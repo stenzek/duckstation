@@ -134,7 +134,7 @@ ALWAYS_INLINE_RELEASE void MaskValidate(PGXP_value* pV, u32 psxV, u32 mask, u32 
 
 ALWAYS_INLINE_RELEASE double f16Sign(double in)
 {
-  const s32 s = static_cast<s32>(static_cast<u64>(in * (USHRT_MAX + 1)));
+  const s32 s = static_cast<s32>(static_cast<s64>(in * (USHRT_MAX + 1)));
   return static_cast<double>(s) / static_cast<double>(USHRT_MAX + 1);
 }
 ALWAYS_INLINE_RELEASE double f16Unsign(double in)

@@ -3,3 +3,5 @@ add_executable(duckstation-regtest
 )
 
 target_link_libraries(duckstation-regtest PRIVATE core common scmversion)
+
+add_core_resources(duckstation-regtest)

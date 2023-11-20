@@ -991,6 +991,7 @@ bool CPU::NewRec::Compiler::TryRenameMIPSReg(Reg to, Reg from, u32 fromhost, Reg
 
   // remove all references to renamed-to register
   DeleteMIPSReg(to, false);
+  CancelLoadDelaysToReg(to);
 
   // and do the actual rename, new register has been modified.
   m_host_regs[fromhost].reg = to;

@@ -53,13 +53,15 @@ bool RegTestHost::SetFolders()
   EmuFolders::AppRoot = Path::Canonicalize(Path::GetDirectory(program_path));
   EmuFolders::DataRoot = EmuFolders::AppRoot;
 
-#ifndef __APPLE__
+#ifdef __APPLE__
+  static constexpr char MAC_DATA_DIR[] = "Library/Application Support/DuckStation";
+  const char* home_dir = getenv("HOME");
+  if (home_dir)
+    EmuFolders::DataRoot = Path::Combine(home_dir, MAC_DATA_DIR);
+#endif
+
   // On Windows/Linux, these are in the binary directory.
   EmuFolders::Resources = Path::Combine(EmuFolders::AppRoot, "resources");
-#else
-  // On macOS, this is in the bundle resources directory.
-  EmuFolders::Resources = Path::Canonicalize(Path::Combine(EmuFolders::AppRoot, "../Resources"));
-#endif
 
   Log_DevPrintf("AppRoot Directory: %s", EmuFolders::AppRoot.c_str());
   Log_DevPrintf("DataRoot Directory: %s", EmuFolders::DataRoot.c_str());
@@ -71,7 +73,7 @@ bool RegTestHost::SetFolders()
   // the resources directory should exist, bail out if not
   if (!FileSystem::DirectoryExists(EmuFolders::Resources.c_str()))
   {
-    Log_ErrorPrintf("Error", "Resources directory is missing, your installation is incomplete.");
+    Log_ErrorPrint("Resources directory is missing, your installation is incomplete.");
     return false;
   }
 

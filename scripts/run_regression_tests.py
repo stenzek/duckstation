@@ -41,7 +41,7 @@ def run_regression_tests(runner, gamedir, destdir, dump_interval, frames, parall
 
     if parallel <= 1:
         for game in gamepaths:
-            run_regression_test(runner, destdir, dump_interval, frames, game)
+            run_regression_test(runner, destdir, dump_interval, frames, renderer, game)
     else:
         print("Processing %u games on %u processors" % (len(gamepaths), parallel))
         func = partial(run_regression_test, runner, destdir, dump_interval, frames, renderer)

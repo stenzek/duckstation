@@ -972,6 +972,10 @@ void CodeGenerator::GenerateExceptionExit(Instruction instruction, const CodeCac
 
 void CodeGenerator::BlockPrologue()
 {
+#if 0
+  EmitFunctionCall(nullptr, &CodeCache::LogCurrentState);
+#endif
+
   InitSpeculativeRegs();
 
   if (m_block->protection == CodeCache::PageProtectionMode::ManualCheck)
@@ -991,10 +995,6 @@ void CodeGenerator::BlockPrologue()
     else if (m_pc == 0xb0)
       EmitFunctionCall(nullptr, &CPU::HandleB0Syscall);
   }
-
-#if 0
-  EmitFunctionCall(nullptr, &CodeCache::LogCurrentState);
-#endif
 
   if (m_block->uncached_fetch_ticks > 0 || m_block->icache_line_count > 0)
     EmitICacheCheckAndUpdate();
@@ -2745,7 +2745,8 @@ bool CodeGenerator::Compile_cop0(Instruction instruction, const CodeCache::Instr
             EmitBranch(GetCurrentFarCodePointer());
             SwitchToFarCode();
             m_register_cache.PushState();
-            WriteNewPC(CalculatePC(), false);
+            if (!info.is_last_instruction)
+              WriteNewPC(CalculatePC(), false);
             EmitStoreCPUStructField(offsetof(State, downcount), Value::FromConstantU32(0));
             EmitExceptionExit();
             m_register_cache.PopState();

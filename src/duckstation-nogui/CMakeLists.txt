@@ -7,6 +7,8 @@ add_executable(duckstation-nogui
 target_precompile_headers(duckstation-nogui PRIVATE "pch.h")
 target_link_libraries(duckstation-nogui PRIVATE core util common imgui scmversion)
 
+add_core_resources(duckstation-nogui)
+
 if(WIN32)
   message(STATUS "Building Win32 NoGUI Platform.")
   target_sources(duckstation-nogui PRIVATE
