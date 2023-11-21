@@ -133,6 +133,8 @@ std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, const Version
   if (wi.type == WindowInfo::Type::Wayland)
     context = ContextEGLWayland::Create(wi, versions_to_try, num_versions_to_try);
 #endif
+  if (wi.type == WindowInfo::Type::Surfaceless)
+    context = ContextEGL::Create(wi, versions_to_try, num_versions_to_try);
 #endif
 
   if (!context)

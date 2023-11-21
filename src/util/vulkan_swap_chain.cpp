@@ -351,9 +351,11 @@ bool VulkanSwapChain::CreateSwapChain()
     image_count = std::min(image_count, surface_capabilities.maxImageCount);
 
   // Determine the dimensions of the swap chain. Values of -1 indicate the size we specify here
-  // determines window size?
+  // determines window size? Android sometimes lags updating currentExtent, so don't use it.
   VkExtent2D size = surface_capabilities.currentExtent;
+#ifndef __ANDROID__
   if (size.width == UINT32_MAX)
+#endif
   {
     size.width = m_window_info.surface_width;
     size.height = m_window_info.surface_height;
