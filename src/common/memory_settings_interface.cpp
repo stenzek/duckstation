@@ -145,7 +145,7 @@ void MemorySettingsInterface::SetDoubleValue(const char* section, const char* ke
 
 void MemorySettingsInterface::SetBoolValue(const char* section, const char* key, bool value)
 {
-  SetValue(section, key, std::to_string(value));
+  SetValue(section, key, value ? "true" : "false");
 }
 
 void MemorySettingsInterface::SetStringValue(const char* section, const char* key, const char* value)
@@ -181,7 +181,7 @@ void MemorySettingsInterface::SetValue(const char* section, const char* key, std
     sit = m_sections.emplace(std::make_pair(std::string(section), KeyMap())).first;
 
   const auto range = sit->second.equal_range(key);
-  if (range.first == sit->second.end())
+  if (range.first == range.second)
   {
     sit->second.emplace(std::string(key), std::move(value));
     return;
