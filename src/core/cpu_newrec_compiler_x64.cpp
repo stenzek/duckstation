@@ -1935,6 +1935,10 @@ void CPU::NewRec::X64Compiler::TestInterrupts(const Xbyak::Reg32& sr)
 
   SwitchToFarCode(true, &CodeGenerator::jnz);
   BackupHostState();
+
+  // Update load delay, this normally happens at the end of an instruction, but we're finishing it early.
+  UpdateLoadDelay();
+
   Flush(FLUSH_END_BLOCK | FLUSH_FOR_EXCEPTION | FLUSH_FOR_C_CALL);
 
   // Can't use EndBlockWithException() here, because it'll use the wrong PC.

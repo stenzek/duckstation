@@ -1983,6 +1983,10 @@ void CPU::NewRec::AArch32Compiler::TestInterrupts(const vixl::aarch32::Register&
 
   SwitchToFarCode(true, ne);
   BackupHostState();
+
+  // Update load delay, this normally happens at the end of an instruction, but we're finishing it early.
+  UpdateLoadDelay();
+
   Flush(FLUSH_END_BLOCK | FLUSH_FOR_EXCEPTION | FLUSH_FOR_C_CALL);
 
   // Can't use EndBlockWithException() here, because it'll use the wrong PC.

@@ -402,7 +402,7 @@ protected:
   TickCount m_gte_done_cycle = 0;
 
   const Instruction* inst = nullptr;
-  const CodeCache::InstructionInfo* iinfo = nullptr;
+  CodeCache::InstructionInfo* iinfo = nullptr;
   u32 m_current_instruction_pc = 0;
   bool m_current_instruction_branch_delay_slot = false;
   bool m_branch_delay_slot_swapped = false;

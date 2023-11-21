@@ -2212,7 +2212,12 @@ void CPU::NewRec::RISCV64Compiler::TestInterrupts(const biscuit::GPR& sr)
   rvAsm->SRLIW(sr, sr, 8);
   rvAsm->ANDI(sr, sr, 0xFF);
   SwitchToFarCode(true, &Assembler::BEQ, sr, zero);
+
   BackupHostState();
+
+  // Update load delay, this normally happens at the end of an instruction, but we're finishing it early.
+  UpdateLoadDelay();
+
   Flush(FLUSH_END_BLOCK | FLUSH_FOR_EXCEPTION | FLUSH_FOR_C_CALL);
 
   // Can't use EndBlockWithException() here, because it'll use the wrong PC.

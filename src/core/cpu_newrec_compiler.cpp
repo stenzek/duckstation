@@ -1602,11 +1602,13 @@ void CPU::NewRec::Compiler::CompileLoadStoreTemplate(void (Compiler::*func)(Comp
 
   // constant address?
   std::optional<VirtualMemoryAddress> addr;
+  std::optional<VirtualMemoryAddress> spec_addr;
   bool use_fastmem = CodeCache::IsUsingFastmem() && !g_settings.cpu_recompiler_memory_exceptions &&
                      !SpecIsCacheIsolated() && !CodeCache::HasPreviouslyFaultedOnPC(m_current_instruction_pc);
   if (HasConstantReg(rs))
   {
     addr = GetConstantRegU32(rs) + inst->i.imm_sext32();
+    spec_addr = addr;
     cf.const_s = true;
 
     if (!Bus::CanUseFastmemForAddress(addr.value()))
@@ -1617,7 +1619,7 @@ void CPU::NewRec::Compiler::CompileLoadStoreTemplate(void (Compiler::*func)(Comp
   }
   else
   {
-    const std::optional<VirtualMemoryAddress> spec_addr = SpecExec_LoadStoreAddr();
+    spec_addr = SpecExec_LoadStoreAddr();
     if (use_fastmem && spec_addr.has_value() && !Bus::CanUseFastmemForAddress(spec_addr.value()))
     {
       Log_DebugFmt("Not using fastmem for speculative {:08X}", spec_addr.value());
@@ -1671,6 +1673,22 @@ void CPU::NewRec::Compiler::CompileLoadStoreTemplate(void (Compiler::*func)(Comp
   }
 
   (this->*func)(cf, size, sign, use_fastmem, addr);
+
+  if (store && !m_block_ended && !m_current_instruction_branch_delay_slot && spec_addr.has_value() &&
+      GetSegmentForAddress(spec_addr.value()) != Segment::KSEG2)
+  {
+    // Get rid of physical aliases.
+    const u32 phys_spec_addr = VirtualAddressToPhysical(spec_addr.value());
+    if (phys_spec_addr >= VirtualAddressToPhysical(m_block->pc) &&
+        phys_spec_addr < VirtualAddressToPhysical(m_block->pc + (m_block->size * sizeof(Instruction))))
+    {
+      Log_WarningFmt("Instruction {:08X} speculatively writes to {:08X} inside block {:08X}-{:08X}. Truncating block.",
+                     m_current_instruction_pc, phys_spec_addr, m_block->pc,
+                     m_block->pc + (m_block->size * sizeof(Instruction)));
+      m_block->size = ((m_current_instruction_pc - m_block->pc) / sizeof(Instruction)) + 1;
+      iinfo->is_last_instruction = true;
+    }
+  }
 }
 
 void CPU::NewRec::Compiler::FlushForLoadStore(const std::optional<VirtualMemoryAddress>& address, bool store,
