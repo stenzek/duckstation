@@ -368,16 +368,6 @@ std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const s
   filename = Path::Combine(
     EmuFolders::Shaders,
     fmt::format("reshade" FS_OSPATH_SEPARATOR_STR "Shaders" FS_OSPATH_SEPARATOR_STR "{}.fx", shader_name));
-
-  // TODO: Won't work on Android. Who cares? All the homies are tired of demanding Android users.
-  if (!FileSystem::FileExists(filename.c_str()))
-  {
-    filename = Path::Combine(EmuFolders::Resources,
-                             fmt::format("shaders" FS_OSPATH_SEPARATOR_STR "reshade" FS_OSPATH_SEPARATOR_STR
-                                         "Shaders" FS_OSPATH_SEPARATOR_STR "{}.fx",
-                                         shader_name));
-  }
-
   if (FileSystem::FileExists(filename.c_str()))
   {
     std::unique_ptr<ReShadeFXShader> shader = std::make_unique<ReShadeFXShader>();
@@ -393,8 +383,21 @@ std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const s
       return shader;
   }
 
-  resource_str =
-    Host::ReadResourceFileToString(fmt::format("shaders" FS_OSPATH_SEPARATOR_STR "{}.glsl", shader_name).c_str());
+  filename =
+    fmt::format("shaders/reshade" FS_OSPATH_SEPARATOR_STR "Shaders" FS_OSPATH_SEPARATOR_STR "{}.fx", shader_name);
+  resource_str = Host::ReadResourceFileToString(filename.c_str());
+  if (resource_str.has_value())
+  {
+    std::unique_ptr<ReShadeFXShader> shader = std::make_unique<ReShadeFXShader>();
+    if (shader->LoadFromString(std::string(shader_name), std::move(filename), std::move(resource_str.value()),
+                               only_config, error))
+    {
+      return shader;
+    }
+  }
+
+  filename = fmt::format("shaders" FS_OSPATH_SEPARATOR_STR "{}.glsl", shader_name);
+  resource_str = Host::ReadResourceFileToString(filename.c_str());
   if (resource_str.has_value())
   {
     std::unique_ptr<GLSLShader> shader = std::make_unique<GLSLShader>();

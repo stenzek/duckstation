@@ -24,7 +24,8 @@ public:
 
   bool IsValid() const override;
 
-  bool LoadFromFile(std::string name, const char* filename, bool only_config, Error* error);
+  bool LoadFromFile(std::string name, std::string filename, bool only_config, Error* error);
+  bool LoadFromString(std::string name, std::string filename, std::string code, bool only_config, Error* error);
 
   bool ResizeOutput(GPUTexture::Format format, u32 width, u32 height) override;
   bool CompilePipeline(GPUTexture::Format format, u32 width, u32 height) override;
@@ -73,7 +74,7 @@ private:
     ShaderOption::ValueVector value;
   };
 
-  bool CreateModule(s32 buffer_width, s32 buffer_height, reshadefx::module* mod, Error* error);
+  bool CreateModule(s32 buffer_width, s32 buffer_height, reshadefx::module* mod, std::string code, Error* error);
   bool CreateOptions(const reshadefx::module& mod, Error* error);
   bool GetSourceOption(const reshadefx::uniform_info& ui, SourceOptionType* si, Error* error);
   bool CreatePasses(GPUTexture::Format backbuffer_format, reshadefx::module& mod, Error* error);

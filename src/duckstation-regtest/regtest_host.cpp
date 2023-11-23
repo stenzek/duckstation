@@ -171,6 +171,12 @@ void Host::CommitBaseSettingChanges()
   // noop, in memory
 }
 
+bool Host::ResourceFileExists(const char* filename)
+{
+  const std::string path(Path::Combine(EmuFolders::Resources, filename));
+  return FileSystem::FileExists(path.c_str());
+}
+
 std::optional<std::vector<u8>> Host::ReadResourceFile(const char* filename)
 {
   const std::string path(Path::Combine(EmuFolders::Resources, filename));
