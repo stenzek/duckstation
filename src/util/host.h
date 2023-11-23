@@ -12,6 +12,9 @@
 #include <vector>
 
 namespace Host {
+/// Returns true if the specified resource file exists.
+bool ResourceFileExists(const char* filename);
+
 /// Reads a file from the resources directory of the application.
 /// This may be outside of the "normal" filesystem on platforms such as Mac.
 std::optional<std::vector<u8>> ReadResourceFile(const char* filename);

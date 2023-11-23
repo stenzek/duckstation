@@ -39,6 +39,28 @@ static RenderAPI GetRenderAPI()
   return g_gpu_device ? g_gpu_device->GetRenderAPI() : RenderAPI::D3D11;
 }
 
+static bool PreprocessorFileExistsCallback(const std::string& path)
+{
+  if (Path::IsAbsolute(path))
+    return FileSystem::FileExists(path.c_str());
+
+  return Host::ResourceFileExists(path.c_str());
+}
+
+static bool PreprocessorReadFileCallback(const std::string& path, std::string& data)
+{
+  std::optional<std::string> rdata;
+  if (Path::IsAbsolute(path))
+    rdata = FileSystem::ReadFileToString(path.c_str());
+  else
+    rdata = Host::ReadResourceFileToString(path.c_str());
+  if (!rdata.has_value())
+    return false;
+
+  data = std::move(rdata.value());
+  return true;
+}
+
 static std::unique_ptr<reshadefx::codegen> CreateRFXCodegen()
 {
   const bool debug_info = g_gpu_device ? g_gpu_device->IsDebugDevice() : false;
@@ -253,18 +275,38 @@ PostProcessing::ReShadeFXShader::ReShadeFXShader() = default;
 
 PostProcessing::ReShadeFXShader::~ReShadeFXShader() = default;
 
-bool PostProcessing::ReShadeFXShader::LoadFromFile(std::string name, const char* filename, bool only_config,
+bool PostProcessing::ReShadeFXShader::LoadFromFile(std::string name, std::string filename, bool only_config,
                                                    Error* error)
+{
+  std::optional<std::string> data = FileSystem::ReadFileToString(filename.c_str(), error);
+  if (!data.has_value())
+  {
+    Log_ErrorFmt("Failed to read '{}'.", filename);
+    return false;
+  }
+
+  return LoadFromString(std::move(name), std::move(filename), std::move(data.value()), only_config, error);
+}
+
+bool PostProcessing::ReShadeFXShader::LoadFromString(std::string name, std::string filename, std::string code,
+                                                     bool only_config, Error* error)
 {
   DebugAssert(only_config || g_gpu_device);
 
-  m_filename = filename;
   m_name = std::move(name);
+  m_filename = std::move(filename);
+
+  // Reshade's preprocessor expects this.
+  if (code.empty() || code.back() != '\n')
+    code.push_back('\n');
 
   reshadefx::module temp_module;
   if (!CreateModule(only_config ? DEFAULT_BUFFER_WIDTH : g_gpu_device->GetWindowWidth(),
-                    only_config ? DEFAULT_BUFFER_HEIGHT : g_gpu_device->GetWindowHeight(), &temp_module, error))
+                    only_config ? DEFAULT_BUFFER_HEIGHT : g_gpu_device->GetWindowHeight(), &temp_module,
+                    std::move(code), error))
+  {
     return false;
+  }
 
   if (!CreateOptions(temp_module, error))
     return false;
@@ -318,12 +360,27 @@ bool PostProcessing::ReShadeFXShader::IsValid() const
 }
 
 bool PostProcessing::ReShadeFXShader::CreateModule(s32 buffer_width, s32 buffer_height, reshadefx::module* mod,
-                                                   Error* error)
+                                                   std::string code, Error* error)
 {
   reshadefx::preprocessor pp;
-  pp.add_include_path(std::string(Path::GetDirectory(m_filename)));
-  pp.add_include_path(std::string(Path::Combine(
-    EmuFolders::Resources, "shaders" FS_OSPATH_SEPARATOR_STR "reshade" FS_OSPATH_SEPARATOR_STR "Shaders")));
+  pp.set_include_callbacks(PreprocessorFileExistsCallback, PreprocessorReadFileCallback);
+
+  if (Path::IsAbsolute(m_filename))
+  {
+    // we're a real file, so include that directory
+    pp.add_include_path(std::string(Path::GetDirectory(m_filename)));
+  }
+  else
+  {
+    // we're a resource, include the resource subdirectory, if there is one
+    if (std::string_view resdir = Path::GetDirectory(m_filename); !resdir.empty())
+      pp.add_include_path(std::string(resdir));
+  }
+
+  // root of the user directory, and resources
+  pp.add_include_path(Path::Combine(EmuFolders::Shaders, "reshade" FS_OSPATH_SEPARATOR_STR "Shaders"));
+  pp.add_include_path("shaders/reshade/Shaders");
+
   pp.add_macro_definition("__RESHADE__", "50901");
   pp.add_macro_definition("BUFFER_WIDTH", std::to_string(buffer_width)); // TODO: can we make these uniforms?
   pp.add_macro_definition("BUFFER_HEIGHT", std::to_string(buffer_height));
@@ -350,7 +407,7 @@ bool PostProcessing::ReShadeFXShader::CreateModule(s32 buffer_width, s32 buffer_
       break;
   }
 
-  if (!pp.append_file(m_filename))
+  if (!pp.append_string(std::move(code), m_filename))
   {
     Error::SetString(error, fmt::format("Failed to preprocess:\n{}", pp.errors()));
     return false;
@@ -1013,9 +1070,20 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
   m_textures.clear();
   m_passes.clear();
 
+  std::string fxcode;
+  if (!PreprocessorReadFileCallback(m_filename, fxcode))
+  {
+    Log_ErrorFmt("Failed to re-read shader for pipeline: '{}'", m_filename);
+    return false;
+  }
+
+  // Reshade's preprocessor expects this.
+  if (fxcode.empty() || fxcode.back() != '\n')
+    fxcode.push_back('\n');
+
   Error error;
   reshadefx::module mod;
-  if (!CreateModule(width, height, &mod, &error))
+  if (!CreateModule(width, height, &mod, std::move(fxcode), &error))
   {
     Log_ErrorPrintf("Failed to create module for '%s': %s", m_name.c_str(), error.GetDescription().c_str());
     return false;

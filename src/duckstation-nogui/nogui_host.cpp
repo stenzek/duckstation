@@ -350,6 +350,12 @@ s32 Host::Internal::GetTranslatedStringImpl(const std::string_view& context, con
   return static_cast<s32>(msg.size());
 }
 
+bool Host::ResourceFileExists(const char* filename)
+{
+  const std::string path(Path::Combine(EmuFolders::Resources, filename));
+  return FileSystem::FileExists(path.c_str());
+}
+
 std::optional<std::vector<u8>> Host::ReadResourceFile(const char* filename)
 {
   const std::string path(Path::Combine(EmuFolders::Resources, filename));
