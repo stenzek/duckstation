@@ -61,27 +61,14 @@ static const int precedence_lookup[] = {
 	11, 11, 11, 11 // unary operators
 };
 
-static bool read_file(const std::filesystem::path &path, std::string &data)
+static bool read_file(const std::string &path, std::string &data, reshadefx::preprocessor::include_read_file_callback &cb)
 {
-	std::ifstream file(path, std::ios::binary);
-	if (!file)
+	std::string file_data;
+	if (!cb(path, file_data))
 		return false;
-
-	// Read file contents into memory
-	std::error_code ec;
-	const uintmax_t file_size = std::filesystem::file_size(path, ec);
-	if (ec)
-		return false;
-
-	std::string file_data(static_cast<size_t>(file_size + 1), '\0');
-	if (!file.read(file_data.data(), file_size))
-		return false;
-
-	// No longer need to have a handle open to the file, since all data was read, so can safely close it
-	file.close();
 
 	// Append a new line feed to the end of the input string to avoid issues with parsing
-	file_data.back() = '\n';
+	file_data.push_back('\n');
 
 	// Remove BOM (0xefbbbf means 0xfeff)
 	if (file_data.size() >= 3 &&
@@ -94,6 +81,33 @@ static bool read_file(const std::filesystem::path &path, std::string &data)
 	return true;
 }
 
+bool reshadefx::preprocessor::stdfs_read_file_callback(const std::string &path, std::string &data)
+{
+  std::ifstream file(std::filesystem::path(path), std::ios::binary);
+  if (!file)
+    return false;
+
+  // Read file contents into memory
+  std::error_code ec;
+  const uintmax_t file_size = std::filesystem::file_size(path, ec);
+  if (ec)
+    return false;
+
+	data.reserve(file_size + 1);
+	data.resize(static_cast<size_t>(file_size), '\0');
+  if (!file.read(data.data(), file_size))
+    return false;
+
+  // No longer need to have a handle open to the file, since all data was read, so can safely close it
+  file.close();
+	return true;
+}
+
+bool reshadefx::preprocessor::stdfs_file_exists_callback(const std::string &path)
+{
+	return std::filesystem::exists(std::filesystem::path(path));
+}
+
 template <char ESCAPE_CHAR = '\\'>
 static std::string escape_string(std::string s)
 {
@@ -103,16 +117,25 @@ static std::string escape_string(std::string s)
 }
 
 reshadefx::preprocessor::preprocessor()
+	: _file_exists_cb(stdfs_file_exists_callback)
+	, _read_file_cb(stdfs_read_file_callback)
 {
 }
 reshadefx::preprocessor::~preprocessor()
 {
 }
 
-void reshadefx::preprocessor::add_include_path(const std::filesystem::path &path)
+void reshadefx::preprocessor::set_include_callbacks(include_file_exists_callback file_exists,
+                                                    include_read_file_callback read_file)
+{
+	_file_exists_cb = file_exists;
+	_read_file_cb = read_file;
+}
+
+void reshadefx::preprocessor::add_include_path(const std::string &path)
 {
 	assert(!path.empty());
-	_include_paths.push_back(path);
+	_include_paths.push_back(std::filesystem::path(path));
 }
 bool reshadefx::preprocessor::add_macro_definition(const std::string &name, const macro &macro)
 {
@@ -120,15 +143,15 @@ bool reshadefx::preprocessor::add_macro_definition(const std::string &name, cons
 	return _macros.emplace(name, macro).second;
 }
 
-bool reshadefx::preprocessor::append_file(const std::filesystem::path &path)
+bool reshadefx::preprocessor::append_file(const std::string &path)
 {
 	std::string source_code;
-	if (!read_file(path, source_code))
+	if (!read_file(path, source_code, _read_file_cb))
 		return false;
 
 	return append_string(std::move(source_code), path);
 }
-bool reshadefx::preprocessor::append_string(std::string source_code, const std::filesystem::path &path)
+bool reshadefx::preprocessor::append_string(std::string source_code, const std::string &path /* = std::string() */)
 {
 	// Enforce all input strings to end with a line feed
 	assert(!source_code.empty() && source_code.back() == '\n');
@@ -138,7 +161,7 @@ bool reshadefx::preprocessor::append_string(std::string source_code, const std::
 	// Give this push a name, so that lexer location starts at a new line
 	// This is necessary in case this string starts with a preprocessor directive, since the lexer only reports those as such if they appear at the beginning of a new line
 	// But without a name, the lexer location is set to the last token location, which most likely will not be at the start of the line
-	push(std::move(source_code), path.empty() ? "unknown" : path.u8string());
+	push(std::move(source_code), path.empty() ? "unknown" : path);
 	parse();
 
 	return _success;
@@ -667,10 +690,9 @@ void reshadefx::preprocessor::parse_include()
 	std::filesystem::path file_path = std::filesystem::u8path(_output_location.source);
 	file_path.replace_filename(file_name);
 
-	std::error_code ec;
-	if (!std::filesystem::exists(file_path, ec))
+	if (!_file_exists_cb(file_path.u8string()))
 		for (const std::filesystem::path &include_path : _include_paths)
-			if (std::filesystem::exists(file_path = include_path / file_name, ec))
+			if (_file_exists_cb((file_path = include_path / file_name).u8string()))
 				break;
 
 	const std::string file_path_string = file_path.u8string();
@@ -687,7 +709,7 @@ void reshadefx::preprocessor::parse_include()
 	}
 	else
 	{
-		if (!read_file(file_path, input))
+		if (!read_file(file_path_string, input, _read_file_cb))
 			return error(keyword_location, "could not open included file '" + file_name.u8string() + '\'');
 
 		_file_cache.emplace(file_path_string, input);
@@ -863,13 +885,12 @@ bool reshadefx::preprocessor::evaluate_expression()
 				if (has_parentheses && !expect(tokenid::parenthesis_close))
 					return false;
 
-				std::error_code ec;
-				if (!std::filesystem::exists(file_path, ec))
+				if (!_file_exists_cb(file_path.u8string()))
 					for (const std::filesystem::path &include_path : _include_paths)
-						if (std::filesystem::exists(file_path = include_path / file_name, ec))
+						if (_file_exists_cb((file_path = include_path / file_name).u8string()))
 							break;
 
-				rpn[rpn_index++] = { std::filesystem::exists(file_path, ec) ? 1 : 0, false };
+				rpn[rpn_index++] = { _file_exists_cb(file_path.u8string()) ? 1 : 0, false };
 				continue;
 			}
 			if (_token.literal_as_string == "defined")
