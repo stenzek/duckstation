@@ -321,8 +321,8 @@ bool PostProcessing::ReShadeFXShader::CreateModule(s32 buffer_width, s32 buffer_
                                                    Error* error)
 {
   reshadefx::preprocessor pp;
-  pp.add_include_path(std::filesystem::path(Path::GetDirectory(m_filename)));
-  pp.add_include_path(std::filesystem::path(Path::Combine(
+  pp.add_include_path(std::string(Path::GetDirectory(m_filename)));
+  pp.add_include_path(std::string(Path::Combine(
     EmuFolders::Resources, "shaders" FS_OSPATH_SEPARATOR_STR "reshade" FS_OSPATH_SEPARATOR_STR "Shaders")));
   pp.add_macro_definition("__RESHADE__", "50901");
   pp.add_macro_definition("BUFFER_WIDTH", std::to_string(buffer_width)); // TODO: can we make these uniforms?
@@ -350,7 +350,7 @@ bool PostProcessing::ReShadeFXShader::CreateModule(s32 buffer_width, s32 buffer_
       break;
   }
 
-  if (!pp.append_file(std::filesystem::path(m_filename)))
+  if (!pp.append_file(m_filename))
   {
     Error::SetString(error, fmt::format("Failed to preprocess:\n{}", pp.errors()));
     return false;

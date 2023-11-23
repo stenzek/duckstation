@@ -29,15 +29,26 @@ namespace reshadefx
 			bool is_function_like = false;
 		};
 
+		// Callbacks for manual file reading.
+		using include_file_exists_callback = bool(*)(const std::string &path);
+		using include_read_file_callback = bool(*)(const std::string &path, std::string &data);
+		static bool stdfs_read_file_callback(const std::string &path, std::string& data);
+		static bool stdfs_file_exists_callback(const std::string &path);
+
 		// Define constructor explicitly because lexer class is not included here
 		preprocessor();
 		~preprocessor();
 
 		/// <summary>
+		/// Sets callbacks to use for reading files. If this is not called, std::filesystem will be used.
+		/// </summary>
+		void set_include_callbacks(include_file_exists_callback file_exists, include_read_file_callback read_file);
+
+		/// <summary>
 		/// Adds an include directory to the list of search paths used when resolving #include directives.
 		/// </summary>
 		/// <param name="path">Path to the directory to add.</param>
-		void add_include_path(const std::filesystem::path &path);
+		void add_include_path(const std::string &path);
 
 		/// <summary>
 		/// Adds a new macro definition. This is equal to appending '#define name macro' to this preprocessor instance.
@@ -62,14 +73,14 @@ namespace reshadefx
 		/// </summary>
 		/// <param name="path">Path to the file to parse.</param>
 		/// <returns><see langword="true"/> if parsing was successful, <see langword="false"/> otherwise.</returns>
-		bool append_file(const std::filesystem::path &path);
+		bool append_file(const std::string &path);
 		/// <summary>
 		/// Parses the specified string and appends it to the output.
 		/// </summary>
 		/// <param name="source_code">String to parse.</param>
 		/// <param name="path">Optional file path to identify this string with.</param>
 		/// <returns><see langword="true"/> if parsing was successful, <see langword="false"/> otherwise.</returns>
-		bool append_string(std::string source_code, const std::filesystem::path &path = std::filesystem::path());
+		bool append_string(std::string source_code, const std::string &path = std::string());
 
 		/// <summary>
 		/// Gets the list of error messages.
@@ -144,6 +155,8 @@ namespace reshadefx
 		void create_macro_replacement_list(macro &macro);
 
 		bool _success = true;
+		include_file_exists_callback _file_exists_cb;
+		include_read_file_callback _read_file_cb;
 		std::string _output, _errors;
 
 		std::string _current_token_raw_data;
