@@ -25,16 +25,16 @@ HTTPDownloaderWinHttp::~HTTPDownloaderWinHttp()
   }
 }
 
-std::unique_ptr<HTTPDownloader> HTTPDownloader::Create(const char* user_agent)
+std::unique_ptr<HTTPDownloader> HTTPDownloader::Create(std::string user_agent)
 {
   std::unique_ptr<HTTPDownloaderWinHttp> instance(std::make_unique<HTTPDownloaderWinHttp>());
-  if (!instance->Initialize(user_agent))
+  if (!instance->Initialize(std::move(user_agent)))
     return {};
 
   return instance;
 }
 
-bool HTTPDownloaderWinHttp::Initialize(const char* user_agent)
+bool HTTPDownloaderWinHttp::Initialize(std::string user_agent)
 {
   static constexpr DWORD dwAccessType = WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY;
 

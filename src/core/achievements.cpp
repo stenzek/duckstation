@@ -125,7 +125,6 @@ static void ReportRCError(int err, fmt::format_string<T...> fmt, T&&... args);
 static void EnsureCacheDirectoriesExist();
 static void ClearGameInfo();
 static void ClearGameHash();
-static std::string GetUserAgent();
 static std::string GetGameHash(CDImage* image);
 static void SetHardcoreMode(bool enabled, bool force_display_message);
 static bool IsLoggedInOrLoggingIn();
@@ -241,11 +240,6 @@ const rc_client_user_game_summary_t& Achievements::GetGameSummary()
   return s_game_summary;
 }
 
-std::string Achievements::GetUserAgent()
-{
-  return fmt::format("DuckStation for {} ({}) {}", TARGET_OS_STR, CPU_ARCH_STR, g_scm_tag_str);
-}
-
 void Achievements::ReportError(const std::string_view& sv)
 {
   std::string error = fmt::format("Achievements error: {}", sv);
@@ -311,7 +305,7 @@ std::string Achievements::GetGameHash(CDImage* image)
 
 void Achievements::DownloadImage(std::string url, std::string cache_filename)
 {
-  auto callback = [cache_filename](s32 status_code, std::string content_type, HTTPDownloader::Request::Data data) {
+  auto callback = [cache_filename](s32 status_code, const std::string& content_type, HTTPDownloader::Request::Data data) {
     if (status_code != HTTPDownloader::HTTP_STATUS_OK)
       return;
 
@@ -437,7 +431,7 @@ bool Achievements::Initialize()
 
 bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http)
 {
-  *http = HTTPDownloader::Create(GetUserAgent().c_str());
+  *http = HTTPDownloader::Create(Host::GetHTTPUserAgent());
   if (!*http)
   {
     Host::ReportErrorAsync("Achievements Error", "Failed to create HTTPDownloader, cannot use achievements");
@@ -621,7 +615,7 @@ uint32_t Achievements::ClientReadMemory(uint32_t address, uint8_t* buffer, uint3
 void Achievements::ClientServerCall(const rc_api_request_t* request, rc_client_server_callback_t callback,
                                     void* callback_data, rc_client_t* client)
 {
-  HTTPDownloader::Request::Callback hd_callback = [callback, callback_data](s32 status_code, std::string content_type,
+  HTTPDownloader::Request::Callback hd_callback = [callback, callback_data](s32 status_code, const std::string& content_type,
                                                                             HTTPDownloader::Request::Data data) {
     rc_api_server_response_t rr;
     rr.http_status_code = (status_code <= 0) ? (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED ?
@@ -2959,7 +2953,7 @@ void Achievements::SwitchToRAIntegration()
 void Achievements::RAIntegration::InitializeRAIntegration(void* main_window_handle)
 {
   RA_InitClient((HWND)main_window_handle, "DuckStation", g_scm_tag_str);
-  RA_SetUserAgentDetail(Achievements::GetUserAgent().c_str());
+  RA_SetUserAgentDetail(Host::GetHTTPUserAgent().c_str());
 
   RA_InstallSharedFunctions(RACallbackIsActive, RACallbackCauseUnpause, RACallbackCausePause, RACallbackRebuildMenu,
                             RACallbackEstimateTitle, RACallbackResetEmulator, RACallbackLoadROM);

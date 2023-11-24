@@ -15,7 +15,7 @@ public:
   HTTPDownloaderCurl();
   ~HTTPDownloaderCurl() override;
 
-  bool Initialize(const char* user_agent);
+  bool Initialize(std::string user_agent);
 
 protected:
   Request* InternalCreateRequest() override;

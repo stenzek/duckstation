@@ -33,6 +33,9 @@ void ReportFormattedErrorAsync(const std::string_view& title, const char* format
 bool ConfirmMessage(const std::string_view& title, const std::string_view& message);
 bool ConfirmFormattedMessage(const std::string_view& title, const char* format, ...);
 
+/// Returns the user agent to use for HTTP requests.
+std::string GetHTTPUserAgent();
+
 /// Opens a URL, using the default application.
 void OpenURL(const std::string_view& url);
 

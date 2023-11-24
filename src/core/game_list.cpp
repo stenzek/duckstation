@@ -1139,7 +1139,7 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
     return false;
   }
 
-  std::unique_ptr<HTTPDownloader> downloader(HTTPDownloader::Create());
+  std::unique_ptr<HTTPDownloader> downloader(HTTPDownloader::Create(Host::GetHTTPUserAgent()));
   if (!downloader)
   {
     progress->DisplayError("Failed to create HTTP downloader.");
@@ -1171,7 +1171,7 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
     std::string filename(HTTPDownloader::URLDecode(url));
     downloader->CreateRequest(
       std::move(url), [use_serial, &save_callback, entry_path = std::move(entry_path), filename = std::move(filename)](
-                        s32 status_code, std::string content_type, HTTPDownloader::Request::Data data) {
+                        s32 status_code, const std::string& content_type, HTTPDownloader::Request::Data data) {
         if (status_code != HTTPDownloader::HTTP_STATUS_OK || data.empty())
           return;
 
