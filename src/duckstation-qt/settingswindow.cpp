@@ -106,14 +106,11 @@ void SettingsWindow::addPages()
     QStringLiteral("sparkle-fill"),
     tr("<strong>Enhancement Settings</strong><hr>These options control enhancements which can improve visuals compared "
        "to the original console. Mouse over each option for additional information."));
-  if (!isPerGameSettings())
-  {
-    addWidget(
-      m_post_processing_settings = new PostProcessingSettingsWidget(this, m_ui.settingsContainer),
-      tr("Post-Processing"), QStringLiteral("sun-fill"),
-      tr("<strong>Post-Processing Settings</strong><hr>Post processing allows you to alter the appearance of the image "
-         "displayed on the screen with various filters. Shaders will be executed in sequence."));
-  }
+  addWidget(
+    m_post_processing_settings = new PostProcessingSettingsWidget(this, m_ui.settingsContainer), tr("Post-Processing"),
+    QStringLiteral("sun-fill"),
+    tr("<strong>Post-Processing Settings</strong><hr>Post processing allows you to alter the appearance of the image "
+       "displayed on the screen with various filters. Shaders will be executed in sequence."));
   addWidget(
     m_audio_settings = new AudioSettingsWidget(this, m_ui.settingsContainer), tr("Audio"),
     QStringLiteral("volume-up-line"),
