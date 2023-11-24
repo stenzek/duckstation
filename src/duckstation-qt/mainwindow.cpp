@@ -367,7 +367,7 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main, bool 
   {
     // See lameland comment above.
     if (use_main_window_pos && !s_use_central_widget)
-      container->move(pos());
+      container->setGeometry(geometry());
     else
       restoreDisplayWindowGeometryFromConfig();
     container->showNormal();
@@ -2911,8 +2911,14 @@ MainWindow::SystemLock MainWindow::pauseAndLockSystem()
   if (was_fullscreen)
   {
     g_emu_thread->setFullscreen(false, false);
-    while (s_system_valid && g_emu_thread->isFullscreen())
-      QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
+
+    // Container could change... thanks Wayland.
+    QWidget* container;
+    while (s_system_valid &&
+           (g_emu_thread->isFullscreen() || !(container = getDisplayContainer()) || container->isFullScreen()))
+    {
+      QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+    }
   }
 
   if (!was_paused)
