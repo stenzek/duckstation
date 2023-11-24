@@ -22,7 +22,8 @@
     "modules/21-libbacktrace.json",
     {
       "name": "duckstation",
-      "buildsystem": "cmake",
+      "buildsystem": "cmake-ninja",
+      "no-make-install": true,
       "build-options": {
         "strip": false,
         "no-debuginfo": true,

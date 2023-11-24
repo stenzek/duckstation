@@ -8,7 +8,7 @@
  */
 #define _DEFAULT_SOURCE
 #define _BSD_SOURCE
-#ifndef __FreeBSD__
+#if !defined(__FreeBSD__) && !defined(__NetBSD__)
 #define _POSIX_SOURCE
 #endif
 #include "cubeb-internal.h"
@@ -788,10 +788,10 @@ cbjack_destroy(cubeb * context)
 
   if (context->jack_client != NULL)
     WRAP(jack_client_close)(context->jack_client);
-
+#ifndef DISABLE_LIBJACK_DLOPEN
   if (context->libjack)
     dlclose(context->libjack);
-
+#endif
   free(context);
 }
 

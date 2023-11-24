@@ -6,6 +6,7 @@
  */
 #include "cubeb-internal.h"
 #include "cubeb/cubeb.h"
+#include "cubeb_tracing.h"
 #include <assert.h>
 #include <dlfcn.h>
 #include <inttypes.h>
@@ -67,7 +68,7 @@ struct cubeb_stream {
   struct sio_hdl * hdl;          /* link us to sndio */
   int mode;                      /* bitmap of SIO_{PLAY,REC} */
   int active;                    /* cubec_start() called */
-  int conv;                      /* need float->s16 conversion */
+  int conv;                      /* need float->s24 conversion */
   unsigned char * rbuf;          /* rec data consumed from here */
   unsigned char * pbuf;          /* play data is prepared here */
   unsigned int nfr;              /* number of frames in ibuf and obuf */
@@ -98,33 +99,33 @@ s16_setvol(void * ptr, long nsamp, float volume)
 }
 
 static void
-float_to_s16(void * ptr, long nsamp, float volume)
+float_to_s24(void * ptr, long nsamp, float volume)
 {
-  int16_t * dst = ptr;
+  int32_t * dst = ptr;
   float * src = ptr;
-  float mult = volume * 32768;
+  float mult = volume * 8388608;
   int s;
 
   while (nsamp-- > 0) {
     s = lrintf(*(src++) * mult);
-    if (s < -32768)
-      s = -32768;
-    else if (s > 32767)
-      s = 32767;
+    if (s < -8388608)
+      s = -8388608;
+    else if (s > 8388607)
+      s = 8388607;
     *(dst++) = s;
   }
 }
 
 static void
-s16_to_float(void * ptr, long nsamp)
+s24_to_float(void * ptr, long nsamp)
 {
-  int16_t * src = ptr;
+  int32_t * src = ptr;
   float * dst = ptr;
 
   src += nsamp;
   dst += nsamp;
   while (nsamp-- > 0)
-    *(--dst) = (1. / 32768) * *(--src);
+    *(--dst) = (1. / 8388608) * *(--src);
 }
 
 static const char *
@@ -161,10 +162,14 @@ sndio_mainloop(void * arg)
   size_t pstart = 0, pend = 0, rstart = 0, rend = 0;
   long nfr;
 
+  CUBEB_REGISTER_THREAD("cubeb rendering thread");
+
   nfds = WRAP(sio_nfds)(s->hdl);
   pfds = calloc(nfds, sizeof(struct pollfd));
-  if (pfds == NULL)
+  if (pfds == NULL) {
+    CUBEB_UNREGISTER_THREAD();
     return NULL;
+  }
 
   DPR("sndio_mainloop()\n");
   s->state_cb(s, s->arg, CUBEB_STATE_STARTED);
@@ -172,6 +177,7 @@ sndio_mainloop(void * arg)
   if (!WRAP(sio_start)(s->hdl)) {
     pthread_mutex_unlock(&s->mtx);
     free(pfds);
+    CUBEB_UNREGISTER_THREAD();
     return NULL;
   }
   DPR("sndio_mainloop(), started\n");
@@ -207,7 +213,7 @@ sndio_mainloop(void * arg)
       }
 
       if ((s->mode & SIO_REC) && s->conv)
-        s16_to_float(s->rbuf, s->nfr * s->rchan);
+        s24_to_float(s->rbuf, s->nfr * s->rchan);
 
       /* invoke call-back, it returns less that s->nfr if done */
       pthread_mutex_unlock(&s->mtx);
@@ -238,7 +244,7 @@ sndio_mainloop(void * arg)
 
       if (s->mode & SIO_PLAY) {
         if (s->conv)
-          float_to_s16(s->pbuf, nfr * s->pchan, s->volume);
+          float_to_s24(s->pbuf, nfr * s->pchan, s->volume);
         else
           s16_setvol(s->pbuf, nfr * s->pchan, s->volume);
       }
@@ -300,6 +306,7 @@ sndio_mainloop(void * arg)
   pthread_mutex_unlock(&s->mtx);
   s->state_cb(s, s->arg, state);
   free(pfds);
+  CUBEB_UNREGISTER_THREAD();
   return NULL;
 }
 
@@ -362,8 +369,10 @@ static void
 sndio_destroy(cubeb * context)
 {
   DPR("sndio_destroy()\n");
+#ifndef DISABLE_LIBSNDIO_DLOPEN
   if (context->libsndio)
     dlclose(context->libsndio);
+#endif
   free(context);
 }
 
@@ -420,21 +429,25 @@ sndio_stream_init(cubeb * context, cubeb_stream ** stream,
   }
   WRAP(sio_initpar)(&wpar);
   wpar.sig = 1;
-  wpar.bits = 16;
   switch (format) {
   case CUBEB_SAMPLE_S16LE:
     wpar.le = 1;
+    wpar.bits = 16;
     break;
   case CUBEB_SAMPLE_S16BE:
     wpar.le = 0;
+    wpar.bits = 16;
     break;
   case CUBEB_SAMPLE_FLOAT32NE:
     wpar.le = SIO_LE_NATIVE;
+    wpar.bits = 24;
+    wpar.msb = 0;
     break;
   default:
     DPR("sndio_stream_init() unsupported format\n");
     goto err;
   }
+  wpar.bps = SIO_BPS(wpar.bits);
   wpar.rate = rate;
   if (s->mode & SIO_REC)
     wpar.rchan = input_stream_params->channels;
@@ -446,6 +459,8 @@ sndio_stream_init(cubeb * context, cubeb_stream ** stream,
     goto err;
   }
   if (rpar.bits != wpar.bits || rpar.le != wpar.le || rpar.sig != wpar.sig ||
+      rpar.bps != wpar.bps ||
+      (wpar.bits < 8 * wpar.bps && rpar.msb != wpar.msb) ||
       rpar.rate != wpar.rate ||
       ((s->mode & SIO_REC) && rpar.rchan != wpar.rchan) ||
       ((s->mode & SIO_PLAY) && rpar.pchan != wpar.pchan)) {

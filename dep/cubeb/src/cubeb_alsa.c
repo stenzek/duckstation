@@ -7,9 +7,13 @@
 #undef NDEBUG
 #define _DEFAULT_SOURCE
 #define _BSD_SOURCE
+#if defined(__NetBSD__)
+#define _NETBSD_SOURCE /* timersub() */
+#endif
 #define _XOPEN_SOURCE 500
 #include "cubeb-internal.h"
 #include "cubeb/cubeb.h"
+#include "cubeb_tracing.h"
 #include <alsa/asoundlib.h>
 #include <assert.h>
 #include <dlfcn.h>
@@ -579,9 +583,13 @@ alsa_run_thread(void * context)
   cubeb * ctx = context;
   int r;
 
+  CUBEB_REGISTER_THREAD("cubeb rendering thread");
+
   do {
     r = alsa_run(ctx);
   } while (r >= 0);
+
+  CUBEB_UNREGISTER_THREAD();
 
   return NULL;
 }
@@ -957,11 +965,11 @@ alsa_destroy(cubeb * ctx)
     WRAP(snd_config_delete)(ctx->local_config);
     pthread_mutex_unlock(&cubeb_alsa_mutex);
   }
-
+#ifndef DISABLE_LIBASOUND_DLOPEN
   if (ctx->libasound) {
     dlclose(ctx->libasound);
   }
-
+#endif
   free(ctx);
 }
 
