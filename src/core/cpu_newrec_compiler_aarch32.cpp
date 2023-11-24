@@ -1931,21 +1931,22 @@ void CPU::NewRec::AArch32Compiler::Compile_mtc0(CompileFlags cf)
     Flush(FLUSH_FOR_C_CALL);
 
     SwitchToFarCodeIfBitSet(changed_bits, 16);
-    armAsm->push(RegisterList(RARG1, RARG2));
+    armAsm->push(RegisterList(RARG1));
     EmitCall(reinterpret_cast<const void*>(&CPU::UpdateMemoryPointers));
-    armAsm->pop(RegisterList(RARG1, RARG2));
+    armAsm->pop(RegisterList(RARG1));
     if (CodeCache::IsUsingFastmem() && m_block->HasFlag(CodeCache::BlockFlags::ContainsLoadStoreInstructions) &&
         IsHostRegAllocated(RMEMBASE.GetCode()))
     {
       FreeHostReg(RMEMBASE.GetCode());
     }
     SwitchToNearCode(true);
-  }
 
-  if (reg == Cop0Reg::SR || reg == Cop0Reg::CAUSE)
+    TestInterrupts(RARG1);
+  }
+  else if (reg == Cop0Reg::CAUSE)
   {
-    const Register sr = (reg == Cop0Reg::SR) ? RARG2 : (armAsm->ldr(RARG1, PTR(&g_state.cop0_regs.sr.bits)), RARG1);
-    TestInterrupts(sr);
+    armAsm->ldr(RARG1, PTR(&g_state.cop0_regs.sr.bits));
+    TestInterrupts(RARG1);
   }
 
   if (reg == Cop0Reg::DCIC && g_settings.cpu_recompiler_memory_exceptions)

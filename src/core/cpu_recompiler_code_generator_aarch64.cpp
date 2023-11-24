@@ -1411,17 +1411,7 @@ void CodeGenerator::RestoreStackAfterCall(u32 adjust_size)
 
 void CodeGenerator::EmitCall(const void* ptr)
 {
-  const s64 displacement = armGetPCDisplacement(GetCurrentCodePointer(), ptr);
-  const bool use_blr = !vixl::IsInt26(displacement);
-  if (use_blr)
-  {
-    m_emit->Mov(GetHostReg64(RSCRATCH), reinterpret_cast<uintptr_t>(ptr));
-    m_emit->Blr(GetHostReg64(RSCRATCH));
-  }
-  else
-  {
-    m_emit->bl(displacement);
-  }
+  armEmitCall(m_emit, ptr, false);
 }
 
 void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr)

@@ -1911,18 +1911,19 @@ void CPU::NewRec::AArch64Compiler::Compile_mtc0(CompileFlags cf)
 
     SwitchToFarCodeIfBitSet(changed_bits, 16);
     armAsm->sub(sp, sp, 16);
-    armAsm->stp(RWARG1, RWARG2, MemOperand(sp));
+    armAsm->str(RWARG1, MemOperand(sp));
     EmitCall(reinterpret_cast<const void*>(&CPU::UpdateMemoryPointers));
-    armAsm->ldp(RWARG1, RWARG2, MemOperand(sp));
+    armAsm->ldr(RWARG1, MemOperand(sp));
     armAsm->add(sp, sp, 16);
     armAsm->ldr(RMEMBASE, PTR(&g_state.fastmem_base));
     SwitchToNearCode(true);
-  }
 
-  if (reg == Cop0Reg::SR || reg == Cop0Reg::CAUSE)
+    TestInterrupts(RWARG1);
+  }
+  else if (reg == Cop0Reg::CAUSE)
   {
-    const WRegister sr = (reg == Cop0Reg::SR) ? RWARG2 : (armAsm->ldr(RWARG1, PTR(&g_state.cop0_regs.sr.bits)), RWARG1);
-    TestInterrupts(sr);
+    armAsm->ldr(RWARG1, PTR(&g_state.cop0_regs.sr.bits));
+    TestInterrupts(RWARG1);
   }
 
   if (reg == Cop0Reg::DCIC && g_settings.cpu_recompiler_memory_exceptions)

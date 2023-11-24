@@ -28,6 +28,13 @@ Log_SetChannel(CPU::NewRec);
 
 static constexpr u32 BACKPATCH_JMP_SIZE = 5;
 
+// on win32, we need to reserve an additional 32 bytes shadow space when calling out to C
+#ifdef _WIN32
+static constexpr u32 STACK_SHADOW_SIZE = 32;
+#else
+static constexpr u32 STACK_SHADOW_SIZE = 0;
+#endif
+
 using namespace Xbyak;
 
 using CPU::Recompiler::IsCallerSavedRegister;
@@ -1881,20 +1888,20 @@ void CPU::NewRec::X64Compiler::Compile_mtc0(CompileFlags cf)
 
     cg->test(changed_bits, 1u << 16);
     SwitchToFarCode(true, &CodeGenerator::jnz);
-    cg->push(RWARG1);
-    cg->push(RWARG2);
+    cg->mov(cg->dword[cg->rsp], RWARG2);
+    cg->sub(cg->rsp, STACK_SHADOW_SIZE + 8);
     cg->call(&CPU::UpdateMemoryPointers);
-    cg->pop(RWARG2);
-    cg->pop(RWARG1);
+    cg->add(cg->rsp, STACK_SHADOW_SIZE + 8);
+    cg->mov(RWARG2, cg->dword[cg->rsp]);
     cg->mov(RMEMBASE, cg->qword[PTR(&g_state.fastmem_base)]);
     SwitchToNearCode(true);
-  }
 
-  if (reg == Cop0Reg::SR || reg == Cop0Reg::CAUSE)
+    TestInterrupts(RWARG2);
+  }
+  else if (reg == Cop0Reg::CAUSE)
   {
-    const Reg32 sr =
-      (reg == Cop0Reg::SR) ? RWARG2 : (cg->mov(RWARG1, cg->dword[PTR(&g_state.cop0_regs.sr.bits)]), RWARG1);
-    TestInterrupts(sr);
+    cg->mov(RWARG1, cg->dword[PTR(&g_state.cop0_regs.sr.bits)]);
+    TestInterrupts(RWARG1);
   }
 
   if (reg == Cop0Reg::DCIC && g_settings.cpu_recompiler_memory_exceptions)
@@ -2104,13 +2111,6 @@ u32 CPU::NewRec::CompileLoadStoreThunk(void* thunk_code, u32 thunk_space, void* 
 
   static constexpr u32 GPR_SIZE = 8;
 
-  // on win32, we need to reserve an additional 32 bytes shadow space when calling out to C
-#ifdef _WIN32
-  static constexpr u32 SHADOW_SIZE = 32;
-#else
-  static constexpr u32 SHADOW_SIZE = 0;
-#endif
-
   // save regs
   u32 num_gprs = 0;
 
@@ -2120,13 +2120,13 @@ u32 CPU::NewRec::CompileLoadStoreThunk(void* thunk_code, u32 thunk_space, void* 
       num_gprs++;
   }
 
-  const u32 stack_size = (((num_gprs + 1) & ~1u) * GPR_SIZE) + SHADOW_SIZE;
+  const u32 stack_size = (((num_gprs + 1) & ~1u) * GPR_SIZE) + STACK_SHADOW_SIZE;
 
   if (stack_size > 0)
   {
     cg->sub(cg->rsp, stack_size);
 
-    u32 stack_offset = SHADOW_SIZE;
+    u32 stack_offset = STACK_SHADOW_SIZE;
     for (u32 i = 0; i < NUM_HOST_REGS; i++)
     {
       if ((gpr_bitmask & (1u << i)) && IsCallerSavedRegister(i) && (!is_load || data_register != i))
@@ -2201,7 +2201,7 @@ u32 CPU::NewRec::CompileLoadStoreThunk(void* thunk_code, u32 thunk_space, void* 
   // restore regs
   if (stack_size > 0)
   {
-    u32 stack_offset = SHADOW_SIZE;
+    u32 stack_offset = STACK_SHADOW_SIZE;
     for (u32 i = 0; i < NUM_HOST_REGS; i++)
     {
       if ((gpr_bitmask & (1u << i)) && IsCallerSavedRegister(i) && (!is_load || data_register != i))

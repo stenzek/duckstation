@@ -2160,19 +2160,18 @@ void CPU::NewRec::RISCV64Compiler::Compile_mtc0(CompileFlags cf)
     SwitchToFarCode(true, &Assembler::BEQ, RSCRATCH, zero);
     rvAsm->ADDI(sp, sp, -16);
     rvAsm->SW(RARG1, 0, sp);
-    rvAsm->SW(RARG2, 8, sp);
     EmitCall(reinterpret_cast<const void*>(&CPU::UpdateMemoryPointers));
-    rvAsm->SW(RARG2, 8, sp);
-    rvAsm->SW(RARG1, 0, sp);
+    rvAsm->LW(RARG1, 0, sp);
     rvAsm->ADDI(sp, sp, 16);
     rvAsm->LD(RMEMBASE, PTR(&g_state.fastmem_base));
     SwitchToNearCode(true);
-  }
 
-  if (reg == Cop0Reg::SR || reg == Cop0Reg::CAUSE)
+    TestInterrupts(RARG1);
+  }
+  else if (reg == Cop0Reg::CAUSE)
   {
-    const GPR sr = (reg == Cop0Reg::SR) ? RARG2 : (rvAsm->LW(RARG1, PTR(&g_state.cop0_regs.sr.bits)), RARG1);
-    TestInterrupts(sr);
+    rvAsm->LW(RARG1, PTR(&g_state.cop0_regs.sr.bits));
+    TestInterrupts(RARG1);
   }
 
   if (reg == Cop0Reg::DCIC && g_settings.cpu_recompiler_memory_exceptions)
