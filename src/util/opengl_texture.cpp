@@ -481,22 +481,16 @@ void OpenGLDevice::CommitClear(OpenGLTexture* tex)
         const GLenum attachment = tex->IsDepthStencil() ? GL_DEPTH_ATTACHMENT : GL_COLOR_ATTACHMENT0;
         glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, attachment, tex->GetGLTarget(), tex->GetGLId(), 0);
 
-        glDisable(GL_SCISSOR_TEST);
         if (tex->IsDepthStencil())
         {
-          if (glClearDepthf)
-            glClearDepthf(tex->GetClearDepth());
-          else
-            glClearDepth(tex->GetClearDepth());
-          glClear(GL_DEPTH_BUFFER_BIT);
+          const float depth = tex->GetClearDepth();
+          glClearBufferfv(GL_DEPTH, 0, &depth);
         }
         else
         {
           const auto color = tex->GetUNormClearColor();
-          glClearColor(color[0], color[1], color[2], color[3]);
-          glClear(GL_COLOR_BUFFER_BIT);
+          glClearBufferfv(GL_COLOR, 0, color.data());
         }
-        glEnable(GL_SCISSOR_TEST);
 
         glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, attachment, GL_TEXTURE_2D, 0, 0);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_current_framebuffer ? m_current_framebuffer->GetGLId() : 0);
@@ -515,7 +509,6 @@ void OpenGLDevice::CommitClear(OpenGLTexture* tex)
 
 void OpenGLDevice::CommitClear(OpenGLFramebuffer* fb)
 {
-  GLenum clear_flags = 0;
   GLenum invalidate_attachments[2];
   GLuint num_invalidate_attachments = 0;
 
@@ -533,8 +526,7 @@ void OpenGLDevice::CommitClear(OpenGLFramebuffer* fb)
       case GPUTexture::State::Cleared:
       {
         const auto color = FB->GetUNormClearColor();
-        glClearColor(color[0], color[1], color[2], color[3]);
-        clear_flags |= GL_COLOR_BUFFER_BIT;
+        glClearBufferfv(GL_COLOR, 0, color.data());
         FB->SetState(GPUTexture::State::Dirty);
       }
 
@@ -559,11 +551,8 @@ void OpenGLDevice::CommitClear(OpenGLFramebuffer* fb)
 
       case GPUTexture::State::Cleared:
       {
-        if (glClearDepthf)
-          glClearDepthf(DS->GetClearDepth());
-        else
-          glClearDepth(DS->GetClearDepth());
-        clear_flags |= GL_DEPTH_BUFFER_BIT;
+        const float depth = DS->GetClearDepth();
+        glClearBufferfv(GL_DEPTH, 0, &depth);
         DS->SetState(GPUTexture::State::Dirty);
       }
       break;
@@ -577,12 +566,6 @@ void OpenGLDevice::CommitClear(OpenGLFramebuffer* fb)
     }
   }
 
-  if (clear_flags != 0)
-  {
-    glDisable(GL_SCISSOR_TEST);
-    glClear(clear_flags);
-    glEnable(GL_SCISSOR_TEST);
-  }
   if (num_invalidate_attachments > 0 && glInvalidateFramebuffer)
     glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER, num_invalidate_attachments, invalidate_attachments);
 }

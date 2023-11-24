@@ -20,6 +20,8 @@
 
 Log_SetChannel(OpenGLDevice);
 
+static constexpr std::array<float, 4> s_clear_color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+
 OpenGLDevice::OpenGLDevice()
 {
   // Something which won't be matched..
@@ -598,12 +600,9 @@ void OpenGLDevice::SetSwapInterval()
 void OpenGLDevice::RenderBlankFrame()
 {
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-  glDisable(GL_SCISSOR_TEST);
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT);
+  glClearBufferfv(GL_COLOR, 0, s_clear_color.data());
   m_gl_context->SwapBuffers();
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_current_framebuffer ? m_current_framebuffer->GetGLId() : 0);
-  glEnable(GL_SCISSOR_TEST);
 }
 
 GPUDevice::AdapterAndModeList OpenGLDevice::GetAdapterAndModeList()
@@ -697,6 +696,7 @@ bool OpenGLDevice::BeginPresent(bool skip_present)
   }
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glClearBufferfv(GL_COLOR, 0, s_clear_color.data());
 
   const Common::Rectangle<s32> window_rc =
     Common::Rectangle<s32>::FromExtents(0, 0, m_window_info.surface_width, m_window_info.surface_height);
@@ -705,9 +705,6 @@ bool OpenGLDevice::BeginPresent(bool skip_present)
   m_last_scissor = window_rc;
   UpdateViewport();
   UpdateScissor();
-
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT);
   return true;
 }
 
