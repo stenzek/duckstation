@@ -133,16 +133,20 @@ target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(core PUBLIC Threads::Threads common util zlib)
 target_link_libraries(core PRIVATE stb xxhash imgui rapidjson rcheevos)
 
-if(${CPU_ARCH} STREQUAL "x64")
+if(CPU_ARCH_X64)
   target_compile_definitions(core PUBLIC "ENABLE_RECOMPILER=1" "ENABLE_NEWREC=1" "ENABLE_MMAP_FASTMEM=1")
   target_sources(core PRIVATE ${RECOMPILER_SRCS} ${NEWREC_SOURCES}
     cpu_recompiler_code_generator_x64.cpp
     cpu_newrec_compiler_x64.cpp
     cpu_newrec_compiler_x64.h
   )
-  target_link_libraries(core PRIVATE xbyak zydis)
+  target_link_libraries(core PRIVATE xbyak)
+  if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    target_link_libraries(core PRIVATE zydis)
+  endif()
   message("Building x64 recompiler")
-elseif(${CPU_ARCH} STREQUAL "aarch32")
+endif()
+if(CPU_ARCH_ARM32)
   target_compile_definitions(core PUBLIC "ENABLE_RECOMPILER=1" "ENABLE_NEWREC=1")
   target_sources(core PRIVATE ${RECOMPILER_SRCS} ${NEWREC_SOURCES}
     cpu_recompiler_code_generator_aarch32.cpp
@@ -151,7 +155,8 @@ elseif(${CPU_ARCH} STREQUAL "aarch32")
   )
   target_link_libraries(core PUBLIC vixl)
   message("Building AArch32 recompiler")
-elseif(${CPU_ARCH} STREQUAL "aarch64")
+endif()
+if(CPU_ARCH_ARM64)
   target_compile_definitions(core PUBLIC "ENABLE_RECOMPILER=1" "ENABLE_NEWREC=1" "ENABLE_MMAP_FASTMEM=1")
   target_sources(core PRIVATE ${RECOMPILER_SRCS} ${NEWREC_SOURCES}
     cpu_recompiler_code_generator_aarch64.cpp
@@ -160,7 +165,8 @@ elseif(${CPU_ARCH} STREQUAL "aarch64")
   )
   target_link_libraries(core PUBLIC vixl)
   message("Building AArch64 recompiler")
-elseif(${CPU_ARCH} STREQUAL "riscv64")
+endif()
+if(CPU_ARCH_RISCV64)
   target_compile_definitions(core PUBLIC "ENABLE_NEWREC=1" "ENABLE_MMAP_FASTMEM=1")
   target_sources(core PRIVATE ${NEWREC_SOURCES}
     cpu_newrec_compiler_riscv64.cpp
@@ -168,8 +174,6 @@ elseif(${CPU_ARCH} STREQUAL "riscv64")
   )
   target_link_libraries(core PUBLIC biscuit::biscuit riscv-disas)
   message("Building RISC-V 64-bit recompiler")
-else()
-  message("Not building recompiler")
 endif()
 
 if(ENABLE_DISCORD_PRESENCE)

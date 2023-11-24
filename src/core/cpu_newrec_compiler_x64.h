@@ -3,8 +3,9 @@
 
 #pragma once
 #include "cpu_newrec_compiler.h"
-#include <initializer_list>
 #include <memory>
+
+#ifdef CPU_ARCH_X64
 
 namespace CPU::NewRec {
 
@@ -139,3 +140,5 @@ private:
 };
 
 } // namespace CPU::NewRec
+
+#endif // CPU_ARCH_X64

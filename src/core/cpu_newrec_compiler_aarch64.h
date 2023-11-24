@@ -5,6 +5,8 @@
 #include "cpu_newrec_compiler.h"
 #include <memory>
 
+#ifdef CPU_ARCH_ARM64
+
 #include "vixl/aarch64/assembler-aarch64.h"
 
 namespace CPU::NewRec {
@@ -163,3 +165,5 @@ private:
 };
 
 } // namespace CPU::NewRec
+
+#endif // CPU_ARCH_ARM64
