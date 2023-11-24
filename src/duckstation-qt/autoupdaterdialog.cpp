@@ -4,9 +4,12 @@
 #include "autoupdaterdialog.h"
 #include "mainwindow.h"
 #include "qthost.h"
+#include "qtprogresscallback.h"
 #include "qtutils.h"
 #include "scmversion/scmversion.h"
 #include "unzip.h"
+
+#include "util/http_downloader.h"
 
 #include "common/file_system.h"
 #include "common/log.h"
@@ -22,12 +25,12 @@
 #include <QtCore/QJsonValue>
 #include <QtCore/QProcess>
 #include <QtCore/QString>
-#include <QtNetwork/QNetworkAccessManager>
-#include <QtNetwork/QNetworkReply>
-#include <QtNetwork/QNetworkRequest>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QProgressDialog>
+
+// Interval at which HTTP requests are polled.
+static constexpr u32 HTTP_POLL_INTERVAL = 10;
 
 #ifdef __APPLE__
 #include "common/cocoa_tools.h"
@@ -45,8 +48,8 @@
 #ifdef AUTO_UPDATER_SUPPORTED
 
 static const char* LATEST_TAG_URL = "https://api.github.com/repos/stenzek/duckstation/tags";
-static const char* LATEST_RELEASE_URL = "https://api.github.com/repos/stenzek/duckstation/releases/tags/%s";
-static const char* CHANGES_URL = "https://api.github.com/repos/stenzek/duckstation/compare/%s...%s";
+static const char* LATEST_RELEASE_URL = "https://api.github.com/repos/stenzek/duckstation/releases/tags/{}";
+static const char* CHANGES_URL = "https://api.github.com/repos/stenzek/duckstation/compare/{}...{}";
 static const char* UPDATE_ASSET_FILENAME = SCM_RELEASE_ASSET;
 static const char* UPDATE_TAGS[] = SCM_RELEASE_TAGS;
 static const char* THIS_RELEASE_TAG = SCM_RELEASE_TAG;
@@ -55,11 +58,8 @@ static const char* THIS_RELEASE_TAG = SCM_RELEASE_TAG;
 
 Log_SetChannel(AutoUpdaterDialog);
 
-AutoUpdaterDialog::AutoUpdaterDialog(EmuThread* host_interface, QWidget* parent /* = nullptr */)
-  : QDialog(parent), m_host_interface(host_interface)
+AutoUpdaterDialog::AutoUpdaterDialog(QWidget* parent /* = nullptr */) : QDialog(parent)
 {
-  m_network_access_mgr = new QNetworkAccessManager(this);
-
   m_ui.setupUi(this);
 
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -67,6 +67,10 @@ AutoUpdaterDialog::AutoUpdaterDialog(EmuThread* host_interface, QWidget* parent 
   connect(m_ui.downloadAndInstall, &QPushButton::clicked, this, &AutoUpdaterDialog::downloadUpdateClicked);
   connect(m_ui.skipThisUpdate, &QPushButton::clicked, this, &AutoUpdaterDialog::skipThisUpdateClicked);
   connect(m_ui.remindMeLater, &QPushButton::clicked, this, &AutoUpdaterDialog::remindMeLaterClicked);
+
+  m_http = HTTPDownloader::Create(Host::GetHTTPUserAgent());
+  if (!m_http)
+    Log_ErrorPrint("Failed to create HTTP downloader, auto updater will not be available.");
 }
 
 AutoUpdaterDialog::~AutoUpdaterDialog() = default;
@@ -129,16 +133,52 @@ void AutoUpdaterDialog::reportError(const char* msg, ...)
   QMessageBox::critical(this, tr("Updater Error"), QString::fromStdString(full_msg));
 }
 
+bool AutoUpdaterDialog::ensureHttpReady()
+{
+  if (!m_http)
+    return false;
+
+  if (!m_http_poll_timer)
+  {
+    m_http_poll_timer = new QTimer(this);
+    m_http_poll_timer->connect(m_http_poll_timer, &QTimer::timeout, this, &AutoUpdaterDialog::httpPollTimerPoll);
+  }
+
+  if (!m_http_poll_timer->isActive())
+  {
+    m_http_poll_timer->setSingleShot(false);
+    m_http_poll_timer->setInterval(HTTP_POLL_INTERVAL);
+    m_http_poll_timer->start();
+  }
+
+  return true;
+}
+
+void AutoUpdaterDialog::httpPollTimerPoll()
+{
+  Assert(m_http);
+  m_http->PollRequests();
+
+  if (!m_http->HasAnyRequests())
+  {
+    Log_VerbosePrint("All HTTP requests done.");
+    m_http_poll_timer->stop();
+  }
+}
+
 void AutoUpdaterDialog::queueUpdateCheck(bool display_message)
 {
   m_display_messages = display_message;
 
 #ifdef AUTO_UPDATER_SUPPORTED
-  connect(m_network_access_mgr, &QNetworkAccessManager::finished, this, &AutoUpdaterDialog::getLatestTagComplete);
+  if (!ensureHttpReady())
+  {
+    emit updateCheckCompleted();
+    return;
+  }
 
-  QUrl url(QUrl::fromEncoded(QByteArray(LATEST_TAG_URL)));
-  QNetworkRequest request(url);
-  m_network_access_mgr->get(request);
+  m_http->CreateRequest(LATEST_TAG_URL, std::bind(&AutoUpdaterDialog::getLatestTagComplete, this, std::placeholders::_1,
+                                                  std::placeholders::_3));
 #else
   emit updateCheckCompleted();
 #endif
@@ -147,32 +187,29 @@ void AutoUpdaterDialog::queueUpdateCheck(bool display_message)
 void AutoUpdaterDialog::queueGetLatestRelease()
 {
 #ifdef AUTO_UPDATER_SUPPORTED
-  connect(m_network_access_mgr, &QNetworkAccessManager::finished, this, &AutoUpdaterDialog::getLatestReleaseComplete);
+  if (!ensureHttpReady())
+  {
+    emit updateCheckCompleted();
+    return;
+  }
 
-  SmallString url_string;
-  url_string.format(LATEST_RELEASE_URL, getCurrentUpdateTag().c_str());
-
-  QUrl url(QUrl::fromEncoded(QByteArray(url_string)));
-  QNetworkRequest request(url);
-  m_network_access_mgr->get(request);
+  std::string url = fmt::format(fmt::runtime(LATEST_RELEASE_URL), getCurrentUpdateTag());
+  m_http->CreateRequest(std::move(url), std::bind(&AutoUpdaterDialog::getLatestReleaseComplete, this,
+                                                  std::placeholders::_1, std::placeholders::_3));
 #endif
 }
 
-void AutoUpdaterDialog::getLatestTagComplete(QNetworkReply* reply)
+void AutoUpdaterDialog::getLatestTagComplete(s32 status_code, std::vector<u8> response)
 {
 #ifdef AUTO_UPDATER_SUPPORTED
   const std::string selected_tag(getCurrentUpdateTag());
   const QString selected_tag_qstr = QString::fromStdString(selected_tag);
 
-  // this might fail due to a lack of internet connection - in which case, don't spam the user with messages every time.
-  m_network_access_mgr->disconnect(this);
-  reply->deleteLater();
-
-  if (reply->error() == QNetworkReply::NoError)
+  if (status_code == HTTPDownloader::HTTP_STATUS_OK)
   {
-    const QByteArray reply_json(reply->readAll());
     QJsonParseError parse_error;
-    QJsonDocument doc(QJsonDocument::fromJson(reply_json, &parse_error));
+    const QJsonDocument doc = QJsonDocument::fromJson(
+      QByteArray(reinterpret_cast<const char*>(response.data()), response.size()), &parse_error);
     if (doc.isArray())
     {
       const QJsonArray doc_array(doc.array());
@@ -215,24 +252,21 @@ void AutoUpdaterDialog::getLatestTagComplete(QNetworkReply* reply)
   else
   {
     if (m_display_messages)
-      reportError("Failed to download latest tag info: %d", static_cast<int>(reply->error()));
+      reportError("Failed to download latest tag info: HTTP %d", status_code);
   }
 
   emit updateCheckCompleted();
 #endif
 }
 
-void AutoUpdaterDialog::getLatestReleaseComplete(QNetworkReply* reply)
+void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, std::vector<u8> response)
 {
 #ifdef AUTO_UPDATER_SUPPORTED
-  m_network_access_mgr->disconnect(this);
-  reply->deleteLater();
-
-  if (reply->error() == QNetworkReply::NoError)
+  if (status_code == HTTPDownloader::HTTP_STATUS_OK)
   {
-    const QByteArray reply_json(reply->readAll());
     QJsonParseError parse_error;
-    QJsonDocument doc(QJsonDocument::fromJson(reply_json, &parse_error));
+    const QJsonDocument doc = QJsonDocument::fromJson(
+      QByteArray(reinterpret_cast<const char*>(response.data()), response.size()), &parse_error);
     if (doc.isObject())
     {
       const QJsonObject doc_object(doc.object());
@@ -253,8 +287,12 @@ void AutoUpdaterDialog::getLatestReleaseComplete(QNetworkReply* reply)
             m_ui.newVersion->setText(
               tr("New Version: %1 (%2)").arg(m_latest_sha).arg(doc_object["published_at"].toString()));
             m_ui.updateNotes->setText(tr("Loading..."));
+            m_ui.downloadAndInstall->setEnabled(true);
             queueGetChanges();
-            exec();
+
+            // We have to defer this, because it comes back through the timer/HTTP callback...
+            QMetaObject::invokeMethod(this, "exec", Qt::QueuedConnection);
+
             emit updateCheckCompleted();
             return;
           }
@@ -272,7 +310,7 @@ void AutoUpdaterDialog::getLatestReleaseComplete(QNetworkReply* reply)
   }
   else
   {
-    reportError("Failed to download latest release info: %d", static_cast<int>(reply->error()));
+    reportError("Failed to download latest release info: HTTP %d", status_code);
   }
 #endif
 }
@@ -280,27 +318,23 @@ void AutoUpdaterDialog::getLatestReleaseComplete(QNetworkReply* reply)
 void AutoUpdaterDialog::queueGetChanges()
 {
 #ifdef AUTO_UPDATER_SUPPORTED
-  connect(m_network_access_mgr, &QNetworkAccessManager::finished, this, &AutoUpdaterDialog::getChangesComplete);
+  if (!ensureHttpReady())
+    return;
 
-  const std::string url_string(
-    StringUtil::StdStringFromFormat(CHANGES_URL, g_scm_hash_str, getCurrentUpdateTag().c_str()));
-  QUrl url(QUrl::fromEncoded(QByteArray(url_string.c_str(), static_cast<int>(url_string.size()))));
-  QNetworkRequest request(url);
-  m_network_access_mgr->get(request);
+  std::string url = fmt::format(fmt::runtime(CHANGES_URL), g_scm_hash_str, getCurrentUpdateTag());
+  m_http->CreateRequest(std::move(url), std::bind(&AutoUpdaterDialog::getChangesComplete, this, std::placeholders::_1,
+                                                  std::placeholders::_3));
 #endif
 }
 
-void AutoUpdaterDialog::getChangesComplete(QNetworkReply* reply)
+void AutoUpdaterDialog::getChangesComplete(s32 status_code, std::vector<u8> response)
 {
 #ifdef AUTO_UPDATER_SUPPORTED
-  m_network_access_mgr->disconnect(this);
-  reply->deleteLater();
-
-  if (reply->error() == QNetworkReply::NoError)
+  if (status_code == HTTPDownloader::HTTP_STATUS_OK)
   {
-    const QByteArray reply_json(reply->readAll());
     QJsonParseError parse_error;
-    QJsonDocument doc(QJsonDocument::fromJson(reply_json, &parse_error));
+    const QJsonDocument doc = QJsonDocument::fromJson(
+      QByteArray(reinterpret_cast<const char*>(response.data()), response.size()), &parse_error);
     if (doc.isObject())
     {
       const QJsonObject doc_object(doc.object());
@@ -362,67 +396,59 @@ void AutoUpdaterDialog::getChangesComplete(QNetworkReply* reply)
   }
   else
   {
-    reportError("Failed to download change list: %d", static_cast<int>(reply->error()));
+    reportError("Failed to download change list: HTTP %d", status_code);
   }
 #endif
-
-  m_ui.downloadAndInstall->setEnabled(true);
 }
 
 void AutoUpdaterDialog::downloadUpdateClicked()
 {
-  QUrl url(m_download_url);
-  QNetworkRequest request(url);
-  QNetworkReply* reply = m_network_access_mgr->get(request);
+  m_display_messages = true;
 
-  QProgressDialog progress(tr("Downloading %1...").arg(m_download_url), tr("Cancel"), 0, 1);
-  progress.setWindowTitle(tr("Automatic Updater"));
-  progress.setWindowIcon(windowIcon());
-  progress.setAutoClose(false);
+  std::optional<bool> download_result;
+  QtModalProgressCallback progress(this);
+  progress.SetTitle(tr("Automatic Updater").toUtf8().constData());
+  progress.SetStatusText(tr("Downloading %1...").arg(m_latest_sha).toUtf8().constData());
+  progress.GetDialog().setWindowIcon(windowIcon());
+  progress.SetCancellable(true);
 
-  connect(reply, &QNetworkReply::downloadProgress, [&progress](quint64 received, quint64 total) {
-    progress.setRange(0, static_cast<int>(total));
-    progress.setValue(static_cast<int>(received));
-  });
+  m_http->CreateRequest(
+    m_download_url.toStdString(),
+    [this, &download_result](s32 status_code, const std::string&, std::vector<u8> response) {
+      if (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED)
+        return;
 
-  connect(m_network_access_mgr, &QNetworkAccessManager::finished, this, [this, &progress](QNetworkReply* reply) {
-    m_network_access_mgr->disconnect();
+      if (status_code != HTTPDownloader::HTTP_STATUS_OK)
+      {
+        reportError("Download failed: %d", status_code);
+        download_result = false;
+        return;
+      }
 
-    if (reply->error() != QNetworkReply::NoError)
-    {
-      reportError("Download failed: %s", reply->errorString().toUtf8().constData());
-      progress.done(-1);
-      return;
-    }
+      if (response.empty())
+      {
+        reportError("Download failed: Update is empty");
+        download_result = false;
+        return;
+      }
 
-    const QByteArray data = reply->readAll();
-    if (data.isEmpty())
-    {
-      reportError("Download failed: Update is empty");
-      progress.done(-1);
-      return;
-    }
+      download_result = processUpdate(response);
+    },
+    &progress);
 
-    if (processUpdate(data))
-      progress.done(1);
-    else
-      progress.done(-1);
-  });
-
-  const int result = progress.exec();
-  if (result == 0)
+  // Block until completion.
+  while (m_http->HasAnyRequests())
   {
-    // cancelled
-    reply->abort();
+    QApplication::processEvents(QEventLoop::AllEvents, HTTP_POLL_INTERVAL);
+    m_http->PollRequests();
   }
-  else if (result == 1)
+
+  if (download_result.value_or(false))
   {
-    // updater started
-    g_main_window->requestExit();
+    // updater started. since we're a modal on the main window, we have to queue this.
+    QMetaObject::invokeMethod(g_main_window, "requestExit", Qt::QueuedConnection, Q_ARG(bool, true));
     done(0);
   }
-
-  reply->deleteLater();
 }
 
 bool AutoUpdaterDialog::updateNeeded() const
@@ -456,7 +482,7 @@ void AutoUpdaterDialog::remindMeLaterClicked()
 
 #ifdef _WIN32
 
-bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data)
+bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
 {
   const QString update_directory = QCoreApplication::applicationDirPath();
   const QString update_zip_path = update_directory + QStringLiteral("\\update.zip");
@@ -472,7 +498,9 @@ bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data)
 
   {
     QFile update_zip_file(update_zip_path);
-    if (!update_zip_file.open(QIODevice::WriteOnly) || update_zip_file.write(update_data) != update_data.size())
+    if (!update_zip_file.open(QIODevice::WriteOnly) ||
+        update_zip_file.write(reinterpret_cast<const char*>(update_data.data()),
+                              static_cast<qint64>(update_data.size())) != static_cast<qint64>(update_data.size()))
     {
       reportError("Writing update zip to '%s' failed", update_zip_path.toUtf8().constData());
       return false;
@@ -587,7 +615,7 @@ void AutoUpdaterDialog::cleanupAfterUpdate()
 
 #elif defined(__APPLE__)
 
-bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data)
+bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
 {
   std::optional<std::string> bundle_path = CocoaTools::GetNonTranslocatedBundlePath();
   if (!bundle_path.has_value())
@@ -628,7 +656,9 @@ bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data)
   // Save update.
   {
     QFile zip_file(QString::fromStdString(zip_path));
-    if (!zip_file.open(QIODevice::WriteOnly) || zip_file.write(update_data) != update_data.size())
+    if (!zip_file.open(QIODevice::WriteOnly) ||
+        zip_file.write(reinterpret_cast<const char*>(update_data.data()), static_cast<qint64>(update_data.size())) !=
+          static_cast<qint64>(update_data.size()))
     {
       reportError("Writing update zip to '%s' failed", zip_path.c_str());
       return false;
@@ -659,7 +689,7 @@ void AutoUpdaterDialog::cleanupAfterUpdate()
 
 #elif defined(__linux__)
 
-bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data)
+bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
 {
   const char* appimage_path = std::getenv("APPIMAGE");
   if (!appimage_path || !FileSystem::FileExists(appimage_path))
@@ -699,7 +729,9 @@ bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data)
     QFile old_file(qappimage_path);
     const QFileDevice::Permissions old_permissions = old_file.permissions();
     QFile new_file(new_appimage_path);
-    if (!new_file.open(QIODevice::WriteOnly) || new_file.write(update_data) != update_data.size() ||
+    if (!new_file.open(QIODevice::WriteOnly) ||
+        new_file.write(reinterpret_cast<const char*>(update_data.data()), static_cast<qint64>(update_data.size())) !=
+          static_cast<qint64>(update_data.size()) ||
         !new_file.setPermissions(old_permissions))
     {
       QFile::remove(new_appimage_path);
@@ -759,7 +791,7 @@ void AutoUpdaterDialog::cleanupAfterUpdate()
 
 #else
 
-bool AutoUpdaterDialog::processUpdate(const QByteArray& update_data)
+bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
 {
   return false;
 }
