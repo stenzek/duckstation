@@ -28,7 +28,7 @@ add_library(zstd
 	lib/decompress/zstd_decompress.c
 )
 
-if(NOT MSVC AND CPU_ARCH STREQUAL "x64")
+if(NOT MSVC AND CPU_ARCH_X64)
 	target_sources(zstd PRIVATE lib/decompress/huf_decompress_amd64.S)
 endif()
 

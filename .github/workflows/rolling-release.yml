@@ -368,7 +368,11 @@ jobs:
       run: |
         mkdir build
         cd build
-        ../scripts/make-universal-macos-binary.sh ..
+        export MACOSX_DEPLOYMENT_TARGET=11.0
+        cmake -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENGL=OFF -DCMAKE_PREFIX_PATH="$HOME/deps" -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -G Ninja ..
+        cmake --build . --parallel
+        mv bin/DuckStation.app .
+        codesign -s - --deep -f -v DuckStation.app
         zip -r duckstation-mac-release.zip DuckStation.app/
 
     - name: Upload macOS .app

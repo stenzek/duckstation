@@ -11,6 +11,9 @@
 #include "cpu_recompiler_thunks.h"
 #include "settings.h"
 #include "timing_event.h"
+
+#ifdef CPU_ARCH_ARM64
+
 Log_SetChannel(CPU::Recompiler);
 
 #ifdef ENABLE_HOST_DISASSEMBLY
@@ -2592,3 +2595,5 @@ void CodeGenerator::EmitLoadGlobalAddress(HostReg host_reg, const void* ptr)
 }
 
 } // namespace CPU::Recompiler
+
+#endif // CPU_ARCH_ARM64

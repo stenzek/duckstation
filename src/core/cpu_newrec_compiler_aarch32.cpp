@@ -14,6 +14,9 @@
 #include "settings.h"
 #include "timing_event.h"
 #include <limits>
+
+#ifdef CPU_ARCH_ARM32
+
 Log_SetChannel(CPU::NewRec);
 
 #define PTR(x) vixl::aarch32::MemOperand(RSTATE, (((u8*)(x)) - ((u8*)&g_state)))
@@ -2260,3 +2263,5 @@ u32 CPU::NewRec::CompileLoadStoreThunk(void* thunk_code, u32 thunk_space, void* 
 
   return static_cast<u32>(armAsm->GetCursorOffset());
 }
+
+#endif // CPU_ARCH_ARM32

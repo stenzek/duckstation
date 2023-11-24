@@ -5,6 +5,8 @@
 #include "cpu_newrec_compiler.h"
 #include <memory>
 
+#ifdef CPU_ARCH_RISCV64
+
 namespace CPU::NewRec {
 
 class RISCV64Compiler final : public Compiler
@@ -168,3 +170,5 @@ private:
 };
 
 } // namespace CPU::NewRec
+
+#endif // CPU_ARCH_RISCV64

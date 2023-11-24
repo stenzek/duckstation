@@ -27,7 +27,7 @@ target_compile_definitions(vixl PUBLIC
   VIXL_CODE_BUFFER_MALLOC
 )
 
-if(${CPU_ARCH} STREQUAL "aarch32")
+if(CPU_ARCH_ARM32)
   target_sources(vixl PRIVATE
     include/vixl/aarch32/assembler-aarch32.h
     include/vixl/aarch32/constants-aarch32.h
@@ -52,7 +52,7 @@ if(${CPU_ARCH} STREQUAL "aarch32")
   )
 endif()
 
-if(${CPU_ARCH} STREQUAL "aarch64")
+if(CPU_ARCH_ARM64)
   target_sources(vixl PRIVATE
     include/vixl/aarch64/abi-aarch64.h
     include/vixl/aarch64/assembler-aarch64.h

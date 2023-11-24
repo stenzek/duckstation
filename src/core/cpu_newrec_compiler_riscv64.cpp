@@ -13,6 +13,9 @@
 #include "settings.h"
 #include "timing_event.h"
 #include <limits>
+
+#ifdef CPU_ARCH_RISCV64
+
 Log_SetChannel(CPU::NewRec);
 
 #ifdef ENABLE_HOST_DISASSEMBLY
@@ -2480,3 +2483,5 @@ u32 CPU::NewRec::CompileLoadStoreThunk(void* thunk_code, u32 thunk_space, void* 
 
   return static_cast<u32>(rvAsm->GetCodeBuffer().GetSizeInBytes());
 }
+
+#endif // CPU_ARCH_RISCV64

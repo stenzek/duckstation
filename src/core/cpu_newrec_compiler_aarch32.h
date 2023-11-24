@@ -2,8 +2,11 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
+
 #include "cpu_newrec_compiler.h"
 #include <memory>
+
+#ifdef CPU_ARCH_ARM32
 
 #include "vixl/aarch32/assembler-aarch32.h"
 #include "vixl/aarch32/operands-aarch32.h"
@@ -162,3 +165,5 @@ private:
 };
 
 } // namespace CPU::NewRec
+
+#endif // CPU_ARCH_ARM32

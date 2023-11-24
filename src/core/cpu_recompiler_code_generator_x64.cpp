@@ -13,6 +13,8 @@
 #include "common/assert.h"
 #include "common/log.h"
 
+#ifdef CPU_ARCH_X64
+
 Log_SetChannel(Recompiler::CodeGenerator);
 
 #ifdef ENABLE_HOST_DISASSEMBLY
@@ -3207,3 +3209,5 @@ void CodeGenerator::EmitLoadGlobalAddress(HostReg host_reg, const void* ptr)
     m_emit->mov(GetHostReg64(host_reg), reinterpret_cast<size_t>(ptr));
 }
 } // namespace CPU::Recompiler
+
+#endif // CPU_ARCH_X64

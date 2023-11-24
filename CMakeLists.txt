@@ -135,31 +135,44 @@ endif()
 
 
 # Detect processor type.
-if("${CMAKE_OSX_ARCHITECTURES}" STREQUAL "arm64")
-  # Cross-compile on macos.
-  set(CPU_ARCH "aarch64")
+if(APPLE AND NOT "${CMAKE_OSX_ARCHITECTURES}" STREQUAL "")
+  # Universal binaries.
+  if("x86_64" IN_LIST CMAKE_OSX_ARCHITECTURES)
+    set(CPU_ARCH_X64 TRUE)
+    message("Building x86_64 MacOS binaries.")
+  endif()
+  if("arm64" IN_LIST CMAKE_OSX_ARCHITECTURES)
+    set(CPU_ARCH_ARM64 TRUE)
+    message("Building ARM64 MacOS binaries.")
+  endif()
 elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "amd64" OR
        "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "AMD64" OR "${CMAKE_OSX_ARCHITECTURES}" STREQUAL "x86_64")
   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(CPU_ARCH "x64")
+    set(CPU_ARCH_X64 TRUE)
+    message("Building x86_64 binaries.")
   else()
     # Cross-compiling 32-bit build. 32-bit hosts are not supported.
-    set(CPU_ARCH "x86")
+    set(CPU_ARCH_X86 TRUE)
+    message("Building x86_32 binaries [not supported].")
   endif()
 elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "i386" OR
        "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "i686")
-  set(CPU_ARCH "x86")
+  set(CPU_ARCH_X86 TRUE)
+  message("Building x86_32 binaries [not supported].")
 elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm64")
   if(CMAKE_SIZEOF_VOID_P EQUAL 8) # Might have an A64 kernel, e.g. Raspbian.
-    set(CPU_ARCH "aarch64")
+    set(CPU_ARCH_ARM64 TRUE)
+    message("Building ARM64 binaries.")
   else()
-    set(CPU_ARCH "aarch32")
+    set(CPU_ARCH_ARM32 TRUE)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -marm -march=armv7-a")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -marm -march=armv7-a")
+    message("Building ARM32 binaries on ARM64.")
   endif()
 elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "armv7-a" OR
        "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "armv7l")
-  set(CPU_ARCH "aarch32")
+  set(CPU_ARCH_ARM32 TRUE)
+  message("Building ARM32 binaries.")
   if(ANDROID)
     # Force ARM mode, since apparently ANDROID_ARM_MODE isn't working..
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -marm")
@@ -171,6 +184,7 @@ elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm" OR "${CMAKE_SYSTEM_PROCESSOR}"
   endif()
 elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "riscv64")
   set(CPU_ARCH "riscv64")
+  message("Building RISC-V 64 binaries.")
 
   # Not done for us. Or we should inline atomics?
   link_libraries("-latomic")
@@ -208,7 +222,7 @@ find_package(Threads REQUIRED)
 
 # Enable large file support on Linux 32-bit platforms.
 # Android is deliberately ommitted here as it didn't support 64-bit ops on files until Android 7/N.
-if((LINUX OR FREEBSD) AND (${CPU_ARCH} STREQUAL "x86" OR ${CPU_ARCH} STREQUAL "aarch32"))
+if((LINUX OR FREEBSD) AND (CPU_ARCH_X86 OR CPU_ARCH_ARM32))
   add_definitions("-D_FILE_OFFSET_BITS=64")
 endif()
 
