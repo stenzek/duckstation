@@ -600,7 +600,9 @@ void OpenGLDevice::SetSwapInterval()
 void OpenGLDevice::RenderBlankFrame()
 {
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+  glDisable(GL_SCISSOR_TEST);
   glClearBufferfv(GL_COLOR, 0, s_clear_color.data());
+  glEnable(GL_SCISSOR_TEST);
   m_gl_context->SwapBuffers();
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_current_framebuffer ? m_current_framebuffer->GetGLId() : 0);
 }
@@ -696,7 +698,9 @@ bool OpenGLDevice::BeginPresent(bool skip_present)
   }
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glDisable(GL_SCISSOR_TEST);
   glClearBufferfv(GL_COLOR, 0, s_clear_color.data());
+  glEnable(GL_SCISSOR_TEST);
 
   const Common::Rectangle<s32> window_rc =
     Common::Rectangle<s32>::FromExtents(0, 0, m_window_info.surface_width, m_window_info.surface_height);

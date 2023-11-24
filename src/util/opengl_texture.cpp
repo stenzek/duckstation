@@ -484,12 +484,16 @@ void OpenGLDevice::CommitClear(OpenGLTexture* tex)
         if (tex->IsDepthStencil())
         {
           const float depth = tex->GetClearDepth();
+          glDisable(GL_SCISSOR_TEST);
           glClearBufferfv(GL_DEPTH, 0, &depth);
+          glEnable(GL_SCISSOR_TEST);
         }
         else
         {
           const auto color = tex->GetUNormClearColor();
+          glDisable(GL_SCISSOR_TEST);
           glClearBufferfv(GL_COLOR, 0, color.data());
+          glEnable(GL_SCISSOR_TEST);
         }
 
         glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, attachment, GL_TEXTURE_2D, 0, 0);
@@ -526,7 +530,9 @@ void OpenGLDevice::CommitClear(OpenGLFramebuffer* fb)
       case GPUTexture::State::Cleared:
       {
         const auto color = FB->GetUNormClearColor();
+        glDisable(GL_SCISSOR_TEST);
         glClearBufferfv(GL_COLOR, 0, color.data());
+        glEnable(GL_SCISSOR_TEST);
         FB->SetState(GPUTexture::State::Dirty);
       }
 
@@ -552,7 +558,9 @@ void OpenGLDevice::CommitClear(OpenGLFramebuffer* fb)
       case GPUTexture::State::Cleared:
       {
         const float depth = DS->GetClearDepth();
+        glDisable(GL_SCISSOR_TEST);
         glClearBufferfv(GL_DEPTH, 0, &depth);
+        glEnable(GL_SCISSOR_TEST);
         DS->SetState(GPUTexture::State::Dirty);
       }
       break;
