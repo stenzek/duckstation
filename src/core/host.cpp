@@ -8,6 +8,8 @@
 #include "shader_cache_version.h"
 #include "system.h"
 
+#include "scmversion/scmversion.h"
+
 #include "util/gpu_device.h"
 #include "util/imgui_manager.h"
 
@@ -215,6 +217,11 @@ void Host::Internal::SetInputSettingsLayer(SettingsInterface* sif)
 {
   std::unique_lock lock(s_settings_mutex);
   s_layered_settings_interface.SetLayer(LayeredSettingsInterface::LAYER_INPUT, sif);
+}
+
+std::string Host::GetHTTPUserAgent()
+{
+  return fmt::format("DuckStation for {} ({}) {}", TARGET_OS_STR, CPU_ARCH_STR, g_scm_tag_str);
 }
 
 void Host::ReportFormattedDebuggerMessage(const char* format, ...)

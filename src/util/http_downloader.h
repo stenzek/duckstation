@@ -13,6 +13,8 @@
 #include <string_view>
 #include <vector>
 
+class ProgressCallback;
+
 class HTTPDownloader
 {
 public:
@@ -27,7 +29,7 @@ public:
   struct Request
   {
     using Data = std::vector<u8>;
-    using Callback = std::function<void(s32 status_code, std::string content_type, Data data)>;
+    using Callback = std::function<void(s32 status_code, const std::string& content_type, Data data)>;
 
     enum class Type
     {
@@ -46,6 +48,7 @@ public:
 
     HTTPDownloader* parent;
     Callback callback;
+    ProgressCallback* progress;
     std::string url;
     std::string post_data;
     std::string content_type;
@@ -53,6 +56,7 @@ public:
     u64 start_time;
     s32 status_code = 0;
     u32 content_length = 0;
+    u32 last_progress_update = 0;
     Type type = Type::Get;
     std::atomic<State> state{State::Pending};
   };
@@ -60,7 +64,7 @@ public:
   HTTPDownloader();
   virtual ~HTTPDownloader();
 
-  static std::unique_ptr<HTTPDownloader> Create(const char* user_agent = DEFAULT_USER_AGENT);
+  static std::unique_ptr<HTTPDownloader> Create(std::string user_agent = DEFAULT_USER_AGENT);
   static std::string URLEncode(const std::string_view& str);
   static std::string URLDecode(const std::string_view& str);
   static std::string GetExtensionForContentType(const std::string& content_type);
@@ -68,12 +72,12 @@ public:
   void SetTimeout(float timeout);
   void SetMaxActiveRequests(u32 max_active_requests);
 
-  void CreateRequest(std::string url, Request::Callback callback);
-  void CreatePostRequest(std::string url, std::string post_data, Request::Callback callback);
-
-  bool HasAnyRequests();
+  void CreateRequest(std::string url, Request::Callback callback, ProgressCallback* progress = nullptr);
+  void CreatePostRequest(std::string url, std::string post_data, Request::Callback callback,
+                         ProgressCallback* progress = nullptr);
   void PollRequests();
   void WaitForAllRequests();
+  bool HasAnyRequests();
 
   static const char DEFAULT_USER_AGENT[];
 

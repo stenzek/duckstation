@@ -5,6 +5,7 @@
 
 #include "common/assert.h"
 #include "common/log.h"
+#include "common/progress_callback.h"
 #include "common/string_util.h"
 #include "common/timer.h"
 
@@ -34,13 +35,14 @@ void HTTPDownloader::SetMaxActiveRequests(u32 max_active_requests)
   m_max_active_requests = max_active_requests;
 }
 
-void HTTPDownloader::CreateRequest(std::string url, Request::Callback callback)
+void HTTPDownloader::CreateRequest(std::string url, Request::Callback callback, ProgressCallback* progress)
 {
   Request* req = InternalCreateRequest();
   req->parent = this;
   req->type = Request::Type::Get;
   req->url = std::move(url);
   req->callback = std::move(callback);
+  req->progress = progress;
   req->start_time = Common::Timer::GetCurrentValue();
 
   std::unique_lock<std::mutex> lock(m_pending_http_request_lock);
@@ -53,7 +55,8 @@ void HTTPDownloader::CreateRequest(std::string url, Request::Callback callback)
   LockedAddRequest(req);
 }
 
-void HTTPDownloader::CreatePostRequest(std::string url, std::string post_data, Request::Callback callback)
+void HTTPDownloader::CreatePostRequest(std::string url, std::string post_data, Request::Callback callback,
+                                       ProgressCallback* progress)
 {
   Request* req = InternalCreateRequest();
   req->parent = this;
@@ -61,6 +64,7 @@ void HTTPDownloader::CreatePostRequest(std::string url, std::string post_data, R
   req->url = std::move(url);
   req->post_data = std::move(post_data);
   req->callback = std::move(callback);
+  req->progress = progress;
   req->start_time = Common::Timer::GetCurrentValue();
 
   std::unique_lock<std::mutex> lock(m_pending_http_request_lock);
@@ -71,12 +75,6 @@ void HTTPDownloader::CreatePostRequest(std::string url, std::string post_data, R
   }
 
   LockedAddRequest(req);
-}
-
-bool HTTPDownloader::HasAnyRequests()
-{
-  std::unique_lock<std::mutex> lock(m_pending_http_request_lock);
-  return !m_pending_http_requests.empty();
 }
 
 void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
@@ -100,11 +98,12 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
       continue;
     }
 
-    if (req->state == Request::State::Started && current_time >= req->start_time &&
+    if ((req->state == Request::State::Started || req->state == Request::State::Receiving) &&
+        current_time >= req->start_time &&
         Common::Timer::ConvertValueToSeconds(current_time - req->start_time) >= m_timeout)
     {
       // request timed out
-      Log_ErrorPrintf("Request for '%s' timed out", req->url.c_str());
+      Log_ErrorFmt("Request for '{}' timed out", req->url);
 
       req->state.store(Request::State::Cancelled);
       m_pending_http_requests.erase(m_pending_http_requests.begin() + index);
@@ -117,22 +116,50 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
       lock.lock();
       continue;
     }
+    else if ((req->state == Request::State::Started || req->state == Request::State::Receiving) && req->progress &&
+             req->progress->IsCancelled())
+    {
+      // request timed out
+      Log_ErrorFmt("Request for '{}' cancelled", req->url);
+
+      req->state.store(Request::State::Cancelled);
+      m_pending_http_requests.erase(m_pending_http_requests.begin() + index);
+      lock.unlock();
+
+      req->callback(HTTP_STATUS_CANCELLED, std::string(), Request::Data());
+
+      CloseRequest(req);
+
+      lock.lock();
+      continue;
+    }
 
     if (req->state != Request::State::Complete)
     {
+      if (req->progress)
+      {
+        const u32 size = static_cast<u32>(req->data.size());
+        if (size != req->last_progress_update)
+        {
+          req->last_progress_update = size;
+          req->progress->SetProgressRange(req->content_length);
+          req->progress->SetProgressValue(req->last_progress_update);
+        }
+      }
+
       active_requests++;
       index++;
       continue;
     }
 
     // request complete
-    Log_VerbosePrintf("Request for '%s' complete, returned status code %u and %zu bytes", req->url.c_str(),
-                      req->status_code, req->data.size());
+    Log_VerboseFmt("Request for '{}' complete, returned status code {} and {} bytes", req->url, req->status_code,
+                   req->data.size());
     m_pending_http_requests.erase(m_pending_http_requests.begin() + index);
 
     // run callback with lock unheld
     lock.unlock();
-    req->callback(req->status_code, std::move(req->content_type), std::move(req->data));
+    req->callback(req->status_code, req->content_type, std::move(req->data));
     CloseRequest(req);
     lock.lock();
   }
@@ -195,6 +222,12 @@ u32 HTTPDownloader::LockedGetActiveRequestCount()
       count++;
   }
   return count;
+}
+
+bool HTTPDownloader::HasAnyRequests()
+{
+  std::unique_lock<std::mutex> lock(m_pending_http_request_lock);
+  return !m_pending_http_requests.empty();
 }
 
 std::string HTTPDownloader::URLEncode(const std::string_view& str)
