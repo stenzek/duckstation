@@ -46,6 +46,7 @@ protected:
   bool event(QEvent* event) override;
 
 private:
+  bool isActuallyFullscreen() const;
   void updateCenterPos();
 
   QPoint m_relative_mouse_start_pos{};
