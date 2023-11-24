@@ -2871,7 +2871,7 @@ void MainWindow::checkForUpdates(bool display_message)
   if (m_auto_updater_dialog)
     return;
 
-  m_auto_updater_dialog = new AutoUpdaterDialog(g_emu_thread, this);
+  m_auto_updater_dialog = new AutoUpdaterDialog(this);
   connect(m_auto_updater_dialog, &AutoUpdaterDialog::updateCheckCompleted, this, &MainWindow::onUpdateCheckComplete);
   m_auto_updater_dialog->queueUpdateCheck(display_message);
 }

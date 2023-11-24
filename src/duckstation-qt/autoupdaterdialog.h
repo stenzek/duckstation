@@ -3,14 +3,19 @@
 
 #pragma once
 
+#include "common/types.h"
+
 #include "ui_autoupdaterdialog.h"
 
-#include <QtCore/QStringList>
-#include <QtWidgets/QDialog>
+#include <memory>
 #include <string>
 
-class QNetworkAccessManager;
-class QNetworkReply;
+#include <QtCore/QDateTime>
+#include <QtCore/QStringList>
+#include <QtCore/QTimer>
+#include <QtWidgets/QDialog>
+
+class HTTPDownloader;
 
 class EmuThread;
 
@@ -19,7 +24,7 @@ class AutoUpdaterDialog final : public QDialog
   Q_OBJECT
 
 public:
-  explicit AutoUpdaterDialog(EmuThread* host_interface, QWidget* parent = nullptr);
+  explicit AutoUpdaterDialog(QWidget* parent = nullptr);
   ~AutoUpdaterDialog();
 
   static bool isSupported();
@@ -35,11 +40,7 @@ public Q_SLOTS:
   void queueGetLatestRelease();
 
 private Q_SLOTS:
-  void getLatestTagComplete(QNetworkReply* reply);
-  void getLatestReleaseComplete(QNetworkReply* reply);
-
-  void queueGetChanges();
-  void getChangesComplete(QNetworkReply* reply);
+  void httpPollTimerPoll();
 
   void downloadUpdateClicked();
   void skipThisUpdateClicked();
@@ -47,21 +48,30 @@ private Q_SLOTS:
 
 private:
   void reportError(const char* msg, ...);
+
+  bool ensureHttpReady();
+
   bool updateNeeded() const;
   std::string getCurrentUpdateTag() const;
 
+  void getLatestTagComplete(s32 status_code, std::vector<u8> response);
+  void getLatestReleaseComplete(s32 status_code, std::vector<u8> response);
+
+  void queueGetChanges();
+  void getChangesComplete(s32 status_code, std::vector<u8> response);
+
 #ifdef _WIN32
-  bool processUpdate(const QByteArray& update_data);
+  bool processUpdate(const std::vector<u8>& update_data);
   bool extractUpdater(const QString& zip_path, const QString& destination_path);
   bool doUpdate(const QString& zip_path, const QString& updater_path, const QString& destination_path);
 #else
-  bool processUpdate(const QByteArray& update_data);
+  bool processUpdate(const std::vector<u8>& update_data);
 #endif
 
   Ui::AutoUpdaterDialog m_ui;
 
-  EmuThread* m_host_interface;
-  QNetworkAccessManager* m_network_access_mgr = nullptr;
+  std::unique_ptr<HTTPDownloader> m_http;
+  QTimer* m_http_poll_timer = nullptr;
   QString m_latest_sha;
   QString m_download_url;
   int m_download_size = 0;
