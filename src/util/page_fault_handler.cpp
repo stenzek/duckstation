@@ -121,11 +121,9 @@ static LONG ExceptionHandler(PEXCEPTION_POINTERS exi)
 
 #elif defined(USE_SIGSEGV)
 
+static struct sigaction s_old_sigsegv_action;
 #if defined(__APPLE__) || defined(__aarch64__)
 static struct sigaction s_old_sigbus_action;
-#endif
-#if !defined(__APPLE__) || defined(__aarch64__)
-static struct sigaction s_old_sigsegv_action;
 #endif
 
 static void CallExistingSignalHandler(int signal, siginfo_t* siginfo, void* ctx)
@@ -262,16 +260,14 @@ bool InstallHandler(Handler handler)
     // Don't block the signal from executing recursively, we want to fire the original handler.
     sa.sa_flags |= SA_NODEFER;
 #endif
+    if (sigaction(SIGSEGV, &sa, &s_old_sigsegv_action) != 0)
+      return false;
 #if defined(__APPLE__) || defined(__aarch64__)
     // MacOS uses SIGBUS for memory permission violations
     if (sigaction(SIGBUS, &sa, &s_old_sigbus_action) != 0)
       return false;
 #endif
-#if !defined(__APPLE__) || defined(__aarch64__)
-    if (sigaction(SIGSEGV, &sa, &s_old_sigsegv_action) != 0)
-      return false;
-#endif
-#if defined(__APPLE__) && defined(__aarch64__)
+#ifdef __APPLE__
     task_set_exception_ports(mach_task_self(), EXC_MASK_BAD_ACCESS, MACH_PORT_NULL, EXCEPTION_DEFAULT, 0);
 #endif
 #else
