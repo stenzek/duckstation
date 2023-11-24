@@ -56,9 +56,33 @@ constexpr T PreviousPow2(T value)
   value |= (value >> 1);
   value |= (value >> 2);
   value |= (value >> 4);
-  value |= (value >> 8);
-  value |= (value >> 16);
+  if constexpr (sizeof(T) >= 16)
+    value |= (value >> 8);
+  if constexpr (sizeof(T) >= 32)
+    value |= (value >> 16);
+  if constexpr (sizeof(T) >= 64)
+    value |= (value >> 32);
   return value - (value >> 1);
+}
+template<typename T>
+constexpr T NextPow2(T value)
+{
+  // https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+  if (value == static_cast<T>(0))
+    return 0;
+
+  value--;
+  value |= (value >> 1);
+  value |= (value >> 2);
+  value |= (value >> 4);
+  if constexpr (sizeof(T) >= 16)
+    value |= (value >> 8);
+  if constexpr (sizeof(T) >= 32)
+    value |= (value >> 16);
+  if constexpr (sizeof(T) >= 64)
+    value |= (value >> 32);
+  value++;
+  return value;
 }
 
 ALWAYS_INLINE static void* AlignedMalloc(size_t size, size_t alignment)

@@ -48,6 +48,8 @@ public:
   static void FlushInstructionCache(void* address, u32 size);
 
 private:
+  bool TryAllocateAt(const void* addr);
+
   u8* m_code_ptr = nullptr;
   u8* m_free_code_ptr = nullptr;
   u32 m_code_size = 0;

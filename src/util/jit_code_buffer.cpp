@@ -44,28 +44,42 @@ bool JitCodeBuffer::Allocate(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_siz
 
   m_total_size = size + far_code_size;
 
-#if defined(_WIN32)
-  m_code_ptr = static_cast<u8*>(VirtualAlloc(nullptr, m_total_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE));
-  if (!m_code_ptr)
+#ifdef CPU_ARCH_X64
+  // Try to find a region in 32-bit range of ourselves.
+  // Assume that the DuckStation binary will at max be 256MB. Therefore the max offset is
+  // +/- 256MB + round_up_pow2(size). This'll be 512MB for the JITs.
+  static const u8 base_ptr = 0;
+  const u8* base =
+    reinterpret_cast<const u8*>(Common::AlignDownPow2(reinterpret_cast<uintptr_t>(&base_ptr), HOST_PAGE_SIZE));
+  const u32 max_displacement = 0x80000000u - Common::NextPow2(256 * 1024 * 1024 + m_total_size);
+  const u8* max_address = ((base + max_displacement) < base) ?
+                            reinterpret_cast<const u8*>(std::numeric_limits<uintptr_t>::max()) :
+                            (base + max_displacement);
+  const u8* min_address = ((base - max_displacement) > base) ? nullptr : (base - max_displacement);
+  const u32 step = 256 * 1024 * 1024;
+  const u32 steps = static_cast<u32>(max_address - min_address) / step;
+  for (u32 offset = 0; offset < steps; offset++)
   {
-    Log_ErrorPrintf("VirtualAlloc(RWX, %u) for internal buffer failed: %u", m_total_size, GetLastError());
-    return false;
+    const u8* addr = max_address - (offset * step);
+    Log_VerboseFmt("Trying {} (base {}, offset {}, displacement 0x{:X})", static_cast<const void*>(addr),
+                   static_cast<const void*>(base), offset, static_cast<ptrdiff_t>(addr - base));
+    if (TryAllocateAt(addr))
+      break;
   }
-#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__) || defined(__FreeBSD__)
-  int flags = MAP_PRIVATE | MAP_ANONYMOUS;
-#if defined(__APPLE__) && defined(__aarch64__)
-  // MAP_JIT and toggleable write protection is required on Apple Silicon.
-  flags |= MAP_JIT;
-#endif
-
-  m_code_ptr = static_cast<u8*>(mmap(nullptr, m_total_size, PROT_READ | PROT_WRITE | PROT_EXEC, flags, -1, 0));
-  if (!m_code_ptr)
+  if (m_code_ptr)
   {
-    Log_ErrorPrintf("mmap(RWX, %u) for internal buffer failed: %d", m_total_size, errno);
-    return false;
+    Log_InfoFmt("Allocated JIT buffer of size {} at {} (0x{:X} bytes away)", m_total_size,
+                static_cast<void*>(m_code_ptr), static_cast<ptrdiff_t>(m_code_ptr - base));
+  }
+  else
+  {
+    Log_ErrorPrint("Failed to allocate JIT buffer in range, expect crashes.");
+    if (!TryAllocateAt(nullptr))
+      return false;
   }
 #else
-  return false;
+  if (!TryAllocateAt(nullptr))
+    return false;
 #endif
 
   m_free_code_ptr = m_code_ptr;
@@ -80,6 +94,42 @@ bool JitCodeBuffer::Allocate(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_siz
   m_old_protection = 0;
   m_owns_buffer = true;
   return true;
+}
+
+bool JitCodeBuffer::TryAllocateAt(const void* addr)
+{
+#if defined(_WIN32)
+  m_code_ptr = static_cast<u8*>(VirtualAlloc(const_cast<void*>(addr), m_total_size,
+                                             addr ? (MEM_RESERVE | MEM_COMMIT) : MEM_COMMIT, PAGE_EXECUTE_READWRITE));
+  if (!m_code_ptr)
+  {
+    if (!addr)
+      Log_ErrorPrintf("VirtualAlloc(RWX, %u) for internal buffer failed: %u", m_total_size, GetLastError());
+    return false;
+  }
+
+  return true;
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__) || defined(__FreeBSD__)
+  int flags = MAP_PRIVATE | MAP_ANONYMOUS;
+#if defined(__APPLE__) && defined(__aarch64__)
+  // MAP_JIT and toggleable write protection is required on Apple Silicon.
+  flags |= MAP_JIT;
+#endif
+
+  m_code_ptr =
+    static_cast<u8*>(mmap(const_cast<void*>(addr), m_total_size, PROT_READ | PROT_WRITE | PROT_EXEC, flags, -1, 0));
+  if (!m_code_ptr)
+  {
+    if (!addr)
+      Log_ErrorPrintf("mmap(RWX, %u) for internal buffer failed: %d", m_total_size, errno);
+
+    return false;
+  }
+
+  return true;
+#else
+  return false;
+#endif
 }
 
 bool JitCodeBuffer::Initialize(void* buffer, u32 size, u32 far_code_size /* = 0 */, u32 guard_size /* = 0 */)
