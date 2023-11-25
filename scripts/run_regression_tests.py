@@ -33,7 +33,10 @@ def run_regression_tests(runner, gamedir, destdir, dump_interval, frames, parall
     paths = glob.glob(gamedir + "/*.*", recursive=True)
     gamepaths = list(filter(is_game_path, paths))
 
-    if not os.path.isdir(destdir) and not os.mkdir(destdir):
+    try:
+        if not os.path.isdir(destdir):
+            os.mkdir(destdir)
+    except OSError:
         print("Failed to create directory")
         return False
 

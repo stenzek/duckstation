@@ -2498,10 +2498,29 @@ void GPU_HW::DispatchRenderCommand()
     if (m_draw_mode.IsTexturePageChanged())
     {
       m_draw_mode.ClearTexturePageChangedFlag();
+
+#if 0
+      if (m_vram_dirty_rect.Valid())
+      {
+        GL_INS_FMT("VRAM DIRTY: {},{} => {},{}", m_vram_dirty_rect.left, m_vram_dirty_rect.top, m_vram_dirty_rect.right,
+                   m_vram_dirty_rect.bottom);
+
+        auto tpr = m_draw_mode.mode_reg.GetTexturePageRectangle();
+        GL_INS_FMT("PAGE RECT: {},{} => {},{}", tpr.left, tpr.top, tpr.right, tpr.bottom);
+        if (m_draw_mode.mode_reg.IsUsingPalette())
+        {
+          tpr = m_draw_mode.GetTexturePaletteRectangle();
+          GL_INS_FMT("PALETTE RECT: {},{} => {},{}", tpr.left, tpr.top, tpr.right, tpr.bottom);
+        }
+      }
+#endif
+
       if (m_vram_dirty_rect.Valid() && (m_draw_mode.mode_reg.GetTexturePageRectangle().Intersects(m_vram_dirty_rect) ||
                                         (m_draw_mode.mode_reg.IsUsingPalette() &&
                                          m_draw_mode.GetTexturePaletteRectangle().Intersects(m_vram_dirty_rect))))
       {
+        GL_INS("Invalidating VRAM read cache due to drawing area overlap");
+
         // Log_DevPrint("Invalidating VRAM read cache due to drawing area overlap");
         if (!IsFlushed())
           FlushRender();
@@ -2534,68 +2553,71 @@ void GPU_HW::DispatchRenderCommand()
 
   EnsureVertexBufferSpaceForCurrentCommand();
 
-  // transparency mode change
-  if (transparency_mode != GPUTransparencyMode::Disabled &&
-      (texture_mode == GPUTextureMode::Disabled || !NeedsShaderBlending(transparency_mode)))
+  if (GetBatchVertexCount() == 0)
   {
-    static constexpr float transparent_alpha[4][2] = {{0.5f, 0.5f}, {1.0f, 1.0f}, {1.0f, 1.0f}, {0.25f, 1.0f}};
-
-    const float src_alpha_factor = transparent_alpha[static_cast<u32>(transparency_mode)][0];
-    const float dst_alpha_factor = transparent_alpha[static_cast<u32>(transparency_mode)][1];
-    m_batch_ubo_dirty |= (m_batch_ubo_data.u_src_alpha_factor != src_alpha_factor ||
-                          m_batch_ubo_data.u_dst_alpha_factor != dst_alpha_factor);
-    m_batch_ubo_data.u_src_alpha_factor = src_alpha_factor;
-    m_batch_ubo_data.u_dst_alpha_factor = dst_alpha_factor;
-  }
-
-  const bool check_mask_before_draw = m_GPUSTAT.check_mask_before_draw;
-  const bool set_mask_while_drawing = m_GPUSTAT.set_mask_while_drawing;
-  if (m_batch.check_mask_before_draw != check_mask_before_draw ||
-      m_batch.set_mask_while_drawing != set_mask_while_drawing)
-  {
-    m_batch.check_mask_before_draw = check_mask_before_draw;
-    m_batch.set_mask_while_drawing = set_mask_while_drawing;
-    m_batch_ubo_dirty |= (m_batch_ubo_data.u_set_mask_while_drawing != BoolToUInt32(set_mask_while_drawing));
-    m_batch_ubo_data.u_set_mask_while_drawing = BoolToUInt32(set_mask_while_drawing);
-  }
-
-  m_batch.interlacing = IsInterlacedRenderingEnabled();
-  if (m_batch.interlacing)
-  {
-    const u32 displayed_field = GetActiveLineLSB();
-    m_batch_ubo_dirty |= (m_batch_ubo_data.u_interlaced_displayed_field != displayed_field);
-    m_batch_ubo_data.u_interlaced_displayed_field = displayed_field;
-  }
-
-  // update state
-  m_batch.texture_mode = texture_mode;
-  m_batch.transparency_mode = transparency_mode;
-  m_batch.dithering = dithering_enable;
-
-  if (m_draw_mode.IsTextureWindowChanged())
-  {
-    m_draw_mode.ClearTextureWindowChangedFlag();
-
-    m_batch_ubo_data.u_texture_window_and[0] = ZeroExtend32(m_draw_mode.texture_window.and_x);
-    m_batch_ubo_data.u_texture_window_and[1] = ZeroExtend32(m_draw_mode.texture_window.and_y);
-    m_batch_ubo_data.u_texture_window_or[0] = ZeroExtend32(m_draw_mode.texture_window.or_x);
-    m_batch_ubo_data.u_texture_window_or[1] = ZeroExtend32(m_draw_mode.texture_window.or_y);
-    m_batch_ubo_dirty = true;
-  }
-
-  if (m_drawing_area_changed)
-  {
-    m_drawing_area_changed = false;
-    SetScissor();
-
-    if (m_pgxp_depth_buffer && m_last_depth_z < 1.0f)
-      ClearDepthBuffer();
-
-    if (m_sw_renderer)
+    // transparency mode change
+    if (transparency_mode != GPUTransparencyMode::Disabled &&
+        (texture_mode == GPUTextureMode::Disabled || !NeedsShaderBlending(transparency_mode)))
     {
-      GPUBackendSetDrawingAreaCommand* cmd = m_sw_renderer->NewSetDrawingAreaCommand();
-      cmd->new_area = m_drawing_area;
-      m_sw_renderer->PushCommand(cmd);
+      static constexpr float transparent_alpha[4][2] = {{0.5f, 0.5f}, {1.0f, 1.0f}, {1.0f, 1.0f}, {0.25f, 1.0f}};
+
+      const float src_alpha_factor = transparent_alpha[static_cast<u32>(transparency_mode)][0];
+      const float dst_alpha_factor = transparent_alpha[static_cast<u32>(transparency_mode)][1];
+      m_batch_ubo_dirty |= (m_batch_ubo_data.u_src_alpha_factor != src_alpha_factor ||
+                            m_batch_ubo_data.u_dst_alpha_factor != dst_alpha_factor);
+      m_batch_ubo_data.u_src_alpha_factor = src_alpha_factor;
+      m_batch_ubo_data.u_dst_alpha_factor = dst_alpha_factor;
+    }
+
+    const bool check_mask_before_draw = m_GPUSTAT.check_mask_before_draw;
+    const bool set_mask_while_drawing = m_GPUSTAT.set_mask_while_drawing;
+    if (m_batch.check_mask_before_draw != check_mask_before_draw ||
+        m_batch.set_mask_while_drawing != set_mask_while_drawing)
+    {
+      m_batch.check_mask_before_draw = check_mask_before_draw;
+      m_batch.set_mask_while_drawing = set_mask_while_drawing;
+      m_batch_ubo_dirty |= (m_batch_ubo_data.u_set_mask_while_drawing != BoolToUInt32(set_mask_while_drawing));
+      m_batch_ubo_data.u_set_mask_while_drawing = BoolToUInt32(set_mask_while_drawing);
+    }
+
+    m_batch.interlacing = IsInterlacedRenderingEnabled();
+    if (m_batch.interlacing)
+    {
+      const u32 displayed_field = GetActiveLineLSB();
+      m_batch_ubo_dirty |= (m_batch_ubo_data.u_interlaced_displayed_field != displayed_field);
+      m_batch_ubo_data.u_interlaced_displayed_field = displayed_field;
+    }
+
+    // update state
+    m_batch.texture_mode = texture_mode;
+    m_batch.transparency_mode = transparency_mode;
+    m_batch.dithering = dithering_enable;
+
+    if (m_draw_mode.IsTextureWindowChanged())
+    {
+      m_draw_mode.ClearTextureWindowChangedFlag();
+
+      m_batch_ubo_data.u_texture_window_and[0] = ZeroExtend32(m_draw_mode.texture_window.and_x);
+      m_batch_ubo_data.u_texture_window_and[1] = ZeroExtend32(m_draw_mode.texture_window.and_y);
+      m_batch_ubo_data.u_texture_window_or[0] = ZeroExtend32(m_draw_mode.texture_window.or_x);
+      m_batch_ubo_data.u_texture_window_or[1] = ZeroExtend32(m_draw_mode.texture_window.or_y);
+      m_batch_ubo_dirty = true;
+    }
+
+    if (m_drawing_area_changed)
+    {
+      m_drawing_area_changed = false;
+      SetScissor();
+
+      if (m_pgxp_depth_buffer && m_last_depth_z < 1.0f)
+        ClearDepthBuffer();
+
+      if (m_sw_renderer)
+      {
+        GPUBackendSetDrawingAreaCommand* cmd = m_sw_renderer->NewSetDrawingAreaCommand();
+        cmd->new_area = m_drawing_area;
+        m_sw_renderer->PushCommand(cmd);
+      }
     }
   }
 
