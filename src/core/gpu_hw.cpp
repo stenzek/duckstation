@@ -71,7 +71,7 @@ ALWAYS_INLINE static bool ShouldDisableColorPerspective()
 }
 
 /// Returns true if the specified texture filtering mode requires dual-source blending.
-ALWAYS_INLINE static bool TextureFilterRequiresDualSourceBlend(GPUTextureFilter filter)
+ALWAYS_INLINE static bool IsBlendedTextureFiltering(GPUTextureFilter filter)
 {
   return (filter == GPUTextureFilter::Bilinear || filter == GPUTextureFilter::JINC2 || filter == GPUTextureFilter::xBR);
 }
@@ -457,7 +457,7 @@ void GPU_HW::CheckSettings()
                             TRANSLATE_STR("GPU_HW", "SSAA is not supported, using MSAA instead."),
                             Host::OSD_ERROR_DURATION);
   }
-  if (!features.dual_source_blend && TextureFilterRequiresDualSourceBlend(m_texture_filtering))
+  if (!features.dual_source_blend && IsBlendedTextureFiltering(m_texture_filtering))
   {
     Host::AddIconOSDMessage(
       "TextureFilterUnsupported", ICON_FA_EXCLAMATION_TRIANGLE,
@@ -850,7 +850,7 @@ bool GPU_HW::CompilePipelines()
               if ((static_cast<GPUTransparencyMode>(transparency_mode) != GPUTransparencyMode::Disabled &&
                    (static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::TransparencyDisabled &&
                     static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::OnlyOpaque)) ||
-                  m_texture_filtering != GPUTextureFilter::Nearest)
+                  IsBlendedTextureFiltering(m_texture_filtering))
               {
                 plconfig.blend.enable = true;
                 plconfig.blend.src_alpha_blend = GPUPipeline::BlendFunc::One;
