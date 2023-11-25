@@ -110,14 +110,13 @@ You will need a device with armv7 (32-bit ARM), AArch64 (64-bit ARM), or x86_64 
 
 Google Play is the preferred distribution mechanism and will result in smaller download sizes: https://play.google.com/store/apps/details?id=com.github.stenzek.duckstation
 
-**No support is provided for the Android app**, it is free and your expectations should be in line with that. Please **do not** email me about issues about it, they will be ignored.
+**No support is provided for the Android app**, it is free and your expectations should be in line with that. Please **do not** email me about issues about it, or ask for help, you will be ignored.
 
 If you must use an APK, download links are listed in https://www.duckstation.org/android/
 
 To use:
 1. Install and run the app for the first time.
-2. Add game directories by tapping the add button and selecting a directory. You can add additional directories afterwards by selecting "Edit Game Directories" from the menu.
-3. Tap a game to start. When you start a game for the first time it will prompt you to import a BIOS image.
+2. Follow the setup wizard.
 
 If you have an external controller, you will need to map the buttons and sticks in settings.
 
@@ -128,6 +127,8 @@ A number of PAL region games use LibCrypt protection, requiring additional CD su
 For these games, make sure that the CD image and its corresponding SBI (.sbi) file have the same name and are placed in the same directory. DuckStation will automatically load the SBI file when it is found next to the CD image.
 
 For example, if your disc image was named `Spyro3.cue`, you would place the SBI file in the same directory, and name it `Spyro3.sbi`.
+
+CHD images with built-in subchannel information are also supported.
 
 ## Building
 
@@ -193,7 +194,7 @@ in the same directory as the DuckStation executable.
 ## Bindings for Qt frontend
 Your keyboard or game controller can be used to simulate a variety of PlayStation controllers. Controller input is supported through DInput, XInput, and SDL backends and can be changed through `Settings -> General Settings`.
 
-To bind your input device, go to `Settings -> Controller Settings`. Each of the buttons/axes for the simulated controller will be listed, alongside the corresponding key/button on your device that it is currently bound to. To rebind, click the box next to the button/axis name, and press the key or button on your input device that you wish to bind to. When binding rumble, simply press any button on the controller you wish to send rumble to.
+To bind your input device, go to `Settings -> Controllers`. Each of the buttons/axes for the simulated controller will be listed, alongside the corresponding key/button on your device that it is currently bound to. To rebind, click the box next to the button/axis name, and press the key or button on your input device that you wish to bind to. When binding rumble, simply press any button on the controller you wish to send rumble to.
 
 ## SDL Game Controller Database
 DuckStation releases ship with a database of game controller mappings for the SDL controller backend, courtesy of https://github.com/gabomdq/SDL_GameControllerDB. The included `gamecontrollerdb.txt` file can be found in the `database` subdirectory of the DuckStation program directory.
@@ -202,10 +203,13 @@ If you are experiencing issues binding your controller with the SDL controller b
 
 ## Default bindings
 Controller 1:
- - **D-Pad:** W/A/S/D
- - **Triangle/Square/Circle/Cross:** Numpad8/Numpad4/Numpad6/Numpad2
+ - **Left Stick:** W/A/S/D
+ - **Right Stick:** T/F/G/H
+ - **D-Pad:** Up/Left/Down/Right
+ - **Triangle/Square/Circle/Cross:** I/J/L/K
  - **L1/R1:** Q/E
  - **L2/R2:** 1/3
+ - **L3/R3:** 2/4
  - **Start:** Enter
  - **Select:** Backspace
 
