@@ -1355,13 +1355,35 @@ bool System::BootSystem(SystemBootParameters parameters)
   }
 
   // Check for resuming with hardcore mode.
-  if (!parameters.save_state.empty() && Achievements::IsHardcoreModeActive() &&
-      !Achievements::ConfirmHardcoreModeDisable(TRANSLATE("Achievements", "Resuming state")))
+  if (parameters.disable_achievements_hardcore_mode)
+    Achievements::DisableHardcoreMode();
+  if (!parameters.save_state.empty() && Achievements::IsHardcoreModeActive())
   {
-    s_state = State::Shutdown;
-    ClearRunningGame();
-    Host::OnSystemDestroyed();
-    return false;
+    bool cancelled;
+    if (FullscreenUI::IsInitialized())
+    {
+      Achievements::ConfirmHardcoreModeDisableAsync(TRANSLATE("Achievements", "Resuming state"),
+                                                    [parameters = std::move(parameters)](bool approved) mutable {
+                                                      if (approved)
+                                                      {
+                                                        parameters.disable_achievements_hardcore_mode = true;
+                                                        BootSystem(std::move(parameters));
+                                                      }
+                                                    });
+      cancelled = true;
+    }
+    else
+    {
+      cancelled = !Achievements::ConfirmHardcoreModeDisable(TRANSLATE("Achievements", "Resuming state"));
+    }
+
+    if (cancelled)
+    {
+      s_state = State::Shutdown;
+      ClearRunningGame();
+      Host::OnSystemDestroyed();
+      return false;
+    }
   }
 
   // Load BIOS image.

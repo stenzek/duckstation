@@ -50,6 +50,7 @@ struct SystemBootParameters
   bool load_image_to_ram = false;
   bool force_software_renderer = false;
   bool fast_forward_to_first_frame = false;
+  bool disable_achievements_hardcore_mode = false;
 };
 
 struct SaveStateInfo
