@@ -6,6 +6,7 @@
 #include "common/small_string.h"
 #include "common/types.h"
 
+#include <functional>
 #include <mutex>
 #include <string>
 #include <utility>
@@ -81,6 +82,7 @@ void DisableHardcoreMode();
 
 /// Prompts the user to disable hardcore mode, if they agree, returns true.
 bool ConfirmHardcoreModeDisable(const char* trigger);
+void ConfirmHardcoreModeDisableAsync(const char* trigger, std::function<void(bool)> callback);
 
 /// Returns true if hardcore mode is active, and functionality should be restricted.
 bool IsHardcoreModeActive();

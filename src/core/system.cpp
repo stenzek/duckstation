@@ -1133,9 +1133,13 @@ bool System::LoadState(const char* filename)
   if (!IsValid())
     return false;
 
-  if (Achievements::IsHardcoreModeActive() &&
-      !Achievements::ConfirmHardcoreModeDisable(TRANSLATE("Achievements", "Loading state")))
+  if (Achievements::IsHardcoreModeActive())
   {
+    Achievements::ConfirmHardcoreModeDisableAsync(TRANSLATE("Achievements", "Loading state"),
+                                                  [filename = std::string(filename)](bool approved) {
+                                                    if (approved)
+                                                      LoadState(filename.c_str());
+                                                  });
     return false;
   }
 
@@ -2699,8 +2703,14 @@ void System::SetRewindState(bool enabled)
     return;
   }
 
-  if (Achievements::IsHardcoreModeActive() && !Achievements::ConfirmHardcoreModeDisable("Rewinding"))
+  if (Achievements::IsHardcoreModeActive() && enabled)
+  {
+    Achievements::ConfirmHardcoreModeDisableAsync("Rewinding", [](bool approved) {
+      if (approved)
+        SetRewindState(true);
+    });
     return;
+  }
 
   System::SetRewinding(enabled);
   UpdateSpeedLimiterState();
@@ -2711,8 +2721,14 @@ void System::DoFrameStep()
   if (!IsValid())
     return;
 
-  if (Achievements::IsHardcoreModeActive() && !Achievements::ConfirmHardcoreModeDisable("Frame stepping"))
+  if (Achievements::IsHardcoreModeActive())
+  {
+    Achievements::ConfirmHardcoreModeDisableAsync("Frame stepping", [](bool approved) {
+      if (approved)
+        DoFrameStep();
+    });
     return;
+  }
 
   s_frame_step_request = true;
   PauseSystem(false);
@@ -2723,8 +2739,11 @@ void System::DoToggleCheats()
   if (!System::IsValid())
     return;
 
-  if (Achievements::IsHardcoreModeActive() && !Achievements::ConfirmHardcoreModeDisable("Toggling cheats"))
+  if (Achievements::IsHardcoreModeActive())
+  {
+    Achievements::ConfirmHardcoreModeDisableAsync("Toggling cheats", [](bool approved) { DoToggleCheats(); });
     return;
+  }
 
   CheatList* cl = GetCheatList();
   if (!cl)
