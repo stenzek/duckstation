@@ -2645,11 +2645,14 @@ void MainWindow::checkForSettingChanges()
   updateWindowState();
 }
 
-void MainWindow::getWindowInfo(WindowInfo* wi)
+std::optional<WindowInfo> MainWindow::getWindowInfo()
 {
-  std::optional<WindowInfo> opt_wi(QtUtils::GetWindowInfoForWidget(this));
-  if (opt_wi.has_value())
-    *wi = opt_wi.value();
+  if (!m_display_widget || isRenderingToMain())
+    return QtUtils::GetWindowInfoForWidget(this);
+  else if (QWidget* widget = getDisplayContainer())
+    return QtUtils::GetWindowInfoForWidget(widget);
+  else
+    return std::nullopt;
 }
 
 void MainWindow::onCheckForUpdatesActionTriggered()

@@ -104,7 +104,7 @@ public Q_SLOTS:
   bool requestShutdown(bool allow_confirm = true, bool allow_save_to_state = true, bool save_state = true);
   void requestExit(bool allow_confirm = true);
   void checkForSettingChanges();
-  void getWindowInfo(WindowInfo* wi);
+  std::optional<WindowInfo> getWindowInfo();
 
   void checkForUpdates(bool display_message);
 
