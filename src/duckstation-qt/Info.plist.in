@@ -37,6 +37,8 @@
     <string>2019-2023 Connor McLaughlin &lt;stenzek@gmail.com&gt;</string>
     <key>LSMinimumSystemVersion</key>
     <string>${CMAKE_OSX_DEPLOYMENT_TARGET}</string>
+    <key>LSApplicationCategoryType</key>
+    <string>public.app-category.games</string>
     <key>NSHighResolutionCapable</key>
     <true/>
     <key>CSResourcesFileMapped</key>
