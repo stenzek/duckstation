@@ -934,6 +934,11 @@ std::optional<std::string> InputManager::ConvertHostKeyboardCodeToString(u32 cod
   return g_nogui_window->ConvertHostKeyboardCodeToString(code);
 }
 
+const char* InputManager::ConvertHostKeyboardCodeToIcon(u32 code)
+{
+  return nullptr;
+}
+
 BEGIN_HOTKEY_LIST(g_host_hotkeys)
 END_HOTKEY_LIST()
 

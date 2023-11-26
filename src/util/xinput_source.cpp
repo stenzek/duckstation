@@ -1,22 +1,34 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "xinput_source.h"
+#include "input_manager.h"
+
 #include "common/assert.h"
 #include "common/log.h"
 #include "common/string_util.h"
-#include "core/host.h"
-#include "input_manager.h"
+
+#include "IconsPromptFont.h"
+
 #include <cmath>
+
 Log_SetChannel(XInputSource);
 
-const char* XInputSource::s_axis_names[XInputSource::NUM_AXES] = {
+static const char* s_axis_names[XInputSource::NUM_AXES] = {
   "LeftX",        // AXIS_LEFTX
   "LeftY",        // AXIS_LEFTY
   "RightX",       // AXIS_RIGHTX
   "RightY",       // AXIS_RIGHTY
   "LeftTrigger",  // AXIS_TRIGGERLEFT
   "RightTrigger", // AXIS_TRIGGERRIGHT
+};
+static constexpr const char* s_axis_icons[][2] = {
+  {ICON_PF_LEFT_ANALOG_LEFT, ICON_PF_LEFT_ANALOG_RIGHT},   // AXIS_LEFTX
+  {ICON_PF_LEFT_ANALOG_UP, ICON_PF_LEFT_ANALOG_DOWN},      // AXIS_LEFTY
+  {ICON_PF_RIGHT_ANALOG_LEFT, ICON_PF_RIGHT_ANALOG_RIGHT}, // AXIS_RIGHTX
+  {ICON_PF_RIGHT_ANALOG_UP, ICON_PF_RIGHT_ANALOG_DOWN},    // AXIS_RIGHTY
+  {nullptr, ICON_PF_LEFT_TRIGGER_PULL},                    // AXIS_TRIGGERLEFT
+  {nullptr, ICON_PF_RIGHT_TRIGGER_PULL},                   // AXIS_TRIGGERRIGHT
 };
 static const GenericInputBinding s_xinput_generic_binding_axis_mapping[][2] = {
   {GenericInputBinding::LeftStickLeft, GenericInputBinding::LeftStickRight},   // AXIS_LEFTX
@@ -27,7 +39,7 @@ static const GenericInputBinding s_xinput_generic_binding_axis_mapping[][2] = {
   {GenericInputBinding::Unknown, GenericInputBinding::R2},                     // AXIS_TRIGGERRIGHT
 };
 
-const char* XInputSource::s_button_names[XInputSource::NUM_BUTTONS] = {
+static const char* s_button_names[XInputSource::NUM_BUTTONS] = {
   "DPadUp",        // XINPUT_GAMEPAD_DPAD_UP
   "DPadDown",      // XINPUT_GAMEPAD_DPAD_DOWN
   "DPadLeft",      // XINPUT_GAMEPAD_DPAD_LEFT
@@ -44,7 +56,7 @@ const char* XInputSource::s_button_names[XInputSource::NUM_BUTTONS] = {
   "Y",             // XINPUT_GAMEPAD_Y
   "Guide",         // XINPUT_GAMEPAD_GUIDE
 };
-const u16 XInputSource::s_button_masks[XInputSource::NUM_BUTTONS] = {
+static const u16 s_button_masks[XInputSource::NUM_BUTTONS] = {
   XINPUT_GAMEPAD_DPAD_UP,
   XINPUT_GAMEPAD_DPAD_DOWN,
   XINPUT_GAMEPAD_DPAD_LEFT,
@@ -60,6 +72,23 @@ const u16 XInputSource::s_button_masks[XInputSource::NUM_BUTTONS] = {
   XINPUT_GAMEPAD_X,
   XINPUT_GAMEPAD_Y,
   0x400, // XINPUT_GAMEPAD_GUIDE
+};
+static constexpr const char* s_button_icons[] = {
+  ICON_PF_XBOX_DPAD_UP,       // XINPUT_GAMEPAD_DPAD_UP
+  ICON_PF_XBOX_DPAD_DOWN,     // XINPUT_GAMEPAD_DPAD_DOWN
+  ICON_PF_XBOX_DPAD_LEFT,     // XINPUT_GAMEPAD_DPAD_LEFT
+  ICON_PF_XBOX_DPAD_RIGHT,    // XINPUT_GAMEPAD_DPAD_RIGHT
+  ICON_PF_BURGER_MENU,        // XINPUT_GAMEPAD_START
+  ICON_PF_SHARE_CAPTURE,      // XINPUT_GAMEPAD_BACK
+  ICON_PF_LEFT_ANALOG_CLICK,  // XINPUT_GAMEPAD_LEFT_THUMB
+  ICON_PF_RIGHT_ANALOG_CLICK, // XINPUT_GAMEPAD_RIGHT_THUMB
+  ICON_PF_LEFT_SHOULDER_LB,   // XINPUT_GAMEPAD_LEFT_SHOULDER
+  ICON_PF_RIGHT_SHOULDER_RB,  // XINPUT_GAMEPAD_RIGHT_SHOULDER
+  ICON_PF_BUTTON_A,           // XINPUT_GAMEPAD_A
+  ICON_PF_BUTTON_B,           // XINPUT_GAMEPAD_B
+  ICON_PF_BUTTON_X,           // XINPUT_GAMEPAD_X
+  ICON_PF_BUTTON_Y,           // XINPUT_GAMEPAD_Y
+  ICON_PF_XBOX,               // XINPUT_GAMEPAD_GUIDE
 };
 static const GenericInputBinding s_xinput_generic_binding_button_mapping[] = {
   GenericInputBinding::DPadUp,    // XINPUT_GAMEPAD_DPAD_UP
@@ -287,24 +316,48 @@ std::optional<InputBindingKey> XInputSource::ParseKeyString(const std::string_vi
   return std::nullopt;
 }
 
-std::string XInputSource::ConvertKeyToString(InputBindingKey key)
+TinyString XInputSource::ConvertKeyToString(InputBindingKey key)
 {
-  std::string ret;
+  TinyString ret;
 
   if (key.source_type == InputSourceType::XInput)
   {
     if (key.source_subtype == InputSubclass::ControllerAxis && key.data < std::size(s_axis_names))
     {
       const char modifier = key.modifier == InputModifier::Negate ? '-' : '+';
-      ret = fmt::format("XInput-{}/{}{}", static_cast<u32>(key.source_index), modifier, s_axis_names[key.data]);
+      ret.fmt("XInput-{}/{}{}", static_cast<u32>(key.source_index), modifier, s_axis_names[key.data]);
     }
     else if (key.source_subtype == InputSubclass::ControllerButton && key.data < std::size(s_button_names))
     {
-      ret = fmt::format("XInput-{}/{}", static_cast<u32>(key.source_index), s_button_names[key.data]);
+      ret.fmt("XInput-{}/{}", static_cast<u32>(key.source_index), s_button_names[key.data]);
     }
     else if (key.source_subtype == InputSubclass::ControllerMotor)
     {
-      ret = fmt::format("XInput-{}/{}Motor", static_cast<u32>(key.source_index), key.data ? "Large" : "Small");
+      ret.fmt("XInput-{}/{}Motor", static_cast<u32>(key.source_index), key.data ? "Large" : "Small");
+    }
+  }
+
+  return ret;
+}
+
+TinyString XInputSource::ConvertKeyToIcon(InputBindingKey key)
+{
+  TinyString ret;
+
+  if (key.source_type == InputSourceType::SDL)
+  {
+    if (key.source_subtype == InputSubclass::ControllerAxis)
+    {
+      if (key.data < std::size(s_axis_icons) && key.modifier != InputModifier::FullAxis)
+      {
+        ret.fmt("XInput-{}  {}", static_cast<u32>(key.source_index),
+                s_axis_icons[key.data][key.modifier == InputModifier::None]);
+      }
+    }
+    else if (key.source_subtype == InputSubclass::ControllerButton)
+    {
+      if (key.data < std::size(s_button_icons))
+        ret.fmt("XInput-{}  {}", static_cast<u32>(key.source_index), s_button_icons[key.data]);
     }
   }
 
@@ -384,8 +437,7 @@ void XInputSource::HandleControllerConnection(u32 index)
   cd.has_small_motor = caps.Vibration.wRightMotorSpeed != 0;
   cd.last_state = {};
 
-  InputManager::OnInputDeviceConnected(fmt::format("XInput-{}", index),
-    fmt::format("XInput Controller {}", index));
+  InputManager::OnInputDeviceConnected(fmt::format("XInput-{}", index), fmt::format("XInput Controller {}", index));
 }
 
 void XInputSource::HandleControllerDisconnection(u32 index)

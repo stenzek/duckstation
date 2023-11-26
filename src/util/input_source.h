@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "common/small_string.h"
 #include "common/types.h"
 #include "input_manager.h"
 
@@ -30,7 +31,8 @@ public:
 
   virtual std::optional<InputBindingKey> ParseKeyString(const std::string_view& device,
                                                         const std::string_view& binding) = 0;
-  virtual std::string ConvertKeyToString(InputBindingKey key) = 0;
+  virtual TinyString ConvertKeyToString(InputBindingKey key) = 0;
+  virtual TinyString ConvertKeyToIcon(InputBindingKey key) = 0;
 
   /// Enumerates available devices. Returns a pair of the prefix (e.g. SDL-0) and the device name.
   virtual std::vector<std::pair<std::string, std::string>> EnumerateDevices() = 0;

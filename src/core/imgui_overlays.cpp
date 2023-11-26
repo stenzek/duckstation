@@ -615,7 +615,7 @@ void ImGuiManager::DrawInputsOverlay()
       continue;
 
     if (cinfo->icon_name)
-      text.append_fmt("{} {} |", cinfo->icon_name, port + 1u);
+      text.append_fmt("{} {}", cinfo->icon_name, port + 1u);
     else
       text.append_fmt("{} |", port + 1u);
 

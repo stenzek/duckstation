@@ -89,7 +89,12 @@ std::optional<InputBindingKey> Win32RawInputSource::ParseKeyString(const std::st
   return std::nullopt;
 }
 
-std::string Win32RawInputSource::ConvertKeyToString(InputBindingKey key)
+TinyString Win32RawInputSource::ConvertKeyToString(InputBindingKey key)
+{
+  return {};
+}
+
+TinyString Win32RawInputSource::ConvertKeyToIcon(InputBindingKey key)
 {
   return {};
 }

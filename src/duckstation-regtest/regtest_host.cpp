@@ -363,6 +363,11 @@ std::optional<std::string> InputManager::ConvertHostKeyboardCodeToString(u32 cod
   return std::nullopt;
 }
 
+const char* InputManager::ConvertHostKeyboardCodeToIcon(u32 code)
+{
+  return nullptr;
+}
+
 void Host::AddFixedInputBindings(SettingsInterface& si)
 {
   // noop

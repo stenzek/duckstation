@@ -1364,6 +1364,9 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
   if (!visible)
     return;
 
+  if (oneline)
+    InputManager::PrettifyInputBinding(value);
+
   if (show_type)
   {
     if (icon_name)
@@ -1375,17 +1378,17 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
       switch (type)
       {
         case InputBindingInfo::Type::Button:
-          title.fmt(ICON_FA_DOT_CIRCLE "{}", display_name);
+          title.fmt(ICON_FA_DOT_CIRCLE " {}", display_name);
           break;
         case InputBindingInfo::Type::Axis:
         case InputBindingInfo::Type::HalfAxis:
-          title.fmt(ICON_FA_BULLSEYE "{}", display_name);
+          title.fmt(ICON_FA_BULLSEYE " {}", display_name);
           break;
         case InputBindingInfo::Type::Motor:
-          title.fmt(ICON_FA_BELL "{}", display_name);
+          title.fmt(ICON_FA_BELL " {}", display_name);
           break;
         case InputBindingInfo::Type::Macro:
-          title.fmt(ICON_FA_PIZZA_SLICE "{}", display_name);
+          title.fmt(ICON_FA_PIZZA_SLICE " {}", display_name);
           break;
         default:
           title = display_name;
@@ -1406,8 +1409,8 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
 
     ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, show_type ? title.c_str() : display_name, nullptr, nullptr,
                              ImVec2(0.0f, 0.0f), &title_bb);
-    ImGui::RenderTextClipped(bb.Min, bb.Max, value.empty() ? FSUI_CSTR("-") : value.c_str(), nullptr,
-                             &value_size, ImVec2(1.0f, 0.5f), &bb);
+    ImGui::RenderTextClipped(bb.Min, bb.Max, value.empty() ? FSUI_CSTR("-") : value.c_str(), nullptr, &value_size,
+                             ImVec2(1.0f, 0.5f), &bb);
     ImGui::PopFont();
   }
   else
@@ -3407,9 +3410,27 @@ void FullscreenUI::DrawControllerSettingsPage()
 
       std::string binds_string(
         bsi->GetStringValue(section.c_str(), fmt::format("Macro{}Binds", macro_index + 1).c_str()));
-      if (MenuButton(
+      TinyString pretty_binds_string;
+      if (!binds_string.empty())
+      {
+        for (const std::string_view& bind : StringUtil::SplitString(binds_string, '&', true))
+        {
+          const char* dispname = nullptr;
+          for (const Controller::ControllerBindingInfo& bi : ci->bindings)
+          {
+            if (bind == bi.name)
+            {
+              dispname = bi.icon_name ? bi.icon_name : Host::TranslateToCString(ci->name, bi.display_name);
+              break;
+            }
+          }
+          pretty_binds_string.append_fmt("{}{}", pretty_binds_string.empty() ? "" : " ", dispname);
+        }
+      }
+      if (MenuButtonWithValue(
             TinyString::from_fmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_KEYBOARD, "Macro {} Buttons")), macro_index + 1),
-            binds_string.empty() ? FSUI_CSTR("No Buttons Selected") : binds_string.c_str()))
+            nullptr, pretty_binds_string.empty() ? FSUI_CSTR("-") : pretty_binds_string.c_str(), true,
+            LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
       {
         std::vector<std::string_view> buttons_split(StringUtil::SplitString(binds_string, '&', true));
         ImGuiFullscreen::ChoiceDialogOptions options;
@@ -3476,10 +3497,10 @@ void FullscreenUI::DrawControllerSettingsPage()
       s32 frequency = bsi->GetIntValue(section.c_str(), freq_key.c_str(), 0);
       SmallString freq_summary;
       if (frequency == 0)
-        freq_summary = FSUI_VSTR("Macro will not auto-toggle.");
+        freq_summary = FSUI_VSTR("Disabled");
       else
-        freq_summary.fmt(FSUI_FSTR("Macro will toggle every {} frames."), frequency);
-      if (MenuButton(freq_title, freq_summary))
+        freq_summary.fmt(FSUI_FSTR("{} Frames"), frequency);
+      if (MenuButtonWithValue(freq_title, nullptr, freq_summary, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
         ImGui::OpenPopup(freq_title);
 
       ImGui::SetNextWindowSize(LayoutScale(500.0f, 180.0f));
@@ -6727,6 +6748,7 @@ void FullscreenUI::ProgressCallback::SetCancelled()
 #if 0
 // TRANSLATION-STRING-AREA-BEGIN
 TRANSLATE_NOOP("FullscreenUI", "${title}: Title of the game.\n${filetitle}: Name component of the game's filename.\n${serial}: Serial of the game.");
+TRANSLATE_NOOP("FullscreenUI", "-");
 TRANSLATE_NOOP("FullscreenUI", "1 Frame");
 TRANSLATE_NOOP("FullscreenUI", "10 Frames");
 TRANSLATE_NOOP("FullscreenUI", "100% [60 FPS (NTSC) / 50 FPS (PAL)]");
@@ -7061,7 +7083,6 @@ TRANSLATE_NOOP("FullscreenUI", "Logs messages to duckstation.log in the user dir
 TRANSLATE_NOOP("FullscreenUI", "Logs messages to the console window.");
 TRANSLATE_NOOP("FullscreenUI", "Logs messages to the debug console where supported.");
 TRANSLATE_NOOP("FullscreenUI", "Logs out of RetroAchievements.");
-TRANSLATE_NOOP("FullscreenUI", "Macro will toggle every {} frames.");
 TRANSLATE_NOOP("FullscreenUI", "Macro {} Buttons");
 TRANSLATE_NOOP("FullscreenUI", "Macro {} Frequency");
 TRANSLATE_NOOP("FullscreenUI", "Macro {} Trigger");
@@ -7081,7 +7102,6 @@ TRANSLATE_NOOP("FullscreenUI", "Mute All Sound");
 TRANSLATE_NOOP("FullscreenUI", "Mute CD Audio");
 TRANSLATE_NOOP("FullscreenUI", "No");
 TRANSLATE_NOOP("FullscreenUI", "No Binding");
-TRANSLATE_NOOP("FullscreenUI", "No Buttons Selected");
 TRANSLATE_NOOP("FullscreenUI", "No Game Selected");
 TRANSLATE_NOOP("FullscreenUI", "No cheats found for {}.");
 TRANSLATE_NOOP("FullscreenUI", "No input profiles available.");
@@ -7321,6 +7341,7 @@ TRANSLATE_NOOP("FullscreenUI", "Writes textures which can be replaced to the dum
 TRANSLATE_NOOP("FullscreenUI", "Yes");
 TRANSLATE_NOOP("FullscreenUI", "\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.");
 TRANSLATE_NOOP("FullscreenUI", "\"PlayStation\" and \"PSX\" are registered trademarks of Sony Interactive Entertainment Europe Limited. This software is not affiliated in any way with Sony Interactive Entertainment.");
+TRANSLATE_NOOP("FullscreenUI", "{} Frames");
 TRANSLATE_NOOP("FullscreenUI", "{} deleted.");
 TRANSLATE_NOOP("FullscreenUI", "{} does not exist.");
 TRANSLATE_NOOP("FullscreenUI", "{} is not a valid disc image.");

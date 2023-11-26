@@ -48,7 +48,8 @@ public:
 
   std::optional<InputBindingKey> ParseKeyString(const std::string_view& device,
                                                 const std::string_view& binding) override;
-  std::string ConvertKeyToString(InputBindingKey key) override;
+  TinyString ConvertKeyToString(InputBindingKey key) override;
+  TinyString ConvertKeyToIcon(InputBindingKey key) override;
 
 private:
   template<typename T>
