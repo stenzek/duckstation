@@ -1,10 +1,13 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "qtutils.h"
+
 #include "common/string_util.h"
+
 #include "fmt/format.h"
 #include "util/input_manager.h"
+
 #include <QtGui/QKeyEvent>
 
 struct KeyCodeName
@@ -454,7 +457,7 @@ static constexpr KeyCodeName s_qt_key_names[] = {{Qt::Key_Escape, "Escape"},
 
 std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::string_view& str)
 {
-  std::string compare_name(str);
+  std::string_view compare_name = str;
   u32 modifier_bits = 0;
   if (StringUtil::StartsWith(compare_name, "Numpad"))
   {

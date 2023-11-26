@@ -15,6 +15,7 @@
 static const Controller::ControllerInfo s_none_info = {ControllerType::None,
                                                        "None",
                                                        TRANSLATE_NOOP("ControllerType", "Not Connected"),
+                                                       nullptr,
                                                        {},
                                                        {},
                                                        Controller::VibrationCapabilities::NoVibration};

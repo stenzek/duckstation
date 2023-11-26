@@ -14,6 +14,8 @@
 #include "common/path.h"
 #include "common/string_util.h"
 
+#include "IconsPromptFont.h"
+
 #include <array>
 
 #ifdef _DEBUG
@@ -261,25 +263,25 @@ std::unique_ptr<GunCon> GunCon::Create(u32 index)
 }
 
 static const Controller::ControllerBindingInfo s_binding_info[] = {
-#define BUTTON(name, display_name, binding, genb)                                                                      \
+#define BUTTON(name, display_name, icon_name, binding, genb)                                                           \
   {                                                                                                                    \
-    name, display_name, static_cast<u32>(binding), InputBindingInfo::Type::Button, genb                                \
+    name, display_name, icon_name, static_cast<u32>(binding), InputBindingInfo::Type::Button, genb                     \
   }
-#define HALFAXIS(name, display_name, binding, genb)                                                                    \
+#define HALFAXIS(name, display_name, icon_name, binding, genb)                                                         \
   {                                                                                                                    \
-    name, display_name, static_cast<u32>(binding), InputBindingInfo::Type::HalfAxis, genb                              \
+    name, display_name, icon_name, static_cast<u32>(binding), InputBindingInfo::Type::HalfAxis, genb                   \
   }
 
   // clang-format off
-  BUTTON("Trigger", TRANSLATE_NOOP("GunCon", "Trigger"), GunCon::Binding::Trigger, GenericInputBinding::R2),
-  BUTTON("ShootOffscreen", TRANSLATE_NOOP("GunCon", "Shoot Offscreen"), GunCon::Binding::ShootOffscreen, GenericInputBinding::L2),
-  BUTTON("A", TRANSLATE_NOOP("GunCon", "A"), GunCon::Binding::A, GenericInputBinding::Cross),
-  BUTTON("B", TRANSLATE_NOOP("GunCon", "B"), GunCon::Binding::B, GenericInputBinding::Circle),
+  BUTTON("Trigger", TRANSLATE_NOOP("GunCon", "Trigger"), nullptr, GunCon::Binding::Trigger, GenericInputBinding::R2),
+  BUTTON("ShootOffscreen", TRANSLATE_NOOP("GunCon", "Shoot Offscreen"), nullptr, GunCon::Binding::ShootOffscreen, GenericInputBinding::L2),
+  BUTTON("A", TRANSLATE_NOOP("GunCon", "A"), ICON_PF_BUTTON_A, GunCon::Binding::A, GenericInputBinding::Cross),
+  BUTTON("B", TRANSLATE_NOOP("GunCon", "B"), ICON_PF_BUTTON_B, GunCon::Binding::B, GenericInputBinding::Circle),
 
-  HALFAXIS("RelativeLeft", TRANSLATE_NOOP("GunCon", "Relative Left"), GunCon::Binding::RelativeLeft, GenericInputBinding::Unknown),
-  HALFAXIS("RelativeRight", TRANSLATE_NOOP("GunCon", "Relative Right"), GunCon::Binding::RelativeRight, GenericInputBinding::Unknown),
-  HALFAXIS("RelativeUp", TRANSLATE_NOOP("GunCon", "Relative Up"), GunCon::Binding::RelativeUp, GenericInputBinding::Unknown),
-  HALFAXIS("RelativeDown", TRANSLATE_NOOP("GunCon", "Relative Down"),  GunCon::Binding::RelativeDown, GenericInputBinding::Unknown),
+  HALFAXIS("RelativeLeft", TRANSLATE_NOOP("GunCon", "Relative Left"), ICON_PF_ANALOG_LEFT, GunCon::Binding::RelativeLeft, GenericInputBinding::Unknown),
+  HALFAXIS("RelativeRight", TRANSLATE_NOOP("GunCon", "Relative Right"), ICON_PF_ANALOG_RIGHT, GunCon::Binding::RelativeRight, GenericInputBinding::Unknown),
+  HALFAXIS("RelativeUp", TRANSLATE_NOOP("GunCon", "Relative Up"), ICON_PF_ANALOG_UP, GunCon::Binding::RelativeUp, GenericInputBinding::Unknown),
+  HALFAXIS("RelativeDown", TRANSLATE_NOOP("GunCon", "Relative Down"), ICON_PF_ANALOG_DOWN, GunCon::Binding::RelativeDown, GenericInputBinding::Unknown),
 // clang-format on
 
 #undef BUTTON
@@ -301,7 +303,7 @@ static const SettingInfo s_settings[] = {
    "%.0f%%", nullptr, 100.0f}};
 
 const Controller::ControllerInfo GunCon::INFO = {
-  ControllerType::GunCon, "GunCon",   TRANSLATE_NOOP("ControllerType", "GunCon"),
+  ControllerType::GunCon, "GunCon",   TRANSLATE_NOOP("ControllerType", "GunCon"),    nullptr,
   s_binding_info,         s_settings, Controller::VibrationCapabilities::NoVibration};
 
 void GunCon::LoadSettings(SettingsInterface& si, const char* section)

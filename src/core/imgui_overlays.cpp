@@ -581,7 +581,7 @@ void ImGuiManager::DrawInputsOverlay()
   const float shadow_offset = 1.0f * scale;
   const float margin = 10.0f * scale;
   const float spacing = 5.0f * scale;
-  ImFont* font = ImGuiManager::GetFixedFont();
+  ImFont* font = ImGuiManager::GetStandardFont();
 
   static constexpr u32 text_color = IM_COL32(0xff, 0xff, 0xff, 255);
   static constexpr u32 shadow_color = IM_COL32(0x00, 0x00, 0x00, 100);
@@ -614,7 +614,10 @@ void ImGuiManager::DrawInputsOverlay()
     if (!cinfo)
       continue;
 
-    text.fmt("P{} |", port + 1u);
+    if (cinfo->icon_name)
+      text.append_fmt("{} {} |", cinfo->icon_name, port + 1u);
+    else
+      text.append_fmt("{} |", port + 1u);
 
     for (const Controller::ControllerBindingInfo& bi : cinfo->bindings)
     {
@@ -626,9 +629,9 @@ void ImGuiManager::DrawInputsOverlay()
           // axes are always shown
           const float value = controller->GetBindState(bi.bind_index);
           if (value >= (254.0f / 255.0f))
-            text.append_fmt(" {}", bi.name);
+            text.append_fmt(" {}", bi.icon_name ? bi.icon_name : bi.name);
           else if (value > (1.0f / 255.0f))
-            text.append_fmt(" {}: {:.2f}", bi.name, value);
+            text.append_fmt(" {}: {:.2f}", bi.icon_name ? bi.icon_name : bi.name, value);
         }
         break;
 
@@ -637,7 +640,7 @@ void ImGuiManager::DrawInputsOverlay()
           // buttons only shown when active
           const float value = controller->GetBindState(bi.bind_index);
           if (value >= 0.5f)
-            text.append_fmt(" {}", bi.name);
+            text.append_fmt(" {}", bi.icon_name ? bi.icon_name : bi.name);
         }
         break;
 

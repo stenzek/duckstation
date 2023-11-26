@@ -11,6 +11,8 @@
 #include "common/assert.h"
 #include "common/log.h"
 
+#include "IconsPromptFont.h"
+
 #include <array>
 
 Log_SetChannel(PlayStationMouse);
@@ -193,15 +195,15 @@ std::unique_ptr<PlayStationMouse> PlayStationMouse::Create(u32 index)
 }
 
 static const Controller::ControllerBindingInfo s_binding_info[] = {
-#define BUTTON(name, display_name, button, genb)                                                                       \
+#define BUTTON(name, display_name, icon_name, button, genb)                                                            \
   {                                                                                                                    \
-    name, display_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb                                 \
+    name, display_name, icon_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb                      \
   }
 
   // clang-format off
-  { "Pointer", TRANSLATE_NOOP("PlaystationMouse", "Pointer"), static_cast<u32>(PlayStationMouse::Binding::PointerX), InputBindingInfo::Type::Pointer, GenericInputBinding::Unknown },
-  BUTTON("Left", TRANSLATE_NOOP("PlayStationMouse", "Left Button"), PlayStationMouse::Binding::Left, GenericInputBinding::Cross),
-  BUTTON("Right", TRANSLATE_NOOP("PlayStationMouse", "Right Button"), PlayStationMouse::Binding::Right, GenericInputBinding::Circle),
+  { "Pointer", TRANSLATE_NOOP("PlaystationMouse", "Pointer"), ICON_PF_MOUSE_ANY, static_cast<u32>(PlayStationMouse::Binding::PointerX), InputBindingInfo::Type::Pointer, GenericInputBinding::Unknown },
+  BUTTON("Left", TRANSLATE_NOOP("PlayStationMouse", "Left Button"), ICON_PF_MOUSE_BUTTON_1, PlayStationMouse::Binding::Left, GenericInputBinding::Cross),
+  BUTTON("Right", TRANSLATE_NOOP("PlayStationMouse", "Right Button"), ICON_PF_MOUSE_BUTTON_2, PlayStationMouse::Binding::Right, GenericInputBinding::Circle),
 // clang-format on
 
 #undef BUTTON
@@ -218,6 +220,7 @@ static const SettingInfo s_settings[] = {
 const Controller::ControllerInfo PlayStationMouse::INFO = {ControllerType::PlayStationMouse,
                                                            "PlayStationMouse",
                                                            TRANSLATE_NOOP("ControllerType", "PlayStation Mouse"),
+                                                           ICON_PF_MOUSE,
                                                            s_binding_info,
                                                            s_settings,
                                                            Controller::VibrationCapabilities::NoVibration};

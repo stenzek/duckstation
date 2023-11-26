@@ -390,7 +390,8 @@ static void BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::Type typ
                               const std::string_view& key, const std::string_view& display_name);
 static void DrawInputBindingWindow();
 static void DrawInputBindingButton(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section,
-                                   const char* name, const char* display_name, bool show_type = true);
+                                   const char* name, const char* display_name, const char* icon_name,
+                                   bool show_type = true);
 static void ClearInputBindingVariables();
 static void StartAutomaticBinding(u32 port);
 
@@ -1342,7 +1343,8 @@ std::string FullscreenUI::GetEffectiveStringSetting(SettingsInterface* bsi, cons
 }
 
 void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section,
-                                          const char* name, const char* display_name, bool show_type)
+                                          const char* name, const char* display_name, const char* icon_name,
+                                          bool show_type)
 {
   if (type == InputBindingInfo::Type::Pointer)
     return;
@@ -1363,24 +1365,31 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
 
   if (show_type)
   {
-    switch (type)
+    if (icon_name)
     {
-      case InputBindingInfo::Type::Button:
-        title.fmt(ICON_FA_DOT_CIRCLE "{}", display_name);
-        break;
-      case InputBindingInfo::Type::Axis:
-      case InputBindingInfo::Type::HalfAxis:
-        title.fmt(ICON_FA_BULLSEYE "{}", display_name);
-        break;
-      case InputBindingInfo::Type::Motor:
-        title.fmt(ICON_FA_BELL "{}", display_name);
-        break;
-      case InputBindingInfo::Type::Macro:
-        title.fmt(ICON_FA_PIZZA_SLICE "{}", display_name);
-        break;
-      default:
-        title = display_name;
-        break;
+      title.fmt("{} {}", icon_name, display_name);
+    }
+    else
+    {
+      switch (type)
+      {
+        case InputBindingInfo::Type::Button:
+          title.fmt(ICON_FA_DOT_CIRCLE "{}", display_name);
+          break;
+        case InputBindingInfo::Type::Axis:
+        case InputBindingInfo::Type::HalfAxis:
+          title.fmt(ICON_FA_BULLSEYE "{}", display_name);
+          break;
+        case InputBindingInfo::Type::Motor:
+          title.fmt(ICON_FA_BELL "{}", display_name);
+          break;
+        case InputBindingInfo::Type::Macro:
+          title.fmt(ICON_FA_PIZZA_SLICE "{}", display_name);
+          break;
+        default:
+          title = display_name;
+          break;
+      }
     }
   }
 
@@ -3354,7 +3363,7 @@ void FullscreenUI::DrawControllerSettingsPage()
     for (const Controller::ControllerBindingInfo& bi : ci->bindings)
     {
       DrawInputBindingButton(bsi, bi.type, section.c_str(), bi.name,
-                             Host::TranslateToCString(ci->name, bi.display_name), true);
+                             Host::TranslateToCString(ci->name, bi.display_name), bi.icon_name, true);
     }
 
     if (mtap_enabled[mtap_port])
@@ -3372,7 +3381,7 @@ void FullscreenUI::DrawControllerSettingsPage()
     {
       DrawInputBindingButton(bsi, InputBindingInfo::Type::Macro, section.c_str(),
                              TinyString::from_fmt("Macro{}", macro_index + 1),
-                             TinyString::from_fmt(FSUI_FSTR("Macro {} Trigger"), macro_index + 1));
+                             TinyString::from_fmt(FSUI_FSTR("Macro {} Trigger"), macro_index + 1), nullptr);
 
       std::string binds_string(
         bsi->GetStringValue(section.c_str(), fmt::format("Macro{}Binds", macro_index + 1).c_str()));
@@ -3548,7 +3557,7 @@ void FullscreenUI::DrawHotkeySettingsPage()
     }
 
     DrawInputBindingButton(bsi, InputBindingInfo::Type::Button, "Hotkeys", hotkey->name,
-                           Host::TranslateToCString("Hotkeys", hotkey->display_name), false);
+                           Host::TranslateToCString("Hotkeys", hotkey->display_name), nullptr, false);
   }
 
   EndMenuButtons();

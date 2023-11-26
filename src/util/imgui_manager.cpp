@@ -83,7 +83,8 @@ static ImFont* s_large_font;
 
 static std::vector<u8> s_standard_font_data;
 static std::vector<u8> s_fixed_font_data;
-static std::vector<u8> s_icon_font_data;
+static std::vector<u8> s_icon_fa_font_data;
+static std::vector<u8> s_icon_pf_font_data;
 
 static float s_window_width;
 static float s_window_height;
@@ -479,13 +480,22 @@ bool ImGuiManager::LoadFontData()
     s_fixed_font_data = std::move(font_data.value());
   }
 
-  if (s_icon_font_data.empty())
+  if (s_icon_fa_font_data.empty())
   {
     std::optional<std::vector<u8>> font_data = Host::ReadResourceFile("fonts/fa-solid-900.ttf");
     if (!font_data.has_value())
       return false;
 
-    s_icon_font_data = std::move(font_data.value());
+    s_icon_fa_font_data = std::move(font_data.value());
+  }
+
+  if (s_icon_pf_font_data.empty())
+  {
+    std::optional<std::vector<u8>> font_data = Host::ReadResourceFile("fonts/promptfont.otf");
+    if (!font_data.has_value())
+      return false;
+
+    s_icon_pf_font_data = std::move(font_data.value());
   }
 
   return true;
@@ -544,16 +554,39 @@ bool ImGuiManager::AddIconFonts(float size)
     0xf545, 0xf545, 0xf547, 0xf548, 0xf552, 0xf552, 0xf57a, 0xf57a, 0xf5a2, 0xf5a2, 0xf5aa, 0xf5aa, 0xf5e7, 0xf5e7,
     0xf65d, 0xf65e, 0xf6a9, 0xf6a9, 0xf7c2, 0xf7c2, 0xf807, 0xf807, 0xf815, 0xf815, 0xf818, 0xf818, 0xf84c, 0xf84c,
     0xf8cc, 0xf8cc, 0x0,    0x0};
+  static constexpr ImWchar range_pf[] = { 0x2196,0x2199,0x219e,0x21a1,0x21b0,0x21b3,0x21ba,0x21c3,0x21c7,0x21ca,0x21d0,0x21d4,0x21e0,0x21e3,0x21ed,0x21ee,0x21f7,0x21f8,0x220b,0x220b,0x227a,0x227d,0x23ce,0x23ce,0x23f4,0x23f7,0x2427,0x243a,0x243c,0x243c,0x243e,0x243e,0x2460,0x246b,0x24f5,0x24fd,0x24ff,0x24ff,0x278a,0x278b,0x27fc,0x27fc,0xff21,0xff3a,0x0,0x0 };
 
-  ImFontConfig cfg;
-  cfg.MergeMode = true;
-  cfg.PixelSnapH = true;
-  cfg.GlyphMinAdvanceX = size;
-  cfg.GlyphMaxAdvanceX = size;
-  cfg.FontDataOwnedByAtlas = false;
+  {
+    ImFontConfig cfg;
+    cfg.MergeMode = true;
+    cfg.PixelSnapH = true;
+    cfg.GlyphMinAdvanceX = size;
+    cfg.GlyphMaxAdvanceX = size;
+    cfg.FontDataOwnedByAtlas = false;
 
-  return (ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_icon_font_data.data(), static_cast<int>(s_icon_font_data.size()),
-                                                     size * 0.75f, &cfg, range_fa) != nullptr);
+    if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
+          s_icon_fa_font_data.data(), static_cast<int>(s_icon_fa_font_data.size()), size * 0.75f, &cfg, range_fa))
+    {
+      return false;
+    }
+  }
+
+  {
+    ImFontConfig cfg;
+    cfg.MergeMode = true;
+    cfg.PixelSnapH = true;
+    cfg.GlyphMinAdvanceX = size;
+    cfg.GlyphMaxAdvanceX = size;
+    cfg.FontDataOwnedByAtlas = false;
+
+    if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
+          s_icon_pf_font_data.data(), static_cast<int>(s_icon_pf_font_data.size()), size * 1.2f, &cfg, range_pf))
+    {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 bool ImGuiManager::AddImGuiFonts(bool fullscreen_fonts)

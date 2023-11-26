@@ -36,6 +36,7 @@ public:
   {
     const char* name;
     const char* display_name;
+    const char* icon_name;
     u32 bind_index;
     InputBindingInfo::Type type;
     GenericInputBinding generic_mapping;
@@ -46,6 +47,7 @@ public:
     ControllerType type;
     const char* name;
     const char* display_name;
+    const char* icon_name;
     std::span<const ControllerBindingInfo> bindings;
     std::span<const SettingInfo> settings;
     VibrationCapabilities vibration_caps;
