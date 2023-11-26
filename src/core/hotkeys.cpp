@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
+#include "achievements.h"
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "fullscreen_ui.h"
@@ -100,11 +101,41 @@ static void HotkeySaveStateSlot(bool global, s32 slot)
   System::SaveState(path.c_str(), g_settings.create_save_state_backups);
 }
 
+#ifndef __ANDROID__
+
+static bool CanPause()
+{
+  static constexpr const float PAUSE_INTERVAL = 3.0f;
+  static Common::Timer::Value s_last_pause_time = 0;
+
+  if (!Achievements::IsHardcoreModeActive() || System::IsPaused())
+    return true;
+
+  const Common::Timer::Value time = Common::Timer::GetCurrentValue();
+  const float delta = static_cast<float>(Common::Timer::ConvertValueToSeconds(time - s_last_pause_time));
+  if (delta < PAUSE_INTERVAL)
+  {
+    Host::AddIconOSDMessage(
+      "PauseCooldown", ICON_FA_CLOCK,
+      fmt::format(TRANSLATE_FS("Hotkeys", "You cannot pause until another {:.1f} seconds have passed."),
+                  PAUSE_INTERVAL - delta),
+      Host::OSD_QUICK_DURATION);
+    return false;
+  }
+
+  Host::RemoveKeyedOSDMessage("PauseCooldown");
+  s_last_pause_time = time;
+
+  return true;
+}
+
+#endif
+
 BEGIN_HOTKEY_LIST(g_common_hotkeys)
 #ifndef __ANDROID__
 DEFINE_HOTKEY("OpenPauseMenu", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_NOOP("Hotkeys", "Open Pause Menu"),
               [](s32 pressed) {
-                if (!pressed)
+                if (!pressed && CanPause())
                   FullscreenUI::OpenPauseMenu();
               })
 #endif
@@ -143,13 +174,13 @@ DEFINE_HOTKEY("ToggleFullscreen", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLAT
 
 DEFINE_HOTKEY("TogglePause", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_NOOP("Hotkeys", "Toggle Pause"),
               [](s32 pressed) {
-                if (!pressed)
+                if (!pressed && CanPause())
                   System::PauseSystem(!System::IsPaused());
               })
 
 DEFINE_HOTKEY("PowerOff", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_NOOP("Hotkeys", "Power Off System"),
               [](s32 pressed) {
-                if (!pressed)
+                if (!pressed && CanPause())
                   Host::RequestSystemShutdown(true, g_settings.save_state_on_exit);
               })
 #endif
@@ -160,19 +191,19 @@ DEFINE_HOTKEY("Screenshot", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_NOOP
                   System::SaveScreenshot();
               })
 
-#if !defined(__ANDROID__)
+#ifndef __ANDROID__
 DEFINE_HOTKEY("OpenAchievements", TRANSLATE_NOOP("Hotkeys", "General"),
               TRANSLATE_NOOP("Hotkeys", "Open Achievement List"), [](s32 pressed) {
-                if (!pressed)
+                if (!pressed && CanPause())
                   FullscreenUI::OpenAchievementsWindow();
               })
 
 DEFINE_HOTKEY("OpenLeaderboards", TRANSLATE_NOOP("Hotkeys", "General"),
               TRANSLATE_NOOP("Hotkeys", "Open Leaderboard List"), [](s32 pressed) {
-                if (!pressed)
+                if (!pressed && CanPause())
                   FullscreenUI::OpenLeaderboardsWindow();
               })
-#endif // !defined(__ANDROID__)
+#endif
 
 DEFINE_HOTKEY("Reset", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Reset System"), [](s32 pressed) {
   if (!pressed)
