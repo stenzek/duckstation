@@ -1352,16 +1352,17 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
   TinyString title;
   title.fmt("{}/{}", section, name);
 
+  std::string value = bsi->GetStringValue(section, name);
+  const bool oneline = (std::count_if(value.begin(), value.end(), [](char ch) { return (ch == '&'); }) <= 1);
+
   ImRect bb;
   bool visible, hovered, clicked;
-  clicked =
-    MenuButtonFrame(title, true, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, &visible, &hovered, &bb.Min, &bb.Max);
+  clicked = MenuButtonFrame(title, true,
+                            oneline ? ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY :
+                                      ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
+                            &visible, &hovered, &bb.Min, &bb.Max);
   if (!visible)
     return;
-
-  const float midpoint = bb.Min.y + g_large_font->FontSize + LayoutScale(4.0f);
-  const ImRect title_bb(bb.Min, ImVec2(bb.Max.x, midpoint));
-  const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), bb.Max);
 
   if (show_type)
   {
@@ -1393,16 +1394,37 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
     }
   }
 
-  ImGui::PushFont(g_large_font);
-  ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, show_type ? title.c_str() : display_name, nullptr, nullptr,
-                           ImVec2(0.0f, 0.0f), &title_bb);
-  ImGui::PopFont();
+  const float midpoint = bb.Min.y + g_large_font->FontSize + LayoutScale(4.0f);
 
-  const std::string value(bsi->GetStringValue(section, name));
-  ImGui::PushFont(g_medium_font);
-  ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, value.empty() ? FSUI_CSTR("No Binding") : value.c_str(),
-                           nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
-  ImGui::PopFont();
+  if (oneline)
+  {
+    ImGui::PushFont(g_large_font);
+
+    const ImVec2 value_size(ImGui::CalcTextSize(value.empty() ? FSUI_CSTR("-") : value.c_str(), nullptr));
+    const float text_end = bb.Max.x - value_size.x;
+    const ImRect title_bb(bb.Min, ImVec2(text_end, midpoint));
+
+    ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, show_type ? title.c_str() : display_name, nullptr, nullptr,
+                             ImVec2(0.0f, 0.0f), &title_bb);
+    ImGui::RenderTextClipped(bb.Min, bb.Max, value.empty() ? FSUI_CSTR("-") : value.c_str(), nullptr,
+                             &value_size, ImVec2(1.0f, 0.5f), &bb);
+    ImGui::PopFont();
+  }
+  else
+  {
+    const ImRect title_bb(bb.Min, ImVec2(bb.Max.x, midpoint));
+    const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), bb.Max);
+
+    ImGui::PushFont(g_large_font);
+    ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, show_type ? title.c_str() : display_name, nullptr, nullptr,
+                             ImVec2(0.0f, 0.0f), &title_bb);
+    ImGui::PopFont();
+
+    ImGui::PushFont(g_medium_font);
+    ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, value.empty() ? FSUI_CSTR("No Binding") : value.c_str(),
+                             nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
+    ImGui::PopFont();
+  }
 
   if (clicked)
   {
