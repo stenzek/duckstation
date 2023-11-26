@@ -59,7 +59,7 @@ ALWAYS_INLINE_RELEASE static u32 GetBoxDownsampleScale(u32 resolution_scale)
   return scale;
 }
 
-ALWAYS_INLINE static bool ShouldUseUVLimits()
+ALWAYS_INLINE static bool ShouldClampUVs()
 {
   // We only need UV limits if PGXP is enabled, or texture filtering is enabled.
   return g_settings.gpu_pgxp_enable || g_settings.gpu_texture_filter != GPUTextureFilter::Nearest;
@@ -214,7 +214,8 @@ bool GPU_HW::Initialize()
   m_true_color = g_settings.gpu_true_color;
   m_scaled_dithering = g_settings.gpu_scaled_dithering;
   m_texture_filtering = g_settings.gpu_texture_filter;
-  m_using_uv_limits = ShouldUseUVLimits();
+  m_clamp_uvs = ShouldClampUVs();
+  m_compute_uv_range = m_clamp_uvs;
   m_chroma_smoothing = g_settings.gpu_24bit_chroma_smoothing;
   m_downsample_mode = GetDownsampleMode(m_resolution_scale);
   m_wireframe_mode = g_settings.gpu_wireframe_mode;
@@ -334,7 +335,7 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
   const GPUDownsampleMode downsample_mode = GetDownsampleMode(resolution_scale);
   const GPUWireframeMode wireframe_mode =
     features.geometry_shaders ? g_settings.gpu_wireframe_mode : GPUWireframeMode::Disabled;
-  const bool use_uv_limits = ShouldUseUVLimits();
+  const bool clamp_uvs = ShouldClampUVs();
   const bool disable_color_perspective = features.noperspective_interpolation && ShouldDisableColorPerspective();
 
   // TODO: Use old_settings
@@ -346,7 +347,7 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
     (m_resolution_scale != resolution_scale || m_multisamples != multisamples ||
      m_true_color != g_settings.gpu_true_color || m_per_sample_shading != per_sample_shading ||
      m_scaled_dithering != g_settings.gpu_scaled_dithering || m_texture_filtering != g_settings.gpu_texture_filter ||
-     m_using_uv_limits != use_uv_limits || m_chroma_smoothing != g_settings.gpu_24bit_chroma_smoothing ||
+     m_clamp_uvs != clamp_uvs || m_chroma_smoothing != g_settings.gpu_24bit_chroma_smoothing ||
      m_downsample_mode != downsample_mode ||
      (m_downsample_mode == GPUDownsampleMode::Box &&
       g_settings.gpu_downsample_scale != old_settings.gpu_downsample_scale) ||
@@ -396,7 +397,8 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
   m_true_color = g_settings.gpu_true_color;
   m_scaled_dithering = g_settings.gpu_scaled_dithering;
   m_texture_filtering = g_settings.gpu_texture_filter;
-  m_using_uv_limits = use_uv_limits;
+  m_clamp_uvs = clamp_uvs;
+  m_compute_uv_range = m_clamp_uvs;
   m_chroma_smoothing = g_settings.gpu_24bit_chroma_smoothing;
   m_downsample_mode = downsample_mode;
   m_wireframe_mode = wireframe_mode;
@@ -604,7 +606,7 @@ void GPU_HW::PrintSettingsToLog()
               (!m_true_color && m_scaled_dithering) ? " (Scaled)" : "");
   Log_InfoFmt("Texture Filtering: {}", Settings::GetTextureFilterDisplayName(m_texture_filtering));
   Log_InfoFmt("Dual-source blending: {}", m_supports_dual_source_blend ? "Supported" : "Not supported");
-  Log_InfoFmt("Using UV limits: {}", m_using_uv_limits ? "YES" : "NO");
+  Log_InfoFmt("Clamping UVs: {}", m_clamp_uvs ? "YES" : "NO");
   Log_InfoFmt("Depth buffer: {}", m_pgxp_depth_buffer ? "YES" : "NO");
   Log_InfoFmt("Downsampling: {}", Settings::GetDownsampleModeDisplayName(m_downsample_mode));
   Log_InfoFmt("Wireframe rendering: {}", Settings::GetGPUWireframeModeDisplayName(m_wireframe_mode));
@@ -738,9 +740,8 @@ bool GPU_HW::CompilePipelines()
 {
   const GPUDevice::Features features = g_gpu_device->GetFeatures();
   GPU_HW_ShaderGen shadergen(g_gpu_device->GetRenderAPI(), m_resolution_scale, m_multisamples, m_per_sample_shading,
-                             m_true_color, m_scaled_dithering, m_texture_filtering, m_using_uv_limits,
-                             m_pgxp_depth_buffer, m_disable_color_perspective, m_supports_dual_source_blend,
-                             m_supports_framebuffer_fetch);
+                             m_true_color, m_scaled_dithering, m_texture_filtering, m_clamp_uvs, m_pgxp_depth_buffer,
+                             m_disable_color_perspective, m_supports_dual_source_blend, m_supports_framebuffer_fetch);
 
   ShaderCompileProgressTracker progress("Compiling Pipelines", 2 + (4 * 5 * 9 * 2 * 2) + (3 * 4 * 5 * 9 * 2 * 2) + 1 +
                                                                  2 + (2 * 2) + 2 + 1 + 1 + (2 * 3) + 1);
@@ -872,10 +873,10 @@ bool GPU_HW::CompilePipelines()
 
               plconfig.input_layout.vertex_attributes =
                 textured ?
-                  (m_using_uv_limits ? std::span<const GPUPipeline::VertexAttribute>(
-                                         vertex_attributes, NUM_BATCH_TEXTURED_LIMITS_VERTEX_ATTRIBUTES) :
-                                       std::span<const GPUPipeline::VertexAttribute>(
-                                         vertex_attributes, NUM_BATCH_TEXTURED_VERTEX_ATTRIBUTES)) :
+                  (m_clamp_uvs ? std::span<const GPUPipeline::VertexAttribute>(
+                                   vertex_attributes, NUM_BATCH_TEXTURED_LIMITS_VERTEX_ATTRIBUTES) :
+                                 std::span<const GPUPipeline::VertexAttribute>(vertex_attributes,
+                                                                               NUM_BATCH_TEXTURED_VERTEX_ATTRIBUTES)) :
                   std::span<const GPUPipeline::VertexAttribute>(vertex_attributes, NUM_BATCH_VERTEX_ATTRIBUTES);
 
               plconfig.vertex_shader = batch_vertex_shaders[BoolToUInt8(textured)].get();
@@ -1273,6 +1274,10 @@ void GPU_HW::UpdateVRAMReadTexture()
 {
   GL_SCOPE("UpdateVRAMReadTexture()");
 
+  if (m_texpage_dirty)
+    GL_INS("Texpage is no longer dirty");
+  m_texpage_dirty = false;
+
   const auto scaled_rect = m_vram_dirty_rect * m_resolution_scale;
   if (m_vram_texture->IsMultisampled())
   {
@@ -1464,21 +1469,23 @@ void GPU_HW::HandleFlippedQuadTextureCoordinates(BatchVertex* vertices)
   }
 }
 
-void GPU_HW::ComputePolygonUVLimits(BatchVertex* vertices, u32 num_vertices)
+void GPU_HW::ComputePolygonUVLimits(u32 texpage, BatchVertex* vertices, u32 num_vertices)
 {
-  u16 min_u = vertices[0].u, max_u = vertices[0].u, min_v = vertices[0].v, max_v = vertices[0].v;
+  u32 min_u = vertices[0].u, max_u = vertices[0].u, min_v = vertices[0].v, max_v = vertices[0].v;
   for (u32 i = 1; i < num_vertices; i++)
   {
-    min_u = std::min<u16>(min_u, vertices[i].u);
-    max_u = std::max<u16>(max_u, vertices[i].u);
-    min_v = std::min<u16>(min_v, vertices[i].v);
-    max_v = std::max<u16>(max_v, vertices[i].v);
+    min_u = std::min<u32>(min_u, vertices[i].u);
+    max_u = std::max<u32>(max_u, vertices[i].u);
+    min_v = std::min<u32>(min_v, vertices[i].v);
+    max_v = std::max<u32>(max_v, vertices[i].v);
   }
 
   if (min_u != max_u)
     max_u--;
   if (min_v != max_v)
     max_v--;
+
+  CheckForTexPageOverlap(texpage, min_u, min_v, max_u, max_v);
 
   for (u32 i = 0; i < num_vertices; i++)
     vertices[i].SetUVLimits(min_u, max_u, min_v, max_v);
@@ -1689,8 +1696,8 @@ void GPU_HW::LoadVertices()
       if (rc.quad_polygon && m_resolution_scale > 1)
         HandleFlippedQuadTextureCoordinates(vertices.data());
 
-      if (m_using_uv_limits && textured)
-        ComputePolygonUVLimits(vertices.data(), num_vertices);
+      if (m_compute_uv_range && textured)
+        ComputePolygonUVLimits(texpage, vertices.data(), num_vertices);
 
       if (!IsDrawingAreaIsValid())
         return;
@@ -1847,6 +1854,8 @@ void GPU_HW::LoadVertices()
           const float quad_end_x = quad_start_x + static_cast<float>(quad_width);
           const u16 tex_right = tex_left + static_cast<u16>(quad_width);
           const u32 uv_limits = BatchVertex::PackUVLimits(tex_left, tex_right - 1, tex_top, tex_bottom - 1);
+
+          CheckForTexPageOverlap(texpage, tex_left, tex_top, tex_right - 1, tex_bottom - 1);
 
           AddNewVertex(quad_start_x, quad_start_y, depth, 1.0f, color, texpage, tex_left, tex_top, uv_limits);
           AddNewVertex(quad_end_x, quad_start_y, depth, 1.0f, color, texpage, tex_right, tex_top, uv_limits);
@@ -2074,6 +2083,44 @@ void GPU_HW::IncludeVRAMDirtyRectangle(const Common::Rectangle<u32>& rect)
        (m_draw_mode.mode_reg.IsUsingPalette() && m_draw_mode.GetTexturePaletteRectangle().Intersects(rect))))
   {
     m_draw_mode.SetTexturePageChanged();
+  }
+}
+
+ALWAYS_INLINE_RELEASE void GPU_HW::CheckForTexPageOverlap(u32 texpage, u32 min_u, u32 min_v, u32 max_u, u32 max_v)
+{
+  if (!m_texpage_dirty)
+    return;
+
+  static constexpr std::array<std::array<u8, 2>, 4> uv_shifts_adds = {{{2, 3}, {1, 1}, {0, 0}, {0, 0}}};
+
+  const u32 xoffs = (texpage & 0xFu) * 64u;
+  const u32 yoffs = ((texpage >> 4) & 1u) * 256u;
+  const u32 xshift = uv_shifts_adds[(texpage >> 7) & 2][0];
+  const u32 xadd = uv_shifts_adds[(texpage >> 7) & 2][1];
+
+  const u32 vram_min_u =
+    (((min_u & m_draw_mode.texture_window.and_x) | m_draw_mode.texture_window.or_x) >> xshift) + xoffs;
+  const u32 vram_max_u =
+    ((((max_u & m_draw_mode.texture_window.and_x) | m_draw_mode.texture_window.or_x) + xadd) >> xshift) + xoffs;
+  const u32 vram_min_v = ((min_v & m_draw_mode.texture_window.and_y) | m_draw_mode.texture_window.or_y) + yoffs;
+  const u32 vram_max_v = ((max_v & m_draw_mode.texture_window.and_y) | m_draw_mode.texture_window.or_y) + yoffs;
+
+  // Log_InfoFmt("{}: {},{} => {},{}", s_draw_number, vram_min_u, vram_min_v, vram_max_u, vram_max_v);
+
+  if (vram_min_u < m_current_uv_range.left || vram_min_v < m_current_uv_range.top ||
+      vram_max_u >= m_current_uv_range.right || vram_max_v >= m_current_uv_range.bottom)
+  {
+    m_current_uv_range.Include(vram_min_u, vram_max_u, vram_min_v, vram_max_v);
+
+    DebugAssert(m_vram_dirty_rect.Valid());
+    if (m_current_uv_range.Intersects(m_vram_dirty_rect))
+    {
+      GL_INS_FMT("Updating VRAM cache due to UV {{{},{} => {},{}}} intersection with dirty {{{},{} => {},{}}}",
+                 m_current_uv_range.left, m_current_uv_range.top, m_current_uv_range.right, m_current_uv_range.bottom,
+                 m_vram_dirty_rect.left, m_vram_dirty_rect.top, m_vram_dirty_rect.right, m_vram_dirty_rect.bottom);
+
+      UpdateVRAMReadTexture();
+    }
   }
 }
 
@@ -2515,17 +2562,30 @@ void GPU_HW::DispatchRenderCommand()
       }
 #endif
 
-      if (m_vram_dirty_rect.Valid() && (m_draw_mode.mode_reg.GetTexturePageRectangle().Intersects(m_vram_dirty_rect) ||
-                                        (m_draw_mode.mode_reg.IsUsingPalette() &&
-                                         m_draw_mode.GetTexturePaletteRectangle().Intersects(m_vram_dirty_rect))))
+      if (m_vram_dirty_rect.Valid() && m_draw_mode.mode_reg.IsUsingPalette() &&
+          m_draw_mode.GetTexturePaletteRectangle().Intersects(m_vram_dirty_rect))
       {
-        GL_INS("Invalidating VRAM read cache due to drawing area overlap");
-
-        // Log_DevPrint("Invalidating VRAM read cache due to drawing area overlap");
+        GL_INS("Palette in VRAM dirty area, flushing cache");
         if (!IsFlushed())
           FlushRender();
 
         UpdateVRAMReadTexture();
+      }
+
+      if (m_vram_dirty_rect.Valid() && m_draw_mode.mode_reg.GetTexturePageRectangle().Intersects(m_vram_dirty_rect))
+      {
+        GL_INS("Texpage is in dirty area, checking UV ranges");
+        m_compute_uv_range = true;
+        m_texpage_dirty = true;
+        m_current_uv_range.SetInvalid();
+      }
+      else
+      {
+        m_compute_uv_range = m_clamp_uvs;
+        if (m_texpage_dirty)
+          GL_INS("Texpage is no longer dirty");
+
+        m_texpage_dirty = false;
       }
     }
 

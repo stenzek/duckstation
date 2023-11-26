@@ -198,6 +198,7 @@ bool GPU::HandleNOPCommand()
 bool GPU::HandleClearCacheCommand()
 {
   Log_DebugPrintf("GP0 clear cache");
+  m_draw_mode.SetTexturePageChanged();
   m_fifo.RemoveOne();
   AddCommandTicks(1);
   EndCommand();

@@ -167,6 +167,9 @@ union GPUDrawModeReg
   // Bits 0..5 are returned in the GPU status register, latched at E1h/polygon draw time.
   static constexpr u32 GPUSTAT_MASK = 0b11111111111;
 
+  static constexpr std::array<u32, 4> texture_page_widths = {
+    {TEXTURE_PAGE_WIDTH / 4, TEXTURE_PAGE_WIDTH / 2, TEXTURE_PAGE_WIDTH, TEXTURE_PAGE_WIDTH}};
+
   u16 bits;
 
   BitField<u16, u8, 0, 4> texture_page_x_base;
@@ -188,8 +191,6 @@ union GPUDrawModeReg
   /// Returns a rectangle comprising the texture page area.
   ALWAYS_INLINE_RELEASE Common::Rectangle<u32> GetTexturePageRectangle() const
   {
-    static constexpr std::array<u32, 4> texture_page_widths = {
-      {TEXTURE_PAGE_WIDTH / 4, TEXTURE_PAGE_WIDTH / 2, TEXTURE_PAGE_WIDTH, TEXTURE_PAGE_WIDTH}};
     return Common::Rectangle<u32>::FromExtents(GetTexturePageBaseX(), GetTexturePageBaseY(),
                                                texture_page_widths[static_cast<u8>(texture_mode.GetValue())],
                                                TEXTURE_PAGE_HEIGHT);

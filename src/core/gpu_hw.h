@@ -151,6 +151,7 @@ private:
   void SetFullVRAMDirtyRectangle();
   void ClearVRAMDirtyRectangle();
   void IncludeVRAMDirtyRectangle(const Common::Rectangle<u32>& rect);
+  void CheckForTexPageOverlap(u32 texpage, u32 min_u, u32 min_v, u32 max_u, u32 max_v);
 
   bool IsFlushed() const;
   u32 GetBatchVertexSpace() const;
@@ -192,7 +193,7 @@ private:
   static void HandleFlippedQuadTextureCoordinates(BatchVertex* vertices);
 
   /// Computes polygon U/V boundaries.
-  static void ComputePolygonUVLimits(BatchVertex* vertices, u32 num_vertices);
+  void ComputePolygonUVLimits(u32 texpage, BatchVertex* vertices, u32 num_vertices);
 
   /// Sets the depth test flag for PGXP depth buffering.
   void SetBatchDepthBuffer(bool enabled);
@@ -251,17 +252,20 @@ private:
   GPUDownsampleMode m_downsample_mode = GPUDownsampleMode::Disabled;
   GPUWireframeMode m_wireframe_mode = GPUWireframeMode::Disabled;
   bool m_true_color = true;
-  bool m_using_uv_limits = false;
+  bool m_clamp_uvs = false;
+  bool m_compute_uv_range = false;
   bool m_pgxp_depth_buffer = false;
+  bool m_texpage_dirty = false;
 
   BatchConfig m_batch;
+
+  // Changed state
+  bool m_batch_ubo_dirty = true;
   BatchUBOData m_batch_ubo_data = {};
 
   // Bounding box of VRAM area that the GPU has drawn into.
   Common::Rectangle<u32> m_vram_dirty_rect;
-
-  // Changed state
-  bool m_batch_ubo_dirty = true;
+  Common::Rectangle<u32> m_current_uv_range;
 
   // [depth_test][render_mode][texture_mode][transparency_mode][dithering][interlacing]
   DimensionalArray<std::unique_ptr<GPUPipeline>, 2, 2, 5, 9, 4, 3> m_batch_pipelines{};
