@@ -122,6 +122,14 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
 
 #ifdef ENABLE_OPENGL
   // Extension enabling for OpenGL.
+  if (m_render_api == RenderAPI::OpenGL || m_render_api == RenderAPI::OpenGLES)
+  {
+    if (GLAD_GL_EXT_shader_framebuffer_fetch)
+      ss << "#extension GL_EXT_shader_framebuffer_fetch : require\n";
+    else if (GLAD_GL_ARM_shader_framebuffer_fetch)
+      ss << "#extension GL_ARM_shader_framebuffer_fetch : require\n";
+  }
+
   if (m_render_api == RenderAPI::OpenGLES)
   {
     // Enable EXT_blend_func_extended for dual-source blend on OpenGL ES.
@@ -129,8 +137,6 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
       ss << "#extension GL_EXT_blend_func_extended : require\n";
     if (GLAD_GL_ARB_blend_func_extended)
       ss << "#extension GL_ARB_blend_func_extended : require\n";
-    if (GLAD_GL_EXT_shader_framebuffer_fetch)
-      ss << "#extension GL_EXT_shader_framebuffer_fetch : require\n";
 
     // Test for V3D driver - we have to fudge coordinates slightly.
     if (std::strstr(reinterpret_cast<const char*>(glGetString(GL_VENDOR)), "Broadcom") &&
@@ -159,11 +165,6 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
     // Enable SSBOs if it's not required by the version.
     if (!GLAD_GL_VERSION_4_3 && !GLAD_GL_ES_VERSION_3_1 && GLAD_GL_ARB_shader_storage_buffer_object)
       ss << "#extension GL_ARB_shader_storage_buffer_object : require\n";
-
-    if (GLAD_GL_EXT_shader_framebuffer_fetch)
-      ss << "#extension GL_EXT_shader_framebuffer_fetch : require\n";
-    else if (GLAD_GL_ARM_shader_framebuffer_fetch)
-      ss << "#extension GL_ARM_shader_framebuffer_fetch : require\n";
   }
 #endif
 
