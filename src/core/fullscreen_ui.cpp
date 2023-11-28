@@ -7008,7 +7008,6 @@ TRANSLATE_NOOP("FullscreenUI", "Moves this shader lower in the chain, applying i
 TRANSLATE_NOOP("FullscreenUI", "Multitap Mode");
 TRANSLATE_NOOP("FullscreenUI", "Mute All Sound");
 TRANSLATE_NOOP("FullscreenUI", "Mute CD Audio");
-TRANSLATE_NOOP("FullscreenUI", "No");
 TRANSLATE_NOOP("FullscreenUI", "No Binding");
 TRANSLATE_NOOP("FullscreenUI", "No Game Selected");
 TRANSLATE_NOOP("FullscreenUI", "No cheats found for {}.");
@@ -7246,7 +7245,6 @@ TRANSLATE_NOOP("FullscreenUI", "When playing a multi-disc game and using per-gam
 TRANSLATE_NOOP("FullscreenUI", "When this option is chosen, the clock speed set below will be used.");
 TRANSLATE_NOOP("FullscreenUI", "Wireframe Rendering");
 TRANSLATE_NOOP("FullscreenUI", "Writes textures which can be replaced to the dump directory.");
-TRANSLATE_NOOP("FullscreenUI", "Yes");
 TRANSLATE_NOOP("FullscreenUI", "\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.");
 TRANSLATE_NOOP("FullscreenUI", "\"PlayStation\" and \"PSX\" are registered trademarks of Sony Interactive Entertainment Europe Limited. This software is not affiliated in any way with Sony Interactive Entertainment.");
 TRANSLATE_NOOP("FullscreenUI", "{} Frames");

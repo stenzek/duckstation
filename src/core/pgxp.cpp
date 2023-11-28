@@ -377,7 +377,13 @@ int PGXP::GTE_NCLIP_valid(u32 sxy0, u32 sxy1, u32 sxy2)
   Validate(&SXY1, sxy1);
   Validate(&SXY2, sxy2);
   if (((SXY0.flags & SXY1.flags & SXY2.flags & VALID_01) == VALID_01)) // && Config.PGXP_GTE && (Config.PGXP_Mode > 0))
+  {
+    // Don't use accurate clipping for game-constructed values, which don't have a valid Z.
+    if ((SXY0.flags & SXY1.flags & SXY2.flags & VALID_2) == 0)
+      return 0;
+
     return 1;
+  }
   return 0;
 }
 
@@ -820,6 +826,12 @@ void PGXP::CPU_ADD(u32 instr, u32 rsVal, u32 rtVal)
     ret.halfFlags[0] &= CPU_reg[rt(instr)].halfFlags[0];
   }
 
+  if (!(ret.flags & VALID_2) && (CPU_reg[rt(instr)].flags & VALID_2))
+  {
+    ret.z = CPU_reg[rt(instr)].z;
+    ret.flags |= VALID_2;
+  }
+
   ret.value = rsVal + rtVal;
 
   CPU_reg[rd(instr)] = ret;
@@ -856,6 +868,12 @@ void PGXP::CPU_SUB(u32 instr, u32 rsVal, u32 rtVal)
   ret.halfFlags[0] &= CPU_reg[rt(instr)].halfFlags[0];
 
   ret.value = rsVal - rtVal;
+
+  if (!(ret.flags & VALID_2) && (CPU_reg[rt(instr)].flags & VALID_2))
+  {
+    ret.z = CPU_reg[rt(instr)].z;
+    ret.flags |= VALID_2;
+  }
 
   CPU_reg[rd(instr)] = ret;
 }
