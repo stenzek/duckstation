@@ -329,18 +329,25 @@ ALWAYS_INLINE void SmallStringBase::fmt(fmt::format_string<T...> fmt, T&&... arg
 #pragma warning(pop)
 #endif
 
-template<>
-struct fmt::formatter<SmallStringBase>
-{
-  template<typename ParseContext>
-  constexpr auto parse(ParseContext& ctx)
-  {
-    return ctx.begin();
-  }
+#define MAKE_FORMATTER(type)                                                                                           \
+  template<>                                                                                                           \
+  struct fmt::formatter<type>                                                                                          \
+  {                                                                                                                    \
+    template<typename ParseContext>                                                                                    \
+    constexpr auto parse(ParseContext& ctx)                                                                            \
+    {                                                                                                                  \
+      return ctx.begin();                                                                                              \
+    }                                                                                                                  \
+                                                                                                                       \
+    template<typename FormatContext>                                                                                   \
+    auto format(const type& str, FormatContext& ctx)                                                                   \
+    {                                                                                                                  \
+      return fmt::format_to(ctx.out(), "{}", str.view());                                                              \
+    }                                                                                                                  \
+  };
 
-  template<typename FormatContext>
-  auto format(const SmallStringBase& str, FormatContext& ctx)
-  {
-    return fmt::format_to(ctx.out(), "{}", str.view());
-  }
-};
+MAKE_FORMATTER(TinyString);
+MAKE_FORMATTER(SmallString);
+MAKE_FORMATTER(LargeString);
+
+#undef MAKE_FORMATTER
