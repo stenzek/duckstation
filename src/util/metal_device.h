@@ -283,7 +283,7 @@ public:
   static AdapterAndModeList StaticGetAdapterAndModeList();
 
 protected:
-  bool CreateDevice(const std::string_view& adapter, bool threaded_presentation) override;
+  bool CreateDevice(const std::string_view& adapter, bool threaded_presentation, FeatureMask disabled_features) override;
   void DestroyDevice() override;
 
 private:
@@ -298,7 +298,7 @@ private:
 
   ALWAYS_INLINE NSView* GetWindowView() const { return (__bridge NSView*)m_window_info.window_handle; }
 
-  void SetFeatures();
+  void SetFeatures(FeatureMask disabled_features);
   bool LoadShaders();
 
   id<MTLFunction> GetFunctionFromLibrary(id<MTLLibrary> library, NSString* name);

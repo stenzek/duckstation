@@ -116,7 +116,7 @@ D3D12Device::ComPtr<ID3D12RootSignature> D3D12Device::CreateRootSignature(const 
   return rs;
 }
 
-bool D3D12Device::CreateDevice(const std::string_view& adapter, bool threaded_presentation)
+bool D3D12Device::CreateDevice(const std::string_view& adapter, bool threaded_presentation, FeatureMask disabled_features)
 {
   std::unique_lock lock(s_instance_mutex);
 
@@ -223,7 +223,7 @@ bool D3D12Device::CreateDevice(const std::string_view& adapter, bool threaded_pr
     return false;
   }
 
-  SetFeatures();
+  SetFeatures(disabled_features);
 
   if (!CreateCommandLists() || !CreateDescriptorHeaps())
     return false;
@@ -1156,7 +1156,7 @@ void D3D12Device::InsertDebugMessage(const char* msg)
 #endif
 }
 
-void D3D12Device::SetFeatures()
+void D3D12Device::SetFeatures(FeatureMask disabled_features)
 {
   m_max_texture_size = D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION;
   m_max_multisamples = 1;
@@ -1172,13 +1172,13 @@ void D3D12Device::SetFeatures()
     }
   }
 
-  m_features.dual_source_blend = true;
-  m_features.framebuffer_fetch = false;
-  m_features.noperspective_interpolation = true;
+  m_features.dual_source_blend = !(disabled_features & FEATURE_MASK_DUAL_SOURCE_BLEND);
+  m_features.framebuffer_fetch = !(disabled_features & FEATURE_MASK_FRAMEBUFFER_FETCH);
   m_features.per_sample_shading = true;
-  m_features.supports_texture_buffers = true;
+  m_features.noperspective_interpolation = true;
+  m_features.supports_texture_buffers = !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS);
   m_features.texture_buffers_emulated_with_ssbo = false;
-  m_features.geometry_shaders = true;
+  m_features.geometry_shaders = !(disabled_features & FEATURE_MASK_GEOMETRY_SHADERS);
   m_features.partial_msaa_resolve = true;
   m_features.gpu_timing = true;
   m_features.shader_cache = true;

@@ -299,7 +299,8 @@ bool OpenGLDevice::HasSurface() const
   return m_window_info.type != WindowInfo::Type::Surfaceless;
 }
 
-bool OpenGLDevice::CreateDevice(const std::string_view& adapter, bool threaded_presentation)
+bool OpenGLDevice::CreateDevice(const std::string_view& adapter, bool threaded_presentation,
+                                FeatureMask disabled_features)
 {
   m_gl_context = GL::Context::Create(m_window_info);
   if (!m_gl_context)
@@ -348,7 +349,7 @@ bool OpenGLDevice::CreateDevice(const std::string_view& adapter, bool threaded_p
   }
 
   bool buggy_pbo;
-  if (!CheckFeatures(&buggy_pbo))
+  if (!CheckFeatures(&buggy_pbo, disabled_features))
     return false;
 
   if (!CreateBuffers(buggy_pbo))
@@ -360,7 +361,7 @@ bool OpenGLDevice::CreateDevice(const std::string_view& adapter, bool threaded_p
   return true;
 }
 
-bool OpenGLDevice::CheckFeatures(bool* buggy_pbo)
+bool OpenGLDevice::CheckFeatures(bool* buggy_pbo, FeatureMask disabled_features)
 {
   const bool is_gles = m_gl_context->IsGLES();
 
@@ -427,16 +428,18 @@ bool OpenGLDevice::CheckFeatures(bool* buggy_pbo)
   GLint max_dual_source_draw_buffers = 0;
   glGetIntegerv(GL_MAX_DUAL_SOURCE_DRAW_BUFFERS, &max_dual_source_draw_buffers);
   m_features.dual_source_blend =
-    (max_dual_source_draw_buffers > 0) &&
+    !(disabled_features & FEATURE_MASK_DUAL_SOURCE_BLEND) && (max_dual_source_draw_buffers > 0) &&
     (GLAD_GL_VERSION_3_3 || GLAD_GL_ARB_blend_func_extended || GLAD_GL_EXT_blend_func_extended);
 
-  m_features.framebuffer_fetch = (GLAD_GL_EXT_shader_framebuffer_fetch || GLAD_GL_ARM_shader_framebuffer_fetch);
+  m_features.framebuffer_fetch = !(disabled_features & FEATURE_MASK_FRAMEBUFFER_FETCH) &&
+                                 (GLAD_GL_EXT_shader_framebuffer_fetch || GLAD_GL_ARM_shader_framebuffer_fetch);
 
 #ifdef __APPLE__
   // Partial texture buffer uploads appear to be broken in macOS's OpenGL driver.
   m_features.supports_texture_buffers = false;
 #else
-  m_features.supports_texture_buffers = (GLAD_GL_VERSION_3_1 || GLAD_GL_ES_VERSION_3_2);
+  m_features.supports_texture_buffers =
+    !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS) && (GLAD_GL_VERSION_3_1 || GLAD_GL_ES_VERSION_3_2);
 
   // And Samsung's ANGLE/GLES driver?
   if (std::strstr(reinterpret_cast<const char*>(glGetString(GL_RENDERER)), "ANGLE"))
@@ -493,7 +496,8 @@ bool OpenGLDevice::CheckFeatures(bool* buggy_pbo)
   // noperspective is not supported in GLSL ES.
   m_features.noperspective_interpolation = !is_gles;
 
-  m_features.geometry_shaders = GLAD_GL_VERSION_3_2 || GLAD_GL_ES_VERSION_3_2;
+  m_features.geometry_shaders =
+    !(disabled_features & FEATURE_MASK_GEOMETRY_SHADERS) && (GLAD_GL_VERSION_3_2 || GLAD_GL_ES_VERSION_3_2);
 
   m_features.gpu_timing = !(m_gl_context->IsGLES() &&
                             (!GLAD_GL_EXT_disjoint_timer_query || !glGetQueryObjectivEXT || !glGetQueryObjectui64vEXT));

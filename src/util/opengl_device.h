@@ -122,7 +122,7 @@ public:
   void UnbindPipeline(const OpenGLPipeline* pl);
 
 protected:
-  bool CreateDevice(const std::string_view& adapter, bool threaded_presentation) override;
+  bool CreateDevice(const std::string_view& adapter, bool threaded_presentation, FeatureMask disabled_features) override;
   void DestroyDevice() override;
 
   bool ReadPipelineCache(const std::string& filename) override;
@@ -138,7 +138,7 @@ private:
   static constexpr u32 UNIFORM_BUFFER_SIZE = 2 * 1024 * 1024;
   static constexpr u32 TEXTURE_STREAM_BUFFER_SIZE = 16 * 1024 * 1024;
 
-  bool CheckFeatures(bool* buggy_pbo);
+  bool CheckFeatures(bool* buggy_pbo, FeatureMask disabled_features);
   bool CreateBuffers(bool buggy_pbo);
   void DestroyBuffers();
 

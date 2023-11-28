@@ -220,7 +220,8 @@ public:
   void UnbindTextureBuffer(VulkanTextureBuffer* buf);
 
 protected:
-  bool CreateDevice(const std::string_view& adapter, bool threaded_presentation) override;
+  bool CreateDevice(const std::string_view& adapter, bool threaded_presentation,
+                    FeatureMask disabled_features) override;
   void DestroyDevice() override;
 
   bool ReadPipelineCache(const std::string& filename) override;
@@ -305,7 +306,7 @@ private:
   bool CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer);
   void ProcessDeviceExtensions();
 
-  bool CheckFeatures();
+  bool CheckFeatures(FeatureMask disabled_features);
 
   bool CreateAllocator();
   void DestroyAllocator();
