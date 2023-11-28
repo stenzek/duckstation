@@ -358,9 +358,9 @@ GLuint OpenGLDevice::CompileProgram(const GPUPipeline::GraphicsConfig& plconfig)
       }
       else
       {
-        glBindAttribLocation(
-          program_id, i,
-          TinyString::from_fmt("{}{}", semantic_vars[static_cast<u8>(va.semantic.GetValue())], va.semantic_index));
+        glBindAttribLocation(program_id, i,
+                             TinyString::from_fmt("{}{}", semantic_vars[static_cast<u8>(va.semantic.GetValue())],
+                                                  static_cast<u8>(va.semantic_index)));
       }
     }
 
