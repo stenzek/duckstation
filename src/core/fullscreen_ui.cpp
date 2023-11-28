@@ -2798,7 +2798,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 #ifdef ENABLE_DISCORD_PRESENCE
   MenuHeading(FSUI_CSTR("Integration"));
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_CHARGING_STATION, "Enable Discord Presence"),
-                    "Shows the game you are currently playing as part of your profile on Discord.", "Main",
+                    FSUI_CSTR("Shows the game you are currently playing as part of your profile in Discord."), "Main",
                     "EnableDiscordPresence", false);
 #endif
 
@@ -3116,7 +3116,7 @@ void FullscreenUI::DrawEmulationSettingsPage()
     u64 ram_usage, vram_usage;
     System::CalculateRewindMemoryUsage(rewind_save_slots, &ram_usage, &vram_usage);
     rewind_summary.fmt(
-      FSUI_FSTR("Rewind for {0} frames, lasting {1:.2f} seconds will require up to {3} MB of RAM and {4} MB of VRAM."),
+      FSUI_FSTR("Rewind for {0} frames, lasting {1:.2f} seconds will require up to {2} MB of RAM and {3} MB of VRAM."),
       rewind_save_slots, duration, ram_usage / 1048576, vram_usage / 1048576);
   }
   else
@@ -3242,7 +3242,7 @@ void FullscreenUI::DrawControllerSettingsPage()
   SettingsInterface* bsi = GetEditingSettingsInterface();
   const bool game_settings = IsEditingGameSettings(bsi);
 
-  MenuHeading("Configuration");
+  MenuHeading(FSUI_CSTR("Configuration"));
 
   if (IsEditingGameSettings(bsi))
   {
@@ -3309,7 +3309,7 @@ void FullscreenUI::DrawControllerSettingsPage()
                     "InputSources", "XInput", false);
 #endif
 
-  MenuHeading("Multitap");
+  MenuHeading(FSUI_CSTR("Multitap"));
   DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_PLUS_SQUARE, "Multitap Mode"),
                   FSUI_CSTR("Enables an additional three controller slots on each port. Not supported in all games."),
                   "ControllerPorts", "MultitapMode", Settings::DEFAULT_MULTITAP_MODE, &Settings::ParseMultitapModeName,
@@ -3595,7 +3595,7 @@ void FullscreenUI::DrawHotkeySettingsPage()
   {
     if (!last_category || std::strcmp(hotkey->category, last_category->category) != 0)
     {
-      MenuHeading(hotkey->category);
+      MenuHeading(Host::TranslateToCString("Hotkeys", hotkey->category));
       last_category = hotkey;
     }
 
@@ -3947,7 +3947,7 @@ void FullscreenUI::DrawDisplaySettingsPage()
                     FSUI_CSTR("Disables dithering and uses the full 8 bits per channel of color information."), "GPU",
                     "TrueColor", true, is_hardware);
 
-  DrawToggleSetting(bsi, "Widescreen Hack",
+  DrawToggleSetting(bsi, FSUI_CSTR("Widescreen Hack"),
                     FSUI_CSTR("Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games."),
                     "GPU", "WidescreenHack", false, is_hardware);
 
@@ -4463,7 +4463,7 @@ void FullscreenUI::DrawAudioSettingsPage()
 
   BeginMenuButtons();
 
-  MenuHeading("Audio Control");
+  MenuHeading(FSUI_CSTR("Audio Control"));
 
   DrawIntRangeSetting(bsi, FSUI_CSTR("Output Volume"),
                       FSUI_CSTR("Controls the volume of the audio played on the host."), "Audio", "OutputVolume", 100,
@@ -6744,6 +6744,7 @@ TRANSLATE_NOOP("FullscreenUI", "Are you sure you want to clear the current post-
 TRANSLATE_NOOP("FullscreenUI", "Aspect Ratio");
 TRANSLATE_NOOP("FullscreenUI", "Attempts to map the selected port to a chosen controller.");
 TRANSLATE_NOOP("FullscreenUI", "Audio Backend");
+TRANSLATE_NOOP("FullscreenUI", "Audio Control");
 TRANSLATE_NOOP("FullscreenUI", "Audio Settings");
 TRANSLATE_NOOP("FullscreenUI", "Auto-Detect");
 TRANSLATE_NOOP("FullscreenUI", "Automatic Mapping");
@@ -6788,6 +6789,7 @@ TRANSLATE_NOOP("FullscreenUI", "Close Game");
 TRANSLATE_NOOP("FullscreenUI", "Close Menu");
 TRANSLATE_NOOP("FullscreenUI", "Compatibility Rating");
 TRANSLATE_NOOP("FullscreenUI", "Compatibility: ");
+TRANSLATE_NOOP("FullscreenUI", "Configuration");
 TRANSLATE_NOOP("FullscreenUI", "Confirm Power Off");
 TRANSLATE_NOOP("FullscreenUI", "Console Settings");
 TRANSLATE_NOOP("FullscreenUI", "Contributor List: https://github.com/stenzek/duckstation/blob/master/CONTRIBUTORS.md");
@@ -7005,6 +7007,7 @@ TRANSLATE_NOOP("FullscreenUI", "Move Down");
 TRANSLATE_NOOP("FullscreenUI", "Move Up");
 TRANSLATE_NOOP("FullscreenUI", "Moves this shader higher in the chain, applying it earlier.");
 TRANSLATE_NOOP("FullscreenUI", "Moves this shader lower in the chain, applying it later.");
+TRANSLATE_NOOP("FullscreenUI", "Multitap");
 TRANSLATE_NOOP("FullscreenUI", "Multitap Mode");
 TRANSLATE_NOOP("FullscreenUI", "Mute All Sound");
 TRANSLATE_NOOP("FullscreenUI", "Mute CD Audio");
@@ -7094,7 +7097,7 @@ TRANSLATE_NOOP("FullscreenUI", "Resume");
 TRANSLATE_NOOP("FullscreenUI", "Resume Game");
 TRANSLATE_NOOP("FullscreenUI", "Rewind Save Frequency");
 TRANSLATE_NOOP("FullscreenUI", "Rewind Save Slots");
-TRANSLATE_NOOP("FullscreenUI", "Rewind for {0} frames, lasting {1:.2f} seconds will require up to {3} MB of RAM and {4} MB of VRAM.");
+TRANSLATE_NOOP("FullscreenUI", "Rewind for {0} frames, lasting {1:.2f} seconds will require up to {2} MB of RAM and {3} MB of VRAM.");
 TRANSLATE_NOOP("FullscreenUI", "Rich presence inactive or unsupported.");
 TRANSLATE_NOOP("FullscreenUI", "Runahead");
 TRANSLATE_NOOP("FullscreenUI", "Runahead/Rewind");
@@ -7243,6 +7246,7 @@ TRANSLATE_NOOP("FullscreenUI", "When enabled, per-game settings will be applied,
 TRANSLATE_NOOP("FullscreenUI", "When enabled, the minimum supported output latency will be used for the host API.");
 TRANSLATE_NOOP("FullscreenUI", "When playing a multi-disc game and using per-game (title) memory cards, use a single memory card for all discs.");
 TRANSLATE_NOOP("FullscreenUI", "When this option is chosen, the clock speed set below will be used.");
+TRANSLATE_NOOP("FullscreenUI", "Widescreen Hack");
 TRANSLATE_NOOP("FullscreenUI", "Wireframe Rendering");
 TRANSLATE_NOOP("FullscreenUI", "Writes textures which can be replaced to the dump directory.");
 TRANSLATE_NOOP("FullscreenUI", "\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.");
