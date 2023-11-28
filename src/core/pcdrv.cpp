@@ -121,9 +121,6 @@ bool PCDrv::HandleSyscall(u32 instruction_bits, CPU::Registers& regs)
   regs.v0 = 0xffffffff;                                                                                                \
   regs.v1 = 0xffffffff; // error code
 
-  if (!g_settings.pcdrv_enable)
-    return false;
-
   const u32 code = (instruction_bits >> 6) & 0xfffff; // 20 bits, funct = 0
   switch (code)
   {

@@ -27,6 +27,7 @@ namespace CPU {
 static void SetPC(u32 new_pc);
 static void UpdateLoadDelay();
 static void Branch(u32 target);
+static void FlushLoadDelay();
 static void FlushPipeline();
 
 static u32 GetExceptionVector(bool debug_exception = false);
@@ -362,12 +363,19 @@ void CPU::RaiseException(Exception excode)
 
 void CPU::RaiseBreakException(u32 CAUSE_bits, u32 EPC, u32 instruction_bits)
 {
-  if (PCDrv::HandleSyscall(instruction_bits, g_state.regs))
+  if (g_settings.pcdrv_enable)
   {
-    // immediately return
-    g_state.npc = EPC + 4;
-    FlushPipeline();
-    return;
+    // Load delays need to be flushed, because the break HLE might read a register which
+    // is currently being loaded, and on real hardware there isn't a hazard here.
+    FlushLoadDelay();
+
+    if (PCDrv::HandleSyscall(instruction_bits, g_state.regs))
+    {
+      // immediately return
+      g_state.npc = EPC + 4;
+      FlushPipeline();
+      return;
+    }
   }
 
   // normal exception
@@ -394,12 +402,17 @@ ALWAYS_INLINE_RELEASE void CPU::UpdateLoadDelay()
   g_state.next_load_delay_reg = Reg::count;
 }
 
-ALWAYS_INLINE_RELEASE void CPU::FlushPipeline()
+ALWAYS_INLINE_RELEASE void CPU::FlushLoadDelay()
 {
-  // loads are flushed
   g_state.next_load_delay_reg = Reg::count;
   g_state.regs.r[static_cast<u8>(g_state.load_delay_reg)] = g_state.load_delay_value;
   g_state.load_delay_reg = Reg::count;
+}
+
+ALWAYS_INLINE_RELEASE void CPU::FlushPipeline()
+{
+  // loads are flushed
+  FlushLoadDelay();
 
   // not in a branch delay slot
   g_state.branch_was_taken = false;
