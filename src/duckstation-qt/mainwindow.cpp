@@ -822,17 +822,25 @@ void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidg
           }
           break;
         case MemoryCardType::PerGame:
-          paths[i] = QString::fromStdString(g_settings.GetGameMemoryCardPath(entry->serial.c_str(), i));
+          paths[i] = QString::fromStdString(g_settings.GetGameMemoryCardPath(entry->serial, i));
           break;
         case MemoryCardType::PerGameTitle:
+        {
           paths[i] = QString::fromStdString(
-            g_settings.GetGameMemoryCardPath(MemoryCard::SanitizeGameTitleForFileName(entry->title).c_str(), i));
-          break;
+            g_settings.GetGameMemoryCardPath(MemoryCard::SanitizeGameTitleForFileName(entry->title), i));
+          if (!entry->disc_set_name.empty() && g_settings.memory_card_use_playlist_title && !QFile::exists(paths[i]))
+          {
+            paths[i] = QString::fromStdString(
+              g_settings.GetGameMemoryCardPath(MemoryCard::SanitizeGameTitleForFileName(entry->disc_set_name), i));
+          }
+        }
+        break;
+
         case MemoryCardType::PerGameFileTitle:
         {
           const std::string display_name(FileSystem::GetDisplayNameFromPath(entry->path));
           paths[i] = QString::fromStdString(g_settings.GetGameMemoryCardPath(
-            MemoryCard::SanitizeGameTitleForFileName(Path::GetFileTitle(display_name)).c_str(), i));
+            MemoryCard::SanitizeGameTitleForFileName(Path::GetFileTitle(display_name)), i));
         }
         break;
         default:

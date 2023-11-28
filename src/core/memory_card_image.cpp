@@ -229,6 +229,9 @@ u32 MemoryCardImage::GetFreeBlockCount(const DataArray& data)
 
 std::vector<MemoryCardImage::FileInfo> MemoryCardImage::EnumerateFiles(const DataArray& data, bool include_deleted)
 {
+  // For getting the icon, we only consider binary transparency. Some games set the alpha to 0.
+  static constexpr auto icon_to_rgba8 = [](u16 col) { return (col == 0) ? 0u : VRAMRGBA5551ToRGBA8888(col | 0x8000); };
+
   std::vector<FileInfo> files;
 
   for (u32 dir_frame = 1; dir_frame < FRAMES_PER_BLOCK; dir_frame++)
@@ -295,8 +298,8 @@ std::vector<MemoryCardImage::FileInfo> MemoryCardImage::EnumerateFiles(const Dat
       u32* pixels_ptr = fi.icon_frames[icon_frame].pixels;
       for (u32 i = 0; i < ICON_WIDTH * ICON_HEIGHT; i += 2)
       {
-        *(pixels_ptr++) = VRAMRGBA5551ToRGBA8888(tf->icon_palette[*indices_ptr & 0xF]);
-        *(pixels_ptr++) = VRAMRGBA5551ToRGBA8888(tf->icon_palette[*indices_ptr >> 4]);
+        *(pixels_ptr++) = icon_to_rgba8(tf->icon_palette[*indices_ptr & 0xF]);
+        *(pixels_ptr++) = icon_to_rgba8(tf->icon_palette[*indices_ptr >> 4]);
         indices_ptr++;
       }
     }

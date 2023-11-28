@@ -40,7 +40,7 @@ namespace {
 
 enum : u32
 {
-  GAME_LIST_CACHE_SIGNATURE = 0x45434C47,
+  GAME_LIST_CACHE_SIGNATURE = 0x45434C48,
   GAME_LIST_CACHE_VERSION = 34,
 
   PLAYED_TIME_SERIAL_LENGTH = 32,
@@ -232,6 +232,19 @@ bool GameList::GetDiscListEntry(const std::string& path, Entry* entry)
     entry->max_blocks = dentry->max_blocks;
     entry->supported_controllers = dentry->supported_controllers;
     entry->compatibility = dentry->compatibility;
+
+    if (!cdi->HasSubImages())
+    {
+      for (size_t i = 0; i < dentry->disc_set_serials.size(); i++)
+      {
+        if (dentry->disc_set_serials[i] == entry->serial)
+        {
+          entry->disc_set_name = dentry->disc_set_name;
+          entry->disc_set_index = static_cast<s8>(i);
+          break;
+        }
+      }
+    }
   }
   else
   {
@@ -318,12 +331,13 @@ bool GameList::LoadEntriesFromCache(ByteStream* stream)
 
     if (!stream->ReadU8(&type) || !stream->ReadU8(&region) || !stream->ReadSizePrefixedString(&path) ||
         !stream->ReadSizePrefixedString(&ge.serial) || !stream->ReadSizePrefixedString(&ge.title) ||
-        !stream->ReadSizePrefixedString(&ge.genre) || !stream->ReadSizePrefixedString(&ge.publisher) ||
-        !stream->ReadSizePrefixedString(&ge.developer) || !stream->ReadU64(&ge.hash) ||
-        !stream->ReadU64(&ge.total_size) || !stream->ReadU64(reinterpret_cast<u64*>(&ge.last_modified_time)) ||
-        !stream->ReadU64(&ge.release_date) || !stream->ReadU16(&ge.supported_controllers) ||
-        !stream->ReadU8(&ge.min_players) || !stream->ReadU8(&ge.max_players) || !stream->ReadU8(&ge.min_blocks) ||
-        !stream->ReadU8(&ge.max_blocks) || !stream->ReadU8(&compatibility_rating) ||
+        !stream->ReadSizePrefixedString(&ge.disc_set_name) || !stream->ReadSizePrefixedString(&ge.genre) ||
+        !stream->ReadSizePrefixedString(&ge.publisher) || !stream->ReadSizePrefixedString(&ge.developer) ||
+        !stream->ReadU64(&ge.hash) || !stream->ReadU64(&ge.total_size) ||
+        !stream->ReadU64(reinterpret_cast<u64*>(&ge.last_modified_time)) || !stream->ReadU64(&ge.release_date) ||
+        !stream->ReadU16(&ge.supported_controllers) || !stream->ReadU8(&ge.min_players) ||
+        !stream->ReadU8(&ge.max_players) || !stream->ReadU8(&ge.min_blocks) || !stream->ReadU8(&ge.max_blocks) ||
+        !stream->ReadS8(&ge.disc_set_index) || !stream->ReadU8(&compatibility_rating) ||
         region >= static_cast<u8>(DiscRegion::Count) || type >= static_cast<u8>(EntryType::Count) ||
         compatibility_rating >= static_cast<u8>(GameDatabase::CompatibilityRating::Count))
     {
@@ -354,6 +368,7 @@ bool GameList::WriteEntryToCache(const Entry* entry)
   result &= s_cache_write_stream->WriteSizePrefixedString(entry->path);
   result &= s_cache_write_stream->WriteSizePrefixedString(entry->serial);
   result &= s_cache_write_stream->WriteSizePrefixedString(entry->title);
+  result &= s_cache_write_stream->WriteSizePrefixedString(entry->disc_set_name);
   result &= s_cache_write_stream->WriteSizePrefixedString(entry->genre);
   result &= s_cache_write_stream->WriteSizePrefixedString(entry->publisher);
   result &= s_cache_write_stream->WriteSizePrefixedString(entry->developer);
@@ -366,6 +381,7 @@ bool GameList::WriteEntryToCache(const Entry* entry)
   result &= s_cache_write_stream->WriteU8(entry->max_players);
   result &= s_cache_write_stream->WriteU8(entry->min_blocks);
   result &= s_cache_write_stream->WriteU8(entry->max_blocks);
+  result &= s_cache_write_stream->WriteS8(entry->disc_set_index);
   result &= s_cache_write_stream->WriteU8(static_cast<u8>(entry->compatibility));
   return result;
 }
@@ -581,7 +597,7 @@ const GameList::Entry* GameList::GetEntryForPath(const char* path)
   return nullptr;
 }
 
-const GameList::Entry* GameList::GetEntryBySerial(const std::string_view& serial)
+const GameList::Entry* GameList::GetEntryBySerial(std::string_view serial)
 {
   for (const Entry& entry : s_entries)
   {
@@ -595,7 +611,7 @@ const GameList::Entry* GameList::GetEntryBySerial(const std::string_view& serial
   return nullptr;
 }
 
-const GameList::Entry* GameList::GetEntryBySerialAndHash(const std::string_view& serial, u64 hash)
+const GameList::Entry* GameList::GetEntryBySerialAndHash(std::string_view serial, u64 hash)
 {
   for (const Entry& entry : s_entries)
   {
@@ -604,6 +620,19 @@ const GameList::Entry* GameList::GetEntryBySerialAndHash(const std::string_view&
   }
 
   return nullptr;
+}
+
+std::vector<const GameList::Entry*> GameList::GetDiscSetMembers(std::string_view disc_set_name)
+{
+  std::vector<const Entry*> ret;
+  for (const Entry& entry : s_entries)
+  {
+    if (/*!entry.disc_set_member || */ disc_set_name != entry.disc_set_name)
+      continue;
+
+    ret.push_back(&entry);
+  }
+  return ret;
 }
 
 u32 GameList::GetEntryCount()

@@ -39,6 +39,7 @@ struct Entry
   std::string path;
   std::string serial;
   std::string title;
+  std::string disc_set_name;
   std::string genre;
   std::string publisher;
   std::string developer;
@@ -54,6 +55,7 @@ struct Entry
   u8 max_players = 1;
   u8 min_blocks = 0;
   u8 max_blocks = 0;
+  s8 disc_set_index = -1;
 
   GameDatabase::CompatibilityRating compatibility = GameDatabase::CompatibilityRating::Unknown;
 
@@ -75,8 +77,9 @@ bool PopulateEntryFromPath(const std::string& path, Entry* entry);
 std::unique_lock<std::recursive_mutex> GetLock();
 const Entry* GetEntryByIndex(u32 index);
 const Entry* GetEntryForPath(const char* path);
-const Entry* GetEntryBySerial(const std::string_view& serial);
-const Entry* GetEntryBySerialAndHash(const std::string_view& serial, u64 hash);
+const Entry* GetEntryBySerial(std::string_view serial);
+const Entry* GetEntryBySerialAndHash(std::string_view serial, u64 hash);
+std::vector<const Entry*> GetDiscSetMembers(std::string_view disc_set_name);
 u32 GetEntryCount();
 
 bool IsGameListLoaded();
