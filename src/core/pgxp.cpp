@@ -6,6 +6,7 @@
 #include "cpu_core.h"
 #include "settings.h"
 
+#include "common/assert.h"
 #include "common/log.h"
 
 #include <climits>
@@ -276,10 +277,7 @@ void PGXP::Initialize()
   {
     Mem = static_cast<PGXP_value*>(std::calloc(PGXP_MEM_SIZE, sizeof(PGXP_value)));
     if (!Mem)
-    {
-      std::fprintf(stderr, "Failed to allocate PGXP memory\n");
-      std::abort();
-    }
+      Panic("Failed to allocate PGXP memory");
   }
 
   if (g_settings.gpu_pgxp_vertex_cache && !vertexCache)
