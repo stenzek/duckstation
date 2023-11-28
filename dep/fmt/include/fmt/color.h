@@ -11,7 +11,7 @@
 #include "format.h"
 
 FMT_BEGIN_NAMESPACE
-FMT_MODULE_EXPORT_BEGIN
+FMT_BEGIN_EXPORT
 
 enum class color : uint32_t {
   alice_blue = 0xF0F8FF,               // rgb(240,248,255)
@@ -203,7 +203,7 @@ struct rgb {
   uint8_t b;
 };
 
-FMT_BEGIN_DETAIL_NAMESPACE
+namespace detail {
 
 // color is a struct of either a rgb color or a terminal color.
 struct color_type {
@@ -225,8 +225,7 @@ struct color_type {
     uint32_t rgb_color;
   } value;
 };
-
-FMT_END_DETAIL_NAMESPACE
+}  // namespace detail
 
 /** A text style consisting of foreground and background colors and emphasis. */
 class text_style {
@@ -323,7 +322,7 @@ FMT_CONSTEXPR inline text_style operator|(emphasis lhs, emphasis rhs) noexcept {
   return text_style(lhs) | rhs;
 }
 
-FMT_BEGIN_DETAIL_NAMESPACE
+namespace detail {
 
 template <typename Char> struct ansi_color_escape {
   FMT_CONSTEXPR ansi_color_escape(detail::color_type text_color,
@@ -423,26 +422,6 @@ FMT_CONSTEXPR ansi_color_escape<Char> make_emphasis(emphasis em) noexcept {
   return ansi_color_escape<Char>(em);
 }
 
-template <typename Char> inline void fputs(const Char* chars, FILE* stream) {
-  int result = std::fputs(chars, stream);
-  if (result < 0)
-    FMT_THROW(system_error(errno, FMT_STRING("cannot write to file")));
-}
-
-template <> inline void fputs<wchar_t>(const wchar_t* chars, FILE* stream) {
-  int result = std::fputws(chars, stream);
-  if (result < 0)
-    FMT_THROW(system_error(errno, FMT_STRING("cannot write to file")));
-}
-
-template <typename Char> inline void reset_color(FILE* stream) {
-  fputs("\x1b[0m", stream);
-}
-
-template <> inline void reset_color<wchar_t>(FILE* stream) {
-  fputs(L"\x1b[0m", stream);
-}
-
 template <typename Char> inline void reset_color(buffer<Char>& buffer) {
   auto reset_color = string_view("\x1b[0m");
   buffer.append(reset_color.begin(), reset_color.end());
@@ -477,19 +456,21 @@ void vformat_to(buffer<Char>& buf, const text_style& ts,
   if (has_style) detail::reset_color<Char>(buf);
 }
 
-FMT_END_DETAIL_NAMESPACE
+}  // namespace detail
 
-template <typename S, typename Char = char_t<S>>
-void vprint(std::FILE* f, const text_style& ts, const S& format,
-            basic_format_args<buffer_context<type_identity_t<Char>>> args) {
-  basic_memory_buffer<Char> buf;
-  detail::vformat_to(buf, ts, detail::to_string_view(format), args);
+inline void vprint(std::FILE* f, const text_style& ts, string_view fmt,
+                   format_args args) {
+  // Legacy wide streams are not supported.
+  auto buf = memory_buffer();
+  detail::vformat_to(buf, ts, fmt, args);
   if (detail::is_utf8()) {
-    detail::print(f, basic_string_view<Char>(buf.begin(), buf.size()));
-  } else {
-    buf.push_back(Char(0));
-    detail::fputs(buf.data(), f);
+    detail::print(f, string_view(buf.begin(), buf.size()));
+    return;
   }
+  buf.push_back('\0');
+  int result = std::fputs(buf.data(), f);
+  if (result < 0)
+    FMT_THROW(system_error(errno, FMT_STRING("cannot write to file")));
 }
 
 /**
@@ -566,7 +547,7 @@ OutputIt vformat_to(
     basic_format_args<buffer_context<type_identity_t<Char>>> args) {
   auto&& buf = detail::get_buffer<Char>(out);
   detail::vformat_to(buf, ts, format_str, args);
-  return detail::get_iterator(buf);
+  return detail::get_iterator(buf, out);
 }
 
 /**
@@ -634,7 +615,7 @@ struct formatter<detail::styled_arg<T>, Char> : formatter<T, Char> {
 
   **Example**::
 
-    fmt::print("Elapsed time: {s:.2f} seconds",
+    fmt::print("Elapsed time: {0:.2f} seconds",
                fmt::styled(1.23, fmt::fg(fmt::color::green) |
                                  fmt::bg(fmt::color::blue)));
   \endrst
@@ -645,7 +626,7 @@ FMT_CONSTEXPR auto styled(const T& value, text_style ts)
   return detail::styled_arg<remove_cvref_t<T>>{value, ts};
 }
 
-FMT_MODULE_EXPORT_END
+FMT_END_EXPORT
 FMT_END_NAMESPACE
 
 #endif  // FMT_COLOR_H_
