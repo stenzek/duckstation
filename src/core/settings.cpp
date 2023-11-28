@@ -181,6 +181,8 @@ void Settings::Load(SettingsInterface& si)
   gpu_multisamples = static_cast<u32>(si.GetIntValue("GPU", "Multisamples", 1));
   gpu_use_debug_device = si.GetBoolValue("GPU", "UseDebugDevice", false);
   gpu_disable_shader_cache = si.GetBoolValue("GPU", "DisableShaderCache", false);
+  gpu_disable_dual_source_blend = si.GetBoolValue("GPU", "DisableDualSourceBlend", false);
+  gpu_disable_framebuffer_fetch = si.GetBoolValue("GPU", "DisableFramebufferFetch", false);
   gpu_per_sample_shading = si.GetBoolValue("GPU", "PerSampleShading", false);
   gpu_use_thread = si.GetBoolValue("GPU", "UseThread", true);
   gpu_use_software_renderer_for_readbacks = si.GetBoolValue("GPU", "UseSoftwareRendererForReadbacks", false);
@@ -437,6 +439,8 @@ void Settings::Save(SettingsInterface& si) const
   si.SetIntValue("GPU", "Multisamples", static_cast<long>(gpu_multisamples));
   si.SetBoolValue("GPU", "UseDebugDevice", gpu_use_debug_device);
   si.SetBoolValue("GPU", "DisableShaderCache", gpu_disable_shader_cache);
+  si.SetBoolValue("GPU", "DisableDualSourceBlend", gpu_disable_dual_source_blend);
+  si.SetBoolValue("GPU", "DisableFramebufferFetch", gpu_disable_framebuffer_fetch);
   si.SetBoolValue("GPU", "PerSampleShading", gpu_per_sample_shading);
   si.SetBoolValue("GPU", "UseThread", gpu_use_thread);
   si.SetBoolValue("GPU", "ThreadedPresentation", gpu_threaded_presentation);

@@ -139,8 +139,8 @@ std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::Gra
     VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA,     // InvSrcAlpha1
     VK_BLEND_FACTOR_DST_ALPHA,                // DstAlpha
     VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA,      // InvDstAlpha
-    VK_BLEND_FACTOR_CONSTANT_ALPHA,           // ConstantAlpha
-    VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA, // InvConstantAlpha
+    VK_BLEND_FACTOR_CONSTANT_COLOR,           // ConstantAlpha
+    VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR, // InvConstantAlpha
   }};
 
   static constexpr std::array<VkBlendOp, static_cast<u32>(GPUPipeline::BlendOp::MaxCount)> op_mapping = {{

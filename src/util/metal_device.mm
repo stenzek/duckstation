@@ -123,7 +123,7 @@ void MetalDevice::SetVSync(bool enabled)
     [m_layer setDisplaySyncEnabled:enabled];
 }
 
-bool MetalDevice::CreateDevice(const std::string_view& adapter, bool threaded_presentation)
+bool MetalDevice::CreateDevice(const std::string_view& adapter, bool threaded_presentation, FeatureMask disabled_features)
 {
   @autoreleasepool
   {
@@ -166,7 +166,7 @@ bool MetalDevice::CreateDevice(const std::string_view& adapter, bool threaded_pr
     m_queue = [queue retain];
     Log_InfoPrintf("Metal Device: %s", [[m_device name] UTF8String]);
 
-    SetFeatures();
+    SetFeatures(disabled_features);
 
     if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateLayer())
       return false;
@@ -190,7 +190,7 @@ bool MetalDevice::CreateDevice(const std::string_view& adapter, bool threaded_pr
   }
 }
 
-void MetalDevice::SetFeatures()
+void MetalDevice::SetFeatures(FeatureMask disabled_features)
 {
   // https://gist.github.com/kylehowells/63d0723abc9588eb734cade4b7df660d
   if ([m_device supportsFamily:MTLGPUFamilyMacCatalyst1] || [m_device supportsFamily:MTLGPUFamilyMac1] ||
@@ -211,11 +211,11 @@ void MetalDevice::SetFeatures()
     m_max_multisamples = multisamples;
   }
 
-  m_features.dual_source_blend = true;
-  m_features.framebuffer_fetch = false; // TODO
+  m_features.dual_source_blend = !(disabled_features & FEATURE_MASK_DUAL_SOURCE_BLEND);
+  m_features.framebuffer_fetch = !(disabled_features & FEATURE_MASK_FRAMEBUFFER_FETCH) && false; // TODO
   m_features.per_sample_shading = true;
   m_features.noperspective_interpolation = true;
-  m_features.supports_texture_buffers = true;
+  m_features.supports_texture_buffers = !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS);
   m_features.texture_buffers_emulated_with_ssbo = true;
   m_features.geometry_shaders = false;
   m_features.partial_msaa_resolve = false;

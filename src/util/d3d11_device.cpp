@@ -63,7 +63,8 @@ bool D3D11Device::HasSurface() const
   return static_cast<bool>(m_swap_chain);
 }
 
-bool D3D11Device::CreateDevice(const std::string_view& adapter, bool threaded_presentation)
+bool D3D11Device::CreateDevice(const std::string_view& adapter, bool threaded_presentation,
+                               FeatureMask disabled_features)
 {
   std::unique_lock lock(s_instance_mutex);
 
@@ -131,7 +132,7 @@ bool D3D11Device::CreateDevice(const std::string_view& adapter, bool threaded_pr
                                            sizeof(allow_tearing_supported));
   m_allow_tearing_supported = (SUCCEEDED(hr) && allow_tearing_supported == TRUE);
 
-  SetFeatures();
+  SetFeatures(disabled_features);
 
   if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain())
     return false;
@@ -152,7 +153,7 @@ void D3D11Device::DestroyDevice()
   m_device.Reset();
 }
 
-void D3D11Device::SetFeatures()
+void D3D11Device::SetFeatures(FeatureMask disabled_features)
 {
   const D3D_FEATURE_LEVEL feature_level = m_device->GetFeatureLevel();
 
@@ -169,13 +170,13 @@ void D3D11Device::SetFeatures()
     }
   }
 
-  m_features.dual_source_blend = true;
+  m_features.dual_source_blend = !(disabled_features & FEATURE_MASK_DUAL_SOURCE_BLEND);
   m_features.framebuffer_fetch = false;
   m_features.per_sample_shading = (feature_level >= D3D_FEATURE_LEVEL_10_1);
   m_features.noperspective_interpolation = true;
-  m_features.supports_texture_buffers = true;
+  m_features.supports_texture_buffers = !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS);
   m_features.texture_buffers_emulated_with_ssbo = false;
-  m_features.geometry_shaders = true;
+  m_features.geometry_shaders = !(disabled_features & FEATURE_MASK_GEOMETRY_SHADERS);
   m_features.partial_msaa_resolve = false;
   m_features.gpu_timing = true;
   m_features.shader_cache = true;

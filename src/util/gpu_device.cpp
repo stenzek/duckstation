@@ -223,7 +223,8 @@ bool GPUDevice::IsSameRenderAPI(RenderAPI lhs, RenderAPI rhs)
 }
 
 bool GPUDevice::Create(const std::string_view& adapter, const std::string_view& shader_cache_path,
-                       u32 shader_cache_version, bool debug_device, bool vsync, bool threaded_presentation)
+                       u32 shader_cache_version, bool debug_device, bool vsync, bool threaded_presentation,
+                       FeatureMask disabled_features)
 {
   m_vsync_enabled = vsync;
   m_debug_device = debug_device;
@@ -234,7 +235,7 @@ bool GPUDevice::Create(const std::string_view& adapter, const std::string_view& 
     return false;
   }
 
-  if (!CreateDevice(adapter, threaded_presentation))
+  if (!CreateDevice(adapter, threaded_presentation, disabled_features))
   {
     Log_ErrorPrintf("Failed to create device.");
     return false;

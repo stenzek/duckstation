@@ -179,7 +179,8 @@ public:
   void UnbindTextureBuffer(D3D12TextureBuffer* buf);
 
 protected:
-  bool CreateDevice(const std::string_view& adapter, bool threaded_presentation) override;
+  bool CreateDevice(const std::string_view& adapter, bool threaded_presentation,
+                    FeatureMask disabled_features) override;
   void DestroyDevice() override;
 
   bool ReadPipelineCache(const std::string& filename) override;
@@ -215,7 +216,7 @@ private:
 
   static void GetAdapterAndModeList(AdapterAndModeList* ret, IDXGIFactory5* factory);
 
-  void SetFeatures();
+  void SetFeatures(FeatureMask disabled_features);
 
   bool CreateSwapChain();
   bool CreateSwapChainRTV();

@@ -111,7 +111,7 @@ public:
   static AdapterAndModeList StaticGetAdapterAndModeList();
 
 protected:
-  bool CreateDevice(const std::string_view& adapter, bool threaded_presentation) override;
+  bool CreateDevice(const std::string_view& adapter, bool threaded_presentation, FeatureMask disabled_features) override;
   void DestroyDevice() override;
 
 private:
@@ -129,7 +129,7 @@ private:
 
   static void GetAdapterAndModeList(AdapterAndModeList* ret, IDXGIFactory5* factory);
 
-  void SetFeatures();
+  void SetFeatures(FeatureMask disabled_features);
 
   bool CheckStagingBufferSize(u32 width, u32 height, DXGI_FORMAT format);
   void DestroyStagingBuffer();

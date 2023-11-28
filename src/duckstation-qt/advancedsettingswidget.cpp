@@ -340,6 +340,10 @@ void AdvancedSettingsWidget::addTweakOptions()
                         false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Disable Shader Cache"), "GPU", "DisableShaderCache",
                         false);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Disable Dual-Source Blend"), "GPU",
+                        "DisableDualSourceBlend", false);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Disable Framebuffer Fetch"), "GPU",
+                        "DisableFramebufferFetch", false);
 
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Stretch Display Vertically"), "Display",
                         "StretchVertically", false);
@@ -401,6 +405,8 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
                            static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD)); // GPU max run-ahead
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Use debug host GPU device
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Disable Shader Cache
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Disable Dual-Source Blend
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Disable Framebuffer Fetch
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Stretch Display Vertically
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);                       // Increase Timer Resolution
     setChoiceTweakOption(m_ui.tweakOptionTable, i++,
@@ -447,6 +453,9 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue("Hacks", "GPUFIFOSize");
   sif->DeleteValue("Hacks", "GPUMaxRunAhead");
   sif->DeleteValue("GPU", "UseDebugDevice");
+  sif->DeleteValue("GPU", "DisableShaderCache");
+  sif->DeleteValue("GPU", "DisableDualSourceBlend");
+  sif->DeleteValue("GPU", "DisableFramebufferFetch");
   sif->DeleteValue("Display", "StretchVertically");
   sif->DeleteValue("Main", "IncreaseTimerResolution");
   sif->DeleteValue("CDROM", "MechaconVersion");

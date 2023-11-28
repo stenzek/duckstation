@@ -1601,7 +1601,8 @@ bool VulkanDevice::HasSurface() const
   return static_cast<bool>(m_swap_chain);
 }
 
-bool VulkanDevice::CreateDevice(const std::string_view& adapter, bool threaded_presentation)
+bool VulkanDevice::CreateDevice(const std::string_view& adapter, bool threaded_presentation,
+                                FeatureMask disabled_features)
 {
   std::unique_lock lock(s_instance_mutex);
   bool enable_debug_utils = m_debug_device;
@@ -1704,7 +1705,7 @@ bool VulkanDevice::CreateDevice(const std::string_view& adapter, bool threaded_p
   if (!CreateDevice(surface, enable_validation_layer))
     return false;
 
-  if (!CheckFeatures())
+  if (!CheckFeatures(disabled_features))
   {
     Host::ReportErrorAsync("Error", "Your GPU does not support the required Vulkan features.");
     return false;
@@ -2163,7 +2164,7 @@ void VulkanDevice::InsertDebugMessage(const char* msg)
 #endif
 }
 
-bool VulkanDevice::CheckFeatures()
+bool VulkanDevice::CheckFeatures(FeatureMask disabled_features)
 {
   m_max_texture_size = m_device_properties.limits.maxImageDimension2D;
 
@@ -2193,15 +2194,16 @@ bool VulkanDevice::CheckFeatures()
   else
     m_max_multisamples = 1;
 
-  m_features.dual_source_blend = m_device_features.dualSrcBlend; // TODO: Option to disable
-  m_features.framebuffer_fetch = false; // TODO: Option to disable
+  m_features.dual_source_blend =
+    !(disabled_features & FEATURE_MASK_DUAL_SOURCE_BLEND) && m_device_features.dualSrcBlend;
+  m_features.framebuffer_fetch = /*!(disabled_features & FEATURE_MASK_FRAMEBUFFER_FETCH) && */false;
 
   if (!m_features.dual_source_blend)
     Log_WarningPrintf("Vulkan driver is missing dual-source blending. This will have an impact on performance.");
 
   m_features.noperspective_interpolation = true;
   m_features.per_sample_shading = m_device_features.sampleRateShading;
-  m_features.supports_texture_buffers = true;
+  m_features.supports_texture_buffers = !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS);
 
 #ifdef __APPLE__
   // Partial texture buffer uploads appear to be broken in macOS/MoltenVK.
@@ -2218,7 +2220,8 @@ bool VulkanDevice::CheckFeatures()
   if (m_features.texture_buffers_emulated_with_ssbo)
     Log_WarningPrintf("Emulating texture buffers with SSBOs.");
 
-  m_features.geometry_shaders = m_device_features.geometryShader;
+  m_features.geometry_shaders =
+    !(disabled_features & FEATURE_MASK_GEOMETRY_SHADERS) && m_device_features.geometryShader;
 
   m_features.partial_msaa_resolve = true;
   m_features.shader_cache = true;
