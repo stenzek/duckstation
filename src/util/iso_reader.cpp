@@ -1,207 +1,235 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "iso_reader.h"
 #include "cd_image.h"
-#include "common/log.h"
-#include <cctype>
-Log_SetChannel(ISOReader);
 
-static bool FilenamesEqual(const char* a, const char* b, u32 length)
+#include "common/error.h"
+#include "common/log.h"
+#include "common/string_util.h"
+
+#include "fmt/format.h"
+
+#include <cctype>
+
+Log_SetChannel(IsoReader);
+
+IsoReader::IsoReader() = default;
+
+IsoReader::~IsoReader() = default;
+
+std::string_view IsoReader::RemoveVersionIdentifierFromPath(const std::string_view& path)
 {
-  u32 pos = 0;
-  for (; pos < length && *a != '\0' && *b != '\0'; pos++)
+  const std::string_view::size_type pos = path.find(';');
+  return (pos != std::string_view::npos) ? path.substr(0, pos) : path;
+}
+
+bool IsoReader::Open(CDImage* image, u32 track_number, Error* error)
+{
+  m_image = image;
+  m_track_number = track_number;
+
+  if (!ReadPVD(error))
+    return false;
+
+  return true;
+}
+
+bool IsoReader::ReadSector(u8* buf, u32 lsn, Error* error)
+{
+  if (!m_image->Seek(m_track_number, lsn))
   {
-    if (std::tolower(*(a++)) != std::tolower(*(b++)))
-      return false;
+    Error::SetString(error, fmt::format("Failed to seek to LSN #{}", lsn));
+    return false;
+  }
+
+  if (m_image->Read(CDImage::ReadMode::DataOnly, 1, buf) != 1)
+  {
+    Error::SetString(error, fmt::format("Failed to read LSN #{}", lsn));
+    return false;
   }
 
   return true;
 }
 
-ISOReader::ISOReader() = default;
-
-ISOReader::~ISOReader() = default;
-
-bool ISOReader::Open(CDImage* image, u32 track_number)
-{
-  m_image = image;
-  m_track_number = track_number;
-  if (!ReadPVD())
-    return false;
-
-  return true;
-}
-
-bool ISOReader::ReadPVD()
+bool IsoReader::ReadPVD(Error* error)
 {
   // volume descriptor start at sector 16
-  if (!m_image->Seek(m_track_number, 16))
-    return false;
+  static constexpr u32 START_SECTOR = 16;
 
   // try only a maximum of 256 volume descriptors
   for (u32 i = 0; i < 256; i++)
   {
     u8 buffer[SECTOR_SIZE];
-    if (m_image->Read(CDImage::ReadMode::DataOnly, 1, buffer) != 1)
+    if (!ReadSector(buffer, START_SECTOR + i, error))
       return false;
 
     const ISOVolumeDescriptorHeader* header = reinterpret_cast<ISOVolumeDescriptorHeader*>(buffer);
-    if (header->type_code != 1)
+    if (std::memcmp(header->standard_identifier, "CD001", 5) != 0)
+      continue;
+    else if (header->type_code != 1)
       continue;
     else if (header->type_code == 255)
       break;
 
     std::memcpy(&m_pvd, buffer, sizeof(ISOPrimaryVolumeDescriptor));
-    Log_DebugPrintf("PVD found at index %u", i);
+    Log_DevFmt("ISOReader: PVD found at index {}", i);
     return true;
   }
 
-  Log_ErrorPrint("PVD not found");
+  Error::SetString(error, "Failed to find the Primary Volume Descriptor.");
   return false;
 }
 
-std::optional<ISOReader::ISODirectoryEntry> ISOReader::LocateFile(const char* path)
+std::optional<IsoReader::ISODirectoryEntry> IsoReader::LocateFile(const std::string_view& path, Error* error)
 {
-  u8 sector_buffer[SECTOR_SIZE];
-
   const ISODirectoryEntry* root_de = reinterpret_cast<const ISODirectoryEntry*>(m_pvd.root_directory_entry);
-  if (*path == '\0' || std::strcmp(path, "/") == 0)
+  if (path.empty() || path == "/" || path == "\\")
   {
     // locating the root directory
     return *root_de;
   }
 
   // start at the root directory
-  return LocateFile(path, sector_buffer, root_de->location_le, root_de->length_le);
+  u8 sector_buffer[SECTOR_SIZE];
+  return LocateFile(path, sector_buffer, root_de->location_le, root_de->length_le, error);
 }
 
-std::optional<ISOReader::ISODirectoryEntry> ISOReader::LocateFile(const char* path, u8* sector_buffer,
-                                                                  u32 directory_record_lba, u32 directory_record_size)
+std::string_view IsoReader::GetDirectoryEntryFileName(const u8* sector, u32 de_sector_offset)
+{
+  const ISODirectoryEntry* de = reinterpret_cast<const ISODirectoryEntry*>(sector + de_sector_offset);
+  if ((sizeof(ISODirectoryEntry) + de->filename_length) > de->entry_length ||
+      (sizeof(ISODirectoryEntry) + de->filename_length + de_sector_offset) > SECTOR_SIZE)
+  {
+    return std::string_view();
+  }
+
+  const char* str = reinterpret_cast<const char*>(sector + de_sector_offset + sizeof(ISODirectoryEntry));
+  if (de->filename_length == 1)
+  {
+    if (str[0] == '\0')
+      return ".";
+    else if (str[0] == '\1')
+      return "..";
+  }
+
+  // Strip any version information like the PS2 BIOS does.
+  u32 length_without_version = 0;
+  for (; length_without_version < de->filename_length; length_without_version++)
+  {
+    if (str[length_without_version] == ';' || str[length_without_version] == '\0')
+      break;
+  }
+
+  return std::string_view(str, length_without_version);
+}
+
+std::optional<IsoReader::ISODirectoryEntry> IsoReader::LocateFile(const std::string_view& path, u8* sector_buffer,
+                                                                  u32 directory_record_lba, u32 directory_record_size,
+                                                                  Error* error)
 {
   if (directory_record_size == 0)
   {
-    Log_ErrorPrintf("Directory entry record size 0 while looking for '%s'", path);
+    Error::SetString(error, fmt::format("Directory entry record size 0 while looking for '{}'", path));
     return std::nullopt;
   }
 
   // strip any leading slashes
-  const char* path_component_start = path;
-  while (*path_component_start == '/' || *path_component_start == '\\')
+  size_t path_component_start = 0;
+  while (path_component_start < path.length() &&
+         (path[path_component_start] == '/' || path[path_component_start] == '\\'))
+  {
     path_component_start++;
+  }
 
-  u32 path_component_length = 0;
-  const char* path_component_end = path_component_start;
-  while (*path_component_end != '\0' && *path_component_end != '/' && *path_component_end != '\\')
+  size_t path_component_length = 0;
+  while ((path_component_start + path_component_length) < path.length() &&
+         path[path_component_start + path_component_length] != '/' &&
+         path[path_component_start + path_component_length] != '\\')
   {
     path_component_length++;
-    path_component_end++;
+  }
+
+  const std::string_view path_component = path.substr(path_component_start, path_component_length);
+  if (path_component.empty())
+  {
+    Error::SetString(error, fmt::format("Empty path component in {}", path));
+    return std::nullopt;
   }
 
   // start reading directory entries
   const u32 num_sectors = (directory_record_size + (SECTOR_SIZE - 1)) / SECTOR_SIZE;
-  if (!m_image->Seek(m_track_number, directory_record_lba))
-  {
-    Log_ErrorPrintf("Seek to LBA %u failed", directory_record_lba);
-    return std::nullopt;
-  }
-
   for (u32 i = 0; i < num_sectors; i++)
   {
-    if (m_image->Read(CDImage::ReadMode::DataOnly, 1, sector_buffer) != 1)
-    {
-      Log_ErrorPrintf("Failed to read LBA %u", directory_record_lba + i);
+    if (!ReadSector(sector_buffer, directory_record_lba + i, error))
       return std::nullopt;
-    }
 
     u32 sector_offset = 0;
     while ((sector_offset + sizeof(ISODirectoryEntry)) < SECTOR_SIZE)
     {
       const ISODirectoryEntry* de = reinterpret_cast<const ISODirectoryEntry*>(&sector_buffer[sector_offset]);
-      const char* de_filename =
-        reinterpret_cast<const char*>(&sector_buffer[sector_offset + sizeof(ISODirectoryEntry)]);
-      if ((sector_offset + de->entry_length) > SECTOR_SIZE || de->filename_length > de->entry_length ||
-          de->entry_length < sizeof(ISODirectoryEntry))
-      {
+      if (de->entry_length < sizeof(ISODirectoryEntry))
         break;
-      }
 
+      const std::string_view de_filename = GetDirectoryEntryFileName(sector_buffer, sector_offset);
       sector_offset += de->entry_length;
 
-      // skip current/parent directory
-      if (de->filename_length == 1 && (*de_filename == '\x0' || *de_filename == '\x1'))
+      // Empty file would be pretty strange..
+      if (de_filename.empty() || de_filename == "." || de_filename == "..")
         continue;
 
-      // check filename length
-      if (de->filename_length < path_component_length)
+      if (de_filename.length() != path_component.length() ||
+          StringUtil::Strncasecmp(de_filename.data(), path_component.data(), path_component.length()) != 0)
+      {
         continue;
-
-      if (de->flags & ISODirectoryEntryFlag_Directory)
-      {
-        // directories don't have the version? so check the length instead
-        if (de->filename_length != path_component_length ||
-            !FilenamesEqual(de_filename, path_component_start, path_component_length))
-        {
-          continue;
-        }
-      }
-      else
-      {
-        // compare filename
-        if (!FilenamesEqual(de_filename, path_component_start, path_component_length) ||
-            de_filename[path_component_length] != ';')
-        {
-          continue;
-        }
       }
 
       // found it. is this the file we're looking for?
-      if (*path_component_end == '\0')
+      if ((path_component_start + path_component_length) == path.length())
         return *de;
 
       // if it is a directory, recurse into it
       if (de->flags & ISODirectoryEntryFlag_Directory)
-        return LocateFile(path_component_end, sector_buffer, de->location_le, de->length_le);
+      {
+        return LocateFile(path.substr(path_component_start + path_component_length), sector_buffer, de->location_le,
+                          de->length_le, error);
+      }
 
       // we're looking for a directory but got a file
-      Log_ErrorPrintf("Looking for directory but got file");
+      Error::SetString(error, fmt::format("Looking for directory '{}' but got file", path_component));
       return std::nullopt;
     }
   }
 
-  std::string temp(path_component_start, path_component_length);
-  Log_ErrorPrintf("Path component '%s' not found", temp.c_str());
+  Error::SetString(error, fmt::format("Path component '{}' not found", path_component));
   return std::nullopt;
 }
 
-std::vector<std::string> ISOReader::GetFilesInDirectory(const char* path)
+std::vector<std::string> IsoReader::GetFilesInDirectory(const std::string_view& path, Error* error)
 {
-  std::string base_path = path;
-  u32 directory_record_lba;
+  std::string base_path(path);
+  u32 directory_record_lsn;
   u32 directory_record_length;
   if (base_path.empty())
   {
     // root directory
     const ISODirectoryEntry* root_de = reinterpret_cast<const ISODirectoryEntry*>(m_pvd.root_directory_entry);
-    directory_record_lba = root_de->location_le;
+    directory_record_lsn = root_de->location_le;
     directory_record_length = root_de->length_le;
   }
   else
   {
-    auto directory_de = LocateFile(base_path.c_str());
-    if (!directory_de)
-    {
-      Log_ErrorPrintf("Directory entry not found for '%s'", path);
+    auto directory_de = LocateFile(base_path, error);
+    if (!directory_de.has_value())
       return {};
-    }
 
     if ((directory_de->flags & ISODirectoryEntryFlag_Directory) == 0)
     {
-      Log_ErrorPrintf("Path '%s' is not a directory, can't list", path);
+      Error::SetString(error, fmt::format("Path '{}' is not a directory, can't list", path));
       return {};
     }
 
-    directory_record_lba = directory_de->location_le;
+    directory_record_lsn = directory_de->location_le;
     directory_record_length = directory_de->length_le;
 
     if (base_path[base_path.size() - 1] != '/')
@@ -210,92 +238,147 @@ std::vector<std::string> ISOReader::GetFilesInDirectory(const char* path)
 
   // start reading directory entries
   const u32 num_sectors = (directory_record_length + (SECTOR_SIZE - 1)) / SECTOR_SIZE;
-  if (!m_image->Seek(m_track_number, directory_record_lba))
-  {
-    Log_ErrorPrintf("Seek to LBA %u failed", directory_record_lba);
-    return {};
-  }
-
   std::vector<std::string> files;
   u8 sector_buffer[SECTOR_SIZE];
   for (u32 i = 0; i < num_sectors; i++)
   {
-    if (m_image->Read(CDImage::ReadMode::DataOnly, 1, sector_buffer) != 1)
-    {
-      Log_ErrorPrintf("Failed to read LBA %u", directory_record_lba + i);
+    if (!ReadSector(sector_buffer, directory_record_lsn + i, error))
       break;
-    }
 
     u32 sector_offset = 0;
     while ((sector_offset + sizeof(ISODirectoryEntry)) < SECTOR_SIZE)
     {
       const ISODirectoryEntry* de = reinterpret_cast<const ISODirectoryEntry*>(&sector_buffer[sector_offset]);
-      const char* de_filename =
-        reinterpret_cast<const char*>(&sector_buffer[sector_offset + sizeof(ISODirectoryEntry)]);
-      if ((sector_offset + de->entry_length) > SECTOR_SIZE || de->filename_length > de->entry_length ||
-          de->entry_length < sizeof(ISODirectoryEntry))
-      {
+      if (de->entry_length < sizeof(ISODirectoryEntry))
         break;
-      }
 
+      const std::string_view de_filename = GetDirectoryEntryFileName(sector_buffer, sector_offset);
       sector_offset += de->entry_length;
 
-      // skip current/parent directory
-      if (de->filename_length == 1 && (*de_filename == '\x0' || *de_filename == '\x1'))
+      // Empty file would be pretty strange..
+      if (de_filename.empty() || de_filename == "." || de_filename == "..")
         continue;
 
-      // strip off terminator/file version
-      std::string filename(de_filename, de->filename_length);
-      std::string::size_type pos = filename.rfind(';');
-      if (pos == std::string::npos)
-      {
-        Log_ErrorPrintf("Invalid filename '%s'", filename.c_str());
-        continue;
-      }
-      filename.erase(pos);
-
-      if (!filename.empty())
-        files.push_back(base_path + filename);
+      files.push_back(fmt::format("{}{}", base_path, de_filename));
     }
   }
 
   return files;
 }
 
-bool ISOReader::ReadFile(const char* path, std::vector<u8>* data)
+std::vector<std::pair<std::string, IsoReader::ISODirectoryEntry>>
+IsoReader::GetEntriesInDirectory(const std::string_view& path, Error* error /*= nullptr*/)
 {
-  auto de = LocateFile(path);
+  std::string base_path(path);
+  u32 directory_record_lsn;
+  u32 directory_record_length;
+  if (base_path.empty())
+  {
+    // root directory
+    const ISODirectoryEntry* root_de = reinterpret_cast<const ISODirectoryEntry*>(m_pvd.root_directory_entry);
+    directory_record_lsn = root_de->location_le;
+    directory_record_length = root_de->length_le;
+  }
+  else
+  {
+    auto directory_de = LocateFile(base_path, error);
+    if (!directory_de.has_value())
+      return {};
+
+    if ((directory_de->flags & ISODirectoryEntryFlag_Directory) == 0)
+    {
+      Error::SetString(error, fmt::format("Path '{}' is not a directory, can't list", path));
+      return {};
+    }
+
+    directory_record_lsn = directory_de->location_le;
+    directory_record_length = directory_de->length_le;
+
+    if (base_path[base_path.size() - 1] != '/')
+      base_path += '/';
+  }
+
+  // start reading directory entries
+  const u32 num_sectors = (directory_record_length + (SECTOR_SIZE - 1)) / SECTOR_SIZE;
+  std::vector<std::pair<std::string, IsoReader::ISODirectoryEntry>> files;
+  u8 sector_buffer[SECTOR_SIZE];
+  for (u32 i = 0; i < num_sectors; i++)
+  {
+    if (!ReadSector(sector_buffer, directory_record_lsn + i, error))
+      break;
+
+    u32 sector_offset = 0;
+    while ((sector_offset + sizeof(ISODirectoryEntry)) < SECTOR_SIZE)
+    {
+      const ISODirectoryEntry* de = reinterpret_cast<const ISODirectoryEntry*>(&sector_buffer[sector_offset]);
+      if (de->entry_length < sizeof(ISODirectoryEntry))
+        break;
+
+      const std::string_view de_filename = GetDirectoryEntryFileName(sector_buffer, sector_offset);
+      sector_offset += de->entry_length;
+
+      // Empty file would be pretty strange..
+      if (de_filename.empty() || de_filename == "." || de_filename == "..")
+        continue;
+
+      files.emplace_back(fmt::format("{}{}", base_path, de_filename), *de);
+    }
+  }
+
+  return files;
+}
+
+bool IsoReader::FileExists(const std::string_view& path, Error* error)
+{
+  auto de = LocateFile(path, error);
   if (!de)
-  {
-    Log_ErrorPrintf("File not found: '%s'", path);
     return false;
-  }
-  if (de->flags & ISODirectoryEntryFlag_Directory)
+
+  return (de->flags & ISODirectoryEntryFlag_Directory) == 0;
+}
+
+bool IsoReader::DirectoryExists(const std::string_view& path, Error* error)
+{
+  auto de = LocateFile(path, error);
+  if (!de)
+    return false;
+
+  return (de->flags & ISODirectoryEntryFlag_Directory) == ISODirectoryEntryFlag_Directory;
+}
+
+bool IsoReader::ReadFile(const std::string_view& path, std::vector<u8>* data, Error* error)
+{
+  auto de = LocateFile(path, error);
+  if (!de)
+    return false;
+
+  return ReadFile(de.value(), data, error);
+}
+
+bool IsoReader::ReadFile(const ISODirectoryEntry& de, std::vector<u8>* data, Error* error /*= nullptr*/)
+{
+  if (de.flags & ISODirectoryEntryFlag_Directory)
   {
-    Log_ErrorPrintf("File is a directory: '%s'", path);
+    Error::SetString(error, "File is a directory");
     return false;
   }
 
-  if (!m_image->Seek(m_track_number, de->location_le))
-    return false;
-
-  if (de->length_le == 0)
+  if (de.length_le == 0)
   {
     data->clear();
     return true;
   }
 
-  const u32 num_sectors = (de->length_le + (SECTOR_SIZE - 1)) / SECTOR_SIZE;
-  data->resize(num_sectors * u64(SECTOR_SIZE));
-  if (m_image->Read(CDImage::ReadMode::DataOnly, num_sectors, data->data()) != num_sectors)
-    return false;
+  static_assert(sizeof(size_t) == sizeof(u64));
+  const u32 num_sectors = (de.length_le + (SECTOR_SIZE - 1)) / SECTOR_SIZE;
+  data->resize(num_sectors * static_cast<u64>(SECTOR_SIZE));
+  for (u32 i = 0, lsn = de.location_le; i < num_sectors; i++, lsn++)
+  {
+    if (!ReadSector(data->data() + (i * SECTOR_SIZE), lsn, error))
+      return false;
+  }
 
-  data->resize(de->length_le);
+  // Might not be sector aligned, so reduce it back.
+  data->resize(de.length_le);
   return true;
-}
-
-bool ISOReader::FileExists(const char* path)
-{
-  auto de = LocateFile(path);
-  return de.has_value();
 }

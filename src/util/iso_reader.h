@@ -1,8 +1,10 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
+
 #include "common/types.h"
+
 #include <memory>
 #include <optional>
 #include <string>
@@ -10,7 +12,9 @@
 
 class CDImage;
 
-class ISOReader
+class Error;
+
+class IsoReader
 {
 public:
   enum : u32
@@ -127,30 +131,43 @@ public:
     u16 sequence_le;
     u16 sequence_be;
     u8 filename_length;
+
+    ALWAYS_INLINE bool IsDirectory() const { return (flags & ISODirectoryEntryFlag_Directory); }
+    ALWAYS_INLINE u32 GetSizeInSectors() const { return (length_le + (SECTOR_SIZE - 1)) / SECTOR_SIZE; }
   };
 
 #pragma pack(pop)
 
-  ISOReader();
-  ~ISOReader();
+  IsoReader();
+  ~IsoReader();
+
+  static std::string_view RemoveVersionIdentifierFromPath(const std::string_view& path);
 
   ALWAYS_INLINE const CDImage* GetImage() const { return m_image; }
   ALWAYS_INLINE u32 GetTrackNumber() const { return m_track_number; }
   ALWAYS_INLINE const ISOPrimaryVolumeDescriptor& GetPVD() const { return m_pvd; }
 
-  bool Open(CDImage* image, u32 track_number);
+  bool Open(CDImage* image, u32 track_number, Error* error = nullptr);
 
-  std::vector<std::string> GetFilesInDirectory(const char* path);
+  std::vector<std::string> GetFilesInDirectory(const std::string_view& path, Error* error = nullptr);
+  std::vector<std::pair<std::string, ISODirectoryEntry>> GetEntriesInDirectory(const std::string_view& path,
+                                                                               Error* error = nullptr);
 
-  bool ReadFile(const char* path, std::vector<u8>* data);
-  bool FileExists(const char* path);
+  std::optional<ISODirectoryEntry> LocateFile(const std::string_view& path, Error* error);
+
+  bool FileExists(const std::string_view& path, Error* error = nullptr);
+  bool DirectoryExists(const std::string_view& path, Error* error = nullptr);
+  bool ReadFile(const std::string_view& path, std::vector<u8>* data, Error* error = nullptr);
+  bool ReadFile(const ISODirectoryEntry& de, std::vector<u8>* data, Error* error = nullptr);
 
 private:
-  bool ReadPVD();
+  static std::string_view GetDirectoryEntryFileName(const u8* sector, u32 de_sector_offset);
 
-  std::optional<ISODirectoryEntry> LocateFile(const char* path);
-  std::optional<ISODirectoryEntry> LocateFile(const char* path, u8* sector_buffer, u32 directory_record_lba,
-                                              u32 directory_record_size);
+  bool ReadSector(u8* buf, u32 lsn, Error* error);
+  bool ReadPVD(Error* error);
+
+  std::optional<ISODirectoryEntry> LocateFile(const std::string_view& path, u8* sector_buffer, u32 directory_record_lba,
+                                              u32 directory_record_size, Error* error);
 
   CDImage* m_image;
   u32 m_track_number;
