@@ -53,8 +53,6 @@ static QString FixLanguageName(const QString& language);
 static std::string GetFontPath(const GlyphInfo* gi);
 static void UpdateGlyphRanges(const std::string_view& language);
 static const GlyphInfo* GetGlyphInfo(const std::string_view& language);
-
-static std::vector<ImWchar> s_glyph_ranges;
 } // namespace QtHost
 
 static std::vector<QTranslator*> s_translators;
@@ -133,9 +131,18 @@ void QtHost::InstallTranslator()
   qApp->installTranslator(translator);
   s_translators.push_back(translator);
 
-  UpdateGlyphRanges(language.toStdString());
-
-  Host::ClearTranslationCache();
+  // We end up here both on language change, and on startup.
+  if (g_emu_thread)
+  {
+    Host::RunOnCPUThread([language = language.toStdString()]() {
+      UpdateGlyphRanges(language);
+      Host::ClearTranslationCache();
+    });
+  }
+  else
+  {
+    UpdateGlyphRanges(language.toStdString());
+  }
 }
 
 QString QtHost::FixLanguageName(const QString& language)
@@ -233,10 +240,11 @@ void QtHost::UpdateGlyphRanges(const std::string_view& language)
   const GlyphInfo* gi = GetGlyphInfo(language);
 
   std::string font_path;
-  s_glyph_ranges.clear();
+  std::vector<ImWchar> glyph_ranges;
+  glyph_ranges.clear();
 
   // Base Latin range is always included.
-  s_glyph_ranges.insert(s_glyph_ranges.begin(), std::begin(s_base_latin_range), std::end(s_base_latin_range));
+  glyph_ranges.insert(glyph_ranges.begin(), std::begin(s_base_latin_range), std::end(s_base_latin_range));
 
   if (gi)
   {
@@ -247,8 +255,8 @@ void QtHost::UpdateGlyphRanges(const std::string_view& language)
       {
         // Always should be in pairs.
         DebugAssert(ptr[0] != 0 && ptr[1] != 0);
-        s_glyph_ranges.push_back(*(ptr++));
-        s_glyph_ranges.push_back(*(ptr++));
+        glyph_ranges.push_back(*(ptr++));
+        glyph_ranges.push_back(*(ptr++));
       }
     }
 
@@ -258,16 +266,15 @@ void QtHost::UpdateGlyphRanges(const std::string_view& language)
   // If we don't have any specific glyph range, assume Central European, except if English, then keep the size down.
   if ((!gi || !gi->used_glyphs) && language != "en")
   {
-    s_glyph_ranges.insert(s_glyph_ranges.begin(), std::begin(s_central_european_ranges),
-                          std::end(s_central_european_ranges));
+    glyph_ranges.insert(glyph_ranges.begin(), std::begin(s_central_european_ranges),
+                        std::end(s_central_european_ranges));
   }
 
   // List terminator.
-  s_glyph_ranges.push_back(0);
-  s_glyph_ranges.push_back(0);
+  glyph_ranges.push_back(0);
+  glyph_ranges.push_back(0);
 
-  ImGuiManager::SetFontPath(std::move(font_path));
-  ImGuiManager::SetFontRange(s_glyph_ranges.data());
+  ImGuiManager::SetFontPathAndRange(std::move(font_path), std::move(glyph_ranges));
 }
 
 // clang-format off

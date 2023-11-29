@@ -709,12 +709,14 @@ std::string MainWindow::getDeviceDiscPath(const QString& title)
 
 void MainWindow::recreate()
 {
-  if (s_system_valid)
+  const bool was_display_created = m_display_created;
+  if (was_display_created)
   {
-    requestShutdown(false, true, true);
-
-    while (s_system_valid)
+    g_emu_thread->setSurfaceless(true);
+    while (m_display_widget || !g_emu_thread->isSurfaceless())
       QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
+
+    m_display_created = false;
   }
 
   // We need to close input sources, because e.g. DInput uses our window handle.
@@ -724,11 +726,19 @@ void MainWindow::recreate()
   g_main_window = nullptr;
 
   MainWindow* new_main_window = new MainWindow();
+  DebugAssert(g_main_window == new_main_window);
   new_main_window->show();
   deleteLater();
 
   // Reload the sources we just closed.
   g_emu_thread->reloadInputSources();
+
+  if (was_display_created)
+  {
+    g_emu_thread->setSurfaceless(false);
+    g_main_window->updateEmulationActions(false, System::IsValid(), Achievements::IsHardcoreModeActive());
+    g_main_window->onFullscreenUIStateChange(g_emu_thread->isRunningFullscreenUI());
+  }
 }
 
 void MainWindow::destroySubWindows()
@@ -2464,10 +2474,11 @@ void MainWindow::showEvent(QShowEvent* event)
 void MainWindow::closeEvent(QCloseEvent* event)
 {
   // If there's no VM, we can just exit as normal.
-  if (!s_system_valid)
+  if (!s_system_valid || !m_display_created)
   {
     saveGeometryToConfig();
-    g_emu_thread->stopFullscreenUI();
+    if (m_display_created)
+      g_emu_thread->stopFullscreenUI();
     destroySubWindows();
     QMainWindow::closeEvent(event);
     return;

@@ -74,7 +74,7 @@ static float s_global_prescale = 1.0f; // before window scale
 static float s_global_scale = 1.0f;
 
 static std::string s_font_path;
-static const ImWchar* s_font_range = nullptr;
+static std::vector<ImWchar> s_font_range;
 
 static ImFont* s_standard_font;
 static ImFont* s_fixed_font;
@@ -109,16 +109,30 @@ static bool s_global_prescale_changed = false;
 static std::array<ImGuiManager::SoftwareCursor, InputManager::MAX_SOFTWARE_CURSORS> s_software_cursors = {};
 } // namespace ImGuiManager
 
-void ImGuiManager::SetFontPath(std::string path)
+void ImGuiManager::SetFontPathAndRange(std::string path, std::vector<u16> range)
 {
-  s_font_path = std::move(path);
-  s_standard_font_data = {};
-}
+  if (s_font_path == path && s_font_range == range)
+    return;
 
-void ImGuiManager::SetFontRange(const u16* range)
-{
-  s_font_range = range;
+  s_font_path = std::move(path);
+  s_font_range = std::move(range);
   s_standard_font_data = {};
+
+  if (ImGui::GetCurrentContext())
+  {
+    ImGui::EndFrame();
+
+    if (!LoadFontData())
+      Panic("Failed to load font data");
+
+    if (!AddImGuiFonts(HasFullscreenFonts()))
+      Panic("Failed to create ImGui font text");
+
+    if (!g_gpu_device->UpdateImGuiFontTexture())
+      Panic("Failed to recreate font texture after scale+resize");
+
+    NewFrame();
+  }
 }
 
 void ImGuiManager::SetGlobalScale(float global_scale)
@@ -527,7 +541,7 @@ ImFont* ImGuiManager::AddTextFont(float size)
   cfg.FontDataOwnedByAtlas = false;
   return ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_standard_font_data.data(),
                                                     static_cast<int>(s_standard_font_data.size()), size, &cfg,
-                                                    s_font_range ? s_font_range : default_ranges);
+                                                    s_font_range.empty() ? default_ranges : s_font_range.data());
 }
 
 ImFont* ImGuiManager::AddFixedFont(float size)
