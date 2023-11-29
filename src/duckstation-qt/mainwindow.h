@@ -27,7 +27,7 @@ class QProgressBar;
 class GameListWidget;
 class EmuThread;
 class AutoUpdaterDialog;
-class MemoryCardEditorDialog;
+class MemoryCardEditorWindow;
 class CheatManagerDialog;
 class DebuggerWindow;
 class MainWindow;
@@ -284,7 +284,7 @@ private:
   ControllerSettingsWindow* m_controller_settings_window = nullptr;
 
   AutoUpdaterDialog* m_auto_updater_dialog = nullptr;
-  MemoryCardEditorDialog* m_memory_card_editor_dialog = nullptr;
+  MemoryCardEditorWindow* m_memory_card_editor_window = nullptr;
   CheatManagerDialog* m_cheat_manager_dialog = nullptr;
   DebuggerWindow* m_debugger_window = nullptr;
 

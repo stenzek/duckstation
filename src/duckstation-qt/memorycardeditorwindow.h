@@ -1,9 +1,12 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
+
+#include "ui_memorycardeditorwindow.h"
+
 #include "core/memory_card_image.h"
-#include "ui_memorycardeditordialog.h"
+
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QDialogButtonBox>
@@ -11,13 +14,13 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QTableWidget>
 
-class MemoryCardEditorDialog : public QDialog
+class MemoryCardEditorWindow : public QWidget
 {
   Q_OBJECT
 
 public:
-  MemoryCardEditorDialog(QWidget* parent);
-  ~MemoryCardEditorDialog();
+  MemoryCardEditorWindow();
+  ~MemoryCardEditorWindow();
 
   bool setCardA(const QString& path);
   bool setCardB(const QString& path);

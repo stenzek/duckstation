@@ -27,7 +27,7 @@
     <ClCompile Include="biossettingswidget.cpp" />
     <ClCompile Include="enhancementsettingswidget.cpp" />
     <ClCompile Include="displaysettingswidget.cpp" />
-    <ClCompile Include="memorycardeditordialog.cpp" />
+    <ClCompile Include="memorycardeditorwindow.cpp" />
     <ClCompile Include="postprocessingsettingswidget.cpp" />
     <ClCompile Include="cheatmanagerdialog.cpp" />
     <ClCompile Include="cheatcodeeditordialog.cpp" />
@@ -162,7 +162,7 @@
     <ClCompile Include="$(IntDir)moc_mainwindow.cpp">
       <Filter>moc</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)moc_memorycardeditordialog.cpp">
+    <ClCompile Include="$(IntDir)moc_memorycardeditorwindow.cpp">
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)moc_memorycardsettingswidget.cpp">
@@ -229,7 +229,7 @@
     <QtMoc Include="autoupdaterdialog.h" />
     <QtMoc Include="biossettingswidget.h" />
     <QtMoc Include="enhancementsettingswidget.h" />
-    <QtMoc Include="memorycardeditordialog.h" />
+    <QtMoc Include="memorycardeditorwindow.h" />
     <QtMoc Include="displaysettingswidget.h" />
     <QtMoc Include="postprocessingsettingswidget.h" />
     <QtMoc Include="cheatmanagerdialog.h" />
@@ -267,7 +267,7 @@
     <QtUi Include="enhancementsettingswidget.ui" />
     <QtUi Include="displaysettingswidget.ui" />
     <QtUi Include="postprocessingsettingswidget.ui" />
-    <QtUi Include="memorycardeditordialog.ui" />
+    <QtUi Include="memorycardeditorwindow.ui" />
     <QtUi Include="cheatmanagerdialog.ui" />
     <QtUi Include="cheatcodeeditordialog.ui" />
     <QtUi Include="emulationsettingswidget.ui" />

@@ -13,7 +13,7 @@
 #include "gamelistwidget.h"
 #include "generalsettingswidget.h"
 #include "logwindow.h"
-#include "memorycardeditordialog.h"
+#include "memorycardeditorwindow.h"
 #include "qthost.h"
 #include "qtutils.h"
 #include "settingswindow.h"
@@ -738,6 +738,13 @@ void MainWindow::destroySubWindows()
     m_debugger_window->close();
     m_debugger_window->deleteLater();
     m_debugger_window = nullptr;
+  }
+
+  if (m_memory_card_editor_window)
+  {
+    m_memory_card_editor_window->close();
+    m_memory_card_editor_window->deleteLater();
+    m_memory_card_editor_window = nullptr;
   }
 
   if (m_controller_settings_window)
@@ -2342,6 +2349,7 @@ void MainWindow::doSettings(const char* category /* = nullptr */)
   else
   {
     dlg->raise();
+    dlg->activateWindow();
     dlg->setFocus();
   }
 
@@ -2362,6 +2370,7 @@ void MainWindow::doControllerSettings(
   else
   {
     m_controller_settings_window->raise();
+    m_controller_settings_window->activateWindow();
     m_controller_settings_window->setFocus();
   }
 
@@ -2682,25 +2691,26 @@ void MainWindow::openMemoryCardEditor(const QString& card_a_path, const QString&
             tr("Memory card '%1' does not exist. Do you want to create an empty memory card?").arg(card_path),
             QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
       {
-        if (!MemoryCardEditorDialog::createMemoryCard(card_path))
+        if (!MemoryCardEditorWindow::createMemoryCard(card_path))
           QMessageBox::critical(this, tr("Memory Card Not Found"),
                                 tr("Failed to create memory card '%1'").arg(card_path));
       }
     }
   }
 
-  if (!m_memory_card_editor_dialog)
+  if (!m_memory_card_editor_window)
   {
-    m_memory_card_editor_dialog = new MemoryCardEditorDialog(this);
-    m_memory_card_editor_dialog->setModal(false);
+    m_memory_card_editor_window = new MemoryCardEditorWindow();
+    m_memory_card_editor_window->show();
   }
 
-  m_memory_card_editor_dialog->show();
-  m_memory_card_editor_dialog->activateWindow();
+  m_memory_card_editor_window->raise();
+  m_memory_card_editor_window->activateWindow();
+  m_memory_card_editor_window->setFocus();
 
   if (!card_a_path.isEmpty())
   {
-    if (!m_memory_card_editor_dialog->setCardA(card_a_path))
+    if (!m_memory_card_editor_window->setCardA(card_a_path))
     {
       QMessageBox::critical(
         this, tr("Memory Card Not Found"),
@@ -2709,7 +2719,7 @@ void MainWindow::openMemoryCardEditor(const QString& card_a_path, const QString&
   }
   if (!card_b_path.isEmpty())
   {
-    if (!m_memory_card_editor_dialog->setCardB(card_b_path))
+    if (!m_memory_card_editor_window->setCardB(card_b_path))
     {
       QMessageBox::critical(
         this, tr("Memory Card Not Found"),

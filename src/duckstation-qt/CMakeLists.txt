@@ -116,9 +116,9 @@ set(SRCS
   mainwindow.cpp
   mainwindow.h
   mainwindow.ui
-  memorycardeditordialog.cpp
-  memorycardeditordialog.h
-  memorycardeditordialog.ui
+  memorycardeditorwindow.cpp
+  memorycardeditorwindow.h
+  memorycardeditorwindow.ui
   memorycardsettingswidget.cpp
   memorycardsettingswidget.h
   memoryviewwidget.cpp

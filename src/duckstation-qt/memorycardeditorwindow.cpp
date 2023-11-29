@@ -1,7 +1,7 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
-#include "memorycardeditordialog.h"
+#include "memorycardeditorwindow.h"
 #include "common/file_system.h"
 #include "common/path.h"
 #include "common/string_util.h"
@@ -19,7 +19,7 @@ static constexpr char MEMORY_CARD_IMPORT_FILTER[] =
 static constexpr char SINGLE_SAVEFILE_FILTER[] =
   TRANSLATE_NOOP("MemoryCardEditorDialog", "Single Save Files (*.mcs);;All Files (*.*)");
 
-MemoryCardEditorDialog::MemoryCardEditorDialog(QWidget* parent) : QDialog(parent)
+MemoryCardEditorWindow::MemoryCardEditorWindow() : QWidget()
 {
   m_ui.setupUi(this);
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -53,9 +53,9 @@ MemoryCardEditorDialog::MemoryCardEditorDialog(QWidget* parent) : QDialog(parent
   m_ui.openCardB->setToolTip(open_card_hover_text);
 }
 
-MemoryCardEditorDialog::~MemoryCardEditorDialog() = default;
+MemoryCardEditorWindow::~MemoryCardEditorWindow() = default;
 
-bool MemoryCardEditorDialog::setCardA(const QString& path)
+bool MemoryCardEditorWindow::setCardA(const QString& path)
 {
   int index = m_ui.cardAPath->findData(QVariant(QDir::toNativeSeparators(path)));
   if (index < 0)
@@ -73,7 +73,7 @@ bool MemoryCardEditorDialog::setCardA(const QString& path)
   return true;
 }
 
-bool MemoryCardEditorDialog::setCardB(const QString& path)
+bool MemoryCardEditorWindow::setCardB(const QString& path)
 {
   int index = m_ui.cardBPath->findData(QVariant(QDir::toNativeSeparators(path)));
   if (index < 0)
@@ -91,7 +91,7 @@ bool MemoryCardEditorDialog::setCardB(const QString& path)
   return true;
 }
 
-bool MemoryCardEditorDialog::createMemoryCard(const QString& path)
+bool MemoryCardEditorWindow::createMemoryCard(const QString& path)
 {
   MemoryCardImage::DataArray data;
   MemoryCardImage::Format(&data);
@@ -99,19 +99,19 @@ bool MemoryCardEditorDialog::createMemoryCard(const QString& path)
   return MemoryCardImage::SaveToFile(data, path.toUtf8().constData());
 }
 
-void MemoryCardEditorDialog::resizeEvent(QResizeEvent* ev)
+void MemoryCardEditorWindow::resizeEvent(QResizeEvent* ev)
 {
   QtUtils::ResizeColumnsForTableView(m_card_a.table, {32, -1, 155, 45});
   QtUtils::ResizeColumnsForTableView(m_card_b.table, {32, -1, 155, 45});
 }
 
-void MemoryCardEditorDialog::closeEvent(QCloseEvent* ev)
+void MemoryCardEditorWindow::closeEvent(QCloseEvent* ev)
 {
   m_card_a.path_cb->setCurrentIndex(0);
   m_card_b.path_cb->setCurrentIndex(0);
 }
 
-void MemoryCardEditorDialog::createCardButtons(Card* card, QDialogButtonBox* buttonBox)
+void MemoryCardEditorWindow::createCardButtons(Card* card, QDialogButtonBox* buttonBox)
 {
   card->format_button = buttonBox->addButton(tr("Format Card"), QDialogButtonBox::ActionRole);
   card->import_file_button = buttonBox->addButton(tr("Import File..."), QDialogButtonBox::ActionRole);
@@ -119,7 +119,7 @@ void MemoryCardEditorDialog::createCardButtons(Card* card, QDialogButtonBox* but
   card->save_button = buttonBox->addButton(tr("Save"), QDialogButtonBox::ActionRole);
 }
 
-void MemoryCardEditorDialog::connectCardUi(Card* card, QDialogButtonBox* buttonBox)
+void MemoryCardEditorWindow::connectCardUi(Card* card, QDialogButtonBox* buttonBox)
 {
   connect(card->save_button, &QPushButton::clicked, [this, card] { saveCard(card); });
   connect(card->format_button, &QPushButton::clicked, [this, card] { formatCard(card); });
@@ -127,14 +127,14 @@ void MemoryCardEditorDialog::connectCardUi(Card* card, QDialogButtonBox* buttonB
   connect(card->import_button, &QPushButton::clicked, [this, card] { importCard(card); });
 }
 
-void MemoryCardEditorDialog::connectUi()
+void MemoryCardEditorWindow::connectUi()
 {
-  connect(m_ui.cardA, &QTableWidget::itemSelectionChanged, this, &MemoryCardEditorDialog::onCardASelectionChanged);
-  connect(m_ui.cardB, &QTableWidget::itemSelectionChanged, this, &MemoryCardEditorDialog::onCardBSelectionChanged);
-  connect(m_moveLeft, &QPushButton::clicked, this, &MemoryCardEditorDialog::doCopyFile);
-  connect(m_moveRight, &QPushButton::clicked, this, &MemoryCardEditorDialog::doCopyFile);
-  connect(m_deleteFile, &QPushButton::clicked, this, &MemoryCardEditorDialog::doDeleteFile);
-  connect(m_undeleteFile, &QPushButton::clicked, this, &MemoryCardEditorDialog::doUndeleteFile);
+  connect(m_ui.cardA, &QTableWidget::itemSelectionChanged, this, &MemoryCardEditorWindow::onCardASelectionChanged);
+  connect(m_ui.cardB, &QTableWidget::itemSelectionChanged, this, &MemoryCardEditorWindow::onCardBSelectionChanged);
+  connect(m_moveLeft, &QPushButton::clicked, this, &MemoryCardEditorWindow::doCopyFile);
+  connect(m_moveRight, &QPushButton::clicked, this, &MemoryCardEditorWindow::doCopyFile);
+  connect(m_deleteFile, &QPushButton::clicked, this, &MemoryCardEditorWindow::doDeleteFile);
+  connect(m_undeleteFile, &QPushButton::clicked, this, &MemoryCardEditorWindow::doUndeleteFile);
 
   connect(m_ui.cardAPath, QOverload<int>::of(&QComboBox::currentIndexChanged),
           [this](int index) { loadCardFromComboBox(&m_card_a, index); });
@@ -144,10 +144,10 @@ void MemoryCardEditorDialog::connectUi()
   connect(m_ui.newCardB, &QPushButton::clicked, [this]() { newCard(&m_card_b); });
   connect(m_ui.openCardA, &QPushButton::clicked, [this]() { openCard(&m_card_a); });
   connect(m_ui.openCardB, &QPushButton::clicked, [this]() { openCard(&m_card_b); });
-  connect(m_exportFile, &QPushButton::clicked, this, &MemoryCardEditorDialog::doExportSaveFile);
+  connect(m_exportFile, &QPushButton::clicked, this, &MemoryCardEditorWindow::doExportSaveFile);
 }
 
-void MemoryCardEditorDialog::populateComboBox(QComboBox* cb)
+void MemoryCardEditorWindow::populateComboBox(QComboBox* cb)
 {
   QSignalBlocker sb(cb);
 
@@ -169,12 +169,12 @@ void MemoryCardEditorDialog::populateComboBox(QComboBox* cb)
   }
 }
 
-void MemoryCardEditorDialog::loadCardFromComboBox(Card* card, int index)
+void MemoryCardEditorWindow::loadCardFromComboBox(Card* card, int index)
 {
   loadCard(card->path_cb->itemData(index).toString(), card);
 }
 
-void MemoryCardEditorDialog::onCardASelectionChanged()
+void MemoryCardEditorWindow::onCardASelectionChanged()
 {
   {
     QSignalBlocker cb(m_card_b.table);
@@ -184,7 +184,7 @@ void MemoryCardEditorDialog::onCardASelectionChanged()
   updateButtonState();
 }
 
-void MemoryCardEditorDialog::onCardBSelectionChanged()
+void MemoryCardEditorWindow::onCardBSelectionChanged()
 {
   {
     QSignalBlocker cb(m_card_a.table);
@@ -194,7 +194,7 @@ void MemoryCardEditorDialog::onCardBSelectionChanged()
   updateButtonState();
 }
 
-void MemoryCardEditorDialog::clearSelection()
+void MemoryCardEditorWindow::clearSelection()
 {
   {
     QSignalBlocker cb(m_card_a.table);
@@ -209,7 +209,7 @@ void MemoryCardEditorDialog::clearSelection()
   updateButtonState();
 }
 
-bool MemoryCardEditorDialog::loadCard(const QString& filename, Card* card)
+bool MemoryCardEditorWindow::loadCard(const QString& filename, Card* card)
 {
   promptForSave(card);
 
@@ -250,7 +250,7 @@ static void setCardTableItemProperties(QTableWidgetItem* item, const MemoryCardI
   }
 }
 
-void MemoryCardEditorDialog::updateCardTable(Card* card)
+void MemoryCardEditorWindow::updateCardTable(Card* card)
 {
   card->table->setRowCount(0);
 
@@ -289,20 +289,20 @@ void MemoryCardEditorDialog::updateCardTable(Card* card)
   }
 }
 
-void MemoryCardEditorDialog::updateCardBlocksFree(Card* card)
+void MemoryCardEditorWindow::updateCardBlocksFree(Card* card)
 {
   card->blocks_free = MemoryCardImage::GetFreeBlockCount(card->data);
   card->blocks_free_label->setText(
     tr("%n block(s) free%1", "", card->blocks_free).arg(card->dirty ? QStringLiteral(" (*)") : QString()));
 }
 
-void MemoryCardEditorDialog::setCardDirty(Card* card)
+void MemoryCardEditorWindow::setCardDirty(Card* card)
 {
   card->dirty = true;
   card->save_button->setEnabled(true);
 }
 
-void MemoryCardEditorDialog::newCard(Card* card)
+void MemoryCardEditorWindow::newCard(Card* card)
 {
   promptForSave(card);
 
@@ -328,7 +328,7 @@ void MemoryCardEditorDialog::newCard(Card* card)
   saveCard(card);
 }
 
-void MemoryCardEditorDialog::openCard(Card* card)
+void MemoryCardEditorWindow::openCard(Card* card)
 {
   promptForSave(card);
 
@@ -357,7 +357,7 @@ void MemoryCardEditorDialog::openCard(Card* card)
   updateButtonState();
 }
 
-void MemoryCardEditorDialog::saveCard(Card* card)
+void MemoryCardEditorWindow::saveCard(Card* card)
 {
   if (card->filename.empty())
     return;
@@ -374,7 +374,7 @@ void MemoryCardEditorDialog::saveCard(Card* card)
   updateCardBlocksFree(card);
 }
 
-void MemoryCardEditorDialog::promptForSave(Card* card)
+void MemoryCardEditorWindow::promptForSave(Card* card)
 {
   if (card->filename.empty() || !card->dirty)
     return;
@@ -390,7 +390,7 @@ void MemoryCardEditorDialog::promptForSave(Card* card)
   saveCard(card);
 }
 
-void MemoryCardEditorDialog::doCopyFile()
+void MemoryCardEditorWindow::doCopyFile()
 {
   const auto [src, fi] = getSelectedFile();
   if (!fi)
@@ -440,7 +440,7 @@ void MemoryCardEditorDialog::doCopyFile()
   updateButtonState();
 }
 
-void MemoryCardEditorDialog::doDeleteFile()
+void MemoryCardEditorWindow::doDeleteFile()
 {
   const auto [card, fi] = getSelectedFile();
   if (!fi)
@@ -459,7 +459,7 @@ void MemoryCardEditorDialog::doDeleteFile()
   updateButtonState();
 }
 
-void MemoryCardEditorDialog::doUndeleteFile()
+void MemoryCardEditorWindow::doUndeleteFile()
 {
   const auto [card, fi] = getSelectedFile();
   if (!fi)
@@ -481,7 +481,7 @@ void MemoryCardEditorDialog::doUndeleteFile()
   updateButtonState();
 }
 
-void MemoryCardEditorDialog::doExportSaveFile()
+void MemoryCardEditorWindow::doExportSaveFile()
 {
   QString filename = QDir::toNativeSeparators(
     QFileDialog::getSaveFileName(this, tr("Select Single Savefile"), QString(), tr(SINGLE_SAVEFILE_FILTER)));
@@ -502,7 +502,7 @@ void MemoryCardEditorDialog::doExportSaveFile()
   }
 }
 
-void MemoryCardEditorDialog::importCard(Card* card)
+void MemoryCardEditorWindow::importCard(Card* card)
 {
   promptForSave(card);
 
@@ -527,7 +527,7 @@ void MemoryCardEditorDialog::importCard(Card* card)
   updateButtonState();
 }
 
-void MemoryCardEditorDialog::formatCard(Card* card)
+void MemoryCardEditorWindow::formatCard(Card* card)
 {
   promptForSave(card);
 
@@ -550,7 +550,7 @@ void MemoryCardEditorDialog::formatCard(Card* card)
   updateButtonState();
 }
 
-void MemoryCardEditorDialog::importSaveFile(Card* card)
+void MemoryCardEditorWindow::importSaveFile(Card* card)
 {
   QString filename =
     QFileDialog::getOpenFileName(this, tr("Select Import Save File"), QString(), tr(SINGLE_SAVEFILE_FILTER));
@@ -571,7 +571,7 @@ void MemoryCardEditorDialog::importSaveFile(Card* card)
   updateCardBlocksFree(card);
 }
 
-std::tuple<MemoryCardEditorDialog::Card*, const MemoryCardImage::FileInfo*> MemoryCardEditorDialog::getSelectedFile()
+std::tuple<MemoryCardEditorWindow::Card*, const MemoryCardImage::FileInfo*> MemoryCardEditorWindow::getSelectedFile()
 {
   QList<QTableWidgetSelectionRange> sel = m_card_a.table->selectedRanges();
   Card* card = &m_card_a;
@@ -591,7 +591,7 @@ std::tuple<MemoryCardEditorDialog::Card*, const MemoryCardImage::FileInfo*> Memo
   return std::tuple<Card*, const MemoryCardImage::FileInfo*>(card, &card->files[index]);
 }
 
-void MemoryCardEditorDialog::updateButtonState()
+void MemoryCardEditorWindow::updateButtonState()
 {
   const auto [selected_card, selected_file] = getSelectedFile();
   const bool is_card_b = (selected_card == &m_card_b);

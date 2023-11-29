@@ -41,7 +41,7 @@
     <ClCompile Include="gdbserver.cpp" />
     <ClCompile Include="mainwindow.cpp" />
     <ClCompile Include="memorycardsettingswidget.cpp" />
-    <ClCompile Include="memorycardeditordialog.cpp" />
+    <ClCompile Include="memorycardeditorwindow.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
@@ -64,7 +64,7 @@
     <QtMoc Include="coverdownloaddialog.h" />
     <QtMoc Include="enhancementsettingswidget.h" />
     <QtMoc Include="memorycardsettingswidget.h" />
-    <QtMoc Include="memorycardeditordialog.h" />
+    <QtMoc Include="memorycardeditorwindow.h" />
     <QtMoc Include="displaywidget.h" />
     <QtMoc Include="generalsettingswidget.h" />
     <QtMoc Include="displaysettingswidget.h" />
@@ -146,7 +146,7 @@
     <QtUi Include="postprocessingsettingswidget.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <QtUi Include="memorycardeditordialog.ui">
+    <QtUi Include="memorycardeditorwindow.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="cheatmanagerdialog.ui">
@@ -263,7 +263,7 @@
     <ClCompile Include="$(IntDir)moc_logwindow.cpp" />
     <ClCompile Include="$(IntDir)moc_mainwindow.cpp" />
     <ClCompile Include="$(IntDir)moc_memorycardsettingswidget.cpp" />
-    <ClCompile Include="$(IntDir)moc_memorycardeditordialog.cpp" />
+    <ClCompile Include="$(IntDir)moc_memorycardeditorwindow.cpp" />
     <ClCompile Include="$(IntDir)moc_memoryviewwidget.cpp" />
     <ClCompile Include="$(IntDir)moc_postprocessingsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_qthost.cpp" />
