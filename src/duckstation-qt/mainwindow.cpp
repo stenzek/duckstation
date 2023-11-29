@@ -1648,32 +1648,29 @@ void MainWindow::setupAdditionalUi()
   }
   updateDebugMenuCropMode();
 
-  const QString current_language(QString::fromStdString(Host::GetBaseStringSettingValue("Main", "Language", "")));
+  const std::string current_language = Host::GetBaseStringSettingValue("Main", "Language", "");
   QActionGroup* language_group = new QActionGroup(m_ui.menuSettingsLanguage);
-  for (const std::pair<QString, QString>& it : QtHost::GetAvailableLanguageList())
+  for (const auto& [language, code] : Host::GetAvailableLanguageList())
   {
-    QAction* action = language_group->addAction(it.first);
+    QAction* action = language_group->addAction(QString::fromUtf8(language));
     action->setCheckable(true);
-    action->setChecked(current_language == it.second);
+    action->setChecked(current_language == code);
 
-    QString icon_filename(QStringLiteral(":/icons/flags/%1.png").arg(it.second));
+    QString icon_filename(QStringLiteral(":/icons/flags/%1.png").arg(QLatin1StringView(code)));
     if (!QFile::exists(icon_filename))
     {
       // try without the suffix (e.g. es-es -> es)
-      const int pos = it.second.lastIndexOf('-');
-      if (pos >= 0)
-        icon_filename = QStringLiteral(":/icons/flags/%1.png").arg(it.second.left(pos));
+      const char* pos = std::strrchr(code, '-');
+      if (pos)
+        icon_filename = QStringLiteral(":/icons/flags/%1.png").arg(QLatin1StringView(pos));
     }
     action->setIcon(QIcon(icon_filename));
 
     m_ui.menuSettingsLanguage->addAction(action);
-    action->setData(it.second);
+    action->setData(QString::fromLatin1(code));
     connect(action, &QAction::triggered, [this, action]() {
       const QString new_language = action->data().toString();
-      Host::SetBaseStringSettingValue("Main", "Language", new_language.toUtf8().constData());
-      Host::CommitBaseSettingChanges();
-      QtHost::InstallTranslator();
-      recreate();
+      Host::ChangeLanguage(new_language.toUtf8().constData());
     });
   }
 

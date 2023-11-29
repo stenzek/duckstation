@@ -253,9 +253,6 @@ bool InNoGUIMode();
 /// Executes a function on the UI thread.
 void RunOnUIThread(const std::function<void()>& func, bool block = false);
 
-/// Returns a list of supported languages and codes (suffixes for translation files).
-std::vector<std::pair<QString, QString>> GetAvailableLanguageList();
-
 /// Default language for the platform.
 const char* GetDefaultLanguage();
 

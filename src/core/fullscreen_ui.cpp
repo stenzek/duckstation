@@ -2795,6 +2795,34 @@ void FullscreenUI::DrawInterfaceSettingsPage()
     ImGuiFullscreen::SetTheme(bsi->GetBoolValue("Main", "UseLightFullscreenUITheme", false));
   }
 
+  {
+    // Have to do this the annoying way, because it's host-derived.
+    const auto language_list = Host::GetAvailableLanguageList();
+    std::string current_language = bsi->GetStringValue("Main", "Language", "");
+    const char* current_language_name = "Unknown";
+    for (const auto& [language, code] : language_list)
+    {
+      if (current_language == code)
+        current_language_name = language;
+    }
+    if (MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_LANGUAGE, "UI Language"),
+                            FSUI_CSTR("Chooses the language used for UI elements."), current_language_name))
+    {
+      ImGuiFullscreen::ChoiceDialogOptions options;
+      for (const auto& [language, code] : language_list)
+        options.emplace_back(fmt::format("{} [{}]", language, code), (current_language == code));
+      OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_LANGUAGE, "UI Language"), false, std::move(options),
+                       [language_list](s32 index, const std::string& title, bool checked) {
+                         if (static_cast<u32>(index) >= language_list.size())
+                           return;
+
+                         ImGuiFullscreen::CloseChoiceDialog();
+                         Host::RunOnCPUThread(
+                           [language = language_list[index].second]() { Host::ChangeLanguage(language); });
+                       });
+    }
+  }
+
 #ifdef ENABLE_DISCORD_PRESENCE
   MenuHeading(FSUI_CSTR("Integration"));
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_CHARGING_STATION, "Enable Discord Presence"),
@@ -6777,6 +6805,7 @@ TRANSLATE_NOOP("FullscreenUI", "Change settings for the emulator.");
 TRANSLATE_NOOP("FullscreenUI", "Changes the aspect ratio used to display the console's output to the screen.");
 TRANSLATE_NOOP("FullscreenUI", "Cheat List");
 TRANSLATE_NOOP("FullscreenUI", "Chooses the backend to use for rendering the console/game visuals.");
+TRANSLATE_NOOP("FullscreenUI", "Chooses the language used for UI elements.");
 TRANSLATE_NOOP("FullscreenUI", "Chroma Smoothing For 24-Bit Display");
 TRANSLATE_NOOP("FullscreenUI", "Clean Boot");
 TRANSLATE_NOOP("FullscreenUI", "Clear Settings");
@@ -7218,6 +7247,7 @@ TRANSLATE_NOOP("FullscreenUI", "Toggle every %d frames");
 TRANSLATE_NOOP("FullscreenUI", "True Color Rendering");
 TRANSLATE_NOOP("FullscreenUI", "Turbo Speed");
 TRANSLATE_NOOP("FullscreenUI", "Type");
+TRANSLATE_NOOP("FullscreenUI", "UI Language");
 TRANSLATE_NOOP("FullscreenUI", "Undo Load State");
 TRANSLATE_NOOP("FullscreenUI", "Unknown");
 TRANSLATE_NOOP("FullscreenUI", "Unlimited");

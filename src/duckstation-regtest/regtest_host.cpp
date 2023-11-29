@@ -146,6 +146,16 @@ void Host::ReportDebuggerMessage(const std::string_view& message)
   Log_ErrorPrintf("ReportDebuggerMessage: %.*s", static_cast<int>(message.size()), message.data());
 }
 
+std::span<const std::pair<const char*, const char*>> Host::GetAvailableLanguageList()
+{
+  return {};
+}
+
+bool Host::ChangeLanguage(const char* new_language)
+{
+  return false;
+}
+
 s32 Host::Internal::GetTranslatedStringImpl(const std::string_view& context, const std::string_view& msg, char* tbuf,
                                             size_t tbuf_space)
 {

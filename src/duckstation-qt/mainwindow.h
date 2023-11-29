@@ -107,6 +107,7 @@ public Q_SLOTS:
   std::optional<WindowInfo> getWindowInfo();
 
   void checkForUpdates(bool display_message);
+  void recreate();
 
   void* getNativeWindowId();
 
@@ -242,7 +243,6 @@ private:
   void setTheme(const QString& theme);
   void updateTheme();
   void reloadThemeSpecificImages();
-  void recreate();
   void destroySubWindows();
 
   void registerForDeviceNotifications();

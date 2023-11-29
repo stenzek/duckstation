@@ -75,6 +75,12 @@ std::unique_ptr<AudioStream> CreateAudioStream(AudioBackend backend, u32 sample_
 void ReportDebuggerMessage(const std::string_view& message);
 void ReportFormattedDebuggerMessage(const char* format, ...);
 
+/// Returns a list of supported languages and codes (suffixes for translation files).
+std::span<const std::pair<const char*, const char*>> GetAvailableLanguageList();
+
+/// Refreshes the UI when the language is changed.
+bool ChangeLanguage(const char* new_language);
+
 /// Displays a loading screen with the logo, rendered with ImGui. Use when executing possibly-time-consuming tasks
 /// such as compiling shaders when starting up.
 void DisplayLoadingScreen(const char* message, int progress_min = -1, int progress_max = -1, int progress_value = -1);

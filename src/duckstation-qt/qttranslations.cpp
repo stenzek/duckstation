@@ -1,6 +1,7 @@
 ﻿// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
+#include "mainwindow.h"
 #include "qthost.h"
 
 #include "core/host.h"
@@ -202,24 +203,37 @@ static std::string QtHost::GetFontPath(const GlyphInfo* gi)
   return font_path;
 }
 
-std::vector<std::pair<QString, QString>> QtHost::GetAvailableLanguageList()
+std::span<const std::pair<const char*, const char*>> Host::GetAvailableLanguageList()
 {
-  return {{QStringLiteral("English"), QStringLiteral("en")},
-          {QStringLiteral("Deutsch"), QStringLiteral("de")},
-          {QStringLiteral("Español de Latinoamérica"), QStringLiteral("es")},
-          {QStringLiteral("Español de España"), QStringLiteral("es-ES")},
-          {QStringLiteral("Français"), QStringLiteral("fr")},
-          {QStringLiteral("עברית"), QStringLiteral("he")},
-          {QStringLiteral("日本語"), QStringLiteral("ja")},
-          {QStringLiteral("한국어"), QStringLiteral("ko")},
-          {QStringLiteral("Italiano"), QStringLiteral("it")},
-          {QStringLiteral("Nederlands"), QStringLiteral("nl")},
-          {QStringLiteral("Polski"), QStringLiteral("pl")},
-          {QStringLiteral("Português (Pt)"), QStringLiteral("pt-PT")},
-          {QStringLiteral("Português (Br)"), QStringLiteral("pt-BR")},
-          {QStringLiteral("Русский"), QStringLiteral("ru")},
-          {QStringLiteral("Türkçe"), QStringLiteral("tr")},
-          {QStringLiteral("简体中文"), QStringLiteral("zh-CN")}};
+  static constexpr const std::pair<const char*, const char*> languages[] = {{"English", "en"},
+                                                                            {"Deutsch", "de"},
+                                                                            {"Español de Latinoamérica", "es"},
+                                                                            {"Español de España", "es-ES"},
+                                                                            {"Français", "fr"},
+                                                                            {"עברית", "he"},
+                                                                            {"日本語", "ja"},
+                                                                            {"한국어", "ko"},
+                                                                            {"Italiano", "it"},
+                                                                            {"Nederlands", "nl"},
+                                                                            {"Polski", "pl"},
+                                                                            {"Português (Pt)", "pt-PT"},
+                                                                            {"Português (Br)", "pt-BR"},
+                                                                            {"Русский", "ru"},
+                                                                            {"Türkçe", "tr"},
+                                                                            {"简体中文", "zh-CN"}};
+
+  return languages;
+}
+
+bool Host::ChangeLanguage(const char* new_language)
+{
+  QtHost::RunOnUIThread([new_language = std::string(new_language)]() {
+    Host::SetBaseStringSettingValue("Main", "Language", new_language.c_str());
+    Host::CommitBaseSettingChanges();
+    QtHost::InstallTranslator();
+    g_main_window->recreate();
+  });
+  return true;
 }
 
 const char* QtHost::GetDefaultLanguage()

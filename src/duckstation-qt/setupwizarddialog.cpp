@@ -186,8 +186,8 @@ void SetupWizardDialog::setupLanguagePage()
                                                GeneralSettingsWidget::DEFAULT_THEME_NAME, "InterfaceSettingsWidget");
   connect(m_ui.theme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SetupWizardDialog::themeChanged);
 
-  for (const std::pair<QString, QString>& it : QtHost::GetAvailableLanguageList())
-    m_ui.language->addItem(it.first, it.second);
+  for (const auto& [language, code] : Host::GetAvailableLanguageList())
+    m_ui.language->addItem(QString::fromUtf8(language), QString::fromLatin1(code));
   SettingWidgetBinder::BindWidgetToStringSetting(nullptr, m_ui.language, "Main", "Language",
                                                  QtHost::GetDefaultLanguage());
   connect(m_ui.language, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
