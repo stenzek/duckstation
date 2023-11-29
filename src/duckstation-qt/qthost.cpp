@@ -290,7 +290,7 @@ void QtHost::SetDataDirectory()
       EmuFolders::DataRoot = Path::Combine(StringUtil::WideStringToUTF8String(documents_directory), "DuckStation");
     CoTaskMemFree(documents_directory);
   }
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__FreeBSD__)
   // Use $XDG_CONFIG_HOME/duckstation if it exists.
   const char* xdg_config_home = getenv("XDG_CONFIG_HOME");
   if (xdg_config_home && Path::IsAbsolute(xdg_config_home))
