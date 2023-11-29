@@ -13,7 +13,7 @@ with open(src_file, "r") as f:
     full_source = f.read()
 
 strings = set()
-for token in ["FSUI_STR", "FSUI_CSTR", "FSUI_FSTR", "FSUI_NSTR", "FSUI_ICONSTR"]:
+for token in ["FSUI_STR", "FSUI_CSTR", "FSUI_FSTR", "FSUI_NSTR", "FSUI_ICONSTR", "FSUI_VSTR"]:
     token_len = len(token)
     last_pos = 0
     while True:

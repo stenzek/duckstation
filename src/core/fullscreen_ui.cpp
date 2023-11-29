@@ -3380,7 +3380,7 @@ void FullscreenUI::DrawControllerSettingsPage()
     const std::string type(bsi->GetStringValue(section.c_str(), "Type", Controller::GetDefaultPadType(global_slot)));
     const Controller::ControllerInfo* ci = Controller::GetControllerInfo(type);
     if (MenuButton(TinyString::from_fmt("{}##type{}", FSUI_ICONSTR(ICON_FA_GAMEPAD, "Controller Type"), global_slot),
-                   ci ? ci->display_name : FSUI_CSTR("Unknown")))
+                   ci ? Host::TranslateToCString(ci->name, ci->display_name) : FSUI_CSTR("Unknown")))
     {
       std::vector<std::pair<std::string, std::string>> raw_options(Controller::GetControllerTypeNames());
       ImGuiFullscreen::ChoiceDialogOptions options;
@@ -7127,6 +7127,8 @@ TRANSLATE_NOOP("FullscreenUI", "Resume Game");
 TRANSLATE_NOOP("FullscreenUI", "Rewind Save Frequency");
 TRANSLATE_NOOP("FullscreenUI", "Rewind Save Slots");
 TRANSLATE_NOOP("FullscreenUI", "Rewind for {0} frames, lasting {1:.2f} seconds will require up to {2} MB of RAM and {3} MB of VRAM.");
+TRANSLATE_NOOP("FullscreenUI", "Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.");
+TRANSLATE_NOOP("FullscreenUI", "Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.");
 TRANSLATE_NOOP("FullscreenUI", "Rich presence inactive or unsupported.");
 TRANSLATE_NOOP("FullscreenUI", "Runahead");
 TRANSLATE_NOOP("FullscreenUI", "Runahead/Rewind");
