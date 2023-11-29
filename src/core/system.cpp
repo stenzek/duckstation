@@ -3964,6 +3964,7 @@ void System::DoRewind()
 
   InvalidateDisplay();
   Host::PumpMessagesOnCPUThread();
+  Internal::IdlePollUpdate();
 
   Throttle();
 }
