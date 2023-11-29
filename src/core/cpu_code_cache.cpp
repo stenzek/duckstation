@@ -442,6 +442,7 @@ CPU::CodeCache::Block* CPU::CodeCache::CreateBlock(u32 pc, const BlockInstructio
       Assert(it != s_blocks.end());
       s_blocks.erase(it);
 
+      block->~Block();
       std::free(block);
       block = nullptr;
     }
@@ -452,6 +453,7 @@ CPU::CodeCache::Block* CPU::CodeCache::CreateBlock(u32 pc, const BlockInstructio
     block =
       static_cast<Block*>(std::malloc(sizeof(Block) + (sizeof(Instruction) * size) + (sizeof(InstructionInfo) * size)));
     Assert(block);
+    new (block) Block();
     s_blocks.push_back(block);
   }
 
@@ -710,7 +712,10 @@ void CPU::CodeCache::ClearBlocks()
 #endif
 
   for (Block* block : s_blocks)
+  {
+    block->~Block();
     std::free(block);
+  }
   s_blocks.clear();
 
   std::memset(s_lut_block_pointers.get(), 0, sizeof(Block*) * GetLUTSlotCount(false));
