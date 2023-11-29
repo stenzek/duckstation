@@ -26,10 +26,14 @@
 #include "util/ini_settings_interface.h"
 
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/file_system.h"
+#include "common/log.h"
 
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QTextEdit>
+
+Log_SetChannel(SettingsWindow);
 
 static QList<SettingsWindow*> s_open_game_properties_dialogs;
 
@@ -484,18 +488,35 @@ void SettingsWindow::openGamePropertiesDialog(const std::string& path, const std
     }
   }
 
-  std::string filename(System::GetGameSettingsPath(serial));
-  std::unique_ptr<INISettingsInterface> sif = std::make_unique<INISettingsInterface>(std::move(filename));
+  const GameDatabase::Entry* dentry = nullptr;
+  if (!System::IsExeFileName(path) && !System::IsPsfFileName(path))
+  {
+    // Need to resolve hash games.
+    Error error;
+    std::unique_ptr<CDImage> image = CDImage::Open(path.c_str(), false, &error);
+    if (image)
+      dentry = GameDatabase::GetEntryForDisc(image.get());
+    else
+      Log_ErrorFmt("Failed to open '{}' for game properties: {}", path, error.GetDescription());
+
+    if (!dentry)
+    {
+      // Use the serial and hope for the best...
+      dentry = GameDatabase::GetEntryForSerial(serial);
+    }
+  }
+
+  const std::string& real_serial = dentry ? dentry->serial : serial;
+  std::string ini_filename = System::GetGameSettingsPath(real_serial);
+  std::unique_ptr<INISettingsInterface> sif = std::make_unique<INISettingsInterface>(std::move(ini_filename));
   if (FileSystem::FileExists(sif->GetFileName().c_str()))
     sif->Load();
 
-  const GameDatabase::Entry* dentry = GameDatabase::GetEntryForSerial(serial);
-
   const QString window_title(tr("%1 [%2]")
                                .arg(dentry ? QtUtils::StringViewToQString(dentry->title) : QStringLiteral("<UNKNOWN>"))
-                               .arg(QtUtils::StringViewToQString(serial)));
+                               .arg(QtUtils::StringViewToQString(real_serial)));
 
-  SettingsWindow* dialog = new SettingsWindow(path, serial, region, dentry, std::move(sif));
+  SettingsWindow* dialog = new SettingsWindow(path, real_serial, region, dentry, std::move(sif));
   dialog->setWindowTitle(window_title);
   dialog->show();
 }

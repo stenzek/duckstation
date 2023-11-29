@@ -3346,7 +3346,7 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
       std::string id;
       GetGameDetailsFromImage(image, &id, &s_running_game_hash);
 
-      s_running_game_entry = GameDatabase::GetEntryForId(id);
+      s_running_game_entry = GameDatabase::GetEntryForGameDetails(id, s_running_game_hash);
       if (s_running_game_entry)
       {
         s_running_game_serial = s_running_game_entry->serial;

@@ -41,6 +41,7 @@ enum : u32
 };
 
 static Entry* GetMutableEntry(const std::string_view& serial);
+static const Entry* GetEntryForId(const std::string_view& code);
 
 static bool LoadFromCache();
 static bool SaveToCache();
@@ -149,15 +150,32 @@ std::string GameDatabase::GetSerialForPath(const char* path)
 const GameDatabase::Entry* GameDatabase::GetEntryForDisc(CDImage* image)
 {
   std::string id;
-  System::GetGameDetailsFromImage(image, &id, nullptr);
+  System::GameHash hash;
+  System::GetGameDetailsFromImage(image, &id, &hash);
+  const Entry* entry = GetEntryForGameDetails(id, hash);
+  if (entry)
+    return entry;
+
+  Log_WarningPrintf("No entry found for disc '%s'", id.c_str());
+  return nullptr;
+}
+
+const GameDatabase::Entry* GameDatabase::GetEntryForGameDetails(const std::string& id, u64 hash)
+{
+  const Entry* entry;
+
   if (!id.empty())
   {
-    const Entry* entry = GetEntryForId(id);
+    entry = GetEntryForId(id);
     if (entry)
       return entry;
   }
 
-  Log_WarningPrintf("No entry found for disc '%s'", id.c_str());
+  // some games with invalid serials use the hash
+  entry = GetEntryForId(System::GetGameHashId(hash));
+  if (entry)
+    return entry;
+
   return nullptr;
 }
 

@@ -216,7 +216,7 @@ bool GameList::GetDiscListEntry(const std::string& path, Entry* entry)
   System::GetGameDetailsFromImage(cdi.get(), &id, &entry->hash);
 
   // try the database first
-  const GameDatabase::Entry* dentry = GameDatabase::GetEntryForId(id);
+  const GameDatabase::Entry* dentry = GameDatabase::GetEntryForGameDetails(id, entry->hash);
   if (dentry)
   {
     // pull from database
