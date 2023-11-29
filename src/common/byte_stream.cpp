@@ -28,7 +28,9 @@
 #ifdef _MSC_VER
 #include <malloc.h>
 #else
+#if !defined(__FreeBSD__)
 #include <alloca.h>
+#endif
 #endif
 
 Log_SetChannel(ByteStream);
