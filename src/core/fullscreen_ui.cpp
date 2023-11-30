@@ -3380,7 +3380,7 @@ void FullscreenUI::DrawControllerSettingsPage()
     const std::string type(bsi->GetStringValue(section.c_str(), "Type", Controller::GetDefaultPadType(global_slot)));
     const Controller::ControllerInfo* ci = Controller::GetControllerInfo(type);
     if (MenuButton(TinyString::from_fmt("{}##type{}", FSUI_ICONSTR(ICON_FA_GAMEPAD, "Controller Type"), global_slot),
-                   ci ? Host::TranslateToCString(ci->name, ci->display_name) : FSUI_CSTR("Unknown")))
+                   ci ? Host::TranslateToCString("ControllerType", ci->display_name) : FSUI_CSTR("Unknown")))
     {
       std::vector<std::pair<std::string, std::string>> raw_options(Controller::GetControllerTypeNames());
       ImGuiFullscreen::ChoiceDialogOptions options;
@@ -3594,7 +3594,7 @@ void FullscreenUI::DrawControllerSettingsPage()
             break;
           case SettingInfo::Type::IntegerList:
             DrawIntListSetting(bsi, title, description, section.c_str(), si.name, si.IntegerDefaultValue(), si.options,
-                               0, false, si.IntegerMinValue(), true, LAYOUT_MENU_BUTTON_HEIGHT, g_large_font,
+                               0, true, si.IntegerMinValue(), true, LAYOUT_MENU_BUTTON_HEIGHT, g_large_font,
                                g_medium_font, ci->name);
             break;
           case SettingInfo::Type::Float:
@@ -3720,7 +3720,7 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
     title.fmt("{}##card_name_{}", FSUI_ICONSTR(ICON_FA_FILE, "Shared Card Name"), i);
     if (MenuButtonWithValue(title,
                             FSUI_CSTR("The selected memory card image will be used in shared mode for this slot."),
-                            path_value.has_value() ? path_value->c_str() : "Use Global Setting", is_shared))
+                            path_value.has_value() ? path_value->c_str() : FSUI_CSTR("Use Global Setting"), is_shared))
     {
       ImGuiFullscreen::ChoiceDialogOptions options;
       std::vector<std::string> names;
@@ -6252,14 +6252,15 @@ void FullscreenUI::DrawGameListSettingsPage(const ImVec2& heading_size)
       FSUI_NSTR("Time Played"), FSUI_NSTR("Last Played"), FSUI_NSTR("Size")};
 
     DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_BORDER_ALL, "Default View"),
-                       "Sets which view the game list will open to.", "Main", "DefaultFullscreenUIGameView", 0,
-                       view_types, std::size(view_types), true);
+                       FSUI_CSTR("Selects the view that the game list will open to."), "Main",
+                       "DefaultFullscreenUIGameView", 0, view_types, std::size(view_types), true);
     DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_SORT, "Sort By"),
-                       "Determines which field the game list will be sorted by.", "Main", "FullscreenUIGameSort", 0,
-                       sort_types, std::size(sort_types), true);
-    DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SORT_ALPHA_DOWN, "Sort Reversed"),
-                      "Reverses the game list sort order from the default (usually ascending to descending).", "Main",
-                      "FullscreenUIGameSortReverse", false);
+                       FSUI_CSTR("Determines that field that the game list will be sorted by."), "Main",
+                       "FullscreenUIGameSort", 0, sort_types, std::size(sort_types), true);
+    DrawToggleSetting(
+      bsi, FSUI_ICONSTR(ICON_FA_SORT_ALPHA_DOWN, "Sort Reversed"),
+      FSUI_CSTR("Reverses the game list sort order from the default (usually ascending to descending)."), "Main",
+      "FullscreenUIGameSortReverse", false);
   }
 
   MenuHeading(FSUI_CSTR("Cover Settings"));
@@ -6864,6 +6865,7 @@ TRANSLATE_NOOP("FullscreenUI", "Determines how much of the area typically not vi
 TRANSLATE_NOOP("FullscreenUI", "Determines how the emulated CPU executes instructions.");
 TRANSLATE_NOOP("FullscreenUI", "Determines how the emulated console's output is upscaled or downscaled to your monitor's resolution.");
 TRANSLATE_NOOP("FullscreenUI", "Determines quality of audio when not running at 100% speed.");
+TRANSLATE_NOOP("FullscreenUI", "Determines that field that the game list will be sorted by.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the amount of audio buffered before being pulled by the host API.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the emulated hardware type.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the position on the screen when black borders must be added.");
@@ -7124,6 +7126,7 @@ TRANSLATE_NOOP("FullscreenUI", "Resolution change will be applied after restarti
 TRANSLATE_NOOP("FullscreenUI", "Restores the state of the system prior to the last state loaded.");
 TRANSLATE_NOOP("FullscreenUI", "Resume");
 TRANSLATE_NOOP("FullscreenUI", "Resume Game");
+TRANSLATE_NOOP("FullscreenUI", "Reverses the game list sort order from the default (usually ascending to descending).");
 TRANSLATE_NOOP("FullscreenUI", "Rewind Save Frequency");
 TRANSLATE_NOOP("FullscreenUI", "Rewind Save Slots");
 TRANSLATE_NOOP("FullscreenUI", "Rewind for {0} frames, lasting {1:.2f} seconds will require up to {2} MB of RAM and {3} MB of VRAM.");
@@ -7157,6 +7160,7 @@ TRANSLATE_NOOP("FullscreenUI", "Selects the GPU to use for rendering.");
 TRANSLATE_NOOP("FullscreenUI", "Selects the percentage of the normal clock speed the emulated hardware will run at.");
 TRANSLATE_NOOP("FullscreenUI", "Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.");
 TRANSLATE_NOOP("FullscreenUI", "Selects the resolution to use in fullscreen modes.");
+TRANSLATE_NOOP("FullscreenUI", "Selects the view that the game list will open to.");
 TRANSLATE_NOOP("FullscreenUI", "Serial");
 TRANSLATE_NOOP("FullscreenUI", "Session: {}");
 TRANSLATE_NOOP("FullscreenUI", "Set Input Binding");
