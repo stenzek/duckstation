@@ -23,10 +23,6 @@
 #define RC_CLIENT_UNKNOWN_GAME_ID (uint32_t)-1
 #define RC_CLIENT_RECENT_UNLOCK_DELAY_SECONDS (10 * 60) /* ten minutes */
 
-struct rc_client_async_handle_t {
-  uint8_t aborted;
-};
-
 enum {
   RC_CLIENT_ASYNC_NOT_ABORTED = 0,
   RC_CLIENT_ASYNC_ABORTED = 1,
@@ -131,6 +127,11 @@ void rc_client_destroy(rc_client_t* client)
 
   rc_client_unload_game(client);
 
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->destroy)
+    client->state.external_client->destroy();
+#endif
+
   rc_buffer_destroy(&client->state.buffer);
 
   rc_mutex_destroy(&client->state.mutex);
@@ -227,6 +228,11 @@ void rc_client_enable_logging(rc_client_t* client, int level, rc_client_message_
 {
   client->callbacks.log_call = callback;
   client->state.log_level = callback ? level : RC_CLIENT_LOG_LEVEL_NONE;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->enable_logging)
+    client->state.external_client->enable_logging(client, level, callback);
+#endif
 }
 
 /* ===== Common ===== */
@@ -291,6 +297,22 @@ static rc_clock_t rc_client_clock_get_now_millisecs(const rc_client_t* client)
 void rc_client_set_get_time_millisecs_function(rc_client_t* client, rc_get_time_millisecs_func_t handler)
 {
   client->callbacks.get_time_millisecs = handler ? handler : rc_client_clock_get_now_millisecs;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->set_get_time_millisecs)
+    client->state.external_client->set_get_time_millisecs(client, handler);
+#endif
+}
+
+int rc_client_async_handle_aborted(rc_client_t* client, rc_client_async_handle_t* async_handle)
+{
+  int aborted;
+
+  rc_mutex_lock(&client->state.mutex);
+  aborted = async_handle->aborted;
+  rc_mutex_unlock(&client->state.mutex);
+
+  return aborted;
 }
 
 static void rc_client_begin_async(rc_client_t* client, rc_client_async_handle_t* async_handle)
@@ -333,10 +355,39 @@ static int rc_client_end_async(rc_client_t* client, rc_client_async_handle_t* as
 void rc_client_abort_async(rc_client_t* client, rc_client_async_handle_t* async_handle)
 {
   if (async_handle && client) {
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+    if (client->state.external_client && client->state.external_client->abort_async) {
+      client->state.external_client->abort_async(async_handle);
+      return;
+    }
+#endif
+
     rc_mutex_lock(&client->state.mutex);
     async_handle->aborted = RC_CLIENT_ASYNC_ABORTED;
     rc_mutex_unlock(&client->state.mutex);
   }
+}
+
+static int rc_client_async_handle_valid(rc_client_t* client, rc_client_async_handle_t* async_handle)
+{
+  int valid = 0;
+  size_t i;
+
+  /* there is a small window of opportunity where the client could have been destroyed before calling
+   * this function, but this function assumes the possibility that the handle has been destroyed, so
+   * we can't check it for RC_CLIENT_ASYNC_DESTROYED before attempting to scan the client data */
+  rc_mutex_lock(&client->state.mutex);
+
+  for (i = 0; i < sizeof(client->state.async_handles) / sizeof(client->state.async_handles[0]); ++i) {
+    if (client->state.async_handles[i] == async_handle) {
+      valid = 1;
+      break;
+    }
+  }
+
+  rc_mutex_unlock(&client->state.mutex);
+
+  return valid;
 }
 
 static const char* rc_client_server_error_message(int* result, int http_status_code, const rc_api_response_t* response)
@@ -459,6 +510,10 @@ static int rc_client_should_retry(const rc_api_server_response_t* server_respons
 
     case 524: /* 524 A Timeout Occurred */
       /* connection to server from cloudfare was dropped before request was completed */
+      return 1;
+
+    case 525: /* 525 SSL Handshake Failed */
+      /* web server worker connection pool is exhausted */
       return 1;
 
     case RC_API_SERVER_RESPONSE_RETRYABLE_CLIENT_ERROR:
@@ -614,7 +669,13 @@ static rc_client_async_handle_t* rc_client_begin_login(rc_client_t* client,
 
   rc_api_destroy_request(&request);
 
-  return &callback_data->async_handle;
+  /* if the user state has changed, the async operation completed synchronously */
+  rc_mutex_lock(&client->state.mutex);
+  if (client->state.user != RC_CLIENT_USER_STATE_LOGIN_REQUESTED)
+    callback_data = NULL;
+  rc_mutex_unlock(&client->state.mutex);
+
+  return callback_data ? &callback_data->async_handle : NULL;
 }
 
 rc_client_async_handle_t* rc_client_begin_login_with_password(rc_client_t* client,
@@ -636,6 +697,11 @@ rc_client_async_handle_t* rc_client_begin_login_with_password(rc_client_t* clien
     callback(RC_INVALID_STATE, "password is required", client, callback_userdata);
     return NULL;
   }
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->begin_login_with_password)
+    return client->state.external_client->begin_login_with_password(client, username, password, callback, callback_userdata);
+#endif
 
   memset(&login_request, 0, sizeof(login_request));
   login_request.username = username;
@@ -665,6 +731,11 @@ rc_client_async_handle_t* rc_client_begin_login_with_token(rc_client_t* client,
     return NULL;
   }
 
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->begin_login_with_token)
+    return client->state.external_client->begin_login_with_token(client, username, token, callback, callback_userdata);
+#endif
+
   memset(&login_request, 0, sizeof(login_request));
   login_request.username = username;
   login_request.api_token = token;
@@ -679,6 +750,13 @@ void rc_client_logout(rc_client_t* client)
 
   if (!client)
     return;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->logout) {
+    client->state.external_client->logout();
+    return;
+  }
+#endif
 
   switch (client->state.user) {
     case RC_CLIENT_USER_STATE_LOGGED_IN:
@@ -707,7 +785,15 @@ void rc_client_logout(rc_client_t* client)
 
 const rc_client_user_t* rc_client_get_user_info(const rc_client_t* client)
 {
-  return (client && client->state.user == RC_CLIENT_USER_STATE_LOGGED_IN) ? &client->user : NULL;
+  if (!client)
+    return NULL;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->get_user_info)
+    return client->state.external_client->get_user_info();
+#endif
+
+  return (client->state.user == RC_CLIENT_USER_STATE_LOGGED_IN) ? &client->user : NULL;
 }
 
 int rc_client_user_get_image_url(const rc_client_user_t* user, char buffer[], size_t buffer_size)
@@ -758,7 +844,17 @@ void rc_client_get_user_game_summary(const rc_client_t* client, rc_client_user_g
     return;
 
   memset(summary, 0, sizeof(*summary));
-  if (!client || !client->game)
+  if (!client)
+    return;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->get_user_game_summary) {
+    client->state.external_client->get_user_game_summary(summary);
+    return;
+  }
+#endif
+
+  if (!client->game)
     return;
 
   rc_mutex_lock((rc_mutex_t*)&client->state.mutex); /* remove const cast for mutex access */
@@ -2111,6 +2207,11 @@ rc_client_async_handle_t* rc_client_begin_load_game(rc_client_t* client, const c
     return NULL;
   }
 
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->begin_load_game)
+    return client->state.external_client->begin_load_game(client, hash, callback, callback_userdata);
+#endif
+
   load_state = (rc_client_load_state_t*)calloc(1, sizeof(*load_state));
   if (!load_state) {
     callback(RC_OUT_OF_MEMORY, rc_error_str(RC_OUT_OF_MEMORY), client, callback_userdata);
@@ -2136,6 +2237,11 @@ rc_client_async_handle_t* rc_client_begin_identify_and_load_game(rc_client_t* cl
     callback(RC_INVALID_STATE, "client is required", client, callback_userdata);
     return NULL;
   }
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->begin_identify_and_load_game)
+    return client->state.external_client->begin_identify_and_load_game(client, console_id, file_path, data, data_size, callback, callback_userdata);
+#endif
 
   if (data) {
     if (file_path) {
@@ -2240,6 +2346,13 @@ void rc_client_unload_game(rc_client_t* client)
 
   if (!client)
     return;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->unload_game) {
+    client->state.external_client->unload_game();
+    return;
+  }
+#endif
 
   rc_mutex_lock(&client->state.mutex);
 
@@ -2365,6 +2478,11 @@ rc_client_async_handle_t* rc_client_begin_change_media(rc_client_t* client, cons
     return NULL;
   }
 
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->begin_change_media)
+    return client->state.external_client->begin_change_media(client, file_path, data, data_size, callback, callback_userdata);
+#endif
+
   rc_mutex_lock(&client->state.mutex);
   if (client->state.load) {
     game = client->state.load->game;
@@ -2475,6 +2593,7 @@ rc_client_async_handle_t* rc_client_begin_change_media(rc_client_t* client, cons
   else {
     /* call the server to make sure the hash is valid for the loaded game */
     rc_client_load_state_t* callback_data;
+    rc_client_async_handle_t* async_handle;
     rc_api_resolve_hash_request_t resolve_hash_request;
     rc_api_request_t request;
     int result;
@@ -2500,18 +2619,28 @@ rc_client_async_handle_t* rc_client_begin_change_media(rc_client_t* client, cons
     callback_data->hash = game_hash;
     callback_data->game = game;
 
-    rc_client_begin_async(client, &callback_data->async_handle);
+    async_handle = &callback_data->async_handle;
+    rc_client_begin_async(client, async_handle);
     client->callbacks.server_call(&request, rc_client_identify_changed_media_callback, callback_data, client);
 
     rc_api_destroy_request(&request);
 
-    return &callback_data->async_handle;
+    /* if handle is no longer valid, the async operation completed synchronously */
+    return rc_client_async_handle_valid(client, async_handle) ? async_handle : NULL;
   }
 }
 
 const rc_client_game_t* rc_client_get_game_info(const rc_client_t* client)
 {
-  return (client && client->game) ? &client->game->public_ : NULL;
+  if (!client)
+    return NULL;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->get_game_info)
+    return client->state.external_client->get_game_info();
+#endif
+
+  return client->game ? &client->game->public_ : NULL;
 }
 
 int rc_client_game_get_image_url(const rc_client_game_t* game, char buffer[], size_t buffer_size)
@@ -2524,19 +2653,24 @@ int rc_client_game_get_image_url(const rc_client_game_t* game, char buffer[], si
 
 /* ===== Subsets ===== */
 
-void rc_client_begin_load_subset(rc_client_t* client, uint32_t subset_id, rc_client_callback_t callback, void* callback_userdata)
+rc_client_async_handle_t* rc_client_begin_load_subset(rc_client_t* client, uint32_t subset_id, rc_client_callback_t callback, void* callback_userdata)
 {
   char buffer[32];
   rc_client_load_state_t* load_state;
 
   if (!client) {
     callback(RC_INVALID_STATE, "client is required", client, callback_userdata);
-    return;
+    return NULL;
   }
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->begin_load_subset)
+    return client->state.external_client->begin_load_subset(client, subset_id, callback, callback_userdata);
+#endif
 
   if (!client->game) {
     callback(RC_NO_GAME_LOADED, rc_error_str(RC_NO_GAME_LOADED), client, callback_userdata);
-    return;
+    return NULL;
   }
 
   snprintf(buffer, sizeof(buffer), "[SUBSET%lu]", (unsigned long)subset_id);
@@ -2544,7 +2678,7 @@ void rc_client_begin_load_subset(rc_client_t* client, uint32_t subset_id, rc_cli
   load_state = (rc_client_load_state_t*)calloc(1, sizeof(*load_state));
   if (!load_state) {
     callback(RC_OUT_OF_MEMORY, rc_error_str(RC_OUT_OF_MEMORY), client, callback_userdata);
-    return;
+    return NULL;
   }
 
   load_state->client = client;
@@ -2556,13 +2690,23 @@ void rc_client_begin_load_subset(rc_client_t* client, uint32_t subset_id, rc_cli
   client->state.load = load_state;
 
   rc_client_begin_fetch_game_data(load_state);
+
+  return (client->state.load == load_state) ? &load_state->async_handle : NULL;
 }
 
 const rc_client_subset_t* rc_client_get_subset_info(rc_client_t* client, uint32_t subset_id)
 {
   rc_client_subset_info_t* subset;
 
-  if (!client || !client->game)
+  if (!client)
+    return NULL;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->get_subset_info)
+    return client->state.external_client->get_subset_info(subset_id);
+#endif
+
+  if (!client->game)
     return NULL;
 
   for (subset = client->game->subsets; subset; subset = subset->next) {
@@ -2722,7 +2866,7 @@ rc_client_achievement_list_t* rc_client_create_achievement_list(rc_client_t* cli
   rc_client_achievement_t** bucket_achievements;
   rc_client_achievement_t** achievement_ptr;
   rc_client_achievement_bucket_t* bucket_ptr;
-  rc_client_achievement_list_t* list;
+  rc_client_achievement_list_info_t* list;
   rc_client_subset_info_t* subset;
   const uint32_t list_size = RC_ALIGN(sizeof(*list));
   uint32_t bucket_counts[16];
@@ -2745,8 +2889,16 @@ rc_client_achievement_list_t* rc_client_create_achievement_list(rc_client_t* cli
   };
   const time_t recent_unlock_time = time(NULL) - RC_CLIENT_RECENT_UNLOCK_DELAY_SECONDS;
 
-  if (!client || !client->game)
-    return calloc(1, sizeof(rc_client_achievement_list_t));
+  if (!client)
+    return (rc_client_achievement_list_t*)calloc(1, sizeof(rc_client_achievement_list_info_t));
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->create_achievement_list)
+    return (rc_client_achievement_list_t*)client->state.external_client->create_achievement_list(category, grouping);
+#endif
+
+  if (!client->game)
+    return (rc_client_achievement_list_t*)calloc(1, sizeof(rc_client_achievement_list_info_t));
 
   memset(&bucket_counts, 0, sizeof(bucket_counts));
 
@@ -2811,8 +2963,8 @@ rc_client_achievement_list_t* rc_client_create_achievement_list(rc_client_t* cli
 
   buckets_size = RC_ALIGN(num_buckets * sizeof(rc_client_achievement_bucket_t));
 
-  list = (rc_client_achievement_list_t*)malloc(list_size + buckets_size + num_achievements * sizeof(rc_client_achievement_t*));
-  bucket_ptr = list->buckets = (rc_client_achievement_bucket_t*)((uint8_t*)list + list_size);
+  list = (rc_client_achievement_list_info_t*)malloc(list_size + buckets_size + num_achievements * sizeof(rc_client_achievement_t*));
+  bucket_ptr = list->public_.buckets = (rc_client_achievement_bucket_t*)((uint8_t*)list + list_size);
   achievement_ptr = (rc_client_achievement_t**)((uint8_t*)bucket_ptr + buckets_size);
 
   if (grouping == RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_PROGRESS) {
@@ -2891,13 +3043,17 @@ rc_client_achievement_list_t* rc_client_create_achievement_list(rc_client_t* cli
 
   rc_mutex_unlock(&client->state.mutex);
 
-  list->num_buckets = (uint32_t)(bucket_ptr - list->buckets);
-  return list;
+  list->destroy_func = NULL;
+  list->public_.num_buckets = (uint32_t)(bucket_ptr - list->public_.buckets);
+  return &list->public_;
 }
 
 void rc_client_destroy_achievement_list(rc_client_achievement_list_t* list)
 {
-  if (list)
+  rc_client_achievement_list_info_t* info = (rc_client_achievement_list_info_t*)list;
+  if (info->destroy_func)
+    info->destroy_func(info);
+  else
     free(list);
 }
 
@@ -2906,7 +3062,15 @@ int rc_client_has_achievements(rc_client_t* client)
   rc_client_subset_info_t* subset;
   int result;
 
-  if (!client || !client->game)
+  if (!client)
+    return 0;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->has_achievements)
+    return client->state.external_client->has_achievements();
+#endif
+
+  if (!client->game)
     return 0;
 
   rc_mutex_lock(&client->state.mutex);
@@ -2952,7 +3116,15 @@ const rc_client_achievement_t* rc_client_get_achievement_info(rc_client_t* clien
 {
   rc_client_subset_info_t* subset;
 
-  if (!client || !client->game)
+  if (!client)
+    return NULL;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->get_achievement_info)
+    return client->state.external_client->get_achievement_info(id);
+#endif
+
+  if (!client->game)
     return NULL;
 
   for (subset = client->game->subsets; subset; subset = subset->next) {
@@ -3229,7 +3401,15 @@ const rc_client_leaderboard_t* rc_client_get_leaderboard_info(const rc_client_t*
 {
   rc_client_subset_info_t* subset;
 
-  if (!client || !client->game)
+  if (!client)
+    return NULL;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->get_leaderboard_info)
+    return client->state.external_client->get_leaderboard_info(id);
+#endif
+
+  if (!client->game)
     return NULL;
 
   for (subset = client->game->subsets; subset; subset = subset->next) {
@@ -3301,7 +3481,7 @@ rc_client_leaderboard_list_t* rc_client_create_leaderboard_list(rc_client_t* cli
   rc_client_leaderboard_t** bucket_leaderboards;
   rc_client_leaderboard_t** leaderboard_ptr;
   rc_client_leaderboard_bucket_t* bucket_ptr;
-  rc_client_leaderboard_list_t* list;
+  rc_client_leaderboard_list_info_t* list;
   rc_client_subset_info_t* subset;
   const uint32_t list_size = RC_ALIGN(sizeof(*list));
   uint32_t bucket_counts[8];
@@ -3320,7 +3500,15 @@ rc_client_leaderboard_list_t* rc_client_create_leaderboard_list(rc_client_t* cli
     RC_CLIENT_LEADERBOARD_BUCKET_UNSUPPORTED
   };
 
-  if (!client || !client->game)
+  if (!client)
+    return calloc(1, sizeof(rc_client_leaderboard_list_t));
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->create_leaderboard_list)
+    return (rc_client_leaderboard_list_t*)client->state.external_client->create_leaderboard_list(grouping);
+#endif
+
+  if (!client->game)
     return calloc(1, sizeof(rc_client_leaderboard_list_t));
 
   memset(&bucket_counts, 0, sizeof(bucket_counts));
@@ -3385,8 +3573,8 @@ rc_client_leaderboard_list_t* rc_client_create_leaderboard_list(rc_client_t* cli
 
   buckets_size = RC_ALIGN(num_buckets * sizeof(rc_client_leaderboard_bucket_t));
 
-  list = (rc_client_leaderboard_list_t*)malloc(list_size + buckets_size + num_leaderboards * sizeof(rc_client_leaderboard_t*));
-  bucket_ptr = list->buckets = (rc_client_leaderboard_bucket_t*)((uint8_t*)list + list_size);
+  list = (rc_client_leaderboard_list_info_t*)malloc(list_size + buckets_size + num_leaderboards * sizeof(rc_client_leaderboard_t*));
+  bucket_ptr = list->public_.buckets = (rc_client_leaderboard_bucket_t*)((uint8_t*)list + list_size);
   leaderboard_ptr = (rc_client_leaderboard_t**)((uint8_t*)bucket_ptr + buckets_size);
 
   if (grouping == RC_CLIENT_LEADERBOARD_LIST_GROUPING_TRACKING) {
@@ -3455,13 +3643,17 @@ rc_client_leaderboard_list_t* rc_client_create_leaderboard_list(rc_client_t* cli
 
   rc_mutex_unlock(&client->state.mutex);
 
-  list->num_buckets = (uint32_t)(bucket_ptr - list->buckets);
-  return list;
+  list->destroy_func = NULL;
+  list->public_.num_buckets = (uint32_t)(bucket_ptr - list->public_.buckets);
+  return &list->public_;
 }
 
 void rc_client_destroy_leaderboard_list(rc_client_leaderboard_list_t* list)
 {
-  if (list)
+  rc_client_leaderboard_list_info_t* info = (rc_client_leaderboard_list_info_t*)list;
+  if (info->destroy_func)
+    info->destroy_func(info);
+  else
     free(list);
 }
 
@@ -3470,7 +3662,15 @@ int rc_client_has_leaderboards(rc_client_t* client)
   rc_client_subset_info_t* subset;
   int result;
 
-  if (!client || !client->game)
+  if (!client)
+    return 0;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->has_leaderboards)
+    return client->state.external_client->has_leaderboards();
+#endif
+
+  if (!client->game)
     return 0;
 
   rc_mutex_lock(&client->state.mutex);
@@ -3843,24 +4043,26 @@ static void rc_client_fetch_leaderboard_entries_callback(const rc_api_server_res
     lbinfo_callback_data->callback(result, error_message, NULL, client, lbinfo_callback_data->callback_userdata);
   }
   else {
-    rc_client_leaderboard_entry_list_t* list;
-    const size_t list_size = sizeof(*list) + sizeof(rc_client_leaderboard_entry_t) * lbinfo_response.num_entries;
+    rc_client_leaderboard_entry_list_info_t* info;
+    const size_t list_size = sizeof(*info) + sizeof(rc_client_leaderboard_entry_t) * lbinfo_response.num_entries;
     size_t needed_size = list_size;
     uint32_t i;
 
     for (i = 0; i < lbinfo_response.num_entries; i++)
       needed_size += strlen(lbinfo_response.entries[i].username) + 1;
 
-    list = (rc_client_leaderboard_entry_list_t*)malloc(needed_size);
-    if (!list) {
+    info = (rc_client_leaderboard_entry_list_info_t*)malloc(needed_size);
+    if (!info) {
       lbinfo_callback_data->callback(RC_OUT_OF_MEMORY, rc_error_str(RC_OUT_OF_MEMORY), NULL, client, lbinfo_callback_data->callback_userdata);
     }
     else {
-      rc_client_leaderboard_entry_t* entry = list->entries = (rc_client_leaderboard_entry_t*)((uint8_t*)list + sizeof(*list));
+      rc_client_leaderboard_entry_list_t* list = &info->public_;
+      rc_client_leaderboard_entry_t* entry = list->entries = (rc_client_leaderboard_entry_t*)((uint8_t*)info + sizeof(*info));
       char* user = (char*)((uint8_t*)list + list_size);
       const rc_api_lboard_info_entry_t* lbentry = lbinfo_response.entries;
       const rc_api_lboard_info_entry_t* stop = lbentry + lbinfo_response.num_entries;
       const size_t logged_in_user_len = strlen(client->user.display_name) + 1;
+      info->destroy_func = NULL;
       list->user_index = -1;
 
       for (; lbentry < stop; ++lbentry, ++entry) {
@@ -3894,6 +4096,7 @@ static rc_client_async_handle_t* rc_client_begin_fetch_leaderboard_info(rc_clien
     rc_client_fetch_leaderboard_entries_callback_t callback, void* callback_userdata)
 {
   rc_client_fetch_leaderboard_entries_callback_data_t* callback_data;
+  rc_client_async_handle_t* async_handle;
   rc_api_request_t request;
   int result;
   const char* error_message;
@@ -3917,17 +4120,23 @@ static rc_client_async_handle_t* rc_client_begin_fetch_leaderboard_info(rc_clien
   callback_data->callback_userdata = callback_userdata;
   callback_data->leaderboard_id = lbinfo_request->leaderboard_id;
 
-  rc_client_begin_async(client, &callback_data->async_handle);
+  async_handle = &callback_data->async_handle;
+  rc_client_begin_async(client, async_handle);
   client->callbacks.server_call(&request, rc_client_fetch_leaderboard_entries_callback, callback_data, client);
   rc_api_destroy_request(&request);
 
-  return &callback_data->async_handle;
+  return rc_client_async_handle_valid(client, async_handle) ? async_handle : NULL;
 }
 
 rc_client_async_handle_t* rc_client_begin_fetch_leaderboard_entries(rc_client_t* client, uint32_t leaderboard_id,
     uint32_t first_entry, uint32_t count, rc_client_fetch_leaderboard_entries_callback_t callback, void* callback_userdata)
 {
   rc_api_fetch_leaderboard_info_request_t lbinfo_request;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->begin_fetch_leaderboard_entries)
+    return client->state.external_client->begin_fetch_leaderboard_entries(client, leaderboard_id, first_entry, count, callback, callback_userdata);
+#endif
 
   memset(&lbinfo_request, 0, sizeof(lbinfo_request));
   lbinfo_request.leaderboard_id = leaderboard_id;
@@ -3941,6 +4150,11 @@ rc_client_async_handle_t* rc_client_begin_fetch_leaderboard_entries_around_user(
   uint32_t count, rc_client_fetch_leaderboard_entries_callback_t callback, void* callback_userdata)
 {
   rc_api_fetch_leaderboard_info_request_t lbinfo_request;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->begin_fetch_leaderboard_entries_around_user)
+    return client->state.external_client->begin_fetch_leaderboard_entries_around_user(client, leaderboard_id, count, callback, callback_userdata);
+#endif
 
   memset(&lbinfo_request, 0, sizeof(lbinfo_request));
   lbinfo_request.leaderboard_id = leaderboard_id;
@@ -3957,7 +4171,10 @@ rc_client_async_handle_t* rc_client_begin_fetch_leaderboard_entries_around_user(
 
 void rc_client_destroy_leaderboard_entry_list(rc_client_leaderboard_entry_list_t* list)
 {
-  if (list)
+  rc_client_leaderboard_entry_list_info_t* info = (rc_client_leaderboard_entry_list_info_t*)list;
+  if (info->destroy_func)
+    info->destroy_func(info);
+  else
     free(list);
 }
 
@@ -4022,10 +4239,15 @@ static void rc_client_ping(rc_client_scheduled_callback_data_t* callback_data, r
 
 int rc_client_has_rich_presence(rc_client_t* client)
 {
-  if (!client || !client->game)
+  if (!client)
     return 0;
 
-  if (!client->game->runtime.richpresence || !client->game->runtime.richpresence->richpresence)
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->has_rich_presence)
+    return client->state.external_client->has_rich_presence();
+#endif
+
+  if (!client->game || !client->game->runtime.richpresence || !client->game->runtime.richpresence->richpresence)
     return 0;
 
   return 1;
@@ -4035,7 +4257,15 @@ size_t rc_client_get_rich_presence_message(rc_client_t* client, char buffer[], s
 {
   int result;
 
-  if (!client || !client->game || !buffer)
+  if (!client || !buffer)
+    return 0;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->get_rich_presence_message)
+    return client->state.external_client->get_rich_presence_message(buffer, buffer_size);
+#endif
+
+  if (!client->game)
     return 0;
 
   rc_mutex_lock(&client->state.mutex);
@@ -4045,8 +4275,12 @@ size_t rc_client_get_rich_presence_message(rc_client_t* client, char buffer[], s
 
   rc_mutex_unlock(&client->state.mutex);
 
-  if (result == 0)
+  if (result == 0) {
     result = snprintf(buffer, buffer_size, "Playing %s", client->game->public_.title);
+    /* snprintf will return the amount of space needed, we want to return the number of chars written */
+    if ((size_t)result >= buffer_size)
+      return (buffer_size - 1);
+  }
 
   return result;
 }
@@ -4055,14 +4289,28 @@ size_t rc_client_get_rich_presence_message(rc_client_t* client, char buffer[], s
 
 void rc_client_set_event_handler(rc_client_t* client, rc_client_event_handler_t handler)
 {
-  if (client)
-    client->callbacks.event_handler = handler;
+  if (!client)
+    return;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->set_event_handler)
+    client->state.external_client->set_event_handler(client, handler);
+#endif
+
+  client->callbacks.event_handler = handler;
 }
 
 void rc_client_set_read_memory_function(rc_client_t* client, rc_client_read_memory_func_t handler)
 {
-  if (client)
-    client->callbacks.read_memory = handler;
+  if (!client)
+    return;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->set_read_memory)
+    client->state.external_client->set_read_memory(client, handler);
+#endif
+
+  client->callbacks.read_memory = handler;
 }
 
 static void rc_client_invalidate_processing_memref(rc_client_t* client)
@@ -4173,7 +4421,15 @@ void rc_client_set_legacy_peek(rc_client_t* client, int method)
 
 int rc_client_is_processing_required(rc_client_t* client)
 {
-  if (!client || !client->game)
+  if (!client)
+    return 0;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->is_processing_required)
+    return client->state.external_client->is_processing_required();
+#endif
+
+  if (!client->game)
     return 0;
 
   if (client->game->runtime.trigger_count || client->game->runtime.lboard_count)
@@ -4594,6 +4850,13 @@ void rc_client_do_frame(rc_client_t* client)
   if (!client)
     return;
 
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->do_frame) {
+    client->state.external_client->do_frame();
+    return;
+  }
+#endif
+
   if (client->game && !client->game->waiting_for_reset) {
     rc_runtime_richpresence_t* richpresence;
     rc_client_subset_info_t* subset;
@@ -4638,6 +4901,13 @@ void rc_client_idle(rc_client_t* client)
 
   if (!client)
     return;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->idle) {
+    client->state.external_client->idle();
+    return;
+  }
+#endif
 
   scheduled_callback = client->state.scheduled_callbacks;
   if (scheduled_callback) {
@@ -4765,7 +5035,17 @@ static void rc_client_reset_all(rc_client_t* client)
 void rc_client_reset(rc_client_t* client)
 {
   rc_client_game_hash_t* game_hash;
-  if (!client || !client->game)
+  if (!client)
+    return;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->reset) {
+    client->state.external_client->reset();
+    return;
+  }
+#endif
+
+  if (!client->game)
     return;
 
   game_hash = rc_client_find_game_hash(client, client->game->public_.hash);
@@ -4796,7 +5076,15 @@ size_t rc_client_progress_size(rc_client_t* client)
 {
   size_t result;
 
-  if (!client || !client->game)
+  if (!client)
+    return 0;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->progress_size)
+    return client->state.external_client->progress_size();
+#endif
+
+  if (!client->game)
     return 0;
 
   rc_mutex_lock(&client->state.mutex);
@@ -4810,7 +5098,15 @@ int rc_client_serialize_progress(rc_client_t* client, uint8_t* buffer)
 {
   int result;
 
-  if (!client || !client->game)
+  if (!client)
+    return RC_NO_GAME_LOADED;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->serialize_progress)
+    return client->state.external_client->serialize_progress(buffer);
+#endif
+
+  if (!client->game)
     return RC_NO_GAME_LOADED;
 
   if (!buffer)
@@ -4921,7 +5217,15 @@ int rc_client_deserialize_progress(rc_client_t* client, const uint8_t* serialize
   rc_client_subset_info_t* subset;
   int result;
 
-  if (!client || !client->game)
+  if (!client)
+    return RC_NO_GAME_LOADED;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->deserialize_progress)
+    return client->state.external_client->deserialize_progress(serialized);
+#endif
+
+  if (!client->game)
     return RC_NO_GAME_LOADED;
 
   rc_mutex_lock(&client->state.mutex);
@@ -4988,6 +5292,13 @@ void rc_client_set_hardcore_enabled(rc_client_t* client, int enabled)
   if (!client)
     return;
 
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->get_hardcore_enabled) {
+    client->state.external_client->set_hardcore_enabled(enabled);
+    return;
+  }
+#endif
+
   rc_mutex_lock(&client->state.mutex);
 
   enabled = enabled ? 1 : 0;
@@ -5022,51 +5333,107 @@ void rc_client_set_hardcore_enabled(rc_client_t* client, int enabled)
 
 int rc_client_get_hardcore_enabled(const rc_client_t* client)
 {
-  return client && client->state.hardcore;
+  if (!client)
+    return 0;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->get_hardcore_enabled)
+    return client->state.external_client->get_hardcore_enabled();
+#endif
+
+  return client->state.hardcore;
 }
 
 void rc_client_set_unofficial_enabled(rc_client_t* client, int enabled)
 {
-  if (client) {
-    RC_CLIENT_LOG_INFO_FORMATTED(client, "Unofficial %s", enabled ? "enabled" : "disabled");
-    client->state.unofficial_enabled = enabled ? 1 : 0;
+  if (!client)
+    return;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->set_unofficial_enabled) {
+    client->state.external_client->set_unofficial_enabled(enabled);
+    return;
   }
+#endif
+
+  RC_CLIENT_LOG_INFO_FORMATTED(client, "Unofficial %s", enabled ? "enabled" : "disabled");
+  client->state.unofficial_enabled = enabled ? 1 : 0;
 }
 
 int rc_client_get_unofficial_enabled(const rc_client_t* client)
 {
-  return client && client->state.unofficial_enabled;
+  if (!client)
+    return 0;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->get_unofficial_enabled)
+    return client->state.external_client->get_unofficial_enabled();
+#endif
+
+  return client->state.unofficial_enabled;
 }
 
 void rc_client_set_encore_mode_enabled(rc_client_t* client, int enabled)
 {
-  if (client) {
-    RC_CLIENT_LOG_INFO_FORMATTED(client, "Encore mode %s", enabled ? "enabled" : "disabled");
-    client->state.encore_mode = enabled ? 1 : 0;
+  if (!client)
+    return;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->set_encore_mode_enabled) {
+    client->state.external_client->set_encore_mode_enabled(enabled);
+    return;
   }
+#endif
+
+  RC_CLIENT_LOG_INFO_FORMATTED(client, "Encore mode %s", enabled ? "enabled" : "disabled");
+  client->state.encore_mode = enabled ? 1 : 0;
 }
 
 int rc_client_get_encore_mode_enabled(const rc_client_t* client)
 {
-  return client && client->state.encore_mode;
+  if (!client)
+    return 0;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->get_encore_mode_enabled)
+    return client->state.external_client->get_encore_mode_enabled();
+#endif
+
+  return client->state.encore_mode;
 }
 
 void rc_client_set_spectator_mode_enabled(rc_client_t* client, int enabled)
 {
-  if (client) {
-    if (!enabled && client->state.spectator_mode == RC_CLIENT_SPECTATOR_MODE_LOCKED) {
-      RC_CLIENT_LOG_WARN(client, "Spectator mode cannot be disabled if it was enabled prior to loading game.");
-      return;
-    }
+  if (!client)
+    return;
 
-    RC_CLIENT_LOG_INFO_FORMATTED(client, "Spectator mode %s", enabled ? "enabled" : "disabled");
-    client->state.spectator_mode = enabled ? RC_CLIENT_SPECTATOR_MODE_ON : RC_CLIENT_SPECTATOR_MODE_OFF;
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->set_spectator_mode_enabled) {
+    client->state.external_client->set_spectator_mode_enabled(enabled);
+    return;
   }
+#endif
+
+  if (!enabled && client->state.spectator_mode == RC_CLIENT_SPECTATOR_MODE_LOCKED) {
+    RC_CLIENT_LOG_WARN(client, "Spectator mode cannot be disabled if it was enabled prior to loading game.");
+    return;
+  }
+
+  RC_CLIENT_LOG_INFO_FORMATTED(client, "Spectator mode %s", enabled ? "enabled" : "disabled");
+  client->state.spectator_mode = enabled ? RC_CLIENT_SPECTATOR_MODE_ON : RC_CLIENT_SPECTATOR_MODE_OFF;
 }
 
 int rc_client_get_spectator_mode_enabled(const rc_client_t* client)
 {
-  return client && (client->state.spectator_mode == RC_CLIENT_SPECTATOR_MODE_OFF) ? 0 : 1;
+  if (!client)
+    return 0;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->get_spectator_mode_enabled)
+    return client->state.external_client->get_spectator_mode_enabled();
+#endif
+
+  return (client->state.spectator_mode == RC_CLIENT_SPECTATOR_MODE_OFF) ? 0 : 1;
 }
 
 void rc_client_set_userdata(rc_client_t* client, void* userdata)
@@ -5094,4 +5461,9 @@ void rc_client_set_host(const rc_client_t* client, const char* hostname)
     RC_CLIENT_LOG_VERBOSE_FORMATTED(client, "Using host: %s", hostname);
   }
   rc_api_set_host(hostname);
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->set_host)
+    client->state.external_client->set_host(hostname);
+#endif
 }

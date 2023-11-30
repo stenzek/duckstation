@@ -96,6 +96,11 @@ static const rc_disallowed_setting_t _rc_disallowed_mesen_s_settings[] = {
   { NULL, NULL }
 };
 
+static const rc_disallowed_setting_t _rc_disallowed_neocd_settings[] = {
+  { "neocd_bios", "uni-bios*" },
+  { NULL, NULL }
+};
+
 static const rc_disallowed_setting_t _rc_disallowed_pcsx_rearmed_settings[] = {
   { "pcsx_rearmed_region", "pal" },
   { NULL, NULL }
@@ -152,6 +157,7 @@ static const rc_disallowed_core_settings_t rc_disallowed_core_settings[] = {
   { "Genesis Plus GX Wide", _rc_disallowed_gpgx_wide_settings },
   { "Mesen", _rc_disallowed_mesen_settings },
   { "Mesen-S", _rc_disallowed_mesen_s_settings },
+  { "NeoCD", _rc_disallowed_neocd_settings },
   { "PPSSPP", _rc_disallowed_ppsspp_settings },
   { "PCSX-ReARMed", _rc_disallowed_pcsx_rearmed_settings },
   { "PicoDrive", _rc_disallowed_picodrive_settings },

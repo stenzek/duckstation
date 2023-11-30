@@ -7,6 +7,13 @@ extern "C" {
 
 #include "rc_client.h"
 
+#ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
+ #include "rc_client_raintegration_internal.h"
+#endif
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+ #include "rc_client_external.h"
+#endif
+
 #include "rc_compat.h"
 #include "rc_runtime.h"
 #include "rc_runtime_types.h"
@@ -50,6 +57,12 @@ typedef struct rc_client_scheduled_callback_data_t
 
 void rc_client_schedule_callback(rc_client_t* client, rc_client_scheduled_callback_data_t* scheduled_callback);
 
+struct rc_client_async_handle_t {
+  uint8_t aborted;
+};
+
+int rc_client_async_handle_aborted(rc_client_t* client, rc_client_async_handle_t* async_handle);
+
 /*****************************************************************************\
 | Achievements                                                                |
 \*****************************************************************************/
@@ -77,6 +90,14 @@ typedef struct rc_client_achievement_info_t {
   time_t created_time;
   time_t updated_time;
 } rc_client_achievement_info_t;
+
+struct rc_client_achievement_list_info_t;
+typedef void (*rc_client_destroy_achievement_list_func_t)(struct rc_client_achievement_list_info_t* list);
+
+typedef struct rc_client_achievement_list_info_t {
+  rc_client_achievement_list_t public_;
+  rc_client_destroy_achievement_list_func_t destroy_func;
+} rc_client_achievement_list_info_t;
 
 enum {
   RC_CLIENT_PROGRESS_TRACKER_ACTION_NONE,
@@ -145,6 +166,22 @@ typedef struct rc_client_leaderboard_info_t {
   uint8_t hidden;
 } rc_client_leaderboard_info_t;
 
+struct rc_client_leaderboard_list_info_t;
+typedef void (*rc_client_destroy_leaderboard_list_func_t)(struct rc_client_leaderboard_list_info_t* list);
+
+typedef struct rc_client_leaderboard_list_info_t {
+  rc_client_leaderboard_list_t public_;
+  rc_client_destroy_leaderboard_list_func_t destroy_func;
+} rc_client_leaderboard_list_info_t;
+
+struct rc_client_leaderboard_entry_list_info_t;
+typedef void (*rc_client_destroy_leaderboard_entry_list_func_t)(struct rc_client_leaderboard_entry_list_info_t* list);
+
+typedef struct rc_client_leaderboard_entry_list_info_t {
+  rc_client_leaderboard_entry_list_t public_;
+  rc_client_destroy_leaderboard_entry_list_func_t destroy_func;
+} rc_client_leaderboard_entry_list_info_t;
+
 uint8_t rc_client_map_leaderboard_format(int format);
 
 /*****************************************************************************\
@@ -177,7 +214,7 @@ typedef struct rc_client_subset_info_t {
   uint8_t pending_events;
 } rc_client_subset_info_t;
 
-void rc_client_begin_load_subset(rc_client_t* client, uint32_t subset_id, rc_client_callback_t callback, void* callback_userdata);
+rc_client_async_handle_t* rc_client_begin_load_subset(rc_client_t* client, uint32_t subset_id, rc_client_callback_t callback, void* callback_userdata);
 
 /*****************************************************************************\
 | Game                                                                        |
@@ -272,6 +309,13 @@ typedef struct rc_client_state_t {
   rc_buffer_t buffer;
 
   rc_client_scheduled_callback_data_t* scheduled_callbacks;
+
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  rc_client_external_t* external_client;
+#endif
+#ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
+  rc_client_raintegration_t* raintegration;
+#endif
 
   uint8_t hardcore;
   uint8_t encore_mode;

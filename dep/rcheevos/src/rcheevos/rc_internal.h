@@ -2,6 +2,7 @@
 #define RC_INTERNAL_H
 
 #include "rc_runtime_types.h"
+#include "../rc_util.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,15 +40,8 @@ RC_ALLOW_ALIGN(char)
 /* force alignment to 4 bytes on 32-bit systems, or 8 bytes on 64-bit systems */
 #define RC_ALIGN(n) (((n) + (sizeof(void*)-1)) & ~(sizeof(void*)-1))
 
-typedef struct rc_scratch_buffer {
-  struct rc_scratch_buffer* next;
-  int32_t offset;
-  uint8_t buffer[512 - 16];
-}
-rc_scratch_buffer_t;
-
 typedef struct {
-  rc_scratch_buffer_t buffer;
+  rc_buffer_t buffer;
   rc_scratch_string_t* strings;
 
   struct objs {

@@ -279,7 +279,6 @@ static void rc_rebalance_richpresence_lookup_rebuild(rc_richpresence_lookup_item
 static void rc_rebalance_richpresence_lookup(rc_richpresence_lookup_item_t** root, rc_parse_state_t* parse)
 {
   rc_richpresence_lookup_item_t** items;
-  rc_scratch_buffer_t* buffer;
   int index;
   int size;
 
@@ -288,29 +287,13 @@ static void rc_rebalance_richpresence_lookup(rc_richpresence_lookup_item_t** roo
   if (count < 3)
     return;
 
-  /* allocate space for the flattened list - prefer scratch memory if available */
+  /* allocate space for the flattened list in scratch memory */
   size = count * sizeof(rc_richpresence_lookup_item_t*);
-  buffer = &parse->scratch.buffer;
-  do {
-    const int aligned_offset = RC_ALIGN(buffer->offset);
-    const int remaining = sizeof(buffer->buffer) - aligned_offset;
+  items = (rc_richpresence_lookup_item_t**)rc_buffer_alloc(&parse->scratch.buffer, size);
 
-    if (remaining >= size) {
-      items = (rc_richpresence_lookup_item_t**)&buffer->buffer[aligned_offset];
-      break;
-    }
-
-    buffer = buffer->next;
-    if (buffer == NULL) {
-      /* could not find large enough block of scratch memory; allocate. if allocation fails,
-       * we can still use the unbalanced tree, so just bail out */
-      items = (rc_richpresence_lookup_item_t**)malloc(size);
-      if (items == NULL)
-        return;
-
-      break;
-    }
-  } while (1);
+  /* if allocation fails, we can still use the unbalanced tree, so just bail out */
+  if (items == NULL)
+    return;
 
   /* flatten the list */
   index = 0;
@@ -318,9 +301,6 @@ static void rc_rebalance_richpresence_lookup(rc_richpresence_lookup_item_t** roo
 
   /* and rebuild it as a balanced tree */
   rc_rebalance_richpresence_lookup_rebuild(root, items, 0, count - 1);
-
-  if (buffer == NULL)
-    free(items);
 }
 
 static void rc_insert_richpresence_lookup_item(rc_richpresence_lookup_t* lookup,

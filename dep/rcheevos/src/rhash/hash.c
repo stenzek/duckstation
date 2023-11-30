@@ -2594,7 +2594,8 @@ void rc_hash_initialize_iterator(struct rc_hash_iterator* iterator, const char* 
           iterator->consoles[4] = RC_CONSOLE_PSP;
           iterator->consoles[5] = RC_CONSOLE_PC_ENGINE_CD;
           iterator->consoles[6] = RC_CONSOLE_3DO;
-          iterator->consoles[7] = RC_CONSOLE_PCFX;
+          iterator->consoles[7] = RC_CONSOLE_NEO_GEO_CD;
+          iterator->consoles[8] = RC_CONSOLE_PCFX;
           need_path = 1;
         }
         else if (rc_path_compare_extension(ext, "col"))
