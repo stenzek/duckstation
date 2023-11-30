@@ -2707,14 +2707,18 @@ void MainWindow::openMemoryCardEditor(const QString& card_a_path, const QString&
   }
 
   if (!m_memory_card_editor_window)
-  {
     m_memory_card_editor_window = new MemoryCardEditorWindow();
+
+  if (!m_memory_card_editor_window->isVisible())
+  {
     m_memory_card_editor_window->show();
   }
-
-  m_memory_card_editor_window->raise();
-  m_memory_card_editor_window->activateWindow();
-  m_memory_card_editor_window->setFocus();
+  else
+  {
+    m_memory_card_editor_window->raise();
+    m_memory_card_editor_window->activateWindow();
+    m_memory_card_editor_window->setFocus();
+  }
 
   if (!card_a_path.isEmpty())
   {
