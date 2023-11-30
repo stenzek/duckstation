@@ -1,10 +1,10 @@
 {
   "app-id": "org.duckstation.DuckStation",
   "runtime": "org.kde.Platform",
-  "runtime-version": "6.5",
+  "runtime-version": "6.6",
   "sdk": "org.kde.Sdk",
   "sdk-extensions": [
-    "org.freedesktop.Sdk.Extension.llvm16"
+    "org.freedesktop.Sdk.Extension.llvm17"
   ],
   "command": "duckstation-qt",
   "finish-args": [
@@ -33,8 +33,8 @@
           "-DBUILD_NOGUI_FRONTEND=OFF",
           "-DBUILD_QT_FRONTEND=ON",
           "-DBUILD_TESTS=OFF",
-          "-DCMAKE_C_COMPILER=/usr/lib/sdk/llvm16/bin/clang",
-          "-DCMAKE_CXX_COMPILER=/usr/lib/sdk/llvm16/bin/clang++",
+          "-DCMAKE_C_COMPILER=/usr/lib/sdk/llvm17/bin/clang",
+          "-DCMAKE_CXX_COMPILER=/usr/lib/sdk/llvm17/bin/clang++",
           "-DCMAKE_EXE_LINKER_FLAGS_INIT=-fuse-ld=lld",
           "-DCMAKE_MODULE_LINKER_FLAGS_INIT=-fuse-ld=lld",
           "-DCMAKE_SHARED_LINKER_FLAGS_INIT=-fuse-ld=lld"

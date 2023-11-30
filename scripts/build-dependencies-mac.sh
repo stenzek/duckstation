@@ -6,8 +6,8 @@ export MACOSX_DEPLOYMENT_TARGET=11.0
 INSTALLDIR="$HOME/deps"
 NPROCS="$(getconf _NPROCESSORS_ONLN)"
 SDL=SDL2-2.28.5
-QT=6.5.3
-MOLTENVK=1.2.5
+QT=6.6.1
+MOLTENVK=1.2.6
 
 mkdir -p deps-build
 cd deps-build
@@ -19,12 +19,12 @@ export CXXFLAGS="-I$INSTALLDIR/include -Os $CXXFLAGS"
 
 cat > SHASUMS <<EOF
 332cb37d0be20cb9541739c61f79bae5a477427d79ae85e352089afdaf6666e4  $SDL.tar.gz
-946d8f0e7ae3b47774b03a610d3a3e7e4bcbef3e667e1362325936839035a115  v$MOLTENVK.tar.gz
-df2f4a230be4ea04f9798f2c19ab1413a3b8ec6a80bef359f50284235307b546  qtbase-everywhere-src-$QT.tar.xz
-49c026c49a738ed024c072a4b205cdc1235507da4a2d0ea740bd574fff138ccb  qtimageformats-everywhere-src-$QT.tar.xz
-fc41c47b69ca1f80473cd4b11996394155781105345392961d064d04f95d5bef  qtsvg-everywhere-src-$QT.tar.xz
-fc91d32b3f696725bbb48b0df240c25b606bbee3bd22627cfcbee876a6405e37  qttools-everywhere-src-$QT.tar.xz
-83b44c0ddcf9c28e836f63c21a3fea2fb2c24cb630eefc79984f5bec44e949e3  qttranslations-everywhere-src-$QT.tar.xz
+b6a3d179aa9c41275ed0e35e502e5e3fd347dbe5117a0435a26868b231cd6246  v$MOLTENVK.tar.gz
+450c5b4677b2fe40ed07954d7f0f40690068e80a94c9df86c2c905ccd59d02f7  qtbase-everywhere-src-$QT.tar.xz
+ac4ed08950072e375be662cfa64fdb447dd6e935cf29c56a4128d1500492188f  qtimageformats-everywhere-src-$QT.tar.xz
+248deb56d26a463cf3162f530358ccf90cfb654bbf518bb35ddf81b205e09228  qtsvg-everywhere-src-$QT.tar.xz
+4939105a7345ab4e19e7caee8654a836e65bd41910359623e0f233f3aff0914a  qttools-everywhere-src-$QT.tar.xz
+668702e822ad7150b27e7caa2158595fd9b3b77ffbc8262e6509872a3920ee88  qttranslations-everywhere-src-$QT.tar.xz
 EOF
 
 curl -L \
