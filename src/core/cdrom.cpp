@@ -3292,6 +3292,7 @@ void CDROM::CreateFileMap()
   }
 
   Log_DevFmt("Creating file map for {}...", media->GetFileName());
+  s_file_map.emplace(iso.GetPVDLBA(), std::make_pair(iso.GetPVDLBA(), std::string("PVD")));
   CreateFileMap(iso, std::string_view());
   Log_DevFmt("Found {} files", s_file_map.size());
 }
@@ -3302,6 +3303,10 @@ void CDROM::CreateFileMap(IsoReader& iso, const std::string_view& dir)
   {
     if (entry.IsDirectory())
     {
+      Log_DevFmt("{}-{} = {}", entry.location_le, entry.location_le + entry.GetSizeInSectors() - 1, path);
+      s_file_map.emplace(entry.location_le, std::make_pair(entry.location_le + entry.GetSizeInSectors() - 1,
+                                                           fmt::format("<DIR> {}", path)));
+
       CreateFileMap(iso, path);
       continue;
     }

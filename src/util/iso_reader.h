@@ -145,6 +145,7 @@ public:
 
   ALWAYS_INLINE const CDImage* GetImage() const { return m_image; }
   ALWAYS_INLINE u32 GetTrackNumber() const { return m_track_number; }
+  ALWAYS_INLINE u32 GetPVDLBA() const { return m_pvd_lba; }
   ALWAYS_INLINE const ISOPrimaryVolumeDescriptor& GetPVD() const { return m_pvd; }
 
   bool Open(CDImage* image, u32 track_number, Error* error = nullptr);
@@ -173,4 +174,5 @@ private:
   u32 m_track_number;
 
   ISOPrimaryVolumeDescriptor m_pvd = {};
+  u32 m_pvd_lba = 0;
 };

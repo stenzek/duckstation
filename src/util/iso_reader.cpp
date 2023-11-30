@@ -72,6 +72,7 @@ bool IsoReader::ReadPVD(Error* error)
     else if (header->type_code == 255)
       break;
 
+    m_pvd_lba = START_SECTOR + i;
     std::memcpy(&m_pvd, buffer, sizeof(ISOPrimaryVolumeDescriptor));
     Log_DevFmt("ISOReader: PVD found at index {}", i);
     return true;
