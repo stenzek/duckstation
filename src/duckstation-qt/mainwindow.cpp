@@ -1668,7 +1668,7 @@ void MainWindow::setupAdditionalUi()
 
     m_ui.menuSettingsLanguage->addAction(action);
     action->setData(QString::fromLatin1(code));
-    connect(action, &QAction::triggered, [this, action]() {
+    connect(action, &QAction::triggered, [action]() {
       const QString new_language = action->data().toString();
       Host::ChangeLanguage(new_language.toUtf8().constData());
     });

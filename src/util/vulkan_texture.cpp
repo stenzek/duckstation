@@ -473,7 +473,8 @@ void VulkanTexture::TransitionToLayout(Layout layout)
 
 void VulkanTexture::TransitionToLayout(VkCommandBuffer command_buffer, Layout new_layout)
 {
-  if (m_layout == new_layout)
+  // Need a barrier inbetween multiple self transfers.
+  if (m_layout == new_layout && new_layout != Layout::TransferSelf)
     return;
 
   TransitionSubresourcesToLayout(command_buffer, 0, m_layers, 0, m_levels, m_layout, new_layout);
