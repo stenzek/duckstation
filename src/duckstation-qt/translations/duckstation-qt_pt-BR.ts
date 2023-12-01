@@ -10825,32 +10825,32 @@ Error was:</source>
 <context>
     <name>GameListCompatibilityRating</name>
     <message>
-        <location filename="../../core/game_database.cpp" line="216"/>
+        <location filename="../../core/game_database.cpp" line="217"/>
         <source>Unknown</source>
         <translation>Desconhecido</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="217"/>
+        <location filename="../../core/game_database.cpp" line="218"/>
         <source>Doesn&apos;t Boot</source>
         <translation>Não funciona</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="218"/>
+        <location filename="../../core/game_database.cpp" line="219"/>
         <source>Crashes In Intro</source>
         <translation>Quebra logo no início</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="219"/>
+        <location filename="../../core/game_database.cpp" line="220"/>
         <source>Crashes In-Game</source>
         <translation>Quebra durante o jogo</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="220"/>
+        <location filename="../../core/game_database.cpp" line="221"/>
         <source>Graphical/Audio Issues</source>
         <translation>Problemas de áudio e vídeo</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="221"/>
+        <location filename="../../core/game_database.cpp" line="222"/>
         <source>No Issues</source>
         <translation>Sem problemas</translation>
     </message>
@@ -15545,76 +15545,148 @@ Usando a seguinte imagem &apos;{}&apos;, isso pode resultar em instabilidade.</t
         <translation>Texturas de pós-processamento recarregadas.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="257"/>
         <source>CPU interpreter forced by game settings.</source>
-        <translation>Configurado o interpretador por CPU pela configuração individual.</translation>
+        <translation type="vanished">Configurado o interpretador por CPU pela configuração individual.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="268"/>
         <source>Software renderer forced by game settings.</source>
-        <translation>Renderização por software forçado pelas configurações individuais.</translation>
+        <translation type="vanished">Renderização por software forçado pelas configurações individuais.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="280"/>
         <source>Using software renderer for readbacks based on game settings.</source>
-        <translation>Usando o renderizador por software para releituras com base nas configurações individuais.</translation>
+        <translation type="vanished">Usando o renderizador por software para releituras com base nas configurações individuais.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="291"/>
         <source>Interlacing forced by game settings.</source>
-        <translation>Entrelaçamento forçado pela configuração individual.</translation>
+        <translation type="vanished">Entrelaçamento forçado pela configuração individual.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="302"/>
         <source>True color disabled by game settings.</source>
-        <translation>Efeito cor real desativado pelas configurações individuais.</translation>
+        <translation type="vanished">Efeito cor real desativado pelas configurações individuais.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="313"/>
         <source>Upscaling disabled by game settings.</source>
-        <translation>Escalonamento desativado pelas configurações individuais.</translation>
+        <translation type="vanished">Escalonamento desativado pelas configurações individuais.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="324"/>
         <source>Scaled dithering disabled by game settings.</source>
-        <translation>Dithering escalonado desligado pelas configurações individuais.</translation>
+        <translation type="vanished">Dithering escalonado desligado pelas configurações individuais.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="335"/>
         <source>Widescreen rendering disabled by game settings.</source>
-        <translation>Ajuste de tela panorâmica desativado pelas configurações.</translation>
+        <translation type="vanished">Ajuste de tela panorâmica desativado pelas configurações.</translation>
     </message>
     <message>
         <source>Widescreen disabled by game settings.</source>
         <translation type="vanished">Ajuste de tela panorâmica desativado pelas configurações.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="347"/>
         <source>Forcing NTSC Timings disallowed by game settings.</source>
-        <translation>Temporizadores NTSC não permitidos pela configuração individual.</translation>
+        <translation type="vanished">Temporizadores NTSC não permitidos pela configuração individual.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="359"/>
         <source>PGXP geometry correction disabled by game settings.</source>
-        <translation>Correção geométrica desativada pelas configurações individuais.</translation>
+        <translation type="vanished">Correção geométrica desativada pelas configurações individuais.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="371"/>
         <source>PGXP culling disabled by game settings.</source>
-        <translation>Correção de curvas desativada pela configuração individual.</translation>
+        <translation type="vanished">Correção de curvas desativada pela configuração individual.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="383"/>
         <source>PGXP perspective corrected textures disabled by game settings.</source>
+        <translation type="vanished">Perspectiva PGXP corrigiu as texturas desativadas pelas configurações por jogo.</translation>
+    </message>
+    <message>
+        <source>PGXP perspective corrected colors disabled by game settings.</source>
+        <translation type="vanished">Perspectiva PGXP corrigiu as cores desativadas pelas configurações por jogo.</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="258"/>
+        <source>CPU interpreter forced by compatibility settings.</source>
+        <translation>Interpretador do CPU forçado pelas configurações de compatibilidade.</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="270"/>
+        <source>Software renderer forced by compatibility settings.</source>
+        <translation>Renderizador de software forçado pelas configurações de compatibilidade.</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="283"/>
+        <source>Using software renderer for readbacks based on compatibility settings.</source>
+        <translation>Usando o renderizador de software para releituras com base nas configurações de compatibilidade.</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="295"/>
+        <source>Interlacing forced by compatibility settings.</source>
+        <translation>Entrelaçamento forçado pelas configurações de compatibilidade.</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="307"/>
+        <source>True color disabled by compatibility settings.</source>
+        <translation>Cor real desativada pelas configurações de compatibilidade.</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="319"/>
+        <source>Upscaling disabled by compatibility settings.</source>
+        <translation>Aumento de escala desativado pelas configurações de compatibilidade.</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="331"/>
+        <source>Texture filtering disabled by compatibility settings.</source>
+        <translation>Filtragem de textura desativada pelas configurações de compatibilidade.</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="343"/>
+        <source>Scaled dithering disabled by compatibility settings.</source>
+        <translation>Escalonamento do dithering desativado pelas configurações de compatibilidade.</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="355"/>
+        <source>Widescreen rendering disabled by compatibility settings.</source>
+        <translation>Renderização de tela utra larga desativada pelas configurações de compatibilidade.</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="367"/>
+        <source>Forcing NTSC Timings disallowed by compatibility settings.</source>
+        <translation>Temporizações NTSC não permitidas pelas configurações de compatibilidade.</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="380"/>
+        <source>PGXP geometry correction disabled by compatibility settings.</source>
+        <translation>Correção da geometria do PGXP desativada pelas configurações de compatibilidade.</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="391"/>
+        <source>PGXP culling disabled by compatibility settings.</source>
+        <translation>Opções de PGXP desativadas pelas configurações de compatibilidade.</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="404"/>
+        <source>PGXP perspective corrected textures disabled by compatibility settings.</source>
         <translation>Perspectiva PGXP corrigiu as texturas desativadas pelas configurações por jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="396"/>
-        <source>PGXP perspective corrected colors disabled by game settings.</source>
+        <location filename="../../core/game_database.cpp" line="418"/>
+        <source>PGXP perspective corrected colors disabled by compatibility settings.</source>
         <translation>Perspectiva PGXP corrigiu as cores desativadas pelas configurações por jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="493"/>
+        <location filename="../../core/game_database.cpp" line="430"/>
+        <source>PGXP vertex cache forced by compatibility settings.</source>
+        <translation>Cache de vértices PGXP forçado por configurações de compatibilidade.</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="442"/>
+        <source>PGXP CPU mode forced by compatibility settings.</source>
+        <translation>Modo de CPU PGXP forçado pelas configurações de compatibilidade.</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="454"/>
+        <source>PGXP Depth Buffer disabled by compatibility settings.</source>
+        <translation>Alocação de profundidade de PGXP desativado pelas configurações de compatibilidade.</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="518"/>
         <source>Controller in port {0} ({1}) is not supported for {2}.
 Supported controllers: {3}
 Please configure a supported controller from the list above.</source>
@@ -15627,19 +15699,16 @@ Configure um controle compatível da lista acima.</translation>
         <translation type="vanished">Correção de curvas desligada pela configuração individual.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="407"/>
         <source>PGXP vertex cache forced by game settings.</source>
-        <translation>Vértice armazenado forçado pelas configurações individuais.</translation>
+        <translation type="vanished">Vértice armazenado forçado pelas configurações individuais.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="418"/>
         <source>PGXP CPU mode forced by game settings.</source>
-        <translation>PGXP em modo CPU forçado pelas configurações individuais.</translation>
+        <translation type="vanished">PGXP em modo CPU forçado pelas configurações individuais.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="429"/>
         <source>PGXP Depth Buffer disabled by game settings.</source>
-        <translation>PGXP modo eixo Z desativado pelas configurações individuais.</translation>
+        <translation type="vanished">PGXP modo eixo Z desativado pelas configurações individuais.</translation>
     </message>
     <message>
         <source>Controller %u changed to digital by game settings.</source>
