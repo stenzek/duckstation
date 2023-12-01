@@ -4803,47 +4803,53 @@ void FullscreenUI::DrawPauseMenu()
       buffer.fmt("{} - ", serial);
     buffer.append(Path::GetFileName(System::GetDiscPath()));
 
+    const float image_width = 60.0f;
+    const float image_height = 60.0f;
+
     const ImVec2 title_size(
       g_large_font->CalcTextSizeA(g_large_font->FontSize, std::numeric_limits<float>::max(), -1.0f, title.c_str()));
     const ImVec2 subtitle_size(
-      g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(), -1.0f, buffer));
+      g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(), -1.0f, buffer.c_str()));
 
-    ImVec2 title_pos(display_size.x - LayoutScale(20.0f + 50.0f + 20.0f) - title_size.x,
-                     display_size.y - LayoutScale(20.0f + 50.0f));
-    ImVec2 subtitle_pos(display_size.x - LayoutScale(20.0f + 50.0f + 20.0f) - subtitle_size.x,
+    ImVec2 title_pos(display_size.x - LayoutScale(10.0f + image_width + 20.0f) - title_size.x,
+                     display_size.y - LayoutScale(10.0f + image_height));
+    ImVec2 subtitle_pos(display_size.x - LayoutScale(10.0f + image_width + 20.0f) - subtitle_size.x,
                         title_pos.y + g_large_font->FontSize + LayoutScale(4.0f));
-    float rp_height = 0.0f;
 
-    if (Achievements::HasActiveGame())
+    float rp_height = 0.0f;
     {
       const auto lock = Achievements::GetLock();
-      const std::string& rp = Achievements::GetRichPresenceString();
+      const std::string& rp = Achievements::IsActive() ? Achievements::GetRichPresenceString() : std::string();
+
       if (!rp.empty())
       {
         const float wrap_width = LayoutScale(350.0f);
         const ImVec2 rp_size = g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(),
-                                                            wrap_width, rp.data(), rp.data() + rp.size());
-        rp_height = rp_size.y + LayoutScale(4.0f);
+                                                            wrap_width, rp.data(), rp.data() + rp.length());
 
-        const ImVec2 rp_pos(display_size.x - LayoutScale(20.0f + 50.0f + 20.0f) - rp_size.x - rp_height,
-                            subtitle_pos.y + LayoutScale(4.0f));
+        // Add a small extra gap if any Rich Presence is displayed
+        rp_height = rp_size.y - g_medium_font->FontSize + LayoutScale(2.0f);
 
-        title_pos.x -= rp_height;
+        const ImVec2 rp_pos(display_size.x - LayoutScale(20.0f + 50.0f + 20.0f) - rp_size.x,
+                            subtitle_pos.y + g_medium_font->FontSize + LayoutScale(4.0f) - rp_height);
+
         title_pos.y -= rp_height;
-        subtitle_pos.x -= rp_height;
         subtitle_pos.y -= rp_height;
 
-        DrawShadowedText(dl, g_medium_font, rp_pos, text_color, rp.data(), rp.data() + rp.size(), wrap_width);
+        DrawShadowedText(dl, g_medium_font, rp_pos, text_color, rp.data(), rp.data() + rp.length(), wrap_width);
       }
     }
 
-    DrawShadowedText(dl, g_large_font, title_pos, text_color, title.c_str(), title.c_str() + title.length());
-    DrawShadowedText(dl, g_medium_font, subtitle_pos, text_color, buffer.c_str(), buffer.end_ptr());
+    DrawShadowedText(dl, g_large_font, title_pos, text_color, title.c_str());
+    DrawShadowedText(dl, g_medium_font, subtitle_pos, text_color, buffer.c_str());
 
-    const ImVec2 image_min(display_size.x - LayoutScale(20.0f + 50.0f) - rp_height,
-                           display_size.y - LayoutScale(20.0f + 50.0f) - rp_height);
-    const ImVec2 image_max(image_min.x + LayoutScale(50.0f) + rp_height, image_min.y + LayoutScale(50.0f) + rp_height);
-    dl->AddImage(GetCoverForCurrentGame(), image_min, image_max);
+    GPUTexture* const cover = GetCoverForCurrentGame();
+    const ImVec2 image_min(display_size.x - LayoutScale(10.0f + image_width),
+                           display_size.y - LayoutScale(10.0f + image_height) - rp_height);
+    const ImVec2 image_max(image_min.x + LayoutScale(image_width), image_min.y + LayoutScale(image_height) + rp_height);
+    const ImRect image_rect(CenterImage(ImRect(image_min, image_max), ImVec2(static_cast<float>(cover->GetWidth()),
+                                                                             static_cast<float>(cover->GetHeight()))));
+    dl->AddImage(cover, image_rect.Min, image_rect.Max);
   }
 
   // current time / play time
