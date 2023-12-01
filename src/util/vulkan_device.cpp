@@ -2202,6 +2202,7 @@ bool VulkanDevice::CheckFeatures(FeatureMask disabled_features)
     Log_WarningPrintf("Vulkan driver is missing dual-source blending. This will have an impact on performance.");
 
   m_features.noperspective_interpolation = true;
+  m_features.texture_copy_to_self = !(disabled_features & FEATURE_MASK_TEXTURE_COPY_TO_SELF);
   m_features.per_sample_shading = m_device_features.sampleRateShading;
   m_features.supports_texture_buffers = !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS);
 

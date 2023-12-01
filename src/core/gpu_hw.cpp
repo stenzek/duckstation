@@ -2474,9 +2474,7 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
   const bool use_shader =
     (m_GPUSTAT.IsMaskingEnabled() || ((src_x % VRAM_WIDTH) + width) > VRAM_WIDTH ||
      ((src_y % VRAM_HEIGHT) + height) > VRAM_HEIGHT || ((dst_x % VRAM_WIDTH) + width) > VRAM_WIDTH ||
-     ((dst_y % VRAM_HEIGHT) + height) > VRAM_HEIGHT ||
-     Common::Rectangle<u32>::FromExtents(src_x, src_y, width, height)
-       .Intersects(Common::Rectangle<u32>::FromExtents(dst_x, dst_y, width, height)));
+     ((dst_y % VRAM_HEIGHT) + height) > VRAM_HEIGHT);
 
   if (use_shader || IsUsingMultisampling())
   {
@@ -2526,14 +2524,15 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
     return;
   }
 
-  // We can't CopySubresourceRegion to the same resource. So use the shadow texture if we can, but that may need to be
-  // updated first. Copying to the same resource seemed to work on Windows 10, but breaks on Windows 7. But, it's
-  // against the API spec, so better to be safe than sorry.
-
-  // TODO: make this an optional feature, DX12 can do it
-
-  if (m_vram_dirty_rect.Intersects(Common::Rectangle<u32>::FromExtents(src_x, src_y, width, height)))
-    UpdateVRAMReadTexture();
+  GPUTexture* src_tex = m_vram_texture.get();
+  const bool overlaps_with_self = Common::Rectangle<u32>::FromExtents(src_x, src_y, width, height)
+                                    .Intersects(Common::Rectangle<u32>::FromExtents(dst_x, dst_y, width, height));
+  if (!g_gpu_device->GetFeatures().texture_copy_to_self || overlaps_with_self)
+  {
+    src_tex = m_vram_read_texture.get();
+    if (m_vram_dirty_rect.Intersects(Common::Rectangle<u32>::FromExtents(src_x, src_y, width, height)))
+      UpdateVRAMReadTexture();
+  }
 
   IncludeVRAMDirtyRectangle(
     Common::Rectangle<u32>::FromExtents(dst_x, dst_y, width, height).Clamped(0, 0, VRAM_WIDTH, VRAM_HEIGHT));
@@ -2545,9 +2544,10 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
   }
 
   g_gpu_device->CopyTextureRegion(m_vram_texture.get(), dst_x * m_resolution_scale, dst_y * m_resolution_scale, 0, 0,
-                                  m_vram_read_texture.get(), src_x * m_resolution_scale, src_y * m_resolution_scale, 0,
+                                  src_tex, src_x * m_resolution_scale, src_y * m_resolution_scale, 0,
                                   0, width * m_resolution_scale, height * m_resolution_scale);
-  m_vram_read_texture->MakeReadyForSampling();
+  if (src_tex != m_vram_texture.get())
+    m_vram_read_texture->MakeReadyForSampling();
 }
 
 void GPU_HW::DispatchRenderCommand()

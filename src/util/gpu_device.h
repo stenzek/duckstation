@@ -449,6 +449,7 @@ public:
     FEATURE_MASK_FRAMEBUFFER_FETCH = (1 << 1),
     FEATURE_MASK_TEXTURE_BUFFERS = (1 << 2),
     FEATURE_MASK_GEOMETRY_SHADERS = (1 << 3),
+    FEATURE_MASK_TEXTURE_COPY_TO_SELF = (1 << 4),
   };
 
   struct Features
@@ -457,6 +458,7 @@ public:
     bool framebuffer_fetch : 1;
     bool per_sample_shading : 1;
     bool noperspective_interpolation : 1;
+    bool texture_copy_to_self : 1;
     bool supports_texture_buffers : 1;
     bool texture_buffers_emulated_with_ssbo : 1;
     bool geometry_shaders : 1;

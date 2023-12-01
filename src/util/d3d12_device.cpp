@@ -116,7 +116,8 @@ D3D12Device::ComPtr<ID3D12RootSignature> D3D12Device::CreateRootSignature(const 
   return rs;
 }
 
-bool D3D12Device::CreateDevice(const std::string_view& adapter, bool threaded_presentation, FeatureMask disabled_features)
+bool D3D12Device::CreateDevice(const std::string_view& adapter, bool threaded_presentation,
+                               FeatureMask disabled_features)
 {
   std::unique_lock lock(s_instance_mutex);
 
@@ -1176,6 +1177,8 @@ void D3D12Device::SetFeatures(FeatureMask disabled_features)
   m_features.framebuffer_fetch = false;
   m_features.per_sample_shading = true;
   m_features.noperspective_interpolation = true;
+  m_features.texture_copy_to_self =
+    /*!(disabled_features & FEATURE_MASK_TEXTURE_COPY_TO_SELF)*/ false; // TODO: Support with Enhanced Barriers
   m_features.supports_texture_buffers = !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS);
   m_features.texture_buffers_emulated_with_ssbo = false;
   m_features.geometry_shaders = !(disabled_features & FEATURE_MASK_GEOMETRY_SHADERS);
