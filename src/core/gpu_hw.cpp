@@ -2119,6 +2119,12 @@ ALWAYS_INLINE_RELEASE void GPU_HW::CheckForTexPageOverlap(u32 texpage, u32 min_u
                  m_current_uv_range.left, m_current_uv_range.top, m_current_uv_range.right, m_current_uv_range.bottom,
                  m_vram_dirty_rect.left, m_vram_dirty_rect.top, m_vram_dirty_rect.right, m_vram_dirty_rect.bottom);
 
+      if (GetBatchVertexCount() > 0)
+      {
+        FlushRender();
+        EnsureVertexBufferSpaceForCurrentCommand();
+      }
+
       UpdateVRAMReadTexture();
     }
   }
@@ -2292,6 +2298,8 @@ void GPU_HW::FillDrawCommand(GPUBackendDrawCommand* cmd, GPURenderCommand rc) co
 
 void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 {
+  GL_SCOPE_FMT("FillVRAM({},{} => {},{} ({}x{}) with 0x{:08X}", x, y, x + width, y + height, width, height, color);
+
   if (m_sw_renderer)
   {
     GPUBackendFillVRAMCommand* cmd = m_sw_renderer->NewFillVRAMCommand();
@@ -2341,9 +2349,12 @@ void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
 
 void GPU_HW::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
 {
+  GL_PUSH_FMT("ReadVRAM({},{} => {},{} ({}x{})", x, y, x + width, y + height, width, height);
+
   if (m_sw_renderer)
   {
     m_sw_renderer->Sync(false);
+    GL_POP();
     return;
   }
 
@@ -2361,6 +2372,7 @@ void GPU_HW::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
   g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
   g_gpu_device->Draw(3, 0);
   m_vram_readback_texture->MakeReadyForSampling();
+  GL_POP();
 
   // Stage the readback and copy it into our shadow buffer.
   g_gpu_device->DownloadTexture(m_vram_readback_texture.get(), 0, 0, encoded_width, encoded_height,
@@ -2372,6 +2384,8 @@ void GPU_HW::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
 
 void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask)
 {
+  GL_SCOPE_FMT("UpdateVRAM({},{} => {},{} ({}x{})", x, y, x + width, y + height, width, height);
+
   if (m_sw_renderer)
   {
     const u32 num_words = width * height;
@@ -2441,6 +2455,8 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, b
 
 void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height)
 {
+  GL_SCOPE_FMT("CopyVRAM({}x{} @ {},{} => {},{}", width, height, src_x, src_y, dst_x, dst_y);
+
   if (m_sw_renderer)
   {
     GPUBackendCopyVRAMCommand* cmd = m_sw_renderer->NewCopyVRAMCommand();
