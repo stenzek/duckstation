@@ -609,7 +609,7 @@ Unread messages: {}</source>
     <message>
         <location filename="../../core/achievements.cpp" line="1011"/>
         <source>You have unlocked {0} of {1} achievements, and earned {2} of {3} points.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Вы открыли {0} достижений из {1} и заработали {2} из {3} баллов.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1017"/>
@@ -620,7 +620,7 @@ Unread messages: {}</source>
     <message>
         <location filename="../../core/achievements.cpp" line="2196"/>
         <source>You have unlocked {0} of {1} achievements, earning {2} of {3} possible points.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Вы открыли {0} достижений из {1} и заработали {2} из {3} возможных баллов.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2548"/>
@@ -918,7 +918,7 @@ Unread messages: {}</source>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="354"/>
         <source>CD-ROM Mechacon Version</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Версия Мехакона дисковода</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="358"/>
@@ -6235,7 +6235,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6694"/>
         <source>-</source>
-        <translation type="unfinished"></translation>
+        <translation>-</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6771"/>
@@ -6295,7 +6295,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6782"/>
         <source>Audio Control</source>
-        <translation type="unfinished"></translation>
+        <translation>Управление звуком</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6783"/>
@@ -6457,12 +6457,12 @@ Do you want to load this save and continue?</source>
         <location filename="../../core/fullscreen_ui.cpp" line="6814"/>
         <source>Chooses the backend to use for rendering the console/game visuals.</source>
         <translatorcomment>*отрисовки *отображения</translatorcomment>
-        <translation type="unfinished">Выбирает серверную часть, которая будет использоваться для отрисовки визуальных эффектов консоли/игры.</translation>
+        <translation type="unfinished">Выбор серверной части, которая будет использоваться для отрисовки визуальных эффектов консоли/игры.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6815"/>
         <source>Chooses the language used for UI elements.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Выбор языка, используемого для элементов пользовательского интерфейса.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6816"/>
@@ -6757,7 +6757,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6874"/>
         <source>Determines that field that the game list will be sorted by.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Определяет поле, по которому будет сортироваться список игр.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6875"/>
@@ -6787,7 +6787,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6880"/>
         <source>Disable All Enhancements</source>
-        <translation type="unfinished">Отключить все улучшения</translation>
+        <translation>Отключить все улучшения</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6881"/>
@@ -6959,7 +6959,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6914"/>
         <source>Enable Region Check</source>
-        <translation type="unfinished">Включить проверку региона</translation>
+        <translation>Включить проверку региона</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6915"/>
@@ -6991,17 +6991,17 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7047"/>
         <source>Multitap</source>
-        <translation type="unfinished"></translation>
+        <translation>Мультитап</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7135"/>
         <source>Reverses the game list sort order from the default (usually ascending to descending).</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Меняет порядок сортировки списка игр на обратный (обычно по возрастанию на убывание).</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7138"/>
         <source>Rewind for {0} frames, lasting {1:.2f} seconds will require up to {2} MB of RAM and {3} MB of VRAM.</source>
-        <translation type="unfinished">Для перемотки назад {0} кадров длительностью {1:.2f} секунд потребуется до {3} Мб ОЗУ и {4} Мб видеопамяти. {0}?} {1:.2f?} {2}?} {3}?}</translation>
+        <translation type="unfinished">Для перемотки назад {0} кадров длительностью {1:.2f} секунд потребуется до {2} Мб ОЗУ и {3} Мб видеопамяти.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7139"/>
@@ -7016,7 +7016,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7169"/>
         <source>Selects the view that the game list will open to.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Выбирает вид, в котором откроется список игр.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7204"/>
@@ -7041,7 +7041,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7262"/>
         <source>UI Language</source>
-        <translation type="unfinished"></translation>
+        <translation>Язык пользовательского интерфейса</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7271"/>
@@ -8922,7 +8922,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7297"/>
         <source>{} Frames</source>
-        <translation type="unfinished"></translation>
+        <translation>{} кадров</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7298"/>
@@ -9201,7 +9201,7 @@ Error was:</source>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="467"/>
         <source>Texture filter &apos;{}&apos; is not supported with the current renderer.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Фильтр текстур &apos;{}&apos; не поддерживается текущим средством отрисовки.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="479"/>
@@ -9216,7 +9216,7 @@ Error was:</source>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="543"/>
         <source>Resolution scale {0}x not supported for adaptive downsampling, using {1}x.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Масштаб разрешения {0}x не поддерживается для адаптивного понижения разрешения с использованием {1}x.</translation>
     </message>
 </context>
 <context>
@@ -10174,7 +10174,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../core/hotkeys.cpp" line="120"/>
         <source>You cannot pause until another {:.1f} seconds have passed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Вы не можете сделать паузу, пока не пройдет еще {:.1f} секунд.</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="136"/>
@@ -10672,17 +10672,17 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../logwindow.cpp" line="91"/>
         <source>Log Window - %1 [%2]</source>
-        <translation type="unfinished">Окно журнала — %1 [%2]</translation>
+        <translation>Окно журнала - %1 [%2]</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="95"/>
         <source>Log Window</source>
-        <translation type="unfinished">Окно журнала</translation>
+        <translation>Окно журнала</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="114"/>
         <source>&amp;Clear</source>
-        <translation type="unfinished">&amp;Очистить</translation>
+        <translation>&amp;Очистить</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="116"/>
@@ -10692,73 +10692,73 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../logwindow.cpp" line="121"/>
         <source>Cl&amp;ose</source>
-        <translation type="unfinished">&amp;Закрыть</translation>
+        <translation>&amp;Закрыть</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="124"/>
         <source>&amp;Settings</source>
-        <translation type="unfinished">&amp;Настройки</translation>
+        <translation>&amp;Настройки</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="126"/>
         <source>Log To &amp;System Console</source>
-        <translation type="unfinished"></translation>
+        <translation>Журнал в &amp;Системную консоль</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="130"/>
         <source>Log To &amp;Debug Console</source>
-        <translation type="unfinished"></translation>
+        <translation>Журнал в &amp;Консоль отладки</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="134"/>
         <source>Log To &amp;File</source>
-        <translation type="unfinished"></translation>
+        <translation>Журнал в &amp;Файл</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="140"/>
         <source>Attach To &amp;Main Window</source>
-        <translation type="unfinished">Прикрепить к &amp;Главному окну</translation>
+        <translation>Прикрепить к &amp;Главному окну</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="144"/>
         <source>Show &amp;Timestamps</source>
-        <translation type="unfinished"></translation>
+        <translation>Показать &amp;Временные метки</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="150"/>
         <source>&amp;Log Level</source>
-        <translation type="unfinished">&amp;Уровень журнала</translation>
+        <translation>&amp;Уровень журнала</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="159"/>
         <source>&amp;Filters</source>
-        <translation type="unfinished">&amp;Фильтры</translation>
+        <translation>&amp;Фильтры</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="250"/>
         <source>Select Log File</source>
-        <translation type="unfinished">Выбрать файл журнала</translation>
+        <translation>Выбрать файл журнала</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="250"/>
         <source>Log Files (*.txt)</source>
-        <translation type="unfinished">Файлы журналов (*.txt)</translation>
+        <translation>Файлы журналов (*.txt)</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="257"/>
         <source>Error</source>
-        <translation type="unfinished">Ошибка</translation>
+        <translation>Ошибка</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="257"/>
         <source>Failed to open file for writing.</source>
-        <translation type="unfinished">Не удалось открыть файл для записи.</translation>
+        <translation>Не удалось открыть файл для записи.</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="264"/>
         <source>Log was written to %1.
 </source>
-        <translation type="unfinished">Журнал записан в %1.
+        <translation>Журнал записан в %1.
 </translation>
     </message>
 </context>
@@ -11990,57 +11990,57 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="27"/>
         <source>Delete File</source>
-        <translation type="unfinished">Удалить файл</translation>
+        <translation>Удалить файл</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="28"/>
         <source>Undelete File</source>
-        <translation type="unfinished">Восстановить файл</translation>
+        <translation>Восстановить файл</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="29"/>
         <source>Export File</source>
-        <translation type="unfinished">Экспортировать файл</translation>
+        <translation>Экспортировать файл</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="30"/>
         <source>&lt;&lt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;&lt;</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="31"/>
         <source>&gt;&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&gt;&gt;</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="48"/>
         <source>New Card...</source>
-        <translation type="unfinished">Новая карта...</translation>
+        <translation>Новая карта...</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="49"/>
         <source>Open Card...</source>
-        <translation type="unfinished">Открыть карту...</translation>
+        <translation>Открыть карту...</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="116"/>
         <source>Format Card</source>
-        <translation type="unfinished">Форматировать карту</translation>
+        <translation>Форматировать карту</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="117"/>
         <source>Import File...</source>
-        <translation type="unfinished">Импортировать файл...</translation>
+        <translation>Импортировать файл...</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="118"/>
         <source>Import Card...</source>
-        <translation type="unfinished">Импортировать карту...</translation>
+        <translation>Импортировать карту...</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="119"/>
         <source>Save</source>
-        <translation type="unfinished">Сохранить</translation>
+        <translation>Сохранить</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="232"/>
@@ -12056,24 +12056,24 @@ Are you sure you want to continue?</source>
         <location filename="../memorycardeditorwindow.cpp" line="517"/>
         <location filename="../memorycardeditorwindow.cpp" line="563"/>
         <source>Error</source>
-        <translation type="unfinished">Ошибка</translation>
+        <translation>Ошибка</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="232"/>
         <location filename="../memorycardeditorwindow.cpp" line="342"/>
         <source>Failed to load memory card image.</source>
-        <translation type="unfinished">Не удалось загрузить образ карты памяти.</translation>
+        <translation>Не удалось загрузить образ карты памяти.</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="276"/>
         <source> (Deleted)</source>
-        <translation type="unfinished"> (Удален)</translation>
+        <translation> (Удален)</translation>
     </message>
     <message numerus="yes">
         <location filename="../memorycardeditorwindow.cpp" line="296"/>
         <source>%n block(s) free%1</source>
-        <translation type="unfinished">
-            <numerusform>%n блок свободно%1</numerusform>
+        <translation>
+            <numerusform>%n блок свободен%1</numerusform>
             <numerusform>%n блока свободно%1</numerusform>
             <numerusform>%n блоков свободно%1</numerusform>
         </translation>
@@ -12082,92 +12082,92 @@ Are you sure you want to continue?</source>
         <location filename="../memorycardeditorwindow.cpp" line="310"/>
         <location filename="../memorycardeditorwindow.cpp" line="336"/>
         <source>Select Memory Card</source>
-        <translation type="unfinished">Выбрать карту памяти</translation>
+        <translation>Выбрать карту памяти</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="368"/>
         <source>Failed to write card to &apos;%1&apos;</source>
-        <translation type="unfinished">Не удалось записать карту в &apos;%1&apos;</translation>
+        <translation>Не удалось записать карту в &apos;%1&apos;</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="382"/>
         <source>Save memory card?</source>
-        <translation type="unfinished">Сохранить карту памяти?</translation>
+        <translation>Сохранить карту памяти?</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="383"/>
         <source>Memory card &apos;%1&apos; is not saved, do you want to save before closing?</source>
-        <translation type="unfinished">Карта памяти &apos;%1&apos; не сохранена. Сохранить перед закрытием?</translation>
+        <translation>Карта памяти &apos;%1&apos; не сохранена. Сохранить перед закрытием?</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="407"/>
         <source>Destination memory card already contains a save file with the same name (%1) as the one you are attempting to copy. Please delete this file from the destination memory card before copying.</source>
-        <translation type="unfinished">Целевая карта памяти уже содержит файл сохранения с тем же именем (%1), что и файл, который вы пытаетесь скопировать. Перед копированием удалите этот файл с целевой карты памяти.</translation>
+        <translation>Целевая карта памяти уже содержит файл сохранения с тем же именем (%1), что и файл, который вы пытаетесь скопировать. Перед копированием удалите этот файл с целевой карты памяти.</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="417"/>
         <source>Insufficient blocks, this file needs %1 but only %2 are available.</source>
-        <translation type="unfinished">Недостаточно блоков, этому файлу нужен %1, но доступно только %2.</translation>
+        <translation>Недостаточно блоков, этому файлу нужен %1, но доступно только %2.</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="426"/>
         <source>Failed to read file %1</source>
-        <translation type="unfinished">Не удалось прочитать файл %1</translation>
+        <translation>Не удалось прочитать файл %1</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="432"/>
         <source>Failed to write file %1</source>
-        <translation type="unfinished">Не удалось записать файл %1</translation>
+        <translation>Не удалось записать файл %1</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="451"/>
         <source>Failed to delete file %1</source>
-        <translation type="unfinished">Не удалось удалить файл %1</translation>
+        <translation>Не удалось удалить файл %1</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="472"/>
         <source>Failed to undelete file %1. The file may have been partially overwritten by another save.</source>
-        <translation type="unfinished">Не удалось восстановить файл %1. Возможно, файл был частично перезаписан другим сохранением.</translation>
+        <translation>Не удалось восстановить файл %1. Возможно, файл был частично перезаписан другим сохранением.</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="487"/>
         <source>Select Single Savefile</source>
-        <translation type="unfinished">Выбрать одиночный файл сохранения</translation>
+        <translation>Выбрать одиночный файл сохранения</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="500"/>
         <source>Failed to export save file %1. Check the log for more details.</source>
-        <translation type="unfinished">Не удалось экспортировать файл сохранения %1. Проверьте журнал для получения более подробной информации.</translation>
+        <translation>Не удалось экспортировать файл сохранения %1. Проверьте журнал для получения более подробной информации.</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="510"/>
         <source>Select Import File</source>
-        <translation type="unfinished">Выбрать импортируемый файл</translation>
+        <translation>Выбрать импортируемый файл</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="517"/>
         <source>Failed to import memory card. The log may contain more information.</source>
-        <translation type="unfinished">Не удалось импортировать карту памяти. Журнал может содержать дополнительную информацию.</translation>
+        <translation>Не удалось импортировать карту памяти. Журнал может содержать дополнительную информацию.</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="534"/>
         <source>Format memory card?</source>
-        <translation type="unfinished">Форматировать карту памяти?</translation>
+        <translation>Форматировать карту памяти?</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="535"/>
         <source>Formatting the memory card will destroy all saves, and they will not be recoverable. The memory card which will be formatted is located at &apos;%1&apos;.</source>
-        <translation type="unfinished">Форматирование карты памяти приведет к уничтожению всех сохранений, и они не будут восстановлены. Карта памяти, которая будет отформатирована, находится в &apos;%1&apos;.</translation>
+        <translation>Форматирование карты памяти приведет к уничтожению всех сохранений, и они не будут восстановлены. Карта памяти, которая будет отформатирована, находится в &apos;%1&apos;.</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="556"/>
         <source>Select Import Save File</source>
-        <translation type="unfinished">Выбрать импортируемый файл сохранения</translation>
+        <translation>Выбрать импортируемый файл сохранения</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="564"/>
         <source>Failed to import save. Check if there is enough room on the memory card or if an existing save with the same name already exists.</source>
-        <translation type="unfinished">Не удалось импортировать сохранение. Проверьте, достаточно ли места на карте памяти или уже есть существующее сохранение с тем же именем.</translation>
+        <translation>Не удалось импортировать сохранение. Проверьте, достаточно ли места на карте памяти или уже есть существующее сохранение с тем же именем.</translation>
     </message>
 </context>
 <context>
@@ -12976,87 +12976,92 @@ Using existing image &apos;{}&apos;, this may result in instability.</source>
     <message>
         <location filename="../../core/game_database.cpp" line="258"/>
         <source>CPU interpreter forced by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>*установлен</translatorcomment>
+        <translation type="unfinished">Интерпретатор процессора принудительно задан настройками совместимости.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="270"/>
         <source>Software renderer forced by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>*установлен *отображения</translatorcomment>
+        <translation type="unfinished">Программная отрисовка, принудительно задан настройками совместимости.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="283"/>
         <source>Using software renderer for readbacks based on compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>*обратного чтения-считывания-считываний *отображения</translatorcomment>
+        <translation type="unfinished">Использование программной отрисовки для обратных чтений на основе настроек совместимости.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="295"/>
         <source>Interlacing forced by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Чересстрочная развертка принудительно задана настроками совместимости.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="307"/>
         <source>True color disabled by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">True color отключен настройками совместимости.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="319"/>
         <source>Upscaling disabled by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Масштабирование отключено настройками совместимости.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="331"/>
         <source>Texture filtering disabled by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Фильтрация текстур отключена настройками совместимости.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="343"/>
         <source>Scaled dithering disabled by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>*размытие *сглаживание *дизеринг</translatorcomment>
+        <translation type="unfinished">Масштабируемый дизеринг отключен настройками совместимости.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="355"/>
         <source>Widescreen rendering disabled by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Широкоэкранный режим отключен настройками совместимости.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="367"/>
         <source>Forcing NTSC Timings disallowed by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Принудительная синхронизация NTSC запрещена настройками совместимости.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="380"/>
         <source>PGXP geometry correction disabled by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Корректировка геометрии PGXP отключена настройками совместимости.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="391"/>
         <source>PGXP culling disabled by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Отбраковка PGXP отключена настройками совместимости.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="404"/>
         <source>PGXP perspective corrected textures disabled by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Текстуры с корректировкой перспективы PGXP отключены настройками совместимости.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="418"/>
         <source>PGXP perspective corrected colors disabled by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Цвета с корректировкой перспективы PGXP отключены настройками совместимости.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="430"/>
         <source>PGXP vertex cache forced by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Кеш вершин PGXP принудительно задан настройками совместимости.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="442"/>
         <source>PGXP CPU mode forced by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>*установлен</translatorcomment>
+        <translation type="unfinished">Режим процессора PGXP, принудительно задан настройками совместимости.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="454"/>
         <source>PGXP Depth Buffer disabled by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Буфер глубины PGXP отключен настройками совместимости.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="518"/>
@@ -13434,12 +13439,12 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.ui" line="20"/>
         <source>DuckStation Settings</source>
-        <translation type="unfinished">Настройки DuckStation</translation>
+        <translation>Настройки DuckStation</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="54"/>
         <source>Summary</source>
-        <translation type="unfinished">Сводка</translation>
+        <translation>Сводка</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="56"/>
@@ -13449,7 +13454,7 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.cpp" line="71"/>
         <source>General</source>
-        <translation type="unfinished">Общие</translation>
+        <translation>Общие</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="73"/>
@@ -13459,7 +13464,7 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.cpp" line="79"/>
         <source>Game List</source>
-        <translation type="unfinished">Список игр</translation>
+        <translation>Список игр</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="81"/>
@@ -13469,7 +13474,7 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.cpp" line="86"/>
         <source>BIOS</source>
-        <translation type="unfinished">BIOS</translation>
+        <translation>BIOS</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="88"/>
@@ -13479,7 +13484,7 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.cpp" line="90"/>
         <source>Console</source>
-        <translation type="unfinished">Консоль</translation>
+        <translation>Консоль</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="92"/>
@@ -13489,7 +13494,7 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.cpp" line="94"/>
         <source>Emulation</source>
-        <translation type="unfinished">Эмуляция</translation>
+        <translation>Эмуляция</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="96"/>
@@ -13499,7 +13504,7 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.cpp" line="99"/>
         <source>Memory Cards</source>
-        <translation type="unfinished">Карты памяти</translation>
+        <translation>Карты памяти</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="101"/>
@@ -13509,7 +13514,7 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.cpp" line="104"/>
         <source>Display</source>
-        <translation type="unfinished">Отображение</translation>
+        <translation>Отображение</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="106"/>
@@ -13519,7 +13524,7 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.cpp" line="109"/>
         <source>Enhancements</source>
-        <translation type="unfinished">Улучшения</translation>
+        <translation>Улучшения</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="111"/>
@@ -13529,7 +13534,7 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.cpp" line="114"/>
         <source>Post-Processing</source>
-        <translation type="unfinished">Постобработка</translation>
+        <translation>Постобработка</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="116"/>
@@ -13539,7 +13544,7 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.cpp" line="119"/>
         <source>Audio</source>
-        <translation type="unfinished">Звук</translation>
+        <translation>Звук</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="121"/>
@@ -13549,7 +13554,7 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.cpp" line="124"/>
         <source>Achievements</source>
-        <translation type="unfinished">Достижения</translation>
+        <translation>Достижения</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="126"/>
@@ -13559,7 +13564,7 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.cpp" line="148"/>
         <source>Folders</source>
-        <translation type="unfinished">Папки</translation>
+        <translation>Папки</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="150"/>
@@ -13569,7 +13574,7 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.cpp" line="153"/>
         <source>Advanced</source>
-        <translation type="unfinished">Дополнительные</translation>
+        <translation>Дополнительные</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="155"/>
@@ -13579,7 +13584,7 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.cpp" line="212"/>
         <source>Confirm Restore Defaults</source>
-        <translation type="unfinished">Подтвердите восстановление настроек по умолчанию</translation>
+        <translation>Подтвердите восстановление настроек по умолчанию</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="213"/>
@@ -13589,12 +13594,12 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.cpp" line="229"/>
         <source>Recommended Value</source>
-        <translation type="unfinished">Рекомендуемое значение</translation>
+        <translation>Рекомендуемое значение</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="515"/>
         <source>%1 [%2]</source>
-        <translation type="unfinished">%1 [%2]</translation>
+        <translation>%1 [%2]</translation>
     </message>
 </context>
 <context>
