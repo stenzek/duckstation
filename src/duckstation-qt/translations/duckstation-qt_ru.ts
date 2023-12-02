@@ -12994,7 +12994,7 @@ Using existing image &apos;{}&apos;, this may result in instability.</source>
     <message>
         <location filename="../../core/game_database.cpp" line="295"/>
         <source>Interlacing forced by compatibility settings.</source>
-        <translation type="unfinished">Чересстрочная развертка принудительно задана настроками совместимости.</translation>
+        <translation type="unfinished">Чересстрочная развертка принудительно задана настройками совместимости.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="307"/>
