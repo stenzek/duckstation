@@ -2544,8 +2544,8 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
   }
 
   g_gpu_device->CopyTextureRegion(m_vram_texture.get(), dst_x * m_resolution_scale, dst_y * m_resolution_scale, 0, 0,
-                                  src_tex, src_x * m_resolution_scale, src_y * m_resolution_scale, 0,
-                                  0, width * m_resolution_scale, height * m_resolution_scale);
+                                  src_tex, src_x * m_resolution_scale, src_y * m_resolution_scale, 0, 0,
+                                  width * m_resolution_scale, height * m_resolution_scale);
   if (src_tex != m_vram_texture.get())
     m_vram_read_texture->MakeReadyForSampling();
 }
@@ -2618,11 +2618,14 @@ void GPU_HW::DispatchRenderCommand()
   }
 
   // has any state changed which requires a new batch?
+  // Reverse blending breaks with mixed transparent and opaque pixels, so we have to do one draw per polygon.
+  // If we have fbfetch, we don't need to draw it in two passes. Test case: Suikoden 2 shadows.
   const GPUTransparencyMode transparency_mode =
     rc.transparency_enable ? m_draw_mode.mode_reg.transparency_mode : GPUTransparencyMode::Disabled;
   const bool dithering_enable = (!m_true_color && rc.IsDitheringEnabled()) ? m_GPUSTAT.dither_enable : false;
   if (texture_mode != m_batch.texture_mode || transparency_mode != m_batch.transparency_mode ||
-      transparency_mode == GPUTransparencyMode::BackgroundMinusForeground || dithering_enable != m_batch.dithering)
+      (transparency_mode == GPUTransparencyMode::BackgroundMinusForeground && !m_supports_framebuffer_fetch) ||
+      dithering_enable != m_batch.dithering)
   {
     FlushRender();
   }
