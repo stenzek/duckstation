@@ -492,7 +492,10 @@ void OpenGLDevice::CommitClear(OpenGLTexture* tex)
         {
           const auto color = tex->GetUNormClearColor();
           glDisable(GL_SCISSOR_TEST);
+          glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
           glClearBufferfv(GL_COLOR, 0, color.data());
+          glColorMask(m_last_blend_state.write_r, m_last_blend_state.write_g, m_last_blend_state.write_b,
+                      m_last_blend_state.write_a);
           glEnable(GL_SCISSOR_TEST);
         }
 
@@ -531,7 +534,10 @@ void OpenGLDevice::CommitClear(OpenGLFramebuffer* fb)
       {
         const auto color = FB->GetUNormClearColor();
         glDisable(GL_SCISSOR_TEST);
+        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
         glClearBufferfv(GL_COLOR, 0, color.data());
+        glColorMask(m_last_blend_state.write_r, m_last_blend_state.write_g, m_last_blend_state.write_b,
+                    m_last_blend_state.write_a);
         glEnable(GL_SCISSOR_TEST);
         FB->SetState(GPUTexture::State::Dirty);
       }

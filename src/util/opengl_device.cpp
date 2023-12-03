@@ -609,7 +609,10 @@ void OpenGLDevice::RenderBlankFrame()
 {
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
   glDisable(GL_SCISSOR_TEST);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
   glClearBufferfv(GL_COLOR, 0, s_clear_color.data());
+  glColorMask(m_last_blend_state.write_r, m_last_blend_state.write_g, m_last_blend_state.write_b,
+              m_last_blend_state.write_a);
   glEnable(GL_SCISSOR_TEST);
   m_gl_context->SwapBuffers();
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_current_framebuffer ? m_current_framebuffer->GetGLId() : 0);
@@ -707,7 +710,10 @@ bool OpenGLDevice::BeginPresent(bool skip_present)
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glDisable(GL_SCISSOR_TEST);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
   glClearBufferfv(GL_COLOR, 0, s_clear_color.data());
+  glColorMask(m_last_blend_state.write_r, m_last_blend_state.write_g, m_last_blend_state.write_b,
+              m_last_blend_state.write_a);
   glEnable(GL_SCISSOR_TEST);
 
   const Common::Rectangle<s32> window_rc =
