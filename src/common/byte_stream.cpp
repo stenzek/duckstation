@@ -1559,7 +1559,7 @@ public:
     {
       const s64 skip = std::min<s64>(m_output_buffer_wpos - m_output_buffer_rpos, remaining);
       remaining -= skip;
-      m_output_buffer_wpos += static_cast<u32>(skip);
+      m_output_buffer_rpos += static_cast<u32>(skip);
       if (remaining == 0)
         return true;
       else if (!Decompress())
