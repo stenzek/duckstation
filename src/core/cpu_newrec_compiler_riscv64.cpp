@@ -1847,6 +1847,8 @@ void CPU::NewRec::RISCV64Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize
                                                const std::optional<VirtualMemoryAddress>& address)
 {
   DebugAssert(size == MemoryAccessSize::Word && !sign);
+
+  const GPR addr = GPR(AllocateTempHostReg(HR_CALLEE_SAVED));
   FlushForLoadStore(address, false, use_fastmem);
 
   // TODO: if address is constant, this can be simplified..
@@ -1856,7 +1858,6 @@ void CPU::NewRec::RISCV64Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize
     UpdateLoadDelay();
 
   // We'd need to be careful here if we weren't overwriting it..
-  const GPR addr = GPR(AllocateHostReg(HR_CALLEE_SAVED, HR_TYPE_TEMP));
   ComputeLoadStoreAddressArg(cf, address, addr);
   rvAsm->ANDI(RARG1, addr, ~0x3u);
   GenerateLoad(RARG1, MemoryAccessSize::Word, false, use_fastmem, []() { return RRET; });
@@ -2012,11 +2013,12 @@ void CPU::NewRec::RISCV64Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize
                                                const std::optional<VirtualMemoryAddress>& address)
 {
   DebugAssert(size == MemoryAccessSize::Word && !sign);
+
+  const GPR addr = GPR(AllocateTempHostReg(HR_CALLEE_SAVED));
   FlushForLoadStore(address, true, use_fastmem);
 
   // TODO: if address is constant, this can be simplified..
   // We'd need to be careful here if we weren't overwriting it..
-  const GPR addr = GPR(AllocateHostReg(HR_CALLEE_SAVED, HR_TYPE_TEMP));
   ComputeLoadStoreAddressArg(cf, address, addr);
   rvAsm->ANDI(RARG1, addr, ~0x3u);
   GenerateLoad(RARG1, MemoryAccessSize::Word, false, use_fastmem, []() { return RRET; });

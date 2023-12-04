@@ -1515,6 +1515,8 @@ void CPU::NewRec::X64Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize siz
                                            const std::optional<VirtualMemoryAddress>& address)
 {
   DebugAssert(size == MemoryAccessSize::Word && !sign);
+
+  const Reg32 addr = Reg32(AllocateTempHostReg(HR_CALLEE_SAVED));
   FlushForLoadStore(address, false, use_fastmem);
 
   // TODO: if address is constant, this can be simplified..
@@ -1524,7 +1526,6 @@ void CPU::NewRec::X64Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize siz
     UpdateLoadDelay();
 
   // We'd need to be careful here if we weren't overwriting it..
-  const Reg32 addr = Reg32(AllocateHostReg(HR_CALLEE_SAVED, HR_TYPE_TEMP));
   ComputeLoadStoreAddressArg(cf, address, addr);
   cg->mov(RWARG1, addr);
   cg->and_(RWARG1, ~0x3u);
@@ -1711,11 +1712,12 @@ void CPU::NewRec::X64Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize siz
                                            const std::optional<VirtualMemoryAddress>& address)
 {
   DebugAssert(size == MemoryAccessSize::Word && !sign);
+
+  const Reg32 addr = Reg32(AllocateTempHostReg(HR_CALLEE_SAVED));
   FlushForLoadStore(address, true, use_fastmem);
 
   // TODO: if address is constant, this can be simplified..
   // We'd need to be careful here if we weren't overwriting it..
-  const Reg32 addr = Reg32(AllocateHostReg(HR_CALLEE_SAVED, HR_TYPE_TEMP));
   ComputeLoadStoreAddressArg(cf, address, addr);
   cg->mov(RWARG1, addr);
   cg->and_(RWARG1, ~0x3u);

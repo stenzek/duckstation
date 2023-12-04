@@ -1555,6 +1555,8 @@ void CPU::NewRec::AArch64Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize
                                                const std::optional<VirtualMemoryAddress>& address)
 {
   DebugAssert(size == MemoryAccessSize::Word && !sign);
+
+  const WRegister addr = WRegister(AllocateTempHostReg(HR_CALLEE_SAVED));
   FlushForLoadStore(address, false, use_fastmem);
 
   // TODO: if address is constant, this can be simplified..
@@ -1564,7 +1566,6 @@ void CPU::NewRec::AArch64Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize
     UpdateLoadDelay();
 
   // We'd need to be careful here if we weren't overwriting it..
-  const WRegister addr = WRegister(AllocateHostReg(HR_CALLEE_SAVED, HR_TYPE_TEMP));
   ComputeLoadStoreAddressArg(cf, address, addr);
   armAsm->and_(RWARG1, addr, armCheckLogicalConstant(~0x3u));
   GenerateLoad(RWARG1, MemoryAccessSize::Word, false, use_fastmem, []() { return RWRET; });
@@ -1747,11 +1748,12 @@ void CPU::NewRec::AArch64Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize
                                                const std::optional<VirtualMemoryAddress>& address)
 {
   DebugAssert(size == MemoryAccessSize::Word && !sign);
+
+  const WRegister addr = WRegister(AllocateTempHostReg(HR_CALLEE_SAVED));
   FlushForLoadStore(address, true, use_fastmem);
 
   // TODO: if address is constant, this can be simplified..
   // We'd need to be careful here if we weren't overwriting it..
-  const WRegister addr = WRegister(AllocateHostReg(HR_CALLEE_SAVED, HR_TYPE_TEMP));
   ComputeLoadStoreAddressArg(cf, address, addr);
   armAsm->and_(RWARG1, addr, armCheckLogicalConstant(~0x3u));
   GenerateLoad(RWARG1, MemoryAccessSize::Word, false, use_fastmem, []() { return RWRET; });
