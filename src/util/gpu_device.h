@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -30,27 +30,6 @@ enum class RenderAPI : u32
   OpenGL,
   OpenGLES,
   Metal
-};
-
-class GPUFramebuffer
-{
-public:
-  GPUFramebuffer(GPUTexture* rt, GPUTexture* ds, u32 width, u32 height);
-  virtual ~GPUFramebuffer();
-
-  ALWAYS_INLINE GPUTexture* GetRT() const { return m_rt; }
-  ALWAYS_INLINE GPUTexture* GetDS() const { return m_ds; }
-
-  ALWAYS_INLINE u32 GetWidth() const { return m_width; }
-  ALWAYS_INLINE u32 GetHeight() const { return m_height; }
-
-  virtual void SetDebugName(const std::string_view& name) = 0;
-
-protected:
-  GPUTexture* m_rt;
-  GPUTexture* m_ds;
-  u32 m_width;
-  u32 m_height;
 };
 
 class GPUSampler
@@ -394,10 +373,13 @@ public:
     GPUShader* geometry_shader;
     GPUShader* fragment_shader;
 
-    GPUTexture::Format color_format;
+    GPUTexture::Format color_formats[4];
     GPUTexture::Format depth_format;
     u32 samples;
     bool per_sample_shading;
+
+    void SetTargetFormats(GPUTexture::Format color_format,
+                          GPUTexture::Format depth_format_ = GPUTexture::Format::Unknown);
   };
 
   GPUPipeline();
@@ -477,6 +459,8 @@ public:
 
   static constexpr u32 MAX_TEXTURE_SAMPLERS = 8;
   static constexpr u32 MIN_TEXEL_BUFFER_ELEMENTS = 4 * 1024 * 512;
+  static constexpr u32 MAX_RENDER_TARGETS = 4;
+  static_assert(sizeof(GPUPipeline::GraphicsConfig::color_formats) == sizeof(GPUTexture::Format) * MAX_RENDER_TARGETS);
 
   virtual ~GPUDevice();
 
@@ -576,9 +560,6 @@ public:
   virtual void ClearDepth(GPUTexture* t, float d);
   virtual void InvalidateRenderTarget(GPUTexture* t);
 
-  /// Framebuffer abstraction.
-  virtual std::unique_ptr<GPUFramebuffer> CreateFramebuffer(GPUTexture* rt_or_ds, GPUTexture* ds = nullptr) = 0;
-
   /// Shader abstraction.
   std::unique_ptr<GPUShader> CreateShader(GPUShaderStage stage, const std::string_view& source,
                                           const char* entry_point = "main");
@@ -606,12 +587,13 @@ public:
   void UploadUniformBuffer(const void* data, u32 data_size);
 
   /// Drawing setup abstraction.
-  virtual void SetFramebuffer(GPUFramebuffer* fb) = 0;
+  virtual void SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds) = 0;
   virtual void SetPipeline(GPUPipeline* pipeline) = 0;
   virtual void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) = 0;
   virtual void SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer) = 0;
   virtual void SetViewport(s32 x, s32 y, s32 width, s32 height) = 0; // TODO: Rectangle
   virtual void SetScissor(s32 x, s32 y, s32 width, s32 height) = 0;
+  void SetRenderTarget(GPUTexture* rt, GPUTexture* ds = nullptr);
   void SetViewportAndScissor(s32 x, s32 y, s32 width, s32 height);
 
   // Drawing abstraction.
@@ -647,7 +629,8 @@ public:
   virtual float GetAndResetAccumulatedGPUTime();
 
 protected:
-  virtual bool CreateDevice(const std::string_view& adapter, bool threaded_presentation, FeatureMask disabled_features) = 0;
+  virtual bool CreateDevice(const std::string_view& adapter, bool threaded_presentation,
+                            FeatureMask disabled_features) = 0;
   virtual void DestroyDevice() = 0;
 
   std::string GetShaderCacheBaseName(const std::string_view& type) const;

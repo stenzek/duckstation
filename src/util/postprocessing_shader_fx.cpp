@@ -1080,7 +1080,7 @@ const char* PostProcessing::ReShadeFXShader::GetTextureNameForID(TextureID id) c
 }
 
 GPUTexture* PostProcessing::ReShadeFXShader::GetTextureByID(TextureID id, GPUTexture* input,
-                                                            GPUFramebuffer* final_target) const
+                                                            GPUTexture* final_target) const
 {
   if (id < 0)
   {
@@ -1094,29 +1094,6 @@ GPUTexture* PostProcessing::ReShadeFXShader::GetTextureByID(TextureID id, GPUTex
     }
     else if (id == OUTPUT_COLOR_TEXTURE)
     {
-      Panic("Wrong state for final target");
-      return nullptr;
-    }
-    else
-    {
-      Panic("Unexpected reserved texture ID");
-      return nullptr;
-    }
-  }
-
-  if (static_cast<size_t>(id) >= m_textures.size())
-    Panic("Unexpected texture ID");
-
-  return m_textures[static_cast<size_t>(id)].texture.get();
-}
-
-GPUFramebuffer* PostProcessing::ReShadeFXShader::GetFramebufferByID(TextureID id, GPUTexture* input,
-                                                                    GPUFramebuffer* final_target) const
-{
-  if (id < 0)
-  {
-    if (id == OUTPUT_COLOR_TEXTURE)
-    {
       return final_target;
     }
     else
@@ -1129,9 +1106,7 @@ GPUFramebuffer* PostProcessing::ReShadeFXShader::GetFramebufferByID(TextureID id
   if (static_cast<size_t>(id) >= m_textures.size())
     Panic("Unexpected texture ID");
 
-  const Texture& tex = m_textures[static_cast<size_t>(id)];
-  Assert(tex.framebuffer);
-  return tex.framebuffer.get();
+  return m_textures[static_cast<size_t>(id)].texture.get();
 }
 
 bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format, u32 width, u32 height)
@@ -1243,7 +1218,7 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
       if (!vs || !fs)
         return false;
 
-      plconfig.color_format = (pass.render_target >= 0) ? m_textures[pass.render_target].format : format;
+      plconfig.SetTargetFormats((pass.render_target >= 0) ? m_textures[pass.render_target].format : format);
       plconfig.blend = MapBlendState(info);
       plconfig.primitive = MapPrimitive(info.topology);
       plconfig.vertex_shader = vs.get();
@@ -1274,7 +1249,6 @@ bool PostProcessing::ReShadeFXShader::ResizeOutput(GPUTexture::Format format, u3
     if (tex.rt_scale == 0.0f)
       continue;
 
-    tex.framebuffer.reset();
     tex.texture.reset();
 
     const u32 t_width = std::max(static_cast<u32>(static_cast<float>(width) * tex.rt_scale), 1u);
@@ -1285,22 +1259,15 @@ bool PostProcessing::ReShadeFXShader::ResizeOutput(GPUTexture::Format format, u3
       Log_ErrorPrintf("Failed to create %ux%u texture", t_width, t_height);
       return {};
     }
-
-    tex.framebuffer = g_gpu_device->CreateFramebuffer(tex.texture.get());
-    if (!tex.framebuffer)
-    {
-      Log_ErrorPrintf("Failed to create %ux%u texture framebuffer", t_width, t_height);
-      return {};
-    }
   }
 
   m_valid = true;
   return true;
 }
 
-bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUFramebuffer* final_target, s32 final_left,
-                                            s32 final_top, s32 final_width, s32 final_height, s32 orig_width,
-                                            s32 orig_height, u32 target_width, u32 target_height)
+bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUTexture* final_target, s32 final_left, s32 final_top,
+                                            s32 final_width, s32 final_height, s32 orig_width, s32 orig_height,
+                                            u32 target_width, u32 target_height)
 {
   GL_PUSH_FMT("PostProcessingShaderFX {}", m_name);
 
@@ -1461,9 +1428,9 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUFramebuffer* f
   {
     GL_SCOPE_FMT("Draw pass {}", pass.name.c_str());
     GL_INS_FMT("Render Target: ID {} [{}]", pass.render_target, GetTextureNameForID(pass.render_target));
-    GPUFramebuffer* output_fb = GetFramebufferByID(pass.render_target, input, final_target);
+    GPUTexture* output = GetTextureByID(pass.render_target, input, final_target);
 
-    if (!output_fb)
+    if (!output)
     {
       // Drawing to final buffer.
       if (!g_gpu_device->BeginPresent(false))
@@ -1474,7 +1441,7 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUFramebuffer* f
     }
     else
     {
-      g_gpu_device->SetFramebuffer(output_fb);
+      g_gpu_device->SetRenderTargets(&output, 1, nullptr);
     }
 
     g_gpu_device->SetPipeline(pass.pipeline.get());

@@ -86,8 +86,6 @@ public:
   void ClearDepth(GPUTexture* t, float d) override;
   void InvalidateRenderTarget(GPUTexture* t) override;
 
-  std::unique_ptr<GPUFramebuffer> CreateFramebuffer(GPUTexture* rt_or_ds, GPUTexture* ds = nullptr) override;
-
   std::unique_ptr<GPUShader> CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data) override;
   std::unique_ptr<GPUShader> CreateShaderFromSource(GPUShaderStage stage, const std::string_view& source,
                                                     const char* entry_point, DynamicHeapArray<u8>* out_binary) override;
@@ -105,7 +103,7 @@ public:
   void PushUniformBuffer(const void* data, u32 data_size) override;
   void* MapUniformBuffer(u32 size) override;
   void UnmapUniformBuffer(u32 size) override;
-  void SetFramebuffer(GPUFramebuffer* fb) override;
+  void SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds) override;
   void SetPipeline(GPUPipeline* pipeline) override;
   void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) override;
   void SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer) override;
@@ -172,8 +170,6 @@ public:
   void SubmitCommandList(bool wait_for_completion, const char* reason, ...);
   void SubmitCommandListAndRestartRenderPass(const char* reason);
 
-  void UnbindFramebuffer(D3D12Framebuffer* fb);
-  void UnbindFramebuffer(D3D12Texture* tex);
   void UnbindPipeline(D3D12Pipeline* pl);
   void UnbindTexture(D3D12Texture* tex);
   void UnbindTextureBuffer(D3D12TextureBuffer* buf);
@@ -245,6 +241,8 @@ private:
   bool CreateRTVDescriptor(ID3D12Resource* resource, u32 samples, DXGI_FORMAT format, D3D12DescriptorHandle* dh);
   bool CreateDSVDescriptor(ID3D12Resource* resource, u32 samples, DXGI_FORMAT format, D3D12DescriptorHandle* dh);
   bool CreateUAVDescriptor(ID3D12Resource* resource, u32 samples, DXGI_FORMAT format, D3D12DescriptorHandle* dh);
+
+  bool IsRenderTargetBound(const GPUTexture* tex) const;
 
   bool CheckDownloadBufferSize(u32 required_size);
   void DestroyDownloadBuffer();
@@ -330,10 +328,11 @@ private:
   // Which bindings/state has to be updated before the next draw.
   u32 m_dirty_flags = ALL_DIRTY_STATE;
 
-  D3D12Framebuffer* m_current_framebuffer = nullptr;
-
   D3D12Pipeline* m_current_pipeline = nullptr;
   D3D12_PRIMITIVE_TOPOLOGY m_current_topology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
+  u32 m_num_current_render_targets = 0;
+  std::array<D3D12Texture*, MAX_RENDER_TARGETS> m_current_render_targets = {};
+  D3D12Texture* m_current_depth_target = nullptr;
   u32 m_current_vertex_stride = 0;
   u32 m_current_blend_constant = 0;
   GPUPipeline::Layout m_current_pipeline_layout = GPUPipeline::Layout::SingleTextureAndPushConstants;

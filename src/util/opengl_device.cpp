@@ -155,9 +155,9 @@ void OpenGLDevice::CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 
                       GL_COLOR_BUFFER_BIT, GL_NEAREST);
     glEnable(GL_SCISSOR_TEST);
 
-    if (m_current_framebuffer)
+    if (m_current_fbo)
     {
-      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_current_framebuffer ? m_current_framebuffer->GetGLId() : 0);
+      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_current_fbo);
       glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
     }
     else
@@ -201,9 +201,9 @@ void OpenGLDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u
                     GL_COLOR_BUFFER_BIT, GL_LINEAR);
   glEnable(GL_SCISSOR_TEST);
 
-  if (m_current_framebuffer)
+  if (m_current_fbo)
   {
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_current_framebuffer ? m_current_framebuffer->GetGLId() : 0);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_current_fbo);
     glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
   }
   else
@@ -215,22 +215,31 @@ void OpenGLDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u
 void OpenGLDevice::ClearRenderTarget(GPUTexture* t, u32 c)
 {
   GPUDevice::ClearRenderTarget(t, c);
-  if (m_current_framebuffer && m_current_framebuffer->GetRT() == t)
-    CommitClear(m_current_framebuffer);
+  if (const s32 idx = IsRenderTargetBound(t); idx >= 0)
+    CommitRTClearInFB(static_cast<OpenGLTexture*>(t), static_cast<u32>(idx));
 }
 
 void OpenGLDevice::ClearDepth(GPUTexture* t, float d)
 {
   GPUDevice::ClearDepth(t, d);
-  if (m_current_framebuffer && m_current_framebuffer->GetDS() == t)
-    CommitClear(m_current_framebuffer);
+  if (m_current_depth_target == t)
+    CommitDSClearInFB(static_cast<OpenGLTexture*>(t));
 }
 
 void OpenGLDevice::InvalidateRenderTarget(GPUTexture* t)
 {
   GPUDevice::InvalidateRenderTarget(t);
-  if (m_current_framebuffer && (m_current_framebuffer->GetRT() == t || m_current_framebuffer->GetDS() == t))
-    CommitClear(m_current_framebuffer);
+  if (t->IsRenderTarget())
+  {
+    if (const s32 idx = IsRenderTargetBound(t); idx >= 0)
+      CommitRTClearInFB(static_cast<OpenGLTexture*>(t), static_cast<u32>(idx));
+  }
+  else
+  {
+    DebugAssert(t->IsDepthStencil());
+    if (m_current_depth_target == t)
+      CommitDSClearInFB(static_cast<OpenGLTexture*>(t));
+  }
 }
 
 void OpenGLDevice::PushDebugGroup(const char* name)
@@ -617,7 +626,56 @@ void OpenGLDevice::RenderBlankFrame()
               m_last_blend_state.write_a);
   glEnable(GL_SCISSOR_TEST);
   m_gl_context->SwapBuffers();
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_current_framebuffer ? m_current_framebuffer->GetGLId() : 0);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_current_fbo);
+}
+
+s32 OpenGLDevice::IsRenderTargetBound(const GPUTexture* tex) const
+{
+  for (u32 i = 0; i < m_num_current_render_targets; i++)
+  {
+    if (m_current_render_targets[i] == tex)
+      return static_cast<s32>(i);
+  }
+
+  return -1;
+}
+
+GLuint OpenGLDevice::CreateFramebuffer(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds, u32 flags)
+{
+  glGetError();
+
+  GLuint fbo_id;
+  glGenFramebuffers(1, &fbo_id);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_id);
+
+  for (u32 i = 0; i < num_rts; i++)
+  {
+    OpenGLTexture* const RT = static_cast<OpenGLTexture*>(rts[i]);
+    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, RT->GetGLTarget(), RT->GetGLId(), 0);
+  }
+
+  if (ds)
+  {
+    OpenGLTexture* const DS = static_cast<OpenGLTexture*>(ds);
+    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, DS->GetGLTarget(), DS->GetGLId(), 0);
+  }
+
+  if (glGetError() != GL_NO_ERROR || glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+  {
+    Log_ErrorFmt("Failed to create GL framebuffer: {}", static_cast<s32>(glGetError()));
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, OpenGLDevice::GetInstance().m_current_fbo);
+    glDeleteFramebuffers(1, &fbo_id);
+    return {};
+  }
+
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, OpenGLDevice::GetInstance().m_current_fbo);
+  return fbo_id;
+}
+
+void OpenGLDevice::DestroyFramebuffer(GLuint fbo)
+{
+  if (fbo != 0)
+    glDeleteFramebuffers(1, &fbo);
 }
 
 GPUDevice::AdapterAndModeList OpenGLDevice::GetAdapterAndModeList()
@@ -720,7 +778,12 @@ bool OpenGLDevice::BeginPresent(bool skip_present)
 
   const Common::Rectangle<s32> window_rc =
     Common::Rectangle<s32>::FromExtents(0, 0, m_window_info.surface_width, m_window_info.surface_height);
-  m_current_framebuffer = nullptr;
+
+  m_current_fbo = 0;
+  m_num_current_render_targets = 0;
+  std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
+  m_current_depth_target = nullptr;
+
   m_last_viewport = window_rc;
   m_last_scissor = window_rc;
   UpdateViewport();
@@ -730,7 +793,7 @@ bool OpenGLDevice::BeginPresent(bool skip_present)
 
 void OpenGLDevice::EndPresent()
 {
-  DebugAssert(!m_current_framebuffer);
+  DebugAssert(m_current_fbo == 0);
 
   if (m_gpu_timing_enabled)
     PopTimestampQuery();
@@ -886,6 +949,36 @@ void OpenGLDevice::UnbindTexture(GLuint id)
   }
 }
 
+void OpenGLDevice::UnbindTexture(OpenGLTexture* tex)
+{
+  UnbindTexture(tex->GetGLId());
+
+  if (tex->IsRenderTarget())
+  {
+    for (u32 i = 0; i < m_num_current_render_targets; i++)
+    {
+      if (m_current_render_targets[i] == tex)
+      {
+        Log_WarningPrint("Unbinding current RT");
+        SetRenderTargets(nullptr, 0, m_current_depth_target);
+        break;
+      }
+    }
+
+    m_framebuffer_manager.RemoveRTReferences(tex);
+  }
+  else if (tex->IsDepthStencil())
+  {
+    if (m_current_depth_target == tex)
+    {
+      Log_WarningPrint("Unbinding current DS");
+      SetRenderTargets(nullptr, 0, nullptr);
+    }
+
+    m_framebuffer_manager.RemoveDSReferences(tex);
+  }
+}
+
 void OpenGLDevice::UnbindSSBO(GLuint id)
 {
   if (m_last_ssbo != id)
@@ -905,15 +998,6 @@ void OpenGLDevice::UnbindSampler(GLuint id)
       ss.second = 0;
       glBindSampler(slot, 0);
     }
-  }
-}
-
-void OpenGLDevice::UnbindFramebuffer(const OpenGLFramebuffer* fb)
-{
-  if (m_current_framebuffer == fb)
-  {
-    m_current_framebuffer = nullptr;
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
   }
 }
 
@@ -984,25 +1068,55 @@ void OpenGLDevice::UnmapUniformBuffer(u32 size)
   glBindBufferRange(GL_UNIFORM_BUFFER, 1, m_uniform_buffer->GetGLBufferId(), pos, size);
 }
 
-void OpenGLDevice::SetFramebuffer(GPUFramebuffer* fb)
+void OpenGLDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds)
 {
-  if (m_current_framebuffer == fb)
-    return;
+  bool changed = (m_num_current_render_targets != num_rts || m_current_depth_target != ds);
+  bool needs_ds_clear = (ds && ds->IsClearedOrInvalidated());
+  bool needs_rt_clear = false;
 
-  OpenGLFramebuffer* FB = static_cast<OpenGLFramebuffer*>(fb);
-  const bool prev_was_window = (m_current_framebuffer == nullptr);
-  const bool new_is_window = (FB == nullptr);
-  m_current_framebuffer = FB;
-
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, FB ? FB->GetGLId() : 0);
-  if (prev_was_window != new_is_window)
+  m_current_depth_target = static_cast<OpenGLTexture*>(ds);
+  for (u32 i = 0; i < num_rts; i++)
   {
-    UpdateViewport();
-    UpdateScissor();
+    OpenGLTexture* const dt = static_cast<OpenGLTexture*>(rts[i]);
+    changed |= m_current_render_targets[i] != dt;
+    m_current_render_targets[i] = dt;
+    needs_rt_clear |= dt->IsClearedOrInvalidated();
+  }
+  for (u32 i = num_rts; i < m_num_current_render_targets; i++)
+    m_current_render_targets[i] = nullptr;
+  m_num_current_render_targets = num_rts;
+  if (changed)
+  {
+    GLuint fbo = 0;
+    if (m_num_current_render_targets > 0 || m_current_depth_target)
+    {
+      if ((fbo = m_framebuffer_manager.Lookup(rts, num_rts, ds, 0)) == 0)
+      {
+        Log_ErrorFmt("Failed to get FBO for {} render targets", num_rts);
+        m_current_fbo = 0;
+        std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
+        m_num_current_render_targets = 0;
+        m_current_depth_target = nullptr;
+        return;
+      }
+    }
+
+    m_current_fbo = fbo;
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
   }
 
-  if (FB)
-    CommitClear(FB);
+  if (needs_rt_clear)
+  {
+    for (u32 i = 0; i < num_rts; i++)
+    {
+      OpenGLTexture* const dt = static_cast<OpenGLTexture*>(rts[i]);
+      if (dt->IsClearedOrInvalidated())
+        CommitRTClearInFB(dt, i);
+    }
+  }
+
+  if (needs_ds_clear)
+    CommitDSClearInFB(static_cast<OpenGLTexture*>(ds));
 }
 
 void OpenGLDevice::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler)
@@ -1078,7 +1192,7 @@ std::tuple<s32, s32, s32, s32> OpenGLDevice::GetFlippedViewportScissor(const Com
   // Only when rendering to window framebuffer.
   // We draw everything else upside-down.
   s32 x, y, width, height;
-  if (!m_current_framebuffer)
+  if (m_current_fbo == 0)
   {
     const s32 sh = static_cast<s32>(m_window_info.surface_height);
     const s32 rh = rc.GetHeight();

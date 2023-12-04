@@ -4,6 +4,7 @@
 #pragma once
 
 #include "gpu_device.h"
+#include "gpu_framebuffer_manager.h"
 #include "gpu_texture.h"
 #include "vulkan_loader.h"
 #include "vulkan_stream_buffer.h"
@@ -20,7 +21,6 @@
 #include <unordered_map>
 #include <vector>
 
-class VulkanFramebuffer;
 class VulkanPipeline;
 class VulkanSwapChain;
 class VulkanTexture;
@@ -45,6 +45,7 @@ public:
     bool vk_ext_attachment_feedback_loop_layout : 1;
     bool vk_ext_full_screen_exclusive : 1;
     bool vk_khr_driver_properties : 1;
+    bool vk_khr_dynamic_rendering : 1;
     bool vk_khr_push_descriptor : 1;
   };
 
@@ -87,8 +88,6 @@ public:
   void ClearDepth(GPUTexture* t, float d) override;
   void InvalidateRenderTarget(GPUTexture* t) override;
 
-  std::unique_ptr<GPUFramebuffer> CreateFramebuffer(GPUTexture* rt_or_ds, GPUTexture* ds = nullptr) override;
-
   std::unique_ptr<GPUShader> CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data) override;
   std::unique_ptr<GPUShader> CreateShaderFromSource(GPUShaderStage stage, const std::string_view& source,
                                                     const char* entry_point, DynamicHeapArray<u8>* out_binary) override;
@@ -106,7 +105,7 @@ public:
   void PushUniformBuffer(const void* data, u32 data_size) override;
   void* MapUniformBuffer(u32 size) override;
   void UnmapUniformBuffer(u32 size) override;
-  void SetFramebuffer(GPUFramebuffer* fb) override;
+  void SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds) override;
   void SetPipeline(GPUPipeline* pipeline) override;
   void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) override;
   void SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer) override;
@@ -156,14 +155,10 @@ public:
   void WaitForGPUIdle();
 
   // Creates a simple render pass.
-  VkRenderPass GetRenderPass(VkFormat color_format, VkFormat depth_format, VkSampleCountFlagBits samples,
-                             VkAttachmentLoadOp color_load_op = VK_ATTACHMENT_LOAD_OP_LOAD,
-                             VkAttachmentStoreOp color_store_op = VK_ATTACHMENT_STORE_OP_STORE,
-                             VkAttachmentLoadOp depth_load_op = VK_ATTACHMENT_LOAD_OP_LOAD,
-                             VkAttachmentStoreOp depth_store_op = VK_ATTACHMENT_STORE_OP_STORE,
-                             VkAttachmentLoadOp stencil_load_op = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                             VkAttachmentStoreOp stencil_store_op = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                             bool color_feedback_loop = false, bool depth_sampling = false);
+  VkRenderPass GetRenderPass(const GPUPipeline::GraphicsConfig& config);
+  VkRenderPass GetRenderPass(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds, bool color_feedback_loop = false,
+                             bool depth_sampling = false);
+  VkRenderPass GetSwapChainRenderPass(GPUTexture::Format format, VkAttachmentLoadOp load_op);
 
   // Gets a non-clearing version of the specified render pass. Slow, don't call in hot path.
   VkRenderPass GetRenderPassForRestarting(VkRenderPass pass);
@@ -213,7 +208,6 @@ public:
   void SubmitCommandBuffer(bool wait_for_completion, const char* reason, ...);
   void SubmitCommandBufferAndRestartRenderPass(const char* reason);
 
-  void UnbindFramebuffer(VulkanFramebuffer* fb);
   void UnbindFramebuffer(VulkanTexture* tex);
   void UnbindPipeline(VulkanPipeline* pl);
   void UnbindTexture(VulkanTexture* tex);
@@ -239,24 +233,32 @@ private:
       DIRTY_FLAG_INITIAL | DIRTY_FLAG_PIPELINE_LAYOUT | DIRTY_FLAG_DYNAMIC_OFFSETS | DIRTY_FLAG_TEXTURES_OR_SAMPLERS,
   };
 
-  union RenderPassCacheKey
+  struct RenderPassCacheKey
   {
-    struct
+    struct RenderTarget
     {
-      u32 color_format : 8;
-      u32 depth_format : 8;
-      u32 samples : 4;
-      u32 color_load_op : 2;
-      u32 color_store_op : 1;
-      u32 depth_load_op : 2;
-      u32 depth_store_op : 1;
-      u32 stencil_load_op : 2;
-      u32 stencil_store_op : 1;
-      u32 color_feedback_loop : 1;
-      u32 depth_sampling : 1;
+      u8 format : 5;
+      u8 load_op : 2;
+      u8 store_op : 1;
     };
+    RenderTarget color[MAX_RENDER_TARGETS];
 
-    u32 key;
+    u8 depth_format : 5;
+    u8 depth_load_op : 2;
+    u8 depth_store_op : 1;
+    u8 stencil_load_op : 2;
+    u8 stencil_store_op : 1;
+    u8 depth_sampling : 1;
+    u8 color_feedback_loop : 1;
+    u8 samples;
+
+    bool operator==(const RenderPassCacheKey& rhs) const;
+    bool operator!=(const RenderPassCacheKey& rhs) const;
+  };
+
+  struct RenderPassCacheKeyHash
+  {
+    size_t operator()(const RenderPassCacheKey& rhs) const;
   };
 
   struct CommandBuffer
@@ -332,6 +334,8 @@ private:
   /// Set dirty flags on everything to force re-bind at next draw time.
   void InvalidateCachedState();
 
+  bool IsRenderTargetBound(const GPUTexture* tex) const;
+
   /// Applies any changed state.
   VkPipelineLayout GetCurrentVkPipelineLayout() const;
   void SetInitialPipelineState();
@@ -349,6 +353,8 @@ private:
   bool InRenderPass();
 
   VkRenderPass CreateCachedRenderPass(RenderPassCacheKey key);
+  static VkFramebuffer CreateFramebuffer(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds, u32 flags);
+  static void DestroyFramebuffer(VkFramebuffer fbo);
 
   void BeginCommandBuffer(u32 index);
   void WaitForCommandBufferCompletion(u32 index);
@@ -400,7 +406,8 @@ private:
 
   QueuedPresent m_queued_present = {};
 
-  std::unordered_map<u32, VkRenderPass> m_render_pass_cache;
+  std::unordered_map<RenderPassCacheKey, VkRenderPass, RenderPassCacheKeyHash> m_render_pass_cache;
+  GPUFramebufferManager<VkFramebuffer, CreateFramebuffer, DestroyFramebuffer> m_framebuffer_manager;
   VkPipelineCache m_pipeline_cache = VK_NULL_HANDLE;
 
   // TODO: Move to static?
@@ -438,7 +445,10 @@ private:
   // Which bindings/state has to be updated before the next draw.
   u32 m_dirty_flags = ALL_DIRTY_STATE;
 
-  VulkanFramebuffer* m_current_framebuffer = nullptr;
+  u32 m_num_current_render_targets = 0;
+  std::array<GPUTexture*, MAX_RENDER_TARGETS> m_current_render_targets = {};
+  GPUTexture* m_current_depth_target = nullptr;
+  VkFramebuffer m_current_framebuffer = VK_NULL_HANDLE;
   VkRenderPass m_current_render_pass = VK_NULL_HANDLE;
 
   VulkanPipeline* m_current_pipeline = nullptr;

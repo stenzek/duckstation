@@ -25,6 +25,7 @@
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="gpu_device.h" />
+    <ClInclude Include="gpu_framebuffer_manager.h" />
     <ClInclude Include="gpu_shader_cache.h" />
     <ClInclude Include="gpu_texture.h" />
     <ClInclude Include="host.h" />
@@ -244,6 +245,19 @@
     <ProjectReference Include="..\common\common.vcxproj">
       <Project>{ee054e08-3799-4a59-a422-18259c105ffd}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="metal_device.mm">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+      <FileType>Document</FileType>
+    </ClCompile>
+    <None Include="metal_shaders.metal">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </None>
+    <ClCompile Include="metal_stream_buffer.mm">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+      <FileType>Document</FileType>
+    </ClCompile>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{57F6206D-F264-4B07-BAF8-11B9BBE1F455}</ProjectGuid>

@@ -13,32 +13,6 @@
 
 class D3D11Device;
 
-class D3D11Framebuffer final : public GPUFramebuffer
-{
-  friend D3D11Device;
-
-  template<typename T>
-  using ComPtr = Microsoft::WRL::ComPtr<T>;
-
-public:
-  ~D3D11Framebuffer() override;
-
-  ALWAYS_INLINE u32 GetNumRTVs() const { return m_rtv ? 1 : 0; }
-  ALWAYS_INLINE ID3D11RenderTargetView* GetRTV() const { return m_rtv.Get(); }
-  ALWAYS_INLINE ID3D11RenderTargetView* const* GetRTVArray() const { return m_rtv.GetAddressOf(); }
-  ALWAYS_INLINE ID3D11DepthStencilView* GetDSV() const { return m_dsv.Get(); }
-
-  void SetDebugName(const std::string_view& name) override;
-  void CommitClear(ID3D11DeviceContext1* context);
-
-private:
-  D3D11Framebuffer(GPUTexture* rt, GPUTexture* ds, u32 width, u32 height, ComPtr<ID3D11RenderTargetView> rtv,
-                   ComPtr<ID3D11DepthStencilView> dsv);
-
-  ComPtr<ID3D11RenderTargetView> m_rtv;
-  ComPtr<ID3D11DepthStencilView> m_dsv;
-};
-
 class D3D11Sampler final : public GPUSampler
 {
   friend D3D11Device;

@@ -91,6 +91,8 @@ public:
 
   ALWAYS_INLINE State GetState() const { return m_state; }
   ALWAYS_INLINE void SetState(State state) { m_state = state; }
+  ALWAYS_INLINE bool IsDirty() const { return (m_state == State::Dirty); }
+  ALWAYS_INLINE bool IsClearedOrInvalidated() const { return (m_state != State::Dirty); }
 
   ALWAYS_INLINE bool IsRenderTargetOrDepthStencil() const
   {
@@ -118,6 +120,7 @@ public:
 
   static u32 GetPixelSize(GPUTexture::Format format);
   static bool IsDepthFormat(GPUTexture::Format format);
+  static bool IsDepthStencilFormat(GPUTexture::Format format);
   static bool ValidateConfig(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format);
 
   static bool ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u32>& texture_data, u32& texture_data_stride,

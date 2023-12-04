@@ -847,43 +847,6 @@ std::unique_ptr<GPUSampler> D3D12Device::CreateSampler(const GPUSampler::Config&
   return std::unique_ptr<GPUSampler>(new D3D12Sampler(std::move(handle)));
 }
 
-D3D12Framebuffer::D3D12Framebuffer(GPUTexture* rt, GPUTexture* ds, u32 width, u32 height, D3D12DescriptorHandle rtv,
-                                   D3D12DescriptorHandle dsv)
-  : GPUFramebuffer(rt, ds, width, height), m_rtv(std::move(rtv)), m_dsv(std::move(dsv))
-{
-}
-
-D3D12Framebuffer::~D3D12Framebuffer()
-{
-  D3D12Device& dev = D3D12Device::GetInstance();
-  if (m_rtv)
-    D3D12Device::GetInstance().DeferDescriptorDestruction(dev.GetRTVHeapManager(), &m_rtv);
-  if (m_dsv)
-    D3D12Device::GetInstance().DeferDescriptorDestruction(dev.GetDSVHeapManager(), &m_dsv);
-}
-
-void D3D12Framebuffer::SetDebugName(const std::string_view& name)
-{
-}
-
-std::unique_ptr<GPUFramebuffer> D3D12Device::CreateFramebuffer(GPUTexture* rt_or_ds, GPUTexture* ds /*= nullptr*/)
-{
-  DebugAssert((rt_or_ds || ds) && (!rt_or_ds || rt_or_ds->IsRenderTarget() || (rt_or_ds->IsDepthStencil() && !ds)));
-  D3D12Texture* RT = static_cast<D3D12Texture*>((rt_or_ds && rt_or_ds->IsDepthStencil()) ? nullptr : rt_or_ds);
-  D3D12Texture* DS = static_cast<D3D12Texture*>((rt_or_ds && rt_or_ds->IsDepthStencil()) ? rt_or_ds : ds);
-
-  const u32 width = RT ? RT->GetWidth() : DS->GetWidth();
-  const u32 height = RT ? RT->GetHeight() : DS->GetHeight();
-
-  D3D12DescriptorHandle rtv, dsv;
-  if (RT)
-    rtv = RT->GetWriteDescriptor();
-  if (DS)
-    dsv = DS->GetWriteDescriptor();
-
-  return std::unique_ptr<GPUFramebuffer>(new D3D12Framebuffer(RT, DS, width, height, std::move(rtv), std::move(dsv)));
-}
-
 D3D12TextureBuffer::D3D12TextureBuffer(Format format, u32 size_in_elements) : GPUTextureBuffer(format, size_in_elements)
 {
 }

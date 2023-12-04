@@ -53,10 +53,8 @@ static u32 s_target_height = 0;
 static Common::Timer s_timer;
 
 static std::unique_ptr<GPUTexture> s_input_texture;
-static std::unique_ptr<GPUFramebuffer> s_input_framebuffer;
 
 static std::unique_ptr<GPUTexture> s_output_texture;
-static std::unique_ptr<GPUFramebuffer> s_output_framebuffer;
 
 static std::unordered_map<u64, std::unique_ptr<GPUSampler>> s_samplers;
 static std::unique_ptr<GPUTexture> s_dummy_texture;
@@ -602,11 +600,6 @@ GPUTexture* PostProcessing::GetInputTexture()
   return s_input_texture.get();
 }
 
-GPUFramebuffer* PostProcessing::GetInputFramebuffer()
-{
-  return s_input_framebuffer.get();
-}
-
 const Common::Timer& PostProcessing::GetTimer()
 {
   return s_timer;
@@ -650,14 +643,8 @@ bool PostProcessing::CheckTargets(GPUTexture::Format target_format, u32 target_w
 
   if (!(s_input_texture = g_gpu_device->CreateTexture(target_width, target_height, 1, 1, 1,
                                                       GPUTexture::Type::RenderTarget, target_format)) ||
-      !(s_input_framebuffer = g_gpu_device->CreateFramebuffer(s_input_texture.get())))
-  {
-    return false;
-  }
-
-  if (!(s_output_texture = g_gpu_device->CreateTexture(target_width, target_height, 1, 1, 1,
-                                                       GPUTexture::Type::RenderTarget, target_format)) ||
-      !(s_output_framebuffer = g_gpu_device->CreateFramebuffer(s_output_texture.get())))
+      !(s_output_texture = g_gpu_device->CreateTexture(target_width, target_height, 1, 1, 1,
+                                                       GPUTexture::Type::RenderTarget, target_format)))
   {
     return false;
   }
@@ -688,36 +675,30 @@ void PostProcessing::DestroyTextures()
   s_target_width = 0;
   s_target_height = 0;
 
-  s_output_framebuffer.reset();
   s_output_texture.reset();
-
-  s_input_framebuffer.reset();
   s_input_texture.reset();
 }
 
-bool PostProcessing::Apply(GPUFramebuffer* final_target, s32 final_left, s32 final_top, s32 final_width,
-                           s32 final_height, s32 orig_width, s32 orig_height)
+bool PostProcessing::Apply(GPUTexture* final_target, s32 final_left, s32 final_top, s32 final_width, s32 final_height,
+                           s32 orig_width, s32 orig_height)
 {
   GL_SCOPE("PostProcessing Apply");
 
   const u32 target_width = final_target ? final_target->GetWidth() : g_gpu_device->GetWindowWidth();
   const u32 target_height = final_target ? final_target->GetHeight() : g_gpu_device->GetWindowHeight();
-  const GPUTexture::Format target_format =
-    final_target ? final_target->GetRT()->GetFormat() : g_gpu_device->GetWindowFormat();
+  const GPUTexture::Format target_format = final_target ? final_target->GetFormat() : g_gpu_device->GetWindowFormat();
   if (!CheckTargets(target_format, target_width, target_height))
     return false;
 
   GPUTexture* input = s_input_texture.get();
-  GPUFramebuffer* input_fb = s_input_framebuffer.get();
   GPUTexture* output = s_output_texture.get();
-  GPUFramebuffer* output_fb = s_output_framebuffer.get();
   input->MakeReadyForSampling();
 
   for (const std::unique_ptr<Shader>& stage : s_stages)
   {
     const bool is_final = (stage.get() == s_stages.back().get());
 
-    if (!stage->Apply(input, is_final ? final_target : output_fb, final_left, final_top, final_width, final_height,
+    if (!stage->Apply(input, is_final ? final_target : output, final_left, final_top, final_width, final_height,
                       orig_width, orig_height, s_target_width, s_target_height))
     {
       return false;
@@ -727,7 +708,6 @@ bool PostProcessing::Apply(GPUFramebuffer* final_target, s32 final_left, s32 fin
     {
       output->MakeReadyForSampling();
       std::swap(input, output);
-      std::swap(input_fb, output_fb);
     }
   }
 

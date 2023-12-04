@@ -40,6 +40,7 @@ public:
   ALWAYS_INLINE u32 GetImageCount() const { return static_cast<u32>(m_images.size()); }
   ALWAYS_INLINE VkFormat GetImageFormat() const { return m_format; }
   ALWAYS_INLINE VkImage GetCurrentImage() const { return m_images[m_current_image].image; }
+  ALWAYS_INLINE VkImageView GetCurrentImageView() const { return m_images[m_current_image].view; }
   ALWAYS_INLINE VkFramebuffer GetCurrentFramebuffer() const { return m_images[m_current_image].framebuffer; }
   ALWAYS_INLINE VkSemaphore GetImageAvailableSemaphore() const
   {

@@ -570,12 +570,9 @@ void D3D12Device::SubmitCommandListAndRestartRenderPass(const char* reason)
   if (InRenderPass())
     EndRenderPass();
 
-  D3D12Framebuffer* fb = m_current_framebuffer;
   D3D12Pipeline* pl = m_current_pipeline;
   SubmitCommandList(false, "%s", reason);
 
-  if (fb)
-    SetFramebuffer(fb);
   SetPipeline(pl);
   BeginRenderPass();
 }
@@ -1091,7 +1088,7 @@ bool D3D12Device::BeginPresent(bool frame_skip)
 
 void D3D12Device::EndPresent()
 {
-  DebugAssert(InRenderPass() && !m_current_framebuffer);
+  DebugAssert(InRenderPass() && m_num_current_render_targets == 0 && !m_current_depth_target);
   EndRenderPass();
 
   const auto& swap_chain_buf = m_swap_chain_buffers[m_current_swap_chain_buffer];
@@ -1316,25 +1313,22 @@ void D3D12Device::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u3
 void D3D12Device::ClearRenderTarget(GPUTexture* t, u32 c)
 {
   GPUDevice::ClearRenderTarget(t, c);
-  if (InRenderPass() && m_current_framebuffer && m_current_framebuffer->GetRT() == t)
+  if (InRenderPass() && IsRenderTargetBound(t))
     EndRenderPass();
 }
 
 void D3D12Device::ClearDepth(GPUTexture* t, float d)
 {
   GPUDevice::ClearDepth(t, d);
-  if (InRenderPass() && m_current_framebuffer && m_current_framebuffer->GetDS() == t)
+  if (InRenderPass() && m_current_depth_target == t)
     EndRenderPass();
 }
 
 void D3D12Device::InvalidateRenderTarget(GPUTexture* t)
 {
   GPUDevice::InvalidateRenderTarget(t);
-  if (InRenderPass() && m_current_framebuffer &&
-      (m_current_framebuffer->GetRT() == t || m_current_framebuffer->GetDS() == t))
-  {
+  if (InRenderPass() && (t->IsRenderTarget() ? IsRenderTargetBound(t) : (m_current_depth_target == t)))
     EndRenderPass();
-  }
 }
 
 bool D3D12Device::CreateBuffers()
@@ -1530,60 +1524,71 @@ void D3D12Device::DestroyRootSignatures()
     it->Reset();
 }
 
-void D3D12Device::SetFramebuffer(GPUFramebuffer* fb)
+void D3D12Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds)
 {
-  if (m_current_framebuffer == fb)
-    return;
-
   if (InRenderPass())
     EndRenderPass();
 
-  m_current_framebuffer = static_cast<D3D12Framebuffer*>(fb);
+  ID3D12GraphicsCommandList4* cmdlist = GetCommandList();
+
+  m_current_depth_target = static_cast<D3D12Texture*>(ds);
+  for (u32 i = 0; i < num_rts; i++)
+  {
+    D3D12Texture* const dt = static_cast<D3D12Texture*>(rts[i]);
+    m_current_render_targets[i] = dt;
+    dt->CommitClear(cmdlist);
+  }
+  for (u32 i = num_rts; i < m_num_current_render_targets; i++)
+    m_current_render_targets[i] = nullptr;
+  m_num_current_render_targets = num_rts;
 }
 
 void D3D12Device::BeginRenderPass()
 {
   DebugAssert(!InRenderPass());
 
-  D3D12_RENDER_PASS_RENDER_TARGET_DESC rt_desc;
+  std::array<D3D12_RENDER_PASS_RENDER_TARGET_DESC, MAX_RENDER_TARGETS> rt_desc;
   D3D12_RENDER_PASS_DEPTH_STENCIL_DESC ds_desc;
-  const D3D12_RENDER_PASS_RENDER_TARGET_DESC* rt_desc_p = nullptr;
-  const D3D12_RENDER_PASS_DEPTH_STENCIL_DESC* ds_desc_p = nullptr;
+
+  D3D12_RENDER_PASS_RENDER_TARGET_DESC* rt_desc_p = nullptr;
+  D3D12_RENDER_PASS_DEPTH_STENCIL_DESC* ds_desc_p = nullptr;
+  u32 num_rt_descs = 0;
 
   ID3D12GraphicsCommandList4* cmdlist = GetCommandList();
 
-  if (m_current_framebuffer) [[likely]]
+  if (m_num_current_render_targets > 0 || m_current_depth_target) [[likely]]
   {
-    D3D12Texture* rt = static_cast<D3D12Texture*>(m_current_framebuffer->GetRT());
-    if (rt)
+    for (u32 i = 0; i < m_num_current_render_targets; i++)
     {
+      D3D12Texture* const rt = m_current_render_targets[i];
       rt->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_RENDER_TARGET);
       rt->SetUseFenceValue(GetCurrentFenceValue());
-      rt_desc_p = &rt_desc;
-      rt_desc.cpuDescriptor = rt->GetWriteDescriptor();
-      rt_desc.EndingAccess.Type = D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE;
+
+      D3D12_RENDER_PASS_RENDER_TARGET_DESC& desc = rt_desc[i];
+      desc.cpuDescriptor = rt->GetWriteDescriptor();
+      desc.EndingAccess.Type = D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE;
 
       switch (rt->GetState())
       {
         case GPUTexture::State::Cleared:
         {
-          rt_desc.BeginningAccess.Type = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR;
-          std::memcpy(rt_desc.BeginningAccess.Clear.ClearValue.Color, rt->GetUNormClearColor().data(),
-                      sizeof(rt_desc.BeginningAccess.Clear.ClearValue.Color));
+          desc.BeginningAccess.Type = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR;
+          std::memcpy(desc.BeginningAccess.Clear.ClearValue.Color, rt->GetUNormClearColor().data(),
+                      sizeof(desc.BeginningAccess.Clear.ClearValue.Color));
           rt->SetState(GPUTexture::State::Dirty);
         }
         break;
 
         case GPUTexture::State::Invalidated:
         {
-          rt_desc.BeginningAccess.Type = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD;
+          desc.BeginningAccess.Type = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD;
           rt->SetState(GPUTexture::State::Dirty);
         }
         break;
 
         case GPUTexture::State::Dirty:
         {
-          rt_desc.BeginningAccess.Type = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE;
+          desc.BeginningAccess.Type = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE;
         }
         break;
 
@@ -1593,9 +1598,11 @@ void D3D12Device::BeginRenderPass()
       }
     }
 
-    D3D12Texture* ds = static_cast<D3D12Texture*>(m_current_framebuffer->GetDS());
-    if (ds)
+    rt_desc_p = (m_num_current_render_targets > 0) ? rt_desc.data() : nullptr;
+    num_rt_descs = m_num_current_render_targets;
+    if (m_current_depth_target)
     {
+      D3D12Texture* const ds = m_current_depth_target;
       ds->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_DEPTH_WRITE);
       ds->SetUseFenceValue(GetCurrentFenceValue());
       ds_desc_p = &ds_desc;
@@ -1631,16 +1638,19 @@ void D3D12Device::BeginRenderPass()
           UnreachableCode();
           break;
       }
+
+      ds_desc_p = &ds_desc;
     }
   }
   else
   {
     // Re-rendering to swap chain.
     const auto& swap_chain_buf = m_swap_chain_buffers[m_current_swap_chain_buffer];
-    rt_desc = {swap_chain_buf.second,
-               {D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE, {}},
-               {D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE, {}}};
-    rt_desc_p = &rt_desc;
+    rt_desc[0] = {swap_chain_buf.second,
+                  {D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE, {}},
+                  {D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE, {}}};
+    rt_desc_p = &rt_desc[0];
+    num_rt_descs = 1;
   }
 
   // All textures should be in shader read only optimal already, but just in case..
@@ -1652,7 +1662,7 @@ void D3D12Device::BeginRenderPass()
   }
 
   DebugAssert(rt_desc_p || ds_desc_p);
-  cmdlist->BeginRenderPass(rt_desc_p ? 1 : 0, rt_desc_p, ds_desc_p, D3D12_RENDER_PASS_FLAG_NONE);
+  cmdlist->BeginRenderPass(num_rt_descs, rt_desc_p, ds_desc_p, D3D12_RENDER_PASS_FLAG_NONE);
 
   // TODO: Stats
   m_in_render_pass = true;
@@ -1686,7 +1696,9 @@ void D3D12Device::BeginSwapChainRenderPass()
     {D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE, {}}};
   cmdlist->BeginRenderPass(1, &rt_desc, nullptr, D3D12_RENDER_PASS_FLAG_NONE);
 
-  m_current_framebuffer = nullptr;
+  std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
+  m_num_current_render_targets = 0;
+  m_current_depth_target = nullptr;
   m_in_render_pass = true;
 
   // Clear pipeline, it's likely incompatible.
@@ -1706,29 +1718,6 @@ void D3D12Device::EndRenderPass()
   m_in_render_pass = false;
 
   GetCommandList()->EndRenderPass();
-}
-
-void D3D12Device::UnbindFramebuffer(D3D12Framebuffer* fb)
-{
-  if (m_current_framebuffer != fb)
-    return;
-
-  if (InRenderPass())
-    EndRenderPass();
-  m_current_framebuffer = nullptr;
-}
-
-void D3D12Device::UnbindFramebuffer(D3D12Texture* tex)
-{
-  if (!m_current_framebuffer)
-    return;
-
-  if (m_current_framebuffer->GetRT() != tex && m_current_framebuffer->GetDS() != tex)
-    return;
-
-  if (InRenderPass())
-    EndRenderPass();
-  m_current_framebuffer = nullptr;
 }
 
 void D3D12Device::SetPipeline(GPUPipeline* pipeline)
@@ -1789,11 +1778,21 @@ void D3D12Device::UnbindPipeline(D3D12Pipeline* pl)
   m_current_pipeline = nullptr;
 }
 
+bool D3D12Device::IsRenderTargetBound(const GPUTexture* tex) const
+{
+  for (u32 i = 0; i < m_num_current_render_targets; i++)
+  {
+    if (m_current_render_targets[i] == tex)
+      return true;
+  }
+
+  return false;
+}
+
 void D3D12Device::InvalidateCachedState()
 {
   m_dirty_flags = ALL_DIRTY_STATE;
   m_in_render_pass = false;
-  m_current_framebuffer = nullptr;
   m_current_pipeline = nullptr;
   m_current_vertex_stride = 0;
   m_current_blend_constant = 0;
@@ -1899,6 +1898,28 @@ void D3D12Device::UnbindTexture(D3D12Texture* tex)
     {
       m_current_textures[i] = nullptr;
       m_dirty_flags |= DIRTY_FLAG_TEXTURES;
+    }
+  }
+
+  if (tex->IsRenderTarget())
+  {
+    for (u32 i = 0; i < m_num_current_render_targets; i++)
+    {
+      if (m_current_render_targets[i] == tex)
+      {
+        if (InRenderPass())
+          EndRenderPass();
+        m_current_render_targets[i] = nullptr;
+      }
+    }
+  }
+  else if (tex->IsDepthStencil())
+  {
+    if (m_current_depth_target == tex)
+    {
+      if (InRenderPass())
+        EndRenderPass();
+      m_current_depth_target = nullptr;
     }
   }
 }

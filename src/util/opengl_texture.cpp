@@ -205,7 +205,7 @@ void OpenGLTexture::Destroy()
 {
   if (m_id != 0)
   {
-    OpenGLDevice::GetInstance().UnbindTexture(m_id);
+    OpenGLDevice::GetInstance().UnbindTexture(this);
     glDeleteTextures(1, &m_id);
     m_id = 0;
   }
@@ -410,58 +410,6 @@ std::unique_ptr<GPUSampler> OpenGLDevice::CreateSampler(const GPUSampler::Config
 
 //////////////////////////////////////////////////////////////////////////
 
-OpenGLFramebuffer::OpenGLFramebuffer(GPUTexture* rt, GPUTexture* ds, u32 width, u32 height, GLuint id)
-  : GPUFramebuffer(rt, ds, width, height), m_id(id)
-{
-}
-
-OpenGLFramebuffer::~OpenGLFramebuffer()
-{
-  OpenGLDevice::GetInstance().UnbindFramebuffer(this);
-}
-
-void OpenGLFramebuffer::SetDebugName(const std::string_view& name)
-{
-#ifdef _DEBUG
-  if (glObjectLabel)
-    glObjectLabel(GL_FRAMEBUFFER, m_id, static_cast<GLsizei>(name.length()), static_cast<const GLchar*>(name.data()));
-#endif
-}
-
-void OpenGLFramebuffer::Bind(GLenum target)
-{
-  glBindFramebuffer(target, m_id);
-}
-
-std::unique_ptr<GPUFramebuffer> OpenGLDevice::CreateFramebuffer(GPUTexture* rt_or_ds, GPUTexture* ds /* = nullptr */)
-{
-  glGetError();
-
-  GLuint fbo_id;
-  glGenFramebuffers(1, &fbo_id);
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_id);
-
-  DebugAssert((rt_or_ds || ds) && (!rt_or_ds || rt_or_ds->IsRenderTarget() || (rt_or_ds->IsDepthStencil() && !ds)));
-  OpenGLTexture* RT = static_cast<OpenGLTexture*>((rt_or_ds && rt_or_ds->IsDepthStencil()) ? nullptr : rt_or_ds);
-  OpenGLTexture* DS = static_cast<OpenGLTexture*>((rt_or_ds && rt_or_ds->IsDepthStencil()) ? rt_or_ds : ds);
-  if (RT)
-    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, RT->GetGLTarget(), RT->GetGLId(), 0);
-  if (DS)
-    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, DS->GetGLTarget(), DS->GetGLId(), 0);
-
-  if (glGetError() != GL_NO_ERROR || glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-  {
-    Log_ErrorPrintf("Failed to create GL framebuffer: %u", glGetError());
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_current_framebuffer ? m_current_framebuffer->GetGLId() : 0);
-    glDeleteFramebuffers(1, &fbo_id);
-    return {};
-  }
-
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_current_framebuffer ? m_current_framebuffer->GetGLId() : 0);
-  return std::unique_ptr<GPUFramebuffer>(new OpenGLFramebuffer(RT, DS, RT ? RT->GetWidth() : DS->GetWidth(),
-                                                               RT ? RT->GetHeight() : DS->GetHeight(), fbo_id));
-}
-
 void OpenGLDevice::CommitClear(OpenGLTexture* tex)
 {
   switch (tex->GetState())
@@ -484,7 +432,7 @@ void OpenGLDevice::CommitClear(OpenGLTexture* tex)
         glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER, 1, &attachment);
 
         glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, attachment, GL_TEXTURE_2D, 0, 0);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_current_framebuffer ? m_current_framebuffer->GetGLId() : 0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_current_fbo);
       }
     }
     break;
@@ -525,7 +473,7 @@ void OpenGLDevice::CommitClear(OpenGLTexture* tex)
         }
 
         glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, attachment, GL_TEXTURE_2D, 0, 0);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_current_framebuffer ? m_current_framebuffer->GetGLId() : 0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_current_fbo);
       }
     }
     break;
@@ -539,74 +487,68 @@ void OpenGLDevice::CommitClear(OpenGLTexture* tex)
   }
 }
 
-void OpenGLDevice::CommitClear(OpenGLFramebuffer* fb)
+void OpenGLDevice::CommitRTClearInFB(OpenGLTexture* tex, u32 idx)
 {
-  GLenum invalidate_attachments[2];
-  GLuint num_invalidate_attachments = 0;
-
-  if (OpenGLTexture* FB = static_cast<OpenGLTexture*>(fb->GetRT()))
+  switch (tex->GetState())
   {
-    switch (FB->GetState())
+    case GPUTexture::State::Invalidated:
     {
-      case GPUTexture::State::Invalidated:
-      {
-        invalidate_attachments[num_invalidate_attachments++] = GL_COLOR_ATTACHMENT0;
-        FB->SetState(GPUTexture::State::Dirty);
-      }
+      const GLenum attachment = GL_COLOR_ATTACHMENT0 + idx;
+      glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER, 1, &attachment);
+      tex->SetState(GPUTexture::State::Dirty);
+    }
+    break;
+
+    case GPUTexture::State::Cleared:
+    {
+      const auto color = tex->GetUNormClearColor();
+      glDisable(GL_SCISSOR_TEST);
+      glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+      glClearBufferfv(GL_COLOR, static_cast<GLint>(idx), color.data());
+      glColorMask(m_last_blend_state.write_r, m_last_blend_state.write_g, m_last_blend_state.write_b,
+                  m_last_blend_state.write_a);
+      glEnable(GL_SCISSOR_TEST);
+      tex->SetState(GPUTexture::State::Dirty);
+    }
+
+    case GPUTexture::State::Dirty:
       break;
 
-      case GPUTexture::State::Cleared:
-      {
-        const auto color = FB->GetUNormClearColor();
-        glDisable(GL_SCISSOR_TEST);
-        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-        glClearBufferfv(GL_COLOR, 0, color.data());
-        glColorMask(m_last_blend_state.write_r, m_last_blend_state.write_g, m_last_blend_state.write_b,
-                    m_last_blend_state.write_a);
-        glEnable(GL_SCISSOR_TEST);
-        FB->SetState(GPUTexture::State::Dirty);
-      }
-
-      case GPUTexture::State::Dirty:
-        break;
-
-      default:
-        UnreachableCode();
-        break;
-    }
+    default:
+      UnreachableCode();
+      break;
   }
-  if (OpenGLTexture* DS = static_cast<OpenGLTexture*>(fb->GetDS()))
+}
+
+void OpenGLDevice::CommitDSClearInFB(OpenGLTexture* tex)
+{
+  switch (tex->GetState())
   {
-    switch (DS->GetState())
+    case GPUTexture::State::Invalidated:
     {
-      case GPUTexture::State::Invalidated:
-      {
-        invalidate_attachments[num_invalidate_attachments++] = GL_DEPTH_ATTACHMENT;
-        DS->SetState(GPUTexture::State::Dirty);
-      }
-      break;
-
-      case GPUTexture::State::Cleared:
-      {
-        const float depth = DS->GetClearDepth();
-        glDisable(GL_SCISSOR_TEST);
-        glClearBufferfv(GL_DEPTH, 0, &depth);
-        glEnable(GL_SCISSOR_TEST);
-        DS->SetState(GPUTexture::State::Dirty);
-      }
-      break;
-
-      case GPUTexture::State::Dirty:
-        break;
-
-      default:
-        UnreachableCode();
-        break;
+      const GLenum attachment = GL_DEPTH_ATTACHMENT;
+      glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER, 1, &attachment);
+      tex->SetState(GPUTexture::State::Dirty);
     }
-  }
+    break;
 
-  if (num_invalidate_attachments > 0 && glInvalidateFramebuffer)
-    glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER, num_invalidate_attachments, invalidate_attachments);
+    case GPUTexture::State::Cleared:
+    {
+      const float depth = tex->GetClearDepth();
+      glDisable(GL_SCISSOR_TEST);
+      glClearBufferfv(GL_DEPTH, 0, &depth);
+      glEnable(GL_SCISSOR_TEST);
+      tex->SetState(GPUTexture::State::Dirty);
+    }
+    break;
+
+    case GPUTexture::State::Dirty:
+      break;
+
+    default:
+      UnreachableCode();
+      break;
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////

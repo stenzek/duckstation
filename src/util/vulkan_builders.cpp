@@ -264,6 +264,9 @@ void Vulkan::GraphicsPipelineBuilder::Clear()
   m_line_rasterization_state = {};
   m_line_rasterization_state.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_LINE_STATE_CREATE_INFO_EXT;
 
+  m_rendering = {};
+  m_rendering.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR;
+
   // set defaults
   SetNoCullRasterizationState();
   SetNoDepthTestState();
@@ -567,6 +570,29 @@ void Vulkan::GraphicsPipelineBuilder::SetProvokingVertex(VkProvokingVertexModeEX
   AddPointerToChain(&m_rasterization_state, &m_provoking_vertex);
 
   m_provoking_vertex.provokingVertexMode = mode;
+}
+
+void Vulkan::GraphicsPipelineBuilder::SetDynamicRendering()
+{
+  AddPointerToChain(&m_ci, &m_rendering);
+}
+
+void Vulkan::GraphicsPipelineBuilder::AddDynamicRenderingColorAttachment(VkFormat format)
+{
+  SetDynamicRendering();
+
+  DebugAssert(m_rendering.colorAttachmentCount < MAX_ATTACHMENTS);
+  m_rendering_color_formats[m_rendering.colorAttachmentCount++] = format;
+
+  m_rendering.pColorAttachmentFormats = m_rendering_color_formats.data();
+}
+
+void Vulkan::GraphicsPipelineBuilder::SetDynamicRenderingDepthAttachment(VkFormat depth_format, VkFormat stencil_format)
+{
+  SetDynamicRendering();
+
+  m_rendering.depthAttachmentFormat = depth_format;
+  m_rendering.stencilAttachmentFormat = stencil_format;
 }
 
 Vulkan::ComputePipelineBuilder::ComputePipelineBuilder()

@@ -1579,7 +1579,7 @@ bool GPU::CompileDisplayPipeline()
   plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
   plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
-  plconfig.color_format = g_gpu_device->HasSurface() ? g_gpu_device->GetWindowFormat() : GPUTexture::Format::RGBA8;
+  plconfig.SetTargetFormats(g_gpu_device->HasSurface() ? g_gpu_device->GetWindowFormat() : GPUTexture::Format::RGBA8);
   plconfig.depth_format = GPUTexture::Format::Unknown;
   plconfig.samples = 1;
   plconfig.per_sample_shading = false;
@@ -1670,9 +1670,10 @@ bool GPU::PresentDisplay()
   return RenderDisplay(nullptr, draw_rect, true);
 }
 
-bool GPU::RenderDisplay(GPUFramebuffer* target, const Common::Rectangle<s32>& draw_rect, bool postfx)
+bool GPU::RenderDisplay(GPUTexture* target, const Common::Rectangle<s32>& draw_rect, bool postfx)
 {
-  GL_SCOPE_FMT("RenderDisplay: {}x{} at {},{}", draw_rect.left, draw_rect.top, draw_rect.GetWidth(), draw_rect.GetHeight());
+  GL_SCOPE_FMT("RenderDisplay: {}x{} at {},{}", draw_rect.left, draw_rect.top, draw_rect.GetWidth(),
+               draw_rect.GetHeight());
 
   if (m_display_texture)
     m_display_texture->MakeReadyForSampling();
@@ -1716,8 +1717,7 @@ bool GPU::RenderDisplay(GPUFramebuffer* target, const Common::Rectangle<s32>& dr
       break;
   }
 
-  const GPUTexture::Format hdformat =
-    (target && target->GetRT()) ? target->GetRT()->GetFormat() : g_gpu_device->GetWindowFormat();
+  const GPUTexture::Format hdformat = target ? target->GetFormat() : g_gpu_device->GetWindowFormat();
   const u32 target_width = target ? target->GetWidth() : g_gpu_device->GetWindowWidth();
   const u32 target_height = target ? target->GetHeight() : g_gpu_device->GetWindowHeight();
   const bool really_postfx = (postfx && HasDisplayTexture() && PostProcessing::IsActive() &&
@@ -1725,12 +1725,12 @@ bool GPU::RenderDisplay(GPUFramebuffer* target, const Common::Rectangle<s32>& dr
   if (really_postfx)
   {
     g_gpu_device->ClearRenderTarget(PostProcessing::GetInputTexture(), 0);
-    g_gpu_device->SetFramebuffer(PostProcessing::GetInputFramebuffer());
+    g_gpu_device->SetRenderTarget(PostProcessing::GetInputTexture());
   }
   else
   {
     if (target)
-      g_gpu_device->SetFramebuffer(target);
+      g_gpu_device->SetRenderTarget(target);
     else if (!g_gpu_device->BeginPresent(false))
       return false;
   }
@@ -2059,16 +2059,10 @@ bool GPU::RenderScreenshotToBuffer(u32 width, u32 height, const Common::Rectangl
   if (!render_texture)
     return false;
 
-  std::unique_ptr<GPUFramebuffer> render_fb = g_gpu_device->CreateFramebuffer(render_texture.get());
-  if (!render_fb)
-    return false;
-
   g_gpu_device->ClearRenderTarget(render_texture.get(), 0);
 
   // TODO: this should use copy shader instead.
-  RenderDisplay(render_fb.get(), draw_rect, postfx);
-
-  g_gpu_device->SetFramebuffer(nullptr);
+  RenderDisplay(render_texture.get(), draw_rect, postfx);
 
   const u32 stride = GPUTexture::GetPixelSize(hdformat) * width;
   out_pixels->resize(width * height);

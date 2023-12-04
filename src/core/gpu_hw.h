@@ -213,11 +213,6 @@ private:
   std::unique_ptr<GPUTexture> m_vram_replacement_texture;
   std::unique_ptr<GPUTexture> m_display_private_texture; // TODO: Move to base.
 
-  std::unique_ptr<GPUFramebuffer> m_vram_framebuffer;
-  std::unique_ptr<GPUFramebuffer> m_vram_update_depth_framebuffer;
-  std::unique_ptr<GPUFramebuffer> m_vram_readback_framebuffer;
-  std::unique_ptr<GPUFramebuffer> m_display_framebuffer;
-
   std::unique_ptr<GPUTextureBuffer> m_vram_upload_buffer;
   std::unique_ptr<GPUTexture> m_vram_write_texture;
 
@@ -288,9 +283,7 @@ private:
 
   std::unique_ptr<GPUTexture> m_downsample_texture;
   std::unique_ptr<GPUTexture> m_downsample_render_texture;
-  std::unique_ptr<GPUFramebuffer> m_downsample_framebuffer;
   std::unique_ptr<GPUTexture> m_downsample_weight_texture;
-  std::unique_ptr<GPUFramebuffer> m_downsample_weight_framebuffer;
   std::unique_ptr<GPUPipeline> m_downsample_first_pass_pipeline;
   std::unique_ptr<GPUPipeline> m_downsample_mid_pass_pipeline;
   std::unique_ptr<GPUPipeline> m_downsample_blur_pass_pipeline;

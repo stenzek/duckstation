@@ -130,8 +130,7 @@ bool PostProcessing::GLSLShader::CompilePipeline(GPUTexture::Format format, u32 
   GPUPipeline::GraphicsConfig plconfig;
   plconfig.layout = GPUPipeline::Layout::SingleTextureAndUBO;
   plconfig.primitive = GPUPipeline::Primitive::Triangles;
-  plconfig.color_format = format;
-  plconfig.depth_format = GPUTexture::Format::Unknown;
+  plconfig.SetTargetFormats(format);
   plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
   plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
@@ -157,7 +156,7 @@ bool PostProcessing::GLSLShader::CompilePipeline(GPUTexture::Format format, u32 
   return true;
 }
 
-bool PostProcessing::GLSLShader::Apply(GPUTexture* input, GPUFramebuffer* final_target, s32 final_left, s32 final_top,
+bool PostProcessing::GLSLShader::Apply(GPUTexture* input, GPUTexture* final_target, s32 final_left, s32 final_top,
                                        s32 final_width, s32 final_height, s32 orig_width, s32 orig_height,
                                        u32 target_width, u32 target_height)
 {
@@ -171,8 +170,8 @@ bool PostProcessing::GLSLShader::Apply(GPUTexture* input, GPUFramebuffer* final_
   }
   else
   {
-    g_gpu_device->SetFramebuffer(final_target);
-    g_gpu_device->ClearRenderTarget(final_target->GetRT(), 0); // TODO: Could use an invalidate here too.
+    g_gpu_device->SetRenderTargets(&final_target, 1, nullptr);
+    g_gpu_device->ClearRenderTarget(final_target, 0); // TODO: Could use an invalidate here too.
   }
 
   g_gpu_device->SetPipeline(m_pipeline.get());

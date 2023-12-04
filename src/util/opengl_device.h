@@ -5,6 +5,7 @@
 
 #include "gl/context.h"
 #include "gpu_device.h"
+#include "gpu_framebuffer_manager.h"
 #include "gpu_shader_cache.h"
 #include "opengl_loader.h"
 #include "opengl_pipeline.h"
@@ -16,7 +17,6 @@
 #include <memory>
 #include <tuple>
 
-class OpenGLFramebuffer;
 class OpenGLPipeline;
 class OpenGLStreamBuffer;
 class OpenGLTexture;
@@ -65,8 +65,6 @@ public:
   void ClearDepth(GPUTexture* t, float d) override;
   void InvalidateRenderTarget(GPUTexture* t) override;
 
-  std::unique_ptr<GPUFramebuffer> CreateFramebuffer(GPUTexture* rt_or_ds, GPUTexture* ds = nullptr) override;
-
   std::unique_ptr<GPUShader> CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data) override;
   std::unique_ptr<GPUShader> CreateShaderFromSource(GPUShaderStage stage, const std::string_view& source,
                                                     const char* entry_point, DynamicHeapArray<u8>* out_binary) override;
@@ -84,7 +82,7 @@ public:
   void PushUniformBuffer(const void* data, u32 data_size) override;
   void* MapUniformBuffer(u32 size) override;
   void UnmapUniformBuffer(u32 size) override;
-  void SetFramebuffer(GPUFramebuffer* fb) override;
+  void SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds) override;
   void SetPipeline(GPUPipeline* pipeline) override;
   void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) override;
   void SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer) override;
@@ -102,7 +100,8 @@ public:
   float GetAndResetAccumulatedGPUTime() override;
 
   void CommitClear(OpenGLTexture* tex);
-  void CommitClear(OpenGLFramebuffer* fb); // Assumes the FB has been bound.
+  void CommitRTClearInFB(OpenGLTexture* tex, u32 idx);
+  void CommitDSClearInFB(OpenGLTexture* tex);
 
   GLuint LookupProgramCache(const OpenGLPipeline::ProgramCacheKey& key, const GPUPipeline::GraphicsConfig& plconfig);
   GLuint CompileProgram(const GPUPipeline::GraphicsConfig& plconfig);
@@ -115,9 +114,9 @@ public:
 
   void SetActiveTexture(u32 slot);
   void UnbindTexture(GLuint id);
+  void UnbindTexture(OpenGLTexture* tex);
   void UnbindSSBO(GLuint id);
   void UnbindSampler(GLuint id);
-  void UnbindFramebuffer(const OpenGLFramebuffer* fb);
   void UnbindPipeline(const OpenGLPipeline* pl);
 
 protected:
@@ -145,6 +144,10 @@ private:
   void SetSwapInterval();
   void RenderBlankFrame();
 
+  s32 IsRenderTargetBound(const GPUTexture* tex) const;
+  static GLuint CreateFramebuffer(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds, u32 flags);
+  static void DestroyFramebuffer(GLuint fbo);
+
   std::tuple<s32, s32, s32, s32> GetFlippedViewportScissor(const Common::Rectangle<s32>& rc) const;
   void UpdateViewport();
   void UpdateScissor();
@@ -165,7 +168,6 @@ private:
   void ApplyBlendState(GPUPipeline::BlendState bs);
 
   std::unique_ptr<GL::Context> m_gl_context;
-  std::unique_ptr<OpenGLFramebuffer> m_window_framebuffer;
 
   std::unique_ptr<OpenGLStreamBuffer> m_vertex_buffer;
   std::unique_ptr<OpenGLStreamBuffer> m_index_buffer;
@@ -175,6 +177,7 @@ private:
   // TODO: pass in file instead of blob for pipeline cache
   OpenGLPipeline::VertexArrayCache m_vao_cache;
   OpenGLPipeline::ProgramCache m_program_cache;
+  GPUFramebufferManager<GLuint, CreateFramebuffer, DestroyFramebuffer> m_framebuffer_manager;
 
   // VAO cache - fixed max as key
   GPUPipeline::BlendState m_last_blend_state = {};
@@ -193,7 +196,11 @@ private:
   GLuint m_read_fbo = 0;
   GLuint m_write_fbo = 0;
 
-  OpenGLFramebuffer* m_current_framebuffer = nullptr;
+  GLuint m_current_fbo = 0;
+  u32 m_num_current_render_targets = 0;
+  std::array<OpenGLTexture*, MAX_RENDER_TARGETS> m_current_render_targets = {};
+  OpenGLTexture* m_current_depth_target = nullptr;
+
   OpenGLPipeline* m_current_pipeline = nullptr;
 
   std::array<GLuint, NUM_TIMESTAMP_QUERIES> m_timestamp_queries = {};

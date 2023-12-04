@@ -23,6 +23,7 @@ add_library(util
   cue_parser.h
   gpu_device.cpp
   gpu_device.h
+  gpu_framebuffer_manager.h
   gpu_shader_cache.cpp
   gpu_shader_cache.h
   gpu_texture.cpp
@@ -72,7 +73,7 @@ target_precompile_headers(util PRIVATE "pch.h")
 target_include_directories(util PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(util PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(util PUBLIC common simpleini imgui)
-target_link_libraries(util PRIVATE stb libchdr zlib soundtouch Zstd::Zstd reshadefx)
+target_link_libraries(util PRIVATE stb libchdr zlib soundtouch xxhash Zstd::Zstd reshadefx)
 
 if(ENABLE_CUBEB)
   target_sources(util PRIVATE

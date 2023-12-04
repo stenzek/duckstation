@@ -8,7 +8,7 @@
       <PreprocessorDefinitions>ENABLE_CUBEB=1;ENABLE_SDL2=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Platform)'!='ARM64'">%(PreprocessorDefinitions);ENABLE_OPENGL=1;ENABLE_VULKAN=1</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Platform)'=='ARM64'">%(PreprocessorDefinitions);SOUNDTOUCH_USE_NEON</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\soundtouch\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\d3d12ma\include;$(SolutionDir)dep\zstd\lib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\xxhash\include;$(SolutionDir)dep\soundtouch\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\d3d12ma\include;$(SolutionDir)dep\zstd\lib</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Platform)'!='ARM64'">%(AdditionalIncludeDirectories);$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan\include;$(SolutionDir)dep\glslang</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>

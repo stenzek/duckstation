@@ -88,7 +88,7 @@ std::string D3D12Pipeline::GetPipelineName(const GraphicsConfig& config)
     hash.Update(shader->GetBytecodeData(), shader->GetBytecodeSize());
   if (const D3D12Shader* shader = static_cast<const D3D12Shader*>(config.geometry_shader))
     hash.Update(shader->GetBytecodeData(), shader->GetBytecodeSize());
-  hash.Update(&config.color_format, sizeof(config.color_format));
+  hash.Update(&config.color_formats, sizeof(config.color_formats));
   hash.Update(&config.depth_format, sizeof(config.depth_format));
   hash.Update(&config.samples, sizeof(config.samples));
   hash.Update(&config.per_sample_shading, sizeof(config.per_sample_shading));
@@ -212,8 +212,11 @@ std::unique_ptr<GPUPipeline> D3D12Device::CreatePipeline(const GPUPipeline::Grap
                     blend_mapping[static_cast<u8>(config.blend.dst_alpha_blend.GetValue())],
                     op_mapping[static_cast<u8>(config.blend.alpha_blend_op.GetValue())], config.blend.write_mask);
 
-  if (config.color_format != GPUTexture::Format::Unknown)
-    gpb.SetRenderTarget(0, D3DCommon::GetFormatMapping(config.color_format).rtv_format);
+  for (u32 i = 0; i < MAX_RENDER_TARGETS; i++)
+  {
+    if (config.color_formats[i] != GPUTexture::Format::Unknown)
+      gpb.SetRenderTarget(i, D3DCommon::GetFormatMapping(config.color_formats[i]).rtv_format);
+  }
 
   if (config.depth_format != GPUTexture::Format::Unknown)
     gpb.SetDepthStencilFormat(D3DCommon::GetFormatMapping(config.depth_format).dsv_format);

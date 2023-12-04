@@ -536,24 +536,35 @@ void D3D11Device::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u3
                                 src11->GetD3DTexture(), 0, dst11->GetDXGIFormat());
 }
 
+bool D3D11Device::IsRenderTargetBound(const GPUTexture* tex) const
+{
+  for (u32 i = 0; i < m_num_current_render_targets; i++)
+  {
+    if (m_current_render_targets[i] == tex)
+      return true;
+  }
+
+  return false;
+}
+
 void D3D11Device::ClearRenderTarget(GPUTexture* t, u32 c)
 {
   GPUDevice::ClearRenderTarget(t, c);
-  if (m_current_framebuffer && m_current_framebuffer->GetRT() == t)
+  if (IsRenderTargetBound(t))
     static_cast<D3D11Texture*>(t)->CommitClear(m_context.Get());
 }
 
 void D3D11Device::ClearDepth(GPUTexture* t, float d)
 {
   GPUDevice::ClearDepth(t, d);
-  if (m_current_framebuffer && m_current_framebuffer->GetDS() == t)
+  if (m_current_depth_target == t)
     static_cast<D3D11Texture*>(t)->CommitClear(m_context.Get());
 }
 
 void D3D11Device::InvalidateRenderTarget(GPUTexture* t)
 {
   GPUDevice::InvalidateRenderTarget(t);
-  if (m_current_framebuffer && (m_current_framebuffer->GetRT() == t || m_current_framebuffer->GetDS() == t))
+  if (t->IsRenderTarget() ? IsRenderTargetBound(t) : (m_current_depth_target == t))
     static_cast<D3D11Texture*>(t)->CommitClear(m_context.Get());
 }
 
@@ -613,13 +624,15 @@ bool D3D11Device::BeginPresent(bool skip_present)
   static constexpr float clear_color[4] = {0.0f, 0.0f, 0.0f, 1.0f};
   m_context->ClearRenderTargetView(m_swap_chain_rtv.Get(), clear_color);
   m_context->OMSetRenderTargets(1, m_swap_chain_rtv.GetAddressOf(), nullptr);
-  m_current_framebuffer = nullptr;
+  m_num_current_render_targets = 0;
+  std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
+  m_current_depth_target = nullptr;
   return true;
 }
 
 void D3D11Device::EndPresent()
 {
-  DebugAssert(!m_current_framebuffer);
+  DebugAssert(m_num_current_render_targets == 0 && !m_current_depth_target);
 
   if (!m_vsync_enabled && m_gpu_timing_enabled)
     PopTimestampQuery();
@@ -873,34 +886,17 @@ void D3D11Device::UnmapUniformBuffer(u32 size)
   m_context->PSSetConstantBuffers1(0, 1, m_uniform_buffer.GetD3DBufferArray(), &first_constant, &num_constants);
 }
 
-void D3D11Device::SetFramebuffer(GPUFramebuffer* fb)
+void D3D11Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds)
 {
-  if (m_current_framebuffer == fb)
-    return;
+  ID3D11RenderTargetView* rtvs[MAX_RENDER_TARGETS];
 
-  m_current_framebuffer = static_cast<D3D11Framebuffer*>(fb);
-  if (!m_current_framebuffer)
-  {
-    m_context->OMSetRenderTargets(0, nullptr, nullptr);
-    return;
-  }
+  bool changed = (m_num_current_render_targets != num_rts || m_current_depth_target != ds);
+  m_current_depth_target = static_cast<D3D11Texture*>(ds);
 
   // Make sure textures aren't bound.
-  if (D3D11Texture* rt = static_cast<D3D11Texture*>(fb->GetRT()); rt)
+  if (ds)
   {
-    const ID3D11ShaderResourceView* srv = rt->GetD3DSRV();
-    for (u32 i = 0; i < MAX_TEXTURE_SAMPLERS; i++)
-    {
-      if (m_current_textures[i] == srv)
-      {
-        m_current_textures[i] = nullptr;
-        m_context->PSSetShaderResources(i, 1, &m_current_textures[i]);
-      }
-    }
-  }
-  if (D3D11Texture* ds = static_cast<D3D11Texture*>(fb->GetDS()); ds)
-  {
-    const ID3D11ShaderResourceView* srv = ds->GetD3DSRV();
+    const ID3D11ShaderResourceView* srv = static_cast<D3D11Texture*>(ds)->GetD3DSRV();
     for (u32 i = 0; i < MAX_TEXTURE_SAMPLERS; i++)
     {
       if (m_current_textures[i] == srv)
@@ -911,18 +907,31 @@ void D3D11Device::SetFramebuffer(GPUFramebuffer* fb)
     }
   }
 
-  m_current_framebuffer->CommitClear(m_context.Get());
-  m_context->OMSetRenderTargets(m_current_framebuffer->GetNumRTVs(), m_current_framebuffer->GetRTVArray(),
-                                m_current_framebuffer->GetDSV());
-}
+  for (u32 i = 0; i < num_rts; i++)
+  {
+    D3D11Texture* const dt = static_cast<D3D11Texture*>(rts[i]);
+    changed |= m_current_render_targets[i] != dt;
+    m_current_render_targets[i] = dt;
+    rtvs[i] = dt->GetD3DRTV();
+    dt->CommitClear(m_context.Get());
 
-void D3D11Device::UnbindFramebuffer(D3D11Framebuffer* fb)
-{
-  if (m_current_framebuffer != fb)
+    const ID3D11ShaderResourceView* srv = dt->GetD3DSRV();
+    for (u32 j = 0; j < MAX_TEXTURE_SAMPLERS; j++)
+    {
+      if (m_current_textures[j] == srv)
+      {
+        m_current_textures[j] = nullptr;
+        m_context->PSSetShaderResources(j, 1, &m_current_textures[j]);
+      }
+    }
+  }
+  for (u32 i = num_rts; i < m_num_current_render_targets; i++)
+    m_current_render_targets[i] = nullptr;
+  m_num_current_render_targets = num_rts;
+  if (!changed)
     return;
 
-  m_current_framebuffer = nullptr;
-  m_context->OMSetRenderTargets(0, nullptr, nullptr);
+  m_context->OMSetRenderTargets(num_rts, rtvs, ds ? static_cast<D3D11Texture*>(ds)->GetD3DDSV() : nullptr);
 }
 
 void D3D11Device::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler)
@@ -931,8 +940,7 @@ void D3D11Device::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* s
   ID3D11SamplerState* S = sampler ? static_cast<D3D11Sampler*>(sampler)->GetSamplerState() : nullptr;
 
   // Runtime will null these if we don't...
-  DebugAssert(!m_current_framebuffer || !texture ||
-              (m_current_framebuffer->GetRT() != texture && m_current_framebuffer->GetDS() != texture));
+  DebugAssert(!texture || !IsRenderTargetBound(texture) || m_current_depth_target != texture);
 
   if (m_current_textures[slot] != T)
   {
@@ -970,8 +978,23 @@ void D3D11Device::UnbindTexture(D3D11Texture* tex)
     }
   }
 
-  if (m_current_framebuffer && m_current_framebuffer->GetRT() == tex)
-    SetFramebuffer(nullptr);
+  if (tex->IsRenderTarget())
+  {
+    for (u32 i = 0; i < m_num_current_render_targets; i++)
+    {
+      if (m_current_render_targets[i] == tex)
+      {
+        Log_WarningPrint("Unbinding current RT");
+        SetRenderTargets(nullptr, 0, m_current_depth_target);
+        break;
+      }
+    }
+  }
+  else if (m_current_depth_target == tex)
+  {
+    Log_WarningPrint("Unbinding current DS");
+    SetRenderTargets(nullptr, 0, nullptr);
+  }
 }
 
 void D3D11Device::SetViewport(s32 x, s32 y, s32 width, s32 height)

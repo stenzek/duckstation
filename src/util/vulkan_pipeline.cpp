@@ -199,11 +199,31 @@ std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::Gra
 
   gpb.SetPipelineLayout(m_pipeline_layouts[static_cast<u8>(config.layout)]);
 
-  const VkRenderPass render_pass = GetRenderPass(TEXTURE_FORMAT_MAPPING[static_cast<u8>(config.color_format)],
-                                                 TEXTURE_FORMAT_MAPPING[static_cast<u8>(config.depth_format)],
-                                                 static_cast<VkSampleCountFlagBits>(config.samples));
-  DebugAssert(render_pass);
-  gpb.SetRenderPass(render_pass, 0);
+  if (m_optional_extensions.vk_khr_dynamic_rendering)
+  {
+    gpb.SetDynamicRendering();
+
+    for (u32 i = 0; i < MAX_RENDER_TARGETS; i++)
+    {
+      if (config.color_formats[i] == GPUTexture::Format::Unknown)
+        break;
+
+      gpb.AddDynamicRenderingColorAttachment(
+        VulkanDevice::TEXTURE_FORMAT_MAPPING[static_cast<u8>(config.color_formats[i])]);
+    }
+
+    if (config.depth_format != GPUTexture::Format::Unknown)
+    {
+      gpb.SetDynamicRenderingDepthAttachment(VulkanDevice::TEXTURE_FORMAT_MAPPING[static_cast<u8>(config.depth_format)],
+                                             VK_FORMAT_UNDEFINED);
+    }
+  }
+  else
+  {
+    const VkRenderPass render_pass = GetRenderPass(config);
+    DebugAssert(render_pass != VK_NULL_HANDLE);
+    gpb.SetRenderPass(render_pass, 0);
+  }
 
   const VkPipeline pipeline = gpb.Create(m_device, m_pipeline_cache, false);
   if (!pipeline)

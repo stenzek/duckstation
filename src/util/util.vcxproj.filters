@@ -70,6 +70,7 @@
     <ClInclude Include="http_downloader_curl.h" />
     <ClInclude Include="http_downloader_winhttp.h" />
     <ClInclude Include="http_downloader.h" />
+    <ClInclude Include="gpu_framebuffer_manager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -149,10 +150,15 @@
     <ClCompile Include="http_downloader_curl.cpp" />
     <ClCompile Include="http_downloader_winhttp.cpp" />
     <ClCompile Include="http_downloader.cpp" />
+    <ClCompile Include="metal_device.mm" />
+    <ClCompile Include="metal_stream_buffer.mm" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="gl">
       <UniqueIdentifier>{e637fc5b-2483-4a31-abc3-89a16d45c223}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="metal_shaders.metal" />
   </ItemGroup>
 </Project>

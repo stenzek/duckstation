@@ -236,6 +236,10 @@ VULKAN_DEVICE_ENTRY_POINT(vkAcquireFullScreenExclusiveModeEXT, false)
 VULKAN_DEVICE_ENTRY_POINT(vkReleaseFullScreenExclusiveModeEXT, false)
 #endif
 
+// VK_KHR_dynamic_rendering
+VULKAN_DEVICE_ENTRY_POINT(vkCmdBeginRenderingKHR, false)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdEndRenderingKHR, false)
+
 // VK_KHR_push_descriptor
 VULKAN_DEVICE_ENTRY_POINT(vkCmdPushDescriptorSetKHR, false)
 

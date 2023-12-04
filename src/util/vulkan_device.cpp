@@ -20,6 +20,7 @@
 #include "common/small_string.h"
 
 #include "fmt/format.h"
+#include "xxhash.h"
 
 #include <limits>
 #include <mutex>
@@ -38,6 +39,13 @@ struct VK_PIPELINE_CACHE_HEADER
   u8 uuid[VK_UUID_SIZE];
 };
 #pragma pack(pop)
+
+static VkAttachmentLoadOp GetLoadOpForTexture(const GPUTexture* tex)
+{
+  static constexpr VkAttachmentLoadOp ops[3] = {VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_LOAD_OP_CLEAR,
+                                                VK_ATTACHMENT_LOAD_OP_DONT_CARE};
+  return ops[static_cast<u8>(tex->GetState())];
+}
 
 // Tweakables
 enum : u32
@@ -83,6 +91,9 @@ const std::array<VkFormat, static_cast<u32>(GPUTexture::Format::MaxCount)> Vulka
 };
 
 static constexpr VkClearValue s_present_clear_color = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
+
+// Handles are always 64-bit, even on 32-bit platforms.
+static const VkRenderPass DYNAMIC_RENDERING_RENDER_PASS = reinterpret_cast<VkRenderPass>(static_cast<s64>(-1LL));
 
 #ifdef _DEBUG
 static u32 s_debug_scope_depth = 0;
@@ -355,6 +366,10 @@ bool VulkanDevice::SelectDeviceExtensions(ExtensionList* extension_list, bool en
   m_optional_extensions.vk_ext_attachment_feedback_loop_layout =
     SupportsExtension(VK_EXT_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_EXTENSION_NAME, false);
   m_optional_extensions.vk_khr_driver_properties = SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
+  m_optional_extensions.vk_khr_dynamic_rendering =
+    SupportsExtension(VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME, false) &&
+    SupportsExtension(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME, false) &&
+    SupportsExtension(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME, false);
   m_optional_extensions.vk_khr_push_descriptor = SupportsExtension(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME, false);
 
 #ifdef _WIN32
@@ -501,11 +516,15 @@ bool VulkanDevice::CreateDevice(VkSurfaceKHR surface, bool enable_validation_lay
     VK_FALSE};
   VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT attachment_feedback_loop_feature = {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT, nullptr, VK_TRUE};
+  VkPhysicalDeviceDynamicRenderingFeatures dynamic_rendering_feature = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES, nullptr, VK_TRUE};
 
   if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
     Vulkan::AddPointerToChain(&device_info, &rasterization_order_access_feature);
   if (m_optional_extensions.vk_ext_attachment_feedback_loop_layout)
     Vulkan::AddPointerToChain(&device_info, &attachment_feedback_loop_feature);
+  if (m_optional_extensions.vk_khr_dynamic_rendering)
+    Vulkan::AddPointerToChain(&device_info, &dynamic_rendering_feature);
 
   VkResult res = vkCreateDevice(m_physical_device, &device_info, nullptr, &m_device);
   if (res != VK_SUCCESS)
@@ -545,12 +564,16 @@ void VulkanDevice::ProcessDeviceExtensions()
     VK_FALSE};
   VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT attachment_feedback_loop_feature = {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT, nullptr, VK_FALSE};
+  VkPhysicalDeviceDynamicRenderingFeatures dynamic_rendering_feature = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES, nullptr, VK_TRUE};
 
   // add in optional feature structs
   if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
     Vulkan::AddPointerToChain(&features2, &rasterization_order_access_feature);
   if (m_optional_extensions.vk_ext_attachment_feedback_loop_layout)
     Vulkan::AddPointerToChain(&features2, &attachment_feedback_loop_feature);
+  if (m_optional_extensions.vk_khr_dynamic_rendering)
+    Vulkan::AddPointerToChain(&features2, &dynamic_rendering_feature);
 
   // query
   vkGetPhysicalDeviceFeatures2(m_physical_device, &features2);
@@ -560,6 +583,7 @@ void VulkanDevice::ProcessDeviceExtensions()
     (rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess == VK_TRUE);
   m_optional_extensions.vk_ext_attachment_feedback_loop_layout &=
     (attachment_feedback_loop_feature.attachmentFeedbackLoopLayout == VK_TRUE);
+  m_optional_extensions.vk_khr_dynamic_rendering &= (dynamic_rendering_feature.dynamicRendering == VK_TRUE);
 
   VkPhysicalDeviceProperties2 properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, nullptr, {}};
   VkPhysicalDevicePushDescriptorPropertiesKHR push_descriptor_properties = {
@@ -584,6 +608,8 @@ void VulkanDevice::ProcessDeviceExtensions()
                  m_optional_extensions.vk_ext_rasterization_order_attachment_access ? "supported" : "NOT supported");
   Log_InfoPrintf("VK_EXT_attachment_feedback_loop_layout is %s",
                  m_optional_extensions.vk_ext_attachment_feedback_loop_layout ? "supported" : "NOT supported");
+  Log_InfoPrintf("VK_KHR_dynamic_rendering is %s",
+                 m_optional_extensions.vk_khr_dynamic_rendering ? "supported" : "NOT supported");
   Log_InfoPrintf("VK_KHR_push_descriptor is %s",
                  m_optional_extensions.vk_khr_push_descriptor ? "supported" : "NOT supported");
 }
@@ -794,33 +820,110 @@ void VulkanDevice::DestroyPersistentDescriptorPool()
     vkDestroyDescriptorPool(m_device, m_global_descriptor_pool, nullptr);
 }
 
-VkRenderPass VulkanDevice::GetRenderPass(VkFormat color_format, VkFormat depth_format, VkSampleCountFlagBits samples,
-                                         VkAttachmentLoadOp color_load_op /* = VK_ATTACHMENT_LOAD_OP_LOAD */,
-                                         VkAttachmentStoreOp color_store_op /* = VK_ATTACHMENT_STORE_OP_STORE */,
-                                         VkAttachmentLoadOp depth_load_op /* = VK_ATTACHMENT_LOAD_OP_LOAD */,
-                                         VkAttachmentStoreOp depth_store_op /* = VK_ATTACHMENT_STORE_OP_STORE */,
-                                         VkAttachmentLoadOp stencil_load_op /* = VK_ATTACHMENT_LOAD_OP_DONT_CARE */,
-                                         VkAttachmentStoreOp stencil_store_op /* = VK_ATTACHMENT_STORE_OP_DONT_CARE */,
+bool VulkanDevice::RenderPassCacheKey::operator==(const RenderPassCacheKey& rhs) const
+{
+  return (std::memcmp(this, &rhs, sizeof(*this)) == 0);
+}
+
+bool VulkanDevice::RenderPassCacheKey::operator!=(const RenderPassCacheKey& rhs) const
+{
+  return (std::memcmp(this, &rhs, sizeof(*this)) != 0);
+}
+
+size_t VulkanDevice::RenderPassCacheKeyHash::operator()(const RenderPassCacheKey& rhs) const
+{
+  if constexpr (sizeof(void*) == 8)
+    return XXH3_64bits(&rhs, sizeof(rhs));
+  else
+    return XXH32(&rhs, sizeof(rhs), 0x1337);
+}
+
+VkRenderPass VulkanDevice::GetRenderPass(const GPUPipeline::GraphicsConfig& config)
+{
+  RenderPassCacheKey key;
+  std::memset(&key, 0, sizeof(key));
+
+  for (u32 i = 0; i < MAX_RENDER_TARGETS; i++)
+  {
+    if (config.color_formats[i] == GPUTexture::Format::Unknown)
+      break;
+
+    key.color[i].format = static_cast<u8>(config.color_formats[i]);
+    key.color[i].load_op = VK_ATTACHMENT_LOAD_OP_LOAD;
+    key.color[i].store_op = VK_ATTACHMENT_STORE_OP_STORE;
+  }
+
+  if (config.depth_format != GPUTexture::Format::Unknown)
+  {
+    key.depth_format = static_cast<u8>(config.depth_format);
+    key.depth_load_op = VK_ATTACHMENT_LOAD_OP_LOAD;
+    key.depth_store_op = VK_ATTACHMENT_STORE_OP_STORE;
+
+    const bool stencil = GPUTexture::IsDepthStencilFormat(config.depth_format);
+    key.stencil_load_op = stencil ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    key.stencil_store_op = stencil ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
+  }
+
+  // key.color_feedback_loop = false;
+  // key.depth_sampling = false;
+
+  key.samples = static_cast<u8>(config.samples);
+
+  const auto it = m_render_pass_cache.find(key);
+  return (it != m_render_pass_cache.end()) ? it->second : CreateCachedRenderPass(key);
+}
+
+VkRenderPass VulkanDevice::GetRenderPass(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds,
                                          bool color_feedback_loop /* = false */, bool depth_sampling /* = false */)
 {
-  RenderPassCacheKey key = {};
-  key.color_format = color_format;
-  key.depth_format = depth_format;
-  key.samples = samples;
-  key.color_load_op = color_load_op;
-  key.color_store_op = color_store_op;
-  key.depth_load_op = depth_load_op;
-  key.depth_store_op = depth_store_op;
-  key.stencil_load_op = stencil_load_op;
-  key.stencil_store_op = stencil_store_op;
+  RenderPassCacheKey key;
+  std::memset(&key, 0, sizeof(key));
+
+  static_assert(static_cast<u8>(GPUTexture::Format::Unknown) == 0);
+
+  for (u32 i = 0; i < num_rts; i++)
+  {
+    key.color[i].format = static_cast<u8>(rts[i]->GetFormat());
+    key.color[i].load_op = GetLoadOpForTexture(rts[i]);
+    key.color[i].store_op = VK_ATTACHMENT_STORE_OP_STORE;
+    key.samples = static_cast<u8>(rts[i]->GetSamples());
+  }
+
+  if (ds)
+  {
+    const VkAttachmentLoadOp load_op = GetLoadOpForTexture(ds);
+    key.depth_format = static_cast<u8>(ds->GetFormat());
+    key.depth_load_op = load_op;
+    key.depth_store_op = VK_ATTACHMENT_STORE_OP_STORE;
+
+    const bool stencil = GPUTexture::IsDepthStencilFormat(ds->GetFormat());
+    key.stencil_load_op = stencil ? load_op : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    key.stencil_store_op = stencil ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
+
+    key.samples = static_cast<u8>(ds->GetSamples());
+  }
+
   key.color_feedback_loop = color_feedback_loop;
   key.depth_sampling = depth_sampling;
 
-  auto it = m_render_pass_cache.find(key.key);
-  if (it != m_render_pass_cache.end())
-    return it->second;
+  const auto it = m_render_pass_cache.find(key);
+  return (it != m_render_pass_cache.end()) ? it->second : CreateCachedRenderPass(key);
+}
 
-  return CreateCachedRenderPass(key);
+VkRenderPass VulkanDevice::GetSwapChainRenderPass(GPUTexture::Format format, VkAttachmentLoadOp load_op)
+{
+  DebugAssert(format != GPUTexture::Format::Unknown);
+
+  RenderPassCacheKey key;
+  std::memset(&key, 0, sizeof(key));
+
+  key.color[0].format = static_cast<u8>(format);
+  key.color[0].load_op = load_op;
+  key.color[0].store_op = VK_ATTACHMENT_STORE_OP_STORE;
+  key.samples = 1;
+
+  const auto it = m_render_pass_cache.find(key);
+  return (it != m_render_pass_cache.end()) ? it->second : CreateCachedRenderPass(key);
 }
 
 VkRenderPass VulkanDevice::GetRenderPassForRestarting(VkRenderPass pass)
@@ -830,19 +933,22 @@ VkRenderPass VulkanDevice::GetRenderPassForRestarting(VkRenderPass pass)
     if (it.second != pass)
       continue;
 
-    RenderPassCacheKey modified_key;
-    modified_key.key = it.first;
-    if (modified_key.color_load_op == VK_ATTACHMENT_LOAD_OP_CLEAR)
-      modified_key.color_load_op = VK_ATTACHMENT_LOAD_OP_LOAD;
+    RenderPassCacheKey modified_key = it.first;
+    for (u32 i = 0; i < MAX_RENDER_TARGETS; i++)
+    {
+      if (modified_key.color[i].load_op == VK_ATTACHMENT_LOAD_OP_CLEAR)
+        modified_key.color[i].load_op = VK_ATTACHMENT_LOAD_OP_LOAD;
+    }
+
     if (modified_key.depth_load_op == VK_ATTACHMENT_LOAD_OP_CLEAR)
       modified_key.depth_load_op = VK_ATTACHMENT_LOAD_OP_LOAD;
     if (modified_key.stencil_load_op == VK_ATTACHMENT_LOAD_OP_CLEAR)
       modified_key.stencil_load_op = VK_ATTACHMENT_LOAD_OP_LOAD;
 
-    if (modified_key.key == it.first)
+    if (modified_key == it.first)
       return pass;
 
-    auto fit = m_render_pass_cache.find(modified_key.key);
+    auto fit = m_render_pass_cache.find(modified_key);
     if (fit != m_render_pass_cache.end())
       return fit->second;
 
@@ -1261,12 +1367,9 @@ void VulkanDevice::SubmitCommandBufferAndRestartRenderPass(const char* reason)
   if (InRenderPass())
     EndRenderPass();
 
-  VulkanFramebuffer* fb = m_current_framebuffer;
   VulkanPipeline* pl = m_current_pipeline;
   SubmitCommandBuffer(false, "%s", reason);
 
-  if (fb)
-    SetFramebuffer(fb);
   SetPipeline(pl);
   BeginRenderPass();
 }
@@ -1404,19 +1507,25 @@ VkRenderPass VulkanDevice::CreateCachedRenderPass(RenderPassCacheKey key)
   VkAttachmentReference* input_reference_ptr = nullptr;
   VkSubpassDependency subpass_dependency;
   VkSubpassDependency* subpass_dependency_ptr = nullptr;
-  std::array<VkAttachmentDescription, 2> attachments;
+  std::array<VkAttachmentDescription, MAX_RENDER_TARGETS + 1> attachments;
   u32 num_attachments = 0;
-  if (key.color_format != VK_FORMAT_UNDEFINED)
+
+  for (u32 i = 0; i < MAX_RENDER_TARGETS; i++)
   {
+    if (key.color[i].format == static_cast<u8>(GPUTexture::Format::Unknown))
+      break;
+
     const VkImageLayout layout =
       key.color_feedback_loop ?
         (UseFeedbackLoopLayout() ? VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT : VK_IMAGE_LAYOUT_GENERAL) :
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    attachments[num_attachments] = {0,
-                                    static_cast<VkFormat>(key.color_format),
+
+    const RenderPassCacheKey::RenderTarget key_rt = key.color[i];
+    attachments[num_attachments] = {i,
+                                    TEXTURE_FORMAT_MAPPING[key_rt.format],
                                     static_cast<VkSampleCountFlagBits>(key.samples),
-                                    static_cast<VkAttachmentLoadOp>(key.color_load_op),
-                                    static_cast<VkAttachmentStoreOp>(key.color_store_op),
+                                    static_cast<VkAttachmentLoadOp>(key_rt.load_op),
+                                    static_cast<VkAttachmentStoreOp>(key_rt.store_op),
                                     VK_ATTACHMENT_LOAD_OP_DONT_CARE,
                                     VK_ATTACHMENT_STORE_OP_DONT_CARE,
                                     layout,
@@ -1453,14 +1562,17 @@ VkRenderPass VulkanDevice::CreateCachedRenderPass(RenderPassCacheKey key)
 
     num_attachments++;
   }
-  if (key.depth_format != VK_FORMAT_UNDEFINED)
+
+  const u32 num_rts = num_attachments;
+
+  if (key.depth_format != static_cast<u8>(GPUTexture::Format::Unknown))
   {
     const VkImageLayout layout =
       key.depth_sampling ?
         (UseFeedbackLoopLayout() ? VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT : VK_IMAGE_LAYOUT_GENERAL) :
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     attachments[num_attachments] = {0,
-                                    static_cast<VkFormat>(key.depth_format),
+                                    static_cast<VkFormat>(TEXTURE_FORMAT_MAPPING[key.depth_format]),
                                     static_cast<VkSampleCountFlagBits>(key.samples),
                                     static_cast<VkAttachmentLoadOp>(key.depth_load_op),
                                     static_cast<VkAttachmentStoreOp>(key.depth_store_op),
@@ -1480,10 +1592,10 @@ VkRenderPass VulkanDevice::CreateCachedRenderPass(RenderPassCacheKey key)
       0;
   const VkSubpassDescription subpass = {subpass_flags,
                                         VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                        input_reference_ptr ? 1u : 0u,
-                                        input_reference_ptr ? input_reference_ptr : nullptr,
-                                        color_reference_ptr ? 1u : 0u,
-                                        color_reference_ptr ? color_reference_ptr : nullptr,
+                                        input_reference_ptr ? num_rts : 0u,
+                                        input_reference_ptr,
+                                        num_rts,
+                                        color_reference_ptr,
                                         nullptr,
                                         depth_reference_ptr,
                                         0,
@@ -1506,8 +1618,35 @@ VkRenderPass VulkanDevice::CreateCachedRenderPass(RenderPassCacheKey key)
     return VK_NULL_HANDLE;
   }
 
-  m_render_pass_cache.emplace(key.key, pass);
+  m_render_pass_cache.emplace(key, pass);
   return pass;
+}
+
+VkFramebuffer VulkanDevice::CreateFramebuffer(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds, u32 flags)
+{
+  VulkanDevice& dev = VulkanDevice::GetInstance();
+  VkRenderPass render_pass = dev.GetRenderPass(rts, num_rts, ds, false, false);
+
+  const GPUTexture* rt_or_ds = (num_rts > 0) ? rts[0] : ds;
+  DebugAssert(rt_or_ds);
+
+  Vulkan::FramebufferBuilder fbb;
+  fbb.SetRenderPass(render_pass);
+  fbb.SetSize(rt_or_ds->GetWidth(), rt_or_ds->GetHeight(), 1);
+  for (u32 i = 0; i < num_rts; i++)
+    fbb.AddAttachment(static_cast<VulkanTexture*>(rts[i])->GetView());
+  if (ds)
+    fbb.AddAttachment(static_cast<VulkanTexture*>(ds)->GetView());
+
+  return fbb.Create(dev.m_device, false);
+}
+
+void VulkanDevice::DestroyFramebuffer(VkFramebuffer fbo)
+{
+  if (fbo == VK_NULL_HANDLE)
+    return;
+
+  VulkanDevice::GetInstance().DeferFramebufferDestruction(fbo);
 }
 
 void VulkanDevice::GetAdapterAndModeList(AdapterAndModeList* ret, VkInstance instance)
@@ -2098,7 +2237,7 @@ bool VulkanDevice::BeginPresent(bool frame_skip)
 
 void VulkanDevice::EndPresent()
 {
-  DebugAssert(InRenderPass() && !m_current_framebuffer);
+  DebugAssert(InRenderPass() && m_num_current_render_targets == 0 && !m_current_depth_target);
   EndRenderPass();
 
   VkCommandBuffer cmdbuf = GetCurrentCommandBuffer();
@@ -2196,7 +2335,7 @@ bool VulkanDevice::CheckFeatures(FeatureMask disabled_features)
 
   m_features.dual_source_blend =
     !(disabled_features & FEATURE_MASK_DUAL_SOURCE_BLEND) && m_device_features.dualSrcBlend;
-  m_features.framebuffer_fetch = /*!(disabled_features & FEATURE_MASK_FRAMEBUFFER_FETCH) && */false;
+  m_features.framebuffer_fetch = /*!(disabled_features & FEATURE_MASK_FRAMEBUFFER_FETCH) && */ false;
 
   if (!m_features.dual_source_blend)
     Log_WarningPrintf("Vulkan driver is missing dual-source blending. This will have an impact on performance.");
@@ -2354,25 +2493,22 @@ void VulkanDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u
 void VulkanDevice::ClearRenderTarget(GPUTexture* t, u32 c)
 {
   GPUDevice::ClearRenderTarget(t, c);
-  if (InRenderPass() && m_current_framebuffer && m_current_framebuffer->GetRT() == t)
+  if (InRenderPass() && IsRenderTargetBound(t))
     EndRenderPass();
 }
 
 void VulkanDevice::ClearDepth(GPUTexture* t, float d)
 {
   GPUDevice::ClearDepth(t, d);
-  if (InRenderPass() && m_current_framebuffer && m_current_framebuffer->GetDS() == t)
+  if (InRenderPass() && m_current_depth_target == t)
     EndRenderPass();
 }
 
 void VulkanDevice::InvalidateRenderTarget(GPUTexture* t)
 {
   GPUDevice::InvalidateRenderTarget(t);
-  if (InRenderPass() && m_current_framebuffer &&
-      (m_current_framebuffer->GetRT() == t || m_current_framebuffer->GetDS() == t))
-  {
+  if (InRenderPass() && (t->IsRenderTarget() ? IsRenderTargetBound(t) : (m_current_depth_target == t)))
     EndRenderPass();
-  }
 }
 
 bool VulkanDevice::CreateBuffers()
@@ -2670,143 +2806,213 @@ void VulkanDevice::RenderBlankFrame()
   InvalidateCachedState();
 }
 
-void VulkanDevice::SetFramebuffer(GPUFramebuffer* fb)
+void VulkanDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds)
 {
-  if (m_current_framebuffer == fb)
-    return;
+  bool changed = (m_num_current_render_targets != num_rts || m_current_depth_target != ds);
+  bool needs_ds_clear = (ds && ds->IsClearedOrInvalidated());
+  bool needs_rt_clear = false;
 
-  if (InRenderPass())
-    EndRenderPass();
+  m_current_depth_target = ds;
+  for (u32 i = 0; i < num_rts; i++)
+  {
+    VulkanTexture* const RT = static_cast<VulkanTexture*>(rts[i]);
+    changed |= m_current_render_targets[i] != RT;
+    m_current_render_targets[i] = RT;
+    needs_rt_clear |= RT->IsClearedOrInvalidated();
+  }
+  for (u32 i = num_rts; i < m_num_current_render_targets; i++)
+    m_current_render_targets[i] = nullptr;
+  m_num_current_render_targets = num_rts;
 
-  m_current_framebuffer = static_cast<VulkanFramebuffer*>(fb);
+  if (changed)
+  {
+    if (InRenderPass())
+      EndRenderPass();
+
+    if (m_num_current_render_targets == 0 && !m_current_depth_target)
+    {
+      m_current_framebuffer = VK_NULL_HANDLE;
+      return;
+    }
+
+    if (!m_optional_extensions.vk_khr_dynamic_rendering)
+    {
+      m_current_framebuffer =
+        m_framebuffer_manager.Lookup((m_num_current_render_targets > 0) ? m_current_render_targets.data() : nullptr,
+                                     m_num_current_render_targets, m_current_depth_target, 0);
+      if (m_current_framebuffer == VK_NULL_HANDLE)
+      {
+        Log_ErrorPrint("Failed to create framebuffer");
+        return;
+      }
+    }
+  }
+
+  // TODO: This could use vkCmdClearAttachments() instead.
+  if (needs_rt_clear || needs_ds_clear)
+  {
+    if (InRenderPass())
+      EndRenderPass();
+  }
 }
 
 void VulkanDevice::BeginRenderPass()
 {
+  // TODO: Stats
   DebugAssert(!InRenderPass());
-
-  VkRenderPassBeginInfo bi = {
-    VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr, VK_NULL_HANDLE, VK_NULL_HANDLE, {}, 0u, nullptr};
-  std::array<VkClearValue, 2> clear_values;
-
-  if (m_current_framebuffer) [[likely]]
-  {
-    VkFormat rt_format = VK_FORMAT_UNDEFINED;
-    VkFormat ds_format = VK_FORMAT_UNDEFINED;
-    VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT;
-    VkAttachmentLoadOp rt_load_op = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    VkAttachmentStoreOp rt_store_op = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    VkAttachmentLoadOp ds_load_op = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    VkAttachmentStoreOp ds_store_op = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-
-    VulkanTexture* rt = static_cast<VulkanTexture*>(m_current_framebuffer->GetRT());
-    if (rt)
-    {
-      samples = static_cast<VkSampleCountFlagBits>(rt->GetSamples());
-      rt_format = rt->GetVkFormat();
-      rt_store_op = VK_ATTACHMENT_STORE_OP_STORE;
-
-      switch (rt->GetState())
-      {
-        case GPUTexture::State::Cleared:
-        {
-          std::memcpy(clear_values[0].color.float32, rt->GetUNormClearColor().data(),
-                      sizeof(clear_values[0].color.float32));
-          rt_load_op = VK_ATTACHMENT_LOAD_OP_CLEAR;
-          rt->SetState(GPUTexture::State::Dirty);
-          bi.pClearValues = clear_values.data();
-          bi.clearValueCount = 1;
-        }
-        break;
-
-        case GPUTexture::State::Invalidated:
-        {
-          // already DONT_CARE
-          rt->SetState(GPUTexture::State::Dirty);
-        }
-        break;
-
-        case GPUTexture::State::Dirty:
-        {
-          rt_load_op = VK_ATTACHMENT_LOAD_OP_LOAD;
-        }
-        break;
-
-        default:
-          UnreachableCode();
-          break;
-      }
-
-      rt->TransitionToLayout(VulkanTexture::Layout::ColorAttachment);
-      rt->SetUseFenceCounter(GetCurrentFenceCounter());
-    }
-
-    VulkanTexture* ds = static_cast<VulkanTexture*>(m_current_framebuffer->GetDS());
-    if (ds)
-    {
-      samples = static_cast<VkSampleCountFlagBits>(ds->GetSamples());
-      ds_format = ds->GetVkFormat();
-      ds_store_op = VK_ATTACHMENT_STORE_OP_STORE;
-
-      switch (ds->GetState())
-      {
-        case GPUTexture::State::Cleared:
-        {
-          const u32 idx = rt ? 1 : 0;
-          clear_values[idx].depthStencil = {ds->GetClearDepth(), 0u};
-          ds_load_op = VK_ATTACHMENT_LOAD_OP_CLEAR;
-          ds->SetState(GPUTexture::State::Dirty);
-          bi.pClearValues = clear_values.data();
-          bi.clearValueCount = idx + 1;
-        }
-        break;
-
-        case GPUTexture::State::Invalidated:
-        {
-          // already DONT_CARE
-          ds->SetState(GPUTexture::State::Dirty);
-        }
-        break;
-
-        case GPUTexture::State::Dirty:
-        {
-          ds_load_op = VK_ATTACHMENT_LOAD_OP_LOAD;
-        }
-        break;
-
-        default:
-          UnreachableCode();
-          break;
-      }
-
-      ds->TransitionToLayout(VulkanTexture::Layout::DepthStencilAttachment);
-      ds->SetUseFenceCounter(GetCurrentFenceCounter());
-    }
-
-    bi.framebuffer = m_current_framebuffer->GetFramebuffer();
-    bi.renderPass = m_current_render_pass =
-      GetRenderPass(rt_format, ds_format, samples, rt_load_op, rt_store_op, ds_load_op, ds_store_op);
-    bi.renderArea.extent = {m_current_framebuffer->GetWidth(), m_current_framebuffer->GetHeight()};
-  }
-  else
-  {
-    // Re-rendering to swap chain.
-    bi.framebuffer = m_swap_chain->GetCurrentFramebuffer();
-    bi.renderPass = m_current_render_pass =
-      GetRenderPass(m_swap_chain->GetImageFormat(), VK_FORMAT_UNDEFINED, VK_SAMPLE_COUNT_1_BIT,
-                    VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE);
-    bi.renderArea.extent = {m_swap_chain->GetWidth(), m_swap_chain->GetHeight()};
-  }
-
-  DebugAssert(m_current_render_pass);
 
   // All textures should be in shader read only optimal already, but just in case..
   const u32 num_textures = GetActiveTexturesForLayout(m_current_pipeline_layout);
   for (u32 i = 0; i < num_textures; i++)
     m_current_textures[i]->TransitionToLayout(VulkanTexture::Layout::ShaderReadOnly);
 
-  // TODO: Stats
-  vkCmdBeginRenderPass(GetCurrentCommandBuffer(), &bi, VK_SUBPASS_CONTENTS_INLINE);
+  if (m_optional_extensions.vk_khr_dynamic_rendering)
+  {
+    VkRenderingInfoKHR ri = {
+      VK_STRUCTURE_TYPE_RENDERING_INFO_KHR, nullptr, 0u, {}, 1u, 0u, 0u, nullptr, nullptr, nullptr};
+
+    std::array<VkRenderingAttachmentInfoKHR, MAX_RENDER_TARGETS> attachments;
+    VkRenderingAttachmentInfoKHR depth_attachment;
+
+    if (m_num_current_render_targets > 0 || m_current_depth_target)
+    {
+      ri.colorAttachmentCount = m_num_current_render_targets;
+      ri.pColorAttachments = (m_num_current_render_targets > 0) ? attachments.data() : nullptr;
+
+      // set up clear values and transition targets
+      for (u32 i = 0; i < m_num_current_render_targets; i++)
+      {
+        VulkanTexture* const rt = static_cast<VulkanTexture*>(m_current_render_targets[i]);
+        rt->TransitionToLayout(VulkanTexture::Layout::ColorAttachment);
+        rt->SetUseFenceCounter(GetCurrentFenceCounter());
+
+        VkRenderingAttachmentInfo& ai = attachments[i];
+        ai.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+        ai.pNext = nullptr;
+        ai.imageView = rt->GetView();
+        ai.imageLayout = rt->GetVkLayout();
+        ai.resolveMode = VK_RESOLVE_MODE_NONE_KHR;
+        ai.resolveImageView = VK_NULL_HANDLE;
+        ai.resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        ai.loadOp = GetLoadOpForTexture(rt);
+        ai.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+
+        if (rt->GetState() == GPUTexture::State::Cleared)
+        {
+          std::memcpy(ai.clearValue.color.float32, rt->GetUNormClearColor().data(),
+                      sizeof(ai.clearValue.color.float32));
+        }
+        rt->SetState(GPUTexture::State::Dirty);
+      }
+
+      if (VulkanTexture* const ds = static_cast<VulkanTexture*>(m_current_depth_target))
+      {
+        ds->TransitionToLayout(VulkanTexture::Layout::DepthStencilAttachment);
+        ds->SetUseFenceCounter(GetCurrentFenceCounter());
+
+        depth_attachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+        depth_attachment.pNext = nullptr;
+        depth_attachment.imageView = ds->GetView();
+        depth_attachment.imageLayout = ds->GetVkLayout();
+        depth_attachment.resolveMode = VK_RESOLVE_MODE_NONE_KHR;
+        depth_attachment.resolveImageView = VK_NULL_HANDLE;
+        depth_attachment.resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        depth_attachment.loadOp = GetLoadOpForTexture(ds);
+        depth_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        ri.pDepthAttachment = &depth_attachment;
+
+        if (ds->GetState() == GPUTexture::State::Cleared)
+          depth_attachment.clearValue.depthStencil = {ds->GetClearDepth(), 0u};
+
+        ds->SetState(GPUTexture::State::Dirty);
+      }
+
+      const VulkanTexture* const rt_or_ds = static_cast<const VulkanTexture*>(
+        (m_num_current_render_targets > 0) ? m_current_render_targets[0] : m_current_depth_target);
+      ri.renderArea = {{}, {rt_or_ds->GetWidth(), rt_or_ds->GetHeight()}};
+    }
+    else
+    {
+      VkRenderingAttachmentInfo& ai = attachments[0];
+      ai.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+      ai.pNext = nullptr;
+      ai.imageView = m_swap_chain->GetCurrentImageView();
+      ai.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+      ai.resolveMode = VK_RESOLVE_MODE_NONE_KHR;
+      ai.resolveImageView = VK_NULL_HANDLE;
+      ai.resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+      ai.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+      ai.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+
+      ri.colorAttachmentCount = 1;
+      ri.pColorAttachments = attachments.data();
+      ri.renderArea = {{}, {m_swap_chain->GetWidth(), m_swap_chain->GetHeight()}};
+    }
+
+    m_current_render_pass = DYNAMIC_RENDERING_RENDER_PASS;
+    vkCmdBeginRenderingKHR(GetCurrentCommandBuffer(), &ri);
+  }
+  else
+  {
+    VkRenderPassBeginInfo bi = {
+      VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr, VK_NULL_HANDLE, VK_NULL_HANDLE, {}, 0u, nullptr};
+    std::array<VkClearValue, MAX_RENDER_TARGETS + 1> clear_values;
+
+    if (m_current_framebuffer != VK_NULL_HANDLE)
+    {
+      bi.framebuffer = m_current_framebuffer;
+      bi.renderPass = m_current_render_pass = GetRenderPass(
+        m_current_render_targets.data(), m_num_current_render_targets, m_current_depth_target, false, false);
+      if (bi.renderPass == VK_NULL_HANDLE)
+      {
+        Log_ErrorPrint("Failed to create render pass");
+        return;
+      }
+
+      // set up clear values and transition targets
+      for (u32 i = 0; i < m_num_current_render_targets; i++)
+      {
+        VulkanTexture* const rt = static_cast<VulkanTexture*>(m_current_render_targets[i]);
+        if (rt->GetState() == GPUTexture::State::Cleared)
+        {
+          std::memcpy(clear_values[i].color.float32, rt->GetUNormClearColor().data(),
+                      sizeof(clear_values[i].color.float32));
+          bi.pClearValues = clear_values.data();
+          bi.clearValueCount = i + 1;
+        }
+        rt->SetState(GPUTexture::State::Dirty);
+        rt->TransitionToLayout(VulkanTexture::Layout::ColorAttachment);
+        rt->SetUseFenceCounter(GetCurrentFenceCounter());
+      }
+      if (VulkanTexture* const ds = static_cast<VulkanTexture*>(m_current_depth_target))
+      {
+        if (ds->GetState() == GPUTexture::State::Cleared)
+        {
+          clear_values[m_num_current_render_targets].depthStencil = {ds->GetClearDepth(), 0u};
+          bi.pClearValues = clear_values.data();
+          bi.clearValueCount = m_num_current_render_targets + 1;
+        }
+        ds->SetState(GPUTexture::State::Dirty);
+        ds->TransitionToLayout(VulkanTexture::Layout::DepthStencilAttachment);
+        ds->SetUseFenceCounter(GetCurrentFenceCounter());
+      }
+
+      const VulkanTexture* const rt_or_ds = static_cast<const VulkanTexture*>(
+        (m_num_current_render_targets > 0) ? m_current_render_targets[0] : m_current_depth_target);
+      bi.renderArea.extent = {rt_or_ds->GetWidth(), rt_or_ds->GetHeight()};
+    }
+    else
+    {
+      // Re-rendering to swap chain.
+      bi.framebuffer = m_swap_chain->GetCurrentFramebuffer();
+      bi.renderPass = m_current_render_pass =
+        GetSwapChainRenderPass(m_swap_chain->GetWindowInfo().surface_format, VK_ATTACHMENT_LOAD_OP_LOAD);
+      bi.renderArea.extent = {m_swap_chain->GetWidth(), m_swap_chain->GetHeight()};
+    }
+
+    DebugAssert(m_current_render_pass);
+    vkCmdBeginRenderPass(GetCurrentCommandBuffer(), &bi, VK_SUBPASS_CONTENTS_INLINE);
+  }
 
   // If this is a new command buffer, bind the pipeline and such.
   if (m_dirty_flags & DIRTY_FLAG_INITIAL)
@@ -2830,21 +3036,53 @@ void VulkanDevice::BeginSwapChainRenderPass()
   for (u32 i = 0; i < num_textures; i++)
     m_current_textures[i]->TransitionToLayout(VulkanTexture::Layout::ShaderReadOnly);
 
-  const VkRenderPass render_pass =
-    GetRenderPass(m_swap_chain->GetImageFormat(), VK_FORMAT_UNDEFINED, VK_SAMPLE_COUNT_1_BIT,
-                  VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
-  DebugAssert(render_pass);
+  if (m_optional_extensions.vk_khr_dynamic_rendering)
+  {
+    const VkRenderingAttachmentInfo ai = {VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR,
+                                          nullptr,
+                                          m_swap_chain->GetCurrentImageView(),
+                                          VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                          VK_RESOLVE_MODE_NONE_KHR,
+                                          VK_NULL_HANDLE,
+                                          VK_IMAGE_LAYOUT_UNDEFINED,
+                                          VK_ATTACHMENT_LOAD_OP_LOAD,
+                                          VK_ATTACHMENT_STORE_OP_STORE,
+                                          {}};
 
-  const VkRenderPassBeginInfo rp = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-                                    nullptr,
-                                    render_pass,
-                                    m_swap_chain->GetCurrentFramebuffer(),
-                                    {{0, 0}, {m_swap_chain->GetWidth(), m_swap_chain->GetHeight()}},
-                                    1u,
-                                    &s_present_clear_color};
-  vkCmdBeginRenderPass(GetCurrentCommandBuffer(), &rp, VK_SUBPASS_CONTENTS_INLINE);
-  m_current_render_pass = render_pass;
-  m_current_framebuffer = nullptr;
+    const VkRenderingInfoKHR ri = {VK_STRUCTURE_TYPE_RENDERING_INFO_KHR,
+                                   nullptr,
+                                   0u,
+                                   {{}, {m_swap_chain->GetWidth(), m_swap_chain->GetHeight()}},
+                                   1u,
+                                   0u,
+                                   1u,
+                                   &ai,
+                                   nullptr,
+                                   nullptr};
+
+    m_current_render_pass = DYNAMIC_RENDERING_RENDER_PASS;
+    vkCmdBeginRenderingKHR(GetCurrentCommandBuffer(), &ri);
+  }
+  else
+  {
+    m_current_render_pass =
+      GetSwapChainRenderPass(m_swap_chain->GetWindowInfo().surface_format, VK_ATTACHMENT_LOAD_OP_CLEAR);
+    DebugAssert(m_current_render_pass);
+
+    const VkRenderPassBeginInfo rp = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+                                      nullptr,
+                                      m_current_render_pass,
+                                      m_swap_chain->GetCurrentFramebuffer(),
+                                      {{0, 0}, {m_swap_chain->GetWidth(), m_swap_chain->GetHeight()}},
+                                      1u,
+                                      &s_present_clear_color};
+    vkCmdBeginRenderPass(GetCurrentCommandBuffer(), &rp, VK_SUBPASS_CONTENTS_INLINE);
+  }
+
+  m_num_current_render_targets = 0;
+  std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
+  m_current_depth_target = nullptr;
+  m_current_framebuffer = VK_NULL_HANDLE;
 
   // Clear pipeline, it's likely incompatible.
   m_current_pipeline = nullptr;
@@ -2860,32 +3098,11 @@ void VulkanDevice::EndRenderPass()
   DebugAssert(m_current_render_pass != VK_NULL_HANDLE);
 
   // TODO: stats
-  m_current_render_pass = VK_NULL_HANDLE;
-
-  vkCmdEndRenderPass(GetCurrentCommandBuffer());
-}
-
-void VulkanDevice::UnbindFramebuffer(VulkanFramebuffer* fb)
-{
-  if (m_current_framebuffer != fb)
-    return;
-
-  if (InRenderPass())
-    EndRenderPass();
-  m_current_framebuffer = nullptr;
-}
-
-void VulkanDevice::UnbindFramebuffer(VulkanTexture* tex)
-{
-  if (!m_current_framebuffer)
-    return;
-
-  if (m_current_framebuffer->GetRT() != tex && m_current_framebuffer->GetDS() != tex)
-    return;
-
-  if (InRenderPass())
-    EndRenderPass();
-  m_current_framebuffer = nullptr;
+  VkCommandBuffer cmdbuf = GetCurrentCommandBuffer();
+  if (std::exchange(m_current_render_pass, VK_NULL_HANDLE) == DYNAMIC_RENDERING_RENDER_PASS)
+    vkCmdEndRenderingKHR(cmdbuf);
+  else
+    vkCmdEndRenderPass(GetCurrentCommandBuffer());
 }
 
 void VulkanDevice::SetPipeline(GPUPipeline* pipeline)
@@ -2928,8 +3145,18 @@ void VulkanDevice::InvalidateCachedState()
 {
   m_dirty_flags = ALL_DIRTY_STATE;
   m_current_render_pass = VK_NULL_HANDLE;
-  m_current_framebuffer = nullptr;
   m_current_pipeline = nullptr;
+}
+
+bool VulkanDevice::IsRenderTargetBound(const GPUTexture* tex) const
+{
+  for (u32 i = 0; i < m_num_current_render_targets; i++)
+  {
+    if (m_current_render_targets[i] == tex)
+      return true;
+  }
+
+  return false;
 }
 
 VkPipelineLayout VulkanDevice::GetCurrentVkPipelineLayout() const
@@ -3007,6 +3234,31 @@ void VulkanDevice::UnbindTexture(VulkanTexture* tex)
       m_current_textures[i] = m_null_texture.get();
       m_dirty_flags |= DIRTY_FLAG_TEXTURES_OR_SAMPLERS;
     }
+  }
+
+  if (tex->IsRenderTarget())
+  {
+    for (u32 i = 0; i < m_num_current_render_targets; i++)
+    {
+      if (m_current_render_targets[i] == tex)
+      {
+        Log_WarningPrint("Unbinding current RT");
+        SetRenderTargets(nullptr, 0, m_current_depth_target);
+        break;
+      }
+    }
+
+    m_framebuffer_manager.RemoveRTReferences(tex);
+  }
+  else if (tex->IsDepthStencil())
+  {
+    if (m_current_depth_target == tex)
+    {
+      Log_WarningPrint("Unbinding current DS");
+      SetRenderTargets(nullptr, 0, nullptr);
+    }
+
+    m_framebuffer_manager.RemoveDSReferences(tex);
   }
 }
 

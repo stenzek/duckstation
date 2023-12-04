@@ -57,25 +57,6 @@ private:
   u8 m_map_level = 0;
 };
 
-class OpenGLFramebuffer final : public GPUFramebuffer
-{
-  friend OpenGLDevice;
-
-public:
-  ~OpenGLFramebuffer() override;
-
-  ALWAYS_INLINE GLuint GetGLId() const { return m_id; }
-
-  void SetDebugName(const std::string_view& name) override;
-
-  void Bind(GLenum target);
-
-private:
-  OpenGLFramebuffer(GPUTexture* rt, GPUTexture* ds, u32 width, u32 height, GLuint id);
-
-  GLuint m_id;
-};
-
 class OpenGLTextureBuffer final : public GPUTextureBuffer
 {
   friend OpenGLDevice;

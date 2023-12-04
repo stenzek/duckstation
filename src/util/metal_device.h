@@ -33,7 +33,6 @@
 #include <vector>
 
 class MetalDevice;
-class MetalFramebuffer;
 class MetalPipeline;
 class MetalTexture;
 
@@ -161,28 +160,10 @@ private:
   MetalStreamBuffer m_buffer;
 };
 
-class MetalFramebuffer final : public GPUFramebuffer
-{
-  friend MetalDevice;
-
-public:
-  ~MetalFramebuffer() override;
-
-  MTLRenderPassDescriptor* GetDescriptor() const;
-
-  void SetDebugName(const std::string_view& name) override;
-
-private:
-  MetalFramebuffer(GPUTexture* rt, GPUTexture* ds, u32 width, u32 height, id<MTLTexture> rt_tex, id<MTLTexture> ds_tex,
-                   MTLRenderPassDescriptor* descriptor);
-
-  id<MTLTexture> m_rt_tex;
-  id<MTLTexture> m_ds_tex;
-  MTLRenderPassDescriptor* m_descriptor;
-};
-
 class MetalDevice final : public GPUDevice
 {
+  friend MetalTexture;
+
 public:
   ALWAYS_INLINE static MetalDevice& GetInstance() { return *static_cast<MetalDevice*>(g_gpu_device.get()); }
   ALWAYS_INLINE id<MTLDevice> GetMTLDevice() { return m_device; }
@@ -222,8 +203,6 @@ public:
   void ClearDepth(GPUTexture* t, float d) override;
   void InvalidateRenderTarget(GPUTexture* t) override;
 
-  std::unique_ptr<GPUFramebuffer> CreateFramebuffer(GPUTexture* rt_or_ds, GPUTexture* ds = nullptr) override;
-
   std::unique_ptr<GPUShader> CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data) override;
   std::unique_ptr<GPUShader> CreateShaderFromSource(GPUShaderStage stage, const std::string_view& source,
                                                     const char* entry_point,
@@ -242,7 +221,7 @@ public:
   void PushUniformBuffer(const void* data, u32 data_size) override;
   void* MapUniformBuffer(u32 size) override;
   void UnmapUniformBuffer(u32 size) override;
-  void SetFramebuffer(GPUFramebuffer* fb) override;
+  void SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds) override;
   void SetPipeline(GPUPipeline* pipeline) override;
   void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) override;
   void SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer) override;
@@ -271,8 +250,6 @@ public:
 
   void CommitClear(MetalTexture* tex);
 
-  void UnbindFramebuffer(MetalFramebuffer* fb);
-  void UnbindFramebuffer(MetalTexture* tex);
   void UnbindPipeline(MetalPipeline* pl);
   void UnbindTexture(MetalTexture* tex);
   void UnbindTextureBuffer(MetalTextureBuffer* buf);
@@ -283,7 +260,8 @@ public:
   static AdapterAndModeList StaticGetAdapterAndModeList();
 
 protected:
-  bool CreateDevice(const std::string_view& adapter, bool threaded_presentation, FeatureMask disabled_features) override;
+  bool CreateDevice(const std::string_view& adapter, bool threaded_presentation,
+                    FeatureMask disabled_features) override;
   void DestroyDevice() override;
 
 private:
@@ -336,6 +314,8 @@ private:
   bool CreateBuffers();
   void DestroyBuffers();
 
+  bool IsRenderTargetBound(const GPUTexture* tex) const;
+
   id<MTLDevice> m_device;
   id<MTLCommandQueue> m_queue;
 
@@ -369,7 +349,9 @@ private:
   id<MTLCommandBuffer> m_render_cmdbuf = nil;
   id<MTLRenderCommandEncoder> m_render_encoder = nil;
 
-  MetalFramebuffer* m_current_framebuffer = nullptr;
+  std::array<MetalTexture*, MAX_RENDER_TARGETS> m_current_render_targets = {};
+  u32 m_num_current_render_targets = 0;
+  MetalTexture* m_current_depth_target = nullptr;
 
   MetalPipeline* m_current_pipeline = nullptr;
   id<MTLDepthStencilState> m_current_depth_state = nil;

@@ -10,13 +10,11 @@
 #include <string_view>
 #include <vector>
 
-namespace Common
-{
+namespace Common {
 class Timer;
 }
 
 class GPUSampler;
-class GPUFramebuffer;
 class GPUTexture;
 
 class Error;
@@ -123,13 +121,12 @@ bool ReloadShaders();
 void Shutdown();
 
 GPUTexture* GetInputTexture();
-GPUFramebuffer* GetInputFramebuffer();
 const Common::Timer& GetTimer();
 
 bool CheckTargets(GPUTexture::Format target_format, u32 target_width, u32 target_height);
 
-bool Apply(GPUFramebuffer* final_target, s32 final_left, s32 final_top, s32 final_width, s32 final_height,
-           s32 orig_width, s32 orig_height);
+bool Apply(GPUTexture* final_target, s32 final_left, s32 final_top, s32 final_width, s32 final_height, s32 orig_width,
+           s32 orig_height);
 
 GPUSampler* GetSampler(const GPUSampler::Config& config);
 GPUTexture* GetDummyTexture();

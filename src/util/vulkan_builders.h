@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "gpu_device.h"
 #include "vulkan_loader.h"
 
 #include "common/string_util.h"
@@ -79,7 +80,7 @@ public:
     MAX_SHADER_STAGES = 3,
     MAX_VERTEX_ATTRIBUTES = 16,
     MAX_VERTEX_BUFFERS = 8,
-    MAX_ATTACHMENTS = 2,
+    MAX_ATTACHMENTS = GPUDevice::MAX_RENDER_TARGETS + 1,
     MAX_DYNAMIC_STATE = 8
   };
 
@@ -140,6 +141,10 @@ public:
 
   void SetProvokingVertex(VkProvokingVertexModeEXT mode);
 
+  void SetDynamicRendering();
+  void AddDynamicRenderingColorAttachment(VkFormat format);
+  void SetDynamicRenderingDepthAttachment(VkFormat depth_format, VkFormat stencil_format);
+
 private:
   VkGraphicsPipelineCreateInfo m_ci;
   std::array<VkPipelineShaderStageCreateInfo, MAX_SHADER_STAGES> m_shader_stages;
@@ -167,6 +172,9 @@ private:
 
   VkPipelineRasterizationProvokingVertexStateCreateInfoEXT m_provoking_vertex;
   VkPipelineRasterizationLineStateCreateInfoEXT m_line_rasterization_state;
+
+  VkPipelineRenderingCreateInfoKHR m_rendering;
+  std::array<VkFormat, MAX_ATTACHMENTS> m_rendering_color_formats;
 };
 
 class ComputePipelineBuilder
@@ -271,7 +279,7 @@ class FramebufferBuilder
 {
   enum : u32
   {
-    MAX_ATTACHMENTS = 2,
+    MAX_ATTACHMENTS = GPUDevice::MAX_RENDER_TARGETS + 1,
   };
 
 public:

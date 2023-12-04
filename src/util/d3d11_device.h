@@ -17,7 +17,6 @@
 #include <vector>
 #include <wrl/client.h>
 
-class D3D11Framebuffer;
 class D3D11Pipeline;
 class D3D11Shader;
 class D3D11Texture;
@@ -66,8 +65,6 @@ public:
   void ClearDepth(GPUTexture* t, float d) override;
   void InvalidateRenderTarget(GPUTexture* t) override;
 
-  std::unique_ptr<GPUFramebuffer> CreateFramebuffer(GPUTexture* rt_or_ds, GPUTexture* ds = nullptr) override;
-
   std::unique_ptr<GPUShader> CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data) override;
   std::unique_ptr<GPUShader> CreateShaderFromSource(GPUShaderStage stage, const std::string_view& source,
                                                     const char* entry_point, DynamicHeapArray<u8>* binary) override;
@@ -85,7 +82,7 @@ public:
   void PushUniformBuffer(const void* data, u32 data_size) override;
   void* MapUniformBuffer(u32 size) override;
   void UnmapUniformBuffer(u32 size) override;
-  void SetFramebuffer(GPUFramebuffer* fb) override;
+  void SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds) override;
   void SetPipeline(GPUPipeline* pipeline) override;
   void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) override;
   void SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer) override;
@@ -104,14 +101,14 @@ public:
   bool BeginPresent(bool skip_present) override;
   void EndPresent() override;
 
-  void UnbindFramebuffer(D3D11Framebuffer* fb);
   void UnbindPipeline(D3D11Pipeline* pl);
   void UnbindTexture(D3D11Texture* tex);
 
   static AdapterAndModeList StaticGetAdapterAndModeList();
 
 protected:
-  bool CreateDevice(const std::string_view& adapter, bool threaded_presentation, FeatureMask disabled_features) override;
+  bool CreateDevice(const std::string_view& adapter, bool threaded_presentation,
+                    FeatureMask disabled_features) override;
   void DestroyDevice() override;
 
 private:
@@ -140,6 +137,8 @@ private:
 
   bool CreateBuffers();
   void DestroyBuffers();
+
+  bool IsRenderTargetBound(const GPUTexture* tex) const;
 
   ComPtr<ID3D11RasterizerState> GetRasterizationState(const GPUPipeline::RasterizationState& rs);
   ComPtr<ID3D11DepthStencilState> GetDepthState(const GPUPipeline::DepthState& ds);
@@ -178,8 +177,10 @@ private:
   D3D11StreamBuffer m_index_buffer;
   D3D11StreamBuffer m_uniform_buffer;
 
-  D3D11Framebuffer* m_current_framebuffer = nullptr;
   D3D11Pipeline* m_current_pipeline = nullptr;
+  std::array<D3D11Texture*, MAX_RENDER_TARGETS> m_current_render_targets = {};
+  u32 m_num_current_render_targets = 0;
+  D3D11Texture* m_current_depth_target = nullptr;
 
   ID3D11InputLayout* m_current_input_layout = nullptr;
   ID3D11VertexShader* m_current_vertex_shader = nullptr;

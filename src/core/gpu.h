@@ -23,7 +23,6 @@
 class StateWrapper;
 
 class GPUDevice;
-class GPUFramebuffer;
 class GPUTexture;
 class GPUPipeline;
 
@@ -585,7 +584,7 @@ protected:
                                              float* out_top_padding, float* out_scale, float* out_x_scale,
                                              bool apply_aspect_ratio = true) const;
 
-  bool RenderDisplay(GPUFramebuffer* target, const Common::Rectangle<s32>& draw_rect, bool postfx);
+  bool RenderDisplay(GPUTexture* target, const Common::Rectangle<s32>& draw_rect, bool postfx);
 
   s32 m_display_width = 0;
   s32 m_display_height = 0;

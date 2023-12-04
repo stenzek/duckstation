@@ -124,26 +124,6 @@ private:
   D3D12DescriptorHandle m_descriptor;
 };
 
-class D3D12Framebuffer final : public GPUFramebuffer
-{
-  friend D3D12Device;
-
-public:
-  ~D3D12Framebuffer() override;
-
-  ALWAYS_INLINE const D3D12DescriptorHandle& GetRTV() const { return m_rtv; }
-  ALWAYS_INLINE const D3D12DescriptorHandle& GetDSV() const { return m_dsv; }
-
-  void SetDebugName(const std::string_view& name) override;
-
-private:
-  D3D12Framebuffer(GPUTexture* rt, GPUTexture* ds, u32 width, u32 height, D3D12DescriptorHandle rtv,
-                   D3D12DescriptorHandle dsv);
-
-  D3D12DescriptorHandle m_rtv;
-  D3D12DescriptorHandle m_dsv;
-};
-
 class D3D12TextureBuffer final : public GPUTextureBuffer
 {
   friend D3D12Device;

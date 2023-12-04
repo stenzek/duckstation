@@ -961,54 +961,6 @@ std::unique_ptr<GPUSampler> VulkanDevice::CreateSampler(const GPUSampler::Config
   return std::unique_ptr<GPUSampler>(new VulkanSampler(vsampler));
 }
 
-VulkanFramebuffer::VulkanFramebuffer(GPUTexture* rt, GPUTexture* ds, u32 width, u32 height, VkFramebuffer fb)
-  : GPUFramebuffer(rt, ds, width, height), m_framebuffer(fb)
-{
-}
-
-VulkanFramebuffer::~VulkanFramebuffer()
-{
-  VulkanDevice::GetInstance().DeferFramebufferDestruction(m_framebuffer);
-}
-
-void VulkanFramebuffer::SetDebugName(const std::string_view& name)
-{
-  Vulkan::SetObjectName(VulkanDevice::GetInstance().GetVulkanDevice(), m_framebuffer, name);
-}
-
-std::unique_ptr<GPUFramebuffer> VulkanDevice::CreateFramebuffer(GPUTexture* rt_or_ds, GPUTexture* ds /*= nullptr*/)
-{
-  DebugAssert((rt_or_ds || ds) && (!rt_or_ds || rt_or_ds->IsRenderTarget() || (rt_or_ds->IsDepthStencil() && !ds)));
-  VulkanTexture* RT = static_cast<VulkanTexture*>((rt_or_ds && rt_or_ds->IsDepthStencil()) ? nullptr : rt_or_ds);
-  VulkanTexture* DS = static_cast<VulkanTexture*>((rt_or_ds && rt_or_ds->IsDepthStencil()) ? rt_or_ds : ds);
-
-  const u32 width = RT ? RT->GetWidth() : DS->GetWidth();
-  const u32 height = RT ? RT->GetHeight() : DS->GetHeight();
-
-  const VkRenderPass render_pass =
-    GetRenderPass(RT ? RT->GetVkFormat() : VK_FORMAT_UNDEFINED, DS ? DS->GetVkFormat() : VK_FORMAT_UNDEFINED,
-                  static_cast<VkSampleCountFlagBits>(RT ? RT->GetSamples() : DS->GetSamples()),
-                  RT ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                  RT ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                  DS ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                  DS ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE);
-  DebugAssert(render_pass != VK_NULL_HANDLE);
-
-  Vulkan::FramebufferBuilder fbb;
-  fbb.SetRenderPass(render_pass);
-  fbb.SetSize(width, height, 1);
-  if (RT)
-    fbb.AddAttachment(RT->GetView());
-  if (DS)
-    fbb.AddAttachment(DS->GetView());
-
-  const VkFramebuffer fb = fbb.Create(m_device, false);
-  if (fb == VK_NULL_HANDLE)
-    return {};
-
-  return std::unique_ptr<GPUFramebuffer>(new VulkanFramebuffer(RT, DS, width, height, fb));
-}
-
 VulkanTextureBuffer::VulkanTextureBuffer(Format format, u32 size_in_elements)
   : GPUTextureBuffer(format, size_in_elements)
 {

@@ -126,25 +126,6 @@ private:
   VkSampler m_sampler;
 };
 
-class VulkanFramebuffer final : public GPUFramebuffer
-{
-  friend VulkanDevice;
-
-public:
-  ~VulkanFramebuffer() override;
-
-  ALWAYS_INLINE VkFramebuffer GetFramebuffer() const { return m_framebuffer; }
-
-  void SetDebugName(const std::string_view& name) override;
-
-  // TODO: Maybe render passes should be in here to avoid the map lookup...
-
-private:
-  VulkanFramebuffer(GPUTexture* rt, GPUTexture* ds, u32 width, u32 height, VkFramebuffer fb);
-
-  VkFramebuffer m_framebuffer;
-};
-
 class VulkanTextureBuffer final : public GPUTextureBuffer
 {
   friend VulkanDevice;

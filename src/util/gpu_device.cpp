@@ -4,6 +4,7 @@
 #include "gpu_device.h"
 #include "core/host.h"     // TODO: Remove, needed for getting fullscreen mode.
 #include "core/settings.h" // TODO: Remove, needed for dump directory.
+#include "gpu_framebuffer_manager.h"
 #include "shadergen.h"
 
 #include "common/assert.h"
@@ -15,6 +16,7 @@
 
 #include "fmt/format.h"
 #include "imgui.h"
+#include "xxhash.h"
 
 Log_SetChannel(GPUDevice);
 
@@ -36,13 +38,6 @@ Log_SetChannel(GPUDevice);
 std::unique_ptr<GPUDevice> g_gpu_device;
 
 static std::string s_pipeline_cache_path;
-
-GPUFramebuffer::GPUFramebuffer(GPUTexture* rt, GPUTexture* ds, u32 width, u32 height)
-  : m_rt(rt), m_ds(ds), m_width(width), m_height(height)
-{
-}
-
-GPUFramebuffer::~GPUFramebuffer() = default;
 
 GPUSampler::GPUSampler() = default;
 
@@ -156,6 +151,15 @@ GPUPipeline::BlendState GPUPipeline::BlendState::GetAlphaBlendingState()
   return ret;
 }
 
+void GPUPipeline::GraphicsConfig::SetTargetFormats(GPUTexture::Format color_format,
+                                                   GPUTexture::Format depth_format_ /* = GPUTexture::Format::Unknown */)
+{
+  color_formats[0] = color_format;
+  for (size_t i = 1; i < std::size(color_formats); i++)
+    color_formats[i] = GPUTexture::Format::Unknown;
+  depth_format = depth_format_;
+}
+
 GPUTextureBuffer::GPUTextureBuffer(Format format, u32 size) : m_format(format), m_size_in_elements(size)
 {
 }
@@ -169,6 +173,35 @@ u32 GPUTextureBuffer::GetElementSize(Format format)
   }};
 
   return element_size[static_cast<u32>(format)];
+}
+
+bool GPUFramebufferManagerBase::Key::operator==(const Key& rhs) const
+{
+  return (std::memcmp(this, &rhs, sizeof(*this)) == 0);
+}
+
+bool GPUFramebufferManagerBase::Key::operator!=(const Key& rhs) const
+{
+  return (std::memcmp(this, &rhs, sizeof(*this)) != 0);
+}
+
+bool GPUFramebufferManagerBase::Key::ContainsRT(const GPUTexture* tex) const
+{
+  // num_rts is worse for predictability.
+  for (u32 i = 0; i < GPUDevice::MAX_RENDER_TARGETS; i++)
+  {
+    if (rts[i] == tex)
+      return true;
+  }
+  return false;
+}
+
+size_t GPUFramebufferManagerBase::KeyHash::operator()(const Key& key) const
+{
+  if constexpr (sizeof(void*) == 8)
+    return XXH3_64bits(&key, sizeof(key));
+  else
+    return XXH32(&key, sizeof(key), 0x1337);
 }
 
 GPUDevice::~GPUDevice() = default;
@@ -438,8 +471,7 @@ bool GPUDevice::CreateResources()
   plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
   plconfig.blend = GPUPipeline::BlendState::GetAlphaBlendingState();
   plconfig.blend.write_mask = 0x7;
-  plconfig.color_format = HasSurface() ? m_window_info.surface_format : GPUTexture::Format::RGBA8;
-  plconfig.depth_format = GPUTexture::Format::Unknown;
+  plconfig.SetTargetFormats(HasSurface() ? m_window_info.surface_format : GPUTexture::Format::RGBA8);
   plconfig.samples = 1;
   plconfig.per_sample_shading = false;
   plconfig.vertex_shader = imgui_vs.get();
@@ -545,6 +577,11 @@ void GPUDevice::UploadUniformBuffer(const void* data, u32 data_size)
   void* map = MapUniformBuffer(data_size);
   std::memcpy(map, data, data_size);
   UnmapUniformBuffer(data_size);
+}
+
+void GPUDevice::SetRenderTarget(GPUTexture* rt, GPUTexture* ds /*= nullptr*/)
+{
+  SetRenderTargets(rt ? &rt : nullptr, rt ? 1 : 0, ds);
 }
 
 void GPUDevice::SetViewportAndScissor(s32 x, s32 y, s32 width, s32 height)

@@ -91,6 +91,12 @@ bool GPUTexture::IsDepthFormat(Format format)
   return (format == Format::D16);
 }
 
+bool GPUTexture::IsDepthStencilFormat(Format format)
+{
+  // None needed yet.
+  return false;
+}
+
 bool GPUTexture::ValidateConfig(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format)
 {
   if (width > MAX_WIDTH || height > MAX_HEIGHT || layers > MAX_LAYERS || levels > MAX_LEVELS || samples > MAX_SAMPLES)

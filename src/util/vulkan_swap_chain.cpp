@@ -488,8 +488,7 @@ bool VulkanSwapChain::CreateSwapChain()
   res = vkGetSwapchainImagesKHR(dev.GetVulkanDevice(), m_swap_chain, &image_count, images.data());
   Assert(res == VK_SUCCESS);
 
-  VkRenderPass render_pass =
-    dev.GetRenderPass(m_format, VK_FORMAT_UNDEFINED, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR);
+  VkRenderPass render_pass = dev.GetSwapChainRenderPass(m_window_info.surface_format, VK_ATTACHMENT_LOAD_OP_CLEAR);
   if (render_pass == VK_NULL_HANDLE)
     return false;
 

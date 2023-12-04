@@ -123,7 +123,8 @@ void MetalDevice::SetVSync(bool enabled)
     [m_layer setDisplaySyncEnabled:enabled];
 }
 
-bool MetalDevice::CreateDevice(const std::string_view& adapter, bool threaded_presentation, FeatureMask disabled_features)
+bool MetalDevice::CreateDevice(const std::string_view& adapter, bool threaded_presentation,
+                               FeatureMask disabled_features)
 {
   @autoreleasepool
   {
@@ -493,6 +494,17 @@ void MetalDevice::DestroyBuffers()
   m_depth_states.clear();
 }
 
+bool MetalDevice::IsRenderTargetBound(const GPUTexture* tex) const
+{
+  for (u32 i = 0; i < m_num_current_render_targets; i++)
+  {
+    if (m_current_render_targets[i] == tex)
+      return true;
+  }
+
+  return false;
+}
+
 GPUDevice::AdapterAndModeList MetalDevice::StaticGetAdapterAndModeList()
 {
   AdapterAndModeList ret;
@@ -770,7 +782,12 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Grap
     desc.vertexFunction = static_cast<const MetalShader*>(config.vertex_shader)->GetFunction();
     desc.fragmentFunction = static_cast<const MetalShader*>(config.fragment_shader)->GetFunction();
 
-    desc.colorAttachments[0].pixelFormat = s_pixel_format_mapping[static_cast<u8>(config.color_format)];
+    for (u32 i = 0; i < MAX_RENDER_TARGETS; i++)
+    {
+      if (config.color_formats[i] == GPUTexture::Format::Unknown)
+        break;
+      desc.colorAttachments[0].pixelFormat = s_pixel_format_mapping[static_cast<u8>(config.color_formats[i])];
+    }
     desc.depthAttachmentPixelFormat = s_pixel_format_mapping[static_cast<u8>(config.depth_format)];
 
     // Input assembly.
@@ -998,7 +1015,12 @@ void MetalTexture::Unmap()
 
 void MetalTexture::MakeReadyForSampling()
 {
-  MetalDevice::GetInstance().UnbindFramebuffer(this);
+  MetalDevice& dev = MetalDevice::GetInstance();
+  if (!dev.InRenderPass())
+    return;
+
+  if (IsRenderTarget() ? dev.IsRenderTargetBound(this) : (dev.m_current_depth_target == this))
+    dev.EndRenderPass();
 }
 
 void MetalTexture::SetDebugName(const std::string_view& name)
@@ -1085,130 +1107,6 @@ std::unique_ptr<GPUTexture> MetalDevice::CreateTexture(u32 width, u32 height, u3
     }
 
     return gtex;
-  }
-}
-
-MetalFramebuffer::MetalFramebuffer(GPUTexture* rt, GPUTexture* ds, u32 width, u32 height, id<MTLTexture> rt_tex,
-                                   id<MTLTexture> ds_tex, MTLRenderPassDescriptor* descriptor)
-  : GPUFramebuffer(rt, ds, width, height), m_rt_tex(rt_tex), m_ds_tex(ds_tex), m_descriptor(descriptor)
-{
-}
-
-MetalFramebuffer::~MetalFramebuffer()
-{
-  // TODO: safe deleting?
-  if (m_rt_tex != nil)
-    [m_rt_tex release];
-  if (m_ds_tex != nil)
-    [m_ds_tex release];
-  [m_descriptor release];
-}
-
-void MetalFramebuffer::SetDebugName(const std::string_view& name)
-{
-}
-
-MTLRenderPassDescriptor* MetalFramebuffer::GetDescriptor() const
-{
-  if (m_rt)
-  {
-    switch (m_rt->GetState())
-    {
-      case GPUTexture::State::Cleared:
-      {
-        const auto clear_color = m_rt->GetUNormClearColor();
-        m_descriptor.colorAttachments[0].loadAction = MTLLoadActionClear;
-        m_descriptor.colorAttachments[0].clearColor =
-          MTLClearColorMake(clear_color[0], clear_color[1], clear_color[2], clear_color[3]);
-        m_rt->SetState(GPUTexture::State::Dirty);
-      }
-      break;
-
-      case GPUTexture::State::Invalidated:
-      {
-        m_descriptor.colorAttachments[0].loadAction = MTLLoadActionDontCare;
-        m_rt->SetState(GPUTexture::State::Dirty);
-      }
-      break;
-
-      case GPUTexture::State::Dirty:
-      {
-        m_descriptor.colorAttachments[0].loadAction = MTLLoadActionLoad;
-      }
-      break;
-
-      default:
-        UnreachableCode();
-        break;
-    }
-  }
-
-  if (m_ds)
-  {
-    switch (m_ds->GetState())
-    {
-      case GPUTexture::State::Cleared:
-      {
-        m_descriptor.depthAttachment.loadAction = MTLLoadActionClear;
-        m_descriptor.depthAttachment.clearDepth = m_ds->GetClearDepth();
-        m_ds->SetState(GPUTexture::State::Dirty);
-      }
-      break;
-
-      case GPUTexture::State::Invalidated:
-      {
-        m_descriptor.depthAttachment.loadAction = MTLLoadActionDontCare;
-        m_ds->SetState(GPUTexture::State::Dirty);
-      }
-      break;
-
-      case GPUTexture::State::Dirty:
-      {
-        m_descriptor.depthAttachment.loadAction = MTLLoadActionLoad;
-      }
-      break;
-
-      default:
-        UnreachableCode();
-        break;
-    }
-  }
-
-  return m_descriptor;
-}
-
-std::unique_ptr<GPUFramebuffer> MetalDevice::CreateFramebuffer(GPUTexture* rt_or_ds, GPUTexture* ds)
-{
-  DebugAssert((rt_or_ds || ds) && (!rt_or_ds || rt_or_ds->IsRenderTarget() || (rt_or_ds->IsDepthStencil() && !ds)));
-  MetalTexture* RT = static_cast<MetalTexture*>((rt_or_ds && rt_or_ds->IsDepthStencil()) ? nullptr : rt_or_ds);
-  MetalTexture* DS = static_cast<MetalTexture*>((rt_or_ds && rt_or_ds->IsDepthStencil()) ? rt_or_ds : ds);
-
-  @autoreleasepool
-  {
-    MTLRenderPassDescriptor* desc = [[MTLRenderPassDescriptor renderPassDescriptor] retain];
-    id<MTLTexture> rt_tex = RT ? [RT->GetMTLTexture() retain] : nil;
-    id<MTLTexture> ds_tex = DS ? [DS->GetMTLTexture() retain] : nil;
-
-    if (RT)
-    {
-      desc.colorAttachments[0].texture = rt_tex;
-      desc.colorAttachments[0].loadAction = MTLLoadActionLoad;
-      desc.colorAttachments[0].storeAction = MTLStoreActionStore;
-    }
-
-    if (DS)
-    {
-      desc.depthAttachment.texture = ds_tex;
-      desc.depthAttachment.loadAction = MTLLoadActionLoad;
-      desc.depthAttachment.storeAction = MTLStoreActionStore;
-    }
-
-    const u32 width = RT ? RT->GetWidth() : DS->GetWidth();
-    const u32 height = RT ? RT->GetHeight() : DS->GetHeight();
-    desc.renderTargetWidth = width;
-    desc.renderTargetHeight = height;
-
-    return std::unique_ptr<GPUFramebuffer>(new MetalFramebuffer(RT, DS, width, height, rt_tex, ds_tex, desc));
   }
 }
 
@@ -1489,25 +1387,22 @@ void MetalDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u3
 void MetalDevice::ClearRenderTarget(GPUTexture* t, u32 c)
 {
   GPUDevice::ClearRenderTarget(t, c);
-  if (InRenderPass() && m_current_framebuffer && m_current_framebuffer->GetRT() == t)
+  if (InRenderPass() && IsRenderTargetBound(t))
     EndRenderPass();
 }
 
 void MetalDevice::ClearDepth(GPUTexture* t, float d)
 {
   GPUDevice::ClearDepth(t, d);
-  if (InRenderPass() && m_current_framebuffer && m_current_framebuffer->GetDS() == t)
+  if (InRenderPass() && m_current_depth_target == t)
     EndRenderPass();
 }
 
 void MetalDevice::InvalidateRenderTarget(GPUTexture* t)
 {
   GPUDevice::InvalidateRenderTarget(t);
-  if (InRenderPass() && m_current_framebuffer &&
-      (m_current_framebuffer->GetRT() == t || m_current_framebuffer->GetDS() == t))
-  {
+  if (InRenderPass() && (t->IsRenderTarget() ? IsRenderTargetBound(t) : (m_current_depth_target == t)))
     EndRenderPass();
-  }
 }
 
 void MetalDevice::CommitClear(MetalTexture* tex)
@@ -1689,44 +1584,29 @@ void MetalDevice::UnmapUniformBuffer(u32 size)
   }
 }
 
-void MetalDevice::SetFramebuffer(GPUFramebuffer* fb)
+void MetalDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds)
 {
-  if (m_current_framebuffer == fb)
-    return;
+  bool changed = (m_num_current_render_targets != num_rts || m_current_depth_target != ds);
+  bool needs_ds_clear = (ds && ds->IsClearedOrInvalidated());
+  bool needs_rt_clear = false;
 
-  if (InRenderPass())
-    EndRenderPass();
+  m_current_depth_target = static_cast<MetalTexture*>(ds);
+  for (u32 i = 0; i < num_rts; i++)
+  {
+    MetalTexture* const RT = static_cast<MetalTexture*>(rts[i]);
+    changed |= m_current_render_targets[i] != RT;
+    m_current_render_targets[i] = RT;
+    needs_rt_clear |= RT->IsClearedOrInvalidated();
+  }
+  for (u32 i = num_rts; i < m_num_current_render_targets; i++)
+    m_current_render_targets[i] = nullptr;
+  m_num_current_render_targets = num_rts;
 
-  m_current_framebuffer = static_cast<MetalFramebuffer*>(fb);
-
-  // Current pipeline might be incompatible, so unbind it.
-  // Otherwise it'll get bound to the new render encoder.
-  // TODO: we shouldn't need to do this now
-  m_current_pipeline = nullptr;
-  m_current_depth_state = nil;
-}
-
-void MetalDevice::UnbindFramebuffer(MetalFramebuffer* fb)
-{
-  if (m_current_framebuffer != fb)
-    return;
-
-  if (InRenderPass())
-    EndRenderPass();
-  m_current_framebuffer = nullptr;
-}
-
-void MetalDevice::UnbindFramebuffer(MetalTexture* tex)
-{
-  if (!m_current_framebuffer)
-    return;
-
-  if (m_current_framebuffer->GetRT() != tex && m_current_framebuffer->GetDS() != tex)
-    return;
-
-  if (InRenderPass())
-    EndRenderPass();
-  m_current_framebuffer = nullptr;
+  if (changed || needs_rt_clear || needs_ds_clear)
+  {
+    if (InRenderPass())
+      EndRenderPass();
+  }
 }
 
 void MetalDevice::SetPipeline(GPUPipeline* pipeline)
@@ -1815,6 +1695,27 @@ void MetalDevice::UnbindTexture(MetalTexture* tex)
         [m_render_encoder setFragmentTexture:nil atIndex:i];
     }
   }
+
+  if (tex->IsRenderTarget())
+  {
+    for (u32 i = 0; i < m_num_current_render_targets; i++)
+    {
+      if (m_current_render_targets[i] == tex)
+      {
+        Log_WarningPrint("Unbinding current RT");
+        SetRenderTargets(nullptr, 0, m_current_depth_target);
+        break;
+      }
+    }
+  }
+  else if (tex->IsDepthStencil())
+  {
+    if (m_current_depth_target == tex)
+    {
+      Log_WarningPrint("Unbinding current DS");
+      SetRenderTargets(nullptr, 0, nullptr);
+    }
+  }
 }
 
 void MetalDevice::UnbindTextureBuffer(MetalTextureBuffer* buf)
@@ -1863,21 +1764,85 @@ void MetalDevice::BeginRenderPass()
 
   @autoreleasepool
   {
-    MTLRenderPassDescriptor* desc;
-    if (!m_current_framebuffer)
+    MTLRenderPassDescriptor* desc = [MTLRenderPassDescriptor renderPassDescriptor];
+    if (m_num_current_render_targets == 0 && !m_current_depth_target)
     {
       // Rendering to view, but we got interrupted...
-      desc = [MTLRenderPassDescriptor renderPassDescriptor];
       desc.colorAttachments[0].texture = [m_layer_drawable texture];
       desc.colorAttachments[0].loadAction = MTLLoadActionLoad;
     }
     else
     {
-      desc = m_current_framebuffer->GetDescriptor();
-      if (MetalTexture* RT = static_cast<MetalTexture*>(m_current_framebuffer->GetRT()))
+      for (u32 i = 0; i < m_num_current_render_targets; i++)
+      {
+        MetalTexture* const RT = m_current_render_targets[i];
+        desc.colorAttachments[i].texture = RT->GetMTLTexture();
         RT->SetUseFenceCounter(m_current_fence_counter);
-      if (MetalTexture* DS = static_cast<MetalTexture*>(m_current_framebuffer->GetDS()))
+
+        switch (RT->GetState())
+        {
+          case GPUTexture::State::Cleared:
+          {
+            const auto clear_color = RT->GetUNormClearColor();
+            desc.colorAttachments[i].loadAction = MTLLoadActionClear;
+            desc.colorAttachments[i].clearColor =
+              MTLClearColorMake(clear_color[0], clear_color[1], clear_color[2], clear_color[3]);
+            RT->SetState(GPUTexture::State::Dirty);
+          }
+          break;
+
+          case GPUTexture::State::Invalidated:
+          {
+            desc.colorAttachments[i].loadAction = MTLLoadActionDontCare;
+            RT->SetState(GPUTexture::State::Dirty);
+          }
+          break;
+
+          case GPUTexture::State::Dirty:
+          {
+            desc.colorAttachments[i].loadAction = MTLLoadActionLoad;
+          }
+          break;
+
+          default:
+            UnreachableCode();
+            break;
+        }
+      }
+
+      if (MetalTexture* DS = m_current_depth_target)
+      {
+        desc.depthAttachment.texture = m_current_depth_target->GetMTLTexture();
         DS->SetUseFenceCounter(m_current_fence_counter);
+
+        switch (DS->GetState())
+        {
+          case GPUTexture::State::Cleared:
+          {
+            desc.depthAttachment.loadAction = MTLLoadActionClear;
+            desc.depthAttachment.clearDepth = DS->GetClearDepth();
+            DS->SetState(GPUTexture::State::Dirty);
+          }
+          break;
+
+          case GPUTexture::State::Invalidated:
+          {
+            desc.depthAttachment.loadAction = MTLLoadActionDontCare;
+            DS->SetState(GPUTexture::State::Dirty);
+          }
+          break;
+
+          case GPUTexture::State::Dirty:
+          {
+            desc.depthAttachment.loadAction = MTLLoadActionLoad;
+          }
+          break;
+
+          default:
+            UnreachableCode();
+            break;
+        }
+      }
     }
 
     m_render_encoder = [[m_render_cmdbuf renderCommandEncoderWithDescriptor:desc] retain];
@@ -1948,8 +1913,10 @@ void MetalDevice::SetScissorInRenderEncoder()
 
 Common::Rectangle<s32> MetalDevice::ClampToFramebufferSize(const Common::Rectangle<s32>& rc) const
 {
-  const s32 clamp_width = m_current_framebuffer ? m_current_framebuffer->GetWidth() : m_window_info.surface_width;
-  const s32 clamp_height = m_current_framebuffer ? m_current_framebuffer->GetHeight() : m_window_info.surface_height;
+  const MetalTexture* rt_or_ds =
+    (m_num_current_render_targets > 0) ? m_current_render_targets[0] : m_current_depth_target;
+  const s32 clamp_width = rt_or_ds ? rt_or_ds->GetWidth() : m_window_info.surface_width;
+  const s32 clamp_height = rt_or_ds ? rt_or_ds->GetHeight() : m_window_info.surface_height;
   return rc.ClampedSize(clamp_width, clamp_height);
 }
 
@@ -2023,10 +1990,12 @@ bool MetalDevice::BeginPresent(bool skip_present)
 
     // Set up rendering to layer.
     id<MTLTexture> layer_texture = [m_layer_drawable texture];
-    m_current_framebuffer = nullptr;
     m_layer_pass_desc.colorAttachments[0].texture = layer_texture;
     m_layer_pass_desc.colorAttachments[0].loadAction = MTLLoadActionClear;
     m_render_encoder = [[m_render_cmdbuf renderCommandEncoderWithDescriptor:m_layer_pass_desc] retain];
+    std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
+    m_num_current_render_targets = 0;
+    m_current_depth_target = nullptr;
     m_current_pipeline = nullptr;
     m_current_depth_state = nil;
     SetInitialEncoderState();
@@ -2036,7 +2005,7 @@ bool MetalDevice::BeginPresent(bool skip_present)
 
 void MetalDevice::EndPresent()
 {
-  DebugAssert(!m_current_framebuffer);
+  DebugAssert(m_num_current_render_targets == 0 && !m_current_depth_target);
   EndAnyEncoding();
 
   [m_render_cmdbuf presentDrawable:m_layer_drawable];
