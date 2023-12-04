@@ -197,7 +197,7 @@ std::unique_ptr<GPUSampler> D3D11Device::CreateSampler(const GPUSampler::Config&
   desc.MinLOD = static_cast<float>(config.min_lod);
   desc.MaxLOD = static_cast<float>(config.max_lod);
 
-  if (config.anisotropy > 0)
+  if (config.anisotropy > 1)
   {
     desc.Filter = D3D11_FILTER_ANISOTROPIC;
     desc.MaxAnisotropy = config.anisotropy;

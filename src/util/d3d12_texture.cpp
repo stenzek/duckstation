@@ -806,7 +806,7 @@ D3D12DescriptorHandle D3D12Device::GetSampler(const GPUSampler::Config& config)
   desc.MinLOD = static_cast<float>(config.min_lod);
   desc.MaxLOD = static_cast<float>(config.max_lod);
 
-  if (config.anisotropy > 0)
+  if (config.anisotropy > 1)
   {
     desc.Filter = D3D12_FILTER_ANISOTROPIC;
     desc.MaxAnisotropy = config.anisotropy;

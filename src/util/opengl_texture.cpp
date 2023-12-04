@@ -376,10 +376,8 @@ std::unique_ptr<GPUSampler> OpenGLDevice::CreateSampler(const GPUSampler::Config
   glSamplerParameterf(sampler, GL_TEXTURE_MIN_LOD, static_cast<float>(config.min_lod));
   glSamplerParameterf(sampler, GL_TEXTURE_MAX_LOD, static_cast<float>(config.max_lod));
   glSamplerParameterfv(sampler, GL_TEXTURE_BORDER_COLOR, config.GetBorderFloatColor().data());
-  if (config.anisotropy)
-  {
-    // TODO
-  }
+  if (config.anisotropy > 1)
+    glSamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY, static_cast<float>(config.anisotropy.GetValue()));
 
   return std::unique_ptr<GPUSampler>(new OpenGLSampler(sampler));
 }

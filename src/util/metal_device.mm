@@ -1264,7 +1264,7 @@ std::unique_ptr<GPUSampler> MetalDevice::CreateSampler(const GPUSampler::Config&
                                                           MTLSamplerMipFilterNotMipmapped;
     desc.lodMinClamp = static_cast<float>(config.min_lod);
     desc.lodMaxClamp = static_cast<float>(config.max_lod);
-    desc.maxAnisotropy = config.anisotropy;
+    desc.maxAnisotropy = std::max<u8>(config.anisotropy, 1);
 
     if (config.address_u == GPUSampler::AddressMode::ClampToBorder ||
         config.address_v == GPUSampler::AddressMode::ClampToBorder ||
