@@ -126,13 +126,13 @@ bool GPUTexture::ValidateConfig(u32 width, u32 height, u32 layers, u32 levels, u
     return false;
   }
 
-  if (layers > 1 && type != Type::Texture)
+  if (layers > 1 && type != Type::Texture && type != Type::DynamicTexture)
   {
     Log_ErrorPrintf("Texture arrays are not supported on targets.");
     return false;
   }
 
-  if (levels > 1 && type != Type::Texture)
+  if (levels > 1 && type != Type::Texture && type != Type::DynamicTexture)
   {
     Log_ErrorPrintf("Mipmaps are not supported on targets.");
     return false;

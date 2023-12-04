@@ -281,8 +281,8 @@ std::optional<Common::RGBA8Image> ImGuiFullscreen::LoadTextureImage(const char* 
 std::shared_ptr<GPUTexture> ImGuiFullscreen::UploadTexture(const char* path, const Common::RGBA8Image& image)
 {
   std::unique_ptr<GPUTexture> texture =
-    g_gpu_device->CreateTexture(image.GetWidth(), image.GetHeight(), 1, 1, 1, GPUTexture::Type::Texture,
-                                GPUTexture::Format::RGBA8, image.GetPixels(), image.GetPitch());
+    g_gpu_device->FetchTexture(image.GetWidth(), image.GetHeight(), 1, 1, 1, GPUTexture::Type::Texture,
+                               GPUTexture::Format::RGBA8, image.GetPixels(), image.GetPitch());
   if (!texture)
   {
     Log_ErrorPrintf("failed to create %ux%u texture for resource", image.GetWidth(), image.GetHeight());
@@ -290,7 +290,7 @@ std::shared_ptr<GPUTexture> ImGuiFullscreen::UploadTexture(const char* path, con
   }
 
   Log_DevPrintf("Uploaded texture resource '%s' (%ux%u)", path, image.GetWidth(), image.GetHeight());
-  return std::shared_ptr<GPUTexture>(std::move(texture));
+  return std::shared_ptr<GPUTexture>(texture.release(), GPUDevice::PooledTextureDeleter());
 }
 
 std::shared_ptr<GPUTexture> ImGuiFullscreen::LoadTexture(const std::string_view& path)

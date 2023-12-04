@@ -2184,6 +2184,7 @@ bool VulkanDevice::BeginPresent(bool frame_skip)
   if (!m_swap_chain)
   {
     SubmitCommandBuffer(false);
+    TrimTexturePool();
     return false;
   }
 
@@ -2194,6 +2195,7 @@ bool VulkanDevice::BeginPresent(bool frame_skip)
   if (CheckLastSubmitFail())
   {
     Panic("Fixme"); // TODO
+    TrimTexturePool();
     return false;
   }
 
@@ -2214,6 +2216,7 @@ bool VulkanDevice::BeginPresent(bool frame_skip)
       {
         Log_ErrorPrintf("Failed to recreate surface after loss");
         SubmitCommandBuffer(false);
+        TrimTexturePool();
         return false;
       }
 
@@ -2227,6 +2230,7 @@ bool VulkanDevice::BeginPresent(bool frame_skip)
       // Still submit the command buffer, otherwise we'll end up with several frames waiting.
       LOG_VULKAN_ERROR(res, "vkAcquireNextImageKHR() failed: ");
       SubmitCommandBuffer(false);
+      TrimTexturePool();
       return false;
     }
   }
@@ -2247,6 +2251,7 @@ void VulkanDevice::EndPresent()
   SubmitCommandBuffer(m_swap_chain.get(), !m_swap_chain->IsPresentModeSynchronizing());
   MoveToNextCommandBuffer();
   InvalidateCachedState();
+  TrimTexturePool();
 }
 
 #ifdef _DEBUG

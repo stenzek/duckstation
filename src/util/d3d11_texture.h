@@ -61,7 +61,6 @@ public:
   {
     return reinterpret_cast<ID3D11RenderTargetView* const*>(m_rtv_dsv.GetAddressOf());
   }
-  ALWAYS_INLINE bool IsDynamic() const { return m_dynamic; }
   DXGI_FORMAT GetDXGIFormat() const;
 
   ALWAYS_INLINE operator ID3D11Texture2D*() const { return m_texture.Get(); }
@@ -77,7 +76,7 @@ public:
   ALWAYS_INLINE operator bool() const { return static_cast<bool>(m_texture); }
 
   bool Create(ID3D11Device* device, u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type,
-              Format format, const void* initial_data = nullptr, u32 initial_data_stride = 0, bool dynamic = false);
+              Format format, const void* initial_data = nullptr, u32 initial_data_stride = 0);
 
   void Destroy();
 
@@ -97,7 +96,6 @@ private:
   ComPtr<ID3D11ShaderResourceView> m_srv;
   ComPtr<ID3D11View> m_rtv_dsv;
   u32 m_mapped_subresource = 0;
-  bool m_dynamic = false;
 };
 
 class D3D11TextureBuffer final : public GPUTextureBuffer

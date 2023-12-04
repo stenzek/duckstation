@@ -588,7 +588,7 @@ bool PostProcessing::ReloadShaders()
 
 void PostProcessing::Shutdown()
 {
-  s_dummy_texture.reset();
+  g_gpu_device->RecycleTexture(std::move(s_dummy_texture));
   s_samplers.clear();
   s_enabled = false;
   decltype(s_stages)().swap(s_stages);
@@ -625,8 +625,8 @@ GPUTexture* PostProcessing::GetDummyTexture()
     return s_dummy_texture.get();
 
   const u32 zero = 0;
-  s_dummy_texture = g_gpu_device->CreateTexture(1, 1, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
-                                                &zero, sizeof(zero));
+  s_dummy_texture = g_gpu_device->FetchTexture(1, 1, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
+                                               &zero, sizeof(zero));
   if (!s_dummy_texture)
     Log_ErrorPrint("Failed to create dummy texture.");
 
@@ -641,10 +641,10 @@ bool PostProcessing::CheckTargets(GPUTexture::Format target_format, u32 target_w
   // In case any allocs fail.
   DestroyTextures();
 
-  if (!(s_input_texture = g_gpu_device->CreateTexture(target_width, target_height, 1, 1, 1,
-                                                      GPUTexture::Type::RenderTarget, target_format)) ||
-      !(s_output_texture = g_gpu_device->CreateTexture(target_width, target_height, 1, 1, 1,
-                                                       GPUTexture::Type::RenderTarget, target_format)))
+  if (!(s_input_texture = g_gpu_device->FetchTexture(target_width, target_height, 1, 1, 1,
+                                                     GPUTexture::Type::RenderTarget, target_format)) ||
+      !(s_output_texture = g_gpu_device->FetchTexture(target_width, target_height, 1, 1, 1,
+                                                      GPUTexture::Type::RenderTarget, target_format)))
   {
     return false;
   }
@@ -675,8 +675,8 @@ void PostProcessing::DestroyTextures()
   s_target_width = 0;
   s_target_height = 0;
 
-  s_output_texture.reset();
-  s_input_texture.reset();
+  g_gpu_device->RecycleTexture(std::move(s_output_texture));
+  g_gpu_device->RecycleTexture(std::move(s_input_texture));
 }
 
 bool PostProcessing::Apply(GPUTexture* final_target, s32 final_left, s32 final_top, s32 final_width, s32 final_height,

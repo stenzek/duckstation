@@ -13,6 +13,8 @@
 #include "common/small_string.h"
 #include "common/types.h"
 
+#include <cstring>
+#include <deque>
 #include <memory>
 #include <optional>
 #include <span>
@@ -457,6 +459,11 @@ public:
     std::vector<std::string> fullscreen_modes;
   };
 
+  struct PooledTextureDeleter
+  {
+    void operator()(GPUTexture* const tex);
+  };
+
   static constexpr u32 MAX_TEXTURE_SAMPLERS = 8;
   static constexpr u32 MIN_TEXEL_BUFFER_ELEMENTS = 4 * 1024 * 512;
   static constexpr u32 MAX_RENDER_TARGETS = 4;
@@ -541,14 +548,23 @@ public:
 
   virtual std::string GetDriverInfo() const = 0;
 
-  /// Creates an abstracted RGBA8 texture. If dynamic, the texture can be updated with UpdateTexture() below.
   virtual std::unique_ptr<GPUTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                     GPUTexture::Type type, GPUTexture::Format format,
-                                                    const void* data = nullptr, u32 data_stride = 0,
-                                                    bool dynamic = false) = 0;
+                                                    const void* data = nullptr, u32 data_stride = 0) = 0;
   virtual std::unique_ptr<GPUSampler> CreateSampler(const GPUSampler::Config& config) = 0;
   virtual std::unique_ptr<GPUTextureBuffer> CreateTextureBuffer(GPUTextureBuffer::Format format,
                                                                 u32 size_in_elements) = 0;
+
+  // Texture pooling.
+  std::unique_ptr<GPUTexture> FetchTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
+                                           GPUTexture::Type type, GPUTexture::Format format, const void* data = nullptr,
+                                           u32 data_stride = 0);
+  std::unique_ptr<GPUTexture, PooledTextureDeleter>
+  FetchAutoRecycleTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, GPUTexture::Type type,
+                          GPUTexture::Format format, const void* data = nullptr, u32 data_stride = 0,
+                          bool dynamic = false);
+  void RecycleTexture(std::unique_ptr<GPUTexture> texture);
+  void PurgeTexturePool();
 
   virtual bool DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, void* out_data,
                                u32 out_data_stride) = 0;
@@ -644,6 +660,8 @@ protected:
 
   bool AcquireWindow(bool recreate_window);
 
+  void TrimTexturePool();
+
   Features m_features = {};
   u32 m_max_texture_size = 0;
   u32 m_max_multisamples = 0;
@@ -655,25 +673,63 @@ protected:
   std::unique_ptr<GPUSampler> m_nearest_sampler;
   std::unique_ptr<GPUSampler> m_linear_sampler;
 
-  bool m_gpu_timing_enabled = false;
-  bool m_vsync_enabled = false;
-  bool m_debug_device = false;
-
 private:
+  static constexpr u32 POOL_PURGE_DELAY = 60;
+
+  struct TexturePoolKey
+  {
+    u16 width;
+    u16 height;
+    u8 layers;
+    u8 levels;
+    u8 samples;
+    GPUTexture::Type type;
+    GPUTexture::Format format;
+    u8 pad;
+
+    ALWAYS_INLINE bool operator==(const TexturePoolKey& rhs) const
+    {
+      return std::memcmp(this, &rhs, sizeof(TexturePoolKey)) == 0;
+    }
+    ALWAYS_INLINE bool operator!=(const TexturePoolKey& rhs) const
+    {
+      return std::memcmp(this, &rhs, sizeof(TexturePoolKey)) != 0;
+    }
+  };
+  struct TexturePoolEntry
+  {
+    std::unique_ptr<GPUTexture> texture;
+    u32 remove_count;
+    TexturePoolKey key;
+  };
+
   void OpenShaderCache(const std::string_view& base_path, u32 version);
   void CloseShaderCache();
   bool CreateResources();
   void DestroyResources();
 
+  std::unique_ptr<GPUPipeline> m_imgui_pipeline;
+  std::unique_ptr<GPUTexture> m_imgui_font_texture;
+
+  std::deque<TexturePoolEntry> m_texture_pool;
+  u32 m_texture_pool_counter = 0;
+
   // TODO: Move out.
   u64 m_last_frame_displayed_time = 0;
   float m_display_frame_interval = 0.0f;
 
-  std::unique_ptr<GPUPipeline> m_imgui_pipeline;
-  std::unique_ptr<GPUTexture> m_imgui_font_texture;
+protected:
+  bool m_gpu_timing_enabled = false;
+  bool m_vsync_enabled = false;
+  bool m_debug_device = false;
 };
 
 extern std::unique_ptr<GPUDevice> g_gpu_device;
+
+ALWAYS_INLINE void GPUDevice::PooledTextureDeleter::operator()(GPUTexture* const tex)
+{
+  g_gpu_device->RecycleTexture(std::unique_ptr<GPUTexture>(tex));
+}
 
 namespace Host {
 /// Called when the core is creating a render device.

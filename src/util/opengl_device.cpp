@@ -50,7 +50,7 @@ RenderAPI OpenGLDevice::GetRenderAPI() const
 
 std::unique_ptr<GPUTexture> OpenGLDevice::CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                         GPUTexture::Type type, GPUTexture::Format format,
-                                                        const void* data, u32 data_stride, bool dynamic /* = false */)
+                                                        const void* data, u32 data_stride)
 {
   std::unique_ptr<OpenGLTexture> tex(std::make_unique<OpenGLTexture>());
   if (!tex->Create(width, height, layers, levels, samples, type, format, data, data_stride))
@@ -764,7 +764,11 @@ bool OpenGLDevice::BeginPresent(bool skip_present)
   if (skip_present || m_window_info.type == WindowInfo::Type::Surfaceless)
   {
     if (!skip_present)
+    {
       glFlush();
+      TrimTexturePool();
+    }
+
     return false;
   }
 
@@ -802,6 +806,8 @@ void OpenGLDevice::EndPresent()
 
   if (m_gpu_timing_enabled)
     KickTimestampQuery();
+
+  TrimTexturePool();
 }
 
 void OpenGLDevice::CreateTimestampQueries()

@@ -257,7 +257,6 @@ static std::shared_ptr<GPUTexture> s_fallback_disc_texture;
 static std::shared_ptr<GPUTexture> s_fallback_exe_texture;
 static std::shared_ptr<GPUTexture> s_fallback_psf_texture;
 static std::shared_ptr<GPUTexture> s_fallback_playlist_texture;
-static std::vector<std::unique_ptr<GPUTexture>> s_cleanup_textures;
 
 //////////////////////////////////////////////////////////////////////////
 // Landing
@@ -745,9 +744,6 @@ void FullscreenUI::Render()
   if (!s_initialized)
     return;
 
-  for (std::unique_ptr<GPUTexture>& tex : s_cleanup_textures)
-    tex.reset();
-  s_cleanup_textures.clear();
   ImGuiFullscreen::UploadAsyncTextures();
 
   ImGuiFullscreen::BeginLayout();
@@ -866,8 +862,6 @@ void FullscreenUI::DestroyResources()
   s_fallback_exe_texture.reset();
   s_fallback_disc_texture.reset();
   for (auto& tex : s_game_compatibility_textures)
-    tex.reset();
-  for (auto& tex : s_cleanup_textures)
     tex.reset();
 }
 
@@ -5089,16 +5083,15 @@ void FullscreenUI::PopulateSaveStateScreenshot(SaveStateListEntry* li, const Ext
   li->preview_texture.reset();
   if (ssi && !ssi->screenshot_data.empty())
   {
-    li->preview_texture = g_gpu_device->CreateTexture(
+    li->preview_texture = g_gpu_device->FetchTexture(
       ssi->screenshot_width, ssi->screenshot_height, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
-      ssi->screenshot_data.data(), sizeof(u32) * ssi->screenshot_width, false);
+      ssi->screenshot_data.data(), sizeof(u32) * ssi->screenshot_width);
   }
   else
   {
-    li->preview_texture = g_gpu_device->CreateTexture(
+    li->preview_texture = g_gpu_device->FetchTexture(
       Resources::PLACEHOLDER_ICON_WIDTH, Resources::PLACEHOLDER_ICON_HEIGHT, 1, 1, 1, GPUTexture::Type::Texture,
-      GPUTexture::Format::RGBA8, Resources::PLACEHOLDER_ICON_DATA, sizeof(u32) * Resources::PLACEHOLDER_ICON_WIDTH,
-      false);
+      GPUTexture::Format::RGBA8, Resources::PLACEHOLDER_ICON_DATA, sizeof(u32) * Resources::PLACEHOLDER_ICON_WIDTH);
   }
 
   if (!li->preview_texture)
@@ -5110,7 +5103,7 @@ void FullscreenUI::ClearSaveStateEntryList()
   for (SaveStateListEntry& entry : s_save_state_selector_slots)
   {
     if (entry.preview_texture)
-      s_cleanup_textures.push_back(std::move(entry.preview_texture));
+      g_gpu_device->RecycleTexture(std::move(entry.preview_texture));
   }
   s_save_state_selector_slots.clear();
 }

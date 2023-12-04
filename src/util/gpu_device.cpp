@@ -289,6 +289,7 @@ bool GPUDevice::Create(const std::string_view& adapter, const std::string_view& 
 
 void GPUDevice::Destroy()
 {
+  PurgeTexturePool();
   if (HasSurface())
     DestroySurface();
   DestroyResources();
@@ -726,10 +727,11 @@ bool GPUDevice::UpdateImGuiFontTexture()
   }
 
   std::unique_ptr<GPUTexture> new_font =
-    CreateTexture(width, height, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8, pixels, pitch);
+    FetchTexture(width, height, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8, pixels, pitch);
   if (!new_font)
     return false;
 
+  RecycleTexture(std::move(m_imgui_font_texture));
   m_imgui_font_texture = std::move(new_font);
   io.Fonts->SetTexID(m_imgui_font_texture.get());
   return true;
@@ -739,6 +741,108 @@ bool GPUDevice::UsesLowerLeftOrigin() const
 {
   const RenderAPI api = GetRenderAPI();
   return (api == RenderAPI::OpenGL || api == RenderAPI::OpenGLES);
+}
+
+std::unique_ptr<GPUTexture> GPUDevice::FetchTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
+                                                    GPUTexture::Type type, GPUTexture::Format format,
+                                                    const void* data /*= nullptr*/, u32 data_stride /*= 0*/)
+{
+  std::unique_ptr<GPUTexture> ret;
+
+  const TexturePoolKey key = {static_cast<u16>(width),
+                              static_cast<u16>(height),
+                              static_cast<u8>(layers),
+                              static_cast<u8>(levels),
+                              static_cast<u8>(samples),
+                              type,
+                              format,
+                              0u};
+
+  for (auto it = m_texture_pool.begin(); it != m_texture_pool.end(); ++it)
+  {
+    if (it->key == key)
+    {
+      if (data && !it->texture->Update(0, 0, width, height, data, data_stride, 0, 0))
+      {
+        // This shouldn't happen...
+        Log_ErrorFmt("Failed to upload {}x{} to pooled texture", width, height);
+        break;
+      }
+
+      ret = std::move(it->texture);
+      m_texture_pool.erase(it);
+      return ret;
+    }
+  }
+
+  ret = CreateTexture(width, height, layers, levels, samples, type, format, data, data_stride);
+  return ret;
+}
+
+std::unique_ptr<GPUTexture, GPUDevice::PooledTextureDeleter>
+GPUDevice::FetchAutoRecycleTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, GPUTexture::Type type,
+                                   GPUTexture::Format format, const void* data /*= nullptr*/, u32 data_stride /*= 0*/,
+                                   bool dynamic /*= false*/)
+{
+  std::unique_ptr<GPUTexture> ret =
+    FetchTexture(width, height, layers, levels, samples, type, format, data, data_stride);
+  return std::unique_ptr<GPUTexture, PooledTextureDeleter>(ret.release());
+}
+
+void GPUDevice::RecycleTexture(std::unique_ptr<GPUTexture> texture)
+{
+  if (!texture)
+    return;
+
+  u32 remove_count = m_texture_pool_counter + POOL_PURGE_DELAY;
+  if (remove_count < m_texture_pool_counter)
+  {
+    // wrapped around, handle it
+    if (m_texture_pool.empty())
+    {
+      m_texture_pool_counter = 0;
+      remove_count = POOL_PURGE_DELAY;
+    }
+    else
+    {
+      const u32 reduce = m_texture_pool.front().remove_count;
+      m_texture_pool_counter -= reduce;
+      remove_count -= reduce;
+    }
+  }
+
+  const TexturePoolKey key = {static_cast<u16>(texture->GetWidth()),
+                              static_cast<u16>(texture->GetHeight()),
+                              static_cast<u8>(texture->GetLayers()),
+                              static_cast<u8>(texture->GetLevels()),
+                              static_cast<u8>(texture->GetSamples()),
+                              texture->GetType(),
+                              texture->GetFormat(),
+                              0u};
+
+  m_texture_pool.push_back({std::move(texture), remove_count, key});
+}
+
+void GPUDevice::PurgeTexturePool()
+{
+  m_texture_pool_counter = 0;
+  m_texture_pool.clear();
+}
+
+void GPUDevice::TrimTexturePool()
+{
+  if (m_texture_pool.empty())
+    return;
+
+  const u32 counter = m_texture_pool_counter++;
+  for (auto it = m_texture_pool.begin(); it != m_texture_pool.end();)
+  {
+    if (counter < it->remove_count)
+      break;
+
+    Log_ProfileFmt("Trim {}x{} texture from pool", it->texture->GetWidth(), it->texture->GetHeight());
+    it = m_texture_pool.erase(it);
+  }
 }
 
 void GPUDevice::SetDisplayMaxFPS(float max_fps)

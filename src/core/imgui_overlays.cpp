@@ -717,7 +717,13 @@ void SaveStateSelectorUI::Close(bool reset_slot)
 
 void SaveStateSelectorUI::RefreshList()
 {
+  for (ListEntry& entry : s_slots)
+  {
+    if (entry.preview_texture)
+      g_gpu_device->RecycleTexture(std::move(entry.preview_texture));
+  }
   s_slots.clear();
+
   if (System::IsShutdown())
     return;
 
@@ -761,7 +767,10 @@ void SaveStateSelectorUI::DestroyTextures()
   Close();
 
   for (ListEntry& entry : s_slots)
-    entry.preview_texture.reset();
+  {
+    if (entry.preview_texture)
+      g_gpu_device->RecycleTexture(std::move(entry.preview_texture));
+  }
 }
 
 void SaveStateSelectorUI::RefreshHotkeyLegend()
@@ -815,23 +824,22 @@ void SaveStateSelectorUI::InitializeListEntry(ListEntry* li, ExtendedSaveStateIn
   li->slot = slot;
   li->global = global;
 
-  li->preview_texture.reset();
-
   // Might not have a display yet, we're called at startup..
   if (g_gpu_device)
   {
+    g_gpu_device->RecycleTexture(std::move(li->preview_texture));
+
     if (ssi && !ssi->screenshot_data.empty())
     {
-      li->preview_texture = g_gpu_device->CreateTexture(
+      li->preview_texture = g_gpu_device->FetchTexture(
         ssi->screenshot_width, ssi->screenshot_height, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
-        ssi->screenshot_data.data(), sizeof(u32) * ssi->screenshot_width, false);
+        ssi->screenshot_data.data(), sizeof(u32) * ssi->screenshot_width);
     }
     else
     {
-      li->preview_texture = g_gpu_device->CreateTexture(
+      li->preview_texture = g_gpu_device->FetchTexture(
         Resources::PLACEHOLDER_ICON_WIDTH, Resources::PLACEHOLDER_ICON_HEIGHT, 1, 1, 1, GPUTexture::Type::Texture,
-        GPUTexture::Format::RGBA8, Resources::PLACEHOLDER_ICON_DATA, sizeof(u32) * Resources::PLACEHOLDER_ICON_WIDTH,
-        false);
+        GPUTexture::Format::RGBA8, Resources::PLACEHOLDER_ICON_DATA, sizeof(u32) * Resources::PLACEHOLDER_ICON_WIDTH);
     }
 
     if (!li->preview_texture)
@@ -850,10 +858,11 @@ void SaveStateSelectorUI::InitializePlaceholderListEntry(ListEntry* li, std::str
 
   if (g_gpu_device)
   {
-    li->preview_texture = g_gpu_device->CreateTexture(
+    g_gpu_device->RecycleTexture(std::move(li->preview_texture));
+
+    li->preview_texture = g_gpu_device->FetchTexture(
       Resources::PLACEHOLDER_ICON_WIDTH, Resources::PLACEHOLDER_ICON_HEIGHT, 1, 1, 1, GPUTexture::Type::Texture,
-      GPUTexture::Format::RGBA8, Resources::PLACEHOLDER_ICON_DATA, sizeof(u32) * Resources::PLACEHOLDER_ICON_WIDTH,
-      false);
+      GPUTexture::Format::RGBA8, Resources::PLACEHOLDER_ICON_DATA, sizeof(u32) * Resources::PLACEHOLDER_ICON_WIDTH);
     if (!li->preview_texture)
       Log_ErrorPrintf("Failed to upload save state image to GPU");
   }

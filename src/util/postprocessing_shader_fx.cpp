@@ -273,7 +273,11 @@ static GPUPipeline::Primitive MapPrimitive(reshadefx::primitive_topology topolog
 
 PostProcessing::ReShadeFXShader::ReShadeFXShader() = default;
 
-PostProcessing::ReShadeFXShader::~ReShadeFXShader() = default;
+PostProcessing::ReShadeFXShader::~ReShadeFXShader()
+{
+  for (Texture& tex : m_textures)
+    g_gpu_device->RecycleTexture(std::move(tex.texture));
+}
 
 bool PostProcessing::ReShadeFXShader::LoadFromFile(std::string name, std::string filename, bool only_config,
                                                    Error* error)
@@ -936,8 +940,8 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
       }
 
       tex.rt_scale = 0.0f;
-      tex.texture = g_gpu_device->CreateTexture(image.GetWidth(), image.GetHeight(), 1, 1, 1, GPUTexture::Type::Texture,
-                                                GPUTexture::Format::RGBA8, image.GetPixels(), image.GetPitch());
+      tex.texture = g_gpu_device->FetchTexture(image.GetWidth(), image.GetHeight(), 1, 1, 1, GPUTexture::Type::Texture,
+                                               GPUTexture::Format::RGBA8, image.GetPixels(), image.GetPitch());
       if (!tex.texture)
       {
         Error::SetString(
@@ -1249,11 +1253,11 @@ bool PostProcessing::ReShadeFXShader::ResizeOutput(GPUTexture::Format format, u3
     if (tex.rt_scale == 0.0f)
       continue;
 
-    tex.texture.reset();
+    g_gpu_device->RecycleTexture(std::move(tex.texture));
 
     const u32 t_width = std::max(static_cast<u32>(static_cast<float>(width) * tex.rt_scale), 1u);
     const u32 t_height = std::max(static_cast<u32>(static_cast<float>(height) * tex.rt_scale), 1u);
-    tex.texture = g_gpu_device->CreateTexture(t_width, t_height, 1, 1, 1, GPUTexture::Type::RenderTarget, tex.format);
+    tex.texture = g_gpu_device->FetchTexture(t_width, t_height, 1, 1, 1, GPUTexture::Type::RenderTarget, tex.format);
     if (!tex.texture)
     {
       Log_ErrorPrintf("Failed to create %ux%u texture", t_width, t_height);

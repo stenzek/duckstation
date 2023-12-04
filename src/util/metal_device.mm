@@ -1043,7 +1043,7 @@ void MetalTexture::Destroy()
 
 std::unique_ptr<GPUTexture> MetalDevice::CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                        GPUTexture::Type type, GPUTexture::Format format,
-                                                       const void* data, u32 data_stride, bool dynamic /* = false */)
+                                                       const void* data, u32 data_stride)
 {
   if (!GPUTexture::ValidateConfig(width, height, layers, layers, samples, type, format))
     return {};
@@ -1073,6 +1073,7 @@ std::unique_ptr<GPUTexture> MetalDevice::CreateTexture(u32 width, u32 height, u3
     switch (type)
     {
       case GPUTexture::Type::Texture:
+      case GPUTexture::Type::DynamicTexture:
         desc.usage = MTLTextureUsageShaderRead;
         break;
 
@@ -1977,14 +1978,23 @@ bool MetalDevice::BeginPresent(bool skip_present)
 {
   @autoreleasepool
   {
-    if (skip_present || m_layer == nil)
+    if (skip_present)
       return false;
+
+    if (m_layer == nil)
+    {
+      TrimTexturePool();
+      return false;
+    }
 
     EndAnyEncoding();
 
     m_layer_drawable = [[m_layer nextDrawable] retain];
     if (m_layer_drawable == nil)
+    {
+      TrimTexturePool();
       return false;
+    }
 
     SetViewportAndScissor(0, 0, m_window_info.surface_width, m_window_info.surface_height);
 
@@ -2012,6 +2022,7 @@ void MetalDevice::EndPresent()
   [m_layer_drawable release];
   m_layer_drawable = nil;
   SubmitCommandBuffer();
+  TrimTexturePool();
 }
 
 void MetalDevice::CreateCommandBuffer()

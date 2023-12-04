@@ -1067,6 +1067,7 @@ bool D3D12Device::BeginPresent(bool frame_skip)
   if (!m_swap_chain)
   {
     SubmitCommandList(false);
+    TrimTexturePool();
     return false;
   }
 
@@ -1079,6 +1080,7 @@ bool D3D12Device::BeginPresent(bool frame_skip)
       (FAILED(m_swap_chain->GetFullscreenState(&is_fullscreen, nullptr)) || !is_fullscreen))
   {
     Host::RunOnCPUThread([]() { Host::SetFullscreen(false); });
+    TrimTexturePool();
     return false;
   }
 
@@ -1104,6 +1106,8 @@ void D3D12Device::EndPresent()
     m_swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
   else
     m_swap_chain->Present(static_cast<UINT>(m_vsync_enabled), 0);
+
+  TrimTexturePool();
 }
 
 #ifdef _DEBUG

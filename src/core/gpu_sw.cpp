@@ -31,6 +31,7 @@ GPU_SW::GPU_SW()
 
 GPU_SW::~GPU_SW()
 {
+  g_gpu_device->RecycleTexture(std::move(m_private_display_texture));
   m_backend.Shutdown();
 }
 
@@ -98,9 +99,9 @@ GPUTexture* GPU_SW::GetDisplayTexture(u32 width, u32 height, GPUTexture::Format 
       m_private_display_texture->GetHeight() != height || m_private_display_texture->GetFormat() != format)
   {
     ClearDisplayTexture();
-    m_private_display_texture.reset();
+    g_gpu_device->RecycleTexture(std::move(m_private_display_texture));
     m_private_display_texture =
-      g_gpu_device->CreateTexture(width, height, 1, 1, 1, GPUTexture::Type::Texture, format, nullptr, 0, true);
+      g_gpu_device->FetchTexture(width, height, 1, 1, 1, GPUTexture::Type::DynamicTexture, format, nullptr, 0);
     if (!m_private_display_texture)
       Log_ErrorPrintf("Failed to create %ux%u %u texture", width, height, static_cast<u32>(format));
   }

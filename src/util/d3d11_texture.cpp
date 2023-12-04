@@ -21,10 +21,10 @@ Log_SetChannel(D3D11Device);
 
 std::unique_ptr<GPUTexture> D3D11Device::CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                        GPUTexture::Type type, GPUTexture::Format format,
-                                                       const void* data, u32 data_stride, bool dynamic /* = false */)
+                                                       const void* data, u32 data_stride)
 {
   std::unique_ptr<D3D11Texture> tex = std::make_unique<D3D11Texture>();
-  if (!tex->Create(m_device.Get(), width, height, layers, levels, samples, type, format, data, data_stride, dynamic))
+  if (!tex->Create(m_device.Get(), width, height, layers, levels, samples, type, format, data, data_stride))
     tex.reset();
 
   return tex;
@@ -199,7 +199,7 @@ bool D3D11Texture::IsValid() const
 bool D3D11Texture::Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch, u32 layer /*= 0*/,
                           u32 level /*= 0*/)
 {
-  if (m_dynamic)
+  if (m_type == Type::DynamicTexture)
   {
     void* map;
     u32 map_stride;
@@ -225,8 +225,8 @@ bool D3D11Texture::Update(u32 x, u32 y, u32 width, u32 height, const void* data,
 bool D3D11Texture::Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32 height, u32 layer /*= 0*/,
                        u32 level /*= 0*/)
 {
-  if (!m_dynamic || (x + width) > GetMipWidth(level) || (y + height) > GetMipHeight(level) || layer > m_layers ||
-      level > m_levels)
+  if (m_type != Type::DynamicTexture || (x + width) > GetMipWidth(level) || (y + height) > GetMipHeight(level) ||
+      layer > m_layers || level > m_levels)
   {
     return false;
   }
@@ -269,13 +269,14 @@ DXGI_FORMAT D3D11Texture::GetDXGIFormat() const
 }
 
 bool D3D11Texture::Create(ID3D11Device* device, u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type,
-                          Format format, const void* initial_data /* = nullptr */, u32 initial_data_stride /* = 0 */,
-                          bool dynamic /* = false */)
+                          Format format, const void* initial_data /* = nullptr */, u32 initial_data_stride /* = 0 */)
 {
   if (!ValidateConfig(width, height, layers, layers, samples, type, format))
     return false;
 
   u32 bind_flags = 0;
+  D3D11_USAGE usage = D3D11_USAGE_DEFAULT;
+  u32 cpu_access = 0;
   switch (type)
   {
     case Type::RenderTarget:
@@ -287,6 +288,11 @@ bool D3D11Texture::Create(ID3D11Device* device, u32 width, u32 height, u32 layer
     case Type::Texture:
       bind_flags = D3D11_BIND_SHADER_RESOURCE;
       break;
+    case Type::DynamicTexture:
+      bind_flags = D3D11_BIND_SHADER_RESOURCE;
+      usage = D3D11_USAGE_DYNAMIC;
+      cpu_access = D3D11_CPU_ACCESS_WRITE;
+      break;
     case Type::RWTexture:
       bind_flags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
       break;
@@ -296,9 +302,8 @@ bool D3D11Texture::Create(ID3D11Device* device, u32 width, u32 height, u32 layer
 
   const D3DCommon::DXGIFormatMapping& fm = D3DCommon::GetFormatMapping(format);
 
-  CD3D11_TEXTURE2D_DESC desc(fm.resource_format, width, height, layers, levels, bind_flags,
-                             dynamic ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT, dynamic ? D3D11_CPU_ACCESS_WRITE : 0,
-                             samples, 0, 0);
+  CD3D11_TEXTURE2D_DESC desc(fm.resource_format, width, height, layers, levels, bind_flags, usage, cpu_access, samples,
+                             0, 0);
 
   D3D11_SUBRESOURCE_DATA srd;
   srd.pSysMem = initial_data;
@@ -373,7 +378,6 @@ bool D3D11Texture::Create(ID3D11Device* device, u32 width, u32 height, u32 layer
   m_samples = static_cast<u8>(samples);
   m_type = type;
   m_format = format;
-  m_dynamic = dynamic;
   return true;
 }
 
@@ -383,7 +387,6 @@ void D3D11Texture::Destroy()
   m_rtv_dsv.Reset();
   m_srv.Reset();
   m_texture.Reset();
-  m_dynamic = false;
   ClearBaseProperties();
 }
 

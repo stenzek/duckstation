@@ -28,6 +28,7 @@ public:
     RenderTarget,
     DepthStencil,
     Texture,
+    DynamicTexture,
     RWTexture,
   };
 
@@ -100,7 +101,8 @@ public:
   }
   ALWAYS_INLINE bool IsRenderTarget() const { return (m_type == Type::RenderTarget); }
   ALWAYS_INLINE bool IsDepthStencil() const { return (m_type == Type::DepthStencil); }
-  ALWAYS_INLINE bool IsTexture() const { return (m_type == Type::Texture); }
+  ALWAYS_INLINE bool IsTexture() const { return (m_type == Type::Texture || m_type == Type::DynamicTexture); }
+  ALWAYS_INLINE bool IsDynamicTexture() const { return (m_type == Type::DynamicTexture); }
 
   ALWAYS_INLINE const ClearValue& GetClearValue() const { return m_clear_value; }
   ALWAYS_INLINE u32 GetClearColor() const { return m_clear_value.color; }
@@ -152,6 +154,7 @@ protected:
   u8 m_samples = 0;
   Type m_type = Type::Unknown;
   Format m_format = Format::Unknown;
+
   State m_state = State::Dirty;
 
   ClearValue m_clear_value = {};

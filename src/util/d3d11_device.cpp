@@ -601,6 +601,7 @@ bool D3D11Device::BeginPresent(bool skip_present)
   {
     // Note: Really slow on Intel...
     m_context->Flush();
+    TrimTexturePool();
     return false;
   }
 
@@ -611,6 +612,7 @@ bool D3D11Device::BeginPresent(bool skip_present)
       (FAILED(m_swap_chain->GetFullscreenState(&is_fullscreen, nullptr)) || !is_fullscreen))
   {
     Host::SetFullscreen(false);
+    TrimTexturePool();
     return false;
   }
 
@@ -644,6 +646,8 @@ void D3D11Device::EndPresent()
 
   if (m_gpu_timing_enabled)
     KickTimestampQuery();
+
+  TrimTexturePool();
 }
 
 GPUDevice::AdapterAndModeList D3D11Device::StaticGetAdapterAndModeList()

@@ -100,6 +100,7 @@ std::unique_ptr<VulkanTexture> VulkanTexture::Create(u32 width, u32 height, u32 
   switch (type)
   {
     case Type::Texture:
+    case Type::DynamicTexture:
     {
       ici.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
     }
@@ -716,8 +717,7 @@ void VulkanTexture::MakeReadyForSampling()
 
 std::unique_ptr<GPUTexture> VulkanDevice::CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                         GPUTexture::Type type, GPUTexture::Format format,
-                                                        const void* data /* = nullptr */, u32 data_stride /* = 0 */,
-                                                        bool dynamic /* = false */)
+                                                        const void* data /* = nullptr */, u32 data_stride /* = 0 */)
 {
   const VkFormat vk_format = VulkanDevice::TEXTURE_FORMAT_MAPPING[static_cast<u8>(format)];
   std::unique_ptr<VulkanTexture> tex =

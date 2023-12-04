@@ -36,8 +36,7 @@ D3D12Texture::~D3D12Texture()
 
 std::unique_ptr<GPUTexture> D3D12Device::CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                        GPUTexture::Type type, GPUTexture::Format format,
-                                                       const void* data /* = nullptr */, u32 data_stride /* = 0 */,
-                                                       bool dynamic /* = false */)
+                                                       const void* data /* = nullptr */, u32 data_stride /* = 0 */)
 {
   if (!GPUTexture::ValidateConfig(width, height, layers, levels, samples, type, format))
     return {};
@@ -66,6 +65,7 @@ std::unique_ptr<GPUTexture> D3D12Device::CreateTexture(u32 width, u32 height, u3
   switch (type)
   {
     case GPUTexture::Type::Texture:
+    case GPUTexture::Type::DynamicTexture:
     {
       desc.Flags = D3D12_RESOURCE_FLAG_NONE;
       state = D3D12_RESOURCE_STATE_COPY_DEST;
@@ -329,7 +329,8 @@ ID3D12GraphicsCommandList4* D3D12Texture::GetCommandBufferForUpdate()
   if (m_type != Type::Texture || m_use_fence_counter == dev.GetCurrentFenceValue())
   {
     // Console.WriteLn("Texture update within frame, can't use do beforehand");
-    dev.EndRenderPass();
+    if (dev.InRenderPass())
+      dev.EndRenderPass();
     return dev.GetCommandList();
   }
 

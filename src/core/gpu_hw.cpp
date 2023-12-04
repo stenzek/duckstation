@@ -290,8 +290,8 @@ bool GPU_HW::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
 
         tex =
           g_gpu_device
-            ->CreateTexture(m_vram_texture->GetWidth(), m_vram_texture->GetHeight(), 1, 1, m_vram_texture->GetSamples(),
-                            GPUTexture::Type::RenderTarget, GPUTexture::Format::RGBA8, nullptr, 0, false)
+            ->FetchTexture(m_vram_texture->GetWidth(), m_vram_texture->GetHeight(), 1, 1, m_vram_texture->GetSamples(),
+                           GPUTexture::Type::RenderTarget, GPUTexture::Format::RGBA8, nullptr, 0)
             .release();
         *host_texture = tex;
         if (!tex)
@@ -627,18 +627,18 @@ bool GPU_HW::CreateBuffers()
                                                GPUTexture::Type::RWTexture :
                                                GPUTexture::Type::Texture;
 
-  if (!(m_vram_texture = g_gpu_device->CreateTexture(texture_width, texture_height, 1, 1, samples,
-                                                     GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT)) ||
-      !(m_vram_depth_texture = g_gpu_device->CreateTexture(texture_width, texture_height, 1, 1, samples,
-                                                           GPUTexture::Type::DepthStencil, VRAM_DS_FORMAT)) ||
+  if (!(m_vram_texture = g_gpu_device->FetchTexture(texture_width, texture_height, 1, 1, samples,
+                                                    GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT)) ||
+      !(m_vram_depth_texture = g_gpu_device->FetchTexture(texture_width, texture_height, 1, 1, samples,
+                                                          GPUTexture::Type::DepthStencil, VRAM_DS_FORMAT)) ||
       !(m_vram_read_texture =
-          g_gpu_device->CreateTexture(texture_width, texture_height, 1, 1, 1, read_texture_type, VRAM_RT_FORMAT)) ||
-      !(m_display_private_texture = g_gpu_device->CreateTexture(
+          g_gpu_device->FetchTexture(texture_width, texture_height, 1, 1, 1, read_texture_type, VRAM_RT_FORMAT)) ||
+      !(m_display_private_texture = g_gpu_device->FetchTexture(
           ((m_downsample_mode == GPUDownsampleMode::Adaptive) ? VRAM_WIDTH : GPU_MAX_DISPLAY_WIDTH) *
             m_resolution_scale,
           GPU_MAX_DISPLAY_HEIGHT * m_resolution_scale, 1, 1, 1, GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT)) ||
-      !(m_vram_readback_texture = g_gpu_device->CreateTexture(VRAM_WIDTH / 2, VRAM_HEIGHT, 1, 1, 1,
-                                                              GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT)))
+      !(m_vram_readback_texture = g_gpu_device->FetchTexture(VRAM_WIDTH / 2, VRAM_HEIGHT, 1, 1, 1,
+                                                             GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT)))
   {
     return false;
   }
@@ -661,13 +661,13 @@ bool GPU_HW::CreateBuffers()
   {
     const u32 levels = GetAdaptiveDownsamplingMipLevels();
 
-    if (!(m_downsample_texture = g_gpu_device->CreateTexture(texture_width, texture_height, 1, levels, 1,
-                                                             GPUTexture::Type::Texture, VRAM_RT_FORMAT)) ||
-        !(m_downsample_render_texture = g_gpu_device->CreateTexture(texture_width, texture_height, 1, 1, 1,
-                                                                    GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT)) ||
+    if (!(m_downsample_texture = g_gpu_device->FetchTexture(texture_width, texture_height, 1, levels, 1,
+                                                            GPUTexture::Type::Texture, VRAM_RT_FORMAT)) ||
+        !(m_downsample_render_texture = g_gpu_device->FetchTexture(texture_width, texture_height, 1, 1, 1,
+                                                                   GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT)) ||
         !(m_downsample_weight_texture =
-            g_gpu_device->CreateTexture(texture_width >> (levels - 1), texture_height >> (levels - 1), 1, 1, 1,
-                                        GPUTexture::Type::RenderTarget, GPUTexture::Format::R8)))
+            g_gpu_device->FetchTexture(texture_width >> (levels - 1), texture_height >> (levels - 1), 1, 1, 1,
+                                       GPUTexture::Type::RenderTarget, GPUTexture::Format::R8)))
     {
       return false;
     }
@@ -676,8 +676,8 @@ bool GPU_HW::CreateBuffers()
   {
     const u32 downsample_scale = GetBoxDownsampleScale(m_resolution_scale);
     if (!(m_downsample_render_texture =
-            g_gpu_device->CreateTexture(VRAM_WIDTH * downsample_scale, VRAM_HEIGHT * downsample_scale, 1, 1, 1,
-                                        GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT)))
+            g_gpu_device->FetchTexture(VRAM_WIDTH * downsample_scale, VRAM_HEIGHT * downsample_scale, 1, 1, 1,
+                                       GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT)))
     {
       return false;
     }
@@ -702,14 +702,14 @@ void GPU_HW::DestroyBuffers()
   ClearDisplayTexture();
 
   m_vram_upload_buffer.reset();
-  m_downsample_weight_texture.reset();
-  m_downsample_render_texture.reset();
-  m_downsample_texture.reset();
-  m_vram_read_texture.reset();
-  m_vram_depth_texture.reset();
-  m_vram_texture.reset();
-  m_vram_readback_texture.reset();
-  m_display_private_texture.reset();
+  g_gpu_device->RecycleTexture(std::move(m_downsample_weight_texture));
+  g_gpu_device->RecycleTexture(std::move(m_downsample_render_texture));
+  g_gpu_device->RecycleTexture(std::move(m_downsample_texture));
+  g_gpu_device->RecycleTexture(std::move(m_vram_read_texture));
+  g_gpu_device->RecycleTexture(std::move(m_vram_depth_texture));
+  g_gpu_device->RecycleTexture(std::move(m_vram_texture));
+  g_gpu_device->RecycleTexture(std::move(m_vram_readback_texture));
+  g_gpu_device->RecycleTexture(std::move(m_display_private_texture));
 }
 
 bool GPU_HW::CompilePipelines()
@@ -2018,11 +2018,11 @@ bool GPU_HW::BlitVRAMReplacementTexture(const TextureReplacementTexture* tex, u3
   if (!m_vram_replacement_texture || m_vram_replacement_texture->GetWidth() < tex->GetWidth() ||
       m_vram_replacement_texture->GetHeight() < tex->GetHeight())
   {
-    m_vram_replacement_texture.reset();
+    g_gpu_device->RecycleTexture(std::move(m_vram_replacement_texture));
 
     if (!(m_vram_replacement_texture =
-            g_gpu_device->CreateTexture(tex->GetWidth(), tex->GetHeight(), 1, 1, 1, GPUTexture::Type::Texture,
-                                        GPUTexture::Format::RGBA8, tex->GetPixels(), tex->GetPitch(), true)))
+            g_gpu_device->FetchTexture(tex->GetWidth(), tex->GetHeight(), 1, 1, 1, GPUTexture::Type::DynamicTexture,
+                                       GPUTexture::Format::RGBA8, tex->GetPixels(), tex->GetPitch())))
     {
       return false;
     }

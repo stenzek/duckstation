@@ -2054,8 +2054,8 @@ bool GPU::RenderScreenshotToBuffer(u32 width, u32 height, const Common::Rectangl
   const GPUTexture::Format hdformat =
     g_gpu_device->HasSurface() ? g_gpu_device->GetWindowFormat() : GPUTexture::Format::RGBA8;
 
-  std::unique_ptr<GPUTexture> render_texture =
-    g_gpu_device->CreateTexture(width, height, 1, 1, 1, GPUTexture::Type::RenderTarget, hdformat);
+  auto render_texture =
+    g_gpu_device->FetchAutoRecycleTexture(width, height, 1, 1, 1, GPUTexture::Type::RenderTarget, hdformat);
   if (!render_texture)
     return false;
 

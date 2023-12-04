@@ -1035,8 +1035,9 @@ void ImGuiManager::UpdateSoftwareCursorTexture(u32 index)
     Log_ErrorPrintf("Failed to load software cursor %u image '%s'", index, sc.image_path.c_str());
     return;
   }
-  sc.texture = g_gpu_device->CreateTexture(image.GetWidth(), image.GetHeight(), 1, 1, 1, GPUTexture::Type::Texture,
-                                           GPUTexture::Format::RGBA8, image.GetPixels(), image.GetPitch());
+  g_gpu_device->RecycleTexture(std::move(sc.texture));
+  sc.texture = g_gpu_device->FetchTexture(image.GetWidth(), image.GetHeight(), 1, 1, 1, GPUTexture::Type::Texture,
+                                          GPUTexture::Format::RGBA8, image.GetPixels(), image.GetPitch());
   if (!sc.texture)
   {
     Log_ErrorPrintf("Failed to upload %ux%u software cursor %u image '%s'", image.GetWidth(), image.GetHeight(), index,
