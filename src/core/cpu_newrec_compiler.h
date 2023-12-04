@@ -436,7 +436,7 @@ protected:
     bool dirty_gte_done_cycle;
     bool block_ended;
     const Instruction* inst;
-    const CodeCache::InstructionInfo* iinfo;
+    CodeCache::InstructionInfo* iinfo;
     u32 current_instruction_pc;
     bool current_instruction_delay_slot;
     std::bitset<static_cast<size_t>(Reg::count)> const_regs_valid;

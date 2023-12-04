@@ -111,7 +111,7 @@ const void* CPU::NewRec::Compiler::CompileBlock(CodeCache::Block* block, u32* ho
   {
     CompileInstruction();
 
-    if (iinfo->is_last_instruction || m_block_ended)
+    if (m_block_ended || iinfo->is_last_instruction)
     {
       if (!m_block_ended)
       {
@@ -1111,6 +1111,7 @@ void CPU::NewRec::Compiler::BackupHostState()
   bu.dirty_gte_done_cycle = m_dirty_gte_done_cycle;
   bu.block_ended = m_block_ended;
   bu.inst = inst;
+  bu.iinfo = iinfo;
   bu.current_instruction_pc = m_current_instruction_pc;
   bu.current_instruction_delay_slot = m_current_instruction_branch_delay_slot;
   bu.const_regs_valid = m_constant_regs_valid;
@@ -1139,6 +1140,7 @@ void CPU::NewRec::Compiler::RestoreHostState()
   m_current_instruction_branch_delay_slot = bu.current_instruction_delay_slot;
   m_current_instruction_pc = bu.current_instruction_pc;
   inst = bu.inst;
+  iinfo = bu.iinfo;
   m_block_ended = bu.block_ended;
   m_dirty_gte_done_cycle = bu.dirty_gte_done_cycle;
   m_dirty_instruction_bits = bu.dirty_instruction_bits;
