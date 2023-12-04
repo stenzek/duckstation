@@ -117,6 +117,48 @@ Erro: %1
 Verifique seu nome de usuário e senha e tente novamente.</translation>
     </message>
     <message>
+        <location filename="../achievementlogindialog.cpp" line="79"/>
+        <source>Enable Achievements</source>
+        <translation>Ativar conquistas</translation>
+    </message>
+    <message>
+        <location filename="../achievementlogindialog.cpp" line="80"/>
+        <source>Achievement tracking is not currently enabled. Your login will have no effect until after tracking is enabled.
+
+Do you want to enable tracking now?</source>
+        <translation>O registro de conquistas não está ativado no momento. Sua conexão não terá efeito até que o registro seja ativado.
+
+Deseja ativar o registro agora?</translation>
+    </message>
+    <message>
+        <location filename="../achievementlogindialog.cpp" line="91"/>
+        <source>Enable Hardcore Mode</source>
+        <translation>Ativar modo hardcore</translation>
+    </message>
+    <message>
+        <location filename="../achievementlogindialog.cpp" line="92"/>
+        <source>Hardcore mode is not currently enabled. Enabling hardcore mode allows you to set times, scores, and participate in game-specific leaderboards.
+
+However, hardcore mode also prevents the usage of save states, cheats and slowdown functionality.
+
+Do you want to enable hardcore mode?</source>
+        <translation>O modo hardcore não está ativado no momento. Ativando o modo hardcore você poderá definir tempos, pontuações e participar dos placares de líderes específicos do jogo.
+
+No entanto, o modo hardcore também impede o uso de salvamentos rápidos, trapaças e funcionalidades de desaceleração.
+
+Deseja ativar o modo hardcore?</translation>
+    </message>
+    <message>
+        <location filename="../achievementlogindialog.cpp" line="109"/>
+        <source>Reset System</source>
+        <translation>Reiniciar o sistema</translation>
+    </message>
+    <message>
+        <location filename="../achievementlogindialog.cpp" line="110"/>
+        <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
+        <translation>O modo hardcore não será ativado até que o sistema seja reiniciado. Deseja reiniciar o sistema agora?</translation>
+    </message>
+    <message>
         <source>&amp;Cancel</source>
         <translation type="vanished">&amp;Cancelar</translation>
     </message>
@@ -466,33 +508,33 @@ Token gerado %2.</translation>
         <translation type="vanished">Modo dificílimo desligado pelo estado salvo.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1034"/>
+        <location filename="../../core/achievements.cpp" line="1033"/>
         <source>Hardcore mode will be enabled on system reset.</source>
         <translation>Modo dificílimo será ligado assim que o sistema for reiniciado.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1061"/>
+        <location filename="../../core/achievements.cpp" line="1060"/>
         <source>{} (Unofficial)</source>
         <translation>{} (Não oficial)</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1083"/>
+        <location filename="../../core/achievements.cpp" line="1082"/>
         <source>Mastered {}</source>
         <translatorcomment>Conquistado {}</translatorcomment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1084"/>
+        <location filename="../../core/achievements.cpp" line="1083"/>
         <source>{} achievements, {} points</source>
         <translation>{} conquistas, {} pontos</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1099"/>
+        <location filename="../../core/achievements.cpp" line="1098"/>
         <source>Leaderboard attempt started.</source>
         <translation>Placar de líderes inciada.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1114"/>
+        <location filename="../../core/achievements.cpp" line="1113"/>
         <source>Leaderboard attempt failed.</source>
         <translation>Placar de líderes falhou.</translation>
     </message>
@@ -509,105 +551,105 @@ Token gerado %2.</translation>
         <translation type="vanished">Sua pontuação {} (enviando)</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1011"/>
+        <location filename="../../core/achievements.cpp" line="1010"/>
         <source>You have unlocked {0} of {1} achievements, and earned {2} of {3} points.</source>
         <translation>Você desbloqueou {0} de {1} conquistas e ganhou {2} de {3} pontos.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1159"/>
+        <location filename="../../core/achievements.cpp" line="1158"/>
         <source>Your Time: {} (Best: {})</source>
         <translation>Seu tempo: {} (melhor: {})</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1160"/>
+        <location filename="../../core/achievements.cpp" line="1159"/>
         <source>Your Score: {} (Best: {})</source>
         <translation>Sua pontuação: {} (melhor: {})</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1161"/>
+        <location filename="../../core/achievements.cpp" line="1160"/>
         <source>Your Value: {} (Best: {})</source>
         <translation>Sua pontuação: {} (melhor: {})</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1166"/>
+        <location filename="../../core/achievements.cpp" line="1165"/>
         <source>{}
 Leaderboard Position: {} of {}</source>
         <translation>{}
 Posição na tabela de classificação: {} de {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1297"/>
+        <location filename="../../core/achievements.cpp" line="1295"/>
         <source>Server error in {}:
 {}</source>
         <translation>Erro no servidor {}:
 {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1311"/>
+        <location filename="../../core/achievements.cpp" line="1309"/>
         <source>Achievements Disconnected</source>
         <translation>Conquistas desconectadas</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1312"/>
+        <location filename="../../core/achievements.cpp" line="1310"/>
         <source>An unlock request could not be completed. We will keep retrying to submit this request.</source>
         <translation>Não foi possível concluir sua solicitação de desbloqueio. Continuaremos tentando enviar esta solicitação.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1324"/>
+        <location filename="../../core/achievements.cpp" line="1322"/>
         <source>Achievements Reconnected</source>
         <translation>Conquistas reconectadas</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1325"/>
+        <location filename="../../core/achievements.cpp" line="1323"/>
         <source>All pending unlock requests have completed.</source>
         <translation>Todas as solicitações de desbloqueio pendentes foram concluídas.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1737"/>
+        <location filename="../../core/achievements.cpp" line="1735"/>
         <source>Score: {} ({} softcore)
 Unread messages: {}</source>
         <translation>Pontuação: {} ({} normal)
 Mensagens não lidas: {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1784"/>
-        <location filename="../../core/achievements.cpp" line="1824"/>
+        <location filename="../../core/achievements.cpp" line="1782"/>
+        <location filename="../../core/achievements.cpp" line="1822"/>
         <source>Confirm Hardcore Mode</source>
         <translation>Confirmar modo dificílimo</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1785"/>
-        <location filename="../../core/achievements.cpp" line="1825"/>
+        <location filename="../../core/achievements.cpp" line="1783"/>
+        <location filename="../../core/achievements.cpp" line="1823"/>
         <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
         <translation>{0} não é possível no momento enquanto o modo dificílimo estiver ligado. Deseja desativar o dificílimo? {0} será cancelado se você escolher Não.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1828"/>
+        <location filename="../../core/achievements.cpp" line="1826"/>
         <source>Yes</source>
         <translation>Sim</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1829"/>
+        <location filename="../../core/achievements.cpp" line="1827"/>
         <source>No</source>
         <translation>Não</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2049"/>
+        <location filename="../../core/achievements.cpp" line="2047"/>
         <source>Active Challenge Achievements</source>
         <translation>Conquistas ativadas</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2177"/>
+        <location filename="../../core/achievements.cpp" line="2175"/>
         <source> (Hardcore Mode)</source>
         <translation> (Modo hardcore)</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2191"/>
+        <location filename="../../core/achievements.cpp" line="2189"/>
         <source>You have unlocked all achievements and earned {} points!</source>
         <translation>Você desbloqueou todas as conquistas e ganhou {} pontos!</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2196"/>
+        <location filename="../../core/achievements.cpp" line="2194"/>
         <source>You have unlocked {0} of {1} achievements, earning {2} of {3} possible points.</source>
         <translation>Você desbloqueou {0} de {1} conquistas, ganhando {2} de {3} pontos possíveis.</translation>
     </message>
@@ -616,79 +658,79 @@ Mensagens não lidas: {}</translation>
         <translation type="vanished">Você desbloqueou {} de {} conquistas, ganhando {} de {} pontos possíveis.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2246"/>
+        <location filename="../../core/achievements.cpp" line="2244"/>
         <source>Unknown</source>
         <translation>Desconhecido</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2246"/>
+        <location filename="../../core/achievements.cpp" line="2244"/>
         <source>Locked</source>
         <translation>Bloqueado</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2247"/>
+        <location filename="../../core/achievements.cpp" line="2245"/>
         <source>Unlocked</source>
         <translation>Desbloqueado</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2247"/>
+        <location filename="../../core/achievements.cpp" line="2245"/>
         <source>Unsupported</source>
         <translation>Sem suporte</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2248"/>
+        <location filename="../../core/achievements.cpp" line="2246"/>
         <source>Unofficial</source>
         <translation>Não oficial</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2248"/>
+        <location filename="../../core/achievements.cpp" line="2246"/>
         <source>Recently Unlocked</source>
         <translation>Desbloqueado recentemente</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2249"/>
+        <location filename="../../core/achievements.cpp" line="2247"/>
         <source>Active Challenges</source>
         <translation>Desafios ativos</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2249"/>
+        <location filename="../../core/achievements.cpp" line="2247"/>
         <source>Almost There</source>
         <translation>Quase lá</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2340"/>
+        <location filename="../../core/achievements.cpp" line="2338"/>
         <source>{} points</source>
         <translation>{} pontos</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2340"/>
+        <location filename="../../core/achievements.cpp" line="2338"/>
         <source>{} point</source>
         <translation>{} ponto</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2343"/>
+        <location filename="../../core/achievements.cpp" line="2341"/>
         <source>XXX points</source>
         <translation>XXX pontos</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2376"/>
+        <location filename="../../core/achievements.cpp" line="2374"/>
         <source>Unlocked: {}</source>
         <translation>Desbloqueado: {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2719"/>
-        <location filename="../../core/achievements.cpp" line="2728"/>
+        <location filename="../../core/achievements.cpp" line="2717"/>
+        <location filename="../../core/achievements.cpp" line="2726"/>
         <source>Loading...</source>
         <translation>Carregando...</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2921"/>
-        <location filename="../../core/achievements.cpp" line="2941"/>
+        <location filename="../../core/achievements.cpp" line="2919"/>
+        <location filename="../../core/achievements.cpp" line="2939"/>
         <source>Leaderboard download failed</source>
         <translation>Falha ao baixar os placares de líderes</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1405"/>
+        <location filename="../../core/achievements.cpp" line="1403"/>
         <source>Hardcore mode is now enabled.</source>
         <translation>O modo Hardcore está ativado.</translation>
     </message>
@@ -697,32 +739,32 @@ Mensagens não lidas: {}</translation>
         <translation type="vanished">Você desbloqueou {} de {} conquistas, ganhando {} de {} pontos possíveis.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1129"/>
+        <location filename="../../core/achievements.cpp" line="1128"/>
         <source>Your Time: {}{}</source>
         <translation>Seu tempo: {}{}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1130"/>
+        <location filename="../../core/achievements.cpp" line="1129"/>
         <source>Your Score: {}{}</source>
         <translation>Sua pontuação: {}{}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1131"/>
+        <location filename="../../core/achievements.cpp" line="1130"/>
         <source>Your Value: {}{}</source>
         <translation>Sua pontuação: {}{}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1140"/>
+        <location filename="../../core/achievements.cpp" line="1139"/>
         <source> (Submitting)</source>
         <translation> (enviando)</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1406"/>
+        <location filename="../../core/achievements.cpp" line="1404"/>
         <source>Hardcore mode is now disabled.</source>
         <translation>O modo Hardcore está desligado.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1003"/>
+        <location filename="../../core/achievements.cpp" line="1002"/>
         <source>{} (Hardcore Mode)</source>
         <translation>{} (Modo dificílimo)</translation>
     </message>
@@ -731,8 +773,8 @@ Mensagens não lidas: {}</translation>
         <translation type="vanished">Você ganhou {} de {} conquistas e {} de {} pontos.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1017"/>
-        <location filename="../../core/achievements.cpp" line="2204"/>
+        <location filename="../../core/achievements.cpp" line="1016"/>
+        <location filename="../../core/achievements.cpp" line="2202"/>
         <source>This game has no achievements.</source>
         <translation>Este jogo não possui conquistas.</translation>
     </message>
@@ -751,57 +793,57 @@ Leaderboard Position: {} of {}</source>
 Posição nos placares de lideres: {} de {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2548"/>
+        <location filename="../../core/achievements.cpp" line="2546"/>
         <source>This game has {} leaderboards.</source>
         <translation>Este jogo não possui {} placares de lideres.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2565"/>
+        <location filename="../../core/achievements.cpp" line="2563"/>
         <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
         <translation>O envio de pontuações está desligado porque o modo dificílimo está desativado. As tabelas de classificação são somente leitura.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2586"/>
+        <location filename="../../core/achievements.cpp" line="2584"/>
         <source>Show Best</source>
         <translation>Mostrar melhor</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2586"/>
+        <location filename="../../core/achievements.cpp" line="2584"/>
         <source>Show Nearby</source>
         <translation>Mostrar nas redondezas</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2614"/>
+        <location filename="../../core/achievements.cpp" line="2612"/>
         <source>Rank</source>
         <translation>Classificação</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2619"/>
+        <location filename="../../core/achievements.cpp" line="2617"/>
         <source>Name</source>
         <translation>Nome</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2624"/>
+        <location filename="../../core/achievements.cpp" line="2622"/>
         <source>Time</source>
         <translation>Tempo</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2625"/>
+        <location filename="../../core/achievements.cpp" line="2623"/>
         <source>Score</source>
         <translation>Placar</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2626"/>
+        <location filename="../../core/achievements.cpp" line="2624"/>
         <source>Value</source>
         <translation>Valor</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2639"/>
+        <location filename="../../core/achievements.cpp" line="2637"/>
         <source>Date Submitted</source>
         <translation>Data do envio</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2700"/>
+        <location filename="../../core/achievements.cpp" line="2698"/>
         <source>Downloading leaderboard data, please wait...</source>
         <translation>Baixando informações de placares, por favor aguarde...</translation>
     </message>
@@ -4816,32 +4858,36 @@ Esta ação não poderá ser desfeita.</translation>
 <context>
     <name>ControllerSettingsWindow</name>
     <message>
-        <location filename="../controllersettingswindow.ui" line="20"/>
         <source>Controller Settings</source>
-        <translation>Configurações de controle</translation>
+        <translation type="vanished">Configurações de controle</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.ui" line="68"/>
+        <location filename="../controllersettingswindow.ui" line="20"/>
+        <source>DuckStation Controller Settings</source>
+        <translation>Configurações de controle do emulador</translation>
+    </message>
+    <message>
+        <location filename="../controllersettingswindow.ui" line="72"/>
         <source>Profile:</source>
         <translation>Perfil:</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.ui" line="78"/>
+        <location filename="../controllersettingswindow.ui" line="82"/>
         <source>New Profile</source>
         <translation>Novo perfil</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.ui" line="89"/>
+        <location filename="../controllersettingswindow.ui" line="93"/>
         <source>Load Profile</source>
         <translation>Carregar perfil</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.ui" line="99"/>
+        <location filename="../controllersettingswindow.ui" line="103"/>
         <source>Delete Profile</source>
         <translation>Apagar perfil</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.ui" line="110"/>
+        <location filename="../controllersettingswindow.ui" line="114"/>
         <location filename="../controllersettingswindow.cpp" line="192"/>
         <source>Restore Defaults</source>
         <translation>Restaurar padrões</translation>
@@ -14362,9 +14408,8 @@ Tem certeza de que deseja continuar?</translation>
         <translation type="vanished">Apagar arquivo</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="15"/>
         <source>All Memory Card Types (*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</source>
-        <translation>Todos os tipos de cartão de memória (*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</translation>
+        <translation type="vanished">Todos os tipos de cartão de memória (*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</translation>
     </message>
     <message>
         <source>Undelete File</source>
@@ -14387,9 +14432,8 @@ Tem certeza de que deseja continuar?</translation>
         <translation type="vanished">Todos os tipos de cartão de memória (*.mcd *.mcr *.mc)</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="18"/>
         <source>All Importable Memory Card Types (*.mcd *.mcr *.mc *.gme)</source>
-        <translation>Tipos de cartão de memória compatíveis (*.mcd *.mcr *.mc *.gme)</translation>
+        <translation type="vanished">Tipos de cartão de memória compatíveis (*.mcd *.mcr *.mc *.gme)</translation>
     </message>
     <message>
         <source>Browse...</source>
@@ -14424,9 +14468,8 @@ Tem certeza de que deseja continuar?</translation>
         <translation type="vanished">%1 Blocos Livres%2</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="20"/>
         <source>Single Save Files (*.mcs);;All Files (*.*)</source>
-        <translation>Arquivos de memória único (*.mcs);;Todos os arquivos (*.*)</translation>
+        <translation type="vanished">Arquivos de memória único (*.mcs);;Todos os arquivos (*.*)</translation>
     </message>
     <message>
         <source> (Deleted)</source>
@@ -14510,6 +14553,21 @@ Tem certeza de que deseja continuar?</translation>
 </context>
 <context>
     <name>MemoryCardEditorWindow</name>
+    <message>
+        <location filename="../memorycardeditorwindow.cpp" line="15"/>
+        <source>All Memory Card Types (*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</source>
+        <translation>Todos os tipos de cartão de memória (*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</translation>
+    </message>
+    <message>
+        <location filename="../memorycardeditorwindow.cpp" line="18"/>
+        <source>All Importable Memory Card Types (*.mcd *.mcr *.mc *.gme)</source>
+        <translation>Tipos de cartão de memória compatíveis (*.mcd *.mcr *.mc *.gme)</translation>
+    </message>
+    <message>
+        <location filename="../memorycardeditorwindow.cpp" line="20"/>
+        <source>Single Save Files (*.mcs);;All Files (*.*)</source>
+        <translation>Arquivos de memória único (*.mcs);;Todos os arquivos (*.*)</translation>
+    </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="27"/>
         <source>Delete File</source>
@@ -17062,179 +17120,179 @@ Deseja criar esse diretório?</translation>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Bem-vindo ao DuckStation!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;Este assistente ajudará a guiá-lo através das etapas de configuração necessárias para usar o aplicativo. Se esta for a primeira vez que você instala o emulador, recomendamos que consulte o guia de configuração em &lt;a href=&quot;https://github.com/stenzek/duckstation#downloading-and-running&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;https://github.com/stenzek/duckstation#downloading-and-running&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Por padrão, o DuckStation se conectará ao site &lt;a href=&quot;https://github.com/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;github.com&lt;/span&gt;&lt;/a&gt; para verificar se há atualizações disponíveis. Se você não deseja que o DuckStation faça nenhuma conexão de rede na inicialização, você deverá desmarcar a opção Atualizações Automáticas. A configuração de atualização automática pode ser alteradas posteriormente nas configurações da interface.&lt;/p&gt;&lt;p&gt;Escolha um idioma e um tema para começar..&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="65"/>
+        <location filename="../setupwizarddialog.ui" line="71"/>
         <source>Language:</source>
         <translation>Idioma:</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="82"/>
+        <location filename="../setupwizarddialog.ui" line="88"/>
         <source>Theme:</source>
         <translation>Tema:</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="105"/>
+        <location filename="../setupwizarddialog.ui" line="111"/>
         <source>Enable Automatic Updates</source>
         <translation>Habilitar atualizações automáticas</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="130"/>
+        <location filename="../setupwizarddialog.ui" line="136"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation requires a PS1 BIOS in order to run.&lt;/p&gt;&lt;p&gt;For legal reasons, you must obtain a BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;from an actual PS1 unit that you own&lt;/span&gt; (borrowing doesn&apos;t count). You should use Caetla or another utility to create an image from your console&apos;s BIOS ROM on your PC.&lt;/p&gt;&lt;p&gt;Once dumped, this BIOS image should be placed in the bios folder within the data directory shown below, or you can instruct DuckStation to scan an alternative directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation requer um BIOS de PS1 para funcionar.&lt;/p&gt;&lt;p&gt;Por razões legais, você deve obter um BIOS&lt;span style=&quot; font-weight:700;&quot;&gt;de uma unidade PS1 real de sua propriedade&lt;/span&gt; (empréstimo não conta). Você deve usar o dispositivo Caetla ou outro similar para criar uma imagem da ROM do BIOS do seu console para o seu PC.&lt;/p&gt;&lt;p&gt;Uma vez despejada, esta imagem do BIOS deve ser colocada na pasta bios dentro do diretório de dados mostrado abaixo, ou indicar para o DuckStation onde verificar o diretório onde o arquivo está.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="145"/>
+        <location filename="../setupwizarddialog.ui" line="151"/>
         <source>BIOS Directory:</source>
         <translation>Diretório do BIOS:</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="155"/>
+        <location filename="../setupwizarddialog.ui" line="161"/>
         <source>Browse...</source>
         <translation>Buscar...</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="162"/>
+        <location filename="../setupwizarddialog.ui" line="168"/>
         <source>Reset</source>
         <translation>Redefinir</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="173"/>
+        <location filename="../setupwizarddialog.ui" line="179"/>
         <source>NTSC-J (Japan):</source>
         <translation>NTSC-J (Japão):</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="190"/>
+        <location filename="../setupwizarddialog.ui" line="196"/>
         <source>NTSC-U/C (US/Canada):</source>
         <translation>NTSC-U/C (EUA, Canadá):</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="207"/>
+        <location filename="../setupwizarddialog.ui" line="213"/>
         <source>PAL (Europe, Australia):</source>
         <translation>PAL (Europa, Austrália):</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="241"/>
+        <location filename="../setupwizarddialog.ui" line="247"/>
         <source>Open in Explorer...</source>
         <translation>Abrir pasta...</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="248"/>
+        <location filename="../setupwizarddialog.ui" line="254"/>
         <source>Refresh List</source>
         <translation>Atualizar lista</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="286"/>
+        <location filename="../setupwizarddialog.ui" line="292"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation will automatically scan and identify games from the selected directories below, and populate the game list. These games should be dumped from discs you own. Utilities such as ImgBurn can be used to create images of game discs in .bin/.cue format.&lt;/p&gt;&lt;p&gt;Supported formats for dumps include: &lt;span style=&quot; font-weight:700;&quot;&gt;.cue&lt;/span&gt; (Cue Sheets), &lt;span style=&quot; font-weight:700;&quot;&gt;.iso/.img&lt;/span&gt; (Single Track Image), &lt;span style=&quot; font-weight:700;&quot;&gt;.ecm&lt;/span&gt; (Error Code Modeling Image), &lt;span style=&quot; font-weight:700;&quot;&gt;.mds&lt;/span&gt; (Media Descriptor Sidecar), &lt;span style=&quot; font-weight:700;&quot;&gt;.chd&lt;/span&gt; (Compressed Hunks of Data), &lt;span style=&quot; font-weight:700;&quot;&gt;.pbp&lt;/span&gt; (PlayStation Portable, Only Decrypted).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation irá verificar e identificar automaticamente os jogos dos diretórios escolhidos abaixo preenchendo a lista de jogos. Esses jogos devem ser retirados dos discos que você possui. Programas como ImgBurn podem ser usados ​​para criar imagens de discos de jogos no formato .bin/.cue.&lt;/p&gt;&lt;p&gt;Os formatos suportados para dumps são: &lt;span style=&quot; font-weight:700;&quot;&gt;.cue&lt;/span&gt; (Cue Sheets), &lt;span style=&quot; font-weight:700;&quot;&gt;.iso/.img&lt;/span&gt; (Imagem de faixa única), &lt;span style=&quot; font-weight:700;&quot;&gt;.ecm&lt;/span&gt; (Error Code Modeling Image), &lt;span style=&quot; font-weight:700;&quot;&gt;.mds&lt;/span&gt; (Media Descriptor Sidecar), &lt;span style=&quot; font-weight:700;&quot;&gt;.chd&lt;/span&gt; (Compressed Hunks of Data), &lt;span style=&quot; font-weight:700;&quot;&gt;.pbp&lt;/span&gt; (PlayStation Portátil, Apenas descriptografado).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="301"/>
+        <location filename="../setupwizarddialog.ui" line="307"/>
         <source>Search Directories (will be scanned for games)</source>
         <translation>Examinar diretórios (serão examinados por jogos)</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="327"/>
+        <location filename="../setupwizarddialog.ui" line="333"/>
         <source>Add...</source>
         <translation>Adicionar...</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="347"/>
+        <location filename="../setupwizarddialog.ui" line="353"/>
         <location filename="../setupwizarddialog.cpp" line="267"/>
         <source>Remove</source>
         <translation>Remover</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="364"/>
+        <location filename="../setupwizarddialog.ui" line="370"/>
         <source>Search Directory</source>
         <translation>Diretório de pesquisa</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="369"/>
+        <location filename="../setupwizarddialog.ui" line="375"/>
         <source>Scan Recursively</source>
         <translation>Verificar recursivamente</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="396"/>
+        <location filename="../setupwizarddialog.ui" line="402"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, DuckStation will map your keyboard to the virtual controller.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;To use an external controller, you must map it first. &lt;/span&gt;On this screen, you can automatically map any controller which is currently connected. If your controller is not currently connected, you can plug it in now.&lt;/p&gt;&lt;p&gt;To change controller bindings in more detail, or use multi-tap, open the Settings menu and choose Controllers once you have completed the Setup Wizard.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Por padrão, o DuckStation mapeará seu teclado como um controle.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Para usar um dispositivo externo, você deve mapeá-lo primeiro. &lt;/span&gt;Nesta tela, você pode mapear automaticamente qualquer controle que esteja conectado no momento. Se o seu controle não estiver conectado no momento, pode conectá-lo agora.&lt;/p&gt;&lt;p&gt;Para alterar as atribuições do controle ou usar a função multitap, abra o menu Configurações e escolha Controle depois de concluir o assistente de configuração. .&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="406"/>
+        <location filename="../setupwizarddialog.ui" line="412"/>
         <source>Controller Port 1</source>
         <translation>Porta do controle 1</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="415"/>
-        <location filename="../setupwizarddialog.ui" line="485"/>
+        <location filename="../setupwizarddialog.ui" line="421"/>
+        <location filename="../setupwizarddialog.ui" line="491"/>
         <source>Controller Mapped To:</source>
         <translation>Controle mapeado para:</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="422"/>
-        <location filename="../setupwizarddialog.ui" line="475"/>
+        <location filename="../setupwizarddialog.ui" line="428"/>
+        <location filename="../setupwizarddialog.ui" line="481"/>
         <source>Controller Type:</source>
         <translation>Tipo de controle:</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="431"/>
-        <location filename="../setupwizarddialog.ui" line="494"/>
+        <location filename="../setupwizarddialog.ui" line="437"/>
+        <location filename="../setupwizarddialog.ui" line="500"/>
         <location filename="../setupwizarddialog.cpp" line="411"/>
         <source>Default (Keyboard)</source>
         <translation>Padrão (teclado)</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="451"/>
-        <location filename="../setupwizarddialog.ui" line="514"/>
+        <location filename="../setupwizarddialog.ui" line="457"/>
+        <location filename="../setupwizarddialog.ui" line="520"/>
         <source>Automatic Mapping</source>
         <translation>Mapeamento automático</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="469"/>
+        <location filename="../setupwizarddialog.ui" line="475"/>
         <source>Controller Port 2</source>
         <translation>Porta do controle 2</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="561"/>
+        <location filename="../setupwizarddialog.ui" line="567"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Setup Complete!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;You are now ready to run games.&lt;/p&gt;&lt;p&gt;Further options are available under the settings menu. You can also use the Big Picture UI for navigation entirely with a gamepad.&lt;/p&gt;&lt;p&gt;We hope you enjoy using DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Configuração concluída!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;Agora você está pronto para rodar os jogos.&lt;/p&gt;&lt;p&gt;Outras opções estão disponíveis no menu de configurações. Você também pode usar o modo Tela grande para navegar diretamente pelo controle.&lt;/p&gt;&lt;p&gt;Esperamos que você goste de usar o DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="634"/>
+        <location filename="../setupwizarddialog.ui" line="640"/>
         <source>Language</source>
         <translation>Idioma</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="641"/>
+        <location filename="../setupwizarddialog.ui" line="647"/>
         <source>BIOS Image</source>
         <translation>Imagem do BIOS</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="648"/>
+        <location filename="../setupwizarddialog.ui" line="654"/>
         <source>Game Directories</source>
         <translation>Diretórios de jogos</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="655"/>
+        <location filename="../setupwizarddialog.ui" line="661"/>
         <source>Controller Setup</source>
         <translation>Configuração do controle</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="662"/>
+        <location filename="../setupwizarddialog.ui" line="668"/>
         <source>Complete</source>
         <translation>Terminado</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="704"/>
+        <location filename="../setupwizarddialog.ui" line="710"/>
         <source>&amp;Back</source>
         <translation>&amp;Voltar</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="711"/>
+        <location filename="../setupwizarddialog.ui" line="717"/>
         <location filename="../setupwizarddialog.cpp" line="141"/>
         <source>&amp;Next</source>
         <translation>&amp;Próximo</translation>
     </message>
     <message>
-        <location filename="../setupwizarddialog.ui" line="721"/>
+        <location filename="../setupwizarddialog.ui" line="727"/>
         <source>&amp;Cancel</source>
         <translation>&amp;Cancelar</translation>
     </message>
