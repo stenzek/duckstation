@@ -633,10 +633,6 @@ bool GPU_HW::CreateBuffers()
                                                           GPUTexture::Type::DepthStencil, VRAM_DS_FORMAT)) ||
       !(m_vram_read_texture =
           g_gpu_device->FetchTexture(texture_width, texture_height, 1, 1, 1, read_texture_type, VRAM_RT_FORMAT)) ||
-      !(m_display_private_texture = g_gpu_device->FetchTexture(
-          ((m_downsample_mode == GPUDownsampleMode::Adaptive) ? VRAM_WIDTH : GPU_MAX_DISPLAY_WIDTH) *
-            m_resolution_scale,
-          GPU_MAX_DISPLAY_HEIGHT * m_resolution_scale, 1, 1, 1, GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT)) ||
       !(m_vram_readback_texture = g_gpu_device->FetchTexture(VRAM_WIDTH / 2, VRAM_HEIGHT, 1, 1, 1,
                                                              GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT)))
   {
@@ -646,7 +642,6 @@ bool GPU_HW::CreateBuffers()
   GL_OBJECT_NAME(m_vram_texture, "VRAM Texture");
   GL_OBJECT_NAME(m_vram_depth_texture, "VRAM Depth Texture");
   GL_OBJECT_NAME(m_vram_read_texture, "VRAM Read Texture");
-  GL_OBJECT_NAME(m_display_private_texture, "Display Texture");
   GL_OBJECT_NAME(m_vram_readback_texture, "VRAM Readback Texture");
 
   if (!(m_vram_upload_buffer =
@@ -693,7 +688,10 @@ void GPU_HW::ClearFramebuffer()
   g_gpu_device->ClearRenderTarget(m_vram_texture.get(), 0);
   g_gpu_device->ClearDepth(m_vram_depth_texture.get(), m_pgxp_depth_buffer ? 1.0f : 0.0f);
   ClearVRAMDirtyRectangle();
-  g_gpu_device->ClearRenderTarget(m_display_private_texture.get(), 0);
+
+  if (m_display_private_texture)
+    g_gpu_device->ClearRenderTarget(m_display_private_texture.get(), 0);
+
   m_last_depth_z = 1.0f;
 }
 
@@ -1350,7 +1348,9 @@ void GPU_HW::DrawBatchVertices(BatchRenderMode render_mode, u32 num_vertices, u3
 void GPU_HW::ClearDisplay()
 {
   ClearDisplayTexture();
-  g_gpu_device->ClearRenderTarget(m_display_private_texture.get(), 0xFF000000u);
+
+  if (m_display_private_texture)
+    g_gpu_device->ClearRenderTarget(m_display_private_texture.get(), 0xFF000000u);
 }
 
 void GPU_HW::HandleFlippedQuadTextureCoordinates(BatchVertex* vertices)
@@ -2782,6 +2782,21 @@ void GPU_HW::UpdateDisplay()
     }
     else
     {
+      if (!m_display_private_texture || m_display_private_texture->GetWidth() != scaled_display_width ||
+          m_display_private_texture->GetHeight() != scaled_display_height)
+      {
+        g_gpu_device->RecycleTexture(std::move(m_display_private_texture));
+        if (!(m_display_private_texture = g_gpu_device->FetchTexture(
+                scaled_display_width, scaled_display_height, 1, 1, 1, GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT)))
+        {
+          Log_ErrorFmt("Failed to create {}x{} display texture", scaled_display_width, scaled_display_height);
+          ClearDisplayTexture();
+          return;
+        }
+
+        GL_OBJECT_NAME(m_display_private_texture, "Display Texture");
+      }
+
       // TODO: discard vs load for interlaced
       if (interlaced == InterlacedRenderMode::None)
         g_gpu_device->InvalidateRenderTarget(m_display_private_texture.get());
@@ -2797,9 +2812,6 @@ void GPU_HW::UpdateDisplay()
       const u32 uniforms[4] = {reinterpret_start_x, scaled_vram_offset_y + reinterpret_field_offset,
                                reinterpret_crop_left, reinterpret_field_offset};
       g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
-
-      Assert(scaled_display_width <= m_display_private_texture->GetWidth() &&
-             scaled_display_height <= m_display_private_texture->GetHeight());
 
       g_gpu_device->SetViewportAndScissor(0, 0, scaled_display_width, scaled_display_height);
       g_gpu_device->Draw(3, 0);
