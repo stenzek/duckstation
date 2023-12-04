@@ -96,7 +96,6 @@ struct LeaderboardTrackerIndicator
   u32 tracker_id;
   std::string text;
   Common::Timer show_hide_time;
-  u32 display_length;
   bool active;
 };
 
@@ -1190,7 +1189,6 @@ void Achievements::HandleLeaderboardTrackerShowEvent(const rc_client_event_t* ev
   LeaderboardTrackerIndicator indicator;
   indicator.tracker_id = event->leaderboard_tracker->id;
   indicator.text = event->leaderboard_tracker->display;
-  indicator.display_length = static_cast<u32>(std::strlen(event->leaderboard_tracker->display));
   indicator.active = true;
   s_active_leaderboard_trackers.push_back(std::move(indicator));
 }
@@ -1963,7 +1961,7 @@ void Achievements::DrawGameOverlays()
 
       TinyString width_string;
       width_string.append(ICON_FA_STOPWATCH);
-      for (u32 i = 0; i < indicator.display_length; i++)
+      for (u32 i = 0; i < indicator.text.length(); i++)
         width_string.append('0');
       const ImVec2 size = ImGuiFullscreen::g_medium_font->CalcTextSizeA(
         ImGuiFullscreen::g_medium_font->FontSize, FLT_MAX, 0.0f, width_string.c_str(), width_string.end_ptr());
