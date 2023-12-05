@@ -25,4 +25,6 @@ void ExecuteInstruction(u32 inst_bits);
 using InstructionImpl = void (*)(Instruction);
 InstructionImpl GetInstructionImpl(u32 inst_bits, TickCount* ticks);
 
+const char* GetRegisterName(u32 index);
+
 } // namespace GTE

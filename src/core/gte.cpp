@@ -1401,3 +1401,15 @@ GTE::InstructionImpl GTE::GetInstructionImpl(u32 inst_bits, TickCount* ticks)
       Panic("Missing handler");
   }
 }
+
+const char* GTE::GetRegisterName(u32 index)
+{
+  static constexpr std::array<const char*, 64> names = {
+    {"V0_XY", "V0_Z",  "V1_XY", "V1_Z",  "V2_XY", "V2_Z",  "RGBC", "OTZ",  "IR0",  "IR1",   "IR2",   "IR3",   "SXY0",
+     "SXY1",  "SXY2",  "SXYP",  "SZ0",   "SZ1",   "SZ2",   "SZ3",  "RGB0", "RGB1", "RGB2",  "RES1",  "MAC0",  "MAC1",
+     "MAC2",  "MAC3",  "IRGB",  "ORGB",  "LZCS",  "LZCR",  "RT_0", "RT_1", "RT_2", "RT_3",  "RT_4",  "TRX",   "TRY",
+     "TRZ",   "LLM_0", "LLM_1", "LLM_2", "LLM_3", "LLM_4", "RBK",  "GBK",  "BBK",  "LCM_0", "LCM_1", "LCM_2", "LCM_3",
+     "LCM_4", "RFC",   "GFC",   "BFC",   "OFX",   "OFY",   "H",    "DQA",  "DQB",  "ZSF3",  "ZSF4",  "FLAG"}};
+
+  return (index < names.size()) ? names[index] : "";
+}

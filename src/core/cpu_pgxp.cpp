@@ -149,8 +149,8 @@ void CPU::PGXP::Shutdown()
   }
 
   std::memset(g_state.pgxp_gte, 0, sizeof(g_state.pgxp_gte));
-
   std::memset(g_state.pgxp_gpr, 0, sizeof(g_state.pgxp_gpr));
+
   std::memset(g_state.pgxp_cop0, 0, sizeof(g_state.pgxp_cop0));
 }
 
@@ -178,12 +178,12 @@ void CPU::PGXP::Shutdown()
 
 ALWAYS_INLINE_RELEASE void CPU::PGXP::MakeValid(PGXP_value* pV, u32 psxV)
 {
-  if (VALID_01 != (pV->flags & VALID_01))
+  if ((pV->flags & VALID_01) != VALID_01)
   {
     pV->x = static_cast<float>(static_cast<s16>(Truncate16(psxV)));
     pV->y = static_cast<float>(static_cast<s16>(Truncate16(psxV >> 16)));
     pV->z = 0.f;
-    pV->flags |= VALID_01;
+    pV->flags = VALID_01;
     pV->value = psxV;
   }
 }
@@ -276,9 +276,19 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::ValidateAndCopyMem16(PGXP_value* dest, u32
     }
 
     // truncate value
-    dest->y = (dest->x < 0) ? -1.f * sign : 0.f; // 0.f;
+    if (dest->compFlags[0] == VALID)
+    {
+      // only set y as valid if x is also valid.. don't want to make fake values
+      dest->y = (dest->x < 0) ? -1.f * sign : 0.f; // 0.f;
+      dest->compFlags[1] = VALID; // iCB: High word is valid, just 0
+    }
+    else
+    {
+      dest->y = 0.0f;
+      dest->compFlags[1] = 0;
+    }
+
     dest->value = value;
-    dest->compFlags[1] = VALID; // iCB: High word is valid, just 0
     return;
   }
 
@@ -562,9 +572,7 @@ void CPU::PGXP::CPU_SB(u32 instr, u32 addr, u32 rtVal)
 void CPU::PGXP::CPU_SH(u32 instr, u32 addr, u32 rtVal)
 {
   PGXP_value* val = &g_state.pgxp_gpr[rt(instr)];
-
-  // validate and copy half value
-  MaskValidate(val, rtVal, 0xFFFF, VALID_0);
+  Validate(val, rtVal);
   WriteMem16(val, addr);
 }
 
@@ -1390,6 +1398,16 @@ void CPU::PGXP::CPU_SRA(u32 instr, u32 rtVal)
 
   ret.x = (float)x;
   ret.y = (float)y;
+
+  // Use low precision/rounded values when we're not shifting an entire component,
+  // and it's not originally from a 3D value. Too many false positives in P2/etc.
+  // What we probably should do is not set the valid flag on non-3D values to begin
+  // with, only letting them become valid when used in another expression.
+  if (!(ret.flags & VALID_2) && sh < 16)
+  {
+    ret.flags = 0;
+    MakeValid(&ret, rdVal);
+  }
 
   ret.value = rdVal;
   g_state.pgxp_gpr[rd(instr)] = ret;
