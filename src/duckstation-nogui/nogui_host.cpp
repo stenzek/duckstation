@@ -147,7 +147,7 @@ bool NoGUIHost::ShouldUsePortableMode()
 
 void NoGUIHost::SetAppRoot()
 {
-  std::string program_path(FileSystem::GetProgramPath());
+  const std::string program_path = FileSystem::GetProgramPath();
   Log_InfoPrintf("Program Path: %s", program_path.c_str());
 
   EmuFolders::AppRoot = Path::Canonicalize(Path::GetDirectory(program_path));
@@ -190,7 +190,7 @@ void NoGUIHost::SetDataDirectory()
   const char* xdg_config_home = getenv("XDG_CONFIG_HOME");
   if (xdg_config_home && Path::IsAbsolute(xdg_config_home))
   {
-    EmuFolders::DataRoot = Path::Combine(xdg_config_home, "duckstation");
+    EmuFolders::DataRoot = Path::RealPath(Path::Combine(xdg_config_home, "duckstation"));
   }
   else
   {
@@ -203,14 +203,14 @@ void NoGUIHost::SetDataDirectory()
       const std::string share_dir(Path::Combine(local_dir, "share"));
       FileSystem::EnsureDirectoryExists(local_dir.c_str(), false);
       FileSystem::EnsureDirectoryExists(share_dir.c_str(), false);
-      EmuFolders::DataRoot = Path::Combine(share_dir, "duckstation");
+      EmuFolders::DataRoot = Path::RealPath(Path::Combine(share_dir, "duckstation"));
     }
   }
 #elif defined(__APPLE__)
   static constexpr char MAC_DATA_DIR[] = "Library/Application Support/DuckStation";
   const char* home_dir = getenv("HOME");
   if (home_dir)
-    EmuFolders::DataRoot = Path::Combine(home_dir, MAC_DATA_DIR);
+    EmuFolders::DataRoot = Path::RealPath(Path::Combine(home_dir, MAC_DATA_DIR));
 #endif
 
   // make sure it exists
