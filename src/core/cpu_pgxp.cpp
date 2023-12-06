@@ -40,29 +40,21 @@ enum : u32
 
 union psx_value
 {
-  struct
-  {
-    u8 l, h, h2, h3;
-  } b;
+  u32 d;
+  s32 sd;
   struct
   {
     u16 l, h;
   } w;
   struct
   {
-    s8 l, h, h2, h3;
-  } sb;
-  struct
-  {
     s16 l, h;
   } sw;
-  u32 d;
-  s32 sd;
 };
 } // namespace
 
-static void PGXP_CacheVertex(s16 sx, s16 sy, const PGXP_value& vertex);
-static PGXP_value* PGXP_GetCachedVertex(short sx, short sy);
+static void CacheVertex(s16 sx, s16 sy, const PGXP_value& vertex);
+static PGXP_value* GetCachedVertex(short sx, short sy);
 
 static float TruncateVertexPosition(float p);
 static bool IsWithinTolerance(float precise_x, float precise_y, int int_x, int int_y);
@@ -90,8 +82,8 @@ static void WriteMem16(const PGXP_value* src, u32 addr);
 static const PGXP_value PGXP_value_invalid = {0.f, 0.f, 0.f, {0}, 0};
 static const PGXP_value PGXP_value_zero = {0.f, 0.f, 0.f, {VALID_ALL}, 0};
 
-static PGXP_value* Mem = nullptr;
-static PGXP_value* vertexCache = nullptr;
+static PGXP_value* s_mem = nullptr;
+static PGXP_value* s_vertex_cache = nullptr;
 } // namespace CPU::PGXP
 
 void CPU::PGXP::Initialize()
@@ -101,25 +93,25 @@ void CPU::PGXP::Initialize()
 
   std::memset(g_state.pgxp_gte, 0, sizeof(g_state.pgxp_gte));
 
-  if (!Mem)
+  if (!s_mem)
   {
-    Mem = static_cast<PGXP_value*>(std::calloc(PGXP_MEM_SIZE, sizeof(PGXP_value)));
-    if (!Mem)
+    s_mem = static_cast<PGXP_value*>(std::calloc(PGXP_MEM_SIZE, sizeof(PGXP_value)));
+    if (!s_mem)
       Panic("Failed to allocate PGXP memory");
   }
 
-  if (g_settings.gpu_pgxp_vertex_cache && !vertexCache)
+  if (g_settings.gpu_pgxp_vertex_cache && !s_vertex_cache)
   {
-    vertexCache = static_cast<PGXP_value*>(std::calloc(VERTEX_CACHE_SIZE, sizeof(PGXP_value)));
-    if (!vertexCache)
+    s_vertex_cache = static_cast<PGXP_value*>(std::calloc(VERTEX_CACHE_SIZE, sizeof(PGXP_value)));
+    if (!s_vertex_cache)
     {
       Log_ErrorPrint("Failed to allocate memory for vertex cache, disabling.");
       g_settings.gpu_pgxp_vertex_cache = false;
     }
   }
 
-  if (vertexCache)
-    std::memset(vertexCache, 0, sizeof(PGXP_value) * VERTEX_CACHE_SIZE);
+  if (s_vertex_cache)
+    std::memset(s_vertex_cache, 0, sizeof(PGXP_value) * VERTEX_CACHE_SIZE);
 }
 
 void CPU::PGXP::Reset()
@@ -128,24 +120,24 @@ void CPU::PGXP::Reset()
   std::memset(g_state.pgxp_cop0, 0, sizeof(g_state.pgxp_cop0));
   std::memset(g_state.pgxp_gte, 0, sizeof(g_state.pgxp_gte));
 
-  if (Mem)
-    std::memset(Mem, 0, sizeof(PGXP_value) * PGXP_MEM_SIZE);
+  if (s_mem)
+    std::memset(s_mem, 0, sizeof(PGXP_value) * PGXP_MEM_SIZE);
 
-  if (vertexCache)
-    std::memset(vertexCache, 0, sizeof(PGXP_value) * VERTEX_CACHE_SIZE);
+  if (s_vertex_cache)
+    std::memset(s_vertex_cache, 0, sizeof(PGXP_value) * VERTEX_CACHE_SIZE);
 }
 
 void CPU::PGXP::Shutdown()
 {
-  if (vertexCache)
+  if (s_vertex_cache)
   {
-    std::free(vertexCache);
-    vertexCache = nullptr;
+    std::free(s_vertex_cache);
+    s_vertex_cache = nullptr;
   }
-  if (Mem)
+  if (s_mem)
   {
-    std::free(Mem);
-    Mem = nullptr;
+    std::free(s_mem);
+    s_mem = nullptr;
   }
 
   std::memset(g_state.pgxp_gte, 0, sizeof(g_state.pgxp_gte));
@@ -178,25 +170,23 @@ void CPU::PGXP::Shutdown()
 
 ALWAYS_INLINE_RELEASE void CPU::PGXP::MakeValid(PGXP_value* pV, u32 psxV)
 {
-  if ((pV->flags & VALID_01) != VALID_01)
-  {
-    pV->x = static_cast<float>(static_cast<s16>(Truncate16(psxV)));
-    pV->y = static_cast<float>(static_cast<s16>(Truncate16(psxV >> 16)));
-    pV->z = 0.f;
-    pV->flags = VALID_01;
-    pV->value = psxV;
-  }
+  if ((pV->flags & VALID_01) == VALID_01)
+    return;
+
+  pV->x = static_cast<float>(static_cast<s16>(Truncate16(psxV)));
+  pV->y = static_cast<float>(static_cast<s16>(Truncate16(psxV >> 16)));
+  pV->z = 0.0f;
+  pV->flags = VALID_01;
+  pV->value = psxV;
 }
 
 ALWAYS_INLINE_RELEASE void CPU::PGXP::Validate(PGXP_value* pV, u32 psxV)
 {
-  // assume pV is not NULL
   pV->flags &= (pV->value == psxV) ? ALL : INV_VALID_ALL;
 }
 
 ALWAYS_INLINE_RELEASE void CPU::PGXP::MaskValidate(PGXP_value* pV, u32 psxV, u32 mask, u32 validMask)
 {
-  // assume pV is not NULL
   pV->flags &= ((pV->value & mask) == (psxV & mask)) ? ALL : (ALL ^ (validMask));
 }
 
@@ -220,11 +210,11 @@ ALWAYS_INLINE_RELEASE double CPU::PGXP::f16Overflow(double in)
 ALWAYS_INLINE_RELEASE CPU::PGXP_value* CPU::PGXP::GetPtr(u32 addr)
 {
   if ((addr & SCRATCHPAD_ADDR_MASK) == SCRATCHPAD_ADDR)
-    return &Mem[PGXP_MEM_SCRATCH_OFFSET + ((addr & SCRATCHPAD_OFFSET_MASK) >> 2)];
+    return &s_mem[PGXP_MEM_SCRATCH_OFFSET + ((addr & SCRATCHPAD_OFFSET_MASK) >> 2)];
 
   const u32 paddr = (addr & PHYSICAL_MEMORY_ADDRESS_MASK);
   if (paddr < Bus::RAM_MIRROR_END)
-    return &Mem[(paddr & Bus::g_ram_mask) >> 2];
+    return &s_mem[(paddr & Bus::g_ram_mask) >> 2];
   else
     return nullptr;
 }
@@ -232,67 +222,67 @@ ALWAYS_INLINE_RELEASE CPU::PGXP_value* CPU::PGXP::GetPtr(u32 addr)
 ALWAYS_INLINE_RELEASE void CPU::PGXP::ValidateAndCopyMem(PGXP_value* dest, u32 addr, u32 value)
 {
   PGXP_value* pMem = GetPtr(addr);
-  if (pMem)
+  if (!pMem)
   {
-    Validate(pMem, value);
-    *dest = *pMem;
+    *dest = PGXP_value_invalid;
     return;
   }
 
-  *dest = PGXP_value_invalid;
+  Validate(pMem, value);
+  *dest = *pMem;
 }
 
 ALWAYS_INLINE_RELEASE void CPU::PGXP::ValidateAndCopyMem16(PGXP_value* dest, u32 addr, u32 value, bool sign)
 {
-  u32 validMask = 0;
-  psx_value val, mask;
   PGXP_value* pMem = GetPtr(addr);
-  if (pMem)
+  if (!pMem)
   {
-    mask.d = val.d = 0;
-    // determine if high or low word
-    if ((addr % 4) == 2)
-    {
-      val.w.h = static_cast<u16>(value);
-      mask.w.h = 0xFFFF;
-      validMask = VALID_1;
-    }
-    else
-    {
-      val.w.l = static_cast<u16>(value);
-      mask.w.l = 0xFFFF;
-      validMask = VALID_0;
-    }
-
-    // validate and copy whole value
-    MaskValidate(pMem, val.d, mask.d, validMask);
-    *dest = *pMem;
-
-    // if high word then shift
-    if ((addr % 4) == 2)
-    {
-      dest->x = dest->y;
-      dest->compFlags[0] = dest->compFlags[1];
-    }
-
-    // truncate value
-    if (dest->compFlags[0] == VALID)
-    {
-      // only set y as valid if x is also valid.. don't want to make fake values
-      dest->y = (dest->x < 0) ? -1.f * sign : 0.f; // 0.f;
-      dest->compFlags[1] = VALID; // iCB: High word is valid, just 0
-    }
-    else
-    {
-      dest->y = 0.0f;
-      dest->compFlags[1] = 0;
-    }
-
-    dest->value = value;
+    *dest = PGXP_value_invalid;
     return;
   }
 
-  *dest = PGXP_value_invalid;
+  psx_value val{0}, mask{0};
+  u32 valid_mask = 0;
+
+  // determine if high or low word
+  const bool hiword = ((addr & 2) != 0);
+  if (hiword)
+  {
+    val.w.h = static_cast<u16>(value);
+    mask.w.h = 0xFFFF;
+    valid_mask = VALID_1;
+  }
+  else
+  {
+    val.w.l = static_cast<u16>(value);
+    mask.w.l = 0xFFFF;
+    valid_mask = VALID_0;
+  }
+
+  // validate and copy whole value
+  MaskValidate(pMem, val.d, mask.d, valid_mask);
+  *dest = *pMem;
+
+  // if high word then shift
+  if (hiword)
+  {
+    dest->x = dest->y;
+    dest->compFlags[0] = dest->compFlags[1];
+  }
+
+  // only set y as valid if x is also valid.. don't want to make fake values
+  if (dest->compFlags[0] == VALID)
+  {
+    dest->y = (dest->x < 0) ? -1.f * sign : 0.f;
+    dest->compFlags[1] = VALID;
+  }
+  else
+  {
+    dest->y = 0.0f;
+    dest->compFlags[1] = 0;
+  }
+
+  dest->value = value;
 }
 
 ALWAYS_INLINE_RELEASE void CPU::PGXP::WriteMem(const PGXP_value* value, u32 addr)
@@ -306,33 +296,29 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::WriteMem(const PGXP_value* value, u32 addr
 ALWAYS_INLINE_RELEASE void CPU::PGXP::WriteMem16(const PGXP_value* src, u32 addr)
 {
   PGXP_value* dest = GetPtr(addr);
-  psx_value* pVal = nullptr;
+  if (!dest)
+    return;
 
-  if (dest)
+  // determine if high or low word
+  const bool hiword = ((addr & 2) != 0);
+  if (hiword)
   {
-    pVal = (psx_value*)&dest->value;
-    // determine if high or low word
-    if ((addr % 4) == 2)
-    {
-      dest->y = src->x;
-      dest->compFlags[1] = src->compFlags[0];
-      pVal->w.h = (u16)src->value;
-    }
-    else
-    {
-      dest->x = src->x;
-      dest->compFlags[0] = src->compFlags[0];
-      pVal->w.l = (u16)src->value;
-    }
+    dest->y = src->x;
+    dest->compFlags[1] = src->compFlags[0];
+    dest->value = (dest->value & UINT32_C(0x0000FFFF)) | (src->value << 16);
+  }
+  else
+  {
+    dest->x = src->x;
+    dest->compFlags[0] = src->compFlags[0];
+    dest->value = (dest->value & UINT32_C(0xFFFF0000)) | (src->value & UINT32_C(0x0000FFFF));
+  }
 
-    // overwrite z/w if valid
-    if (src->compFlags[2] == VALID)
-    {
-      dest->z = src->z;
-      dest->compFlags[2] = src->compFlags[2];
-    }
-
-    // dest->valid = dest->valid && src->valid;
+  // overwrite z/w if valid
+  if (src->compFlags[2] == VALID)
+  {
+    dest->z = src->z;
+    dest->compFlags[2] = src->compFlags[2];
   }
 }
 
@@ -349,7 +335,7 @@ void CPU::PGXP::GTE_PushSXYZ2f(float x, float y, float z, u32 v)
   SXY2.flags = VALID_ALL;
 
   if (g_settings.gpu_pgxp_vertex_cache)
-    PGXP_CacheVertex(static_cast<s16>(Truncate16(v)), static_cast<s16>(Truncate16(v >> 16)), SXY2);
+    CacheVertex(static_cast<s16>(Truncate16(v)), static_cast<s16>(Truncate16(v >> 16)), SXY2);
 }
 
 #define VX(n) (psxRegs.CP2D.p[n << 1].sw.l)
@@ -450,21 +436,21 @@ void CPU::PGXP::CPU_SWC2(u32 instr, u32 addr, u32 rtVal)
   WriteMem(&g_state.pgxp_gte[rt(instr)], addr);
 }
 
-ALWAYS_INLINE_RELEASE void CPU::PGXP::PGXP_CacheVertex(s16 sx, s16 sy, const PGXP_value& vertex)
+ALWAYS_INLINE_RELEASE void CPU::PGXP::CacheVertex(s16 sx, s16 sy, const PGXP_value& vertex)
 {
   if (sx >= -0x800 && sx <= 0x7ff && sy >= -0x800 && sy <= 0x7ff)
   {
     // Write vertex into cache
-    vertexCache[(sy + 0x800) * VERTEX_CACHE_WIDTH + (sx + 0x800)] = vertex;
+    s_vertex_cache[(sy + 0x800) * VERTEX_CACHE_WIDTH + (sx + 0x800)] = vertex;
   }
 }
 
-ALWAYS_INLINE_RELEASE CPU::PGXP_value* CPU::PGXP::PGXP_GetCachedVertex(short sx, short sy)
+ALWAYS_INLINE_RELEASE CPU::PGXP_value* CPU::PGXP::GetCachedVertex(short sx, short sy)
 {
   if (sx >= -0x800 && sx <= 0x7ff && sy >= -0x800 && sy <= 0x7ff)
   {
     // Return pointer to cache entry
-    return &vertexCache[(sy + 0x800) * VERTEX_CACHE_WIDTH + (sx + 0x800)];
+    return &s_vertex_cache[(sy + 0x800) * VERTEX_CACHE_WIDTH + (sx + 0x800)];
   }
 
   return nullptr;
@@ -511,7 +497,7 @@ bool CPU::PGXP::GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, i
     const short psx_y = (short)(value >> 16);
 
     // Look in cache for valid vertex
-    vert = PGXP_GetCachedVertex(psx_x, psx_y);
+    vert = GetCachedVertex(psx_x, psx_y);
     if (vert && (vert->flags & VALID_01) == VALID_01)
     {
       *out_x = TruncateVertexPosition(vert->x) + static_cast<float>(xOffs);

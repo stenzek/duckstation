@@ -438,6 +438,9 @@ DEFINE_HOTKEY("TogglePGXPCPU", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_
 
                   // we need to recompile all blocks if pgxp is toggled on/off
                   CPU::CodeCache::Reset();
+
+                  // need to swap interpreters
+                  System::InterruptExecution();
                 }
               })
 
