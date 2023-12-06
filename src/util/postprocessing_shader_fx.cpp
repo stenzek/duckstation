@@ -81,15 +81,15 @@ static std::unique_ptr<reshadefx::codegen> CreateRFXCodegen()
     case RenderAPI::Metal:
     {
       return std::unique_ptr<reshadefx::codegen>(reshadefx::create_codegen_glsl(
-        true, debug_info, uniforms_to_spec_constants, false, (rapi == RenderAPI::Vulkan)));
+        false, true, debug_info, uniforms_to_spec_constants, false, (rapi == RenderAPI::Vulkan)));
     }
 
     case RenderAPI::OpenGL:
     case RenderAPI::OpenGLES:
     default:
     {
-      return std::unique_ptr<reshadefx::codegen>(
-        reshadefx::create_codegen_glsl(false, debug_info, uniforms_to_spec_constants, false, true));
+      return std::unique_ptr<reshadefx::codegen>(reshadefx::create_codegen_glsl(
+        (rapi == RenderAPI::OpenGLES), false, debug_info, uniforms_to_spec_constants, false, true));
     }
   }
 }
@@ -1099,14 +1099,18 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
 
   const std::string_view code(mod.code.data(), mod.code.size());
 
-  auto get_shader = [needs_main_defn, &code](const std::string& name, const std::vector<Sampler>& samplers,
-                                             GPUShaderStage stage) {
+  auto get_shader = [api, needs_main_defn, &code](const std::string& name, const std::vector<Sampler>& samplers,
+                                                  GPUShaderStage stage) {
     std::string real_code;
     if (needs_main_defn)
     {
       // dFdx/dFdy are not defined in the vertex shader.
       const char* defns = (stage == GPUShaderStage::Vertex) ? "#define dFdx(x) x\n#define dFdy(x) x\n" : "";
-      real_code = fmt::format("#version 460 core\n#define ENTRY_POINT_{}\n{}\n{}", name, defns, code);
+      const char* precision = (api == RenderAPI::OpenGLES) ?
+                                "precision highp float;\nprecision highp int;\nprecision highp sampler2D;\n" :
+                                "";
+      real_code = fmt::format("#version {}\n#define ENTRY_POINT_{}\n{}\n{}\n{}",
+                              (api == RenderAPI::OpenGLES) ? "320 es" : "460 core", name, defns, precision, code);
 
       for (const Sampler& sampler : samplers)
       {

@@ -13,11 +13,12 @@
 
 using namespace reshadefx;
 
+namespace {
 class codegen_glsl final : public codegen
 {
 public:
-	codegen_glsl(bool vulkan_semantics, bool debug_info, bool uniforms_to_spec_constants, bool enable_16bit_types, bool flip_vert_y)
-		: _debug_info(debug_info), _vulkan_semantics(vulkan_semantics), _uniforms_to_spec_constants(uniforms_to_spec_constants), _enable_16bit_types(enable_16bit_types), _flip_vert_y(flip_vert_y)
+	codegen_glsl(bool gles, bool vulkan_semantics, bool debug_info, bool uniforms_to_spec_constants, bool enable_16bit_types, bool flip_vert_y)
+		: _gles(gles), _debug_info(debug_info), _vulkan_semantics(vulkan_semantics), _uniforms_to_spec_constants(uniforms_to_spec_constants), _enable_16bit_types(enable_16bit_types), _flip_vert_y(flip_vert_y)
 	{
 		// Create default block and reserve a memory block to avoid frequent reallocations
 		std::string &block = _blocks.emplace(0, std::string()).first->second;
@@ -41,6 +42,7 @@ private:
 	std::string _compute_block;
 	std::unordered_map<id, std::string> _names;
 	std::unordered_map<id, std::string> _blocks;
+	bool _gles = false;
 	bool _debug_info = false;
 	bool _vulkan_semantics = false;
 	bool _uniforms_to_spec_constants = false;
@@ -755,7 +757,7 @@ private:
 		if (!global)
 			code += '\t';
 
-		if (initializer_value != 0 && type.has(type::q_const))
+		if (initializer_value != 0 && (type.has(type::q_const) && !_gles))
 			code += "const ";
 
 		write_type(code, type);
@@ -843,8 +845,8 @@ private:
 		_blocks.at(0) += "#ifdef ENTRY_POINT_" + func.unique_name + '\n';
 		if (stype == shader_type::cs)
 			_blocks.at(0) += "layout(local_size_x = " + std::to_string(num_threads[0]) +
-			                      ", local_size_y = " + std::to_string(num_threads[1]) +
-			                      ", local_size_z = " + std::to_string(num_threads[2]) + ") in;\n";
+														", local_size_y = " + std::to_string(num_threads[1]) +
+														", local_size_z = " + std::to_string(num_threads[2]) + ") in;\n";
 
 		function_info entry_point;
 		entry_point.return_type = { type::t_void };
@@ -1004,7 +1006,7 @@ private:
 							}
 							else
 							{
-								if (member.type.is_boolean())
+								if (member.type.is_boolean() || (_gles && member.type.is_integral()))
 								{
 									write_type<false, false>(code, member.type);
 									code += '(';
@@ -1012,7 +1014,7 @@ private:
 
 								code += semantic_to_builtin(std::move(in_param_name), member.semantic, stype);
 
-								if (member.type.is_boolean())
+								if (member.type.is_boolean() || (_gles && member.type.is_integral()))
 									code += ')';
 							}
 
@@ -1097,7 +1099,7 @@ private:
 				}
 				else
 				{
-					if (param_type.is_boolean())
+					if (param_type.is_boolean() || (_gles && param_type.is_integral()))
 					{
 						write_type<false, false>(code, param_type);
 						code += '(';
@@ -1105,7 +1107,7 @@ private:
 
 					code += semantic_to_builtin("_in_param" + std::to_string(i), func.parameter_list[i].semantic, stype);
 
-					if (param_type.is_boolean())
+					if (param_type.is_boolean() || (_gles && param_type.is_integral()))
 						code += ')';
 				}
 			}
@@ -1345,9 +1347,31 @@ private:
 				}
 				else
 				{
-					expr_code += '.';
-					for (unsigned int i = 0; i < 4 && op.swizzle[i] >= 0; ++i)
-						expr_code += "xyzw"[op.swizzle[i]];
+					// can't swizzle scalars
+					if (_gles && op.from.is_scalar())
+					{
+						// => e.g. vec3(expr, expr, expr).xyz
+						type.clear();
+						write_type<false, false>(type, op.to);
+						std::string new_code = type;
+						new_code += '(';
+
+						const unsigned int components = op.to.components();
+						for (unsigned int i = 0; i < components; ++i)
+						{
+								if (i > 0)
+									new_code += ',';
+								new_code += '(' + expr_code + ')';
+						}
+						new_code += ')';
+						expr_code = std::move(new_code);
+					}
+					else
+					{
+						expr_code += '.';
+						for (unsigned int i = 0; i < 4 && op.swizzle[i] >= 0; ++i)
+							expr_code += "xyzw"[op.swizzle[i]];
+					}
 				}
 				break;
 			}
@@ -1812,7 +1836,7 @@ private:
 
 		write_location(code, loc);
 
-		if (flags != 0)
+		if (flags != 0 && !_gles)
 		{
 			_enable_control_flow_attributes = true;
 
@@ -1896,7 +1920,7 @@ private:
 		code += _blocks.at(prev_block);
 
 		std::string attributes;
-		if (flags != 0)
+		if (flags != 0 && !_gles)
 		{
 			_enable_control_flow_attributes = true;
 
@@ -2158,8 +2182,9 @@ private:
 		_blocks.at(0) += "{\n" + _blocks.at(_last_block) + "}\n";
 	}
 };
+} // namespace
 
-codegen *reshadefx::create_codegen_glsl(bool vulkan_semantics, bool debug_info, bool uniforms_to_spec_constants, bool enable_16bit_types, bool flip_vert_y)
+codegen *reshadefx::create_codegen_glsl(bool gles, bool vulkan_semantics, bool debug_info, bool uniforms_to_spec_constants, bool enable_16bit_types, bool flip_vert_y)
 {
-	return new codegen_glsl(vulkan_semantics, debug_info, uniforms_to_spec_constants, enable_16bit_types, flip_vert_y);
+	return new codegen_glsl(gles, vulkan_semantics, debug_info, uniforms_to_spec_constants, enable_16bit_types, flip_vert_y);
 }
