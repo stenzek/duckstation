@@ -101,6 +101,48 @@ Please check your username and password, and try again.</source>
 请检查您的用户名和密码，然后重试。</translation>
     </message>
     <message>
+        <location filename="../achievementlogindialog.cpp" line="79"/>
+        <source>Enable Achievements</source>
+        <translation>启用成就</translation>
+    </message>
+    <message>
+        <location filename="../achievementlogindialog.cpp" line="80"/>
+        <source>Achievement tracking is not currently enabled. Your login will have no effect until after tracking is enabled.
+
+Do you want to enable tracking now?</source>
+        <translation>成就追踪当前没有启用。在启用追踪之前，您的登入将没有效果。
+
+您想要现在启用追踪吗？</translation>
+    </message>
+    <message>
+        <location filename="../achievementlogindialog.cpp" line="91"/>
+        <source>Enable Hardcore Mode</source>
+        <translation>启用硬核模式</translation>
+    </message>
+    <message>
+        <location filename="../achievementlogindialog.cpp" line="92"/>
+        <source>Hardcore mode is not currently enabled. Enabling hardcore mode allows you to set times, scores, and participate in game-specific leaderboards.
+
+However, hardcore mode also prevents the usage of save states, cheats and slowdown functionality.
+
+Do you want to enable hardcore mode?</source>
+        <translation>硬核模式当前没有启用。启用硬核模式允许您设置时间，得分，并参与特定于游戏的排行榜。
+
+然而，硬核模式也阻止了存档，金手指和减速功能的使用。
+
+您想要启用硬核模式吗？</translation>
+    </message>
+    <message>
+        <location filename="../achievementlogindialog.cpp" line="109"/>
+        <source>Reset System</source>
+        <translation>重启系统</translation>
+    </message>
+    <message>
+        <location filename="../achievementlogindialog.cpp" line="110"/>
+        <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
+        <translation>硬核模式在系统重启之前将不会启用。您想要现在重启系统吗？</translation>
+    </message>
+    <message>
         <source>&amp;Cancel</source>
         <translation type="vanished">取消(&amp;C)</translation>
     </message>
@@ -447,34 +489,34 @@ Login token generated at:</source>
 <context>
     <name>Achievements</name>
     <message>
-        <location filename="../../core/achievements.cpp" line="2624"/>
+        <location filename="../../core/achievements.cpp" line="2622"/>
         <source>Time</source>
         <translation>时间</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2625"/>
+        <location filename="../../core/achievements.cpp" line="2623"/>
         <source>Score</source>
         <translation>得分</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1785"/>
-        <location filename="../../core/achievements.cpp" line="1825"/>
+        <location filename="../../core/achievements.cpp" line="1783"/>
+        <location filename="../../core/achievements.cpp" line="1823"/>
         <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
         <translation>当硬核模式处于活动状态时，无法执行{0}。您想要禁用硬核模式吗？如果您选择“否”，{0}将会被取消。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1011"/>
+        <location filename="../../core/achievements.cpp" line="1010"/>
         <source>You have unlocked {0} of {1} achievements, and earned {2} of {3} points.</source>
         <translation>您已经解锁了{0}的{1}成就，并获得了{2}的{3}点数。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1784"/>
-        <location filename="../../core/achievements.cpp" line="1824"/>
+        <location filename="../../core/achievements.cpp" line="1782"/>
+        <location filename="../../core/achievements.cpp" line="1822"/>
         <source>Confirm Hardcore Mode</source>
         <translation>确认硬核模式</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1406"/>
+        <location filename="../../core/achievements.cpp" line="1404"/>
         <source>Hardcore mode is now disabled.</source>
         <translation>硬核模式现已禁用。</translation>
     </message>
@@ -483,133 +525,133 @@ Login token generated at:</source>
         <translation type="vanished">您已经解锁了{}的{}成就，并获得了{}的{}点数。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1034"/>
+        <location filename="../../core/achievements.cpp" line="1033"/>
         <source>Hardcore mode will be enabled on system reset.</source>
         <translation>硬核模式将在系统重启时启用。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1061"/>
+        <location filename="../../core/achievements.cpp" line="1060"/>
         <source>{} (Unofficial)</source>
         <translation>{} (非官方)</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1083"/>
+        <location filename="../../core/achievements.cpp" line="1082"/>
         <source>Mastered {}</source>
         <translation>掌握{}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1084"/>
+        <location filename="../../core/achievements.cpp" line="1083"/>
         <source>{} achievements, {} points</source>
         <translation>{}成就，{}点数</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1099"/>
+        <location filename="../../core/achievements.cpp" line="1098"/>
         <source>Leaderboard attempt started.</source>
         <translation>排行榜尝试开始。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1114"/>
+        <location filename="../../core/achievements.cpp" line="1113"/>
         <source>Leaderboard attempt failed.</source>
         <translation>排行榜尝试失败。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1129"/>
+        <location filename="../../core/achievements.cpp" line="1128"/>
         <source>Your Time: {}{}</source>
         <translation>您的时间: {}{}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1130"/>
+        <location filename="../../core/achievements.cpp" line="1129"/>
         <source>Your Score: {}{}</source>
         <translation>您的得分: {}{}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1131"/>
+        <location filename="../../core/achievements.cpp" line="1130"/>
         <source>Your Value: {}{}</source>
         <translation>您的值: {}{}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1140"/>
+        <location filename="../../core/achievements.cpp" line="1139"/>
         <source> (Submitting)</source>
         <translation> (提交中)</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1159"/>
+        <location filename="../../core/achievements.cpp" line="1158"/>
         <source>Your Time: {} (Best: {})</source>
         <translation>您的时间: {} (最佳: {})</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1160"/>
+        <location filename="../../core/achievements.cpp" line="1159"/>
         <source>Your Score: {} (Best: {})</source>
         <translation>您的得分: {} (最佳: {})</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1161"/>
+        <location filename="../../core/achievements.cpp" line="1160"/>
         <source>Your Value: {} (Best: {})</source>
         <translation>您的值: {} (最佳: {})</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1166"/>
+        <location filename="../../core/achievements.cpp" line="1165"/>
         <source>{}
 Leaderboard Position: {} of {}</source>
         <translation>{}
 排行榜位置: {}的{}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1297"/>
+        <location filename="../../core/achievements.cpp" line="1295"/>
         <source>Server error in {}:
 {}</source>
         <translation>服务器错误在{}:
 {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1311"/>
+        <location filename="../../core/achievements.cpp" line="1309"/>
         <source>Achievements Disconnected</source>
         <translation>成就连接断开</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1312"/>
+        <location filename="../../core/achievements.cpp" line="1310"/>
         <source>An unlock request could not be completed. We will keep retrying to submit this request.</source>
         <translation>解锁请求无法完成。我们将继续重试提交此请求。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1324"/>
+        <location filename="../../core/achievements.cpp" line="1322"/>
         <source>Achievements Reconnected</source>
         <translation>成就连接重连</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1325"/>
+        <location filename="../../core/achievements.cpp" line="1323"/>
         <source>All pending unlock requests have completed.</source>
         <translation>全部挂起的解锁请求已完成。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1737"/>
+        <location filename="../../core/achievements.cpp" line="1735"/>
         <source>Score: {} ({} softcore)
 Unread messages: {}</source>
         <translation>得分: {} ({}软核)
 未读消息: {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1828"/>
+        <location filename="../../core/achievements.cpp" line="1826"/>
         <source>Yes</source>
         <translation>是</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1829"/>
+        <location filename="../../core/achievements.cpp" line="1827"/>
         <source>No</source>
         <translation>否</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2049"/>
+        <location filename="../../core/achievements.cpp" line="2047"/>
         <source>Active Challenge Achievements</source>
         <translation>活动的挑战成就</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2177"/>
+        <location filename="../../core/achievements.cpp" line="2175"/>
         <source> (Hardcore Mode)</source>
         <translation> (硬核模式)</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2191"/>
+        <location filename="../../core/achievements.cpp" line="2189"/>
         <source>You have unlocked all achievements and earned {} points!</source>
         <translation>您已经解锁了全部成就并获得了{}点数！</translation>
     </message>
@@ -618,109 +660,109 @@ Unread messages: {}</source>
         <translation type="vanished">您已经解锁了{}的{}成就，获得了{}的{}可能的点数。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2246"/>
+        <location filename="../../core/achievements.cpp" line="2244"/>
         <source>Unknown</source>
         <translation>未知</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2246"/>
+        <location filename="../../core/achievements.cpp" line="2244"/>
         <source>Locked</source>
         <translation>锁定</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2247"/>
+        <location filename="../../core/achievements.cpp" line="2245"/>
         <source>Unlocked</source>
         <translation>解锁</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2247"/>
+        <location filename="../../core/achievements.cpp" line="2245"/>
         <source>Unsupported</source>
         <translation>不支持</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2248"/>
+        <location filename="../../core/achievements.cpp" line="2246"/>
         <source>Unofficial</source>
         <translation>非官方</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2248"/>
+        <location filename="../../core/achievements.cpp" line="2246"/>
         <source>Recently Unlocked</source>
         <translation>最近解锁</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2249"/>
+        <location filename="../../core/achievements.cpp" line="2247"/>
         <source>Active Challenges</source>
         <translation>活动的挑战</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2249"/>
+        <location filename="../../core/achievements.cpp" line="2247"/>
         <source>Almost There</source>
         <translation>近在咫尺</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2340"/>
+        <location filename="../../core/achievements.cpp" line="2338"/>
         <source>{} points</source>
         <translation>{}点数</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2340"/>
+        <location filename="../../core/achievements.cpp" line="2338"/>
         <source>{} point</source>
         <translation>{}点数</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2343"/>
+        <location filename="../../core/achievements.cpp" line="2341"/>
         <source>XXX points</source>
         <translation>XXX点数</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2376"/>
+        <location filename="../../core/achievements.cpp" line="2374"/>
         <source>Unlocked: {}</source>
         <translation>解锁: {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2586"/>
+        <location filename="../../core/achievements.cpp" line="2584"/>
         <source>Show Best</source>
         <translation>显示最佳</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2586"/>
+        <location filename="../../core/achievements.cpp" line="2584"/>
         <source>Show Nearby</source>
         <translation>显示附近</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2614"/>
+        <location filename="../../core/achievements.cpp" line="2612"/>
         <source>Rank</source>
         <translation>排名</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2619"/>
+        <location filename="../../core/achievements.cpp" line="2617"/>
         <source>Name</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2626"/>
+        <location filename="../../core/achievements.cpp" line="2624"/>
         <source>Value</source>
         <translation>值</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2639"/>
+        <location filename="../../core/achievements.cpp" line="2637"/>
         <source>Date Submitted</source>
         <translation>日期提交</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2700"/>
+        <location filename="../../core/achievements.cpp" line="2698"/>
         <source>Downloading leaderboard data, please wait...</source>
         <translation>下载排行榜数据中，请稍候…</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2719"/>
-        <location filename="../../core/achievements.cpp" line="2728"/>
+        <location filename="../../core/achievements.cpp" line="2717"/>
+        <location filename="../../core/achievements.cpp" line="2726"/>
         <source>Loading...</source>
         <translation>读取中…</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2921"/>
-        <location filename="../../core/achievements.cpp" line="2941"/>
+        <location filename="../../core/achievements.cpp" line="2919"/>
+        <location filename="../../core/achievements.cpp" line="2939"/>
         <source>Leaderboard download failed</source>
         <translation>排行榜下载失败</translation>
     </message>
@@ -731,17 +773,17 @@ Unread messages: {}</source>
         <translation>继续档</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1003"/>
+        <location filename="../../core/achievements.cpp" line="1002"/>
         <source>{} (Hardcore Mode)</source>
         <translation>{} (硬核模式)</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2196"/>
+        <location filename="../../core/achievements.cpp" line="2194"/>
         <source>You have unlocked {0} of {1} achievements, earning {2} of {3} possible points.</source>
         <translation>您已经解锁了{0}的{1}成就，获得了{2}的{3}可能的点数。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2565"/>
+        <location filename="../../core/achievements.cpp" line="2563"/>
         <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
         <translation>由于硬核模式关闭，提交得分被禁用。排行榜仅限读取。</translation>
     </message>
@@ -765,7 +807,7 @@ Leaderboard Position: {} of {}</source>
         <translation type="vanished">排行榜禁用，因为硬核模式已关闭。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2548"/>
+        <location filename="../../core/achievements.cpp" line="2546"/>
         <source>This game has {} leaderboards.</source>
         <translation>这个游戏有{}排行榜。</translation>
     </message>
@@ -774,8 +816,8 @@ Leaderboard Position: {} of {}</source>
         <translation type="vanished">您获得了{}的{}成就，以及{}的{}点数。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1017"/>
-        <location filename="../../core/achievements.cpp" line="2204"/>
+        <location filename="../../core/achievements.cpp" line="1016"/>
+        <location filename="../../core/achievements.cpp" line="2202"/>
         <source>This game has no achievements.</source>
         <translation>这个游戏没有成就。</translation>
     </message>
@@ -784,7 +826,7 @@ Leaderboard Position: {} of {}</source>
         <translation type="vanished">通过档开关禁用硬核模式。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1405"/>
+        <location filename="../../core/achievements.cpp" line="1403"/>
         <source>Hardcore mode is now enabled.</source>
         <translation>硬核模式现已启用。</translation>
     </message>
@@ -13776,9 +13818,8 @@ The saves will not be recoverable.</source>
         <translation type="vanished">记忆卡&apos;%1&apos;未保存，您想要在关闭前保存吗？</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="15"/>
         <source>All Memory Card Types (*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</source>
-        <translation>全部记忆卡类型 (*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</translation>
+        <translation type="vanished">全部记忆卡类型 (*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.ui" line="53"/>
@@ -13849,9 +13890,8 @@ The saves will not be recoverable.</source>
         <translation type="vanished">无法导入保存。检查记忆卡上是否有足够的空间，或者是否已经存在同名的保存。</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="18"/>
         <source>All Importable Memory Card Types (*.mcd *.mcr *.mc *.gme)</source>
-        <translation>全部可导入的记忆卡类型 (*.mcd *.mcr *.mc *.gme)</translation>
+        <translation type="vanished">全部可导入的记忆卡类型 (*.mcd *.mcr *.mc *.gme)</translation>
     </message>
     <message>
         <source>Import File...</source>
@@ -13878,9 +13918,8 @@ The saves will not be recoverable.</source>
         <translation type="vanished">新建记忆卡…</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="20"/>
         <source>Single Save Files (*.mcs);;All Files (*.*)</source>
-        <translation>单个保存文件 (*.mcs);;全部文件 (*.*)</translation>
+        <translation type="vanished">单个保存文件 (*.mcs);;全部文件 (*.*)</translation>
     </message>
     <message>
         <source>Delete File</source>
@@ -13905,7 +13944,7 @@ The saves will not be recoverable.</source>
     </message>
     <message>
         <source>All Memory Card Types (*.mcd *.mcr *.mc)</source>
-        <translation type="vanished">所有记忆卡类型 (*.mcd *.mcr *.mc)</translation>
+        <translation type="vanished">全部记忆卡类型 (*.mcd *.mcr *.mc)</translation>
     </message>
     <message>
         <source>Save memory card?</source>
@@ -13940,6 +13979,21 @@ The saves will not be recoverable.</source>
 </context>
 <context>
     <name>MemoryCardEditorWindow</name>
+    <message>
+        <location filename="../memorycardeditorwindow.cpp" line="15"/>
+        <source>All Memory Card Types (*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</source>
+        <translation>全部记忆卡类型 (*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</translation>
+    </message>
+    <message>
+        <location filename="../memorycardeditorwindow.cpp" line="18"/>
+        <source>All Importable Memory Card Types (*.mcd *.mcr *.mc *.gme)</source>
+        <translation>全部可导入的记忆卡类型 (*.mcd *.mcr *.mc *.gme)</translation>
+    </message>
+    <message>
+        <location filename="../memorycardeditorwindow.cpp" line="20"/>
+        <source>Single Save Files (*.mcs);;All Files (*.*)</source>
+        <translation>单个保存文件 (*.mcs);;全部文件 (*.*)</translation>
+    </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="27"/>
         <source>Delete File</source>
