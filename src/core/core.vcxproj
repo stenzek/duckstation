@@ -77,7 +77,7 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="pgxp.cpp" />
+    <ClCompile Include="cpu_pgxp.cpp" />
     <ClCompile Include="playstation_mouse.cpp" />
     <ClCompile Include="psf_loader.cpp" />
     <ClCompile Include="resources.cpp" />
@@ -161,7 +161,7 @@
     <ClInclude Include="controller.h" />
     <ClInclude Include="pcdrv.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="pgxp.h" />
+    <ClInclude Include="cpu_pgxp.h" />
     <ClInclude Include="playstation_mouse.h" />
     <ClInclude Include="psf_loader.h" />
     <ClInclude Include="resources.h" />

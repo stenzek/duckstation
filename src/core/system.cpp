@@ -26,7 +26,7 @@
 #include "multitap.h"
 #include "pad.h"
 #include "pcdrv.h"
-#include "pgxp.h"
+#include "cpu_pgxp.h"
 #include "psf_loader.h"
 #include "save_state_version.h"
 #include "sio.h"
@@ -1561,7 +1561,7 @@ bool System::Initialize(bool force_software_renderer)
   GTE::UpdateAspectRatio();
 
   if (g_settings.gpu_pgxp_enable)
-    PGXP::Initialize();
+    CPU::PGXP::Initialize();
 
   // Was startup cancelled? (e.g. shading compilers took too long and the user closed the application)
   if (IsStartupCancelled())
@@ -1573,7 +1573,7 @@ bool System::Initialize(bool force_software_renderer)
       Host::ReleaseRenderWindow();
     }
     if (g_settings.gpu_pgxp_enable)
-      PGXP::Shutdown();
+      CPU::PGXP::Shutdown();
     CPU::Shutdown();
     Bus::Shutdown();
     return false;
@@ -1666,7 +1666,7 @@ void System::DestroySystem()
   g_gpu.reset();
   InterruptController::Shutdown();
   DMA::Shutdown();
-  PGXP::Shutdown();
+  CPU::PGXP::Shutdown();
   CPU::CodeCache::Shutdown();
   Bus::Shutdown();
   CPU::Shutdown();
@@ -2086,7 +2086,7 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
   // only reset pgxp if we're not runahead-rollbacking. the value checks will save us from broken rendering, and it
   // saves using imprecise values for a frame in 30fps games.
   if (sw.IsReading() && g_settings.gpu_pgxp_enable && !is_memory_state)
-    PGXP::Reset();
+    CPU::PGXP::Reset();
 
   if (!sw.DoMarker("Bus") || !Bus::DoState(sw))
     return false;
@@ -2201,7 +2201,7 @@ void System::InternalReset()
   CPU::Reset();
   CPU::CodeCache::Reset();
   if (g_settings.gpu_pgxp_enable)
-    PGXP::Initialize();
+    CPU::PGXP::Initialize();
 
   Bus::Reset();
   DMA::Reset();
@@ -3670,10 +3670,10 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
                                         g_settings.gpu_pgxp_cpu != old_settings.gpu_pgxp_cpu)))
     {
       if (old_settings.gpu_pgxp_enable)
-        PGXP::Shutdown();
+        CPU::PGXP::Shutdown();
 
       if (g_settings.gpu_pgxp_enable)
-        PGXP::Initialize();
+        CPU::PGXP::Initialize();
 
       CPU::CodeCache::Reset();
     }

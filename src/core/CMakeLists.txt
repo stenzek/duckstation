@@ -26,6 +26,8 @@ add_library(core
   cpu_core_private.h
   cpu_disasm.cpp
   cpu_disasm.h
+  cpu_pgxp.cpp
+  cpu_pgxp.h
   cpu_types.cpp
   cpu_types.h
   digital_controller.cpp
@@ -85,8 +87,6 @@ add_library(core
   pad.h
   pcdrv.cpp
   pcdrv.h
-  pgxp.cpp
-  pgxp.h
   playstation_mouse.cpp
   playstation_mouse.h
   psf_loader.cpp

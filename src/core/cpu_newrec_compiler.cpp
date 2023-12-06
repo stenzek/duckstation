@@ -8,7 +8,7 @@
 #include "cpu_code_cache.h"
 #include "cpu_core_private.h"
 #include "cpu_disasm.h"
-#include "pgxp.h"
+#include "cpu_pgxp.h"
 #include "settings.h"
 #include <cstdint>
 #include <limits>
@@ -1274,7 +1274,7 @@ void CPU::NewRec::Compiler::CompileInstruction()
         {
           switch (inst->cop.CommonOp())
           {
-            case CopCommonInstruction::mfcn: if (inst->r.rt != Reg::zero) { CompileTemplate(nullptr, &Compiler::Compile_mfc0, nullptr, TF_WRITES_T | TF_LOAD_DELAY); } SpecExec_mfc0(); break;
+            case CopCommonInstruction::mfcn: if (inst->r.rt != Reg::zero) { CompileTemplate(nullptr, &Compiler::Compile_mfc0, PGXPFN(CPU_MFC0), TF_WRITES_T | TF_LOAD_DELAY); } SpecExec_mfc0(); break;
             case CopCommonInstruction::mtcn: CompileTemplate(nullptr, &Compiler::Compile_mtc0, PGXPFN(CPU_MTC0), TF_READS_T); SpecExec_mtc0(); break;
             default: Compile_Fallback(); break;
           }
@@ -2122,6 +2122,9 @@ void CPU::NewRec::Compiler::Compile_lui()
     return;
 
   SetConstantReg(inst->i.rt, inst->i.imm_zext32() << 16);
+
+  if (g_settings.UsingPGXPCPUMode())
+    GeneratePGXPCallWithMIPSRegs(reinterpret_cast<const void*>(&PGXP::CPU_LUI), inst->bits);
 }
 
 static constexpr const std::array<std::pair<u32*, u32>, 16> s_cop0_table = {

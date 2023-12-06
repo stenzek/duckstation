@@ -6,7 +6,7 @@
 #include "gpu_hw_shadergen.h"
 #include "gpu_sw_backend.h"
 #include "host.h"
-#include "pgxp.h"
+#include "cpu_pgxp.h"
 #include "settings.h"
 #include "system.h"
 
@@ -1671,9 +1671,9 @@ void GPU_HW::LoadVertices()
 
         if (pgxp)
         {
-          valid_w &=
-            PGXP::GetPreciseVertex(Truncate32(maddr_and_pos >> 32), vp.bits, native_x, native_y, m_drawing_offset.x,
-                                   m_drawing_offset.y, &vertices[i].x, &vertices[i].y, &vertices[i].w);
+          valid_w &= CPU::PGXP::GetPreciseVertex(Truncate32(maddr_and_pos >> 32), vp.bits, native_x, native_y,
+                                                 m_drawing_offset.x, m_drawing_offset.y, &vertices[i].x, &vertices[i].y,
+                                                 &vertices[i].w);
         }
       }
       if (pgxp)

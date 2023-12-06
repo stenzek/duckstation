@@ -4,7 +4,7 @@
 #pragma once
 #include "types.h"
 
-namespace PGXP {
+namespace CPU::PGXP {
 
 void Initialize();
 void Reset();

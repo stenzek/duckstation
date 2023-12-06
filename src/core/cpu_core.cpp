@@ -14,7 +14,7 @@
 #include "gte.h"
 #include "host.h"
 #include "pcdrv.h"
-#include "pgxp.h"
+#include "cpu_pgxp.h"
 #include "settings.h"
 #include "system.h"
 #include "timing_event.h"
@@ -190,6 +190,9 @@ void CPU::Reset()
   UpdateMemoryPointers();
 
   GTE::Reset();
+
+  if (g_settings.gpu_pgxp_enable)
+    PGXP::Reset();
 
   // TODO: This consumes cycles...
   SetPC(RESET_VECTOR);

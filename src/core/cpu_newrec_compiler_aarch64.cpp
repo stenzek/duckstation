@@ -7,10 +7,10 @@
 #include "common/log.h"
 #include "common/string_util.h"
 #include "cpu_core_private.h"
+#include "cpu_pgxp.h"
 #include "cpu_recompiler_thunks.h"
 #include "cpu_recompiler_types.h"
 #include "gte.h"
-#include "pgxp.h"
 #include "settings.h"
 #include "timing_event.h"
 #include <limits>

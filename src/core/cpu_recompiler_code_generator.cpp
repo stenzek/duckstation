@@ -7,7 +7,7 @@
 #include "cpu_core_private.h"
 #include "cpu_disasm.h"
 #include "gte.h"
-#include "pgxp.h"
+#include "cpu_pgxp.h"
 #include "settings.h"
 Log_SetChannel(CPU::Recompiler);
 

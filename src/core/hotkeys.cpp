@@ -8,7 +8,7 @@
 #include "gpu.h"
 #include "host.h"
 #include "imgui_overlays.h"
-#include "pgxp.h"
+#include "cpu_pgxp.h"
 #include "settings.h"
 #include "spu.h"
 #include "system.h"
@@ -341,9 +341,9 @@ DEFINE_HOTKEY("TogglePGXP", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOO
                                            5.0f);
 
                   if (g_settings.gpu_pgxp_enable)
-                    PGXP::Initialize();
+                    CPU::PGXP::Initialize();
                   else
-                    PGXP::Shutdown();
+                    CPU::PGXP::Shutdown();
 
                   // we need to recompile all blocks if pgxp is toggled on/off
                   CPU::CodeCache::Reset();
@@ -433,8 +433,8 @@ DEFINE_HOTKEY("TogglePGXPCPU", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_
                                              TRANSLATE_STR("OSDMessage", "PGXP CPU mode is now disabled."),
                                            5.0f);
 
-                  PGXP::Shutdown();
-                  PGXP::Initialize();
+                  CPU::PGXP::Shutdown();
+                  CPU::PGXP::Initialize();
 
                   // we need to recompile all blocks if pgxp is toggled on/off
                   CPU::CodeCache::Reset();

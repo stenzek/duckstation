@@ -5,7 +5,7 @@
 
 #include "cpu_core.h"
 #include "cpu_core_private.h"
-#include "pgxp.h"
+#include "cpu_pgxp.h"
 #include "settings.h"
 #include "timing_event.h"
 
@@ -794,7 +794,7 @@ void GTE::RTPS(const s16 V[3], u8 shift, bool lm, bool last)
 
     precise_x = std::clamp<float>(precise_x, -1024.0f, 1023.0f);
     precise_y = std::clamp<float>(precise_y, -1024.0f, 1023.0f);
-    PGXP::GTE_PushSXYZ2f(precise_x, precise_y, precise_z, REGS.dr32[14]);
+    CPU::PGXP::GTE_PushSXYZ2f(precise_x, precise_y, precise_z, REGS.dr32[14]);
   }
 
   if (last)
@@ -842,10 +842,10 @@ void GTE::Execute_NCLIP(Instruction inst)
 
 void GTE::Execute_NCLIP_PGXP(Instruction inst)
 {
-  if (PGXP::GTE_NCLIP_valid(REGS.dr32[12], REGS.dr32[13], REGS.dr32[14]))
+  if (CPU::PGXP::GTE_NCLIP_valid(REGS.dr32[12], REGS.dr32[13], REGS.dr32[14]))
   {
     REGS.FLAG.Clear();
-    REGS.MAC0 = static_cast<s32>(PGXP::GTE_NCLIP());
+    REGS.MAC0 = static_cast<s32>(CPU::PGXP::GTE_NCLIP());
   }
   else
   {

@@ -41,7 +41,7 @@
     <ClCompile Include="negcon.cpp" />
     <ClCompile Include="resources.cpp" />
     <ClCompile Include="host_interface_progress_callback.cpp" />
-    <ClCompile Include="pgxp.cpp" />
+    <ClCompile Include="cpu_pgxp.cpp" />
     <ClCompile Include="cheats.cpp" />
     <ClCompile Include="memory_card_image.cpp" />
     <ClCompile Include="analog_joystick.cpp" />
@@ -107,7 +107,7 @@
     <ClInclude Include="resources.h" />
     <ClInclude Include="host_interface_progress_callback.h" />
     <ClInclude Include="gte_types.h" />
-    <ClInclude Include="pgxp.h" />
+    <ClInclude Include="cpu_pgxp.h" />
     <ClInclude Include="cpu_core_private.h" />
     <ClInclude Include="cheats.h" />
     <ClInclude Include="memory_card_image.h" />
