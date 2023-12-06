@@ -75,7 +75,8 @@ bool OpenGLDevice::DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width,
   glPixelStorei(GL_PACK_ALIGNMENT, alignment);
   glPixelStorei(GL_PACK_ROW_LENGTH, out_data_stride / T->GetPixelSize());
 
-  const auto [gl_internal_format, gl_format, gl_type] = OpenGLTexture::GetPixelFormatMapping(T->GetFormat());
+  const auto [gl_internal_format, gl_format, gl_type] =
+    OpenGLTexture::GetPixelFormatMapping(T->GetFormat(), m_gl_context->IsGLES());
   const u32 layer = 0;
   const u32 level = 0;
 
@@ -105,7 +106,8 @@ bool OpenGLDevice::DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width,
 
 bool OpenGLDevice::SupportsTextureFormat(GPUTexture::Format format) const
 {
-  const auto [gl_internal_format, gl_format, gl_type] = OpenGLTexture::GetPixelFormatMapping(format);
+  const auto [gl_internal_format, gl_format, gl_type] =
+    OpenGLTexture::GetPixelFormatMapping(format, m_gl_context->IsGLES());
   return (gl_internal_format != static_cast<GLenum>(0));
 }
 

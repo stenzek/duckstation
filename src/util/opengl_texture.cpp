@@ -24,7 +24,7 @@ static constexpr u32 TEXTURE_UPLOAD_ALIGNMENT = 64;
 // We need 32 here for AVX2, so 64 is also fine.
 static constexpr u32 TEXTURE_UPLOAD_PITCH_ALIGNMENT = 64;
 
-const std::tuple<GLenum, GLenum, GLenum>& OpenGLTexture::GetPixelFormatMapping(GPUTexture::Format format)
+const std::tuple<GLenum, GLenum, GLenum>& OpenGLTexture::GetPixelFormatMapping(GPUTexture::Format format, bool gles)
 {
   static constexpr std::array<std::tuple<GLenum, GLenum, GLenum>, static_cast<u32>(GPUTexture::Format::MaxCount)>
     mapping = {{
@@ -50,7 +50,32 @@ const std::tuple<GLenum, GLenum, GLenum>& OpenGLTexture::GetPixelFormatMapping(G
       {GL_RGB10_A2, GL_BGRA, GL_UNSIGNED_INT_2_10_10_10_REV}, // RGB10A2
     }};
 
-  return mapping[static_cast<u32>(format)];
+  // GLES doesn't have the non-normalized 16-bit formats.. use float and hope for the best, lol.
+  static constexpr std::array<std::tuple<GLenum, GLenum, GLenum>, static_cast<u32>(GPUTexture::Format::MaxCount)>
+    mapping_gles = {{
+      {},                                                     // Unknown
+      {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE},                  // RGBA8
+      {GL_RGBA8, GL_BGRA, GL_UNSIGNED_BYTE},                  // BGRA8
+      {GL_RGB565, GL_RGB, GL_UNSIGNED_SHORT_5_6_5},           // RGB565
+      {GL_RGB5_A1, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV},   // RGBA5551
+      {GL_R8, GL_RED, GL_UNSIGNED_BYTE},                      // R8
+      {GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_SHORT},   // D16
+      {GL_R16F, GL_RED, GL_HALF_FLOAT},                       // R16
+      {GL_R16F, GL_RED, GL_HALF_FLOAT},                       // R16F
+      {GL_R32I, GL_RED, GL_INT},                              // R32I
+      {GL_R32UI, GL_RED, GL_UNSIGNED_INT},                    // R32U
+      {GL_R32F, GL_RED, GL_FLOAT},                            // R32F
+      {GL_RG8, GL_RG, GL_UNSIGNED_BYTE},                      // RG8
+      {GL_RG16F, GL_RG, GL_HALF_FLOAT},                       // RG16
+      {GL_RG16F, GL_RG, GL_HALF_FLOAT},                       // RG16F
+      {GL_RG32F, GL_RG, GL_FLOAT},                            // RG32F
+      {GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT},                   // RGBA16
+      {GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT},                   // RGBA16F
+      {GL_RGBA32F, GL_RGBA, GL_FLOAT},                        // RGBA32F
+      {GL_RGB10_A2, GL_BGRA, GL_UNSIGNED_INT_2_10_10_10_REV}, // RGB10A2
+    }};
+
+  return gles ? mapping_gles[static_cast<u32>(format)] : mapping[static_cast<u32>(format)];
 }
 
 OpenGLTexture::OpenGLTexture() = default;
@@ -84,7 +109,7 @@ bool OpenGLTexture::Create(u32 width, u32 height, u32 layers, u32 levels, u32 sa
 
   const GLenum target =
     ((samples > 1) ? GL_TEXTURE_2D_MULTISAMPLE : ((layers > 1) ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D));
-  const auto [gl_internal_format, gl_format, gl_type] = GetPixelFormatMapping(format);
+  const auto [gl_internal_format, gl_format, gl_type] = GetPixelFormatMapping(format, OpenGLDevice::IsGLES());
 
   OpenGLDevice::BindUpdateTextureUnit();
 
@@ -200,7 +225,7 @@ bool OpenGLTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data
 
   // Worth using the PBO? Driver probably knows better...
   const GLenum target = GetGLTarget();
-  const auto [gl_internal_format, gl_format, gl_type] = GetPixelFormatMapping(m_format);
+  const auto [gl_internal_format, gl_format, gl_type] = GetPixelFormatMapping(m_format, OpenGLDevice::IsGLES());
   const u32 preferred_pitch =
     Common::AlignUpPow2(static_cast<u32>(width) * GetPixelSize(), TEXTURE_UPLOAD_PITCH_ALIGNMENT);
   const u32 map_size = preferred_pitch * static_cast<u32>(height);
@@ -280,7 +305,7 @@ void OpenGLTexture::Unmap()
 
   glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch / GetPixelSize());
 
-  const auto [gl_internal_format, gl_format, gl_type] = GetPixelFormatMapping(m_format);
+  const auto [gl_internal_format, gl_format, gl_type] = GetPixelFormatMapping(m_format, OpenGLDevice::IsGLES());
   if (IsTextureArray())
   {
     glTexSubImage3D(target, m_map_level, m_map_x, m_map_y, m_map_layer, m_map_width, m_map_height, 1, gl_format,
@@ -469,7 +494,8 @@ void OpenGLDevice::CommitClear(OpenGLTexture* tex)
 
       if (glClearTexImage)
       {
-        const auto [gl_internal_format, gl_format, gl_type] = OpenGLTexture::GetPixelFormatMapping(tex->GetFormat());
+        const auto [gl_internal_format, gl_format, gl_type] =
+          OpenGLTexture::GetPixelFormatMapping(tex->GetFormat(), m_gl_context->IsGLES());
         glClearTexImage(tex->GetGLId(), 0, gl_format, gl_type, &tex->GetClearValue());
       }
       else

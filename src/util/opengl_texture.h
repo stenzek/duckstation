@@ -20,7 +20,7 @@ public:
   ~OpenGLTexture();
 
   static bool UseTextureStorage(bool multisampled);
-  static const std::tuple<GLenum, GLenum, GLenum>& GetPixelFormatMapping(Format format);
+  static const std::tuple<GLenum, GLenum, GLenum>& GetPixelFormatMapping(Format format, bool gles);
 
   ALWAYS_INLINE GLuint GetGLId() const { return m_id; }
   bool IsValid() const override { return m_id != 0; }

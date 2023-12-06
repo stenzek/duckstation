@@ -32,9 +32,8 @@ public:
   {
     return GetInstance().m_texture_stream_buffer.get();
   }
+  ALWAYS_INLINE static bool IsGLES() { return GetInstance().m_gl_context->IsGLES(); }
   static void BindUpdateTextureUnit();
-
-  ALWAYS_INLINE GL::Context* GetGLContext() const { return m_gl_context.get(); }
 
   RenderAPI GetRenderAPI() const override;
 
@@ -122,7 +121,8 @@ public:
   void UnbindPipeline(const OpenGLPipeline* pl);
 
 protected:
-  bool CreateDevice(const std::string_view& adapter, bool threaded_presentation, FeatureMask disabled_features) override;
+  bool CreateDevice(const std::string_view& adapter, bool threaded_presentation,
+                    FeatureMask disabled_features) override;
   void DestroyDevice() override;
 
   bool ReadPipelineCache(const std::string& filename) override;
