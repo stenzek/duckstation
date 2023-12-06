@@ -544,7 +544,7 @@ void FullscreenUI::CancelAsyncOps()
 void FullscreenUI::AsyncOpThreadEntryPoint(std::function<void(::ProgressCallback*)> callback,
                                            FullscreenUI::ProgressCallback* progress)
 {
-  Threading::SetNameOfCurrentThread(fmt::format("{} Async Op", progress->GetName()).c_str());
+  Threading::SetNameOfCurrentThread(TinyString::from_fmt("{} Async Op", progress->GetName()).c_str());
 
   callback(progress);
 
@@ -853,7 +853,7 @@ bool FullscreenUI::LoadResources()
   s_fallback_playlist_texture = LoadTexture("fullscreenui/address-book-new.png");
 
   for (u32 i = 0; i < static_cast<u32>(GameDatabase::CompatibilityRating::Count); i++)
-    s_game_compatibility_textures[i] = LoadTexture(fmt::format("fullscreenui/star-{}.png", i).c_str());
+    s_game_compatibility_textures[i] = LoadTexture(TinyString::from_fmt("fullscreenui/star-{}.png", i).c_str());
 
   return true;
 }
@@ -3376,8 +3376,8 @@ void FullscreenUI::DrawControllerSettingsPage()
       MenuHeading(TinyString::from_fmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_PLUG, "Controller Port {}")), mtap_port + 1));
     }
 
-    const std::string section(fmt::format("Pad{}", global_slot + 1));
-    const std::string type(bsi->GetStringValue(section.c_str(), "Type", Controller::GetDefaultPadType(global_slot)));
+    const TinyString section = TinyString::from_fmt("Pad{}", global_slot + 1);
+    const std::string type = bsi->GetStringValue(section.c_str(), "Type", Controller::GetDefaultPadType(global_slot));
     const Controller::ControllerInfo* ci = Controller::GetControllerInfo(type);
     if (MenuButton(TinyString::from_fmt("{}##type{}", FSUI_ICONSTR(ICON_FA_GAMEPAD, "Controller Type"), global_slot),
                    ci ? Host::TranslateToCString("ControllerType", ci->display_name) : FSUI_CSTR("Unknown")))
@@ -3495,9 +3495,9 @@ void FullscreenUI::DrawControllerSettingsPage()
 
             auto lock = Host::GetSettingsLock();
             SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-            const std::string key(fmt::format("Macro{}Binds", macro_index + 1));
+            const TinyString key = TinyString::from_fmt("Macro{}Binds", macro_index + 1);
 
-            std::string binds_string(bsi->GetStringValue(section.c_str(), key.c_str()));
+            std::string binds_string = bsi->GetStringValue(section.c_str(), key.c_str());
             std::vector<std::string_view> buttons_split(StringUtil::SplitString(binds_string, '&', true));
             auto it = std::find(buttons_split.begin(), buttons_split.end(), to_modify);
             if (checked)
@@ -3519,7 +3519,7 @@ void FullscreenUI::DrawControllerSettingsPage()
           });
       }
 
-      const std::string freq_key(fmt::format("Macro{}Frequency", macro_index + 1));
+      const TinyString freq_key = TinyString::from_fmt("Macro{}Frequency", macro_index + 1);
       const SmallString freq_title =
         SmallString::from_fmt(fmt::runtime(FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Macro {} Frequency")), macro_index + 1);
       s32 frequency = bsi->GetIntValue(section.c_str(), freq_key.c_str(), 0);
@@ -3553,7 +3553,7 @@ void FullscreenUI::DrawControllerSettingsPage()
         }
 
         BeginMenuButtons();
-        if (MenuButton("OK", nullptr, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+        if (MenuButton(FSUI_CSTR("OK"), nullptr, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
           ImGui::CloseCurrentPopup();
         EndMenuButtons();
 
@@ -5921,8 +5921,8 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
       // region
       {
-        std::string flag_texture(
-          fmt::format("fullscreenui/{}.png", Settings::GetDiscRegionName(selected_entry->region)));
+        const TinyString flag_texture =
+          TinyString::from_fmt("fullscreenui/{}.png", Settings::GetDiscRegionName(selected_entry->region));
         ImGui::TextUnformatted(FSUI_CSTR("Region: "));
         ImGui::SameLine();
         ImGui::Image(GetCachedTextureAsync(flag_texture.c_str()), LayoutScale(23.0f, 16.0f));

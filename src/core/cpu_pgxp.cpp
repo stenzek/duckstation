@@ -90,7 +90,6 @@ void CPU::PGXP::Initialize()
 {
   std::memset(g_state.pgxp_gpr, 0, sizeof(g_state.pgxp_gpr));
   std::memset(g_state.pgxp_cop0, 0, sizeof(g_state.pgxp_cop0));
-
   std::memset(g_state.pgxp_gte, 0, sizeof(g_state.pgxp_gte));
 
   if (!s_mem)
@@ -142,7 +141,6 @@ void CPU::PGXP::Shutdown()
 
   std::memset(g_state.pgxp_gte, 0, sizeof(g_state.pgxp_gte));
   std::memset(g_state.pgxp_gpr, 0, sizeof(g_state.pgxp_gpr));
-
   std::memset(g_state.pgxp_cop0, 0, sizeof(g_state.pgxp_cop0));
 }
 
