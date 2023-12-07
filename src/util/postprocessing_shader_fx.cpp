@@ -430,9 +430,20 @@ bool PostProcessing::ReShadeFXShader::CreateModule(s32 buffer_width, s32 buffer_
   return true;
 }
 
+static bool HasAnnotationWithName(const reshadefx::uniform_info& uniform, const std::string_view& annotation_name)
+{
+  for (const reshadefx::annotation& an : uniform.annotations)
+  {
+    if (an.name == annotation_name)
+      return true;
+  }
+
+  return false;
+}
+
 static std::string_view GetStringAnnotationValue(const std::vector<reshadefx::annotation>& annotations,
-                                                 const std::string_view& annotation_name,
-                                                 const std::string_view& default_value)
+                                                 const std::string_view annotation_name,
+                                                 const std::string_view default_value)
 {
   for (const reshadefx::annotation& an : annotations)
   {
@@ -449,7 +460,7 @@ static std::string_view GetStringAnnotationValue(const std::vector<reshadefx::an
 }
 
 static bool GetBooleanAnnotationValue(const std::vector<reshadefx::annotation>& annotations,
-                                      const std::string_view& annotation_name, bool default_value)
+                                      const std::string_view annotation_name, bool default_value)
 {
   for (const reshadefx::annotation& an : annotations)
   {
@@ -466,7 +477,7 @@ static bool GetBooleanAnnotationValue(const std::vector<reshadefx::annotation>& 
 }
 
 static PostProcessing::ShaderOption::ValueVector
-GetVectorAnnotationValue(const reshadefx::uniform_info& uniform, const std::string_view& annotation_name,
+GetVectorAnnotationValue(const reshadefx::uniform_info& uniform, const std::string_view annotation_name,
                          const PostProcessing::ShaderOption::ValueVector& default_value)
 {
   PostProcessing::ShaderOption::ValueVector vv = default_value;
@@ -477,7 +488,7 @@ GetVectorAnnotationValue(const reshadefx::uniform_info& uniform, const std::stri
 
     const u32 components = std::min<u32>(an.type.components(), PostProcessing::ShaderOption::MAX_VECTOR_COMPONENTS);
 
-    if (an.type.base == uniform.type.base)
+    if (an.type.base == uniform.type.base || (an.type.is_integral() && uniform.type.is_integral())) // int<->uint
     {
       if (components > 0)
         std::memcpy(&vv[0].float_value, &an.value.as_float[0], sizeof(float) * components);
@@ -584,6 +595,8 @@ bool PostProcessing::ReShadeFXShader::CreateOptions(const reshadefx::module& mod
 
     ShaderOption opt;
     opt.name = ui.name;
+    opt.category = GetStringAnnotationValue(ui.annotations, "ui_category", std::string_view());
+    opt.tooltip = GetStringAnnotationValue(ui.annotations, "ui_tooltip", std::string_view());
 
     if (!GetBooleanAnnotationValue(ui.annotations, "hidden", false))
     {
@@ -592,7 +605,7 @@ bool PostProcessing::ReShadeFXShader::CreateOptions(const reshadefx::module& mod
         opt.ui_name = ui.name;
     }
 
-    // const std::string_view ui_type = GetStringAnnotationValue(ui.annotations, "ui_type", std::string_view();
+    const std::string_view ui_type = GetStringAnnotationValue(ui.annotations, "ui_type", std::string_view());
 
     switch (ui.type.base)
     {
@@ -624,8 +637,8 @@ bool PostProcessing::ReShadeFXShader::CreateOptions(const reshadefx::module& mod
       return false;
     }
 
-    opt.min_value = GetVectorAnnotationValue(ui, "ui_min", {});
-    opt.max_value = GetVectorAnnotationValue(ui, "ui_max", {});
+    opt.min_value = GetVectorAnnotationValue(ui, "ui_min", opt.default_value);
+    opt.max_value = GetVectorAnnotationValue(ui, "ui_max", opt.default_value);
     ShaderOption::ValueVector default_step = {};
     switch (opt.type)
     {
@@ -654,6 +667,25 @@ bool PostProcessing::ReShadeFXShader::CreateOptions(const reshadefx::module& mod
     }
     opt.step_value = GetVectorAnnotationValue(ui, "ui_step", default_step);
 
+    // set a default maximum based on step if there isn't one
+    if (!HasAnnotationWithName(ui, "ui_max") && HasAnnotationWithName(ui, "ui_step"))
+    {
+      for (u32 i = 0; i < opt.vector_size; i++)
+      {
+        switch (opt.type)
+        {
+          case ShaderOption::Type::Float:
+            opt.max_value[i].float_value = opt.min_value[i].float_value + (opt.step_value[i].float_value * 100.0f);
+            break;
+          case ShaderOption::Type::Int:
+            opt.max_value[i].int_value = opt.min_value[i].int_value + (opt.step_value[i].int_value * 100);
+            break;
+          default:
+            break;
+        }
+      }
+    }
+
     if (ui.has_initializer_value)
     {
       std::memcpy(&opt.default_value[0].float_value, &ui.initializer_value.as_float[0],
@@ -667,8 +699,43 @@ bool PostProcessing::ReShadeFXShader::CreateOptions(const reshadefx::module& mod
     // Assume default if user doesn't set it.
     opt.value = opt.default_value;
 
+    if (!ui_type.empty() && opt.vector_size > 1)
+    {
+      Log_WarningFmt("Uniform '{}' has UI type of '{}' but is vector not scalar ({}), ignoring", opt.name, ui_type,
+                     opt.vector_size);
+    }
+    else if (!ui_type.empty())
+    {
+      if ((ui_type == "combo" || ui_type == "radio") && opt.type == ShaderOption::Type::Int)
+      {
+        const std::string_view ui_values = GetStringAnnotationValue(ui.annotations, "ui_items", std::string_view());
+
+        size_t start_pos = 0;
+        while (start_pos < ui_values.size())
+        {
+          size_t end_pos = start_pos;
+          while (end_pos < ui_values.size() && ui_values[end_pos] != '\0')
+            end_pos++;
+
+          const size_t len = end_pos - start_pos;
+          if (len > 0)
+            opt.choice_options.emplace_back(ui_values.substr(start_pos, len));
+          start_pos = end_pos + 1;
+        }
+
+        // update max if it hasn't been specified
+        const size_t num_choices = opt.choice_options.size();
+        if (num_choices > 0)
+          opt.max_value[0].int_value = std::max(static_cast<s32>(num_choices - 1), opt.max_value[0].int_value);
+      }
+    }
+
     m_options.push_back(std::move(opt));
   }
+
+  // sort based on category
+  std::sort(m_options.begin(), m_options.end(),
+            [](const ShaderOption& lhs, const ShaderOption& rhs) { return lhs.category < rhs.category; });
 
   m_uniforms_size = mod.total_uniform_size;
   Log_DevFmt("{}: {} options", m_filename, m_options.size());
@@ -739,6 +806,12 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
       }
 
       *si = SourceOptionType::MousePoint;
+      return true;
+    }
+    else if (source == "mousebutton")
+    {
+      Log_WarningFmt("Ignoring mousebutton source in uniform '{}', not supported.", ui.name);
+      *si = SourceOptionType::Zero;
       return true;
     }
     else if (source == "random")

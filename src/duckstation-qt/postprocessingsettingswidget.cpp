@@ -308,14 +308,45 @@ void PostProcessingShaderConfigWidget::createUi()
 {
   u32 row = 0;
 
+  const std::string* last_category = nullptr;
+
   for (PostProcessing::ShaderOption& option : m_options)
   {
     if (option.ui_name.empty())
       continue;
 
+    if (!last_category || option.category != *last_category)
+    {
+      if (last_category)
+        m_layout->addItem(new QSpacerItem(1, 4), row++, 0);
+
+      if (!option.category.empty())
+      {
+        QLabel* label = new QLabel(QString::fromStdString(option.category), this);
+        QFont label_font(label->font());
+        label_font.setPointSizeF(12.0f);
+        label->setFont(label_font);
+        m_layout->addWidget(label, row++, 0, 1, 3, Qt::AlignLeft);
+      }
+
+      if (last_category)
+      {
+        QLabel* line = new QLabel(this);
+        line->setFrameShape(QFrame::HLine);
+        line->setFixedHeight(4);
+        line->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        m_layout->addWidget(line, row++, 0, 1, 3);
+      }
+
+      last_category = &option.category;
+    }
+
+    const QString tooltip = QString::fromStdString(option.tooltip);
+
     if (option.type == PostProcessing::ShaderOption::Type::Bool)
     {
       QCheckBox* checkbox = new QCheckBox(QString::fromStdString(option.ui_name), this);
+      checkbox->setToolTip(tooltip);
       checkbox->setChecked(option.value[0].int_value != 0);
       connect(checkbox, &QCheckBox::stateChanged, [this, &option](int state) {
         option.value[0].int_value = (state == Qt::Checked) ? 1 : 0;
@@ -323,6 +354,24 @@ void PostProcessingShaderConfigWidget::createUi()
       });
       m_layout->addWidget(checkbox, row, 0, 1, 3, Qt::AlignLeft);
       m_widgets.push_back(checkbox);
+      row++;
+    }
+    else if (option.type == PostProcessing::ShaderOption::Type::Int && !option.choice_options.empty())
+    {
+      QLabel* label = new QLabel(QString::fromStdString(option.ui_name), this);
+      label->setToolTip(tooltip);
+      m_layout->addWidget(label, row, 0, 1, 1, Qt::AlignLeft);
+
+      QComboBox* combo = new QComboBox(this);
+      combo->setToolTip(tooltip);
+      for (const std::string& combo_option : option.choice_options)
+        combo->addItem(QString::fromStdString(combo_option));
+      connect(combo, &QComboBox::currentIndexChanged, [this, &option](int index) {
+        option.value[0].int_value = index;
+        updateConfigForOption(option);
+      });
+      m_layout->addWidget(combo, row, 1, 1, 2, Qt::AlignLeft);
+      m_widgets.push_back(combo);
       row++;
     }
     else
@@ -342,14 +391,17 @@ void PostProcessingShaderConfigWidget::createUi()
         }
 
         QWidget* label_w = new QLabel(label, this);
+        label_w->setToolTip(tooltip);
         m_layout->addWidget(label_w, row, 0, 1, 1, Qt::AlignLeft);
         m_widgets.push_back(label_w);
 
         QSlider* slider = new QSlider(Qt::Horizontal, this);
+        slider->setToolTip(tooltip);
         m_layout->addWidget(slider, row, 1, 1, 1, Qt::AlignLeft);
         m_widgets.push_back(slider);
 
         QLabel* slider_label = new QLabel(this);
+        slider_label->setToolTip(tooltip);
         m_layout->addWidget(slider_label, row, 2, 1, 1, Qt::AlignLeft);
         m_widgets.push_back(slider_label);
 

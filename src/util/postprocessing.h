@@ -51,6 +51,8 @@ struct ShaderOption
   std::string name;
   std::string ui_name;
   std::string dependent_option;
+  std::string category;
+  std::string tooltip;
   Type type;
   u32 vector_size;
   u32 buffer_size;
@@ -60,6 +62,7 @@ struct ShaderOption
   ValueVector max_value;
   ValueVector step_value;
   ValueVector value;
+  std::vector<std::string> choice_options;
 
   static u32 ParseIntVector(const std::string_view& line, ValueVector* values);
   static u32 ParseFloatVector(const std::string_view& line, ValueVector* values);
