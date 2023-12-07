@@ -227,7 +227,7 @@ const char* GameDatabase::GetCompatibilityRatingDisplayName(CompatibilityRating 
 
 void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_messages) const
 {
-  constexpr float osd_duration = 5.0f;
+  constexpr float osd_duration = Host::OSD_INFO_DURATION;
 
   if (display_active_start_offset.has_value())
     settings.display_active_start_offset = display_active_start_offset.value();
@@ -438,9 +438,17 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   {
     if (display_osd_messages && settings.gpu_pgxp_enable && !settings.gpu_pgxp_cpu)
     {
+#ifndef __ANDROID__
       Host::AddIconOSDMessage("gamedb_force_pgxp_cpu", ICON_FA_MICROCHIP,
                               TRANSLATE_STR("OSDMessage", "PGXP CPU mode forced by compatibility settings."),
                               osd_duration);
+#else
+      Host::AddIconOSDMessage(
+        "gamedb_force_pgxp_cpu", ICON_FA_MICROCHIP,
+        "This game requires PGXP CPU mode, which increases system requirements.\n" ICON_FA_EXCLAMATION_TRIANGLE
+        "  If the game runs too slow, disable PGXP for this game.",
+        Host::OSD_WARNING_DURATION);
+#endif
     }
 
     settings.gpu_pgxp_cpu = true;
