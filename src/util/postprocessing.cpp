@@ -155,6 +155,8 @@ std::vector<std::pair<std::string, std::string>> PostProcessing::GetAvailableSha
                         FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RECURSIVE | FILESYSTEM_FIND_RELATIVE_PATHS |
                           FILESYSTEM_FIND_KEEP_ARRAY,
                         &results);
+  std::sort(results.begin(), results.end(),
+            [](const auto& lhs, const auto& rhs) { return lhs.FileName < rhs.FileName; });
 
   for (FILESYSTEM_FIND_DATA& fd : results)
   {
@@ -182,6 +184,9 @@ std::vector<std::pair<std::string, std::string>> PostProcessing::GetAvailableSha
     Path::Combine(EmuFolders::Resources, "shaders" FS_OSPATH_SEPARATOR_STR "reshade" FS_OSPATH_SEPARATOR_STR "Shaders")
       .c_str(),
     "*.fx", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_KEEP_ARRAY, &results);
+  std::sort(results.begin(), results.end(),
+            [](const auto& lhs, const auto& rhs) { return lhs.FileName < rhs.FileName; });
+
   for (FILESYSTEM_FIND_DATA& fd : results)
   {
     size_t pos = fd.FileName.rfind('.');
