@@ -353,7 +353,9 @@ void EmuThread::checkForSettingsChanges(const Settings& old_settings)
   if (g_main_window)
   {
     QMetaObject::invokeMethod(g_main_window, &MainWindow::checkForSettingChanges, Qt::QueuedConnection);
-    updatePerformanceCounters();
+
+    if (System::IsValid())
+      updatePerformanceCounters();
   }
 
   if (g_gpu_device)
