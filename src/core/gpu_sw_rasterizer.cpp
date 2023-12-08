@@ -38,6 +38,31 @@ CopyVRAMFunction CopyVRAM = nullptr;
 GPUDrawingArea g_drawing_area = {};
 } // namespace GPU_SW_Rasterizer
 
+void GPU_SW_Rasterizer::UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit)
+{
+  const u16* const src_row = &g_vram[reg.GetYBase() * VRAM_WIDTH];
+  const u32 start_x = reg.GetXBase();
+  if (!clut_is_8bit)
+  {
+    // Wraparound can't happen in 4-bit mode.
+    std::memcpy(g_gpu_clut, &src_row[start_x], sizeof(u16) * 16);
+  }
+  else
+  {
+    if ((start_x + 256) > VRAM_WIDTH) [[unlikely]]
+    {
+      const u32 end = VRAM_WIDTH - start_x;
+      const u32 start = 256 - end;
+      std::memcpy(g_gpu_clut, &src_row[start_x], sizeof(u16) * end);
+      std::memcpy(g_gpu_clut + end, src_row, sizeof(u16) * start);
+    }
+    else
+    {
+      std::memcpy(g_gpu_clut, &src_row[start_x], sizeof(u16) * 256);
+    }
+  }
+}
+
 // Default scalar implementation definitions.
 namespace GPU_SW_Rasterizer::Scalar {
 namespace {

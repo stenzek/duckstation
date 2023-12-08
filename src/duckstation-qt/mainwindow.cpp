@@ -85,6 +85,7 @@ static bool s_use_central_widget = false;
 // UI thread VM validity.
 static bool s_system_valid = false;
 static bool s_system_paused = false;
+static bool s_fullscreen_ui_started = false;
 static std::atomic_uint32_t s_system_locked{false};
 static QString s_current_game_title;
 static QString s_current_game_serial;
@@ -764,7 +765,7 @@ void MainWindow::recreate()
   {
     g_emu_thread->setSurfaceless(false);
     g_main_window->updateEmulationActions(false, System::IsValid(), Achievements::IsHardcoreModeActive());
-    g_main_window->onFullscreenUIStateChange(g_emu_thread->isRunningFullscreenUI());
+    g_main_window->onFullscreenUIStartedOrStopped(s_fullscreen_ui_started);
   }
 
   if (controller_settings_window_pos.has_value())
@@ -1258,8 +1259,9 @@ void MainWindow::onStartFullscreenUITriggered()
     g_emu_thread->startFullscreenUI();
 }
 
-void MainWindow::onFullscreenUIStateChange(bool running)
+void MainWindow::onFullscreenUIStartedOrStopped(bool running)
 {
+  s_fullscreen_ui_started = running;
   m_ui.actionStartFullscreenUI->setText(running ? tr("Stop Big Picture Mode") : tr("Start Big Picture Mode"));
   m_ui.actionStartFullscreenUI2->setText(running ? tr("Exit Big Picture") : tr("Big Picture"));
 }
@@ -2045,7 +2047,7 @@ void MainWindow::connectSignals()
   connect(g_emu_thread, &EmuThread::mediaCaptureStarted, this, &MainWindow::onMediaCaptureStarted);
   connect(g_emu_thread, &EmuThread::mediaCaptureStopped, this, &MainWindow::onMediaCaptureStopped);
   connect(g_emu_thread, &EmuThread::mouseModeRequested, this, &MainWindow::onMouseModeRequested);
-  connect(g_emu_thread, &EmuThread::fullscreenUIStateChange, this, &MainWindow::onFullscreenUIStateChange);
+  connect(g_emu_thread, &EmuThread::fullscreenUIStartedOrStopped, this, &MainWindow::onFullscreenUIStartedOrStopped);
   connect(g_emu_thread, &EmuThread::achievementsLoginRequested, this, &MainWindow::onAchievementsLoginRequested);
   connect(g_emu_thread, &EmuThread::achievementsChallengeModeChanged, this,
           &MainWindow::onAchievementsChallengeModeChanged);
@@ -2498,7 +2500,7 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
   // reshow the main window during display updates, because otherwise fullscreen transitions and renderer switches
   // would briefly show and then hide the main window. So instead, we do it on shutdown, here. Except if we're in
   // batch mode, when we're going to exit anyway.
-  if (!isRenderingToMain() && isHidden() && !QtHost::InBatchMode() && !g_emu_thread->isRunningFullscreenUI())
+  if (!isRenderingToMain() && isHidden() && !QtHost::InBatchMode() && !s_fullscreen_ui_started)
     updateWindowState(true);
 
   // Now we can actually shut down the VM.

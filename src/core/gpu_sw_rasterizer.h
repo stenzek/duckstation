@@ -18,12 +18,15 @@ static constexpr u32 DITHER_LUT_SIZE = 512;
 using DitherLUT = std::array<std::array<std::array<u8, DITHER_LUT_SIZE>, DITHER_MATRIX_SIZE>, DITHER_MATRIX_SIZE>;
 extern const DitherLUT g_dither_lut;
 
+// TODO: Pack in struct
 extern GPUDrawingArea g_drawing_area;
+
+extern void UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit);
 
 using DrawRectangleFunction = void (*)(const GPUBackendDrawRectangleCommand* cmd);
 typedef const DrawRectangleFunction DrawRectangleFunctionTable[2][2][2];
 
-using DrawTriangleFunction = void (*)(const GPUBackendDrawPolygonCommand* cmd,
+using DrawTriangleFunction = void (*)(const GPUBackendDrawCommand* cmd,
                                       const GPUBackendDrawPolygonCommand::Vertex* v0,
                                       const GPUBackendDrawPolygonCommand::Vertex* v1,
                                       const GPUBackendDrawPolygonCommand::Vertex* v2);

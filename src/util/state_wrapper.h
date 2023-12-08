@@ -34,6 +34,8 @@ public:
   ALWAYS_INLINE bool IsReading() const { return (m_mode == Mode::Read); }
   ALWAYS_INLINE bool IsWriting() const { return (m_mode == Mode::Write); }
   ALWAYS_INLINE u32 GetVersion() const { return m_version; }
+  ALWAYS_INLINE const u8* GetData() const { return m_data; }
+  ALWAYS_INLINE size_t GetDataSize() const { return m_size; }
   ALWAYS_INLINE size_t GetPosition() const { return m_pos; }
 
   /// Overload for integral or floating-point types. Writes bytes as-is.

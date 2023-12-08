@@ -40,14 +40,13 @@
     <ClCompile Include="gpu_hw_texture_cache.cpp" />
     <ClCompile Include="gpu_shadergen.cpp" />
     <ClCompile Include="gpu_sw.cpp" />
-    <ClCompile Include="gpu_sw_backend.cpp" />
     <ClCompile Include="gpu_sw_rasterizer.cpp" />
+    <ClCompile Include="gpu_thread.cpp" />
     <ClCompile Include="gte.cpp" />
     <ClCompile Include="dma.cpp" />
     <ClCompile Include="gpu.cpp" />
     <ClCompile Include="gpu_hw.cpp" />
     <ClCompile Include="host.cpp" />
-    <ClCompile Include="host_interface_progress_callback.cpp" />
     <ClCompile Include="hotkeys.cpp" />
     <ClCompile Include="imgui_overlays.cpp" />
     <ClCompile Include="interrupt_controller.cpp" />
@@ -118,8 +117,8 @@
     <ClInclude Include="gpu_hw_texture_cache.h" />
     <ClInclude Include="gpu_shadergen.h" />
     <ClInclude Include="gpu_sw.h" />
-    <ClInclude Include="gpu_sw_backend.h" />
     <ClInclude Include="gpu_sw_rasterizer.h" />
+    <ClInclude Include="gpu_thread.h" />
     <ClInclude Include="gpu_types.h" />
     <ClInclude Include="gte.h" />
     <ClInclude Include="cpu_types.h" />
@@ -128,7 +127,6 @@
     <ClInclude Include="gpu_hw.h" />
     <ClInclude Include="gte_types.h" />
     <ClInclude Include="host.h" />
-    <ClInclude Include="host_interface_progress_callback.h" />
     <ClInclude Include="imgui_overlays.h" />
     <ClInclude Include="input_types.h" />
     <ClInclude Include="interrupt_controller.h" />

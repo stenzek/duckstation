@@ -8,7 +8,9 @@
 #include "controller.h"
 #include "game_list.h"
 #include "gpu.h"
+#include "gpu_thread.h"
 #include "host.h"
+#include "imgui_overlays.h"
 #include "settings.h"
 #include "system.h"
 #include "system_private.h"
@@ -203,6 +205,7 @@ struct PostProcessingStageInfo
 //////////////////////////////////////////////////////////////////////////
 // Main
 //////////////////////////////////////////////////////////////////////////
+static void UpdateRunIdleState();
 static void PauseForMenuOpen(bool set_pause_menu_open);
 static bool AreAnyDialogsOpen();
 static void ClosePauseMenu();
@@ -601,12 +604,12 @@ bool FullscreenUI::Initialize()
   s_state.about_window_open = false;
   s_state.hotkey_list_cache = InputManager::GetHotkeyList();
 
-  if (!System::IsValid())
+  Host::RunOnCPUThread([]() { Host::OnFullscreenUIStartedOrStopped(true); });
+
+  if (!GPUThread::HasGPUBackend())
     SwitchToLanding();
 
-  if (!System::IsRunning())
-    Host::OnIdleStateChanged();
-
+  UpdateRunIdleState();
   ForceKeyNavEnabled();
   return true;
 }
@@ -630,6 +633,7 @@ bool FullscreenUI::AreAnyDialogsOpen()
 
 void FullscreenUI::CheckForConfigChanges(const Settings& old_settings)
 {
+  // NOTE: Called on CPU thread.
   if (!IsInitialized())
     return;
 
@@ -637,55 +641,98 @@ void FullscreenUI::CheckForConfigChanges(const Settings& old_settings)
   // That means we're going to be reading achievement state.
   if (old_settings.achievements_enabled && !g_settings.achievements_enabled)
   {
-    if (s_state.current_main_window == MainWindowType::Achievements ||
-        s_state.current_main_window == MainWindowType::Leaderboards)
-      ReturnToPreviousWindow();
+    if (!IsInitialized())
+      return;
+
+    GPUThread::RunOnThread([]() {
+      if (s_state.current_main_window == MainWindowType::Achievements ||
+          s_state.current_main_window == MainWindowType::Leaderboards)
+      {
+        ReturnToPreviousWindow();
+      }
+    });
   }
+}
+
+void FullscreenUI::UpdateRunIdleState()
+{
+  const bool new_run_idle = HasActiveWindow();
+  GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::FullscreenUIActive, new_run_idle);
 }
 
 void FullscreenUI::OnSystemStarted()
 {
+  // NOTE: Called on CPU thread.
   if (!IsInitialized())
     return;
 
-  s_state.current_main_window = MainWindowType::None;
-  QueueResetFocus(FocusResetType::ViewChanged);
-}
+  GPUThread::RunOnThread([]() {
+    if (!IsInitialized())
+      return;
 
-void FullscreenUI::OnSystemPaused()
-{
-  // noop
+    s_state.current_main_window = MainWindowType::None;
+    QueueResetFocus(FocusResetType::ViewChanged);
+    UpdateRunIdleState();
+  });
 }
 
 void FullscreenUI::OnSystemResumed()
 {
-  // get rid of pause menu if we unpaused another way
-  if (s_state.current_main_window == MainWindowType::PauseMenu)
-    ClosePauseMenu();
+  // NOTE: Called on CPU thread.
+  if (!IsInitialized())
+    return;
+
+  GPUThread::RunOnThread([]() {
+    if (!IsInitialized())
+      return;
+
+    // get rid of pause menu if we unpaused another way
+    if (s_state.current_main_window == MainWindowType::PauseMenu)
+      ClosePauseMenu();
+
+    UpdateRunIdleState();
+  });
 }
 
 void FullscreenUI::OnSystemDestroyed()
 {
+  // NOTE: Called on CPU thread.
   if (!IsInitialized())
     return;
 
-  s_state.pause_menu_was_open = false;
-  s_state.was_paused_on_quick_menu_open = false;
-  s_state.current_pause_submenu = PauseSubMenu::None;
-  SwitchToLanding();
+  GPUThread::RunOnThread([]() {
+    if (!IsInitialized())
+      return;
+
+    s_state.pause_menu_was_open = false;
+    s_state.was_paused_on_quick_menu_open = false;
+    s_state.current_pause_submenu = PauseSubMenu::None;
+    SwitchToLanding();
+    UpdateRunIdleState();
+  });
 }
 
 void FullscreenUI::OnRunningGameChanged()
 {
+  // NOTE: Called on CPU thread.
   if (!IsInitialized())
     return;
 
   const std::string& path = System::GetDiscPath();
   const std::string& serial = System::GetGameSerial();
+
+  std::string subtitle;
   if (!serial.empty())
-    s_state.current_game_subtitle = fmt::format("{0} - {1}", serial, Path::GetFileName(path));
+    subtitle = fmt::format("{0} - {1}", serial, Path::GetFileName(path));
   else
-    s_state.current_game_subtitle = {};
+    subtitle = {};
+
+  GPUThread::RunOnThread([subtitle = std::move(subtitle)]() mutable {
+    if (!IsInitialized())
+      return;
+
+    s_state.current_game_subtitle = std::move(subtitle);
+  });
 }
 
 void FullscreenUI::PauseForMenuOpen(bool set_pause_menu_open)
@@ -702,15 +749,18 @@ void FullscreenUI::OpenPauseMenu()
   if (!System::IsValid())
     return;
 
-  if (!Initialize() || s_state.current_main_window != MainWindowType::None)
-    return;
+  GPUThread::RunOnThread([]() {
+    if (!Initialize() || s_state.current_main_window != MainWindowType::None)
+      return;
 
-  PauseForMenuOpen(true);
-  s_state.current_main_window = MainWindowType::PauseMenu;
-  s_state.current_pause_submenu = PauseSubMenu::None;
-  QueueResetFocus(FocusResetType::ViewChanged);
-  ForceKeyNavEnabled();
-  FixStateIfPaused();
+    PauseForMenuOpen(true);
+    s_state.current_main_window = MainWindowType::PauseMenu;
+    s_state.current_pause_submenu = PauseSubMenu::None;
+    QueueResetFocus(FocusResetType::ViewChanged);
+    ForceKeyNavEnabled();
+    UpdateRunIdleState();
+    FixStateIfPaused();
+  });
 }
 
 void FullscreenUI::OpenCheatsMenu()
@@ -724,41 +774,39 @@ void FullscreenUI::OpenCheatsMenu()
   s_state.settings_page = SettingsPage::Cheats;
   PauseForMenuOpen(true);
   ForceKeyNavEnabled();
+  UpdateRunIdleState();
   FixStateIfPaused();
 }
 
 void FullscreenUI::FixStateIfPaused()
 {
-  if (!System::IsValid() || System::IsRunning())
+  if (!GPUThread::HasGPUBackend() || System::IsRunning())
     return;
 
   // When we're paused, we won't have trickled the key up event for escape yet. Do it now.
   ImGui::UpdateInputEvents(false);
-
-  Host::OnIdleStateChanged();
-  Host::RunOnCPUThread([]() {
-    if (System::IsValid())
-    {
-      // Why twice? To clear the "wants keyboard input" flag.
-      System::InvalidateDisplay();
-      System::InvalidateDisplay();
-    }
-  });
 }
 
 void FullscreenUI::ClosePauseMenu()
 {
-  if (!IsInitialized() || !System::IsValid())
+  if (!System::IsValid())
     return;
 
-  if (System::GetState() == System::State::Paused && !s_state.was_paused_on_quick_menu_open)
-    Host::RunOnCPUThread([]() { System::PauseSystem(false); });
+  const bool paused = System::IsPaused();
+  GPUThread::RunOnThread([paused]() {
+    if (!IsInitialized())
+      return;
 
-  s_state.current_main_window = MainWindowType::None;
-  s_state.current_pause_submenu = PauseSubMenu::None;
-  s_state.pause_menu_was_open = false;
-  QueueResetFocus(FocusResetType::ViewChanged);
-  FixStateIfPaused();
+    if (paused && !s_state.was_paused_on_quick_menu_open)
+      Host::RunOnCPUThread([]() { System::PauseSystem(false); });
+
+    s_state.current_main_window = MainWindowType::None;
+    s_state.current_pause_submenu = PauseSubMenu::None;
+    s_state.pause_menu_was_open = false;
+    QueueResetFocus(FocusResetType::ViewChanged);
+    UpdateRunIdleState();
+    FixStateIfPaused();
+  });
 }
 
 void FullscreenUI::OpenPauseSubMenu(PauseSubMenu submenu)
@@ -789,14 +837,21 @@ void FullscreenUI::Shutdown()
   s_state.current_game_subtitle = {};
   DestroyResources();
   ImGuiFullscreen::Shutdown();
+  if (s_state.initialized)
+    Host::RunOnCPUThread([]() { Host::OnFullscreenUIStartedOrStopped(false); });
+
   s_state.initialized = false;
   s_state.tried_to_initialize = false;
+  UpdateRunIdleState();
 }
 
 void FullscreenUI::Render()
 {
   if (!s_state.initialized)
+  {
+    ImGuiFullscreen::RenderLoadingScreen();
     return;
+  }
 
   ImGuiFullscreen::UploadAsyncTextures();
 
@@ -855,6 +910,8 @@ void FullscreenUI::Render()
 
   ImGuiFullscreen::EndLayout();
 
+  ImGuiFullscreen::RenderLoadingScreen();
+
   if (s_state.settings_changed.load(std::memory_order_relaxed))
   {
     Host::CommitBaseSettingChanges();
@@ -888,7 +945,7 @@ void FullscreenUI::Render()
         }
       }
 
-      if (System::IsValid())
+      if (GPUThread::HasGPUBackend())
         Host::RunOnCPUThread([]() { System::ReloadGameSettings(false); });
     }
     s_state.game_settings_changed.store(false, std::memory_order_release);
@@ -907,7 +964,7 @@ void FullscreenUI::InvalidateCoverCache()
 
 void FullscreenUI::ReturnToPreviousWindow()
 {
-  if (System::IsValid() && s_state.pause_menu_was_open)
+  if (GPUThread::HasGPUBackend() && s_state.pause_menu_was_open)
   {
     s_state.current_main_window = MainWindowType::PauseMenu;
     QueueResetFocus(FocusResetType::ViewChanged);
@@ -921,7 +978,8 @@ void FullscreenUI::ReturnToPreviousWindow()
 void FullscreenUI::ReturnToMainWindow()
 {
   ClosePauseMenu();
-  s_state.current_main_window = System::IsValid() ? MainWindowType::None : MainWindowType::Landing;
+  s_state.current_main_window = GPUThread::HasGPUBackend() ? MainWindowType::None : MainWindowType::Landing;
+  UpdateRunIdleState();
   FixStateIfPaused();
 }
 
@@ -957,8 +1015,13 @@ ImGuiFullscreen::FileSelectorFilters FullscreenUI::GetDiscImageFilters()
 
 void FullscreenUI::DoStartPath(std::string path, std::string state, std::optional<bool> fast_boot)
 {
-  if (System::IsValid())
+  if (GPUThread::HasGPUBackend())
     return;
+
+  // Switch to nothing, we'll get called back via OnSystemDestroyed() if startup fails.
+  s_state.current_main_window = MainWindowType::None;
+  QueueResetFocus(FocusResetType::ViewChanged);
+  UpdateRunIdleState();
 
   SystemBootParameters params;
   params.filename = std::move(path);
@@ -1154,108 +1217,116 @@ void FullscreenUI::DoChangeDiscFromFile()
 
 void FullscreenUI::DoChangeDisc()
 {
-  ImGuiFullscreen::ChoiceDialogOptions options;
+  Host::RunOnCPUThread([]() {
+    ImGuiFullscreen::ChoiceDialogOptions options;
 
-  if (System::HasMediaSubImages())
-  {
-    const u32 current_index = System::GetMediaSubImageIndex();
-    const u32 count = System::GetMediaSubImageCount();
-    options.reserve(count + 1);
-    options.emplace_back(FSUI_STR("From File..."), false);
-
-    for (u32 i = 0; i < count; i++)
-      options.emplace_back(System::GetMediaSubImageTitle(i), i == current_index);
-
-    auto callback = [](s32 index, const std::string& title, bool checked) {
-      if (index == 0)
-      {
-        CloseChoiceDialog();
-        DoChangeDiscFromFile();
-        return;
-      }
-      else if (index > 0)
-      {
-        System::SwitchMediaSubImage(static_cast<u32>(index - 1));
-      }
-
-      CloseChoiceDialog();
-      ReturnToPreviousWindow();
-    };
-
-    OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), true, std::move(options),
-                     std::move(callback));
-
-    return;
-  }
-
-  if (const GameDatabase::Entry* entry = System::GetGameDatabaseEntry(); entry && !entry->disc_set_serials.empty())
-  {
-    const auto lock = GameList::GetLock();
-    auto matches = GameList::GetMatchingEntriesForSerial(entry->disc_set_serials);
-    if (matches.size() > 1)
+    if (System::HasMediaSubImages())
     {
-      options.reserve(matches.size() + 1);
+      const u32 current_index = System::GetMediaSubImageIndex();
+      const u32 count = System::GetMediaSubImageCount();
+      options.reserve(count + 1);
       options.emplace_back(FSUI_STR("From File..."), false);
 
-      std::vector<std::string> paths;
-      paths.reserve(matches.size());
+      for (u32 i = 0; i < count; i++)
+        options.emplace_back(System::GetMediaSubImageTitle(i), i == current_index);
 
-      const std::string& current_path = System::GetDiscPath();
-      for (auto& [title, glentry] : matches)
-      {
-        options.emplace_back(std::move(title), current_path == glentry->path);
-        paths.push_back(glentry->path);
-      }
+      GPUThread::RunOnThread([options = std::move(options)]() mutable {
+        auto callback = [](s32 index, const std::string& title, bool checked) {
+          if (index == 0)
+          {
+            CloseChoiceDialog();
+            DoChangeDiscFromFile();
+            return;
+          }
+          else if (index > 0)
+          {
+            System::SwitchMediaSubImage(static_cast<u32>(index - 1));
+          }
 
-      auto callback = [paths = std::move(paths)](s32 index, const std::string& title, bool checked) {
-        if (index == 0)
-        {
           CloseChoiceDialog();
-          DoChangeDiscFromFile();
-          return;
-        }
-        else if (index > 0)
-        {
-          System::InsertMedia(paths[index - 1].c_str());
-        }
+          ReturnToPreviousWindow();
+        };
 
-        CloseChoiceDialog();
-        ReturnToMainWindow();
-      };
-
-      OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), true, std::move(options),
-                       std::move(callback));
+        OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), true, std::move(options),
+                         std::move(callback));
+      });
 
       return;
     }
-  }
 
-  DoChangeDiscFromFile();
+    if (const GameDatabase::Entry* entry = System::GetGameDatabaseEntry(); entry && !entry->disc_set_serials.empty())
+    {
+      const auto lock = GameList::GetLock();
+      auto matches = GameList::GetMatchingEntriesForSerial(entry->disc_set_serials);
+      if (matches.size() > 1)
+      {
+        options.reserve(matches.size() + 1);
+        options.emplace_back(FSUI_STR("From File..."), false);
+
+        std::vector<std::string> paths;
+        paths.reserve(matches.size());
+
+        const std::string& current_path = System::GetDiscPath();
+        for (auto& [title, glentry] : matches)
+        {
+          options.emplace_back(std::move(title), current_path == glentry->path);
+          paths.push_back(glentry->path);
+        }
+
+        GPUThread::RunOnThread([options = std::move(options), paths = std::move(paths)]() mutable {
+          auto callback = [paths = std::move(paths)](s32 index, const std::string& title, bool checked) {
+            if (index == 0)
+            {
+              CloseChoiceDialog();
+              DoChangeDiscFromFile();
+              return;
+            }
+            else if (index > 0)
+            {
+              System::InsertMedia(paths[index - 1].c_str());
+            }
+
+            CloseChoiceDialog();
+            ReturnToMainWindow();
+          };
+
+          OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), true, std::move(options),
+                           std::move(callback));
+        });
+
+        return;
+      }
+    }
+
+    GPUThread::RunOnThread([]() { DoChangeDiscFromFile(); });
+  });
 }
 
 void FullscreenUI::DoToggleAnalogMode()
 {
   // hacky way to toggle analog mode
-  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
-  {
-    Controller* ctrl = System::GetController(i);
-    if (!ctrl)
-      continue;
-
-    const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(ctrl->GetType());
-    if (!cinfo)
-      continue;
-
-    for (const Controller::ControllerBindingInfo& bi : cinfo->bindings)
+  Host::RunOnCPUThread([]() {
+    for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
     {
-      if (std::strcmp(bi.name, "Analog") == 0)
+      Controller* ctrl = System::GetController(i);
+      if (!ctrl)
+        continue;
+
+      const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(ctrl->GetType());
+      if (!cinfo)
+        continue;
+
+      for (const Controller::ControllerBindingInfo& bi : cinfo->bindings)
       {
-        ctrl->SetBindState(bi.bind_index, 1.0f);
-        ctrl->SetBindState(bi.bind_index, 0.0f);
-        break;
+        if (std::strcmp(bi.name, "Analog") == 0)
+        {
+          ctrl->SetBindState(bi.bind_index, 1.0f);
+          ctrl->SetBindState(bi.bind_index, 0.0f);
+          break;
+        }
       }
     }
-  }
+  });
 }
 
 void FullscreenUI::DoRequestExit()
@@ -2860,7 +2931,7 @@ void FullscreenUI::DrawSettingsWindow()
                                (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
 
   const float bg_alpha =
-    System::IsValid() ? (s_state.settings_page == SettingsPage::PostProcessing ? 0.50f : 0.90f) : 1.0f;
+    GPUThread::HasGPUBackend() ? (s_state.settings_page == SettingsPage::PostProcessing ? 0.50f : 0.90f) : 1.0f;
 
   if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "settings_category",
                             ImVec4(UIStyle.PrimaryColor.x, UIStyle.PrimaryColor.y, UIStyle.PrimaryColor.z, bg_alpha)))
@@ -3797,12 +3868,9 @@ void FullscreenUI::DrawControllerSettingsPage()
                   &Settings::GetMultitapModeName, &Settings::GetMultitapModeDisplayName, MultitapMode::Count);
 
   // load mtap settings
-  MultitapMode mtap_mode = g_settings.multitap_mode;
-  if (IsEditingGameSettings(bsi))
-  {
-    mtap_mode = Settings::ParseMultitapModeName(bsi->GetTinyStringValue("ControllerPorts", "MultitapMode", "").c_str())
-                  .value_or(g_settings.multitap_mode);
-  }
+  const MultitapMode mtap_mode =
+    Settings::ParseMultitapModeName(bsi->GetTinyStringValue("ControllerPorts", "MultitapMode", "").c_str())
+      .value_or(Settings::DEFAULT_MULTITAP_MODE);
   const std::array<bool, 2> mtap_enabled = {
     {(mtap_mode == MultitapMode::Port1Only || mtap_mode == MultitapMode::BothPorts),
      (mtap_mode == MultitapMode::Port2Only || mtap_mode == MultitapMode::BothPorts)}};
@@ -4669,7 +4737,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
                  FSUI_CSTR("Reloads the shaders from disk, applying any changes."),
                  bsi->GetBoolValue("PostProcessing", "Enabled", false)))
   {
-    if (System::IsValid() && PostProcessing::ReloadShaders())
+    if (GPUThread::HasGPUBackend() && PostProcessing::ReloadShaders())
       ShowToast(std::string(), FSUI_STR("Post-processing shaders reloaded."));
   }
 
@@ -5105,7 +5173,7 @@ void FullscreenUI::DrawAchievementsSettingsPage()
                   "cheats, and slowdown functions."),
         "Cheevos", "ChallengeMode", false, enabled))
   {
-    if (System::IsValid() && bsi->GetBoolValue("Cheevos", "ChallengeMode", false))
+    if (GPUThread::HasGPUBackend() && bsi->GetBoolValue("Cheevos", "ChallengeMode", false))
       ShowToast(std::string(), FSUI_STR("Hardcore mode will be enabled on next game restart."));
   }
   DrawToggleSetting(
@@ -5267,28 +5335,30 @@ void FullscreenUI::DrawAchievementsLoginWindow()
                                                     0, 0, 0);
 
       Host::RunOnCPUThread([username = std::string(username), password = std::string(password)]() {
-        ImGuiFullscreen::CloseBackgroundProgressDialog(LOGIN_PROGRESS_NAME);
-
         Error error;
-        if (Achievements::Login(username.c_str(), password.c_str(), &error))
-        {
-          // TODO-GPU-THREAD: Synchronize access to s_achievements_login_window_open.
-          actually_close_popup();
-          return;
-        }
+        const bool result = Achievements::Login(username.c_str(), password.c_str(), &error);
+        GPUThread::RunOnThread([result, error = std::move(error)]() {
+          ImGuiFullscreen::CloseBackgroundProgressDialog(LOGIN_PROGRESS_NAME);
 
-        // keep popup open on failure
-        // because of the whole popup stack thing, we need to hide the dialog while this popup is visible
-        s_state.achievements_login_window_open = false;
-        ImGuiFullscreen::OpenInfoMessageDialog(
-          FSUI_STR("Login Error"),
-          fmt::format(FSUI_FSTR("Login Failed.\nError: {}\nPlease check your username and password, and try again."),
-                      error.GetDescription()),
-          []() {
-            s_state.achievements_login_window_open = true;
-            QueueResetFocus(FocusResetType::PopupOpened);
-          },
-          FSUI_ICONSTR(ICON_FA_TIMES, "Close"));
+          if (result)
+          {
+            actually_close_popup();
+            return;
+          }
+
+          // keep popup open on failure
+          // because of the whole popup stack thing, we need to hide the dialog while this popup is visible
+          s_state.achievements_login_window_open = false;
+          ImGuiFullscreen::OpenInfoMessageDialog(
+            FSUI_STR("Login Error"),
+            fmt::format(FSUI_FSTR("Login Failed.\nError: {}\nPlease check your username and password, and try again."),
+                        error.GetDescription()),
+            []() {
+              s_state.achievements_login_window_open = true;
+              QueueResetFocus(FocusResetType::PopupOpened);
+            },
+            FSUI_ICONSTR(ICON_FA_TIMES, "Close"));
+        });
       });
     }
 
@@ -5799,7 +5869,7 @@ void FullscreenUI::DrawPauseMenu()
       case PauseSubMenu::None:
       {
         // NOTE: Menu close must come first, because otherwise VM destruction options will race.
-        const bool has_game = System::IsValid() && !System::GetGameSerial().empty();
+        const bool has_game = GPUThread::HasGPUBackend() && !System::GetGameSerial().empty();
 
         if (DefaultActiveButton(FSUI_ICONSTR(ICON_FA_PLAY, "Resume Game"), false) || WantsToCloseMenu())
           ClosePauseMenu();
@@ -6662,7 +6732,7 @@ void FullscreenUI::DrawGameListWindow()
     ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
                                (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
 
-  const float bg_alpha = System::IsValid() ? 0.90f : 1.0f;
+  const float bg_alpha = GPUThread::HasGPUBackend() ? 0.90f : 1.0f;
 
   if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "gamelist_view",
                             MulAlpha(UIStyle.PrimaryColor, bg_alpha)))
@@ -7212,7 +7282,7 @@ void FullscreenUI::DrawGameListSettingsWindow()
     ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
                                (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
 
-  const float bg_alpha = System::IsValid() ? 0.90f : 1.0f;
+  const float bg_alpha = GPUThread::HasGPUBackend() ? 0.90f : 1.0f;
 
   if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "gamelist_view",
                             MulAlpha(UIStyle.PrimaryColor, bg_alpha)))
@@ -7528,31 +7598,36 @@ void FullscreenUI::DrawAboutWindow()
 
 void FullscreenUI::OpenAchievementsWindow()
 {
+  if (!System::IsValid())
+    return;
+
   if (!Achievements::IsActive())
   {
     Host::AddKeyedOSDMessage("achievements_disabled", FSUI_STR("Achievements are not enabled."),
                              Host::OSD_INFO_DURATION);
     return;
   }
-
-  if (!System::IsValid() || !Initialize())
-    return;
-
-  if (!Achievements::HasAchievements() || !Achievements::PrepareAchievementsWindow())
+  else if (!Achievements::HasAchievements())
   {
     ShowToast(std::string(), FSUI_STR("This game has no achievements."));
     return;
   }
 
-  if (s_state.current_main_window != MainWindowType::PauseMenu)
-  {
-    PauseForMenuOpen(false);
-    ForceKeyNavEnabled();
-  }
+  GPUThread::RunOnThread([]() {
+    if (!Initialize() || !Achievements::PrepareAchievementsWindow())
+      return;
 
-  s_state.current_main_window = MainWindowType::Achievements;
-  QueueResetFocus(FocusResetType::ViewChanged);
-  FixStateIfPaused();
+    if (s_state.current_main_window != MainWindowType::PauseMenu)
+    {
+      PauseForMenuOpen(false);
+      ForceKeyNavEnabled();
+    }
+
+    s_state.current_main_window = MainWindowType::Achievements;
+    QueueResetFocus(FocusResetType::ViewChanged);
+    UpdateRunIdleState();
+    FixStateIfPaused();
+  });
 }
 
 bool FullscreenUI::IsAchievementsWindowOpen()
@@ -7562,31 +7637,36 @@ bool FullscreenUI::IsAchievementsWindowOpen()
 
 void FullscreenUI::OpenLeaderboardsWindow()
 {
+  if (!System::IsValid())
+    return;
+
   if (!Achievements::IsActive())
   {
     Host::AddKeyedOSDMessage("achievements_disabled", FSUI_STR("Leaderboards are not enabled."),
                              Host::OSD_INFO_DURATION);
     return;
   }
-
-  if (!System::IsValid() || !Initialize())
-    return;
-
-  if (!Achievements::HasLeaderboards() || !Achievements::PrepareLeaderboardsWindow())
+  else if (!Achievements::HasLeaderboards())
   {
     ShowToast(std::string(), FSUI_STR("This game has no leaderboards."));
     return;
   }
 
-  if (s_state.current_main_window != MainWindowType::PauseMenu)
-  {
-    PauseForMenuOpen(false);
-    ForceKeyNavEnabled();
-  }
+  GPUThread::RunOnThread([]() {
+    if (!Initialize() || !Achievements::PrepareLeaderboardsWindow())
+      return;
 
-  s_state.current_main_window = MainWindowType::Leaderboards;
-  QueueResetFocus(FocusResetType::ViewChanged);
-  FixStateIfPaused();
+    if (s_state.current_main_window != MainWindowType::PauseMenu)
+    {
+      PauseForMenuOpen(false);
+      ForceKeyNavEnabled();
+    }
+
+    s_state.current_main_window = MainWindowType::Leaderboards;
+    QueueResetFocus(FocusResetType::ViewChanged);
+    UpdateRunIdleState();
+    FixStateIfPaused();
+  });
 }
 
 bool FullscreenUI::IsLeaderboardsWindowOpen()
@@ -7595,6 +7675,155 @@ bool FullscreenUI::IsLeaderboardsWindowOpen()
 }
 
 #endif // __ANDROID__
+
+LoadingScreenProgressCallback::LoadingScreenProgressCallback()
+  : ProgressCallback(), m_open_time(Timer::GetCurrentValue()), m_on_gpu_thread(GPUThread::IsOnThread())
+{
+}
+
+LoadingScreenProgressCallback::~LoadingScreenProgressCallback()
+{
+  // Did we activate?
+  if (m_last_progress_percent < 0)
+    return;
+
+  if (!m_on_gpu_thread)
+  {
+    GPUThread::RunOnThread([]() {
+      ImGuiFullscreen::CloseLoadingScreen();
+      Assert(GPUThread::GetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive));
+      GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive, false);
+    });
+  }
+  else
+  {
+    // since this was pushing frames, we need to restore the context
+    GPUThread::Internal::RestoreContextAfterPresent();
+  }
+}
+
+void LoadingScreenProgressCallback::PushState()
+{
+  ProgressCallback::PushState();
+}
+
+void LoadingScreenProgressCallback::PopState()
+{
+  ProgressCallback::PopState();
+  Redraw(true);
+}
+
+void LoadingScreenProgressCallback::SetCancellable(bool cancellable)
+{
+  ProgressCallback::SetCancellable(cancellable);
+  Redraw(true);
+}
+
+void LoadingScreenProgressCallback::SetTitle(const std::string_view title)
+{
+  // todo?
+}
+
+void LoadingScreenProgressCallback::SetStatusText(const std::string_view text)
+{
+  ProgressCallback::SetStatusText(text);
+  Redraw(true);
+}
+
+void LoadingScreenProgressCallback::SetProgressRange(u32 range)
+{
+  u32 last_range = m_progress_range;
+
+  ProgressCallback::SetProgressRange(range);
+
+  if (m_progress_range != last_range)
+    Redraw(false);
+}
+
+void LoadingScreenProgressCallback::SetProgressValue(u32 value)
+{
+  u32 lastValue = m_progress_value;
+
+  ProgressCallback::SetProgressValue(value);
+
+  if (m_progress_value != lastValue)
+    Redraw(false);
+}
+
+void LoadingScreenProgressCallback::Redraw(bool force)
+{
+  if (m_last_progress_percent < 0 &&
+      Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - m_open_time) < m_open_delay)
+  {
+    return;
+  }
+
+  const int percent =
+    static_cast<int>((static_cast<float>(m_progress_value) / static_cast<float>(m_progress_range)) * 100.0f);
+  DebugAssert(percent >= 0);
+  if (percent == m_last_progress_percent && !force)
+    return;
+
+  // activation?
+  if (m_last_progress_percent < 0 && !m_on_gpu_thread)
+  {
+    GPUThread::RunOnThread([]() {
+      Assert(!GPUThread::GetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive));
+      GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive, true);
+    });
+  }
+
+  m_last_progress_percent = percent;
+  if (m_on_gpu_thread)
+  {
+    ImGuiFullscreen::RenderLoadingScreen(ImGuiManager::LOGO_IMAGE_NAME, m_status_text, 0,
+                                         static_cast<s32>(m_progress_range), static_cast<s32>(m_progress_value));
+  }
+  else
+  {
+    GPUThread::RunOnThread([status_text = SmallString(std::string_view(m_status_text)),
+                            range = static_cast<s32>(m_progress_range), value = static_cast<s32>(m_progress_value)]() {
+      ImGuiFullscreen::OpenOrUpdateLoadingScreen(ImGuiManager::LOGO_IMAGE_NAME, status_text, 0, range, value);
+    });
+  }
+}
+
+void LoadingScreenProgressCallback::ModalError(const std::string_view message)
+{
+  ERROR_LOG(message);
+  Host::ReportErrorAsync("Error", message);
+}
+
+bool LoadingScreenProgressCallback::ModalConfirmation(const std::string_view message)
+{
+  INFO_LOG(message);
+  return Host::ConfirmMessage("Confirm", message);
+}
+
+void FullscreenUI::OpenLoadingScreen(std::string_view image, std::string_view message, s32 progress_min /*= -1*/,
+                                     s32 progress_max /*= -1*/, s32 progress_value /*= -1*/)
+{
+  Assert(GPUThread::IsOnThread());
+  Assert(!GPUThread::GetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive));
+  GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive, true);
+  ImGuiFullscreen::OpenOrUpdateLoadingScreen(image, message, progress_min, progress_max, progress_value);
+}
+
+void FullscreenUI::UpdateLoadingScreen(std::string_view image, std::string_view message, s32 progress_min /*= -1*/,
+                                       s32 progress_max /*= -1*/, s32 progress_value /*= -1*/)
+{
+  Assert(GPUThread::IsOnThread());
+  Assert(GPUThread::GetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive));
+  ImGuiFullscreen::OpenOrUpdateLoadingScreen(image, message, progress_min, progress_max, progress_value);
+}
+
+void FullscreenUI::CloseLoadingScreen()
+{
+  Assert(GPUThread::IsOnThread());
+  Assert(GPUThread::GetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive));
+  ImGuiFullscreen::CloseLoadingScreen();
+  GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive, false);
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Translation String Area

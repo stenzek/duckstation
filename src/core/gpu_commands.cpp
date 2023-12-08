@@ -1,13 +1,16 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
+#include "cpu_pgxp.h"
 #include "gpu.h"
+#include "gpu_backend.h"
 #include "gpu_dump.h"
 #include "gpu_hw_texture_cache.h"
 #include "interrupt_controller.h"
 #include "system.h"
 
 #include "common/assert.h"
+#include "common/gsvector_formatter.h"
 #include "common/log.h"
 #include "common/string_util.h"
 
@@ -93,7 +96,7 @@ void GPU::TryExecuteCommands()
           // drop terminator
           m_fifo.RemoveOne();
           DEBUG_LOG("Drawing poly-line with {} vertices", GetPolyLineVertexCount());
-          DispatchRenderCommand();
+          FinishPolyline();
           m_blit_buffer.clear();
           EndCommand();
           continue;
@@ -200,8 +203,8 @@ bool GPU::HandleNOPCommand()
 bool GPU::HandleClearCacheCommand()
 {
   DEBUG_LOG("GP0 clear cache");
-  m_draw_mode.SetTexturePageChanged();
   InvalidateCLUT();
+  GPUBackend::PushCommand(GPUBackend::NewClearCacheCommand());
   m_fifo.RemoveOne();
   AddCommandTicks(1);
   EndCommand();
@@ -248,8 +251,6 @@ bool GPU::HandleSetDrawingAreaTopLeftCommand()
   DEBUG_LOG("Set drawing area top-left: ({}, {})", left, top);
   if (m_drawing_area.left != left || m_drawing_area.top != top)
   {
-    FlushRender();
-
     m_drawing_area.left = left;
     m_drawing_area.top = top;
     m_drawing_area_changed = true;
@@ -270,8 +271,6 @@ bool GPU::HandleSetDrawingAreaBottomRightCommand()
   DEBUG_LOG("Set drawing area bottom-right: ({}, {})", right, bottom);
   if (m_drawing_area.right != right || m_drawing_area.bottom != bottom)
   {
-    FlushRender();
-
     m_drawing_area.right = right;
     m_drawing_area.bottom = bottom;
     m_drawing_area_changed = true;
@@ -291,8 +290,6 @@ bool GPU::HandleSetDrawingOffsetCommand()
   DEBUG_LOG("Set drawing offset ({}, {})", x, y);
   if (m_drawing_offset.x != x || m_drawing_offset.y != y)
   {
-    FlushRender();
-
     m_drawing_offset.x = x;
     m_drawing_offset.y = y;
   }
@@ -308,17 +305,43 @@ bool GPU::HandleSetMaskBitCommand()
 
   constexpr u32 gpustat_mask = (1 << 11) | (1 << 12);
   const u32 gpustat_bits = (param & 0x03) << 11;
-  if ((m_GPUSTAT.bits & gpustat_mask) != gpustat_bits)
-  {
-    FlushRender();
-    m_GPUSTAT.bits = (m_GPUSTAT.bits & ~gpustat_mask) | gpustat_bits;
-  }
+  m_GPUSTAT.bits = (m_GPUSTAT.bits & ~gpustat_mask) | gpustat_bits;
   DEBUG_LOG("Set mask bit {} {}", BoolToUInt32(m_GPUSTAT.set_mask_while_drawing),
             BoolToUInt32(m_GPUSTAT.check_mask_before_draw));
 
   AddCommandTicks(1);
   EndCommand();
   return true;
+}
+
+void GPU::PrepareForDraw()
+{
+  if (m_drawing_area_changed)
+  {
+    m_drawing_area_changed = false;
+    GPUBackendSetDrawingAreaCommand* cmd = GPUBackend::NewSetDrawingAreaCommand();
+    cmd->new_area = m_drawing_area;
+    GPUBackend::PushCommand(cmd);
+  }
+}
+
+void GPU::FillBackendCommandParameters(GPUBackendCommand* cmd) const
+{
+  cmd->params.bits = 0;
+  cmd->params.check_mask_before_draw = m_GPUSTAT.check_mask_before_draw;
+  cmd->params.set_mask_while_drawing = m_GPUSTAT.set_mask_while_drawing;
+  cmd->params.active_line_lsb = m_crtc_state.active_line_lsb;
+  cmd->params.interlaced_rendering = IsInterlacedRenderingEnabled();
+}
+
+void GPU::FillDrawCommand(GPUBackendDrawCommand* cmd, GPURenderCommand rc) const
+{
+  FillBackendCommandParameters(cmd);
+  cmd->rc.bits = rc.bits;
+  cmd->draw_mode.bits = m_draw_mode.mode_reg.bits;
+  cmd->draw_mode.dither_enable = rc.IsDitheringEnabled() && cmd->draw_mode.dither_enable;
+  cmd->palette.bits = m_draw_mode.palette_reg.bits;
+  cmd->window = m_draw_mode.texture_window;
 }
 
 bool GPU::HandleRenderPolygonCommand()
@@ -346,6 +369,7 @@ bool GPU::HandleRenderPolygonCommand()
             words_per_vertex, setup_ticks);
 
   // set draw state up
+  // TODO: Get rid of SetTexturePalette() and just fill it as needed
   if (rc.texture_enable)
   {
     const u16 texpage_attribute = Truncate16((rc.shading_enable ? FifoPeek(5) : FifoPeek(4)) >> 16);
@@ -355,12 +379,218 @@ bool GPU::HandleRenderPolygonCommand()
     UpdateCLUTIfNeeded(m_draw_mode.mode_reg.texture_mode, m_draw_mode.palette_reg);
   }
 
-  m_counters.num_vertices += num_vertices;
-  m_counters.num_primitives++;
   m_render_command.bits = rc.bits;
   m_fifo.RemoveOne();
 
-  DispatchRenderCommand();
+  PrepareForDraw();
+
+  if (g_settings.gpu_pgxp_enable)
+  {
+    GPUBackendDrawPrecisePolygonCommand* cmd = GPUBackend::NewDrawPrecisePolygonCommand(num_vertices);
+    FillDrawCommand(cmd, rc);
+
+    const u32 first_color = rc.color_for_first_vertex;
+    const bool shaded = rc.shading_enable;
+    const bool textured = rc.texture_enable;
+    bool valid_w = g_settings.gpu_pgxp_texture_correction;
+    for (u32 i = 0; i < num_vertices; i++)
+    {
+      GPUBackendDrawPrecisePolygonCommand::Vertex* vert = &cmd->vertices[i];
+      vert->color = (shaded && i > 0) ? (FifoPop() & UINT32_C(0x00FFFFFF)) : first_color;
+      const u64 maddr_and_pos = m_fifo.Pop();
+      const GPUVertexPosition vp{Truncate32(maddr_and_pos)};
+      vert->native_x = m_drawing_offset.x + vp.x;
+      vert->native_y = m_drawing_offset.y + vp.y;
+      vert->texcoord = textured ? Truncate16(FifoPop()) : 0;
+
+      valid_w &= CPU::PGXP::GetPreciseVertex(Truncate32(maddr_and_pos >> 32), vp.bits, vert->native_x, vert->native_y,
+                                             m_drawing_offset.x, m_drawing_offset.y, &vert->x, &vert->y, &vert->w);
+    }
+
+    cmd->valid_w = valid_w;
+    if (!valid_w)
+    {
+      if (g_settings.gpu_pgxp_disable_2d)
+      {
+        // NOTE: This reads uninitialized data, but it's okay, it doesn't get used.
+        for (u32 i = 0; i < num_vertices; i++)
+        {
+          GPUBackendDrawPrecisePolygonCommand::Vertex& v = cmd->vertices[i];
+          GSVector2::store<false>(&v.x, GSVector2(GSVector2i::load<false>(&v.native_x)));
+          v.w = 1.0f;
+        }
+      }
+      else
+      {
+        for (u32 i = 0; i < num_vertices; i++)
+          cmd->vertices[i].w = 1.0f;
+      }
+    }
+
+    // Cull polygons which are too large.
+    const GSVector2 v0f = GSVector2::load<false>(&cmd->vertices[0].x);
+    const GSVector2 v1f = GSVector2::load<false>(&cmd->vertices[1].x);
+    const GSVector2 v2f = GSVector2::load<false>(&cmd->vertices[2].x);
+    const GSVector2 min_pos_12 = v1f.min(v2f);
+    const GSVector2 max_pos_12 = v1f.max(v2f);
+    const GSVector4i draw_rect_012 = GSVector4i(GSVector4(min_pos_12.min(v0f)).upld(GSVector4(max_pos_12.max(v0f))))
+                                       .add32(GSVector4i::cxpr(0, 0, 1, 1));
+    const bool first_tri_culled =
+      (draw_rect_012.width() > MAX_PRIMITIVE_WIDTH || draw_rect_012.height() > MAX_PRIMITIVE_HEIGHT ||
+       !draw_rect_012.rintersects(m_clamped_drawing_area));
+    if (first_tri_culled)
+    {
+      // TODO: GPU events... somehow.
+      DEBUG_LOG("Culling off-screen/too-large polygon: {},{} {},{} {},{}", cmd->vertices[0].native_x,
+                cmd->vertices[0].native_y, cmd->vertices[1].native_x, cmd->vertices[1].native_y,
+                cmd->vertices[2].native_x, cmd->vertices[2].native_y);
+
+      if (!rc.quad_polygon)
+      {
+        EndCommand();
+        return true;
+      }
+    }
+    else
+    {
+      AddDrawTriangleTicks(GSVector2i::load<false>(&cmd->vertices[0].native_x), GSVector2i::load<false>(&cmd->vertices[1].native_x),
+                           GSVector2i::load<false>(&cmd->vertices[2].native_x), rc.shading_enable, rc.texture_enable,
+                           rc.transparency_enable);
+    }
+
+    // quads
+    if (rc.quad_polygon)
+    {
+      const GSVector2 v3f = GSVector2::load<false>(&cmd->vertices[3].x);
+      const GSVector4i draw_rect_123 = GSVector4i(GSVector4(min_pos_12.min(v3f)).upld(GSVector4(max_pos_12.max(v3f))))
+                                         .add32(GSVector4i::cxpr(0, 0, 1, 1));
+
+      // Cull polygons which are too large.
+      const bool second_tri_culled =
+        (draw_rect_123.width() > MAX_PRIMITIVE_WIDTH || draw_rect_123.height() > MAX_PRIMITIVE_HEIGHT ||
+         !draw_rect_123.rintersects(m_clamped_drawing_area));
+      if (second_tri_culled)
+      {
+        DEBUG_LOG("Culling off-screen/too-large polygon (quad second half): {},{} {},{} {},{}",
+                  cmd->vertices[2].native_x, cmd->vertices[2].native_y, cmd->vertices[1].native_x,
+                  cmd->vertices[1].native_y, cmd->vertices[0].native_x, cmd->vertices[0].native_y);
+
+        if (first_tri_culled)
+        {
+          EndCommand();
+          return true;
+        }
+
+        // Remove second part of quad.
+        cmd->num_vertices = 3;
+      }
+      else
+      {
+        AddDrawTriangleTicks(GSVector2i::load<false>(&cmd->vertices[2].native_x), GSVector2i::load<false>(&cmd->vertices[1].native_x),
+                             GSVector2i::load<false>(&cmd->vertices[3].native_x), rc.shading_enable, rc.texture_enable,
+                             rc.transparency_enable);
+
+        // If first part was culled, move the second part to the first.
+        if (first_tri_culled)
+        {
+          std::memcpy(&cmd->vertices[0], &cmd->vertices[2], sizeof(GPUBackendDrawPrecisePolygonCommand::Vertex));
+          std::memcpy(&cmd->vertices[2], &cmd->vertices[3], sizeof(GPUBackendDrawPrecisePolygonCommand::Vertex));
+          cmd->num_vertices = 3;
+        }
+      }
+    }
+
+    GPUBackend::PushCommand(cmd);
+  }
+  else
+  {
+    GPUBackendDrawPolygonCommand* cmd = GPUBackend::NewDrawPolygonCommand(num_vertices);
+    FillDrawCommand(cmd, rc);
+
+    const u32 first_color = rc.color_for_first_vertex;
+    const bool shaded = rc.shading_enable;
+    const bool textured = rc.texture_enable;
+    for (u32 i = 0; i < num_vertices; i++)
+    {
+      GPUBackendDrawPolygonCommand::Vertex* vert = &cmd->vertices[i];
+      vert->color = (shaded && i > 0) ? (FifoPop() & UINT32_C(0x00FFFFFF)) : first_color;
+      const u64 maddr_and_pos = m_fifo.Pop();
+      const GPUVertexPosition vp{Truncate32(maddr_and_pos)};
+      vert->x = m_drawing_offset.x + vp.x;
+      vert->y = m_drawing_offset.y + vp.y;
+      vert->texcoord = textured ? Truncate16(FifoPop()) : 0;
+    }
+
+    // Cull polygons which are too large.
+    const GSVector2i v0 = GSVector2i::load<false>(&cmd->vertices[0].x);
+    const GSVector2i v1 = GSVector2i::load<false>(&cmd->vertices[1].x);
+    const GSVector2i v2 = GSVector2i::load<false>(&cmd->vertices[2].x);
+    const GSVector2i min_pos_12 = v1.min_s32(v2);
+    const GSVector2i max_pos_12 = v1.max_s32(v2);
+    const GSVector4i draw_rect_012 =
+      GSVector4i::xyxy(min_pos_12.min_s32(v0), max_pos_12.max_s32(v0)).add32(GSVector4i::cxpr(0, 0, 1, 1));
+    const bool first_tri_culled =
+      (draw_rect_012.width() > MAX_PRIMITIVE_WIDTH || draw_rect_012.height() > MAX_PRIMITIVE_HEIGHT ||
+       !draw_rect_012.rintersects(m_clamped_drawing_area));
+    if (first_tri_culled)
+    {
+      DEBUG_LOG("Culling off-screen/too-large polygon: {},{} {},{} {},{}", cmd->vertices[0].x, cmd->vertices[0].y,
+                cmd->vertices[1].x, cmd->vertices[1].y, cmd->vertices[2].x, cmd->vertices[2].y);
+
+      if (!rc.quad_polygon)
+      {
+        EndCommand();
+        return true;
+      }
+    }
+    else
+    {
+      AddDrawTriangleTicks(v0, v1, v2, rc.shading_enable, rc.texture_enable, rc.transparency_enable);
+    }
+
+    // quads
+    if (rc.quad_polygon)
+    {
+      const GSVector2i v3 = GSVector2i::load<false>(&cmd->vertices[3].x);
+      const GSVector4i draw_rect_123 = GSVector4i(min_pos_12.min_s32(v3))
+                                         .upl64(GSVector4i(max_pos_12.max_s32(v3)))
+                                         .add32(GSVector4i::cxpr(0, 0, 1, 1));
+
+      // Cull polygons which are too large.
+      const bool second_tri_culled =
+        (draw_rect_123.width() > MAX_PRIMITIVE_WIDTH || draw_rect_123.height() > MAX_PRIMITIVE_HEIGHT ||
+         !draw_rect_123.rintersects(m_clamped_drawing_area));
+      if (second_tri_culled)
+      {
+        DEBUG_LOG("Culling too-large polygon (quad second half): {},{} {},{} {},{}", cmd->vertices[2].x,
+                  cmd->vertices[2].y, cmd->vertices[1].x, cmd->vertices[1].y, cmd->vertices[0].x, cmd->vertices[0].y);
+
+        if (first_tri_culled)
+        {
+          EndCommand();
+          return true;
+        }
+
+        // Remove second part of quad.
+        cmd->num_vertices = 3;
+      }
+      else
+      {
+        AddDrawTriangleTicks(v2, v1, v3, rc.shading_enable, rc.texture_enable, rc.transparency_enable);
+
+        // If first part was culled, move the second part to the first.
+        if (first_tri_culled)
+        {
+          std::memcpy(&cmd->vertices[0], &cmd->vertices[2], sizeof(GPUBackendDrawPolygonCommand::Vertex));
+          std::memcpy(&cmd->vertices[2], &cmd->vertices[3], sizeof(GPUBackendDrawPolygonCommand::Vertex));
+          cmd->num_vertices = 3;
+        }
+      }
+    }
+
+    GPUBackend::PushCommand(cmd);
+  }
+
   EndCommand();
   return true;
 }
@@ -389,12 +619,65 @@ bool GPU::HandleRenderRectangleCommand()
             rc.transparency_enable ? "semi-transparent" : "opaque", rc.texture_enable ? "textured" : "non-textured",
             rc.shading_enable ? "shaded" : "monochrome", total_words, setup_ticks);
 
-  m_counters.num_vertices++;
-  m_counters.num_primitives++;
   m_render_command.bits = rc.bits;
   m_fifo.RemoveOne();
 
-  DispatchRenderCommand();
+  PrepareForDraw();
+  GPUBackendDrawRectangleCommand* cmd = GPUBackend::NewDrawRectangleCommand();
+  FillDrawCommand(cmd, rc);
+  cmd->color = rc.color_for_first_vertex;
+
+  const GPUVertexPosition vp{FifoPop()};
+  cmd->x = TruncateGPUVertexPosition(m_drawing_offset.x + vp.x);
+  cmd->y = TruncateGPUVertexPosition(m_drawing_offset.y + vp.y);
+
+  if (rc.texture_enable)
+  {
+    const u32 texcoord_and_palette = FifoPop();
+    cmd->palette.bits = Truncate16(texcoord_and_palette >> 16);
+    cmd->texcoord = Truncate16(texcoord_and_palette);
+  }
+  else
+  {
+    cmd->palette.bits = 0;
+    cmd->texcoord = 0;
+  }
+
+  switch (rc.rectangle_size)
+  {
+    case GPUDrawRectangleSize::R1x1:
+      cmd->width = 1;
+      cmd->height = 1;
+      break;
+    case GPUDrawRectangleSize::R8x8:
+      cmd->width = 8;
+      cmd->height = 8;
+      break;
+    case GPUDrawRectangleSize::R16x16:
+      cmd->width = 16;
+      cmd->height = 16;
+      break;
+    default:
+    {
+      const u32 width_and_height = FifoPop();
+      cmd->width = static_cast<u16>(width_and_height & VRAM_WIDTH_MASK);
+      cmd->height = static_cast<u16>((width_and_height >> 16) & VRAM_HEIGHT_MASK);
+    }
+    break;
+  }
+
+  const GSVector4i rect = GSVector4i(cmd->x, cmd->y, cmd->x + cmd->width, cmd->y + cmd->height);
+  const GSVector4i clamped_rect = m_clamped_drawing_area.rintersect(rect);
+  if (clamped_rect.rempty()) [[unlikely]]
+  {
+    DEBUG_LOG("Culling off-screen rectangle {}", rect);
+    EndCommand();
+    return true;
+  }
+
+  AddDrawRectangleTicks(clamped_rect, rc.texture_enable, rc.transparency_enable);
+
+  GPUBackend::PushCommand(cmd);
   EndCommand();
   return true;
 }
@@ -411,12 +694,55 @@ bool GPU::HandleRenderLineCommand()
   TRACE_LOG("Render {} {} line ({} total words)", rc.transparency_enable ? "semi-transparent" : "opaque",
             rc.shading_enable ? "shaded" : "monochrome", total_words);
 
-  m_counters.num_vertices += 2;
-  m_counters.num_primitives++;
   m_render_command.bits = rc.bits;
   m_fifo.RemoveOne();
 
-  DispatchRenderCommand();
+  PrepareForDraw();
+  GPUBackendDrawLineCommand* cmd = GPUBackend::NewDrawLineCommand(2);
+  FillDrawCommand(cmd, rc);
+  cmd->palette.bits = 0;
+
+  if (rc.shading_enable)
+  {
+    cmd->vertices[0].color = rc.color_for_first_vertex;
+    const GPUVertexPosition start_pos{FifoPop()};
+    cmd->vertices[0].x = m_drawing_offset.x + start_pos.x;
+    cmd->vertices[0].y = m_drawing_offset.y + start_pos.y;
+
+    cmd->vertices[1].color = FifoPop() & UINT32_C(0x00FFFFFF);
+    const GPUVertexPosition end_pos{FifoPop()};
+    cmd->vertices[1].x = m_drawing_offset.x + end_pos.x;
+    cmd->vertices[1].y = m_drawing_offset.y + end_pos.y;
+  }
+  else
+  {
+    cmd->vertices[0].color = rc.color_for_first_vertex;
+    cmd->vertices[1].color = rc.color_for_first_vertex;
+
+    const GPUVertexPosition start_pos{FifoPop()};
+    cmd->vertices[0].x = m_drawing_offset.x + start_pos.x;
+    cmd->vertices[0].y = m_drawing_offset.y + start_pos.y;
+
+    const GPUVertexPosition end_pos{FifoPop()};
+    cmd->vertices[1].x = m_drawing_offset.x + end_pos.x;
+    cmd->vertices[1].y = m_drawing_offset.y + end_pos.y;
+  }
+
+  const GSVector2i v0 = GSVector2i::load<false>(&cmd->vertices[0].x);
+  const GSVector2i v1 = GSVector2i::load<false>(&cmd->vertices[1].x);
+  const GSVector4i rect = GSVector4i::xyxy(v0.min_s32(v1), v0.max_s32(v1)).add32(GSVector4i::cxpr(0, 0, 1, 1));
+  const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
+
+  if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT || clamped_rect.rempty())
+  {
+    DEBUG_LOG("Culling too-large/off-screen line: {},{} - {},{}", cmd->vertices[0].y, cmd->vertices[0].y,
+              cmd->vertices[1].x, cmd->vertices[1].y);
+    EndCommand();
+    return true;
+  }
+
+  AddDrawLineTicks(clamped_rect, rc.shading_enable);
+  GPUBackend::PushCommand(cmd);
   EndCommand();
   return true;
 }
@@ -453,14 +779,70 @@ bool GPU::HandleRenderPolyLineCommand()
   return true;
 }
 
+void GPU::FinishPolyline()
+{
+  PrepareForDraw();
+
+  const u32 num_vertices = GetPolyLineVertexCount();
+  DebugAssert(num_vertices >= 2);
+
+  GPUBackendDrawLineCommand* cmd = GPUBackend::NewDrawLineCommand((num_vertices - 1) * 2);
+  FillDrawCommand(cmd, m_render_command);
+
+  u32 buffer_pos = 0;
+  const GPUVertexPosition start_vp{m_blit_buffer[buffer_pos++]};
+  const GSVector2i draw_offset = GSVector2i::load<false>(&m_drawing_offset.x);
+  GSVector2i start_pos = GSVector2i(start_vp.x, start_vp.y).add32(draw_offset);
+  u32 start_color = m_render_command.color_for_first_vertex;
+
+  const bool shaded = m_render_command.shading_enable;
+  u32 out_vertex_count = 0;
+  for (u32 i = 1; i < num_vertices; i++)
+  {
+    const u32 end_color =
+      shaded ? (m_blit_buffer[buffer_pos++] & UINT32_C(0x00FFFFFF)) : m_render_command.color_for_first_vertex;
+    const GPUVertexPosition vp{m_blit_buffer[buffer_pos++]};
+    const GSVector2i end_pos = GSVector2i(vp.x, vp.y).add32(draw_offset);
+
+    const GSVector4i rect =
+      GSVector4i::xyxy(start_pos.min_s32(end_pos), start_pos.max_s32(end_pos)).add32(GSVector4i::cxpr(0, 0, 1, 1));
+    const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
+
+    if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT || clamped_rect.rempty())
+    {
+      DEBUG_LOG("Culling too-large/off-screen line: {},{} - {},{}", start_pos.x, start_pos.y, end_pos.x, end_pos.y);
+    }
+    else
+    {
+      AddDrawLineTicks(clamped_rect, m_render_command.shading_enable);
+
+      GPUBackendDrawLineCommand::Vertex* out_vertex = &cmd->vertices[out_vertex_count];
+      out_vertex_count += 2;
+
+      GSVector2i::store<false>(&out_vertex[0].x, start_pos);
+      out_vertex[0].color = start_color;
+      GSVector2i::store<false>(&out_vertex[1].x, end_pos);
+      out_vertex[1].color = end_color;
+    }
+
+    start_pos = end_pos;
+    start_color = end_color;
+  }
+
+  if (out_vertex_count > 0)
+  {
+    DebugAssert(out_vertex_count <= cmd->num_vertices);
+    cmd->num_vertices = Truncate16(out_vertex_count);
+    GPUBackend::PushCommand(cmd);
+  }
+}
+
 bool GPU::HandleFillRectangleCommand()
 {
   CHECK_COMMAND_SIZE(3);
 
   if (IsInterlacedRenderingEnabled() && IsCRTCScanlinePending())
     SynchronizeCRTC();
-
-  FlushRender();
 
   const u32 color = FifoPop() & 0x00FFFFFF;
   const u32 dst_x = FifoPeek() & 0x3F0;
@@ -471,9 +853,17 @@ bool GPU::HandleFillRectangleCommand()
   DEBUG_LOG("Fill VRAM rectangle offset=({},{}), size=({},{})", dst_x, dst_y, width, height);
 
   if (width > 0 && height > 0)
-    FillVRAM(dst_x, dst_y, width, height, color);
+  {
+    GPUBackendFillVRAMCommand* cmd = GPUBackend::NewFillVRAMCommand();
+    FillBackendCommandParameters(cmd);
+    cmd->x = static_cast<u16>(dst_x);
+    cmd->y = static_cast<u16>(dst_y);
+    cmd->width = static_cast<u16>(width);
+    cmd->height = static_cast<u16>(height);
+    cmd->color = color;
+    GPUBackend::PushCommand(cmd);
+  }
 
-  m_counters.num_writes++;
   AddCommandTicks(46 + ((width / 8) + 9) * height);
   EndCommand();
   return true;
@@ -523,8 +913,6 @@ void GPU::FinishVRAMWrite()
   if (IsInterlacedRenderingEnabled() && IsCRTCScanlinePending())
     SynchronizeCRTC();
 
-  FlushRender();
-
   if (m_blit_remaining_words == 0)
   {
     if (g_settings.debugging.dump_cpu_to_vram_copies)
@@ -557,18 +945,18 @@ void GPU::FinishVRAMWrite()
     const u8* blit_ptr = reinterpret_cast<const u8*>(m_blit_buffer.data());
     if (transferred_full_rows > 0)
     {
-      UpdateVRAM(m_vram_transfer.x, m_vram_transfer.y, m_vram_transfer.width, transferred_full_rows, blit_ptr,
-                 m_GPUSTAT.set_mask_while_drawing, m_GPUSTAT.check_mask_before_draw);
+      UpdateVRAM(m_vram_transfer.x, m_vram_transfer.y, m_vram_transfer.width, static_cast<u16>(transferred_full_rows),
+                 blit_ptr, m_GPUSTAT.set_mask_while_drawing, m_GPUSTAT.check_mask_before_draw);
       blit_ptr += (ZeroExtend32(m_vram_transfer.width) * transferred_full_rows) * sizeof(u16);
     }
     if (transferred_width_last_row > 0)
     {
-      UpdateVRAM(m_vram_transfer.x, m_vram_transfer.y + transferred_full_rows, transferred_width_last_row, 1, blit_ptr,
-                 m_GPUSTAT.set_mask_while_drawing, m_GPUSTAT.check_mask_before_draw);
+      UpdateVRAM(m_vram_transfer.x, static_cast<u16>(m_vram_transfer.y + transferred_full_rows),
+                 static_cast<u16>(transferred_width_last_row), 1, blit_ptr, m_GPUSTAT.set_mask_while_drawing,
+                 m_GPUSTAT.check_mask_before_draw);
     }
   }
 
-  m_counters.num_writes++;
   m_blit_buffer.clear();
   m_vram_transfer = {};
   m_blitter_state = BlitterState::Idle;
@@ -588,9 +976,6 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand()
             m_vram_transfer.width, m_vram_transfer.height);
   DebugAssert(m_vram_transfer.col == 0 && m_vram_transfer.row == 0);
 
-  // all rendering should be done first...
-  FlushRender();
-
   // ensure VRAM shadow is up to date
   ReadVRAM(m_vram_transfer.x, m_vram_transfer.y, m_vram_transfer.width, m_vram_transfer.height);
 
@@ -602,7 +987,6 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand()
   }
 
   // switch to pixel-by-pixel read state
-  m_counters.num_reads++;
   m_blitter_state = BlitterState::ReadingVRAM;
   m_command_total_words = 0;
 
@@ -633,10 +1017,15 @@ bool GPU::HandleCopyRectangleVRAMToVRAMCommand()
     width == 0 || height == 0 || (src_x == dst_x && src_y == dst_y && !m_GPUSTAT.set_mask_while_drawing);
   if (!skip_copy)
   {
-    m_counters.num_copies++;
-
-    FlushRender();
-    CopyVRAM(src_x, src_y, dst_x, dst_y, width, height);
+    GPUBackendCopyVRAMCommand* cmd = GPUBackend::NewCopyVRAMCommand();
+    FillBackendCommandParameters(cmd);
+    cmd->src_x = static_cast<u16>(src_x);
+    cmd->src_y = static_cast<u16>(src_y);
+    cmd->dst_x = static_cast<u16>(dst_x);
+    cmd->dst_y = static_cast<u16>(dst_y);
+    cmd->width = static_cast<u16>(width);
+    cmd->height = static_cast<u16>(height);
+    GPUBackend::PushCommand(cmd);
   }
 
   AddCommandTicks(width * height * 2);
