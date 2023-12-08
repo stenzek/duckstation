@@ -42,6 +42,9 @@
     <ClInclude Include="memmap.h" />
     <ClInclude Include="intrin.h" />
     <ClInclude Include="perf_scope.h" />
+    <ClInclude Include="thirdparty\SmallVector.h">
+      <Filter>thirdparty</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="small_string.cpp" />
@@ -67,9 +70,15 @@
     <ClCompile Include="fastjmp.cpp" />
     <ClCompile Include="memmap.cpp" />
     <ClCompile Include="perf_scope.cpp" />
+    <ClCompile Include="thirdparty\SmallVector.cpp">
+      <Filter>thirdparty</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />
+    <Natvis Include="thirdparty\llvm.natvis">
+      <Filter>thirdparty</Filter>
+    </Natvis>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="thirdparty">

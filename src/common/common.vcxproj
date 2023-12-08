@@ -35,6 +35,7 @@
     <ClInclude Include="small_string.h" />
     <ClInclude Include="heterogeneous_containers.h" />
     <ClInclude Include="string_util.h" />
+    <ClInclude Include="thirdparty\SmallVector.h" />
     <ClInclude Include="thirdparty\StackWalker.h" />
     <ClInclude Include="threading.h" />
     <ClInclude Include="timer.h" />
@@ -61,12 +62,14 @@
     <ClCompile Include="sha1_digest.cpp" />
     <ClCompile Include="small_string.cpp" />
     <ClCompile Include="string_util.cpp" />
+    <ClCompile Include="thirdparty\SmallVector.cpp" />
     <ClCompile Include="thirdparty\StackWalker.cpp" />
     <ClCompile Include="threading.cpp" />
     <ClCompile Include="timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />
+    <Natvis Include="thirdparty\llvm.natvis" />
   </ItemGroup>
   <ItemGroup>
     <MARMASM Include="fastjmp_arm.asm">
