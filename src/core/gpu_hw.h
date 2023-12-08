@@ -208,7 +208,6 @@ private:
 
   std::unique_ptr<GPUTexture> m_vram_texture;
   std::unique_ptr<GPUTexture> m_vram_depth_texture;
-  std::unique_ptr<GPUTexture> m_vram_depth_view;
   std::unique_ptr<GPUTexture> m_vram_read_texture;
   std::unique_ptr<GPUTexture> m_vram_readback_texture;
   std::unique_ptr<GPUTexture> m_vram_replacement_texture;

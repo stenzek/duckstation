@@ -729,7 +729,6 @@ void GPU_HW::DestroyBuffers()
   m_vram_update_depth_framebuffer.reset();
   m_vram_framebuffer.reset();
   m_vram_read_texture.reset();
-  m_vram_depth_view.reset();
   m_vram_depth_texture.reset();
   m_vram_texture.reset();
   m_vram_readback_texture.reset();
