@@ -28,7 +28,8 @@
 
 LOG_CHANNEL(Settings);
 
-Settings g_settings;
+ALIGN_TO_CACHE_LINE Settings g_settings;
+ALIGN_TO_CACHE_LINE Settings g_gpu_settings;
 
 const char* SettingInfo::StringDefaultValue() const
 {
@@ -206,6 +207,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   gpu_disable_compressed_textures = si.GetBoolValue("GPU", "DisableCompressedTextures", false);
   gpu_per_sample_shading = si.GetBoolValue("GPU", "PerSampleShading", false);
   gpu_use_thread = si.GetBoolValue("GPU", "UseThread", true);
+  gpu_max_queued_frames = static_cast<u8>(si.GetUIntValue("GPU", "MaxQueuedFrames", DEFAULT_GPU_MAX_QUEUED_FRAMES));
   gpu_use_software_renderer_for_readbacks = si.GetBoolValue("GPU", "UseSoftwareRendererForReadbacks", false);
   gpu_true_color = si.GetBoolValue("GPU", "TrueColor", true);
   gpu_scaled_dithering = si.GetBoolValue("GPU", "ScaledDithering", true);
@@ -546,6 +548,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   }
 
   si.SetBoolValue("GPU", "PerSampleShading", gpu_per_sample_shading);
+  si.SetUIntValue("GPU", "MaxQueuedFrames", gpu_max_queued_frames);
   si.SetBoolValue("GPU", "UseThread", gpu_use_thread);
   si.SetBoolValue("GPU", "UseSoftwareRendererForReadbacks", gpu_use_software_renderer_for_readbacks);
   si.SetBoolValue("GPU", "TrueColor", gpu_true_color);

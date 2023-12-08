@@ -7,14 +7,20 @@
 
 #include <string>
 
+class GPUBackend;
+
 namespace ImGuiManager {
-void RenderTextOverlays();
+
+static constexpr const char* LOGO_IMAGE_NAME = "images/duck.png";
+
+void RenderTextOverlays(const GPUBackend* gpu);
 void RenderDebugWindows();
 bool UpdateDebugWindowConfig();
 void DestroyAllDebugWindows();
 
 void RenderOverlayWindows();
 void DestroyOverlayTextures();
+
 } // namespace ImGuiManager
 
 namespace SaveStateSelectorUI {

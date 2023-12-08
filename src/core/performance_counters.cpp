@@ -3,6 +3,8 @@
 
 #include "performance_counters.h"
 #include "gpu.h"
+#include "gpu_backend.h"
+#include "gpu_thread.h"
 #include "system.h"
 #include "system_private.h"
 
@@ -45,9 +47,9 @@ struct State
   float cpu_thread_usage;
   float cpu_thread_time;
 
-  u64 last_sw_time;
-  float sw_thread_usage;
-  float sw_thread_time;
+  u64 last_gpu_thread_time;
+  float gpu_thread_usage;
+  float gpu_thread_time;
 
   float average_gpu_time;
   float accumulated_gpu_time;
@@ -105,14 +107,14 @@ float PerformanceCounters::GetCPUThreadAverageTime()
   return s_state.cpu_thread_time;
 }
 
-float PerformanceCounters::GetSWThreadUsage()
+float PerformanceCounters::GetGPUThreadUsage()
 {
-  return s_state.sw_thread_usage;
+  return s_state.gpu_thread_usage;
 }
 
-float PerformanceCounters::GetSWThreadAverageTime()
+float PerformanceCounters::GetGPUThreadAverageTime()
 {
-  return s_state.sw_thread_time;
+  return s_state.gpu_thread_time;
 }
 
 float PerformanceCounters::GetGPUUsage()
@@ -150,17 +152,16 @@ void PerformanceCounters::Reset()
   s_state.last_frame_number = System::GetFrameNumber();
   s_state.last_internal_frame_number = System::GetInternalFrameNumber();
   s_state.last_cpu_time = System::GetCPUThreadHandle().GetCPUTime();
-  if (const Threading::Thread* sw_thread = g_gpu->GetSWThread(); sw_thread)
-    s_state.last_sw_time = sw_thread->GetCPUTime();
-  else
-    s_state.last_sw_time = 0;
+  s_state.last_gpu_thread_time = GPUThread::Internal::GetThreadHandle().GetCPUTime();
 
   s_state.average_frame_time_accumulator = 0.0f;
   s_state.minimum_frame_time_accumulator = 0.0f;
   s_state.maximum_frame_time_accumulator = 0.0f;
+
+  std::atomic_thread_fence(std::memory_order_release);
 }
 
-void PerformanceCounters::Update(u32 frame_number, u32 internal_frame_number)
+void PerformanceCounters::Update(GPUBackend* gpu, u32 frame_number, u32 internal_frame_number)
 {
   const Timer::Value now_ticks = Timer::GetCurrentValue();
 
@@ -177,7 +178,7 @@ void PerformanceCounters::Update(u32 frame_number, u32 internal_frame_number)
   // update fps counter
   const Timer::Value ticks_diff = now_ticks - s_state.last_update_time;
   const float time = static_cast<float>(Timer::ConvertValueToSeconds(ticks_diff));
-  if (time < PERFORMANCE_COUNTER_UPDATE_INTERVAL)
+  if (time < PERFORMANCE_COUNTER_UPDATE_INTERVAL || s_state.last_frame_number == frame_number)
     return;
 
   s_state.last_update_time = now_ticks;
@@ -202,18 +203,17 @@ void PerformanceCounters::Update(u32 frame_number, u32 internal_frame_number)
   s_state.fps = static_cast<float>(internal_frames_run) / time;
   s_state.speed = (s_state.vps / System::GetVideoFrameRate()) * 100.0f;
 
-  const Threading::Thread* sw_thread = g_gpu->GetSWThread();
   const u64 cpu_time = System::GetCPUThreadHandle().GetCPUTime();
-  const u64 sw_time = sw_thread ? sw_thread->GetCPUTime() : 0;
+  const u64 gpu_thread_time = GPUThread::Internal::GetThreadHandle().GetCPUTime();
   const u64 cpu_delta = cpu_time - s_state.last_cpu_time;
-  const u64 sw_delta = sw_time - s_state.last_sw_time;
+  const u64 gpu_thread_delta = gpu_thread_time - s_state.last_gpu_thread_time;
   s_state.last_cpu_time = cpu_time;
-  s_state.last_sw_time = sw_time;
+  s_state.last_gpu_thread_time = gpu_thread_time;
 
   s_state.cpu_thread_usage = static_cast<float>(static_cast<double>(cpu_delta) * pct_divider);
   s_state.cpu_thread_time = static_cast<float>(static_cast<double>(cpu_delta) * time_divider);
-  s_state.sw_thread_usage = static_cast<float>(static_cast<double>(sw_delta) * pct_divider);
-  s_state.sw_thread_time = static_cast<float>(static_cast<double>(sw_delta) * time_divider);
+  s_state.gpu_thread_usage = static_cast<float>(static_cast<double>(gpu_thread_delta) * pct_divider);
+  s_state.gpu_thread_time = static_cast<float>(static_cast<double>(gpu_thread_delta) * time_divider);
 
   if (MediaCapture* cap = System::GetMediaCapture())
     cap->UpdateCaptureThreadUsage(pct_divider, time_divider);
@@ -228,13 +228,13 @@ void PerformanceCounters::Update(u32 frame_number, u32 internal_frame_number)
   s_state.presents_since_last_update = 0;
 
   if (g_settings.display_show_gpu_stats)
-    g_gpu->UpdateStatistics(frames_run);
+    gpu->UpdateStatistics(frames_run);
 
-  VERBOSE_LOG("FPS: {:.2f} VPS: {:.2f} CPU: {:.2f} GPU: {:.2f} Avg: {:.2f}ms Min: {:.2f}ms Max: {:.2f}ms", s_state.fps,
-              s_state.vps, s_state.cpu_thread_usage, s_state.gpu_usage, s_state.average_frame_time,
-              s_state.minimum_frame_time, s_state.maximum_frame_time);
+  VERBOSE_LOG("FPS: {:.2f} VPS: {:.2f} CPU: {:.2f} RNDR: {:.2f} GPU: {:.2f} Avg: {:.2f}ms Min: {:.2f}ms Max: {:.2f}ms",
+              s_state.fps, s_state.vps, s_state.cpu_thread_usage, s_state.gpu_thread_usage, s_state.gpu_usage,
+              s_state.average_frame_time, s_state.minimum_frame_time, s_state.maximum_frame_time);
 
-  Host::OnPerformanceCountersUpdated();
+  Host::OnPerformanceCountersUpdated(gpu);
 }
 
 void PerformanceCounters::AccumulateGPUTime()

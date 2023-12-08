@@ -7,26 +7,30 @@
 
 #include <functional>
 
+class GPUBackend;
+
 namespace System {
 
 /// Memory save states - only for internal use.
 struct MemorySaveState
 {
-  std::unique_ptr<GPUTexture> vram_texture;
   DynamicHeapArray<u8> state_data;
   size_t state_size;
+
+  std::unique_ptr<GPUTexture> vram_texture;
+  DynamicHeapArray<u8> gpu_state_data;
+  size_t gpu_state_size;
 };
 
 MemorySaveState& AllocateMemoryState();
 MemorySaveState& GetFirstMemoryState();
 MemorySaveState& PopMemoryState();
+bool AllocateMemoryStates(size_t state_count);
 void FreeMemoryStateStorage();
 void LoadMemoryState(MemorySaveState& mss, bool update_display);
-bool SaveMemoryState(MemorySaveState& mss);
+void SaveMemoryState(MemorySaveState& mss);
 
-/// Returns the maximum size of a save state, considering the current configuration.
-size_t GetMaxSaveStateSize();
-
+bool IsRunaheadActive();
 void IncrementFrameNumber();
 void IncrementInternalFrameNumber();
 void FrameDone();
@@ -34,6 +38,10 @@ void FrameDone();
 /// Returns true if vsync should be used.
 GPUVSyncMode GetEffectiveVSyncMode();
 bool ShouldAllowPresentThrottle();
+
+/// Retrieves timing information for frame presentation on the GPU thread.
+/// Returns false if this frame should not be presented or the command buffer flushed.
+bool GetFramePresentationParameters(GPUBackendFramePresentationParameters* frame);
 
 /// Call when host display size changes.
 void DisplayWindowResized();
@@ -65,6 +73,7 @@ void IdlePollUpdate();
 /// Task threads, asynchronous work which will block system shutdown.
 void QueueTaskOnThread(std::function<void()> task);
 void RemoveSelfFromTaskThreads();
+void JoinTaskThreads();
 
 } // namespace System
 
@@ -91,11 +100,8 @@ void OnSystemPaused();
 /// Called when the VM is resumed after being paused.
 void OnSystemResumed();
 
-/// Called when the pause state changes, or fullscreen UI opens.
-void OnIdleStateChanged();
-
 /// Called when performance metrics are updated, approximately once a second.
-void OnPerformanceCountersUpdated();
+void OnPerformanceCountersUpdated(const GPUBackend* gpu_backend);
 
 /// Provided by the host; called when the running executable changes.
 void OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name);

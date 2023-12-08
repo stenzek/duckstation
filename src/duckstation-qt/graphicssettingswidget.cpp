@@ -610,8 +610,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                              tr("Draws a wireframe outline of the triangles rendered by the console's GPU, either as a "
                                 "replacement or an overlay."));
   dialog->registerWidgetHelp(m_ui.gpuThread, tr("Threaded Rendering"), tr("Checked"),
-                             tr("Uses a second thread for drawing graphics. Currently only available for the software "
-                                "renderer, but can provide a significant speed improvement, and is safe to use."));
+                             tr("Uses a second thread for drawing graphics. Provides a significant speed improvement "
+                                "particularly with the software renderer, and is safe to use."));
 
   dialog->registerWidgetHelp(
     m_ui.useDebugDevice, tr("Use Debug Device"), tr("Unchecked"),
@@ -818,8 +818,6 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 #ifdef _WIN32
   m_ui.blitSwapChain->setEnabled(render_api == RenderAPI::D3D11);
 #endif
-
-  m_ui.gpuThread->setEnabled(!is_hardware);
 
   m_ui.exclusiveFullscreenLabel->setEnabled(render_api == RenderAPI::D3D11 || render_api == RenderAPI::D3D12 ||
                                             render_api == RenderAPI::Vulkan);

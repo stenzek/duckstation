@@ -10,6 +10,7 @@ class GPUTexture;
 class StateWrapper;
 
 struct Settings;
+class GPU_HW;
 
 //////////////////////////////////////////////////////////////////////////
 // Texture Cache
@@ -102,9 +103,12 @@ struct Source
   TListNode<Source> hash_cache_ref;
 };
 
-bool Initialize();
+bool Initialize(GPU_HW* backend);
 void UpdateSettings(bool use_texture_cache, const Settings& old_settings);
+
+bool GetStateSize(StateWrapper& sw, u32* size);
 bool DoState(StateWrapper& sw, bool skip);
+
 void Shutdown();
 
 void Invalidate();

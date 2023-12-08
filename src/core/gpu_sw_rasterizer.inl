@@ -968,7 +968,7 @@ struct TrianglePart
 #ifndef USE_VECTOR
 
 template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable>
-static void DrawSpan(const GPUBackendDrawPolygonCommand* cmd, s32 y, s32 x_start, s32 x_bound, UVStepper uv,
+static void DrawSpan(const GPUBackendDrawCommand* cmd, s32 y, s32 x_start, s32 x_bound, UVStepper uv,
                      const UVSteps& uvstep, RGBStepper rgb, const RGBSteps& rgbstep)
 {
   s32 width = x_bound - x_start;
@@ -1008,7 +1008,7 @@ static void DrawSpan(const GPUBackendDrawPolygonCommand* cmd, s32 y, s32 x_start
 }
 
 template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable>
-ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawPolygonCommand* cmd, const TrianglePart& tp,
+ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawCommand* cmd, const TrianglePart& tp,
                                                    const UVStepper& uv, const UVSteps& uvstep, const RGBStepper& rgb,
                                                    const RGBSteps& rgbstep)
 {
@@ -1145,7 +1145,7 @@ struct TriangleVectors : PixelVectors<texture_enable>
 } // namespace
 
 template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable>
-ALWAYS_INLINE_RELEASE static void DrawSpan(const GPUBackendDrawPolygonCommand* cmd, s32 y, s32 x_start, s32 x_bound,
+ALWAYS_INLINE_RELEASE static void DrawSpan(const GPUBackendDrawCommand *cmd, s32 y, s32 x_start, s32 x_bound,
                                            UVStepper uv, const UVSteps& uvstep, RGBStepper rgb, const RGBSteps& rgbstep,
                                            const TriangleVectors<shading_enable, texture_enable>& tv)
 {
@@ -1250,7 +1250,7 @@ ALWAYS_INLINE_RELEASE static void DrawSpan(const GPUBackendDrawPolygonCommand* c
 }
 
 template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable>
-ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawPolygonCommand* cmd, const TrianglePart& tp,
+ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawCommand* cmd, const TrianglePart& tp,
                                                    const UVStepper& uv, const UVSteps& uvstep, const RGBStepper& rgb,
                                                    const RGBSteps& rgbstep)
 {
@@ -1349,7 +1349,7 @@ ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawPolygonCo
 #endif // USE_VECTOR
 
 template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable>
-static void DrawTriangle(const GPUBackendDrawPolygonCommand* cmd, const GPUBackendDrawPolygonCommand::Vertex* v0,
+static void DrawTriangle(const GPUBackendDrawCommand* cmd, const GPUBackendDrawPolygonCommand::Vertex* v0,
                          const GPUBackendDrawPolygonCommand::Vertex* v1, const GPUBackendDrawPolygonCommand::Vertex* v2)
 {
 #ifdef CHECK_VECTOR

@@ -5,8 +5,8 @@
 #include "cdrom_async_reader.h"
 #include "cdrom_subq_replacement.h"
 #include "dma.h"
+#include "fullscreen_ui.h"
 #include "host.h"
-#include "host_interface_progress_callback.h"
 #include "interrupt_controller.h"
 #include "settings.h"
 #include "spu.h"
@@ -997,7 +997,7 @@ bool CDROM::PrecacheMedia()
     return false;
   }
 
-  HostInterfaceProgressCallback callback;
+  LoadingScreenProgressCallback callback;
   if (!s_reader.Precache(&callback))
   {
     Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Precaching CD image failed, it may be unreliable."),
