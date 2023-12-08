@@ -221,10 +221,12 @@ VkImageLayout VulkanTexture::GetVkLayout() const
 VkCommandBuffer VulkanTexture::GetCommandBufferForUpdate()
 {
   VulkanDevice& dev = VulkanDevice::GetInstance();
-  if (m_type != Type::Texture || m_use_fence_counter == dev.GetCurrentFenceCounter())
+  if ((m_type != Type::Texture && m_type != Type::DynamicTexture) ||
+      m_use_fence_counter == dev.GetCurrentFenceCounter())
   {
     // Console.WriteLn("Texture update within frame, can't use do beforehand");
-    dev.EndRenderPass();
+    if (dev.InRenderPass())
+      dev.EndRenderPass();
     return dev.GetCurrentCommandBuffer();
   }
 
