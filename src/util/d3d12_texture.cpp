@@ -233,8 +233,8 @@ bool D3D12Device::CreateRTVDescriptor(ID3D12Resource* resource, u32 samples, DXG
     return false;
   }
 
-  const D3D12_RENDER_TARGET_VIEW_DESC desc = {format, (samples > 1) ? D3D12_RTV_DIMENSION_TEXTURE2DMS :
-                                                                      D3D12_RTV_DIMENSION_TEXTURE2D, {} };
+  const D3D12_RENDER_TARGET_VIEW_DESC desc = {
+    format, (samples > 1) ? D3D12_RTV_DIMENSION_TEXTURE2DMS : D3D12_RTV_DIMENSION_TEXTURE2D, {}};
   m_device->CreateRenderTargetView(resource, &desc, dh->cpu_handle);
   return true;
 }
@@ -249,7 +249,7 @@ bool D3D12Device::CreateDSVDescriptor(ID3D12Resource* resource, u32 samples, DXG
   }
 
   const D3D12_DEPTH_STENCIL_VIEW_DESC desc = {
-    format, (samples > 1) ? D3D12_DSV_DIMENSION_TEXTURE2DMS : D3D12_DSV_DIMENSION_TEXTURE2D, D3D12_DSV_FLAG_NONE, {} };
+    format, (samples > 1) ? D3D12_DSV_DIMENSION_TEXTURE2DMS : D3D12_DSV_DIMENSION_TEXTURE2D, D3D12_DSV_FLAG_NONE, {}};
   m_device->CreateDepthStencilView(resource, &desc, dh->cpu_handle);
   return true;
 }
@@ -264,7 +264,7 @@ bool D3D12Device::CreateUAVDescriptor(ID3D12Resource* resource, u32 samples, DXG
   }
 
   DebugAssert(samples == 1);
-  const D3D12_UNORDERED_ACCESS_VIEW_DESC desc = { format, D3D12_UAV_DIMENSION_TEXTURE2D, {} };
+  const D3D12_UNORDERED_ACCESS_VIEW_DESC desc = {format, D3D12_UAV_DIMENSION_TEXTURE2D, {}};
   m_device->CreateUnorderedAccessView(resource, nullptr, &desc, dh->cpu_handle);
   return true;
 }
@@ -326,7 +326,7 @@ void D3D12Texture::Destroy(bool defer)
 ID3D12GraphicsCommandList4* D3D12Texture::GetCommandBufferForUpdate()
 {
   D3D12Device& dev = D3D12Device::GetInstance();
-  if (m_type != Type::Texture || m_use_fence_counter == dev.GetCurrentFenceValue())
+  if ((m_type != Type::Texture && m_type != Type::DynamicTexture) || m_use_fence_counter == dev.GetCurrentFenceValue())
   {
     // Console.WriteLn("Texture update within frame, can't use do beforehand");
     if (dev.InRenderPass())
