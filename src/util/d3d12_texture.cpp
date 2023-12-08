@@ -553,7 +553,8 @@ void D3D12Texture::CommitClear()
     return;
 
   D3D12Device& dev = D3D12Device::GetInstance();
-  dev.EndRenderPass();
+  if (dev.InRenderPass())
+    dev.EndRenderPass();
 
   ActuallyCommitClear(dev.GetCommandList());
 }
