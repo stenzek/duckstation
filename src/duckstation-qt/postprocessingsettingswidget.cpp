@@ -366,6 +366,7 @@ void PostProcessingShaderConfigWidget::createUi()
       combo->setToolTip(tooltip);
       for (const std::string& combo_option : option.choice_options)
         combo->addItem(QString::fromStdString(combo_option));
+      combo->setCurrentIndex(option.value[0].int_value);
       connect(combo, &QComboBox::currentIndexChanged, [this, &option](int index) {
         option.value[0].int_value = index;
         updateConfigForOption(option);
