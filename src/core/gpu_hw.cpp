@@ -3,10 +3,10 @@
 
 #include "gpu_hw.h"
 #include "cpu_core.h"
+#include "cpu_pgxp.h"
 #include "gpu_hw_shadergen.h"
 #include "gpu_sw_backend.h"
 #include "host.h"
-#include "cpu_pgxp.h"
 #include "settings.h"
 #include "system.h"
 
@@ -653,30 +653,9 @@ bool GPU_HW::CreateBuffers()
   Log_InfoFmt("Created HW framebuffer of {}x{}", texture_width, texture_height);
 
   if (m_downsample_mode == GPUDownsampleMode::Adaptive)
-  {
-    const u32 levels = GetAdaptiveDownsamplingMipLevels();
-
-    if (!(m_downsample_texture = g_gpu_device->FetchTexture(texture_width, texture_height, 1, levels, 1,
-                                                            GPUTexture::Type::Texture, VRAM_RT_FORMAT)) ||
-        !(m_downsample_render_texture = g_gpu_device->FetchTexture(texture_width, texture_height, 1, 1, 1,
-                                                                   GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT)) ||
-        !(m_downsample_weight_texture =
-            g_gpu_device->FetchTexture(texture_width >> (levels - 1), texture_height >> (levels - 1), 1, 1, 1,
-                                       GPUTexture::Type::RenderTarget, GPUTexture::Format::R8)))
-    {
-      return false;
-    }
-  }
+    m_downsample_scale_or_levels = GetAdaptiveDownsamplingMipLevels();
   else if (m_downsample_mode == GPUDownsampleMode::Box)
-  {
-    const u32 downsample_scale = GetBoxDownsampleScale(m_resolution_scale);
-    if (!(m_downsample_render_texture =
-            g_gpu_device->FetchTexture(VRAM_WIDTH * downsample_scale, VRAM_HEIGHT * downsample_scale, 1, 1, 1,
-                                       GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT)))
-    {
-      return false;
-    }
-  }
+    m_downsample_scale_or_levels = m_resolution_scale / GetBoxDownsampleScale(m_resolution_scale);
 
   g_gpu_device->SetRenderTarget(m_vram_texture.get(), m_vram_depth_texture.get());
   SetFullVRAMDirtyRectangle();
@@ -700,8 +679,6 @@ void GPU_HW::DestroyBuffers()
   ClearDisplayTexture();
 
   m_vram_upload_buffer.reset();
-  g_gpu_device->RecycleTexture(std::move(m_downsample_weight_texture));
-  g_gpu_device->RecycleTexture(std::move(m_downsample_render_texture));
   g_gpu_device->RecycleTexture(std::move(m_downsample_texture));
   g_gpu_device->RecycleTexture(std::move(m_vram_read_texture));
   g_gpu_device->RecycleTexture(std::move(m_vram_depth_texture));
@@ -2846,21 +2823,39 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top
     float lod;
   };
 
-  g_gpu_device->CopyTextureRegion(m_downsample_texture.get(), 0, 0, 0, 0, source, left, top, 0, 0, width, height);
-  g_gpu_device->SetTextureSampler(0, m_downsample_texture.get(), m_downsample_lod_sampler.get());
+  if (!m_downsample_texture || m_downsample_texture->GetWidth() != width || m_downsample_texture->GetHeight() != height)
+  {
+    g_gpu_device->RecycleTexture(std::move(m_downsample_texture));
+    m_downsample_texture =
+      g_gpu_device->FetchTexture(width, height, 1, 1, 1, GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT);
+  }
+  std::unique_ptr<GPUTexture, GPUDevice::PooledTextureDeleter> level_texture = g_gpu_device->FetchAutoRecycleTexture(
+    width, height, 1, m_downsample_scale_or_levels, 1, GPUTexture::Type::Texture, VRAM_RT_FORMAT);
+  std::unique_ptr<GPUTexture, GPUDevice::PooledTextureDeleter> weight_texture =
+    g_gpu_device->FetchAutoRecycleTexture(std::max(width >> (m_downsample_scale_or_levels - 1), 1u),
+                                          std::max(height >> (m_downsample_scale_or_levels - 1), 1u), 1, 1, 1,
+                                          GPUTexture::Type::RenderTarget, GPUTexture::Format::R8);
+  if (!m_downsample_texture || !level_texture || !weight_texture)
+  {
+    Log_ErrorFmt("Failed to create {}x{} RTs for adaptive downsampling", width, height);
+    SetDisplayTexture(source, left, top, width, height);
+    return;
+  }
 
-  const u32 levels = m_downsample_texture->GetLevels();
+  g_gpu_device->CopyTextureRegion(level_texture.get(), 0, 0, 0, 0, source, left, top, 0, 0, width, height);
+  g_gpu_device->SetTextureSampler(0, level_texture.get(), m_downsample_lod_sampler.get());
+
   SmoothingUBOData uniforms;
 
   // create mip chain
-  for (u32 level = 1; level < levels; level++)
+  for (u32 level = 1; level < m_downsample_scale_or_levels; level++)
   {
     GL_SCOPE_FMT("Create miplevel {}", level);
 
     const u32 level_width = width >> level;
     const u32 level_height = height >> level;
-    const float rcp_width = 1.0f / static_cast<float>(m_downsample_texture->GetMipWidth(level));
-    const float rcp_height = 1.0f / static_cast<float>(m_downsample_texture->GetMipHeight(level));
+    const float rcp_width = 1.0f / static_cast<float>(level_texture->GetMipWidth(level));
+    const float rcp_height = 1.0f / static_cast<float>(level_texture->GetMipHeight(level));
     uniforms.min_uv[0] = 0.0f;
     uniforms.min_uv[1] = 0.0f;
     uniforms.max_uv[0] = static_cast<float>(level_width) * rcp_width;
@@ -2869,26 +2864,26 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top
     uniforms.rcp_size[1] = rcp_height;
     uniforms.lod = static_cast<float>(level - 1);
 
-    g_gpu_device->ClearRenderTarget(m_downsample_render_texture.get(), 0);
-    g_gpu_device->SetRenderTarget(m_downsample_render_texture.get());
+    g_gpu_device->InvalidateRenderTarget(m_downsample_texture.get());
+    g_gpu_device->SetRenderTarget(m_downsample_texture.get());
     g_gpu_device->SetViewportAndScissor(0, 0, level_width, level_height);
     g_gpu_device->SetPipeline((level == 1) ? m_downsample_first_pass_pipeline.get() :
                                              m_downsample_mid_pass_pipeline.get());
     g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
     g_gpu_device->Draw(3, 0);
-    g_gpu_device->CopyTextureRegion(m_downsample_texture.get(), 0, 0, 0, level, m_downsample_render_texture.get(), 0, 0,
-                                    0, 0, level_width, level_height);
+    g_gpu_device->CopyTextureRegion(level_texture.get(), 0, 0, 0, level, m_downsample_texture.get(), 0, 0, 0, 0,
+                                    level_width, level_height);
   }
 
   // blur pass at lowest level
   {
     GL_SCOPE("Blur");
 
-    const u32 last_level = levels - 1;
-    const u32 last_width = width >> last_level;
-    const u32 last_height = height >> last_level;
-    const float rcp_width = 1.0f / static_cast<float>(m_downsample_render_texture->GetWidth());
-    const float rcp_height = 1.0f / static_cast<float>(m_downsample_render_texture->GetHeight());
+    const u32 last_level = m_downsample_scale_or_levels - 1;
+    const u32 last_width = level_texture->GetMipWidth(last_level);
+    const u32 last_height = level_texture->GetMipHeight(last_level);
+    const float rcp_width = 1.0f / static_cast<float>(m_downsample_texture->GetWidth());
+    const float rcp_height = 1.0f / static_cast<float>(m_downsample_texture->GetHeight());
     uniforms.min_uv[0] = 0.0f;
     uniforms.min_uv[1] = 0.0f;
     uniforms.max_uv[0] = static_cast<float>(last_width) * rcp_width;
@@ -2897,58 +2892,81 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top
     uniforms.rcp_size[1] = rcp_height;
     uniforms.lod = 0.0f;
 
-    m_downsample_render_texture->MakeReadyForSampling();
-    g_gpu_device->ClearRenderTarget(m_downsample_weight_texture.get(), 0);
-    g_gpu_device->SetRenderTarget(m_downsample_weight_texture.get());
-    g_gpu_device->SetTextureSampler(0, m_downsample_render_texture.get(), g_gpu_device->GetNearestSampler());
+    m_downsample_texture->MakeReadyForSampling();
+    g_gpu_device->InvalidateRenderTarget(weight_texture.get());
+    g_gpu_device->SetRenderTarget(weight_texture.get());
+    g_gpu_device->SetTextureSampler(0, m_downsample_texture.get(), g_gpu_device->GetNearestSampler());
     g_gpu_device->SetViewportAndScissor(0, 0, last_width, last_height);
     g_gpu_device->SetPipeline(m_downsample_blur_pass_pipeline.get());
     g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
     g_gpu_device->Draw(3, 0);
-    m_downsample_weight_texture->MakeReadyForSampling();
+    weight_texture->MakeReadyForSampling();
   }
 
   // composite downsampled and upsampled images together
   {
     GL_SCOPE("Composite");
 
-    g_gpu_device->ClearRenderTarget(m_downsample_render_texture.get(), 0);
-    g_gpu_device->SetRenderTarget(m_downsample_render_texture.get());
-    g_gpu_device->SetTextureSampler(0, m_downsample_texture.get(), m_downsample_composite_sampler.get());
-    g_gpu_device->SetTextureSampler(1, m_downsample_weight_texture.get(), m_downsample_lod_sampler.get());
+    uniforms.min_uv[0] = 0.0f;
+    uniforms.min_uv[1] = 0.0f;
+    uniforms.max_uv[0] = 1.0f;
+    uniforms.max_uv[1] = 1.0f;
+
+    g_gpu_device->InvalidateRenderTarget(m_downsample_texture.get());
+    g_gpu_device->SetRenderTarget(m_downsample_texture.get());
+    g_gpu_device->SetTextureSampler(0, level_texture.get(), m_downsample_composite_sampler.get());
+    g_gpu_device->SetTextureSampler(1, weight_texture.get(), m_downsample_lod_sampler.get());
     g_gpu_device->SetViewportAndScissor(0, 0, width, height);
     g_gpu_device->SetPipeline(m_downsample_composite_pass_pipeline.get());
+    g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
     g_gpu_device->Draw(3, 0);
-    m_downsample_render_texture->MakeReadyForSampling();
+    m_downsample_texture->MakeReadyForSampling();
   }
 
   GL_POP();
 
   RestoreDeviceContext();
 
-  SetDisplayTexture(m_downsample_render_texture.get(), 0, 0, width, height);
+  SetDisplayTexture(m_downsample_texture.get(), 0, 0, width, height);
 }
 
 void GPU_HW::DownsampleFramebufferBoxFilter(GPUTexture* source, u32 left, u32 top, u32 width, u32 height)
 {
-  const u32 factor = m_resolution_scale / GetBoxDownsampleScale(m_resolution_scale);
-  const u32 ds_left = left / factor;
-  const u32 ds_top = top / factor;
-  const u32 ds_width = width / factor;
-  const u32 ds_height = height / factor;
+  GL_SCOPE_FMT("DownsampleFramebufferBoxFilter({},{} => {},{} ({}x{})", left, top, left + width, top + height, width,
+               height);
+
+  const u32 ds_width = width / m_downsample_scale_or_levels;
+  const u32 ds_height = height / m_downsample_scale_or_levels;
+
+  if (!m_downsample_texture || m_downsample_texture->GetWidth() != ds_width ||
+      m_downsample_texture->GetHeight() != ds_height)
+  {
+    g_gpu_device->RecycleTexture(std::move(m_downsample_texture));
+    m_downsample_texture =
+      g_gpu_device->FetchTexture(ds_width, ds_height, 1, 1, 1, GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT);
+  }
+  if (!m_downsample_texture)
+  {
+    Log_ErrorFmt("Failed to create {}x{} RT for box downsampling", width, height);
+    SetDisplayTexture(source, left, top, width, height);
+    return;
+  }
 
   source->MakeReadyForSampling();
 
-  g_gpu_device->ClearRenderTarget(m_downsample_render_texture.get(), 0);
-  g_gpu_device->SetRenderTarget(m_downsample_render_texture.get());
+  const u32 uniforms[4] = {left, top, 0u, 0u};
+  g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
+
+  g_gpu_device->InvalidateRenderTarget(m_downsample_texture.get());
+  g_gpu_device->SetRenderTarget(m_downsample_texture.get());
   g_gpu_device->SetPipeline(m_downsample_first_pass_pipeline.get());
   g_gpu_device->SetTextureSampler(0, source, g_gpu_device->GetNearestSampler());
-  g_gpu_device->SetViewportAndScissor(ds_left, ds_top, ds_width, ds_height);
+  g_gpu_device->SetViewportAndScissor(0, 0, ds_width, ds_height);
   g_gpu_device->Draw(3, 0);
 
   RestoreDeviceContext();
 
-  SetDisplayTexture(m_downsample_render_texture.get(), ds_left, ds_top, ds_width, ds_height);
+  SetDisplayTexture(m_downsample_texture.get(), 0, 0, ds_width, ds_height);
 }
 
 void GPU_HW::DrawRendererStats(bool is_idle_frame)

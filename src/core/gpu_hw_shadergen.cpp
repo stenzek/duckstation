@@ -1582,10 +1582,9 @@ std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleCompositeFragmentShader(
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, false, false, false, false);
   ss << R"(
 {
-  float2 uv = v_pos.xy * RCP_VRAM_SIZE;
-  float bias = SAMPLE_TEXTURE(samp1, uv).r;
+  float bias = SAMPLE_TEXTURE(samp1, v_tex0).r;
   float mip = float(RESOLUTION_SCALE - 1u) * bias;
-  float3 color = SAMPLE_TEXTURE_LEVEL(samp0, uv, mip).rgb;
+  float3 color = SAMPLE_TEXTURE_LEVEL(samp0, v_tex0, mip).rgb;
   o_col0 = float4(color, 1.0);
 }
 )";
@@ -1598,6 +1597,7 @@ std::string GPU_HW_ShaderGen::GenerateBoxSampleDownsampleFragmentShader(u32 fact
   std::stringstream ss;
   WriteHeader(ss);
   WriteCommonFunctions(ss);
+  DeclareUniformBuffer(ss, {"uint2 u_base_coords"}, true);
   DeclareTexture(ss, "samp0", 0, false);
 
   ss << "#define FACTOR " << factor << "\n";
@@ -1606,7 +1606,7 @@ std::string GPU_HW_ShaderGen::GenerateBoxSampleDownsampleFragmentShader(u32 fact
   ss << R"(
 {
   float3 color = float3(0.0, 0.0, 0.0);
-  uint2 base_coords = uint2(v_pos.xy) * uint2(FACTOR, FACTOR);
+  uint2 base_coords = u_base_coords + uint2(v_pos.xy) * uint2(FACTOR, FACTOR);
   for (uint offset_x = 0u; offset_x < FACTOR; offset_x++)
   {
     for (uint offset_y = 0u; offset_y < FACTOR; offset_y++)
