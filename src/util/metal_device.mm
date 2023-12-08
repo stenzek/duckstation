@@ -1231,6 +1231,7 @@ std::unique_ptr<GPUSampler> MetalDevice::CreateSampler(const GPUSampler::Config&
       MTLSamplerAddressModeRepeat,             // Repeat
       MTLSamplerAddressModeClampToEdge,        // ClampToEdge
       MTLSamplerAddressModeClampToBorderColor, // ClampToBorder
+      MTLSamplerAddressModeMirrorRepeat,       // MirrorRepeat
     }};
     static constexpr std::array<MTLSamplerMinMagFilter, static_cast<u8>(GPUSampler::Filter::MaxCount)> min_mag_filters =
       {{

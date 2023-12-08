@@ -182,7 +182,7 @@ static GPUSampler::Config MapSampler(const reshadefx::sampler_info& si)
       case reshadefx::texture_address_mode::wrap:
         return GPUSampler::AddressMode::Repeat;
       case reshadefx::texture_address_mode::mirror:
-        Panic("Not implemented");
+        return GPUSampler::AddressMode::MirrorRepeat;
       case reshadefx::texture_address_mode::clamp:
         return GPUSampler::AddressMode::ClampToEdge;
       case reshadefx::texture_address_mode::border:

@@ -69,6 +69,7 @@ public:
     Repeat,
     ClampToEdge,
     ClampToBorder,
+    MirrorRepeat,
 
     MaxCount
   };

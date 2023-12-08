@@ -363,6 +363,7 @@ std::unique_ptr<GPUSampler> OpenGLDevice::CreateSampler(const GPUSampler::Config
     GL_REPEAT,          // Repeat
     GL_CLAMP_TO_EDGE,   // ClampToEdge
     GL_CLAMP_TO_BORDER, // ClampToBorder
+    GL_MIRRORED_REPEAT, // MirrorRepeat
   }};
 
   // [mipmap_on_off][mipmap][filter]

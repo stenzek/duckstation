@@ -870,6 +870,7 @@ VkSampler VulkanDevice::GetSampler(const GPUSampler::Config& config)
     VK_SAMPLER_ADDRESS_MODE_REPEAT,          // Repeat
     VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,   // ClampToEdge
     VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER, // ClampToBorder
+    VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT, // MirrorRepeat
   }};
   static constexpr std::array<VkFilter, static_cast<u8>(GPUSampler::Filter::MaxCount)> min_mag_filters = {{
     VK_FILTER_NEAREST, // Nearest

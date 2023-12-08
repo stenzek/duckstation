@@ -177,6 +177,7 @@ std::unique_ptr<GPUSampler> D3D11Device::CreateSampler(const GPUSampler::Config&
     D3D11_TEXTURE_ADDRESS_WRAP,   // Repeat
     D3D11_TEXTURE_ADDRESS_CLAMP,  // ClampToEdge
     D3D11_TEXTURE_ADDRESS_BORDER, // ClampToBorder
+    D3D11_TEXTURE_ADDRESS_MIRROR, // MirrorRepeat
   }};
   static constexpr u8 filter_count = static_cast<u8>(GPUSampler::Filter::MaxCount);
   static constexpr D3D11_FILTER filters[filter_count][filter_count][filter_count] = {

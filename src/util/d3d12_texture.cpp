@@ -786,6 +786,7 @@ D3D12DescriptorHandle D3D12Device::GetSampler(const GPUSampler::Config& config)
     D3D12_TEXTURE_ADDRESS_MODE_WRAP,   // Repeat
     D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // ClampToEdge
     D3D12_TEXTURE_ADDRESS_MODE_BORDER, // ClampToBorder
+    D3D12_TEXTURE_ADDRESS_MODE_MIRROR, // MirrorRepeat
   }};
 
   static constexpr u8 filter_count = static_cast<u8>(GPUSampler::Filter::MaxCount);
