@@ -5,6 +5,7 @@
 
 #include "postprocessing_shader.h"
 
+#include "common/thirdparty/SmallVector.h"
 #include "common/timer.h"
 
 // reshadefx
@@ -103,8 +104,8 @@ private:
   struct Pass
   {
     std::unique_ptr<GPUPipeline> pipeline;
-    TextureID render_target;
-    std::vector<Sampler> samplers;
+    llvm::SmallVector<TextureID, GPUDevice::MAX_RENDER_TARGETS> render_targets;
+    llvm::SmallVector<Sampler, GPUDevice::MAX_TEXTURE_SAMPLERS> samplers;
     u32 num_vertices;
 
 #ifdef _DEBUG

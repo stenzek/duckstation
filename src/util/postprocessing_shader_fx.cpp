@@ -317,7 +317,6 @@ bool PostProcessing::ReShadeFXShader::LoadFromString(std::string name, std::stri
 
   if (!temp_module.techniques.empty())
   {
-    u32 max_rt = 0;
     bool has_passes = false;
     for (const reshadefx::technique_info& tech : temp_module.techniques)
     {
@@ -325,12 +324,20 @@ bool PostProcessing::ReShadeFXShader::LoadFromString(std::string name, std::stri
       {
         has_passes = true;
 
+        u32 max_rt = 0;
         for (u32 i = 0; i < std::size(pi.render_target_names); i++)
         {
           if (pi.render_target_names[i].empty())
             break;
 
           max_rt = std::max(max_rt, i);
+        }
+
+        if (max_rt > GPUDevice::MAX_RENDER_TARGETS)
+        {
+          Error::SetString(error, fmt::format("Too many render targets ({}) in pass {}, only {} are supported.", max_rt,
+                                              pi.name, GPUDevice::MAX_RENDER_TARGETS));
+          return false;
         }
 
         if (pi.samplers.size() > GPUDevice::MAX_TEXTURE_SAMPLERS)
@@ -344,11 +351,6 @@ bool PostProcessing::ReShadeFXShader::LoadFromString(std::string name, std::stri
     if (!has_passes)
     {
       Error::SetString(error, "No passes defined in file.");
-      return false;
-    }
-    else if (max_rt > 0)
-    {
-      Error::SetString(error, "Shaders with multiple render targets are currently not supported.");
       return false;
     }
   }
@@ -967,24 +969,32 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
 
       if (is_final)
       {
-        pass.render_target = OUTPUT_COLOR_TEXTURE;
+        pass.render_targets.push_back(OUTPUT_COLOR_TEXTURE);
       }
       else if (!pi.render_target_names[0].empty())
       {
-        pass.render_target = static_cast<TextureID>(m_textures.size());
-        for (u32 i = 0; i < static_cast<u32>(m_textures.size()); i++)
+        for (const std::string& rtname : pi.render_target_names)
         {
-          if (m_textures[i].reshade_name == pi.render_target_names[0])
-          {
-            pass.render_target = static_cast<TextureID>(i);
+          if (rtname.empty())
             break;
+
+          TextureID rt = static_cast<TextureID>(m_textures.size());
+          for (u32 i = 0; i < static_cast<u32>(m_textures.size()); i++)
+          {
+            if (m_textures[i].reshade_name == rtname)
+            {
+              rt = static_cast<TextureID>(i);
+              break;
+            }
           }
-        }
-        if (pass.render_target == static_cast<TextureID>(m_textures.size()))
-        {
-          Error::SetString(error, fmt::format("Unknown texture '{}' used as render target in pass '{}'",
-                                              pi.render_target_names[0], pi.name));
-          return false;
+          if (rt == static_cast<TextureID>(m_textures.size()))
+          {
+            Error::SetString(error,
+                             fmt::format("Unknown texture '{}' used as render target in pass '{}'", rtname, pi.name));
+            return false;
+          }
+
+          pass.render_targets.push_back(rt);
         }
       }
       else
@@ -992,7 +1002,7 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
         Texture new_rt;
         new_rt.rt_scale = 1.0f;
         new_rt.format = backbuffer_format;
-        pass.render_target = static_cast<TextureID>(m_textures.size());
+        pass.render_targets.push_back(static_cast<TextureID>(m_textures.size()));
         m_textures.push_back(std::move(new_rt));
       }
 
@@ -1151,7 +1161,7 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
 
   const std::string_view code(mod.code.data(), mod.code.size());
 
-  auto get_shader = [api, needs_main_defn, &code](const std::string& name, const std::vector<Sampler>& samplers,
+  auto get_shader = [api, needs_main_defn, &code](const std::string& name, const std::span<Sampler> samplers,
                                                   GPUShaderStage stage) {
     std::string real_code;
     if (needs_main_defn)
@@ -1222,7 +1232,15 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
       if (!vs || !fs)
         return false;
 
-      plconfig.SetTargetFormats((pass.render_target >= 0) ? m_textures[pass.render_target].format : format);
+      for (size_t i = 0; i < pass.render_targets.size(); i++)
+      {
+        plconfig.color_formats[i] =
+          ((pass.render_targets[i] >= 0) ? m_textures[pass.render_targets[i]].format : format);
+      }
+      for (size_t i = pass.render_targets.size(); i < GPUDevice::MAX_RENDER_TARGETS; i++)
+        plconfig.color_formats[i] = GPUTexture::Format::Unknown;
+      plconfig.depth_format = GPUTexture::Format::Unknown;
+
       plconfig.blend = MapBlendState(info);
       plconfig.primitive = MapPrimitive(info.topology);
       plconfig.vertex_shader = vs.get();
@@ -1431,12 +1449,11 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUTexture* final
   for (const Pass& pass : m_passes)
   {
     GL_SCOPE_FMT("Draw pass {}", pass.name.c_str());
-    GL_INS_FMT("Render Target: ID {} [{}]", pass.render_target, GetTextureNameForID(pass.render_target));
-    GPUTexture* output = GetTextureByID(pass.render_target, input, final_target);
+    DebugAssert(!pass.render_targets.empty());
 
-    if (!output)
+    if (pass.render_targets.size() == 1 && pass.render_targets[0] == OUTPUT_COLOR_TEXTURE && !final_target)
     {
-      // Drawing to final buffer.
+      // Special case: drawing to final buffer.
       if (!g_gpu_device->BeginPresent(false))
       {
         GL_POP();
@@ -1445,7 +1462,16 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUTexture* final
     }
     else
     {
-      g_gpu_device->SetRenderTargets(&output, 1, nullptr);
+      std::array<GPUTexture*, GPUDevice::MAX_RENDER_TARGETS> render_targets;
+      for (size_t i = 0; i < pass.render_targets.size(); i++)
+      {
+        GL_INS_FMT("Render Target {}: ID {} [{}]", i, pass.render_targets[i],
+                   GetTextureNameForID(pass.render_targets[i]));
+        render_targets[i] = GetTextureByID(pass.render_targets[i], input, final_target);
+        DebugAssert(render_targets[i]);
+      }
+
+      g_gpu_device->SetRenderTargets(render_targets.data(), static_cast<u32>(pass.render_targets.size()), nullptr);
     }
 
     g_gpu_device->SetPipeline(pass.pipeline.get());
