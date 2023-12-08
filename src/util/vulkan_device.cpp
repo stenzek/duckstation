@@ -3050,9 +3050,9 @@ void VulkanDevice::BeginSwapChainRenderPass()
                                           VK_RESOLVE_MODE_NONE_KHR,
                                           VK_NULL_HANDLE,
                                           VK_IMAGE_LAYOUT_UNDEFINED,
-                                          VK_ATTACHMENT_LOAD_OP_LOAD,
+                                          VK_ATTACHMENT_LOAD_OP_CLEAR,
                                           VK_ATTACHMENT_STORE_OP_STORE,
-                                          {}};
+                                          s_present_clear_color};
 
     const VkRenderingInfoKHR ri = {VK_STRUCTURE_TYPE_RENDERING_INFO_KHR,
                                    nullptr,
