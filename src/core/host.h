@@ -96,21 +96,6 @@ bool IsFullscreen();
 /// Alters fullscreen state of hosting application.
 void SetFullscreen(bool enabled);
 
-/// Attempts to create the rendering device backend.
-bool CreateGPUDevice(RenderAPI api, bool fullscreen, Error* error);
-
-/// Handles fullscreen transitions and such.
-void UpdateDisplayWindow(bool fullscreen);
-
-/// Called when the window is resized.
-void ResizeDisplayWindow(s32 width, s32 height, float scale);
-
-/// Destroys any active rendering device.
-void ReleaseGPUDevice();
-
-/// Called at the end of the frame, before presentation.
-void FrameDone();
-
 namespace Internal {
 
 /// Returns true if the host should use portable mode.

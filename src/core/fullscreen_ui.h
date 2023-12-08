@@ -21,7 +21,6 @@ bool IsInitialized();
 bool HasActiveWindow();
 void CheckForConfigChanges(const Settings& old_settings);
 void OnSystemStarted();
-void OnSystemPaused();
 void OnSystemResumed();
 void OnSystemDestroyed();
 void OnRunningGameChanged();
@@ -49,6 +48,12 @@ void TimeToPrintableString(SmallStringBase* str, time_t t);
 namespace Host {
 
 #ifndef __ANDROID__
+
+/// Called whenever fullscreen UI starts/stops.
+void OnFullscreenUIStartedOrStopped(bool started);
+
+/// Called when the pause state changes, or fullscreen UI opens.
+void OnFullscreenUIActiveChanged(bool is_active);
 
 /// Requests shut down and exit of the hosting application. This may not actually exit,
 /// if the user cancels the shutdown confirmation.

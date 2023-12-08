@@ -44,6 +44,8 @@ class INISettingsInterface;
 enum class RenderAPI : u8;
 class GPUDevice;
 
+class GPUBackend;
+
 class MainWindow;
 class DisplayWidget;
 
@@ -91,9 +93,9 @@ public:
   ALWAYS_INLINE QEventLoop* getEventLoop() const { return m_event_loop; }
 
   ALWAYS_INLINE bool isFullscreen() const { return m_is_fullscreen; }
+  ALWAYS_INLINE bool isFullscreenUIActive() const { return m_is_fullscreen_ui_active; }
   ALWAYS_INLINE bool isRenderingToMain() const { return m_is_rendering_to_main; }
   ALWAYS_INLINE bool isSurfaceless() const { return m_is_surfaceless; }
-  ALWAYS_INLINE bool isRunningFullscreenUI() const { return m_run_fullscreen_ui; }
 
   std::optional<WindowInfo> acquireRenderWindow(RenderAPI render_api, bool fullscreen, bool exclusive_fullscreen,
                                                 Error* error);
@@ -102,6 +104,8 @@ public:
 
   void startBackgroundControllerPollTimer();
   void stopBackgroundControllerPollTimer();
+  void setFullscreenUIActive(bool active);
+  void setFullscreenUIStarted(bool started);
   void wakeThread();
 
   bool shouldRenderToMain() const;
@@ -109,7 +113,7 @@ public:
 
   void bootOrLoadState(std::string path);
 
-  void updatePerformanceCounters();
+  void updatePerformanceCounters(const GPUBackend* gpu_backend);
   void resetPerformanceCounters();
 
   /// Locks the system by pausing it, while a popup dialog is displayed.
@@ -147,7 +151,7 @@ Q_SIGNALS:
   void runningGameChanged(const QString& filename, const QString& game_serial, const QString& game_title);
   void inputProfileLoaded();
   void mouseModeRequested(bool relative, bool hide_cursor);
-  void fullscreenUIStateChange(bool running);
+  void fullscreenUIStartedOrStopped(bool running);
   void achievementsLoginRequested(Achievements::LoginRequestReason reason);
   void achievementsRefreshed(quint32 id, const QString& game_info_string);
   void achievementsChallengeModeChanged(bool enabled);
@@ -243,9 +247,10 @@ private:
   QTimer* m_background_controller_polling_timer = nullptr;
 
   bool m_shutdown_flag = false;
-  bool m_run_fullscreen_ui = false;
   bool m_is_rendering_to_main = false;
   bool m_is_fullscreen = false;
+  bool m_is_fullscreen_ui_started = false;
+  bool m_is_fullscreen_ui_active = false;
   bool m_is_surfaceless = false;
   bool m_save_state_on_shutdown = false;
 

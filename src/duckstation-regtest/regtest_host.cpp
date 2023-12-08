@@ -5,7 +5,7 @@
 #include "core/controller.h"
 #include "core/fullscreen_ui.h"
 #include "core/game_list.h"
-#include "core/gpu.h"
+#include "core/gpu_backend.h"
 #include "core/host.h"
 #include "core/system.h"
 #include "core/system_private.h"
@@ -276,7 +276,7 @@ void Host::OnIdleStateChanged()
   //
 }
 
-void Host::OnPerformanceCountersUpdated()
+void Host::OnPerformanceCountersUpdated(const GPUBackend* gpu_backend)
 {
   //
 }
@@ -365,14 +365,10 @@ void Host::DestroyAuxiliaryRenderWindow(AuxiliaryRenderWindowHandle handle, s32*
 {
 }
 
-void Host::FrameDone()
+void Host::FrameDoneOnGPUThread(GPUBackend* gpu_backend, u32 frame_number)
 {
-  const u32 frame = System::GetFrameNumber();
-  if (s_frame_dump_interval > 0 && (s_frame_dump_interval == 1 || (frame % s_frame_dump_interval) == 0))
-  {
-    std::string dump_filename(RegTestHost::GetFrameDumpFilename(frame));
-    g_gpu->WriteDisplayTextureToFile(std::move(dump_filename));
-  }
+  if (s_frame_dump_interval > 0 && (s_frame_dump_interval == 1 || (frame_number % s_frame_dump_interval) == 0))
+    gpu_backend->WriteDisplayTextureToFile(RegTestHost::GetFrameDumpFilename(frame_number));
 }
 
 void Host::OpenURL(std::string_view url)

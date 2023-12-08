@@ -5,6 +5,8 @@
 
 #include "common/types.h"
 
+class GPUBackend;
+
 namespace PerformanceCounters
 {
 static constexpr u32 NUM_FRAME_TIME_SAMPLES = 150;
@@ -18,8 +20,8 @@ float GetMinimumFrameTime();
 float GetMaximumFrameTime();
 float GetCPUThreadUsage();
 float GetCPUThreadAverageTime();
-float GetSWThreadUsage();
-float GetSWThreadAverageTime();
+float GetGPUThreadUsage();
+float GetGPUThreadAverageTime();
 float GetGPUUsage();
 float GetGPUAverageTime();
 const FrameTimeHistory& GetFrameTimeHistory();
@@ -27,7 +29,7 @@ u32 GetFrameTimeHistoryPos();
 
 void Clear();
 void Reset();
-void Update(u32 frame_number, u32 internal_frame_number);
+void Update(GPUBackend* gpu, u32 frame_number, u32 internal_frame_number);
 void AccumulateGPUTime();
 
 } // namespace Host

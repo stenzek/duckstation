@@ -385,6 +385,17 @@ const char* GPUDevice::ShaderLanguageToString(GPUShaderLanguage language)
   }
 }
 
+const char* GPUDevice::VSyncModeToString(GPUVSyncMode mode)
+{
+  static constexpr std::array<const char*, static_cast<size_t>(GPUVSyncMode::Count)> vsync_modes = {{
+    "Disabled",
+    "FIFO",
+    "Mailbox",
+  }};
+
+  return vsync_modes[static_cast<size_t>(mode)];
+}
+
 bool GPUDevice::IsSameRenderAPI(RenderAPI lhs, RenderAPI rhs)
 {
   return (lhs == rhs || ((lhs == RenderAPI::OpenGL || lhs == RenderAPI::OpenGLES) &&

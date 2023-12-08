@@ -7,8 +7,10 @@
 
 #include <string>
 
+class GPUBackend;
+
 namespace ImGuiManager {
-void RenderTextOverlays();
+void RenderTextOverlays(const GPUBackend* gpu);
 void RenderDebugWindows();
 bool UpdateDebugWindowConfig();
 void DestroyAllDebugWindows();

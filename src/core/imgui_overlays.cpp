@@ -9,6 +9,8 @@
 #include "dma.h"
 #include "fullscreen_ui.h"
 #include "gpu.h"
+#include "gpu_backend.h"
+#include "gpu_thread.h"
 #include "host.h"
 #include "mdec.h"
 #include "performance_counters.h"
@@ -70,10 +72,10 @@ struct DebugWindowInfo
 } // namespace
 
 static void FormatProcessorStat(SmallStringBase& text, double usage, double time);
-static void DrawPerformanceOverlay(float& position_y, float scale, float margin, float spacing);
+static void DrawPerformanceOverlay(const GPUBackend* gpu, float& position_y, float scale, float margin, float spacing);
 static void DrawMediaCaptureOverlay(float& position_y, float scale, float margin, float spacing);
 static void DrawFrameTimeOverlay(float& position_y, float scale, float margin, float spacing);
-static void DrawEnhancementsOverlay();
+static void DrawEnhancementsOverlay(const GPUBackend* gpu);
 static void DrawInputsOverlay();
 
 #ifndef __ANDROID__
@@ -284,26 +286,25 @@ void ImGuiManager::DestroyAllDebugWindows()
 #endif
 }
 
-void ImGuiManager::RenderTextOverlays()
+void ImGuiManager::RenderTextOverlays(const GPUBackend* gpu)
 {
+  // NOTE: Racey read.
   const System::State state = System::GetState();
-  if (state != System::State::Shutdown)
-  {
-    const float scale = ImGuiManager::GetGlobalScale();
-    const float f_margin = ImGuiManager::GetScreenMargin() * scale;
-    const float margin = ImCeil(ImGuiManager::GetScreenMargin() * scale);
-    const float spacing = ImCeil(5.0f * scale);
-    float position_y = ImFloor(f_margin);
-    DrawPerformanceOverlay(position_y, scale, margin, spacing);
-    DrawFrameTimeOverlay(position_y, scale, margin, spacing);
-    DrawMediaCaptureOverlay(position_y, scale, margin, spacing);
 
-    if (g_settings.display_show_enhancements && state != System::State::Paused)
-      DrawEnhancementsOverlay();
+  const float scale = ImGuiManager::GetGlobalScale();
+  const float f_margin = ImGuiManager::GetScreenMargin() * scale;
+  const float margin = ImCeil(ImGuiManager::GetScreenMargin() * scale);
+  const float spacing = ImCeil(5.0f * scale);
+  float position_y = ImFloor(f_margin);
+  DrawPerformanceOverlay(gpu, position_y, scale, margin, spacing);
+  DrawFrameTimeOverlay(position_y, scale, margin, spacing);
+  DrawMediaCaptureOverlay(position_y, scale, margin, spacing);
 
-    if (g_settings.display_show_inputs && state != System::State::Paused)
-      DrawInputsOverlay();
-  }
+  if (g_gpu_settings.display_show_enhancements && state != System::State::Paused)
+    DrawEnhancementsOverlay(gpu);
+
+  if (g_gpu_settings.display_show_inputs && state != System::State::Paused)
+    DrawInputsOverlay();
 }
 
 void ImGuiManager::FormatProcessorStat(SmallStringBase& text, double usage, double time)
@@ -317,11 +318,12 @@ void ImGuiManager::FormatProcessorStat(SmallStringBase& text, double usage, doub
     text.append_format("{:.1f}% ({:.2f}ms)", usage, time);
 }
 
-void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, float margin, float spacing)
+void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position_y, float scale, float margin,
+                                          float spacing)
 {
-  if (!(g_settings.display_show_fps || g_settings.display_show_speed || g_settings.display_show_gpu_stats ||
-        g_settings.display_show_resolution || g_settings.display_show_cpu_usage ||
-        (g_settings.display_show_status_indicators &&
+  if (!(g_gpu_settings.display_show_fps || g_gpu_settings.display_show_speed || g_gpu_settings.display_show_gpu_stats ||
+        g_gpu_settings.display_show_resolution || g_gpu_settings.display_show_cpu_usage ||
+        (g_gpu_settings.display_show_status_indicators &&
          (System::IsPaused() || System::IsFastForwardEnabled() || System::IsTurboEnabled()))))
   {
     return;
@@ -352,9 +354,9 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, float 
   if (state == System::State::Running)
   {
     const float speed = PerformanceCounters::GetEmulationSpeed();
-    if (g_settings.display_show_fps)
+    if (g_gpu_settings.display_show_fps)
       text.append_format("G: {:.2f} | V: {:.2f}", PerformanceCounters::GetFPS(), PerformanceCounters::GetVPS());
-    if (g_settings.display_show_speed)
+    if (g_gpu_settings.display_show_speed)
     {
       text.append_format("{}{}%", text.empty() ? "" : " | ", static_cast<u32>(std::round(speed)));
 
@@ -377,19 +379,19 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, float 
       DRAW_LINE(fixed_font, text, color);
     }
 
-    if (g_settings.display_show_gpu_stats)
+    if (g_gpu_settings.display_show_gpu_stats)
     {
-      g_gpu->GetStatsString(text);
+      gpu->GetStatsString(text);
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
 
-      g_gpu->GetMemoryStatsString(text);
+      gpu->GetMemoryStatsString(text);
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
     }
 
-    if (g_settings.display_show_resolution)
+    if (g_gpu_settings.display_show_resolution)
     {
-      const u32 resolution_scale = g_gpu->GetResolutionScale();
-      const auto [display_width, display_height] = g_gpu->GetFullDisplayResolution();// wrong
+      const u32 resolution_scale = gpu->GetResolutionScale();
+      const auto [display_width, display_height] = g_gpu->GetFullDisplayResolution(); // NOTE: Racey read.
       const bool interlaced = g_gpu->IsInterlacedDisplayEnabled();
       const bool pal = g_gpu->IsInPALMode();
       text.format("{}x{} {} {} [{}x]", display_width * resolution_scale, display_height * resolution_scale,
@@ -397,13 +399,13 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, float 
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
     }
 
-    if (g_settings.display_show_latency_stats)
+    if (g_gpu_settings.display_show_latency_stats)
     {
       System::FormatLatencyStats(text);
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
     }
 
-    if (g_settings.display_show_cpu_usage)
+    if (g_gpu_settings.display_show_cpu_usage)
     {
       text.format("{:.2f}ms | {:.2f}ms | {:.2f}ms", PerformanceCounters::GetMinimumFrameTime(),
                   PerformanceCounters::GetAverageFrameTime(), PerformanceCounters::GetMaximumFrameTime());
@@ -454,11 +456,11 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, float 
                           PerformanceCounters::GetCPUThreadAverageTime());
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
 
-      if (g_gpu->GetSWThread())
+      if (g_gpu_settings.gpu_use_thread)
       {
-        text.assign("SW: ");
-        FormatProcessorStat(text, PerformanceCounters::GetSWThreadUsage(),
-                            PerformanceCounters::GetSWThreadAverageTime());
+        text.assign("RNDR: ");
+        FormatProcessorStat(text, PerformanceCounters::GetGPUThreadUsage(),
+                            PerformanceCounters::GetGPUThreadAverageTime());
         DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
       }
 
@@ -472,14 +474,14 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, float 
 #endif
     }
 
-    if (g_settings.display_show_gpu_usage && g_gpu_device->IsGPUTimingEnabled())
+    if (g_gpu_settings.display_show_gpu_usage && g_gpu_device->IsGPUTimingEnabled())
     {
       text.assign("GPU: ");
       FormatProcessorStat(text, PerformanceCounters::GetGPUUsage(), PerformanceCounters::GetGPUAverageTime());
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
     }
 
-    if (g_settings.display_show_status_indicators)
+    if (g_gpu_settings.display_show_status_indicators)
     {
       const bool rewinding = System::IsRewinding();
       if (rewinding || System::IsFastForwardEnabled() || System::IsTurboEnabled())
@@ -489,7 +491,7 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, float 
       }
     }
   }
-  else if (g_settings.display_show_status_indicators && state == System::State::Paused &&
+  else if (g_gpu_settings.display_show_status_indicators && state == System::State::Paused &&
            !FullscreenUI::HasActiveWindow())
   {
     text.assign(ICON_EMOJI_PAUSE);
@@ -499,12 +501,12 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, float 
 #undef DRAW_LINE
 }
 
-void ImGuiManager::DrawEnhancementsOverlay()
+void ImGuiManager::DrawEnhancementsOverlay(const GPUBackend* gpu)
 {
   LargeString text;
   text.append_format("{} {}-{}", Settings::GetConsoleRegionName(System::GetRegion()),
                      GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()),
-                     g_gpu->IsHardwareRenderer() ? "HW" : "SW");
+                     GPUBackend::IsUsingHardwareBackend() ? "HW" : "SW");
 
   if (g_settings.rewind_enable)
     text.append_format(" RW={}/{}", g_settings.rewind_save_frequency, g_settings.rewind_save_slots);
@@ -949,7 +951,10 @@ void SaveStateSelectorUI::ClearList()
   for (ListEntry& li : s_slots)
   {
     if (li.preview_texture)
-      g_gpu_device->RecycleTexture(std::move(li.preview_texture));
+    {
+      GPUThread::RunOnThread(
+        [tex = li.preview_texture.release()]() { g_gpu_device->RecycleTexture(std::unique_ptr<GPUTexture>(tex)); });
+    }
   }
   s_slots.clear();
 }
@@ -1269,7 +1274,7 @@ void SaveStateSelectorUI::LoadCurrentSlot()
     }
   }
 
-  Close();
+  GPUThread::RunOnThread(&Close);
 }
 
 void SaveStateSelectorUI::SaveCurrentSlot()
@@ -1286,7 +1291,7 @@ void SaveStateSelectorUI::SaveCurrentSlot()
     }
   }
 
-  Close();
+  GPUThread::RunOnThread(&Close);
 }
 
 void SaveStateSelectorUI::ShowSlotOSDMessage()
@@ -1310,7 +1315,7 @@ void SaveStateSelectorUI::ShowSlotOSDMessage()
 void ImGuiManager::RenderOverlayWindows()
 {
   const System::State state = System::GetState();
-  if (state != System::State::Shutdown)
+  if (state == System::State::Paused || state == System::State::Running)
   {
     if (SaveStateSelectorUI::s_open)
       SaveStateSelectorUI::Draw();

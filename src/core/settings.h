@@ -98,6 +98,7 @@ struct Settings
   std::string gpu_adapter;
   u8 gpu_resolution_scale = 1;
   u8 gpu_multisamples = 1;
+  u8 gpu_max_queued_frames = 2;
   bool gpu_use_thread : 1 = true;
   bool gpu_use_software_renderer_for_readbacks : 1 = false;
   bool gpu_use_debug_device : 1 = false;
@@ -495,6 +496,8 @@ struct Settings
   static constexpr ConsoleRegion DEFAULT_CONSOLE_REGION = ConsoleRegion::Auto;
   static constexpr float DEFAULT_GPU_PGXP_DEPTH_THRESHOLD = 300.0f;
   static constexpr float GPU_PGXP_DEPTH_THRESHOLD_SCALE = 4096.0f;
+  static constexpr u8 DEFAULT_GPU_MAX_QUEUED_FRAMES = 2; // TODO: Maybe lower? But that means fast CPU threads would
+                                                         // always stall, could be a problem for power management.
 
   // Prefer recompiler when supported.
 #ifdef ENABLE_RECOMPILER
@@ -561,7 +564,9 @@ struct Settings
 #endif
 };
 
-extern Settings g_settings;
+// TODO: Use smaller copy for GPU thread copy.
+ALIGN_TO_CACHE_LINE extern Settings g_settings;     // CPU thread copy.
+ALIGN_TO_CACHE_LINE extern Settings g_gpu_settings; // GPU thread copy.
 
 namespace EmuFolders {
 extern std::string AppRoot;

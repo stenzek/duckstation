@@ -61,10 +61,10 @@ add_library(core
   gpu_shadergen.h
   gpu_sw.cpp
   gpu_sw.h
-  gpu_sw_backend.cpp
-  gpu_sw_backend.h
   gpu_sw_rasterizer.cpp
   gpu_sw_rasterizer.h
+  gpu_thread.cpp
+  gpu_thread.h
   gpu_types.h
   guncon.cpp
   guncon.h
