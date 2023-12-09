@@ -243,10 +243,58 @@ public:
     assign(move);
   }
 
+  ALWAYS_INLINE SmallStackString(const SmallStackString& copy)
+  {
+    init();
+    assign(copy);
+  }
+
+  ALWAYS_INLINE SmallStackString(SmallStackString&& move)
+  {
+    init();
+    assign(move);
+  }
+
   ALWAYS_INLINE SmallStackString(const std::string_view& sv)
   {
     init();
     assign(sv);
+  }
+
+  ALWAYS_INLINE SmallStackString& operator=(const SmallStringBase& copy)
+  {
+    assign(copy);
+    return *this;
+  }
+
+  ALWAYS_INLINE SmallStackString& operator=(SmallStringBase&& move)
+  {
+    assign(move);
+    return *this;
+  }
+
+  ALWAYS_INLINE SmallStackString& operator=(const SmallStackString& copy)
+  {
+    assign(copy);
+    return *this;
+  }
+
+  ALWAYS_INLINE SmallStackString& operator=(SmallStackString&& move)
+  {
+    assign(move);
+    return *this;
+  }
+
+  ALWAYS_INLINE SmallStackString& operator=(const std::string_view& sv)
+  {
+    assign(sv);
+    return *this;
+  }
+
+  ALWAYS_INLINE SmallStackString& operator=(const char* str)
+  {
+    assign(str);
+    return *this;
   }
 
   // Override the fromstring method
