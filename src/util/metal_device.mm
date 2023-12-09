@@ -1778,6 +1778,7 @@ void MetalDevice::BeginRenderPass()
       {
         MetalTexture* const RT = m_current_render_targets[i];
         desc.colorAttachments[i].texture = RT->GetMTLTexture();
+        desc.colorAttachments[i].storeAction = MTLStoreActionStore;
         RT->SetUseFenceCounter(m_current_fence_counter);
 
         switch (RT->GetState())
@@ -1814,6 +1815,7 @@ void MetalDevice::BeginRenderPass()
       if (MetalTexture* DS = m_current_depth_target)
       {
         desc.depthAttachment.texture = m_current_depth_target->GetMTLTexture();
+        desc.depthAttachment.storeAction = MTLStoreActionStore;
         DS->SetUseFenceCounter(m_current_fence_counter);
 
         switch (DS->GetState())
