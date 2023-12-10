@@ -93,7 +93,7 @@ const std::array<VkFormat, static_cast<u32>(GPUTexture::Format::MaxCount)> Vulka
 static constexpr VkClearValue s_present_clear_color = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
 
 // Handles are always 64-bit, even on 32-bit platforms.
-static const VkRenderPass DYNAMIC_RENDERING_RENDER_PASS = reinterpret_cast<VkRenderPass>(static_cast<s64>(-1LL));
+static const VkRenderPass DYNAMIC_RENDERING_RENDER_PASS = ((VkRenderPass)static_cast<s64>(-1LL));
 
 #ifdef _DEBUG
 static u32 s_debug_scope_depth = 0;
