@@ -271,6 +271,18 @@ std::vector<PostProcessing::ShaderOption> PostProcessing::Config::GetStageOption
   return ret;
 }
 
+std::vector<PostProcessing::ShaderOption> PostProcessing::Config::GetShaderOptions(const std::string& shader_name,
+                                                                                   Error* error)
+{
+  std::vector<PostProcessing::ShaderOption> ret;
+  std::unique_ptr<Shader> shader = TryLoadingShader(shader_name, true, error);
+  if (!shader)
+    return ret;
+
+  ret = shader->TakeOptions();
+  return ret;
+}
+
 bool PostProcessing::Config::AddStage(SettingsInterface& si, const std::string& shader_name, Error* error)
 {
   std::unique_ptr<Shader> shader = TryLoadingShader(shader_name, true, error);

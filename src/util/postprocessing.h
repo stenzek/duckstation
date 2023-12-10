@@ -93,6 +93,7 @@ namespace Config {
 u32 GetStageCount(const SettingsInterface& si);
 std::string GetStageShaderName(const SettingsInterface& si, u32 index);
 std::vector<ShaderOption> GetStageOptions(const SettingsInterface& si, u32 index);
+std::vector<ShaderOption> GetShaderOptions(const std::string& shader_name, Error* error);
 
 bool AddStage(SettingsInterface& si, const std::string& shader_name, Error* error);
 void RemoveStage(SettingsInterface& si, u32 index);
