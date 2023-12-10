@@ -630,6 +630,7 @@ public:
 
   bool UpdateImGuiFontTexture();
   bool UsesLowerLeftOrigin() const;
+  static Common::Rectangle<s32> FlipToLowerLeft(const Common::Rectangle<s32>& rc, s32 target_height);
   void SetDisplayMaxFPS(float max_fps);
   bool ShouldSkipDisplayingFrame();
   void ThrottlePresentation();

@@ -1193,38 +1193,12 @@ void OpenGLDevice::SetScissor(s32 x, s32 y, s32 width, s32 height)
   UpdateScissor();
 }
 
-std::tuple<s32, s32, s32, s32> OpenGLDevice::GetFlippedViewportScissor(const Common::Rectangle<s32>& rc) const
-{
-  // Only when rendering to window framebuffer.
-  // We draw everything else upside-down.
-  s32 x, y, width, height;
-  if (m_current_fbo == 0)
-  {
-    const s32 sh = static_cast<s32>(m_window_info.surface_height);
-    const s32 rh = rc.GetHeight();
-    x = rc.left;
-    y = sh - rc.top - rh;
-    width = rc.GetWidth();
-    height = rh;
-  }
-  else
-  {
-    x = rc.left;
-    y = rc.top;
-    width = rc.GetWidth();
-    height = rc.GetHeight();
-  }
-  return std::tie(x, y, width, height);
-}
-
 void OpenGLDevice::UpdateViewport()
 {
-  const auto& [x, y, width, height] = GetFlippedViewportScissor(m_last_viewport);
-  glViewport(x, y, width, height);
+  glViewport(m_last_viewport.left, m_last_viewport.top, m_last_viewport.GetWidth(), m_last_viewport.GetHeight());
 }
 
 void OpenGLDevice::UpdateScissor()
 {
-  const auto& [x, y, width, height] = GetFlippedViewportScissor(m_last_scissor);
-  glScissor(x, y, width, height);
+  glScissor(m_last_scissor.left, m_last_scissor.top, m_last_scissor.GetWidth(), m_last_scissor.GetHeight());
 }

@@ -1722,6 +1722,8 @@ bool GPU::RenderDisplay(GPUTexture* target, const Common::Rectangle<s32>& draw_r
   const u32 target_height = target ? target->GetHeight() : g_gpu_device->GetWindowHeight();
   const bool really_postfx = (postfx && HasDisplayTexture() && PostProcessing::IsActive() &&
                               PostProcessing::CheckTargets(hdformat, target_width, target_height));
+  const Common::Rectangle<s32> real_draw_rect =
+    g_gpu_device->UsesLowerLeftOrigin() ? GPUDevice::FlipToLowerLeft(draw_rect, target_height) : draw_rect;
   if (really_postfx)
   {
     g_gpu_device->ClearRenderTarget(PostProcessing::GetInputTexture(), 0);
@@ -1762,13 +1764,15 @@ bool GPU::RenderDisplay(GPUTexture* target, const Common::Rectangle<s32>& draw_r
   uniforms.src_size[3] = rcp_height;
   g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
 
-  g_gpu_device->SetViewportAndScissor(draw_rect.left, draw_rect.top, draw_rect.GetWidth(), draw_rect.GetHeight());
+  g_gpu_device->SetViewportAndScissor(real_draw_rect.left, real_draw_rect.top, real_draw_rect.GetWidth(),
+                                      real_draw_rect.GetHeight());
   g_gpu_device->Draw(3, 0);
 
   if (really_postfx)
   {
-    return PostProcessing::Apply(target, draw_rect.left, draw_rect.top, draw_rect.GetWidth(), draw_rect.GetHeight(),
-                                 m_display_texture_view_width, m_display_texture_view_height);
+    return PostProcessing::Apply(target, real_draw_rect.left, real_draw_rect.top, real_draw_rect.GetWidth(),
+                                 real_draw_rect.GetHeight(), m_display_texture_view_width,
+                                 m_display_texture_view_height);
   }
   else
   {

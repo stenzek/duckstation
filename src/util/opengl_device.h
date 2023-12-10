@@ -147,7 +147,6 @@ private:
   static GLuint CreateFramebuffer(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds, u32 flags);
   static void DestroyFramebuffer(GLuint fbo);
 
-  std::tuple<s32, s32, s32, s32> GetFlippedViewportScissor(const Common::Rectangle<s32>& rc) const;
   void UpdateViewport();
   void UpdateScissor();
 

@@ -529,6 +529,7 @@ void GPUDevice::RenderImGui()
   PushUniformBuffer(ortho_projection, sizeof(ortho_projection));
 
   // Render command lists
+  const bool flip = UsesLowerLeftOrigin();
   for (int n = 0; n < draw_data->CmdListsCount; n++)
   {
     const ImDrawList* cmd_list = draw_data->CmdLists[n];
@@ -546,9 +547,21 @@ void GPUDevice::RenderImGui()
       if (pcmd->ElemCount == 0 || pcmd->ClipRect.z <= pcmd->ClipRect.x || pcmd->ClipRect.w <= pcmd->ClipRect.y)
         continue;
 
-      SetScissor(static_cast<s32>(pcmd->ClipRect.x), static_cast<s32>(pcmd->ClipRect.y),
-                 static_cast<s32>(pcmd->ClipRect.z - pcmd->ClipRect.x),
-                 static_cast<s32>(pcmd->ClipRect.w - pcmd->ClipRect.y));
+      if (flip)
+      {
+        const s32 height = static_cast<s32>(pcmd->ClipRect.w - pcmd->ClipRect.y);
+        const s32 flipped_y =
+          static_cast<s32>(m_window_info.surface_height) - static_cast<s32>(pcmd->ClipRect.y) - height;
+        SetScissor(static_cast<s32>(pcmd->ClipRect.x), flipped_y, static_cast<s32>(pcmd->ClipRect.z - pcmd->ClipRect.x),
+                   flipped_y + height);
+      }
+      else
+      {
+        SetScissor(static_cast<s32>(pcmd->ClipRect.x), static_cast<s32>(pcmd->ClipRect.y),
+                   static_cast<s32>(pcmd->ClipRect.z - pcmd->ClipRect.x),
+                   static_cast<s32>(pcmd->ClipRect.w - pcmd->ClipRect.y));
+      }
+
       SetTextureSampler(0, reinterpret_cast<GPUTexture*>(pcmd->TextureId), m_linear_sampler.get());
       DrawIndexed(pcmd->ElemCount, base_index + pcmd->IdxOffset, base_vertex + pcmd->VtxOffset);
     }
@@ -741,6 +754,13 @@ bool GPUDevice::UsesLowerLeftOrigin() const
 {
   const RenderAPI api = GetRenderAPI();
   return (api == RenderAPI::OpenGL || api == RenderAPI::OpenGLES);
+}
+
+Common::Rectangle<s32> GPUDevice::FlipToLowerLeft(const Common::Rectangle<s32>& rc, s32 target_height)
+{
+  const s32 height = rc.GetHeight();
+  const s32 flipped_y = target_height - rc.top - height;
+  return Common::Rectangle<s32>(rc.left, flipped_y, rc.right, flipped_y + height);
 }
 
 std::unique_ptr<GPUTexture> GPUDevice::FetchTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
