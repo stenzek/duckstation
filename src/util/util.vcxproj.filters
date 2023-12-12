@@ -71,6 +71,7 @@
     <ClInclude Include="http_downloader_winhttp.h" />
     <ClInclude Include="http_downloader.h" />
     <ClInclude Include="gpu_framebuffer_manager.h" />
+    <ClInclude Include="imgui_animated.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />

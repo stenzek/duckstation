@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
+#define IMGUI_DEFINE_MATH_OPERATORS
+
 #include "imgui_overlays.h"
 #include "cdrom.h"
 #include "controller.h"
@@ -16,15 +18,18 @@
 
 #include "util/audio_stream.h"
 #include "util/gpu_device.h"
+#include "util/imgui_animated.h"
 #include "util/imgui_fullscreen.h"
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
 
 #include "common/align.h"
 #include "common/assert.h"
+#include "common/easing.h"
 #include "common/file_system.h"
 #include "common/intrin.h"
 #include "common/log.h"
+#include "common/path.h"
 #include "common/string_util.h"
 #include "common/timer.h"
 
@@ -50,10 +55,6 @@ static void DrawPerformanceOverlay();
 static void DrawEnhancementsOverlay();
 static void DrawInputsOverlay();
 } // namespace ImGuiManager
-
-namespace SaveStateSelectorUI {
-static void Draw();
-}
 
 static std::tuple<float, float> GetMinMax(std::span<const float> values)
 {
@@ -121,8 +122,6 @@ static std::tuple<float, float> GetMinMax(std::span<const float> values)
   return std::tie(min, max);
 #endif
 }
-
-static bool s_save_state_selector_ui_open = false;
 
 void Host::DisplayLoadingScreen(const char* message, int progress_min /*= -1*/, int progress_max /*= -1*/,
                                 int progress_value /*= -1*/)
@@ -237,16 +236,6 @@ void ImGuiManager::RenderTextOverlays()
 
     if (g_settings.display_show_inputs && state != System::State::Paused)
       DrawInputsOverlay();
-  }
-}
-
-void ImGuiManager::RenderOverlayWindows()
-{
-  const System::State state = System::GetState();
-  if (state != System::State::Shutdown)
-  {
-    if (s_save_state_selector_ui_open)
-      SaveStateSelectorUI::Draw();
   }
 }
 
@@ -663,6 +652,7 @@ void ImGuiManager::DrawInputsOverlay()
 }
 
 namespace SaveStateSelectorUI {
+namespace {
 struct ListEntry
 {
   std::string path;
@@ -673,11 +663,13 @@ struct ListEntry
   s32 slot;
   bool global;
 };
+} // namespace
 
 static void InitializePlaceholderListEntry(ListEntry* li, std::string path, s32 slot, bool global);
 static void InitializeListEntry(ListEntry* li, ExtendedSaveStateInfo* ssi, std::string path, s32 slot, bool global);
 
 static void RefreshHotkeyLegend();
+static void Draw();
 
 static std::string s_load_legend;
 static std::string s_save_legend;
@@ -687,26 +679,33 @@ static std::string s_next_legend;
 static std::vector<ListEntry> s_slots;
 static u32 s_current_selection = 0;
 
-static Common::Timer s_open_timer;
 static float s_open_time = 0.0f;
+static float s_close_time = 0.0f;
+
+static ImAnimatedFloat s_scroll_animated;
+static ImAnimatedFloat s_background_animated;
+
+static bool s_open = false;
 } // namespace SaveStateSelectorUI
 
 void SaveStateSelectorUI::Open(float open_time /* = DEFAULT_OPEN_TIME */)
 {
-  s_open_timer.Reset();
-  s_open_time = open_time;
+  s_open_time = 0.0f;
+  s_close_time = open_time;
 
-  if (s_save_state_selector_ui_open)
+  if (s_open)
     return;
 
-  s_save_state_selector_ui_open = true;
+  s_scroll_animated.Reset(0.0f);
+  s_background_animated.Reset(0.0f);
+  s_open = true;
   RefreshList();
   RefreshHotkeyLegend();
 }
 
 void SaveStateSelectorUI::Close(bool reset_slot)
 {
-  s_save_state_selector_ui_open = false;
+  s_open = false;
   s_load_legend = {};
   s_save_legend = {};
   s_prev_legend = {};
@@ -775,14 +774,9 @@ void SaveStateSelectorUI::DestroyTextures()
 
 void SaveStateSelectorUI::RefreshHotkeyLegend()
 {
-  auto format_legend_entry = [](std::string_view setting, std::string_view caption) {
-    auto slash_pos = setting.find_first_of('/');
-    if (slash_pos != setting.npos)
-    {
-      setting = setting.substr(slash_pos + 1);
-    }
-
-    return fmt::format("{} - {}", setting, caption);
+  auto format_legend_entry = [](std::string binding, std::string_view caption) {
+    InputManager::PrettifyInputBinding(binding);
+    return fmt::format("{} - {}", binding, caption);
   };
 
   s_load_legend = format_legend_entry(Host::GetStringSettingValue("Hotkeys", "LoadSelectedSaveState"),
@@ -797,19 +791,19 @@ void SaveStateSelectorUI::RefreshHotkeyLegend()
 
 void SaveStateSelectorUI::SelectNextSlot()
 {
-  if (!s_save_state_selector_ui_open)
+  if (!s_open)
     Open();
 
-  s_open_timer.Reset();
+  s_open_time = 0.0f;
   s_current_selection = (s_current_selection == static_cast<u32>(s_slots.size() - 1)) ? 0 : (s_current_selection + 1);
 }
 
 void SaveStateSelectorUI::SelectPreviousSlot()
 {
-  if (!s_save_state_selector_ui_open)
+  if (!s_open)
     Open();
 
-  s_open_timer.Reset();
+  s_open_time = 0.0f;
   s_current_selection =
     (s_current_selection == 0) ? (static_cast<u32>(s_slots.size()) - 1u) : (s_current_selection - 1);
 }
@@ -820,7 +814,9 @@ void SaveStateSelectorUI::InitializeListEntry(ListEntry* li, ExtendedSaveStateIn
   li->title = std::move(ssi->title);
   li->serial = std::move(ssi->serial);
   li->path = std::move(path);
-  li->formatted_timestamp = fmt::format("{:%c}", fmt::localtime(ssi->timestamp));
+  li->formatted_timestamp =
+    fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "Saved at {0:%H:%M:%S} on {0:%a} {0:%Y/%m/%d}."),
+                fmt::localtime(ssi->timestamp));
   li->slot = slot;
   li->global = global;
 
@@ -870,16 +866,21 @@ void SaveStateSelectorUI::InitializePlaceholderListEntry(ListEntry* li, std::str
 
 void SaveStateSelectorUI::Draw()
 {
-  const float framebuffer_scale = ImGui::GetIO().DisplayFramebufferScale.x;
-  const float window_width = ImGui::GetIO().DisplaySize.x * (2.0f / 3.0f);
-  const float window_height = ImGui::GetIO().DisplaySize.y * 0.5f;
-  const float rounding = 4.0f * framebuffer_scale;
-  ImGui::SetNextWindowSize(ImVec2(window_width, window_height), ImGuiCond_Always);
-  ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x * 0.5f, ImGui::GetIO().DisplaySize.y * 0.5f),
-                          ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+  static constexpr float SCROLL_ANIMATION_TIME = 0.25f;
+  static constexpr float BG_ANIMATION_TIME = 0.15f;
+
+  const auto& io = ImGui::GetIO();
+  const float scale = ImGuiManager::GetGlobalScale();
+  const float width = (600.0f * scale);
+  const float height = (420.0f * scale);
+
+  const float padding_and_rounding = 15.0f * scale;
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, padding_and_rounding);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(padding_and_rounding, padding_and_rounding));
   ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.11f, 0.15f, 0.17f, 0.8f));
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, rounding);
+  ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_Always);
+  ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always,
+                          ImVec2(0.5f, 0.5f));
 
   if (ImGui::Begin("##save_state_selector", nullptr,
                    ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar |
@@ -887,14 +888,17 @@ void SaveStateSelectorUI::Draw()
   {
     // Leave 2 lines for the legend
     const float legend_margin = ImGui::GetFontSize() * 2.0f + ImGui::GetStyle().ItemSpacing.y * 3.0f;
-    const float padding = 10.0f * framebuffer_scale;
+    const float padding = 10.0f * scale;
 
     ImGui::BeginChild("##item_list", ImVec2(0, -legend_margin), false,
-                      ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar);
+                      ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar |
+                        ImGuiWindowFlags_NoBackground);
     {
-      const ImVec2 image_size = ImVec2(128.0f * framebuffer_scale, (128.0f / (4.0f / 3.0f)) * framebuffer_scale);
-      const float item_height = image_size.y + padding * 2.0f;
+      const ImVec2 image_size = ImVec2(128.0f * scale, (128.0f / (4.0f / 3.0f)) * scale);
+      const float item_width = std::floor(width - (padding_and_rounding * 2.0f) - ImGui::GetStyle().ScrollbarSize);
+      const float item_height = std::floor(image_size.y + padding * 2.0f);
       const float text_indent = image_size.x + padding + padding;
+      std::optional<ImRect> scroll_rect;
 
       for (size_t i = 0; i < s_slots.size(); i++)
       {
@@ -904,11 +908,38 @@ void SaveStateSelectorUI::Draw()
         if (i == s_current_selection)
         {
           ImGui::SetCursorPosY(y_start);
-          ImGui::SetScrollHereY();
 
           const ImVec2 p_start(ImGui::GetCursorScreenPos());
-          const ImVec2 p_end(p_start.x + window_width, p_start.y + item_height);
-          ImGui::GetWindowDrawList()->AddRectFilled(p_start, p_end, ImColor(0.22f, 0.30f, 0.34f, 0.9f), rounding);
+          const ImVec2 p_end(p_start.x + item_width, p_start.y + item_height);
+          const ImRect item_rect(p_start, p_end);
+          const ImRect& window_rect = ImGui::GetCurrentWindow()->ClipRect;
+          if (!window_rect.Contains(item_rect))
+          {
+            float scroll_target = ImGui::GetScrollY();
+            if (item_rect.Min.y < window_rect.Min.y)
+              scroll_target = (ImGui::GetScrollY() - (window_rect.Min.y - item_rect.Min.y));
+            else if (item_rect.Max.y > window_rect.Max.y)
+              scroll_target = (ImGui::GetScrollY() + (item_rect.Max.y - window_rect.Max.y));
+
+            if (scroll_target != s_scroll_animated.GetEndValue())
+              s_scroll_animated.Start(ImGui::GetScrollY(), scroll_target, SCROLL_ANIMATION_TIME);
+          }
+
+          if (s_scroll_animated.IsActive())
+            ImGui::SetScrollY(s_scroll_animated.UpdateAndGetValue());
+
+          if (s_background_animated.GetEndValue() != p_start.y)
+            s_background_animated.Start(s_background_animated.UpdateAndGetValue(), p_start.y, BG_ANIMATION_TIME);
+
+          ImVec2 highlight_pos;
+          if (s_background_animated.IsActive())
+            highlight_pos = ImVec2(p_start.x, s_background_animated.UpdateAndGetValue());
+          else
+            highlight_pos = p_start;
+
+          ImGui::GetWindowDrawList()->AddRectFilled(highlight_pos,
+                                                    ImVec2(highlight_pos.x + item_width, highlight_pos.y + item_height),
+                                                    ImColor(0.22f, 0.30f, 0.34f, 0.9f), padding_and_rounding);
         }
 
         if (entry.preview_texture)
@@ -922,30 +953,37 @@ void SaveStateSelectorUI::Draw()
 
         ImGui::Indent(text_indent);
 
-        if (entry.global)
+        ImGui::TextUnformatted(TinyString::from_fmt(entry.global ?
+                                                      TRANSLATE_FS("SaveStateSelectorUI", "Global Slot {}") :
+                                                      TRANSLATE_FS("SaveStateSelectorUI", "Game Slot {}"),
+                                                    entry.slot)
+                                 .c_str());
+        if (!entry.formatted_timestamp.empty())
         {
-          ImGui::Text(TRANSLATE("SaveStateSelectorUI", "Global Slot %d"), entry.slot);
-        }
-        else if (entry.serial.empty())
-        {
-          ImGui::Text(TRANSLATE("SaveStateSelectorUI", "Game Slot %d"), entry.slot);
+          if (entry.global)
+            ImGui::TextUnformatted(entry.title.c_str());
+          ImGui::TextUnformatted(entry.formatted_timestamp.c_str());
         }
         else
         {
-          ImGui::Text(TRANSLATE("SaveStateSelectorUI", "%s Slot %d"), entry.serial.c_str(), entry.slot);
+          ImGui::TextUnformatted(TRANSLATE("SaveStateSelectorUI", "No save present in this slot."));
         }
-        ImGui::TextUnformatted(entry.title.c_str());
-        ImGui::TextUnformatted(entry.formatted_timestamp.c_str());
-        ImGui::TextUnformatted(entry.path.c_str());
+
+        const std::string_view filename = Path::GetFileName(entry.path);
+        ImGui::PushFont(ImGuiManager::GetFixedFont());
+        ImGui::TextUnformatted(filename.data(), filename.data() + filename.length());
+        ImGui::PopFont();
 
         ImGui::Unindent(text_indent);
+        ImGui::SetCursorPosY(y_start);
+        ImGui::ItemSize(ImVec2(item_width, item_height));
       }
     }
     ImGui::EndChild();
 
     ImGui::BeginChild("##legend", ImVec2(0, 0), false,
                       ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar |
-                        ImGuiWindowFlags_NoScrollbar);
+                        ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground);
     {
       ImGui::SetCursorPosX(padding);
       ImGui::BeginTable("table", 2);
@@ -969,7 +1007,8 @@ void SaveStateSelectorUI::Draw()
   ImGui::PopStyleColor();
 
   // auto-close
-  if (s_open_timer.GetTimeSeconds() >= s_open_time)
+  s_open_time += io.DeltaTime;
+  if (s_open_time >= s_close_time)
     Close();
 }
 
@@ -989,4 +1028,14 @@ void SaveStateSelectorUI::SaveCurrentSlot()
 
   System::SaveState(s_slots[s_current_selection].path.c_str(), g_settings.create_save_state_backups);
   Close();
+}
+
+void ImGuiManager::RenderOverlayWindows()
+{
+  const System::State state = System::GetState();
+  if (state != System::State::Shutdown)
+  {
+    if (SaveStateSelectorUI::s_open)
+      SaveStateSelectorUI::Draw();
+  }
 }
