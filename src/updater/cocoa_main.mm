@@ -114,8 +114,6 @@ int main(int argc, char* argv[])
 
     updater.CleanupStagingDirectory();
     
-    progress.ModalInformation("Update complete.");
-
     result = EXIT_SUCCESS;
   });
 
