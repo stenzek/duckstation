@@ -66,7 +66,7 @@ static std::optional<std::string_view> DeserializePacket(const std::string_view&
 static std::string SerializePacket(const std::string_view& in)
 {
   std::stringstream ss;
-  ss << '$' << in << '#' << TinyString::from_fmt("{:02x}", ComputeChecksum(in));
+  ss << '$' << in << '#' << TinyString::from_format("{:02x}", ComputeChecksum(in));
   return ss.str();
 }
 

@@ -359,7 +359,7 @@ GLuint OpenGLDevice::CompileProgram(const GPUPipeline::GraphicsConfig& plconfig)
       else
       {
         glBindAttribLocation(program_id, i,
-                             TinyString::from_fmt("{}{}", semantic_vars[static_cast<u8>(va.semantic.GetValue())],
+                             TinyString::from_format("{}{}", semantic_vars[static_cast<u8>(va.semantic.GetValue())],
                                                   static_cast<u8>(va.semantic_index)));
       }
     }
@@ -420,7 +420,7 @@ void OpenGLDevice::PostLinkProgram(const GPUPipeline::GraphicsConfig& plconfig, 
     const u32 num_textures = std::max<u32>(GetActiveTexturesForLayout(plconfig.layout), 1);
     for (u32 i = 0; i < num_textures; i++)
     {
-      location = glGetUniformLocation(program_id, TinyString::from_fmt("samp{}", i));
+      location = glGetUniformLocation(program_id, TinyString::from_format("samp{}", i));
       if (location >= 0)
         glUniform1i(location, i);
     }

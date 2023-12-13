@@ -1047,22 +1047,22 @@ TinyString GameList::FormatTimespan(std::time_t timespan, bool long_format)
   if (!long_format)
   {
     if (hours >= 100)
-      ret.fmt(TRANSLATE_FS("GameList", "{}h {}m"), hours, minutes);
+      ret.format(TRANSLATE_FS("GameList", "{}h {}m"), hours, minutes);
     else if (hours > 0)
-      ret.fmt(TRANSLATE_FS("GameList", "{}h {}m {}s"), hours, minutes, seconds);
+      ret.format(TRANSLATE_FS("GameList", "{}h {}m {}s"), hours, minutes, seconds);
     else if (minutes > 0)
-      ret.fmt(TRANSLATE_FS("GameList", "{}m {}s"), minutes, seconds);
+      ret.format(TRANSLATE_FS("GameList", "{}m {}s"), minutes, seconds);
     else if (seconds > 0)
-      ret.fmt(TRANSLATE_FS("GameList", "{}s"), seconds);
+      ret.format(TRANSLATE_FS("GameList", "{}s"), seconds);
     else
       ret = TRANSLATE_SV("GameList", "None");
   }
   else
   {
     if (hours > 0)
-      ret.fmt(TRANSLATE_FS("GameList", "{} hours"), hours);
+      ret.format(TRANSLATE_FS("GameList", "{} hours"), hours);
     else
-      ret.fmt(TRANSLATE_FS("GameList", "{} minutes"), minutes);
+      ret.format(TRANSLATE_FS("GameList", "{} minutes"), minutes);
   }
 
   return ret;

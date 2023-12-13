@@ -179,9 +179,9 @@ void SmallStringBase::append_hex(const void* data, size_t len)
 
   make_room_for(static_cast<u32>(len) * 4);
   const u8* bytes = static_cast<const u8*>(data);
-  append_fmt("{:02X}", bytes[0]);
+  append_format("{:02X}", bytes[0]);
   for (size_t i = 1; i < len; i++)
-    append_fmt(", {:02X}", bytes[i]);
+    append_format(", {:02X}", bytes[i]);
 }
 
 void SmallStringBase::prepend(const char* str, u32 length)
@@ -224,15 +224,15 @@ void SmallStringBase::append(const std::string_view& str)
   append(str.data(), static_cast<u32>(str.length()));
 }
 
-void SmallStringBase::append_format(const char* format, ...)
+void SmallStringBase::append_sprintf(const char* format, ...)
 {
   std::va_list ap;
   va_start(ap, format);
-  append_format_va(format, ap);
+  append_vsprintf(format, ap);
   va_end(ap);
 }
 
-void SmallStringBase::append_format_va(const char* format, va_list ap)
+void SmallStringBase::append_vsprintf(const char* format, va_list ap)
 {
   // We have a 1KB byte buffer on the stack here. If this is too little, we'll grow it via the heap,
   // but 1KB should be enough for most strings.
@@ -290,15 +290,15 @@ void SmallStringBase::prepend(const std::string_view& str)
   prepend(str.data(), static_cast<u32>(str.length()));
 }
 
-void SmallStringBase::prepend_format(const char* format, ...)
+void SmallStringBase::prepend_sprintf(const char* format, ...)
 {
   va_list ap;
   va_start(ap, format);
-  prepend_format_va(format, ap);
+  prepend_vsprintf(format, ap);
   va_end(ap);
 }
 
-void SmallStringBase::prepend_format_va(const char* format, va_list ArgPtr)
+void SmallStringBase::prepend_vsprintf(const char* format, va_list ArgPtr)
 {
   // We have a 1KB byte buffer on the stack here. If this is too little, we'll grow it via the heap,
   // but 1KB should be enough for most strings.
@@ -376,18 +376,18 @@ void SmallStringBase::insert(s32 offset, const std::string_view& str)
   insert(offset, str.data(), static_cast<u32>(str.size()));
 }
 
-void SmallStringBase::format(const char* format, ...)
+void SmallStringBase::sprintf(const char* format, ...)
 {
   va_list ap;
   va_start(ap, format);
-  format_va(format, ap);
+  vsprintf(format, ap);
   va_end(ap);
 }
 
-void SmallStringBase::format_va(const char* format, va_list ap)
+void SmallStringBase::vsprintf(const char* format, va_list ap)
 {
   clear();
-  append_format_va(format, ap);
+  append_vsprintf(format, ap);
 }
 
 void SmallStringBase::assign(const SmallStringBase& copy)

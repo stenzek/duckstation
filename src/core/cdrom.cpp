@@ -824,7 +824,7 @@ bool CDROM::PrecacheMedia()
 TinyString CDROM::LBAToMSFString(CDImage::LBA lba)
 {
   const auto pos = CDImage::Position::FromLBA(lba);
-  return TinyString::from_fmt("{:02d}:{:02d}:{:02d}", pos.minute, pos.second, pos.frame);
+  return TinyString::from_format("{:02d}:{:02d}:{:02d}", pos.minute, pos.second, pos.frame);
 }
 
 void CDROM::SetReadaheadSectors(u32 readahead_sectors)
@@ -1425,7 +1425,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
   {
     SmallString params;
     for (u32 i = 0; i < s_param_fifo.GetSize(); i++)
-      params.append_fmt("{}0x{:02X}", (i == 0) ? "" : ", ", s_param_fifo.Peek(i));
+      params.append_format("{}0x{:02X}", (i == 0) ? "" : ", ", s_param_fifo.Peek(i));
     Log_DevFmt("CDROM executing command 0x{:02X} ({}), stat = 0x{:02X}, params = [{}]", static_cast<u8>(s_command),
                ci.name, s_secondary_status.bits, params);
   }
@@ -3410,7 +3410,7 @@ void CDROM::DrawDebugWindow()
               // don't want to use locale...
               TinyString ret;
               TinyString temp;
-              temp.append_fmt("{}", val);
+              temp.append_format("{}", val);
 
               u32 commas = 2u - (temp.length() % 3u);
               for (const char* p = temp.c_str(); *p != 0u; p++)

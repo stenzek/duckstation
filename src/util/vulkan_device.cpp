@@ -700,7 +700,7 @@ bool VulkanDevice::CreateCommandBuffers()
       LOG_VULKAN_ERROR(res, "vkCreateCommandPool failed: ");
       return false;
     }
-    Vulkan::SetObjectName(m_device, resources.command_pool, TinyString::from_fmt("Frame Command Pool {}", frame_index));
+    Vulkan::SetObjectName(m_device, resources.command_pool, TinyString::from_format("Frame Command Pool {}", frame_index));
 
     VkCommandBufferAllocateInfo buffer_info = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO, nullptr,
                                                resources.command_pool, VK_COMMAND_BUFFER_LEVEL_PRIMARY,
@@ -715,7 +715,7 @@ bool VulkanDevice::CreateCommandBuffers()
     for (u32 i = 0; i < resources.command_buffers.size(); i++)
     {
       Vulkan::SetObjectName(m_device, resources.command_buffers[i],
-                            TinyString::from_fmt("Frame {} {}Command Buffer", frame_index, (i == 0) ? "Init" : ""));
+                            TinyString::from_format("Frame {} {}Command Buffer", frame_index, (i == 0) ? "Init" : ""));
     }
 
     VkFenceCreateInfo fence_info = {VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr, VK_FENCE_CREATE_SIGNALED_BIT};
@@ -726,7 +726,7 @@ bool VulkanDevice::CreateCommandBuffers()
       LOG_VULKAN_ERROR(res, "vkCreateFence failed: ");
       return false;
     }
-    Vulkan::SetObjectName(m_device, resources.fence, TinyString::from_fmt("Frame Fence {}", frame_index));
+    Vulkan::SetObjectName(m_device, resources.fence, TinyString::from_format("Frame Fence {}", frame_index));
 
     if (!m_optional_extensions.vk_khr_push_descriptor)
     {
@@ -745,7 +745,7 @@ bool VulkanDevice::CreateCommandBuffers()
         return false;
       }
       Vulkan::SetObjectName(m_device, resources.descriptor_pool,
-                            TinyString::from_fmt("Frame Descriptor Pool {}", frame_index));
+                            TinyString::from_format("Frame Descriptor Pool {}", frame_index));
     }
 
     ++frame_index;

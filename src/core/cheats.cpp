@@ -397,9 +397,9 @@ bool CheatList::LoadFromLibretroString(const std::string& str)
 
   for (u32 i = 0; i < num_cheats; i++)
   {
-    const std::string* desc = FindKey(kvp, TinyString::from_fmt("cheat{}_desc", i));
-    const std::string* code = FindKey(kvp, TinyString::from_fmt("cheat{}_code", i));
-    const std::string* enable = FindKey(kvp, TinyString::from_fmt("cheat{}_enable", i));
+    const std::string* desc = FindKey(kvp, TinyString::from_format("cheat{}_desc", i));
+    const std::string* code = FindKey(kvp, TinyString::from_format("cheat{}_code", i));
+    const std::string* enable = FindKey(kvp, TinyString::from_format("cheat{}_enable", i));
     if (!desc || !code || !enable)
     {
       Log_WarningPrintf("Missing desc/code/enable for cheat %u", i);

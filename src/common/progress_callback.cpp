@@ -18,7 +18,7 @@ void ProgressCallback::SetFormattedStatusText(const char* Format, ...)
   va_list ap;
 
   va_start(ap, Format);
-  str.format_va(Format, ap);
+  str.vsprintf(Format, ap);
   va_end(ap);
 
   SetStatusText(str);
@@ -30,7 +30,7 @@ void ProgressCallback::DisplayFormattedError(const char* format, ...)
   va_list ap;
 
   va_start(ap, format);
-  str.format_va(format, ap);
+  str.vsprintf(format, ap);
   va_end(ap);
 
   DisplayError(str);
@@ -42,7 +42,7 @@ void ProgressCallback::DisplayFormattedWarning(const char* format, ...)
   va_list ap;
 
   va_start(ap, format);
-  str.format_va(format, ap);
+  str.vsprintf(format, ap);
   va_end(ap);
 
   DisplayWarning(str);
@@ -54,7 +54,7 @@ void ProgressCallback::DisplayFormattedInformation(const char* format, ...)
   va_list ap;
 
   va_start(ap, format);
-  str.format_va(format, ap);
+  str.vsprintf(format, ap);
   va_end(ap);
 
   DisplayInformation(str);
@@ -66,7 +66,7 @@ void ProgressCallback::DisplayFormattedDebugMessage(const char* format, ...)
   va_list ap;
 
   va_start(ap, format);
-  str.format_va(format, ap);
+  str.vsprintf(format, ap);
   va_end(ap);
 
   DisplayDebugMessage(str);
@@ -78,7 +78,7 @@ void ProgressCallback::DisplayFormattedModalError(const char* format, ...)
   va_list ap;
 
   va_start(ap, format);
-  str.format_va(format, ap);
+  str.vsprintf(format, ap);
   va_end(ap);
 
   ModalError(str);
@@ -90,7 +90,7 @@ bool ProgressCallback::DisplayFormattedModalConfirmation(const char* format, ...
   va_list ap;
 
   va_start(ap, format);
-  str.format_va(format, ap);
+  str.vsprintf(format, ap);
   va_end(ap);
 
   return ModalConfirmation(str);
@@ -102,7 +102,7 @@ void ProgressCallback::DisplayFormattedModalInformation(const char* format, ...)
   va_list ap;
 
   va_start(ap, format);
-  str.format_va(format, ap);
+  str.vsprintf(format, ap);
   va_end(ap);
 
   ModalInformation(str);
@@ -341,7 +341,7 @@ void ConsoleProgressCallback::Redraw(bool update_value_only)
 
   SmallString message;
   message.append(m_status_text);
-  message.append_fmt(" [{:.2f}%]", percent_complete);
+  message.append_format(" [{:.2f}%]", percent_complete);
 
   if (max_bar_length > 0)
   {

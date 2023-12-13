@@ -318,7 +318,7 @@ void GPUDevice::OpenShaderCache(const std::string_view& base_path, u32 version)
       if (m_features.pipeline_cache)
       {
         const std::string pc_filename =
-          Path::Combine(base_path, TinyString::from_fmt("{}.bin", GetShaderCacheBaseName("pipelines")));
+          Path::Combine(base_path, TinyString::from_format("{}.bin", GetShaderCacheBaseName("pipelines")));
         if (FileSystem::FileExists(pc_filename.c_str()))
         {
           Log_InfoPrintf("Removing old pipeline cache '%s'", pc_filename.c_str());
@@ -337,7 +337,7 @@ void GPUDevice::OpenShaderCache(const std::string_view& base_path, u32 version)
   if (m_features.pipeline_cache && !base_path.empty())
   {
     const std::string basename = GetShaderCacheBaseName("pipelines");
-    const std::string filename = Path::Combine(base_path, TinyString::from_fmt("{}.bin", basename));
+    const std::string filename = Path::Combine(base_path, TinyString::from_format("{}.bin", basename));
     if (ReadPipelineCache(filename))
       s_pipeline_cache_path = std::move(filename);
     else

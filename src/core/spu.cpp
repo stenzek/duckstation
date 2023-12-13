@@ -1500,7 +1500,7 @@ bool SPU::StartDumpingAudio(const char* filename)
     if (i == NUM_VOICES)
       new_suffix.assign("reverb.wav");
     else
-      new_suffix.fmt("voice{}.wav", i);
+      new_suffix.format("voice{}.wav", i);
 
     const std::string voice_filename = Path::ReplaceExtension(filename, new_suffix);
     if (!s_voice_dump_writers[i]->Open(voice_filename.c_str(), SAMPLE_RATE, 2))

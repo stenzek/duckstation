@@ -481,7 +481,7 @@ void GameListWidget::resizeTableViewColumnsToFit()
 
 static TinyString getColumnVisibilitySettingsKeyName(int column)
 {
-  return TinyString::from_fmt("Show{}", GameListModel::getColumnName(static_cast<GameListModel::Column>(column)));
+  return TinyString::from_format("Show{}", GameListModel::getColumnName(static_cast<GameListModel::Column>(column)));
 }
 
 void GameListWidget::loadTableViewColumnVisibilitySettings()

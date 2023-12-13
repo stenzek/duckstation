@@ -180,7 +180,7 @@ bool GPU::HandleUnknownGP0Command()
 
   SmallString dump;
   for (u32 i = 0; i < m_fifo.GetSize(); i++)
-    dump.append_fmt("{}{:08X}", (i > 0) ? " " : "", FifoPeek(i));
+    dump.append_format("{}{:08X}", (i > 0) ? " " : "", FifoPeek(i));
   Log_ErrorPrintf("FIFO: %s", dump.c_str());
 
   m_fifo.RemoveOne();
@@ -512,7 +512,7 @@ void GPU::FinishVRAMWrite()
   {
     if (g_settings.debugging.dump_cpu_to_vram_copies)
     {
-      DumpVRAMToFile(TinyString::from_fmt("cpu_to_vram_copy_{}.png", s_cpu_to_vram_dump_id++), m_vram_transfer.width,
+      DumpVRAMToFile(TinyString::from_format("cpu_to_vram_copy_{}.png", s_cpu_to_vram_dump_id++), m_vram_transfer.width,
                      m_vram_transfer.height, sizeof(u16) * m_vram_transfer.width, m_blit_buffer.data(), true);
     }
 
@@ -580,7 +580,7 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand()
 
   if (g_settings.debugging.dump_vram_to_cpu_copies)
   {
-    DumpVRAMToFile(TinyString::from_fmt("vram_to_cpu_copy_{}.png", s_vram_to_cpu_dump_id++), m_vram_transfer.width,
+    DumpVRAMToFile(TinyString::from_format("vram_to_cpu_copy_{}.png", s_vram_to_cpu_dump_id++), m_vram_transfer.width,
                    m_vram_transfer.height, sizeof(u16) * VRAM_WIDTH,
                    &m_vram_ptr[m_vram_transfer.y * VRAM_WIDTH + m_vram_transfer.x], true);
   }

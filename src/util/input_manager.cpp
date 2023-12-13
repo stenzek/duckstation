@@ -1840,7 +1840,7 @@ bool InputManager::MigrateBindings(SettingsInterface& si)
         if (bnum >= std::size(button_mapping))
           continue;
 
-        new_bind.fmt("SDL-{}/{}", cnum, button_mapping[bnum]);
+        new_bind.format("SDL-{}/{}", cnum, button_mapping[bnum]);
         si.SetStringValue(new_section.c_str(), new_key, new_bind);
         Log_DevPrintf("%s -> %s", old_bind.c_str(), new_bind.c_str());
         num_changes++;
@@ -1850,14 +1850,14 @@ bool InputManager::MigrateBindings(SettingsInterface& si)
         if (bnum >= std::size(axis_mapping))
           continue;
 
-        new_bind.fmt("SDL-{}/{}{}", cnum, dir, axis_mapping[bnum]);
+        new_bind.format("SDL-{}/{}{}", cnum, dir, axis_mapping[bnum]);
         si.SetStringValue(new_section.c_str(), new_key, new_bind);
         Log_DevPrintf("%s -> %s", old_bind.c_str(), new_bind.c_str());
         num_changes++;
       }
       else if (StringUtil::StartsWith(old_bind.c_str(), "Keyboard/Keypad+"))
       {
-        new_bind.fmt("Keyboard/Numpad{}", old_bind.substr(16));
+        new_bind.format("Keyboard/Numpad{}", old_bind.substr(16));
         si.SetStringValue(new_section.c_str(), new_key, new_bind);
         Log_DevPrintf("%s -> %s", old_bind.c_str(), new_bind.c_str());
         num_changes++;
@@ -1890,9 +1890,9 @@ bool InputManager::MigrateBindings(SettingsInterface& si)
         if (bnum >= std::size(axis_mapping))
           continue;
 
-        new_bind.fmt("SDL-{}/-{}", cnum, axis_mapping[bnum]);
+        new_bind.format("SDL-{}/-{}", cnum, axis_mapping[bnum]);
         si.SetStringValue(new_section.c_str(), new_neg_key, new_bind);
-        new_bind.fmt("SDL-{}/+{}", cnum, axis_mapping[bnum]);
+        new_bind.format("SDL-{}/+{}", cnum, axis_mapping[bnum]);
         si.SetStringValue(new_section.c_str(), new_pos_key, new_bind);
 
         Log_DevPrintf("%s -> %s", old_bind.c_str(), new_bind.c_str());
@@ -1906,9 +1906,9 @@ bool InputManager::MigrateBindings(SettingsInterface& si)
       unsigned cnum;
       if (std::sscanf(rumble_source.c_str(), "Controller%u", &cnum) == 1)
       {
-        new_bind.fmt("SDL-{}/LargeMotor", cnum);
+        new_bind.format("SDL-{}/LargeMotor", cnum);
         si.SetStringValue(new_section.c_str(), "LargeMotor", new_bind);
-        new_bind.fmt("SDL-{}/SmallMotor", cnum);
+        new_bind.format("SDL-{}/SmallMotor", cnum);
         si.SetStringValue(new_section.c_str(), "SmallMotor", new_bind);
         num_changes++;
       }

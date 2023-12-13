@@ -255,7 +255,7 @@ void CPU::CodeCache::DisassembleAndLogHostCode(const void* start, u32 size)
       for (u32 i = 0; i < 10; i++)
       {
         if (i < disas_instruction.length)
-          hex.append_fmt(" {:02X}", ptr[i]);
+          hex.append_format(" {:02X}", ptr[i]);
         else
           hex.append("   ");
       }

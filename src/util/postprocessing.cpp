@@ -127,11 +127,11 @@ TinyString PostProcessing::ValueToString(ShaderOption::Type type, u32 vector_siz
         break;
 
       case ShaderOption::Type::Int:
-        ret.append_fmt("{}", value[i].int_value);
+        ret.append_format("{}", value[i].int_value);
         break;
 
       case ShaderOption::Type::Float:
-        ret.append_fmt("{}", value[i].float_value);
+        ret.append_format("{}", value[i].float_value);
         break;
 
       default:
@@ -210,7 +210,7 @@ std::vector<std::pair<std::string, std::string>> PostProcessing::GetAvailableSha
 
 TinyString PostProcessing::GetStageConfigSection(u32 index)
 {
-  return TinyString::from_fmt("PostProcessing/Stage{}", index + 1);
+  return TinyString::from_format("PostProcessing/Stage{}", index + 1);
 }
 
 void PostProcessing::CopyStageConfig(SettingsInterface& si, u32 old_index, u32 new_index)

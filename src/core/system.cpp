@@ -236,7 +236,7 @@ static bool s_discord_presence_active = false;
 
 static TinyString GetTimestampStringForFileName()
 {
-  return TinyString::from_fmt("{:%Y-%m-%d_%H-%M-%S}", fmt::localtime(std::time(nullptr)));
+  return TinyString::from_format("{:%Y-%m-%d_%H-%M-%S}", fmt::localtime(std::time(nullptr)));
 }
 
 void System::Internal::ProcessStartup()
@@ -3408,7 +3408,7 @@ bool System::CheckForSBIFile(CDImage* image)
   {
     return Host::ConfirmMessage(
       "Confirm Unsupported Configuration",
-      LargeString::from_fmt(
+      LargeString::from_format(
         TRANSLATE_FS("System", "You are attempting to run a libcrypt protected game without an SBI file:\n\n{0}: "
                                "{1}\n\nThe game will likely not run properly.\n\nPlease check the README for "
                                "instructions on how to add an SBI file.\n\nDo you wish to continue?"),
@@ -3418,7 +3418,7 @@ bool System::CheckForSBIFile(CDImage* image)
   {
     Host::ReportErrorAsync(
       TRANSLATE("System", "Error"),
-      LargeString::from_fmt(
+      LargeString::from_format(
         TRANSLATE_FS("System", "You are attempting to run a libcrypt protected game without an SBI file:\n\n{0}: "
                                "{1}\n\nYour dump is incomplete, you must add the SBI file to run this game. \n\nThe "
                                "name of the SBI file must match the name of the disc image."),

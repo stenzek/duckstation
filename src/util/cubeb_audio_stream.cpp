@@ -66,7 +66,7 @@ void CubebAudioStream::LogCallback(const char* fmt, ...)
   LargeString str;
   std::va_list ap;
   va_start(ap, fmt);
-  str.format_va(fmt, ap);
+  str.vsprintf(fmt, ap);
   va_end(ap);
   Log_DevPrint(str);
 }
