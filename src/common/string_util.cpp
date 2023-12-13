@@ -157,7 +157,7 @@ std::size_t StringUtil::Strlcpy(char* dst, const char* src, std::size_t size)
   return len;
 }
 
-std::size_t StringUtil::Strlcpy(char* dst, const std::string_view& src, std::size_t size)
+std::size_t StringUtil::Strlcpy(char* dst, const std::string_view src, std::size_t size)
 {
   std::size_t len = src.length();
   if (len < size)
@@ -173,7 +173,7 @@ std::size_t StringUtil::Strlcpy(char* dst, const std::string_view& src, std::siz
   return len;
 }
 
-std::optional<std::vector<u8>> StringUtil::DecodeHex(const std::string_view& in)
+std::optional<std::vector<u8>> StringUtil::DecodeHex(const std::string_view in)
 {
   std::vector<u8> data;
   data.reserve(in.size() / 2);
@@ -199,7 +199,7 @@ std::string StringUtil::EncodeHex(const u8* data, int length)
   return ss.str();
 }
 
-std::string_view StringUtil::StripWhitespace(const std::string_view& str)
+std::string_view StringUtil::StripWhitespace(const std::string_view str)
 {
   std::string_view::size_type start = 0;
   while (start < str.size() && std::isspace(str[start]))
@@ -235,7 +235,7 @@ void StringUtil::StripWhitespace(std::string* str)
   }
 }
 
-std::vector<std::string_view> StringUtil::SplitString(const std::string_view& str, char delimiter,
+std::vector<std::string_view> StringUtil::SplitString(const std::string_view str, char delimiter,
                                                       bool skip_empty /*= true*/)
 {
   std::vector<std::string_view> res;
@@ -260,7 +260,7 @@ std::vector<std::string_view> StringUtil::SplitString(const std::string_view& st
   return res;
 }
 
-std::vector<std::string> StringUtil::SplitNewString(const std::string_view& str, char delimiter,
+std::vector<std::string> StringUtil::SplitNewString(const std::string_view str, char delimiter,
                                                     bool skip_empty /*= true*/)
 {
   std::vector<std::string> res;
@@ -285,15 +285,15 @@ std::vector<std::string> StringUtil::SplitNewString(const std::string_view& str,
   return res;
 }
 
-std::string StringUtil::ReplaceAll(const std::string_view& subject, const std::string_view& search,
-                                   const std::string_view& replacement)
+std::string StringUtil::ReplaceAll(const std::string_view subject, const std::string_view search,
+                                   const std::string_view replacement)
 {
   std::string ret(subject);
   ReplaceAll(&ret, search, replacement);
   return ret;
 }
 
-void StringUtil::ReplaceAll(std::string* subject, const std::string_view& search, const std::string_view& replacement)
+void StringUtil::ReplaceAll(std::string* subject, const std::string_view search, const std::string_view replacement)
 {
   if (!subject->empty())
   {
@@ -306,7 +306,7 @@ void StringUtil::ReplaceAll(std::string* subject, const std::string_view& search
   }
 }
 
-bool StringUtil::ParseAssignmentString(const std::string_view& str, std::string_view* key, std::string_view* value)
+bool StringUtil::ParseAssignmentString(const std::string_view str, std::string_view* key, std::string_view* value)
 {
   const std::string_view::size_type pos = str.find('=');
   if (pos == std::string_view::npos)
@@ -397,7 +397,7 @@ invalid:
   return 1;
 }
 
-std::string StringUtil::Ellipsise(const std::string_view& str, u32 max_length, const char* ellipsis /*= "..."*/)
+std::string StringUtil::Ellipsise(const std::string_view str, u32 max_length, const char* ellipsis /*= "..."*/)
 {
   std::string ret;
   ret.reserve(max_length);
@@ -438,7 +438,7 @@ void StringUtil::EllipsiseInPlace(std::string& str, u32 max_length, const char* 
   }
 }
 
-size_t StringUtil::DecodeUTF8(const std::string_view& str, size_t offset, char32_t* ch)
+size_t StringUtil::DecodeUTF8(const std::string_view str, size_t offset, char32_t* ch)
 {
   return DecodeUTF8(str.data() + offset, str.length() - offset, ch);
 }
@@ -450,7 +450,7 @@ size_t StringUtil::DecodeUTF8(const std::string& str, size_t offset, char32_t* c
 
 #ifdef _WIN32
 
-std::wstring StringUtil::UTF8StringToWideString(const std::string_view& str)
+std::wstring StringUtil::UTF8StringToWideString(const std::string_view str)
 {
   std::wstring ret;
   if (!UTF8StringToWideString(ret, str))
@@ -459,7 +459,7 @@ std::wstring StringUtil::UTF8StringToWideString(const std::string_view& str)
   return ret;
 }
 
-bool StringUtil::UTF8StringToWideString(std::wstring& dest, const std::string_view& str)
+bool StringUtil::UTF8StringToWideString(std::wstring& dest, const std::string_view str)
 {
   int wlen = MultiByteToWideChar(CP_UTF8, 0, str.data(), static_cast<int>(str.length()), nullptr, 0);
   if (wlen < 0)
@@ -472,7 +472,7 @@ bool StringUtil::UTF8StringToWideString(std::wstring& dest, const std::string_vi
   return true;
 }
 
-std::string StringUtil::WideStringToUTF8String(const std::wstring_view& str)
+std::string StringUtil::WideStringToUTF8String(const std::wstring_view str)
 {
   std::string ret;
   if (!WideStringToUTF8String(ret, str))
@@ -481,7 +481,7 @@ std::string StringUtil::WideStringToUTF8String(const std::wstring_view& str)
   return ret;
 }
 
-bool StringUtil::WideStringToUTF8String(std::string& dest, const std::wstring_view& str)
+bool StringUtil::WideStringToUTF8String(std::string& dest, const std::wstring_view str)
 {
   int mblen = WideCharToMultiByte(CP_UTF8, 0, str.data(), static_cast<int>(str.length()), nullptr, 0, nullptr, nullptr);
   if (mblen < 0)
