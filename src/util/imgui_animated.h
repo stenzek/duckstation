@@ -99,8 +99,6 @@ public:
 
   void Start(const ImVec2& start_value, const ImVec2& end_value, float duration)
   {
-    if (start_value.x > 100000.0)
-      __debugbreak();
     m_current_value = start_value;
     m_start_value = start_value;
     m_end_value = end_value;
