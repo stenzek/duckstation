@@ -82,7 +82,7 @@ static std::string ResolveHostPath(const std::string& path)
   const std::string& root = g_settings.pcdrv_root;
   std::string canonicalized_path = Path::Canonicalize(Path::Combine(root, path));
   if (canonicalized_path.length() < root.length() ||                      // Length has to be longer (a file),
-      !StringUtil::StartsWith(canonicalized_path, root) ||                // and start with the host root,
+      !canonicalized_path.starts_with(root) ||                            // and start with the host root,
       canonicalized_path[root.length()] != FS_OSPATH_SEPARATOR_CHARACTER) // and we can't access a sibling.
   {
     Log_ErrorPrintf("Denying access to path outside of PCDrv directory. Requested path: '%s', "

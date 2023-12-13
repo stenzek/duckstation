@@ -206,17 +206,6 @@ inline std::string ToChars(bool value, int base)
 std::optional<std::vector<u8>> DecodeHex(const std::string_view& str);
 std::string EncodeHex(const u8* data, int length);
 
-/// starts_with from C++20
-ALWAYS_INLINE static bool StartsWith(const std::string_view& str, const std::string_view& prefix)
-{
-  return (str.compare(0, prefix.length(), prefix) == 0);
-}
-ALWAYS_INLINE static bool EndsWith(const std::string_view& str, const std::string_view& suffix)
-{
-  const std::size_t suffix_length = suffix.length();
-  return (str.length() >= suffix_length && str.compare(str.length() - suffix_length, suffix_length, suffix) == 0);
-}
-
 /// StartsWith/EndsWith variants which aren't case sensitive.
 ALWAYS_INLINE static bool StartsWithNoCase(const std::string_view& str, const std::string_view& prefix)
 {

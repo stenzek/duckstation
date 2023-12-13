@@ -306,7 +306,7 @@ std::string ProcessPacket(const std::string_view& data)
   // Try to invoke packet command.
   bool processed = false;
   for (const auto& command : COMMANDS) {
-    if (StringUtil::StartsWith(packet->data(), command.first)) {
+    if (packet->starts_with(command.first)) {
       Log_DebugPrintf("Processing command '%s'", command.first);
 
       // Invoke command, remove command name from payload.

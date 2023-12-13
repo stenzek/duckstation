@@ -500,7 +500,7 @@ std::vector<std::pair<std::string, std::string>> CDImage::GetDeviceList()
 
 bool CDImage::IsDeviceName(const char* filename)
 {
-  return StringUtil::StartsWith(filename, "\\\\.\\");
+  return std::string_view(filename).starts_with("\\\\.\\");
 }
 
 #else

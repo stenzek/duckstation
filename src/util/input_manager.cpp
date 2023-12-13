@@ -241,15 +241,15 @@ std::optional<InputBindingKey> InputManager::ParseInputBindingKey(const std::str
     return std::nullopt;
 
   // lameee, string matching
-  if (StringUtil::StartsWith(source, "Keyboard"))
+  if (source.starts_with("Keyboard"))
   {
     return ParseHostKeyboardKey(source, sub_binding);
   }
-  else if (StringUtil::StartsWith(source, "Pointer"))
+  else if (source.starts_with("Pointer"))
   {
     return ParsePointerKey(source, sub_binding);
   }
-  else if (StringUtil::StartsWith(source, "Sensor"))
+  else if (source.starts_with("Sensor"))
   {
     return ParseSensorKey(source, sub_binding);
   }
@@ -420,7 +420,7 @@ void InputManager::PrettifyInputBindingPart(const std::string_view binding, Smal
     return;
 
   // lameee, string matching
-  if (StringUtil::StartsWith(source, "Keyboard"))
+  if (source.starts_with("Keyboard"))
   {
     std::optional<InputBindingKey> key = ParseHostKeyboardKey(source, sub_binding);
     const char* icon = key.has_value() ? ConvertHostKeyboardCodeToIcon(key->data) : nullptr;
@@ -431,7 +431,7 @@ void InputManager::PrettifyInputBindingPart(const std::string_view binding, Smal
       return;
     }
   }
-  else if (StringUtil::StartsWith(source, "Pointer"))
+  else if (source.starts_with("Pointer"))
   {
     const std::optional<InputBindingKey> key = ParsePointerKey(source, sub_binding);
     if (key.has_value())
@@ -451,7 +451,7 @@ void InputManager::PrettifyInputBindingPart(const std::string_view binding, Smal
       }
     }
   }
-  else if (StringUtil::StartsWith(source, "Sensor"))
+  else if (source.starts_with("Sensor"))
   {
   }
   else
@@ -691,7 +691,7 @@ std::optional<InputBindingKey> InputManager::ParsePointerKey(const std::string_v
   key.source_type = InputSourceType::Pointer;
   key.source_index = static_cast<u32>(pointer_index.value());
 
-  if (StringUtil::StartsWith(sub_binding, "Button"))
+  if (sub_binding.starts_with("Button"))
   {
     const std::optional<s32> button_number = StringUtil::FromChars<s32>(sub_binding.substr(6));
     if (!button_number.has_value() || button_number.value() < 0)
@@ -704,7 +704,7 @@ std::optional<InputBindingKey> InputManager::ParsePointerKey(const std::string_v
 
   for (u32 i = 0; i < s_pointer_axis_names.size(); i++)
   {
-    if (StringUtil::StartsWith(sub_binding, s_pointer_axis_names[i]))
+    if (sub_binding.starts_with(s_pointer_axis_names[i]))
     {
       key.source_subtype = InputSubclass::PointerAxis;
       key.data = i;
@@ -736,7 +736,7 @@ std::optional<InputBindingKey> InputManager::ParsePointerKey(const std::string_v
 
 std::optional<u32> InputManager::GetIndexFromPointerBinding(const std::string_view& source)
 {
-  if (!StringUtil::StartsWith(source, "Pointer-"))
+  if (!source.starts_with("Pointer-"))
     return std::nullopt;
 
   const std::optional<s32> pointer_index = StringUtil::FromChars<s32>(source.substr(8));
@@ -763,7 +763,7 @@ std::optional<InputBindingKey> InputManager::ParseSensorKey(const std::string_vi
 
   for (u32 i = 0; i < s_sensor_accelerometer_names.size(); i++)
   {
-    if (StringUtil::StartsWith(sub_binding, s_sensor_accelerometer_names[i]))
+    if (sub_binding.starts_with(s_sensor_accelerometer_names[i]))
     {
       key.source_subtype = InputSubclass::SensorAccelerometer;
       key.data = i;
@@ -1855,14 +1855,14 @@ bool InputManager::MigrateBindings(SettingsInterface& si)
         Log_DevPrintf("%s -> %s", old_bind.c_str(), new_bind.c_str());
         num_changes++;
       }
-      else if (StringUtil::StartsWith(old_bind.c_str(), "Keyboard/Keypad+"))
+      else if (old_bind.starts_with("Keyboard/Keypad+"))
       {
         new_bind.format("Keyboard/Numpad{}", old_bind.substr(16));
         si.SetStringValue(new_section.c_str(), new_key, new_bind);
         Log_DevPrintf("%s -> %s", old_bind.c_str(), new_bind.c_str());
         num_changes++;
       }
-      else if (StringUtil::StartsWith(old_bind.c_str(), "Keyboard/"))
+      else if (old_bind.starts_with("Keyboard/"))
       {
         // pass through as-is
         si.SetStringValue(new_section.c_str(), new_key, old_bind.c_str());

@@ -775,7 +775,7 @@ bool MemoryCardImage::ImportSave(DataArray* data, const char* filename)
     return false;
   }
 
-  if (StringUtil::EndsWith(filename, ".mcs"))
+  if (std::string_view(filename).ends_with(".mcs"))
   {
     return ImportSaveWithDirectoryFrame(data, filename, sd);
   }
