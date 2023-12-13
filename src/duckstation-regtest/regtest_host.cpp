@@ -549,6 +549,46 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
         s_base_settings_interface->SetStringValue("GPU", "Renderer", Settings::GetRendererName(renderer.value()));
         continue;
       }
+      else if (CHECK_ARG_PARAM("-upscale"))
+      {
+        const u32 upscale = StringUtil::FromChars<u32>(argv[++i]).value_or(0);
+        if (upscale == 0)
+        {
+          Log_ErrorPrint("Invalid upscale value.");
+          return false;
+        }
+
+        Log_InfoFmt("Setting upscale to {}.", upscale);
+        s_base_settings_interface->SetIntValue("GPU", "ResolutionScale", static_cast<s32>(upscale));
+        continue;
+      }
+      else if (CHECK_ARG_PARAM("-cpu"))
+      {
+        const std::optional<CPUExecutionMode> cpu = Settings::ParseCPUExecutionMode(argv[++i]);
+        if (!cpu.has_value())
+        {
+          Log_ErrorPrint("Invalid CPU execution mode.");
+          return false;
+        }
+
+        Log_InfoFmt("Setting CPU execution mode to {}.", Settings::GetCPUExecutionModeName(cpu.value()));
+        s_base_settings_interface->SetStringValue("CPU", "ExecutionMode",
+                                                  Settings::GetCPUExecutionModeName(cpu.value()));
+        continue;
+      }
+      else if (CHECK_ARG("-pgxp"))
+      {
+        Log_InfoPrint("Enabling PGXP.");
+        s_base_settings_interface->SetBoolValue("GPU", "PGXPEnable", true);
+        continue;
+      }
+      else if (CHECK_ARG("-pgxp-cpu"))
+      {
+        Log_InfoPrint("Enabling PGXP CPU mode.");
+        s_base_settings_interface->SetBoolValue("GPU", "PGXPEnable", true);
+        s_base_settings_interface->SetBoolValue("GPU", "PGXPCPU", true);
+        continue;
+      }
       else if (CHECK_ARG("--"))
       {
         no_more_args = true;
