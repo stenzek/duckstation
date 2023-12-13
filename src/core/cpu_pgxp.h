@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-2.0+
 
 #pragma once
-#include "types.h"
+#include "cpu_core.h"
 
 namespace CPU::PGXP {
 
@@ -34,7 +34,13 @@ void CPU_LBx(u32 instr, u32 addr, u32 rtVal);
 void CPU_SB(u32 instr, u32 addr, u32 rtVal);
 void CPU_SH(u32 instr, u32 addr, u32 rtVal);
 void CPU_SW(u32 instr, u32 addr, u32 rtVal);
-void CPU_MOVE(u32 rd_and_rs, u32 rsVal);
+void CPU_MOVE(u32 Rd, u32 Rs, u32 rsVal);
+
+ALWAYS_INLINE static u32 PackMoveArgs(Reg rd, Reg rs)
+{
+  return (static_cast<u32>(rd) << 8) | static_cast<u32>(rs);
+}
+void CPU_MOVE_Packed(u32 rd_and_rs, u32 rsVal);
 
 // Arithmetic with immediate value
 void CPU_ADDI(u32 instr, u32 rsVal);
@@ -73,14 +79,30 @@ void CPU_SLLV(u32 instr, u32 rtVal, u32 rsVal);
 void CPU_SRLV(u32 instr, u32 rtVal, u32 rsVal);
 void CPU_SRAV(u32 instr, u32 rtVal, u32 rsVal);
 
-// Move registers
-void CPU_MFHI(u32 instr, u32 hiVal);
-void CPU_MTHI(u32 instr, u32 rsVal);
-void CPU_MFLO(u32 instr, u32 loVal);
-void CPU_MTLO(u32 instr, u32 rsVal);
-
 // CP0 Data transfer tracking
 void CPU_MFC0(u32 instr, u32 rdVal);
 void CPU_MTC0(u32 instr, u32 rdVal, u32 rtVal);
 
-} // namespace PGXP
+ALWAYS_INLINE void TryMove(Reg rd, Reg rs, Reg rt)
+{
+  u32 src;
+  if (rs == Reg::zero)
+    src = static_cast<u32>(rt);
+  else if (rt == Reg::zero)
+    src = static_cast<u32>(rs);
+  else
+    return;
+
+  CPU_MOVE(static_cast<u32>(rd), src, g_state.regs.r[src]);
+}
+
+ALWAYS_INLINE void TryMoveImm(Reg rd, Reg rs, u32 imm)
+{
+  if (imm == 0)
+  {
+    const u32 src = static_cast<u32>(rs);
+    CPU_MOVE(static_cast<u32>(rd), src, g_state.regs.r[src]);
+  }
+}
+
+} // namespace CPU::PGXP

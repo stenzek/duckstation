@@ -1728,8 +1728,8 @@ void CPU::NewRec::Compiler::CompileMoveRegTemplate(Reg dst, Reg src, bool pgxp_m
   if (g_settings.gpu_pgxp_enable && pgxp_move)
   {
     // might've been renamed, so use dst here
-    GeneratePGXPCallWithMIPSRegs(reinterpret_cast<const void*>(&PGXP::CPU_MOVE),
-                                 (static_cast<u32>(dst) << 8) | (static_cast<u32>(src)), dst);
+    GeneratePGXPCallWithMIPSRegs(reinterpret_cast<const void*>(&PGXP::CPU_MOVE_Packed), PGXP::PackMoveArgs(dst, src),
+                                 dst);
   }
 }
 

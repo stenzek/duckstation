@@ -6,8 +6,8 @@
 #include "cpu_core.h"
 #include "cpu_core_private.h"
 #include "cpu_disasm.h"
-#include "gte.h"
 #include "cpu_pgxp.h"
+#include "gte.h"
 #include "settings.h"
 Log_SetChannel(CPU::Recompiler);
 
@@ -1269,6 +1269,13 @@ bool CodeGenerator::Compile_Bitwise(Instruction instruction, const CodeCache::In
       result = OrValues(lhs, rhs);
       if (spec_lhs && spec_rhs)
         spec_value = *spec_lhs | *spec_rhs;
+
+      if (g_settings.gpu_pgxp_enable && !g_settings.gpu_pgxp_cpu && dest != Reg::zero &&
+          instruction.i.rs != Reg::zero && dest != instruction.i.rs && rhs.HasConstantValue(0))
+      {
+        EmitFunctionCall(nullptr, &PGXP::CPU_MOVE_Packed,
+                         Value::FromConstantU32(PGXP::PackMoveArgs(dest, instruction.i.rs)), lhs);
+      }
     }
     break;
 
@@ -1291,6 +1298,13 @@ bool CodeGenerator::Compile_Bitwise(Instruction instruction, const CodeCache::In
       result = XorValues(lhs, rhs);
       if (spec_lhs && spec_rhs)
         spec_value = *spec_lhs ^ *spec_rhs;
+
+      if (g_settings.gpu_pgxp_enable && !g_settings.gpu_pgxp_cpu && dest != Reg::zero &&
+          instruction.i.rs != Reg::zero && dest != instruction.i.rs && rhs.HasConstantValue(0))
+      {
+        EmitFunctionCall(nullptr, &PGXP::CPU_MOVE_Packed,
+                         Value::FromConstantU32(PGXP::PackMoveArgs(dest, instruction.i.rs)), lhs);
+      }
     }
     break;
 
@@ -1306,6 +1320,16 @@ bool CodeGenerator::Compile_Bitwise(Instruction instruction, const CodeCache::In
           result = OrValues(lhs, rhs);
           if (spec_lhs && spec_rhs)
             spec_value = *spec_lhs | *spec_rhs;
+
+          if (g_settings.gpu_pgxp_enable && !g_settings.gpu_pgxp_cpu && dest != Reg::zero &&
+              ((lhs.HasConstantValue(0) && instruction.r.rt != Reg::zero && dest != instruction.r.rs) ||
+               (rhs.HasConstantValue(0) && instruction.r.rs != Reg::zero && dest != instruction.r.rt)))
+          {
+            EmitFunctionCall(nullptr, &PGXP::CPU_MOVE_Packed,
+                             Value::FromConstantU32(
+                               PGXP::PackMoveArgs(dest, lhs.HasConstantValue(0) ? instruction.r.rt : instruction.r.rs)),
+                             lhs.HasConstantValue(0) ? rhs : lhs);
+          }
         }
         break;
 
@@ -1328,6 +1352,16 @@ bool CodeGenerator::Compile_Bitwise(Instruction instruction, const CodeCache::In
           result = XorValues(lhs, rhs);
           if (spec_lhs && spec_rhs)
             spec_value = *spec_lhs ^ *spec_rhs;
+
+          if (g_settings.gpu_pgxp_enable && !g_settings.gpu_pgxp_cpu && dest != Reg::zero &&
+              ((lhs.HasConstantValue(0) && instruction.r.rt != Reg::zero && dest != instruction.r.rs) ||
+               (rhs.HasConstantValue(0) && instruction.r.rs != Reg::zero && dest != instruction.r.rt)))
+          {
+            EmitFunctionCall(nullptr, &PGXP::CPU_MOVE_Packed,
+                             Value::FromConstantU32(
+                               PGXP::PackMoveArgs(dest, lhs.HasConstantValue(0) ? instruction.r.rt : instruction.r.rs)),
+                             lhs.HasConstantValue(0) ? rhs : lhs);
+          }
         }
         break;
 
@@ -1787,7 +1821,10 @@ bool CodeGenerator::Compile_MoveHiLo(Instruction instruction, const CodeCache::I
     {
       Value hi = m_register_cache.ReadGuestRegister(Reg::hi);
       if (g_settings.UsingPGXPCPUMode())
-        EmitFunctionCall(nullptr, &PGXP::CPU_MFHI, Value::FromConstantU32(instruction.bits), hi);
+      {
+        EmitFunctionCall(nullptr, &PGXP::CPU_MOVE_Packed,
+                         Value::FromConstantU32(PGXP::PackMoveArgs(instruction.r.rd, Reg::hi)), hi);
+      }
 
       m_register_cache.WriteGuestRegister(instruction.r.rd, std::move(hi));
       SpeculativeWriteReg(instruction.r.rd, std::nullopt);
@@ -1798,7 +1835,10 @@ bool CodeGenerator::Compile_MoveHiLo(Instruction instruction, const CodeCache::I
     {
       Value rs = m_register_cache.ReadGuestRegister(instruction.r.rs);
       if (g_settings.UsingPGXPCPUMode())
-        EmitFunctionCall(nullptr, &PGXP::CPU_MTHI, Value::FromConstantU32(instruction.bits), rs);
+      {
+        EmitFunctionCall(nullptr, &PGXP::CPU_MOVE_Packed,
+                         Value::FromConstantU32(PGXP::PackMoveArgs(Reg::hi, instruction.r.rs)), rs);
+      }
 
       m_register_cache.WriteGuestRegister(Reg::hi, std::move(rs));
     }
@@ -1808,7 +1848,10 @@ bool CodeGenerator::Compile_MoveHiLo(Instruction instruction, const CodeCache::I
     {
       Value lo = m_register_cache.ReadGuestRegister(Reg::lo);
       if (g_settings.UsingPGXPCPUMode())
-        EmitFunctionCall(nullptr, &PGXP::CPU_MFLO, Value::FromConstantU32(instruction.bits), lo);
+      {
+        EmitFunctionCall(nullptr, &PGXP::CPU_MOVE_Packed,
+                         Value::FromConstantU32(PGXP::PackMoveArgs(instruction.r.rd, Reg::lo)), lo);
+      }
 
       m_register_cache.WriteGuestRegister(instruction.r.rd, std::move(lo));
       SpeculativeWriteReg(instruction.r.rd, std::nullopt);
@@ -1819,7 +1862,10 @@ bool CodeGenerator::Compile_MoveHiLo(Instruction instruction, const CodeCache::I
     {
       Value rs = m_register_cache.ReadGuestRegister(instruction.r.rs);
       if (g_settings.UsingPGXPCPUMode())
-        EmitFunctionCall(nullptr, &PGXP::CPU_MTLO, Value::FromConstantU32(instruction.bits), rs);
+      {
+        EmitFunctionCall(nullptr, &PGXP::CPU_MOVE_Packed,
+                         Value::FromConstantU32(PGXP::PackMoveArgs(Reg::lo, instruction.r.rs)), rs);
+      }
 
       m_register_cache.WriteGuestRegister(Reg::lo, std::move(rs));
     }
@@ -1842,7 +1888,6 @@ bool CodeGenerator::Compile_Add(Instruction instruction, const CodeCache::Instru
                                                                          instruction.r.funct == InstructionFunct::add));
 
   Value lhs, rhs;
-  Reg lhs_src;
   SpeculativeValue lhs_spec, rhs_spec;
   Reg dest;
 
@@ -1853,7 +1898,6 @@ bool CodeGenerator::Compile_Add(Instruction instruction, const CodeCache::Instru
     {
       // rt <- rs + sext(imm)
       dest = instruction.i.rt;
-      lhs_src = instruction.i.rs;
       lhs = m_register_cache.ReadGuestRegister(instruction.i.rs);
       rhs = Value::FromConstantU32(instruction.i.imm_sext32());
 
@@ -1866,7 +1910,6 @@ bool CodeGenerator::Compile_Add(Instruction instruction, const CodeCache::Instru
     {
       Assert(instruction.r.funct == InstructionFunct::add || instruction.r.funct == InstructionFunct::addu);
       dest = instruction.r.rd;
-      lhs_src = instruction.r.rs;
       lhs = m_register_cache.ReadGuestRegister(instruction.r.rs);
       rhs = m_register_cache.ReadGuestRegister(instruction.r.rt);
       lhs_spec = SpeculativeReadReg(instruction.r.rs);
@@ -1880,17 +1923,38 @@ bool CodeGenerator::Compile_Add(Instruction instruction, const CodeCache::Instru
   }
 
   // detect register moves and handle them for pgxp
-  if (g_settings.gpu_pgxp_enable && rhs.HasConstantValue(0))
+  if (dest != Reg::zero && g_settings.gpu_pgxp_enable)
   {
-    EmitFunctionCall(nullptr, &PGXP::CPU_MOVE,
-                     Value::FromConstantU32((static_cast<u32>(dest) << 8) | (static_cast<u32>(lhs_src))), lhs);
-  }
-  else if (g_settings.UsingPGXPCPUMode())
-  {
+    bool handled = false;
     if (instruction.op != InstructionOp::funct)
-      EmitFunctionCall(nullptr, &PGXP::CPU_ADDI, Value::FromConstantU32(instruction.bits), lhs);
+    {
+      if (g_settings.gpu_pgxp_enable && !g_settings.gpu_pgxp_cpu && instruction.i.rs != Reg::zero &&
+          dest != instruction.i.rs && rhs.HasConstantValue(0))
+      {
+        handled = true;
+        EmitFunctionCall(nullptr, &PGXP::CPU_MOVE_Packed,
+                         Value::FromConstantU32(PGXP::PackMoveArgs(dest, instruction.i.rs)), lhs);
+      }
+    }
     else
-      EmitFunctionCall(nullptr, &PGXP::CPU_ADD, Value::FromConstantU32(instruction.bits), lhs, rhs);
+    {
+      if (g_settings.gpu_pgxp_enable && !g_settings.gpu_pgxp_cpu &&
+          ((lhs.HasConstantValue(0) && instruction.r.rt != Reg::zero && dest != instruction.r.rs) ||
+           (rhs.HasConstantValue(0) && instruction.r.rs != Reg::zero && dest != instruction.r.rt)))
+      {
+        handled = true;
+        EmitFunctionCall(nullptr, &PGXP::CPU_MOVE_Packed,
+                         Value::FromConstantU32(PGXP::PackMoveArgs(dest, instruction.i.rs)), lhs);
+      }
+    }
+
+    if (g_settings.gpu_pgxp_cpu && !handled)
+    {
+      if (instruction.op != InstructionOp::funct)
+        EmitFunctionCall(nullptr, &PGXP::CPU_ADDI, Value::FromConstantU32(instruction.bits), lhs);
+      else
+        EmitFunctionCall(nullptr, &PGXP::CPU_ADD, Value::FromConstantU32(instruction.bits), lhs, rhs);
+    }
   }
 
   Value result = AddValues(lhs, rhs, check_overflow);

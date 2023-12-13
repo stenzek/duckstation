@@ -79,8 +79,8 @@ static void CPU_BITWISE(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
 static void WriteMem(const PGXP_value* value, u32 addr);
 static void WriteMem16(const PGXP_value* src, u32 addr);
 
-static const PGXP_value PGXP_value_invalid = {0.f, 0.f, 0.f, {0}, 0};
-static const PGXP_value PGXP_value_zero = {0.f, 0.f, 0.f, {VALID_ALL}, 0};
+static const PGXP_value PGXP_value_invalid = {0.f, 0.f, 0.f, 0, {0}};
+static const PGXP_value PGXP_value_zero = {0.f, 0.f, 0.f, 0, {VALID_ALL}};
 
 static PGXP_value* s_mem = nullptr;
 static PGXP_value* s_vertex_cache = nullptr;
@@ -568,11 +568,17 @@ void CPU::PGXP::CPU_SW(u32 instr, u32 addr, u32 rtVal)
   WriteMem(val, addr);
 }
 
-void CPU::PGXP::CPU_MOVE(u32 rd_and_rs, u32 rsVal)
+void CPU::PGXP::CPU_MOVE_Packed(u32 rd_and_rs, u32 rsVal)
 {
   const u32 Rs = (rd_and_rs & 0xFFu);
+  const u32 Rd = (rd_and_rs >> 8);
+  CPU_MOVE(Rd, Rs, rsVal);
+}
+
+void CPU::PGXP::CPU_MOVE(u32 Rd, u32 Rs, u32 rsVal)
+{
   Validate(&g_state.pgxp_gpr[Rs], rsVal);
-  g_state.pgxp_gpr[(rd_and_rs >> 8)] = g_state.pgxp_gpr[Rs];
+  g_state.pgxp_gpr[Rd] = g_state.pgxp_gpr[Rs];
 }
 
 void CPU::PGXP::CPU_ADDI(u32 instr, u32 rsVal)
@@ -1031,9 +1037,9 @@ void CPU::PGXP::CPU_MULT(u32 instr, u32 rsVal, u32 rtVal)
     MakeValid(&g_state.pgxp_gpr[rt(instr)], rtVal);
   }
 
-  g_state.pgxp_lo = g_state.pgxp_hi = g_state.pgxp_gpr[rs(instr)];
+  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)] = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)] = g_state.pgxp_gpr[rs(instr)];
 
-  g_state.pgxp_lo.halfFlags[0] = g_state.pgxp_hi.halfFlags[0] =
+  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].halfFlags[0] = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].halfFlags[0] =
     (g_state.pgxp_gpr[rs(instr)].halfFlags[0] & g_state.pgxp_gpr[rt(instr)].halfFlags[0]);
 
   double xx, xy, yx, yy;
@@ -1056,15 +1062,15 @@ void CPU::PGXP::CPU_MULT(u32 instr, u32 rsVal, u32 rtVal)
 
   hy = f16Overflow(hx);
 
-  g_state.pgxp_lo.x = (float)f16Sign(lx);
-  g_state.pgxp_lo.y = (float)f16Sign(ly);
-  g_state.pgxp_hi.x = (float)f16Sign(hx);
-  g_state.pgxp_hi.y = (float)f16Sign(hy);
+  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].x = (float)f16Sign(lx);
+  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].y = (float)f16Sign(ly);
+  g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].x = (float)f16Sign(hx);
+  g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].y = (float)f16Sign(hy);
 
   // compute PSX value
   const u64 result = static_cast<u64>(static_cast<s64>(SignExtend64(rsVal)) * static_cast<s64>(SignExtend64(rtVal)));
-  g_state.pgxp_hi.value = Truncate32(result >> 32);
-  g_state.pgxp_lo.value = Truncate32(result);
+  g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].value = Truncate32(result >> 32);
+  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].value = Truncate32(result);
 }
 
 void CPU::PGXP::CPU_MULTU(u32 instr, u32 rsVal, u32 rtVal)
@@ -1081,9 +1087,9 @@ void CPU::PGXP::CPU_MULTU(u32 instr, u32 rsVal, u32 rtVal)
     MakeValid(&g_state.pgxp_gpr[rt(instr)], rtVal);
   }
 
-  g_state.pgxp_lo = g_state.pgxp_hi = g_state.pgxp_gpr[rs(instr)];
+  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)] = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)] = g_state.pgxp_gpr[rs(instr)];
 
-  g_state.pgxp_lo.halfFlags[0] = g_state.pgxp_hi.halfFlags[0] =
+  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].halfFlags[0] = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].halfFlags[0] =
     (g_state.pgxp_gpr[rs(instr)].halfFlags[0] & g_state.pgxp_gpr[rt(instr)].halfFlags[0]);
 
   double xx, xy, yx, yy;
@@ -1106,15 +1112,15 @@ void CPU::PGXP::CPU_MULTU(u32 instr, u32 rsVal, u32 rtVal)
 
   hy = f16Overflow(hx);
 
-  g_state.pgxp_lo.x = (float)f16Sign(lx);
-  g_state.pgxp_lo.y = (float)f16Sign(ly);
-  g_state.pgxp_hi.x = (float)f16Sign(hx);
-  g_state.pgxp_hi.y = (float)f16Sign(hy);
+  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].x = (float)f16Sign(lx);
+  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].y = (float)f16Sign(ly);
+  g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].x = (float)f16Sign(hx);
+  g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].y = (float)f16Sign(hy);
 
   // compute PSX value
   const u64 result = ZeroExtend64(rsVal) * ZeroExtend64(rtVal);
-  g_state.pgxp_hi.value = Truncate32(result >> 32);
-  g_state.pgxp_lo.value = Truncate32(result);
+  g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].value = Truncate32(result >> 32);
+  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].value = Truncate32(result);
 }
 
 void CPU::PGXP::CPU_DIV(u32 instr, u32 rsVal, u32 rtVal)
@@ -1132,39 +1138,42 @@ void CPU::PGXP::CPU_DIV(u32 instr, u32 rsVal, u32 rtVal)
     MakeValid(&g_state.pgxp_gpr[rt(instr)], rtVal);
   }
 
-  g_state.pgxp_lo = g_state.pgxp_hi = g_state.pgxp_gpr[rs(instr)];
+  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)] = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)] = g_state.pgxp_gpr[rs(instr)];
 
-  g_state.pgxp_lo.halfFlags[0] = g_state.pgxp_hi.halfFlags[0] =
+  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].halfFlags[0] = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].halfFlags[0] =
     (g_state.pgxp_gpr[rs(instr)].halfFlags[0] & g_state.pgxp_gpr[rt(instr)].halfFlags[0]);
 
   double vs = f16Unsign(g_state.pgxp_gpr[rs(instr)].x) + (g_state.pgxp_gpr[rs(instr)].y) * (double)(1 << 16);
   double vt = f16Unsign(g_state.pgxp_gpr[rt(instr)].x) + (g_state.pgxp_gpr[rt(instr)].y) * (double)(1 << 16);
 
   double lo = vs / vt;
-  g_state.pgxp_lo.y = (float)f16Sign(f16Overflow(lo));
-  g_state.pgxp_lo.x = (float)f16Sign(lo);
+  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].y = (float)f16Sign(f16Overflow(lo));
+  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].x = (float)f16Sign(lo);
 
   double hi = fmod(vs, vt);
-  g_state.pgxp_hi.y = (float)f16Sign(f16Overflow(hi));
-  g_state.pgxp_hi.x = (float)f16Sign(hi);
+  g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].y = (float)f16Sign(f16Overflow(hi));
+  g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].x = (float)f16Sign(hi);
 
   // compute PSX value
   if (static_cast<s32>(rtVal) == 0)
   {
     // divide by zero
-    g_state.pgxp_lo.value = (static_cast<s32>(rsVal) >= 0) ? UINT32_C(0xFFFFFFFF) : UINT32_C(1);
-    g_state.pgxp_hi.value = static_cast<u32>(static_cast<s32>(rsVal));
+    g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].value =
+      (static_cast<s32>(rsVal) >= 0) ? UINT32_C(0xFFFFFFFF) : UINT32_C(1);
+    g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].value = static_cast<u32>(static_cast<s32>(rsVal));
   }
   else if (rsVal == UINT32_C(0x80000000) && static_cast<s32>(rtVal) == -1)
   {
     // unrepresentable
-    g_state.pgxp_lo.value = UINT32_C(0x80000000);
-    g_state.pgxp_hi.value = 0;
+    g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].value = UINT32_C(0x80000000);
+    g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].value = 0;
   }
   else
   {
-    g_state.pgxp_lo.value = static_cast<u32>(static_cast<s32>(rsVal) / static_cast<s32>(rtVal));
-    g_state.pgxp_hi.value = static_cast<u32>(static_cast<s32>(rsVal) % static_cast<s32>(rtVal));
+    g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].value =
+      static_cast<u32>(static_cast<s32>(rsVal) / static_cast<s32>(rtVal));
+    g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].value =
+      static_cast<u32>(static_cast<s32>(rsVal) % static_cast<s32>(rtVal));
   }
 }
 
@@ -1183,32 +1192,32 @@ void CPU::PGXP::CPU_DIVU(u32 instr, u32 rsVal, u32 rtVal)
     MakeValid(&g_state.pgxp_gpr[rt(instr)], rtVal);
   }
 
-  g_state.pgxp_lo = g_state.pgxp_hi = g_state.pgxp_gpr[rs(instr)];
+  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)] = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)] = g_state.pgxp_gpr[rs(instr)];
 
-  g_state.pgxp_lo.halfFlags[0] = g_state.pgxp_hi.halfFlags[0] =
+  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].halfFlags[0] = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].halfFlags[0] =
     (g_state.pgxp_gpr[rs(instr)].halfFlags[0] & g_state.pgxp_gpr[rt(instr)].halfFlags[0]);
 
   double vs = f16Unsign(g_state.pgxp_gpr[rs(instr)].x) + f16Unsign(g_state.pgxp_gpr[rs(instr)].y) * (double)(1 << 16);
   double vt = f16Unsign(g_state.pgxp_gpr[rt(instr)].x) + f16Unsign(g_state.pgxp_gpr[rt(instr)].y) * (double)(1 << 16);
 
   double lo = vs / vt;
-  g_state.pgxp_lo.y = (float)f16Sign(f16Overflow(lo));
-  g_state.pgxp_lo.x = (float)f16Sign(lo);
+  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].y = (float)f16Sign(f16Overflow(lo));
+  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].x = (float)f16Sign(lo);
 
   double hi = fmod(vs, vt);
-  g_state.pgxp_hi.y = (float)f16Sign(f16Overflow(hi));
-  g_state.pgxp_hi.x = (float)f16Sign(hi);
+  g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].y = (float)f16Sign(f16Overflow(hi));
+  g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].x = (float)f16Sign(hi);
 
   if (rtVal == 0)
   {
     // divide by zero
-    g_state.pgxp_lo.value = UINT32_C(0xFFFFFFFF);
-    g_state.pgxp_hi.value = rsVal;
+    g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].value = UINT32_C(0xFFFFFFFF);
+    g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].value = rsVal;
   }
   else
   {
-    g_state.pgxp_lo.value = rsVal / rtVal;
-    g_state.pgxp_hi.value = rsVal % rtVal;
+    g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].value = rsVal / rtVal;
+    g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].value = rsVal % rtVal;
   }
 }
 
@@ -1573,38 +1582,6 @@ void CPU::PGXP::CPU_SRAV(u32 instr, u32 rtVal, u32 rsVal)
 
   ret.value = rdVal;
   g_state.pgxp_gpr[rd(instr)] = ret;
-}
-
-void CPU::PGXP::CPU_MFHI(u32 instr, u32 hiVal)
-{
-  // Rd = Hi
-  Validate(&g_state.pgxp_hi, hiVal);
-
-  g_state.pgxp_gpr[rd(instr)] = g_state.pgxp_hi;
-}
-
-void CPU::PGXP::CPU_MTHI(u32 instr, u32 rsVal)
-{
-  // Hi = Rd
-  Validate(&g_state.pgxp_gpr[rs(instr)], rsVal);
-
-  g_state.pgxp_hi = g_state.pgxp_gpr[rd(instr)];
-}
-
-void CPU::PGXP::CPU_MFLO(u32 instr, u32 loVal)
-{
-  // Rd = Lo
-  Validate(&g_state.pgxp_lo, loVal);
-
-  g_state.pgxp_gpr[rd(instr)] = g_state.pgxp_lo;
-}
-
-void CPU::PGXP::CPU_MTLO(u32 instr, u32 rsVal)
-{
-  // Lo = Rd
-  Validate(&g_state.pgxp_gpr[rs(instr)], rsVal);
-
-  g_state.pgxp_lo = g_state.pgxp_gpr[rd(instr)];
 }
 
 void CPU::PGXP::CPU_MFC0(u32 instr, u32 rdVal)

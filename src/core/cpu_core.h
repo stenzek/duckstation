@@ -52,13 +52,13 @@ struct PGXP_value
   float x;
   float y;
   float z;
+  u32 value;
   union
   {
     u32 flags;
     u8 compFlags[4];
     u16 halfFlags[2];
   };
-  u32 value;
 };
 
 struct State
@@ -107,9 +107,7 @@ struct State
 
   std::array<u8, SCRATCHPAD_SIZE> scratchpad = {};
 
-  PGXP_value pgxp_gpr[32];
-  PGXP_value pgxp_hi;
-  PGXP_value pgxp_lo;
+  PGXP_value pgxp_gpr[static_cast<u8>(Reg::count)];
   PGXP_value pgxp_cop0[32];
   PGXP_value pgxp_gte[64];
 

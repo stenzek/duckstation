@@ -10,11 +10,11 @@
 #include "cpu_code_cache_private.h"
 #include "cpu_core_private.h"
 #include "cpu_disasm.h"
+#include "cpu_pgxp.h"
 #include "cpu_recompiler_thunks.h"
 #include "gte.h"
 #include "host.h"
 #include "pcdrv.h"
-#include "cpu_pgxp.h"
 #include "settings.h"
 #include "system.h"
 #include "timing_event.h"
@@ -920,236 +920,250 @@ restart_instruction:
       {
         case InstructionFunct::sll:
         {
-          const u32 new_value = ReadReg(inst.r.rt) << inst.r.shamt;
-          if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_SLL(inst.bits, ReadReg(inst.r.rt));
+          const u32 rtVal = ReadReg(inst.r.rt);
+          const u32 rdVal = rtVal << inst.r.shamt;
+          WriteReg(inst.r.rd, rdVal);
 
-          WriteReg(inst.r.rd, new_value);
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_SLL(inst.bits, rtVal);
         }
         break;
 
         case InstructionFunct::srl:
         {
-          const u32 new_value = ReadReg(inst.r.rt) >> inst.r.shamt;
-          if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_SRL(inst.bits, ReadReg(inst.r.rt));
+          const u32 rtVal = ReadReg(inst.r.rt);
+          const u32 rdVal = rtVal >> inst.r.shamt;
+          WriteReg(inst.r.rd, rdVal);
 
-          WriteReg(inst.r.rd, new_value);
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_SRL(inst.bits, rtVal);
         }
         break;
 
         case InstructionFunct::sra:
         {
-          const u32 new_value = static_cast<u32>(static_cast<s32>(ReadReg(inst.r.rt)) >> inst.r.shamt);
-          if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_SRA(inst.bits, ReadReg(inst.r.rt));
+          const u32 rtVal = ReadReg(inst.r.rt);
+          const u32 rdVal = static_cast<u32>(static_cast<s32>(rtVal) >> inst.r.shamt);
+          WriteReg(inst.r.rd, rdVal);
 
-          WriteReg(inst.r.rd, new_value);
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_SRA(inst.bits, rtVal);
         }
         break;
 
         case InstructionFunct::sllv:
         {
-          const u32 shift_amount = ReadReg(inst.r.rs) & UINT32_C(0x1F);
-          const u32 new_value = ReadReg(inst.r.rt) << shift_amount;
+          const u32 rtVal = ReadReg(inst.r.rt);
+          const u32 shamt = ReadReg(inst.r.rs) & UINT32_C(0x1F);
+          const u32 rdVal = rtVal << shamt;
           if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_SLLV(inst.bits, ReadReg(inst.r.rt), shift_amount);
+            PGXP::CPU_SLLV(inst.bits, rtVal, shamt);
 
-          WriteReg(inst.r.rd, new_value);
+          WriteReg(inst.r.rd, rdVal);
         }
         break;
 
         case InstructionFunct::srlv:
         {
-          const u32 shift_amount = ReadReg(inst.r.rs) & UINT32_C(0x1F);
-          const u32 new_value = ReadReg(inst.r.rt) >> shift_amount;
-          if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_SRLV(inst.bits, ReadReg(inst.r.rt), shift_amount);
+          const u32 rtVal = ReadReg(inst.r.rt);
+          const u32 shamt = ReadReg(inst.r.rs) & UINT32_C(0x1F);
+          const u32 rdVal = rtVal >> shamt;
+          WriteReg(inst.r.rd, rdVal);
 
-          WriteReg(inst.r.rd, new_value);
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_SRLV(inst.bits, rtVal, shamt);
         }
         break;
 
         case InstructionFunct::srav:
         {
-          const u32 shift_amount = ReadReg(inst.r.rs) & UINT32_C(0x1F);
-          const u32 new_value = static_cast<u32>(static_cast<s32>(ReadReg(inst.r.rt)) >> shift_amount);
-          if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_SRAV(inst.bits, ReadReg(inst.r.rt), shift_amount);
+          const u32 rtVal = ReadReg(inst.r.rt);
+          const u32 shamt = ReadReg(inst.r.rs) & UINT32_C(0x1F);
+          const u32 rdVal = static_cast<u32>(static_cast<s32>(rtVal) >> shamt);
+          WriteReg(inst.r.rd, rdVal);
 
-          WriteReg(inst.r.rd, new_value);
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_SRAV(inst.bits, rtVal, shamt);
         }
         break;
 
         case InstructionFunct::and_:
         {
-          const u32 new_value = ReadReg(inst.r.rs) & ReadReg(inst.r.rt);
-          if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_AND_(inst.bits, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
-
+          const u32 rsVal = ReadReg(inst.r.rs);
+          const u32 rtVal = ReadReg(inst.r.rt);
+          const u32 new_value = rsVal & rtVal;
           WriteReg(inst.r.rd, new_value);
+
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_AND_(inst.bits, rsVal, rtVal);
         }
         break;
 
         case InstructionFunct::or_:
         {
-          const u32 new_value = ReadReg(inst.r.rs) | ReadReg(inst.r.rt);
-          if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_OR_(inst.bits, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
-
+          const u32 rsVal = ReadReg(inst.r.rs);
+          const u32 rtVal = ReadReg(inst.r.rt);
+          const u32 new_value = rsVal | rtVal;
           WriteReg(inst.r.rd, new_value);
+
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_OR_(inst.bits, rsVal, rtVal);
+          else if constexpr (pgxp_mode >= PGXPMode::Memory)
+            PGXP::TryMove(inst.r.rd, inst.r.rs, inst.r.rt);
         }
         break;
 
         case InstructionFunct::xor_:
         {
-          const u32 new_value = ReadReg(inst.r.rs) ^ ReadReg(inst.r.rt);
-          if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_XOR_(inst.bits, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
-
+          const u32 rsVal = ReadReg(inst.r.rs);
+          const u32 rtVal = ReadReg(inst.r.rt);
+          const u32 new_value = rsVal ^ rtVal;
           WriteReg(inst.r.rd, new_value);
+
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_XOR_(inst.bits, rsVal, rtVal);
+          else if constexpr (pgxp_mode >= PGXPMode::Memory)
+            PGXP::TryMove(inst.r.rd, inst.r.rs, inst.r.rt);
         }
         break;
 
         case InstructionFunct::nor:
         {
-          const u32 new_value = ~(ReadReg(inst.r.rs) | ReadReg(inst.r.rt));
-          if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_NOR(inst.bits, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
-
+          const u32 rsVal = ReadReg(inst.r.rs);
+          const u32 rtVal = ReadReg(inst.r.rt);
+          const u32 new_value = ~(rsVal | rtVal);
           WriteReg(inst.r.rd, new_value);
+
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_NOR(inst.bits, rsVal, rtVal);
         }
         break;
 
         case InstructionFunct::add:
         {
-          const u32 old_value = ReadReg(inst.r.rs);
-          const u32 add_value = ReadReg(inst.r.rt);
-          const u32 new_value = old_value + add_value;
-          if (AddOverflow(old_value, add_value, new_value))
+          const u32 rsVal = ReadReg(inst.r.rs);
+          const u32 rtVal = ReadReg(inst.r.rt);
+          const u32 rdVal = rsVal + rtVal;
+          if (AddOverflow(rsVal, rtVal, rdVal))
           {
             RaiseException(Exception::Ov);
             return;
           }
 
-          if constexpr (pgxp_mode == PGXPMode::CPU)
-            PGXP::CPU_ADD(inst.bits, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
-          else if constexpr (pgxp_mode >= PGXPMode::Memory)
-          {
-            if (add_value == 0)
-            {
-              PGXP::CPU_MOVE((static_cast<u32>(inst.r.rd.GetValue()) << 8) | static_cast<u32>(inst.r.rs.GetValue()),
-                             old_value);
-            }
-          }
+          WriteReg(inst.r.rd, rdVal);
 
-          WriteReg(inst.r.rd, new_value);
+          if constexpr (pgxp_mode == PGXPMode::CPU)
+            PGXP::CPU_ADD(inst.bits, rsVal, rtVal);
+          else if constexpr (pgxp_mode >= PGXPMode::Memory)
+            PGXP::TryMove(inst.r.rd, inst.r.rs, inst.r.rt);
         }
         break;
 
         case InstructionFunct::addu:
         {
-          const u32 old_value = ReadReg(inst.r.rs);
-          const u32 add_value = ReadReg(inst.r.rt);
-          const u32 new_value = old_value + add_value;
-          if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_ADD(inst.bits, old_value, add_value);
-          else if constexpr (pgxp_mode >= PGXPMode::Memory)
-          {
-            if (add_value == 0)
-            {
-              PGXP::CPU_MOVE((static_cast<u32>(inst.r.rd.GetValue()) << 8) | static_cast<u32>(inst.r.rs.GetValue()),
-                             old_value);
-            }
-          }
+          const u32 rsVal = ReadReg(inst.r.rs);
+          const u32 rtVal = ReadReg(inst.r.rt);
+          const u32 rdVal = rsVal + rtVal;
+          WriteReg(inst.r.rd, rdVal);
 
-          WriteReg(inst.r.rd, new_value);
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_ADD(inst.bits, rsVal, rtVal);
+          else if constexpr (pgxp_mode >= PGXPMode::Memory)
+            PGXP::TryMove(inst.r.rd, inst.r.rs, inst.r.rt);
         }
         break;
 
         case InstructionFunct::sub:
         {
-          const u32 old_value = ReadReg(inst.r.rs);
-          const u32 sub_value = ReadReg(inst.r.rt);
-          const u32 new_value = old_value - sub_value;
-          if (SubOverflow(old_value, sub_value, new_value))
+          const u32 rsVal = ReadReg(inst.r.rs);
+          const u32 rtVal = ReadReg(inst.r.rt);
+          const u32 rdVal = rsVal - rtVal;
+          if (SubOverflow(rsVal, rtVal, rdVal))
           {
             RaiseException(Exception::Ov);
             return;
           }
 
-          if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_SUB(inst.bits, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
+          WriteReg(inst.r.rd, rdVal);
 
-          WriteReg(inst.r.rd, new_value);
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_SUB(inst.bits, rsVal, rtVal);
         }
         break;
 
         case InstructionFunct::subu:
         {
-          const u32 new_value = ReadReg(inst.r.rs) - ReadReg(inst.r.rt);
-          if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_SUB(inst.bits, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
+          const u32 rsVal = ReadReg(inst.r.rs);
+          const u32 rtVal = ReadReg(inst.r.rt);
+          const u32 rdVal = rsVal - rtVal;
+          WriteReg(inst.r.rd, rdVal);
 
-          WriteReg(inst.r.rd, new_value);
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_SUB(inst.bits, rsVal, rtVal);
         }
         break;
 
         case InstructionFunct::slt:
         {
-          const u32 result = BoolToUInt32(static_cast<s32>(ReadReg(inst.r.rs)) < static_cast<s32>(ReadReg(inst.r.rt)));
-          if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_SLT(inst.bits, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
-
+          const u32 rsVal = ReadReg(inst.r.rs);
+          const u32 rtVal = ReadReg(inst.r.rt);
+          const u32 result = BoolToUInt32(static_cast<s32>(rsVal) < static_cast<s32>(rtVal));
           WriteReg(inst.r.rd, result);
+
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_SLT(inst.bits, rsVal, rtVal);
         }
         break;
 
         case InstructionFunct::sltu:
         {
-          const u32 result = BoolToUInt32(ReadReg(inst.r.rs) < ReadReg(inst.r.rt));
-          if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_SLTU(inst.bits, ReadReg(inst.r.rs), ReadReg(inst.r.rt));
-
+          const u32 rsVal = ReadReg(inst.r.rs);
+          const u32 rtVal = ReadReg(inst.r.rt);
+          const u32 result = BoolToUInt32(rsVal < rtVal);
           WriteReg(inst.r.rd, result);
+
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_SLTU(inst.bits, rsVal, rtVal);
         }
         break;
 
         case InstructionFunct::mfhi:
         {
-          if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_MFHI(inst.bits, g_state.regs.hi);
+          const u32 value = g_state.regs.hi;
+          WriteReg(inst.r.rd, value);
 
-          WriteReg(inst.r.rd, g_state.regs.hi);
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_MOVE(static_cast<u32>(inst.r.rd.GetValue()), static_cast<u32>(Reg::hi), value);
         }
         break;
 
         case InstructionFunct::mthi:
         {
           const u32 value = ReadReg(inst.r.rs);
-          if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_MTHI(inst.bits, value);
-
           g_state.regs.hi = value;
+
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_MOVE(static_cast<u32>(Reg::hi), static_cast<u32>(inst.r.rs.GetValue()), value);
         }
         break;
 
         case InstructionFunct::mflo:
         {
-          if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_MFLO(inst.bits, g_state.regs.lo);
+          const u32 value = g_state.regs.lo;
+          WriteReg(inst.r.rd, value);
 
-          WriteReg(inst.r.rd, g_state.regs.lo);
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_MOVE(static_cast<u32>(inst.r.rd.GetValue()), static_cast<u32>(Reg::lo), value);
         }
         break;
 
         case InstructionFunct::mtlo:
         {
           const u32 value = ReadReg(inst.r.rs);
-          if constexpr (pgxp_mode == PGXPMode::CPU)
-            PGXP::CPU_MTLO(inst.bits, value);
-
           g_state.regs.lo = value;
+
+          if constexpr (pgxp_mode == PGXPMode::CPU)
+            PGXP::CPU_MOVE(static_cast<u32>(Reg::lo), static_cast<u32>(inst.r.rs.GetValue()), value);
         }
         break;
 
@@ -1174,11 +1188,11 @@ restart_instruction:
           const u32 rhs = ReadReg(inst.r.rt);
           const u64 result = ZeroExtend64(lhs) * ZeroExtend64(rhs);
 
-          if constexpr (pgxp_mode >= PGXPMode::CPU)
-            PGXP::CPU_MULTU(inst.bits, lhs, rhs);
-
           g_state.regs.hi = Truncate32(result >> 32);
           g_state.regs.lo = Truncate32(result);
+
+          if constexpr (pgxp_mode >= PGXPMode::CPU)
+            PGXP::CPU_MULTU(inst.bits, lhs, rhs);
         }
         break;
 
@@ -1285,103 +1299,95 @@ restart_instruction:
 
     case InstructionOp::andi:
     {
-      const u32 new_value = ReadReg(inst.i.rs) & inst.i.imm_zext32();
+      const u32 rsVal = ReadReg(inst.i.rs);
+      const u32 new_value = rsVal & inst.i.imm_zext32();
+      WriteReg(inst.i.rt, new_value);
 
       if constexpr (pgxp_mode >= PGXPMode::CPU)
-        PGXP::CPU_ANDI(inst.bits, ReadReg(inst.i.rs));
-
-      WriteReg(inst.i.rt, new_value);
+        PGXP::CPU_ANDI(inst.bits, rsVal);
     }
     break;
 
     case InstructionOp::ori:
     {
-      const u32 new_value = ReadReg(inst.i.rs) | inst.i.imm_zext32();
+      const u32 rsVal = ReadReg(inst.i.rs);
+      const u32 imm = inst.i.imm_zext32();
+      const u32 rtVal = rsVal | imm;
+      WriteReg(inst.i.rt, rtVal);
 
       if constexpr (pgxp_mode >= PGXPMode::CPU)
-        PGXP::CPU_ORI(inst.bits, ReadReg(inst.i.rs));
-
-      WriteReg(inst.i.rt, new_value);
+        PGXP::CPU_ORI(inst.bits, rsVal);
+      else if constexpr (pgxp_mode >= PGXPMode::Memory)
+        PGXP::TryMoveImm(inst.r.rd, inst.r.rs, imm);
     }
     break;
 
     case InstructionOp::xori:
     {
-      const u32 new_value = ReadReg(inst.i.rs) ^ inst.i.imm_zext32();
+      const u32 rsVal = ReadReg(inst.i.rs);
+      const u32 imm = inst.i.imm_zext32();
+      const u32 new_value = ReadReg(inst.i.rs) ^ imm;
+      WriteReg(inst.i.rt, new_value);
 
       if constexpr (pgxp_mode >= PGXPMode::CPU)
-        PGXP::CPU_XORI(inst.bits, ReadReg(inst.i.rs));
-
-      WriteReg(inst.i.rt, new_value);
+        PGXP::CPU_XORI(inst.bits, rsVal);
+      else if constexpr (pgxp_mode >= PGXPMode::Memory)
+        PGXP::TryMoveImm(inst.r.rd, inst.r.rs, imm);
     }
     break;
 
     case InstructionOp::addi:
     {
-      const u32 old_value = ReadReg(inst.i.rs);
-      const u32 add_value = inst.i.imm_sext32();
-      const u32 new_value = old_value + add_value;
-      if (AddOverflow(old_value, add_value, new_value))
+      const u32 rsVal = ReadReg(inst.i.rs);
+      const u32 imm = inst.i.imm_sext32();
+      const u32 rtVal = rsVal + imm;
+      if (AddOverflow(rsVal, imm, rtVal))
       {
         RaiseException(Exception::Ov);
         return;
       }
 
-      if constexpr (pgxp_mode >= PGXPMode::CPU)
-        PGXP::CPU_ADDI(inst.bits, ReadReg(inst.i.rs));
-      else if constexpr (pgxp_mode >= PGXPMode::Memory)
-      {
-        if (add_value == 0)
-        {
-          PGXP::CPU_MOVE((static_cast<u32>(inst.i.rt.GetValue()) << 8) | static_cast<u32>(inst.i.rs.GetValue()),
-                         old_value);
-        }
-      }
+      WriteReg(inst.i.rt, rtVal);
 
-      WriteReg(inst.i.rt, new_value);
+      if constexpr (pgxp_mode >= PGXPMode::CPU)
+        PGXP::CPU_ADDI(inst.bits, rsVal);
+      else if constexpr (pgxp_mode >= PGXPMode::Memory)
+        PGXP::TryMoveImm(inst.r.rd, inst.r.rs, imm);
     }
     break;
 
     case InstructionOp::addiu:
     {
-      const u32 old_value = ReadReg(inst.i.rs);
-      const u32 add_value = inst.i.imm_sext32();
-      const u32 new_value = old_value + add_value;
+      const u32 rsVal = ReadReg(inst.i.rs);
+      const u32 imm = inst.i.imm_sext32();
+      const u32 rtVal = rsVal + imm;
+      WriteReg(inst.i.rt, rtVal);
 
       if constexpr (pgxp_mode >= PGXPMode::CPU)
-        PGXP::CPU_ADDI(inst.bits, ReadReg(inst.i.rs));
+        PGXP::CPU_ADDI(inst.bits, rsVal);
       else if constexpr (pgxp_mode >= PGXPMode::Memory)
-      {
-        if (add_value == 0)
-        {
-          PGXP::CPU_MOVE((static_cast<u32>(inst.i.rt.GetValue()) << 8) | static_cast<u32>(inst.i.rs.GetValue()),
-                         old_value);
-        }
-      }
-
-      WriteReg(inst.i.rt, new_value);
+        PGXP::TryMoveImm(inst.r.rd, inst.r.rs, imm);
     }
     break;
 
     case InstructionOp::slti:
     {
-      const u32 result = BoolToUInt32(static_cast<s32>(ReadReg(inst.i.rs)) < static_cast<s32>(inst.i.imm_sext32()));
+      const u32 rsVal = ReadReg(inst.i.rs);
+      const u32 result = BoolToUInt32(static_cast<s32>(rsVal) < static_cast<s32>(inst.i.imm_sext32()));
+      WriteReg(inst.i.rt, result);
 
       if constexpr (pgxp_mode >= PGXPMode::CPU)
-        PGXP::CPU_SLTI(inst.bits, ReadReg(inst.i.rs));
-
-      WriteReg(inst.i.rt, result);
+        PGXP::CPU_SLTI(inst.bits, rsVal);
     }
     break;
 
     case InstructionOp::sltiu:
     {
       const u32 result = BoolToUInt32(ReadReg(inst.i.rs) < inst.i.imm_sext32());
+      WriteReg(inst.i.rt, result);
 
       if constexpr (pgxp_mode >= PGXPMode::CPU)
         PGXP::CPU_SLTIU(inst.bits, ReadReg(inst.i.rs));
-
-      WriteReg(inst.i.rt, result);
     }
     break;
 
@@ -1671,20 +1677,20 @@ restart_instruction:
           case CopCommonInstruction::mfcn:
           {
             const u32 value = ReadCop0Reg(static_cast<Cop0Reg>(inst.r.rd.GetValue()));
+            WriteRegDelayed(inst.r.rt, value);
 
             if constexpr (pgxp_mode == PGXPMode::CPU)
               PGXP::CPU_MFC0(inst.bits, value);
-
-            WriteRegDelayed(inst.r.rt, value);
           }
           break;
 
           case CopCommonInstruction::mtcn:
           {
-            WriteCop0Reg(static_cast<Cop0Reg>(inst.r.rd.GetValue()), ReadReg(inst.r.rt));
+            const u32 rtVal = ReadReg(inst.r.rt);
+            WriteCop0Reg(static_cast<Cop0Reg>(inst.r.rd.GetValue()), rtVal);
 
             if constexpr (pgxp_mode == PGXPMode::CPU)
-              PGXP::CPU_MTC0(inst.bits, ReadCop0Reg(static_cast<Cop0Reg>(inst.r.rd.GetValue())), ReadReg(inst.i.rt));
+              PGXP::CPU_MTC0(inst.bits, ReadCop0Reg(static_cast<Cop0Reg>(inst.r.rd.GetValue())), rtVal);
           }
           break;
 
@@ -2380,7 +2386,6 @@ void CPU::CodeCache::InterpretUncachedBlock()
       break;
     }
 
-
     in_branch_delay_slot = branch;
   }
 }
@@ -2930,8 +2935,7 @@ bool CPU::SafeWriteMemoryWord(VirtualMemoryAddress addr, u32 value)
   if ((addr & 3) == 0)
     return DoSafeMemoryAccess<MemoryAccessType::Write, MemoryAccessSize::Word>(addr, value);
 
-  return SafeWriteMemoryHalfWord(addr, Truncate16(value)) &&
-         SafeWriteMemoryHalfWord(addr + 2, Truncate16(value >> 16));
+  return SafeWriteMemoryHalfWord(addr, Truncate16(value)) && SafeWriteMemoryHalfWord(addr + 2, Truncate16(value >> 16));
 }
 
 void* CPU::GetDirectReadMemoryPointer(VirtualMemoryAddress address, MemoryAccessSize size, TickCount* read_ticks)
