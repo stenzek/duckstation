@@ -1451,6 +1451,14 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUTexture* final
     GL_SCOPE_FMT("Draw pass {}", pass.name.c_str());
     DebugAssert(!pass.render_targets.empty());
 
+    // Sucks doing this twice, but we need to set the RT first (for DX11), and transition layouts (for VK).
+    for (const Sampler& sampler : pass.samplers)
+    {
+      GPUTexture* const tex = GetTextureByID(sampler.texture_id, input, final_target);
+      if (tex)
+        tex->MakeReadyForSampling();
+    }
+
     if (pass.render_targets.size() == 1 && pass.render_targets[0] == OUTPUT_COLOR_TEXTURE && !final_target)
     {
       // Special case: drawing to final buffer.

@@ -110,17 +110,12 @@ MaxValue = 10.0
 StepAmount = 0.05
 DefaultValue = 2.0
 
-[OptionBool]
-GUIName = Scale in Linear Gamma
-OptionName = scaleInLinearGamma
-DefaultValue = true
-
 [/configuration]
 */
 
 //Uncomment to reduce instructions with simpler linearization
 //(fixes HD3000 Sandy Bridge IGP)
-//#define SIMPLE_LINEAR_GAMMA
+#define SIMPLE_LINEAR_GAMMA
 #define DO_BLOOM
 
 // ------------- //
@@ -143,17 +138,11 @@ float3 ToSrgb(float3 c)
 #else
 float ToLinear1(float c)
 {
-    if (!OptionEnabled(scaleInLinearGamma)) 
-        return c;
-    
     return(c<=0.04045) ? c/12.92 : pow((c + 0.055)/1.055, 2.4);
 }
 
 float3 ToLinear(float3 c)
 {
-    if (!OptionEnabled(scaleInLinearGamma)) 
-        return c;
-    
     return float3(ToLinear1(c.r), ToLinear1(c.g), ToLinear1(c.b));
 }
 
@@ -161,17 +150,11 @@ float3 ToLinear(float3 c)
 // Assuming using sRGB typed textures this should not be needed.
 float ToSrgb1(float c)
 {
-    if (!OptionEnabled(scaleInLinearGamma)) 
-        return c;
-    
     return(c<0.0031308 ? c*12.92 : 1.055*pow(c, 0.41666) - 0.055);
 }
 
 float3 ToSrgb(float3 c)
 {
-    if (!OptionEnabled(scaleInLinearGamma)) 
-        return c;
-    
     return float3(ToSrgb1(c.r), ToSrgb1(c.g), ToSrgb1(c.b));
 }
 #endif
@@ -391,15 +374,8 @@ void main()
     outColor.rgb += Bloom(pos)*GetOption(bloomAmount);
 #endif
 
-    if (GetOption(shadowMask) > 0.0)
+    if (GetOption(shadowMask) > 0)
         outColor.rgb *= Mask(gl_FragCoord.xy * 1.000001);
     
-#ifdef GL_ES    /* TODO/FIXME - hacky clamp fix */
-    float2 bordertest = (pos);
-    if ( bordertest.x > 0.0001 && bordertest.x < 0.9999 && bordertest.y > 0.0001 && bordertest.y < 0.9999)
-        outColor.rgb = outColor.rgb;
-    else
-        outColor.rgb = float3(0.0);
-#endif
     SetOutput(float4(ToSrgb(outColor.rgb), 1.0));
 } 

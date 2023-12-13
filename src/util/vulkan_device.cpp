@@ -93,7 +93,7 @@ const std::array<VkFormat, static_cast<u32>(GPUTexture::Format::MaxCount)> Vulka
 static constexpr VkClearValue s_present_clear_color = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
 
 // Handles are always 64-bit, even on 32-bit platforms.
-static const VkRenderPass DYNAMIC_RENDERING_RENDER_PASS = ((VkRenderPass)static_cast<s64>(-1LL));
+static const VkRenderPass DYNAMIC_RENDERING_RENDER_PASS = ((VkRenderPass) static_cast<s64>(-1LL));
 
 #ifdef _DEBUG
 static u32 s_debug_scope_depth = 0;
@@ -602,6 +602,21 @@ void VulkanDevice::ProcessDeviceExtensions()
 
   m_optional_extensions.vk_khr_push_descriptor &= (push_descriptor_properties.maxPushDescriptors >= 1);
 
+  if (IsBrokenMobileDriver())
+  {
+    // Push descriptor is broken on Adreno v502.. don't want to think about dynamic rendending.
+    if (m_optional_extensions.vk_khr_dynamic_rendering)
+    {
+      m_optional_extensions.vk_khr_dynamic_rendering = false;
+      Log_WarningPrint("Disabling VK_KHR_dynamic_rendering on broken mobile driver.");
+    }
+    if (m_optional_extensions.vk_khr_push_descriptor)
+    {
+      m_optional_extensions.vk_khr_push_descriptor = false;
+      Log_WarningPrint("Disabling VK_KHR_push_descriptor on broken mobile driver.");
+    }
+  }
+
   Log_InfoPrintf("VK_EXT_memory_budget is %s",
                  m_optional_extensions.vk_ext_memory_budget ? "supported" : "NOT supported");
   Log_InfoPrintf("VK_EXT_rasterization_order_attachment_access is %s",
@@ -700,7 +715,8 @@ bool VulkanDevice::CreateCommandBuffers()
       LOG_VULKAN_ERROR(res, "vkCreateCommandPool failed: ");
       return false;
     }
-    Vulkan::SetObjectName(m_device, resources.command_pool, TinyString::from_format("Frame Command Pool {}", frame_index));
+    Vulkan::SetObjectName(m_device, resources.command_pool,
+                          TinyString::from_format("Frame Command Pool {}", frame_index));
 
     VkCommandBufferAllocateInfo buffer_info = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO, nullptr,
                                                resources.command_pool, VK_COMMAND_BUFFER_LEVEL_PRIMARY,
@@ -1495,6 +1511,31 @@ void VulkanDevice::DisableDebugUtils()
     vkDestroyDebugUtilsMessengerEXT(m_instance, m_debug_messenger_callback, nullptr);
     m_debug_messenger_callback = VK_NULL_HANDLE;
   }
+}
+
+bool VulkanDevice::IsDeviceAdreno() const
+{
+  // Assume turnip is fine...
+  return ((m_device_properties.vendorID == 0x5143 ||
+           m_device_driver_properties.driverID == VK_DRIVER_ID_QUALCOMM_PROPRIETARY) &&
+          m_device_driver_properties.driverID != VK_DRIVER_ID_MESA_TURNIP);
+}
+
+bool VulkanDevice::IsDeviceMali() const
+{
+  return (m_device_properties.vendorID == 0x13B5 ||
+          m_device_driver_properties.driverID == VK_DRIVER_ID_ARM_PROPRIETARY);
+}
+
+bool VulkanDevice::IsDeviceImgTec() const
+{
+  return (m_device_properties.vendorID == 0x1010 ||
+          m_device_driver_properties.driverID == VK_DRIVER_ID_IMAGINATION_PROPRIETARY);
+}
+
+bool VulkanDevice::IsBrokenMobileDriver() const
+{
+  return (IsDeviceAdreno() || IsDeviceMali() || IsDeviceImgTec());
 }
 
 VkRenderPass VulkanDevice::CreateCachedRenderPass(RenderPassCacheKey key)
@@ -3343,6 +3384,10 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(bool new_layout, bool new_dynam
     {
       ds[num_ds++] = m_ubo_descriptor_set;
       new_dynamic_offsets = true;
+    }
+    else
+    {
+      first_ds++;
     }
   }
 

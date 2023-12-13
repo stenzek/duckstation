@@ -292,6 +292,12 @@ private:
   bool EnableDebugUtils();
   void DisableDebugUtils();
 
+  // Vendor queries.
+  bool IsDeviceAdreno() const;
+  bool IsDeviceMali() const;
+  bool IsDeviceImgTec() const;
+  bool IsBrokenMobileDriver() const;
+
   void SubmitCommandBuffer(VulkanSwapChain* present_swap_chain = nullptr, bool submit_on_thread = false);
   void MoveToNextCommandBuffer();
   void WaitForPresentComplete();
