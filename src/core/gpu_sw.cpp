@@ -554,7 +554,7 @@ void GPU_SW::FillDrawCommand(GPUBackendDrawCommand* cmd, GPURenderCommand rc) co
   FillBackendCommandParameters(cmd);
   cmd->rc.bits = rc.bits;
   cmd->draw_mode.bits = m_draw_mode.mode_reg.bits;
-  cmd->palette.bits = m_draw_mode.palette_reg;
+  cmd->palette.bits = m_draw_mode.palette_reg.bits;
   cmd->window = m_draw_mode.texture_window;
 }
 

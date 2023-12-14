@@ -193,12 +193,16 @@ bool GPU::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_displ
   sw.Do(&m_GPUSTAT.bits);
 
   sw.Do(&m_draw_mode.mode_reg.bits);
-  sw.Do(&m_draw_mode.palette_reg);
+  sw.Do(&m_draw_mode.palette_reg.bits);
   sw.Do(&m_draw_mode.texture_window_value);
-  sw.Do(&m_draw_mode.texture_page_x);
-  sw.Do(&m_draw_mode.texture_page_y);
-  sw.Do(&m_draw_mode.texture_palette_x);
-  sw.Do(&m_draw_mode.texture_palette_y);
+
+  if (sw.GetVersion() < 62)
+  {
+    // texture_page_x, texture_page_y, texture_palette_x, texture_palette_y
+    DebugAssert(sw.IsReading());
+    sw.SkipBytes(sizeof(u32) * 4);
+  }
+
   sw.Do(&m_draw_mode.texture_window.and_x);
   sw.Do(&m_draw_mode.texture_window.and_y);
   sw.Do(&m_draw_mode.texture_window.or_x);
@@ -1514,14 +1518,8 @@ void GPU::SetDrawMode(u16 value)
   if (new_mode_reg.bits == m_draw_mode.mode_reg.bits)
     return;
 
-  if ((new_mode_reg.bits & GPUDrawModeReg::TEXTURE_PAGE_MASK) !=
-      (m_draw_mode.mode_reg.bits & GPUDrawModeReg::TEXTURE_PAGE_MASK))
-  {
-    m_draw_mode.texture_page_x = new_mode_reg.GetTexturePageBaseX();
-    m_draw_mode.texture_page_y = new_mode_reg.GetTexturePageBaseY();
-    m_draw_mode.texture_page_changed = true;
-  }
-
+  m_draw_mode.texture_page_changed |= ((new_mode_reg.bits & GPUDrawModeReg::TEXTURE_PAGE_MASK) !=
+                                       (m_draw_mode.mode_reg.bits & GPUDrawModeReg::TEXTURE_PAGE_MASK));
   m_draw_mode.mode_reg.bits = new_mode_reg.bits;
 
   if (m_GPUSTAT.draw_to_displayed_field != new_mode_reg.draw_to_displayed_field)
@@ -1536,12 +1534,10 @@ void GPU::SetDrawMode(u16 value)
 void GPU::SetTexturePalette(u16 value)
 {
   value &= DrawMode::PALETTE_MASK;
-  if (m_draw_mode.palette_reg == value)
+  if (m_draw_mode.palette_reg.bits == value)
     return;
 
-  m_draw_mode.texture_palette_x = ZeroExtend32(value & 0x3F) * 16;
-  m_draw_mode.texture_palette_y = ZeroExtend32(value >> 6);
-  m_draw_mode.palette_reg = value;
+  m_draw_mode.palette_reg.bits = value;
   m_draw_mode.texture_page_changed = true;
 }
 

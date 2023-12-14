@@ -208,6 +208,13 @@ union GPUTexturePaletteReg
 
   ALWAYS_INLINE u32 GetXBase() const { return static_cast<u32>(x) * 16u; }
   ALWAYS_INLINE u32 GetYBase() const { return static_cast<u32>(y); }
+
+  /// Returns a rectangle comprising the texture palette area.
+  ALWAYS_INLINE_RELEASE Common::Rectangle<u32> GetRectangle(GPUTextureMode mode) const
+  {
+    static constexpr std::array<u32, 4> palette_widths = {{16, 256, 0, 0}};
+    return Common::Rectangle<u32>::FromExtents(GetXBase(), GetYBase(), palette_widths[static_cast<u8>(mode)], 1);
+  }
 };
 
 struct GPUTextureWindow

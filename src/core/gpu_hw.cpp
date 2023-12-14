@@ -1623,7 +1623,7 @@ void GPU_HW::LoadVertices()
     m_current_depth++;
 
   const GPURenderCommand rc{m_render_command.bits};
-  const u32 texpage = ZeroExtend32(m_draw_mode.mode_reg.bits) | (ZeroExtend32(m_draw_mode.palette_reg) << 16);
+  const u32 texpage = ZeroExtend32(m_draw_mode.mode_reg.bits) | (ZeroExtend32(m_draw_mode.palette_reg.bits) << 16);
   const float depth = GetCurrentNormalizedVertexDepth();
 
   switch (rc.primitive)
@@ -2067,7 +2067,8 @@ void GPU_HW::IncludeVRAMDirtyRectangle(Common::Rectangle<u32>& rect, const Commo
   // shadow texture is updated
   if (!m_draw_mode.IsTexturePageChanged() &&
       (m_draw_mode.mode_reg.GetTexturePageRectangle().Intersects(new_rect) ||
-       (m_draw_mode.mode_reg.IsUsingPalette() && m_draw_mode.GetTexturePaletteRectangle().Intersects(new_rect))))
+       (m_draw_mode.mode_reg.IsUsingPalette() &&
+        m_draw_mode.palette_reg.GetRectangle(m_draw_mode.mode_reg.texture_mode).Intersects(new_rect))))
   {
     m_draw_mode.SetTexturePageChanged();
   }
@@ -2300,7 +2301,7 @@ void GPU_HW::FillDrawCommand(GPUBackendDrawCommand* cmd, GPURenderCommand rc) co
   FillBackendCommandParameters(cmd);
   cmd->rc.bits = rc.bits;
   cmd->draw_mode.bits = m_draw_mode.mode_reg.bits;
-  cmd->palette.bits = m_draw_mode.palette_reg;
+  cmd->palette.bits = m_draw_mode.palette_reg.bits;
   cmd->window = m_draw_mode.texture_window;
 }
 
@@ -2604,7 +2605,8 @@ void GPU_HW::DispatchRenderCommand()
 
       if (m_draw_mode.mode_reg.IsUsingPalette())
       {
-        const Common::Rectangle<u32> palette_rect = m_draw_mode.GetTexturePaletteRectangle();
+        const Common::Rectangle<u32> palette_rect =
+          m_draw_mode.palette_reg.GetRectangle(m_draw_mode.mode_reg.texture_mode);
         const bool update_drawn = palette_rect.Intersects(m_vram_dirty_draw_rect);
         const bool update_written = palette_rect.Intersects(m_vram_dirty_write_rect);
         if (update_drawn || update_written)

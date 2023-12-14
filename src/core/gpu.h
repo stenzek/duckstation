@@ -422,27 +422,15 @@ protected:
 
     // original values
     GPUDrawModeReg mode_reg;
-    u16 palette_reg; // from vertex
+    GPUTexturePaletteReg palette_reg; // from vertex
     u32 texture_window_value;
 
     // decoded values
-    u32 texture_page_x;
-    u32 texture_page_y;
-    u32 texture_palette_x;
-    u32 texture_palette_y;
     GPUTextureWindow texture_window;
     bool texture_x_flip;
     bool texture_y_flip;
     bool texture_page_changed;
     bool texture_window_changed;
-
-    /// Returns a rectangle comprising the texture palette area.
-    ALWAYS_INLINE_RELEASE Common::Rectangle<u32> GetTexturePaletteRectangle() const
-    {
-      static constexpr std::array<u32, 4> palette_widths = {{16, 256, 0, 0}};
-      return Common::Rectangle<u32>::FromExtents(texture_palette_x, texture_palette_y,
-                                                 palette_widths[static_cast<u8>(mode_reg.texture_mode.GetValue())], 1);
-    }
 
     ALWAYS_INLINE bool IsTexturePageChanged() const { return texture_page_changed; }
     ALWAYS_INLINE void SetTexturePageChanged() { texture_page_changed = true; }
