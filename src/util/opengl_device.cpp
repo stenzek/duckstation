@@ -1130,8 +1130,18 @@ void OpenGLDevice::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* 
   DebugAssert(slot < MAX_TEXTURE_SAMPLERS);
   auto& sslot = m_last_samplers[slot];
 
-  const OpenGLTexture* T = static_cast<const OpenGLTexture*>(texture);
-  const GLuint Tid = T ? T->GetGLId() : 0;
+  OpenGLTexture* T = static_cast<OpenGLTexture*>(texture);
+  GLuint Tid;
+  if (T)
+  {
+    Tid = T->GetGLId();
+    CommitClear(T);
+  }
+  else
+  {
+    Tid = 0;
+  }
+
   if (sslot.first != Tid)
   {
     sslot.first = Tid;

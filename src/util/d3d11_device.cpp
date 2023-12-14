@@ -940,7 +940,17 @@ void D3D11Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTextu
 
 void D3D11Device::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler)
 {
-  ID3D11ShaderResourceView* T = texture ? static_cast<D3D11Texture*>(texture)->GetD3DSRV() : nullptr;
+  ID3D11ShaderResourceView* T;
+  if (texture)
+  {
+    static_cast<D3D11Texture*>(texture)->CommitClear(m_context.Get());
+    T = static_cast<D3D11Texture*>(texture)->GetD3DSRV();
+  }
+  else
+  {
+    T = nullptr;
+  }
+
   ID3D11SamplerState* S = sampler ? static_cast<D3D11Sampler*>(sampler)->GetSamplerState() : nullptr;
 
   // Runtime will null these if we don't...

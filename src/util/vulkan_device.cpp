@@ -3250,6 +3250,7 @@ void VulkanDevice::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* 
 
   if (T)
   {
+    T->CommitClear();
     T->SetUseFenceCounter(GetCurrentFenceCounter());
     if (T->GetLayout() != VulkanTexture::Layout::ShaderReadOnly)
     {

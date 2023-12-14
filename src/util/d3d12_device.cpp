@@ -1864,6 +1864,7 @@ void D3D12Device::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* s
 
     if (T)
     {
+      T->CommitClear();
       T->SetUseFenceValue(GetCurrentFenceValue());
       if (T->GetResourceState() != D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)
       {

@@ -1408,13 +1408,12 @@ void MetalDevice::InvalidateRenderTarget(GPUTexture* t)
 
 void MetalDevice::CommitClear(MetalTexture* tex)
 {
-  if (tex->GetState() == GPUTexture::State::Dirty)
-    return;
-
   DebugAssert(tex->IsRenderTargetOrDepthStencil());
 
   if (tex->GetState() == GPUTexture::State::Cleared)
   {
+    tex->SetState(GPUTexture::State::Dirty);
+
     // TODO: We could combine it with the current render pass.
     if (InRenderPass())
       EndRenderPass();
@@ -1655,7 +1654,10 @@ void MetalDevice::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* s
 
   id<MTLTexture> T = texture ? static_cast<MetalTexture*>(texture)->GetMTLTexture() : nil;
   if (texture)
+  {
+    CommitClear(static_cast<MetalTexture*>(texture));
     static_cast<MetalTexture*>(texture)->SetUseFenceCounter(m_current_fence_counter);
+  }
 
   if (m_current_textures[slot] != T)
   {
