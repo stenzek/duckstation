@@ -66,6 +66,12 @@ private:
     MAX_VERTICES_FOR_RECTANGLE = 6 * (((MAX_PRIMITIVE_WIDTH + (TEXTURE_PAGE_WIDTH - 1)) / TEXTURE_PAGE_WIDTH) + 1u) *
                                  (((MAX_PRIMITIVE_HEIGHT + (TEXTURE_PAGE_HEIGHT - 1)) / TEXTURE_PAGE_HEIGHT) + 1u)
   };
+  enum : u8
+  {
+    TEXPAGE_DIRTY_DRAWN_RECT = (1 << 0),
+    TEXPAGE_DIRTY_WRITTEN_RECT = (1 << 1),
+  };
+
   static_assert(GPUDevice::MIN_TEXEL_BUFFER_ELEMENTS >= (VRAM_WIDTH * VRAM_HEIGHT));
 
   struct BatchVertex
@@ -134,7 +140,7 @@ private:
   void PrintSettingsToLog();
   void CheckSettings();
 
-  void UpdateVRAMReadTexture();
+  void UpdateVRAMReadTexture(bool drawn, bool written);
   void UpdateDepthBufferFromMaskBit();
   void ClearDepthBuffer();
   void SetScissor();
@@ -150,7 +156,7 @@ private:
 
   void SetFullVRAMDirtyRectangle();
   void ClearVRAMDirtyRectangle();
-  void IncludeVRAMDirtyRectangle(const Common::Rectangle<u32>& rect);
+  void IncludeVRAMDirtyRectangle(Common::Rectangle<u32>& rect, const Common::Rectangle<u32>& new_rect);
   void CheckForTexPageOverlap(u32 texpage, u32 min_u, u32 min_v, u32 max_u, u32 max_v);
 
   bool IsFlushed() const;
@@ -249,7 +255,7 @@ private:
   bool m_clamp_uvs = false;
   bool m_compute_uv_range = false;
   bool m_pgxp_depth_buffer = false;
-  bool m_texpage_dirty = false;
+  u8 m_texpage_dirty = 0;
 
   BatchConfig m_batch;
 
@@ -258,7 +264,8 @@ private:
   BatchUBOData m_batch_ubo_data = {};
 
   // Bounding box of VRAM area that the GPU has drawn into.
-  Common::Rectangle<u32> m_vram_dirty_rect;
+  Common::Rectangle<u32> m_vram_dirty_draw_rect;
+  Common::Rectangle<u32> m_vram_dirty_write_rect;
   Common::Rectangle<u32> m_current_uv_range;
 
   // [depth_test][render_mode][texture_mode][transparency_mode][dithering][interlacing]

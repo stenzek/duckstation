@@ -3,10 +3,10 @@
 
 #pragma once
 #include <algorithm>
+#include <cstring>
 #include <limits>
 #include <tuple>
 #include <type_traits>
-#include <cstring>
 
 namespace Common {
 
@@ -131,6 +131,10 @@ struct Rectangle
 
   /// Tests whether the specified point is contained in the rectangle.
   constexpr bool Contains(T x, T y) const { return (x >= left && x < right && y >= top && y < bottom); }
+  constexpr bool Contains(const Rectangle& rhs) const
+  {
+    return (left <= rhs.left && right >= rhs.right && top <= rhs.top && bottom >= rhs.bottom);
+  }
 
   /// Expands the bounds of the rectangle to contain the specified point.
   constexpr void Include(T x, T y)
