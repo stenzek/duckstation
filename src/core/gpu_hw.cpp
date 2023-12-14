@@ -2046,8 +2046,8 @@ ALWAYS_INLINE_RELEASE void GPU_HW::CheckForTexPageOverlap(u32 texpage, u32 min_u
 
   const u32 xoffs = (texpage & 0xFu) * 64u;
   const u32 yoffs = ((texpage >> 4) & 1u) * 256u;
-  const u32 xshift = uv_shifts_adds[(texpage >> 7) & 2][0];
-  const u32 xadd = uv_shifts_adds[(texpage >> 7) & 2][1];
+  const u32 xshift = uv_shifts_adds[(texpage >> 7) & 3][0];
+  const u32 xadd = uv_shifts_adds[(texpage >> 7) & 3][1];
 
   const u32 vram_min_u =
     (((min_u & m_draw_mode.texture_window.and_x) | m_draw_mode.texture_window.or_x) >> xshift) + xoffs;
