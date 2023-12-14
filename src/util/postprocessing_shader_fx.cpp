@@ -316,6 +316,7 @@ bool PostProcessing::ReShadeFXShader::LoadFromString(std::string name, std::stri
   if (!CreateOptions(temp_module, error))
     return false;
 
+  // check limits
   if (!temp_module.techniques.empty())
   {
     bool has_passes = false;

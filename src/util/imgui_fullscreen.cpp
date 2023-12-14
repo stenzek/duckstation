@@ -39,7 +39,7 @@ Log_SetChannel(ImGuiFullscreen);
 namespace ImGuiFullscreen {
 using MessageDialogCallbackVariant = std::variant<InfoMessageDialogCallback, ConfirmMessageDialogCallback>;
 
-static constexpr float MENU_BACKGROUND_ANIMATION_TIME = 0.25f;
+static constexpr float MENU_BACKGROUND_ANIMATION_TIME = 0.5f;
 
 static std::optional<Common::RGBA8Image> LoadTextureImage(const char* path);
 static std::shared_ptr<GPUTexture> UploadTexture(const char* path, const Common::RGBA8Image& image);
@@ -124,6 +124,7 @@ static ImAnimatedVec2 s_menu_button_frame_min_animated;
 static ImAnimatedVec2 s_menu_button_frame_max_animated;
 static bool s_had_hovered_menu_item = false;
 static bool s_has_hovered_menu_item = false;
+static bool s_rendered_menu_item_border = false;
 
 namespace {
 struct FileSelectorItem
@@ -492,6 +493,7 @@ void ImGuiFullscreen::EndLayout()
 
   PopResetLayout();
 
+  s_rendered_menu_item_border = false;
   s_had_hovered_menu_item = std::exchange(s_has_hovered_menu_item, false);
 }
 
@@ -685,6 +687,26 @@ void ImGuiFullscreen::EndFullscreenWindow()
   ImGui::PopStyleColor();
 }
 
+void ImGuiFullscreen::PrerenderMenuButtonBorder()
+{
+  if (!s_had_hovered_menu_item)
+    return;
+
+  // updating might finish the animation
+  const ImVec2 min = s_menu_button_frame_min_animated.UpdateAndGetValue();
+  const ImVec2 max = s_menu_button_frame_max_animated.UpdateAndGetValue();
+  const ImU32 col = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
+
+  const float t = static_cast<float>(std::min(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0));
+  ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
+
+  ImGui::RenderFrame(min, max, col, true, 0.0f);
+
+  ImGui::PopStyleColor();
+
+  s_rendered_menu_item_border = true;
+}
+
 void ImGuiFullscreen::BeginMenuButtons(u32 num_items, float y_align, float x_padding, float y_padding,
                                        float item_height)
 {
@@ -703,6 +725,8 @@ void ImGuiFullscreen::BeginMenuButtons(u32 num_items, float y_align, float x_pad
     if (window_height > total_size)
       ImGui::SetCursorPosY((window_height - total_size) * y_align);
   }
+
+  PrerenderMenuButtonBorder();
 }
 
 void ImGuiFullscreen::EndMenuButtons()
@@ -814,7 +838,7 @@ void ImGuiFullscreen::DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_m
   ImVec2 frame_min = p_min;
   ImVec2 frame_max = p_max;
 
-  if (ImGui::GetIO().NavVisible)
+  if (ImGui::GetIO().NavVisible && ImGui::GetHoveredID() != ImGui::GetItemID())
   {
     if (!s_had_hovered_menu_item)
     {
@@ -842,7 +866,11 @@ void ImGuiFullscreen::DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_m
     }
   }
 
-  ImGui::RenderFrame(frame_min, frame_max, fill_col, border, rounding);
+  if (!s_rendered_menu_item_border)
+  {
+    s_rendered_menu_item_border = true;
+    ImGui::RenderFrame(frame_min, frame_max, fill_col, border, rounding);
+  }
 }
 
 bool ImGuiFullscreen::MenuButtonFrame(const char* str_id, bool enabled, float height, bool* visible, bool* hovered,
@@ -934,7 +962,7 @@ bool ImGuiFullscreen::ActiveButton(const char* title, bool is_active, bool enabl
   {
     ImVec2 pos, size;
     GetMenuButtonFrameBounds(height, &pos, &size);
-    DrawMenuButtonFrame(pos, pos + size, ImGui::GetColorU32(UIPrimaryColor), false);
+    ImGui::RenderFrame(pos, pos + size, ImGui::GetColorU32(UIPrimaryColor), false);
   }
 
   ImRect bb;

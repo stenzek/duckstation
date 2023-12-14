@@ -171,6 +171,7 @@ bool BeginFullscreenWindow(const ImVec2& position, const ImVec2& size, const cha
                            float padding = 0.0f, ImGuiWindowFlags flags = 0);
 void EndFullscreenWindow();
 
+void PrerenderMenuButtonBorder();
 void BeginMenuButtons(u32 num_items = 0, float y_align = 0.0f, float x_padding = LAYOUT_MENU_BUTTON_X_PADDING,
                       float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING, float item_height = LAYOUT_MENU_BUTTON_HEIGHT);
 void EndMenuButtons();
