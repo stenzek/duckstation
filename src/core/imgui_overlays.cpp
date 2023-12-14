@@ -898,7 +898,6 @@ void SaveStateSelectorUI::Draw()
       const float item_width = std::floor(width - (padding_and_rounding * 2.0f) - ImGui::GetStyle().ScrollbarSize);
       const float item_height = std::floor(image_size.y + padding * 2.0f);
       const float text_indent = image_size.x + padding + padding;
-      std::optional<ImRect> scroll_rect;
 
       for (size_t i = 0; i < s_slots.size(); i++)
       {

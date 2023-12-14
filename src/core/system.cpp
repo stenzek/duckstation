@@ -11,6 +11,7 @@
 #include "controller.h"
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
+#include "cpu_pgxp.h"
 #include "dma.h"
 #include "fullscreen_ui.h"
 #include "game_database.h"
@@ -26,7 +27,6 @@
 #include "multitap.h"
 #include "pad.h"
 #include "pcdrv.h"
-#include "cpu_pgxp.h"
 #include "psf_loader.h"
 #include "save_state_version.h"
 #include "sio.h"
@@ -108,6 +108,8 @@ static std::string GetMediaPathFromSaveState(const char* path);
 static bool DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display, bool is_memory_state);
 static bool CreateGPU(GPURenderer renderer, bool is_switching);
 static bool SaveUndoLoadState();
+static void WarnAboutUnsafeSettings();
+static void LogUnsafeSettingsToConsole(const std::string& messages);
 
 /// Throttles the system, i.e. sleeps until it's time to execute the next frame.
 static void Throttle();
@@ -1601,42 +1603,11 @@ bool System::Initialize(bool force_software_renderer)
   PCDrv::Initialize();
   PostProcessing::Initialize();
 
-  static constexpr float WARNING_DURATION = 15.0f;
-
-  if (g_settings.cpu_overclock_active)
-  {
-    Host::AddFormattedOSDMessage(
-      WARNING_DURATION,
-      TRANSLATE("OSDMessage", "CPU clock speed is set to %u%% (%u / %u). This may result in instability."),
-      g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator, g_settings.cpu_overclock_denominator);
-  }
-  if (g_settings.cdrom_read_speedup > 1)
-  {
-    Host::AddFormattedOSDMessage(
-      WARNING_DURATION,
-      TRANSLATE("OSDMessage", "CD-ROM read speedup set to %ux (effective speed %ux). This may result in instability."),
-      g_settings.cdrom_read_speedup, g_settings.cdrom_read_speedup * 2);
-  }
-  if (g_settings.cdrom_seek_speedup != 1)
-  {
-    if (g_settings.cdrom_seek_speedup == 0)
-    {
-      Host::AddOSDMessage(
-        TRANSLATE_STR("OSDMessage", "CD-ROM seek speedup set to instant. This may result in instability."),
-        WARNING_DURATION);
-    }
-    else
-    {
-      Host::AddFormattedOSDMessage(
-        WARNING_DURATION, TRANSLATE("OSDMessage", "CD-ROM seek speedup set to %ux. This may result in instability."),
-        g_settings.cdrom_seek_speedup);
-    }
-  }
-
   s_cpu_thread_handle = Threading::ThreadHandle::GetForCallingThread();
 
   UpdateThrottlePeriod();
   UpdateMemorySaveStateSettings();
+  WarnAboutUnsafeSettings();
   return true;
 }
 
@@ -3790,6 +3761,84 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
   {
     g_settings.UpdateLogSettings();
   }
+}
+
+void System::WarnAboutUnsafeSettings()
+{
+  std::string messages;
+  auto append = [&messages](const char* icon, std::string_view msg) {
+    messages += icon;
+    messages += ' ';
+    messages += msg;
+    messages += '\n';
+  };
+
+  if (g_settings.cpu_overclock_active)
+  {
+    append(ICON_FA_MICROCHIP,
+           fmt::format(TRANSLATE_FS("System", "CPU clock speed is set to {}% ({} / {}). This may crash games."),
+                       g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator,
+                       g_settings.cpu_overclock_denominator));
+  }
+  if (g_settings.cdrom_read_speedup > 1)
+  {
+    append(
+      ICON_FA_COMPACT_DISC,
+      fmt::format(TRANSLATE_FS("System", "CD-ROM read speedup set to {}x (effective speed {}x). This may crash games."),
+                  g_settings.cdrom_read_speedup, g_settings.cdrom_read_speedup * 2));
+  }
+  if (g_settings.cdrom_seek_speedup != 1)
+  {
+    append(ICON_FA_COMPACT_DISC,
+           fmt::format(TRANSLATE_FS("System", "CD-ROM seek speedup set to {}. This may crash games."),
+                       (g_settings.cdrom_seek_speedup == 0) ?
+                         TinyString(TRANSLATE_SV("System", "Instant")) :
+                         TinyString::from_format("{}x", g_settings.cdrom_seek_speedup)));
+  }
+  if (g_settings.gpu_force_ntsc_timings)
+  {
+    append(ICON_FA_TV, TRANSLATE_SV("System", "Force NTSC timings is enabled. Games may run at incorrect speeds."));
+  }
+  if (g_settings.gpu_multisamples != 1)
+  {
+    append(ICON_FA_MAGIC,
+           TRANSLATE_SV("System", "Multisample anti-aliasing is enabled, some games may not render correctly."));
+  }
+  if (g_settings.enable_8mb_ram)
+    append(ICON_FA_MICROCHIP, TRANSLATE_SV("System", "8MB RAM is enabled, this may be incompatible with some games."));
+
+  if (!messages.empty())
+  {
+    if (messages.back() == '\n')
+      messages.pop_back();
+
+    LogUnsafeSettingsToConsole(messages);
+    Host::AddKeyedOSDMessage("performance_settings_warning", std::move(messages), Host::OSD_WARNING_DURATION);
+  }
+  else
+  {
+    Host::RemoveKeyedOSDMessage("performance_settings_warning");
+  }
+}
+
+void System::LogUnsafeSettingsToConsole(const std::string& messages)
+{
+  // a not-great way of getting rid of the icons for the console message
+  std::string console_messages = messages;
+  for (;;)
+  {
+    const std::string::size_type pos = console_messages.find("\xef");
+    if (pos != std::string::npos)
+    {
+      console_messages.erase(pos, pos + 3);
+      console_messages.insert(pos, "[Unsafe Settings]");
+    }
+    else
+    {
+      break;
+    }
+  }
+  Log_WarningPrint(console_messages.c_str());
 }
 
 void System::CalculateRewindMemoryUsage(u32 num_saves, u64* ram_usage, u64* vram_usage)
