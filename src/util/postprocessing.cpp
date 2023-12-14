@@ -11,6 +11,7 @@
 
 // TODO: Remove me
 #include "core/host.h"
+#include "core/host_interface_progress_callback.h"
 #include "core/settings.h"
 
 #include "IconsFontAwesome5.h"
@@ -19,6 +20,7 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
+#include "common/progress_callback.h"
 #include "common/small_string.h"
 #include "common/string_util.h"
 #include "common/timer.h"
@@ -464,6 +466,8 @@ void PostProcessing::LoadStages()
     return;
 
   Error error;
+  HostInterfaceProgressCallback progress;
+  progress.SetProgressRange(stage_count);
 
   for (u32 i = 0; i < stage_count; i++)
   {
@@ -476,6 +480,7 @@ void PostProcessing::LoadStages()
     }
 
     lock.unlock();
+    progress.SetFormattedStatusText("Loading shader %s...", stage_name.c_str());
 
     std::unique_ptr<Shader> shader = TryLoadingShader(stage_name, false, &error);
     if (!shader)
@@ -487,12 +492,21 @@ void PostProcessing::LoadStages()
     lock.lock();
     shader->LoadOptions(si, GetStageConfigSection(i));
     s_stages.push_back(std::move(shader));
+
+    progress.IncrementProgressValue();
   }
 
   if (stage_count > 0)
   {
     s_timer.Reset();
     Log_DevPrintf("Loaded %u post-processing stages.", stage_count);
+  }
+
+  // precompile shaders
+  if (g_gpu_device && g_gpu_device->GetWindowFormat() != GPUTexture::Format::Unknown)
+  {
+    CheckTargets(g_gpu_device->GetWindowFormat(), g_gpu_device->GetWindowWidth(), g_gpu_device->GetWindowHeight(),
+                 &progress);
   }
 }
 
@@ -513,6 +527,11 @@ void PostProcessing::UpdateSettings()
   Error error;
 
   s_stages.resize(stage_count);
+
+  HostInterfaceProgressCallback progress;
+  progress.SetProgressRange(stage_count);
+
+  const GPUTexture::Format prev_format = s_target_format;
 
   for (u32 i = 0; i < stage_count; i++)
   {
@@ -551,6 +570,9 @@ void PostProcessing::UpdateSettings()
 
     s_stages[i]->LoadOptions(si, GetStageConfigSection(i));
   }
+
+  if (prev_format != GPUTexture::Format::Unknown)
+    CheckTargets(prev_format, s_target_width, s_target_height, &progress);
 
   if (stage_count > 0)
   {
@@ -645,7 +667,8 @@ GPUTexture* PostProcessing::GetDummyTexture()
   return s_dummy_texture.get();
 }
 
-bool PostProcessing::CheckTargets(GPUTexture::Format target_format, u32 target_width, u32 target_height)
+bool PostProcessing::CheckTargets(GPUTexture::Format target_format, u32 target_width, u32 target_height,
+                                  ProgressCallback* progress)
 {
   if (s_target_format == target_format && s_target_width == target_width && s_target_height == target_height)
     return true;
@@ -661,9 +684,19 @@ bool PostProcessing::CheckTargets(GPUTexture::Format target_format, u32 target_w
     return false;
   }
 
-  for (auto& shader : s_stages)
+  if (!progress)
+    progress = ProgressCallback::NullProgressCallback;
+
+  progress->SetProgressRange(static_cast<u32>(s_stages.size()));
+  progress->SetProgressValue(0);
+
+  for (size_t i = 0; i < s_stages.size(); i++)
   {
-    if (!shader->CompilePipeline(target_format, target_width, target_height) ||
+    Shader* const shader = s_stages[i].get();
+
+    progress->SetFormattedStatusText("Compiling %s...", shader->GetName().c_str());
+
+    if (!shader->CompilePipeline(target_format, target_width, target_height, progress) ||
         !shader->ResizeOutput(target_format, target_width, target_height))
     {
       Log_ErrorPrintf("Failed to compile one or more post-processing shaders, disabling.");
@@ -673,6 +706,8 @@ bool PostProcessing::CheckTargets(GPUTexture::Format target_format, u32 target_w
       s_enabled = false;
       return false;
     }
+
+    progress->SetProgressValue(static_cast<u32>(i + 1));
   }
 
   s_target_format = target_format;
@@ -695,12 +730,6 @@ bool PostProcessing::Apply(GPUTexture* final_target, s32 final_left, s32 final_t
                            s32 orig_width, s32 orig_height)
 {
   GL_SCOPE("PostProcessing Apply");
-
-  const u32 target_width = final_target ? final_target->GetWidth() : g_gpu_device->GetWindowWidth();
-  const u32 target_height = final_target ? final_target->GetHeight() : g_gpu_device->GetWindowHeight();
-  const GPUTexture::Format target_format = final_target ? final_target->GetFormat() : g_gpu_device->GetWindowFormat();
-  if (!CheckTargets(target_format, target_width, target_height))
-    return false;
 
   GPUTexture* input = s_input_texture.get();
   GPUTexture* output = s_output_texture.get();

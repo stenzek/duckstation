@@ -19,6 +19,7 @@ class GPUTexture;
 
 class Error;
 class SettingsInterface;
+class ProgressCallback;
 
 namespace PostProcessing {
 struct ShaderOption
@@ -124,7 +125,7 @@ void Shutdown();
 GPUTexture* GetInputTexture();
 const Common::Timer& GetTimer();
 
-bool CheckTargets(GPUTexture::Format target_format, u32 target_width, u32 target_height);
+bool CheckTargets(GPUTexture::Format target_format, u32 target_width, u32 target_height, ProgressCallback* progress = nullptr);
 
 bool Apply(GPUTexture* final_target, s32 final_left, s32 final_top, s32 final_width, s32 final_height, s32 orig_width,
            s32 orig_height);

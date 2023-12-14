@@ -20,6 +20,7 @@
 
 class GPUPipeline;
 class GPUTexture;
+class ProgressCallback;
 
 namespace PostProcessing {
 
@@ -45,7 +46,7 @@ public:
 
   virtual bool ResizeOutput(GPUTexture::Format format, u32 width, u32 height) = 0;
 
-  virtual bool CompilePipeline(GPUTexture::Format format, u32 width, u32 height) = 0;
+  virtual bool CompilePipeline(GPUTexture::Format format, u32 width, u32 height, ProgressCallback* progress) = 0;
 
   virtual bool Apply(GPUTexture* input, GPUTexture* final_target, s32 final_left, s32 final_top, s32 final_width,
                      s32 final_height, s32 orig_width, s32 orig_height, u32 target_width, u32 target_height) = 0;

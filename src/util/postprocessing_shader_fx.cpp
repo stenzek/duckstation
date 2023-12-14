@@ -15,6 +15,7 @@
 #include "common/image.h"
 #include "common/log.h"
 #include "common/path.h"
+#include "common/progress_callback.h"
 #include "common/string_util.h"
 
 #include "effect_codegen.hpp"
@@ -1123,7 +1124,8 @@ GPUTexture* PostProcessing::ReShadeFXShader::GetTextureByID(TextureID id, GPUTex
   return m_textures[static_cast<size_t>(id)].texture.get();
 }
 
-bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format, u32 width, u32 height)
+bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format, u32 width, u32 height,
+                                                      ProgressCallback* progress)
 {
   const RenderAPI api = g_gpu_device->GetRenderAPI();
   const bool needs_main_defn = (api != RenderAPI::D3D11 && api != RenderAPI::D3D12);
@@ -1219,6 +1221,14 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
   plconfig.samples = 1;
   plconfig.per_sample_shading = false;
 
+  progress->PushState();
+
+  size_t total_passes = 0;
+  for (const reshadefx::technique_info& tech : mod.techniques)
+    total_passes += tech.passes.size();
+  progress->SetProgressRange(static_cast<u32>(total_passes));
+  progress->SetProgressValue(0);
+
   u32 passnum = 0;
   for (const reshadefx::technique_info& tech : mod.techniques)
   {
@@ -1230,7 +1240,10 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
       auto vs = get_shader(info.vs_entry_point, pass.samplers, GPUShaderStage::Vertex);
       auto fs = get_shader(info.ps_entry_point, pass.samplers, GPUShaderStage::Fragment);
       if (!vs || !fs)
+      {
+        progress->PopState();
         return false;
+      }
 
       for (size_t i = 0; i < pass.render_targets.size(); i++)
       {
@@ -1247,16 +1260,24 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
       plconfig.fragment_shader = fs.get();
       plconfig.geometry_shader = nullptr;
       if (!plconfig.vertex_shader || !plconfig.fragment_shader)
+      {
+        progress->PopState();
         return false;
+      }
 
       pass.pipeline = g_gpu_device->CreatePipeline(plconfig);
       if (!pass.pipeline)
       {
         Log_ErrorPrintf("Failed to create pipeline for pass '%s'", info.name.c_str());
+        progress->PopState();
         return false;
       }
+
+      progress->SetProgressValue(passnum);
     }
   }
+
+  progress->PopState();
 
   m_valid = true;
   return true;

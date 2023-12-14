@@ -112,7 +112,7 @@ void PostProcessing::GLSLShader::FillUniformBuffer(void* buffer, u32 texture_wid
   }
 }
 
-bool PostProcessing::GLSLShader::CompilePipeline(GPUTexture::Format format, u32 width, u32 height)
+bool PostProcessing::GLSLShader::CompilePipeline(GPUTexture::Format format, u32 width, u32 height, ProgressCallback* progress)
 {
   if (m_pipeline)
     m_pipeline.reset();

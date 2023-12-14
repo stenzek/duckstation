@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "host_interface_progress_callback.h"
@@ -60,6 +60,9 @@ void HostInterfaceProgressCallback::SetProgressValue(u32 value)
 
 void HostInterfaceProgressCallback::Redraw(bool force)
 {
+  if (m_last_progress_percent < 0 && m_open_time.GetTimeSeconds() < m_open_delay)
+    return;
+
   const int percent =
     static_cast<int>((static_cast<float>(m_progress_value) / static_cast<float>(m_progress_range)) * 100.0f);
   if (percent == m_last_progress_percent && !force)
