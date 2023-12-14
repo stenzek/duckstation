@@ -1108,6 +1108,7 @@ void System::PauseSystem(bool paused)
       PlatformMisc::ResumeScreensaver();
 
     Host::OnSystemPaused();
+    Host::OnIdleStateChanged();
     InvalidateDisplay();
   }
   else
@@ -1122,6 +1123,7 @@ void System::PauseSystem(bool paused)
     UpdateDisplaySync();
 
     Host::OnSystemResumed();
+    Host::OnIdleStateChanged();
 
     ResetPerformanceCounters();
     ResetThrottler();
@@ -1285,6 +1287,7 @@ bool System::BootSystem(SystemBootParameters parameters)
                                                     Path::GetFileName(parameters.filename), error.GetDescription()));
         s_state = State::Shutdown;
         Host::OnSystemDestroyed();
+        Host::OnIdleStateChanged();
         return false;
       }
 
@@ -1324,6 +1327,7 @@ bool System::BootSystem(SystemBootParameters parameters)
                                        parameters.filename, error.GetDescription()));
     s_state = State::Shutdown;
     Host::OnSystemDestroyed();
+    Host::OnIdleStateChanged();
     return false;
   }
 
@@ -1338,6 +1342,7 @@ bool System::BootSystem(SystemBootParameters parameters)
                                       parameters.override_exe.c_str());
       s_state = State::Shutdown;
       Host::OnSystemDestroyed();
+      Host::OnIdleStateChanged();
       return false;
     }
 
@@ -1351,6 +1356,7 @@ bool System::BootSystem(SystemBootParameters parameters)
     s_state = State::Shutdown;
     ClearRunningGame();
     Host::OnSystemDestroyed();
+    Host::OnIdleStateChanged();
     return false;
   }
 
@@ -1382,6 +1388,7 @@ bool System::BootSystem(SystemBootParameters parameters)
       s_state = State::Shutdown;
       ClearRunningGame();
       Host::OnSystemDestroyed();
+      Host::OnIdleStateChanged();
       return false;
     }
   }
@@ -1392,6 +1399,7 @@ bool System::BootSystem(SystemBootParameters parameters)
     s_state = State::Shutdown;
     ClearRunningGame();
     Host::OnSystemDestroyed();
+    Host::OnIdleStateChanged();
     return false;
   }
 
@@ -1401,6 +1409,7 @@ bool System::BootSystem(SystemBootParameters parameters)
     s_state = State::Shutdown;
     ClearRunningGame();
     Host::OnSystemDestroyed();
+    Host::OnIdleStateChanged();
     return false;
   }
 
@@ -1453,6 +1462,7 @@ bool System::BootSystem(SystemBootParameters parameters)
     PlatformMisc::SuspendScreensaver();
 
   Host::OnSystemStarted();
+  Host::OnIdleStateChanged();
 
   // try to load the state, if it fails, bail out
   if (!parameters.save_state.empty())
@@ -1692,6 +1702,7 @@ void System::DestroySystem()
   s_state = State::Shutdown;
 
   Host::OnSystemDestroyed();
+  Host::OnIdleStateChanged();
 }
 
 void System::ClearRunningGame()

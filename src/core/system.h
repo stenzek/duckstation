@@ -518,6 +518,9 @@ void OnSystemPaused();
 /// Called when the VM is resumed after being paused.
 void OnSystemResumed();
 
+/// Called when the pause state changes, or fullscreen UI opens.
+void OnIdleStateChanged();
+
 /// Called when performance metrics are updated, approximately once a second.
 void OnPerformanceCountersUpdated();
 

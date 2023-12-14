@@ -243,6 +243,11 @@ void Host::OnSystemResumed()
   //
 }
 
+void Host::OnIdleStateChanged()
+{
+  //
+}
+
 void Host::OnPerformanceCountersUpdated()
 {
   //

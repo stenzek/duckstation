@@ -738,6 +738,10 @@ void Host::OnSystemDestroyed()
 {
 }
 
+void Host::OnIdleStateChanged()
+{
+}
+
 void Host::BeginPresentFrame()
 {
 }

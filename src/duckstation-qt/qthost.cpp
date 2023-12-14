@@ -485,7 +485,6 @@ void EmuThread::startFullscreenUI()
   // poll more frequently so we don't lose events
   stopBackgroundControllerPollTimer();
   startBackgroundControllerPollTimer();
-  wakeThread();
 }
 
 void EmuThread::stopFullscreenUI()
@@ -731,7 +730,6 @@ void Host::OnSystemStarting()
 
 void Host::OnSystemStarted()
 {
-  g_emu_thread->wakeThread();
   g_emu_thread->stopBackgroundControllerPollTimer();
 
   emit g_emu_thread->systemStarted();
@@ -751,7 +749,6 @@ void Host::OnSystemResumed()
 
   emit g_emu_thread->systemResumed();
 
-  g_emu_thread->wakeThread();
   g_emu_thread->stopBackgroundControllerPollTimer();
 }
 
@@ -760,10 +757,11 @@ void Host::OnSystemDestroyed()
   g_emu_thread->resetPerformanceCounters();
   g_emu_thread->startBackgroundControllerPollTimer();
   emit g_emu_thread->systemDestroyed();
+}
 
-  // re-wake thread when we're running fsui, otherwise it won't draw
-  if (g_emu_thread->isRunningFullscreenUI())
-    g_emu_thread->wakeThread();
+void Host::OnIdleStateChanged()
+{
+  g_emu_thread->wakeThread();
 }
 
 void EmuThread::reloadInputSources()

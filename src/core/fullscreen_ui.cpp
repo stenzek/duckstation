@@ -229,6 +229,7 @@ static void ExitFullscreenAndOpenURL(const std::string_view& url);
 static void CopyTextToClipboard(std::string title, const std::string_view& text);
 static void DrawAboutWindow();
 static void OpenAboutWindow();
+static void FixStateIfPaused();
 
 static MainWindowType s_current_main_window = MainWindowType::None;
 static PauseSubMenu s_current_pause_submenu = PauseSubMenu::None;
@@ -595,6 +596,9 @@ bool FullscreenUI::Initialize()
   if (!System::IsValid())
     SwitchToLanding();
 
+  if (!System::IsRunning())
+    Host::OnIdleStateChanged();
+
   return true;
 }
 
@@ -697,6 +701,26 @@ void FullscreenUI::OpenPauseMenu()
   s_current_main_window = MainWindowType::PauseMenu;
   s_current_pause_submenu = PauseSubMenu::None;
   QueueResetFocus();
+  FixStateIfPaused();
+}
+
+void FullscreenUI::FixStateIfPaused()
+{
+  if (!System::IsValid() || System::IsRunning())
+    return;
+
+  // When we're paused, we won't have trickled the key up event for escape yet. Do it now.
+  ImGui::UpdateInputEvents(false);
+
+  Host::OnIdleStateChanged();
+  Host::RunOnCPUThread([]() {
+    if (System::IsValid())
+    {
+      // Why twice? To clear the "wants keyboard input" flag.
+      System::InvalidateDisplay();
+      System::InvalidateDisplay();
+    }
+  });
 }
 
 void FullscreenUI::ClosePauseMenu()
@@ -711,6 +735,7 @@ void FullscreenUI::ClosePauseMenu()
   s_current_pause_submenu = PauseSubMenu::None;
   s_pause_menu_was_open = false;
   QueueResetFocus();
+  FixStateIfPaused();
 }
 
 void FullscreenUI::OpenPauseSubMenu(PauseSubMenu submenu)
@@ -837,6 +862,7 @@ void FullscreenUI::ReturnToMainWindow()
 {
   ClosePauseMenu();
   s_current_main_window = System::IsValid() ? MainWindowType::None : MainWindowType::Landing;
+  FixStateIfPaused();
 }
 
 bool FullscreenUI::LoadResources()
@@ -1556,7 +1582,7 @@ void FullscreenUI::DrawInputBindingWindow()
                              ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs))
   {
     ImGui::TextWrapped("%s", SmallString::from_format(FSUI_FSTR("Setting {} binding {}."), s_input_binding_section,
-                                                   s_input_binding_display_name)
+                                                      s_input_binding_display_name)
                                .c_str());
     ImGui::TextUnformatted(FSUI_CSTR("Push a controller button or axis now."));
     ImGui::NewLine();
@@ -2887,7 +2913,7 @@ void FullscreenUI::DrawBIOSSettingsPage()
 
     if (MenuButtonWithValue(title,
                             SmallString::from_format(FSUI_FSTR("BIOS to use when emulating {} consoles."),
-                                                  Settings::GetConsoleRegionDisplayName(region)),
+                                                     Settings::GetConsoleRegionDisplayName(region)),
                             filename.has_value() ? (filename->empty() ? FSUI_CSTR("Auto-Detect") : filename->c_str()) :
                                                    FSUI_CSTR("Use Global Setting")))
     {
@@ -3362,12 +3388,13 @@ void FullscreenUI::DrawControllerSettingsPage()
 
     if (mtap_enabled[mtap_port])
     {
-      MenuHeading(TinyString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_PLUG, "Controller Port {}{}")), mtap_port + 1,
-                                       mtap_slot_names[mtap_slot]));
+      MenuHeading(TinyString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_PLUG, "Controller Port {}{}")),
+                                          mtap_port + 1, mtap_slot_names[mtap_slot]));
     }
     else
     {
-      MenuHeading(TinyString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_PLUG, "Controller Port {}")), mtap_port + 1));
+      MenuHeading(
+        TinyString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_PLUG, "Controller Port {}")), mtap_port + 1));
     }
 
     const TinyString section = TinyString::from_format("Pad{}", global_slot + 1);
@@ -3416,12 +3443,12 @@ void FullscreenUI::DrawControllerSettingsPage()
     if (mtap_enabled[mtap_port])
     {
       MenuHeading(SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_MICROCHIP, "Controller Port {}{} Macros")),
-                                        mtap_port + 1, mtap_slot_names[mtap_slot]));
+                                           mtap_port + 1, mtap_slot_names[mtap_slot]));
     }
     else
     {
       MenuHeading(SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_MICROCHIP, "Controller Port {} Macros")),
-                                        mtap_port + 1));
+                                           mtap_port + 1));
     }
 
     for (u32 macro_index = 0; macro_index < InputManager::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_index++)
@@ -3564,12 +3591,12 @@ void FullscreenUI::DrawControllerSettingsPage()
       {
         MenuHeading(
           SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_SLIDERS_H, "Controller Port {}{} Settings")),
-                                mtap_port + 1, mtap_slot_names[mtap_slot]));
+                                   mtap_port + 1, mtap_slot_names[mtap_slot]));
       }
       else
       {
-        MenuHeading(SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_SLIDERS_H, "Controller Port {} Settings")),
-                                          mtap_port + 1));
+        MenuHeading(SmallString::from_format(
+          fmt::runtime(FSUI_ICONSTR(ICON_FA_SLIDERS_H, "Controller Port {} Settings")), mtap_port + 1));
       }
 
       for (const SettingInfo& si : ci->settings)
@@ -4245,7 +4272,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
         {
           tstr.format(ICON_FA_RULER_VERTICAL "{}##{}", opt.ui_name, opt.name);
           str.format(FSUI_FSTR("Value: {} | Default: {} | Minimum: {} | Maximum: {}"), opt.value[0].float_value,
-                  opt.default_value[0].float_value, opt.min_value[0].float_value, opt.max_value[0].float_value);
+                     opt.default_value[0].float_value, opt.min_value[0].float_value, opt.max_value[0].float_value);
           if (MenuButton(tstr, str))
             ImGui::OpenPopup(tstr);
 
@@ -4344,7 +4371,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
         {
           tstr.format(ICON_FA_RULER_VERTICAL "{}##{}", opt.ui_name, opt.name);
           str.format(FSUI_FSTR("Value: {} | Default: {} | Minimum: {} | Maximum: {}"), opt.value[0].int_value,
-                  opt.default_value[0].int_value, opt.min_value[0].int_value, opt.max_value[0].int_value);
+                     opt.default_value[0].int_value, opt.min_value[0].int_value, opt.max_value[0].int_value);
           if (MenuButton(tstr, str))
             ImGui::OpenPopup(tstr);
 
@@ -4609,7 +4636,7 @@ void FullscreenUI::DrawAchievementsSettingsPage()
     {
       ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
       ActiveButton(SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_USER, "Username: {}")),
-                                         bsi->GetStringValue("Cheevos", "Username")),
+                                            bsi->GetStringValue("Cheevos", "Username")),
                    false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
       TinyString ts_string;
@@ -4642,7 +4669,7 @@ void FullscreenUI::DrawAchievementsSettingsPage()
 
       ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
       ActiveButton(SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_BOOKMARK, "Game: {} ({})")),
-                                         Achievements::GetGameID(), Achievements::GetGameTitle()),
+                                            Achievements::GetGameID(), Achievements::GetGameTitle()),
                    false, false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
       const std::string& rich_presence_string = Achievements::GetRichPresenceString();
@@ -5083,9 +5110,9 @@ void FullscreenUI::PopulateSaveStateScreenshot(SaveStateListEntry* li, const Ext
   li->preview_texture.reset();
   if (ssi && !ssi->screenshot_data.empty())
   {
-    li->preview_texture = g_gpu_device->FetchTexture(
-      ssi->screenshot_width, ssi->screenshot_height, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
-      ssi->screenshot_data.data(), sizeof(u32) * ssi->screenshot_width);
+    li->preview_texture = g_gpu_device->FetchTexture(ssi->screenshot_width, ssi->screenshot_height, 1, 1, 1,
+                                                     GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
+                                                     ssi->screenshot_data.data(), sizeof(u32) * ssi->screenshot_width);
   }
   else
   {
@@ -6523,6 +6550,7 @@ void FullscreenUI::OpenAchievementsWindow()
 
   s_current_main_window = MainWindowType::Achievements;
   QueueResetFocus();
+  FixStateIfPaused();
 }
 
 bool FullscreenUI::IsAchievementsWindowOpen()
@@ -6553,6 +6581,7 @@ void FullscreenUI::OpenLeaderboardsWindow()
 
   s_current_main_window = MainWindowType::Leaderboards;
   QueueResetFocus();
+  FixStateIfPaused();
 }
 
 bool FullscreenUI::IsLeaderboardsWindowOpen()
