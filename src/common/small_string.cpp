@@ -39,7 +39,7 @@ SmallStringBase::SmallStringBase(SmallStringBase&& move)
   assign(std::move(move));
 }
 
-SmallStringBase::SmallStringBase(const std::string_view& sv)
+SmallStringBase::SmallStringBase(const std::string_view sv)
 {
   assign(sv);
 }
@@ -125,7 +125,7 @@ SmallStringBase& SmallStringBase::operator=(SmallStringBase&& move)
   return *this;
 }
 
-SmallStringBase& SmallStringBase::operator=(const std::string_view& str)
+SmallStringBase& SmallStringBase::operator=(const std::string_view str)
 {
   assign(str);
   return *this;
@@ -219,7 +219,7 @@ void SmallStringBase::append(const std::string& str)
   append(str.c_str(), static_cast<u32>(str.length()));
 }
 
-void SmallStringBase::append(const std::string_view& str)
+void SmallStringBase::append(const std::string_view str)
 {
   append(str.data(), static_cast<u32>(str.length()));
 }
@@ -285,7 +285,7 @@ void SmallStringBase::prepend(const std::string& str)
   prepend(str.c_str(), static_cast<u32>(str.length()));
 }
 
-void SmallStringBase::prepend(const std::string_view& str)
+void SmallStringBase::prepend(const std::string_view str)
 {
   prepend(str.data(), static_cast<u32>(str.length()));
 }
@@ -371,7 +371,7 @@ void SmallStringBase::insert(s32 offset, const std::string& str)
   insert(offset, str.c_str(), static_cast<u32>(str.size()));
 }
 
-void SmallStringBase::insert(s32 offset, const std::string_view& str)
+void SmallStringBase::insert(s32 offset, const std::string_view str)
 {
   insert(offset, str.data(), static_cast<u32>(str.size()));
 }
@@ -433,7 +433,7 @@ void SmallStringBase::assign(const std::string& str)
   append(str.data(), static_cast<u32>(str.size()));
 }
 
-void SmallStringBase::assign(const std::string_view& str)
+void SmallStringBase::assign(const std::string_view str)
 {
   clear();
   append(str.data(), static_cast<u32>(str.size()));
@@ -452,7 +452,7 @@ bool SmallStringBase::equals(const SmallStringBase& str) const
   return (m_length == str.m_length && (m_length == 0 || std::strcmp(m_buffer, str.m_buffer) == 0));
 }
 
-bool SmallStringBase::equals(const std::string_view& str) const
+bool SmallStringBase::equals(const std::string_view str) const
 {
   return (m_length == static_cast<u32>(str.length()) &&
           (m_length == 0 || CASE_N_COMPARE(m_buffer, str.data(), m_length) == 0));
@@ -471,7 +471,7 @@ bool SmallStringBase::iequals(const SmallStringBase& str) const
   return (m_length == str.m_length && (m_length == 0 || std::strcmp(m_buffer, str.m_buffer) == 0));
 }
 
-bool SmallStringBase::iequals(const std::string_view& str) const
+bool SmallStringBase::iequals(const std::string_view str) const
 {
   return (m_length == static_cast<u32>(str.length()) &&
           (m_length == 0 || CASE_N_COMPARE(m_buffer, str.data(), m_length) == 0));
@@ -517,7 +517,7 @@ bool SmallStringBase::starts_with(const SmallStringBase& str, bool case_sensitiv
                             (CASE_N_COMPARE(str.m_buffer, m_buffer, other_length) == 0);
 }
 
-bool SmallStringBase::starts_with(const std::string_view& str, bool case_sensitive) const
+bool SmallStringBase::starts_with(const std::string_view str, bool case_sensitive) const
 {
   const u32 other_length = static_cast<u32>(str.length());
   if (other_length > m_length)
@@ -549,7 +549,7 @@ bool SmallStringBase::ends_with(const SmallStringBase& str, bool case_sensitive)
                             (CASE_N_COMPARE(str.m_buffer, m_buffer + start_offset, other_length) == 0);
 }
 
-bool SmallStringBase::ends_with(const std::string_view& str, bool case_sensitive) const
+bool SmallStringBase::ends_with(const std::string_view str, bool case_sensitive) const
 {
   const u32 other_length = static_cast<u32>(str.length());
   if (other_length > m_length)

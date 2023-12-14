@@ -28,7 +28,7 @@ public:
   SmallStringBase(const SmallStringBase& copy);
   SmallStringBase(SmallStringBase&& move);
   SmallStringBase(const std::string& str);
-  SmallStringBase(const std::string_view& sv);
+  SmallStringBase(const std::string_view sv);
 
   // Destructor. Child classes may not have any destructors, as this is not virtual.
   ~SmallStringBase();
@@ -37,7 +37,7 @@ public:
   void assign(const char* str);
   void assign(const char* str, u32 length);
   void assign(const std::string& copy);
-  void assign(const std::string_view& copy);
+  void assign(const std::string_view copy);
   void assign(const SmallStringBase& copy);
   void assign(SmallStringBase&& move);
 
@@ -54,7 +54,7 @@ public:
   void append(const char* appendText);
   void append(const char* str, u32 length);
   void append(const std::string& str);
-  void append(const std::string_view& str);
+  void append(const std::string_view str);
   void append(const SmallStringBase& str);
 
   // append formatted string to this string
@@ -74,7 +74,7 @@ public:
   void prepend(const char* str);
   void prepend(const char* str, u32 length);
   void prepend(const std::string& str);
-  void prepend(const std::string_view& str);
+  void prepend(const std::string_view str);
   void prepend(const SmallStringBase& str);
 
   // append formatted string to this string
@@ -88,7 +88,7 @@ public:
   void insert(s32 offset, const char* str);
   void insert(s32 offset, const char* str, u32 length);
   void insert(s32 offset, const std::string& str);
-  void insert(s32 offset, const std::string_view& str);
+  void insert(s32 offset, const std::string_view str);
   void insert(s32 offset, const SmallStringBase& str);
 
   // set to formatted string
@@ -101,25 +101,25 @@ public:
   // compare one string to another
   bool equals(const char* str) const;
   bool equals(const SmallStringBase& str) const;
-  bool equals(const std::string_view& str) const;
+  bool equals(const std::string_view str) const;
   bool iequals(const char* str) const;
   bool iequals(const SmallStringBase& str) const;
-  bool iequals(const std::string_view& str) const;
+  bool iequals(const std::string_view str) const;
 
   // numerical compares
   int compare(const char* str) const;
   int compare(const SmallStringBase& str) const;
-  int compare(const std::string_view& str) const;
+  int compare(const std::string_view str) const;
   int icompare(const char* str) const;
   int icompare(const SmallStringBase& str) const;
-  int icompare(const std::string_view& str) const;
+  int icompare(const std::string_view str) const;
 
   // starts with / ends with
   bool starts_with(const char* str, bool case_sensitive = true) const;
-  bool starts_with(const std::string_view& str, bool case_sensitive = true) const;
+  bool starts_with(const std::string_view str, bool case_sensitive = true) const;
   bool starts_with(const SmallStringBase& str, bool case_sensitive = true) const;
   bool ends_with(const char* str, bool case_sensitive = true) const;
-  bool ends_with(const std::string_view& str, bool case_sensitive = true) const;
+  bool ends_with(const std::string_view str, bool case_sensitive = true) const;
   bool ends_with(const SmallStringBase& str, bool case_sensitive = true) const;
 
   // searches for a character inside a string
@@ -181,21 +181,21 @@ public:
   // comparative operators
   ALWAYS_INLINE bool operator==(const char* str) const { return equals(str); }
   ALWAYS_INLINE bool operator==(const SmallStringBase& str) const { return equals(str); }
-  ALWAYS_INLINE bool operator==(const std::string_view& str) const { return equals(str); }
+  ALWAYS_INLINE bool operator==(const std::string_view str) const { return equals(str); }
   ALWAYS_INLINE bool operator!=(const char* str) const { return !equals(str); }
   ALWAYS_INLINE bool operator!=(const SmallStringBase& str) const { return !equals(str); }
-  ALWAYS_INLINE bool operator!=(const std::string_view& str) const { return !equals(str); }
+  ALWAYS_INLINE bool operator!=(const std::string_view str) const { return !equals(str); }
   ALWAYS_INLINE bool operator<(const char* str) const { return (compare(str) < 0); }
   ALWAYS_INLINE bool operator<(const SmallStringBase& str) const { return (compare(str) < 0); }
-  ALWAYS_INLINE bool operator<(const std::string_view& str) const { return (compare(str) < 0); }
+  ALWAYS_INLINE bool operator<(const std::string_view str) const { return (compare(str) < 0); }
   ALWAYS_INLINE bool operator>(const char* str) const { return (compare(str) > 0); }
   ALWAYS_INLINE bool operator>(const SmallStringBase& str) const { return (compare(str) > 0); }
-  ALWAYS_INLINE bool operator>(const std::string_view& str) const { return (compare(str) > 0); }
+  ALWAYS_INLINE bool operator>(const std::string_view str) const { return (compare(str) > 0); }
 
   SmallStringBase& operator=(const SmallStringBase& copy);
   SmallStringBase& operator=(const char* str);
   SmallStringBase& operator=(const std::string& str);
-  SmallStringBase& operator=(const std::string_view& str);
+  SmallStringBase& operator=(const std::string_view str);
   SmallStringBase& operator=(SmallStringBase&& move);
 
 protected:
@@ -255,7 +255,7 @@ public:
     assign(move);
   }
 
-  ALWAYS_INLINE SmallStackString(const std::string_view& sv)
+  ALWAYS_INLINE SmallStackString(const std::string_view sv)
   {
     init();
     assign(sv);
@@ -285,7 +285,7 @@ public:
     return *this;
   }
 
-  ALWAYS_INLINE SmallStackString& operator=(const std::string_view& sv)
+  ALWAYS_INLINE SmallStackString& operator=(const std::string_view sv)
   {
     assign(sv);
     return *this;
