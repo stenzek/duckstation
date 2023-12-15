@@ -973,9 +973,10 @@ bool CPU::CodeCache::ReadBlockInstructions(u32 start_pc, BlockInstructionList* i
         return false;
       }
 
-      // change the pc for the second branch's delay slot, it comes from the first branch
-      pc = GetDirectBranchTarget(prev.first, prev.second.pc);
-      Log_DevPrintf("Double branch at %08X, using delay slot from %08X -> %08X", info.pc, prev.second.pc, pc);
+      // we _could_ fetch the delay slot from the first branch's target, but it's probably in a different
+      // page, and that's an invalidation nightmare. so just fallback to the int, this is very rare anyway.
+      Log_WarningPrintf("Direct branch in delay slot at %08X, skipping block", info.pc);
+      return false;
     }
 
     // instruction is decoded now
