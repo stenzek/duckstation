@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 #include <limits>
 #include <tuple>
@@ -134,6 +135,24 @@ struct Rectangle
   constexpr bool Contains(const Rectangle& rhs) const
   {
     return (left <= rhs.left && right >= rhs.right && top <= rhs.top && bottom >= rhs.bottom);
+  }
+
+  /// Returns the middle point of the rectangle.
+  constexpr T GetCenterX() const { return left + ((right - left) / 2); }
+  constexpr T GetCenterY() const { return top + ((bottom - top) / 2); }
+
+  /// Returns the distance between two rectangles.
+  T GetDistance(const Rectangle& rhs) const
+  {
+    const T lcx = GetCenterX();
+    const T lcy = GetCenterY();
+    const T rcx = rhs.GetCenterX();
+    const T rcy = rhs.GetCenterY();
+    const T dx = (lcx - rcx);
+    const T dy = (lcy - rcy);
+    const T distsq = (dx * dx) + (dy * dy);
+    const float dist = std::sqrt(static_cast<float>(distsq));
+    return static_cast<T>(dist);
   }
 
   /// Expands the bounds of the rectangle to contain the specified point.

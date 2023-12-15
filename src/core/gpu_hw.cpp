@@ -2493,13 +2493,13 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
     (m_GPUSTAT.IsMaskingEnabled() || ((src_x % VRAM_WIDTH) + width) > VRAM_WIDTH ||
      ((src_y % VRAM_HEIGHT) + height) > VRAM_HEIGHT || ((dst_x % VRAM_WIDTH) + width) > VRAM_WIDTH ||
      ((dst_y % VRAM_HEIGHT) + height) > VRAM_HEIGHT);
+  const Common::Rectangle<u32> src_bounds = GetVRAMTransferBounds(src_x, src_y, width, height);
+  const Common::Rectangle<u32> dst_bounds = GetVRAMTransferBounds(dst_x, dst_y, width, height);
+  const bool intersect_with_draw = m_vram_dirty_draw_rect.Intersects(src_bounds);
+  const bool intersect_with_write = m_vram_dirty_write_rect.Intersects(src_bounds);
 
   if (use_shader || IsUsingMultisampling())
   {
-    const Common::Rectangle<u32> src_bounds = GetVRAMTransferBounds(src_x, src_y, width, height);
-    const Common::Rectangle<u32> dst_bounds = GetVRAMTransferBounds(dst_x, dst_y, width, height);
-    const bool intersect_with_draw = m_vram_dirty_draw_rect.Intersects(src_bounds);
-    const bool intersect_with_write = m_vram_dirty_write_rect.Intersects(src_bounds);
     if (intersect_with_draw || intersect_with_write)
       UpdateVRAMReadTexture(intersect_with_draw, intersect_with_write);
     IncludeVRAMDirtyRectangle(m_vram_dirty_draw_rect, dst_bounds);
@@ -2545,22 +2545,27 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
   }
 
   GPUTexture* src_tex = m_vram_texture.get();
-  const bool overlaps_with_self = Common::Rectangle<u32>::FromExtents(src_x, src_y, width, height)
-                                    .Intersects(Common::Rectangle<u32>::FromExtents(dst_x, dst_y, width, height));
+  const bool overlaps_with_self = src_bounds.Intersects(dst_bounds);
   if (!g_gpu_device->GetFeatures().texture_copy_to_self || overlaps_with_self)
   {
     src_tex = m_vram_read_texture.get();
-
-    const Common::Rectangle<u32> src_bounds = GetVRAMTransferBounds(src_x, src_y, width, height);
-    const bool intersect_with_draw = m_vram_dirty_draw_rect.Intersects(src_bounds);
-    const bool intersect_with_write = m_vram_dirty_write_rect.Intersects(src_bounds);
     if (intersect_with_draw || intersect_with_write)
       UpdateVRAMReadTexture(intersect_with_draw, intersect_with_write);
   }
 
-  IncludeVRAMDirtyRectangle(
-    m_vram_dirty_draw_rect,
-    Common::Rectangle<u32>::FromExtents(dst_x, dst_y, width, height).Clamped(0, 0, VRAM_WIDTH, VRAM_HEIGHT));
+  Common::Rectangle<u32>* update_rect;
+  if (intersect_with_draw || intersect_with_write)
+  {
+    update_rect = intersect_with_draw ? &m_vram_dirty_draw_rect : &m_vram_dirty_write_rect;
+  }
+  else
+  {
+    const bool use_write =
+      (m_vram_dirty_write_rect.Valid() && m_vram_dirty_draw_rect.Valid() &&
+       m_vram_dirty_write_rect.GetDistance(dst_bounds) < m_vram_dirty_draw_rect.GetDistance(dst_bounds));
+    update_rect = use_write ? &m_vram_dirty_write_rect : &m_vram_dirty_draw_rect;
+  }
+  IncludeVRAMDirtyRectangle(*update_rect, dst_bounds);
 
   if (m_GPUSTAT.check_mask_before_draw)
   {
