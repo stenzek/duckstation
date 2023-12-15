@@ -390,6 +390,9 @@ public:
   /// Moves load delay to the next load delay, and writes any previous load delay to the destination register.
   void UpdateLoadDelay();
 
+  /// Cancels any present load delay.
+  void CancelLoadDelay();
+
   /// Writes the load delay to the CPU structure, so it is synced up with the interpreter.
   void WriteLoadDelayToCPU(bool clear);
 

@@ -2371,6 +2371,8 @@ bool CodeGenerator::Compile_Branch(Instruction instruction, const CodeCache::Ins
 
       // now invalidate lr because it was possibly written in the branch
       m_register_cache.InvalidateGuestRegister(lr_reg);
+      if (m_register_cache.GetLoadDelayRegister() == lr_reg)
+        m_register_cache.CancelLoadDelay();
     }
 
     // we don't need to test the address of constant branches unless they're definitely misaligned, which would be

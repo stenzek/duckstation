@@ -753,6 +753,16 @@ void RegisterCache::UpdateLoadDelay()
   }
 }
 
+void RegisterCache::CancelLoadDelay()
+{
+  if (m_state.load_delay_register == Reg::count)
+    return;
+
+  Log_DebugPrintf("Cancelling load delay of register %s", GetRegName(m_state.load_delay_register));
+  m_state.load_delay_register = Reg::count;
+  m_state.load_delay_value.ReleaseAndClear();
+}
+
 void RegisterCache::WriteLoadDelayToCPU(bool clear)
 {
   // There shouldn't be a flush at the same time as there's a new load delay.
