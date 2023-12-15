@@ -1542,8 +1542,8 @@ std::string Achievements::GetAchievementBadgePath(const rc_client_achievement_t*
   if (achievement->badge_name[0] == 0)
     return path;
 
-  path = Path::Combine(s_image_directory, TinyString::from_format("achievement_{}_{}_{}.png", s_game_id, achievement->id,
-                                                               s_achievement_state_strings[state]));
+  path = Path::Combine(s_image_directory, TinyString::from_format("achievement_{}_{}_{}.png", s_game_id,
+                                                                  achievement->id, s_achievement_state_strings[state]));
 
   if (download_if_missing && !FileSystem::FileExists(path.c_str()))
   {
@@ -1792,6 +1792,7 @@ bool Achievements::ConfirmHardcoreModeDisable(const char* trigger)
 
 void Achievements::ConfirmHardcoreModeDisableAsync(const char* trigger, std::function<void(bool)> callback)
 {
+#ifndef __ANDROID__
 #ifdef ENABLE_RAINTEGRATION
   if (IsUsingRAIntegration())
   {
@@ -1803,7 +1804,7 @@ void Achievements::ConfirmHardcoreModeDisableAsync(const char* trigger, std::fun
 
   if (!FullscreenUI::Initialize())
   {
-    Host::AddOSDMessage(fmt::format(TRANSLATE_FS("Cannot {} while hardcode mode is active.", trigger)),
+    Host::AddOSDMessage(fmt::format(TRANSLATE_FS("Achievements", "Cannot {} while hardcode mode is active."), trigger),
                         Host::OSD_WARNING_DURATION);
     callback(false);
     return;
@@ -1825,6 +1826,11 @@ void Achievements::ConfirmHardcoreModeDisableAsync(const char* trigger, std::fun
                 trigger),
     std::move(real_callback), fmt::format(ICON_FA_CHECK " {}", TRANSLATE_SV("Achievements", "Yes")),
     fmt::format(ICON_FA_TIMES " {}", TRANSLATE_SV("Achievements", "No")));
+#else
+  Host::AddOSDMessage(fmt::format(TRANSLATE_FS("Achievements", "Cannot {} while hardcode mode is active."), trigger),
+                      Host::OSD_WARNING_DURATION);
+  callback(false);
+#endif
 }
 
 void Achievements::ClearUIState()
@@ -2187,14 +2193,14 @@ void Achievements::DrawAchievementsWindow()
         if (s_game_summary.num_unlocked_achievements == s_game_summary.num_core_achievements)
         {
           text.format(TRANSLATE_FS("Achievements", "You have unlocked all achievements and earned {} points!"),
-                   s_game_summary.points_unlocked);
+                      s_game_summary.points_unlocked);
         }
         else
         {
           text.format(TRANSLATE_FS("Achievements",
-                                "You have unlocked {0} of {1} achievements, earning {2} of {3} possible points."),
-                   s_game_summary.num_unlocked_achievements, s_game_summary.num_core_achievements,
-                   s_game_summary.points_unlocked, s_game_summary.points_core);
+                                   "You have unlocked {0} of {1} achievements, earning {2} of {3} possible points."),
+                      s_game_summary.num_unlocked_achievements, s_game_summary.num_core_achievements,
+                      s_game_summary.points_unlocked, s_game_summary.points_core);
         }
       }
       else
@@ -2335,8 +2341,9 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
   SmallString text;
 
   const float midpoint = bb.Min.y + g_large_font->FontSize + spacing;
-  text.format((cheevo->points != 1) ? TRANSLATE_FS("Achievements", "{} points") : TRANSLATE_FS("Achievements", "{} point"),
-           cheevo->points);
+  text.format((cheevo->points != 1) ? TRANSLATE_FS("Achievements", "{} points") :
+                                      TRANSLATE_FS("Achievements", "{} point"),
+              cheevo->points);
   const ImVec2 points_template_size(
     g_medium_font->CalcTextSizeA(g_medium_font->FontSize, FLT_MAX, 0.0f, TRANSLATE("Achievements", "XXX points")));
   const ImVec2 points_size(
