@@ -3366,7 +3366,8 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
   if (s_running_game_serial != prev_serial)
     UpdateSessionTime(prev_serial);
 
-  SaveStateSelectorUI::RefreshList();
+  if (SaveStateSelectorUI::IsOpen())
+    SaveStateSelectorUI::RefreshList();
 
 #ifdef ENABLE_DISCORD_PRESENCE
   UpdateDiscordPresence();

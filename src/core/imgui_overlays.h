@@ -15,6 +15,7 @@ namespace SaveStateSelectorUI {
 
 static constexpr float DEFAULT_OPEN_TIME = 5.0f;
 
+bool IsOpen();
 void Open(float open_time = DEFAULT_OPEN_TIME);
 void RefreshList();
 void DestroyTextures();

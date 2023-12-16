@@ -688,6 +688,11 @@ static ImAnimatedFloat s_background_animated;
 static bool s_open = false;
 } // namespace SaveStateSelectorUI
 
+bool SaveStateSelectorUI::IsOpen()
+{
+  return s_open;
+}
+
 void SaveStateSelectorUI::Open(float open_time /* = DEFAULT_OPEN_TIME */)
 {
   s_open_time = 0.0f;
