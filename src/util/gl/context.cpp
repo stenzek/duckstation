@@ -65,7 +65,12 @@ static void DisableBrokenExtensions(const char* gl_vendor, const char* gl_render
          gl_major_version >= 3 && gl_minor_version >= 2 && major_version > 0))
     {
       // r32p0 and beyond seem okay.
-      Log_VerbosePrintf("Keeping copy_image for driver version '%s'", gl_version);
+      //Log_VerbosePrintf("Keeping copy_image for driver version '%s'", gl_version);
+
+      // Framebuffer blits still end up faster.
+      Log_VerbosePrintf("Newer Mali driver detected, disabling GL_{EXT,OES}_copy_image.");
+      GLAD_GL_EXT_copy_image = 0;
+      GLAD_GL_OES_copy_image = 0;
     }
     else
     {
