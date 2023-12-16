@@ -1413,6 +1413,10 @@ void Achievements::SetHardcoreMode(bool enabled, bool force_display_message)
     DisplayAchievementSummary();
   }
 
+  // Reload setting to permit cheating-like things if we were just disabled.
+  if (!enabled)
+    Host::RunOnCPUThread([]() { System::ApplySettings(false); });
+
   // Toss away UI state, because it's invalid now
   ClearUIState();
 
