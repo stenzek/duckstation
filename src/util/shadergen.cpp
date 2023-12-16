@@ -573,7 +573,7 @@ void ShaderGen::DeclareFragmentEntryPoint(
 
     if (m_use_glsl_binding_layout)
     {
-      if (m_supports_dual_source_blend)
+      if (m_supports_dual_source_blend && num_color_outputs > 1)
       {
         for (u32 i = 0; i < num_color_outputs; i++)
         {
