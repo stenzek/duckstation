@@ -7,6 +7,10 @@
 class SmallStringBase;
 
 namespace CPU {
+
 void DisassembleInstruction(SmallStringBase* dest, u32 pc, u32 bits);
 void DisassembleInstructionComment(SmallStringBase* dest, u32 pc, u32 bits, Registers* regs);
+
+const char* GetGTERegisterName(u32 index);
+
 } // namespace CPU
