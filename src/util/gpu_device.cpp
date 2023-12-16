@@ -553,7 +553,7 @@ void GPUDevice::RenderImGui()
         const s32 flipped_y =
           static_cast<s32>(m_window_info.surface_height) - static_cast<s32>(pcmd->ClipRect.y) - height;
         SetScissor(static_cast<s32>(pcmd->ClipRect.x), flipped_y, static_cast<s32>(pcmd->ClipRect.z - pcmd->ClipRect.x),
-                   flipped_y + height);
+                   height);
       }
       else
       {
