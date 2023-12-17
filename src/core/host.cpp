@@ -321,7 +321,7 @@ void Host::ReleaseGPUDevice()
   if (!g_gpu_device)
     return;
 
-  SaveStateSelectorUI::DestroyTextures();
+  ImGuiManager::DestroyOverlayTextures();
   FullscreenUI::Shutdown();
   ImGuiManager::Shutdown();
 

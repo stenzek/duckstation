@@ -1621,7 +1621,7 @@ void System::DestroySystem()
 
   PostProcessing::Shutdown();
 
-  SaveStateSelectorUI::Close(true);
+  SaveStateSelectorUI::Clear();
   FullscreenUI::OnSystemDestroyed();
 
   InputManager::PauseVibration();
@@ -3367,7 +3367,9 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
     UpdateSessionTime(prev_serial);
 
   if (SaveStateSelectorUI::IsOpen())
-    SaveStateSelectorUI::RefreshList();
+    SaveStateSelectorUI::RefreshList(s_running_game_serial);
+  else
+    SaveStateSelectorUI::ClearList();
 
 #ifdef ENABLE_DISCORD_PRESENCE
   UpdateDiscordPresence();

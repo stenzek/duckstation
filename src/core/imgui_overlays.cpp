@@ -31,6 +31,7 @@
 #include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
+#include "common/thirdparty/SmallVector.h"
 #include "common/timer.h"
 
 #include "IconsFontAwesome5.h"
@@ -328,14 +329,14 @@ void ImGuiManager::DrawPerformanceOverlay()
       const bool interlaced = g_gpu->IsInterlacedDisplayEnabled();
       const bool pal = g_gpu->IsInPALMode();
       text.format("{}x{} {} {}", effective_width, effective_height, pal ? "PAL" : "NTSC",
-               interlaced ? "Interlaced" : "Progressive");
+                  interlaced ? "Interlaced" : "Progressive");
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
     }
 
     if (g_settings.display_show_cpu)
     {
       text.format("{:.2f}ms | {:.2f}ms | {:.2f}ms", System::GetMinimumFrameTime(), System::GetAverageFrameTime(),
-               System::GetMaximumFrameTime());
+                  System::GetMaximumFrameTime());
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
 
       if (g_settings.cpu_overclock_active ||
@@ -496,8 +497,8 @@ void ImGuiManager::DrawEnhancementsOverlay()
 {
   LargeString text;
   text.append_format("{} {}-{}", Settings::GetConsoleRegionName(System::GetRegion()),
-                  GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()),
-                  g_gpu->IsHardwareRenderer() ? "HW" : "SW");
+                     GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()),
+                     g_gpu->IsHardwareRenderer() ? "HW" : "SW");
 
   if (g_settings.rewind_enable)
     text.append_format(" RW={}/{}", g_settings.rewind_save_frequency, g_settings.rewind_save_slots);
@@ -655,29 +656,38 @@ namespace SaveStateSelectorUI {
 namespace {
 struct ListEntry
 {
-  std::string path;
-  std::string serial;
-  std::string title;
-  std::string formatted_timestamp;
+  std::string summary;
+  std::string game_details; // only in global slots
+  std::string filename;
   std::unique_ptr<GPUTexture> preview_texture;
   s32 slot;
   bool global;
 };
 } // namespace
 
-static void InitializePlaceholderListEntry(ListEntry* li, std::string path, s32 slot, bool global);
-static void InitializeListEntry(ListEntry* li, ExtendedSaveStateInfo* ssi, std::string path, s32 slot, bool global);
+static void InitializePlaceholderListEntry(ListEntry* li, const std::string& path, s32 slot, bool global);
+static void InitializeListEntry(ListEntry* li, ExtendedSaveStateInfo* ssi, const std::string& path, s32 slot,
+                                bool global);
 
+static void DestroyTextures();
 static void RefreshHotkeyLegend();
 static void Draw();
+static void ShowSlotOSDMessage();
+static std::string GetCurrentSlotPath();
+
+static constexpr const char* DATE_TIME_FORMAT =
+  TRANSLATE_NOOP("SaveStateSelectorUI", "Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.");
+
+static std::shared_ptr<GPUTexture> s_placeholder_texture;
 
 static std::string s_load_legend;
 static std::string s_save_legend;
 static std::string s_prev_legend;
 static std::string s_next_legend;
 
-static std::vector<ListEntry> s_slots;
-static u32 s_current_selection = 0;
+static llvm::SmallVector<ListEntry, System::PER_GAME_SAVE_STATE_SLOTS + System::GLOBAL_SAVE_STATE_SLOTS> s_slots;
+static s32 s_current_slot = 0;
+static bool s_current_slot_global = false;
 
 static float s_open_time = 0.0f;
 static float s_close_time = 0.0f;
@@ -695,31 +705,34 @@ bool SaveStateSelectorUI::IsOpen()
 
 void SaveStateSelectorUI::Open(float open_time /* = DEFAULT_OPEN_TIME */)
 {
+  const std::string& serial = System::GetGameSerial();
+
   s_open_time = 0.0f;
   s_close_time = open_time;
 
   if (s_open)
     return;
 
+  if (!s_placeholder_texture)
+    s_placeholder_texture = ImGuiFullscreen::LoadTexture("no-save.png");
+
   s_scroll_animated.Reset(0.0f);
   s_background_animated.Reset(0.0f);
   s_open = true;
-  RefreshList();
+  RefreshList(serial);
   RefreshHotkeyLegend();
 }
 
-void SaveStateSelectorUI::Close(bool reset_slot)
+void SaveStateSelectorUI::Close()
 {
   s_open = false;
   s_load_legend = {};
   s_save_legend = {};
   s_prev_legend = {};
   s_next_legend = {};
-  if (reset_slot)
-    s_current_selection = 0;
 }
 
-void SaveStateSelectorUI::RefreshList()
+void SaveStateSelectorUI::RefreshList(const std::string& serial)
 {
   for (ListEntry& entry : s_slots)
   {
@@ -731,11 +744,11 @@ void SaveStateSelectorUI::RefreshList()
   if (System::IsShutdown())
     return;
 
-  if (!System::GetGameSerial().empty())
+  if (!serial.empty())
   {
     for (s32 i = 1; i <= System::PER_GAME_SAVE_STATE_SLOTS; i++)
     {
-      std::string path(System::GetGameSaveStateFileName(System::GetGameSerial(), i));
+      std::string path(System::GetGameSaveStateFileName(serial, i));
       std::optional<ExtendedSaveStateInfo> ssi = System::GetExtendedSaveStateInfo(path.c_str());
 
       ListEntry li;
@@ -761,9 +774,26 @@ void SaveStateSelectorUI::RefreshList()
 
     s_slots.push_back(std::move(li));
   }
+}
 
-  if (s_slots.empty() || s_current_selection >= s_slots.size())
-    s_current_selection = 0;
+void SaveStateSelectorUI::Clear()
+{
+  // called on CPU thread at shutdown, textures should already be deleted, unless running
+  // big picture UI, in which case we have to delete them here...
+  ClearList();
+
+  s_current_slot = 0;
+  s_current_slot_global = false;
+}
+
+void SaveStateSelectorUI::ClearList()
+{
+  for (ListEntry& li : s_slots)
+  {
+    if (li.preview_texture)
+      g_gpu_device->RecycleTexture(std::move(li.preview_texture));
+  }
+  s_slots.clear();
 }
 
 void SaveStateSelectorUI::DestroyTextures()
@@ -775,6 +805,8 @@ void SaveStateSelectorUI::DestroyTextures()
     if (entry.preview_texture)
       g_gpu_device->RecycleTexture(std::move(entry.preview_texture));
   }
+
+  s_placeholder_texture.reset();
 }
 
 void SaveStateSelectorUI::RefreshHotkeyLegend()
@@ -794,34 +826,69 @@ void SaveStateSelectorUI::RefreshHotkeyLegend()
                                       TRANSLATE_STR("SaveStateSelectorUI", "Select Next"));
 }
 
-void SaveStateSelectorUI::SelectNextSlot()
+void SaveStateSelectorUI::SelectNextSlot(bool open_selector)
 {
-  if (!s_open)
-    Open();
+  const s32 total_slots = s_current_slot_global ? System::GLOBAL_SAVE_STATE_SLOTS : System::PER_GAME_SAVE_STATE_SLOTS;
+  s_current_slot++;
+  if (s_current_slot >= total_slots)
+  {
+    s_current_slot -= total_slots;
+    s_current_slot_global = !s_current_slot_global;
+    if (System::GetGameSerial().empty() && !s_current_slot_global)
+    {
+      s_current_slot_global = false;
+      s_current_slot = 0;
+    }
+  }
 
-  s_open_time = 0.0f;
-  s_current_selection = (s_current_selection == static_cast<u32>(s_slots.size() - 1)) ? 0 : (s_current_selection + 1);
+  if (open_selector)
+  {
+    if (!s_open)
+      Open();
+
+    s_open_time = 0.0f;
+  }
+  else
+  {
+    ShowSlotOSDMessage();
+  }
 }
 
-void SaveStateSelectorUI::SelectPreviousSlot()
+void SaveStateSelectorUI::SelectPreviousSlot(bool open_selector)
 {
-  if (!s_open)
-    Open();
+  s_current_slot--;
+  if (s_current_slot < 0)
+  {
+    s_current_slot_global = !s_current_slot_global;
+    s_current_slot += s_current_slot_global ? System::GLOBAL_SAVE_STATE_SLOTS : System::PER_GAME_SAVE_STATE_SLOTS;
+    if (System::GetGameSerial().empty() && !s_current_slot_global)
+    {
+      s_current_slot_global = false;
+      s_current_slot = 0;
+    }
+  }
 
-  s_open_time = 0.0f;
-  s_current_selection =
-    (s_current_selection == 0) ? (static_cast<u32>(s_slots.size()) - 1u) : (s_current_selection - 1);
+  if (open_selector)
+  {
+    if (!s_open)
+      Open();
+
+    s_open_time = 0.0f;
+  }
+  else
+  {
+    ShowSlotOSDMessage();
+  }
 }
 
-void SaveStateSelectorUI::InitializeListEntry(ListEntry* li, ExtendedSaveStateInfo* ssi, std::string path, s32 slot,
-                                              bool global)
+void SaveStateSelectorUI::InitializeListEntry(ListEntry* li, ExtendedSaveStateInfo* ssi, const std::string& path,
+                                              s32 slot, bool global)
 {
-  li->title = std::move(ssi->title);
-  li->serial = std::move(ssi->serial);
-  li->path = std::move(path);
-  li->formatted_timestamp =
-    fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "Saved at {0:%H:%M:%S} on {0:%a} {0:%Y/%m/%d}."),
-                fmt::localtime(ssi->timestamp));
+  if (global)
+    li->game_details = fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "{} ({})"), ssi->title, ssi->serial);
+
+  li->summary = fmt::format(TRANSLATE_FS("SaveStateSelectorUI", DATE_TIME_FORMAT), fmt::localtime(ssi->timestamp));
+  li->filename = Path::GetFileName(path);
   li->slot = slot;
   li->global = global;
 
@@ -835,38 +902,17 @@ void SaveStateSelectorUI::InitializeListEntry(ListEntry* li, ExtendedSaveStateIn
       li->preview_texture = g_gpu_device->FetchTexture(
         ssi->screenshot_width, ssi->screenshot_height, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
         ssi->screenshot_data.data(), sizeof(u32) * ssi->screenshot_width);
+      if (!li->preview_texture)
+        Log_ErrorPrintf("Failed to upload save state image to GPU");
     }
-    else
-    {
-      li->preview_texture = g_gpu_device->FetchTexture(
-        Resources::PLACEHOLDER_ICON_WIDTH, Resources::PLACEHOLDER_ICON_HEIGHT, 1, 1, 1, GPUTexture::Type::Texture,
-        GPUTexture::Format::RGBA8, Resources::PLACEHOLDER_ICON_DATA, sizeof(u32) * Resources::PLACEHOLDER_ICON_WIDTH);
-    }
-
-    if (!li->preview_texture)
-      Log_ErrorPrintf("Failed to upload save state image to GPU");
   }
 }
 
-void SaveStateSelectorUI::InitializePlaceholderListEntry(ListEntry* li, std::string path, s32 slot, bool global)
+void SaveStateSelectorUI::InitializePlaceholderListEntry(ListEntry* li, const std::string& path, s32 slot, bool global)
 {
-  li->title = TRANSLATE_STR("SaveStateSelectorUI", "No Save State");
-  std::string().swap(li->serial);
-  li->path = std::move(path);
-  std::string().swap(li->formatted_timestamp);
+  li->summary = TRANSLATE_STR("SaveStateSelectorUI", "No save present in this slot.");
   li->slot = slot;
   li->global = global;
-
-  if (g_gpu_device)
-  {
-    g_gpu_device->RecycleTexture(std::move(li->preview_texture));
-
-    li->preview_texture = g_gpu_device->FetchTexture(
-      Resources::PLACEHOLDER_ICON_WIDTH, Resources::PLACEHOLDER_ICON_HEIGHT, 1, 1, 1, GPUTexture::Type::Texture,
-      GPUTexture::Format::RGBA8, Resources::PLACEHOLDER_ICON_DATA, sizeof(u32) * Resources::PLACEHOLDER_ICON_WIDTH);
-    if (!li->preview_texture)
-      Log_ErrorPrintf("Failed to upload save state image to GPU");
-  }
 }
 
 void SaveStateSelectorUI::Draw()
@@ -899,6 +945,8 @@ void SaveStateSelectorUI::Draw()
                       ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar |
                         ImGuiWindowFlags_NoBackground);
     {
+      const s32 current_slot = GetCurrentSlot();
+      const bool current_slot_global = IsCurrentSlotGlobal();
       const ImVec2 image_size = ImVec2(128.0f * scale, (128.0f / (4.0f / 3.0f)) * scale);
       const float item_width = std::floor(width - (padding_and_rounding * 2.0f) - ImGui::GetStyle().ScrollbarSize);
       const float item_height = std::floor(image_size.y + padding * 2.0f);
@@ -909,7 +957,7 @@ void SaveStateSelectorUI::Draw()
         const ListEntry& entry = s_slots[i];
         const float y_start = item_height * static_cast<float>(i);
 
-        if (i == s_current_selection)
+        if (entry.slot == current_slot && entry.global == current_slot_global)
         {
           ImGui::SetCursorPosY(y_start);
 
@@ -946,11 +994,12 @@ void SaveStateSelectorUI::Draw()
                                                     ImColor(0.22f, 0.30f, 0.34f, 0.9f), padding_and_rounding);
         }
 
-        if (entry.preview_texture)
+        if (GPUTexture* preview_texture =
+              entry.preview_texture ? entry.preview_texture.get() : s_placeholder_texture.get())
         {
           ImGui::SetCursorPosY(y_start + padding);
           ImGui::SetCursorPosX(padding);
-          ImGui::Image(entry.preview_texture.get(), image_size);
+          ImGui::Image(preview_texture, image_size);
         }
 
         ImGui::SetCursorPosY(y_start + padding);
@@ -958,24 +1007,15 @@ void SaveStateSelectorUI::Draw()
         ImGui::Indent(text_indent);
 
         ImGui::TextUnformatted(TinyString::from_format(entry.global ?
-                                                      TRANSLATE_FS("SaveStateSelectorUI", "Global Slot {}") :
-                                                      TRANSLATE_FS("SaveStateSelectorUI", "Game Slot {}"),
-                                                    entry.slot)
+                                                         TRANSLATE_FS("SaveStateSelectorUI", "Global Slot {}") :
+                                                         TRANSLATE_FS("SaveStateSelectorUI", "Game Slot {}"),
+                                                       entry.slot)
                                  .c_str());
-        if (!entry.formatted_timestamp.empty())
-        {
-          if (entry.global)
-            ImGui::TextUnformatted(entry.title.c_str());
-          ImGui::TextUnformatted(entry.formatted_timestamp.c_str());
-        }
-        else
-        {
-          ImGui::TextUnformatted(TRANSLATE("SaveStateSelectorUI", "No save present in this slot."));
-        }
-
-        const std::string_view filename = Path::GetFileName(entry.path);
+        if (entry.global)
+          ImGui::TextUnformatted(entry.game_details.c_str(), entry.game_details.c_str() + entry.game_details.length());
+        ImGui::TextUnformatted(entry.summary.c_str(), entry.summary.c_str() + entry.summary.length());
         ImGui::PushFont(ImGuiManager::GetFixedFont());
-        ImGui::TextUnformatted(filename.data(), filename.data() + filename.length());
+        ImGui::TextUnformatted(entry.filename.data(), entry.filename.data() + entry.filename.length());
         ImGui::PopFont();
 
         ImGui::Unindent(text_indent);
@@ -1016,22 +1056,78 @@ void SaveStateSelectorUI::Draw()
     Close();
 }
 
+s32 SaveStateSelectorUI::GetCurrentSlot()
+{
+  return s_current_slot + 1;
+}
+
+bool SaveStateSelectorUI::IsCurrentSlotGlobal()
+{
+  return s_current_slot_global;
+}
+
+std::string SaveStateSelectorUI::GetCurrentSlotPath()
+{
+  std::string filename;
+  if (!s_current_slot_global)
+  {
+    if (const std::string& serial = System::GetGameSerial(); !serial.empty())
+      filename = System::GetGameSaveStateFileName(serial, s_current_slot + 1);
+  }
+  else
+  {
+    filename = System::GetGlobalSaveStateFileName(s_current_slot + 1);
+  }
+
+  return filename;
+}
+
 void SaveStateSelectorUI::LoadCurrentSlot()
 {
-  if (s_slots.empty() || s_current_selection >= s_slots.size() || s_slots[s_current_selection].path.empty())
-    return;
+  if (std::string path = GetCurrentSlotPath(); !path.empty())
+  {
+    if (FileSystem::FileExists(path.c_str()))
+    {
+      System::LoadState(path.c_str());
+    }
+    else
+    {
+      Host::AddIconOSDMessage(
+        "LoadState", ICON_FA_SD_CARD,
+        IsCurrentSlotGlobal() ?
+          fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "No save state found in Global Slot {}."), GetCurrentSlot()) :
+          fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "No save state found in Slot {}."), GetCurrentSlot()),
+        Host::OSD_INFO_DURATION);
+    }
+  }
 
-  System::LoadState(s_slots[s_current_selection].path.c_str());
   Close();
 }
 
 void SaveStateSelectorUI::SaveCurrentSlot()
 {
-  if (s_slots.empty() || s_current_selection >= s_slots.size() || s_slots[s_current_selection].path.empty())
-    return;
+  if (std::string path = GetCurrentSlotPath(); !path.empty())
+    System::SaveState(path.c_str(), g_settings.create_save_state_backups);
 
-  System::SaveState(s_slots[s_current_selection].path.c_str(), g_settings.create_save_state_backups);
   Close();
+}
+
+void SaveStateSelectorUI::ShowSlotOSDMessage()
+{
+  const std::string path = GetCurrentSlotPath();
+  FILESYSTEM_STAT_DATA sd;
+  std::string date;
+  if (!path.empty() && FileSystem::StatFile(path.c_str(), &sd))
+    date = fmt::format(TRANSLATE_FS("SaveStateSelectorUI", DATE_TIME_FORMAT), fmt::localtime(sd.ModificationTime));
+  else
+    date = TRANSLATE_STR("SaveStateSelectorUI", "no save yet");
+
+  Host::AddIconOSDMessage(
+    "ShowSlotOSDMessage", ICON_FA_SEARCH,
+    IsCurrentSlotGlobal() ?
+      fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "Global Save Slot {0} selected ({1})."), GetCurrentSlot(), date) :
+      fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "Save Slot {0} selected ({1})."), GetCurrentSlot(), date),
+    Host::OSD_QUICK_DURATION);
 }
 
 void ImGuiManager::RenderOverlayWindows()
@@ -1042,4 +1138,9 @@ void ImGuiManager::RenderOverlayWindows()
     if (SaveStateSelectorUI::s_open)
       SaveStateSelectorUI::Draw();
   }
+}
+
+void ImGuiManager::DestroyOverlayTextures()
+{
+  SaveStateSelectorUI::DestroyTextures();
 }

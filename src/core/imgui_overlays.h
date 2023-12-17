@@ -5,25 +5,32 @@
 
 #include "util/imgui_manager.h"
 
+#include <string>
+
 namespace ImGuiManager {
 void RenderTextOverlays();
 void RenderDebugWindows();
+
 void RenderOverlayWindows();
+void DestroyOverlayTextures();
 } // namespace ImGuiManager
 
 namespace SaveStateSelectorUI {
 
-static constexpr float DEFAULT_OPEN_TIME = 5.0f;
+static constexpr float DEFAULT_OPEN_TIME = 7.5f;
 
 bool IsOpen();
 void Open(float open_time = DEFAULT_OPEN_TIME);
-void RefreshList();
-void DestroyTextures();
-void Close(bool reset_slot = false);
+void RefreshList(const std::string& serial);
+void Clear();
+void ClearList();
+void Close();
 
-void SelectNextSlot();
-void SelectPreviousSlot();
+void SelectNextSlot(bool open_selector);
+void SelectPreviousSlot(bool open_selector);
 
+s32 GetCurrentSlot();
+bool IsCurrentSlotGlobal();
 void LoadCurrentSlot();
 void SaveCurrentSlot();
 

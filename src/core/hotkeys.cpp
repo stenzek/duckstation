@@ -4,11 +4,11 @@
 #include "achievements.h"
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
+#include "cpu_pgxp.h"
 #include "fullscreen_ui.h"
 #include "gpu.h"
 #include "host.h"
 #include "imgui_overlays.h"
-#include "cpu_pgxp.h"
 #include "settings.h"
 #include "spu.h"
 #include "system.h"
@@ -68,7 +68,7 @@ static void HotkeyLoadStateSlot(bool global, s32 slot)
   if (!global && System::GetGameSerial().empty())
   {
     Host::AddKeyedOSDMessage("LoadState", TRANSLATE_NOOP("OSDMessage", "Cannot load state for game without serial."),
-                             5.0f);
+                             Host::OSD_ERROR_DURATION);
     return;
   }
 
@@ -77,7 +77,8 @@ static void HotkeyLoadStateSlot(bool global, s32 slot)
   if (!FileSystem::FileExists(path.c_str()))
   {
     Host::AddKeyedOSDMessage("LoadState",
-                             fmt::format(TRANSLATE_NOOP("OSDMessage", "No save state found in slot {}."), slot), 5.0f);
+                             fmt::format(TRANSLATE_NOOP("OSDMessage", "No save state found in slot {}."), slot),
+                             Host::OSD_INFO_DURATION);
     return;
   }
 
@@ -92,7 +93,7 @@ static void HotkeySaveStateSlot(bool global, s32 slot)
   if (!global && System::GetGameSerial().empty())
   {
     Host::AddKeyedOSDMessage("LoadState", TRANSLATE_NOOP("OSDMessage", "Cannot save state for game without serial."),
-                             5.0f);
+                             Host::OSD_ERROR_DURATION);
     return;
   }
 
@@ -518,12 +519,20 @@ DEFINE_HOTKEY("SaveSelectedSaveState", TRANSLATE_NOOP("Hotkeys", "Save States"),
 DEFINE_HOTKEY("SelectPreviousSaveStateSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
               TRANSLATE_NOOP("Hotkeys", "Select Previous Save Slot"), [](s32 pressed) {
                 if (!pressed)
-                  Host::RunOnCPUThread(SaveStateSelectorUI::SelectPreviousSlot);
+                  Host::RunOnCPUThread([]() { SaveStateSelectorUI::SelectPreviousSlot(true); });
               })
 DEFINE_HOTKEY("SelectNextSaveStateSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
               TRANSLATE_NOOP("Hotkeys", "Select Next Save Slot"), [](s32 pressed) {
                 if (!pressed)
-                  Host::RunOnCPUThread(SaveStateSelectorUI::SelectNextSlot);
+                  Host::RunOnCPUThread([]() { SaveStateSelectorUI::SelectNextSlot(true); });
+              })
+DEFINE_HOTKEY("SaveStateAndSelectNextSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
+              TRANSLATE_NOOP("Hotkeys", "Save State and Select Next Slot"), [](s32 pressed) {
+                if (!pressed && System::IsValid())
+                {
+                  SaveStateSelectorUI::SaveCurrentSlot();
+                  SaveStateSelectorUI::SelectNextSlot(false);
+                }
               })
 
 DEFINE_HOTKEY("UndoLoadState", TRANSLATE_NOOP("Hotkeys", "Save States"), TRANSLATE_NOOP("Hotkeys", "Undo Load State"),
