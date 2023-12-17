@@ -11,6 +11,7 @@
 #include <array>
 
 namespace CPU {
+namespace {
 
 enum Operand : u8
 {
@@ -30,6 +31,28 @@ struct TableEntry
 {
   const char* format;
 };
+
+struct GTEInstructionTable
+{
+  const char* name;
+  bool sf;
+  bool lm;
+  bool mvmva;
+};
+} // namespace
+
+static void FormatInstruction(SmallStringBase* dest, const Instruction inst, u32 pc, const char* format);
+static void FormatComment(SmallStringBase* dest, const Instruction inst, u32 pc, Registers* regs, const char* format);
+
+template<typename T>
+static void FormatCopInstruction(SmallStringBase* dest, u32 pc, const Instruction inst,
+                                 const std::pair<T, const char*>* table, size_t table_size, T table_key);
+
+template<typename T>
+static void FormatCopComment(SmallStringBase* dest, u32 pc, Registers* regs, const Instruction inst,
+                             const std::pair<T, const char*>* table, size_t table_size, T table_key);
+
+static void FormatGTEInstruction(SmallStringBase* dest, u32 pc, const Instruction inst);
 
 static const std::array<const char*, 64> s_base_table = {{
   "",                       // 0
@@ -180,15 +203,6 @@ static constexpr const std::array<const char*, 64> s_gte_register_names = {
    "trz",   "llm_0", "llm_1", "llm_2", "llm_3", "llm_4", "rbk",  "gbk",  "bbk",  "lcm_0", "lcm_1", "lcm_2", "lcm_3",
    "lcm_4", "rfc",   "gfc",   "bfc",   "ofx",   "ofy",   "h",    "dqa",  "dqb",  "zsf3",  "zsf4",  "flag"}};
 
-namespace {
-struct GTEInstructionTable
-{
-  const char* name;
-  bool sf;
-  bool lm;
-  bool mvmva;
-};
-} // namespace
 static constexpr const std::array<GTEInstructionTable, 64> s_gte_instructions = {{
   {"rtps", true, true, false},      // 0x00
   {"nclip", false, false, false},   // 0x01
@@ -256,7 +270,9 @@ static constexpr const std::array<GTEInstructionTable, 64> s_gte_instructions = 
   {"ncct", true, true, false},      // 0x3F
 }};
 
-static void FormatInstruction(SmallStringBase* dest, const Instruction inst, u32 pc, const char* format)
+} // namespace CPU
+
+void CPU::FormatInstruction(SmallStringBase* dest, const Instruction inst, u32 pc, const char* format)
 {
   dest->clear();
 
@@ -352,7 +368,7 @@ static void FormatInstruction(SmallStringBase* dest, const Instruction inst, u32
   }
 }
 
-static void FormatComment(SmallStringBase* dest, const Instruction inst, u32 pc, Registers* regs, const char* format)
+void CPU::FormatComment(SmallStringBase* dest, const Instruction inst, u32 pc, Registers* regs, const char* format)
 {
   const char* str = format;
   while (*str != '\0')
@@ -431,8 +447,8 @@ static void FormatComment(SmallStringBase* dest, const Instruction inst, u32 pc,
 }
 
 template<typename T>
-static void FormatCopInstruction(SmallStringBase* dest, u32 pc, const Instruction inst,
-                                 const std::pair<T, const char*>* table, size_t table_size, T table_key)
+void CPU::FormatCopInstruction(SmallStringBase* dest, u32 pc, const Instruction inst,
+                               const std::pair<T, const char*>* table, size_t table_size, T table_key)
 {
   for (size_t i = 0; i < table_size; i++)
   {
@@ -447,8 +463,8 @@ static void FormatCopInstruction(SmallStringBase* dest, u32 pc, const Instructio
 }
 
 template<typename T>
-static void FormatCopComment(SmallStringBase* dest, u32 pc, Registers* regs, const Instruction inst,
-                             const std::pair<T, const char*>* table, size_t table_size, T table_key)
+void CPU::FormatCopComment(SmallStringBase* dest, u32 pc, Registers* regs, const Instruction inst,
+                           const std::pair<T, const char*>* table, size_t table_size, T table_key)
 {
   for (size_t i = 0; i < table_size; i++)
   {
@@ -460,7 +476,7 @@ static void FormatCopComment(SmallStringBase* dest, u32 pc, Registers* regs, con
   }
 }
 
-static void FormatGTEInstruction(SmallStringBase* dest, u32 pc, const Instruction inst)
+void CPU::FormatGTEInstruction(SmallStringBase* dest, u32 pc, const Instruction inst)
 {
   const GTE::Instruction gi{inst.bits};
   const GTEInstructionTable& t = s_gte_instructions[gi.command];
@@ -479,7 +495,7 @@ static void FormatGTEInstruction(SmallStringBase* dest, u32 pc, const Instructio
   }
 }
 
-void DisassembleInstruction(SmallStringBase* dest, u32 pc, u32 bits)
+void CPU::DisassembleInstruction(SmallStringBase* dest, u32 pc, u32 bits)
 {
   const Instruction inst{bits};
   switch (inst.op)
@@ -544,7 +560,7 @@ void DisassembleInstruction(SmallStringBase* dest, u32 pc, u32 bits)
   }
 }
 
-void DisassembleInstructionComment(SmallStringBase* dest, u32 pc, u32 bits, Registers* regs)
+void CPU::DisassembleInstructionComment(SmallStringBase* dest, u32 pc, u32 bits, Registers* regs)
 {
   const Instruction inst{bits};
   switch (inst.op)
@@ -612,5 +628,3 @@ const char* CPU::GetGTERegisterName(u32 index)
 {
   return (index < s_gte_register_names.size()) ? s_gte_register_names[index] : "";
 }
-
-} // namespace CPU
