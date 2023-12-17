@@ -605,51 +605,57 @@ Posição na tabela de classificação: {} de {}</translation>
         <translation>Todas as solicitações de desbloqueio pendentes foram concluídas.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1735"/>
+        <location filename="../../core/achievements.cpp" line="1739"/>
         <source>Score: {} ({} softcore)
 Unread messages: {}</source>
         <translation>Pontuação: {} ({} normal)
 Mensagens não lidas: {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1782"/>
-        <location filename="../../core/achievements.cpp" line="1822"/>
+        <location filename="../../core/achievements.cpp" line="1786"/>
+        <location filename="../../core/achievements.cpp" line="1827"/>
         <source>Confirm Hardcore Mode</source>
         <translation>Confirmar modo dificílimo</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1783"/>
-        <location filename="../../core/achievements.cpp" line="1823"/>
+        <location filename="../../core/achievements.cpp" line="1787"/>
+        <location filename="../../core/achievements.cpp" line="1828"/>
         <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
         <translation>{0} não é possível no momento enquanto o modo dificílimo estiver ligado. Deseja desativar o dificílimo? {0} será cancelado se você escolher Não.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1826"/>
+        <location filename="../../core/achievements.cpp" line="1811"/>
+        <location filename="../../core/achievements.cpp" line="1834"/>
+        <source>Cannot {} while hardcode mode is active.</source>
+        <translation>Não é possível registrar {} enquanto o modo hardcore estiver ativo.</translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1831"/>
         <source>Yes</source>
         <translation>Sim</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1827"/>
+        <location filename="../../core/achievements.cpp" line="1832"/>
         <source>No</source>
         <translation>Não</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2047"/>
+        <location filename="../../core/achievements.cpp" line="2057"/>
         <source>Active Challenge Achievements</source>
         <translation>Conquistas ativadas</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2175"/>
+        <location filename="../../core/achievements.cpp" line="2185"/>
         <source> (Hardcore Mode)</source>
         <translation> (Modo hardcore)</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2189"/>
+        <location filename="../../core/achievements.cpp" line="2199"/>
         <source>You have unlocked all achievements and earned {} points!</source>
         <translation>Você desbloqueou todas as conquistas e ganhou {} pontos!</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2194"/>
+        <location filename="../../core/achievements.cpp" line="2204"/>
         <source>You have unlocked {0} of {1} achievements, earning {2} of {3} possible points.</source>
         <translation>Você desbloqueou {0} de {1} conquistas, ganhando {2} de {3} pontos possíveis.</translation>
     </message>
@@ -658,74 +664,74 @@ Mensagens não lidas: {}</translation>
         <translation type="vanished">Você desbloqueou {} de {} conquistas, ganhando {} de {} pontos possíveis.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2244"/>
+        <location filename="../../core/achievements.cpp" line="2254"/>
         <source>Unknown</source>
         <translation>Desconhecido</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2244"/>
+        <location filename="../../core/achievements.cpp" line="2254"/>
         <source>Locked</source>
         <translation>Bloqueado</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2245"/>
+        <location filename="../../core/achievements.cpp" line="2255"/>
         <source>Unlocked</source>
         <translation>Desbloqueado</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2245"/>
+        <location filename="../../core/achievements.cpp" line="2255"/>
         <source>Unsupported</source>
         <translation>Sem suporte</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2246"/>
+        <location filename="../../core/achievements.cpp" line="2256"/>
         <source>Unofficial</source>
         <translation>Não oficial</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2246"/>
+        <location filename="../../core/achievements.cpp" line="2256"/>
         <source>Recently Unlocked</source>
         <translation>Desbloqueado recentemente</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2247"/>
+        <location filename="../../core/achievements.cpp" line="2257"/>
         <source>Active Challenges</source>
         <translation>Desafios ativos</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2247"/>
+        <location filename="../../core/achievements.cpp" line="2257"/>
         <source>Almost There</source>
         <translation>Quase lá</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2338"/>
+        <location filename="../../core/achievements.cpp" line="2348"/>
         <source>{} points</source>
         <translation>{} pontos</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2338"/>
+        <location filename="../../core/achievements.cpp" line="2349"/>
         <source>{} point</source>
         <translation>{} ponto</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2341"/>
+        <location filename="../../core/achievements.cpp" line="2352"/>
         <source>XXX points</source>
         <translation>XXX pontos</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2374"/>
+        <location filename="../../core/achievements.cpp" line="2385"/>
         <source>Unlocked: {}</source>
         <translation>Desbloqueado: {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2717"/>
-        <location filename="../../core/achievements.cpp" line="2726"/>
+        <location filename="../../core/achievements.cpp" line="2728"/>
+        <location filename="../../core/achievements.cpp" line="2737"/>
         <source>Loading...</source>
         <translation>Carregando...</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2919"/>
-        <location filename="../../core/achievements.cpp" line="2939"/>
+        <location filename="../../core/achievements.cpp" line="2930"/>
+        <location filename="../../core/achievements.cpp" line="2950"/>
         <source>Leaderboard download failed</source>
         <translation>Falha ao baixar os placares de líderes</translation>
     </message>
@@ -774,7 +780,7 @@ Mensagens não lidas: {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1016"/>
-        <location filename="../../core/achievements.cpp" line="2202"/>
+        <location filename="../../core/achievements.cpp" line="2212"/>
         <source>This game has no achievements.</source>
         <translation>Este jogo não possui conquistas.</translation>
     </message>
@@ -793,57 +799,57 @@ Leaderboard Position: {} of {}</source>
 Posição nos placares de lideres: {} de {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2546"/>
+        <location filename="../../core/achievements.cpp" line="2557"/>
         <source>This game has {} leaderboards.</source>
         <translation>Este jogo não possui {} placares de lideres.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2563"/>
+        <location filename="../../core/achievements.cpp" line="2574"/>
         <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
         <translation>O envio de pontuações está desligado porque o modo dificílimo está desativado. As tabelas de classificação são somente leitura.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2584"/>
+        <location filename="../../core/achievements.cpp" line="2595"/>
         <source>Show Best</source>
         <translation>Mostrar melhor</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2584"/>
+        <location filename="../../core/achievements.cpp" line="2595"/>
         <source>Show Nearby</source>
         <translation>Mostrar nas redondezas</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2612"/>
+        <location filename="../../core/achievements.cpp" line="2623"/>
         <source>Rank</source>
         <translation>Classificação</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2617"/>
+        <location filename="../../core/achievements.cpp" line="2628"/>
         <source>Name</source>
         <translation>Nome</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2622"/>
+        <location filename="../../core/achievements.cpp" line="2633"/>
         <source>Time</source>
         <translation>Tempo</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2623"/>
+        <location filename="../../core/achievements.cpp" line="2634"/>
         <source>Score</source>
         <translation>Placar</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2624"/>
+        <location filename="../../core/achievements.cpp" line="2635"/>
         <source>Value</source>
         <translation>Valor</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2637"/>
+        <location filename="../../core/achievements.cpp" line="2648"/>
         <source>Date Submitted</source>
         <translation>Data do envio</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2698"/>
+        <location filename="../../core/achievements.cpp" line="2709"/>
         <source>Downloading leaderboard data, please wait...</source>
         <translation>Baixando informações de placares, por favor aguarde...</translation>
     </message>
@@ -15161,7 +15167,7 @@ Tem certeza de que deseja continuar?</translation>
         <translation>Função de retrocesso desligada porque o avanço rápido está ligado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3593"/>
+        <location filename="../../core/system.cpp" line="3594"/>
         <source>Recompiler options changed, flushing all blocks.</source>
         <translation>As opções do recompilador foram alteradas, limpando todos os blocos.</translation>
     </message>
@@ -15210,32 +15216,32 @@ Tem certeza de que deseja continuar?</translation>
         <translation type="vanished">PGXP desativado, reconstruindo blocos.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4495"/>
+        <location filename="../../core/system.cpp" line="4496"/>
         <source>{} cheats are enabled. This may result in instability.</source>
         <translation>{} as trapaças estão ativados. Isso resultará em instabilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4558"/>
+        <location filename="../../core/system.cpp" line="4559"/>
         <source>Saved {} cheats to &apos;{}&apos;.</source>
         <translation>Trapaças {} salvas em &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4573"/>
+        <location filename="../../core/system.cpp" line="4574"/>
         <source>Deleted cheat list &apos;{}&apos;.</source>
         <translation>Lista de trapaças excluída &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4670"/>
+        <location filename="../../core/system.cpp" line="4671"/>
         <source>Widescreen hack is now enabled, and aspect ratio is set to {}.</source>
         <translation>Ajuste de tela panorâmica ligado, a proporção da imagem está definida para {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4678"/>
+        <location filename="../../core/system.cpp" line="4679"/>
         <source>Widescreen hack is now disabled, and aspect ratio is set to {}.</source>
         <translation>Ajuste de tela panorâmica desligado, a proporção da imagem foi definida para {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4692"/>
+        <location filename="../../core/system.cpp" line="4693"/>
         <source>Switching to %s renderer...</source>
         <translation>Mudando para %s...</translation>
     </message>
@@ -15287,7 +15293,7 @@ Tem certeza de que deseja continuar?</translation>
         <translation>Texturas personalizadas recarregadas.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4194"/>
+        <location filename="../../core/system.cpp" line="4195"/>
         <source>Failed to save undo load state.</source>
         <translation>Falha ao desfazer carregar estado.</translation>
     </message>
@@ -15375,32 +15381,32 @@ Tem certeza de que deseja continuar?</translation>
         <translation type="vanished">Perfil de controle carregado de &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4255"/>
+        <location filename="../../core/system.cpp" line="4256"/>
         <source>Started dumping audio to &apos;%s&apos;.</source>
         <translation>Iniciado despejo de áudio em &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4260"/>
+        <location filename="../../core/system.cpp" line="4261"/>
         <source>Failed to start dumping audio to &apos;%s&apos;.</source>
         <translation>Falha ao iniciar despejo de áudio em &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4270"/>
+        <location filename="../../core/system.cpp" line="4271"/>
         <source>Stopped dumping audio.</source>
         <translation>Despejo de áudio terminado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4300"/>
+        <location filename="../../core/system.cpp" line="4301"/>
         <source>Screenshot file &apos;%s&apos; already exists.</source>
         <translation>Captura de tela &apos;%s&apos; já existe.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4309"/>
+        <location filename="../../core/system.cpp" line="4310"/>
         <source>Failed to save screenshot to &apos;%s&apos;</source>
         <translation>Falha ao salvar captura em &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4313"/>
+        <location filename="../../core/system.cpp" line="4314"/>
         <source>Screenshot saved to &apos;%s&apos;.</source>
         <translation>Captura de tela salva em &apos;%s&apos;.</translation>
     </message>
@@ -15419,7 +15425,7 @@ Please configure a supported controller from the list above.</source>
         <translation type="vanished">Usando perfil de controle &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4488"/>
+        <location filename="../../core/system.cpp" line="4489"/>
         <source>Failed to load cheats from &apos;%s&apos;.</source>
         <translation>Falha ao carregar &apos;%s&apos; trapaças.</translation>
     </message>
@@ -15475,17 +15481,17 @@ Please configure a supported controller from the list above.</source>
         <translation type="vanished">Trapaça &apos;%s&apos; apagada da lista.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4615"/>
+        <location filename="../../core/system.cpp" line="4616"/>
         <source>Cheat &apos;%s&apos; enabled.</source>
         <translation>Trapaça &apos;%s&apos; ativada.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4619"/>
+        <location filename="../../core/system.cpp" line="4620"/>
         <source>Cheat &apos;%s&apos; disabled.</source>
         <translation>Trapaça &apos;%s&apos; desativada.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4542"/>
+        <location filename="../../core/system.cpp" line="4543"/>
         <source>Failed to save cheat list to &apos;%s&apos;</source>
         <translation>Falha ao salvar lista de trapaças para &apos;%s&apos;</translation>
     </message>
@@ -15572,12 +15578,12 @@ Usando a seguinte imagem &apos;{}&apos;, isso pode resultar em instabilidade.</t
         </translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4635"/>
+        <location filename="../../core/system.cpp" line="4636"/>
         <source>Applied cheat &apos;%s&apos;.</source>
         <translation>Trapaça aplicada &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4639"/>
+        <location filename="../../core/system.cpp" line="4640"/>
         <source>Cheat &apos;%s&apos; is already enabled.</source>
         <translation>Trapaça &apos;%s&apos; já está ativada.</translation>
     </message>
@@ -15913,27 +15919,27 @@ Configure um controle compatível da lista acima.</translation>
         <translation type="vanished">Falha ao abrir o disco &apos;%s&apos;: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3466"/>
+        <location filename="../../core/system.cpp" line="3467"/>
         <source>Failed to switch to subimage %u in &apos;%s&apos;: %s.</source>
         <translation>Falha ao trocar para disco %u em &apos;%s&apos;: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3474"/>
+        <location filename="../../core/system.cpp" line="3475"/>
         <source>Switched to sub-image %s (%u) in &apos;%s&apos;.</source>
         <translation>Mudado para segunda imagem %s (%u) em &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3524"/>
+        <location filename="../../core/system.cpp" line="3525"/>
         <source>Switching to {}{} GPU renderer.</source>
         <translation>Alternando para o renderizador de GPU {}{}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3550"/>
+        <location filename="../../core/system.cpp" line="3551"/>
         <source>Switching to {} audio backend.</source>
         <translation>Alternando para o backend de áudio {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3574"/>
+        <location filename="../../core/system.cpp" line="3575"/>
         <source>Switching to {} CPU execution mode.</source>
         <translation>Alternando para o modo de execução pelo CPU {}.</translation>
     </message>
@@ -16600,47 +16606,47 @@ The saves will not be recoverable.</source>
 <context>
     <name>SaveStateSelectorUI</name>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="783"/>
+        <location filename="../../core/imgui_overlays.cpp" line="788"/>
         <source>Load</source>
         <translation>Carregar</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="785"/>
+        <location filename="../../core/imgui_overlays.cpp" line="790"/>
         <source>Save</source>
         <translation>Salvar</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="787"/>
+        <location filename="../../core/imgui_overlays.cpp" line="792"/>
         <source>Select Previous</source>
         <translation>Anterior</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="789"/>
+        <location filename="../../core/imgui_overlays.cpp" line="794"/>
         <source>Select Next</source>
         <translation>Próximo</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="818"/>
+        <location filename="../../core/imgui_overlays.cpp" line="823"/>
         <source>Saved at {0:%H:%M:%S} on {0:%a} {0:%Y/%m/%d}.</source>
         <translation>Salvo em {0:%H:%M:%S} on {0:%a} {0:%Y/%m/%d}.</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="848"/>
+        <location filename="../../core/imgui_overlays.cpp" line="853"/>
         <source>No Save State</source>
         <translation>Sem estado salvo</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="956"/>
+        <location filename="../../core/imgui_overlays.cpp" line="961"/>
         <source>Global Slot {}</source>
         <translation>Compartimento global {}</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="957"/>
+        <location filename="../../core/imgui_overlays.cpp" line="962"/>
         <source>Game Slot {}</source>
         <translation>Compartimento {}</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="968"/>
+        <location filename="../../core/imgui_overlays.cpp" line="973"/>
         <source>No save present in this slot.</source>
         <translation>Não há dados nesse compartimento.</translation>
     </message>
@@ -17405,7 +17411,7 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1477"/>
-        <location filename="../../core/system.cpp" line="3402"/>
+        <location filename="../../core/system.cpp" line="3403"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
@@ -17440,7 +17446,7 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <translation>Falha ao trocar de imagem {} no CD &apos;{}&apos; usado pelo estado de salvamento: {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3394"/>
+        <location filename="../../core/system.cpp" line="3395"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 {0}: {1}
@@ -17461,7 +17467,7 @@ Consulte o LEIAME para obter instruções sobre como adicionar um arquivo SBI.
 Deseja continuar?</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3404"/>
+        <location filename="../../core/system.cpp" line="3405"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 {0}: {1}
@@ -17478,42 +17484,42 @@ Seu arquivo de jogo está incompleto, você deve adicionar o arquivo SBI para ex
 O nome do arquivo SBI deve corresponder ao nome da imagem do disco.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3779"/>
+        <location filename="../../core/system.cpp" line="3780"/>
         <source>CPU clock speed is set to {}% ({} / {}). This may crash games.</source>
         <translation>Velocidade do CPU configurada para {}% ({} / {}. pode causar falhas nos jogos.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3787"/>
+        <location filename="../../core/system.cpp" line="3788"/>
         <source>CD-ROM read speedup set to {}x (effective speed {}x). This may crash games.</source>
         <translation>Velocidade de leitura do CD-ROM definida como {}x (velocidade efetiva {}x). Jogos podem travar.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3793"/>
+        <location filename="../../core/system.cpp" line="3794"/>
         <source>CD-ROM seek speedup set to {}. This may crash games.</source>
         <translation>Velocidade de leitura do CD-ROM definida para {}. Jogos podem travar.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3795"/>
+        <location filename="../../core/system.cpp" line="3796"/>
         <source>Instant</source>
         <translation>Instantâneo</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3800"/>
+        <location filename="../../core/system.cpp" line="3801"/>
         <source>Force NTSC timings is enabled. Games may run at incorrect speeds.</source>
         <translation>A opção forçar temporizador no modo NTSC está ativada. Os jogos serão executados em uma velocidade incorreta.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3805"/>
+        <location filename="../../core/system.cpp" line="3806"/>
         <source>Multisample anti-aliasing is enabled, some games may not render correctly.</source>
         <translation>O anti-serrilhamento múltiplo está ativado, alguns jogos podem não ser renderizados corretamente.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3808"/>
+        <location filename="../../core/system.cpp" line="3809"/>
         <source>8MB RAM is enabled, this may be incompatible with some games.</source>
         <translation>Modo de 8 MB de RAM está ativado, o que pode ser incompatível com alguns jogos.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4397"/>
+        <location filename="../../core/system.cpp" line="4398"/>
         <source>Invalid version {} ({} version {})</source>
         <translation>Versão inválida {} ({} versão {})</translation>
     </message>
