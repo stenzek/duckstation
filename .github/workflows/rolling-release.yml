@@ -23,13 +23,13 @@ jobs:
     runs-on: windows-2022
     timeout-minutes: 120
     steps:
-    - uses: actions/checkout@v2.3.1
+    - uses: actions/checkout@v4.1.1
       with:
         fetch-depth: 0
 
     - name: Cache Dependencies
       id: cache-deps
-      uses: actions/cache@v3
+      uses: actions/cache@v3.3.2
       with:
         path: |
           dep/msvc/deps-arm64
@@ -115,14 +115,14 @@ jobs:
     runs-on: windows-2022
     timeout-minutes: 120
     steps:
-    - uses: actions/checkout@v2.3.1
+    - uses: actions/checkout@v4.1.1
       with:
         fetch-depth: 0
         submodules: true
 
     - name: Cache Dependencies
       id: cache-deps
-      uses: actions/cache@v3
+      uses: actions/cache@v3.3.2
       with:
         path: |
           dep/msvc/deps-arm64
@@ -215,7 +215,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y --allow-downgrades libc6=2.35-0ubuntu3.5 libc6-dev=2.35-0ubuntu3.5 libstdc++6=12.3.0-1ubuntu1~22.04 libgcc-s1=12.3.0-1ubuntu1~22.04
 
-    - uses: actions/checkout@v2.3.1
+    - uses: actions/checkout@v4.1.1
       with:
         fetch-depth: 0
 
@@ -236,7 +236,7 @@ jobs:
 
     - name: Cache Dependencies
       id: cache-deps
-      uses: actions/cache@v3
+      uses: actions/cache@v3.3.2
       with:
         path: ~/deps
         key: deps ${{ hashFiles('scripts/build-dependencies.sh') }}
@@ -298,7 +298,7 @@ jobs:
         flatpak run org.freedesktop.appstream-glib validate scripts/flatpak/org.duckstation.DuckStation.metainfo.xml
 
     - name: Build Flatpak
-      uses: flatpak/flatpak-github-actions/flatpak-builder@v6.1
+      uses: flatpak/flatpak-github-actions/flatpak-builder@v6.3
       with:
         bundle: duckstation-x64.flatpak
         manifest-path: scripts/flatpak/org.duckstation.DuckStation.json
@@ -327,7 +327,7 @@ jobs:
     runs-on: macos-11
     timeout-minutes: 120
     steps:
-    - uses: actions/checkout@v2.3.1
+    - uses: actions/checkout@v4.1.1
       with:
         fetch-depth: 0
 
@@ -343,7 +343,7 @@ jobs:
 
     - name: Cache Dependencies
       id: cache-deps-mac
-      uses: actions/cache@v3
+      uses: actions/cache@v3.3.2
       with:
         path: ~/deps
         key: deps-mac ${{ hashFiles('scripts/build-dependencies-mac.sh') }}
@@ -389,7 +389,7 @@ jobs:
 
   create-release:
     needs: [windows-build, windows-arm64-build, linux-build, linux-flatpak-build, macos-build]
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-22.04"
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
     steps:
       - name: Download Windows Artifacts
