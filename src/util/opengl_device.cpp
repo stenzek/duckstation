@@ -492,10 +492,7 @@ bool OpenGLDevice::CheckFeatures(bool* buggy_pbo, FeatureMask disabled_features)
     }
     else
     {
-      Host::ReportErrorAsync(
-        TRANSLATE_SV("GPUDevice", "Error"),
-        TRANSLATE_SV("Error", "Both texture buffers and SSBOs are not supported, or are of inadequate size."));
-      return false;
+      Log_WarningPrint("Both texture buffers and SSBOs are not supported. Performance will suffer.");
     }
   }
 
