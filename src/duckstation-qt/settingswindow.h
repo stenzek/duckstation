@@ -44,6 +44,7 @@ public:
   ~SettingsWindow();
 
   static void openGamePropertiesDialog(const std::string& path, const std::string& serial, DiscRegion region);
+  static void closeGamePropertiesDialogs();
 
   ALWAYS_INLINE bool isPerGameSettings() const { return static_cast<bool>(m_sif); }
   ALWAYS_INLINE SettingsInterface* getSettingsInterface() const { return m_sif.get(); }

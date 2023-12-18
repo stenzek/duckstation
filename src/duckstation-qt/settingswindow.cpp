@@ -520,3 +520,12 @@ void SettingsWindow::openGamePropertiesDialog(const std::string& path, const std
   dialog->setWindowTitle(window_title);
   dialog->show();
 }
+
+void SettingsWindow::closeGamePropertiesDialogs()
+{
+  for (SettingsWindow* dialog : s_open_game_properties_dialogs)
+  {
+    dialog->close();
+    dialog->deleteLater();
+  }
+}
