@@ -22,9 +22,6 @@ Log_SetChannel(MetalDevice);
 
 // TODO: Disable hazard tracking and issue barriers explicitly.
 
-static constexpr MTLPixelFormat LAYER_MTL_PIXEL_FORMAT = MTLPixelFormatRGBA8Unorm;
-static constexpr GPUTexture::Format LAYER_TEXTURE_FORMAT = GPUTexture::Format::RGBA8;
-
 // Looking across a range of GPUs, the optimal copy alignment for Vulkan drivers seems
 // to be between 1 (AMD/NV) and 64 (Intel). So, we'll go with 64 here.
 static constexpr u32 TEXTURE_UPLOAD_ALIGNMENT = 64;
@@ -55,8 +52,6 @@ static constexpr std::array<MTLPixelFormat, static_cast<u32>(GPUTexture::Format:
   MTLPixelFormatRGBA32Float,  // RGBA32F
   MTLPixelFormatBGR10A2Unorm, // RGB10A2
 };
-
-static constexpr std::array<float, 4> s_clear_color = {};
 
 static unsigned s_next_bad_shader_id = 1;
 
@@ -700,7 +695,7 @@ id<MTLDepthStencilState> MetalDevice::GetDepthState(const GPUPipeline::DepthStat
         MTLCompareFunctionEqual,        // Equal
       }};
 
-    MTLDepthStencilDescriptor* desc = [[[MTLDepthStencilDescriptor alloc] init] autorelease];
+    MTLDepthStencilDescriptor* desc = [[MTLDepthStencilDescriptor new] autorelease];
     desc.depthCompareFunction = func_mapping[static_cast<u8>(ds.depth_test.GetValue())];
     desc.depthWriteEnabled = ds.depth_write ? TRUE : FALSE;
 
@@ -778,7 +773,7 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Grap
       MTLBlendOperationMax,             // Max
     }};
 
-    MTLRenderPipelineDescriptor* desc = [[[MTLRenderPipelineDescriptor alloc] init] autorelease];
+    MTLRenderPipelineDescriptor* desc = [[MTLRenderPipelineDescriptor new] autorelease];
     desc.vertexFunction = static_cast<const MetalShader*>(config.vertex_shader)->GetFunction();
     desc.fragmentFunction = static_cast<const MetalShader*>(config.fragment_shader)->GetFunction();
 
@@ -1054,12 +1049,13 @@ std::unique_ptr<GPUTexture> MetalDevice::CreateTexture(u32 width, u32 height, u3
 
   @autoreleasepool
   {
-    MTLTextureDescriptor* desc = [[[MTLTextureDescriptor alloc] init] autorelease];
-    desc.width = width;
-    desc.height = height;
-    desc.depth = levels;
-    desc.pixelFormat = pixel_format;
+    MTLTextureDescriptor* desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:pixel_format
+                                                                                    width:width
+                                                                                   height:height
+                                                                                mipmapped:(levels > 1)];
+
     desc.mipmapLevelCount = levels;
+    desc.storageMode = MTLStorageModeShared;
     if (samples > 1)
     {
       desc.textureType = (layers > 1) ? MTLTextureType2DMultisampleArray : MTLTextureType2DMultisample;
@@ -1068,6 +1064,7 @@ std::unique_ptr<GPUTexture> MetalDevice::CreateTexture(u32 width, u32 height, u3
     else if (layers > 1)
     {
       desc.textureType = MTLTextureType2DArray;
+      desc.arrayLength = layers;
     }
 
     switch (type)
@@ -1153,7 +1150,7 @@ std::unique_ptr<GPUSampler> MetalDevice::CreateSampler(const GPUSampler::Config&
       {0xFFFFFFFFu, MTLSamplerBorderColorOpaqueWhite},
     };
 
-    MTLSamplerDescriptor* desc = [[[MTLSamplerDescriptor alloc] init] autorelease];
+    MTLSamplerDescriptor* desc = [[MTLSamplerDescriptor new] autorelease];
     desc.normalizedCoordinates = true;
     desc.sAddressMode = ta[static_cast<u8>(config.address_u.GetValue())];
     desc.tAddressMode = ta[static_cast<u8>(config.address_v.GetValue())];
@@ -1245,7 +1242,7 @@ bool MetalDevice::CheckDownloadBufferSize(u32 required_size)
     if (m_download_buffer != nil)
       [m_download_buffer release];
 
-    constexpr MTLResourceOptions options = MTLResourceStorageModeShared | MTLResourceOptionCPUCacheModeDefault;
+    constexpr MTLResourceOptions options = MTLResourceStorageModeShared | MTLResourceCPUCacheModeDefaultCache;
     m_download_buffer = [[m_device newBufferWithLength:required_size options:options] retain];
     if (m_download_buffer == nil)
     {
@@ -1408,10 +1405,9 @@ void MetalDevice::InvalidateRenderTarget(GPUTexture* t)
 
 void MetalDevice::CommitClear(MetalTexture* tex)
 {
-  DebugAssert(tex->IsRenderTargetOrDepthStencil());
-
   if (tex->GetState() == GPUTexture::State::Cleared)
   {
+    DebugAssert(tex->IsRenderTargetOrDepthStencil());
     tex->SetState(GPUTexture::State::Dirty);
 
     // TODO: We could combine it with the current render pass.
