@@ -1445,7 +1445,7 @@ void SPU::DMAWrite(const u32* words, u32 word_count)
   const u32 words_to_transfer = std::min(s_transfer_fifo.GetSpace(), halfword_count);
   s_transfer_fifo.PushRange(halfwords, words_to_transfer);
 
-  if (words_to_transfer != halfword_count)
+  if (words_to_transfer != halfword_count) [[unlikely]]
     Log_WarningPrintf("Transfer FIFO overflow, dropping %u halfwords", halfword_count - words_to_transfer);
 
   UpdateDMARequest();
