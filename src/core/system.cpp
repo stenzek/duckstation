@@ -4025,8 +4025,6 @@ void System::DoRewind()
     s_rewind_load_counter--;
   }
 
-  s_next_frame_time += s_frame_period;
-
   InvalidateDisplay();
   Host::PumpMessagesOnCPUThread();
   Internal::IdlePollUpdate();
