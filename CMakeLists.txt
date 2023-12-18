@@ -153,12 +153,12 @@ elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR "${CMAKE_SYSTEM_PROCESSO
   else()
     # Cross-compiling 32-bit build. 32-bit hosts are not supported.
     set(CPU_ARCH_X86 TRUE)
-    message("Building x86_32 binaries [not supported].")
+    message(FATAL_ERROR "Building x86_32 binaries is not supported.")
   endif()
 elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "i386" OR
        "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "i686")
   set(CPU_ARCH_X86 TRUE)
-  message("Building x86_32 binaries [not supported].")
+  message(FATAL_ERROR "Building x86_32 binaries is not supported.")
 elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm64")
   if(CMAKE_SIZEOF_VOID_P EQUAL 8) # Might have an A64 kernel, e.g. Raspbian.
     set(CPU_ARCH_ARM64 TRUE)
