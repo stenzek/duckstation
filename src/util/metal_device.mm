@@ -394,11 +394,12 @@ void MetalDevice::RenderBlankFrame()
 
   @autoreleasepool
   {
-    id<MTLDrawable> drawable = [m_layer nextDrawable];
+    id<MTLDrawable> drawable = [[m_layer nextDrawable] retain];
     m_layer_pass_desc.colorAttachments[0].texture = [drawable texture];
     id<MTLRenderCommandEncoder> encoder = [m_render_cmdbuf renderCommandEncoderWithDescriptor:m_layer_pass_desc];
     [encoder endEncoding];
     [m_render_cmdbuf presentDrawable:drawable];
+    DeferRelease(drawable);
     SubmitCommandBuffer();
   }
 }
@@ -2019,7 +2020,7 @@ void MetalDevice::EndPresent()
   EndAnyEncoding();
 
   [m_render_cmdbuf presentDrawable:m_layer_drawable];
-  [m_layer_drawable release];
+  DeferRelease(m_layer_drawable);
   m_layer_drawable = nil;
   SubmitCommandBuffer();
   TrimTexturePool();
