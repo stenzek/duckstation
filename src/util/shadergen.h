@@ -41,7 +41,8 @@ protected:
   void WriteUniformBufferDeclaration(std::stringstream& ss, bool push_constant_on_vulkan);
   void DeclareUniformBuffer(std::stringstream& ss, const std::initializer_list<const char*>& members,
                             bool push_constant_on_vulkan);
-  void DeclareTexture(std::stringstream& ss, const char* name, u32 index, bool multisampled = false);
+  void DeclareTexture(std::stringstream& ss, const char* name, u32 index, bool multisampled = false,
+                      bool is_int = false, bool is_unsigned = false);
   void DeclareTextureBuffer(std::stringstream& ss, const char* name, u32 index, bool is_int, bool is_unsigned);
   void DeclareVertexEntryPoint(std::stringstream& ss, const std::initializer_list<const char*>& attributes,
                                u32 num_color_outputs, u32 num_texcoord_outputs,

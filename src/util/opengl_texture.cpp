@@ -36,12 +36,14 @@ const std::tuple<GLenum, GLenum, GLenum>& OpenGLTexture::GetPixelFormatMapping(G
       {GL_R8, GL_RED, GL_UNSIGNED_BYTE},                      // R8
       {GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_SHORT},   // D16
       {GL_R16, GL_RED, GL_UNSIGNED_SHORT},                    // R16
+      {GL_R16I, GL_RED_INTEGER, GL_SHORT},                    // R16I
+      {GL_R16UI, GL_RED_INTEGER, GL_UNSIGNED_SHORT},          // R16U
       {GL_R16F, GL_RED, GL_HALF_FLOAT},                       // R16F
-      {GL_R32I, GL_RED, GL_INT},                              // R32I
-      {GL_R32UI, GL_RED, GL_UNSIGNED_INT},                    // R32U
+      {GL_R32I, GL_RED_INTEGER, GL_INT},                      // R32I
+      {GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT},            // R32U
       {GL_R32F, GL_RED, GL_FLOAT},                            // R32F
-      {GL_RG8, GL_RG, GL_UNSIGNED_BYTE},                      // RG8
-      {GL_RG16, GL_RG, GL_UNSIGNED_SHORT},                    // RG16
+      {GL_RG8, GL_RG_INTEGER, GL_UNSIGNED_BYTE},              // RG8
+      {GL_RG16F, GL_RG, GL_UNSIGNED_SHORT},                   // RG16
       {GL_RG16F, GL_RG, GL_HALF_FLOAT},                       // RG16F
       {GL_RG32F, GL_RG, GL_FLOAT},                            // RG32F
       {GL_RGBA16, GL_RGBA, GL_UNSIGNED_BYTE},                 // RGBA16
@@ -61,9 +63,11 @@ const std::tuple<GLenum, GLenum, GLenum>& OpenGLTexture::GetPixelFormatMapping(G
       {GL_R8, GL_RED, GL_UNSIGNED_BYTE},                      // R8
       {GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_SHORT},   // D16
       {GL_R16F, GL_RED, GL_HALF_FLOAT},                       // R16
+      {GL_R16I, GL_RED_INTEGER, GL_SHORT},                    // R16I
+      {GL_R16UI, GL_RED_INTEGER, GL_UNSIGNED_SHORT},          // R16U
       {GL_R16F, GL_RED, GL_HALF_FLOAT},                       // R16F
-      {GL_R32I, GL_RED, GL_INT},                              // R32I
-      {GL_R32UI, GL_RED, GL_UNSIGNED_INT},                    // R32U
+      {GL_R32I, GL_RED_INTEGER, GL_INT},                      // R32I
+      {GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT},            // R32U
       {GL_R32F, GL_RED, GL_FLOAT},                            // R32F
       {GL_RG8, GL_RG, GL_UNSIGNED_BYTE},                      // RG8
       {GL_RG16F, GL_RG, GL_HALF_FLOAT},                       // RG16

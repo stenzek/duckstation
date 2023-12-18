@@ -39,6 +39,8 @@ static constexpr std::array<MTLPixelFormat, static_cast<u32>(GPUTexture::Format:
   MTLPixelFormatR8Unorm,      // R8
   MTLPixelFormatDepth16Unorm, // D16
   MTLPixelFormatR16Unorm,     // R16
+  MTLPixelFormatR16Sint,      // R16I
+  MTLPixelFormatR16Uint,      // R16U
   MTLPixelFormatR16Float,     // R16F
   MTLPixelFormatR32Sint,      // R32I
   MTLPixelFormatR32Uint,      // R32U
