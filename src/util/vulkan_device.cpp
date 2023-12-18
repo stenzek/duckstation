@@ -76,6 +76,8 @@ const std::array<VkFormat, static_cast<u32>(GPUTexture::Format::MaxCount)> Vulka
   VK_FORMAT_R8_UNORM,                 // R8
   VK_FORMAT_D16_UNORM,                // D16
   VK_FORMAT_R16_UNORM,                // R16
+  VK_FORMAT_R16_SINT,                 // R16I
+  VK_FORMAT_R16_UINT,                 // R16U
   VK_FORMAT_R16_SFLOAT,               // R16F
   VK_FORMAT_R32_SINT,                 // R32I
   VK_FORMAT_R32_UINT,                 // R32U

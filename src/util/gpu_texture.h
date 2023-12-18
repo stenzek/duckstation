@@ -42,6 +42,8 @@ public:
     R8,
     D16,
     R16,
+    R16I,
+    R16U,
     R16F,
     R32I,
     R32U,
