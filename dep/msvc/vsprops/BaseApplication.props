@@ -4,7 +4,10 @@
     <IntDir>$(SolutionDir)build\$(ProjectName)-$(Platform)-$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)bin\$(Platform)\</OutDir>
     <GenerateProjectSpecificOutputFolder>false</GenerateProjectSpecificOutputFolder>
-    <TargetName>$(ProjectName)-$(Platform)-$(Configuration)</TargetName>
+
+    <!-- Use MSVC suffix for MSVC builds, and remove the Clang suffix. -->
+    <TargetName Condition="$(Configuration.EndsWith(Clang))">$(ProjectName)-$(Platform)-$(Configuration.Replace("-Clang", ""))</TargetName>
+    <TargetName Condition="!$(Configuration.EndsWith(Clang))">$(ProjectName)-$(Platform)-$(Configuration)-MSVC</TargetName>
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
 
