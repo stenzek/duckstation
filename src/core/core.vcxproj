@@ -190,7 +190,7 @@
     <ProjectReference Include="..\..\dep\zstd\zstd.vcxproj">
       <Project>{73ee0c55-6ffe-44e7-9c12-baa52434a797}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\dep\zydis\zydis.vcxproj" Condition="'$(Platform)'=='x64'">
+    <ProjectReference Include="..\..\dep\zydis\zydis.vcxproj" Condition="'$(Platform)'=='x64' And $(Configuration.Contains('Debug'))">
       <Project>{c51a346a-86b2-46df-9bb3-d0aa7e5d8699}</Project>
     </ProjectReference>
     <ProjectReference Include="..\scmversion\scmversion.vcxproj">
@@ -207,8 +207,8 @@
   <Import Project="core.props" />
   <ItemDefinitionGroup>
     <ClCompile>
-      <PreprocessorDefinitions Condition="'$(Platform)'=='x64'">ZYDIS_DISABLE_ENCODER;ZYDIS_DISABLE_AVX512;ZYDIS_DISABLE_KNC;ZYDIS_STATIC_BUILD;ZYCORE_STATIC_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories Condition="'$(Platform)'=='x64'">$(SolutionDir)dep\zydis\include;$(SolutionDir)dep\zydis\dependencies\zycore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions Condition="'$(Platform)'=='x64' And $(Configuration.Contains('Debug'))">ZYDIS_DISABLE_ENCODER;ZYDIS_DISABLE_AVX512;ZYDIS_DISABLE_KNC;ZYDIS_STATIC_BUILD;ZYCORE_STATIC_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories Condition="'$(Platform)'=='x64' And $(Configuration.Contains('Debug'))">$(SolutionDir)dep\zydis\include;$(SolutionDir)dep\zydis\dependencies\zycore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
