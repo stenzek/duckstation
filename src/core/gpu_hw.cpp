@@ -645,10 +645,15 @@ bool GPU_HW::CreateBuffers()
   GL_OBJECT_NAME(m_vram_read_texture, "VRAM Read Texture");
   GL_OBJECT_NAME(m_vram_readback_texture, "VRAM Readback Texture");
 
-  if (!(m_vram_upload_buffer =
-          g_gpu_device->CreateTextureBuffer(GPUTextureBuffer::Format::R16UI, GPUDevice::MIN_TEXEL_BUFFER_ELEMENTS)))
+  if (g_gpu_device->GetFeatures().supports_texture_buffers)
   {
-    return false;
+    if (!(m_vram_upload_buffer =
+            g_gpu_device->CreateTextureBuffer(GPUTextureBuffer::Format::R16UI, GPUDevice::MIN_TEXEL_BUFFER_ELEMENTS)))
+    {
+      return false;
+    }
+
+    GL_OBJECT_NAME(m_vram_upload_buffer, "VRAM Upload Buffer");
   }
 
   Log_InfoFmt("Created HW framebuffer of {}x{}", texture_width, texture_height);
@@ -999,9 +1004,10 @@ bool GPU_HW::CompilePipelines()
 
   // VRAM write
   {
+    const bool use_buffer = features.supports_texture_buffers;
     const bool use_ssbo = features.texture_buffers_emulated_with_ssbo;
-    std::unique_ptr<GPUShader> fs =
-      g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GenerateVRAMWriteFragmentShader(use_ssbo));
+    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
+      GPUShaderStage::Fragment, shadergen.GenerateVRAMWriteFragmentShader(use_buffer, use_ssbo));
     if (!fs)
       return false;
 
@@ -2438,11 +2444,28 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, b
     }
   }
 
-  const u32 num_pixels = width * height;
-  void* map = m_vram_upload_buffer->Map(num_pixels);
-  const u32 map_index = m_vram_upload_buffer->GetCurrentPosition();
-  std::memcpy(map, data, num_pixels * sizeof(u16));
-  m_vram_upload_buffer->Unmap(num_pixels);
+  std::unique_ptr<GPUTexture> upload_texture;
+  u32 map_index;
+
+  if (!g_gpu_device->GetFeatures().supports_texture_buffers)
+  {
+    map_index = 0;
+    upload_texture = g_gpu_device->FetchTexture(width, height, 1, 1, 1, GPUTexture::Type::Texture,
+                                                GPUTexture::Format::R16U, data, width * sizeof(u16));
+    if (!upload_texture)
+    {
+      Log_ErrorFmt("Failed to get {}x{} upload texture. Things are gonna break.", width, height);
+      return;
+    }
+  }
+  else
+  {
+    const u32 num_pixels = width * height;
+    void* map = m_vram_upload_buffer->Map(num_pixels);
+    map_index = m_vram_upload_buffer->GetCurrentPosition();
+    std::memcpy(map, data, num_pixels * sizeof(u16));
+    m_vram_upload_buffer->Unmap(num_pixels);
+  }
 
   struct VRAMWriteUBOData
   {
@@ -2465,8 +2488,17 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, b
   g_gpu_device->SetScissor(scaled_bounds.left, scaled_bounds.top, scaled_bounds.GetWidth(), scaled_bounds.GetHeight());
   g_gpu_device->SetPipeline(m_vram_write_pipelines[BoolToUInt8(check_mask && !m_pgxp_depth_buffer)].get());
   g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
-  g_gpu_device->SetTextureBuffer(0, m_vram_upload_buffer.get());
-  g_gpu_device->Draw(3, 0);
+  if (upload_texture)
+  {
+    g_gpu_device->SetTextureSampler(0, upload_texture.get(), g_gpu_device->GetNearestSampler());
+    g_gpu_device->Draw(3, 0);
+    g_gpu_device->RecycleTexture(std::move(upload_texture));
+  }
+  else
+  {
+    g_gpu_device->SetTextureBuffer(0, m_vram_upload_buffer.get());
+    g_gpu_device->Draw(3, 0);
+  }
 
   RestoreDeviceContext();
 }
