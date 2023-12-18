@@ -3958,7 +3958,7 @@ bool System::LoadRewindState(u32 skip_saves /*= 0*/, bool consume_state /*=true 
 {
   while (skip_saves > 0 && !s_rewind_states.empty())
   {
-    g_gpu_device->RecycleTexture(std::move(s_rewind_states.front().vram_texture));
+    g_gpu_device->RecycleTexture(std::move(s_rewind_states.back().vram_texture));
     s_rewind_states.pop_back();
     skip_saves--;
   }
