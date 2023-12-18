@@ -26,24 +26,18 @@
     <ClCompile Include="cpu_newrec_compiler_x64.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="cpu_recompiler_code_generator.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='Win32'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="cpu_recompiler_code_generator.cpp" />
     <ClCompile Include="cpu_recompiler_code_generator_aarch32.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="cpu_recompiler_code_generator_aarch64.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="cpu_recompiler_code_generator_generic.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='Win32'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="cpu_recompiler_code_generator_generic.cpp" />
     <ClCompile Include="cpu_recompiler_code_generator_x64.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="cpu_recompiler_register_cache.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='Win32'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="cpu_recompiler_register_cache.cpp" />
     <ClCompile Include="cpu_types.cpp" />
     <ClCompile Include="digital_controller.cpp" />
     <ClCompile Include="fullscreen_ui.cpp" />
@@ -117,18 +111,10 @@
     <ClInclude Include="cpu_newrec_compiler_x64.h">
       <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="cpu_recompiler_code_generator.h">
-      <ExcludedFromBuild Condition="'$(Platform)'=='Win32'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="cpu_recompiler_register_cache.h">
-      <ExcludedFromBuild Condition="'$(Platform)'=='Win32'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="cpu_recompiler_thunks.h">
-      <ExcludedFromBuild Condition="'$(Platform)'=='Win32'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="cpu_recompiler_types.h">
-      <ExcludedFromBuild Condition="'$(Platform)'=='Win32'">true</ExcludedFromBuild>
-    </ClInclude>
+    <ClInclude Include="cpu_recompiler_code_generator.h" />
+    <ClInclude Include="cpu_recompiler_register_cache.h" />
+    <ClInclude Include="cpu_recompiler_thunks.h" />
+    <ClInclude Include="cpu_recompiler_types.h" />
     <ClInclude Include="digital_controller.h" />
     <ClInclude Include="fullscreen_ui.h" />
     <ClInclude Include="game_database.h" />

@@ -21,5 +21,5 @@
   </ItemDefinitionGroup>
 
   <Import Project="..\..\dep\msvc\vsprops\SDL2Compile.props" />
-  <Import Project="..\..\dep\winpixeventruntime\WinPixEventRuntime.props" />
+  <Import Condition="$(Configuration.Contains('Debug'))" Project="..\..\dep\winpixeventruntime\WinPixEventRuntime.props" />
 </Project>
