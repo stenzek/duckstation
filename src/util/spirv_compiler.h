@@ -42,7 +42,7 @@ std::optional<SPIRVCodeVector> CompileShader(GPUShaderStage stage, std::string_v
 #ifdef __APPLE__
 
 // Converts a SPIR-V shader into MSL.
-std::optional<std::string> CompileSPIRVToMSL(std::span<const SPIRVCodeType> spv);
+std::optional<std::string> CompileSPIRVToMSL(GPUShaderStage stage, std::span<const SPIRVCodeType> spv);
 
 #endif
 

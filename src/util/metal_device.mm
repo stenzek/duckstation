@@ -638,7 +638,7 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromSource(GPUShaderStage st
     return {};
   }
 
-  std::optional<std::string> msl = SPIRVCompiler::CompileSPIRVToMSL(spirv.value());
+  std::optional<std::string> msl = SPIRVCompiler::CompileSPIRVToMSL(stage, spirv.value());
   if (!msl.has_value())
   {
     Log_ErrorPrintf("Failed to compile SPIR-V to MSL.");

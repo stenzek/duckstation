@@ -336,8 +336,8 @@ void ShaderGen::DeclareTexture(std::stringstream& ss, const char* name, u32 inde
 {
   if (m_glsl)
   {
-    if (IsVulkan())
-      ss << "layout(set = " << (m_has_uniform_buffer ? 1 : 0) << ", binding = " << index << ") ";
+    if (m_spirv)
+      ss << "layout(set = " << ((m_has_uniform_buffer || IsMetal()) ? 1 : 0) << ", binding = " << index << ") ";
     else if (m_use_glsl_binding_layout)
       ss << "layout(binding = " << index << ") ";
 
@@ -354,8 +354,8 @@ void ShaderGen::DeclareTextureBuffer(std::stringstream& ss, const char* name, u3
 {
   if (m_glsl)
   {
-    if (IsVulkan())
-      ss << "layout(set = 0, binding = " << index << ") ";
+    if (m_spirv)
+      ss << "layout(set = " << ((m_has_uniform_buffer || IsMetal()) ? 1 : 0) << ", binding = " << index << ") ";
     else if (m_use_glsl_binding_layout)
       ss << "layout(binding = " << index << ") ";
 

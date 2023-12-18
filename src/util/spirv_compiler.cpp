@@ -173,12 +173,29 @@ std::optional<SPIRVCompiler::SPIRVCodeVector> SPIRVCompiler::CompileShader(GPUSh
 
 #ifdef __APPLE__
 
-std::optional<std::string> SPIRVCompiler::CompileSPIRVToMSL(std::span<const SPIRVCodeType> spv)
+std::optional<std::string> SPIRVCompiler::CompileSPIRVToMSL(GPUShaderStage stage, std::span<const SPIRVCodeType> spv)
 {
   spirv_cross::CompilerMSL compiler(spv.data(), spv.size());
 
   spirv_cross::CompilerMSL::Options options = compiler.get_msl_options();
   options.pad_fragment_output_components = true;
+
+  if (stage == GPUShaderStage::Fragment)
+  {
+    for (u32 i = 0; i < GPUDevice::MAX_TEXTURE_SAMPLERS; i++)
+    {
+      spirv_cross::MSLResourceBinding rb;
+      rb.stage = spv::ExecutionModelFragment;
+      rb.desc_set = 1;
+      rb.binding = i;
+      rb.count = 1;
+      rb.msl_texture = i;
+      rb.msl_sampler = i;
+      rb.msl_buffer = i;
+      compiler.add_msl_resource_binding(rb);
+    }
+  }
+
   compiler.set_msl_options(options);
 
   std::string msl = compiler.compile();
