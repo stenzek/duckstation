@@ -684,6 +684,7 @@ void CPU::CodeCache::InvalidateBlock(Block* block, BlockState new_state)
 void CPU::CodeCache::InvalidateAllRAMBlocks()
 {
   // TODO: maybe combine the backlink into one big instruction flush cache?
+  MemMap::BeginCodeWrite();
 
   for (Block* block : s_blocks)
   {
@@ -691,6 +692,7 @@ void CPU::CodeCache::InvalidateAllRAMBlocks()
       InvalidateBlock(block, BlockState::Invalidated);
   }
 
+  MemMap::EndCodeWrite();
   Bus::ClearRAMCodePageFlags();
 }
 
