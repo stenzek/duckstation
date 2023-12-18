@@ -3844,10 +3844,11 @@ void System::LogUnsafeSettingsToConsole(const std::string& messages)
   Log_WarningPrint(console_messages.c_str());
 }
 
-void System::CalculateRewindMemoryUsage(u32 num_saves, u64* ram_usage, u64* vram_usage)
+void System::CalculateRewindMemoryUsage(u32 num_saves, u32 resolution_scale, u64* ram_usage, u64* vram_usage)
 {
+  const u64 real_resolution_scale = static_cast<u64>(std::max(g_settings.gpu_resolution_scale, 1u));
   *ram_usage = MAX_SAVE_STATE_SIZE * static_cast<u64>(num_saves);
-  *vram_usage = (VRAM_WIDTH * VRAM_HEIGHT * 4) * static_cast<u64>(std::max(g_settings.gpu_resolution_scale, 1u)) *
+  *vram_usage = ((VRAM_WIDTH * real_resolution_scale) * (VRAM_HEIGHT * real_resolution_scale) * 4) *
                 static_cast<u64>(g_settings.gpu_multisamples) * static_cast<u64>(num_saves);
 }
 
@@ -3869,7 +3870,7 @@ void System::UpdateMemorySaveStateSettings()
     s_rewind_save_counter = 0;
 
     u64 ram_usage, vram_usage;
-    CalculateRewindMemoryUsage(g_settings.rewind_save_slots, &ram_usage, &vram_usage);
+    CalculateRewindMemoryUsage(g_settings.rewind_save_slots, g_settings.gpu_resolution_scale, &ram_usage, &vram_usage);
     Log_InfoPrintf(
       "Rewind is enabled, saving every %d frames, with %u slots and %" PRIu64 "MB RAM and %" PRIu64 "MB VRAM usage",
       std::max(s_rewind_save_frequency, 1), g_settings.rewind_save_slots, ram_usage / 1048576, vram_usage / 1048576);

@@ -183,13 +183,14 @@ void EmulationSettingsWidget::updateRewind()
 
   if (!runahead_enabled && rewind_enabled)
   {
+    const u32 resolution_scale = static_cast<u32>(m_dialog->getEffectiveIntValue("GPU", "ResolutionScale", 1));
     const u32 frames = static_cast<u32>(m_ui.rewindSaveSlots->value());
     const float frequency = static_cast<float>(m_ui.rewindSaveFrequency->value());
     const float duration =
       ((frequency <= std::numeric_limits<float>::epsilon()) ? (1.0f / 60.0f) : frequency) * static_cast<float>(frames);
 
     u64 ram_usage, vram_usage;
-    System::CalculateRewindMemoryUsage(frames, &ram_usage, &vram_usage);
+    System::CalculateRewindMemoryUsage(frames, resolution_scale, &ram_usage, &vram_usage);
 
     m_ui.rewindSummary->setText(
       tr("Rewind for %n frame(s), lasting %1 second(s) will require up to %2MB of RAM and %3MB of VRAM.", "", frames)

@@ -3155,6 +3155,7 @@ void FullscreenUI::DrawEmulationSettingsPage()
   }
   else if (rewind_enabled)
   {
+    const u32 resolution_scale = GetEffectiveUIntSetting(bsi, "GPU", "ResolutionScale", 1);
     const float rewind_frequency = GetEffectiveFloatSetting(bsi, "Main", "RewindFrequency", 10.0f);
     const s32 rewind_save_slots = GetEffectiveIntSetting(bsi, "Main", "RewindSaveSlots", 10);
     const float duration =
@@ -3162,7 +3163,7 @@ void FullscreenUI::DrawEmulationSettingsPage()
       static_cast<float>(rewind_save_slots);
 
     u64 ram_usage, vram_usage;
-    System::CalculateRewindMemoryUsage(rewind_save_slots, &ram_usage, &vram_usage);
+    System::CalculateRewindMemoryUsage(rewind_save_slots, resolution_scale, &ram_usage, &vram_usage);
     rewind_summary.format(
       FSUI_FSTR("Rewind for {0} frames, lasting {1:.2f} seconds will require up to {2} MB of RAM and {3} MB of VRAM."),
       rewind_save_slots, duration, ram_usage / 1048576, vram_usage / 1048576);
