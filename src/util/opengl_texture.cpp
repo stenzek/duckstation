@@ -36,12 +36,14 @@ const std::tuple<GLenum, GLenum, GLenum>& OpenGLTexture::GetPixelFormatMapping(G
       {GL_R8, GL_RED, GL_UNSIGNED_BYTE},                      // R8
       {GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_SHORT},   // D16
       {GL_R16, GL_RED, GL_UNSIGNED_SHORT},                    // R16
+      {GL_R16I, GL_RED_INTEGER, GL_SHORT},                    // R16I
+      {GL_R16UI, GL_RED_INTEGER, GL_UNSIGNED_SHORT},          // R16U
       {GL_R16F, GL_RED, GL_HALF_FLOAT},                       // R16F
-      {GL_R32I, GL_RED, GL_INT},                              // R32I
-      {GL_R32UI, GL_RED, GL_UNSIGNED_INT},                    // R32U
+      {GL_R32I, GL_RED_INTEGER, GL_INT},                      // R32I
+      {GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT},            // R32U
       {GL_R32F, GL_RED, GL_FLOAT},                            // R32F
-      {GL_RG8, GL_RG, GL_UNSIGNED_BYTE},                      // RG8
-      {GL_RG16, GL_RG, GL_UNSIGNED_SHORT},                    // RG16
+      {GL_RG8, GL_RG_INTEGER, GL_UNSIGNED_BYTE},              // RG8
+      {GL_RG16F, GL_RG, GL_UNSIGNED_SHORT},                   // RG16
       {GL_RG16F, GL_RG, GL_HALF_FLOAT},                       // RG16F
       {GL_RG32F, GL_RG, GL_FLOAT},                            // RG32F
       {GL_RGBA16, GL_RGBA, GL_UNSIGNED_BYTE},                 // RGBA16
@@ -61,9 +63,11 @@ const std::tuple<GLenum, GLenum, GLenum>& OpenGLTexture::GetPixelFormatMapping(G
       {GL_R8, GL_RED, GL_UNSIGNED_BYTE},                      // R8
       {GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_SHORT},   // D16
       {GL_R16F, GL_RED, GL_HALF_FLOAT},                       // R16
+      {GL_R16I, GL_RED_INTEGER, GL_SHORT},                    // R16I
+      {GL_R16UI, GL_RED_INTEGER, GL_UNSIGNED_SHORT},          // R16U
       {GL_R16F, GL_RED, GL_HALF_FLOAT},                       // R16F
-      {GL_R32I, GL_RED, GL_INT},                              // R32I
-      {GL_R32UI, GL_RED, GL_UNSIGNED_INT},                    // R32U
+      {GL_R32I, GL_RED_INTEGER, GL_INT},                      // R32I
+      {GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT},            // R32U
       {GL_R32F, GL_RED, GL_FLOAT},                            // R32F
       {GL_RG8, GL_RG, GL_UNSIGNED_BYTE},                      // RG8
       {GL_RG16F, GL_RG, GL_HALF_FLOAT},                       // RG16
@@ -136,45 +140,69 @@ bool OpenGLTexture::Create(u32 width, u32 height, u32 layers, u32 levels, u32 sa
   }
   else
   {
-    if (UseTextureStorage(false))
+    const bool use_texture_storage = UseTextureStorage(false);
+    if (use_texture_storage)
     {
       if (layers > 1)
         glTexStorage3D(target, levels, gl_internal_format, width, height, layers);
       else
         glTexStorage2D(target, levels, gl_internal_format, width, height);
+    }
+
+    if (!use_texture_storage || data)
+    {
+      const u32 pixel_size = GetPixelSize(format);
+      const u32 alignment = ((data_pitch % 4) == 0) ? 4 : (((data_pitch % 2) == 0) ? 2 : 1);
+      if (data)
+      {
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, data_pitch / pixel_size);
+        if (alignment != 4)
+          glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
+      }
+
+      const u8* data_ptr = static_cast<const u8*>(data);
+      u32 current_width = width;
+      u32 current_height = height;
+      for (u32 i = 0; i < levels; i++)
+      {
+        if (use_texture_storage)
+        {
+          if (layers > 1)
+            glTexSubImage3D(target, i, 0, 0, 0, current_width, current_height, layers, gl_format, gl_type, data_ptr);
+          else
+            glTexSubImage2D(target, i, 0, 0, current_width, current_height, gl_format, gl_type, data_ptr);
+        }
+        else
+        {
+          if (layers > 1)
+            glTexImage3D(target, i, gl_internal_format, current_width, current_height, layers, 0, gl_format, gl_type,
+                         data_ptr);
+          else
+            glTexImage2D(target, i, gl_internal_format, current_width, current_height, 0, gl_format, gl_type, data_ptr);
+        }
+
+        if (data_ptr)
+          data_ptr += data_pitch * current_width;
+
+        current_width = (current_width > 1) ? (current_width / 2u) : current_width;
+        current_height = (current_height > 1) ? (current_height / 2u) : current_height;
+
+        // TODO: Incorrect assumption.
+        data_pitch = pixel_size * current_width;
+      }
 
       if (data)
       {
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, data_pitch / GetPixelSize(format));
-
-        // TODO: Fix data for mipmaps here.
-        if (layers > 1)
-          glTexSubImage3D(target, 0, 0, 0, 0, width, height, layers, gl_format, gl_type, data);
-        else
-          glTexSubImage2D(target, 0, 0, 0, width, height, gl_format, gl_type, data);
-
+        if (alignment != 4)
+          glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
         glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
       }
     }
-    else
+
+    if (!use_texture_storage)
     {
-      if (data)
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, data_pitch / GetPixelSize(format));
-
-      for (u32 i = 0; i < levels; i++)
-      {
-        // TODO: Fix data pointer here.
-        if (layers > 1)
-          glTexImage3D(target, i, gl_internal_format, width, height, layers, 0, gl_format, gl_type, data);
-        else
-          glTexImage2D(target, i, gl_internal_format, width, height, 0, gl_format, gl_type, data);
-      }
-
-      if (data)
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-
       glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0);
-      glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, levels);
+      glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, levels - 1);
     }
   }
 
@@ -396,9 +424,9 @@ std::unique_ptr<GPUSampler> OpenGLDevice::CreateSampler(const GPUSampler::Config
   glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER,
                       filters[mipmap_on_off][static_cast<u8>(config.mip_filter.GetValue())]
                              [static_cast<u8>(config.min_filter.GetValue())]);
-  glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER,
-                      filters[mipmap_on_off][static_cast<u8>(config.mip_filter.GetValue())]
-                             [static_cast<u8>(config.mag_filter.GetValue())]);
+  glSamplerParameteri(
+    sampler, GL_TEXTURE_MAG_FILTER,
+    filters[0][static_cast<u8>(config.mip_filter.GetValue())][static_cast<u8>(config.mag_filter.GetValue())]);
   glSamplerParameterf(sampler, GL_TEXTURE_MIN_LOD, static_cast<float>(config.min_lod));
   glSamplerParameterf(sampler, GL_TEXTURE_MAX_LOD, static_cast<float>(config.max_lod));
   glSamplerParameterfv(sampler, GL_TEXTURE_BORDER_COLOR, config.GetBorderFloatColor().data());

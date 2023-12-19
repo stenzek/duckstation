@@ -248,7 +248,7 @@ void MDEC::WriteRegister(u32 offset, u32 value)
 
 void MDEC::DMARead(u32* words, u32 word_count)
 {
-  if (s_data_out_fifo.GetSize() < word_count)
+  if (s_data_out_fifo.GetSize() < word_count) [[unlikely]]
   {
     Log_WarningPrintf("Insufficient data in output FIFO (requested %u, have %u)", word_count,
                       s_data_out_fifo.GetSize());
@@ -269,7 +269,7 @@ void MDEC::DMARead(u32* words, u32 word_count)
 
 void MDEC::DMAWrite(const u32* words, u32 word_count)
 {
-  if (s_data_in_fifo.GetSpace() < (word_count * 2))
+  if (s_data_in_fifo.GetSpace() < (word_count * 2)) [[unlikely]]
   {
     Log_WarningPrintf("Input FIFO overflow (writing %u, space %u)", word_count * 2, s_data_in_fifo.GetSpace());
   }

@@ -470,7 +470,7 @@ bool OpenGLDevice::CheckFeatures(bool* buggy_pbo, FeatureMask disabled_features)
   }
 #endif
 
-  if (!m_features.supports_texture_buffers)
+  if (!m_features.supports_texture_buffers && !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS))
   {
     // Try SSBOs.
     GLint max_fragment_storage_blocks = 0;
@@ -487,15 +487,12 @@ bool OpenGLDevice::CheckFeatures(bool* buggy_pbo, FeatureMask disabled_features)
       (max_fragment_storage_blocks > 0 && max_ssbo_size >= static_cast<GLint64>(1024 * 512 * sizeof(u16)));
     if (m_features.texture_buffers_emulated_with_ssbo)
     {
-      Log_InfoPrintf("Using shader storage buffers for VRAM writes.");
+      Log_InfoPrint("Using shader storage buffers for VRAM writes.");
       m_features.supports_texture_buffers = true;
     }
     else
     {
-      Host::ReportErrorAsync(
-        TRANSLATE_SV("GPUDevice", "Error"),
-        TRANSLATE_SV("Error", "Both texture buffers and SSBOs are not supported, or are of inadequate size."));
-      return false;
+      Log_WarningPrint("Both texture buffers and SSBOs are not supported. Performance will suffer.");
     }
   }
 

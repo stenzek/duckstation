@@ -181,6 +181,8 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
     ss << "precision highp float;\n";
     ss << "precision highp int;\n";
     ss << "precision highp sampler2D;\n";
+    ss << "precision highp isampler2D;\n";
+    ss << "precision highp usampler2D;\n";
 
     if (GLAD_GL_ES_VERSION_3_1)
       ss << "precision highp sampler2DMS;\n";
@@ -332,7 +334,8 @@ void ShaderGen::DeclareUniformBuffer(std::stringstream& ss, const std::initializ
   ss << "};\n\n";
 }
 
-void ShaderGen::DeclareTexture(std::stringstream& ss, const char* name, u32 index, bool multisampled /* = false */)
+void ShaderGen::DeclareTexture(std::stringstream& ss, const char* name, u32 index, bool multisampled /* = false */,
+                               bool is_int /* = false */, bool is_unsigned /* = false */)
 {
   if (m_glsl)
   {
@@ -341,11 +344,13 @@ void ShaderGen::DeclareTexture(std::stringstream& ss, const char* name, u32 inde
     else if (m_use_glsl_binding_layout)
       ss << "layout(binding = " << index << ") ";
 
-    ss << "uniform " << (multisampled ? "sampler2DMS " : "sampler2D ") << name << ";\n";
+    ss << "uniform " << (is_int ? (is_unsigned ? "u" : "i") : "") << (multisampled ? "sampler2DMS " : "sampler2D ")
+       << name << ";\n";
   }
   else
   {
-    ss << (multisampled ? "Texture2DMS<float4> " : "Texture2D ") << name << " : register(t" << index << ");\n";
+    ss << (multisampled ? "Texture2DMS<" : "Texture2D<") << (is_int ? (is_unsigned ? "uint4" : "int4") : "float4")
+       << "> " << name << " : register(t" << index << ");\n";
     ss << "SamplerState " << name << "_ss : register(s" << index << ");\n";
   }
 }

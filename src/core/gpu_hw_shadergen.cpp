@@ -1271,18 +1271,23 @@ uint SampleVRAM(uint2 coords)
   return ss.str();
 }
 
-std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_ssbo)
+std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_buffer, bool use_ssbo)
 {
   std::stringstream ss;
   WriteHeader(ss);
   WriteCommonFunctions(ss);
   DefineMacro(ss, "PGXP_DEPTH", m_pgxp_depth);
+  DefineMacro(ss, "USE_BUFFER", use_buffer);
   DeclareUniformBuffer(ss,
                        {"uint2 u_base_coords", "uint2 u_end_coords", "uint2 u_size", "uint u_buffer_base_offset",
                         "uint u_mask_or_bits", "float u_depth_value"},
                        true);
 
-  if (use_ssbo && m_glsl)
+  if (!use_buffer)
+  {
+    DeclareTexture(ss, "samp0", 0, false, true, true);
+  }
+  else if (use_ssbo && m_glsl)
   {
     ss << "layout(std430";
     if (IsVulkan())
@@ -1316,14 +1321,17 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_ssbo)
     discard;
   }
 
-
   // find offset from the start of the row/column
   uint2 offset;
   offset.x = (coords.x < u_base_coords.x) ? ((VRAM_SIZE.x / RESOLUTION_SCALE) - u_base_coords.x + coords.x) : (coords.x - u_base_coords.x);
   offset.y = (coords.y < u_base_coords.y) ? ((VRAM_SIZE.y / RESOLUTION_SCALE) - u_base_coords.y + coords.y) : (coords.y - u_base_coords.y);
 
+#if !USE_BUFFER
+  uint value = LOAD_TEXTURE(samp0, int2(offset), 0).x;
+#else
   uint buffer_offset = u_buffer_base_offset + (offset.y * u_size.x) + offset.x;
   uint value = GET_VALUE(buffer_offset) | u_mask_or_bits;
+#endif
   
   o_col0 = RGBA5551ToRGBA8(value);
 #if !PGXP_DEPTH

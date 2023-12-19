@@ -22,7 +22,7 @@ public:
   std::string GenerateWireframeGeometryShader();
   std::string GenerateWireframeFragmentShader();
   std::string GenerateVRAMReadFragmentShader();
-  std::string GenerateVRAMWriteFragmentShader(bool use_ssbo);
+  std::string GenerateVRAMWriteFragmentShader(bool use_buffer, bool use_ssbo);
   std::string GenerateVRAMCopyFragmentShader();
   std::string GenerateVRAMFillFragmentShader(bool wrapped, bool interlaced);
   std::string GenerateVRAMUpdateDepthFragmentShader();

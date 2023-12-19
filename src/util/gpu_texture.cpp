@@ -67,23 +67,32 @@ std::array<float, 4> GPUTexture::GetUNormClearColor() const
 
 u32 GPUTexture::GetPixelSize(GPUTexture::Format format)
 {
-  switch (format)
-  {
-    case Format::RGBA8:
-    case Format::BGRA8:
-      return 4;
+  static constexpr std::array<u8, static_cast<size_t>(Format::MaxCount)> sizes = {{
+    0,  // Unknown
+    4,  // RGBA8
+    4,  // BGRA8
+    2,  // RGB565
+    2,  // RGBA5551
+    1,  // R8
+    2,  // D16
+    2,  // R16
+    2,  // R16I
+    2,  // R16U
+    2,  // R16F
+    4,  // R32I
+    4,  // R32U
+    4,  // R32F
+    2,  // RG8
+    2,  // RG16
+    2,  // RG16F
+    8,  // RG32F
+    8,  // RGBA16
+    8,  // RGBA16F
+    16, // RGBA32F
+    4,  // RGB10A2
+  }};
 
-    case Format::RGBA5551:
-    case Format::RGB565:
-    case Format::D16:
-      return 2;
-
-    case Format::R8:
-      return 1;
-
-    default:
-      return 0;
-  }
+  return sizes[static_cast<size_t>(format)];
 }
 
 bool GPUTexture::IsDepthFormat(Format format)
