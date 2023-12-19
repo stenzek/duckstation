@@ -177,7 +177,7 @@ bool ContextAGL::CreateContext(NSOpenGLContext* share_context, int profile, bool
       NSOpenGLPFADoubleBuffer,
       NSOpenGLPFAOpenGLProfile,
       static_cast<NSOpenGLPixelFormatAttribute>(profile),
-      NSOpenGLPFAAccelerated,
+      //NSOpenGLPFAAccelerated,
       0}};
   m_pixel_format = [[NSOpenGLPixelFormat alloc] initWithAttributes:attribs.data()];
   if (m_pixel_format == nil)
