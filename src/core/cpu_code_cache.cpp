@@ -689,7 +689,16 @@ void CPU::CodeCache::InvalidateAllRAMBlocks()
   for (Block* block : s_blocks)
   {
     if (AddressInRAM(block->pc))
+    {
       InvalidateBlock(block, BlockState::Invalidated);
+      block->next_block_in_page = nullptr;
+    }
+  }
+
+  for (PageProtectionInfo& ppi : s_page_protection)
+  {
+    ppi.first_block_in_page = nullptr;
+    ppi.last_block_in_page = nullptr;
   }
 
   MemMap::EndCodeWrite();
