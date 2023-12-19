@@ -111,9 +111,22 @@ bool JitCodeBuffer::TryAllocateAt(const void* addr)
   return true;
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__) || defined(__FreeBSD__)
   int flags = MAP_PRIVATE | MAP_ANONYMOUS;
-#if defined(__APPLE__) && defined(__aarch64__)
+#if defined(__linux__)
+  // Linux does the right thing, allows us to not disturb an existing mapping.
+  if (addr)
+    flags |= MAP_FIXED_NOREPLACE;
+#elif defined(__FreeBSD__)
+  // FreeBSD achieves the same with MAP_FIXED and MAP_EXCL.
+  if (addr)
+    flags |= MAP_FIXED | MAP_EXCL;
+#elif defined(__APPLE__) && defined(__aarch64__)
   // MAP_JIT and toggleable write protection is required on Apple Silicon.
   flags |= MAP_JIT;
+#elif defined(__APPLE__)
+  // MAP_FIXED is needed on x86 apparently.. hopefully there's nothing mapped at this address, otherwise we'll end up
+  // clobbering it..
+  if (addr)
+    flags |= MAP_FIXED;
 #endif
 
   m_code_ptr =
@@ -123,6 +136,13 @@ bool JitCodeBuffer::TryAllocateAt(const void* addr)
     if (!addr)
       Log_ErrorPrintf("mmap(RWX, %u) for internal buffer failed: %d", m_total_size, errno);
 
+    return false;
+  }
+  else if (addr && m_code_ptr != addr)
+  {
+    if (munmap(m_code_ptr, m_total_size) != 0)
+      Log_ErrorPrintf("Failed to munmap() incorrectly hinted allocation: %d", errno);
+    m_code_ptr = nullptr;
     return false;
   }
 
