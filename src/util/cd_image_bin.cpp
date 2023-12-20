@@ -25,6 +25,8 @@ public:
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasNonStandardSubchannel() const override;
 
+  s64 GetSizeOnDisk() const override;
+
 protected:
   bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
 
@@ -143,6 +145,11 @@ bool CDImageBin::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_i
 
   m_file_position += index.file_sector_size;
   return true;
+}
+
+s64 CDImageBin::GetSizeOnDisk() const
+{
+  return FileSystem::FSize64(m_fp);
 }
 
 std::unique_ptr<CDImage> CDImage::OpenBinImage(const char* filename, Error* error)

@@ -155,7 +155,8 @@ bool GameList::GetExeListEntry(const std::string& path, GameList::Entry* entry)
   entry->serial.clear();
   entry->title = Path::GetFileTitle(display_name);
   entry->region = BIOS::GetPSExeDiscRegion(header);
-  entry->total_size = ZeroExtend64(file_size);
+  entry->file_size = ZeroExtend64(file_size);
+  entry->uncompressed_size = entry->file_size;
   entry->type = EntryType::PSExe;
   entry->compatibility = GameDatabase::CompatibilityRating::Unknown;
 
@@ -171,7 +172,8 @@ bool GameList::GetPsfListEntry(const std::string& path, Entry* entry)
 
   entry->serial.clear();
   entry->region = file.GetRegion();
-  entry->total_size = static_cast<u32>(file.GetProgramData().size());
+  entry->file_size = static_cast<u32>(file.GetProgramData().size());
+  entry->uncompressed_size = entry->file_size;
   entry->type = EntryType::PSF;
   entry->compatibility = GameDatabase::CompatibilityRating::Unknown;
 
@@ -208,7 +210,8 @@ bool GameList::GetDiscListEntry(const std::string& path, Entry* entry)
     return false;
 
   entry->path = path;
-  entry->total_size = static_cast<u64>(CDImage::RAW_SECTOR_SIZE) * static_cast<u64>(cdi->GetLBACount());
+  entry->file_size = cdi->GetSizeOnDisk();
+  entry->uncompressed_size = static_cast<u64>(CDImage::RAW_SECTOR_SIZE) * static_cast<u64>(cdi->GetLBACount());
   entry->type = EntryType::Disc;
   entry->compatibility = GameDatabase::CompatibilityRating::Unknown;
 
@@ -283,7 +286,7 @@ bool GameList::GetDiscListEntry(const std::string& path, Entry* entry)
         continue;
       }
 
-      entry->total_size += static_cast<u64>(CDImage::RAW_SECTOR_SIZE) * static_cast<u64>(cdi->GetLBACount());
+      entry->uncompressed_size += static_cast<u64>(CDImage::RAW_SECTOR_SIZE) * static_cast<u64>(cdi->GetLBACount());
     }
   }
 
@@ -333,7 +336,7 @@ bool GameList::LoadEntriesFromCache(ByteStream* stream)
         !stream->ReadSizePrefixedString(&ge.serial) || !stream->ReadSizePrefixedString(&ge.title) ||
         !stream->ReadSizePrefixedString(&ge.disc_set_name) || !stream->ReadSizePrefixedString(&ge.genre) ||
         !stream->ReadSizePrefixedString(&ge.publisher) || !stream->ReadSizePrefixedString(&ge.developer) ||
-        !stream->ReadU64(&ge.hash) || !stream->ReadU64(&ge.total_size) ||
+        !stream->ReadU64(&ge.hash) || !stream->ReadS64(&ge.file_size) || !stream->ReadU64(&ge.uncompressed_size) ||
         !stream->ReadU64(reinterpret_cast<u64*>(&ge.last_modified_time)) || !stream->ReadU64(&ge.release_date) ||
         !stream->ReadU16(&ge.supported_controllers) || !stream->ReadU8(&ge.min_players) ||
         !stream->ReadU8(&ge.max_players) || !stream->ReadU8(&ge.min_blocks) || !stream->ReadU8(&ge.max_blocks) ||
@@ -373,7 +376,8 @@ bool GameList::WriteEntryToCache(const Entry* entry)
   result &= s_cache_write_stream->WriteSizePrefixedString(entry->publisher);
   result &= s_cache_write_stream->WriteSizePrefixedString(entry->developer);
   result &= s_cache_write_stream->WriteU64(entry->hash);
-  result &= s_cache_write_stream->WriteU64(entry->total_size);
+  result &= s_cache_write_stream->WriteS64(entry->file_size);
+  result &= s_cache_write_stream->WriteU64(entry->uncompressed_size);
   result &= s_cache_write_stream->WriteU64(entry->last_modified_time);
   result &= s_cache_write_stream->WriteU64(entry->release_date);
   result &= s_cache_write_stream->WriteU16(entry->supported_controllers);

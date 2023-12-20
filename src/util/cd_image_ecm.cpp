@@ -170,6 +170,7 @@ public:
 
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasNonStandardSubchannel() const override;
+  s64 GetSizeOnDisk() const override;
 
 protected:
   bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
@@ -540,6 +541,11 @@ bool CDImageEcm::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_i
   const size_t chunk_offset = static_cast<size_t>(file_start - m_chunk_start);
   std::memcpy(buffer, &m_chunk_buffer[chunk_offset], RAW_SECTOR_SIZE);
   return true;
+}
+
+s64 CDImageEcm::GetSizeOnDisk() const
+{
+  return FileSystem::FSize64(m_fp);
 }
 
 std::unique_ptr<CDImage> CDImage::OpenEcmImage(const char* filename, Error* error)

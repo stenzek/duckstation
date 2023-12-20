@@ -473,6 +473,7 @@ void GameListWidget::resizeTableViewColumnsToFit()
                                                      100, // players
                                                      80,  // time played
                                                      80,  // last played
+                                                     80,  // file size
                                                      80,  // size
                                                      50,  // region
                                                      100  // compatibility
@@ -498,7 +499,8 @@ void GameListWidget::loadTableViewColumnVisibilitySettings()
     false, // players
     true,  // time played
     true,  // last played
-    true,  // size
+    true,  // file size
+    false, // size
     true,  // region
     true   // compatibility
   }};

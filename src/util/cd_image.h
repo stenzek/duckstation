@@ -328,6 +328,10 @@ public:
   virtual PrecacheResult Precache(ProgressCallback* progress = ProgressCallback::NullProgressCallback);
   virtual bool IsPrecached() const;
 
+  // Returns the size on disk of the image. This could be multiple files.
+  // If this function returns -1, it means the size could not be computed.
+  virtual s64 GetSizeOnDisk() const;
+
 protected:
   void ClearTOC();
   void CopyTOC(const CDImage* image);
