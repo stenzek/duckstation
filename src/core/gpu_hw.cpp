@@ -1011,7 +1011,8 @@ bool GPU_HW::CompilePipelines()
     if (!fs)
       return false;
 
-    plconfig.layout = GPUPipeline::Layout::SingleTextureBufferAndPushConstants;
+    plconfig.layout =
+      use_buffer ? GPUPipeline::Layout::SingleTextureBufferAndPushConstants : GPUPipeline::Layout::SingleTextureAndUBO;
     plconfig.fragment_shader = fs.get();
     for (u8 depth_test = 0; depth_test < 2; depth_test++)
     {
