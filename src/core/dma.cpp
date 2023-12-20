@@ -688,7 +688,7 @@ TickCount DMA::TransferMemoryToDevice(u32 address, u32 increment, u32 word_count
   const u32 mask = GetAddressMask();
   if constexpr (channel != Channel::GPU)
   {
-    if (static_cast<s32>(increment) < 0 || ((address + (increment * word_count)) & mask) <= address)
+    if (static_cast<s32>(increment) < 0 || ((address + (increment * word_count)) & mask) <= address) [[unlikely]]
     {
       // Use temp buffer if it's wrapping around
       if (s_transfer_buffer.size() < word_count)
@@ -708,7 +708,7 @@ TickCount DMA::TransferMemoryToDevice(u32 address, u32 increment, u32 word_count
   {
     case Channel::GPU:
     {
-      if (g_gpu->BeginDMAWrite())
+      if (g_gpu->BeginDMAWrite()) [[likely]]
       {
         u8* ram_pointer = Bus::g_ram;
         for (u32 i = 0; i < word_count; i++)
@@ -765,7 +765,7 @@ TickCount DMA::TransferDeviceToMemory(u32 address, u32 increment, u32 word_count
   }
 
   u32* dest_pointer = reinterpret_cast<u32*>(&Bus::g_ram[address]);
-  if (static_cast<s32>(increment) < 0 || ((address + (increment * word_count)) & mask) <= address)
+  if (static_cast<s32>(increment) < 0 || ((address + (increment * word_count)) & mask) <= address) [[unlikely]]
   {
     // Use temp buffer if it's wrapping around
     if (s_transfer_buffer.size() < word_count)
@@ -798,7 +798,7 @@ TickCount DMA::TransferDeviceToMemory(u32 address, u32 increment, u32 word_count
       break;
   }
 
-  if (dest_pointer == s_transfer_buffer.data())
+  if (dest_pointer == s_transfer_buffer.data()) [[unlikely]]
   {
     u8* ram_pointer = Bus::g_ram;
     for (u32 i = 0; i < word_count; i++)
