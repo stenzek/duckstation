@@ -42,7 +42,6 @@ public:
   template<typename T>
   using ComPtr = Microsoft::WRL::ComPtr<T>;
 
-  D3D11Texture();
   ~D3D11Texture();
 
   ALWAYS_INLINE ID3D11Texture2D* GetD3DTexture() const { return m_texture.Get(); }
@@ -75,15 +74,12 @@ public:
   }
   ALWAYS_INLINE operator bool() const { return static_cast<bool>(m_texture); }
 
-  bool Create(ID3D11Device* device, u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type,
-              Format format, const void* initial_data = nullptr, u32 initial_data_stride = 0);
-
-  void Destroy();
+  static std::unique_ptr<D3D11Texture> Create(ID3D11Device* device, u32 width, u32 height, u32 layers, u32 levels,
+                                              u32 samples, Type type, Format format, const void* initial_data = nullptr,
+                                              u32 initial_data_stride = 0);
 
   D3D11_TEXTURE2D_DESC GetDesc() const;
   void CommitClear(ID3D11DeviceContext1* context);
-
-  bool IsValid() const override;
 
   bool Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch, u32 layer = 0, u32 level = 0) override;
   bool Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32 height, u32 layer = 0, u32 level = 0) override;
@@ -92,6 +88,9 @@ public:
   void SetDebugName(const std::string_view& name) override;
 
 private:
+  D3D11Texture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format,
+               ComPtr<ID3D11Texture2D> texture, ComPtr<ID3D11ShaderResourceView> srv, ComPtr<ID3D11View> rtv_dsv);
+
   ComPtr<ID3D11Texture2D> m_texture;
   ComPtr<ID3D11ShaderResourceView> m_srv;
   ComPtr<ID3D11View> m_rtv_dsv;

@@ -38,6 +38,7 @@ Log_SetChannel(GPUDevice);
 std::unique_ptr<GPUDevice> g_gpu_device;
 
 static std::string s_pipeline_cache_path;
+size_t GPUDevice::s_total_vram_usage = 0;
 
 GPUSampler::GPUSampler() = default;
 
@@ -763,6 +764,11 @@ Common::Rectangle<s32> GPUDevice::FlipToLowerLeft(const Common::Rectangle<s32>& 
   return Common::Rectangle<s32>(rc.left, flipped_y, rc.right, flipped_y + height);
 }
 
+bool GPUDevice::IsTexturePoolType(GPUTexture::Type type)
+{
+  return (type == GPUTexture::Type::Texture || type == GPUTexture::Type::DynamicTexture);
+}
+
 std::unique_ptr<GPUTexture> GPUDevice::FetchTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                     GPUTexture::Type type, GPUTexture::Format format,
                                                     const void* data /*= nullptr*/, u32 data_stride /*= 0*/)
@@ -778,20 +784,55 @@ std::unique_ptr<GPUTexture> GPUDevice::FetchTexture(u32 width, u32 height, u32 l
                               format,
                               0u};
 
-  for (auto it = m_texture_pool.begin(); it != m_texture_pool.end(); ++it)
+  const bool is_texture = IsTexturePoolType(type);
+  TexturePool& pool = is_texture ? m_texture_pool : m_target_pool;
+  const u32 pool_size = (is_texture ? MAX_TEXTURE_POOL_SIZE : MAX_TARGET_POOL_SIZE);
+
+  TexturePool::iterator it;
+
+  if (is_texture && m_features.prefer_unused_textures)
   {
-    if (it->key == key)
+    // Try to find a texture that wasn't used this frame first.
+    // Start at the back of the pool.
+    it = m_texture_pool.end();
+    for (auto rit = m_texture_pool.rbegin(); rit != m_texture_pool.rend(); ++rit)
     {
-      if (data && !it->texture->Update(0, 0, width, height, data, data_stride, 0, 0))
+      if (rit->use_counter == m_texture_pool_counter)
       {
-        // This shouldn't happen...
-        Log_ErrorFmt("Failed to upload {}x{} to pooled texture", width, height);
-        break;
+        // We're into textures recycled this frame, not going to find anything newer.
+        // But prefer reuse over creating a new texture.
+        if (m_texture_pool.size() < pool_size)
+          break;
       }
 
+      if (rit->key == key)
+      {
+        it = std::prev(rit.base());
+        break;
+      }
+    }
+  }
+  else
+  {
+    for (it = pool.begin(); it != pool.end(); ++it)
+    {
+      if (it->key == key)
+        break;
+    }
+  }
+
+  if (it != pool.end())
+  {
+    if (!data || it->texture->Update(0, 0, width, height, data, data_stride, 0, 0))
+    {
       ret = std::move(it->texture);
       m_texture_pool.erase(it);
       return ret;
+    }
+    else
+    {
+      // This shouldn't happen...
+      Log_ErrorFmt("Failed to upload {}x{} to pooled texture", width, height);
     }
   }
 
@@ -814,23 +855,6 @@ void GPUDevice::RecycleTexture(std::unique_ptr<GPUTexture> texture)
   if (!texture)
     return;
 
-  u32 remove_count = m_texture_pool_counter + POOL_PURGE_DELAY;
-  if (remove_count < m_texture_pool_counter)
-  {
-    // wrapped around, handle it
-    if (m_texture_pool.empty())
-    {
-      m_texture_pool_counter = 0;
-      remove_count = POOL_PURGE_DELAY;
-    }
-    else
-    {
-      const u32 reduce = m_texture_pool.front().remove_count;
-      m_texture_pool_counter -= reduce;
-      remove_count -= reduce;
-    }
-  }
-
   const TexturePoolKey key = {static_cast<u16>(texture->GetWidth()),
                               static_cast<u16>(texture->GetHeight()),
                               static_cast<u8>(texture->GetLayers()),
@@ -840,28 +864,74 @@ void GPUDevice::RecycleTexture(std::unique_ptr<GPUTexture> texture)
                               texture->GetFormat(),
                               0u};
 
-  m_texture_pool.push_back({std::move(texture), remove_count, key});
+  const bool is_texture = IsTexturePoolType(texture->GetType());
+  TexturePool& pool = is_texture ? m_texture_pool : m_target_pool;
+  pool.push_back({std::move(texture), m_texture_pool_counter, key});
+
+  const u32 max_size = is_texture ? MAX_TEXTURE_POOL_SIZE : MAX_TARGET_POOL_SIZE;
+  while (pool.size() >= max_size)
+  {
+    Log_ProfileFmt("Trim {}x{} texture from pool", pool.front().texture->GetWidth(), pool.front().texture->GetHeight());
+    pool.pop_front();
+  }
 }
 
 void GPUDevice::PurgeTexturePool()
 {
   m_texture_pool_counter = 0;
   m_texture_pool.clear();
+  m_target_pool.clear();
 }
 
 void GPUDevice::TrimTexturePool()
 {
-  if (m_texture_pool.empty())
+  GL_INS_FMT("Texture Pool Size: {}", m_texture_pool.size());
+  GL_INS_FMT("Target Pool Size: {}", m_target_pool.size());
+  GL_INS_FMT("VRAM Usage: {:.2f} MB", s_total_vram_usage / 1048576.0);
+
+  Log_DebugFmt("Texture Pool Size: {} Target Pool Size: {} VRAM: {:.2f} MB", m_texture_pool.size(),
+               m_target_pool.size(), s_total_vram_usage / 1048756.0);
+
+  if (m_texture_pool.empty() && m_target_pool.empty())
     return;
 
-  const u32 counter = m_texture_pool_counter++;
-  for (auto it = m_texture_pool.begin(); it != m_texture_pool.end();)
+  const u32 prev_counter = m_texture_pool_counter++;
+  for (u32 pool_idx = 0; pool_idx < 2; pool_idx++)
   {
-    if (counter < it->remove_count)
-      break;
+    TexturePool& pool = pool_idx ? m_target_pool : m_texture_pool;
+    for (auto it = pool.begin(); it != pool.end();)
+    {
+      const u32 delta = (it->use_counter - prev_counter);
+      if (delta < POOL_PURGE_DELAY)
+        break;
 
-    Log_ProfileFmt("Trim {}x{} texture from pool", it->texture->GetWidth(), it->texture->GetHeight());
-    it = m_texture_pool.erase(it);
+      Log_ProfileFmt("Trim {}x{} texture from pool", it->texture->GetWidth(), it->texture->GetHeight());
+      it = pool.erase(it);
+    }
+  }
+
+  if (m_texture_pool_counter < prev_counter) [[unlikely]]
+  {
+    // wrapped around, handle it
+    if (m_texture_pool.empty() && m_target_pool.empty())
+    {
+      m_texture_pool_counter = 0;
+    }
+    else
+    {
+      const u32 texture_min =
+        m_texture_pool.empty() ? std::numeric_limits<u32>::max() : m_texture_pool.front().use_counter;
+      const u32 target_min =
+        m_target_pool.empty() ? std::numeric_limits<u32>::max() : m_target_pool.front().use_counter;
+      const u32 reduce = std::min(texture_min, target_min);
+      m_texture_pool_counter -= reduce;
+      for (u32 pool_idx = 0; pool_idx < 2; pool_idx++)
+      {
+        TexturePool& pool = pool_idx ? m_target_pool : m_texture_pool;
+        for (TexturePoolEntry& entry : pool)
+          entry.use_counter -= reduce;
+      }
+    }
   }
 }
 

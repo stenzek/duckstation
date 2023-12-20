@@ -52,11 +52,7 @@ std::unique_ptr<GPUTexture> OpenGLDevice::CreateTexture(u32 width, u32 height, u
                                                         GPUTexture::Type type, GPUTexture::Format format,
                                                         const void* data, u32 data_stride)
 {
-  std::unique_ptr<OpenGLTexture> tex(std::make_unique<OpenGLTexture>());
-  if (!tex->Create(width, height, layers, levels, samples, type, format, data, data_stride))
-    tex.reset();
-
-  return tex;
+  return OpenGLTexture::Create(width, height, layers, levels, samples, type, format, data, data_stride);
 }
 
 bool OpenGLDevice::DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, void* out_data,
@@ -532,6 +528,9 @@ bool OpenGLDevice::CheckFeatures(bool* buggy_pbo, FeatureMask disabled_features)
     Log_WarningPrintf("Your GL driver does not support program binaries. Hopefully it has a built-in cache, otherwise "
                       "startup will be slow due to compiling shaders.");
   }
+
+  // Mobile drivers prefer textures to not be updated mid-frame.
+  m_features.prefer_unused_textures = is_gles || vendor_id_arm || vendor_id_powervr || vendor_id_qualcomm;
 
   return true;
 }

@@ -82,11 +82,22 @@ const std::tuple<GLenum, GLenum, GLenum>& OpenGLTexture::GetPixelFormatMapping(G
   return gles ? mapping_gles[static_cast<u32>(format)] : mapping[static_cast<u32>(format)];
 }
 
-OpenGLTexture::OpenGLTexture() = default;
+OpenGLTexture::OpenGLTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format,
+                             GLuint id)
+  : GPUTexture(static_cast<u16>(width), static_cast<u16>(height), static_cast<u8>(layers), static_cast<u8>(levels),
+               static_cast<u8>(samples), type, format),
+    m_id(id)
+{
+}
 
 OpenGLTexture::~OpenGLTexture()
 {
-  Destroy();
+  if (m_id != 0)
+  {
+    OpenGLDevice::GetInstance().UnbindTexture(this);
+    glDeleteTextures(1, &m_id);
+    m_id = 0;
+  }
 }
 
 bool OpenGLTexture::UseTextureStorage(bool multisampled)
@@ -99,16 +110,16 @@ bool OpenGLTexture::UseTextureStorage() const
   return UseTextureStorage(IsMultisampled());
 }
 
-bool OpenGLTexture::Create(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format,
-                           const void* data, u32 data_pitch)
+std::unique_ptr<OpenGLTexture> OpenGLTexture::Create(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
+                                                     Type type, Format format, const void* data, u32 data_pitch)
 {
   if (!ValidateConfig(width, height, layers, levels, samples, type, format))
-    return false;
+    return nullptr;
 
   if (layers > 1 && data)
   {
     Log_ErrorPrintf("Loading texture array data not currently supported");
-    return false;
+    return nullptr;
   }
 
   const GLenum target =
@@ -211,34 +222,10 @@ bool OpenGLTexture::Create(u32 width, u32 height, u32 layers, u32 levels, u32 sa
   {
     Log_ErrorPrintf("Failed to create texture: 0x%X", error);
     glDeleteTextures(1, &id);
-    return false;
+    return nullptr;
   }
 
-  if (IsValid())
-    Destroy();
-
-  m_id = id;
-  m_width = static_cast<u16>(width);
-  m_height = static_cast<u16>(height);
-  m_layers = static_cast<u8>(layers);
-  m_levels = static_cast<u8>(levels);
-  m_samples = static_cast<u8>(samples);
-  m_type = type;
-  m_format = format;
-  m_state = GPUTexture::State::Dirty;
-  return true;
-}
-
-void OpenGLTexture::Destroy()
-{
-  if (m_id != 0)
-  {
-    OpenGLDevice::GetInstance().UnbindTexture(this);
-    glDeleteTextures(1, &m_id);
-    m_id = 0;
-  }
-
-  ClearBaseProperties();
+  return std::unique_ptr<OpenGLTexture>(new OpenGLTexture(width, height, layers, levels, samples, type, format, id));
 }
 
 void OpenGLTexture::CommitClear()

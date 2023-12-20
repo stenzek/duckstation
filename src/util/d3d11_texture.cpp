@@ -23,11 +23,7 @@ std::unique_ptr<GPUTexture> D3D11Device::CreateTexture(u32 width, u32 height, u3
                                                        GPUTexture::Type type, GPUTexture::Format format,
                                                        const void* data, u32 data_stride)
 {
-  std::unique_ptr<D3D11Texture> tex = std::make_unique<D3D11Texture>();
-  if (!tex->Create(m_device.Get(), width, height, layers, levels, samples, type, format, data, data_stride))
-    tex.reset();
-
-  return tex;
+  return D3D11Texture::Create(m_device.Get(), width, height, layers, levels, samples, type, format, data, data_stride);
 }
 
 bool D3D11Device::DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, void* out_data,
@@ -154,11 +150,21 @@ std::unique_ptr<GPUSampler> D3D11Device::CreateSampler(const GPUSampler::Config&
   return std::unique_ptr<GPUSampler>(new D3D11Sampler(std::move(ss)));
 }
 
-D3D11Texture::D3D11Texture() = default;
+D3D11Texture::D3D11Texture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format,
+                           ComPtr<ID3D11Texture2D> texture, ComPtr<ID3D11ShaderResourceView> srv,
+                           ComPtr<ID3D11View> rtv_dsv)
+  : GPUTexture(static_cast<u16>(width), static_cast<u16>(height), static_cast<u8>(layers), static_cast<u8>(levels),
+               static_cast<u8>(samples), type, format),
+    m_texture(std::move(texture)), m_srv(std::move(srv)), m_rtv_dsv(std::move(rtv_dsv))
+{
+}
 
 D3D11Texture::~D3D11Texture()
 {
-  Destroy();
+  D3D11Device::GetInstance().UnbindTexture(this);
+  m_rtv_dsv.Reset();
+  m_srv.Reset();
+  m_texture.Reset();
 }
 
 D3D11_TEXTURE2D_DESC D3D11Texture::GetDesc() const
@@ -189,11 +195,6 @@ void D3D11Texture::CommitClear(ID3D11DeviceContext1* context)
   }
 
   m_state = GPUTexture::State::Dirty;
-}
-
-bool D3D11Texture::IsValid() const
-{
-  return static_cast<bool>(m_texture);
 }
 
 bool D3D11Texture::Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch, u32 layer /*= 0*/,
@@ -268,11 +269,13 @@ DXGI_FORMAT D3D11Texture::GetDXGIFormat() const
   return D3DCommon::GetFormatMapping(m_format).resource_format;
 }
 
-bool D3D11Texture::Create(ID3D11Device* device, u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type,
-                          Format format, const void* initial_data /* = nullptr */, u32 initial_data_stride /* = 0 */)
+std::unique_ptr<D3D11Texture> D3D11Texture::Create(ID3D11Device* device, u32 width, u32 height, u32 layers, u32 levels,
+                                                   u32 samples, Type type, Format format,
+                                                   const void* initial_data /* = nullptr */,
+                                                   u32 initial_data_stride /* = 0 */)
 {
   if (!ValidateConfig(width, height, layers, layers, samples, type, format))
-    return false;
+    return nullptr;
 
   u32 bind_flags = 0;
   D3D11_USAGE usage = D3D11_USAGE_DEFAULT;
@@ -317,7 +320,7 @@ bool D3D11Texture::Create(ID3D11Device* device, u32 width, u32 height, u32 layer
     Log_ErrorPrintf(
       "Create texture failed: 0x%08X (%ux%u levels:%u samples:%u format:%u bind_flags:%X initial_data:%p)", tex_hr,
       width, height, levels, samples, static_cast<unsigned>(format), bind_flags, initial_data);
-    return false;
+    return nullptr;
   }
 
   ComPtr<ID3D11ShaderResourceView> srv;
@@ -332,7 +335,7 @@ bool D3D11Texture::Create(ID3D11Device* device, u32 width, u32 height, u32 layer
     if (FAILED(hr))
     {
       Log_ErrorPrintf("Create SRV for texture failed: 0x%08X", hr);
-      return false;
+      return nullptr;
     }
   }
 
@@ -347,7 +350,7 @@ bool D3D11Texture::Create(ID3D11Device* device, u32 width, u32 height, u32 layer
     if (FAILED(hr))
     {
       Log_ErrorPrintf("Create RTV for texture failed: 0x%08X", hr);
-      return false;
+      return nullptr;
     }
 
     rtv_dsv = std::move(rtv);
@@ -362,32 +365,14 @@ bool D3D11Texture::Create(ID3D11Device* device, u32 width, u32 height, u32 layer
     if (FAILED(hr))
     {
       Log_ErrorPrintf("Create DSV for texture failed: 0x%08X", hr);
-      return false;
+      return nullptr;
     }
 
     rtv_dsv = std::move(dsv);
   }
 
-  m_texture = std::move(texture);
-  m_srv = std::move(srv);
-  m_rtv_dsv = std::move(rtv_dsv);
-  m_width = static_cast<u16>(width);
-  m_height = static_cast<u16>(height);
-  m_layers = static_cast<u8>(layers);
-  m_levels = static_cast<u8>(levels);
-  m_samples = static_cast<u8>(samples);
-  m_type = type;
-  m_format = format;
-  return true;
-}
-
-void D3D11Texture::Destroy()
-{
-  D3D11Device::GetInstance().UnbindTexture(this);
-  m_rtv_dsv.Reset();
-  m_srv.Reset();
-  m_texture.Reset();
-  ClearBaseProperties();
+  return std::unique_ptr<D3D11Texture>(new D3D11Texture(width, height, layers, levels, samples, type, format,
+                                                        std::move(texture), std::move(srv), std::move(rtv_dsv)));
 }
 
 D3D11TextureBuffer::D3D11TextureBuffer(Format format, u32 size_in_elements) : GPUTextureBuffer(format, size_in_elements)

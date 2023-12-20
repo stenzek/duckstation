@@ -220,6 +220,7 @@ void MetalDevice::SetFeatures(FeatureMask disabled_features)
   m_features.partial_msaa_resolve = false;
   m_features.shader_cache = true;
   m_features.pipeline_cache = false;
+  m_features.prefer_unused_textures = true;
 }
 
 bool MetalDevice::LoadShaders()
@@ -871,13 +872,11 @@ MetalTexture::MetalTexture(id<MTLTexture> texture, u16 width, u16 height, u8 lay
 
 MetalTexture::~MetalTexture()
 {
-  MetalDevice::GetInstance().UnbindTexture(this);
-  Destroy();
-}
-
-bool MetalTexture::IsValid() const
-{
-  return (m_texture != nil);
+  if (m_texture != nil)
+  {
+    MetalDevice::GetInstance().UnbindTexture(this);
+    MetalDevice::DeferRelease(m_texture);
+  }
 }
 
 bool MetalTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch, u32 layer /*= 0*/,
@@ -1027,16 +1026,6 @@ void MetalTexture::SetDebugName(const std::string_view& name)
   {
     [m_texture setLabel:StringViewToNSString(name)];
   }
-}
-
-void MetalTexture::Destroy()
-{
-  if (m_texture != nil)
-  {
-    MetalDevice::DeferRelease(m_texture);
-    m_texture = nil;
-  }
-  ClearBaseProperties();
 }
 
 std::unique_ptr<GPUTexture> MetalDevice::CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,

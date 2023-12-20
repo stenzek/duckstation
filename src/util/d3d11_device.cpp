@@ -182,6 +182,7 @@ void D3D11Device::SetFeatures(FeatureMask disabled_features)
   m_features.gpu_timing = true;
   m_features.shader_cache = true;
   m_features.pipeline_cache = false;
+  m_features.prefer_unused_textures = false;
 }
 
 bool D3D11Device::CreateSwapChain()

@@ -15,7 +15,6 @@ class OpenGLTexture final : public GPUTexture
   friend OpenGLDevice;
 
 public:
-  OpenGLTexture();
   OpenGLTexture(const OpenGLTexture&) = delete;
   ~OpenGLTexture();
 
@@ -23,16 +22,15 @@ public:
   static const std::tuple<GLenum, GLenum, GLenum>& GetPixelFormatMapping(Format format, bool gles);
 
   ALWAYS_INLINE GLuint GetGLId() const { return m_id; }
-  bool IsValid() const override { return m_id != 0; }
+
   bool Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch, u32 layer = 0, u32 level = 0) override;
   bool Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32 height, u32 layer = 0, u32 level = 0) override;
   void Unmap() override;
 
   void SetDebugName(const std::string_view& name) override;
 
-  bool Create(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format,
-              const void* data = nullptr, u32 data_pitch = 0);
-  void Destroy();
+  static std::unique_ptr<OpenGLTexture> Create(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type,
+                                               Format format, const void* data = nullptr, u32 data_pitch = 0);
 
   bool UseTextureStorage() const;
 
@@ -46,6 +44,8 @@ public:
   OpenGLTexture& operator=(const OpenGLTexture&) = delete;
 
 private:
+  OpenGLTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format, GLuint id);
+
   GLuint m_id = 0;
 
   u32 m_map_offset = 0;

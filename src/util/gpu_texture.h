@@ -73,9 +73,18 @@ public:
   };
 
 public:
+  GPUTexture(const GPUTexture&) = delete;
   virtual ~GPUTexture();
 
   static const char* GetFormatName(Format format);
+  static u32 GetPixelSize(GPUTexture::Format format);
+  static bool IsDepthFormat(GPUTexture::Format format);
+  static bool IsDepthStencilFormat(GPUTexture::Format format);
+  static bool ValidateConfig(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format);
+
+  static bool ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u32>& texture_data, u32& texture_data_stride,
+                                        GPUTexture::Format format);
+  static void FlipTextureDataRGBA8(u32 width, u32 height, std::vector<u32>& texture_data, u32 texture_data_stride);
 
   ALWAYS_INLINE u32 GetWidth() const { return m_width; }
   ALWAYS_INLINE u32 GetHeight() const { return m_height; }
@@ -122,16 +131,9 @@ public:
     m_clear_value.depth = depth;
   }
 
-  static u32 GetPixelSize(GPUTexture::Format format);
-  static bool IsDepthFormat(GPUTexture::Format format);
-  static bool IsDepthStencilFormat(GPUTexture::Format format);
-  static bool ValidateConfig(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format);
+  size_t GetVRAMUsage() const;
 
-  static bool ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u32>& texture_data, u32& texture_data_stride,
-                                        GPUTexture::Format format);
-  static void FlipTextureDataRGBA8(u32 width, u32 height, std::vector<u32>& texture_data, u32 texture_data_stride);
-
-  virtual bool IsValid() const = 0;
+  GPUTexture& operator=(const GPUTexture&) = delete;
 
   virtual bool Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch, u32 layer = 0,
                       u32 level = 0) = 0;
@@ -144,10 +146,7 @@ public:
   virtual void SetDebugName(const std::string_view& name) = 0;
 
 protected:
-  GPUTexture();
   GPUTexture(u16 width, u16 height, u8 layers, u8 levels, u8 samples, Type type, Format format);
-
-  void ClearBaseProperties();
 
   u16 m_width = 0;
   u16 m_height = 0;
