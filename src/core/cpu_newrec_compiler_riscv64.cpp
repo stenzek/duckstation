@@ -8,6 +8,7 @@
 #include "common/string_util.h"
 #include "cpu_code_cache_private.h"
 #include "cpu_core_private.h"
+#include "cpu_pgxp.h"
 #include "cpu_recompiler_thunks.h"
 #include "gte.h"
 #include "settings.h"
@@ -1601,8 +1602,8 @@ biscuit::GPR CPU::NewRec::RISCV64Compiler::ComputeLoadStoreAddressArg(
 }
 
 template<typename RegAllocFn>
-void CPU::NewRec::RISCV64Compiler::GenerateLoad(const biscuit::GPR& addr_reg, MemoryAccessSize size, bool sign,
-                                                bool use_fastmem, const RegAllocFn& dst_reg_alloc)
+biscuit::GPR CPU::NewRec::RISCV64Compiler::GenerateLoad(const biscuit::GPR& addr_reg, MemoryAccessSize size, bool sign,
+                                                        bool use_fastmem, const RegAllocFn& dst_reg_alloc)
 {
   if (use_fastmem)
   {
@@ -1648,7 +1649,7 @@ void CPU::NewRec::RISCV64Compiler::GenerateLoad(const biscuit::GPR& addr_reg, Me
     rvAsm->NOP();
 
     AddLoadStoreInfo(start, 8, addr_reg.Index(), dst.Index(), size, sign, true);
-    return;
+    return dst;
   }
 
   if (addr_reg.Index() != RARG1.Index())
@@ -1727,6 +1728,8 @@ void CPU::NewRec::RISCV64Compiler::GenerateLoad(const biscuit::GPR& addr_reg, Me
     }
     break;
   }
+
+  return dst_reg;
 }
 
 void CPU::NewRec::RISCV64Compiler::GenerateStore(const biscuit::GPR& addr_reg, const biscuit::GPR& value_reg,
@@ -1832,15 +1835,29 @@ void CPU::NewRec::RISCV64Compiler::GenerateStore(const biscuit::GPR& addr_reg, c
 void CPU::NewRec::RISCV64Compiler::Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                                                const std::optional<VirtualMemoryAddress>& address)
 {
+  const std::optional<GPR> addr_reg = (g_settings.gpu_pgxp_enable && cf.MipsT() != Reg::zero) ?
+                                        std::optional<GPR>(GPR(AllocateTempHostReg(HR_CALLEE_SAVED))) :
+                                        std::optional<GPR>();
   FlushForLoadStore(address, false, use_fastmem);
-  const GPR addr = ComputeLoadStoreAddressArg(cf, address);
-  GenerateLoad(addr, size, sign, use_fastmem, [this, cf]() {
+  const GPR addr = ComputeLoadStoreAddressArg(cf, address, addr_reg);
+  const GPR data = GenerateLoad(addr, size, sign, use_fastmem, [this, cf]() {
     if (cf.MipsT() == Reg::zero)
       return RRET;
 
-    return GPR(AllocateHostReg(HR_MODE_WRITE, EMULATE_LOAD_DELAYS ? HR_TYPE_NEXT_LOAD_DELAY_VALUE : HR_TYPE_CPU_REG,
-                               cf.MipsT()));
+    return GPR(AllocateHostReg(GetFlagsForNewLoadDelayedReg(),
+                               EMULATE_LOAD_DELAYS ? HR_TYPE_NEXT_LOAD_DELAY_VALUE : HR_TYPE_CPU_REG, cf.MipsT()));
   });
+
+  if (g_settings.gpu_pgxp_enable && cf.MipsT() != Reg::zero)
+  {
+    Flush(FLUSH_FOR_C_CALL);
+
+    EmitMov(RARG1, inst->bits);
+    rvAsm->MV(RARG2, addr);
+    rvAsm->MV(RARG3, data);
+    EmitCall(s_pgxp_mem_load_functions[static_cast<u32>(size)][static_cast<u32>(sign)]);
+    FreeHostReg(addr_reg.value().Index());
+  }
 }
 
 void CPU::NewRec::RISCV64Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
@@ -1931,8 +1948,10 @@ void CPU::NewRec::RISCV64Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize
 void CPU::NewRec::RISCV64Compiler::Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                                                 const std::optional<VirtualMemoryAddress>& address)
 {
+  const std::optional<GPR> addr_reg =
+    g_settings.gpu_pgxp_enable ? std::optional<GPR>(GPR(AllocateTempHostReg(HR_CALLEE_SAVED))) : std::optional<GPR>();
   FlushForLoadStore(address, false, use_fastmem);
-  const GPR addr = ComputeLoadStoreAddressArg(cf, address);
+  const GPR addr = ComputeLoadStoreAddressArg(cf, address, addr_reg);
   GenerateLoad(addr, MemoryAccessSize::Word, false, use_fastmem, []() { return RRET; });
 
   const u32 index = static_cast<u32>(inst->r.rt.GetValue());
@@ -1941,27 +1960,27 @@ void CPU::NewRec::RISCV64Compiler::Compile_lwc2(CompileFlags cf, MemoryAccessSiz
   {
     case GTERegisterAccessAction::Ignore:
     {
-      return;
+      break;
     }
 
     case GTERegisterAccessAction::Direct:
     {
       rvAsm->SW(RRET, PTR(ptr));
-      return;
+      break;
     }
 
     case GTERegisterAccessAction::SignExtend16:
     {
       EmitSExtH(RRET, RRET);
       rvAsm->SW(RRET, PTR(ptr));
-      return;
+      break;
     }
 
     case GTERegisterAccessAction::ZeroExtend16:
     {
       EmitUExtH(RRET, RRET);
       rvAsm->SW(RRET, PTR(ptr));
-      return;
+      break;
     }
 
     case GTERegisterAccessAction::CallHandler:
@@ -1970,7 +1989,7 @@ void CPU::NewRec::RISCV64Compiler::Compile_lwc2(CompileFlags cf, MemoryAccessSiz
       rvAsm->MV(RARG2, RRET);
       EmitMov(RARG1, index);
       EmitCall(reinterpret_cast<const void*>(&GTE::WriteRegister));
-      return;
+      break;
     }
 
     case GTERegisterAccessAction::PushFIFO:
@@ -1984,7 +2003,7 @@ void CPU::NewRec::RISCV64Compiler::Compile_lwc2(CompileFlags cf, MemoryAccessSiz
       rvAsm->SW(RARG2, PTR(&g_state.gte_regs.SXY0[0]));
       rvAsm->SW(RARG3, PTR(&g_state.gte_regs.SXY1[0]));
       rvAsm->SW(RRET, PTR(&g_state.gte_regs.SXY2[0]));
-      return;
+      break;
     }
 
     default:
@@ -1993,6 +2012,16 @@ void CPU::NewRec::RISCV64Compiler::Compile_lwc2(CompileFlags cf, MemoryAccessSiz
       return;
     }
   }
+
+  if (g_settings.gpu_pgxp_enable)
+  {
+    Flush(FLUSH_FOR_C_CALL);
+    rvAsm->MV(RARG3, RRET);
+    rvAsm->MV(RARG2, addr);
+    EmitMov(RARG1, inst->bits);
+    EmitCall(reinterpret_cast<const void*>(&PGXP::CPU_LWC2));
+    FreeHostReg(addr_reg.value().Index());
+  }
 }
 
 void CPU::NewRec::RISCV64Compiler::Compile_sxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
@@ -2000,13 +2029,26 @@ void CPU::NewRec::RISCV64Compiler::Compile_sxx(CompileFlags cf, MemoryAccessSize
 {
   AssertRegOrConstS(cf);
   AssertRegOrConstT(cf);
-  FlushForLoadStore(address, true, use_fastmem);
-  const GPR addr = ComputeLoadStoreAddressArg(cf, address);
 
+  const std::optional<GPR> addr_reg =
+    g_settings.gpu_pgxp_enable ? std::optional<GPR>(GPR(AllocateTempHostReg(HR_CALLEE_SAVED))) : std::optional<GPR>();
+  FlushForLoadStore(address, true, use_fastmem);
+  const GPR addr = ComputeLoadStoreAddressArg(cf, address, addr_reg);
+  const GPR data = cf.valid_host_t ? CFGetRegT(cf) : RARG2;
   if (!cf.valid_host_t)
     MoveTToReg(RARG2, cf);
 
-  GenerateStore(addr, cf.valid_host_t ? CFGetRegT(cf) : RARG2, size, use_fastmem);
+  GenerateStore(addr, data, size, use_fastmem);
+
+  if (g_settings.gpu_pgxp_enable)
+  {
+    Flush(FLUSH_FOR_C_CALL);
+    MoveMIPSRegToReg(RARG3, cf.MipsT());
+    rvAsm->MV(RARG2, addr);
+    EmitMov(RARG1, inst->bits);
+    EmitCall(s_pgxp_mem_store_functions[static_cast<u32>(size)]);
+    FreeHostReg(addr_reg.value().Index());
+  }
 }
 
 void CPU::NewRec::RISCV64Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
@@ -2102,8 +2144,29 @@ void CPU::NewRec::RISCV64Compiler::Compile_swc2(CompileFlags cf, MemoryAccessSiz
     break;
   }
 
-  const GPR addr = ComputeLoadStoreAddressArg(cf, address);
-  GenerateStore(addr, RARG2, size, use_fastmem);
+  // PGXP makes this a giant pain.
+  if (!g_settings.gpu_pgxp_enable)
+  {
+    const GPR addr = ComputeLoadStoreAddressArg(cf, address);
+    GenerateStore(addr, RARG2, size, use_fastmem);
+    return;
+  }
+
+  // TODO: This can be simplified because we don't need to validate in PGXP..
+  const GPR addr_reg = GPR(AllocateTempHostReg(HR_CALLEE_SAVED));
+  const GPR data_backup = GPR(AllocateTempHostReg(HR_CALLEE_SAVED));
+  FlushForLoadStore(address, true, use_fastmem);
+  ComputeLoadStoreAddressArg(cf, address, addr_reg);
+  rvAsm->MV(data_backup, RARG2);
+  GenerateStore(addr_reg, RARG2, size, use_fastmem);
+
+  Flush(FLUSH_FOR_C_CALL);
+  rvAsm->MV(RARG3, data_backup);
+  rvAsm->MV(RARG2, addr_reg);
+  EmitMov(RARG1, inst->bits);
+  EmitCall(reinterpret_cast<const void*>(&PGXP::CPU_SWC2));
+  FreeHostReg(addr_reg.Index());
+  FreeHostReg(data_backup.Index());
 }
 
 void CPU::NewRec::RISCV64Compiler::Compile_mtc0(CompileFlags cf)
@@ -2261,10 +2324,11 @@ void CPU::NewRec::RISCV64Compiler::Compile_mfc2(CompileFlags cf)
   if (action == GTERegisterAccessAction::Ignore)
     return;
 
+  u32 hreg;
   if (action == GTERegisterAccessAction::Direct)
   {
-    const u32 hreg =
-      AllocateHostReg(HR_MODE_WRITE, EMULATE_LOAD_DELAYS ? HR_TYPE_NEXT_LOAD_DELAY_VALUE : HR_TYPE_CPU_REG, rt);
+    hreg = AllocateHostReg(GetFlagsForNewLoadDelayedReg(),
+                           EMULATE_LOAD_DELAYS ? HR_TYPE_NEXT_LOAD_DELAY_VALUE : HR_TYPE_CPU_REG, rt);
     rvAsm->LW(GPR(hreg), PTR(ptr));
   }
   else if (action == GTERegisterAccessAction::CallHandler)
@@ -2273,13 +2337,21 @@ void CPU::NewRec::RISCV64Compiler::Compile_mfc2(CompileFlags cf)
     EmitMov(RARG1, index);
     EmitCall(reinterpret_cast<const void*>(&GTE::ReadRegister));
 
-    const u32 hreg =
-      AllocateHostReg(HR_MODE_WRITE, EMULATE_LOAD_DELAYS ? HR_TYPE_NEXT_LOAD_DELAY_VALUE : HR_TYPE_CPU_REG, rt);
+    hreg = AllocateHostReg(GetFlagsForNewLoadDelayedReg(),
+                           EMULATE_LOAD_DELAYS ? HR_TYPE_NEXT_LOAD_DELAY_VALUE : HR_TYPE_CPU_REG, rt);
     rvAsm->MV(GPR(hreg), RRET);
   }
   else
   {
     Panic("Unknown action");
+  }
+
+  if (g_settings.gpu_pgxp_enable)
+  {
+    Flush(FLUSH_FOR_C_CALL);
+    EmitMov(RARG1, inst->bits);
+    rvAsm->MV(RARG2, GPR(hreg));
+    EmitCall(reinterpret_cast<const void*>(&PGXP::CPU_MFC2));
   }
 }
 
