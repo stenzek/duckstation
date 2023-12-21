@@ -826,7 +826,7 @@ std::unique_ptr<GPUTexture> GPUDevice::FetchTexture(u32 width, u32 height, u32 l
     if (!data || it->texture->Update(0, 0, width, height, data, data_stride, 0, 0))
     {
       ret = std::move(it->texture);
-      m_texture_pool.erase(it);
+      pool.erase(it);
       return ret;
     }
     else
