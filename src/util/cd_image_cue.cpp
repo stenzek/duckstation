@@ -32,6 +32,7 @@ public:
 
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasNonStandardSubchannel() const override;
+  s64 GetSizeOnDisk() const override;
 
 protected:
   bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
@@ -337,6 +338,15 @@ bool CDImageCueSheet::ReadSectorFromIndex(void* buffer, const Index& index, LBA 
 
   tf.file_position += index.file_sector_size;
   return true;
+}
+
+s64 CDImageCueSheet::GetSizeOnDisk() const
+{
+  // Doesn't include the cue.. but they're tiny anyway, whatever.
+  u64 size = 0;
+  for (const TrackFile& tf : m_files)
+    size += FileSystem::FSize64(tf.file);
+  return size;
 }
 
 std::unique_ptr<CDImage> CDImage::OpenCueSheetImage(const char* filename, Error* error)

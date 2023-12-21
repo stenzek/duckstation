@@ -68,6 +68,7 @@ public:
   bool HasNonStandardSubchannel() const override;
   PrecacheResult Precache(ProgressCallback* progress) override;
   bool IsPrecached() const override;
+  s64 GetSizeOnDisk() const override;
 
 protected:
   bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
@@ -569,6 +570,11 @@ ALWAYS_INLINE_RELEASE bool CDImageCHD::UpdateHunkBuffer(const Index& index, LBA 
 
   m_current_hunk_index = hunk_index;
   return true;
+}
+
+s64 CDImageCHD::GetSizeOnDisk() const
+{
+  return static_cast<s64>(chd_get_compressed_size(m_chd));
 }
 
 std::unique_ptr<CDImage> CDImage::OpenCHDImage(const char* filename, Error* error)

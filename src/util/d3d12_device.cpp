@@ -1187,6 +1187,7 @@ void D3D12Device::SetFeatures(FeatureMask disabled_features)
   m_features.gpu_timing = true;
   m_features.shader_cache = true;
   m_features.pipeline_cache = true;
+  m_features.prefer_unused_textures = true;
 
   BOOL allow_tearing_supported = false;
   HRESULT hr = m_dxgi_factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported,

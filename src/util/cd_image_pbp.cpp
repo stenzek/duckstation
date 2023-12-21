@@ -135,6 +135,7 @@ public:
 
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasNonStandardSubchannel() const override;
+  s64 GetSizeOnDisk() const override;
 
   bool HasSubImages() const override;
   u32 GetSubImageCount() const override;
@@ -958,6 +959,11 @@ std::string CDImagePBP::GetSubImageMetadata(u32 index, const std::string_view& t
   }
 
   return CDImage::GetSubImageMetadata(index, type);
+}
+
+s64 CDImagePBP::GetSizeOnDisk() const
+{
+  return FileSystem::FSize64(m_file);
 }
 
 std::unique_ptr<CDImage> CDImage::OpenPBPImage(const char* filename, Error* error)

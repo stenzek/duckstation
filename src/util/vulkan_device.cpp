@@ -2414,6 +2414,7 @@ bool VulkanDevice::CheckFeatures(FeatureMask disabled_features)
   m_features.partial_msaa_resolve = true;
   m_features.shader_cache = true;
   m_features.pipeline_cache = true;
+  m_features.prefer_unused_textures = true;
 
   return true;
 }

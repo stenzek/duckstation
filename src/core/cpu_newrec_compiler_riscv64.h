@@ -90,8 +90,8 @@ protected:
   biscuit::GPR ComputeLoadStoreAddressArg(CompileFlags cf, const std::optional<VirtualMemoryAddress>& address,
                                           const std::optional<const biscuit::GPR>& reg = std::nullopt);
   template<typename RegAllocFn>
-  void GenerateLoad(const biscuit::GPR& addr_reg, MemoryAccessSize size, bool sign, bool use_fastmem,
-                    const RegAllocFn& dst_reg_alloc);
+  biscuit::GPR GenerateLoad(const biscuit::GPR& addr_reg, MemoryAccessSize size, bool sign, bool use_fastmem,
+                            const RegAllocFn& dst_reg_alloc);
   void GenerateStore(const biscuit::GPR& addr_reg, const biscuit::GPR& value_reg, MemoryAccessSize size,
                      bool use_fastmem);
   void Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,

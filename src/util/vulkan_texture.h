@@ -48,7 +48,6 @@ public:
 
   VkImageLayout GetVkLayout() const;
 
-  bool IsValid() const override { return (m_image != VK_NULL_HANDLE); }
   bool Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch, u32 layer = 0, u32 level = 0) override;
   bool Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32 height, u32 layer = 0, u32 level = 0) override;
   void Unmap() override;

@@ -19,7 +19,7 @@
 
 static constexpr std::array<const char*, GameListModel::Column_Count> s_column_names = {
   {"Type", "Serial", "Title", "File Title", "Developer", "Publisher", "Genre", "Year", "Players", "Time Played",
-   "Last Played", "Size", "Region", "Compatibility", "Cover"}};
+   "Last Played", "Size", "File Size", "Region", "Compatibility", "Cover"}};
 
 static constexpr int COVER_ART_WIDTH = 512;
 static constexpr int COVER_ART_HEIGHT = 512;
@@ -303,8 +303,13 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
             return QStringLiteral("%1-%2").arg(ge->min_players).arg(ge->max_players);
         }
 
-        case Column_Size:
-          return QString("%1 MB").arg(static_cast<double>(ge->total_size) / 1048576.0, 0, 'f', 2);
+        case Column_FileSize:
+          return (ge->file_size >= 0) ?
+                   QString("%1 MB").arg(static_cast<double>(ge->file_size) / 1048576.0, 0, 'f', 2) :
+                   tr("Unknown");
+
+        case Column_UncompressedSize:
+          return QString("%1 MB").arg(static_cast<double>(ge->uncompressed_size) / 1048576.0, 0, 'f', 2);
 
         case Column_TimePlayed:
         {
@@ -374,8 +379,11 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
         case Column_LastPlayed:
           return static_cast<qlonglong>(ge->last_played_time);
 
-        case Column_Size:
-          return static_cast<qulonglong>(ge->total_size);
+        case Column_FileSize:
+          return static_cast<qulonglong>(ge->file_size);
+
+        case Column_UncompressedSize:
+          return static_cast<qulonglong>(ge->uncompressed_size);
 
         default:
           return {};
@@ -519,12 +527,20 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
       return (static_cast<int>(left->compatibility) < static_cast<int>(right->compatibility));
     }
 
-    case Column_Size:
+    case Column_FileSize:
     {
-      if (left->total_size == right->total_size)
+      if (left->file_size == right->file_size)
         return titlesLessThan(left_row, right_row);
 
-      return (left->total_size < right->total_size);
+      return (left->file_size < right->file_size);
+    }
+
+    case Column_UncompressedSize:
+    {
+      if (left->uncompressed_size == right->uncompressed_size)
+        return titlesLessThan(left_row, right_row);
+
+      return (left->uncompressed_size < right->uncompressed_size);
     }
 
     case Column_Genre:
@@ -622,7 +638,8 @@ void GameListModel::setColumnDisplayNames()
   m_column_display_names[Column_Players] = tr("Players");
   m_column_display_names[Column_TimePlayed] = tr("Time Played");
   m_column_display_names[Column_LastPlayed] = tr("Last Played");
-  m_column_display_names[Column_Size] = tr("Size");
+  m_column_display_names[Column_FileSize] = tr("Size");
+  m_column_display_names[Column_UncompressedSize] = tr("Raw Size");
   m_column_display_names[Column_Region] = tr("Region");
   m_column_display_names[Column_Compatibility] = tr("Compatibility");
 }

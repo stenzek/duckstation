@@ -5717,11 +5717,21 @@ void FullscreenUI::PopulateGameListEntryList()
                 }
                 break;
 
-                case 6: // Size
+                case 6: // File Size
                 {
-                  if (lhs->total_size != rhs->total_size)
+                  if (lhs->file_size != rhs->file_size)
                   {
-                    return reverse ? (lhs->total_size > rhs->total_size) : (lhs->total_size < rhs->total_size);
+                    return reverse ? (lhs->file_size > rhs->file_size) : (lhs->file_size < rhs->file_size);
+                  }
+                }
+                break;
+
+                case 7: // Uncompressed Size
+                {
+                  if (lhs->uncompressed_size != rhs->uncompressed_size)
+                  {
+                    return reverse ? (lhs->uncompressed_size > rhs->uncompressed_size) :
+                                     (lhs->uncompressed_size < rhs->uncompressed_size);
                   }
                 }
                 break;
@@ -5975,7 +5985,12 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       ImGui::Text(FSUI_CSTR("Last Played: %s"), GameList::FormatTimestamp(selected_entry->last_played_time).c_str());
 
       // size
-      ImGui::Text(FSUI_CSTR("Size: %.2f MB"), static_cast<float>(selected_entry->total_size) / 1048576.0f);
+      if (selected_entry->file_size >= 0)
+        ImGui::Text(FSUI_CSTR("File Size: %.2f MB"), static_cast<float>(selected_entry->file_size) / 1048576.0f);
+      else
+        ImGui::TextUnformatted(FSUI_CSTR("Unknown File Size"));
+      ImGui::Text(FSUI_CSTR("Uncompressed Size: %.2f MB"),
+                  static_cast<float>(selected_entry->uncompressed_size) / 1048576.0f);
 
       ImGui::PopFont();
     }
@@ -6275,8 +6290,8 @@ void FullscreenUI::DrawGameListSettingsPage(const ImVec2& heading_size)
   {
     static constexpr const char* view_types[] = {FSUI_NSTR("Game Grid"), FSUI_NSTR("Game List")};
     static constexpr const char* sort_types[] = {
-      FSUI_NSTR("Type"),        FSUI_NSTR("Serial"),      FSUI_NSTR("Title"), FSUI_NSTR("File Title"),
-      FSUI_NSTR("Time Played"), FSUI_NSTR("Last Played"), FSUI_NSTR("Size")};
+      FSUI_NSTR("Type"),        FSUI_NSTR("Serial"),      FSUI_NSTR("Title"),     FSUI_NSTR("File Title"),
+      FSUI_NSTR("Time Played"), FSUI_NSTR("Last Played"), FSUI_NSTR("File Size"), FSUI_NSTR("Uncompressed Size")};
 
     DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_BORDER_ALL, "Default View"),
                        FSUI_CSTR("Selects the view that the game list will open to."), "Main",
@@ -6969,6 +6984,8 @@ TRANSLATE_NOOP("FullscreenUI", "Failed to save input profile '{}'.");
 TRANSLATE_NOOP("FullscreenUI", "Fast Boot");
 TRANSLATE_NOOP("FullscreenUI", "Fast Forward Speed");
 TRANSLATE_NOOP("FullscreenUI", "Fast Forward Volume");
+TRANSLATE_NOOP("FullscreenUI", "File Size");
+TRANSLATE_NOOP("FullscreenUI", "File Size: %.2f MB");
 TRANSLATE_NOOP("FullscreenUI", "File Title");
 TRANSLATE_NOOP("FullscreenUI", "Force 4:3 For 24-Bit Display");
 TRANSLATE_NOOP("FullscreenUI", "Force NTSC Timings");
@@ -7231,8 +7248,6 @@ TRANSLATE_NOOP("FullscreenUI", "Shows the number of frames (or v-syncs) displaye
 TRANSLATE_NOOP("FullscreenUI", "Simulates the CPU's instruction cache in the recompiler. Can help with games running too fast.");
 TRANSLATE_NOOP("FullscreenUI", "Simulates the region check present in original, unmodified consoles.");
 TRANSLATE_NOOP("FullscreenUI", "Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.");
-TRANSLATE_NOOP("FullscreenUI", "Size");
-TRANSLATE_NOOP("FullscreenUI", "Size: %.2f MB");
 TRANSLATE_NOOP("FullscreenUI", "Slow Boot");
 TRANSLATE_NOOP("FullscreenUI", "Smooths out blockyness between colour transitions in 24-bit content, usually FMVs. Only applies to the hardware renderers.");
 TRANSLATE_NOOP("FullscreenUI", "Smooths out the blockiness of magnified textures on 3D objects.");
@@ -7283,8 +7298,11 @@ TRANSLATE_NOOP("FullscreenUI", "True Color Rendering");
 TRANSLATE_NOOP("FullscreenUI", "Turbo Speed");
 TRANSLATE_NOOP("FullscreenUI", "Type");
 TRANSLATE_NOOP("FullscreenUI", "UI Language");
+TRANSLATE_NOOP("FullscreenUI", "Uncompressed Size");
+TRANSLATE_NOOP("FullscreenUI", "Uncompressed Size: %.2f MB");
 TRANSLATE_NOOP("FullscreenUI", "Undo Load State");
 TRANSLATE_NOOP("FullscreenUI", "Unknown");
+TRANSLATE_NOOP("FullscreenUI", "Unknown File Size");
 TRANSLATE_NOOP("FullscreenUI", "Unlimited");
 TRANSLATE_NOOP("FullscreenUI", "Use Blit Swap Chain");
 TRANSLATE_NOOP("FullscreenUI", "Use Debug GPU Device");

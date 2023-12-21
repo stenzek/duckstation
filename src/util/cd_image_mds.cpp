@@ -48,6 +48,7 @@ public:
 
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
   bool HasNonStandardSubchannel() const override;
+  s64 GetSizeOnDisk() const override;
 
 protected:
   bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
@@ -283,6 +284,11 @@ bool CDImageMds::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_i
 
   m_mdf_file_position += read_size;
   return true;
+}
+
+s64 CDImageMds::GetSizeOnDisk() const
+{
+  return FileSystem::FSize64(m_mdf_file);
 }
 
 std::unique_ptr<CDImage> CDImage::OpenMdsImage(const char* filename, Error* error)

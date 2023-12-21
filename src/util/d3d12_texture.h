@@ -37,7 +37,6 @@ public:
   ALWAYS_INLINE DXGI_FORMAT GetDXGIFormat() const { return m_dxgi_format; }
   ALWAYS_INLINE ID3D12Resource* GetResource() const { return m_resource.Get(); }
 
-  bool IsValid() const override { return static_cast<bool>(m_resource); }
   bool Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch, u32 layer = 0, u32 level = 0) override;
   bool Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32 height, u32 layer = 0, u32 level = 0) override;
   void Unmap() override;

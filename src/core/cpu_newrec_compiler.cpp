@@ -525,11 +525,20 @@ u32 CPU::NewRec::Compiler::GetFreeHostReg(u32 flags)
 {
   const u32 req_flags = HR_USABLE | (flags & HR_CALLEE_SAVED);
 
+  u32 fallback = NUM_HOST_REGS;
   for (u32 i = 0; i < NUM_HOST_REGS; i++)
   {
     if ((m_host_regs[i].flags & (req_flags | HR_NEEDED | HR_ALLOCATED)) == req_flags)
-      return i;
+    {
+      // Prefer callee-saved registers.
+      if (m_host_regs[i].flags & HR_CALLEE_SAVED)
+        return i;
+      else if (fallback == NUM_HOST_REGS)
+        fallback = i;
+    }
   }
+  if (fallback != NUM_HOST_REGS)
+    return fallback;
 
   // find register with lowest counter
   u32 lowest = NUM_HOST_REGS;

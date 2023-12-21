@@ -44,7 +44,8 @@ struct Entry
   std::string publisher;
   std::string developer;
   u64 hash = 0;
-  u64 total_size = 0;
+  s64 file_size = 0;
+  u64 uncompressed_size = 0;
   std::time_t last_modified_time = 0;
   std::time_t last_played_time = 0;
   std::time_t total_played_time = 0;

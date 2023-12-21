@@ -386,6 +386,11 @@ bool CDImage::IsPrecached() const
   return false;
 }
 
+s64 CDImage::GetSizeOnDisk() const
+{
+  return -1;
+}
+
 void CDImage::ClearTOC()
 {
   m_lba_count = 0;

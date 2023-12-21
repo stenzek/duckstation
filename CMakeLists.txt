@@ -183,11 +183,19 @@ elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm" OR "${CMAKE_SYSTEM_PROCESSOR}"
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -marm -march=armv7-a")
   endif()
 elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "riscv64")
-  set(CPU_ARCH "riscv64")
+  set(CPU_ARCH_RISCV64 TRUE)
   message("Building RISC-V 64 binaries.")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -finline-atomics")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -finline-atomics")
 
-  # Not done for us. Or we should inline atomics?
+  # Still need this, apparently.
   link_libraries("-latomic")
+
+  if(NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    # Frame pointers generate an annoying amount of code on leaf functions.
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fomit-frame-pointer")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fomit-frame-pointer")
+  endif()
 else()
   message(FATAL_ERROR "Unknown system processor: ${CMAKE_SYSTEM_PROCESSOR}")
 endif()

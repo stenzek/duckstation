@@ -424,6 +424,8 @@ protected:
 class GPUDevice
 {
 public:
+  friend GPUTexture;
+
   // TODO: drop virtuals
   // TODO: gpu crash handling on present
   using DrawIndex = u16;
@@ -451,6 +453,7 @@ public:
     bool gpu_timing : 1;
     bool shader_cache : 1;
     bool pipeline_cache : 1;
+    bool prefer_unused_textures : 1;
   };
 
   struct AdapterAndModeList
@@ -627,6 +630,7 @@ public:
   virtual void SetVSync(bool enabled) = 0;
 
   ALWAYS_INLINE bool IsDebugDevice() const { return m_debug_device; }
+  ALWAYS_INLINE size_t GetVRAMUsage() const { return s_total_vram_usage; }
 
   bool UpdateImGuiFontTexture();
   bool UsesLowerLeftOrigin() const;
@@ -675,7 +679,9 @@ protected:
   std::unique_ptr<GPUSampler> m_linear_sampler;
 
 private:
-  static constexpr u32 POOL_PURGE_DELAY = 60;
+  static constexpr u32 MAX_TEXTURE_POOL_SIZE = 100;
+  static constexpr u32 MAX_TARGET_POOL_SIZE = 50;
+  static constexpr u32 POOL_PURGE_DELAY = 300;
 
   struct TexturePoolKey
   {
@@ -700,19 +706,27 @@ private:
   struct TexturePoolEntry
   {
     std::unique_ptr<GPUTexture> texture;
-    u32 remove_count;
+    u32 use_counter;
     TexturePoolKey key;
   };
+
+  using TexturePool = std::deque<TexturePoolEntry>;
 
   void OpenShaderCache(const std::string_view& base_path, u32 version);
   void CloseShaderCache();
   bool CreateResources();
   void DestroyResources();
 
+  static bool IsTexturePoolType(GPUTexture::Type type);
+
+  static size_t s_total_vram_usage;
+
   std::unique_ptr<GPUPipeline> m_imgui_pipeline;
   std::unique_ptr<GPUTexture> m_imgui_font_texture;
 
-  std::deque<TexturePoolEntry> m_texture_pool;
+  TexturePool m_texture_pool;
+  TexturePool m_target_pool;
+  size_t m_pool_vram_usage = 0;
   u32 m_texture_pool_counter = 0;
 
   // TODO: Move out.

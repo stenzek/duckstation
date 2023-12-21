@@ -405,10 +405,16 @@ void ImGuiManager::DrawPerformanceOverlay()
 #endif
     }
 
-    if (g_settings.display_show_gpu && g_gpu_device->IsGPUTimingEnabled())
+    if (g_settings.display_show_gpu)
     {
-      text.assign("GPU: ");
-      FormatProcessorStat(text, System::GetGPUUsage(), System::GetGPUAverageTime());
+      if (g_gpu_device->IsGPUTimingEnabled())
+      {
+        text.assign("GPU: ");
+        FormatProcessorStat(text, System::GetGPUUsage(), System::GetGPUAverageTime());
+        DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
+      }
+
+      text.format("VRAM: {} MB", (g_gpu_device->GetVRAMUsage() + (1048576 - 1)) / 1048576);
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
     }
 

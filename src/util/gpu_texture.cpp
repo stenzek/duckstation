@@ -10,15 +10,17 @@
 
 Log_SetChannel(GPUTexture);
 
-GPUTexture::GPUTexture() = default;
-
 GPUTexture::GPUTexture(u16 width, u16 height, u8 layers, u8 levels, u8 samples, Type type, Format format)
   : m_width(width), m_height(height), m_layers(layers), m_levels(levels), m_samples(samples), m_type(type),
     m_format(format)
 {
+  GPUDevice::s_total_vram_usage += GetVRAMUsage();
 }
 
-GPUTexture::~GPUTexture() = default;
+GPUTexture::~GPUTexture()
+{
+  GPUDevice::s_total_vram_usage -= GetVRAMUsage();
+}
 
 const char* GPUTexture::GetFormatName(Format format)
 {
@@ -48,21 +50,28 @@ const char* GPUTexture::GetFormatName(Format format)
   return format_names[static_cast<u8>(format)];
 }
 
-void GPUTexture::ClearBaseProperties()
-{
-  m_width = 0;
-  m_height = 0;
-  m_layers = 0;
-  m_levels = 0;
-  m_samples = 0;
-  m_type = GPUTexture::Type::Unknown;
-  m_format = GPUTexture::Format::Unknown;
-  m_state = State::Dirty;
-}
-
 std::array<float, 4> GPUTexture::GetUNormClearColor() const
 {
   return GPUDevice::RGBA8ToFloat(m_clear_value.color);
+}
+
+size_t GPUTexture::GetVRAMUsage() const
+{
+  if (m_levels == 1) [[likely]]
+    return ((static_cast<size_t>(m_width * m_height) * GetPixelSize(m_format)) * m_layers * m_samples);
+
+  const size_t ps = GetPixelSize(m_format) * m_layers * m_samples;
+  u32 width = m_width;
+  u32 height = m_height;
+  size_t ts = 0;
+  for (u32 i = 0; i < m_levels; i++)
+  {
+    width = (width > 1) ? (width / 2) : width;
+    height = (height > 1) ? (height / 2) : height;
+    ts += static_cast<size_t>(width * height) * ps;
+  }
+
+  return ts;
 }
 
 u32 GPUTexture::GetPixelSize(GPUTexture::Format format)
