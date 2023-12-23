@@ -582,7 +582,7 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand()
   {
     DumpVRAMToFile(TinyString::from_format("vram_to_cpu_copy_{}.png", s_vram_to_cpu_dump_id++), m_vram_transfer.width,
                    m_vram_transfer.height, sizeof(u16) * VRAM_WIDTH,
-                   &m_vram_ptr[m_vram_transfer.y * VRAM_WIDTH + m_vram_transfer.x], true);
+                   &g_vram[m_vram_transfer.y * VRAM_WIDTH + m_vram_transfer.x], true);
   }
 
   // switch to pixel-by-pixel read state

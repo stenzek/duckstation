@@ -23,7 +23,7 @@ bool GPUBackend::Initialize(bool force_thread)
   return true;
 }
 
-void GPUBackend::Reset(bool clear_vram)
+void GPUBackend::Reset()
 {
   Sync(true);
   m_drawing_area = {};

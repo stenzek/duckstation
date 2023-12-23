@@ -33,6 +33,7 @@
 Log_SetChannel(GPU);
 
 std::unique_ptr<GPU> g_gpu;
+alignas(HOST_PAGE_SIZE) u16 g_vram[VRAM_SIZE / sizeof(u16)];
 
 const GPU::GP0CommandHandlerTable GPU::s_GP0_command_handler_table = GPU::GenerateGP0CommandHandlerTable();
 
@@ -132,6 +133,10 @@ void GPU::Reset(bool clear_vram)
   m_crtc_state.in_vblank = false;
   m_crtc_state.interlaced_field = 0;
   m_crtc_state.interlaced_display_field = 0;
+
+  if (clear_vram)
+    std::memset(g_vram, 0, sizeof(g_vram));
+
   SoftReset();
   UpdateDisplay();
 }
@@ -300,7 +305,7 @@ bool GPU::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_displ
     else
     {
       ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
-      sw.DoBytes(m_vram_ptr, VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16));
+      sw.DoBytes(g_vram, VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16));
     }
   }
 
@@ -1074,7 +1079,7 @@ u32 GPU::ReadGPUREAD()
     // Read with correct wrap-around behavior.
     const u16 read_x = (m_vram_transfer.x + m_vram_transfer.col) % VRAM_WIDTH;
     const u16 read_y = (m_vram_transfer.y + m_vram_transfer.row) % VRAM_HEIGHT;
-    value |= ZeroExtend32(m_vram_ptr[read_y * VRAM_WIDTH + read_x]) << (i * 16);
+    value |= ZeroExtend32(g_vram[read_y * VRAM_WIDTH + read_x]) << (i * 16);
 
     if (++m_vram_transfer.col == m_vram_transfer.width)
     {
@@ -1357,7 +1362,7 @@ void GPU::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
     for (u32 yoffs = 0; yoffs < height; yoffs++)
     {
       const u32 row = (y + yoffs) % VRAM_HEIGHT;
-      std::fill_n(&m_vram_ptr[row * VRAM_WIDTH + x], width, color16);
+      std::fill_n(&g_vram[row * VRAM_WIDTH + x], width, color16);
     }
   }
   else if (IsInterlacedRenderingEnabled())
@@ -1373,7 +1378,7 @@ void GPU::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
       if ((row & u32(1)) == active_field)
         continue;
 
-      u16* row_ptr = &m_vram_ptr[row * VRAM_WIDTH];
+      u16* row_ptr = &g_vram[row * VRAM_WIDTH];
       for (u32 xoffs = 0; xoffs < width; xoffs++)
       {
         const u32 col = (x + xoffs) % VRAM_WIDTH;
@@ -1386,7 +1391,7 @@ void GPU::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
     for (u32 yoffs = 0; yoffs < height; yoffs++)
     {
       const u32 row = (y + yoffs) % VRAM_HEIGHT;
-      u16* row_ptr = &m_vram_ptr[row * VRAM_WIDTH];
+      u16* row_ptr = &g_vram[row * VRAM_WIDTH];
       for (u32 xoffs = 0; xoffs < width; xoffs++)
       {
         const u32 col = (x + xoffs) % VRAM_WIDTH;
@@ -1402,7 +1407,7 @@ void GPU::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool
   if ((x + width) <= VRAM_WIDTH && (y + height) <= VRAM_HEIGHT && !set_mask && !check_mask)
   {
     const u16* src_ptr = static_cast<const u16*>(data);
-    u16* dst_ptr = &m_vram_ptr[y * VRAM_WIDTH + x];
+    u16* dst_ptr = &g_vram[y * VRAM_WIDTH + x];
     for (u32 yoffs = 0; yoffs < height; yoffs++)
     {
       std::copy_n(src_ptr, width, dst_ptr);
@@ -1420,7 +1425,7 @@ void GPU::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool
 
     for (u32 row = 0; row < height;)
     {
-      u16* dst_row_ptr = &m_vram_ptr[((y + row++) % VRAM_HEIGHT) * VRAM_WIDTH];
+      u16* dst_row_ptr = &g_vram[((y + row++) % VRAM_HEIGHT) * VRAM_WIDTH];
       for (u32 col = 0; col < width;)
       {
         // TODO: Handle unaligned reads...
@@ -1475,8 +1480,8 @@ void GPU::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 he
   {
     for (u32 row = 0; row < height; row++)
     {
-      const u16* src_row_ptr = &m_vram_ptr[((src_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
-      u16* dst_row_ptr = &m_vram_ptr[((dst_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
+      const u16* src_row_ptr = &g_vram[((src_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
+      u16* dst_row_ptr = &g_vram[((dst_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
 
       for (s32 col = static_cast<s32>(width - 1); col >= 0; col--)
       {
@@ -1491,8 +1496,8 @@ void GPU::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 he
   {
     for (u32 row = 0; row < height; row++)
     {
-      const u16* src_row_ptr = &m_vram_ptr[((src_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
-      u16* dst_row_ptr = &m_vram_ptr[((dst_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
+      const u16* src_row_ptr = &g_vram[((src_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
+      u16* dst_row_ptr = &g_vram[((dst_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
 
       for (u32 col = 0; col < width; col++)
       {
@@ -2175,11 +2180,11 @@ bool GPU::DumpVRAMToFile(const char* filename)
   const char* extension = std::strrchr(filename, '.');
   if (extension && StringUtil::Strcasecmp(extension, ".png") == 0)
   {
-    return DumpVRAMToFile(filename, VRAM_WIDTH, VRAM_HEIGHT, sizeof(u16) * VRAM_WIDTH, m_vram_ptr, true);
+    return DumpVRAMToFile(filename, VRAM_WIDTH, VRAM_HEIGHT, sizeof(u16) * VRAM_WIDTH, g_vram, true);
   }
   else if (extension && StringUtil::Strcasecmp(extension, ".bin") == 0)
   {
-    return FileSystem::WriteBinaryFile(filename, m_vram_ptr, VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16));
+    return FileSystem::WriteBinaryFile(filename, g_vram, VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16));
   }
   else
   {

@@ -24,10 +24,7 @@ ALWAYS_INLINE static constexpr std::tuple<T, T> MinMax(T v1, T v2)
     return std::tie(v1, v2);
 }
 
-GPU_SW::GPU_SW()
-{
-  m_vram_ptr = m_backend.GetVRAM();
-}
+GPU_SW::GPU_SW() = default;
 
 GPU_SW::~GPU_SW()
 {
@@ -84,7 +81,7 @@ void GPU_SW::Reset(bool clear_vram)
 {
   GPU::Reset(clear_vram);
 
-  m_backend.Reset(clear_vram);
+  m_backend.Reset();
 }
 
 void GPU_SW::UpdateSettings(const Settings& old_settings)
@@ -269,7 +266,7 @@ void GPU_SW::CopyOut15Bit(u32 src_x, u32 src_y, u32 width, u32 height, u32 field
     const u32 rows = height >> interlaced_shift;
     dst_stride <<= interlaced_shift;
 
-    const u16* src_ptr = &m_vram_ptr[src_y * VRAM_WIDTH + src_x];
+    const u16* src_ptr = &g_vram[src_y * VRAM_WIDTH + src_x];
     const u32 src_step = VRAM_WIDTH << interleaved_shift;
     for (u32 row = 0; row < rows; row++)
     {
@@ -286,7 +283,7 @@ void GPU_SW::CopyOut15Bit(u32 src_x, u32 src_y, u32 width, u32 height, u32 field
     const u32 end_x = src_x + width;
     for (u32 row = 0; row < rows; row++)
     {
-      const u16* src_row_ptr = &m_vram_ptr[(src_y % VRAM_HEIGHT) * VRAM_WIDTH];
+      const u16* src_row_ptr = &g_vram[(src_y % VRAM_HEIGHT) * VRAM_WIDTH];
       OutputPixelType* dst_row_ptr = reinterpret_cast<OutputPixelType*>(dst_ptr);
 
       for (u32 col = src_x; col < end_x; col++)
@@ -352,7 +349,7 @@ void GPU_SW::CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 heigh
 
   if ((src_x + width) <= VRAM_WIDTH && (src_y + (rows << interleaved_shift)) <= VRAM_HEIGHT)
   {
-    const u8* src_ptr = reinterpret_cast<const u8*>(&m_vram_ptr[src_y * VRAM_WIDTH + src_x]) + (skip_x * 3);
+    const u8* src_ptr = reinterpret_cast<const u8*>(&g_vram[src_y * VRAM_WIDTH + src_x]) + (skip_x * 3);
     const u32 src_stride = (VRAM_WIDTH << interleaved_shift) * sizeof(u16);
     for (u32 row = 0; row < rows; row++)
     {
@@ -412,7 +409,7 @@ void GPU_SW::CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 heigh
   {
     for (u32 row = 0; row < rows; row++)
     {
-      const u16* src_row_ptr = &m_vram_ptr[(src_y % VRAM_HEIGHT) * VRAM_WIDTH];
+      const u16* src_row_ptr = &g_vram[(src_y % VRAM_HEIGHT) * VRAM_WIDTH];
       OutputPixelType* dst_row_ptr = reinterpret_cast<OutputPixelType*>(dst_ptr);
 
       for (u32 col = 0; col < width; col++)

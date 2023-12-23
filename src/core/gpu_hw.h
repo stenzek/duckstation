@@ -222,8 +222,6 @@ private:
   std::unique_ptr<GPUTextureBuffer> m_vram_upload_buffer;
   std::unique_ptr<GPUTexture> m_vram_write_texture;
 
-  FixedHeapArray<u16, VRAM_WIDTH * VRAM_HEIGHT> m_vram_shadow;
-
   std::unique_ptr<GPU_SW_Backend> m_sw_renderer;
 
   BatchVertex* m_batch_start_vertex_ptr = nullptr;

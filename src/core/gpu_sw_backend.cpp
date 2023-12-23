@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
+#include "gpu.h"
 #include "gpu_sw_backend.h"
 #include "system.h"
 
@@ -8,11 +9,7 @@
 
 #include <algorithm>
 
-GPU_SW_Backend::GPU_SW_Backend() : GPUBackend()
-{
-  m_vram.fill(0);
-  m_vram_ptr = m_vram.data();
-}
+GPU_SW_Backend::GPU_SW_Backend() = default;
 
 GPU_SW_Backend::~GPU_SW_Backend() = default;
 
@@ -21,12 +18,9 @@ bool GPU_SW_Backend::Initialize(bool force_thread)
   return GPUBackend::Initialize(force_thread);
 }
 
-void GPU_SW_Backend::Reset(bool clear_vram)
+void GPU_SW_Backend::Reset()
 {
-  GPUBackend::Reset(clear_vram);
-
-  if (clear_vram)
-    m_vram.fill(0);
+  GPUBackend::Reset();
 }
 
 void GPU_SW_Backend::DrawPolygon(const GPUBackendDrawPolygonCommand* cmd)
@@ -728,7 +722,7 @@ void GPU_SW_Backend::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, GP
     for (u32 yoffs = 0; yoffs < height; yoffs++)
     {
       const u32 row = (y + yoffs) % VRAM_HEIGHT;
-      std::fill_n(&m_vram_ptr[row * VRAM_WIDTH + x], width, color16);
+      std::fill_n(&g_vram[row * VRAM_WIDTH + x], width, color16);
     }
   }
   else if (params.interlaced_rendering)
@@ -741,7 +735,7 @@ void GPU_SW_Backend::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, GP
       if ((row & u32(1)) == active_field)
         continue;
 
-      u16* row_ptr = &m_vram_ptr[row * VRAM_WIDTH];
+      u16* row_ptr = &g_vram[row * VRAM_WIDTH];
       for (u32 xoffs = 0; xoffs < width; xoffs++)
       {
         const u32 col = (x + xoffs) % VRAM_WIDTH;
@@ -754,7 +748,7 @@ void GPU_SW_Backend::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, GP
     for (u32 yoffs = 0; yoffs < height; yoffs++)
     {
       const u32 row = (y + yoffs) % VRAM_HEIGHT;
-      u16* row_ptr = &m_vram_ptr[row * VRAM_WIDTH];
+      u16* row_ptr = &g_vram[row * VRAM_WIDTH];
       for (u32 xoffs = 0; xoffs < width; xoffs++)
       {
         const u32 col = (x + xoffs) % VRAM_WIDTH;
@@ -771,7 +765,7 @@ void GPU_SW_Backend::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void*
   if ((x + width) <= VRAM_WIDTH && (y + height) <= VRAM_HEIGHT && !params.IsMaskingEnabled())
   {
     const u16* src_ptr = static_cast<const u16*>(data);
-    u16* dst_ptr = &m_vram_ptr[y * VRAM_WIDTH + x];
+    u16* dst_ptr = &g_vram[y * VRAM_WIDTH + x];
     for (u32 yoffs = 0; yoffs < height; yoffs++)
     {
       std::copy_n(src_ptr, width, dst_ptr);
@@ -788,7 +782,7 @@ void GPU_SW_Backend::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void*
 
     for (u32 row = 0; row < height;)
     {
-      u16* dst_row_ptr = &m_vram_ptr[((y + row++) % VRAM_HEIGHT) * VRAM_WIDTH];
+      u16* dst_row_ptr = &g_vram[((y + row++) % VRAM_HEIGHT) * VRAM_WIDTH];
       for (u32 col = 0; col < width;)
       {
         // TODO: Handle unaligned reads...
@@ -844,8 +838,8 @@ void GPU_SW_Backend::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wi
   {
     for (u32 row = 0; row < height; row++)
     {
-      const u16* src_row_ptr = &m_vram_ptr[((src_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
-      u16* dst_row_ptr = &m_vram_ptr[((dst_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
+      const u16* src_row_ptr = &g_vram[((src_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
+      u16* dst_row_ptr = &g_vram[((dst_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
 
       for (s32 col = static_cast<s32>(width - 1); col >= 0; col--)
       {
@@ -860,8 +854,8 @@ void GPU_SW_Backend::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wi
   {
     for (u32 row = 0; row < height; row++)
     {
-      const u16* src_row_ptr = &m_vram_ptr[((src_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
-      u16* dst_row_ptr = &m_vram_ptr[((dst_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
+      const u16* src_row_ptr = &g_vram[((src_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
+      u16* dst_row_ptr = &g_vram[((dst_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
 
       for (u32 col = 0; col < width; col++)
       {

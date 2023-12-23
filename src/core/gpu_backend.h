@@ -22,12 +22,11 @@ public:
   GPUBackend();
   virtual ~GPUBackend();
 
-  ALWAYS_INLINE u16* GetVRAM() const { return m_vram_ptr; }
   ALWAYS_INLINE const Threading::Thread* GetThread() const { return m_use_gpu_thread ? &m_gpu_thread : nullptr; }
 
   virtual bool Initialize(bool force_thread);
   virtual void UpdateSettings();
-  virtual void Reset(bool clear_vram);
+  virtual void Reset();
   virtual void Shutdown();
 
   GPUBackendFillVRAMCommand* NewFillVRAMCommand();
@@ -63,8 +62,6 @@ protected:
   virtual void DrawingAreaChanged() = 0;
 
   void HandleCommand(const GPUBackendCommand* cmd);
-
-  u16* m_vram_ptr = nullptr;
 
   Common::Rectangle<u32> m_drawing_area{};
 

@@ -14,12 +14,12 @@ public:
   ~GPU_SW_Backend() override;
 
   bool Initialize(bool force_thread) override;
-  void Reset(bool clear_vram) override;
+  void Reset() override;
 
-  ALWAYS_INLINE_RELEASE u16 GetPixel(const u32 x, const u32 y) const { return m_vram[VRAM_WIDTH * y + x]; }
-  ALWAYS_INLINE_RELEASE const u16* GetPixelPtr(const u32 x, const u32 y) const { return &m_vram[VRAM_WIDTH * y + x]; }
-  ALWAYS_INLINE_RELEASE u16* GetPixelPtr(const u32 x, const u32 y) { return &m_vram[VRAM_WIDTH * y + x]; }
-  ALWAYS_INLINE_RELEASE void SetPixel(const u32 x, const u32 y, const u16 value) { m_vram[VRAM_WIDTH * y + x] = value; }
+  ALWAYS_INLINE_RELEASE u16 GetPixel(const u32 x, const u32 y) const { return g_vram[VRAM_WIDTH * y + x]; }
+  ALWAYS_INLINE_RELEASE const u16* GetPixelPtr(const u32 x, const u32 y) const { return &g_vram[VRAM_WIDTH * y + x]; }
+  ALWAYS_INLINE_RELEASE u16* GetPixelPtr(const u32 x, const u32 y) { return &g_vram[VRAM_WIDTH * y + x]; }
+  ALWAYS_INLINE_RELEASE void SetPixel(const u32 x, const u32 y, const u16 value) { g_vram[VRAM_WIDTH * y + x] = value; }
 
   // this is actually (31 * 255) >> 4) == 494, but to simplify addressing we use the next power of two (512)
   static constexpr u32 DITHER_LUT_SIZE = 512;
@@ -165,6 +165,4 @@ protected:
                                                     const GPUBackendDrawLineCommand::Vertex* p0,
                                                     const GPUBackendDrawLineCommand::Vertex* p1);
   DrawLineFunction GetDrawLineFunction(bool shading_enable, bool transparency_enable, bool dithering_enable);
-
-  std::array<u16, VRAM_WIDTH * VRAM_HEIGHT> m_vram;
 };

@@ -130,8 +130,6 @@ private:
 
 GPU_HW::GPU_HW() : GPU()
 {
-  m_vram_ptr = m_vram_shadow.data();
-
 #ifdef _DEBUG
   s_draw_number = 0;
 #endif
@@ -251,9 +249,8 @@ void GPU_HW::Reset(bool clear_vram)
 
   m_batch_current_vertex_ptr = m_batch_start_vertex_ptr;
 
-  m_vram_shadow.fill(0);
   if (m_sw_renderer)
-    m_sw_renderer->Reset(clear_vram);
+    m_sw_renderer->Reset();
 
   m_batch = {};
   m_batch_ubo_data = {};
@@ -442,7 +439,7 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
       Panic("Failed to recreate buffers.");
 
     RestoreDeviceContext();
-    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, m_vram_ptr, false, false);
+    UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, g_vram, false, false);
     UpdateDepthBufferFromMaskBit();
     UpdateDisplay();
   }
@@ -2291,8 +2288,6 @@ void GPU_HW::UpdateSoftwareRenderer(bool copy_vram_from_hw)
   if (current_enabled == new_enabled)
     return;
 
-  m_vram_ptr = m_vram_shadow.data();
-
   if (!new_enabled)
   {
     if (m_sw_renderer)
@@ -2310,7 +2305,6 @@ void GPU_HW::UpdateSoftwareRenderer(bool copy_vram_from_hw)
   {
     FlushRender();
     ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
-    std::memcpy(sw_renderer->GetVRAM(), m_vram_ptr, sizeof(u16) * VRAM_WIDTH * VRAM_HEIGHT);
 
     // Sync the drawing area.
     GPUBackendSetDrawingAreaCommand* cmd = sw_renderer->NewSetDrawingAreaCommand();
@@ -2319,7 +2313,6 @@ void GPU_HW::UpdateSoftwareRenderer(bool copy_vram_from_hw)
   }
 
   m_sw_renderer = std::move(sw_renderer);
-  m_vram_ptr = m_sw_renderer->GetVRAM();
 }
 
 void GPU_HW::FillBackendCommandParameters(GPUBackendCommand* cmd) const
@@ -2429,7 +2422,7 @@ void GPU_HW::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
 
   // Stage the readback and copy it into our shadow buffer.
   g_gpu_device->DownloadTexture(m_vram_readback_texture.get(), 0, 0, encoded_width, encoded_height,
-                                reinterpret_cast<u32*>(&m_vram_shadow[copy_rect.top * VRAM_WIDTH + copy_rect.left]),
+                                reinterpret_cast<u32*>(&g_vram[copy_rect.top * VRAM_WIDTH + copy_rect.left]),
                                 VRAM_WIDTH * sizeof(u16));
 
   RestoreDeviceContext();
