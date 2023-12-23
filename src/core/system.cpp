@@ -234,6 +234,7 @@ static u64 s_session_start_time = 0;
 
 #ifdef ENABLE_DISCORD_PRESENCE
 static bool s_discord_presence_active = false;
+static time_t s_discord_presence_time_epoch;
 #endif
 
 static TinyString GetTimestampStringForFileName()
@@ -1691,7 +1692,7 @@ void System::ClearRunningGame()
   Achievements::GameChanged(s_running_game_path, nullptr);
 
 #ifdef ENABLE_DISCORD_PRESENCE
-  UpdateDiscordPresence();
+  UpdateDiscordPresence(true);
 #endif
 }
 
@@ -3372,7 +3373,7 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
     SaveStateSelectorUI::ClearList();
 
 #ifdef ENABLE_DISCORD_PRESENCE
-  UpdateDiscordPresence();
+  UpdateDiscordPresence(booting);
 #endif
 
   Host::OnGameChanged(s_running_game_path, s_running_game_serial, s_running_game_title);
@@ -4834,7 +4835,7 @@ void System::InitializeDiscordPresence()
   Discord_Initialize("705325712680288296", &handlers, 0, nullptr);
   s_discord_presence_active = true;
 
-  UpdateDiscordPresence();
+  UpdateDiscordPresence(true);
 }
 
 void System::ShutdownDiscordPresence()
@@ -4847,16 +4848,19 @@ void System::ShutdownDiscordPresence()
   s_discord_presence_active = false;
 }
 
-void System::UpdateDiscordPresence()
+void System::UpdateDiscordPresence(bool update_session_time)
 {
   if (!s_discord_presence_active)
     return;
+
+  if (update_session_time)
+    s_discord_presence_time_epoch = std::time(nullptr);
 
   // https://discord.com/developers/docs/rich-presence/how-to#updating-presence-update-presence-payload-fields
   DiscordRichPresence rp = {};
   rp.largeImageKey = "duckstation_logo";
   rp.largeImageText = "DuckStation PS1/PSX Emulator";
-  rp.startTimestamp = std::time(nullptr);
+  rp.startTimestamp = s_discord_presence_time_epoch;
   rp.details = "No Game Running";
   if (IsValidOrInitializing())
   {

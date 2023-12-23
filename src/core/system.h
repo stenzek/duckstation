@@ -480,7 +480,7 @@ void SetRunaheadReplayFlag();
 
 #ifdef ENABLE_DISCORD_PRESENCE
 /// Called when rich presence changes.
-void UpdateDiscordPresence();
+void UpdateDiscordPresence(bool update_session_time);
 #endif
 
 namespace Internal {

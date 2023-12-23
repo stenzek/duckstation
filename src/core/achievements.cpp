@@ -795,7 +795,7 @@ void Achievements::UpdateRichPresence(std::unique_lock<std::recursive_mutex>& lo
 
 #ifdef ENABLE_DISCORD_PRESENCE
   lock.unlock();
-  System::UpdateDiscordPresence();
+  System::UpdateDiscordPresence(false);
   lock.lock();
 #endif
 }
