@@ -333,6 +333,7 @@ struct GPUBackendCopyVRAMCommand : public GPUBackendCommand
 struct GPUBackendSetDrawingAreaCommand : public GPUBackendCommand
 {
   GPUDrawingArea new_area;
+  s32 new_clamped_area[4];
 };
 
 struct GPUBackendUpdateCLUTCommand : public GPUBackendCommand

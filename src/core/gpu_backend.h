@@ -62,12 +62,10 @@ protected:
   virtual void DrawRectangle(const GPUBackendDrawRectangleCommand* cmd) = 0;
   virtual void DrawLine(const GPUBackendDrawLineCommand* cmd) = 0;
   virtual void FlushRender() = 0;
-  virtual void DrawingAreaChanged() = 0;
+  virtual void DrawingAreaChanged(const GPUDrawingArea& new_drawing_area, const GSVector4i clamped_drawing_area) = 0;
   virtual void UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit) = 0;
 
   void HandleCommand(const GPUBackendCommand* cmd);
-
-  GPUDrawingArea m_drawing_area = {};
 
   Threading::KernelSemaphore m_sync_semaphore;
   std::atomic_bool m_gpu_thread_sleeping{false};

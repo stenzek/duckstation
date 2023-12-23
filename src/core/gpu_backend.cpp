@@ -26,7 +26,7 @@ bool GPUBackend::Initialize(bool force_thread)
 void GPUBackend::Reset()
 {
   Sync(true);
-  m_drawing_area = {};
+  DrawingAreaChanged(GPUDrawingArea{0, 0, 0, 0}, GSVector4i::zero());
 }
 
 void GPUBackend::UpdateSettings()
@@ -310,8 +310,8 @@ void GPUBackend::HandleCommand(const GPUBackendCommand* cmd)
     case GPUBackendCommandType::SetDrawingArea:
     {
       FlushRender();
-      m_drawing_area = static_cast<const GPUBackendSetDrawingAreaCommand*>(cmd)->new_area;
-      DrawingAreaChanged();
+      const GPUBackendSetDrawingAreaCommand* ccmd = static_cast<const GPUBackendSetDrawingAreaCommand*>(cmd);
+      DrawingAreaChanged(ccmd->new_area, GSVector4i::load<false>(ccmd->new_clamped_area));
     }
     break;
 

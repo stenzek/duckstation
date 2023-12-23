@@ -57,6 +57,8 @@ add_library(core
   gpu_sw.h
   gpu_sw_backend.cpp
   gpu_sw_backend.h
+  gpu_sw_rasterizer.cpp
+  gpu_sw_rasterizer.h
   gpu_types.h
   guncon.cpp
   guncon.h
