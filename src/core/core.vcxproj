@@ -50,6 +50,13 @@
     <ClCompile Include="gpu_shadergen.cpp" />
     <ClCompile Include="gpu_sw.cpp" />
     <ClCompile Include="gpu_sw_backend.cpp" />
+    <ClCompile Include="gpu_sw_rasterizer.cpp" />
+    <ClCompile Include="gpu_sw_rasterizer_avx2.cpp">
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <AdditionalOptions Condition="$(Configuration.Contains(Clang))">%(AdditionalOptions) -mavx2</AdditionalOptions>
+      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="gte.cpp" />
     <ClCompile Include="dma.cpp" />
     <ClCompile Include="gpu.cpp" />
@@ -127,6 +134,7 @@
     <ClInclude Include="gpu_shadergen.h" />
     <ClInclude Include="gpu_sw.h" />
     <ClInclude Include="gpu_sw_backend.h" />
+    <ClInclude Include="gpu_sw_rasterizer.h" />
     <ClInclude Include="gpu_types.h" />
     <ClInclude Include="gte.h" />
     <ClInclude Include="cpu_types.h" />
@@ -194,6 +202,9 @@
     <ProjectReference Include="..\util\util.vcxproj">
       <Project>{57f6206d-f264-4b07-baf8-11b9bbe1f455}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="gpu_sw_rasterizer.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{868B98C8-65A1-494B-8346-250A73A48C0A}</ProjectGuid>

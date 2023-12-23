@@ -501,6 +501,7 @@ void GPU_SW::DispatchRenderCommand()
   {
     GPUBackendSetDrawingAreaCommand* cmd = m_backend.NewSetDrawingAreaCommand();
     cmd->new_area = m_drawing_area;
+    GSVector4i::store<false>(cmd->new_clamped_area, m_clamped_drawing_area);
     m_backend.PushCommand(cmd);
     m_drawing_area_changed = false;
   }
