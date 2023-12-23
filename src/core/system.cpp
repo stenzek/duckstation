@@ -4138,9 +4138,8 @@ void System::ShutdownSystem(bool save_resume_state)
   if (save_resume_state)
     SaveResumeState();
 
-  if (s_system_executing)
-    s_state = State::Stopping;
-  else
+  s_state = State::Stopping;
+  if (!s_system_executing)
     DestroySystem();
 }
 
