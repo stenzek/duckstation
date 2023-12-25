@@ -127,12 +127,33 @@ GPUTexture::Format VulkanDevice::GetFormatForVkFormat(VkFormat format)
   return GPUTexture::Format::Unknown;
 }
 
-VkInstance VulkanDevice::CreateVulkanInstance(const WindowInfo& wi, bool enable_debug_utils,
-                                              bool enable_validation_layer)
+VkInstance VulkanDevice::CreateVulkanInstance(const WindowInfo& wi, u32* apiVersion, OptionalExtensions* oe,
+                                              bool enable_debug_utils, bool enable_validation_layer)
 {
   ExtensionList enabled_extensions;
-  if (!SelectInstanceExtensions(&enabled_extensions, wi, enable_debug_utils))
+  if (!SelectInstanceExtensions(&enabled_extensions, wi, oe, enable_debug_utils))
     return VK_NULL_HANDLE;
+
+  u32 maxApiVersion = VK_API_VERSION_1_0;
+  if (vkEnumerateInstanceVersion)
+  {
+    VkResult res = vkEnumerateInstanceVersion(&maxApiVersion);
+    if (res != VK_SUCCESS)
+    {
+      LOG_VULKAN_ERROR(res, "vkEnumerateInstanceVersion() failed: ");
+      maxApiVersion = VK_API_VERSION_1_0;
+    }
+  }
+  else
+  {
+    Log_WarningPrint("Driver does not provide vkEnumerateInstanceVersion().");
+  }
+
+  // Cap out at 1.1 for consistency.
+  *apiVersion = std::min(maxApiVersion, VK_API_VERSION_1_1);
+  Log_InfoFmt("Supported instance version: {}.{}.{}, requesting version {}.{}.{}", VK_API_VERSION_MAJOR(maxApiVersion),
+              VK_API_VERSION_MINOR(maxApiVersion), VK_API_VERSION_PATCH(maxApiVersion),
+              VK_API_VERSION_MAJOR(*apiVersion), VK_API_VERSION_MINOR(*apiVersion), VK_API_VERSION_PATCH(*apiVersion));
 
   // Remember to manually update this every release. We don't pull in svnrev.h here, because
   // it's only the major/minor version, and rebuilding the file every time something else changes
@@ -144,7 +165,7 @@ VkInstance VulkanDevice::CreateVulkanInstance(const WindowInfo& wi, bool enable_
   app_info.applicationVersion = VK_MAKE_VERSION(0, 1, 0);
   app_info.pEngineName = "DuckStation";
   app_info.engineVersion = VK_MAKE_VERSION(0, 1, 0);
-  app_info.apiVersion = VK_API_VERSION_1_1;
+  app_info.apiVersion = *apiVersion;
 
   VkInstanceCreateInfo instance_create_info = {};
   instance_create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -175,7 +196,7 @@ VkInstance VulkanDevice::CreateVulkanInstance(const WindowInfo& wi, bool enable_
   return instance;
 }
 
-bool VulkanDevice::SelectInstanceExtensions(ExtensionList* extension_list, const WindowInfo& wi,
+bool VulkanDevice::SelectInstanceExtensions(ExtensionList* extension_list, const WindowInfo& wi, OptionalExtensions* oe,
                                             bool enable_debug_utils)
 {
   u32 extension_count = 0;
@@ -244,6 +265,9 @@ bool VulkanDevice::SelectInstanceExtensions(ExtensionList* extension_list, const
 
   // Needed for exclusive fullscreen control.
   SupportsExtension(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME, false);
+
+  oe->vk_khr_get_physical_device_properties2 =
+    SupportsExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, false);
 
   return true;
 }
@@ -367,6 +391,11 @@ bool VulkanDevice::SelectDeviceExtensions(ExtensionList* extension_list, bool en
     SupportsExtension(VK_ARM_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME, false);
   m_optional_extensions.vk_ext_attachment_feedback_loop_layout =
     SupportsExtension(VK_EXT_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_EXTENSION_NAME, false);
+  m_optional_extensions.vk_khr_get_memory_requirements2 =
+    SupportsExtension(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME, false);
+  m_optional_extensions.vk_khr_bind_memory2 = SupportsExtension(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME, false);
+  m_optional_extensions.vk_khr_dedicated_allocation =
+    SupportsExtension(VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME, false);
   m_optional_extensions.vk_khr_driver_properties = SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
   m_optional_extensions.vk_khr_dynamic_rendering =
     SupportsExtension(VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME, false) &&
@@ -625,23 +654,48 @@ void VulkanDevice::ProcessDeviceExtensions()
                  m_optional_extensions.vk_ext_rasterization_order_attachment_access ? "supported" : "NOT supported");
   Log_InfoPrintf("VK_EXT_attachment_feedback_loop_layout is %s",
                  m_optional_extensions.vk_ext_attachment_feedback_loop_layout ? "supported" : "NOT supported");
+  Log_InfoPrintf("VK_KHR_get_memory_requirements2 is %s",
+                 m_optional_extensions.vk_khr_get_memory_requirements2 ? "supported" : "NOT supported");
+  Log_InfoPrintf("VK_KHR_bind_memory2 is %s",
+                 m_optional_extensions.vk_khr_bind_memory2 ? "supported" : "NOT supported");
+  Log_InfoPrintf("VK_KHR_get_physical_device_properties2 is %s",
+                 m_optional_extensions.vk_khr_get_physical_device_properties2 ? "supported" : "NOT supported");
+  Log_InfoPrintf("VK_KHR_dedicated_allocation is %s",
+                 m_optional_extensions.vk_khr_dedicated_allocation ? "supported" : "NOT supported");
   Log_InfoPrintf("VK_KHR_dynamic_rendering is %s",
                  m_optional_extensions.vk_khr_dynamic_rendering ? "supported" : "NOT supported");
   Log_InfoPrintf("VK_KHR_push_descriptor is %s",
                  m_optional_extensions.vk_khr_push_descriptor ? "supported" : "NOT supported");
 }
 
-bool VulkanDevice::CreateAllocator()
+bool VulkanDevice::CreateAllocator(u32 apiVersion)
 {
   VmaAllocatorCreateInfo ci = {};
-  ci.vulkanApiVersion = VK_API_VERSION_1_1;
+  ci.vulkanApiVersion = apiVersion;
   ci.flags = VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT;
   ci.physicalDevice = m_physical_device;
   ci.device = m_device;
   ci.instance = m_instance;
 
+  if (apiVersion < VK_API_VERSION_1_1)
+  {
+    if (m_optional_extensions.vk_khr_get_memory_requirements2 && m_optional_extensions.vk_khr_dedicated_allocation)
+    {
+      Log_DevPrint("Enabling VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT on < Vulkan 1.1.");
+      ci.flags |= VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
+    }
+    if (m_optional_extensions.vk_khr_bind_memory2)
+    {
+      Log_DevPrint("Enabling VMA_ALLOCATOR_CREATE_KHR_BIND_MEMORY2_BIT on < Vulkan 1.1.");
+      ci.flags |= VMA_ALLOCATOR_CREATE_KHR_BIND_MEMORY2_BIT;
+    }
+  }
+
   if (m_optional_extensions.vk_ext_memory_budget)
+  {
+    Log_DevPrint("Enabling VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT.");
     ci.flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
+  }
 
   // Limit usage of the DEVICE_LOCAL upload heap when we're using a debug device.
   // On NVIDIA drivers, it results in frequently running out of device memory when trying to
@@ -1715,7 +1769,9 @@ GPUDevice::AdapterAndModeList VulkanDevice::StaticGetAdapterAndModeList()
     if (Vulkan::LoadVulkanLibrary())
     {
       ScopedGuard lib_guard([]() { Vulkan::UnloadVulkanLibrary(); });
-      const VkInstance instance = CreateVulkanInstance(WindowInfo(), false, false);
+      u32 apiVersion;
+      OptionalExtensions oe = {};
+      const VkInstance instance = CreateVulkanInstance(WindowInfo(), &apiVersion, &oe, false, false);
       if (instance != VK_NULL_HANDLE)
       {
         if (Vulkan::LoadVulkanInstanceFunctions(instance))
@@ -1797,7 +1853,9 @@ bool VulkanDevice::CreateDevice(const std::string_view& adapter, bool threaded_p
     return false;
   }
 
-  m_instance = CreateVulkanInstance(m_window_info, enable_debug_utils, enable_validation_layer);
+  u32 apiVersion;
+  m_instance = CreateVulkanInstance(m_window_info, &apiVersion, &m_optional_extensions, enable_debug_utils,
+                                    enable_validation_layer);
   if (m_instance == VK_NULL_HANDLE)
   {
     if (enable_debug_utils || enable_validation_layer)
@@ -1805,7 +1863,8 @@ bool VulkanDevice::CreateDevice(const std::string_view& adapter, bool threaded_p
       // Try again without the validation layer.
       enable_debug_utils = false;
       enable_validation_layer = false;
-      m_instance = CreateVulkanInstance(m_window_info, enable_debug_utils, enable_validation_layer);
+      m_instance = CreateVulkanInstance(m_window_info, &apiVersion, &m_optional_extensions, enable_debug_utils,
+                                        enable_validation_layer);
       if (m_instance == VK_NULL_HANDLE)
       {
         Host::ReportErrorAsync("Error",
@@ -1894,8 +1953,11 @@ bool VulkanDevice::CreateDevice(const std::string_view& adapter, bool threaded_p
   }
 
   // And critical resources.
-  if (!CreateAllocator() || !CreatePersistentDescriptorPool() || !CreateCommandBuffers() || !CreatePipelineLayouts())
+  if (!CreateAllocator(apiVersion) || !CreatePersistentDescriptorPool() || !CreateCommandBuffers() ||
+      !CreatePipelineLayouts())
+  {
     return false;
+  }
 
   if (threaded_presentation)
     StartPresentThread();

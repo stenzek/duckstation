@@ -44,6 +44,10 @@ public:
     bool vk_ext_rasterization_order_attachment_access : 1;
     bool vk_ext_attachment_feedback_loop_layout : 1;
     bool vk_ext_full_screen_exclusive : 1;
+    bool vk_khr_get_memory_requirements2 : 1;
+    bool vk_khr_bind_memory2 : 1;
+    bool vk_khr_get_physical_device_properties2 : 1;
+    bool vk_khr_dedicated_allocation : 1;
     bool vk_khr_driver_properties : 1;
     bool vk_khr_dynamic_rendering : 1;
     bool vk_khr_push_descriptor : 1;
@@ -279,7 +283,8 @@ private:
   static void GetAdapterAndModeList(AdapterAndModeList* ret, VkInstance instance);
 
   // Helper method to create a Vulkan instance.
-  static VkInstance CreateVulkanInstance(const WindowInfo& wi, bool enable_debug_utils, bool enable_validation_layer);
+  static VkInstance CreateVulkanInstance(const WindowInfo& wi, u32* apiVersion, OptionalExtensions* oe,
+                                         bool enable_debug_utils, bool enable_validation_layer);
 
   // Returns a list of Vulkan-compatible GPUs.
   using GPUList = std::vector<std::pair<VkPhysicalDevice, std::string>>;
@@ -307,7 +312,8 @@ private:
   bool CheckLastSubmitFail();
 
   using ExtensionList = std::vector<const char*>;
-  static bool SelectInstanceExtensions(ExtensionList* extension_list, const WindowInfo& wi, bool enable_debug_utils);
+  static bool SelectInstanceExtensions(ExtensionList* extension_list, const WindowInfo& wi, OptionalExtensions* oe,
+                                       bool enable_debug_utils);
   bool SelectDeviceExtensions(ExtensionList* extension_list, bool enable_surface);
   bool SelectDeviceFeatures();
   bool CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer);
@@ -315,7 +321,7 @@ private:
 
   bool CheckFeatures(FeatureMask disabled_features);
 
-  bool CreateAllocator();
+  bool CreateAllocator(u32 apiVersion);
   void DestroyAllocator();
   bool CreateCommandBuffers();
   void DestroyCommandBuffers();
