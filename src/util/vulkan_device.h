@@ -283,8 +283,8 @@ private:
   static void GetAdapterAndModeList(AdapterAndModeList* ret, VkInstance instance);
 
   // Helper method to create a Vulkan instance.
-  static VkInstance CreateVulkanInstance(const WindowInfo& wi, u32* apiVersion, OptionalExtensions* oe,
-                                         bool enable_debug_utils, bool enable_validation_layer);
+  static VkInstance CreateVulkanInstance(const WindowInfo& wi, OptionalExtensions* oe, bool enable_debug_utils,
+                                         bool enable_validation_layer);
 
   // Returns a list of Vulkan-compatible GPUs.
   using GPUList = std::vector<std::pair<VkPhysicalDevice, std::string>>;
@@ -321,7 +321,7 @@ private:
 
   bool CheckFeatures(FeatureMask disabled_features);
 
-  bool CreateAllocator(u32 apiVersion);
+  bool CreateAllocator();
   void DestroyAllocator();
   bool CreateCommandBuffers();
   void DestroyCommandBuffers();

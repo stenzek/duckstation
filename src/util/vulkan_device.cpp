@@ -127,8 +127,8 @@ GPUTexture::Format VulkanDevice::GetFormatForVkFormat(VkFormat format)
   return GPUTexture::Format::Unknown;
 }
 
-VkInstance VulkanDevice::CreateVulkanInstance(const WindowInfo& wi, u32* apiVersion, OptionalExtensions* oe,
-                                              bool enable_debug_utils, bool enable_validation_layer)
+VkInstance VulkanDevice::CreateVulkanInstance(const WindowInfo& wi, OptionalExtensions* oe, bool enable_debug_utils,
+                                              bool enable_validation_layer)
 {
   ExtensionList enabled_extensions;
   if (!SelectInstanceExtensions(&enabled_extensions, wi, oe, enable_debug_utils))
@@ -150,10 +150,10 @@ VkInstance VulkanDevice::CreateVulkanInstance(const WindowInfo& wi, u32* apiVers
   }
 
   // Cap out at 1.1 for consistency.
-  *apiVersion = std::min(maxApiVersion, VK_API_VERSION_1_1);
+  const u32 apiVersion = std::min(maxApiVersion, VK_API_VERSION_1_1);
   Log_InfoFmt("Supported instance version: {}.{}.{}, requesting version {}.{}.{}", VK_API_VERSION_MAJOR(maxApiVersion),
               VK_API_VERSION_MINOR(maxApiVersion), VK_API_VERSION_PATCH(maxApiVersion),
-              VK_API_VERSION_MAJOR(*apiVersion), VK_API_VERSION_MINOR(*apiVersion), VK_API_VERSION_PATCH(*apiVersion));
+              VK_API_VERSION_MAJOR(apiVersion), VK_API_VERSION_MINOR(apiVersion), VK_API_VERSION_PATCH(apiVersion));
 
   // Remember to manually update this every release. We don't pull in svnrev.h here, because
   // it's only the major/minor version, and rebuilding the file every time something else changes
@@ -165,7 +165,7 @@ VkInstance VulkanDevice::CreateVulkanInstance(const WindowInfo& wi, u32* apiVers
   app_info.applicationVersion = VK_MAKE_VERSION(0, 1, 0);
   app_info.pEngineName = "DuckStation";
   app_info.engineVersion = VK_MAKE_VERSION(0, 1, 0);
-  app_info.apiVersion = *apiVersion;
+  app_info.apiVersion = apiVersion;
 
   VkInstanceCreateInfo instance_create_info = {};
   instance_create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -306,16 +306,6 @@ VulkanDevice::GPUList VulkanDevice::EnumerateGPUs(VkInstance instance)
   {
     VkPhysicalDeviceProperties props = {};
     vkGetPhysicalDeviceProperties(device, &props);
-
-    // Skip GPUs which don't support Vulkan 1.1, since we won't be able to create a device with them anyway.
-    if (VK_API_VERSION_VARIANT(props.apiVersion) == 0 && VK_API_VERSION_MAJOR(props.apiVersion) <= 1 &&
-        VK_API_VERSION_MINOR(props.apiVersion) < 1)
-    {
-      Log_WarningFmt("Ignoring Vulkan GPU '{}' because it only claims support for Vulkan {}.{}.{}", props.deviceName,
-                     VK_API_VERSION_MAJOR(props.apiVersion), VK_API_VERSION_MINOR(props.apiVersion),
-                     VK_API_VERSION_PATCH(props.apiVersion));
-      continue;
-    }
 
     std::string gpu_name = props.deviceName;
 
@@ -668,8 +658,15 @@ void VulkanDevice::ProcessDeviceExtensions()
                  m_optional_extensions.vk_khr_push_descriptor ? "supported" : "NOT supported");
 }
 
-bool VulkanDevice::CreateAllocator(u32 apiVersion)
+bool VulkanDevice::CreateAllocator()
 {
+  const u32 apiVersion = std::min(m_device_properties.apiVersion, VK_API_VERSION_1_1);
+  Log_InfoFmt("Supported device API version: {}.{}.{}, using version {}.{}.{} for allocator.",
+              VK_API_VERSION_MAJOR(m_device_properties.apiVersion),
+              VK_API_VERSION_MINOR(m_device_properties.apiVersion),
+              VK_API_VERSION_PATCH(m_device_properties.apiVersion), VK_API_VERSION_MAJOR(apiVersion),
+              VK_API_VERSION_MINOR(apiVersion), VK_API_VERSION_PATCH(apiVersion));
+
   VmaAllocatorCreateInfo ci = {};
   ci.vulkanApiVersion = apiVersion;
   ci.flags = VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT;
@@ -1769,9 +1766,8 @@ GPUDevice::AdapterAndModeList VulkanDevice::StaticGetAdapterAndModeList()
     if (Vulkan::LoadVulkanLibrary())
     {
       ScopedGuard lib_guard([]() { Vulkan::UnloadVulkanLibrary(); });
-      u32 apiVersion;
       OptionalExtensions oe = {};
-      const VkInstance instance = CreateVulkanInstance(WindowInfo(), &apiVersion, &oe, false, false);
+      const VkInstance instance = CreateVulkanInstance(WindowInfo(), &oe, false, false);
       if (instance != VK_NULL_HANDLE)
       {
         if (Vulkan::LoadVulkanInstanceFunctions(instance))
@@ -1853,9 +1849,7 @@ bool VulkanDevice::CreateDevice(const std::string_view& adapter, bool threaded_p
     return false;
   }
 
-  u32 apiVersion;
-  m_instance = CreateVulkanInstance(m_window_info, &apiVersion, &m_optional_extensions, enable_debug_utils,
-                                    enable_validation_layer);
+  m_instance = CreateVulkanInstance(m_window_info, &m_optional_extensions, enable_debug_utils, enable_validation_layer);
   if (m_instance == VK_NULL_HANDLE)
   {
     if (enable_debug_utils || enable_validation_layer)
@@ -1863,8 +1857,8 @@ bool VulkanDevice::CreateDevice(const std::string_view& adapter, bool threaded_p
       // Try again without the validation layer.
       enable_debug_utils = false;
       enable_validation_layer = false;
-      m_instance = CreateVulkanInstance(m_window_info, &apiVersion, &m_optional_extensions, enable_debug_utils,
-                                        enable_validation_layer);
+      m_instance =
+        CreateVulkanInstance(m_window_info, &m_optional_extensions, enable_debug_utils, enable_validation_layer);
       if (m_instance == VK_NULL_HANDLE)
       {
         Host::ReportErrorAsync("Error",
@@ -1953,11 +1947,8 @@ bool VulkanDevice::CreateDevice(const std::string_view& adapter, bool threaded_p
   }
 
   // And critical resources.
-  if (!CreateAllocator(apiVersion) || !CreatePersistentDescriptorPool() || !CreateCommandBuffers() ||
-      !CreatePipelineLayouts())
-  {
+  if (!CreateAllocator() || !CreatePersistentDescriptorPool() || !CreateCommandBuffers() || !CreatePipelineLayouts())
     return false;
-  }
 
   if (threaded_presentation)
     StartPresentThread();
