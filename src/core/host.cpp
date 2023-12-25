@@ -241,6 +241,13 @@ bool Host::CreateGPUDevice(RenderAPI api)
   Log_InfoPrintf("Trying to create a %s GPU device...", GPUDevice::RenderAPIToString(api));
   g_gpu_device = GPUDevice::CreateDeviceForAPI(api);
 
+  std::optional<bool> exclusive_fullscreen_control;
+  if (g_settings.display_exclusive_fullscreen_control != DisplayExclusiveFullscreenControl::Automatic)
+  {
+    exclusive_fullscreen_control =
+      (g_settings.display_exclusive_fullscreen_control == DisplayExclusiveFullscreenControl::Allowed);
+  }
+
   u32 disabled_features = 0;
   if (g_settings.gpu_disable_dual_source_blend)
     disabled_features |= GPUDevice::FEATURE_MASK_DUAL_SOURCE_BLEND;
@@ -249,11 +256,12 @@ bool Host::CreateGPUDevice(RenderAPI api)
 
   // TODO: FSUI should always use vsync..
   const bool vsync = System::IsValid() ? System::ShouldUseVSync() : g_settings.video_sync_enabled;
-  if (!g_gpu_device || !g_gpu_device->Create(
-                         g_settings.gpu_adapter,
-                         g_settings.gpu_disable_shader_cache ? std::string_view() : std::string_view(EmuFolders::Cache),
-                         SHADER_CACHE_VERSION, g_settings.gpu_use_debug_device, vsync,
-                         g_settings.gpu_threaded_presentation, static_cast<GPUDevice::FeatureMask>(disabled_features)))
+  if (!g_gpu_device || !g_gpu_device->Create(g_settings.gpu_adapter,
+                                             g_settings.gpu_disable_shader_cache ? std::string_view() :
+                                                                                   std::string_view(EmuFolders::Cache),
+                                             SHADER_CACHE_VERSION, g_settings.gpu_use_debug_device, vsync,
+                                             g_settings.gpu_threaded_presentation, exclusive_fullscreen_control,
+                                             static_cast<GPUDevice::FeatureMask>(disabled_features)))
   {
     Log_ErrorPrintf("Failed to create GPU device.");
     if (g_gpu_device)

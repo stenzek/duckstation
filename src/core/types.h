@@ -143,6 +143,14 @@ enum class DisplayScalingMode : u8
   Count
 };
 
+enum class DisplayExclusiveFullscreenControl : u8
+{
+  Automatic,
+  Disallowed,
+  Allowed,
+  Count
+};
+
 enum class AudioBackend : u8
 {
   Null,

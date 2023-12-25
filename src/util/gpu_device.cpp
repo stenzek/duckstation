@@ -258,7 +258,7 @@ bool GPUDevice::IsSameRenderAPI(RenderAPI lhs, RenderAPI rhs)
 
 bool GPUDevice::Create(const std::string_view& adapter, const std::string_view& shader_cache_path,
                        u32 shader_cache_version, bool debug_device, bool vsync, bool threaded_presentation,
-                       FeatureMask disabled_features)
+                       std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features)
 {
   m_vsync_enabled = vsync;
   m_debug_device = debug_device;
@@ -269,7 +269,7 @@ bool GPUDevice::Create(const std::string_view& adapter, const std::string_view& 
     return false;
   }
 
-  if (!CreateDevice(adapter, threaded_presentation, disabled_features))
+  if (!CreateDevice(adapter, threaded_presentation, exclusive_fullscreen_control, disabled_features))
   {
     Log_ErrorPrintf("Failed to create device.");
     return false;
@@ -826,7 +826,7 @@ std::unique_ptr<GPUTexture> GPUDevice::FetchTexture(u32 width, u32 height, u32 l
     if (!data || it->texture->Update(0, 0, width, height, data, data_stride, 0, 0))
     {
       ret = std::move(it->texture);
-      m_texture_pool.erase(it);
+      pool.erase(it);
       return ret;
     }
     else

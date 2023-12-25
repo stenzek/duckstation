@@ -237,11 +237,22 @@ u32 SDLInputSource::ParseRGBForPlayerId(const std::string_view& str, u32 player_
 
 void SDLInputSource::SetHints()
 {
-  const std::string controller_db_path = Path::Combine(EmuFolders::Resources, CONTROLLER_DB_FILENAME);
-  if (FileSystem::FileExists(controller_db_path.c_str()))
-    SDL_SetHint(SDL_HINT_GAMECONTROLLERCONFIG_FILE, controller_db_path.c_str());
+  if (const std::string upath = Path::Combine(EmuFolders::DataRoot, CONTROLLER_DB_FILENAME);
+      FileSystem::FileExists(upath.c_str()))
+  {
+    Log_InfoFmt("Using Controller DB from user directory: '{}'", upath);
+    SDL_SetHint(SDL_HINT_GAMECONTROLLERCONFIG_FILE, upath.c_str());
+  }
+  else if (const std::string rpath = Path::Combine(EmuFolders::Resources, CONTROLLER_DB_FILENAME);
+           FileSystem::FileExists(rpath.c_str()))
+  {
+    Log_InfoPrint("Using Controller DB from resources.");
+    SDL_SetHint(SDL_HINT_GAMECONTROLLERCONFIG_FILE, rpath.c_str());
+  }
   else
-    Log_ErrorFmt("Controller DB not found at '{}'", controller_db_path);
+  {
+    Log_ErrorFmt("Controller DB not found, it should be named '{}'", CONTROLLER_DB_FILENAME);
+  }
 
   SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, m_controller_enhanced_mode ? "1" : "0");
   SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, m_controller_enhanced_mode ? "1" : "0");
@@ -276,6 +287,7 @@ bool SDLInputSource::InitializeSubsystem()
 
   // we should open the controllers as the connected events come in, so no need to do any more here
   m_sdl_subsystem_initialized = true;
+  Log_InfoFmt("{} controller mappings are loaded.", SDL_GameControllerNumMappings());
   return true;
 }
 
@@ -460,7 +472,7 @@ TinyString SDLInputSource::ConvertKeyToString(InputBindingKey key)
       else
       {
         ret.format("SDL-{}/{}Axis{}{}", static_cast<u32>(key.source_index), modifier,
-                key.data - static_cast<u32>(std::size(s_sdl_axis_names)), key.invert ? "~" : "");
+                   key.data - static_cast<u32>(std::size(s_sdl_axis_names)), key.invert ? "~" : "");
       }
     }
     else if (key.source_subtype == InputSubclass::ControllerButton)
@@ -472,7 +484,7 @@ TinyString SDLInputSource::ConvertKeyToString(InputBindingKey key)
       else
       {
         ret.format("SDL-{}/Button{}", static_cast<u32>(key.source_index),
-                key.data - static_cast<u32>(std::size(s_sdl_button_names)));
+                   key.data - static_cast<u32>(std::size(s_sdl_button_names)));
       }
     }
     else if (key.source_subtype == InputSubclass::ControllerHat)
@@ -480,7 +492,7 @@ TinyString SDLInputSource::ConvertKeyToString(InputBindingKey key)
       const u32 hat_index = key.data / static_cast<u32>(std::size(s_sdl_hat_direction_names));
       const u32 hat_direction = key.data % static_cast<u32>(std::size(s_sdl_hat_direction_names));
       ret.format("SDL-{}/Hat{}{}", static_cast<u32>(key.source_index), hat_index,
-              s_sdl_hat_direction_names[hat_direction]);
+                 s_sdl_hat_direction_names[hat_direction]);
     }
     else if (key.source_subtype == InputSubclass::ControllerMotor)
     {
@@ -506,7 +518,7 @@ TinyString SDLInputSource::ConvertKeyToIcon(InputBindingKey key)
       if (key.data < std::size(s_sdl_axis_icons) && key.modifier != InputModifier::FullAxis)
       {
         ret.format("SDL-{}  {}", static_cast<u32>(key.source_index),
-                s_sdl_axis_icons[key.data][key.modifier == InputModifier::None]);
+                   s_sdl_axis_icons[key.data][key.modifier == InputModifier::None]);
       }
     }
     else if (key.source_subtype == InputSubclass::ControllerButton)

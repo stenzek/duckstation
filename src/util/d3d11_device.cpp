@@ -64,7 +64,7 @@ bool D3D11Device::HasSurface() const
 }
 
 bool D3D11Device::CreateDevice(const std::string_view& adapter, bool threaded_presentation,
-                               FeatureMask disabled_features)
+                               std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features)
 {
   std::unique_lock lock(s_instance_mutex);
 

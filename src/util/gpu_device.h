@@ -536,7 +536,8 @@ public:
   virtual RenderAPI GetRenderAPI() const = 0;
 
   bool Create(const std::string_view& adapter, const std::string_view& shader_cache_path, u32 shader_cache_version,
-              bool debug_device, bool vsync, bool threaded_presentation, FeatureMask disabled_features);
+              bool debug_device, bool vsync, bool threaded_presentation,
+              std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features);
   void Destroy();
 
   virtual bool HasSurface() const = 0;
@@ -651,7 +652,7 @@ public:
 
 protected:
   virtual bool CreateDevice(const std::string_view& adapter, bool threaded_presentation,
-                            FeatureMask disabled_features) = 0;
+                            std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features) = 0;
   virtual void DestroyDevice() = 0;
 
   std::string GetShaderCacheBaseName(const std::string_view& type) const;
@@ -775,7 +776,8 @@ struct GLAutoPop
 #define GL_INS(msg) g_gpu_device->InsertDebugMessage(msg)
 #define GL_OBJECT_NAME(obj, name) (obj)->SetDebugName(name)
 
-#define GL_SCOPE_FMT(...) GLAutoPop gl_auto_pop((g_gpu_device->PushDebugGroup(SmallString::from_format(__VA_ARGS__)), 0))
+#define GL_SCOPE_FMT(...)                                                                                              \
+  GLAutoPop gl_auto_pop((g_gpu_device->PushDebugGroup(SmallString::from_format(__VA_ARGS__)), 0))
 #define GL_PUSH_FMT(...) g_gpu_device->PushDebugGroup(SmallString::from_format(__VA_ARGS__))
 #define GL_INS_FMT(...) g_gpu_device->InsertDebugMessage(SmallString::from_format(__VA_ARGS__))
 #define GL_OBJECT_NAME_FMT(obj, ...) (obj)->SetDebugName(SmallString::from_format(__VA_ARGS__))

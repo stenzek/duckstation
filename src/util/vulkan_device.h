@@ -44,6 +44,10 @@ public:
     bool vk_ext_rasterization_order_attachment_access : 1;
     bool vk_ext_attachment_feedback_loop_layout : 1;
     bool vk_ext_full_screen_exclusive : 1;
+    bool vk_khr_get_memory_requirements2 : 1;
+    bool vk_khr_bind_memory2 : 1;
+    bool vk_khr_get_physical_device_properties2 : 1;
+    bool vk_khr_dedicated_allocation : 1;
     bool vk_khr_driver_properties : 1;
     bool vk_khr_dynamic_rendering : 1;
     bool vk_khr_push_descriptor : 1;
@@ -214,7 +218,7 @@ public:
 
 protected:
   bool CreateDevice(const std::string_view& adapter, bool threaded_presentation,
-                    FeatureMask disabled_features) override;
+                    std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features) override;
   void DestroyDevice() override;
 
   bool ReadPipelineCache(const std::string& filename) override;
@@ -279,7 +283,8 @@ private:
   static void GetAdapterAndModeList(AdapterAndModeList* ret, VkInstance instance);
 
   // Helper method to create a Vulkan instance.
-  static VkInstance CreateVulkanInstance(const WindowInfo& wi, bool enable_debug_utils, bool enable_validation_layer);
+  static VkInstance CreateVulkanInstance(const WindowInfo& wi, OptionalExtensions* oe, bool enable_debug_utils,
+                                         bool enable_validation_layer);
 
   // Returns a list of Vulkan-compatible GPUs.
   using GPUList = std::vector<std::pair<VkPhysicalDevice, std::string>>;
@@ -307,7 +312,8 @@ private:
   bool CheckLastSubmitFail();
 
   using ExtensionList = std::vector<const char*>;
-  static bool SelectInstanceExtensions(ExtensionList* extension_list, const WindowInfo& wi, bool enable_debug_utils);
+  static bool SelectInstanceExtensions(ExtensionList* extension_list, const WindowInfo& wi, OptionalExtensions* oe,
+                                       bool enable_debug_utils);
   bool SelectDeviceExtensions(ExtensionList* extension_list, bool enable_surface);
   bool SelectDeviceFeatures();
   bool CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer);
@@ -422,6 +428,7 @@ private:
   VkPhysicalDeviceProperties m_device_properties = {};
   VkPhysicalDeviceDriverPropertiesKHR m_device_driver_properties = {};
   OptionalExtensions m_optional_extensions = {};
+  std::optional<bool> m_exclusive_fullscreen_control;
 
   std::unique_ptr<VulkanSwapChain> m_swap_chain;
   std::unique_ptr<VulkanTexture> m_null_texture;

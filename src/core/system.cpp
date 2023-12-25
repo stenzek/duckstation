@@ -234,6 +234,7 @@ static u64 s_session_start_time = 0;
 
 #ifdef ENABLE_DISCORD_PRESENCE
 static bool s_discord_presence_active = false;
+static time_t s_discord_presence_time_epoch;
 #endif
 
 static TinyString GetTimestampStringForFileName()
@@ -1691,7 +1692,7 @@ void System::ClearRunningGame()
   Achievements::GameChanged(s_running_game_path, nullptr);
 
 #ifdef ENABLE_DISCORD_PRESENCE
-  UpdateDiscordPresence();
+  UpdateDiscordPresence(true);
 #endif
 }
 
@@ -3372,7 +3373,7 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
     SaveStateSelectorUI::ClearList();
 
 #ifdef ENABLE_DISCORD_PRESENCE
-  UpdateDiscordPresence();
+  UpdateDiscordPresence(booting);
 #endif
 
   Host::OnGameChanged(s_running_game_path, s_running_game_serial, s_running_game_title);
@@ -3508,12 +3509,14 @@ void System::SetCheatList(std::unique_ptr<CheatList> cheats)
 
 void System::CheckForSettingsChanges(const Settings& old_settings)
 {
-  if (IsValid() && (g_settings.gpu_renderer != old_settings.gpu_renderer ||
-                    g_settings.gpu_use_debug_device != old_settings.gpu_use_debug_device ||
-                    g_settings.gpu_threaded_presentation != old_settings.gpu_threaded_presentation ||
-                    g_settings.gpu_disable_shader_cache != old_settings.gpu_disable_shader_cache ||
-                    g_settings.gpu_disable_dual_source_blend != old_settings.gpu_disable_dual_source_blend ||
-                    g_settings.gpu_disable_framebuffer_fetch != old_settings.gpu_disable_framebuffer_fetch))
+  if (IsValid() &&
+      (g_settings.gpu_renderer != old_settings.gpu_renderer ||
+       g_settings.gpu_use_debug_device != old_settings.gpu_use_debug_device ||
+       g_settings.gpu_threaded_presentation != old_settings.gpu_threaded_presentation ||
+       g_settings.gpu_disable_shader_cache != old_settings.gpu_disable_shader_cache ||
+       g_settings.gpu_disable_dual_source_blend != old_settings.gpu_disable_dual_source_blend ||
+       g_settings.gpu_disable_framebuffer_fetch != old_settings.gpu_disable_framebuffer_fetch ||
+       g_settings.display_exclusive_fullscreen_control != old_settings.display_exclusive_fullscreen_control))
   {
     // if debug device/threaded presentation change, we need to recreate the whole display
     const bool recreate_device =
@@ -3521,7 +3524,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
        g_settings.gpu_threaded_presentation != old_settings.gpu_threaded_presentation ||
        g_settings.gpu_disable_shader_cache != old_settings.gpu_disable_shader_cache ||
        g_settings.gpu_disable_dual_source_blend != old_settings.gpu_disable_dual_source_blend ||
-       g_settings.gpu_disable_framebuffer_fetch != old_settings.gpu_disable_framebuffer_fetch);
+       g_settings.gpu_disable_framebuffer_fetch != old_settings.gpu_disable_framebuffer_fetch ||
+       g_settings.display_exclusive_fullscreen_control != old_settings.display_exclusive_fullscreen_control);
 
     Host::AddIconOSDMessage("RendererSwitch", ICON_FA_PAINT_ROLLER,
                             fmt::format(TRANSLATE_FS("OSDMessage", "Switching to {}{} GPU renderer."),
@@ -4137,9 +4141,8 @@ void System::ShutdownSystem(bool save_resume_state)
   if (save_resume_state)
     SaveResumeState();
 
-  if (s_system_executing)
-    s_state = State::Stopping;
-  else
+  s_state = State::Stopping;
+  if (!s_system_executing)
     DestroySystem();
 }
 
@@ -4834,7 +4837,7 @@ void System::InitializeDiscordPresence()
   Discord_Initialize("705325712680288296", &handlers, 0, nullptr);
   s_discord_presence_active = true;
 
-  UpdateDiscordPresence();
+  UpdateDiscordPresence(true);
 }
 
 void System::ShutdownDiscordPresence()
@@ -4847,16 +4850,19 @@ void System::ShutdownDiscordPresence()
   s_discord_presence_active = false;
 }
 
-void System::UpdateDiscordPresence()
+void System::UpdateDiscordPresence(bool update_session_time)
 {
   if (!s_discord_presence_active)
     return;
+
+  if (update_session_time)
+    s_discord_presence_time_epoch = std::time(nullptr);
 
   // https://discord.com/developers/docs/rich-presence/how-to#updating-presence-update-presence-payload-fields
   DiscordRichPresence rp = {};
   rp.largeImageKey = "duckstation_logo";
   rp.largeImageText = "DuckStation PS1/PSX Emulator";
-  rp.startTimestamp = std::time(nullptr);
+  rp.startTimestamp = s_discord_presence_time_epoch;
   rp.details = "No Game Running";
   if (IsValidOrInitializing())
   {

@@ -84,9 +84,9 @@ VULKAN_INSTANCE_ENTRY_POINT(vkGetDisplayPlaneCapabilitiesKHR, false)
 VULKAN_INSTANCE_ENTRY_POINT(vkCreateDisplayPlaneSurfaceKHR, false)
 
 // Vulkan 1.1 functions.
-VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceFeatures2, true)
-VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceProperties2, true)
-VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceMemoryProperties2, true)
+VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceFeatures2, false)
+VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceProperties2, false)
+VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceMemoryProperties2, false)
 
 // VK_EXT_calibrated_timestamps
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceCalibrateableTimeDomainsEXT, false)
@@ -222,10 +222,10 @@ VULKAN_DEVICE_ENTRY_POINT(vkAcquireNextImageKHR, false)
 VULKAN_DEVICE_ENTRY_POINT(vkQueuePresentKHR, false)
 
 // Vulkan 1.1 functions.
-VULKAN_DEVICE_ENTRY_POINT(vkGetBufferMemoryRequirements2, true)
-VULKAN_DEVICE_ENTRY_POINT(vkGetImageMemoryRequirements2, true)
-VULKAN_DEVICE_ENTRY_POINT(vkBindBufferMemory2, true)
-VULKAN_DEVICE_ENTRY_POINT(vkBindImageMemory2, true)
+VULKAN_DEVICE_ENTRY_POINT(vkGetBufferMemoryRequirements2, false)
+VULKAN_DEVICE_ENTRY_POINT(vkGetImageMemoryRequirements2, false)
+VULKAN_DEVICE_ENTRY_POINT(vkBindBufferMemory2, false)
+VULKAN_DEVICE_ENTRY_POINT(vkBindImageMemory2, false)
 
 // Vulkan 1.3 functions.
 VULKAN_DEVICE_ENTRY_POINT(vkGetDeviceBufferMemoryRequirements, false)
