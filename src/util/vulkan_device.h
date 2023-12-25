@@ -218,7 +218,7 @@ public:
 
 protected:
   bool CreateDevice(const std::string_view& adapter, bool threaded_presentation,
-                    FeatureMask disabled_features) override;
+                    std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features) override;
   void DestroyDevice() override;
 
   bool ReadPipelineCache(const std::string& filename) override;
@@ -428,6 +428,7 @@ private:
   VkPhysicalDeviceProperties m_device_properties = {};
   VkPhysicalDeviceDriverPropertiesKHR m_device_driver_properties = {};
   OptionalExtensions m_optional_extensions = {};
+  std::optional<bool> m_exclusive_fullscreen_control;
 
   std::unique_ptr<VulkanSwapChain> m_swap_chain;
   std::unique_ptr<VulkanTexture> m_null_texture;

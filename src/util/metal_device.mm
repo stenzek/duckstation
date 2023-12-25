@@ -121,6 +121,7 @@ void MetalDevice::SetVSync(bool enabled)
 }
 
 bool MetalDevice::CreateDevice(const std::string_view& adapter, bool threaded_presentation,
+                               std::optional<bool> exclusive_fullscreen_control,
                                FeatureMask disabled_features)
 {
   @autoreleasepool

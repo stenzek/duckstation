@@ -3509,12 +3509,14 @@ void System::SetCheatList(std::unique_ptr<CheatList> cheats)
 
 void System::CheckForSettingsChanges(const Settings& old_settings)
 {
-  if (IsValid() && (g_settings.gpu_renderer != old_settings.gpu_renderer ||
-                    g_settings.gpu_use_debug_device != old_settings.gpu_use_debug_device ||
-                    g_settings.gpu_threaded_presentation != old_settings.gpu_threaded_presentation ||
-                    g_settings.gpu_disable_shader_cache != old_settings.gpu_disable_shader_cache ||
-                    g_settings.gpu_disable_dual_source_blend != old_settings.gpu_disable_dual_source_blend ||
-                    g_settings.gpu_disable_framebuffer_fetch != old_settings.gpu_disable_framebuffer_fetch))
+  if (IsValid() &&
+      (g_settings.gpu_renderer != old_settings.gpu_renderer ||
+       g_settings.gpu_use_debug_device != old_settings.gpu_use_debug_device ||
+       g_settings.gpu_threaded_presentation != old_settings.gpu_threaded_presentation ||
+       g_settings.gpu_disable_shader_cache != old_settings.gpu_disable_shader_cache ||
+       g_settings.gpu_disable_dual_source_blend != old_settings.gpu_disable_dual_source_blend ||
+       g_settings.gpu_disable_framebuffer_fetch != old_settings.gpu_disable_framebuffer_fetch ||
+       g_settings.display_exclusive_fullscreen_control != old_settings.display_exclusive_fullscreen_control))
   {
     // if debug device/threaded presentation change, we need to recreate the whole display
     const bool recreate_device =
@@ -3522,7 +3524,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
        g_settings.gpu_threaded_presentation != old_settings.gpu_threaded_presentation ||
        g_settings.gpu_disable_shader_cache != old_settings.gpu_disable_shader_cache ||
        g_settings.gpu_disable_dual_source_blend != old_settings.gpu_disable_dual_source_blend ||
-       g_settings.gpu_disable_framebuffer_fetch != old_settings.gpu_disable_framebuffer_fetch);
+       g_settings.gpu_disable_framebuffer_fetch != old_settings.gpu_disable_framebuffer_fetch ||
+       g_settings.display_exclusive_fullscreen_control != old_settings.display_exclusive_fullscreen_control);
 
     Host::AddIconOSDMessage("RendererSwitch", ICON_FA_PAINT_ROLLER,
                             fmt::format(TRANSLATE_FS("OSDMessage", "Switching to {}{} GPU renderer."),

@@ -236,6 +236,12 @@ void Settings::Load(SettingsInterface& si)
   display_scaling =
     ParseDisplayScaling(si.GetStringValue("Display", "Scaling", GetDisplayScalingName(DEFAULT_DISPLAY_SCALING)).c_str())
       .value_or(DEFAULT_DISPLAY_SCALING);
+  display_exclusive_fullscreen_control =
+    ParseDisplayExclusiveFullscreenControl(
+      si.GetStringValue("Display", "ExclusiveFullscreenControl",
+                        GetDisplayExclusiveFullscreenControlName(DEFAULT_DISPLAY_EXCLUSIVE_FULLSCREEN_CONTROL))
+        .c_str())
+      .value_or(DEFAULT_DISPLAY_EXCLUSIVE_FULLSCREEN_CONTROL);
   display_force_4_3_for_24bit = si.GetBoolValue("Display", "Force4_3For24Bit", false);
   display_active_start_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveStartOffset", 0));
   display_active_end_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveEndOffset", 0));
@@ -475,6 +481,8 @@ void Settings::Save(SettingsInterface& si) const
   si.SetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(display_aspect_ratio));
   si.SetStringValue("Display", "Alignment", GetDisplayAlignmentName(display_alignment));
   si.SetStringValue("Display", "Scaling", GetDisplayScalingName(display_scaling));
+  si.SetStringValue("Display", "ExclusiveFullscreenControl",
+                    GetDisplayExclusiveFullscreenControlName(display_exclusive_fullscreen_control));
   si.SetIntValue("Display", "CustomAspectRatioNumerator", display_aspect_ratio_custom_numerator);
   si.GetIntValue("Display", "CustomAspectRatioDenominator", display_aspect_ratio_custom_denominator);
   si.SetBoolValue("Display", "ShowOSDMessages", display_show_osd_messages);
@@ -1236,6 +1244,42 @@ const char* Settings::GetDisplayScalingName(DisplayScalingMode mode)
 const char* Settings::GetDisplayScalingDisplayName(DisplayScalingMode mode)
 {
   return Host::TranslateToCString("DisplayScalingMode", s_display_scaling_display_names[static_cast<int>(mode)]);
+}
+
+static constexpr const std::array s_display_exclusive_fullscreen_mode_names = {
+  "Automatic",
+  "Disallowed",
+  "Allowed",
+};
+static constexpr const std::array s_display_exclusive_fullscreen_mode_display_names = {
+  TRANSLATE_NOOP("Settings", "Automatic (Default)"),
+  TRANSLATE_NOOP("Settings", "Disallowed"),
+  TRANSLATE_NOOP("Settings", "Allowed"),
+};
+
+std::optional<DisplayExclusiveFullscreenControl> Settings::ParseDisplayExclusiveFullscreenControl(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_display_exclusive_fullscreen_mode_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<DisplayExclusiveFullscreenControl>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetDisplayExclusiveFullscreenControlName(DisplayExclusiveFullscreenControl mode)
+{
+  return s_display_exclusive_fullscreen_mode_names[static_cast<int>(mode)];
+}
+
+const char* Settings::GetDisplayExclusiveFullscreenControlDisplayName(DisplayExclusiveFullscreenControl mode)
+{
+  return Host::TranslateToCString("Settings",
+                                  s_display_exclusive_fullscreen_mode_display_names[static_cast<int>(mode)]);
 }
 
 static constexpr const std::array s_audio_backend_names = {

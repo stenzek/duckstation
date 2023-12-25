@@ -1836,12 +1836,11 @@ bool VulkanDevice::HasSurface() const
 }
 
 bool VulkanDevice::CreateDevice(const std::string_view& adapter, bool threaded_presentation,
-                                FeatureMask disabled_features)
+                                std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features)
 {
   std::unique_lock lock(s_instance_mutex);
   bool enable_debug_utils = m_debug_device;
   bool enable_validation_layer = m_debug_device;
-  std::optional<bool> exclusive_fullscreen_control;
 
   if (!Vulkan::LoadVulkanLibrary())
   {
@@ -1953,9 +1952,11 @@ bool VulkanDevice::CreateDevice(const std::string_view& adapter, bool threaded_p
   if (threaded_presentation)
     StartPresentThread();
 
+  m_exclusive_fullscreen_control = exclusive_fullscreen_control;
+
   if (surface != VK_NULL_HANDLE)
   {
-    m_swap_chain = VulkanSwapChain::Create(m_window_info, surface, m_vsync_enabled, exclusive_fullscreen_control);
+    m_swap_chain = VulkanSwapChain::Create(m_window_info, surface, m_vsync_enabled, m_exclusive_fullscreen_control);
     if (!m_swap_chain)
     {
       Log_ErrorPrintf("Failed to create swap chain");
@@ -2174,8 +2175,7 @@ bool VulkanDevice::UpdateWindow()
     return false;
   }
 
-  // TODO: exclusive fullscreen control
-  m_swap_chain = VulkanSwapChain::Create(m_window_info, surface, m_vsync_enabled, std::nullopt);
+  m_swap_chain = VulkanSwapChain::Create(m_window_info, surface, m_vsync_enabled, m_exclusive_fullscreen_control);
   if (!m_swap_chain)
   {
     Log_ErrorPrintf("Failed to create swap chain");

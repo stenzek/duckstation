@@ -276,6 +276,11 @@ void AdvancedSettingsWidget::addTweakOptions()
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Apply Compatibility Settings"), "Main",
                         "ApplyCompatibilitySettings", true);
   addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Display FPS Limit"), "Display", "MaxFPS", 0, 1000, 0);
+  addChoiceTweakOption(
+    m_dialog, m_ui.tweakOptionTable, tr("Exclusive Fullscreen Control"), "Display", "ExclusiveFullscreenControl",
+    &Settings::ParseDisplayExclusiveFullscreenControl, &Settings::GetDisplayExclusiveFullscreenControlName,
+    &Settings::GetDisplayExclusiveFullscreenControlDisplayName,
+    static_cast<u32>(DisplayExclusiveFullscreenControl::Count), Settings::DEFAULT_DISPLAY_EXCLUSIVE_FULLSCREEN_CONTROL);
 
   addMSAATweakOption(m_dialog, m_ui.tweakOptionTable, tr("Multisample Antialiasing"));
 
@@ -377,6 +382,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);    // Show frame times
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);     // Apply compatibility settings
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++, 0);       // Display FPS limit
+    setChoiceTweakOption(m_ui.tweakOptionTable, i++, Settings::DEFAULT_DISPLAY_EXCLUSIVE_FULLSCREEN_CONTROL);
     setChoiceTweakOption(m_ui.tweakOptionTable, i++, 0);         // Multisample antialiasing
     setChoiceTweakOption(m_ui.tweakOptionTable, i++, 0);         // Wireframe mode
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);    // PGXP vertex cache
@@ -433,6 +439,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue("Display", "LineStartOffset");
   sif->DeleteValue("Display", "LineEndOffset");
   sif->DeleteValue("Display", "StretchVertically");
+  sif->DeleteValue("Display", "ExclusiveFullscreenControl");
   sif->DeleteValue("GPU", "Multisamples");
   sif->DeleteValue("GPU", "PerSampleShading");
   sif->DeleteValue("GPU", "PGXPVertexCache");

@@ -257,7 +257,7 @@ public:
 
 protected:
   bool CreateDevice(const std::string_view& adapter, bool threaded_presentation,
-                    FeatureMask disabled_features) override;
+                    std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features) override;
   void DestroyDevice() override;
 
 private:
