@@ -52,14 +52,6 @@
 <context>
     <name>AchievementLoginDialog</name>
     <message>
-        <source>RetroAchievements Login</source>
-        <translation type="vanished">Credenciais do RetroAchievements</translation>
-    </message>
-    <message>
-        <source>Please enter user name and password for retroachievements.org below. Your password will not be saved in DuckStation, instead an access token will be generated and used instead.</source>
-        <translation type="vanished">Por favor entre com um nome de usuário e senha para se autenticar no retroachievements.org conforme abaixo. Suas credenciais não serão salvas no emulador. Será criado um token único de acesso para autenticação.</translation>
-    </message>
-    <message>
         <location filename="../achievementlogindialog.ui" line="29"/>
         <source>RetroAchievements Login</source>
         <comment>Window title</comment>
@@ -70,10 +62,6 @@
         <source>RetroAchievements Login</source>
         <comment>Header text</comment>
         <translation>Credenciais do RetroAchievements</translation>
-    </message>
-    <message>
-        <source>Please enter user name and password for retroachievements.org below. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
-        <translation type="vanished">Por favor entre com um nome de usuário e senha para se autenticar no retroachievements.org conforme abaixo. Suas credenciais não serão salvas no emulador. Será criado um token único de acesso para autenticação.</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.ui" line="69"/>
@@ -159,26 +147,14 @@ Deseja ativar o modo hardcore?</translation>
         <translation>O modo hardcore não será ativado até que o sistema seja reiniciado. Deseja reiniciar o sistema agora?</translation>
     </message>
     <message>
-        <source>&amp;Cancel</source>
-        <translation type="vanished">&amp;Cancelar</translation>
-    </message>
-    <message>
         <location filename="../achievementlogindialog.cpp" line="71"/>
         <source>Login Error</source>
         <translation>Erro ao iniciar sessão</translation>
     </message>
     <message>
-        <source>A user name and password must be provided.</source>
-        <translation type="vanished">Um nome de usuário e senha precisam ser inseridos.</translation>
-    </message>
-    <message>
         <location filename="../achievementlogindialog.cpp" line="40"/>
         <source>Logging in...</source>
         <translation>Entrando...</translation>
-    </message>
-    <message>
-        <source>Login failed. Please check your username and password, and try again.</source>
-        <translation type="vanished">Falha na entrada, por favor verifique seu usuário e senha e tente de novo.</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.cpp" line="73"/>
@@ -194,22 +170,10 @@ Deseja ativar o modo hardcore?</translation>
         <translation></translation>
     </message>
     <message>
-        <source>Global Settings</source>
-        <translation type="vanished">Configurações globais</translation>
-    </message>
-    <message>
         <location filename="../achievementsettingswidget.ui" line="45"/>
         <location filename="../achievementsettingswidget.cpp" line="46"/>
         <source>Enable Achievements</source>
         <translation>Ativar conquistas</translation>
-    </message>
-    <message>
-        <source>Enable Rich Presence</source>
-        <translation type="vanished">Ativar mostrar no Discord</translation>
-    </message>
-    <message>
-        <source>Enable Test Mode</source>
-        <translation type="vanished">Ativar modo de teste</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="181"/>
@@ -239,18 +203,6 @@ Deseja ativar o modo hardcore?</translation>
         <location filename="../achievementsettingswidget.cpp" line="68"/>
         <source>Test Unofficial Achievements</source>
         <translation>Testar as conquistas não oficiais</translation>
-    </message>
-    <message>
-        <source>Enable Leaderboards</source>
-        <translation type="vanished">Ativar placares</translation>
-    </message>
-    <message>
-        <source>Show Challenge Indicators</source>
-        <translation type="vanished">Mostrar indicadores de desafio</translation>
-    </message>
-    <message>
-        <source>Show Notifications</source>
-        <translation type="vanished">Mostrar notificações</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="198"/>
@@ -316,38 +268,15 @@ Token de login gerado em:</translation>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation usa o RetroAchievements como banco de dados de conquistas e para acompanhar o seu progresso. Para usar as conquistas, inscreva-se em &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Para ver a lista de conquistas na lista de jogos, pressione a tecla de atalho para &lt;span style=&quot; font-weight:600;&quot;&gt;abrir o menu de pausa&lt;/span&gt; e escolha a opção &lt;span style=&quot; font-weight:600;&quot;&gt;conquistas&lt;/span&gt; no menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Quick Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation usa o RetroAchievements como base de dados para as conquistas. Para usar esta
-função, considere fazer sua conta em:&lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
-        <source>Account Settings</source>
-        <translation type="vanished">Configurações da Conta</translation>
-    </message>
-    <message>
         <location filename="../achievementsettingswidget.ui" line="66"/>
         <location filename="../achievementsettingswidget.cpp" line="48"/>
         <source>Enable Hardcore Mode</source>
         <translation>Ativar modo hardcore</translation>
     </message>
     <message>
-        <source>Enable Hardcode Mode</source>
-        <translation type="vanished">Ativar Modo Hardcore</translation>
-    </message>
-    <message>
-        <source>Enabling hardcore mode will disable cheats, save sates, and debugging features.</source>
-        <translation type="vanished">Ativando o modo mais difícil (Hardcore), irá desativar trapaças, salvar estado rápido e
-algumas funções de depuração.</translation>
-    </message>
-    <message>
         <location filename="../achievementsettingswidget.ui" line="242"/>
         <source>Game Info</source>
         <translation>Informações do jogo</translation>
-    </message>
-    <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation usa o RetroAchievements como base de dados para as conquistas. Para usar esta
-função, considere fazer sua conta em:&lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="46"/>
@@ -390,17 +319,9 @@ função, considere fazer sua conta em:&lt;a href=&quot;https://retroachievement
         <translation>Quando ativado, DuckStation irá listar conquistas não oficiais. Por favor saiba que essas conquistas não são rastreadas pelo RetroAchievements, portanto serão desbloqueadas sempre.</translation>
     </message>
     <message>
-        <source>When enabled, rich presence information will be collected and sent to the server where supported.</source>
-        <translation type="vanished">Quando ativado, a informação do que estiver sendo jogado será enviado ao servidor se suportado.</translation>
-    </message>
-    <message>
         <location filename="../achievementsettingswidget.cpp" line="73"/>
         <source>When enabled, the first disc in a playlist will be used for achievements, regardless of which disc is active.</source>
         <translation>Quando ativado, o primeiro disco em uma lista de reprodução será usado para conquistas, independente de qual disco está ativo.</translation>
-    </message>
-    <message>
-        <source>&quot;Challenge&quot; mode for achievements. Disables save state, cheats, and slowdown functions, but you receive double the achievement points.</source>
-        <translation type="vanished">Modo &quot;dificílimo&quot; para conquistas. Desativa salvamentos rápidos, carregamento de trapaças e funções de velocidade, mas você receberá o dobro de pontos de conquistas em troca.</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="49"/>
@@ -416,17 +337,9 @@ função, considere fazer sua conta em:&lt;a href=&quot;https://retroachievement
         <translation>Marcado</translation>
     </message>
     <message>
-        <source>Displays popup messages on events such as achievement unlocks and leaderboard submissions.</source>
-        <translation type="vanished">Exibe mensagens de alerta em eventos como desbloqueios de conquistas e envios de placar.</translation>
-    </message>
-    <message>
         <location filename="../achievementsettingswidget.cpp" line="58"/>
         <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
         <translation>Reproduz efeitos sonoros para eventos como desbloqueios de conquistas e envios de placar.</translation>
-    </message>
-    <message>
-        <source>Enables tracking and submission of leaderboards in supported games. If leaderboards are disabled, you will still be able to view the leaderboard and scores, but no scores will be uploaded.</source>
-        <translation type="vanished">Permite rastreamento e envio de tabelas de classificação em jogos suportados. Se as tabelas de classificação estiverem desativadas, você ainda poderá visualizar a tabela de classificação e as pontuações, mas nenhuma pontuação será carregada.</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="61"/>
@@ -469,26 +382,6 @@ Token gerado %2.</translation>
         <source>Not Logged In.</source>
         <translation>Não conectado.</translation>
     </message>
-    <message>
-        <source>Enabling hardcore mode will shut down your current game.
-
-</source>
-        <translation type="vanished">Habilitar o modo hardcore encerrará seu jogo atual..
-
-</translation>
-    </message>
-    <message>
-        <source>The current state will be saved, but you will be unable to load it until you disable hardcore mode.
-
-</source>
-        <translation type="vanished">O estado atual será salvo, mas você não poderá carregá-lo até que desative o modo hardcore..
-
-</translation>
-    </message>
-    <message>
-        <source>Do you want to continue?</source>
-        <translation type="vanished">Deseja mesmo continuar?</translation>
-    </message>
 </context>
 <context>
     <name>Achievements</name>
@@ -502,10 +395,6 @@ Token gerado %2.</translation>
         <location filename="../../core/system.cpp" line="1386"/>
         <source>Resuming state</source>
         <translation>Retomando estado</translation>
-    </message>
-    <message>
-        <source>Hardcore mode disabled by state switch.</source>
-        <translation type="vanished">Modo dificílimo desligado pelo estado salvo.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1033"/>
@@ -537,18 +426,6 @@ Token gerado %2.</translation>
         <location filename="../../core/achievements.cpp" line="1113"/>
         <source>Leaderboard attempt failed.</source>
         <translation>Placar de líderes falhou.</translation>
-    </message>
-    <message>
-        <source>Your Time: {} (Submitting)</source>
-        <translation type="vanished">Seu tempo: {} (enviando)</translation>
-    </message>
-    <message>
-        <source>Your Score: {} (Submitting)</source>
-        <translation type="vanished">Sua pontuação: {} (enviando)</translation>
-    </message>
-    <message>
-        <source>Your Value: {} (Submitting)</source>
-        <translation type="vanished">Sua pontuação {} (enviando)</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1010"/>
@@ -660,10 +537,6 @@ Mensagens não lidas: {}</translation>
         <translation>Você desbloqueou {0} de {1} conquistas, ganhando {2} de {3} pontos possíveis.</translation>
     </message>
     <message>
-        <source>You have unlocked {} of {} achievements, earning {} of {} possible points.</source>
-        <translation type="vanished">Você desbloqueou {} de {} conquistas, ganhando {} de {} pontos possíveis.</translation>
-    </message>
-    <message>
         <location filename="../../core/achievements.cpp" line="2254"/>
         <source>Unknown</source>
         <translation>Desconhecido</translation>
@@ -741,10 +614,6 @@ Mensagens não lidas: {}</translation>
         <translation>O modo Hardcore está ativado.</translation>
     </message>
     <message>
-        <source>You have unlocked {} of {} achievements, and earned {} of {} points.</source>
-        <translation type="vanished">Você desbloqueou {} de {} conquistas, ganhando {} de {} pontos possíveis.</translation>
-    </message>
-    <message>
         <location filename="../../core/achievements.cpp" line="1128"/>
         <source>Your Time: {}{}</source>
         <translation>Seu tempo: {}{}</translation>
@@ -775,28 +644,10 @@ Mensagens não lidas: {}</translation>
         <translation>{} (Modo dificílimo)</translation>
     </message>
     <message>
-        <source>You have earned {} of {} achievements, and {} of {} points.</source>
-        <translation type="vanished">Você ganhou {} de {} conquistas e {} de {} pontos.</translation>
-    </message>
-    <message>
         <location filename="../../core/achievements.cpp" line="1016"/>
         <location filename="../../core/achievements.cpp" line="2212"/>
         <source>This game has no achievements.</source>
         <translation>Este jogo não possui conquistas.</translation>
-    </message>
-    <message>
-        <source>Leaderboards are enabled.</source>
-        <translation type="vanished">Os placares estão ligados.</translation>
-    </message>
-    <message>
-        <source>Leaderboards are disabled because hardcore mode is off.</source>
-        <translation type="vanished">As tabelas de classificação estão desligadas porque o modo dificílimo está desativado.</translation>
-    </message>
-    <message>
-        <source>Your Score: {} (Best: {})
-Leaderboard Position: {} of {}</source>
-        <translation type="vanished">Sua pontuação: {} (Melhor: : {})
-Posição nos placares de lideres: {} de {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2557"/>
@@ -916,37 +767,9 @@ Posição nos placares de lideres: {} de {}</translation>
         <translation>Valor</translation>
     </message>
     <message>
-        <source>These options are tweakable to improve performance/game compatibility. Use at your own risk, modified values will not be supported.</source>
-        <translation type="vanished">Essas opções são ajustáveis ​​para melhorar a compatibilidade desempenho dos jogos. Use por sua conta e risco.</translation>
-    </message>
-    <message>
-        <source>DMA Max Slice Ticks:</source>
-        <translation type="vanished">DMA Max Slice Ticks:</translation>
-    </message>
-    <message>
-        <source>DMA Halt Ticks:</source>
-        <translation type="vanished">DMA Halt Ticks:</translation>
-    </message>
-    <message>
-        <source>GPU FIFO Size:</source>
-        <translation type="vanished">GPU FIFO Size:</translation>
-    </message>
-    <message>
-        <source>GPU Max Run-Ahead:</source>
-        <translation type="vanished">GPU Max Run-Ahead:</translation>
-    </message>
-    <message>
         <location filename="../advancedsettingswidget.cpp" line="304"/>
         <source>PGXP Vertex Cache</source>
         <translation>PGXP vértice armazenado</translation>
-    </message>
-    <message>
-        <source>PGXP CPU Mode</source>
-        <translation type="vanished">PGXP Modo CPU</translation>
-    </message>
-    <message>
-        <source>PGXP Preserve Projection Precision</source>
-        <translation type="vanished">Preservar Precisão e Projeção do PGXP</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="305"/>
@@ -969,10 +792,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <translation>Ativar recompilador de acesso a RAM</translation>
     </message>
     <message>
-        <source>Enable Recompiler ICache</source>
-        <translation type="vanished">Ativar recompilador ICache</translation>
-    </message>
-    <message>
         <location filename="../advancedsettingswidget.cpp" line="321"/>
         <source>Enable VRAM Write Texture Replacement</source>
         <translation>Ativar texturas personalizadas</translation>
@@ -981,10 +800,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <location filename="../advancedsettingswidget.cpp" line="323"/>
         <source>Preload Texture Replacements</source>
         <translation>Pré-carregar texturas personalizadas</translation>
-    </message>
-    <message>
-        <source>Dump Replacable VRAM Writes</source>
-        <translation type="vanished">Despejar Texturas Substituíveis</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="327"/>
@@ -1032,10 +847,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <translation>Desativar todas as melhorias</translation>
     </message>
     <message>
-        <source>Show Fullscreen Status Indicators</source>
-        <translation type="vanished">Mostrar indicadores de tela cheia</translation>
-    </message>
-    <message>
         <location filename="../advancedsettingswidget.cpp" line="325"/>
         <source>Dump Replaceable VRAM Writes</source>
         <translation>Despejar texturas</translation>
@@ -1044,10 +855,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <location filename="../advancedsettingswidget.cpp" line="356"/>
         <source>Increase Timer Resolution</source>
         <translation>Aumentar resolução em tempo real</translation>
-    </message>
-    <message>
-        <source>Use Blit Swap Chain</source>
-        <translation type="vanished">Usar cadeia de troca Boleana (Blip Blip)</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="154"/>
@@ -1074,14 +881,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <location filename="../advancedsettingswidget.cpp" line="273"/>
         <source>Show Status Indicators</source>
         <translation>Mostrar indicadores de situação</translation>
-    </message>
-    <message>
-        <source>Show Enhancement Settings</source>
-        <translation type="vanished">Mostrar configurações de aprimoramento</translation>
-    </message>
-    <message>
-        <source>Controller Enhanced Mode (PS4/PS5)</source>
-        <translation type="vanished">Modo de controle aprimorado (PS4/PS5)</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="276"/>
@@ -1246,25 +1045,9 @@ Posição nos placares de lideres: {} de {}</translation>
         <source>PCDrv Root Directory</source>
         <translation>Diretório raiz PCDrv</translation>
     </message>
-    <message>
-        <source>Enables the usage of debug devices and shaders for rendering APIs which support them. Should only be used when debugging the emulator.</source>
-        <translation type="vanished">Permite o uso de dispositivos de depuração e shaders para renderizar APIs que os suportam. Só deve ser usado ao depurar o emulador.</translation>
-    </message>
-    <message>
-        <source>Determines whether the CPU&apos;s instruction cache is simulated in the recompiler. Improves accuracy at a small cost to performance. If games are running too fast, try enabling this option.</source>
-        <translation type="vanished">Determina se a instrução enviada ao CPU emulado fica armazenada no recompilador. Melhor a precisão ao pequeno custo de performance. Se os jogos estão rodando muito rápido, tente ativar esta opção.</translation>
-    </message>
 </context>
 <context>
     <name>AnalogController</name>
-    <message>
-        <source>Controller %u switched to analog mode.</source>
-        <translation type="vanished">Controle %u mudado para modo analógico.</translation>
-    </message>
-    <message>
-        <source>Controller %u switched to digital mode.</source>
-        <translation type="vanished">Controle %u mudado para modo digital.</translation>
-    </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="118"/>
         <location filename="../../core/analog_controller.cpp" line="304"/>
@@ -1276,14 +1059,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <location filename="../../core/analog_controller.cpp" line="305"/>
         <source>Controller {} switched to digital mode.</source>
         <translation>Controle {} alterado para o modo digital.</translation>
-    </message>
-    <message>
-        <source>Controller %u is locked to analog mode by the game.</source>
-        <translation type="vanished">Controle %u está travado em modo analógico pelo jogo.</translation>
-    </message>
-    <message>
-        <source>Controller %u is locked to digital mode by the game.</source>
-        <translation type="vanished">Controle %u está travado no modo digital pelo jogo.</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="319"/>
@@ -1436,40 +1211,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <translation>Inverte a direção do controle analógico direito.</translation>
     </message>
     <message>
-        <source>LeftX</source>
-        <translation type="vanished">Esquerda eixo X</translation>
-    </message>
-    <message>
-        <source>LeftY</source>
-        <translation type="vanished">Esquerda eixo Y</translation>
-    </message>
-    <message>
-        <source>RightX</source>
-        <translation type="vanished">Direita eixo X</translation>
-    </message>
-    <message>
-        <source>RightY</source>
-        <translation type="vanished">Direita eixo Y</translation>
-    </message>
-    <message>
-        <source>Up</source>
-        <translation type="vanished">          🠉</translation>
-    </message>
-    <message>
-        <source>Down</source>
-        <translation type="vanished">          🠋</translation>
-    </message>
-    <message>
-        <source>Left</source>
-        <translatorcomment>🠰</translatorcomment>
-        <translation type="vanished">          🠈</translation>
-    </message>
-    <message>
-        <source>Right</source>
-        <translatorcomment>          ➡️</translatorcomment>
-        <translation type="vanished">          ➜</translation>
-    </message>
-    <message>
         <location filename="../../core/analog_controller.cpp" line="812"/>
         <source>Select</source>
         <translation>Select</translation>
@@ -1530,25 +1271,9 @@ Posição nos placares de lideres: {} de {}</translation>
         <translation>R3</translation>
     </message>
     <message>
-        <source>Analog</source>
-        <translation type="vanished">    Analógico</translation>
-    </message>
-    <message>
         <location filename="../../core/analog_controller.cpp" line="842"/>
         <source>Force Analog Mode on Reset</source>
         <translation>Forçar modo analógico ao reiniciar</translation>
-    </message>
-    <message>
-        <source>Forces the controller to analog mode when the console is reset/powered on. May cause issues with games, so it is recommended to leave this option off.</source>
-        <translation type="vanished">Força os controles a ficarem no modo analógico quando o console é reiniciado ou religado. Pode causar problemas em alguns jogos, portanto considere deixar esta opção desligada.</translation>
-    </message>
-    <message>
-        <source>Enable Analog Mode on Reset</source>
-        <translation type="vanished">Ativar modo Analógico ao Reiniciar</translation>
-    </message>
-    <message>
-        <source>Automatically enables analog mode when the console is reset/powered on.</source>
-        <translation type="vanished">Ativa o modo analógico automaticamente quando o console é reiniciado / desligado.</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="846"/>
@@ -1561,14 +1286,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <translation>Te permite usar os analógicos como um direcional (D-Pad) no modo digital, assim como os botões.</translation>
     </message>
     <message>
-        <source>Analog Axis Scale</source>
-        <translation type="vanished">Escala de eixo do analógico</translation>
-    </message>
-    <message>
-        <source>Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation type="vanished">Define o fator de escala do eixo do analógico. Um valor entre 1.30 e 1.40 é recomendável quando estiver usando controles mais recentes, por exemplo: Dualshock 4 e controles de Xbox One.</translation>
-    </message>
-    <message>
         <location filename="../../core/analog_controller.cpp" line="864"/>
         <source>Vibration Bias</source>
         <translation>Vibração</translation>
@@ -1577,10 +1294,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <location filename="../../core/analog_controller.cpp" line="865"/>
         <source>Sets the rumble bias value. If rumble in some games is too weak or not functioning, try increasing this value.</source>
         <translation>Define valores de vibração. Se a vibração em alguns jogos estiver fraca ou não funcionar, tente aumentar estes valores.</translation>
-    </message>
-    <message>
-        <source>Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.s</source>
-        <translation type="vanished">Define a zona morta do analógico, por exemplo:. a fração do movimento do analógico que será ignorada.</translation>
     </message>
 </context>
 <context>
@@ -1723,38 +1436,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <translation>Inverte a direção do analógico direito.</translation>
     </message>
     <message>
-        <source>LeftX</source>
-        <translation type="vanished">Esquerda eixo X</translation>
-    </message>
-    <message>
-        <source>LeftY</source>
-        <translation type="vanished">Esquerda eixo Y</translation>
-    </message>
-    <message>
-        <source>RightX</source>
-        <translation type="vanished">Direita eixo X</translation>
-    </message>
-    <message>
-        <source>RightY</source>
-        <translation type="vanished">Direita eixo Y</translation>
-    </message>
-    <message>
-        <source>Up</source>
-        <translation type="vanished">          🠉</translation>
-    </message>
-    <message>
-        <source>Down</source>
-        <translation type="vanished">          🠋</translation>
-    </message>
-    <message>
-        <source>Left</source>
-        <translation type="vanished">          🠈</translation>
-    </message>
-    <message>
-        <source>Right</source>
-        <translation type="vanished">          ➜</translation>
-    </message>
-    <message>
         <location filename="../../core/analog_joystick.cpp" line="361"/>
         <source>Select</source>
         <translation>Select</translation>
@@ -1814,18 +1495,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <source>R3</source>
         <translation>R3</translation>
     </message>
-    <message>
-        <source>Analog</source>
-        <translation type="vanished">    Analógico</translation>
-    </message>
-    <message>
-        <source>Analog Axis Scale</source>
-        <translation type="vanished">Escala de eixo do analógico</translation>
-    </message>
-    <message>
-        <source>Sets the analog stick axis scaling factor. A value between 1.30 and 1.40 is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
-        <translation type="vanished">Define a escala do eixo dos controles um valor entre 1.30 e 1.40 é recomendável quando estiver usando controles mais recentes, por exemplo: Dualshock 4 e controles de X-box one.</translation>
-    </message>
 </context>
 <context>
     <name>AudioBackend</name>
@@ -1843,10 +1512,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <location filename="../../core/settings.cpp" line="1303"/>
         <source>XAudio2</source>
         <translation>XAudio2</translation>
-    </message>
-    <message>
-        <source>OpenSL ES</source>
-        <translation type="vanished">OpenSL ES</translation>
     </message>
 </context>
 <context>
@@ -1875,14 +1540,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <location filename="../audiosettingswidget.ui" line="102"/>
         <source>Maximum latency: 0 frames (0.00ms)</source>
         <translation>Latência máxima: 0 quadros (0.00ms)</translation>
-    </message>
-    <message>
-        <source>Sync To Output</source>
-        <translation type="vanished">Sincronizar</translation>
-    </message>
-    <message>
-        <source>Resampling</source>
-        <translation type="vanished">Ajustar áudio</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="136"/>
@@ -1946,10 +1603,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <translation>Volume do avanço rápido:</translation>
     </message>
     <message>
-        <source>Volume:</source>
-        <translation type="vanished">Volume:</translation>
-    </message>
-    <message>
         <location filename="../audiosettingswidget.ui" line="281"/>
         <location filename="../audiosettingswidget.cpp" line="81"/>
         <source>Mute All Sound</source>
@@ -1960,10 +1613,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <location filename="../audiosettingswidget.cpp" line="83"/>
         <source>Mute CD Audio</source>
         <translation>Silenciar áudio CDs</translation>
-    </message>
-    <message>
-        <source>Mute</source>
-        <translation type="vanished">Mudo</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="223"/>
@@ -1982,10 +1631,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <translation>As opções disponíveis determinam como o jogo irá reproduzir os sons; Cubed, fornece menor latência ou seja, atraso no áudio, se estiver tendo problemas tente usar a opção SDL. A opção nulo desativa o som do jogo completamente no emulador.</translation>
     </message>
     <message>
-        <source>Buffer Size</source>
-        <translation type="vanished">Tamanho do buffer</translation>
-    </message>
-    <message>
         <location filename="../audiosettingswidget.cpp" line="69"/>
         <source>Output Latency</source>
         <translation>Latência de saída</translation>
@@ -1999,10 +1644,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <location filename="../audiosettingswidget.cpp" line="70"/>
         <source>The buffer size determines the size of the chunks of audio which will be pulled by the host. Smaller values reduce the output latency, but may cause hitches if the emulation speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of this value, so using a low value here may not significantly change latency.</source>
         <translation>O tamanho do buffer determina o quão preciso será o som no emulador. Valores menores reduzem a latência de saída, mas podem causar problemas se a velocidade da emulação for inconsistente. Usar a opção cubed implica em valores menores independentemente da latência o que não fará muita diferença no final.</translation>
-    </message>
-    <message>
-        <source>Checked</source>
-        <translation type="vanished">Marcado</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="77"/>
@@ -2050,25 +1691,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <source>Maximum Latency: %1 frames / %2 ms</source>
         <translation>Latência máxima: %1 quadros / %2 ms</translation>
     </message>
-    <message numerus="yes">
-        <source>Maximum Latency: %n frames (%1ms)</source>
-        <translation type="vanished">
-            <numerusform>Latência máxima:%n quadros (%1ms)</numerusform>
-            <numerusform></numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Maximum Latency: %1 frames (%2ms)</source>
-        <translation type="vanished">Latência Máxima:%1 frames (%2ms)</translation>
-    </message>
-    <message>
-        <source>Throttles the emulation speed based on the audio backend pulling audio frames. Sync will automatically be disabled if not running at 100% speed.</source>
-        <translation type="vanished">A sincronização será desativada automaticamente se não estiver funcionando a 100% da velocidade.</translation>
-    </message>
-    <message>
-        <source>Throttles the emulation speed based on the audio backend pulling audio frames. This helps to remove noises or crackling if emulation is too fast. Sync will automatically be disabled if not running at 100% speed.</source>
-        <translation type="vanished">Limita a velocidade de emulação com base na opção de áudio escolhida, isso ajuda a remover ruídos ou estalos se a emulação for muito rápida. A sincronização será desativada automaticamente se não estiver funcioando a 100% da velocidade.</translation>
-    </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="75"/>
         <location filename="../audiosettingswidget.cpp" line="81"/>
@@ -2082,21 +1704,9 @@ Posição nos placares de lideres: {} de {}</translation>
         <translation>Inicia o despejo do áudio para um arquivo assim que o emulador é iniciado. Útil só em caso de depuração.</translation>
     </message>
     <message>
-        <source>Volume</source>
-        <translation type="vanished">Volume</translation>
-    </message>
-    <message>
-        <source>Controls the volume of the audio played on the host. Values are in percentage.</source>
-        <translation type="vanished">Controla o volume do áudio. Valores são mostrados em porcentagem.</translation>
-    </message>
-    <message>
         <location filename="../audiosettingswidget.cpp" line="79"/>
         <source>Fast Forward Volume</source>
         <translation>Volume do avanço rápido</translation>
-    </message>
-    <message>
-        <source>Controls the volume of the audio played on the host when fast forwarding. Values are in percentage.</source>
-        <translation type="vanished">Controla o volume do áudio quando o avanço rápido é usado. Caso não queira escutar o som do jogo muito rápido ou distorcido diminua o volume. Valores medidos em porcentagem.</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="82"/>
@@ -2107,14 +1717,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <location filename="../audiosettingswidget.cpp" line="84"/>
         <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
         <translation>Opção útil para silenciar tanto CDs de áudio quanto sons de fundo em alguns jogos.</translation>
-    </message>
-    <message>
-        <source>When running outside of 100% speed, resamples audio from the target speed instead of dropping frames. Produces much nicer fast forward/slowdown audio at a small cost to performance.</source>
-        <translation type="vanished">Quando estiver rodando fora dos 100% da velocidade, o áudio será ajustado para que não haja queda de quadros. Produz uma melhor qualidade do avanço rápido no áudio ao custo pequeno de perda de desempenho.</translation>
-    </message>
-    <message>
-        <source>Maximum latency: %1 frames (%2ms)</source>
-        <translation type="vanished">Latência Máxima:%1 frames (%2ms)</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="172"/>
@@ -2164,10 +1766,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <location filename="../autoupdaterdialog.ui" line="67"/>
         <source>New Version: </source>
         <translation>Nova versão: </translation>
-    </message>
-    <message>
-        <source>Update Notes:</source>
-        <translation type="vanished">Notas da Versão:</translation>
     </message>
     <message>
         <location filename="../autoupdaterdialog.ui" line="95"/>
@@ -2233,10 +1831,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <location filename="../autoupdaterdialog.cpp" line="411"/>
         <source>Downloading %1...</source>
         <translation>Baixando %1...</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="vanished">Cancelar</translation>
     </message>
 </context>
 <context>
@@ -2309,10 +1903,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <translation>Habilitar registro TTY</translation>
     </message>
     <message>
-        <source>Enable TTY Output</source>
-        <translation type="vanished">Habilitar saída TTY</translation>
-    </message>
-    <message>
         <location filename="../biossettingswidget.cpp" line="29"/>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
         <translation>Registra chamadas do BIOS no console. Nem todos os jogos contêm mensagens de depuração.</translation>
@@ -2339,25 +1929,13 @@ Posição nos placares de lideres: {} de {}</translation>
         <translation>Pula a animação clássica de início do console ficando em tela preta por alguns segundos. Não funciona com todos os jogos, mas é seguro deixar marcado.</translation>
     </message>
     <message>
-        <source>Patches the BIOS to log calls to printf(). Only use when debugging, can break games.</source>
-        <translation type="vanished">Mostra mensagens de depuração do jogo use somente para fins de depuração, pode quebrar seus jogos.</translation>
-    </message>
-    <message>
         <location filename="../biossettingswidget.cpp" line="105"/>
         <source>Use Global Setting</source>
         <translation>Usar configuração global</translation>
     </message>
-    <message>
-        <source>Select Directory</source>
-        <translation type="vanished">Escolher diretório</translation>
-    </message>
 </context>
 <context>
     <name>CPUExecutionMode</name>
-    <message>
-        <source>Intepreter (Slowest)</source>
-        <translation type="vanished">Interpretador (Mais Lento)</translation>
-    </message>
     <message>
         <location filename="../../core/settings.cpp" line="855"/>
         <source>Interpreter (Slowest)</source>
@@ -2425,14 +2003,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <translation>Ativação:</translation>
     </message>
     <message>
-        <source>Save</source>
-        <translation type="vanished">Salvar</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="vanished">Cancelar</translation>
-    </message>
-    <message>
         <location filename="../cheatcodeeditordialog.cpp" line="23"/>
         <location filename="../cheatcodeeditordialog.cpp" line="29"/>
         <source>Error</source>
@@ -2460,10 +2030,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <location filename="../cheatmanagerdialog.ui" line="24"/>
         <source>Cheat List</source>
         <translation>Lista de trapaças</translation>
-    </message>
-    <message>
-        <source>&amp;New Category...</source>
-        <translation type="vanished">&amp;Nova Categoria...</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="32"/>
@@ -2672,14 +2238,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <translation>Remover entradas selecionadas da lista</translation>
     </message>
     <message>
-        <source>Equal to Previous</source>
-        <translation type="vanished">Igual ao Anterior</translation>
-    </message>
-    <message>
-        <source>Not Equal to Previous</source>
-        <translation type="vanished">Não Igual ao Anterior</translation>
-    </message>
-    <message>
         <location filename="../cheatmanagerdialog.ui" line="351"/>
         <source>Greater Than Previous</source>
         <translation>Maior do que o anterior</translation>
@@ -2775,21 +2333,9 @@ Posição nos placares de lideres: {} de {}</translation>
         <translation>Congelar</translation>
     </message>
     <message>
-        <source>Description</source>
-        <translation type="vanished">Descrição</translation>
-    </message>
-    <message>
-        <source>Add To Watch</source>
-        <translation type="vanished">Adicionar para temporizador</translation>
-    </message>
-    <message>
         <location filename="../cheatmanagerdialog.ui" line="618"/>
         <source>Add Manual Address</source>
         <translation>Adicionar endereço manualmente</translation>
-    </message>
-    <message>
-        <source>Remove Watch</source>
-        <translation type="vanished">Remover temporizador</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="641"/>
@@ -2912,21 +2458,9 @@ Posição nos placares de lideres: {} de {}</translation>
         <translation>Inserir endereço manualmente:</translation>
     </message>
     <message>
-        <source>Enter memory address:</source>
-        <translation type="vanished">Insira o endereço de memória:</translation>
-    </message>
-    <message>
         <location filename="../cheatmanagerdialog.cpp" line="768"/>
         <source>Select data size:</source>
         <translation>Selecione o tamanho dos dados::</translation>
-    </message>
-    <message>
-        <source>Memory Scan</source>
-        <translation type="vanished">Varredura de memória</translation>
-    </message>
-    <message>
-        <source>Memory scan found %1 addresses, but only the first %2 are displayed.</source>
-        <translation type="vanished">Leitura de RAM encontrada %1 , mas só os primeiros %2 serão mostrados.</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.cpp" line="25"/>
@@ -2978,41 +2512,6 @@ Posição nos placares de lideres: {} de {}</translation>
     </message>
 </context>
 <context>
-    <name>Cheevos</name>
-    <message>
-        <source>Logged into RetroAchievements using username &apos;%s&apos;.</source>
-        <translation type="vanished">Logado no RetroAchievements com o seguinte usuário: &apos;%s&apos;.</translation>
-    </message>
-    <message>
-        <source>Logging in to RetroAchivements...</source>
-        <translation type="vanished">Entrando no RetroAchievements...</translation>
-    </message>
-    <message>
-        <source>Downloading achievement resources...</source>
-        <translation type="vanished">Baixando conquistas...</translation>
-    </message>
-    <message>
-        <source> (Hardcore Mode)</source>
-        <translation type="vanished"> Modo dificílimo</translation>
-    </message>
-    <message>
-        <source>You have earned %u of %u achievements, and %u of %u points.</source>
-        <translation type="vanished">Você ganhou %u de %u conquistas e %u de %u pontos.</translation>
-    </message>
-    <message>
-        <source>This game has no achievements.</source>
-        <translation type="vanished">Este jogo não possui conquistas.</translation>
-    </message>
-    <message>
-        <source>Leaderboards are enabled.</source>
-        <translation type="vanished">Os placares estão ativados.</translation>
-    </message>
-    <message>
-        <source>Leaderboards are DISABLED because Hardcore Mode is off.</source>
-        <translation type="vanished">As listas de classificação estão DESATIVADAS porque o modo dificílimo está desativado.</translation>
-    </message>
-</context>
-<context>
     <name>ColorPickerButton</name>
     <message>
         <location filename="../colorpickerbutton.cpp" line="41"/>
@@ -3026,25 +2525,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <location filename="../../util/cubeb_audio_stream.cpp" line="288"/>
         <source>Default Output Device</source>
         <translation>Dispositivo de saída padrão</translation>
-    </message>
-</context>
-<context>
-    <name>CommonHostInterface</name>
-    <message>
-        <source>Are you sure you want to stop emulation?</source>
-        <translation type="vanished">Tem certeza de que deseja parar a emulação?</translation>
-    </message>
-    <message>
-        <source>The current state will be saved.</source>
-        <translation type="vanished">O estado atual será salvo.</translation>
-    </message>
-    <message>
-        <source>Invalid version %u (%s version %u)</source>
-        <translation type="vanished">Versão inválida %u (%s versão %u)</translation>
-    </message>
-    <message>
-        <source>Invalid version %u (minimum version %u)</source>
-        <translation type="vanished">Versão inválida %u (versão esperada %u)</translation>
     </message>
 </context>
 <context>
@@ -3063,10 +2543,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <location filename="../../core/settings.cpp" line="796"/>
         <source>NTSC-U/C (US, Canada)</source>
         <translation>NTSC-U/C (US, Canadá)</translation>
-    </message>
-    <message>
-        <source>NTSC-U (US)</source>
-        <translation type="vanished">NTSC-U (US)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="796"/>
@@ -3092,22 +2568,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <translation>Região:</translation>
     </message>
     <message>
-        <source>BIOS Image Path:</source>
-        <translation type="vanished">Caminho para BIOS:</translation>
-    </message>
-    <message>
-        <source>Fast Boot</source>
-        <translation type="vanished">Inicio Rápido</translation>
-    </message>
-    <message>
-        <source>Enable TTY Output</source>
-        <translation type="vanished">Habilitar saída TTY</translation>
-    </message>
-    <message>
-        <source>...</source>
-        <translation type="vanished">...</translation>
-    </message>
-    <message>
         <location filename="../consolesettingswidget.ui" line="58"/>
         <source>CPU Emulation</source>
         <translation>Emulação de CPU</translation>
@@ -3116,30 +2576,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <location filename="../consolesettingswidget.ui" line="64"/>
         <source>Execution Mode:</source>
         <translation>Modo de execução:</translation>
-    </message>
-    <message>
-        <source>CPU Clock Speed Control</source>
-        <translation type="vanished">Controle de Velocidade do CPU</translation>
-    </message>
-    <message>
-        <source>Speed Control</source>
-        <translation type="vanished">Controle de Velocidade</translation>
-    </message>
-    <message>
-        <source>Emulation Speed:</source>
-        <translation type="vanished">Velocidade da Emulação:</translation>
-    </message>
-    <message>
-        <source>Fast Forward Speed:</source>
-        <translation type="vanished">Velocidade do Avanço Rápido:</translation>
-    </message>
-    <message>
-        <source>Turbo Speed:</source>
-        <translation type="vanished">Velocidade do Turbo:</translation>
-    </message>
-    <message>
-        <source>Sync To Host Refresh Rate</source>
-        <translation type="vanished">Sincronizar taxa de atualização</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="48"/>
@@ -3298,22 +2734,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <translation>Antecipação de leitura assíncrona:</translation>
     </message>
     <message>
-        <source>Controller Ports</source>
-        <translation type="vanished">Controle de portas</translation>
-    </message>
-    <message>
-        <source>Multitap:</source>
-        <translation type="vanished">Multitap:</translation>
-    </message>
-    <message>
-        <source>CDROM Emulation</source>
-        <translation type="vanished">Emulação do CD-ROM</translation>
-    </message>
-    <message>
-        <source>Use Read Thread (Asynchronous)</source>
-        <translation type="vanished">Usar leitura assíncrona</translation>
-    </message>
-    <message>
         <location filename="../consolesettingswidget.ui" line="285"/>
         <location filename="../consolesettingswidget.cpp" line="91"/>
         <source>Enable Region Check</source>
@@ -3335,10 +2755,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <translation>Desmarcado</translation>
     </message>
     <message>
-        <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enable.</source>
-        <translation type="vanished">Pula a animação de inicio do console. Não funciona com todos os jogos, mas é seguro deixar marcado.</translation>
-    </message>
-    <message>
         <location filename="../consolesettingswidget.cpp" line="76"/>
         <location filename="../consolesettingswidget.cpp" line="94"/>
         <source>Preload Image to RAM</source>
@@ -3351,62 +2767,14 @@ Posição nos placares de lideres: {} de {}</translation>
         <translation>Carrega o jogo na memória RAM. útil para evitar certas instabilidades durante o jogo.</translation>
     </message>
     <message>
-        <source>CDROM Read Speedup</source>
-        <translation type="vanished">Velocidade de leitura CD-Rom</translation>
-    </message>
-    <message>
-        <source>None (Double Speed</source>
-        <translation type="vanished">Nenhum</translation>
-    </message>
-    <message>
         <location filename="../consolesettingswidget.cpp" line="81"/>
         <source>Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio is playing. May improve loading speeds in some games, at the cost of breaking others.</source>
         <translation>Aumenta a velocidade de leitura do CD-ROM. Só se aplica a velocidade de leitura em 2x para cima, a configuração será ignorada quando usado para tocar CDs de música. Pode aumentar a velocidade de leitura em telas de carregamento em alguns jogos ao custo de quebrar outros.</translation>
     </message>
     <message>
-        <source>Emulation Speed</source>
-        <translation type="vanished">Velocidade da emulação</translation>
-    </message>
-    <message>
-        <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
-        <translation type="vanished">Ajusta a velocidade da emulação. Não é garantido que a velocidade será alcançada sendo assim o emulador irá tentar rodar o mais rápido que puder.</translation>
-    </message>
-    <message>
-        <source>Fast Forward Speed</source>
-        <translation type="vanished">Velocidade do Avanço Rápido</translation>
-    </message>
-    <message>
-        <source>User Preference</source>
-        <translation type="vanished">Preferência do usuário</translation>
-    </message>
-    <message>
-        <source>Sets the fast forward speed. This speed will be used when the fast forward hotkey is pressed/toggled.</source>
-        <translation type="vanished">Define a velocidade do avanço rápido. Será usada quando o atalho de avanço rápido for pressionado ou alternado.</translation>
-    </message>
-    <message>
-        <source>Turbo Speed</source>
-        <translation type="vanished">Velocidade do Turbo</translation>
-    </message>
-    <message>
-        <source>Sets the turbo speed. This speed will be used when the turbo hotkey is pressed/toggled. Turboing will take priority over fast forwarding if both hotkeys are pressed/toggled.</source>
-        <translation type="vanished">Ajusta a velocidade do Turbo. Será usado quando o atalho para o turbo for pressionado ou alternado. O modo Turbo terá prioridade caso já exista um atalho atribuido ao avanço rápido.</translation>
-    </message>
-    <message>
         <location filename="../consolesettingswidget.cpp" line="91"/>
         <source>Checked</source>
         <translation>Marcado</translation>
-    </message>
-    <message>
-        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when both VSync and Audio Resampling settings are enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation type="vanished">Ajusta a velocidade da emulação de acordo com a mesma taxa de atualização do PC / Monitor, quando a sincronização vertical e a opção Ajustar Áudio estiverem ativadas. Resultando em animações mais suaves, ao custo do aumento da velocidade da emulação (aceleração) em menos de 1%.Usuários com taxa de sincronização variável devem desativar esta opção.</translation>
-    </message>
-    <message>
-        <source>Sets the turbo speed. This speed will be used when the turbo hotkey is pressed/toggled.</source>
-        <translation type="vanished">Ajusta a velocidade do Turbo. Será usado quando o atalho para o turbo for pressionado ou alternado.</translation>
-    </message>
-    <message>
-        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate, when VSync and Audio Resampling is enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%.</source>
-        <translation type="vanished">Ajusta a velocidade da emulação de acordo com a mesma taxa de atualização do PC / Monitor, quando a sincronização vertical e a opção Ajustar Áudio estiverem ativadas. Resultando em animações mais suaves, ao custo do aumento da velocidade da emulação (aceleração) em menos de 1%.</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="30"/>
@@ -3479,10 +2847,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <translation>Ativa mais 6MB de memória RAM, normalmente usado em consoles de desenvolvimento. Os jogos precisam ser modificados para usar tamanha quantidade de memória adicional, podendo quebrar em jogos que não possuem tal característica portanto só ative esta opção com jogos já modificados para este fim.</translation>
     </message>
     <message>
-        <source>Enables an additional 6MB of RAM, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable, and may break games which rely on memory mirrors, so it should only be used with compatible mods.</source>
-        <translation type="vanished">Ativa mais 6MB de RAM, normalmente usado em consoles de desenvolvimento. Os jogos precisam ser modificados para usar tamanha quantidade de memória adicional, podendo quebrar em jogos que não possuem tal característica portanto só ative esta opção com jogos que já modificados para este fim.</translation>
-    </message>
-    <message>
         <location filename="../consolesettingswidget.cpp" line="80"/>
         <source>CD-ROM Read Speedup</source>
         <translation>Velocidade de leitura CD-ROM</translation>
@@ -3508,17 +2872,9 @@ Posição nos placares de lideres: {} de {}</translation>
         <translation>Reduz os engasgos na emulação lendo / descompactando dados do CD de forma assíncrona sequencialmente. Configurar valores muito altos de setores pode reduzir picos ao fazer transmissões de cenas em FMVs ou até mesmo no áudio em dispositivos de armazenamento mais lentos ou quando estiver usando formatos de jogos comprimidos no formato CHD.</translation>
     </message>
     <message>
-        <source>CDROM Seek Speedup</source>
-        <translation type="vanished">Velocidade de Busca de CD-Rom</translation>
-    </message>
-    <message>
         <location filename="../consolesettingswidget.cpp" line="85"/>
         <source>Reduces the simulated time for the CD-ROM sled to move to different areas of the disc. Can improve loading times, but crash games which do not expect the CD-ROM to operate faster.</source>
         <translation>Pode melhorar o tempo de carregamento reduzindo o tempo de leitura nas diferentes áreas do CD-ROM mas em contra partida, pode quebrar jogos em que esse aumento de leitura não é esperado.</translation>
-    </message>
-    <message>
-        <source>Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.</source>
-        <translation type="vanished">Reduz engasgos na emulação lendo / descomprimindo os arquivos da mídia de forma assincrona.</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="92"/>
@@ -3529,18 +2885,6 @@ Posição nos placares de lideres: {} de {}</translation>
         <location filename="../consolesettingswidget.cpp" line="98"/>
         <source>Automatically applies patches to disc images when they are present in the same directory. Currently only PPF patches are supported with this option.</source>
         <translation>Aplica automaticamente &apos;modificações&apos; em jogos quando presentes no mesmo diretório. Atualmente só são aceitos modificações do tipo PPF arquivos comumente usados em tradução de jogos.</translation>
-    </message>
-    <message>
-        <source>Multitap</source>
-        <translation type="vanished">Multitap</translation>
-    </message>
-    <message>
-        <source>Disabled</source>
-        <translation type="vanished">Desativado</translation>
-    </message>
-    <message>
-        <source>Enables multitap support on specified controller ports. Leave disabled for games that do not support multitap input.</source>
-        <translation type="vanished">Ativa suporte a múltiplos controles (Multitap). Deixe desativado para jogos que não têm suporte a esta função.</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="131"/>
@@ -3570,14 +2914,6 @@ This warning will only be shown once.</source>
         <location filename="../consolesettingswidget.cpp" line="180"/>
         <source>%1% (%2MHz)</source>
         <translation>%1% (%2MHz)</translation>
-    </message>
-    <message>
-        <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay.</source>
-        <translation type="vanished">Carrega o jogo na memória RAM. Útil para evitar certas instabilidades durante o jogo.</translation>
-    </message>
-    <message>
-        <source>Select BIOS Image</source>
-        <translation type="vanished">Escolha o Arquivo de BIOS</translation>
     </message>
 </context>
 <context>
@@ -3620,14 +2956,6 @@ This warning will only be shown once.</source>
         <translation>Limpar mapeamento</translation>
     </message>
     <message>
-        <source>Automatic binding</source>
-        <translation type="vanished">Atribuição automática</translation>
-    </message>
-    <message>
-        <source>Clear Bindings</source>
-        <translation type="vanished">Limpar atribuições</translation>
-    </message>
-    <message>
         <location filename="../controllerbindingwidgets.cpp" line="211"/>
         <source>No devices available</source>
         <translation>Nenhum dispositivo disponível</translation>
@@ -3641,18 +2969,6 @@ This warning will only be shown once.</source>
         <location filename="../controllerbindingwidgets.cpp" line="273"/>
         <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
         <translation>Nenhuma atribuição genérica foi gerada para o dispositivo &apos;%1&apos;. O controle pode não suportar o mapeamento automático gerado pelo emulador.</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to clear all bindings for this controller? This action cannot be undone.</source>
-        <translation type="vanished">Tem certeza de que deseja limpar todas as atribuições para este controle? Essa ação não pode ser desfeita.</translation>
-    </message>
-    <message>
-        <source>Automatic Binding</source>
-        <translation type="vanished">Atribuição automática</translation>
-    </message>
-    <message>
-        <source>No generic bindings were generated for device &apos;%1&apos;</source>
-        <translation type="vanished">Nenhuma atribuição genérica foi gerada para o dispositivo &apos;%1&apos;</translation>
     </message>
 </context>
 <context>
@@ -3965,13 +3281,6 @@ This warning will only be shown once.</source>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="1112"/>
         <source>Mode</source>
         <translation>Modo</translation>
-    </message>
-</context>
-<context>
-    <name>ControllerBindingWidget_Base</name>
-    <message>
-        <source>%1%</source>
-        <translation type="vanished">%1%</translation>
     </message>
 </context>
 <context>
@@ -4298,21 +3607,6 @@ This warning will only be shown once.</source>
     </message>
 </context>
 <context>
-    <name>ControllerCustomSettingsDialog</name>
-    <message>
-        <source>%1 Settings</source>
-        <translation type="vanished">%1 Configurações</translation>
-    </message>
-    <message>
-        <source>Browse...</source>
-        <translation type="vanished">Buscar...</translation>
-    </message>
-    <message>
-        <source>Select File</source>
-        <translation type="vanished">Escolha o arquivo</translation>
-    </message>
-</context>
-<context>
     <name>ControllerCustomSettingsWidget</name>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="507"/>
@@ -4429,10 +3723,6 @@ This warning will only be shown once.</source>
         <translation>10</translation>
     </message>
     <message>
-        <source>Invert</source>
-        <translation type="vanished">Inverter</translation>
-    </message>
-    <message>
         <location filename="../controllerglobalsettingswidget.ui" line="240"/>
         <source>Using raw input improves precision when you bind controller sticks to the mouse pointer. Also enables multiple mice to be used.</source>
         <translation>O uso de entrada legada melhora a precisão quando você vincula os analógicos do controle ao ponteiro do mouse. Também permite que vários mouses sejam usados.</translation>
@@ -4494,29 +3784,6 @@ This warning will only be shown once.</source>
     </message>
 </context>
 <context>
-    <name>ControllerInterface</name>
-    <message>
-        <source>None</source>
-        <translation type="vanished">Nenhum</translation>
-    </message>
-    <message>
-        <source>SDL</source>
-        <translation type="vanished">SDL</translation>
-    </message>
-    <message>
-        <source>XInput</source>
-        <translation type="vanished">X-Input</translation>
-    </message>
-    <message>
-        <source>DInput</source>
-        <translation type="vanished">DInput</translation>
-    </message>
-    <message>
-        <source>Evdev</source>
-        <translation type="vanished">Evdev</translation>
-    </message>
-</context>
-<context>
     <name>ControllerLEDSettingsDialog</name>
     <message>
         <location filename="../controllerledsettingsdialog.ui" line="14"/>
@@ -4542,19 +3809,6 @@ This warning will only be shown once.</source>
         <location filename="../controllerledsettingsdialog.ui" line="56"/>
         <source>SDL-3 LED</source>
         <translation>SDL-3 LED</translation>
-    </message>
-</context>
-<context>
-    <name>ControllerMacroDialog</name>
-    <message>
-        <source>Controller Port %1 Macros</source>
-        <translation type="vanished">Porta do controle %1 Macro</translation>
-    </message>
-    <message>
-        <source>Macro %1
-%2</source>
-        <translation type="vanished">Macro %1
-%2</translation>
     </message>
 </context>
 <context>
@@ -4646,232 +3900,7 @@ This warning will only be shown once.</source>
     </message>
 </context>
 <context>
-    <name>ControllerSettingsDialog</name>
-    <message>
-        <source>Controller Settings</source>
-        <translation type="vanished">Configurações de controle</translation>
-    </message>
-    <message>
-        <source>Profile:</source>
-        <translation type="vanished">Perfil:</translation>
-    </message>
-    <message>
-        <source>New Profile</source>
-        <translation type="vanished">Novo perfil</translation>
-    </message>
-    <message>
-        <source>Load Profile</source>
-        <translation type="vanished">Carregar perfil</translation>
-    </message>
-    <message>
-        <source>Delete Profile</source>
-        <translation type="vanished">Apagar perfil</translation>
-    </message>
-    <message>
-        <source>Restore Defaults</source>
-        <translation type="vanished">Restaurar padrões</translation>
-    </message>
-    <message>
-        <source>Create Input Profile</source>
-        <translation type="vanished">Criar perfil de entrada</translation>
-    </message>
-    <message>
-        <source>Enter the name for the new input profile:</source>
-        <translation type="vanished">Digite o nome para o novo perfil de entrada:</translation>
-    </message>
-    <message>
-        <source>Error</source>
-        <translation type="vanished">Erro</translation>
-    </message>
-    <message>
-        <source>A profile with the name &apos;%1&apos; already exists.</source>
-        <translation type="vanished">Já existe um perfil com o nome &apos;%1&apos;.</translation>
-    </message>
-    <message>
-        <source>Do you want to copy all bindings from the currently-selected profile to the new profile? Selecting No will create a completely empty profile.</source>
-        <translation type="vanished">Deseja copiar todas as atribuições do perfil atual escolhido para o novo perfil? Escolhendo não, criará um perfil completamente vazio.</translation>
-    </message>
-    <message>
-        <source>Failed to save the new profile to &apos;%1&apos;.</source>
-        <translation type="vanished">Falha ao salvar o novo perfil em &apos;%1&apos;.</translation>
-    </message>
-    <message>
-        <source>Load Input Profile</source>
-        <translation type="vanished">Carregar perfil de entrada</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to load the input profile named &apos;%1&apos;?
-
-All current global bindings will be removed, and the profile bindings loaded.
-
-You cannot undo this action.</source>
-        <translation type="vanished">Tem certeza de que deseja carregar o perfil de entrada &apos;%1&apos;?
-Todas as atribuições globais atuais serão removidas e as atribuições de perfil carregadas.
-
-Esta ação não poderá ser desfeita.</translation>
-    </message>
-    <message>
-        <source>Delete Input Profile</source>
-        <translation type="vanished">Apagar perfil de entrada</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to delete the input profile named &apos;%1&apos;?
-
-You cannot undo this action.</source>
-        <translation type="vanished">Tem certeza de que deseja apagar o perfil de entrada &apos;%1&apos;?
-
-Esta ação não poderá ser desfeita.</translation>
-    </message>
-    <message>
-        <source>Failed to delete &apos;%1&apos;.</source>
-        <translation type="vanished">Falha ao apagar &apos;%1&apos;.</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to restore the default controller configuration?
-
-All shared bindings and configuration will be lost, but your input profiles will remain.
-
-You cannot undo this action.</source>
-        <translation type="vanished">Tem certeza de que deseja restaurar a configuração padrão do controle?
-
-Todas as atribuições e configurações compartilhadas serão perdidas, mas seus perfis de entrada permanecerão.
-
-Esta ação não poderá ser desfeita.</translation>
-    </message>
-    <message>
-        <source>Global Settings</source>
-        <translation type="vanished">Configurações globais</translation>
-    </message>
-    <message>
-        <source>Controller Port %1%2
-%3</source>
-        <translation type="vanished">Porta do controle %1%2
-%3</translation>
-    </message>
-    <message>
-        <source>Controller Port %1
-%2</source>
-        <translation type="vanished">Porta do controle %1
-%2</translation>
-    </message>
-    <message>
-        <source>Hotkeys</source>
-        <translation type="vanished">Atalhos</translation>
-    </message>
-    <message>
-        <source>Shared</source>
-        <translation type="vanished">Compartilhado</translation>
-    </message>
-    <message>
-        <source>The input profile named &apos;%1&apos; cannot be found.</source>
-        <translation type="vanished">O perfil de entrada &apos;%1&apos; não pôde ser encontrado.</translation>
-    </message>
-</context>
-<context>
-    <name>ControllerSettingsWidget</name>
-    <message>
-        <source>Controller Type:</source>
-        <translation type="vanished">Tipo de controle:</translation>
-    </message>
-    <message>
-        <source>Load Profile</source>
-        <translation type="vanished">Carregar perfil</translation>
-    </message>
-    <message>
-        <source>Save Profile</source>
-        <translation type="vanished">Salvar perfil</translation>
-    </message>
-    <message>
-        <source>Clear All</source>
-        <translation type="vanished">Limpar tudo</translation>
-    </message>
-    <message>
-        <source>Clear Bindings</source>
-        <translation type="vanished">Limpar atribuições</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to clear all bound controls? This can not be reversed.</source>
-        <translation type="vanished">Tem certeza de que deseja limpar todos os controles vinculados? Isto não poderá ser desfeito.</translation>
-    </message>
-    <message>
-        <source>Rebind All</source>
-        <translation type="vanished">Reatribuir tudo</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to rebind all controls? All currently-bound controls will be irreversibly cleared. Rebinding will begin after confirmation.</source>
-        <translation type="vanished">Tem certeza de que quer reatribuir todos os controles? todas as mudanças feitas nos controles serão perdidas. A reatribuição será iniciada após a confirmação.</translation>
-    </message>
-    <message>
-        <source>Port %1</source>
-        <translation type="vanished">Porta %1</translation>
-    </message>
-    <message>
-        <source>Port %1%2</source>
-        <translation type="vanished">Porta %1%2</translation>
-    </message>
-    <message>
-        <source>Button Bindings:</source>
-        <translation type="vanished">Atribuir botões:</translation>
-    </message>
-    <message>
-        <source>Axis Bindings:</source>
-        <translation type="vanished">Atribuir analógicos:</translation>
-    </message>
-    <message>
-        <source>Rumble</source>
-        <translation type="vanished">Vibração</translation>
-    </message>
-    <message>
-        <source>Browse...</source>
-        <translation type="vanished">Procurar...</translation>
-    </message>
-    <message>
-        <source>Select File</source>
-        <translation type="vanished">Escolha o arquivo</translation>
-    </message>
-    <message>
-        <source>Auto Fire Buttons</source>
-        <translation type="vanished">Botões de disparo automático</translation>
-    </message>
-    <message>
-        <source>Auto Fire %1</source>
-        <translation type="vanished">Disparo automático %1</translation>
-    </message>
-    <message>
-        <source> Frames</source>
-        <translation type="vanished"> Quadro(s)</translation>
-    </message>
-    <message>
-        <source>Select path to input profile ini</source>
-        <translation type="vanished">Escolha o caminho para inserir o perfil do jogo</translation>
-    </message>
-    <message>
-        <source>New...</source>
-        <translation type="vanished">Novo...</translation>
-    </message>
-    <message>
-        <source>Enter Input Profile Name</source>
-        <translation type="vanished">Escolha um nome para o perfil</translation>
-    </message>
-    <message>
-        <source>Error</source>
-        <translation type="vanished">Erro</translation>
-    </message>
-    <message>
-        <source>No name entered, input profile was not saved.</source>
-        <translation type="vanished">Nome não atribuído. A configuração de controle não foi salva.</translation>
-    </message>
-    <message>
-        <source>No path selected, input profile was not saved.</source>
-        <translation type="vanished">Caminho não atribuído, configuração de controle não foi salva.</translation>
-    </message>
-</context>
-<context>
     <name>ControllerSettingsWindow</name>
-    <message>
-        <source>Controller Settings</source>
-        <translation type="vanished">Configurações de controle</translation>
-    </message>
     <message>
         <location filename="../controllersettingswindow.ui" line="20"/>
         <source>DuckStation Controller Settings</source>
@@ -5048,10 +4077,6 @@ Esta ação não poderá ser desfeita.</translation>
         <translation>Controle analógico</translation>
     </message>
     <message>
-        <source>Namco GunCon</source>
-        <translation type="vanished">Namco GunCon</translation>
-    </message>
-    <message>
         <location filename="../../core/playstation_mouse.cpp" line="222"/>
         <location filename="../../core/settings.cpp" line="1343"/>
         <source>PlayStation Mouse</source>
@@ -5086,10 +4111,6 @@ Esta ação não poderá ser desfeita.</translation>
         <location filename="../coverdownloaddialog.ui" line="14"/>
         <source>Download Covers</source>
         <translation>Baixar capas</translation>
-    </message>
-    <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.&lt;/p&gt;&lt;p&gt;In the form below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;O DuckStation pode baixar automaticamente capas para jogos que ainda não possuem suas capas definidas. Não hospedamos nenhuma imagem de capa, o usuário deve fornecer sua própria fonte de imagens.&lt;/p&gt;&lt;p&gt;No formulário abaixo, especifique o endereço para baixar as capas, com uma URL por linha. As seguintes opções ​​estão disponíveis:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${título}:&lt;/span&gt; Título do jogo.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${título do arquivo}:&lt;/span&gt; Nome do arquivo do jogo.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial do jogo.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Exemplo:&lt;/span&gt; https://www.exemplo.nao.de.um.dominio.valido.com/capas/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../coverdownloaddialog.ui" line="38"/>
@@ -5590,22 +4611,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>DigitalController</name>
     <message>
-        <source>Up</source>
-        <translation type="vanished">          🠉</translation>
-    </message>
-    <message>
-        <source>Down</source>
-        <translation type="vanished">          🠋</translation>
-    </message>
-    <message>
-        <source>Left</source>
-        <translation type="vanished">          🠈</translation>
-    </message>
-    <message>
-        <source>Right</source>
-        <translation type="vanished">          ➜</translation>
-    </message>
-    <message>
         <location filename="../../core/digital_controller.cpp" line="165"/>
         <source>Select</source>
         <translation>Select</translation>
@@ -5694,10 +4699,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>NTSC-J (Japão)</translation>
     </message>
     <message>
-        <source>NTSC-U (US)</source>
-        <translation type="vanished">NTSC-U (US)</translation>
-    </message>
-    <message>
         <location filename="../../core/settings.cpp" line="824"/>
         <source>NTSC-U/C (US, Canada)</source>
         <translation>NTSC-U/C (US, Canadá)</translation>
@@ -5747,10 +4748,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../../core/settings.cpp" line="1124"/>
         <source>Stretch To Fill</source>
         <translation>Esticar para preencher</translation>
-    </message>
-    <message>
-        <source>Auto (Match Window)</source>
-        <translation type="vanished">Auto (corresponder a janela)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1125"/>
@@ -5865,31 +4862,15 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>Mostrar configurações de sobreposição</translation>
     </message>
     <message>
-        <source>Use Software Renderer For Readbacks</source>
-        <translation type="vanished">Usar modo software para releituras</translation>
-    </message>
-    <message>
         <location filename="../displaysettingswidget.ui" line="131"/>
         <source>:</source>
         <translation>:</translation>
-    </message>
-    <message>
-        <source>Show Game Frame Rate</source>
-        <translation type="vanished">Mostrar FPS do jogo</translation>
-    </message>
-    <message>
-        <source>Show Display FPS</source>
-        <translation type="vanished">Mostrar VPS do jogo</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="228"/>
         <location filename="../displaysettingswidget.cpp" line="133"/>
         <source>Show Controller Input</source>
         <translation>Mostrar controles na tela</translation>
-    </message>
-    <message>
-        <source>Display All Frames</source>
-        <translation type="vanished">Mostrar todos os Quadros</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="103"/>
@@ -5907,34 +4888,10 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>Corte:</translation>
     </message>
     <message>
-        <source>Downsampling:</source>
-        <translation type="vanished">Suavização da imagem:</translation>
-    </message>
-    <message>
-        <source>Stretch To Fill</source>
-        <translation type="vanished">Esticar para preencher</translation>
-    </message>
-    <message>
-        <source>Linear Upscaling</source>
-        <translation type="vanished">Escalonamento linear</translation>
-    </message>
-    <message>
-        <source>Integer Upscaling</source>
-        <translation type="vanished">Escalonamento íntegro</translation>
-    </message>
-    <message>
         <location filename="../displaysettingswidget.ui" line="70"/>
         <location filename="../displaysettingswidget.cpp" line="108"/>
         <source>VSync</source>
         <translation>Sincronização vertical</translation>
-    </message>
-    <message>
-        <source>Sync To Host Refresh Rate</source>
-        <translation type="vanished">Sincronizar taxa de atualização</translation>
-    </message>
-    <message>
-        <source>Optimal Frame Pacing</source>
-        <translation type="vanished">Otimização de quadros</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="172"/>
@@ -5948,10 +4905,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>Mensagens em tela</translation>
     </message>
     <message>
-        <source>Show Messages</source>
-        <translation type="vanished">Mostrar Mensagens</translation>
-    </message>
-    <message>
         <location filename="../displaysettingswidget.ui" line="221"/>
         <location filename="../displaysettingswidget.cpp" line="120"/>
         <source>Show FPS</source>
@@ -5962,10 +4915,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.cpp" line="123"/>
         <source>Show Emulation Speed</source>
         <translation>Mostrar velocidade da emulação</translation>
-    </message>
-    <message>
-        <source>Show VPS</source>
-        <translation type="vanished">Mostrar VPS</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="235"/>
@@ -6030,10 +4979,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>Determina como a imagem do console emulado é aumentada ou reduzida de acordo com a resolução do seu monitor.</translation>
     </message>
     <message>
-        <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is 4:3 which matches a typical TV of the era.</source>
-        <translation type="vanished">Altera a proporção usada para exibir o jogo na tela. O padrão é 4:3, que corresponde a uma TV típica da época.CRT mais conhecida como Tubão.</translation>
-    </message>
-    <message>
         <location filename="../displaysettingswidget.cpp" line="87"/>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto (Game Native) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
         <translation>Altera a proporção de aspecto exibida na tela. O padrão é automático (resolução nativa), que se ajusta a proporção da imagem para como o jogo seria em uma TV típica da época.</translation>
@@ -6042,10 +4987,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.cpp" line="90"/>
         <source>Crop Mode</source>
         <translation>Modo de corte</translation>
-    </message>
-    <message>
-        <source>Only Overscan Area</source>
-        <translation type="vanished">Somente área renderizada</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="92"/>
@@ -6063,28 +5004,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>Determina a posição na tela quando as bordas pretas devem ser adicionadas.</translation>
     </message>
     <message>
-        <source>Downsampling</source>
-        <translation type="vanished">Suavização</translation>
-    </message>
-    <message>
-        <source>Disabled</source>
-        <translation type="vanished">Desativado</translation>
-    </message>
-    <message>
-        <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, but should be disabled for pure 3D games. Only applies to the hardware renderers.</source>
-        <translation type="vanished">Suaviza a imagem renderizada antes de ser mostrada na tela. Pode melhorar a qualidade da imagem em jogos 2D / 3D, mas deve ser desativada em jogos completamente 3D só se aplica ao uso em renderizadores por hardware; placa de vídeo dedicadas.</translation>
-    </message>
-    <message>
         <location filename="../displaysettingswidget.cpp" line="108"/>
         <location filename="../displaysettingswidget.cpp" line="111"/>
         <location filename="../displaysettingswidget.cpp" line="114"/>
         <location filename="../displaysettingswidget.cpp" line="117"/>
         <source>Checked</source>
         <translation>Marcado</translation>
-    </message>
-    <message>
-        <source>Uses bilinear texture filtering when displaying the console&apos;s framebuffer to the screen. &lt;br&gt;Disabling filtering will producer a sharper, blockier/pixelated image. Enabling will smooth out the image. &lt;br&gt;The option will be less noticable the higher the resolution scale.</source>
-        <translation type="vanished">Usa textura bi-linear filtrando todo buffer para a tela principal desabilitar esta filtragem produzirá uma imagem mais nítida porém pixelada. Ativar irá deixar a imagem mais suave, esta opção fica menos notável em resoluções mais altas.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="103"/>
@@ -6098,14 +5023,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>Desmarcado</translation>
     </message>
     <message>
-        <source>Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. &lt;br&gt;May result in a sharper image in some 2D games.</source>
-        <translation type="vanished">Adiciona preenchimento na tela para garantir que a proporção entre pixels seja um número inteiro. Pode resultar em uma imagem mais nítida em alguns jogos 2D.</translation>
-    </message>
-    <message>
-        <source>Fills the window with the active display area, regardless of the aspect ratio.</source>
-        <translation type="vanished">Preenche a janela com o conteúdo mostrado, independentemente da proporção da imagem escolhida.</translation>
-    </message>
-    <message>
         <location filename="../displaysettingswidget.cpp" line="104"/>
         <source>Saves screenshots at internal render resolution and without postprocessing. If this option is disabled, the screenshots will be taken at the window&apos;s resolution. Internal resolution screenshots can be very large at high rendering scales.</source>
         <translation>Salva capturas de tela em resolução de renderização interna e sem pós-processamento. Se esta opção estiver desabilitada, as capturas de tela serão tiradas na resolução da janela. As capturas de tela de resolução interna podem ser muito grandes dependendo da resolução que foi tirada.</translation>
@@ -6116,10 +5033,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>Ative esta opção para combinar a taxa de atualização do emulador com seu monitor. A sincronização vertical será desativada automaticamente quando não for possível atingir 100% da velocidade.</translation>
     </message>
     <message>
-        <source>Enable this option will ensure every frame the console renders is displayed to the screen, for optimal frame pacing. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
-        <translation type="vanished">Garante que cada quadro renderizado será mostrado em tela no seu ritmo adequado. Se estiver tendo dificuldades ao manter uma boa velocidade ou estiver enfrentando algumas falhas de áudio tente desativar esta opção.</translation>
-    </message>
-    <message>
         <location filename="../displaysettingswidget.cpp" line="112"/>
         <source>Presents frames on a background thread when fast forwarding or vsync is disabled. This can measurably improve performance in the Vulkan renderer.</source>
         <translation>Apresenta quadros sequêncialmente em segundo plano quando o avanço rápido ou o v-sync está desativado pode melhorar o desempenho no renderizador Vulkan.</translation>
@@ -6128,14 +5041,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.cpp" line="115"/>
         <source>Uses a second thread for drawing graphics. Currently only available for the software renderer, but can provide a significant speed improvement, and is safe to use.</source>
         <translation>Usa um segundo processo para desenhar gráficos em tela. Atualmente só disponível para renderizadores por software, pode fornecer uma melhoria significativa na velocidade, pode ser usado a vontade.</translation>
-    </message>
-    <message>
-        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when both VSync and Audio Resampling settings are enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation type="vanished">Ajusta a velocidade de emulação para que a taxa de atualização do console corresponda à taxa de atualização do seu dispositivo quando as configurações de sincronização de áudio estão ativadas. Isso resulta nas animações mais suaves possíveis, ao custo de potencialmente aumentar um pouco a velocidade de emulação em menos de 1%. A taxa de atualização de sincronização não terá efeito se a atualização do console estiver mais alta que a do monitor. Usuários com taxa de atualização variável devem desativar esta opção.</translation>
-    </message>
-    <message>
-        <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
-        <translation type="vanished">Executa o modo software em paralelo para releituras na memória de vídeo. Em alguns sistemas, pode resultar em maior desempenho ao usar aprimoramentos gráficos com o renderizador por hardware.</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.ui" line="214"/>
@@ -6152,14 +5057,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../displaysettingswidget.cpp" line="121"/>
         <source>Shows the internal frame rate of the game in the top-right corner of the display.</source>
         <translation>Mostra o FPS atual do jogo no topo superior direito da tela.</translation>
-    </message>
-    <message>
-        <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
-        <translation type="vanished">Mostra o VPS no canto superior direito da tela.</translation>
-    </message>
-    <message>
-        <source>Show Speed</source>
-        <translation type="vanished">Mostrar Velocidade</translation>
     </message>
     <message>
         <location filename="../displaysettingswidget.cpp" line="124"/>
@@ -6240,25 +5137,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>Salvamento rápido não encontrado.</translation>
     </message>
     <message>
-        <source>Game ID: %1
-Game Title: %2
-Achievements: %5 (%6)
-
-</source>
-        <translation type="vanished">ID do Jogo: %1
-Título do Jogo: %2
-Conquistas: %5 (%6)
-
-</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n points</source>
-        <translation type="vanished">
-            <numerusform>%n pontos</numerusform>
-            <numerusform>%n pontos</numerusform>
-        </translation>
-    </message>
-    <message>
         <location filename="../qthost.cpp" line="1230"/>
         <source>Game: %1 (%2)
 </source>
@@ -6334,10 +5212,6 @@ Conquistas: %5 (%6)
         <location filename="../emulationsettingswidget.ui" line="89"/>
         <source>Rewind/Runahead</source>
         <translation>Retroceder/Avançar</translation>
-    </message>
-    <message>
-        <source>Rewind</source>
-        <translation type="vanished">Rebobinar</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="95"/>
@@ -6436,14 +5310,6 @@ Conquistas: %5 (%6)
         <translation>Avançar</translation>
     </message>
     <message>
-        <source>Enable Runahead</source>
-        <translation type="vanished">Ativar Avançar</translation>
-    </message>
-    <message>
-        <source>Runahead Frames:</source>
-        <translation type="vanished">Avanço de Quadros:</translation>
-    </message>
-    <message>
         <location filename="../emulationsettingswidget.cpp" line="80"/>
         <source>Emulation Speed</source>
         <translation>Velocidade da emulação</translation>
@@ -6540,17 +5406,9 @@ Conquistas: %5 (%6)
         </translation>
     </message>
     <message>
-        <source>Rewind for %1 frames, lasting %2 seconds will require up to %3MB of RAM and %4MB of VRAM.</source>
-        <translation type="vanished">Retroceder por %1 quadros, durará %2 segundos que exigirá pouco mais de %3MB de RAM e %4MB de V-RAM.</translation>
-    </message>
-    <message>
         <location filename="../emulationsettingswidget.cpp" line="207"/>
         <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
         <translation>O retrocesso não está ativado porque o pulo de quadros está ativado; Tenha em mente que ativando esta função poderá aumentar muito os requisitos do sistema. (Uso de RAM e V-RAM).</translation>
-    </message>
-    <message>
-        <source>Rewind is disabled because runahead is enabled.</source>
-        <translation type="vanished">Rebobinar desativado pois a opção Avançar está ativada.</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="213"/>
@@ -6643,18 +5501,6 @@ Conquistas: %5 (%6)
         <translation>Modo CPU (muito lento)</translation>
     </message>
     <message>
-        <source>Depth Buffer</source>
-        <translation type="vanished">PGXP (Modo Polimento Eixo Z)</translation>
-    </message>
-    <message>
-        <source>Widescreen Hack (render 3D in 16:9)</source>
-        <translation type="vanished">Melhoria para Telas Panorâmicas</translation>
-    </message>
-    <message>
-        <source>Multisample Antialiasing:</source>
-        <translation type="vanished">Filtro anti-serrilhado:</translation>
-    </message>
-    <message>
         <location filename="../enhancementsettingswidget.ui" line="136"/>
         <source>Force 4:3 For 24-Bit Display (disable widescreen for FMVs)</source>
         <translation>Forçar 4:3 (desativa efeito esticado em FMVs)</translation>
@@ -6663,10 +5509,6 @@ Conquistas: %5 (%6)
         <location filename="../enhancementsettingswidget.ui" line="143"/>
         <source>Chroma Smoothing For 24-Bit Display (reduce FMV color blockyness)</source>
         <translation>Suavização de croma (reduz artefatos em cenas FMV)</translation>
-    </message>
-    <message>
-        <source>Bilinear Texture Filtering</source>
-        <translation type="vanished">Filtragem de Textura Bilinear</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.ui" line="116"/>
@@ -6708,10 +5550,6 @@ Conquistas: %5 (%6)
         <translation>Correção de curvas</translation>
     </message>
     <message>
-        <source>Texture Correction</source>
-        <translation type="vanished">Correção de textura</translation>
-    </message>
-    <message>
         <location filename="../enhancementsettingswidget.cpp" line="66"/>
         <location filename="../enhancementsettingswidget.cpp" line="77"/>
         <location filename="../enhancementsettingswidget.cpp" line="87"/>
@@ -6743,17 +5581,9 @@ Conquistas: %5 (%6)
         <translation>Aumentar a resolução para mais de 1x aumentará a resolução dos polígonos e linhas em jogos 3D. Só é utilizável quando usado com placas de vídeo dedicadas. Geralmente é seguro ativar esta opção deixando assim a maior parte dos jogos com visual muito melhor em resoluções mais altas porém utiliza mais da sua placa de vídeo.</translation>
     </message>
     <message>
-        <source>Multisample Antialiasing</source>
-        <translation type="vanished">Filtro anti-serrilhado</translation>
-    </message>
-    <message>
         <location filename="../enhancementsettingswidget.cpp" line="59"/>
         <source>Disabled</source>
         <translation>Desativado</translation>
-    </message>
-    <message>
-        <source>Uses multisample antialiasing for rendering 3D objects. Can smooth out jagged edges on polygons at a lower cost to performance compared to increasing the resolution scale, but may be more likely to cause rendering errors in some games. Only applies to the hardware backends.</source>
-        <translation type="vanished">Usa suavização para renderizar objetos 3D. Pode suavizar bordas irregulares em polígonos ao custo menor de desempenho em comparação com o aumento da escala de resolução mas pode ser mais provável que cause erros de renderização em alguns jogos. Somente se aplica quando usado em renderizadores baseados em hardware.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="59"/>
@@ -6834,10 +5664,6 @@ Conquistas: %5 (%6)
         <translation>Smooths out the blockiness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers. &lt;br&gt;The JINC2 and especially xBR filtering modes are very demanding, and may not be worth the speed penalty.</translation>
     </message>
     <message>
-        <source>Smooths out the blockyness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers.</source>
-        <translation type="vanished">Suaviza as texturas ampliadas em objetos 3D usando filtragem. Terá melhor efeito em resoluções mais altas e aplica-se apenas quando usado com renderizadores por hardware.</translation>
-    </message>
-    <message>
         <location filename="../enhancementsettingswidget.cpp" line="107"/>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. &lt;br&gt;For 2D games, or games which use pre-rendered backgrounds, this enhancement will not work as expected. &lt;br&gt;&lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
         <translation>Escala vértices ao espaço atual da tela, aumentando o campo de visão de 4:3 para a proporção escolhida. &lt;br&gt;&lt;b&gt;&lt;u&gt; pode não ser compatível com todos os jogos 3D.&lt;/u&gt;&lt;/b&gt;</translation>
@@ -6878,14 +5704,6 @@ Conquistas: %5 (%6)
         <translation>Usa PGXP em todas as operações não só nas operações de memória. Obrigatório para que o PGXP corrija problemas nos poligonos em algums jogos mas tem um custo bem alto no desempenho.</translation>
     </message>
     <message>
-        <source>Smooths out the blockyness of magnified textures on 3D object by using bilinear filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers.</source>
-        <translation type="vanished">Suaviza texturas ampliadas em objetos 3D usando filtragem bilinear. Terá efeito maior em resoluções mais altas. Aplica-se apenas aos rederizadores por hardware.</translation>
-    </message>
-    <message>
-        <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to 16:9 in 3D games. &lt;br&gt;For 2D games, or games which use pre-rendered backgrounds, this enhancement will not work as expected. &lt;br&gt;&lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation type="vanished">Escala as posições de vértices para uma proporção de aspecto esticado, aumentando o campo de visão de 4:3 para 16:9 em jogos 3D. &lt;br&gt;Para jogos 2D, ou jogos que usam fundos pré-renderizados, este aprimoramento não funcionará como esperado. &lt;b&gt;&lt;u&gt;Pode não ser compatível com todos os jogos&lt;/u&gt;&lt;/b&gt;</translation>
-    </message>
-    <message>
         <location filename="../enhancementsettingswidget.cpp" line="117"/>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;br&gt;Only works with the hardware renderers. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
         <translation>Reduz as &quot;oscilações&quot; nos polígonos tentando preservar os mesmos na hora da transferência para a memória. &lt;br&gt;Funciona apenas se rederizado por hardware e pode não ser compatível com todos os jogos&lt;/u&gt;&lt;/b&gt;</translation>
@@ -6894,17 +5712,6 @@ Conquistas: %5 (%6)
         <location filename="../enhancementsettingswidget.cpp" line="120"/>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
         <translation>Aumenta a precisão das curvas nos polígonos reduzindo o número de buracos na geometria do mesmo requer ativada a opção: correção geométrica.</translation>
-    </message>
-    <message>
-        <source>Uses perspective-correct interpolation for texture coordinates and colors, straightening out warped textures. Requires geometry correction enabled.</source>
-        <translation type="vanished">Utiliza interpolação corretiva em perspectiva para coordenadas e cores de textura endireitando as que estiverem distorcidas. Requer correção de geometria ativada.</translation>
-    </message>
-</context>
-<context>
-    <name>Error</name>
-    <message>
-        <source>Both texture buffers and SSBOs are not supported, or are of inadequate size.</source>
-        <translation type="vanished">SSOB e suas texturas armazenadas não são suportados ou são de tamanho inadequado.</translation>
     </message>
 </context>
 <context>
@@ -7351,18 +6158,6 @@ Deseja carregar e continuar a partir desde dado ?</translation>
         <translation>Configurações de conquistas</translation>
     </message>
     <message>
-        <source>Achievements are disabled.</source>
-        <translation type="vanished">As conquistas foram desativadas.</translation>
-    </message>
-    <message>
-        <source>Achievements: {} ({} points)</source>
-        <translation type="vanished">Conquistas: {} ({} pontos)</translation>
-    </message>
-    <message>
-        <source>Active Challenge Achievements</source>
-        <translation type="vanished">Conquistas ativadas</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6804"/>
         <source>Add Search Directory</source>
         <translation>Adicionar diretório de busca</translation>
@@ -7386,10 +6181,6 @@ Deseja carregar e continuar a partir desde dado ?</translation>
         <location filename="../../core/fullscreen_ui.cpp" line="6808"/>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
         <translation>Precisão adicional ao PGXP dados pós-projeção. Pode melhorar visualmente alguns jogos.</translation>
-    </message>
-    <message>
-        <source>Adds padding to ensure pixels are a whole number in size.</source>
-        <translation type="vanished">Adiciona preenchimento para garantir que os pixels tenham o tamanho de um número inteiro.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6803"/>
@@ -8127,10 +6918,6 @@ Deseja carregar e continuar a partir desde dado ?</translation>
         <translation>Ativar fonte de entrada SDL</translation>
     </message>
     <message>
-        <source>Enable Sound Effects</source>
-        <translation type="vanished">Ativar efeitos sonoros</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6955"/>
         <source>Enable Subdirectory Scanning</source>
         <translation>Ativar a verificação de subdiretórios</translation>
@@ -8227,10 +7014,6 @@ Error was:</source>
         <translation>Modo de renderização Wireframe</translation>
     </message>
     <message>
-        <source>Enable TTY Output</source>
-        <translation type="vanished">Habilitar saída TTY</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6957"/>
         <source>Enable VRAM Write Texture Replacement</source>
         <translation>Ativar texturas personalizadas</translation>
@@ -8274,10 +7057,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="6965"/>
         <source>Enables the replacement of background textures in supported games.</source>
         <translation>Permite a substituição de texturas de fundo em jogos compatíveis.</translation>
-    </message>
-    <message>
-        <source>Enables tracking and submission of leaderboards in supported games.</source>
-        <translation type="vanished">Permite o rastreamento e o envio de placares de líderes em jogos compatíveis.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6967"/>
@@ -8355,10 +7134,6 @@ Error was:</source>
         <translation>Falha ao carregar &apos;{}&apos;.</translation>
     </message>
     <message>
-        <source>Failed to load shader {}. It may be invalid.</source>
-        <translation type="vanished">Falha ao carregar o shader {}. pode ser inválido.</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6983"/>
         <source>Failed to save input profile &apos;{}&apos;.</source>
         <translation>Falha ao salvar o perfil de entrada &apos;{}&apos;.</translation>
@@ -8382,10 +7157,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="6989"/>
         <source>File Title</source>
         <translation>Título do jogo (na pasta)</translation>
-    </message>
-    <message>
-        <source>Fills the window with the active display area, regardless of the aspect ratio.</source>
-        <translation type="vanished">Preenche a janela com o conteúdo mostrado, independentemente da proporção da imagem escolhida.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6990"/>
@@ -8443,10 +7214,6 @@ Error was:</source>
         <translation>Grade de jogos</translation>
     </message>
     <message>
-        <source>Game ID: {}</source>
-        <translation type="vanished">ID do jogo: {}</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7001"/>
         <source>Game List</source>
         <translation>Lista de jogos</translation>
@@ -8470,10 +7237,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7005"/>
         <source>Game Slot {0}##game_slot_{0}</source>
         <translation>Compartimento de jogo {0}##game_slot_{0}</translation>
-    </message>
-    <message>
-        <source>Game Title: {}</source>
-        <translation type="vanished">Título do jogo: {}</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7006"/>
@@ -8636,10 +7399,6 @@ Error was:</source>
         <translation>Perfil de entrada &apos;{}&apos; salvo.</translation>
     </message>
     <message>
-        <source>Integer Upscaling</source>
-        <translation type="vanished">Escalonamento íntegro</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7038"/>
         <source>Integration</source>
         <translation>Integração</translation>
@@ -8705,10 +7464,6 @@ Error was:</source>
         <translation>Limita o número de quadros exibidos na tela. Esses quadros ainda são renderizados.</translation>
     </message>
     <message>
-        <source>Linear Upscaling</source>
-        <translation type="vanished">Escalonamento linear</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7051"/>
         <source>Load Devices From Save States</source>
         <translation>Carregar a partir do estado salvo</translation>
@@ -8742,10 +7497,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7057"/>
         <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay.</source>
         <translation>Carrega o jogo na memória RAM. Útil para evitar certas instabilidades durante o jogo.</translation>
-    </message>
-    <message>
-        <source>Locked Achievements</source>
-        <translation type="vanished">Conquistas bloqueadas</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7058"/>
@@ -8821,10 +7572,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7072"/>
         <source>Logs out of RetroAchievements.</source>
         <translation>Desconecta-se do RetroAchievements.</translation>
-    </message>
-    <message>
-        <source>Macro will toggle every {} frames.</source>
-        <translation type="vanished">Macro será alternada a cada {} quadros.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7073"/>
@@ -8917,17 +7664,9 @@ Error was:</source>
         <translation>Silenciar áudio CDs</translation>
     </message>
     <message>
-        <source>No</source>
-        <translation type="vanished">No</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7091"/>
         <source>No Binding</source>
         <translation>Sem atribuição</translation>
-    </message>
-    <message>
-        <source>No Buttons Selected</source>
-        <translation type="vanished">Nenhum botão foi selecionado</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7092"/>
@@ -9060,17 +7799,9 @@ Error was:</source>
         <translation>Configurações do PGXP</translation>
     </message>
     <message>
-        <source>Password: </source>
-        <translation type="vanished">Senha: </translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7118"/>
         <source>Patches</source>
         <translation>Modificações</translation>
-    </message>
-    <message>
-        <source>Patches the BIOS to log calls to printf(). Only use when debugging, can break games.</source>
-        <translation type="vanished">Mostra mensagens de depuração do jogo use somente para fins de depuração, pode quebrar seus jogos.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7119"/>
@@ -9088,10 +7819,6 @@ Error was:</source>
         <translation>Pausar quando inativo</translation>
     </message>
     <message>
-        <source>Pause On Menu</source>
-        <translation type="vanished">Pausa no menu</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7122"/>
         <source>Pause On Start</source>
         <translation>Pausar ao iniciar</translation>
@@ -9105,10 +7832,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7124"/>
         <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
         <translation>Pausa o emulador quando a janela é minimizada ou na mudança de foco para outro aplicativo aberto, e retoma quando volta ao foco.</translation>
-    </message>
-    <message>
-        <source>Pauses the emulator when you open the quick menu, and unpauses when you close it.</source>
-        <translation type="vanished">Pausa o emulador quando você abre o menu rápido e cancela a pausa quando fecha.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7125"/>
@@ -9141,10 +7864,6 @@ Error was:</source>
         <translation>Reproduz efeitos sonoros para eventos como desbloqueios de conquistas e envios de placar.</translation>
     </message>
     <message>
-        <source>Please enter your user name and password for retroachievements.org.</source>
-        <translation type="vanished">Digite seu nome de usuário e senha para retroachievements.org.</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7131"/>
         <source>Port {} Controller Type</source>
         <translation>Porta do controle do tipo{}</translation>
@@ -9163,10 +7882,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7134"/>
         <source>Post-processing chain cleared.</source>
         <translation>Lista de pós-processamento limpa.</translation>
-    </message>
-    <message>
-        <source>Post-processing chain is empty.</source>
-        <translation type="vanished">Listade pós-processamento está vazia.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7135"/>
@@ -9382,14 +8097,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7177"/>
         <source>Rewind Save Slots</source>
         <translation>Retrocede espaços de salvamento</translation>
-    </message>
-    <message>
-        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require up to {3} MB of RAM and {4} MB of VRAM.</source>
-        <translation type="vanished">Retroceder para {0} quadros, com duração de {1:.2f} segundos, exigirá até {3} MB de RAM e {4} MB de VRAM.</translation>
-    </message>
-    <message>
-        <source>Rich Presence</source>
-        <translation type="vanished">Presença rica</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7181"/>
@@ -9622,10 +8329,6 @@ Error was:</source>
         <translation>Mostrar uso do CPU</translation>
     </message>
     <message>
-        <source>Show Challenge Indicators</source>
-        <translation type="vanished">Mostrar indicadores de desafio</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7227"/>
         <source>Show Controller Input</source>
         <translation>Mostrar controles na tela</translation>
@@ -9649,10 +8352,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7231"/>
         <source>Show GPU Usage</source>
         <translation>Mostrar uso da GPU</translation>
-    </message>
-    <message>
-        <source>Show Notifications</source>
-        <translation type="vanished">Mostrar notificações</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7232"/>
@@ -9748,14 +8447,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7250"/>
         <source>Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.</source>
         <translation>Simula o pulo de quadros para tentar reduzir atrasos. Requisitos de sistema muito altos.</translation>
-    </message>
-    <message>
-        <source>Size</source>
-        <translation type="vanished">Tamanho</translation>
-    </message>
-    <message>
-        <source>Size: %.2f MB</source>
-        <translation type="vanished">Tamanho: %.2f MB</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7251"/>
@@ -9858,10 +8549,6 @@ Error was:</source>
         <translation>Modo de alongamento</translation>
     </message>
     <message>
-        <source>Stretch To Fit</source>
-        <translation type="vanished">Esticar para preencher</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7271"/>
         <source>Stretches the display to match the aspect ratio by multiplying vertically instead of horizontally.</source>
         <translation>Estica a tela para corresponder à proporção de aspecto, multiplicando verticalmente em vez de horizontalmente.</translation>
@@ -9895,10 +8582,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7277"/>
         <source>Temporarily disables all enhancements, useful when testing.</source>
         <translation>Desativa temporariamente todos os aprimoramentos, útil para testes.</translation>
-    </message>
-    <message>
-        <source>Test Mode</source>
-        <translation type="vanished">Modo de teste</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7278"/>
@@ -9941,10 +8624,6 @@ Error was:</source>
         <translation>A imagem do cartão de memória escolhida será usada no modo compartilhado para esse compartimento.</translation>
     </message>
     <message>
-        <source>This build was not compiled with RetroAchivements support.</source>
-        <translation type="vanished">Esta versão do DuckStation não foi construída com a função de conquistas.</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7288"/>
         <source>Threaded Presentation</source>
         <translation>Apresentação sequencial</translation>
@@ -9963,10 +8642,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7291"/>
         <source>Time Played: %s</source>
         <translation>Jogou pela última vez: %s</translation>
-    </message>
-    <message>
-        <source>Timing out in %.0f seconds...</source>
-        <translation type="vanished">Tempo limite em %.0f segundos...</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7293"/>
@@ -10019,10 +8694,6 @@ Error was:</source>
         <translation>ilimitado</translation>
     </message>
     <message>
-        <source>Unlocked Achievements</source>
-        <translation type="vanished">Conquistas desbloqueadas</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7307"/>
         <source>Use Blit Swap Chain</source>
         <translation>Usar cadeia de troca</translation>
@@ -10048,17 +8719,9 @@ Error was:</source>
         <translation>Usar nomes de arquivos seriais</translation>
     </message>
     <message>
-        <source>Use Single Card For Sub-Images</source>
-        <translation type="vanished">Usar cartão único para múltiplos discos</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7313"/>
         <source>Use Software Renderer For Readbacks</source>
         <translation>Usar modo software para releituras</translation>
-    </message>
-    <message>
-        <source>User Name: </source>
-        <translation type="vanished">Nome de usuário: </translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7314"/>
@@ -10069,10 +8732,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7315"/>
         <source>Uses PGXP for all instructions, not just memory operations.</source>
         <translation>Usa PGXP para todas as instruções, não apenas para operações de memória.</translation>
-    </message>
-    <message>
-        <source>Uses a bilinear filter when upscaling to display, smoothing out the image.</source>
-        <translation type="vanished">Usa um filtro bilinear ao fazer o upscaling para exibição e, teça, suavizando a imagem.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7316"/>
@@ -10145,10 +8804,6 @@ Error was:</source>
         <translation>Quando ativado, as configurações por jogo serão aplicadas e os aprimoramentos incompatíveis serão desativados.</translation>
     </message>
     <message>
-        <source>When enabled, rich presence information will be collected and sent to the server where supported.</source>
-        <translation type="vanished">Quando ativado, a informação do que estiver sendo jogado será enviado ao servidor se suportado.</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7330"/>
         <source>When enabled, the minimum supported output latency will be used for the host API.</source>
         <translation>Quando ativada, a latência mínima de saída suportada será usada para a API do host.</translation>
@@ -10164,33 +8819,9 @@ Error was:</source>
         <translation>Quando ativado, a velocidade escolhida será usada.</translation>
     </message>
     <message>
-        <source>When using a multi-disc image (m3u/pbp) and per-game (title) memory cards, use a single memory card for all discs.</source>
-        <translation type="vanished">Ao usar um formato de disco múltiplo (m3u / pbp) e cartões de memória por jogo (título), um único cartão de memória será usado para todos os discos. Se desmarcado, um cartão separado será usado para cada disco.</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7335"/>
         <source>Writes textures which can be replaced to the dump directory.</source>
         <translation>Grava texturas que podem ser substituídas no diretório de despejo.</translation>
-    </message>
-    <message>
-        <source>XXX points</source>
-        <translation type="vanished">XXX Pontos</translation>
-    </message>
-    <message>
-        <source>Yes</source>
-        <translation type="vanished">Sim</translation>
-    </message>
-    <message>
-        <source>You have unlocked all achievements and earned {} points!</source>
-        <translation type="vanished">Você desbloqueou todas as conquistas e ganhou {} pontos!</translation>
-    </message>
-    <message>
-        <source>You have unlocked {} of {} achievements, earning {} of {} possible points.</source>
-        <translation type="vanished">Você desbloqueou {} de {} conquistas, ganhando {} de {} pontos possíveis.</translation>
-    </message>
-    <message>
-        <source>Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
-        <translation type="vanished">Sua senha não será salva no DuckStation; em vez disso, será gerado e usado um token de acesso.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7336"/>
@@ -10221,14 +8852,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7341"/>
         <source>{} is not a valid disc image.</source>
         <translation>{} não é uma imagem de disco válida.</translation>
-    </message>
-    <message>
-        <source>{} point</source>
-        <translation type="vanished">{} pontos</translation>
-    </message>
-    <message>
-        <source>{} points</source>
-        <translation type="vanished">{} pontos</translation>
     </message>
 </context>
 <context>
@@ -10304,302 +8927,6 @@ Error was:</source>
 <context>
     <name>GPUSettingsWidget</name>
     <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
-        <source>Basic</source>
-        <translation type="vanished">Básico</translation>
-    </message>
-    <message>
-        <source>Renderer:</source>
-        <translation type="vanished">Renderizador:</translation>
-    </message>
-    <message>
-        <source>Adapter:</source>
-        <translation type="vanished">Adaptador:</translation>
-    </message>
-    <message>
-        <source>Use Debug Device</source>
-        <translation type="vanished">Usar Dispositivo de Depuração</translation>
-    </message>
-    <message>
-        <source>Screen Display</source>
-        <translation type="vanished">Exibição</translation>
-    </message>
-    <message>
-        <source>Aspect Ratio:</source>
-        <translation type="vanished">Proporção e Aspecto:</translation>
-    </message>
-    <message>
-        <source>Crop:</source>
-        <translation type="vanished">Cortar:</translation>
-    </message>
-    <message>
-        <source>Linear Upscaling</source>
-        <translation type="vanished">Escalonamento Linear</translation>
-    </message>
-    <message>
-        <source>Integer Upscaling</source>
-        <translation type="vanished">Escalonamento Integro</translation>
-    </message>
-    <message>
-        <source>VSync</source>
-        <translation type="vanished">Sincronização Vertical (V-Sync)</translation>
-    </message>
-    <message>
-        <source>Enhancements</source>
-        <translation type="vanished">Aprimoramentos</translation>
-    </message>
-    <message>
-        <source>Resolution Scale:</source>
-        <translation type="vanished">Escala de Resolução:</translation>
-    </message>
-    <message>
-        <source>True Color Rendering (24-bit, disables dithering)</source>
-        <translation type="vanished">Renderização em (24 Cores, desativa o efeito dithering)</translation>
-    </message>
-    <message>
-        <source>Scaled Dithering (scale dither pattern to resolution)</source>
-        <translation type="vanished">Dithering Escalonado, (Escalona o padrão do dithering para a resolução)</translation>
-    </message>
-    <message>
-        <source>Disable Interlacing (force progressive render/scan)</source>
-        <translation type="vanished">Desativa o entrelaçamento (Força Renderização Progressiva)</translation>
-    </message>
-    <message>
-        <source>Force NTSC Timings (60hz-on-PAL)</source>
-        <translation type="vanished">Força o temporizador rodar em NTSC (60hz em jogos EU)</translation>
-    </message>
-    <message>
-        <source>Bilinear Texture Filtering</source>
-        <translation type="vanished">Filtragem de Textura Bilinear</translation>
-    </message>
-    <message>
-        <source>Widescreen Hack</source>
-        <translation type="vanished">Hack para Telas Widescreen</translation>
-    </message>
-    <message>
-        <source>PGXP</source>
-        <translation type="vanished">PGXP</translation>
-    </message>
-    <message>
-        <source>Geometry Correction</source>
-        <translation type="vanished">Correção Geométrica</translation>
-    </message>
-    <message>
-        <source>Culling Correction</source>
-        <translation type="vanished">Correção de Curvas</translation>
-    </message>
-    <message>
-        <source>Texture Correction</source>
-        <translation type="vanished">Correção de Textura</translation>
-    </message>
-    <message>
-        <source>Vertex Cache</source>
-        <translation type="vanished">Vértice Armazenado</translation>
-    </message>
-    <message>
-        <source>CPU Mode</source>
-        <translation type="vanished">Modo CPU</translation>
-    </message>
-    <message>
-        <source>Renderer</source>
-        <translation type="vanished">Renderizador</translation>
-    </message>
-    <message>
-        <source>Chooses the backend to use for rendering tasks for the the console GPU. Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
-        <translation type="vanished">Escolhe a opção a ser usada para emular a GPU. Dependendo do seu sistema e hardware, As opções DX11 e OpenGL podem aparecer.O renderizador de software oferece a melhor compatibilidade, mas é o mais lento e não oferece nenhum aprimoramento.</translation>
-    </message>
-    <message>
-        <source>Adapter</source>
-        <translation type="vanished">Adaptador</translation>
-    </message>
-    <message>
-        <source>If your system contains multiple GPUs or adapters, you can select which GPU you wish to use for the hardware renderers. This option is only supported in Direct3D and Vulkan, OpenGL will always use the default device.</source>
-        <translation type="vanished">Se você tem várias GPUs ,você poderá selecionar qual delas deseja usar para os renderizadores de hardware. Esta opção é suportada apenas no Direct3D e no Vulkan, OpenGL sempre usará o dispositivo padrão.</translation>
-    </message>
-    <message>
-        <source>Unchecked</source>
-        <translation type="vanished">Desmarcado</translation>
-    </message>
-    <message>
-        <source>Enables the usage of debug devices and shaders for rendering APIs which support them. Should only be used when debugging the emulator.</source>
-        <translation type="vanished">Permite o uso de dispositivos de depuração e shaders para renderizar APIs que os suportam. Só deve ser usado ao depurar o emulador.</translation>
-    </message>
-    <message>
-        <source>Aspect Ratio</source>
-        <translation type="vanished">Razão de Aspecto</translation>
-    </message>
-    <message>
-        <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is 4:3 which matches a typical TV of the era.</source>
-        <translation type="vanished">Altera a proporção usada para exibir o jogo na tela. O padrão é 4:3, que corresponde a uma TV típica da época.CRT mais conhecida como Tubão.</translation>
-    </message>
-    <message>
-        <source>Crop Mode</source>
-        <translation type="vanished">Modo de Corte</translation>
-    </message>
-    <message>
-        <source>Only Overscan Area</source>
-        <translation type="vanished">Somente Área Renderizada</translation>
-    </message>
-    <message>
-        <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. Some games display content in the overscan area, or use it for screen effects and may not display correctly with the All Borders setting. Only Overscan offers a good compromise between stability and hiding black borders.</source>
-        <translation type="vanished">Determina quanto da área normalmente não visível em uma TV o usuário pode ver ou não.Alguns jogos mostram conteúdo fora desta área pré-determinada.Somente esta opção &quot;overscan&quot; (fora da área visível) pode oferecer um boa estabilidade na hora de ocultar as tarjas (bordas)pretas quando ocorrem.</translation>
-    </message>
-    <message>
-        <source>Forces the rendering and display of frames to progressive mode. This removes the &quot;combing&quot; effect seen in 480i games by rendering them in 480p. Not all games are compatible with this option, some require interlaced rendering or render interlaced internally. Usually safe to enable.</source>
-        <translation type="vanished">Força a renderização e a exibição de quadros para o modo progressivo. Isso remove efeitos de &quot;trepidação&quot; Visto nos jogos 480i renderizando-os em 480p.Nem todos os jogos são compatíveis com esta opção, alguns requerem renderização entrelaçada internamente. Normalmente é seguro ativar.</translation>
-    </message>
-    <message>
-        <source>Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster. For variable frame rate games, it may not affect the speed.</source>
-        <translation type="vanished">Quando o console está no modo PAL - Geralmente jogos Europeus rodam a 50hz. força estes jogos a rodar em até 60hz sendo assim, resulta em um jogo mais rápido até 15%.Em jogos com taxas de quadro (fps) variável pode isto não afetará a velocidade na hora da jogatina.</translation>
-    </message>
-    <message>
-        <source>Forces the display of frames to progressive mode. This only affects the displayed image, the console will be unaware of the setting. If the game is internally producing interlaced frames, this option may not have any effect. Usually safe to enable.</source>
-        <translation type="vanished">Força o modo de quadros por segundo em modo progressivo. Se o jogo já tem essa opção nativamente ele não irá ter nenhum beneficio podendo assim deixar a mesma ligada.</translation>
-    </message>
-    <message>
-        <source>Checked</source>
-        <translation type="vanished">Marcado</translation>
-    </message>
-    <message>
-        <source>Uses bilinear texture filtering when displaying the console&apos;s framebuffer to the screen. Disabling filtering will producer a sharper, blockier/pixelated image. Enabling will smooth out the image. The option will be less noticable the higher the resolution scale.</source>
-        <translation type="vanished">Usa textura bilinear filtrando todo buffer para a tela principal.Desabilitar esta filtragem produzirá uma imagem mais nítida porém pixelada. Ativar irá deixar a imagem mais suave. Esta opção fica menos notável em resoluções mais altas.</translation>
-    </message>
-    <message>
-        <source>Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. May result in a sharper image in some 2D games.</source>
-        <translation type="vanished">Adiciona preenchimento na tela para garantir que a proporção entre pixels seja um número inteiro. Pode resultar em uma imagem mais nítida em alguns jogos 2D.</translation>
-    </message>
-    <message>
-        <source>Enables synchronization with the host display when possible. Enabling this option will provide better frame pacing and smoother motion with fewer duplicated frames. VSync is automatically disabled when it is not possible (e.g. running at non-100% speed).</source>
-        <translation type="vanished">Ativa a sincronização quando possível. A ativação dessa opção fornecerá melhor ritmo de quadros por segundo e movimento mais suave com menos quadros duplicados.&lt;br&gt;&lt;br&gt;O V-Sync é desativado automaticamente quando não é possível usá-lo (por exemplo quando o jogo não estiver rodando a 100%).</translation>
-    </message>
-    <message>
-        <source>Resolution Scale</source>
-        <translation type="vanished">Escala de Resolução</translation>
-    </message>
-    <message>
-        <source>Enables the upscaling of 3D objects rendered to the console&apos;s framebuffer. Only applies to the hardware backends. This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
-        <translation type="vanished">Permite o aumento de escala de objetos 3D renderizados, aplica-se apenas aos back-end de hardware é seguro usar essa opção na maioria dos jogos ficando melhor ainda em resoluções mais altas; Isto implica também no maior uso da sua Placa de Video.</translation>
-    </message>
-    <message>
-        <source>Forces the precision of colours output to the console&apos;s framebuffer to use the full 8 bits of precision per channel. This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering, which makes the transition between colours less sharp by applying a pattern around those pixels. Most games are compatible with this option, but there is a number which aren&apos;t and will have broken effects with it enabled. Only applies to the hardware renderers.</source>
-        <translation type="vanished">Força a precisão das cores produz efeitos de gradientes mais agradável ao custo de fazer com que algumas cores pareçam um pouco diferentes. Desativar a opção também ativa alguns pontilhados, o que torna a transição entre cores menos nítida a maioria dos jogos é compatível com esta opção, os que não forem terão efeitos quebrados com a opção ativada. Aplica-se apenas aos renderizadores por hardware.</translation>
-    </message>
-    <message>
-        <source>Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. Usually safe to enable, and only supported by the hardware renderers.</source>
-        <translation type="vanished">Escalona os &apos;ditherings&apos; - pontilhados na imagem para a placa de Video.Torna a visão destes pontos muito menos visiveis em resoluções mais altas.Geralmente seguro ativar e suportado apenas pelos rederizadores por Hardware (ou seja usando sua placa de vídeo).</translation>
-    </message>
-    <message>
-        <source>Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster. For variable frame rate games, it may not affect the framerate.</source>
-        <translation type="vanished">Força os jogos PAL a serem executados a 60 hz, resultará nos jogos rodando 17% mais rápido. Isso pode não afetar a taxa de quadros em jogos com FPS variável.</translation>
-    </message>
-    <message>
-        <source>Smooths out the blockyness of magnified textures on 3D object by using bilinear filtering. Will have a greater effect on higher resolution scales. Currently this option produces artifacts around objects in many games and needs further work. Only applies to the hardware renderers.</source>
-        <translation type="vanished">Suaviza as texturas ampliadas nos objetos 3D usando a filtragem bilinear.Terá um efeito maior em escalas de resolução mais alta. Atualmente, esta opção produz artefatos em torno de objetos em muitos jogos.Apenas recomendado seu uso em rederizadores baseados em Hardware.</translation>
-    </message>
-    <message>
-        <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to 16:9 in 3D games. For 2D games, or games which use pre-rendered backgrounds, this enhancement will not work as expected.</source>
-        <translation type="vanished">Dimensiona as posições dos vértices da tela para a proporção mais larga (Widescreen), aumentando o campo de visão de 4:3 para 16: 9 em jogos 3D. Para jogos 2D ou jogos que usam fundos pré-renderizados, esse aprimoramento não funcionará conforme o esperado.</translation>
-    </message>
-    <message>
-        <source>Reduces &quot;wobbly&quot; polygons by attempting to preserve the fractional component through memory transfers. Only works with the hardware renderers, and may not be compatible with all games.</source>
-        <translation type="vanished">Reduz &apos;tremeliques&apos; nos polígonos tentando preservar os mesmos na hora da transferência para a memória. Funciona apenas se rederizado por hardware e pode não é  compatível com todos os jogos.</translation>
-    </message>
-    <message>
-        <source>Smooths out the blockyness of magnified textures on 3D object by using bilinear filtering. Will have a greater effect on higher resolution scales. Only applies to the hardware renderers.</source>
-        <translation type="vanished">Suaviza texturas ampliadas em objetos 3D usando filtragem bilinear. Terá efeito maior em resoluções mais altas. Aplica-se apenas aos rederizadores por hardware.</translation>
-    </message>
-    <message>
-        <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to 16:9 in 3D games. &lt;br&gt;For 2D games, or games which use pre-rendered backgrounds, this enhancement will not work as expected. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation type="vanished">Escala as posições de vértices para uma proporção de aspecto esticado, aumentando o campo de visão de 4:3 para 16:9 em jogos 3D. &lt;br&gt;Para jogos 2D, ou jogos que usam fundos pré-rederizados, este aprimoramento não funcionará como esperado. &lt;b&gt;&lt;u&gt;Pode não ser compatível com todos os jogos&lt;/u&gt;&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>Chooses the backend to use for rendering the console/game visuals. &lt;br&gt;Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. &lt;br&gt;The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
-        <translation type="vanished">Escolhe a opção a ser usada para emular a GPU. Dependendo do seu sistema e hardware, As opções DX11 e OpenGL podem aparecer.O renderizador de software oferece a melhor compatibilidade, mas é o mais lento e não oferece nenhum aprimoramento.</translation>
-    </message>
-    <message>
-        <source>If your system contains multiple GPUs or adapters, you can select which GPU you wish to use for the hardware renderers. &lt;br&gt;This option is only supported in Direct3D and Vulkan. OpenGL will always use the default device.</source>
-        <translation type="vanished">Se você tem várias GPUs ,você poderá selecionar qual delas deseja usar para os renderizadores de hardware. Esta opção é suportada apenas no Direct3D e no Vulkan, OpenGL sempre usará o dispositivo padrão.</translation>
-    </message>
-    <message>
-        <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. &lt;br&gt;Some games display content in the overscan area, or use it for screen effects. &lt;br&gt;May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
-        <translation type="vanished">Determina quanto da area normalmente não visivel em uma TV o usuário pode ver ou não.Alguns jogos mostram conteúdo fora desta area pré-determinada.Somente esta opção &quot;overscan&quot; (fora da área visivel) pode oferecer um boa estabilidade na hora de ocultar as tarjas (bordas)pretas quando ocorrem.</translation>
-    </message>
-    <message>
-        <source>Forces the rendering and display of frames to progressive mode. &lt;br&gt;This removes the &quot;combing&quot; effect seen in 480i games by rendering them in 480p. Usually safe to enable.&lt;br&gt; &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation type="vanished">Força a renderização e a exibição de quadros para o modo progressivo. Isso remove efeitos de &quot;trepidação&quot; Visto nos jogos 480i renderizando-os em 480p.Nem todos os jogos são compatíveis com esta opção, alguns requerem renderização entrelaçada internamente. Normalmente é seguro ativar..&lt;/u&gt;&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>Uses bilinear texture filtering when displaying the console&apos;s framebuffer to the screen. &lt;br&gt;Disabling filtering will producer a sharper, blockier/pixelated image. Enabling will smooth out the image. &lt;br&gt;The option will be less noticable the higher the resolution scale.</source>
-        <translation type="vanished">Usa textura bilinear filtrando todo buffer para a tela principal.Desabilitar esta filtragem produzirá uma imagem mais nítida porém pixelada. Ativar irá deixar a imagem mais suave. Esta opção fica menos notável em resoluções mais altas.</translation>
-    </message>
-    <message>
-        <source>Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an integer number. &lt;br&gt;May result in a sharper image in some 2D games.</source>
-        <translation type="vanished">Adiciona preenchimento na tela para garantir que a proporção entre pixels seja um número inteiro. Pode resultar em uma imagem mais nítida em alguns jogos 2D.</translation>
-    </message>
-    <message>
-        <source>Enable this option to match DuckStation&apos;s refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (e.g. running at non-100% speed).</source>
-        <translation type="vanished">Habilite esta opção para combinar a taxa de atualização do emulador com seu monitor. O V-Sync (sincronização vertical) será desativado automaticamente quando não for possível atingir 100% da velocidade.</translation>
-    </message>
-    <message>
-        <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
-        <translation type="vanished">Aumentar a resolução para mais de 1x aumentará a resolução dos Poligonos e linhas em jogos 3D. Só é utilizável quando usado com placas de video dedicadas. &lt;br&gt; Geralmente é seguro ativar esta opção, deixando assim a maior parte dos jogos com vizual muito melhor em resoluções mais altas; Porém, utiliza mais da sua placa de Vídeo.</translation>
-    </message>
-    <message>
-        <source>Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. &lt;br&gt;Usually safe to enable, and only supported by the hardware renderers.</source>
-        <translation type="vanished">Escalona os &apos;ditherings&apos; - pontilhados na imagem para a placa de Video.Torna a visão destes pontos muito menos visiveis em resoluções mais altas.Geralmente seguro ativar e suportado apenas pelos rederizadores por Hardware (ou seja usando sua placa de vídeo).</translation>
-    </message>
-    <message>
-        <source>Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. &lt;br&gt;For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster. &lt;br&gt;For variable frame rate games, it may not affect the speed.</source>
-        <translation type="vanished">Quando o console está no modo PAL - Geralmente jogos Europeus rodam a 50hz. força estes jogos a rodar em até 60hz sendo assim, resulta em um jogo mais rápido até 15%.Em jogos com taxas de quadro (fps) variável pode isto não afetará a velocidade na hora da jogatina.</translation>
-    </message>
-    <message>
-        <source>Smooths out the blockyness of magnified textures on 3D object by using bilinear filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers.</source>
-        <translation type="vanished">Suaviza texturas ampliadas em objetos 3D usando filtragem bilinear. Terá efeito maior em resoluções mais altas. Aplica-se apenas aos rederizadores por hardware.</translation>
-    </message>
-    <message>
-        <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to 16:9 in 3D games. &lt;br&gt;For 2D games, or games which use pre-rendered backgrounds, this enhancement will not work as expected. &lt;br&gt;&lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation type="vanished">Escala as posições de vértices para uma proporção de aspecto esticado, aumentando o campo de visão de 4:3 para 16:9 em jogos 3D. &lt;br&gt;Para jogos 2D, ou jogos que usam fundos pré-renderizados, este aprimoramento não funcionará como esperado. &lt;b&gt;&lt;u&gt;Pode não ser compatível com todos os jogos&lt;/u&gt;&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;br&gt;Only works with the hardware renderers. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation type="vanished">Reduz &quot;tremeliques&quot; nos polígonos tentando preservar os mesmos na hora da transferência para a memória. Funciona apenas se rederizado por hardware e pode não ser compatível com todos os jogos.&lt;/u&gt;&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
-        <translation type="vanished">Aumenta a precisão das curvas nos polígonos, reduzindo o número de buracos na geometria do mesmo. Requer a Correção Geometrica ativada.</translation>
-    </message>
-    <message>
-        <source>Uses perspective-correct interpolation for texture coordinates and colors, straightening out warped textures. Requires geometry correction enabled.</source>
-        <translation type="vanished">Utiliza interpolação corretiva em perspetiva para coordenadas e das cores na textura, endireitando as que estiverem distorcidas. Requer correção de geometria ativada.</translation>
-    </message>
-    <message>
-        <source>Uses screen coordinates as a fallback when tracking vertices through memory fails. May improve PGXP compatibility.</source>
-        <translation type="vanished">Quando a correção de vértices falha, essa opção se encarrega de usar as coordenadas da tela para o rastreamento. Pode melhorar a compatibilidade com o PGXP.</translation>
-    </message>
-    <message>
-        <source>Tries to track vertex manipulation through the CPU. Some games require this option for PGXP to be effective. Very slow, and incompatible with the recompiler.</source>
-        <translation type="vanished">Tenta manipular o rastreamento dos vértices (extremidades) direto para o processador. Alguns jogos exigem esta opção para que o aprimoramento - PGXP. tenha o efeito desejado. Atenção, este modo é MUITO LENTO, e incompatível com o recompilador se ativo.</translation>
-    </message>
-    <message>
-        <source> (for 720p)</source>
-        <translation type="vanished">&gt;(720p)</translation>
-    </message>
-    <message>
-        <source> (for 1080p)</source>
-        <translation type="vanished">&gt;(1080p)</translation>
-    </message>
-    <message>
-        <source> (for 1440p)</source>
-        <translation type="vanished">&gt;(1440p)</translation>
-    </message>
-    <message>
-        <source> (for 4K)</source>
-        <translation type="vanished">&gt;(4k)</translation>
-    </message>
-    <message>
         <location filename="../qtutils.cpp" line="698"/>
         <source>Automatic based on window size</source>
         <translation>Automático, baseado no tamanho da janela</translation>
@@ -10665,10 +8992,6 @@ Error was:</source>
         <translation>%1x SSAA</translation>
     </message>
     <message>
-        <source>9x</source>
-        <translation type="vanished">9x &gt; (9216x4608)</translation>
-    </message>
-    <message>
         <location filename="../qtutils.cpp" line="708"/>
         <source>10x</source>
         <translation>10x</translation>
@@ -10702,18 +9025,6 @@ Error was:</source>
         <location filename="../qtutils.cpp" line="714"/>
         <source>16x</source>
         <translation>16x</translation>
-    </message>
-    <message>
-        <source>%1x%2</source>
-        <translation type="vanished">%1x%2</translation>
-    </message>
-    <message>
-        <source>%1x (%2x%3 VRAM)</source>
-        <translation type="obsolete">%1x (%2x%3 VRAM)</translation>
-    </message>
-    <message>
-        <source>(Default)</source>
-        <translation type="vanished">Padrão</translation>
     </message>
 </context>
 <context>
@@ -10749,25 +9060,9 @@ Error was:</source>
         <translation>xBR (Muito lento sem AA)</translation>
     </message>
     <message>
-        <source>JINC2</source>
-        <translation type="vanished">JINC2</translation>
-    </message>
-    <message>
         <location filename="../../core/settings.cpp" line="1004"/>
         <source>Bilinear (No Edge Blending)</source>
         <translation>Bi-linear (sem AA)</translation>
-    </message>
-    <message>
-        <source>xBR</source>
-        <translation type="vanished">xBR</translation>
-    </message>
-    <message>
-        <source>JINC2 (No Edge Blending)</source>
-        <translation type="vanished">JINC2 (sem AA)</translation>
-    </message>
-    <message>
-        <source>xBR (No Edge Blending)</source>
-        <translation type="vanished">xBR (sem AA)</translation>
     </message>
 </context>
 <context>
@@ -10950,10 +9245,6 @@ Error was:</source>
         <translation>Tipo</translation>
     </message>
     <message>
-        <source>Code</source>
-        <translation type="vanished">Código</translation>
-    </message>
-    <message>
         <location filename="../gamelistmodel.cpp" line="309"/>
         <source>Unknown</source>
         <translation>Desconhecido</translation>
@@ -11050,11 +9341,6 @@ Error was:</source>
         <translation></translation>
     </message>
     <message>
-        <source>Search Directories</source>
-        <translatorcomment>Here, I did prefer to keep it capitalized cause it is a title so it does make sense.</translatorcomment>
-        <translation type="vanished">Pesquisar Diretórios</translation>
-    </message>
-    <message>
         <location filename="../gamelistsettingswidget.ui" line="34"/>
         <source>Search Directories (will be scanned for games)</source>
         <translation>Examinar diretórios (serão examinados por jogos)</translation>
@@ -11078,10 +9364,6 @@ Error was:</source>
         <translation>Caminhos excluídos (não será feita busca por jogos)</translation>
     </message>
     <message>
-        <source>Excluded Paths</source>
-        <translation type="vanished">Caminhos excluídos</translation>
-    </message>
-    <message>
         <location filename="../gamelistsettingswidget.ui" line="171"/>
         <source>Scan For New Games</source>
         <translation>Examinar por novos jogos</translation>
@@ -11090,18 +9372,6 @@ Error was:</source>
         <location filename="../gamelistsettingswidget.ui" line="187"/>
         <source>Rescan All Games</source>
         <translation>Examinar tudo</translation>
-    </message>
-    <message>
-        <source>Scan New</source>
-        <translation type="vanished">Examinar novos</translation>
-    </message>
-    <message>
-        <source>Rescan All</source>
-        <translation type="vanished">Examinar tudo</translation>
-    </message>
-    <message>
-        <source>Update Redump Database</source>
-        <translation type="vanished">Atualizar Lista de Jogos</translation>
     </message>
     <message>
         <location filename="../gamelistsettingswidget.cpp" line="109"/>
@@ -11131,40 +9401,6 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <location filename="../gamelistsettingswidget.cpp" line="153"/>
         <source>Select Path</source>
         <translation>Selecione o caminho</translation>
-    </message>
-    <message>
-        <source>Download database from redump.org?</source>
-        <translation type="vanished">Atualizar Banco de Dados de Jogos</translation>
-    </message>
-    <message>
-        <source>Do you wish to download the disc database from redump.org?
-
-This will download approximately 4 megabytes over your current internet connection.</source>
-        <translation type="vanished">Quer baixar o banco de dados do redump? Isto significa que serão baixados 4MB de informação.</translation>
-    </message>
-    <message>
-        <source>Downloading %1...</source>
-        <translation type="vanished">Baixando %1...</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="vanished">Cancelar</translation>
-    </message>
-    <message>
-        <source>Download failed</source>
-        <translation type="vanished">Falha ao Baixar</translation>
-    </message>
-    <message>
-        <source>Extracting...</source>
-        <translation type="vanished">Extraindo...</translation>
-    </message>
-    <message>
-        <source>Extract failed</source>
-        <translation type="vanished">Falha na Extração</translation>
-    </message>
-    <message>
-        <source>Extracting game database failed.</source>
-        <translation type="vanished">Extração do banco de dados falhou.</translation>
     </message>
 </context>
 <context>
@@ -11203,604 +9439,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../gamelistwidget.ui" line="200"/>
         <source>Search...</source>
         <translation>Buscar...</translation>
-    </message>
-</context>
-<context>
-    <name>GamePropertiesDialog</name>
-    <message>
-        <source>Properties</source>
-        <translation type="vanished">Propriedades</translation>
-    </message>
-    <message>
-        <source>Image Path:</source>
-        <translation type="vanished">Caminho da imagem:</translation>
-    </message>
-    <message>
-        <source>Game Code:</source>
-        <translation type="vanished">Código do jogo:</translation>
-    </message>
-    <message>
-        <source>Title:</source>
-        <translation type="vanished">Título:</translation>
-    </message>
-    <message>
-        <source>Region:</source>
-        <translation type="vanished">Região:</translation>
-    </message>
-    <message>
-        <source>Compatibility:</source>
-        <translation type="vanished">Compatibilidade:</translation>
-    </message>
-    <message>
-        <source>Upscaling Issues:</source>
-        <translation type="vanished">Problemas de redimensionamento:</translation>
-    </message>
-    <message>
-        <source>Comments:</source>
-        <translation type="vanished">Comentários:</translation>
-    </message>
-    <message>
-        <source>Version Tested:</source>
-        <translation type="vanished">Versão testada:</translation>
-    </message>
-    <message>
-        <source>Set to Current</source>
-        <translation type="vanished">Definir para atual</translation>
-    </message>
-    <message>
-        <source>Tracks:</source>
-        <translation type="vanished">Faixas:</translation>
-    </message>
-    <message>
-        <source>#</source>
-        <translation type="vanished">#</translation>
-    </message>
-    <message>
-        <source>Mode</source>
-        <translation type="vanished">Modo</translation>
-    </message>
-    <message>
-        <source>Start</source>
-        <translation type="vanished">Iniciar</translation>
-    </message>
-    <message>
-        <source>Length</source>
-        <translation type="vanished">Comprimento</translation>
-    </message>
-    <message>
-        <source>Hash</source>
-        <translation type="vanished">Valores</translation>
-    </message>
-    <message>
-        <source>User Settings</source>
-        <translation type="vanished">Configurações Personalizadas</translation>
-    </message>
-    <message>
-        <source>Force 4:3 For 24-Bit Display (disable widescreen for FMVs)</source>
-        <translation type="vanished">Forçar 4:3 (desativa efeito esticado em FMVs)</translation>
-    </message>
-    <message>
-        <source>GPU Settings</source>
-        <translation type="vanished">Configurações da GPU</translation>
-    </message>
-    <message>
-        <source>Crop Mode:</source>
-        <translation type="vanished">Modo de corte:</translation>
-    </message>
-    <message>
-        <source>Aspect Ratio:</source>
-        <translation type="vanished">Proporção e aspecto:</translation>
-    </message>
-    <message>
-        <source>User Settings (Console)</source>
-        <translation type="vanished">Configurações do usuário (console)</translation>
-    </message>
-    <message>
-        <source>CPU Clock Speed Control</source>
-        <translation type="vanished">Controle de velocidade do CPU (Overclock)</translation>
-    </message>
-    <message>
-        <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
-        <translation type="vanished">Ativar aumento de velocidade do CPU (Overclock)</translation>
-    </message>
-    <message>
-        <source>100% (effective 33.3mhz)</source>
-        <translation type="vanished">100% (eficaz 33.3mhz)</translation>
-    </message>
-    <message>
-        <source>Enable 8MB RAM (Dev Console)</source>
-        <translation type="vanished">Ativar 8MB RAM (modo console de desenvolvedor)</translation>
-    </message>
-    <message>
-        <source>GPU Screen Display</source>
-        <translation type="vanished">Modo de exibição GPU</translation>
-    </message>
-    <message>
-        <source>:</source>
-        <translation type="vanished">:</translation>
-    </message>
-    <message>
-        <source>Downsampling:</source>
-        <translation type="vanished">Suavização da imagem:</translation>
-    </message>
-    <message>
-        <source>Linear Upscaling</source>
-        <translation type="vanished">Escalonamento linear</translation>
-    </message>
-    <message>
-        <source>Integer Upscaling</source>
-        <translation type="vanished">Escalonamento integro</translation>
-    </message>
-    <message>
-        <source>Renderer:</source>
-        <translation type="vanished">Renderizador:</translation>
-    </message>
-    <message>
-        <source>GPU Enhancements</source>
-        <translation type="vanished">Melhorias GPU</translation>
-    </message>
-    <message>
-        <source>Resolution Scale:</source>
-        <translation type="vanished">Escala de Resolução:</translation>
-    </message>
-    <message>
-        <source>Multisample Antialiasing:</source>
-        <translation type="vanished">Filtro anti-serrilhado (MSAA):</translation>
-    </message>
-    <message>
-        <source>Texture Filtering:</source>
-        <translation type="vanished">Filtro de textura:</translation>
-    </message>
-    <message>
-        <source>True Color Rendering (24-bit, disables dithering)</source>
-        <translation type="vanished">Renderização em (24 cores, desativa dithering)</translation>
-    </message>
-    <message>
-        <source>Scaled Dithering (scale dither pattern to resolution)</source>
-        <translation type="vanished">Dithering escalonado, (escalona o padrão do dithering para a resolução)</translation>
-    </message>
-    <message>
-        <source>Widescreen Hack</source>
-        <translation type="vanished">Melhoria para telas panorâmicas</translation>
-    </message>
-    <message>
-        <source>Force NTSC Timings (60hz-on-PAL)</source>
-        <translation type="vanished">Força o temporizador NTSC (60hz jogos EU)</translation>
-    </message>
-    <message>
-        <source>Bilinear Texture Filtering</source>
-        <translation type="vanished">Filtragem de Textura Bilinear</translation>
-    </message>
-    <message>
-        <source>PGXP Geometry Correction</source>
-        <translation type="vanished">PGXP correção geométrica</translation>
-    </message>
-    <message>
-        <source>PGXP Preserve Projection Precision</source>
-        <translation type="vanished">Preservar precisão e projeção do PGXP</translation>
-    </message>
-    <message>
-        <source>PGXP Depth Buffer</source>
-        <translation type="vanished">PGXP (buffer de profundidade)</translation>
-    </message>
-    <message>
-        <source>Other Settings</source>
-        <translation type="vanished">Outras configurações</translation>
-    </message>
-    <message>
-        <source>Status</source>
-        <translation type="vanished">Situação</translation>
-    </message>
-    <message>
-        <source>Revision:</source>
-        <translation type="vanished">Revisão:</translation>
-    </message>
-    <message>
-        <source>CD-ROM Read Speedup:</source>
-        <translation type="vanished">Velocidade de leitura CD-ROM:</translation>
-    </message>
-    <message>
-        <source>None (Double Speed)</source>
-        <translation type="vanished">2x (roda a 2X)</translation>
-    </message>
-    <message>
-        <source>2x (Quad Speed)</source>
-        <translation type="vanished">2x (quadruplicado)</translation>
-    </message>
-    <message>
-        <source>3x (6x Speed)</source>
-        <translation type="vanished">3x (6X de velocidade)</translation>
-    </message>
-    <message>
-        <source>4x (8x Speed)</source>
-        <translation type="vanished">4x (8X de velocidade)</translation>
-    </message>
-    <message>
-        <source>5x (10x Speed)</source>
-        <translation type="vanished">5x (10X de velocidade)</translation>
-    </message>
-    <message>
-        <source>6x (12x Speed)</source>
-        <translation type="vanished">6x (12X de velocidade)</translation>
-    </message>
-    <message>
-        <source>7x (14x Speed)</source>
-        <translation type="vanished">7x (14X de velocidade)</translation>
-    </message>
-    <message>
-        <source>8x (16x Speed)</source>
-        <translation type="vanished">8x (16X de velocidade)</translation>
-    </message>
-    <message>
-        <source>9x (18x Speed)</source>
-        <translation type="vanished">9x (18X de velocidade)</translation>
-    </message>
-    <message>
-        <source>10x (20x Speed)</source>
-        <translation type="vanished">10x (20X de velocidade)</translation>
-    </message>
-    <message>
-        <source>CD-ROM Seek Speedup:</source>
-        <translation type="vanished">Velocidade de busca CD-ROM:</translation>
-    </message>
-    <message>
-        <source>Infinite/Instantaneous</source>
-        <translation type="vanished">Infinita/Instantânea</translation>
-    </message>
-    <message>
-        <source>None (Normal Speed)</source>
-        <translation type="vanished">Nenhuma (velocidade normal)</translation>
-    </message>
-    <message>
-        <source>2x</source>
-        <translation type="vanished">2x</translation>
-    </message>
-    <message>
-        <source>3x</source>
-        <translation type="vanished">3x</translation>
-    </message>
-    <message>
-        <source>4x</source>
-        <translation type="vanished">4x</translation>
-    </message>
-    <message>
-        <source>5x</source>
-        <translation type="vanished">5x</translation>
-    </message>
-    <message>
-        <source>6x</source>
-        <translation type="vanished">6x</translation>
-    </message>
-    <message>
-        <source>7x</source>
-        <translation type="vanished">7x</translation>
-    </message>
-    <message>
-        <source>8x</source>
-        <translation type="vanished">8x</translation>
-    </message>
-    <message>
-        <source>9x</source>
-        <translation type="vanished">9x</translation>
-    </message>
-    <message>
-        <source>10x</source>
-        <translation type="vanished">10x &gt; (10240x5120)</translation>
-    </message>
-    <message>
-        <source>Runahead Frames:</source>
-        <translation type="vanished">Avanço de quadros:</translation>
-    </message>
-    <message>
-        <source>Disabled</source>
-        <translation type="vanished">Desativado</translation>
-    </message>
-    <message>
-        <source>1 Frame</source>
-        <translation type="vanished">1 quadro</translation>
-    </message>
-    <message>
-        <source>2 Frames</source>
-        <translation type="vanished">2 quadros</translation>
-    </message>
-    <message>
-        <source>3 Frames</source>
-        <translation type="vanished">3 quadros</translation>
-    </message>
-    <message>
-        <source>4 Frames</source>
-        <translation type="vanished">4 quadros</translation>
-    </message>
-    <message>
-        <source>5 Frames</source>
-        <translation type="vanished">5 quadros</translation>
-    </message>
-    <message>
-        <source>6 Frames</source>
-        <translation type="vanished">6 quadros</translation>
-    </message>
-    <message>
-        <source>7 Frames</source>
-        <translation type="vanished">7 quadros</translation>
-    </message>
-    <message>
-        <source>8 Frames</source>
-        <translation type="vanished">8 quadros</translation>
-    </message>
-    <message>
-        <source>9 Frames</source>
-        <translation type="vanished">9 quadros</translation>
-    </message>
-    <message>
-        <source>10 Frames</source>
-        <translation type="vanished">10 quadros</translation>
-    </message>
-    <message>
-        <source>User Settings (Graphics)</source>
-        <translation type="vanished">Configurações do usuário (gráficos)</translation>
-    </message>
-    <message>
-        <source>User Settings (Input)</source>
-        <translation type="vanished">Tipo de controle</translation>
-    </message>
-    <message>
-        <source>Controller Settings</source>
-        <translation type="vanished">Configurações de controle</translation>
-    </message>
-    <message>
-        <source>Controller 1 Type:</source>
-        <translation type="vanished">Opção controle 1:</translation>
-    </message>
-    <message>
-        <source>Controller 2 Type:</source>
-        <translation type="vanished">Opção controle 2:</translation>
-    </message>
-    <message>
-        <source>Input Profile For Bindings:</source>
-        <translation type="vanished">Perfil do controle:</translation>
-    </message>
-    <message>
-        <source>Multitap Mode:</source>
-        <translation type="vanished">Modo multitap:</translation>
-    </message>
-    <message>
-        <source>Memory Card Settings</source>
-        <translation type="vanished">Cartões de memória</translation>
-    </message>
-    <message>
-        <source>Memory Card 1 Type:</source>
-        <translation type="vanished">Cartão de memória tipo 1:</translation>
-    </message>
-    <message>
-        <source>Memory Card 1 Shared Path:</source>
-        <translation type="vanished">Cartão de memória 1 caminho do compartilhamento:</translation>
-    </message>
-    <message>
-        <source>Browse...</source>
-        <translation type="vanished">Procurar...</translation>
-    </message>
-    <message>
-        <source>Memory Card 2 Type:</source>
-        <translation type="vanished">Cartão de memória tipo 2:</translation>
-    </message>
-    <message>
-        <source>Memory Card 2 Shared Path:</source>
-        <translation type="vanished">Cartão de memória 2 caminho do compartilhamento:</translation>
-    </message>
-    <message>
-        <source>Compatibility Settings</source>
-        <translation type="vanished">Configurações de compatibilidade</translation>
-    </message>
-    <message>
-        <source>Traits</source>
-        <translation type="vanished">Características individuais</translation>
-    </message>
-    <message>
-        <source>Overrides</source>
-        <translation type="vanished">Sobreposições</translation>
-    </message>
-    <message>
-        <source>Display Active Offset:</source>
-        <translation type="vanished">Opções de deslocamento:</translation>
-    </message>
-    <message>
-        <source>Display Line Offset:</source>
-        <translation type="vanished">Deslocamento de linha:</translation>
-    </message>
-    <message>
-        <source>DMA Max Slice Ticks:</source>
-        <translation type="vanished">DMA Max Slice Ticks:</translation>
-    </message>
-    <message>
-        <source>DMA Halt Ticks:</source>
-        <translation type="vanished">DMA Halt Ticks:</translation>
-    </message>
-    <message>
-        <source>GPU FIFO Size:</source>
-        <translation type="vanished">GPU FIFO Size:</translation>
-    </message>
-    <message>
-        <source>GPU Max Run Ahead:</source>
-        <translation type="vanished">GPU Max run ahead:</translation>
-    </message>
-    <message>
-        <source>PGXP Geometry Tolerance:</source>
-        <translation type="vanished">Tolerância geométrica do PGXP:</translation>
-    </message>
-    <message>
-        <source>PGXP Depth Threshold:</source>
-        <translation type="vanished">Limite modo PGXP eixo Z:</translation>
-    </message>
-    <message>
-        <source>Compute &amp;&amp; Verify Hashes</source>
-        <translation type="vanished">Calcular valores</translation>
-    </message>
-    <message>
-        <source>Compute Hashes</source>
-        <translation type="vanished">Calcular valores</translation>
-    </message>
-    <message>
-        <source>Verify Dump</source>
-        <translation type="vanished">Validar jogo</translation>
-    </message>
-    <message>
-        <source>Export Compatibility Info</source>
-        <translation type="vanished">Exportar informação de compatibilidade</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation type="vanished">Fechar</translation>
-    </message>
-    <message>
-        <source>Game Properties - %1</source>
-        <translation type="vanished">Propriedades do jogo - %1</translation>
-    </message>
-    <message>
-        <source>%1</source>
-        <translation type="vanished">%1</translation>
-    </message>
-    <message>
-        <source>(unchanged)</source>
-        <translation type="vanished">(inalterado)</translation>
-    </message>
-    <message>
-        <source>&lt;not verified&gt;</source>
-        <translation type="vanished">&lt;não verificado&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;not computed&gt;</source>
-        <translation type="vanished">&lt;Não Calculado&gt;</translation>
-    </message>
-    <message>
-        <source>Select path to memory card image</source>
-        <translation type="vanished">Escolha o caminho para os cartões de memória</translation>
-    </message>
-    <message>
-        <source>%1% (%2MHz)</source>
-        <translation type="vanished">%1% (%2MHz)</translation>
-    </message>
-    <message>
-        <source>Search on Redump.org</source>
-        <translation type="vanished">Procurar em Redump.org</translation>
-    </message>
-    <message>
-        <source>Not yet implemented</source>
-        <translation type="vanished">Ainda não implementado</translation>
-    </message>
-    <message>
-        <source>Compatibility Info Export</source>
-        <translation type="vanished">Exportar informações de compatibilidade</translation>
-    </message>
-    <message>
-        <source>Press OK to copy to clipboard.</source>
-        <translation type="vanished">Pressione OK para copiar para a área de transferência.</translation>
-    </message>
-</context>
-<context>
-    <name>GameSettingsTrait</name>
-    <message>
-        <source>Force Interpreter</source>
-        <translation type="vanished">Forçar interpretador</translation>
-    </message>
-    <message>
-        <source>Force Software Renderer</source>
-        <translation type="vanished">Forçar renderização por software</translation>
-    </message>
-    <message>
-        <source>Enable Interlacing</source>
-        <translation type="vanished">Ativar Entrelaçamento</translation>
-    </message>
-    <message>
-        <source>Force Software Renderer For Readbacks</source>
-        <translation type="vanished">Forçar modo software para releituras</translation>
-    </message>
-    <message>
-        <source>Force Interlacing</source>
-        <translation type="vanished">Forçar o entrelaçamento</translation>
-    </message>
-    <message>
-        <source>Disable True Color</source>
-        <translation type="vanished">Desativar cor real</translation>
-    </message>
-    <message>
-        <source>Disable Upscaling</source>
-        <translation type="vanished">Desativar escalonamento</translation>
-    </message>
-    <message>
-        <source>Disable Scaled Dithering</source>
-        <translation type="vanished">Desativar dithering escalonado</translation>
-    </message>
-    <message>
-        <source>Disallow Forcing NTSC Timings</source>
-        <translation type="vanished">Desativa os temporizadores em NTSC</translation>
-    </message>
-    <message>
-        <source>Disable Widescreen</source>
-        <translation type="vanished">Desativar ajuste de tela panorâmica</translation>
-    </message>
-    <message>
-        <source>Disable PGXP</source>
-        <translation type="vanished">Desativar PGXP</translation>
-    </message>
-    <message>
-        <source>Disable PGXP Culling</source>
-        <translation type="vanished">Desativar correção de curvas</translation>
-    </message>
-    <message>
-        <source>Disable PGXP Perspective Correct Textures</source>
-        <translation type="vanished">Desativar correção de texturas de perspectiva PGXP</translation>
-    </message>
-    <message>
-        <source>Disable PGXP Perspective Correct Colors</source>
-        <translation type="vanished">Desativar correção de cores de perspectiva PGXP</translation>
-    </message>
-    <message>
-        <source>Disable PGXP Texture Correction</source>
-        <translation type="vanished">Desligar correção de textura (PGXP)</translation>
-    </message>
-    <message>
-        <source>Disable PGXP Depth Buffer</source>
-        <translation type="vanished">Desligar PGXP modo eixo Z</translation>
-    </message>
-    <message>
-        <source>Force PGXP Vertex Cache</source>
-        <translation type="vanished">Forçar armazenamento em modo PGXP</translation>
-    </message>
-    <message>
-        <source>Force PGXP CPU Mode</source>
-        <translation type="vanished">Força o PGXP em modo CPU</translation>
-    </message>
-    <message>
-        <source>Force Recompiler LUT Fastmem</source>
-        <translation type="vanished">Forçar recompilador LUT fastmen</translation>
-    </message>
-    <message>
-        <source>Disable Forcing Controller Analog Mode on Reset</source>
-        <translation type="vanished">Desativar Modo Analógico Forçado ao Reiniciar</translation>
-    </message>
-    <message>
-        <source>Force Recompiler Memory Exceptions</source>
-        <translation type="vanished">Forçar exceções de memória do recompilador</translation>
-    </message>
-    <message>
-        <source>Force Recompiler ICache</source>
-        <translation type="vanished">Força recompilador em modo armazenado (ICache)</translation>
-    </message>
-    <message>
-        <source>Enable PGXP Vertex Cache</source>
-        <translation type="vanished">Ativar PGXP Vértice Armazenado</translation>
-    </message>
-    <message>
-        <source>Enable PGXP CPU Mode</source>
-        <translation type="vanished">Ativar PGXP - Modo CPU</translation>
-    </message>
-    <message>
-        <source>Force Digital Controller</source>
-        <translation type="vanished">Forçar Controle Digital (D-Pad)</translation>
-    </message>
-    <message>
-        <source>Enable Recompiler Memory Exceptions</source>
-        <translation type="vanished">Habilitar Exceções de Memória</translation>
     </message>
 </context>
 <context>
@@ -12052,10 +9690,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Inibir proteção de tela</translation>
     </message>
     <message>
-        <source>Render To Main Window</source>
-        <translation type="vanished">Carregar jogo na janela principal</translation>
-    </message>
-    <message>
         <location filename="../generalsettingswidget.ui" line="59"/>
         <location filename="../generalsettingswidget.cpp" line="88"/>
         <source>Pause On Focus Loss</source>
@@ -12116,22 +9750,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Esconder cursor em tela cheia</translation>
     </message>
     <message>
-        <source>Enable Fullscreen UI</source>
-        <translation type="vanished">Abrir menu rápido</translation>
-    </message>
-    <message>
-        <source>Speed Control</source>
-        <translation type="vanished">Controle de Velocidade</translation>
-    </message>
-    <message>
-        <source>Emulation Speed:</source>
-        <translation type="vanished">Velocidade da Emulação:</translation>
-    </message>
-    <message>
-        <source>Fast Forward Speed:</source>
-        <translation type="vanished">Velocidade do Avanço Rápido:</translation>
-    </message>
-    <message>
         <location filename="../generalsettingswidget.ui" line="169"/>
         <source>Automatic Updater</source>
         <translation>Atualizador automático</translation>
@@ -12150,54 +9768,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../generalsettingswidget.ui" line="221"/>
         <source>Check for Updates...</source>
         <translation>Checar por atualizações...</translation>
-    </message>
-    <message>
-        <source>Emulation Speed</source>
-        <translation type="vanished">Velocidade da emulação</translation>
-    </message>
-    <message>
-        <source>100%</source>
-        <translation type="vanished">100%</translation>
-    </message>
-    <message>
-        <source>Enable Speed Limiter</source>
-        <translation type="vanished">Ativa Limitador de Velocidade</translation>
-    </message>
-    <message>
-        <source>Increase Timer Resolution</source>
-        <translation type="vanished">Aumentar Resolução em Tempo Real</translation>
-    </message>
-    <message>
-        <source>On-Screen Display</source>
-        <translation type="vanished">Mensagens na Tela</translation>
-    </message>
-    <message>
-        <source>Show Messages</source>
-        <translation type="vanished">Mostrar Mensagens</translation>
-    </message>
-    <message>
-        <source>Show FPS</source>
-        <translation type="vanished">Mostar FPS</translation>
-    </message>
-    <message>
-        <source>Show Emulation Speed</source>
-        <translation type="vanished">Mostrar velocidade de Emulação</translation>
-    </message>
-    <message>
-        <source>Show VPS</source>
-        <translation type="vanished">Mostrar VPS</translation>
-    </message>
-    <message>
-        <source>Show Resolution</source>
-        <translation type="vanished">Mostrar Resolução</translation>
-    </message>
-    <message>
-        <source>Miscellaneous</source>
-        <translation type="vanished">Diversos</translation>
-    </message>
-    <message>
-        <source>Controller Backend:</source>
-        <translation type="vanished">Tipo de controle:</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="69"/>
@@ -12251,10 +9821,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Carrega o jogo na janela principal do emulador sob a janela da lista de jogos. Se desmarcado, o jogo irá rodar em uma janela separada.</translation>
     </message>
     <message>
-        <source>Renders the display of the simulated console to the main window of the application, over the game list. If unchecked, the display will render in a separate window.</source>
-        <translation type="vanished">Carrega o jogo na janela principal do emulador sob a janela da lista de jogos. Se desmarcado, o jogo irá rodar em uma janela separada.</translation>
-    </message>
-    <message>
         <location filename="../generalsettingswidget.cpp" line="87"/>
         <source>Pauses the emulator when a game is started.</source>
         <translation>Pausa a emulação quando um jogo é iniciado.</translation>
@@ -12280,65 +9846,9 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Carrega automaticamente e aplica as trapaças assim que o jogo iniciar.</translation>
     </message>
     <message>
-        <source>Fast Forward Speed</source>
-        <translation type="vanished">Velocidade do Avanço Rápido</translation>
-    </message>
-    <message>
-        <source>Sets the fast forward (turbo) speed. This speed will be used when the fast forward hotkey is pressed/toggled.</source>
-        <translation type="vanished">Define a velocidade do avanço rápido. Será usada quando o atalho de avanço rápido for pressionado ou alternado.</translation>
-    </message>
-    <message>
         <location filename="../generalsettingswidget.cpp" line="116"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
-    </message>
-    <message>
-        <source>Throttles the emulation speed to the chosen speed above. If unchecked, the emulator will run as fast as possible, which may not be playable.</source>
-        <translation type="vanished">Acelera a velocidade da emulação para a velocidade escolhida acima. Se desmarcado, o emulador será executado o mais rápido possível, pode ser que não seja possivel sequer jogar.</translation>
-    </message>
-    <message>
-        <source>Increases the system timer resolution when emulation is started to provide more accurate frame pacing. May increase battery usage on laptops.</source>
-        <translation type="vanished">Aumenta a resolução em tempo real quando emulador é iniciado dando maior precisão nos quadros emulados. Pode aumentar o consumo de bateria em Laptops.</translation>
-    </message>
-    <message>
-        <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
-        <translation type="vanished">Ajusta a velocidade da emulação. Não é garantido que a velocidade será alcançada sendo assim o emulador irá tentar rodar o mais rápido que puder.</translation>
-    </message>
-    <message>
-        <source>Show OSD Messages</source>
-        <translation type="vanished">Mostar mensagens em Tela</translation>
-    </message>
-    <message>
-        <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
-        <translation type="vanished">Mostrar as mensagens na tela (canto superior esquerdo) quando eventos ocorrerem; Quando um SaveState é criado ou carregado, capturas de tela forem feitas etc.</translation>
-    </message>
-    <message>
-        <source>Shows the internal frame rate of the game in the top-right corner of the display.</source>
-        <translation type="vanished">Mostra o FPS atual do jogo no topo superior direito da tela.</translation>
-    </message>
-    <message>
-        <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
-        <translation type="vanished">Mostra o FPS no canto superior direito da tela.</translation>
-    </message>
-    <message>
-        <source>Show Speed</source>
-        <translation type="vanished">Mostrar Velocidade</translation>
-    </message>
-    <message>
-        <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
-        <translation type="vanished">Mostra a velocidade de emulação atual do sistema no canto superior direito da tela registrado em porcentagem.</translation>
-    </message>
-    <message>
-        <source>Controller Backend</source>
-        <translation type="vanished">Tipo de controle</translation>
-    </message>
-    <message>
-        <source>Determines the backend which is used for controller input. Windows users may prefer to use XInput over SDL2 for compatibility.</source>
-        <translation type="vanished">Determina qual opção de controle será usada para o controle atual. Para quem usa windows dê preferência ao X-Input ao invés do SDL2 para melhor compatibilidade.</translation>
-    </message>
-    <message>
-        <source>Enables the fullscreen UI mode, suitable for controller operation which is used in the NoGUI frontend.</source>
-        <translation type="vanished">Ativa o uso do menu rápido enquanto joga. Útil para quando está em modo tela cheia e precisa alterar alguma função, atalho, carregar saves ou mesmo ver conquistas sem precisar sair do modo tela cheia ou fechar o emulador.</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="101"/>
@@ -12361,18 +9871,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../generalsettingswidget.cpp" line="109"/>
         <source>Automatically checks for updates to the program on startup. Updates can be deferred until later or skipped entirely.</source>
         <translation>Verifica automaticamente se há atualizações na inicialização. As atualizações podem ser adiadas para mais tarde ou totalmente ignoradas.</translation>
-    </message>
-    <message>
-        <source>%1%</source>
-        <translation type="vanished">%1%</translation>
-    </message>
-    <message>
-        <source>Unlimited</source>
-        <translation type="vanished">Sem limite</translation>
-    </message>
-    <message>
-        <source>%1% [%2 FPS (NTSC) / %3 FPS (PAL)]</source>
-        <translation type="vanished">%1% [%2 FPS (NTSC) / %3 FPS (PAL)]</translation>
     </message>
 </context>
 <context>
@@ -12487,10 +9985,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../../core/hotkeys.cpp" line="202"/>
         <source>General</source>
         <translation>Geral</translation>
-    </message>
-    <message>
-        <source>Open Quick Menu</source>
-        <translation type="vanished">Abrir menu rápido</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="144"/>
@@ -12937,22 +10431,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Áudio</translation>
     </message>
     <message>
-        <source>Load Game State %u</source>
-        <translation type="vanished">Carregar estado de jogo %u</translation>
-    </message>
-    <message>
-        <source>Save Game State %u</source>
-        <translation type="vanished">Salvar Estado do Jogo %u</translation>
-    </message>
-    <message>
-        <source>Load Global State %u</source>
-        <translation type="vanished">Carregar Estado Global %u</translation>
-    </message>
-    <message>
-        <source>Save Global State %u</source>
-        <translation type="vanished">Salvar Estado Global %u</translation>
-    </message>
-    <message>
         <location filename="../../core/hotkeys.cpp" line="448"/>
         <source>Toggle Mute</source>
         <translation>Alternar mudo</translation>
@@ -12971,10 +10449,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../../core/hotkeys.cpp" line="493"/>
         <source>Volume Down</source>
         <translation>Volume -</translation>
-    </message>
-    <message>
-        <source>Open Netplay Chat</source>
-        <translation type="vanished">Abrir bate-papo</translation>
     </message>
 </context>
 <context>
@@ -13023,10 +10497,6 @@ This will download approximately 4 megabytes over your current internet connecti
 </context>
 <context>
     <name>InputBindingWidget</name>
-    <message>
-        <source>%1 bindings</source>
-        <translation type="vanished">%1 atribuições</translation>
-    </message>
     <message numerus="yes">
         <location filename="../inputbindingwidgets.cpp" line="69"/>
         <source>%n bindings</source>
@@ -13081,10 +10551,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../../core/settings.cpp" line="764"/>
         <source>Performance</source>
         <translation>Desempenho</translation>
-    </message>
-    <message>
-        <source>Success</source>
-        <translation type="vanished">Sucesso</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="765"/>
@@ -13259,19 +10725,11 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>DuckStation</translation>
     </message>
     <message>
-        <source>System</source>
-        <translation type="vanished">Sistema</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.ui" line="42"/>
         <location filename="../mainwindow.cpp" line="1215"/>
         <location filename="../mainwindow.cpp" line="1465"/>
         <source>Change Disc</source>
         <translation>Mudar disco</translation>
-    </message>
-    <message>
-        <source>From Playlist...</source>
-        <translation type="vanished">Da lista de Jogos...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="57"/>
@@ -13477,10 +10935,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Cartões de memória</translation>
     </message>
     <message>
-        <source>Enable GDB server</source>
-        <translation type="vanished">Ativar servidor GDB</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.ui" line="971"/>
         <location filename="../mainwindow.cpp" line="1266"/>
         <source>Start Big Picture Mode</source>
@@ -13496,38 +10950,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../mainwindow.ui" line="985"/>
         <source>Cover Downloader</source>
         <translation>Baixar capas</translation>
-    </message>
-    <message>
-        <source>B&amp;IOS Settings...</source>
-        <translation type="vanished">Configurações de &amp;BIOS...</translation>
-    </message>
-    <message>
-        <source>C&amp;onsole Settings...</source>
-        <translation type="vanished">Configurações do &amp;console...</translation>
-    </message>
-    <message>
-        <source>&amp;Controller Settings...</source>
-        <translation type="vanished">Configuração de c&amp;ontroles...</translation>
-    </message>
-    <message>
-        <source>&amp;Hotkey Settings...</source>
-        <translation type="vanished">Configuraç&amp;ão de atalhos...</translation>
-    </message>
-    <message>
-        <source>&amp;GPU Settings...</source>
-        <translation type="vanished">Configuração da GPU</translation>
-    </message>
-    <message>
-        <source>&amp;Display Settings...</source>
-        <translation type="vanished">&amp;Opções de vídeo...</translation>
-    </message>
-    <message>
-        <source>&amp;Enhancement Settings...</source>
-        <translation type="vanished">&amp;Opções de aprimoramento...</translation>
-    </message>
-    <message>
-        <source>&amp;Post-Processing Settings...</source>
-        <translation type="vanished">C&amp;onfigurações de pós-processamento...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="469"/>
@@ -13560,10 +10982,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Procurar por &amp;atualizações...</translation>
     </message>
     <message>
-        <source>&amp;About...</source>
-        <translation type="vanished">Sobr&amp;e...</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.ui" line="38"/>
         <source>&amp;System</source>
         <translation>&amp;Sistema</translation>
@@ -13582,10 +11000,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../mainwindow.ui" line="295"/>
         <source>Start &amp;File...</source>
         <translation>Iniciar arquivo...</translation>
-    </message>
-    <message>
-        <source>E&amp;mulation Settings...</source>
-        <translation type="vanished">Configurações de emulação...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="524"/>
@@ -13608,33 +11022,9 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Trapaças...</translation>
     </message>
     <message>
-        <source>Audio Settings...</source>
-        <translation type="vanished">Configurações de áudio...</translation>
-    </message>
-    <message>
-        <source>Achievement Settings...</source>
-        <translation type="vanished">Configurações de conquistas...</translation>
-    </message>
-    <message>
-        <source>Game List Settings...</source>
-        <translation type="vanished">Configurar lista de jogos...</translation>
-    </message>
-    <message>
-        <source>General Settings...</source>
-        <translation type="vanished">Configurações gerais...</translation>
-    </message>
-    <message>
-        <source>Advanced Settings...</source>
-        <translation type="vanished">Configurações avançadas...</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.ui" line="614"/>
         <source>Add Game Directory...</source>
         <translation>Adicionar diretório de jogos...</translation>
-    </message>
-    <message>
-        <source>&amp;Settings...</source>
-        <translation type="vanished">Co&amp;nfigurações...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="643"/>
@@ -13727,10 +11117,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Mostrar estado do CD-ROM</translation>
     </message>
     <message>
-        <source>Show CDROM State</source>
-        <translation type="vanished">Mostrar estado do CD-Rom</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.ui" line="763"/>
         <source>Show SPU State</source>
         <translation>Mostrar estado do SPU</translation>
@@ -13754,10 +11140,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../mainwindow.ui" line="796"/>
         <source>&amp;Screenshot</source>
         <translation>C&amp;aptura de tela</translation>
-    </message>
-    <message>
-        <source>&amp;Memory Card Settings...</source>
-        <translation type="vanished">&amp;Configurações do cartão de memória...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="814"/>
@@ -13861,10 +11243,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <translation>Desligar sem salvar</translation>
     </message>
     <message>
-        <source>&amp;Game List</source>
-        <translation type="vanished">&amp;Caminho dos Jogos</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.ui" line="867"/>
         <source>System &amp;Display</source>
         <translation>Sistema e &amp;vídeo</translation>
@@ -13878,42 +11256,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../mainwindow.cpp" line="305"/>
         <source>Failed to get window info from widget</source>
         <translation>Falha ao tentar obter informação da janela</translation>
-    </message>
-    <message>
-        <source>Failed to create host display device context.</source>
-        <translation type="vanished">Falha ao exibir imagem na tela.</translation>
-    </message>
-    <message>
-        <source>Failed to get new window info from widget</source>
-        <translation type="vanished">Falha ao tentar obter novas informações da janela</translation>
-    </message>
-    <message>
-        <source>All File Types (*.bin *.img *.cue *.chd *.exe *.psexe *.psf *.m3u);;Single-Track Raw Images (*.bin *.img);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf);;Playlists (*.m3u)</source>
-        <translation type="vanished">Tipos de Arquivos (*.bin *.img *.cue *.chd *.exe *.psexe *.psf *.m3u);;Trilha Única (*.bin *.img);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Executáveis PlayStation (*.exe *.psexe);;Portable Sound Format Files (*.psf);;Playlists (*.m3u)</translation>
-    </message>
-    <message>
-        <source>All File Types (*.bin *.img *.iso *.cue *.chd *.exe *.psexe *.psf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf);;Playlists (*.m3u)</source>
-        <translation type="vanished">Tipos de Arquivos (*.bin *.img *.cue *.chd *.exe *.psexe *.psf *.m3u);;Trilha Única (*.bin *.img);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Executáveis PlayStation (*.exe *.psexe);;Portable Sound Format Files (*.psf);;Playlists (*.m3u)</translation>
-    </message>
-    <message>
-        <source>All File Types (*.bin *.img *.iso *.cue *.chd *.exe *.psexe *.psf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
-        <translation type="vanished">Tipos de Arquivos (*.bin *.img *.cue *.chd *.exe *.psexe *.psf *.m3u);;Trilha Única (*.bin *.img);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Executáveis PlayStation (*.exe *.psexe);;Portable Sound Format Files (*.psf);;Playlists (*.m3u)</translation>
-    </message>
-    <message>
-        <source>All File Types (*.bin *.img *.iso *.cue *.chd *.exe *.psexe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
-        <translation type="vanished">Tipos de Arquivos (*.bin *.img *.cue *.chd *.exe *.psexe *.psf *.m3u);;Trilha Única (*.bin *.img);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Executáveis PlayStation (*.exe *.psexe);;Portable Sound Format Files (*.psf);;Playlists (*.m3u)</translation>
-    </message>
-    <message>
-        <source>All File Types (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.exe *.psexe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
-        <translation type="vanished">Tipos de Arquivos (*.bin *.img *.cue *.chd *.exe *.psexe *.psf *.m3u);;Trilha Única (*.bin *.img);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Executáveis PlayStation (*.exe *.psexe);;Portable Sound Format Files (*.psf);;Playlists (*.m3u)</translation>
-    </message>
-    <message>
-        <source>All File Types (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
-        <translation type="vanished">Todos os tipos de arquivo (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.psf *.minipsf *.m3u);;Imagens de faixa única (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</translation>
-    </message>
-    <message>
-        <source>Failed to create host display.</source>
-        <translation type="vanished">Falha ao iniciar exibição em tela.</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="661"/>
@@ -13930,10 +11272,6 @@ This will download approximately 4 megabytes over your current internet connecti
         <location filename="../mainwindow.cpp" line="676"/>
         <source>Could not find any CD-ROM devices. Please ensure you have a CD-ROM drive connected and sufficient permissions to access it.</source>
         <translation>Não foi possível encontrar nenhum dispositivo de CD-ROM. Certifique-se de ter uma unidade de CD-ROM conectada e permissões suficientes para acessá-la.</translation>
-    </message>
-    <message>
-        <source>All File Types (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp);;PlayStation Executables (*.exe *.psexe *.ps-exe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
-        <translation type="vanished">Todos os tipos de arquivo (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.psf *.minipsf *.m3u);;Imagens de faixa única (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp);;PlayStation Executables (*.exe *.psexe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="62"/>
@@ -14160,10 +11498,6 @@ This action cannot be undone.</source>
 Esta ação não poderá ser desfeita.</translation>
     </message>
     <message>
-        <source>Could not find a game list entry for the currently running file. Please make sure this file is in a location scanned by the game list.</source>
-        <translation type="vanished">Não foi possível encontrar uma entrada da lista de jogos para o arquivo em execução no momento. Certifique-se de que este arquivo esteja em um local verificado pela lista de jogos.</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.cpp" line="1418"/>
         <source>Properties...</source>
         <translation>Propriedades...</translation>
@@ -14219,10 +11553,6 @@ Esta ação não poderá ser desfeita.</translation>
         <translation>Escolher imagem de capa</translation>
     </message>
     <message>
-        <source>All Cover Image Types (*.jpg *.jpeg *.png)</source>
-        <translation type="vanished">Todos os tipos de imagem de capa (*.jpg *.jpeg *.png)</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.cpp" line="1508"/>
         <source>Cover Already Exists</source>
         <translation>Capa já existe</translation>
@@ -14251,10 +11581,6 @@ Esta ação não poderá ser desfeita.</translation>
         <translation>Falha ao copiar &apos;%1&apos; para &apos;%2&apos;</translation>
     </message>
     <message>
-        <source>Language changed. Please restart the application to apply.</source>
-        <translation type="vanished">Idioma alterado. Reinicie o emulador para o aplicar.</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.cpp" line="1681"/>
         <source>%1x Scale</source>
         <translation>Expandir para %1x</translation>
@@ -14278,10 +11604,6 @@ Esta ação não poderá ser desfeita.</translation>
         <translation>Arquivos (*.bin);;Imagens (*.png)</translation>
     </message>
     <message>
-        <source>Default</source>
-        <translation type="vanished">Padrão</translation>
-    </message>
-    <message>
         <location filename="../generalsettingswidget.cpp" line="14"/>
         <source>Native</source>
         <translation>Nativo</translation>
@@ -14300,10 +11622,6 @@ Esta ação não poderá ser desfeita.</translation>
         <location filename="../generalsettingswidget.cpp" line="17"/>
         <source>Dark Fusion (Blue)</source>
         <translation>Dark Fusion (azul)</translation>
-    </message>
-    <message>
-        <source>DarkFusion</source>
-        <translation type="vanished">DarkFusion</translation>
     </message>
     <message>
         <location filename="../generalsettingswidget.cpp" line="18"/>
@@ -14430,173 +11748,6 @@ Tem certeza de que deseja continuar?</translation>
         <location filename="../memorycardeditorwindow.ui" line="165"/>
         <source>Open...</source>
         <translation>Abrir...</translation>
-    </message>
-    <message>
-        <source>Format Card</source>
-        <translation type="vanished">Formatar cartão</translation>
-    </message>
-    <message>
-        <source>0 blocks used</source>
-        <translation type="vanished">0 Blocos Usados</translation>
-    </message>
-    <message>
-        <source>Import File...</source>
-        <translation type="vanished">Importar arquivo...</translation>
-    </message>
-    <message>
-        <source>Import Card...</source>
-        <translation type="vanished">Importar cartão...</translation>
-    </message>
-    <message>
-        <source>Save</source>
-        <translation type="vanished">Salvar</translation>
-    </message>
-    <message>
-        <source>Delete File</source>
-        <translation type="vanished">Apagar arquivo</translation>
-    </message>
-    <message>
-        <source>All Memory Card Types (*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</source>
-        <translation type="vanished">Todos os tipos de cartão de memória (*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</translation>
-    </message>
-    <message>
-        <source>Undelete File</source>
-        <translation type="vanished">Recuperar arquivo</translation>
-    </message>
-    <message>
-        <source>Export File</source>
-        <translation type="vanished">Exportar arquivo</translation>
-    </message>
-    <message>
-        <source>&lt;&lt;</source>
-        <translation type="vanished">&lt;&lt;</translation>
-    </message>
-    <message>
-        <source>&gt;&gt;</source>
-        <translation type="vanished">&gt;&gt;</translation>
-    </message>
-    <message>
-        <source>All Memory Card Types (*.mcd *.mcr *.mc)</source>
-        <translation type="vanished">Todos os tipos de cartão de memória (*.mcd *.mcr *.mc)</translation>
-    </message>
-    <message>
-        <source>All Importable Memory Card Types (*.mcd *.mcr *.mc *.gme)</source>
-        <translation type="vanished">Tipos de cartão de memória compatíveis (*.mcd *.mcr *.mc *.gme)</translation>
-    </message>
-    <message>
-        <source>Browse...</source>
-        <translation type="vanished">Procurar...</translation>
-    </message>
-    <message>
-        <source>Select Memory Card</source>
-        <translation type="vanished">Escolha o cartão de memória</translation>
-    </message>
-    <message>
-        <source>Error</source>
-        <translation type="vanished">Erro</translation>
-    </message>
-    <message>
-        <source>Single Save Files (*.mcs)</source>
-        <translation type="vanished">Cartões únicos (*.mcs)</translation>
-    </message>
-    <message>
-        <source>New Card...</source>
-        <translation type="vanished">Novo cartão...</translation>
-    </message>
-    <message>
-        <source>Open Card...</source>
-        <translation type="vanished">Abrir cartão...</translation>
-    </message>
-    <message>
-        <source>Failed to load memory card image.</source>
-        <translation type="vanished">Falha ao carregar cartão de memória.</translation>
-    </message>
-    <message>
-        <source>%1 blocks free%2</source>
-        <translation type="vanished">%1 Blocos Livres%2</translation>
-    </message>
-    <message>
-        <source>Single Save Files (*.mcs);;All Files (*.*)</source>
-        <translation type="vanished">Arquivos de memória único (*.mcs);;Todos os arquivos (*.*)</translation>
-    </message>
-    <message>
-        <source> (Deleted)</source>
-        <translation type="vanished"> (Apagado)</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n block(s) free%1</source>
-        <translation type="vanished">
-            <numerusform>%n bloco livre%1</numerusform>
-            <numerusform>%n blocos livres%1</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Failed to write card to &apos;%1&apos;</source>
-        <translation type="vanished">Falha ao escrever no cartão &apos;%1</translation>
-    </message>
-    <message>
-        <source>Save memory card?</source>
-        <translation type="vanished">Salvar cartão?</translation>
-    </message>
-    <message>
-        <source>Memory card &apos;%1&apos; is not saved, do you want to save before closing?</source>
-        <translation type="vanished">O cartão de memória &apos;%1&apos; não foi salvo, gostaria de salvar antes de fechar?</translation>
-    </message>
-    <message>
-        <source>Destination memory card already contains a save file with the same name (%1) as the one you are attempting to copy. Please delete this file from the destination memory card before copying.</source>
-        <translation type="vanished">O cartão de memória escolhido já contém um arquivo de jogo com o mesmo nome (%1) idêntico ao que você está tentando copiar. Por favor apague este arquivo primeiro antes de copiar.</translation>
-    </message>
-    <message>
-        <source>Insufficient blocks, this file needs %1 but only %2 are available.</source>
-        <translation type="vanished">Não há espaço suficiente, este cartão precisa %1 mas há somente %2 disponível.</translation>
-    </message>
-    <message>
-        <source>Failed to read file %1</source>
-        <translation type="vanished">Falha ao ler arquivo %1</translation>
-    </message>
-    <message>
-        <source>Failed to write file %1</source>
-        <translation type="vanished">Falha ao escrever arquivo %1</translation>
-    </message>
-    <message>
-        <source>Failed to delete file %1</source>
-        <translation type="vanished">Falha ao apagar arquivo %1</translation>
-    </message>
-    <message>
-        <source>Failed to undelete file %1. The file may have been partially overwritten by another save.</source>
-        <translation type="vanished">Falha ao apagar aquivo %1. O arquivo pode ter sido parcialmente substituído por outro arquivo.</translation>
-    </message>
-    <message>
-        <source>Select Single Savefile</source>
-        <translation type="vanished">Escolher um único arquivo de save</translation>
-    </message>
-    <message>
-        <source>Failed to export save file %1. Check the log for more details.</source>
-        <translation type="vanished">Falha ao exportar arquivo de cartão de memória %1. Verifique o registro para mais detalhes.</translation>
-    </message>
-    <message>
-        <source>Select Import File</source>
-        <translation type="vanished">Selecione o arquivo a ser importado</translation>
-    </message>
-    <message>
-        <source>Failed to import memory card. The log may contain more information.</source>
-        <translation type="vanished">Falha ao importar cartão de memória. O arquivo de registro pode conter mais informações.</translation>
-    </message>
-    <message>
-        <source>Format memory card?</source>
-        <translation type="vanished">Formatar cartão de memória?</translation>
-    </message>
-    <message>
-        <source>Formatting the memory card will destroy all saves, and they will not be recoverable. The memory card which will be formatted is located at &apos;%1&apos;.</source>
-        <translation type="vanished">Formatar o cartão de meória irá destruir todos os seus saves, e não será possível recuperá-los. o cartão formatado será criado em &apos;%1&apos;.</translation>
-    </message>
-    <message>
-        <source>Select Import Save File</source>
-        <translation type="vanished">Importar arquivo</translation>
-    </message>
-    <message>
-        <source>Failed to import save. Check if there is enough room on the memory card or if an existing save with the same name already exists.</source>
-        <translation type="vanished">Falha ao importar arquivo de save. Verifique se há espaço suficiente no cartão de memória ou se já não existe um jogo igual ou de mesmo nome salvo.</translation>
     </message>
 </context>
 <context>
@@ -14811,25 +11962,9 @@ Tem certeza de que deseja continuar?</translation>
         <translation>Configurações compartilhadas</translation>
     </message>
     <message>
-        <source>Use Single Card For Playlist</source>
-        <translation type="vanished">Usar um único cartão para jogos múltiplos</translation>
-    </message>
-    <message>
         <location filename="../memorycardsettingswidget.cpp" line="70"/>
         <source>Checked</source>
         <translation>Marcado</translation>
-    </message>
-    <message>
-        <source>When using a playlist (m3u) and per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
-        <translation type="vanished">Esta opção é útil quando se tem jogos com múltiplos CDs; Se desmarcado, um cartão separado será usado para cada disco.</translation>
-    </message>
-    <message>
-        <source>If one of the &quot;separate card per game&quot; memory card modes is chosen, these memory cards will be saved to the memcards directory.</source>
-        <translation type="vanished">Se um dos modos de cartão de memória &quot;cartão separado por jogo&quot; for escolhido, esses cartões de memória serão salvos no diretório padrão.</translation>
-    </message>
-    <message>
-        <source>Open...</source>
-        <translation type="vanished">Abrir...</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="118"/>
@@ -14857,18 +11992,6 @@ Tem certeza de que deseja continuar?</translation>
         <location filename="../memorycardsettingswidget.cpp" line="152"/>
         <source>Reset</source>
         <translation>Redefinir</translation>
-    </message>
-    <message>
-        <source>Use Single Card For Sub-Images</source>
-        <translation type="vanished">Usar cartão único para múltiplos discos</translation>
-    </message>
-    <message>
-        <source>When using a multi-disc format (m3u/pbp) and per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
-        <translation type="vanished">Ao usar um formato de disco múltiplo (m3u / pbp) e cartões de memória por jogo (título), um único cartão de memória será usado para todos os discos. Se desmarcado, um cartão separado será usado para cada disco.</translation>
-    </message>
-    <message>
-        <source>If one of the &quot;separate card per game&quot; memory card modes is chosen, these memory cards will be saved to the memory cards directory.</source>
-        <translation type="vanished">Se um dos modos de cartão de memória &quot;cartão separado por jogo&quot; for escolhido, esses cartões de memória serão salvos no diretório padrão.</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="80"/>
@@ -14911,10 +12034,6 @@ Tem certeza de que deseja continuar?</translation>
         <source>Select path to memory card image</source>
         <translation>Escolha o caminho para os cartões de memória</translation>
     </message>
-    <message>
-        <source>Select path to memory card directory</source>
-        <translation type="vanished">Escolher caminho para cartão de memória</translation>
-    </message>
 </context>
 <context>
     <name>MemoryCardType</name>
@@ -14937,14 +12056,6 @@ Tem certeza de que deseja continuar?</translation>
         <location filename="../../core/settings.cpp" line="1376"/>
         <source>Separate Card Per Game (Title)</source>
         <translation>Cartão separado por jogo (título)</translation>
-    </message>
-    <message>
-        <source>Separate Card Per Game (Game Code)</source>
-        <translation type="vanished">Separar cartão por jogo (código do jogo)</translation>
-    </message>
-    <message>
-        <source>Separate Card Per Game (Game Title)</source>
-        <translation type="vanished">Separar cartão por jogo (título do jogo)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1377"/>
@@ -14975,108 +12086,13 @@ Tem certeza de que deseja continuar?</translation>
         <translation>Ativar somente na porta 2</translation>
     </message>
     <message>
-        <source>Enable on Port 1 only</source>
-        <translation type="vanished">Ativar somente na Porta 1</translation>
-    </message>
-    <message>
         <location filename="../../core/settings.cpp" line="1431"/>
         <source>Enable on Ports 1 and 2</source>
         <translation>Ativar nas portas 1 e 2</translation>
     </message>
-    <message>
-        <source>Enable on Port 2 only</source>
-        <translation type="vanished">Ativar somente na Porta 2</translation>
-    </message>
-</context>
-<context>
-    <name>NamcoGunCon</name>
-    <message>
-        <source>Trigger</source>
-        <translation type="vanished">Gatilho</translation>
-    </message>
-    <message>
-        <source>ShootOffscreen</source>
-        <translation type="vanished">Atirar para fora</translation>
-    </message>
-    <message>
-        <source>A</source>
-        <translation type="vanished">A</translation>
-    </message>
-    <message>
-        <source>B</source>
-        <translation type="vanished">B</translation>
-    </message>
-    <message>
-        <source>Crosshair Image Path</source>
-        <translation type="vanished">Caminho imagem de mira</translation>
-    </message>
-    <message>
-        <source>Path to an image to use as a crosshair/cursor.</source>
-        <translation type="vanished">Caminho para imagem a ser usada como cursor.</translation>
-    </message>
-    <message>
-        <source>Crosshair Image Scale</source>
-        <translation type="vanished">Escala de mira</translation>
-    </message>
-    <message>
-        <source>Scale of crosshair image on screen.</source>
-        <translation type="vanished">Escala da mira em tela.</translation>
-    </message>
-    <message>
-        <source>X Scale</source>
-        <translation type="vanished">Dimensão X (verticalmente)</translation>
-    </message>
-    <message>
-        <source>Scales X coordinates relative to the center of the screen.</source>
-        <translation type="vanished">Dimensionar coordenadas X em relação ao centro da tela .</translation>
-    </message>
 </context>
 <context>
     <name>NeGcon</name>
-    <message>
-        <source>Steering</source>
-        <translation type="vanished">Volante</translation>
-    </message>
-    <message>
-        <source>I</source>
-        <translation type="vanished">Botão I</translation>
-    </message>
-    <message>
-        <source>II</source>
-        <translation type="vanished">       Botão II</translation>
-    </message>
-    <message>
-        <source>L</source>
-        <translation type="vanished">        L</translation>
-    </message>
-    <message>
-        <source>Up</source>
-        <translation type="vanished">          🠉</translation>
-    </message>
-    <message>
-        <source>Down</source>
-        <translation type="vanished">          🠋</translation>
-    </message>
-    <message>
-        <source>Left</source>
-        <translation type="vanished">          🠈</translation>
-    </message>
-    <message>
-        <source>Right</source>
-        <translation type="vanished">          ➜</translation>
-    </message>
-    <message>
-        <source>A</source>
-        <translation type="vanished">          A</translation>
-    </message>
-    <message>
-        <source>B</source>
-        <translation type="vanished">          B</translation>
-    </message>
-    <message>
-        <source>R</source>
-        <translation type="vanished">          R</translation>
-    </message>
     <message>
         <location filename="../../core/negcon.cpp" line="246"/>
         <source>D-Pad Up</source>
@@ -15171,10 +12187,6 @@ Tem certeza de que deseja continuar?</translation>
         <translation>Sistema reiniciado.</translation>
     </message>
     <message>
-        <source>Loading state from &apos;%s&apos;...</source>
-        <translation type="vanished">Estado carregado de &apos;%s&apos;...</translation>
-    </message>
-    <message>
         <location filename="../../core/system.cpp" line="1171"/>
         <source>Loading state from &apos;%s&apos; failed. Resetting.</source>
         <translation>Carregamento de estado &apos;%s&apos;.falhou. reiniciando.</translation>
@@ -15183,10 +12195,6 @@ Tem certeza de que deseja continuar?</translation>
         <location filename="../../core/system.cpp" line="1212"/>
         <source>Saving state to &apos;%s&apos; failed.</source>
         <translation>Falha ao salvar estado em &apos;%s&apos;.</translation>
-    </message>
-    <message>
-        <source>State saved to &apos;%s&apos;.</source>
-        <translation type="vanished">Estado salvo em &apos;%s&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="643"/>
@@ -15212,50 +12220,6 @@ Tem certeza de que deseja continuar?</translation>
         <location filename="../../core/system.cpp" line="3600"/>
         <source>Recompiler options changed, flushing all blocks.</source>
         <translation>As opções do recompilador foram alteradas, limpando todos os blocos.</translation>
-    </message>
-    <message>
-        <source>PGXP CPU mode is incompatible with the recompiler, using Cached Interpreter instead.</source>
-        <translation type="vanished">PGXP em modo CPU não é compatível com o recompilador, mudando para Interpretador armazenado.</translation>
-    </message>
-    <message>
-        <source>mmap fastmem is not available on this platform, using LUT instead.</source>
-        <translation type="vanished">Fastmem não disponível nesta plataforma, LUT será usado no lugar.</translation>
-    </message>
-    <message>
-        <source>Switching to %s%s GPU renderer.</source>
-        <translation type="vanished">Mudando renderizador de GPU para %s%s.</translation>
-    </message>
-    <message>
-        <source>Switching to %s audio backend.</source>
-        <translation type="vanished">Mudando tipo de saída de som para %s.</translation>
-    </message>
-    <message>
-        <source>Switching to %s CPU execution mode.</source>
-        <translation type="vanished">Mudando para modo de execução %s.</translation>
-    </message>
-    <message>
-        <source>CPU memory exceptions enabled, flushing all blocks.</source>
-        <translation type="vanished">Exceção de RAM em modo CPU ativado, limpando blocos.</translation>
-    </message>
-    <message>
-        <source>CPU memory exceptions disabled, flushing all blocks.</source>
-        <translation type="vanished">Exceção de RAM em modo CPU desativado, limpando blocos.</translation>
-    </message>
-    <message>
-        <source>CPU ICache enabled, flushing all blocks.</source>
-        <translation type="vanished">Icache ativado, limpando blocos.</translation>
-    </message>
-    <message>
-        <source>CPU ICache disabled, flushing all blocks.</source>
-        <translation type="vanished">Icache desativado, limpando blocos.</translation>
-    </message>
-    <message>
-        <source>PGXP enabled, recompiling all blocks.</source>
-        <translation type="vanished">PGXP ativado, reconstruindo blocos.</translation>
-    </message>
-    <message>
-        <source>PGXP disabled, recompiling all blocks.</source>
-        <translation type="vanished">PGXP desativado, reconstruindo blocos.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4500"/>
@@ -15286,18 +12250,6 @@ Tem certeza de que deseja continuar?</translation>
         <location filename="../../core/system.cpp" line="4697"/>
         <source>Switching to %s renderer...</source>
         <translation>Mudando para %s...</translation>
-    </message>
-    <message>
-        <source>Failed to load post processing shader chain.</source>
-        <translation type="vanished">Falha ao carregar shader escolhido.</translation>
-    </message>
-    <message>
-        <source>Speed limiter enabled.</source>
-        <translation type="vanished">Limitador de Velocidade Ativado.</translation>
-    </message>
-    <message>
-        <source>Speed limiter disabled.</source>
-        <translation type="vanished">Limitador de Velocidade Desativado.</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="274"/>
@@ -15345,14 +12297,6 @@ Tem certeza de que deseja continuar?</translation>
         <translation>O retrocesso não está habilitado.</translation>
     </message>
     <message>
-        <source>Achievements are disabled or unavailable for this game.</source>
-        <translation type="vanished">As conquistas estão desativadas ou indisponíveis para este jogo.</translation>
-    </message>
-    <message>
-        <source>Leaderboards are disabled or unavailable for this game.</source>
-        <translation type="vanished">As listas de classificação estão desativadas ou indisponíveis para este jogo.</translation>
-    </message>
-    <message>
         <location filename="../../core/hotkeys.cpp" line="70"/>
         <source>Cannot load state for game without serial.</source>
         <translation>Não é possível carregar o estado do jogo sem seu número de série.</translation>
@@ -15366,14 +12310,6 @@ Tem certeza de que deseja continuar?</translation>
         <location filename="../../core/hotkeys.cpp" line="95"/>
         <source>Cannot save state for game without serial.</source>
         <translation>Não é possível salvar o estado do jogo sem seu número de série.</translation>
-    </message>
-    <message>
-        <source>Achievements are disabled or unavailable for  game.</source>
-        <translation type="vanished">As conquistas estão desativadas ou indisponíveis para este jogo.</translation>
-    </message>
-    <message>
-        <source>Leaderboards are disabled or unavailable for  game.</source>
-        <translation type="vanished">As listas de classificação estão desativadas ou indisponíveis para este jogo.</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="294"/>
@@ -15405,10 +12341,6 @@ Tem certeza de que deseja continuar?</translation>
         <translation>Volume: {}%</translation>
     </message>
     <message>
-        <source>Volume: %d%%</source>
-        <translation type="vanished">Volume: %d%%</translation>
-    </message>
-    <message>
         <location filename="../../core/hotkeys.cpp" line="474"/>
         <source>CD Audio Muted.</source>
         <translation>Áudio do CD silenciado.</translation>
@@ -15417,10 +12349,6 @@ Tem certeza de que deseja continuar?</translation>
         <location filename="../../core/hotkeys.cpp" line="475"/>
         <source>CD Audio Unmuted.</source>
         <translation>Áudio do CD religado.</translation>
-    </message>
-    <message>
-        <source>Loaded input profile from &apos;%s&apos;</source>
-        <translation type="vanished">Perfil de controle carregado de &apos;%s&apos;</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4260"/>
@@ -15453,38 +12381,9 @@ Tem certeza de que deseja continuar?</translation>
         <translation>Captura de tela salva em &apos;%s&apos;.</translation>
     </message>
     <message>
-        <source>Controller in port %u (%s) is not supported for %s.
-Supported controllers: %s
-Please configure a supported controller from the list above.</source>
-        <translation type="vanished">Controle na porta %u (%s) não compatível com %s.controles compatíveis: %s configure um controle compatível conforme mostrado.</translation>
-    </message>
-    <message>
-        <source>Input profile &apos;%s&apos; cannot be found.</source>
-        <translation type="vanished">Perfil de controle &apos;%s&apos; não encontrado.</translation>
-    </message>
-    <message>
-        <source>Using input profile &apos;%s&apos;.</source>
-        <translation type="vanished">Usando perfil de controle &apos;%s&apos;.</translation>
-    </message>
-    <message>
         <location filename="../../core/system.cpp" line="4493"/>
         <source>Failed to load cheats from &apos;%s&apos;.</source>
         <translation>Falha ao carregar &apos;%s&apos; trapaças.</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n cheats are enabled. This may result in instability.</source>
-        <translation type="vanished">
-            <numerusform>%n trapaça ativada. Instabilidades podem acontecer.</numerusform>
-            <numerusform>%n trapaças ativadas. Instabilidades podem acontecer.</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Widescreen hack is now enabled, and aspect ratio is set to %s.</source>
-        <translation type="vanished">Ajuste de tela panorâmica ligado, e a proporção da imagem está definida como %s.</translation>
-    </message>
-    <message>
-        <source>Widescreen hack is now disabled, and aspect ratio is set to %s.</source>
-        <translation type="vanished">Ajuste de tela panorâmica desligado, e a proporção da imagem está definida como %s.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3167"/>
@@ -15505,22 +12404,6 @@ Please configure a supported controller from the list above.</source>
         <location filename="../../core/system.cpp" line="3182"/>
         <source>Swapped memory card ports. Neither port has a memory card.</source>
         <translation>Portas de cartão de memória trocadas. nenhuma das portas possui cartão de memória.</translation>
-    </message>
-    <message>
-        <source>Loaded %u cheats from list. %u cheats are enabled.</source>
-        <translation type="vanished">Trapaças %u carregadas da lista. %u trapaças ativadas.</translation>
-    </message>
-    <message>
-        <source>Loaded %u cheats from database.</source>
-        <translation type="vanished">Trapaças %u carregadas do bando de dados.</translation>
-    </message>
-    <message>
-        <source>Saved %u cheats to &apos;%s&apos;.</source>
-        <translation type="vanished">Trapaça %u.salva para &apos;%s&apos;.</translation>
-    </message>
-    <message>
-        <source>Deleted cheat list &apos;%s&apos;.</source>
-        <translation type="vanished">Trapaça &apos;%s&apos; apagada da lista.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4620"/>
@@ -15556,70 +12439,6 @@ Usando a seguinte imagem &apos;{}&apos;, isso pode resultar em instabilidade.</t
         <translation>Nenhuma trapaça foi carregada.</translation>
     </message>
     <message>
-        <source>%u cheats are now active.</source>
-        <translation type="vanished">%u trapaças ativadas.</translation>
-    </message>
-    <message>
-        <source>%u cheats are now inactive.</source>
-        <translation type="vanished">%u trapaças desativadas.</translation>
-    </message>
-    <message>
-        <source>Fast forwarding...</source>
-        <translation type="vanished">Avançando...</translation>
-    </message>
-    <message>
-        <source>Stopped fast forwarding.</source>
-        <translation type="vanished">Avanço rápido terminado.</translation>
-    </message>
-    <message>
-        <source>Turboing...</source>
-        <translation type="vanished">Turbo ligado...</translation>
-    </message>
-    <message>
-        <source>Stopped turboing.</source>
-        <translation type="vanished">Turbo desligado.</translation>
-    </message>
-    <message>
-        <source>Hotkey unavailable because achievements hardcore mode is active.</source>
-        <translation type="vanished">Atalho desativado modo dificílimo ligado.</translation>
-    </message>
-    <message>
-        <source>Rewinding...</source>
-        <translation type="vanished">Rebobinando...</translation>
-    </message>
-    <message>
-        <source>Stopped rewinding.</source>
-        <translation type="vanished">Retrocesso terminado.</translation>
-    </message>
-    <message numerus="yes">
-        <source>Loaded %n cheats from list.</source>
-        <translation type="vanished">
-            <numerusform>Foi carregado %n trapaça(s) da lista.</numerusform>
-            <numerusform></numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source> %n cheats are enabled.</source>
-        <translation type="vanished">
-            <numerusform>%n trapaça ativada.</numerusform>
-            <numerusform>%n trapaças ativadas.</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>Loaded %n cheats from database.</source>
-        <translation type="vanished">
-            <numerusform>Foi carregado %n trapaça(s) do banco de dados.</numerusform>
-            <numerusform></numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>Saved %n cheats to &apos;%s&apos;.</source>
-        <translation type="vanished">
-            <numerusform>Salvo %n trapaça em &apos;%s&apos;.</numerusform>
-            <numerusform>Salvo %n trapaças em &apos;%s&apos;.</numerusform>
-        </translation>
-    </message>
-    <message>
         <location filename="../../core/system.cpp" line="4640"/>
         <source>Applied cheat &apos;%s&apos;.</source>
         <translation>Trapaça aplicada &apos;%s&apos;.</translation>
@@ -15651,69 +12470,9 @@ Usando a seguinte imagem &apos;{}&apos;, isso pode resultar em instabilidade.</t
         <translation>Pós-processamento desligado.</translation>
     </message>
     <message>
-        <source>Failed to load post-processing shader chain.</source>
-        <translation type="vanished">Falha ao carregar texturas de pós-processamento.</translation>
-    </message>
-    <message>
         <location filename="../../util/postprocessing.cpp" line="619"/>
         <source>Post-processing shaders reloaded.</source>
         <translation>Texturas de pós-processamento recarregadas.</translation>
-    </message>
-    <message>
-        <source>CPU interpreter forced by game settings.</source>
-        <translation type="vanished">Configurado o interpretador por CPU pela configuração individual.</translation>
-    </message>
-    <message>
-        <source>Software renderer forced by game settings.</source>
-        <translation type="vanished">Renderização por software forçado pelas configurações individuais.</translation>
-    </message>
-    <message>
-        <source>Using software renderer for readbacks based on game settings.</source>
-        <translation type="vanished">Usando o renderizador por software para releituras com base nas configurações individuais.</translation>
-    </message>
-    <message>
-        <source>Interlacing forced by game settings.</source>
-        <translation type="vanished">Entrelaçamento forçado pela configuração individual.</translation>
-    </message>
-    <message>
-        <source>True color disabled by game settings.</source>
-        <translation type="vanished">Efeito cor real desativado pelas configurações individuais.</translation>
-    </message>
-    <message>
-        <source>Upscaling disabled by game settings.</source>
-        <translation type="vanished">Escalonamento desativado pelas configurações individuais.</translation>
-    </message>
-    <message>
-        <source>Scaled dithering disabled by game settings.</source>
-        <translation type="vanished">Dithering escalonado desligado pelas configurações individuais.</translation>
-    </message>
-    <message>
-        <source>Widescreen rendering disabled by game settings.</source>
-        <translation type="vanished">Ajuste de tela panorâmica desativado pelas configurações.</translation>
-    </message>
-    <message>
-        <source>Widescreen disabled by game settings.</source>
-        <translation type="vanished">Ajuste de tela panorâmica desativado pelas configurações.</translation>
-    </message>
-    <message>
-        <source>Forcing NTSC Timings disallowed by game settings.</source>
-        <translation type="vanished">Temporizadores NTSC não permitidos pela configuração individual.</translation>
-    </message>
-    <message>
-        <source>PGXP geometry correction disabled by game settings.</source>
-        <translation type="vanished">Correção geométrica desativada pelas configurações individuais.</translation>
-    </message>
-    <message>
-        <source>PGXP culling disabled by game settings.</source>
-        <translation type="vanished">Correção de curvas desativada pela configuração individual.</translation>
-    </message>
-    <message>
-        <source>PGXP perspective corrected textures disabled by game settings.</source>
-        <translation type="vanished">Perspectiva PGXP corrigiu as texturas desativadas pelas configurações por jogo.</translation>
-    </message>
-    <message>
-        <source>PGXP perspective corrected colors disabled by game settings.</source>
-        <translation type="vanished">Perspectiva PGXP corrigiu as cores desativadas pelas configurações por jogo.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="258"/>
@@ -15810,34 +12569,6 @@ Controles compatíveis: {3}
 Configure um controle compatível da lista acima.</translation>
     </message>
     <message>
-        <source>PGXP texture correction disabled by game settings.</source>
-        <translation type="vanished">Correção de curvas desligada pela configuração individual.</translation>
-    </message>
-    <message>
-        <source>PGXP vertex cache forced by game settings.</source>
-        <translation type="vanished">Vértice armazenado forçado pelas configurações individuais.</translation>
-    </message>
-    <message>
-        <source>PGXP CPU mode forced by game settings.</source>
-        <translation type="vanished">PGXP em modo CPU forçado pelas configurações individuais.</translation>
-    </message>
-    <message>
-        <source>PGXP Depth Buffer disabled by game settings.</source>
-        <translation type="vanished">PGXP modo eixo Z desativado pelas configurações individuais.</translation>
-    </message>
-    <message>
-        <source>Controller %u changed to digital by game settings.</source>
-        <translation type="vanished">Controle %u mudado para modo analógico pela configuração personalizada.</translation>
-    </message>
-    <message>
-        <source>Recompiler memory exceptions forced by game settings.</source>
-        <translation type="vanished">Exeções de RAM forçada pelas configurações.</translation>
-    </message>
-    <message>
-        <source>Recompiler ICache forced by game settings.</source>
-        <translation type="vanished">Recompilador ICache forçado pelas configurações.</translation>
-    </message>
-    <message>
         <location filename="../../core/pad.cpp" line="201"/>
         <source>Save state contains controller type %s in port %u, but %s is used. Switching.</source>
         <translation>Estado rápido contém controle %s na porta %u, mas %s está em uso, mudando.</translation>
@@ -15883,10 +12614,6 @@ Configure um controle compatível da lista acima.</translation>
         <translation>Pré-alocação de disco falhou, pode ser que a imagem esteja danificada.</translation>
     </message>
     <message>
-        <source>Failed to apply ppf patch from &apos;%s&apos;, using unpatched image.</source>
-        <translation type="vanished">Falha ao aplicar modificação ppf &apos;%1s&apos;, usando imagem limpa.</translation>
-    </message>
-    <message>
         <location filename="../../core/system.cpp" line="1163"/>
         <source>Loading state from &apos;{}&apos;...</source>
         <translation>Estado carregado de &apos;{}&apos;...</translation>
@@ -15900,22 +12627,6 @@ Configure um controle compatível da lista acima.</translation>
         <location filename="../../core/system.cpp" line="1220"/>
         <source>State saved to &apos;{}&apos;.</source>
         <translation>Estado salvo em &apos;{}&apos;.</translation>
-    </message>
-    <message>
-        <source>CPU clock speed is set to %u%% (%u / %u). This may result in instability.</source>
-        <translation type="vanished">Velocidade do CPU foi mudada para %u%% isto resultará em instabilidades.</translation>
-    </message>
-    <message>
-        <source>CD-ROM read speedup set to %ux (effective speed %ux). This may result in instability.</source>
-        <translation type="vanished">Leitura do CD-rom acelerada para %ux (velocidade apropriada %u). pode resultar em instabilidades.</translation>
-    </message>
-    <message>
-        <source>CD-ROM seek speedup set to instant. This may result in instability.</source>
-        <translation type="vanished">Aumento de velocidade de busca do CD-ROM definida para instantânea. isso pode resultar em instabilidade.</translation>
-    </message>
-    <message>
-        <source>CD-ROM seek speedup set to %ux. This may result in instability.</source>
-        <translation type="vanished">Aumento de velocidade de busca do CD-ROM definida para % ux. isso pode resultar em instabilidade.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2013"/>
@@ -15943,10 +12654,6 @@ Configure um controle compatível da lista acima.</translation>
         <translation>Disco inserido &apos;{}&apos; ({}).</translation>
     </message>
     <message>
-        <source>Failed to open CD image from save state &apos;%s&apos;: %s. Using existing image &apos;%s&apos;, this may result in instability.</source>
-        <translation type="vanished">Falha ao abrir imagem do estado salvo &apos;%s&apos;: %s. usando imagem existente &apos;%s&apos;, isto, resultará em instabilidades.</translation>
-    </message>
-    <message>
         <location filename="../../core/system.cpp" line="2764"/>
         <source>{} cheats are now active.</source>
         <translation>{} trapaças ativadas.</translation>
@@ -15955,10 +12662,6 @@ Configure um controle compatível da lista acima.</translation>
         <location filename="../../core/system.cpp" line="2765"/>
         <source>{} cheats are now inactive.</source>
         <translation>{} trapaças desativadas.</translation>
-    </message>
-    <message>
-        <source>Failed to open disc image &apos;%s&apos;: %s.</source>
-        <translation type="vanished">Falha ao abrir o disco &apos;%s&apos;: %s.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3470"/>
@@ -15986,67 +12689,6 @@ Configure um controle compatível da lista acima.</translation>
         <translation>Alternando para o modo de execução pelo CPU {}.</translation>
     </message>
     <message>
-        <source>Failed to open CD image from save state: &apos;%s&apos;. Using existing image &apos;%s&apos;, this may result in instability.</source>
-        <translation type="vanished">Falha ao abrir imagem do estado salvo: &apos;%s&apos; Usando imagem existente &apos;%s&apos;, isto, resultará em instabilidades.</translation>
-    </message>
-    <message>
-        <source>Failed to open disc image &apos;%s&apos;.</source>
-        <translation type="vanished">Falha ao abrir o disco &apos;%s&apos;.</translation>
-    </message>
-    <message>
-        <source>Inserted disc &apos;%s&apos; (%s).</source>
-        <translation type="vanished">Disco inserido &apos;%s&apos; (%s).</translation>
-    </message>
-    <message>
-        <source>%ux MSAA is not supported, using %ux instead.</source>
-        <translation type="vanished">%ux filtro MSAA não suportado, usando %ux no lugar.</translation>
-    </message>
-    <message>
-        <source>SSAA is not supported, using MSAA instead.</source>
-        <translation type="vanished">Filtro SSAA não suportado, usando filtro MSAA.</translation>
-    </message>
-    <message>
-        <source>Texture filter &apos;%s&apos; is not supported on your device.</source>
-        <translation type="vanished">Filtro de textura &apos;%s&apos; não é suportado no seu dispositivo.</translation>
-    </message>
-    <message>
-        <source>Texture filter &apos;%s&apos; is not supported with the current renderer.</source>
-        <translation type="vanished">Filtro de textura &apos;%s&apos; não suportado com o renderizador atual.</translation>
-    </message>
-    <message>
-        <source>Adaptive downsampling is not supported with the current renderer, using box filter instead.</source>
-        <translatorcomment>downsampling - suavização e não como qualidade neste caso pois é uma melhoria</translatorcomment>
-        <translation type="vanished">Suavização Adaptativa não suportada no renderizador atual, usando outro filtro.</translation>
-    </message>
-    <message>
-        <source>Geometry shaders are not supported by your GPU, and are required for wireframe rendering.</source>
-        <translation type="vanished">Os shaders não são compatíveis com sua GPU e são obrigatórios para a renderização no modo de wireframe.</translation>
-    </message>
-    <message>
-        <source>Resolution scale set to %ux (display %ux%u, VRAM %ux%u)</source>
-        <translation type="vanished">Escala de resolução configurada para %ux (vídeo %ux%u, VRAM %ux%u)</translation>
-    </message>
-    <message>
-        <source>Multisample anti-aliasing set to %ux (SSAA).</source>
-        <translation type="vanished">Filtro anti-serrilhado configurado para %ux (SSAA).</translation>
-    </message>
-    <message>
-        <source>Multisample anti-aliasing set to %ux.</source>
-        <translation type="vanished">Filtro MSAA anti-serrilhado configurado para %ux.</translation>
-    </message>
-    <message>
-        <source>{}x MSAA is not supported, using {}x instead.</source>
-        <translation type="vanished">{}x MSAA não é compatível. Use {}x.</translation>
-    </message>
-    <message>
-        <source>Resolution scale {0}x is not divisible by downsample scale {1}x, using {2}x instead.</source>
-        <translation type="vanished">A escala de resolução {0}x não é divisível pela escala de redução da resolução {1}x, usando {2}x.</translation>
-    </message>
-    <message>
-        <source>Resolution scale %ux not supported for adaptive smoothing, using %ux.</source>
-        <translation type="vanished">Escala de resolução %ux não é compatível com suavização adaptativa, usando %ux.</translation>
-    </message>
-    <message>
         <location filename="../../core/memory_card.cpp" line="288"/>
         <source>Memory card at &apos;%s&apos; could not be read, formatting.</source>
         <translation>Cartão de memória &apos;%s&apos; não pôde ser lido, formatando.</translation>
@@ -16062,54 +12704,14 @@ Configure um controle compatível da lista acima.</translation>
         <translation>Salvo para o cartão de memória em &apos;{}&apos;.</translation>
     </message>
     <message>
-        <source>Failed to save memory card to &apos;%s&apos;</source>
-        <translation type="vanished">Falha ao salvar para o cartão de memória &apos;%s&apos;</translation>
-    </message>
-    <message>
-        <source>Saved memory card to &apos;%s&apos;</source>
-        <translation type="vanished">Salvo para o cartão de memória em &apos;%s&apos;</translation>
-    </message>
-    <message>
-        <source>Acquired exclusive fullscreen.</source>
-        <translation type="vanished">Modo tela cheia exclusiva.</translation>
-    </message>
-    <message>
-        <source>Failed to acquire exclusive fullscreen.</source>
-        <translation type="vanished">Falha ao ativar tela cheia em modo exclusivo.</translation>
-    </message>
-    <message>
-        <source>Lost exclusive fullscreen.</source>
-        <translation type="vanished">Tela-cheia exclusiva perdida.</translation>
-    </message>
-    <message>
-        <source>OpenGL renderer unavailable, your driver or hardware is not recent enough. OpenGL 3.1 or OpenGL ES 3.0 is required.</source>
-        <translation type="vanished">Renderizador openGL não disponível, driver ou hardware não compatíveis. OpenGL 3.1 ou OpenGLES 3.0 são obrigatórios.</translation>
-    </message>
-    <message>
         <location filename="../../core/analog_controller.cpp" line="69"/>
         <source>Analog mode forcing is disabled by game settings. Controller will start in digital mode.</source>
         <translation>Modo analógico forçado desativado pelas configurações.
 Controles iniciados em modo digital.</translation>
     </message>
-    <message>
-        <source>Failed to read executable from disc. Achievements disabled.</source>
-        <translation type="vanished">Falha ao ler o jogo. conquistas desativadas.</translation>
-    </message>
-    <message>
-        <source>OpenGL renderer unavailable, your driver or hardware is not recent enough. OpenGL 3.1 or OpenGL ES 3.1 is required.</source>
-        <translation type="vanished">Renderizador openGL não disponível, driver ou hardware não compatíveis. OpenGL 3.1 ou OpenGLES 3.0 são obrigatórios.</translation>
-    </message>
 </context>
 <context>
     <name>PlayStationMouse</name>
-    <message>
-        <source>Left</source>
-        <translation type="vanished">   Esquerda</translation>
-    </message>
-    <message>
-        <source>Right</source>
-        <translation type="vanished">       Direita  </translation>
-    </message>
     <message>
         <location filename="../../core/playstation_mouse.cpp" line="205"/>
         <source>Left Button</source>
@@ -16136,25 +12738,9 @@ Controles iniciados em modo digital.</translation>
         <source>Vertical Sensitivity</source>
         <translation>Sensibilidade vertical</translation>
     </message>
-    <message>
-        <source>Relative Mouse Mode</source>
-        <translation type="vanished">Mouse modo relativo</translation>
-    </message>
-    <message>
-        <source>Locks the mouse cursor to the window, use for FPS games.</source>
-        <translation type="vanished">Trava o cursor do mouse dentro da janela, útil para jogos de FPS.</translation>
-    </message>
 </context>
 <context>
     <name>PlaystationMouse</name>
-    <message>
-        <source>Relative Mouse Mode</source>
-        <translation type="vanished">Mouse Modo Relativo</translation>
-    </message>
-    <message>
-        <source>Locks the mouse cursor to the window, use for FPS games.</source>
-        <translation type="vanished">Trava o cursor do mouse dentro da janela, útil para jogos de FPS.</translation>
-    </message>
     <message>
         <location filename="../../core/playstation_mouse.cpp" line="204"/>
         <source>Pointer</source>
@@ -16177,53 +12763,6 @@ Controles iniciados em modo digital.</translation>
         <location filename="../../util/postprocessing.cpp" line="435"/>
         <source>Unknown Error</source>
         <translation>Erro desconhecido</translation>
-    </message>
-</context>
-<context>
-    <name>PostProcessingChainConfigWidget</name>
-    <message>
-        <source>Add</source>
-        <translation type="vanished">Adicionar</translation>
-    </message>
-    <message>
-        <source>Remove</source>
-        <translation type="vanished">Remover</translation>
-    </message>
-    <message>
-        <source>Clear</source>
-        <translation type="vanished">Limpar</translation>
-    </message>
-    <message>
-        <source>Move Up</source>
-        <translation type="vanished">Para cima</translation>
-    </message>
-    <message>
-        <source>Move Down</source>
-        <translation type="vanished">Para baixo</translation>
-    </message>
-    <message>
-        <source>Options...</source>
-        <translation type="vanished">Opções...</translation>
-    </message>
-    <message>
-        <source>No Shaders Available</source>
-        <translation type="vanished">Sem texturas disponíveis</translation>
-    </message>
-    <message>
-        <source>Error</source>
-        <translation type="vanished">Erro</translation>
-    </message>
-    <message>
-        <source>Failed to add shader. The log may contain more information.</source>
-        <translation type="vanished">Falha ao carregar shader. O arquivo de registro contém mais informações.</translation>
-    </message>
-    <message>
-        <source>Question</source>
-        <translation type="vanished">Pergunta</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to clear all shader stages?</source>
-        <translation type="vanished">Tem certeza de que deseja limpar todas as mudanças ?</translation>
     </message>
 </context>
 <context>
@@ -16269,14 +12808,6 @@ Controles iniciados em modo digital.</translation>
         <translation>Para baixo</translation>
     </message>
     <message>
-        <source>Load Preset</source>
-        <translation type="vanished">Carregar pré-definição</translation>
-    </message>
-    <message>
-        <source>Save Preset</source>
-        <translation type="vanished">Salvar pré-definição</translation>
-    </message>
-    <message>
         <location filename="../postprocessingsettingswidget.ui" line="67"/>
         <source>Post Processing Chain</source>
         <translation>Lista de pós-processamentos</translation>
@@ -16306,25 +12837,6 @@ Controles iniciados em modo digital.</translation>
         <source>Are you sure you want to clear all shader stages?</source>
         <translation>Tem certeza de que deseja desfazer todas as mudanças ?</translation>
     </message>
-    <message>
-        <source>The current post-processing chain is invalid, it has been reset.</source>
-        <translation type="vanished">A cadeira de pós-processamento atual é inválida, e foi redefinida.</translation>
-    </message>
-    <message>
-        <source>The current post-processing chain is invalid, it has been reset. Any changes made will overwrite the existing config.</source>
-        <translation type="vanished">A configuração de pós-processamento atual é inválida, e será redefinida. Quaisquer alterações feitas irão sobrescrever as configurações existentes.</translation>
-    </message>
-</context>
-<context>
-    <name>PostProcessingShaderConfigDialog</name>
-    <message>
-        <source>%1 Shader Options</source>
-        <translation type="vanished">%1 Opções de shaders</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation type="vanished">Fechar</translation>
-    </message>
 </context>
 <context>
     <name>PostProcessingShaderConfigWidget</name>
@@ -16353,21 +12865,9 @@ Controles iniciados em modo digital.</translation>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
-    <message>
-        <source>Reset to Defaults</source>
-        <translation type="vanished">Restaurar para os padrões</translation>
-    </message>
 </context>
 <context>
     <name>QObject</name>
-    <message>
-        <source>DuckStation Error</source>
-        <translation type="vanished">Erro no Duckstation</translation>
-    </message>
-    <message>
-        <source>Failed to initialize host interface. Cannot continue.</source>
-        <translation type="vanished">Falha ao iniciar interface. Não é possível continuar.</translation>
-    </message>
     <message>
         <location filename="../qtutils.cpp" line="686"/>
         <source>Failed to open URL</source>
@@ -16430,168 +12930,6 @@ The URL was: %1</source>
     </message>
 </context>
 <context>
-    <name>QtHostInterface</name>
-    <message>
-        <source>Load From File...</source>
-        <translation type="vanished">Carregar do arquivo...</translation>
-    </message>
-    <message>
-        <source>Undo Load State</source>
-        <translation type="vanished">Desfazer carregar estado</translation>
-    </message>
-    <message>
-        <source>Save To File...</source>
-        <translation type="vanished">Carregar para arquivo...</translation>
-    </message>
-    <message>
-        <source>Game Save %1 (%2)</source>
-        <translation type="vanished">Jogo salvo %1 (%2)</translation>
-    </message>
-    <message>
-        <source>Game Save %1 (Empty)</source>
-        <translation type="vanished">Jogo salvo %1 (Vazio)</translation>
-    </message>
-    <message>
-        <source>Global Save %1 (%2)</source>
-        <translation type="vanished">Compartimento global %1 (%2)</translation>
-    </message>
-    <message>
-        <source>Global Save %1 (Empty)</source>
-        <translation type="vanished">Compartimento global %1 (Vazio)</translation>
-    </message>
-    <message>
-        <source>Resume</source>
-        <translation type="vanished">Continuar</translation>
-    </message>
-    <message>
-        <source>Load State</source>
-        <translation type="vanished">Carregar estado</translation>
-    </message>
-    <message>
-        <source>Resume (%1)</source>
-        <translation type="vanished">Continuar (%1)</translation>
-    </message>
-    <message>
-        <source>Game ID: %1
-Game Title: %2
-Game Developer: %3
-Game Publisher: %4
-Achievements: %5 (%6)
-
-</source>
-        <translation type="vanished">ID do jogo: %1
-Título do jogo: %2
-Desenvolvido por: %3
-Publicado por: %4
-Conquistas: %5 (%6)
-</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n points</source>
-        <translation type="vanished">
-            <numerusform>%n pontos</numerusform>
-            <numerusform></numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Game ID: %1
-Game Title: %2
-Game Developer: %3
-Game Publisher: %4
-Achievements: %5 (%6 points)
-
-</source>
-        <translation type="vanished">ID do Jogo: %1
-Título do Jogo: %2
-Desenvolvido por: %3
-Publicado Por: %4
-Total de Conquistas: %5 (%6 pontos)
-</translation>
-    </message>
-    <message>
-        <source>Rich presence inactive or unsupported.</source>
-        <translation type="vanished">Presença rica do Discord inativa ou não suportada.</translation>
-    </message>
-    <message>
-        <source>Game not loaded or no RetroAchievements available.</source>
-        <translation type="vanished">Jogo não carregado ou sem conquistas disponíveis.</translation>
-    </message>
-    <message>
-        <source>PCSXR/Libretro Cheat Files (*.cht *.txt);;All Files (*.*)</source>
-        <translation type="vanished">Arquivos Suportados PCSXR/Libretro (*.cht *.txt);;Todos (*.*)</translation>
-    </message>
-    <message>
-        <source>%1 Save %2 (%3)</source>
-        <translation type="vanished">%1 Salvo %2 (%3)</translation>
-    </message>
-    <message>
-        <source>Game</source>
-        <translation type="vanished">Jogo</translation>
-    </message>
-    <message>
-        <source>No resume save state found.</source>
-        <translation type="vanished">Salvamento rápido não encontrado.</translation>
-    </message>
-    <message>
-        <source>From File...</source>
-        <translation type="vanished">De arquivo...</translation>
-    </message>
-    <message>
-        <source>Select Save State File</source>
-        <translation type="vanished">Escolher arquivo de salvamento rápido</translation>
-    </message>
-    <message>
-        <source>Save States (*.sav)</source>
-        <translation type="vanished">Salvamento rápido (*.sav)</translation>
-    </message>
-    <message>
-        <source>Edit Memory Cards...</source>
-        <translation type="vanished">Editar cartões de memória...</translation>
-    </message>
-    <message>
-        <source>Delete Save States...</source>
-        <translation type="vanished">Apagar estados salvos...</translation>
-    </message>
-    <message>
-        <source>Confirm Save State Deletion</source>
-        <translation type="vanished">Confirma deleção de estado salvo</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to delete all save states for %1?
-
-The saves will not be recoverable.</source>
-        <translation type="vanished">Tem certeza de que deseja apagar os estados salvos %1? Não será possivel reverter esta ação.</translation>
-    </message>
-    <message>
-        <source>&amp;Load Cheats...</source>
-        <translation type="vanished">&amp;Carregar Trapaças...</translation>
-    </message>
-    <message>
-        <source>Select Cheat File</source>
-        <translation type="vanished">Escolha um Arquivo de Trapaça</translation>
-    </message>
-    <message>
-        <source>PCSXR/Libretro Cheat Files (*.cht);;All Files (*.*)</source>
-        <translation type="vanished">PCSXR/Libretro Arquivos de Trapaça (*.cht);;Todos os Arquivos (*.*)</translation>
-    </message>
-    <message>
-        <source>&amp;Save Cheats...</source>
-        <translation type="vanished">&amp;Salvar Trapaças...</translation>
-    </message>
-    <message>
-        <source>PCSXR Cheat Files (*.cht);;All Files (*.*)</source>
-        <translation type="vanished">Arquivos Suportados PCSXR/Libretro (*.cht *.txt);;Todos (*.*)</translation>
-    </message>
-    <message>
-        <source>&amp;Enabled Cheats</source>
-        <translation type="vanished">&amp;Trapaças ativadas</translation>
-    </message>
-    <message>
-        <source>&amp;Apply Cheats</source>
-        <translation type="vanished">&amp;Aplicar trapaças</translation>
-    </message>
-</context>
-<context>
     <name>QtModalProgressCallback</name>
     <message>
         <location filename="../qtprogresscallback.cpp" line="14"/>
@@ -16617,32 +12955,6 @@ The saves will not be recoverable.</source>
         <location filename="../qtprogresscallback.cpp" line="101"/>
         <source>Information</source>
         <translation>Informação</translation>
-    </message>
-</context>
-<context>
-    <name>QtProgressCallback</name>
-    <message>
-        <source>DuckStation</source>
-        <translation type="vanished">DuckStation</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="vanished">Cancelar</translation>
-    </message>
-    <message>
-        <source>Error</source>
-        <translation type="vanished">Erro</translation>
-    </message>
-    <message>
-        <source>Information</source>
-        <translation type="vanished">Informação</translation>
-    </message>
-</context>
-<context>
-    <name>RelativeMouseMode</name>
-    <message>
-        <source>Locks the mouse cursor to the window, use for FPS games.</source>
-        <translation type="vanished">Trava o cursor do mouse dentro da janela, útil para jogos de FPS.</translation>
     </message>
 </context>
 <context>
@@ -16703,14 +13015,6 @@ The saves will not be recoverable.</source>
         <translation>Compartimento de dados {0} escolhido({1}).</translation>
     </message>
     <message>
-        <source>Saved at {0:%H:%M:%S} on {0:%a} {0:%Y/%m/%d}.</source>
-        <translation type="vanished">Salvo em {0:%H:%M:%S} on {0:%a} {0:%Y/%m/%d}.</translation>
-    </message>
-    <message>
-        <source>No Save State</source>
-        <translation type="vanished">Sem estado salvo</translation>
-    </message>
-    <message>
         <location filename="../../core/imgui_overlays.cpp" line="1016"/>
         <source>Global Slot {}</source>
         <translation>Compartimento global {}</translation>
@@ -16724,22 +13028,6 @@ The saves will not be recoverable.</source>
         <location filename="../../core/imgui_overlays.cpp" line="919"/>
         <source>No save present in this slot.</source>
         <translation>Não há dados nesse compartimento.</translation>
-    </message>
-    <message>
-        <source>Global Slot %d</source>
-        <translation type="vanished">Compartimento global %d</translation>
-    </message>
-    <message>
-        <source>Game Slot %d</source>
-        <translation type="vanished">Compartimento %d</translation>
-    </message>
-    <message>
-        <source>Gane Slot %d</source>
-        <translation type="vanished">Compartimento %d</translation>
-    </message>
-    <message>
-        <source>%s Slot %d</source>
-        <translation type="vanished">%s Compartimento %d</translation>
     </message>
 </context>
 <context>
@@ -16810,230 +13098,6 @@ Deseja criar esse diretório?</translation>
 </context>
 <context>
     <name>SettingsDialog</name>
-    <message>
-        <source>DuckStation Settings</source>
-        <translation type="vanished">Configurações</translation>
-    </message>
-    <message>
-        <source>General Settings</source>
-        <translation type="vanished">Configurações gerais</translation>
-    </message>
-    <message>
-        <source>BIOS Settings</source>
-        <translation type="vanished">Configurações de BIOS</translation>
-    </message>
-    <message>
-        <source>Console Settings</source>
-        <translation type="vanished">Configurações do console</translation>
-    </message>
-    <message>
-        <source>Emulation Settings</source>
-        <translation type="vanished">Configurações de emulação</translation>
-    </message>
-    <message>
-        <source>Game List Settings</source>
-        <translation type="vanished">Configurar lista de jogos</translation>
-    </message>
-    <message>
-        <source>Hotkey Settings</source>
-        <translation type="vanished">Configurações de atalhos</translation>
-    </message>
-    <message>
-        <source>Controller Settings</source>
-        <translation type="vanished">Configurações de controle</translation>
-    </message>
-    <message>
-        <source>Memory Card Settings</source>
-        <translation type="vanished">Cartões de memória</translation>
-    </message>
-    <message>
-        <source>Display Settings</source>
-        <translation type="vanished">Opções de vídeo</translation>
-    </message>
-    <message>
-        <source>Enhancement Settings</source>
-        <translation type="vanished">Opções de aprimoramento</translation>
-    </message>
-    <message>
-        <source>Post-Processing Settings</source>
-        <translation type="vanished">Ajustes de pós-processamento</translation>
-    </message>
-    <message>
-        <source>Achievement Settings</source>
-        <translation type="vanished">Configurações de conquistas</translation>
-    </message>
-    <message>
-        <source>Restore Defaults</source>
-        <translation type="vanished">Restaurar padrões</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation type="vanished">Fechar</translation>
-    </message>
-    <message>
-        <source>GPU Settings</source>
-        <translation type="vanished">Configurações da GPU</translation>
-    </message>
-    <message>
-        <source>Audio Settings</source>
-        <translation type="vanished">Configurações de áudio</translation>
-    </message>
-    <message>
-        <source>Advanced Settings</source>
-        <translation type="vanished">Configurações avançadas</translation>
-    </message>
-    <message>
-        <source>This DuckStation build was not compiled with RetroAchievements support.</source>
-        <translation type="vanished">Esta versão do DuckStation não foi construída com a função de conquistas.</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;General Settings&lt;/strong&gt;&lt;hr&gt;These options control how the emulator looks and behaves.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;Configurações gerais&lt;/strong&gt;&lt;hr&gt;Essas opções controlam a aparência do emulador e o seu comportamento. Passe o ponteiro do mouse sobre uma das opções para obter informações adicionais.</translation>
-    </message>
-    <message>
-        <source>Summary</source>
-        <translation type="vanished">Índice</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Summary&lt;/strong&gt;&lt;hr&gt;This page shows information about the selected game, and allows you to validate your disc was dumped correctly.</source>
-        <translation type="vanished">&lt;strong&gt;Índice1&lt;/strong&gt;&lt;hr&gt;Esta página mostra informações sobre o jogo selecionado e permite que você valide que seu disco foi despejado corretamente.</translation>
-    </message>
-    <message>
-        <source>General</source>
-        <translation type="vanished">Geral</translation>
-    </message>
-    <message>
-        <source>Game List</source>
-        <translation type="vanished">Lista de jogos</translation>
-    </message>
-    <message>
-        <source>BIOS</source>
-        <translation type="vanished">BIOS</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;BIOS Settings&lt;/strong&gt;&lt;hr&gt;These options control which BIOS is used and how it will be patched.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;Configurações do BIOS&lt;/strong&gt;&lt;hr&gt;Essas opções controlam qual BIOS é usado.&lt;br&gt;&lt;br&gt;Passe o ponteiro do mouse sobre uma opção para obter mais informações.</translation>
-    </message>
-    <message>
-        <source>Console</source>
-        <translation type="vanished">Console</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Console Settings&lt;/strong&gt;&lt;hr&gt;These options determine the configuration of the simulated console.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;Configurações do console&lt;/strong&gt;&lt;hr&gt;Essas opções determinam a configuração do console emulado. Passe o ponteiro do mouse sobre uma das opções para obter informações adicionais.</translation>
-    </message>
-    <message>
-        <source>Emulation</source>
-        <translation type="vanished">Emulação</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Emulation Settings&lt;/strong&gt;&lt;hr&gt;These options determine the speed and runahead behavior of the system.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;Configurações de emulação&lt;/strong&gt;&lt;hr&gt;Essas opções determinam a velocidade e o comportamento de avanço do sistema.&lt;br&gt;&lt;br&gt;Passe o ponteiro do mouse sobre as opções para ver mais detalhes.</translation>
-    </message>
-    <message>
-        <source>Memory Cards</source>
-        <translation type="vanished">Cartões de memória</translation>
-    </message>
-    <message>
-        <source>Audio</source>
-        <translation type="vanished">Áudio</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Folder Settings&lt;/strong&gt;&lt;hr&gt;These options control where DuckStation will save runtime data files.</source>
-        <translation type="vanished">&lt;strong&gt;Configurações de pasta&lt;/strong&gt;&lt;hr&gt;Essas opções controlam onde o DuckStation salvará os arquivos de dados de tempo de execução.</translation>
-    </message>
-    <message>
-        <source>%1 [%2]</source>
-        <translation type="vanished">%1 [%2]</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive. Additionally, the redump.org database can be downloaded or updated to provide titles for discs, as the discs themselves do not provide title information.</source>
-        <translation type="vanished">&lt;strong&gt;Configuração Lista de Jogos&lt;/strong&gt;&lt;hr&gt;A lista acima mostra os diretórios que serão pesquisados ​​pelo DuckStation para preencher a lista de jogos. Os diretórios de pesquisa podem ser adicionados, removidos e alternados para recursivo / não recursivo. Além disso, o banco de dados pode ser baixado ou atualizado para fornecer mais títulos, pois os próprios discos não fornecem tais informações.</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive.</source>
-        <translation type="vanished">&lt;strong&gt;Configurações da lista de jogos&lt;/strong&gt;&lt;hr&gt;A lista acima mostra os diretórios de pesquisa aos quais o emulador irá popular com seus jogos. esses diretórios podem ser adicionados, removidos e alterados para recursivo ou não recursivo.</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Hotkey Settings&lt;/strong&gt;&lt;hr&gt;Binding a hotkey allows you to trigger events such as a resetting or taking screenshots at the press of a key/controller button. Hotkey titles are self-explanatory. Clicking a binding will start a countdown, in which case you should press the key or controller button/axis you wish to bind. If no button  is pressed and the timer lapses, the binding will be unchanged. To clear a binding, right-click the button. To  bind multiple buttons, hold Shift and click the button.</source>
-        <translation type="vanished">&lt;strong&gt;Configuração de atalhos&lt;/strong&gt;&lt;hr&gt;Vincular uma tecla de atalho permite acionar eventos como redefinir botões vinculados ou tirar capturas de tela com o pressionar de uma tecla. Clicando em uma das opções iniciará uma contagem regressiva; neste caso você deve pressionar uma tecla referente ao botão ou eixo que deseja vincular. Se nenhum botão for pressionado o cronômetro irá parar e o vínculo permanecerá inalterado. Para limpar um vínculo clique com o botão direito sobre a opção desejada, para vincular mais de um botão segure Shift e clique no botão que gostaria de vincular.</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Controller Settings&lt;/strong&gt;&lt;hr&gt;This page lets you choose the type of controller you wish to simulate for the console, and rebind the keys or host game controller buttons to your choosing. Clicking a binding will start a countdown, in which case you should press the key or controller button/axis you wish to bind. (For rumble, press any button/axis on the controller you wish to send rumble to.) If no button is pressed and the timer lapses, the binding will be unchanged. To clear a binding, right-click the button. To bind multiple buttons, hold Shift and click the button.</source>
-        <translation type="vanished">&lt;strong&gt;Configuração de controle&lt;/strong&gt;&lt;hr&gt;Essa página permite escolher o tipo de controle que você deseja emular bem como vincular teclas ou botões para seu controle a vontade clicar em vincular iniciará uma contagem regressiva; você deve pressionar a tecla ou botão do controle que deseja vincular. (Para vibração, pressione qualquer botão no controle para o qual você deseja atribuir).</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Memory Card Settings&lt;/strong&gt;&lt;hr&gt;This page lets you control what mode the memory card emulation will function in, and where the images for these cards will be stored on disk.</source>
-        <translation type="vanished">&lt;strong&gt;Configuração de cartão de memória&lt;/strong&gt;&lt;hr&gt;Esta página permite controlar em que modo a emulação do cartão de memória funcionará e onde as imagens desses cartões serão armazenadas.</translation>
-    </message>
-    <message>
-        <source>Display</source>
-        <translation type="vanished">Exibição</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Display Settings&lt;/strong&gt;&lt;hr&gt;These options control the how the frames generated by the console are displayed on the screen.</source>
-        <translation type="vanished">&lt;strong&gt;Opções de vídeo&lt;/strong&gt;&lt;hr&gt;Essas opções controlam como os quadros gerados pelo console são exibidos na tela.</translation>
-    </message>
-    <message>
-        <source>Enhancements</source>
-        <translation type="vanished">Aprimoramentos</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Enhancement Settings&lt;/strong&gt;&lt;hr&gt;These options control enhancements which can improve visuals compared to the original console. Mouse over each option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;Opções de aprimoramento&lt;/strong&gt;&lt;hr&gt;Essas opções controlam como as melhorias visuais serão controladas em comparação com o console original. Passe o ponteiro do mouse sobre uma das opções para obter informações adicionais.</translation>
-    </message>
-    <message>
-        <source>Post-Processing</source>
-        <translation type="vanished">Pós-processamento</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Post-Processing Settings&lt;/strong&gt;&lt;hr&gt;Post processing allows you to alter the appearance of the image displayed on the screen with various filters. Shaders will be executed in sequence.</source>
-        <translation type="vanished">&lt;strong&gt;Configurações de pós-processamento&lt;/strong&gt;&lt;hr&gt;Esses ajustes, te permitem alterar a aparência da imagem exibida na tela com muitos filtros. os shaders serão executados em sequência.</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;GPU Settings&lt;/strong&gt;&lt;hr&gt;These options control the simulation of the GPU in the console. Various enhancements are available, mouse over each for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;Configuração da GPU&lt;/strong&gt;&lt;hr&gt;Essas opções controlam a simulação da GPU no console. Estão disponíveis várias melhorias, passe o mouse sobre cada uma para obter informações adicionais.</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Audio Settings&lt;/strong&gt;&lt;hr&gt;These options control the audio output of the console. Mouse over an option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;Configurações de áudio&lt;/strong&gt;&lt;hr&gt;Essas opções controlam a saída do som no emulador. Passe o ponteiro do mouse sobre uma das opções para obter informações adicionais.</translation>
-    </message>
-    <message>
-        <source>Achievements</source>
-        <translation type="vanished">Conquistas</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Achievement Settings&lt;/strong&gt;&lt;hr&gt;These options control RetroAchievements. Mouse over an option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;Configurações de conquistas&lt;/strong&gt;&lt;hr&gt;Estas opçõse controlam as opções do RetroAchievements. Aponte o ponteiro do mouse para mais informações.</translation>
-    </message>
-    <message>
-        <source>Folders</source>
-        <translation type="vanished">Pastas</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Folder Settings&lt;/strong&gt;&lt;hr&gt;These options control where PCSX2 will save runtime data files.</source>
-        <translation type="vanished">&lt;strong&gt;Conifuguração de pastas&lt;/strong&gt;&lt;hr&gt;Essas opções controlam onde o Duckstation salvará os arquivos de dados de tempo de execução.</translation>
-    </message>
-    <message>
-        <source>Advanced</source>
-        <translation type="vanished">Avançado</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;hr&gt;These options control logging and internal behavior of the emulator. Mouse over an option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;Opções Avançadas&lt;/strong&gt;&lt;hr&gt;Essas opções controlam o registro e o comportamento interno do emulador. Passe o ponteiro do mouse sobre uma das opções para obter informações adicionais.</translation>
-    </message>
-    <message>
-        <source>Confirm Restore Defaults</source>
-        <translation type="vanished">Confirmar restaurar para os padrões</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to restore the default settings? Any preferences will be lost.</source>
-        <translation type="vanished">Você tem certeza de que deseja restaurar as cofigurações para o padrão? As preferências atuais serão perdidas.</translation>
-    </message>
-    <message>
-        <source>Recommended Value</source>
-        <translation type="vanished">Recomendado</translation>
-    </message>
     <message>
         <location filename="../settingwidgetbinder.h" line="126"/>
         <source>Use Global Setting [Enabled]</source>
@@ -17494,10 +13558,6 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
 <context>
     <name>System</name>
     <message>
-        <source>Save state is incompatible: expecting version %u but state is version %u.</source>
-        <translation type="vanished">Estado salvo incompatível: versão do mesmo esperada %u não a versão %u.</translation>
-    </message>
-    <message>
         <location filename="../../core/system.cpp" line="2157"/>
         <source>Failed to load %s BIOS.</source>
         <translation>Falha ao carregar %s BIOS.</translation>
@@ -17617,14 +13677,6 @@ O nome do arquivo SBI deve corresponder ao nome da imagem do disco.</translation
         <translation>Versão inválida {} ({} versão {})</translation>
     </message>
     <message>
-        <source>Failed to open CD image &apos;%s&apos; used by save state: %s.</source>
-        <translation type="vanished">Falha ao abrir imagem do CD &apos;%s&apos; usado pelo estado salvo: %s.</translation>
-    </message>
-    <message>
-        <source>Failed to switch to subimage %u in CD image &apos;%s&apos; used by save state: %s.</source>
-        <translation type="vanished">Falha ao trocar disco %u do CD &apos;%s&apos; usado pelo estado salvo: %s.</translation>
-    </message>
-    <message>
         <location filename="../../core/system.cpp" line="2999"/>
         <source>Per-game memory card cannot be used for slot {} as the running game has no code. Using shared card instead.</source>
         <translation>O cartão de memória individual não pode ser usado no compartimento {} porque o jogo em execução não possui código. Usando cartão compartilhado.</translation>
@@ -17645,110 +13697,9 @@ O nome do arquivo SBI deve corresponder ao nome da imagem do disco.</translation
         <translation>O cartão de memória individual não pode ser usado no compartimento {} porque o jogo em execução não tem caminho configurado. Usando cartão compartilhado.</translation>
     </message>
     <message>
-        <source>Per-game memory card cannot be used for slot %u as the running game has no path. Using shared card instead.</source>
-        <translation type="vanished">O cartão de memória individual não pôde ser usado no compartimento %u caminho não configurado. usando cartão compartilhado.</translation>
-    </message>
-    <message>
-        <source>You are attempting to run a libcrypt protected game without an SBI file:
-
-%s: %s
-
-Your dump is incomplete, you must add the SBI file to run this game. 
-
-The name of the SBI file must match the name of the disc image.</source>
-        <translation type="vanished">Você está tentando rodar um jogo protegido sem um arquivo SBI:
-
-%s: %s
-
-Sua cópia está incompleta, você deve adicionar o arquivo SBI para que o jogo funcione.
-
-O nome do arquivo SBI deve ser idêntico ao nome do jogo.</translation>
-    </message>
-    <message>
-        <source>You are attempting to run a libcrypt protected game without an SBI file:
-
-%s: %s
-
-Your dump is incomplete, you must add the SBI file to run this game.</source>
-        <translation type="vanished">Você está tentando rodar um jogo que contém proteção contra cópias, sem o arquivo apropriado (SBI).
-
-%s: %s 
-
-Seu despejo está incompleto, você deve adicionar o arquivo SBI para rodá-lo corretamente.</translation>
-    </message>
-    <message>
-        <source>Failed to open CD image from save state: &apos;%s&apos;.</source>
-        <translation type="vanished">Falha ao abrir estado salvo: &apos;%s&apos;.</translation>
-    </message>
-    <message>
-        <source>Per-game memory card cannot be used for slot %u as the running game has no code. Using shared card instead.</source>
-        <translation type="vanished">Caminho para o cartão de memória no compartimento %u não pôde ser usado
-o jogo iniciado não possui um códido válido. Será usado um cartão compartilhado.</translation>
-    </message>
-    <message>
-        <source>Per-game memory card cannot be used for slot %u as the running game has no title. Using shared card instead.</source>
-        <translation type="vanished">Caminho para o cartão de memória no compartimento %u não pôde ser usado
-o jogo iniciado não possui um nome válido. Será usado um cartão compartilhado.</translation>
-    </message>
-    <message>
-        <source>Memory card path for slot %u is missing, using default.</source>
-        <translation type="vanished">Caminho para o Cartão de Memória %u incorreto, usando o padrão.</translation>
-    </message>
-    <message>
         <location filename="../../core/system.cpp" line="3291"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>Jogo trocado, recarregando cartões de memória.</translation>
-    </message>
-    <message>
-        <source>You are attempting to run a libcrypt protected game without an SBI file:
-
-%s: %s
-
-The game will likely not run properly.
-
-Please check the README for instructions on how to add an SBI file.
-
-Do you wish to continue?</source>
-        <translation type="vanished">Você está tentando jogar um jogo encriptado / protegido sem um arquivo SBI:
-%s: %s 
-O jogo provavelmente não irá funcionar corretamente.
-
-Por gentileza, verifique o arquivo README para maiores instruções de como adicionar o arquivo em questão.
-
-Quer mesmo continuar?</translation>
-    </message>
-    <message>
-        <source>You are attempting to run a libcrypt protected game without a SBI file:
-
-%s: %s
-
-The game will likely not run properly.
-
-Please check the README for instructions on how to add a SBI file.</source>
-        <translation type="vanished">Você está tentando rodar um jogo que contém proteção contra cópias, sem o arquivo SBI. %s: %s o jogo provavelmente não irá funcionar corrretamente. Por gentileza leia o arquivo README para maiores instruções de como adicionar tais arquivos ao seu jogo.</translation>
-    </message>
-    <message>
-        <source>Removing current media from playlist, removing media from CD-ROM.</source>
-        <translation type="vanished">Mudando mídia atual da lista, removendo mídia do leitor de CD.</translation>
-    </message>
-    <message>
-        <source>Changing current media from playlist, replacing current media.</source>
-        <translation type="vanished">Mudando mídia atual da lista, recalculando mídia atual.</translation>
-    </message>
-    <message>
-        <source>Failed to acquire host display.</source>
-        <translation type="vanished">Falha ao iniciar exibição do jogo.</translation>
-    </message>
-    <message>
-        <source>System failed to boot. The log may contain more information.</source>
-        <translation type="vanished">Falha ao iniciar o sistema. O registro pode conter mais informações.</translation>
-    </message>
-</context>
-<context>
-    <name>USB</name>
-    <message>
-        <source>Applies a color to the chosen crosshair images, can be used for multiple players. Specify in HTML/CSS format (e.g. #aabbcc)</source>
-        <translation type="vanished">Aplica uma cor às imagens de mira escolhidas, pode ser usado por vários jogadores. Especifique no formato HTML/CSS (por exemplo, #aabbcc)</translation>
     </message>
 </context>
 </TS>
