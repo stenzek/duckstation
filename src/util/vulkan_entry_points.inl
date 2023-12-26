@@ -83,6 +83,11 @@ VULKAN_INSTANCE_ENTRY_POINT(vkCreateDisplayModeKHR, false)
 VULKAN_INSTANCE_ENTRY_POINT(vkGetDisplayPlaneCapabilitiesKHR, false)
 VULKAN_INSTANCE_ENTRY_POINT(vkCreateDisplayPlaneSurfaceKHR, false)
 
+// VK_KHR_get_physical_device_properties2
+VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceFeatures2KHR, false)
+VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceProperties2KHR, false)
+VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceMemoryProperties2KHR, false)
+
 // Vulkan 1.1 functions.
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceFeatures2, false)
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceProperties2, false)

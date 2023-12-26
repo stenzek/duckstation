@@ -586,7 +586,7 @@ void VulkanDevice::ProcessDeviceExtensions()
   VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT attachment_feedback_loop_feature = {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT, nullptr, VK_FALSE};
   VkPhysicalDeviceDynamicRenderingFeatures dynamic_rendering_feature = {
-    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES, nullptr, VK_TRUE};
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES, nullptr, VK_FALSE};
 
   // add in optional feature structs
   if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
@@ -596,8 +596,30 @@ void VulkanDevice::ProcessDeviceExtensions()
   if (m_optional_extensions.vk_khr_dynamic_rendering)
     Vulkan::AddPointerToChain(&features2, &dynamic_rendering_feature);
 
-  // query
-  vkGetPhysicalDeviceFeatures2(m_physical_device, &features2);
+  // we might not have VK_KHR_get_physical_device_properties2...
+  if (!vkGetPhysicalDeviceFeatures2 || !vkGetPhysicalDeviceProperties2 || !vkGetPhysicalDeviceMemoryProperties2)
+  {
+    if (!vkGetPhysicalDeviceFeatures2KHR || !vkGetPhysicalDeviceProperties2KHR ||
+        !vkGetPhysicalDeviceMemoryProperties2KHR)
+    {
+      Log_ErrorPrint(
+        "One or more functions from VK_KHR_get_physical_device_properties2 is missing, disabling extension.");
+      m_optional_extensions.vk_khr_get_physical_device_properties2 = false;
+      vkGetPhysicalDeviceFeatures2 = nullptr;
+      vkGetPhysicalDeviceProperties2 = nullptr;
+      vkGetPhysicalDeviceMemoryProperties2 = nullptr;
+    }
+    else
+    {
+      vkGetPhysicalDeviceFeatures2 = vkGetPhysicalDeviceFeatures2KHR;
+      vkGetPhysicalDeviceProperties2 = vkGetPhysicalDeviceProperties2KHR;
+      vkGetPhysicalDeviceMemoryProperties2 = vkGetPhysicalDeviceMemoryProperties2KHR;
+    }
+  }
+
+  // don't bother querying if we're not actually looking at any features
+  if (vkGetPhysicalDeviceFeatures2 && features2.pNext)
+    vkGetPhysicalDeviceFeatures2(m_physical_device, &features2);
 
   // confirm we actually support it
   m_optional_extensions.vk_ext_rasterization_order_attachment_access &=
@@ -618,8 +640,9 @@ void VulkanDevice::ProcessDeviceExtensions()
   if (m_optional_extensions.vk_khr_push_descriptor)
     Vulkan::AddPointerToChain(&properties2, &push_descriptor_properties);
 
-  // query
-  vkGetPhysicalDeviceProperties2(m_physical_device, &properties2);
+  // don't bother querying if we're not actually looking at any features
+  if (vkGetPhysicalDeviceProperties2 && properties2.pNext)
+    vkGetPhysicalDeviceProperties2(m_physical_device, &properties2);
 
   m_optional_extensions.vk_khr_push_descriptor &= (push_descriptor_properties.maxPushDescriptors >= 1);
 
