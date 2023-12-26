@@ -5,6 +5,10 @@
       <Configuration>DebugFast</Configuration>
       <Platform>ARM64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="DebugFast|Win32">
+      <Configuration>DebugFast</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="DebugFast|x64">
       <Configuration>DebugFast</Configuration>
       <Platform>x64</Platform>
@@ -12,6 +16,10 @@
     <ProjectConfiguration Include="Debug|ARM64">
       <Configuration>Debug</Configuration>
       <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
@@ -21,6 +29,10 @@
       <Configuration>ReleaseLTCG</Configuration>
       <Platform>ARM64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseLTCG|Win32">
+      <Configuration>ReleaseLTCG</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="ReleaseLTCG|x64">
       <Configuration>ReleaseLTCG</Configuration>
       <Platform>x64</Platform>
@@ -28,6 +40,10 @@
     <ProjectConfiguration Include="Release|ARM64">
       <Configuration>Release</Configuration>
       <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
@@ -37,6 +53,10 @@
       <Configuration>DebugFast-Clang</Configuration>
       <Platform>ARM64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="DebugFast-Clang|Win32">
+      <Configuration>DebugFast-Clang</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="DebugFast-Clang|x64">
       <Configuration>DebugFast-Clang</Configuration>
       <Platform>x64</Platform>
@@ -44,6 +64,10 @@
     <ProjectConfiguration Include="Debug-Clang|ARM64">
       <Configuration>Debug-Clang</Configuration>
       <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug-Clang|Win32">
+      <Configuration>Debug-Clang</Configuration>
+      <Platform>Win32</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Debug-Clang|x64">
       <Configuration>Debug-Clang</Configuration>
@@ -53,6 +77,10 @@
       <Configuration>ReleaseLTCG-Clang</Configuration>
       <Platform>ARM64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseLTCG-Clang|Win32">
+      <Configuration>ReleaseLTCG-Clang</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="ReleaseLTCG-Clang|x64">
       <Configuration>ReleaseLTCG-Clang</Configuration>
       <Platform>x64</Platform>
@@ -60,6 +88,10 @@
     <ProjectConfiguration Include="Release-Clang|ARM64">
       <Configuration>Release-Clang</Configuration>
       <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release-Clang|Win32">
+      <Configuration>Release-Clang</Configuration>
+      <Platform>Win32</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release-Clang|x64">
       <Configuration>Release-Clang</Configuration>
