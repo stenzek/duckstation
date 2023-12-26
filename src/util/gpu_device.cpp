@@ -793,23 +793,21 @@ std::unique_ptr<GPUTexture> GPUDevice::FetchTexture(u32 width, u32 height, u32 l
   if (is_texture && m_features.prefer_unused_textures)
   {
     // Try to find a texture that wasn't used this frame first.
-    // Start at the back of the pool.
-    it = m_texture_pool.end();
-    for (auto rit = m_texture_pool.rbegin(); rit != m_texture_pool.rend(); ++rit)
+    for (it = m_texture_pool.begin(); it != m_texture_pool.end(); ++it)
     {
-      if (rit->use_counter == m_texture_pool_counter)
+      if (it->use_counter == m_texture_pool_counter)
       {
         // We're into textures recycled this frame, not going to find anything newer.
         // But prefer reuse over creating a new texture.
         if (m_texture_pool.size() < pool_size)
+        {
+          it = m_texture_pool.end();
           break;
+        }
       }
 
-      if (rit->key == key)
-      {
-        it = std::prev(rit.base());
+      if (it->key == key)
         break;
-      }
     }
   }
   else
@@ -869,7 +867,7 @@ void GPUDevice::RecycleTexture(std::unique_ptr<GPUTexture> texture)
   pool.push_back({std::move(texture), m_texture_pool_counter, key});
 
   const u32 max_size = is_texture ? MAX_TEXTURE_POOL_SIZE : MAX_TARGET_POOL_SIZE;
-  while (pool.size() >= max_size)
+  while (pool.size() > max_size)
   {
     Log_ProfileFmt("Trim {}x{} texture from pool", pool.front().texture->GetWidth(), pool.front().texture->GetHeight());
     pool.pop_front();
@@ -901,7 +899,7 @@ void GPUDevice::TrimTexturePool()
     TexturePool& pool = pool_idx ? m_target_pool : m_texture_pool;
     for (auto it = pool.begin(); it != pool.end();)
     {
-      const u32 delta = (it->use_counter - prev_counter);
+      const u32 delta = (prev_counter - it->use_counter);
       if (delta < POOL_PURGE_DELAY)
         break;
 

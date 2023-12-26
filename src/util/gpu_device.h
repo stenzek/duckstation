@@ -680,7 +680,7 @@ protected:
   std::unique_ptr<GPUSampler> m_linear_sampler;
 
 private:
-  static constexpr u32 MAX_TEXTURE_POOL_SIZE = 100;
+  static constexpr u32 MAX_TEXTURE_POOL_SIZE = 125;
   static constexpr u32 MAX_TARGET_POOL_SIZE = 50;
   static constexpr u32 POOL_PURGE_DELAY = 300;
 
