@@ -102,6 +102,8 @@ struct Settings
   bool gpu_disable_shader_cache = false;
   bool gpu_disable_dual_source_blend = false;
   bool gpu_disable_framebuffer_fetch = false;
+  bool gpu_disable_texture_buffers = false;
+  bool gpu_disable_texture_copy_to_self = false;
   bool gpu_per_sample_shading = false;
   bool gpu_true_color = true;
   bool gpu_scaled_dithering = true;

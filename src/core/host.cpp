@@ -253,6 +253,10 @@ bool Host::CreateGPUDevice(RenderAPI api)
     disabled_features |= GPUDevice::FEATURE_MASK_DUAL_SOURCE_BLEND;
   if (g_settings.gpu_disable_framebuffer_fetch)
     disabled_features |= GPUDevice::FEATURE_MASK_FRAMEBUFFER_FETCH;
+  if (g_settings.gpu_disable_texture_buffers)
+    disabled_features |= GPUDevice::FEATURE_MASK_TEXTURE_BUFFERS;
+  if (g_settings.gpu_disable_texture_copy_to_self)
+    disabled_features |= GPUDevice::FEATURE_MASK_TEXTURE_COPY_TO_SELF;
 
   // TODO: FSUI should always use vsync..
   const bool vsync = System::IsValid() ? System::ShouldUseVSync() : g_settings.video_sync_enabled;

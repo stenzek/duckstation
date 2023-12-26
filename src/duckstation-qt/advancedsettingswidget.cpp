@@ -349,6 +349,10 @@ void AdvancedSettingsWidget::addTweakOptions()
                         "DisableDualSourceBlend", false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Disable Framebuffer Fetch"), "GPU",
                         "DisableFramebufferFetch", false);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Disable Texture Buffers"), "GPU", "DisableTextureBuffers",
+                        false);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Disable Texture Copy To Self"), "GPU",
+                        "DisableTextureCopyToSelf", false);
 
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Stretch Display Vertically"), "Display",
                         "StretchVertically", false);
@@ -377,11 +381,11 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   {
     int i = 0;
 
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);    // Disable all enhancements
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);     // Show status indicators
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);    // Show frame times
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);     // Apply compatibility settings
-    setIntRangeTweakOption(m_ui.tweakOptionTable, i++, 0);       // Display FPS limit
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Disable all enhancements
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);  // Show status indicators
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Show frame times
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);  // Apply compatibility settings
+    setIntRangeTweakOption(m_ui.tweakOptionTable, i++, 0);    // Display FPS limit
     setChoiceTweakOption(m_ui.tweakOptionTable, i++, Settings::DEFAULT_DISPLAY_EXCLUSIVE_FULLSCREEN_CONTROL);
     setChoiceTweakOption(m_ui.tweakOptionTable, i++, 0);         // Multisample antialiasing
     setChoiceTweakOption(m_ui.tweakOptionTable, i++, 0);         // Wireframe mode
@@ -400,7 +404,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
                            Settings::DEFAULT_VRAM_WRITE_DUMP_WIDTH_THRESHOLD); // Minimum dumped VRAM width
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
-                           Settings::DEFAULT_VRAM_WRITE_DUMP_HEIGHT_THRESHOLD); // Minimum dumped VRAm height
+                           Settings::DEFAULT_VRAM_WRITE_DUMP_HEIGHT_THRESHOLD); // Minimum dumped VRAM height
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
                            static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS)); // DMA max slice ticks
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
@@ -413,6 +417,8 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Disable Shader Cache
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Disable Dual-Source Blend
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Disable Framebuffer Fetch
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Disable Texture Buffers
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Disable Texture Copy To Self
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Stretch Display Vertically
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);                       // Increase Timer Resolution
     setChoiceTweakOption(m_ui.tweakOptionTable, i++,
@@ -463,6 +469,8 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue("GPU", "DisableShaderCache");
   sif->DeleteValue("GPU", "DisableDualSourceBlend");
   sif->DeleteValue("GPU", "DisableFramebufferFetch");
+  sif->DeleteValue("GPU", "DisableTextureBuffers");
+  sif->DeleteValue("GPU", "DisableTextureCopyToSelf");
   sif->DeleteValue("Display", "StretchVertically");
   sif->DeleteValue("Main", "IncreaseTimerResolution");
   sif->DeleteValue("CDROM", "MechaconVersion");

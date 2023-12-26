@@ -183,6 +183,8 @@ void Settings::Load(SettingsInterface& si)
   gpu_disable_shader_cache = si.GetBoolValue("GPU", "DisableShaderCache", false);
   gpu_disable_dual_source_blend = si.GetBoolValue("GPU", "DisableDualSourceBlend", false);
   gpu_disable_framebuffer_fetch = si.GetBoolValue("GPU", "DisableFramebufferFetch", false);
+  gpu_disable_texture_buffers = si.GetBoolValue("GPU", "DisableTextureBuffers", false);
+  gpu_disable_texture_copy_to_self = si.GetBoolValue("GPU", "DisableTextureCopyToSelf", false);
   gpu_per_sample_shading = si.GetBoolValue("GPU", "PerSampleShading", false);
   gpu_use_thread = si.GetBoolValue("GPU", "UseThread", true);
   gpu_use_software_renderer_for_readbacks = si.GetBoolValue("GPU", "UseSoftwareRendererForReadbacks", false);
@@ -447,6 +449,8 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("GPU", "DisableShaderCache", gpu_disable_shader_cache);
   si.SetBoolValue("GPU", "DisableDualSourceBlend", gpu_disable_dual_source_blend);
   si.SetBoolValue("GPU", "DisableFramebufferFetch", gpu_disable_framebuffer_fetch);
+  si.SetBoolValue("GPU", "DisableTextureBuffers", gpu_disable_texture_buffers);
+  si.SetBoolValue("GPU", "DisableTextureCopyToSelf", gpu_disable_texture_copy_to_self);
   si.SetBoolValue("GPU", "PerSampleShading", gpu_per_sample_shading);
   si.SetBoolValue("GPU", "UseThread", gpu_use_thread);
   si.SetBoolValue("GPU", "ThreadedPresentation", gpu_threaded_presentation);
