@@ -1325,9 +1325,11 @@ bool CodeGenerator::Compile_Bitwise(Instruction instruction, const CodeCache::In
               ((lhs.HasConstantValue(0) && instruction.r.rt != Reg::zero && dest != instruction.r.rs) ||
                (rhs.HasConstantValue(0) && instruction.r.rs != Reg::zero && dest != instruction.r.rt)))
           {
+            const auto rs = lhs.HasConstantValue(0) ? static_cast<CPU::Reg>(instruction.r.rt) : static_cast<CPU::Reg>(instruction.r.rs);
+
             EmitFunctionCall(nullptr, &PGXP::CPU_MOVE_Packed,
                              Value::FromConstantU32(
-                               PGXP::PackMoveArgs(dest, lhs.HasConstantValue(0) ? instruction.r.rt : instruction.r.rs)),
+                               PGXP::PackMoveArgs(dest, rs)),
                              lhs.HasConstantValue(0) ? rhs : lhs);
           }
         }
@@ -1357,9 +1359,11 @@ bool CodeGenerator::Compile_Bitwise(Instruction instruction, const CodeCache::In
               ((lhs.HasConstantValue(0) && instruction.r.rt != Reg::zero && dest != instruction.r.rs) ||
                (rhs.HasConstantValue(0) && instruction.r.rs != Reg::zero && dest != instruction.r.rt)))
           {
+            const auto rs = lhs.HasConstantValue(0) ? static_cast<CPU::Reg>(instruction.r.rt) : static_cast<CPU::Reg>(instruction.r.rs);
+
             EmitFunctionCall(nullptr, &PGXP::CPU_MOVE_Packed,
                              Value::FromConstantU32(
-                               PGXP::PackMoveArgs(dest, lhs.HasConstantValue(0) ? instruction.r.rt : instruction.r.rs)),
+                               PGXP::PackMoveArgs(dest, rs)),
                              lhs.HasConstantValue(0) ? rhs : lhs);
           }
         }
