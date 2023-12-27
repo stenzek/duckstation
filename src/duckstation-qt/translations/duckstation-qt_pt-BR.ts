@@ -1003,7 +1003,7 @@ Mensagens não lidas: {}</translation>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="280"/>
         <source>Exclusive Fullscreen Control</source>
-        <translation>Controle exclusivo do modo tela cheia</translation>
+        <translation>Controle do modo de tela cheia exclusiva</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="287"/>
