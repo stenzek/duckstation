@@ -12227,39 +12227,34 @@ Tem certeza de que deseja continuar?</translation>
         <translation>Função de retrocesso desligada porque o avanço rápido está ligado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3604"/>
+        <location filename="../../core/system.cpp" line="3610"/>
         <source>Recompiler options changed, flushing all blocks.</source>
         <translation>As opções do recompilador foram alteradas, limpando todos os blocos.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4504"/>
+        <location filename="../../core/system.cpp" line="4510"/>
         <source>{} cheats are enabled. This may result in instability.</source>
         <translation>{} as trapaças estão ativados. Isso resultará em instabilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4567"/>
+        <location filename="../../core/system.cpp" line="4573"/>
         <source>Saved {} cheats to &apos;{}&apos;.</source>
         <translation>Trapaças {} salvas em &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4582"/>
+        <location filename="../../core/system.cpp" line="4588"/>
         <source>Deleted cheat list &apos;{}&apos;.</source>
         <translation>Lista de trapaças excluída &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4679"/>
+        <location filename="../../core/system.cpp" line="4685"/>
         <source>Widescreen hack is now enabled, and aspect ratio is set to {}.</source>
         <translation>Ajuste de tela panorâmica ligado, a proporção da imagem está definida para {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4687"/>
+        <location filename="../../core/system.cpp" line="4693"/>
         <source>Widescreen hack is now disabled, and aspect ratio is set to {}.</source>
         <translation>Ajuste de tela panorâmica desligado, a proporção da imagem foi definida para {}.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4701"/>
-        <source>Switching to %s renderer...</source>
-        <translation>Mudando para %s...</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="274"/>
@@ -12297,7 +12292,7 @@ Tem certeza de que deseja continuar?</translation>
         <translation>Texturas personalizadas recarregadas.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4203"/>
+        <location filename="../../core/system.cpp" line="4209"/>
         <source>Failed to save undo load state.</source>
         <translation>Falha ao desfazer carregar estado.</translation>
     </message>
@@ -12361,37 +12356,37 @@ Tem certeza de que deseja continuar?</translation>
         <translation>Áudio do CD religado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4264"/>
+        <location filename="../../core/system.cpp" line="4270"/>
         <source>Started dumping audio to &apos;%s&apos;.</source>
         <translation>Iniciado despejo de áudio em &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4269"/>
+        <location filename="../../core/system.cpp" line="4275"/>
         <source>Failed to start dumping audio to &apos;%s&apos;.</source>
         <translation>Falha ao iniciar despejo de áudio em &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4279"/>
+        <location filename="../../core/system.cpp" line="4285"/>
         <source>Stopped dumping audio.</source>
         <translation>Despejo de áudio terminado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4309"/>
+        <location filename="../../core/system.cpp" line="4315"/>
         <source>Screenshot file &apos;%s&apos; already exists.</source>
         <translation>Captura de tela &apos;%s&apos; já existe.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4318"/>
+        <location filename="../../core/system.cpp" line="4324"/>
         <source>Failed to save screenshot to &apos;%s&apos;</source>
         <translation>Falha ao salvar captura em &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4322"/>
+        <location filename="../../core/system.cpp" line="4328"/>
         <source>Screenshot saved to &apos;%s&apos;.</source>
         <translation>Captura de tela salva em &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4497"/>
+        <location filename="../../core/system.cpp" line="4503"/>
         <source>Failed to load cheats from &apos;%s&apos;.</source>
         <translation>Falha ao carregar &apos;%s&apos; trapaças.</translation>
     </message>
@@ -12416,17 +12411,17 @@ Tem certeza de que deseja continuar?</translation>
         <translation>Portas de cartão de memória trocadas. nenhuma das portas possui cartão de memória.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4624"/>
+        <location filename="../../core/system.cpp" line="4630"/>
         <source>Cheat &apos;%s&apos; enabled.</source>
         <translation>Trapaça &apos;%s&apos; ativada.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4628"/>
+        <location filename="../../core/system.cpp" line="4634"/>
         <source>Cheat &apos;%s&apos; disabled.</source>
         <translation>Trapaça &apos;%s&apos; desativada.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4551"/>
+        <location filename="../../core/system.cpp" line="4557"/>
         <source>Failed to save cheat list to &apos;%s&apos;</source>
         <translation>Falha ao salvar lista de trapaças para &apos;%s&apos;</translation>
     </message>
@@ -12449,12 +12444,12 @@ Usando a seguinte imagem &apos;{}&apos;, isso pode resultar em instabilidade.</t
         <translation>Nenhuma trapaça foi carregada.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4644"/>
+        <location filename="../../core/system.cpp" line="4650"/>
         <source>Applied cheat &apos;%s&apos;.</source>
         <translation>Trapaça aplicada &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4648"/>
+        <location filename="../../core/system.cpp" line="4654"/>
         <source>Cheat &apos;%s&apos; is already enabled.</source>
         <translation>Trapaça &apos;%s&apos; já está ativada.</translation>
     </message>
@@ -12664,6 +12659,11 @@ Configure um controle compatível da lista acima.</translation>
         <translation>Disco inserido &apos;{}&apos; ({}).</translation>
     </message>
     <message>
+        <location filename="../../core/system.cpp" line="4708"/>
+        <source>Switching to {} renderer...</source>
+        <translation>Alterando para renderizador {}...</translation>
+    </message>
+    <message>
         <location filename="../../core/system.cpp" line="2764"/>
         <source>{} cheats are now active.</source>
         <translation>{} trapaças ativadas.</translation>
@@ -12674,42 +12674,42 @@ Configure um controle compatível da lista acima.</translation>
         <translation>{} trapaças desativadas.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3470"/>
+        <location filename="../../core/system.cpp" line="3476"/>
         <source>Failed to switch to subimage %u in &apos;%s&apos;: %s.</source>
         <translation>Falha ao trocar para disco %u em &apos;%s&apos;: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3478"/>
+        <location filename="../../core/system.cpp" line="3484"/>
         <source>Switched to sub-image %s (%u) in &apos;%s&apos;.</source>
         <translation>Mudado para segunda imagem %s (%u) em &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3535"/>
+        <location filename="../../core/system.cpp" line="3541"/>
         <source>Switching to {}{} GPU renderer.</source>
         <translation>Alternando para o renderizador de GPU {}{}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3561"/>
+        <location filename="../../core/system.cpp" line="3567"/>
         <source>Switching to {} audio backend.</source>
         <translation>Alternando para o backend de áudio {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3585"/>
+        <location filename="../../core/system.cpp" line="3591"/>
         <source>Switching to {} CPU execution mode.</source>
         <translation>Alternando para o modo de execução pelo CPU {}.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card.cpp" line="288"/>
-        <source>Memory card at &apos;%s&apos; could not be read, formatting.</source>
-        <translation>Cartão de memória &apos;%s&apos; não pôde ser lido, formatando.</translation>
+        <location filename="../../core/memory_card.cpp" line="289"/>
+        <source>Memory card &apos;{}&apos; could not be read, formatting.</source>
+        <translation>Cartão de memória &apos;{}&apos; não pode ser lidro, formatando.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card.cpp" line="333"/>
+        <location filename="../../core/memory_card.cpp" line="334"/>
         <source>Failed to save memory card to &apos;{}&apos;.</source>
         <translation>Falha ao salvar para o cartão de memória &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card.cpp" line="344"/>
+        <location filename="../../core/memory_card.cpp" line="345"/>
         <source>Saved memory card to &apos;{}&apos;.</source>
         <translation>Salvo para o cartão de memória em &apos;{}&apos;.</translation>
     </message>
@@ -13288,7 +13288,7 @@ Deseja criar esse diretório?</translation>
         <translation>Recomendado</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="515"/>
+        <location filename="../settingswindow.cpp" line="518"/>
         <source>%1 [%2]</source>
         <translation>%1 [%2]</translation>
     </message>
@@ -13574,7 +13574,7 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1478"/>
-        <location filename="../../core/system.cpp" line="3406"/>
+        <location filename="../../core/system.cpp" line="3407"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
@@ -13630,7 +13630,7 @@ Consulte o LEIAME para obter instruções sobre como adicionar um arquivo SBI.
 Deseja continuar?</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3408"/>
+        <location filename="../../core/system.cpp" line="3409"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 {0}: {1}
@@ -13647,42 +13647,42 @@ Seu arquivo de jogo está incompleto, você deve adicionar o arquivo SBI para ex
 O nome do arquivo SBI deve corresponder ao nome da imagem do disco.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3790"/>
+        <location filename="../../core/system.cpp" line="3796"/>
         <source>CPU clock speed is set to {}% ({} / {}). This may crash games.</source>
         <translation>Velocidade do CPU configurada para {}% ({} / {}. pode causar falhas nos jogos.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3798"/>
+        <location filename="../../core/system.cpp" line="3804"/>
         <source>CD-ROM read speedup set to {}x (effective speed {}x). This may crash games.</source>
         <translation>Velocidade de leitura do CD-ROM definida como {}x (velocidade efetiva {}x). Jogos podem travar.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3804"/>
+        <location filename="../../core/system.cpp" line="3810"/>
         <source>CD-ROM seek speedup set to {}. This may crash games.</source>
         <translation>Velocidade de leitura do CD-ROM definida para {}. Jogos podem travar.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3806"/>
+        <location filename="../../core/system.cpp" line="3812"/>
         <source>Instant</source>
         <translation>Instantâneo</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3811"/>
+        <location filename="../../core/system.cpp" line="3817"/>
         <source>Force NTSC timings is enabled. Games may run at incorrect speeds.</source>
         <translation>A opção forçar temporizador no modo NTSC está ativada. Os jogos serão executados em uma velocidade incorreta.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3816"/>
+        <location filename="../../core/system.cpp" line="3822"/>
         <source>Multisample anti-aliasing is enabled, some games may not render correctly.</source>
         <translation>O anti-serrilhamento múltiplo está ativado, alguns jogos podem não ser renderizados corretamente.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3819"/>
+        <location filename="../../core/system.cpp" line="3825"/>
         <source>8MB RAM is enabled, this may be incompatible with some games.</source>
         <translation>Modo de 8 MB de RAM está ativado, o que pode ser incompatível com alguns jogos.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4406"/>
+        <location filename="../../core/system.cpp" line="4412"/>
         <source>Invalid version {} ({} version {})</source>
         <translation>Versão inválida {} ({} versão {})</translation>
     </message>
