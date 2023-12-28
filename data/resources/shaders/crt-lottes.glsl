@@ -133,7 +133,7 @@ float3 ToLinear(float3 c)
 }
 float3 ToSrgb(float3 c)
 {
-    return pow(c, float3(1.0 / 2.2));
+    return pow(c, float3(1.0 / 2.2, 1.0 / 2.2, 1.0 / 2.2));
 }
 #else
 float ToLinear1(float c)
