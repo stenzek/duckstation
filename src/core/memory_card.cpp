@@ -284,9 +284,10 @@ std::unique_ptr<MemoryCard> MemoryCard::Open(std::string_view filename)
   mc->m_filename = filename;
   if (!mc->LoadFromFile())
   {
-    Log_InfoPrintf("Memory card at '%s' could not be read, formatting.", mc->m_filename.c_str());
-    Host::AddFormattedOSDMessage(5.0f, TRANSLATE("OSDMessage", "Memory card at '%s' could not be read, formatting."),
-                                 mc->m_filename.c_str());
+    Log_InfoFmt("Memory card at '{}' could not be read, formatting.", mc->m_filename);
+    Host::AddIconOSDMessage(fmt::format("memory_card_{}", filename), ICON_FA_SD_CARD,
+                            fmt::format(TRANSLATE_FS("OSDMessage", "Memory card '{}' could not be read, formatting."),
+                                        Path::GetFileName(filename), Host::OSD_INFO_DURATION));
     mc->Format();
   }
 

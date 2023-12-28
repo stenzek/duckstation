@@ -33,6 +33,8 @@ const char* GPUTexture::GetFormatName(Format format)
     "R8",      // R8
     "D16",     // D16
     "R16",     // R16
+    "R16I",    // R16I
+    "R16U",    // R16U
     "R16F",    // R16F
     "R32I",    // R32I
     "R32U",    // R32U

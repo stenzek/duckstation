@@ -4698,8 +4698,10 @@ void System::ToggleSoftwareRendering()
 
   const GPURenderer new_renderer = g_gpu->IsHardwareRenderer() ? GPURenderer::Software : g_settings.gpu_renderer;
 
-  Host::AddKeyedFormattedOSDMessage("SoftwareRendering", 5.0f, TRANSLATE("OSDMessage", "Switching to %s renderer..."),
-                                    Settings::GetRendererDisplayName(new_renderer));
+  Host::AddIconOSDMessage("SoftwareRendering", ICON_FA_PAINT_ROLLER,
+                          fmt::format(TRANSLATE_FS("OSDMessage", "Switching to {} renderer..."),
+                                      Settings::GetRendererDisplayName(new_renderer)),
+                          Host::OSD_QUICK_DURATION);
   RecreateGPU(new_renderer);
   ResetPerformanceCounters();
 }
