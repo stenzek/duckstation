@@ -126,6 +126,4 @@ private:
 
   QObject* m_current_help_widget = nullptr;
   QMap<QObject*, QString> m_widget_help_text_map;
-
-  std::string m_game_serial;
 };

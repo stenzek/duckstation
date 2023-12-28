@@ -477,17 +477,6 @@ void SettingsWindow::removeSettingValue(const char* section, const char* key)
 
 void SettingsWindow::openGamePropertiesDialog(const std::string& path, const std::string& serial, DiscRegion region)
 {
-  // check for an existing dialog with this crc
-  for (SettingsWindow* dialog : s_open_game_properties_dialogs)
-  {
-    if (dialog->m_game_serial == serial)
-    {
-      dialog->show();
-      dialog->setFocus();
-      return;
-    }
-  }
-
   const GameDatabase::Entry* dentry = nullptr;
   if (!System::IsExeFileName(path) && !System::IsPsfFileName(path))
   {
@@ -508,6 +497,20 @@ void SettingsWindow::openGamePropertiesDialog(const std::string& path, const std
 
   const std::string& real_serial = dentry ? dentry->serial : serial;
   std::string ini_filename = System::GetGameSettingsPath(real_serial);
+
+  // check for an existing dialog with this crc
+  for (SettingsWindow* dialog : s_open_game_properties_dialogs)
+  {
+    if (dialog->isPerGameSettings() && static_cast<INISettingsInterface*>(dialog->getSettingsInterface())->GetFileName() == ini_filename)
+    {
+      dialog->show();
+      dialog->raise();
+      dialog->activateWindow();
+      dialog->setFocus();
+      return;
+    }
+  }
+
   std::unique_ptr<INISettingsInterface> sif = std::make_unique<INISettingsInterface>(std::move(ini_filename));
   if (FileSystem::FileExists(sif->GetFileName().c_str()))
     sif->Load();
