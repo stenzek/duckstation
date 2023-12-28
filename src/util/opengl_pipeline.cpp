@@ -360,7 +360,7 @@ GLuint OpenGLDevice::CompileProgram(const GPUPipeline::GraphicsConfig& plconfig)
       {
         glBindAttribLocation(program_id, i,
                              TinyString::from_format("{}{}", semantic_vars[static_cast<u8>(va.semantic.GetValue())],
-                                                  static_cast<u8>(va.semantic_index)));
+                                                     static_cast<u8>(va.semantic_index)));
       }
     }
 
@@ -451,13 +451,13 @@ void OpenGLDevice::UnrefProgram(const OpenGLPipeline::ProgramCacheKey& key)
     m_program_cache.erase(it);
 }
 
-GLuint OpenGLDevice::LookupVAOCache(const OpenGLPipeline::VertexArrayCacheKey& key)
+OpenGLPipeline::VertexArrayCache::const_iterator OpenGLDevice::LookupVAOCache(const OpenGLPipeline::VertexArrayCacheKey& key)
 {
-  auto it = m_vao_cache.find(key);
+  OpenGLPipeline::VertexArrayCache::iterator it = m_vao_cache.find(key);
   if (it != m_vao_cache.end())
   {
     it->second.reference_count++;
-    return it->second.vao_id;
+    return it;
   }
 
   OpenGLPipeline::VertexArrayCacheItem item;
@@ -465,11 +465,10 @@ GLuint OpenGLDevice::LookupVAOCache(const OpenGLPipeline::VertexArrayCacheKey& k
     CreateVAO(std::span<const GPUPipeline::VertexAttribute>(key.vertex_attributes, key.num_vertex_attributes),
               key.vertex_attribute_stride);
   if (item.vao_id == 0)
-    return 0;
+    return m_vao_cache.cend();
 
   item.reference_count = 1;
-  m_vao_cache.emplace(key, item);
-  return item.vao_id;
+  return m_vao_cache.emplace(key, item).first;
 }
 
 GLuint OpenGLDevice::CreateVAO(std::span<const GPUPipeline::VertexAttribute> attributes, u32 stride)
@@ -518,7 +517,8 @@ GLuint OpenGLDevice::CreateVAO(std::span<const GPUPipeline::VertexAttribute> att
       glVertexAttribPointer(i, va.components, m.type, m.normalized, stride, ptr);
   }
 
-  glBindVertexArray(m_last_vao);
+  if (m_last_vao != m_vao_cache.cend())
+    glBindVertexArray(m_last_vao->second.vao_id);
 
   return vao;
 }
@@ -531,9 +531,9 @@ void OpenGLDevice::UnrefVAO(const OpenGLPipeline::VertexArrayCacheKey& key)
   if ((--it->second.reference_count) > 0)
     return;
 
-  if (m_last_vao == it->second.vao_id)
+  if (m_last_vao == it)
   {
-    m_last_vao = 0;
+    m_last_vao = m_vao_cache.cend();
     glBindVertexArray(0);
   }
 
@@ -541,8 +541,9 @@ void OpenGLDevice::UnrefVAO(const OpenGLPipeline::VertexArrayCacheKey& key)
   m_vao_cache.erase(it);
 }
 
-OpenGLPipeline::OpenGLPipeline(const ProgramCacheKey& key, GLuint program, GLuint vao, const RasterizationState& rs,
-                               const DepthState& ds, const BlendState& bs, GLenum topology)
+OpenGLPipeline::OpenGLPipeline(const ProgramCacheKey& key, GLuint program, VertexArrayCache::const_iterator vao,
+                               const RasterizationState& rs, const DepthState& ds, const BlendState& bs,
+                               GLenum topology)
   : m_key(key), m_program(program), m_vao(vao), m_blend_state(bs), m_rasterization_state(rs), m_depth_state(ds),
     m_topology(topology)
 {
@@ -572,8 +573,8 @@ std::unique_ptr<GPUPipeline> OpenGLDevice::CreatePipeline(const GPUPipeline::Gra
   if (program_id == 0)
     return {};
 
-  const GLuint vao_id = LookupVAOCache(pkey.va_key);
-  if (vao_id == 0)
+  const OpenGLPipeline::VertexArrayCache::const_iterator vao = LookupVAOCache(pkey.va_key);
+  if (vao == m_vao_cache.cend())
   {
     UnrefProgram(pkey);
     return {};
@@ -586,7 +587,7 @@ std::unique_ptr<GPUPipeline> OpenGLDevice::CreatePipeline(const GPUPipeline::Gra
     GL_TRIANGLE_STRIP, // TriangleStrips
   }};
 
-  return std::unique_ptr<GPUPipeline>(new OpenGLPipeline(pkey, program_id, vao_id, config.rasterization, config.depth,
+  return std::unique_ptr<GPUPipeline>(new OpenGLPipeline(pkey, program_id, vao, config.rasterization, config.depth,
                                                          config.blend, primitives[static_cast<u8>(config.primitive)]));
 }
 
@@ -716,7 +717,7 @@ void OpenGLDevice::SetPipeline(GPUPipeline* pipeline)
   if (m_last_vao != P->GetVAO())
   {
     m_last_vao = P->GetVAO();
-    glBindVertexArray(m_last_vao);
+    glBindVertexArray(m_last_vao->second.vao_id);
   }
   if (m_last_program != P->GetProgram())
   {

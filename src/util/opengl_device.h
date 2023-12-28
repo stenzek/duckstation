@@ -107,7 +107,7 @@ public:
   void PostLinkProgram(const GPUPipeline::GraphicsConfig& plconfig, GLuint program_id);
   void UnrefProgram(const OpenGLPipeline::ProgramCacheKey& key);
 
-  GLuint LookupVAOCache(const OpenGLPipeline::VertexArrayCacheKey& key);
+  OpenGLPipeline::VertexArrayCache::const_iterator LookupVAOCache(const OpenGLPipeline::VertexArrayCacheKey& key);
   GLuint CreateVAO(std::span<const GPUPipeline::VertexAttribute> attributes, u32 stride);
   void UnrefVAO(const OpenGLPipeline::VertexArrayCacheKey& key);
 
@@ -165,6 +165,8 @@ private:
   void ApplyDepthState(GPUPipeline::DepthState ds);
   void ApplyBlendState(GPUPipeline::BlendState bs);
 
+  void SetVertexBufferOffsets(u32 base_vertex);
+
   std::unique_ptr<GL::Context> m_gl_context;
 
   std::unique_ptr<OpenGLStreamBuffer> m_vertex_buffer;
@@ -178,12 +180,12 @@ private:
   GPUFramebufferManager<GLuint, CreateFramebuffer, DestroyFramebuffer> m_framebuffer_manager;
 
   // VAO cache - fixed max as key
+  OpenGLPipeline::VertexArrayCache::const_iterator m_last_vao = m_vao_cache.cend();
   GPUPipeline::BlendState m_last_blend_state = {};
   GPUPipeline::RasterizationState m_last_rasterization_state = {};
   GPUPipeline::DepthState m_last_depth_state = {};
   GLuint m_uniform_buffer_alignment = 1;
   GLuint m_last_program = 0;
-  GLuint m_last_vao = 0;
   u32 m_last_texture_unit = 0;
   std::array<std::pair<GLuint, GLuint>, MAX_TEXTURE_SAMPLERS> m_last_samplers = {};
   GLuint m_last_ssbo = 0;

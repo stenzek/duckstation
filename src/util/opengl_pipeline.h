@@ -97,7 +97,7 @@ public:
   ~OpenGLPipeline() override;
 
   ALWAYS_INLINE GLuint GetProgram() const { return m_program; }
-  ALWAYS_INLINE GLuint GetVAO() const { return m_vao; }
+  ALWAYS_INLINE VertexArrayCache::const_iterator GetVAO() const { return m_vao; }
   ALWAYS_INLINE const RasterizationState& GetRasterizationState() const { return m_rasterization_state; }
   ALWAYS_INLINE const DepthState& GetDepthState() const { return m_depth_state; }
   ALWAYS_INLINE const BlendState& GetBlendState() const { return m_blend_state; }
@@ -106,12 +106,12 @@ public:
   void SetDebugName(const std::string_view& name) override;
 
 private:
-  OpenGLPipeline(const ProgramCacheKey& key, GLuint program, GLuint vao, const RasterizationState& rs,
-                 const DepthState& ds, const BlendState& bs, GLenum topology);
+  OpenGLPipeline(const ProgramCacheKey& key, GLuint program, VertexArrayCache::const_iterator vao,
+                 const RasterizationState& rs, const DepthState& ds, const BlendState& bs, GLenum topology);
 
   ProgramCacheKey m_key;
+  VertexArrayCache::const_iterator m_vao;
   GLuint m_program;
-  GLuint m_vao;
   BlendState m_blend_state;
   RasterizationState m_rasterization_state;
   DepthState m_depth_state;

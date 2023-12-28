@@ -1014,15 +1014,42 @@ void OpenGLDevice::UnbindPipeline(const OpenGLPipeline* pl)
   }
 }
 
+ALWAYS_INLINE_RELEASE void OpenGLDevice::SetVertexBufferOffsets(u32 base_vertex)
+{
+  const OpenGLPipeline::VertexArrayCacheKey& va = m_last_vao->first;
+  const size_t stride = va.vertex_attribute_stride;
+  for (u32 i = 0; i < va.num_vertex_attributes; i++)
+  {
+    glBindVertexBuffer(i, m_vertex_buffer->GetGLBufferId(), base_vertex * stride + va.vertex_attributes[i].offset,
+                       static_cast<GLsizei>(stride));
+  }
+}
+
 void OpenGLDevice::Draw(u32 vertex_count, u32 base_vertex)
 {
-  glDrawArrays(m_current_pipeline->GetTopology(), base_vertex, vertex_count);
+  if (glDrawElementsBaseVertex) [[likely]]
+  {
+    glDrawArrays(m_current_pipeline->GetTopology(), base_vertex, vertex_count);
+    return;
+  }
+
+  SetVertexBufferOffsets(base_vertex);
+  glDrawArrays(m_current_pipeline->GetTopology(), 0, vertex_count);
 }
 
 void OpenGLDevice::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
 {
+  if (glDrawElementsBaseVertex) [[likely]]
+  {
+    const void* indices = reinterpret_cast<const void*>(static_cast<uintptr_t>(base_index) * sizeof(u16));
+    glDrawElementsBaseVertex(m_current_pipeline->GetTopology(), index_count, GL_UNSIGNED_SHORT, indices, base_vertex);
+    return;
+  }
+
+  SetVertexBufferOffsets(base_vertex);
+
   const void* indices = reinterpret_cast<const void*>(static_cast<uintptr_t>(base_index) * sizeof(u16));
-  glDrawElementsBaseVertex(m_current_pipeline->GetTopology(), index_count, GL_UNSIGNED_SHORT, indices, base_vertex);
+  glDrawElements(m_current_pipeline->GetTopology(), index_count, GL_UNSIGNED_SHORT, indices);
 }
 
 void OpenGLDevice::MapVertexBuffer(u32 vertex_size, u32 vertex_count, void** map_ptr, u32* map_space,
