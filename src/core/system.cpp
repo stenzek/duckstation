@@ -3402,6 +3402,7 @@ bool System::CheckForSBIFile(CDImage* image)
   }
   else
   {
+#ifndef __ANDROID__
     Host::ReportErrorAsync(
       TRANSLATE("System", "Error"),
       LargeString::from_format(
@@ -3409,6 +3410,11 @@ bool System::CheckForSBIFile(CDImage* image)
                                "{1}\n\nYour dump is incomplete, you must add the SBI file to run this game. \n\nThe "
                                "name of the SBI file must match the name of the disc image."),
         s_running_game_serial, s_running_game_title));
+#else
+    // Shorter because no confirm messages.
+    Host::ReportErrorAsync("Missing SBI file.", "The selected game requires a SBI file to run properly.");
+#endif
+
     return false;
   }
 }
