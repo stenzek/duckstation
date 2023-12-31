@@ -681,6 +681,7 @@ bool PostProcessing::CheckTargets(GPUTexture::Format target_format, u32 target_w
       !(s_output_texture = g_gpu_device->FetchTexture(target_width, target_height, 1, 1, 1,
                                                       GPUTexture::Type::RenderTarget, target_format)))
   {
+    DestroyTextures();
     return false;
   }
 

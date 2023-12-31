@@ -1716,8 +1716,10 @@ bool GPU::RenderDisplay(GPUTexture* target, const Common::Rectangle<s32>& draw_r
   const GPUTexture::Format hdformat = target ? target->GetFormat() : g_gpu_device->GetWindowFormat();
   const u32 target_width = target ? target->GetWidth() : g_gpu_device->GetWindowWidth();
   const u32 target_height = target ? target->GetHeight() : g_gpu_device->GetWindowHeight();
-  const bool really_postfx = (postfx && HasDisplayTexture() && PostProcessing::IsActive() &&
-                              PostProcessing::CheckTargets(hdformat, target_width, target_height));
+  const bool really_postfx =
+    (postfx && HasDisplayTexture() && PostProcessing::IsActive() && !g_gpu_device->GetWindowInfo().IsSurfaceless() &&
+     hdformat != GPUTexture::Format::Unknown && target_width > 0 && target_height > 0 &&
+     PostProcessing::CheckTargets(hdformat, target_width, target_height));
   const Common::Rectangle<s32> real_draw_rect =
     g_gpu_device->UsesLowerLeftOrigin() ? GPUDevice::FlipToLowerLeft(draw_rect, target_height) : draw_rect;
   if (really_postfx)
