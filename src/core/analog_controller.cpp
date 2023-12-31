@@ -860,7 +860,7 @@ static const SettingInfo s_settings[] = {
   {SettingInfo::Type::Float, "ButtonDeadzone", TRANSLATE_NOOP("AnalogController", "Button/Trigger Deadzone"),
    TRANSLATE_NOOP("AnalogController", "Sets the deadzone for activating buttons/triggers, "
                                       "i.e. the fraction of the trigger which will be ignored."),
-   "0.25", "0.00", "1.00", "0.01", "%.0f%%", nullptr, 100.0f},
+   "0.25", "0.01", "1.00", "0.01", "%.0f%%", nullptr, 100.0f},
   {SettingInfo::Type::Integer, "VibrationBias", TRANSLATE_NOOP("AnalogController", "Vibration Bias"),
    TRANSLATE_NOOP("AnalogController", "Sets the rumble bias value. If rumble in some games is too weak or not "
                                       "functioning, try increasing this value."),
@@ -889,7 +889,7 @@ void AnalogController::LoadSettings(SettingsInterface& si, const char* section)
   m_analog_deadzone = std::clamp(si.GetFloatValue(section, "AnalogDeadzone", DEFAULT_STICK_DEADZONE), 0.0f, 1.0f);
   m_analog_sensitivity =
     std::clamp(si.GetFloatValue(section, "AnalogSensitivity", DEFAULT_STICK_SENSITIVITY), 0.01f, 3.0f);
-  m_button_deadzone = std::clamp(si.GetFloatValue(section, "ButtonDeadzone", DEFAULT_BUTTON_DEADZONE), 0.0f, 1.0f);
+  m_button_deadzone = std::clamp(si.GetFloatValue(section, "ButtonDeadzone", DEFAULT_BUTTON_DEADZONE), 0.01f, 1.0f);
   m_rumble_bias = static_cast<u8>(std::min<u32>(si.GetIntValue(section, "VibrationBias", 8), 255));
   m_invert_left_stick = static_cast<u8>(si.GetIntValue(section, "InvertLeftStick", 0));
   m_invert_right_stick = static_cast<u8>(si.GetIntValue(section, "InvertRightStick", 0));
