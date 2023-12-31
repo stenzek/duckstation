@@ -4,4 +4,4 @@
 #pragma once
 #include "common/types.h"
 
-static constexpr u32 SHADER_CACHE_VERSION = 17;
+static constexpr u32 SHADER_CACHE_VERSION = 18;

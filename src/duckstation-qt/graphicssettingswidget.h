@@ -34,6 +34,8 @@ private Q_SLOTS:
   void onTrueColorChanged();
   void onDownsampleModeChanged();
   void onFullscreenModeChanged();
+  void onEnableTextureCacheChanged();
+  void onEnableTextureDumpingChanged();
   void onEnableAnyTextureReplacementsChanged();
   void onEnableVRAMWriteDumpingChanged();
 

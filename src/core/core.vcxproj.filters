@@ -68,6 +68,7 @@
     <ClCompile Include="justifier.cpp" />
     <ClCompile Include="pine_server.cpp" />
     <ClCompile Include="gdb_server.cpp" />
+    <ClCompile Include="gpu_hw_texture_cache.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -142,5 +143,6 @@
     <ClInclude Include="justifier.h" />
     <ClInclude Include="pine_server.h" />
     <ClInclude Include="gdb_server.h" />
+    <ClInclude Include="gpu_hw_texture_cache.h" />
   </ItemGroup>
 </Project>

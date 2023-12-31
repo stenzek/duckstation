@@ -127,6 +127,7 @@ struct Settings
   bool gpu_disable_interlacing : 1 = true;
   bool gpu_force_ntsc_timings : 1 = false;
   bool gpu_widescreen_hack : 1 = false;
+  bool gpu_texture_cache : 1 = false;
   bool gpu_pgxp_enable : 1 = false;
   bool gpu_pgxp_culling : 1 = true;
   bool gpu_pgxp_texture_correction : 1 = true;
@@ -237,15 +238,27 @@ struct Settings
   // texture replacements
   struct TextureReplacementSettings
   {
+    bool enable_texture_replacements : 1 = false;
+    bool dump_textures : 1 = false;
+    bool dump_texture_pages : 1 = false;
+    bool dump_texture_force_alpha_channel : 1 = true;
+
     bool enable_vram_write_replacements : 1 = false;
     bool preload_textures : 1 = false;
 
     bool dump_vram_writes : 1 = false;
     bool dump_vram_write_force_alpha_channel : 1 = true;
+
+    u32 texture_dump_width_threshold = 16;
+    u32 texture_dump_height_threshold = 16;
+
     u32 dump_vram_write_width_threshold = 128;
     u32 dump_vram_write_height_threshold = 128;
 
-    ALWAYS_INLINE bool AnyReplacementsEnabled() const { return enable_vram_write_replacements; }
+    ALWAYS_INLINE bool AnyReplacementsEnabled() const
+    {
+      return (enable_texture_replacements || enable_vram_write_replacements);
+    }
 
     ALWAYS_INLINE bool ShouldDumpVRAMWrite(u32 width, u32 height)
     {
@@ -343,6 +356,8 @@ struct Settings
     DEFAULT_DMA_HALT_TICKS = 100,
     DEFAULT_GPU_FIFO_SIZE = 16,
     DEFAULT_GPU_MAX_RUN_AHEAD = 128,
+    DEFAULT_TEXTURE_DUMP_WIDTH_THRESHOLD = 16,
+    DEFAULT_TEXTURE_DUMP_HEIGHT_THRESHOLD = 16,
     DEFAULT_VRAM_WRITE_DUMP_WIDTH_THRESHOLD = 128,
     DEFAULT_VRAM_WRITE_DUMP_HEIGHT_THRESHOLD = 128,
   };
