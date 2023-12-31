@@ -2289,6 +2289,10 @@ public:
     return GSVector4i(static_cast<s32>(F64[0]), static_cast<s32>(F64[1]), 0, 0);
   }
 
+  ALWAYS_INLINE GSVector2 xy() const { return GSVector2(x, y); }
+
+  ALWAYS_INLINE GSVector2 zw() const { return GSVector2(z, w); }
+
 #define VECTOR4_SHUFFLE_4(xs, xn, ys, yn, zs, zn, ws, wn)                                                              \
   ALWAYS_INLINE GSVector4 xs##ys##zs##ws() const { return GSVector4(F32[xn], F32[yn], F32[zn], F32[wn]); }
 

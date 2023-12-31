@@ -1814,6 +1814,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevo
   m_ui.menuCheats->setDisabled(cheevos_challenge_mode);
   m_ui.actionCPUDebugger->setDisabled(cheevos_challenge_mode);
   m_ui.actionMemoryScanner->setDisabled(cheevos_challenge_mode);
+  m_ui.actionReloadTextureReplacements->setDisabled(starting || !running);
   m_ui.actionDumpRAM->setDisabled(starting || !running || cheevos_challenge_mode);
   m_ui.actionDumpVRAM->setDisabled(starting || !running || cheevos_challenge_mode);
   m_ui.actionDumpSPURAM->setDisabled(starting || !running || cheevos_challenge_mode);
@@ -2095,6 +2096,8 @@ void MainWindow::connectSignals()
   connect(m_ui.actionCPUDebugger, &QAction::triggered, this, &MainWindow::openCPUDebugger);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableGDBServer, "Debug", "EnableGDBServer", false);
   connect(m_ui.actionOpenDataDirectory, &QAction::triggered, this, &MainWindow::onToolsOpenDataDirectoryTriggered);
+  connect(m_ui.actionOpenTextureDirectory, &QAction::triggered, this, &MainWindow::onToolsOpenTextureDirectoryTriggered);
+  connect(m_ui.actionReloadTextureReplacements, &QAction::triggered, g_emu_thread, &EmuThread::reloadTextureReplacements);
   connect(m_ui.actionMergeDiscSets, &QAction::triggered, m_game_list_widget, &GameListWidget::setMergeDiscSets);
   connect(m_ui.actionShowGameIcons, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowGameIcons);
   connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
@@ -2813,6 +2816,15 @@ void MainWindow::openCPUDebugger()
 void MainWindow::onToolsOpenDataDirectoryTriggered()
 {
   QtUtils::OpenURL(this, QUrl::fromLocalFile(QString::fromStdString(EmuFolders::DataRoot)));
+}
+
+void MainWindow::onToolsOpenTextureDirectoryTriggered()
+{
+  QString dir = QString::fromStdString(EmuFolders::Textures);
+  if (s_system_valid && !s_current_game_serial.isEmpty())
+    dir = QStringLiteral("%1" FS_OSPATH_SEPARATOR_STR "%2").arg(dir).arg(s_current_game_serial);
+
+  QtUtils::OpenURL(this, QUrl::fromLocalFile(dir));
 }
 
 void MainWindow::onSettingsTriggeredFromToolbar()

@@ -284,6 +284,7 @@
     <QtUi Include="audiostretchsettingsdialog.ui" />
     <QtUi Include="controllerbindingwidget_justifier.ui" />
     <QtUi Include="selectdiscdialog.ui" />
+    <QtUi Include="texturereplacementsettingsdialog.ui" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="duckstation-qt.rc" />

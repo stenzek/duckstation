@@ -2998,6 +2998,10 @@ public:
     return GSVector4i(vsetq_lane_s32(high, vsetq_lane_s32(low, vdupq_n_s32(0), 0), 1));
   }
 
+  ALWAYS_INLINE GSVector2 xy() const { return GSVector2(vget_low_s32(v4s)); }
+
+  ALWAYS_INLINE GSVector2 zw() const { return GSVector2(vget_high_s32(v4s)); }
+
 #define VECTOR4_SHUFFLE_4(xs, xn, ys, yn, zs, zn, ws, wn)                                                              \
   ALWAYS_INLINE GSVector4 xs##ys##zs##ws() const                                                                       \
   {                                                                                                                    \

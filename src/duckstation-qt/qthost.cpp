@@ -19,6 +19,7 @@
 #include "core/game_list.h"
 #include "core/gdb_server.h"
 #include "core/gpu.h"
+#include "core/gpu_hw_texture_cache.h"
 #include "core/host.h"
 #include "core/imgui_overlays.h"
 #include "core/memory_card.h"
@@ -1349,6 +1350,18 @@ void EmuThread::clearInputBindStateFromSource(InputBindingKey key)
   }
 
   InputManager::ClearBindStateFromSource(key);
+}
+
+void EmuThread::reloadTextureReplacements()
+{
+  if (!isOnThread())
+  {
+    QMetaObject::invokeMethod(this, "reloadTextureReplacements", Qt::QueuedConnection);
+    return;
+  }
+
+  if (System::IsValid())
+    GPUTextureCache::ReloadTextureReplacements();
 }
 
 void EmuThread::runOnEmuThread(std::function<void()> callback)

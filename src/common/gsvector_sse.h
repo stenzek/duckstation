@@ -2365,6 +2365,10 @@ public:
 
   ALWAYS_INLINE GSVector4i f64toi32() const { return GSVector4i(_mm_cvttpd_epi32(_mm_castps_pd(m))); }
 
+  ALWAYS_INLINE GSVector2 xy() const { return GSVector2(m); }
+
+  ALWAYS_INLINE GSVector2 zw() const { return GSVector2(_mm_shuffle_ps(m, m, _MM_SHUFFLE(3, 2, 3, 2))); }
+
 #define VECTOR4_SHUFFLE_4(xs, xn, ys, yn, zs, zn, ws, wn)                                                              \
   ALWAYS_INLINE GSVector4 xs##ys##zs##ws() const                                                                       \
   {                                                                                                                    \

@@ -15,8 +15,8 @@ public:
                    bool supports_dual_source_blend, bool supports_framebuffer_fetch);
   ~GPU_HW_ShaderGen();
 
-  std::string GenerateBatchVertexShader(bool textured, bool palette, bool uv_limits, bool force_round_texcoords,
-                                        bool pgxp_depth);
+  std::string GenerateBatchVertexShader(bool textured, bool palette, bool page_texture, bool uv_limits,
+                                        bool force_round_texcoords, bool pgxp_depth);
   std::string GenerateBatchFragmentShader(GPU_HW::BatchRenderMode render_mode, GPUTransparencyMode transparency,
                                           GPU_HW::BatchTextureMode texture_mode, GPUTextureFilter texture_filtering,
                                           bool uv_limits, bool force_round_texcoords, bool dithering, bool interlacing,
@@ -35,6 +35,8 @@ public:
   std::string GenerateAdaptiveDownsampleBlurFragmentShader();
   std::string GenerateAdaptiveDownsampleCompositeFragmentShader();
   std::string GenerateBoxSampleDownsampleFragmentShader(u32 factor);
+
+  std::string GenerateReplacementMergeFragmentShader(bool semitransparent);
 
 private:
   ALWAYS_INLINE bool UsingMSAA() const { return m_multisamples > 1; }

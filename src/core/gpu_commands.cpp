@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gpu.h"
+#include "gpu_hw_texture_cache.h"
 #include "interrupt_controller.h"
 #include "system.h"
-#include "texture_replacements.h"
 
 #include "common/assert.h"
 #include "common/log.h"
@@ -532,10 +532,10 @@ void GPU::FinishVRAMWrite()
                      m_vram_transfer.height, sizeof(u16) * m_vram_transfer.width, m_blit_buffer.data(), true);
     }
 
-    if (g_settings.texture_replacements.ShouldDumpVRAMWrite(m_vram_transfer.width, m_vram_transfer.height))
+    if (GPUTextureCache::ShouldDumpVRAMWrite(m_vram_transfer.width, m_vram_transfer.height))
     {
-      TextureReplacements::DumpVRAMWrite(m_vram_transfer.width, m_vram_transfer.height,
-                                         reinterpret_cast<const u16*>(m_blit_buffer.data()));
+      GPUTextureCache::DumpVRAMWrite(m_vram_transfer.width, m_vram_transfer.height,
+                                     reinterpret_cast<const u16*>(m_blit_buffer.data()));
     }
 
     UpdateVRAM(m_vram_transfer.x, m_vram_transfer.y, m_vram_transfer.width, m_vram_transfer.height,

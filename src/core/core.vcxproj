@@ -47,6 +47,7 @@
     <ClCompile Include="gpu_backend.cpp" />
     <ClCompile Include="gpu_commands.cpp" />
     <ClCompile Include="gpu_hw_shadergen.cpp" />
+    <ClCompile Include="gpu_hw_texture_cache.cpp" />
     <ClCompile Include="gpu_shadergen.cpp" />
     <ClCompile Include="gpu_sw.cpp" />
     <ClCompile Include="gpu_sw_backend.cpp" />
@@ -81,7 +82,6 @@
     <ClCompile Include="sio.cpp" />
     <ClCompile Include="spu.cpp" />
     <ClCompile Include="system.cpp" />
-    <ClCompile Include="texture_replacements.cpp" />
     <ClCompile Include="timers.cpp" />
     <ClCompile Include="timing_event.cpp" />
   </ItemGroup>
@@ -124,6 +124,7 @@
     <ClInclude Include="gdb_server.h" />
     <ClInclude Include="gpu_backend.h" />
     <ClInclude Include="gpu_hw_shadergen.h" />
+    <ClInclude Include="gpu_hw_texture_cache.h" />
     <ClInclude Include="gpu_shadergen.h" />
     <ClInclude Include="gpu_sw.h" />
     <ClInclude Include="gpu_sw_backend.h" />
@@ -161,7 +162,6 @@
     <ClInclude Include="sio.h" />
     <ClInclude Include="spu.h" />
     <ClInclude Include="system.h" />
-    <ClInclude Include="texture_replacements.h" />
     <ClInclude Include="timers.h" />
     <ClInclude Include="timing_event.h" />
     <ClInclude Include="types.h" />

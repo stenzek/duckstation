@@ -7,12 +7,12 @@
 #include "cpu_pgxp.h"
 #include "fullscreen_ui.h"
 #include "gpu.h"
+#include "gpu_hw_texture_cache.h"
 #include "host.h"
 #include "imgui_overlays.h"
 #include "settings.h"
 #include "spu.h"
 #include "system.h"
-#include "texture_replacements.h"
 
 #include "util/gpu_device.h"
 #include "util/input_manager.h"
@@ -22,8 +22,8 @@
 #include "common/file_system.h"
 #include "common/timer.h"
 
-#include "IconsFontAwesome5.h"
 #include "IconsEmoji.h"
+#include "IconsFontAwesome5.h"
 #include "fmt/format.h"
 
 #include <cmath>
@@ -441,7 +441,7 @@ DEFINE_HOTKEY("ReloadTextureReplacements", TRANSLATE_NOOP("Hotkeys", "Graphics")
                 {
                   Host::AddKeyedOSDMessage("ReloadTextureReplacements",
                                            TRANSLATE_STR("OSDMessage", "Texture replacements reloaded."), 10.0f);
-                  TextureReplacements::Reload();
+                  GPUTextureCache::ReloadTextureReplacements();
                 }
               })
 
@@ -554,7 +554,8 @@ DEFINE_HOTKEY("AudioCDAudioMute", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_
                 {
                   g_settings.cdrom_mute_cd_audio = !g_settings.cdrom_mute_cd_audio;
                   Host::AddIconOSDMessage(
-                    "AudioControlHotkey", g_settings.cdrom_mute_cd_audio ? ICON_EMOJI_MUTED_SPEAKER : ICON_EMOJI_MEDIUM_VOLUME_SPEAKER,
+                    "AudioControlHotkey",
+                    g_settings.cdrom_mute_cd_audio ? ICON_EMOJI_MUTED_SPEAKER : ICON_EMOJI_MEDIUM_VOLUME_SPEAKER,
                     g_settings.cdrom_mute_cd_audio ? TRANSLATE_STR("OSDMessage", "CD Audio Muted.") :
                                                      TRANSLATE_STR("OSDMessage", "CD Audio Unmuted."),
                     2.0f);

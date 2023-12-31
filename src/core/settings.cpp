@@ -228,6 +228,7 @@ void Settings::Load(SettingsInterface& si, SettingsInterface& controller_si)
       si.GetStringValue("GPU", "ForceVideoTiming", GetForceVideoTimingName(DEFAULT_FORCE_VIDEO_TIMING_MODE)).c_str())
       .value_or(DEFAULT_FORCE_VIDEO_TIMING_MODE);
   gpu_widescreen_hack = si.GetBoolValue("GPU", "WidescreenHack", false);
+  gpu_texture_cache = si.GetBoolValue("GPU", "EnableTextureCache", false);
   display_24bit_chroma_smoothing = si.GetBoolValue("GPU", "ChromaSmoothing24Bit", false);
   gpu_pgxp_enable = si.GetBoolValue("GPU", "PGXPEnable", false);
   gpu_pgxp_culling = si.GetBoolValue("GPU", "PGXPCulling", true);
@@ -433,16 +434,43 @@ void Settings::Load(SettingsInterface& si, SettingsInterface& controller_si)
   debugging.show_mdec_state = si.GetBoolValue("Debug", "ShowMDECState");
   debugging.show_dma_state = si.GetBoolValue("Debug", "ShowDMAState");
 
+  texture_replacements.enable_texture_replacements =
+    si.GetBoolValue("TextureReplacements", "EnableTextureReplacements", false);
   texture_replacements.enable_vram_write_replacements =
     si.GetBoolValue("TextureReplacements", "EnableVRAMWriteReplacements", false);
   texture_replacements.preload_textures = si.GetBoolValue("TextureReplacements", "PreloadTextures", false);
+  texture_replacements.dump_textures = si.GetBoolValue("TextureReplacements", "DumpTextures", false);
+  texture_replacements.dump_replaced_textures = si.GetBoolValue("TextureReplacements", "DumpReplacedTextures", true);
   texture_replacements.dump_vram_writes = si.GetBoolValue("TextureReplacements", "DumpVRAMWrites", false);
-  texture_replacements.dump_vram_write_force_alpha_channel =
+
+  texture_replacements.config.dump_texture_pages = si.GetBoolValue("TextureReplacements", "DumpTexturePages", false);
+  texture_replacements.config.dump_full_texture_pages =
+    si.GetBoolValue("TextureReplacements", "DumpFullTexturePages", false);
+  texture_replacements.config.dump_texture_force_alpha_channel =
+    si.GetBoolValue("TextureReplacements", "DumpTextureForceAlphaChannel", false);
+  texture_replacements.config.dump_vram_write_force_alpha_channel =
     si.GetBoolValue("TextureReplacements", "DumpVRAMWriteForceAlphaChannel", true);
-  texture_replacements.dump_vram_write_width_threshold =
-    si.GetIntValue("TextureReplacements", "DumpVRAMWriteWidthThreshold", 128);
-  texture_replacements.dump_vram_write_height_threshold =
-    si.GetIntValue("TextureReplacements", "DumpVRAMWriteHeightThreshold", 128);
+  texture_replacements.config.dump_c16_textures = si.GetBoolValue("TextureReplacements", "DumpC16Textures", false);
+  texture_replacements.config.reduce_palette_range = si.GetBoolValue("TextureReplacements", "ReducePaletteRange", true);
+  texture_replacements.config.convert_copies_to_writes =
+    si.GetBoolValue("TextureReplacements", "ConvertCopiesToWrites", false);
+  texture_replacements.config.replacement_scale_linear_filter =
+    si.GetBoolValue("TextureReplacements", "ReplacementScaleLinearFilter", true);
+
+  texture_replacements.config.max_vram_write_splits = si.GetUIntValue("TextureReplacements", "MaxVRAMWriteSplits", 0u);
+  texture_replacements.config.max_vram_write_coalesce_width =
+    si.GetUIntValue("TextureReplacements", "MaxVRAMWriteCoalesceWidth", 0u);
+  texture_replacements.config.max_vram_write_coalesce_height =
+    si.GetUIntValue("TextureReplacements", "MaxVRAMWriteCoalesceHeight", 0u);
+
+  texture_replacements.config.texture_dump_width_threshold =
+    si.GetUIntValue("TextureReplacements", "DumpTextureWidthThreshold", 16);
+  texture_replacements.config.texture_dump_height_threshold =
+    si.GetUIntValue("TextureReplacements", "DumpTextureHeightThreshold", 16);
+  texture_replacements.config.vram_write_dump_width_threshold =
+    si.GetUIntValue("TextureReplacements", "DumpVRAMWriteWidthThreshold", 128);
+  texture_replacements.config.vram_write_dump_height_threshold =
+    si.GetUIntValue("TextureReplacements", "DumpVRAMWriteHeightThreshold", 128);
 
 #ifdef __ANDROID__
   // Android users are incredibly silly and don't understand that stretch is in the aspect ratio list...
@@ -526,6 +554,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetStringValue("GPU", "WireframeMode", GetGPUWireframeModeName(gpu_wireframe_mode));
   si.SetStringValue("GPU", "ForceVideoTiming", GetForceVideoTimingName(gpu_force_video_timing));
   si.SetBoolValue("GPU", "WidescreenHack", gpu_widescreen_hack);
+  si.SetBoolValue("GPU", "EnableTextureCache", gpu_texture_cache);
   si.SetBoolValue("GPU", "ChromaSmoothing24Bit", display_24bit_chroma_smoothing);
   si.SetBoolValue("GPU", "PGXPEnable", gpu_pgxp_enable);
   si.SetBoolValue("GPU", "PGXPCulling", gpu_pgxp_culling);
@@ -677,16 +706,41 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
     si.SetBoolValue("Debug", "ShowDMAState", debugging.show_dma_state);
   }
 
+  si.SetBoolValue("TextureReplacements", "EnableTextureReplacements", texture_replacements.enable_texture_replacements);
   si.SetBoolValue("TextureReplacements", "EnableVRAMWriteReplacements",
                   texture_replacements.enable_vram_write_replacements);
   si.SetBoolValue("TextureReplacements", "PreloadTextures", texture_replacements.preload_textures);
   si.SetBoolValue("TextureReplacements", "DumpVRAMWrites", texture_replacements.dump_vram_writes);
+  si.SetBoolValue("TextureReplacements", "DumpTextures", texture_replacements.dump_textures);
+  si.SetBoolValue("TextureReplacements", "DumpReplacedTextures", texture_replacements.dump_replaced_textures);
+
+  si.SetBoolValue("TextureReplacements", "DumpTexturePages", texture_replacements.config.dump_texture_pages);
+  si.SetBoolValue("TextureReplacements", "DumpFullTexturePages", texture_replacements.config.dump_full_texture_pages);
+  si.SetBoolValue("TextureReplacements", "DumpTextureForceAlphaChannel",
+                  texture_replacements.config.dump_texture_force_alpha_channel);
+
   si.SetBoolValue("TextureReplacements", "DumpVRAMWriteForceAlphaChannel",
-                  texture_replacements.dump_vram_write_force_alpha_channel);
-  si.SetIntValue("TextureReplacements", "DumpVRAMWriteWidthThreshold",
-                 texture_replacements.dump_vram_write_width_threshold);
-  si.SetIntValue("TextureReplacements", "DumpVRAMWriteHeightThreshold",
-                 texture_replacements.dump_vram_write_height_threshold);
+                  texture_replacements.config.dump_vram_write_force_alpha_channel);
+  si.SetBoolValue("TextureReplacements", "DumpC16Textures", texture_replacements.config.dump_c16_textures);
+  si.SetBoolValue("TextureReplacements", "ReducePaletteRange", texture_replacements.config.reduce_palette_range);
+  si.SetBoolValue("TextureReplacements", "ConvertCopiesToWrites", texture_replacements.config.convert_copies_to_writes);
+  si.SetBoolValue("TextureReplacements", "ReplacementScaleLinearFilter",
+                  texture_replacements.config.replacement_scale_linear_filter);
+
+  si.SetUIntValue("TextureReplacements", "MaxVRAMWriteSplits", texture_replacements.config.max_vram_write_splits);
+  si.SetUIntValue("TextureReplacements", "MaxVRAMWriteCoalesceWidth",
+                  texture_replacements.config.max_vram_write_coalesce_width);
+  si.GetUIntValue("TextureReplacements", "MaxVRAMWriteCoalesceHeight",
+                  texture_replacements.config.max_vram_write_coalesce_height);
+
+  si.SetUIntValue("TextureReplacements", "DumpTextureWidthThreshold",
+                  texture_replacements.config.texture_dump_width_threshold);
+  si.SetUIntValue("TextureReplacements", "DumpTextureHeightThreshold",
+                  texture_replacements.config.texture_dump_height_threshold);
+  si.SetUIntValue("TextureReplacements", "DumpVRAMWriteWidthThreshold",
+                  texture_replacements.config.vram_write_dump_width_threshold);
+  si.SetUIntValue("TextureReplacements", "DumpVRAMWriteHeightThreshold",
+                  texture_replacements.config.vram_write_dump_height_threshold);
 }
 
 void Settings::Clear(SettingsInterface& si)
@@ -714,6 +768,146 @@ void Settings::Clear(SettingsInterface& si)
   si.ClearSection("Logging");
   si.ClearSection("Debug");
   si.ClearSection("TextureReplacements");
+}
+
+bool Settings::TextureReplacementSettings::Configuration::operator==(const Configuration& rhs) const
+{
+  return (dump_texture_pages == rhs.dump_texture_pages && dump_full_texture_pages == rhs.dump_full_texture_pages &&
+          dump_texture_force_alpha_channel == rhs.dump_texture_force_alpha_channel &&
+          dump_vram_write_force_alpha_channel == rhs.dump_vram_write_force_alpha_channel &&
+          dump_c16_textures == rhs.dump_c16_textures && reduce_palette_range == rhs.reduce_palette_range &&
+          convert_copies_to_writes == rhs.convert_copies_to_writes &&
+          replacement_scale_linear_filter == rhs.replacement_scale_linear_filter &&
+          max_vram_write_splits == rhs.max_vram_write_splits &&
+          max_vram_write_coalesce_width == rhs.max_vram_write_coalesce_width &&
+          max_vram_write_coalesce_height == rhs.max_vram_write_coalesce_height &&
+          texture_dump_width_threshold == rhs.texture_dump_width_threshold &&
+          texture_dump_height_threshold == rhs.texture_dump_height_threshold &&
+          vram_write_dump_width_threshold == rhs.vram_write_dump_width_threshold &&
+          vram_write_dump_height_threshold == rhs.vram_write_dump_height_threshold);
+}
+
+bool Settings::TextureReplacementSettings::Configuration::operator!=(const Configuration& rhs) const
+{
+  return !operator==(rhs);
+}
+
+bool Settings::TextureReplacementSettings::operator==(const TextureReplacementSettings& rhs) const
+{
+  return (enable_texture_replacements == rhs.enable_texture_replacements &&
+          enable_vram_write_replacements == rhs.enable_vram_write_replacements &&
+          preload_textures == rhs.preload_textures && dump_textures == rhs.dump_textures &&
+          dump_replaced_textures == rhs.dump_replaced_textures && dump_vram_writes == rhs.dump_vram_writes &&
+          config == rhs.config);
+}
+
+bool Settings::TextureReplacementSettings::operator!=(const TextureReplacementSettings& rhs) const
+{
+  return !operator==(rhs);
+}
+
+std::string Settings::TextureReplacementSettings::Configuration::ExportToYAML(bool comment) const
+{
+  static constexpr const char CONFIG_TEMPLATE[] = R"(# DuckStation Texture Replacement Configuration
+# This file allows you to set a per-game configuration for the dumping and
+# replacement system, avoiding the need to use the normal per-game settings
+# when moving files to a different computer. It also allows for the definition
+# of texture aliases, for reducing duplicate files.
+#
+# All options are commented out by default. If an option is commented, the user's
+# current setting will be used instead. If an option is defined in this file, it
+# will always take precedence over the user's choice.
+
+# Enables texture page dumping mode.
+# Instead of tracking VRAM writes and attempting to identify the "real" size of
+# textures, create sub-rectangles from pages based on how they are drawn. In
+# most games, this will lead to significant duplication in dumps, and reduce
+# replacement reliability. However, some games are incompatible with write
+# tracking, and must use page mode.
+{}DumpTexturePages: {}
+
+# Dumps full texture pages instead of sub-rectangles.
+# 256x256 pages will be dumped/replaced instead.
+{}DumpFullTexturePages: {}
+
+# Enables the dumping of direct textures (i.e. C16 format).
+# Most games do not use direct textures, and when they do, it is usually for
+# post-processing or FMVs. Ignoring C16 textures typically reduces garbage/false
+# positive texture dumps, however, some games may require it.
+{}DumpC16Textures: {}
+
+# Reduces the size of palettes (i.e. CLUTs) to only those indices that are used.
+# This can help reduce duplication and improve replacement reliability in games
+# that use 8-bit textures, but do not reserve or use the full 1x256 region in
+# video memory for storage of the palette. When replacing textures dumped with
+# this option enabled, CPU usage on the GPU thread does increase trivially,
+# however, generally it is worthwhile for the reliability improvement. Games
+# that require this option include Metal Gear Solid.
+{}ReducePaletteRange: {}
+
+# Converts VRAM copies to VRAM writes, when a copy of performed into a previously
+# tracked VRAM write. This is required for some games that construct animated
+# textures by copying and replacing small portions of the texture with the parts
+# that are animated. Generally this option will cause duplication when dumping,
+# but it is required in some games, such as Final Fantasy VIII.
+{}ConvertCopiesToWrites: {}
+
+# Determines the maximum number of times a VRAM write/upload can be split, before
+# it is discarded and no longer tracked. This is required for games that partially
+# overwrite texture data, such as Gran Turismo.
+{}MaxVRAMWriteSplits: {}
+
+# Determines the maximum size of an incoming VRAM write that will be merged with
+# another write to the left/above of the incoming write. Needed for games that
+# upload textures one line at a time. These games will log "tracking VRAM write
+# of Nx1" repeatedly during loading. If the upload size is 1, then you can set
+# the corresponding maximum coalesce dimension to 1 to merge these uploads,
+# which should enable these textures to be dumped/replaced.
+{}MaxVRAMWriteCoalesceWidth: {}
+{}MaxVRAMWriteCoalesceHeight: {}
+
+# Determines the minimum size of a texture that will be dumped. Textures with a
+# width/height smaller than this value will be ignored.
+{}DumpTextureWidthThreshold: {}
+{}DumpTextureHeightThreshold: {}
+
+# Determines the minimum size of a VRAM write that will be dumped, in background
+# dumping mode. Uploads smaller than this size will be ignored.
+{}DumpVRAMWriteWidthThreshold: {}
+{}DumpVRAMWriteHeightThreshold: {}
+
+# Enables the use of a bilinear filter when scaling replacement textures.
+# If more than one replacement texture in a 256x256 texture page has a different
+# scaling over the native resolution, or the texture page is not covered, a
+# bilinear filter will be used to resize/stretch the replacement texture, and/or
+# the original native data.
+{}ReplacementScaleLinearFilter: {}
+
+# Use this section to define replacement aliases. One line per replacement
+# texture, with the key set to the source ID, and the value set to the filename
+# which should be loaded as a replacement. For example, without the newline,
+# or keep the multi-line separator.
+#Aliases:
+  # Alias-Texture-Name: Path-To-Texture
+  #  texupload-P4-AAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBB-64x256-0-192-64x64-P0-14: |
+  #    texupload-P4-BBBBBBBBBBBBBBBB-BBBBBBBBBBBBBBBB-64x256-0-64-64x64-P0-13.png
+  #  texupload-P4-AAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBB-64x256-0-192-64x64-P0-14: mytexture.png
+)";
+
+  const std::string_view comment_str = comment ? "#" : "";
+  return fmt::format(CONFIG_TEMPLATE, comment_str, dump_texture_pages, // DumpTexturePages
+                     comment_str, dump_full_texture_pages,             // DumpFullTexturePages
+                     comment_str, dump_c16_textures,                   // DumpC16Textures
+                     comment_str, reduce_palette_range,                // ReducePaletteRange
+                     comment_str, convert_copies_to_writes,            // ConvertCopiesToWrites
+                     comment_str, max_vram_write_splits,               // MaxVRAMWriteSplits
+                     comment_str, max_vram_write_coalesce_width,       // MaxVRAMWriteCoalesceWidth
+                     comment_str, max_vram_write_coalesce_height,      // MaxVRAMWriteCoalesceHeight
+                     comment_str, texture_dump_width_threshold,        // DumpTextureWidthThreshold
+                     comment_str, texture_dump_height_threshold,       // DumpTextureHeightThreshold
+                     comment_str, vram_write_dump_width_threshold,     // DumpVRAMWriteWidthThreshold
+                     comment_str, vram_write_dump_height_threshold,    // DumpVRAMWriteHeightThreshold
+                     comment_str, replacement_scale_linear_filter);    // ReplacementScaleLinearFilter
 }
 
 void Settings::FixIncompatibleSettings(bool display_osd_messages)
@@ -2043,7 +2237,6 @@ bool EmuFolders::EnsureFoldersExist()
   result = FileSystem::EnsureDirectoryExists(Covers.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(Dumps.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(Path::Combine(Dumps, "audio").c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(Path::Combine(Dumps, "textures").c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(GameIcons.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(GameSettings.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(InputProfiles.c_str(), false) && result;

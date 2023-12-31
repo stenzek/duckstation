@@ -39,8 +39,9 @@ private Q_SLOTS:
   void onMediaCaptureVideoAutoResolutionChanged();
   void onMediaCaptureAudioEnabledChanged();
 
+  void onEnableTextureCacheChanged();
   void onEnableAnyTextureReplacementsChanged();
-  void onEnableVRAMWriteDumpingChanged();
+  void onTextureReplacementOptionsClicked();
 
 private:
   static constexpr int TAB_INDEX_RENDERING = 0;

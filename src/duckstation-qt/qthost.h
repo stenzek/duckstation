@@ -199,6 +199,7 @@ public Q_SLOTS:
   void reloadPostProcessingShaders();
   void updatePostProcessingSettings();
   void clearInputBindStateFromSource(InputBindingKey key);
+  void reloadTextureReplacements();
 
 private Q_SLOTS:
   void stopInThread();

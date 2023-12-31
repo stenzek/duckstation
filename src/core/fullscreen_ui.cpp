@@ -4502,23 +4502,45 @@ void FullscreenUI::DrawDisplaySettingsPage()
 
   MenuHeading(FSUI_CSTR("Texture Replacements"));
 
-  DrawToggleSetting(bsi, FSUI_CSTR("Enable VRAM Write Texture Replacement"),
-                    FSUI_CSTR("Enables the replacement of background textures in supported games."),
-                    "TextureReplacements", "EnableVRAMWriteReplacements", false);
-  DrawToggleSetting(bsi, FSUI_CSTR("Preload Replacement Textures"),
-                    FSUI_CSTR("Loads all replacement texture to RAM, reducing stuttering at runtime."),
-                    "TextureReplacements", "PreloadTextures", false);
+  ActiveButton(FSUI_CSTR("The texture cache is currently experimental, and may cause rendering errors in some games."),
+               false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font);
+
+  DrawToggleSetting(bsi, FSUI_CSTR("Enable Texture Cache"),
+                    FSUI_CSTR("Enables caching of guest textures, required for texture replacement."), "GPU",
+                    "EnableTextureCache", false);
   DrawToggleSetting(bsi, FSUI_CSTR("Use Old MDEC Routines"),
                     FSUI_CSTR("Enables the older, less accurate MDEC decoding routines. May be required for old "
                               "replacement backgrounds to match/load."),
                     "Hacks", "UseOldMDECRoutines", false);
 
-  DrawToggleSetting(bsi, FSUI_CSTR("Dump Replaceable VRAM Writes"),
-                    FSUI_CSTR("Writes textures which can be replaced to the dump directory."), "TextureReplacements",
+  const bool texture_cache_enabled = GetEffectiveBoolSetting(bsi, "GPU", "EnableTextureCache", false);
+  DrawToggleSetting(bsi, FSUI_CSTR("Enable Texture Replacements"),
+                    FSUI_CSTR("Enables loading of replacement textures. Not compatible with all games."),
+                    "TextureReplacements", "EnableTextureReplacements", false, texture_cache_enabled);
+  DrawToggleSetting(
+    bsi, FSUI_CSTR("Enable Texture Dumping"),
+    FSUI_CSTR("Enables dumping of textures to image files, which can be replaced. Not compatible with all games."),
+    "TextureReplacements", "DumpTextures", false, texture_cache_enabled);
+  DrawToggleSetting(bsi, FSUI_CSTR("Dump Replaced Textures"),
+                    FSUI_CSTR("Dumps textures that have replacements already loaded."), "TextureReplacements",
+                    "DumpReplacedTextures", false, texture_cache_enabled);
+
+  DrawToggleSetting(bsi, FSUI_CSTR("Enable VRAM Write Texture Replacement"),
+                    FSUI_CSTR("Enables the replacement of background textures in supported games."),
+                    "TextureReplacements", "EnableVRAMWriteReplacements", false);
+
+  DrawToggleSetting(bsi, FSUI_CSTR("Enable VRAM Write Dumping"),
+                    FSUI_CSTR("Writes backgrounds that can be replaced to the dump directory."), "TextureReplacements",
                     "DumpVRAMWrites", false);
-  DrawToggleSetting(bsi, FSUI_CSTR("Set VRAM Write Dump Alpha Channel"),
-                    FSUI_CSTR("Clears the mask/transparency bit in VRAM write dumps."), "TextureReplacements",
-                    "DumpVRAMWriteForceAlphaChannel", true);
+
+  DrawToggleSetting(bsi, FSUI_CSTR("Preload Replacement Textures"),
+                    FSUI_CSTR("Loads all replacement texture to RAM, reducing stuttering at runtime."),
+                    "TextureReplacements", "PreloadTextures", false,
+                    ((texture_cache_enabled &&
+                      GetEffectiveBoolSetting(bsi, "TextureReplacements", "EnableTextureReplacements", false)) ||
+                     GetEffectiveBoolSetting(bsi, "TextureReplacements", "EnableVRAMWriteReplacements", false)));
+
+  DrawFolderSetting(bsi, FSUI_CSTR("Textures Directory"), "Folders", "Textures", EmuFolders::Textures);
 
   EndMenuButtons();
 }
@@ -7239,7 +7261,6 @@ TRANSLATE_NOOP("FullscreenUI", "Clear Settings");
 TRANSLATE_NOOP("FullscreenUI", "Clear Shaders");
 TRANSLATE_NOOP("FullscreenUI", "Clears a shader from the chain.");
 TRANSLATE_NOOP("FullscreenUI", "Clears all settings set for this game.");
-TRANSLATE_NOOP("FullscreenUI", "Clears the mask/transparency bit in VRAM write dumps.");
 TRANSLATE_NOOP("FullscreenUI", "Close");
 TRANSLATE_NOOP("FullscreenUI", "Close Game");
 TRANSLATE_NOOP("FullscreenUI", "Close Menu");
@@ -7319,7 +7340,8 @@ TRANSLATE_NOOP("FullscreenUI", "Downsampling");
 TRANSLATE_NOOP("FullscreenUI", "Downsampling Display Scale");
 TRANSLATE_NOOP("FullscreenUI", "Duck icon by icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)");
 TRANSLATE_NOOP("FullscreenUI", "DuckStation is a free simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability.");
-TRANSLATE_NOOP("FullscreenUI", "Dump Replaceable VRAM Writes");
+TRANSLATE_NOOP("FullscreenUI", "Dump Replaced Textures");
+TRANSLATE_NOOP("FullscreenUI", "Dumps textures that have replacements already loaded.");
 TRANSLATE_NOOP("FullscreenUI", "Emulation Settings");
 TRANSLATE_NOOP("FullscreenUI", "Emulation Speed");
 TRANSLATE_NOOP("FullscreenUI", "Enable 8MB RAM");
@@ -7338,6 +7360,10 @@ TRANSLATE_NOOP("FullscreenUI", "Enable Rewinding");
 TRANSLATE_NOOP("FullscreenUI", "Enable SDL Input Source");
 TRANSLATE_NOOP("FullscreenUI", "Enable Subdirectory Scanning");
 TRANSLATE_NOOP("FullscreenUI", "Enable TTY Logging");
+TRANSLATE_NOOP("FullscreenUI", "Enable Texture Cache");
+TRANSLATE_NOOP("FullscreenUI", "Enable Texture Dumping");
+TRANSLATE_NOOP("FullscreenUI", "Enable Texture Replacements");
+TRANSLATE_NOOP("FullscreenUI", "Enable VRAM Write Dumping");
 TRANSLATE_NOOP("FullscreenUI", "Enable VRAM Write Texture Replacement");
 TRANSLATE_NOOP("FullscreenUI", "Enable XInput Input Source");
 TRANSLATE_NOOP("FullscreenUI", "Enable debugging when supported by the host's renderer API. Only for developer use.");
@@ -7345,6 +7371,9 @@ TRANSLATE_NOOP("FullscreenUI", "Enable/Disable the Player LED on DualSense contr
 TRANSLATE_NOOP("FullscreenUI", "Enables alignment and bus exceptions. Not needed for any known games.");
 TRANSLATE_NOOP("FullscreenUI", "Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.");
 TRANSLATE_NOOP("FullscreenUI", "Enables an additional three controller slots on each port. Not supported in all games.");
+TRANSLATE_NOOP("FullscreenUI", "Enables caching of guest textures, required for texture replacement.");
+TRANSLATE_NOOP("FullscreenUI", "Enables dumping of textures to image files, which can be replaced. Not compatible with all games.");
+TRANSLATE_NOOP("FullscreenUI", "Enables loading of replacement textures. Not compatible with all games.");
 TRANSLATE_NOOP("FullscreenUI", "Enables smooth scrolling of menus in Big Picture UI.");
 TRANSLATE_NOOP("FullscreenUI", "Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.");
 TRANSLATE_NOOP("FullscreenUI", "Enables the replacement of background textures in supported games.");
@@ -7626,7 +7655,6 @@ TRANSLATE_NOOP("FullscreenUI", "Selects the view that the game list will open to
 TRANSLATE_NOOP("FullscreenUI", "Serial");
 TRANSLATE_NOOP("FullscreenUI", "Session: {}");
 TRANSLATE_NOOP("FullscreenUI", "Set Input Binding");
-TRANSLATE_NOOP("FullscreenUI", "Set VRAM Write Dump Alpha Channel");
 TRANSLATE_NOOP("FullscreenUI", "Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.");
 TRANSLATE_NOOP("FullscreenUI", "Sets a threshold for discarding the emulated depth buffer. May help in some games.");
 TRANSLATE_NOOP("FullscreenUI", "Sets the fast forward speed. It is not guaranteed that this speed will be reached on all systems.");
@@ -7705,10 +7733,12 @@ TRANSLATE_NOOP("FullscreenUI", "Temporarily disables all enhancements, useful wh
 TRANSLATE_NOOP("FullscreenUI", "Test Unofficial Achievements");
 TRANSLATE_NOOP("FullscreenUI", "Texture Filtering");
 TRANSLATE_NOOP("FullscreenUI", "Texture Replacements");
+TRANSLATE_NOOP("FullscreenUI", "Textures Directory");
 TRANSLATE_NOOP("FullscreenUI", "The SDL input source supports most controllers.");
 TRANSLATE_NOOP("FullscreenUI", "The XInput source provides support for XBox 360/XBox One/XBox Series controllers.");
 TRANSLATE_NOOP("FullscreenUI", "The audio backend determines how frames produced by the emulator are submitted to the host.");
 TRANSLATE_NOOP("FullscreenUI", "The selected memory card image will be used in shared mode for this slot.");
+TRANSLATE_NOOP("FullscreenUI", "The texture cache is currently experimental, and may cause rendering errors in some games.");
 TRANSLATE_NOOP("FullscreenUI", "This game has no achievements.");
 TRANSLATE_NOOP("FullscreenUI", "This game has no leaderboards.");
 TRANSLATE_NOOP("FullscreenUI", "Threaded Rendering");
@@ -7763,7 +7793,7 @@ TRANSLATE_NOOP("FullscreenUI", "When playing a multi-disc game and using per-gam
 TRANSLATE_NOOP("FullscreenUI", "When this option is chosen, the clock speed set below will be used.");
 TRANSLATE_NOOP("FullscreenUI", "Widescreen Rendering");
 TRANSLATE_NOOP("FullscreenUI", "Wireframe Rendering");
-TRANSLATE_NOOP("FullscreenUI", "Writes textures which can be replaced to the dump directory.");
+TRANSLATE_NOOP("FullscreenUI", "Writes backgrounds that can be replaced to the dump directory.");
 TRANSLATE_NOOP("FullscreenUI", "Yes, {} now and risk memory card corruption.");
 TRANSLATE_NOOP("FullscreenUI", "\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.");
 TRANSLATE_NOOP("FullscreenUI", "\"PlayStation\" and \"PSX\" are registered trademarks of Sony Interactive Entertainment Europe Limited. This software is not affiliated in any way with Sony Interactive Entertainment.");

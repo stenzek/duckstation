@@ -208,6 +208,8 @@
     <property name="title">
      <string>&amp;Tools</string>
     </property>
+    <addaction name="actionOpenDataDirectory"/>
+    <addaction name="separator"/>
     <addaction name="actionMemoryCardEditor"/>
     <addaction name="actionCoverDownloader"/>
     <addaction name="separator"/>
@@ -215,7 +217,8 @@
     <addaction name="separator"/>
     <addaction name="actionMediaCapture"/>
     <addaction name="separator"/>
-    <addaction name="actionOpenDataDirectory"/>
+    <addaction name="actionOpenTextureDirectory"/>
+    <addaction name="actionReloadTextureReplacements"/>
    </widget>
    <addaction name="menuSystem"/>
    <addaction name="menuSettings"/>
@@ -915,6 +918,16 @@
    </property>
    <property name="text">
     <string>Media Ca&amp;pture</string>
+   </property>
+  </action>
+  <action name="actionOpenTextureDirectory">
+   <property name="text">
+    <string>Open Texture Directory...</string>
+   </property>
+  </action>
+  <action name="actionReloadTextureReplacements">
+   <property name="text">
+    <string>Reload Texture Replacements</string>
    </property>
   </action>
  </widget>

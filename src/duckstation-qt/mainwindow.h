@@ -178,6 +178,7 @@ private Q_SLOTS:
   void onToolsCoverDownloaderTriggered();
   void onToolsMediaCaptureToggled(bool checked);
   void onToolsOpenDataDirectoryTriggered();
+  void onToolsOpenTextureDirectoryTriggered();
   void onSettingsTriggeredFromToolbar();
 
   void onGameListRefreshComplete();

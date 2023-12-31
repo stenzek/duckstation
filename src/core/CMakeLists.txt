@@ -51,6 +51,8 @@ add_library(core
   gpu_hw.h
   gpu_hw_shadergen.cpp
   gpu_hw_shadergen.h
+  gpu_hw_texture_cache.cpp
+  gpu_hw_texture_cache.h
   gpu_shadergen.cpp
   gpu_shadergen.h
   gpu_sw.cpp
@@ -108,8 +110,6 @@ add_library(core
   spu.h
   system.cpp
   system.h
-  texture_replacements.cpp
-  texture_replacements.h
   timers.cpp
   timers.h
   timing_event.cpp
