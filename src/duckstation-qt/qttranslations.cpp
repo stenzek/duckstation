@@ -181,6 +181,7 @@ std::span<const std::pair<const char*, const char*>> Host::GetAvailableLanguageL
                                                                             {"Español de España", "es-ES"},
                                                                             {"Français", "fr"},
                                                                             {"עברית", "he"},
+                                                                            {"Bahasa Indonesia", "id"},
                                                                             {"日本語", "ja"},
                                                                             {"한국어", "ko"},
                                                                             {"Italiano", "it"},
