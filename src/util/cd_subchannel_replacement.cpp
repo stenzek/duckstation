@@ -61,6 +61,8 @@ bool CDSubChannelReplacement::LoadSBI(const std::string& path)
     return true;
   }
 
+  m_replacement_subq.clear();
+
   SBIFileEntry entry;
   while (std::fread(&entry, sizeof(entry), 1, fp.get()) == 1)
   {
@@ -100,6 +102,8 @@ bool CDSubChannelReplacement::LoadLSD(const std::string& path)
   auto fp = FileSystem::OpenManagedCFile(path.c_str(), "rb");
   if (!fp)
     return false;
+
+  m_replacement_subq.clear();
 
   LSDFileEntry entry;
   while (std::fread(&entry, sizeof(entry), 1, fp.get()) == 1)

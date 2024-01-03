@@ -41,6 +41,7 @@ static u32 ReadCop0Reg(Cop0Reg reg);
 static void WriteCop0Reg(Cop0Reg reg, u32 value);
 
 static void DispatchCop0Breakpoint();
+static bool IsCop0ExecutionBreakpointUnmasked();
 static void Cop0ExecutionBreakpointCheck();
 template<MemoryAccessType type>
 static void Cop0DataBreakpointCheck(VirtualMemoryAddress address);
@@ -108,7 +109,8 @@ void CPU::StartTrace()
     return;
 
   s_trace_to_log = true;
-  UpdateDebugDispatcherFlag();
+  if (UpdateDebugDispatcherFlag())
+    System::InterruptExecution();
 }
 
 void CPU::StopTrace()
@@ -121,7 +123,8 @@ void CPU::StopTrace()
 
   s_log_file_opened = false;
   s_trace_to_log = false;
-  UpdateDebugDispatcherFlag();
+  if (UpdateDebugDispatcherFlag())
+    System::InterruptExecution();
 }
 
 void CPU::WriteToExecutionLog(const char* format, ...)
@@ -517,6 +520,8 @@ ALWAYS_INLINE_RELEASE void CPU::WriteCop0Reg(Cop0Reg reg, u32 value)
     {
       g_state.cop0_regs.BPCM = value;
       Log_DevPrintf("COP0 BPCM <- %08X", value);
+      if (UpdateDebugDispatcherFlag())
+        ExitExecution();
     }
     break;
 
@@ -545,7 +550,8 @@ ALWAYS_INLINE_RELEASE void CPU::WriteCop0Reg(Cop0Reg reg, u32 value)
       g_state.cop0_regs.dcic.bits =
         (g_state.cop0_regs.dcic.bits & ~Cop0Registers::DCIC::WRITE_MASK) | (value & Cop0Registers::DCIC::WRITE_MASK);
       Log_DevPrintf("COP0 DCIC <- %08X (now %08X)", value, g_state.cop0_regs.dcic.bits);
-      UpdateDebugDispatcherFlag();
+      if (UpdateDebugDispatcherFlag())
+        ExitExecution();
     }
     break;
 
@@ -572,6 +578,34 @@ ALWAYS_INLINE_RELEASE void CPU::WriteCop0Reg(Cop0Reg reg, u32 value)
       Log_DevPrintf("Unknown COP0 reg write %u (%08X)", ZeroExtend32(static_cast<u8>(reg)), value);
       break;
   }
+}
+
+ALWAYS_INLINE_RELEASE bool CPU::IsCop0ExecutionBreakpointUnmasked()
+{
+  static constexpr const u32 code_address_ranges[][2] = {
+    // KUSEG
+    {Bus::RAM_BASE, Bus::RAM_BASE | Bus::RAM_8MB_MASK},
+    {Bus::BIOS_BASE, Bus::BIOS_BASE | Bus::BIOS_MASK},
+
+    // KSEG0
+    {0x80000000u | Bus::RAM_BASE, 0x80000000u | Bus::RAM_BASE | Bus::RAM_8MB_MASK},
+    {0x80000000u | Bus::BIOS_BASE, 0x80000000u | Bus::BIOS_BASE | Bus::BIOS_MASK},
+
+    // KSEG1
+    {0xA0000000u | Bus::RAM_BASE, 0xA0000000u | Bus::RAM_BASE | Bus::RAM_8MB_MASK},
+    {0xA0000000u | Bus::BIOS_BASE, 0xA0000000u | Bus::BIOS_BASE | Bus::BIOS_MASK},
+  };
+
+  const u32 bpc = g_state.cop0_regs.BPC;
+  const u32 bpcm = g_state.cop0_regs.BPCM;
+  const u32 masked_bpc = bpc & bpcm;
+  for (const auto [range_start, range_end] : code_address_ranges)
+  {
+    if (masked_bpc >= (range_start & bpcm) && masked_bpc <= (range_end & bpcm))
+      return true;
+  }
+
+  return false;
 }
 
 ALWAYS_INLINE_RELEASE void CPU::Cop0ExecutionBreakpointCheck()
@@ -1890,25 +1924,24 @@ void CPU::DispatchInterrupt()
   TimingEvents::UpdateCPUDowncount();
 }
 
-void CPU::UpdateDebugDispatcherFlag()
+bool CPU::UpdateDebugDispatcherFlag()
 {
   const bool has_any_breakpoints = !s_breakpoints.empty();
 
   // TODO: cop0 breakpoints
   const auto& dcic = g_state.cop0_regs.dcic;
-  const bool has_cop0_breakpoints =
-    dcic.super_master_enable_1 && dcic.super_master_enable_2 && dcic.execution_breakpoint_enable;
+  const bool has_cop0_breakpoints = dcic.super_master_enable_1 && dcic.super_master_enable_2 &&
+                                    dcic.execution_breakpoint_enable && IsCop0ExecutionBreakpointUnmasked();
 
   const bool use_debug_dispatcher =
     has_any_breakpoints || has_cop0_breakpoints || s_trace_to_log ||
     (g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter && g_settings.bios_tty_logging);
   if (use_debug_dispatcher == g_state.use_debug_dispatcher)
-    return;
+    return false;
 
   Log_DevPrintf("%s debug dispatcher", use_debug_dispatcher ? "Now using" : "No longer using");
   g_state.use_debug_dispatcher = use_debug_dispatcher;
-  if (System::IsExecuting())
-    ExitExecution();
+  return true;
 }
 
 void CPU::ExitExecution()
@@ -1963,7 +1996,8 @@ bool CPU::AddBreakpoint(VirtualMemoryAddress address, bool auto_clear, bool enab
 
   Breakpoint bp{address, nullptr, auto_clear ? 0 : s_breakpoint_counter++, 0, auto_clear, enabled};
   s_breakpoints.push_back(std::move(bp));
-  UpdateDebugDispatcherFlag();
+  if (UpdateDebugDispatcherFlag())
+    System::InterruptExecution();
 
   if (!auto_clear)
   {
@@ -1982,7 +2016,8 @@ bool CPU::AddBreakpointWithCallback(VirtualMemoryAddress address, BreakpointCall
 
   Breakpoint bp{address, callback, 0, 0, false, true};
   s_breakpoints.push_back(std::move(bp));
-  UpdateDebugDispatcherFlag();
+  if (UpdateDebugDispatcherFlag())
+    System::InterruptExecution();
   return true;
 }
 
@@ -1996,7 +2031,8 @@ bool CPU::RemoveBreakpoint(VirtualMemoryAddress address)
   Host::ReportFormattedDebuggerMessage(TRANSLATE("DebuggerMessage", "Removed breakpoint at 0x%08X."), address);
 
   s_breakpoints.erase(it);
-  UpdateDebugDispatcherFlag();
+  if (UpdateDebugDispatcherFlag())
+    System::InterruptExecution();
 
   if (address == s_last_breakpoint_check_pc)
     s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
@@ -2009,7 +2045,8 @@ void CPU::ClearBreakpoints()
   s_breakpoints.clear();
   s_breakpoint_counter = 0;
   s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
-  UpdateDebugDispatcherFlag();
+  if (UpdateDebugDispatcherFlag())
+    System::InterruptExecution();
 }
 
 bool CPU::AddStepOverBreakpoint()
@@ -2431,6 +2468,8 @@ void CPU::UpdateMemoryPointers()
 void CPU::ExecutionModeChanged()
 {
   g_state.bus_error = false;
+  if (UpdateDebugDispatcherFlag())
+    System::InterruptExecution();
 }
 
 template<bool add_ticks, bool icache_read, u32 word_count, bool raise_exceptions>

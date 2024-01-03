@@ -743,12 +743,16 @@ bool CDImagePBP::OpenDisc(u32 index, Error* error)
 
   if (m_disc_offsets.size() > 1)
   {
-    const std::string offset_path = fmt::format("{}_{}.pbp", Path::StripExtension(m_filename), index + 1);
+    // Gross. Have to use the SBI suffix here, otherwise Android won't resolve content URIs...
+    // Which means that LSD won't be usable with PBP on Android. Oh well.
+    const std::string display_name = FileSystem::GetDisplayNameFromPath(m_filename);
+    const std::string offset_path =
+      Path::BuildRelativePath(m_filename, fmt::format("{}_{}.sbi", Path::StripExtension(display_name), index + 1));
     m_sbi.LoadFromImagePath(offset_path);
   }
   else
   {
-    m_sbi.LoadFromImagePath(Path::ReplaceExtension(m_filename, "sbi"));
+    m_sbi.LoadFromImagePath(m_filename);
   }
 
   m_current_disc = index;
