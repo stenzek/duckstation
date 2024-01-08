@@ -1474,10 +1474,8 @@ void GPU_HW::ComputePolygonUVLimits(u32 texpage, BatchVertex* vertices, u32 num_
     max_v = std::max<u32>(max_v, vertices[i].v);
   }
 
-  if (min_u != max_u)
-    max_u--;
-  if (min_v != max_v)
-    max_v--;
+  max_u = (min_u != max_u) ? (max_u - 1) : max_u;
+  max_v = (min_v != max_v) ? (max_v - 1) : max_v;
 
   CheckForTexPageOverlap(texpage, min_u, min_v, max_u, max_v);
 
@@ -2105,7 +2103,7 @@ ALWAYS_INLINE_RELEASE void GPU_HW::CheckForTexPageOverlap(u32 texpage, u32 min_u
   if (vram_min_u < m_current_uv_range.left || vram_min_v < m_current_uv_range.top ||
       vram_max_u >= m_current_uv_range.right || vram_max_v >= m_current_uv_range.bottom)
   {
-    m_current_uv_range.Include(vram_min_u, vram_max_u, vram_min_v, vram_max_v);
+    m_current_uv_range.Include(vram_min_u, vram_max_u + 1, vram_min_v, vram_max_v + 1);
 
     bool update_drawn = false, update_written = false;
     if (m_texpage_dirty & TEXPAGE_DIRTY_DRAWN_RECT)
