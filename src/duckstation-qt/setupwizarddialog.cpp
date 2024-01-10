@@ -205,7 +205,7 @@ void SetupWizardDialog::themeChanged()
 void SetupWizardDialog::languageChanged()
 {
   // Skip the recreation, since we don't have many dynamic UI elements.
-  QtHost::InstallTranslator();
+  QtHost::InstallTranslator(this);
   m_ui.retranslateUi(this);
   setupControllerPage(false);
 }

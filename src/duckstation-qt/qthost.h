@@ -259,7 +259,7 @@ void RunOnUIThread(const std::function<void()>& func, bool block = false);
 const char* GetDefaultLanguage();
 
 /// Call when the language changes.
-void InstallTranslator();
+void InstallTranslator(QWidget* dialog_parent);
 
 /// Returns the application name and version, optionally including debug/devel config indicator.
 QString GetAppNameAndVersion();

@@ -200,7 +200,7 @@ std::optional<bool> QtHost::DownloadFile(QWidget* parent, const QString& title, 
       if (status_code != HTTPDownloader::HTTP_STATUS_OK)
       {
         QMessageBox::critical(parent, qApp->translate("QtHost", "Error"),
-                              qApp->translate("QtHost", "Download failed with HTTP status code {}.").arg(status_code));
+                              qApp->translate("QtHost", "Download failed with HTTP status code %1.").arg(status_code));
         download_result = false;
         return;
       }
@@ -382,7 +382,7 @@ bool QtHost::InitializeConfig(std::string settings_filename)
       s_base_settings_interface->Save();
   }
 
-  InstallTranslator();
+  InstallTranslator(nullptr);
   return true;
 }
 
