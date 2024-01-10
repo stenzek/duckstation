@@ -26,12 +26,16 @@
 #include "common/assert.h"
 #include "common/byte_stream.h"
 #include "common/crash_handler.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
+#include "common/minizip_helpers.h"
 #include "common/path.h"
+#include "common/scoped_guard.h"
 #include "common/string_util.h"
 
 #include "util/audio_stream.h"
+#include "util/http_downloader.h"
 #include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
 #include "util/input_manager.h"
@@ -91,6 +95,7 @@ static void SetDefaultSettings(SettingsInterface& si, bool system, bool controll
 static void SaveSettings();
 static bool RunSetupWizard();
 static std::string GetResourcePath(std::string_view name, bool allow_override);
+static std::optional<bool> DownloadFile(QWidget* parent, const QString& title, std::string url, std::vector<u8>* data);
 static void InitializeEarlyConsole();
 static void HookSignals();
 static void PrintCommandLineVersion();
@@ -157,6 +162,168 @@ QString QtHost::GetAppConfigSuffix()
 QString QtHost::GetResourcesBasePath()
 {
   return QString::fromStdString(EmuFolders::Resources);
+}
+
+QIcon QtHost::GetAppIcon()
+{
+  return QIcon(QStringLiteral(":/icons/duck.png"));
+}
+
+std::optional<bool> QtHost::DownloadFile(QWidget* parent, const QString& title, std::string url, std::vector<u8>* data)
+{
+  static constexpr u32 HTTP_POLL_INTERVAL = 10;
+
+  std::unique_ptr<HTTPDownloader> http = HTTPDownloader::Create(Host::GetHTTPUserAgent());
+  if (!http)
+  {
+    QMessageBox::critical(parent, qApp->translate("QtHost", "Error"),
+                          qApp->translate("QtHost", "Failed to create HTTPDownloader."));
+    return false;
+  }
+
+  std::optional<bool> download_result;
+  const std::string::size_type url_file_part_pos = url.rfind('/');
+  QtModalProgressCallback progress(parent);
+  progress.GetDialog().setLabelText(qApp->translate("QtHost", "Downloading %1...")
+                                      .arg(QtUtils::StringViewToQString(std::string_view(url).substr(
+                                        (url_file_part_pos >= 0) ? (url_file_part_pos + 1) : 0))));
+  progress.GetDialog().setWindowTitle(title);
+  progress.GetDialog().setWindowIcon(GetAppIcon());
+  progress.SetCancellable(true);
+
+  http->CreateRequest(
+    std::move(url),
+    [parent, data, &download_result, &progress](s32 status_code, const std::string&, std::vector<u8> hdata) {
+      if (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED)
+        return;
+
+      if (status_code != HTTPDownloader::HTTP_STATUS_OK)
+      {
+        QMessageBox::critical(parent, qApp->translate("QtHost", "Error"),
+                              qApp->translate("QtHost", "Download failed with HTTP status code {}.").arg(status_code));
+        download_result = false;
+        return;
+      }
+
+      if (hdata.empty())
+      {
+        QMessageBox::critical(parent, qApp->translate("QtHost", "Error"),
+                              qApp->translate("QtHost", "Download failed: Data is empty.").arg(status_code));
+
+        download_result = false;
+        return;
+      }
+
+      *data = std::move(hdata);
+      download_result = true;
+    },
+    &progress);
+
+  // Block until completion.
+  while (http->HasAnyRequests())
+  {
+    QApplication::processEvents(QEventLoop::AllEvents, HTTP_POLL_INTERVAL);
+    http->PollRequests();
+  }
+
+  return download_result;
+}
+
+bool QtHost::DownloadFile(QWidget* parent, const QString& title, std::string url, const char* path)
+{
+  Log_InfoFmt("Download from {}, saving to {}.", url, path);
+
+  std::vector<u8> data;
+  if (!DownloadFile(parent, title, std::move(url), &data).value_or(false) || data.empty())
+    return false;
+
+  // Directory may not exist. Create it.
+  const std::string directory(Path::GetDirectory(path));
+  if ((!directory.empty() && !FileSystem::DirectoryExists(directory.c_str()) &&
+       !FileSystem::CreateDirectory(directory.c_str(), true)) ||
+      !FileSystem::WriteBinaryFile(path, data.data(), data.size()))
+  {
+    QMessageBox::critical(parent, qApp->translate("QtHost", "Error"),
+                          qApp->translate("QtHost", "Failed to write '%1'.").arg(QString::fromUtf8(path)));
+    return false;
+  }
+
+  return true;
+}
+
+bool QtHost::DownloadFileFromZip(QWidget* parent, const QString& title, std::string url, const char* zip_filename,
+                                 const char* output_path)
+{
+  Log_InfoFmt("Download {} from {}, saving to {}.", zip_filename, url, output_path);
+
+  std::vector<u8> data;
+  if (!DownloadFile(parent, title, std::move(url), &data).value_or(false) || data.empty())
+    return false;
+
+  const unzFile zf = MinizipHelpers::OpenUnzMemoryFile(data.data(), data.size());
+  if (!zf)
+  {
+    QMessageBox::critical(parent, qApp->translate("QtHost", "Error"),
+                          qApp->translate("QtHost", "Failed to open downloaded zip file."));
+    return false;
+  }
+
+  const ScopedGuard zf_guard = [&zf]() { unzClose(zf); };
+
+  if (unzLocateFile(zf, zip_filename, 0) != UNZ_OK || unzOpenCurrentFile(zf) != UNZ_OK)
+  {
+    QMessageBox::critical(
+      parent, qApp->translate("QtHost", "Error"),
+      qApp->translate("QtHost", "Failed to locate '%1' in zip.").arg(QString::fromUtf8(zip_filename)));
+    return false;
+  }
+
+  // Directory may not exist. Create it.
+  Error error;
+  FileSystem::ManagedCFilePtr output_file;
+  const std::string directory(Path::GetDirectory(output_path));
+  if ((!directory.empty() && !FileSystem::DirectoryExists(directory.c_str()) &&
+       !FileSystem::CreateDirectory(directory.c_str(), true)) ||
+      !(output_file = FileSystem::OpenManagedCFile(output_path, "wb", &error)))
+  {
+    QMessageBox::critical(parent, qApp->translate("QtHost", "Error"),
+                          qApp->translate("QtHost", "Failed to open '%1': %2.")
+                            .arg(QString::fromUtf8(output_path))
+                            .arg(QString::fromStdString(error.GetDescription())));
+    return false;
+  }
+
+  static constexpr size_t CHUNK_SIZE = 4096;
+  char chunk[CHUNK_SIZE];
+  for (;;)
+  {
+    int size = unzReadCurrentFile(zf, chunk, CHUNK_SIZE);
+    if (size < 0)
+    {
+      QMessageBox::critical(
+        parent, qApp->translate("QtHost", "Error"),
+        qApp->translate("QtHost", "Failed to read '%1' from zip.").arg(QString::fromUtf8(zip_filename)));
+      output_file.reset();
+      FileSystem::DeleteFile(output_path);
+      return false;
+    }
+    else if (size == 0)
+    {
+      break;
+    }
+
+    if (std::fwrite(chunk, size, 1, output_file.get()) != 1)
+    {
+      QMessageBox::critical(parent, qApp->translate("QtHost", "Error"),
+                            qApp->translate("QtHost", "Failed to write to '%1'.").arg(QString::fromUtf8(output_path)));
+
+      output_file.reset();
+      FileSystem::DeleteFile(output_path);
+      return false;
+    }
+  }
+
+  return true;
 }
 
 bool QtHost::InitializeConfig(std::string settings_filename)
@@ -1445,7 +1612,8 @@ void Host::OnInputDeviceDisconnected(const std::string_view& identifier)
 
 ALWAYS_INLINE std::string QtHost::GetResourcePath(std::string_view filename, bool allow_override)
 {
-  return allow_override ? EmuFolders::GetOverridableResourcePath(filename) : Path::Combine(EmuFolders::Resources, filename);
+  return allow_override ? EmuFolders::GetOverridableResourcePath(filename) :
+                          Path::Combine(EmuFolders::Resources, filename);
 }
 
 bool Host::ResourceFileExists(std::string_view filename, bool allow_override)

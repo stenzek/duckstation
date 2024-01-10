@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -20,6 +20,8 @@
 #include <QtCore/QSemaphore>
 #include <QtCore/QString>
 #include <QtCore/QThread>
+#include <QtGui/QIcon>
+
 #include <atomic>
 #include <functional>
 #include <map>
@@ -265,8 +267,18 @@ QString GetAppNameAndVersion();
 /// Returns the debug/devel config indicator.
 QString GetAppConfigSuffix();
 
+/// Returns the main application icon.
+QIcon GetAppIcon();
+
 /// Returns the base path for resources. This may be : prefixed, if we're using embedded resources.
 QString GetResourcesBasePath();
+
+/// Downloads the specified URL to the provided path.
+bool DownloadFile(QWidget* parent, const QString& title, std::string url, const char* path);
+
+/// Downloads the specified URL, and extracts the specified file from a zip to a provided path.
+bool DownloadFileFromZip(QWidget* parent, const QString& title, std::string url, const char* zip_filename,
+                         const char* output_path);
 
 /// Thread-safe settings access.
 void QueueSettingsSave();
