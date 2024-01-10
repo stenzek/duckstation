@@ -689,7 +689,7 @@ bool CheatList::SaveToPCSXRFile(const char* filename)
 
 bool CheatList::LoadFromPackage(const std::string& serial)
 {
-  const std::optional<std::string> db_string(Host::ReadResourceFileToString("chtdb.txt"));
+  const std::optional<std::string> db_string(Host::ReadResourceFileToString("chtdb.txt", false));
   if (!db_string.has_value())
     return false;
 

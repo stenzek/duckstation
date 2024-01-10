@@ -580,7 +580,7 @@ bool GameDatabase::LoadFromCache()
     return false;
   }
 
-  const u64 gamedb_ts = Host::GetResourceFileTimestamp("gamedb.json").value_or(0);
+  const u64 gamedb_ts = Host::GetResourceFileTimestamp("gamedb.json", false).value_or(0);
 
   u32 signature, version, num_entries, num_codes;
   u64 file_gamedb_ts;
@@ -674,7 +674,7 @@ bool GameDatabase::LoadFromCache()
 
 bool GameDatabase::SaveToCache()
 {
-  const u64 gamedb_ts = Host::GetResourceFileTimestamp("gamedb.json").value_or(0);
+  const u64 gamedb_ts = Host::GetResourceFileTimestamp("gamedb.json", false).value_or(0);
 
   std::unique_ptr<ByteStream> stream(
     ByteStream::OpenFile(GetCacheFile().c_str(), BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE |
@@ -830,7 +830,7 @@ static std::optional<float> GetOptionalFloatFromObject(const rapidjson::Value& o
 
 bool GameDatabase::LoadGameDBJson()
 {
-  std::optional<std::string> gamedb_data(Host::ReadResourceFileToString("gamedb.json"));
+  std::optional<std::string> gamedb_data(Host::ReadResourceFileToString("gamedb.json", false));
   if (!gamedb_data.has_value())
   {
     Log_ErrorPrintf("Failed to read game database");
@@ -1082,7 +1082,7 @@ void GameDatabase::EnsureTrackHashesMapLoaded()
 
 bool GameDatabase::LoadTrackHashes()
 {
-  std::optional<std::string> gamedb_data(Host::ReadResourceFileToString("gamedb.json"));
+  std::optional<std::string> gamedb_data(Host::ReadResourceFileToString("gamedb.json", false));
   if (!gamedb_data.has_value())
   {
     Log_ErrorPrintf("Failed to read game database");

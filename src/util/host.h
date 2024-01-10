@@ -13,17 +13,17 @@
 
 namespace Host {
 /// Returns true if the specified resource file exists.
-bool ResourceFileExists(const char* filename);
+bool ResourceFileExists(std::string_view filename, bool allow_override);
 
 /// Reads a file from the resources directory of the application.
 /// This may be outside of the "normal" filesystem on platforms such as Mac.
-std::optional<std::vector<u8>> ReadResourceFile(const char* filename);
+std::optional<std::vector<u8>> ReadResourceFile(std::string_view filename, bool allow_override);
 
 /// Reads a resource file file from the resources directory as a string.
-std::optional<std::string> ReadResourceFileToString(const char* filename);
+std::optional<std::string> ReadResourceFileToString(std::string_view filename, bool allow_override);
 
 /// Returns the modified time of a resource.
-std::optional<std::time_t> GetResourceFileTimestamp(const char* filename);
+std::optional<std::time_t> GetResourceFileTimestamp(std::string_view filename, bool allow_override);
 
 /// Displays an asynchronous error on the UI thread, i.e. doesn't block the caller.
 void ReportErrorAsync(const std::string_view& title, const std::string_view& message);

@@ -45,7 +45,7 @@ static bool PreprocessorFileExistsCallback(const std::string& path)
   if (Path::IsAbsolute(path))
     return FileSystem::FileExists(path.c_str());
 
-  return Host::ResourceFileExists(path.c_str());
+  return Host::ResourceFileExists(path.c_str(), true);
 }
 
 static bool PreprocessorReadFileCallback(const std::string& path, std::string& data)
@@ -54,7 +54,7 @@ static bool PreprocessorReadFileCallback(const std::string& path, std::string& d
   if (Path::IsAbsolute(path))
     rdata = FileSystem::ReadFileToString(path.c_str());
   else
-    rdata = Host::ReadResourceFileToString(path.c_str());
+    rdata = Host::ReadResourceFileToString(path.c_str(), true);
   if (!rdata.has_value())
     return false;
 
@@ -935,7 +935,7 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
       {
         // Might be a base file/resource instead.
         const std::string resource_name = Path::Combine("shaders/reshade/Textures", source);
-        if (std::optional<std::vector<u8>> resdata = Host::ReadResourceFile(resource_name.c_str());
+        if (std::optional<std::vector<u8>> resdata = Host::ReadResourceFile(resource_name.c_str(), true);
             !resdata.has_value() || !image.LoadFromBuffer(resource_name.c_str(), resdata->data(), resdata->size()))
         {
           Error::SetString(error, fmt::format("Failed to load image '{}' (from '{}')", source, image_path).c_str());

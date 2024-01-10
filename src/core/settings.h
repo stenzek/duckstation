@@ -1,15 +1,20 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
+
+#include "types.h"
+
+#include "util/audio_stream.h"
+
 #include "common/log.h"
 #include "common/settings_interface.h"
 #include "common/small_string.h"
-#include "types.h"
-#include "util/audio_stream.h"
+
 #include <array>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 enum class RenderAPI : u32;
@@ -525,6 +530,7 @@ extern std::string SaveStates;
 extern std::string Screenshots;
 extern std::string Shaders;
 extern std::string Textures;
+extern std::string UserResources;
 
 // Assumes that AppRoot and DataRoot have been initialized.
 void SetDefaults();
@@ -534,4 +540,7 @@ void Save(SettingsInterface& si);
 
 /// Updates the variables in the EmuFolders namespace, reloading subsystems if needed.
 void Update();
+
+/// Returns the path to a resource file, allowing the user to override it.
+std::string GetOverridableResourcePath(std::string_view name);
 } // namespace EmuFolders

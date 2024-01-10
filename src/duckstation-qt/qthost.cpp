@@ -90,6 +90,7 @@ static bool SetCriticalFolders();
 static void SetDefaultSettings(SettingsInterface& si, bool system, bool controller);
 static void SaveSettings();
 static bool RunSetupWizard();
+static std::string GetResourcePath(std::string_view name, bool allow_override);
 static void InitializeEarlyConsole();
 static void HookSignals();
 static void PrintCommandLineVersion();
@@ -1442,33 +1443,39 @@ void Host::OnInputDeviceDisconnected(const std::string_view& identifier)
     identifier.empty() ? QString() : QString::fromUtf8(identifier.data(), identifier.size()));
 }
 
-bool Host::ResourceFileExists(const char* filename)
+ALWAYS_INLINE std::string QtHost::GetResourcePath(std::string_view filename, bool allow_override)
 {
-  const std::string path(Path::Combine(EmuFolders::Resources, filename));
+  return allow_override ? EmuFolders::GetOverridableResourcePath(filename) : Path::Combine(EmuFolders::Resources, filename);
+}
+
+bool Host::ResourceFileExists(std::string_view filename, bool allow_override)
+{
+  const std::string path = QtHost::GetResourcePath(filename, allow_override);
   return FileSystem::FileExists(path.c_str());
 }
 
-std::optional<std::vector<u8>> Host::ReadResourceFile(const char* filename)
+std::optional<std::vector<u8>> Host::ReadResourceFile(std::string_view filename, bool allow_override)
 {
-  const std::string path(Path::Combine(EmuFolders::Resources, filename));
+  const std::string path = QtHost::GetResourcePath(filename, allow_override);
   std::optional<std::vector<u8>> ret(FileSystem::ReadBinaryFile(path.c_str()));
   if (!ret.has_value())
     Log_ErrorPrintf("Failed to read resource file '%s'", filename);
   return ret;
 }
 
-std::optional<std::string> Host::ReadResourceFileToString(const char* filename)
+std::optional<std::string> Host::ReadResourceFileToString(std::string_view filename, bool allow_override)
 {
-  const std::string path(Path::Combine(EmuFolders::Resources, filename));
+  const std::string path = QtHost::GetResourcePath(filename, allow_override);
   std::optional<std::string> ret(FileSystem::ReadFileToString(path.c_str()));
   if (!ret.has_value())
     Log_ErrorPrintf("Failed to read resource file to string '%s'", filename);
   return ret;
 }
 
-std::optional<std::time_t> Host::GetResourceFileTimestamp(const char* filename)
+std::optional<std::time_t> Host::GetResourceFileTimestamp(std::string_view filename, bool allow_override)
 {
-  const std::string path(Path::Combine(EmuFolders::Resources, filename));
+  const std::string path = QtHost::GetResourcePath(filename, allow_override);
+
   FILESYSTEM_STAT_DATA sd;
   if (!FileSystem::StatFile(path.c_str(), &sd))
   {

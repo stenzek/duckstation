@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "settings.h"
@@ -1504,6 +1504,7 @@ std::string EmuFolders::SaveStates;
 std::string EmuFolders::Screenshots;
 std::string EmuFolders::Shaders;
 std::string EmuFolders::Textures;
+std::string EmuFolders::UserResources;
 
 void EmuFolders::SetDefaults()
 {
@@ -1519,6 +1520,7 @@ void EmuFolders::SetDefaults()
   Screenshots = Path::Combine(DataRoot, "screenshots");
   Shaders = Path::Combine(DataRoot, "shaders");
   Textures = Path::Combine(DataRoot, "textures");
+  UserResources = Path::Combine(DataRoot, "resources");
 }
 
 static std::string LoadPathFromSettings(SettingsInterface& si, const std::string& root, const char* section,
@@ -1546,19 +1548,22 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
   Screenshots = LoadPathFromSettings(si, DataRoot, "Folders", "Screenshots", "screenshots");
   Shaders = LoadPathFromSettings(si, DataRoot, "Folders", "Shaders", "shaders");
   Textures = LoadPathFromSettings(si, DataRoot, "Folders", "Textures", "textures");
+  UserResources = LoadPathFromSettings(si, DataRoot, "Folders", "UserResources", "resources");
 
-  Log_DevPrintf("BIOS Directory: %s", Bios.c_str());
-  Log_DevPrintf("Cache Directory: %s", Cache.c_str());
-  Log_DevPrintf("Cheats Directory: %s", Cheats.c_str());
-  Log_DevPrintf("Covers Directory: %s", Covers.c_str());
-  Log_DevPrintf("Dumps Directory: %s", Dumps.c_str());
-  Log_DevPrintf("Game Settings Directory: %s", GameSettings.c_str());
-  Log_DevPrintf("Input Profile Directory: %s", InputProfiles.c_str());
-  Log_DevPrintf("MemoryCards Directory: %s", MemoryCards.c_str());
-  Log_DevPrintf("SaveStates Directory: %s", SaveStates.c_str());
-  Log_DevPrintf("Screenshots Directory: %s", Screenshots.c_str());
-  Log_DevPrintf("Shaders Directory: %s", Shaders.c_str());
-  Log_DevPrintf("Textures Directory: %s", Textures.c_str());
+  Log_DevFmt("BIOS Directory: {}", Bios);
+  Log_DevFmt("Cache Directory: {}", Cache);
+  Log_DevFmt("Cheats Directory: {}", Cheats);
+  Log_DevFmt("Covers Directory: {}", Covers);
+  Log_DevFmt("Dumps Directory: {}", Dumps);
+  Log_DevFmt("Game Settings Directory: {}", GameSettings);
+  Log_DevFmt("Input Profile Directory: {}", InputProfiles);
+  Log_DevFmt("MemoryCards Directory: {}", MemoryCards);
+  Log_DevFmt("Resources Directory: {}", Resources);
+  Log_DevFmt("SaveStates Directory: {}", SaveStates);
+  Log_DevFmt("Screenshots Directory: {}", Screenshots);
+  Log_DevFmt("Shaders Directory: {}", Shaders);
+  Log_DevFmt("Textures Directory: {}", Textures);
+  Log_DevFmt("User Resources Directory: {}", UserResources);
 }
 
 void EmuFolders::Save(SettingsInterface& si)
@@ -1576,6 +1581,7 @@ void EmuFolders::Save(SettingsInterface& si)
   si.SetStringValue("Folders", "Screenshots", Path::MakeRelative(Screenshots, DataRoot).c_str());
   si.SetStringValue("Folders", "Shaders", Path::MakeRelative(Shaders, DataRoot).c_str());
   si.SetStringValue("Folders", "Textures", Path::MakeRelative(Textures, DataRoot).c_str());
+  si.SetStringValue("Folders", "UserResources", Path::MakeRelative(UserResources, DataRoot).c_str());
 }
 
 void EmuFolders::Update()
@@ -1623,7 +1629,24 @@ bool EmuFolders::EnsureFoldersExist()
              Path::Combine(Shaders, "reshade" FS_OSPATH_SEPARATOR_STR "Textures").c_str(), false) &&
            result;
   result = FileSystem::EnsureDirectoryExists(Textures.c_str(), false) && result;
+  result = FileSystem::EnsureDirectoryExists(UserResources.c_str(), false) && result;
   return result;
+}
+
+std::string EmuFolders::GetOverridableResourcePath(std::string_view name)
+{
+  std::string upath = Path::Combine(UserResources, name);
+  if (FileSystem::FileExists(upath.c_str()))
+  {
+    if (UserResources != Resources)
+      Log_WarningFmt("Using user-provided resource file {}", name);
+  }
+  else
+  {
+    upath = Path::Combine(Resources, name);
+  }
+
+  return upath;
 }
 
 static const char* s_log_filters[] = {

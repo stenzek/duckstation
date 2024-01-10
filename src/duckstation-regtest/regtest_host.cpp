@@ -181,13 +181,13 @@ void Host::CommitBaseSettingChanges()
   // noop, in memory
 }
 
-bool Host::ResourceFileExists(const char* filename)
+bool Host::ResourceFileExists(std::string_view filename, bool allow_override)
 {
   const std::string path(Path::Combine(EmuFolders::Resources, filename));
   return FileSystem::FileExists(path.c_str());
 }
 
-std::optional<std::vector<u8>> Host::ReadResourceFile(const char* filename)
+std::optional<std::vector<u8>> Host::ReadResourceFile(std::string_view filename, bool allow_override)
 {
   const std::string path(Path::Combine(EmuFolders::Resources, filename));
   std::optional<std::vector<u8>> ret(FileSystem::ReadBinaryFile(path.c_str()));
@@ -196,7 +196,7 @@ std::optional<std::vector<u8>> Host::ReadResourceFile(const char* filename)
   return ret;
 }
 
-std::optional<std::string> Host::ReadResourceFileToString(const char* filename)
+std::optional<std::string> Host::ReadResourceFileToString(std::string_view filename, bool allow_override)
 {
   const std::string path(Path::Combine(EmuFolders::Resources, filename));
   std::optional<std::string> ret(FileSystem::ReadFileToString(path.c_str()));
@@ -205,7 +205,7 @@ std::optional<std::string> Host::ReadResourceFileToString(const char* filename)
   return ret;
 }
 
-std::optional<std::time_t> Host::GetResourceFileTimestamp(const char* filename)
+std::optional<std::time_t> Host::GetResourceFileTimestamp(std::string_view filename, bool allow_override)
 {
   const std::string path(Path::Combine(EmuFolders::Resources, filename));
   FILESYSTEM_STAT_DATA sd;
