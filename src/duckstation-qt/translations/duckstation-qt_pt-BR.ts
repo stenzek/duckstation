@@ -165,116 +165,111 @@ Deseja ativar o modo hardcore?</translation>
 <context>
     <name>AchievementSettingsWidget</name>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="14"/>
-        <source>Form</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../achievementsettingswidget.ui" line="45"/>
+        <location filename="../achievementsettingswidget.ui" line="42"/>
         <location filename="../achievementsettingswidget.cpp" line="46"/>
         <source>Enable Achievements</source>
         <translation>Ativar conquistas</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="181"/>
+        <location filename="../achievementsettingswidget.ui" line="178"/>
         <location filename="../achievementsettingswidget.cpp" line="57"/>
         <source>Enable Sound Effects</source>
         <translation>Ativar efeitos sonoros</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="73"/>
+        <location filename="../achievementsettingswidget.ui" line="70"/>
         <location filename="../achievementsettingswidget.cpp" line="72"/>
         <source>Use First Disc From Playlist</source>
         <translation>Usar o primeiro disco da lista de reprodução</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="32"/>
+        <location filename="../achievementsettingswidget.ui" line="29"/>
         <source>Settings</source>
         <translation>Configurações</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="38"/>
+        <location filename="../achievementsettingswidget.ui" line="35"/>
         <location filename="../achievementsettingswidget.cpp" line="64"/>
         <source>Enable Spectator Mode</source>
         <translation>Ativar o modo espectador</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="52"/>
+        <location filename="../achievementsettingswidget.ui" line="49"/>
         <location filename="../achievementsettingswidget.cpp" line="68"/>
         <source>Test Unofficial Achievements</source>
         <translation>Testar as conquistas não oficiais</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="198"/>
+        <location filename="../achievementsettingswidget.ui" line="195"/>
         <source>Account</source>
         <translation>Conta</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="224"/>
+        <location filename="../achievementsettingswidget.ui" line="221"/>
         <location filename="../achievementsettingswidget.cpp" line="192"/>
         <source>Login...</source>
         <translation>Entrar...</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="217"/>
+        <location filename="../achievementsettingswidget.ui" line="214"/>
         <source>View Profile...</source>
         <translation>Ver perfil...</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="59"/>
+        <location filename="../achievementsettingswidget.ui" line="56"/>
         <location filename="../achievementsettingswidget.cpp" line="62"/>
         <source>Enable Encore Mode</source>
         <translation>Ativar modo de repetição</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="83"/>
+        <location filename="../achievementsettingswidget.ui" line="80"/>
         <source>Notifications</source>
         <translation>Notificações</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="119"/>
-        <location filename="../achievementsettingswidget.ui" line="165"/>
+        <location filename="../achievementsettingswidget.ui" line="116"/>
+        <location filename="../achievementsettingswidget.ui" line="162"/>
         <source>5 seconds</source>
         <translation>5 segundos</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="128"/>
+        <location filename="../achievementsettingswidget.ui" line="125"/>
         <location filename="../achievementsettingswidget.cpp" line="51"/>
         <source>Show Achievement Notifications</source>
         <translation>Mostrar notificações de conquistas</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="174"/>
+        <location filename="../achievementsettingswidget.ui" line="171"/>
         <location filename="../achievementsettingswidget.cpp" line="54"/>
         <source>Show Leaderboard Notifications</source>
         <translation>Mostrar notificações de placar</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="188"/>
+        <location filename="../achievementsettingswidget.ui" line="185"/>
         <location filename="../achievementsettingswidget.cpp" line="60"/>
         <source>Enable In-Game Overlays</source>
         <translation>Ativar sobreposições no jogo</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="204"/>
+        <location filename="../achievementsettingswidget.ui" line="201"/>
         <source>Username:
 Login token generated at:</source>
         <translation>Nome de usuário:
 Token de login gerado em:</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="258"/>
+        <location filename="../achievementsettingswidget.ui" line="255"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Pause Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation usa o RetroAchievements como banco de dados de conquistas e para acompanhar o seu progresso. Para usar as conquistas, inscreva-se em &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Para ver a lista de conquistas na lista de jogos, pressione a tecla de atalho para &lt;span style=&quot; font-weight:600;&quot;&gt;abrir o menu de pausa&lt;/span&gt; e escolha a opção &lt;span style=&quot; font-weight:600;&quot;&gt;conquistas&lt;/span&gt; no menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="66"/>
+        <location filename="../achievementsettingswidget.ui" line="63"/>
         <location filename="../achievementsettingswidget.cpp" line="48"/>
         <source>Enable Hardcore Mode</source>
         <translation>Ativar modo hardcore</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="242"/>
+        <location filename="../achievementsettingswidget.ui" line="239"/>
         <source>Game Info</source>
         <translation>Informações do jogo</translation>
     </message>
@@ -708,61 +703,56 @@ Mensagens não lidas: {}</translation>
 <context>
     <name>AdvancedSettingsWidget</name>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="14"/>
-        <source>Form</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.ui" line="32"/>
+        <location filename="../advancedsettingswidget.ui" line="29"/>
         <source>Logging</source>
         <translation>Registro</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="40"/>
+        <location filename="../advancedsettingswidget.ui" line="37"/>
         <source>Log Level:</source>
         <translation>Nível do registro:</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="50"/>
+        <location filename="../advancedsettingswidget.ui" line="47"/>
         <source>Log Filters:</source>
         <translation>Filtros do regisro:</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="64"/>
+        <location filename="../advancedsettingswidget.ui" line="61"/>
         <location filename="../advancedsettingswidget.cpp" line="255"/>
         <source>Log To System Console</source>
         <translation>Carregar para console</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="71"/>
+        <location filename="../advancedsettingswidget.ui" line="68"/>
         <location filename="../advancedsettingswidget.cpp" line="259"/>
         <source>Log To Window</source>
         <translation>Carregar para janela</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="78"/>
+        <location filename="../advancedsettingswidget.ui" line="75"/>
         <location filename="../advancedsettingswidget.cpp" line="257"/>
         <source>Log To Debug Console</source>
         <translation>Carregar para console de depuração</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="85"/>
+        <location filename="../advancedsettingswidget.ui" line="82"/>
         <location filename="../advancedsettingswidget.cpp" line="261"/>
         <source>Log To File</source>
         <translation>Carregar para arquivo</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="113"/>
+        <location filename="../advancedsettingswidget.ui" line="110"/>
         <source>Tweaks/Hacks</source>
         <translation>Ajustes e hacks</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="141"/>
+        <location filename="../advancedsettingswidget.ui" line="138"/>
         <source>Option</source>
         <translation>Opção</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="146"/>
+        <location filename="../advancedsettingswidget.ui" line="143"/>
         <source>Value</source>
         <translation>Valor</translation>
     </message>
@@ -857,7 +847,7 @@ Mensagens não lidas: {}</translation>
         <translation>Aumentar resolução em tempo real</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="154"/>
+        <location filename="../advancedsettingswidget.ui" line="151"/>
         <source>Reset To Default</source>
         <translation>Redefinir para o padrão</translation>
     </message>
@@ -867,12 +857,12 @@ Mensagens não lidas: {}</translation>
         <translation>Habilitar exceções de memória</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="97"/>
+        <location filename="../advancedsettingswidget.ui" line="94"/>
         <source>System Settings</source>
         <translation>Configurações do sistema</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="103"/>
+        <location filename="../advancedsettingswidget.ui" line="100"/>
         <location filename="../advancedsettingswidget.cpp" line="263"/>
         <source>Show Debug Menu</source>
         <translation>Mostrar menu de depuração</translation>
@@ -1527,106 +1517,101 @@ Mensagens não lidas: {}</translation>
 <context>
     <name>AudioSettingsWidget</name>
     <message>
-        <location filename="../audiosettingswidget.ui" line="14"/>
-        <source>Form</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../audiosettingswidget.ui" line="32"/>
+        <location filename="../audiosettingswidget.ui" line="29"/>
         <source>Configuration</source>
         <translation>Configuração</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="112"/>
+        <location filename="../audiosettingswidget.ui" line="109"/>
         <source>Backend:</source>
         <translation>Saída de Som:</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="76"/>
+        <location filename="../audiosettingswidget.ui" line="73"/>
         <source>Buffer Size:</source>
         <translation>Tamanho do buffer:</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="102"/>
+        <location filename="../audiosettingswidget.ui" line="99"/>
         <source>Maximum latency: 0 frames (0.00ms)</source>
         <translation>Latência máxima: 0 quadros (0.00ms)</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="136"/>
+        <location filename="../audiosettingswidget.ui" line="133"/>
         <location filename="../audiosettingswidget.cpp" line="75"/>
         <source>Start Dumping On Boot</source>
         <translation>Despejar áudio ao iniciar</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="161"/>
+        <location filename="../audiosettingswidget.ui" line="158"/>
         <source>Minimal</source>
         <translation>Mínimo</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="84"/>
+        <location filename="../audiosettingswidget.ui" line="81"/>
         <source>Off (Noisy)</source>
         <translation>Desligado (com ruídos)</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="89"/>
+        <location filename="../audiosettingswidget.ui" line="86"/>
         <source>Resampling (Pitch Shift)</source>
         <translation>Reajuste (mudança de tom)</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="94"/>
+        <location filename="../audiosettingswidget.ui" line="91"/>
         <source>Time Stretch (Tempo Change, Best Sound)</source>
         <translation>Extensão do tempo (mudança de tempo, melhor qualidade)</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="122"/>
+        <location filename="../audiosettingswidget.ui" line="119"/>
         <source>Output Latency:</source>
         <translation>Latência de saída:</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="129"/>
+        <location filename="../audiosettingswidget.ui" line="126"/>
         <source>Driver:</source>
         <translation>Driver:</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="69"/>
+        <location filename="../audiosettingswidget.ui" line="66"/>
         <source>Stretch Mode:</source>
         <translation>Modo de alongamento:</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="170"/>
+        <location filename="../audiosettingswidget.ui" line="167"/>
         <source>Output Device:</source>
         <translation>Dispositivo de saída:</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="183"/>
+        <location filename="../audiosettingswidget.ui" line="180"/>
         <source>Controls</source>
         <translation>Controles</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="189"/>
+        <location filename="../audiosettingswidget.ui" line="186"/>
         <source>Output Volume:</source>
         <translation>Volume de saída:</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="274"/>
+        <location filename="../audiosettingswidget.ui" line="271"/>
         <source>Fast Forward Volume:</source>
         <translation>Volume do avanço rápido:</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="281"/>
+        <location filename="../audiosettingswidget.ui" line="278"/>
         <location filename="../audiosettingswidget.cpp" line="81"/>
         <source>Mute All Sound</source>
         <translation>Silenciar tudo</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="288"/>
+        <location filename="../audiosettingswidget.ui" line="285"/>
         <location filename="../audiosettingswidget.cpp" line="83"/>
         <source>Mute CD Audio</source>
         <translation>Silenciar áudio CDs</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="223"/>
-        <location filename="../audiosettingswidget.ui" line="262"/>
+        <location filename="../audiosettingswidget.ui" line="220"/>
+        <location filename="../audiosettingswidget.ui" line="259"/>
         <source>100%</source>
         <translation>100%</translation>
     </message>
@@ -1846,68 +1831,63 @@ Mensagens não lidas: {}</translation>
 <context>
     <name>BIOSSettingsWidget</name>
     <message>
-        <location filename="../biossettingswidget.ui" line="14"/>
-        <source>Form</source>
-        <translation>Form</translation>
-    </message>
-    <message>
-        <location filename="../biossettingswidget.ui" line="32"/>
+        <location filename="../biossettingswidget.ui" line="29"/>
         <source>BIOS Selection</source>
         <translation>Seleção de BIOS</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.ui" line="48"/>
+        <location filename="../biossettingswidget.ui" line="45"/>
         <source>PAL (Europe, Australia):</source>
         <translation>PAL (Europa, Austrália):</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.ui" line="55"/>
+        <location filename="../biossettingswidget.ui" line="52"/>
         <source>NTSC-J (Japan):</source>
         <translation>NTSC-J (Japão):</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.ui" line="62"/>
+        <location filename="../biossettingswidget.ui" line="59"/>
         <source>NTSC-U/C (US/Canada):</source>
         <translation>NTSC-U/C (EUA, Canadá):</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.ui" line="104"/>
+        <location filename="../biossettingswidget.ui" line="101"/>
         <source>Open in Explorer...</source>
         <translation>Abrir pasta...</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.ui" line="111"/>
+        <location filename="../biossettingswidget.ui" line="108"/>
         <source>Refresh List</source>
         <translation>Atualizar lista</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.ui" line="123"/>
+        <location filename="../biossettingswidget.ui" line="120"/>
         <source>BIOS Directory</source>
         <translation>Diretório do BIOS</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.ui" line="129"/>
+        <location filename="../biossettingswidget.ui" line="126"/>
         <source>DuckStation will search for BIOS images in this directory.</source>
         <translation>Duckstation procurará BIOS no seguinte diretório.</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.ui" line="144"/>
+        <location filename="../biossettingswidget.ui" line="141"/>
         <source>Browse...</source>
         <translation>Buscar...</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.ui" line="156"/>
+        <location filename="../biossettingswidget.ui" line="153"/>
         <source>Options and Patches</source>
         <translation>Opções e ajustes</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.ui" line="162"/>
+        <location filename="../biossettingswidget.ui" line="159"/>
         <location filename="../biossettingswidget.cpp" line="25"/>
         <source>Fast Boot</source>
         <translation>Início rápido</translation>
     </message>
     <message>
-        <location filename="../biossettingswidget.ui" line="169"/>
+        <location filename="../biossettingswidget.ui" line="166"/>
         <location filename="../biossettingswidget.cpp" line="28"/>
         <source>Enable TTY Logging</source>
         <translation>Habilitar registro TTY</translation>
@@ -2563,194 +2543,189 @@ Mensagens não lidas: {}</translation>
 <context>
     <name>ConsoleSettingsWidget</name>
     <message>
-        <location filename="../consolesettingswidget.ui" line="14"/>
-        <source>Form</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../consolesettingswidget.ui" line="32"/>
+        <location filename="../consolesettingswidget.ui" line="29"/>
         <source>Console</source>
         <translation>Console</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="38"/>
+        <location filename="../consolesettingswidget.ui" line="35"/>
         <source>Region:</source>
         <translation>Região:</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="58"/>
+        <location filename="../consolesettingswidget.ui" line="55"/>
         <source>CPU Emulation</source>
         <translation>Emulação de CPU</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="64"/>
+        <location filename="../consolesettingswidget.ui" line="61"/>
         <source>Execution Mode:</source>
         <translation>Modo de execução:</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="48"/>
+        <location filename="../consolesettingswidget.ui" line="45"/>
         <location filename="../consolesettingswidget.cpp" line="70"/>
         <source>Enable 8MB RAM (Dev Console)</source>
         <translation>Ativar modo 8MB RAM (console desenvolvedor)</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="78"/>
+        <location filename="../consolesettingswidget.ui" line="75"/>
         <location filename="../consolesettingswidget.cpp" line="61"/>
         <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
         <translation>Ativar aumento de velocidade do CPU</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="98"/>
+        <location filename="../consolesettingswidget.ui" line="95"/>
         <source>100% (effective 33.3mhz)</source>
         <translation>100% (eficaz 33.3mhz)</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="134"/>
+        <location filename="../consolesettingswidget.ui" line="131"/>
         <location filename="../consolesettingswidget.cpp" line="65"/>
         <source>Enable Recompiler ICache</source>
         <translation>Ativar recompilador ICache</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="144"/>
+        <location filename="../consolesettingswidget.ui" line="141"/>
         <source>CD-ROM Emulation</source>
         <translation>Emulação do CD-ROM</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="153"/>
+        <location filename="../consolesettingswidget.ui" line="150"/>
         <source>Read Speedup:</source>
         <translation>Velocidade de leitura:</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="161"/>
+        <location filename="../consolesettingswidget.ui" line="158"/>
         <location filename="../consolesettingswidget.cpp" line="80"/>
         <source>None (Double Speed)</source>
         <translation>Nenhuma</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="166"/>
+        <location filename="../consolesettingswidget.ui" line="163"/>
         <source>2x (Quad Speed)</source>
         <translation>2x (4x velocidade)</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="171"/>
+        <location filename="../consolesettingswidget.ui" line="168"/>
         <source>3x (6x Speed)</source>
         <translation>3x (6X velocidade)</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="176"/>
+        <location filename="../consolesettingswidget.ui" line="173"/>
         <source>4x (8x Speed)</source>
         <translation>4x (8X velocidade)</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="181"/>
+        <location filename="../consolesettingswidget.ui" line="178"/>
         <source>5x (10x Speed)</source>
         <translation>5x (10X velocidade)</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="186"/>
+        <location filename="../consolesettingswidget.ui" line="183"/>
         <source>6x (12x Speed)</source>
         <translation>6x (12X velocidade)</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="191"/>
+        <location filename="../consolesettingswidget.ui" line="188"/>
         <source>7x (14x Speed)</source>
         <translation>7x (14X velocidade)</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="196"/>
+        <location filename="../consolesettingswidget.ui" line="193"/>
         <source>8x (16x Speed)</source>
         <translation>8x (16X velocidade)</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="201"/>
+        <location filename="../consolesettingswidget.ui" line="198"/>
         <source>9x (18x Speed)</source>
         <translation>9x (18X velocidade)</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="206"/>
+        <location filename="../consolesettingswidget.ui" line="203"/>
         <source>10x (20x Speed)</source>
         <translation>10x (20X velocidade)</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="299"/>
+        <location filename="../consolesettingswidget.ui" line="296"/>
         <location filename="../consolesettingswidget.cpp" line="97"/>
         <source>Apply Image Patches</source>
         <translation>Aplicar modificações (PPF)</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="214"/>
+        <location filename="../consolesettingswidget.ui" line="211"/>
         <source>Seek Speedup:</source>
         <translation>Velocidade de busca:</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="225"/>
+        <location filename="../consolesettingswidget.ui" line="222"/>
         <source>Infinite/Instantaneous</source>
         <translation>Infinita/Instantânea</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="230"/>
+        <location filename="../consolesettingswidget.ui" line="227"/>
         <location filename="../consolesettingswidget.cpp" line="84"/>
         <source>None (Normal Speed)</source>
         <translation>Nenhuma (velocidade normal)</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="235"/>
+        <location filename="../consolesettingswidget.ui" line="232"/>
         <source>2x</source>
         <translation>2 vezes</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="240"/>
+        <location filename="../consolesettingswidget.ui" line="237"/>
         <source>3x</source>
         <translation>3 vezes</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="245"/>
+        <location filename="../consolesettingswidget.ui" line="242"/>
         <source>4x</source>
         <translation>4 vezes</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="250"/>
+        <location filename="../consolesettingswidget.ui" line="247"/>
         <source>5x</source>
         <translation>5 vezes</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="255"/>
+        <location filename="../consolesettingswidget.ui" line="252"/>
         <source>6x</source>
         <translation>6 vezes</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="260"/>
+        <location filename="../consolesettingswidget.ui" line="257"/>
         <source>7x</source>
         <translation>7 vezes</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="265"/>
+        <location filename="../consolesettingswidget.ui" line="262"/>
         <source>8x</source>
         <translation>8 vezes</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="270"/>
+        <location filename="../consolesettingswidget.ui" line="267"/>
         <source>9x</source>
         <translation>9 vezes</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="275"/>
+        <location filename="../consolesettingswidget.ui" line="272"/>
         <source>10x</source>
         <translation>10 vezes</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="308"/>
+        <location filename="../consolesettingswidget.ui" line="305"/>
         <source>Async Readahead:</source>
         <translation>Antecipação de leitura assíncrona:</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="285"/>
+        <location filename="../consolesettingswidget.ui" line="282"/>
         <location filename="../consolesettingswidget.cpp" line="91"/>
         <source>Enable Region Check</source>
         <translation>Ativar verificaçao de região</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="292"/>
+        <location filename="../consolesettingswidget.ui" line="289"/>
         <source>Preload Image To RAM</source>
         <translation>Carregar jogo para RAM</translation>
     </message>
@@ -2929,38 +2904,33 @@ This warning will only be shown once.</source>
 <context>
     <name>ControllerBindingWidget</name>
     <message>
-        <location filename="../controllerbindingwidget.ui" line="14"/>
-        <source>Form</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../controllerbindingwidget.ui" line="32"/>
+        <location filename="../controllerbindingwidget.ui" line="29"/>
         <source>Controller Type</source>
         <translation>Tipo de controle</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget.ui" line="43"/>
+        <location filename="../controllerbindingwidget.ui" line="40"/>
         <source>Bindings</source>
         <translation>Atribuições</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget.ui" line="63"/>
+        <location filename="../controllerbindingwidget.ui" line="60"/>
         <source>Settings</source>
         <translation>Configurações</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget.ui" line="83"/>
+        <location filename="../controllerbindingwidget.ui" line="80"/>
         <source>Macros</source>
         <translation>Macros</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget.ui" line="120"/>
+        <location filename="../controllerbindingwidget.ui" line="117"/>
         <location filename="../controllerbindingwidgets.cpp" line="272"/>
         <source>Automatic Mapping</source>
         <translation>Mapeamento automático</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget.ui" line="134"/>
+        <location filename="../controllerbindingwidget.ui" line="131"/>
         <location filename="../controllerbindingwidgets.cpp" line="221"/>
         <source>Clear Mapping</source>
         <translation>Limpar mapeamento</translation>
@@ -2984,161 +2954,156 @@ This warning will only be shown once.</source>
 <context>
     <name>ControllerBindingWidget_AnalogController</name>
     <message>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="26"/>
-        <source>Form</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="46"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="43"/>
         <source>D-Pad</source>
         <translation>Direcionais</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="52"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="221"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="864"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="49"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="218"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="861"/>
         <source>Down</source>
         <translation>Baixo</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="82"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="122"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="162"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="202"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="251"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="291"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="331"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="371"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="414"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="465"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="499"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="533"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="567"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="601"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="635"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="685"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="725"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="765"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="805"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="854"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="894"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="934"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="974"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="1017"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="1142"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="1164"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="1204"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="79"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="119"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="159"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="199"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="248"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="288"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="328"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="368"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="411"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="462"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="496"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="530"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="564"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="598"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="632"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="682"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="722"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="762"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="802"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="851"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="891"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="931"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="971"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="1014"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="1139"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="1161"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="1201"/>
         <source>PushButton</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="92"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="261"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="824"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="89"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="258"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="821"/>
         <source>Left</source>
         <translation>Esquerda</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="132"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="301"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="944"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="129"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="298"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="941"/>
         <source>Up</source>
         <translation>Cima</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="172"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="341"/>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="904"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="169"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="338"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="901"/>
         <source>Right</source>
         <translation>Direita</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="215"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="212"/>
         <source>Left Analog</source>
         <translation>Analógico</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="384"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="381"/>
         <source>Large Motor</source>
         <translation>Motor maior</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="475"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="472"/>
         <source>Select</source>
         <translation>Select</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="611"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="608"/>
         <source>L1</source>
         <translation>L1</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="577"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="574"/>
         <source>R1</source>
         <translation>R1</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="441"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="438"/>
         <source>R2</source>
         <translation>R2</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="509"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="506"/>
         <source>L2</source>
         <translation>L2</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="543"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="540"/>
         <source>Start</source>
         <translation>Start</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="649"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="646"/>
         <source>Face Buttons</source>
         <translation>Botões frontais</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="655"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="652"/>
         <source>Cross</source>
         <translation>Cruz</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="695"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="692"/>
         <source>Square</source>
         <translation>Quadrado</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="735"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="732"/>
         <source>Triangle</source>
         <translation>Triângulo</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="775"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="772"/>
         <source>Circle</source>
         <translation>Círculo</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="818"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="815"/>
         <source>Right Analog</source>
         <translation>Analógico direito</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="987"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="984"/>
         <source>Small Motor</source>
         <translation>Motor menor</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="1112"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="1109"/>
         <source>R3</source>
         <translation>R3</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="1152"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="1149"/>
         <source>Analog</source>
         <translation>Analógico</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_controller.ui" line="1174"/>
+        <location filename="../controllerbindingwidget_analog_controller.ui" line="1171"/>
         <source>L3</source>
         <translation>L3</translation>
     </message>
@@ -3146,149 +3111,144 @@ This warning will only be shown once.</source>
 <context>
     <name>ControllerBindingWidget_AnalogJoystick</name>
     <message>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="26"/>
-        <source>Form</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="46"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="43"/>
         <source>D-Pad</source>
         <translation>Direcionais</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="52"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="221"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="824"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="49"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="218"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="821"/>
         <source>Down</source>
         <translation>Baixo</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="82"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="122"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="162"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="202"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="251"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="291"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="331"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="371"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="425"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="459"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="493"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="527"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="561"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="595"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="645"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="685"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="725"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="765"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="814"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="854"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="894"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="934"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="1049"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="1089"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="1124"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="79"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="119"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="159"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="199"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="248"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="288"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="328"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="368"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="422"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="456"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="490"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="524"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="558"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="592"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="642"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="682"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="722"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="762"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="811"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="851"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="891"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="931"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="1046"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="1086"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="1121"/>
         <source>PushButton</source>
         <translation>Pressione um botão</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="92"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="261"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="784"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="89"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="258"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="781"/>
         <source>Left</source>
         <translation>Esquerda</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="132"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="301"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="904"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="129"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="298"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="901"/>
         <source>Up</source>
         <translation>Cima</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="172"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="341"/>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="864"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="169"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="338"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="861"/>
         <source>Right</source>
         <translation>Direita</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="215"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="212"/>
         <source>Left Analog</source>
         <translation>Analógico esquerdo</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="469"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="466"/>
         <source>L2</source>
         <translation>L2</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="435"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="432"/>
         <source>L1</source>
         <translation>L1</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="503"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="500"/>
         <source>R2</source>
         <translation>R2</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="537"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="534"/>
         <source>Start</source>
         <translation>Start</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="401"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="398"/>
         <source>R1</source>
         <translation>R1</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="571"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="568"/>
         <source>Select</source>
         <translation>Select</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="609"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="606"/>
         <source>Face Buttons</source>
         <translation>Botões frontais</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="615"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="612"/>
         <source>Cross</source>
         <translation>Cruz</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="655"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="652"/>
         <source>Square</source>
         <translation>Quadrado</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="695"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="692"/>
         <source>Triangle</source>
         <translation>Triângulo</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="735"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="732"/>
         <source>Circle</source>
         <translation>Círculo</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="778"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="775"/>
         <source>Right Analog</source>
         <translation>Analógico direito</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="1019"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="1016"/>
         <source>R3</source>
         <translation>R3</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="1059"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="1056"/>
         <source>L3</source>
         <translation>L3</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_analog_joystick.ui" line="1112"/>
+        <location filename="../controllerbindingwidget_analog_joystick.ui" line="1109"/>
         <source>Mode</source>
         <translation>Modo</translation>
     </message>
@@ -3296,105 +3256,100 @@ This warning will only be shown once.</source>
 <context>
     <name>ControllerBindingWidget_DigitalController</name>
     <message>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="26"/>
-        <source>Form</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="46"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="43"/>
         <source>L1</source>
         <translation>L1</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="70"/>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="104"/>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="138"/>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="172"/>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="235"/>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="275"/>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="315"/>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="355"/>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="506"/>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="546"/>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="586"/>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="626"/>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="680"/>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="714"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="67"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="101"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="135"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="169"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="232"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="272"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="312"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="352"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="503"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="543"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="583"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="623"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="677"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="711"/>
         <source>PushButton</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="80"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="77"/>
         <source>L2</source>
         <translation>L2</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="114"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="111"/>
         <source>R2</source>
         <translation>R2</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="148"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="145"/>
         <source>R1</source>
         <translation>R1</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="199"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="196"/>
         <source>Face Buttons</source>
         <translation>Botões frontais</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="205"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="202"/>
         <source>Cross</source>
         <translation>Cruz</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="245"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="242"/>
         <source>Square</source>
         <translation>Quadrado</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="285"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="282"/>
         <source>Triangle</source>
         <translation>Triângulo</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="325"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="322"/>
         <source>Circle</source>
         <translation>Círculo</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="470"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="467"/>
         <source>D-Pad</source>
         <translation>Direcionais</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="476"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="473"/>
         <source>Down</source>
         <translation>Baixo</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="516"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="513"/>
         <source>Left</source>
         <translation>Esquerda</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="556"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="553"/>
         <source>Up</source>
         <translation>Cima</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="596"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="593"/>
         <source>Right</source>
         <translation>Direita</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="656"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="653"/>
         <source>Select</source>
         <translation>Select</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_digital_controller.ui" line="690"/>
+        <location filename="../controllerbindingwidget_digital_controller.ui" line="687"/>
         <source>Start</source>
         <translation>Start</translation>
     </message>
@@ -3402,53 +3357,48 @@ This warning will only be shown once.</source>
 <context>
     <name>ControllerBindingWidget_GunCon</name>
     <message>
-        <location filename="../controllerbindingwidget_guncon.ui" line="26"/>
-        <source>Form</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../controllerbindingwidget_guncon.ui" line="134"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="131"/>
         <source>Side Buttons</source>
         <translation>Botões frontais</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_guncon.ui" line="140"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="137"/>
         <source>B</source>
         <translation>B</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_guncon.ui" line="223"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="220"/>
         <source>Relative Aiming</source>
         <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
         <translation>Mira relativa</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_guncon.ui" line="229"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="226"/>
         <source>Down</source>
         <translation>Baixo</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_guncon.ui" line="269"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="266"/>
         <source>Left</source>
         <translation>Esquerda</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_guncon.ui" line="309"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="306"/>
         <source>Up</source>
         <translation>Cima</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_guncon.ui" line="349"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="346"/>
         <source>Right</source>
         <translation>Direita</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_guncon.ui" line="473"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="470"/>
         <source>Pointer Setup</source>
         <translation>Configuração do ponteiro</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_guncon.ui" line="479"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="476"/>
         <source>&lt;p&gt;By default, GunCon will use the mouse pointer. To use the mouse, you &lt;strong&gt;do not&lt;/strong&gt; need to configure any bindings apart from the trigger and buttons.&lt;/p&gt;
 
 &lt;p&gt;If you want to use a controller, or lightgun which simulates a controller instead of a mouse, then you should bind it to Relative Aiming. Otherwise, Relative Aiming should be &lt;strong&gt;left unbound&lt;/strong&gt;.&lt;/p&gt;</source>
@@ -3457,30 +3407,30 @@ This warning will only be shown once.</source>
 &lt;p&gt;Se você quiser usar um controle ou lightgun que simule um controle em vez de um mouse, você deve vinculá-lo à Mira Relativa. Caso contrário, a Mira Relativa deve ser &lt;strong&gt;deixada desvinculada&lt;/strong&gt;.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_guncon.ui" line="68"/>
-        <location filename="../controllerbindingwidget_guncon.ui" line="108"/>
-        <location filename="../controllerbindingwidget_guncon.ui" line="170"/>
-        <location filename="../controllerbindingwidget_guncon.ui" line="210"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="65"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="105"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="167"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="207"/>
         <source>PushButton</source>
         <translation>Pressione um botão</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_guncon.ui" line="180"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="177"/>
         <source>A</source>
         <translation>A</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_guncon.ui" line="32"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="29"/>
         <source>Trigger</source>
         <translation>Gatilho</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_guncon.ui" line="38"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="35"/>
         <source>Fire Offscreen</source>
         <translation>Atirar fora da tela</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_guncon.ui" line="78"/>
+        <location filename="../controllerbindingwidget_guncon.ui" line="75"/>
         <source>Fire</source>
         <translation>Atirar</translation>
     </message>
@@ -3488,28 +3438,23 @@ This warning will only be shown once.</source>
 <context>
     <name>ControllerBindingWidget_Mouse</name>
     <message>
-        <location filename="../controllerbindingwidget_mouse.ui" line="32"/>
-        <source>Form</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../controllerbindingwidget_mouse.ui" line="50"/>
+        <location filename="../controllerbindingwidget_mouse.ui" line="47"/>
         <source>Buttons</source>
         <translation>Botões</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_mouse.ui" line="96"/>
+        <location filename="../controllerbindingwidget_mouse.ui" line="93"/>
         <source>Left</source>
         <translation>Esquerda</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_mouse.ui" line="86"/>
-        <location filename="../controllerbindingwidget_mouse.ui" line="126"/>
+        <location filename="../controllerbindingwidget_mouse.ui" line="83"/>
+        <location filename="../controllerbindingwidget_mouse.ui" line="123"/>
         <source>PushButton</source>
         <translation>Pressione um botão</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_mouse.ui" line="56"/>
+        <location filename="../controllerbindingwidget_mouse.ui" line="53"/>
         <source>Right</source>
         <translation>Direita</translation>
     </message>
@@ -3517,96 +3462,91 @@ This warning will only be shown once.</source>
 <context>
     <name>ControllerBindingWidget_NeGcon</name>
     <message>
-        <location filename="../controllerbindingwidget_negcon.ui" line="26"/>
-        <source>Form</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../controllerbindingwidget_negcon.ui" line="59"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="56"/>
         <source>D-Pad</source>
         <translation>Direcionais</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_negcon.ui" line="65"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="62"/>
         <source>Down</source>
         <translation>Baixo</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_negcon.ui" line="95"/>
-        <location filename="../controllerbindingwidget_negcon.ui" line="135"/>
-        <location filename="../controllerbindingwidget_negcon.ui" line="175"/>
-        <location filename="../controllerbindingwidget_negcon.ui" line="215"/>
-        <location filename="../controllerbindingwidget_negcon.ui" line="252"/>
-        <location filename="../controllerbindingwidget_negcon.ui" line="303"/>
-        <location filename="../controllerbindingwidget_negcon.ui" line="337"/>
-        <location filename="../controllerbindingwidget_negcon.ui" line="400"/>
-        <location filename="../controllerbindingwidget_negcon.ui" line="440"/>
-        <location filename="../controllerbindingwidget_negcon.ui" line="480"/>
-        <location filename="../controllerbindingwidget_negcon.ui" line="520"/>
-        <location filename="../controllerbindingwidget_negcon.ui" line="641"/>
-        <location filename="../controllerbindingwidget_negcon.ui" line="681"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="92"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="132"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="172"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="212"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="249"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="300"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="334"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="397"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="437"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="477"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="517"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="638"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="678"/>
         <source>PushButton</source>
         <translation>Pressione um botão</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_negcon.ui" line="105"/>
-        <location filename="../controllerbindingwidget_negcon.ui" line="651"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="102"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="648"/>
         <source>Left</source>
         <translation>Esquerda</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_negcon.ui" line="145"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="142"/>
         <source>Up</source>
         <translation>Cima</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_negcon.ui" line="185"/>
-        <location filename="../controllerbindingwidget_negcon.ui" line="611"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="182"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="608"/>
         <source>Right</source>
         <translation>Direita</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_negcon.ui" line="228"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="225"/>
         <source>Start</source>
         <translation>Start</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_negcon.ui" line="279"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="276"/>
         <source>L</source>
         <translation>L</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_negcon.ui" line="313"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="310"/>
         <source>R</source>
         <translation>R</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_negcon.ui" line="364"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="361"/>
         <source>Face Buttons</source>
         <translation>Botões frontais</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_negcon.ui" line="370"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="367"/>
         <source>I</source>
         <translation>I</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_negcon.ui" line="410"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="407"/>
         <source>II</source>
         <translation>II</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_negcon.ui" line="450"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="447"/>
         <source>B</source>
         <translation>B</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_negcon.ui" line="490"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="487"/>
         <source>A</source>
         <translation>A</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidget_negcon.ui" line="605"/>
+        <location filename="../controllerbindingwidget_negcon.ui" line="602"/>
         <source>Steering/Twist</source>
         <translation>Direção/Giro</translation>
     </message>
@@ -3642,153 +3582,148 @@ This warning will only be shown once.</source>
 <context>
     <name>ControllerGlobalSettingsWidget</name>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="14"/>
-        <source>Form</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="83"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="80"/>
         <source>Controller Multitap</source>
         <translation>Controle múltiplo</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="89"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="86"/>
         <source>The multitap enables up to 8 controllers to be connected to the console. Each multitap provides 4 ports. Multitap is not supported by all games.</source>
         <translation>Permite que até 8 controles sejam conectados ao console. Cada multitap fornece 4 portas. Multitap não é suportado por todos os jogos.</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="99"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="96"/>
         <source>Multitap Mode:</source>
         <translation>Modo multitap:</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="107"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="104"/>
         <source>Disabled</source>
         <translation>Desligado</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="112"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="109"/>
         <source>Enable on Port 1 Only</source>
         <translation>Ativar somente na porta 1</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="117"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="114"/>
         <source>Enable on Port 2 Only</source>
         <translation>Ativar somente na porta 2</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="122"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="119"/>
         <source>Enable on Ports 1 and 2</source>
         <translation>Ativar nas portas 1 e 2</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="32"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="29"/>
         <source>DInput Source</source>
         <translation>Fonte DInput</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="38"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="35"/>
         <source>The DInput source provides support for legacy controllers which do not support XInput. Accessing these controllers via SDL instead is recommended.</source>
         <translation>A fonte DInput fornece suporte para controles legados que não suportam XInput. Acessar esses controladores via SDL é mais recomendado.</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="48"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="45"/>
         <source>Enable DInput Input Source</source>
         <translation>Ativar fonte de entrada DInput</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="133"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="130"/>
         <source>SDL Input Source</source>
         <translation>Fonte de entrada SDL</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="139"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="136"/>
         <source>The SDL input source supports most controllers, and provides advanced functionality for DualShock 4 / DualSense pads in Bluetooth mode (Vibration / LED Control).</source>
         <translation>A fonte de entrada SDL suporta a maioria dos controles e fornece funcionalidade avançada para DualShock 4 / DualSense no modo Bluetooth (Vibração / controle do LED).</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="149"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="146"/>
         <source>Enable SDL Input Source</source>
         <translation>Ativar fonte de entrada SDL</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="158"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="155"/>
         <source>DualShock 4 / DualSense Enhanced Mode</source>
         <translation>DualShock 4 / Modo Aprimorado DualSense</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="58"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="55"/>
         <source>Detected Devices</source>
         <translation>Dispositivos encontrados</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="234"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="231"/>
         <source>Mouse/Pointer Source</source>
         <translation>Fonte do Ponteiro do mouse</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="296"/>
-        <location filename="../controllerglobalsettingswidget.ui" line="351"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="293"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="348"/>
         <source>10</source>
         <translation>10</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="240"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="237"/>
         <source>Using raw input improves precision when you bind controller sticks to the mouse pointer. Also enables multiple mice to be used.</source>
         <translation>O uso de entrada legada melhora a precisão quando você vincula os analógicos do controle ao ponteiro do mouse. Também permite que vários mouses sejam usados.</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="305"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="302"/>
         <source>Vertical Sensitivity:</source>
         <translation>Sensibilidade Vertical:</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="250"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="247"/>
         <source>Horizontal Sensitivity:</source>
         <translation>Sensibilidade horizontal:</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="362"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="359"/>
         <source>Enable Mouse Mapping</source>
         <translation>Ativar mapeamento do mouse</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="369"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="366"/>
         <source>Use Raw Input</source>
         <translation>Usar entrada legada</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="182"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="179"/>
         <source>XInput Source</source>
         <translation>Fonte de entrada XInput</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="165"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="162"/>
         <source>Controller LED Settings</source>
         <translation>Configurações de LED do controle</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="188"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="185"/>
         <source>The XInput source provides support for XBox 360 / XBox One / XBox Series controllers, and third party controllers which implement the XInput protocol.</source>
         <translation>A fonte de entrada XInput fornece suporte para controles XBox 360 / XBox One / XBox Series e controles de terceiros que implementam o protocolo XInput.</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="198"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="195"/>
         <source>Enable XInput Input Source</source>
         <translation>Ativar fonte de entrada XInput</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="208"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="205"/>
         <source>Profile Settings</source>
         <translation>Configurações de perfil</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="214"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="211"/>
         <source>When this option is enabled, hotkeys can be set in this input profile, and will be used instead of the global hotkeys. By default, hotkeys are always shared between all profiles.</source>
         <translation>Quando esta opção está ligada, as teclas de atalho podem ser definidas para este perfil de entrada e serão usadas no lugar das teclas de atalho globais. Por padrão, as teclas de atalho são sempre compartilhadas entre todos os perfis.</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="224"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="221"/>
         <source>Use Per-Profile Hotkeys</source>
         <translation>Usar teclas de atalho por perfil</translation>
     </message>
@@ -3824,47 +3759,42 @@ This warning will only be shown once.</source>
 <context>
     <name>ControllerMacroEditWidget</name>
     <message>
-        <location filename="../controllermacroeditwidget.ui" line="14"/>
-        <source>Form</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../controllermacroeditwidget.ui" line="32"/>
+        <location filename="../controllermacroeditwidget.ui" line="29"/>
         <source>Binds/Buttons</source>
         <translation>Atribuir botões</translation>
     </message>
     <message>
-        <location filename="../controllermacroeditwidget.ui" line="38"/>
+        <location filename="../controllermacroeditwidget.ui" line="35"/>
         <source>Select the buttons which you want to trigger with this macro. All buttons are activated concurrently.</source>
         <translation>Selecione os botões que você deseja acionar o macro. Todos os botões são ativados simultaneamente.</translation>
     </message>
     <message>
-        <location filename="../controllermacroeditwidget.ui" line="54"/>
+        <location filename="../controllermacroeditwidget.ui" line="51"/>
         <source>Trigger</source>
         <translation>Gatilho</translation>
     </message>
     <message>
-        <location filename="../controllermacroeditwidget.ui" line="60"/>
+        <location filename="../controllermacroeditwidget.ui" line="57"/>
         <source>Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</source>
         <translation>Selecione a tecla para ativar este macro. Pode ser um único botão ou uma combinação de botões. Mantenha a tecla shift pressionada para múltiplos botões.</translation>
     </message>
     <message>
-        <location filename="../controllermacroeditwidget.ui" line="73"/>
+        <location filename="../controllermacroeditwidget.ui" line="70"/>
         <source>PushButton</source>
         <translation>Pressione um botão</translation>
     </message>
     <message>
-        <location filename="../controllermacroeditwidget.ui" line="83"/>
+        <location filename="../controllermacroeditwidget.ui" line="80"/>
         <source>Frequency</source>
         <translation>Frequência</translation>
     </message>
     <message>
-        <location filename="../controllermacroeditwidget.ui" line="91"/>
+        <location filename="../controllermacroeditwidget.ui" line="88"/>
         <source>Macro will toggle every N frames.</source>
         <translation>O macro alternará a cada N quadros.</translation>
     </message>
     <message>
-        <location filename="../controllermacroeditwidget.ui" line="98"/>
+        <location filename="../controllermacroeditwidget.ui" line="95"/>
         <source>Set...</source>
         <translation>Definir...</translation>
     </message>
@@ -4202,42 +4132,42 @@ Esta ação não poderá ser desfeita.</translation>
 <context>
     <name>DebuggerMessage</name>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1970"/>
+        <location filename="../../core/cpu_core.cpp" line="2004"/>
         <source>Added breakpoint at 0x%08X.</source>
         <translation>Interruptor adicionado em 0x%08X.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="1996"/>
+        <location filename="../../core/cpu_core.cpp" line="2031"/>
         <source>Removed breakpoint at 0x%08X.</source>
         <translation>Interruptor removido em 0x%08X.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="2027"/>
+        <location filename="../../core/cpu_core.cpp" line="2064"/>
         <source>0x%08X is not a call instruction.</source>
         <translation>0x%08X não é uma chamada de instrução.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="2036"/>
+        <location filename="../../core/cpu_core.cpp" line="2073"/>
         <source>Can&apos;t step over double branch at 0x%08X</source>
         <translation>Não é possível duplicar ramificações em 0x%08X</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="2044"/>
+        <location filename="../../core/cpu_core.cpp" line="2081"/>
         <source>Stepping over to 0x%08X.</source>
         <translation>Pulando para 0x%8X.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="2061"/>
+        <location filename="../../core/cpu_core.cpp" line="2098"/>
         <source>Instruction read failed at %08X while searching for function end.</source>
         <translation>Leitura de instrução falhou em %08X ao final da busca.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="2067"/>
+        <location filename="../../core/cpu_core.cpp" line="2104"/>
         <source>Stepping out to 0x%08X.</source>
         <translation>Saindo em 0x%08X.</translation>
     </message>
     <message>
-        <location filename="../../core/cpu_core.cpp" line="2074"/>
+        <location filename="../../core/cpu_core.cpp" line="2111"/>
         <source>No return instruction found after %u instructions for step-out at %08X.</source>
         <translation>Sem instrução de retorno encontrada após%u nas instruções de saída em %08X.</translation>
     </message>
@@ -4809,125 +4739,120 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>DisplaySettingsWidget</name>
     <message>
-        <location filename="../displaysettingswidget.ui" line="14"/>
-        <source>Form</source>
-        <translation>Form</translation>
-    </message>
-    <message>
-        <location filename="../displaysettingswidget.ui" line="32"/>
+        <location filename="../displaysettingswidget.ui" line="29"/>
         <source>Basic</source>
         <translation>Básico</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="38"/>
+        <location filename="../displaysettingswidget.ui" line="35"/>
         <source>Renderer:</source>
         <translation>Renderizador:</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="48"/>
+        <location filename="../displaysettingswidget.ui" line="45"/>
         <source>Adapter:</source>
         <translation>Adaptador:</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="58"/>
+        <location filename="../displaysettingswidget.ui" line="55"/>
         <source>Fullscreen Mode:</source>
         <translation>Modo tela cheia:</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="77"/>
+        <location filename="../displaysettingswidget.ui" line="74"/>
         <location filename="../displaysettingswidget.cpp" line="114"/>
         <source>Threaded Rendering</source>
         <translation>Renderização sequencial</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="84"/>
+        <location filename="../displaysettingswidget.ui" line="81"/>
         <location filename="../displaysettingswidget.cpp" line="111"/>
         <source>Threaded Presentation</source>
         <translation>Apresentação sequencial</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="160"/>
+        <location filename="../displaysettingswidget.ui" line="157"/>
         <source>Position:</source>
         <translation>Posição:</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="181"/>
+        <location filename="../displaysettingswidget.ui" line="178"/>
         <source>Scaling:</source>
         <translation>Dimensionamento:</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="207"/>
+        <location filename="../displaysettingswidget.ui" line="204"/>
         <location filename="../displaysettingswidget.cpp" line="128"/>
         <source>Show CPU Usage</source>
         <translation>Mostrar uso do CPU</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="242"/>
+        <location filename="../displaysettingswidget.ui" line="239"/>
         <source>Show GPU Usage</source>
         <translation>Mostrar uso da GPU</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="249"/>
+        <location filename="../displaysettingswidget.ui" line="246"/>
         <source>Show Settings Overlay</source>
         <translation>Mostrar configurações de sobreposição</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="131"/>
+        <location filename="../displaysettingswidget.ui" line="128"/>
         <source>:</source>
         <translation>:</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="228"/>
+        <location filename="../displaysettingswidget.ui" line="225"/>
         <location filename="../displaysettingswidget.cpp" line="133"/>
         <source>Show Controller Input</source>
         <translation>Mostrar controles na tela</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="103"/>
+        <location filename="../displaysettingswidget.ui" line="100"/>
         <source>Screen Display</source>
         <translation>Exibição</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="109"/>
+        <location filename="../displaysettingswidget.ui" line="106"/>
         <source>Aspect Ratio:</source>
         <translation>Razão de aspecto:</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="150"/>
+        <location filename="../displaysettingswidget.ui" line="147"/>
         <source>Crop:</source>
         <translation>Corte:</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="70"/>
+        <location filename="../displaysettingswidget.ui" line="67"/>
         <location filename="../displaysettingswidget.cpp" line="108"/>
         <source>VSync</source>
         <translation>Sincronização vertical</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="172"/>
+        <location filename="../displaysettingswidget.ui" line="169"/>
         <location filename="../displaysettingswidget.cpp" line="103"/>
         <source>Internal Resolution Screenshots</source>
         <translation>Resolução da captura de tela</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="194"/>
+        <location filename="../displaysettingswidget.ui" line="191"/>
         <source>On-Screen Display</source>
         <translation>Mensagens em tela</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="221"/>
+        <location filename="../displaysettingswidget.ui" line="218"/>
         <location filename="../displaysettingswidget.cpp" line="120"/>
         <source>Show FPS</source>
         <translation>Mostrar FPS</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="200"/>
+        <location filename="../displaysettingswidget.ui" line="197"/>
         <location filename="../displaysettingswidget.cpp" line="123"/>
         <source>Show Emulation Speed</source>
         <translation>Mostrar velocidade da emulação</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="235"/>
+        <location filename="../displaysettingswidget.ui" line="232"/>
         <location filename="../displaysettingswidget.cpp" line="125"/>
         <source>Show Resolution</source>
         <translation>Mostrar resolução</translation>
@@ -5053,7 +4978,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>Usa um segundo processo para desenhar gráficos em tela. Atualmente só disponível para renderizadores por software, pode fornecer uma melhoria significativa na velocidade, pode ser usado a vontade.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="214"/>
+        <location filename="../displaysettingswidget.ui" line="211"/>
         <location filename="../displaysettingswidget.cpp" line="117"/>
         <source>Show OSD Messages</source>
         <translation>Mostrar mensagens na tela</translation>
@@ -5089,7 +5014,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>Mostra quais botões estão sendo pressionados no canto inferior esquerdo da tela.</translation>
     </message>
     <message>
-        <location filename="../displaysettingswidget.ui" line="91"/>
+        <location filename="../displaysettingswidget.ui" line="88"/>
         <location filename="../displaysettingswidget.cpp" line="138"/>
         <source>Use Blit Swap Chain</source>
         <translation>Usar cadeia de troca</translation>
@@ -5109,27 +5034,22 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>EmptyGameListWidget</name>
     <message>
-        <location filename="../emptygamelistwidget.ui" line="14"/>
-        <source>Form</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../emptygamelistwidget.ui" line="33"/>
+        <location filename="../emptygamelistwidget.ui" line="30"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;No games in supported formats were found.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Please add a directory with games to begin.&lt;/p&gt;&lt;p&gt;Game dumps in the following formats will be scanned and listed:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Nenhum jogo nos formatos suportados foi encontrado.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Por favor adicione um diretório com jogos para começar.&lt;/p&gt;&lt;p&gt;Os seguintes formatos abaixo são suportados e serão lidos:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../emptygamelistwidget.ui" line="43"/>
+        <location filename="../emptygamelistwidget.ui" line="40"/>
         <source>TextLabel</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../emptygamelistwidget.ui" line="68"/>
+        <location filename="../emptygamelistwidget.ui" line="65"/>
         <source>Add Game Directory...</source>
         <translation>Adicionar diretório de jogos...</translation>
     </message>
     <message>
-        <location filename="../emptygamelistwidget.ui" line="105"/>
+        <location filename="../emptygamelistwidget.ui" line="102"/>
         <source>Scan For New Games</source>
         <translation>Examinar por novos jogos</translation>
     </message>
@@ -5137,44 +5057,44 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>EmuThread</name>
     <message>
-        <location filename="../qthost.cpp" line="564"/>
+        <location filename="../qthost.cpp" line="732"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="564"/>
+        <location filename="../qthost.cpp" line="732"/>
         <source>No resume save state found.</source>
         <translation>Salvamento rápido não encontrado.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1230"/>
+        <location filename="../qthost.cpp" line="1398"/>
         <source>Game: %1 (%2)
 </source>
         <translation>Jogo: %1 (%2)
 </translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1238"/>
+        <location filename="../qthost.cpp" line="1406"/>
         <source>Rich presence inactive or unsupported.</source>
         <translation>Presença rica do Discord inativa ou não suportada.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1242"/>
+        <location filename="../qthost.cpp" line="1410"/>
         <source>Game not loaded or no RetroAchievements available.</source>
         <translation>Jogo não carregado ou sem conquistas disponíveis.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1522"/>
+        <location filename="../qthost.cpp" line="1697"/>
         <source>%1x%2</source>
         <translation>%1x%2</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1531"/>
+        <location filename="../qthost.cpp" line="1706"/>
         <source>Game: %1 FPS</source>
         <translation>Jogo: %1 FPS</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1541"/>
+        <location filename="../qthost.cpp" line="1716"/>
         <source>Video: %1 FPS (%2%)</source>
         <translation>Vídeo: %1 FPS (%2%)</translation>
     </message>
@@ -5182,135 +5102,130 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>EmulationSettingsWidget</name>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="14"/>
-        <source>Form</source>
-        <translation>#</translation>
-    </message>
-    <message>
-        <location filename="../emulationsettingswidget.ui" line="32"/>
+        <location filename="../emulationsettingswidget.ui" line="29"/>
         <source>Speed Control</source>
         <translation>Controle de velocidade</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="38"/>
+        <location filename="../emulationsettingswidget.ui" line="35"/>
         <source>Emulation Speed:</source>
         <translation>Velocidade da emulação:</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="48"/>
+        <location filename="../emulationsettingswidget.ui" line="45"/>
         <source>Fast Forward Speed:</source>
         <translation>Velocidade do avanço rápido:</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="58"/>
+        <location filename="../emulationsettingswidget.ui" line="55"/>
         <source>Turbo Speed:</source>
         <translation>Velocidade do turbo:</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="70"/>
+        <location filename="../emulationsettingswidget.ui" line="67"/>
         <location filename="../emulationsettingswidget.cpp" line="91"/>
         <source>Sync To Host Refresh Rate</source>
         <translation>Sincronizar taxa de atualização</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="77"/>
+        <location filename="../emulationsettingswidget.ui" line="74"/>
         <location filename="../emulationsettingswidget.cpp" line="97"/>
         <source>Optimal Frame Pacing</source>
         <translation>Otimização de quadros</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="89"/>
+        <location filename="../emulationsettingswidget.ui" line="86"/>
         <source>Rewind/Runahead</source>
         <translation>Retroceder/Avançar</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="95"/>
+        <location filename="../emulationsettingswidget.ui" line="92"/>
         <source>Enable Rewinding</source>
         <translation>Ativar retrocesso</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="102"/>
+        <location filename="../emulationsettingswidget.ui" line="99"/>
         <source>Rewind Save Frequency:</source>
         <translation>Frequência do retrocesso:</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="109"/>
+        <location filename="../emulationsettingswidget.ui" line="106"/>
         <source> Seconds</source>
         <translation> Segundos</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="122"/>
+        <location filename="../emulationsettingswidget.ui" line="119"/>
         <source>Rewind Buffer Size:</source>
         <translation>Tamanho do retrocesso:</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="129"/>
+        <location filename="../emulationsettingswidget.ui" line="126"/>
         <source> Frames</source>
         <translation> Quadro(s)</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="142"/>
+        <location filename="../emulationsettingswidget.ui" line="139"/>
         <source>Runahead:</source>
         <translation>Pulo de quadro(s):</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="150"/>
+        <location filename="../emulationsettingswidget.ui" line="147"/>
         <location filename="../emulationsettingswidget.cpp" line="109"/>
         <source>Disabled</source>
         <translation>Desativado</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="155"/>
+        <location filename="../emulationsettingswidget.ui" line="152"/>
         <source>1 Frame</source>
         <translation>1 quadro</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="160"/>
+        <location filename="../emulationsettingswidget.ui" line="157"/>
         <source>2 Frames</source>
         <translation>2 quadros</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="165"/>
+        <location filename="../emulationsettingswidget.ui" line="162"/>
         <source>3 Frames</source>
         <translation>3 quadros</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="170"/>
+        <location filename="../emulationsettingswidget.ui" line="167"/>
         <source>4 Frames</source>
         <translation>4 quadros</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="175"/>
+        <location filename="../emulationsettingswidget.ui" line="172"/>
         <source>5 Frames</source>
         <translation>5 quadros</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="180"/>
+        <location filename="../emulationsettingswidget.ui" line="177"/>
         <source>6 Frames</source>
         <translation>6 quadros</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="185"/>
+        <location filename="../emulationsettingswidget.ui" line="182"/>
         <source>7 Frames</source>
         <translation>7 quadros</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="190"/>
+        <location filename="../emulationsettingswidget.ui" line="187"/>
         <source>8 Frames</source>
         <translation>8 quadros</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="195"/>
+        <location filename="../emulationsettingswidget.ui" line="192"/>
         <source>9 Frames</source>
         <translation>9 quadros</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="200"/>
+        <location filename="../emulationsettingswidget.ui" line="197"/>
         <source>10 Frames</source>
         <translation>10 quadros</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="208"/>
+        <location filename="../emulationsettingswidget.ui" line="205"/>
         <source>TextLabel</source>
         <translation></translation>
     </message>
@@ -5429,110 +5344,105 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>EnhancementSettingsWidget</name>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="14"/>
-        <source>Form</source>
-        <translation>Form</translation>
-    </message>
-    <message>
-        <location filename="../enhancementsettingswidget.ui" line="32"/>
+        <location filename="../enhancementsettingswidget.ui" line="29"/>
         <source>Rendering Enhancements</source>
         <translation>Aprimoramentos de renderização</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="38"/>
+        <location filename="../enhancementsettingswidget.ui" line="35"/>
         <source>Internal Resolution Scale:</source>
         <translation>Escala de resolução:</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="48"/>
+        <location filename="../enhancementsettingswidget.ui" line="45"/>
         <source>Texture Filtering:</source>
         <translation>Filtragem de textura:</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="58"/>
+        <location filename="../enhancementsettingswidget.ui" line="55"/>
         <location filename="../enhancementsettingswidget.cpp" line="77"/>
         <source>True Color Rendering (24-bit, disables dithering)</source>
         <translation>Renderização em (24 Cores, desativa o efeito dithering)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="65"/>
+        <location filename="../enhancementsettingswidget.ui" line="62"/>
         <location filename="../enhancementsettingswidget.cpp" line="84"/>
         <source>Scaled Dithering (scale dither pattern to resolution)</source>
         <translation>Dithering escalonado (escala o dithering para a resolução atual)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="72"/>
+        <location filename="../enhancementsettingswidget.ui" line="69"/>
         <source>Widescreen Hack (render 3D in display aspect ratio)</source>
         <translation>Melhoria de objetos 3D (hack widescreen)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="79"/>
+        <location filename="../enhancementsettingswidget.ui" line="76"/>
         <source>Software Renderer Readbacks (run in parallel for VRAM-&gt;CPU transfers)</source>
         <translation>Software para releituras (paralelo entre VRAM e CPU)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="86"/>
+        <location filename="../enhancementsettingswidget.ui" line="83"/>
         <source>Downsampling:</source>
         <translation>Suavização da imagem:</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="98"/>
+        <location filename="../enhancementsettingswidget.ui" line="95"/>
         <source>x</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="166"/>
+        <location filename="../enhancementsettingswidget.ui" line="163"/>
         <location filename="../enhancementsettingswidget.cpp" line="122"/>
         <source>Perspective Correct Textures</source>
         <translation>Perspectiva de correção de texturas</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="194"/>
+        <location filename="../enhancementsettingswidget.ui" line="191"/>
         <location filename="../enhancementsettingswidget.cpp" line="134"/>
         <source>Preserve Projection Precision</source>
         <translation>Preservar precisão e projeção</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="201"/>
+        <location filename="../enhancementsettingswidget.ui" line="198"/>
         <location filename="../enhancementsettingswidget.cpp" line="126"/>
         <source>Perspective Correct Colors</source>
         <translation>Perspectiva de correção de cores</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="187"/>
+        <location filename="../enhancementsettingswidget.ui" line="184"/>
         <location filename="../enhancementsettingswidget.cpp" line="130"/>
         <source>Depth Buffer (Low Compatibility)</source>
         <translation>Modo eixo Z (compatibilidade baixa)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="180"/>
+        <location filename="../enhancementsettingswidget.ui" line="177"/>
         <location filename="../enhancementsettingswidget.cpp" line="136"/>
         <source>CPU Mode (Very Slow)</source>
         <translation>Modo CPU (muito lento)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="136"/>
+        <location filename="../enhancementsettingswidget.ui" line="133"/>
         <source>Force 4:3 For 24-Bit Display (disable widescreen for FMVs)</source>
         <translation>Forçar 4:3 (desativa efeito esticado em FMVs)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="143"/>
+        <location filename="../enhancementsettingswidget.ui" line="140"/>
         <source>Chroma Smoothing For 24-Bit Display (reduce FMV color blockyness)</source>
         <translation>Suavização de croma (reduz artefatos em cenas FMV)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="116"/>
+        <location filename="../enhancementsettingswidget.ui" line="113"/>
         <source>Display Enhancements</source>
         <translation>Aprimoramentos de exibição</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="122"/>
+        <location filename="../enhancementsettingswidget.ui" line="119"/>
         <location filename="../enhancementsettingswidget.cpp" line="66"/>
         <source>Disable Interlacing (force progressive render/scan)</source>
         <translation>Desativa o entrelaçamento (força renderização progressiva)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="129"/>
+        <location filename="../enhancementsettingswidget.ui" line="126"/>
         <location filename="../enhancementsettingswidget.cpp" line="87"/>
         <source>Force NTSC Timings (60hz-on-PAL)</source>
         <translation>Força 60hz em jogos PAL</translation>
@@ -5543,18 +5453,18 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>Aprimoramento para telas panorâmicas</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="153"/>
+        <location filename="../enhancementsettingswidget.ui" line="150"/>
         <source>PGXP (Precision Geometry Transform Pipeline)</source>
         <translation>PGXP (correção geométrica)</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="173"/>
+        <location filename="../enhancementsettingswidget.ui" line="170"/>
         <location filename="../enhancementsettingswidget.cpp" line="116"/>
         <source>Geometry Correction</source>
         <translation>Correção geométrica</translation>
     </message>
     <message>
-        <location filename="../enhancementsettingswidget.ui" line="159"/>
+        <location filename="../enhancementsettingswidget.ui" line="156"/>
         <location filename="../enhancementsettingswidget.cpp" line="119"/>
         <source>Culling Correction</source>
         <translation>Correção de curvas</translation>
@@ -5727,71 +5637,66 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>FolderSettingsWidget</name>
     <message>
-        <location filename="../foldersettingswidget.ui" line="14"/>
-        <source>Form</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../foldersettingswidget.ui" line="32"/>
+        <location filename="../foldersettingswidget.ui" line="29"/>
         <source>Cache Directory</source>
         <translation>Diretório de cache</translation>
     </message>
     <message>
-        <location filename="../foldersettingswidget.ui" line="41"/>
-        <location filename="../foldersettingswidget.ui" line="81"/>
-        <location filename="../foldersettingswidget.ui" line="121"/>
-        <location filename="../foldersettingswidget.ui" line="161"/>
+        <location filename="../foldersettingswidget.ui" line="38"/>
+        <location filename="../foldersettingswidget.ui" line="78"/>
+        <location filename="../foldersettingswidget.ui" line="118"/>
+        <location filename="../foldersettingswidget.ui" line="158"/>
         <source>Browse...</source>
         <translation>Buscar...</translation>
     </message>
     <message>
-        <location filename="../foldersettingswidget.ui" line="48"/>
-        <location filename="../foldersettingswidget.ui" line="88"/>
-        <location filename="../foldersettingswidget.ui" line="128"/>
-        <location filename="../foldersettingswidget.ui" line="168"/>
+        <location filename="../foldersettingswidget.ui" line="45"/>
+        <location filename="../foldersettingswidget.ui" line="85"/>
+        <location filename="../foldersettingswidget.ui" line="125"/>
+        <location filename="../foldersettingswidget.ui" line="165"/>
         <source>Open...</source>
         <translation>Abrir...</translation>
     </message>
     <message>
-        <location filename="../foldersettingswidget.ui" line="55"/>
-        <location filename="../foldersettingswidget.ui" line="95"/>
-        <location filename="../foldersettingswidget.ui" line="135"/>
-        <location filename="../foldersettingswidget.ui" line="175"/>
+        <location filename="../foldersettingswidget.ui" line="52"/>
+        <location filename="../foldersettingswidget.ui" line="92"/>
+        <location filename="../foldersettingswidget.ui" line="132"/>
+        <location filename="../foldersettingswidget.ui" line="172"/>
         <source>Reset</source>
         <translation>Redefinir</translation>
     </message>
     <message>
-        <location filename="../foldersettingswidget.ui" line="62"/>
+        <location filename="../foldersettingswidget.ui" line="59"/>
         <source>Used for storing shaders and game list data.</source>
         <translation>Usado para armazenar shaders e dados da lista de jogos.</translation>
     </message>
     <message>
-        <location filename="../foldersettingswidget.ui" line="72"/>
+        <location filename="../foldersettingswidget.ui" line="69"/>
         <source>Covers Directory</source>
         <translation>Diretório de capas</translation>
     </message>
     <message>
-        <location filename="../foldersettingswidget.ui" line="102"/>
+        <location filename="../foldersettingswidget.ui" line="99"/>
         <source>Used for storing covers in the game grid/Big Picture UIs.</source>
         <translation>Usado para armazenar capas no modo grade e no modo tela grande.</translation>
     </message>
     <message>
-        <location filename="../foldersettingswidget.ui" line="112"/>
+        <location filename="../foldersettingswidget.ui" line="109"/>
         <source>Screenshots Directory</source>
         <translation>Diretório de capturas de tela</translation>
     </message>
     <message>
-        <location filename="../foldersettingswidget.ui" line="142"/>
+        <location filename="../foldersettingswidget.ui" line="139"/>
         <source>Used for screenshots.</source>
         <translation>Usado para capturas de tela.</translation>
     </message>
     <message>
-        <location filename="../foldersettingswidget.ui" line="152"/>
+        <location filename="../foldersettingswidget.ui" line="149"/>
         <source>Save States Directory</source>
         <translation>Diretório dos estados salvos</translation>
     </message>
     <message>
-        <location filename="../foldersettingswidget.ui" line="182"/>
+        <location filename="../foldersettingswidget.ui" line="179"/>
         <source>Used for storing save states.</source>
         <translation>Usado para armazenar estados salvos.</translation>
     </message>
@@ -8928,7 +8833,7 @@ Error was:</source>
         <translation>Placa de vídeo (OpenGL)</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1513"/>
+        <location filename="../qthost.cpp" line="1688"/>
         <location filename="../../core/settings.cpp" line="948"/>
         <source>Software</source>
         <translation>Software</translation>
@@ -9346,40 +9251,35 @@ Error was:</source>
 <context>
     <name>GameListSettingsWidget</name>
     <message>
-        <location filename="../gamelistsettingswidget.ui" line="14"/>
-        <source>Form</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../gamelistsettingswidget.ui" line="34"/>
+        <location filename="../gamelistsettingswidget.ui" line="31"/>
         <source>Search Directories (will be scanned for games)</source>
         <translation>Examinar diretórios (serão examinados por jogos)</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.ui" line="60"/>
-        <location filename="../gamelistsettingswidget.ui" line="119"/>
+        <location filename="../gamelistsettingswidget.ui" line="57"/>
+        <location filename="../gamelistsettingswidget.ui" line="116"/>
         <source>Add</source>
         <translation>Adicionar</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.ui" line="76"/>
-        <location filename="../gamelistsettingswidget.ui" line="135"/>
+        <location filename="../gamelistsettingswidget.ui" line="73"/>
+        <location filename="../gamelistsettingswidget.ui" line="132"/>
         <location filename="../gamelistsettingswidget.cpp" line="107"/>
         <source>Remove</source>
         <translation>Remover</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.ui" line="93"/>
+        <location filename="../gamelistsettingswidget.ui" line="90"/>
         <source>Excluded Paths (will not be scanned)</source>
         <translation>Caminhos excluídos (não será feita busca por jogos)</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.ui" line="171"/>
+        <location filename="../gamelistsettingswidget.ui" line="168"/>
         <source>Scan For New Games</source>
         <translation>Examinar por novos jogos</translation>
     </message>
     <message>
-        <location filename="../gamelistsettingswidget.ui" line="187"/>
+        <location filename="../gamelistsettingswidget.ui" line="184"/>
         <source>Rescan All Games</source>
         <translation>Examinar tudo</translation>
     </message>
@@ -9416,37 +9316,32 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
 <context>
     <name>GameListWidget</name>
     <message>
-        <location filename="../gamelistwidget.ui" line="14"/>
-        <source>Form</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../gamelistwidget.ui" line="60"/>
+        <location filename="../gamelistwidget.ui" line="57"/>
         <source>Game List</source>
         <translation>Lista de jogos</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.ui" line="83"/>
+        <location filename="../gamelistwidget.ui" line="80"/>
         <source>Game Grid</source>
         <translation>Grade de jogos</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.ui" line="106"/>
+        <location filename="../gamelistwidget.ui" line="103"/>
         <source>Show Titles</source>
         <translation>Mostrar títulos</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.ui" line="169"/>
+        <location filename="../gamelistwidget.ui" line="166"/>
         <source>All Types</source>
         <translation>Todos os tipos</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.ui" line="182"/>
+        <location filename="../gamelistwidget.ui" line="179"/>
         <source>All Regions</source>
         <translation>Todas as regiões</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.ui" line="200"/>
+        <location filename="../gamelistwidget.ui" line="197"/>
         <source>Search...</source>
         <translation>Buscar...</translation>
     </message>
@@ -9650,28 +9545,23 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
 <context>
     <name>GeneralSettingsWidget</name>
     <message>
-        <location filename="../generalsettingswidget.ui" line="14"/>
-        <source>Form</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../generalsettingswidget.ui" line="32"/>
+        <location filename="../generalsettingswidget.ui" line="29"/>
         <source>Behaviour</source>
         <translation>Comportamento</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="52"/>
+        <location filename="../generalsettingswidget.ui" line="49"/>
         <source>Save State On Shutdown</source>
         <translation>Salvar estado ao desligar</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="94"/>
+        <location filename="../generalsettingswidget.ui" line="91"/>
         <location filename="../generalsettingswidget.cpp" line="86"/>
         <source>Pause On Start</source>
         <translation>Pausar ao iniciar</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="45"/>
+        <location filename="../generalsettingswidget.ui" line="42"/>
         <location filename="../generalsettingswidget.cpp" line="69"/>
         <source>Confirm Power Off</source>
         <translation>Confirmar ao fechar</translation>
@@ -9682,100 +9572,100 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <translation>Salvar ao fechar</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="87"/>
+        <location filename="../generalsettingswidget.ui" line="84"/>
         <location filename="../generalsettingswidget.cpp" line="92"/>
         <source>Load Devices From Save States</source>
         <translation>Carregar a partir do estado salvo</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="124"/>
+        <location filename="../generalsettingswidget.ui" line="121"/>
         <location filename="../generalsettingswidget.cpp" line="75"/>
         <source>Start Fullscreen</source>
         <translation>Iniciar em tela cheia</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="80"/>
+        <location filename="../generalsettingswidget.ui" line="77"/>
         <location filename="../generalsettingswidget.cpp" line="80"/>
         <source>Inhibit Screensaver</source>
         <translation>Inibir proteção de tela</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="59"/>
+        <location filename="../generalsettingswidget.ui" line="56"/>
         <location filename="../generalsettingswidget.cpp" line="88"/>
         <source>Pause On Focus Loss</source>
         <translation>Pausar quando inativo</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="66"/>
+        <location filename="../generalsettingswidget.ui" line="63"/>
         <location filename="../generalsettingswidget.cpp" line="97"/>
         <source>Apply Per-Game Settings</source>
         <translation>Usar configurações individuais</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="38"/>
+        <location filename="../generalsettingswidget.ui" line="35"/>
         <location filename="../generalsettingswidget.cpp" line="100"/>
         <source>Automatically Load Cheats</source>
         <translation>Carregar trapaças automaticamente</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="73"/>
+        <location filename="../generalsettingswidget.ui" line="70"/>
         <source>Create Save State Backups</source>
         <translation>Criar cópia de segurança dos salvamentos rápidos</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="108"/>
+        <location filename="../generalsettingswidget.ui" line="105"/>
         <source>Compress Save States</source>
         <translation>Comprimir dados de estados salvos</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="118"/>
+        <location filename="../generalsettingswidget.ui" line="115"/>
         <source>Game Display</source>
         <translation>Exibição</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="131"/>
+        <location filename="../generalsettingswidget.ui" line="128"/>
         <source>Double-Click Toggles Fullscreen</source>
         <translation>Duplo clique para alternar para tela cheia</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="138"/>
+        <location filename="../generalsettingswidget.ui" line="135"/>
         <location filename="../generalsettingswidget.cpp" line="83"/>
         <source>Render To Separate Window</source>
         <translation>Renderizar para uma janela separada</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="145"/>
+        <location filename="../generalsettingswidget.ui" line="142"/>
         <source>Hide Main Window When Running</source>
         <translation>Ocultar a janela principal ao executar</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="152"/>
+        <location filename="../generalsettingswidget.ui" line="149"/>
         <source>Disable Window Resizing</source>
         <translation>Desativar o redimensionamento da janela</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="159"/>
+        <location filename="../generalsettingswidget.ui" line="156"/>
         <location filename="../generalsettingswidget.cpp" line="77"/>
         <source>Hide Cursor In Fullscreen</source>
         <translation>Esconder cursor em tela cheia</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="169"/>
+        <location filename="../generalsettingswidget.ui" line="166"/>
         <source>Automatic Updater</source>
         <translation>Atualizador automático</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="175"/>
+        <location filename="../generalsettingswidget.ui" line="172"/>
         <source>Update Channel:</source>
         <translation>Canal de atualização:</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="185"/>
+        <location filename="../generalsettingswidget.ui" line="182"/>
         <source>Current Version:</source>
         <translation>Versão atual:</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="221"/>
+        <location filename="../generalsettingswidget.ui" line="218"/>
         <source>Check for Updates...</source>
         <translation>Checar por atualizações...</translation>
     </message>
@@ -9861,7 +9751,7 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="101"/>
+        <location filename="../generalsettingswidget.ui" line="98"/>
         <location filename="../generalsettingswidget.cpp" line="102"/>
         <source>Enable Discord Presence</source>
         <translation>Ativar presença rica do Discord</translation>
@@ -9872,7 +9762,7 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <translation>Mostra o jogo que estiver jogando no seu perfil no Discord quando conectado.</translation>
     </message>
     <message>
-        <location filename="../generalsettingswidget.ui" line="199"/>
+        <location filename="../generalsettingswidget.ui" line="196"/>
         <location filename="../generalsettingswidget.cpp" line="108"/>
         <source>Enable Automatic Update Check</source>
         <translation>Verificar por atualizações</translation>
@@ -10692,37 +10582,37 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
 <context>
     <name>MAC_APPLICATION_MENU</name>
     <message>
-        <location filename="../qttranslations.cpp" line="34"/>
+        <location filename="../qttranslations.cpp" line="39"/>
         <source>Services</source>
         <translation>Serviços</translation>
     </message>
     <message>
-        <location filename="../qttranslations.cpp" line="35"/>
+        <location filename="../qttranslations.cpp" line="40"/>
         <source>Hide %1</source>
         <translation>Ocultar %1</translation>
     </message>
     <message>
-        <location filename="../qttranslations.cpp" line="36"/>
+        <location filename="../qttranslations.cpp" line="41"/>
         <source>Hide Others</source>
         <translation>Ocultar outros</translation>
     </message>
     <message>
-        <location filename="../qttranslations.cpp" line="37"/>
+        <location filename="../qttranslations.cpp" line="42"/>
         <source>Show All</source>
         <translation>Mostrar tudo</translation>
     </message>
     <message>
-        <location filename="../qttranslations.cpp" line="38"/>
+        <location filename="../qttranslations.cpp" line="43"/>
         <source>Preferences...</source>
         <translation>Preferências...</translation>
     </message>
     <message>
-        <location filename="../qttranslations.cpp" line="39"/>
+        <location filename="../qttranslations.cpp" line="44"/>
         <source>Quit %1</source>
         <translation>Sair %1</translation>
     </message>
     <message>
-        <location filename="../qttranslations.cpp" line="40"/>
+        <location filename="../qttranslations.cpp" line="45"/>
         <source>About %1</source>
         <translation>Sobre %1</translation>
     </message>
@@ -12778,47 +12668,42 @@ Controles iniciados em modo digital.</translation>
 <context>
     <name>PostProcessingSettingsWidget</name>
     <message>
-        <location filename="../postprocessingsettingswidget.ui" line="14"/>
-        <source>Form</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../postprocessingsettingswidget.ui" line="34"/>
+        <location filename="../postprocessingsettingswidget.ui" line="31"/>
         <source>Enable Post Processing</source>
         <translation>Ativar pós-processamento</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.ui" line="54"/>
+        <location filename="../postprocessingsettingswidget.ui" line="51"/>
         <source>&amp;Reload Shaders</source>
         <translation>&amp;Recarregar shaders</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.ui" line="97"/>
+        <location filename="../postprocessingsettingswidget.ui" line="94"/>
         <source>Add</source>
         <translation>Adicionar</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.ui" line="117"/>
+        <location filename="../postprocessingsettingswidget.ui" line="114"/>
         <source>Remove</source>
         <translation>Remover</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.ui" line="137"/>
+        <location filename="../postprocessingsettingswidget.ui" line="134"/>
         <source>Clear</source>
         <translation>Limpar</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.ui" line="157"/>
+        <location filename="../postprocessingsettingswidget.ui" line="154"/>
         <source>Move Up</source>
         <translation>Para cima</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.ui" line="177"/>
+        <location filename="../postprocessingsettingswidget.ui" line="174"/>
         <source>Move Down</source>
         <translation>Para baixo</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.ui" line="67"/>
+        <location filename="../postprocessingsettingswidget.ui" line="64"/>
         <source>Post Processing Chain</source>
         <translation>Lista de pós-processamentos</translation>
     </message>
@@ -12912,31 +12797,105 @@ The URL was: %1</source>
 <context>
     <name>QtHost</name>
     <message>
-        <location filename="../qthost.cpp" line="1957"/>
-        <location filename="../qthost.cpp" line="1983"/>
-        <location filename="../qthost.cpp" line="1999"/>
+        <location filename="../qthost.cpp" line="179"/>
+        <location filename="../qthost.cpp" line="202"/>
+        <location filename="../qthost.cpp" line="210"/>
+        <location filename="../qthost.cpp" line="246"/>
+        <location filename="../qthost.cpp" line="266"/>
+        <location filename="../qthost.cpp" line="276"/>
+        <location filename="../qthost.cpp" line="289"/>
+        <location filename="../qthost.cpp" line="304"/>
+        <location filename="../qthost.cpp" line="317"/>
+        <location filename="../qthost.cpp" line="2132"/>
+        <location filename="../qthost.cpp" line="2158"/>
+        <location filename="../qthost.cpp" line="2174"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1958"/>
+        <location filename="../qthost.cpp" line="180"/>
+        <source>Failed to create HTTPDownloader.</source>
+        <translation>Falha ao criar protocolo HTTP.</translation>
+    </message>
+    <message>
+        <location filename="../qthost.cpp" line="187"/>
+        <source>Downloading %1...</source>
+        <translation>Baixando %1...</translation>
+    </message>
+    <message>
+        <location filename="../qthost.cpp" line="203"/>
+        <source>Download failed with HTTP status code %1.</source>
+        <translation>O download falhou com o código HTTP %1.</translation>
+    </message>
+    <message>
+        <location filename="../qthost.cpp" line="211"/>
+        <source>Download failed: Data is empty.</source>
+        <translation>O download falhou: Os dados estão vazios.</translation>
+    </message>
+    <message>
+        <location filename="../qthost.cpp" line="247"/>
+        <source>Failed to write &apos;%1&apos;.</source>
+        <translation>Falha ao gravar &apos;%1&apos;.</translation>
+    </message>
+    <message>
+        <location filename="../qthost.cpp" line="267"/>
+        <source>Failed to open downloaded zip file.</source>
+        <translation>Falha ao abrir o arquivo compactado baixado.</translation>
+    </message>
+    <message>
+        <location filename="../qthost.cpp" line="277"/>
+        <source>Failed to locate &apos;%1&apos; in zip.</source>
+        <translation>Falha ao localizar &apos;%1&apos; no zip.</translation>
+    </message>
+    <message>
+        <location filename="../qthost.cpp" line="290"/>
+        <source>Failed to open &apos;%1&apos;: %2.</source>
+        <translation>Falha ao abrir &apos;%1&apos;: %2.</translation>
+    </message>
+    <message>
+        <location filename="../qthost.cpp" line="305"/>
+        <source>Failed to read &apos;%1&apos; from zip.</source>
+        <translation>Falha ao ler &apos;%1&apos; a partir do zip.</translation>
+    </message>
+    <message>
+        <location filename="../qthost.cpp" line="318"/>
+        <source>Failed to write to &apos;%1&apos;.</source>
+        <translation>Falha ao gravar em &apos;%1&apos;.</translation>
+    </message>
+    <message>
+        <location filename="../qthost.cpp" line="2133"/>
         <source>File &apos;%1&apos; does not exist.</source>
         <translation>O arquivo &apos;%1&apos; não existe.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1984"/>
+        <location filename="../qthost.cpp" line="2159"/>
         <source>The specified save state does not exist.</source>
         <translation>O dado de salvamento não existe.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2000"/>
+        <location filename="../qthost.cpp" line="2175"/>
         <source>Cannot use no-gui mode, because no boot filename was specified.</source>
         <translation>Não é possível usar o modo no-gui, porque nenhum parâmetro de inicialização foi configurado.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2001"/>
+        <location filename="../qthost.cpp" line="2176"/>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
         <translation>Não é possível usar este modo porque nenhum parâmetro de inicialização foi configurado.</translation>
+    </message>
+    <message>
+        <location filename="../qttranslations.cpp" line="305"/>
+        <source>Missing Font File</source>
+        <translation>Arquivo de fonte ausente</translation>
+    </message>
+    <message>
+        <location filename="../qttranslations.cpp" line="311"/>
+        <source>The font file &apos;%1&apos; is required for the On-Screen Display and Big Picture Mode to show messages in your language.&lt;br&gt;&lt;br&gt;Do you want to download this file now? These files are usually less than 10 megabytes in size.&lt;br&gt;&lt;br&gt;&lt;strong&gt;If you do not download this file, on-screen messages will not be readable.&lt;/strong&gt;</source>
+        <translation>O arquivo de fonte &apos;%1&apos; é necessário para que a exibição na tela e o Modo Tela Grande mostrem mensagens no seu idioma.&lt;br&gt;&lt;br&gt;Gostaria de baixar este arquivo agora? Geralmente, esses arquivos têm menos de 10 megabytes.&lt;br&gt;&lt;br&gt;&lt;strong&gt;Se você não baixar este arquivo, as mensagens na tela não ficarão legíveis.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <location filename="../qttranslations.cpp" line="323"/>
+        <source>Downloading Files</source>
+        <translation>Baixando arquivos</translation>
     </message>
 </context>
 <context>
