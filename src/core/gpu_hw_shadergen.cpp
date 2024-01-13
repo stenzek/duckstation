@@ -130,9 +130,10 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
                     float((a_texcoord >> 16) * RESOLUTION_SCALE));
 
     // base_x,base_y,palette_x,palette_y
+    // Palette X is scaled in fragment shader, since it can wrap.
     v_texpage.x = (a_texpage & 15u) * 64u * RESOLUTION_SCALE;
     v_texpage.y = ((a_texpage >> 4) & 1u) * 256u * RESOLUTION_SCALE;
-    v_texpage.z = ((a_texpage >> 16) & 63u) * 16u * RESOLUTION_SCALE;
+    v_texpage.z = ((a_texpage >> 16) & 63u) * 16u;
     v_texpage.w = ((a_texpage >> 22) & 511u) * RESOLUTION_SCALE;
 
     #if UV_LIMITS
@@ -755,8 +756,8 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
       uint palette_index = (vram_value >> (subpixel * 8u)) & 0xFFu;
     #endif
 
-    // sample palette
-    uint2 palette_icoord = uint2(texpage.z + (palette_index * RESOLUTION_SCALE), texpage.w);
+    // sample palette. can wrap in X direction
+    uint2 palette_icoord = uint2(((texpage.z + palette_index) & 0x3FFu) * RESOLUTION_SCALE, texpage.w);
     return SAMPLE_TEXTURE(samp0, float2(palette_icoord) * RCP_VRAM_SIZE);
   #else
     // Direct texturing. Render-to-texture effects. Use upscaled coordinates.
