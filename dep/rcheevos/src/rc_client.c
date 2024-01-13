@@ -23,6 +23,9 @@
 #define RC_CLIENT_UNKNOWN_GAME_ID (uint32_t)-1
 #define RC_CLIENT_RECENT_UNLOCK_DELAY_SECONDS (10 * 60) /* ten minutes */
 
+#define RC_MINIMUM_UNPAUSED_FRAMES 20
+#define RC_PAUSE_DECAY_MULTIPLIER 4
+
 enum {
   RC_CLIENT_ASYNC_NOT_ABORTED = 0,
   RC_CLIENT_ASYNC_ABORTED = 1,
@@ -76,12 +79,15 @@ static void rc_client_raise_leaderboard_events(rc_client_t* client, rc_client_su
 static void rc_client_raise_pending_events(rc_client_t* client, rc_client_game_info_t* game);
 static void rc_client_reschedule_callback(rc_client_t* client, rc_client_scheduled_callback_data_t* callback, rc_clock_t when);
 static void rc_client_award_achievement_retry(rc_client_scheduled_callback_data_t* callback_data, rc_client_t* client, rc_clock_t now);
+static int rc_client_is_award_achievement_pending(const rc_client_t* client, uint32_t achievement_id);
 static void rc_client_submit_leaderboard_entry_retry(rc_client_scheduled_callback_data_t* callback_data, rc_client_t* client, rc_clock_t now);
 
 /* ===== Construction/Destruction ===== */
 
 static void rc_client_dummy_event_handler(const rc_client_event_t* event, rc_client_t* client)
 {
+  (void)event;
+  (void)client;
 }
 
 rc_client_t* rc_client_create(rc_client_read_memory_func_t read_memory_function, rc_client_server_call_t server_call_function)
@@ -91,6 +97,7 @@ rc_client_t* rc_client_create(rc_client_read_memory_func_t read_memory_function,
     return NULL;
 
   client->state.hardcore = 1;
+  client->state.required_unpaused_frames = RC_MINIMUM_UNPAUSED_FRAMES;
 
   client->callbacks.read_memory = read_memory_function;
   client->callbacks.server_call = server_call_function;
@@ -241,6 +248,8 @@ static rc_clock_t rc_client_clock_get_now_millisecs(const rc_client_t* client)
 {
 #if defined(CLOCK_MONOTONIC)
   struct timespec now;
+  (void)client;
+
   if (clock_gettime(CLOCK_MONOTONIC, &now) < 0)
     return 0;
 
@@ -249,6 +258,8 @@ static rc_clock_t rc_client_clock_get_now_millisecs(const rc_client_t* client)
 #elif defined(_WIN32)
   static LARGE_INTEGER freq;
   LARGE_INTEGER ticks;
+
+  (void)client;
 
   /* Frequency is the number of ticks per second and is guaranteed to not change. */
   if (!freq.QuadPart) {
@@ -265,6 +276,9 @@ static rc_clock_t rc_client_clock_get_now_millisecs(const rc_client_t* client)
   return (rc_clock_t)(ticks.QuadPart / freq.QuadPart);
 #else
   const clock_t clock_now = clock();
+
+  (void)client;
+
   if (sizeof(clock_t) == 4) {
     static uint32_t clock_wraps = 0;
     static clock_t last_clock = 0;
@@ -402,6 +416,8 @@ static const char* rc_client_server_error_message(int* result, int http_status_c
     if (response->error_message)
       return response->error_message;
   }
+
+  (void)http_status_code;
 
   if (*result != RC_OK)
     return rc_error_str(*result);
@@ -1342,7 +1358,7 @@ static void rc_client_deactivate_leaderboards(rc_client_game_info_t* game, rc_cl
 
         case RC_CLIENT_LEADERBOARD_STATE_TRACKING:
           rc_client_release_leaderboard_tracker(client->game, leaderboard);
-          /* fallthrough to default */
+          /* fallthrough */ /* to default */
         default:
           leaderboard->public_.state = RC_CLIENT_LEADERBOARD_STATE_INACTIVE;
           break;
@@ -1533,6 +1549,8 @@ static void rc_client_begin_start_session(rc_client_load_state_t* load_state)
   start_session_params.username = client->user.username;
   start_session_params.api_token = client->user.token;
   start_session_params.game_id = load_state->hash->game_id;
+  start_session_params.game_hash = load_state->hash->hash;
+  start_session_params.hardcore = client->state.hardcore;
 
   result = rc_api_init_start_session_request(&start_session_request, &start_session_params);
   if (result != RC_OK) {
@@ -1609,6 +1627,9 @@ static void rc_client_copy_achievements(rc_client_load_state_t* load_state,
     achievement->public_.points = read->points;
     achievement->public_.category = (read->category != RC_ACHIEVEMENT_CATEGORY_CORE) ?
       RC_CLIENT_ACHIEVEMENT_CATEGORY_UNOFFICIAL : RC_CLIENT_ACHIEVEMENT_CATEGORY_CORE;
+    achievement->public_.rarity = read->rarity;
+    achievement->public_.rarity_hardcore = read->rarity_hardcore;
+    achievement->public_.type = read->type; /* assert: mapping is 1:1 */
 
     memaddr = read->definition;
     rc_runtime_checksum(memaddr, achievement->md5);
@@ -1680,6 +1701,13 @@ uint8_t rc_client_map_leaderboard_format(int format)
     case RC_FORMAT_FLOAT4:
     case RC_FORMAT_FLOAT5:
     case RC_FORMAT_FLOAT6:
+    case RC_FORMAT_FIXED1:
+    case RC_FORMAT_FIXED2:
+    case RC_FORMAT_FIXED3:
+    case RC_FORMAT_TENS:
+    case RC_FORMAT_HUNDREDS:
+    case RC_FORMAT_THOUSANDS:
+    case RC_FORMAT_UNSIGNED_VALUE:
     default:
       return RC_CLIENT_LEADERBOARD_FORMAT_VALUE;
   }
@@ -2731,7 +2759,14 @@ static void rc_client_update_achievement_display_information(rc_client_t* client
 
   if (achievement->public_.state == RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED) {
     /* achievement unlocked */
-    new_bucket = RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED;
+    if (achievement->public_.unlock_time >= recent_unlock_time) {
+      new_bucket = RC_CLIENT_ACHIEVEMENT_BUCKET_RECENTLY_UNLOCKED;
+    } else {
+      new_bucket = RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED;
+
+      if (client->state.disconnect && rc_client_is_award_achievement_pending(client, achievement->public_.id))
+        new_bucket = RC_CLIENT_ACHIEVEMENT_BUCKET_UNSYNCED;
+    }
   }
   else {
     /* active achievement */
@@ -2772,9 +2807,6 @@ static void rc_client_update_achievement_display_information(rc_client_t* client
     }
   }
 
-  if (new_bucket == RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED && achievement->public_.unlock_time >= recent_unlock_time)
-    new_bucket = RC_CLIENT_ACHIEVEMENT_BUCKET_RECENTLY_UNLOCKED;
-
   achievement->public_.bucket = new_bucket;
 }
 
@@ -2788,6 +2820,7 @@ static const char* rc_client_get_achievement_bucket_label(uint8_t bucket_type)
     case RC_CLIENT_ACHIEVEMENT_BUCKET_RECENTLY_UNLOCKED: return "Recently Unlocked";
     case RC_CLIENT_ACHIEVEMENT_BUCKET_ACTIVE_CHALLENGE: return "Active Challenges";
     case RC_CLIENT_ACHIEVEMENT_BUCKET_ALMOST_THERE: return "Almost There";
+    case RC_CLIENT_ACHIEVEMENT_BUCKET_UNSYNCED: return "Unlocks Not Synced to Server";
     default: return "Unknown";
   }
 }
@@ -2845,6 +2878,7 @@ static uint8_t rc_client_map_bucket(uint8_t bucket, int grouping)
   if (grouping == RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_LOCK_STATE) {
     switch (bucket) {
       case RC_CLIENT_ACHIEVEMENT_BUCKET_RECENTLY_UNLOCKED:
+      case RC_CLIENT_ACHIEVEMENT_BUCKET_UNSYNCED:
         return RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED;
 
       case RC_CLIENT_ACHIEVEMENT_BUCKET_ACTIVE_CHALLENGE:
@@ -2869,7 +2903,7 @@ rc_client_achievement_list_t* rc_client_create_achievement_list(rc_client_t* cli
   rc_client_achievement_list_info_t* list;
   rc_client_subset_info_t* subset;
   const uint32_t list_size = RC_ALIGN(sizeof(*list));
-  uint32_t bucket_counts[16];
+  uint32_t bucket_counts[NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS];
   uint32_t num_buckets;
   uint32_t num_achievements;
   size_t buckets_size;
@@ -2879,7 +2913,8 @@ rc_client_achievement_list_t* rc_client_create_achievement_list(rc_client_t* cli
   const uint8_t shared_bucket_order[] = {
     RC_CLIENT_ACHIEVEMENT_BUCKET_ACTIVE_CHALLENGE,
     RC_CLIENT_ACHIEVEMENT_BUCKET_RECENTLY_UNLOCKED,
-    RC_CLIENT_ACHIEVEMENT_BUCKET_ALMOST_THERE
+    RC_CLIENT_ACHIEVEMENT_BUCKET_ALMOST_THERE,
+    RC_CLIENT_ACHIEVEMENT_BUCKET_UNSYNCED,
   };
   const uint8_t subset_bucket_order[] = {
     RC_CLIENT_ACHIEVEMENT_BUCKET_LOCKED,
@@ -3158,12 +3193,33 @@ typedef struct rc_client_award_achievement_callback_data_t
   rc_client_scheduled_callback_data_t* scheduled_callback_data;
 } rc_client_award_achievement_callback_data_t;
 
+static int rc_client_is_award_achievement_pending(const rc_client_t* client, uint32_t achievement_id)
+{
+  /* assume lock already held */
+  rc_client_scheduled_callback_data_t* scheduled_callback = client->state.scheduled_callbacks;
+  for (; scheduled_callback; scheduled_callback = scheduled_callback->next)
+  {
+    if (scheduled_callback->callback == rc_client_award_achievement_retry)
+    {
+      rc_client_award_achievement_callback_data_t* ach_data =
+        (rc_client_award_achievement_callback_data_t*)scheduled_callback->data;
+      if (ach_data->id == achievement_id)
+        return 1;
+    }
+  }
+
+  return 0;
+}
+
 static void rc_client_award_achievement_server_call(rc_client_award_achievement_callback_data_t* ach_data);
 
 static void rc_client_award_achievement_retry(rc_client_scheduled_callback_data_t* callback_data, rc_client_t* client, rc_clock_t now)
 {
   rc_client_award_achievement_callback_data_t* ach_data =
     (rc_client_award_achievement_callback_data_t*)callback_data->data;
+
+  (void)client;
+  (void)now;
 
   rc_client_award_achievement_server_call(ach_data);
 }
@@ -3793,6 +3849,9 @@ static void rc_client_submit_leaderboard_entry_retry(rc_client_scheduled_callbac
   rc_client_submit_leaderboard_entry_callback_data_t* lboard_data =
       (rc_client_submit_leaderboard_entry_callback_data_t*)callback_data->data;
 
+  (void)client;
+  (void)now;
+
   rc_client_submit_leaderboard_entry_server_call(lboard_data);
 }
 
@@ -3995,7 +4054,7 @@ static void rc_client_subset_reset_leaderboards(rc_client_game_info_t* game, rc_
 
       case RC_CLIENT_LEADERBOARD_STATE_TRACKING:
         rc_client_release_leaderboard_tracker(game, leaderboard);
-        /* fallthrough to default */
+        /* fallthrough */ /* to default */
       default:
         leaderboard->public_.state = RC_CLIENT_LEADERBOARD_STATE_ACTIVE;
         rc_reset_lboard(lboard);
@@ -4224,6 +4283,8 @@ static void rc_client_ping(rc_client_scheduled_callback_data_t* callback_data, r
   api_params.api_token = client->user.token;
   api_params.game_id = client->game->public_.id;
   api_params.rich_presence = buffer;
+  api_params.game_hash = client->game->public_.hash;
+  api_params.hardcore = client->state.hardcore;
 
   result = rc_api_init_ping_request(&request, &api_params);
   if (result != RC_OK) {
@@ -4544,6 +4605,9 @@ static void rc_client_progress_tracker_timer_elapsed(rc_client_scheduled_callbac
 {
   rc_client_event_t client_event;
   memset(&client_event, 0, sizeof(client_event));
+
+  (void)callback_data;
+  (void)now;
 
   rc_mutex_lock(&client->state.mutex);
   if (client->game->progress_tracker.action == RC_CLIENT_PROGRESS_TRACKER_ACTION_NONE) {
@@ -4892,6 +4956,24 @@ void rc_client_do_frame(rc_client_t* client)
     rc_client_raise_pending_events(client, client->game);
   }
 
+  /* we've processed a frame. if there's a pause delay in effect, process it */
+  if (client->state.unpaused_frame_decay > 0) {
+    client->state.unpaused_frame_decay--;
+
+    if (client->state.unpaused_frame_decay == 0 &&
+        client->state.required_unpaused_frames > RC_MINIMUM_UNPAUSED_FRAMES) {
+      /* the full decay has elapsed and a penalty still exists.
+       * lower the penalty and reset the decay counter */
+      client->state.required_unpaused_frames >>= 1;
+
+      if (client->state.required_unpaused_frames <= RC_MINIMUM_UNPAUSED_FRAMES)
+        client->state.required_unpaused_frames = RC_MINIMUM_UNPAUSED_FRAMES;
+
+      client->state.unpaused_frame_decay =
+        client->state.required_unpaused_frames * (RC_PAUSE_DECAY_MULTIPLIER - 1) - 1;
+    }
+  }
+
   rc_client_idle(client);
 }
 
@@ -5070,6 +5152,49 @@ void rc_client_reset(rc_client_t* client)
   rc_mutex_unlock(&client->state.mutex);
 
   rc_client_raise_pending_events(client, client->game);
+}
+
+int rc_client_can_pause(rc_client_t* client, uint32_t* frames_remaining)
+{
+#ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+  if (client->state.external_client && client->state.external_client->can_pause)
+    return client->state.external_client->can_pause(frames_remaining);
+#endif
+
+  if (frames_remaining)
+    *frames_remaining = 0;
+
+  /* pause is always allowed in softcore */
+  if (!rc_client_get_hardcore_enabled(client))
+    return 1;
+
+  /* a full decay means we haven't processed any frames since the last time this was called. */
+  if (client->state.unpaused_frame_decay == client->state.required_unpaused_frames * RC_PAUSE_DECAY_MULTIPLIER)
+    return 1;
+
+  /* if less than RC_MINIMUM_UNPAUSED_FRAMES have been processed, don't allow the pause */
+  if (client->state.unpaused_frame_decay > client->state.required_unpaused_frames * (RC_PAUSE_DECAY_MULTIPLIER - 1)) {
+    if (frames_remaining) {
+      *frames_remaining = client->state.unpaused_frame_decay -
+                          client->state.required_unpaused_frames * (RC_PAUSE_DECAY_MULTIPLIER - 1);
+    }
+    return 0;
+  }
+
+  /* we're going to allow the emulator to pause. calculate how many frames are needed before the next
+   * pause will be allowed. */
+
+  if (client->state.unpaused_frame_decay > 0) {
+    /* The user has paused within the decay window. Require a longer
+     * run of unpaused frames before allowing the next pause */
+    if (client->state.required_unpaused_frames < 5 * 60) /* don't make delay longer then 5 seconds */
+      client->state.required_unpaused_frames += RC_MINIMUM_UNPAUSED_FRAMES;
+  }
+
+  /* require multiple unpaused_frames windows to decay the penalty */
+  client->state.unpaused_frame_decay = client->state.required_unpaused_frames * RC_PAUSE_DECAY_MULTIPLIER;
+
+  return 1;
 }
 
 size_t rc_client_progress_size(rc_client_t* client)
@@ -5463,7 +5588,7 @@ void rc_client_set_host(const rc_client_t* client, const char* hostname)
   rc_api_set_host(hostname);
 
 #ifdef RC_CLIENT_SUPPORTS_EXTERNAL
-  if (client->state.external_client && client->state.external_client->set_host)
+  if (client && client->state.external_client && client->state.external_client->set_host)
     client->state.external_client->set_host(hostname);
 #endif
 }

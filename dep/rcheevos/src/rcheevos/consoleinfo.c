@@ -2,7 +2,7 @@
 
 #include <ctype.h>
 
-const char* rc_console_name(int console_id)
+const char* rc_console_name(uint32_t console_id)
 {
   switch (console_id)
   {
@@ -194,6 +194,9 @@ const char* rc_console_name(int console_id)
 
     case RC_CONSOLE_SHARPX1:
       return "Sharp X1";
+
+    case RC_CONSOLE_STANDALONE:
+      return "Standalone";
 
     case RC_CONSOLE_SUPER_NINTENDO:
       return "Super Nintendo Entertainment System";

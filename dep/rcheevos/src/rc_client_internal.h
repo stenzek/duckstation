@@ -1,10 +1,6 @@
 #ifndef RC_CLIENT_INTERNAL_H
 #define RC_CLIENT_INTERNAL_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "rc_client.h"
 
 #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
@@ -18,16 +14,18 @@ extern "C" {
 #include "rc_runtime.h"
 #include "rc_runtime_types.h"
 
+RC_BEGIN_C_DECLS
+
 /*****************************************************************************\
 | Callbacks                                                                   |
 \*****************************************************************************/
 
 struct rc_api_fetch_game_data_response_t;
-typedef void (*rc_client_post_process_game_data_response_t)(const rc_api_server_response_t* server_response,
+typedef void (RC_CCONV *rc_client_post_process_game_data_response_t)(const rc_api_server_response_t* server_response,
               struct rc_api_fetch_game_data_response_t* game_data_response, rc_client_t* client, void* userdata);
-typedef int (*rc_client_can_submit_achievement_unlock_t)(uint32_t achievement_id, rc_client_t* client);
-typedef int (*rc_client_can_submit_leaderboard_entry_t)(uint32_t leaderboard_id, rc_client_t* client);
-typedef int (*rc_client_rich_presence_override_t)(rc_client_t* client, char buffer[], size_t buffersize);
+typedef int (RC_CCONV *rc_client_can_submit_achievement_unlock_t)(uint32_t achievement_id, rc_client_t* client);
+typedef int (RC_CCONV *rc_client_can_submit_leaderboard_entry_t)(uint32_t leaderboard_id, rc_client_t* client);
+typedef int (RC_CCONV *rc_client_rich_presence_override_t)(rc_client_t* client, char buffer[], size_t buffersize);
 
 typedef struct rc_client_callbacks_t {
   rc_client_read_memory_func_t read_memory;
@@ -44,7 +42,7 @@ typedef struct rc_client_callbacks_t {
 } rc_client_callbacks_t;
 
 struct rc_client_scheduled_callback_data_t;
-typedef void (*rc_client_scheduled_callback_t)(struct rc_client_scheduled_callback_data_t* callback_data, rc_client_t* client, rc_clock_t now);
+typedef void (RC_CCONV *rc_client_scheduled_callback_t)(struct rc_client_scheduled_callback_data_t* callback_data, rc_client_t* client, rc_clock_t now);
 
 typedef struct rc_client_scheduled_callback_data_t
 {
@@ -92,7 +90,7 @@ typedef struct rc_client_achievement_info_t {
 } rc_client_achievement_info_t;
 
 struct rc_client_achievement_list_info_t;
-typedef void (*rc_client_destroy_achievement_list_func_t)(struct rc_client_achievement_list_info_t* list);
+typedef void (RC_CCONV *rc_client_destroy_achievement_list_func_t)(struct rc_client_achievement_list_info_t* list);
 
 typedef struct rc_client_achievement_list_info_t {
   rc_client_achievement_list_t public_;
@@ -167,7 +165,7 @@ typedef struct rc_client_leaderboard_info_t {
 } rc_client_leaderboard_info_t;
 
 struct rc_client_leaderboard_list_info_t;
-typedef void (*rc_client_destroy_leaderboard_list_func_t)(struct rc_client_leaderboard_list_info_t* list);
+typedef void (RC_CCONV *rc_client_destroy_leaderboard_list_func_t)(struct rc_client_leaderboard_list_info_t* list);
 
 typedef struct rc_client_leaderboard_list_info_t {
   rc_client_leaderboard_list_t public_;
@@ -175,7 +173,7 @@ typedef struct rc_client_leaderboard_list_info_t {
 } rc_client_leaderboard_list_info_t;
 
 struct rc_client_leaderboard_entry_list_info_t;
-typedef void (*rc_client_destroy_leaderboard_entry_list_func_t)(struct rc_client_leaderboard_entry_list_info_t* list);
+typedef void (RC_CCONV *rc_client_destroy_leaderboard_entry_list_func_t)(struct rc_client_leaderboard_entry_list_info_t* list);
 
 typedef struct rc_client_leaderboard_entry_list_info_t {
   rc_client_leaderboard_entry_list_t public_;
@@ -317,6 +315,9 @@ typedef struct rc_client_state_t {
   rc_client_raintegration_t* raintegration;
 #endif
 
+  uint16_t unpaused_frame_decay;
+  uint16_t required_unpaused_frames;
+
   uint8_t hardcore;
   uint8_t encore_mode;
   uint8_t spectator_mode;
@@ -387,8 +388,6 @@ void rc_client_set_legacy_peek(rc_client_t* client, int method);
 
 void rc_client_release_leaderboard_tracker(rc_client_game_info_t* game, rc_client_leaderboard_info_t* leaderboard);
 
-#ifdef __cplusplus
-}
-#endif
+RC_END_C_DECLS
 
 #endif /* RC_CLIENT_INTERNAL_H */

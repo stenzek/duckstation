@@ -189,6 +189,10 @@ static rc_richpresence_display_t* rc_parse_richpresence_display_internal(const c
           {"Float4", 6, RC_FORMAT_FLOAT4},
           {"Float5", 6, RC_FORMAT_FLOAT5},
           {"Float6", 6, RC_FORMAT_FLOAT6},
+          {"Fixed1", 6, RC_FORMAT_FIXED1},
+          {"Fixed2", 6, RC_FORMAT_FIXED2},
+          {"Fixed3", 6, RC_FORMAT_FIXED3},
+          {"Unsigned", 8, RC_FORMAT_UNSIGNED_VALUE}
         };
         size_t i;
 

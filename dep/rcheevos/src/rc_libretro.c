@@ -622,7 +622,7 @@ static void rc_libretro_memory_init_from_unmapped_memory(rc_libretro_memory_regi
 }
 
 int rc_libretro_memory_init(rc_libretro_memory_regions_t* regions, const struct retro_memory_map* mmap,
-                            rc_libretro_get_core_memory_info_func get_core_memory_info, int console_id) {
+                            rc_libretro_get_core_memory_info_func get_core_memory_info, uint32_t console_id) {
   const rc_memory_regions_t* console_regions = rc_console_memory_regions(console_id);
   rc_libretro_memory_regions_t new_regions;
   int has_valid_region = 0;
