@@ -65,6 +65,7 @@ namespace Achievements {
 static constexpr const char* INFO_SOUND_NAME = "sounds/achievements/message.wav";
 static constexpr const char* UNLOCK_SOUND_NAME = "sounds/achievements/unlock.wav";
 static constexpr const char* LBSUBMIT_SOUND_NAME = "sounds/achievements/lbsubmit.wav";
+static constexpr const char* ACHEIVEMENT_DETAILS_URL_TEMPLATE = "https://retroachievements.org/achievement/{}";
 
 static constexpr u32 LEADERBOARD_NEARBY_ENTRIES_TO_FETCH = 10;
 static constexpr u32 LEADERBOARD_ALL_FETCH_SIZE = 20;
@@ -2310,11 +2311,11 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
 
   ImRect bb;
   bool visible, hovered;
-  ImGuiFullscreen::MenuButtonFrame(TinyString::from_format("chv_{}", cheevo->id), true,
-                                   !is_measured ? ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT + unlock_size :
-                                                  ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT +
-                                                    progress_height_unscaled + progress_spacing_unscaled,
-                                   &visible, &hovered, &bb.Min, &bb.Max, 0, alpha);
+  const bool clicked = ImGuiFullscreen::MenuButtonFrame(
+    TinyString::from_format("chv_{}", cheevo->id), true,
+    !is_measured ? ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT + unlock_size :
+                   ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT + progress_height_unscaled + progress_spacing_unscaled,
+    &visible, &hovered, &bb.Min, &bb.Max, 0, alpha);
   if (!visible)
     return;
 
@@ -2432,6 +2433,14 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
                 ImGui::GetColorU32(ImGuiFullscreen::UIPrimaryTextColor), measured_progress.data(),
                 measured_progress.data() + measured_progress.size());
   }
+
+  if (clicked)
+  {
+    const SmallString url = SmallString::from_format(fmt::runtime(ACHEIVEMENT_DETAILS_URL_TEMPLATE), cheevo->id);
+    Log_InfoFmt("Opening achievement details: {}", url);
+    Host::OpenURL(url);
+  }
+
 
   ImGui::PopFont();
 }
