@@ -76,7 +76,8 @@ template<typename... T>
 ALWAYS_INLINE static void WriteFmt(const char* channelName, const char* functionName, LOGLEVEL level,
                                    fmt::format_string<T...> fmt, T&&... args)
 {
-  return WriteFmtArgs(channelName, functionName, level, fmt, fmt::make_format_args(args...));
+  if (level <= GetLogLevel())
+    return WriteFmtArgs(channelName, functionName, level, fmt, fmt::make_format_args(args...));
 }
 } // namespace Log
 
