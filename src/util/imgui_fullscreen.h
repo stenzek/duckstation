@@ -37,6 +37,7 @@ extern ImFont* g_medium_font;
 extern ImFont* g_large_font;
 
 extern float g_layout_scale;
+extern float g_rcp_layout_scale;
 extern float g_layout_padding_left;
 extern float g_layout_padding_top;
 
@@ -56,63 +57,76 @@ extern ImVec4 UISecondaryWeakColor; // Not currently used.
 extern ImVec4 UISecondaryStrongColor;
 extern ImVec4 UISecondaryTextColor;
 
-static ALWAYS_INLINE float DPIScale(float v)
+ALWAYS_INLINE static float DPIScale(float v)
 {
   return ImGui::GetIO().DisplayFramebufferScale.x * v;
 }
 
-static ALWAYS_INLINE float DPIScale(int v)
+ALWAYS_INLINE static float DPIScale(int v)
 {
   return ImGui::GetIO().DisplayFramebufferScale.x * static_cast<float>(v);
 }
 
-static ALWAYS_INLINE ImVec2 DPIScale(const ImVec2& v)
+ALWAYS_INLINE static ImVec2 DPIScale(const ImVec2& v)
 {
   const ImVec2& fbs = ImGui::GetIO().DisplayFramebufferScale;
   return ImVec2(v.x * fbs.x, v.y * fbs.y);
 }
 
-static ALWAYS_INLINE float WindowWidthScale(float v)
+ALWAYS_INLINE static float WindowWidthScale(float v)
 {
   return ImGui::GetWindowWidth() * v;
 }
 
-static ALWAYS_INLINE float WindowHeightScale(float v)
+ALWAYS_INLINE static float WindowHeightScale(float v)
 {
   return ImGui::GetWindowHeight() * v;
 }
 
-static ALWAYS_INLINE float LayoutScale(float v)
+ALWAYS_INLINE static float LayoutScale(float v)
 {
   return g_layout_scale * v;
 }
 
-static ALWAYS_INLINE ImVec2 LayoutScale(const ImVec2& v)
+ALWAYS_INLINE static ImVec2 LayoutScale(const ImVec2& v)
 {
   return ImVec2(v.x * g_layout_scale, v.y * g_layout_scale);
 }
 
-static ALWAYS_INLINE ImVec2 LayoutScale(float x, float y)
+ALWAYS_INLINE static ImVec2 LayoutScale(float x, float y)
 {
   return ImVec2(x * g_layout_scale, y * g_layout_scale);
 }
 
-static ALWAYS_INLINE ImVec2 LayoutScaleAndOffset(float x, float y)
+ALWAYS_INLINE static ImVec2 LayoutScaleAndOffset(float x, float y)
 {
   return ImVec2(g_layout_padding_left + x * g_layout_scale, g_layout_padding_top + y * g_layout_scale);
 }
 
-static ALWAYS_INLINE ImVec4 ModAlpha(const ImVec4& v, float a)
+ALWAYS_INLINE static float LayoutUnscale(float v)
+{
+  return g_rcp_layout_scale * v;
+}
+ALWAYS_INLINE static ImVec2 LayoutUnscale(const ImVec2& v)
+{
+  return ImVec2(v.x * g_rcp_layout_scale, v.y * g_rcp_layout_scale);
+}
+ALWAYS_INLINE static ImVec2 LayoutUnscale(float x, float y)
+{
+  return ImVec2(x * g_rcp_layout_scale, y * g_rcp_layout_scale);
+}
+
+ALWAYS_INLINE static ImVec4 ModAlpha(const ImVec4& v, float a)
 {
   return ImVec4(v.x, v.y, v.z, a);
 }
 
-static ALWAYS_INLINE ImVec4 MulAlpha(const ImVec4& v, float a)
+ALWAYS_INLINE static ImVec4 MulAlpha(const ImVec4& v, float a)
 {
   return ImVec4(v.x, v.y, v.z, v.w * a);
 }
 
-static ALWAYS_INLINE std::string_view RemoveHash(const std::string_view& s)
+ALWAYS_INLINE static std::string_view RemoveHash(const std::string_view& s)
 {
   const std::string_view::size_type pos = s.find('#');
   return (pos != std::string_view::npos) ? s.substr(0, pos) : s;

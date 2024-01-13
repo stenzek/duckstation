@@ -64,6 +64,7 @@ ImFont* g_large_font = nullptr;
 ImFont* g_icon_font = nullptr;
 
 float g_layout_scale = 1.0f;
+float g_rcp_layout_scale = 1.0f;
 float g_layout_padding_left = 0.0f;
 float g_layout_padding_top = 0.0f;
 
@@ -429,6 +430,8 @@ bool ImGuiFullscreen::UpdateLayoutScale()
     g_layout_padding_top = (screen_height - (LAYOUT_SCREEN_HEIGHT * g_layout_scale)) / 2.0f;
     g_layout_padding_left = 0.0f;
   }
+
+  g_rcp_layout_scale = 1.0f / g_layout_scale;
 
   return g_layout_scale != old_scale;
 }
