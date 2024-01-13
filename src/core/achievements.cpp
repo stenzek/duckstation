@@ -2297,6 +2297,7 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
   using ImGuiFullscreen::g_large_font;
   using ImGuiFullscreen::g_medium_font;
   using ImGuiFullscreen::LayoutScale;
+  using ImGuiFullscreen::LayoutUnscale;
 
   static constexpr float alpha = 0.8f;
   static constexpr float progress_height_unscaled = 20.0f;
@@ -2308,13 +2309,26 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
   const std::string_view measured_progress(cheevo->measured_progress);
   const bool is_measured = !is_unlocked && !measured_progress.empty();
   const float unlock_size = is_unlocked ? (spacing + ImGuiFullscreen::LAYOUT_MEDIUM_FONT_SIZE) : 0.0f;
+  const ImVec2 points_template_size(
+    g_medium_font->CalcTextSizeA(g_medium_font->FontSize, FLT_MAX, 0.0f, TRANSLATE("Achievements", "XXX points")));
+
+  const size_t summary_length = std::strlen(cheevo->description);
+  const float summary_wrap_width =
+    (ImGui::GetCurrentWindow()->WorkRect.GetWidth() - (ImGui::GetStyle().FramePadding.x * 2.0f) -
+     LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT + 30.0f) - points_template_size.x);
+  const ImVec2 summary_text_size(g_medium_font->CalcTextSizeA(
+    g_medium_font->FontSize, FLT_MAX, summary_wrap_width, cheevo->description, cheevo->description + summary_length));
+
+  // Messy, but need to undo LayoutScale in MenuButtonFrame()...
+  const float extra_summary_height = LayoutUnscale(std::max(summary_text_size.y - g_medium_font->FontSize, 0.0f));
 
   ImRect bb;
   bool visible, hovered;
   const bool clicked = ImGuiFullscreen::MenuButtonFrame(
     TinyString::from_format("chv_{}", cheevo->id), true,
-    !is_measured ? ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT + unlock_size :
-                   ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT + progress_height_unscaled + progress_spacing_unscaled,
+    !is_measured ? ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT + extra_summary_height + unlock_size :
+                   ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT + extra_summary_height + progress_height_unscaled +
+                     progress_spacing_unscaled,
     &visible, &hovered, &bb.Min, &bb.Max, 0, alpha);
   if (!visible)
     return;
@@ -2350,8 +2364,6 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
   text.format((cheevo->points != 1) ? TRANSLATE_FS("Achievements", "{} points") :
                                       TRANSLATE_FS("Achievements", "{} point"),
               cheevo->points);
-  const ImVec2 points_template_size(
-    g_medium_font->CalcTextSizeA(g_medium_font->FontSize, FLT_MAX, 0.0f, TRANSLATE("Achievements", "XXX points")));
   const ImVec2 points_size(
     g_medium_font->CalcTextSizeA(g_medium_font->FontSize, FLT_MAX, 0.0f, text.c_str(), text.end_ptr()));
   const float points_template_start = bb.Max.x - points_template_size.x;
@@ -2383,7 +2395,8 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
 
   const float text_start_x = bb.Min.x + image_size.x + LayoutScale(15.0f);
   const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(points_start, midpoint));
-  const ImRect summary_bb(ImVec2(text_start_x, midpoint), ImVec2(points_start, midpoint + g_medium_font->FontSize));
+  const ImRect summary_bb(ImVec2(text_start_x, midpoint),
+                          ImVec2(points_start, midpoint + g_medium_font->FontSize + extra_summary_height));
   const ImRect points_bb(ImVec2(points_start, midpoint), bb.Max);
   const ImRect lock_bb(ImVec2(points_template_start + ((points_template_size.x - right_icon_size.x) * 0.5f), bb.Min.y),
                        ImVec2(bb.Max.x, midpoint));
@@ -2395,10 +2408,10 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
   ImGui::PopFont();
 
   ImGui::PushFont(g_medium_font);
-  if (cheevo->description && std::strlen(cheevo->description) > 0)
+  if (cheevo->description && summary_length > 0)
   {
-    ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, cheevo->description, nullptr, nullptr, ImVec2(0.0f, 0.0f),
-                             &summary_bb);
+    ImGui::RenderTextWrapped(summary_bb.Min, cheevo->description, cheevo->description + summary_length,
+                             summary_wrap_width);
   }
   ImGui::RenderTextClipped(points_bb.Min, points_bb.Max, text.c_str(), text.end_ptr(), &points_size, ImVec2(0.0f, 0.0f),
                            &points_bb);
@@ -2440,7 +2453,6 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
     Log_InfoFmt("Opening achievement details: {}", url);
     Host::OpenURL(url);
   }
-
 
   ImGui::PopFont();
 }
