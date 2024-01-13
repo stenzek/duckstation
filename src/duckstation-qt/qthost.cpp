@@ -193,7 +193,7 @@ std::optional<bool> QtHost::DownloadFile(QWidget* parent, const QString& title, 
 
   http->CreateRequest(
     std::move(url),
-    [parent, data, &download_result, &progress](s32 status_code, const std::string&, std::vector<u8> hdata) {
+    [parent, data, &download_result](s32 status_code, const std::string&, std::vector<u8> hdata) {
       if (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED)
         return;
 
