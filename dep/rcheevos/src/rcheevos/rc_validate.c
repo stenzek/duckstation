@@ -306,8 +306,7 @@ int rc_validate_condset_internal(const rc_condset_t* condset, char result[], con
           snprintf(result, result_size, "Condition %d: Hit target of 1 is redundant on ResetIf", index);
           return 0;
         }
-        /* fallthrough to default */
-
+        /* fallthrough */ /* to default */
       default:
         if (in_add_hits) {
           if (cond->required_hits == 0) {

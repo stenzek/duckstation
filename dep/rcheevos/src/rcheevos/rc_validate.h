@@ -5,9 +5,7 @@
 
 #include <stddef.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+RC_BEGIN_C_DECLS
 
 int rc_validate_memrefs(const rc_memref_t* memref, char result[], const size_t result_size, uint32_t max_address);
 
@@ -19,8 +17,6 @@ int rc_validate_memrefs_for_console(const rc_memref_t* memref, char result[], co
 int rc_validate_condset_for_console(const rc_condset_t* condset, char result[], const size_t result_size, uint32_t console_id);
 int rc_validate_trigger_for_console(const rc_trigger_t* trigger, char result[], const size_t result_size, uint32_t console_id);
 
-#ifdef __cplusplus
-}
-#endif
+RC_END_C_DECLS
 
 #endif /* RC_VALIDATE_H */

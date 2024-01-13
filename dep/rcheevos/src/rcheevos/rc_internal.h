@@ -4,9 +4,7 @@
 #include "rc_runtime_types.h"
 #include "../rc_util.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+RC_BEGIN_C_DECLS
 
 typedef struct rc_scratch_string {
   char* value;
@@ -194,8 +192,6 @@ int rc_lboard_state_active(int state);
 
 void rc_parse_richpresence_internal(rc_richpresence_t* self, const char* script, rc_parse_state_t* parse);
 
-#ifdef __cplusplus
-}
-#endif
+RC_END_C_DECLS
 
 #endif /* RC_INTERNAL_H */

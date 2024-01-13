@@ -7,6 +7,11 @@
 #include <stdio.h>
 #include <ctype.h>
 
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
 /* arbitrary limit to prevent allocating and hashing large files */
 #define MAX_BUFFER_SIZE 64 * 1024 * 1024
 
@@ -48,7 +53,35 @@ static struct rc_hash_filereader* filereader = NULL;
 
 static void* filereader_open(const char* path)
 {
+#if defined(WINVER) && WINVER >= 0x0500
+  /* Windows requires using wchar APIs for Unicode paths */
+  /* Note that MultiByteToWideChar will only be defined for >= Windows 2000 */
+  wchar_t* wpath;
+  int wpath_length;
+  FILE* fp;
+
+  /* Calculate wpath length from path */
+  wpath_length = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, path, -1, NULL, 0);
+  if (wpath_length == 0) /* 0 indicates error (this is likely from invalid UTF-8) */
+    return NULL;
+
+  wpath = (wchar_t*)malloc(wpath_length * sizeof(wchar_t));
+  if (!wpath)
+    return NULL;
+
+  if (MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, wpath_length) == 0)
+  {
+    free(wpath);
+    return NULL;
+  }
 #if defined(__STDC_WANT_SECURE_LIB__)
+  _wfopen_s(&fp, wpath, L"rb");
+#else
+  fp = _wfopen(wpath, L"rb");
+#endif
+  free(wpath);
+  return fp;
+#elif defined(__STDC_WANT_SECURE_LIB__)
   FILE* fp;
   fopen_s(&fp, path, "rb");
   return fp;
@@ -1925,7 +1958,7 @@ void rc_file_seek_buffered_file(void* file_handle, int64_t offset, int origin)
   {
     case SEEK_SET: buffered_file->read_ptr = buffered_file->data + offset; break;
     case SEEK_CUR: buffered_file->read_ptr += offset; break;
-    case SEEK_END: buffered_file->read_ptr = buffered_file->data + buffered_file->data_size - offset; break;
+    case SEEK_END: buffered_file->read_ptr = buffered_file->data + buffered_file->data_size + offset; break;
   }
 
   if (buffered_file->read_ptr < buffered_file->data)
@@ -1957,7 +1990,7 @@ void rc_file_close_buffered_file(void* file_handle)
   free(file_handle);
 }
 
-static int rc_hash_file_from_buffer(char hash[33], int console_id, const uint8_t* buffer, size_t buffer_size)
+static int rc_hash_file_from_buffer(char hash[33], uint32_t console_id, const uint8_t* buffer, size_t buffer_size)
 {
   struct rc_hash_filereader buffered_filereader_funcs;
   struct rc_hash_filereader* old_filereader = filereader;
@@ -1980,7 +2013,7 @@ static int rc_hash_file_from_buffer(char hash[33], int console_id, const uint8_t
   return result;
 }
 
-int rc_hash_generate_from_buffer(char hash[33], int console_id, const uint8_t* buffer, size_t buffer_size)
+int rc_hash_generate_from_buffer(char hash[33], uint32_t console_id, const uint8_t* buffer, size_t buffer_size)
 {
   switch (console_id)
   {
@@ -2115,7 +2148,7 @@ static int rc_hash_whole_file(char hash[33], const char* path)
   return result;
 }
 
-static int rc_hash_buffered_file(char hash[33], int console_id, const char* path)
+static int rc_hash_buffered_file(char hash[33], uint32_t console_id, const char* path)
 {
   uint8_t* buffer;
   int64_t size;
@@ -2261,7 +2294,7 @@ static const char* rc_hash_get_first_item_from_playlist(const char* path)
   return disc_path;
 }
 
-static int rc_hash_generate_from_playlist(char hash[33], int console_id, const char* path)
+static int rc_hash_generate_from_playlist(char hash[33], uint32_t console_id, const char* path)
 {
   int result;
   const char* disc_path;
@@ -2283,7 +2316,7 @@ static int rc_hash_generate_from_playlist(char hash[33], int console_id, const c
   return result;
 }
 
-int rc_hash_generate_from_file(char hash[33], int console_id, const char* path)
+int rc_hash_generate_from_file(char hash[33], uint32_t console_id, const char* path)
 {
   switch (console_id)
   {

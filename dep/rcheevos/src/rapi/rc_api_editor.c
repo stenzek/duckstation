@@ -1,5 +1,6 @@
 #include "rc_api_editor.h"
 #include "rc_api_common.h"
+#include "rc_api_runtime.h"
 
 #include "../rc_compat.h"
 #include "../rhash/md5.h"
@@ -185,6 +186,15 @@ void rc_api_destroy_update_code_note_response(rc_api_update_code_note_response_t
 
 /* --- Update Achievement --- */
 
+static const char* rc_type_string(uint32_t type) {
+  switch (type) {
+    case RC_ACHIEVEMENT_TYPE_MISSABLE: return "missable";
+    case RC_ACHIEVEMENT_TYPE_PROGRESSION: return "progression";
+    case RC_ACHIEVEMENT_TYPE_WIN: return "win_condition";
+    default: return "";
+  }
+}
+
 int rc_api_init_update_achievement_request(rc_api_request_t* request, const rc_api_update_achievement_request_t* api_params) {
   rc_api_url_builder_t builder;
   char buffer[33];
@@ -216,6 +226,7 @@ int rc_api_init_update_achievement_request(rc_api_request_t* request, const rc_a
   rc_url_builder_append_unum_param(&builder, "f", api_params->category);
   if (api_params->badge)
     rc_url_builder_append_str_param(&builder, "b", api_params->badge);
+  rc_url_builder_append_str_param(&builder, "x", rc_type_string(api_params->type));
 
   /* Evaluate the signature. */
   md5_init(&md5);
