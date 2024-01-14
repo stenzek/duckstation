@@ -170,7 +170,7 @@ bool ImGuiManager::Initialize(float global_scale, bool show_osd_messages)
 
   ImGuiIO& io = ImGui::GetIO();
   io.IniFilename = nullptr;
-  io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
+  io.BackendFlags |= ImGuiBackendFlags_HasGamepad | ImGuiBackendFlags_RendererHasVtxOffset;
   io.BackendUsingLegacyKeyArrays = 0;
   io.BackendUsingLegacyNavInputArray = 0;
 #ifndef __ANDROID__
@@ -351,7 +351,7 @@ void ImGuiManager::SetKeyMap()
 {
   struct KeyMapping
   {
-    int index;
+    ImGuiKey index;
     const char* name;
     const char* alt_name;
   };

@@ -1454,7 +1454,7 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
     BeginInputBinding(bsi, type, section, name, display_name);
   }
   else if (ImGui::IsItemClicked(ImGuiMouseButton_Right) ||
-           ImGui::IsNavInputTest(ImGuiNavInput_Input, ImGuiNavReadMode_Pressed))
+           ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false))
   {
     bsi->DeleteValue(section, name);
     SetSettingsChanged(bsi);
@@ -2596,12 +2596,12 @@ void FullscreenUI::DrawSettingsWindow()
 
     if (!ImGui::IsPopupOpen(0u, ImGuiPopupFlags_AnyPopup))
     {
-      if (ImGui::IsNavInputTest(ImGuiNavInput_FocusPrev, ImGuiNavReadMode_Pressed))
+      if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, false))
       {
         index = (index == 0) ? (count - 1) : (index - 1);
         s_settings_page = pages[index];
       }
-      else if (ImGui::IsNavInputTest(ImGuiNavInput_FocusNext, ImGuiNavReadMode_Pressed))
+      else if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, false))
       {
         index = (index + 1) % count;
         s_settings_page = pages[index];
@@ -5486,7 +5486,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
         }
 
         if (hovered && (ImGui::IsItemClicked(ImGuiMouseButton_Right) ||
-                        ImGui::IsNavInputTest(ImGuiNavInput_Input, ImGuiNavReadMode_Pressed)))
+                        ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false)))
         {
           s_save_state_selector_submenu_index = static_cast<s32>(i);
         }
@@ -5770,12 +5770,12 @@ void FullscreenUI::DrawGameListWindow()
 
     if (!ImGui::IsPopupOpen(0u, ImGuiPopupFlags_AnyPopup))
     {
-      if (ImGui::IsNavInputTest(ImGuiNavInput_FocusPrev, ImGuiNavReadMode_Pressed))
+      if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, false))
       {
         s_game_list_page = static_cast<GameListPage>(
           (s_game_list_page == static_cast<GameListPage>(0)) ? (count - 1) : (static_cast<u32>(s_game_list_page) - 1));
       }
-      else if (ImGui::IsNavInputTest(ImGuiNavInput_FocusNext, ImGuiNavReadMode_Pressed))
+      else if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, false))
       {
         s_game_list_page = static_cast<GameListPage>((static_cast<u32>(s_game_list_page) + 1) % count);
       }
@@ -5889,7 +5889,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
         selected_entry = entry;
 
       if (selected_entry && (ImGui::IsItemClicked(ImGuiMouseButton_Right) ||
-                             ImGui::IsNavInputTest(ImGuiNavInput_Input, ImGuiNavReadMode_Pressed)))
+                             ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false)))
       {
         HandleGameListOptions(selected_entry);
       }
@@ -6107,7 +6107,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
         HandleGameListActivate(entry);
 
       if (hovered && (ImGui::IsItemClicked(ImGuiMouseButton_Right) ||
-                      ImGui::IsNavInputTest(ImGuiNavInput_Input, ImGuiNavReadMode_Pressed)))
+                      ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false)))
       {
         HandleGameListOptions(entry);
       }
