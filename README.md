@@ -1,11 +1,32 @@
-# DuckStation - PlayStation 1, aka. PSX Emulator
-[Features](#features) | [Downloading and Running](#downloading-and-running) | [Building](#building) | [Disclaimers](#disclaimers)
 
-**Latest Builds for Windows 10/11, Linux (AppImage/Flatpak), and macOS:** https://github.com/stenzek/duckstation/releases/tag/latest
+<div align="center">
+  <a href="https://github.com/stenzek/duckstation">
+    <img src="duckstation-md-images/duck.png" alt="Logo" width="150" height="150">
+  </a>
+</div>
 
-**Game Compatibility List:** https://docs.google.com/spreadsheets/d/e/2PACX-1vRE0jjiK_aldpICoy5kVQlpk2f81Vo6P4p9vfg4d7YoTOoDlH4PQHoXjTD2F7SdN8SSBLoEAItaIqQo/pubhtml
+<h3 align="center">Duckstation</h3>
+<p align = "center">As know as PSX Emulator</p>
 
-**Wiki:** https://www.duckstation.org/wiki/
+ <p align="center">
+    <a href="https://www.duckstation.org/">Official Site</a>
+    ・
+    <a href="#features">Features</a>
+    ・
+    <a href="#building">Building</a>
+    ・
+    <a href="#disclaimers">Disclaimers</a>
+</p>
+<hr>
+
+**Latest Builds for Windows 10/11, Linux (AppImage/Flatpak), and macOS:** <br>
+https://github.com/stenzek/duckstation/releases/tag/latest
+
+**Game Compatibility List:** <br>
+https://docs.google.com/spreadsheets/d/e/2PACX-1vRE0jjiK_aldpICoy5kVQlpk2f81Vo6P4p9vfg4d7YoTOoDlH4PQHoXjTD2F7SdN8SSBLoEAItaIqQo/pubhtml
+
+**Wiki:** <br>
+https://www.duckstation.org/wiki/
 
 DuckStation is an simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability. The goal is to be as accurate as possible while maintaining performance suitable for low-end devices. "Hack" options are discouraged, the default configuration should support all playable games with only some of the enhancements having compatibility issues.
 
@@ -15,10 +36,17 @@ A "BIOS" ROM image is required to to start the emulator and to play games. You c
 
 DuckStation features a fully-featured frontend built using Qt, as well as a fullscreen/TV UI based on Dear ImGui.
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/main-qt.png" alt="Main Window Screenshot" />
-  <img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/bigduck.png" alt="Fullscreen UI Screenshot" />
-</p>
+<h1>List Mode<h1>
+<div style="display: flex; justify-content: center;">
+  <img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/main-qt.png" alt="Main Window Screenshot" style="width: 55%; margin-right: 1%;">
+
+  <img src="https://raw.githubusercontent.com/stenzek/duckstation/md-images/bigduck.png" alt="Fullscreen UI Screenshot" style="width: 48%; margin-left: 1%;">
+</div>
+
+<h1>Grid Mode<h1>
+<div style="display: flex; justify-content: center;">
+  <img src="duckstation-md-images/Grid with 3D covers.png" alt="Grid mode" style="width: 100%;">
+</div>
 
 Other features include:
 
