@@ -1,10 +1,3 @@
-
-<div align="center">
-  <a href="https://github.com/stenzek/duckstation">
-    <img src="duckstation-md-images/duck.png" alt="Logo" width="150" height="150">
-  </a>
-</div>
-
 <h3 align="center">Duckstation</h3>
 <p align = "center">As know as PSX Emulator</p>
 
