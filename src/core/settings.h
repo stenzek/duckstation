@@ -111,6 +111,7 @@ struct Settings
   bool gpu_disable_texture_copy_to_self = false;
   bool gpu_per_sample_shading = false;
   bool gpu_true_color = true;
+  bool gpu_debanding = false;
   bool gpu_scaled_dithering = true;
   GPUTextureFilter gpu_texture_filter = DEFAULT_GPU_TEXTURE_FILTER;
   GPUDownsampleMode gpu_downsample_mode = DEFAULT_GPU_DOWNSAMPLE_MODE;
