@@ -190,6 +190,7 @@ void Settings::Load(SettingsInterface& si)
   gpu_use_software_renderer_for_readbacks = si.GetBoolValue("GPU", "UseSoftwareRendererForReadbacks", false);
   gpu_threaded_presentation = si.GetBoolValue("GPU", "ThreadedPresentation", true);
   gpu_true_color = si.GetBoolValue("GPU", "TrueColor", true);
+  gpu_debanding = si.GetBoolValue("GPU", "Debanding", false);
   gpu_scaled_dithering = si.GetBoolValue("GPU", "ScaledDithering", true);
   gpu_texture_filter =
     ParseTextureFilterName(
@@ -456,6 +457,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("GPU", "ThreadedPresentation", gpu_threaded_presentation);
   si.SetBoolValue("GPU", "UseSoftwareRendererForReadbacks", gpu_use_software_renderer_for_readbacks);
   si.SetBoolValue("GPU", "TrueColor", gpu_true_color);
+  si.SetBoolValue("GPU", "Debanding", gpu_debanding);
   si.SetBoolValue("GPU", "ScaledDithering", gpu_scaled_dithering);
   si.SetStringValue("GPU", "TextureFilter", GetTextureFilterName(gpu_texture_filter));
   si.SetStringValue("GPU", "DownsampleMode", GetDownsampleModeName(gpu_downsample_mode));
@@ -614,6 +616,7 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.gpu_multisamples = 1;
     g_settings.gpu_per_sample_shading = false;
     g_settings.gpu_true_color = false;
+    g_settings.gpu_debanding = false;
     g_settings.gpu_scaled_dithering = false;
     g_settings.gpu_texture_filter = GPUTextureFilter::Nearest;
     g_settings.gpu_disable_interlacing = false;

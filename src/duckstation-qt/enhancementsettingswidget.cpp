@@ -81,6 +81,11 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(SettingsWindow* dialog, QWi
        "a pattern around those pixels. Most games are compatible with this option, but there is a number which aren't "
        "and will have broken effects with it enabled. Only applies to the hardware renderers."));
   dialog->registerWidgetHelp(
+    m_ui.debanding, tr("True Color Debanding"), tr("Unchecked"),
+    tr("Applies modern dithering techniques to further smooth out gradients when true color is enabled. "
+      "This debanding is performed during rendering (as opposed to a post-processing step), which allows it to be fast while preserving detail. "
+      "Debanding increases the file size of screenshots due to the subtle dithering pattern present in screenshots."));
+  dialog->registerWidgetHelp(
     m_ui.scaledDithering, tr("Scaled Dithering (scale dither pattern to resolution)"), tr("Checked"),
     tr("Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less "
        "obvious at higher resolutions. <br>Usually safe to enable, and only supported by the hardware renderers."));
