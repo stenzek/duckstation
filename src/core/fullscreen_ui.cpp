@@ -3999,7 +3999,7 @@ void FullscreenUI::DrawDisplaySettingsPage()
 
   DrawToggleSetting(bsi, FSUI_CSTR("True Color Debanding"),
                     FSUI_CSTR("Applies modern dithering techniques to further smooth out gradients when true color is enabled."), "GPU",
-                    "Debanding", false, is_hardware);
+                    "Debanding", false, is_hardware && bsi->GetBoolValue("GPU", "TrueColor", false));
 
   DrawToggleSetting(bsi, FSUI_CSTR("Widescreen Hack"),
                     FSUI_CSTR("Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games."),

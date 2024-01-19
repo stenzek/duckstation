@@ -18,7 +18,7 @@ public:
   ~EnhancementSettingsWidget();
 
 private Q_SLOTS:
-  void updateScaledDitheringEnabled();
+  void onTrueColorChanged();
   void updateDownsampleScaleVisible();
   void updatePGXPSettingsEnabled();
 
