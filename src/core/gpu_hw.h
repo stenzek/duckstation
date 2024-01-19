@@ -252,6 +252,7 @@ private:
   GPUDownsampleMode m_downsample_mode = GPUDownsampleMode::Disabled;
   GPUWireframeMode m_wireframe_mode = GPUWireframeMode::Disabled;
   bool m_true_color = true;
+  bool m_debanding = false;
   bool m_clamp_uvs = false;
   bool m_compute_uv_range = false;
   bool m_pgxp_depth_buffer = false;

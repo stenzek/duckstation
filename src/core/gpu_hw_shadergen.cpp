@@ -9,11 +9,11 @@ GPU_HW_ShaderGen::GPU_HW_ShaderGen(RenderAPI render_api, u32 resolution_scale, u
                                    bool per_sample_shading, bool true_color, bool scaled_dithering,
                                    GPUTextureFilter texture_filtering, bool uv_limits, bool pgxp_depth,
                                    bool disable_color_perspective, bool supports_dual_source_blend,
-                                   bool supports_framebuffer_fetch)
+                                   bool supports_framebuffer_fetch, bool debanding)
   : ShaderGen(render_api, supports_dual_source_blend, supports_framebuffer_fetch), m_resolution_scale(resolution_scale),
     m_multisamples(multisamples), m_per_sample_shading(per_sample_shading), m_true_color(true_color),
     m_scaled_dithering(scaled_dithering), m_texture_filter(texture_filtering), m_uv_limits(uv_limits),
-    m_pgxp_depth(pgxp_depth), m_disable_color_perspective(disable_color_perspective)
+    m_pgxp_depth(pgxp_depth), m_disable_color_perspective(disable_color_perspective), m_debanding(debanding)
 {
 }
 
@@ -615,7 +615,7 @@ void FilteredSampleFromVRAM(uint4 texpage, float2 coords, float4 uv_limits,
 
   ialpha = res.w;
   texcol = float4(res.xyz, resW);
-     
+
   // Compensate for partially transparent sampling.
   if (ialpha > 0.0)
     texcol.rgb /= float3(ialpha, ialpha, ialpha);
@@ -662,6 +662,8 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   DefineMacro(ss, "RAW_TEXTURE", raw_texture);
   DefineMacro(ss, "DITHERING", dithering);
   DefineMacro(ss, "DITHERING_SCALED", m_scaled_dithering);
+  // Debanding requires true color to work correctly.
+  DefineMacro(ss, "DEBANDING", m_true_color && m_debanding);
   DefineMacro(ss, "INTERLACING", interlacing);
   DefineMacro(ss, "TRUE_COLOR", m_true_color);
   DefineMacro(ss, "TEXTURE_FILTERING", m_texture_filter != GPUTextureFilter::Nearest);
@@ -761,13 +763,29 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
     return SAMPLE_TEXTURE(samp0, float2(palette_icoord) * RCP_VRAM_SIZE);
   #else
     // Direct texturing. Render-to-texture effects. Use upscaled coordinates.
-    uint2 icoord = ApplyUpscaledTextureWindow(FloatToIntegerCoords(coords));    
+    uint2 icoord = ApplyUpscaledTextureWindow(FloatToIntegerCoords(coords));
     uint2 direct_icoord = texpage.xy + icoord;
     return SAMPLE_TEXTURE(samp0, float2(direct_icoord) * RCP_VRAM_SIZE);
   #endif
 }
 
 #endif
+
+// From https://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
+// and https://www.shadertoy.com/view/MslGR8 (5th one starting from the bottom)
+// NOTE: `frag_coord` is in pixels (i.e. not normalized UV).
+float3 ApplyDebanding(float2 frag_coord) {
+#if DEBANDING
+	// Iestyn's RGB dither (7 asm instructions) from Portal 2 X360, slightly modified for VR.
+	float3 dither = float3(dot(vec2(171.0, 231.0), frag_coord));
+	dither.rgb = fract(dither.rgb / float3(103.0, 71.0, 97.0));
+
+	// Subtract 0.5 to avoid slightly brightening the whole viewport.
+	return (dither.rgb - 0.5) / 255.0;
+#else
+  return float3(0.0);
+#endif
+}
 )";
 
   if (textured)
@@ -797,7 +815,7 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
 
   ss << R"(
 {
-  uint3 vertcol = uint3(v_col0.rgb * float3(255.0, 255.0, 255.0));
+  uint3 vertcol = uint3(v_col0.rgb * float3(255.0, 255.0, 255.0) + ApplyDebanding(v_pos.xy));
 
   bool semitransparent;
   uint3 icolor;
@@ -821,7 +839,7 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
     #if UV_LIMITS
       float4 uv_limits = v_uv_limits;
       #if !PALETTE
-        // Extend the UV range to all "upscaled" pixels. This means 1-pixel-high polygon-based 
+        // Extend the UV range to all "upscaled" pixels. This means 1-pixel-high polygon-based
         // framebuffer effects won't be downsampled. (e.g. Mega Man Legends 2 haze effect)
         uv_limits *= float(RESOLUTION_SCALE);
         uv_limits.zw += float(RESOLUTION_SCALE - 1u);
@@ -859,7 +877,7 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
         #endif
       #endif
     #else
-      icolor = uint3(texcol.rgb * float3(255.0, 255.0, 255.0));
+      icolor = uint3(texcol.rgb * float3(255.0, 255.0, 255.0) + ApplyDebanding(v_pos.xy));
       #if !RAW_TEXTURE
         icolor = (icolor * vertcol) >> 7;
         #if DITHERING
@@ -1051,10 +1069,10 @@ float3 SampleVRAM24(uint2 icoords)
   uint2 vram_coords = u_vram_offset + uint2((icoords.x * 3u) / 2u, icoords.y);
   uint s0 = RGBA8ToRGBA5551(LoadVRAM(int2((vram_coords % clamp_size) * RESOLUTION_SCALE)));
   uint s1 = RGBA8ToRGBA5551(LoadVRAM(int2(((vram_coords + uint2(1, 0)) % clamp_size) * RESOLUTION_SCALE)));
-    
+
   // select which part of the combined 16-bit texels we are currently shading
   uint s1s0 = ((s1 << 16) | s0) >> ((icoords.x & 1u) * 8u);
-    
+
   // extract components and normalize
   return float3(float(s1s0 & 0xFFu) / 255.0, float((s1s0 >> 8u) & 0xFFu) / 255.0,
                 float((s1s0 >> 16u) & 0xFFu) / 255.0);
@@ -1113,7 +1131,7 @@ float3 SampleVRAM24Smoothed(uint2 icoords)
       o_col0 = float4(SampleVRAM24Smoothed(icoords), 1.0);
     #else
       o_col0 = float4(SampleVRAM24(icoords), 1.0);
-    #endif    
+    #endif
   #else
     o_col0 = float4(LoadVRAM(int2((icoords + u_vram_offset) % VRAM_SIZE)).rgb, 1.0);
   #endif
@@ -1333,7 +1351,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_buffer, b
   uint buffer_offset = u_buffer_base_offset + (offset.y * u_size.x) + offset.x;
   uint value = GET_VALUE(buffer_offset) | u_mask_or_bits;
 #endif
-  
+
   o_col0 = RGBA5551ToRGBA8(value);
 #if !PGXP_DEPTH
   o_depth = (o_col0.a == 1.0) ? u_depth_value : 0.0;
