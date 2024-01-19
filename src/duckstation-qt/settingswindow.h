@@ -11,6 +11,8 @@
 #include <QtWidgets/QDialog>
 #include <array>
 
+class QWheelEvent;
+
 class SettingsInterface;
 
 enum class DiscRegion : u8;
@@ -95,6 +97,9 @@ private Q_SLOTS:
   void onCategoryCurrentRowChanged(int row);
   void onRestoreDefaultsClicked();
 
+protected:
+  void wheelEvent(QWheelEvent* event);
+
 private:
   enum : u32
   {
@@ -103,6 +108,7 @@ private:
 
   void addPages();
   void addWidget(QWidget* widget, QString title, QString icon, QString help_text);
+  bool handleWheelEvent(QWheelEvent* event);
 
   Ui::SettingsWindow m_ui;
 

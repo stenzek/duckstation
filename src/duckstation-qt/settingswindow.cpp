@@ -30,7 +30,9 @@
 #include "common/file_system.h"
 #include "common/log.h"
 
+#include <QtGui/QWheelEvent>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QScrollBar>
 #include <QtWidgets/QTextEdit>
 
 Log_SetChannel(SettingsWindow);
@@ -68,10 +70,11 @@ SettingsWindow::~SettingsWindow()
 
 void SettingsWindow::addPages()
 {
-  addWidget(m_general_settings = new GeneralSettingsWidget(this, m_ui.settingsContainer), tr("General"),
-            QStringLiteral("settings-3-line"),
-            tr("<strong>General Settings</strong><hr>These options control how the emulator looks and "
-               "behaves.<br><br>Mouse over an option for additional information."));
+  addWidget(
+    m_general_settings = new GeneralSettingsWidget(this, m_ui.settingsContainer), tr("General"),
+    QStringLiteral("settings-3-line"),
+    tr("<strong>General Settings</strong><hr>These options control how the emulator looks and "
+       "behaves.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
 
   if (!isPerGameSettings())
   {
@@ -83,18 +86,20 @@ void SettingsWindow::addPages()
          "recursive/non-recursive."));
   }
 
-  addWidget(m_bios_settings = new BIOSSettingsWidget(this, m_ui.settingsContainer), tr("BIOS"),
-            QStringLiteral("chip-line"),
-            tr("<strong>BIOS Settings</strong><hr>These options control which BIOS is used and how it will be "
-               "patched.<br><br>Mouse over an option for additional information."));
-  addWidget(m_console_settings = new ConsoleSettingsWidget(this, m_ui.settingsContainer), tr("Console"),
-            QStringLiteral("chip-2-line"),
-            tr("<strong>Console Settings</strong><hr>These options determine the configuration of the simulated "
-               "console.<br><br>Mouse over an option for additional information."));
-  addWidget(m_emulation_settings = new EmulationSettingsWidget(this, m_ui.settingsContainer), tr("Emulation"),
-            QStringLiteral("emulation-line"),
-            tr("<strong>Emulation Settings</strong><hr>These options determine the speed and runahead behavior of the "
-               "system.<br><br>Mouse over an option for additional information."));
+  addWidget(
+    m_bios_settings = new BIOSSettingsWidget(this, m_ui.settingsContainer), tr("BIOS"), QStringLiteral("chip-line"),
+    tr("<strong>BIOS Settings</strong><hr>These options control which BIOS is used and how it will be "
+       "patched.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
+  addWidget(
+    m_console_settings = new ConsoleSettingsWidget(this, m_ui.settingsContainer), tr("Console"),
+    QStringLiteral("chip-2-line"),
+    tr("<strong>Console Settings</strong><hr>These options determine the configuration of the simulated "
+       "console.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
+  addWidget(
+    m_emulation_settings = new EmulationSettingsWidget(this, m_ui.settingsContainer), tr("Emulation"),
+    QStringLiteral("emulation-line"),
+    tr("<strong>Emulation Settings</strong><hr>These options determine the speed and runahead behavior of the "
+       "system.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
   addWidget(
     m_memory_card_settings = new MemoryCardSettingsWidget(this, m_ui.settingsContainer), tr("Memory Cards"),
     QStringLiteral("memcard-line"),
@@ -109,7 +114,8 @@ void SettingsWindow::addPages()
     m_enhancement_settings = new EnhancementSettingsWidget(this, m_ui.settingsContainer), tr("Enhancements"),
     QStringLiteral("sparkle-fill"),
     tr("<strong>Enhancement Settings</strong><hr>These options control enhancements which can improve visuals compared "
-       "to the original console. Mouse over each option for additional information."));
+       "to the original console. Mouse over each option for additional information, and Shift+Wheel to scroll this "
+       "panel."));
   addWidget(
     m_post_processing_settings = new PostProcessingSettingsWidget(this, m_ui.settingsContainer), tr("Post-Processing"),
     QStringLiteral("sun-fill"),
@@ -124,7 +130,7 @@ void SettingsWindow::addPages()
     QString title(tr("Achievements"));
     QString icon_text(QStringLiteral("trophy-line"));
     QString help_text(tr("<strong>Achievement Settings</strong><hr>These options control RetroAchievements. Mouse over "
-                         "an option for additional information."));
+                         "an option for additional information, and Shift+Wheel to scroll this panel."));
 
     if (!Achievements::IsUsingRAIntegration())
     {
@@ -153,7 +159,7 @@ void SettingsWindow::addPages()
   addWidget(m_advanced_settings = new AdvancedSettingsWidget(this, m_ui.settingsContainer), tr("Advanced"),
             QStringLiteral("tools-line"),
             tr("<strong>Advanced Settings</strong><hr>These options control logging and internal behavior of the "
-               "emulator. Mouse over an option for additional information."));
+               "emulator. Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
 
   if (isPerGameSettings())
   {
@@ -255,8 +261,36 @@ bool SettingsWindow::eventFilter(QObject* object, QEvent* event)
       m_ui.helpText->setText(m_category_help_text[m_ui.settingsCategory->currentRow()]);
     }
   }
+  else if (event->type() == QEvent::Wheel)
+  {
+    if (handleWheelEvent(static_cast<QWheelEvent*>(event)))
+      return true;
+  }
 
   return QWidget::eventFilter(object, event);
+}
+
+bool SettingsWindow::handleWheelEvent(QWheelEvent* event)
+{
+  if (!(event->modifiers() & Qt::ShiftModifier))
+    return false;
+
+  const int amount = event->hasPixelDelta() ? event->pixelDelta().y() : (event->angleDelta().y() / 20);
+
+  QScrollBar* sb = m_ui.helpText->verticalScrollBar();
+  if (!sb)
+    return false;
+
+  sb->setSliderPosition(std::max(sb->sliderPosition() - amount, 0));
+  return true;
+}
+
+void SettingsWindow::wheelEvent(QWheelEvent* event)
+{
+  if (handleWheelEvent(event))
+    return;
+
+  QWidget::wheelEvent(event);
 }
 
 bool SettingsWindow::getEffectiveBoolValue(const char* section, const char* key, bool default_value) const
@@ -501,7 +535,8 @@ void SettingsWindow::openGamePropertiesDialog(const std::string& path, const std
   // check for an existing dialog with this crc
   for (SettingsWindow* dialog : s_open_game_properties_dialogs)
   {
-    if (dialog->isPerGameSettings() && static_cast<INISettingsInterface*>(dialog->getSettingsInterface())->GetFileName() == ini_filename)
+    if (dialog->isPerGameSettings() &&
+        static_cast<INISettingsInterface*>(dialog->getSettingsInterface())->GetFileName() == ini_filename)
     {
       dialog->show();
       dialog->raise();
