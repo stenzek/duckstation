@@ -22,6 +22,7 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(SettingsWindow* dialog, QWi
                                                Settings::DEFAULT_GPU_DOWNSAMPLE_MODE);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.gpuDownsampleScale, "GPU", "DownsampleScale", 1);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.trueColor, "GPU", "TrueColor", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.debanding, "GPU", "Debanding", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.scaledDithering, "GPU", "ScaledDithering", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableInterlacing, "GPU", "DisableInterlacing", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.forceNTSCTimings, "GPU", "ForceNTSCTimings", false);
