@@ -774,16 +774,18 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
 // From https://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
 // and https://www.shadertoy.com/view/MslGR8 (5th one starting from the bottom)
 // NOTE: `frag_coord` is in pixels (i.e. not normalized UV).
-float3 ApplyDebanding(float2 frag_coord) {
+float3 ApplyDebanding(float2 frag_coord)
+{
 #if DEBANDING
-	// Iestyn's RGB dither (7 asm instructions) from Portal 2 X360, slightly modified for VR.
-	float3 dither = float3(dot(vec2(171.0, 231.0), frag_coord));
-	dither.rgb = fract(dither.rgb / float3(103.0, 71.0, 97.0));
+  // Iestyn's RGB dither (7 asm instructions) from Portal 2 X360, slightly modified for VR.
+  float ditherc = dot(vec2(171.0, 231.0), frag_coord);
+  float3 dither = float3(ditherc, ditherc, ditherc);
+  dither = fract(dither / float3(103.0, 71.0, 97.0));
 
-	// Subtract 0.5 to avoid slightly brightening the whole viewport.
-	return (dither.rgb - 0.5) / 255.0;
+  // Subtract 0.5 to avoid slightly brightening the whole viewport.
+  return (dither - 0.5) / 255.0;
 #else
-  return float3(0.0);
+  return float3(0.0, 0.0, 0.0);
 #endif
 }
 )";

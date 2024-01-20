@@ -10,6 +10,7 @@
 #include "common/align.h"
 #include "common/assert.h"
 #include "common/bitutils.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
@@ -64,7 +65,8 @@ bool D3D11Device::HasSurface() const
 }
 
 bool D3D11Device::CreateDevice(const std::string_view& adapter, bool threaded_presentation,
-                               std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features)
+                               std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features,
+                               Error* error)
 {
   std::unique_lock lock(s_instance_mutex);
 
@@ -72,7 +74,7 @@ bool D3D11Device::CreateDevice(const std::string_view& adapter, bool threaded_pr
   if (m_debug_device)
     create_flags |= D3D11_CREATE_DEVICE_DEBUG;
 
-  m_dxgi_factory = D3DCommon::CreateFactory(m_debug_device);
+  m_dxgi_factory = D3DCommon::CreateFactory(m_debug_device, error);
   if (!m_dxgi_factory)
     return false;
 
@@ -90,12 +92,12 @@ bool D3D11Device::CreateDevice(const std::string_view& adapter, bool threaded_pr
 
   if (FAILED(hr))
   {
-    Log_ErrorPrintf("Failed to create D3D device: 0x%08X", hr);
+    Error::SetHResult(error, "Failed to create D3D device: ", hr);
     return false;
   }
   else if (FAILED(hr = temp_device.As(&m_device)) || FAILED(hr = temp_context.As(&m_context)))
   {
-    Log_ErrorPrintf("Failed to get D3D11.1 device: 0x%08X", hr);
+    Error::SetHResult(error, "Failed to get D3D11.1 device: ", hr);
     return false;
   }
 
@@ -135,10 +137,16 @@ bool D3D11Device::CreateDevice(const std::string_view& adapter, bool threaded_pr
   SetFeatures(disabled_features);
 
   if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain())
+  {
+    Error::SetStringView(error, "Failed to create swap chain");
     return false;
+  }
 
   if (!CreateBuffers())
+  {
+    Error::SetStringView(error, "Failed to create buffers");
     return false;
+  }
 
   return true;
 }
@@ -663,7 +671,7 @@ GPUDevice::AdapterAndModeList D3D11Device::StaticGetAdapterAndModeList()
   }
   else
   {
-    ComPtr<IDXGIFactory5> factory = D3DCommon::CreateFactory(false);
+    ComPtr<IDXGIFactory5> factory = D3DCommon::CreateFactory(false, nullptr);
     if (factory)
       GetAdapterAndModeList(&ret, factory.Get());
   }

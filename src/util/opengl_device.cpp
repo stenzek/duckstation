@@ -307,9 +307,9 @@ bool OpenGLDevice::HasSurface() const
 }
 
 bool OpenGLDevice::CreateDevice(const std::string_view& adapter, bool threaded_presentation,
-                                std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features)
+                                std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features, Error* error)
 {
-  m_gl_context = GL::Context::Create(m_window_info);
+  m_gl_context = GL::Context::Create(m_window_info, error);
   if (!m_gl_context)
   {
     Log_ErrorPrintf("Failed to create any GL context");

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "d3d12_device.h"
@@ -13,6 +13,7 @@
 #include "common/align.h"
 #include "common/assert.h"
 #include "common/bitutils.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
@@ -117,11 +118,11 @@ D3D12Device::ComPtr<ID3D12RootSignature> D3D12Device::CreateRootSignature(const 
 }
 
 bool D3D12Device::CreateDevice(const std::string_view& adapter, bool threaded_presentation,
-                               std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features)
+                               std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features, Error* error)
 {
   std::unique_lock lock(s_instance_mutex);
 
-  m_dxgi_factory = D3DCommon::CreateFactory(m_debug_device);
+  m_dxgi_factory = D3DCommon::CreateFactory(m_debug_device, error);
   if (!m_dxgi_factory)
     return false;
 
@@ -150,7 +151,7 @@ bool D3D12Device::CreateDevice(const std::string_view& adapter, bool threaded_pr
   hr = D3D12CreateDevice(m_adapter.Get(), m_feature_level, IID_PPV_ARGS(&m_device));
   if (FAILED(hr))
   {
-    Log_ErrorPrintf("Failed to create D3D12 device: %08X", hr);
+    Error::SetHResult(error, "Failed to create D3D12 device: ", hr);
     return false;
   }
 
@@ -192,7 +193,7 @@ bool D3D12Device::CreateDevice(const std::string_view& adapter, bool threaded_pr
   hr = m_device->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(&m_command_queue));
   if (FAILED(hr))
   {
-    Log_ErrorPrintf("Failed to create command queue: %08X", hr);
+    Error::SetHResult(error, "Failed to create command queue: ", hr);
     return false;
   }
 
@@ -206,34 +207,43 @@ bool D3D12Device::CreateDevice(const std::string_view& adapter, bool threaded_pr
   hr = D3D12MA::CreateAllocator(&allocatorDesc, m_allocator.GetAddressOf());
   if (FAILED(hr))
   {
-    Log_ErrorPrintf("D3D12MA::CreateAllocator() failed with HRESULT %08X", hr);
+    Error::SetHResult(error, "D3D12MA::CreateAllocator() failed: ", hr);
     return false;
   }
 
   hr = m_device->CreateFence(m_completed_fence_value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence));
   if (FAILED(hr))
   {
-    Log_ErrorPrintf("Failed to create fence: %08X", hr);
+    Error::SetHResult(error, "Failed to create fence: ", hr);
     return false;
   }
 
   m_fence_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
   if (m_fence_event == NULL)
   {
-    Log_ErrorPrintf("Failed to create fence event: %08X", GetLastError());
+    Error::SetWin32(error, "Failed to create fence event: ", GetLastError());
     return false;
   }
 
   SetFeatures(disabled_features);
 
   if (!CreateCommandLists() || !CreateDescriptorHeaps())
+  {
+    Error::SetStringView(error, "Failed to create command lists/descriptor heaps.");
     return false;
+  }
 
   if (!m_window_info.IsSurfaceless() && !CreateSwapChain())
+  {
+    Error::SetStringView(error, "Failed to create swap chain.");
     return false;
+  }
 
   if (!CreateRootSignatures() || !CreateBuffers())
+  {
+    Error::SetStringView(error, "Failed to create root signature/buffers.");
     return false;
+  }
 
   CreateTimestampQuery();
   return true;
@@ -741,7 +751,7 @@ GPUDevice::AdapterAndModeList D3D12Device::StaticGetAdapterAndModeList()
   }
   else
   {
-    ComPtr<IDXGIFactory5> factory = D3DCommon::CreateFactory(false);
+    ComPtr<IDXGIFactory5> factory = D3DCommon::CreateFactory(false, nullptr);
     if (factory)
       GetAdapterAndModeList(&ret, factory.Get());
   }

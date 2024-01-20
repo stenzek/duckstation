@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -16,6 +16,8 @@
 #include <vector>
 #include <wrl/client.h>
 
+class Error;
+
 struct IDXGIFactory5;
 struct IDXGIAdapter1;
 struct IDXGIOutput;
@@ -27,7 +29,7 @@ const char* GetFeatureLevelString(D3D_FEATURE_LEVEL feature_level);
 const char* GetFeatureLevelShaderModelString(D3D_FEATURE_LEVEL feature_level);
 
 // create a dxgi factory
-Microsoft::WRL::ComPtr<IDXGIFactory5> CreateFactory(bool debug);
+Microsoft::WRL::ComPtr<IDXGIFactory5> CreateFactory(bool debug, Error* error);
 
 // returns a list of all adapter names
 std::vector<std::string> GetAdapterNames(IDXGIFactory5* factory);

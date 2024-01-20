@@ -17,6 +17,7 @@
 #include "core/system.h"
 
 #include "util/gpu_device.h"
+#include "util/imgui_fullscreen.h"
 #include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
 #include "util/input_manager.h"
@@ -59,6 +60,44 @@ std::unique_ptr<NoGUIPlatform> g_nogui_window;
 // Local function declarations
 //////////////////////////////////////////////////////////////////////////
 namespace NoGUIHost {
+
+namespace {
+class AsyncOpProgressCallback final : public BaseProgressCallback
+{
+public:
+  AsyncOpProgressCallback(std::string name);
+  ~AsyncOpProgressCallback() override;
+
+  ALWAYS_INLINE const std::string& GetName() const { return m_name; }
+
+  void PushState() override;
+  void PopState() override;
+
+  void SetCancellable(bool cancellable) override;
+  void SetTitle(const char* title) override;
+  void SetStatusText(const char* text) override;
+  void SetProgressRange(u32 range) override;
+  void SetProgressValue(u32 value) override;
+
+  void DisplayError(const char* message) override;
+  void DisplayWarning(const char* message) override;
+  void DisplayInformation(const char* message) override;
+  void DisplayDebugMessage(const char* message) override;
+
+  void ModalError(const char* message) override;
+  bool ModalConfirmation(const char* message) override;
+  void ModalInformation(const char* message) override;
+
+  void SetCancelled();
+
+private:
+  void Redraw(bool force);
+
+  std::string m_name;
+  int m_last_progress_percent = -1;
+};
+} // namespace
+
 /// Starts the virtual machine.
 static void StartSystem(SystemBootParameters params);
 
@@ -88,7 +127,6 @@ static void UpdateWindowTitle(const std::string& game_title);
 static void CancelAsyncOp();
 static void StartAsyncOp(std::function<void(ProgressCallback*)> callback);
 static void AsyncOpThreadEntryPoint(std::function<void(ProgressCallback*)> callback);
-} // namespace NoGUIHost
 
 //////////////////////////////////////////////////////////////////////////
 // Local variable declarations
@@ -109,7 +147,8 @@ static u32 s_blocking_cpu_events_pending = 0; // TODO: Token system would work b
 
 static std::mutex s_async_op_mutex;
 static std::thread s_async_op_thread;
-static FullscreenUI::ProgressCallback* s_async_op_progress = nullptr;
+static AsyncOpProgressCallback* s_async_op_progress = nullptr;
+} // namespace NoGUIHost
 
 //////////////////////////////////////////////////////////////////////////
 // Initialization/Shutdown
@@ -694,10 +733,10 @@ std::optional<WindowInfo> Host::AcquireRenderWindow(bool recreate_window)
     }
     if (res)
       wi = g_nogui_window->GetPlatformWindowInfo();
-    s_platform_window_updated.Post();
+    NoGUIHost::s_platform_window_updated.Post();
   });
 
-  s_platform_window_updated.Wait();
+  NoGUIHost::s_platform_window_updated.Wait();
 
   if (!wi.has_value())
   {
@@ -719,14 +758,14 @@ void Host::ReleaseRenderWindow()
   // Need to block here, otherwise the recreation message associates with the old window.
   g_nogui_window->ExecuteInMessageLoop([]() {
     g_nogui_window->DestroyPlatformWindow();
-    s_platform_window_updated.Post();
+    NoGUIHost::s_platform_window_updated.Post();
   });
-  s_platform_window_updated.Wait();
+  NoGUIHost::s_platform_window_updated.Wait();
 }
 
 void Host::OnSystemStarting()
 {
-  s_was_paused_by_focus_loss = false;
+  NoGUIHost::s_was_paused_by_focus_loss = false;
 }
 
 void Host::OnSystemStarted()
@@ -800,6 +839,11 @@ void Host::OnAchievementsHardcoreModeChanged(bool enabled)
   // noop
 }
 
+void Host::OnCoverDownloaderOpenRequested()
+{
+  // noop
+}
+
 void Host::SetMouseMode(bool relative, bool hide_cursor)
 {
   // noop
@@ -854,11 +898,11 @@ void NoGUIHost::UpdateWindowTitle(const std::string& game_title)
 
 void Host::RunOnCPUThread(std::function<void()> function, bool block /* = false */)
 {
-  std::unique_lock lock(s_cpu_thread_events_mutex);
-  s_cpu_thread_events.emplace_back(std::move(function), block);
-  s_cpu_thread_event_posted.notify_one();
+  std::unique_lock lock(NoGUIHost::s_cpu_thread_events_mutex);
+  NoGUIHost::s_cpu_thread_events.emplace_back(std::move(function), block);
+  NoGUIHost::s_cpu_thread_event_posted.notify_one();
   if (block)
-    s_cpu_thread_event_done.wait(lock, []() { return s_blocking_cpu_events_pending == 0; });
+    NoGUIHost::s_cpu_thread_event_done.wait(lock, []() { return NoGUIHost::s_blocking_cpu_events_pending == 0; });
 }
 
 void NoGUIHost::StartAsyncOp(std::function<void(ProgressCallback*)> callback)
@@ -884,7 +928,7 @@ void NoGUIHost::AsyncOpThreadEntryPoint(std::function<void(ProgressCallback*)> c
 {
   Threading::SetNameOfCurrentThread("Async Op");
 
-  FullscreenUI::ProgressCallback fs_callback("async_op");
+  AsyncOpProgressCallback fs_callback("async_op");
   std::unique_lock lock(s_async_op_mutex);
   s_async_op_progress = &fs_callback;
 
@@ -908,15 +952,15 @@ void Host::CancelGameListRefresh()
 
 bool Host::IsFullscreen()
 {
-  return s_is_fullscreen;
+  return NoGUIHost::s_is_fullscreen;
 }
 
 void Host::SetFullscreen(bool enabled)
 {
-  if (s_is_fullscreen == enabled)
+  if (NoGUIHost::s_is_fullscreen == enabled)
     return;
 
-  s_is_fullscreen = enabled;
+  NoGUIHost::s_is_fullscreen = enabled;
   g_nogui_window->SetFullscreen(enabled);
 }
 
@@ -933,7 +977,7 @@ void Host::RequestExit(bool allow_confirm)
   }
 
   // clear the running flag, this'll break out of the main CPU loop once the VM is shutdown.
-  s_running.store(false, std::memory_order_release);
+  NoGUIHost::s_running.store(false, std::memory_order_release);
 }
 
 void Host::RequestSystemShutdown(bool allow_confirm, bool save_state)
@@ -1230,6 +1274,119 @@ bool NoGUIHost::ParseCommandLineParametersAndInitializeConfig(int argc, char* ar
   return true;
 }
 
+NoGUIHost::AsyncOpProgressCallback::AsyncOpProgressCallback(std::string name)
+  : BaseProgressCallback(), m_name(std::move(name))
+{
+  ImGuiFullscreen::OpenBackgroundProgressDialog(m_name.c_str(), "", 0, 100, 0);
+}
+
+NoGUIHost::AsyncOpProgressCallback::~AsyncOpProgressCallback()
+{
+  ImGuiFullscreen::CloseBackgroundProgressDialog(m_name.c_str());
+}
+
+void NoGUIHost::AsyncOpProgressCallback::PushState()
+{
+  BaseProgressCallback::PushState();
+}
+
+void NoGUIHost::AsyncOpProgressCallback::PopState()
+{
+  BaseProgressCallback::PopState();
+  Redraw(true);
+}
+
+void NoGUIHost::AsyncOpProgressCallback::SetCancellable(bool cancellable)
+{
+  BaseProgressCallback::SetCancellable(cancellable);
+  Redraw(true);
+}
+
+void NoGUIHost::AsyncOpProgressCallback::SetTitle(const char* title)
+{
+  // todo?
+}
+
+void NoGUIHost::AsyncOpProgressCallback::SetStatusText(const char* text)
+{
+  BaseProgressCallback::SetStatusText(text);
+  Redraw(true);
+}
+
+void NoGUIHost::AsyncOpProgressCallback::SetProgressRange(u32 range)
+{
+  u32 last_range = m_progress_range;
+
+  BaseProgressCallback::SetProgressRange(range);
+
+  if (m_progress_range != last_range)
+    Redraw(false);
+}
+
+void NoGUIHost::AsyncOpProgressCallback::SetProgressValue(u32 value)
+{
+  u32 lastValue = m_progress_value;
+
+  BaseProgressCallback::SetProgressValue(value);
+
+  if (m_progress_value != lastValue)
+    Redraw(false);
+}
+
+void NoGUIHost::AsyncOpProgressCallback::Redraw(bool force)
+{
+  const int percent =
+    static_cast<int>((static_cast<float>(m_progress_value) / static_cast<float>(m_progress_range)) * 100.0f);
+  if (percent == m_last_progress_percent && !force)
+    return;
+
+  m_last_progress_percent = percent;
+  ImGuiFullscreen::UpdateBackgroundProgressDialog(m_name.c_str(), m_status_text, 0, 100, percent);
+}
+
+void NoGUIHost::AsyncOpProgressCallback::DisplayError(const char* message)
+{
+  Log_ErrorPrint(message);
+  Host::ReportErrorAsync("Error", message);
+}
+
+void NoGUIHost::AsyncOpProgressCallback::DisplayWarning(const char* message)
+{
+  Log_WarningPrint(message);
+}
+
+void NoGUIHost::AsyncOpProgressCallback::DisplayInformation(const char* message)
+{
+  Log_InfoPrint(message);
+}
+
+void NoGUIHost::AsyncOpProgressCallback::DisplayDebugMessage(const char* message)
+{
+  Log_DebugPrint(message);
+}
+
+void NoGUIHost::AsyncOpProgressCallback::ModalError(const char* message)
+{
+  Log_ErrorPrint(message);
+  Host::ReportErrorAsync("Error", message);
+}
+
+bool NoGUIHost::AsyncOpProgressCallback::ModalConfirmation(const char* message)
+{
+  return false;
+}
+
+void NoGUIHost::AsyncOpProgressCallback::ModalInformation(const char* message)
+{
+  Log_InfoPrint(message);
+}
+
+void NoGUIHost::AsyncOpProgressCallback::SetCancelled()
+{
+  if (m_cancellable)
+    m_cancelled = true;
+}
+
 int main(int argc, char* argv[])
 {
   CrashHandler::Install();
@@ -1257,7 +1414,7 @@ int main(int argc, char* argv[])
   // Ensure log is flushed.
   Log::SetFileOutputParams(false, nullptr);
 
-  s_base_settings_interface.reset();
+  NoGUIHost::s_base_settings_interface.reset();
   g_nogui_window.reset();
   return EXIT_SUCCESS;
 }

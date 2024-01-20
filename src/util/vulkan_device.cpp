@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "vulkan_device.h"
@@ -13,6 +13,7 @@
 #include "common/align.h"
 #include "common/assert.h"
 #include "common/bitutils.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
@@ -1859,7 +1860,8 @@ bool VulkanDevice::HasSurface() const
 }
 
 bool VulkanDevice::CreateDevice(const std::string_view& adapter, bool threaded_presentation,
-                                std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features)
+                                std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features,
+                                Error* error)
 {
   std::unique_lock lock(s_instance_mutex);
   bool enable_debug_utils = m_debug_device;
@@ -1867,7 +1869,7 @@ bool VulkanDevice::CreateDevice(const std::string_view& adapter, bool threaded_p
 
   if (!Vulkan::LoadVulkanLibrary())
   {
-    Host::ReportErrorAsync("Error", "Failed to load Vulkan library. Does your GPU and/or driver support Vulkan?");
+    Error::SetStringView(error, "Failed to load Vulkan library. Does your GPU and/or driver support Vulkan?");
     return false;
   }
 
@@ -1883,8 +1885,7 @@ bool VulkanDevice::CreateDevice(const std::string_view& adapter, bool threaded_p
         CreateVulkanInstance(m_window_info, &m_optional_extensions, enable_debug_utils, enable_validation_layer);
       if (m_instance == VK_NULL_HANDLE)
       {
-        Host::ReportErrorAsync("Error",
-                               "Failed to create Vulkan instance. Does your GPU and/or driver support Vulkan?");
+        Error::SetStringView(error, "Failed to create Vulkan instance. Does your GPU and/or driver support Vulkan?");
         return false;
       }
 
@@ -1895,13 +1896,14 @@ bool VulkanDevice::CreateDevice(const std::string_view& adapter, bool threaded_p
   if (!Vulkan::LoadVulkanInstanceFunctions(m_instance))
   {
     Log_ErrorPrintf("Failed to load Vulkan instance functions");
+    Error::SetStringView(error, "Failed to load Vulkan instance functions");
     return false;
   }
 
   GPUList gpus = EnumerateGPUs(m_instance);
   if (gpus.empty())
   {
-    Host::ReportErrorAsync("Error", "No physical devices found. Does your GPU and/or driver support Vulkan?");
+    Error::SetStringView(error, "No physical devices found. Does your GPU and/or driver support Vulkan?");
     return false;
   }
 
@@ -1964,7 +1966,7 @@ bool VulkanDevice::CreateDevice(const std::string_view& adapter, bool threaded_p
 
   if (!CheckFeatures(disabled_features))
   {
-    Host::ReportErrorAsync("Error", "Your GPU does not support the required Vulkan features.");
+    Error::SetStringView(error, "Your GPU does not support the required Vulkan features.");
     return false;
   }
 
@@ -1982,7 +1984,7 @@ bool VulkanDevice::CreateDevice(const std::string_view& adapter, bool threaded_p
     m_swap_chain = VulkanSwapChain::Create(m_window_info, surface, m_vsync_enabled, m_exclusive_fullscreen_control);
     if (!m_swap_chain)
     {
-      Log_ErrorPrintf("Failed to create swap chain");
+      Error::SetStringView(error, "Failed to create swap chain");
       return false;
     }
 
@@ -1998,12 +2000,15 @@ bool VulkanDevice::CreateDevice(const std::string_view& adapter, bool threaded_p
 
   if (!CreateNullTexture())
   {
-    Log_ErrorPrint("Failed to create dummy texture");
+    Error::SetStringView(error, "Failed to create dummy texture");
     return false;
   }
 
   if (!CreateBuffers() || !CreatePersistentDescriptorSets())
+  {
+    Error::SetStringView(error, "Failed to create buffers/descriptor sets");
     return false;
+  }
 
   return true;
 }

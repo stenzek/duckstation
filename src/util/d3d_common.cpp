@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "d3d_common.h"
 
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/rectangle.h"
@@ -54,7 +55,7 @@ const char* D3DCommon::GetFeatureLevelShaderModelString(D3D_FEATURE_LEVEL featur
   return "unk";
 }
 
-Microsoft::WRL::ComPtr<IDXGIFactory5> D3DCommon::CreateFactory(bool debug)
+Microsoft::WRL::ComPtr<IDXGIFactory5> D3DCommon::CreateFactory(bool debug, Error* error)
 {
   UINT flags = 0;
   if (debug)
@@ -63,7 +64,7 @@ Microsoft::WRL::ComPtr<IDXGIFactory5> D3DCommon::CreateFactory(bool debug)
   Microsoft::WRL::ComPtr<IDXGIFactory5> factory;
   const HRESULT hr = CreateDXGIFactory2(flags, IID_PPV_ARGS(factory.GetAddressOf()));
   if (FAILED(hr))
-    Log_ErrorPrintf("Failed to create DXGI factory: %08X", hr);
+    Error::SetHResult(error, "Failed to create DXGI factory: ", hr);
 
   return factory;
 }

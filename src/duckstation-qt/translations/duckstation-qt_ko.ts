@@ -41,12 +41,12 @@
     <message>
         <location filename="../aboutdialog.cpp" line="59"/>
         <source>DuckStation Third-Party Notices</source>
-        <translation type="unfinished"></translation>
+        <translation>DuckStation 써드파티 공지</translation>
     </message>
     <message>
         <location filename="../aboutdialog.cpp" line="79"/>
         <source>Missing thirdparty.html file. You should request it from where-ever you obtained DuckStation.</source>
-        <translation type="unfinished"></translation>
+        <translation>thirdparty.html 파일이 없습니다. DuckStation을 구입한 곳에서 이 파일을 요청해야 합니다.</translation>
     </message>
 </context>
 <context>
@@ -66,7 +66,7 @@
     <message>
         <location filename="../achievementlogindialog.ui" line="69"/>
         <source>Please enter your user name and password for retroachievements.org below. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
-        <translation type="unfinished"></translation>
+        <translation>아래에 retroachievements.org의 사용자 이름과 비밀번호를 입력하세요. 비밀번호는 DuckStation에 저장되지 않으며, 대신 액세스 토큰이 생성되어 사용됩니다.</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.ui" line="94"/>
@@ -86,7 +86,7 @@
     <message>
         <location filename="../achievementlogindialog.cpp" line="22"/>
         <source>&lt;strong&gt;Your RetroAchievements login token is no longer valid.&lt;/strong&gt; You must re-enter your credentials for achievements to be tracked. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;RetroAchievements 로그인 토큰이 더 이상 유효하지 않습니다.&lt;/strong&gt; 업적을 추적하려면 자격 증명을 다시 입력해야 합니다. 비밀번호는 DuckStation에 저장되지 않으며, 대신 액세스 토큰이 생성되어 사용됩니다.</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.cpp" line="27"/>
@@ -104,24 +104,29 @@
 Error: %1
 
 Please check your username and password, and try again.</source>
-        <translation type="unfinished"></translation>
+        <translation>로그인하지 못했습니다.
+오류 : %1
+
+사용자 이름과 비밀번호를 확인한 후 다시 시도하세요.</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.cpp" line="79"/>
         <source>Enable Achievements</source>
-        <translation type="unfinished">도전 과제 활성화</translation>
+        <translation>도전 과제 활성화</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.cpp" line="80"/>
         <source>Achievement tracking is not currently enabled. Your login will have no effect until after tracking is enabled.
 
 Do you want to enable tracking now?</source>
-        <translation type="unfinished"></translation>
+        <translation>현재 업적 추적은 활성화되어 있지 않습니다. 추적을 활성화할 때까지는 로그인에 아무런 영향을 미치지 않습니다.
+
+지금 추적을 활성화하시겠습니까?</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.cpp" line="91"/>
         <source>Enable Hardcore Mode</source>
-        <translation type="unfinished">하드코어 모드 활성화</translation>
+        <translation>하드코어 모드 활성화</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.cpp" line="92"/>
@@ -130,17 +135,21 @@ Do you want to enable tracking now?</source>
 However, hardcore mode also prevents the usage of save states, cheats and slowdown functionality.
 
 Do you want to enable hardcore mode?</source>
-        <translation type="unfinished"></translation>
+        <translation>현재 하드코어 모드는 활성화되어 있지 않습니다. 하드코어 모드를 활성화하면 시간, 점수를 설정하고 게임별 순위표에 참여할 수 있습니다.
+
+하지만 하드코어 모드에서는 저장 상태, 치트 및 속도 저하 기능을 사용할 수 없습니다.
+
+하드코어 모드를 활성화하시겠습니까?</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.cpp" line="109"/>
         <source>Reset System</source>
-        <translation type="unfinished">시스템 초기화</translation>
+        <translation>시스템 초기화</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.cpp" line="110"/>
         <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
-        <translation type="unfinished">하드코어 모드는 시스템을 초기화할 때까지 활성화되지 않습니다. 지금 시스템을 초기화하시겠습니까?</translation>
+        <translation>하드코어 모드는 시스템을 초기화할 때까지 활성화되지 않습니다. 지금 시스템을 초기화하시겠습니까?</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.cpp" line="40"/>
@@ -203,54 +212,55 @@ Do you want to enable hardcore mode?</source>
     <message>
         <location filename="../achievementsettingswidget.ui" line="32"/>
         <source>Settings</source>
-        <translation type="unfinished">설정</translation>
+        <translation>설정</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="38"/>
         <location filename="../achievementsettingswidget.cpp" line="64"/>
         <source>Enable Spectator Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>관중 모드 활성화</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="59"/>
         <location filename="../achievementsettingswidget.cpp" line="62"/>
         <source>Enable Encore Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>앙코르 모드 활성화</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="83"/>
         <source>Notifications</source>
-        <translation type="unfinished"></translation>
+        <translation>알림</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="119"/>
         <location filename="../achievementsettingswidget.ui" line="165"/>
         <source>5 seconds</source>
-        <translation type="unfinished"></translation>
+        <translation>5초</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="128"/>
         <location filename="../achievementsettingswidget.cpp" line="51"/>
         <source>Show Achievement Notifications</source>
-        <translation type="unfinished"></translation>
+        <translation>도전 과제 알림 표시</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="174"/>
         <location filename="../achievementsettingswidget.cpp" line="54"/>
         <source>Show Leaderboard Notifications</source>
-        <translation type="unfinished"></translation>
+        <translation>순위표 알림 표시</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="188"/>
         <location filename="../achievementsettingswidget.cpp" line="60"/>
         <source>Enable In-Game Overlays</source>
-        <translation type="unfinished"></translation>
+        <translation>게임 내 오버레이 활성화</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="204"/>
         <source>Username:
 Login token generated at:</source>
-        <translation type="unfinished"></translation>
+        <translation>사용자 이름 :
+로그인 토큰이 생성된 위치 :</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="258"/>
@@ -286,17 +296,17 @@ Login token generated at:</source>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="52"/>
         <source>Displays popup messages on events such as achievement unlocks and game completion.</source>
-        <translation type="unfinished"></translation>
+        <translation>도전 과제 잠금 해제 및 게임 완료와 같은 이벤트에 대한 팝업 메시지를 표시합니다.</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="55"/>
         <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
-        <translation type="unfinished"></translation>
+        <translation>순위표 도전을 시작, 제출 또는 실패할 때 팝업 메시지를 표시합니다.</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="63"/>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
-        <translation type="unfinished"></translation>
+        <translation>활성화하면 각 세션은 잠금 해제된 업적이 없는 것처럼 작동합니다.</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="65"/>
@@ -350,8 +360,8 @@ Login token generated at:</source>
         <location filename="../achievementsettingswidget.cpp" line="164"/>
         <location filename="../achievementsettingswidget.cpp" line="171"/>
         <source>%n seconds</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n초</numerusform>
         </translation>
     </message>
     <message>
@@ -393,100 +403,103 @@ Login token generated on %2.</source>
     <message>
         <location filename="../../core/achievements.cpp" line="1060"/>
         <source>{} (Unofficial)</source>
-        <translation type="unfinished"></translation>
+        <translation>{}(비공식)</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1082"/>
         <source>Mastered {}</source>
-        <translation type="unfinished"></translation>
+        <translation>마스터{}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1083"/>
         <source>{} achievements, {} points</source>
-        <translation type="unfinished"></translation>
+        <translation>{}개의 도전 과제, {}점</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1098"/>
         <source>Leaderboard attempt started.</source>
-        <translation type="unfinished"></translation>
+        <translation>순위표 시도가 시작되었습니다.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1113"/>
         <source>Leaderboard attempt failed.</source>
-        <translation type="unfinished"></translation>
+        <translation>순위표 시도에 실패했습니다.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1128"/>
         <source>Your Time: {}{}</source>
-        <translation type="unfinished"></translation>
+        <translation>사용 시간 : {}{}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1129"/>
         <source>Your Score: {}{}</source>
-        <translation type="unfinished"></translation>
+        <translation>현재 점수 : {}{}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1130"/>
         <source>Your Value: {}{}</source>
-        <translation type="unfinished"></translation>
+        <translation>현재 가치 : {}{}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1139"/>
         <source> (Submitting)</source>
-        <translation type="unfinished"></translation>
+        <translation> (제출)</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1158"/>
         <source>Your Time: {} (Best: {})</source>
-        <translation type="unfinished"></translation>
+        <translation>사용 시간 : {}(최고 기록 : {})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1159"/>
         <source>Your Score: {} (Best: {})</source>
-        <translation type="unfinished"></translation>
+        <translation>현재 점수 : {}(최고 기록 : {})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1160"/>
         <source>Your Value: {} (Best: {})</source>
-        <translation type="unfinished"></translation>
+        <translation>현재 가치 : {}(최고 기록 : {})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1165"/>
         <source>{}
 Leaderboard Position: {} of {}</source>
-        <translation type="unfinished"></translation>
+        <translation>{}
+순위표 위치 : {}의 {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1295"/>
         <source>Server error in {}:
 {}</source>
-        <translation type="unfinished"></translation>
+        <translation>{}의 서버 오류 :
+{}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1309"/>
         <source>Achievements Disconnected</source>
-        <translation type="unfinished"></translation>
+        <translation>도전 과제 연결 끊김</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1310"/>
         <source>An unlock request could not be completed. We will keep retrying to submit this request.</source>
-        <translation type="unfinished"></translation>
+        <translation>도전 과제 연결이 끊겨 잠금 해제 요청을 완료하지 못했습니다. 이 요청을 제출하도록 계속 시도하겠습니다.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1322"/>
         <source>Achievements Reconnected</source>
-        <translation type="unfinished"></translation>
+        <translation>다시 연결된 도전 과제</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1323"/>
         <source>All pending unlock requests have completed.</source>
-        <translation type="unfinished"></translation>
+        <translation>보류 중인 모든 잠금 해제 요청이 완료되었습니다.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1739"/>
         <source>Score: {} ({} softcore)
 Unread messages: {}</source>
-        <translation type="unfinished"></translation>
+        <translation>점수 : {}({} 소프트코어)
+읽지 않은 메시지: {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1786"/>
@@ -504,109 +517,109 @@ Unread messages: {}</source>
         <location filename="../../core/achievements.cpp" line="1811"/>
         <location filename="../../core/achievements.cpp" line="1834"/>
         <source>Cannot {} while hardcode mode is active.</source>
-        <translation type="unfinished"></translation>
+        <translation>하드코드 모드가 활성화되어 있는 동안에는 {}할 수 없습니다.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1831"/>
         <source>Yes</source>
-        <translation type="unfinished">예</translation>
+        <translation>예</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1832"/>
         <source>No</source>
-        <translation type="unfinished">아니오</translation>
+        <translation>아니오</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2057"/>
         <source>Active Challenge Achievements</source>
-        <translation type="unfinished">활성 도전 과제</translation>
+        <translation>활성 도전 과제</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2185"/>
         <source> (Hardcore Mode)</source>
-        <translation type="unfinished"></translation>
+        <translation> (하드코어 모드)</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2199"/>
         <source>You have unlocked all achievements and earned {} points!</source>
-        <translation type="unfinished">모든 도전 과제를 봉인 해제하고 {}점을 획득했습니다!</translation>
+        <translation>모든 도전 과제를 봉인 해제하고 {}점을 획득했습니다!</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2204"/>
         <source>You have unlocked {0} of {1} achievements, earning {2} of {3} possible points.</source>
-        <translation type="unfinished"></translation>
+        <translation>{1}개의 도전 과제 중 {0}개를 잠금 해제하여 {3}점 중 {2}점을 획득했습니다.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2254"/>
         <source>Unknown</source>
-        <translation type="unfinished">알 수 없음</translation>
+        <translation>알 수 없음</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2254"/>
         <source>Locked</source>
-        <translation type="unfinished"></translation>
+        <translation>잠김</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2255"/>
         <source>Unlocked</source>
-        <translation type="unfinished"></translation>
+        <translation>잠금 해제</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2255"/>
         <source>Unsupported</source>
-        <translation type="unfinished"></translation>
+        <translation>지원되지 않음</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2256"/>
         <source>Unofficial</source>
-        <translation type="unfinished"></translation>
+        <translation>비공식</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2256"/>
         <source>Recently Unlocked</source>
-        <translation type="unfinished"></translation>
+        <translation>최근 잠금 해제</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2257"/>
         <source>Active Challenges</source>
-        <translation type="unfinished"></translation>
+        <translation>도전 과제 활성화</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2257"/>
         <source>Almost There</source>
-        <translation type="unfinished"></translation>
+        <translation>거의 도착</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2348"/>
         <source>{} points</source>
-        <translation type="unfinished">{}점</translation>
+        <translation>{}점</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2349"/>
         <source>{} point</source>
-        <translation type="unfinished">{}점</translation>
+        <translation>{}점</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2352"/>
         <source>XXX points</source>
-        <translation type="unfinished">XXX점</translation>
+        <translation>XXX점</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2385"/>
         <source>Unlocked: {}</source>
-        <translation type="unfinished"></translation>
+        <translation>잠금 해제 : {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2728"/>
         <location filename="../../core/achievements.cpp" line="2737"/>
         <source>Loading...</source>
-        <translation type="unfinished">불러오는 중...</translation>
+        <translation>불러오는 중...</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2930"/>
         <location filename="../../core/achievements.cpp" line="2950"/>
         <source>Leaderboard download failed</source>
-        <translation type="unfinished"></translation>
+        <translation>순위표 내려받기 실패</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1403"/>
@@ -616,7 +629,7 @@ Unread messages: {}</source>
     <message>
         <location filename="../../core/achievements.cpp" line="1010"/>
         <source>You have unlocked {0} of {1} achievements, and earned {2} of {3} points.</source>
-        <translation type="unfinished"></translation>
+        <translation>1}개의 도전 과제 중 {0}개를 잠금 해제하고 {3}점 중 {2}점을 획득했습니다.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1404"/>
@@ -647,22 +660,22 @@ Unread messages: {}</source>
     <message>
         <location filename="../../core/achievements.cpp" line="2595"/>
         <source>Show Best</source>
-        <translation type="unfinished"></translation>
+        <translation>최고 기록 표시</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2595"/>
         <source>Show Nearby</source>
-        <translation type="unfinished"></translation>
+        <translation>주변 표시</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2623"/>
         <source>Rank</source>
-        <translation type="unfinished"></translation>
+        <translation>순위</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2628"/>
         <source>Name</source>
-        <translation type="unfinished">이름</translation>
+        <translation>이름</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2633"/>
@@ -677,12 +690,12 @@ Unread messages: {}</source>
     <message>
         <location filename="../../core/achievements.cpp" line="2635"/>
         <source>Value</source>
-        <translation type="unfinished">값</translation>
+        <translation>값</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2648"/>
         <source>Date Submitted</source>
-        <translation type="unfinished"></translation>
+        <translation>제출일</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2709"/>
@@ -774,12 +787,12 @@ Unread messages: {}</source>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="280"/>
         <source>Exclusive Fullscreen Control</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">전체 화면 전용 제어</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="285"/>
         <source>Multisample Antialiasing</source>
-        <translation>멀티 샘플 앤티 앨리어싱</translation>
+        <translation>다중 표본 앤티 앨리어싱</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="287"/>
@@ -889,12 +902,12 @@ Unread messages: {}</source>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="348"/>
         <source>Disable Dual-Source Blend</source>
-        <translation type="unfinished"></translation>
+        <translation>이중 소스 혼합 비활성화</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="350"/>
         <source>Disable Framebuffer Fetch</source>
-        <translation type="unfinished"></translation>
+        <translation>프레임버퍼 가져오기 비활성화</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="353"/>
@@ -904,7 +917,7 @@ Unread messages: {}</source>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="359"/>
         <source>CD-ROM Mechacon Version</source>
-        <translation type="unfinished"></translation>
+        <translation>CD-ROM 메카콘 버전</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="363"/>
@@ -1716,17 +1729,17 @@ Unread messages: {}</source>
     <message>
         <location filename="../../util/audio_stream.cpp" line="58"/>
         <source>None</source>
-        <translation type="unfinished">없음</translation>
+        <translation>없음</translation>
     </message>
     <message>
         <location filename="../../util/audio_stream.cpp" line="59"/>
         <source>Resampling</source>
-        <translation type="unfinished"></translation>
+        <translation>재표본화</translation>
     </message>
     <message>
         <location filename="../../util/audio_stream.cpp" line="60"/>
         <source>Time Stretching</source>
-        <translation type="unfinished">시간 관리</translation>
+        <translation>시간 관리</translation>
     </message>
 </context>
 <context>
@@ -1940,7 +1953,7 @@ Unread messages: {}</source>
     <message>
         <location filename="../../core/settings.cpp" line="858"/>
         <source>New Recompiler (Experimental)</source>
-        <translation type="unfinished"></translation>
+        <translation>새로운 리컴파일러(실험용)</translation>
     </message>
 </context>
 <context>
@@ -3400,39 +3413,41 @@ This warning will only be shown once.</source>
         <location filename="../controllerbindingwidget_guncon.ui" line="223"/>
         <source>Relative Aiming</source>
         <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">상대 조준</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_guncon.ui" line="229"/>
         <source>Down</source>
-        <translation type="unfinished">↓</translation>
+        <translation>↓</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_guncon.ui" line="269"/>
         <source>Left</source>
-        <translation type="unfinished">←</translation>
+        <translation>←</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_guncon.ui" line="309"/>
         <source>Up</source>
-        <translation type="unfinished">↑</translation>
+        <translation>↑</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_guncon.ui" line="349"/>
         <source>Right</source>
-        <translation type="unfinished">→</translation>
+        <translation>→</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_guncon.ui" line="473"/>
         <source>Pointer Setup</source>
-        <translation type="unfinished"></translation>
+        <translation>포인터 설정</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_guncon.ui" line="479"/>
         <source>&lt;p&gt;By default, GunCon will use the mouse pointer. To use the mouse, you &lt;strong&gt;do not&lt;/strong&gt; need to configure any bindings apart from the trigger and buttons.&lt;/p&gt;
 
 &lt;p&gt;If you want to use a controller, or lightgun which simulates a controller instead of a mouse, then you should bind it to Relative Aiming. Otherwise, Relative Aiming should be &lt;strong&gt;left unbound&lt;/strong&gt;.&lt;/p&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&lt;p&gt;기본적으로 건콘은 마우스 포인터를 사용합니다. 마우스를 사용하려면 트리거와 버튼 외에 다른 할당을 구성할 필요가 &lt;strong&gt;없습니다&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;마우스 대신 컨트롤러를 시뮬레이션하는 컨트롤러 또는 라이트건을 사용하려면 이를 상대 조준에 할당해야 합니다. 그렇지 않은 경우 상대 조준은 &lt;strong&gt;할당되지 않은 상태로 두어야 합니다&lt;/strong&gt;.&lt;/p&gt;</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_guncon.ui" line="68"/>
@@ -3892,44 +3907,44 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllersettingswindow.ui" line="20"/>
         <source>DuckStation Controller Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>DuckStation 컨트롤러 설정</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.ui" line="72"/>
         <source>Profile:</source>
-        <translation type="unfinished">프로필 :</translation>
+        <translation>프로필 :</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.ui" line="82"/>
         <source>New Profile</source>
-        <translation type="unfinished">새 프로필</translation>
+        <translation>새 프로필</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.ui" line="93"/>
         <source>Load Profile</source>
-        <translation type="unfinished">프로필 불러오기</translation>
+        <translation>프로필 불러오기</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.ui" line="103"/>
         <source>Delete Profile</source>
-        <translation type="unfinished">프로필 삭제</translation>
+        <translation>프로필 삭제</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.ui" line="114"/>
         <location filename="../controllersettingswindow.cpp" line="192"/>
         <source>Restore Defaults</source>
-        <translation type="unfinished"></translation>
+        <translation>기본값으로 되돌리기</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="96"/>
         <location filename="../controllersettingswindow.cpp" line="107"/>
         <source>Create Input Profile</source>
-        <translation type="unfinished">입력 프로필 생성</translation>
+        <translation>입력 프로필 생성</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="96"/>
         <source>Enter the name for the new input profile:</source>
-        <translation type="unfinished">새 입력 프로필 이름을 입력 :</translation>
+        <translation>새 입력 프로필 이름을 입력 :</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="103"/>
@@ -3937,27 +3952,27 @@ This warning will only be shown once.</source>
         <location filename="../controllersettingswindow.cpp" line="180"/>
         <location filename="../controllersettingswindow.cpp" line="477"/>
         <source>Error</source>
-        <translation type="unfinished">오류</translation>
+        <translation>오류</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="103"/>
         <source>A profile with the name &apos;%1&apos; already exists.</source>
-        <translation type="unfinished">&apos;%1&apos;(이)라는 이름의 프로필이 이미 있습니다.</translation>
+        <translation>&apos;%1&apos;(이)라는 이름의 프로필이 이미 있습니다.</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="108"/>
         <source>Do you want to copy all bindings from the currently-selected profile to the new profile? Selecting No will create a completely empty profile.</source>
-        <translation type="unfinished">현재 선택한 프로필의 모든 할당을 새 프로필로 복사하시겠습니까? 아니오를 선택하면 빈 프로필이 생성됩니다.</translation>
+        <translation>현재 선택한 프로필의 모든 할당을 새 프로필로 복사하시겠습니까? 아니오를 선택하면 빈 프로필이 생성됩니다.</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="137"/>
         <source>Failed to save the new profile to &apos;%1&apos;.</source>
-        <translation type="unfinished">새 프로필을 &apos;%1&apos;에 저장하지 못했습니다.</translation>
+        <translation>새 프로필을 &apos;%1&apos;에 저장하지 못했습니다.</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="147"/>
         <source>Load Input Profile</source>
-        <translation type="unfinished">입력 프로필 불러오기</translation>
+        <translation>입력 프로필 불러오기</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="148"/>
@@ -3966,7 +3981,7 @@ This warning will only be shown once.</source>
 All current global bindings will be removed, and the profile bindings loaded.
 
 You cannot undo this action.</source>
-        <translation type="unfinished">&apos;%1&apos;(이)라는 입력 프로필을 불러오시겠습니까?
+        <translation>&apos;%1&apos;(이)라는 입력 프로필을 불러오시겠습니까?
 
 현재 모든 전역 할당이 제거되고 프로필 할당을 불러옵니다.
 
@@ -3975,21 +3990,21 @@ You cannot undo this action.</source>
     <message>
         <location filename="../controllersettingswindow.cpp" line="169"/>
         <source>Delete Input Profile</source>
-        <translation type="unfinished">입력 프로필 삭제</translation>
+        <translation>입력 프로필 삭제</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="170"/>
         <source>Are you sure you want to delete the input profile named &apos;%1&apos;?
 
 You cannot undo this action.</source>
-        <translation type="unfinished">&apos;%1&apos;(이)라는 입력 프로필을 삭제하시겠습니까?
+        <translation>&apos;%1&apos;(이)라는 입력 프로필을 삭제하시겠습니까?
 
 이 작업은 실행 취소할 수 없습니다.</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="180"/>
         <source>Failed to delete &apos;%1&apos;.</source>
-        <translation type="unfinished">&apos;%1&apos;을(를) 삭제하지 못했습니다.</translation>
+        <translation>&apos;%1&apos;을(를) 삭제하지 못했습니다.</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="193"/>
@@ -3998,7 +4013,7 @@ You cannot undo this action.</source>
 All shared bindings and configuration will be lost, but your input profiles will remain.
 
 You cannot undo this action.</source>
-        <translation type="unfinished">기본 컨트롤러 구성을 복원하시겠습니까?
+        <translation>기본 컨트롤러 구성을 복원하시겠습니까?
 
 모든 공유 바인딩 및 구성은 손실되지만 입력 프로필은 그대로 유지됩니다.
 
@@ -4007,14 +4022,14 @@ You cannot undo this action.</source>
     <message>
         <location filename="../controllersettingswindow.cpp" line="360"/>
         <source>Global Settings</source>
-        <translation type="unfinished">전체 설정</translation>
+        <translation>전체 설정</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="402"/>
         <location filename="../controllersettingswindow.cpp" line="442"/>
         <source>Controller Port %1%2
 %3</source>
-        <translation type="unfinished">컨트롤러 포트 %1%2
+        <translation>컨트롤러 포트 %1%2
 %3</translation>
     </message>
     <message>
@@ -4022,23 +4037,23 @@ You cannot undo this action.</source>
         <location filename="../controllersettingswindow.cpp" line="443"/>
         <source>Controller Port %1
 %2</source>
-        <translation type="unfinished">컨트롤러 포트 %1
+        <translation>컨트롤러 포트 %1
 %2</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="413"/>
         <source>Hotkeys</source>
-        <translation type="unfinished">단축키</translation>
+        <translation>단축키</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="455"/>
         <source>Shared</source>
-        <translation type="unfinished">공유</translation>
+        <translation>공유</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="477"/>
         <source>The input profile named &apos;%1&apos; cannot be found.</source>
-        <translation type="unfinished">&apos;%1&apos;(이)라는 입력 프로필을 찾을 수 없습니다.</translation>
+        <translation>&apos;%1&apos;(이)라는 입력 프로필을 찾을 수 없습니다.</translation>
     </message>
 </context>
 <context>
@@ -5130,7 +5145,8 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../qthost.cpp" line="1230"/>
         <source>Game: %1 (%2)
 </source>
-        <translation type="unfinished"></translation>
+        <translation>게임 : %1{%2}
+</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="1238"/>
@@ -5787,7 +5803,7 @@ ${serial} : 게임 일련번호.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6732"/>
         <source>-</source>
-        <translation type="unfinished"></translation>
+        <translation>-</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6733"/>
@@ -6126,12 +6142,12 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6799"/>
         <source>Account</source>
-        <translation type="unfinished">계정</translation>
+        <translation>계정</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6800"/>
         <source>Achievement Notifications</source>
-        <translation type="unfinished"></translation>
+        <translation>도전 과제 알림</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6801"/>
@@ -6171,7 +6187,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6803"/>
         <source>Achievements are not enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>도전 과제가 활성화되어 있지 않습니다.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6809"/>
@@ -6231,7 +6247,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6820"/>
         <source>Audio Control</source>
-        <translation type="unfinished"></translation>
+        <translation>음향 제어</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6821"/>
@@ -6396,7 +6412,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6853"/>
         <source>Chooses the language used for UI elements.</source>
-        <translation type="unfinished"></translation>
+        <translation>사용자 인터페이스 요소에 사용할 언어를 선택합니다.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6854"/>
@@ -6461,7 +6477,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6866"/>
         <source>Configuration</source>
-        <translation type="unfinished">설정</translation>
+        <translation>설정</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6867"/>
@@ -6601,7 +6617,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6894"/>
         <source>Current Game</source>
-        <translation type="unfinished"></translation>
+        <translation>현재 게임</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6895"/>
@@ -6691,7 +6707,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6912"/>
         <source>Determines that field that the game list will be sorted by.</source>
-        <translation type="unfinished"></translation>
+        <translation>게임 목록이 정렬될 필드를 결정합니다.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6913"/>
@@ -6771,7 +6787,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6928"/>
         <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
-        <translation type="unfinished"></translation>
+        <translation>순위표 도전을 시작, 제출 또는 실패할 때 팝업 메시지를 표시합니다.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6929"/>
@@ -6856,7 +6872,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6945"/>
         <source>Enable In-Game Overlays</source>
-        <translation type="unfinished"></translation>
+        <translation>게임 내 오버레이 활성화</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6946"/>
@@ -6916,7 +6932,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6966"/>
         <source>Encore Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>앙코르 모드</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6982"/>
@@ -6928,37 +6944,37 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6987"/>
         <source>File Size</source>
-        <translation type="unfinished"></translation>
+        <translation>파일 크기</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6988"/>
         <source>File Size: %.2f MB</source>
-        <translation type="unfinished"></translation>
+        <translation>파일 크기 : %.2f MB</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7178"/>
         <source>Rewind for {0} frames, lasting {1:.2f} seconds will require up to {2} MB of RAM and {3} MB of VRAM.</source>
-        <translation type="unfinished">{0}프레임 동안 되감기, {1:.2f}초 동안 지속하려면 최대 {3}MB의 RAM과 {4}MB의 VRAM이 필요합니다. {0}?} {1:.2f?} {2}?} {3}?}</translation>
+        <translation>{0}프레임을 되감고 {1:.2f}초 동안 지속하려면 최대 {2}MB의 RAM과 {3}MB의 VRAM이 필요합니다.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7179"/>
         <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation type="unfinished">선행 실행이 활성화되어 되감기가 비활성화되었습니다. 선행 실행을 사용하면 시스템 요구 사항이 크게 증가합니다.</translation>
+        <translation>선행 실행이 활성화되어 되감기가 비활성화되었습니다. 선행 실행을 사용하면 시스템 요구 사항이 크게 증가합니다.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7180"/>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
-        <translation type="unfinished">되감기가 활성화되어 있지 않습니다. 되감기를 활성화하면 시스템 요구 사항이 크게 증가할 수 있습니다.</translation>
+        <translation>되감기가 활성화되어 있지 않습니다. 되감기를 활성화하면 시스템 요구 사항이 크게 증가할 수 있습니다.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7286"/>
         <source>This game has no achievements.</source>
-        <translation type="unfinished">이 게임에는 {} 순위표가 있습니다.</translation>
+        <translation>이 게임에는 {} 순위표가 있습니다.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7287"/>
         <source>This game has no leaderboards.</source>
-        <translation type="unfinished"></translation>
+        <translation>이 게임에는 순위표가 없습니다.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7292"/>
@@ -6968,22 +6984,22 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7300"/>
         <source>UI Language</source>
-        <translation type="unfinished"></translation>
+        <translation>사용자 인터페이스 언어</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7301"/>
         <source>Uncompressed Size</source>
-        <translation type="unfinished"></translation>
+        <translation>압축되지 않은 크기</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7302"/>
         <source>Uncompressed Size: %.2f MB</source>
-        <translation type="unfinished"></translation>
+        <translation>압축되지 않은 크기 : %.2fMB</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7305"/>
         <source>Unknown File Size</source>
-        <translation type="unfinished"></translation>
+        <translation>알 수 없는 파일 크기</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7312"/>
@@ -6993,12 +7009,12 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7327"/>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
-        <translation type="unfinished"></translation>
+        <translation>활성화하면 각 세션은 잠금 해제된 도전 과제가 없는 것처럼 작동합니다.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7333"/>
         <source>Widescreen Hack</source>
-        <translation type="unfinished">와일드스크린 핵</translation>
+        <translation>와일드스크린 핵</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7334"/>
@@ -7278,7 +7294,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7015"/>
         <source>Game: {} ({})</source>
-        <translation type="unfinished"></translation>
+        <translation>게임 : {}({})</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7016"/>
@@ -7308,7 +7324,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7021"/>
         <source>Hardcore mode will be enabled on next game restart.</source>
-        <translation type="unfinished"></translation>
+        <translation>다음 게임 다시 시작 시, 하드코어 모드가 활성화됩니다.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7022"/>
@@ -7378,7 +7394,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7035"/>
         <source>Input Sources</source>
-        <translation type="unfinished"></translation>
+        <translation>입력 소스</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7036"/>
@@ -7438,7 +7454,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7047"/>
         <source>Leaderboard Notifications</source>
-        <translation type="unfinished"></translation>
+        <translation>순위표 알림</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7048"/>
@@ -7448,7 +7464,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7049"/>
         <source>Leaderboards are not enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>순위표가 활성화되어 있지 않습니다.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7050"/>
@@ -7638,7 +7654,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7087"/>
         <source>Multitap</source>
-        <translation type="unfinished"></translation>
+        <translation>멀티탭</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7088"/>
@@ -7768,7 +7784,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7113"/>
         <source>PGXP (Precision Geometry Transform Pipeline)</source>
-        <translation type="unfinished">PGXP(정밀 기하학 트랜스폼 파이프라인)</translation>
+        <translation>PGXP(정밀 기하학 트랜스폼 파이프라인)</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7114"/>
@@ -8013,7 +8029,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7162"/>
         <source>Rendering</source>
-        <translation type="unfinished"></translation>
+        <translation>렌더링</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7163"/>
@@ -8078,7 +8094,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7175"/>
         <source>Reverses the game list sort order from the default (usually ascending to descending).</source>
-        <translation type="unfinished"></translation>
+        <translation>게임 목록 정렬 순서를 기본값(보통 오름차순에서 내림차순)에서 반전시킵니다.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7176"/>
@@ -8233,7 +8249,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7209"/>
         <source>Selects the view that the game list will open to.</source>
-        <translation type="unfinished"></translation>
+        <translation>게임 목록이 열릴 보기를 선택합니다.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7210"/>
@@ -8303,7 +8319,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7223"/>
         <source>Settings and Operations</source>
-        <translation type="unfinished"></translation>
+        <translation>설정 및 조작</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7224"/>
@@ -8408,7 +8424,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7244"/>
         <source>Shows the game you are currently playing as part of your profile in Discord.</source>
-        <translation type="unfinished">현재 디스코드에서 프로필의 일부로 플레이 중인 게임을 표시합니다.</translation>
+        <translation>현재 디스코드에서 프로필의 일부로 플레이 중인 게임을 표시합니다.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7245"/>
@@ -8468,12 +8484,12 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7256"/>
         <source>Sound Effects</source>
-        <translation type="unfinished"></translation>
+        <translation>음향 효과</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7257"/>
         <source>Spectator Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>관중 모드</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7258"/>
@@ -8823,7 +8839,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7338"/>
         <source>{} Frames</source>
-        <translation type="unfinished"></translation>
+        <translation>{}프레임</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7339"/>
@@ -8877,7 +8893,7 @@ Error was:</source>
     <message>
         <location filename="../../core/settings.cpp" line="931"/>
         <source>Automatic</source>
-        <translation type="unfinished"></translation>
+        <translation>자동</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="933"/>
@@ -9075,47 +9091,47 @@ Error was:</source>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="361"/>
         <source>Resolution scale set to {0}x (display {1}x{2}, VRAM {3}x{4})</source>
-        <translation type="unfinished"></translation>
+        <translation>해상도 배율이 {0}x로 설정됨(디스플레이 {1}x{2}, VRAM {3}x{4})</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="374"/>
         <source>Multisample anti-aliasing set to {}x (SSAA).</source>
-        <translation type="unfinished"></translation>
+        <translation>다중 샘플 앤티 앨리어싱이 {}배(SSAA)로 설정되었습니다.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="381"/>
         <source>Multisample anti-aliasing set to {}x.</source>
-        <translation type="unfinished"></translation>
+        <translation>다중 샘플 앤티 앨리어싱이 {}배로 설정되었습니다.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="448"/>
         <source>{}x MSAA is not supported, using {}x instead.</source>
-        <translation type="unfinished">{}x MSAA는 지원되지 않습니다. 대신 {}x를 사용하세요.</translation>
+        <translation>{}배 MSAA는 지원되지 않습니다. 대신 {}배를 사용하세요.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="460"/>
         <source>SSAA is not supported, using MSAA instead.</source>
-        <translation type="unfinished">SSAA는 지원되지 않아 MSAA를 사용합니다.</translation>
+        <translation>SSAA는 지원되지 않아 MSAA를 사용합니다.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="467"/>
         <source>Texture filter &apos;{}&apos; is not supported with the current renderer.</source>
-        <translation type="unfinished"></translation>
+        <translation>텍스처 필터 &apos;{}&apos;는 현재 렌더러에서 지원하지 않습니다.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="479"/>
         <source>Geometry shaders are not supported by your GPU, and are required for wireframe rendering.</source>
-        <translation type="unfinished">기하 셰이더는 GPU에서 지원되지 않으며 와이어프레임 렌더링에 필요합니다.</translation>
+        <translation>기하 셰이더는 GPU에서 지원되지 않으며 와이어프레임 렌더링에 필요합니다.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="492"/>
         <source>Resolution scale {0}x is not divisible by downsample scale {1}x, using {2}x instead.</source>
-        <translation type="unfinished">해상도 스케일 {0}x는 다운샘플링 스케일 {1}배로 나눌 수 없으며 대신 {2}x를 사용합니다.</translation>
+        <translation>해상도 배율 {0}배는 다운샘플링 스케일 {1}배로 나눌 수 없으며 대신 {2}배를 사용합니다.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="543"/>
         <source>Resolution scale {0}x not supported for adaptive downsampling, using {1}x.</source>
-        <translation type="unfinished"></translation>
+        <translation>적응형 다운샘플링에는 해상도 배율 {0}배가 지원되지 않으며, {1}배를 사용합니다.</translation>
     </message>
 </context>
 <context>
@@ -9229,7 +9245,7 @@ Error was:</source>
     <message>
         <location filename="../gamelistmodel.cpp" line="309"/>
         <source>Unknown</source>
-        <translation type="unfinished">알 수 없음</translation>
+        <translation>알 수 없음</translation>
     </message>
     <message>
         <location filename="../gamelistmodel.cpp" line="630"/>
@@ -9294,7 +9310,7 @@ Error was:</source>
     <message>
         <location filename="../gamelistmodel.cpp" line="642"/>
         <source>Raw Size</source>
-        <translation type="unfinished"></translation>
+        <translation>원본 크기</translation>
     </message>
     <message>
         <location filename="../gamelistmodel.cpp" line="643"/>
@@ -9885,22 +9901,22 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../core/guncon.cpp" line="281"/>
         <source>Relative Left</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Relative ←</translation>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="282"/>
         <source>Relative Right</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Relative →</translation>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="283"/>
         <source>Relative Up</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Relative ↑</translation>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="284"/>
         <source>Relative Down</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Relative ↓</translation>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="291"/>
@@ -9925,12 +9941,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../core/guncon.cpp" line="297"/>
         <source>Cursor Color</source>
-        <translation type="unfinished"></translation>
+        <translation>커서 색상</translation>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="298"/>
         <source>Applies a color to the chosen crosshair images, can be used for multiple players. Specify in HTML/CSS format (e.g. #aabbcc)</source>
-        <translation type="unfinished"></translation>
+        <translation>선택한 십자선 이미지에 색상을 적용하며 여러 플레이어에 사용할 수 있습니다. HTML/CSS 형식으로 지정(예 : #aabbcc)</translation>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="301"/>
@@ -10085,7 +10101,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../core/hotkeys.cpp" line="121"/>
         <source>You cannot pause until another {:.1f} seconds have passed.</source>
-        <translation type="unfinished"></translation>
+        <translation>{:.1f}초가 더 지날 때까지 일시 중지할 수 없습니다.</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="137"/>
@@ -10202,7 +10218,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../core/hotkeys.cpp" line="530"/>
         <source>Save State and Select Next Slot</source>
-        <translation type="unfinished"></translation>
+        <translation>상태 저장 및 다음 슬롯 선택</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="538"/>
@@ -10574,93 +10590,94 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../logwindow.cpp" line="91"/>
         <source>Log Window - %1 [%2]</source>
-        <translation type="unfinished"></translation>
+        <translation>로그창 - %1[%2]</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="95"/>
         <source>Log Window</source>
-        <translation type="unfinished"></translation>
+        <translation>로그창</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="114"/>
         <source>&amp;Clear</source>
-        <translation type="unfinished"></translation>
+        <translation>지우기(&amp;C)</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="116"/>
         <source>&amp;Save...</source>
-        <translation type="unfinished"></translation>
+        <translation>크기(&amp;S)...</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="121"/>
         <source>Cl&amp;ose</source>
-        <translation type="unfinished"></translation>
+        <translation>닫기(&amp;O)</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="124"/>
         <source>&amp;Settings</source>
-        <translation type="unfinished">설정(&amp;S)</translation>
+        <translation>설정(&amp;S)</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="126"/>
         <source>Log To &amp;System Console</source>
-        <translation type="unfinished"></translation>
+        <translation>시스템 콘솔에 로그 기록(&amp;S)</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="130"/>
         <source>Log To &amp;Debug Console</source>
-        <translation type="unfinished"></translation>
+        <translation>디버그 콘솔에 로그 기록(&amp;D)</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="134"/>
         <source>Log To &amp;File</source>
-        <translation type="unfinished"></translation>
+        <translation>파일에 로그 기록(&amp;F)</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="140"/>
         <source>Attach To &amp;Main Window</source>
-        <translation type="unfinished"></translation>
+        <translation>기본창에 연결(&amp;M)</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="144"/>
         <source>Show &amp;Timestamps</source>
-        <translation type="unfinished"></translation>
+        <translation>타임스탬프 표시(&amp;B)</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="150"/>
         <source>&amp;Log Level</source>
-        <translation type="unfinished"></translation>
+        <translation>로그 레벨(&amp;L)</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="159"/>
         <source>&amp;Filters</source>
-        <translation type="unfinished"></translation>
+        <translation>필터(&amp;F)</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="250"/>
         <source>Select Log File</source>
-        <translation type="unfinished"></translation>
+        <translation>기록 파일 선택</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="250"/>
         <source>Log Files (*.txt)</source>
-        <translation type="unfinished"></translation>
+        <translation>기록 파일(*.txt)</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="257"/>
         <source>Error</source>
-        <translation type="unfinished">오류</translation>
+        <translation>오류</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="257"/>
         <source>Failed to open file for writing.</source>
-        <translation type="unfinished"></translation>
+        <translation>기록하기 위해 파일을 여는 데 실패했습니다.</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="264"/>
         <source>Log was written to %1.
 </source>
-        <translation type="unfinished"></translation>
+        <translation>로그가 %1에 기록되었습니다.
+</translation>
     </message>
 </context>
 <context>
@@ -11013,7 +11030,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.ui" line="515"/>
         <source>View Third-Party Notices...</source>
-        <translation type="unfinished"></translation>
+        <translation>써드파티 공지 보기...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="524"/>
@@ -11189,7 +11206,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.ui" line="902"/>
         <source>Enable GDB Server</source>
-        <translation type="unfinished"></translation>
+        <translation>GDB 서버 활성화</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="911"/>
@@ -11442,12 +11459,12 @@ Do you want to load this state, or start from a fresh boot?</source>
     <message>
         <location filename="../mainwindow.cpp" line="1266"/>
         <source>Stop Big Picture Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>빅픽쳐 모드 중지</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1267"/>
         <source>Exit Big Picture</source>
-        <translation type="unfinished"></translation>
+        <translation>빅픽쳐 모드 종료</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1382"/>
@@ -11530,12 +11547,12 @@ Do you want to load this state, or start from a fresh boot?</source>
     <message>
         <location filename="../mainwindow.cpp" line="1490"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</source>
-        <translation type="unfinished"></translation>
+        <translation>모든 표지 이미지 유형(*.jpg *.jpeg *.png *.webp)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1504"/>
         <source>You must select a different file to the current cover image.</source>
-        <translation type="unfinished"></translation>
+        <translation>현재 표지 이미지와 다른 파일을 선택해야 합니다.</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1518"/>
@@ -11550,7 +11567,7 @@ Do you want to load this state, or start from a fresh boot?</source>
     <message>
         <location filename="../mainwindow.cpp" line="1528"/>
         <source>Failed to remove &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>&apos;%1&apos; 제거 실패</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1537"/>
@@ -11656,7 +11673,7 @@ This action cannot be undone.</source>
     <message>
         <location filename="../mainwindow.cpp" line="2756"/>
         <source>RA: Logged in as %1 (%2, %3 softcore). %4 unread messages.</source>
-        <translation type="unfinished"></translation>
+        <translation>RA : %1(%2, %3 소프트코어)로 로그인했습니다. 읽지 않은 메시지가 %4개 있습니다.</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="2804"/>
@@ -11741,72 +11758,72 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="15"/>
         <source>All Memory Card Types (*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</source>
-        <translation type="unfinished">모든 메모리 카드 유형(*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</translation>
+        <translation>모든 메모리 카드 유형(*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="18"/>
         <source>All Importable Memory Card Types (*.mcd *.mcr *.mc *.gme)</source>
-        <translation type="unfinished">가져올 수 있는 모든 메모리 카드 유형(*.mcd *.mcr *.mc *.gme)</translation>
+        <translation>가져올 수 있는 모든 메모리 카드 유형(*.mcd *.mcr *.mc *.gme)</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="20"/>
         <source>Single Save Files (*.mcs);;All Files (*.*)</source>
-        <translation type="unfinished">단일 저장 파일(*.mcs);;모든 파일 (*.*)</translation>
+        <translation>단일 저장 파일(*.mcs);;모든 파일 (*.*)</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="27"/>
         <source>Delete File</source>
-        <translation type="unfinished">파일 삭제</translation>
+        <translation>파일 삭제</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="28"/>
         <source>Undelete File</source>
-        <translation type="unfinished">삭제 파일 복구</translation>
+        <translation>삭제 파일 복구</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="29"/>
         <source>Export File</source>
-        <translation type="unfinished">파일 내보내기</translation>
+        <translation>파일 내보내기</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="30"/>
         <source>&lt;&lt;</source>
-        <translation type="unfinished">&lt;&lt;</translation>
+        <translation>&lt;&lt;</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="31"/>
         <source>&gt;&gt;</source>
-        <translation type="unfinished">&gt;&gt;</translation>
+        <translation>&gt;&gt;</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="48"/>
         <source>New Card...</source>
-        <translation type="unfinished">새 카드 만들기...</translation>
+        <translation>새 카드 만들기...</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="49"/>
         <source>Open Card...</source>
-        <translation type="unfinished">카드 열기...</translation>
+        <translation>카드 열기...</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="116"/>
         <source>Format Card</source>
-        <translation type="unfinished">카드 초기화</translation>
+        <translation>카드 초기화</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="117"/>
         <source>Import File...</source>
-        <translation type="unfinished">파일 가져오기...</translation>
+        <translation>파일 가져오기...</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="118"/>
         <source>Import Card...</source>
-        <translation type="unfinished">카드 가져오기...</translation>
+        <translation>카드 가져오기...</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="119"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>저장</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="232"/>
@@ -11822,23 +11839,23 @@ Are you sure you want to continue?</source>
         <location filename="../memorycardeditorwindow.cpp" line="517"/>
         <location filename="../memorycardeditorwindow.cpp" line="563"/>
         <source>Error</source>
-        <translation type="unfinished">오류</translation>
+        <translation>오류</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="232"/>
         <location filename="../memorycardeditorwindow.cpp" line="342"/>
         <source>Failed to load memory card image.</source>
-        <translation type="unfinished">메모리 카드 이미지를 불러오지 못했습니다.</translation>
+        <translation>메모리 카드 이미지를 불러오지 못했습니다.</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="276"/>
         <source> (Deleted)</source>
-        <translation type="unfinished"> (삭제됨)</translation>
+        <translation> (삭제됨)</translation>
     </message>
     <message numerus="yes">
         <location filename="../memorycardeditorwindow.cpp" line="296"/>
         <source>%n block(s) free%1</source>
-        <translation type="unfinished">
+        <translation>
             <numerusform>%n 블록 사용 가능%1</numerusform>
         </translation>
     </message>
@@ -11846,92 +11863,92 @@ Are you sure you want to continue?</source>
         <location filename="../memorycardeditorwindow.cpp" line="310"/>
         <location filename="../memorycardeditorwindow.cpp" line="336"/>
         <source>Select Memory Card</source>
-        <translation type="unfinished">메모리 카드 선택</translation>
+        <translation>메모리 카드 선택</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="368"/>
         <source>Failed to write card to &apos;%1&apos;</source>
-        <translation type="unfinished">&apos;%1&apos;에 카드 기록 실패</translation>
+        <translation>&apos;%1&apos;에 카드 기록 실패</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="382"/>
         <source>Save memory card?</source>
-        <translation type="unfinished">메모리 카드를 저장하시겠습니까?</translation>
+        <translation>메모리 카드를 저장하시겠습니까?</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="383"/>
         <source>Memory card &apos;%1&apos; is not saved, do you want to save before closing?</source>
-        <translation type="unfinished">메모리 카드 &apos;%1&apos;이(가) 저장되지 않았는데 닫기 전에 저장하시겠습니까?</translation>
+        <translation>메모리 카드 &apos;%1&apos;이(가) 저장되지 않았는데 닫기 전에 저장하시겠습니까?</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="407"/>
         <source>Destination memory card already contains a save file with the same name (%1) as the one you are attempting to copy. Please delete this file from the destination memory card before copying.</source>
-        <translation type="unfinished">대상 메모리 카드에 복사하려는 파일과 같은 이름(%1)의 저장 파일이 이미 있습니다. 복사하기 전에 대상 메모리 카드에서 이 파일을 삭제하십시오.</translation>
+        <translation>대상 메모리 카드에 복사하려는 파일과 같은 이름(%1)의 저장 파일이 이미 있습니다. 복사하기 전에 대상 메모리 카드에서 이 파일을 삭제하십시오.</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="417"/>
         <source>Insufficient blocks, this file needs %1 but only %2 are available.</source>
-        <translation type="unfinished">블록이 부족합니다. 이 파일에 %1이 필요하지만 사용할 수 있는 블록은 %2개뿐입니다.</translation>
+        <translation>블록이 부족합니다. 이 파일에 %1이 필요하지만 사용할 수 있는 블록은 %2개뿐입니다.</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="426"/>
         <source>Failed to read file %1</source>
-        <translation type="unfinished">%1 파일 읽기 실패</translation>
+        <translation>%1 파일 읽기 실패</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="432"/>
         <source>Failed to write file %1</source>
-        <translation type="unfinished">%1 파일 쓰기 실패</translation>
+        <translation>%1 파일 쓰기 실패</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="451"/>
         <source>Failed to delete file %1</source>
-        <translation type="unfinished">%1 파일 삭제 실패</translation>
+        <translation>%1 파일 삭제 실패</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="472"/>
         <source>Failed to undelete file %1. The file may have been partially overwritten by another save.</source>
-        <translation type="unfinished">%1 삭제 파일 복구에 실패했습니다. 파일이 다른 저장에 의해 부분적으로 덮어씌워졌을 수 있습니다.</translation>
+        <translation>%1 삭제 파일 복구에 실패했습니다. 파일이 다른 저장에 의해 부분적으로 덮어씌워졌을 수 있습니다.</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="487"/>
         <source>Select Single Savefile</source>
-        <translation type="unfinished">단일 저장 파일 선택</translation>
+        <translation>단일 저장 파일 선택</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="500"/>
         <source>Failed to export save file %1. Check the log for more details.</source>
-        <translation type="unfinished">저장 파일 %1을(를) 내보내지 못했습니다. 자세한 내용은 로그를 확인하세요.</translation>
+        <translation>저장 파일 %1을(를) 내보내지 못했습니다. 자세한 내용은 로그를 확인하세요.</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="510"/>
         <source>Select Import File</source>
-        <translation type="unfinished">가져올 파일 선택</translation>
+        <translation>가져올 파일 선택</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="517"/>
         <source>Failed to import memory card. The log may contain more information.</source>
-        <translation type="unfinished">메모리 카드를 가져오지 못했습니다. 로그에 자세한 정보가 포함되어 있을 수 있습니다.</translation>
+        <translation>메모리 카드를 가져오지 못했습니다. 로그에 자세한 정보가 포함되어 있을 수 있습니다.</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="534"/>
         <source>Format memory card?</source>
-        <translation type="unfinished">메모리 카드를 초기화 하시겠습니까?</translation>
+        <translation>메모리 카드를 초기화 하시겠습니까?</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="535"/>
         <source>Formatting the memory card will destroy all saves, and they will not be recoverable. The memory card which will be formatted is located at &apos;%1&apos;.</source>
-        <translation type="unfinished">메모리 카드를 초기화하면 모든 저장 내용이 파괴되며 복구할 수 없습니다. 초기화할 메모리 카드는 &apos;%1&apos; 에 있습니다.</translation>
+        <translation>메모리 카드를 초기화하면 모든 저장 내용이 파괴되며 복구할 수 없습니다. 초기화할 메모리 카드는 &apos;%1&apos; 에 있습니다.</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="556"/>
         <source>Select Import Save File</source>
-        <translation type="unfinished">저장 파일 가져오기 선택</translation>
+        <translation>저장 파일 가져오기 선택</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="564"/>
         <source>Failed to import save. Check if there is enough room on the memory card or if an existing save with the same name already exists.</source>
-        <translation type="unfinished">저장을 가져오지 못했습니다. 메모리 카드에 충분한 공간이 있는지 또는 같은 이름의 기존 저장이 이미 있는지 확인하세요.</translation>
+        <translation>저장을 가져오지 못했습니다. 메모리 카드에 충분한 공간이 있는지 또는 같은 이름의 기존 저장이 이미 있는지 확인하세요.</translation>
     </message>
 </context>
 <context>
@@ -12209,22 +12226,22 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/system.cpp" line="3271"/>
         <source>Failed to open disc image &apos;{}&apos;: {}.</source>
-        <translation type="unfinished"></translation>
+        <translation>디스크 이미지 &apos;{}&apos;: {}을(를) 열지 못했습니다.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3285"/>
         <source>Inserted disc &apos;{}&apos; ({}).</source>
-        <translation type="unfinished"></translation>
+        <translation>디스크 &apos;{}&apos;({})을 삽입했습니다.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3531"/>
         <source>Switching to {}{} GPU renderer.</source>
-        <translation type="unfinished"></translation>
+        <translation>GPU 렌더러 {}{}로 전환 중입니다.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3557"/>
         <source>Switching to {} audio backend.</source>
-        <translation type="unfinished"></translation>
+        <translation>{} 음향 후처리로 전환 중입니다.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4500"/>
@@ -12429,13 +12446,14 @@ Are you sure you want to continue?</source>
         <location filename="../../core/system.cpp" line="2289"/>
         <source>Failed to open CD image from save state &apos;{}&apos;: {}.
 Using existing image &apos;{}&apos;, this may result in instability.</source>
-        <translation type="unfinished"></translation>
+        <translation>저장 상태 &apos;{}&apos;: {}에서 CD 이미지를 열지 못했습니다.
+기존 이미지 &apos;{}&apos;을 사용하면 불안정해질 수 있습니다.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2299"/>
         <location filename="../../core/system.cpp" line="2318"/>
         <source>Error</source>
-        <translation type="unfinished">오류</translation>
+        <translation>오류</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2756"/>
@@ -12601,94 +12619,96 @@ Using existing image &apos;{}&apos;, this may result in instability.</source>
     <message>
         <location filename="../../core/game_database.cpp" line="258"/>
         <source>CPU interpreter forced by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>호환성 설정에 의해 강제로 CPU 인터프리터가 실행됩니다.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="270"/>
         <source>Software renderer forced by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>호환성 설정에 의해 소프트웨어 렌더링이 강제로 실행됩니다.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="283"/>
         <source>Using software renderer for readbacks based on compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>호환성 설정에 따른 다시 읽기를 위해 소프트웨어 렌더러를 사용합니다.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="295"/>
         <source>Interlacing forced by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>호환성 설정에 의해 강제로 인터레이스됩니다.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="307"/>
         <source>True color disabled by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>호환성 설정에 의해 트루 컬러가 비활성화됩니다.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="319"/>
         <source>Upscaling disabled by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>호환성 설정에 따라 업스케일링이 비활성화됩니다.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="331"/>
         <source>Texture filtering disabled by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>호환성 설정에 의해 텍스처 필터링이 비활성화되었습니다.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="343"/>
         <source>Scaled dithering disabled by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>호환성 설정에 의해 스케일 디더링이 비활성화됩니다.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="355"/>
         <source>Widescreen rendering disabled by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>호환성 설정으로 인해 와이드스크린 렌더링이 비활성화되었습니다.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="367"/>
         <source>Forcing NTSC Timings disallowed by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>호환성 설정에서 허용하지 않는 NTSC 타이밍을 강제로 적용합니다.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="380"/>
         <source>PGXP geometry correction disabled by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>호환성 설정에 의해 PGXP 기하학 보정이 비활성화되었습니다.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="391"/>
         <source>PGXP culling disabled by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>호환성 설정에 의해 PGXP 컬링이 비활성화되었습니다.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="404"/>
         <source>PGXP perspective corrected textures disabled by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>호환성 설정에 의해 PGXP 원근 보정 텍스처가 비활성화되었습니다.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="418"/>
         <source>PGXP perspective corrected colors disabled by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>호환성 설정에 의해 PGXP 원근 보정 색상이 비활성화되었습니다.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="430"/>
         <source>PGXP vertex cache forced by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>호환성 설정에 의해 강제로 PGXP 버텍스 캐시가 적용됩니다.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="443"/>
         <source>PGXP CPU mode forced by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>호환성 설정에 의해 강제되는 PGXP CPU 모드입니다.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="462"/>
         <source>PGXP Depth Buffer disabled by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>호환성 설정에 의해 PGXP 심도 버퍼가 비활성화되었습니다.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="526"/>
         <source>Controller in port {0} ({1}) is not supported for {2}.
 Supported controllers: {3}
 Please configure a supported controller from the list above.</source>
-        <translation type="unfinished"></translation>
+        <translation>포트 {0}({1})의 컨트롤러는 {2}에 대해 지원되지 않습니다.
+지원되는 컨트롤러 : {3}
+위 목록에서 지원되는 컨트롤러를 구성하세요.</translation>
     </message>
 </context>
 <context>
@@ -12706,18 +12726,18 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/playstation_mouse.cpp" line="212"/>
         <source>Horizontal Sensitivity</source>
-        <translation type="unfinished"></translation>
+        <translation>수평 감도</translation>
     </message>
     <message>
         <location filename="../../core/playstation_mouse.cpp" line="213"/>
         <location filename="../../core/playstation_mouse.cpp" line="216"/>
         <source>Adjusts the correspondance between physical and virtual mouse movement.</source>
-        <translation type="unfinished"></translation>
+        <translation>실제 마우스 움직임과 가상 마우스 움직임 간의 대응을 조정합니다.</translation>
     </message>
     <message>
         <location filename="../../core/playstation_mouse.cpp" line="215"/>
         <source>Vertical Sensitivity</source>
-        <translation type="unfinished"></translation>
+        <translation>수직 감도</translation>
     </message>
 </context>
 <context>
@@ -12725,7 +12745,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/playstation_mouse.cpp" line="204"/>
         <source>Pointer</source>
-        <translation type="unfinished"></translation>
+        <translation>포인터</translation>
     </message>
 </context>
 <context>
@@ -12945,7 +12965,7 @@ URL : %1</translation>
     <message>
         <location filename="../../core/imgui_overlays.cpp" line="685"/>
         <source>Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</source>
-        <translation type="unfinished"></translation>
+        <translation>{0:%a} {0:%Y/%m/%d}의 {0:%H:%M}에 저장되었습니다.</translation>
     </message>
     <message>
         <location filename="../../core/imgui_overlays.cpp" line="826"/>
@@ -12970,47 +12990,47 @@ URL : %1</translation>
     <message>
         <location filename="../../core/imgui_overlays.cpp" line="894"/>
         <source>{} ({})</source>
-        <translation type="unfinished"></translation>
+        <translation>{} ({})</translation>
     </message>
     <message>
         <location filename="../../core/imgui_overlays.cpp" line="919"/>
         <source>No save present in this slot.</source>
-        <translation type="unfinished">이 슬롯에는 저장된 것이 없습니다.</translation>
+        <translation>이 슬롯에는 저장된 것이 없습니다.</translation>
     </message>
     <message>
         <location filename="../../core/imgui_overlays.cpp" line="1016"/>
         <source>Global Slot {}</source>
-        <translation type="unfinished"></translation>
+        <translation>게임 슬롯 {}</translation>
     </message>
     <message>
         <location filename="../../core/imgui_overlays.cpp" line="1017"/>
         <source>Game Slot {}</source>
-        <translation type="unfinished"></translation>
+        <translation>게임 슬롯 {}</translation>
     </message>
     <message>
         <location filename="../../core/imgui_overlays.cpp" line="1104"/>
         <source>No save state found in Global Slot {}.</source>
-        <translation type="unfinished"></translation>
+        <translation>글로벌 슬롯 {}에 저장 상태를 찾을 수 없습니다.</translation>
     </message>
     <message>
         <location filename="../../core/imgui_overlays.cpp" line="1105"/>
         <source>No save state found in Slot {}.</source>
-        <translation type="unfinished"></translation>
+        <translation>슬롯 {}에 저장 상태를 찾을 수 없습니다.</translation>
     </message>
     <message>
         <location filename="../../core/imgui_overlays.cpp" line="1129"/>
         <source>no save yet</source>
-        <translation type="unfinished"></translation>
+        <translation>저장하지 않음</translation>
     </message>
     <message>
         <location filename="../../core/imgui_overlays.cpp" line="1134"/>
         <source>Global Save Slot {0} selected ({1}).</source>
-        <translation type="unfinished"></translation>
+        <translation>글로벌 저장 슬롯 {0}이(가) 선택되었습니다({1}).</translation>
     </message>
     <message>
         <location filename="../../core/imgui_overlays.cpp" line="1135"/>
         <source>Save Slot {0} selected ({1}).</source>
-        <translation type="unfinished"></translation>
+        <translation>저장 슬롯 {0}이(가) 선택되었습니다({1}).</translation>
     </message>
 </context>
 <context>
@@ -13030,7 +13050,7 @@ URL : %1</translation>
     <message>
         <location filename="../settingwidgetbinder.h" line="1066"/>
         <source>Confirm Folder</source>
-        <translation type="unfinished"></translation>
+        <translation>폴더 확인</translation>
     </message>
     <message>
         <location filename="../settingwidgetbinder.h" line="1068"/>
@@ -13039,17 +13059,21 @@ URL : %1</translation>
 %1
 
 Do you want to create this directory?</source>
-        <translation type="unfinished"></translation>
+        <translation>선택한 디렉터리가 현재 존재하지 않습니다:
+
+%1
+
+이 디렉터리를 생성하시겠습니까?</translation>
     </message>
     <message>
         <location filename="../settingwidgetbinder.h" line="1091"/>
         <source>Error</source>
-        <translation type="unfinished">오류</translation>
+        <translation>오류</translation>
     </message>
     <message>
         <location filename="../settingwidgetbinder.h" line="1092"/>
         <source>Folder path cannot be empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>폴더 경로는 비워둘 수 없습니다.</translation>
     </message>
     <message>
         <location filename="../settingwidgetbinder.h" line="1113"/>
@@ -13062,17 +13086,17 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../../core/settings.cpp" line="1255"/>
         <source>Automatic (Default)</source>
-        <translation type="unfinished"></translation>
+        <translation>자동(기본값)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1256"/>
         <source>Disallowed</source>
-        <translation type="unfinished"></translation>
+        <translation>허용 암함</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1257"/>
         <source>Allowed</source>
-        <translation type="unfinished"></translation>
+        <translation>허용</translation>
     </message>
 </context>
 <context>
@@ -13099,167 +13123,167 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.ui" line="20"/>
         <source>DuckStation Settings</source>
-        <translation type="unfinished">DuckStation 설정</translation>
+        <translation>DuckStation 설정</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="54"/>
         <source>Summary</source>
-        <translation type="unfinished">개요</translation>
+        <translation>개요</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="56"/>
         <source>&lt;strong&gt;Summary&lt;/strong&gt;&lt;hr&gt;This page shows information about the selected game, and allows you to validate your disc was dumped correctly.</source>
-        <translation type="unfinished">&lt;strong&gt;요약&lt;/strong&gt;&lt;hr&gt;이 페이지에는 선택한 게임에 대한 정보가 표시되며, 디스크가 올바르게 덤프되었는지 확인할 수 있습니다.</translation>
+        <translation>&lt;strong&gt;요약&lt;/strong&gt;&lt;hr&gt;이 페이지에는 선택한 게임에 대한 정보가 표시되며, 디스크가 올바르게 덤프되었는지 확인할 수 있습니다.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="71"/>
         <source>General</source>
-        <translation type="unfinished">일반</translation>
+        <translation>일반</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="73"/>
         <source>&lt;strong&gt;General Settings&lt;/strong&gt;&lt;hr&gt;These options control how the emulator looks and behaves.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation type="unfinished">&lt;strong&gt;일반 설정&lt;/strong&gt;&lt;hr&gt;이 옵션은 에뮬레이터의 모양과 동작 방식을 제어합니다.&lt;br&gt;&lt;br&gt;추가 정보를 보려면 옵션 위에 마우스를 올려놓으세요.</translation>
+        <translation>&lt;strong&gt;일반 설정&lt;/strong&gt;&lt;hr&gt;이 옵션은 에뮬레이터의 모양과 동작 방식을 제어합니다.&lt;br&gt;&lt;br&gt;추가 정보를 보려면 옵션 위에 마우스를 올려놓으세요.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="79"/>
         <source>Game List</source>
-        <translation type="unfinished">게임 목록</translation>
+        <translation>게임 목록</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="81"/>
         <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive.</source>
-        <translation type="unfinished">&lt;strong&gt;게임 목록 설정&lt;/strong&gt;&lt;hr&gt;위 목록은 게임 목록을 채우기 위해 DuckStation에서 검색할 디렉터리를 보여줍니다. 검색 디렉터리를 추가, 삭제 및 하위 디렉터리 검색 여부를 전환할 수 있습니다.</translation>
+        <translation>&lt;strong&gt;게임 목록 설정&lt;/strong&gt;&lt;hr&gt;위 목록은 게임 목록을 채우기 위해 DuckStation에서 검색할 디렉터리를 보여줍니다. 검색 디렉터리를 추가, 삭제 및 하위 디렉터리 검색 여부를 전환할 수 있습니다.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="86"/>
         <source>BIOS</source>
-        <translation type="unfinished">바이오스</translation>
+        <translation>바이오스</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="88"/>
         <source>&lt;strong&gt;BIOS Settings&lt;/strong&gt;&lt;hr&gt;These options control which BIOS is used and how it will be patched.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation type="unfinished">&lt;strong&gt;바이오스 설정&lt;/strong&gt;&lt;hr&gt;이 옵션은 어떤 바이오스를 사용하고 어떻게 패치할지 제어합니다.&lt;br&gt;&lt;br&gt;추가 정보를 보려면 옵션 위에 마우스를 올려놓으십시오.</translation>
+        <translation>&lt;strong&gt;바이오스 설정&lt;/strong&gt;&lt;hr&gt;이 옵션은 어떤 바이오스를 사용하고 어떻게 패치할지 제어합니다.&lt;br&gt;&lt;br&gt;추가 정보를 보려면 옵션 위에 마우스를 올려놓으십시오.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="90"/>
         <source>Console</source>
-        <translation type="unfinished">콘솔</translation>
+        <translation>콘솔</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="92"/>
         <source>&lt;strong&gt;Console Settings&lt;/strong&gt;&lt;hr&gt;These options determine the configuration of the simulated console.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation type="unfinished">&lt;strong&gt;콘솔 설정&lt;/strong&gt;&lt;hr&gt;이 옵션에 따라 시뮬레이션된 콘솔의 구성이 결정됩니다.&lt;br&gt;&lt;br&gt;추가 정보를 보려면 옵션 위로 마우스를 가져갑니다.</translation>
+        <translation>&lt;strong&gt;콘솔 설정&lt;/strong&gt;&lt;hr&gt;이 옵션에 따라 시뮬레이션된 콘솔의 구성이 결정됩니다.&lt;br&gt;&lt;br&gt;추가 정보를 보려면 옵션 위로 마우스를 가져갑니다.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="94"/>
         <source>Emulation</source>
-        <translation type="unfinished">에뮬레이션</translation>
+        <translation>에뮬레이션</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="96"/>
         <source>&lt;strong&gt;Emulation Settings&lt;/strong&gt;&lt;hr&gt;These options determine the speed and runahead behavior of the system.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation type="unfinished">&lt;strong&gt;에뮬레이션 설정&lt;/strong&gt;&lt;hr&gt;이 옵션은 시스템의 속도와 선행 실행 동작을 결정합니다.&lt;br&gt;&lt;br&gt;추가 정보를 보려면 옵션 위에 마우스를 올려놓으세요.</translation>
+        <translation>&lt;strong&gt;에뮬레이션 설정&lt;/strong&gt;&lt;hr&gt;이 옵션은 시스템의 속도와 선행 실행 동작을 결정합니다.&lt;br&gt;&lt;br&gt;추가 정보를 보려면 옵션 위에 마우스를 올려놓으세요.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="99"/>
         <source>Memory Cards</source>
-        <translation type="unfinished">메모리 카드</translation>
+        <translation>메모리 카드</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="101"/>
         <source>&lt;strong&gt;Memory Card Settings&lt;/strong&gt;&lt;hr&gt;This page lets you control what mode the memory card emulation will function in, and where the images for these cards will be stored on disk.</source>
-        <translation type="unfinished">&lt;strong&gt;메모리 카드 설정&lt;/strong&gt;&lt;hr&gt;이 페이지에서는 메모리 카드 에뮬레이션이 작동할 모드와 해당 카드의 이미지가 디스크에 저장될 위치를 제어할 수 있습니다.</translation>
+        <translation>&lt;strong&gt;메모리 카드 설정&lt;/strong&gt;&lt;hr&gt;이 페이지에서는 메모리 카드 에뮬레이션이 작동할 모드와 해당 카드의 이미지가 디스크에 저장될 위치를 제어할 수 있습니다.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="104"/>
         <source>Display</source>
-        <translation type="unfinished">화면</translation>
+        <translation>화면</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="106"/>
         <source>&lt;strong&gt;Display Settings&lt;/strong&gt;&lt;hr&gt;These options control the how the frames generated by the console are displayed on the screen.</source>
-        <translation type="unfinished">&lt;strong&gt;화면 설정&lt;/strong&gt;&lt;hr&gt;이 옵션은 콘솔에서 생성된 프레임이 화면에 표시되는 방식을 제어합니다.</translation>
+        <translation>&lt;strong&gt;화면 설정&lt;/strong&gt;&lt;hr&gt;이 옵션은 콘솔에서 생성된 프레임이 화면에 표시되는 방식을 제어합니다.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="109"/>
         <source>Enhancements</source>
-        <translation type="unfinished">강화</translation>
+        <translation>강화</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="111"/>
         <source>&lt;strong&gt;Enhancement Settings&lt;/strong&gt;&lt;hr&gt;These options control enhancements which can improve visuals compared to the original console. Mouse over each option for additional information.</source>
-        <translation type="unfinished">&lt;strong&gt;추가 설정&lt;/strong&gt;&lt;hr&gt;이 옵션은 원래 콘솔에 비해 비주얼을 개선할 수 있는 향상된 기능을 제어합니다. 각 옵션 위에 마우스를 올리면 자세한 정보를 확인할 수 있습니다.</translation>
+        <translation>&lt;strong&gt;추가 설정&lt;/strong&gt;&lt;hr&gt;이 옵션은 원래 콘솔에 비해 비주얼을 개선할 수 있는 향상된 기능을 제어합니다. 각 옵션 위에 마우스를 올리면 자세한 정보를 확인할 수 있습니다.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="114"/>
         <source>Post-Processing</source>
-        <translation type="unfinished">후처리</translation>
+        <translation>후처리</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="116"/>
         <source>&lt;strong&gt;Post-Processing Settings&lt;/strong&gt;&lt;hr&gt;Post processing allows you to alter the appearance of the image displayed on the screen with various filters. Shaders will be executed in sequence.</source>
-        <translation type="unfinished">&lt;strong&gt;후처리 설정&lt;/strong&gt;&lt;hr&gt;후처리를 사용하면 다양한 필터를 사용하여 화면에 표시되는 이미지의 모양을 변경할 수 있습니다. 셰이더는 순차적으로 실행됩니다.</translation>
+        <translation>&lt;strong&gt;후처리 설정&lt;/strong&gt;&lt;hr&gt;후처리를 사용하면 다양한 필터를 사용하여 화면에 표시되는 이미지의 모양을 변경할 수 있습니다. 셰이더는 순차적으로 실행됩니다.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="119"/>
         <source>Audio</source>
-        <translation type="unfinished">음향</translation>
+        <translation>음향</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="121"/>
         <source>&lt;strong&gt;Audio Settings&lt;/strong&gt;&lt;hr&gt;These options control the audio output of the console. Mouse over an option for additional information.</source>
-        <translation type="unfinished">&lt;strong&gt;음향 설정&lt;/strong&gt;&lt;hr&gt;이 옵션은 콘솔의 음향 출력을 제어합니다. 추가 정보를 보려면 옵션 위로 마우스를 가져갑니다.</translation>
+        <translation>&lt;strong&gt;음향 설정&lt;/strong&gt;&lt;hr&gt;이 옵션은 콘솔의 음향 출력을 제어합니다. 추가 정보를 보려면 옵션 위로 마우스를 가져갑니다.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="124"/>
         <source>Achievements</source>
-        <translation type="unfinished">도전 과제</translation>
+        <translation>도전 과제</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="126"/>
         <source>&lt;strong&gt;Achievement Settings&lt;/strong&gt;&lt;hr&gt;These options control RetroAchievements. Mouse over an option for additional information.</source>
-        <translation type="unfinished">&lt;strong&gt;도전 과제 설정&lt;/strong&gt;&lt;hr&gt;이 옵션은 레트로어치브먼트를 제어합니다. 추가 정보를 보려면 옵션 위로 마우스를 가져갑니다.</translation>
+        <translation>&lt;strong&gt;도전 과제 설정&lt;/strong&gt;&lt;hr&gt;이 옵션은 레트로어치브먼트를 제어합니다. 추가 정보를 보려면 옵션 위로 마우스를 가져갑니다.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="148"/>
         <source>Folders</source>
-        <translation type="unfinished">폴더</translation>
+        <translation>폴더</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="150"/>
         <source>&lt;strong&gt;Folder Settings&lt;/strong&gt;&lt;hr&gt;These options control where DuckStation will save runtime data files.</source>
-        <translation type="unfinished">&lt;strong&gt;폴더 설정&lt;/strong&gt;&lt;hr&gt;이 옵션은 DuckStation이 런타임 데이터 파일을 저장할 위치를 제어합니다.</translation>
+        <translation>&lt;strong&gt;폴더 설정&lt;/strong&gt;&lt;hr&gt;이 옵션은 DuckStation이 런타임 데이터 파일을 저장할 위치를 제어합니다.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="153"/>
         <source>Advanced</source>
-        <translation type="unfinished">고급 설정</translation>
+        <translation>고급 설정</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="155"/>
         <source>&lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;hr&gt;These options control logging and internal behavior of the emulator. Mouse over an option for additional information.</source>
-        <translation type="unfinished">&lt;strong&gt;고급 설정&lt;/strong&gt;&lt;hr&gt;이 옵션은 에뮬레이터의 로그 기록 및 내부 동작을 제어합니다. 추가 정보를 보려면 옵션 위로 마우스를 가져갑니다.</translation>
+        <translation>&lt;strong&gt;고급 설정&lt;/strong&gt;&lt;hr&gt;이 옵션은 에뮬레이터의 로그 기록 및 내부 동작을 제어합니다. 추가 정보를 보려면 옵션 위로 마우스를 가져갑니다.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="212"/>
         <source>Confirm Restore Defaults</source>
-        <translation type="unfinished">기본값 복원 확인</translation>
+        <translation>기본값 복원 확인</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="213"/>
         <source>Are you sure you want to restore the default settings? Any preferences will be lost.</source>
-        <translation type="unfinished">기본 설정으로 복원하시겠습니까? 기존 설정이 모두 손실됩니다.</translation>
+        <translation>기본 설정으로 복원하시겠습니까? 기존 설정이 모두 손실됩니다.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="229"/>
         <source>Recommended Value</source>
-        <translation type="unfinished">추천 사항</translation>
+        <translation>추천 사항</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="515"/>
         <source>%1 [%2]</source>
-        <translation type="unfinished">%1[%2]</translation>
+        <translation>%1[%2]</translation>
     </message>
 </context>
 <context>
@@ -13581,12 +13605,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../core/system.cpp" line="2300"/>
         <source>Failed to open CD image &apos;{}&apos; used by save state: {}.</source>
-        <translation type="unfinished"></translation>
+        <translation>저장 상태 : {}에서 사용하는 CD 이미지 &apos;{}&apos;을(를) 열지 못했습니다.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2320"/>
         <source>Failed to switch to subimage {} in CD image &apos;{}&apos; used by save state: {}.</source>
-        <translation type="unfinished"></translation>
+        <translation>저장 상태 : {}에서 사용하는 CD 이미지 &apos;{}&apos;의 하위 이미지 {}로 전환하지 못했습니다.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3018"/>
@@ -13614,7 +13638,15 @@ The game will likely not run properly.
 Please check the README for instructions on how to add an SBI file.
 
 Do you wish to continue?</source>
-        <translation type="unfinished"></translation>
+        <translation>SBI 파일 없이 libcrypt로 보호된 게임을 실행하려고 합니다:
+
+{0} : {1}
+
+게임이 제대로 실행되지 않을 수 있습니다.
+
+SBI 파일을 추가하는 방법에 대한 지침은 사용 설명서를 확인하세요.
+
+계속하시겠습니까?</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3408"/>
@@ -13625,47 +13657,53 @@ Do you wish to continue?</source>
 Your dump is incomplete, you must add the SBI file to run this game. 
 
 The name of the SBI file must match the name of the disc image.</source>
-        <translation type="unfinished"></translation>
+        <translation>SBI 파일 없이 libcrypt로 보호된 게임을 실행하려고 합니다:
+
+{0} : {1}
+
+덤프가 불완전하므로 이 게임을 실행하려면 SBI 파일을 추가해야 합니다. 
+
+SBI 파일 이름은 디스크 이미지의 이름과 일치해야 합니다.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3786"/>
         <source>CPU clock speed is set to {}% ({} / {}). This may crash games.</source>
-        <translation type="unfinished"></translation>
+        <translation>CPU 클럭 속도는 {}%({} / {})로 설정됩니다. 이로 인해 게임이 중단될 수 있습니다.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3794"/>
         <source>CD-ROM read speedup set to {}x (effective speed {}x). This may crash games.</source>
-        <translation type="unfinished"></translation>
+        <translation>CD-ROM 읽기 속도를 {}배속(유효 속도 {}배속)으로 설정했습니다. 이로 인해 게임이 중단될 수 있습니다.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3800"/>
         <source>CD-ROM seek speedup set to {}. This may crash games.</source>
-        <translation type="unfinished"></translation>
+        <translation>CD-ROM 탐색 속도 향상이 {}로 설정되었습니다. 이로 인해 게임이 중단될 수 있습니다.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3802"/>
         <source>Instant</source>
-        <translation type="unfinished"></translation>
+        <translation>인스턴트</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3807"/>
         <source>Force NTSC timings is enabled. Games may run at incorrect speeds.</source>
-        <translation type="unfinished"></translation>
+        <translation>강제 NTSC 타이밍이 활성화되었습니다. 게임이 잘못된 속도로 실행될 수 있습니다.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3812"/>
         <source>Multisample anti-aliasing is enabled, some games may not render correctly.</source>
-        <translation type="unfinished"></translation>
+        <translation>다중 표본 앤티 앨리어싱이 활성화되어 있으면 일부 게임이 올바르게 렌더링되지 않을 수 있습니다.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3815"/>
         <source>8MB RAM is enabled, this may be incompatible with some games.</source>
-        <translation type="unfinished"></translation>
+        <translation>8MB RAM이 활성화되어 있으며 일부 게임에서는 호환되지 않을 수 있습니다.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4402"/>
         <source>Invalid version {} ({} version {})</source>
-        <translation type="unfinished"></translation>
+        <translation>잘못된 버전 {}({} 버전 {})</translation>
     </message>
 </context>
 </TS>

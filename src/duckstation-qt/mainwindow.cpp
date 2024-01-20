@@ -2063,6 +2063,7 @@ void MainWindow::connectSignals()
   connect(g_emu_thread, &EmuThread::achievementsLoginSucceeded, this, &MainWindow::onAchievementsLoginSucceeded);
   connect(g_emu_thread, &EmuThread::achievementsChallengeModeChanged, this,
           &MainWindow::onAchievementsChallengeModeChanged);
+  connect(g_emu_thread, &EmuThread::onCoverDownloaderOpenRequested, this, &MainWindow::onToolsCoverDownloaderTriggered);
 
   // These need to be queued connections to stop crashing due to menus opening/closing and switching focus.
   connect(m_game_list_widget, &GameListWidget::refreshProgress, this, &MainWindow::onGameListRefreshProgress);
@@ -2790,7 +2791,9 @@ void MainWindow::onToolsMemoryCardEditorTriggered()
 
 void MainWindow::onToolsCoverDownloaderTriggered()
 {
-  CoverDownloadDialog dlg(this);
+  // This can be invoked via big picture, so exit fullscreen.
+  SystemLock lock(pauseAndLockSystem());
+  CoverDownloadDialog dlg(lock.getDialogParent());
   connect(&dlg, &CoverDownloadDialog::coverRefreshRequested, m_game_list_widget, &GameListWidget::refreshGridCovers);
   dlg.exec();
 }

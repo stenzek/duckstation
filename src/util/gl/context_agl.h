@@ -22,8 +22,7 @@ public:
   ContextAGL(const WindowInfo& wi);
   ~ContextAGL() override;
 
-  static std::unique_ptr<Context> Create(const WindowInfo& wi, const Version* versions_to_try,
-                                         size_t num_versions_to_try);
+  static std::unique_ptr<Context> Create(const WindowInfo& wi, std::span<const Version> versions_to_try);
 
   void* GetProcAddress(const char* name) override;
   bool ChangeSurface(const WindowInfo& new_wi) override;
@@ -38,7 +37,7 @@ public:
 private:
   ALWAYS_INLINE NSView* GetView() const { return static_cast<NSView*>((__bridge NSView*)m_wi.window_handle); }
 
-  bool Initialize(const Version* versions_to_try, size_t num_versions_to_try);
+  bool Initialize(std::span<const Version> versions_to_try);
   bool CreateContext(NSOpenGLContext* share_context, int profile, bool make_current);
   void BindContextToView();
 

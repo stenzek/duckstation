@@ -68,6 +68,13 @@ SettingsWindow::~SettingsWindow()
     s_open_game_properties_dialogs.removeOne(this);
 }
 
+void SettingsWindow::closeEvent(QCloseEvent* event)
+{
+  // we need to clean up ourselves, since we're not modal
+  if (isPerGameSettings())
+    deleteLater();
+}
+
 void SettingsWindow::addPages()
 {
   addWidget(

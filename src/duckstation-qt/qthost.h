@@ -150,6 +150,9 @@ Q_SIGNALS:
   void achievementsChallengeModeChanged(bool enabled);
   void cheatEnabled(quint32 index, bool enabled);
 
+  /// Big Picture UI requests.
+  void onCoverDownloaderOpenRequested();
+
 public Q_SLOTS:
   void setDefaultSettings(bool system = true, bool controller = true);
   void applySettings(bool display_osd_messages = false);

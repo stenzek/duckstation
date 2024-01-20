@@ -1418,6 +1418,11 @@ void Host::OnAchievementsHardcoreModeChanged(bool enabled)
   emit g_emu_thread->achievementsChallengeModeChanged(enabled);
 }
 
+void Host::OnCoverDownloaderOpenRequested()
+{
+  emit g_emu_thread->onCoverDownloaderOpenRequested();
+}
+
 void EmuThread::doBackgroundControllerPoll()
 {
   System::Internal::IdlePollUpdate();
@@ -1627,7 +1632,7 @@ std::optional<std::vector<u8>> Host::ReadResourceFile(std::string_view filename,
   const std::string path = QtHost::GetResourcePath(filename, allow_override);
   std::optional<std::vector<u8>> ret(FileSystem::ReadBinaryFile(path.c_str()));
   if (!ret.has_value())
-    Log_ErrorPrintf("Failed to read resource file '%s'", filename);
+    Log_ErrorFmt("Failed to read resource file '{}'", filename);
   return ret;
 }
 
@@ -1636,7 +1641,7 @@ std::optional<std::string> Host::ReadResourceFileToString(std::string_view filen
   const std::string path = QtHost::GetResourcePath(filename, allow_override);
   std::optional<std::string> ret(FileSystem::ReadFileToString(path.c_str()));
   if (!ret.has_value())
-    Log_ErrorPrintf("Failed to read resource file to string '%s'", filename);
+    Log_ErrorFmt("Failed to read resource file to string '{}'", filename);
   return ret;
 }
 
@@ -1647,7 +1652,7 @@ std::optional<std::time_t> Host::GetResourceFileTimestamp(std::string_view filen
   FILESYSTEM_STAT_DATA sd;
   if (!FileSystem::StatFile(path.c_str(), &sd))
   {
-    Log_ErrorPrintf("Failed to stat resource file '%s'", filename);
+    Log_ErrorFmt("Failed to stat resource file '{}'", filename);
     return std::nullopt;
   }
 

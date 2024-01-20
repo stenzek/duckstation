@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "context_egl_wayland.h"
@@ -12,7 +12,9 @@ Log_SetChannel(ContextEGL);
 namespace GL {
 static const char* WAYLAND_EGL_MODNAME = "libwayland-egl.so.1";
 
-ContextEGLWayland::ContextEGLWayland(const WindowInfo& wi) : ContextEGL(wi) {}
+ContextEGLWayland::ContextEGLWayland(const WindowInfo& wi) : ContextEGL(wi)
+{
+}
 ContextEGLWayland::~ContextEGLWayland()
 {
   if (m_wl_window)
@@ -21,11 +23,11 @@ ContextEGLWayland::~ContextEGLWayland()
     dlclose(m_wl_module);
 }
 
-std::unique_ptr<Context> ContextEGLWayland::Create(const WindowInfo& wi, const Version* versions_to_try,
-                                                   size_t num_versions_to_try)
+std::unique_ptr<Context> ContextEGLWayland::Create(const WindowInfo& wi, std::span<const Version> versions_to_try,
+                                                   Error* error)
 {
   std::unique_ptr<ContextEGLWayland> context = std::make_unique<ContextEGLWayland>(wi);
-  if (!context->LoadModule() || !context->Initialize(versions_to_try, num_versions_to_try))
+  if (!context->LoadModule() || !context->Initialize(versions_to_try, error))
     return nullptr;
 
   return context;

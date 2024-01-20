@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "context_egl.h"
 
 #include "common/assert.h"
 #include "common/log.h"
+#include "common/error.h"
 
 #include <optional>
 #include <vector>
@@ -22,21 +23,21 @@ ContextEGL::~ContextEGL()
   DestroyContext();
 }
 
-std::unique_ptr<Context> ContextEGL::Create(const WindowInfo& wi, const Version* versions_to_try,
-                                            size_t num_versions_to_try)
+std::unique_ptr<Context> ContextEGL::Create(const WindowInfo& wi, std::span<const Version> versions_to_try, Error* error)
 {
   std::unique_ptr<ContextEGL> context = std::make_unique<ContextEGL>(wi);
-  if (!context->Initialize(versions_to_try, num_versions_to_try))
+  if (!context->Initialize(versions_to_try, error))
     return nullptr;
 
   return context;
 }
 
-bool ContextEGL::Initialize(const Version* versions_to_try, size_t num_versions_to_try)
+bool ContextEGL::Initialize(std::span<const Version> versions_to_try, Error* error)
 {
   if (!gladLoadEGL())
   {
-    Log_ErrorPrintf("Loading GLAD EGL functions failed");
+    Log_ErrorPrint("Loading GLAD EGL functions failed");
+    Error::SetStringView(error, "Loading GLAD EGL functions failed");
     return false;
   }
 
@@ -46,7 +47,9 @@ bool ContextEGL::Initialize(const Version* versions_to_try, size_t num_versions_
   int egl_major, egl_minor;
   if (!eglInitialize(m_display, &egl_major, &egl_minor))
   {
-    Log_ErrorPrintf("eglInitialize() failed: %d", eglGetError());
+    const int gerror = static_cast<int>(eglGetError());
+    Log_ErrorFmt("eglInitialize() failed: {} (0x{:X})", gerror, gerror);
+    Error::SetStringFmt(error, "eglInitialize() failed: {} (0x{:X})", gerror, gerror);
     return false;
   }
   Log_InfoPrintf("EGL Version: %d.%d", egl_major, egl_minor);
@@ -60,12 +63,13 @@ bool ContextEGL::Initialize(const Version* versions_to_try, size_t num_versions_
   if (!m_supports_surfaceless)
     Log_WarningPrint("EGL implementation does not support surfaceless contexts, emulating with pbuffers");
 
-  for (size_t i = 0; i < num_versions_to_try; i++)
+  for (const Version& cv : versions_to_try)
   {
-    if (CreateContextAndSurface(versions_to_try[i], nullptr, true))
+    if (CreateContextAndSurface(cv, nullptr, true))
       return true;
   }
 
+  Error::SetStringView(error, "Failed to create any context versions");
   return false;
 }
 

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -15,8 +15,7 @@ public:
   ContextEGL(const WindowInfo& wi);
   ~ContextEGL() override;
 
-  static std::unique_ptr<Context> Create(const WindowInfo& wi, const Version* versions_to_try,
-                                         size_t num_versions_to_try);
+  static std::unique_ptr<Context> Create(const WindowInfo& wi, std::span<const Version> versions_to_try, Error* error);
 
   void* GetProcAddress(const char* name) override;
   virtual bool ChangeSurface(const WindowInfo& new_wi) override;
@@ -32,7 +31,7 @@ protected:
   virtual bool SetDisplay();
   virtual EGLNativeWindowType GetNativeWindow(EGLConfig config);
 
-  bool Initialize(const Version* versions_to_try, size_t num_versions_to_try);
+  bool Initialize(std::span<const Version> versions_to_try, Error* error);
   bool CreateDisplay();
   bool CreateContext(const Version& version, EGLContext share_context);
   bool CreateContextAndSurface(const Version& version, EGLContext share_context, bool make_current);
