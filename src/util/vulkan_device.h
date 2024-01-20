@@ -51,6 +51,7 @@ public:
     bool vk_khr_driver_properties : 1;
     bool vk_khr_dynamic_rendering : 1;
     bool vk_khr_push_descriptor : 1;
+    bool vk_ext_external_memory_host : 1;
   };
 
   static GPUTexture::Format GetFormatForVkFormat(VkFormat format);

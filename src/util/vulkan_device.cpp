@@ -393,6 +393,8 @@ bool VulkanDevice::SelectDeviceExtensions(ExtensionList* extension_list, bool en
     SupportsExtension(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME, false) &&
     SupportsExtension(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME, false);
   m_optional_extensions.vk_khr_push_descriptor = SupportsExtension(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME, false);
+  m_optional_extensions.vk_ext_external_memory_host =
+    SupportsExtension(VK_EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME, false);
 
 #ifdef _WIN32
   m_optional_extensions.vk_ext_full_screen_exclusive =
@@ -632,6 +634,8 @@ void VulkanDevice::ProcessDeviceExtensions()
   VkPhysicalDeviceProperties2 properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, nullptr, {}};
   VkPhysicalDevicePushDescriptorPropertiesKHR push_descriptor_properties = {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES_KHR, nullptr, 0u};
+  VkPhysicalDeviceExternalMemoryHostPropertiesEXT external_memory_host_properties = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_HOST_PROPERTIES_EXT, nullptr, 0};
 
   if (m_optional_extensions.vk_khr_driver_properties)
   {
@@ -641,11 +645,18 @@ void VulkanDevice::ProcessDeviceExtensions()
   if (m_optional_extensions.vk_khr_push_descriptor)
     Vulkan::AddPointerToChain(&properties2, &push_descriptor_properties);
 
+  if (m_optional_extensions.vk_ext_external_memory_host)
+    Vulkan::AddPointerToChain(&properties2, &external_memory_host_properties);
+
   // don't bother querying if we're not actually looking at any features
   if (vkGetPhysicalDeviceProperties2 && properties2.pNext)
     vkGetPhysicalDeviceProperties2(m_physical_device, &properties2);
 
   m_optional_extensions.vk_khr_push_descriptor &= (push_descriptor_properties.maxPushDescriptors >= 1);
+
+  // vk_ext_external_memory_host is only used if the import alignment is the same as the system's page size
+  m_optional_extensions.vk_ext_external_memory_host &=
+    (external_memory_host_properties.minImportedHostPointerAlignment == HOST_PAGE_SIZE);
 
   if (IsBrokenMobileDriver())
   {
@@ -680,6 +691,8 @@ void VulkanDevice::ProcessDeviceExtensions()
                  m_optional_extensions.vk_khr_dynamic_rendering ? "supported" : "NOT supported");
   Log_InfoPrintf("VK_KHR_push_descriptor is %s",
                  m_optional_extensions.vk_khr_push_descriptor ? "supported" : "NOT supported");
+  Log_InfoPrintf("VK_EXT_external_memory_host is %s",
+                 m_optional_extensions.vk_ext_external_memory_host ? "supported" : "NOT supported");
 }
 
 bool VulkanDevice::CreateAllocator()
