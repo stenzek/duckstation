@@ -739,7 +739,22 @@ bool VulkanDevice::DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width,
   const u32 pitch = Common::AlignUp(width * T->GetPixelSize(), GetBufferCopyRowPitchAlignment());
   const u32 size = pitch * height;
   const u32 level = 0;
-  if (!CheckDownloadBufferSize(size))
+
+  const VkCommandBuffer cmdbuf = GetCurrentCommandBuffer();
+
+  u32 dest_offset = 0;
+  VkBuffer dest_buffer = VK_NULL_HANDLE;
+  VkDeviceMemory imported_memory = VK_NULL_HANDLE;
+  if (TryImportHostMemory(out_data, size, VK_BUFFER_USAGE_TRANSFER_DST_BIT, &imported_memory, &dest_buffer,
+                          &dest_offset))
+  {
+  }
+  else if (CheckDownloadBufferSize(size))
+  {
+    dest_buffer = m_download_buffer;
+    dest_offset = 0;
+  }
+  else
   {
     Log_ErrorPrintf("Can't read back %ux%u", width, height);
     return false;
@@ -748,15 +763,13 @@ bool VulkanDevice::DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width,
   if (InRenderPass())
     EndRenderPass();
 
-  const VkCommandBuffer cmdbuf = GetCurrentCommandBuffer();
-
   VulkanTexture::Layout old_layout = T->GetLayout();
   if (old_layout != VulkanTexture::Layout::TransferSrc)
     T->TransitionSubresourcesToLayout(cmdbuf, 0, 1, 0, 1, old_layout, VulkanTexture::Layout::TransferSrc);
 
   VkBufferImageCopy image_copy = {};
   const VkImageAspectFlags aspect = T->IsDepthStencil() ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-  image_copy.bufferOffset = 0;
+  image_copy.bufferOffset = dest_offset;
   image_copy.bufferRowLength = pitch / T->GetPixelSize();
   image_copy.bufferImageHeight = 0;
   image_copy.imageSubresource = {aspect, level, 0u, 1u};
@@ -764,8 +777,7 @@ bool VulkanDevice::DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width,
   image_copy.imageExtent = {width, height, 1u};
 
   // do the copy
-  vkCmdCopyImageToBuffer(cmdbuf, T->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_download_buffer, 1,
-                         &image_copy);
+  vkCmdCopyImageToBuffer(cmdbuf, T->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dest_buffer, 1, &image_copy);
 
   // flush gpu cache
   const VkBufferMemoryBarrier buffer_info = {
@@ -775,8 +787,8 @@ bool VulkanDevice::DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width,
     VK_ACCESS_HOST_READ_BIT,                 // VkAccessFlags      dstAccessMask
     VK_QUEUE_FAMILY_IGNORED,                 // uint32_t           srcQueueFamilyIndex
     VK_QUEUE_FAMILY_IGNORED,                 // uint32_t           dstQueueFamilyIndex
-    m_download_buffer,                       // VkBuffer           buffer
-    0,                                       // VkDeviceSize       offset
+    dest_buffer,                             // VkBuffer           buffer
+    dest_offset,                             // VkDeviceSize       offset
     size                                     // VkDeviceSize       size
   };
   vkCmdPipelineBarrier(cmdbuf, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_HOST_BIT, 0, 0, nullptr, 1, &buffer_info,
@@ -787,12 +799,22 @@ bool VulkanDevice::DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width,
 
   SubmitCommandBuffer(true);
 
-  // invalidate cpu cache before reading
-  VkResult res = vmaInvalidateAllocation(m_allocator, m_download_buffer_allocation, 0, size);
-  if (res != VK_SUCCESS)
-    LOG_VULKAN_ERROR(res, "vmaInvalidateAllocation() failed, readback may be incorrect: ");
+  if (imported_memory)
+  {
+    // Cleanup imported memory
+    vkFreeMemory(m_device, imported_memory, nullptr);
+    vkDestroyBuffer(m_device, dest_buffer, nullptr);
+  }
+  else
+  {
+    // invalidate cpu cache before reading
+    VkResult res = vmaInvalidateAllocation(m_allocator, m_download_buffer_allocation, 0, size);
+    if (res != VK_SUCCESS)
+      LOG_VULKAN_ERROR(res, "vmaInvalidateAllocation() failed, readback may be incorrect: ");
 
-  StringUtil::StrideMemCpy(out_data, out_data_stride, m_download_buffer_map, pitch, width * T->GetPixelSize(), height);
+    StringUtil::StrideMemCpy(out_data, out_data_stride, m_download_buffer_map, pitch, width * T->GetPixelSize(),
+                             height);
+  }
   return true;
 }
 
