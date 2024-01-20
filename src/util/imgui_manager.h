@@ -1,10 +1,12 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
 
 #include "common/types.h"
 #include <string>
+
+class Error;
 
 struct ImFont;
 
@@ -22,7 +24,7 @@ void SetGlobalScale(float global_scale);
 void SetShowOSDMessages(bool enable);
 
 /// Initializes ImGui, creates fonts, etc.
-bool Initialize(float global_scale, bool show_osd_messages);
+bool Initialize(float global_scale, bool show_osd_messages, Error* error);
 
 /// Frees all ImGui resources.
 void Shutdown();

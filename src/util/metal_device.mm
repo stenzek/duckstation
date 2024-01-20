@@ -6,6 +6,7 @@
 
 #include "common/align.h"
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
@@ -122,7 +123,7 @@ void MetalDevice::SetVSync(bool enabled)
 
 bool MetalDevice::CreateDevice(const std::string_view& adapter, bool threaded_presentation,
                                std::optional<bool> exclusive_fullscreen_control,
-                               FeatureMask disabled_features)
+                               FeatureMask disabled_features, Error* error)
 {
   @autoreleasepool
   {
@@ -149,7 +150,7 @@ bool MetalDevice::CreateDevice(const std::string_view& adapter, bool threaded_pr
       device = [MTLCreateSystemDefaultDevice() autorelease];
       if (device == nil)
       {
-        Log_ErrorPrint("Failed to create default Metal device.");
+        Error::SetStringView(error, "Failed to create default Metal device.");
         return false;
       }
     }
@@ -157,7 +158,7 @@ bool MetalDevice::CreateDevice(const std::string_view& adapter, bool threaded_pr
     id<MTLCommandQueue> queue = [[device newCommandQueue] autorelease];
     if (queue == nil)
     {
-      Log_ErrorPrint("Failed to create command queue.");
+      Error::SetStringView(error, "Failed to create command queue.");
       return false;
     }
 
@@ -168,20 +169,23 @@ bool MetalDevice::CreateDevice(const std::string_view& adapter, bool threaded_pr
     SetFeatures(disabled_features);
 
     if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateLayer())
+    {
+      Error::SetStringView(error, "Failed to create layer.");
       return false;
+    }
 
     CreateCommandBuffer();
     RenderBlankFrame();
 
     if (!LoadShaders())
     {
-      Log_ErrorPrint("Failed to load shaders.");
+      Error::SetStringView(error, "Failed to load shaders.");
       return false;
     }
 
     if (!CreateBuffers())
     {
-      Log_ErrorPrintf("Failed to create buffers.");
+      Error::SetStringView(error, "Failed to create buffers.");
       return false;
     }
 

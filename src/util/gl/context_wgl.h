@@ -20,8 +20,7 @@ public:
   ContextWGL(const WindowInfo& wi);
   ~ContextWGL() override;
 
-  static std::unique_ptr<Context> Create(const WindowInfo& wi, const Version* versions_to_try,
-                                         size_t num_versions_to_try);
+  static std::unique_ptr<Context> Create(const WindowInfo& wi, std::span<const Version> versions_to_try, Error* error);
 
   void* GetProcAddress(const char* name) override;
   bool ChangeSurface(const WindowInfo& new_wi) override;
@@ -38,7 +37,7 @@ private:
 
   HDC GetDCAndSetPixelFormat(HWND hwnd);
 
-  bool Initialize(const Version* versions_to_try, size_t num_versions_to_try);
+  bool Initialize(std::span<const Version> versions_to_try, Error* error);
   bool InitializeDC();
   void ReleaseDC();
   bool CreatePBuffer();

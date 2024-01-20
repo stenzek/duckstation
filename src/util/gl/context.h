@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -7,9 +7,11 @@
 
 #include "common/types.h"
 
-#include <array>
 #include <memory>
+#include <span>
 #include <vector>
+
+class Error;
 
 namespace GL {
 class Context
@@ -57,26 +59,9 @@ public:
 
   virtual std::vector<FullscreenModeInfo> EnumerateFullscreenModes();
 
-  static std::unique_ptr<Context> Create(const WindowInfo& wi, const Version* versions_to_try,
-                                         size_t num_versions_to_try);
-
-  template<size_t N>
-  static std::unique_ptr<Context> Create(const WindowInfo& wi, const std::array<Version, N>& versions_to_try)
-  {
-    return Create(wi, versions_to_try.data(), versions_to_try.size());
-  }
-
-  static std::unique_ptr<Context> Create(const WindowInfo& wi) { return Create(wi, GetAllVersionsList()); }
-
-  static const std::array<Version, 11>& GetAllDesktopVersionsList();
-  static const std::array<Version, 12>& GetAllDesktopVersionsListWithFallback();
-  static const std::array<Version, 4>& GetAllESVersionsList();
-  static const std::array<Version, 16>& GetAllVersionsList();
+  static std::unique_ptr<Context> Create(const WindowInfo& wi, Error* error);
 
 protected:
-#ifdef _WIN32
-#endif
-
   WindowInfo m_wi;
   Version m_version = {};
 };

@@ -8,6 +8,7 @@
 #include "shadergen.h"
 
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
@@ -258,20 +259,21 @@ bool GPUDevice::IsSameRenderAPI(RenderAPI lhs, RenderAPI rhs)
 
 bool GPUDevice::Create(const std::string_view& adapter, const std::string_view& shader_cache_path,
                        u32 shader_cache_version, bool debug_device, bool vsync, bool threaded_presentation,
-                       std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features)
+                       std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features, Error* error)
 {
   m_vsync_enabled = vsync;
   m_debug_device = debug_device;
 
   if (!AcquireWindow(true))
   {
-    Log_ErrorPrintf("Failed to acquire window from host.");
+    Error::SetStringView(error, "Failed to acquire window from host.");
     return false;
   }
 
-  if (!CreateDevice(adapter, threaded_presentation, exclusive_fullscreen_control, disabled_features))
+  if (!CreateDevice(adapter, threaded_presentation, exclusive_fullscreen_control, disabled_features, error))
   {
-    Log_ErrorPrintf("Failed to create device.");
+    if (error && !error->IsValid())
+      error->SetStringView("Failed to create device.");
     return false;
   }
 
@@ -281,7 +283,7 @@ bool GPUDevice::Create(const std::string_view& adapter, const std::string_view& 
 
   if (!CreateResources())
   {
-    Log_ErrorPrintf("Failed to create base resources.");
+    Error::SetStringView(error, "Failed to create base resources.");
     return false;
   }
 

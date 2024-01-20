@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "context_wgl.h"
 #include "../opengl_loader.h"
 
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/log.h"
 #include "common/scoped_guard.h"
 
@@ -51,36 +52,44 @@ ContextWGL::~ContextWGL()
   ReleaseDC();
 }
 
-std::unique_ptr<Context> ContextWGL::Create(const WindowInfo& wi, const Version* versions_to_try,
-                                            size_t num_versions_to_try)
+std::unique_ptr<Context> ContextWGL::Create(const WindowInfo& wi, std::span<const Version> versions_to_try,
+                                            Error* error)
 {
   std::unique_ptr<ContextWGL> context = std::make_unique<ContextWGL>(wi);
-  if (!context->Initialize(versions_to_try, num_versions_to_try))
+  if (!context->Initialize(versions_to_try, error))
     return nullptr;
 
   return context;
 }
 
-bool ContextWGL::Initialize(const Version* versions_to_try, size_t num_versions_to_try)
+bool ContextWGL::Initialize(std::span<const Version> versions_to_try, Error* error)
 {
   if (m_wi.type == WindowInfo::Type::Win32)
   {
     if (!InitializeDC())
+    {
+      Error::SetStringView(error, "Failed to create DC.");
       return false;
+    }
   }
   else
   {
     if (!CreatePBuffer())
+    {
+      Error::SetStringView(error, "Failed to create PBuffer");
       return false;
+    }
   }
 
   // Everything including core/ES requires a dummy profile to load the WGL extensions.
   if (!CreateAnyContext(nullptr, true))
-    return false;
-
-  for (size_t i = 0; i < num_versions_to_try; i++)
   {
-    const Version& cv = versions_to_try[i];
+    Error::SetStringView(error, "Failed to create dummy context.");
+    return false;
+  }
+
+  for (const Version& cv : versions_to_try)
+  {
     if (cv.profile == Profile::NoProfile)
     {
       // we already have the dummy context, so just use that
@@ -94,6 +103,7 @@ bool ContextWGL::Initialize(const Version* versions_to_try, size_t num_versions_
     }
   }
 
+  Error::SetStringView(error, "Failed to create any contexts.");
   return false;
 }
 

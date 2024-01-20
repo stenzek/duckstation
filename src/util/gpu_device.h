@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -22,6 +22,8 @@
 #include <string_view>
 #include <tuple>
 #include <vector>
+
+class Error;
 
 enum class RenderAPI : u32
 {
@@ -537,7 +539,7 @@ public:
 
   bool Create(const std::string_view& adapter, const std::string_view& shader_cache_path, u32 shader_cache_version,
               bool debug_device, bool vsync, bool threaded_presentation,
-              std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features);
+              std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features, Error* error);
   void Destroy();
 
   virtual bool HasSurface() const = 0;
@@ -652,7 +654,8 @@ public:
 
 protected:
   virtual bool CreateDevice(const std::string_view& adapter, bool threaded_presentation,
-                            std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features) = 0;
+                            std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features,
+                            Error* error) = 0;
   virtual void DestroyDevice() = 0;
 
   std::string GetShaderCacheBaseName(const std::string_view& type) const;

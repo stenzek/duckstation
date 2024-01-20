@@ -1,17 +1,19 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "context_egl_x11.h"
 
 namespace GL {
-ContextEGLX11::ContextEGLX11(const WindowInfo& wi) : ContextEGL(wi) {}
+ContextEGLX11::ContextEGLX11(const WindowInfo& wi) : ContextEGL(wi)
+{
+}
 ContextEGLX11::~ContextEGLX11() = default;
 
-std::unique_ptr<Context> ContextEGLX11::Create(const WindowInfo& wi, const Version* versions_to_try,
-                                               size_t num_versions_to_try)
+std::unique_ptr<Context> ContextEGLX11::Create(const WindowInfo& wi, std::span<const Version> versions_to_try,
+                                               Error* error)
 {
   std::unique_ptr<ContextEGLX11> context = std::make_unique<ContextEGLX11>(wi);
-  if (!context->Initialize(versions_to_try, num_versions_to_try))
+  if (!context->Initialize(versions_to_try, error))
     return nullptr;
 
   return context;

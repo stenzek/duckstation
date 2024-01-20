@@ -544,7 +544,7 @@ void OpenGLDevice::UnrefVAO(const OpenGLPipeline::VertexArrayCacheKey& key)
 OpenGLPipeline::OpenGLPipeline(const ProgramCacheKey& key, GLuint program, VertexArrayCache::const_iterator vao,
                                const RasterizationState& rs, const DepthState& ds, const BlendState& bs,
                                GLenum topology)
-  : m_key(key), m_program(program), m_vao(vao), m_blend_state(bs), m_rasterization_state(rs), m_depth_state(ds),
+  : m_key(key), m_vao(vao), m_program(program), m_blend_state(bs), m_rasterization_state(rs), m_depth_state(ds),
     m_topology(topology)
 {
 }

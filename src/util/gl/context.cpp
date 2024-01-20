@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "context.h"
 #include "../opengl_loader.h"
 
+#include "common/error.h"
 #include "common/log.h"
 
 #include <cstdio>
@@ -65,7 +66,7 @@ static void DisableBrokenExtensions(const char* gl_vendor, const char* gl_render
          gl_major_version >= 3 && gl_minor_version >= 2 && major_version > 0))
     {
       // r32p0 and beyond seem okay.
-      //Log_VerbosePrintf("Keeping copy_image for driver version '%s'", gl_version);
+      // Log_VerbosePrintf("Keeping copy_image for driver version '%s'", gl_version);
 
       // Framebuffer blits still end up faster.
       Log_VerbosePrintf("Newer Mali driver detected, disabling GL_{EXT,OES}_copy_image.");
@@ -117,45 +118,60 @@ std::vector<Context::FullscreenModeInfo> Context::EnumerateFullscreenModes()
   return {};
 }
 
-std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, const Version* versions_to_try,
-                                             size_t num_versions_to_try)
+std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, Error* error)
 {
+  static constexpr std::array<Version, 14> vlist = {{{Profile::Core, 4, 6},
+                                                     {Profile::Core, 4, 5},
+                                                     {Profile::Core, 4, 4},
+                                                     {Profile::Core, 4, 3},
+                                                     {Profile::Core, 4, 2},
+                                                     {Profile::Core, 4, 1},
+                                                     {Profile::Core, 4, 0},
+                                                     {Profile::Core, 3, 3},
+                                                     {Profile::Core, 3, 2},
+                                                     {Profile::Core, 3, 1},
+                                                     {Profile::Core, 3, 0},
+                                                     {Profile::ES, 3, 2},
+                                                     {Profile::ES, 3, 1},
+                                                     {Profile::ES, 3, 0}}};
+
+  std::span<const Version> versions_to_try = vlist;
   if (ShouldPreferESContext())
   {
     // move ES versions to the front
-    Version* new_versions_to_try = static_cast<Version*>(alloca(sizeof(Version) * num_versions_to_try));
+    Version* new_versions_to_try = static_cast<Version*>(alloca(sizeof(Version) * versions_to_try.size()));
     size_t count = 0;
-    for (size_t i = 0; i < num_versions_to_try; i++)
+    for (const Version& cv : versions_to_try)
     {
-      if (versions_to_try[i].profile == Profile::ES)
-        new_versions_to_try[count++] = versions_to_try[i];
+      if (cv.profile == Profile::ES)
+        new_versions_to_try[count++] = cv;
     }
-    for (size_t i = 0; i < num_versions_to_try; i++)
+    for (const Version& cv : versions_to_try)
     {
-      if (versions_to_try[i].profile != Profile::ES)
-        new_versions_to_try[count++] = versions_to_try[i];
+      if (cv.profile != Profile::ES)
+        new_versions_to_try[count++] = cv;
     }
-    versions_to_try = new_versions_to_try;
+    versions_to_try = std::span<const Version>(new_versions_to_try, versions_to_try.size());
   }
 
   std::unique_ptr<Context> context;
 #if defined(_WIN32) && !defined(_M_ARM64)
-  context = ContextWGL::Create(wi, versions_to_try, num_versions_to_try);
+  context = ContextWGL::Create(wi, versions_to_try, error);
 #elif defined(__APPLE__)
-  context = ContextAGL::Create(wi, versions_to_try, num_versions_to_try);
+  context = ContextAGL::Create(wi, versions_to_try);
 #elif defined(__ANDROID__)
-  context = ContextEGLAndroid::Create(wi, versions_to_try, num_versions_to_try);
+  context = ContextEGLAndroid::Create(wi, versions_to_try, error);
 #else
 #if defined(ENABLE_X11)
   if (wi.type == WindowInfo::Type::X11)
-    context = ContextEGLX11::Create(wi, versions_to_try, num_versions_to_try);
+    context = ContextEGLX11::Create(wi, versions_to_try, error);
 #endif
 #if defined(ENABLE_WAYLAND)
   if (wi.type == WindowInfo::Type::Wayland)
-    context = ContextEGLWayland::Create(wi, versions_to_try, num_versions_to_try);
+    context = ContextEGLWayland::Create(wi, versions_to_try, error);
 #endif
   if (wi.type == WindowInfo::Type::Surfaceless)
-    context = ContextEGL::Create(wi, versions_to_try, num_versions_to_try);
+    context = ContextEGL::Create(wi, versions_to_try, error);
 #endif
 
   if (!context)
@@ -172,7 +188,7 @@ std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, const Version
   {
     if (!gladLoadGLLoader([](const char* name) { return context_being_created->GetProcAddress(name); }))
     {
-      Log_ErrorPrintf("Failed to load GL functions for GLAD");
+      Error::SetStringView(error, "Failed to load GL functions for GLAD");
       return nullptr;
     }
   }
@@ -180,7 +196,7 @@ std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, const Version
   {
     if (!gladLoadGLES2Loader([](const char* name) { return context_being_created->GetProcAddress(name); }))
     {
-      Log_ErrorPrintf("Failed to load GLES functions for GLAD");
+      Error::SetStringView(error, "Failed to load GLES functions for GLAD");
       return nullptr;
     }
   }
@@ -197,67 +213,6 @@ std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, const Version
   DisableBrokenExtensions(gl_vendor, gl_renderer, gl_version);
 
   return context;
-}
-
-const std::array<Context::Version, 11>& Context::GetAllDesktopVersionsList()
-{
-  static constexpr std::array<Version, 11> vlist = {{{Profile::Core, 4, 6},
-                                                     {Profile::Core, 4, 5},
-                                                     {Profile::Core, 4, 4},
-                                                     {Profile::Core, 4, 3},
-                                                     {Profile::Core, 4, 2},
-                                                     {Profile::Core, 4, 1},
-                                                     {Profile::Core, 4, 0},
-                                                     {Profile::Core, 3, 3},
-                                                     {Profile::Core, 3, 2},
-                                                     {Profile::Core, 3, 1},
-                                                     {Profile::Core, 3, 0}}};
-  return vlist;
-}
-
-const std::array<Context::Version, 12>& Context::GetAllDesktopVersionsListWithFallback()
-{
-  static constexpr std::array<Version, 12> vlist = {{{Profile::Core, 4, 6},
-                                                     {Profile::Core, 4, 5},
-                                                     {Profile::Core, 4, 4},
-                                                     {Profile::Core, 4, 3},
-                                                     {Profile::Core, 4, 2},
-                                                     {Profile::Core, 4, 1},
-                                                     {Profile::Core, 4, 0},
-                                                     {Profile::Core, 3, 3},
-                                                     {Profile::Core, 3, 2},
-                                                     {Profile::Core, 3, 1},
-                                                     {Profile::Core, 3, 0},
-                                                     {Profile::NoProfile, 0, 0}}};
-  return vlist;
-}
-
-const std::array<Context::Version, 4>& Context::GetAllESVersionsList()
-{
-  static constexpr std::array<Version, 4> vlist = {
-    {{Profile::ES, 3, 2}, {Profile::ES, 3, 1}, {Profile::ES, 3, 0}, {Profile::ES, 2, 0}}};
-  return vlist;
-}
-
-const std::array<Context::Version, 16>& Context::GetAllVersionsList()
-{
-  static constexpr std::array<Version, 16> vlist = {{{Profile::Core, 4, 6},
-                                                     {Profile::Core, 4, 5},
-                                                     {Profile::Core, 4, 4},
-                                                     {Profile::Core, 4, 3},
-                                                     {Profile::Core, 4, 2},
-                                                     {Profile::Core, 4, 1},
-                                                     {Profile::Core, 4, 0},
-                                                     {Profile::Core, 3, 3},
-                                                     {Profile::Core, 3, 2},
-                                                     {Profile::Core, 3, 1},
-                                                     {Profile::Core, 3, 0},
-                                                     {Profile::ES, 3, 2},
-                                                     {Profile::ES, 3, 1},
-                                                     {Profile::ES, 3, 0},
-                                                     {Profile::ES, 2, 0},
-                                                     {Profile::NoProfile, 0, 0}}};
-  return vlist;
 }
 
 } // namespace GL
