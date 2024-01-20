@@ -98,7 +98,8 @@ private Q_SLOTS:
   void onRestoreDefaultsClicked();
 
 protected:
-  void wheelEvent(QWheelEvent* event);
+  void closeEvent(QCloseEvent* event) override;
+  void wheelEvent(QWheelEvent* event) override;
 
 private:
   enum : u32
