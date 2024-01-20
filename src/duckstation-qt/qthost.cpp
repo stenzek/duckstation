@@ -1418,6 +1418,11 @@ void Host::OnAchievementsHardcoreModeChanged(bool enabled)
   emit g_emu_thread->achievementsChallengeModeChanged(enabled);
 }
 
+void Host::OnCoverDownloaderOpenRequested()
+{
+  emit g_emu_thread->onCoverDownloaderOpenRequested();
+}
+
 void EmuThread::doBackgroundControllerPoll()
 {
   System::Internal::IdlePollUpdate();

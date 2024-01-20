@@ -44,7 +44,6 @@
 
 #include <atomic>
 #include <bitset>
-#include <thread>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -208,15 +207,6 @@ struct PostProcessingStageInfo
 };
 
 //////////////////////////////////////////////////////////////////////////
-// Utility
-//////////////////////////////////////////////////////////////////////////
-static void StartAsyncOp(std::function<void(::ProgressCallback*)> callback, std::string name);
-static void AsyncOpThreadEntryPoint(std::function<void(::ProgressCallback*)> callback,
-                                    FullscreenUI::ProgressCallback* progress);
-static void CancelAsyncOpWithName(const std::string_view& name);
-static void CancelAsyncOps();
-
-//////////////////////////////////////////////////////////////////////////
 // Main
 //////////////////////////////////////////////////////////////////////////
 static void ToggleTheme();
@@ -239,11 +229,6 @@ static bool s_tried_to_initialize = false;
 static bool s_pause_menu_was_open = false;
 static bool s_was_paused_on_quick_menu_open = false;
 static bool s_about_window_open = false;
-
-// async operations (e.g. cover downloads)
-using AsyncOpEntry = std::pair<std::thread, std::unique_ptr<FullscreenUI::ProgressCallback>>;
-static std::mutex s_async_op_mutex;
-static std::deque<AsyncOpEntry> s_async_ops;
 
 //////////////////////////////////////////////////////////////////////////
 // Resources
@@ -454,7 +439,6 @@ static bool s_save_state_selector_resuming = false;
 // Game List
 //////////////////////////////////////////////////////////////////////////
 static void DrawGameListWindow();
-static void DrawCoverDownloaderWindow();
 static void DrawGameList(const ImVec2& heading_size);
 static void DrawGameGrid(const ImVec2& heading_size);
 static void HandleGameListActivate(const GameList::Entry* entry);
@@ -488,77 +472,6 @@ void FullscreenUI::TimeToPrintableString(SmallStringBase* str, time_t t)
   char buf[256];
   std::strftime(buf, sizeof(buf), "%c", &lt);
   str->assign(buf);
-}
-
-void FullscreenUI::StartAsyncOp(std::function<void(::ProgressCallback*)> callback, std::string name)
-{
-  CancelAsyncOpWithName(name);
-
-  std::unique_lock lock(s_async_op_mutex);
-  std::unique_ptr<FullscreenUI::ProgressCallback> progress(
-    std::make_unique<FullscreenUI::ProgressCallback>(std::move(name)));
-  std::thread thread(AsyncOpThreadEntryPoint, std::move(callback), progress.get());
-  s_async_ops.emplace_back(std::move(thread), std::move(progress));
-}
-
-void FullscreenUI::CancelAsyncOpWithName(const std::string_view& name)
-{
-  std::unique_lock lock(s_async_op_mutex);
-  for (auto iter = s_async_ops.begin(); iter != s_async_ops.end(); ++iter)
-  {
-    if (name != iter->second->GetName())
-      continue;
-
-    // move the thread out so it doesn't detach itself, then join
-    std::unique_ptr<FullscreenUI::ProgressCallback> progress(std::move(iter->second));
-    std::thread thread(std::move(iter->first));
-    progress->SetCancelled();
-    s_async_ops.erase(iter);
-    lock.unlock();
-    if (thread.joinable())
-      thread.join();
-    lock.lock();
-    break;
-  }
-}
-
-void FullscreenUI::CancelAsyncOps()
-{
-  std::unique_lock lock(s_async_op_mutex);
-  while (!s_async_ops.empty())
-  {
-    auto iter = s_async_ops.begin();
-
-    // move the thread out so it doesn't detach itself, then join
-    std::unique_ptr<FullscreenUI::ProgressCallback> progress(std::move(iter->second));
-    std::thread thread(std::move(iter->first));
-    progress->SetCancelled();
-    s_async_ops.erase(iter);
-    lock.unlock();
-    if (thread.joinable())
-      thread.join();
-    lock.lock();
-  }
-}
-
-void FullscreenUI::AsyncOpThreadEntryPoint(std::function<void(::ProgressCallback*)> callback,
-                                           FullscreenUI::ProgressCallback* progress)
-{
-  Threading::SetNameOfCurrentThread(TinyString::from_format("{} Async Op", progress->GetName()).c_str());
-
-  callback(progress);
-
-  // if we were removed from the list, it means we got cancelled, and the main thread is blocking
-  std::unique_lock lock(s_async_op_mutex);
-  for (auto iter = s_async_ops.begin(); iter != s_async_ops.end(); ++iter)
-  {
-    if (iter->second.get() == progress)
-    {
-      iter->first.detach();
-      s_async_ops.erase(iter);
-      break;
-    }
-  }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -748,7 +661,6 @@ void FullscreenUI::OpenPauseSubMenu(PauseSubMenu submenu)
 void FullscreenUI::Shutdown()
 {
   Achievements::ClearUIState();
-  CancelAsyncOps();
   CloseSaveStateSelector();
   s_cover_image_map.clear();
   s_game_list_sorted_entries = {};
@@ -1453,8 +1365,7 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
   {
     BeginInputBinding(bsi, type, section, name, display_name);
   }
-  else if (ImGui::IsItemClicked(ImGuiMouseButton_Right) ||
-           ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false))
+  else if (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false))
   {
     bsi->DeleteValue(section, name);
     SetSettingsChanged(bsi);
@@ -3997,9 +3908,10 @@ void FullscreenUI::DrawDisplaySettingsPage()
                     FSUI_CSTR("Disables dithering and uses the full 8 bits per channel of color information."), "GPU",
                     "TrueColor", true, is_hardware);
 
-  DrawToggleSetting(bsi, FSUI_CSTR("True Color Debanding"),
-                    FSUI_CSTR("Applies modern dithering techniques to further smooth out gradients when true color is enabled."), "GPU",
-                    "Debanding", false, is_hardware && bsi->GetBoolValue("GPU", "TrueColor", false));
+  DrawToggleSetting(
+    bsi, FSUI_CSTR("True Color Debanding"),
+    FSUI_CSTR("Applies modern dithering techniques to further smooth out gradients when true color is enabled."), "GPU",
+    "Debanding", false, is_hardware && bsi->GetBoolValue("GPU", "TrueColor", false));
 
   DrawToggleSetting(bsi, FSUI_CSTR("Widescreen Hack"),
                     FSUI_CSTR("Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games."),
@@ -5485,8 +5397,8 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
           closed = true;
         }
 
-        if (hovered && (ImGui::IsItemClicked(ImGuiMouseButton_Right) ||
-                        ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false)))
+        if (hovered &&
+            (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false)))
         {
           s_save_state_selector_submenu_index = static_cast<s32>(i);
         }
@@ -5888,8 +5800,8 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       if (hovered)
         selected_entry = entry;
 
-      if (selected_entry && (ImGui::IsItemClicked(ImGuiMouseButton_Right) ||
-                             ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false)))
+      if (selected_entry &&
+          (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false)))
       {
         HandleGameListOptions(selected_entry);
       }
@@ -6106,8 +6018,8 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
       if (pressed)
         HandleGameListActivate(entry);
 
-      if (hovered && (ImGui::IsItemClicked(ImGuiMouseButton_Right) ||
-                      ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false)))
+      if (hovered &&
+          (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false)))
       {
         HandleGameListOptions(entry);
       }
@@ -6314,7 +6226,9 @@ void FullscreenUI::DrawGameListSettingsPage(const ImVec2& heading_size)
     DrawFolderSetting(bsi, FSUI_ICONSTR(ICON_FA_FOLDER, "Covers Directory"), "Folders", "Covers", EmuFolders::Covers);
     if (MenuButton(FSUI_ICONSTR(ICON_FA_DOWNLOAD, "Download Covers"),
                    FSUI_CSTR("Downloads covers from a user-specified URL template.")))
-      ImGui::OpenPopup("Download Covers");
+    {
+      Host::OnCoverDownloaderOpenRequested();
+    }
   }
 
   MenuHeading("Operations");
@@ -6329,89 +6243,7 @@ void FullscreenUI::DrawGameListSettingsPage(const ImVec2& heading_size)
 
   EndMenuButtons();
 
-  DrawCoverDownloaderWindow();
   EndFullscreenWindow();
-}
-
-void FullscreenUI::DrawCoverDownloaderWindow()
-{
-  ImGui::SetNextWindowSize(LayoutScale(1000.0f, 0.0f));
-  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
-  ImGui::PushFont(g_large_font);
-
-  bool is_open = true;
-  if (ImGui::BeginPopupModal("Download Covers", &is_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
-  {
-    ImGui::TextWrapped(
-      "%s",
-      FSUI_CSTR("DuckStation can automatically download covers for games which do not currently have a cover set. We "
-                "do not host any cover images, the user must provide their own source for images."));
-    ImGui::NewLine();
-    ImGui::TextWrapped("%s",
-                       FSUI_CSTR("In the form below, specify the URLs to download covers from, with one template URL "
-                                 "per line. The following variables are available:"));
-    ImGui::NewLine();
-    ImGui::TextWrapped("%s", FSUI_CSTR("${title}: Title of the game.\n${filetitle}: Name component of the game's "
-                                       "filename.\n${serial}: Serial of the game."));
-    ImGui::NewLine();
-    ImGui::TextWrapped("%s", FSUI_CSTR("Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg"));
-    ImGui::NewLine();
-
-    BeginMenuButtons();
-
-    static char template_urls[512];
-    ImGui::InputTextMultiline("##templates", template_urls, sizeof(template_urls),
-                              ImVec2(ImGui::GetCurrentWindow()->WorkRect.GetWidth(), LayoutScale(175.0f)));
-
-    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(5.0f));
-
-    static bool use_serial_names;
-    ImGui::PushFont(g_medium_font);
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(2.0f, 2.0f));
-    ImGui::Checkbox(FSUI_CSTR("Use Serial File Names"), &use_serial_names);
-    ImGui::PopStyleVar(1);
-    ImGui::PopFont();
-
-    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-
-    const bool download_enabled = (std::strlen(template_urls) > 0);
-
-    if (ActiveButton(FSUI_ICONSTR(ICON_FA_DOWNLOAD, "Start Download"), false, download_enabled))
-    {
-      StartAsyncOp(
-        [urls = StringUtil::SplitNewString(template_urls, '\n'),
-         use_serial_names = use_serial_names](::ProgressCallback* progress) {
-          GameList::DownloadCovers(urls, use_serial_names, progress,
-                                   [](const GameList::Entry* entry, std::string save_path) {
-                                     // cache the cover path on our side once it's saved
-                                     Host::RunOnCPUThread([path = entry->path, save_path = std::move(save_path)]() {
-                                       s_cover_image_map[std::move(path)] = std::move(save_path);
-                                     });
-                                   });
-        },
-        "Download Covers");
-      std::memset(template_urls, 0, sizeof(template_urls));
-      use_serial_names = false;
-      ImGui::CloseCurrentPopup();
-    }
-
-    if (ActiveButton(FSUI_ICONSTR(ICON_FA_TIMES, "Cancel"), false))
-    {
-      std::memset(template_urls, 0, sizeof(template_urls));
-      use_serial_names = false;
-      ImGui::CloseCurrentPopup();
-    }
-
-    EndMenuButtons();
-
-    ImGui::EndPopup();
-  }
-
-  ImGui::PopFont();
-  ImGui::PopStyleVar(2);
 }
 
 void FullscreenUI::SwitchToGameList()
@@ -6609,118 +6441,6 @@ bool FullscreenUI::IsLeaderboardsWindowOpen()
   return (s_current_main_window == MainWindowType::Leaderboards);
 }
 
-FullscreenUI::ProgressCallback::ProgressCallback(std::string name) : BaseProgressCallback(), m_name(std::move(name))
-{
-  ImGuiFullscreen::OpenBackgroundProgressDialog(m_name.c_str(), "", 0, 100, 0);
-}
-
-FullscreenUI::ProgressCallback::~ProgressCallback()
-{
-  ImGuiFullscreen::CloseBackgroundProgressDialog(m_name.c_str());
-}
-
-void FullscreenUI::ProgressCallback::PushState()
-{
-  BaseProgressCallback::PushState();
-}
-
-void FullscreenUI::ProgressCallback::PopState()
-{
-  BaseProgressCallback::PopState();
-  Redraw(true);
-}
-
-void FullscreenUI::ProgressCallback::SetCancellable(bool cancellable)
-{
-  BaseProgressCallback::SetCancellable(cancellable);
-  Redraw(true);
-}
-
-void FullscreenUI::ProgressCallback::SetTitle(const char* title)
-{
-  // todo?
-}
-
-void FullscreenUI::ProgressCallback::SetStatusText(const char* text)
-{
-  BaseProgressCallback::SetStatusText(text);
-  Redraw(true);
-}
-
-void FullscreenUI::ProgressCallback::SetProgressRange(u32 range)
-{
-  u32 last_range = m_progress_range;
-
-  BaseProgressCallback::SetProgressRange(range);
-
-  if (m_progress_range != last_range)
-    Redraw(false);
-}
-
-void FullscreenUI::ProgressCallback::SetProgressValue(u32 value)
-{
-  u32 lastValue = m_progress_value;
-
-  BaseProgressCallback::SetProgressValue(value);
-
-  if (m_progress_value != lastValue)
-    Redraw(false);
-}
-
-void FullscreenUI::ProgressCallback::Redraw(bool force)
-{
-  const int percent =
-    static_cast<int>((static_cast<float>(m_progress_value) / static_cast<float>(m_progress_range)) * 100.0f);
-  if (percent == m_last_progress_percent && !force)
-    return;
-
-  m_last_progress_percent = percent;
-  ImGuiFullscreen::UpdateBackgroundProgressDialog(m_name.c_str(), m_status_text, 0, 100, percent);
-}
-
-void FullscreenUI::ProgressCallback::DisplayError(const char* message)
-{
-  Log_ErrorPrint(message);
-  Host::ReportErrorAsync("Error", message);
-}
-
-void FullscreenUI::ProgressCallback::DisplayWarning(const char* message)
-{
-  Log_WarningPrint(message);
-}
-
-void FullscreenUI::ProgressCallback::DisplayInformation(const char* message)
-{
-  Log_InfoPrint(message);
-}
-
-void FullscreenUI::ProgressCallback::DisplayDebugMessage(const char* message)
-{
-  Log_DebugPrint(message);
-}
-
-void FullscreenUI::ProgressCallback::ModalError(const char* message)
-{
-  Log_ErrorPrint(message);
-  Host::ReportErrorAsync("Error", message);
-}
-
-bool FullscreenUI::ProgressCallback::ModalConfirmation(const char* message)
-{
-  return false;
-}
-
-void FullscreenUI::ProgressCallback::ModalInformation(const char* message)
-{
-  Log_InfoPrint(message);
-}
-
-void FullscreenUI::ProgressCallback::SetCancelled()
-{
-  if (m_cancellable)
-    m_cancelled = true;
-}
-
 #endif // __ANDROID__
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -6732,7 +6452,6 @@ void FullscreenUI::ProgressCallback::SetCancelled()
 
 #if 0
 // TRANSLATION-STRING-AREA-BEGIN
-TRANSLATE_NOOP("FullscreenUI", "${title}: Title of the game.\n${filetitle}: Name component of the game's filename.\n${serial}: Serial of the game.");
 TRANSLATE_NOOP("FullscreenUI", "-");
 TRANSLATE_NOOP("FullscreenUI", "1 Frame");
 TRANSLATE_NOOP("FullscreenUI", "10 Frames");
@@ -6815,6 +6534,7 @@ TRANSLATE_NOOP("FullscreenUI", "Advanced Settings");
 TRANSLATE_NOOP("FullscreenUI", "All Time: {}");
 TRANSLATE_NOOP("FullscreenUI", "Allow Booting Without SBI File");
 TRANSLATE_NOOP("FullscreenUI", "Allows loading protected games without subchannel information.");
+TRANSLATE_NOOP("FullscreenUI", "Applies modern dithering techniques to further smooth out gradients when true color is enabled.");
 TRANSLATE_NOOP("FullscreenUI", "Apply Image Patches");
 TRANSLATE_NOOP("FullscreenUI", "Apply Per-Game Settings");
 TRANSLATE_NOOP("FullscreenUI", "Are you sure you want to clear the current post-processing chain? All configuration will be lost.");
@@ -6937,7 +6657,6 @@ TRANSLATE_NOOP("FullscreenUI", "Downsamples the rendered image prior to displayi
 TRANSLATE_NOOP("FullscreenUI", "Downsampling");
 TRANSLATE_NOOP("FullscreenUI", "Downsampling Display Scale");
 TRANSLATE_NOOP("FullscreenUI", "Duck icon by icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)");
-TRANSLATE_NOOP("FullscreenUI", "DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.");
 TRANSLATE_NOOP("FullscreenUI", "DuckStation is a free and open-source simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability.");
 TRANSLATE_NOOP("FullscreenUI", "Dump Replaceable VRAM Writes");
 TRANSLATE_NOOP("FullscreenUI", "Emulation Settings");
@@ -6972,7 +6691,6 @@ TRANSLATE_NOOP("FullscreenUI", "Enhancements");
 TRANSLATE_NOOP("FullscreenUI", "Ensures every frame generated is displayed for optimal pacing. Disable if you are having speed or sound issues.");
 TRANSLATE_NOOP("FullscreenUI", "Enter the name of the input profile you wish to create.");
 TRANSLATE_NOOP("FullscreenUI", "Enter the name of the memory card you wish to create.");
-TRANSLATE_NOOP("FullscreenUI", "Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg");
 TRANSLATE_NOOP("FullscreenUI", "Execution Mode");
 TRANSLATE_NOOP("FullscreenUI", "Exit");
 TRANSLATE_NOOP("FullscreenUI", "Exit And Save State");
@@ -7030,7 +6748,6 @@ TRANSLATE_NOOP("FullscreenUI", "How many saves will be kept for rewinding. Highe
 TRANSLATE_NOOP("FullscreenUI", "How often a rewind state will be created. Higher frequencies have greater system requirements.");
 TRANSLATE_NOOP("FullscreenUI", "Identifies any new files added to the game directories.");
 TRANSLATE_NOOP("FullscreenUI", "If not enabled, the current post processing chain will be ignored.");
-TRANSLATE_NOOP("FullscreenUI", "In the form below, specify the URLs to download covers from, with one template URL per line. The following variables are available:");
 TRANSLATE_NOOP("FullscreenUI", "Increase Timer Resolution");
 TRANSLATE_NOOP("FullscreenUI", "Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games.");
 TRANSLATE_NOOP("FullscreenUI", "Increases the precision of polygon culling, reducing the number of holes in geometry.");
@@ -7264,7 +6981,6 @@ TRANSLATE_NOOP("FullscreenUI", "Speeds up CD-ROM reads by the specified factor. 
 TRANSLATE_NOOP("FullscreenUI", "Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some games, and break others.");
 TRANSLATE_NOOP("FullscreenUI", "Stage {}: {}");
 TRANSLATE_NOOP("FullscreenUI", "Start BIOS");
-TRANSLATE_NOOP("FullscreenUI", "Start Download");
 TRANSLATE_NOOP("FullscreenUI", "Start File");
 TRANSLATE_NOOP("FullscreenUI", "Start Fullscreen");
 TRANSLATE_NOOP("FullscreenUI", "Start the console without any disc inserted.");
@@ -7298,6 +7014,7 @@ TRANSLATE_NOOP("FullscreenUI", "Title");
 TRANSLATE_NOOP("FullscreenUI", "Toggle Analog");
 TRANSLATE_NOOP("FullscreenUI", "Toggle Fast Forward");
 TRANSLATE_NOOP("FullscreenUI", "Toggle every %d frames");
+TRANSLATE_NOOP("FullscreenUI", "True Color Debanding");
 TRANSLATE_NOOP("FullscreenUI", "True Color Rendering");
 TRANSLATE_NOOP("FullscreenUI", "Turbo Speed");
 TRANSLATE_NOOP("FullscreenUI", "Type");
@@ -7312,7 +7029,6 @@ TRANSLATE_NOOP("FullscreenUI", "Use Blit Swap Chain");
 TRANSLATE_NOOP("FullscreenUI", "Use Debug GPU Device");
 TRANSLATE_NOOP("FullscreenUI", "Use Global Setting");
 TRANSLATE_NOOP("FullscreenUI", "Use Light Theme");
-TRANSLATE_NOOP("FullscreenUI", "Use Serial File Names");
 TRANSLATE_NOOP("FullscreenUI", "Use Single Card For Multi-Disc Games");
 TRANSLATE_NOOP("FullscreenUI", "Use Software Renderer For Readbacks");
 TRANSLATE_NOOP("FullscreenUI", "Username: {}");

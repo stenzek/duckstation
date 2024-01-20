@@ -1,7 +1,8 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "core/achievements.h"
+#include "core/fullscreen_ui.h"
 #include "core/game_list.h"
 #include "core/gpu.h"
 #include "core/host.h"
@@ -364,6 +365,11 @@ void Host::OnAchievementsRefreshed()
 }
 
 void Host::OnAchievementsHardcoreModeChanged(bool enabled)
+{
+  // noop
+}
+
+void Host::OnCoverDownloaderOpenRequested()
 {
   // noop
 }
