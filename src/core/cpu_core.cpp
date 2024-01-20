@@ -51,9 +51,9 @@ static bool BreakpointCheck();
 static void TracePrintInstruction();
 #endif
 
-static void DisassembleAndPrint(u32 addr, const char* prefix);
-static void PrintInstruction(u32 bits, u32 pc, Registers* regs, const char* prefix);
-static void LogInstruction(u32 bits, u32 pc, Registers* regs);
+static void DisassembleAndPrint(u32 addr, bool regs, const char* prefix);
+static void PrintInstruction(u32 bits, u32 pc, bool regs, const char* prefix);
+static void LogInstruction(u32 bits, u32 pc, bool regs);
 
 static void HandleWriteSyscall();
 static void HandlePutcSyscall();
@@ -314,7 +314,7 @@ ALWAYS_INLINE_RELEASE void CPU::RaiseException(u32 CAUSE_bits, u32 EPC, u32 vect
                   static_cast<u8>(g_state.cop0_regs.cause.Excode.GetValue()), g_state.current_instruction_pc,
                   g_state.cop0_regs.EPC, g_state.cop0_regs.cause.BD ? "true" : "false",
                   g_state.cop0_regs.cause.CE.GetValue());
-    DisassembleAndPrint(g_state.current_instruction_pc, 4, 0);
+    DisassembleAndPrint(g_state.current_instruction_pc, 4u, 0u);
     if (s_trace_to_log)
     {
       CPU::WriteToExecutionLog("Exception %u at 0x%08X (epc=0x%08X, BD=%s, CE=%u)\n",
@@ -669,7 +669,7 @@ void CPU::TracePrintInstruction()
   TinyString instr;
   TinyString comment;
   DisassembleInstruction(&instr, pc, bits);
-  DisassembleInstructionComment(&comment, pc, bits, &g_state.regs);
+  DisassembleInstructionComment(&comment, pc, bits);
   if (!comment.empty())
   {
     for (u32 i = instr.length(); i < 30; i++)
@@ -683,35 +683,41 @@ void CPU::TracePrintInstruction()
 
 #endif
 
-void CPU::PrintInstruction(u32 bits, u32 pc, Registers* regs, const char* prefix)
+void CPU::PrintInstruction(u32 bits, u32 pc, bool regs, const char* prefix)
 {
   TinyString instr;
-  TinyString comment;
   DisassembleInstruction(&instr, pc, bits);
-  DisassembleInstructionComment(&comment, pc, bits, regs);
-  if (!comment.empty())
+  if (regs)
   {
-    for (u32 i = instr.length(); i < 30; i++)
-      instr.append(' ');
-    instr.append("; ");
-    instr.append(comment);
+    TinyString comment;
+    DisassembleInstructionComment(&comment, pc, bits);
+    if (!comment.empty())
+    {
+      for (u32 i = instr.length(); i < 30; i++)
+        instr.append(' ');
+      instr.append("; ");
+      instr.append(comment);
+    }
   }
 
   Log_DevPrintf("%s%08x: %08x %s", prefix, pc, bits, instr.c_str());
 }
 
-void CPU::LogInstruction(u32 bits, u32 pc, Registers* regs)
+void CPU::LogInstruction(u32 bits, u32 pc, bool regs)
 {
   TinyString instr;
-  TinyString comment;
   DisassembleInstruction(&instr, pc, bits);
-  DisassembleInstructionComment(&comment, pc, bits, regs);
-  if (!comment.empty())
+  if (regs)
   {
-    for (u32 i = instr.length(); i < 30; i++)
-      instr.append(' ');
-    instr.append("; ");
-    instr.append(comment);
+    TinyString comment;
+    DisassembleInstructionComment(&comment, pc, bits);
+    if (!comment.empty())
+    {
+      for (u32 i = instr.length(); i < 30; i++)
+        instr.append(' ');
+      instr.append("; ");
+      instr.append(comment);
+    }
   }
 
   WriteToExecutionLog("%08x: %08x %s\n", pc, bits, instr.c_str());
@@ -899,11 +905,11 @@ ALWAYS_INLINE static constexpr bool SubOverflow(u32 old_value, u32 sub_value, u3
   return (((new_value ^ old_value) & (old_value ^ sub_value)) & UINT32_C(0x80000000)) != 0;
 }
 
-void CPU::DisassembleAndPrint(u32 addr, const char* prefix)
+void CPU::DisassembleAndPrint(u32 addr, bool regs, const char* prefix)
 {
   u32 bits = 0;
   SafeReadMemoryWord(addr, &bits);
-  PrintInstruction(bits, addr, &g_state.regs, prefix);
+  PrintInstruction(bits, addr, regs, prefix);
 }
 
 void CPU::DisassembleAndPrint(u32 addr, u32 instructions_before /* = 0 */, u32 instructions_after /* = 0 */)
@@ -911,14 +917,14 @@ void CPU::DisassembleAndPrint(u32 addr, u32 instructions_before /* = 0 */, u32 i
   u32 disasm_addr = addr - (instructions_before * sizeof(u32));
   for (u32 i = 0; i < instructions_before; i++)
   {
-    DisassembleAndPrint(disasm_addr, "");
+    DisassembleAndPrint(disasm_addr, false, "");
     disasm_addr += sizeof(u32);
   }
 
   // <= to include the instruction itself
   for (u32 i = 0; i <= instructions_after; i++)
   {
-    DisassembleAndPrint(disasm_addr, (i == 0) ? "---->" : "");
+    DisassembleAndPrint(disasm_addr, (i == 0), (i == 0) ? "---->" : "");
     disasm_addr += sizeof(u32);
   }
 }
@@ -2227,7 +2233,7 @@ template<PGXPMode pgxp_mode, bool debug>
       if constexpr (debug)
       {
         if (s_trace_to_log)
-          LogInstruction(g_state.current_instruction.bits, g_state.current_instruction_pc, &g_state.regs);
+          LogInstruction(g_state.current_instruction.bits, g_state.current_instruction_pc, true);
 
         if (g_state.current_instruction_pc == 0xA0) [[unlikely]]
           HandleA0Syscall();

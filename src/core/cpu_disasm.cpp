@@ -42,14 +42,14 @@ struct GTEInstructionTable
 } // namespace
 
 static void FormatInstruction(SmallStringBase* dest, const Instruction inst, u32 pc, const char* format);
-static void FormatComment(SmallStringBase* dest, const Instruction inst, u32 pc, Registers* regs, const char* format);
+static void FormatComment(SmallStringBase* dest, const Instruction inst, u32 pc, const char* format);
 
 template<typename T>
 static void FormatCopInstruction(SmallStringBase* dest, u32 pc, const Instruction inst,
                                  const std::pair<T, const char*>* table, size_t table_size, T table_key);
 
 template<typename T>
-static void FormatCopComment(SmallStringBase* dest, u32 pc, Registers* regs, const Instruction inst,
+static void FormatCopComment(SmallStringBase* dest, u32 pc, const Instruction inst,
                              const std::pair<T, const char*>* table, size_t table_size, T table_key);
 
 static void FormatGTEInstruction(SmallStringBase* dest, u32 pc, const Instruction inst);
@@ -189,10 +189,10 @@ static const std::array<const char*, 64> s_special_table = {{
 }};
 
 static const std::array<std::pair<CopCommonInstruction, const char*>, 4> s_cop_common_table = {
-  {{CopCommonInstruction::mfcn, "mfc$cop $rt, $coprd"},
-   {CopCommonInstruction::cfcn, "cfc$cop $rt, $coprd"},
+  {{CopCommonInstruction::mfcn, "mfc$cop $rt_, $coprd"},
+   {CopCommonInstruction::cfcn, "cfc$cop $rt_, $coprdc"},
    {CopCommonInstruction::mtcn, "mtc$cop $rt, $coprd"},
-   {CopCommonInstruction::ctcn, "ctc$cop $rt, $coprd"}}};
+   {CopCommonInstruction::ctcn, "ctc$cop $rt, $coprdc"}}};
 
 static const std::array<std::pair<Cop0Instruction, const char*>, 1> s_cop0_table = {{{Cop0Instruction::rfe, "rfe"}}};
 
@@ -291,6 +291,11 @@ void CPU::FormatInstruction(SmallStringBase* dest, const Instruction inst, u32 p
       dest->append(GetRegName(inst.r.rs));
       str += 2;
     }
+    else if (std::strncmp(str, "rt_", 3) == 0)
+    {
+      dest->append(GetRegName(inst.r.rt));
+      str += 3;
+    }
     else if (std::strncmp(str, "rt", 2) == 0)
     {
       dest->append(GetRegName(inst.r.rt));
@@ -340,6 +345,14 @@ void CPU::FormatInstruction(SmallStringBase* dest, const Instruction inst, u32 p
       dest->append(((inst.bits & (UINT32_C(1) << 24)) != 0) ? 't' : 'f');
       str += 5;
     }
+    else if (std::strncmp(str, "coprdc", 6) == 0)
+    {
+      if (inst.IsCop2Instruction())
+        dest->append(GetGTERegisterName(static_cast<u8>(inst.r.rd.GetValue()) + 32));
+      else
+        dest->append_format("{}", ZeroExtend32(static_cast<u8>(inst.r.rd.GetValue())));
+      str += 6;
+    }
     else if (std::strncmp(str, "coprd", 5) == 0)
     {
       if (inst.IsCop2Instruction())
@@ -368,8 +381,10 @@ void CPU::FormatInstruction(SmallStringBase* dest, const Instruction inst, u32 p
   }
 }
 
-void CPU::FormatComment(SmallStringBase* dest, const Instruction inst, u32 pc, Registers* regs, const char* format)
+void CPU::FormatComment(SmallStringBase* dest, const Instruction inst, u32 pc, const char* format)
 {
+  const CPU::Registers* regs = &CPU::g_state.regs;
+
   const char* str = format;
   while (*str != '\0')
   {
@@ -383,6 +398,10 @@ void CPU::FormatComment(SmallStringBase* dest, const Instruction inst, u32 pc, R
                           regs->r[static_cast<u8>(inst.r.rs.GetValue())]);
 
       str += 2;
+    }
+    else if (std::strncmp(str, "rt_", 3) == 0)
+    {
+      str += 3;
     }
     else if (std::strncmp(str, "rt", 2) == 0)
     {
@@ -427,12 +446,36 @@ void CPU::FormatComment(SmallStringBase* dest, const Instruction inst, u32 pc, R
     {
       str += 5;
     }
+    else if (std::strncmp(str, "coprdc", 6) == 0)
+    {
+      if (inst.IsCop2Instruction())
+      {
+        dest->append_format("{}{}=0x{:08X}", dest->empty() ? "" : ", ",
+                            GetGTERegisterName(static_cast<u8>(inst.r.rd.GetValue()) + 32),
+                            g_state.gte_regs.cr32[static_cast<u8>(inst.r.rd.GetValue())]);
+      }
+      str += 6;
+    }
     else if (std::strncmp(str, "coprd", 5) == 0)
     {
+      if (inst.IsCop2Instruction())
+      {
+        dest->append_format("{}{}=0x{:08X}", dest->empty() ? "" : ", ",
+                            GetGTERegisterName(static_cast<u8>(inst.r.rd.GetValue())),
+                            g_state.gte_regs.dr32[static_cast<u8>(inst.r.rd.GetValue())]);
+      }
+
       str += 5;
     }
     else if (std::strncmp(str, "coprt", 5) == 0)
     {
+      if (inst.IsCop2Instruction())
+      {
+        dest->append_format("{}{}=0x{:08X}", dest->empty() ? "" : ", ",
+                            GetGTERegisterName(static_cast<u8>(inst.r.rt.GetValue())),
+                            g_state.gte_regs.dr32[static_cast<u8>(inst.r.rt.GetValue())]);
+      }
+
       str += 5;
     }
     else if (std::strncmp(str, "cop", 3) == 0)
@@ -463,14 +506,14 @@ void CPU::FormatCopInstruction(SmallStringBase* dest, u32 pc, const Instruction 
 }
 
 template<typename T>
-void CPU::FormatCopComment(SmallStringBase* dest, u32 pc, Registers* regs, const Instruction inst,
+void CPU::FormatCopComment(SmallStringBase* dest, u32 pc, const Instruction inst,
                            const std::pair<T, const char*>* table, size_t table_size, T table_key)
 {
   for (size_t i = 0; i < table_size; i++)
   {
     if (table[i].first == table_key)
     {
-      FormatComment(dest, inst, pc, regs, table[i].second);
+      FormatComment(dest, inst, pc, table[i].second);
       return;
     }
   }
@@ -560,13 +603,13 @@ void CPU::DisassembleInstruction(SmallStringBase* dest, u32 pc, u32 bits)
   }
 }
 
-void CPU::DisassembleInstructionComment(SmallStringBase* dest, u32 pc, u32 bits, Registers* regs)
+void CPU::DisassembleInstructionComment(SmallStringBase* dest, u32 pc, u32 bits)
 {
   const Instruction inst{bits};
   switch (inst.op)
   {
     case InstructionOp::funct:
-      FormatComment(dest, inst, pc, regs, s_special_table[static_cast<u8>(inst.r.funct.GetValue())]);
+      FormatComment(dest, inst, pc, s_special_table[static_cast<u8>(inst.r.funct.GetValue())]);
       return;
 
     case InstructionOp::cop0:
@@ -576,8 +619,7 @@ void CPU::DisassembleInstructionComment(SmallStringBase* dest, u32 pc, u32 bits,
     {
       if (inst.cop.IsCommonInstruction())
       {
-        FormatCopComment(dest, pc, regs, inst, s_cop_common_table.data(), s_cop_common_table.size(),
-                         inst.cop.CommonOp());
+        FormatCopComment(dest, pc, inst, s_cop_common_table.data(), s_cop_common_table.size(), inst.cop.CommonOp());
       }
       else
       {
@@ -585,7 +627,7 @@ void CPU::DisassembleInstructionComment(SmallStringBase* dest, u32 pc, u32 bits,
         {
           case InstructionOp::cop0:
           {
-            FormatCopComment(dest, pc, regs, inst, s_cop0_table.data(), s_cop0_table.size(), inst.cop.Cop0Op());
+            FormatCopComment(dest, pc, inst, s_cop0_table.data(), s_cop0_table.size(), inst.cop.Cop0Op());
           }
           break;
 
@@ -612,14 +654,14 @@ void CPU::DisassembleInstructionComment(SmallStringBase* dest, u32 pc, u32 bits,
       const bool bgez = ConvertToBoolUnchecked(rt & u8(1));
       const bool link = ConvertToBoolUnchecked((rt >> 4) & u8(1));
       if (link)
-        FormatComment(dest, inst, pc, regs, bgez ? "bgezal $rs, $rel" : "bltzal $rs, $rel");
+        FormatComment(dest, inst, pc, bgez ? "bgezal $rs, $rel" : "bltzal $rs, $rel");
       else
-        FormatComment(dest, inst, pc, regs, bgez ? "bgez $rs, $rel" : "bltz $rs, $rel");
+        FormatComment(dest, inst, pc, bgez ? "bgez $rs, $rel" : "bltz $rs, $rel");
     }
     break;
 
     default:
-      FormatComment(dest, inst, pc, regs, s_base_table[static_cast<u8>(inst.op.GetValue())]);
+      FormatComment(dest, inst, pc, s_base_table[static_cast<u8>(inst.op.GetValue())]);
       break;
   }
 }

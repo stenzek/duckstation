@@ -9,7 +9,7 @@ class SmallStringBase;
 namespace CPU {
 
 void DisassembleInstruction(SmallStringBase* dest, u32 pc, u32 bits);
-void DisassembleInstructionComment(SmallStringBase* dest, u32 pc, u32 bits, Registers* regs);
+void DisassembleInstructionComment(SmallStringBase* dest, u32 pc, u32 bits);
 
 const char* GetGTERegisterName(u32 index);
 

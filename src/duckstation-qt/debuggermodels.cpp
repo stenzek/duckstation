@@ -112,7 +112,7 @@ QVariant DebuggerCodeModel::data(const QModelIndex& index, int role /*= Qt::Disp
           return tr("<invalid>");
 
         TinyString str;
-        CPU::DisassembleInstructionComment(&str, address, instruction_bits, &CPU::g_state.regs);
+        CPU::DisassembleInstructionComment(&str, address, instruction_bits);
         return QString::fromUtf8(str.c_str(), static_cast<int>(str.length()));
       }
 
