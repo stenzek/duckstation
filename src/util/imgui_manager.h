@@ -69,6 +69,9 @@ ImFont* GetLargeFont();
 /// Returns true if imgui wants to intercept text input.
 bool WantsTextInput();
 
+/// Returns true if imgui wants to intercept mouse input.
+bool WantsMouseInput();
+
 /// Called on the UI or CPU thread in response to a key press. String is UTF-8.
 void AddTextInput(std::string str);
 

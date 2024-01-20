@@ -322,7 +322,12 @@ void Host::ResizeDisplayWindow(s32 width, s32 height, float scale)
   if (System::IsValid())
   {
     if (System::IsPaused())
+    {
+      // Hackity hack, on some systems, presenting a single frame isn't enough to actually get it
+      // displayed. Two seems to be good enough. Maybe something to do with direct scanout.
       System::InvalidateDisplay();
+      System::InvalidateDisplay();
+    }
 
     System::HostDisplayResized();
   }

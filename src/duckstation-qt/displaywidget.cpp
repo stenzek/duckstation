@@ -1,14 +1,19 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "displaywidget.h"
-#include "common/assert.h"
-#include "common/bitutils.h"
-#include "common/log.h"
 #include "mainwindow.h"
 #include "qthost.h"
 #include "qtutils.h"
+
+#include "core/fullscreen_ui.h"
+
 #include "util/imgui_manager.h"
+
+#include "common/assert.h"
+#include "common/bitutils.h"
+#include "common/log.h"
+
 #include <QtCore/QDebug>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QKeyEvent>
@@ -311,9 +316,12 @@ bool DisplayWidget::event(QEvent* event)
 
       // don't toggle fullscreen when we're bound.. that wouldn't end well.
       if (event->type() == QEvent::MouseButtonDblClick &&
-          static_cast<const QMouseEvent*>(event)->button() == Qt::LeftButton &&
-          !InputManager::HasAnyBindingsForKey(InputManager::MakePointerButtonKey(0, 0)) && QtHost::IsSystemValid() &&
-          !QtHost::IsSystemPaused() && Host::GetBoolSettingValue("Main", "DoubleClickTogglesFullscreen", true))
+          static_cast<const QMouseEvent*>(event)->button() == Qt::LeftButton && QtHost::IsSystemValid() &&
+          !FullscreenUI::HasActiveWindow() &&
+          ((!QtHost::IsSystemPaused() &&
+            !InputManager::HasAnyBindingsForKey(InputManager::MakePointerButtonKey(0, 0))) ||
+           (QtHost::IsSystemPaused() && !ImGuiManager::WantsMouseInput())) &&
+          Host::GetBoolSettingValue("Main", "DoubleClickTogglesFullscreen", true))
       {
         g_emu_thread->toggleFullscreen();
       }
