@@ -2952,6 +2952,90 @@ void VulkanDevice::RenderBlankFrame()
   InvalidateCachedState();
 }
 
+bool VulkanDevice::TryImportHostMemory(const void* data, u32 data_size, VkBufferUsageFlags buffer_usage,
+                                       VkDeviceMemory* out_memory, VkBuffer* out_buffer, u32* out_offset)
+{
+  if (!m_optional_extensions.vk_ext_external_memory_host)
+    return false;
+
+  // Align to the nearest page
+  const void* data_aligned =
+    reinterpret_cast<const void*>(Common::AlignDownPow2(reinterpret_cast<uintptr_t>(data), HOST_PAGE_SIZE));
+
+  // Offset to the start of the data within the page
+  const u32 data_offset = reinterpret_cast<uintptr_t>(data) & (HOST_PAGE_SIZE - 1);
+
+  // Full amount of data that must be imported, including the pages
+  const u32 data_size_aligned = Common::AlignUpPow2(data_offset + data_size, HOST_PAGE_SIZE);
+
+  VkMemoryHostPointerPropertiesEXT pointer_properties = {VK_STRUCTURE_TYPE_MEMORY_HOST_POINTER_PROPERTIES_EXT, nullptr,
+                                                         0};
+  VkResult res = vkGetMemoryHostPointerPropertiesEXT(m_device, VK_EXTERNAL_MEMORY_HANDLE_TYPE_HOST_ALLOCATION_BIT_EXT,
+                                                     data_aligned, &pointer_properties);
+  if (res != VK_SUCCESS || pointer_properties.memoryTypeBits == 0)
+  {
+    return false;
+  }
+
+  VmaAllocationCreateInfo vma_alloc_info = {};
+  vma_alloc_info.preferredFlags =
+    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
+  vma_alloc_info.memoryTypeBits = pointer_properties.memoryTypeBits;
+
+  u32 memory_index = 0;
+  res = vmaFindMemoryTypeIndex(m_allocator, pointer_properties.memoryTypeBits, &vma_alloc_info, &memory_index);
+  if (res != VK_SUCCESS)
+  {
+    return false;
+  }
+
+  const VkImportMemoryHostPointerInfoEXT import_info = {VK_STRUCTURE_TYPE_IMPORT_MEMORY_HOST_POINTER_INFO_EXT, nullptr,
+                                                        VK_EXTERNAL_MEMORY_HANDLE_TYPE_HOST_ALLOCATION_BIT_EXT,
+                                                        const_cast<void*>(data_aligned)};
+
+  const VkMemoryAllocateInfo alloc_info = {VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO, &import_info, data_size_aligned,
+                                           memory_index};
+
+  VkDeviceMemory imported_memory = VK_NULL_HANDLE;
+
+  res = vkAllocateMemory(m_device, &alloc_info, nullptr, &imported_memory);
+  if (res != VK_SUCCESS)
+  {
+    return false;
+  }
+
+  const VkExternalMemoryBufferCreateInfo external_info = {VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO, nullptr,
+                                                          VK_EXTERNAL_MEMORY_HANDLE_TYPE_HOST_ALLOCATION_BIT_EXT};
+
+  const VkBufferCreateInfo buffer_info = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+                                          &external_info,
+                                          0,
+                                          data_size_aligned,
+                                          buffer_usage,
+                                          VK_SHARING_MODE_EXCLUSIVE,
+                                          0,
+                                          nullptr};
+
+  VkBuffer imported_buffer = VK_NULL_HANDLE;
+  res = vkCreateBuffer(m_device, &buffer_info, nullptr, &imported_buffer);
+  if (res != VK_SUCCESS)
+  {
+    if (imported_memory != VK_NULL_HANDLE)
+    {
+      vkFreeMemory(m_device, imported_memory, nullptr);
+    }
+    return false;
+  }
+
+  vkBindBufferMemory(m_device, imported_buffer, imported_memory, 0);
+
+  *out_memory = imported_memory;
+  *out_buffer = imported_buffer;
+  *out_offset = data_offset;
+
+  return true;
+}
+
 void VulkanDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds)
 {
   bool changed = (m_num_current_render_targets != num_rts || m_current_depth_target != ds);

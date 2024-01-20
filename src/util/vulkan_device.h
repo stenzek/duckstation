@@ -341,6 +341,9 @@ private:
 
   void RenderBlankFrame();
 
+  bool TryImportHostMemory(const void* data, u32 data_size, VkBufferUsageFlags buffer_usage, VkDeviceMemory* out_memory,
+                           VkBuffer* out_buffer, u32* out_offset);
+
   bool CheckDownloadBufferSize(u32 required_size);
   void DestroyDownloadBuffer();
 
