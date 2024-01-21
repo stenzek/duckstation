@@ -286,8 +286,7 @@ private:
   // [depth_24][interlace_mode]
   DimensionalArray<std::unique_ptr<GPUPipeline>, 3, 2> m_display_pipelines{};
 
-  // TODO: get rid of this, and use image blits instead where supported
-  std::unique_ptr<GPUPipeline> m_copy_pipeline;
+  std::unique_ptr<GPUPipeline> m_vram_write_replacement_pipeline;
 
   std::unique_ptr<GPUTexture> m_downsample_texture;
   std::unique_ptr<GPUPipeline> m_downsample_first_pass_pipeline;

@@ -1033,6 +1033,19 @@ bool GPU_HW::CompilePipelines()
 
   plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
 
+  // VRAM write replacement
+  {
+    std::unique_ptr<GPUShader> fs =
+      g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GenerateCopyFragmentShader());
+    if (!fs)
+      return false;
+
+    plconfig.fragment_shader = fs.get();
+    plconfig.depth = GPUPipeline::DepthState::GetAlwaysWriteState();
+    if (!(m_vram_write_replacement_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+      return false;
+  }
+
   // VRAM update depth
   {
     std::unique_ptr<GPUShader> fs =
@@ -1096,17 +1109,6 @@ bool GPU_HW::CompilePipelines()
         progress.Increment();
       }
     }
-  }
-
-  {
-    std::unique_ptr<GPUShader> fs =
-      g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GenerateCopyFragmentShader());
-    if (!fs)
-      return false;
-
-    plconfig.fragment_shader = fs.get();
-    if (!(m_copy_pipeline = g_gpu_device->CreatePipeline(plconfig)))
-      return false;
   }
 
   if (m_downsample_mode == GPUDownsampleMode::Adaptive)
@@ -1210,14 +1212,13 @@ void GPU_HW::DestroyPipelines()
 
   destroy(m_vram_readback_pipeline);
   destroy(m_vram_update_depth_pipeline);
+  destroy(m_vram_write_replacement_pipeline);
 
   destroy(m_downsample_first_pass_pipeline);
   destroy(m_downsample_mid_pass_pipeline);
   destroy(m_downsample_blur_pass_pipeline);
   destroy(m_downsample_composite_pass_pipeline);
   m_downsample_composite_sampler.reset();
-
-  m_copy_pipeline.reset();
 
   m_display_pipelines.enumerate(destroy);
 }
@@ -2036,7 +2037,7 @@ bool GPU_HW::BlitVRAMReplacementTexture(const TextureReplacementTexture* tex, u3
                                         u32 height)
 {
   if (!m_vram_replacement_texture || m_vram_replacement_texture->GetWidth() < tex->GetWidth() ||
-      m_vram_replacement_texture->GetHeight() < tex->GetHeight())
+      m_vram_replacement_texture->GetHeight() < tex->GetHeight() || g_gpu_device->GetFeatures().prefer_unused_textures)
   {
     g_gpu_device->RecycleTexture(std::move(m_vram_replacement_texture));
 
@@ -2049,16 +2050,23 @@ bool GPU_HW::BlitVRAMReplacementTexture(const TextureReplacementTexture* tex, u3
   }
   else
   {
-    if (!m_vram_replacement_texture->Update(0, 0, width, height, tex->GetPixels(), tex->GetPitch()))
+    if (!m_vram_replacement_texture->Update(0, 0, tex->GetWidth(), tex->GetHeight(), tex->GetPixels(), tex->GetPitch()))
     {
       Log_ErrorFmt("Update {}x{} texture failed.", width, height);
       return false;
     }
   }
 
-  g_gpu_device->SetRenderTarget(m_vram_texture.get(), m_vram_depth_texture.get()); // TODO: needed?
+  GL_SCOPE_FMT("BlitVRAMReplacementTexture() {}x{} to {},{} => {},{} ({}x{})", tex->GetWidth(), tex->GetHeight(), dst_x,
+               dst_y, dst_x + width, dst_y + height, width, height);
+
+  const float src_rect[4] = {
+    0.0f, 0.0f, static_cast<float>(tex->GetWidth()) / static_cast<float>(m_vram_replacement_texture->GetWidth()),
+    static_cast<float>(tex->GetHeight()) / static_cast<float>(m_vram_replacement_texture->GetHeight())};
+
+  g_gpu_device->PushUniformBuffer(src_rect, sizeof(src_rect));
   g_gpu_device->SetTextureSampler(0, m_vram_replacement_texture.get(), g_gpu_device->GetLinearSampler());
-  g_gpu_device->SetPipeline(m_copy_pipeline.get());
+  g_gpu_device->SetPipeline(m_vram_write_replacement_pipeline.get());
   g_gpu_device->SetViewportAndScissor(dst_x, dst_y, width, height);
   g_gpu_device->Draw(3, 0);
 
