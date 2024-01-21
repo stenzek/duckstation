@@ -1129,9 +1129,15 @@ const char* Settings::GetDisplayCropModeDisplayName(DisplayCropMode crop_mode)
 }
 
 static constexpr const std::array s_display_aspect_ratio_names = {
+#ifndef __ANDROID__
   TRANSLATE_NOOP("DisplayAspectRatio", "Auto (Game Native)"),
   TRANSLATE_NOOP("DisplayAspectRatio", "Stretch To Fill"),
   TRANSLATE_NOOP("DisplayAspectRatio", "Custom"),
+#else
+  "Auto (Game Native)",
+  "Auto (Match Window)",
+  "Custom",
+#endif
   "4:3",
   "16:9",
   "19:9",
