@@ -127,6 +127,12 @@ static std::tuple<float, float> GetMinMax(std::span<const float> values)
 void Host::DisplayLoadingScreen(const char* message, int progress_min /*= -1*/, int progress_max /*= -1*/,
                                 int progress_value /*= -1*/)
 {
+  if (!g_gpu_device)
+  {
+    Log_InfoPrintf("%s: %d/%d", message, progress_value, progress_max);
+    return;
+  }
+
   const auto& io = ImGui::GetIO();
   const float scale = ImGuiManager::GetGlobalScale();
   const float width = (400.0f * scale);
