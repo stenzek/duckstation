@@ -58,7 +58,7 @@ public:
   static constexpr float DEFAULT_LINEARITY = 0.00f;
   static constexpr float DEFAULT_SCALING = 1.00f;
   static constexpr float DEFAULT_STEERING_ZERO = 128.0f;
-  static constexpr float DEFAULT_STEERING_UNIT = 127.0f;
+  static constexpr float DEFAULT_STEERING_UNIT = 128.0f;
   static constexpr float DEFAULT_PEDAL_ZERO = 0.0f;
   static constexpr float DEFAULT_PEDAL_UNIT = 255.0f;
   static constexpr AxisModifier DEFAULT_STEERING_MODIFIER = {

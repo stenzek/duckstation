@@ -57,7 +57,8 @@ float NeGcon::GetBindState(u32 index) const
       index == (static_cast<u32>(Button::Count) + static_cast<u32>(HalfAxis::SteeringRight)))
   {
     float value = m_axis_state[static_cast<u32>(Axis::Steering)];
-    value = (value - 128.0f) / 127.0f;
+    value = value - 128.0f;
+    value /= value < 0.0f ? 128.0f : 127.0f;
     value = std::clamp(value, -1.0f, 1.0f);
     if (index == (static_cast<u32>(Button::Count) + static_cast<u32>(HalfAxis::SteeringLeft)))
     {
