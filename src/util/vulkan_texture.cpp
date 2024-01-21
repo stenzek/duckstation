@@ -339,6 +339,9 @@ bool VulkanTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data
     sbuffer.CommitMemory(required_size);
   }
 
+  GPUDevice::GetStatistics().buffer_streamed += required_size;
+  GPUDevice::GetStatistics().num_uploads++;
+
   const VkCommandBuffer cmdbuf = GetCommandBufferForUpdate();
 
   // if we're an rt and have been cleared, and the full rect isn't being uploaded, do the clear
@@ -406,6 +409,9 @@ void VulkanTexture::Unmap()
   const u32 req_size = m_map_height * aligned_pitch;
   const u32 offset = sb.GetCurrentOffset();
   sb.CommitMemory(req_size);
+
+  GPUDevice::GetStatistics().buffer_streamed += req_size;
+  GPUDevice::GetStatistics().num_uploads++;
 
   // first time the texture is used? don't leave it undefined
   const VkCommandBuffer cmdbuf = GetCommandBufferForUpdate();
@@ -745,6 +751,8 @@ bool VulkanDevice::DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width,
     return false;
   }
 
+  s_stats.num_downloads++;
+
   if (InRenderPass())
     EndRenderPass();
 
@@ -1015,7 +1023,10 @@ void* VulkanTextureBuffer::Map(u32 required_elements)
 
 void VulkanTextureBuffer::Unmap(u32 used_elements)
 {
-  m_buffer.CommitMemory(GetElementSize(m_format) * used_elements);
+  const u32 size = GetElementSize(m_format) * used_elements;
+  GPUDevice::GetStatistics().buffer_streamed += size;
+  GPUDevice::GetStatistics().num_uploads++;
+  m_buffer.CommitMemory(size);
 }
 
 void VulkanTextureBuffer::SetDebugName(const std::string_view& name)

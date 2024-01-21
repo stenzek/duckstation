@@ -253,8 +253,8 @@ void ImGuiManager::FormatProcessorStat(SmallStringBase& text, double usage, doub
 
 void ImGuiManager::DrawPerformanceOverlay()
 {
-  if (!(g_settings.display_show_fps || g_settings.display_show_speed || g_settings.display_show_resolution ||
-        g_settings.display_show_cpu ||
+  if (!(g_settings.display_show_fps || g_settings.display_show_speed || g_settings.display_show_gpu_stats ||
+        g_settings.display_show_resolution || g_settings.display_show_cpu_usage ||
         (g_settings.display_show_status_indicators &&
          (System::IsPaused() || System::IsFastForwardEnabled() || System::IsTurboEnabled()))))
   {
@@ -322,6 +322,15 @@ void ImGuiManager::DrawPerformanceOverlay()
       DRAW_LINE(fixed_font, text, color);
     }
 
+    if (g_settings.display_show_gpu_stats)
+    {
+      g_gpu->GetStatsString(text);
+      DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
+
+      g_gpu->GetMemoryStatsString(text);
+      DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
+    }
+
     if (g_settings.display_show_resolution)
     {
       // TODO: this seems wrong?
@@ -333,7 +342,7 @@ void ImGuiManager::DrawPerformanceOverlay()
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
     }
 
-    if (g_settings.display_show_cpu)
+    if (g_settings.display_show_cpu_usage)
     {
       text.format("{:.2f}ms | {:.2f}ms | {:.2f}ms", System::GetMinimumFrameTime(), System::GetAverageFrameTime(),
                   System::GetMaximumFrameTime());
@@ -405,16 +414,10 @@ void ImGuiManager::DrawPerformanceOverlay()
 #endif
     }
 
-    if (g_settings.display_show_gpu)
+    if (g_settings.display_show_gpu_usage && g_gpu_device->IsGPUTimingEnabled())
     {
-      if (g_gpu_device->IsGPUTimingEnabled())
-      {
-        text.assign("GPU: ");
-        FormatProcessorStat(text, System::GetGPUUsage(), System::GetGPUAverageTime());
-        DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
-      }
-
-      text.format("VRAM: {} MB", (g_gpu_device->GetVRAMUsage() + (1048576 - 1)) / 1048576);
+      text.assign("GPU: ");
+      FormatProcessorStat(text, System::GetGPUUsage(), System::GetGPUAverageTime());
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
     }
 
@@ -525,10 +528,14 @@ void ImGuiManager::DrawEnhancementsOverlay()
   {
     text.append_format(" {}x{}", g_settings.gpu_multisamples, g_settings.gpu_per_sample_shading ? "SSAA" : "MSAA");
   }
-  if (g_settings.gpu_true_color) {
-    if (g_settings.gpu_debanding) {
+  if (g_settings.gpu_true_color)
+  {
+    if (g_settings.gpu_debanding)
+    {
       text.append(" TrueColDeband");
-    } else {
+    }
+    else
+    {
       text.append(" TrueCol");
     }
   }

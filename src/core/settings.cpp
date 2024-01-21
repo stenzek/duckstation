@@ -253,9 +253,10 @@ void Settings::Load(SettingsInterface& si)
   display_show_osd_messages = si.GetBoolValue("Display", "ShowOSDMessages", true);
   display_show_fps = si.GetBoolValue("Display", "ShowFPS", false);
   display_show_speed = si.GetBoolValue("Display", "ShowSpeed", false);
+  display_show_gpu_stats = si.GetBoolValue("Display", "ShowGPUStatistics", false);
   display_show_resolution = si.GetBoolValue("Display", "ShowResolution", false);
-  display_show_cpu = si.GetBoolValue("Display", "ShowCPU", false);
-  display_show_gpu = si.GetBoolValue("Display", "ShowGPU", false);
+  display_show_cpu_usage = si.GetBoolValue("Display", "ShowCPU", false);
+  display_show_gpu_usage = si.GetBoolValue("Display", "ShowGPU", false);
   display_show_frame_times = si.GetBoolValue("Display", "ShowFrameTimes", false);
   display_show_status_indicators = si.GetBoolValue("Display", "ShowStatusIndicators", true);
   display_show_inputs = si.GetBoolValue("Display", "ShowInputs", false);
@@ -495,8 +496,9 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Display", "ShowFPS", display_show_fps);
   si.SetBoolValue("Display", "ShowSpeed", display_show_speed);
   si.SetBoolValue("Display", "ShowResolution", display_show_resolution);
-  si.SetBoolValue("Display", "ShowCPU", display_show_cpu);
-  si.SetBoolValue("Display", "ShowGPU", display_show_gpu);
+  si.SetBoolValue("Display", "ShowGPUStatistics", display_show_gpu_stats);
+  si.SetBoolValue("Display", "ShowCPU", display_show_cpu_usage);
+  si.SetBoolValue("Display", "ShowGPU", display_show_gpu_usage);
   si.SetBoolValue("Display", "ShowFrameTimes", display_show_frame_times);
   si.SetBoolValue("Display", "ShowStatusIndicators", display_show_status_indicators);
   si.SetBoolValue("Display", "ShowInputs", display_show_inputs);

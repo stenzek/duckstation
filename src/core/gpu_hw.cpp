@@ -1262,7 +1262,7 @@ void GPU_HW::UpdateVRAMReadTexture(bool drawn, bool written)
                                       scaled_rect.GetWidth(), scaled_rect.GetHeight());
     }
 
-    m_renderer_stats.num_vram_read_texture_updates++;
+    // m_counters.num_read_texture_updates++;
     rect.SetInvalid();
   };
 
@@ -2797,7 +2797,7 @@ void GPU_HW::FlushRender()
   if (m_batch_ubo_dirty)
   {
     g_gpu_device->UploadUniformBuffer(&m_batch_ubo_data, sizeof(m_batch_ubo_data));
-    m_renderer_stats.num_uniform_buffer_updates++;
+    // m_counters.num_ubo_updates++;
     m_batch_ubo_dirty = false;
   }
 
@@ -2805,20 +2805,17 @@ void GPU_HW::FlushRender()
   {
     if (NeedsTwoPassRendering())
     {
-      m_renderer_stats.num_batches += 2;
       DrawBatchVertices(BatchRenderMode::OnlyOpaque, vertex_count, m_batch_base_vertex);
       DrawBatchVertices(BatchRenderMode::OnlyTransparent, vertex_count, m_batch_base_vertex);
     }
     else
     {
-      m_renderer_stats.num_batches++;
       DrawBatchVertices(m_batch.GetRenderMode(), vertex_count, m_batch_base_vertex);
     }
   }
 
   if (m_wireframe_mode != GPUWireframeMode::Disabled)
   {
-    m_renderer_stats.num_batches++;
     g_gpu_device->SetPipeline(m_wireframe_pipeline.get());
     g_gpu_device->Draw(vertex_count, m_batch_base_vertex);
   }
@@ -3094,19 +3091,12 @@ void GPU_HW::DownsampleFramebufferBoxFilter(GPUTexture* source, u32 left, u32 to
   SetDisplayTexture(m_downsample_texture.get(), 0, 0, ds_width, ds_height);
 }
 
-void GPU_HW::DrawRendererStats(bool is_idle_frame)
+void GPU_HW::DrawRendererStats()
 {
-  if (!is_idle_frame)
-  {
-    m_last_renderer_stats = m_renderer_stats;
-    m_renderer_stats = {};
-  }
-
   if (ImGui::CollapsingHeader("Renderer Statistics", ImGuiTreeNodeFlags_DefaultOpen))
   {
     static const ImVec4 active_color{1.0f, 1.0f, 1.0f, 1.0f};
     static const ImVec4 inactive_color{0.4f, 0.4f, 0.4f, 1.0f};
-    const auto& stats = m_last_renderer_stats;
 
     ImGui::Columns(2);
     ImGui::SetColumnWidth(0, 200.0f * Host::GetOSDScale());
@@ -3156,21 +3146,6 @@ void GPU_HW::DrawRendererStats(bool is_idle_frame)
     ImGui::SameLine();
     ImGui::TextColored((g_settings.gpu_pgxp_enable && g_settings.gpu_pgxp_vertex_cache) ? active_color : inactive_color,
                        "Cache");
-    ImGui::NextColumn();
-
-    ImGui::TextUnformatted("Batches Drawn:");
-    ImGui::NextColumn();
-    ImGui::Text("%u", stats.num_batches);
-    ImGui::NextColumn();
-
-    ImGui::TextUnformatted("VRAM Read Texture Updates:");
-    ImGui::NextColumn();
-    ImGui::Text("%u", stats.num_vram_read_texture_updates);
-    ImGui::NextColumn();
-
-    ImGui::TextUnformatted("Uniform Buffer Updates: ");
-    ImGui::NextColumn();
-    ImGui::Text("%u", stats.num_uniform_buffer_updates);
     ImGui::NextColumn();
 
     ImGui::Columns(1);

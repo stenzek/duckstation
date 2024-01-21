@@ -273,6 +273,7 @@ void AdvancedSettingsWidget::addTweakOptions()
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Show Status Indicators"), "Display",
                         "ShowStatusIndicators", true);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Show Frame Times"), "Display", "ShowFrameTimes", false);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Show Settings Overlay"), "Display", "ShowEnhancements", false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Apply Compatibility Settings"), "Main",
                         "ApplyCompatibilitySettings", true);
   addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Display FPS Limit"), "Display", "MaxFPS", 0, 1000, 0);
@@ -384,6 +385,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Disable all enhancements
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);  // Show status indicators
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Show frame times
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Show settings overlay
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);  // Apply compatibility settings
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++, 0);    // Display FPS limit
     setChoiceTweakOption(m_ui.tweakOptionTable, i++, Settings::DEFAULT_DISPLAY_EXCLUSIVE_FULLSCREEN_CONTROL);
@@ -438,6 +440,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue("Display", "ShowEnhancements");
   sif->DeleteValue("Display", "ShowStatusIndicators");
   sif->DeleteValue("Display", "ShowFrameTimes");
+  sif->DeleteValue("Display", "ShowEnhancements");
   sif->DeleteValue("Main", "ApplyCompatibilitySettings");
   sif->DeleteValue("Display", "MaxFPS");
   sif->DeleteValue("Display", "ActiveStartOffset");

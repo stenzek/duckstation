@@ -45,6 +45,8 @@ bool D3D11Device::DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width, 
     return false;
   }
 
+  s_stats.num_downloads++;
+
   const u32 copy_size = tex->GetPixelSize() * width;
   StringUtil::StrideMemCpy(out_data, out_data_stride, sr.pData, sr.RowPitch, copy_size, height);
   m_context->Unmap(m_readback_staging_texture.Get(), 0);
@@ -218,6 +220,10 @@ bool D3D11Texture::Update(u32 x, u32 y, u32 width, u32 height, const void* data,
 
   ID3D11DeviceContext1* context = D3D11Device::GetD3DContext();
   CommitClear(context);
+
+  GPUDevice::GetStatistics().buffer_streamed += height * pitch;
+  GPUDevice::GetStatistics().num_uploads++;
+
   context->UpdateSubresource(m_texture.Get(), srnum, &box, data, pitch, 0);
   m_state = GPUTexture::State::Dirty;
   return true;
@@ -245,6 +251,9 @@ bool D3D11Texture::Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32
     Log_ErrorPrintf("Map pixels texture failed: %08X", hr);
     return false;
   }
+
+  GPUDevice::GetStatistics().buffer_streamed += height * sr.RowPitch;
+  GPUDevice::GetStatistics().num_uploads++;
 
   *map = static_cast<u8*>(sr.pData) + (y * sr.RowPitch) + (x * GetPixelSize());
   *map_stride = sr.RowPitch;
@@ -321,6 +330,12 @@ std::unique_ptr<D3D11Texture> D3D11Texture::Create(ID3D11Device* device, u32 wid
       "Create texture failed: 0x%08X (%ux%u levels:%u samples:%u format:%u bind_flags:%X initial_data:%p)", tex_hr,
       width, height, levels, samples, static_cast<unsigned>(format), bind_flags, initial_data);
     return nullptr;
+  }
+
+  if (initial_data)
+  {
+    GPUDevice::GetStatistics().buffer_streamed += height * initial_data_stride;
+    GPUDevice::GetStatistics().num_uploads++;
   }
 
   ComPtr<ID3D11ShaderResourceView> srv;
@@ -412,7 +427,10 @@ void* D3D11TextureBuffer::Map(u32 required_elements)
 
 void D3D11TextureBuffer::Unmap(u32 used_elements)
 {
-  m_buffer.Unmap(D3D11Device::GetD3DContext(), used_elements * GetElementSize(m_format));
+  const u32 size = used_elements * GetElementSize(m_format);
+  GPUDevice::GetStatistics().buffer_streamed += size;
+  GPUDevice::GetStatistics().num_uploads++;
+  m_buffer.Unmap(D3D11Device::GetD3DContext(), size);
 }
 
 void D3D11TextureBuffer::SetDebugName(const std::string_view& name)

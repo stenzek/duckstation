@@ -144,9 +144,10 @@ struct Settings
   bool display_show_osd_messages = true;
   bool display_show_fps = false;
   bool display_show_speed = false;
+  bool display_show_gpu_stats = false;
   bool display_show_resolution = false;
-  bool display_show_cpu = false;
-  bool display_show_gpu = false;
+  bool display_show_cpu_usage = false;
+  bool display_show_gpu_usage = false;
   bool display_show_frame_times = false;
   bool display_show_status_indicators = true;
   bool display_show_inputs = false;

@@ -458,6 +458,16 @@ public:
     bool prefer_unused_textures : 1;
   };
 
+  struct Statistics
+  {
+    size_t buffer_streamed;
+    u32 num_draws;
+    u32 num_render_passes;
+    u32 num_copies;
+    u32 num_downloads;
+    u32 num_uploads;
+  };
+
   struct AdapterAndModeList
   {
     std::vector<std::string> adapter_names;
@@ -474,6 +484,7 @@ public:
   static constexpr u32 MAX_RENDER_TARGETS = 4;
   static_assert(sizeof(GPUPipeline::GraphicsConfig::color_formats) == sizeof(GPUTexture::Format) * MAX_RENDER_TARGETS);
 
+  GPUDevice();
   virtual ~GPUDevice();
 
   /// Returns the default/preferred API for the system.
@@ -652,6 +663,9 @@ public:
   /// Returns the amount of GPU time utilized since the last time this method was called.
   virtual float GetAndResetAccumulatedGPUTime();
 
+  ALWAYS_INLINE static Statistics& GetStatistics() { return s_stats; }
+  static void ResetStatistics();
+
 protected:
   virtual bool CreateDevice(const std::string_view& adapter, bool threaded_presentation,
                             std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features,
@@ -738,6 +752,8 @@ private:
   float m_display_frame_interval = 0.0f;
 
 protected:
+  static Statistics s_stats;
+
   bool m_gpu_timing_enabled = false;
   bool m_vsync_enabled = false;
   bool m_debug_device = false;

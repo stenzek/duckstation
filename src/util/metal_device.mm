@@ -890,6 +890,9 @@ bool MetalTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data,
   const u32 aligned_pitch = Common::AlignUpPow2(width * GetPixelSize(), TEXTURE_UPLOAD_PITCH_ALIGNMENT);
   const u32 req_size = height * aligned_pitch;
 
+  GPUDevice::GetStatistics().buffer_streamed += req_size;
+  GPUDevice::GetStatistics().num_uploads++;
+
   MetalDevice& dev = MetalDevice::GetInstance();
   MetalStreamBuffer& sb = dev.GetTextureStreamBuffer();
   id<MTLBuffer> actual_buffer;
@@ -988,6 +991,9 @@ void MetalTexture::Unmap()
 {
   const u32 aligned_pitch = Common::AlignUpPow2(m_map_width * GetPixelSize(), TEXTURE_UPLOAD_PITCH_ALIGNMENT);
   const u32 req_size = m_map_height * aligned_pitch;
+
+  GPUDevice::GetStatistics().buffer_streamed += req_size;
+  GPUDevice::GetStatistics().num_uploads++;
 
   MetalDevice& dev = MetalDevice::GetInstance();
   MetalStreamBuffer& sb = dev.GetTextureStreamBuffer();
@@ -1206,6 +1212,8 @@ bool MetalDevice::DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width, 
   MetalTexture* T = static_cast<MetalTexture*>(texture);
   CommitClear(T);
 
+  s_stats.num_downloads++;
+
   @autoreleasepool
   {
     id<MTLBlitCommandEncoder> encoder = GetBlitEncoder(true);
@@ -1303,6 +1311,8 @@ void MetalDevice::CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 d
   S->SetUseFenceCounter(m_current_fence_counter);
   D->SetUseFenceCounter(m_current_fence_counter);
 
+  s_stats.num_copies++;
+
   @autoreleasepool
   {
     id<MTLBlitCommandEncoder> encoder = GetBlitEncoder(true);
@@ -1364,6 +1374,8 @@ void MetalDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u3
 
   if (InRenderPass())
     EndRenderPass();
+
+  s_stats.num_copies++;
 
   const u32 threadgroupHeight = resolve_pipeline.maxTotalThreadsPerThreadgroup / resolve_pipeline.threadExecutionWidth;
   const MTLSize intrinsicThreadgroupSize = MTLSizeMake(resolve_pipeline.threadExecutionWidth, threadgroupHeight, 1);
@@ -1472,7 +1484,10 @@ void* MetalTextureBuffer::Map(u32 required_elements)
 
 void MetalTextureBuffer::Unmap(u32 used_elements)
 {
-  m_buffer.CommitMemory(GetElementSize(m_format) * used_elements);
+  const u32 size = GetElementSize(m_format) * used_elements;
+  GPUDevice::GetStatistics().buffer_streamed += size;
+  GPUDevice::GetStatistics().num_uploads++;
+  m_buffer.CommitMemory(size);
 }
 
 void MetalTextureBuffer::SetDebugName(const std::string_view& name)
@@ -1523,7 +1538,9 @@ void MetalDevice::MapVertexBuffer(u32 vertex_size, u32 vertex_count, void** map_
 
 void MetalDevice::UnmapVertexBuffer(u32 vertex_size, u32 vertex_count)
 {
-  m_vertex_buffer.CommitMemory(vertex_size * vertex_count);
+  const u32 size = vertex_size * vertex_count;
+  s_stats.buffer_streamed += size;
+  m_vertex_buffer.CommitMemory(size);
 }
 
 void MetalDevice::MapIndexBuffer(u32 index_count, DrawIndex** map_ptr, u32* map_space, u32* map_base_index)
@@ -1543,11 +1560,14 @@ void MetalDevice::MapIndexBuffer(u32 index_count, DrawIndex** map_ptr, u32* map_
 
 void MetalDevice::UnmapIndexBuffer(u32 used_index_count)
 {
-  m_index_buffer.CommitMemory(sizeof(DrawIndex) * used_index_count);
+  const u32 size = sizeof(DrawIndex) * used_index_count;
+  s_stats.buffer_streamed += size;
+    m_index_buffer.CommitMemory(size);
 }
 
 void MetalDevice::PushUniformBuffer(const void* data, u32 data_size)
 {
+  s_stats.buffer_streamed += data_size;
   void* map = MapUniformBuffer(data_size);
   std::memcpy(map, data, data_size);
   UnmapUniformBuffer(data_size);
@@ -1568,6 +1588,7 @@ void* MetalDevice::MapUniformBuffer(u32 size)
 
 void MetalDevice::UnmapUniformBuffer(u32 size)
 {
+  s_stats.buffer_streamed += size;
   m_current_uniform_buffer_position = m_uniform_buffer.GetCurrentOffset();
   m_uniform_buffer.CommitMemory(size);
   if (InRenderPass())
@@ -1758,6 +1779,8 @@ void MetalDevice::BeginRenderPass()
     m_inline_upload_encoder = nil;
   }
 
+  s_stats.num_render_passes++;
+
   @autoreleasepool
   {
     MTLRenderPassDescriptor* desc = [MTLRenderPassDescriptor renderPassDescriptor];
@@ -1927,12 +1950,15 @@ void MetalDevice::PreDrawCheck()
 void MetalDevice::Draw(u32 vertex_count, u32 base_vertex)
 {
   PreDrawCheck();
+  s_stats.num_draws++;
   [m_render_encoder drawPrimitives:m_current_pipeline->GetPrimitive() vertexStart:base_vertex vertexCount:vertex_count];
 }
 
 void MetalDevice::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
 {
   PreDrawCheck();
+
+  s_stats.num_draws++;
 
   const u32 index_offset = base_index * sizeof(u16);
   [m_render_encoder drawIndexedPrimitives:m_current_pipeline->GetPrimitive()
@@ -2000,6 +2026,7 @@ bool MetalDevice::BeginPresent(bool skip_present)
     m_layer_pass_desc.colorAttachments[0].texture = layer_texture;
     m_layer_pass_desc.colorAttachments[0].loadAction = MTLLoadActionClear;
     m_render_encoder = [[m_render_cmdbuf renderCommandEncoderWithDescriptor:m_layer_pass_desc] retain];
+    s_stats.num_render_passes++;
     std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
     m_num_current_render_targets = 0;
     m_current_depth_target = nullptr;

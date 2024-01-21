@@ -241,9 +241,9 @@
        </widget>
       </item>
       <item row="5" column="1">
-       <widget class="QCheckBox" name="showSettings">
+       <widget class="QCheckBox" name="showGPUStatistics">
         <property name="text">
-         <string>Show Settings Overlay</string>
+         <string>Show GPU Statistics</string>
         </property>
        </widget>
       </item>
