@@ -1456,6 +1456,10 @@ bool System::BootSystem(SystemBootParameters parameters)
     }
   }
 
+  // Texture replacement preloading.
+  // TODO: Move this and everything else below OnSystemStarted().
+  g_texture_replacements.SetGameID(s_running_game_serial);
+
   // Good to go.
   s_state = State::Running;
   SPU::GetOutputStream()->SetPaused(false);
@@ -3355,7 +3359,8 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
     }
   }
 
-  g_texture_replacements.SetGameID(s_running_game_serial);
+  if (!booting)
+    g_texture_replacements.SetGameID(s_running_game_serial);
 
   if (booting)
     Achievements::ResetHardcoreMode();
