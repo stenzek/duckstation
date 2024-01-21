@@ -525,8 +525,17 @@ u32 GPU_HW::CalculateResolutionScale() const
                          static_cast<s32>(m_crtc_state.display_height) :
                          (m_console_is_pal ? (PAL_VERTICAL_ACTIVE_END - PAL_VERTICAL_ACTIVE_START) :
                                              (NTSC_VERTICAL_ACTIVE_END - NTSC_VERTICAL_ACTIVE_START));
+
+    float widescreen_multiplier = 1.0f;
+    if (g_settings.gpu_widescreen_hack) {
+        // Multiply scale factor by aspect ratio relative to 4:3, so that widescreen resolution is as close as possible to native screen resolution.
+        // Otherwise, anamorphic stretching would result in increasingly less horizontal resolution (relative to native screen resolution)
+        // as the aspect ratio gets wider.
+        widescreen_multiplier = std::max(1.0, (float(g_gpu_device->GetWindowWidth()) / g_gpu_device->GetWindowHeight()) / (4.0 / 3.0));
+    }
+
     const s32 preferred_scale =
-      static_cast<s32>(std::ceil(static_cast<float>(g_gpu_device->GetWindowHeight()) / height));
+      static_cast<s32>(std::ceil(static_cast<float>(g_gpu_device->GetWindowHeight() * widescreen_multiplier) / height));
     Log_VerboseFmt("Height = {}, preferred scale = {}", height, preferred_scale);
 
     scale = static_cast<u32>(std::clamp<s32>(preferred_scale, 1, max_resolution_scale));
