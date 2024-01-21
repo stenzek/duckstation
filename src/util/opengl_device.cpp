@@ -76,6 +76,8 @@ bool OpenGLDevice::DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width,
   const u32 layer = 0;
   const u32 level = 0;
 
+  s_stats.num_downloads++;
+
   if (GLAD_GL_VERSION_4_5 || GLAD_GL_ARB_get_texture_sub_image)
   {
     glGetTextureSubImage(T->GetGLId(), level, x, y, layer, width, height, 1, gl_format, gl_type,
@@ -115,6 +117,8 @@ void OpenGLDevice::CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 
   OpenGLTexture* S = static_cast<OpenGLTexture*>(src);
   CommitClear(D);
   CommitClear(S);
+
+  s_stats.num_copies++;
 
   const GLuint sid = S->GetGLId();
   const GLuint did = D->GetGLId();
@@ -191,6 +195,8 @@ void OpenGLDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u
   {
     CommitClear(D);
   }
+
+  s_stats.num_copies++;
 
   glDisable(GL_SCISSOR_TEST);
   glBlitFramebuffer(src_x, src_y, src_x + width, src_y + height, dst_x, dst_y, dst_x + width, dst_y + height,
@@ -307,7 +313,8 @@ bool OpenGLDevice::HasSurface() const
 }
 
 bool OpenGLDevice::CreateDevice(const std::string_view& adapter, bool threaded_presentation,
-                                std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features, Error* error)
+                                std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features,
+                                Error* error)
 {
   m_gl_context = GL::Context::Create(m_window_info, error);
   if (!m_gl_context)
@@ -1030,6 +1037,8 @@ ALWAYS_INLINE_RELEASE void OpenGLDevice::SetVertexBufferOffsets(u32 base_vertex)
 
 void OpenGLDevice::Draw(u32 vertex_count, u32 base_vertex)
 {
+  s_stats.num_draws++;
+
   if (glDrawElementsBaseVertex) [[likely]]
   {
     glDrawArrays(m_current_pipeline->GetTopology(), base_vertex, vertex_count);
@@ -1042,6 +1051,8 @@ void OpenGLDevice::Draw(u32 vertex_count, u32 base_vertex)
 
 void OpenGLDevice::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
 {
+  s_stats.num_draws++;
+
   if (glDrawElementsBaseVertex) [[likely]]
   {
     const void* indices = reinterpret_cast<const void*>(static_cast<uintptr_t>(base_index) * sizeof(u16));
@@ -1066,7 +1077,9 @@ void OpenGLDevice::MapVertexBuffer(u32 vertex_size, u32 vertex_count, void** map
 
 void OpenGLDevice::UnmapVertexBuffer(u32 vertex_size, u32 vertex_count)
 {
-  m_vertex_buffer->Unmap(vertex_size * vertex_count);
+  const u32 size = vertex_size * vertex_count;
+  s_stats.buffer_streamed += size;
+  m_vertex_buffer->Unmap(size);
 }
 
 void OpenGLDevice::MapIndexBuffer(u32 index_count, DrawIndex** map_ptr, u32* map_space, u32* map_base_index)
@@ -1079,7 +1092,9 @@ void OpenGLDevice::MapIndexBuffer(u32 index_count, DrawIndex** map_ptr, u32* map
 
 void OpenGLDevice::UnmapIndexBuffer(u32 used_index_count)
 {
-  m_index_buffer->Unmap(sizeof(DrawIndex) * used_index_count);
+  const u32 size = sizeof(DrawIndex) * used_index_count;
+  s_stats.buffer_streamed += size;
+  m_index_buffer->Unmap(size);
 }
 
 void OpenGLDevice::PushUniformBuffer(const void* data, u32 data_size)
@@ -1087,6 +1102,7 @@ void OpenGLDevice::PushUniformBuffer(const void* data, u32 data_size)
   const auto res = m_uniform_buffer->Map(m_uniform_buffer_alignment, data_size);
   std::memcpy(res.pointer, data, data_size);
   m_uniform_buffer->Unmap(data_size);
+  s_stats.buffer_streamed += data_size;
   glBindBufferRange(GL_UNIFORM_BUFFER, 1, m_uniform_buffer->GetGLBufferId(), res.buffer_offset, data_size);
 }
 
@@ -1099,6 +1115,7 @@ void* OpenGLDevice::MapUniformBuffer(u32 size)
 void OpenGLDevice::UnmapUniformBuffer(u32 size)
 {
   const u32 pos = m_uniform_buffer->Unmap(size);
+  s_stats.buffer_streamed += pos;
   glBindBufferRange(GL_UNIFORM_BUFFER, 1, m_uniform_buffer->GetGLBufferId(), pos, size);
 }
 
@@ -1135,6 +1152,7 @@ void OpenGLDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUText
       }
     }
 
+    s_stats.num_render_passes++;
     m_current_fbo = fbo;
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
   }

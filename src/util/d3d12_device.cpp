@@ -118,7 +118,8 @@ D3D12Device::ComPtr<ID3D12RootSignature> D3D12Device::CreateRootSignature(const 
 }
 
 bool D3D12Device::CreateDevice(const std::string_view& adapter, bool threaded_presentation,
-                               std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features, Error* error)
+                               std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features,
+                               Error* error)
 {
   std::unique_lock lock(s_instance_mutex);
 
@@ -1256,6 +1257,8 @@ void D3D12Device::CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 d
     D->CommitClear();
   }
 
+  s_stats.num_copies++;
+
   // *now* we can do a normal image copy.
   if (InRenderPass())
     EndRenderPass();
@@ -1296,6 +1299,8 @@ void D3D12Device::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u3
 
   if (InRenderPass())
     EndRenderPass();
+
+  s_stats.num_copies++;
 
   D3D12Texture* D = static_cast<D3D12Texture*>(dst);
   D3D12Texture* S = static_cast<D3D12Texture*>(src);
@@ -1401,7 +1406,9 @@ void D3D12Device::MapVertexBuffer(u32 vertex_size, u32 vertex_count, void** map_
 
 void D3D12Device::UnmapVertexBuffer(u32 vertex_size, u32 vertex_count)
 {
-  m_vertex_buffer.CommitMemory(vertex_size * vertex_count);
+  const u32 upload_size = vertex_size * vertex_count;
+  s_stats.buffer_streamed += upload_size;
+  m_vertex_buffer.CommitMemory(upload_size);
 }
 
 void D3D12Device::MapIndexBuffer(u32 index_count, DrawIndex** map_ptr, u32* map_space, u32* map_base_index)
@@ -1421,7 +1428,9 @@ void D3D12Device::MapIndexBuffer(u32 index_count, DrawIndex** map_ptr, u32* map_
 
 void D3D12Device::UnmapIndexBuffer(u32 used_index_count)
 {
-  m_index_buffer.CommitMemory(sizeof(DrawIndex) * used_index_count);
+  const u32 upload_size = sizeof(DrawIndex) * used_index_count;
+  s_stats.buffer_streamed += upload_size;
+  m_index_buffer.CommitMemory(upload_size);
 }
 
 void D3D12Device::PushUniformBuffer(const void* data, u32 data_size)
@@ -1441,6 +1450,7 @@ void D3D12Device::PushUniformBuffer(const void* data, u32 data_size)
     UpdateRootSignature();
   }
 
+  s_stats.buffer_streamed += data_size;
   GetCommandList()->SetGraphicsRoot32BitConstants(push_parameter[static_cast<u8>(m_current_pipeline_layout)],
                                                   data_size / 4u, data, 0);
 }
@@ -1462,6 +1472,7 @@ void* D3D12Device::MapUniformBuffer(u32 size)
 
 void D3D12Device::UnmapUniformBuffer(u32 size)
 {
+  s_stats.buffer_streamed += size;
   m_uniform_buffer_position = m_uniform_buffer.GetCurrentOffset();
   m_uniform_buffer.CommitMemory(size);
   m_dirty_flags |= DIRTY_FLAG_CONSTANT_BUFFER;
@@ -1681,6 +1692,7 @@ void D3D12Device::BeginRenderPass()
 
   // TODO: Stats
   m_in_render_pass = true;
+  s_stats.num_render_passes++;
 
   // If this is a new command buffer, bind the pipeline and such.
   if (m_dirty_flags & DIRTY_FLAG_INITIAL)
@@ -1715,6 +1727,7 @@ void D3D12Device::BeginSwapChainRenderPass()
   m_num_current_render_targets = 0;
   m_current_depth_target = nullptr;
   m_in_render_pass = true;
+  s_stats.num_render_passes++;
 
   // Clear pipeline, it's likely incompatible.
   m_current_pipeline = nullptr;
@@ -2119,11 +2132,13 @@ bool D3D12Device::UpdateRootParameters(u32 dirty)
 void D3D12Device::Draw(u32 vertex_count, u32 base_vertex)
 {
   PreDrawCheck();
+  s_stats.num_draws++;
   GetCommandList()->DrawInstanced(vertex_count, 1, base_vertex, 0);
 }
 
 void D3D12Device::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
 {
   PreDrawCheck();
+  s_stats.num_draws++;
   GetCommandList()->DrawIndexedInstanced(index_count, 1, base_index, base_vertex, 0);
 }

@@ -2778,6 +2778,9 @@ void FullscreenUI::DrawInterfaceSettingsPage()
     FSUI_CSTR("Shows the number of frames (or v-syncs) displayed per second by the system in the top-right "
               "corner of the display."),
     "Display", "ShowFPS", false);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BARS, "Show GPU Statistics"),
+                    FSUI_CSTR("Shows information about the emulated GPU in the top-right corner of the display."),
+                    "Display", "ShowGPUStatistics", false);
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BATTERY_HALF, "Show CPU Usage"),
                     FSUI_CSTR("Shows the host's CPU usage based on threads in the top-right corner of the display."),
                     "Display", "ShowCPU", false);

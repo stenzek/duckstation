@@ -2568,6 +2568,8 @@ void VulkanDevice::CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 
   if (InRenderPass())
     EndRenderPass();
 
+  s_stats.num_copies++;
+
   S->SetUseFenceCounter(GetCurrentFenceCounter());
   D->SetUseFenceCounter(GetCurrentFenceCounter());
   S->TransitionToLayout((D == S) ? VulkanTexture::Layout::TransferSelf : VulkanTexture::Layout::TransferSrc);
@@ -2591,6 +2593,8 @@ void VulkanDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u
 
   if (InRenderPass())
     EndRenderPass();
+
+  s_stats.num_copies++;
 
   VulkanTexture* D = static_cast<VulkanTexture*>(dst);
   VulkanTexture* S = static_cast<VulkanTexture*>(src);
@@ -2699,7 +2703,9 @@ void VulkanDevice::MapVertexBuffer(u32 vertex_size, u32 vertex_count, void** map
 
 void VulkanDevice::UnmapVertexBuffer(u32 vertex_size, u32 vertex_count)
 {
-  m_vertex_buffer.CommitMemory(vertex_size * vertex_count);
+  const u32 size = vertex_size * vertex_count;
+  s_stats.buffer_streamed += size;
+  m_vertex_buffer.CommitMemory(size);
 }
 
 void VulkanDevice::MapIndexBuffer(u32 index_count, DrawIndex** map_ptr, u32* map_space, u32* map_base_index)
@@ -2719,12 +2725,15 @@ void VulkanDevice::MapIndexBuffer(u32 index_count, DrawIndex** map_ptr, u32* map
 
 void VulkanDevice::UnmapIndexBuffer(u32 used_index_count)
 {
-  m_index_buffer.CommitMemory(sizeof(DrawIndex) * used_index_count);
+  const u32 size = sizeof(DrawIndex) * used_index_count;
+  s_stats.buffer_streamed += size;
+  m_index_buffer.CommitMemory(size);
 }
 
 void VulkanDevice::PushUniformBuffer(const void* data, u32 data_size)
 {
   DebugAssert(data_size < UNIFORM_PUSH_CONSTANTS_SIZE);
+  s_stats.buffer_streamed += data_size;
   vkCmdPushConstants(GetCurrentCommandBuffer(), GetCurrentVkPipelineLayout(), UNIFORM_PUSH_CONSTANTS_STAGES, 0,
                      data_size, data);
 }
@@ -2745,6 +2754,7 @@ void* VulkanDevice::MapUniformBuffer(u32 size)
 
 void VulkanDevice::UnmapUniformBuffer(u32 size)
 {
+  s_stats.buffer_streamed += size;
   m_uniform_buffer_position = m_uniform_buffer.GetCurrentOffset();
   m_uniform_buffer.CommitMemory(size);
   m_dirty_flags |= DIRTY_FLAG_DYNAMIC_OFFSETS;
@@ -3147,6 +3157,8 @@ void VulkanDevice::BeginRenderPass()
     vkCmdBeginRenderPass(GetCurrentCommandBuffer(), &bi, VK_SUBPASS_CONTENTS_INLINE);
   }
 
+  s_stats.num_render_passes++;
+
   // If this is a new command buffer, bind the pipeline and such.
   if (m_dirty_flags & DIRTY_FLAG_INITIAL)
     SetInitialPipelineState();
@@ -3212,6 +3224,7 @@ void VulkanDevice::BeginSwapChainRenderPass()
     vkCmdBeginRenderPass(GetCurrentCommandBuffer(), &rp, VK_SUBPASS_CONTENTS_INLINE);
   }
 
+  s_stats.num_render_passes++;
   m_num_current_render_targets = 0;
   std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
   m_current_depth_target = nullptr;
@@ -3568,11 +3581,13 @@ bool VulkanDevice::UpdateDescriptorSets(u32 dirty)
 void VulkanDevice::Draw(u32 vertex_count, u32 base_vertex)
 {
   PreDrawCheck();
+  s_stats.num_draws++;
   vkCmdDraw(GetCurrentCommandBuffer(), vertex_count, 1, base_vertex, 0);
 }
 
 void VulkanDevice::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
 {
   PreDrawCheck();
+  s_stats.num_draws++;
   vkCmdDrawIndexed(GetCurrentCommandBuffer(), index_count, 1, base_index, base_vertex, 0);
 }

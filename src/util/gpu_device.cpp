@@ -40,6 +40,7 @@ std::unique_ptr<GPUDevice> g_gpu_device;
 
 static std::string s_pipeline_cache_path;
 size_t GPUDevice::s_total_vram_usage = 0;
+GPUDevice::Statistics GPUDevice::s_stats = {};
 
 GPUSampler::GPUSampler() = default;
 
@@ -204,6 +205,11 @@ size_t GPUFramebufferManagerBase::KeyHash::operator()(const Key& key) const
     return XXH3_64bits(&key, sizeof(key));
   else
     return XXH32(&key, sizeof(key), 0x1337);
+}
+
+GPUDevice::GPUDevice()
+{
+  ResetStatistics();
 }
 
 GPUDevice::~GPUDevice() = default;
@@ -991,6 +997,11 @@ bool GPUDevice::SetGPUTimingEnabled(bool enabled)
 float GPUDevice::GetAndResetAccumulatedGPUTime()
 {
   return 0.0f;
+}
+
+void GPUDevice::ResetStatistics()
+{
+  s_stats = {};
 }
 
 std::unique_ptr<GPUDevice> GPUDevice::CreateDeviceForAPI(RenderAPI api)

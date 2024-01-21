@@ -443,6 +443,9 @@ bool D3D12Texture::Update(u32 x, u32 y, u32 width, u32 height, const void* data,
       m_state = State::Dirty;
   }
 
+  GPUDevice::GetStatistics().buffer_streamed += required_size;
+  GPUDevice::GetStatistics().num_uploads++;
+
   // first time the texture is used? don't leave it undefined
   if (m_resource_state == D3D12_RESOURCE_STATE_COMMON)
     TransitionToState(cmdlist, D3D12_RESOURCE_STATE_COPY_DEST);
@@ -510,6 +513,9 @@ void D3D12Texture::Unmap()
   const u32 req_size = m_map_height * aligned_pitch;
   const u32 offset = sb.GetCurrentOffset();
   sb.CommitMemory(req_size);
+
+  GPUDevice::GetStatistics().buffer_streamed += req_size;
+  GPUDevice::GetStatistics().num_uploads++;
 
   ID3D12GraphicsCommandList4* cmdlist = GetCommandBufferForUpdate();
 
@@ -907,7 +913,10 @@ void* D3D12TextureBuffer::Map(u32 required_elements)
 
 void D3D12TextureBuffer::Unmap(u32 used_elements)
 {
-  m_buffer.CommitMemory(GetElementSize(m_format) * used_elements);
+  const u32 size = GetElementSize(m_format) * used_elements;
+  GPUDevice::GetStatistics().buffer_streamed += size;
+  GPUDevice::GetStatistics().num_uploads++;
+  m_buffer.CommitMemory(size);
 }
 
 void D3D12TextureBuffer::SetDebugName(const std::string_view& name)

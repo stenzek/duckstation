@@ -166,6 +166,9 @@ std::unique_ptr<OpenGLTexture> OpenGLTexture::Create(u32 width, u32 height, u32 
       const u32 alignment = ((data_pitch % 4) == 0) ? 4 : (((data_pitch % 2) == 0) ? 2 : 1);
       if (data)
       {
+        GPUDevice::GetStatistics().buffer_streamed += data_pitch * height;
+        GPUDevice::GetStatistics().num_uploads++;
+
         glPixelStorei(GL_UNPACK_ROW_LENGTH, data_pitch / pixel_size);
         if (alignment != 4)
           glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
@@ -248,6 +251,9 @@ bool OpenGLTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data
 
   CommitClear();
 
+  GPUDevice::GetStatistics().buffer_streamed += map_size;
+  GPUDevice::GetStatistics().num_uploads++;
+
   OpenGLDevice::BindUpdateTextureUnit();
   glBindTexture(target, m_id);
 
@@ -309,6 +315,10 @@ void OpenGLTexture::Unmap()
 
   const u32 pitch = Common::AlignUpPow2(static_cast<u32>(m_map_width) * GetPixelSize(), TEXTURE_UPLOAD_PITCH_ALIGNMENT);
   const u32 upload_size = pitch * static_cast<u32>(m_map_height);
+
+  GPUDevice::GetStatistics().buffer_streamed += upload_size;
+  GPUDevice::GetStatistics().num_uploads++;
+
   OpenGLStreamBuffer* sb = OpenGLDevice::GetTextureStreamBuffer();
   sb->Unmap(upload_size);
   sb->Bind();
@@ -627,7 +637,10 @@ void* OpenGLTextureBuffer::Map(u32 required_elements)
 
 void OpenGLTextureBuffer::Unmap(u32 used_elements)
 {
-  m_buffer->Unmap(used_elements * GetElementSize(m_format));
+  const u32 size = used_elements * GetElementSize(m_format);
+  GPUDevice::GetStatistics().buffer_streamed += size;
+  GPUDevice::GetStatistics().num_uploads++;
+  m_buffer->Unmap(size);
 }
 
 void OpenGLTextureBuffer::SetDebugName(const std::string_view& name)

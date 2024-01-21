@@ -188,7 +188,7 @@ private:
   void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) override;
   void DispatchRenderCommand() override;
   void FlushRender() override;
-  void DrawRendererStats(bool is_idle_frame) override;
+  void DrawRendererStats() override;
 
   bool BlitVRAMReplacementTexture(const TextureReplacementTexture* tex, u32 dst_x, u32 dst_y, u32 width, u32 height);
 
@@ -297,8 +297,4 @@ private:
   std::unique_ptr<GPUSampler> m_downsample_lod_sampler;
   std::unique_ptr<GPUSampler> m_downsample_composite_sampler;
   u32 m_downsample_scale_or_levels = 0;
-
-  // Statistics
-  RendererStats m_renderer_stats = {};
-  RendererStats m_last_renderer_stats = {};
 };

@@ -352,8 +352,8 @@ bool GPU::HandleRenderPolygonCommand()
     SetTexturePalette(Truncate16(FifoPeek(2) >> 16));
   }
 
-  m_stats.num_vertices += num_vertices;
-  m_stats.num_polygons++;
+  m_counters.num_vertices += num_vertices;
+  m_counters.num_primitives++;
   m_render_command.bits = rc.bits;
   m_fifo.RemoveOne();
 
@@ -384,8 +384,8 @@ bool GPU::HandleRenderRectangleCommand()
                   rc.texture_enable ? "textured" : "non-textured", rc.shading_enable ? "shaded" : "monochrome",
                   total_words, setup_ticks);
 
-  m_stats.num_vertices++;
-  m_stats.num_polygons++;
+  m_counters.num_vertices++;
+  m_counters.num_primitives++;
   m_render_command.bits = rc.bits;
   m_fifo.RemoveOne();
 
@@ -406,8 +406,8 @@ bool GPU::HandleRenderLineCommand()
   Log_TracePrintf("Render %s %s line (%u total words)", rc.transparency_enable ? "semi-transparent" : "opaque",
                   rc.shading_enable ? "shaded" : "monochrome", total_words);
 
-  m_stats.num_vertices += 2;
-  m_stats.num_polygons++;
+  m_counters.num_vertices += 2;
+  m_counters.num_primitives++;
   m_render_command.bits = rc.bits;
   m_fifo.RemoveOne();
 
@@ -468,7 +468,7 @@ bool GPU::HandleFillRectangleCommand()
   if (width > 0 && height > 0)
     FillVRAM(dst_x, dst_y, width, height, color);
 
-  m_stats.num_vram_fills++;
+  m_counters.num_writes++;
   AddCommandTicks(46 + ((width / 8) + 9) * height);
   EndCommand();
   return true;
@@ -552,10 +552,10 @@ void GPU::FinishVRAMWrite()
     }
   }
 
+  m_counters.num_writes++;
   m_blit_buffer.clear();
   m_vram_transfer = {};
   m_blitter_state = BlitterState::Idle;
-  m_stats.num_vram_writes++;
 }
 
 bool GPU::HandleCopyRectangleVRAMToCPUCommand()
@@ -586,7 +586,6 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand()
   }
 
   // switch to pixel-by-pixel read state
-  m_stats.num_vram_reads++;
   m_blitter_state = BlitterState::ReadingVRAM;
   m_command_total_words = 0;
   return true;
@@ -612,11 +611,12 @@ bool GPU::HandleCopyRectangleVRAMToVRAMCommand()
     width == 0 || height == 0 || (src_x == dst_x && src_y == dst_y && !m_GPUSTAT.set_mask_while_drawing);
   if (!skip_copy)
   {
+    m_counters.num_copies++;
+
     FlushRender();
     CopyVRAM(src_x, src_y, dst_x, dst_y, width, height);
   }
 
-  m_stats.num_vram_copies++;
   AddCommandTicks(width * height * 2);
   EndCommand();
   return true;

@@ -20,6 +20,8 @@
 #include <tuple>
 #include <vector>
 
+class SmallStringBase;
+
 class StateWrapper;
 
 class GPUDevice;
@@ -99,6 +101,10 @@ public:
 
   // Render statistics debug window.
   void DrawDebugStateWindow();
+  void GetStatsString(SmallStringBase& str);
+  void GetMemoryStatsString(SmallStringBase& str);
+  void ResetStatistics();
+  void UpdateStatistics(u32 frame_count);
 
   void CPUClockChanged();
 
@@ -308,7 +314,7 @@ protected:
   virtual void DispatchRenderCommand();
   virtual void ClearDisplay();
   virtual void UpdateDisplay();
-  virtual void DrawRendererStats(bool is_idle_frame);
+  virtual void DrawRendererStats();
 
   ALWAYS_INLINE void AddDrawTriangleTicks(s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3, bool shaded, bool textured,
                                           bool semitransparent)
@@ -589,17 +595,30 @@ protected:
   s32 m_display_texture_view_width = 0;
   s32 m_display_texture_view_height = 0;
 
-  struct Stats
+  struct Counters
   {
-    u32 num_vram_reads;
-    u32 num_vram_fills;
-    u32 num_vram_writes;
-    u32 num_vram_copies;
+    u32 num_reads;
+    u32 num_writes;
+    u32 num_copies;
     u32 num_vertices;
-    u32 num_polygons;
+    u32 num_primitives;
+
+    // u32 num_read_texture_updates;
+    // u32 num_ubo_updates;
   };
+
+  struct Stats : Counters
+  {
+    size_t host_buffer_streamed;
+    u32 host_num_draws;
+    u32 host_num_render_passes;
+    u32 host_num_copies;
+    u32 host_num_downloads;
+    u32 host_num_uploads;
+  };
+
+  Counters m_counters = {};
   Stats m_stats = {};
-  Stats m_last_stats = {};
 
 private:
   bool CompileDisplayPipeline();

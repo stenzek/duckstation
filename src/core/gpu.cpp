@@ -21,6 +21,7 @@
 #include "common/file_system.h"
 #include "common/heap_array.h"
 #include "common/log.h"
+#include "common/small_string.h"
 #include "common/string_util.h"
 
 #include "stb_image_resize.h"
@@ -35,7 +36,10 @@ std::unique_ptr<GPU> g_gpu;
 
 const GPU::GP0CommandHandlerTable GPU::s_GP0_command_handler_table = GPU::GenerateGP0CommandHandlerTable();
 
-GPU::GPU() = default;
+GPU::GPU()
+{
+  ResetStatistics();
+}
 
 GPU::~GPU()
 {
@@ -66,7 +70,7 @@ bool GPU::Initialize()
     return false;
   }
 
-  g_gpu_device->SetGPUTimingEnabled(g_settings.display_show_gpu);
+  g_gpu_device->SetGPUTimingEnabled(g_settings.display_show_gpu_usage);
 
   return true;
 }
@@ -93,7 +97,7 @@ void GPU::UpdateSettings(const Settings& old_settings)
       Panic("Failed to compile display pipeline on settings change.");
   }
 
-  g_gpu_device->SetGPUTimingEnabled(g_settings.display_show_gpu);
+  g_gpu_device->SetGPUTimingEnabled(g_settings.display_show_gpu_usage);
 }
 
 void GPU::CPUClockChanged()
@@ -2229,59 +2233,7 @@ void GPU::DrawDebugStateWindow()
     return;
   }
 
-  const bool is_idle_frame = m_stats.num_polygons == 0;
-  if (!is_idle_frame)
-  {
-    m_last_stats = m_stats;
-    m_stats = {};
-  }
-
-  if (ImGui::CollapsingHeader("Statistics", ImGuiTreeNodeFlags_DefaultOpen))
-  {
-    const Stats& stats = m_last_stats;
-
-    ImGui::Columns(2);
-    ImGui::SetColumnWidth(0, 200.0f * framebuffer_scale);
-
-    ImGui::TextUnformatted("Idle Frame: ");
-    ImGui::NextColumn();
-    ImGui::Text("%s", is_idle_frame ? "Yes" : "No");
-    ImGui::NextColumn();
-
-    ImGui::TextUnformatted("VRAM Reads: ");
-    ImGui::NextColumn();
-    ImGui::Text("%u", stats.num_vram_reads);
-    ImGui::NextColumn();
-
-    ImGui::TextUnformatted("VRAM Fills: ");
-    ImGui::NextColumn();
-    ImGui::Text("%u", stats.num_vram_fills);
-    ImGui::NextColumn();
-
-    ImGui::TextUnformatted("VRAM Writes: ");
-    ImGui::NextColumn();
-    ImGui::Text("%u", stats.num_vram_writes);
-    ImGui::NextColumn();
-
-    ImGui::TextUnformatted("VRAM Copies: ");
-    ImGui::NextColumn();
-    ImGui::Text("%u", stats.num_vram_copies);
-    ImGui::NextColumn();
-
-    ImGui::TextUnformatted("Vertices Processed: ");
-    ImGui::NextColumn();
-    ImGui::Text("%u", stats.num_vertices);
-    ImGui::NextColumn();
-
-    ImGui::TextUnformatted("Polygons Drawn: ");
-    ImGui::NextColumn();
-    ImGui::Text("%u", stats.num_polygons);
-    ImGui::NextColumn();
-
-    ImGui::Columns(1);
-  }
-
-  DrawRendererStats(is_idle_frame);
+  DrawRendererStats();
 
   if (ImGui::CollapsingHeader("GPU", ImGuiTreeNodeFlags_DefaultOpen))
   {
@@ -2339,6 +2291,67 @@ void GPU::DrawDebugStateWindow()
   ImGui::End();
 }
 
-void GPU::DrawRendererStats(bool is_idle_frame)
+void GPU::DrawRendererStats()
 {
+}
+
+void GPU::GetStatsString(SmallStringBase& str)
+{
+  if (IsHardwareRenderer())
+  {
+    str.format("{} HW | {} P | {} DC | {} RP | {} RB | {} C | {} W",
+               GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()), m_stats.num_primitives,
+               m_stats.host_num_draws, m_stats.host_num_render_passes, m_stats.num_reads, m_stats.num_copies,
+               m_stats.num_writes);
+  }
+  else
+  {
+    str.format("{} SW | {} P | {} R | {} C | {} W", GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()),
+               m_stats.num_primitives, m_stats.num_reads, m_stats.num_copies, m_stats.num_writes);
+  }
+}
+
+void GPU::GetMemoryStatsString(SmallStringBase& str)
+{
+  const u32 vram_usage_mb = static_cast<u32>((g_gpu_device->GetVRAMUsage() + (1048576 - 1)) / 1048576);
+  const u32 stream_kb = static_cast<u32>((m_stats.host_buffer_streamed + (1024 - 1)) / 1024);
+
+  str.format("{} MB VRAM | {} KB STR | {} TC | {} TU", vram_usage_mb, stream_kb, m_stats.host_num_copies,
+             m_stats.host_num_uploads);
+}
+
+void GPU::ResetStatistics()
+{
+  m_counters = {};
+  g_gpu_device->ResetStatistics();
+}
+
+void GPU::UpdateStatistics(u32 frame_count)
+{
+  const GPUDevice::Statistics& stats = g_gpu_device->GetStatistics();
+  const u32 round = (frame_count - 1);
+
+#define UPDATE_COUNTER(x) m_stats.x = (m_counters.x + round) / frame_count
+#define UPDATE_GPU_STAT(x) m_stats.host_##x = (stats.x + round) / frame_count
+
+  UPDATE_COUNTER(num_reads);
+  UPDATE_COUNTER(num_writes);
+  UPDATE_COUNTER(num_copies);
+  UPDATE_COUNTER(num_vertices);
+  UPDATE_COUNTER(num_primitives);
+
+  // UPDATE_COUNTER(num_read_texture_updates);
+  // UPDATE_COUNTER(num_ubo_updates);
+
+  UPDATE_GPU_STAT(buffer_streamed);
+  UPDATE_GPU_STAT(num_draws);
+  UPDATE_GPU_STAT(num_render_passes);
+  UPDATE_GPU_STAT(num_copies);
+  UPDATE_GPU_STAT(num_downloads);
+  UPDATE_GPU_STAT(num_uploads);
+
+#undef UPDATE_GPU_STAT
+#undef UPDATE_COUNTER
+
+  ResetStatistics();
 }
