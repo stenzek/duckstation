@@ -416,7 +416,7 @@ private:
     u32 command_buffer_index;
   };
 
-  QueuedPresent m_queued_present = {};
+  QueuedPresent m_queued_present = {nullptr, 0xFFFFFFFFu};
 
   std::unordered_map<RenderPassCacheKey, VkRenderPass, RenderPassCacheKeyHash> m_render_pass_cache;
   GPUFramebufferManager<VkFramebuffer, CreateFramebuffer, DestroyFramebuffer> m_framebuffer_manager;

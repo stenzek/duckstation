@@ -1140,13 +1140,33 @@ bool VulkanDevice::SetGPUTimingEnabled(bool enabled)
 
 void VulkanDevice::WaitForCommandBufferCompletion(u32 index)
 {
-  // Wait for this command buffer to be completed.
-  VkResult res = vkWaitForFences(m_device, 1, &m_frame_resources[index].fence, VK_TRUE, UINT64_MAX);
-  if (res != VK_SUCCESS)
+  // We might be waiting for the buffer we just submitted to the worker thread.
+  if (m_queued_present.command_buffer_index == index && !m_present_done.load(std::memory_order_acquire))
   {
-    LOG_VULKAN_ERROR(res, "vkWaitForFences failed: ");
-    m_last_submit_failed.store(true, std::memory_order_release);
-    return;
+    Log_WarningFmt("Waiting for threaded submission of cmdbuffer {}", index);
+    WaitForPresentComplete();
+  }
+
+  // Wait for this command buffer to be completed.
+  static constexpr u32 MAX_TIMEOUTS = 10;
+  u32 timeouts = 0;
+  for (;;)
+  {
+    VkResult res = vkWaitForFences(m_device, 1, &m_frame_resources[index].fence, VK_TRUE, UINT64_MAX);
+    if (res == VK_SUCCESS)
+      break;
+
+    if (res == VK_TIMEOUT && (++timeouts) <= MAX_TIMEOUTS)
+    {
+      Log_ErrorFmt("vkWaitForFences() for cmdbuffer {} failed with VK_TIMEOUT, trying again.", index);
+      continue;
+    }
+    else if (res != VK_SUCCESS)
+    {
+      LOG_VULKAN_ERROR(res, "vkWaitForFences() for cmdbuffer %u failed: ", index);
+      m_last_submit_failed.store(true, std::memory_order_release);
+      return;
+    }
   }
 
   // Clean up any resources for command buffers between the last known completed buffer and this
@@ -1162,7 +1182,7 @@ void VulkanDevice::WaitForCommandBufferCompletion(u32 index)
     if (m_gpu_timing_enabled && resources.timestamp_written)
     {
       std::array<u64, 2> timestamps;
-      res =
+      VkResult res =
         vkGetQueryPoolResults(m_device, m_timestamp_query_pool, index * 2, static_cast<u32>(timestamps.size()),
                               sizeof(u64) * timestamps.size(), timestamps.data(), sizeof(u64), VK_QUERY_RESULT_64_BIT);
       if (res == VK_SUCCESS)
@@ -1245,7 +1265,7 @@ void VulkanDevice::SubmitCommandBuffer(VulkanSwapChain* present_swap_chain /* = 
 
   m_queued_present.command_buffer_index = m_current_frame;
   m_queued_present.swap_chain = present_swap_chain;
-  m_present_done.store(false);
+  m_present_done.store(false, std::memory_order_release);
   m_present_queued_cv.notify_one();
 }
 
@@ -1316,7 +1336,7 @@ void VulkanDevice::DoPresent(VulkanSwapChain* present_swap_chain)
 
 void VulkanDevice::WaitForPresentComplete()
 {
-  if (m_present_done.load())
+  if (m_present_done.load(std::memory_order_acquire))
     return;
 
   std::unique_lock<std::mutex> lock(m_present_mutex);
@@ -1325,26 +1345,28 @@ void VulkanDevice::WaitForPresentComplete()
 
 void VulkanDevice::WaitForPresentComplete(std::unique_lock<std::mutex>& lock)
 {
-  if (m_present_done.load())
+  if (m_present_done.load(std::memory_order_acquire))
     return;
 
-  m_present_done_cv.wait(lock, [this]() { return m_present_done.load(); });
+  m_present_done_cv.wait(lock, [this]() { return m_present_done.load(std::memory_order_acquire); });
 }
 
 void VulkanDevice::PresentThread()
 {
   std::unique_lock<std::mutex> lock(m_present_mutex);
-  while (!m_present_thread_done.load())
+  while (!m_present_thread_done.load(std::memory_order_acquire))
   {
-    m_present_queued_cv.wait(lock, [this]() { return !m_present_done.load() || m_present_thread_done.load(); });
+    m_present_queued_cv.wait(lock, [this]() {
+      return !m_present_done.load(std::memory_order_acquire) || m_present_thread_done.load(std::memory_order_acquire);
+    });
 
-    if (m_present_done.load())
+    if (m_present_done.load(std::memory_order_acquire))
       continue;
 
     DoSubmitCommandBuffer(m_queued_present.command_buffer_index, m_queued_present.swap_chain);
     if (m_queued_present.swap_chain)
       DoPresent(m_queued_present.swap_chain);
-    m_present_done.store(true);
+    m_present_done.store(true, std::memory_order_release);
     m_present_done_cv.notify_one();
   }
 }
@@ -1352,7 +1374,7 @@ void VulkanDevice::PresentThread()
 void VulkanDevice::StartPresentThread()
 {
   DebugAssert(!m_present_thread.joinable());
-  m_present_thread_done.store(false);
+  m_present_thread_done.store(false, std::memory_order_release);
   m_present_thread = std::thread(&VulkanDevice::PresentThread, this);
 }
 
@@ -1364,7 +1386,7 @@ void VulkanDevice::StopPresentThread()
   {
     std::unique_lock<std::mutex> lock(m_present_mutex);
     WaitForPresentComplete(lock);
-    m_present_thread_done.store(true);
+    m_present_thread_done.store(true, std::memory_order_release);
     m_present_queued_cv.notify_one();
   }
 
@@ -1379,9 +1401,6 @@ void VulkanDevice::MoveToNextCommandBuffer()
 void VulkanDevice::BeginCommandBuffer(u32 index)
 {
   CommandBuffer& resources = m_frame_resources[index];
-
-  if (!m_present_done.load() && m_queued_present.command_buffer_index == index)
-    WaitForPresentComplete();
 
   // Wait for the GPU to finish with all resources for this command buffer.
   if (resources.fence_counter > m_completed_fence_counter)
