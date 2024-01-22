@@ -4075,7 +4075,7 @@ You cannot undo this action.</source>
         <translation>光枪</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="275"/>
+        <location filename="../../core/negcon.cpp" line="345"/>
         <location filename="../../core/settings.cpp" line="1359"/>
         <source>NeGcon</source>
         <translation>NeGcon</translation>
@@ -8091,7 +8091,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6739"/>
         <source>Game type copied to clipboard.</source>
-        <translation>游戏类型复制到剪贴板。</translation>
+        <translation>游戏格式复制到剪贴板。</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6913"/>
@@ -9172,7 +9172,7 @@ Do you want to load this save and continue?</source>
         <translation>分辨率比率{0}x不能被缩减采样比率{1}x整除，使用{2}x代替。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="545"/>
+        <location filename="../../core/gpu_hw.cpp" line="554"/>
         <source>Resolution scale {0}x not supported for adaptive downsampling, using {1}x.</source>
         <translation>分辨率比率{0}x不支持自适应缩减采样，使用{1}x。</translation>
     </message>
@@ -12136,87 +12136,239 @@ The saves will not be recoverable.</source>
 <context>
     <name>NeGcon</name>
     <message>
-        <location filename="../../core/negcon.cpp" line="246"/>
+        <location filename="../../core/negcon.cpp" line="274"/>
         <source>D-Pad Up</source>
         <translation>十字方向键 上</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="247"/>
+        <location filename="../../core/negcon.cpp" line="275"/>
         <source>D-Pad Right</source>
         <translation>十字方向键 右</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="248"/>
+        <location filename="../../core/negcon.cpp" line="276"/>
         <source>D-Pad Down</source>
         <translation>十字方向键 下</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="249"/>
+        <location filename="../../core/negcon.cpp" line="277"/>
         <source>D-Pad Left</source>
         <translation>十字方向键 左</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="250"/>
+        <location filename="../../core/negcon.cpp" line="278"/>
         <source>Start</source>
         <translation>开始</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="251"/>
+        <location filename="../../core/negcon.cpp" line="279"/>
         <source>A Button</source>
         <translation>A按键</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="252"/>
+        <location filename="../../core/negcon.cpp" line="280"/>
         <source>B Button</source>
         <translation>B按键</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="253"/>
+        <location filename="../../core/negcon.cpp" line="281"/>
         <source>I Button</source>
         <translation>I按键</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="254"/>
+        <location filename="../../core/negcon.cpp" line="282"/>
         <source>II Button</source>
         <translation>II按键</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="255"/>
+        <location filename="../../core/negcon.cpp" line="283"/>
         <source>Left Trigger</source>
         <translation>左触发器</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="256"/>
+        <location filename="../../core/negcon.cpp" line="284"/>
         <source>Right Trigger</source>
         <translation>右触发器</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="257"/>
+        <location filename="../../core/negcon.cpp" line="285"/>
         <source>Steering (Twist) Left</source>
         <translation>转向 (扭转) 左</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="258"/>
+        <location filename="../../core/negcon.cpp" line="286"/>
         <source>Steering (Twist) Right</source>
         <translation>转向 (扭转) 右</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="267"/>
+        <location filename="../../core/negcon.cpp" line="295"/>
+        <source>Sets deadzone for steering axis.</source>
+        <translation>设置转向轴死区。</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="297"/>
+        <source>Steering Axis Saturation</source>
+        <translation>转向轴饱和度</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="298"/>
+        <source>Sets saturation for steering axis.</source>
+        <translation>设置转向轴饱和度。</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="300"/>
+        <source>Steering Axis Linearity</source>
+        <translation>转向轴线性度</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="301"/>
+        <source>Sets linearity for steering axis.</source>
+        <translation>设置转向轴线性度。</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="303"/>
+        <source>Steering Scaling</source>
+        <translation>转向缩放</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="304"/>
+        <source>Sets scaling for steering axis.</source>
+        <translation>设置转向轴缩放。</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="306"/>
+        <source>I Button Deadzone</source>
+        <translation>I按键死区</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="307"/>
+        <source>Sets deadzone for button I.</source>
+        <translation>设置按键I死区。</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="309"/>
+        <source>I Button Saturation</source>
+        <translation>I按键饱和度</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="310"/>
+        <source>Sets saturation for button I.</source>
+        <translation>设置按键I饱和度。</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="312"/>
+        <source>I Button Linearity</source>
+        <translation>I按键线性度</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="313"/>
+        <source>Sets linearity for button I.</source>
+        <translation>设置按键I线性度。</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="315"/>
+        <source>I Scaling</source>
+        <translation>I缩放</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="316"/>
+        <source>Sets scaling for button I.</source>
+        <translation>设置按键I缩放。</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="318"/>
+        <source>II Button Deadzone</source>
+        <translation>II按键死区</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="319"/>
+        <source>Sets deadzone for button II.</source>
+        <translation>设置按键II死区。</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="321"/>
+        <source>II Button Saturation</source>
+        <translation>II按键饱和度</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="322"/>
+        <source>Sets saturation for button II.</source>
+        <translation>设置按键II饱和度。</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="324"/>
+        <source>II Button Linearity</source>
+        <translation>II按键线性度</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="325"/>
+        <source>Sets linearity for button II.</source>
+        <translation>设置按键II线性度。</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="327"/>
+        <source>II Scaling</source>
+        <translation>II缩放</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="328"/>
+        <source>Sets scaling for button II.</source>
+        <translation>设置按键II缩放。</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="330"/>
+        <source>Left Trigger Deadzone</source>
+        <translation>左触发器死区</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="331"/>
+        <source>Sets deadzone for left trigger.</source>
+        <translation>设置左触发器死区。</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="333"/>
+        <source>Left Trigger Saturation</source>
+        <translation>左触发器饱和度</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="334"/>
+        <source>Sets saturation for left trigger.</source>
+        <translation>设置左触发器饱和度。</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="336"/>
+        <source>Left Trigger Linearity</source>
+        <translation>左触发器线性度</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="337"/>
+        <source>Sets linearity for left trigger.</source>
+        <translation>设置左触发器线性度。</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="339"/>
+        <source>Left Trigger Scaling</source>
+        <translation>左触发器缩放</translation>
+    </message>
+    <message>
+        <location filename="../../core/negcon.cpp" line="340"/>
+        <source>Sets scaling for left trigger.</source>
+        <translation>设置左触发器缩放。</translation>
+    </message>
+    <message>
         <source>Sets deadzone size for steering axis.</source>
-        <translation>设置转向轴死区大小。</translation>
+        <translation type="vanished">设置转向轴死区大小。</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="270"/>
         <source>Sets the steering axis scaling factor.</source>
-        <translation>设置转向轴缩放系数。</translation>
+        <translation type="vanished">设置转向轴缩放系数。</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="269"/>
         <source>Steering Axis Sensitivity</source>
-        <translation>转向轴灵敏度</translation>
+        <translation type="vanished">转向轴灵敏度</translation>
     </message>
     <message>
-        <location filename="../../core/negcon.cpp" line="266"/>
+        <location filename="../../core/negcon.cpp" line="294"/>
         <source>Steering Axis Deadzone</source>
         <translation>转向轴死区</translation>
     </message>
