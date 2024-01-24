@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "controllerbindingwidgets.h"
@@ -23,6 +23,7 @@
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QScrollArea>
 #include <QtWidgets/QSpinBox>
 #include <algorithm>
 
@@ -504,22 +505,19 @@ ControllerCustomSettingsWidget::ControllerCustomSettingsWidget(ControllerBinding
   if (!cinfo || cinfo->settings.empty())
     return;
 
-  QGroupBox* gbox = new QGroupBox(tr("%1 Settings").arg(qApp->translate("ControllerType", cinfo->display_name)), this);
-  QGridLayout* gbox_layout = new QGridLayout(gbox);
-  createSettingWidgets(parent, gbox, gbox_layout, cinfo);
+  QScrollArea* sarea = new QScrollArea(this);
+  QWidget* swidget = new QWidget(sarea);
+  sarea->setWidget(swidget);
+  sarea->setWidgetResizable(true);
+  sarea->setFrameShape(QFrame::StyledPanel);
+  sarea->setFrameShadow(QFrame::Sunken);
+
+  QGridLayout* swidget_layout = new QGridLayout(swidget);
+  createSettingWidgets(parent, swidget, swidget_layout, cinfo);
 
   QVBoxLayout* layout = new QVBoxLayout(this);
   layout->setContentsMargins(0, 0, 0, 0);
-  layout->addWidget(gbox);
-
-  QHBoxLayout* bottom_hlayout = new QHBoxLayout();
-  QPushButton* restore_defaults = new QPushButton(tr("Restore Default Settings"), this);
-  restore_defaults->setIcon(QIcon::fromTheme(QStringLiteral("restart-line")));
-  connect(restore_defaults, &QPushButton::clicked, this, &ControllerCustomSettingsWidget::restoreDefaults);
-  bottom_hlayout->addStretch(1);
-  bottom_hlayout->addWidget(restore_defaults);
-  layout->addLayout(bottom_hlayout);
-  layout->addStretch(1);
+  layout->addWidget(sarea);
 }
 
 ControllerCustomSettingsWidget::~ControllerCustomSettingsWidget()
@@ -651,6 +649,16 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
 
     layout->addItem(new QSpacerItem(1, 10, QSizePolicy::Minimum, QSizePolicy::Fixed), current_row++, 0, 1, 4);
   }
+
+  QHBoxLayout* bottom_hlayout = new QHBoxLayout();
+  QPushButton* restore_defaults = new QPushButton(tr("Restore Default Settings"), this);
+  restore_defaults->setIcon(QIcon::fromTheme(QStringLiteral("restart-line")));
+  connect(restore_defaults, &QPushButton::clicked, this, &ControllerCustomSettingsWidget::restoreDefaults);
+  bottom_hlayout->addStretch(1);
+  bottom_hlayout->addWidget(restore_defaults);
+  layout->addLayout(bottom_hlayout, current_row++, 0, 1, 4);
+
+  layout->addItem(new QSpacerItem(1, 1, QSizePolicy::Minimum, QSizePolicy::Expanding), current_row++, 0, 1, 4);
 }
 
 void ControllerCustomSettingsWidget::restoreDefaults()
