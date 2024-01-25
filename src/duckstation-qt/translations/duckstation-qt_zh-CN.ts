@@ -7301,7 +7301,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6650"/>
         <source>Disables interlaced rendering and display in the GPU. Some games can render in 480p this way, but others will break.</source>
-        <translation>在GPU中禁用隔行渲染和显示。有些游戏可以用这种方式渲染480p，但另一些游戏会崩溃。</translation>
+        <translation>在GPU中禁用隔行渲染和显示。一些游戏可以用这种方式渲染480p，但另一些游戏会崩溃。</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6529"/>
@@ -7969,7 +7969,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6938"/>
         <source>Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.</source>
-        <translation>设置一个阈值，当超过时丢弃精确值。可能有助于解决一些游戏中的故障。</translation>
+        <translation>设置一个阈值，当超过时丢弃精确值。可能有助于解决某些游戏中的故障。</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6709"/>
