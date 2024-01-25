@@ -81,8 +81,8 @@ void CPU::NewRec::AArch32Compiler::Reset(CodeCache::Block* block, u8* code_buffe
   {
     HostRegAlloc& ra = m_host_regs[i];
 
-    if (i == RARG1.GetCode() || i == RARG1.GetCode() || i == RARG2.GetCode() || i == RARG3.GetCode() ||
-        i == RSCRATCH.GetCode() || i == RSTATE.GetCode() || i == membase_idx || i == sp.GetCode() || i == pc.GetCode())
+    if (i == RARG1.GetCode() || i == RARG2.GetCode() || i == RARG3.GetCode() || i == RSCRATCH.GetCode() ||
+        i == RSTATE.GetCode() || i == membase_idx || i == sp.GetCode() || i == pc.GetCode())
     {
       continue;
     }

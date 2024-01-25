@@ -1,0 +1,33 @@
+name: GameDB Lint
+
+on:
+  pull_request:
+    paths:
+      - 'data/resources/gamedb.json'
+  push:
+    branches:
+      - master
+      - dev
+    paths:
+      - 'data/resources/gamedb.json'
+  workflow_dispatch:
+
+jobs:
+  gamedb-lint:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+    - uses: actions/checkout@v4.1.1
+      with:
+        fetch-depth: 0
+
+    - name: Install Packages
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install python3-demjson
+
+    - name: Check GameDB
+      shell: bash
+      run: |
+        jsonlint -s data/resources/gamedb.json
