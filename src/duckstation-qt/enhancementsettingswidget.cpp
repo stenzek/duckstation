@@ -64,7 +64,7 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(SettingsWindow* dialog, QWi
                              tr("Selects the resolution scale that will be applied to the final image. 1x will "
                                 "downsample to the original console resolution."));
   dialog->registerWidgetHelp(
-    m_ui.disableInterlacing, tr("Disable Interlacing"), tr("Unchecked"),
+    m_ui.disableInterlacing, tr("Disable Interlacing"), tr("Checked"),
     tr(
       "Forces the rendering and display of frames to progressive mode. <br>This removes the \"combing\" effect seen in "
       "480i games by rendering them in 480p. Usually safe to enable.<br> "
@@ -75,7 +75,7 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(SettingsWindow* dialog, QWi
        "to the hardware backends. <br>This option is usually safe, with most games looking fine at "
        "higher resolutions. Higher resolutions require a more powerful GPU."));
   dialog->registerWidgetHelp(
-    m_ui.trueColor, tr("True Color Rendering"), tr("Unchecked"),
+    m_ui.trueColor, tr("True Color Rendering"), tr("Checked"),
     tr("Forces the precision of colours output to the console's framebuffer to use the full 8 bits of precision per "
        "channel. This produces nicer looking gradients at the cost of making some colours look slightly different. "
        "Disabling the option also enables dithering, which makes the transition between colours less sharp by applying "

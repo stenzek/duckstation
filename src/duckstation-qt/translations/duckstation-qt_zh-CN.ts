@@ -7301,7 +7301,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6650"/>
         <source>Disables interlaced rendering and display in the GPU. Some games can render in 480p this way, but others will break.</source>
-        <translation>在GPU中禁用隔行渲染和显示。有些游戏可以用这种方式渲染480p，但另一些游戏会崩溃。</translation>
+        <translation>在GPU中禁用隔行渲染和显示。一些游戏可以用这种方式渲染480p，但另一些游戏会崩溃。</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6529"/>
@@ -7969,7 +7969,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6938"/>
         <source>Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.</source>
-        <translation>设置一个阈值，当超过时丢弃精确值。可能有助于解决一些游戏中的故障。</translation>
+        <translation>设置一个阈值，当超过时丢弃精确值。可能有助于解决某些游戏中的故障。</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6709"/>
@@ -10806,7 +10806,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.ui" line="927"/>
         <source>Zoom &amp;In (Grid View)</source>
-        <translation>放大(&amp;I) (方格样式)</translation>
+        <translation>放大(&amp;I) (方格视图)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="397"/>
@@ -11092,7 +11092,7 @@ This action cannot be undone.</source>
     <message>
         <location filename="../mainwindow.ui" line="943"/>
         <source>Refresh &amp;Covers (Grid View)</source>
-        <translation>刷新封面(&amp;C) (方格样式)</translation>
+        <translation>刷新封面(&amp;C) (方格视图)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="2702"/>
@@ -11186,12 +11186,12 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../mainwindow.ui" line="922"/>
         <source>Show Titles (Grid View)</source>
-        <translation>显示标题 (方格样式)</translation>
+        <translation>显示标题 (方格视图)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="935"/>
         <source>Zoom &amp;Out (Grid View)</source>
-        <translation>缩小(&amp;O) (方格样式)</translation>
+        <translation>缩小(&amp;O) (方格视图)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="814"/>
@@ -11311,12 +11311,12 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../mainwindow.ui" line="911"/>
         <source>Game &amp;Grid</source>
-        <translation>游戏方格样式(&amp;G)</translation>
+        <translation>游戏方格(&amp;G)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="859"/>
         <source>Game &amp;List</source>
-        <translation>游戏列表样式(&amp;L)</translation>
+        <translation>游戏列表(&amp;L)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="75"/>
@@ -13992,7 +13992,7 @@ SBI文件的名称必须匹配光盘镜像的名称。</translation>
     <message>
         <location filename="../../core/system.cpp" line="3824"/>
         <source>CD-ROM seek speedup set to {}. This may crash games.</source>
-        <translation>CD-ROM读取加速设置为{}。这可能会崩溃游戏。</translation>
+        <translation>CD-ROM搜寻加速设置为{}。这可能会崩溃游戏。</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3826"/>

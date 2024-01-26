@@ -6205,7 +6205,7 @@ void FullscreenUI::DrawGameListSettingsPage(const ImVec2& heading_size)
     }
   }
 
-  MenuHeading("List Settings");
+  MenuHeading(FSUI_CSTR("List Settings"));
   {
     static constexpr const char* view_types[] = {FSUI_NSTR("Game Grid"), FSUI_NSTR("Game List")};
     static constexpr const char* sort_types[] = {
@@ -6234,14 +6234,18 @@ void FullscreenUI::DrawGameListSettingsPage(const ImVec2& heading_size)
     }
   }
 
-  MenuHeading("Operations");
+  MenuHeading(FSUI_CSTR("Operations"));
   {
     if (MenuButton(FSUI_ICONSTR(ICON_FA_SEARCH, "Scan For New Games"),
                    FSUI_CSTR("Identifies any new files added to the game directories.")))
+    {
       Host::RefreshGameListAsync(false);
+    }
     if (MenuButton(FSUI_ICONSTR(ICON_FA_SEARCH_PLUS, "Rescan All Games"),
                    FSUI_CSTR("Forces a full rescan of all games previously identified.")))
+    {
       Host::RefreshGameListAsync(true);
+    }
   }
 
   EndMenuButtons();
@@ -6772,6 +6776,7 @@ TRANSLATE_NOOP("FullscreenUI", "Leaderboard Notifications");
 TRANSLATE_NOOP("FullscreenUI", "Leaderboards");
 TRANSLATE_NOOP("FullscreenUI", "Leaderboards are not enabled.");
 TRANSLATE_NOOP("FullscreenUI", "Limits how many frames are displayed to the screen. These frames are still rendered.");
+TRANSLATE_NOOP("FullscreenUI", "List Settings");
 TRANSLATE_NOOP("FullscreenUI", "Load Devices From Save States");
 TRANSLATE_NOOP("FullscreenUI", "Load Profile");
 TRANSLATE_NOOP("FullscreenUI", "Load Resume State");

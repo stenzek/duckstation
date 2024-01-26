@@ -93,7 +93,7 @@ static float apply_axis_modifier(float value, const NeGcon::AxisModifier& axis_m
 static u8 get_scaled_value(float value, const NeGcon::AxisModifier& axis_modifier)
 {
   value = axis_modifier.scaling * axis_modifier.unit * value + axis_modifier.zero;
-  return std::clamp(std::round(value), 0.0f, 255.0f);
+  return static_cast<u8>(std::clamp(std::round(value), 0.0f, 255.0f));
 }
 
 void NeGcon::SetBindState(u32 index, float value)
