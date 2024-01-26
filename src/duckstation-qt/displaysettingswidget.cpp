@@ -105,7 +105,7 @@ DisplaySettingsWidget::DisplaySettingsWidget(SettingsWindow* dialog, QWidget* pa
                                 "option is disabled, the screenshots will be taken at the window's resolution. "
                                 "Internal resolution screenshots can be very large at high rendering scales."));
   dialog->registerWidgetHelp(
-    m_ui.vsync, tr("VSync"), tr("Checked"),
+    m_ui.vsync, tr("VSync"), tr("Unchecked"),
     tr("Enable this option to match DuckStation's refresh rate with your current monitor or screen. "
        "VSync is automatically disabled when it is not possible (e.g. running at non-100% speed)."));
   dialog->registerWidgetHelp(m_ui.threadedPresentation, tr("Threaded Presentation"), tr("Checked"),

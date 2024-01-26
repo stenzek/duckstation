@@ -95,7 +95,7 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
        "the console's refresh rate is too far from the host's refresh rate. Users with variable refresh rate displays "
        "should disable this option."));
   dialog->registerWidgetHelp(m_ui.displayAllFrames, tr("Optimal Frame Pacing"), tr("Unchecked"),
-                             tr("Enable this option will ensure every frame the console renders is displayed to the "
+                             tr("Enabling this option will ensure every frame the console renders is displayed to the "
                                 "screen, for optimal frame pacing. If you are having difficulties maintaining full "
                                 "speed, or are getting audio glitches, try disabling this option."));
   dialog->registerWidgetHelp(
