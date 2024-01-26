@@ -346,10 +346,10 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
       g_settings.gpu_downsample_scale != old_settings.gpu_downsample_scale));
   const bool shaders_changed =
     (m_resolution_scale != resolution_scale || m_multisamples != multisamples ||
-     m_true_color != g_settings.gpu_true_color || m_debanding != g_settings.gpu_debanding || m_per_sample_shading != per_sample_shading ||
-     m_scaled_dithering != g_settings.gpu_scaled_dithering || m_texture_filtering != g_settings.gpu_texture_filter ||
-     m_clamp_uvs != clamp_uvs || m_chroma_smoothing != g_settings.gpu_24bit_chroma_smoothing ||
-     m_downsample_mode != downsample_mode ||
+     m_true_color != g_settings.gpu_true_color || m_debanding != g_settings.gpu_debanding ||
+     m_per_sample_shading != per_sample_shading || m_scaled_dithering != g_settings.gpu_scaled_dithering ||
+     m_texture_filtering != g_settings.gpu_texture_filter || m_clamp_uvs != clamp_uvs ||
+     m_chroma_smoothing != g_settings.gpu_24bit_chroma_smoothing || m_downsample_mode != downsample_mode ||
      (m_downsample_mode == GPUDownsampleMode::Box &&
       g_settings.gpu_downsample_scale != old_settings.gpu_downsample_scale) ||
      m_wireframe_mode != wireframe_mode || m_pgxp_depth_buffer != g_settings.UsingPGXPDepthBuffer() ||
@@ -527,11 +527,14 @@ u32 GPU_HW::CalculateResolutionScale() const
                                              (NTSC_VERTICAL_ACTIVE_END - NTSC_VERTICAL_ACTIVE_START));
 
     float widescreen_multiplier = 1.0f;
-    if (g_settings.gpu_widescreen_hack) {
-        // Multiply scale factor by aspect ratio relative to 4:3, so that widescreen resolution is as close as possible to native screen resolution.
-        // Otherwise, anamorphic stretching would result in increasingly less horizontal resolution (relative to native screen resolution)
-        // as the aspect ratio gets wider.
-        widescreen_multiplier = std::max(1.0, (float(g_gpu_device->GetWindowWidth()) / g_gpu_device->GetWindowHeight()) / (4.0 / 3.0));
+    if (g_settings.gpu_widescreen_hack)
+    {
+      // Multiply scale factor by aspect ratio relative to 4:3, so that widescreen resolution is as close as possible to
+      // native screen resolution. Otherwise, anamorphic stretching would result in increasingly less horizontal
+      // resolution (relative to native screen resolution) as the aspect ratio gets wider.
+      widescreen_multiplier = std::max(1.0f, (static_cast<float>(g_gpu_device->GetWindowWidth()) /
+                                              static_cast<float>(g_gpu_device->GetWindowHeight())) /
+                                               (4.0f / 3.0f));
     }
 
     const s32 preferred_scale =
@@ -615,7 +618,8 @@ void GPU_HW::PrintSettingsToLog()
               VRAM_HEIGHT * m_resolution_scale, GetMaxResolutionScale());
   Log_InfoFmt("Multisampling: {}x{}", m_multisamples, m_per_sample_shading ? " (per sample shading)" : "");
   Log_InfoFmt("Dithering: {}{}", m_true_color ? "Disabled" : "Enabled",
-              (!m_true_color && m_scaled_dithering) ? " (Scaled)" : ((m_true_color && m_debanding) ? " (Debanding)" : ""));
+              (!m_true_color && m_scaled_dithering) ? " (Scaled)" :
+                                                      ((m_true_color && m_debanding) ? " (Debanding)" : ""));
   Log_InfoFmt("Texture Filtering: {}", Settings::GetTextureFilterDisplayName(m_texture_filtering));
   Log_InfoFmt("Dual-source blending: {}", m_supports_dual_source_blend ? "Supported" : "Not supported");
   Log_InfoFmt("Clamping UVs: {}", m_clamp_uvs ? "YES" : "NO");
@@ -709,7 +713,8 @@ bool GPU_HW::CompilePipelines()
   const GPUDevice::Features features = g_gpu_device->GetFeatures();
   GPU_HW_ShaderGen shadergen(g_gpu_device->GetRenderAPI(), m_resolution_scale, m_multisamples, m_per_sample_shading,
                              m_true_color, m_scaled_dithering, m_texture_filtering, m_clamp_uvs, m_pgxp_depth_buffer,
-                             m_disable_color_perspective, m_supports_dual_source_blend, m_supports_framebuffer_fetch, m_debanding);
+                             m_disable_color_perspective, m_supports_dual_source_blend, m_supports_framebuffer_fetch,
+                             m_debanding);
 
   ShaderCompileProgressTracker progress("Compiling Pipelines", 2 + (4 * 5 * 9 * 2 * 2) + (3 * 4 * 5 * 9 * 2 * 2) + 1 +
                                                                  2 + (2 * 2) + 2 + 1 + 1 + (2 * 3) + 1);

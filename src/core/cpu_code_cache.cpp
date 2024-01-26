@@ -242,9 +242,14 @@ void CPU::CodeCache::Execute()
 {
 #ifdef ENABLE_RECOMPILER_SUPPORT
   if (IsUsingAnyRecompiler())
+  {
     g_enter_recompiler();
+    UnreachableCode();
+  }
   else
+  {
     ExecuteCachedInterpreter();
+  }
 #else
   ExecuteCachedInterpreter();
 #endif
