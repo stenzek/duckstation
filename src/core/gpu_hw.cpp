@@ -221,6 +221,7 @@ bool GPU_HW::Initialize()
   m_downsample_mode = GetDownsampleMode(m_resolution_scale);
   m_wireframe_mode = g_settings.gpu_wireframe_mode;
   m_disable_color_perspective = features.noperspective_interpolation && ShouldDisableColorPerspective();
+  m_pgxp_depth_buffer = g_settings.UsingPGXPDepthBuffer();
 
   CheckSettings();
 
@@ -414,6 +415,8 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
     m_batch.use_depth_buffer = false;
     if (m_pgxp_depth_buffer)
       ClearDepthBuffer();
+    else
+      UpdateDepthBufferFromMaskBit();
   }
 
   UpdateSoftwareRenderer(true);
@@ -504,8 +507,6 @@ void GPU_HW::CheckSettings()
     if (box_downscale == g_settings.gpu_resolution_scale)
       m_downsample_mode = GPUDownsampleMode::Disabled;
   }
-
-  m_pgxp_depth_buffer = g_settings.UsingPGXPDepthBuffer();
 }
 
 u32 GPU_HW::CalculateResolutionScale() const
