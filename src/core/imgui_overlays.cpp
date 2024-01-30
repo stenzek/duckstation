@@ -740,8 +740,6 @@ void SaveStateSelectorUI::Open(float open_time /* = DEFAULT_OPEN_TIME */)
   if (!s_placeholder_texture)
     s_placeholder_texture = ImGuiFullscreen::LoadTexture("no-save.png");
 
-  s_scroll_animated.Reset(0.0f);
-  s_background_animated.Reset(0.0f);
   s_open = true;
   RefreshList(serial);
   RefreshHotkeyLegend();
@@ -808,6 +806,8 @@ void SaveStateSelectorUI::Clear()
 
   s_current_slot = 0;
   s_current_slot_global = false;
+  s_scroll_animated.Reset(0.0f);
+  s_background_animated.Reset(0.0f);
 }
 
 void SaveStateSelectorUI::ClearList()
