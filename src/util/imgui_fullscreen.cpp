@@ -419,14 +419,14 @@ bool ImGuiFullscreen::UpdateLayoutScale()
   if (screen_ratio > LAYOUT_RATIO)
   {
     // screen is wider, use height, pad width
-    g_layout_scale = std::max(screen_height / LAYOUT_SCREEN_HEIGHT, 1.0f);
+    g_layout_scale = std::max(screen_height / LAYOUT_SCREEN_HEIGHT, 0.1f);
     g_layout_padding_top = 0.0f;
     g_layout_padding_left = (screen_width - (LAYOUT_SCREEN_WIDTH * g_layout_scale)) / 2.0f;
   }
   else
   {
     // screen is taller, use width, pad height
-    g_layout_scale = std::max(screen_width / LAYOUT_SCREEN_WIDTH, 1.0f);
+    g_layout_scale = std::max(screen_width / LAYOUT_SCREEN_WIDTH, 0.1f);
     g_layout_padding_top = (screen_height - (LAYOUT_SCREEN_HEIGHT * g_layout_scale)) / 2.0f;
     g_layout_padding_left = 0.0f;
   }
