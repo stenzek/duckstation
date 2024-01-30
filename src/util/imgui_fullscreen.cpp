@@ -841,9 +841,10 @@ void ImGuiFullscreen::DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_m
   ImVec2 frame_min = p_min;
   ImVec2 frame_max = p_max;
 
-  if (ImGui::GetIO().NavVisible && ImGui::GetHoveredID() != ImGui::GetItemID())
+  const ImGuiIO& io = ImGui::GetIO();
+  if (io.NavVisible)
   {
-    if (!s_had_hovered_menu_item)
+    if (!s_had_hovered_menu_item || io.MouseDelta.x != 0.0f || io.MouseDelta.y != 0.0f)
     {
       s_menu_button_frame_min_animated.Reset(frame_min);
       s_menu_button_frame_max_animated.Reset(frame_max);
