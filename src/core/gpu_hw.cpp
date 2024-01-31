@@ -415,7 +415,7 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
     m_batch.use_depth_buffer = false;
     if (m_pgxp_depth_buffer)
       ClearDepthBuffer();
-    else
+    else if (m_vram_texture) // might be null when resizing
       UpdateDepthBufferFromMaskBit();
   }
 
