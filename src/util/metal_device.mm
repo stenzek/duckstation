@@ -1079,7 +1079,7 @@ std::unique_ptr<GPUTexture> MetalDevice::CreateTexture(u32 width, u32 height, u3
                                                                                 mipmapped:(levels > 1)];
 
     desc.mipmapLevelCount = levels;
-    desc.storageMode = MTLStorageModeShared;
+    desc.storageMode = MTLStorageModePrivate;
     if (samples > 1)
     {
       desc.textureType = (layers > 1) ? MTLTextureType2DMultisampleArray : MTLTextureType2DMultisample;
