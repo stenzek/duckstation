@@ -189,9 +189,9 @@
     <widget class="QComboBox" name="inputProfile"/>
    </item>
    <item row="16" column="1">
-    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0,0">
+    <layout class="QHBoxLayout" name="verifyLayout" stretch="0,1,0">
      <item>
-      <spacer name="horizontalSpacer">
+      <spacer name="verifySpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -207,7 +207,7 @@
       <widget class="QLineEdit" name="revision">
        <property name="minimumSize">
         <size>
-         <width>100</width>
+         <width>300</width>
          <height>0</height>
         </size>
        </property>

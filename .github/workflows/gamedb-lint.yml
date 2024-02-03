@@ -3,13 +3,15 @@ name: GameDB Lint
 on:
   pull_request:
     paths:
-      - 'data/resources/gamedb.json'
+      - 'data/resources/gamedb.yaml'
+      - 'data/resources/discdb.yaml'
   push:
     branches:
       - master
       - dev
     paths:
-      - 'data/resources/gamedb.json'
+      - 'data/resources/gamedb.yaml'
+      - 'data/resources/discdb.yaml'
   workflow_dispatch:
 
 jobs:
@@ -25,9 +27,12 @@ jobs:
       shell: bash
       run: |
         sudo apt-get update
-        sudo apt-get -y install python3-demjson
+        sudo apt-get -y install yamllint
 
     - name: Check GameDB
       shell: bash
-      run: |
-        jsonlint -s data/resources/gamedb.json
+      run: yamllint -c extras/yamllint-config.yaml -s -f github data/resources/gamedb.yaml
+
+    - name: Check DiscDB
+      shell: bash
+      run: yamllint -c extras/yamllint-config.yaml -s -f github data/resources/discdb.yaml

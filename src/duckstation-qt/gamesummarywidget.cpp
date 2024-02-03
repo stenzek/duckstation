@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "gamesummarywidget.h"
@@ -13,7 +13,6 @@
 
 #include "fmt/format.h"
 
-#include <QtConcurrent/QtConcurrent>
 #include <QtCore/QFuture>
 #include <QtWidgets/QMessageBox>
 
@@ -219,13 +218,6 @@ void GameSummaryWidget::onComputeHashClicked()
     return;
   }
 
-#ifndef _DEBUGFAST
-  // Kick off hash preparation asynchronously, as building the map of results may take a while
-  // This breaks for DebugFast because of the iterator debug level mismatch.
-  QFuture<const GameDatabase::TrackHashesMap*> result =
-    QtConcurrent::run([]() { return &GameDatabase::GetTrackHashesMap(); });
-#endif
-
   QtModalProgressCallback progress_callback(this);
   progress_callback.SetProgressRange(image->GetTrackCount());
 
@@ -259,6 +251,7 @@ void GameSummaryWidget::onComputeHashClicked()
   if (calculate_hash_success)
   {
     std::string found_revision;
+    std::string found_serial;
     m_redump_search_keyword = CDImageHasher::HashToString(track_hashes.front());
 
     progress_callback.SetStatusText("Verifying hashes...");
@@ -270,11 +263,7 @@ void GameSummaryWidget::onComputeHashClicked()
     // 2. For each data track match, try to match all audio tracks
     //    If all match, assume this revision. Else, try other revisions,
     //    and accept the one with the most matches.
-#ifndef _DEBUGFAST
-    const GameDatabase::TrackHashesMap& hashes_map = *result.result();
-#else
     const GameDatabase::TrackHashesMap& hashes_map = GameDatabase::GetTrackHashesMap();
-#endif
 
     auto data_track_matches = hashes_map.equal_range(track_hashes[0]);
     if (data_track_matches.first != data_track_matches.second)
@@ -317,13 +306,30 @@ void GameSummaryWidget::onComputeHashClicked()
         }
       }
 
-      found_revision = best_data_match->second.revisionString;
+      found_revision = best_data_match->second.revision_str;
+      found_serial = best_data_match->second.serial;
     }
 
+    QString text;
+
     if (!found_revision.empty())
+      text = tr("Revision: %1").arg(found_revision.empty() ? tr("N/A") : QString::fromStdString(found_revision));
+
+    if (found_serial != m_ui.serial->text().toStdString())
     {
-      m_ui.revision->setText(
-        tr("Revision: %1").arg(found_revision.empty() ? tr("N/A") : QString::fromStdString(found_revision)));
+      text =
+        tr("Serial Mismatch: %1 vs %2%3").arg(QString::fromStdString(found_serial)).arg(m_ui.serial->text()).arg(text);
+    }
+
+    if (!text.isEmpty())
+    {
+      if (m_ui.verifySpacer)
+      {
+        m_ui.verifyLayout->removeItem(m_ui.verifySpacer);
+        delete m_ui.verifySpacer;
+        m_ui.verifySpacer = nullptr;
+      }
+      m_ui.revision->setText(text);
       m_ui.revision->setVisible(true);
     }
   }

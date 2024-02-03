@@ -172,6 +172,9 @@
     <ProjectReference Include="..\..\dep\rainterface\rainterface.vcxproj" Condition="'$(Platform)'!='ARM64'">
       <Project>{e4357877-d459-45c7-b8f6-dcbb587bb528}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\dep\rapidyaml\rapidyaml.vcxproj">
+      <Project>{1ad23a8a-4c20-434c-ae6b-0e07759eeb1e}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\dep\rcheevos\rcheevos.vcxproj">
       <Project>{4ba0a6d4-3ae1-42b2-9347-096fd023ff64}</Project>
     </ProjectReference>

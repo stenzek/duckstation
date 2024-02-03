@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "game_database.h"
@@ -16,21 +16,17 @@
 #include "common/string_util.h"
 #include "common/timer.h"
 
-#include "rapidjson/document.h"
-#include "rapidjson/error/en.h"
+#include "ryml.hpp"
 
 #include <iomanip>
 #include <memory>
 #include <optional>
 #include <sstream>
+#include <type_traits>
 
 #include "IconsFontAwesome5.h"
 
 Log_SetChannel(GameDatabase);
-
-#ifdef _WIN32
-#include "common/windows_headers.h"
-#endif
 
 namespace GameDatabase {
 
@@ -46,34 +42,50 @@ static const Entry* GetEntryForId(const std::string_view& code);
 static bool LoadFromCache();
 static bool SaveToCache();
 
-static bool LoadGameDBJson();
-static bool ParseJsonEntry(Entry* entry, const rapidjson::Value& value);
-static bool ParseJsonCodes(u32 index, const rapidjson::Value& value);
+static void SetRymlCallbacks();
+static bool LoadGameDBYaml();
+static bool ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value);
+static bool ParseYamlCodes(u32 index, const ryml::ConstNodeRef& value, std::string_view serial);
 static bool LoadTrackHashes();
 
-static std::array<const char*, static_cast<u32>(GameDatabase::Trait::Count)> s_trait_names = {{
-  "ForceInterpreter",
-  "ForceSoftwareRenderer",
-  "ForceSoftwareRendererForReadbacks",
-  "ForceInterlacing",
-  "DisableTrueColor",
-  "DisableUpscaling",
-  "DisableTextureFiltering",
-  "DisableScaledDithering",
-  "DisableForceNTSCTimings",
-  "DisableWidescreen",
-  "DisablePGXP",
-  "DisablePGXPCulling",
-  "DisablePGXPTextureCorrection",
-  "DisablePGXPColorCorrection",
-  "DisablePGXPDepthBuffer",
-  "ForcePGXPVertexCache",
-  "ForcePGXPCPUMode",
-  "ForceRecompilerMemoryExceptions",
-  "ForceRecompilerICache",
-  "ForceRecompilerLUTFastmem",
-  "IsLibCryptProtected",
+static constexpr const std::array<const char*, static_cast<int>(CompatibilityRating::Count)>
+  s_compatibility_rating_names = {
+    {"Unknown", "DoesntBoot", "CrashesInIntro", "CrashesInGame", "GraphicalAudioIssues", "NoIssues"}};
+
+static constexpr const std::array<const char*, static_cast<size_t>(CompatibilityRating::Count)>
+  s_compatibility_rating_display_names = {{TRANSLATE_NOOP("GameListCompatibilityRating", "Unknown"),
+                                           TRANSLATE_NOOP("GameListCompatibilityRating", "Doesn't Boot"),
+                                           TRANSLATE_NOOP("GameListCompatibilityRating", "Crashes In Intro"),
+                                           TRANSLATE_NOOP("GameListCompatibilityRating", "Crashes In-Game"),
+                                           TRANSLATE_NOOP("GameListCompatibilityRating", "Graphical/Audio Issues"),
+                                           TRANSLATE_NOOP("GameListCompatibilityRating", "No Issues")}};
+
+static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Trait::Count)> s_trait_names = {{
+  "forceInterpreter",
+  "forceSoftwareRenderer",
+  "forceSoftwareRendererForReadbacks",
+  "forceInterlacing",
+  "disableTrueColor",
+  "disableUpscaling",
+  "disableTextureFiltering",
+  "disableScaledDithering",
+  "disableForceNTSCTimings",
+  "disableWidescreen",
+  "disablePGXP",
+  "disablePGXPCulling",
+  "disablePGXPTextureCorrection",
+  "disablePGXPColorCorrection",
+  "disablePGXPDepthBuffer",
+  "forcePGXPVertexCache",
+  "forcePGXPCPUMode",
+  "forceRecompilerMemoryExceptions",
+  "forceRecompilerICache",
+  "forceRecompilerLUTFastmem",
+  "isLibCryptProtected",
 }};
+
+static constexpr const char* GAMEDB_YAML_FILENAME = "gamedb.yaml";
+static constexpr const char* DISCDB_YAML_FILENAME = "discdb.yaml";
 
 static bool s_loaded = false;
 static bool s_track_hashes_loaded = false;
@@ -83,6 +95,94 @@ static PreferUnorderedStringMap<u32> s_code_lookup;
 
 static TrackHashesMap s_track_hashes_map;
 } // namespace GameDatabase
+
+// RapidYAML utility routines.
+
+ALWAYS_INLINE std::string_view to_stringview(const c4::csubstr& s)
+{
+  return std::string_view(s.data(), s.size());
+}
+
+ALWAYS_INLINE std::string_view to_stringview(const c4::substr& s)
+{
+  return std::string_view(s.data(), s.size());
+}
+
+ALWAYS_INLINE c4::csubstr to_csubstr(const std::string_view& sv)
+{
+  return c4::csubstr(sv.data(), sv.length());
+}
+
+static bool GetStringFromObject(const ryml::ConstNodeRef& object, std::string_view key, std::string* dest)
+{
+  dest->clear();
+
+  const ryml::ConstNodeRef member = object.find_child(to_csubstr(key));
+  if (!member.valid())
+    return false;
+
+  const c4::csubstr val = member.val();
+  if (!val.empty())
+    dest->assign(val.data(), val.size());
+
+  return true;
+}
+
+template<typename T>
+static bool GetUIntFromObject(const ryml::ConstNodeRef& object, std::string_view key, T* dest)
+{
+  *dest = 0;
+
+  const ryml::ConstNodeRef member = object.find_child(to_csubstr(key));
+  if (!member.valid())
+    return false;
+
+  const c4::csubstr val = member.val();
+  if (val.empty())
+  {
+    Log_ErrorFmt("Unexpected empty value in {}", key);
+    return false;
+  }
+
+  const std::optional<T> opt_value = StringUtil::FromChars<T>(to_stringview(val));
+  if (!opt_value.has_value())
+  {
+    Log_ErrorFmt("Unexpected non-uint value in {}", key);
+    return false;
+  }
+
+  *dest = opt_value.value();
+  return true;
+}
+
+template<typename T>
+static std::optional<T> GetOptionalTFromObject(const ryml::ConstNodeRef& object, std::string_view key)
+{
+  std::optional<T> ret;
+
+  const ryml::ConstNodeRef member = object.find_child(to_csubstr(key));
+  if (member.valid())
+  {
+    const c4::csubstr val = member.val();
+    if (!val.empty())
+    {
+      ret = StringUtil::FromChars<T>(to_stringview(val));
+      if (!ret.has_value())
+      {
+        if constexpr (std::is_floating_point_v<T>)
+          Log_ErrorFmt("Unexpected non-float value in {}", key);
+        else if constexpr (std::is_integral_v<T>)
+          Log_ErrorFmt("Unexpected non-int value in {}", key);
+      }
+    }
+    else
+    {
+      Log_ErrorFmt("Unexpected empty value in {}", key);
+    }
+  }
+
+  return ret;
+}
 
 void GameDatabase::EnsureLoaded()
 {
@@ -98,11 +198,11 @@ void GameDatabase::EnsureLoaded()
     s_entries = {};
     s_code_lookup = {};
 
-    LoadGameDBJson();
+    LoadGameDBYaml();
     SaveToCache();
   }
 
-  Log_InfoPrintf("Database load took %.2f ms", timer.GetTimeMilliseconds());
+  Log_InfoFmt("Database load took {:.0f}ms", timer.GetTimeMilliseconds());
 }
 
 void GameDatabase::Unload()
@@ -198,30 +298,16 @@ GameDatabase::Entry* GameDatabase::GetMutableEntry(const std::string_view& seria
   return nullptr;
 }
 
-const char* GameDatabase::GetTraitName(Trait trait)
-{
-  DebugAssert(trait < Trait::Count);
-  return s_trait_names[static_cast<u32>(trait)];
-}
-
 const char* GameDatabase::GetCompatibilityRatingName(CompatibilityRating rating)
 {
-  static std::array<const char*, static_cast<int>(CompatibilityRating::Count)> names = {
-    {"Unknown", "DoesntBoot", "CrashesInIntro", "CrashesInGame", "GraphicalAudioIssues", "NoIssues"}};
-  return names[static_cast<int>(rating)];
+  return s_compatibility_rating_names[static_cast<int>(rating)];
 }
 
 const char* GameDatabase::GetCompatibilityRatingDisplayName(CompatibilityRating rating)
 {
-  static constexpr std::array<const char*, static_cast<size_t>(CompatibilityRating::Count)> names = {
-    {TRANSLATE_NOOP("GameListCompatibilityRating", "Unknown"),
-     TRANSLATE_NOOP("GameListCompatibilityRating", "Doesn't Boot"),
-     TRANSLATE_NOOP("GameListCompatibilityRating", "Crashes In Intro"),
-     TRANSLATE_NOOP("GameListCompatibilityRating", "Crashes In-Game"),
-     TRANSLATE_NOOP("GameListCompatibilityRating", "Graphical/Audio Issues"),
-     TRANSLATE_NOOP("GameListCompatibilityRating", "No Issues")}};
   return (rating >= CompatibilityRating::Unknown && rating < CompatibilityRating::Count) ?
-           Host::TranslateToCString("GameListCompatibilityRating", names[static_cast<int>(rating)]) :
+           Host::TranslateToCString("GameListCompatibilityRating",
+                                    s_compatibility_rating_display_names[static_cast<int>(rating)]) :
            "";
 }
 
@@ -580,7 +666,7 @@ bool GameDatabase::LoadFromCache()
     return false;
   }
 
-  const u64 gamedb_ts = Host::GetResourceFileTimestamp("gamedb.json", false).value_or(0);
+  const u64 gamedb_ts = Host::GetResourceFileTimestamp("gamedb.yaml", false).value_or(0);
 
   u32 signature, version, num_entries, num_codes;
   u64 file_gamedb_ts;
@@ -674,7 +760,7 @@ bool GameDatabase::LoadFromCache()
 
 bool GameDatabase::SaveToCache()
 {
-  const u64 gamedb_ts = Host::GetResourceFileTimestamp("gamedb.json", false).value_or(0);
+  const u64 gamedb_ts = Host::GetResourceFileTimestamp("gamedb.yaml", false).value_or(0);
 
   std::unique_ptr<ByteStream> stream(
     ByteStream::OpenFile(GetCacheFile().c_str(), BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE |
@@ -742,329 +828,258 @@ bool GameDatabase::SaveToCache()
   return true;
 }
 
-//////////////////////////////////////////////////////////////////////////
-// JSON Parsing
-//////////////////////////////////////////////////////////////////////////
-
-static bool GetStringFromObject(const rapidjson::Value& object, const char* key, std::string* dest)
+void GameDatabase::SetRymlCallbacks()
 {
-  dest->clear();
-  auto member = object.FindMember(key);
-  if (member == object.MemberEnd() || !member->value.IsString())
-    return false;
-
-  dest->assign(member->value.GetString(), member->value.GetStringLength());
-  return true;
+  ryml::Callbacks callbacks = ryml::get_callbacks();
+  callbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location loc, void* userdata) {
+    Log_ErrorFmt("Parse error at {}:{} (bufpos={}): {}", loc.line, loc.col, loc.offset, std::string_view(msg, msg_len));
+  };
+  ryml::set_callbacks(callbacks);
+  c4::set_error_callback(
+    [](const char* msg, size_t msg_size) { Log_ErrorFmt("C4 error: {}", std::string_view(msg, msg_size)); });
 }
 
-static bool GetBoolFromObject(const rapidjson::Value& object, const char* key, bool* dest)
+bool GameDatabase::LoadGameDBYaml()
 {
-  *dest = false;
+  Common::Timer timer;
 
-  auto member = object.FindMember(key);
-  if (member == object.MemberEnd() || !member->value.IsBool())
-    return false;
-
-  *dest = member->value.GetBool();
-  return true;
-}
-
-template<typename T>
-static bool GetUIntFromObject(const rapidjson::Value& object, const char* key, T* dest)
-{
-  *dest = 0;
-
-  auto member = object.FindMember(key);
-  if (member == object.MemberEnd() || !member->value.IsUint())
-    return false;
-
-  *dest = static_cast<T>(member->value.GetUint());
-  return true;
-}
-
-static bool GetArrayOfStringsFromObject(const rapidjson::Value& object, const char* key, std::vector<std::string>* dest)
-{
-  dest->clear();
-  auto member = object.FindMember(key);
-  if (member == object.MemberEnd() || !member->value.IsArray())
-    return false;
-
-  for (const rapidjson::Value& str : member->value.GetArray())
-  {
-    if (str.IsString())
-    {
-      dest->emplace_back(str.GetString(), str.GetStringLength());
-    }
-  }
-  return true;
-}
-
-template<typename T>
-static std::optional<T> GetOptionalIntFromObject(const rapidjson::Value& object, const char* key)
-{
-  auto member = object.FindMember(key);
-  if (member == object.MemberEnd() || !member->value.IsInt())
-    return std::nullopt;
-
-  return static_cast<T>(member->value.GetInt());
-}
-
-template<typename T>
-static std::optional<T> GetOptionalUIntFromObject(const rapidjson::Value& object, const char* key)
-{
-  auto member = object.FindMember(key);
-  if (member == object.MemberEnd() || !member->value.IsUint())
-    return std::nullopt;
-
-  return static_cast<T>(member->value.GetUint());
-}
-
-static std::optional<float> GetOptionalFloatFromObject(const rapidjson::Value& object, const char* key)
-{
-  auto member = object.FindMember(key);
-  if (member == object.MemberEnd() || !member->value.IsFloat())
-    return std::nullopt;
-
-  return member->value.GetFloat();
-}
-
-bool GameDatabase::LoadGameDBJson()
-{
-  std::optional<std::string> gamedb_data(Host::ReadResourceFileToString("gamedb.json", false));
+  const std::optional<std::string> gamedb_data = Host::ReadResourceFileToString(GAMEDB_YAML_FILENAME, false);
   if (!gamedb_data.has_value())
   {
-    Log_ErrorPrintf("Failed to read game database");
+    Log_ErrorPrint("Failed to read game database");
     return false;
   }
 
-  // TODO: Parse in-place, avoid string allocations.
-  std::unique_ptr<rapidjson::Document> json = std::make_unique<rapidjson::Document>();
-  json->Parse(gamedb_data->c_str(), gamedb_data->size());
-  if (json->HasParseError())
-  {
-    Log_ErrorPrintf("Failed to parse game database: %s at offset %zu",
-                    rapidjson::GetParseError_En(json->GetParseError()), json->GetErrorOffset());
-    return false;
-  }
+  SetRymlCallbacks();
 
-  if (!json->IsArray())
-  {
-    Log_ErrorPrintf("Document is not an array");
-    return false;
-  }
+  const ryml::Tree tree = ryml::parse_in_arena(to_csubstr(GAMEDB_YAML_FILENAME), to_csubstr(gamedb_data.value()));
+  const ryml::ConstNodeRef root = tree.rootref();
+  s_entries.reserve(root.num_children());
 
-  const auto& jarray = json->GetArray();
-  s_entries.reserve(jarray.Size());
-
-  for (const rapidjson::Value& current : json->GetArray())
+  for (const ryml::ConstNodeRef& current : root.children())
   {
     // TODO: binary sort
     const u32 index = static_cast<u32>(s_entries.size());
     Entry& entry = s_entries.emplace_back();
-    if (!ParseJsonEntry(&entry, current))
+    if (!ParseYamlEntry(&entry, current))
     {
       s_entries.pop_back();
       continue;
     }
 
-    ParseJsonCodes(index, current);
+    ParseYamlCodes(index, current, entry.serial);
   }
 
-  Log_InfoPrintf("Loaded %zu entries and %zu codes from database", s_entries.size(), s_code_lookup.size());
-  return true;
+  ryml::reset_callbacks();
+
+  Log_InfoFmt("Loaded {} entries and {} codes from database in {:.0f}ms.", s_entries.size(), s_code_lookup.size(),
+              timer.GetTimeMilliseconds());
+  return !s_entries.empty();
 }
 
-bool GameDatabase::ParseJsonEntry(Entry* entry, const rapidjson::Value& value)
+bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
 {
-  if (!value.IsObject())
+  entry->serial = to_stringview(value.key());
+  if (entry->serial.empty())
   {
-    Log_WarningPrintf("entry is not an object");
+    Log_ErrorPrint("Missing serial for entry.");
     return false;
   }
 
-  if (!GetStringFromObject(value, "serial", &entry->serial) || !GetStringFromObject(value, "name", &entry->title) ||
-      entry->serial.empty())
+  GetStringFromObject(value, "name", &entry->title);
+
+  if (const ryml::ConstNodeRef metadata = value.find_child(to_csubstr("metadata")); metadata.valid())
   {
-    Log_ErrorPrintf("Missing serial or title for entry");
-    return false;
-  }
+    GetStringFromObject(metadata, "genre", &entry->genre);
+    GetStringFromObject(metadata, "developer", &entry->developer);
+    GetStringFromObject(metadata, "publisher", &entry->publisher);
 
-  GetStringFromObject(value, "genre", &entry->genre);
-  GetStringFromObject(value, "developer", &entry->developer);
-  GetStringFromObject(value, "publisher", &entry->publisher);
+    GetUIntFromObject(metadata, "minPlayers", &entry->min_players);
+    GetUIntFromObject(metadata, "maxPlayers", &entry->max_players);
+    GetUIntFromObject(metadata, "minBlocks", &entry->min_blocks);
+    GetUIntFromObject(metadata, "maxBlocks", &entry->max_blocks);
 
-  GetUIntFromObject(value, "minPlayers", &entry->min_players);
-  GetUIntFromObject(value, "maxPlayers", &entry->max_players);
-  GetUIntFromObject(value, "minBlocks", &entry->min_blocks);
-  GetUIntFromObject(value, "maxBlocks", &entry->max_blocks);
-
-  entry->release_date = 0;
-  {
-    std::string release_date;
-    if (GetStringFromObject(value, "releaseDate", &release_date))
+    entry->release_date = 0;
     {
-      std::istringstream iss(release_date);
-      struct tm parsed_time = {};
-      iss >> std::get_time(&parsed_time, "%Y-%m-%d");
-      if (!iss.fail())
+      std::string release_date;
+      if (GetStringFromObject(metadata, "releaseDate", &release_date))
       {
-        parsed_time.tm_isdst = 0;
+        std::istringstream iss(release_date);
+        struct tm parsed_time = {};
+        iss >> std::get_time(&parsed_time, "%Y-%m-%d");
+        if (!iss.fail())
+        {
+          parsed_time.tm_isdst = 0;
 #ifdef _WIN32
-        entry->release_date = _mkgmtime(&parsed_time);
+          entry->release_date = _mkgmtime(&parsed_time);
 #else
-        entry->release_date = timegm(&parsed_time);
+          entry->release_date = timegm(&parsed_time);
 #endif
+        }
       }
     }
   }
 
   entry->supported_controllers = static_cast<u16>(~0u);
-  const auto controllers = value.FindMember("controllers");
-  if (controllers != value.MemberEnd())
-  {
-    if (controllers->value.IsArray())
-    {
-      bool first = true;
-      for (const rapidjson::Value& controller : controllers->value.GetArray())
-      {
-        if (!controller.IsString())
-        {
-          Log_WarningPrintf("controller is not a string");
-          return false;
-        }
 
-        std::optional<ControllerType> ctype = Settings::ParseControllerTypeName(controller.GetString());
-        if (!ctype.has_value())
+  if (const ryml::ConstNodeRef controllers = value.find_child(to_csubstr("controllers"));
+      controllers.valid() && controllers.has_children())
+  {
+    bool first = true;
+    for (const ryml::ConstNodeRef& controller : controllers.children())
+    {
+      const std::string_view controller_str = to_stringview(controller.val());
+      if (controller_str.empty())
+      {
+        Log_WarningFmt("controller is not a string in {}", entry->serial);
+        return false;
+      }
+
+      std::optional<ControllerType> ctype = Settings::ParseControllerTypeName(controller_str);
+      if (!ctype.has_value())
+      {
+        Log_WarningFmt("Invalid controller type {} in {}", controller_str, entry->serial);
+        continue;
+      }
+
+      if (first)
+      {
+        entry->supported_controllers = 0;
+        first = false;
+      }
+
+      entry->supported_controllers |= (1u << static_cast<u16>(ctype.value()));
+    }
+  }
+
+  if (const ryml::ConstNodeRef compatibility = value.find_child(to_csubstr("compatibility"));
+      compatibility.valid() && compatibility.has_children())
+  {
+    const ryml::ConstNodeRef rating = compatibility.find_child(to_csubstr("rating"));
+    if (rating.valid())
+    {
+      const std::string_view rating_str = to_stringview(rating.val());
+
+      const auto iter = std::find(s_compatibility_rating_names.begin(), s_compatibility_rating_names.end(), rating_str);
+      if (iter != s_compatibility_rating_names.end())
+      {
+        const size_t rating_idx = static_cast<size_t>(std::distance(s_compatibility_rating_names.begin(), iter));
+        DebugAssert(rating_idx < static_cast<size_t>(CompatibilityRating::Count));
+        entry->compatibility = static_cast<CompatibilityRating>(rating_idx);
+      }
+      else
+      {
+        Log_WarningFmt("Unknown compatibility rating {} in {}", rating_str, entry->serial);
+      }
+    }
+  }
+
+  if (const ryml::ConstNodeRef traits = value.find_child(to_csubstr("traits")); traits.valid() && traits.has_children())
+  {
+    for (const ryml::ConstNodeRef& trait : traits.children())
+    {
+      const std::string_view trait_str = to_stringview(trait.val());
+      if (trait_str.empty())
+      {
+        Log_WarningFmt("Empty trait in {}", entry->serial);
+        continue;
+      }
+
+      const auto iter = std::find(s_trait_names.begin(), s_trait_names.end(), trait_str);
+      if (iter == s_trait_names.end())
+      {
+        Log_WarningFmt("Unknown trait {} in {}", trait_str, entry->serial);
+        continue;
+      }
+
+      const size_t trait_idx = static_cast<size_t>(std::distance(s_trait_names.begin(), iter));
+      DebugAssert(trait_idx < static_cast<size_t>(Trait::Count));
+      entry->traits[trait_idx] = true;
+    }
+  }
+
+  if (const ryml::ConstNodeRef settings = value.find_child(to_csubstr("settings"));
+      settings.valid() && settings.has_children())
+  {
+    entry->display_active_start_offset = GetOptionalTFromObject<s16>(settings, "displayActiveStartOffset");
+    entry->display_active_end_offset = GetOptionalTFromObject<s16>(settings, "displayActiveEndOffset");
+    entry->display_line_start_offset = GetOptionalTFromObject<s8>(settings, "displayLineStartOffset");
+    entry->display_line_end_offset = GetOptionalTFromObject<s8>(settings, "displayLineEndOffset");
+    entry->dma_max_slice_ticks = GetOptionalTFromObject<u32>(settings, "dmaMaxSliceTicks");
+    entry->dma_halt_ticks = GetOptionalTFromObject<u32>(settings, "dmaHaltTicks");
+    entry->gpu_fifo_size = GetOptionalTFromObject<u32>(settings, "gpuFIFOSize");
+    entry->gpu_max_run_ahead = GetOptionalTFromObject<u32>(settings, "gpuMaxRunAhead");
+    entry->gpu_pgxp_tolerance = GetOptionalTFromObject<float>(settings, "gpuPGXPTolerance");
+    entry->gpu_pgxp_depth_threshold = GetOptionalTFromObject<float>(settings, "gpuPGXPDepthThreshold");
+  }
+
+  if (const ryml::ConstNodeRef disc_set = value.find_child("discSet"); disc_set.valid() && disc_set.has_children())
+  {
+    GetStringFromObject(disc_set, "name", &entry->disc_set_name);
+
+    if (const ryml::ConstNodeRef set_serials = disc_set.find_child("serials");
+        set_serials.valid() && set_serials.has_children())
+    {
+      entry->disc_set_serials.reserve(set_serials.num_children());
+      for (const ryml::ConstNodeRef& serial : set_serials)
+      {
+        const std::string_view serial_str = to_stringview(serial.val());
+        if (serial_str.empty())
         {
-          Log_WarningPrintf("Invalid controller type '%s'", controller.GetString());
+          Log_WarningFmt("Empty disc set serial in {}", entry->serial);
           continue;
         }
 
-        if (first)
+        if (std::find(entry->disc_set_serials.begin(), entry->disc_set_serials.end(), serial_str) !=
+            entry->disc_set_serials.end())
         {
-          entry->supported_controllers = 0;
-          first = false;
+          Log_WarningFmt("Duplicate serial {} in disc set serials for {}", serial_str, entry->serial);
+          continue;
         }
 
-        entry->supported_controllers |= (1u << static_cast<u16>(ctype.value()));
+        entry->disc_set_serials.emplace_back(serial_str);
       }
-    }
-    else
-    {
-      Log_WarningPrintf("controllers is not an array");
-    }
-  }
-
-  const auto compatibility = value.FindMember("compatibility");
-  if (compatibility != value.MemberEnd())
-  {
-    if (compatibility->value.IsObject())
-    {
-      u32 rating;
-      if (GetUIntFromObject(compatibility->value, "rating", &rating) &&
-          rating < static_cast<u32>(CompatibilityRating::Count))
-      {
-        entry->compatibility = static_cast<CompatibilityRating>(rating);
-      }
-    }
-    else
-    {
-      Log_WarningPrintf("compatibility is not an object");
-    }
-  }
-
-  const auto traits = value.FindMember("traits");
-  if (traits != value.MemberEnd())
-  {
-    if (traits->value.IsObject())
-    {
-      const auto& traitsobj = traits->value;
-      for (u32 trait = 0; trait < static_cast<u32>(Trait::Count); trait++)
-      {
-        bool bvalue;
-        if (GetBoolFromObject(traitsobj, s_trait_names[trait], &bvalue) && bvalue)
-          entry->traits[trait] = bvalue;
-      }
-
-      entry->display_active_start_offset = GetOptionalIntFromObject<s16>(traitsobj, "DisplayActiveStartOffset");
-      entry->display_active_end_offset = GetOptionalIntFromObject<s16>(traitsobj, "DisplayActiveEndOffset");
-      entry->display_line_start_offset = GetOptionalIntFromObject<s8>(traitsobj, "DisplayLineStartOffset");
-      entry->display_line_end_offset = GetOptionalIntFromObject<s8>(traitsobj, "DisplayLineEndOffset");
-      entry->dma_max_slice_ticks = GetOptionalUIntFromObject<u32>(traitsobj, "DMAMaxSliceTicks");
-      entry->dma_halt_ticks = GetOptionalUIntFromObject<u32>(traitsobj, "DMAHaltTicks");
-      entry->gpu_fifo_size = GetOptionalUIntFromObject<u32>(traitsobj, "GPUFIFOSize");
-      entry->gpu_max_run_ahead = GetOptionalUIntFromObject<u32>(traitsobj, "GPUMaxRunAhead");
-      entry->gpu_pgxp_tolerance = GetOptionalFloatFromObject(traitsobj, "GPUPGXPTolerance");
-      entry->gpu_pgxp_depth_threshold = GetOptionalFloatFromObject(traitsobj, "GPUPGXPDepthThreshold");
-    }
-    else
-    {
-      Log_WarningPrintf("traits is not an object");
-    }
-  }
-
-  GetStringFromObject(value, "discSetName", &entry->disc_set_name);
-  const auto disc_set_serials = value.FindMember("discSetSerials");
-  if (disc_set_serials != value.MemberEnd())
-  {
-    if (disc_set_serials->value.IsArray())
-    {
-      const auto disc_set_serials_array = disc_set_serials->value.GetArray();
-      entry->disc_set_serials.reserve(disc_set_serials_array.Size());
-      for (const rapidjson::Value& serial : disc_set_serials_array)
-      {
-        if (serial.IsString())
-        {
-          entry->disc_set_serials.emplace_back(serial.GetString(), serial.GetStringLength());
-        }
-        else
-        {
-          Log_WarningPrintf("discSetSerial is not a string");
-        }
-      }
-    }
-    else
-    {
-      Log_WarningPrintf("discSetSerials is not an array");
     }
   }
 
   return true;
 }
 
-bool GameDatabase::ParseJsonCodes(u32 index, const rapidjson::Value& value)
+bool GameDatabase::ParseYamlCodes(u32 index, const ryml::ConstNodeRef& value, std::string_view serial)
 {
-  auto member = value.FindMember("codes");
-  if (member == value.MemberEnd())
+  const ryml::ConstNodeRef& codes = value.find_child(to_csubstr("codes"));
+  if (!codes.valid() || !codes.has_children())
   {
-    Log_WarningPrintf("codes member is missing");
-    return false;
-  }
+    // use serial instead
+    auto iter = s_code_lookup.find(serial);
+    if (iter != s_code_lookup.end())
+    {
+      Log_WarningFmt("Duplicate code '{}'", serial);
+      return false;
+    }
 
-  if (!member->value.IsArray())
-  {
-    Log_WarningPrintf("codes is not an array");
-    return false;
+    s_code_lookup.emplace(serial, index);
+    return true;
   }
 
   u32 added = 0;
-  for (const rapidjson::Value& current_code : member->value.GetArray())
+  for (const ryml::ConstNodeRef& current_code : codes)
   {
-    if (!current_code.IsString())
+    const std::string_view current_code_str = to_stringview(current_code.val());
+    if (current_code_str.empty())
     {
-      Log_WarningPrintf("code is not a string");
+      Log_WarningFmt("code is not a string in {}", serial);
       continue;
     }
 
-    const std::string_view code(current_code.GetString(), current_code.GetStringLength());
-    auto iter = s_code_lookup.find(code);
+    auto iter = s_code_lookup.find(current_code_str);
     if (iter != s_code_lookup.end())
     {
-      Log_WarningPrintf("Duplicate code '%.*s'", static_cast<int>(code.size()), code.data());
+      Log_WarningFmt("Duplicate code '{}' in {}", current_code_str, serial);
       continue;
     }
 
-    s_code_lookup.emplace(code, index);
+    s_code_lookup.emplace(current_code_str, index);
     added++;
   }
 
@@ -1082,105 +1097,84 @@ void GameDatabase::EnsureTrackHashesMapLoaded()
 
 bool GameDatabase::LoadTrackHashes()
 {
-  std::optional<std::string> gamedb_data(Host::ReadResourceFileToString("gamedb.json", false));
+  Common::Timer load_timer;
+
+  std::optional<std::string> gamedb_data(Host::ReadResourceFileToString(DISCDB_YAML_FILENAME, false));
   if (!gamedb_data.has_value())
   {
-    Log_ErrorPrintf("Failed to read game database");
+    Log_ErrorPrint("Failed to read game database");
     return false;
   }
+
+  SetRymlCallbacks();
 
   // TODO: Parse in-place, avoid string allocations.
-  std::unique_ptr<rapidjson::Document> json = std::make_unique<rapidjson::Document>();
-  json->Parse(gamedb_data->c_str(), gamedb_data->size());
-  if (json->HasParseError())
-  {
-    Log_ErrorPrintf("Failed to parse game database: %s at offset %zu",
-                    rapidjson::GetParseError_En(json->GetParseError()), json->GetErrorOffset());
-    return false;
-  }
-
-  if (!json->IsArray())
-  {
-    Log_ErrorPrintf("Document is not an array");
-    return false;
-  }
+  const ryml::Tree tree = ryml::parse_in_arena(to_csubstr(DISCDB_YAML_FILENAME), to_csubstr(gamedb_data.value()));
+  const ryml::ConstNodeRef root = tree.rootref();
 
   s_track_hashes_map = {};
 
-  for (const rapidjson::Value& current : json->GetArray())
+  size_t serials = 0;
+  for (const ryml::ConstNodeRef& current : root.children())
   {
-    if (!current.IsObject())
+    const std::string_view serial = to_stringview(current.key());
+    if (serial.empty() || !current.has_children())
     {
-      Log_WarningPrintf("entry is not an object");
+      Log_WarningPrint("entry is not an object");
       continue;
     }
 
-    std::vector<std::string> codes;
-    if (!GetArrayOfStringsFromObject(current, "codes", &codes))
+    const ryml::ConstNodeRef track_data = current.find_child(to_csubstr("trackData"));
+    if (!track_data.valid() || !track_data.has_children())
     {
-      Log_WarningPrintf("codes member is missing");
+      Log_WarningFmt("trackData is missing in {}", serial);
       continue;
     }
 
-    auto track_data = current.FindMember("track_data");
-    if (track_data == current.MemberEnd())
+    u32 revision = 0;
+    for (const ryml::ConstNodeRef& track_revisions : track_data.children())
     {
-      Log_WarningPrintf("track_data member is missing");
-      continue;
-    }
-
-    if (!track_data->value.IsArray())
-    {
-      Log_WarningPrintf("track_data is not an array");
-      continue;
-    }
-
-    uint32_t revision = 0;
-    for (const rapidjson::Value& track_revisions : track_data->value.GetArray())
-    {
-      if (!track_revisions.IsObject())
+      const ryml::ConstNodeRef tracks = track_revisions.find_child(to_csubstr("tracks"));
+      if (!tracks.valid() || !tracks.has_children())
       {
-        Log_WarningPrintf("track_data is not an array of object");
+        Log_WarningFmt("tracks member is missing in {}", serial);
         continue;
       }
 
-      auto tracks = track_revisions.FindMember("tracks");
-      if (tracks == track_revisions.MemberEnd())
-      {
-        Log_WarningPrintf("tracks member is missing");
-        continue;
-      }
+      std::string revision_string;
+      GetStringFromObject(track_revisions, "version", &revision_string);
 
-      if (!tracks->value.IsArray())
+      for (const ryml::ConstNodeRef& track : tracks)
       {
-        Log_WarningPrintf("tracks is not an array");
-        continue;
-      }
-
-      std::string revisionString;
-      GetStringFromObject(track_revisions, "version", &revisionString);
-
-      for (const rapidjson::Value& track : tracks->value.GetArray())
-      {
-        auto md5_field = track.FindMember("md5");
-        if (md5_field == track.MemberEnd() || !md5_field->value.IsString())
+        const ryml::ConstNodeRef md5 = track.find_child("md5");
+        std::string_view md5_str;
+        if (!md5.valid() || (md5_str = to_stringview(md5.val())).empty())
         {
+          Log_WarningFmt("md5 is missing in track in {}", serial);
           continue;
         }
 
-        auto md5 = CDImageHasher::HashFromString(
-          std::string_view(md5_field->value.GetString(), md5_field->value.GetStringLength()));
-        if (md5)
+        const std::optional<CDImageHasher::Hash> md5o = CDImageHasher::HashFromString(md5_str);
+        if (md5o.has_value())
         {
-          s_track_hashes_map.emplace(std::piecewise_construct, std::forward_as_tuple(md5.value()),
-                                     std::forward_as_tuple(codes, revisionString, revision));
+          s_track_hashes_map.emplace(std::piecewise_construct, std::forward_as_tuple(md5o.value()),
+                                     std::forward_as_tuple(std::string(serial), revision_string, revision));
+        }
+        else
+        {
+          Log_WarningFmt("invalid md5 in {}", serial);
         }
       }
       revision++;
     }
+
+    serials++;
   }
 
-  return true;
+  ryml::reset_callbacks();
+  Log_InfoFmt("Loaded {} track hashes from {} serials in {:.0f}ms.", s_track_hashes_map.size(), serials,
+              load_timer.GetTimeMilliseconds());
+  return !s_track_hashes_map.empty();
 }
 
 const GameDatabase::TrackHashesMap& GameDatabase::GetTrackHashesMap()

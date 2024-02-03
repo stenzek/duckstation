@@ -1,0 +1,16 @@
+extends: default
+
+rules:
+  line-length:
+    max: 200
+  indentation:
+    spaces: 2
+    indent-sequences: true
+  document-start:
+    present: false
+  document-end:
+    present: false
+  comments:
+    require-starting-space: true
+    min-spaces-from-content: 1
+
