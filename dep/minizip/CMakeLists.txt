@@ -18,5 +18,5 @@ endif()
     
 target_include_directories(minizip PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_include_directories(minizip INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
-target_link_libraries(minizip zlib)
+target_link_libraries(minizip ZLIB::ZLIB)
 

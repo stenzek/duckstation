@@ -1,3 +1,5 @@
+find_package(Qt6 6.6.0 COMPONENTS Core Gui Widgets Network LinguistTools REQUIRED)
+
 include(CopyBaseTranslations)
 
 set(CMAKE_AUTOMOC ON)
