@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>902</width>
-    <height>673</height>
+    <height>800</height>
    </rect>
   </property>
   <layout class="QGridLayout" name="mainLayout" columnstretch="1,0">
@@ -129,7 +129,7 @@
      <property name="title">
       <string>SDL Input Source</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_2">
+     <layout class="QGridLayout" name="sdlGridLayout">
       <item row="0" column="0" colspan="2">
        <widget class="QLabel" name="label_2">
         <property name="text">
@@ -163,12 +163,25 @@
           </property>
           <property name="icon">
            <iconset theme="lightbulb-line">
-            <normaloff>.</normaloff>.
-           </iconset>
+            <normaloff>.</normaloff>.</iconset>
           </property>
          </widget>
         </item>
        </layout>
+      </item>
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="enableSDLIOKitDriver">
+        <property name="text">
+         <string>Enable IOKit Driver</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QCheckBox" name="enableSDLMFIDriver">
+        <property name="text">
+         <string>Enable MFI Driver</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
