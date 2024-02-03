@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "controllerglobalsettingswidget.h"
@@ -23,15 +23,31 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
           &ControllerGlobalSettingsWidget::updateSDLOptionsEnabled);
   connect(m_ui.ledSettings, &QToolButton::clicked, this, &ControllerGlobalSettingsWidget::ledSettingsClicked);
 
+#ifdef __APPLE__
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLIOKitDriver, "InputSources", "SDLIOKitDriver", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLMFIDriver, "InputSources", "SDLMFIDriver", true);
+#else
+  m_ui.sdlGridLayout->removeWidget(m_ui.enableSDLIOKitDriver);
+  m_ui.enableSDLIOKitDriver->deleteLater();
+  m_ui.enableSDLIOKitDriver = nullptr;
+  m_ui.sdlGridLayout->removeWidget(m_ui.enableSDLMFIDriver);
+  m_ui.enableSDLMFIDriver->deleteLater();
+  m_ui.enableSDLMFIDriver = nullptr;
+#endif
+
 #ifdef _WIN32
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableDInputSource, "InputSources", "DInput", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableXInputSource, "InputSources", "XInput", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableRawInput, "InputSources", "RawInput", false);
 #else
-  m_ui.enableDInputSource->setEnabled(false);
-  m_ui.enableXInputSource->setEnabled(false);
-  m_ui.enableRawInput->setEnabled(false);
+  m_ui.mainLayout->removeWidget(m_ui.xinputGroup);
+  m_ui.xinputGroup->deleteLater();
+  m_ui.xinputGroup = nullptr;
+  m_ui.mainLayout->removeWidget(m_ui.dinputGroup);
+  m_ui.dinputGroup->deleteLater();
+  m_ui.dinputGroup = nullptr;
 #endif
+
   ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableMouseMapping, "UI", "EnableMouseMapping",
                                                               false);
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.multitapMode, "ControllerPorts", "MultitapMode",

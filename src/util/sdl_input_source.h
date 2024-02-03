@@ -1,9 +1,11 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
-#include "SDL.h"
 #include "input_source.h"
+
+#include <SDL.h>
+
 #include <array>
 #include <functional>
 #include <mutex>
@@ -86,8 +88,14 @@ private:
 
   ControllerDataVector m_controllers;
 
-  bool m_sdl_subsystem_initialized = false;
-  bool m_controller_enhanced_mode = false;
   std::array<u32, MAX_LED_COLORS> m_led_colors{};
   std::vector<std::pair<std::string, std::string>> m_sdl_hints;
+
+  bool m_sdl_subsystem_initialized = false;
+  bool m_controller_enhanced_mode = false;
+
+#ifdef __APPLE__
+  bool m_enable_iokit_driver = false;
+  bool m_enable_mfi_driver = false;
+#endif
 };

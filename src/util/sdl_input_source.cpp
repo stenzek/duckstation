@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "sdl_input_source.h"
@@ -172,9 +172,21 @@ void SDLInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std:
 {
   const bool old_controller_enhanced_mode = m_controller_enhanced_mode;
 
+#ifdef __APPLE__
+  const bool old_enable_iokit_driver = m_enable_iokit_driver;
+  const bool old_enable_mfi_driver = m_enable_mfi_driver;
+#endif
+
   LoadSettings(si);
 
-  if (m_controller_enhanced_mode != old_controller_enhanced_mode)
+#ifdef __APPLE__
+  const bool drivers_changed =
+    (m_enable_iokit_driver != old_enable_iokit_driver || m_enable_mfi_driver != old_enable_mfi_driver);
+#else
+  constexpr bool drivers_changed = false;
+#endif
+
+  if (m_controller_enhanced_mode != old_controller_enhanced_mode || drivers_changed)
   {
     settings_lock.unlock();
     ShutdownSubsystem();
@@ -198,9 +210,6 @@ void SDLInputSource::Shutdown()
 
 void SDLInputSource::LoadSettings(SettingsInterface& si)
 {
-  m_controller_enhanced_mode = si.GetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
-  m_sdl_hints = si.GetKeyValueList("SDLHints");
-
   for (u32 i = 0; i < MAX_LED_COLORS; i++)
   {
     const u32 color = GetRGBForPlayerId(si, i);
@@ -215,6 +224,14 @@ void SDLInputSource::LoadSettings(SettingsInterface& si)
 
     SetControllerRGBLED(it->game_controller, color);
   }
+
+  m_controller_enhanced_mode = si.GetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
+  m_sdl_hints = si.GetKeyValueList("SDLHints");
+
+#ifdef __APPLE__
+  m_enable_iokit_driver = si.GetBoolValue("InputSources", "SDLIOKitDriver", true);
+  m_enable_mfi_driver = si.GetBoolValue("InputSources", "SDLMFIDriver", true);
+#endif
 }
 
 u32 SDLInputSource::GetRGBForPlayerId(SettingsInterface& si, u32 player_id)
@@ -256,14 +273,14 @@ void SDLInputSource::SetHints()
 
   SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, m_controller_enhanced_mode ? "1" : "0");
   SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, m_controller_enhanced_mode ? "1" : "0");
-  // Enable Wii U Pro Controller support
-  // New as of SDL 2.26, so use string
-  SDL_SetHint("SDL_JOYSTICK_HIDAPI_WII", "1");
-#ifndef _WIN32
-  // Gets us pressure sensitive button support on Linux
-  // Apparently doesn't work on Windows, so leave it off there
-  // New as of SDL 2.26, so use string
-  SDL_SetHint("SDL_JOYSTICK_HIDAPI_PS3", "1");
+  SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_WII, "1");
+  SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS3, "1");
+
+#ifdef __APPLE__
+  Log_InfoFmt("IOKit is {}, MFI is {}.", m_enable_iokit_driver ? "enabled" : "disabled",
+              m_enable_mfi_driver ? "enabled" : "disabled");
+  SDL_SetHint(SDL_HINT_JOYSTICK_IOKIT, m_enable_iokit_driver ? "1" : "0");
+  SDL_SetHint(SDL_HINT_JOYSTICK_MFI, m_enable_mfi_driver ? "1" : "0");
 #endif
 
   for (const std::pair<std::string, std::string>& hint : m_sdl_hints)
@@ -842,7 +859,7 @@ bool SDLInputSource::HandleJoystickButtonEvent(const SDL_JoyButtonEvent* ev)
   if (it == m_controllers.end())
     return false;
   if (ev->button < it->joy_button_used_in_gc.size() && it->joy_button_used_in_gc[ev->button])
-    return false; // Will get handled by GC event
+    return false;                                                 // Will get handled by GC event
   const u32 button =
     ev->button + static_cast<u32>(std::size(s_sdl_button_names)); // Ensure we don't conflict with GC buttons
   const InputBindingKey key(MakeGenericControllerButtonKey(InputSourceType::SDL, it->player_id, button));
