@@ -44,31 +44,11 @@ if(NOT ANDROID)
   endif()
 endif()
 
-
-# Required libraries.
-if(ENABLE_SDL2)
-  find_package(SDL2 2.28.5 REQUIRED)
-endif()
-if(NOT WIN32 AND NOT ANDROID)
-  find_package(CURL REQUIRED)
-  if(NOT APPLE)
-    find_package(Libbacktrace)
-    if(NOT LIBBACKTRACE_FOUND)
-      message(WARNING "libbacktrace not found, crashes will not produce backtraces.")
-    endif()
-  endif()
-endif()
-if(BUILD_QT_FRONTEND)
-  find_package(Qt6 6.5.3 COMPONENTS Core Gui Widgets Network LinguistTools REQUIRED)
-endif()
-
-
 # Everything except Windows/Mac use EGL.
 if(ENABLE_OPENGL AND (LINUX OR FREEBSD OR ANDROID))
   find_package(EGL REQUIRED)
   set(ENABLE_EGL TRUE)
 endif()
-
 
 if(ENABLE_X11)
   find_package(X11 REQUIRED)
@@ -246,6 +226,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Recursively include the source tree.
+include(DuckStationDependencies)
 add_subdirectory(dep)
 
 # Use C++20 for building the main libraries.

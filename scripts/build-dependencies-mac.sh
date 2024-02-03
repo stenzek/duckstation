@@ -2,12 +2,35 @@
 
 set -e
 
+merge_binaries() {
+  X86DIR=$1
+  ARMDIR=$2
+  echo "Merging ARM64 binaries from $ARMDIR into fat binaries at $X86DIR..."
+
+  IFS="
+"
+  pushd "$X86DIR"
+  for X86BIN in $(find . -type f \( -name '*.dylib' -o -name '*.a' -o -perm +111 \)); do
+    ARMBIN="${ARMDIR}/${X86BIN}"
+    echo "Merge $ARMBIN to $X86BIN..."
+    lipo -create "$X86BIN" "$ARMBIN" -o "$X86BIN"
+  done
+  popd
+}
+
+if [ "$#" -ne 1 ]; then
+    echo "Syntax: $0 <output directory>"
+    exit 1
+fi
+
 export MACOSX_DEPLOYMENT_TARGET=11.0
-INSTALLDIR="$HOME/deps"
+INSTALLDIR="$1"
 NPROCS="$(getconf _NPROCESSORS_ONLN)"
 SDL=SDL2-2.30.0
 QT=6.6.0
 MOLTENVK=1.2.6
+ZSTD=1.5.5
+WEBP=1.3.2
 
 mkdir -p deps-build
 cd deps-build
@@ -20,6 +43,8 @@ export CXXFLAGS="-I$INSTALLDIR/include -Os $CXXFLAGS"
 cat > SHASUMS <<EOF
 36e2e41557e0fa4a1519315c0f5958a87ccb27e25c51776beb6f1239526447b0  $SDL.tar.gz
 b6a3d179aa9c41275ed0e35e502e5e3fd347dbe5117a0435a26868b231cd6246  v$MOLTENVK.tar.gz
+9c4396cc829cfae319a6e2615202e82aad41372073482fce286fac78646d3ee4  zstd-$ZSTD.tar.gz
+2a499607df669e40258e53d0ade8035ba4ec0175244869d1025d460562aa09b4  libwebp-$WEBP.tar.gz
 039d53312acb5897a9054bd38c9ccbdab72500b71fdccdb3f4f0844b0dd39e0e  qtbase-everywhere-src-$QT.tar.xz
 e1542cb50176e237809895c6549598c08587c63703d100be54ac2d806834e384  qtimageformats-everywhere-src-$QT.tar.xz
 33da25fef51102f564624a7ea3e57cb4a0a31b7b44783d1af5749ac36d3c72de  qtsvg-everywhere-src-$QT.tar.xz
@@ -30,6 +55,8 @@ EOF
 curl -L \
   -O "https://libsdl.org/release/$SDL.tar.gz" \
   -O "https://github.com/KhronosGroup/MoltenVK/archive/refs/tags/v$MOLTENVK.tar.gz" \
+  -O "https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz" \
+  -O "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$WEBP.tar.gz" \
   -O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtbase-everywhere-src-$QT.tar.xz" \
   -O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtsvg-everywhere-src-$QT.tar.xz" \
   -O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttools-everywhere-src-$QT.tar.xz" \
@@ -42,52 +69,10 @@ echo "Installing SDL..."
 tar xf "$SDL.tar.gz"
 cd "$SDL"
 
-# Patch clang wrappers to require 11.0 for x64.
-patch -u build-scripts/clang-fat.sh <<EOF
---- clang-fat.bak	2023-02-05 13:22:17.032581300 +1000
-+++ clang-fat.sh	2023-02-05 13:23:15.668561400 +1000
-@@ -6,12 +6,12 @@
- 
- DEVELOPER="\`xcode-select -print-path\`/Platforms/MacOSX.platform/Developer"
- 
--# Intel 64-bit compiler flags (10.9 runtime compatibility)
--CLANG_COMPILE_X64="clang -arch x86_64 -mmacosx-version-min=10.9 \\
---DMAC_OS_X_VERSION_MIN_REQUIRED=1070 \\
-+# Intel 64-bit compiler flags (11.0 runtime compatibility)
-+CLANG_COMPILE_X64="clang -arch x86_64 -mmacosx-version-min=11.0 \\
-+-DMAC_OS_X_VERSION_MIN_REQUIRED=101400 \\
- -I/usr/local/include"
- 
--CLANG_LINK_X64="-mmacosx-version-min=10.9"
-+CLANG_LINK_X64="-mmacosx-version-min=11.0"
- 
- # ARM 64-bit compiler flags (11.0 runtime compatibility)
- CLANG_COMPILE_ARM64="clang -arch arm64 -mmacosx-version-min=11.0 \\
-EOF
-
-patch -u build-scripts/clang++-fat.sh << EOF
---- clang++-fat.bak	2023-02-05 13:22:23.744491600 +1000
-+++ clang++-fat.sh	2023-02-05 13:23:27.160575900 +1000
-@@ -6,11 +6,11 @@
- 
- DEVELOPER="\`xcode-select -print-path\`/Platforms/MacOSX.platform/Developer"
- 
--# Intel 64-bit compiler flags (10.7 runtime compatibility)
--CLANG_COMPILE_X64="clang++ -arch x86_64 -mmacosx-version-min=10.7 \\
-+# Intel 64-bit compiler flags (11.0 runtime compatibility)
-+CLANG_COMPILE_X64="clang++ -arch x86_64 -mmacosx-version-min=11.0 \\
- -I/usr/local/include"
- 
--CLANG_LINK_X64="-mmacosx-version-min=10.7"
-+CLANG_LINK_X64="-mmacosx-version-min=11.0"
- 
- # ARM 64-bit compiler flags (11.0 runtime compatibility)
- CLANG_COMPILE_ARM64="clang++ -arch arm64 -mmacosx-version-min=11.0 \\
-EOF
-
-CC="${PWD}/build-scripts/clang-fat.sh" CXX="${PWD}/build-scripts/clang++-fat.sh" ./configure --prefix "$INSTALLDIR" --without-x
-make "-j$NPROCS"
-make install
+# SDL seems fine with dual architectures.
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DSDL_X11=OFF -DBUILD_SHARED_LIBS=ON
+make -C build "-j$NPROCS"
+make -C build install
 cd ..
 
 # MoltenVK already builds universal binaries, nothing special to do here.
@@ -188,6 +173,33 @@ cd build
 cmake --build . --parallel
 ninja install
 cd ../../
+
+# Bit lame, but a custom install path breaks Qt's rcc :/
+echo "Installing Zstd..."
+tar xf "zstd-$ZSTD.tar.gz"
+cd "zstd-$ZSTD"
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DBUILD_SHARED_LIBS=ON -DZSTD_BUILD_PROGRAMS=OFF -B build-dir build/cmake
+make -C build-dir "-j$NPROCS"
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_OSX_ARCHITECTURES="arm64" -DBUILD_SHARED_LIBS=ON -DZSTD_BUILD_PROGRAMS=OFF -B build-dir-arm64 build/cmake
+make -C build-dir-arm64 "-j$NPROCS"
+merge_binaries $(realpath build-dir) $(realpath build-dir-arm64)
+make -C build-dir install
+cd ..
+
+echo "Installing WebP..."
+tar xf "libwebp-$WEBP.tar.gz"
+cd "libwebp-$WEBP"
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_OSX_ARCHITECTURES="x86_64" -B build \
+  -DWEBP_BUILD_ANIM_UTILS=OFF -DWEBP_BUILD_CWEBP=OFF -DWEBP_BUILD_DWEBP=OFF -DWEBP_BUILD_GIF2WEBP=OFF -DWEBP_BUILD_IMG2WEBP=OFF \
+  -DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_WEBPMUX=OFF -DWEBP_BUILD_EXTRAS=OFF -DBUILD_SHARED_LIBS=ON
+make -C build "-j$NPROCS"
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_OSX_ARCHITECTURES="arm64" -B build-arm64 \
+  -DWEBP_BUILD_ANIM_UTILS=OFF -DWEBP_BUILD_CWEBP=OFF -DWEBP_BUILD_DWEBP=OFF -DWEBP_BUILD_GIF2WEBP=OFF -DWEBP_BUILD_IMG2WEBP=OFF \
+  -DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_WEBPMUX=OFF -DWEBP_BUILD_EXTRAS=OFF -DBUILD_SHARED_LIBS=ON
+make -C build-arm64 "-j$NPROCS"
+merge_binaries $(realpath build) $(realpath build-arm64)
+make -C build install
+cd ..
 
 echo "Cleaning up..."
 cd ..

@@ -130,7 +130,7 @@ set(NEWREC_SOURCES
 target_precompile_headers(core PRIVATE "pch.h")
 target_include_directories(core PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(core PUBLIC Threads::Threads common util zlib)
+target_link_libraries(core PUBLIC Threads::Threads common util ZLIB::ZLIB)
 target_link_libraries(core PRIVATE stb xxhash imgui rapidjson rcheevos)
 
 if(CPU_ARCH_X64)

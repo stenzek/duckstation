@@ -29,3 +29,4 @@ add_library(zlib
 
 target_include_directories(zlib PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_include_directories(zlib INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
+add_library(ZLIB::ZLIB ALIAS zlib)

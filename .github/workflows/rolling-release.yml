@@ -243,7 +243,7 @@ jobs:
 
     - name: Build Dependencies
       if: steps.cache-deps.outputs.cache-hit != 'true'
-      run: scripts/build-dependencies.sh
+      run: scripts/build-dependencies.sh "$HOME/deps"
 
     - name: Tag as preview build
       if: github.ref == 'refs/heads/master'
@@ -350,7 +350,7 @@ jobs:
 
     - name: Build Dependencies
       if: steps.cache-deps-mac.outputs.cache-hit != 'true'
-      run: scripts/build-dependencies-mac.sh
+      run: scripts/build-dependencies-mac.sh "$HOME/deps"
 
     - name: Tag as preview build
       if: github.ref == 'refs/heads/master'

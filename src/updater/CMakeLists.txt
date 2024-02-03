@@ -3,7 +3,7 @@ add_executable(updater
   updater.h
 )
 
-target_link_libraries(updater PRIVATE common minizip zlib)
+target_link_libraries(updater PRIVATE common minizip ZLIB::ZLIB)
 
 if(WIN32)
   target_sources(updater PRIVATE
