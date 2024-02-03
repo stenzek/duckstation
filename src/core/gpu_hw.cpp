@@ -413,10 +413,15 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
   {
     m_pgxp_depth_buffer = g_settings.UsingPGXPDepthBuffer();
     m_batch.use_depth_buffer = false;
-    if (m_pgxp_depth_buffer)
-      ClearDepthBuffer();
-    else if (m_vram_texture) // might be null when resizing
-      UpdateDepthBufferFromMaskBit();
+
+    // might be null when resizing
+    if (m_vram_texture)
+    {
+      if (m_pgxp_depth_buffer)
+        ClearDepthBuffer();
+      else
+        UpdateDepthBufferFromMaskBit();
+    }
   }
 
   UpdateSoftwareRenderer(true);
