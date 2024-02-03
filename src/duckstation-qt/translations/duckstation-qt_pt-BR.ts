@@ -3657,43 +3657,43 @@ This warning will only be shown once.</source>
         <translation>Dispositivos encontrados</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="231"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="244"/>
         <source>Mouse/Pointer Source</source>
         <translation>Fonte do Ponteiro do mouse</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="293"/>
-        <location filename="../controllerglobalsettingswidget.ui" line="348"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="306"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="361"/>
         <source>10</source>
         <translation>10</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="237"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="250"/>
         <source>Using raw input improves precision when you bind controller sticks to the mouse pointer. Also enables multiple mice to be used.</source>
         <translation>O uso de entrada legada melhora a precisão quando você vincula os analógicos do controle ao ponteiro do mouse. Também permite que vários mouses sejam usados.</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="302"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="315"/>
         <source>Vertical Sensitivity:</source>
         <translation>Sensibilidade Vertical:</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="247"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="260"/>
         <source>Horizontal Sensitivity:</source>
         <translation>Sensibilidade horizontal:</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="359"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="372"/>
         <source>Enable Mouse Mapping</source>
         <translation>Ativar mapeamento do mouse</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="366"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="379"/>
         <source>Use Raw Input</source>
         <translation>Usar entrada legada</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="179"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="192"/>
         <source>XInput Source</source>
         <translation>Fonte de entrada XInput</translation>
     </message>
@@ -3703,27 +3703,37 @@ This warning will only be shown once.</source>
         <translation>Configurações de LED do controle</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="185"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="175"/>
+        <source>Enable IOKit Driver</source>
+        <translation>Ativar driver IOKit</translation>
+    </message>
+    <message>
+        <location filename="../controllerglobalsettingswidget.ui" line="182"/>
+        <source>Enable MFI Driver</source>
+        <translation>Ativar driver MFI</translation>
+    </message>
+    <message>
+        <location filename="../controllerglobalsettingswidget.ui" line="198"/>
         <source>The XInput source provides support for XBox 360 / XBox One / XBox Series controllers, and third party controllers which implement the XInput protocol.</source>
         <translation>A fonte de entrada XInput fornece suporte para controles XBox 360 / XBox One / XBox Series e controles de terceiros que implementam o protocolo XInput.</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="195"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="208"/>
         <source>Enable XInput Input Source</source>
         <translation>Ativar fonte de entrada XInput</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="205"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="218"/>
         <source>Profile Settings</source>
         <translation>Configurações de perfil</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="211"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="224"/>
         <source>When this option is enabled, hotkeys can be set in this input profile, and will be used instead of the global hotkeys. By default, hotkeys are always shared between all profiles.</source>
         <translation>Quando esta opção está ligada, as teclas de atalho podem ser definidas para este perfil de entrada e serão usadas no lugar das teclas de atalho globais. Por padrão, as teclas de atalho são sempre compartilhadas entre todos os perfis.</translation>
     </message>
     <message>
-        <location filename="../controllerglobalsettingswidget.ui" line="221"/>
+        <location filename="../controllerglobalsettingswidget.ui" line="234"/>
         <source>Use Per-Profile Hotkeys</source>
         <translation>Usar teclas de atalho por perfil</translation>
     </message>
@@ -9018,47 +9028,47 @@ Error was:</source>
 <context>
     <name>GPU_HW</name>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="362"/>
+        <location filename="../../core/gpu_hw.cpp" line="363"/>
         <source>Resolution scale set to {0}x (display {1}x{2}, VRAM {3}x{4})</source>
         <translation>Escala de resolução definida para {0}x (tela {1}x{2}, VRAM {3}x{4})</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="375"/>
+        <location filename="../../core/gpu_hw.cpp" line="376"/>
         <source>Multisample anti-aliasing set to {}x (SSAA).</source>
         <translation>Anti serrilhado múltiplo definido para {}x (SSAA).</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="382"/>
+        <location filename="../../core/gpu_hw.cpp" line="383"/>
         <source>Multisample anti-aliasing set to {}x.</source>
         <translation>Suavização de serrilhado definido para {}x.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="450"/>
+        <location filename="../../core/gpu_hw.cpp" line="458"/>
         <source>{}x MSAA is not supported, using {}x instead.</source>
         <translation>{}x MSAA não é compatível. Use {}x.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="462"/>
+        <location filename="../../core/gpu_hw.cpp" line="470"/>
         <source>SSAA is not supported, using MSAA instead.</source>
         <translation>Filtro SSAA não suportado, usando filtro MSAA.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="469"/>
+        <location filename="../../core/gpu_hw.cpp" line="477"/>
         <source>Texture filter &apos;{}&apos; is not supported with the current renderer.</source>
         <translation>O filtro de textura &apos;{}&apos; não é compatível com o renderizador atual.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="481"/>
+        <location filename="../../core/gpu_hw.cpp" line="489"/>
         <source>Geometry shaders are not supported by your GPU, and are required for wireframe rendering.</source>
         <translation>Os sombreadores não são compatíveis com sua GPU e são obrigatórios para a renderização no modo de wireframe.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="494"/>
+        <location filename="../../core/gpu_hw.cpp" line="502"/>
         <source>Resolution scale {0}x is not divisible by downsample scale {1}x, using {2}x instead.</source>
         <translation>A escala de resolução {0}x não é divisível pela escala de redução da resolução {1}x, usando {2}x.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="557"/>
+        <location filename="../../core/gpu_hw.cpp" line="563"/>
         <source>Resolution scale {0}x not supported for adaptive downsampling, using {1}x.</source>
         <translation>A escala de resolução {0}x não é compatível com a redução de amostra adaptável, usando {1}x.</translation>
     </message>
