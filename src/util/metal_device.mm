@@ -1285,6 +1285,14 @@ bool MetalDevice::CheckDownloadBufferSize(u32 required_size)
 
 bool MetalDevice::SupportsTextureFormat(GPUTexture::Format format) const
 {
+  if (format == GPUTexture::Format::RGB565 || format == GPUTexture::Format::RGBA5551)
+  {
+    // These formats require an Apple Silicon GPU.
+    // See https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
+    if (![m_device supportsFamily:MTLGPUFamilyApple2])
+      return false;
+  }
+
   return (s_pixel_format_mapping[static_cast<u8>(format)] != MTLPixelFormatInvalid);
 }
 
