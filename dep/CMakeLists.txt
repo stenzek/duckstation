@@ -29,6 +29,8 @@ add_subdirectory(reshadefx EXCLUDE_FROM_ALL)
 disable_compiler_warnings_for_target(reshadefx)
 add_subdirectory(rcheevos EXCLUDE_FROM_ALL)
 disable_compiler_warnings_for_target(rcheevos)
+add_subdirectory(rapidyaml EXCLUDE_FROM_ALL)
+disable_compiler_warnings_for_target(rapidyaml)
 
 # Build dependencies on Windows/Android.
 if(WIN32 OR ANDROID)

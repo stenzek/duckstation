@@ -1,0 +1,209 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="yml">
+      <UniqueIdentifier>{c002fb0c-6a19-4827-8a7a-19e0a309fb0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="yml\detail">
+      <UniqueIdentifier>{a3c32dd2-c04e-4122-8aa7-75c26954f557}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="yml\std">
+      <UniqueIdentifier>{df1d37c9-df20-47f2-9031-60d4fa1f8c69}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="c4">
+      <UniqueIdentifier>{6df19960-803e-4406-a9e6-43eaa256d94d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="c4\std">
+      <UniqueIdentifier>{c53d424e-00a4-4c3c-89f4-f67c57cdee8f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\c4\yml\detail\parser_dbg.hpp">
+      <Filter>yml\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\yml\detail\print.hpp">
+      <Filter>yml\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\yml\detail\stack.hpp">
+      <Filter>yml\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\yml\detail\checks.hpp">
+      <Filter>yml\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\yml\std\string.hpp">
+      <Filter>yml\std</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\yml\std\vector.hpp">
+      <Filter>yml\std</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\yml\std\map.hpp">
+      <Filter>yml\std</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\yml\std\std.hpp">
+      <Filter>yml\std</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\yml\yml.hpp">
+      <Filter>yml</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\yml\common.hpp">
+      <Filter>yml</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\yml\emit.def.hpp">
+      <Filter>yml</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\yml\emit.hpp">
+      <Filter>yml</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\yml\export.hpp">
+      <Filter>yml</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\yml\node.hpp">
+      <Filter>yml</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\yml\parse.hpp">
+      <Filter>yml</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\yml\preprocess.hpp">
+      <Filter>yml</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\yml\tree.hpp">
+      <Filter>yml</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\yml\writer.hpp">
+      <Filter>yml</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\base64.hpp">
+      <Filter>c4</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\blob.hpp">
+      <Filter>c4</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\charconv.hpp">
+      <Filter>c4</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\compiler.hpp">
+      <Filter>c4</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\config.hpp">
+      <Filter>c4</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\cpu.hpp">
+      <Filter>c4</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\dump.hpp">
+      <Filter>c4</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\error.hpp">
+      <Filter>c4</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\export.hpp">
+      <Filter>c4</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\format.hpp">
+      <Filter>c4</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\language.hpp">
+      <Filter>c4</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\memory_util.hpp">
+      <Filter>c4</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\platform.hpp">
+      <Filter>c4</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\preprocessor.hpp">
+      <Filter>c4</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\substr.hpp">
+      <Filter>c4</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\substr_fwd.hpp">
+      <Filter>c4</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\szconv.hpp">
+      <Filter>c4</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\types.hpp">
+      <Filter>c4</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\utf.hpp">
+      <Filter>c4</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\windows.hpp">
+      <Filter>c4</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\windows_pop.hpp">
+      <Filter>c4</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\windows_push.hpp">
+      <Filter>c4</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\std\string.hpp">
+      <Filter>c4\std</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\std\string_fwd.hpp">
+      <Filter>c4\std</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\std\string_view.hpp">
+      <Filter>c4\std</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\std\tuple.hpp">
+      <Filter>c4\std</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\std\vector.hpp">
+      <Filter>c4\std</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\std\vector_fwd.hpp">
+      <Filter>c4\std</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\std\std.hpp">
+      <Filter>c4\std</Filter>
+    </ClInclude>
+    <ClInclude Include="include\c4\std\std_fwd.hpp">
+      <Filter>c4\std</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ryml.hpp" />
+    <ClInclude Include="include\ryml_std.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="include\c4\c4core.natvis">
+      <Filter>c4</Filter>
+    </Natvis>
+    <Natvis Include="include\ryml.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\c4\base64.cpp">
+      <Filter>c4</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c4\error.cpp">
+      <Filter>c4</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c4\format.cpp">
+      <Filter>c4</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c4\language.cpp">
+      <Filter>c4</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c4\memory_util.cpp">
+      <Filter>c4</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c4\utf.cpp">
+      <Filter>c4</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c4\yml\parse.cpp">
+      <Filter>yml</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c4\yml\preprocess.cpp">
+      <Filter>yml</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c4\yml\tree.cpp">
+      <Filter>yml</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c4\yml\common.cpp">
+      <Filter>yml</Filter>
+    </ClCompile>
+    <ClCompile Include="src\c4\yml\node.cpp">
+      <Filter>yml</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
