@@ -79,6 +79,17 @@ static void LogNSError(NSError* error, const char* desc, ...)
   Log::Writef("MetalDevice", "", LOGLEVEL_ERROR, "  NSError Description: %s", [error.description UTF8String]);
 }
 
+static GPUTexture::Format GetTextureFormatForMTLFormat(MTLPixelFormat fmt)
+{
+  for (u32 i = 0; i < static_cast<u32>(GPUTexture::Format::MaxCount); i++)
+  {
+    if (s_pixel_format_mapping[i] == fmt)
+      return static_cast<GPUTexture::Format>(i);
+  }
+
+  return GPUTexture::Format::Unknown;
+}
+
 template<typename F>
 static void RunOnMainThread(F&& f)
 {
@@ -122,8 +133,8 @@ void MetalDevice::SetVSync(bool enabled)
 }
 
 bool MetalDevice::CreateDevice(const std::string_view& adapter, bool threaded_presentation,
-                               std::optional<bool> exclusive_fullscreen_control,
-                               FeatureMask disabled_features, Error* error)
+                               std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features,
+                               Error* error)
 {
   @autoreleasepool
   {
@@ -345,13 +356,24 @@ bool MetalDevice::CreateLayer()
     RunOnMainThread([this]() {
       @autoreleasepool
       {
-        Log_InfoPrintf("Creating a %ux%u Metal layer.", m_window_info.surface_width, m_window_info.surface_height);
+        Log_InfoFmt("Creating a {}x{} Metal layer.", m_window_info.surface_width, m_window_info.surface_height);
         const auto size =
           CGSizeMake(static_cast<float>(m_window_info.surface_width), static_cast<float>(m_window_info.surface_height));
         m_layer = [CAMetalLayer layer];
         [m_layer setDevice:m_device];
         [m_layer setDrawableSize:size];
-        [m_layer setPixelFormat:MTLPixelFormatRGBA8Unorm];
+
+        // Default should be BGRA8.
+        const MTLPixelFormat layer_fmt = [m_layer pixelFormat];
+        m_window_info.surface_format = GetTextureFormatForMTLFormat(layer_fmt);
+        if (m_window_info.surface_format == GPUTexture::Format::Unknown)
+        {
+          Log_ErrorFmt("Invalid pixel format {} in layer, using BGRA8.", static_cast<u32>(layer_fmt));
+          [m_layer setPixelFormat:MTLPixelFormatBGRA8Unorm];
+          m_window_info.surface_format = GPUTexture::Format::BGRA8;
+        }
+
+        Log_VerboseFmt("Metal layer pixel format is {}.", GPUTexture::GetFormatName(m_window_info.surface_format));
 
         NSView* view = GetWindowView();
         [view setWantsLayer:TRUE];
@@ -360,7 +382,6 @@ bool MetalDevice::CreateLayer()
     });
 
     [m_layer setDisplaySyncEnabled:m_vsync_enabled];
-    m_window_info.surface_format = GPUTexture::Format::RGBA8;
 
     DebugAssert(m_layer_pass_desc == nil);
     m_layer_pass_desc = [[MTLRenderPassDescriptor renderPassDescriptor] retain];
@@ -1562,7 +1583,7 @@ void MetalDevice::UnmapIndexBuffer(u32 used_index_count)
 {
   const u32 size = sizeof(DrawIndex) * used_index_count;
   s_stats.buffer_streamed += size;
-    m_index_buffer.CommitMemory(size);
+  m_index_buffer.CommitMemory(size);
 }
 
 void MetalDevice::PushUniformBuffer(const void* data, u32 data_size)
