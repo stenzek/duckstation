@@ -111,6 +111,7 @@ static bool s_nogui_mode = false;
 static bool s_start_fullscreen_ui = false;
 static bool s_start_fullscreen_ui_fullscreen = false;
 static bool s_run_setup_wizard = false;
+static bool s_cleanup_after_update = false;
 
 EmuThread* g_emu_thread;
 GDBServer* g_gdb_server;
@@ -2089,9 +2090,7 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
       }
       else if (CHECK_ARG("-updatecleanup"))
       {
-        if (AutoUpdaterDialog::isSupported())
-          AutoUpdaterDialog::cleanupAfterUpdate();
-
+        s_cleanup_after_update = AutoUpdaterDialog::isSupported();
         continue;
       }
 #ifdef ENABLE_RAINTEGRATION
@@ -2213,6 +2212,10 @@ int main(int argc, char* argv[])
   std::shared_ptr<SystemBootParameters> autoboot;
   if (!QtHost::ParseCommandLineParametersAndInitializeConfig(app, autoboot))
     return EXIT_FAILURE;
+
+  // Remove any previous-version remanants.
+  if (s_cleanup_after_update)
+    AutoUpdaterDialog::cleanupAfterUpdate();
 
   // Set theme before creating any windows.
   MainWindow::updateApplicationTheme();
