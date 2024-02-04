@@ -63,10 +63,10 @@ static inline int Strncasecmp(const char* s1, const char* s2, std::size_t n)
 // Case-insensitive equality of string views.
 static inline bool EqualNoCase(std::string_view s1, std::string_view s2)
 {
-  if (s1.empty() || s2.empty())
-    return (s1.empty() == s2.empty());
+  if (s1.length() != s2.length())
+    return false;
 
-  return (Strncasecmp(s1.data(), s2.data(), std::min(s1.length(), s2.length())) == 0);
+  return (Strncasecmp(s1.data(), s2.data(), s1.length()) == 0);
 }
 
 /// Wrapper around std::from_chars

@@ -409,7 +409,7 @@ struct Settings
   static const char* GetAudioBackendName(AudioBackend backend);
   static const char* GetAudioBackendDisplayName(AudioBackend backend);
 
-  static std::optional<ControllerType> ParseControllerTypeName(const char* str);
+  static std::optional<ControllerType> ParseControllerTypeName(std::string_view str);
   static const char* GetControllerTypeName(ControllerType type);
   static const char* GetControllerTypeDisplayName(ControllerType type);
 

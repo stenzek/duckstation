@@ -1358,12 +1358,12 @@ static constexpr const std::array s_controller_display_names = {
   TRANSLATE_NOOP("ControllerType", "PlayStation Mouse"),
   TRANSLATE_NOOP("ControllerType", "NeGcon")};
 
-std::optional<ControllerType> Settings::ParseControllerTypeName(const char* str)
+std::optional<ControllerType> Settings::ParseControllerTypeName(std::string_view str)
 {
   int index = 0;
   for (const char* name : s_controller_type_names)
   {
-    if (StringUtil::Strcasecmp(name, str) == 0)
+    if (StringUtil::EqualNoCase(str, name))
       return static_cast<ControllerType>(index);
 
     index++;
