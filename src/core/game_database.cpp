@@ -202,7 +202,7 @@ void GameDatabase::EnsureLoaded()
     SaveToCache();
   }
 
-  Log_InfoFmt("Database load took {:.0f}ms", timer.GetTimeMilliseconds());
+  Log_InfoFmt("Database load of {} entries took {:.0f}ms.", s_entries.size(), timer.GetTimeMilliseconds());
 }
 
 void GameDatabase::Unload()
@@ -841,8 +841,6 @@ void GameDatabase::SetRymlCallbacks()
 
 bool GameDatabase::LoadGameDBYaml()
 {
-  Common::Timer timer;
-
   const std::optional<std::string> gamedb_data = Host::ReadResourceFileToString(GAMEDB_YAML_FILENAME, false);
   if (!gamedb_data.has_value())
   {
@@ -871,9 +869,6 @@ bool GameDatabase::LoadGameDBYaml()
   }
 
   ryml::reset_callbacks();
-
-  Log_InfoFmt("Loaded {} entries and {} codes from database in {:.0f}ms.", s_entries.size(), s_code_lookup.size(),
-              timer.GetTimeMilliseconds());
   return !s_entries.empty();
 }
 
