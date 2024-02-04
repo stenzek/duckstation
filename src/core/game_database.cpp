@@ -61,27 +61,27 @@ static constexpr const std::array<const char*, static_cast<size_t>(Compatibility
                                            TRANSLATE_NOOP("GameListCompatibilityRating", "No Issues")}};
 
 static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Trait::Count)> s_trait_names = {{
-  "forceInterpreter",
-  "forceSoftwareRenderer",
-  "forceSoftwareRendererForReadbacks",
-  "forceInterlacing",
-  "disableTrueColor",
-  "disableUpscaling",
-  "disableTextureFiltering",
-  "disableScaledDithering",
-  "disableForceNTSCTimings",
-  "disableWidescreen",
-  "disablePGXP",
-  "disablePGXPCulling",
-  "disablePGXPTextureCorrection",
-  "disablePGXPColorCorrection",
-  "disablePGXPDepthBuffer",
-  "forcePGXPVertexCache",
-  "forcePGXPCPUMode",
-  "forceRecompilerMemoryExceptions",
-  "forceRecompilerICache",
-  "forceRecompilerLUTFastmem",
-  "isLibCryptProtected",
+  "ForceInterpreter",
+  "ForceSoftwareRenderer",
+  "ForceSoftwareRendererForReadbacks",
+  "ForceInterlacing",
+  "DisableTrueColor",
+  "DisableUpscaling",
+  "DisableTextureFiltering",
+  "DisableScaledDithering",
+  "DisableForceNTSCTimings",
+  "DisableWidescreen",
+  "DisablePGXP",
+  "DisablePGXPCulling",
+  "DisablePGXPTextureCorrection",
+  "DisablePGXPColorCorrection",
+  "DisablePGXPDepthBuffer",
+  "ForcePGXPVertexCache",
+  "ForcePGXPCPUMode",
+  "ForceRecompilerMemoryExceptions",
+  "ForceRecompilerICache",
+  "ForceRecompilerLUTFastmem",
+  "IsLibCryptProtected",
 }};
 
 static constexpr const char* GAMEDB_YAML_FILENAME = "gamedb.yaml";
@@ -990,6 +990,19 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
       const size_t trait_idx = static_cast<size_t>(std::distance(s_trait_names.begin(), iter));
       DebugAssert(trait_idx < static_cast<size_t>(Trait::Count));
       entry->traits[trait_idx] = true;
+    }
+  }
+
+  if (const ryml::ConstNodeRef& libcrypt = value.find_child(to_csubstr("libcrypt")); libcrypt.valid())
+  {
+    if (const std::optional libcrypt_val = StringUtil::FromChars<bool>(to_stringview(libcrypt.val()));
+        libcrypt_val.has_value())
+    {
+      entry->traits[static_cast<size_t>(Trait::IsLibCryptProtected)] = true;
+    }
+    else
+    {
+      Log_WarningFmt("Invalid libcrypt value in {}", entry->serial);
     }
   }
 

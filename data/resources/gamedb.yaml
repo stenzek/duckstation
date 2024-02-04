@@ -1025,7 +1025,7 @@ SLPS-01434:
   controllers:
     - DigitalController
   traits:
-    - forceInterlacing
+    - ForceInterlacing
   metadata:
     publisher: "ASCII Entertaiment"
     developer: "ASCII Entertaiment"
@@ -2909,8 +2909,7 @@ SLES-01226:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Gremlin Graphics"
     developer: "Gremlin Graphics"
@@ -3178,7 +3177,7 @@ SCPS-10126:
     - AnalogController
     - DigitalController
   traits:
-    - forceSoftwareRenderer
+    - ForceSoftwareRenderer
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -5700,7 +5699,7 @@ SLES-01135:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Psygnosis"
     developer: "Matrix Software \\Contrail"
@@ -5718,7 +5717,7 @@ SLES-01135:
 SLED-01308:
   name: "Alundra (Europe) (Demo)"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLES-01198:
   name: "Alundra (France)"
   compatibility:
@@ -5727,7 +5726,7 @@ SLES-01198:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Psygnosis"
     developer: "Matrix Software \\Contrail"
@@ -5750,7 +5749,7 @@ SLES-01256:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Psygnosis"
     developer: "Matrix Software \\Contrail"
@@ -5773,7 +5772,7 @@ SLES-01257:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Psygnosis"
     developer: "Matrix Software \\Contrail"
@@ -5796,7 +5795,7 @@ SCPS-10035:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony / Psygnosis"
     developer: "Matrix Software \\Contrail"
@@ -5819,7 +5818,7 @@ SLES-01258:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Psygnosis"
     developer: "Matrix Software \\Contrail"
@@ -5842,7 +5841,7 @@ SLUS-00553:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Working Designs /Psygnosis"
     developer: "Matrix Software \\Contrail"
@@ -5882,7 +5881,7 @@ SLES-02600:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Activision"
     developer: "Contrail"
@@ -5906,7 +5905,7 @@ SLUS-01017:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Activision"
     developer: "Contrail"
@@ -5927,7 +5926,7 @@ SLES-02602:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Activision"
     developer: "Contrail"
@@ -5948,7 +5947,7 @@ SCPS-10115:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Sony"
     developer: "Contrail"
@@ -5966,14 +5965,14 @@ SCPS-10115:
 PAPX-90097:
   name: "Alundra 2 - Mashinka no Nazo (Japan) (Demo)"
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
 SLES-02601:
   name: "Alundra 2 - Une Legende Est Nee (France)"
   controllers:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Activision"
     developer: "Contrail"
@@ -7209,8 +7208,7 @@ SLES-02563:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Infogrames Sheffield House"
@@ -7350,8 +7348,7 @@ SCES-01564:
   name: "Ape Escape (Europe)"
   controllers:
     - AnalogController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -7372,8 +7369,7 @@ SCES-02028:
   name: "Ape Escape (France)"
   controllers:
     - AnalogController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -7392,8 +7388,7 @@ SCES-02029:
   name: "Ape Escape (Germany)"
   controllers:
     - AnalogController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -7412,8 +7407,7 @@ SCES-02030:
   name: "Ape Escape (Italy)"
   controllers:
     - AnalogController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -7460,8 +7454,7 @@ SCES-02031:
   name: "Ape Escape - La Invasion de los Monos (Spain)"
   controllers:
     - AnalogController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -8491,7 +8484,7 @@ SLUS-00952:
     - DigitalController
     - PlayStationMouse
   traits:
-    - forceInterlacing
+    - ForceInterlacing
   metadata:
     publisher: "Midway Home Entertainment"
     developer: "Digital Eclipse Software, Inc"
@@ -10356,8 +10349,7 @@ SLES-03324:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Infogrames"
@@ -11870,8 +11862,7 @@ SLES-02977:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Codemasters"
     developer: "Codemasters"
@@ -11891,8 +11882,7 @@ SLES-03605:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Codemasters"
     developer: "Codemasters"
@@ -12837,8 +12827,7 @@ SCES-02366:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Mattel"
     developer: "Runecraft"
@@ -12997,8 +12986,7 @@ SCES-02365:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Mattel"
     developer: "Runecraft"
@@ -13018,8 +13006,7 @@ SCES-02367:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Mattel"
     developer: "Runecraft"
@@ -13039,8 +13026,7 @@ SCES-02368:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Mattel"
     developer: "Runecraft"
@@ -13060,8 +13046,7 @@ SCES-02369:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Mattel"
     developer: "Runecraft"
@@ -13103,8 +13088,7 @@ SCES-02488:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Mattel"
     developer: "Runecraft"
@@ -13124,8 +13108,7 @@ SCES-02489:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Mattel"
     developer: "Runecraft"
@@ -13145,8 +13128,7 @@ SCES-02487:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Mattel"
     developer: "Runecraft"
@@ -13166,8 +13148,7 @@ SCES-02490:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Mattel"
     developer: "Runecraft"
@@ -13187,8 +13168,7 @@ SCES-02491:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Mattel"
     developer: "Runecraft"
@@ -13870,7 +13850,7 @@ SCES-00002:
   controllers:
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Sony"
     developer: "Takara"
@@ -13893,7 +13873,7 @@ SCUS-94003:
   controllers:
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   codes:
     - SCUS-94003
     - SCUS-94200
@@ -19106,7 +19086,7 @@ SLES-03552:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Capcom"
     developer: "Capcom"
@@ -19130,7 +19110,7 @@ SLUS-01324:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Capcom"
     developer: "Capcom"
@@ -19151,7 +19131,7 @@ SLPS-02728:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   codes:
     - SLPS-02728
     - SLPM-87159
@@ -21148,8 +21128,7 @@ SCES-02105:
     - AnalogController
     - DigitalController
     - NeGcon
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony"
     developer: "Naughty Dog"
@@ -21517,8 +21496,7 @@ SLES-02293:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Infogrames Sheffield House"
@@ -25141,7 +25119,7 @@ SLPS-00935:
   controllers:
     - DigitalController
   traits:
-    - disablePGXP
+    - DisablePGXP
   metadata:
     publisher: "Bandai"
     developer: "KID Corporation"
@@ -25166,7 +25144,7 @@ SLPS-00869:
   controllers:
     - DigitalController
   traits:
-    - disablePGXP
+    - DisablePGXP
   metadata:
     publisher: "Bandai"
     developer: "KID Corporation"
@@ -25191,7 +25169,7 @@ SLPS-00870:
   controllers:
     - DigitalController
   traits:
-    - disablePGXP
+    - DisablePGXP
   metadata:
     publisher: "Bandai"
     developer: "KID Corporation"
@@ -25534,7 +25512,7 @@ SCPS-45447:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   codes:
     - SCPS-45447
     - SCPS-45448
@@ -25565,8 +25543,8 @@ SLPM-87395:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
-    - disableWidescreen
+    - ForceRecompilerICache
+    - DisableWidescreen
   settings:
     dmaMaxSliceTicks: 100
     dmaHaltTicks: 150
@@ -25600,8 +25578,8 @@ SLPM-87396:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
-    - disableWidescreen
+    - ForceRecompilerICache
+    - DisableWidescreen
   settings:
     dmaMaxSliceTicks: 100
     dmaHaltTicks: 150
@@ -25638,8 +25616,8 @@ SLUS-01041:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
-    - disableWidescreen
+    - ForceRecompilerICache
+    - DisableWidescreen
   settings:
     dmaMaxSliceTicks: 100
     dmaHaltTicks: 150
@@ -25670,8 +25648,8 @@ SLUS-01080:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
-    - disableWidescreen
+    - ForceRecompilerICache
+    - DisableWidescreen
   settings:
     dmaMaxSliceTicks: 100
     dmaHaltTicks: 150
@@ -25694,7 +25672,7 @@ SCPS-45446:
   controllers:
     - DigitalController
   traits:
-    - forceSoftwareRendererForReadbacks
+    - ForceSoftwareRendererForReadbacks
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -25714,7 +25692,7 @@ SLPM-87374:
   controllers:
     - DigitalController
   traits:
-    - forceSoftwareRendererForReadbacks
+    - ForceSoftwareRendererForReadbacks
   codes:
     - SLPM-87374
     - SLPS-02430
@@ -27257,8 +27235,7 @@ SLES-02766:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Infogrames"
@@ -27401,7 +27378,7 @@ SLPS-02878:
     - DigitalController
     - NeGcon
   traits:
-    - forceRecompilerLUTFastmem
+    - ForceRecompilerLUTFastmem
   metadata:
     publisher: "Spike"
     developer: "Codemasters"
@@ -27538,7 +27515,7 @@ SLES-02605:
     - DigitalController
     - NeGcon
   traits:
-    - forceRecompilerLUTFastmem
+    - ForceRecompilerLUTFastmem
   metadata:
     publisher: "Codemasters"
     developer: "Codemasters"
@@ -27567,7 +27544,7 @@ SLUS-01222:
     - DigitalController
     - NeGcon
   traits:
-    - forceRecompilerLUTFastmem
+    - ForceRecompilerLUTFastmem
   settings:
     displayActiveStartOffset: 64
     displayActiveEndOffset: 68
@@ -29084,7 +29061,7 @@ SLED-02310:
 SLED-02439:
   name: "Compilation 03 (Australia)"
   traits:
-    - disablePGXPCulling
+    - DisablePGXPCulling
 SLED-02440:
   name: "Compilation 04 (Australia)"
 SLPS-01062:
@@ -29777,7 +29754,7 @@ SLPS-02504:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Bandai"
     developer: "Polygon Magic"
@@ -29803,7 +29780,7 @@ SLPS-02505:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Bandai"
     developer: "Polygon Magic"
@@ -29829,7 +29806,7 @@ SLUS-00898:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Bandai"
     developer: "Polygon Magic"
@@ -29855,7 +29832,7 @@ SLUS-01199:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Bandai"
     developer: "Polygon Magic"
@@ -30099,7 +30076,7 @@ SCUS-94244:
     - AnalogController
     - DigitalController
   traits:
-    - disablePGXPColorCorrection
+    - DisablePGXPColorCorrection
   metadata:
     publisher: "Sony"
     developer: "Naughty Dog, Inc"
@@ -30197,7 +30174,7 @@ SCPS-10073:
     - AnalogController
     - DigitalController
   traits:
-    - disablePGXPColorCorrection
+    - DisablePGXPColorCorrection
   codes:
     - SCPS-10073
     - SCPS-91164
@@ -30245,7 +30222,7 @@ SCES-01420:
     - AnalogController
     - DigitalController
   traits:
-    - disablePGXPColorCorrection
+    - DisablePGXPColorCorrection
   metadata:
     publisher: "Sony"
     developer: "Naughty Dog, Inc"
@@ -30401,8 +30378,8 @@ SCES-02834:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
-    - isLibCryptProtected
+    - ForceRecompilerICache
+  libcrypt: true
   metadata:
     publisher: "Sony"
     developer: "Eurocom Developments"
@@ -30923,7 +30900,7 @@ SLES-00593:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Fox Interactive"
     developer: "Argonaut Games"
@@ -30941,7 +30918,7 @@ SLES-00593:
 SLED-00038:
   name: "Croc - Legend of the Gobbos (Europe) (Demo)"
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
 SLUS-00530:
   name: "Croc - Legend of the Gobbos (USA)"
   compatibility:
@@ -30951,7 +30928,7 @@ SLUS-00530:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Fox Interactive"
     developer: "Argonaut Games"
@@ -30969,14 +30946,14 @@ SLUS-00530:
 SLED-02119:
   name: "Croc 2 (Europe) (Demo)"
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
 SLES-02088:
   name: "Croc 2 (Europe) (En,Fr,De,Es,It,Nl,Sv)"
   controllers:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Fox Interactive"
     developer: "Argonaut Games"
@@ -31006,7 +30983,7 @@ SLUS-00634:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Fox Interactive"
     developer: "Argonaut Games"
@@ -31024,7 +31001,7 @@ SLUS-00634:
 SLUS-90056:
   name: "Croc 2 (USA) (Demo)"
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
 SLPM-86310:
   name: "Croc Adventure (Japan)"
   compatibility:
@@ -31034,7 +31011,7 @@ SLPM-86310:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "KOEI"
     developer: "Argonaut Games"
@@ -31052,14 +31029,14 @@ SLPM-86310:
 SLPM-80473:
   name: "Croc Adventure (Japan) (Demo)"
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
 SLPS-01055:
   name: "Croc! Pau-Pau Island (Japan)"
   controllers:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Media Quest"
     developer: "Argonaut Games"
@@ -31077,7 +31054,7 @@ SLPS-01055:
 SLPM-80173:
   name: "Croc! Pau-Pau Island (Japan) (Demo)"
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
 SLPM-87235:
   name: "Croket! Kindan no Kinka Box! (Japan)"
   controllers:
@@ -34783,7 +34760,7 @@ SLPS-00267:
     - DigitalController
     - NeGcon
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Nichibutsu (Nihon Bussan)"
     developer: "Nichibutsu (Nihon Bussan)"
@@ -35063,8 +35040,8 @@ SLES-00081:
   controllers:
     - DigitalController
   traits:
-    - disableUpscaling
-    - disablePGXP
+    - DisableUpscaling
+    - DisablePGXP
   metadata:
     publisher: "Psygnosis"
     developer: "Millennium Interactive Ltd"
@@ -35084,8 +35061,8 @@ SLES-00149:
   controllers:
     - DigitalController
   traits:
-    - disableUpscaling
-    - disablePGXP
+    - DisableUpscaling
+    - DisablePGXP
   metadata:
     publisher: "Psygnosis"
     developer: "Millennium Interactive Ltd"
@@ -35105,8 +35082,8 @@ SLES-00148:
   controllers:
     - DigitalController
   traits:
-    - disableUpscaling
-    - disablePGXP
+    - DisableUpscaling
+    - DisablePGXP
   metadata:
     publisher: "Psygnosis"
     developer: "Millennium Interactive Ltd"
@@ -35126,8 +35103,8 @@ SLES-00146:
   controllers:
     - DigitalController
   traits:
-    - disableUpscaling
-    - disablePGXP
+    - DisableUpscaling
+    - DisablePGXP
   metadata:
     publisher: "Psygnosis"
     developer: "Millennium Interactive Ltd"
@@ -35147,8 +35124,8 @@ SLPS-00275:
   controllers:
     - DigitalController
   traits:
-    - disableUpscaling
-    - disablePGXP
+    - DisableUpscaling
+    - DisablePGXP
   metadata:
     publisher: "Multisoft"
     developer: "Millennium Interactive Ltd"
@@ -35168,8 +35145,8 @@ SLES-00147:
   controllers:
     - DigitalController
   traits:
-    - disableUpscaling
-    - disablePGXP
+    - DisableUpscaling
+    - DisablePGXP
   metadata:
     publisher: "Psygnosis"
     developer: "Millennium Interactive Ltd"
@@ -35189,8 +35166,8 @@ SLUS-00009:
   controllers:
     - DigitalController
   traits:
-    - disableUpscaling
-    - disablePGXP
+    - DisableUpscaling
+    - DisablePGXP
   metadata:
     publisher: "Data East USA, Inc"
     developer: "Millennium Interactive Ltd"
@@ -36443,7 +36420,7 @@ SLUS-00912:
     - DigitalController
     - NeGcon
   traits:
-    - forceInterlacing
+    - ForceInterlacing
   metadata:
     publisher: "Psygnosis"
     developer: "Studio 33 Ltd"
@@ -36607,7 +36584,7 @@ SCES-01312:
     - AnalogController
     - DigitalController
   traits:
-    - forceInterlacing
+    - ForceInterlacing
   metadata:
     publisher: "THQ"
     developer: "Shift"
@@ -37841,8 +37818,7 @@ SLES-02207:
   name: "Dino Crisis (Europe)"
   controllers:
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom"
@@ -37861,8 +37837,7 @@ SLES-02208:
   name: "Dino Crisis (France)"
   controllers:
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom"
@@ -37881,8 +37856,7 @@ SLES-02209:
   name: "Dino Crisis (Germany)"
   controllers:
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom"
@@ -37901,8 +37875,7 @@ SLES-02210:
   name: "Dino Crisis (Italy)"
   controllers:
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom"
@@ -37946,8 +37919,7 @@ SLES-02211:
     versionTested: "0.1-4423-g32ab7c13"
   controllers:
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom"
@@ -37991,7 +37963,7 @@ SLES-03221:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom"
@@ -38012,7 +37984,7 @@ SLES-03222:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom"
@@ -38033,7 +38005,7 @@ SLES-03223:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom"
@@ -38054,7 +38026,7 @@ SLES-03224:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom"
@@ -38075,7 +38047,7 @@ SLPM-86627:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   codes:
     - SLPM-86627
     - SLPM-87234
@@ -38096,7 +38068,7 @@ SLPM-86627:
 SLPM-80573:
   name: "Dino Crisis 2 (Japan) (Demo)"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLES-03225:
   name: "Dino Crisis 2 (Spain)"
   compatibility:
@@ -38106,7 +38078,7 @@ SLES-03225:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom"
@@ -38130,7 +38102,7 @@ SLUS-01279:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Capcom"
     developer: "Capcom"
@@ -38148,7 +38120,7 @@ SLUS-01279:
 SLUS-90087:
   name: "Dino Crisis 2 (USA) (En,Ja) (Demo)"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLES-03989:
   name: "Dinomaster Party (Europe) (En,Fr,De,Es,It,Nl)"
   controllers:
@@ -38771,8 +38743,7 @@ SCES-02004:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony / Disney Interactive"
     developer: "Revolution Software"
@@ -39070,8 +39041,7 @@ SCES-02006:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony / Disney Interactive"
     developer: "Revolution Software"
@@ -39305,8 +39275,7 @@ SCES-01516:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony / Disney Interactive"
     developer: "Eurocom Developments Ltd"
@@ -39326,8 +39295,7 @@ SCES-01518:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony / Disney Interactive"
     developer: "Eurocom Developments Ltd"
@@ -39350,8 +39318,7 @@ SCES-01519:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony / Disney Interactive"
     developer: "Eurocom Developments Ltd"
@@ -39485,8 +39452,7 @@ SLES-03189:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Disney Interactive / Eidos Interactive"
     developer: "Toys for Bob"
@@ -39506,8 +39472,7 @@ SLES-03191:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Disney Interactive / Eidos Interactive"
     developer: "Toys for Bob"
@@ -39531,8 +39496,7 @@ SLES-03190:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Disney Interactive / Eidos Interactive"
     developer: "Toys for Bob"
@@ -39633,7 +39597,7 @@ SCES-03000:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Sony / Disney Interactive"
     developer: "Argonaut Games"
@@ -39657,7 +39621,7 @@ SCUS-94569:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Sony / Disney Interactive"
     developer: "Argonaut Games"
@@ -39777,8 +39741,7 @@ SCES-02007:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony / Disney Interactive"
     developer: "Revolution Software"
@@ -40221,8 +40184,7 @@ SCES-01695:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony / Disney Interactive"
     developer: "Revolution Software"
@@ -40434,8 +40396,7 @@ SCES-01431:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony / Disney Interactive"
     developer: "Eurocom Developments Ltd"
@@ -40474,8 +40435,7 @@ SCES-02185:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony / Disney Interactive"
     developer: "Eurocom Developments Ltd"
@@ -40741,8 +40701,7 @@ SCES-02264:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony / Disney Interactive"
     developer: "Revolution Software"
@@ -41750,8 +41709,7 @@ SCES-02184:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony / Disney Interactive"
     developer: "Eurocom Developments Ltd"
@@ -42037,8 +41995,7 @@ SCES-02005:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony / Disney Interactive"
     developer: "Revolution Software"
@@ -42269,8 +42226,7 @@ SCES-02181:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony / Disney Interactive"
     developer: "Eurocom Developments Ltd"
@@ -42290,8 +42246,7 @@ SCES-01517:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony / Disney Interactive"
     developer: "Eurocom Developments Ltd"
@@ -42330,8 +42285,7 @@ SCES-02182:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony / Disney Interactive"
     developer: "Eurocom Developments Ltd"
@@ -43174,8 +43128,8 @@ SLES-00132:
   controllers:
     - DigitalController
   traits:
-    - disableUpscaling
-    - disablePGXP
+    - DisableUpscaling
+    - DisablePGXP
   metadata:
     publisher: "GT Interactive / Williams Entertainment"
     developer: "Midway Studios San Diego"
@@ -43197,8 +43151,8 @@ SLPS-00308:
   controllers:
     - DigitalController
   traits:
-    - disableUpscaling
-    - disablePGXP
+    - DisableUpscaling
+    - DisablePGXP
   metadata:
     publisher: "Soft Bank"
     developer: "Midway Studios San Diego"
@@ -43222,8 +43176,8 @@ SLUS-00077:
   controllers:
     - DigitalController
   traits:
-    - disableUpscaling
-    - disablePGXP
+    - DisableUpscaling
+    - DisablePGXP
   metadata:
     publisher: "GT Interactive / Williams Entertainment"
     developer: "Midway Studios San Diego"
@@ -46191,8 +46145,8 @@ SLES-00703:
     - AnalogController
     - DigitalController
   traits:
-    - disableUpscaling
-    - disablePGXP
+    - DisableUpscaling
+    - DisablePGXP
   metadata:
     publisher: "GT Interactive"
     developer: "3D Realms Entertainment"
@@ -46213,8 +46167,8 @@ SLES-00987:
     - AnalogController
     - DigitalController
   traits:
-    - disableUpscaling
-    - disablePGXP
+    - DisableUpscaling
+    - DisablePGXP
   metadata:
     publisher: "GT Interactive"
     developer: "3D Realms Entertainment"
@@ -46232,8 +46186,8 @@ SLES-00987:
 SLED-01027:
   name: "Duke Nukem (France) (Demo)"
   traits:
-    - disableUpscaling
-    - disablePGXP
+    - DisableUpscaling
+    - DisablePGXP
 SLES-03405:
   name: "Duke Nukem - Land of the Babes (Europe) (En,Fr,De,Es,It)"
   controllers:
@@ -46406,8 +46360,8 @@ SLPS-01557:
     - AnalogController
     - DigitalController
   traits:
-    - disableUpscaling
-    - disablePGXP
+    - DisableUpscaling
+    - DisablePGXP
   metadata:
     publisher: "King Record Co. Ltd"
     developer: "3D Realms Entertainment"
@@ -46431,8 +46385,8 @@ SLUS-00355:
     - AnalogController
     - DigitalController
   traits:
-    - disableUpscaling
-    - disablePGXP
+    - DisableUpscaling
+    - DisablePGXP
   metadata:
     publisher: "GT Interactive"
     developer: "3D Realms Entertainment"
@@ -46897,8 +46851,7 @@ SLES-02538:
     - AnalogController
     - DigitalController
     - NeGcon
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "EA Sports"
     developer: "Climax Group"
@@ -47313,8 +47266,7 @@ SLES-01715:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Glass Ghost"
@@ -48029,7 +47981,7 @@ SCUS-94243:
   controllers:
     - DigitalController
   traits:
-    - forceRecompilerLUTFastmem
+    - ForceRecompilerLUTFastmem
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -48964,8 +48916,7 @@ SCES-01704:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony Computer Entertaiment Europe"
     developer: "London Studio"
@@ -50998,8 +50949,7 @@ SLES-03061:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Electronic Arts"
     developer: "Krisalis Software Ltd"
@@ -51058,8 +51008,7 @@ SLES-02723:
     - AnalogController
     - DigitalController
     - NeGcon
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Electronic Arts"
     developer: "Visual Sciences"
@@ -51084,8 +51033,7 @@ SLES-02722:
     - AnalogController
     - DigitalController
     - NeGcon
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Electronic Arts"
     developer: "Visual Sciences"
@@ -51109,8 +51057,7 @@ SLES-02724:
     - AnalogController
     - DigitalController
     - NeGcon
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Electronic Arts"
     developer: "Visual Sciences"
@@ -54845,8 +54792,8 @@ SLES-00487:
     - DigitalController
     - PlayStationMouse
   traits:
-    - disableUpscaling
-    - disablePGXP
+    - DisableUpscaling
+    - DisablePGXP
   metadata:
     publisher: "GT Interactive / Williams Entertainment"
     developer: "id Software, Inc."
@@ -54867,8 +54814,8 @@ SLPS-00727:
     - DigitalController
     - PlayStationMouse
   traits:
-    - disableUpscaling
-    - disablePGXP
+    - DisableUpscaling
+    - DisablePGXP
   metadata:
     publisher: "Soft Bank"
     developer: "id Software, Inc."
@@ -54893,8 +54840,8 @@ SLUS-00331:
     - DigitalController
     - PlayStationMouse
   traits:
-    - disableUpscaling
-    - disablePGXP
+    - DisableUpscaling
+    - DisablePGXP
   metadata:
     publisher: "GT Interactive / Williams Entertainment"
     developer: "id Software, Inc."
@@ -55030,7 +54977,7 @@ SLUS-01363:
   controllers:
     - DigitalController
   traits:
-    - forceSoftwareRendererForReadbacks
+    - ForceSoftwareRendererForReadbacks
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -55202,8 +55149,8 @@ SLES-02965:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -55234,8 +55181,8 @@ SLES-12965:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -55266,8 +55213,8 @@ SLES-22965:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -55298,8 +55245,8 @@ SLES-32965:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -55330,8 +55277,8 @@ SLES-02966:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -55362,8 +55309,8 @@ SLES-12966:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -55394,8 +55341,8 @@ SLES-22966:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -55426,8 +55373,8 @@ SLES-32966:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -55455,8 +55402,8 @@ SLES-02967:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -55484,8 +55431,8 @@ SLES-12967:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -55513,8 +55460,8 @@ SLES-22967:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -55542,8 +55489,8 @@ SLES-32967:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -55571,8 +55518,8 @@ SLES-02968:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -55600,8 +55547,8 @@ SLES-12968:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -55629,8 +55576,8 @@ SLES-22968:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -55658,8 +55605,8 @@ SLES-32968:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -55687,7 +55634,7 @@ SCPS-45500:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   codes:
     - SCPS-45500
     - SLPM-87388
@@ -55719,7 +55666,7 @@ SCPS-45501:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   codes:
     - SCPS-45501
     - SLPM-87389
@@ -55751,7 +55698,7 @@ SCPS-45502:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   codes:
     - SCPS-45502
     - SLPM-87390
@@ -55783,7 +55730,7 @@ SCPS-45503:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   codes:
     - SCPS-45503
     - SLPM-87391
@@ -55818,8 +55765,8 @@ SLES-02969:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -55850,8 +55797,8 @@ SLES-12969:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -55882,8 +55829,8 @@ SLES-22969:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -55914,8 +55861,8 @@ SLES-32969:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -55946,7 +55893,7 @@ SLUS-01251:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -55977,7 +55924,7 @@ SLUS-01295:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -56008,7 +55955,7 @@ SLUS-01296:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -56039,7 +55986,7 @@ SLUS-01297:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -56274,7 +56221,7 @@ SCES-00867:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56302,7 +56249,7 @@ SCES-10867:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56330,7 +56277,7 @@ SCES-20867:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56358,7 +56305,7 @@ SCES-00868:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56386,7 +56333,7 @@ SCES-10868:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56414,7 +56361,7 @@ SCES-20868:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56442,7 +56389,7 @@ SCES-00869:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56470,7 +56417,7 @@ SCES-10869:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56498,7 +56445,7 @@ SCES-20869:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56529,7 +56476,7 @@ SLPS-00700:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony / Squaresoft"
     developer: "Squaresoft"
@@ -56555,7 +56502,7 @@ SLPS-00701:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony / Squaresoft"
     developer: "Squaresoft"
@@ -56581,7 +56528,7 @@ SLPS-00702:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony / Squaresoft"
     developer: "Squaresoft"
@@ -56610,7 +56557,7 @@ SCES-00900:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56641,7 +56588,7 @@ SCES-10900:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56672,7 +56619,7 @@ SCES-20900:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56703,7 +56650,7 @@ SCUS-94163:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony / Squaresoft"
     developer: "Squaresoft"
@@ -56732,7 +56679,7 @@ SCUS-94164:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony / Squaresoft"
     developer: "Squaresoft"
@@ -56761,7 +56708,7 @@ SCUS-94165:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony / Squaresoft"
     developer: "Squaresoft"
@@ -56779,17 +56726,17 @@ SCUS-94165:
 SCUS-94961:
   name: "Final Fantasy VII (USA) (Interactive Sampler CD)"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SCUS-94179:
   name: "Final Fantasy VII (USA) (Square Soft on PlayStation Previews)"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SCPS-45007:
   name: "Final Fantasy VII (aka Final Fantasy 7 or FF7)"
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   codes:
     - SCPS-45007
     - SCPS-45008
@@ -56820,7 +56767,7 @@ SLPM-84020:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   codes:
     - SLPM-84020
     - SLPM-87380
@@ -56852,7 +56799,7 @@ SLPM-84021:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   codes:
     - SLPM-84021
     - SLPM-87381
@@ -56884,7 +56831,7 @@ SLPM-84022:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   codes:
     - SLPM-84022
     - SLPM-87382
@@ -56916,7 +56863,7 @@ SLPM-87383:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   codes:
     - SLPM-87383
     - SLPS-01060
@@ -56938,11 +56885,11 @@ SLPM-87383:
 SCED-02062:
   name: "Final Fantasy VIII (Europe) (Demo 1)"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLED-02258:
   name: "Final Fantasy VIII (Europe) (Demo 2)"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SCES-02080:
   name: "Final Fantasy VIII (Europe, Australia) (Disc 1)"
   discSet:
@@ -56959,8 +56906,8 @@ SCES-02080:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   codes:
     - SCES-02080
     - SLES-02080
@@ -56994,8 +56941,8 @@ SCES-12080:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   codes:
     - SCES-12080
     - SLES-12080
@@ -57029,8 +56976,8 @@ SCES-22080:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   codes:
     - SCES-22080
     - SLES-22080
@@ -57064,8 +57011,8 @@ SCES-32080:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   codes:
     - SCES-32080
     - SLES-32080
@@ -57086,7 +57033,7 @@ SCES-32080:
 SLED-02259:
   name: "Final Fantasy VIII (France) (Demo)"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLES-02081:
   name: "Final Fantasy VIII (France) (Disc 1)"
   discSet:
@@ -57100,8 +57047,8 @@ SLES-02081:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -57129,8 +57076,8 @@ SLES-12081:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -57158,8 +57105,8 @@ SLES-22081:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -57187,8 +57134,8 @@ SLES-32081:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -57216,8 +57163,8 @@ SLES-02082:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -57245,8 +57192,8 @@ SLES-12082:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -57274,8 +57221,8 @@ SLES-22082:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -57303,8 +57250,8 @@ SLES-32082:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -57332,8 +57279,8 @@ SLES-02083:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -57361,8 +57308,8 @@ SLES-12083:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -57390,8 +57337,8 @@ SLES-22083:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -57419,8 +57366,8 @@ SLES-32083:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -57450,7 +57397,7 @@ SLPM-87384:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   codes:
     - SLPM-87384
     - SLPS-01880
@@ -57481,7 +57428,7 @@ SLPM-87385:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   codes:
     - SLPM-87385
     - SLPS-01881
@@ -57512,7 +57459,7 @@ SLPM-87386:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   codes:
     - SLPM-87386
     - SLPS-01882
@@ -57543,7 +57490,7 @@ SLPM-87387:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   codes:
     - SLPM-87387
     - SLPS-01883
@@ -57564,11 +57511,11 @@ SLPM-87387:
 SLPM-80269:
   name: "Final Fantasy VIII (Japan) (Square's Preview Extra) (Demo)"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLED-02262:
   name: "Final Fantasy VIII (Spain) (Demo)"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLES-02084:
   name: "Final Fantasy VIII (Spain) (Disc 1)"
   discSet:
@@ -57585,8 +57532,8 @@ SLES-02084:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -57617,8 +57564,8 @@ SLES-12084:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -57649,8 +57596,8 @@ SLES-22084:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -57681,8 +57628,8 @@ SLES-32084:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -57713,7 +57660,7 @@ SLUS-00892:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -57744,7 +57691,7 @@ SLUS-00908:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -57775,7 +57722,7 @@ SLUS-00909:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -57806,7 +57753,7 @@ SLUS-00910:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -57827,7 +57774,7 @@ SCPS-45375:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   codes:
     - SCPS-45375
     - SCPS-45376
@@ -58696,7 +58643,7 @@ SCES-00985:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony Computer Entertainment Incorporated"
     developer: "Opus Corp"
@@ -58775,8 +58722,7 @@ SLES-02978:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Codemasters"
     developer: "Codemasters"
@@ -58796,8 +58742,7 @@ SLES-03606:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Codemasters"
     developer: "Codemasters"
@@ -58978,7 +58923,7 @@ SCPS-45077:
     - DigitalController
     - NeGcon
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Psygnosis"
     developer: "Bizarre Creations"
@@ -58999,7 +58944,7 @@ SLES-00298:
     - DigitalController
     - NeGcon
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Psygnosis"
     developer: "Bizarre Creations"
@@ -59024,7 +58969,7 @@ SIPS-60011:
     - DigitalController
     - NeGcon
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Psygnosis"
     developer: "Bizarre Creations"
@@ -59045,7 +58990,7 @@ SCUS-94353:
     - DigitalController
     - NeGcon
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Psygnosis"
     developer: "Bizarre Creations"
@@ -59324,12 +59269,12 @@ SLES-02527:
 SCED-01979:
   name: "Formula One '99 (Europe) (En,Fr,De,It) (Beta)"
   traits:
-    - forceInterpreter
-    - isLibCryptProtected
+    - ForceInterpreter
+  libcrypt: true
 SLED-00491:
   name: "Formula One (Europe) (En,Fr,De,Es,It) (Demo)"
   traits:
-    - forceInterpreter
+    - ForceInterpreter
 SCES-02777:
   name: "Formula One 2000 (Europe) (En,Fi)"
   controllers:
@@ -59337,7 +59282,7 @@ SCES-02777:
     - DigitalController
     - NeGcon
   traits:
-    - forceInterpreter
+    - ForceInterpreter
   metadata:
     publisher: "Psygnosis"
     developer: "Studio 33"
@@ -59360,7 +59305,7 @@ SCES-02779:
     - DigitalController
     - NeGcon
   traits:
-    - forceInterpreter
+    - ForceInterpreter
   metadata:
     publisher: "Psygnosis"
     developer: "Studio 33"
@@ -59383,7 +59328,7 @@ SCES-02778:
     - DigitalController
     - NeGcon
   traits:
-    - forceInterpreter
+    - ForceInterpreter
   metadata:
     publisher: "Psygnosis"
     developer: "Studio 33"
@@ -59406,7 +59351,7 @@ SLUS-01134:
     - DigitalController
     - NeGcon
   traits:
-    - forceInterpreter
+    - ForceInterpreter
   metadata:
     publisher: "Midway"
     developer: "Studio 33"
@@ -59430,7 +59375,7 @@ SCES-03404:
     - DigitalController
     - NeGcon
   traits:
-    - forceInterpreter
+    - ForceInterpreter
   metadata:
     publisher: "Psygnosis"
     developer: "Studio 33"
@@ -59455,7 +59400,7 @@ SCES-03424:
     - DigitalController
     - NeGcon
   traits:
-    - forceInterpreter
+    - ForceInterpreter
   metadata:
     publisher: "Psygnosis"
     developer: "Studio 33"
@@ -59478,7 +59423,7 @@ SCES-03423:
     - DigitalController
     - NeGcon
   traits:
-    - forceInterpreter
+    - ForceInterpreter
   metadata:
     publisher: "Psygnosis"
     developer: "Studio 33"
@@ -59501,7 +59446,7 @@ SCES-03524:
     - DigitalController
     - NeGcon
   traits:
-    - forceInterpreter
+    - ForceInterpreter
   metadata:
     publisher: "Psygnosis"
     developer: "Studio 33"
@@ -59523,8 +59468,8 @@ SCES-02222:
     - DigitalController
     - NeGcon
   traits:
-    - forceInterpreter
-    - isLibCryptProtected
+    - ForceInterpreter
+  libcrypt: true
   metadata:
     publisher: "Psygnosis"
     developer: "Studio 33"
@@ -59548,8 +59493,8 @@ SCES-01979:
     - DigitalController
     - NeGcon
   traits:
-    - forceInterpreter
-    - isLibCryptProtected
+    - ForceInterpreter
+  libcrypt: true
   metadata:
     publisher: "Psygnosis"
     developer: "Studio 33"
@@ -59574,7 +59519,7 @@ SCPS-10101:
     - DigitalController
     - NeGcon
   traits:
-    - forceInterpreter
+    - ForceInterpreter
   metadata:
     publisher: "Sony"
     developer: "Studio 33"
@@ -59599,7 +59544,7 @@ SLUS-00870:
     - DigitalController
     - NeGcon
   traits:
-    - forceInterpreter
+    - ForceInterpreter
   metadata:
     publisher: "Psygnosis"
     developer: "Studio 33"
@@ -59623,7 +59568,7 @@ SCES-03886:
     - DigitalController
     - NeGcon
   traits:
-    - forceInterpreter
+    - ForceInterpreter
   metadata:
     publisher: "Psygnosis"
     developer: "Studio 33"
@@ -60522,8 +60467,7 @@ SLES-02767:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Infogrames"
@@ -60736,8 +60680,7 @@ SCES-01702:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony Computer Entertaiment Europe"
     developer: "London Studio"
@@ -60778,8 +60721,7 @@ SLES-03062:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Electronic Arts"
     developer: "Krisalis Software Ltd"
@@ -61866,7 +61808,7 @@ SLPS-00078:
   controllers:
     - DigitalController
   traits:
-    - disableTrueColor
+    - DisableTrueColor
   codes:
     - HASH-B39B28CB8E99EF28
   metadata:
@@ -62159,8 +62101,8 @@ SLES-02328:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
-    - isLibCryptProtected
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Crave Entertainment"
     developer: "Polygon Magic Inc"
@@ -62187,8 +62129,8 @@ SLES-12328:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
-    - isLibCryptProtected
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Crave Entertainment"
     developer: "Polygon Magic Inc"
@@ -62215,8 +62157,8 @@ SLES-22328:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
-    - isLibCryptProtected
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Crave Entertainment"
     developer: "Polygon Magic Inc"
@@ -62243,8 +62185,8 @@ SLES-02329:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
-    - isLibCryptProtected
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Crave Entertainment"
     developer: "Polygon Magic Inc"
@@ -62271,8 +62213,8 @@ SLES-12329:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
-    - isLibCryptProtected
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Crave Entertainment"
     developer: "Polygon Magic Inc"
@@ -62299,8 +62241,8 @@ SLES-22329:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
-    - isLibCryptProtected
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Crave Entertainment"
     developer: "Polygon Magic Inc"
@@ -62327,8 +62269,8 @@ SLES-02330:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
-    - isLibCryptProtected
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Crave Entertainment"
     developer: "Polygon Magic Inc"
@@ -62355,8 +62297,8 @@ SLES-12330:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
-    - isLibCryptProtected
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Crave Entertainment"
     developer: "Polygon Magic Inc"
@@ -62383,8 +62325,8 @@ SLES-22330:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
-    - isLibCryptProtected
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Crave Entertainment"
     developer: "Polygon Magic Inc"
@@ -62411,7 +62353,7 @@ SLPS-02192:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Ascii"
     developer: "Polygon Magic Inc"
@@ -62438,7 +62380,7 @@ SLPS-02193:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Ascii"
     developer: "Polygon Magic Inc"
@@ -62465,7 +62407,7 @@ SLPS-02194:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Ascii"
     developer: "Polygon Magic Inc"
@@ -62499,7 +62441,7 @@ SLUS-00986:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Crave Entertainment"
     developer: "Polygon Magic Inc"
@@ -62529,7 +62471,7 @@ SLUS-01098:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Crave Entertainment"
     developer: "Polygon Magic Inc"
@@ -62559,7 +62501,7 @@ SLUS-01099:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Crave Entertainment"
     developer: "Polygon Magic Inc"
@@ -63546,8 +63488,7 @@ SLES-01241:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "NA.P.S. Team"
@@ -66136,7 +66077,7 @@ SLES-02397:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Ubisoft"
     developer: "Game Arts"
@@ -66162,7 +66103,7 @@ SLES-12397:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Ubisoft"
     developer: "Game Arts"
@@ -66188,7 +66129,7 @@ SLES-02398:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Ubisoft"
     developer: "Game Arts"
@@ -66214,7 +66155,7 @@ SLES-12398:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Ubisoft"
     developer: "Game Arts"
@@ -66240,7 +66181,7 @@ SLES-02399:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Ubisoft"
     developer: "Game Arts"
@@ -66266,7 +66207,7 @@ SLES-12399:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Ubisoft"
     developer: "Game Arts"
@@ -66292,7 +66233,7 @@ SLPS-02124:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   codes:
     - SLPS-02124
     - SLPS-91205
@@ -66321,7 +66262,7 @@ SLPS-02125:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   codes:
     - SLPS-02125
     - SLPS-91206
@@ -66354,7 +66295,7 @@ SCUS-94457:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Sony"
     developer: "Game Arts"
@@ -66384,7 +66325,7 @@ SCUS-94465:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Sony"
     developer: "Game Arts"
@@ -66402,7 +66343,7 @@ SCUS-94465:
 SLPM-80297:
   name: "Grandia - Prologue (Japan) (Demo)"
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
 SLPS-01624:
   name: "Granew-tou! Daibouken (Japan)"
   controllers:
@@ -68793,7 +68734,7 @@ SLES-01539:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sunsoft"
     developer: "Sunsoft"
@@ -68816,7 +68757,7 @@ SLPS-01733:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sunsoft"
     developer: "Sunsoft"
@@ -68837,7 +68778,7 @@ SLPS-02692:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sunsoft"
     developer: "Sunsoft"
@@ -68858,7 +68799,7 @@ SLPS-03270:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sunsoft"
     developer: "Sunsoft"
@@ -69012,7 +68953,7 @@ SLES-03972:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Electronic Arts"
     developer: "Argonaut Games"
@@ -69035,7 +68976,7 @@ SLES-03974:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Electronic Arts"
     developer: "Argonaut Games"
@@ -69058,7 +68999,7 @@ SLES-03973:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Electronic Arts"
     developer: "Argonaut Games"
@@ -69081,7 +69022,7 @@ SLES-03975:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Electronic Arts"
     developer: "Argonaut Games"
@@ -69107,7 +69048,7 @@ SLUS-01503:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Electronic Arts"
     developer: "Argonaut Games"
@@ -69127,14 +69068,14 @@ SLUS-01503:
 SLUS-01417:
   name: "Harry Potter and the Philosopher's Stone (Canada) (En,Fr,De)"
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
 SLES-03662:
   name: "Harry Potter and the Philosopher's Stone (Europe) (En,Fr,De)"
   controllers:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Electronic Arts"
     developer: "Argonaut Games"
@@ -69157,7 +69098,7 @@ SLES-03665:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Electronic Arts"
     developer: "Argonaut Games"
@@ -69180,7 +69121,7 @@ SLES-03663:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Electronic Arts"
     developer: "Argonaut Games"
@@ -69203,7 +69144,7 @@ SLES-03664:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Electronic Arts"
     developer: "Argonaut Games"
@@ -69229,7 +69170,7 @@ SLUS-01415:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Electronic Arts"
     developer: "Argonaut Games"
@@ -69252,7 +69193,7 @@ SLES-03976:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Electronic Arts"
     developer: "Argonaut Games"
@@ -69273,7 +69214,7 @@ SLPS-03492:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Electronic Arts"
     developer: "Argonaut Games"
@@ -69294,7 +69235,7 @@ SLPS-03355:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Electronic Arts"
     developer: "Argonaut Games"
@@ -69312,7 +69253,7 @@ SLPS-03355:
 SLPM-84013:
   name: "Harry Potter to Kenja no Ishi (Japan) (Coca-Cola Kenshouhin)"
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
 PCPX-96110:
   name: "Haru no BuruBuru (Japan) (Taikenban)"
 SLPM-86466:
@@ -70858,7 +70799,7 @@ SLUS-00348:
   controllers:
     - DigitalController
   traits:
-    - disableUpscaling
+    - DisableUpscaling
   metadata:
     publisher: "GT Interactive Software"
     developer: "Raven Software"
@@ -72078,8 +72019,7 @@ SLES-01041:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Infogrames"
@@ -72123,8 +72063,7 @@ SLES-02769:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Infogrames"
@@ -75612,14 +75551,14 @@ SLES-00511:
 SCPS-45294:
   name: "International Superstar Soccer Pro '98 (Asia)"
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
 SLES-01218:
   name: "International Superstar Soccer Pro '98 (Europe) (En,Fr,De,Es)"
   controllers:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Konami"
     developer: "KCET"
@@ -75640,18 +75579,18 @@ SLES-01218:
 SLED-01401:
   name: "International Superstar Soccer Pro '98 (Europe) (En,Fr,De,Es,It) (Demo)"
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
 SLED-01513:
   name: "International Superstar Soccer Pro '98 (France) (Demo)"
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
 SLES-01264:
   name: "International Superstar Soccer Pro '98 (Italy)"
   controllers:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Konami"
     developer: "KCET"
@@ -75672,7 +75611,7 @@ SLUS-00674:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Konami"
     developer: "KCET"
@@ -76319,8 +76258,7 @@ SLES-03489:
     - AnalogController
     - DigitalController
     - NeGcon
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "SCI"
     developer: "Pixelogic"
@@ -76341,8 +76279,7 @@ SLES-03626:
     - AnalogController
     - DigitalController
     - NeGcon
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "SCI"
     developer: "Pixelogic"
@@ -76365,8 +76302,7 @@ SLES-03648:
     - AnalogController
     - DigitalController
     - NeGcon
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "SCI"
     developer: "Pixelogic"
@@ -76828,8 +76764,7 @@ SCES-01444:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Midway"
     developer: "Radical Entertainment"
@@ -84080,7 +84015,7 @@ SCES-01659:
     - AnalogController
     - DigitalController
   traits:
-    - disablePGXPCulling
+    - DisablePGXPCulling
   metadata:
     publisher: "Psygnosis"
     developer: "Psygnosis Camden Studio"
@@ -84113,7 +84048,7 @@ SLUS-00801:
     - AnalogController
     - DigitalController
   traits:
-    - disablePGXPCulling
+    - DisablePGXPCulling
   metadata:
     publisher: "Psygnosis"
     developer: "Psygnosis Camden Studio"
@@ -85551,7 +85486,7 @@ SCPS-45441:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   codes:
     - SCPS-45441
     - SCPS-45442
@@ -85584,7 +85519,7 @@ SLES-02897:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Infogrames"
     developer: "Sacnoth"
@@ -85609,7 +85544,7 @@ SLES-12897:
       - SLES-22897
       - SLES-32897
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLES-22897:
   name: "Koudelka (Europe) (Disc 3)"
   discSet:
@@ -85620,7 +85555,7 @@ SLES-22897:
       - SLES-22897
       - SLES-32897
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLES-32897:
   name: "Koudelka (Europe) (Disc 4)"
   discSet:
@@ -85631,7 +85566,7 @@ SLES-32897:
       - SLES-22897
       - SLES-32897
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLES-02898:
   name: "Koudelka (France) (Disc 1)"
   discSet:
@@ -85645,7 +85580,7 @@ SLES-02898:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Infogrames"
     developer: "Sacnoth"
@@ -85670,7 +85605,7 @@ SLES-12898:
       - SLES-22898
       - SLES-32898
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLES-22898:
   name: "Koudelka (France) (Disc 3)"
   discSet:
@@ -85681,7 +85616,7 @@ SLES-22898:
       - SLES-22898
       - SLES-32898
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLES-32898:
   name: "Koudelka (France) (Disc 4)"
   discSet:
@@ -85692,7 +85627,7 @@ SLES-32898:
       - SLES-22898
       - SLES-32898
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLES-02899:
   name: "Koudelka (Germany) (Disc 1)"
   discSet:
@@ -85706,7 +85641,7 @@ SLES-02899:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Infogrames"
     developer: "Sacnoth"
@@ -85731,7 +85666,7 @@ SLES-12899:
       - SLES-22899
       - SLES-32899
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLES-22899:
   name: "Koudelka (Germany) (Disc 3)"
   discSet:
@@ -85742,7 +85677,7 @@ SLES-22899:
       - SLES-22899
       - SLES-32899
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLES-32899:
   name: "Koudelka (Germany) (Disc 4)"
   discSet:
@@ -85753,7 +85688,7 @@ SLES-32899:
       - SLES-22899
       - SLES-32899
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLES-02900:
   name: "Koudelka (Italy) (Disc 1)"
   discSet:
@@ -85767,7 +85702,7 @@ SLES-02900:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Infogrames"
     developer: "Sacnoth"
@@ -85792,7 +85727,7 @@ SLES-12900:
       - SLES-22900
       - SLES-32900
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLES-22900:
   name: "Koudelka (Italy) (Disc 3)"
   discSet:
@@ -85803,7 +85738,7 @@ SLES-22900:
       - SLES-22900
       - SLES-32900
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLES-32900:
   name: "Koudelka (Italy) (Disc 4)"
   discSet:
@@ -85814,7 +85749,7 @@ SLES-32900:
       - SLES-22900
       - SLES-32900
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLPS-02460:
   name: "Koudelka (Japan) (Disc 1)"
   discSet:
@@ -85828,7 +85763,7 @@ SLPS-02460:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "SNK"
     developer: "Sacnoth"
@@ -85856,7 +85791,7 @@ SLPS-02461:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "SNK"
     developer: "Sacnoth"
@@ -85884,7 +85819,7 @@ SLPS-02462:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "SNK"
     developer: "Sacnoth"
@@ -85912,7 +85847,7 @@ SLPS-02463:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "SNK"
     developer: "Sacnoth"
@@ -85930,11 +85865,11 @@ SLPS-02463:
 SLPM-80489:
   name: "Koudelka (Japan) (Promotion-ban)"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLPM-80490:
   name: "Koudelka (Japan) (Taikenban)"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLES-02901:
   name: "Koudelka (Spain) (Disc 1)"
   discSet:
@@ -85948,7 +85883,7 @@ SLES-02901:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Infogrames"
     developer: "Sacnoth"
@@ -85973,7 +85908,7 @@ SLES-12901:
       - SLES-22901
       - SLES-32901
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLES-22901:
   name: "Koudelka (Spain) (Disc 3)"
   discSet:
@@ -85984,7 +85919,7 @@ SLES-22901:
       - SLES-22901
       - SLES-32901
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLES-32901:
   name: "Koudelka (Spain) (Disc 4)"
   discSet:
@@ -85995,7 +85930,7 @@ SLES-32901:
       - SLES-22901
       - SLES-32901
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLUS-01051:
   name: "Koudelka (USA) (Disc 1)"
   discSet:
@@ -86011,7 +85946,7 @@ SLUS-01051:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Infogrames"
     developer: "Sacnoth"
@@ -86038,7 +85973,7 @@ SLUS-01100:
   compatibility:
     rating: NoIssues
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLUS-01101:
   name: "Koudelka (USA) (Disc 3)"
   discSet:
@@ -86051,7 +85986,7 @@ SLUS-01101:
   compatibility:
     rating: NoIssues
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLUS-01102:
   name: "Koudelka (USA) (Disc 4)"
   discSet:
@@ -86064,7 +85999,7 @@ SLUS-01102:
   compatibility:
     rating: NoIssues
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLPM-80567:
   name: "Kougien CD-ROM 2000-nen Natsu-ban (Japan)"
 SLPS-00684:
@@ -87723,8 +87658,7 @@ SLES-02975:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Codemasters"
     developer: "Codemasters"
@@ -87744,8 +87678,7 @@ SLES-03603:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Codemasters"
     developer: "Codemasters"
@@ -87843,7 +87776,7 @@ SLPS-02833:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerLUTFastmem
+    - ForceRecompilerLUTFastmem
   metadata:
     publisher: "Sony"
     developer: "ArtDink"
@@ -87864,7 +87797,7 @@ SCPS-45120:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerLUTFastmem
+    - ForceRecompilerLUTFastmem
   codes:
     - SCPS-45120
     - SLPS-01009
@@ -88481,8 +88414,7 @@ SLES-01362:
     - AnalogController
     - DigitalController
     - NeGcon
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Eutechnyx"
@@ -88546,8 +88478,7 @@ SLES-01301:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
     developer: "Crystal Dynamics, Inc"
@@ -88572,8 +88503,7 @@ SLES-02024:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
     developer: "Crystal Dynamics, Inc"
@@ -88593,8 +88523,7 @@ SLES-02025:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
     developer: "Crystal Dynamics, Inc"
@@ -88614,8 +88543,7 @@ SLES-02027:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
     developer: "Crystal Dynamics, Inc"
@@ -88638,8 +88566,7 @@ SLES-02026:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
     developer: "Crystal Dynamics, Inc"
@@ -88682,7 +88609,7 @@ SCPS-10059:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Sony"
     developer: "Prokion"
@@ -88749,7 +88676,7 @@ SCES-03043:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -88777,7 +88704,7 @@ SCES-13043:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -88805,7 +88732,7 @@ SCES-23043:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -88833,7 +88760,7 @@ SCES-33043:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -88861,7 +88788,7 @@ SCES-03044:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -88889,7 +88816,7 @@ SCES-13044:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -88917,7 +88844,7 @@ SCES-23044:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -88945,7 +88872,7 @@ SCES-33044:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -88973,7 +88900,7 @@ SCES-03045:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89001,7 +88928,7 @@ SCES-13045:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89029,7 +88956,7 @@ SCES-23045:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89057,7 +88984,7 @@ SCES-33045:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89085,7 +89012,7 @@ SCES-03046:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89113,7 +89040,7 @@ SCES-13046:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89141,7 +89068,7 @@ SCES-23046:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89169,7 +89096,7 @@ SCES-33046:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89187,11 +89114,11 @@ SCES-33046:
 PAPX-90091:
   name: "Legend of Dragoon, The (Japan) (Demo 1)"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 PAPX-90103:
   name: "Legend of Dragoon, The (Japan) (Demo 2)"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SCPS-10119:
   name: "Legend of Dragoon, The (Japan) (Disc 1)"
   discSet:
@@ -89205,7 +89132,7 @@ SCPS-10119:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89230,7 +89157,7 @@ SCPS-10120:
       - SCPS-10121
       - SCPS-10122
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SCPS-10121:
   name: "Legend of Dragoon, The (Japan) (Disc 3)"
   discSet:
@@ -89241,7 +89168,7 @@ SCPS-10121:
       - SCPS-10121
       - SCPS-10122
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SCPS-10122:
   name: "Legend of Dragoon, The (Japan) (Disc 4)"
   discSet:
@@ -89252,7 +89179,7 @@ SCPS-10122:
       - SCPS-10121
       - SCPS-10122
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SCES-03047:
   name: "Legend of Dragoon, The (Spain) (Disc 1)"
   discSet:
@@ -89269,7 +89196,7 @@ SCES-03047:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89300,7 +89227,7 @@ SCES-13047:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89331,7 +89258,7 @@ SCES-23047:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89362,7 +89289,7 @@ SCES-33047:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89393,7 +89320,7 @@ SCUS-94491:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89421,7 +89348,7 @@ SCUS-94584:
     rating: NoIssues
     versionTested: "0.1-2663-gfd39f09a"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SCUS-94585:
   name: "Legend of Dragoon, The (USA) (Disc 3)"
   discSet:
@@ -89435,7 +89362,7 @@ SCUS-94585:
     rating: NoIssues
     versionTested: "0.1-2663-gfd39f09a"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SCUS-94586:
   name: "Legend of Dragoon, The (USA) (Disc 4)"
   discSet:
@@ -89449,7 +89376,7 @@ SCUS-94586:
     rating: NoIssues
     versionTested: "0.1-2663-gfd39f09a"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLES-01273:
   name: "Legend of Foresia - La Contree Interdite (France)"
   controllers:
@@ -89549,7 +89476,7 @@ SCES-01752:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Sony"
     developer: "Prokion"
@@ -89570,7 +89497,7 @@ SCES-01944:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Sony"
     developer: "Prokion"
@@ -89591,7 +89518,7 @@ SCES-01945:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Sony"
     developer: "Prokion"
@@ -89612,7 +89539,7 @@ SCES-01946:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Sony"
     developer: "Prokion"
@@ -89636,7 +89563,7 @@ SCES-01947:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Sony"
     developer: "Prokion"
@@ -89660,7 +89587,7 @@ SCUS-94254:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Sony"
     developer: "Prokion"
@@ -91792,8 +91719,7 @@ SLES-03530:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Kalisto Entertaiment"
@@ -94779,8 +94705,7 @@ SLES-02402:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Codemasters"
     developer: "Codemasters"
@@ -94800,8 +94725,7 @@ SLES-02979:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Codemasters"
     developer: "Codemasters"
@@ -94821,8 +94745,7 @@ SLES-03607:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Codemasters"
     developer: "Codemasters"
@@ -94879,7 +94802,7 @@ SLES-03868:
   controllers:
     - DigitalController
   traits:
-    - disablePGXPCulling
+    - DisablePGXPCulling
   metadata:
     publisher: "3DO"
     developer: "Anco"
@@ -95329,8 +95252,7 @@ SLES-02768:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Infogrames"
@@ -96929,8 +96851,7 @@ SCES-00311:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony"
     developer: "Millenium Interactive"
@@ -96950,8 +96871,7 @@ SCES-01492:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony"
     developer: "Millenium Interactive"
@@ -96971,8 +96891,7 @@ SCES-01493:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony"
     developer: "Millenium Interactive"
@@ -96995,8 +96914,7 @@ SCES-01494:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony"
     developer: "Millenium Interactive"
@@ -97019,8 +96937,7 @@ SCES-01495:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony"
     developer: "Millenium Interactive"
@@ -97083,8 +97000,7 @@ SCES-02544:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony"
     developer: "SCEE Cambridge Studios"
@@ -97109,8 +97025,7 @@ SCES-02545:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony"
     developer: "SCEE Cambridge Studios"
@@ -97134,8 +97049,7 @@ SCES-02546:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony"
     developer: "SCEE Cambridge Studios"
@@ -97185,7 +97099,7 @@ SLES-01064:
   controllers:
     - DigitalController
   traits:
-    - disableTrueColor
+    - DisableTrueColor
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 2 / Laguna videogames"
@@ -97208,7 +97122,7 @@ SLUS-00453:
   controllers:
     - DigitalController
   traits:
-    - disableTrueColor
+    - DisableTrueColor
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 2 / Laguna videogames"
@@ -97515,7 +97429,7 @@ SLPS-00500:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Atlus Co"
     developer: "Atlus Co"
@@ -97535,7 +97449,7 @@ SLPS-91029:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Atlus Co"
     developer: "Atlus Co"
@@ -97555,7 +97469,7 @@ SLPM-87192:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Atlus Co"
     developer: "Atlus Co"
@@ -97578,7 +97492,7 @@ SLPS-00435:
   controllers:
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Banpresto"
     developer: "General Support"
@@ -98172,8 +98086,7 @@ SLES-03519:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Runecraft"
@@ -98193,8 +98106,7 @@ SLES-03520:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Runecraft"
@@ -98214,8 +98126,7 @@ SLES-03521:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Runecraft"
@@ -98235,8 +98146,7 @@ SLES-03522:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Runecraft"
@@ -98256,8 +98166,7 @@ SLES-03523:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Runecraft"
@@ -98630,7 +98539,7 @@ SCPS-45320:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   codes:
     - SCPS-45320
     - SCPS-45321
@@ -98655,7 +98564,7 @@ PAPX-90044:
     rating: NoIssues
     versionTested: "0.1-905-g237f469"
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
 SCPS-45317:
   name: "Metal Gear Solid (Asia) (Disc 1)"
   discSet:
@@ -98667,7 +98576,7 @@ SCPS-45317:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Konami"
     developer: "KCE Japan"
@@ -98693,7 +98602,7 @@ SCPS-45318:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Konami"
     developer: "KCE Japan"
@@ -98711,11 +98620,11 @@ SCPS-45318:
 SLED-01400:
   name: "Metal Gear Solid (Europe) (Demo 1)"
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
 SLED-01775:
   name: "Metal Gear Solid (Europe) (Demo 2)"
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
 SLES-01370:
   name: "Metal Gear Solid (Europe) (Disc 1)"
   discSet:
@@ -98730,7 +98639,7 @@ SLES-01370:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Konami"
     developer: "KCE Japan"
@@ -98759,7 +98668,7 @@ SLES-11370:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Konami"
     developer: "KCE Japan"
@@ -98788,7 +98697,7 @@ SLES-01506:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Konami"
     developer: "KCE Japan"
@@ -98817,7 +98726,7 @@ SLES-11506:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Konami"
     developer: "KCE Japan"
@@ -98846,7 +98755,7 @@ SLES-01507:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Konami"
     developer: "KCE Japan"
@@ -98875,7 +98784,7 @@ SLES-11507:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Konami"
     developer: "KCE Japan"
@@ -98904,7 +98813,7 @@ SLES-01508:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Konami"
     developer: "KCE Japan"
@@ -98933,7 +98842,7 @@ SLES-11508:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Konami"
     developer: "KCE Japan"
@@ -98954,7 +98863,7 @@ SLPM-86098:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Konami"
     developer: "Konami / Diamond Head"
@@ -98980,7 +98889,7 @@ SLPM-86114:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   codes:
     - SLPM-86114
     - SLPM-87411
@@ -99010,7 +98919,7 @@ SLPM-86115:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   codes:
     - SLPM-86115
     - SLPM-87412
@@ -99043,7 +98952,7 @@ SLES-01734:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Konami"
     developer: "KCE Japan"
@@ -99072,7 +98981,7 @@ SLES-11734:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Konami"
     developer: "KCE Japan"
@@ -99090,7 +98999,7 @@ SLES-11734:
 SLUS-90035:
   name: "Metal Gear Solid (USA) (Demo)"
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
 SLUS-00594:
   name: "Metal Gear Solid (USA) (Disc 1)"
   discSet:
@@ -99105,7 +99014,7 @@ SLUS-00594:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Konami"
     developer: "KCE Japan"
@@ -99134,7 +99043,7 @@ SLUS-00776:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Konami"
     developer: "KCE Japan"
@@ -99296,7 +99205,7 @@ SLPM-86485:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   codes:
     - SLPM-86485
     - SLPM-86486
@@ -99345,7 +99254,7 @@ SLPM-86111:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   codes:
     - SLPM-86111
     - SLPM-86112
@@ -99631,8 +99540,7 @@ SLES-01545:
     - AnalogController
     - DigitalController
     - NeGcon
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Digital Illusions CE AB"
@@ -99655,8 +99563,7 @@ SLES-02395:
     - AnalogController
     - DigitalController
     - NeGcon
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Digital Illusions CE AB"
@@ -100075,8 +99982,7 @@ SLES-02839:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Proein"
     developer: "Codemasters"
@@ -101025,8 +100931,7 @@ SLES-01906:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "X-ample"
@@ -101242,8 +101147,7 @@ SLES-02830:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Take 2 Interactive"
     developer: "Lost Toys Ltd"
@@ -101928,8 +101832,7 @@ SCES-01701:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony Computer Entertaiment Europe"
     developer: "London Studio"
@@ -104135,7 +104038,7 @@ SLPS-03336:
     - DigitalController
     - NeGcon
   traits:
-    - forceInterlacing
+    - ForceInterlacing
   metadata:
     publisher: "Namco"
     developer: "Namco"
@@ -105189,8 +105092,7 @@ SLES-02086:
     - AnalogController
     - DigitalController
     - NeGcon
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Curly Monsters Ltd"
@@ -105881,7 +105783,7 @@ SLES-00529:
   controllers:
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Acclaim Entertaiment"
     developer: "Sculptured Software, Inc"
@@ -105901,7 +105803,7 @@ SLPS-00699:
   controllers:
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Acclaim Entertaiment"
     developer: "Sculptured Software, Inc"
@@ -105924,7 +105826,7 @@ SLUS-00388:
   controllers:
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Acclaim Entertaiment"
     developer: "Sculptured Software, Inc"
@@ -108562,7 +108464,7 @@ SCUS-94577:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "989 Sports"
     developer: "Solworks"
@@ -108580,7 +108482,7 @@ SCUS-94577:
 SCUS-94578:
   name: "NHL FaceOff 2001 (USA) (Demo)"
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
 SCES-01022:
   name: "NHL FaceOff 98 (Europe)"
   controllers:
@@ -110033,7 +109935,7 @@ SLPS-03553:
     - AnalogController
     - DigitalController
   traits:
-    - forceInterlacing
+    - ForceInterlacing
   metadata:
     publisher: "Bandai"
     developer: "Denyusha & Dimps"
@@ -110559,8 +110461,7 @@ SLES-02689:
     - AnalogController
     - DigitalController
     - NeGcon
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Electronic Arts"
     developer: "Eden Studios / ?trange Libellules"
@@ -110583,8 +110484,7 @@ SLES-02700:
     - AnalogController
     - DigitalController
     - NeGcon
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Electronic Arts"
     developer: "Eden Studios / ?trange Libellules"
@@ -111444,7 +111344,7 @@ SLES-01987:
   controllers:
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Atari / Hasbro Interactive"
     developer: "Blue Planet Interactive"
@@ -111469,7 +111369,7 @@ SLPS-01774:
   controllers:
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   codes:
     - SLPS-01774
     - SLPS-02701
@@ -111495,7 +111395,7 @@ SLUS-00862:
   controllers:
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Atari / Hasbro Interactive"
     developer: "Blue Planet Interactive"
@@ -117308,8 +117208,7 @@ SLES-02061:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Infogrames"
@@ -117330,8 +117229,7 @@ SLES-02396:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Infogrames"
@@ -119602,7 +119500,7 @@ SCPS-45203:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   codes:
     - SCPS-45203
     - SCPS-45204
@@ -119631,7 +119529,7 @@ SLPS-01230:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -119657,7 +119555,7 @@ SLPS-01231:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -119686,7 +119584,7 @@ SLUS-00662:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -119715,7 +119613,7 @@ SLUS-00668:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -119733,14 +119631,14 @@ SLUS-00668:
 SLPM-80300:
   name: "Parasite Eve - Special CD-ROM (Japan)"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLPS-91479:
   name: "Parasite Eve 2 [PSOne Books]"
   controllers:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   codes:
     - SLPS-91479
     - SLPS-91480
@@ -119764,7 +119662,7 @@ SLPS-02779:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   codes:
     - SLPS-02779
     - SLPS-02780
@@ -119793,8 +119691,8 @@ SLES-02558:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -119820,8 +119718,8 @@ SLES-12558:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -119847,8 +119745,8 @@ SLES-02559:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -119874,8 +119772,8 @@ SLES-12559:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -119901,8 +119799,8 @@ SLES-02560:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -119928,8 +119826,8 @@ SLES-12560:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -119955,8 +119853,8 @@ SLES-02562:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -119982,8 +119880,8 @@ SLES-12562:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -120009,7 +119907,7 @@ SCPS-45467:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   codes:
     - SCPS-45467
     - SLPS-02480
@@ -120038,7 +119936,7 @@ SCPS-45468:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   codes:
     - SCPS-45468
     - SLPS-02481
@@ -120070,8 +119968,8 @@ SLES-02561:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -120100,8 +119998,8 @@ SLES-12561:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -120130,7 +120028,7 @@ SLUS-01042:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -120158,7 +120056,7 @@ SLUS-01055:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -120886,7 +120784,7 @@ SLPS-01762:
     - AnalogController
     - DigitalController
   traits:
-    - disablePGXPCulling
+    - DisablePGXPCulling
   metadata:
     publisher: "KID"
     developer: "Kid"
@@ -121117,7 +121015,7 @@ SLUS-00339:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Atlus Co"
     developer: "Atlus Co"
@@ -121143,7 +121041,7 @@ SLPM-86967:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   codes:
     - SLPM-86967
     - SLPS-02825
@@ -121172,7 +121070,7 @@ SLPS-02785:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Atlus Co"
     developer: "Atlus Co"
@@ -121198,7 +121096,7 @@ SLPS-02826:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Atlus Co"
     developer: "Atlus Co"
@@ -121224,7 +121122,7 @@ SLPS-02786:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Atlus Co"
     developer: "Atlus Co"
@@ -121245,7 +121143,7 @@ SCPS-45495:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   codes:
     - SCPS-45495
     - SCPS-45496
@@ -121272,7 +121170,7 @@ SLUS-01158:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Atlus Co"
     developer: "Atlus Co"
@@ -121293,7 +121191,7 @@ SLUS-01339:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Atlus Co"
     developer: "Atlus Co"
@@ -121314,7 +121212,7 @@ SCPS-45410:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Atlus Co"
     developer: "Atlus Co"
@@ -121338,7 +121236,7 @@ SLPS-02100:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Atlus Co"
     developer: "Atlus Co"
@@ -121358,7 +121256,7 @@ SLPS-01923:
   controllers:
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Atlus Co"
     developer: "Tose Software"
@@ -121379,7 +121277,7 @@ SLPS-91211:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Atlus Co"
     developer: "Atlus Co"
@@ -124629,7 +124527,7 @@ SLPM-87089:
     - AnalogController
     - DigitalController
   traits:
-    - forceInterlacing
+    - ForceInterlacing
   metadata:
     publisher: "Konami"
     developer: "Konami"
@@ -125576,8 +125474,7 @@ SLES-02292:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Infogrames Sheffield House"
@@ -125752,8 +125649,7 @@ SLES-00017:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Codemasters"
     developer: "Codemasters"
@@ -126487,8 +126383,8 @@ SLES-01211:
     - AnalogController
     - DigitalController
   traits:
-    - forceSoftwareRenderer
-    - forceInterlacing
+    - ForceSoftwareRenderer
+    - ForceInterlacing
   metadata:
     publisher: "Empire Interactive"
     developer: "Cunning Developments"
@@ -126514,8 +126410,8 @@ SLUS-01260:
     - AnalogController
     - DigitalController
   traits:
-    - forceSoftwareRenderer
-    - forceInterlacing
+    - ForceSoftwareRenderer
+    - ForceInterlacing
   metadata:
     publisher: "Empire Interactive"
     developer: "Cunning Developments"
@@ -126536,8 +126432,8 @@ SLES-02466:
     - AnalogController
     - DigitalController
   traits:
-    - forceSoftwareRenderer
-    - forceInterlacing
+    - ForceSoftwareRenderer
+    - ForceInterlacing
   metadata:
     publisher: "Empire Interactive"
     developer: "Cunning Developments"
@@ -126564,8 +126460,8 @@ SLUS-01261:
     - AnalogController
     - DigitalController
   traits:
-    - forceSoftwareRenderer
-    - forceInterlacing
+    - ForceSoftwareRenderer
+    - ForceInterlacing
   metadata:
     publisher: "Take 2 Interactive / Empire Interactive"
     developer: "Cunning Developments"
@@ -126585,8 +126481,8 @@ SLES-00259:
   controllers:
     - DigitalController
   traits:
-    - forceSoftwareRenderer
-    - forceInterlacing
+    - ForceSoftwareRenderer
+    - ForceInterlacing
   metadata:
     publisher: "Empire Interactive / Interplay"
     developer: "Cunning Developments"
@@ -126606,8 +126502,8 @@ SLES-00606:
   controllers:
     - DigitalController
   traits:
-    - forceSoftwareRenderer
-    - forceInterlacing
+    - ForceSoftwareRenderer
+    - ForceInterlacing
   metadata:
     publisher: "Empire Interactive"
     developer: "Cunning Developments"
@@ -126631,8 +126527,8 @@ SLUS-00639:
   controllers:
     - DigitalController
   traits:
-    - forceSoftwareRenderer
-    - forceInterlacing
+    - ForceSoftwareRenderer
+    - ForceInterlacing
   metadata:
     publisher: "Empire Interactive"
     developer: "Cunning Developments"
@@ -126650,8 +126546,8 @@ SLUS-00639:
 SLUS-90039:
   name: "Pro Pinball - Timeshock! (USA) (Demo)"
   traits:
-    - forceSoftwareRenderer
-    - forceInterlacing
+    - ForceSoftwareRenderer
+    - ForceInterlacing
 SLES-03962:
   name: "Pro Racer (Europe)"
   controllers:
@@ -128843,8 +128739,7 @@ SLES-02824:
     - AnalogController
     - DigitalController
     - NeGcon
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Acclaim"
     developer: "Acclaim Studios Cheltenham"
@@ -129199,8 +129094,8 @@ SCPS-45404:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
-    - forceRecompilerLUTFastmem
+    - ForcePGXPCPUMode
+    - ForceRecompilerLUTFastmem
   codes:
     - SCPS-45404
     - SLPS-02038
@@ -129287,8 +129182,7 @@ SLES-01943:
     - AnalogController
     - DigitalController
     - NeGcon
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Gaelco, S.A. / Bit Managers"
@@ -130174,7 +130068,7 @@ SLUS-00656:
     - AnalogController
     - DigitalController
   traits:
-    - forceInterlacing
+    - ForceInterlacing
   metadata:
     publisher: "Mindscape"
     developer: "Pure Entertainment"
@@ -132067,7 +131961,7 @@ SLES-00200:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -132085,13 +131979,13 @@ SLES-00200:
 SLES-00335:
   name: "Resident Evil (Europe, Australia) (Demo)"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLES-00227:
   name: "Resident Evil (France)"
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -132111,7 +132005,7 @@ SLES-00228:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -132129,7 +132023,7 @@ SLES-00228:
 SLES-00355:
   name: "Resident Evil (Germany) (Demo)"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLUS-00170:
   name: "Resident Evil (USA)"
   compatibility:
@@ -132138,7 +132032,7 @@ SLUS-00170:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -132158,7 +132052,7 @@ SLES-00969:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -132178,7 +132072,7 @@ SLES-00970:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -132198,7 +132092,7 @@ SLES-00971:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -132221,7 +132115,7 @@ SLUS-00551:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -132242,7 +132136,7 @@ SLUS-00747:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -132331,7 +132225,7 @@ SLES-00972:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -132356,7 +132250,7 @@ SLES-10972:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -132374,7 +132268,7 @@ SLES-10972:
 SLED-00977:
   name: "Resident Evil 2 (Europe) (Preview)"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLES-00973:
   name: "Resident Evil 2 (France) (Disc 1)"
   discSet:
@@ -132385,7 +132279,7 @@ SLES-00973:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -132410,7 +132304,7 @@ SLES-10973:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -132435,7 +132329,7 @@ SLES-00974:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -132460,7 +132354,7 @@ SLES-10974:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -132485,7 +132379,7 @@ SLES-00975:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -132510,7 +132404,7 @@ SLES-10975:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -132538,7 +132432,7 @@ SLES-00976:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -132566,7 +132460,7 @@ SLES-10976:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom Production Studio 4"
@@ -132584,7 +132478,7 @@ SLES-10976:
 SLUS-80421:
   name: "Resident Evil 2 (USA) (Demo)"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   codes:
     - SLUS-80421
     - SLUS-90009
@@ -132601,7 +132495,7 @@ SLUS-00421:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -132629,7 +132523,7 @@ SLUS-00592:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -132655,7 +132549,7 @@ SLUS-00748:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -132681,7 +132575,7 @@ SLUS-00756:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -132702,8 +132596,8 @@ SLES-02529:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
-    - isLibCryptProtected
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
     developer: "Capcom Production Studio 4"
@@ -132721,15 +132615,15 @@ SLES-02529:
 SLED-02541:
   name: "Resident Evil 3 - Nemesis (Europe) (Demo)"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLES-02530:
   name: "Resident Evil 3 - Nemesis (France)"
   controllers:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
-    - isLibCryptProtected
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
     developer: "Capcom Production Studio 4"
@@ -132750,8 +132644,8 @@ SLES-02531:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
-    - isLibCryptProtected
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
     developer: "Capcom Production Studio 4"
@@ -132772,8 +132666,8 @@ SLES-02698:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
-    - isLibCryptProtected
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
     developer: "Capcom Production Studio 4"
@@ -132794,8 +132688,8 @@ SLES-02533:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
-    - isLibCryptProtected
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
     developer: "Capcom Production Studio 4"
@@ -132819,8 +132713,8 @@ SLES-02532:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
-    - isLibCryptProtected
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Proein / Eidos Interactive"
     developer: "Capcom Production Studio 4"
@@ -132844,7 +132738,7 @@ SLUS-00923:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -132862,7 +132756,7 @@ SLUS-00923:
 SLUS-90064:
   name: "Resident Evil 3 - Nemesis (USA) (Demo)"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLPS-01974:
   name: "Restaurant Dream (Japan)"
   controllers:
@@ -135607,7 +135501,7 @@ SLPS-00630:
     - AnalogController
     - DigitalController
   traits:
-    - disableTrueColor
+    - DisableTrueColor
   codes:
     - SLPS-00630
     - SLPS-91045
@@ -135843,8 +135737,7 @@ SLES-02976:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Codemasters"
     developer: "Codemasters"
@@ -135864,8 +135757,7 @@ SLES-03604:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Codemasters"
     developer: "Codemasters"
@@ -135928,7 +135820,7 @@ SLES-03449:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Cryo Interactive"
     developer: "Carapace"
@@ -136186,8 +136078,7 @@ SLES-02681:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Power & Magic"
@@ -136210,8 +136101,7 @@ SLES-00995:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Power & Magic"
@@ -137331,8 +137221,8 @@ SLES-02112:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -137353,8 +137243,8 @@ SLES-02113:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -137375,8 +137265,8 @@ SLES-02118:
     - AnalogController
     - DigitalController
   traits:
-    - isLibCryptProtected
-    - disableWidescreen
+    - DisableWidescreen
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -137397,7 +137287,7 @@ SLUS-00933:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Square Electronic Arts LLC"
     developer: "Squaresoft"
@@ -142767,7 +142657,7 @@ SLPM-86750:
     - AnalogController
     - DigitalController
   traits:
-    - forceInterlacing
+    - ForceInterlacing
   codes:
     - SLPM-86750
     - SLPS-02120
@@ -143642,7 +143532,7 @@ SLES-01514:
     - DigitalController
     - KonamiJustifier
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Konami"
     developer: "KCET"
@@ -143673,7 +143563,7 @@ SLPM-86192:
     - DigitalController
     - KonamiJustifier
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Konami"
     developer: "KCET"
@@ -143724,7 +143614,7 @@ SLUS-00707:
     - DigitalController
     - KonamiJustifier
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Konami"
     developer: "KCET"
@@ -147642,7 +147532,7 @@ SLUS-00022:
   controllers:
     - DigitalController
   traits:
-    - disableUpscaling
+    - DisableUpscaling
   metadata:
     publisher: "Crystal Dynamics"
     developer: "Left Field Productions"
@@ -148478,8 +148368,7 @@ SLES-02763:
     - AnalogController
     - DigitalController
     - NeGcon
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Ubi Soft / Crave Entertainment"
     developer: "Unique Development Studios (UDS)"
@@ -150329,8 +150218,7 @@ SCES-02290:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony"
     developer: "Rage Software Limited"
@@ -150350,8 +150238,7 @@ SCES-02430:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony"
     developer: "Rage Software Limited"
@@ -150371,8 +150258,7 @@ SCES-02431:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony"
     developer: "Rage Software Limited"
@@ -150392,8 +150278,7 @@ SCES-02432:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony"
     developer: "Rage Software Limited"
@@ -150413,8 +150298,7 @@ SCES-02433:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony"
     developer: "Rage Software Limited"
@@ -151090,8 +150974,7 @@ SCES-01763:
     - AnalogController
     - DigitalController
     - NeGcon
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "SCEE"
     developer: "Funcom"
@@ -151477,7 +151360,7 @@ SLES-02886:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Activision"
     developer: "Neversoft Entertainment"
@@ -151498,7 +151381,7 @@ SLES-02887:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Activision"
     developer: "Neversoft Entertainment"
@@ -151519,7 +151402,7 @@ SLES-02888:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Activision"
     developer: "Neversoft Entertainment"
@@ -151540,7 +151423,7 @@ SLES-02889:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Activision"
     developer: "Neversoft Entertainment"
@@ -151561,7 +151444,7 @@ SLPM-86739:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   codes:
     - SLPM-86739
     - SLPM-87163
@@ -151588,7 +151471,7 @@ SLES-02890:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Activision"
     developer: "Neversoft Entertainment"
@@ -151612,7 +151495,7 @@ SLUS-00875:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Activision"
     developer: "Neversoft Entertainment"
@@ -152057,8 +151940,8 @@ SCES-02835:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
-    - isLibCryptProtected
+    - ForcePGXPCPUMode
+  libcrypt: true
   metadata:
     publisher: "Sony"
     developer: "Insomniac Games"
@@ -152086,7 +151969,7 @@ SCUS-94467:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Sony"
     developer: "Insomniac Games"
@@ -152111,8 +151994,8 @@ SCES-02104:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
-    - isLibCryptProtected
+    - ForcePGXPCPUMode
+  libcrypt: true
   metadata:
     publisher: "Sony"
     developer: "Insomniac Games"
@@ -152140,7 +152023,7 @@ SCUS-94425:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Sony"
     developer: "Insomniac Games"
@@ -152186,8 +152069,8 @@ SCES-01438:
     - AnalogController
     - DigitalController
   traits:
-    - disablePGXPCulling
-    - forcePGXPCPUMode
+    - DisablePGXPCulling
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Sony Computer Entertainment Europe"
     developer: "Insomniac Games"
@@ -152215,7 +152098,7 @@ SCPS-10085:
     - AnalogController
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Sony Computer Entertaiment Japan"
     developer: "Insomniac Games"
@@ -152260,8 +152143,8 @@ SCUS-94228:
     - AnalogController
     - DigitalController
   traits:
-    - disablePGXPCulling
-    - forcePGXPCPUMode
+    - DisablePGXPCulling
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Sony Computer Entertaiment America"
     developer: "Insomniac Games"
@@ -152279,7 +152162,7 @@ SCUS-94228:
 SCUS-94290:
   name: "Spyro the Dragon (USA) (Demo 1)"
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
 SCUS-94439:
   name: "Spyro the Dragon (USA) (Demo 2)"
 SCED-01637:
@@ -152424,7 +152307,7 @@ SLUS-90029:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -153206,8 +153089,8 @@ SLES-00585:
   controllers:
     - DigitalController
   traits:
-    - disableUpscaling
-    - disablePGXP
+    - DisableUpscaling
+    - DisablePGXP
   metadata:
     publisher: "Lucasarts"
     developer: "Lucasarts / Big Bang Software, Inc"
@@ -153227,8 +153110,8 @@ SLES-00640:
   controllers:
     - DigitalController
   traits:
-    - disableUpscaling
-    - disablePGXP
+    - DisableUpscaling
+    - DisablePGXP
   metadata:
     publisher: "Lucasarts"
     developer: "Lucasarts / Big Bang Software, Inc"
@@ -153249,8 +153132,8 @@ SLPS-00685:
   controllers:
     - DigitalController
   traits:
-    - disableUpscaling
-    - disablePGXP
+    - DisableUpscaling
+    - DisablePGXP
   metadata:
     publisher: "Bullet-Proof Software"
     developer: "Lucasarts / Big Bang Software, Inc"
@@ -153270,8 +153153,8 @@ SLES-00646:
   controllers:
     - DigitalController
   traits:
-    - disableUpscaling
-    - disablePGXP
+    - DisableUpscaling
+    - DisablePGXP
   metadata:
     publisher: "Erbe Software"
     developer: "Lucasarts / Big Bang Software, Inc"
@@ -153296,8 +153179,8 @@ SLUS-00297:
   controllers:
     - DigitalController
   traits:
-    - disableUpscaling
-    - disablePGXP
+    - DisableUpscaling
+    - DisablePGXP
   metadata:
     publisher: "Lucasarts"
     developer: "Lucasarts / Big Bang Software, Inc"
@@ -156472,7 +156355,7 @@ SLUS-00292:
   controllers:
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Konami"
     developer: "KCET"
@@ -160596,15 +160479,13 @@ SLES-02956:
     linkCable: false
 SLES-02862:
   name: "Sydney 2000 (Australia)"
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
 SLES-02857:
   name: "Sydney 2000 (Europe)"
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
     developer: "Attention To Detail Limited"
@@ -160624,8 +160505,7 @@ SLES-02858:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
     developer: "Attention To Detail Limited"
@@ -160645,8 +160525,7 @@ SLES-02859:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
     developer: "Attention To Detail Limited"
@@ -160666,8 +160545,7 @@ SLES-02860:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
     developer: "Attention To Detail Limited"
@@ -160706,8 +160584,7 @@ SLES-02861:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
     developer: "Attention To Detail Limited"
@@ -161539,7 +161416,7 @@ SLUS-00813:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sunsoft"
     developer: "Sunsoft"
@@ -161771,8 +161648,7 @@ SLES-02572:
     - AnalogController
     - DigitalController
     - NeGcon
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Codemasters"
     developer: "Codemasters"
@@ -161795,8 +161671,7 @@ SLES-02573:
     - AnalogController
     - DigitalController
     - NeGcon
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Codemasters"
     developer: "Codemasters"
@@ -163402,8 +163277,7 @@ SLES-03245:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sunflowers"
     developer: "Sunflowers"
@@ -163423,8 +163297,7 @@ SLES-02831:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sunflowers"
     developer: "Sunflowers"
@@ -163444,8 +163317,7 @@ SLES-03242:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sunflowers"
     developer: "Sunflowers"
@@ -163465,8 +163337,7 @@ SLES-03241:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sunflowers"
     developer: "Sunflowers"
@@ -163486,8 +163357,7 @@ SLES-03243:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sunflowers"
     developer: "Sunflowers"
@@ -163507,8 +163377,7 @@ SLES-03244:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sunflowers"
     developer: "Sunflowers"
@@ -164336,7 +164205,7 @@ SLPS-00712:
   controllers:
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Imagineer"
     developer: "Ron"
@@ -165521,7 +165390,7 @@ SCPS-45461:
     - AnalogController
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -165790,8 +165659,7 @@ SLES-02688:
   name: "Theme Park World (Europe) (En,Fr,De,Es,It,Nl,Sv)"
   controllers:
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Electronic Arts"
     developer: "Bullfrog Productions / Climax Group"
@@ -165835,8 +165703,7 @@ SCES-01700:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony Computer Entertaiment Europe"
     developer: "London Studio"
@@ -165856,8 +165723,7 @@ SCES-01882:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony Computer Entertaiment Europe"
     developer: "London Studio"
@@ -165878,8 +165744,7 @@ SCES-01703:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony Computer Entertaiment Europe"
     developer: "London Studio"
@@ -166821,7 +166686,7 @@ SLPS-01211:
   controllers:
     - DigitalController
   traits:
-    - forceInterlacing
+    - ForceInterlacing
   metadata:
     publisher: "Banpresto"
     developer: "Banpresto"
@@ -170946,7 +170811,7 @@ SLPM-86429:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerLUTFastmem
+    - ForceRecompilerLUTFastmem
   codes:
     - SLPM-86429
     - SLPM-86943
@@ -170973,7 +170838,7 @@ SLUS-00860:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerLUTFastmem
+    - ForceRecompilerLUTFastmem
   metadata:
     publisher: "Activision"
     developer: "Neversoft Entertainment"
@@ -170991,18 +170856,18 @@ SLUS-00860:
 SLED-02879:
   name: "Tony Hawk's Pro Skater 2 (Australia) (Demo)"
   traits:
-    - forceRecompilerLUTFastmem
+    - ForceRecompilerLUTFastmem
 SLED-03048:
   name: "Tony Hawk's Pro Skater 2 (Europe) (Demo)"
   traits:
-    - forceRecompilerLUTFastmem
+    - ForceRecompilerLUTFastmem
 SLES-02908:
   name: "Tony Hawk's Pro Skater 2 (Europe, Australia)"
   controllers:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerLUTFastmem
+    - ForceRecompilerLUTFastmem
   metadata:
     publisher: "Activision"
     developer: "Neversoft Entertainment"
@@ -171023,7 +170888,7 @@ SLES-02909:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerLUTFastmem
+    - ForceRecompilerLUTFastmem
   metadata:
     publisher: "Activision"
     developer: "Neversoft Entertainment"
@@ -171044,7 +170909,7 @@ SLES-02910:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerLUTFastmem
+    - ForceRecompilerLUTFastmem
   metadata:
     publisher: "Activision"
     developer: "Neversoft Entertainment"
@@ -171065,7 +170930,7 @@ SLPM-86751:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerLUTFastmem
+    - ForceRecompilerLUTFastmem
   metadata:
     publisher: "Success"
     developer: "Neversoft Entertainment"
@@ -171089,7 +170954,7 @@ SLUS-01066:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerLUTFastmem
+    - ForceRecompilerLUTFastmem
   metadata:
     publisher: "Activision"
     developer: "Neversoft Entertainment"
@@ -171107,14 +170972,14 @@ SLUS-01066:
 SLUS-90086:
   name: "Tony Hawk's Pro Skater 2 (USA) (Demo)"
   traits:
-    - forceRecompilerLUTFastmem
+    - ForceRecompilerLUTFastmem
 SLES-03645:
   name: "Tony Hawk's Pro Skater 3 (Europe)"
   controllers:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerLUTFastmem
+    - ForceRecompilerLUTFastmem
   metadata:
     publisher: "Activision"
     developer: "Shaba Games"
@@ -171135,7 +171000,7 @@ SLES-03646:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerLUTFastmem
+    - ForceRecompilerLUTFastmem
   metadata:
     publisher: "Activision"
     developer: "Shaba Games"
@@ -171156,7 +171021,7 @@ SLES-03647:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerLUTFastmem
+    - ForceRecompilerLUTFastmem
   metadata:
     publisher: "Activision"
     developer: "Shaba Games"
@@ -171180,7 +171045,7 @@ SLUS-01419:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerLUTFastmem
+    - ForceRecompilerLUTFastmem
   metadata:
     publisher: "Activision"
     developer: "Shaba Games"
@@ -171201,7 +171066,7 @@ SLES-03954:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerLUTFastmem
+    - ForceRecompilerLUTFastmem
   metadata:
     publisher: "Activision"
     developer: "Vicarious Visions"
@@ -171222,7 +171087,7 @@ SLES-03956:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerLUTFastmem
+    - ForceRecompilerLUTFastmem
   metadata:
     publisher: "Activision"
     developer: "Vicarious Visions"
@@ -171243,7 +171108,7 @@ SLES-03955:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerLUTFastmem
+    - ForceRecompilerLUTFastmem
   metadata:
     publisher: "Activision"
     developer: "Vicarious Visions"
@@ -171267,7 +171132,7 @@ SLUS-01485:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerLUTFastmem
+    - ForceRecompilerLUTFastmem
   metadata:
     publisher: "Activision"
     developer: "Vicarious Visions"
@@ -171683,7 +171548,7 @@ SLPS-02361:
     - DigitalController
     - NeGcon
   traits:
-    - forcePGXPVertexCache
+    - ForcePGXPVertexCache
   codes:
     - SLPS-02361
     - SLPS-02356
@@ -171822,7 +171687,7 @@ SLPS-00025:
   controllers:
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   codes:
     - HASH-A8647D688C39B63F
   metadata:
@@ -172823,7 +172688,7 @@ SLUS-00337:
   controllers:
     - DigitalController
   traits:
-    - forceInterlacing
+    - ForceInterlacing
   metadata:
     publisher: "Ocean"
     developer: "Digital Illusions CE AB"
@@ -174071,8 +173936,7 @@ SLES-02704:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Electronic Arts"
     developer: "EA Sports"
@@ -174092,8 +173956,7 @@ SLES-02705:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Electronic Arts"
     developer: "EA Sports"
@@ -174113,8 +173976,7 @@ SLES-02706:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Electronic Arts"
     developer: "EA Sports"
@@ -174134,8 +173996,7 @@ SLES-02707:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Electronic Arts"
     developer: "EA Sports"
@@ -174155,8 +174016,7 @@ SLES-02708:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Electronic Arts"
     developer: "EA Sports"
@@ -174176,8 +174036,7 @@ SLES-01733:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Rage Software"
@@ -175437,8 +175296,7 @@ SLES-02071:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Proein Software / Eidos Interactive"
     developer: "Mucky Foot"
@@ -175460,8 +175318,7 @@ SLES-02354:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
     developer: "Mucky Foot"
@@ -175481,8 +175338,7 @@ SLES-02355:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
     developer: "Mucky Foot"
@@ -175638,8 +175494,7 @@ SLES-01907:
     - AnalogController
     - DigitalController
     - NeGcon
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Infogrames"
     developer: "Eden Studios"
@@ -176082,8 +175937,7 @@ SLES-02754:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -176103,8 +175957,7 @@ SLES-02755:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -176124,8 +175977,7 @@ SLES-02756:
   controllers:
     - AnalogController
     - DigitalController
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -179329,8 +179181,7 @@ SLES-02733:
     - AnalogController
     - DigitalController
     - NeGcon
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Eidos Interactive / Disney Interactive"
     developer: "Crystal Dynamics, Inc"
@@ -180797,7 +180648,7 @@ SCPS-45027:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Media.Vision Entertainment / Contrail"
@@ -180817,7 +180668,7 @@ SCES-00321:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Media.Vision Entertainment / Contrail"
@@ -180837,7 +180688,7 @@ SCES-01171:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Media.Vision Entertainment / Contrail"
@@ -180857,7 +180708,7 @@ SCES-01172:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Media.Vision Entertainment / Contrail"
@@ -180877,7 +180728,7 @@ SCES-01173:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Media.Vision Entertainment / Contrail"
@@ -180897,7 +180748,7 @@ SCPS-10028:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Media.Vision Entertainment / Contrail"
@@ -180915,13 +180766,13 @@ SCPS-10028:
 PCPX-96034:
   name: "Wild Arms (Japan) (Demo)"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SCPS-91038:
   name: "Wild Arms (Japan) (Rev 1)"
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   codes:
     - SCPS-91038
     - SCPS-91306
@@ -180947,7 +180798,7 @@ SCES-01174:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Media.Vision Entertainment / Contrail"
@@ -180970,7 +180821,7 @@ SCUS-94608:
   controllers:
     - DigitalController
   traits:
-    - disableWidescreen
+    - DisableWidescreen
   metadata:
     publisher: "Sony"
     developer: "Media.Vision Entertainment / Contrail"
@@ -181090,7 +180941,7 @@ PCPX-96171:
 SCUS-94592:
   name: "Wild Arms 2 (USA) (Demo)"
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
 SCUS-94484:
   name: "Wild Arms 2 (USA) (Disc 1)"
   discSet:
@@ -181104,7 +180955,7 @@ SCUS-94484:
   controllers:
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Sony"
     developer: "Media.Vision Entertainment / Contrail"
@@ -181129,7 +180980,7 @@ SCUS-94498:
   controllers:
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Sony"
     developer: "Media.Vision Entertainment / Contrail"
@@ -181149,7 +181000,7 @@ SCPS-45429:
   controllers:
     - DigitalController
   traits:
-    - forcePGXPCPUMode
+    - ForcePGXPCPUMode
   codes:
     - SCPS-45429
     - SCPS-45430
@@ -182538,8 +182389,7 @@ SCES-01909:
     - AnalogController
     - DigitalController
     - NeGcon
-  traits:
-    - isLibCryptProtected
+  libcrypt: true
   metadata:
     publisher: "Sony"
     developer: "Psygnosis Leeds Studio / The Designers Republic"
@@ -183185,7 +183035,7 @@ SLES-01265:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Electronic Arts"
     developer: "Electronic Arts"
@@ -183211,7 +183061,7 @@ SLUS-00644:
     - AnalogController
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Electronic Arts"
     developer: "Electronic Arts"
@@ -183745,7 +183595,7 @@ SLPM-86086:
   controllers:
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Konami"
     developer: "KCET"
@@ -184187,10 +184037,10 @@ SLES-00483:
     - AnalogController
     - DigitalController
   traits:
-    - forceInterlacing
-    - disableUpscaling
-    - disablePGXP
-    - disableTextureFiltering
+    - ForceInterlacing
+    - DisableUpscaling
+    - DisablePGXP
+    - DisableTextureFiltering
   metadata:
     publisher: "Infogrames"
     developer: "Team 17"
@@ -188335,7 +188185,7 @@ SLUS-00183:
   controllers:
     - DigitalController
   traits:
-    - forceRecompilerICache
+    - ForceRecompilerICache
   metadata:
     publisher: "Time Warner Interactive"
     developer: "Zoom Inc"
@@ -189163,7 +189013,7 @@ SLPM-80419:
 PCPX-96184:
   name: "Legend of Dragoon, The (Japan) (Demo 2)"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLPM-80441:
   name: "Maria 2 - Jutai Kokuchi no Nazo (Japan) (Demo)"
 PAPX-90098:
@@ -189339,7 +189189,7 @@ SLES-00066:
 SLED-00406:
   name: "Resident Evil (France) (Demo)"
   traits:
-    - disableWidescreen
+    - DisableWidescreen
 SLPM-80241:
   name: "Frogger (Japan) (Demo)"
 SLPM-80191:
