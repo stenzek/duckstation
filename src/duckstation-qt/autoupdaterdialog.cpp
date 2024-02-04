@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "autoupdaterdialog.h"
@@ -11,6 +11,7 @@
 
 #include "util/http_downloader.h"
 
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/minizip_helpers.h"
@@ -32,7 +33,10 @@
 // Interval at which HTTP requests are polled.
 static constexpr u32 HTTP_POLL_INTERVAL = 10;
 
-#ifdef __APPLE__
+#if defined(_WIN32)
+#include "common/windows_headers.h"
+#include <shellapi.h>
+#elif defined(__APPLE__)
 #include "common/cocoa_tools.h"
 #endif
 
@@ -482,67 +486,71 @@ void AutoUpdaterDialog::remindMeLaterClicked()
 
 #ifdef _WIN32
 
-bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
+static constexpr char UPDATER_EXECUTABLE[] = "updater.exe";
+static constexpr char UPDATER_ARCHIVE_NAME[] = "update.zip";
+
+bool AutoUpdaterDialog::doesUpdaterNeedElevation(const std::string& application_dir) const
 {
-  const QString update_directory = QCoreApplication::applicationDirPath();
-  const QString update_zip_path = update_directory + QStringLiteral("\\update.zip");
-  const QString updater_path = update_directory + QStringLiteral("\\updater.exe");
+  // Try to create a dummy text file in the PCSX2 updater directory. If it fails, we probably won't have write
+  // permission.
+  const std::string dummy_path = Path::Combine(application_dir, "update.txt");
+  auto fp = FileSystem::OpenManagedCFile(dummy_path.c_str(), "wb");
+  if (!fp)
+    return true;
 
-  Q_ASSERT(!update_zip_path.isEmpty() && !updater_path.isEmpty() && !update_directory.isEmpty());
-  if ((QFile::exists(update_zip_path) && !QFile::remove(update_zip_path)) ||
-      (QFile::exists(updater_path) && !QFile::remove(updater_path)))
-  {
-    reportError("Removing existing update zip/updater failed");
-    return false;
-  }
-
-  {
-    QFile update_zip_file(update_zip_path);
-    if (!update_zip_file.open(QIODevice::WriteOnly) ||
-        update_zip_file.write(reinterpret_cast<const char*>(update_data.data()),
-                              static_cast<qint64>(update_data.size())) != static_cast<qint64>(update_data.size()))
-    {
-      reportError("Writing update zip to '%s' failed", update_zip_path.toUtf8().constData());
-      return false;
-    }
-    update_zip_file.close();
-  }
-
-  if (!extractUpdater(update_zip_path, updater_path))
-  {
-    reportError("Extracting updater failed");
-    return false;
-  }
-
-  if (!doUpdate(update_zip_path, updater_path, update_directory))
-  {
-    reportError("Launching updater failed");
-    return false;
-  }
-
-  return true;
+  fp.reset();
+  FileSystem::DeleteFile(dummy_path.c_str());
+  return false;
 }
 
-bool AutoUpdaterDialog::extractUpdater(const QString& zip_path, const QString& destination_path)
+bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
 {
-  unzFile zf = MinizipHelpers::OpenUnzFile(zip_path.toUtf8().constData());
+  const std::string& application_dir = EmuFolders::AppRoot;
+  const std::string update_zip_path = Path::Combine(EmuFolders::DataRoot, UPDATER_ARCHIVE_NAME);
+  const std::string updater_path = Path::Combine(EmuFolders::DataRoot, UPDATER_EXECUTABLE);
+
+  if ((FileSystem::FileExists(update_zip_path.c_str()) && !FileSystem::DeleteFile(update_zip_path.c_str())))
+  {
+    reportError("Removing existing update zip failed");
+    return false;
+  }
+
+  if (!FileSystem::WriteBinaryFile(update_zip_path.c_str(), update_data.data(), update_data.size()))
+  {
+    reportError("Writing update zip to '%s' failed", update_zip_path.c_str());
+    return false;
+  }
+
+  Error updater_extract_error;
+  if (!extractUpdater(update_zip_path.c_str(), updater_path.c_str(), &updater_extract_error))
+  {
+    reportError("Extracting updater failed: %s", updater_extract_error.GetDescription().c_str());
+    return false;
+  }
+
+  return doUpdate(application_dir, update_zip_path, updater_path);
+}
+
+bool AutoUpdaterDialog::extractUpdater(const std::string& zip_path, const std::string& destination_path, Error* error)
+{
+  unzFile zf = MinizipHelpers::OpenUnzFile(zip_path.c_str());
   if (!zf)
   {
     reportError("Failed to open update zip");
     return false;
   }
 
-  if (unzLocateFile(zf, "updater.exe", 0) != UNZ_OK || unzOpenCurrentFile(zf) != UNZ_OK)
+  if (unzLocateFile(zf, UPDATER_EXECUTABLE, 0) != UNZ_OK || unzOpenCurrentFile(zf) != UNZ_OK)
   {
-    reportError("Failed to locate updater.exe");
+    Error::SetString(error, "Failed to locate updater.exe");
     unzClose(zf);
     return false;
   }
 
-  QFile updater_exe(destination_path);
-  if (!updater_exe.open(QIODevice::WriteOnly))
+  auto fp = FileSystem::OpenManagedCFile(destination_path.c_str(), "wb", error);
+  if (!fp)
   {
-    reportError("Failed to open updater.exe for writing");
+    Error::SetString(error, "Failed to open updater.exe for writing");
     unzClose(zf);
     return false;
   }
@@ -554,10 +562,10 @@ bool AutoUpdaterDialog::extractUpdater(const QString& zip_path, const QString& d
     int size = unzReadCurrentFile(zf, chunk, CHUNK_SIZE);
     if (size < 0)
     {
-      reportError("Failed to decompress updater exe");
+      Error::SetString(error, "Failed to decompress updater exe");
       unzClose(zf);
-      updater_exe.close();
-      updater_exe.remove();
+      fp.reset();
+      FileSystem::DeleteFile(destination_path.c_str());
       return false;
     }
     else if (size == 0)
@@ -565,44 +573,48 @@ bool AutoUpdaterDialog::extractUpdater(const QString& zip_path, const QString& d
       break;
     }
 
-    if (updater_exe.write(chunk, size) != size)
+    if (std::fwrite(chunk, size, 1, fp.get()) != 1)
     {
-      reportError("Failed to write updater exe");
+      Error::SetString(error, "Failed to write updater exe");
       unzClose(zf);
-      updater_exe.close();
-      updater_exe.remove();
+      fp.reset();
+      FileSystem::DeleteFile(destination_path.c_str());
       return false;
     }
   }
 
   unzClose(zf);
-  updater_exe.close();
   return true;
 }
 
-bool AutoUpdaterDialog::doUpdate(const QString& zip_path, const QString& updater_path, const QString& destination_path)
+bool AutoUpdaterDialog::doUpdate(const std::string& application_dir, const std::string& zip_path,
+                                 const std::string& updater_path)
 {
-  const QString program_path = QCoreApplication::applicationFilePath();
-  if (program_path.isEmpty())
+  const std::string program_path = QDir::toNativeSeparators(QCoreApplication::applicationFilePath()).toStdString();
+  if (program_path.empty())
   {
     reportError("Failed to get current application path");
     return false;
   }
 
-  QStringList arguments;
-  arguments << QString::number(QCoreApplication::applicationPid());
-  arguments << destination_path;
-  arguments << zip_path;
-  arguments << program_path;
+  const std::wstring wupdater_path = StringUtil::UTF8StringToWideString(updater_path);
+  const std::wstring wapplication_dir = StringUtil::UTF8StringToWideString(application_dir);
+  const std::wstring arguments = StringUtil::UTF8StringToWideString(fmt::format(
+    "{} \"{}\" \"{}\" \"{}\"", QCoreApplication::applicationPid(), application_dir, zip_path, program_path));
 
-  // this will leak, but not sure how else to handle it...
-  QProcess* updater_process = new QProcess();
-  updater_process->setProgram(updater_path);
-  updater_process->setArguments(arguments);
-  updater_process->start(QIODevice::NotOpen);
-  if (!updater_process->waitForStarted())
+  const bool needs_elevation = doesUpdaterNeedElevation(application_dir);
+
+  SHELLEXECUTEINFOW sei = {};
+  sei.cbSize = sizeof(sei);
+  sei.lpVerb = needs_elevation ? L"runas" : nullptr; // needed to trigger elevation
+  sei.lpFile = wupdater_path.c_str();
+  sei.lpParameters = arguments.c_str();
+  sei.lpDirectory = wapplication_dir.c_str();
+  sei.nShow = SW_SHOWNORMAL;
+  if (!ShellExecuteExW(&sei))
   {
-    reportError("Failed to start updater");
+    reportError("Failed to start %s: %s", needs_elevation ? "elevated updater" : "updater",
+                Error::CreateWin32(GetLastError()).GetDescription().c_str());
     return false;
   }
 
@@ -611,6 +623,19 @@ bool AutoUpdaterDialog::doUpdate(const QString& zip_path, const QString& updater
 
 void AutoUpdaterDialog::cleanupAfterUpdate()
 {
+  // If we weren't portable, then updater executable gets left in the application directory.
+  if (EmuFolders::AppRoot == EmuFolders::DataRoot)
+    return;
+
+  const std::string updater_path = Path::Combine(EmuFolders::DataRoot, UPDATER_EXECUTABLE);
+  if (!FileSystem::FileExists(updater_path.c_str()))
+    return;
+
+  if (!FileSystem::DeleteFile(updater_path.c_str()))
+  {
+    QMessageBox::critical(nullptr, tr("Updater Error"), tr("Failed to remove updater exe after update."));
+    return;
+  }
 }
 
 #elif defined(__APPLE__)

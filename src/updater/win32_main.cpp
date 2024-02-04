@@ -96,6 +96,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
   progress.DisplayFormattedInformation("Launching '%s'...",
                                        StringUtil::WideStringToUTF8String(program_to_launch).c_str());
-  ShellExecuteW(nullptr, L"open", program_to_launch.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+  ShellExecuteW(nullptr, L"open", program_to_launch.c_str(), L"-updatecleanup", nullptr, SW_SHOWNORMAL);
   return 0;
 }
