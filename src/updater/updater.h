@@ -16,6 +16,7 @@ public:
   bool Initialize(std::string staging_directory, std::string destination_directory);
 
   bool OpenUpdateZip(const char* path);
+  void RemoveUpdateZip();
   bool PrepareStagingDirectory();
   bool StageUpdate();
   bool CommitUpdate();
@@ -33,7 +34,9 @@ private:
   };
 
   bool ParseZip();
+  void CloseUpdateZip();
 
+  std::string m_zip_path;
   std::string m_staging_directory;
   std::string m_destination_directory;
 

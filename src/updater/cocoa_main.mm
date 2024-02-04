@@ -113,6 +113,7 @@ int main(int argc, char* argv[])
     }
 
     updater.CleanupStagingDirectory();
+    updater.RemoveUpdateZip();
     
     result = EXIT_SUCCESS;
   });

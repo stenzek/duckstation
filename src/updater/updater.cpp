@@ -37,8 +37,7 @@ Updater::Updater(ProgressCallback* progress) : m_progress(progress)
 
 Updater::~Updater()
 {
-  if (m_zf)
-    unzClose(m_zf);
+  CloseUpdateZip();
 }
 
 bool Updater::Initialize(std::string staging_directory, std::string destination_directory)
@@ -56,8 +55,30 @@ bool Updater::OpenUpdateZip(const char* path)
   if (!m_zf)
     return false;
 
+  m_zip_path = path;
+
   m_progress->SetStatusText("Parsing update zip...");
   return ParseZip();
+}
+
+void Updater::CloseUpdateZip()
+{
+  if (m_zf)
+  {
+    unzClose(m_zf);
+    m_zf = nullptr;
+  }
+}
+
+void Updater::RemoveUpdateZip()
+{
+  if (m_zip_path.empty())
+    return;
+
+  CloseUpdateZip();
+
+  if (!FileSystem::DeleteFile(m_zip_path.c_str()))
+    m_progress->DisplayFormattedError("Failed to remove update zip '%s'", m_zip_path.c_str());
 }
 
 bool Updater::RecursiveDeleteDirectory(const char* path, bool remove_dir)

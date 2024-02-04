@@ -707,9 +707,6 @@ bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
 
 void AutoUpdaterDialog::cleanupAfterUpdate()
 {
-  const QString zip_path = QString::fromStdString(Path::Combine(EmuFolders::DataRoot, "update.zip"));
-  if (QFile::exists(zip_path))
-    QFile::remove(zip_path);
 }
 
 #elif defined(__linux__)

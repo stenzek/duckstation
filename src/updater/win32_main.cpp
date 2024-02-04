@@ -93,6 +93,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
   }
 
   updater.CleanupStagingDirectory();
+  updater.RemoveUpdateZip();
 
   progress.DisplayFormattedInformation("Launching '%s'...",
                                        StringUtil::WideStringToUTF8String(program_to_launch).c_str());
