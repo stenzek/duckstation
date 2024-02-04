@@ -26,13 +26,13 @@ SLPS-01204:
   controllers:
     - DigitalController
   metadata:
-    publisher: "Magical Company"
-    developer: "Magical Company"
+    publisher: "Magical Company" # Test
+    developer: "Magical Company"  #  TEst2
     releaseDate: "1998-06-18"
-    genre: "Baseball / Strategy"
+    genre:   "Baseball / Strategy"
     languages:
       - Japanese
-    minPlayers: 1
+    minPlayers : 1
     maxPlayers: 2
     minBlocks: 3
     maxBlocks: 3
