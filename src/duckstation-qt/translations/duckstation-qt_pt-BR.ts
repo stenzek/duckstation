@@ -1747,8 +1747,8 @@ Mensagens não lidas: {}</translation>
     <name>AutoUpdaterDialog</name>
     <message>
         <location filename="../autoupdaterdialog.ui" line="17"/>
-        <location filename="../autoupdaterdialog.cpp" line="236"/>
-        <location filename="../autoupdaterdialog.cpp" line="410"/>
+        <location filename="../autoupdaterdialog.cpp" line="240"/>
+        <location filename="../autoupdaterdialog.cpp" line="414"/>
         <source>Automatic Updater</source>
         <translation>Atualizador automático</translation>
     </message>
@@ -1783,54 +1783,60 @@ Mensagens não lidas: {}</translation>
         <translation>Lembrar-me mais tarde</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="133"/>
+        <location filename="../autoupdaterdialog.cpp" line="137"/>
+        <location filename="../autoupdaterdialog.cpp" line="636"/>
         <source>Updater Error</source>
         <translation>Erro na atualização</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="237"/>
+        <location filename="../autoupdaterdialog.cpp" line="241"/>
         <source>No updates are currently available. Please try again later.</source>
         <translation>Não há novas atualizações no momento.</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="286"/>
+        <location filename="../autoupdaterdialog.cpp" line="290"/>
         <source>Current Version: %1 (%2)</source>
         <translation>Versão atual: %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="288"/>
+        <location filename="../autoupdaterdialog.cpp" line="292"/>
         <source>New Version: %1 (%2)</source>
         <translation>Nova versão: %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="289"/>
+        <location filename="../autoupdaterdialog.cpp" line="293"/>
         <source>Loading...</source>
         <translation>Carregando...</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="342"/>
+        <location filename="../autoupdaterdialog.cpp" line="346"/>
         <source>&lt;h2&gt;Changes:&lt;/h2&gt;</source>
         <translation>&lt;h2&gt;Mudanças:&lt;/h2&gt;</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="375"/>
+        <location filename="../autoupdaterdialog.cpp" line="379"/>
         <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to memory card before installing this update or you will lose progress.&lt;/p&gt;</source>
         <translation>&lt;h2&gt;Alerta para ESTADOS SALVOS&lt;/h2&gt;&lt;p&gt;Ao instalar esta atualização, seus ESTADOS SALVOS se tornarão&lt;b&gt; incompativeis&lt;/b&gt;. Tenha absoluta certeza de ter salvo todo o seu progresso no seu CARTÃO DE MEMÓRIA antes de instalar esta atualização ou você perderá todo o seu progresso.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="383"/>
+        <location filename="../autoupdaterdialog.cpp" line="387"/>
         <source>&lt;h2&gt;Settings Warning&lt;/h2&gt;&lt;p&gt;Installing this update will reset your program configuration. Please note that you will have to reconfigure your settings after this update.&lt;/p&gt;</source>
         <translation>&lt;h2&gt;Alerta sobre suas configurações&lt;/h2&gt;&lt;p&gt;Ao instalar esta atualização todas as suas configurações serão REDEFINIDAS para o padrão sendo assim, você terá de refazê-las novamente.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="387"/>
+        <location filename="../autoupdaterdialog.cpp" line="391"/>
         <source>&lt;h4&gt;Installing this update will download %1 MB through your internet connection.&lt;/h4&gt;</source>
         <translation>&lt;h4&gt;Esta atualização irá baixar %1 MB.&lt;/h4&gt;</translation>
     </message>
     <message>
-        <location filename="../autoupdaterdialog.cpp" line="411"/>
+        <location filename="../autoupdaterdialog.cpp" line="415"/>
         <source>Downloading %1...</source>
         <translation>Baixando %1...</translation>
+    </message>
+    <message>
+        <location filename="../autoupdaterdialog.cpp" line="636"/>
+        <source>Failed to remove updater exe after update.</source>
+        <translation>Falha ao remover o arquivo executável do atualizador após a atualização.</translation>
     </message>
 </context>
 <context>
@@ -5081,44 +5087,44 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>EmuThread</name>
     <message>
-        <location filename="../qthost.cpp" line="732"/>
+        <location filename="../qthost.cpp" line="733"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="732"/>
+        <location filename="../qthost.cpp" line="733"/>
         <source>No resume save state found.</source>
         <translation>Salvamento rápido não encontrado.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1398"/>
+        <location filename="../qthost.cpp" line="1399"/>
         <source>Game: %1 (%2)
 </source>
         <translation>Jogo: %1 (%2)
 </translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1406"/>
+        <location filename="../qthost.cpp" line="1407"/>
         <source>Rich presence inactive or unsupported.</source>
         <translation>Presença rica do Discord inativa ou não suportada.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1410"/>
+        <location filename="../qthost.cpp" line="1411"/>
         <source>Game not loaded or no RetroAchievements available.</source>
         <translation>Jogo não carregado ou sem conquistas disponíveis.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1702"/>
+        <location filename="../qthost.cpp" line="1703"/>
         <source>%1x%2</source>
         <translation>%1x%2</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1711"/>
+        <location filename="../qthost.cpp" line="1712"/>
         <source>Game: %1 FPS</source>
         <translation>Jogo: %1 FPS</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1721"/>
+        <location filename="../qthost.cpp" line="1722"/>
         <source>Video: %1 FPS (%2%)</source>
         <translation>Vídeo: %1 FPS (%2%)</translation>
     </message>
@@ -8860,7 +8866,7 @@ Error was:</source>
         <translation>Placa de vídeo (OpenGL)</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1693"/>
+        <location filename="../qthost.cpp" line="1694"/>
         <location filename="../../core/settings.cpp" line="953"/>
         <source>Software</source>
         <translation>Software</translation>
@@ -9149,32 +9155,32 @@ Error was:</source>
 <context>
     <name>GameListCompatibilityRating</name>
     <message>
-        <location filename="../../core/game_database.cpp" line="217"/>
+        <location filename="../../core/game_database.cpp" line="56"/>
         <source>Unknown</source>
         <translation>Desconhecido</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="218"/>
+        <location filename="../../core/game_database.cpp" line="57"/>
         <source>Doesn&apos;t Boot</source>
         <translation>Não funciona</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="219"/>
+        <location filename="../../core/game_database.cpp" line="58"/>
         <source>Crashes In Intro</source>
         <translation>Quebra logo no início</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="220"/>
+        <location filename="../../core/game_database.cpp" line="59"/>
         <source>Crashes In-Game</source>
         <translation>Quebra durante o jogo</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="221"/>
+        <location filename="../../core/game_database.cpp" line="60"/>
         <source>Graphical/Audio Issues</source>
         <translation>Problemas de áudio e vídeo</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="222"/>
+        <location filename="../../core/game_database.cpp" line="61"/>
         <source>No Issues</source>
         <translation>Sem problemas</translation>
     </message>
@@ -9481,90 +9487,95 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <translation>Editar...</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="68"/>
-        <location filename="../gamesummarywidget.cpp" line="78"/>
-        <location filename="../gamesummarywidget.cpp" line="105"/>
-        <location filename="../gamesummarywidget.cpp" line="121"/>
+        <location filename="../gamesummarywidget.cpp" line="67"/>
+        <location filename="../gamesummarywidget.cpp" line="77"/>
+        <location filename="../gamesummarywidget.cpp" line="104"/>
+        <location filename="../gamesummarywidget.cpp" line="120"/>
+        <location filename="../gamesummarywidget.cpp" line="125"/>
         <location filename="../gamesummarywidget.cpp" line="126"/>
         <location filename="../gamesummarywidget.cpp" line="127"/>
         <location filename="../gamesummarywidget.cpp" line="128"/>
         <location filename="../gamesummarywidget.cpp" line="129"/>
-        <location filename="../gamesummarywidget.cpp" line="130"/>
         <source>Unknown</source>
         <translation>Desconhecido</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="70"/>
+        <location filename="../gamesummarywidget.cpp" line="69"/>
         <source>%1 (Published by %2)</source>
         <translation>%1 (Publicado por %2)</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="76"/>
+        <location filename="../gamesummarywidget.cpp" line="75"/>
         <source>Published by %1</source>
         <translation>Publicado por %1</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="83"/>
+        <location filename="../gamesummarywidget.cpp" line="82"/>
         <source>Released %1</source>
         <translation>Lançado %1</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="89"/>
+        <location filename="../gamesummarywidget.cpp" line="88"/>
         <source>%1-%2 players</source>
         <translation>%1-%2 Jogadores</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="91"/>
+        <location filename="../gamesummarywidget.cpp" line="90"/>
         <source>%1 players</source>
         <translation>%1 Jogadores</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="98"/>
+        <location filename="../gamesummarywidget.cpp" line="97"/>
         <source>%1-%2 memory card blocks</source>
         <translation>%1-%2 blocos de cartão de memória</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="100"/>
+        <location filename="../gamesummarywidget.cpp" line="99"/>
         <source>%1 memory card blocks</source>
         <translation>%1 blocos de cartão de memória</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="140"/>
+        <location filename="../gamesummarywidget.cpp" line="139"/>
         <source>Use Global Settings</source>
         <translation>Usar configuração global</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="182"/>
+        <location filename="../gamesummarywidget.cpp" line="181"/>
         <source>Track %1</source>
         <translation>Faixa %1</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="190"/>
+        <location filename="../gamesummarywidget.cpp" line="189"/>
         <source>&lt;not computed&gt;</source>
         <translation>&lt;Não Calculado&gt;</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="218"/>
+        <location filename="../gamesummarywidget.cpp" line="217"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="218"/>
+        <location filename="../gamesummarywidget.cpp" line="217"/>
         <source>Failed to open CD image for hashing.</source>
         <translation>Falha ao abrir a imagem do CD.</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="326"/>
+        <location filename="../gamesummarywidget.cpp" line="316"/>
         <source>Revision: %1</source>
         <translation>Revisão: %1</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="326"/>
+        <location filename="../gamesummarywidget.cpp" line="316"/>
         <source>N/A</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="351"/>
+        <location filename="../gamesummarywidget.cpp" line="321"/>
+        <source>Serial Mismatch: %1 vs %2%3</source>
+        <translation>Número de série incompatível: %1 vs %2%3</translation>
+    </message>
+    <message>
+        <location filename="../gamesummarywidget.cpp" line="357"/>
         <source>Search on Redump.org</source>
         <translation>Procurar em Redump.org</translation>
     </message>
@@ -12537,92 +12548,92 @@ Usando a seguinte imagem &apos;{}&apos;, isso pode resultar em instabilidade.</t
         <translation>Texturas de pós-processamento recarregadas.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="258"/>
+        <location filename="../../core/game_database.cpp" line="344"/>
         <source>CPU interpreter forced by compatibility settings.</source>
         <translation>Interpretador do CPU forçado pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="270"/>
+        <location filename="../../core/game_database.cpp" line="356"/>
         <source>Software renderer forced by compatibility settings.</source>
         <translation>Renderizador de software forçado pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="283"/>
+        <location filename="../../core/game_database.cpp" line="369"/>
         <source>Using software renderer for readbacks based on compatibility settings.</source>
         <translation>Usando o renderizador de software para releituras com base nas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="295"/>
+        <location filename="../../core/game_database.cpp" line="381"/>
         <source>Interlacing forced by compatibility settings.</source>
         <translation>Entrelaçamento forçado pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="307"/>
+        <location filename="../../core/game_database.cpp" line="393"/>
         <source>True color disabled by compatibility settings.</source>
         <translation>Cor real desativada pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="319"/>
+        <location filename="../../core/game_database.cpp" line="405"/>
         <source>Upscaling disabled by compatibility settings.</source>
         <translation>Aumento de escala desativado pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="331"/>
+        <location filename="../../core/game_database.cpp" line="417"/>
         <source>Texture filtering disabled by compatibility settings.</source>
         <translation>Filtragem de textura desativada pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="343"/>
+        <location filename="../../core/game_database.cpp" line="429"/>
         <source>Scaled dithering disabled by compatibility settings.</source>
         <translation>Escalonamento do dithering desativado pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="355"/>
+        <location filename="../../core/game_database.cpp" line="441"/>
         <source>Widescreen rendering disabled by compatibility settings.</source>
         <translation>Renderização de tela utra larga desativada pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="367"/>
+        <location filename="../../core/game_database.cpp" line="453"/>
         <source>Forcing NTSC Timings disallowed by compatibility settings.</source>
         <translation>Temporizações NTSC não permitidas pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="380"/>
+        <location filename="../../core/game_database.cpp" line="466"/>
         <source>PGXP geometry correction disabled by compatibility settings.</source>
         <translation>Correção da geometria do PGXP desativada pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="391"/>
+        <location filename="../../core/game_database.cpp" line="477"/>
         <source>PGXP culling disabled by compatibility settings.</source>
         <translation>Opções de PGXP desativadas pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="404"/>
+        <location filename="../../core/game_database.cpp" line="490"/>
         <source>PGXP perspective corrected textures disabled by compatibility settings.</source>
         <translation>Perspectiva PGXP corrigiu as texturas desativadas pelas configurações por jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="418"/>
+        <location filename="../../core/game_database.cpp" line="504"/>
         <source>PGXP perspective corrected colors disabled by compatibility settings.</source>
         <translation>Perspectiva PGXP corrigiu as cores desativadas pelas configurações por jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="430"/>
+        <location filename="../../core/game_database.cpp" line="516"/>
         <source>PGXP vertex cache forced by compatibility settings.</source>
         <translation>Cache de vértices PGXP forçado por configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="443"/>
+        <location filename="../../core/game_database.cpp" line="529"/>
         <source>PGXP CPU mode forced by compatibility settings.</source>
         <translation>Modo de CPU PGXP forçado pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="462"/>
+        <location filename="../../core/game_database.cpp" line="548"/>
         <source>PGXP Depth Buffer disabled by compatibility settings.</source>
         <translation>Alocação de profundidade de PGXP desativado pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="526"/>
+        <location filename="../../core/game_database.cpp" line="612"/>
         <source>Controller in port {0} ({1}) is not supported for {2}.
 Supported controllers: {3}
 Please configure a supported controller from the list above.</source>
@@ -12964,88 +12975,88 @@ The URL was: %1</source>
 <context>
     <name>QtHost</name>
     <message>
-        <location filename="../qthost.cpp" line="179"/>
-        <location filename="../qthost.cpp" line="202"/>
-        <location filename="../qthost.cpp" line="210"/>
-        <location filename="../qthost.cpp" line="246"/>
-        <location filename="../qthost.cpp" line="266"/>
-        <location filename="../qthost.cpp" line="276"/>
-        <location filename="../qthost.cpp" line="289"/>
-        <location filename="../qthost.cpp" line="304"/>
-        <location filename="../qthost.cpp" line="317"/>
-        <location filename="../qthost.cpp" line="2137"/>
-        <location filename="../qthost.cpp" line="2163"/>
-        <location filename="../qthost.cpp" line="2179"/>
+        <location filename="../qthost.cpp" line="180"/>
+        <location filename="../qthost.cpp" line="203"/>
+        <location filename="../qthost.cpp" line="211"/>
+        <location filename="../qthost.cpp" line="247"/>
+        <location filename="../qthost.cpp" line="267"/>
+        <location filename="../qthost.cpp" line="277"/>
+        <location filename="../qthost.cpp" line="290"/>
+        <location filename="../qthost.cpp" line="305"/>
+        <location filename="../qthost.cpp" line="318"/>
+        <location filename="../qthost.cpp" line="2136"/>
+        <location filename="../qthost.cpp" line="2162"/>
+        <location filename="../qthost.cpp" line="2178"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="180"/>
+        <location filename="../qthost.cpp" line="181"/>
         <source>Failed to create HTTPDownloader.</source>
         <translation>Falha ao criar protocolo HTTP.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="187"/>
+        <location filename="../qthost.cpp" line="188"/>
         <source>Downloading %1...</source>
         <translation>Baixando %1...</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="203"/>
+        <location filename="../qthost.cpp" line="204"/>
         <source>Download failed with HTTP status code %1.</source>
         <translation>O download falhou com o código HTTP %1.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="211"/>
+        <location filename="../qthost.cpp" line="212"/>
         <source>Download failed: Data is empty.</source>
         <translation>O download falhou: Os dados estão vazios.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="247"/>
+        <location filename="../qthost.cpp" line="248"/>
         <source>Failed to write &apos;%1&apos;.</source>
         <translation>Falha ao gravar &apos;%1&apos;.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="267"/>
+        <location filename="../qthost.cpp" line="268"/>
         <source>Failed to open downloaded zip file.</source>
         <translation>Falha ao abrir o arquivo compactado baixado.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="277"/>
+        <location filename="../qthost.cpp" line="278"/>
         <source>Failed to locate &apos;%1&apos; in zip.</source>
         <translation>Falha ao localizar &apos;%1&apos; no zip.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="290"/>
+        <location filename="../qthost.cpp" line="291"/>
         <source>Failed to open &apos;%1&apos;: %2.</source>
         <translation>Falha ao abrir &apos;%1&apos;: %2.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="305"/>
+        <location filename="../qthost.cpp" line="306"/>
         <source>Failed to read &apos;%1&apos; from zip.</source>
         <translation>Falha ao ler &apos;%1&apos; a partir do zip.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="318"/>
+        <location filename="../qthost.cpp" line="319"/>
         <source>Failed to write to &apos;%1&apos;.</source>
         <translation>Falha ao gravar em &apos;%1&apos;.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2138"/>
+        <location filename="../qthost.cpp" line="2137"/>
         <source>File &apos;%1&apos; does not exist.</source>
         <translation>O arquivo &apos;%1&apos; não existe.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2164"/>
+        <location filename="../qthost.cpp" line="2163"/>
         <source>The specified save state does not exist.</source>
         <translation>O dado de salvamento não existe.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2180"/>
+        <location filename="../qthost.cpp" line="2179"/>
         <source>Cannot use no-gui mode, because no boot filename was specified.</source>
         <translation>Não é possível usar o modo no-gui, porque nenhum parâmetro de inicialização foi configurado.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2181"/>
+        <location filename="../qthost.cpp" line="2180"/>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
         <translation>Não é possível usar este modo porque nenhum parâmetro de inicialização foi configurado.</translation>
     </message>
