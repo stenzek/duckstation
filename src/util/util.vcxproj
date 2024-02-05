@@ -214,6 +214,7 @@
     <ClCompile Include="window_info.cpp" />
     <ClCompile Include="xaudio2_audio_stream.cpp" />
     <ClCompile Include="xinput_source.cpp" />
+    <ClCompile Include="zstd_byte_stream.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\dep\cubeb\cubeb.vcxproj">

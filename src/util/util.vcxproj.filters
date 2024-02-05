@@ -153,6 +153,7 @@
     <ClCompile Include="http_downloader.cpp" />
     <ClCompile Include="metal_device.mm" />
     <ClCompile Include="metal_stream_buffer.mm" />
+    <ClCompile Include="zstd_byte_stream.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="gl">

@@ -1,8 +1,10 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
+
 #include "types.h"
+
 #include <memory>
 #include <string>
 #include <string_view>
@@ -120,7 +122,7 @@ public:
   // null memory stream
   static std::unique_ptr<NullByteStream> CreateNullStream();
 
-  // zstd stream
+  // zstd stream, actually defined in util/zstd_byte_stream.cpp, to avoid common dependency on libzstd
   static std::unique_ptr<ByteStream> CreateZstdCompressStream(ByteStream* src_stream, int compression_level);
   static std::unique_ptr<ByteStream> CreateZstdDecompressStream(ByteStream* src_stream, u32 compressed_size);
 

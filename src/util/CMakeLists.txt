@@ -67,6 +67,7 @@ add_library(util
   wav_writer.h
   window_info.cpp
   window_info.h
+  zstd_byte_stream.cpp
 )
 
 target_precompile_headers(util PRIVATE "pch.h")
