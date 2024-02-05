@@ -5,6 +5,7 @@
 
 #include "common/types.h"
 #include <string>
+#include <vector>
 
 class Error;
 
