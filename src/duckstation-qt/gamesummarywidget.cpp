@@ -13,6 +13,7 @@
 
 #include "fmt/format.h"
 
+#include <QtCore/QDateTime>
 #include <QtCore/QFuture>
 #include <QtWidgets/QMessageBox>
 
