@@ -36,6 +36,7 @@
 #include "common/threading.h"
 
 #include "IconsFontAwesome5.h"
+#include "IconsPromptFont.h"
 #include "fmt/chrono.h"
 #include "fmt/format.h"
 #include "imgui.h"
@@ -1120,7 +1121,7 @@ void FullscreenUI::DrawLandingWindow()
       DoStartFile();
     }
 
-    if (MenuButton(FSUI_ICONSTR(ICON_FA_TOOLBOX, "Start BIOS"),
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_MICROCHIP, "Start BIOS"),
                    FSUI_CSTR("Start the console without any disc inserted.")))
     {
       DoStartBIOS();
@@ -1131,7 +1132,7 @@ void FullscreenUI::DrawLandingWindow()
       OpenSaveStateSelector(true);
     }
 
-    if (MenuButton(FSUI_ICONSTR(ICON_FA_SLIDERS_H, "Settings"), FSUI_CSTR("Change settings for the emulator.")))
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_TOOLBOX, "Settings"), FSUI_CSTR("Change settings for the emulator.")))
       SwitchToSettings();
 
     if (MenuButton(FSUI_ICONSTR(ICON_FA_SIGN_OUT_ALT, "Exit"), FSUI_CSTR("Exits the program.")))
@@ -2466,13 +2467,13 @@ void FullscreenUI::DrawSettingsWindow()
     static constexpr float ITEM_WIDTH = 25.0f;
 
     static constexpr const char* global_icons[] = {
-      ICON_FA_WINDOW_MAXIMIZE, ICON_FA_HDD,          ICON_FA_SLIDERS_H,  ICON_FA_MICROCHIP,
-      ICON_FA_MAGIC,           ICON_FA_PAINT_ROLLER, ICON_FA_HEADPHONES, ICON_FA_GAMEPAD,
-      ICON_FA_KEYBOARD,        ICON_FA_SD_CARD,      ICON_FA_TROPHY,     ICON_FA_EXCLAMATION_TRIANGLE};
+      ICON_FA_TV, ICON_FA_DICE_D20,          ICON_FA_COGS,  ICON_PF_MICROCHIP,
+      ICON_PF_PICTURE,           ICON_FA_MAGIC, ICON_PF_SOUND, ICON_PF_GAMEPAD_ALT,
+      ICON_PF_KEYBOARD_ALT,        ICON_PF_MEMORY_CARD,      ICON_FA_TROPHY,     ICON_FA_EXCLAMATION_TRIANGLE};
     static constexpr const char* per_game_icons[] = {
-      ICON_FA_PARAGRAPH, ICON_FA_HDD,        ICON_FA_SLIDERS_H,
-      ICON_FA_MAGIC,     ICON_FA_HEADPHONES, ICON_FA_GAMEPAD,
-      ICON_FA_SD_CARD,   ICON_FA_TROPHY,     ICON_FA_EXCLAMATION_TRIANGLE};
+      ICON_FA_PARAGRAPH, ICON_FA_HDD,        ICON_FA_COGS,
+      ICON_PF_PICTURE,     ICON_PF_SOUND, ICON_PF_GAMEPAD_ALT,
+      ICON_PF_MEMORY_CARD,   ICON_FA_TROPHY,     ICON_FA_EXCLAMATION_TRIANGLE};
     static constexpr SettingsPage global_pages[] = {
       SettingsPage::Interface, SettingsPage::Console,        SettingsPage::Emulation,    SettingsPage::BIOS,
       SettingsPage::Display,   SettingsPage::PostProcessing, SettingsPage::Audio,        SettingsPage::Controller,
@@ -2696,7 +2697,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                     FSUI_CSTR("Automatically saves the emulator state when powering down or exiting. You can then "
                               "resume directly from where you left off next time."),
                     "Main", "SaveStateOnExit", true);
-  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TV, "Start Fullscreen"),
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_WINDOW_MAXIMIZE, "Start Fullscreen"),
                     FSUI_CSTR("Automatically switches to fullscreen mode when the program is started."), "Main",
                     "StartFullscreen", false);
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MOUSE, "Double-Click Toggles Fullscreen"),
@@ -3238,7 +3239,7 @@ void FullscreenUI::DrawControllerSettingsPage()
   }
   else
   {
-    if (MenuButton(FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Reset Settings"),
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_DUMPSTER_FIRE, "Reset Settings"),
                    FSUI_CSTR("Resets all configuration to defaults (including bindings).")))
     {
       ResetControllerSettings();
