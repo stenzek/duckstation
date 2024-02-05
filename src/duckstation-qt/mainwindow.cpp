@@ -2253,6 +2253,40 @@ void MainWindow::setStyleFromSettings()
 
     qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
   }
+  else if (theme == "greymatter")
+  {
+    qApp->setStyle(QStyleFactory::create("Fusion"));
+
+    const QColor darkGray(46, 52, 64);
+    const QColor lighterGray(59, 66, 82);
+    const QColor gray(111, 111, 111);
+    const QColor blue(198, 238, 255);
+
+    QPalette darkPalette;
+    darkPalette.setColor(QPalette::Window, darkGray);
+    darkPalette.setColor(QPalette::WindowText, Qt::white);
+    darkPalette.setColor(QPalette::Base, lighterGray);
+    darkPalette.setColor(QPalette::AlternateBase, darkGray);
+    darkPalette.setColor(QPalette::ToolTipBase, darkGray);
+    darkPalette.setColor(QPalette::ToolTipText, Qt::white);
+    darkPalette.setColor(QPalette::Text, Qt::white);
+    darkPalette.setColor(QPalette::Button, lighterGray);
+    darkPalette.setColor(QPalette::ButtonText, Qt::white);
+    darkPalette.setColor(QPalette::Link, blue);
+    darkPalette.setColor(QPalette::Highlight, lighterGray.darker());
+    darkPalette.setColor(QPalette::HighlightedText, Qt::white);
+    darkPalette.setColor(QPalette::PlaceholderText, QColor(Qt::white).darker());
+
+    darkPalette.setColor(QPalette::Active, QPalette::Button, lighterGray);
+    darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray.lighter());
+    darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray.lighter());
+    darkPalette.setColor(QPalette::Disabled, QPalette::Text, gray.lighter());
+    darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkGray);
+
+    qApp->setPalette(darkPalette);
+
+    qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #505a70; border: 1px solid white; }");
+  }
   else
   {
     qApp->setStyle(s_unthemed_style_name);

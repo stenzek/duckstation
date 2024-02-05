@@ -15,12 +15,13 @@ const char* GeneralSettingsWidget::THEME_NAMES[] = {
   QT_TRANSLATE_NOOP("MainWindow", "Fusion"),
   QT_TRANSLATE_NOOP("MainWindow", "Dark Fusion (Gray)"),
   QT_TRANSLATE_NOOP("MainWindow", "Dark Fusion (Blue)"),
+  QT_TRANSLATE_NOOP("MainWindow", "Grey Matter"),
   QT_TRANSLATE_NOOP("MainWindow", "QDarkStyle"),
   nullptr,
 };
 
 const char* GeneralSettingsWidget::THEME_VALUES[] = {
-  "", "fusion", "darkfusion", "darkfusionblue", "qdarkstyle", nullptr,
+  "", "fusion", "darkfusion", "darkfusionblue", "greymatter", "qdarkstyle", nullptr,
 };
 
 const char* GeneralSettingsWidget::DEFAULT_THEME_NAME = "darkfusion";
