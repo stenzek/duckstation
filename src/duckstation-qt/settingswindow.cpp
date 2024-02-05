@@ -164,7 +164,7 @@ void SettingsWindow::addPages()
   }
 
   addWidget(m_advanced_settings = new AdvancedSettingsWidget(this, m_ui.settingsContainer), tr("Advanced"),
-            QStringLiteral("tools-line"),
+            QStringLiteral("alert-line"),
             tr("<strong>Advanced Settings</strong><hr>These options control logging and internal behavior of the "
                "emulator. Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
 

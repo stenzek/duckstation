@@ -23,7 +23,7 @@
      <x>0</x>
      <y>0</y>
      <width>1210</width>
-     <height>21</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_Debugger">
@@ -36,15 +36,14 @@
     <addaction name="actionGoToPC"/>
     <addaction name="actionGoToAddress"/>
     <addaction name="actionDumpAddress"/>
-    <addaction name="separator"/>    
-    <addaction name="actionTrace"/>    
+    <addaction name="separator"/>
+    <addaction name="actionTrace"/>
     <addaction name="separator"/>
     <addaction name="actionStepInto"/>
     <addaction name="actionStepOver"/>
     <addaction name="actionStepOut"/>
     <addaction name="separator"/>
     <addaction name="actionClose"/>
-
    </widget>
    <widget class="QMenu" name="menuBreakpoints">
     <property name="title">
@@ -82,7 +81,7 @@
    <addaction name="actionStepInto"/>
    <addaction name="actionStepOver"/>
    <addaction name="actionStepOut"/>
-   <addaction name="separator"/>   
+   <addaction name="separator"/>
    <addaction name="actionTrace"/>
   </widget>
   <widget class="QDockWidget" name="dockWidget_2">
@@ -301,14 +300,13 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="resources/resources.qrc">
-     <normaloff>:/icons/media-playback-pause.png</normaloff>:/icons/media-playback-pause.png</iconset>
+    <iconset theme="pause-line"/>
    </property>
    <property name="text">
-    <string>Pause/Continue</string>
+    <string>&amp;Pause/Continue</string>
    </property>
    <property name="toolTip">
-    <string>&amp;Pause/Continue</string>
+    <string>Pause/Continue</string>
    </property>
    <property name="shortcut">
     <string>F5</string>
@@ -316,14 +314,13 @@
   </action>
   <action name="actionStepInto">
    <property name="icon">
-    <iconset resource="resources/resources.qrc">
-     <normaloff>:/icons/debug-step-into-instruction.png</normaloff>:/icons/debug-step-into-instruction.png</iconset>
+    <iconset theme="debug-step-into-line"/>
    </property>
    <property name="text">
-    <string>Step Into</string>
+    <string>&amp;Step Into</string>
    </property>
    <property name="toolTip">
-    <string>&amp;Step Into</string>
+    <string>Step Into</string>
    </property>
    <property name="shortcut">
     <string>F11</string>
@@ -331,14 +328,13 @@
   </action>
   <action name="actionStepOver">
    <property name="icon">
-    <iconset resource="resources/resources.qrc">
-     <normaloff>:/icons/debug-step-over.png</normaloff>:/icons/debug-step-over.png</iconset>
+    <iconset theme="debug-step-over-line"/>
    </property>
    <property name="text">
-    <string>Step Over</string>
+    <string>Step &amp;Over</string>
    </property>
    <property name="toolTip">
-    <string>Step &amp;Over</string>
+    <string>Step Over</string>
    </property>
    <property name="shortcut">
     <string>F10</string>
@@ -346,14 +342,13 @@
   </action>
   <action name="actionToggleBreakpoint">
    <property name="icon">
-    <iconset resource="resources/resources.qrc">
-     <normaloff>:/icons/media-record@2x.png</normaloff>:/icons/media-record@2x.png</iconset>
+    <iconset theme="debug-toggle-breakpoint"/>
    </property>
    <property name="text">
-    <string>Toggle Breakpoint</string>
+    <string>Toggle B&amp;reakpoint</string>
    </property>
    <property name="toolTip">
-    <string>Toggle &amp;Breakpoint</string>
+    <string>Toggle Breakpoint</string>
    </property>
    <property name="shortcut">
     <string>F9</string>
@@ -366,14 +361,13 @@
   </action>
   <action name="actionStepOut">
    <property name="icon">
-    <iconset resource="resources/resources.qrc">
-     <normaloff>:/icons/debug-step-out.png</normaloff>:/icons/debug-step-out.png</iconset>
+    <iconset theme="debug-step-out-line"/>
    </property>
    <property name="text">
-    <string>Step Out</string>
+    <string>Step O&amp;ut</string>
    </property>
    <property name="toolTip">
-    <string>Step O&amp;ut</string>
+    <string>Step Out</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+F11</string>
@@ -381,14 +375,13 @@
   </action>
   <action name="actionRunToCursor">
    <property name="icon">
-    <iconset resource="resources/resources.qrc">
-     <normaloff>:/icons/debug-run-cursor.png</normaloff>:/icons/debug-run-cursor.png</iconset>
+    <iconset theme="debugger-go-to-cursor"/>
    </property>
    <property name="text">
-    <string>Run To Cursor</string>
+    <string>&amp;Run To Cursor</string>
    </property>
    <property name="toolTip">
-    <string>&amp;Run To Cursor</string>
+    <string>Run To Cursor</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+F10</string>
@@ -396,14 +389,13 @@
   </action>
   <action name="actionClearBreakpoints">
    <property name="icon">
-    <iconset resource="resources/resources.qrc">
-     <normaloff>:/icons/edit-clear-16.png</normaloff>:/icons/edit-clear-16.png</iconset>
+    <iconset theme="debugger-clear-breakpoint"/>
    </property>
    <property name="text">
-    <string>Clear Breakpoints</string>
+    <string>&amp;Clear Breakpoints</string>
    </property>
    <property name="toolTip">
-    <string>&amp;Clear Breakpoints</string>
+    <string>Clear Breakpoints</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Del</string>
@@ -411,14 +403,13 @@
   </action>
   <action name="actionAddBreakpoint">
    <property name="icon">
-    <iconset resource="resources/resources.qrc">
-     <normaloff>:/icons/list-add.png</normaloff>:/icons/list-add.png</iconset>
+    <iconset theme="add-line"/>
    </property>
    <property name="text">
-    <string>Add Breakpoint</string>
+    <string>Add &amp;Breakpoint</string>
    </property>
    <property name="toolTip">
-    <string>Add &amp;Breakpoint</string>
+    <string>Add Breakpoint</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+F9</string>
@@ -426,14 +417,13 @@
   </action>
   <action name="actionGoToPC">
    <property name="icon">
-    <iconset resource="resources/resources.qrc">
-     <normaloff>:/icons/document-open.png</normaloff>:/icons/document-open.png</iconset>
+    <iconset theme="debugger-go-to-pc"/>
    </property>
    <property name="text">
-    <string>Go To PC</string>
+    <string>&amp;Go To PC</string>
    </property>
    <property name="toolTip">
-    <string>&amp;Go To PC</string>
+    <string>Go To PC</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+P</string>
@@ -441,14 +431,13 @@
   </action>
   <action name="actionGoToAddress">
    <property name="icon">
-    <iconset resource="resources/resources.qrc">
-     <normaloff>:/icons/applications-system.png</normaloff>:/icons/applications-system.png</iconset>
+    <iconset theme="debugger-go-to-address"/>
    </property>
    <property name="text">
-    <string>Go To Address</string>
+    <string>Go To &amp;Address</string>
    </property>
    <property name="toolTip">
-    <string>Go To &amp;Address</string>
+    <string>Go To Address</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+G</string>
@@ -456,8 +445,7 @@
   </action>
   <action name="actionDumpAddress">
    <property name="icon">
-    <iconset resource="resources/resources.qrc">
-     <normaloff>:/icons/antialias-icon.png</normaloff>:/icons/antialias-icon.png</iconset>
+    <iconset theme="debugger-dump-address"/>
    </property>
    <property name="text">
     <string>&amp;Dump Address</string>
@@ -468,21 +456,18 @@
   </action>
   <action name="actionTrace">
    <property name="icon">
-    <iconset resource="resources/resources.qrc">
-     <normaloff>:/icons/debug-trace.png</normaloff>:/icons/debug-trace.png</iconset>
+    <iconset theme="debug-trace-line"/>
    </property>
    <property name="text">
-    <string>Trace</string>
+    <string>&amp;Trace</string>
    </property>
    <property name="toolTip">
-    <string>&amp;Trace</string>
+    <string>Trace</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+T</string>
    </property>
   </action>
-  
-  
  </widget>
  <customwidgets>
   <customwidget>

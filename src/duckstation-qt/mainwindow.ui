@@ -598,7 +598,7 @@
   </action>
   <action name="actionAdvancedSettings">
    <property name="icon">
-    <iconset theme="tools-line">
+    <iconset theme="alert-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
