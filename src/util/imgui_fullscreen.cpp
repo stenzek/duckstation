@@ -32,6 +32,7 @@
 #include <deque>
 #include <mutex>
 #include <thread>
+#include <utility>
 #include <variant>
 
 Log_SetChannel(ImGuiFullscreen);
