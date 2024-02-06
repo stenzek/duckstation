@@ -1084,7 +1084,12 @@ void System::ResetSystem()
     return;
 
   if (Achievements::ResetHardcoreMode())
+  {
+    // Make sure a pre-existing cheat file hasn't been loaded when resetting
+    // after enabling HC mode.
+    s_cheat_list.reset();
     ApplySettings(false);
+  }
 
   InternalReset();
   ResetPerformanceCounters();

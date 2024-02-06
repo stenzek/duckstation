@@ -74,7 +74,7 @@ void Logout();
 /// Called when the system changes game, or is booting.
 void GameChanged(const std::string& path, CDImage* image);
 
-/// Re-enables hardcode mode if it is enabled in the settings.
+/// Re-enables hardcore mode if it is enabled in the settings.
 bool ResetHardcoreMode();
 
 /// Forces hardcore mode off until next reset.
