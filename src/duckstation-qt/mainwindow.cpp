@@ -608,12 +608,6 @@ void MainWindow::onSystemDestroyed()
     delete m_cheat_manager_dialog;
     m_cheat_manager_dialog = nullptr;
   }
-
-  if (m_debugger_window)
-  {
-    delete m_debugger_window;
-    m_debugger_window = nullptr;
-  }
 }
 
 void MainWindow::onRunningGameChanged(const QString& filename, const QString& game_serial, const QString& game_title)
@@ -1733,7 +1727,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevo
   m_ui.menuChangeDisc->setDisabled(starting || !running);
   m_ui.menuCheats->setDisabled(starting || !running || cheevos_challenge_mode);
   m_ui.actionCheatManager->setDisabled(starting || !running || cheevos_challenge_mode);
-  m_ui.actionCPUDebugger->setDisabled(starting || !running || cheevos_challenge_mode);
+  m_ui.actionCPUDebugger->setDisabled(cheevos_challenge_mode);
   m_ui.actionDumpRAM->setDisabled(starting || !running || cheevos_challenge_mode);
   m_ui.actionDumpVRAM->setDisabled(starting || !running || cheevos_challenge_mode);
   m_ui.actionDumpSPURAM->setDisabled(starting || !running || cheevos_challenge_mode);
@@ -2871,19 +2865,19 @@ void MainWindow::onToolsCheatManagerTriggered()
 
 void MainWindow::openCPUDebugger()
 {
-  g_emu_thread->setSystemPaused(true, true);
-  if (!System::IsValid())
+  if (m_debugger_window)
+  {
+    m_debugger_window->raise();
+    m_debugger_window->activateWindow();
+    m_debugger_window->setFocus();
     return;
+  }
 
   Assert(!m_debugger_window);
-
   m_debugger_window = new DebuggerWindow();
   m_debugger_window->setWindowIcon(windowIcon());
   connect(m_debugger_window, &DebuggerWindow::closed, this, &MainWindow::onCPUDebuggerClosed);
   m_debugger_window->show();
-
-  // the debugger will miss the pause event above (or we were already paused), so fire it now
-  m_debugger_window->onEmulationPaused();
 }
 
 void MainWindow::onCPUDebuggerClosed()

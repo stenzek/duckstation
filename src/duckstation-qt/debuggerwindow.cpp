@@ -1,12 +1,14 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "debuggerwindow.h"
-#include "common/assert.h"
-#include "core/cpu_core_private.h"
 #include "debuggermodels.h"
 #include "qthost.h"
 #include "qtutils.h"
+
+#include "common/assert.h"
+#include "core/cpu_core_private.h"
+
 #include <QtCore/QSignalBlocker>
 #include <QtGui/QFontDatabase>
 #include <QtWidgets/QFileDialog>
@@ -20,14 +22,24 @@ DebuggerWindow::DebuggerWindow(QWidget* parent /* = nullptr */)
   connectSignals();
   createModels();
   setMemoryViewRegion(Bus::MemoryRegion::RAM);
-  setUIEnabled(false);
+  setUIEnabled(QtHost::IsSystemPaused(), QtHost::IsSystemValid());
 }
 
 DebuggerWindow::~DebuggerWindow() = default;
 
-void DebuggerWindow::onEmulationPaused()
+void DebuggerWindow::onSystemStarted()
 {
-  setUIEnabled(true);
+  setUIEnabled(false, true);
+}
+
+void DebuggerWindow::onSystemDestroyed()
+{
+  setUIEnabled(false, false);
+}
+
+void DebuggerWindow::onSystemPaused()
+{
+  setUIEnabled(true, true);
   refreshAll();
   refreshBreakpointList();
 
@@ -37,9 +49,9 @@ void DebuggerWindow::onEmulationPaused()
   }
 }
 
-void DebuggerWindow::onEmulationResumed()
+void DebuggerWindow::onSystemResumed()
 {
-  setUIEnabled(false);
+  setUIEnabled(false, true);
 
   {
     QSignalBlocker sb(m_ui.actionPause);
@@ -84,7 +96,7 @@ void DebuggerWindow::onPauseActionToggled(bool paused)
   if (!paused)
   {
     m_registers_model->saveCurrentValues();
-    setUIEnabled(false);
+    setUIEnabled(false, true);
   }
 
   g_emu_thread->setSystemPaused(paused);
@@ -422,8 +434,10 @@ void DebuggerWindow::setupAdditionalUi()
 
 void DebuggerWindow::connectSignals()
 {
-  connect(g_emu_thread, &EmuThread::systemPaused, this, &DebuggerWindow::onEmulationPaused);
-  connect(g_emu_thread, &EmuThread::systemResumed, this, &DebuggerWindow::onEmulationResumed);
+  connect(g_emu_thread, &EmuThread::systemPaused, this, &DebuggerWindow::onSystemPaused);
+  connect(g_emu_thread, &EmuThread::systemResumed, this, &DebuggerWindow::onSystemResumed);
+  connect(g_emu_thread, &EmuThread::systemStarted, this, &DebuggerWindow::onSystemStarted);
+  connect(g_emu_thread, &EmuThread::systemDestroyed, this, &DebuggerWindow::onSystemDestroyed);
   connect(g_emu_thread, &EmuThread::debuggerMessageReported, this, &DebuggerWindow::onDebuggerMessageReported);
 
   connect(m_ui.actionPause, &QAction::toggled, this, &DebuggerWindow::onPauseActionToggled);
@@ -483,8 +497,10 @@ void DebuggerWindow::createModels()
   m_ui.breakpointsWidget->setRootIsDecorated(false);
 }
 
-void DebuggerWindow::setUIEnabled(bool enabled)
+void DebuggerWindow::setUIEnabled(bool enabled, bool allow_pause)
 {
+  m_ui.actionPause->setEnabled(allow_pause);
+
   // Disable all UI elements that depend on execution state
   m_ui.codeView->setEnabled(enabled);
   m_ui.registerView->setEnabled(enabled);

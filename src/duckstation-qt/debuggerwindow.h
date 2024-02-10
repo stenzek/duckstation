@@ -1,9 +1,12 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
-#include "core/types.h"
+
 #include "ui_debuggerwindow.h"
+
+#include "core/types.h"
+
 #include <QtWidgets/QMainWindow>
 #include <memory>
 #include <optional>
@@ -27,14 +30,14 @@ public:
 Q_SIGNALS:
   void closed();
 
-public Q_SLOTS:
-  void onEmulationPaused();
-  void onEmulationResumed();
-
 protected:
   void closeEvent(QCloseEvent* event);
 
 private Q_SLOTS:
+  void onSystemStarted();
+  void onSystemDestroyed();
+  void onSystemPaused();
+  void onSystemResumed();
   void onDebuggerMessageReported(const QString& message);
 
   void refreshAll();
@@ -47,7 +50,7 @@ private Q_SLOTS:
   void onGoToAddressTriggered();
   void onDumpAddressTriggered();
   void onFollowAddressTriggered();
-  void onTraceTriggered();  
+  void onTraceTriggered();
   void onAddBreakpointTriggered();
   void onToggleBreakpointTriggered();
   void onClearBreakpointsTriggered();
@@ -59,13 +62,12 @@ private Q_SLOTS:
   void onMemorySearchTriggered();
   void onMemorySearchStringChanged(const QString&);
 
-
 private:
   void setupAdditionalUi();
   void connectSignals();
   void disconnectSignals();
   void createModels();
-  void setUIEnabled(bool enabled);
+  void setUIEnabled(bool enabled, bool allow_pause);
   void setMemoryViewRegion(Bus::MemoryRegion region);
   void toggleBreakpoint(VirtualMemoryAddress address);
   void clearBreakpoints();
