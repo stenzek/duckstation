@@ -1932,19 +1932,11 @@ void System::Throttle()
 
 void System::SingleStepCPU()
 {
-  s_frame_timer.Reset();
-  s_system_executing = true;
+  CPU::SetSingleStepFlag();
 
-  g_gpu->RestoreDeviceContext();
-
-  CPU::SingleStep();
-
-  g_gpu->FlushRender();
-  SPU::GeneratePendingSamples();
-
-  InvalidateDisplay();
-
-  s_system_executing = false;
+  // If this gets called when the system is executing, we're not going to end up here..
+  if (IsPaused())
+    PauseSystem(false);
 }
 
 void System::IncrementInternalFrameNumber()

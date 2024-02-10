@@ -1,11 +1,14 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
-#include "common/bitfield.h"
+
 #include "cpu_types.h"
 #include "gte_types.h"
 #include "types.h"
+
+#include "common/bitfield.h"
+
 #include <array>
 #include <optional>
 #include <string>
@@ -127,7 +130,6 @@ void ExecutionModeChanged();
 
 /// Executes interpreter loop.
 void Execute();
-void SingleStep();
 
 // Forces an early exit from the CPU dispatcher.
 void ExitExecution();
@@ -214,6 +216,7 @@ bool RemoveBreakpoint(VirtualMemoryAddress address);
 void ClearBreakpoints();
 bool AddStepOverBreakpoint();
 bool AddStepOutBreakpoint(u32 max_instructions_to_search = 1000);
+void SetSingleStepFlag();
 
 extern bool TRACE_EXECUTION;
 
