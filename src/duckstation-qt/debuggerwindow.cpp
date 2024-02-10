@@ -553,26 +553,30 @@ void DebuggerWindow::setMemoryViewRegion(Bus::MemoryRegion region)
 
 void DebuggerWindow::toggleBreakpoint(VirtualMemoryAddress address)
 {
-  const bool new_bp_state = !CPU::HasBreakpointAtAddress(address);
-  if (new_bp_state)
-  {
-    if (!CPU::AddBreakpoint(address, false))
-      return;
-  }
-  else
-  {
-    if (!CPU::RemoveBreakpoint(address))
-      return;
-  }
+  Host::RunOnCPUThread([this, address]() {
+    const bool new_bp_state = !CPU::HasBreakpointAtAddress(address);
+    if (new_bp_state)
+    {
+      if (!CPU::AddBreakpoint(address, false))
+        return;
+    }
+    else
+    {
+      if (!CPU::RemoveBreakpoint(address))
+        return;
+    }
 
-  m_code_model->setBreakpointState(address, new_bp_state);
-  refreshBreakpointList();
+    QtHost::RunOnUIThread([this, address, new_bp_state, bps = CPU::GetBreakpointList()]() {
+      m_code_model->setBreakpointState(address, new_bp_state);
+      refreshBreakpointList(bps);
+    });
+  });
 }
 
 void DebuggerWindow::clearBreakpoints()
 {
   m_code_model->clearBreakpoints();
-  CPU::ClearBreakpoints();
+  Host::RunOnCPUThread(&CPU::ClearBreakpoints);
 }
 
 std::optional<VirtualMemoryAddress> DebuggerWindow::getSelectedCodeAddress()
@@ -615,10 +619,14 @@ bool DebuggerWindow::scrollToMemoryAddress(VirtualMemoryAddress address)
 
 void DebuggerWindow::refreshBreakpointList()
 {
+  refreshBreakpointList(CPU::GetBreakpointList());
+}
+
+void DebuggerWindow::refreshBreakpointList(const CPU::BreakpointList& bps)
+{
   while (m_ui.breakpointsWidget->topLevelItemCount() > 0)
     delete m_ui.breakpointsWidget->takeTopLevelItem(0);
 
-  const CPU::BreakpointList bps(CPU::GetBreakpointList());
   for (const CPU::Breakpoint& bp : bps)
   {
     QTreeWidgetItem* item = new QTreeWidgetItem();

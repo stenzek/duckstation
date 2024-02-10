@@ -5,6 +5,7 @@
 
 #include "ui_debuggerwindow.h"
 
+#include "core/cpu_core.h"
 #include "core/types.h"
 
 #include <QtWidgets/QMainWindow>
@@ -76,6 +77,7 @@ private:
   void scrollToCodeAddress(VirtualMemoryAddress address);
   bool scrollToMemoryAddress(VirtualMemoryAddress address);
   void refreshBreakpointList();
+  void refreshBreakpointList(const CPU::BreakpointList& bps);
 
   Ui::DebuggerWindow m_ui;
 
