@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -14,6 +14,7 @@
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include <QtWidgets/QDialog>
+
 #include <array>
 #include <string>
 
@@ -88,6 +89,8 @@ private Q_SLOTS:
 private:
   void refreshProfileList();
   void switchProfile(const QString& name);
+
+  std::array<bool, 2> getEnabledMultitaps() const;
 
   Ui::ControllerSettingsWindow m_ui;
 
