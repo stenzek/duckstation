@@ -255,7 +255,7 @@ void GameSummaryWidget::onComputeHashClicked()
     std::string found_serial;
     m_redump_search_keyword = CDImageHasher::HashToString(track_hashes.front());
 
-    progress_callback.SetStatusText("Verifying hashes...");
+    progress_callback.SetStatusText(TRANSLATE("GameSummaryWidget", "Verifying hashes..."));
     progress_callback.SetProgressValue(image->GetTrackCount());
 
     // Verification strategy used:
@@ -318,8 +318,12 @@ void GameSummaryWidget::onComputeHashClicked()
 
     if (found_serial != m_ui.serial->text().toStdString())
     {
-      text =
-        tr("Serial Mismatch: %1 vs %2%3").arg(QString::fromStdString(found_serial)).arg(m_ui.serial->text()).arg(text);
+      const QString mismatch_str =
+        tr("Serial Mismatch: %1 vs %2").arg(QString::fromStdString(found_serial)).arg(m_ui.serial->text());
+      if (!text.isEmpty())
+        text = QStringLiteral("%1 | %2").arg(mismatch_str).arg(text);
+      else
+        text = mismatch_str;
     }
 
     if (!text.isEmpty())

@@ -1,8 +1,10 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "cd_image_hasher.h"
 #include "cd_image.h"
+
+#include "util/host.h"
 
 #include "common/md5_digest.h"
 #include "common/string_util.h"
@@ -21,7 +23,8 @@ bool CDImageHasher::ReadIndex(CDImage* image, u8 track, u8 index, MD5Digest* dig
   const u32 index_length = image->GetTrackIndexLength(track, index);
   const u32 update_interval = std::max<u32>(index_length / 100u, 1u);
 
-  progress_callback->SetFormattedStatusText("Computing hash for track %u/index %u...", track, index);
+  progress_callback->SetStatusText(
+    fmt::format(TRANSLATE_FS("CDImageHasher", "Computing hash for Track {}/Index {}..."), track, index).c_str());
   progress_callback->SetProgressRange(index_length);
 
   if (!image->Seek(index_start))

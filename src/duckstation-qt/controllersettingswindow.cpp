@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "controllersettingswindow.h"
@@ -370,14 +370,7 @@ void ControllerSettingsWindow::createWidgets()
   }
 
   // load mtap settings
-  const MultitapMode mtap_mode =
-    Settings::ParseMultitapModeName(
-      getStringValue("ControllerPorts", "MultitapMode", Settings::GetMultitapModeName(Settings::DEFAULT_MULTITAP_MODE))
-        .c_str())
-      .value_or(Settings::DEFAULT_MULTITAP_MODE);
-  const std::array<bool, 2> mtap_enabled = {
-    {(mtap_mode == MultitapMode::Port1Only || mtap_mode == MultitapMode::BothPorts),
-     (mtap_mode == MultitapMode::Port2Only || mtap_mode == MultitapMode::BothPorts)}};
+  const std::array<bool, 2> mtap_enabled = getEnabledMultitaps();
 
   // we reorder things a little to make it look less silly for mtap
   static constexpr const std::array<u32, MAX_PORTS> mtap_port_order = {{0, 2, 3, 4, 1, 5, 6, 7}};
@@ -431,20 +424,30 @@ void ControllerSettingsWindow::updateListDescription(u32 global_slot, Controller
     bool is_ok;
     if (item_data.toUInt(&is_ok) == global_slot && is_ok)
     {
-      // const bool is_mtap_port = Controller::PadIsMultitapSlot(global_slot);
+      const std::array<bool, 2> mtap_enabled = getEnabledMultitaps();
       const auto [port, slot] = Controller::ConvertPadToPortAndSlot(global_slot);
-      const bool mtap_enabled = getBoolValue("Pad", (port == 0) ? "MultitapPort1" : "MultitapPort2", false);
 
       const Controller::ControllerInfo* ci = Controller::GetControllerInfo(widget->getControllerType());
       const QString display_name(ci ? qApp->translate("ControllerType", ci->display_name) : QStringLiteral("Unknown"));
 
-      item->setText(mtap_enabled ?
+      item->setText(mtap_enabled[port] ?
                       (tr("Controller Port %1%2\n%3").arg(port + 1).arg(s_mtap_slot_names[slot]).arg(display_name)) :
                       tr("Controller Port %1\n%2").arg(port + 1).arg(display_name));
       item->setIcon(widget->getIcon());
       break;
     }
   }
+}
+
+std::array<bool, 2> ControllerSettingsWindow::getEnabledMultitaps() const
+{
+  const MultitapMode mtap_mode =
+    Settings::ParseMultitapModeName(
+      getStringValue("ControllerPorts", "MultitapMode", Settings::GetMultitapModeName(Settings::DEFAULT_MULTITAP_MODE))
+        .c_str())
+      .value_or(Settings::DEFAULT_MULTITAP_MODE);
+  return {{(mtap_mode == MultitapMode::Port1Only || mtap_mode == MultitapMode::BothPorts),
+           (mtap_mode == MultitapMode::Port2Only || mtap_mode == MultitapMode::BothPorts)}};
 }
 void ControllerSettingsWindow::refreshProfileList()
 {

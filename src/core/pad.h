@@ -13,8 +13,6 @@ class Multitap;
 
 namespace Pad {
 
-static constexpr u32 NUM_SLOTS = 2;
-
 void Initialize();
 void Shutdown();
 void Reset();
