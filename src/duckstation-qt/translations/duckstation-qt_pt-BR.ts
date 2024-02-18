@@ -1936,6 +1936,14 @@ Mensagens não lidas: {}</translation>
     </message>
 </context>
 <context>
+    <name>CDImageHasher</name>
+    <message>
+        <location filename="../../util/cd_image_hasher.cpp" line="27"/>
+        <source>Computing hash for Track {}/Index {}...</source>
+        <translation>Calculando valores para a faixa {}/índice {}...</translation>
+    </message>
+</context>
+<context>
     <name>CPUExecutionMode</name>
     <message>
         <location filename="../../core/settings.cpp" line="864"/>
@@ -3903,7 +3911,7 @@ This warning will only be shown once.</source>
         <location filename="../controllersettingswindow.cpp" line="103"/>
         <location filename="../controllersettingswindow.cpp" line="136"/>
         <location filename="../controllersettingswindow.cpp" line="180"/>
-        <location filename="../controllersettingswindow.cpp" line="477"/>
+        <location filename="../controllersettingswindow.cpp" line="480"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
@@ -3977,33 +3985,33 @@ Esta ação não poderá ser desfeita.</translation>
         <translation>Configurações globais</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="402"/>
-        <location filename="../controllersettingswindow.cpp" line="442"/>
+        <location filename="../controllersettingswindow.cpp" line="395"/>
+        <location filename="../controllersettingswindow.cpp" line="434"/>
         <source>Controller Port %1%2
 %3</source>
         <translation>Porta do controle %1%2
 %3</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="403"/>
-        <location filename="../controllersettingswindow.cpp" line="443"/>
+        <location filename="../controllersettingswindow.cpp" line="396"/>
+        <location filename="../controllersettingswindow.cpp" line="435"/>
         <source>Controller Port %1
 %2</source>
         <translation>Porta do controle %1
 %2</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="413"/>
+        <location filename="../controllersettingswindow.cpp" line="406"/>
         <source>Hotkeys</source>
         <translation>Atalhos</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="455"/>
+        <location filename="../controllersettingswindow.cpp" line="458"/>
         <source>Shared</source>
         <translation>Compartilhado</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="477"/>
+        <location filename="../controllersettingswindow.cpp" line="480"/>
         <source>The input profile named &apos;%1&apos; cannot be found.</source>
         <translation>O perfil de entrada &apos;%1&apos; não pôde ser encontrado.</translation>
     </message>
@@ -9547,7 +9555,7 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     <message>
         <location filename="../gamesummarywidget.cpp" line="190"/>
         <source>&lt;not computed&gt;</source>
-        <translation>&lt;Não Calculado&gt;</translation>
+        <translation>&lt;Não calculado&gt;</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="218"/>
@@ -9558,6 +9566,11 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <location filename="../gamesummarywidget.cpp" line="218"/>
         <source>Failed to open CD image for hashing.</source>
         <translation>Falha ao abrir a imagem do CD.</translation>
+    </message>
+    <message>
+        <location filename="../gamesummarywidget.cpp" line="258"/>
+        <source>Verifying hashes...</source>
+        <translation>Calculando valores...</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="317"/>
@@ -9571,11 +9584,11 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="322"/>
-        <source>Serial Mismatch: %1 vs %2%3</source>
-        <translation>Número de série incompatível: %1 vs %2%3</translation>
+        <source>Serial Mismatch: %1 vs %2</source>
+        <translation>Número de série incompatível: %1 vs %2 {1 ?}</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="358"/>
+        <location filename="../gamesummarywidget.cpp" line="362"/>
         <source>Search on Redump.org</source>
         <translation>Procurar em Redump.org</translation>
     </message>
