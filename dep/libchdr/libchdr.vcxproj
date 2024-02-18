@@ -1,12 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\msvc\vsprops\Configurations.props" />
-  <ItemGroup Condition="'$(Configuration)'!='DebugUWP' And '$(Configuration)'!='ReleaseUWP'">
+  <ItemGroup>
     <ProjectReference Include="..\lzma\lzma.vcxproj">
       <Project>{dd944834-7899-4c1c-a4c1-064b5009d239}</Project>
     </ProjectReference>
     <ProjectReference Include="..\zlib\zlib.vcxproj">
       <Project>{7ff9fdb9-d504-47db-a16a-b08071999620}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\zstd\zstd.vcxproj">
+      <Project>{73ee0c55-6ffe-44e7-9c12-baa52434a797}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -33,7 +36,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\zstd\lib;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <Import Project="..\msvc\vsprops\Targets.props" />
