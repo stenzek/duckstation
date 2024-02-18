@@ -3,6 +3,7 @@
 
 #include "context_egl_wayland.h"
 
+#include "common/error.h"
 #include "common/log.h"
 
 #include <dlfcn.h>
@@ -52,7 +53,16 @@ void ContextEGLWayland::ResizeSurface(u32 new_surface_width, u32 new_surface_hei
   ContextEGL::ResizeSurface(new_surface_width, new_surface_height);
 }
 
-EGLNativeWindowType ContextEGLWayland::GetNativeWindow(EGLConfig config)
+EGLDisplay ContextEGLWayland::GetPlatformDisplay(const EGLAttrib* attribs, Error* error)
+{
+  EGLDisplay dpy = TryGetPlatformDisplay(EGL_PLATFORM_WAYLAND_KHR, attribs);
+  if (dpy == EGL_NO_DISPLAY)
+    dpy = GetFallbackDisplay(error);
+
+  return dpy;
+}
+
+EGLSurface ContextEGLWayland::CreatePlatformSurface(EGLConfig config, const EGLAttrib* attribs, Error* error)
 {
   if (m_wl_window)
   {
@@ -63,9 +73,31 @@ EGLNativeWindowType ContextEGLWayland::GetNativeWindow(EGLConfig config)
   m_wl_window =
     m_wl_egl_window_create(static_cast<wl_surface*>(m_wi.window_handle), m_wi.surface_width, m_wi.surface_height);
   if (!m_wl_window)
-    return {};
+  {
+    Error::SetStringView(error, "wl_egl_window_create() failed");
+    return EGL_NO_SURFACE;
+  }
 
-  return reinterpret_cast<EGLNativeWindowType>(m_wl_window);
+  EGLSurface surface = EGL_NO_SURFACE;
+  if (GLAD_EGL_VERSION_1_5)
+  {
+    surface = eglCreatePlatformWindowSurface(m_display, config, m_wl_window, attribs);
+    if (surface == EGL_NO_SURFACE)
+    {
+      const EGLint err = eglGetError();
+      Error::SetStringFmt(error, "eglCreatePlatformWindowSurface() for Wayland failed: {} (0x{:X})", err, err);
+    }
+  }
+  if (surface == EGL_NO_SURFACE)
+    surface = CreateFallbackSurface(config, attribs, m_wl_window, error);
+
+  if (surface == EGL_NO_SURFACE)
+  {
+    m_wl_egl_window_destroy(m_wl_window);
+    m_wl_window = nullptr;
+  }
+
+  return surface;
 }
 
 bool ContextEGLWayland::LoadModule()

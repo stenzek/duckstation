@@ -3,6 +3,8 @@
 
 #include "context_egl_x11.h"
 
+#include "common/error.h"
+
 namespace GL {
 ContextEGLX11::ContextEGLX11(const WindowInfo& wi) : ContextEGL(wi)
 {
@@ -30,13 +32,13 @@ std::unique_ptr<Context> ContextEGLX11::CreateSharedContext(const WindowInfo& wi
   return context;
 }
 
-void ContextEGLX11::ResizeSurface(u32 new_surface_width, u32 new_surface_height)
+EGLDisplay ContextEGLX11::GetPlatformDisplay(const EGLAttrib* attribs, Error* error)
 {
-  ContextEGL::ResizeSurface(new_surface_width, new_surface_height);
+  EGLDisplay dpy = TryGetPlatformDisplay(EGL_PLATFORM_X11_KHR, attribs);
+  if (dpy == EGL_NO_DISPLAY)
+    dpy = GetFallbackDisplay(error);
+
+  return dpy;
 }
 
-EGLNativeWindowType ContextEGLX11::GetNativeWindow(EGLConfig config)
-{
-  return (EGLNativeWindowType)m_wi.window_handle;
-}
 } // namespace GL

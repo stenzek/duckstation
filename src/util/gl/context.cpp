@@ -155,29 +155,33 @@ std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, Error* error)
   }
 
   std::unique_ptr<Context> context;
+  Error local_error;
 #if defined(_WIN32) && !defined(_M_ARM64)
-  context = ContextWGL::Create(wi, versions_to_try, error);
+  context = ContextWGL::Create(wi, versions_to_try, error ? error : &local_error);
 #elif defined(__APPLE__)
   context = ContextAGL::Create(wi, versions_to_try);
 #elif defined(__ANDROID__)
-  context = ContextEGLAndroid::Create(wi, versions_to_try, error);
+  context = ContextEGLAndroid::Create(wi, versions_to_try, error ? error : &local_error);
 #else
 #if defined(ENABLE_X11)
   if (wi.type == WindowInfo::Type::X11)
-    context = ContextEGLX11::Create(wi, versions_to_try, error);
+    context = ContextEGLX11::Create(wi, versions_to_try, error ? error : &local_error);
 #endif
 #if defined(ENABLE_WAYLAND)
   if (wi.type == WindowInfo::Type::Wayland)
-    context = ContextEGLWayland::Create(wi, versions_to_try, error);
+    context = ContextEGLWayland::Create(wi, versions_to_try, error ? error : &local_error);
 #endif
   if (wi.type == WindowInfo::Type::Surfaceless)
-    context = ContextEGL::Create(wi, versions_to_try, error);
+    context = ContextEGL::Create(wi, versions_to_try, error ? error : &local_error);
 #endif
 
   if (!context)
+  {
+    Log_ErrorFmt("Failed to create GL context: {}", (error ? error : &local_error)->GetDescription());
     return nullptr;
+  }
 
-  Log_InfoPrintf("Created a %s context", context->IsGLES() ? "OpenGL ES" : "OpenGL");
+  Log_InfoPrint(context->IsGLES() ? "Created an OpenGL ES context" : "Created an OpenGL context");
 
   // TODO: Not thread-safe.
   static Context* context_being_created;

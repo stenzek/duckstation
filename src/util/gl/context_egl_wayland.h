@@ -19,7 +19,8 @@ public:
   void ResizeSurface(u32 new_surface_width = 0, u32 new_surface_height = 0) override;
 
 protected:
-  EGLNativeWindowType GetNativeWindow(EGLConfig config) override;
+  EGLDisplay GetPlatformDisplay(const EGLAttrib* attribs, Error* error) override;
+  EGLSurface CreatePlatformSurface(EGLConfig config, const EGLAttrib* attribs, Error* error) override;
 
 private:
   bool LoadModule();
