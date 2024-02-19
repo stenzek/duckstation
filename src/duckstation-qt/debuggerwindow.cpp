@@ -266,7 +266,7 @@ void DebuggerWindow::onCodeViewContextMenuRequested(const QPoint& pt)
   action = menu.addAction(QIcon::fromTheme("debugger-go-to-address"), tr("View in &Dump"));
   connect(action, &QAction::triggered, this, [this, address]() { scrollToMemoryAddress(address); });
 
-  action = menu.addAction(QIcon::fromTheme("debug-trace-line"), tr("Follow Load/Store"));
+  action = menu.addAction(QIcon::fromTheme("debug-trace-line"), tr("&Follow Load/Store"));
   connect(action, &QAction::triggered, this, [this, address]() { tryFollowLoadStore(address); });
 
   menu.exec(m_ui.codeView->mapToGlobal(pt));

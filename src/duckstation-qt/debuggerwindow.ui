@@ -345,7 +345,7 @@
     <iconset theme="debug-toggle-breakpoint"/>
    </property>
    <property name="text">
-    <string>Toggle B&amp;reakpoint</string>
+    <string>Toggle &amp;Breakpoint</string>
    </property>
    <property name="toolTip">
     <string>Toggle Breakpoint</string>
@@ -406,7 +406,7 @@
     <iconset theme="add-line"/>
    </property>
    <property name="text">
-    <string>Add &amp;Breakpoint</string>
+    <string>&amp;Add Breakpoint</string>
    </property>
    <property name="toolTip">
     <string>Add Breakpoint</string>
