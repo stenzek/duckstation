@@ -4303,9 +4303,8 @@ You cannot undo this action.</source>
         <translation>F5</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="348"/>
         <source>Toggle B&amp;reakpoint</source>
-        <translation>断点开关(&amp;R)</translation>
+        <translation type="vanished">断点开关(&amp;R)</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="354"/>
@@ -4370,14 +4369,12 @@ You cannot undo this action.</source>
         <translation>无效的搜索模式。它应当包含十六进制数字或问号。</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="269"/>
         <source>Follow Load/Store</source>
-        <translation>跟随加载/存储</translation>
+        <translation type="vanished">跟随加载/存储</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="409"/>
         <source>Add &amp;Breakpoint</source>
-        <translation>添加断点(&amp;B)</translation>
+        <translation type="vanished">添加断点(&amp;B)</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="334"/>
@@ -4421,6 +4418,11 @@ You cannot undo this action.</source>
         <translation>Ctrl+G</translation>
     </message>
     <message>
+        <location filename="../debuggerwindow.ui" line="409"/>
+        <source>&amp;Add Breakpoint</source>
+        <translation>添加断点(&amp;A)</translation>
+    </message>
+    <message>
         <location filename="../debuggerwindow.ui" line="429"/>
         <source>Ctrl+P</source>
         <translation>Ctrl+P</translation>
@@ -4461,6 +4463,7 @@ You cannot undo this action.</source>
         <translation>清除断点</translation>
     </message>
     <message>
+        <location filename="../debuggerwindow.ui" line="348"/>
         <location filename="../debuggerwindow.cpp" line="254"/>
         <source>Toggle &amp;Breakpoint</source>
         <translation>断点开关(&amp;B)</translation>
@@ -4592,6 +4595,11 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../debuggerwindow.cpp" line="266"/>
         <source>View in &amp;Dump</source>
         <translation>在转储中查看(&amp;D)</translation>
+    </message>
+    <message>
+        <location filename="../debuggerwindow.cpp" line="269"/>
+        <source>&amp;Follow Load/Store</source>
+        <translation>跟随加载/存储(&amp;F)</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="451"/>
