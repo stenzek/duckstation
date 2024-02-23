@@ -2013,6 +2013,42 @@ void CPU::NewRec::Compiler::Compile_multu_const(CompileFlags cf)
   SetConstantReg(Reg::lo, static_cast<u32>(res));
 }
 
+void CPU::NewRec::Compiler::MIPSSignedDivide(s32 num, s32 denom, u32* lo, u32* hi)
+{
+  if (denom == 0)
+  {
+    // divide by zero
+    *lo = (num >= 0) ? UINT32_C(0xFFFFFFFF) : UINT32_C(1);
+    *hi = static_cast<u32>(num);
+  }
+  else if (static_cast<u32>(num) == UINT32_C(0x80000000) && denom == -1)
+  {
+    // unrepresentable
+    *lo = UINT32_C(0x80000000);
+    *hi = 0;
+  }
+  else
+  {
+    *lo = static_cast<u32>(num / denom);
+    *hi = static_cast<u32>(num % denom);
+  }
+}
+
+void CPU::NewRec::Compiler::MIPSUnsignedDivide(u32 num, u32 denom, u32* lo, u32* hi)
+{
+  if (denom == 0)
+  {
+    // divide by zero
+    *lo = UINT32_C(0xFFFFFFFF);
+    *hi = static_cast<u32>(num);
+  }
+  else
+  {
+    *lo = num / denom;
+    *hi = num % denom;
+  }
+}
+
 void CPU::NewRec::Compiler::Compile_div_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsS()) && HasConstantReg(cf.MipsT()));
@@ -2020,24 +2056,8 @@ void CPU::NewRec::Compiler::Compile_div_const(CompileFlags cf)
   const s32 num = GetConstantRegS32(cf.MipsS());
   const s32 denom = GetConstantRegS32(cf.MipsT());
 
-  s32 lo, hi;
-  if (denom == 0)
-  {
-    // divide by zero
-    lo = (num >= 0) ? UINT32_C(0xFFFFFFFF) : UINT32_C(1);
-    hi = static_cast<u32>(num);
-  }
-  else if (static_cast<u32>(num) == UINT32_C(0x80000000) && denom == -1)
-  {
-    // unrepresentable
-    lo = UINT32_C(0x80000000);
-    hi = 0;
-  }
-  else
-  {
-    lo = num / denom;
-    hi = num % denom;
-  }
+  u32 lo, hi;
+  MIPSSignedDivide(num, denom, &lo, &hi);
 
   SetConstantReg(Reg::hi, hi);
   SetConstantReg(Reg::lo, lo);
@@ -2051,18 +2071,7 @@ void CPU::NewRec::Compiler::Compile_divu_const(CompileFlags cf)
   const u32 denom = GetConstantRegU32(cf.MipsT());
 
   u32 lo, hi;
-
-  if (denom == 0)
-  {
-    // divide by zero
-    lo = UINT32_C(0xFFFFFFFF);
-    hi = static_cast<u32>(num);
-  }
-  else
-  {
-    lo = num / denom;
-    hi = num % denom;
-  }
+  MIPSUnsignedDivide(num, denom, &lo, &hi);
 
   SetConstantReg(Reg::hi, hi);
   SetConstantReg(Reg::lo, lo);
@@ -2520,30 +2529,73 @@ void CPU::NewRec::Compiler::SpecExec_srav()
 
 void CPU::NewRec::Compiler::SpecExec_mult()
 {
-  // TODO
-  SpecInvalidateReg(Reg::hi);
-  SpecInvalidateReg(Reg::lo);
+  const SpecValue rs = SpecReadReg(inst->r.rs);
+  const SpecValue rt = SpecReadReg(inst->r.rt);
+  if (rs.has_value() && rt.has_value())
+  {
+    const u64 result =
+      static_cast<u64>(static_cast<s64>(SignExtend64(rs.value())) * static_cast<s64>(SignExtend64(rt.value())));
+    SpecWriteReg(Reg::hi, Truncate32(result >> 32));
+    SpecWriteReg(Reg::lo, Truncate32(result));
+  }
+  else
+  {
+    SpecInvalidateReg(Reg::hi);
+    SpecInvalidateReg(Reg::lo);
+  }
 }
 
 void CPU::NewRec::Compiler::SpecExec_multu()
 {
-  // TODO
-  SpecInvalidateReg(Reg::hi);
-  SpecInvalidateReg(Reg::lo);
+  const SpecValue rs = SpecReadReg(inst->r.rs);
+  const SpecValue rt = SpecReadReg(inst->r.rt);
+  if (rs.has_value() && rt.has_value())
+  {
+    const u64 result = ZeroExtend64(rs.value()) * SignExtend64(rt.value());
+    SpecWriteReg(Reg::hi, Truncate32(result >> 32));
+    SpecWriteReg(Reg::lo, Truncate32(result));
+  }
+  else
+  {
+    SpecInvalidateReg(Reg::hi);
+    SpecInvalidateReg(Reg::lo);
+  }
 }
 
 void CPU::NewRec::Compiler::SpecExec_div()
 {
-  // TODO
-  SpecInvalidateReg(Reg::hi);
-  SpecInvalidateReg(Reg::lo);
+  const SpecValue rs = SpecReadReg(inst->r.rs);
+  const SpecValue rt = SpecReadReg(inst->r.rt);
+  if (rs.has_value() && rt.has_value())
+  {
+    u32 lo, hi;
+    MIPSSignedDivide(static_cast<s32>(rs.value()), static_cast<s32>(rt.value()), &lo, &hi);
+    SpecWriteReg(Reg::hi, hi);
+    SpecWriteReg(Reg::lo, lo);
+  }
+  else
+  {
+    SpecInvalidateReg(Reg::hi);
+    SpecInvalidateReg(Reg::lo);
+  }
 }
 
 void CPU::NewRec::Compiler::SpecExec_divu()
 {
-  // TODO
-  SpecInvalidateReg(Reg::hi);
-  SpecInvalidateReg(Reg::lo);
+  const SpecValue rs = SpecReadReg(inst->r.rs);
+  const SpecValue rt = SpecReadReg(inst->r.rt);
+  if (rs.has_value() && rt.has_value())
+  {
+    u32 lo, hi;
+    MIPSUnsignedDivide(rs.value(), rt.value(), &lo, &hi);
+    SpecWriteReg(Reg::hi, hi);
+    SpecWriteReg(Reg::lo, lo);
+  }
+  else
+  {
+    SpecInvalidateReg(Reg::hi);
+    SpecInvalidateReg(Reg::lo);
+  }
 }
 
 void CPU::NewRec::Compiler::SpecExec_add()

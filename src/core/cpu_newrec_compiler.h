@@ -375,6 +375,9 @@ protected:
   static u32* GetCop0RegPtr(Cop0Reg reg);
   static u32 GetCop0RegWriteMask(Cop0Reg reg);
 
+  static void MIPSSignedDivide(s32 num, s32 denom, u32* lo, u32* hi);
+  static void MIPSUnsignedDivide(u32 num, u32 denom, u32* lo, u32* hi);
+
   void Compile_mfc0(CompileFlags cf);
   virtual void Compile_mtc0(CompileFlags cf) = 0;
   virtual void Compile_rfe(CompileFlags cf) = 0;
