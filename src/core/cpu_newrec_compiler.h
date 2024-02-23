@@ -199,6 +199,7 @@ protected:
   u32 GetBranchReturnAddress(CompileFlags cf) const;
   bool TrySwapDelaySlot(Reg rs = Reg::zero, Reg rt = Reg::zero, Reg rd = Reg::zero);
   void SetCompilerPC(u32 newpc);
+  void TruncateBlock();
 
   virtual const void* GetCurrentCodePointer() = 0;
 

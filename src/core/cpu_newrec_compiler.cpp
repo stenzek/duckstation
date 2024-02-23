@@ -1240,8 +1240,7 @@ void CPU::NewRec::Compiler::CompileInstruction()
         case InstructionFunct::nor: CompileTemplate(&Compiler::Compile_nor_const, &Compiler::Compile_nor, PGXPFN(CPU_NOR), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_COMMUTATIVE); SpecExec_nor(); break;
         case InstructionFunct::slt: CompileTemplate(&Compiler::Compile_slt_const, &Compiler::Compile_slt, PGXPFN(CPU_SLT), TF_WRITES_D | TF_READS_T | TF_READS_S); SpecExec_slt(); break;
         case InstructionFunct::sltu: CompileTemplate(&Compiler::Compile_sltu_const, &Compiler::Compile_sltu, PGXPFN(CPU_SLTU), TF_WRITES_D | TF_READS_T | TF_READS_S); SpecExec_sltu(); break;
-
-      default: Panic("fixme funct"); break;
+        default: Compile_Fallback(); InvalidateSpeculativeValues(); TruncateBlock(); break;
       }
     }
     break;
@@ -1323,7 +1322,18 @@ void CPU::NewRec::Compiler::CompileInstruction()
     case InstructionOp::lwc2: CompileLoadStoreTemplate(&Compiler::Compile_lwc2, MemoryAccessSize::Word, false, false, TF_GTE_STALL | TF_READS_S | TF_LOAD_DELAY); break;
     case InstructionOp::swc2: CompileLoadStoreTemplate(&Compiler::Compile_swc2, MemoryAccessSize::Word, true, false, TF_GTE_STALL | TF_READS_S); SpecExec_swc2(); break;
 
-    default: Panic("Fixme"); break;
+      // swc0/lwc0/cop1/cop3 are essentially no-ops
+    case InstructionOp::cop1:
+    case InstructionOp::cop3:
+    case InstructionOp::lwc0:
+    case InstructionOp::lwc1:
+    case InstructionOp::lwc3:
+    case InstructionOp::swc0:
+    case InstructionOp::swc1:
+    case InstructionOp::swc3:
+      break;
+
+    default: Compile_Fallback(); InvalidateSpeculativeValues(); TruncateBlock(); break;
       // clang-format on
 
 #undef PGXPFN
@@ -1696,10 +1706,15 @@ void CPU::NewRec::Compiler::CompileLoadStoreTemplate(void (Compiler::*func)(Comp
       Log_WarningFmt("Instruction {:08X} speculatively writes to {:08X} inside block {:08X}-{:08X}. Truncating block.",
                      m_current_instruction_pc, phys_spec_addr, m_block->pc,
                      m_block->pc + (m_block->size * sizeof(Instruction)));
-      m_block->size = ((m_current_instruction_pc - m_block->pc) / sizeof(Instruction)) + 1;
-      iinfo->is_last_instruction = true;
+      TruncateBlock();
     }
   }
+}
+
+void CPU::NewRec::Compiler::TruncateBlock()
+{
+  m_block->size = ((m_current_instruction_pc - m_block->pc) / sizeof(Instruction)) + 1;
+  iinfo->is_last_instruction = true;
 }
 
 void CPU::NewRec::Compiler::FlushForLoadStore(const std::optional<VirtualMemoryAddress>& address, bool store,
