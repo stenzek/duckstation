@@ -102,14 +102,14 @@ struct State
   void* fastmem_base = nullptr;
   void** memory_handlers = nullptr;
 
+  PGXP_value pgxp_gpr[static_cast<u8>(Reg::count)] = {};
+  PGXP_value pgxp_cop0[32] = {};
+  PGXP_value pgxp_gte[64] = {};
+
   std::array<u32, ICACHE_LINES> icache_tags = {};
   std::array<u8, ICACHE_SIZE> icache_data = {};
 
   std::array<u8, SCRATCHPAD_SIZE> scratchpad = {};
-
-  PGXP_value pgxp_gpr[static_cast<u8>(Reg::count)];
-  PGXP_value pgxp_cop0[32];
-  PGXP_value pgxp_gte[64];
 
   static constexpr u32 GPRRegisterOffset(u32 index) { return offsetof(State, regs.r) + (sizeof(u32) * index); }
   static constexpr u32 GTERegisterOffset(u32 index) { return offsetof(State, gte_regs.r32) + (sizeof(u32) * index); }
