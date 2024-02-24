@@ -36,14 +36,14 @@ using PageProtectionArray = std::array<PageProtectionInfo, Bus::RAM_8MB_CODE_PAG
 using BlockInstructionInfoPair = std::pair<Instruction, InstructionInfo>;
 using BlockInstructionList = std::vector<BlockInstructionInfoPair>;
 
-// Switch to manual protection if we invalidate more than 4 times within 20 frames.
+// Switch to manual protection if we invalidate more than 4 times within 60 frames.
 // Fall blocks back to interpreter if we recompile more than 3 times within 15 frames.
 // The interpreter fallback is set before the manual protection switch, so that if it's just a single block
 // which is constantly getting mutated, we won't hurt the performance of the rest in the page.
 static constexpr u32 RECOMPILE_COUNT_FOR_INTERPRETER_FALLBACK = 3;
 static constexpr u32 RECOMPILE_FRAMES_FOR_INTERPRETER_FALLBACK = 15;
 static constexpr u32 INVALIDATE_COUNT_FOR_MANUAL_PROTECTION = 4;
-static constexpr u32 INVALIDATE_FRAMES_FOR_MANUAL_PROTECTION = 20;
+static constexpr u32 INVALIDATE_FRAMES_FOR_MANUAL_PROTECTION = 60;
 
 static CodeLUT DecodeCodeLUTPointer(u32 slot, CodeLUT ptr);
 static CodeLUT EncodeCodeLUTPointer(u32 slot, CodeLUT ptr);
