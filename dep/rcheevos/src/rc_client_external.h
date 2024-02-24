@@ -73,6 +73,7 @@ typedef struct rc_client_external_t
   rc_client_external_set_read_memory_func_t set_read_memory;
   rc_client_external_set_get_time_millisecs_func_t set_get_time_millisecs;
   rc_client_external_set_string_func_t set_host;
+  rc_client_external_copy_string_func_t get_user_agent_clause;
 
   rc_client_external_set_int_func_t set_hardcore_enabled;
   rc_client_external_get_int_func_t get_hardcore_enabled;

@@ -43,12 +43,12 @@
     <ClInclude Include="include\rc_runtime.h" />
     <ClInclude Include="include\rc_runtime_types.h" />
     <ClInclude Include="include\rc_url.h" />
+    <ClInclude Include="include\rc_util.h" />
     <ClInclude Include="src\rapi\rc_api_common.h" />
     <ClInclude Include="src\rcheevos\rc_internal.h" />
     <ClInclude Include="src\rcheevos\rc_validate.h" />
     <ClInclude Include="src\rc_client_internal.h" />
     <ClInclude Include="src\rc_compat.h" />
-    <ClInclude Include="src\rc_util.h" />
     <ClInclude Include="src\rc_version.h" />
     <ClInclude Include="src\rhash\md5.h" />
   </ItemGroup>

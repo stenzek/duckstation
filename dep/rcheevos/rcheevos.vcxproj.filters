@@ -144,8 +144,10 @@
       <Filter>rcheevos</Filter>
     </ClInclude>
     <ClInclude Include="src\rc_compat.h" />
-    <ClInclude Include="src\rc_util.h" />
     <ClInclude Include="src\rc_version.h" />
     <ClInclude Include="src\rc_client_internal.h" />
+    <ClInclude Include="include\rc_util.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

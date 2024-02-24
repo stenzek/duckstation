@@ -77,7 +77,9 @@ static void rc_client_raintegration_load_dll(rc_client_t* client,
   raintegration->get_menu = (rc_client_raintegration_get_menu_func_t)GetProcAddress(hDLL, "_Rcheevos_RAIntegrationGetMenu");
   raintegration->activate_menu_item = (rc_client_raintegration_activate_menuitem_func_t)GetProcAddress(hDLL, "_Rcheevos_ActivateRAIntegrationMenuItem");
   raintegration->set_write_memory_function = (rc_client_raintegration_set_write_memory_func_t)GetProcAddress(hDLL, "_Rcheevos_SetRAIntegrationWriteMemoryFunction");
+  raintegration->set_get_game_name_function = (rc_client_raintegration_set_get_game_name_func_t)GetProcAddress(hDLL, "_Rcheevos_SetRAIntegrationGetGameNameFunction");
   raintegration->set_event_handler = (rc_client_raintegration_set_event_handler_func_t)GetProcAddress(hDLL, "_Rcheevos_SetRAIntegrationEventHandler");
+  raintegration->has_modifications = (rc_client_raintegration_get_int_func_t)GetProcAddress(hDLL, "_Rcheevos_HasModifications");
 
   if (!raintegration->get_version ||
       !raintegration->init_client ||
@@ -147,7 +149,8 @@ static void rc_client_init_raintegration(rc_client_t* client,
     const char* host_url = client->state.raintegration->get_host_url();
     if (host_url) {
       if (strcmp(host_url, "OFFLINE") != 0) {
-        rc_client_set_host(client, host_url);
+        if (strcmp(host_url, "https://retroachievements.org") != 0)
+          rc_client_set_host(client, host_url);
       }
       else if (client->state.raintegration->init_client_offline) {
         init_func = client->state.raintegration->init_client_offline;
@@ -363,6 +366,12 @@ void rc_client_raintegration_set_write_memory_function(rc_client_t* client, rc_c
     client->state.raintegration->set_write_memory_function(client, handler);
 }
 
+void rc_client_raintegration_set_get_game_name_function(rc_client_t* client, rc_client_raintegration_get_game_name_func_t handler)
+{
+  if (client && client->state.raintegration && client->state.raintegration->set_get_game_name_function)
+    client->state.raintegration->set_get_game_name_function(client, handler);
+}
+
 void rc_client_raintegration_set_event_handler(rc_client_t* client,
     rc_client_raintegration_event_handler_t handler)
 {
@@ -380,6 +389,18 @@ const rc_client_raintegration_menu_t* rc_client_raintegration_get_menu(const rc_
   }
 
   return client->state.raintegration->get_menu();
+}
+
+int rc_client_raintegration_has_modifications(const rc_client_t* client)
+{
+  if (!client || !client->state.raintegration ||
+    !client->state.raintegration->bIsInited ||
+    !client->state.raintegration->has_modifications)
+  {
+    return 0;
+  }
+
+  return client->state.raintegration->has_modifications();
 }
 
 void rc_client_raintegration_rebuild_submenu(rc_client_t* client, HMENU hMenu)

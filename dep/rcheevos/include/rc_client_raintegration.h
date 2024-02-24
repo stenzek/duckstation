@@ -46,6 +46,8 @@ typedef void (RC_CCONV *rc_client_raintegration_event_handler_t)(const rc_client
 typedef void (RC_CCONV *rc_client_raintegration_write_memory_func_t)(uint32_t address, uint8_t* buffer,
                                                                      uint32_t num_bytes, rc_client_t* client);
 
+typedef void (RC_CCONV* rc_client_raintegration_get_game_name_func_t)(char* buffer, uint32_t buffer_size, rc_client_t* client);
+
 /* types needed to integrate raintegration */
 
 #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
@@ -74,6 +76,8 @@ RC_EXPORT void RC_CCONV rc_client_raintegration_update_menu_item(const rc_client
 RC_EXPORT int RC_CCONV rc_client_raintegration_activate_menu_item(const rc_client_t* client, uint32_t nMenuItemId);
 
 RC_EXPORT void RC_CCONV rc_client_raintegration_set_write_memory_function(rc_client_t* client, rc_client_raintegration_write_memory_func_t handler);
+RC_EXPORT void RC_CCONV rc_client_raintegration_set_get_game_name_function(rc_client_t* client, rc_client_raintegration_get_game_name_func_t handler);
+RC_EXPORT int RC_CCONV rc_client_raintegration_has_modifications(const rc_client_t* client);
 
 RC_EXPORT void RC_CCONV rc_client_raintegration_set_event_handler(rc_client_t* client,
     rc_client_raintegration_event_handler_t handler);

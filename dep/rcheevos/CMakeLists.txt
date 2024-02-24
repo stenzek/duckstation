@@ -12,6 +12,7 @@ add_library(rcheevos
   include/rc_runtime.h
   include/rc_runtime_types.h
   include/rc_url.h
+  include/rc_util.h
   src/rapi/rc_api_common.c
   src/rapi/rc_api_common.h
   src/rapi/rc_api_editor.c
@@ -39,7 +40,6 @@ add_library(rcheevos
   src/rc_compat.c
   src/rc_compat.h
   src/rc_util.c
-  src/rc_util.h
   src/rc_version.h
   src/rhash/cdreader.c
   src/rhash/hash.c

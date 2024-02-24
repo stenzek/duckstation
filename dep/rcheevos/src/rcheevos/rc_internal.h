@@ -2,7 +2,7 @@
 #define RC_INTERNAL_H
 
 #include "rc_runtime_types.h"
-#include "../rc_util.h"
+#include "rc_util.h"
 
 RC_BEGIN_C_DECLS
 

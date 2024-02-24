@@ -2,7 +2,7 @@
 #define RC_API_REQUEST_H
 
 #include "rc_error.h"
-#include "../src/rc_util.h"
+#include "rc_util.h"
 
 #include <stddef.h>
 
