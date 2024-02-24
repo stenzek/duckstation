@@ -5,9 +5,9 @@ project(duckstation C CXX)
 cmake_policy(SET CMP0069 NEW)
 set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
 
-message("CMake Version: ${CMAKE_VERSION}")
-message("CMake System Name: ${CMAKE_SYSTEM_NAME}")
-message("Build Type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "CMake Version: ${CMAKE_VERSION}")
+message(STATUS "CMake System Name: ${CMAKE_SYSTEM_NAME}")
+message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 
 # Pull in modules.
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules/")
@@ -118,17 +118,17 @@ if(APPLE AND NOT "${CMAKE_OSX_ARCHITECTURES}" STREQUAL "")
   # Universal binaries.
   if("x86_64" IN_LIST CMAKE_OSX_ARCHITECTURES)
     set(CPU_ARCH_X64 TRUE)
-    message("Building x86_64 MacOS binaries.")
+    message(STATUS "Building x86_64 MacOS binaries.")
   endif()
   if("arm64" IN_LIST CMAKE_OSX_ARCHITECTURES)
     set(CPU_ARCH_ARM64 TRUE)
-    message("Building ARM64 MacOS binaries.")
+    message(STATUS "Building ARM64 MacOS binaries.")
   endif()
 elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "amd64" OR
        "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "AMD64" OR "${CMAKE_OSX_ARCHITECTURES}" STREQUAL "x86_64")
   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(CPU_ARCH_X64 TRUE)
-    message("Building x86_64 binaries.")
+    message(STATUS "Building x86_64 binaries.")
   else()
     # Cross-compiling 32-bit build. 32-bit hosts are not supported.
     set(CPU_ARCH_X86 TRUE)
@@ -141,17 +141,17 @@ elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86" OR "${CMAKE_SYSTEM_PROCESSOR}"
 elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm64")
   if(CMAKE_SIZEOF_VOID_P EQUAL 8) # Might have an A64 kernel, e.g. Raspbian.
     set(CPU_ARCH_ARM64 TRUE)
-    message("Building ARM64 binaries.")
+    message(STATUS "Building ARM64 binaries.")
   else()
     set(CPU_ARCH_ARM32 TRUE)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -marm -march=armv7-a")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -marm -march=armv7-a")
-    message("Building ARM32 binaries on ARM64.")
+    message(STATUS "Building ARM32 binaries on ARM64.")
   endif()
 elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "armv7-a" OR
        "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "armv7l")
   set(CPU_ARCH_ARM32 TRUE)
-  message("Building ARM32 binaries.")
+  message(STATUS "Building ARM32 binaries.")
   if(ANDROID)
     # Force ARM mode, since apparently ANDROID_ARM_MODE isn't working..
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -marm")
@@ -163,7 +163,7 @@ elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm" OR "${CMAKE_SYSTEM_PROCESSOR}"
   endif()
 elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "riscv64")
   set(CPU_ARCH_RISCV64 TRUE)
-  message("Building RISC-V 64 binaries.")
+  message(STATUS "Building RISC-V 64 binaries.")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -finline-atomics")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -finline-atomics")
 
@@ -178,6 +178,9 @@ elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "riscv64")
 else()
   message(FATAL_ERROR "Unknown system processor: ${CMAKE_SYSTEM_PROCESSOR}")
 endif()
+
+# Detect page size if needed.
+detect_page_size()
 
 
 # We don't need exceptions, disable them to save a bit of code size.

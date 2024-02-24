@@ -1,7 +1,8 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
+#include <bit>
 #include <cstdint>
 #include <cstring>
 #include <limits>
@@ -170,7 +171,11 @@ struct dependent_int_false : std::false_type
 #endif
 
 // Host page sizes.
-#if defined(__APPLE__) && defined(__aarch64__)
+#if defined(OVERRIDE_HOST_PAGE_SIZE)
+static constexpr u32 HOST_PAGE_SIZE = OVERRIDE_HOST_PAGE_SIZE;
+static constexpr u32 HOST_PAGE_MASK = HOST_PAGE_SIZE - 1;
+static constexpr u32 HOST_PAGE_SHIFT = std::bit_width(HOST_PAGE_MASK);
+#elif defined(__APPLE__) && defined(__aarch64__)
 static constexpr u32 HOST_PAGE_SIZE = 0x4000;
 static constexpr u32 HOST_PAGE_MASK = HOST_PAGE_SIZE - 1;
 static constexpr u32 HOST_PAGE_SHIFT = 14;

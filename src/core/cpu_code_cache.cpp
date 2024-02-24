@@ -135,7 +135,6 @@ static constexpr u32 RECOMPILER_FAR_CODE_CACHE_SIZE = 16 * 1024 * 1024;
 #endif
 
 #ifdef USE_STATIC_CODE_BUFFER
-static constexpr u32 RECOMPILER_GUARD_SIZE = 4096;
 alignas(HOST_PAGE_SIZE) static u8 s_code_storage[RECOMPILER_CODE_CACHE_SIZE + RECOMPILER_FAR_CODE_CACHE_SIZE];
 #endif
 
@@ -170,8 +169,8 @@ bool CPU::CodeCache::ProcessStartup()
 
 #ifdef ENABLE_RECOMPILER_SUPPORT
 #ifdef USE_STATIC_CODE_BUFFER
-  const bool has_buffer = s_code_buffer.Initialize(s_code_storage, sizeof(s_code_storage),
-                                                   RECOMPILER_FAR_CODE_CACHE_SIZE, RECOMPILER_GUARD_SIZE);
+  const bool has_buffer =
+    s_code_buffer.Initialize(s_code_storage, sizeof(s_code_storage), RECOMPILER_FAR_CODE_CACHE_SIZE, HOST_PAGE_SIZE);
 #else
   const bool has_buffer = false;
 #endif
