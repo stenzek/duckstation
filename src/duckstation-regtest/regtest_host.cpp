@@ -17,6 +17,7 @@
 
 #include "common/assert.h"
 #include "common/crash_handler.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/memory_settings_interface.h"
@@ -112,6 +113,12 @@ bool RegTestHost::InitializeConfig()
   EmuFolders::EnsureFoldersExist();
 
   return true;
+}
+
+void Host::ReportFatalError(const std::string_view& title, const std::string_view& message)
+{
+  Log_ErrorPrintf("ReportFatalError: %.*s", static_cast<int>(message.size()), message.data());
+  abort();
 }
 
 void Host::ReportErrorAsync(const std::string_view& title, const std::string_view& message)

@@ -25,6 +25,10 @@ std::optional<std::string> ReadResourceFileToString(std::string_view filename, b
 /// Returns the modified time of a resource.
 std::optional<std::time_t> GetResourceFileTimestamp(std::string_view filename, bool allow_override);
 
+/// Reports a fatal error on the main thread. This does not assume that the main window exists,
+/// unlike ReportErrorAsync(), and will exit the application after the popup is closed.
+void ReportFatalError(const std::string_view& title, const std::string_view& message);
+
 /// Displays an asynchronous error on the UI thread, i.e. doesn't block the caller.
 void ReportErrorAsync(const std::string_view& title, const std::string_view& message);
 void ReportFormattedErrorAsync(const std::string_view& title, const char* format, ...);
