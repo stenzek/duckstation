@@ -45,6 +45,7 @@
     <ClInclude Include="thirdparty\SmallVector.h">
       <Filter>thirdparty</Filter>
     </ClInclude>
+    <ClInclude Include="dynamic_library.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="small_string.cpp" />
@@ -73,6 +74,7 @@
     <ClCompile Include="thirdparty\SmallVector.cpp">
       <Filter>thirdparty</Filter>
     </ClCompile>
+    <ClCompile Include="dynamic_library.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

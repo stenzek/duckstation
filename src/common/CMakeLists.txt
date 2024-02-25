@@ -10,6 +10,8 @@ add_library(common
   crash_handler.cpp
   crash_handler.h
   dimensional_array.h
+  dynamic_library.cpp
+  dynamic_library.h
   error.cpp
   error.h
   fastjmp.cpp

@@ -10,6 +10,7 @@
     <ClInclude Include="byte_stream.h" />
     <ClInclude Include="crash_handler.h" />
     <ClInclude Include="dimensional_array.h" />
+    <ClInclude Include="dynamic_library.h" />
     <ClInclude Include="easing.h" />
     <ClInclude Include="error.h" />
     <ClInclude Include="fastjmp.h" />
@@ -47,6 +48,7 @@
     <ClCompile Include="assert.cpp" />
     <ClCompile Include="byte_stream.cpp" />
     <ClCompile Include="crash_handler.cpp" />
+    <ClCompile Include="dynamic_library.cpp" />
     <ClCompile Include="error.cpp" />
     <ClCompile Include="fastjmp.cpp" />
     <ClCompile Include="file_system.cpp" />
