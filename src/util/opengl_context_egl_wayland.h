@@ -2,20 +2,21 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
-#include "context_egl.h"
+
+#include "opengl_context_egl.h"
+
 #include <wayland-egl.h>
 
-namespace GL {
-
-class ContextEGLWayland final : public ContextEGL
+class OpenGLContextEGLWayland final : public OpenGLContextEGL
 {
 public:
-  ContextEGLWayland(const WindowInfo& wi);
-  ~ContextEGLWayland() override;
+  OpenGLContextEGLWayland(const WindowInfo& wi);
+  ~OpenGLContextEGLWayland() override;
 
-  static std::unique_ptr<Context> Create(const WindowInfo& wi, std::span<const Version> versions_to_try, Error* error);
+  static std::unique_ptr<OpenGLContext> Create(const WindowInfo& wi, std::span<const Version> versions_to_try,
+                                               Error* error);
 
-  std::unique_ptr<Context> CreateSharedContext(const WindowInfo& wi, Error* error) override;
+  std::unique_ptr<OpenGLContext> CreateSharedContext(const WindowInfo& wi, Error* error) override;
   void ResizeSurface(u32 new_surface_width = 0, u32 new_surface_height = 0) override;
 
 protected:
@@ -23,7 +24,7 @@ protected:
   EGLSurface CreatePlatformSurface(EGLConfig config, const EGLAttrib* attribs, Error* error) override;
 
 private:
-  bool LoadModule();
+  bool LoadModule(Error* error);
 
   wl_egl_window* m_wl_window = nullptr;
 
@@ -32,5 +33,3 @@ private:
   void (*m_wl_egl_window_destroy)(struct wl_egl_window* egl_window);
   void (*m_wl_egl_window_resize)(struct wl_egl_window* egl_window, int width, int height, int dx, int dy);
 };
-
-} // namespace GL

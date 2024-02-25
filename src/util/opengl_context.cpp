@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
-#include "context.h"
-#include "../opengl_loader.h"
+#include "opengl_context.h"
+#include "opengl_loader.h"
 
 #include "common/error.h"
 #include "common/log.h"
@@ -16,25 +16,23 @@
 #endif
 
 #if defined(_WIN32) && !defined(_M_ARM64)
-#include "context_wgl.h"
+#include "opengl_context_wgl.h"
 #elif defined(__APPLE__)
-#include "context_agl.h"
+#include "opengl_context_agl.h"
 #elif defined(__ANDROID__)
-#include "context_egl_android.h"
+#include "opengl_context_egl_android.h"
 #else
 #ifdef ENABLE_EGL
 #ifdef ENABLE_WAYLAND
-#include "context_egl_wayland.h"
+#include "opengl_context_egl_wayland.h"
 #endif
 #ifdef ENABLE_X11
-#include "context_egl_x11.h"
+#include "opengl_context_egl_x11.h"
 #endif
 #endif
 #endif
 
-Log_SetChannel(GL::Context);
-
-namespace GL {
+Log_SetChannel(OpenGLContext);
 
 static bool ShouldPreferESContext()
 {
@@ -107,18 +105,18 @@ static void DisableBrokenExtensions(const char* gl_vendor, const char* gl_render
   }
 }
 
-Context::Context(const WindowInfo& wi) : m_wi(wi)
+OpenGLContext::OpenGLContext(const WindowInfo& wi) : m_wi(wi)
 {
 }
 
-Context::~Context() = default;
+OpenGLContext::~OpenGLContext() = default;
 
-std::vector<Context::FullscreenModeInfo> Context::EnumerateFullscreenModes()
+std::vector<OpenGLContext::FullscreenModeInfo> OpenGLContext::EnumerateFullscreenModes()
 {
   return {};
 }
 
-std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, Error* error)
+std::unique_ptr<OpenGLContext> OpenGLContext::Create(const WindowInfo& wi, Error* error)
 {
   static constexpr std::array<Version, 14> vlist = {{{Profile::Core, 4, 6},
                                                      {Profile::Core, 4, 5},
@@ -154,37 +152,33 @@ std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, Error* error)
     versions_to_try = std::span<const Version>(new_versions_to_try, versions_to_try.size());
   }
 
-  std::unique_ptr<Context> context;
-  Error local_error;
+  std::unique_ptr<OpenGLContext> context;
 #if defined(_WIN32) && !defined(_M_ARM64)
-  context = ContextWGL::Create(wi, versions_to_try, error ? error : &local_error);
+  context = OpenGLContextWGL::Create(wi, versions_to_try, error);
 #elif defined(__APPLE__)
-  context = ContextAGL::Create(wi, versions_to_try);
+  context = OpenGLContextAGL::Create(wi, versions_to_try, error);
 #elif defined(__ANDROID__)
-  context = ContextEGLAndroid::Create(wi, versions_to_try, error ? error : &local_error);
+  context = ContextEGLAndroid::Create(wi, versions_to_try, error);
 #else
 #if defined(ENABLE_X11)
   if (wi.type == WindowInfo::Type::X11)
-    context = ContextEGLX11::Create(wi, versions_to_try, error ? error : &local_error);
+    context = OpenGLContextEGLX11::Create(wi, versions_to_try, error);
 #endif
 #if defined(ENABLE_WAYLAND)
   if (wi.type == WindowInfo::Type::Wayland)
-    context = ContextEGLWayland::Create(wi, versions_to_try, error ? error : &local_error);
+    context = OpenGLContextEGLWayland::Create(wi, versions_to_try, error);
 #endif
   if (wi.type == WindowInfo::Type::Surfaceless)
-    context = ContextEGL::Create(wi, versions_to_try, error ? error : &local_error);
+    context = OpenGLContextEGL::Create(wi, versions_to_try, error);
 #endif
 
   if (!context)
-  {
-    Log_ErrorFmt("Failed to create GL context: {}", (error ? error : &local_error)->GetDescription());
     return nullptr;
-  }
 
   Log_InfoPrint(context->IsGLES() ? "Created an OpenGL ES context" : "Created an OpenGL context");
 
   // TODO: Not thread-safe.
-  static Context* context_being_created;
+  static OpenGLContext* context_being_created;
   context_being_created = context.get();
 
   // load up glad
@@ -218,5 +212,3 @@ std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, Error* error)
 
   return context;
 }
-
-} // namespace GL

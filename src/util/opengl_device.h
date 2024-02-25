@@ -1,12 +1,12 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
 
-#include "gl/context.h"
 #include "gpu_device.h"
 #include "gpu_framebuffer_manager.h"
 #include "gpu_shader_cache.h"
+#include "opengl_context.h"
 #include "opengl_loader.h"
 #include "opengl_pipeline.h"
 #include "opengl_texture.h"
@@ -168,7 +168,7 @@ private:
 
   void SetVertexBufferOffsets(u32 base_vertex);
 
-  std::unique_ptr<GL::Context> m_gl_context;
+  std::unique_ptr<OpenGLContext> m_gl_context;
 
   std::unique_ptr<OpenGLStreamBuffer> m_vertex_buffer;
   std::unique_ptr<OpenGLStreamBuffer> m_index_buffer;

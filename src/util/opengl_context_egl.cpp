@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
-#include "context_egl.h"
+#include "opengl_context_egl.h"
 
 #include "common/assert.h"
 #include "common/dynamic_library.h"
@@ -13,7 +13,7 @@
 #include <optional>
 #include <vector>
 
-Log_SetChannel(GL::Context);
+Log_SetChannel(OpenGLContext);
 
 static DynamicLibrary s_egl_library;
 static std::atomic_uint32_t s_egl_refcount = 0;
@@ -77,30 +77,29 @@ static std::vector<EGLint> EGLAttribToInt(const EGLAttrib* attribs)
   return int_attribs;
 }
 
-namespace GL {
-ContextEGL::ContextEGL(const WindowInfo& wi) : Context(wi)
+OpenGLContextEGL::OpenGLContextEGL(const WindowInfo& wi) : OpenGLContext(wi)
 {
   LoadEGL();
 }
 
-ContextEGL::~ContextEGL()
+OpenGLContextEGL::~OpenGLContextEGL()
 {
   DestroySurface();
   DestroyContext();
   UnloadEGL();
 }
 
-std::unique_ptr<Context> ContextEGL::Create(const WindowInfo& wi, std::span<const Version> versions_to_try,
-                                            Error* error)
+std::unique_ptr<OpenGLContext> OpenGLContextEGL::Create(const WindowInfo& wi, std::span<const Version> versions_to_try,
+                                                        Error* error)
 {
-  std::unique_ptr<ContextEGL> context = std::make_unique<ContextEGL>(wi);
+  std::unique_ptr<OpenGLContextEGL> context = std::make_unique<OpenGLContextEGL>(wi);
   if (!context->Initialize(versions_to_try, error))
     return nullptr;
 
   return context;
 }
 
-bool ContextEGL::Initialize(std::span<const Version> versions_to_try, Error* error)
+bool OpenGLContextEGL::Initialize(std::span<const Version> versions_to_try, Error* error)
 {
   if (!LoadGLADEGL(EGL_NO_DISPLAY, error))
     return false;
@@ -136,7 +135,7 @@ bool ContextEGL::Initialize(std::span<const Version> versions_to_try, Error* err
   return false;
 }
 
-EGLDisplay ContextEGL::GetPlatformDisplay(const EGLAttrib* attribs, Error* error)
+EGLDisplay OpenGLContextEGL::GetPlatformDisplay(const EGLAttrib* attribs, Error* error)
 {
   EGLDisplay dpy = TryGetPlatformDisplay(EGL_PLATFORM_SURFACELESS_MESA, attribs);
   if (dpy == EGL_NO_DISPLAY)
@@ -145,7 +144,7 @@ EGLDisplay ContextEGL::GetPlatformDisplay(const EGLAttrib* attribs, Error* error
   return dpy;
 }
 
-EGLDisplay ContextEGL::TryGetPlatformDisplay(EGLenum platform, const EGLAttrib* attribs)
+EGLDisplay OpenGLContextEGL::TryGetPlatformDisplay(EGLenum platform, const EGLAttrib* attribs)
 {
   const char* extensions_str = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
   if (!extensions_str)
@@ -203,7 +202,7 @@ EGLDisplay ContextEGL::TryGetPlatformDisplay(EGLenum platform, const EGLAttrib* 
   return dpy;
 }
 
-EGLDisplay ContextEGL::GetFallbackDisplay(Error* error)
+EGLDisplay OpenGLContextEGL::GetFallbackDisplay(Error* error)
 {
   Log_WarningPrint("Using fallback eglGetDisplay() path.");
   EGLDisplay dpy = eglGetDisplay(m_wi.display_connection);
@@ -216,7 +215,7 @@ EGLDisplay ContextEGL::GetFallbackDisplay(Error* error)
   return dpy;
 }
 
-EGLSurface ContextEGL::CreatePlatformSurface(EGLConfig config, const EGLAttrib* attribs, Error* error)
+EGLSurface OpenGLContextEGL::CreatePlatformSurface(EGLConfig config, const EGLAttrib* attribs, Error* error)
 {
   EGLSurface surface = EGL_NO_SURFACE;
   if (GLAD_EGL_VERSION_1_5)
@@ -234,7 +233,7 @@ EGLSurface ContextEGL::CreatePlatformSurface(EGLConfig config, const EGLAttrib* 
   return surface;
 }
 
-EGLSurface ContextEGL::CreateFallbackSurface(EGLConfig config, const EGLAttrib* attribs, void* win, Error* error)
+EGLSurface OpenGLContextEGL::CreateFallbackSurface(EGLConfig config, const EGLAttrib* attribs, void* win, Error* error)
 {
   Log_WarningPrint("Using fallback eglCreateWindowSurface() path.");
 
@@ -251,12 +250,12 @@ EGLSurface ContextEGL::CreateFallbackSurface(EGLConfig config, const EGLAttrib* 
   return surface;
 }
 
-void* ContextEGL::GetProcAddress(const char* name)
+void* OpenGLContextEGL::GetProcAddress(const char* name)
 {
   return reinterpret_cast<void*>(eglGetProcAddress(name));
 }
 
-bool ContextEGL::ChangeSurface(const WindowInfo& new_wi)
+bool OpenGLContextEGL::ChangeSurface(const WindowInfo& new_wi)
 {
   const bool was_current = (eglGetCurrentContext() == m_context);
   if (was_current)
@@ -281,7 +280,7 @@ bool ContextEGL::ChangeSurface(const WindowInfo& new_wi)
   return true;
 }
 
-void ContextEGL::ResizeSurface(u32 new_surface_width /*= 0*/, u32 new_surface_height /*= 0*/)
+void OpenGLContextEGL::ResizeSurface(u32 new_surface_width /*= 0*/, u32 new_surface_height /*= 0*/)
 {
   if (new_surface_width == 0 && new_surface_height == 0)
   {
@@ -303,17 +302,17 @@ void ContextEGL::ResizeSurface(u32 new_surface_width /*= 0*/, u32 new_surface_he
   m_wi.surface_height = new_surface_height;
 }
 
-bool ContextEGL::SwapBuffers()
+bool OpenGLContextEGL::SwapBuffers()
 {
   return eglSwapBuffers(m_display, m_surface);
 }
 
-bool ContextEGL::IsCurrent()
+bool OpenGLContextEGL::IsCurrent()
 {
   return m_context && eglGetCurrentContext() == m_context;
 }
 
-bool ContextEGL::MakeCurrent()
+bool OpenGLContextEGL::MakeCurrent()
 {
   if (!eglMakeCurrent(m_display, m_surface, m_surface, m_context))
   {
@@ -324,19 +323,19 @@ bool ContextEGL::MakeCurrent()
   return true;
 }
 
-bool ContextEGL::DoneCurrent()
+bool OpenGLContextEGL::DoneCurrent()
 {
   return eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 }
 
-bool ContextEGL::SetSwapInterval(s32 interval)
+bool OpenGLContextEGL::SetSwapInterval(s32 interval)
 {
   return eglSwapInterval(m_display, interval);
 }
 
-std::unique_ptr<Context> ContextEGL::CreateSharedContext(const WindowInfo& wi, Error* error)
+std::unique_ptr<OpenGLContext> OpenGLContextEGL::CreateSharedContext(const WindowInfo& wi, Error* error)
 {
-  std::unique_ptr<ContextEGL> context = std::make_unique<ContextEGL>(wi);
+  std::unique_ptr<OpenGLContextEGL> context = std::make_unique<OpenGLContextEGL>(wi);
   context->m_display = m_display;
 
   if (!context->CreateContextAndSurface(m_version, m_context, false))
@@ -348,7 +347,7 @@ std::unique_ptr<Context> ContextEGL::CreateSharedContext(const WindowInfo& wi, E
   return context;
 }
 
-bool ContextEGL::CreateSurface()
+bool OpenGLContextEGL::CreateSurface()
 {
   if (m_wi.type == WindowInfo::Type::Surfaceless)
   {
@@ -384,7 +383,7 @@ bool ContextEGL::CreateSurface()
   return true;
 }
 
-bool ContextEGL::CreatePBufferSurface()
+bool OpenGLContextEGL::CreatePBufferSurface()
 {
   const u32 width = std::max<u32>(m_wi.surface_width, 1);
   const u32 height = std::max<u32>(m_wi.surface_height, 1);
@@ -407,7 +406,7 @@ bool ContextEGL::CreatePBufferSurface()
   return true;
 }
 
-bool ContextEGL::CheckConfigSurfaceFormat(EGLConfig config, GPUTexture::Format format)
+bool OpenGLContextEGL::CheckConfigSurfaceFormat(EGLConfig config, GPUTexture::Format format)
 {
   int red_size, green_size, blue_size, alpha_size;
   if (!eglGetConfigAttrib(m_display, config, EGL_RED_SIZE, &red_size) ||
@@ -437,7 +436,7 @@ bool ContextEGL::CheckConfigSurfaceFormat(EGLConfig config, GPUTexture::Format f
   }
 }
 
-GPUTexture::Format ContextEGL::GetSurfaceTextureFormat() const
+GPUTexture::Format OpenGLContextEGL::GetSurfaceTextureFormat() const
 {
   int red_size = 0, green_size = 0, blue_size = 0, alpha_size = 0;
   eglGetConfigAttrib(m_display, m_config, EGL_RED_SIZE, &red_size);
@@ -464,7 +463,7 @@ GPUTexture::Format ContextEGL::GetSurfaceTextureFormat() const
   }
 }
 
-void ContextEGL::DestroyContext()
+void OpenGLContextEGL::DestroyContext()
 {
   if (eglGetCurrentContext() == m_context)
     eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
@@ -476,7 +475,7 @@ void ContextEGL::DestroyContext()
   }
 }
 
-void ContextEGL::DestroySurface()
+void OpenGLContextEGL::DestroySurface()
 {
   if (eglGetCurrentSurface(EGL_DRAW) == m_surface)
     eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
@@ -488,11 +487,12 @@ void ContextEGL::DestroySurface()
   }
 }
 
-bool ContextEGL::CreateContext(const Version& version, EGLContext share_context)
+bool OpenGLContextEGL::CreateContext(const Version& version, EGLContext share_context)
 {
-  Log_DevPrintf(
-    "Trying version %u.%u (%s)", version.major_version, version.minor_version,
-    version.profile == Context::Profile::ES ? "ES" : (version.profile == Context::Profile::Core ? "Core" : "None"));
+  Log_DevPrintf("Trying version %u.%u (%s)", version.major_version, version.minor_version,
+                version.profile == OpenGLContext::Profile::ES ?
+                  "ES" :
+                  (version.profile == OpenGLContext::Profile::Core ? "Core" : "None"));
   int surface_attribs[16] = {
     EGL_RENDERABLE_TYPE,
     (version.profile == Profile::ES) ?
@@ -600,16 +600,17 @@ bool ContextEGL::CreateContext(const Version& version, EGLContext share_context)
     return false;
   }
 
-  Log_InfoPrintf(
-    "Got version %u.%u (%s)", version.major_version, version.minor_version,
-    version.profile == Context::Profile::ES ? "ES" : (version.profile == Context::Profile::Core ? "Core" : "None"));
+  Log_InfoPrintf("Got version %u.%u (%s)", version.major_version, version.minor_version,
+                 version.profile == OpenGLContext::Profile::ES ?
+                   "ES" :
+                   (version.profile == OpenGLContext::Profile::Core ? "Core" : "None"));
 
   m_config = config.value();
   m_version = version;
   return true;
 }
 
-bool ContextEGL::CreateContextAndSurface(const Version& version, EGLContext share_context, bool make_current)
+bool OpenGLContextEGL::CreateContextAndSurface(const Version& version, EGLContext share_context, bool make_current)
 {
   if (!CreateContext(version, share_context))
     return false;
@@ -637,4 +638,3 @@ bool ContextEGL::CreateContextAndSurface(const Version& version, EGLContext shar
 
   return true;
 }
-} // namespace GL

@@ -1,22 +1,24 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
-#include "context_agl.h"
+#include "opengl_context_agl.h"
+
 #include "common/assert.h"
 #include "common/error.h"
 #include "common/log.h"
-#include <dlfcn.h>
-Log_SetChannel(GL::Context);
 
-namespace GL {
-ContextAGL::ContextAGL(const WindowInfo& wi) : Context(wi)
+#include <dlfcn.h>
+
+Log_SetChannel(OpenGLContext);
+
+OpenGLContextAGL::OpenGLContextAGL(const WindowInfo& wi) : OpenGLContext(wi)
 {
   m_opengl_module_handle = dlopen("/System/Library/Frameworks/OpenGL.framework/Versions/Current/OpenGL", RTLD_NOW);
   if (!m_opengl_module_handle)
     Log_ErrorPrint("Could not open OpenGL.framework, function lookups will probably fail");
 }
 
-ContextAGL::~ContextAGL()
+OpenGLContextAGL::~OpenGLContextAGL()
 {
   if ([NSOpenGLContext currentContext] == m_context)
     [NSOpenGLContext clearCurrentContext];
@@ -31,20 +33,20 @@ ContextAGL::~ContextAGL()
     dlclose(m_opengl_module_handle);
 }
 
-std::unique_ptr<Context> ContextAGL::Create(const WindowInfo& wi, std::span<const Version> versions_to_try)
+std::unique_ptr<OpenGLContext> OpenGLContextAGL::Create(const WindowInfo& wi, std::span<const Version> versions_to_try, Error* error)
 {
-  std::unique_ptr<ContextAGL> context = std::make_unique<ContextAGL>(wi);
-  if (!context->Initialize(versions_to_try))
+  std::unique_ptr<OpenGLContextAGL> context = std::make_unique<OpenGLContextAGL>(wi);
+  if (!context->Initialize(versions_to_try, error))
     return nullptr;
 
   return context;
 }
 
-bool ContextAGL::Initialize(const std::span<const Version> versions_to_try)
+bool OpenGLContextAGL::Initialize(const std::span<const Version> versions_to_try, Error* error)
 {
   for (const Version& cv : versions_to_try)
   {
-    if (cv.profile == Profile::NoProfile && CreateContext(nullptr, NSOpenGLProfileVersionLegacy, true))
+    if (cv.profile == Profile::NoProfile && CreateContext(nullptr, NSOpenGLProfileVersionLegacy, true, error))
     {
       // we already have the dummy context, so just use that
       m_version = cv;
@@ -57,7 +59,7 @@ bool ContextAGL::Initialize(const std::span<const Version> versions_to_try)
 
       const NSOpenGLPixelFormatAttribute profile =
         (cv.major_version > 3 || cv.minor_version > 2) ? NSOpenGLProfileVersion4_1Core : NSOpenGLProfileVersion3_2Core;
-      if (CreateContext(nullptr, static_cast<int>(profile), true))
+      if (CreateContext(nullptr, static_cast<int>(profile), true, error))
       {
         m_version = cv;
         return true;
@@ -65,10 +67,11 @@ bool ContextAGL::Initialize(const std::span<const Version> versions_to_try)
     }
   }
 
+  Error::SetStringView(error, "Failed to create any context versions.");
   return false;
 }
 
-void* ContextAGL::GetProcAddress(const char* name)
+void* OpenGLContextAGL::GetProcAddress(const char* name)
 {
   void* addr = m_opengl_module_handle ? dlsym(m_opengl_module_handle, name) : nullptr;
   if (addr)
@@ -77,19 +80,19 @@ void* ContextAGL::GetProcAddress(const char* name)
   return dlsym(RTLD_NEXT, name);
 }
 
-bool ContextAGL::ChangeSurface(const WindowInfo& new_wi)
+bool OpenGLContextAGL::ChangeSurface(const WindowInfo& new_wi)
 {
   m_wi = new_wi;
   BindContextToView();
   return true;
 }
 
-void ContextAGL::ResizeSurface(u32 new_surface_width /*= 0*/, u32 new_surface_height /*= 0*/)
+void OpenGLContextAGL::ResizeSurface(u32 new_surface_width /*= 0*/, u32 new_surface_height /*= 0*/)
 {
   UpdateDimensions();
 }
 
-bool ContextAGL::UpdateDimensions()
+bool OpenGLContextAGL::UpdateDimensions()
 {
   const NSSize window_size = [GetView() frame].size;
   const CGFloat window_scale = [[GetView() window] backingScaleFactor];
@@ -114,39 +117,39 @@ bool ContextAGL::UpdateDimensions()
   return true;
 }
 
-bool ContextAGL::SwapBuffers()
+bool OpenGLContextAGL::SwapBuffers()
 {
   [m_context flushBuffer];
   return true;
 }
 
-bool ContextAGL::IsCurrent()
+bool OpenGLContextAGL::IsCurrent()
 {
   return (m_context != nil && [NSOpenGLContext currentContext] == m_context);
 }
 
-bool ContextAGL::MakeCurrent()
+bool OpenGLContextAGL::MakeCurrent()
 {
   [m_context makeCurrentContext];
   return true;
 }
 
-bool ContextAGL::DoneCurrent()
+bool OpenGLContextAGL::DoneCurrent()
 {
   [NSOpenGLContext clearCurrentContext];
   return true;
 }
 
-bool ContextAGL::SetSwapInterval(s32 interval)
+bool OpenGLContextAGL::SetSwapInterval(s32 interval)
 {
   GLint gl_interval = static_cast<GLint>(interval);
   [m_context setValues:&gl_interval forParameter:NSOpenGLCPSwapInterval];
   return true;
 }
 
-std::unique_ptr<Context> ContextAGL::CreateSharedContext(const WindowInfo& wi, Error* error)
+std::unique_ptr<OpenGLContext> OpenGLContextAGL::CreateSharedContext(const WindowInfo& wi, Error* error)
 {
-  std::unique_ptr<ContextAGL> context = std::make_unique<ContextAGL>(wi);
+  std::unique_ptr<OpenGLContextAGL> context = std::make_unique<OpenGLContextAGL>(wi);
 
   context->m_context = [[NSOpenGLContext alloc] initWithFormat:m_pixel_format shareContext:m_context];
   if (context->m_context == nil)
@@ -165,7 +168,7 @@ std::unique_ptr<Context> ContextAGL::CreateSharedContext(const WindowInfo& wi, E
   return context;
 }
 
-bool ContextAGL::CreateContext(NSOpenGLContext* share_context, int profile, bool make_current)
+bool OpenGLContextAGL::CreateContext(NSOpenGLContext* share_context, int profile, bool make_current, Error* error)
 {
   if (m_context)
   {
@@ -182,13 +185,16 @@ bool ContextAGL::CreateContext(NSOpenGLContext* share_context, int profile, bool
   m_pixel_format = [[NSOpenGLPixelFormat alloc] initWithAttributes:attribs.data()];
   if (m_pixel_format == nil)
   {
-    Log_ErrorPrintf("Failed to initialize pixel format");
+    Error::SetStringView(error, "Failed to initialize pixel format");
     return false;
   }
 
   m_context = [[NSOpenGLContext alloc] initWithFormat:m_pixel_format shareContext:nil];
   if (m_context == nil)
+  {
+    Error::SetStringView(error, "NSOpenGLContext initWithFormat failed");
     return false;
+  }
 
   if (m_wi.type == WindowInfo::Type::MacOS)
     BindContextToView();
@@ -199,7 +205,7 @@ bool ContextAGL::CreateContext(NSOpenGLContext* share_context, int profile, bool
   return true;
 }
 
-void ContextAGL::BindContextToView()
+void OpenGLContextAGL::BindContextToView()
 {
   NSView* const view = GetView();
   NSWindow* const window = [view window];
@@ -218,4 +224,3 @@ void ContextAGL::BindContextToView()
   else
     dispatch_sync(dispatch_get_main_queue(), block);
 }
-} // namespace GL

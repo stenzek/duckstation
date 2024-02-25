@@ -3,19 +3,18 @@
 
 #pragma once
 
-#include "context.h"
+#include "opengl_context.h"
 
 #include "glad/egl.h"
 
-namespace GL {
-
-class ContextEGL : public Context
+class OpenGLContextEGL : public OpenGLContext
 {
 public:
-  ContextEGL(const WindowInfo& wi);
-  ~ContextEGL() override;
+  OpenGLContextEGL(const WindowInfo& wi);
+  ~OpenGLContextEGL() override;
 
-  static std::unique_ptr<Context> Create(const WindowInfo& wi, std::span<const Version> versions_to_try, Error* error);
+  static std::unique_ptr<OpenGLContext> Create(const WindowInfo& wi, std::span<const Version> versions_to_try,
+                                               Error* error);
 
   void* GetProcAddress(const char* name) override;
   virtual bool ChangeSurface(const WindowInfo& new_wi) override;
@@ -25,7 +24,7 @@ public:
   bool MakeCurrent() override;
   bool DoneCurrent() override;
   bool SetSwapInterval(s32 interval) override;
-  virtual std::unique_ptr<Context> CreateSharedContext(const WindowInfo& wi, Error* error) override;
+  virtual std::unique_ptr<OpenGLContext> CreateSharedContext(const WindowInfo& wi, Error* error) override;
 
 protected:
   virtual EGLDisplay GetPlatformDisplay(const EGLAttrib* attribs, Error* error);
@@ -36,7 +35,6 @@ protected:
   EGLSurface CreateFallbackSurface(EGLConfig config, const EGLAttrib* attribs, void* window, Error* error);
 
   bool Initialize(std::span<const Version> versions_to_try, Error* error);
-  bool CreateDisplay();
   bool CreateContext(const Version& version, EGLContext share_context);
   bool CreateContextAndSurface(const Version& version, EGLContext share_context, bool make_current);
   bool CreateSurface();
@@ -52,5 +50,3 @@ protected:
 
   EGLConfig m_config = {};
 };
-
-} // namespace GL

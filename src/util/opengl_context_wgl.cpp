@@ -1,15 +1,15 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
-#include "context_wgl.h"
-#include "../opengl_loader.h"
+#include "opengl_context_wgl.h"
+#include "opengl_loader.h"
 
 #include "common/assert.h"
 #include "common/error.h"
 #include "common/log.h"
 #include "common/scoped_guard.h"
 
-Log_SetChannel(GL::Context);
+Log_SetChannel(GL::OpenGLContext);
 
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wmicrosoft-cast"
@@ -36,12 +36,11 @@ static bool ReloadWGL(HDC dc)
   return true;
 }
 
-namespace GL {
-ContextWGL::ContextWGL(const WindowInfo& wi) : Context(wi)
+OpenGLContextWGL::OpenGLContextWGL(const WindowInfo& wi) : OpenGLContext(wi)
 {
 }
 
-ContextWGL::~ContextWGL()
+OpenGLContextWGL::~OpenGLContextWGL()
 {
   if (wglGetCurrentContext() == m_rc)
     wglMakeCurrent(m_dc, nullptr);
@@ -52,17 +51,17 @@ ContextWGL::~ContextWGL()
   ReleaseDC();
 }
 
-std::unique_ptr<Context> ContextWGL::Create(const WindowInfo& wi, std::span<const Version> versions_to_try,
-                                            Error* error)
+std::unique_ptr<OpenGLContext> OpenGLContextWGL::Create(const WindowInfo& wi, std::span<const Version> versions_to_try,
+                                                        Error* error)
 {
-  std::unique_ptr<ContextWGL> context = std::make_unique<ContextWGL>(wi);
+  std::unique_ptr<OpenGLContextWGL> context = std::make_unique<OpenGLContextWGL>(wi);
   if (!context->Initialize(versions_to_try, error))
     return nullptr;
 
   return context;
 }
 
-bool ContextWGL::Initialize(std::span<const Version> versions_to_try, Error* error)
+bool OpenGLContextWGL::Initialize(std::span<const Version> versions_to_try, Error* error)
 {
   if (m_wi.type == WindowInfo::Type::Win32)
   {
@@ -98,12 +97,12 @@ bool ContextWGL::Initialize(std::span<const Version> versions_to_try, Error* err
   return false;
 }
 
-void* ContextWGL::GetProcAddress(const char* name)
+void* OpenGLContextWGL::GetProcAddress(const char* name)
 {
   return GetProcAddressCallback(name);
 }
 
-bool ContextWGL::ChangeSurface(const WindowInfo& new_wi)
+bool OpenGLContextWGL::ChangeSurface(const WindowInfo& new_wi)
 {
   const bool was_current = (wglGetCurrentContext() == m_rc);
   Error error;
@@ -127,7 +126,7 @@ bool ContextWGL::ChangeSurface(const WindowInfo& new_wi)
   return true;
 }
 
-void ContextWGL::ResizeSurface(u32 new_surface_width /*= 0*/, u32 new_surface_height /*= 0*/)
+void OpenGLContextWGL::ResizeSurface(u32 new_surface_width /*= 0*/, u32 new_surface_height /*= 0*/)
 {
   RECT client_rc = {};
   GetClientRect(GetHWND(), &client_rc);
@@ -135,17 +134,17 @@ void ContextWGL::ResizeSurface(u32 new_surface_width /*= 0*/, u32 new_surface_he
   m_wi.surface_height = static_cast<u32>(client_rc.bottom - client_rc.top);
 }
 
-bool ContextWGL::SwapBuffers()
+bool OpenGLContextWGL::SwapBuffers()
 {
   return ::SwapBuffers(m_dc);
 }
 
-bool ContextWGL::IsCurrent()
+bool OpenGLContextWGL::IsCurrent()
 {
   return (m_rc && wglGetCurrentContext() == m_rc);
 }
 
-bool ContextWGL::MakeCurrent()
+bool OpenGLContextWGL::MakeCurrent()
 {
   if (!wglMakeCurrent(m_dc, m_rc))
   {
@@ -156,12 +155,12 @@ bool ContextWGL::MakeCurrent()
   return true;
 }
 
-bool ContextWGL::DoneCurrent()
+bool OpenGLContextWGL::DoneCurrent()
 {
   return wglMakeCurrent(m_dc, nullptr);
 }
 
-bool ContextWGL::SetSwapInterval(s32 interval)
+bool OpenGLContextWGL::SetSwapInterval(s32 interval)
 {
   if (!GLAD_WGL_EXT_swap_control)
     return false;
@@ -169,9 +168,9 @@ bool ContextWGL::SetSwapInterval(s32 interval)
   return wglSwapIntervalEXT(interval);
 }
 
-std::unique_ptr<Context> ContextWGL::CreateSharedContext(const WindowInfo& wi, Error* error)
+std::unique_ptr<OpenGLContext> OpenGLContextWGL::CreateSharedContext(const WindowInfo& wi, Error* error)
 {
-  std::unique_ptr<ContextWGL> context = std::make_unique<ContextWGL>(wi);
+  std::unique_ptr<OpenGLContextWGL> context = std::make_unique<OpenGLContextWGL>(wi);
   if (wi.type == WindowInfo::Type::Win32)
   {
     if (!context->InitializeDC(error))
@@ -198,7 +197,7 @@ std::unique_ptr<Context> ContextWGL::CreateSharedContext(const WindowInfo& wi, E
   return context;
 }
 
-HDC ContextWGL::GetDCAndSetPixelFormat(HWND hwnd, Error* error)
+HDC OpenGLContextWGL::GetDCAndSetPixelFormat(HWND hwnd, Error* error)
 {
   PIXELFORMATDESCRIPTOR pfd = {};
   pfd.nSize = sizeof(pfd);
@@ -242,7 +241,7 @@ HDC ContextWGL::GetDCAndSetPixelFormat(HWND hwnd, Error* error)
   return hDC;
 }
 
-bool ContextWGL::InitializeDC(Error* error)
+bool OpenGLContextWGL::InitializeDC(Error* error)
 {
   if (m_wi.type == WindowInfo::Type::Win32)
   {
@@ -263,7 +262,7 @@ bool ContextWGL::InitializeDC(Error* error)
   }
 }
 
-void ContextWGL::ReleaseDC()
+void OpenGLContextWGL::ReleaseDC()
 {
   if (m_pbuffer)
   {
@@ -286,7 +285,7 @@ void ContextWGL::ReleaseDC()
   }
 }
 
-bool ContextWGL::CreatePBuffer(Error* error)
+bool OpenGLContextWGL::CreatePBuffer(Error* error)
 {
   static bool window_class_registered = false;
   static const wchar_t* window_class_name = L"ContextWGLPBuffer";
@@ -387,7 +386,7 @@ bool ContextWGL::CreatePBuffer(Error* error)
   return true;
 }
 
-bool ContextWGL::CreateAnyContext(HGLRC share_context, bool make_current, Error* error)
+bool OpenGLContextWGL::CreateAnyContext(HGLRC share_context, bool make_current, Error* error)
 {
   m_rc = wglCreateContext(m_dc);
   if (!m_rc)
@@ -421,7 +420,8 @@ bool ContextWGL::CreateAnyContext(HGLRC share_context, bool make_current, Error*
   return true;
 }
 
-bool ContextWGL::CreateVersionContext(const Version& version, HGLRC share_context, bool make_current, Error* error)
+bool OpenGLContextWGL::CreateVersionContext(const Version& version, HGLRC share_context, bool make_current,
+                                            Error* error)
 {
   // we need create context attribs
   if (!GLAD_WGL_ARB_create_context)
@@ -501,4 +501,3 @@ bool ContextWGL::CreateVersionContext(const Version& version, HGLRC share_contex
   m_rc = new_rc;
   return true;
 }
-} // namespace GL

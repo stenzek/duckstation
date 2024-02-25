@@ -316,7 +316,7 @@ bool OpenGLDevice::CreateDevice(const std::string_view& adapter, bool threaded_p
                                 std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features,
                                 Error* error)
 {
-  m_gl_context = GL::Context::Create(m_window_info, error);
+  m_gl_context = OpenGLContext::Create(m_window_info, error);
   if (!m_gl_context)
   {
     Log_ErrorPrintf("Failed to create any GL context");
@@ -692,7 +692,7 @@ GPUDevice::AdapterAndModeList OpenGLDevice::GetAdapterAndModeList()
 
   if (m_gl_context)
   {
-    for (const GL::Context::FullscreenModeInfo& fmi : m_gl_context->EnumerateFullscreenModes())
+    for (const OpenGLContext::FullscreenModeInfo& fmi : m_gl_context->EnumerateFullscreenModes())
     {
       aml.fullscreen_modes.push_back(GetFullscreenModeString(fmi.width, fmi.height, fmi.refresh_rate));
     }

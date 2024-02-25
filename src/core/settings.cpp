@@ -1755,7 +1755,7 @@ static const char* s_log_filters[] = {
 #endif
 
 #ifdef ENABLE_OPENGL
-  "GL::Context",
+  "OpenGLContext",
   "OpenGLDevice",
 #endif
 
@@ -1778,7 +1778,6 @@ static const char* s_log_filters[] = {
   "CocoaProgressCallback",
   "MetalDevice",
 #else
-  "ContextEGLWayland",
   "X11NoGUIPlatform",
   "WaylandNoGUIPlatform",
 #endif

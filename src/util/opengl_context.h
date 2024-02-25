@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "../window_info.h"
+#include "window_info.h"
 
 #include "common/types.h"
 
@@ -13,12 +13,11 @@
 
 class Error;
 
-namespace GL {
-class Context
+class OpenGLContext
 {
 public:
-  Context(const WindowInfo& wi);
-  virtual ~Context();
+  OpenGLContext(const WindowInfo& wi);
+  virtual ~OpenGLContext();
 
   enum class Profile
   {
@@ -55,14 +54,13 @@ public:
   virtual bool MakeCurrent() = 0;
   virtual bool DoneCurrent() = 0;
   virtual bool SetSwapInterval(s32 interval) = 0;
-  virtual std::unique_ptr<Context> CreateSharedContext(const WindowInfo& wi, Error* error) = 0;
+  virtual std::unique_ptr<OpenGLContext> CreateSharedContext(const WindowInfo& wi, Error* error) = 0;
 
   virtual std::vector<FullscreenModeInfo> EnumerateFullscreenModes();
 
-  static std::unique_ptr<Context> Create(const WindowInfo& wi, Error* error);
+  static std::unique_ptr<OpenGLContext> Create(const WindowInfo& wi, Error* error);
 
 protected:
   WindowInfo m_wi;
   Version m_version = {};
 };
-} // namespace GL

@@ -95,8 +95,8 @@ endif()
 
 if(ENABLE_OPENGL)
   target_sources(util PRIVATE
-    gl/context.cpp
-    gl/context.h
+    opengl_context.cpp
+    opengl_context.h
     opengl_device.cpp
     opengl_device.h
     opengl_loader.h
@@ -112,29 +112,29 @@ if(ENABLE_OPENGL)
 
   if(WIN32)
     target_sources(util PRIVATE
-      gl/context_wgl.cpp
-      gl/context_wgl.h
+      opengl_context_wgl.cpp
+      opengl_context_wgl.h
     )
     target_link_libraries(util PRIVATE "opengl32.lib")
   endif()
 
   if(LINUX OR FREEBSD OR ANDROID)
     target_sources(util PRIVATE
-      gl/context_egl.cpp
-      gl/context_egl.h
+      opengl_context_egl.cpp
+      opengl_context_egl.h
     )
     target_compile_definitions(util PRIVATE "-DENABLE_EGL=1")
 
     if(ENABLE_X11)
       target_sources(util PRIVATE
-        gl/context_egl_x11.cpp
-        gl/context_egl_x11.h
+        opengl_context_egl_x11.cpp
+        opengl_context_egl_x11.h
       )
     endif()
     if(ENABLE_WAYLAND)
       target_sources(util PRIVATE
-        gl/context_egl_wayland.cpp
-        gl/context_egl_wayland.h
+        opengl_context_egl_wayland.cpp
+        opengl_context_egl_wayland.h
       )
     endif()
     if(ANDROID)
@@ -144,10 +144,10 @@ if(ENABLE_OPENGL)
 
   if(APPLE)
     target_sources(util PRIVATE
-      gl/context_agl.mm
-      gl/context_agl.h
+      opengl_context_agl.mm
+      opengl_context_agl.h
     )
-    set_source_files_properties(gl/context_agl.mm PROPERTIES SKIP_PRECOMPILE_HEADERS TRUE)
+    set_source_files_properties(opengl_context_agl.mm PROPERTIES SKIP_PRECOMPILE_HEADERS TRUE)
   endif()
 endif()
 

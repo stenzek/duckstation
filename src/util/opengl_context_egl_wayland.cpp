@@ -1,22 +1,19 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
-#include "context_egl_wayland.h"
+#include "opengl_context_egl_wayland.h"
 
 #include "common/error.h"
-#include "common/log.h"
 
 #include <dlfcn.h>
 
-Log_SetChannel(ContextEGL);
-
-namespace GL {
 static const char* WAYLAND_EGL_MODNAME = "libwayland-egl.so.1";
 
-ContextEGLWayland::ContextEGLWayland(const WindowInfo& wi) : ContextEGL(wi)
+OpenGLContextEGLWayland::OpenGLContextEGLWayland(const WindowInfo& wi) : OpenGLContextEGL(wi)
 {
 }
-ContextEGLWayland::~ContextEGLWayland()
+
+OpenGLContextEGLWayland::~OpenGLContextEGLWayland()
 {
   if (m_wl_window)
     m_wl_egl_window_destroy(m_wl_window);
@@ -24,36 +21,36 @@ ContextEGLWayland::~ContextEGLWayland()
     dlclose(m_wl_module);
 }
 
-std::unique_ptr<Context> ContextEGLWayland::Create(const WindowInfo& wi, std::span<const Version> versions_to_try,
-                                                   Error* error)
+std::unique_ptr<OpenGLContext> OpenGLContextEGLWayland::Create(const WindowInfo& wi,
+                                                               std::span<const Version> versions_to_try, Error* error)
 {
-  std::unique_ptr<ContextEGLWayland> context = std::make_unique<ContextEGLWayland>(wi);
-  if (!context->LoadModule() || !context->Initialize(versions_to_try, error))
+  std::unique_ptr<OpenGLContextEGLWayland> context = std::make_unique<OpenGLContextEGLWayland>(wi);
+  if (!context->LoadModule(error) || !context->Initialize(versions_to_try, error))
     return nullptr;
 
   return context;
 }
 
-std::unique_ptr<Context> ContextEGLWayland::CreateSharedContext(const WindowInfo& wi, Error* error)
+std::unique_ptr<OpenGLContext> OpenGLContextEGLWayland::CreateSharedContext(const WindowInfo& wi, Error* error)
 {
-  std::unique_ptr<ContextEGLWayland> context = std::make_unique<ContextEGLWayland>(wi);
+  std::unique_ptr<OpenGLContextEGLWayland> context = std::make_unique<OpenGLContextEGLWayland>(wi);
   context->m_display = m_display;
 
-  if (!context->LoadModule() || !context->CreateContextAndSurface(m_version, m_context, false))
+  if (!context->LoadModule(error) || !context->CreateContextAndSurface(m_version, m_context, false))
     return nullptr;
 
   return context;
 }
 
-void ContextEGLWayland::ResizeSurface(u32 new_surface_width, u32 new_surface_height)
+void OpenGLContextEGLWayland::ResizeSurface(u32 new_surface_width, u32 new_surface_height)
 {
   if (m_wl_window)
     m_wl_egl_window_resize(m_wl_window, new_surface_width, new_surface_height, 0, 0);
 
-  ContextEGL::ResizeSurface(new_surface_width, new_surface_height);
+  OpenGLContextEGL::ResizeSurface(new_surface_width, new_surface_height);
 }
 
-EGLDisplay ContextEGLWayland::GetPlatformDisplay(const EGLAttrib* attribs, Error* error)
+EGLDisplay OpenGLContextEGLWayland::GetPlatformDisplay(const EGLAttrib* attribs, Error* error)
 {
   EGLDisplay dpy = TryGetPlatformDisplay(EGL_PLATFORM_WAYLAND_KHR, attribs);
   if (dpy == EGL_NO_DISPLAY)
@@ -62,7 +59,7 @@ EGLDisplay ContextEGLWayland::GetPlatformDisplay(const EGLAttrib* attribs, Error
   return dpy;
 }
 
-EGLSurface ContextEGLWayland::CreatePlatformSurface(EGLConfig config, const EGLAttrib* attribs, Error* error)
+EGLSurface OpenGLContextEGLWayland::CreatePlatformSurface(EGLConfig config, const EGLAttrib* attribs, Error* error)
 {
   if (m_wl_window)
   {
@@ -100,12 +97,13 @@ EGLSurface ContextEGLWayland::CreatePlatformSurface(EGLConfig config, const EGLA
   return surface;
 }
 
-bool ContextEGLWayland::LoadModule()
+bool OpenGLContextEGLWayland::LoadModule(Error* error)
 {
   m_wl_module = dlopen(WAYLAND_EGL_MODNAME, RTLD_NOW | RTLD_GLOBAL);
   if (!m_wl_module)
   {
-    Log_ErrorPrintf("Failed to load %s.", WAYLAND_EGL_MODNAME);
+    const char* err = dlerror();
+    Error::SetStringFmt(error, "Loading {} failed: {}", WAYLAND_EGL_MODNAME, err ? err : "<UNKNOWN>");
     return false;
   }
 
@@ -117,10 +115,9 @@ bool ContextEGLWayland::LoadModule()
     reinterpret_cast<decltype(m_wl_egl_window_resize)>(dlsym(m_wl_module, "wl_egl_window_resize"));
   if (!m_wl_egl_window_create || !m_wl_egl_window_destroy || !m_wl_egl_window_resize)
   {
-    Log_ErrorPrintf("Failed to load one or more functions from %s.", WAYLAND_EGL_MODNAME);
+    Error::SetStringFmt(error, "Failed to load one or more functions from {}.", WAYLAND_EGL_MODNAME);
     return false;
   }
 
   return true;
 }
-} // namespace GL
