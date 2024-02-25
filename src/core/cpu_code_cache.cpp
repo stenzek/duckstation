@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "bus.h"
@@ -7,11 +7,13 @@
 #include "cpu_core_private.h"
 #include "cpu_disasm.h"
 #include "cpu_recompiler_types.h"
+#include "host.h"
 #include "settings.h"
 #include "system.h"
 #include "timing_event.h"
 
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/intrin.h"
 #include "common/log.h"
 #include "common/memmap.h"
@@ -162,7 +164,7 @@ bool CPU::CodeCache::IsUsingFastmem()
   return IsUsingAnyRecompiler() && g_settings.cpu_fastmem_mode != CPUFastmemMode::Disabled;
 }
 
-void CPU::CodeCache::ProcessStartup()
+bool CPU::CodeCache::ProcessStartup()
 {
   AllocateLUTs();
 
@@ -175,12 +177,18 @@ void CPU::CodeCache::ProcessStartup()
 #endif
   if (!has_buffer && !s_code_buffer.Allocate(RECOMPILER_CODE_CACHE_SIZE, RECOMPILER_FAR_CODE_CACHE_SIZE))
   {
-    Panic("Failed to initialize code space");
+    Host::ReportFatalError("Error", "Failed to initialize code space");
+    return false;
   }
 #endif
 
   if (!Common::PageFaultHandler::InstallHandler(ExceptionHandler))
-    Panic("Failed to install page fault handler");
+  {
+    Host::ReportFatalError("Error", "Failed to install page fault handler");
+    return false;
+  }
+
+  return true;
 }
 
 void CPU::CodeCache::ProcessShutdown()

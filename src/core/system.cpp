@@ -242,12 +242,13 @@ static TinyString GetTimestampStringForFileName()
   return TinyString::from_format("{:%Y-%m-%d_%H-%M-%S}", fmt::localtime(std::time(nullptr)));
 }
 
-void System::Internal::ProcessStartup()
+bool System::Internal::ProcessStartup()
 {
   if (!Bus::AllocateMemory())
-    Panic("Failed to allocate memory for emulated bus.");
+    return false;
 
-  CPU::CodeCache::ProcessStartup();
+  if (!CPU::CodeCache::ProcessStartup())
+    return false;
 
   // This will call back to Host::LoadSettings() -> ReloadSources().
   LoadSettings(false);
@@ -263,6 +264,8 @@ void System::Internal::ProcessStartup()
   if (g_settings.enable_discord_presence)
     InitializeDiscordPresence();
 #endif
+
+return true;
 }
 
 void System::Internal::ProcessShutdown()

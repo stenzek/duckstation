@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -12,6 +12,7 @@
 
 class ByteStream;
 class CDImage;
+class Error;
 class StateWrapper;
 
 class Controller;
@@ -485,7 +486,7 @@ void UpdateDiscordPresence(bool update_session_time);
 
 namespace Internal {
 /// Called on process startup.
-void ProcessStartup();
+bool ProcessStartup();
 
 /// Called on process shutdown.
 void ProcessShutdown();

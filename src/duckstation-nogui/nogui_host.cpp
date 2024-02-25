@@ -30,6 +30,7 @@
 #include "common/assert.h"
 #include "common/byte_stream.h"
 #include "common/crash_handler.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
@@ -676,7 +677,11 @@ void NoGUIHost::CPUThreadEntryPoint()
   Threading::SetNameOfCurrentThread("CPU Thread");
 
   // input source setup must happen on emu thread
-  System::Internal::ProcessStartup();
+  if (!System::Internal::ProcessStartup())
+  {
+    g_nogui_window->QuitMessageLoop();
+    return;
+  }
 
   // start the fullscreen UI and get it going
   if (Host::CreateGPUDevice(Settings::GetRenderAPIForRenderer(g_settings.gpu_renderer)) && FullscreenUI::Initialize())

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -34,9 +34,11 @@ enum class PageProtect : u32
 
 #endif
 
+class Error;
+
 namespace MemMap {
 std::string GetFileMappingName(const char* prefix);
-void* CreateSharedMemory(const char* name, size_t size);
+void* CreateSharedMemory(const char* name, size_t size, Error* error);
 void DestroySharedMemory(void* ptr);
 void* MapSharedMemory(void* handle, size_t offset, void* baseaddr, size_t size, PageProtect mode);
 void UnmapSharedMemory(void* baseaddr, size_t size);

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -15,7 +15,7 @@ bool IsUsingAnyRecompiler();
 bool IsUsingFastmem();
 
 /// Allocates resources, call once at startup.
-void ProcessStartup();
+bool ProcessStartup();
 
 /// Frees resources, call once at shutdown.
 void ProcessShutdown();

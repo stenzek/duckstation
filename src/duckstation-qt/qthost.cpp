@@ -1497,7 +1497,11 @@ void EmuThread::run()
   m_started_semaphore.release();
 
   // input source setup must happen on emu thread
-  System::Internal::ProcessStartup();
+  if (!System::Internal::ProcessStartup())
+  {
+    moveToThread(m_ui_thread);
+    return;
+  }
 
   // bind buttons/axises
   createBackgroundControllerPollTimer();

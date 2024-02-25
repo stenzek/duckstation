@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "bus.h"
@@ -24,6 +24,7 @@
 
 #include "common/align.h"
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/intrin.h"
 #include "common/log.h"
 #include "common/memmap.h"
@@ -163,22 +164,31 @@ static constexpr size_t TOTAL_SIZE = LUT_OFFSET + LUT_SIZE;
 
 #define FIXUP_HALFWORD_OFFSET(size, offset) ((size >= MemoryAccessSize::HalfWord) ? (offset) : ((offset) & ~1u))
 #define FIXUP_HALFWORD_READ_VALUE(size, offset, value)                                                                 \
-  ((size >= MemoryAccessSize::HalfWord) ? (value) : ((value) >> (((offset)&u32(1)) * 8u)))
+  ((size >= MemoryAccessSize::HalfWord) ? (value) : ((value) >> (((offset) & u32(1)) * 8u)))
 #define FIXUP_HALFWORD_WRITE_VALUE(size, offset, value)                                                                \
-  ((size >= MemoryAccessSize::HalfWord) ? (value) : ((value) << (((offset)&u32(1)) * 8u)))
+  ((size >= MemoryAccessSize::HalfWord) ? (value) : ((value) << (((offset) & u32(1)) * 8u)))
 
 #define FIXUP_WORD_OFFSET(size, offset) ((size == MemoryAccessSize::Word) ? (offset) : ((offset) & ~3u))
 #define FIXUP_WORD_READ_VALUE(size, offset, value)                                                                     \
-  ((size == MemoryAccessSize::Word) ? (value) : ((value) >> (((offset)&3u) * 8)))
+  ((size == MemoryAccessSize::Word) ? (value) : ((value) >> (((offset) & 3u) * 8)))
 #define FIXUP_WORD_WRITE_VALUE(size, offset, value)                                                                    \
-  ((size == MemoryAccessSize::Word) ? (value) : ((value) << (((offset)&3u) * 8)))
+  ((size == MemoryAccessSize::Word) ? (value) : ((value) << (((offset) & 3u) * 8)))
 
 bool Bus::AllocateMemory()
 {
-  s_shmem_handle = MemMap::CreateSharedMemory(MemMap::GetFileMappingName("duckstation").c_str(), MemoryMap::TOTAL_SIZE);
+  Error error;
+  s_shmem_handle =
+    MemMap::CreateSharedMemory(MemMap::GetFileMappingName("duckstation").c_str(), MemoryMap::TOTAL_SIZE, &error);
   if (!s_shmem_handle)
   {
-    Host::ReportErrorAsync("Error", "Failed to allocate memory");
+#ifndef __linux__
+    error.AddSuffix("\nYou may need to close some programs to free up additional memory.");
+#else
+    error.AddSuffix(
+      "\nYou may need to close some programs to free up additional memory, or increase the size of /dev/shm.");
+#endif
+
+    Host::ReportFatalError("Memory Allocation Failed", error.GetDescription());
     return false;
   }
 
@@ -188,7 +198,7 @@ bool Bus::AllocateMemory()
                                                                MemoryMap::RAM_SIZE, PageProtect::ReadWrite));
   if (!g_ram || !g_unprotected_ram)
   {
-    Host::ReportErrorAsync("Error", "Failed to map memory for RAM");
+    Host::ReportFatalError("Memory Allocation Failed", "Failed to map memory for RAM");
     ReleaseMemory();
     return false;
   }
@@ -199,7 +209,7 @@ bool Bus::AllocateMemory()
                                                     MemoryMap::BIOS_SIZE, PageProtect::ReadWrite));
   if (!g_bios)
   {
-    Host::ReportErrorAsync("Error", "Failed to map memory for BIOS");
+    Host::ReportFatalError("Memory Allocation Failed", "Failed to map memory for BIOS");
     ReleaseMemory();
     return false;
   }
@@ -210,7 +220,7 @@ bool Bus::AllocateMemory()
                                                                   MemoryMap::LUT_SIZE, PageProtect::ReadWrite));
   if (!g_memory_handlers)
   {
-    Host::ReportErrorAsync("Error", "Failed to map memory for LUTs");
+    Host::ReportFatalError("Memory Allocation Failed", "Failed to map memory for LUTs");
     ReleaseMemory();
     return false;
   }
@@ -223,7 +233,7 @@ bool Bus::AllocateMemory()
   if (!s_fastmem_arena.Create(FASTMEM_ARENA_SIZE))
   {
     // TODO: maybe make this non-fatal?
-    Host::ReportErrorAsync("Error", "Failed to create fastmem arena");
+    Host::ReportFatalError("Memory Allocation Failed", "Failed to create fastmem arena");
     ReleaseMemory();
     return false;
   }

@@ -648,18 +648,20 @@ int main(int argc, char* argv[])
 
   if (!autoboot || autoboot->filename.empty())
   {
-    Log_ErrorPrintf("No boot path specified.");
+    Log_ErrorPrint("No boot path specified.");
     return EXIT_FAILURE;
   }
 
-  System::Internal::ProcessStartup();
+  if (!System::Internal::ProcessStartup())
+    return EXIT_FAILURE;
+
   RegTestHost::HookSignals();
 
   int result = -1;
   Log_InfoPrintf("Trying to boot '%s'...", autoboot->filename.c_str());
   if (!System::BootSystem(std::move(autoboot.value())))
   {
-    Log_ErrorPrintf("Failed to boot system.");
+    Log_ErrorPrint("Failed to boot system.");
     goto cleanup;
   }
 
