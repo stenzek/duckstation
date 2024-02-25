@@ -89,6 +89,11 @@ public:
       Error::SetString(errptr, fmt::vformat(fmt, fmt::make_format_args(args...)));
   }
 
+  void AddPrefix(std::string_view prefix);
+  void AddSuffix(std::string_view suffix);
+  static void AddPrefix(Error* errptr, std::string_view prefix);
+  static void AddSuffix(Error* errptr, std::string_view prefix);
+
   Error& operator=(const Error& e);
   Error& operator=(Error&& e);
   bool operator==(const Error& e) const;

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "error.h"
@@ -231,6 +231,28 @@ Error Error::CreateHResult(long err)
 }
 
 #endif
+
+void Error::AddPrefix(std::string_view prefix)
+{
+  m_description.insert(0, prefix);
+}
+
+void Error::AddSuffix(std::string_view suffix)
+{
+  m_description.append(suffix);
+}
+
+void Error::AddPrefix(Error* errptr, std::string_view prefix)
+{
+  if (errptr)
+    errptr->AddPrefix(prefix);
+}
+
+void Error::AddSuffix(Error* errptr, std::string_view prefix)
+{
+  if (errptr)
+    errptr->AddSuffix(prefix);
+}
 
 Error& Error::operator=(const Error& e) = default;
 
