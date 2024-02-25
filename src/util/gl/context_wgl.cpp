@@ -27,7 +27,7 @@ static void* GetProcAddressCallback(const char* name)
 
 static bool ReloadWGL(HDC dc)
 {
-  if (!gladLoadWGLLoader([](const char* name) -> void* { return wglGetProcAddress(name); }, dc))
+  if (!gladLoadWGL(dc, [](const char* name) { return (GLADapiproc)wglGetProcAddress(name); }))
   {
     Log_ErrorPrint("Loading GLAD WGL functions failed");
     return false;
@@ -66,27 +66,18 @@ bool ContextWGL::Initialize(std::span<const Version> versions_to_try, Error* err
 {
   if (m_wi.type == WindowInfo::Type::Win32)
   {
-    if (!InitializeDC())
-    {
-      Error::SetStringView(error, "Failed to create DC.");
+    if (!InitializeDC(error))
       return false;
-    }
   }
   else
   {
-    if (!CreatePBuffer())
-    {
-      Error::SetStringView(error, "Failed to create PBuffer");
+    if (!CreatePBuffer(error))
       return false;
-    }
   }
 
   // Everything including core/ES requires a dummy profile to load the WGL extensions.
-  if (!CreateAnyContext(nullptr, true))
-  {
-    Error::SetStringView(error, "Failed to create dummy context.");
+  if (!CreateAnyContext(nullptr, true, error))
     return false;
-  }
 
   for (const Version& cv : versions_to_try)
   {
@@ -96,7 +87,7 @@ bool ContextWGL::Initialize(std::span<const Version> versions_to_try, Error* err
       m_version = cv;
       return true;
     }
-    else if (CreateVersionContext(cv, nullptr, true))
+    else if (CreateVersionContext(cv, nullptr, true, error))
     {
       m_version = cv;
       return true;
@@ -115,16 +106,21 @@ void* ContextWGL::GetProcAddress(const char* name)
 bool ContextWGL::ChangeSurface(const WindowInfo& new_wi)
 {
   const bool was_current = (wglGetCurrentContext() == m_rc);
+  Error error;
 
   ReleaseDC();
 
   m_wi = new_wi;
-  if (!InitializeDC())
+  if (!InitializeDC(&error))
+  {
+    Log_ErrorFmt("Failed to change surface: {}", error.GetDescription());
     return false;
+  }
 
   if (was_current && !wglMakeCurrent(m_dc, m_rc))
   {
-    Log_ErrorPrintf("Failed to make context current again after surface change: 0x%08X", GetLastError());
+    error.SetWin32(GetLastError());
+    Log_ErrorFmt("Failed to make context current again after surface change: {}", error.GetDescription());
     return false;
   }
 
@@ -153,7 +149,7 @@ bool ContextWGL::MakeCurrent()
 {
   if (!wglMakeCurrent(m_dc, m_rc))
   {
-    Log_ErrorPrintf("wglMakeCurrent() failed: 0x%08X", GetLastError());
+    Log_ErrorFmt("wglMakeCurrent() failed: {}", GetLastError());
     return false;
   }
 
@@ -173,28 +169,28 @@ bool ContextWGL::SetSwapInterval(s32 interval)
   return wglSwapIntervalEXT(interval);
 }
 
-std::unique_ptr<Context> ContextWGL::CreateSharedContext(const WindowInfo& wi)
+std::unique_ptr<Context> ContextWGL::CreateSharedContext(const WindowInfo& wi, Error* error)
 {
   std::unique_ptr<ContextWGL> context = std::make_unique<ContextWGL>(wi);
   if (wi.type == WindowInfo::Type::Win32)
   {
-    if (!context->InitializeDC())
+    if (!context->InitializeDC(error))
       return nullptr;
   }
   else
   {
-    if (!context->CreatePBuffer())
+    if (!context->CreatePBuffer(error))
       return nullptr;
   }
 
   if (m_version.profile == Profile::NoProfile)
   {
-    if (!context->CreateAnyContext(m_rc, false))
+    if (!context->CreateAnyContext(m_rc, false, error))
       return nullptr;
   }
   else
   {
-    if (!context->CreateVersionContext(m_version, m_rc, false))
+    if (!context->CreateVersionContext(m_version, m_rc, false, error))
       return nullptr;
   }
 
@@ -202,7 +198,7 @@ std::unique_ptr<Context> ContextWGL::CreateSharedContext(const WindowInfo& wi)
   return context;
 }
 
-HDC ContextWGL::GetDCAndSetPixelFormat(HWND hwnd)
+HDC ContextWGL::GetDCAndSetPixelFormat(HWND hwnd, Error* error)
 {
   PIXELFORMATDESCRIPTOR pfd = {};
   pfd.nSize = sizeof(pfd);
@@ -218,7 +214,7 @@ HDC ContextWGL::GetDCAndSetPixelFormat(HWND hwnd)
   HDC hDC = ::GetDC(hwnd);
   if (!hDC)
   {
-    Log_ErrorPrintf("GetDC() failed: 0x%08X", GetLastError());
+    Error::SetWin32(error, "GetDC() failed: ", GetLastError());
     return {};
   }
 
@@ -227,7 +223,7 @@ HDC ContextWGL::GetDCAndSetPixelFormat(HWND hwnd)
     const int pf = ChoosePixelFormat(hDC, &pfd);
     if (pf == 0)
     {
-      Log_ErrorPrintf("ChoosePixelFormat() failed: 0x%08X", GetLastError());
+      Error::SetWin32(error, "ChoosePixelFormat() failed: ", GetLastError());
       ::ReleaseDC(hwnd, hDC);
       return {};
     }
@@ -237,7 +233,7 @@ HDC ContextWGL::GetDCAndSetPixelFormat(HWND hwnd)
 
   if (!SetPixelFormat(hDC, m_pixel_format.value(), &pfd))
   {
-    Log_ErrorPrintf("SetPixelFormat() failed: 0x%08X", GetLastError());
+    Error::SetWin32(error, "SetPixelFormat() failed: ", GetLastError());
     ::ReleaseDC(hwnd, hDC);
     return {};
   }
@@ -246,26 +242,23 @@ HDC ContextWGL::GetDCAndSetPixelFormat(HWND hwnd)
   return hDC;
 }
 
-bool ContextWGL::InitializeDC()
+bool ContextWGL::InitializeDC(Error* error)
 {
   if (m_wi.type == WindowInfo::Type::Win32)
   {
-    m_dc = GetDCAndSetPixelFormat(GetHWND());
+    m_dc = GetDCAndSetPixelFormat(GetHWND(), error);
     if (!m_dc)
-    {
-      Log_ErrorPrint("Failed to get DC for window");
       return false;
-    }
 
     return true;
   }
   else if (m_wi.type == WindowInfo::Type::Surfaceless)
   {
-    return CreatePBuffer();
+    return CreatePBuffer(error);
   }
   else
   {
-    Log_ErrorPrintf("Unknown window info type %u", static_cast<unsigned>(m_wi.type));
+    Error::SetStringFmt(error, "Unknown window info type {}", static_cast<unsigned>(m_wi.type));
     return false;
   }
 }
@@ -293,7 +286,7 @@ void ContextWGL::ReleaseDC()
   }
 }
 
-bool ContextWGL::CreatePBuffer()
+bool ContextWGL::CreatePBuffer(Error* error)
 {
   static bool window_class_registered = false;
   static const wchar_t* window_class_name = L"ContextWGLPBuffer";
@@ -316,7 +309,7 @@ bool ContextWGL::CreatePBuffer()
 
     if (!RegisterClassExW(&wc))
     {
-      Log_ErrorPrint("(ContextWGL::CreatePBuffer) RegisterClassExW() failed");
+      Error::SetStringView(error, "(ContextWGL::CreatePBuffer) RegisterClassExW() failed");
       return false;
     }
 
@@ -326,13 +319,13 @@ bool ContextWGL::CreatePBuffer()
   HWND hwnd = CreateWindowExW(0, window_class_name, window_class_name, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
   if (!hwnd)
   {
-    Log_ErrorPrint("(ContextWGL::CreatePBuffer) CreateWindowEx() failed");
+    Error::SetStringView(error, "(ContextWGL::CreatePBuffer) CreateWindowEx() failed");
     return false;
   }
 
   ScopedGuard hwnd_guard([hwnd]() { DestroyWindow(hwnd); });
 
-  HDC hdc = GetDCAndSetPixelFormat(hwnd);
+  HDC hdc = GetDCAndSetPixelFormat(hwnd, error);
   if (!hdc)
     return false;
 
@@ -355,13 +348,13 @@ bool ContextWGL::CreatePBuffer()
     temp_rc = wglCreateContext(hdc);
     if (!temp_rc || !wglMakeCurrent(hdc, temp_rc))
     {
-      Log_ErrorPrint("Failed to create temporary context to load WGL for pbuffer.");
+      Error::SetStringView(error, "Failed to create temporary context to load WGL for pbuffer.");
       return false;
     }
 
     if (!ReloadWGL(hdc) || !GLAD_WGL_ARB_pbuffer)
     {
-      Log_ErrorPrint("Missing WGL_ARB_pbuffer");
+      Error::SetStringView(error, "Missing WGL_ARB_pbuffer");
       return false;
     }
   }
@@ -370,7 +363,7 @@ bool ContextWGL::CreatePBuffer()
   HPBUFFERARB pbuffer = wglCreatePbufferARB(hdc, m_pixel_format.value(), 1, 1, pb_attribs);
   if (!pbuffer)
   {
-    Log_ErrorPrintf("(ContextWGL::CreatePBuffer) wglCreatePbufferARB() failed");
+    Error::SetStringView(error, "(ContextWGL::CreatePBuffer) wglCreatePbufferARB() failed");
     return false;
   }
 
@@ -379,7 +372,7 @@ bool ContextWGL::CreatePBuffer()
   m_dc = wglGetPbufferDCARB(pbuffer);
   if (!m_dc)
   {
-    Log_ErrorPrintf("(ContextWGL::CreatePbuffer) wglGetPbufferDCARB() failed");
+    Error::SetStringView(error, "(ContextWGL::CreatePbuffer) wglGetPbufferDCARB() failed");
     return false;
   }
 
@@ -394,12 +387,12 @@ bool ContextWGL::CreatePBuffer()
   return true;
 }
 
-bool ContextWGL::CreateAnyContext(HGLRC share_context, bool make_current)
+bool ContextWGL::CreateAnyContext(HGLRC share_context, bool make_current, Error* error)
 {
   m_rc = wglCreateContext(m_dc);
   if (!m_rc)
   {
-    Log_ErrorPrintf("wglCreateContext() failed: 0x%08X", GetLastError());
+    Error::SetWin32(error, "wglCreateContext() failed: ", GetLastError());
     return false;
   }
 
@@ -407,33 +400,33 @@ bool ContextWGL::CreateAnyContext(HGLRC share_context, bool make_current)
   {
     if (!wglMakeCurrent(m_dc, m_rc))
     {
-      Log_ErrorPrintf("wglMakeCurrent() failed: 0x%08X", GetLastError());
+      Error::SetWin32(error, "wglMakeCurrent() failed: ", GetLastError());
       return false;
     }
 
     // re-init glad-wgl
-    if (!gladLoadWGLLoader([](const char* name) -> void* { return wglGetProcAddress(name); }, m_dc))
+    if (!gladLoadWGL(m_dc, [](const char* name) { return (GLADapiproc)wglGetProcAddress(name); }))
     {
-      Log_ErrorPrint("Loading GLAD WGL functions failed");
+      Error::SetStringView(error, "Loading GLAD WGL functions failed");
       return false;
     }
   }
 
   if (share_context && !wglShareLists(share_context, m_rc))
   {
-    Log_ErrorPrintf("wglShareLists() failed: 0x%08X", GetLastError());
+    Error::SetWin32(error, "wglShareLists() failed: ", GetLastError());
     return false;
   }
 
   return true;
 }
 
-bool ContextWGL::CreateVersionContext(const Version& version, HGLRC share_context, bool make_current)
+bool ContextWGL::CreateVersionContext(const Version& version, HGLRC share_context, bool make_current, Error* error)
 {
   // we need create context attribs
   if (!GLAD_WGL_ARB_create_context)
   {
-    Log_ErrorPrint("Missing GLAD_WGL_ARB_create_context.");
+    Error::SetStringView(error, "Missing GLAD_WGL_ARB_create_context.");
     return false;
   }
 
@@ -463,7 +456,7 @@ bool ContextWGL::CreateVersionContext(const Version& version, HGLRC share_contex
     if ((version.major_version >= 2 && !GLAD_WGL_EXT_create_context_es2_profile) ||
         (version.major_version < 2 && !GLAD_WGL_EXT_create_context_es_profile))
     {
-      Log_ErrorPrintf("WGL_EXT_create_context_es_profile not supported");
+      Error::SetStringView(error, "WGL_EXT_create_context_es_profile not supported");
       return false;
     }
 
@@ -481,7 +474,7 @@ bool ContextWGL::CreateVersionContext(const Version& version, HGLRC share_contex
   }
   else
   {
-    Log_ErrorPrint("Unknown profile");
+    Error::SetStringView(error, "Unknown profile");
     return false;
   }
 
@@ -493,7 +486,7 @@ bool ContextWGL::CreateVersionContext(const Version& version, HGLRC share_contex
   {
     if (!wglMakeCurrent(m_dc, make_current ? new_rc : nullptr))
     {
-      Log_ErrorPrintf("wglMakeCurrent() failed: 0x%08X", GetLastError());
+      Error::SetWin32(error, "wglMakeCurrent() failed: ", GetLastError());
       wglDeleteContext(new_rc);
       return false;
     }

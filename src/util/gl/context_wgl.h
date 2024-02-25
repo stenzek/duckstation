@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -8,7 +8,7 @@
 
 #include "common/windows_headers.h"
 
-#include "glad_wgl.h"
+#include "glad/wgl.h"
 
 #include <optional>
 
@@ -30,19 +30,19 @@ public:
   bool MakeCurrent() override;
   bool DoneCurrent() override;
   bool SetSwapInterval(s32 interval) override;
-  std::unique_ptr<Context> CreateSharedContext(const WindowInfo& wi) override;
+  std::unique_ptr<Context> CreateSharedContext(const WindowInfo& wi, Error* error) override;
 
 private:
   ALWAYS_INLINE HWND GetHWND() const { return static_cast<HWND>(m_wi.window_handle); }
 
-  HDC GetDCAndSetPixelFormat(HWND hwnd);
+  HDC GetDCAndSetPixelFormat(HWND hwnd, Error* error);
 
   bool Initialize(std::span<const Version> versions_to_try, Error* error);
-  bool InitializeDC();
+  bool InitializeDC(Error* error);
   void ReleaseDC();
-  bool CreatePBuffer();
-  bool CreateAnyContext(HGLRC share_context, bool make_current);
-  bool CreateVersionContext(const Version& version, HGLRC share_context, bool make_current);
+  bool CreatePBuffer(Error* error);
+  bool CreateAnyContext(HGLRC share_context, bool make_current, Error* error);
+  bool CreateVersionContext(const Version& version, HGLRC share_context, bool make_current, Error* error);
 
   HDC m_dc = {};
   HGLRC m_rc = {};

@@ -3,6 +3,7 @@
 
 #include "context_agl.h"
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/log.h"
 #include <dlfcn.h>
 Log_SetChannel(GL::Context);
@@ -53,10 +54,11 @@ bool ContextAGL::Initialize(const std::span<const Version> versions_to_try)
     {
       if (cv.major_version > 4 || cv.minor_version > 1)
         continue;
-      
-      const NSOpenGLPixelFormatAttribute profile = (cv.major_version > 3 || cv.minor_version > 2) ? NSOpenGLProfileVersion4_1Core : NSOpenGLProfileVersion3_2Core;
+
+      const NSOpenGLPixelFormatAttribute profile =
+        (cv.major_version > 3 || cv.minor_version > 2) ? NSOpenGLProfileVersion4_1Core : NSOpenGLProfileVersion3_2Core;
       if (CreateContext(nullptr, static_cast<int>(profile), true))
-      {        
+      {
         m_version = cv;
         return true;
       }
@@ -142,13 +144,16 @@ bool ContextAGL::SetSwapInterval(s32 interval)
   return true;
 }
 
-std::unique_ptr<Context> ContextAGL::CreateSharedContext(const WindowInfo& wi)
+std::unique_ptr<Context> ContextAGL::CreateSharedContext(const WindowInfo& wi, Error* error)
 {
   std::unique_ptr<ContextAGL> context = std::make_unique<ContextAGL>(wi);
 
   context->m_context = [[NSOpenGLContext alloc] initWithFormat:m_pixel_format shareContext:m_context];
   if (context->m_context == nil)
+  {
+    Error::SetStringView(error, "NSOpenGLContext initWithFormat failed");
     return nullptr;
+  }
 
   context->m_version = m_version;
   context->m_pixel_format = m_pixel_format;
@@ -156,7 +161,7 @@ std::unique_ptr<Context> ContextAGL::CreateSharedContext(const WindowInfo& wi)
 
   if (wi.type == WindowInfo::Type::MacOS)
     context->BindContextToView();
-  
+
   return context;
 }
 
@@ -171,12 +176,9 @@ bool ContextAGL::CreateContext(NSOpenGLContext* share_context, int profile, bool
   if (m_pixel_format)
     [m_pixel_format release];
 
-  const std::array<NSOpenGLPixelFormatAttribute, 5> attribs = {{
-      NSOpenGLPFADoubleBuffer,
-      NSOpenGLPFAOpenGLProfile,
-      static_cast<NSOpenGLPixelFormatAttribute>(profile),
-      NSOpenGLPFAAccelerated,
-      0}};
+  const std::array<NSOpenGLPixelFormatAttribute, 5> attribs = {{NSOpenGLPFADoubleBuffer, NSOpenGLPFAOpenGLProfile,
+                                                                static_cast<NSOpenGLPixelFormatAttribute>(profile),
+                                                                NSOpenGLPFAAccelerated, 0}};
   m_pixel_format = [[NSOpenGLPixelFormat alloc] initWithAttributes:attribs.data()];
   if (m_pixel_format == nil)
   {

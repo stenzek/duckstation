@@ -55,7 +55,7 @@ public:
   virtual bool MakeCurrent() = 0;
   virtual bool DoneCurrent() = 0;
   virtual bool SetSwapInterval(s32 interval) = 0;
-  virtual std::unique_ptr<Context> CreateSharedContext(const WindowInfo& wi) = 0;
+  virtual std::unique_ptr<Context> CreateSharedContext(const WindowInfo& wi, Error* error) = 0;
 
   virtual std::vector<FullscreenModeInfo> EnumerateFullscreenModes();
 

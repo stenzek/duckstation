@@ -1,12 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="src\glad.c" />
-    <ClCompile Include="src\glad_wgl.c" />
+    <ClCompile Include="src\gl.c" />
+    <ClCompile Include="src\wgl.c" />
+    <ClCompile Include="src\egl.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\khrplatform.h" />
-    <ClInclude Include="include\glad.h" />
-    <ClInclude Include="include\glad_wgl.h" />
+    <ClInclude Include="include\EGL\eglplatform.h" />
+    <ClInclude Include="include\glad\wgl.h" />
+    <ClInclude Include="include\glad\egl.h" />
+    <ClInclude Include="include\glad\gl.h" />
+    <ClInclude Include="include\KHR\khrplatform.h" />
   </ItemGroup>
 </Project>

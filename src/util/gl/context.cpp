@@ -186,7 +186,7 @@ std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, Error* error)
   // load up glad
   if (!context->IsGLES())
   {
-    if (!gladLoadGLLoader([](const char* name) { return context_being_created->GetProcAddress(name); }))
+    if (!gladLoadGL([](const char* name) { return (GLADapiproc)context_being_created->GetProcAddress(name); }))
     {
       Error::SetStringView(error, "Failed to load GL functions for GLAD");
       return nullptr;
@@ -194,7 +194,7 @@ std::unique_ptr<GL::Context> Context::Create(const WindowInfo& wi, Error* error)
   }
   else
   {
-    if (!gladLoadGLES2Loader([](const char* name) { return context_being_created->GetProcAddress(name); }))
+    if (!gladLoadGLES2([](const char* name) { return (GLADapiproc)context_being_created->GetProcAddress(name); }))
     {
       Error::SetStringView(error, "Failed to load GLES functions for GLAD");
       return nullptr;

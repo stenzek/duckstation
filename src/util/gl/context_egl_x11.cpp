@@ -19,7 +19,7 @@ std::unique_ptr<Context> ContextEGLX11::Create(const WindowInfo& wi, std::span<c
   return context;
 }
 
-std::unique_ptr<Context> ContextEGLX11::CreateSharedContext(const WindowInfo& wi)
+std::unique_ptr<Context> ContextEGLX11::CreateSharedContext(const WindowInfo& wi, Error* error)
 {
   std::unique_ptr<ContextEGLX11> context = std::make_unique<ContextEGLX11>(wi);
   context->m_display = m_display;

@@ -5,7 +5,7 @@
 
 #include "context.h"
 
-#include "glad_egl.h"
+#include "glad/egl.h"
 
 namespace GL {
 
@@ -25,7 +25,7 @@ public:
   bool MakeCurrent() override;
   bool DoneCurrent() override;
   bool SetSwapInterval(s32 interval) override;
-  virtual std::unique_ptr<Context> CreateSharedContext(const WindowInfo& wi) override;
+  virtual std::unique_ptr<Context> CreateSharedContext(const WindowInfo& wi, Error* error) override;
 
 protected:
   virtual bool SetDisplay();

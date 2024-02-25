@@ -33,7 +33,7 @@ std::unique_ptr<Context> ContextEGLWayland::Create(const WindowInfo& wi, std::sp
   return context;
 }
 
-std::unique_ptr<Context> ContextEGLWayland::CreateSharedContext(const WindowInfo& wi)
+std::unique_ptr<Context> ContextEGLWayland::CreateSharedContext(const WindowInfo& wi, Error* error)
 {
   std::unique_ptr<ContextEGLWayland> context = std::make_unique<ContextEGLWayland>(wi);
   context->m_display = m_display;

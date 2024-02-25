@@ -46,7 +46,6 @@ endif()
 
 # Everything except Windows/Mac use EGL.
 if(ENABLE_OPENGL AND (LINUX OR FREEBSD OR ANDROID))
-  find_package(EGL REQUIRED)
   set(ENABLE_EGL TRUE)
 endif()
 

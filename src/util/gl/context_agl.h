@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
-#include "context.h"
 #include "../opengl_loader.h"
+#include "context.h"
 
 #if defined(__APPLE__) && defined(__OBJC__)
 #import <AppKit/AppKit.h>
@@ -32,7 +32,7 @@ public:
   bool MakeCurrent() override;
   bool DoneCurrent() override;
   bool SetSwapInterval(s32 interval) override;
-  std::unique_ptr<Context> CreateSharedContext(const WindowInfo& wi) override;
+  std::unique_ptr<Context> CreateSharedContext(const WindowInfo& wi, Error* error) override;
 
 private:
   ALWAYS_INLINE NSView* GetView() const { return static_cast<NSView*>((__bridge NSView*)m_wi.window_handle); }

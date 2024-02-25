@@ -287,8 +287,8 @@ void OpenGLDevice::SetVSync(bool enabled)
   SetSwapInterval();
 }
 
-static void APIENTRY GLDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
-                                     const GLchar* message, const void* userParam)
+static void GLAD_API_PTR GLDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
+                                         const GLchar* message, const void* userParam)
 {
   switch (severity)
   {

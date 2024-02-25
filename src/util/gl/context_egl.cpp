@@ -4,26 +4,74 @@
 #include "context_egl.h"
 
 #include "common/assert.h"
-#include "common/log.h"
+#include "common/dynamic_library.h"
 #include "common/error.h"
+#include "common/log.h"
 
+#include <atomic>
 #include <optional>
 #include <vector>
 
 Log_SetChannel(GL::Context);
 
+static DynamicLibrary s_egl_library;
+static std::atomic_uint32_t s_egl_refcount = 0;
+
+static bool LoadEGL()
+{
+  // We're not going to be calling this from multiple threads concurrently.
+  // So, not wrapping this in a mutex should be fine.
+  if (s_egl_refcount.fetch_add(1, std::memory_order_acq_rel) == 0)
+  {
+    DebugAssert(!s_egl_library.IsOpen());
+
+    const std::string egl_libname = DynamicLibrary::GetVersionedFilename("libEGL");
+    Log_InfoFmt("Loading EGL from {}...", egl_libname);
+
+    Error error;
+    if (!s_egl_library.Open(egl_libname.c_str(), &error))
+      Log_ErrorFmt("Failed to load EGL: {}", error.GetDescription());
+  }
+
+  return s_egl_library.IsOpen();
+}
+
+static void UnloadEGL()
+{
+  DebugAssert(s_egl_refcount.load(std::memory_order_acquire) > 0);
+  if (s_egl_refcount.fetch_sub(1, std::memory_order_acq_rel) == 1)
+  {
+    Log_InfoPrint("Unloading EGL.");
+    s_egl_library.Close();
+  }
+}
+
+static bool LoadGLADEGL(EGLDisplay display, Error* error)
+{
+  if (!gladLoadEGL(display, [](const char* name) { return (GLADapiproc)s_egl_library.GetSymbolAddress(name); }))
+  {
+    Error::SetStringView(error, "Loading GLAD EGL functions failed");
+    return false;
+  }
+
+  return true;
+}
+
 namespace GL {
 ContextEGL::ContextEGL(const WindowInfo& wi) : Context(wi)
 {
+  LoadEGL();
 }
 
 ContextEGL::~ContextEGL()
 {
   DestroySurface();
   DestroyContext();
+  UnloadEGL();
 }
 
-std::unique_ptr<Context> ContextEGL::Create(const WindowInfo& wi, std::span<const Version> versions_to_try, Error* error)
+std::unique_ptr<Context> ContextEGL::Create(const WindowInfo& wi, std::span<const Version> versions_to_try,
+                                            Error* error)
 {
   std::unique_ptr<ContextEGL> context = std::make_unique<ContextEGL>(wi);
   if (!context->Initialize(versions_to_try, error))
@@ -34,30 +82,29 @@ std::unique_ptr<Context> ContextEGL::Create(const WindowInfo& wi, std::span<cons
 
 bool ContextEGL::Initialize(std::span<const Version> versions_to_try, Error* error)
 {
-  if (!gladLoadEGL())
-  {
-    Log_ErrorPrint("Loading GLAD EGL functions failed");
-    Error::SetStringView(error, "Loading GLAD EGL functions failed");
+  if (!LoadGLADEGL(EGL_NO_DISPLAY, error))
     return false;
-  }
 
   if (!SetDisplay())
+    return false;
+
+  // Re-initialize GLAD.
+  if (!LoadGLADEGL(m_display, error))
     return false;
 
   int egl_major, egl_minor;
   if (!eglInitialize(m_display, &egl_major, &egl_minor))
   {
     const int gerror = static_cast<int>(eglGetError());
-    Log_ErrorFmt("eglInitialize() failed: {} (0x{:X})", gerror, gerror);
     Error::SetStringFmt(error, "eglInitialize() failed: {} (0x{:X})", gerror, gerror);
     return false;
   }
-  Log_InfoPrintf("EGL Version: %d.%d", egl_major, egl_minor);
+  Log_InfoFmt("EGL Version: {}.{}", egl_major, egl_minor);
 
   const char* extensions = eglQueryString(m_display, EGL_EXTENSIONS);
   if (extensions)
   {
-    Log_InfoPrintf("EGL Extensions: %s", extensions);
+    Log_DebugFmt("EGL Extensions: {}", extensions);
     m_supports_surfaceless = std::strstr(extensions, "EGL_KHR_surfaceless_context") != nullptr;
   }
   if (!m_supports_surfaceless)
@@ -168,14 +215,17 @@ bool ContextEGL::SetSwapInterval(s32 interval)
   return eglSwapInterval(m_display, interval);
 }
 
-std::unique_ptr<Context> ContextEGL::CreateSharedContext(const WindowInfo& wi)
+std::unique_ptr<Context> ContextEGL::CreateSharedContext(const WindowInfo& wi, Error* error)
 {
   std::unique_ptr<ContextEGL> context = std::make_unique<ContextEGL>(wi);
   context->m_display = m_display;
   context->m_supports_surfaceless = m_supports_surfaceless;
 
   if (!context->CreateContextAndSurface(m_version, m_context, false))
+  {
+    Error::SetStringView(error, "Failed to create context/surface");
     return nullptr;
+  }
 
   return context;
 }
