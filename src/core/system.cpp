@@ -1110,6 +1110,9 @@ void System::PauseSystem(bool paused)
 
   if (paused)
   {
+    // Make sure the GPU is flushed, otherwise the VB might still be mapped.
+    g_gpu->FlushRender();
+
     FullscreenUI::OnSystemPaused();
 
     InputManager::PauseVibration();
@@ -1187,7 +1190,10 @@ bool System::LoadState(const char* filename)
 
   ResetPerformanceCounters();
   ResetThrottler();
-  InvalidateDisplay();
+
+  if (IsPaused())
+    InvalidateDisplay();
+
   Log_VerbosePrintf("Loading state took %.2f msec", load_timer.GetTimeMilliseconds());
   return true;
 }
@@ -1974,7 +1980,6 @@ void System::RecreateSystem()
 
   ResetPerformanceCounters();
   ResetThrottler();
-  InvalidateDisplay();
 
   if (was_paused)
     PauseSystem(true);
@@ -3662,7 +3667,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.runahead_frames != old_settings.runahead_frames)
     {
       g_gpu->UpdateSettings(old_settings);
-      InvalidateDisplay();
+      if (!IsPaused())
+        InvalidateDisplay();
     }
 
     if (g_settings.gpu_widescreen_hack != old_settings.gpu_widescreen_hack ||
