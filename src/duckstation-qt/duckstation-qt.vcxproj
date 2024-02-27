@@ -332,6 +332,9 @@
     <QtUi Include="setupwizarddialog.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="debuggeraddbreakpointdialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <None Include="translations\duckstation-qt_es-es.ts" />
     <None Include="translations\duckstation-qt_tr.ts" />
   </ItemGroup>

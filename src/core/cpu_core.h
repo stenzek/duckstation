@@ -191,8 +191,17 @@ bool IsTraceEnabled();
 void StartTrace();
 void StopTrace();
 
+// Breakpoint types - execute => breakpoint, read/write => watchpoints
+enum class BreakpointType : u8
+{
+  Execute,
+  Read,
+  Write,
+  Count
+};
+
 // Breakpoint callback - if the callback returns false, the breakpoint will be removed.
-using BreakpointCallback = bool (*)(VirtualMemoryAddress address);
+using BreakpointCallback = bool (*)(BreakpointType type, VirtualMemoryAddress pc, VirtualMemoryAddress memaddr);
 
 struct Breakpoint
 {
@@ -200,6 +209,7 @@ struct Breakpoint
   BreakpointCallback callback;
   u32 number;
   u32 hit_count;
+  BreakpointType type;
   bool auto_clear;
   bool enabled;
 };
@@ -207,12 +217,13 @@ struct Breakpoint
 using BreakpointList = std::vector<Breakpoint>;
 
 // Breakpoints
+const char* GetBreakpointTypeName(BreakpointType type);
 bool HasAnyBreakpoints();
-bool HasBreakpointAtAddress(VirtualMemoryAddress address);
-BreakpointList GetBreakpointList(bool include_auto_clear = false, bool include_callbacks = false);
-bool AddBreakpoint(VirtualMemoryAddress address, bool auto_clear = false, bool enabled = true);
-bool AddBreakpointWithCallback(VirtualMemoryAddress address, BreakpointCallback callback);
-bool RemoveBreakpoint(VirtualMemoryAddress address);
+bool HasBreakpointAtAddress(BreakpointType type, VirtualMemoryAddress address);
+BreakpointList CopyBreakpointList(bool include_auto_clear = false, bool include_callbacks = false);
+bool AddBreakpoint(BreakpointType type, VirtualMemoryAddress address, bool auto_clear = false, bool enabled = true);
+bool AddBreakpointWithCallback(BreakpointType type, VirtualMemoryAddress address, BreakpointCallback callback);
+bool RemoveBreakpoint(BreakpointType type, VirtualMemoryAddress address);
 void ClearBreakpoints();
 bool AddStepOverBreakpoint();
 bool AddStepOutBreakpoint(u32 max_instructions_to_search = 1000);

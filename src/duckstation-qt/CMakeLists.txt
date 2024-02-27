@@ -64,6 +64,7 @@ set(SRCS
   coverdownloaddialog.cpp
   coverdownloaddialog.h
   coverdownloaddialog.ui
+  debuggeraddbreakpointdialog.ui
   debuggermodels.cpp
   debuggermodels.h
   debuggerwindow.cpp

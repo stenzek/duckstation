@@ -55,6 +55,7 @@ private Q_SLOTS:
   void onAddBreakpointTriggered();
   void onToggleBreakpointTriggered();
   void onClearBreakpointsTriggered();
+  void onBreakpointListContextMenuRequested();
   void onStepIntoActionTriggered();
   void onStepOverActionTriggered();
   void onStepOutActionTriggered();
@@ -78,6 +79,8 @@ private:
   bool scrollToMemoryAddress(VirtualMemoryAddress address);
   void refreshBreakpointList();
   void refreshBreakpointList(const CPU::BreakpointList& bps);
+  void addBreakpoint(CPU::BreakpointType type, u32 address);
+  void removeBreakpoint(CPU::BreakpointType type, u32 address);
 
   Ui::DebuggerWindow m_ui;
 

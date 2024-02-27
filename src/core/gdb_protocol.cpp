@@ -219,7 +219,7 @@ static std::optional<std::string> Cmd$z1(const std::string_view& data)
 {
   auto address = StringUtil::FromChars<VirtualMemoryAddress>(data, 16);
   if (address) {
-    CPU::RemoveBreakpoint(*address);
+    CPU::RemoveBreakpoint(CPU::BreakpointType::Execute, *address);
     return { "OK" };
   }
   else {
@@ -232,7 +232,7 @@ static std::optional<std::string> Cmd$Z1(const std::string_view& data)
 {
   auto address = StringUtil::FromChars<VirtualMemoryAddress>(data, 16);
   if (address) {
-    CPU::AddBreakpoint(*address, false);
+    CPU::AddBreakpoint(CPU::BreakpointType::Execute, *address, false);
     return { "OK" };
   }
   else {

@@ -48,7 +48,12 @@ static bool IsCop0ExecutionBreakpointUnmasked();
 static void Cop0ExecutionBreakpointCheck();
 template<MemoryAccessType type>
 static void Cop0DataBreakpointCheck(VirtualMemoryAddress address);
-static void BreakpointCheck();
+
+static BreakpointList& GetBreakpointList(BreakpointType type);
+static bool CheckBreakpointList(BreakpointType type, VirtualMemoryAddress address);
+static void ExecutionBreakpointCheck();
+template<MemoryAccessType type>
+static void MemoryBreakpointCheck(VirtualMemoryAddress address);
 
 #ifdef _DEBUG
 static void TracePrintInstruction();
@@ -94,10 +99,11 @@ static bool s_log_file_opened = false;
 static bool s_trace_to_log = false;
 
 static constexpr u32 INVALID_BREAKPOINT_PC = UINT32_C(0xFFFFFFFF);
-static std::vector<Breakpoint> s_breakpoints;
+static std::array<std::vector<Breakpoint>, static_cast<u32>(BreakpointType::Count)> s_breakpoints;
 static u32 s_breakpoint_counter = 1;
 static u32 s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
-static u8 s_single_step = 0; // 0 - off, 1 - executing one, 2 - done
+static bool s_single_step = false;
+static bool s_break_after_instruction = false;
 } // namespace CPU
 
 bool CPU::IsTraceEnabled()
@@ -156,10 +162,12 @@ void CPU::Initialize()
   g_state.cop0_regs.PRID = UINT32_C(0x00000002);
 
   g_state.use_debug_dispatcher = false;
-  s_breakpoints.clear();
+  for (BreakpointList& bps : s_breakpoints)
+    bps.clear();
   s_breakpoint_counter = 1;
   s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
-  s_single_step = 0;
+  s_single_step = false;
+  s_break_after_instruction = false;
 
   UpdateMemoryPointers();
 
@@ -1436,7 +1444,10 @@ restart_instruction:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
+      {
         Cop0DataBreakpointCheck<MemoryAccessType::Read>(addr);
+        MemoryBreakpointCheck<MemoryAccessType::Read>(addr);
+      }
 
       u8 value;
       if (!ReadMemoryByte(addr, &value))
@@ -1455,7 +1466,10 @@ restart_instruction:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
+      {
         Cop0DataBreakpointCheck<MemoryAccessType::Read>(addr);
+        MemoryBreakpointCheck<MemoryAccessType::Read>(addr);
+      }
 
       u16 value;
       if (!ReadMemoryHalfWord(addr, &value))
@@ -1473,7 +1487,10 @@ restart_instruction:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
+      {
         Cop0DataBreakpointCheck<MemoryAccessType::Read>(addr);
+        MemoryBreakpointCheck<MemoryAccessType::Read>(addr);
+      }
 
       u32 value;
       if (!ReadMemoryWord(addr, &value))
@@ -1490,7 +1507,10 @@ restart_instruction:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
+      {
         Cop0DataBreakpointCheck<MemoryAccessType::Read>(addr);
+        MemoryBreakpointCheck<MemoryAccessType::Read>(addr);
+      }
 
       u8 value;
       if (!ReadMemoryByte(addr, &value))
@@ -1508,7 +1528,10 @@ restart_instruction:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
+      {
         Cop0DataBreakpointCheck<MemoryAccessType::Read>(addr);
+        MemoryBreakpointCheck<MemoryAccessType::Read>(addr);
+      }
 
       u16 value;
       if (!ReadMemoryHalfWord(addr, &value))
@@ -1528,7 +1551,10 @@ restart_instruction:
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       const VirtualMemoryAddress aligned_addr = addr & ~UINT32_C(3);
       if constexpr (debug)
+      {
         Cop0DataBreakpointCheck<MemoryAccessType::Read>(addr);
+        MemoryBreakpointCheck<MemoryAccessType::Read>(addr);
+      }
 
       u32 aligned_value;
       if (!ReadMemoryWord(aligned_addr, &aligned_value))
@@ -1560,7 +1586,10 @@ restart_instruction:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
+      {
         Cop0DataBreakpointCheck<MemoryAccessType::Write>(addr);
+        MemoryBreakpointCheck<MemoryAccessType::Write>(addr);
+      }
 
       const u32 value = ReadReg(inst.i.rt);
       WriteMemoryByte(addr, value);
@@ -1574,7 +1603,10 @@ restart_instruction:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
+      {
         Cop0DataBreakpointCheck<MemoryAccessType::Write>(addr);
+        MemoryBreakpointCheck<MemoryAccessType::Write>(addr);
+      }
 
       const u32 value = ReadReg(inst.i.rt);
       WriteMemoryHalfWord(addr, value);
@@ -1588,7 +1620,10 @@ restart_instruction:
     {
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       if constexpr (debug)
+      {
         Cop0DataBreakpointCheck<MemoryAccessType::Write>(addr);
+        MemoryBreakpointCheck<MemoryAccessType::Write>(addr);
+      }
 
       const u32 value = ReadReg(inst.i.rt);
       WriteMemoryWord(addr, value);
@@ -1604,7 +1639,10 @@ restart_instruction:
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
       const VirtualMemoryAddress aligned_addr = addr & ~UINT32_C(3);
       if constexpr (debug)
+      {
         Cop0DataBreakpointCheck<MemoryAccessType::Write>(aligned_addr);
+        MemoryBreakpointCheck<MemoryAccessType::Write>(aligned_addr);
+      }
 
       const u32 reg_value = ReadReg(inst.i.rt);
       const u8 shift = (Truncate8(addr) & u8(3)) * u8(8);
@@ -1933,7 +1971,7 @@ void CPU::DispatchInterrupt()
 
 bool CPU::UpdateDebugDispatcherFlag()
 {
-  const bool has_any_breakpoints = !s_breakpoints.empty() || (s_single_step != 0);
+  const bool has_any_breakpoints = HasAnyBreakpoints() || s_single_step;
 
   // TODO: cop0 breakpoints
   const auto& dcic = g_state.cop0_regs.dcic;
@@ -1962,12 +2000,26 @@ void CPU::ExitExecution()
 
 bool CPU::HasAnyBreakpoints()
 {
-  return !s_breakpoints.empty();
+  return (GetBreakpointList(BreakpointType::Execute).size() + GetBreakpointList(BreakpointType::Read).size() +
+          GetBreakpointList(BreakpointType::Write).size()) > 0;
 }
 
-bool CPU::HasBreakpointAtAddress(VirtualMemoryAddress address)
+ALWAYS_INLINE CPU::BreakpointList& CPU::GetBreakpointList(BreakpointType type)
 {
-  for (const Breakpoint& bp : s_breakpoints)
+  return s_breakpoints[static_cast<size_t>(type)];
+}
+
+const char* CPU::GetBreakpointTypeName(BreakpointType type)
+{
+  static constexpr std::array<const char*, static_cast<u32>(BreakpointType::Count)> names = {
+    {TRANSLATE_NOOP("DebuggerWindow", "Execute"), TRANSLATE_NOOP("DebuggerWindow", "Read"),
+     TRANSLATE_NOOP("DebuggerWindow", "Write")}};
+  return Host::TranslateToCString("DebuggerWindow", names[static_cast<size_t>(type)]);
+}
+
+bool CPU::HasBreakpointAtAddress(BreakpointType type, VirtualMemoryAddress address)
+{
+  for (const Breakpoint& bp : GetBreakpointList(type))
   {
     if (bp.address == address)
       return true;
@@ -1976,68 +2028,79 @@ bool CPU::HasBreakpointAtAddress(VirtualMemoryAddress address)
   return false;
 }
 
-CPU::BreakpointList CPU::GetBreakpointList(bool include_auto_clear, bool include_callbacks)
+CPU::BreakpointList CPU::CopyBreakpointList(bool include_auto_clear, bool include_callbacks)
 {
   BreakpointList bps;
-  bps.reserve(s_breakpoints.size());
 
-  for (const Breakpoint& bp : s_breakpoints)
+  size_t total = 0;
+  for (const BreakpointList& bplist : s_breakpoints)
+    total += bplist.size();
+
+  bps.reserve(total);
+
+  for (const BreakpointList& bplist : s_breakpoints)
   {
-    if (bp.callback && !include_callbacks)
-      continue;
-    if (bp.auto_clear && !include_auto_clear)
-      continue;
+    for (const Breakpoint& bp : bplist)
+    {
+      if (bp.callback && !include_callbacks)
+        continue;
+      if (bp.auto_clear && !include_auto_clear)
+        continue;
 
-    bps.push_back(bp);
+      bps.push_back(bp);
+    }
   }
 
   return bps;
 }
 
-bool CPU::AddBreakpoint(VirtualMemoryAddress address, bool auto_clear, bool enabled)
+bool CPU::AddBreakpoint(BreakpointType type, VirtualMemoryAddress address, bool auto_clear, bool enabled)
 {
-  if (HasBreakpointAtAddress(address))
+  if (HasBreakpointAtAddress(type, address))
     return false;
 
-  Log_InfoPrintf("Adding breakpoint at %08X, auto clear = %u", address, static_cast<unsigned>(auto_clear));
+  Log_InfoFmt("Adding {} breakpoint at {:08X}, auto clear = %u", GetBreakpointTypeName(type), address,
+              static_cast<unsigned>(auto_clear));
 
-  Breakpoint bp{address, nullptr, auto_clear ? 0 : s_breakpoint_counter++, 0, auto_clear, enabled};
-  s_breakpoints.push_back(std::move(bp));
+  Breakpoint bp{address, nullptr, auto_clear ? 0 : s_breakpoint_counter++, 0, type, auto_clear, enabled};
+  GetBreakpointList(type).push_back(std::move(bp));
   if (UpdateDebugDispatcherFlag())
     System::InterruptExecution();
 
   if (!auto_clear)
   {
-    Host::ReportFormattedDebuggerMessage(TRANSLATE("DebuggerMessage", "Added breakpoint at 0x%08X."), address);
+    Host::ReportFormattedDebuggerMessage(TRANSLATE("DebuggerWindow", "Added breakpoint at 0x%08X."), address);
   }
 
   return true;
 }
 
-bool CPU::AddBreakpointWithCallback(VirtualMemoryAddress address, BreakpointCallback callback)
+bool CPU::AddBreakpointWithCallback(BreakpointType type, VirtualMemoryAddress address, BreakpointCallback callback)
 {
-  if (HasBreakpointAtAddress(address))
+  if (HasBreakpointAtAddress(type, address))
     return false;
 
-  Log_InfoPrintf("Adding breakpoint with callback at %08X", address);
+  Log_InfoFmt("Adding {} breakpoint with callback at {:08X}", GetBreakpointTypeName(type), address);
 
-  Breakpoint bp{address, callback, 0, 0, false, true};
-  s_breakpoints.push_back(std::move(bp));
+  Breakpoint bp{address, callback, 0, 0, type, false, true};
+  GetBreakpointList(type).push_back(std::move(bp));
   if (UpdateDebugDispatcherFlag())
     System::InterruptExecution();
   return true;
 }
 
-bool CPU::RemoveBreakpoint(VirtualMemoryAddress address)
+bool CPU::RemoveBreakpoint(BreakpointType type, VirtualMemoryAddress address)
 {
-  auto it = std::find_if(s_breakpoints.begin(), s_breakpoints.end(),
-                         [address](const Breakpoint& bp) { return bp.address == address; });
-  if (it == s_breakpoints.end())
+  BreakpointList& bplist = GetBreakpointList(type);
+  auto it =
+    std::find_if(bplist.begin(), bplist.end(), [address](const Breakpoint& bp) { return bp.address == address; });
+  if (it == bplist.end())
     return false;
 
-  Host::ReportFormattedDebuggerMessage(TRANSLATE("DebuggerMessage", "Removed breakpoint at 0x%08X."), address);
+  Host::ReportFormattedDebuggerMessage(TRANSLATE("DebuggerWindow", "Removed %s breakpoint at 0x%08X."),
+                                       GetBreakpointTypeName(type), address);
 
-  s_breakpoints.erase(it);
+  bplist.erase(it);
   if (UpdateDebugDispatcherFlag())
     System::InterruptExecution();
 
@@ -2049,7 +2112,8 @@ bool CPU::RemoveBreakpoint(VirtualMemoryAddress address)
 
 void CPU::ClearBreakpoints()
 {
-  s_breakpoints.clear();
+  for (BreakpointList& bplist : s_breakpoints)
+    bplist.clear();
   s_breakpoint_counter = 0;
   s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
   if (UpdateDebugDispatcherFlag())
@@ -2068,7 +2132,7 @@ bool CPU::AddStepOverBreakpoint()
 
   if (!IsCallInstruction(inst))
   {
-    Host::ReportFormattedDebuggerMessage(TRANSLATE("DebuggerMessage", "0x%08X is not a call instruction."), g_state.pc);
+    Host::ReportFormattedDebuggerMessage(TRANSLATE("DebuggerWindow", "0x%08X is not a call instruction."), g_state.pc);
     return false;
   }
 
@@ -2077,7 +2141,7 @@ bool CPU::AddStepOverBreakpoint()
 
   if (IsBranchInstruction(inst))
   {
-    Host::ReportFormattedDebuggerMessage(TRANSLATE("DebuggerMessage", "Can't step over double branch at 0x%08X"),
+    Host::ReportFormattedDebuggerMessage(TRANSLATE("DebuggerWindow", "Can't step over double branch at 0x%08X"),
                                          g_state.pc);
     return false;
   }
@@ -2085,9 +2149,9 @@ bool CPU::AddStepOverBreakpoint()
   // skip the delay slot
   bp_pc += sizeof(Instruction);
 
-  Host::ReportFormattedDebuggerMessage(TRANSLATE("DebuggerMessage", "Stepping over to 0x%08X."), bp_pc);
+  Host::ReportFormattedDebuggerMessage(TRANSLATE("DebuggerWindow", "Stepping over to 0x%08X."), bp_pc);
 
-  return AddBreakpoint(bp_pc, true);
+  return AddBreakpoint(BreakpointType::Execute, bp_pc, true);
 }
 
 bool CPU::AddStepOutBreakpoint(u32 max_instructions_to_search)
@@ -2102,42 +2166,36 @@ bool CPU::AddStepOutBreakpoint(u32 max_instructions_to_search)
     if (!SafeReadInstruction(ret_pc, &inst.bits))
     {
       Host::ReportFormattedDebuggerMessage(
-        TRANSLATE("DebuggerMessage", "Instruction read failed at %08X while searching for function end."), ret_pc);
+        TRANSLATE("DebuggerWindow", "Instruction read failed at %08X while searching for function end."), ret_pc);
       return false;
     }
 
     if (IsReturnInstruction(inst))
     {
-      Host::ReportFormattedDebuggerMessage(TRANSLATE("DebuggerMessage", "Stepping out to 0x%08X."), ret_pc);
+      Host::ReportFormattedDebuggerMessage(TRANSLATE("DebuggerWindow", "Stepping out to 0x%08X."), ret_pc);
 
-      return AddBreakpoint(ret_pc, true);
+      return AddBreakpoint(BreakpointType::Execute, ret_pc, true);
     }
   }
 
   Host::ReportFormattedDebuggerMessage(
-    TRANSLATE("DebuggerMessage", "No return instruction found after %u instructions for step-out at %08X."),
+    TRANSLATE("DebuggerWindow", "No return instruction found after %u instructions for step-out at %08X."),
     max_instructions_to_search, g_state.pc);
 
   return false;
 }
 
-ALWAYS_INLINE_RELEASE void CPU::BreakpointCheck()
+ALWAYS_INLINE_RELEASE bool CPU::CheckBreakpointList(BreakpointType type, VirtualMemoryAddress address)
 {
-  const u32 pc = g_state.pc;
+  BreakpointList& bplist = GetBreakpointList(type);
+  size_t count = bplist.size();
+  if (count == 0) [[likely]]
+    return false;
 
-  if (pc == s_last_breakpoint_check_pc && !s_single_step) [[unlikely]]
+  for (size_t i = 0; i < count;)
   {
-    // we don't want to trigger the same breakpoint which just paused us repeatedly.
-    return;
-  }
-
-  s_last_breakpoint_check_pc = pc;
-
-  u32 count = static_cast<u32>(s_breakpoints.size());
-  for (u32 i = 0; i < count;)
-  {
-    Breakpoint& bp = s_breakpoints[i];
-    if (!bp.enabled || bp.address != pc)
+    Breakpoint& bp = bplist[i];
+    if (!bp.enabled || bp.address != address)
     {
       i++;
       continue;
@@ -2145,12 +2203,14 @@ ALWAYS_INLINE_RELEASE void CPU::BreakpointCheck()
 
     bp.hit_count++;
 
+    const u32 pc = g_state.pc;
+
     if (bp.callback)
     {
       // if callback returns false, the bp is no longer recorded
-      if (!bp.callback(pc))
+      if (!bp.callback(BreakpointType::Execute, pc, address))
       {
-        s_breakpoints.erase(s_breakpoints.begin() + i);
+        bplist.erase(bplist.begin() + i);
         count--;
         UpdateDebugDispatcherFlag();
       }
@@ -2166,41 +2226,60 @@ ALWAYS_INLINE_RELEASE void CPU::BreakpointCheck()
       if (bp.auto_clear)
       {
         Host::ReportFormattedDebuggerMessage("Stopped execution at 0x%08X.", pc);
-        s_breakpoints.erase(s_breakpoints.begin() + i);
+        bplist.erase(bplist.begin() + i);
         count--;
         UpdateDebugDispatcherFlag();
       }
       else
       {
-        Host::ReportFormattedDebuggerMessage("Hit breakpoint %u at 0x%08X.", bp.number, pc);
+        Host::ReportFormattedDebuggerMessage("Hit %s breakpoint %u at 0x%08X.", GetBreakpointTypeName(type), bp.number,
+                                             address);
         i++;
       }
 
-      s_single_step = 0;
-      ExitExecution();
+      return true;
     }
   }
 
-  // single step - we want to break out after this instruction, so set a pending exit
-  // the bp check happens just before execution, so this is fine
-  if (s_single_step != 0) [[unlikely]]
+  return false;
+}
+
+ALWAYS_INLINE_RELEASE void CPU::ExecutionBreakpointCheck()
+{
+  if (s_single_step) [[unlikely]]
   {
-    // not resetting this will break double single stepping, because we broke on the next instruction.
-    s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
-
-    if (s_single_step == 2)
-    {
-      s_single_step = 0;
-      System::PauseSystem(true);
-
-      Host::ReportFormattedDebuggerMessage("Stepped to 0x%08X.", g_state.pc);
-      UpdateDebugDispatcherFlag();
-      ExitExecution();
-    }
-
-    // if there's a bp on the instruction we're about to execute, we should've paused already
-    s_single_step = 2;
+    // single step ignores breakpoints, since it stops anyway
+    s_single_step = false;
+    s_break_after_instruction = true;
+    Host::ReportFormattedDebuggerMessage("Stepped to 0x%08X.", g_state.npc);
+    return;
   }
+
+  if (s_breakpoints[static_cast<u32>(BreakpointType::Execute)].empty()) [[likely]]
+    return;
+
+  const u32 pc = g_state.pc;
+  if (pc == s_last_breakpoint_check_pc) [[unlikely]]
+  {
+    // we don't want to trigger the same breakpoint which just paused us repeatedly.
+    return;
+  }
+
+  s_last_breakpoint_check_pc = pc;
+
+  if (CheckBreakpointList(BreakpointType::Execute, pc)) [[unlikely]]
+  {
+    s_single_step = false;
+    ExitExecution();
+  }
+}
+
+template<MemoryAccessType type>
+ALWAYS_INLINE_RELEASE void CPU::MemoryBreakpointCheck(VirtualMemoryAddress address)
+{
+  const BreakpointType bptype = (type == MemoryAccessType::Read) ? BreakpointType::Read : BreakpointType::Write;
+  if (CheckBreakpointList(bptype, address))
+    s_break_after_instruction = true;
 }
 
 template<PGXPMode pgxp_mode, bool debug>
@@ -2215,7 +2294,7 @@ template<PGXPMode pgxp_mode, bool debug>
       if constexpr (debug)
       {
         Cop0ExecutionBreakpointCheck();
-        BreakpointCheck();
+        ExecutionBreakpointCheck();
       }
 
       g_state.pending_ticks++;
@@ -2258,6 +2337,17 @@ template<PGXPMode pgxp_mode, bool debug>
 
       // next load delay
       UpdateLoadDelay();
+
+      if constexpr (debug)
+      {
+        if (s_break_after_instruction)
+        {
+          s_break_after_instruction = false;
+          System::PauseSystem(true);
+          UpdateDebugDispatcherFlag();
+          ExitExecution();
+        }
+      }
     }
   }
 }
@@ -2334,7 +2424,7 @@ void CPU::Execute()
 
 void CPU::SetSingleStepFlag()
 {
-  s_single_step = 1;
+  s_single_step = true;
   if (UpdateDebugDispatcherFlag())
     System::InterruptExecution();
 }

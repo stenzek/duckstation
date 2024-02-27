@@ -292,6 +292,7 @@
     <QtUi Include="coverdownloaddialog.ui" />
     <QtUi Include="setupwizarddialog.ui" />
     <QtUi Include="controllerledsettingsdialog.ui" />
+    <QtUi Include="debuggeraddbreakpointdialog.ui" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="qt5.natvis" />

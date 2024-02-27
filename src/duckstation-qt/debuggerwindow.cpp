@@ -10,6 +10,7 @@
 #include "core/cpu_core_private.h"
 
 #include <QtCore/QSignalBlocker>
+#include <QtGui/QCursor>
 #include <QtGui/QFontDatabase>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
@@ -41,7 +42,6 @@ void DebuggerWindow::onSystemPaused()
 {
   setUIEnabled(true, true);
   refreshAll();
-  refreshBreakpointList();
 
   {
     QSignalBlocker sb(m_ui.actionPause);
@@ -111,7 +111,7 @@ void DebuggerWindow::onRunToCursorTriggered()
     return;
   }
 
-  CPU::AddBreakpoint(addr.value(), true, true);
+  CPU::AddBreakpoint(CPU::BreakpointType::Execute, addr.value(), true, true);
   g_emu_thread->setSystemPaused(false);
 }
 
@@ -163,18 +163,11 @@ void DebuggerWindow::onFollowAddressTriggered()
 
 void DebuggerWindow::onAddBreakpointTriggered()
 {
-  std::optional<VirtualMemoryAddress> address =
-    QtUtils::PromptForAddress(this, windowTitle(), tr("Enter code address:"), true);
-  if (!address.has_value())
+  DebuggerAddBreakpointDialog dlg(this);
+  if (!dlg.exec())
     return;
 
-  if (CPU::HasBreakpointAtAddress(address.value()))
-  {
-    QMessageBox::critical(this, windowTitle(), tr("A breakpoint already exists at this address."));
-    return;
-  }
-
-  toggleBreakpoint(address.value());
+  addBreakpoint(dlg.getType(), dlg.getAddress());
 }
 
 void DebuggerWindow::onToggleBreakpointTriggered()
@@ -189,6 +182,22 @@ void DebuggerWindow::onToggleBreakpointTriggered()
 void DebuggerWindow::onClearBreakpointsTriggered()
 {
   clearBreakpoints();
+}
+
+void DebuggerWindow::onBreakpointListContextMenuRequested()
+{
+  const QList<QTreeWidgetItem*> selected = m_ui.breakpointsWidget->selectedItems();
+  if (selected.size() != 1)
+    return;
+
+  const QTreeWidgetItem* item = selected[0];
+  const u32 address = item->data(1, Qt::UserRole).toUInt();
+  const CPU::BreakpointType type = static_cast<CPU::BreakpointType>(item->data(2, Qt::UserRole).toUInt());
+
+  QMenu menu(this);
+  connect(menu.addAction(tr("&Remove")), &QAction::triggered, this,
+          [this, address, type]() { removeBreakpoint(type, address); });
+  menu.exec(QCursor::pos());
 }
 
 void DebuggerWindow::onStepIntoActionTriggered()
@@ -268,7 +277,7 @@ void DebuggerWindow::onCodeViewContextMenuRequested(const QPoint& pt)
   action = menu.addAction(QIcon::fromTheme("debugger-go-to-cursor"), tr("&Run To Cursor"));
   connect(action, &QAction::triggered, this, [address]() {
     Host::RunOnCPUThread([address]() {
-      CPU::AddBreakpoint(address, true, true);
+      CPU::AddBreakpoint(CPU::BreakpointType::Execute, address, true, true);
       g_emu_thread->setSystemPaused(false);
     });
   });
@@ -426,6 +435,7 @@ void DebuggerWindow::setupAdditionalUi()
   m_ui.stackView->setFont(fixedFont);
 
   m_ui.codeView->setContextMenuPolicy(Qt::CustomContextMenu);
+  m_ui.breakpointsWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 
   setCentralWidget(nullptr);
   delete m_ui.centralwidget;
@@ -454,6 +464,8 @@ void DebuggerWindow::connectSignals()
   connect(m_ui.actionClose, &QAction::triggered, this, &DebuggerWindow::close);
   connect(m_ui.codeView, &QTreeView::activated, this, &DebuggerWindow::onCodeViewItemActivated);
   connect(m_ui.codeView, &QTreeView::customContextMenuRequested, this, &DebuggerWindow::onCodeViewContextMenuRequested);
+  connect(m_ui.breakpointsWidget, &QTreeWidget::customContextMenuRequested, this,
+          &DebuggerWindow::onBreakpointListContextMenuRequested);
 
   connect(m_ui.memoryRegionRAM, &QRadioButton::clicked, [this]() { setMemoryViewRegion(Bus::MemoryRegion::RAM); });
   connect(m_ui.memoryRegionEXP1, &QRadioButton::clicked, [this]() { setMemoryViewRegion(Bus::MemoryRegion::EXP1); });
@@ -492,7 +504,8 @@ void DebuggerWindow::createModels()
 
   m_ui.breakpointsWidget->setColumnWidth(0, 50);
   m_ui.breakpointsWidget->setColumnWidth(1, 80);
-  m_ui.breakpointsWidget->setColumnWidth(2, 40);
+  m_ui.breakpointsWidget->setColumnWidth(2, 50);
+  m_ui.breakpointsWidget->setColumnWidth(3, 40);
   m_ui.breakpointsWidget->setRootIsDecorated(false);
 }
 
@@ -553,19 +566,19 @@ void DebuggerWindow::setMemoryViewRegion(Bus::MemoryRegion region)
 void DebuggerWindow::toggleBreakpoint(VirtualMemoryAddress address)
 {
   Host::RunOnCPUThread([this, address]() {
-    const bool new_bp_state = !CPU::HasBreakpointAtAddress(address);
+    const bool new_bp_state = !CPU::HasBreakpointAtAddress(CPU::BreakpointType::Execute, address);
     if (new_bp_state)
     {
-      if (!CPU::AddBreakpoint(address, false))
+      if (!CPU::AddBreakpoint(CPU::BreakpointType::Execute, address, false))
         return;
     }
     else
     {
-      if (!CPU::RemoveBreakpoint(address))
+      if (!CPU::RemoveBreakpoint(CPU::BreakpointType::Execute, address))
         return;
     }
 
-    QtHost::RunOnUIThread([this, address, new_bp_state, bps = CPU::GetBreakpointList()]() {
+    QtHost::RunOnUIThread([this, address, new_bp_state, bps = CPU::CopyBreakpointList()]() {
       m_code_model->setBreakpointState(address, new_bp_state);
       refreshBreakpointList(bps);
     });
@@ -618,7 +631,8 @@ bool DebuggerWindow::scrollToMemoryAddress(VirtualMemoryAddress address)
 
 void DebuggerWindow::refreshBreakpointList()
 {
-  refreshBreakpointList(CPU::GetBreakpointList());
+  Host::RunOnCPUThread(
+    [this]() { QtHost::RunOnUIThread([this, bps = CPU::CopyBreakpointList()]() { refreshBreakpointList(bps); }); });
 }
 
 void DebuggerWindow::refreshBreakpointList(const CPU::BreakpointList& bps)
@@ -633,7 +647,50 @@ void DebuggerWindow::refreshBreakpointList(const CPU::BreakpointList& bps)
     item->setCheckState(0, bp.enabled ? Qt::Checked : Qt::Unchecked);
     item->setText(0, QString::asprintf("%u", bp.number));
     item->setText(1, QString::asprintf("0x%08X", bp.address));
-    item->setText(2, QString::asprintf("%u", bp.hit_count));
+    item->setText(2, QString::fromUtf8(CPU::GetBreakpointTypeName(bp.type)));
+    item->setText(3, QString::asprintf("%u", bp.hit_count));
+    item->setData(0, Qt::UserRole, bp.number);
+    item->setData(1, Qt::UserRole, bp.address);
+    item->setData(2, Qt::UserRole, static_cast<u32>(bp.type));
     m_ui.breakpointsWidget->addTopLevelItem(item);
   }
+}
+
+void DebuggerWindow::addBreakpoint(CPU::BreakpointType type, u32 address)
+{
+  Host::RunOnCPUThread([this, address, type]() {
+    const bool result = CPU::AddBreakpoint(type, address);
+    QtHost::RunOnUIThread([this, address, type, result, bps = CPU::CopyBreakpointList()]() {
+      if (!result)
+      {
+        QMessageBox::critical(this, windowTitle(),
+                              tr("Failed to add breakpoint. A breakpoint may already exist at this address."));
+        return;
+      }
+
+      if (type == CPU::BreakpointType::Execute)
+        m_code_model->setBreakpointState(address, true);
+
+      refreshBreakpointList(bps);
+    });
+  });
+}
+
+void DebuggerWindow::removeBreakpoint(CPU::BreakpointType type, u32 address)
+{
+  Host::RunOnCPUThread([this, address, type]() {
+    const bool result = CPU::RemoveBreakpoint(type, address);
+    QtHost::RunOnUIThread([this, address, type, result, bps = CPU::CopyBreakpointList()]() {
+      if (!result)
+      {
+        QMessageBox::critical(this, windowTitle(), tr("Failed to remove breakpoint. This breakpoint may not exist."));
+        return;
+      }
+
+      if (type == CPU::BreakpointType::Execute)
+        m_code_model->setBreakpointState(address, false);
+
+      refreshBreakpointList(bps);
+    });
+  });
 }
