@@ -66,7 +66,7 @@ void DebuggerWindow::onDebuggerMessageReported(const QString& message)
 
 void DebuggerWindow::refreshAll()
 {
-  m_registers_model->invalidateView();
+  m_registers_model->updateValues();
   m_stack_model->invalidateView();
   m_ui.memoryView->repaint();
 
@@ -196,7 +196,6 @@ void DebuggerWindow::onStepIntoActionTriggered()
   Assert(System::IsPaused());
   m_registers_model->saveCurrentValues();
   g_emu_thread->singleStepCPU();
-  refreshAll();
 }
 
 void DebuggerWindow::onStepOverActionTriggered()

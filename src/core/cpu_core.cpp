@@ -825,7 +825,6 @@ const std::array<CPU::DebuggerRegisterListEntry, CPU::NUM_DEBUGGER_REGISTER_LIST
                                     {"hi", &CPU::g_state.regs.hi},
                                     {"lo", &CPU::g_state.regs.lo},
                                     {"pc", &CPU::g_state.pc},
-                                    {"npc", &CPU::g_state.npc},
 
                                     {"COP0_SR", &CPU::g_state.cop0_regs.sr.bits},
                                     {"COP0_CAUSE", &CPU::g_state.cop0_regs.cause.bits},

@@ -64,11 +64,12 @@ public:
   virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
   virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
-  void invalidateView();
+  void updateValues();
   void saveCurrentValues();
 
 private:
-  u32 m_old_reg_values[CPU::NUM_DEBUGGER_REGISTER_LIST_ENTRIES] = {};
+  std::array<u32 ,CPU::NUM_DEBUGGER_REGISTER_LIST_ENTRIES> m_reg_values = {};
+  std::array<u32, CPU::NUM_DEBUGGER_REGISTER_LIST_ENTRIES> m_old_reg_values = {};
 };
 
 class DebuggerStackModel : public QAbstractListModel

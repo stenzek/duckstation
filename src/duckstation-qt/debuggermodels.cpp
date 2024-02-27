@@ -333,11 +333,11 @@ QVariant DebuggerRegistersModel::data(const QModelIndex& index, int role /*= Qt:
     {
       if (role == Qt::DisplayRole)
       {
-        return QString::asprintf("0x%08X", *CPU::g_debugger_register_list[reg_index].value_ptr);
+        return QString::asprintf("0x%08X", m_reg_values[reg_index]);
       }
       else if (role == Qt::ForegroundRole)
       {
-        if (*CPU::g_debugger_register_list[reg_index].value_ptr != m_old_reg_values[reg_index])
+        if (m_reg_values[reg_index] != m_old_reg_values[reg_index])
           return QColor(255, 50, 50);
       }
     }
@@ -370,16 +370,19 @@ QVariant DebuggerRegistersModel::headerData(int section, Qt::Orientation orienta
   }
 }
 
-void DebuggerRegistersModel::invalidateView()
+void DebuggerRegistersModel::updateValues()
 {
   beginResetModel();
+
+  for (u32 i = 0; i < CPU::NUM_DEBUGGER_REGISTER_LIST_ENTRIES; i++)
+    m_reg_values[i] = *CPU::g_debugger_register_list[i].value_ptr;
+
   endResetModel();
 }
 
 void DebuggerRegistersModel::saveCurrentValues()
 {
-  for (u32 i = 0; i < static_cast<u32>(CPU::Reg::count); i++)
-    m_old_reg_values[i] = CPU::g_state.regs.r[i];
+  m_old_reg_values = m_reg_values;
 }
 
 DebuggerStackModel::DebuggerStackModel(QObject* parent /*= nullptr*/) : QAbstractListModel(parent)
