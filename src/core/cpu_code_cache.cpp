@@ -832,9 +832,7 @@ template<PGXPMode pgxp_mode>
         }
       }
 
-      // TODO: make DebugAssert
-      Assert(!(HasPendingInterrupt()));
-
+      DebugAssert(!(HasPendingInterrupt()));
       if (g_settings.cpu_recompiler_icache)
         CheckAndUpdateICacheTags(block->icache_line_count, block->uncached_fetch_ticks);
 
@@ -1605,6 +1603,15 @@ Common::PageFaultHandler::HandlerResult CPU::CodeCache::HandleFastmemException(v
 
     guest_address = static_cast<PhysicalMemoryAddress>(
       static_cast<ptrdiff_t>(static_cast<u8*>(fault_address) - static_cast<u8*>(g_state.fastmem_base)));
+
+    // if we're writing to ram, let it go through a few times, and use manual block protection to sort it out
+    // TODO: path for manual protection to return back to read-only pages
+    if (is_write && !g_state.cop0_regs.sr.Isc && AddressInRAM(guest_address))
+    {
+      Log_DevFmt("Ignoring fault due to RAM write @ 0x{:08X}", guest_address);
+      InvalidateBlocksWithPageIndex(Bus::GetRAMCodePageIndex(guest_address));
+      return Common::PageFaultHandler::HandlerResult::ContinueExecution;
+    }
   }
   else
 #endif
@@ -1623,16 +1630,7 @@ Common::PageFaultHandler::HandlerResult CPU::CodeCache::HandleFastmemException(v
     return Common::PageFaultHandler::HandlerResult::ExecuteNextHandler;
   }
 
-  // if we're writing to ram, let it go through a few times, and use manual block protection to sort it out
-  // TODO: path for manual protection to return back to read-only pages
   LoadstoreBackpatchInfo& info = iter->second;
-  if (is_write && !g_state.cop0_regs.sr.Isc && AddressInRAM(guest_address))
-  {
-    Log_DevFmt("Ignoring fault due to RAM write @ 0x{:08X}", guest_address);
-    InvalidateBlocksWithPageIndex(Bus::GetRAMCodePageIndex(guest_address));
-    return Common::PageFaultHandler::HandlerResult::ContinueExecution;
-  }
-
   Log_DevFmt("Backpatching {} at {}[{}] (pc {:08X} addr {:08X}): Bitmask {:08X} Addr {} Data {} Size {} Signed {:02X}",
              info.is_load ? "load" : "store", exception_pc, info.code_size, info.guest_pc, guest_address,
              info.gpr_bitmask, static_cast<unsigned>(info.address_register), static_cast<unsigned>(info.data_register),
