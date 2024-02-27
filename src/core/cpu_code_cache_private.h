@@ -142,6 +142,7 @@ struct alignas(16) Block
   TickCount uncached_fetch_ticks;
   u32 icache_line_count;
 
+  u32 host_code_size;
   u32 compile_frame;
   u8 compile_count;
 

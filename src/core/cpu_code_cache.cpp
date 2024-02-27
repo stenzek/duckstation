@@ -28,6 +28,7 @@ Log_SetChannel(CPU::CodeCache);
 #include "cpu_newrec_compiler.h"
 #endif
 
+#include <map>
 #include <unordered_set>
 #include <zlib.h>
 
@@ -101,9 +102,10 @@ static bool CompileBlock(Block* block);
 static Common::PageFaultHandler::HandlerResult HandleFastmemException(void* exception_pc, void* fault_address,
                                                                       bool is_write);
 static void BackpatchLoadStore(void* host_pc, const LoadstoreBackpatchInfo& info);
+static void RemoveBackpatchInfoForRange(const void* host_code, u32 size);
 
 static BlockLinkMap s_block_links;
-static std::unordered_map<const void*, LoadstoreBackpatchInfo> s_fastmem_backpatch_info;
+static std::map<const void*, LoadstoreBackpatchInfo> s_fastmem_backpatch_info;
 static std::unordered_set<u32> s_fastmem_faulting_pcs;
 
 NORETURN_FUNCTION_POINTER void (*g_enter_recompiler)();
@@ -479,6 +481,7 @@ CPU::CodeCache::Block* CPU::CodeCache::CreateBlock(u32 pc, const BlockInstructio
   block->protection = GetProtectionModeForBlock(block);
   block->uncached_fetch_ticks = metadata.uncached_fetch_ticks;
   block->icache_line_count = metadata.icache_line_count;
+  block->host_code_size = 0;
   block->compile_frame = recompile_frame;
   block->compile_count = recompile_count + 1;
 
@@ -1332,6 +1335,10 @@ void CPU::CodeCache::CompileOrRevalidateBlock(u32 start_pc)
 
     // remove outward links from this block, since we're recompiling it
     UnlinkBlockExits(block);
+
+    // clean up backpatch info so it doesn't keep growing indefinitely
+    if (block->HasFlag(BlockFlags::ContainsLoadStoreInstructions))
+      RemoveBackpatchInfoForRange(block->host_code, block->host_code_size);
   }
 
   BlockMetadata metadata = {};
@@ -1505,6 +1512,7 @@ bool CPU::CodeCache::CompileBlock(Block* block)
 #endif
 
   block->host_code = host_code;
+  block->host_code_size = host_code_size;
 
   if (!host_code)
   {
@@ -1680,6 +1688,30 @@ void CPU::CodeCache::BackpatchLoadStore(void* host_pc, const LoadstoreBackpatchI
   if (g_settings.cpu_execution_mode == CPUExecutionMode::NewRec)
     NewRec::BackpatchLoadStore(host_pc, info);
 #endif
+}
+
+void CPU::CodeCache::RemoveBackpatchInfoForRange(const void* host_code, u32 size)
+{
+  const u8* start = static_cast<const u8*>(host_code);
+  const u8* end = start + size;
+
+  auto start_iter = s_fastmem_backpatch_info.lower_bound(start);
+  if (start_iter == s_fastmem_backpatch_info.end())
+    return;
+
+  // this might point to another block, so bail out in that case
+  if (start_iter->first >= end)
+    return;
+
+  // find the end point, or last instruction in the range
+  auto end_iter = start_iter;
+  do
+  {
+    ++end_iter;
+  } while (end_iter != s_fastmem_backpatch_info.end() && end_iter->first < end);
+
+  // erase the whole range at once
+  s_fastmem_backpatch_info.erase(start_iter, end_iter);
 }
 
 #endif // ENABLE_RECOMPILER_SUPPORT
