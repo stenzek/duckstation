@@ -1515,6 +1515,14 @@ void VulkanDevice::DeferBufferDestruction(VkBuffer object, VmaAllocation allocat
                                  [this, object, allocation]() { vmaDestroyBuffer(m_allocator, object, allocation); });
 }
 
+void VulkanDevice::DeferBufferDestruction(VkBuffer object, VkDeviceMemory memory)
+{
+  m_cleanup_objects.emplace_back(GetCurrentFenceCounter(), [this, object, memory]() {
+    vkDestroyBuffer(m_device, object, nullptr);
+    vkFreeMemory(m_device, memory, nullptr);
+  });
+}
+
 void VulkanDevice::DeferFramebufferDestruction(VkFramebuffer object)
 {
   m_cleanup_objects.emplace_back(GetCurrentFenceCounter(),
@@ -2067,7 +2075,6 @@ void VulkanDevice::DestroyDevice()
   for (auto& it : m_cleanup_objects)
     it.second();
   m_cleanup_objects.clear();
-  DestroyDownloadBuffer();
   DestroyPersistentDescriptorSets();
   DestroyBuffers();
   DestroySamplers();
@@ -2528,6 +2535,7 @@ bool VulkanDevice::CheckFeatures(FeatureMask disabled_features)
     !(disabled_features & FEATURE_MASK_GEOMETRY_SHADERS) && m_device_features.geometryShader;
 
   m_features.partial_msaa_resolve = true;
+  m_features.memory_import = m_optional_extensions.vk_ext_external_memory_host;
   m_features.shader_cache = true;
   m_features.pipeline_cache = true;
   m_features.prefer_unused_textures = true;
@@ -2981,21 +2989,21 @@ void VulkanDevice::RenderBlankFrame()
   InvalidateCachedState();
 }
 
-bool VulkanDevice::TryImportHostMemory(const void* data, u32 data_size, VkBufferUsageFlags buffer_usage,
-                                       VkDeviceMemory* out_memory, VkBuffer* out_buffer, u32* out_offset)
+bool VulkanDevice::TryImportHostMemory(void* data, size_t data_size, VkBufferUsageFlags buffer_usage,
+                                       VkDeviceMemory* out_memory, VkBuffer* out_buffer, VkDeviceSize* out_offset)
 {
   if (!m_optional_extensions.vk_ext_external_memory_host)
     return false;
 
   // Align to the nearest page
-  const void* data_aligned =
-    reinterpret_cast<const void*>(Common::AlignDownPow2(reinterpret_cast<uintptr_t>(data), HOST_PAGE_SIZE));
+  void* data_aligned =
+    reinterpret_cast<void*>(Common::AlignDownPow2(reinterpret_cast<uintptr_t>(data), HOST_PAGE_SIZE));
 
   // Offset to the start of the data within the page
-  const u32 data_offset = reinterpret_cast<uintptr_t>(data) & (HOST_PAGE_SIZE - 1);
+  const size_t data_offset = reinterpret_cast<uintptr_t>(data) & static_cast<uintptr_t>(HOST_PAGE_MASK);
 
   // Full amount of data that must be imported, including the pages
-  const u32 data_size_aligned = Common::AlignUpPow2(data_offset + data_size, HOST_PAGE_SIZE);
+  const size_t data_size_aligned = Common::AlignUpPow2(data_offset + data_size, HOST_PAGE_SIZE);
 
   VkMemoryHostPointerPropertiesEXT pointer_properties = {VK_STRUCTURE_TYPE_MEMORY_HOST_POINTER_PROPERTIES_EXT, nullptr,
                                                          0};
@@ -3003,6 +3011,7 @@ bool VulkanDevice::TryImportHostMemory(const void* data, u32 data_size, VkBuffer
                                                      data_aligned, &pointer_properties);
   if (res != VK_SUCCESS || pointer_properties.memoryTypeBits == 0)
   {
+    LOG_VULKAN_ERROR(res, "vkGetMemoryHostPointerPropertiesEXT() failed: ");
     return false;
   }
 
@@ -3015,6 +3024,7 @@ bool VulkanDevice::TryImportHostMemory(const void* data, u32 data_size, VkBuffer
   res = vmaFindMemoryTypeIndex(m_allocator, pointer_properties.memoryTypeBits, &vma_alloc_info, &memory_index);
   if (res != VK_SUCCESS)
   {
+    LOG_VULKAN_ERROR(res, "vmaFindMemoryTypeIndex() failed: ");
     return false;
   }
 
@@ -3030,6 +3040,7 @@ bool VulkanDevice::TryImportHostMemory(const void* data, u32 data_size, VkBuffer
   res = vkAllocateMemory(m_device, &alloc_info, nullptr, &imported_memory);
   if (res != VK_SUCCESS)
   {
+    LOG_VULKAN_ERROR(res, "vkAllocateMemory() failed: ");
     return false;
   }
 
@@ -3049,10 +3060,10 @@ bool VulkanDevice::TryImportHostMemory(const void* data, u32 data_size, VkBuffer
   res = vkCreateBuffer(m_device, &buffer_info, nullptr, &imported_buffer);
   if (res != VK_SUCCESS)
   {
+    LOG_VULKAN_ERROR(res, "vkCreateBuffer() failed: ");
     if (imported_memory != VK_NULL_HANDLE)
-    {
       vkFreeMemory(m_device, imported_memory, nullptr);
-    }
+
     return false;
   }
 
@@ -3061,7 +3072,7 @@ bool VulkanDevice::TryImportHostMemory(const void* data, u32 data_size, VkBuffer
   *out_memory = imported_memory;
   *out_buffer = imported_buffer;
   *out_offset = data_offset;
-
+  Log_DevFmt("Imported {} byte buffer covering {} bytes at {}", data_size, data_size_aligned, data);
   return true;
 }
 

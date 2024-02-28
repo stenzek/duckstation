@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -149,4 +149,38 @@ private:
   VulkanStreamBuffer m_buffer;
   VkBufferView m_buffer_view = VK_NULL_HANDLE;
   VkDescriptorSet m_descriptor_set = VK_NULL_HANDLE;
+};
+
+class VulkanDownloadTexture final : public GPUDownloadTexture
+{
+public:
+  ~VulkanDownloadTexture() override;
+
+  static std::unique_ptr<VulkanDownloadTexture> Create(u32 width, u32 height, GPUTexture::Format format, void* memory,
+                                                       size_t memory_size, u32 memory_stride);
+
+  void CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width, u32 height,
+                       u32 src_layer, u32 src_level, bool use_transfer_pitch) override;
+
+  bool Map(u32 x, u32 y, u32 width, u32 height) override;
+  void Unmap() override;
+
+  void Flush() override;
+
+  void SetDebugName(std::string_view name) override;
+
+private:
+  VulkanDownloadTexture(u32 width, u32 height, GPUTexture::Format format, VmaAllocation allocation,
+                        VkDeviceMemory memory, VkBuffer buffer, VkDeviceSize memory_offset, VkDeviceSize buffer_size,
+                        const u8* map_ptr, u32 map_pitch);
+
+  VmaAllocation m_allocation = VK_NULL_HANDLE;
+  VkDeviceMemory m_memory = VK_NULL_HANDLE;
+  VkBuffer m_buffer = VK_NULL_HANDLE;
+
+  u64 m_copy_fence_counter = 0;
+  VkDeviceSize m_memory_offset = 0;
+  VkDeviceSize m_buffer_size = 0;
+
+  bool m_needs_cache_invalidate = false;
 };

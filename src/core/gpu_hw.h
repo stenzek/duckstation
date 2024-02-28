@@ -216,6 +216,7 @@ private:
   std::unique_ptr<GPUTexture> m_vram_depth_texture;
   std::unique_ptr<GPUTexture> m_vram_read_texture;
   std::unique_ptr<GPUTexture> m_vram_readback_texture;
+  std::unique_ptr<GPUDownloadTexture> m_vram_readback_download_texture;
   std::unique_ptr<GPUTexture> m_vram_replacement_texture;
   std::unique_ptr<GPUTexture> m_display_private_texture; // TODO: Move to base.
 

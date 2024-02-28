@@ -1907,7 +1907,7 @@ Common::Rectangle<s32> GPU::CalculateDrawRect(s32 window_width, s32 window_heigh
 
 static bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string filename, FileSystem::ManagedCFilePtr fp,
                                           bool clear_alpha, bool flip_y, u32 resize_width, u32 resize_height,
-                                          std::vector<u32> texture_data, u32 texture_data_stride,
+                                          std::vector<u8> texture_data, u32 texture_data_stride,
                                           GPUTexture::Format texture_format)
 {
 
@@ -1923,8 +1923,18 @@ static bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string fil
 
   if (clear_alpha)
   {
-    for (u32& pixel : texture_data)
-      pixel |= 0xFF000000;
+    for (u32 y = 0; y < height; y++)
+    {
+      u8* pixels = &texture_data[y * texture_data_stride];
+      for (u32 x = 0; x < width; x++)
+      {
+        u32 pixel;
+        std::memcpy(&pixel, pixels, sizeof(pixel));
+        pixel |= 0xFF000000u;
+        std::memcpy(pixels, &pixel, sizeof(pixel));
+        pixels += sizeof(pixel);
+      }
+    }
   }
 
   if (flip_y)
@@ -1932,11 +1942,10 @@ static bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string fil
 
   if (resize_width > 0 && resize_height > 0 && (resize_width != width || resize_height != height))
   {
-    std::vector<u32> resized_texture_data(resize_width * resize_height);
+    std::vector<u8> resized_texture_data(resize_width * resize_height * sizeof(u32));
     u32 resized_texture_stride = sizeof(u32) * resize_width;
-    if (!stbir_resize_uint8(reinterpret_cast<u8*>(texture_data.data()), width, height, texture_data_stride,
-                            reinterpret_cast<u8*>(resized_texture_data.data()), resize_width, resize_height,
-                            resized_texture_stride, 4))
+    if (!stbir_resize_uint8(texture_data.data(), width, height, texture_data_stride, resized_texture_data.data(),
+                            resize_width, resize_height, resized_texture_stride, 4))
     {
       Log_ErrorPrintf("Failed to resize texture data from %ux%u to %ux%u", width, height, resize_width, resize_height);
       return false;
@@ -2022,13 +2031,29 @@ bool GPU::WriteDisplayTextureToFile(std::string filename, bool full_resolution /
   const u32 read_width = static_cast<u32>(m_display_texture_view_width);
   const u32 read_height = static_cast<u32>(m_display_texture_view_height);
 
-  std::vector<u32> texture_data(read_width * read_height);
   const u32 texture_data_stride =
     Common::AlignUpPow2(GPUTexture::GetPixelSize(m_display_texture->GetFormat()) * read_width, 4);
-  if (!g_gpu_device->DownloadTexture(m_display_texture, read_x, read_y, read_width, read_height, texture_data.data(),
-                                     texture_data_stride))
+  std::vector<u8> texture_data(texture_data_stride * read_height);
+
+  std::unique_ptr<GPUDownloadTexture> dltex;
+  if (g_gpu_device->GetFeatures().memory_import)
   {
-    Log_ErrorPrintf("Texture download failed");
+    dltex = g_gpu_device->CreateDownloadTexture(read_width, read_height, m_display_texture->GetFormat(),
+                                                texture_data.data(), texture_data.size(), texture_data_stride);
+  }
+  if (!dltex)
+  {
+    if (!(dltex = g_gpu_device->CreateDownloadTexture(read_width, read_height, m_display_texture->GetFormat())))
+    {
+      Log_ErrorFmt("Failed to create {}x{} {} download texture", read_width, read_height,
+                   GPUTexture::GetFormatName(m_display_texture->GetFormat()));
+      return false;
+    }
+  }
+
+  dltex->CopyFromTexture(0, 0, m_display_texture, read_x, read_y, read_width, read_height, 0, 0, !dltex->IsImported());
+  if (!dltex->ReadTexels(0, 0, read_width, read_height, texture_data.data(), texture_data_stride))
+  {
     RestoreDeviceContext();
     return false;
   }
@@ -2060,7 +2085,7 @@ bool GPU::WriteDisplayTextureToFile(std::string filename, bool full_resolution /
 }
 
 bool GPU::RenderScreenshotToBuffer(u32 width, u32 height, const Common::Rectangle<s32>& draw_rect, bool postfx,
-                                   std::vector<u32>* out_pixels, u32* out_stride, GPUTexture::Format* out_format)
+                                   std::vector<u8>* out_pixels, u32* out_stride, GPUTexture::Format* out_format)
 {
   const GPUTexture::Format hdformat =
     g_gpu_device->HasSurface() ? g_gpu_device->GetWindowFormat() : GPUTexture::Format::RGBA8;
@@ -2076,8 +2101,25 @@ bool GPU::RenderScreenshotToBuffer(u32 width, u32 height, const Common::Rectangl
   RenderDisplay(render_texture.get(), draw_rect, postfx);
 
   const u32 stride = GPUTexture::GetPixelSize(hdformat) * width;
-  out_pixels->resize(width * height);
-  if (!g_gpu_device->DownloadTexture(render_texture.get(), 0, 0, width, height, out_pixels->data(), stride))
+  out_pixels->resize(height * stride);
+
+  std::unique_ptr<GPUDownloadTexture> dltex;
+  if (g_gpu_device->GetFeatures().memory_import)
+  {
+    dltex =
+      g_gpu_device->CreateDownloadTexture(width, height, hdformat, out_pixels->data(), out_pixels->size(), stride);
+  }
+  if (!dltex)
+  {
+    if (!(dltex = g_gpu_device->CreateDownloadTexture(width, height, hdformat)))
+    {
+      Log_ErrorFmt("Failed to create {}x{} download texture", width, height);
+      return false;
+    }
+  }
+
+  dltex->CopyFromTexture(0, 0, render_texture.get(), 0, 0, width, height, 0, 0, false);
+  if (!dltex->ReadTexels(0, 0, width, height, out_pixels->data(), stride))
   {
     RestoreDeviceContext();
     return false;
@@ -2142,7 +2184,7 @@ bool GPU::RenderScreenshotToFile(std::string filename, bool internal_resolution 
   if (width == 0 || height == 0)
     return false;
 
-  std::vector<u32> pixels;
+  std::vector<u8> pixels;
   u32 pixels_stride;
   GPUTexture::Format pixels_format;
   if (!RenderScreenshotToBuffer(width, height, draw_rect, !internal_resolution, &pixels, &pixels_stride,

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "d3d12_texture.h"
@@ -664,112 +664,6 @@ void D3D12Texture::MakeReadyForSampling()
   TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 }
 
-bool D3D12Device::DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, void* out_data,
-                                  u32 out_data_stride)
-{
-  D3D12Texture* T = static_cast<D3D12Texture*>(texture);
-  T->CommitClear();
-
-  const u32 pitch = Common::AlignUp(width * T->GetPixelSize(), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
-  const u32 size = pitch * height;
-  const u32 subresource = 0;
-  if (!CheckDownloadBufferSize(size))
-  {
-    Log_ErrorPrintf("Can't read back %ux%u", width, height);
-    return false;
-  }
-
-  if (InRenderPass())
-    EndRenderPass();
-
-  ID3D12GraphicsCommandList4* cmdlist = GetCommandList();
-
-  D3D12_TEXTURE_COPY_LOCATION srcloc;
-  srcloc.pResource = T->GetResource();
-  srcloc.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-  srcloc.SubresourceIndex = subresource;
-
-  D3D12_TEXTURE_COPY_LOCATION dstloc;
-  dstloc.pResource = m_download_buffer.Get();
-  dstloc.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
-  dstloc.PlacedFootprint.Offset = 0;
-  dstloc.PlacedFootprint.Footprint.Format = T->GetDXGIFormat();
-  dstloc.PlacedFootprint.Footprint.Width = width;
-  dstloc.PlacedFootprint.Footprint.Height = height;
-  dstloc.PlacedFootprint.Footprint.Depth = 1;
-  dstloc.PlacedFootprint.Footprint.RowPitch = pitch;
-
-  const D3D12_RESOURCE_STATES old_layout = T->GetResourceState();
-  if (old_layout != D3D12_RESOURCE_STATE_COPY_SOURCE)
-    T->TransitionSubresourceToState(cmdlist, subresource, old_layout, D3D12_RESOURCE_STATE_COPY_SOURCE);
-
-  // TODO: Rules for depth buffers here?
-  const D3D12_BOX srcbox{static_cast<UINT>(x),         static_cast<UINT>(y),          0u,
-                         static_cast<UINT>(x + width), static_cast<UINT>(y + height), 1u};
-  cmdlist->CopyTextureRegion(&dstloc, 0, 0, 0, &srcloc, &srcbox);
-
-  if (old_layout != D3D12_RESOURCE_STATE_COPY_SOURCE)
-    T->TransitionSubresourceToState(cmdlist, subresource, D3D12_RESOURCE_STATE_COPY_SOURCE, old_layout);
-
-  SubmitCommandList(true);
-
-  u8* map_pointer;
-  const D3D12_RANGE read_range{0u, size};
-  const HRESULT hr = m_download_buffer->Map(0, &read_range, reinterpret_cast<void**>(const_cast<u8**>(&map_pointer)));
-  if (FAILED(hr))
-  {
-    Log_ErrorPrintf("Map() failed with HRESULT %08X", hr);
-    return false;
-  }
-
-  StringUtil::StrideMemCpy(out_data, out_data_stride, map_pointer, pitch, width * T->GetPixelSize(), height);
-  m_download_buffer->Unmap(0, nullptr);
-  return true;
-}
-
-bool D3D12Device::CheckDownloadBufferSize(u32 required_size)
-{
-  if (m_download_buffer_size >= required_size)
-    return true;
-
-  DestroyDownloadBuffer();
-
-  D3D12MA::ALLOCATION_DESC allocation_desc = {};
-  allocation_desc.HeapType = D3D12_HEAP_TYPE_READBACK;
-
-  const D3D12_RESOURCE_DESC resource_desc = {D3D12_RESOURCE_DIMENSION_BUFFER,
-                                             0,
-                                             required_size,
-                                             1,
-                                             1,
-                                             1,
-                                             DXGI_FORMAT_UNKNOWN,
-                                             {1, 0},
-                                             D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
-                                             D3D12_RESOURCE_FLAG_NONE};
-
-  HRESULT hr = m_allocator->CreateResource(&allocation_desc, &resource_desc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
-                                           m_download_buffer_allocation.ReleaseAndGetAddressOf(),
-                                           IID_PPV_ARGS(m_download_buffer.ReleaseAndGetAddressOf()));
-  if (FAILED(hr))
-  {
-    Log_ErrorPrintf("CreateResource() failed with HRESULT %08X", hr);
-    return false;
-  }
-
-  return true;
-}
-
-void D3D12Device::DestroyDownloadBuffer()
-{
-  if (!m_download_buffer)
-    return;
-
-  m_download_buffer.Reset();
-  m_download_buffer_allocation.Reset();
-  m_download_buffer_size = 0;
-}
-
 D3D12Sampler::D3D12Sampler(D3D12DescriptorHandle descriptor) : m_descriptor(descriptor)
 {
 }
@@ -933,4 +827,185 @@ std::unique_ptr<GPUTextureBuffer> D3D12Device::CreateTextureBuffer(GPUTextureBuf
     tb.reset();
 
   return tb;
+}
+
+D3D12DownloadTexture::D3D12DownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+                                           ComPtr<D3D12MA::Allocation> allocation, ComPtr<ID3D12Resource> buffer,
+                                           size_t buffer_size)
+  : GPUDownloadTexture(width, height, format, false), m_allocation(std::move(allocation)), m_buffer(std::move(buffer)),
+    m_buffer_size(buffer_size)
+{
+}
+
+D3D12DownloadTexture::~D3D12DownloadTexture()
+{
+  if (IsMapped())
+    D3D12DownloadTexture::Unmap();
+
+  if (m_buffer)
+    D3D12Device::GetInstance().DeferResourceDestruction(m_allocation.Get(), m_buffer.Get());
+}
+
+std::unique_ptr<D3D12DownloadTexture> D3D12DownloadTexture::Create(u32 width, u32 height, GPUTexture::Format format)
+{
+  const u32 buffer_size = GetBufferSize(width, height, format, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+
+  D3D12MA::ALLOCATION_DESC allocation_desc = {};
+  allocation_desc.HeapType = D3D12_HEAP_TYPE_READBACK;
+
+  const D3D12_RESOURCE_DESC resource_desc = {D3D12_RESOURCE_DIMENSION_BUFFER,
+                                             0,
+                                             buffer_size,
+                                             1,
+                                             1,
+                                             1,
+                                             DXGI_FORMAT_UNKNOWN,
+                                             {1, 0},
+                                             D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
+                                             D3D12_RESOURCE_FLAG_NONE};
+
+  ComPtr<D3D12MA::Allocation> allocation;
+  ComPtr<ID3D12Resource> buffer;
+
+  HRESULT hr = D3D12Device::GetInstance().GetAllocator()->CreateResource(
+    &allocation_desc, &resource_desc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, allocation.GetAddressOf(),
+    IID_PPV_ARGS(buffer.GetAddressOf()));
+  if (FAILED(hr))
+  {
+    Log_ErrorFmt("CreateResource() failed with HRESULT {:08X}", hr);
+    return {};
+  }
+
+  return std::unique_ptr<D3D12DownloadTexture>(
+    new D3D12DownloadTexture(width, height, format, std::move(allocation), std::move(buffer), buffer_size));
+}
+
+void D3D12DownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width,
+                                           u32 height, u32 src_layer, u32 src_level, bool use_transfer_pitch)
+{
+  D3D12Texture* const src12 = static_cast<D3D12Texture*>(src);
+  D3D12Device& dev = D3D12Device::GetInstance();
+
+  DebugAssert(src12->GetFormat() == m_format);
+  DebugAssert(src_level < src12->GetLevels());
+  DebugAssert((src_x + width) <= src12->GetMipWidth(src_level) && (src_y + height) <= src12->GetMipHeight(src_level));
+  DebugAssert((dst_x + width) <= m_width && (dst_y + height) <= m_height);
+  DebugAssert((dst_x == 0 && dst_y == 0) || !use_transfer_pitch);
+
+  u32 copy_offset, copy_size, copy_rows;
+  m_current_pitch = GetTransferPitch(use_transfer_pitch ? width : m_width, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+  GetTransferSize(dst_x, dst_y, width, height, m_current_pitch, &copy_offset, &copy_size, &copy_rows);
+
+  dev.GetStatistics().num_downloads++;
+  if (dev.InRenderPass())
+    dev.EndRenderPass();
+  src12->CommitClear();
+
+  if (IsMapped())
+    Unmap();
+
+  ID3D12GraphicsCommandList* cmdlist = dev.GetCommandList();
+  GL_INS_FMT("ReadbackTexture: {{{},{}}} {}x{} => {{{},{}}}", src_x, src_y, width, height, dst_x, dst_y);
+
+  D3D12_TEXTURE_COPY_LOCATION srcloc;
+  srcloc.pResource = src12->GetResource();
+  srcloc.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+  srcloc.SubresourceIndex = src12->CalculateSubresource(src_layer, src_level);
+
+  D3D12_TEXTURE_COPY_LOCATION dstloc;
+  dstloc.pResource = m_buffer.Get();
+  dstloc.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+  dstloc.PlacedFootprint.Offset = copy_offset;
+  dstloc.PlacedFootprint.Footprint.Format = src12->GetDXGIFormat();
+  dstloc.PlacedFootprint.Footprint.Width = width;
+  dstloc.PlacedFootprint.Footprint.Height = height;
+  dstloc.PlacedFootprint.Footprint.Depth = 1;
+  dstloc.PlacedFootprint.Footprint.RowPitch = m_current_pitch;
+
+  const D3D12_RESOURCE_STATES old_layout = src12->GetResourceState();
+  if (old_layout != D3D12_RESOURCE_STATE_COPY_SOURCE)
+    src12->TransitionSubresourceToState(cmdlist, src_level, old_layout, D3D12_RESOURCE_STATE_COPY_SOURCE);
+
+  // TODO: Rules for depth buffers here?
+  const D3D12_BOX srcbox{static_cast<UINT>(src_x),         static_cast<UINT>(src_y),          0u,
+                         static_cast<UINT>(src_x + width), static_cast<UINT>(src_y + height), 1u};
+  cmdlist->CopyTextureRegion(&dstloc, 0, 0, 0, &srcloc, &srcbox);
+
+  if (old_layout != D3D12_RESOURCE_STATE_COPY_SOURCE)
+    src12->TransitionSubresourceToState(cmdlist, src_level, D3D12_RESOURCE_STATE_COPY_SOURCE, old_layout);
+
+  m_copy_fence_value = dev.GetCurrentFenceValue();
+  m_needs_flush = true;
+}
+
+bool D3D12DownloadTexture::Map(u32 x, u32 y, u32 width, u32 height)
+{
+  if (IsMapped())
+    return true;
+
+  // Never populated?
+  if (!m_current_pitch)
+    return false;
+
+  u32 copy_offset, copy_size, copy_rows;
+  GetTransferSize(x, y, width, height, m_current_pitch, &copy_offset, &copy_size, &copy_rows);
+
+  const D3D12_RANGE read_range{copy_offset, copy_offset + m_current_pitch * copy_rows};
+  const HRESULT hr = m_buffer->Map(0, &read_range, reinterpret_cast<void**>(const_cast<u8**>(&m_map_pointer)));
+  if (FAILED(hr))
+  {
+    Log_ErrorFmt("Map() failed with HRESULT {:08X}", hr);
+    return false;
+  }
+
+  return true;
+}
+
+void D3D12DownloadTexture::Unmap()
+{
+  if (!IsMapped())
+    return;
+
+  const D3D12_RANGE write_range = {};
+  m_buffer->Unmap(0, &write_range);
+  m_map_pointer = nullptr;
+}
+
+void D3D12DownloadTexture::Flush()
+{
+  if (!m_needs_flush)
+    return;
+
+  m_needs_flush = false;
+
+  D3D12Device& dev = D3D12Device::GetInstance();
+  if (dev.GetCompletedFenceValue() >= m_copy_fence_value)
+    return;
+
+  // Need to execute command buffer.
+  if (dev.GetCurrentFenceValue() == m_copy_fence_value)
+    dev.SubmitCommandList(true);
+  else
+    dev.WaitForFence(m_copy_fence_value);
+}
+
+void D3D12DownloadTexture::SetDebugName(std::string_view name)
+{
+  if (name.empty())
+    return;
+
+  D3D12::SetObjectName(m_buffer.Get(), name);
+}
+
+std::unique_ptr<GPUDownloadTexture> D3D12Device::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format)
+{
+  return D3D12DownloadTexture::Create(width, height, format);
+}
+
+std::unique_ptr<GPUDownloadTexture> D3D12Device::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+                                                                       void* memory, size_t memory_size,
+                                                                       u32 memory_stride)
+{
+  Log_ErrorPrint("D3D12 cannot import memory for download textures");
+  return {};
 }

@@ -20,9 +20,13 @@
 class OpenGLPipeline;
 class OpenGLStreamBuffer;
 class OpenGLTexture;
+class OpenGLDownloadTexture;
 
 class OpenGLDevice final : public GPUDevice
 {
+  friend OpenGLTexture;
+  friend OpenGLDownloadTexture;
+
 public:
   OpenGLDevice();
   ~OpenGLDevice();
@@ -34,6 +38,7 @@ public:
   }
   ALWAYS_INLINE static bool IsGLES() { return GetInstance().m_gl_context->IsGLES(); }
   static void BindUpdateTextureUnit();
+  static bool ShouldUsePBOsForDownloads();
 
   RenderAPI GetRenderAPI() const override;
 
@@ -53,8 +58,11 @@ public:
   std::unique_ptr<GPUSampler> CreateSampler(const GPUSampler::Config& config) override;
   std::unique_ptr<GPUTextureBuffer> CreateTextureBuffer(GPUTextureBuffer::Format format, u32 size_in_elements) override;
 
-  bool DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, void* out_data,
-                       u32 out_data_stride) override;
+  std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format) override;
+  std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+                                                            void* memory, size_t memory_size,
+                                                            u32 memory_stride) override;
+
   bool SupportsTextureFormat(GPUTexture::Format format) const override;
   void CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level, GPUTexture* src,
                          u32 src_x, u32 src_y, u32 src_layer, u32 src_level, u32 width, u32 height) override;
@@ -137,8 +145,8 @@ private:
   static constexpr u32 UNIFORM_BUFFER_SIZE = 2 * 1024 * 1024;
   static constexpr u32 TEXTURE_STREAM_BUFFER_SIZE = 16 * 1024 * 1024;
 
-  bool CheckFeatures(bool* buggy_pbo, FeatureMask disabled_features);
-  bool CreateBuffers(bool buggy_pbo);
+  bool CheckFeatures(FeatureMask disabled_features);
+  bool CreateBuffers();
   void DestroyBuffers();
 
   void SetSwapInterval();
@@ -215,4 +223,7 @@ private:
   std::string m_pipeline_disk_cache_filename;
   u32 m_pipeline_disk_cache_data_end = 0;
   bool m_pipeline_disk_cache_changed = false;
+
+  bool m_disable_pbo = false;
+  bool m_disable_async_download = false;
 };

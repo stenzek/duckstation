@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -98,4 +98,35 @@ private:
   OpenGLSampler(GLuint id);
 
   GLuint m_id;
+};
+
+class OpenGLDownloadTexture final : public GPUDownloadTexture
+{
+public:
+  ~OpenGLDownloadTexture() override;
+
+  static std::unique_ptr<OpenGLDownloadTexture> Create(u32 width, u32 height, GPUTexture::Format format, void* memory,
+                                                       size_t memory_size, u32 memory_pitch);
+
+  void CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width, u32 height,
+                       u32 src_layer, u32 src_level, bool use_transfer_pitch) override;
+
+  bool Map(u32 x, u32 y, u32 width, u32 height) override;
+  void Unmap() override;
+
+  void Flush() override;
+
+  void SetDebugName(std::string_view name) override;
+
+private:
+  OpenGLDownloadTexture(u32 width, u32 height, GPUTexture::Format format, bool imported, GLuint buffer_id,
+                        u8* cpu_buffer, u32 buffer_size, const u8* map_ptr, u32 map_pitch);
+
+  GLuint m_buffer_id = 0;
+  u32 m_buffer_size = 0;
+
+  GLsync m_sync = {};
+
+  // used when buffer storage is not available
+  u8* m_cpu_buffer = nullptr;
 };

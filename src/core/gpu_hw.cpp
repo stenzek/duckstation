@@ -663,6 +663,26 @@ bool GPU_HW::CreateBuffers()
   GL_OBJECT_NAME(m_vram_read_texture, "VRAM Read Texture");
   GL_OBJECT_NAME(m_vram_readback_texture, "VRAM Readback Texture");
 
+  if (g_gpu_device->GetFeatures().memory_import)
+  {
+    Log_DevPrint("Trying to import guest VRAM buffer for downloads...");
+    m_vram_readback_download_texture = g_gpu_device->CreateDownloadTexture(
+      m_vram_readback_texture->GetWidth(), m_vram_readback_texture->GetHeight(), m_vram_readback_texture->GetFormat(),
+      g_vram, sizeof(g_vram), VRAM_WIDTH * sizeof(u16));
+    if (!m_vram_readback_download_texture)
+      Log_ErrorPrint("Failed to create imported readback buffer");
+  }
+  if (!m_vram_readback_download_texture)
+  {
+    m_vram_readback_download_texture = g_gpu_device->CreateDownloadTexture(
+      m_vram_readback_texture->GetWidth(), m_vram_readback_texture->GetHeight(), m_vram_readback_texture->GetFormat());
+    if (!m_vram_readback_download_texture)
+    {
+      Log_ErrorPrint("Failed to create readback download texture");
+      return false;
+    }
+  }
+
   if (g_gpu_device->GetFeatures().supports_texture_buffers)
   {
     if (!(m_vram_upload_buffer =
@@ -703,6 +723,7 @@ void GPU_HW::DestroyBuffers()
   ClearDisplayTexture();
 
   m_vram_upload_buffer.reset();
+  m_vram_readback_download_texture.reset();
   g_gpu_device->RecycleTexture(std::move(m_downsample_texture));
   g_gpu_device->RecycleTexture(std::move(m_vram_read_texture));
   g_gpu_device->RecycleTexture(std::move(m_vram_depth_texture));
@@ -2405,8 +2426,18 @@ void GPU_HW::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
   }
 
   // Get bounds with wrap-around handled.
-  const Common::Rectangle<u32> copy_rect = GetVRAMTransferBounds(x, y, width, height);
-  const u32 encoded_width = (copy_rect.GetWidth() + 1) / 2;
+  Common::Rectangle<u32> copy_rect = GetVRAMTransferBounds(x, y, width, height);
+
+  // Has to be aligned to an even pixel for the download, due to 32-bit packing.
+  if (copy_rect.left & 1)
+    copy_rect.left--;
+  if (copy_rect.right & 1)
+    copy_rect.right++;
+
+  DebugAssert((copy_rect.left % 2) == 0 && (copy_rect.GetWidth() % 2) == 0);
+  const u32 encoded_left = copy_rect.left / 2;
+  const u32 encoded_top = copy_rect.top;
+  const u32 encoded_width = copy_rect.GetWidth() / 2;
   const u32 encoded_height = copy_rect.GetHeight();
 
   // Encode the 24-bit texture as 16-bit.
@@ -2421,9 +2452,22 @@ void GPU_HW::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
   GL_POP();
 
   // Stage the readback and copy it into our shadow buffer.
-  g_gpu_device->DownloadTexture(m_vram_readback_texture.get(), 0, 0, encoded_width, encoded_height,
-                                reinterpret_cast<u32*>(&g_vram[copy_rect.top * VRAM_WIDTH + copy_rect.left]),
-                                VRAM_WIDTH * sizeof(u16));
+  if (m_vram_readback_download_texture->IsImported())
+  {
+    // Fast path, read directly.
+    m_vram_readback_download_texture->CopyFromTexture(encoded_left, encoded_top, m_vram_readback_texture.get(), 0, 0,
+                                                      encoded_width, encoded_height, 0, 0, false);
+    m_vram_readback_download_texture->Flush();
+  }
+  else
+  {
+    // Copy to staging buffer, then to VRAM.
+    m_vram_readback_download_texture->CopyFromTexture(0, 0, m_vram_readback_texture.get(), 0, 0, encoded_width,
+                                                      encoded_height, 0, 0, true);
+    m_vram_readback_download_texture->ReadTexels(0, 0, encoded_width, encoded_height,
+                                                 &g_vram[copy_rect.top * VRAM_WIDTH + copy_rect.left],
+                                                 VRAM_WIDTH * sizeof(u16));
+  }
 
   RestoreDeviceContext();
 }

@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "align.h"
 #include "types.h"
 
 #include <type_traits>
@@ -26,6 +27,16 @@
 #else
 #include <malloc.h> // alloca
 #endif
+
+/// Only currently using 128-bit vectors at max.
+static constexpr u32 VECTOR_ALIGNMENT = 16;
+
+/// Aligns allocation/pitch size to preferred host size.
+template<typename T>
+ALWAYS_INLINE static T VectorAlign(T value)
+{
+  return Common::AlignUpPow2(value, VECTOR_ALIGNMENT);
+}
 
 template<typename T>
 ALWAYS_INLINE_RELEASE static void MemsetPtrs(T* ptr, T value, u32 count)

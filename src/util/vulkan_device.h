@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -25,6 +25,7 @@ class VulkanPipeline;
 class VulkanSwapChain;
 class VulkanTexture;
 class VulkanTextureBuffer;
+class VulkanDownloadTexture;
 
 struct VK_PIPELINE_CACHE_HEADER;
 
@@ -32,6 +33,7 @@ class VulkanDevice final : public GPUDevice
 {
 public:
   friend VulkanTexture;
+  friend VulkanDownloadTexture;
 
   enum : u32
   {
@@ -81,8 +83,11 @@ public:
   std::unique_ptr<GPUSampler> CreateSampler(const GPUSampler::Config& config) override;
   std::unique_ptr<GPUTextureBuffer> CreateTextureBuffer(GPUTextureBuffer::Format format, u32 size_in_elements) override;
 
-  bool DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, void* out_data,
-                       u32 out_data_stride) override;
+  std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format) override;
+  std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+                                                            void* memory, size_t memory_size,
+                                                            u32 memory_stride) override;
+
   bool SupportsTextureFormat(GPUTexture::Format format) const override;
   void CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level, GPUTexture* src,
                          u32 src_x, u32 src_y, u32 src_layer, u32 src_level, u32 width, u32 height) override;
@@ -196,6 +201,7 @@ public:
   // Schedule a vulkan resource for destruction later on. This will occur when the command buffer
   // is next re-used, and the GPU has finished working with the specified resource.
   void DeferBufferDestruction(VkBuffer object, VmaAllocation allocation);
+  void DeferBufferDestruction(VkBuffer object, VkDeviceMemory memory);
   void DeferFramebufferDestruction(VkFramebuffer object);
   void DeferImageDestruction(VkImage object, VmaAllocation allocation);
   void DeferImageViewDestruction(VkImageView object);
@@ -341,11 +347,8 @@ private:
 
   void RenderBlankFrame();
 
-  bool TryImportHostMemory(const void* data, u32 data_size, VkBufferUsageFlags buffer_usage, VkDeviceMemory* out_memory,
-                           VkBuffer* out_buffer, u32* out_offset);
-
-  bool CheckDownloadBufferSize(u32 required_size);
-  void DestroyDownloadBuffer();
+  bool TryImportHostMemory(void* data, size_t data_size, VkBufferUsageFlags buffer_usage, VkDeviceMemory* out_memory,
+                           VkBuffer* out_buffer, VkDeviceSize* out_offset);
 
   /// Set dirty flags on everything to force re-bind at next draw time.
   void InvalidateCachedState();
@@ -453,11 +456,6 @@ private:
   u32 m_uniform_buffer_position = 0;
 
   SamplerMap m_sampler_map;
-
-  VmaAllocation m_download_buffer_allocation = VK_NULL_HANDLE;
-  VkBuffer m_download_buffer = VK_NULL_HANDLE;
-  u8* m_download_buffer_map = nullptr;
-  u32 m_download_buffer_size = 0;
 
   // Which bindings/state has to be updated before the next draw.
   u32 m_dirty_flags = ALL_DIRTY_STATE;

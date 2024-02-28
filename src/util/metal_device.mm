@@ -234,6 +234,7 @@ void MetalDevice::SetFeatures(FeatureMask disabled_features)
   m_features.texture_buffers_emulated_with_ssbo = true;
   m_features.geometry_shaders = false;
   m_features.partial_msaa_resolve = false;
+  m_features.memory_import = true;
   m_features.shader_cache = true;
   m_features.pipeline_cache = false;
   m_features.prefer_unused_textures = true;
@@ -499,13 +500,6 @@ bool MetalDevice::CreateBuffers()
 
 void MetalDevice::DestroyBuffers()
 {
-  if (m_download_buffer != nil)
-  {
-    [m_download_buffer release];
-    m_download_buffer = nil;
-    m_download_buffer_size = 0;
-  }
-
   m_texture_upload_buffer.Destroy();
   m_uniform_buffer.Destroy();
   m_vertex_buffer.Destroy();
@@ -759,17 +753,17 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Grap
     static constexpr u32 MAX_COMPONENTS = 4;
     static constexpr const MTLVertexFormat
       format_mapping[static_cast<u8>(GPUPipeline::VertexAttribute::Type::MaxCount)][MAX_COMPONENTS] = {
-        {MTLVertexFormatFloat, MTLVertexFormatFloat2, MTLVertexFormatFloat3, MTLVertexFormatFloat4},     // Float
-        {MTLVertexFormatUChar, MTLVertexFormatUChar2, MTLVertexFormatUChar3, MTLVertexFormatUChar4},     // UInt8
-        {MTLVertexFormatChar, MTLVertexFormatChar2, MTLVertexFormatChar3, MTLVertexFormatChar4},         // SInt8
+        {MTLVertexFormatFloat, MTLVertexFormatFloat2, MTLVertexFormatFloat3, MTLVertexFormatFloat4}, // Float
+        {MTLVertexFormatUChar, MTLVertexFormatUChar2, MTLVertexFormatUChar3, MTLVertexFormatUChar4}, // UInt8
+        {MTLVertexFormatChar, MTLVertexFormatChar2, MTLVertexFormatChar3, MTLVertexFormatChar4},     // SInt8
         {MTLVertexFormatUCharNormalized, MTLVertexFormatUChar2Normalized, MTLVertexFormatUChar3Normalized,
          MTLVertexFormatUChar4Normalized},                                                               // UNorm8
         {MTLVertexFormatUShort, MTLVertexFormatUShort2, MTLVertexFormatUShort3, MTLVertexFormatUShort4}, // UInt16
         {MTLVertexFormatShort, MTLVertexFormatShort2, MTLVertexFormatShort3, MTLVertexFormatShort4},     // SInt16
         {MTLVertexFormatUShortNormalized, MTLVertexFormatUShort2Normalized, MTLVertexFormatUShort3Normalized,
-         MTLVertexFormatUShort4Normalized},                                                              // UNorm16
-        {MTLVertexFormatUInt, MTLVertexFormatUInt2, MTLVertexFormatUInt3, MTLVertexFormatUInt4},         // UInt32
-        {MTLVertexFormatInt, MTLVertexFormatInt2, MTLVertexFormatInt3, MTLVertexFormatInt4},             // SInt32
+         MTLVertexFormatUShort4Normalized},                                                      // UNorm16
+        {MTLVertexFormatUInt, MTLVertexFormatUInt2, MTLVertexFormatUInt3, MTLVertexFormatUInt4}, // UInt32
+        {MTLVertexFormatInt, MTLVertexFormatInt2, MTLVertexFormatInt3, MTLVertexFormatInt4},     // SInt32
       };
 
     static constexpr std::array<MTLCullMode, static_cast<u32>(GPUPipeline::CullMode::MaxCount)> cull_mapping = {{
@@ -1132,6 +1126,166 @@ std::unique_ptr<GPUTexture> MetalDevice::CreateTexture(u32 width, u32 height, u3
   }
 }
 
+MetalDownloadTexture::MetalDownloadTexture(u32 width, u32 height, GPUTexture::Format format, u8* import_buffer,
+                                           size_t buffer_offset, id<MTLBuffer> buffer, const u8* map_ptr, u32 map_pitch)
+  : GPUDownloadTexture(width, height, format, (import_buffer != nullptr)), m_buffer_offset(buffer_offset),
+    m_buffer(buffer)
+{
+  m_map_pointer = map_ptr;
+  m_current_pitch = map_pitch;
+}
+
+MetalDownloadTexture::~MetalDownloadTexture()
+{
+  [m_buffer release];
+}
+
+std::unique_ptr<MetalDownloadTexture> MetalDownloadTexture::Create(u32 width, u32 height, GPUTexture::Format format,
+                                                                   void* memory, size_t memory_size, u32 memory_stride)
+{
+  @autoreleasepool
+  {
+    MetalDevice& dev = MetalDevice::GetInstance();
+    id<MTLBuffer> buffer = nil;
+    size_t memory_offset = 0;
+    const u8* map_ptr = nullptr;
+    u32 map_pitch = 0;
+    u32 buffer_size = 0;
+
+    constexpr MTLResourceOptions options = MTLResourceStorageModeShared | MTLResourceCPUCacheModeDefaultCache;
+
+    // not importing memory?
+    if (!memory)
+    {
+      map_pitch = Common::AlignUpPow2(GPUTexture::CalcUploadPitch(format, width), TEXTURE_UPLOAD_PITCH_ALIGNMENT);
+      buffer_size = height * map_pitch;
+      buffer = [[dev.m_device newBufferWithLength:buffer_size options:options] retain];
+      if (buffer == nil)
+      {
+        Log_ErrorFmt("Failed to create {} byte buffer", buffer_size);
+        return {};
+      }
+
+      map_ptr = static_cast<u8*>([buffer contents]);
+    }
+    else
+    {
+      map_pitch = memory_stride;
+      buffer_size = height * map_pitch;
+      Assert(buffer_size <= memory_size);
+
+      // Importing memory, we need to page align the buffer.
+      void* page_aligned_memory =
+        reinterpret_cast<void*>(Common::AlignDownPow2(reinterpret_cast<uintptr_t>(memory), HOST_PAGE_SIZE));
+      const size_t page_offset = static_cast<size_t>(static_cast<u8*>(memory) - static_cast<u8*>(page_aligned_memory));
+      const size_t page_aligned_size = Common::AlignUpPow2(page_offset + memory_size, HOST_PAGE_SIZE);
+      Log_DevFmt("Trying to import {} bytes of memory at {} for download texture", page_aligned_memory,
+                 page_aligned_size);
+
+      buffer = [[dev.m_device newBufferWithBytesNoCopy:page_aligned_memory
+                                                length:page_aligned_size
+                                               options:options
+                                           deallocator:nil] retain];
+      if (buffer == nil)
+      {
+        Log_ErrorFmt("Failed to import {} byte buffer", page_aligned_size);
+        return {};
+      }
+
+      map_ptr = static_cast<u8*>(memory);
+    }
+
+    return std::unique_ptr<MetalDownloadTexture>(new MetalDownloadTexture(
+      width, height, format, static_cast<u8*>(memory), memory_offset, buffer, map_ptr, map_pitch));
+  }
+}
+
+void MetalDownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width,
+                                           u32 height, u32 src_layer, u32 src_level, bool use_transfer_pitch)
+{
+  MetalTexture* const mtlTex = static_cast<MetalTexture*>(src);
+  MetalDevice& dev = MetalDevice::GetInstance();
+
+  DebugAssert(mtlTex->GetFormat() == m_format);
+  DebugAssert(src_level < mtlTex->GetLevels());
+  DebugAssert((src_x + width) <= mtlTex->GetMipWidth(src_level) && (src_y + height) <= mtlTex->GetMipHeight(src_level));
+  DebugAssert((dst_x + width) <= m_width && (dst_y + height) <= m_height);
+  DebugAssert((dst_x == 0 && dst_y == 0) || !use_transfer_pitch);
+  DebugAssert(!m_is_imported || !use_transfer_pitch);
+
+  u32 copy_offset, copy_size, copy_rows;
+  if (!m_is_imported)
+    m_current_pitch = GetTransferPitch(use_transfer_pitch ? width : m_width, TEXTURE_UPLOAD_PITCH_ALIGNMENT);
+  GetTransferSize(dst_x, dst_y, width, height, m_current_pitch, &copy_offset, &copy_size, &copy_rows);
+
+  dev.GetStatistics().num_downloads++;
+
+  dev.CommitClear(mtlTex);
+
+  id<MTLBlitCommandEncoder> encoder = dev.GetBlitEncoder(true);
+  [encoder copyFromTexture:mtlTex->GetMTLTexture()
+                 sourceSlice:src_layer
+                 sourceLevel:src_level
+                sourceOrigin:MTLOriginMake(src_x, src_y, 0)
+                  sourceSize:MTLSizeMake(width, height, 1)
+                    toBuffer:m_buffer
+           destinationOffset:m_buffer_offset + copy_offset
+      destinationBytesPerRow:m_current_pitch
+    destinationBytesPerImage:0];
+
+  m_copy_fence_counter = dev.m_current_fence_counter;
+  m_needs_flush = true;
+}
+
+bool MetalDownloadTexture::Map(u32 x, u32 y, u32 width, u32 height)
+{
+  // Always mapped.
+  return true;
+}
+
+void MetalDownloadTexture::Unmap()
+{
+  // Always mapped.
+}
+
+void MetalDownloadTexture::Flush()
+{
+  if (!m_needs_flush)
+    return;
+
+  m_needs_flush = false;
+
+  MetalDevice& dev = MetalDevice::GetInstance();
+  if (dev.m_completed_fence_counter >= m_copy_fence_counter)
+    return;
+
+  // Need to execute command buffer.
+  if (dev.GetCurrentFenceCounter() == m_copy_fence_counter)
+    dev.SubmitCommandBuffer(true);
+  else
+    dev.WaitForFenceCounter(m_copy_fence_counter);
+}
+
+void MetalDownloadTexture::SetDebugName(std::string_view name)
+{
+  @autoreleasepool
+  {
+    [m_buffer setLabel:StringViewToNSString(name)];
+  }
+}
+
+std::unique_ptr<GPUDownloadTexture> MetalDevice::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format)
+{
+  return MetalDownloadTexture::Create(width, height, format, nullptr, 0, 0);
+}
+
+std::unique_ptr<GPUDownloadTexture> MetalDevice::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+                                                                       void* memory, size_t memory_size,
+                                                                       u32 memory_stride)
+{
+  return MetalDownloadTexture::Create(width, height, format, memory, memory_size, memory_stride);
+}
+
 MetalSampler::MetalSampler(id<MTLSamplerState> ss) : m_ss(ss)
 {
 }
@@ -1216,71 +1370,6 @@ std::unique_ptr<GPUSampler> MetalDevice::CreateSampler(const GPUSampler::Config&
 
     return std::unique_ptr<GPUSampler>(new MetalSampler([ss retain]));
   }
-}
-
-bool MetalDevice::DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, void* out_data,
-                                  u32 out_data_stride)
-{
-  constexpr u32 src_layer = 0;
-  constexpr u32 src_level = 0;
-
-  const u32 copy_size = width * texture->GetPixelSize();
-  const u32 pitch = Common::AlignUpPow2(copy_size, TEXTURE_UPLOAD_PITCH_ALIGNMENT);
-  const u32 required_size = pitch * height;
-  if (!CheckDownloadBufferSize(required_size))
-    return false;
-
-  MetalTexture* T = static_cast<MetalTexture*>(texture);
-  CommitClear(T);
-
-  s_stats.num_downloads++;
-
-  @autoreleasepool
-  {
-    id<MTLBlitCommandEncoder> encoder = GetBlitEncoder(true);
-
-    [encoder copyFromTexture:T->GetMTLTexture()
-                   sourceSlice:src_layer
-                   sourceLevel:src_level
-                  sourceOrigin:MTLOriginMake(x, y, 0)
-                    sourceSize:MTLSizeMake(width, height, 1)
-                      toBuffer:m_download_buffer
-             destinationOffset:0
-        destinationBytesPerRow:pitch
-      destinationBytesPerImage:0];
-
-    SubmitCommandBuffer(true);
-
-    StringUtil::StrideMemCpy(out_data, out_data_stride, [m_download_buffer contents], pitch, copy_size, height);
-  }
-
-  return true;
-}
-
-bool MetalDevice::CheckDownloadBufferSize(u32 required_size)
-{
-  if (m_download_buffer_size >= required_size)
-    return true;
-
-  @autoreleasepool
-  {
-    // We don't need to defer releasing this one, it's not going to be used.
-    if (m_download_buffer != nil)
-      [m_download_buffer release];
-
-    constexpr MTLResourceOptions options = MTLResourceStorageModeShared | MTLResourceCPUCacheModeDefaultCache;
-    m_download_buffer = [[m_device newBufferWithLength:required_size options:options] retain];
-    if (m_download_buffer == nil)
-    {
-      Log_ErrorPrintf("Failed to create %u byte download buffer", required_size);
-      m_download_buffer_size = 0;
-      return false;
-    }
-
-    m_download_buffer_size = required_size;
-  }
-
-  return true;
 }
 
 bool MetalDevice::SupportsTextureFormat(GPUTexture::Format format) const

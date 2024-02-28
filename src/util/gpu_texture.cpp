@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "gpu_texture.h"
 #include "gpu_device.h"
 
+#include "common/align.h"
 #include "common/bitutils.h"
 #include "common/log.h"
 #include "common/string_util.h"
@@ -50,6 +51,68 @@ const char* GPUTexture::GetFormatName(Format format)
   };
 
   return format_names[static_cast<u8>(format)];
+}
+
+u32 GPUTexture::GetCompressedBytesPerBlock() const
+{
+  return GetCompressedBytesPerBlock(m_format);
+}
+
+u32 GPUTexture::GetCompressedBytesPerBlock(Format format)
+{
+  // TODO: Implement me
+  return GetPixelSize(format);
+}
+
+u32 GPUTexture::GetCompressedBlockSize() const
+{
+  return GetCompressedBlockSize(m_format);
+}
+
+u32 GPUTexture::GetCompressedBlockSize(Format format)
+{
+  // TODO: Implement me
+  /*if (format >= Format::BC1 && format <= Format::BC7)
+    return 4;
+  else*/
+  return 1;
+}
+
+u32 GPUTexture::CalcUploadPitch(Format format, u32 width)
+{
+  /*
+  if (format >= Format::BC1 && format <= Format::BC7)
+    width = Common::AlignUpPow2(width, 4) / 4;
+  */
+  return width * GetCompressedBytesPerBlock(format);
+}
+
+u32 GPUTexture::CalcUploadPitch(u32 width) const
+{
+  return CalcUploadPitch(m_format, width);
+}
+
+u32 GPUTexture::CalcUploadRowLengthFromPitch(u32 pitch) const
+{
+  return CalcUploadRowLengthFromPitch(m_format, pitch);
+}
+
+u32 GPUTexture::CalcUploadRowLengthFromPitch(Format format, u32 pitch)
+{
+  const u32 block_size = GetCompressedBlockSize(format);
+  const u32 bytes_per_block = GetCompressedBytesPerBlock(format);
+  return ((pitch + (bytes_per_block - 1)) / bytes_per_block) * block_size;
+}
+
+u32 GPUTexture::CalcUploadSize(u32 height, u32 pitch) const
+{
+  return CalcUploadSize(m_format, height, pitch);
+}
+
+u32 GPUTexture::CalcUploadSize(Format format, u32 height, u32 pitch)
+{
+  const u32 block_size = GetCompressedBlockSize(format);
+  return pitch * ((static_cast<u32>(height) + (block_size - 1)) / block_size);
 }
 
 std::array<float, 4> GPUTexture::GetUNormClearColor() const
@@ -117,6 +180,12 @@ bool GPUTexture::IsDepthStencilFormat(Format format)
   return false;
 }
 
+bool GPUTexture::IsCompressedFormat(Format format)
+{
+  // TODO: Implement me
+  return false;
+}
+
 bool GPUTexture::ValidateConfig(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format)
 {
   if (width > MAX_WIDTH || height > MAX_HEIGHT || layers > MAX_LAYERS || levels > MAX_LEVELS || samples > MAX_SAMPLES)
@@ -161,7 +230,7 @@ bool GPUTexture::ValidateConfig(u32 width, u32 height, u32 layers, u32 levels, u
   return true;
 }
 
-bool GPUTexture::ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u32>& texture_data,
+bool GPUTexture::ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u8>& texture_data,
                                            u32& texture_data_stride, GPUTexture::Format format)
 {
   switch (format)
@@ -170,9 +239,15 @@ bool GPUTexture::ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u3
     {
       for (u32 y = 0; y < height; y++)
       {
-        u32* pixels = reinterpret_cast<u32*>(reinterpret_cast<u8*>(texture_data.data()) + (y * texture_data_stride));
+        u8* pixels = texture_data.data() + (y * texture_data_stride);
         for (u32 x = 0; x < width; x++)
-          pixels[x] = (pixels[x] & 0xFF00FF00) | ((pixels[x] & 0xFF) << 16) | ((pixels[x] >> 16) & 0xFF);
+        {
+          u32 pixel;
+          std::memcpy(&pixel, pixels, sizeof(pixel));
+          pixel = (pixel & 0xFF00FF00) | ((pixel & 0xFF) << 16) | ((pixel >> 16) & 0xFF);
+          std::memcpy(pixels, &pixel, sizeof(pixel));
+          pixels += sizeof(pixel);
+        }
       }
 
       return true;
@@ -183,12 +258,12 @@ bool GPUTexture::ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u3
 
     case Format::RGB565:
     {
-      std::vector<u32> temp(width * height);
+      std::vector<u8> temp(width * height * sizeof(u32));
 
       for (u32 y = 0; y < height; y++)
       {
-        const u8* pixels_in = reinterpret_cast<u8*>(texture_data.data()) + (y * texture_data_stride);
-        u32* pixels_out = &temp[y * width];
+        const u8* pixels_in = texture_data.data() + (y * texture_data_stride);
+        u8* pixels_out = &temp[y * width * sizeof(u32)];
 
         for (u32 x = 0; x < width; x++)
         {
@@ -199,8 +274,10 @@ bool GPUTexture::ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u3
           const u8 r5 = Truncate8(pixel_in >> 11);
           const u8 g6 = Truncate8((pixel_in >> 5) & 0x3F);
           const u8 b5 = Truncate8(pixel_in & 0x1F);
-          *(pixels_out++) = ZeroExtend32((r5 << 3) | (r5 & 7)) | (ZeroExtend32((g6 << 2) | (g6 & 3)) << 8) |
+          const u32 rgba8 = ZeroExtend32((r5 << 3) | (r5 & 7)) | (ZeroExtend32((g6 << 2) | (g6 & 3)) << 8) |
                             (ZeroExtend32((b5 << 3) | (b5 & 7)) << 16) | (0xFF000000u);
+          std::memcpy(pixels_out, &rgba8, sizeof(u32));
+          pixels_out += sizeof(u32);
         }
       }
 
@@ -211,12 +288,12 @@ bool GPUTexture::ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u3
 
     case Format::RGBA5551:
     {
-      std::vector<u32> temp(width * height);
+      std::vector<u8> temp(width * height * sizeof(u32));
 
       for (u32 y = 0; y < height; y++)
       {
-        const u8* pixels_in = reinterpret_cast<u8*>(texture_data.data()) + (y * texture_data_stride);
-        u32* pixels_out = &temp[y * width];
+        const u8* pixels_in = texture_data.data() + (y * texture_data_stride);
+        u8* pixels_out = &temp[y * width];
 
         for (u32 x = 0; x < width; x++)
         {
@@ -228,8 +305,10 @@ bool GPUTexture::ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u3
           const u8 r5 = Truncate8((pixel_in >> 10) & 0x1F);
           const u8 g6 = Truncate8((pixel_in >> 5) & 0x1F);
           const u8 b5 = Truncate8(pixel_in & 0x1F);
-          *(pixels_out++) = ZeroExtend32((r5 << 3) | (r5 & 7)) | (ZeroExtend32((g6 << 3) | (g6 & 7)) << 8) |
+          const u32 rgba8 = ZeroExtend32((r5 << 3) | (r5 & 7)) | (ZeroExtend32((g6 << 3) | (g6 & 7)) << 8) |
                             (ZeroExtend32((b5 << 3) | (b5 & 7)) << 16) | (a1 ? 0xFF000000u : 0u);
+          std::memcpy(pixels_out, &rgba8, sizeof(u32));
+          pixels_out += sizeof(u32);
         }
       }
 
@@ -244,13 +323,13 @@ bool GPUTexture::ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u3
   }
 }
 
-void GPUTexture::FlipTextureDataRGBA8(u32 width, u32 height, std::vector<u32>& texture_data, u32 texture_data_stride)
+void GPUTexture::FlipTextureDataRGBA8(u32 width, u32 height, std::vector<u8>& texture_data, u32 texture_data_stride)
 {
-  std::vector<u32> temp(width);
+  std::vector<u8> temp(width * sizeof(u32));
   for (u32 flip_row = 0; flip_row < (height / 2); flip_row++)
   {
-    u32* top_ptr = &texture_data[flip_row * width];
-    u32* bottom_ptr = &texture_data[((height - 1) - flip_row) * width];
+    u8* top_ptr = &texture_data[flip_row * texture_data_stride];
+    u8* bottom_ptr = &texture_data[((height - 1) - flip_row) * texture_data_stride];
     std::memcpy(temp.data(), top_ptr, texture_data_stride);
     std::memcpy(top_ptr, bottom_ptr, texture_data_stride);
     std::memcpy(bottom_ptr, temp.data(), texture_data_stride);
@@ -259,4 +338,57 @@ void GPUTexture::FlipTextureDataRGBA8(u32 width, u32 height, std::vector<u32>& t
 
 void GPUTexture::MakeReadyForSampling()
 {
+}
+
+GPUDownloadTexture::GPUDownloadTexture(u32 width, u32 height, GPUTexture::Format format, bool is_imported)
+  : m_width(width), m_height(height), m_format(format), m_is_imported(is_imported)
+{
+}
+
+GPUDownloadTexture::~GPUDownloadTexture() = default;
+
+u32 GPUDownloadTexture::GetBufferSize(u32 width, u32 height, GPUTexture::Format format, u32 pitch_align /* = 1 */)
+{
+  DebugAssert(std::has_single_bit(pitch_align));
+  const u32 bytes_per_pixel = GPUTexture::GetPixelSize(format);
+  const u32 pitch = Common::AlignUpPow2(width * bytes_per_pixel, pitch_align);
+  return (pitch * height);
+}
+
+u32 GPUDownloadTexture::GetTransferPitch(u32 width, u32 pitch_align) const
+{
+  DebugAssert(std::has_single_bit(pitch_align));
+  const u32 bytes_per_pixel = GPUTexture::GetPixelSize(m_format);
+  return Common::AlignUpPow2(width * bytes_per_pixel, pitch_align);
+}
+
+void GPUDownloadTexture::GetTransferSize(u32 x, u32 y, u32 width, u32 height, u32 pitch, u32* copy_offset,
+                                         u32* copy_size, u32* copy_rows) const
+{
+  const u32 bytes_per_pixel = GPUTexture::GetPixelSize(m_format);
+  *copy_offset = (y * pitch) + (x * bytes_per_pixel);
+  *copy_size = width * bytes_per_pixel;
+  *copy_rows = height;
+}
+
+bool GPUDownloadTexture::ReadTexels(u32 x, u32 y, u32 width, u32 height, void* out_ptr, u32 out_stride)
+{
+  if (m_needs_flush)
+    Flush();
+
+  // if we're imported, and this is the same buffer, bail out
+  if (m_map_pointer == out_ptr)
+  {
+    // but stride should match
+    DebugAssert(x == 0 && y == 0 && width <= m_width && height <= m_height && out_stride == m_current_pitch);
+    return true;
+  }
+
+  if (!Map(x, y, width, height))
+    return false;
+
+  u32 copy_offset, copy_size, copy_rows;
+  GetTransferSize(x, y, width, height, m_current_pitch, &copy_offset, &copy_size, &copy_rows);
+  StringUtil::StrideMemCpy(out_ptr, out_stride, m_map_pointer + copy_offset, m_current_pitch, copy_size, copy_rows);
+  return true;
 }

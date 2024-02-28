@@ -261,7 +261,6 @@ void D3D12Device::DestroyDevice()
   WaitForGPUIdle();
 
   DestroyDeferredObjects(m_current_fence_value);
-  DestroyDownloadBuffer();
   DestroySamplers();
   DestroyTimestampQuery();
   DestroyBuffers();
@@ -1195,6 +1194,7 @@ void D3D12Device::SetFeatures(FeatureMask disabled_features)
   m_features.texture_buffers_emulated_with_ssbo = false;
   m_features.geometry_shaders = !(disabled_features & FEATURE_MASK_GEOMETRY_SHADERS);
   m_features.partial_msaa_resolve = true;
+  m_features.memory_import = false;
   m_features.gpu_timing = true;
   m_features.shader_cache = true;
   m_features.pipeline_cache = true;

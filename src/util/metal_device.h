@@ -137,6 +137,34 @@ private:
   u8 m_map_level = 0;
 };
 
+class MetalDownloadTexture final : public GPUDownloadTexture
+{
+public:
+  ~MetalDownloadTexture() override;
+
+  static std::unique_ptr<MetalDownloadTexture> Create(u32 width, u32 height, GPUTexture::Format format, void* memory,
+                                                      size_t memory_size, u32 memory_stride);
+
+  void CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width, u32 height,
+                       u32 src_layer, u32 src_level, bool use_transfer_pitch) override;
+
+  bool Map(u32 x, u32 y, u32 width, u32 height) override;
+  void Unmap() override;
+
+  void Flush() override;
+
+  void SetDebugName(std::string_view name) override;
+
+private:
+  MetalDownloadTexture(u32 width, u32 height, GPUTexture::Format format, u8* import_buffer, size_t buffer_offset,
+                       id<MTLBuffer> buffer, const u8* map_ptr, u32 map_pitch);
+
+  size_t m_buffer_offset = 0;
+  id<MTLBuffer> m_buffer = nil;
+
+  u64 m_copy_fence_counter = 0;
+};
+
 class MetalTextureBuffer final : public GPUTextureBuffer
 {
 public:
@@ -160,6 +188,7 @@ private:
 class MetalDevice final : public GPUDevice
 {
   friend MetalTexture;
+  friend MetalDownloadTexture;
 
 public:
   ALWAYS_INLINE static MetalDevice& GetInstance() { return *static_cast<MetalDevice*>(g_gpu_device.get()); }
@@ -188,8 +217,11 @@ public:
   std::unique_ptr<GPUSampler> CreateSampler(const GPUSampler::Config& config) override;
   std::unique_ptr<GPUTextureBuffer> CreateTextureBuffer(GPUTextureBuffer::Format format, u32 size_in_elements) override;
 
-  bool DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, void* out_data,
-                       u32 out_data_stride) override;
+  std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format) override;
+  std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+                                                            void* memory, size_t memory_size,
+                                                            u32 memory_stride) override;
+
   bool SupportsTextureFormat(GPUTexture::Format format) const override;
   void CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level, GPUTexture* src,
                          u32 src_x, u32 src_y, u32 src_layer, u32 src_level, u32 width, u32 height) override;
@@ -302,8 +334,6 @@ private:
   void SetViewportInRenderEncoder();
   void SetScissorInRenderEncoder();
 
-  bool CheckDownloadBufferSize(u32 required_size);
-
   bool CreateLayer();
   void DestroyLayer();
   void RenderBlankFrame();
@@ -326,9 +356,6 @@ private:
   std::deque<std::pair<u64, id>> m_cleanup_objects; // [fence_counter, object]
 
   DepthStateMap m_depth_states;
-
-  id<MTLBuffer> m_download_buffer = nil;
-  u32 m_download_buffer_size = 0;
 
   MetalStreamBuffer m_vertex_buffer;
   MetalStreamBuffer m_index_buffer;

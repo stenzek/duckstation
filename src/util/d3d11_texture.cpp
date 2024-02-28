@@ -1,16 +1,11 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "d3d11_texture.h"
 #include "d3d11_device.h"
 #include "d3d_common.h"
 
-// #include "common/align.h"
-// #include "common/assert.h"
-// #include "common/file_system.h"
 #include "common/log.h"
-// #include "common/path.h"
-// #include "common/rectangle.h"
 #include "common/string_util.h"
 
 #include "fmt/format.h"
@@ -24,60 +19,6 @@ std::unique_ptr<GPUTexture> D3D11Device::CreateTexture(u32 width, u32 height, u3
                                                        const void* data, u32 data_stride)
 {
   return D3D11Texture::Create(m_device.Get(), width, height, layers, levels, samples, type, format, data, data_stride);
-}
-
-bool D3D11Device::DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, void* out_data,
-                                  u32 out_data_stride)
-{
-  const D3D11Texture* tex = static_cast<const D3D11Texture*>(texture);
-  if (!CheckStagingBufferSize(width, height, tex->GetDXGIFormat()))
-    return false;
-
-  const CD3D11_BOX box(static_cast<LONG>(x), static_cast<LONG>(y), 0, static_cast<LONG>(x + width),
-                       static_cast<LONG>(y + height), 1);
-  m_context->CopySubresourceRegion(m_readback_staging_texture.Get(), 0, 0, 0, 0, tex->GetD3DTexture(), 0, &box);
-
-  D3D11_MAPPED_SUBRESOURCE sr;
-  HRESULT hr = m_context->Map(m_readback_staging_texture.Get(), 0, D3D11_MAP_READ, 0, &sr);
-  if (FAILED(hr))
-  {
-    Log_ErrorPrintf("Map() failed with HRESULT %08X", hr);
-    return false;
-  }
-
-  s_stats.num_downloads++;
-
-  const u32 copy_size = tex->GetPixelSize() * width;
-  StringUtil::StrideMemCpy(out_data, out_data_stride, sr.pData, sr.RowPitch, copy_size, height);
-  m_context->Unmap(m_readback_staging_texture.Get(), 0);
-  return true;
-}
-
-bool D3D11Device::CheckStagingBufferSize(u32 width, u32 height, DXGI_FORMAT format)
-{
-  if (m_readback_staging_texture_width >= width && m_readback_staging_texture_width >= height &&
-      m_readback_staging_texture_format == format)
-    return true;
-
-  DestroyStagingBuffer();
-
-  CD3D11_TEXTURE2D_DESC desc(format, width, height, 1, 1, 0, D3D11_USAGE_STAGING, D3D11_CPU_ACCESS_READ);
-  HRESULT hr = m_device->CreateTexture2D(&desc, nullptr, m_readback_staging_texture.ReleaseAndGetAddressOf());
-  if (FAILED(hr))
-  {
-    Log_ErrorPrintf("CreateTexture2D() failed with HRESULT %08X", hr);
-    return false;
-  }
-
-  return true;
-}
-
-void D3D11Device::DestroyStagingBuffer()
-{
-  m_readback_staging_texture.Reset();
-  m_readback_staging_texture_width = 0;
-  m_readback_staging_texture_height = 0;
-  m_readback_staging_texture_format = DXGI_FORMAT_UNKNOWN;
 }
 
 bool D3D11Device::SupportsTextureFormat(GPUTexture::Format format) const
@@ -446,4 +387,133 @@ std::unique_ptr<GPUTextureBuffer> D3D11Device::CreateTextureBuffer(GPUTextureBuf
     tb.reset();
 
   return tb;
+}
+
+D3D11DownloadTexture::D3D11DownloadTexture(Microsoft::WRL::ComPtr<ID3D11Texture2D> tex, u32 width, u32 height,
+                                           GPUTexture::Format format)
+  : GPUDownloadTexture(width, height, format, false), m_texture(std::move(tex))
+{
+}
+
+D3D11DownloadTexture::~D3D11DownloadTexture()
+{
+  if (IsMapped())
+    D3D11DownloadTexture::Unmap();
+}
+
+std::unique_ptr<D3D11DownloadTexture> D3D11DownloadTexture::Create(u32 width, u32 height, GPUTexture::Format format)
+{
+  D3D11_TEXTURE2D_DESC desc = {};
+  desc.Width = width;
+  desc.Height = height;
+  desc.Format = D3DCommon::GetFormatMapping(format).srv_format;
+  desc.MipLevels = 1;
+  desc.ArraySize = 1;
+  desc.SampleDesc.Count = 1;
+  desc.SampleDesc.Quality = 0;
+  desc.Usage = D3D11_USAGE_STAGING;
+  desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> tex;
+  HRESULT hr = D3D11Device::GetD3DDevice()->CreateTexture2D(&desc, nullptr, tex.GetAddressOf());
+  if (FAILED(hr))
+  {
+    Log_ErrorFmt("CreateTexture2D() failed: {:08X}", hr);
+    return {};
+  }
+
+  return std::unique_ptr<D3D11DownloadTexture>(new D3D11DownloadTexture(std::move(tex), width, height, format));
+}
+
+void D3D11DownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width,
+                                           u32 height, u32 src_layer, u32 src_level, bool use_transfer_pitch)
+{
+  D3D11Texture* src11 = static_cast<D3D11Texture*>(src);
+
+  DebugAssert(src11->GetFormat() == m_format);
+  DebugAssert(src_level < src11->GetLevels());
+  DebugAssert((src_x + width) <= src11->GetMipWidth(src_level) && (src_y + height) <= src11->GetMipHeight(src_level));
+  DebugAssert((dst_x + width) <= m_width && (dst_y + height) <= m_height);
+  DebugAssert((dst_x == 0 && dst_y == 0) || !use_transfer_pitch);
+
+  ID3D11DeviceContext1* const ctx = D3D11Device::GetD3DContext();
+  src11->CommitClear(ctx);
+
+  D3D11Device::GetStatistics().num_downloads++;
+
+  if (IsMapped())
+    Unmap();
+
+  // depth textures need to copy the whole thing..
+  const u32 subresource = D3D11CalcSubresource(src_level, src_layer, src11->GetLevels());
+  if (GPUTexture::IsDepthFormat(src11->GetFormat()))
+  {
+    ctx->CopySubresourceRegion(m_texture.Get(), 0, 0, 0, 0, src11->GetD3DTexture(), subresource, nullptr);
+  }
+  else
+  {
+    const CD3D11_BOX sbox(src_x, src_y, 0, src_x + width, src_y + height, 1);
+    ctx->CopySubresourceRegion(m_texture.Get(), 0, dst_x, dst_y, 0, src11->GetD3DTexture(), subresource, &sbox);
+  }
+
+  m_needs_flush = true;
+}
+
+bool D3D11DownloadTexture::Map(u32 x, u32 y, u32 width, u32 height)
+{
+  if (IsMapped())
+    return true;
+
+  D3D11_MAPPED_SUBRESOURCE sr;
+  HRESULT hr = D3D11Device::GetD3DContext()->Map(m_texture.Get(), 0, D3D11_MAP_READ, 0, &sr);
+  if (FAILED(hr))
+  {
+    Log_ErrorFmt("Map() failed: {:08X}", hr);
+    return false;
+  }
+
+  m_map_pointer = static_cast<u8*>(sr.pData);
+  m_current_pitch = sr.RowPitch;
+  return true;
+}
+
+void D3D11DownloadTexture::Unmap()
+{
+  if (!IsMapped())
+    return;
+
+  D3D11Device::GetD3DContext()->Unmap(m_texture.Get(), 0);
+  m_map_pointer = nullptr;
+}
+
+void D3D11DownloadTexture::Flush()
+{
+  if (!m_needs_flush)
+    return;
+
+  if (IsMapped())
+    Unmap();
+
+  // Handled when mapped.
+}
+
+void D3D11DownloadTexture::SetDebugName(std::string_view name)
+{
+  if (name.empty())
+    return;
+
+  SetD3DDebugObjectName(m_texture.Get(), name);
+}
+
+std::unique_ptr<GPUDownloadTexture> D3D11Device::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format)
+{
+  return D3D11DownloadTexture::Create(width, height, format);
+}
+
+std::unique_ptr<GPUDownloadTexture> D3D11Device::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+                                                                       void* memory, size_t memory_size,
+                                                                       u32 memory_stride)
+{
+  Log_ErrorPrint("D3D11 cannot import memory for download textures");
+  return {};
 }

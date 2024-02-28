@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -118,4 +118,27 @@ public:
 private:
   D3D11StreamBuffer m_buffer;
   Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_srv;
+};
+
+class D3D11DownloadTexture final : public GPUDownloadTexture
+{
+public:
+  ~D3D11DownloadTexture() override;
+
+  static std::unique_ptr<D3D11DownloadTexture> Create(u32 width, u32 height, GPUTexture::Format format);
+
+  void CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width, u32 height,
+                       u32 src_layer, u32 src_level, bool use_transfer_pitch) override;
+
+  bool Map(u32 x, u32 y, u32 width, u32 height) override;
+  void Unmap() override;
+
+  void Flush() override;
+
+  void SetDebugName(std::string_view name) override;
+
+private:
+  D3D11DownloadTexture(Microsoft::WRL::ComPtr<ID3D11Texture2D> tex, u32 width, u32 height, GPUTexture::Format format);
+
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> m_texture;
 };

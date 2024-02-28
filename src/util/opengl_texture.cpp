@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "opengl_texture.h"
@@ -7,6 +7,7 @@
 
 #include "common/align.h"
 #include "common/assert.h"
+#include "common/intrin.h"
 #include "common/log.h"
 #include "common/string_util.h"
 
@@ -695,4 +696,208 @@ std::unique_ptr<GPUTextureBuffer> OpenGLDevice::CreateTextureBuffer(GPUTextureBu
 
   return std::unique_ptr<GPUTextureBuffer>(
     new OpenGLTextureBuffer(format, size_in_elements, std::move(buffer), texture_id));
+}
+
+OpenGLDownloadTexture::OpenGLDownloadTexture(u32 width, u32 height, GPUTexture::Format format, bool imported,
+                                             GLuint buffer_id, u8* cpu_buffer, u32 buffer_size, const u8* map_ptr,
+                                             u32 map_pitch)
+  : GPUDownloadTexture(width, height, format, imported), m_buffer_id(buffer_id), m_buffer_size(buffer_size),
+    m_cpu_buffer(cpu_buffer)
+{
+  m_map_pointer = map_ptr;
+  m_current_pitch = map_pitch;
+}
+
+OpenGLDownloadTexture::~OpenGLDownloadTexture()
+{
+  if (m_buffer_id != 0)
+  {
+    if (m_sync)
+      glDeleteSync(m_sync);
+
+    if (m_map_pointer)
+    {
+      glBindBuffer(GL_PIXEL_PACK_BUFFER, m_buffer_id);
+      glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+      glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    }
+
+    glDeleteBuffers(1, &m_buffer_id);
+  }
+  else if (m_cpu_buffer && !m_is_imported)
+  {
+    Common::AlignedFree(m_cpu_buffer);
+  }
+}
+
+std::unique_ptr<OpenGLDownloadTexture> OpenGLDownloadTexture::Create(u32 width, u32 height, GPUTexture::Format format,
+                                                                     void* memory, size_t memory_size, u32 memory_pitch)
+{
+  const u32 buffer_pitch =
+    memory ? memory_pitch :
+             Common::AlignUpPow2(GPUTexture::CalcUploadPitch(format, width), TEXTURE_UPLOAD_PITCH_ALIGNMENT);
+  const u32 buffer_size = memory ? static_cast<u32>(memory_size) : (height * buffer_pitch);
+
+  const bool use_buffer_storage = (GLAD_GL_VERSION_4_4 || GLAD_GL_ARB_buffer_storage || GLAD_GL_EXT_buffer_storage) &&
+                                  !memory && OpenGLDevice::ShouldUsePBOsForDownloads();
+  if (use_buffer_storage)
+  {
+    GLuint buffer_id;
+    glGenBuffers(1, &buffer_id);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, buffer_id);
+
+    const u32 flags = GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+    const u32 map_flags = GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT;
+
+    if (GLAD_GL_VERSION_4_4 || GLAD_GL_ARB_buffer_storage)
+      glBufferStorage(GL_PIXEL_PACK_BUFFER, buffer_size, nullptr, flags);
+    else if (GLAD_GL_EXT_buffer_storage)
+      glBufferStorageEXT(GL_PIXEL_PACK_BUFFER, buffer_size, nullptr, flags);
+
+    u8* buffer_map = static_cast<u8*>(glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, buffer_size, map_flags));
+
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+
+    if (!buffer_map)
+    {
+      Log_ErrorPrint("Failed to map persistent download buffer");
+      glDeleteBuffers(1, &buffer_id);
+      return {};
+    }
+
+    return std::unique_ptr<OpenGLDownloadTexture>(new OpenGLDownloadTexture(
+      width, height, format, false, buffer_id, nullptr, buffer_size, buffer_map, buffer_pitch));
+  }
+
+  // Fallback to glReadPixels() + CPU buffer.
+  const bool imported = (memory != nullptr);
+  u8* cpu_buffer =
+    imported ? static_cast<u8*>(memory) : static_cast<u8*>(Common::AlignedMalloc(buffer_size, VECTOR_ALIGNMENT));
+  if (!cpu_buffer)
+    return {};
+
+  return std::unique_ptr<OpenGLDownloadTexture>(
+    new OpenGLDownloadTexture(width, height, format, imported, 0, cpu_buffer, buffer_size, cpu_buffer, buffer_pitch));
+}
+
+void OpenGLDownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width,
+                                            u32 height, u32 src_layer, u32 src_level, bool use_transfer_pitch)
+{
+  OpenGLTexture* const srcgl = static_cast<OpenGLTexture*>(src);
+  OpenGLDevice& dev = OpenGLDevice::GetInstance();
+
+  DebugAssert(srcgl->GetFormat() == m_format);
+  DebugAssert(src_level < srcgl->GetLevels());
+  DebugAssert((src_x + width) <= srcgl->GetMipWidth(src_level) && (src_y + height) <= srcgl->GetMipHeight(src_level));
+  DebugAssert((dst_x + width) <= m_width && (dst_y + height) <= m_height);
+  DebugAssert((dst_x == 0 && dst_y == 0) || !use_transfer_pitch);
+  DebugAssert(!m_is_imported || !use_transfer_pitch);
+
+  dev.CommitClear(srcgl);
+
+  u32 copy_offset, copy_size, copy_rows;
+  if (!m_is_imported)
+    m_current_pitch = GetTransferPitch(use_transfer_pitch ? width : m_width, TEXTURE_UPLOAD_PITCH_ALIGNMENT);
+  GetTransferSize(dst_x, dst_y, width, height, m_current_pitch, &copy_offset, &copy_size, &copy_rows);
+  dev.GetStatistics().num_downloads++;
+
+  GLint alignment;
+  if (m_current_pitch & 1)
+    alignment = 1;
+  else if (m_current_pitch & 2)
+    alignment = 2;
+  else
+    alignment = 4;
+
+  glPixelStorei(GL_PACK_ALIGNMENT, alignment);
+  glPixelStorei(GL_PACK_ROW_LENGTH, GPUTexture::CalcUploadRowLengthFromPitch(m_format, m_current_pitch));
+
+  if (!m_cpu_buffer)
+  {
+    // Read to PBO.
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, m_buffer_id);
+  }
+
+  const auto [gl_internal_format, gl_format, gl_type] =
+    OpenGLTexture::GetPixelFormatMapping(srcgl->GetFormat(), dev.IsGLES());
+  if (GLAD_GL_VERSION_4_5 || GLAD_GL_ARB_get_texture_sub_image)
+  {
+    glGetTextureSubImage(srcgl->GetGLId(), src_level, src_x, src_y, 0, width, height, 1, gl_format, gl_type,
+                         m_current_pitch * height, m_cpu_buffer + copy_offset);
+  }
+  else
+  {
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, dev.m_read_fbo);
+    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, srcgl->GetGLId(), 0);
+
+    glReadPixels(src_x, src_y, width, height, gl_format, gl_type, m_cpu_buffer + copy_offset);
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+  }
+
+  if (m_cpu_buffer)
+  {
+    // If using CPU buffers, we never need to flush.
+    m_needs_flush = false;
+  }
+  else
+  {
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+
+    // Create a sync object so we know when the GPU is done copying.
+    if (m_sync)
+      glDeleteSync(m_sync);
+
+    m_sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+    m_needs_flush = true;
+  }
+
+  glPixelStorei(GL_PACK_ROW_LENGTH, 0);
+}
+
+bool OpenGLDownloadTexture::Map(u32 x, u32 y, u32 width, u32 height)
+{
+  // Either always mapped, or CPU buffer.
+  return true;
+}
+
+void OpenGLDownloadTexture::Unmap()
+{
+  // Either always mapped, or CPU buffer.
+}
+
+void OpenGLDownloadTexture::Flush()
+{
+  // If we're using CPU buffers, we did the readback synchronously...
+  if (!m_needs_flush || !m_sync)
+    return;
+
+  m_needs_flush = false;
+
+  glClientWaitSync(m_sync, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+  glDeleteSync(m_sync);
+  m_sync = {};
+}
+
+void OpenGLDownloadTexture::SetDebugName(std::string_view name)
+{
+  if (name.empty())
+    return;
+
+  if (glObjectLabel)
+    glObjectLabel(GL_BUFFER, m_buffer_id, static_cast<GLsizei>(name.length()), name.data());
+}
+
+std::unique_ptr<GPUDownloadTexture> OpenGLDevice::CreateDownloadTexture(u32 width, u32 height,
+                                                                        GPUTexture::Format format)
+{
+  return OpenGLDownloadTexture::Create(width, height, format, nullptr, 0, 0);
+}
+
+std::unique_ptr<GPUDownloadTexture> OpenGLDevice::CreateDownloadTexture(u32 width, u32 height,
+                                                                        GPUTexture::Format format, void* memory,
+                                                                        size_t memory_size, u32 memory_stride)
+{
+  // not _really_ memory importing, but PBOs are broken on Intel....
+  return OpenGLDownloadTexture::Create(width, height, format, memory, memory_size, memory_stride);
 }

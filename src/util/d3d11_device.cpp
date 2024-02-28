@@ -155,7 +155,6 @@ void D3D11Device::DestroyDevice()
 {
   std::unique_lock lock(s_instance_mutex);
 
-  DestroyStagingBuffer();
   DestroyBuffers();
   m_context.Reset();
   m_device.Reset();
@@ -187,6 +186,7 @@ void D3D11Device::SetFeatures(FeatureMask disabled_features)
   m_features.texture_buffers_emulated_with_ssbo = false;
   m_features.geometry_shaders = !(disabled_features & FEATURE_MASK_GEOMETRY_SHADERS);
   m_features.partial_msaa_resolve = false;
+  m_features.memory_import = false;
   m_features.gpu_timing = true;
   m_features.shader_cache = true;
   m_features.pipeline_cache = false;

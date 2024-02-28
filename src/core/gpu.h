@@ -206,7 +206,7 @@ public:
 
   /// Renders the display, optionally with postprocessing to the specified image.
   bool RenderScreenshotToBuffer(u32 width, u32 height, const Common::Rectangle<s32>& draw_rect, bool postfx,
-                                std::vector<u32>* out_pixels, u32* out_stride, GPUTexture::Format* out_format);
+                                std::vector<u8>* out_pixels, u32* out_stride, GPUTexture::Format* out_format);
 
   /// Helper function to save screenshot to PNG.
   bool RenderScreenshotToFile(std::string filename, bool internal_resolution = false, bool compress_on_thread = false);

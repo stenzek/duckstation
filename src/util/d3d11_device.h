@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -53,8 +53,11 @@ public:
   std::unique_ptr<GPUSampler> CreateSampler(const GPUSampler::Config& config) override;
   std::unique_ptr<GPUTextureBuffer> CreateTextureBuffer(GPUTextureBuffer::Format format, u32 size_in_elements) override;
 
-  bool DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, void* out_data,
-                       u32 out_data_stride) override;
+  std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format) override;
+  std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+                                                            void* memory, size_t memory_size,
+                                                            u32 memory_stride) override;
+
   bool SupportsTextureFormat(GPUTexture::Format format) const override;
   void CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level, GPUTexture* src,
                          u32 src_x, u32 src_y, u32 src_layer, u32 src_level, u32 width, u32 height) override;
@@ -128,9 +131,6 @@ private:
 
   void SetFeatures(FeatureMask disabled_features);
 
-  bool CheckStagingBufferSize(u32 width, u32 height, DXGI_FORMAT format);
-  void DestroyStagingBuffer();
-
   bool CreateSwapChain();
   bool CreateSwapChainRTV();
   void DestroySwapChain();
@@ -162,11 +162,6 @@ private:
   DepthStateMap m_depth_states;
   BlendStateMap m_blend_states;
   InputLayoutMap m_input_layouts;
-
-  ComPtr<ID3D11Texture2D> m_readback_staging_texture;
-  DXGI_FORMAT m_readback_staging_texture_format = DXGI_FORMAT_UNKNOWN;
-  u32 m_readback_staging_texture_width = 0;
-  u32 m_readback_staging_texture_height = 0;
 
   bool m_allow_tearing_supported = false;
   bool m_using_flip_model_swap_chain = true;

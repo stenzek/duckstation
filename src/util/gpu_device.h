@@ -439,6 +439,7 @@ public:
     FEATURE_MASK_TEXTURE_BUFFERS = (1 << 2),
     FEATURE_MASK_GEOMETRY_SHADERS = (1 << 3),
     FEATURE_MASK_TEXTURE_COPY_TO_SELF = (1 << 4),
+    FEATURE_MASK_MEMORY_IMPORT = (1 << 5),
   };
 
   struct Features
@@ -452,6 +453,7 @@ public:
     bool texture_buffers_emulated_with_ssbo : 1;
     bool geometry_shaders : 1;
     bool partial_msaa_resolve : 1;
+    bool memory_import : 1;
     bool gpu_timing : 1;
     bool shader_cache : 1;
     bool pipeline_cache : 1;
@@ -583,8 +585,12 @@ public:
   void RecycleTexture(std::unique_ptr<GPUTexture> texture);
   void PurgeTexturePool();
 
-  virtual bool DownloadTexture(GPUTexture* texture, u32 x, u32 y, u32 width, u32 height, void* out_data,
-                               u32 out_data_stride) = 0;
+  virtual std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height,
+                                                                    GPUTexture::Format format) = 0;
+  virtual std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+                                                                    void* memory, size_t memory_size,
+                                                                    u32 memory_stride) = 0;
+
   virtual void CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level, GPUTexture* src,
                                  u32 src_x, u32 src_y, u32 src_layer, u32 src_level, u32 width, u32 height) = 0;
   virtual void ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level,

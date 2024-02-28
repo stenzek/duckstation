@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -145,4 +145,35 @@ public:
 private:
   D3D12StreamBuffer m_buffer;
   D3D12DescriptorHandle m_descriptor;
+};
+
+class D3D12DownloadTexture final : public GPUDownloadTexture
+{
+public:
+  template<typename T>
+  using ComPtr = Microsoft::WRL::ComPtr<T>;
+
+  ~D3D12DownloadTexture() override;
+
+  static std::unique_ptr<D3D12DownloadTexture> Create(u32 width, u32 height, GPUTexture::Format format);
+
+  void CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width, u32 height,
+                       u32 src_layer, u32 src_level, bool use_transfer_pitch) override;
+
+  bool Map(u32 x, u32 y, u32 width, u32 height) override;
+  void Unmap() override;
+
+  void Flush() override;
+
+  void SetDebugName(std::string_view name) override;
+
+private:
+  D3D12DownloadTexture(u32 width, u32 height, GPUTexture::Format format, ComPtr<D3D12MA::Allocation> allocation,
+                       ComPtr<ID3D12Resource> buffer, size_t buffer_size);
+
+  ComPtr<D3D12MA::Allocation> m_allocation;
+  ComPtr<ID3D12Resource> m_buffer;
+
+  u64 m_copy_fence_value = 0;
+  size_t m_buffer_size = 0;
 };
