@@ -598,6 +598,9 @@ VkResult VulkanSwapChain::AcquireNextImage()
   if (!m_swap_chain)
     return VK_ERROR_SURFACE_LOST_KHR;
 
+  // Use a different semaphore for each image.
+  m_current_semaphore = (m_current_semaphore + 1) % static_cast<u32>(m_semaphores.size());
+
   const VkResult res =
     vkAcquireNextImageKHR(VulkanDevice::GetInstance().GetVulkanDevice(), m_swap_chain, UINT64_MAX,
                           m_semaphores[m_current_semaphore].available_semaphore, VK_NULL_HANDLE, &m_current_image);

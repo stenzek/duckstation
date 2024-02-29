@@ -1272,7 +1272,7 @@ void VulkanDevice::SubmitCommandBuffer(VulkanSwapChain* present_swap_chain /* = 
   {
     DoSubmitCommandBuffer(m_current_frame, present_swap_chain);
     if (present_swap_chain)
-      DoPresent(present_swap_chain);
+      DoPresent(present_swap_chain, false);
     return;
   }
 
@@ -1317,7 +1317,7 @@ void VulkanDevice::DoSubmitCommandBuffer(u32 index, VulkanSwapChain* present_swa
   }
 }
 
-void VulkanDevice::DoPresent(VulkanSwapChain* present_swap_chain)
+void VulkanDevice::DoPresent(VulkanSwapChain* present_swap_chain, bool acquire_next)
 {
   const VkPresentInfoKHR present_info = {VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
                                          nullptr,
@@ -1344,7 +1344,8 @@ void VulkanDevice::DoPresent(VulkanSwapChain* present_swap_chain)
   // Grab the next image as soon as possible, that way we spend less time blocked on the next
   // submission. Don't care if it fails, we'll deal with that at the presentation call site.
   // Credit to dxvk for the idea.
-  present_swap_chain->AcquireNextImage();
+  if (acquire_next)
+    present_swap_chain->AcquireNextImage();
 }
 
 void VulkanDevice::WaitForPresentComplete()
@@ -1378,7 +1379,7 @@ void VulkanDevice::PresentThread()
 
     DoSubmitCommandBuffer(m_queued_present.command_buffer_index, m_queued_present.swap_chain);
     if (m_queued_present.swap_chain)
-      DoPresent(m_queued_present.swap_chain);
+      DoPresent(m_queued_present.swap_chain, true);
     m_present_done.store(true, std::memory_order_release);
     m_present_done_cv.notify_one();
   }
