@@ -155395,8 +155395,9 @@ SLUS-00818:
     rating: NoIssues
     versionTested: "0.1-986-gfc911de1"
   controllers:
-    - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # fixes sprite wobblyness
   metadata:
     publisher: "Electronic Arts"
     developer: "Atelier Double"
@@ -155419,6 +155420,8 @@ SLUS-01083:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # fixes sprite wobblyness
   metadata:
     publisher: "Electronic Arts"
     developer: "Micro Cabin"
@@ -155436,8 +155439,9 @@ SLUS-01083:
 SLES-01759:
   name: "Street Skater (Europe) (En,Fr,De)"
   controllers:
-    - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # fixes sprite wobblyness
   metadata:
     publisher: "Electronic Arts"
     developer: "Atelier Double"
@@ -155459,6 +155463,8 @@ SLES-02703:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # fixes sprite wobblyness
   metadata:
     publisher: "Electronic Arts"
     developer: "Micro Cabin"
