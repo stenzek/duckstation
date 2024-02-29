@@ -232,7 +232,7 @@ jobs:
           extra-cmake-modules libcurl4-openssl-dev libssl-dev libasound2-dev libpulse-dev libx11-xcb-dev build-essential git libclang-dev \
           libclang-11-dev libclang-12-dev patchelf libglib2.0-dev libfontconfig1-dev libharfbuzz-dev libjpeg-dev libpng-dev libfreetype-dev \
           libinput-dev libxcb-*-dev libxkbcommon-dev libxkbcommon-x11-dev libxrender-dev libwayland-dev libgl1-mesa-dev libegl-dev \
-          libwebp-dev libzstd-dev libegl1-mesa-dev libgl1-mesa-dev libssl-dev libx11-dev libx11-xcb-dev libfuse2 \
+          libwebp-dev libzstd-dev libegl1-mesa-dev libgl1-mesa-dev libssl-dev libx11-dev libx11-xcb-dev libfuse2 libudev-dev \
           llvm-16 lld-16 clang-16
 
     - name: Cache Dependencies

@@ -61,14 +61,21 @@ std::unique_ptr<CDImage> CDImage::Open(const char* filename, bool allow_patches,
   extension = std::strrchr(filename, '.');
 #endif
 
+  std::unique_ptr<CDImage> image;
   if (!extension)
   {
-    Log_ErrorPrintf("Invalid filename: '%s'", filename);
-    return nullptr;
+    // Device filenames on Linux don't have extensions.
+    if (IsDeviceName(filename))
+    {
+      image = OpenDeviceImage(filename, error);
+    }
+    else
+    {
+      Log_ErrorPrintf("Invalid filename: '%s'", filename);
+      return nullptr;
+    }
   }
-
-  std::unique_ptr<CDImage> image;
-  if (StringUtil::Strcasecmp(extension, ".cue") == 0)
+  else if (StringUtil::Strcasecmp(extension, ".cue") == 0)
   {
     image = OpenCueSheetImage(filename, error);
   }

@@ -276,6 +276,10 @@ elseif(NOT ANDROID)
   pkg_check_modules(DBUS REQUIRED dbus-1)
   target_include_directories(util PRIVATE ${DBUS_INCLUDE_DIRS})
   target_link_libraries(util PRIVATE ${DBUS_LINK_LIBRARIES})
+
+  if(LINUX)
+    target_link_libraries(util PRIVATE UDEV::UDEV)
+  endif()
 endif()
 
 if(NOT WIN32 AND NOT ANDROID)
