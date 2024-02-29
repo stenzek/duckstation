@@ -388,47 +388,54 @@ static constexpr std::array<const char*, 15> s_drive_state_names = {
 struct CommandInfo
 {
   const char* name;
-  u8 expected_parameters;
+  u8 min_parameters;
+  u8 max_parameters;
 };
 
 static std::array<CommandInfo, 255> s_command_info = {{
-  {"Sync", 0},    {"Getstat", 0}, {"Setloc", 3},   {"Play", 0},     {"Forward", 0}, {"Backward", 0}, {"ReadN", 0},
-  {"Standby", 0}, {"Stop", 0},    {"Pause", 0},    {"Init", 0},     {"Mute", 0},    {"Demute", 0},   {"Setfilter", 2},
-  {"Setmode", 1}, {"Getmode", 0}, {"GetlocL", 0},  {"GetlocP", 0},  {"ReadT", 1},   {"GetTN", 0},    {"GetTD", 1},
-  {"SeekL", 0},   {"SeekP", 0},   {"SetClock", 0}, {"GetClock", 0}, {"Test", 1},    {"GetID", 0},    {"ReadS", 0},
-  {"Reset", 0},   {"GetQ", 2},    {"ReadTOC", 0},  {"VideoCD", 6},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},  {"Unknown", 0}, {"Unknown", 0},  {"Unknown", 0},
-  {"Unknown", 0}, {"Unknown", 0}, {nullptr, 0} // Unknown
+  {"Sync", 0, 0},     {"Getstat", 0, 0},   {"Setloc", 3, 3},  {"Play", 0, 1},    {"Forward", 0, 0}, {"Backward", 0, 0},
+  {"ReadN", 0, 0},    {"Standby", 0, 0},   {"Stop", 0, 0},    {"Pause", 0, 0},   {"Init", 0, 0},    {"Mute", 0, 0},
+  {"Demute", 0, 0},   {"Setfilter", 2, 2}, {"Setmode", 1, 1}, {"Getmode", 0, 0}, {"GetlocL", 0, 0}, {"GetlocP", 0, 0},
+  {"ReadT", 1, 1},    {"GetTN", 0, 0},     {"GetTD", 1, 1},   {"SeekL", 0, 0},   {"SeekP", 0, 0},   {"SetClock", 0, 0},
+  {"GetClock", 0, 0}, {"Test", 1, 16},     {"GetID", 0, 0},   {"ReadS", 0, 0},   {"Reset", 0, 0},   {"GetQ", 2, 2},
+  {"ReadTOC", 0, 0},  {"VideoCD", 6, 16},  {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0}, {"Unknown", 0, 0},
+  {"Unknown", 0, 0},  {"Unknown", 0, 0},   {nullptr, 0, 0} // Unknown
 }};
 
 } // namespace CDROM
@@ -1380,8 +1387,8 @@ void CDROM::BeginCommand(Command command)
     // behavior is not correct. So, let's use a heuristic; if the number of parameters of the "old" command is
     // greater than the "new" command, empty the FIFO, which will return the error when the command executes.
     // Otherwise, override the command with the new one.
-    if (s_command_info[static_cast<u8>(s_command)].expected_parameters >
-        s_command_info[static_cast<u8>(command)].expected_parameters)
+    if (s_command_info[static_cast<u8>(s_command)].min_parameters >
+        s_command_info[static_cast<u8>(command)].min_parameters)
     {
       Log_WarningPrintf("Ignoring command 0x%02X (%s) and emptying FIFO as 0x%02x (%s) is still pending",
                         static_cast<u8>(command), s_command_info[static_cast<u8>(command)].name,
@@ -1430,10 +1437,10 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
                ci.name, s_secondary_status.bits, params);
   }
 
-  if (s_param_fifo.GetSize() < ci.expected_parameters) [[unlikely]]
+  if (s_param_fifo.GetSize() < ci.min_parameters || s_param_fifo.GetSize() > ci.max_parameters) [[unlikely]]
   {
-    Log_WarningFmt("Too few parameters for command 0x{:02X} ({}), expecting {} got {}", static_cast<u8>(s_command),
-                   ci.name, ci.expected_parameters, s_param_fifo.GetSize());
+    Log_WarningFmt("Incorrect parameters for command 0x{:02X} ({}), expecting {}-{} got {}", static_cast<u8>(s_command),
+                   ci.name, ci.min_parameters, ci.max_parameters, s_param_fifo.GetSize());
     SendErrorResponse(STAT_ERROR, ERROR_REASON_INCORRECT_NUMBER_OF_PARAMETERS);
     EndCommand();
     return;
@@ -1820,7 +1827,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       SoftReset(ticks_late);
 
       QueueCommandSecondResponse(Command::Init, INIT_TICKS);
-      return;
+      EndCommand();
     }
     break;
 
@@ -1955,13 +1962,25 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     {
       Log_DebugPrintf("CDROM GetTD command");
       Assert(s_param_fifo.GetSize() >= 1);
-      const u8 track = PackedBCDToBinary(s_param_fifo.Peek());
 
       if (!CanReadMedia())
       {
         SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
+        EndCommand();
+        return;
       }
-      else if (track > s_reader.GetMedia()->GetTrackCount())
+
+      const u8 track_bcd = s_param_fifo.Peek();
+      if (!IsValidPackedBCD(track_bcd))
+      {
+        Log_ErrorFmt("Invalid track number in GetTD: {:02X}", track_bcd);
+        SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_ARGUMENT);
+        EndCommand();
+        return;
+      }
+
+      const u8 track = PackedBCDToBinary(track_bcd);
+      if (track > s_reader.GetMedia()->GetTrackCount())
       {
         SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_ARGUMENT);
       }
