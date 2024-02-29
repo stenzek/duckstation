@@ -17,5 +17,6 @@ public:
   std::unique_ptr<OpenGLContext> CreateSharedContext(const WindowInfo& wi, Error* error) override;
 
 protected:
-  EGLDisplay GetPlatformDisplay(const EGLAttrib* attribs, Error* error) override;
+  EGLDisplay GetPlatformDisplay(Error* error) override;
+  EGLSurface CreatePlatformSurface(EGLConfig config, void* win, Error* error) override;
 };

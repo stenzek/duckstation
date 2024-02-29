@@ -27,12 +27,13 @@ public:
   virtual std::unique_ptr<OpenGLContext> CreateSharedContext(const WindowInfo& wi, Error* error) override;
 
 protected:
-  virtual EGLDisplay GetPlatformDisplay(const EGLAttrib* attribs, Error* error);
-  virtual EGLSurface CreatePlatformSurface(EGLConfig config, const EGLAttrib* attribs, Error* error);
+  virtual EGLDisplay GetPlatformDisplay(Error* error);
+  virtual EGLSurface CreatePlatformSurface(EGLConfig config, void* win, Error* error);
 
-  EGLDisplay TryGetPlatformDisplay(EGLenum platform, const EGLAttrib* attribs);
+  EGLDisplay TryGetPlatformDisplay(EGLenum platform, const char* platform_ext);
+  EGLSurface TryCreatePlatformSurface(EGLConfig config, void* window, Error* error);
   EGLDisplay GetFallbackDisplay(Error* error);
-  EGLSurface CreateFallbackSurface(EGLConfig config, const EGLAttrib* attribs, void* window, Error* error);
+  EGLSurface CreateFallbackSurface(EGLConfig config, void* window, Error* error);
 
   bool Initialize(std::span<const Version> versions_to_try, Error* error);
   bool CreateContext(const Version& version, EGLContext share_context);
@@ -49,4 +50,6 @@ protected:
   EGLContext m_context = EGL_NO_CONTEXT;
 
   EGLConfig m_config = {};
+
+  bool m_use_ext_platform_base = false;
 };

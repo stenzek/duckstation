@@ -61,22 +61,6 @@ static bool LoadGLADEGL(EGLDisplay display, Error* error)
   return true;
 }
 
-static std::vector<EGLint> EGLAttribToInt(const EGLAttrib* attribs)
-{
-  std::vector<EGLint> int_attribs;
-  if (attribs)
-  {
-    for (const EGLAttrib* attrib = attribs; *attrib != EGL_NONE;)
-    {
-      int_attribs.push_back(static_cast<EGLint>(*(attrib++))); // key
-      int_attribs.push_back(static_cast<EGLint>(*(attrib++))); // value
-    }
-    int_attribs.push_back(EGL_NONE);
-    int_attribs.push_back(0);
-  }
-  return int_attribs;
-}
-
 OpenGLContextEGL::OpenGLContextEGL(const WindowInfo& wi) : OpenGLContext(wi)
 {
   LoadEGL();
@@ -104,7 +88,7 @@ bool OpenGLContextEGL::Initialize(std::span<const Version> versions_to_try, Erro
   if (!LoadGLADEGL(EGL_NO_DISPLAY, error))
     return false;
 
-  m_display = GetPlatformDisplay(nullptr, error);
+  m_display = GetPlatformDisplay(error);
   if (m_display == EGL_NO_DISPLAY)
     return false;
 
@@ -135,16 +119,24 @@ bool OpenGLContextEGL::Initialize(std::span<const Version> versions_to_try, Erro
   return false;
 }
 
-EGLDisplay OpenGLContextEGL::GetPlatformDisplay(const EGLAttrib* attribs, Error* error)
+EGLDisplay OpenGLContextEGL::GetPlatformDisplay(Error* error)
 {
-  EGLDisplay dpy = TryGetPlatformDisplay(EGL_PLATFORM_SURFACELESS_MESA, attribs);
+  EGLDisplay dpy = TryGetPlatformDisplay(EGL_PLATFORM_SURFACELESS_MESA, "EGL_MESA_platform_surfaceless");
   if (dpy == EGL_NO_DISPLAY)
     dpy = GetFallbackDisplay(error);
 
   return dpy;
 }
 
-EGLDisplay OpenGLContextEGL::TryGetPlatformDisplay(EGLenum platform, const EGLAttrib* attribs)
+EGLSurface OpenGLContextEGL::CreatePlatformSurface(EGLConfig config, void* win, Error* error)
+{
+  EGLSurface surface = TryCreatePlatformSurface(config, win, error);
+  if (!surface)
+    surface = CreateFallbackSurface(config, win, error);
+  return surface;
+}
+
+EGLDisplay OpenGLContextEGL::TryGetPlatformDisplay(EGLenum platform, const char* platform_ext)
 {
   const char* extensions_str = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
   if (!extensions_str)
@@ -154,36 +146,17 @@ EGLDisplay OpenGLContextEGL::TryGetPlatformDisplay(EGLenum platform, const EGLAt
   }
 
   EGLDisplay dpy = EGL_NO_DISPLAY;
-  if (std::strstr(extensions_str, "EGL_KHR_platform_base"))
+  if (platform_ext && std::strstr(extensions_str, platform_ext))
   {
-    Log_DevPrint("Using EGL_KHR_platform_base.");
-
-    PFNEGLGETPLATFORMDISPLAYPROC get_platform_display;
-    if (s_egl_library.GetSymbol("eglGetPlatformDisplay", &get_platform_display))
-    {
-      dpy = get_platform_display(platform, m_wi.display_connection, attribs);
-      if (dpy == EGL_NO_DISPLAY)
-      {
-        const EGLint err = eglGetError();
-        Log_ErrorFmt("eglGetPlatformDisplay() failed: {} (0x{:X})", err, err);
-      }
-    }
-    else
-    {
-      Log_WarningPrint("eglGetPlatformDisplay() was not found");
-    }
-  }
-  else if (std::strstr(extensions_str, "EGL_EXT_platform_base"))
-  {
-    Log_DevPrint("Using EGL_EXT_platform_base.");
+    Log_DevFmt("Using EGL platform {}.", platform_ext);
 
     PFNEGLGETPLATFORMDISPLAYEXTPROC get_platform_display_ext =
       (PFNEGLGETPLATFORMDISPLAYEXTPROC)eglGetProcAddress("eglGetPlatformDisplayEXT");
     if (get_platform_display_ext)
     {
-      const std::vector<EGLint> int_attribs = EGLAttribToInt(attribs);
-      dpy = get_platform_display_ext(platform, m_wi.display_connection, attribs ? int_attribs.data() : nullptr);
-      if (dpy == EGL_NO_DISPLAY)
+      dpy = get_platform_display_ext(platform, m_wi.display_connection, nullptr);
+      m_use_ext_platform_base = (dpy != EGL_NO_DISPLAY);
+      if (!m_use_ext_platform_base)
       {
         const EGLint err = eglGetError();
         Log_ErrorFmt("eglGetPlatformDisplayEXT() failed: {} (0x{:X})", err, err);
@@ -196,15 +169,41 @@ EGLDisplay OpenGLContextEGL::TryGetPlatformDisplay(EGLenum platform, const EGLAt
   }
   else
   {
-    Log_WarningPrint("EGL_EXT_platform_base nor EGL_KHR_platform_base is supported.");
+    Log_WarningFmt("{} is not supported.", platform_ext);
   }
 
   return dpy;
 }
 
+EGLSurface OpenGLContextEGL::TryCreatePlatformSurface(EGLConfig config, void* win, Error* error)
+{
+  EGLSurface surface = EGL_NO_SURFACE;
+  if (m_use_ext_platform_base)
+  {
+    PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC create_platform_window_surface_ext =
+      (PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC)eglGetProcAddress("eglCreatePlatformWindowSurfaceEXT");
+    if (create_platform_window_surface_ext)
+    {
+      surface = create_platform_window_surface_ext(m_display, config, win, nullptr);
+      if (surface == EGL_NO_SURFACE)
+      {
+        const EGLint err = eglGetError();
+        Error::SetStringFmt(error, "eglCreatePlatformWindowSurfaceEXT() failed: {} (0x{:X})", err, err);
+      }
+    }
+    else
+    {
+      Log_ErrorPrint("eglCreatePlatformWindowSurfaceEXT() not found");
+    }
+  }
+
+  return surface;
+}
+
 EGLDisplay OpenGLContextEGL::GetFallbackDisplay(Error* error)
 {
   Log_WarningPrint("Using fallback eglGetDisplay() path.");
+
   EGLDisplay dpy = eglGetDisplay(m_wi.display_connection);
   if (dpy == EGL_NO_DISPLAY)
   {
@@ -215,32 +214,11 @@ EGLDisplay OpenGLContextEGL::GetFallbackDisplay(Error* error)
   return dpy;
 }
 
-EGLSurface OpenGLContextEGL::CreatePlatformSurface(EGLConfig config, const EGLAttrib* attribs, Error* error)
-{
-  EGLSurface surface = EGL_NO_SURFACE;
-  if (GLAD_EGL_VERSION_1_5)
-  {
-    surface = eglCreatePlatformWindowSurface(m_display, config, m_wi.window_handle, attribs);
-    if (surface == EGL_NO_SURFACE)
-    {
-      const EGLint err = eglGetError();
-      Error::SetStringFmt(error, "eglCreatePlatformWindowSurface() failed: {} (0x{:X})", err, err);
-    }
-  }
-  if (surface == EGL_NO_SURFACE)
-    surface = CreateFallbackSurface(config, attribs, m_wi.window_handle, error);
-
-  return surface;
-}
-
-EGLSurface OpenGLContextEGL::CreateFallbackSurface(EGLConfig config, const EGLAttrib* attribs, void* win, Error* error)
+EGLSurface OpenGLContextEGL::CreateFallbackSurface(EGLConfig config, void* win, Error* error)
 {
   Log_WarningPrint("Using fallback eglCreateWindowSurface() path.");
 
-  const std::vector<EGLint> int_attribs = EGLAttribToInt(attribs);
-
-  EGLSurface surface =
-    eglCreateWindowSurface(m_display, config, (EGLNativeWindowType)win, attribs ? int_attribs.data() : nullptr);
+  EGLSurface surface = eglCreateWindowSurface(m_display, config, (EGLNativeWindowType)win, nullptr);
   if (surface == EGL_NO_SURFACE)
   {
     const EGLint err = eglGetError();
@@ -358,7 +336,7 @@ bool OpenGLContextEGL::CreateSurface()
   }
 
   Error error;
-  m_surface = CreatePlatformSurface(m_config, nullptr, &error);
+  m_surface = CreatePlatformSurface(m_config, m_wi.window_handle, &error);
   if (m_surface == EGL_NO_SURFACE)
   {
     Log_ErrorFmt("Failed to create platform surface: {}", error.GetDescription());

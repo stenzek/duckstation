@@ -50,16 +50,16 @@ void OpenGLContextEGLWayland::ResizeSurface(u32 new_surface_width, u32 new_surfa
   OpenGLContextEGL::ResizeSurface(new_surface_width, new_surface_height);
 }
 
-EGLDisplay OpenGLContextEGLWayland::GetPlatformDisplay(const EGLAttrib* attribs, Error* error)
+EGLDisplay OpenGLContextEGLWayland::GetPlatformDisplay(Error* error)
 {
-  EGLDisplay dpy = TryGetPlatformDisplay(EGL_PLATFORM_WAYLAND_KHR, attribs);
+  EGLDisplay dpy = TryGetPlatformDisplay(EGL_PLATFORM_WAYLAND_KHR, "EGL_EXT_platform_wayland");
   if (dpy == EGL_NO_DISPLAY)
     dpy = GetFallbackDisplay(error);
 
   return dpy;
 }
 
-EGLSurface OpenGLContextEGLWayland::CreatePlatformSurface(EGLConfig config, const EGLAttrib* attribs, Error* error)
+EGLSurface OpenGLContextEGLWayland::CreatePlatformSurface(EGLConfig config, void* win, Error* error)
 {
   if (m_wl_window)
   {
@@ -67,31 +67,22 @@ EGLSurface OpenGLContextEGLWayland::CreatePlatformSurface(EGLConfig config, cons
     m_wl_window = nullptr;
   }
 
-  m_wl_window =
-    m_wl_egl_window_create(static_cast<wl_surface*>(m_wi.window_handle), m_wi.surface_width, m_wi.surface_height);
+  m_wl_window = m_wl_egl_window_create(static_cast<wl_surface*>(win), m_wi.surface_width, m_wi.surface_height);
   if (!m_wl_window)
   {
     Error::SetStringView(error, "wl_egl_window_create() failed");
     return EGL_NO_SURFACE;
   }
 
-  EGLSurface surface = EGL_NO_SURFACE;
-  if (GLAD_EGL_VERSION_1_5)
+  EGLSurface surface = TryCreatePlatformSurface(config, m_wl_window, error);
+  if (surface == EGL_NO_SURFACE)
   {
-    surface = eglCreatePlatformWindowSurface(m_display, config, m_wl_window, attribs);
+    surface = CreateFallbackSurface(config, m_wl_window, error);
     if (surface == EGL_NO_SURFACE)
     {
-      const EGLint err = eglGetError();
-      Error::SetStringFmt(error, "eglCreatePlatformWindowSurface() for Wayland failed: {} (0x{:X})", err, err);
+      m_wl_egl_window_destroy(m_wl_window);
+      m_wl_window = nullptr;
     }
-  }
-  if (surface == EGL_NO_SURFACE)
-    surface = CreateFallbackSurface(config, attribs, m_wl_window, error);
-
-  if (surface == EGL_NO_SURFACE)
-  {
-    m_wl_egl_window_destroy(m_wl_window);
-    m_wl_window = nullptr;
   }
 
   return surface;

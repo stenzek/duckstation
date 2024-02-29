@@ -32,11 +32,22 @@ std::unique_ptr<OpenGLContext> OpenGLContextEGLX11::CreateSharedContext(const Wi
   return context;
 }
 
-EGLDisplay OpenGLContextEGLX11::GetPlatformDisplay(const EGLAttrib* attribs, Error* error)
+EGLDisplay OpenGLContextEGLX11::GetPlatformDisplay(Error* error)
 {
-  EGLDisplay dpy = TryGetPlatformDisplay(EGL_PLATFORM_X11_KHR, attribs);
+  EGLDisplay dpy = TryGetPlatformDisplay(EGL_PLATFORM_X11_KHR, "EGL_EXT_platform_x11");
   if (dpy == EGL_NO_DISPLAY)
     dpy = GetFallbackDisplay(error);
 
   return dpy;
+}
+
+EGLSurface OpenGLContextEGLX11::CreatePlatformSurface(EGLConfig config, void* win, Error* error)
+{
+  // This is hideous.. the EXT version requires a pointer to the window, whereas the base
+  // version requires the window itself, casted to void*...
+  EGLSurface surface = TryCreatePlatformSurface(config, &win, error);
+  if (surface == EGL_NO_SURFACE)
+    surface = CreateFallbackSurface(config, win, error);
+
+  return surface;
 }
