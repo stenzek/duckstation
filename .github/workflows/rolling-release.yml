@@ -282,40 +282,52 @@ jobs:
 
   linux-flatpak-build:
     runs-on: ubuntu-22.04
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.6
+      options: --privileged
     timeout-minutes: 120
     steps:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
+        set-safe-directory: ${{ env.GITHUB_WORKSPACE }}
 
-    - name: Install packages
+    # Work around container ownership issue
+    - name: Set Safe Directory
       shell: bash
-      run: scripts/flatpak/install-packages.sh
+      run: git config --global --add safe.directory "*"
 
     - name: Generate AppStream XML
       run: |
         scripts/generate-metainfo.sh scripts/flatpak
         cat scripts/flatpak/org.duckstation.DuckStation.metainfo.xml
-        flatpak run org.freedesktop.appstream-glib validate scripts/flatpak/org.duckstation.DuckStation.metainfo.xml
+
+    - name: Validate AppStream XML
+      run: flatpak-builder-lint appstream scripts/flatpak/org.duckstation.DuckStation.metainfo.xml
+
+    - name: Validate manifest
+      run: flatpak-builder-lint manifest scripts/flatpak/org.duckstation.DuckStation.json
 
     - name: Build Flatpak
-      uses: flatpak/flatpak-github-actions/flatpak-builder@v6.3
+      uses: flathub-infra/flatpak-github-actions/flatpak-builder@23796715b3dfa4c86ddf50cf29c3cc8b3c82dca8
       with:
         bundle: duckstation-x64.flatpak
+        upload-artifact: false
         manifest-path: scripts/flatpak/org.duckstation.DuckStation.json
         arch: x86_64
         build-bundle: true
         verbose: true
-        #mirror-screenshots-url: https://dl.flathub.org/repo/screenshots
+        #mirror-screenshots-url: https://dl.flathub.org/media
         #branch: ${{ inputs.branch }}
         branch: master
         cache: true
         restore-cache: true
         cache-key: flatpak-x64-${{ hashFiles('.scripts/flatpak/**/*.json') }}
 
-#    - name: Commit screenshots to OSTree
-#      run: |
-#        ostree commit --repo=repo --canonical-permissions --branch=screenshots/x86_64 flatpak_app/screenshots
+    # fails due to screenshots..
+    #- name: Validate build
+    #  run: |
+    #    flatpak-builder-lint repo repo
 
     - name: Upload Flatpak
       uses: actions/upload-artifact@v1
