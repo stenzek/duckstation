@@ -132,11 +132,6 @@ private:
 
   void LoadVertices();
 
-  void AddVertex(const BatchVertex& v);
-
-  template<typename... Args>
-  void AddNewVertex(Args&&... args);
-
   void PrintSettingsToLog();
   void CheckSettings();
 
@@ -144,9 +139,9 @@ private:
   void UpdateDepthBufferFromMaskBit();
   void ClearDepthBuffer();
   void SetScissor();
-  void MapBatchVertexPointer(u32 required_vertices);
-  void UnmapBatchVertexPointer(u32 used_vertices);
-  void DrawBatchVertices(BatchRenderMode render_mode, u32 num_vertices, u32 base_vertex);
+  void MapGPUBuffer(u32 required_vertices, u32 required_indices);
+  void UnmapGPUBuffer(u32 used_vertices, u32 used_indices);
+  void DrawBatchVertices(BatchRenderMode render_mode, u32 num_indices, u32 base_index, u32 base_vertex);
 
   u32 CalculateResolutionScale() const;
   GPUDownsampleMode GetDownsampleMode(u32 resolution_scale) const;
@@ -160,9 +155,7 @@ private:
   void CheckForTexPageOverlap(u32 texpage, u32 min_u, u32 min_v, u32 max_u, u32 max_v);
 
   bool IsFlushed() const;
-  u32 GetBatchVertexSpace() const;
-  u32 GetBatchVertexCount() const;
-  void EnsureVertexBufferSpace(u32 required_vertices);
+  void EnsureVertexBufferSpace(u32 required_vertices, u32 required_indices);
   void EnsureVertexBufferSpaceForCurrentCommand();
   void ResetBatchVertexDepth();
 
@@ -225,10 +218,14 @@ private:
 
   std::unique_ptr<GPU_SW_Backend> m_sw_renderer;
 
-  BatchVertex* m_batch_start_vertex_ptr = nullptr;
-  BatchVertex* m_batch_end_vertex_ptr = nullptr;
-  BatchVertex* m_batch_current_vertex_ptr = nullptr;
+  BatchVertex* m_batch_vertex_ptr = nullptr;
+  u16* m_batch_index_ptr = nullptr;
   u32 m_batch_base_vertex = 0;
+  u32 m_batch_base_index = 0;
+  u16 m_batch_vertex_count = 0;
+  u16 m_batch_index_count = 0;
+  u16 m_batch_vertex_space = 0;
+  u16 m_batch_index_space = 0;
   s32 m_current_depth = 0;
   float m_last_depth_z = 1.0f;
 
