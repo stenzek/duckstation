@@ -381,13 +381,13 @@ Token gerado %2.</translation>
 <context>
     <name>Achievements</name>
     <message>
-        <location filename="../../core/system.cpp" line="1149"/>
+        <location filename="../../core/system.cpp" line="1155"/>
         <source>Loading state</source>
         <translation>Carregando estado</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1380"/>
-        <location filename="../../core/system.cpp" line="1392"/>
+        <location filename="../../core/system.cpp" line="1389"/>
+        <location filename="../../core/system.cpp" line="1401"/>
         <source>Resuming state</source>
         <translation>Retomando estado</translation>
     </message>
@@ -4124,87 +4124,77 @@ Esta ação não poderá ser desfeita.</translation>
     </message>
 </context>
 <context>
+    <name>DebuggerAddBreakpointDialog</name>
+    <message>
+        <location filename="../debuggeraddbreakpointdialog.ui" line="14"/>
+        <source>Add Breakpoint</source>
+        <translation>Adicionar ponto de interrupção</translation>
+    </message>
+    <message>
+        <location filename="../debuggeraddbreakpointdialog.ui" line="20"/>
+        <source>Address:</source>
+        <translation>Endereço:</translation>
+    </message>
+    <message>
+        <location filename="../debuggeraddbreakpointdialog.ui" line="30"/>
+        <source>Type:</source>
+        <translation>Tipo:</translation>
+    </message>
+    <message>
+        <location filename="../debuggeraddbreakpointdialog.ui" line="39"/>
+        <source>Execute</source>
+        <translation>Executar</translation>
+    </message>
+    <message>
+        <location filename="../debuggeraddbreakpointdialog.ui" line="49"/>
+        <source>Read</source>
+        <translation>Ler</translation>
+    </message>
+    <message>
+        <location filename="../debuggeraddbreakpointdialog.ui" line="56"/>
+        <source>Write</source>
+        <translation>Escrever</translation>
+    </message>
+</context>
+<context>
     <name>DebuggerCodeModel</name>
     <message>
-        <location filename="../debuggermodels.cpp" line="87"/>
-        <location filename="../debuggermodels.cpp" line="97"/>
-        <location filename="../debuggermodels.cpp" line="112"/>
+        <location filename="../debuggermodels.cpp" line="89"/>
+        <location filename="../debuggermodels.cpp" line="99"/>
+        <location filename="../debuggermodels.cpp" line="114"/>
         <source>&lt;invalid&gt;</source>
         <translation>&lt;inválido&gt;</translation>
     </message>
     <message>
-        <location filename="../debuggermodels.cpp" line="180"/>
+        <location filename="../debuggermodels.cpp" line="182"/>
         <source>Address</source>
         <translation>Endereço</translation>
     </message>
     <message>
-        <location filename="../debuggermodels.cpp" line="182"/>
+        <location filename="../debuggermodels.cpp" line="184"/>
         <source>Bytes</source>
         <translation>Bytes</translation>
     </message>
     <message>
-        <location filename="../debuggermodels.cpp" line="184"/>
+        <location filename="../debuggermodels.cpp" line="186"/>
         <source>Instruction</source>
         <translation>Instrução</translation>
     </message>
     <message>
-        <location filename="../debuggermodels.cpp" line="186"/>
+        <location filename="../debuggermodels.cpp" line="188"/>
         <source>Comment</source>
         <translation>Comentário</translation>
     </message>
 </context>
 <context>
-    <name>DebuggerMessage</name>
-    <message>
-        <location filename="../../core/cpu_core.cpp" line="2010"/>
-        <source>Added breakpoint at 0x%08X.</source>
-        <translation>Interruptor adicionado em 0x%08X.</translation>
-    </message>
-    <message>
-        <location filename="../../core/cpu_core.cpp" line="2037"/>
-        <source>Removed breakpoint at 0x%08X.</source>
-        <translation>Interruptor removido em 0x%08X.</translation>
-    </message>
-    <message>
-        <location filename="../../core/cpu_core.cpp" line="2070"/>
-        <source>0x%08X is not a call instruction.</source>
-        <translation>0x%08X não é uma chamada de instrução.</translation>
-    </message>
-    <message>
-        <location filename="../../core/cpu_core.cpp" line="2079"/>
-        <source>Can&apos;t step over double branch at 0x%08X</source>
-        <translation>Não é possível duplicar ramificações em 0x%08X</translation>
-    </message>
-    <message>
-        <location filename="../../core/cpu_core.cpp" line="2087"/>
-        <source>Stepping over to 0x%08X.</source>
-        <translation>Pulando para 0x%8X.</translation>
-    </message>
-    <message>
-        <location filename="../../core/cpu_core.cpp" line="2104"/>
-        <source>Instruction read failed at %08X while searching for function end.</source>
-        <translation>Leitura de instrução falhou em %08X ao final da busca.</translation>
-    </message>
-    <message>
-        <location filename="../../core/cpu_core.cpp" line="2110"/>
-        <source>Stepping out to 0x%08X.</source>
-        <translation>Saindo em 0x%08X.</translation>
-    </message>
-    <message>
-        <location filename="../../core/cpu_core.cpp" line="2117"/>
-        <source>No return instruction found after %u instructions for step-out at %08X.</source>
-        <translation>Sem instrução de retorno encontrada após%u nas instruções de saída em %08X.</translation>
-    </message>
-</context>
-<context>
     <name>DebuggerRegistersModel</name>
     <message>
-        <location filename="../debuggermodels.cpp" line="365"/>
+        <location filename="../debuggermodels.cpp" line="367"/>
         <source>Register</source>
         <translation>Registrador</translation>
     </message>
     <message>
-        <location filename="../debuggermodels.cpp" line="367"/>
+        <location filename="../debuggermodels.cpp" line="369"/>
         <source>Value</source>
         <translation>Valor</translation>
     </message>
@@ -4212,17 +4202,17 @@ Esta ação não poderá ser desfeita.</translation>
 <context>
     <name>DebuggerStackModel</name>
     <message>
-        <location filename="../debuggermodels.cpp" line="420"/>
+        <location filename="../debuggermodels.cpp" line="425"/>
         <source>&lt;invalid&gt;</source>
         <translation>&lt;inválido&gt;</translation>
     </message>
     <message>
-        <location filename="../debuggermodels.cpp" line="436"/>
+        <location filename="../debuggermodels.cpp" line="441"/>
         <source>Address</source>
         <translation>Endereço</translation>
     </message>
     <message>
-        <location filename="../debuggermodels.cpp" line="438"/>
+        <location filename="../debuggermodels.cpp" line="443"/>
         <source>Value</source>
         <translation>Valor</translation>
     </message>
@@ -4232,7 +4222,7 @@ Esta ação não poderá ser desfeita.</translation>
     <message>
         <location filename="../debuggerwindow.ui" line="14"/>
         <source>CPU Debugger</source>
-        <translation>Depurador de CPU</translation>
+        <translation>Depurador do CPU</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="31"/>
@@ -4302,274 +4292,349 @@ Esta ação não poderá ser desfeita.</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="274"/>
+        <source>Type</source>
+        <translation>Tipo</translation>
+    </message>
+    <message>
+        <location filename="../debuggerwindow.ui" line="279"/>
         <source>Hit Count</source>
         <translation>Contador</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="284"/>
+        <location filename="../debuggerwindow.ui" line="289"/>
         <source>Stack</source>
         <translation>Pilha</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="309"/>
+        <location filename="../debuggerwindow.ui" line="314"/>
         <source>Pause/Continue</source>
         <translation>Pausar/continuar</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="306"/>
+        <location filename="../debuggerwindow.ui" line="311"/>
         <source>&amp;Pause/Continue</source>
-        <translation>&amp;Pausa/Continua</translation>
+        <translation>&amp;Pausar/continuar</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="312"/>
+        <location filename="../debuggerwindow.ui" line="317"/>
         <source>F5</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="323"/>
+        <location filename="../debuggerwindow.ui" line="328"/>
         <source>Step Into</source>
-        <translation>Entrar</translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="320"/>
+        <location filename="../debuggerwindow.ui" line="325"/>
         <source>&amp;Step Into</source>
         <translation>&amp;Entrar</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="326"/>
+        <location filename="../debuggerwindow.ui" line="331"/>
         <source>F11</source>
         <translation>F11</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="337"/>
+        <location filename="../debuggerwindow.ui" line="342"/>
         <source>Step Over</source>
         <translation>Pular</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="334"/>
+        <location filename="../debuggerwindow.ui" line="339"/>
         <source>Step &amp;Over</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="340"/>
+        <location filename="../debuggerwindow.ui" line="345"/>
         <source>F10</source>
         <translation>F10</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="351"/>
+        <location filename="../debuggerwindow.ui" line="356"/>
         <source>Toggle Breakpoint</source>
         <translation>Alternar ponto de interrupção</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="348"/>
-        <location filename="../debuggerwindow.cpp" line="254"/>
+        <location filename="../debuggerwindow.ui" line="353"/>
+        <location filename="../debuggerwindow.cpp" line="274"/>
         <source>Toggle &amp;Breakpoint</source>
         <translation>&amp;Alternar ponto de interrupção</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="354"/>
+        <location filename="../debuggerwindow.ui" line="359"/>
         <source>F9</source>
         <translation>F9</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="359"/>
+        <location filename="../debuggerwindow.ui" line="364"/>
         <source>&amp;Close</source>
         <translation>&amp;Fechar</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="370"/>
+        <location filename="../debuggerwindow.ui" line="375"/>
         <source>Step Out</source>
         <translation>Sair</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="367"/>
+        <location filename="../debuggerwindow.ui" line="372"/>
         <source>Step O&amp;ut</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="373"/>
+        <location filename="../debuggerwindow.ui" line="378"/>
         <source>Ctrl+F11</source>
         <translation>Ctrl+F11</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="384"/>
+        <location filename="../debuggerwindow.ui" line="389"/>
         <source>Run To Cursor</source>
-        <translation>Executar para cursor</translation>
+        <translation>Ir para o cursor</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="381"/>
-        <location filename="../debuggerwindow.cpp" line="257"/>
+        <location filename="../debuggerwindow.ui" line="386"/>
+        <location filename="../debuggerwindow.cpp" line="277"/>
         <source>&amp;Run To Cursor</source>
         <translation>&amp;Executar para cursores</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="387"/>
+        <location filename="../debuggerwindow.ui" line="392"/>
         <source>Ctrl+F10</source>
         <translation>Ctrl+F10</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="398"/>
+        <location filename="../debuggerwindow.ui" line="403"/>
         <source>Clear Breakpoints</source>
         <translation>Limpar pontos de interrupção</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="395"/>
+        <location filename="../debuggerwindow.ui" line="400"/>
         <source>&amp;Clear Breakpoints</source>
-        <translation>&amp;Limpar Pontos de Interrupção</translation>
+        <translation>&amp;Limpar pontos de interrupção</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="401"/>
+        <location filename="../debuggerwindow.ui" line="406"/>
         <source>Ctrl+Del</source>
         <translation>Ctrl+Del</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="412"/>
+        <location filename="../debuggerwindow.ui" line="417"/>
         <source>Add Breakpoint</source>
-        <translation>Adicionar interrupção</translation>
+        <translation>Adicionar ponto de interrupção</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="415"/>
+        <location filename="../debuggerwindow.ui" line="420"/>
         <source>Ctrl+F9</source>
         <translation>Ctrl+F9</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="426"/>
+        <location filename="../debuggerwindow.ui" line="431"/>
         <source>Go To PC</source>
         <translation>Ir para (próxima instrução)</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="423"/>
+        <location filename="../debuggerwindow.ui" line="428"/>
         <source>&amp;Go To PC</source>
         <translation>&amp;Ir para (próxima instrução)</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="429"/>
+        <location filename="../debuggerwindow.ui" line="434"/>
         <source>Ctrl+P</source>
         <translation>Ctrl+P</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="440"/>
+        <location filename="../debuggerwindow.ui" line="445"/>
         <source>Go To Address</source>
         <translation>Ir para endereço</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="437"/>
+        <location filename="../debuggerwindow.ui" line="442"/>
         <source>Go To &amp;Address</source>
         <translation>Ir para &amp;endereço</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="409"/>
+        <location filename="../debuggerwindow.ui" line="414"/>
         <source>&amp;Add Breakpoint</source>
-        <translation></translation>
+        <translation>Adicionar ponto de interrupção</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="443"/>
+        <location filename="../debuggerwindow.ui" line="448"/>
         <source>Ctrl+G</source>
         <translation>Ctrl+G</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="451"/>
+        <location filename="../debuggerwindow.ui" line="456"/>
         <source>&amp;Dump Address</source>
         <translation>&amp;Endereço de despejo</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="454"/>
+        <location filename="../debuggerwindow.ui" line="459"/>
         <source>Ctrl+D</source>
         <translation>Ctrl+D</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="465"/>
+        <location filename="../debuggerwindow.ui" line="470"/>
         <source>Trace</source>
         <translation>Rastreio</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="462"/>
+        <location filename="../debuggerwindow.ui" line="467"/>
         <source>&amp;Trace</source>
         <translation>&amp;Rastrear</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.ui" line="468"/>
+        <location filename="../debuggerwindow.ui" line="473"/>
         <source>Ctrl+T</source>
         <translation>Ctrl+T</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="98"/>
+        <location filename="../debuggerwindow.cpp" line="110"/>
         <source>No address selected.</source>
         <translation>Nenhum endereço selecionado.</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="114"/>
-        <location filename="../debuggerwindow.cpp" line="155"/>
+        <location filename="../debuggerwindow.cpp" line="126"/>
         <source>Enter code address:</source>
         <translation>Digite o código do endereço:</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="124"/>
+        <location filename="../debuggerwindow.cpp" line="136"/>
         <location filename="../qtutils.cpp" line="752"/>
         <source>Enter memory address:</source>
         <translation>Insira o endereço de memória:</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="137"/>
+        <location filename="../debuggerwindow.cpp" line="149"/>
         <source>Trace logging started to cpu_log.txt.
 This file can be several gigabytes, so be aware of SSD wear.</source>
-        <translation>Registro de rastreio iniciado. este arquivo pode ter vários gigabytes, portanto, fique atento ao desgaste do SSD.</translation>
+        <translation>Rastreamento iniciado. este arquivo pode ter vários gigabytes, portanto, fique atento quanto ao desgaste do SSD.</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="143"/>
+        <location filename="../debuggerwindow.cpp" line="155"/>
         <source>Trace logging to cpu_log.txt stopped.</source>
         <translation>O registro de rastreamento foi interrompido.</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="161"/>
-        <source>A breakpoint already exists at this address.</source>
-        <translation>Ponto de interrupção já existente neste endereço.</translation>
+        <location filename="../debuggerwindow.cpp" line="198"/>
+        <source>&amp;Remove</source>
+        <translation>Remover</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="209"/>
+        <location filename="../debuggerwindow.cpp" line="229"/>
         <source>Debugger</source>
         <translation>Depurador</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="209"/>
+        <location filename="../debuggerwindow.cpp" line="229"/>
         <source>Failed to add step-out breakpoint, are you in a valid function?</source>
         <translation>Falha ao adicionar ponto de interrupção de saída, você está em uma função válida?</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="266"/>
+        <location filename="../debuggerwindow.cpp" line="286"/>
         <source>View in &amp;Dump</source>
-        <translation>Ver no &amp;Despejo</translation>
+        <translation>Ver no &amp;despejo</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="269"/>
+        <location filename="../debuggerwindow.cpp" line="289"/>
         <source>&amp;Follow Load/Store</source>
-        <translation></translation>
+        <translation>Carregar/armazenar</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="321"/>
-        <location filename="../debuggerwindow.cpp" line="348"/>
+        <location filename="../debuggerwindow.cpp" line="341"/>
+        <location filename="../debuggerwindow.cpp" line="368"/>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
-        <translation>Padrão de busca inválido! Os valores devem conter digitos em hexadecimais ou pontos de exclamação.</translation>
+        <translation>Padrão de busca inválido! Os valores devem conter digitos em hexadecimal ou pontos de exclamação.</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="360"/>
+        <location filename="../debuggerwindow.cpp" line="380"/>
         <source>Pattern not found.</source>
         <translation>Padrão não encontrado.</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="376"/>
+        <location filename="../debuggerwindow.cpp" line="396"/>
         <source>Pattern found at 0x%1 (passed the end of memory).</source>
         <translation>Padrão encontrado em 0x%1. (além do endereço de memória).</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="382"/>
+        <location filename="../debuggerwindow.cpp" line="402"/>
         <source>Pattern found at 0x%1.</source>
         <translation>Padrão encontrado em 0x%1.</translation>
     </message>
     <message>
+        <location filename="../debuggerwindow.cpp" line="667"/>
+        <source>Failed to add breakpoint. A breakpoint may already exist at this address.</source>
+        <translation>Falha ao adicionar ponto de interrupção. Pode ser que já exista algum neste endereço.</translation>
+    </message>
+    <message>
+        <location filename="../debuggerwindow.cpp" line="686"/>
+        <source>Failed to remove breakpoint. This breakpoint may not exist.</source>
+        <translation>Falha ao remover ponto de interrupção. O mesmo pode não existir.</translation>
+    </message>
+    <message>
+        <location filename="../debuggermodels.cpp" line="480"/>
+        <source>Error</source>
+        <translation>Erro</translation>
+    </message>
+    <message>
+        <location filename="../debuggermodels.cpp" line="481"/>
         <location filename="../qtutils.cpp" line="769"/>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
         <translation>Endereço inválido! valores devem ser: hexa (0x12345678 ou 12345678)</translation>
+    </message>
+    <message>
+        <location filename="../../core/cpu_core.cpp" line="2015"/>
+        <source>Execute</source>
+        <translation>Executar</translation>
+    </message>
+    <message>
+        <location filename="../../core/cpu_core.cpp" line="2015"/>
+        <source>Read</source>
+        <translation>Ler</translation>
+    </message>
+    <message>
+        <location filename="../../core/cpu_core.cpp" line="2016"/>
+        <source>Write</source>
+        <translation>Escrever</translation>
+    </message>
+    <message>
+        <location filename="../../core/cpu_core.cpp" line="2072"/>
+        <source>Added breakpoint at 0x%08X.</source>
+        <translation>Ponto de interrupção no endereço 0x%08X adicionado.</translation>
+    </message>
+    <message>
+        <location filename="../../core/cpu_core.cpp" line="2100"/>
+        <source>Removed %s breakpoint at 0x%08X.</source>
+        <translation>Ponto de interrupção no endereço 0x%08X foi removido.</translation>
+    </message>
+    <message>
+        <location filename="../../core/cpu_core.cpp" line="2135"/>
+        <source>0x%08X is not a call instruction.</source>
+        <translation>0x%08X não é uma chamada de instrução.</translation>
+    </message>
+    <message>
+        <location filename="../../core/cpu_core.cpp" line="2144"/>
+        <source>Can&apos;t step over double branch at 0x%08X</source>
+        <translation>Não é possível duplicar ramificações em 0x%08X</translation>
+    </message>
+    <message>
+        <location filename="../../core/cpu_core.cpp" line="2152"/>
+        <source>Stepping over to 0x%08X.</source>
+        <translation>Pulando para 0x%8X.</translation>
+    </message>
+    <message>
+        <location filename="../../core/cpu_core.cpp" line="2169"/>
+        <source>Instruction read failed at %08X while searching for function end.</source>
+        <translation>Leitura de instrução falhou em %08X ao final da busca.</translation>
+    </message>
+    <message>
+        <location filename="../../core/cpu_core.cpp" line="2175"/>
+        <source>Stepping out to 0x%08X.</source>
+        <translation>Pulando para 0x%08X.</translation>
+    </message>
+    <message>
+        <location filename="../../core/cpu_core.cpp" line="2182"/>
+        <source>No return instruction found after %u instructions for step-out at %08X.</source>
+        <translation>Sem instrução de retorno encontrada após %u nas instruções de saída em %08X.</translation>
     </message>
 </context>
 <context>
@@ -5122,17 +5187,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>Jogo não carregado ou sem conquistas disponíveis.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1703"/>
+        <location filename="../qthost.cpp" line="1735"/>
         <source>%1x%2</source>
         <translation>%1x%2</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1712"/>
+        <location filename="../qthost.cpp" line="1744"/>
         <source>Game: %1 FPS</source>
         <translation>Jogo: %1 FPS</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1722"/>
+        <location filename="../qthost.cpp" line="1754"/>
         <source>Video: %1 FPS (%2%)</source>
         <translation>Vídeo: %1 FPS (%2%)</translation>
     </message>
@@ -8813,12 +8878,12 @@ Error was:</source>
 <context>
     <name>GPUDevice</name>
     <message>
-        <location filename="../../util/opengl_device.cpp" line="335"/>
+        <location filename="../../util/opengl_device.cpp" line="293"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../../util/opengl_device.cpp" line="336"/>
+        <location filename="../../util/opengl_device.cpp" line="294"/>
         <source>OpenGL renderer unavailable, your driver or hardware is not recent enough. OpenGL 3.1 or OpenGL ES 3.1 is required.</source>
         <translation>Renderizador openGL não disponível, driver ou hardware não compatíveis. OpenGL 3.1 ou OpenGLES 3.0 são obrigatórios.</translation>
     </message>
@@ -8874,7 +8939,7 @@ Error was:</source>
         <translation>Placa de vídeo (OpenGL)</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1694"/>
+        <location filename="../qthost.cpp" line="1726"/>
         <location filename="../../core/settings.cpp" line="953"/>
         <source>Software</source>
         <translation>Software</translation>
@@ -9042,47 +9107,47 @@ Error was:</source>
 <context>
     <name>GPU_HW</name>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="363"/>
+        <location filename="../../core/gpu_hw.cpp" line="360"/>
         <source>Resolution scale set to {0}x (display {1}x{2}, VRAM {3}x{4})</source>
         <translation>Escala de resolução definida para {0}x (tela {1}x{2}, VRAM {3}x{4})</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="376"/>
+        <location filename="../../core/gpu_hw.cpp" line="373"/>
         <source>Multisample anti-aliasing set to {}x (SSAA).</source>
         <translation>Anti serrilhado múltiplo definido para {}x (SSAA).</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="383"/>
+        <location filename="../../core/gpu_hw.cpp" line="380"/>
         <source>Multisample anti-aliasing set to {}x.</source>
         <translation>Suavização de serrilhado definido para {}x.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="458"/>
+        <location filename="../../core/gpu_hw.cpp" line="455"/>
         <source>{}x MSAA is not supported, using {}x instead.</source>
         <translation>{}x MSAA não é compatível. Use {}x.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="470"/>
+        <location filename="../../core/gpu_hw.cpp" line="467"/>
         <source>SSAA is not supported, using MSAA instead.</source>
         <translation>Filtro SSAA não suportado, usando filtro MSAA.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="477"/>
+        <location filename="../../core/gpu_hw.cpp" line="474"/>
         <source>Texture filter &apos;{}&apos; is not supported with the current renderer.</source>
         <translation>O filtro de textura &apos;{}&apos; não é compatível com o renderizador atual.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="489"/>
+        <location filename="../../core/gpu_hw.cpp" line="486"/>
         <source>Geometry shaders are not supported by your GPU, and are required for wireframe rendering.</source>
         <translation>Os sombreadores não são compatíveis com sua GPU e são obrigatórios para a renderização no modo de wireframe.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="502"/>
+        <location filename="../../core/gpu_hw.cpp" line="499"/>
         <source>Resolution scale {0}x is not divisible by downsample scale {1}x, using {2}x instead.</source>
         <translation>A escala de resolução {0}x não é divisível pela escala de redução da resolução {1}x, usando {2}x.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="563"/>
+        <location filename="../../core/gpu_hw.cpp" line="560"/>
         <source>Resolution scale {0}x not supported for adaptive downsampling, using {1}x.</source>
         <translation>A escala de resolução {0}x não é compatível com a redução de amostra adaptável, usando {1}x.</translation>
     </message>
@@ -10677,8 +10742,8 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     </message>
     <message>
         <location filename="../mainwindow.ui" line="42"/>
-        <location filename="../mainwindow.cpp" line="1215"/>
-        <location filename="../mainwindow.cpp" line="1465"/>
+        <location filename="../mainwindow.cpp" line="1209"/>
+        <location filename="../mainwindow.cpp" line="1459"/>
         <source>Change Disc</source>
         <translation>Mudar disco</translation>
     </message>
@@ -10689,8 +10754,8 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     </message>
     <message>
         <location filename="../mainwindow.ui" line="66"/>
-        <location filename="../mainwindow.cpp" line="782"/>
-        <location filename="../mainwindow.cpp" line="1083"/>
+        <location filename="../mainwindow.cpp" line="776"/>
+        <location filename="../mainwindow.cpp" line="1077"/>
         <source>Load State</source>
         <translation>Carregar estado</translation>
     </message>
@@ -10887,13 +10952,13 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     </message>
     <message>
         <location filename="../mainwindow.ui" line="971"/>
-        <location filename="../mainwindow.cpp" line="1266"/>
+        <location filename="../mainwindow.cpp" line="1260"/>
         <source>Start Big Picture Mode</source>
         <translation>Iniciar em modo tela grande</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="980"/>
-        <location filename="../mainwindow.cpp" line="1267"/>
+        <location filename="../mainwindow.cpp" line="1261"/>
         <source>Big Picture</source>
         <translation>Modo tela grande</translation>
     </message>
@@ -11094,7 +11159,7 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     </message>
     <message>
         <location filename="../mainwindow.ui" line="814"/>
-        <location filename="../mainwindow.cpp" line="779"/>
+        <location filename="../mainwindow.cpp" line="773"/>
         <source>Resume</source>
         <translation>Continuar</translation>
     </message>
@@ -11209,18 +11274,18 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <translation>Falha ao tentar obter informação da janela</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="661"/>
-        <location filename="../mainwindow.cpp" line="1200"/>
+        <location filename="../mainwindow.cpp" line="655"/>
+        <location filename="../mainwindow.cpp" line="1194"/>
         <source>Select Disc Image</source>
         <translation>Escolha uma imagem de disco</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1185"/>
+        <location filename="../mainwindow.cpp" line="1179"/>
         <source>Start Disc</source>
         <translation>Iniciar disco</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="676"/>
+        <location filename="../mainwindow.cpp" line="670"/>
         <source>Could not find any CD-ROM devices. Please ensure you have a CD-ROM drive connected and sufficient permissions to access it.</source>
         <translation>Não foi possível encontrar nenhum dispositivo de CD-ROM. Certifique-se de ter uma unidade de CD-ROM conectada e permissões suficientes para acessá-la.</translation>
     </message>
@@ -11231,8 +11296,8 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="305"/>
-        <location filename="../mainwindow.cpp" line="1103"/>
-        <location filename="../mainwindow.cpp" line="1382"/>
+        <location filename="../mainwindow.cpp" line="1097"/>
+        <location filename="../mainwindow.cpp" line="1376"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
@@ -11242,111 +11307,111 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <translation>Pausado</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="690"/>
+        <location filename="../mainwindow.cpp" line="684"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="694"/>
+        <location filename="../mainwindow.cpp" line="688"/>
         <source>Select disc drive:</source>
         <translation>Escolha a unidade de disco:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="802"/>
+        <location filename="../mainwindow.cpp" line="796"/>
         <source>Resume (%1)</source>
         <translation>Continuar (%1)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="809"/>
-        <location filename="../mainwindow.cpp" line="934"/>
-        <location filename="../mainwindow.cpp" line="973"/>
+        <location filename="../mainwindow.cpp" line="803"/>
+        <location filename="../mainwindow.cpp" line="928"/>
+        <location filename="../mainwindow.cpp" line="967"/>
         <source>Game Save %1 (%2)</source>
         <translation>Jogo salvo %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="818"/>
+        <location filename="../mainwindow.cpp" line="812"/>
         <source>Edit Memory Cards...</source>
         <translation>Editar cartões de memória...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="874"/>
+        <location filename="../mainwindow.cpp" line="868"/>
         <source>Delete Save States...</source>
         <translation>Apagar estados salvos...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="880"/>
+        <location filename="../mainwindow.cpp" line="874"/>
         <source>Confirm Save State Deletion</source>
         <translation>Confirmar deleção de estado salvo</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="881"/>
+        <location filename="../mainwindow.cpp" line="875"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
         <translation>Tem certeza de que deseja apagar os estados salvos %1? Não será possivel reverter esta ação.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="918"/>
+        <location filename="../mainwindow.cpp" line="912"/>
         <source>Load From File...</source>
         <translation>Carregar do arquivo...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="920"/>
-        <location filename="../mainwindow.cpp" line="962"/>
+        <location filename="../mainwindow.cpp" line="914"/>
+        <location filename="../mainwindow.cpp" line="956"/>
         <source>Select Save State File</source>
         <translation>Escolher arquivo de salvamento rápido</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="920"/>
-        <location filename="../mainwindow.cpp" line="962"/>
+        <location filename="../mainwindow.cpp" line="914"/>
+        <location filename="../mainwindow.cpp" line="956"/>
         <source>Save States (*.sav)</source>
         <translation>Salvamento rápido (*.sav)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="926"/>
+        <location filename="../mainwindow.cpp" line="920"/>
         <source>Undo Load State</source>
         <translation>Desfazer estado carregado</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="934"/>
-        <location filename="../mainwindow.cpp" line="973"/>
+        <location filename="../mainwindow.cpp" line="928"/>
+        <location filename="../mainwindow.cpp" line="967"/>
         <source>Game Save %1 (Empty)</source>
         <translation>Jogo salvo %1 (Vazio)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="940"/>
-        <location filename="../mainwindow.cpp" line="979"/>
+        <location filename="../mainwindow.cpp" line="934"/>
+        <location filename="../mainwindow.cpp" line="973"/>
         <source>Global Save %1 (%2)</source>
         <translation>Compartimento global %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="940"/>
-        <location filename="../mainwindow.cpp" line="979"/>
+        <location filename="../mainwindow.cpp" line="934"/>
+        <location filename="../mainwindow.cpp" line="973"/>
         <source>Global Save %1 (Empty)</source>
         <translation>Compartimento global %1 (Vazio)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="957"/>
+        <location filename="../mainwindow.cpp" line="951"/>
         <source>Save To File...</source>
         <translation>Salvar para arquivo...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1022"/>
+        <location filename="../mainwindow.cpp" line="1016"/>
         <source>&amp;Enabled Cheats</source>
         <translation>&amp;Trapaças ativadas</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1024"/>
+        <location filename="../mainwindow.cpp" line="1018"/>
         <source>&amp;Apply Cheats</source>
         <translation>&amp;Aplicar trapaças</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1078"/>
+        <location filename="../mainwindow.cpp" line="1072"/>
         <source>Load Resume State</source>
         <translation>Carregar estado salvo</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1079"/>
+        <location filename="../mainwindow.cpp" line="1073"/>
         <source>A resume save state was found for this game, saved at:
 
 %1.
@@ -11359,88 +11424,88 @@ Do you want to load this state, or start from a fresh boot?</source>
 Você deseja que este arquivo seja carregado ou que seja reiniciado novamente?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1084"/>
+        <location filename="../mainwindow.cpp" line="1078"/>
         <source>Fresh Boot</source>
         <translation>Inicialização limpa</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1085"/>
+        <location filename="../mainwindow.cpp" line="1079"/>
         <source>Delete And Boot</source>
         <translation>Excluir e iniciar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1104"/>
+        <location filename="../mainwindow.cpp" line="1098"/>
         <source>Failed to delete save state file &apos;%1&apos;.</source>
         <translation>Falha ao apagar o arquivo de estado salvo &apos;%1&apos;.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1161"/>
+        <location filename="../mainwindow.cpp" line="1155"/>
         <source>Confirm Disc Change</source>
         <translation>Confirmar troca de disco</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1162"/>
+        <location filename="../mainwindow.cpp" line="1156"/>
         <source>Do you want to swap discs or boot the new image (via system reset)?</source>
         <translation>Deseja trocar discos ou inicializar outro (via reinicialização do sistema)?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1164"/>
+        <location filename="../mainwindow.cpp" line="1158"/>
         <source>Swap Disc</source>
         <translation>Trocar disco</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1165"/>
+        <location filename="../mainwindow.cpp" line="1159"/>
         <source>Reset</source>
         <translation>Redefinir</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1166"/>
+        <location filename="../mainwindow.cpp" line="1160"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1250"/>
-        <location filename="../mainwindow.cpp" line="2843"/>
+        <location filename="../mainwindow.cpp" line="1244"/>
+        <location filename="../mainwindow.cpp" line="2837"/>
         <source>Cheat Manager</source>
         <translation>Gerenciador de trapaças</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1266"/>
+        <location filename="../mainwindow.cpp" line="1260"/>
         <source>Stop Big Picture Mode</source>
         <translation>Parar modo tela cheia</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1267"/>
+        <location filename="../mainwindow.cpp" line="1261"/>
         <source>Exit Big Picture</source>
         <translation>Sair do modo tela cheia</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1382"/>
+        <location filename="../mainwindow.cpp" line="1376"/>
         <source>You must select a disc to change discs.</source>
         <translation>Você deve escolher um disco para confirmar a troca</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1490"/>
+        <location filename="../mainwindow.cpp" line="1484"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</source>
         <translation>Todos os tipos de imagem de capa (*.jpg *.jpeg *.png *.webp)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1504"/>
+        <location filename="../mainwindow.cpp" line="1498"/>
         <source>You must select a different file to the current cover image.</source>
         <translation>Você deve selecionar um arquivo diferente da imagem de capa atual.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1528"/>
+        <location filename="../mainwindow.cpp" line="1522"/>
         <source>Failed to remove &apos;%1&apos;</source>
         <translation>Falha ao remover &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1537"/>
+        <location filename="../mainwindow.cpp" line="1531"/>
         <source>Confirm Reset</source>
         <translation>Confirmar redefinição</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1538"/>
+        <location filename="../mainwindow.cpp" line="1532"/>
         <source>Are you sure you want to reset the play time for &apos;%1&apos;?
 
 This action cannot be undone.</source>
@@ -11449,108 +11514,108 @@ This action cannot be undone.</source>
 Esta ação não poderá ser desfeita.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1418"/>
+        <location filename="../mainwindow.cpp" line="1412"/>
         <source>Properties...</source>
         <translation>Propriedades...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1422"/>
+        <location filename="../mainwindow.cpp" line="1416"/>
         <source>Open Containing Directory...</source>
         <translation>Abrir diretório...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1427"/>
+        <location filename="../mainwindow.cpp" line="1421"/>
         <source>Set Cover Image...</source>
         <translation>Definir imagem de capa...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1437"/>
+        <location filename="../mainwindow.cpp" line="1431"/>
         <source>Default Boot</source>
         <translation>Inicialização padrão</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1440"/>
+        <location filename="../mainwindow.cpp" line="1434"/>
         <source>Fast Boot</source>
         <translation>Inicialização rápida</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1446"/>
+        <location filename="../mainwindow.cpp" line="1440"/>
         <source>Full Boot</source>
         <translation>Inicialização completa</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1454"/>
+        <location filename="../mainwindow.cpp" line="1448"/>
         <source>Boot and Debug</source>
         <translation>Iniciar jogo com depurador</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1474"/>
+        <location filename="../mainwindow.cpp" line="1468"/>
         <source>Exclude From List</source>
         <translation>Excluir da lista</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1477"/>
+        <location filename="../mainwindow.cpp" line="1471"/>
         <source>Reset Play Time</source>
         <translation>Redefinir tempo de jogo</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1481"/>
+        <location filename="../mainwindow.cpp" line="1475"/>
         <source>Add Search Directory...</source>
         <translation>Adicionar um novo diretório...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1490"/>
+        <location filename="../mainwindow.cpp" line="1484"/>
         <source>Select Cover Image</source>
         <translation>Escolher imagem de capa</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1508"/>
+        <location filename="../mainwindow.cpp" line="1502"/>
         <source>Cover Already Exists</source>
         <translation>Capa já existe</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1509"/>
+        <location filename="../mainwindow.cpp" line="1503"/>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <translation>A capa para este jogo já existe, deseja substituí-lá?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1504"/>
-        <location filename="../mainwindow.cpp" line="1518"/>
-        <location filename="../mainwindow.cpp" line="1523"/>
-        <location filename="../mainwindow.cpp" line="1528"/>
+        <location filename="../mainwindow.cpp" line="1498"/>
+        <location filename="../mainwindow.cpp" line="1512"/>
+        <location filename="../mainwindow.cpp" line="1517"/>
+        <location filename="../mainwindow.cpp" line="1522"/>
         <source>Copy Error</source>
         <translation>Erro ao copiar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1518"/>
+        <location filename="../mainwindow.cpp" line="1512"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation>Falha ao remover capa existente &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1523"/>
+        <location filename="../mainwindow.cpp" line="1517"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
         <translation>Falha ao copiar &apos;%1&apos; para &apos;%2&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1681"/>
+        <location filename="../mainwindow.cpp" line="1675"/>
         <source>%1x Scale</source>
         <translation>Expandir para %1x</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2097"/>
-        <location filename="../mainwindow.cpp" line="2104"/>
-        <location filename="../mainwindow.cpp" line="2113"/>
+        <location filename="../mainwindow.cpp" line="2091"/>
+        <location filename="../mainwindow.cpp" line="2098"/>
+        <location filename="../mainwindow.cpp" line="2107"/>
         <source>Destination File</source>
         <translation>Destino do arquivo</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2097"/>
-        <location filename="../mainwindow.cpp" line="2113"/>
+        <location filename="../mainwindow.cpp" line="2091"/>
+        <location filename="../mainwindow.cpp" line="2107"/>
         <source>Binary Files (*.bin)</source>
         <translation>Arquivos binários (*.bin)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2105"/>
+        <location filename="../mainwindow.cpp" line="2099"/>
         <source>Binary Files (*.bin);;PNG Images (*.png)</source>
         <translation>Arquivos (*.bin);;Imagens (*.png)</translation>
     </message>
@@ -11585,56 +11650,56 @@ Esta ação não poderá ser desfeita.</translation>
         <translation>Escuro</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2658"/>
+        <location filename="../mainwindow.cpp" line="2652"/>
         <source>Confirm Shutdown</source>
         <translation>Confirmar desligamento</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2659"/>
+        <location filename="../mainwindow.cpp" line="2653"/>
         <source>Are you sure you want to shut down the virtual machine?</source>
         <translation>Tem certeza de que deseja desligar a máquina virtual?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2661"/>
+        <location filename="../mainwindow.cpp" line="2655"/>
         <source>Save State For Resume</source>
         <translation>Salvar estado e continuar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2735"/>
-        <location filename="../mainwindow.cpp" line="2740"/>
-        <location filename="../mainwindow.cpp" line="2765"/>
-        <location filename="../mainwindow.cpp" line="2774"/>
+        <location filename="../mainwindow.cpp" line="2729"/>
+        <location filename="../mainwindow.cpp" line="2734"/>
+        <location filename="../mainwindow.cpp" line="2759"/>
+        <location filename="../mainwindow.cpp" line="2768"/>
         <source>Memory Card Not Found</source>
         <translation>Cartão de memória não encontrado</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2736"/>
+        <location filename="../mainwindow.cpp" line="2730"/>
         <source>Memory card &apos;%1&apos; does not exist. Do you want to create an empty memory card?</source>
         <translation>Cartão de memória &apos;%1&apos; não existe, você deseja criar um cartão de memória vazio?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2741"/>
+        <location filename="../mainwindow.cpp" line="2735"/>
         <source>Failed to create memory card &apos;%1&apos;</source>
         <translation>Falha ao criar cartão de memória &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2766"/>
-        <location filename="../mainwindow.cpp" line="2775"/>
+        <location filename="../mainwindow.cpp" line="2760"/>
+        <location filename="../mainwindow.cpp" line="2769"/>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
         <translation>Cartão de memória &apos;%1&apos; não encotrado. Experimente iniciar o jogo e salvá-lo para que ele seja criado.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2791"/>
+        <location filename="../mainwindow.cpp" line="2785"/>
         <source>RA: Logged in as %1 (%2, %3 softcore). %4 unread messages.</source>
         <translation>RA: conectado como %1 (%2, %3 normal). %4 mensagens não lidas.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2841"/>
+        <location filename="../mainwindow.cpp" line="2835"/>
         <source>Do not show again</source>
         <translation>Não mostrar de novo</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2845"/>
+        <location filename="../mainwindow.cpp" line="2839"/>
         <source>Using cheats can have unpredictable effects on games, causing crashes, graphical glitches, and corrupted saves. By using the cheat manager, you agree that it is an unsupported configuration, and we will not provide you with any assistance when games break.
 
 Cheats persist through save states even after being disabled, please remember to reset/reboot the game after turning off any codes.
@@ -11647,17 +11712,17 @@ As trapaças ficam guardadas no estado de salvamento rápido mesmo após serem d
 Tem certeza de que deseja continuar?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2920"/>
+        <location filename="../mainwindow.cpp" line="2914"/>
         <source>Updater Error</source>
         <translation>Erro na atualização</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2926"/>
+        <location filename="../mainwindow.cpp" line="2920"/>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please follow the instructions under &quot;Downloading and Running&quot; at the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;Desculpe, mas você está tentando atualizar uma versão não oficial do Duckstation. Para evitarmos imcompatibilidade, o atualizador automático só poderá ser usado nas versões oficiais! &lt;/p&gt;&lt;p&gt;Para obtê-las, siga as instruções de como e onde no link &quot;Baixando e rodando&quot; conforme abaixo:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2932"/>
+        <location filename="../mainwindow.cpp" line="2926"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation>Atualizações automáticas não são compatíveis com a plataforma atual.</translation>
     </message>
@@ -12278,17 +12343,17 @@ Tem certeza de que deseja continuar?</translation>
 <context>
     <name>OSDMessage</name>
     <message>
-        <location filename="../../core/system.cpp" line="1097"/>
+        <location filename="../../core/system.cpp" line="1100"/>
         <source>System reset.</source>
         <translation>Sistema reiniciado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1177"/>
+        <location filename="../../core/system.cpp" line="1183"/>
         <source>Loading state from &apos;%s&apos; failed. Resetting.</source>
         <translation>Carregamento de estado &apos;%s&apos;.falhou. reiniciando.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1218"/>
+        <location filename="../../core/system.cpp" line="1227"/>
         <source>Saving state to &apos;%s&apos; failed.</source>
         <translation>Falha ao salvar estado em &apos;%s&apos;.</translation>
     </message>
@@ -12318,27 +12383,27 @@ Tem certeza de que deseja continuar?</translation>
         <translation>As opções do recompilador foram alteradas, limpando todos os blocos.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4529"/>
+        <location filename="../../core/system.cpp" line="4530"/>
         <source>{} cheats are enabled. This may result in instability.</source>
         <translation>{} as trapaças estão ativados. Isso resultará em instabilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4592"/>
+        <location filename="../../core/system.cpp" line="4593"/>
         <source>Saved {} cheats to &apos;{}&apos;.</source>
         <translation>Trapaças {} salvas em &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4607"/>
+        <location filename="../../core/system.cpp" line="4608"/>
         <source>Deleted cheat list &apos;{}&apos;.</source>
         <translation>Lista de trapaças excluída &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4704"/>
+        <location filename="../../core/system.cpp" line="4705"/>
         <source>Widescreen hack is now enabled, and aspect ratio is set to {}.</source>
         <translation>Ajuste de tela panorâmica ligado, a proporção da imagem está definida para {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4712"/>
+        <location filename="../../core/system.cpp" line="4713"/>
         <source>Widescreen hack is now disabled, and aspect ratio is set to {}.</source>
         <translation>Ajuste de tela panorâmica desligado, a proporção da imagem foi definida para {}.</translation>
     </message>
@@ -12378,7 +12443,7 @@ Tem certeza de que deseja continuar?</translation>
         <translation>Texturas personalizadas recarregadas.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4228"/>
+        <location filename="../../core/system.cpp" line="4229"/>
         <source>Failed to save undo load state.</source>
         <translation>Falha ao desfazer carregar estado.</translation>
     </message>
@@ -12442,37 +12507,37 @@ Tem certeza de que deseja continuar?</translation>
         <translation>Áudio do CD religado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4289"/>
+        <location filename="../../core/system.cpp" line="4290"/>
         <source>Started dumping audio to &apos;%s&apos;.</source>
         <translation>Iniciado despejo de áudio em &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4294"/>
+        <location filename="../../core/system.cpp" line="4295"/>
         <source>Failed to start dumping audio to &apos;%s&apos;.</source>
         <translation>Falha ao iniciar despejo de áudio em &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4304"/>
+        <location filename="../../core/system.cpp" line="4305"/>
         <source>Stopped dumping audio.</source>
         <translation>Despejo de áudio terminado.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4334"/>
+        <location filename="../../core/system.cpp" line="4335"/>
         <source>Screenshot file &apos;%s&apos; already exists.</source>
         <translation>Captura de tela &apos;%s&apos; já existe.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4343"/>
+        <location filename="../../core/system.cpp" line="4344"/>
         <source>Failed to save screenshot to &apos;%s&apos;</source>
         <translation>Falha ao salvar captura em &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4347"/>
+        <location filename="../../core/system.cpp" line="4348"/>
         <source>Screenshot saved to &apos;%s&apos;.</source>
         <translation>Captura de tela salva em &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4522"/>
+        <location filename="../../core/system.cpp" line="4523"/>
         <source>Failed to load cheats from &apos;%s&apos;.</source>
         <translation>Falha ao carregar &apos;%s&apos; trapaças.</translation>
     </message>
@@ -12497,17 +12562,17 @@ Tem certeza de que deseja continuar?</translation>
         <translation>Portas de cartão de memória trocadas. nenhuma das portas possui cartão de memória.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4649"/>
+        <location filename="../../core/system.cpp" line="4650"/>
         <source>Cheat &apos;%s&apos; enabled.</source>
         <translation>Trapaça &apos;%s&apos; ativada.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4653"/>
+        <location filename="../../core/system.cpp" line="4654"/>
         <source>Cheat &apos;%s&apos; disabled.</source>
         <translation>Trapaça &apos;%s&apos; desativada.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4576"/>
+        <location filename="../../core/system.cpp" line="4577"/>
         <source>Failed to save cheat list to &apos;%s&apos;</source>
         <translation>Falha ao salvar lista de trapaças para &apos;%s&apos;</translation>
     </message>
@@ -12530,12 +12595,12 @@ Usando a seguinte imagem &apos;{}&apos;, isso pode resultar em instabilidade.</t
         <translation>Nenhuma trapaça foi carregada.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4669"/>
+        <location filename="../../core/system.cpp" line="4670"/>
         <source>Applied cheat &apos;%s&apos;.</source>
         <translation>Trapaça aplicada &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4673"/>
+        <location filename="../../core/system.cpp" line="4674"/>
         <source>Cheat &apos;%s&apos; is already enabled.</source>
         <translation>Trapaça &apos;%s&apos; já está ativada.</translation>
     </message>
@@ -12695,27 +12760,27 @@ Configure um controle compatível da lista acima.</translation>
         <translation>Cartão de memória %u presente no sistema mas não no estado salvo, removendo cartão.</translation>
     </message>
     <message>
-        <location filename="../../core/cdrom.cpp" line="809"/>
+        <location filename="../../core/cdrom.cpp" line="816"/>
         <source>CD image preloading not available for multi-disc image &apos;%s&apos;</source>
         <translation>O pré-carregamento da imagem do CD não está disponível para jogos de múltiplos discos &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../core/cdrom.cpp" line="817"/>
+        <location filename="../../core/cdrom.cpp" line="824"/>
         <source>Precaching CD image failed, it may be unreliable.</source>
         <translation>Pré-alocação de disco falhou, pode ser que a imagem esteja danificada.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1169"/>
+        <location filename="../../core/system.cpp" line="1175"/>
         <source>Loading state from &apos;{}&apos;...</source>
         <translation>Estado carregado de &apos;{}&apos;...</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1217"/>
+        <location filename="../../core/system.cpp" line="1226"/>
         <source>Save State</source>
         <translation>Salvar estado</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1226"/>
+        <location filename="../../core/system.cpp" line="1235"/>
         <source>State saved to &apos;{}&apos;.</source>
         <translation>Estado salvo em &apos;{}&apos;.</translation>
     </message>
@@ -12745,7 +12810,7 @@ Configure um controle compatível da lista acima.</translation>
         <translation>Disco inserido &apos;{}&apos; ({}).</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4727"/>
+        <location filename="../../core/system.cpp" line="4728"/>
         <source>Switching to {} renderer...</source>
         <translation>Alterando para renderizador {}...</translation>
     </message>
@@ -13002,9 +13067,9 @@ The URL was: %1</source>
         <location filename="../qthost.cpp" line="290"/>
         <location filename="../qthost.cpp" line="305"/>
         <location filename="../qthost.cpp" line="318"/>
-        <location filename="../qthost.cpp" line="2136"/>
-        <location filename="../qthost.cpp" line="2162"/>
-        <location filename="../qthost.cpp" line="2178"/>
+        <location filename="../qthost.cpp" line="2168"/>
+        <location filename="../qthost.cpp" line="2194"/>
+        <location filename="../qthost.cpp" line="2210"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
@@ -13059,22 +13124,22 @@ The URL was: %1</source>
         <translation>Falha ao gravar em &apos;%1&apos;.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2137"/>
+        <location filename="../qthost.cpp" line="2169"/>
         <source>File &apos;%1&apos; does not exist.</source>
         <translation>O arquivo &apos;%1&apos; não existe.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2163"/>
+        <location filename="../qthost.cpp" line="2195"/>
         <source>The specified save state does not exist.</source>
         <translation>O dado de salvamento não existe.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2179"/>
+        <location filename="../qthost.cpp" line="2211"/>
         <source>Cannot use no-gui mode, because no boot filename was specified.</source>
         <translation>Não é possível usar o modo no-gui, porque nenhum parâmetro de inicialização foi configurado.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2180"/>
+        <location filename="../qthost.cpp" line="2212"/>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
         <translation>Não é possível usar este modo porque nenhum parâmetro de inicialização foi configurado.</translation>
     </message>
@@ -13729,13 +13794,13 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <translation>Falha ao carregar %s BIOS.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1488"/>
+        <location filename="../../core/system.cpp" line="1497"/>
         <location filename="../../core/system.cpp" line="3422"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1489"/>
+        <location filename="../../core/system.cpp" line="1498"/>
         <source>Failed to load save state file &apos;{}&apos; for booting.</source>
         <translation>Falha ao carregar o dado salvo no compartimento &apos;{}&apos;.</translation>
     </message>
@@ -13803,42 +13868,42 @@ Seu arquivo de jogo está incompleto, você deve adicionar o arquivo SBI para ex
 O nome do arquivo SBI deve corresponder ao nome da imagem do disco.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3815"/>
+        <location filename="../../core/system.cpp" line="3816"/>
         <source>CPU clock speed is set to {}% ({} / {}). This may crash games.</source>
         <translation>Velocidade do CPU configurada para {}% ({} / {}. pode causar falhas nos jogos.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3823"/>
+        <location filename="../../core/system.cpp" line="3824"/>
         <source>CD-ROM read speedup set to {}x (effective speed {}x). This may crash games.</source>
         <translation>Velocidade de leitura do CD-ROM definida como {}x (velocidade efetiva {}x). Jogos podem travar.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3829"/>
+        <location filename="../../core/system.cpp" line="3830"/>
         <source>CD-ROM seek speedup set to {}. This may crash games.</source>
         <translation>Velocidade de leitura do CD-ROM definida para {}. Jogos podem travar.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3831"/>
+        <location filename="../../core/system.cpp" line="3832"/>
         <source>Instant</source>
         <translation>Instantâneo</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3836"/>
+        <location filename="../../core/system.cpp" line="3837"/>
         <source>Force NTSC timings is enabled. Games may run at incorrect speeds.</source>
         <translation>A opção forçar temporizador no modo NTSC está ativada. Os jogos serão executados em uma velocidade incorreta.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3841"/>
+        <location filename="../../core/system.cpp" line="3842"/>
         <source>Multisample anti-aliasing is enabled, some games may not render correctly.</source>
         <translation>O anti-serrilhamento múltiplo está ativado, alguns jogos podem não ser renderizados corretamente.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3844"/>
+        <location filename="../../core/system.cpp" line="3845"/>
         <source>8MB RAM is enabled, this may be incompatible with some games.</source>
         <translation>Modo de 8 MB de RAM está ativado, o que pode ser incompatível com alguns jogos.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4431"/>
+        <location filename="../../core/system.cpp" line="4432"/>
         <source>Invalid version {} ({} version {})</source>
         <translation>Versão inválida {} ({} versão {})</translation>
     </message>
