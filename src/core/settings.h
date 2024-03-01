@@ -65,34 +65,34 @@ struct Settings
   CPUExecutionMode cpu_execution_mode = DEFAULT_CPU_EXECUTION_MODE;
   u32 cpu_overclock_numerator = 1;
   u32 cpu_overclock_denominator = 1;
-  bool cpu_overclock_enable = false;
-  bool cpu_overclock_active = false;
-  bool cpu_recompiler_memory_exceptions = false;
-  bool cpu_recompiler_block_linking = true;
-  bool cpu_recompiler_icache = false;
+  bool cpu_overclock_enable : 1 = false;
+  bool cpu_overclock_active : 1 = false;
+  bool cpu_recompiler_memory_exceptions : 1 = false;
+  bool cpu_recompiler_block_linking : 1 = true;
+  bool cpu_recompiler_icache : 1 = false;
   CPUFastmemMode cpu_fastmem_mode = DEFAULT_CPU_FASTMEM_MODE;
 
   float emulation_speed = 1.0f;
   float fast_forward_speed = 0.0f;
   float turbo_speed = 0.0f;
-  bool sync_to_host_refresh_rate = false;
-  bool increase_timer_resolution = true;
-  bool inhibit_screensaver = true;
-  bool start_paused = false;
-  bool start_fullscreen = false;
-  bool pause_on_focus_loss = false;
-  bool save_state_on_exit = true;
-  bool create_save_state_backups = DEFAULT_SAVE_STATE_BACKUPS;
-  bool compress_save_states = DEFAULT_SAVE_STATE_COMPRESSION;
-  bool confim_power_off = true;
-  bool load_devices_from_save_states = false;
-  bool apply_compatibility_settings = true;
-  bool apply_game_settings = true;
-  bool auto_load_cheats = true;
-  bool disable_all_enhancements = false;
-  bool enable_discord_presence = false;
+  bool sync_to_host_refresh_rate : 1 = false;
+  bool increase_timer_resolution : 1 = true;
+  bool inhibit_screensaver : 1 = true;
+  bool start_paused : 1 = false;
+  bool start_fullscreen : 1 = false;
+  bool pause_on_focus_loss : 1 = false;
+  bool save_state_on_exit : 1 = true;
+  bool create_save_state_backups : 1 = DEFAULT_SAVE_STATE_BACKUPS;
+  bool compress_save_states : 1 = DEFAULT_SAVE_STATE_COMPRESSION;
+  bool confim_power_off : 1 = true;
+  bool load_devices_from_save_states : 1 = false;
+  bool apply_compatibility_settings : 1 = true;
+  bool apply_game_settings : 1 = true;
+  bool auto_load_cheats : 1 = true;
+  bool disable_all_enhancements : 1 = false;
+  bool enable_discord_presence : 1 = false;
 
-  bool rewind_enable = false;
+  bool rewind_enable : 1 = false;
   float rewind_save_frequency = 10.0f;
   u32 rewind_save_slots = 10;
   u32 runahead_frames = 0;
@@ -101,34 +101,34 @@ struct Settings
   std::string gpu_adapter;
   u32 gpu_resolution_scale = 1;
   u32 gpu_multisamples = 1;
-  bool gpu_use_thread = true;
-  bool gpu_use_software_renderer_for_readbacks = false;
-  bool gpu_threaded_presentation = true;
-  bool gpu_use_debug_device = false;
-  bool gpu_disable_shader_cache = false;
-  bool gpu_disable_dual_source_blend = false;
-  bool gpu_disable_framebuffer_fetch = false;
-  bool gpu_disable_texture_buffers = false;
-  bool gpu_disable_texture_copy_to_self = false;
-  bool gpu_per_sample_shading = false;
-  bool gpu_true_color = true;
-  bool gpu_debanding = false;
-  bool gpu_scaled_dithering = true;
+  bool gpu_use_thread : 1 = true;
+  bool gpu_use_software_renderer_for_readbacks : 1 = false;
+  bool gpu_threaded_presentation : 1 = true;
+  bool gpu_use_debug_device : 1 = false;
+  bool gpu_disable_shader_cache : 1 = false;
+  bool gpu_disable_dual_source_blend : 1 = false;
+  bool gpu_disable_framebuffer_fetch : 1 = false;
+  bool gpu_disable_texture_buffers : 1 = false;
+  bool gpu_disable_texture_copy_to_self : 1 = false;
+  bool gpu_per_sample_shading : 1 = false;
+  bool gpu_true_color : 1 = true;
+  bool gpu_debanding : 1 = false;
+  bool gpu_scaled_dithering : 1 = true;
   GPUTextureFilter gpu_texture_filter = DEFAULT_GPU_TEXTURE_FILTER;
   GPUDownsampleMode gpu_downsample_mode = DEFAULT_GPU_DOWNSAMPLE_MODE;
   u8 gpu_downsample_scale = 1;
   GPUWireframeMode gpu_wireframe_mode = DEFAULT_GPU_WIREFRAME_MODE;
-  bool gpu_disable_interlacing = true;
-  bool gpu_force_ntsc_timings = false;
-  bool gpu_widescreen_hack = false;
-  bool gpu_pgxp_enable = false;
-  bool gpu_pgxp_culling = true;
-  bool gpu_pgxp_texture_correction = true;
-  bool gpu_pgxp_color_correction = false;
-  bool gpu_pgxp_vertex_cache = false;
-  bool gpu_pgxp_cpu = false;
-  bool gpu_pgxp_preserve_proj_fp = false;
-  bool gpu_pgxp_depth_buffer = false;
+  bool gpu_disable_interlacing : 1 = true;
+  bool gpu_force_ntsc_timings : 1 = false;
+  bool gpu_widescreen_hack : 1 = false;
+  bool gpu_pgxp_enable : 1 = false;
+  bool gpu_pgxp_culling : 1 = true;
+  bool gpu_pgxp_texture_correction : 1 = true;
+  bool gpu_pgxp_color_correction : 1 = false;
+  bool gpu_pgxp_vertex_cache : 1 = false;
+  bool gpu_pgxp_cpu : 1 = false;
+  bool gpu_pgxp_preserve_proj_fp : 1 = false;
+  bool gpu_pgxp_depth_buffer : 1 = false;
   DisplayCropMode display_crop_mode = DEFAULT_DISPLAY_CROP_MODE;
   DisplayAspectRatio display_aspect_ratio = DEFAULT_DISPLAY_ASPECT_RATIO;
   DisplayAlignment display_alignment = DEFAULT_DISPLAY_ALIGNMENT;
@@ -140,22 +140,22 @@ struct Settings
   s16 display_active_end_offset = 0;
   s8 display_line_start_offset = 0;
   s8 display_line_end_offset = 0;
-  bool display_force_4_3_for_24bit = false;
-  bool gpu_24bit_chroma_smoothing = false;
-  bool display_show_osd_messages = true;
-  bool display_show_fps = false;
-  bool display_show_speed = false;
-  bool display_show_gpu_stats = false;
-  bool display_show_resolution = false;
-  bool display_show_cpu_usage = false;
-  bool display_show_gpu_usage = false;
-  bool display_show_frame_times = false;
-  bool display_show_status_indicators = true;
-  bool display_show_inputs = false;
-  bool display_show_enhancements = false;
-  bool display_all_frames = false;
-  bool display_internal_resolution_screenshots = false;
-  bool display_stretch_vertically = false;
+  bool display_force_4_3_for_24bit : 1 = false;
+  bool gpu_24bit_chroma_smoothing : 1 = false;
+  bool display_show_osd_messages : 1 = true;
+  bool display_show_fps : 1 = false;
+  bool display_show_speed : 1 = false;
+  bool display_show_gpu_stats : 1 = false;
+  bool display_show_resolution : 1 = false;
+  bool display_show_cpu_usage : 1 = false;
+  bool display_show_gpu_usage : 1 = false;
+  bool display_show_frame_times : 1 = false;
+  bool display_show_status_indicators : 1 = true;
+  bool display_show_inputs : 1 = false;
+  bool display_show_enhancements : 1 = false;
+  bool display_all_frames : 1 = false;
+  bool display_internal_resolution_screenshots : 1 = false;
+  bool display_stretch_vertically : 1 = false;
   bool video_sync_enabled = DEFAULT_VSYNC_VALUE;
   float display_osd_scale = 100.0f;
   float display_max_fps = DEFAULT_DISPLAY_MAX_FPS;
@@ -164,10 +164,10 @@ struct Settings
 
   u8 cdrom_readahead_sectors = DEFAULT_CDROM_READAHEAD_SECTORS;
   CDROMMechaconVersion cdrom_mechacon_version = DEFAULT_CDROM_MECHACON_VERSION;
-  bool cdrom_region_check = false;
-  bool cdrom_load_image_to_ram = false;
-  bool cdrom_load_image_patches = false;
-  bool cdrom_mute_cd_audio = false;
+  bool cdrom_region_check : 1 = false;
+  bool cdrom_load_image_to_ram : 1 = false;
+  bool cdrom_load_image_patches : 1 = false;
+  bool cdrom_mute_cd_audio : 1 = false;
   u32 cdrom_read_speedup = 1;
   u32 cdrom_seek_speedup = 1;
 
@@ -179,11 +179,11 @@ struct Settings
   u32 audio_buffer_ms = DEFAULT_AUDIO_BUFFER_MS;
   u32 audio_output_volume = 100;
   u32 audio_fast_forward_volume = 100;
-  bool audio_output_muted = false;
-  bool audio_dump_on_boot = false;
+  bool audio_output_muted : 1 = false;
+  bool audio_dump_on_boot : 1 = false;
 
-  bool use_old_mdec_routines = false;
-  bool pcdrv_enable = false;
+  bool use_old_mdec_routines : 1 = false;
+  bool pcdrv_enable : 1 = false;
 
   // timing hacks section
   TickCount dma_max_slice_ticks = DEFAULT_DMA_MAX_SLICE_TICKS;
@@ -192,27 +192,27 @@ struct Settings
   TickCount gpu_max_run_ahead = DEFAULT_GPU_MAX_RUN_AHEAD;
 
   // achievements
-  bool achievements_enabled = false;
-  bool achievements_hardcore_mode = false;
-  bool achievements_notifications = true;
-  bool achievements_leaderboard_notifications = true;
-  bool achievements_sound_effects = true;
-  bool achievements_overlays = true;
-  bool achievements_encore_mode = false;
-  bool achievements_spectator_mode = false;
-  bool achievements_unofficial_test_mode = false;
-  bool achievements_use_first_disc_from_playlist = true;
-  bool achievements_use_raintegration = false;
+  bool achievements_enabled : 1 = false;
+  bool achievements_hardcore_mode : 1 = false;
+  bool achievements_notifications : 1 = true;
+  bool achievements_leaderboard_notifications : 1 = true;
+  bool achievements_sound_effects : 1 = true;
+  bool achievements_overlays : 1 = true;
+  bool achievements_encore_mode : 1 = false;
+  bool achievements_spectator_mode : 1 = false;
+  bool achievements_unofficial_test_mode : 1 = false;
+  bool achievements_use_first_disc_from_playlist : 1 = true;
+  bool achievements_use_raintegration : 1 = false;
   s32 achievements_notification_duration = DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME;
   s32 achievements_leaderboard_duration = DEFAULT_LEADERBOARD_NOTIFICATION_TIME;
 
   struct DebugSettings
   {
-    bool show_vram = false;
-    bool dump_cpu_to_vram_copies = false;
-    bool dump_vram_to_cpu_copies = false;
+    bool show_vram : 1 = false;
+    bool dump_cpu_to_vram_copies : 1 = false;
+    bool dump_vram_to_cpu_copies : 1 = false;
 
-    bool enable_gdb_server = false;
+    bool enable_gdb_server : 1 = false;
     u16 gdb_server_port = 1234;
 
     // Mutable because the imgui window can close itself.
@@ -227,11 +227,11 @@ struct Settings
   // texture replacements
   struct TextureReplacementSettings
   {
-    bool enable_vram_write_replacements = false;
-    bool preload_textures = false;
+    bool enable_vram_write_replacements : 1 = false;
+    bool preload_textures : 1 = false;
 
-    bool dump_vram_writes = false;
-    bool dump_vram_write_force_alpha_channel = true;
+    bool dump_vram_writes : 1 = false;
+    bool dump_vram_write_force_alpha_channel : 1 = true;
     u32 dump_vram_write_width_threshold = 128;
     u32 dump_vram_write_height_threshold = 128;
 
@@ -243,9 +243,9 @@ struct Settings
     }
   } texture_replacements;
 
-  bool bios_tty_logging = false;
-  bool bios_patch_fast_boot = DEFAULT_FAST_BOOT_VALUE;
-  bool enable_8mb_ram = false;
+  bool bios_tty_logging : 1 = false;
+  bool bios_patch_fast_boot : 1 = DEFAULT_FAST_BOOT_VALUE;
+  bool enable_8mb_ram : 1 = false;
 
   std::array<ControllerType, NUM_CONTROLLER_AND_CARD_PORTS> controller_types{};
   bool controller_disable_analog_mode_forcing = false;
@@ -261,11 +261,11 @@ struct Settings
 
   LOGLEVEL log_level = DEFAULT_LOG_LEVEL;
   std::string log_filter;
-  bool log_timestamps = true;
-  bool log_to_console = DEFAULT_LOG_TO_CONSOLE;
-  bool log_to_debug = false;
-  bool log_to_window = false;
-  bool log_to_file = false;
+  bool log_timestamps : 1 = true;
+  bool log_to_console : 1 = DEFAULT_LOG_TO_CONSOLE;
+  bool log_to_debug : 1 = false;
+  bool log_to_window : 1 = false;
+  bool log_to_file : 1 = false;
 
   ALWAYS_INLINE bool IsUsingSoftwareRenderer() const { return (gpu_renderer == GPURenderer::Software); }
   ALWAYS_INLINE bool IsRunaheadEnabled() const { return (runahead_frames > 0); }
