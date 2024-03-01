@@ -99,8 +99,8 @@ struct Settings
 
   GPURenderer gpu_renderer = DEFAULT_GPU_RENDERER;
   std::string gpu_adapter;
-  u32 gpu_resolution_scale = 1;
-  u32 gpu_multisamples = 1;
+  u8 gpu_resolution_scale = 1;
+  u8 gpu_multisamples = 1;
   bool gpu_use_thread : 1 = true;
   bool gpu_use_software_renderer_for_readbacks : 1 = false;
   bool gpu_threaded_presentation : 1 = true;

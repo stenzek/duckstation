@@ -204,8 +204,8 @@ bool GPU_HW::Initialize()
 
   const GPUDevice::Features features = g_gpu_device->GetFeatures();
 
-  m_resolution_scale = CalculateResolutionScale();
-  m_multisamples = std::min(g_settings.gpu_multisamples, g_gpu_device->GetMaxMultisamples());
+  m_resolution_scale = Truncate8(CalculateResolutionScale());
+  m_multisamples = Truncate8(std::min<u32>(g_settings.gpu_multisamples, g_gpu_device->GetMaxMultisamples()));
   m_supports_dual_source_blend = features.dual_source_blend;
   m_supports_framebuffer_fetch = features.framebuffer_fetch;
   m_per_sample_shading = g_settings.gpu_per_sample_shading && features.per_sample_shading;
@@ -328,8 +328,8 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
 
   const GPUDevice::Features features = g_gpu_device->GetFeatures();
 
-  const u32 resolution_scale = CalculateResolutionScale();
-  const u32 multisamples = std::min(g_settings.gpu_multisamples, g_gpu_device->GetMaxMultisamples());
+  const u8 resolution_scale = Truncate8(CalculateResolutionScale());
+  const u8 multisamples = Truncate8(std::min<u32>(g_settings.gpu_multisamples, g_gpu_device->GetMaxMultisamples()));
   const bool per_sample_shading = g_settings.gpu_per_sample_shading && features.noperspective_interpolation;
   const GPUDownsampleMode downsample_mode = GetDownsampleMode(resolution_scale);
   const GPUWireframeMode wireframe_mode =

@@ -177,8 +177,8 @@ void Settings::Load(SettingsInterface& si)
   gpu_renderer = ParseRendererName(si.GetStringValue("GPU", "Renderer", GetRendererName(DEFAULT_GPU_RENDERER)).c_str())
                    .value_or(DEFAULT_GPU_RENDERER);
   gpu_adapter = si.GetStringValue("GPU", "Adapter", "");
-  gpu_resolution_scale = static_cast<u32>(si.GetIntValue("GPU", "ResolutionScale", 1));
-  gpu_multisamples = static_cast<u32>(si.GetIntValue("GPU", "Multisamples", 1));
+  gpu_resolution_scale = static_cast<u8>(si.GetIntValue("GPU", "ResolutionScale", 1));
+  gpu_multisamples = static_cast<u8>(si.GetIntValue("GPU", "Multisamples", 1));
   gpu_use_debug_device = si.GetBoolValue("GPU", "UseDebugDevice", false);
   gpu_disable_shader_cache = si.GetBoolValue("GPU", "DisableShaderCache", false);
   gpu_disable_dual_source_blend = si.GetBoolValue("GPU", "DisableDualSourceBlend", false);

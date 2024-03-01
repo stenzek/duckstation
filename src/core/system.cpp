@@ -3880,7 +3880,7 @@ void System::LogUnsafeSettingsToConsole(const std::string& messages)
 
 void System::CalculateRewindMemoryUsage(u32 num_saves, u32 resolution_scale, u64* ram_usage, u64* vram_usage)
 {
-  const u64 real_resolution_scale = static_cast<u64>(std::max(g_settings.gpu_resolution_scale, 1u));
+  const u64 real_resolution_scale = std::max<u64>(g_settings.gpu_resolution_scale, 1u);
   *ram_usage = MAX_SAVE_STATE_SIZE * static_cast<u64>(num_saves);
   *vram_usage = ((VRAM_WIDTH * real_resolution_scale) * (VRAM_HEIGHT * real_resolution_scale) * 4) *
                 static_cast<u64>(g_settings.gpu_multisamples) * static_cast<u64>(num_saves);

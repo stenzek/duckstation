@@ -50,7 +50,7 @@ static void HotkeyModifyResolutionScale(s32 increment)
     return;
 
   const Settings old_settings = g_settings;
-  g_settings.gpu_resolution_scale = new_resolution_scale;
+  g_settings.gpu_resolution_scale = Truncate8(new_resolution_scale);
 
   if (System::IsValid())
   {

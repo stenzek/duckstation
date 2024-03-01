@@ -232,29 +232,24 @@ private:
   s32 m_current_depth = 0;
   float m_last_depth_z = 1.0f;
 
-  u32 m_resolution_scale = 1;
-  u32 m_multisamples = 1;
+  u8 m_resolution_scale = 1;
+  u8 m_multisamples = 1;
 
-  union
-  {
-    BitField<u8, bool, 0, 1> m_supports_dual_source_blend;
-    BitField<u8, bool, 1, 1> m_supports_framebuffer_fetch;
-    BitField<u8, bool, 2, 1> m_per_sample_shading;
-    BitField<u8, bool, 3, 1> m_scaled_dithering;
-    BitField<u8, bool, 4, 1> m_chroma_smoothing;
-    BitField<u8, bool, 5, 1> m_disable_color_perspective;
-
-    u8 bits = 0;
-  };
+  bool m_supports_dual_source_blend : 1 = false;
+  bool m_supports_framebuffer_fetch : 1 = false;
+  bool m_per_sample_shading : 1 = false;
+  bool m_scaled_dithering : 1 = false;
+  bool m_chroma_smoothing : 1 = false;
+  bool m_disable_color_perspective : 1 = false;
 
   GPUTextureFilter m_texture_filtering = GPUTextureFilter::Nearest;
   GPUDownsampleMode m_downsample_mode = GPUDownsampleMode::Disabled;
   GPUWireframeMode m_wireframe_mode = GPUWireframeMode::Disabled;
-  bool m_true_color = true;
-  bool m_debanding = false;
-  bool m_clamp_uvs = false;
-  bool m_compute_uv_range = false;
-  bool m_pgxp_depth_buffer = false;
+  bool m_true_color : 1 = true;
+  bool m_debanding : 1 = false;
+  bool m_clamp_uvs : 1 = false;
+  bool m_compute_uv_range : 1 = false;
+  bool m_pgxp_depth_buffer : 1 = false;
   u8 m_texpage_dirty = 0;
 
   BatchConfig m_batch;
