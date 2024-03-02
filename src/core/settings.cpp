@@ -196,6 +196,10 @@ void Settings::Load(SettingsInterface& si)
     ParseTextureFilterName(
       si.GetStringValue("GPU", "TextureFilter", GetTextureFilterName(DEFAULT_GPU_TEXTURE_FILTER)).c_str())
       .value_or(DEFAULT_GPU_TEXTURE_FILTER);
+  gpu_line_detect_mode =
+    ParseLineDetectModeName(
+      si.GetStringValue("GPU", "LineDetectMode", GetLineDetectModeName(DEFAULT_GPU_LINE_DETECT_MODE)).c_str())
+      .value_or(DEFAULT_GPU_LINE_DETECT_MODE);
   gpu_downsample_mode =
     ParseDownsampleModeName(
       si.GetStringValue("GPU", "DownsampleMode", GetDownsampleModeName(DEFAULT_GPU_DOWNSAMPLE_MODE)).c_str())
@@ -461,6 +465,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("GPU", "Debanding", gpu_debanding);
   si.SetBoolValue("GPU", "ScaledDithering", gpu_scaled_dithering);
   si.SetStringValue("GPU", "TextureFilter", GetTextureFilterName(gpu_texture_filter));
+  si.SetStringValue("GPU", "LineDetectMode", GetLineDetectModeName(gpu_line_detect_mode));
   si.SetStringValue("GPU", "DownsampleMode", GetDownsampleModeName(gpu_downsample_mode));
   si.SetUIntValue("GPU", "DownsampleScale", gpu_downsample_scale);
   si.SetStringValue("GPU", "WireframeMode", GetGPUWireframeModeName(gpu_wireframe_mode));
@@ -621,6 +626,7 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.gpu_debanding = false;
     g_settings.gpu_scaled_dithering = false;
     g_settings.gpu_texture_filter = GPUTextureFilter::Nearest;
+    g_settings.gpu_line_detect_mode = GPULineDetectMode::Disabled;
     g_settings.gpu_disable_interlacing = false;
     g_settings.gpu_force_ntsc_timings = false;
     g_settings.gpu_widescreen_hack = false;
@@ -1005,8 +1011,9 @@ RenderAPI Settings::GetRenderAPIForRenderer(GPURenderer renderer)
   }
 }
 
-static constexpr const std::array s_texture_filter_names = {"Nearest",       "Bilinear", "BilinearBinAlpha", "JINC2",
-                                                            "JINC2BinAlpha", "xBR",      "xBRBinAlpha"};
+static constexpr const std::array s_texture_filter_names = {
+  "Nearest", "Bilinear", "BilinearBinAlpha", "JINC2", "JINC2BinAlpha", "xBR", "xBRBinAlpha",
+};
 static constexpr const std::array s_texture_filter_display_names = {
   TRANSLATE_NOOP("GPUTextureFilter", "Nearest-Neighbor"),
   TRANSLATE_NOOP("GPUTextureFilter", "Bilinear"),
@@ -1014,7 +1021,8 @@ static constexpr const std::array s_texture_filter_display_names = {
   TRANSLATE_NOOP("GPUTextureFilter", "JINC2 (Slow)"),
   TRANSLATE_NOOP("GPUTextureFilter", "JINC2 (Slow, No Edge Blending)"),
   TRANSLATE_NOOP("GPUTextureFilter", "xBR (Very Slow)"),
-  TRANSLATE_NOOP("GPUTextureFilter", "xBR (Very Slow, No Edge Blending)")};
+  TRANSLATE_NOOP("GPUTextureFilter", "xBR (Very Slow, No Edge Blending)"),
+};
 
 std::optional<GPUTextureFilter> Settings::ParseTextureFilterName(const char* str)
 {
@@ -1032,12 +1040,49 @@ std::optional<GPUTextureFilter> Settings::ParseTextureFilterName(const char* str
 
 const char* Settings::GetTextureFilterName(GPUTextureFilter filter)
 {
-  return s_texture_filter_names[static_cast<int>(filter)];
+  return s_texture_filter_names[static_cast<size_t>(filter)];
 }
 
 const char* Settings::GetTextureFilterDisplayName(GPUTextureFilter filter)
 {
   return Host::TranslateToCString("GPUTextureFilter", s_texture_filter_display_names[static_cast<int>(filter)]);
+}
+
+static constexpr const std::array s_line_detect_mode_names = {
+  "Disabled",
+  "Quads",
+  "BasicTriangles",
+  "AggressiveTriangles",
+};
+static constexpr const std::array s_line_detect_mode_detect_names = {
+  TRANSLATE_NOOP("GPULineDetectMode", "Disabled"),
+  TRANSLATE_NOOP("GPULineDetectMode", "Quads"),
+  TRANSLATE_NOOP("GPULineDetectMode", "Triangles (Basic)"),
+  TRANSLATE_NOOP("GPULineDetectMode", "Triangles (Aggressive)"),
+};
+
+std::optional<GPULineDetectMode> Settings::ParseLineDetectModeName(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_line_detect_mode_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<GPULineDetectMode>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetLineDetectModeName(GPULineDetectMode mode)
+{
+  return s_line_detect_mode_names[static_cast<size_t>(mode)];
+}
+
+const char* Settings::GetLineDetectModeDisplayName(GPULineDetectMode mode)
+{
+  return Host::TranslateToCString("GPULineDetectMode", s_line_detect_mode_detect_names[static_cast<size_t>(mode)]);
 }
 
 static constexpr const std::array s_downsample_mode_names = {"Disabled", "Box", "Adaptive"};

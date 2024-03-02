@@ -105,6 +105,15 @@ enum class GPUWireframeMode : u8
   Count,
 };
 
+enum class GPULineDetectMode : u8
+{
+  Disabled,
+  Quads,
+  BasicTriangles,
+  AggressiveTriangles,
+  Count
+};
+
 enum class DisplayCropMode : u8
 {
   None,

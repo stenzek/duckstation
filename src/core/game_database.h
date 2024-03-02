@@ -80,6 +80,7 @@ struct Entry
   std::optional<u32> gpu_max_run_ahead;
   std::optional<float> gpu_pgxp_tolerance;
   std::optional<float> gpu_pgxp_depth_threshold;
+  std::optional<GPULineDetectMode> gpu_line_detect_mode;
 
   std::string disc_set_name;
   std::vector<std::string> disc_set_serials;

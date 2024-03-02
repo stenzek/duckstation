@@ -43128,8 +43128,9 @@ SLES-00132:
   controllers:
     - DigitalController
   traits:
-    - DisableUpscaling
-    - DisablePGXP
+    - DisablePGXP # 2.5D, not beneficial.
+  settings:
+    gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
   metadata:
     publisher: "GT Interactive / Williams Entertainment"
     developer: "Midway Studios San Diego"
@@ -43151,8 +43152,9 @@ SLPS-00308:
   controllers:
     - DigitalController
   traits:
-    - DisableUpscaling
-    - DisablePGXP
+    - DisablePGXP # 2.5D, not beneficial.
+  settings:
+    gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
   metadata:
     publisher: "Soft Bank"
     developer: "Midway Studios San Diego"
@@ -43172,12 +43174,12 @@ SLUS-00077:
   compatibility:
     rating: NoIssues
     versionTested: "0.1-908-g9f22684"
-    upscalingIssues: "Broken when upscaling"
   controllers:
     - DigitalController
   traits:
-    - DisableUpscaling
-    - DisablePGXP
+    - DisablePGXP # 2.5D, not beneficial.
+  settings:
+    gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
   metadata:
     publisher: "GT Interactive / Williams Entertainment"
     developer: "Midway Studios San Diego"
@@ -46145,8 +46147,9 @@ SLES-00703:
     - AnalogController
     - DigitalController
   traits:
-    - DisableUpscaling
-    - DisablePGXP
+    - DisablePGXP # 2.5D, not beneficial.
+  settings:
+    gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
   metadata:
     publisher: "GT Interactive"
     developer: "3D Realms Entertainment"
@@ -46167,8 +46170,9 @@ SLES-00987:
     - AnalogController
     - DigitalController
   traits:
-    - DisableUpscaling
-    - DisablePGXP
+    - DisablePGXP # 2.5D, not beneficial.
+  settings:
+    gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
   metadata:
     publisher: "GT Interactive"
     developer: "3D Realms Entertainment"
@@ -46186,8 +46190,9 @@ SLES-00987:
 SLED-01027:
   name: "Duke Nukem (France) (Demo)"
   traits:
-    - DisableUpscaling
-    - DisablePGXP
+    - DisablePGXP # 2.5D, not beneficial.
+  settings:
+    gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
 SLES-03405:
   name: "Duke Nukem - Land of the Babes (Europe) (En,Fr,De,Es,It)"
   controllers:
@@ -46360,8 +46365,9 @@ SLPS-01557:
     - AnalogController
     - DigitalController
   traits:
-    - DisableUpscaling
-    - DisablePGXP
+    - DisablePGXP # 2.5D, not beneficial.
+  settings:
+    gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
   metadata:
     publisher: "King Record Co. Ltd"
     developer: "3D Realms Entertainment"
@@ -46385,8 +46391,9 @@ SLUS-00355:
     - AnalogController
     - DigitalController
   traits:
-    - DisableUpscaling
-    - DisablePGXP
+    - DisablePGXP # 2.5D, not beneficial.
+  settings:
+    gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
   metadata:
     publisher: "GT Interactive"
     developer: "3D Realms Entertainment"
@@ -54792,8 +54799,9 @@ SLES-00487:
     - DigitalController
     - PlayStationMouse
   traits:
-    - DisableUpscaling
-    - DisablePGXP
+    - DisablePGXP # 2.5D, not beneficial.
+  settings:
+    gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
   metadata:
     publisher: "GT Interactive / Williams Entertainment"
     developer: "id Software, Inc."
@@ -54814,8 +54822,9 @@ SLPS-00727:
     - DigitalController
     - PlayStationMouse
   traits:
-    - DisableUpscaling
-    - DisablePGXP
+    - DisablePGXP # 2.5D, not beneficial.
+  settings:
+    gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
   metadata:
     publisher: "Soft Bank"
     developer: "id Software, Inc."
@@ -54835,13 +54844,13 @@ SLUS-00331:
   compatibility:
     rating: NoIssues
     versionTested: "0.1-986-gfc911de1"
-    upscalingIssues: "Rendering is broken with any upscaling."
   controllers:
     - DigitalController
     - PlayStationMouse
   traits:
-    - DisableUpscaling
-    - DisablePGXP
+    - DisablePGXP # 2.5D, not beneficial.
+  settings:
+    gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
   metadata:
     publisher: "GT Interactive / Williams Entertainment"
     developer: "id Software, Inc."
@@ -149474,6 +149483,8 @@ SCES-00577:
     versionTested: "0.1-2949-gcd2c581f"
   controllers:
     - DigitalController
+  settings:
+    gpuLineDetectMode: BasicTriangles # Fixes upscaled water rendering.
   metadata:
     publisher: "Sony Computer Entertaiment Europe"
     developer: "Namco"
@@ -149493,9 +149504,10 @@ SLUS-00240:
   compatibility:
     rating: NoIssues
     versionTested: "0.1-1409-ge198e315"
-    upscalingIssues: "Water error in Li Long stage (Issue #371)"
   controllers:
     - DigitalController
+  settings:
+    gpuLineDetectMode: BasicTriangles # Fixes upscaled water rendering.
   metadata:
     publisher: "Namco"
     developer: "Namco"
@@ -153089,8 +153101,9 @@ SLES-00585:
   controllers:
     - DigitalController
   traits:
-    - DisableUpscaling
-    - DisablePGXP
+    - DisablePGXP # 2.5D, PGXP is not beneficial.
+  settings:
+    gpuLineDetectMode: AggressiveTriangles # Fixes upscaled rendering.
   metadata:
     publisher: "Lucasarts"
     developer: "Lucasarts / Big Bang Software, Inc"
@@ -153110,8 +153123,9 @@ SLES-00640:
   controllers:
     - DigitalController
   traits:
-    - DisableUpscaling
-    - DisablePGXP
+    - DisablePGXP # 2.5D, PGXP is not beneficial.
+  settings:
+    gpuLineDetectMode: AggressiveTriangles # Fixes upscaled rendering.
   metadata:
     publisher: "Lucasarts"
     developer: "Lucasarts / Big Bang Software, Inc"
@@ -153132,8 +153146,9 @@ SLPS-00685:
   controllers:
     - DigitalController
   traits:
-    - DisableUpscaling
-    - DisablePGXP
+    - DisablePGXP # 2.5D, PGXP is not beneficial.
+  settings:
+    gpuLineDetectMode: AggressiveTriangles # Fixes upscaled rendering.
   metadata:
     publisher: "Bullet-Proof Software"
     developer: "Lucasarts / Big Bang Software, Inc"
@@ -153153,8 +153168,9 @@ SLES-00646:
   controllers:
     - DigitalController
   traits:
-    - DisableUpscaling
-    - DisablePGXP
+    - DisablePGXP # 2.5D, PGXP is not beneficial.
+  settings:
+    gpuLineDetectMode: AggressiveTriangles # Fixes upscaled rendering.
   metadata:
     publisher: "Erbe Software"
     developer: "Lucasarts / Big Bang Software, Inc"
@@ -153175,12 +153191,12 @@ SLUS-00297:
   compatibility:
     rating: NoIssues
     versionTested: "0.1-986-gfc911de1"
-    upscalingIssues: "Rendering is broken when upscaling is used."
   controllers:
     - DigitalController
   traits:
-    - DisableUpscaling
-    - DisablePGXP
+    - DisablePGXP # 2.5D, PGXP is not beneficial.
+  settings:
+    gpuLineDetectMode: AggressiveTriangles # Fixes upscaled rendering.
   metadata:
     publisher: "Lucasarts"
     developer: "Lucasarts / Big Bang Software, Inc"
@@ -163808,6 +163824,8 @@ SLPS-00365:
   name: "Tekkyuu - True Pinball (Japan)"
   controllers:
     - DigitalController
+  traits:
+    - DisableUpscaling
   metadata:
     publisher: "Ocean"
     developer: "Digital Illusions CE AB"
@@ -172671,6 +172689,8 @@ SLES-00052:
   name: "True Pinball (Europe)"
   controllers:
     - DigitalController
+  traits:
+    - DisableUpscaling
   metadata:
     publisher: "Ocean"
     developer: "Digital Illusions CE AB"
@@ -172695,6 +172715,7 @@ SLUS-00337:
     - DigitalController
   traits:
     - ForceInterlacing
+    - DisableUpscaling
   metadata:
     publisher: "Ocean"
     developer: "Digital Illusions CE AB"
@@ -180948,6 +180969,8 @@ SCUS-94592:
   name: "Wild Arms 2 (USA) (Demo)"
   traits:
     - ForcePGXPCPUMode
+  settings:
+    gpuLineDetectMode: Quads
 SCUS-94484:
   name: "Wild Arms 2 (USA) (Disc 1)"
   discSet:
@@ -180962,6 +180985,8 @@ SCUS-94484:
     - DigitalController
   traits:
     - ForcePGXPCPUMode
+  settings:
+    gpuLineDetectMode: Quads
   metadata:
     publisher: "Sony"
     developer: "Media.Vision Entertainment / Contrail"
@@ -180987,6 +181012,8 @@ SCUS-94498:
     - DigitalController
   traits:
     - ForcePGXPCPUMode
+  settings:
+    gpuLineDetectMode: Quads
   metadata:
     publisher: "Sony"
     developer: "Media.Vision Entertainment / Contrail"
@@ -181007,6 +181034,8 @@ SCPS-45429:
     - DigitalController
   traits:
     - ForcePGXPCPUMode
+  settings:
+    gpuLineDetectMode: Quads
   codes:
     - SCPS-45429
     - SCPS-45430

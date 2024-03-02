@@ -189,7 +189,8 @@ private:
   void DrawLine(float x0, float y0, u32 col0, float x1, float y1, u32 col1, float depth);
 
   /// Handles quads with flipped texture coordinate directions.
-  static void HandleFlippedQuadTextureCoordinates(BatchVertex* vertices);
+  void HandleFlippedQuadTextureCoordinates(BatchVertex* vertices);
+  void ExpandLineTriangles(BatchVertex* vertices, u32 base_vertex);
 
   /// Computes polygon U/V boundaries.
   void ComputePolygonUVLimits(u32 texpage, BatchVertex* vertices, u32 num_vertices);
@@ -240,6 +241,7 @@ private:
   bool m_disable_color_perspective : 1 = false;
 
   GPUTextureFilter m_texture_filtering = GPUTextureFilter::Nearest;
+  GPULineDetectMode m_line_detect_mode = GPULineDetectMode::Disabled;
   GPUDownsampleMode m_downsample_mode = GPUDownsampleMode::Disabled;
   GPUWireframeMode m_wireframe_mode = GPUWireframeMode::Disabled;
   bool m_true_color : 1 = true;

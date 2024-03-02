@@ -2467,13 +2467,12 @@ void FullscreenUI::DrawSettingsWindow()
     static constexpr float ITEM_WIDTH = 25.0f;
 
     static constexpr const char* global_icons[] = {
-      ICON_FA_TV, ICON_FA_DICE_D20,          ICON_FA_COGS,  ICON_PF_MICROCHIP,
-      ICON_PF_PICTURE,           ICON_FA_MAGIC, ICON_PF_SOUND, ICON_PF_GAMEPAD_ALT,
-      ICON_PF_KEYBOARD_ALT,        ICON_PF_MEMORY_CARD,      ICON_FA_TROPHY,     ICON_FA_EXCLAMATION_TRIANGLE};
-    static constexpr const char* per_game_icons[] = {
-      ICON_FA_PARAGRAPH, ICON_FA_HDD,        ICON_FA_COGS,
-      ICON_PF_PICTURE,     ICON_PF_SOUND, ICON_PF_GAMEPAD_ALT,
-      ICON_PF_MEMORY_CARD,   ICON_FA_TROPHY,     ICON_FA_EXCLAMATION_TRIANGLE};
+      ICON_FA_TV,           ICON_FA_DICE_D20,    ICON_FA_COGS,   ICON_PF_MICROCHIP,
+      ICON_PF_PICTURE,      ICON_FA_MAGIC,       ICON_PF_SOUND,  ICON_PF_GAMEPAD_ALT,
+      ICON_PF_KEYBOARD_ALT, ICON_PF_MEMORY_CARD, ICON_FA_TROPHY, ICON_FA_EXCLAMATION_TRIANGLE};
+    static constexpr const char* per_game_icons[] = {ICON_FA_PARAGRAPH,   ICON_FA_HDD,    ICON_FA_COGS,
+                                                     ICON_PF_PICTURE,     ICON_PF_SOUND,  ICON_PF_GAMEPAD_ALT,
+                                                     ICON_PF_MEMORY_CARD, ICON_FA_TROPHY, ICON_FA_EXCLAMATION_TRIANGLE};
     static constexpr SettingsPage global_pages[] = {
       SettingsPage::Interface, SettingsPage::Console,        SettingsPage::Emulation,    SettingsPage::BIOS,
       SettingsPage::Display,   SettingsPage::PostProcessing, SettingsPage::Audio,        SettingsPage::Controller,
@@ -3907,6 +3906,13 @@ void FullscreenUI::DrawDisplaySettingsPage()
     bsi, FSUI_CSTR("Texture Filtering"), FSUI_CSTR("Smooths out the blockiness of magnified textures on 3D objects."),
     "GPU", "TextureFilter", Settings::DEFAULT_GPU_TEXTURE_FILTER, &Settings::ParseTextureFilterName,
     &Settings::GetTextureFilterName, &Settings::GetTextureFilterDisplayName, GPUTextureFilter::Count, is_hardware);
+
+  DrawEnumSetting(bsi, FSUI_CSTR("Line Detection"),
+                  FSUI_CSTR("Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization "
+                            "behavior, filling in gaps introduced by upscaling."),
+                  "GPU", "LineDetectMode", Settings::DEFAULT_GPU_LINE_DETECT_MODE, &Settings::ParseLineDetectModeName,
+                  &Settings::GetLineDetectModeName, &Settings::GetLineDetectModeDisplayName, GPULineDetectMode::Count,
+                  is_hardware);
 
   DrawToggleSetting(bsi, FSUI_CSTR("True Color Rendering"),
                     FSUI_CSTR("Disables dithering and uses the full 8 bits per channel of color information."), "GPU",
@@ -6547,6 +6553,7 @@ TRANSLATE_NOOP("FullscreenUI", "Apply Image Patches");
 TRANSLATE_NOOP("FullscreenUI", "Apply Per-Game Settings");
 TRANSLATE_NOOP("FullscreenUI", "Are you sure you want to clear the current post-processing chain? All configuration will be lost.");
 TRANSLATE_NOOP("FullscreenUI", "Aspect Ratio");
+TRANSLATE_NOOP("FullscreenUI", "Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization behavior, filling in gaps introduced by upscaling.");
 TRANSLATE_NOOP("FullscreenUI", "Attempts to map the selected port to a chosen controller.");
 TRANSLATE_NOOP("FullscreenUI", "Audio Backend");
 TRANSLATE_NOOP("FullscreenUI", "Audio Control");
@@ -6777,6 +6784,7 @@ TRANSLATE_NOOP("FullscreenUI", "Leaderboard Notifications");
 TRANSLATE_NOOP("FullscreenUI", "Leaderboards");
 TRANSLATE_NOOP("FullscreenUI", "Leaderboards are not enabled.");
 TRANSLATE_NOOP("FullscreenUI", "Limits how many frames are displayed to the screen. These frames are still rendered.");
+TRANSLATE_NOOP("FullscreenUI", "Line Detection");
 TRANSLATE_NOOP("FullscreenUI", "List Settings");
 TRANSLATE_NOOP("FullscreenUI", "Load Devices From Save States");
 TRANSLATE_NOOP("FullscreenUI", "Load Profile");

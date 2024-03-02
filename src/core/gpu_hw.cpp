@@ -200,6 +200,7 @@ bool GPU_HW::Initialize()
   m_debanding = g_settings.gpu_debanding;
   m_scaled_dithering = g_settings.gpu_scaled_dithering;
   m_texture_filtering = g_settings.gpu_texture_filter;
+  m_line_detect_mode = (m_resolution_scale > 1) ? g_settings.gpu_line_detect_mode : GPULineDetectMode::Disabled;
   m_clamp_uvs = ShouldClampUVs();
   m_compute_uv_range = m_clamp_uvs;
   m_chroma_smoothing = g_settings.gpu_24bit_chroma_smoothing;
@@ -386,6 +387,7 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
   m_debanding = g_settings.gpu_debanding;
   m_scaled_dithering = g_settings.gpu_scaled_dithering;
   m_texture_filtering = g_settings.gpu_texture_filter;
+  m_line_detect_mode = (m_resolution_scale > 1) ? g_settings.gpu_line_detect_mode : GPULineDetectMode::Disabled;
   m_clamp_uvs = clamp_uvs;
   m_compute_uv_range = m_clamp_uvs;
   m_chroma_smoothing = g_settings.gpu_24bit_chroma_smoothing;
@@ -1410,7 +1412,7 @@ void GPU_HW::ClearDisplay()
     g_gpu_device->ClearRenderTarget(m_display_private_texture.get(), 0xFF000000u);
 }
 
-void GPU_HW::HandleFlippedQuadTextureCoordinates(BatchVertex* vertices)
+ALWAYS_INLINE_RELEASE void GPU_HW::HandleFlippedQuadTextureCoordinates(BatchVertex* vertices)
 {
   // Taken from beetle-psx gpu_polygon.cpp
   // For X/Y flipped 2D sprites, PSX games rely on a very specific rasterization behavior. If U or V is decreasing in X
@@ -1433,6 +1435,24 @@ void GPU_HW::HandleFlippedQuadTextureCoordinates(BatchVertex* vertices)
   const float cax = vertices[0].x - vertices[2].x;
   const float cay = vertices[0].y - vertices[2].y;
 
+  // Hack for Wild Arms 2: The player sprite is drawn one line at a time with a quad, but the bottom V coordinates
+  // are set to a large distance from the top V coordinate. When upscaling, this means that the coordinate is
+  // interpolated between these two values, result in out-of-bounds sampling. At native, it's fine, because at the
+  // top of the primitive, no amount is added to the coordinates. So, in this case, just set all coordinates to the
+  // same value, from the first vertex, ensuring no interpolation occurs. Gate it based on the Y distance being one
+  // pixel, limiting the risk of false positives.
+  if (m_line_detect_mode == GPULineDetectMode::Quads &&
+      (std::max(vertices[0].y, std::max(vertices[1].y, std::max(vertices[2].y, vertices[3].y))) -
+       std::min(vertices[0].y, std::min(vertices[1].y, std::min(vertices[2].y, vertices[3].y)))) == 1.0f) [[unlikely]]
+  {
+    GL_INS_FMT("HLineQuad detected at [{},{}={},{} {},{}={},{} {},{}={},{} {},{}={},{}", vertices[0].x, vertices[0].y,
+               vertices[0].u, vertices[0].v, vertices[1].x, vertices[1].y, vertices[1].u, vertices[1].v, vertices[2].x,
+               vertices[2].y, vertices[2].u, vertices[2].v, vertices[3].x, vertices[3].y, vertices[3].u, vertices[3].v);
+    vertices[1].v = vertices[0].v;
+    vertices[2].v = vertices[0].v;
+    vertices[3].v = vertices[0].v;
+  }
+
   // Compute static derivatives, just assume W is uniform across the primitive and that the plane equation remains the
   // same across the quad. (which it is, there is no Z.. yet).
   const float dudx = -aby * static_cast<float>(vertices[2].u) - bcy * static_cast<float>(vertices[0].u) -
@@ -1449,11 +1469,8 @@ void GPU_HW::HandleFlippedQuadTextureCoordinates(BatchVertex* vertices)
   const s32 texArea = (vertices[1].u - vertices[0].u) * (vertices[2].v - vertices[0].v) -
                       (vertices[2].u - vertices[0].u) * (vertices[1].v - vertices[0].v);
 
-  // Leverage PGXP to further avoid 3D polygons that just happen to align this way after projection
-  const bool is_3d = (vertices[0].w != vertices[1].w || vertices[0].w != vertices[2].w);
-
   // Shouldn't matter as degenerate primitives will be culled anyways.
-  if (area == 0.0f || texArea == 0 || is_3d)
+  if (area == 0.0f || texArea == 0)
     return;
 
   // Use floats here as it'll be faster than integer divides.
@@ -1498,6 +1515,156 @@ void GPU_HW::HandleFlippedQuadTextureCoordinates(BatchVertex* vertices)
     vertices[2].v++;
     vertices[3].v++;
   }
+}
+
+ALWAYS_INLINE_RELEASE void GPU_HW::ExpandLineTriangles(BatchVertex* vertices, u32 base_vertex)
+{
+  // Line expansion inspired by beetle-psx.
+  BatchVertex *vshort, *vlong;
+  bool vertical, horizontal;
+
+  if (m_line_detect_mode == GPULineDetectMode::BasicTriangles)
+  {
+    // Given a tall/one-pixel-wide triangle, determine which vertex is the corner with axis-aligned edges.
+    BatchVertex* vcorner;
+    if (vertices[0].u == vertices[1].u && vertices[0].v == vertices[1].v)
+    {
+      // A,B,C
+      vcorner = &vertices[0];
+      vshort = &vertices[1];
+      vlong = &vertices[2];
+    }
+    else if (vertices[1].u == vertices[2].u && vertices[1].v == vertices[2].v)
+    {
+      // B,C,A
+      vcorner = &vertices[1];
+      vshort = &vertices[2];
+      vlong = &vertices[0];
+    }
+    else if (vertices[2].u == vertices[0].u && vertices[2].v == vertices[0].v)
+    {
+      // C,A,B
+      vcorner = &vertices[2];
+      vshort = &vertices[0];
+      vlong = &vertices[1];
+    }
+    else
+    {
+      return;
+    }
+
+    // Determine line direction. Vertical lines will have a width of 1, horizontal lines a height of 1.
+    vertical = ((vcorner->y == vshort->y) && (std::abs(vcorner->x - vshort->x) == 1.0f));
+    horizontal = ((vcorner->x == vshort->x) && (std::abs(vcorner->y - vshort->y) == 1.0f));
+    if (vertical)
+    {
+      // Line should be vertical. Make sure the triangle is actually a right angle.
+      if (vshort->x == vlong->x)
+        std::swap(vshort, vcorner);
+      else if (vcorner->x != vlong->x)
+        return;
+
+      GL_INS_FMT("Vertical line from Y={} to {}", vcorner->y, vlong->y);
+    }
+    else if (horizontal)
+    {
+      // Line should be horizontal. Make sure the triangle is actually a right angle.
+      if (vshort->y == vlong->y)
+        std::swap(vshort, vcorner);
+      else if (vcorner->y != vlong->y)
+        return;
+
+      GL_INS_FMT("Horizontal line from X={} to {}", vcorner->x, vlong->x);
+    }
+    else
+    {
+      // Not a line-like triangle.
+      return;
+    }
+
+    // We could adjust the short texture coordinate to +1 from its original position, rather than leaving it the same.
+    // However, since the texture is unlikely to be a higher resolution than the one-wide triangle, there would be no
+    // benefit in doing so.
+  }
+  else
+  {
+    DebugAssert(m_line_detect_mode == GPULineDetectMode::AggressiveTriangles);
+
+    // Find direction of line based on horizontal position.
+    BatchVertex *va, *vb, *vc;
+    if (vertices[0].x == vertices[1].x)
+    {
+      va = &vertices[0];
+      vb = &vertices[1];
+      vc = &vertices[2];
+    }
+    else if (vertices[1].x == vertices[2].x)
+    {
+      va = &vertices[1];
+      vb = &vertices[2];
+      vc = &vertices[0];
+    }
+    else if (vertices[2].x == vertices[0].x)
+    {
+      va = &vertices[2];
+      vb = &vertices[0];
+      vc = &vertices[1];
+    }
+    else
+    {
+      return;
+    }
+
+    // Determine line direction. Vertical lines will have a width of 1, horizontal lines a height of 1.
+    vertical = (std::abs(va->x - vc->x) == 1.0f);
+    horizontal = (std::abs(va->y - vb->y) == 1.0f);
+    if (!vertical && !horizontal)
+      return;
+
+    // Determine which vertex is the right angle, based on the vertical position.
+    const BatchVertex* vcorner;
+    if (va->y == vc->y)
+      vcorner = va;
+    else if (vb->y == vc->y)
+      vcorner = vb;
+    else
+      return;
+
+    // Find short/long edge of the triangle.
+    BatchVertex* vother = ((vcorner == va) ? vb : va);
+    vshort = horizontal ? vother : vc;
+    vlong = vertical ? vother : vc;
+
+    // Dark Forces draws its gun sprite vertically, but rotated compared to the sprite date in VRAM.
+    // Therefore the difference in V should be ignored.
+    vshort->u = vcorner->u;
+    vshort->v = vcorner->v;
+
+    // We need to re-compute the UV limits, since we adjusted them above.
+    if (m_compute_uv_range)
+      ComputePolygonUVLimits(vertices[0].texpage, vertices, 3);
+
+    // This is super jank, but because we rewrote the UVs on one of the vertices above, we need to rewrite it to GPU
+    // memory again. Has to be all of them as well, not just vshort, because the UV limits may have changed.
+    DebugAssert(m_batch_vertex_count >= 3);
+    std::memcpy(m_batch_vertex_ptr - 3, vertices, sizeof(BatchVertex) * 3);
+  }
+
+  // Need to write the 4th vertex to the GPU.
+  DebugAssert(m_batch_vertex_space >= 1);
+  BatchVertex* last = &(*(m_batch_vertex_ptr++) = *vlong);
+  last->x = vertical ? vshort->x : vlong->x;
+  last->y = horizontal ? vshort->y : vlong->y;
+  m_batch_vertex_count++;
+  m_batch_vertex_space--;
+
+  // Generate indices for second triangle.
+  DebugAssert(m_batch_index_space >= 3);
+  *(m_batch_index_ptr++) = Truncate16(base_vertex + (vshort - vertices));
+  *(m_batch_index_ptr++) = Truncate16(base_vertex + (vlong - vertices));
+  *(m_batch_index_ptr++) = Truncate16(base_vertex + 3);
+  m_batch_index_count += 3;
+  m_batch_index_space -= 3;
 }
 
 void GPU_HW::ComputePolygonUVLimits(u32 texpage, BatchVertex* vertices, u32 num_vertices)
@@ -1727,7 +1894,9 @@ void GPU_HW::LoadVertices()
         }
       }
 
-      if (rc.quad_polygon && m_resolution_scale > 1)
+      // Use PGXP to exclude primitives that are definitely 3D.
+      const bool is_3d = (vertices[0].w != vertices[1].w || vertices[0].w != vertices[2].w);
+      if (m_resolution_scale > 1 && !is_3d && rc.quad_polygon)
         HandleFlippedQuadTextureCoordinates(vertices.data());
 
       if (m_compute_uv_range && textured)
@@ -1761,8 +1930,9 @@ void GPU_HW::LoadVertices()
       const s32 max_x = std::max(max_x_12, native_vertex_positions[0][0]);
       const s32 min_y = std::min(min_y_12, native_vertex_positions[0][1]);
       const s32 max_y = std::max(max_y_12, native_vertex_positions[0][1]);
+      const bool first_tri_culled = ((max_x - min_x) >= MAX_PRIMITIVE_WIDTH || (max_y - min_y) >= MAX_PRIMITIVE_HEIGHT);
 
-      if ((max_x - min_x) >= MAX_PRIMITIVE_WIDTH || (max_y - min_y) >= MAX_PRIMITIVE_HEIGHT)
+      if (first_tri_culled)
       {
         Log_DebugFmt("Culling too-large polygon: {},{} {},{} {},{}", native_vertex_positions[0][0],
                      native_vertex_positions[0][1], native_vertex_positions[1][0], native_vertex_positions[1][1],
@@ -1827,6 +1997,12 @@ void GPU_HW::LoadVertices()
           m_batch_index_count += 3;
           m_batch_index_space -= 3;
         }
+      }
+      else
+      {
+        // Expand lines to triangles (Doom, Soul Blade, etc.)
+        if (m_line_detect_mode >= GPULineDetectMode::BasicTriangles && !is_3d && !first_tri_culled)
+          ExpandLineTriangles(vertices.data(), start_index);
       }
 
       if (m_sw_renderer)

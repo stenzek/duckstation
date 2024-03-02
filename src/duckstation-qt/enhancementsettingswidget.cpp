@@ -17,6 +17,12 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(SettingsWindow* dialog, QWi
   setupAdditionalUi();
 
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.resolutionScale, "GPU", "ResolutionScale", 1);
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.textureFiltering, "GPU", "TextureFilter",
+                                               &Settings::ParseTextureFilterName, &Settings::GetTextureFilterName,
+                                               Settings::DEFAULT_GPU_TEXTURE_FILTER);
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.gpuLineDetectMode, "GPU", "LineDetectMode",
+                                               &Settings::ParseLineDetectModeName, &Settings::GetLineDetectModeName,
+                                               Settings::DEFAULT_GPU_LINE_DETECT_MODE);
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.gpuDownsampleMode, "GPU", "DownsampleMode",
                                                &Settings::ParseDownsampleModeName, &Settings::GetDownsampleModeName,
                                                Settings::DEFAULT_GPU_DOWNSAMPLE_MODE);
@@ -28,9 +34,6 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(SettingsWindow* dialog, QWi
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.forceNTSCTimings, "GPU", "ForceNTSCTimings", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.force43For24Bit, "Display", "Force4_3For24Bit", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.chromaSmoothingFor24Bit, "GPU", "ChromaSmoothing24Bit", false);
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.textureFiltering, "GPU", "TextureFilter",
-                                               &Settings::ParseTextureFilterName, &Settings::GetTextureFilterName,
-                                               Settings::DEFAULT_GPU_TEXTURE_FILTER);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.widescreenHack, "GPU", "WidescreenHack", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useSoftwareRendererForReadbacks, "GPU",
                                                "UseSoftwareRendererForReadbacks", false);
@@ -105,10 +108,14 @@ EnhancementSettingsWidget::EnhancementSettingsWidget(SettingsWindow* dialog, QWi
                                 "Only applies to the hardware renderers."));
   dialog->registerWidgetHelp(
     m_ui.textureFiltering, tr("Texture Filtering"),
-    QString::fromUtf8(Settings::GetTextureFilterDisplayName(GPUTextureFilter::Nearest)),
+    QString::fromUtf8(Settings::GetTextureFilterDisplayName(Settings::DEFAULT_GPU_TEXTURE_FILTER)),
     tr("Smooths out the blockiness of magnified textures on 3D object by using filtering. <br>Will have a "
        "greater effect on higher resolution scales. Only applies to the hardware renderers. <br>The JINC2 and "
        "especially xBR filtering modes are very demanding, and may not be worth the speed penalty."));
+  dialog->registerWidgetHelp(m_ui.gpuLineDetectMode, tr("Line Detection"),
+                             QString::fromUtf8(Settings::GetLineDetectModeName(Settings::DEFAULT_GPU_LINE_DETECT_MODE)),
+                             tr("Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization "
+                                "behavior, filling in gaps introduced by upscaling."));
   dialog->registerWidgetHelp(
     m_ui.widescreenHack, tr("Widescreen Hack"), tr("Unchecked"),
     tr("Scales vertex positions in screen-space to a widescreen aspect ratio, essentially "
@@ -188,6 +195,12 @@ void EnhancementSettingsWidget::setupAdditionalUi()
   {
     m_ui.textureFiltering->addItem(
       QString::fromUtf8(Settings::GetTextureFilterDisplayName(static_cast<GPUTextureFilter>(i))));
+  }
+
+  for (u32 i = 0; i < static_cast<u32>(GPULineDetectMode::Count); i++)
+  {
+    m_ui.gpuLineDetectMode->addItem(
+      QString::fromUtf8(Settings::GetLineDetectModeDisplayName(static_cast<GPULineDetectMode>(i))));
   }
 
   for (u32 i = 0; i < static_cast<u32>(GPUDownsampleMode::Count); i++)
