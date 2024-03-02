@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -21,14 +21,13 @@ namespace GameDatabase {
 struct Entry;
 }
 
-class GeneralSettingsWidget;
+class InterfaceSettingsWidget;
 class BIOSSettingsWidget;
 class GameListSettingsWidget;
 class ConsoleSettingsWidget;
 class EmulationSettingsWidget;
 class MemoryCardSettingsWidget;
-class DisplaySettingsWidget;
-class EnhancementSettingsWidget;
+class GraphicsSettingsWidget;
 class PostProcessingSettingsWidget;
 class AudioSettingsWidget;
 class AchievementSettingsWidget;
@@ -51,14 +50,13 @@ public:
   ALWAYS_INLINE bool isPerGameSettings() const { return static_cast<bool>(m_sif); }
   ALWAYS_INLINE SettingsInterface* getSettingsInterface() const { return m_sif.get(); }
 
-  ALWAYS_INLINE GeneralSettingsWidget* getGeneralSettingsWidget() const { return m_general_settings; }
+  ALWAYS_INLINE InterfaceSettingsWidget* getGeneralSettingsWidget() const { return m_general_settings; }
   ALWAYS_INLINE BIOSSettingsWidget* getBIOSSettingsWidget() const { return m_bios_settings; }
   ALWAYS_INLINE ConsoleSettingsWidget* getConsoleSettingsWidget() const { return m_console_settings; }
   ALWAYS_INLINE EmulationSettingsWidget* getEmulationSettingsWidget() const { return m_emulation_settings; }
   ALWAYS_INLINE GameListSettingsWidget* getGameListSettingsWidget() const { return m_game_list_settings; }
   ALWAYS_INLINE MemoryCardSettingsWidget* getMemoryCardSettingsWidget() const { return m_memory_card_settings; }
-  ALWAYS_INLINE DisplaySettingsWidget* getDisplaySettingsWidget() const { return m_display_settings; }
-  ALWAYS_INLINE EnhancementSettingsWidget* getEnhancementSettingsWidget() const { return m_enhancement_settings; }
+  ALWAYS_INLINE GraphicsSettingsWidget* getGraphicsSettingsWidget() const { return m_graphics_settings; }
   ALWAYS_INLINE AudioSettingsWidget* getAudioSettingsWidget() const { return m_audio_settings; }
   ALWAYS_INLINE AchievementSettingsWidget* getAchievementSettingsWidget() const { return m_achievement_settings; }
   ALWAYS_INLINE AdvancedSettingsWidget* getAdvancedSettingsWidget() const { return m_advanced_settings; }
@@ -85,6 +83,7 @@ public:
   void setIntSettingValue(const char* section, const char* key, std::optional<int> value);
   void setFloatSettingValue(const char* section, const char* key, std::optional<float> value);
   void setStringSettingValue(const char* section, const char* key, std::optional<const char*> value);
+  bool containsSettingValue(const char* section, const char* key) const;
   void removeSettingValue(const char* section, const char* key);
 
 Q_SIGNALS:
@@ -104,7 +103,7 @@ protected:
 private:
   enum : u32
   {
-    MAX_SETTINGS_WIDGETS = 13
+    MAX_SETTINGS_WIDGETS = 12
   };
 
   void addPages();
@@ -115,14 +114,13 @@ private:
 
   std::unique_ptr<SettingsInterface> m_sif;
 
-  GeneralSettingsWidget* m_general_settings = nullptr;
+  InterfaceSettingsWidget* m_general_settings = nullptr;
   BIOSSettingsWidget* m_bios_settings = nullptr;
   ConsoleSettingsWidget* m_console_settings = nullptr;
   EmulationSettingsWidget* m_emulation_settings = nullptr;
   GameListSettingsWidget* m_game_list_settings = nullptr;
   MemoryCardSettingsWidget* m_memory_card_settings = nullptr;
-  DisplaySettingsWidget* m_display_settings = nullptr;
-  EnhancementSettingsWidget* m_enhancement_settings = nullptr;
+  GraphicsSettingsWidget* m_graphics_settings = nullptr;
   PostProcessingSettingsWidget* m_post_processing_settings = nullptr;
   AudioSettingsWidget* m_audio_settings = nullptr;
   AchievementSettingsWidget* m_achievement_settings = nullptr;

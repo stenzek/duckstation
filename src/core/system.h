@@ -416,9 +416,10 @@ bool StartDumpingAudio(const char* filename = nullptr);
 /// Stops dumping audio to file if it has been started.
 void StopDumpingAudio();
 
-/// Saves a screenshot to the specified file. IF no file name is provided, one will be generated automatically.
-bool SaveScreenshot(const char* filename = nullptr, bool full_resolution = true, bool apply_aspect_ratio = true,
-                    bool compress_on_thread = true);
+/// Saves a screenshot to the specified file. If no file name is provided, one will be generated automatically.
+bool SaveScreenshot(const char* filename = nullptr, DisplayScreenshotMode mode = g_settings.display_screenshot_mode,
+                    DisplayScreenshotFormat format = g_settings.display_screenshot_format,
+                    u8 quality = g_settings.display_screenshot_quality, bool compress_on_thread = true);
 
 /// Loads the cheat list from the specified file.
 bool LoadCheatList(const char* filename);

@@ -1373,7 +1373,7 @@ void EmuThread::saveScreenshot()
     return;
   }
 
-  System::SaveScreenshot(nullptr, true, true);
+  System::SaveScreenshot();
 }
 
 void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
@@ -1828,6 +1828,11 @@ void QtHost::QueueSettingsSave()
   s_settings_save_timer->connect(s_settings_save_timer.get(), &QTimer::timeout, SaveSettings);
   s_settings_save_timer->setSingleShot(true);
   s_settings_save_timer->start(SETTINGS_SAVE_DELAY);
+}
+
+bool QtHost::ShouldShowDebugOptions()
+{
+  return Host::GetBaseBoolSettingValue("Main", "ShowDebugMenu", false);
 }
 
 void Host::RequestSystemShutdown(bool allow_confirm, bool save_state)

@@ -2484,7 +2484,7 @@ void FullscreenUI::DrawSettingsWindow()
     static constexpr std::array<const char*, static_cast<u32>(SettingsPage::Count)> titles = {
       {FSUI_NSTR("Summary"), FSUI_NSTR("Interface Settings"), FSUI_NSTR("Console Settings"),
        FSUI_NSTR("Emulation Settings"), FSUI_NSTR("BIOS Settings"), FSUI_NSTR("Controller Settings"),
-       FSUI_NSTR("Hotkey Settings"), FSUI_NSTR("Memory Card Settings"), FSUI_NSTR("Display Settings"),
+       FSUI_NSTR("Hotkey Settings"), FSUI_NSTR("Memory Card Settings"), FSUI_NSTR("Graphics Settings"),
        FSUI_NSTR("Post-Processing Settings"), FSUI_NSTR("Audio Settings"), FSUI_NSTR("Achievements Settings"),
        FSUI_NSTR("Advanced Settings")}};
 
@@ -3898,7 +3898,7 @@ void FullscreenUI::DrawDisplaySettingsPage()
   MenuHeading(FSUI_CSTR("Rendering"));
 
   DrawIntListSetting(
-    bsi, FSUI_CSTR("Internal Resolution Scale"),
+    bsi, FSUI_CSTR("Internal Resolution"),
     FSUI_CSTR("Scales internal VRAM resolution by the specified multiplier. Some games require 1x VRAM resolution."),
     "GPU", "ResolutionScale", 1, resolution_scales.data(), resolution_scales.size(), true, 0, is_hardware);
 
@@ -3975,9 +3975,19 @@ void FullscreenUI::DrawDisplaySettingsPage()
     "Display", "Scaling", Settings::DEFAULT_DISPLAY_SCALING, &Settings::ParseDisplayScaling,
     &Settings::GetDisplayScalingName, &Settings::GetDisplayScalingDisplayName, DisplayScalingMode::Count);
 
-  DrawToggleSetting(bsi, FSUI_CSTR("Internal Resolution Screenshots"),
-                    FSUI_CSTR("Saves screenshots at internal render resolution and without postprocessing."), "Display",
-                    "InternalResolutionScreenshots", false);
+  DrawEnumSetting(bsi, FSUI_CSTR("Screenshot Size"),
+                  FSUI_CSTR("Determines the size of screenshots created by DuckStation."), "Display", "ScreenshotMode",
+                  Settings::DEFAULT_DISPLAY_SCREENSHOT_MODE, &Settings::ParseDisplayScreenshotMode,
+                  &Settings::GetDisplayScreenshotModeName, &Settings::GetDisplayScreenshotModeDisplayName,
+                  DisplayScreenshotMode::Count);
+  DrawEnumSetting(bsi, FSUI_CSTR("Screenshot Format"),
+                  FSUI_CSTR("Determines the format that screenshots will be saved/compressed with."), "Display",
+                  "ScreenshotFormat", Settings::DEFAULT_DISPLAY_SCREENSHOT_FORMAT,
+                  &Settings::ParseDisplayScreenshotFormat, &Settings::GetDisplayScreenshotFormatName,
+                  &Settings::GetDisplayScreenshotFormatDisplayName, DisplayScreenshotFormat::Count);
+  DrawIntRangeSetting(bsi, FSUI_CSTR("Screenshot Quality"),
+                      FSUI_CSTR("Selects the quality at which screenshots will be compressed."), "Display",
+                      "ScreenshotQuality", Settings::DEFAULT_DISPLAY_SCREENSHOT_QUALITY, 1, 100, "%d%%");
 
   MenuHeading(FSUI_CSTR("Enhancements"));
   DrawToggleSetting(
@@ -6651,7 +6661,9 @@ TRANSLATE_NOOP("FullscreenUI", "Determines quality of audio when not running at 
 TRANSLATE_NOOP("FullscreenUI", "Determines that field that the game list will be sorted by.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the amount of audio buffered before being pulled by the host API.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the emulated hardware type.");
+TRANSLATE_NOOP("FullscreenUI", "Determines the format that screenshots will be saved/compressed with.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the position on the screen when black borders must be added.");
+TRANSLATE_NOOP("FullscreenUI", "Determines the size of screenshots created by DuckStation.");
 TRANSLATE_NOOP("FullscreenUI", "Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.");
 TRANSLATE_NOOP("FullscreenUI", "Device Settings");
 TRANSLATE_NOOP("FullscreenUI", "Disable All Enhancements");
@@ -6754,6 +6766,7 @@ TRANSLATE_NOOP("FullscreenUI", "Genre: %s");
 TRANSLATE_NOOP("FullscreenUI", "GitHub Repository");
 TRANSLATE_NOOP("FullscreenUI", "Global Slot {0} - {1}##global_slot_{0}");
 TRANSLATE_NOOP("FullscreenUI", "Global Slot {0}##global_slot_{0}");
+TRANSLATE_NOOP("FullscreenUI", "Graphics Settings");
 TRANSLATE_NOOP("FullscreenUI", "Hardcore Mode");
 TRANSLATE_NOOP("FullscreenUI", "Hardcore mode will be enabled on next game restart.");
 TRANSLATE_NOOP("FullscreenUI", "Hide Cursor In Fullscreen");
@@ -6773,8 +6786,7 @@ TRANSLATE_NOOP("FullscreenUI", "Input profile '{}' loaded.");
 TRANSLATE_NOOP("FullscreenUI", "Input profile '{}' saved.");
 TRANSLATE_NOOP("FullscreenUI", "Integration");
 TRANSLATE_NOOP("FullscreenUI", "Interface Settings");
-TRANSLATE_NOOP("FullscreenUI", "Internal Resolution Scale");
-TRANSLATE_NOOP("FullscreenUI", "Internal Resolution Screenshots");
+TRANSLATE_NOOP("FullscreenUI", "Internal Resolution");
 TRANSLATE_NOOP("FullscreenUI", "Issue Tracker");
 TRANSLATE_NOOP("FullscreenUI", "Last Played");
 TRANSLATE_NOOP("FullscreenUI", "Last Played: %s");
@@ -6926,7 +6938,6 @@ TRANSLATE_NOOP("FullscreenUI", "Save Screenshot");
 TRANSLATE_NOOP("FullscreenUI", "Save State");
 TRANSLATE_NOOP("FullscreenUI", "Save State On Exit");
 TRANSLATE_NOOP("FullscreenUI", "Saved {:%c}");
-TRANSLATE_NOOP("FullscreenUI", "Saves screenshots at internal render resolution and without postprocessing.");
 TRANSLATE_NOOP("FullscreenUI", "Saves state periodically so you can rewind any mistakes while playing.");
 TRANSLATE_NOOP("FullscreenUI", "Scaled Dithering");
 TRANSLATE_NOOP("FullscreenUI", "Scales internal VRAM resolution by the specified multiplier. Some games require 1x VRAM resolution.");
@@ -6935,6 +6946,9 @@ TRANSLATE_NOOP("FullscreenUI", "Scaling");
 TRANSLATE_NOOP("FullscreenUI", "Scan For New Games");
 TRANSLATE_NOOP("FullscreenUI", "Scanning Subdirectories");
 TRANSLATE_NOOP("FullscreenUI", "Screen Display");
+TRANSLATE_NOOP("FullscreenUI", "Screenshot Format");
+TRANSLATE_NOOP("FullscreenUI", "Screenshot Quality");
+TRANSLATE_NOOP("FullscreenUI", "Screenshot Size");
 TRANSLATE_NOOP("FullscreenUI", "Search Directories");
 TRANSLATE_NOOP("FullscreenUI", "Seek Speedup");
 TRANSLATE_NOOP("FullscreenUI", "Select Device");
@@ -6942,6 +6956,7 @@ TRANSLATE_NOOP("FullscreenUI", "Select Disc Image");
 TRANSLATE_NOOP("FullscreenUI", "Select Macro {} Binds");
 TRANSLATE_NOOP("FullscreenUI", "Selects the GPU to use for rendering.");
 TRANSLATE_NOOP("FullscreenUI", "Selects the percentage of the normal clock speed the emulated hardware will run at.");
+TRANSLATE_NOOP("FullscreenUI", "Selects the quality at which screenshots will be compressed.");
 TRANSLATE_NOOP("FullscreenUI", "Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.");
 TRANSLATE_NOOP("FullscreenUI", "Selects the resolution to use in fullscreen modes.");
 TRANSLATE_NOOP("FullscreenUI", "Selects the view that the game list will open to.");

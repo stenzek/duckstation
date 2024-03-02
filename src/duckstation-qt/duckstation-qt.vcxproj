@@ -21,12 +21,11 @@
     <ClCompile Include="emulationsettingswidget.cpp" />
     <ClCompile Include="debuggermodels.cpp" />
     <ClCompile Include="debuggerwindow.cpp" />
-    <ClCompile Include="enhancementsettingswidget.cpp" />
     <ClCompile Include="foldersettingswidget.cpp" />
     <ClCompile Include="gamelistmodel.cpp" />
     <ClCompile Include="gamelistsearchdirectoriesmodel.cpp" />
-    <ClCompile Include="generalsettingswidget.cpp" />
-    <ClCompile Include="displaysettingswidget.cpp" />
+    <ClCompile Include="interfacesettingswidget.cpp" />
+    <ClCompile Include="graphicssettingswidget.cpp" />
     <ClCompile Include="hotkeysettingswidget.cpp" />
     <ClCompile Include="inputbindingdialog.cpp" />
     <ClCompile Include="inputbindingwidgets.cpp" />
@@ -62,12 +61,10 @@
     <QtMoc Include="cheatmanagerdialog.h" />
     <QtMoc Include="cheatcodeeditordialog.h" />
     <QtMoc Include="coverdownloaddialog.h" />
-    <QtMoc Include="enhancementsettingswidget.h" />
     <QtMoc Include="memorycardsettingswidget.h" />
     <QtMoc Include="memorycardeditorwindow.h" />
     <QtMoc Include="displaywidget.h" />
-    <QtMoc Include="generalsettingswidget.h" />
-    <QtMoc Include="displaysettingswidget.h" />
+    <QtMoc Include="interfacesettingswidget.h" />
     <QtMoc Include="hotkeysettingswidget.h" />
     <QtMoc Include="inputbindingwidgets.h" />
     <QtMoc Include="advancedsettingswidget.h" />
@@ -88,6 +85,7 @@
     <ClInclude Include="controllersettingwidgetbinder.h" />
     <QtMoc Include="memoryviewwidget.h" />
     <QtMoc Include="logwindow.h" />
+    <QtMoc Include="graphicssettingswidget.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="settingwidgetbinder.h" />
@@ -122,22 +120,16 @@
     <QtUi Include="emulationsettingswidget.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <QtUi Include="enhancementsettingswidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
     <QtUi Include="gamelistsettingswidget.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <QtUi Include="generalsettingswidget.ui">
+    <QtUi Include="interfacesettingswidget.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="mainwindow.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="settingswindow.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="displaysettingswidget.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="advancedsettingswidget.ui">
@@ -243,7 +235,6 @@
     <ClCompile Include="$(IntDir)moc_coverdownloaddialog.cpp" />
     <ClCompile Include="$(IntDir)moc_displaywidget.cpp" />
     <ClCompile Include="$(IntDir)moc_emulationsettingswidget.cpp" />
-    <ClCompile Include="$(IntDir)moc_enhancementsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_foldersettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistmodel.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistrefreshthread.cpp" />
@@ -253,13 +244,13 @@
     <ClCompile Include="$(IntDir)moc_gamesummarywidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gdbconnection.cpp" />
     <ClCompile Include="$(IntDir)moc_gdbserver.cpp" />
-    <ClCompile Include="$(IntDir)moc_generalsettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_graphicssettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_debuggermodels.cpp" />
     <ClCompile Include="$(IntDir)moc_debuggerwindow.cpp" />
-    <ClCompile Include="$(IntDir)moc_displaysettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_hotkeysettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_inputbindingdialog.cpp" />
     <ClCompile Include="$(IntDir)moc_inputbindingwidgets.cpp" />
+    <ClCompile Include="$(IntDir)moc_interfacesettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_logwindow.cpp" />
     <ClCompile Include="$(IntDir)moc_mainwindow.cpp" />
     <ClCompile Include="$(IntDir)moc_memorycardsettingswidget.cpp" />
@@ -333,6 +324,9 @@
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="debuggeraddbreakpointdialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="graphicssettingswidget.ui">
       <FileType>Document</FileType>
     </QtUi>
     <None Include="translations\duckstation-qt_es-es.ts" />

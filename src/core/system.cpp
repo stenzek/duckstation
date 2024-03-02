@@ -4306,8 +4306,8 @@ void System::StopDumpingAudio()
   Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Stopped dumping audio."), 5.0f);
 }
 
-bool System::SaveScreenshot(const char* filename /* = nullptr */, bool full_resolution /* = true */,
-                            bool apply_aspect_ratio /* = true */, bool compress_on_thread /* = true */)
+bool System::SaveScreenshot(const char* filename, DisplayScreenshotMode mode, DisplayScreenshotFormat format,
+                            u8 quality, bool compress_on_thread)
 {
   if (!System::IsValid())
     return false;
@@ -4316,7 +4316,7 @@ bool System::SaveScreenshot(const char* filename /* = nullptr */, bool full_reso
   if (!filename)
   {
     const auto& code = System::GetGameSerial();
-    const char* extension = "png";
+    const char* extension = Settings::GetDisplayScreenshotFormatExtension(format);
     if (code.empty())
     {
       auto_filename =
@@ -4337,10 +4337,7 @@ bool System::SaveScreenshot(const char* filename /* = nullptr */, bool full_reso
     return false;
   }
 
-  const bool screenshot_saved =
-    g_gpu->RenderScreenshotToFile(filename, g_settings.display_internal_resolution_screenshots, compress_on_thread);
-
-  if (!screenshot_saved)
+  if (!g_gpu->RenderScreenshotToFile(filename, mode, quality, compress_on_thread))
   {
     Host::AddFormattedOSDMessage(10.0f, TRANSLATE("OSDMessage", "Failed to save screenshot to '%s'"), filename);
     return false;

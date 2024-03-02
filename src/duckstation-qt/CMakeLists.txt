@@ -70,18 +70,12 @@ set(SRCS
   debuggerwindow.cpp
   debuggerwindow.h
   debuggerwindow.ui
-  displaysettingswidget.cpp
-  displaysettingswidget.h
-  displaysettingswidget.ui
   displaywidget.cpp
   displaywidget.h
   emptygamelistwidget.ui
   emulationsettingswidget.cpp
   emulationsettingswidget.h
   emulationsettingswidget.ui
-  enhancementsettingswidget.cpp
-  enhancementsettingswidget.h
-  enhancementsettingswidget.ui
   foldersettingswidget.cpp
   foldersettingswidget.h
   foldersettingswidget.ui
@@ -104,9 +98,9 @@ set(SRCS
   gdbconnection.h
   gdbserver.cpp
   gdbserver.h
-  generalsettingswidget.cpp
-  generalsettingswidget.h
-  generalsettingswidget.ui
+  graphicssettingswidget.cpp
+  graphicssettingswidget.h
+  graphicssettingswidget.ui
   hotkeysettingswidget.cpp
   hotkeysettingswidget.h
   inputbindingdialog.cpp
@@ -114,6 +108,9 @@ set(SRCS
   inputbindingdialog.ui
   inputbindingwidgets.cpp
   inputbindingwidgets.h
+  interfacesettingswidget.cpp
+  interfacesettingswidget.h
+  interfacesettingswidget.ui
   logwindow.cpp
   logwindow.h
   mainwindow.cpp

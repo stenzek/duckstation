@@ -13,7 +13,7 @@
     <ClCompile Include="audiosettingswidget.cpp" />
     <ClCompile Include="displaywidget.cpp" />
     <ClCompile Include="qtprogresscallback.cpp" />
-    <ClCompile Include="generalsettingswidget.cpp" />
+    <ClCompile Include="interfacesettingswidget.cpp" />
     <ClCompile Include="advancedsettingswidget.cpp" />
     <ClCompile Include="gdbconnection.cpp" />
     <ClCompile Include="gdbserver.cpp" />
@@ -25,8 +25,6 @@
     <ClCompile Include="gamelistsearchdirectoriesmodel.cpp" />
     <ClCompile Include="autoupdaterdialog.cpp" />
     <ClCompile Include="biossettingswidget.cpp" />
-    <ClCompile Include="enhancementsettingswidget.cpp" />
-    <ClCompile Include="displaysettingswidget.cpp" />
     <ClCompile Include="memorycardeditorwindow.cpp" />
     <ClCompile Include="postprocessingsettingswidget.cpp" />
     <ClCompile Include="cheatmanagerdialog.cpp" />
@@ -105,16 +103,10 @@
     <ClCompile Include="$(IntDir)moc_debuggerwindow.cpp">
       <Filter>moc</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)moc_displaysettingswidget.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
     <ClCompile Include="$(IntDir)moc_displaywidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)moc_emulationsettingswidget.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)moc_enhancementsettingswidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)moc_foldersettingswidget.cpp">
@@ -142,9 +134,6 @@
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)moc_gdbserver.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)moc_generalsettingswidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)moc_hotkeysettingswidget.cpp">
@@ -186,6 +175,13 @@
     <ClCompile Include="$(IntDir)moc_setupwizarddialog.cpp">
       <Filter>moc</Filter>
     </ClCompile>
+    <ClCompile Include="graphicssettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_graphicssettingswidget.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)moc_interfacesettingswidget.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
@@ -216,7 +212,7 @@
     <QtMoc Include="inputbindingwidgets.h" />
     <QtMoc Include="audiosettingswidget.h" />
     <QtMoc Include="displaywidget.h" />
-    <QtMoc Include="generalsettingswidget.h" />
+    <QtMoc Include="interfacesettingswidget.h" />
     <QtMoc Include="qtprogresscallback.h" />
     <QtMoc Include="advancedsettingswidget.h" />
     <QtMoc Include="gdbconnection.h" />
@@ -228,9 +224,7 @@
     <QtMoc Include="gamelistsearchdirectoriesmodel.h" />
     <QtMoc Include="autoupdaterdialog.h" />
     <QtMoc Include="biossettingswidget.h" />
-    <QtMoc Include="enhancementsettingswidget.h" />
     <QtMoc Include="memorycardeditorwindow.h" />
-    <QtMoc Include="displaysettingswidget.h" />
     <QtMoc Include="postprocessingsettingswidget.h" />
     <QtMoc Include="cheatmanagerdialog.h" />
     <QtMoc Include="cheatcodeeditordialog.h" />
@@ -251,6 +245,7 @@
     <QtMoc Include="colorpickerbutton.h" />
     <QtMoc Include="setupwizarddialog.h" />
     <QtMoc Include="logwindow.h" />
+    <QtMoc Include="graphicssettingswidget.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
@@ -258,14 +253,12 @@
     <QtUi Include="mainwindow.ui" />
     <QtUi Include="settingswindow.ui" />
     <QtUi Include="audiosettingswidget.ui" />
-    <QtUi Include="generalsettingswidget.ui" />
+    <QtUi Include="interfacesettingswidget.ui" />
     <QtUi Include="advancedsettingswidget.ui" />
     <QtUi Include="aboutdialog.ui" />
     <QtUi Include="inputbindingdialog.ui" />
     <QtUi Include="autoupdaterdialog.ui" />
     <QtUi Include="biossettingswidget.ui" />
-    <QtUi Include="enhancementsettingswidget.ui" />
-    <QtUi Include="displaysettingswidget.ui" />
     <QtUi Include="postprocessingsettingswidget.ui" />
     <QtUi Include="memorycardeditorwindow.ui" />
     <QtUi Include="cheatmanagerdialog.ui" />
@@ -293,6 +286,7 @@
     <QtUi Include="setupwizarddialog.ui" />
     <QtUi Include="controllerledsettingsdialog.ui" />
     <QtUi Include="debuggeraddbreakpointdialog.ui" />
+    <QtUi Include="graphicssettingswidget.ui" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="qt5.natvis" />

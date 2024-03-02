@@ -1,16 +1,15 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
-#include "generalsettingswidget.h"
+#include "interfacesettingswidget.h"
 #include "autoupdaterdialog.h"
-#include "generalsettingswidget.h"
 #include "mainwindow.h"
 #include "qtutils.h"
 #include "scmversion/scmversion.h"
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
 
-const char* GeneralSettingsWidget::THEME_NAMES[] = {
+const char* InterfaceSettingsWidget::THEME_NAMES[] = {
   QT_TRANSLATE_NOOP("MainWindow", "Native"),
   QT_TRANSLATE_NOOP("MainWindow", "Fusion"),
   QT_TRANSLATE_NOOP("MainWindow", "Dark Fusion (Gray)"),
@@ -20,13 +19,13 @@ const char* GeneralSettingsWidget::THEME_NAMES[] = {
   nullptr,
 };
 
-const char* GeneralSettingsWidget::THEME_VALUES[] = {
+const char* InterfaceSettingsWidget::THEME_VALUES[] = {
   "", "fusion", "darkfusion", "darkfusionblue", "greymatter", "qdarkstyle", nullptr,
 };
 
-const char* GeneralSettingsWidget::DEFAULT_THEME_NAME = "darkfusion";
+const char* InterfaceSettingsWidget::DEFAULT_THEME_NAME = "darkfusion";
 
-GeneralSettingsWidget::GeneralSettingsWidget(SettingsWindow* dialog, QWidget* parent)
+InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget* parent)
   : QWidget(parent), m_dialog(dialog)
 {
   SettingsInterface* sif = dialog->getSettingsInterface();
@@ -57,7 +56,7 @@ GeneralSettingsWidget::GeneralSettingsWidget(SettingsWindow* dialog, QWidget* pa
                                                Settings::DEFAULT_SAVE_STATE_COMPRESSION);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableDiscordPresence, "Main", "EnableDiscordPresence", false);
   connect(m_ui.renderToSeparateWindow, &QCheckBox::stateChanged, this,
-          &GeneralSettingsWidget::onRenderToSeparateWindowChanged);
+          &InterfaceSettingsWidget::onRenderToSeparateWindowChanged);
 
   onRenderToSeparateWindowChanged();
 
@@ -124,9 +123,9 @@ GeneralSettingsWidget::GeneralSettingsWidget(SettingsWindow* dialog, QWidget* pa
   }
 }
 
-GeneralSettingsWidget::~GeneralSettingsWidget() = default;
+InterfaceSettingsWidget::~InterfaceSettingsWidget() = default;
 
-void GeneralSettingsWidget::onRenderToSeparateWindowChanged()
+void InterfaceSettingsWidget::onRenderToSeparateWindowChanged()
 {
   m_ui.hideMainWindow->setEnabled(m_ui.renderToSeparateWindow->isChecked());
 }

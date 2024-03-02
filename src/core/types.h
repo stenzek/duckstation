@@ -160,6 +160,23 @@ enum class DisplayExclusiveFullscreenControl : u8
   Count
 };
 
+enum class DisplayScreenshotMode : u8
+{
+  ScreenResolution,
+  InternalResolution,
+  UncorrectedInternalResolution,
+  Count
+};
+
+enum class DisplayScreenshotFormat : u8
+{
+  PNG,
+  JPEG,
+  TGA,
+  BMP,
+  Count
+};
+
 enum class AudioBackend : u8
 {
   Null,

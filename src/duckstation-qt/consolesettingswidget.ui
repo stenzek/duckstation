@@ -40,11 +40,22 @@
        <widget class="QComboBox" name="region"/>
       </item>
       <item row="1" column="0" colspan="2">
-       <widget class="QCheckBox" name="enable8MBRAM">
-        <property name="text">
-         <string>Enable 8MB RAM (Dev Console)</string>
-        </property>
-       </widget>
+       <layout class="QGridLayout" name="gridLayout_2">
+        <item row="0" column="0">
+         <widget class="QCheckBox" name="enable8MBRAM">
+          <property name="text">
+           <string>Enable 8MB RAM (Dev Console)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QCheckBox" name="disableAllEnhancements">
+          <property name="text">
+           <string>Disable All Enhancements</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>

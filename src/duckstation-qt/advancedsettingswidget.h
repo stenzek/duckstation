@@ -17,6 +17,12 @@ public:
   explicit AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~AdvancedSettingsWidget();
 
+Q_SIGNALS:
+  void onShowDebugOptionsChanged(bool enabled);
+
+private Q_SLOTS:
+  void onShowDebugOptionsStateChanged();
+
 private:
   struct TweakOption
   {

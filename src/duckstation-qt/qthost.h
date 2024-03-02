@@ -286,6 +286,9 @@ bool DownloadFileFromZip(QWidget* parent, const QString& title, std::string url,
 /// Thread-safe settings access.
 void QueueSettingsSave();
 
+/// Returns true if the debug menu and functionality should be shown.
+bool ShouldShowDebugOptions();
+
 /// VM state, safe to access on UI thread.
 bool IsSystemValid();
 bool IsSystemPaused();

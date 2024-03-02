@@ -67,14 +67,6 @@ void OpenURL(QWidget* parent, const QUrl& qurl);
 /// Opens a URL string with the default handler.
 void OpenURL(QWidget* parent, const char* url);
 
-/// Fills a combo box with resolution scale options.
-void FillComboBoxWithResolutionScales(QComboBox* cb);
-
-/// Fills a combo box with multisampling options.
-QVariant GetMSAAModeValue(uint multisamples, bool ssaa);
-void DecodeMSAAModeValue(const QVariant& userdata, uint* multisamples, bool* ssaa);
-void FillComboBoxWithMSAAModes(QComboBox* cb);
-
 /// Prompts for an address in hex.
 std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, const QString& label, bool code);
 

@@ -40,6 +40,8 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.region, "Console", "Region", &Settings::ParseConsoleRegionName,
                                                &Settings::GetConsoleRegionName, Settings::DEFAULT_CONSOLE_REGION);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enable8MBRAM, "Console", "Enable8MBRAM", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableAllEnhancements, "Main", "DisableAllEnhancements",
+                                               false);
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.cpuExecutionMode, "CPU", "ExecutionMode",
                                                &Settings::ParseCPUExecutionMode, &Settings::GetCPUExecutionModeName,
                                                Settings::DEFAULT_CPU_EXECUTION_MODE);
@@ -72,6 +74,9 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
        "to use a larger heap size for "
        "this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used "
        "with compatible mods."));
+  dialog->registerWidgetHelp(m_ui.disableAllEnhancements, tr("Disable All Enhancements"), tr("Unchecked"),
+                             tr("Disables all enhancement options, simulating the system as accurately as possible. "
+                                "Use to quickly determine whether an enhancement is responsible for game bugs."));
   dialog->registerWidgetHelp(
     m_ui.cdromLoadImageToRAM, tr("Preload Image to RAM"), tr("Unchecked"),
     tr("Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some "

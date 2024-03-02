@@ -123,14 +123,13 @@
     </widget>
     <addaction name="actionViewGameProperties"/>
     <addaction name="separator"/>
-    <addaction name="actionGeneralSettings"/>
+    <addaction name="actionInterfaceSettings"/>
     <addaction name="actionGameListSettings"/>
     <addaction name="actionBIOSSettings"/>
     <addaction name="actionConsoleSettings"/>
     <addaction name="actionEmulationSettings"/>
     <addaction name="actionMemoryCardSettings"/>
-    <addaction name="actionDisplaySettings"/>
-    <addaction name="actionEnhancementSettings"/>
+    <addaction name="actionGraphicsSettings"/>
     <addaction name="actionPostProcessingSettings"/>
     <addaction name="actionAudioSettings"/>
     <addaction name="actionAchievementSettings"/>
@@ -433,22 +432,13 @@
     <string>&amp;Hotkeys</string>
    </property>
   </action>
-  <action name="actionDisplaySettings">
+  <action name="actionGraphicsSettings">
    <property name="icon">
     <iconset theme="image-fill">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Display</string>
-   </property>
-  </action>
-  <action name="actionEnhancementSettings">
-   <property name="icon">
-    <iconset theme="sparkle-fill">
-     <normaloff>.</normaloff>.</iconset>
-   </property>
-   <property name="text">
-    <string>&amp;Enhancements</string>
+    <string>&amp;Graphics</string>
    </property>
   </action>
   <action name="actionPostProcessingSettings">
@@ -587,13 +577,13 @@
     <string>Game List</string>
    </property>
   </action>
-  <action name="actionGeneralSettings">
+  <action name="actionInterfaceSettings">
    <property name="icon">
     <iconset theme="settings-3-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>General</string>
+    <string>&amp;Interface</string>
    </property>
   </action>
   <action name="actionAdvancedSettings">

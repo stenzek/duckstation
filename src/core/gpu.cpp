@@ -1906,8 +1906,8 @@ Common::Rectangle<s32> GPU::CalculateDrawRect(s32 window_width, s32 window_heigh
 }
 
 static bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string filename, FileSystem::ManagedCFilePtr fp,
-                                          bool clear_alpha, bool flip_y, u32 resize_width, u32 resize_height,
-                                          std::vector<u8> texture_data, u32 texture_data_stride,
+                                          u8 quality, bool clear_alpha, bool flip_y, u32 resize_width,
+                                          u32 resize_height, std::vector<u8> texture_data, u32 texture_data_stride,
                                           GPUTexture::Format texture_format)
 {
 
@@ -1964,12 +1964,13 @@ static bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string fil
   bool result = false;
   if (StringUtil::Strcasecmp(extension, ".png") == 0)
   {
+    // TODO: Use quality... libpng is better.
     result =
       (stbi_write_png_to_func(write_func, fp.get(), width, height, 4, texture_data.data(), texture_data_stride) != 0);
   }
   else if (StringUtil::Strcasecmp(extension, ".jpg") == 0)
   {
-    result = (stbi_write_jpg_to_func(write_func, fp.get(), width, height, 4, texture_data.data(), 95) != 0);
+    result = (stbi_write_jpg_to_func(write_func, fp.get(), width, height, 4, texture_data.data(), quality) != 0);
   }
   else if (StringUtil::Strcasecmp(extension, ".tga") == 0)
   {
@@ -2072,14 +2073,16 @@ bool GPU::WriteDisplayTextureToFile(std::string filename, bool full_resolution /
 
   if (!compress_on_thread)
   {
-    return CompressAndWriteTextureToFile(read_width, read_height, std::move(filename), std::move(fp), clear_alpha,
-                                         flip_y, resize_width, resize_height, std::move(texture_data),
-                                         texture_data_stride, m_display_texture->GetFormat());
+    return CompressAndWriteTextureToFile(read_width, read_height, std::move(filename), std::move(fp),
+                                         g_settings.display_screenshot_quality, clear_alpha, flip_y, resize_width,
+                                         resize_height, std::move(texture_data), texture_data_stride,
+                                         m_display_texture->GetFormat());
   }
 
   std::thread compress_thread(CompressAndWriteTextureToFile, read_width, read_height, std::move(filename),
-                              std::move(fp), clear_alpha, flip_y, resize_width, resize_height, std::move(texture_data),
-                              texture_data_stride, m_display_texture->GetFormat());
+                              std::move(fp), g_settings.display_screenshot_quality, clear_alpha, flip_y, resize_width,
+                              resize_height, std::move(texture_data), texture_data_stride,
+                              m_display_texture->GetFormat());
   compress_thread.detach();
   return true;
 }
@@ -2131,51 +2134,59 @@ bool GPU::RenderScreenshotToBuffer(u32 width, u32 height, const Common::Rectangl
   return true;
 }
 
-bool GPU::RenderScreenshotToFile(std::string filename, bool internal_resolution /* = false */,
-                                 bool compress_on_thread /* = false */)
+bool GPU::RenderScreenshotToFile(std::string filename, DisplayScreenshotMode mode, u8 quality, bool compress_on_thread)
 {
   u32 width = g_gpu_device->GetWindowWidth();
   u32 height = g_gpu_device->GetWindowHeight();
   Common::Rectangle<s32> draw_rect = CalculateDrawRect(width, height);
 
+  const bool internal_resolution = (mode != DisplayScreenshotMode::ScreenResolution);
   if (internal_resolution && m_display_texture_view_width != 0 && m_display_texture_view_height != 0)
   {
-    const u32 draw_width = static_cast<u32>(draw_rect.GetWidth());
-    const u32 draw_height = static_cast<u32>(draw_rect.GetHeight());
-
-    // If internal res, scale the computed draw rectangle to the internal res.
-    // We re-use the draw rect because it's already been AR corrected.
-    const float sar =
-      static_cast<float>(m_display_texture_view_width) / static_cast<float>(m_display_texture_view_height);
-    const float dar = static_cast<float>(draw_width) / static_cast<float>(draw_height);
-    if (sar >= dar)
+    if (mode == DisplayScreenshotMode::InternalResolution)
     {
-      // stretch height, preserve width
-      const float scale = static_cast<float>(m_display_texture_view_width) / static_cast<float>(draw_width);
+      const u32 draw_width = static_cast<u32>(draw_rect.GetWidth());
+      const u32 draw_height = static_cast<u32>(draw_rect.GetHeight());
+
+      // If internal res, scale the computed draw rectangle to the internal res.
+      // We re-use the draw rect because it's already been AR corrected.
+      const float sar =
+        static_cast<float>(m_display_texture_view_width) / static_cast<float>(m_display_texture_view_height);
+      const float dar = static_cast<float>(draw_width) / static_cast<float>(draw_height);
+      if (sar >= dar)
+      {
+        // stretch height, preserve width
+        const float scale = static_cast<float>(m_display_texture_view_width) / static_cast<float>(draw_width);
+        width = m_display_texture_view_width;
+        height = static_cast<u32>(std::round(static_cast<float>(draw_height) * scale));
+      }
+      else
+      {
+        // stretch width, preserve height
+        const float scale = static_cast<float>(m_display_texture_view_height) / static_cast<float>(draw_height);
+        width = static_cast<u32>(std::round(static_cast<float>(draw_width) * scale));
+        height = m_display_texture_view_height;
+      }
+
+      // DX11 won't go past 16K texture size.
+      const u32 max_texture_size = g_gpu_device->GetMaxTextureSize();
+      if (width > max_texture_size)
+      {
+        height = static_cast<u32>(static_cast<float>(height) /
+                                  (static_cast<float>(width) / static_cast<float>(max_texture_size)));
+        width = max_texture_size;
+      }
+      if (height > max_texture_size)
+      {
+        height = max_texture_size;
+        width = static_cast<u32>(static_cast<float>(width) /
+                                 (static_cast<float>(height) / static_cast<float>(max_texture_size)));
+      }
+    }
+    else // if (mode == DisplayScreenshotMode::UncorrectedInternalResolution)
+    {
       width = m_display_texture_view_width;
-      height = static_cast<u32>(std::round(static_cast<float>(draw_height) * scale));
-    }
-    else
-    {
-      // stretch width, preserve height
-      const float scale = static_cast<float>(m_display_texture_view_height) / static_cast<float>(draw_height);
-      width = static_cast<u32>(std::round(static_cast<float>(draw_width) * scale));
       height = m_display_texture_view_height;
-    }
-
-    // DX11 won't go past 16K texture size.
-    constexpr u32 MAX_TEXTURE_SIZE = 16384;
-    if (width > MAX_TEXTURE_SIZE)
-    {
-      height = static_cast<u32>(static_cast<float>(height) /
-                                (static_cast<float>(width) / static_cast<float>(MAX_TEXTURE_SIZE)));
-      width = MAX_TEXTURE_SIZE;
-    }
-    if (height > MAX_TEXTURE_SIZE)
-    {
-      height = MAX_TEXTURE_SIZE;
-      width = static_cast<u32>(static_cast<float>(width) /
-                               (static_cast<float>(height) / static_cast<float>(MAX_TEXTURE_SIZE)));
     }
 
     // Remove padding, it's not part of the framebuffer.
@@ -2203,14 +2214,14 @@ bool GPU::RenderScreenshotToFile(std::string filename, bool internal_resolution 
 
   if (!compress_on_thread)
   {
-    return CompressAndWriteTextureToFile(width, height, std::move(filename), std::move(fp), true,
+    return CompressAndWriteTextureToFile(width, height, std::move(filename), std::move(fp), quality, true,
                                          g_gpu_device->UsesLowerLeftOrigin(), width, height, std::move(pixels),
                                          pixels_stride, pixels_format);
   }
 
-  std::thread compress_thread(CompressAndWriteTextureToFile, width, height, std::move(filename), std::move(fp), true,
-                              g_gpu_device->UsesLowerLeftOrigin(), width, height, std::move(pixels), pixels_stride,
-                              pixels_format);
+  std::thread compress_thread(CompressAndWriteTextureToFile, width, height, std::move(filename), std::move(fp), quality,
+                              true, g_gpu_device->UsesLowerLeftOrigin(), width, height, std::move(pixels),
+                              pixels_stride, pixels_format);
   compress_thread.detach();
   return true;
 }

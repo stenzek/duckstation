@@ -209,7 +209,7 @@ public:
                                 std::vector<u8>* out_pixels, u32* out_stride, GPUTexture::Format* out_format);
 
   /// Helper function to save screenshot to PNG.
-  bool RenderScreenshotToFile(std::string filename, bool internal_resolution = false, bool compress_on_thread = false);
+  bool RenderScreenshotToFile(std::string filename, DisplayScreenshotMode mode, u8 quality, bool compress_on_thread);
 
   /// Draws the current display texture, with any post-processing.
   bool PresentDisplay();

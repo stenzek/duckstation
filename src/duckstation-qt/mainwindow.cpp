@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "mainwindow.h"
@@ -11,7 +11,7 @@
 #include "displaywidget.h"
 #include "gamelistsettingswidget.h"
 #include "gamelistwidget.h"
-#include "generalsettingswidget.h"
+#include "interfacesettingswidget.h"
 #include "logwindow.h"
 #include "memorycardeditorwindow.h"
 #include "qthost.h"
@@ -1985,7 +1985,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionFullscreen, &QAction::triggered, g_emu_thread, &EmuThread::toggleFullscreen);
   connect(m_ui.actionSettings, &QAction::triggered, [this]() { doSettings(); });
   connect(m_ui.actionSettings2, &QAction::triggered, this, &MainWindow::onSettingsTriggeredFromToolbar);
-  connect(m_ui.actionGeneralSettings, &QAction::triggered, [this]() { doSettings("General"); });
+  connect(m_ui.actionInterfaceSettings, &QAction::triggered, [this]() { doSettings("Interface"); });
   connect(m_ui.actionBIOSSettings, &QAction::triggered, [this]() { doSettings("BIOS"); });
   connect(m_ui.actionConsoleSettings, &QAction::triggered, [this]() { doSettings("Console"); });
   connect(m_ui.actionEmulationSettings, &QAction::triggered, [this]() { doSettings("Emulation"); });
@@ -1995,8 +1995,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionControllerSettings, &QAction::triggered,
           [this]() { doControllerSettings(ControllerSettingsWindow::Category::GlobalSettings); });
   connect(m_ui.actionMemoryCardSettings, &QAction::triggered, [this]() { doSettings("Memory Cards"); });
-  connect(m_ui.actionDisplaySettings, &QAction::triggered, [this]() { doSettings("Display"); });
-  connect(m_ui.actionEnhancementSettings, &QAction::triggered, [this]() { doSettings("Enhancements"); });
+  connect(m_ui.actionGraphicsSettings, &QAction::triggered, [this]() { doSettings("Graphics"); });
   connect(m_ui.actionPostProcessingSettings, &QAction::triggered, [this]() { doSettings("Post-Processing"); });
   connect(m_ui.actionAudioSettings, &QAction::triggered, [this]() { doSettings("Audio"); });
   connect(m_ui.actionAchievementSettings, &QAction::triggered, [this]() { doSettings("Achievements"); });
@@ -2120,11 +2119,11 @@ void MainWindow::connectSignals()
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionDebugShowMDECState, "Debug", "ShowMDECState", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionDebugShowDMAState, "Debug", "ShowDMAState", false);
 
-  for (u32 i = 0; GeneralSettingsWidget::THEME_NAMES[i]; i++)
+  for (u32 i = 0; InterfaceSettingsWidget::THEME_NAMES[i]; i++)
   {
-    const QString key = QString::fromUtf8(GeneralSettingsWidget::THEME_VALUES[i]);
+    const QString key = QString::fromUtf8(InterfaceSettingsWidget::THEME_VALUES[i]);
     QAction* action =
-      m_ui.menuSettingsTheme->addAction(qApp->translate("MainWindow", GeneralSettingsWidget::THEME_NAMES[i]));
+      m_ui.menuSettingsTheme->addAction(qApp->translate("MainWindow", InterfaceSettingsWidget::THEME_NAMES[i]));
     action->setCheckable(true);
     action->setData(key);
     connect(action, &QAction::toggled, [this, key](bool) { setTheme(key); });
@@ -2154,7 +2153,7 @@ void MainWindow::reloadThemeSpecificImages()
 
 void MainWindow::setStyleFromSettings()
 {
-  const std::string theme(Host::GetBaseStringSettingValue("UI", "Theme", GeneralSettingsWidget::DEFAULT_THEME_NAME));
+  const std::string theme(Host::GetBaseStringSettingValue("UI", "Theme", InterfaceSettingsWidget::DEFAULT_THEME_NAME));
 
   // setPalette() shouldn't be necessary, as the documentation claims that setStyle() resets the palette, but it
   // is here, to work around a bug in 6.4.x and 6.5.x where the palette doesn't restore after changing themes.
@@ -2471,7 +2470,7 @@ void MainWindow::updateDebugMenuCropMode()
 void MainWindow::updateMenuSelectedTheme()
 {
   QString theme =
-    QString::fromStdString(Host::GetBaseStringSettingValue("UI", "Theme", GeneralSettingsWidget::DEFAULT_THEME_NAME));
+    QString::fromStdString(Host::GetBaseStringSettingValue("UI", "Theme", InterfaceSettingsWidget::DEFAULT_THEME_NAME));
 
   for (QObject* obj : m_ui.menuSettingsTheme->children())
   {
@@ -2613,7 +2612,7 @@ void MainWindow::startupUpdateCheck()
 
 void MainWindow::updateDebugMenuVisibility()
 {
-  const bool visible = Host::GetBaseBoolSettingValue("Main", "ShowDebugMenu", false);
+  const bool visible = QtHost::ShouldShowDebugOptions();
   m_ui.menuDebug->menuAction()->setVisible(visible);
 }
 

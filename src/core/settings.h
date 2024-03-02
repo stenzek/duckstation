@@ -135,6 +135,9 @@ struct Settings
   DisplayAlignment display_alignment = DEFAULT_DISPLAY_ALIGNMENT;
   DisplayScalingMode display_scaling = DEFAULT_DISPLAY_SCALING;
   DisplayExclusiveFullscreenControl display_exclusive_fullscreen_control = DEFAULT_DISPLAY_EXCLUSIVE_FULLSCREEN_CONTROL;
+  DisplayScreenshotMode display_screenshot_mode = DEFAULT_DISPLAY_SCREENSHOT_MODE;
+  DisplayScreenshotFormat display_screenshot_format = DEFAULT_DISPLAY_SCREENSHOT_FORMAT;
+  u8 display_screenshot_quality = DEFAULT_DISPLAY_SCREENSHOT_QUALITY;
   u16 display_aspect_ratio_custom_numerator = 0;
   u16 display_aspect_ratio_custom_denominator = 0;
   s16 display_active_start_offset = 0;
@@ -155,7 +158,6 @@ struct Settings
   bool display_show_inputs : 1 = false;
   bool display_show_enhancements : 1 = false;
   bool display_all_frames : 1 = false;
-  bool display_internal_resolution_screenshots : 1 = false;
   bool display_stretch_vertically : 1 = false;
   bool video_sync_enabled = DEFAULT_VSYNC_VALUE;
   float display_osd_scale = 100.0f;
@@ -374,6 +376,8 @@ struct Settings
   static const char* GetRendererName(GPURenderer renderer);
   static const char* GetRendererDisplayName(GPURenderer renderer);
   static RenderAPI GetRenderAPIForRenderer(GPURenderer renderer);
+  static GPURenderer GetRendererForRenderAPI(RenderAPI api);
+  static GPURenderer GetAutomaticRenderer();
 
   static std::optional<GPUTextureFilter> ParseTextureFilterName(const char* str);
   static const char* GetTextureFilterName(GPUTextureFilter filter);
@@ -410,6 +414,15 @@ struct Settings
   static std::optional<DisplayExclusiveFullscreenControl> ParseDisplayExclusiveFullscreenControl(const char* str);
   static const char* GetDisplayExclusiveFullscreenControlName(DisplayExclusiveFullscreenControl mode);
   static const char* GetDisplayExclusiveFullscreenControlDisplayName(DisplayExclusiveFullscreenControl mode);
+
+  static std::optional<DisplayScreenshotMode> ParseDisplayScreenshotMode(const char* str);
+  static const char* GetDisplayScreenshotModeName(DisplayScreenshotMode mode);
+  static const char* GetDisplayScreenshotModeDisplayName(DisplayScreenshotMode mode);
+
+  static std::optional<DisplayScreenshotFormat> ParseDisplayScreenshotFormat(const char* str);
+  static const char* GetDisplayScreenshotFormatName(DisplayScreenshotFormat mode);
+  static const char* GetDisplayScreenshotFormatDisplayName(DisplayScreenshotFormat mode);
+  static const char* GetDisplayScreenshotFormatExtension(DisplayScreenshotFormat mode);
 
   static std::optional<AudioBackend> ParseAudioBackend(const char* str);
   static const char* GetAudioBackendName(AudioBackend backend);
@@ -473,6 +486,9 @@ struct Settings
   static constexpr DisplayScalingMode DEFAULT_DISPLAY_SCALING = DisplayScalingMode::BilinearSmooth;
   static constexpr DisplayExclusiveFullscreenControl DEFAULT_DISPLAY_EXCLUSIVE_FULLSCREEN_CONTROL =
     DisplayExclusiveFullscreenControl::Automatic;
+  static constexpr DisplayScreenshotMode DEFAULT_DISPLAY_SCREENSHOT_MODE = DisplayScreenshotMode::ScreenResolution;
+  static constexpr DisplayScreenshotFormat DEFAULT_DISPLAY_SCREENSHOT_FORMAT = DisplayScreenshotFormat::PNG;
+  static constexpr u8 DEFAULT_DISPLAY_SCREENSHOT_QUALITY = 85;
   static constexpr float DEFAULT_OSD_SCALE = 100.0f;
 
   static constexpr u8 DEFAULT_CDROM_READAHEAD_SECTORS = 8;

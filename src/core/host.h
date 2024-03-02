@@ -47,6 +47,7 @@ void SetBaseStringSettingValue(const char* section, const char* key, const char*
 void SetBaseStringListSettingValue(const char* section, const char* key, const std::vector<std::string>& values);
 bool AddValueToBaseStringListSetting(const char* section, const char* key, const char* value);
 bool RemoveValueFromBaseStringListSetting(const char* section, const char* key, const char* value);
+bool ContainsBaseSettingValue(const char* section, const char* key);
 void DeleteBaseSettingValue(const char* section, const char* key);
 void CommitBaseSettingChanges();
 
