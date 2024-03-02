@@ -937,11 +937,21 @@ void System::LoadSettings(bool display_osd_messages)
   InputManager::ReloadBindings(si, *Host::GetSettingsInterfaceForBindings());
 
   // apply compatibility settings
-  if (g_settings.apply_compatibility_settings && !s_running_game_serial.empty())
+  if (g_settings.apply_compatibility_settings)
   {
-    const GameDatabase::Entry* entry = GameDatabase::GetEntryForSerial(s_running_game_serial);
-    if (entry)
-      entry->ApplySettings(g_settings, display_osd_messages);
+    if (!s_running_game_serial.empty())
+    {
+      const GameDatabase::Entry* entry = GameDatabase::GetEntryForSerial(s_running_game_serial);
+      if (entry)
+        entry->ApplySettings(g_settings, display_osd_messages);
+    }
+  }
+  else
+  {
+    Host::AddIconOSDMessage(
+      "compatibility_settings_disabled", ICON_FA_GAMEPAD,
+      TRANSLATE_STR("System", "Compatibility settings are not enabled. Some games may not function correctly."),
+      Host::OSD_WARNING_DURATION);
   }
 
   g_settings.FixIncompatibleSettings(display_osd_messages);
