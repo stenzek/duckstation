@@ -216,25 +216,32 @@ GPUDevice::~GPUDevice() = default;
 
 RenderAPI GPUDevice::GetPreferredAPI()
 {
+  static RenderAPI preferred_renderer = RenderAPI::None;
+  if (preferred_renderer == RenderAPI::None) [[unlikely]]
+  {
 #if defined(_WIN32) && !defined(_M_ARM64)
-  // Perfer DX11 on Windows, except ARM64, where QCom has slow DX11 drivers.
-  return RenderAPI::D3D11;
+    // Perfer DX11 on Windows, except ARM64, where QCom has slow DX11 drivers.
+    preferred_renderer = RenderAPI::D3D11;
 #elif defined(_WIN32) && defined(_M_ARM64)
-  return RenderAPI::D3D12;
+    preferred_renderer = RenderAPI::D3D12;
 #elif defined(__APPLE__)
-  // Prefer Metal on MacOS.
-  return RenderAPI::Metal;
+    // Prefer Metal on MacOS.
+    preferred_renderer = RenderAPI::Metal;
 #elif defined(ENABLE_OPENGL) && defined(ENABLE_VULKAN)
-  // On Linux, if we have both GL and Vulkan, prefer VK if the driver isn't software.
-  return VulkanDevice::IsSuitableDefaultRenderer() ? RenderAPI::Vulkan : RenderAPI::OpenGL;
+    // On Linux, if we have both GL and Vulkan, prefer VK if the driver isn't software.
+    preferred_renderer = VulkanDevice::IsSuitableDefaultRenderer() ? RenderAPI::Vulkan : RenderAPI::OpenGL;
 #elif defined(ENABLE_OPENGL)
-  return RenderAPI::OpenGL;
+    preferred_renderer = RenderAPI::OpenGL;
 #elif defined(ENABLE_VULKAN)
-  return RenderAPI::Vulkan;
+    preferred_renderer = RenderAPI::Vulkan;
 #else
-  // Uhhh, what?
-  return RenderAPI::None;
+    // Uhhh, what?
+    Log_ErrorPrint("Somehow don't have any renderers available...");
+    preferred_renderer = RenderAPI::None;
 #endif
+  }
+
+  return preferred_renderer;
 }
 
 const char* GPUDevice::RenderAPIToString(RenderAPI api)
