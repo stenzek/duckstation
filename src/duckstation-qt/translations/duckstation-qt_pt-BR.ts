@@ -7920,7 +7920,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7034"/>
         <source>Texture Filtering</source>
-        <translation>Filtragem de textura</translation>
+        <translation>Filtro de textura</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7035"/>
@@ -9028,7 +9028,7 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     <message>
         <location filename="../graphicssettingswidget.ui" line="270"/>
         <source>Texture Filtering:</source>
-        <translation>Filtragem de textura:</translation>
+        <translation>Filtro de textura:</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="282"/>
@@ -9580,7 +9580,7 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     <message>
         <location filename="../graphicssettingswidget.cpp" line="280"/>
         <source>Texture Filtering</source>
-        <translation>Filtragem de textura</translation>
+        <translation>Filtro de textura</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="282"/>
