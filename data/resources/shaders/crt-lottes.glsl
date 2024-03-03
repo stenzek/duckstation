@@ -164,7 +164,7 @@ float3 ToSrgb(float3 c)
 float3 Fetch(float2 pos,float2 off){
   pos=(floor(pos*GetResolution()+off)+float2(0.5,0.5))*GetInvResolution();
 #ifdef SIMPLE_LINEAR_GAMMA
-  return ToLinear(GetOption(brightBoost) * pow(SampleLocation(pos.xy).rgb, float3(2.2)));
+  return ToLinear(GetOption(brightBoost) * pow(SampleLocation(pos.xy).rgb, float3(2.2, 2.2, 2.2)));
 #else
   return ToLinear(GetOption(brightBoost) * SampleLocation(pos.xy).rgb);
 #endif
