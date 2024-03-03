@@ -124,12 +124,15 @@ bool MetalDevice::GetHostRefreshRate(float* refresh_rate)
   return GPUDevice::GetHostRefreshRate(refresh_rate);
 }
 
-void MetalDevice::SetVSync(bool enabled)
+void MetalDevice::SetSyncMode(DisplaySyncMode mode)
 {
-  m_vsync_enabled = enabled;
+  m_sync_mode = mode;
 
   if (m_layer != nil)
+  {
+    const bool enabled = (mode == DisplaySyncMode::VSync || mode == DisplaySyncMode::VSyncRelaxed);
     [m_layer setDisplaySyncEnabled:enabled];
+  }
 }
 
 bool MetalDevice::CreateDevice(const std::string_view& adapter, bool threaded_presentation,
@@ -382,7 +385,8 @@ bool MetalDevice::CreateLayer()
       }
     });
 
-    [m_layer setDisplaySyncEnabled:m_vsync_enabled];
+    const bool sync_enabled = (m_sync_mode == DisplaySyncMode::VSync || m_sync_mode == DisplaySyncMode::VSyncRelaxed);
+    [m_layer setDisplaySyncEnabled:sync_enabled];
 
     DebugAssert(m_layer_pass_desc == nil);
     m_layer_pass_desc = [[MTLRenderPassDescriptor renderPassDescriptor] retain];

@@ -2022,7 +2022,7 @@ bool VulkanDevice::CreateDevice(const std::string_view& adapter, bool threaded_p
 
   if (surface != VK_NULL_HANDLE)
   {
-    m_swap_chain = VulkanSwapChain::Create(m_window_info, surface, m_vsync_enabled, m_exclusive_fullscreen_control);
+    m_swap_chain = VulkanSwapChain::Create(m_window_info, surface, m_sync_mode, m_exclusive_fullscreen_control);
     if (!m_swap_chain)
     {
       Error::SetStringView(error, "Failed to create swap chain");
@@ -2243,7 +2243,7 @@ bool VulkanDevice::UpdateWindow()
     return false;
   }
 
-  m_swap_chain = VulkanSwapChain::Create(m_window_info, surface, m_vsync_enabled, m_exclusive_fullscreen_control);
+  m_swap_chain = VulkanSwapChain::Create(m_window_info, surface, m_sync_mode, m_exclusive_fullscreen_control);
   if (!m_swap_chain)
   {
     Log_ErrorPrintf("Failed to create swap chain");
@@ -2319,24 +2319,27 @@ std::string VulkanDevice::GetDriverInfo() const
   return ret;
 }
 
-void VulkanDevice::SetVSync(bool enabled)
+void VulkanDevice::SetSyncMode(DisplaySyncMode mode)
 {
-  if (!m_swap_chain || m_vsync_enabled == enabled)
+  if (m_sync_mode == mode)
+    return;
+
+  const DisplaySyncMode prev_mode = m_sync_mode;
+  m_sync_mode = mode;
+  if (!m_swap_chain)
     return;
 
   // This swap chain should not be used by the current buffer, thus safe to destroy.
   WaitForGPUIdle();
-  if (!m_swap_chain->SetVSync(enabled))
+  if (!m_swap_chain->SetSyncMode(mode))
   {
     // Try switching back to the old mode..
-    if (!m_swap_chain->SetVSync(m_vsync_enabled))
+    if (!m_swap_chain->SetSyncMode(prev_mode))
     {
       Panic("Failed to reset old vsync mode after failure");
       m_swap_chain.reset();
     }
   }
-
-  m_vsync_enabled = enabled;
 }
 
 bool VulkanDevice::BeginPresent(bool frame_skip)

@@ -3879,10 +3879,11 @@ void FullscreenUI::DrawDisplaySettingsPage()
       "GPU", "UseSoftwareRendererForReadbacks", false);
   }
 
-  DrawToggleSetting(
-    bsi, FSUI_CSTR("Enable VSync"),
+  DrawEnumSetting(
+    bsi, FSUI_CSTR("VSync"),
     FSUI_CSTR("Synchronizes presentation of the console's frames to the host. Enable for smoother animations."),
-    "Display", "VSync", Settings::DEFAULT_VSYNC_VALUE);
+    "Display", "SyncMode", Settings::DEFAULT_DISPLAY_SYNC_MODE, &Settings::ParseDisplaySyncMode,
+    &Settings::GetDisplaySyncModeName, &Settings::GetDisplaySyncModeDisplayName, DisplaySyncMode::Count);
 
   DrawToggleSetting(
     bsi, FSUI_CSTR("Sync To Host Refresh Rate"),

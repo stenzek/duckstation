@@ -5,6 +5,7 @@
 
 #include "gpu_shader_cache.h"
 #include "gpu_texture.h"
+#include "gpu_types.h"
 #include "window_info.h"
 
 #include "common/bitfield.h"
@@ -24,17 +25,6 @@
 #include <vector>
 
 class Error;
-
-enum class RenderAPI : u32
-{
-  None,
-  D3D11,
-  D3D12,
-  Vulkan,
-  OpenGL,
-  OpenGLES,
-  Metal
-};
 
 class GPUSampler
 {
@@ -551,7 +541,7 @@ public:
   virtual RenderAPI GetRenderAPI() const = 0;
 
   bool Create(const std::string_view& adapter, const std::string_view& shader_cache_path, u32 shader_cache_version,
-              bool debug_device, bool vsync, bool threaded_presentation,
+              bool debug_device, DisplaySyncMode sync_mode, bool threaded_presentation,
               std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features, Error* error);
   void Destroy();
 
@@ -646,8 +636,12 @@ public:
   /// Renders ImGui screen elements. Call before EndPresent().
   void RenderImGui();
 
-  ALWAYS_INLINE bool IsVsyncEnabled() const { return m_vsync_enabled; }
-  virtual void SetVSync(bool enabled) = 0;
+  ALWAYS_INLINE DisplaySyncMode GetSyncMode() const { return m_sync_mode; }
+  ALWAYS_INLINE bool IsVSyncActive() const
+  {
+    return (m_sync_mode == DisplaySyncMode::VSync || m_sync_mode == DisplaySyncMode::VSyncRelaxed);
+  }
+  virtual void SetSyncMode(DisplaySyncMode mode);
 
   ALWAYS_INLINE bool IsDebugDevice() const { return m_debug_device; }
   ALWAYS_INLINE size_t GetVRAMUsage() const { return s_total_vram_usage; }
@@ -760,8 +754,8 @@ private:
 protected:
   static Statistics s_stats;
 
+  DisplaySyncMode m_sync_mode = DisplaySyncMode::Disabled;
   bool m_gpu_timing_enabled = false;
-  bool m_vsync_enabled = false;
   bool m_debug_device = false;
 };
 

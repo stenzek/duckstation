@@ -98,7 +98,7 @@ public:
   void Draw(u32 vertex_count, u32 base_vertex) override;
   void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) override;
 
-  void SetVSync(bool enabled) override;
+  void SetSyncMode(DisplaySyncMode mode) override;
 
   bool BeginPresent(bool skip_present) override;
   void EndPresent() override;

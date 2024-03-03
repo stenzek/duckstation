@@ -243,6 +243,10 @@ void Settings::Load(SettingsInterface& si)
   display_scaling =
     ParseDisplayScaling(si.GetStringValue("Display", "Scaling", GetDisplayScalingName(DEFAULT_DISPLAY_SCALING)).c_str())
       .value_or(DEFAULT_DISPLAY_SCALING);
+  display_sync_mode =
+    ParseDisplaySyncMode(
+      si.GetStringValue("Display", "SyncMode", GetDisplaySyncModeName(DEFAULT_DISPLAY_SYNC_MODE)).c_str())
+      .value_or(DEFAULT_DISPLAY_SYNC_MODE);
   display_exclusive_fullscreen_control =
     ParseDisplayExclusiveFullscreenControl(
       si.GetStringValue("Display", "ExclusiveFullscreenControl",
@@ -279,7 +283,6 @@ void Settings::Load(SettingsInterface& si)
   display_show_enhancements = si.GetBoolValue("Display", "ShowEnhancements", false);
   display_all_frames = si.GetBoolValue("Display", "DisplayAllFrames", false);
   display_stretch_vertically = si.GetBoolValue("Display", "StretchVertically", false);
-  video_sync_enabled = si.GetBoolValue("Display", "VSync", DEFAULT_VSYNC_VALUE);
   display_max_fps = si.GetFloatValue("Display", "MaxFPS", DEFAULT_DISPLAY_MAX_FPS);
   display_osd_scale = si.GetFloatValue("Display", "OSDScale", DEFAULT_OSD_SCALE);
 
@@ -504,6 +507,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(display_aspect_ratio));
   si.SetStringValue("Display", "Alignment", GetDisplayAlignmentName(display_alignment));
   si.SetStringValue("Display", "Scaling", GetDisplayScalingName(display_scaling));
+  si.SetStringValue("Display", "SyncMode", GetDisplaySyncModeName(display_sync_mode));
   si.SetStringValue("Display", "ExclusiveFullscreenControl",
                     GetDisplayExclusiveFullscreenControlName(display_exclusive_fullscreen_control));
   si.SetStringValue("Display", "ScreenshotMode", GetDisplayScreenshotModeName(display_screenshot_mode));
@@ -524,7 +528,6 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("Display", "ShowEnhancements", display_show_enhancements);
   si.SetBoolValue("Display", "DisplayAllFrames", display_all_frames);
   si.SetBoolValue("Display", "StretchVertically", display_stretch_vertically);
-  si.SetBoolValue("Display", "VSync", video_sync_enabled);
   si.SetFloatValue("Display", "MaxFPS", display_max_fps);
   si.SetFloatValue("Display", "OSDScale", display_osd_scale);
 
@@ -1355,6 +1358,43 @@ const char* Settings::GetDisplayScalingName(DisplayScalingMode mode)
 const char* Settings::GetDisplayScalingDisplayName(DisplayScalingMode mode)
 {
   return Host::TranslateToCString("DisplayScalingMode", s_display_scaling_display_names[static_cast<int>(mode)]);
+}
+
+static constexpr const std::array s_display_sync_mode_names = {
+  "Disabled",
+  "VSync",
+  "VSyncRelaxed",
+  "VRR",
+};
+static constexpr const std::array s_display_sync_mode_display_names = {
+  TRANSLATE_NOOP("Settings", "Disabled"),
+  TRANSLATE_NOOP("Settings", "VSync"),
+  TRANSLATE_NOOP("Settings", "Relaxed VSync"),
+  TRANSLATE_NOOP("Settings", "VRR/FreeSync/GSync"),
+};
+
+std::optional<DisplaySyncMode> Settings::ParseDisplaySyncMode(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_display_sync_mode_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<DisplaySyncMode>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetDisplaySyncModeName(DisplaySyncMode mode)
+{
+  return s_display_sync_mode_names[static_cast<size_t>(mode)];
+}
+
+const char* Settings::GetDisplaySyncModeDisplayName(DisplaySyncMode mode)
+{
+  return Host::TranslateToCString("Settings", s_display_sync_mode_display_names[static_cast<size_t>(mode)]);
 }
 
 static constexpr const std::array s_display_exclusive_fullscreen_mode_names = {

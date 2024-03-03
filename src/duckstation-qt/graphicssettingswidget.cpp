@@ -51,8 +51,13 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.renderer, "GPU", "Renderer", &Settings::ParseRendererName,
                                                &Settings::GetRendererName, Settings::DEFAULT_GPU_RENDERER);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vsync, "Display", "VSync", false);
-
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.resolutionScale, "GPU", "ResolutionScale", 1);
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.textureFiltering, "GPU", "TextureFilter",
+                                               &Settings::ParseTextureFilterName, &Settings::GetTextureFilterName,
+                                               Settings::DEFAULT_GPU_TEXTURE_FILTER);
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.gpuDownsampleMode, "GPU", "DownsampleMode",
+                                               &Settings::ParseDownsampleModeName, &Settings::GetDownsampleModeName,
+                                               Settings::DEFAULT_GPU_DOWNSAMPLE_MODE);
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayAspectRatio, "Display", "AspectRatio",
                                                &Settings::ParseDisplayAspectRatio, &Settings::GetDisplayAspectRatioName,
                                                Settings::DEFAULT_DISPLAY_ASPECT_RATIO);
@@ -67,13 +72,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayScaling, "Display", "Scaling",
                                                &Settings::ParseDisplayScaling, &Settings::GetDisplayScalingName,
                                                Settings::DEFAULT_DISPLAY_SCALING);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.resolutionScale, "GPU", "ResolutionScale", 1);
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.textureFiltering, "GPU", "TextureFilter",
-                                               &Settings::ParseTextureFilterName, &Settings::GetTextureFilterName,
-                                               Settings::DEFAULT_GPU_TEXTURE_FILTER);
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.gpuDownsampleMode, "GPU", "DownsampleMode",
-                                               &Settings::ParseDownsampleModeName, &Settings::GetDownsampleModeName,
-                                               Settings::DEFAULT_GPU_DOWNSAMPLE_MODE);
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displaySyncMode, "Display", "SyncMode",
+                                               &Settings::ParseDisplaySyncMode, &Settings::GetDisplaySyncModeName,
+                                               Settings::DEFAULT_DISPLAY_SYNC_MODE);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.gpuDownsampleScale, "GPU", "DownsampleScale", 1);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.trueColor, "GPU", "TrueColor", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableInterlacing, "GPU", "DisableInterlacing", true);
@@ -243,9 +244,23 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
        "renderers. <br>This option is only supported in Direct3D and Vulkan. OpenGL will always use the default "
        "device."));
   dialog->registerWidgetHelp(
-    m_ui.vsync, tr("VSync"), tr("Unchecked"),
-    tr("Enable this option to match DuckStation's refresh rate with your current monitor or screen. "
-       "VSync is automatically disabled when it is not possible (e.g. running at non-100% speed)."));
+    m_ui.resolutionScale, tr("Internal Resolution"), "1x",
+    tr("Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies "
+       "to the hardware backends. <br>This option is usually safe, with most games looking fine at "
+       "higher resolutions. Higher resolutions require a more powerful GPU."));
+  dialog->registerWidgetHelp(
+    m_ui.gpuDownsampleMode, tr("Down-Sampling"), tr("Disabled"),
+    tr("Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, "
+       "but should be disabled for pure 3D games. Only applies to the hardware renderers."));
+  dialog->registerWidgetHelp(m_ui.gpuDownsampleScale, tr("Down-Sampling Display Scale"), tr("1x"),
+                             tr("Selects the resolution scale that will be applied to the final image. 1x will "
+                                "downsample to the original console resolution."));
+  dialog->registerWidgetHelp(
+    m_ui.textureFiltering, tr("Texture Filtering"),
+    QString::fromUtf8(Settings::GetTextureFilterDisplayName(Settings::DEFAULT_GPU_TEXTURE_FILTER)),
+    tr("Smooths out the blockiness of magnified textures on 3D object by using filtering. <br>Will have a "
+       "greater effect on higher resolution scales. Only applies to the hardware renderers. <br>The JINC2 and "
+       "especially xBR filtering modes are very demanding, and may not be worth the speed penalty."));
   dialog->registerWidgetHelp(
     m_ui.displayAspectRatio, tr("Aspect Ratio"),
     QString::fromUtf8(Settings::GetDisplayAspectRatioDisplayName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO)),
@@ -261,27 +276,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     m_ui.displayScaling, tr("Scaling"), tr("Bilinear (Smooth)"),
     tr("Determines how the emulated console's output is upscaled or downscaled to your monitor's resolution."));
   dialog->registerWidgetHelp(
-    m_ui.resolutionScale, tr("Internal Resolution"), "1x",
-    tr("Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies "
-       "to the hardware backends. <br>This option is usually safe, with most games looking fine at "
-       "higher resolutions. Higher resolutions require a more powerful GPU."));
-  dialog->registerWidgetHelp(
-    m_ui.msaaMode, tr("Multi-Sampling"), tr("Disabled"),
-    tr("Uses multi-sampled anti-aliasing when rendering 3D polygons. Can improve visuals with a lower performance "
-       "requirement compared to upscaling, <strong>but often introduces rendering errors.</strong>"));
-  dialog->registerWidgetHelp(
-    m_ui.gpuDownsampleMode, tr("Down-Sampling"), tr("Disabled"),
-    tr("Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, "
-       "but should be disabled for pure 3D games. Only applies to the hardware renderers."));
-  dialog->registerWidgetHelp(m_ui.gpuDownsampleScale, tr("Down-Sampling Display Scale"), tr("1x"),
-                             tr("Selects the resolution scale that will be applied to the final image. 1x will "
-                                "downsample to the original console resolution."));
-  dialog->registerWidgetHelp(
-    m_ui.textureFiltering, tr("Texture Filtering"),
-    QString::fromUtf8(Settings::GetTextureFilterDisplayName(Settings::DEFAULT_GPU_TEXTURE_FILTER)),
-    tr("Smooths out the blockiness of magnified textures on 3D object by using filtering. <br>Will have a "
-       "greater effect on higher resolution scales. Only applies to the hardware renderers. <br>The JINC2 and "
-       "especially xBR filtering modes are very demanding, and may not be worth the speed penalty."));
+    m_ui.displaySyncMode, tr("VSync"), tr("Unchecked"),
+    tr("Enable this option to match DuckStation's refresh rate with your current monitor or screen. "
+       "VSync is automatically disabled when it is not possible (e.g. running at non-100% speed)."));
   dialog->registerWidgetHelp(
     m_ui.trueColor, tr("True Color Rendering"), tr("Checked"),
     tr("Forces the precision of colours output to the console's framebuffer to use the full 8 bits of precision per "
@@ -354,9 +351,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                              QString::fromUtf8(Settings::GetLineDetectModeName(Settings::DEFAULT_GPU_LINE_DETECT_MODE)),
                              tr("Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization "
                                 "behavior, filling in gaps introduced by upscaling."));
-  dialog->registerWidgetHelp(m_ui.gpuWireframeMode, tr("Wireframe Mode"), tr("Disabled"),
-                             tr("Draws a wireframe outline of the triangles rendered by the console's GPU, either as a "
-                                "replacement or an overlay."));
+  dialog->registerWidgetHelp(
+    m_ui.msaaMode, tr("Multi-Sampling"), tr("Disabled"),
+    tr("Uses multi-sampled anti-aliasing when rendering 3D polygons. Can improve visuals with a lower performance "
+       "requirement compared to upscaling, <strong>but often introduces rendering errors.</strong>"));
   dialog->registerWidgetHelp(
     m_ui.debanding, tr("True Color Debanding"), tr("Unchecked"),
     tr("Applies modern dithering techniques to further smooth out gradients when true color is enabled. "
@@ -473,6 +471,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
   // Debugging Tab
 
+  dialog->registerWidgetHelp(m_ui.gpuWireframeMode, tr("Wireframe Mode"), tr("Disabled"),
+                             tr("Draws a wireframe outline of the triangles rendered by the console's GPU, either as a "
+                                "replacement or an overlay."));
+
   dialog->registerWidgetHelp(
     m_ui.useDebugDevice, tr("Use Debug Device"), tr("Unchecked"),
     tr("Enable debugging when supported by the host's renderer API. <strong>Only for developer use.</strong>"));
@@ -505,6 +507,18 @@ void GraphicsSettingsWidget::setupAdditionalUi()
     m_ui.renderer->addItem(QString::fromUtf8(Settings::GetRendererDisplayName(static_cast<GPURenderer>(i))));
   }
 
+  for (u32 i = 0; i < static_cast<u32>(GPUTextureFilter::Count); i++)
+  {
+    m_ui.textureFiltering->addItem(
+      QString::fromUtf8(Settings::GetTextureFilterDisplayName(static_cast<GPUTextureFilter>(i))));
+  }
+
+  for (u32 i = 0; i < static_cast<u32>(GPUDownsampleMode::Count); i++)
+  {
+    m_ui.gpuDownsampleMode->addItem(
+      QString::fromUtf8(Settings::GetDownsampleModeDisplayName(static_cast<GPUDownsampleMode>(i))));
+  }
+
   for (u32 i = 0; i < static_cast<u32>(DisplayAspectRatio::Count); i++)
   {
     m_ui.displayAspectRatio->addItem(
@@ -523,26 +537,10 @@ void GraphicsSettingsWidget::setupAdditionalUi()
       QString::fromUtf8(Settings::GetDisplayScalingDisplayName(static_cast<DisplayScalingMode>(i))));
   }
 
+  for (u32 i = 0; i < static_cast<u32>(DisplaySyncMode::Count); i++)
   {
-    if (m_dialog->isPerGameSettings())
-      m_ui.msaaMode->addItem(tr("Use Global Setting"));
-    m_ui.msaaMode->addItem(tr("Disabled"), GetMSAAModeValue(1, false));
-    for (uint i = 2; i <= 32; i *= 2)
-      m_ui.msaaMode->addItem(tr("%1x MSAA").arg(i), GetMSAAModeValue(i, false));
-    for (uint i = 2; i <= 32; i *= 2)
-      m_ui.msaaMode->addItem(tr("%1x SSAA").arg(i), GetMSAAModeValue(i, true));
-  }
-
-  for (u32 i = 0; i < static_cast<u32>(GPUTextureFilter::Count); i++)
-  {
-    m_ui.textureFiltering->addItem(
-      QString::fromUtf8(Settings::GetTextureFilterDisplayName(static_cast<GPUTextureFilter>(i))));
-  }
-
-  for (u32 i = 0; i < static_cast<u32>(GPUDownsampleMode::Count); i++)
-  {
-    m_ui.gpuDownsampleMode->addItem(
-      QString::fromUtf8(Settings::GetDownsampleModeDisplayName(static_cast<GPUDownsampleMode>(i))));
+    m_ui.displaySyncMode->addItem(
+      QString::fromUtf8(Settings::GetDisplaySyncModeDisplayName(static_cast<DisplaySyncMode>(i))));
   }
 
   // Advanced Tab
@@ -559,16 +557,20 @@ void GraphicsSettingsWidget::setupAdditionalUi()
       QString::fromUtf8(Settings::GetDisplayAlignmentDisplayName(static_cast<DisplayAlignment>(i))));
   }
 
+  {
+    if (m_dialog->isPerGameSettings())
+      m_ui.msaaMode->addItem(tr("Use Global Setting"));
+    m_ui.msaaMode->addItem(tr("Disabled"), GetMSAAModeValue(1, false));
+    for (uint i = 2; i <= 32; i *= 2)
+      m_ui.msaaMode->addItem(tr("%1x MSAA").arg(i), GetMSAAModeValue(i, false));
+    for (uint i = 2; i <= 32; i *= 2)
+      m_ui.msaaMode->addItem(tr("%1x SSAA").arg(i), GetMSAAModeValue(i, true));
+  }
+
   for (u32 i = 0; i < static_cast<u32>(GPULineDetectMode::Count); i++)
   {
     m_ui.gpuLineDetectMode->addItem(
       QString::fromUtf8(Settings::GetLineDetectModeDisplayName(static_cast<GPULineDetectMode>(i))));
-  }
-
-  for (u32 i = 0; i < static_cast<u32>(GPUWireframeMode::Count); i++)
-  {
-    m_ui.gpuWireframeMode->addItem(
-      QString::fromUtf8(Settings::GetGPUWireframeModeDisplayName(static_cast<GPUWireframeMode>(i))));
   }
 
   // Capture Tab
@@ -583,6 +585,14 @@ void GraphicsSettingsWidget::setupAdditionalUi()
   {
     m_ui.screenshotFormat->addItem(
       QString::fromUtf8(Settings::GetDisplayScreenshotFormatDisplayName(static_cast<DisplayScreenshotFormat>(i))));
+  }
+
+  // Debugging Tab
+
+  for (u32 i = 0; i < static_cast<u32>(GPUWireframeMode::Count); i++)
+  {
+    m_ui.gpuWireframeMode->addItem(
+      QString::fromUtf8(Settings::GetGPUWireframeModeDisplayName(static_cast<GPUWireframeMode>(i))));
   }
 }
 

@@ -6,6 +6,7 @@
 #include "types.h"
 
 #include "util/audio_stream.h"
+#include "util/gpu_types.h"
 
 #include "common/log.h"
 #include "common/settings_interface.h"
@@ -17,8 +18,6 @@
 #include <string>
 #include <string_view>
 #include <vector>
-
-enum class RenderAPI : u32;
 
 struct SettingInfo
 {
@@ -134,6 +133,7 @@ struct Settings
   DisplayAspectRatio display_aspect_ratio = DEFAULT_DISPLAY_ASPECT_RATIO;
   DisplayAlignment display_alignment = DEFAULT_DISPLAY_ALIGNMENT;
   DisplayScalingMode display_scaling = DEFAULT_DISPLAY_SCALING;
+  DisplaySyncMode display_sync_mode = DEFAULT_DISPLAY_SYNC_MODE;
   DisplayExclusiveFullscreenControl display_exclusive_fullscreen_control = DEFAULT_DISPLAY_EXCLUSIVE_FULLSCREEN_CONTROL;
   DisplayScreenshotMode display_screenshot_mode = DEFAULT_DISPLAY_SCREENSHOT_MODE;
   DisplayScreenshotFormat display_screenshot_format = DEFAULT_DISPLAY_SCREENSHOT_FORMAT;
@@ -159,7 +159,6 @@ struct Settings
   bool display_show_enhancements : 1 = false;
   bool display_all_frames : 1 = false;
   bool display_stretch_vertically : 1 = false;
-  bool video_sync_enabled = DEFAULT_VSYNC_VALUE;
   float display_osd_scale = 100.0f;
   float display_max_fps = DEFAULT_DISPLAY_MAX_FPS;
   float gpu_pgxp_tolerance = -1.0f;
@@ -411,6 +410,10 @@ struct Settings
   static const char* GetDisplayScalingName(DisplayScalingMode mode);
   static const char* GetDisplayScalingDisplayName(DisplayScalingMode mode);
 
+  static std::optional<DisplaySyncMode> ParseDisplaySyncMode(const char* str);
+  static const char* GetDisplaySyncModeName(DisplaySyncMode mode);
+  static const char* GetDisplaySyncModeDisplayName(DisplaySyncMode mode);
+
   static std::optional<DisplayExclusiveFullscreenControl> ParseDisplayExclusiveFullscreenControl(const char* str);
   static const char* GetDisplayExclusiveFullscreenControlName(DisplayExclusiveFullscreenControl mode);
   static const char* GetDisplayExclusiveFullscreenControlDisplayName(DisplayExclusiveFullscreenControl mode);
@@ -484,6 +487,7 @@ struct Settings
   static constexpr DisplayAspectRatio DEFAULT_DISPLAY_ASPECT_RATIO = DisplayAspectRatio::Auto;
   static constexpr DisplayAlignment DEFAULT_DISPLAY_ALIGNMENT = DisplayAlignment::Center;
   static constexpr DisplayScalingMode DEFAULT_DISPLAY_SCALING = DisplayScalingMode::BilinearSmooth;
+  static constexpr DisplaySyncMode DEFAULT_DISPLAY_SYNC_MODE = DisplaySyncMode::Disabled;
   static constexpr DisplayExclusiveFullscreenControl DEFAULT_DISPLAY_EXCLUSIVE_FULLSCREEN_CONTROL =
     DisplayExclusiveFullscreenControl::Automatic;
   static constexpr DisplayScreenshotMode DEFAULT_DISPLAY_SCREENSHOT_MODE = DisplayScreenshotMode::ScreenResolution;
@@ -525,13 +529,11 @@ struct Settings
 #ifndef __ANDROID__
   static constexpr bool DEFAULT_SAVE_STATE_COMPRESSION = true;
   static constexpr bool DEFAULT_SAVE_STATE_BACKUPS = true;
-  static constexpr bool DEFAULT_VSYNC_VALUE = false;
   static constexpr bool DEFAULT_FAST_BOOT_VALUE = false;
   static constexpr float DEFAULT_DISPLAY_MAX_FPS = 0.0f;
 #else
   static constexpr bool DEFAULT_SAVE_STATE_COMPRESSION = true;
   static constexpr bool DEFAULT_SAVE_STATE_BACKUPS = false;
-  static constexpr bool DEFAULT_VSYNC_VALUE = false;
   static constexpr bool DEFAULT_FAST_BOOT_VALUE = true;
   static constexpr float DEFAULT_DISPLAY_MAX_FPS = 60.0f;
 #endif

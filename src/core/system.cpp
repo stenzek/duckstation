@@ -1849,6 +1849,12 @@ void System::FrameDone()
     SaveRunaheadState();
   }
 
+  // TODO: Kick cmdbuffer early
+  const DisplaySyncMode sync_mode = g_gpu_device->GetSyncMode();
+  const bool throttle_after_present = (sync_mode == DisplaySyncMode::Disabled);
+  if (!throttle_after_present && s_throttler_enabled && !IsExecutionInterrupted())
+    Throttle();
+
   const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
   if (current_time < s_next_frame_time || s_display_all_frames || s_last_frame_skipped)
   {
@@ -1860,7 +1866,7 @@ void System::FrameDone()
     s_last_frame_skipped = true;
   }
 
-  if (s_throttler_enabled && !IsExecutionInterrupted())
+  if (throttle_after_present && s_throttler_enabled && !IsExecutionInterrupted())
     Throttle();
 
   // Input poll already done above
@@ -2638,10 +2644,14 @@ void System::UpdateSpeedLimiterState()
   }
 
   // When syncing to host and using vsync, we don't need to sleep.
-  if (s_syncing_to_host && ShouldUseVSync() && s_display_all_frames)
+  if (s_syncing_to_host && s_display_all_frames)
   {
-    Log_InfoPrintf("Using host vsync for throttling.");
-    s_throttler_enabled = false;
+    const DisplaySyncMode effective_sync_mode = GetEffectiveDisplaySyncMode();
+    if (effective_sync_mode == DisplaySyncMode::VSync || effective_sync_mode == DisplaySyncMode::VSyncRelaxed)
+    {
+      Log_InfoPrintf("Using host vsync for throttling.");
+      s_throttler_enabled = false;
+    }
   }
 
   Log_VerbosePrintf("Target speed: %f%%", s_target_speed * 100.0f);
@@ -2674,21 +2684,25 @@ void System::UpdateSpeedLimiterState()
 
 void System::UpdateDisplaySync()
 {
-  const bool video_sync_enabled = ShouldUseVSync();
-  const bool syncing_to_host_vsync = (s_syncing_to_host && video_sync_enabled && s_display_all_frames);
+  const DisplaySyncMode display_sync_mode = GetEffectiveDisplaySyncMode();
+  const bool syncing_to_host_vsync =
+    (s_syncing_to_host &&
+     (display_sync_mode == DisplaySyncMode::VSync || display_sync_mode == DisplaySyncMode::VSyncRelaxed) &&
+     s_display_all_frames);
   const float max_display_fps = (s_throttler_enabled || s_syncing_to_host) ? 0.0f : g_settings.display_max_fps;
-  Log_VerbosePrintf("Using vsync: %s%s", video_sync_enabled ? "YES" : "NO",
+  Log_VerbosePrintf("Display sync: %s%s", Settings::GetDisplaySyncModeDisplayName(display_sync_mode),
                     syncing_to_host_vsync ? " (for throttling)" : "");
   Log_VerbosePrintf("Max display fps: %f (%s)", max_display_fps,
                     s_display_all_frames ? "displaying all frames" : "skipping displaying frames when needed");
 
   g_gpu_device->SetDisplayMaxFPS(max_display_fps);
-  g_gpu_device->SetVSync(video_sync_enabled);
+  g_gpu_device->SetSyncMode(display_sync_mode);
 }
 
-bool System::ShouldUseVSync()
+DisplaySyncMode System::GetEffectiveDisplaySyncMode()
 {
-  return g_settings.video_sync_enabled && !IsRunningAtNonStandardSpeed();
+  // Disable vsync if running outside 100%.
+  return (IsValid() && IsRunningAtNonStandardSpeed()) ? DisplaySyncMode::Disabled : g_settings.display_sync_mode;
 }
 
 bool System::IsFastForwardEnabled()
@@ -3737,7 +3751,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     DMA::SetHaltTicks(g_settings.dma_halt_ticks);
 
     if (g_settings.audio_backend != old_settings.audio_backend ||
-        g_settings.video_sync_enabled != old_settings.video_sync_enabled ||
+        g_settings.display_sync_mode != old_settings.display_sync_mode ||
         g_settings.increase_timer_resolution != old_settings.increase_timer_resolution ||
         g_settings.emulation_speed != old_settings.emulation_speed ||
         g_settings.fast_forward_speed != old_settings.fast_forward_speed ||
