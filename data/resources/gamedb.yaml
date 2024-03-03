@@ -70786,6 +70786,10 @@ SLES-00555:
   name: "Hexen (Europe)"
   controllers:
     - DigitalController
+  traits:
+    - DisablePGXP # 2.5D, not beneficial.
+  settings:
+    gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
   metadata:
     publisher: "GT Interactive Software"
     developer: "Raven Software"
@@ -70808,7 +70812,9 @@ SLUS-00348:
   controllers:
     - DigitalController
   traits:
-    - DisableUpscaling
+    - DisablePGXP # 2.5D, not beneficial.
+  settings:
+    gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
   metadata:
     publisher: "GT Interactive Software"
     developer: "Raven Software"
@@ -70827,6 +70833,10 @@ SLPS-00972:
   name: "Hexen - Beyond Heretic (Japan)"
   controllers:
     - DigitalController
+  traits:
+    - DisablePGXP # 2.5D, not beneficial.
+  settings:
+    gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
   metadata:
     publisher: "GameBank / GT Interactive Software"
     developer: "Raven Software"
@@ -97109,6 +97119,7 @@ SLES-01064:
     - DigitalController
   traits:
     - DisableTrueColor
+    - DisableWidescreen # No effect.
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 2 / Laguna videogames"
@@ -97132,6 +97143,7 @@ SLUS-00453:
     - DigitalController
   traits:
     - DisableTrueColor
+    - DisableWidescreen # No effect.
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 2 / Laguna videogames"
@@ -135511,6 +135523,7 @@ SLPS-00630:
     - DigitalController
   traits:
     - DisableTrueColor
+    - DisableWidescreen # No effect.
   codes:
     - SLPS-00630
     - SLPS-91045

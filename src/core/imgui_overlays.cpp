@@ -556,6 +556,8 @@ void ImGuiManager::DrawEnhancementsOverlay()
   {
     text.append(" WSHack");
   }
+  if (g_settings.gpu_line_detect_mode != GPULineDetectMode::Disabled)
+    text.append_format(" LD={}", Settings::GetLineDetectModeName(g_settings.gpu_line_detect_mode));
   if (g_settings.gpu_pgxp_enable)
   {
     text.append(" PGXP");
