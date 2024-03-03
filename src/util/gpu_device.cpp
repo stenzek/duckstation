@@ -271,10 +271,11 @@ bool GPUDevice::IsSameRenderAPI(RenderAPI lhs, RenderAPI rhs)
 }
 
 bool GPUDevice::Create(const std::string_view& adapter, const std::string_view& shader_cache_path,
-                       u32 shader_cache_version, bool debug_device, bool vsync, bool threaded_presentation,
-                       std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features, Error* error)
+                       u32 shader_cache_version, bool debug_device, DisplaySyncMode sync_mode,
+                       bool threaded_presentation, std::optional<bool> exclusive_fullscreen_control,
+                       FeatureMask disabled_features, Error* error)
 {
-  m_vsync_enabled = vsync;
+  m_sync_mode = sync_mode;
   m_debug_device = debug_device;
 
   if (!AcquireWindow(true))
@@ -582,6 +583,11 @@ void GPUDevice::RenderImGui()
       DrawIndexed(pcmd->ElemCount, base_index + pcmd->IdxOffset, base_vertex + pcmd->VtxOffset);
     }
   }
+}
+
+void GPUDevice::SetSyncMode(DisplaySyncMode mode)
+{
+  m_sync_mode = mode;
 }
 
 void GPUDevice::UploadVertexBuffer(const void* vertices, u32 vertex_size, u32 vertex_count, u32* base_vertex)

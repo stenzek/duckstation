@@ -1529,7 +1529,7 @@ void EmuThread::run()
       if (g_gpu_device)
       {
         System::PresentDisplay(false);
-        if (!g_gpu_device->IsVsyncEnabled())
+        if (!g_gpu_device->IsVSyncActive())
           g_gpu_device->ThrottlePresentation();
       }
     }

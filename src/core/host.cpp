@@ -265,15 +265,13 @@ bool Host::CreateGPUDevice(RenderAPI api)
   if (g_settings.gpu_disable_texture_copy_to_self)
     disabled_features |= GPUDevice::FEATURE_MASK_TEXTURE_COPY_TO_SELF;
 
-  // TODO: FSUI should always use vsync..
   Error error;
-  const bool vsync = System::IsValid() ? System::ShouldUseVSync() : g_settings.video_sync_enabled;
-  if (!g_gpu_device || !g_gpu_device->Create(g_settings.gpu_adapter,
-                                             g_settings.gpu_disable_shader_cache ? std::string_view() :
-                                                                                   std::string_view(EmuFolders::Cache),
-                                             SHADER_CACHE_VERSION, g_settings.gpu_use_debug_device, vsync,
-                                             g_settings.gpu_threaded_presentation, exclusive_fullscreen_control,
-                                             static_cast<GPUDevice::FeatureMask>(disabled_features), &error))
+  if (!g_gpu_device || !g_gpu_device->Create(
+                         g_settings.gpu_adapter,
+                         g_settings.gpu_disable_shader_cache ? std::string_view() : std::string_view(EmuFolders::Cache),
+                         SHADER_CACHE_VERSION, g_settings.gpu_use_debug_device, System::GetEffectiveDisplaySyncMode(),
+                         g_settings.gpu_threaded_presentation, exclusive_fullscreen_control,
+                         static_cast<GPUDevice::FeatureMask>(disabled_features), &error))
   {
     Log_ErrorPrintf("Failed to create GPU device.");
     if (g_gpu_device)

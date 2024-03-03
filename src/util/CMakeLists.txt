@@ -28,6 +28,7 @@ add_library(util
   gpu_shader_cache.h
   gpu_texture.cpp
   gpu_texture.h
+  gpu_types.h
   host.cpp
   host.h
   http_downloader.cpp

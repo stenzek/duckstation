@@ -98,8 +98,6 @@ public:
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;
 
-  void SetVSync(bool enabled) override;
-
   bool BeginPresent(bool skip_present) override;
   void EndPresent() override;
 

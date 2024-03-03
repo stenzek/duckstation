@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>584</width>
-    <height>446</height>
+    <height>434</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -50,18 +50,7 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,0">
-        <item>
-         <widget class="QComboBox" name="adapter"/>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="vsync">
-          <property name="text">
-           <string>VSync</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
+       <widget class="QComboBox" name="adapter"/>
       </item>
      </layout>
     </widget>
@@ -98,74 +87,13 @@
          </property>
          <layout class="QFormLayout" name="formLayout_2">
           <item row="0" column="0">
-           <widget class="QLabel" name="label_6">
-            <property name="text">
-             <string>Aspect Ratio:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0,0,0">
-            <item>
-             <widget class="QComboBox" name="displayAspectRatio"/>
-            </item>
-            <item>
-             <widget class="QSpinBox" name="customAspectRatioNumerator">
-              <property name="minimum">
-               <number>1</number>
-              </property>
-              <property name="maximum">
-               <number>9999</number>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="customAspectRatioSeparator">
-              <property name="text">
-               <string>:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QSpinBox" name="customAspectRatioDenominator">
-              <property name="minimum">
-               <number>1</number>
-              </property>
-              <property name="maximum">
-               <number>9999</number>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_7">
-            <property name="text">
-             <string>Crop:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QComboBox" name="displayCropMode"/>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_8">
-            <property name="text">
-             <string>Scaling:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QComboBox" name="displayScaling"/>
-          </item>
-          <item row="3" column="0">
            <widget class="QLabel" name="resolutionScaleLabel">
             <property name="text">
              <string>Internal Resolution:</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="0" column="1">
            <widget class="QComboBox" name="resolutionScale">
             <item>
              <property name="text">
@@ -254,32 +182,127 @@
             </item>
            </widget>
           </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="msaaModeLabel">
+          <item row="1" column="0">
+           <widget class="QLabel" name="gpuDownsampleLabel">
             <property name="text">
-             <string>Multi-Sampling:</string>
+             <string>Down-Sampling:</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
-           <widget class="QComboBox" name="msaaMode"/>
+          <item row="1" column="1">
+           <layout class="QHBoxLayout" name="gpuDownsampleLayout" stretch="1,0">
+            <item>
+             <widget class="QComboBox" name="gpuDownsampleMode"/>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="gpuDownsampleScale">
+              <property name="suffix">
+               <string>x</string>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>16</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
-          <item row="6" column="0">
+          <item row="2" column="0">
            <widget class="QLabel" name="textureFilteringLabel">
             <property name="text">
              <string>Texture Filtering:</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="1">
+          <item row="2" column="1">
            <widget class="QComboBox" name="textureFiltering"/>
           </item>
-          <item row="8" column="0" colspan="2">
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>Aspect Ratio:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0,0,0">
+            <item>
+             <widget class="QComboBox" name="displayAspectRatio"/>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="customAspectRatioNumerator">
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>9999</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="customAspectRatioSeparator">
+              <property name="text">
+               <string>:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="customAspectRatioDenominator">
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>9999</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_7">
+            <property name="text">
+             <string>Crop:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QComboBox" name="displayCropMode"/>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_8">
+            <property name="text">
+             <string>Scaling:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QComboBox" name="displayScaling"/>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>VSync:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QComboBox" name="displaySyncMode"/>
+          </item>
+          <item row="7" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_2">
             <item row="1" column="0">
              <widget class="QCheckBox" name="pgxpEnable">
               <property name="text">
                <string>PGXP Geometry Correction</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="trueColor">
+              <property name="text">
+               <string>True Color Rendering</string>
               </property>
              </widget>
             </item>
@@ -304,20 +327,6 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="trueColor">
-              <property name="text">
-               <string>True Color Rendering</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1">
-             <widget class="QCheckBox" name="forceNTSCTimings">
-              <property name="text">
-               <string>Force NTSC Timings</string>
-              </property>
-             </widget>
-            </item>
             <item row="3" column="0">
              <widget class="QCheckBox" name="disableInterlacing">
               <property name="text">
@@ -332,30 +341,10 @@
               </property>
              </widget>
             </item>
-           </layout>
-          </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="gpuDownsampleLabel">
-            <property name="text">
-             <string>Down-Sampling:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="1">
-           <layout class="QHBoxLayout" name="gpuDownsampleLayout" stretch="1,0">
-            <item>
-             <widget class="QComboBox" name="gpuDownsampleMode"/>
-            </item>
-            <item>
-             <widget class="QSpinBox" name="gpuDownsampleScale">
-              <property name="suffix">
-               <string>x</string>
-              </property>
-              <property name="minimum">
-               <number>1</number>
-              </property>
-              <property name="maximum">
-               <number>16</number>
+            <item row="3" column="1">
+             <widget class="QCheckBox" name="forceNTSCTimings">
+              <property name="text">
+               <string>Force NTSC Timings</string>
               </property>
              </widget>
             </item>
@@ -477,6 +466,16 @@
           <string>Rendering Options</string>
          </property>
          <layout class="QFormLayout" name="formLayout_6">
+          <item row="1" column="0">
+           <widget class="QLabel" name="gpuLineDetectModeLabel">
+            <property name="text">
+             <string>Line Detection:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="gpuLineDetectMode"/>
+          </item>
           <item row="2" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_5">
             <item row="0" column="1">
@@ -503,24 +502,14 @@
            </layout>
           </item>
           <item row="0" column="0">
-           <widget class="QLabel" name="gpuLineDetectModeLabel">
+           <widget class="QLabel" name="msaaModeLabel">
             <property name="text">
-             <string>Line Detection:</string>
+             <string>Multi-Sampling:</string>
             </property>
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QComboBox" name="gpuLineDetectMode"/>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="gpuWireframeModeLabel">
-            <property name="text">
-             <string>Wireframe Mode:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QComboBox" name="gpuWireframeMode"/>
+           <widget class="QComboBox" name="msaaMode"/>
           </item>
          </layout>
         </widget>
@@ -1035,6 +1024,25 @@
        <property name="bottomMargin">
         <number>0</number>
        </property>
+       <item>
+        <widget class="QGroupBox" name="groupBox_11">
+         <property name="title">
+          <string>Rendering Options</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_11">
+          <item row="0" column="0">
+           <widget class="QLabel" name="gpuWireframeModeLabel">
+            <property name="text">
+             <string>Wireframe Mode:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="gpuWireframeMode"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
        <item>
         <widget class="QGroupBox" name="groupBox_9">
          <property name="title">

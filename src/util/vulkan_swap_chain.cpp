@@ -22,9 +22,69 @@
 
 Log_SetChannel(VulkanDevice);
 
-VulkanSwapChain::VulkanSwapChain(const WindowInfo& wi, VkSurfaceKHR surface, bool vsync,
+static VkFormat GetLinearFormat(VkFormat format)
+{
+  switch (format)
+  {
+    case VK_FORMAT_R8_SRGB:
+      return VK_FORMAT_R8_UNORM;
+    case VK_FORMAT_R8G8_SRGB:
+      return VK_FORMAT_R8G8_UNORM;
+    case VK_FORMAT_R8G8B8_SRGB:
+      return VK_FORMAT_R8G8B8_UNORM;
+    case VK_FORMAT_R8G8B8A8_SRGB:
+      return VK_FORMAT_R8G8B8A8_UNORM;
+    case VK_FORMAT_B8G8R8_SRGB:
+      return VK_FORMAT_B8G8R8_UNORM;
+    case VK_FORMAT_B8G8R8A8_SRGB:
+      return VK_FORMAT_B8G8R8A8_UNORM;
+    default:
+      return format;
+  }
+}
+
+static const char* PresentModeToString(VkPresentModeKHR mode)
+{
+  switch (mode)
+  {
+    case VK_PRESENT_MODE_IMMEDIATE_KHR:
+      return "VK_PRESENT_MODE_IMMEDIATE_KHR";
+
+    case VK_PRESENT_MODE_MAILBOX_KHR:
+      return "VK_PRESENT_MODE_MAILBOX_KHR";
+
+    case VK_PRESENT_MODE_FIFO_KHR:
+      return "VK_PRESENT_MODE_FIFO_KHR";
+
+    case VK_PRESENT_MODE_FIFO_RELAXED_KHR:
+      return "VK_PRESENT_MODE_FIFO_RELAXED_KHR";
+
+    case VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR:
+      return "VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR";
+
+    case VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR:
+      return "VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR";
+
+    default:
+      return "UNKNOWN_VK_PRESENT_MODE";
+  }
+}
+
+static VkPresentModeKHR GetPreferredPresentModeForVsyncMode(DisplaySyncMode mode)
+{
+  static constexpr std::array<VkPresentModeKHR, static_cast<size_t>(DisplaySyncMode::Count)> modes = {{
+    VK_PRESENT_MODE_IMMEDIATE_KHR,    // Disabled
+    VK_PRESENT_MODE_FIFO_KHR,         // VSync
+    VK_PRESENT_MODE_FIFO_RELAXED_KHR, // VSyncRelaxed
+    VK_PRESENT_MODE_IMMEDIATE_KHR,    // VRR ??
+  }};
+
+  return modes[static_cast<size_t>(mode)];
+}
+
+VulkanSwapChain::VulkanSwapChain(const WindowInfo& wi, VkSurfaceKHR surface, VkPresentModeKHR requested_present_mode,
                                  std::optional<bool> exclusive_fullscreen_control)
-  : m_window_info(wi), m_surface(surface), m_vsync_mode(vsync),
+  : m_window_info(wi), m_surface(surface), m_requested_present_mode(requested_present_mode),
     m_exclusive_fullscreen_control(exclusive_fullscreen_control)
 {
 }
@@ -160,36 +220,17 @@ void VulkanSwapChain::DestroyVulkanSurface(VkInstance instance, WindowInfo* wi, 
 #endif
 }
 
-std::unique_ptr<VulkanSwapChain> VulkanSwapChain::Create(const WindowInfo& wi, VkSurfaceKHR surface, bool vsync,
+std::unique_ptr<VulkanSwapChain> VulkanSwapChain::Create(const WindowInfo& wi, VkSurfaceKHR surface,
+                                                         DisplaySyncMode sync_mode,
                                                          std::optional<bool> exclusive_fullscreen_control)
 {
+  const VkPresentModeKHR requested_mode = GetPreferredPresentModeForVsyncMode(sync_mode);
   std::unique_ptr<VulkanSwapChain> swap_chain =
-    std::unique_ptr<VulkanSwapChain>(new VulkanSwapChain(wi, surface, vsync, exclusive_fullscreen_control));
+    std::unique_ptr<VulkanSwapChain>(new VulkanSwapChain(wi, surface, requested_mode, exclusive_fullscreen_control));
   if (!swap_chain->CreateSwapChain())
     return nullptr;
 
   return swap_chain;
-}
-
-static VkFormat GetLinearFormat(VkFormat format)
-{
-  switch (format)
-  {
-    case VK_FORMAT_R8_SRGB:
-      return VK_FORMAT_R8_UNORM;
-    case VK_FORMAT_R8G8_SRGB:
-      return VK_FORMAT_R8G8_UNORM;
-    case VK_FORMAT_R8G8B8_SRGB:
-      return VK_FORMAT_R8G8B8_UNORM;
-    case VK_FORMAT_R8G8B8A8_SRGB:
-      return VK_FORMAT_R8G8B8A8_UNORM;
-    case VK_FORMAT_B8G8R8_SRGB:
-      return VK_FORMAT_B8G8R8_UNORM;
-    case VK_FORMAT_B8G8R8A8_SRGB:
-      return VK_FORMAT_B8G8R8A8_UNORM;
-    default:
-      return format;
-  }
 }
 
 std::optional<VkSurfaceFormatKHR> VulkanSwapChain::SelectSurfaceFormat(VkSurfaceKHR surface)
@@ -232,44 +273,8 @@ std::optional<VkSurfaceFormatKHR> VulkanSwapChain::SelectSurfaceFormat(VkSurface
   return std::nullopt;
 }
 
-static const char* PresentModeToString(VkPresentModeKHR mode)
-{
-  switch (mode)
-  {
-    case VK_PRESENT_MODE_IMMEDIATE_KHR:
-      return "VK_PRESENT_MODE_IMMEDIATE_KHR";
-
-    case VK_PRESENT_MODE_MAILBOX_KHR:
-      return "VK_PRESENT_MODE_MAILBOX_KHR";
-
-    case VK_PRESENT_MODE_FIFO_KHR:
-      return "VK_PRESENT_MODE_FIFO_KHR";
-
-    case VK_PRESENT_MODE_FIFO_RELAXED_KHR:
-      return "VK_PRESENT_MODE_FIFO_RELAXED_KHR";
-
-    case VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR:
-      return "VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR";
-
-    case VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR:
-      return "VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR";
-
-    default:
-      return "UNKNOWN_VK_PRESENT_MODE";
-  }
-}
-
-static VkPresentModeKHR GetPreferredPresentModeForVsyncMode(bool mode)
-{
-  if (mode /*== VsyncMode::On*/)
-    return VK_PRESENT_MODE_FIFO_KHR;
-  /*else if (mode == VsyncMode::Adaptive)
-    return VK_PRESENT_MODE_FIFO_RELAXED_KHR;*/
-  else
-    return VK_PRESENT_MODE_IMMEDIATE_KHR;
-}
-
-std::optional<VkPresentModeKHR> VulkanSwapChain::SelectPresentMode(VkSurfaceKHR surface, bool vsync)
+std::optional<VkPresentModeKHR> VulkanSwapChain::SelectPresentMode(VkSurfaceKHR surface,
+                                                                   VkPresentModeKHR requested_mode)
 {
   VulkanDevice& dev = VulkanDevice::GetInstance();
   VkResult res;
@@ -294,18 +299,17 @@ std::optional<VkPresentModeKHR> VulkanSwapChain::SelectPresentMode(VkSurfaceKHR 
   };
 
   // Use preferred mode if available.
-  const VkPresentModeKHR preferred_mode = GetPreferredPresentModeForVsyncMode(vsync);
   VkPresentModeKHR selected_mode;
-  if (CheckForMode(preferred_mode))
+  if (CheckForMode(requested_mode))
   {
-    selected_mode = preferred_mode;
+    selected_mode = requested_mode;
   }
-  else if (!vsync /*vsync != VsyncMode::On*/ && CheckForMode(VK_PRESENT_MODE_MAILBOX_KHR))
+  else if (requested_mode != VK_PRESENT_MODE_FIFO_KHR && CheckForMode(VK_PRESENT_MODE_MAILBOX_KHR))
   {
     // Prefer mailbox over fifo for adaptive vsync/no-vsync.
     selected_mode = VK_PRESENT_MODE_MAILBOX_KHR;
   }
-  else if (vsync /*vsync != VsyncMode::Off*/ && CheckForMode(VK_PRESENT_MODE_FIFO_KHR))
+  else if (requested_mode == VK_PRESENT_MODE_FIFO_RELAXED_KHR && CheckForMode(VK_PRESENT_MODE_FIFO_KHR))
   {
     // Fallback to FIFO if we're using any kind of vsync.
     // This should never fail, FIFO is mandated.
@@ -317,7 +321,7 @@ std::optional<VkPresentModeKHR> VulkanSwapChain::SelectPresentMode(VkSurfaceKHR 
     selected_mode = present_modes[0];
   }
 
-  Log_DevPrintf("(SwapChain) Preferred present mode: %s, selected: %s", PresentModeToString(preferred_mode),
+  Log_DevPrintf("(SwapChain) Preferred present mode: %s, selected: %s", PresentModeToString(requested_mode),
                 PresentModeToString(selected_mode));
 
   return selected_mode;
@@ -329,7 +333,7 @@ bool VulkanSwapChain::CreateSwapChain()
 
   // Select swap chain format and present mode
   std::optional<VkSurfaceFormatKHR> surface_format = SelectSurfaceFormat(m_surface);
-  std::optional<VkPresentModeKHR> present_mode = SelectPresentMode(m_surface, m_vsync_mode);
+  std::optional<VkPresentModeKHR> present_mode = SelectPresentMode(m_surface, m_requested_present_mode);
   if (!surface_format.has_value() || !present_mode.has_value())
     return false;
 
@@ -468,6 +472,7 @@ bool VulkanSwapChain::CreateSwapChain()
   m_window_info.surface_width = std::max(1u, size.width);
   m_window_info.surface_height = std::max(1u, size.height);
   m_window_info.surface_format = VulkanDevice::GetFormatForVkFormat(surface_format->format);
+  m_actual_present_mode = present_mode.value();
   if (m_window_info.surface_format == GPUTexture::Format::Unknown)
   {
     Log_ErrorPrintf("Unknown Vulkan surface format %u", static_cast<u32>(surface_format->format));
@@ -634,12 +639,13 @@ bool VulkanSwapChain::ResizeSwapChain(u32 new_width, u32 new_height, float new_s
   return true;
 }
 
-bool VulkanSwapChain::SetVSync(bool mode)
+bool VulkanSwapChain::SetSyncMode(DisplaySyncMode mode)
 {
-  if (m_vsync_mode == mode)
+  const VkPresentModeKHR present_mode = GetPreferredPresentModeForVsyncMode(mode);
+  if (m_requested_present_mode == present_mode)
     return true;
 
-  m_vsync_mode = mode;
+  m_requested_present_mode = present_mode;
 
   // Recreate the swap chain with the new present mode.
   Log_VerbosePrintf("Recreating swap chain to change present mode.");
