@@ -45,8 +45,8 @@ void MemoryCardSettingsWidget::createUi(SettingsWindow* dialog)
     QGroupBox* box = new QGroupBox(tr("Shared Settings"), this);
     QVBoxLayout* box_layout = new QVBoxLayout(box);
     QPushButton* browse = new QPushButton(tr("Browse..."), box);
+    QPushButton* open_memcards = new QPushButton(tr("Open..."), box);
     QPushButton* reset = new QPushButton(tr("Reset"), box);
-    QPushButton* open_memcards = new QPushButton(tr("Open Directory..."), box);
 
     {
       QLabel* label = new QLabel(tr("Memory Card Directory:"), box);
@@ -57,6 +57,7 @@ void MemoryCardSettingsWidget::createUi(SettingsWindow* dialog)
 
       hbox->addWidget(m_memory_card_directory);
       hbox->addWidget(browse);
+      hbox->addWidget(open_memcards);
       hbox->addWidget(reset);
 
       box_layout->addLayout(hbox);
@@ -72,20 +73,6 @@ void MemoryCardSettingsWidget::createUi(SettingsWindow* dialog)
          "will be used for all discs. If unchecked, a separate card will be used for each disc."));
 
     box_layout->addWidget(QtUtils::CreateHorizontalLine(box));
-
-    {
-
-      QHBoxLayout* note_layout = new QHBoxLayout();
-      QLabel* note_label =
-        new QLabel(tr("If one of the \"separate card per game\" memory card types is chosen, these memory "
-                      "cards will be saved to the memory cards directory."),
-                   box);
-      note_label->setWordWrap(true);
-      note_layout->addWidget(note_label, 1);
-
-      note_layout->addWidget(open_memcards);
-      box_layout->addLayout(note_layout);
-    }
 
     {
       QHBoxLayout* hbox = new QHBoxLayout();
