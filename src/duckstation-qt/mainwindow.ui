@@ -91,6 +91,7 @@
     <addaction name="actionPause"/>
     <addaction name="menuChangeDisc"/>
     <addaction name="separator"/>
+    <addaction name="actionCheats"/>
     <addaction name="menuCheats"/>
     <addaction name="actionScreenshot"/>
     <addaction name="separator"/>
@@ -274,7 +275,7 @@
    <addaction name="actionReset"/>
    <addaction name="actionPause"/>
    <addaction name="actionChangeDisc"/>
-   <addaction name="actionCheats"/>
+   <addaction name="actionCheatsToolbar"/>
    <addaction name="actionScreenshot"/>
    <addaction name="separator"/>
    <addaction name="actionLoadState"/>
@@ -539,6 +540,15 @@
    </property>
    <property name="text">
     <string>Cheats...</string>
+   </property>
+  </action>
+  <action name="actionCheatsToolbar">
+   <property name="icon">
+    <iconset theme="cheats-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>Cheats</string>
    </property>
   </action>
   <action name="actionAudioSettings">

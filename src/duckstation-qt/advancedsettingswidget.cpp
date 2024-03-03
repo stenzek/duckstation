@@ -213,6 +213,10 @@ void AdvancedSettingsWidget::addTweakOptions()
                         "ApplyCompatibilitySettings", true);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Increase Timer Resolution"), "Main",
                         "IncreaseTimerResolution", true);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Load Devices From Save States"), "Main",
+                        "LoadDevicesFromSaveStates", false);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Compress Save States"), "Main", "CompressSaveStates",
+                        Settings::DEFAULT_SAVE_STATE_COMPRESSION);
 
   if (m_dialog->isPerGameSettings())
   {
@@ -248,6 +252,7 @@ void AdvancedSettingsWidget::addTweakOptions()
                        Settings::ParseCDROMMechVersionName, Settings::GetCDROMMechVersionName,
                        Settings::GetCDROMMechVersionDisplayName, static_cast<u8>(CDROMMechaconVersion::Count),
                        Settings::DEFAULT_CDROM_MECHACON_VERSION);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Region Check"), "CDROM", "RegionCheck", false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Allow Booting Without SBI File"), "CDROM",
                         "AllowBootingWithoutSBIFile", false);
 
@@ -262,8 +267,10 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   {
     int i = 0;
 
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, true); // Apply compatibility settings
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, true); // Increase Timer Resolution
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);  // Apply compatibility settings
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);  // Increase Timer Resolution
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Load Devices From Save States
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, Settings::DEFAULT_SAVE_STATE_COMPRESSION); // Compress Save States
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
                            static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS)); // DMA max slice ticks
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
@@ -278,6 +285,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
                          Settings::DEFAULT_CPU_FASTMEM_MODE); // Recompiler fastmem mode
     setChoiceTweakOption(m_ui.tweakOptionTable, i++,
                          Settings::DEFAULT_CDROM_MECHACON_VERSION); // CDROM Mechacon Version
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // CDROM Region Check
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // Allow booting without SBI file
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // Enable PCDRV
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // Enable PCDRV Writes
@@ -290,6 +298,8 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   SettingsInterface* sif = m_dialog->getSettingsInterface();
   sif->DeleteValue("Main", "ApplyCompatibilitySettings");
   sif->DeleteValue("Main", "IncreaseTimerResolution");
+  sif->DeleteValue("Main", "LoadDevicesFromSaveStates");
+  sif->DeleteValue("Main", "CompressSaveStates");
   sif->DeleteValue("Display", "ActiveStartOffset");
   sif->DeleteValue("Display", "ActiveEndOffset");
   sif->DeleteValue("Display", "LineStartOffset");
@@ -302,6 +312,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue("CPU", "RecompilerBlockLinking");
   sif->DeleteValue("CPU", "FastmemMode");
   sif->DeleteValue("CDROM", "MechaconVersion");
+  sif->DeleteValue("CDROM", "RegionCheck");
   sif->DeleteValue("CDROM", "AllowBootingWithoutSBIFile");
   sif->DeleteValue("PCDrv", "Enabled");
   sif->DeleteValue("PCDrv", "EnableWrites");

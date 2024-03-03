@@ -1086,17 +1086,6 @@ void EmuThread::changeDiscFromPlaylist(quint32 index)
     Host::ReportFormattedErrorAsync("Error", "Failed to switch to subimage %u", index);
 }
 
-void EmuThread::loadCheatList(const QString& filename)
-{
-  if (!isOnThread())
-  {
-    QMetaObject::invokeMethod(this, "loadCheatList", Qt::QueuedConnection, Q_ARG(const QString&, filename));
-    return;
-  }
-
-  System::LoadCheatList(filename.toUtf8().constData());
-}
-
 void EmuThread::setCheatEnabled(quint32 index, bool enabled)
 {
   if (!isOnThread())
@@ -1106,7 +1095,7 @@ void EmuThread::setCheatEnabled(quint32 index, bool enabled)
     return;
   }
 
-  System::SetCheatCodeState(index, enabled, g_settings.auto_load_cheats);
+  System::SetCheatCodeState(index, enabled);
   emit cheatEnabled(index, enabled);
 }
 

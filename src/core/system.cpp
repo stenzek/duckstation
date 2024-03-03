@@ -3400,8 +3400,8 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
   ApplySettings(true);
 
   s_cheat_list.reset();
-  if (g_settings.auto_load_cheats && !Achievements::IsHardcoreModeActive())
-    LoadCheatListFromGameTitle();
+  if (g_settings.enable_cheats)
+    LoadCheatList();
 
   if (s_running_game_serial != prev_serial)
     UpdateSessionTime(prev_serial);
@@ -3653,6 +3653,14 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
 
       if (g_settings.cpu_recompiler_icache != old_settings.cpu_recompiler_icache)
         CPU::ClearICache();
+    }
+
+    if (g_settings.enable_cheats != old_settings.enable_cheats)
+    {
+      if (g_settings.enable_cheats)
+        LoadCheatList();
+      else
+        s_cheat_list.reset();
     }
 
     SPU::GetOutputStream()->SetOutputVolume(GetAudioOutputVolume());
@@ -4534,15 +4542,20 @@ std::string System::GetCheatFileName()
   return ret;
 }
 
-bool System::LoadCheatList(const char* filename)
+bool System::LoadCheatList()
 {
-  if (System::IsShutdown())
+  // Called when booting, needs to test for shutdown.
+  if (IsShutdown() || !g_settings.enable_cheats)
+    return false;
+
+  const std::string filename(GetCheatFileName());
+  if (filename.empty() || !FileSystem::FileExists(filename.c_str()))
     return false;
 
   std::unique_ptr<CheatList> cl = std::make_unique<CheatList>();
-  if (!cl->LoadFromFile(filename, CheatList::Format::Autodetect))
+  if (!cl->LoadFromFile(filename.c_str(), CheatList::Format::Autodetect))
   {
-    Host::AddFormattedOSDMessage(15.0f, TRANSLATE("OSDMessage", "Failed to load cheats from '%s'."), filename);
+    Host::AddFormattedOSDMessage(15.0f, TRANSLATE("OSDMessage", "Failed to load cheats from '%s'."), filename.c_str());
     return false;
   }
 
@@ -4556,19 +4569,6 @@ bool System::LoadCheatList(const char* filename)
 
   System::SetCheatList(std::move(cl));
   return true;
-}
-
-bool System::LoadCheatListFromGameTitle()
-{
-  // Called when booting, needs to test for shutdown.
-  if (IsShutdown() || Achievements::IsHardcoreModeActive())
-    return false;
-
-  const std::string filename(GetCheatFileName());
-  if (filename.empty() || !FileSystem::FileExists(filename.c_str()))
-    return false;
-
-  return LoadCheatList(filename.c_str());
 }
 
 bool System::LoadCheatListFromDatabase()
@@ -4650,7 +4650,7 @@ void System::ClearCheatList(bool save_to_file)
     SaveCheatList();
 }
 
-void System::SetCheatCodeState(u32 index, bool enabled, bool save_to_file)
+void System::SetCheatCodeState(u32 index, bool enabled)
 {
   if (!System::IsValid() || !System::HasCheatList())
     return;
@@ -4676,8 +4676,7 @@ void System::SetCheatCodeState(u32 index, bool enabled, bool save_to_file)
     Host::AddFormattedOSDMessage(5.0f, TRANSLATE("OSDMessage", "Cheat '%s' disabled."), cc.description.c_str());
   }
 
-  if (save_to_file)
-    SaveCheatList();
+  SaveCheatList();
 }
 
 void System::ApplyCheatCode(u32 index)

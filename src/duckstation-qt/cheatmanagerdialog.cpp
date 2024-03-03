@@ -344,7 +344,7 @@ CheatList* CheatManagerDialog::getCheatList() const
   CheatList* list = System::GetCheatList();
   if (!list)
   {
-    System::LoadCheatListFromGameTitle();
+    System::LoadCheatList();
     list = System::GetCheatList();
   }
   if (!list)

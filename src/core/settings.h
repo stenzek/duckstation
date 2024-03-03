@@ -87,7 +87,7 @@ struct Settings
   bool load_devices_from_save_states : 1 = false;
   bool apply_compatibility_settings : 1 = true;
   bool apply_game_settings : 1 = true;
-  bool auto_load_cheats : 1 = true;
+  bool enable_cheats : 1 = true;
   bool disable_all_enhancements : 1 = false;
   bool enable_discord_presence : 1 = false;
 
@@ -518,6 +518,8 @@ struct Settings
 #endif
   static constexpr AudioStretchMode DEFAULT_AUDIO_STRETCH_MODE = AudioStretchMode::TimeStretch;
 
+  static constexpr bool DEFAULT_SAVE_STATE_COMPRESSION = true;
+
   // Enable console logging by default on Linux platforms.
 #if defined(__linux__) && !defined(__ANDROID__)
   static constexpr bool DEFAULT_LOG_TO_CONSOLE = true;
@@ -527,12 +529,10 @@ struct Settings
 
   // Android doesn't create settings until they're first opened, so we have to override the defaults here.
 #ifndef __ANDROID__
-  static constexpr bool DEFAULT_SAVE_STATE_COMPRESSION = true;
   static constexpr bool DEFAULT_SAVE_STATE_BACKUPS = true;
   static constexpr bool DEFAULT_FAST_BOOT_VALUE = false;
   static constexpr float DEFAULT_DISPLAY_MAX_FPS = 0.0f;
 #else
-  static constexpr bool DEFAULT_SAVE_STATE_COMPRESSION = true;
   static constexpr bool DEFAULT_SAVE_STATE_BACKUPS = false;
   static constexpr bool DEFAULT_FAST_BOOT_VALUE = true;
   static constexpr float DEFAULT_DISPLAY_MAX_FPS = 60.0f;

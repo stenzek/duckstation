@@ -421,11 +421,8 @@ bool SaveScreenshot(const char* filename = nullptr, DisplayScreenshotMode mode =
                     DisplayScreenshotFormat format = g_settings.display_screenshot_format,
                     u8 quality = g_settings.display_screenshot_quality, bool compress_on_thread = true);
 
-/// Loads the cheat list from the specified file.
-bool LoadCheatList(const char* filename);
-
 /// Loads the cheat list for the current game title from the user directory.
-bool LoadCheatListFromGameTitle();
+bool LoadCheatList();
 
 /// Loads the cheat list for the current game code from the built-in code database.
 bool LoadCheatListFromDatabase();
@@ -443,7 +440,7 @@ bool DeleteCheatList();
 void ClearCheatList(bool save_to_file);
 
 /// Enables/disabled the specified cheat code.
-void SetCheatCodeState(u32 index, bool enabled, bool save_to_file);
+void SetCheatCodeState(u32 index, bool enabled);
 
 /// Immediately applies the specified cheat code.
 void ApplyCheatCode(u32 index);

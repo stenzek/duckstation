@@ -47,6 +47,9 @@ public:
   static void openGamePropertiesDialog(const std::string& path, const std::string& serial, DiscRegion region);
   static void closeGamePropertiesDialogs();
 
+  // Helper for externally setting fields in game settings ini.
+  static bool setGameSettingsBoolForSerial(const std::string& serial, const char* section, const char* key, bool value);
+
   ALWAYS_INLINE bool isPerGameSettings() const { return static_cast<bool>(m_sif); }
   ALWAYS_INLINE SettingsInterface* getSettingsInterface() const { return m_sif.get(); }
 

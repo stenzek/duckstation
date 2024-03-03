@@ -129,8 +129,12 @@ void SettingsWindow::addPages()
   {
     QString title(tr("Achievements"));
     QString icon_text(QStringLiteral("trophy-line"));
-    QString help_text(tr("<strong>Achievement Settings</strong><hr>These options control RetroAchievements. Mouse over "
-                         "an option for additional information, and Shift+Wheel to scroll this panel."));
+    QString help_text(
+      tr("<strong>Achievement Settings</strong><hr>DuckStation uses RetroAchievements as an achievement database and "
+         "for tracking progress. To use achievements, please sign up for an account at retroachievements.org. To view "
+         "the achievement list in-game, press the hotkey for <strong>Open Pause Menu</strong> and select "
+         "<strong>Achievements</strong> from the menu. Mouse over an option for additional information, and "
+         "Shift+Wheel to scroll this panel."));
 
     if (!Achievements::IsUsingRAIntegration())
     {
@@ -577,4 +581,19 @@ void SettingsWindow::closeGamePropertiesDialogs()
     dialog->close();
     dialog->deleteLater();
   }
+}
+
+bool SettingsWindow::setGameSettingsBoolForSerial(const std::string& serial, const char* section, const char* key,
+                                                  bool value)
+{
+  std::string ini_filename = System::GetGameSettingsPath(serial);
+  if (ini_filename.empty())
+    return false;
+
+  INISettingsInterface sif(std::move(ini_filename));
+  if (FileSystem::FileExists(sif.GetFileName().c_str()))
+    sif.Load();
+
+  sif.SetBoolValue(section, key, value);
+  return sif.Save();
 }

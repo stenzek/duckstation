@@ -37,10 +37,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnStart, "Main", "StartPaused", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.saveStateOnExit, "Main", "SaveStateOnExit", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.confirmPowerOff, "Main", "ConfirmPowerOff", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.loadDevicesFromSaveStates, "Main", "LoadDevicesFromSaveStates",
-                                               false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.applyGameSettings, "Main", "ApplyGameSettings", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.autoLoadCheats, "Main", "AutoLoadCheats", true);
 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.startFullscreen, "Main", "StartFullscreen", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.doubleClickTogglesFullscreen, "Main",
@@ -52,8 +49,6 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hideMouseCursor, "Main", "HideCursorInFullscreen", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.createSaveStateBackups, "Main", "CreateSaveStateBackups",
                                                Settings::DEFAULT_SAVE_STATE_BACKUPS);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.compressSaveStates, "Main", "CompressSaveStates",
-                                               Settings::DEFAULT_SAVE_STATE_COMPRESSION);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableDiscordPresence, "Main", "EnableDiscordPresence", false);
   connect(m_ui.renderToSeparateWindow, &QCheckBox::stateChanged, this,
           &InterfaceSettingsWidget::onRenderToSeparateWindowChanged);
@@ -89,16 +84,9 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
                              tr("Pauses the emulator when you minimize the window or switch to another application, "
                                 "and unpauses when you switch back."));
   dialog->registerWidgetHelp(
-    m_ui.loadDevicesFromSaveStates, tr("Load Devices From Save States"), tr("Unchecked"),
-    tr("When enabled, memory cards and controllers will be overwritten when save states are loaded. This can "
-       "result in lost saves, and controller type mismatches. For deterministic save states, enable this option, "
-       "otherwise leave disabled."));
-  dialog->registerWidgetHelp(
     m_ui.applyGameSettings, tr("Apply Per-Game Settings"), tr("Checked"),
     tr("When enabled, per-game settings will be applied, and incompatible enhancements will be disabled. You should "
        "leave this option enabled except when testing enhancements with incompatible games."));
-  dialog->registerWidgetHelp(m_ui.autoLoadCheats, tr("Automatically Load Cheats"), tr("Unchecked"),
-                             tr("Automatically loads and applies cheats on game start."));
   dialog->registerWidgetHelp(m_ui.enableDiscordPresence, tr("Enable Discord Presence"), tr("Unchecked"),
                              tr("Shows the game you are currently playing as part of your profile in Discord."));
 

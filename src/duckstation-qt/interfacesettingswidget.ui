@@ -29,20 +29,6 @@
       <string>Behaviour</string>
      </property>
      <layout class="QGridLayout" name="formLayout_4">
-      <item row="6" column="1">
-       <widget class="QCheckBox" name="autoLoadCheats">
-        <property name="text">
-         <string>Automatically Load Cheats</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QCheckBox" name="confirmPowerOff">
-        <property name="text">
-         <string>Confirm Power Off</string>
-        </property>
-       </widget>
-      </item>
       <item row="3" column="1">
        <widget class="QCheckBox" name="saveStateOnExit">
         <property name="text">
@@ -78,31 +64,24 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
-       <widget class="QCheckBox" name="loadDevicesFromSaveStates">
-        <property name="text">
-         <string>Load Devices From Save States</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
+      <item row="6" column="1">
        <widget class="QCheckBox" name="pauseOnStart">
         <property name="text">
          <string>Pause On Start</string>
         </property>
        </widget>
       </item>
-      <item row="8" column="0">
-       <widget class="QCheckBox" name="enableDiscordPresence">
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="confirmPowerOff">
         <property name="text">
-         <string>Enable Discord Presence</string>
+         <string>Confirm Power Off</string>
         </property>
        </widget>
       </item>
       <item row="7" column="1">
-       <widget class="QCheckBox" name="compressSaveStates">
+       <widget class="QCheckBox" name="enableDiscordPresence">
         <property name="text">
-         <string>Compress Save States</string>
+         <string>Enable Discord Presence</string>
         </property>
        </widget>
       </item>

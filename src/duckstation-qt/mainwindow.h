@@ -145,6 +145,7 @@ private Q_SLOTS:
   void onChangeDiscMenuAboutToHide();
   void onLoadStateMenuAboutToShow();
   void onSaveStateMenuAboutToShow();
+  void onCheatsActionTriggered();
   void onCheatsMenuAboutToShow();
   void onStartFullscreenUITriggered();
   void onFullscreenUIStateChange(bool running);
@@ -205,6 +206,7 @@ private:
   void updateStatusBarWidgetVisibility();
   void updateWindowTitle();
   void updateWindowState(bool force_visible = false);
+  void updateCheatActionsVisibility();
 
   void setProgressBar(int current, int total);
   void clearProgressBar();

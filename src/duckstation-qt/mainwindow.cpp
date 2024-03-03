@@ -1006,6 +1006,75 @@ void MainWindow::populateChangeDiscSubImageMenu(QMenu* menu, QActionGroup* actio
   }
 }
 
+void MainWindow::updateCheatActionsVisibility()
+{
+  // If the cheat system is disabled, put an action to enable it in place of the menu under System.
+  const bool cheats_enabled = Host::GetBoolSettingValue("Console", "EnableCheats", false);
+  m_ui.actionCheats->setVisible(!cheats_enabled);
+  m_ui.menuCheats->menuAction()->setVisible(cheats_enabled);
+}
+
+void MainWindow::onCheatsActionTriggered()
+{
+  const bool cheats_enabled = Host::GetBoolSettingValue("Console", "EnableCheats", false);
+  if (cheats_enabled)
+  {
+    m_ui.menuCheats->exec(QCursor::pos());
+    return;
+  }
+
+  SystemLock lock(pauseAndLockSystem());
+  QMessageBox mb(this);
+  mb.setWindowTitle(tr("Enable Cheats"));
+  mb.setText(
+    tr("Using cheats can have unpredictable effects on games, causing crashes, graphical glitches, and corrupted "
+       "saves. By using the cheat manager, you agree that it is an unsupported configuration, and we will not "
+       "provide you with any assistance when games break.\n\nCheats persist through save states even after being "
+       "disabled, please remember to reset/reboot the game after turning off any codes.\n\nAre you sure you want "
+       "to continue?"));
+  mb.setIcon(QMessageBox::Warning);
+  QPushButton* global = mb.addButton(tr("Enable For All Games"), QMessageBox::DestructiveRole);
+  QPushButton* game = mb.addButton(tr("Enable For This Game"), QMessageBox::AcceptRole);
+  game->setEnabled(s_system_valid && !s_current_game_serial.isEmpty());
+  QPushButton* cancel = mb.addButton(tr("Cancel"), QMessageBox::RejectRole);
+  mb.setDefaultButton(cancel);
+  mb.setEscapeButton(cancel);
+  mb.exec();
+
+  if (mb.clickedButton() == global)
+  {
+    // enable globally
+    Host::SetBaseBoolSettingValue("Console", "EnableCheats", true);
+    Host::CommitBaseSettingChanges();
+    g_emu_thread->applySettings(false);
+  }
+  else if (mb.clickedButton() == game)
+  {
+    if (!SettingsWindow::setGameSettingsBoolForSerial(s_current_game_serial.toStdString(), "Console", "EnableCheats",
+                                                      true))
+    {
+      QMessageBox::critical(this, tr("Error"), tr("Failed to enable cheats for %1.").arg(s_current_game_serial));
+      return;
+    }
+
+    g_emu_thread->reloadGameSettings(false);
+  }
+  else
+  {
+    // do nothing
+    return;
+  }
+}
+
+void MainWindow::onCheatsMenuAboutToShow()
+{
+  m_ui.menuCheats->clear();
+  connect(m_ui.menuCheats->addAction(tr("Cheat Manager")), &QAction::triggered, this,
+          &MainWindow::onToolsCheatManagerTriggered);
+  m_ui.menuCheats->addSeparator();
+  populateCheatsMenu(m_ui.menuCheats);
+}
+
 void MainWindow::populateCheatsMenu(QMenu* menu)
 {
   if (!s_system_valid)
@@ -1236,15 +1305,6 @@ void MainWindow::onLoadStateMenuAboutToShow()
 void MainWindow::onSaveStateMenuAboutToShow()
 {
   populateSaveStateMenu(s_current_game_serial.toUtf8().constData(), m_ui.menuSaveState);
-}
-
-void MainWindow::onCheatsMenuAboutToShow()
-{
-  m_ui.menuCheats->clear();
-  connect(m_ui.menuCheats->addAction(tr("Cheat Manager")), &QAction::triggered, this,
-          &MainWindow::onToolsCheatManagerTriggered);
-  m_ui.menuCheats->addSeparator();
-  populateCheatsMenu(m_ui.menuCheats);
 }
 
 void MainWindow::onStartFullscreenUITriggered()
@@ -1599,6 +1659,7 @@ void MainWindow::setupAdditionalUi()
   m_ui.actionGridViewShowTitles->setChecked(m_game_list_widget->getShowGridCoverTitles());
 
   updateDebugMenuVisibility();
+  updateCheatActionsVisibility();
 
   for (u32 i = 0; i < static_cast<u32>(CPUExecutionMode::Count); i++)
   {
@@ -1723,6 +1784,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevo
   m_ui.actionPause->setDisabled(starting || !running);
   m_ui.actionChangeDisc->setDisabled(starting || !running);
   m_ui.actionCheats->setDisabled(starting || !running || cheevos_challenge_mode);
+  m_ui.actionCheatsToolbar->setDisabled(starting || !running || cheevos_challenge_mode);
   m_ui.actionScreenshot->setDisabled(starting || !running);
   m_ui.menuChangeDisc->setDisabled(starting || !running);
   m_ui.menuCheats->setDisabled(starting || !running || cheevos_challenge_mode);
@@ -1964,7 +2026,8 @@ void MainWindow::connectSignals()
   connect(m_ui.menuLoadState, &QMenu::aboutToShow, this, &MainWindow::onLoadStateMenuAboutToShow);
   connect(m_ui.menuSaveState, &QMenu::aboutToShow, this, &MainWindow::onSaveStateMenuAboutToShow);
   connect(m_ui.menuCheats, &QMenu::aboutToShow, this, &MainWindow::onCheatsMenuAboutToShow);
-  connect(m_ui.actionCheats, &QAction::triggered, [this] { m_ui.menuCheats->exec(QCursor::pos()); });
+  connect(m_ui.actionCheats, &QAction::triggered, this, &MainWindow::onCheatsActionTriggered);
+  connect(m_ui.actionCheatsToolbar, &QAction::triggered, this, &MainWindow::onCheatsActionTriggered);
   connect(m_ui.actionStartFullscreenUI, &QAction::triggered, this, &MainWindow::onStartFullscreenUITriggered);
   connect(m_ui.actionStartFullscreenUI2, &QAction::triggered, this, &MainWindow::onStartFullscreenUITriggered);
   connect(m_ui.actionRemoveDisc, &QAction::triggered, this, &MainWindow::onRemoveDiscActionTriggered);
@@ -2698,6 +2761,7 @@ void MainWindow::checkForSettingChanges()
 {
   LogWindow::updateSettings();
   updateWindowState();
+  updateCheatActionsVisibility();
 }
 
 std::optional<WindowInfo> MainWindow::getWindowInfo()
@@ -2828,38 +2892,18 @@ void MainWindow::onToolsCoverDownloaderTriggered()
 void MainWindow::onToolsCheatManagerTriggered()
 {
   if (!m_cheat_manager_dialog)
-  {
-    if (Host::GetBaseBoolSettingValue("UI", "DisplayCheatWarning", true))
-    {
-      QCheckBox* cb = new QCheckBox(tr("Do not show again"));
-      QMessageBox mb(this);
-      mb.setWindowTitle(tr("Cheat Manager"));
-      mb.setText(
-        tr("Using cheats can have unpredictable effects on games, causing crashes, graphical glitches, and corrupted "
-           "saves. By using the cheat manager, you agree that it is an unsupported configuration, and we will not "
-           "provide you with any assistance when games break.\n\nCheats persist through save states even after being "
-           "disabled, please remember to reset/reboot the game after turning off any codes.\n\nAre you sure you want "
-           "to continue?"));
-      mb.setIcon(QMessageBox::Warning);
-      mb.addButton(QMessageBox::Yes);
-      mb.addButton(QMessageBox::No);
-      mb.setDefaultButton(QMessageBox::No);
-      mb.setCheckBox(cb);
-
-      connect(cb, &QCheckBox::stateChanged, [](int state) {
-        Host::SetBaseBoolSettingValue("UI", "DisplayCheatWarning", (state != Qt::CheckState::Checked));
-        Host::CommitBaseSettingChanges();
-      });
-
-      if (mb.exec() == QMessageBox::No)
-        return;
-    }
-
     m_cheat_manager_dialog = new CheatManagerDialog(this);
-  }
 
-  m_cheat_manager_dialog->setModal(false);
-  m_cheat_manager_dialog->show();
+  if (!m_cheat_manager_dialog->isVisible())
+  {
+    m_cheat_manager_dialog->show();
+  }
+  else
+  {
+    m_cheat_manager_dialog->raise();
+    m_cheat_manager_dialog->activateWindow();
+    m_cheat_manager_dialog->setFocus();
+  }
 }
 
 void MainWindow::openCPUDebugger()
