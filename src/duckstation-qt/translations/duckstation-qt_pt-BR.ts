@@ -8933,90 +8933,9 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <translation>Resolução interna:</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="100"/>
-        <source>Automatic based on window size</source>
-        <translation>Automático, baseado no tamanho da janela</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="105"/>
         <location filename="../graphicssettingswidget.cpp" line="255"/>
         <source>1x</source>
         <translation>1x</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="110"/>
-        <source>2x</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="115"/>
-        <source>3x (for 720p)</source>
-        <translation>3x (para 720p)</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="120"/>
-        <source>4x</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="125"/>
-        <source>5x (for 1080p)</source>
-        <translation>5x (para 1080p)</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="130"/>
-        <source>6x (for 1440p)</source>
-        <translation>6x (para 1440p)</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="135"/>
-        <source>7x</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="140"/>
-        <source>8x</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="145"/>
-        <source>9x (for 4K)</source>
-        <translation>9x (para 4K)</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="150"/>
-        <source>10x</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="155"/>
-        <source>11x</source>
-        <translation>11x</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="160"/>
-        <source>12x</source>
-        <translation>12x</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="165"/>
-        <source>13x</source>
-        <translation>13x</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="170"/>
-        <source>14x</source>
-        <translation>14x</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="175"/>
-        <source>15x</source>
-        <translation>15x</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="180"/>
-        <source>16x</source>
-        <translation>16x</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="507"/>
@@ -9173,6 +9092,91 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <location filename="../graphicssettingswidget.ui" line="534"/>
         <source>PGXP</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="100"/>
+        <source>Automatic (Based on Window Size)</source>
+        <translation>Automático (baseado no tamanho da janela)</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="105"/>
+        <source>1x Native (Default)</source>
+        <translation>1x Nativo (padrão)</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="110"/>
+        <source>2x Native</source>
+        <translation>2x nativo</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="115"/>
+        <source>3x Native (for 720p)</source>
+        <translation>3x nativo (para 720p)</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="120"/>
+        <source>4x Native</source>
+        <translation>4x nativo</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="125"/>
+        <source>5x Native (for 1080p)</source>
+        <translation>5x nativo (para 1080p)</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="130"/>
+        <source>6x Native (for 1440p)</source>
+        <translation>6x nativo (para 1440p)</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="135"/>
+        <source>7x Native</source>
+        <translation>7x nativo</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="140"/>
+        <source>8x Native</source>
+        <translation>8x nativo</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="145"/>
+        <source>9x Native (for 4K)</source>
+        <translation>9x nativo (para 4k)</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="150"/>
+        <source>10x Native</source>
+        <translation>10x nativo</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="155"/>
+        <source>11x Native</source>
+        <translation>11x nativo</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="160"/>
+        <source>12x Native</source>
+        <translation>12x nativo</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="165"/>
+        <source>13x Native</source>
+        <translation>13x nativo</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="170"/>
+        <source>14x Native</source>
+        <translation>14x nativo</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="175"/>
+        <source>15x Native</source>
+        <translation>15x nativo</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="180"/>
+        <source>16x Native</source>
+        <translation>16x nativo</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="286"/>
@@ -10935,92 +10939,92 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
 <context>
     <name>LogWindow</name>
     <message>
-        <location filename="../logwindow.cpp" line="91"/>
+        <location filename="../logwindow.cpp" line="100"/>
         <source>Log Window - %1 [%2]</source>
         <translation>Janela de registro - %1 [%2]</translation>
     </message>
     <message>
-        <location filename="../logwindow.cpp" line="95"/>
+        <location filename="../logwindow.cpp" line="104"/>
         <source>Log Window</source>
         <translation>Janela de registro</translation>
     </message>
     <message>
-        <location filename="../logwindow.cpp" line="114"/>
+        <location filename="../logwindow.cpp" line="124"/>
         <source>&amp;Clear</source>
         <translation>Limpar</translation>
     </message>
     <message>
-        <location filename="../logwindow.cpp" line="116"/>
+        <location filename="../logwindow.cpp" line="126"/>
         <source>&amp;Save...</source>
         <translation>Salvar...</translation>
     </message>
     <message>
-        <location filename="../logwindow.cpp" line="121"/>
+        <location filename="../logwindow.cpp" line="131"/>
         <source>Cl&amp;ose</source>
         <translation>Fechar</translation>
     </message>
     <message>
-        <location filename="../logwindow.cpp" line="124"/>
+        <location filename="../logwindow.cpp" line="134"/>
         <source>&amp;Settings</source>
         <translation>Configurações</translation>
     </message>
     <message>
-        <location filename="../logwindow.cpp" line="126"/>
+        <location filename="../logwindow.cpp" line="136"/>
         <source>Log To &amp;System Console</source>
         <translation>Registro no console do sistema</translation>
     </message>
     <message>
-        <location filename="../logwindow.cpp" line="130"/>
+        <location filename="../logwindow.cpp" line="140"/>
         <source>Log To &amp;Debug Console</source>
         <translation>Registrar no console de depuração</translation>
     </message>
     <message>
-        <location filename="../logwindow.cpp" line="134"/>
+        <location filename="../logwindow.cpp" line="144"/>
         <source>Log To &amp;File</source>
         <translation>Registro em arquivo</translation>
     </message>
     <message>
-        <location filename="../logwindow.cpp" line="140"/>
+        <location filename="../logwindow.cpp" line="150"/>
         <source>Attach To &amp;Main Window</source>
         <translation>Anexar à janela principal</translation>
     </message>
     <message>
-        <location filename="../logwindow.cpp" line="144"/>
+        <location filename="../logwindow.cpp" line="154"/>
         <source>Show &amp;Timestamps</source>
         <translation>Mostrar registros de data e hora</translation>
     </message>
     <message>
-        <location filename="../logwindow.cpp" line="150"/>
+        <location filename="../logwindow.cpp" line="160"/>
         <source>&amp;Log Level</source>
         <translation>Nível do registro</translation>
     </message>
     <message>
-        <location filename="../logwindow.cpp" line="159"/>
+        <location filename="../logwindow.cpp" line="169"/>
         <source>&amp;Filters</source>
         <translation>Filtros</translation>
     </message>
     <message>
-        <location filename="../logwindow.cpp" line="250"/>
+        <location filename="../logwindow.cpp" line="263"/>
         <source>Select Log File</source>
         <translation>Selecionar arquivo de registro</translation>
     </message>
     <message>
-        <location filename="../logwindow.cpp" line="250"/>
+        <location filename="../logwindow.cpp" line="263"/>
         <source>Log Files (*.txt)</source>
         <translation>Arquivos de registro (*.txt)</translation>
     </message>
     <message>
-        <location filename="../logwindow.cpp" line="257"/>
+        <location filename="../logwindow.cpp" line="270"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../logwindow.cpp" line="257"/>
+        <location filename="../logwindow.cpp" line="270"/>
         <source>Failed to open file for writing.</source>
         <translation>Falha ao abrir o arquivo para escrita.</translation>
     </message>
     <message>
-        <location filename="../logwindow.cpp" line="264"/>
+        <location filename="../logwindow.cpp" line="277"/>
         <source>Log was written to %1.
 </source>
         <translation>O registro foi gravado em %1.
@@ -11074,8 +11078,8 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     </message>
     <message>
         <location filename="../mainwindow.ui" line="42"/>
-        <location filename="../mainwindow.cpp" line="1278"/>
-        <location filename="../mainwindow.cpp" line="1519"/>
+        <location filename="../mainwindow.cpp" line="1280"/>
+        <location filename="../mainwindow.cpp" line="1521"/>
         <source>Change Disc</source>
         <translation>Mudar disco</translation>
     </message>
@@ -11087,8 +11091,8 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     </message>
     <message>
         <location filename="../mainwindow.ui" line="66"/>
-        <location filename="../mainwindow.cpp" line="776"/>
-        <location filename="../mainwindow.cpp" line="1146"/>
+        <location filename="../mainwindow.cpp" line="778"/>
+        <location filename="../mainwindow.cpp" line="1148"/>
         <source>Load State</source>
         <translation>Carregar estado</translation>
     </message>
@@ -11270,13 +11274,13 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     </message>
     <message>
         <location filename="../mainwindow.ui" line="971"/>
-        <location filename="../mainwindow.cpp" line="1320"/>
+        <location filename="../mainwindow.cpp" line="1322"/>
         <source>Start Big Picture Mode</source>
         <translation>Iniciar em modo tela grande</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="980"/>
-        <location filename="../mainwindow.cpp" line="1321"/>
+        <location filename="../mainwindow.cpp" line="1323"/>
         <source>Big Picture</source>
         <translation>Modo tela grande</translation>
     </message>
@@ -11487,7 +11491,7 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     </message>
     <message>
         <location filename="../mainwindow.ui" line="814"/>
-        <location filename="../mainwindow.cpp" line="773"/>
+        <location filename="../mainwindow.cpp" line="775"/>
         <source>Resume</source>
         <translation>Continuar</translation>
     </message>
@@ -11603,12 +11607,12 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="655"/>
-        <location filename="../mainwindow.cpp" line="1263"/>
+        <location filename="../mainwindow.cpp" line="1265"/>
         <source>Select Disc Image</source>
         <translation>Escolha uma imagem de disco</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1248"/>
+        <location filename="../mainwindow.cpp" line="1250"/>
         <source>Start Disc</source>
         <translation>Iniciar disco</translation>
     </message>
@@ -11624,9 +11628,9 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="305"/>
-        <location filename="../mainwindow.cpp" line="1056"/>
-        <location filename="../mainwindow.cpp" line="1166"/>
-        <location filename="../mainwindow.cpp" line="1436"/>
+        <location filename="../mainwindow.cpp" line="1058"/>
+        <location filename="../mainwindow.cpp" line="1168"/>
+        <location filename="../mainwindow.cpp" line="1438"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
@@ -11646,121 +11650,121 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <translation>Escolha a unidade de disco:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="796"/>
+        <location filename="../mainwindow.cpp" line="798"/>
         <source>Resume (%1)</source>
         <translation>Continuar (%1)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="803"/>
-        <location filename="../mainwindow.cpp" line="928"/>
-        <location filename="../mainwindow.cpp" line="967"/>
+        <location filename="../mainwindow.cpp" line="805"/>
+        <location filename="../mainwindow.cpp" line="930"/>
+        <location filename="../mainwindow.cpp" line="969"/>
         <source>Game Save %1 (%2)</source>
         <translation>Jogo salvo %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="812"/>
+        <location filename="../mainwindow.cpp" line="814"/>
         <source>Edit Memory Cards...</source>
         <translation>Editar cartões de memória...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="868"/>
+        <location filename="../mainwindow.cpp" line="870"/>
         <source>Delete Save States...</source>
         <translation>Apagar estados salvos...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="874"/>
+        <location filename="../mainwindow.cpp" line="876"/>
         <source>Confirm Save State Deletion</source>
         <translation>Confirmar deleção de estado salvo</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="875"/>
+        <location filename="../mainwindow.cpp" line="877"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
         <translation>Tem certeza de que deseja apagar os estados salvos %1? Não será possivel reverter esta ação.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="912"/>
+        <location filename="../mainwindow.cpp" line="914"/>
         <source>Load From File...</source>
         <translation>Carregar do arquivo...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="914"/>
-        <location filename="../mainwindow.cpp" line="956"/>
+        <location filename="../mainwindow.cpp" line="916"/>
+        <location filename="../mainwindow.cpp" line="958"/>
         <source>Select Save State File</source>
         <translation>Escolher arquivo de salvamento rápido</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="914"/>
-        <location filename="../mainwindow.cpp" line="956"/>
+        <location filename="../mainwindow.cpp" line="916"/>
+        <location filename="../mainwindow.cpp" line="958"/>
         <source>Save States (*.sav)</source>
         <translation>Salvamento rápido (*.sav)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="920"/>
+        <location filename="../mainwindow.cpp" line="922"/>
         <source>Undo Load State</source>
         <translation>Desfazer estado carregado</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="928"/>
-        <location filename="../mainwindow.cpp" line="967"/>
+        <location filename="../mainwindow.cpp" line="930"/>
+        <location filename="../mainwindow.cpp" line="969"/>
         <source>Game Save %1 (Empty)</source>
         <translation>Jogo salvo %1 (Vazio)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="934"/>
-        <location filename="../mainwindow.cpp" line="973"/>
+        <location filename="../mainwindow.cpp" line="936"/>
+        <location filename="../mainwindow.cpp" line="975"/>
         <source>Global Save %1 (%2)</source>
         <translation>Compartimento global %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="934"/>
-        <location filename="../mainwindow.cpp" line="973"/>
+        <location filename="../mainwindow.cpp" line="936"/>
+        <location filename="../mainwindow.cpp" line="975"/>
         <source>Global Save %1 (Empty)</source>
         <translation>Compartimento global %1 (Vazio)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="951"/>
+        <location filename="../mainwindow.cpp" line="953"/>
         <source>Save To File...</source>
         <translation>Salvar para arquivo...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1028"/>
+        <location filename="../mainwindow.cpp" line="1030"/>
         <source>Enable Cheats</source>
         <translation>Ativar trapaças</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1036"/>
+        <location filename="../mainwindow.cpp" line="1038"/>
         <source>Enable For All Games</source>
         <translation>Ativar para todos os jogos</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1037"/>
+        <location filename="../mainwindow.cpp" line="1039"/>
         <source>Enable For This Game</source>
         <translation>Ativar para este jogo</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1056"/>
+        <location filename="../mainwindow.cpp" line="1058"/>
         <source>Failed to enable cheats for %1.</source>
         <translation>Falha ao ativar trapaças para %1.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1085"/>
+        <location filename="../mainwindow.cpp" line="1087"/>
         <source>&amp;Enabled Cheats</source>
         <translation>&amp;Trapaças ativadas</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1087"/>
+        <location filename="../mainwindow.cpp" line="1089"/>
         <source>&amp;Apply Cheats</source>
         <translation>&amp;Aplicar trapaças</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1141"/>
+        <location filename="../mainwindow.cpp" line="1143"/>
         <source>Load Resume State</source>
         <translation>Carregar estado salvo</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1142"/>
+        <location filename="../mainwindow.cpp" line="1144"/>
         <source>A resume save state was found for this game, saved at:
 
 %1.
@@ -11773,88 +11777,88 @@ Do you want to load this state, or start from a fresh boot?</source>
 Você deseja que este arquivo seja carregado ou que seja reiniciado novamente?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1147"/>
+        <location filename="../mainwindow.cpp" line="1149"/>
         <source>Fresh Boot</source>
         <translation>Inicialização limpa</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1148"/>
+        <location filename="../mainwindow.cpp" line="1150"/>
         <source>Delete And Boot</source>
         <translation>Excluir e iniciar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1167"/>
+        <location filename="../mainwindow.cpp" line="1169"/>
         <source>Failed to delete save state file &apos;%1&apos;.</source>
         <translation>Falha ao apagar o arquivo de estado salvo &apos;%1&apos;.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1224"/>
+        <location filename="../mainwindow.cpp" line="1226"/>
         <source>Confirm Disc Change</source>
         <translation>Confirmar troca de disco</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1225"/>
+        <location filename="../mainwindow.cpp" line="1227"/>
         <source>Do you want to swap discs or boot the new image (via system reset)?</source>
         <translation>Deseja trocar discos ou inicializar outro (via reinicialização do sistema)?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1227"/>
+        <location filename="../mainwindow.cpp" line="1229"/>
         <source>Swap Disc</source>
         <translation>Trocar disco</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1228"/>
+        <location filename="../mainwindow.cpp" line="1230"/>
         <source>Reset</source>
         <translation>Redefinir</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1039"/>
-        <location filename="../mainwindow.cpp" line="1229"/>
+        <location filename="../mainwindow.cpp" line="1041"/>
+        <location filename="../mainwindow.cpp" line="1231"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1072"/>
+        <location filename="../mainwindow.cpp" line="1074"/>
         <source>Cheat Manager</source>
         <translation>Gerenciador de trapaças</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1320"/>
+        <location filename="../mainwindow.cpp" line="1322"/>
         <source>Stop Big Picture Mode</source>
         <translation>Parar modo tela cheia</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1321"/>
+        <location filename="../mainwindow.cpp" line="1323"/>
         <source>Exit Big Picture</source>
         <translation>Sair do modo tela cheia</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1436"/>
+        <location filename="../mainwindow.cpp" line="1438"/>
         <source>You must select a disc to change discs.</source>
         <translation>Você deve escolher um disco para confirmar a troca</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1544"/>
+        <location filename="../mainwindow.cpp" line="1546"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</source>
         <translation>Todos os tipos de imagem de capa (*.jpg *.jpeg *.png *.webp)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1558"/>
+        <location filename="../mainwindow.cpp" line="1560"/>
         <source>You must select a different file to the current cover image.</source>
         <translation>Você deve selecionar um arquivo diferente da imagem de capa atual.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1582"/>
+        <location filename="../mainwindow.cpp" line="1584"/>
         <source>Failed to remove &apos;%1&apos;</source>
         <translation>Falha ao remover &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1591"/>
+        <location filename="../mainwindow.cpp" line="1593"/>
         <source>Confirm Reset</source>
         <translation>Confirmar redefinição</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1592"/>
+        <location filename="../mainwindow.cpp" line="1594"/>
         <source>Are you sure you want to reset the play time for &apos;%1&apos;?
 
 This action cannot be undone.</source>
@@ -11863,108 +11867,108 @@ This action cannot be undone.</source>
 Esta ação não poderá ser desfeita.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1472"/>
+        <location filename="../mainwindow.cpp" line="1474"/>
         <source>Properties...</source>
         <translation>Propriedades...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1476"/>
+        <location filename="../mainwindow.cpp" line="1478"/>
         <source>Open Containing Directory...</source>
         <translation>Abrir diretório...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1481"/>
+        <location filename="../mainwindow.cpp" line="1483"/>
         <source>Set Cover Image...</source>
         <translation>Definir imagem de capa...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1491"/>
+        <location filename="../mainwindow.cpp" line="1493"/>
         <source>Default Boot</source>
         <translation>Inicialização padrão</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1494"/>
+        <location filename="../mainwindow.cpp" line="1496"/>
         <source>Fast Boot</source>
         <translation>Inicialização rápida</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1500"/>
+        <location filename="../mainwindow.cpp" line="1502"/>
         <source>Full Boot</source>
         <translation>Inicialização completa</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1508"/>
+        <location filename="../mainwindow.cpp" line="1510"/>
         <source>Boot and Debug</source>
         <translation>Iniciar jogo com depurador</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1528"/>
+        <location filename="../mainwindow.cpp" line="1530"/>
         <source>Exclude From List</source>
         <translation>Excluir da lista</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1531"/>
+        <location filename="../mainwindow.cpp" line="1533"/>
         <source>Reset Play Time</source>
         <translation>Redefinir tempo de jogo</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1535"/>
+        <location filename="../mainwindow.cpp" line="1537"/>
         <source>Add Search Directory...</source>
         <translation>Adicionar um novo diretório...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1544"/>
+        <location filename="../mainwindow.cpp" line="1546"/>
         <source>Select Cover Image</source>
         <translation>Escolher imagem de capa</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1562"/>
+        <location filename="../mainwindow.cpp" line="1564"/>
         <source>Cover Already Exists</source>
         <translation>Capa já existe</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1563"/>
+        <location filename="../mainwindow.cpp" line="1565"/>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <translation>A capa para este jogo já existe, deseja substituí-lá?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1558"/>
-        <location filename="../mainwindow.cpp" line="1572"/>
-        <location filename="../mainwindow.cpp" line="1577"/>
-        <location filename="../mainwindow.cpp" line="1582"/>
+        <location filename="../mainwindow.cpp" line="1560"/>
+        <location filename="../mainwindow.cpp" line="1574"/>
+        <location filename="../mainwindow.cpp" line="1579"/>
+        <location filename="../mainwindow.cpp" line="1584"/>
         <source>Copy Error</source>
         <translation>Erro ao copiar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1572"/>
+        <location filename="../mainwindow.cpp" line="1574"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation>Falha ao remover capa existente &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1577"/>
+        <location filename="../mainwindow.cpp" line="1579"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
         <translation>Falha ao copiar &apos;%1&apos; para &apos;%2&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1736"/>
+        <location filename="../mainwindow.cpp" line="1738"/>
         <source>%1x Scale</source>
         <translation>Expandir para %1x</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2153"/>
-        <location filename="../mainwindow.cpp" line="2160"/>
-        <location filename="../mainwindow.cpp" line="2169"/>
+        <location filename="../mainwindow.cpp" line="2155"/>
+        <location filename="../mainwindow.cpp" line="2162"/>
+        <location filename="../mainwindow.cpp" line="2171"/>
         <source>Destination File</source>
         <translation>Destino do arquivo</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2153"/>
-        <location filename="../mainwindow.cpp" line="2169"/>
+        <location filename="../mainwindow.cpp" line="2155"/>
+        <location filename="../mainwindow.cpp" line="2171"/>
         <source>Binary Files (*.bin)</source>
         <translation>Arquivos binários (*.bin)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2161"/>
+        <location filename="../mainwindow.cpp" line="2163"/>
         <source>Binary Files (*.bin);;PNG Images (*.png)</source>
         <translation>Arquivos (*.bin);;Imagens (*.png)</translation>
     </message>
@@ -11999,51 +12003,51 @@ Esta ação não poderá ser desfeita.</translation>
         <translation>Escuro</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2714"/>
+        <location filename="../mainwindow.cpp" line="2716"/>
         <source>Confirm Shutdown</source>
         <translation>Confirmar desligamento</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2715"/>
+        <location filename="../mainwindow.cpp" line="2717"/>
         <source>Are you sure you want to shut down the virtual machine?</source>
         <translation>Tem certeza de que deseja desligar a máquina virtual?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2717"/>
+        <location filename="../mainwindow.cpp" line="2719"/>
         <source>Save State For Resume</source>
         <translation>Salvar estado e continuar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2792"/>
-        <location filename="../mainwindow.cpp" line="2797"/>
-        <location filename="../mainwindow.cpp" line="2822"/>
-        <location filename="../mainwindow.cpp" line="2831"/>
+        <location filename="../mainwindow.cpp" line="2794"/>
+        <location filename="../mainwindow.cpp" line="2799"/>
+        <location filename="../mainwindow.cpp" line="2824"/>
+        <location filename="../mainwindow.cpp" line="2833"/>
         <source>Memory Card Not Found</source>
         <translation>Cartão de memória não encontrado</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2793"/>
+        <location filename="../mainwindow.cpp" line="2795"/>
         <source>Memory card &apos;%1&apos; does not exist. Do you want to create an empty memory card?</source>
         <translation>Cartão de memória &apos;%1&apos; não existe, você deseja criar um cartão de memória vazio?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2798"/>
+        <location filename="../mainwindow.cpp" line="2800"/>
         <source>Failed to create memory card &apos;%1&apos;</source>
         <translation>Falha ao criar cartão de memória &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2823"/>
-        <location filename="../mainwindow.cpp" line="2832"/>
+        <location filename="../mainwindow.cpp" line="2825"/>
+        <location filename="../mainwindow.cpp" line="2834"/>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
         <translation>Cartão de memória &apos;%1&apos; não encotrado. Experimente iniciar o jogo e salvá-lo para que ele seja criado.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2848"/>
+        <location filename="../mainwindow.cpp" line="2850"/>
         <source>RA: Logged in as %1 (%2, %3 softcore). %4 unread messages.</source>
         <translation>RA: conectado como %1 (%2, %3 normal). %4 mensagens não lidas.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1030"/>
+        <location filename="../mainwindow.cpp" line="1032"/>
         <source>Using cheats can have unpredictable effects on games, causing crashes, graphical glitches, and corrupted saves. By using the cheat manager, you agree that it is an unsupported configuration, and we will not provide you with any assistance when games break.
 
 Cheats persist through save states even after being disabled, please remember to reset/reboot the game after turning off any codes.
@@ -12056,17 +12060,17 @@ As trapaças ficam guardadas no estado de salvamento rápido mesmo após serem d
 Tem certeza de que deseja continuar?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2957"/>
+        <location filename="../mainwindow.cpp" line="2959"/>
         <source>Updater Error</source>
         <translation>Erro na atualização</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2963"/>
+        <location filename="../mainwindow.cpp" line="2965"/>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please follow the instructions under &quot;Downloading and Running&quot; at the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;Desculpe, mas você está tentando atualizar uma versão não oficial do Duckstation. Para evitarmos imcompatibilidade, o atualizador automático só poderá ser usado nas versões oficiais! &lt;/p&gt;&lt;p&gt;Para obtê-las, siga as instruções de como e onde no link &quot;Baixando e rodando&quot; conforme abaixo:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2969"/>
+        <location filename="../mainwindow.cpp" line="2971"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation>Atualizações automáticas não são compatíveis com a plataforma atual.</translation>
     </message>
@@ -13529,72 +13533,72 @@ The URL was: %1</source>
 <context>
     <name>SaveStateSelectorUI</name>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="703"/>
+        <location filename="../../core/imgui_overlays.cpp" line="705"/>
         <source>Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</source>
         <translation>Salvo em {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="844"/>
+        <location filename="../../core/imgui_overlays.cpp" line="846"/>
         <source>Load</source>
         <translation>Carregar</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="846"/>
+        <location filename="../../core/imgui_overlays.cpp" line="848"/>
         <source>Save</source>
         <translation>Salvar</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="848"/>
+        <location filename="../../core/imgui_overlays.cpp" line="850"/>
         <source>Select Previous</source>
         <translation>Anterior</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="850"/>
+        <location filename="../../core/imgui_overlays.cpp" line="852"/>
         <source>Select Next</source>
         <translation>Próximo</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="912"/>
+        <location filename="../../core/imgui_overlays.cpp" line="914"/>
         <source>{} ({})</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="1122"/>
+        <location filename="../../core/imgui_overlays.cpp" line="1124"/>
         <source>No save state found in Global Slot {}.</source>
         <translation>Nenhum dado de salvamento encontrado no compartimento global {}.</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="1123"/>
+        <location filename="../../core/imgui_overlays.cpp" line="1125"/>
         <source>No save state found in Slot {}.</source>
         <translation>Nenhum estado salvo encontrado no compartimento {}.</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="1147"/>
+        <location filename="../../core/imgui_overlays.cpp" line="1149"/>
         <source>no save yet</source>
         <translation>Ainda não foi salvo</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="1152"/>
+        <location filename="../../core/imgui_overlays.cpp" line="1154"/>
         <source>Global Save Slot {0} selected ({1}).</source>
         <translation>Compartimento de salvamento global {0} selecionado ({1}).</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="1153"/>
+        <location filename="../../core/imgui_overlays.cpp" line="1155"/>
         <source>Save Slot {0} selected ({1}).</source>
         <translation>Compartimento de dados {0} escolhido({1}).</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="1034"/>
+        <location filename="../../core/imgui_overlays.cpp" line="1036"/>
         <source>Global Slot {}</source>
         <translation>Compartimento global {}</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="1035"/>
+        <location filename="../../core/imgui_overlays.cpp" line="1037"/>
         <source>Game Slot {}</source>
         <translation>Compartimento {}</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="937"/>
+        <location filename="../../core/imgui_overlays.cpp" line="939"/>
         <source>No save present in this slot.</source>
         <translation>Não há dados nesse compartimento.</translation>
     </message>
