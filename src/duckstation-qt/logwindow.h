@@ -18,6 +18,7 @@ public:
   ~LogWindow();
 
   static void updateSettings();
+  static void destroy();
 
   ALWAYS_INLINE bool isAttachedToMainWindow() const { return m_attached_to_main_window; }
   void reattachToMainWindow();
@@ -43,6 +44,12 @@ private Q_SLOTS:
   void appendMessage(const QLatin1StringView& channel, quint32 level, const QString& message);
 
 private:
+  static constexpr int DEFAULT_WIDTH = 750;
+  static constexpr int DEFAULT_HEIGHT = 400;
+
+  void saveSize();
+  void restoreSize();
+
   QPlainTextEdit* m_text;
   QMenu* m_level_menu;
   std::span<const char*> m_filter_names;

@@ -14,14 +14,14 @@
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QScrollBar>
 
+// TODO: Since log callbacks are synchronized, no mutex is needed here.
+// But once I get rid of that, there will be.
 LogWindow* g_log_window;
 
 LogWindow::LogWindow(bool attach_to_main)
   : QMainWindow(), m_filter_names(Settings::GetLogFilters()), m_attached_to_main_window(attach_to_main)
 {
-  // TODO: probably should save the size..
-  resize(700, 400);
-
+  restoreSize();
   createUi();
 
   Log::RegisterCallback(&LogWindow::logCallback, this);
@@ -29,9 +29,6 @@ LogWindow::LogWindow(bool attach_to_main)
 
 LogWindow::~LogWindow()
 {
-  if (g_log_window == this)
-    g_log_window = nullptr;
-
   Log::UnregisterCallback(&LogWindow::logCallback, this);
 }
 
@@ -60,10 +57,22 @@ void LogWindow::updateSettings()
 
     g_log_window->show();
   }
-  else
+  else if (g_log_window)
   {
-    delete g_log_window;
+    g_log_window->close();
+    g_log_window->deleteLater();
+    g_log_window = nullptr;
   }
+}
+
+void LogWindow::destroy()
+{
+  if (!g_log_window)
+    return;
+
+  g_log_window->close();
+  g_log_window->deleteLater();
+  g_log_window = nullptr;
 }
 
 void LogWindow::reattachToMainWindow()
@@ -103,6 +112,7 @@ void LogWindow::createUi()
   QIcon icon;
   icon.addFile(QString::fromUtf8(":/icons/duck.png"), QSize(), QIcon::Normal, QIcon::Off);
   setWindowIcon(icon);
+  setWindowFlag(Qt::WindowCloseButtonHint, false);
   updateWindowTitle();
 
   QAction* action;
@@ -165,12 +175,15 @@ void LogWindow::createUi()
   m_text->setTextInteractionFlags(Qt::TextSelectableByKeyboard);
   m_text->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
-#ifndef _WIN32
-  QFont font("Monospace");
-  font.setStyleHint(QFont::TypeWriter);
-#else
+#if defined(_WIN32)
   QFont font("Consolas");
   font.setPointSize(10);
+#elif defined(__APPLE__)
+  QFont font("Monaco");
+  font.setPointSize(11);
+#else
+  QFont font("Monospace");
+  font.setStyleHint(QFont::TypeWriter);
 #endif
   m_text->setFont(font);
 
@@ -293,7 +306,10 @@ void LogWindow::logCallback(void* pUserParam, const char* channelName, const cha
 
 void LogWindow::closeEvent(QCloseEvent* event)
 {
-  // TODO: Update config.
+  Log::UnregisterCallback(&LogWindow::logCallback, this);
+
+  saveSize();
+
   QMainWindow::closeEvent(event);
 }
 
@@ -362,4 +378,33 @@ void LogWindow::appendMessage(const QLatin1StringView& channel, quint32 level, c
       scrollbar->setSliderPosition(pos);
     }
   }
+}
+
+void LogWindow::saveSize()
+{
+  const int current_width = Host::GetBaseIntSettingValue("UI", "LogWindowWidth", DEFAULT_WIDTH);
+  const int current_height = Host::GetBaseIntSettingValue("UI", "LogWindowHeight", DEFAULT_HEIGHT);
+  const QSize wsize = size();
+
+  bool changed = false;
+  if (current_width != wsize.width())
+  {
+    Host::SetBaseIntSettingValue("UI", "LogWindowWidth", wsize.width());
+    changed = true;
+  }
+  if (current_height != wsize.height())
+  {
+    Host::SetBaseIntSettingValue("UI", "LogWindowHeight", wsize.height());
+    changed = true;
+  }
+
+  if (changed)
+    Host::CommitBaseSettingChanges();
+}
+
+void LogWindow::restoreSize()
+{
+  const int width = Host::GetBaseIntSettingValue("UI", "LogWindowWidth", DEFAULT_WIDTH);
+  const int height = Host::GetBaseIntSettingValue("UI", "LogWindowHeight", DEFAULT_HEIGHT);
+  resize(width, height);
 }

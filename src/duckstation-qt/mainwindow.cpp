@@ -766,6 +766,8 @@ void MainWindow::destroySubWindows()
   }
 
   SettingsWindow::closeGamePropertiesDialogs();
+
+  LogWindow::destroy();
 }
 
 void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidget* parent_window, QMenu* menu)
