@@ -97,87 +97,87 @@
            <widget class="QComboBox" name="resolutionScale">
             <item>
              <property name="text">
-              <string>Automatic based on window size</string>
+              <string>Automatic (Based on Window Size)</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>1x</string>
+              <string>1x Native (Default)</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>2x</string>
+              <string>2x Native</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>3x (for 720p)</string>
+              <string>3x Native (for 720p)</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>4x</string>
+              <string>4x Native</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>5x (for 1080p)</string>
+              <string>5x Native (for 1080p)</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>6x (for 1440p)</string>
+              <string>6x Native (for 1440p)</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>7x</string>
+              <string>7x Native</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>8x</string>
+              <string>8x Native</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>9x (for 4K)</string>
+              <string>9x Native (for 4K)</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>10x</string>
+              <string>10x Native</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>11x</string>
+              <string>11x Native</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>12x</string>
+              <string>12x Native</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>13x</string>
+              <string>13x Native</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>14x</string>
+              <string>14x Native</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>15x</string>
+              <string>15x Native</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>16x</string>
+              <string>16x Native</string>
              </property>
             </item>
            </widget>
