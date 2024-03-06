@@ -5,12 +5,12 @@
 
 #include "imgui_fullscreen.h"
 #include "gpu_device.h"
+#include "image.h"
 #include "imgui_animated.h"
 
 #include "common/assert.h"
 #include "common/easing.h"
 #include "common/file_system.h"
-#include "common/image.h"
 #include "common/log.h"
 #include "common/lru_cache.h"
 #include "common/path.h"
@@ -42,8 +42,8 @@ using MessageDialogCallbackVariant = std::variant<InfoMessageDialogCallback, Con
 
 static constexpr float MENU_BACKGROUND_ANIMATION_TIME = 0.5f;
 
-static std::optional<Common::RGBA8Image> LoadTextureImage(const char* path);
-static std::shared_ptr<GPUTexture> UploadTexture(const char* path, const Common::RGBA8Image& image);
+static std::optional<RGBA8Image> LoadTextureImage(const char* path);
+static std::shared_ptr<GPUTexture> UploadTexture(const char* path, const RGBA8Image& image);
 static void TextureLoaderThread();
 
 static void DrawFileSelector();
@@ -96,7 +96,7 @@ static std::atomic_bool s_texture_load_thread_quit{false};
 static std::mutex s_texture_load_mutex;
 static std::condition_variable s_texture_load_cv;
 static std::deque<std::string> s_texture_load_queue;
-static std::deque<std::pair<std::string, Common::RGBA8Image>> s_texture_upload_queue;
+static std::deque<std::pair<std::string, RGBA8Image>> s_texture_upload_queue;
 static std::thread s_texture_load_thread;
 
 static bool s_choice_dialog_open = false;
@@ -268,9 +268,9 @@ const std::shared_ptr<GPUTexture>& ImGuiFullscreen::GetPlaceholderTexture()
   return s_placeholder_texture;
 }
 
-std::optional<Common::RGBA8Image> ImGuiFullscreen::LoadTextureImage(const char* path)
+std::optional<RGBA8Image> ImGuiFullscreen::LoadTextureImage(const char* path)
 {
-  std::optional<Common::RGBA8Image> image;
+  std::optional<RGBA8Image> image;
 
   std::optional<std::vector<u8>> data;
   if (Path::IsAbsolute(path))
@@ -279,7 +279,7 @@ std::optional<Common::RGBA8Image> ImGuiFullscreen::LoadTextureImage(const char* 
     data = Host::ReadResourceFile(path, true);
   if (data.has_value())
   {
-    image = Common::RGBA8Image();
+    image = RGBA8Image();
     if (!image->LoadFromBuffer(path, data->data(), data->size()))
     {
       Log_ErrorPrintf("Failed to read texture resource '%s'", path);
@@ -294,7 +294,7 @@ std::optional<Common::RGBA8Image> ImGuiFullscreen::LoadTextureImage(const char* 
   return image;
 }
 
-std::shared_ptr<GPUTexture> ImGuiFullscreen::UploadTexture(const char* path, const Common::RGBA8Image& image)
+std::shared_ptr<GPUTexture> ImGuiFullscreen::UploadTexture(const char* path, const RGBA8Image& image)
 {
   std::unique_ptr<GPUTexture> texture =
     g_gpu_device->FetchTexture(image.GetWidth(), image.GetHeight(), 1, 1, 1, GPUTexture::Type::Texture,
@@ -312,7 +312,7 @@ std::shared_ptr<GPUTexture> ImGuiFullscreen::UploadTexture(const char* path, con
 std::shared_ptr<GPUTexture> ImGuiFullscreen::LoadTexture(const std::string_view& path)
 {
   std::string path_str(path);
-  std::optional<Common::RGBA8Image> image(LoadTextureImage(path_str.c_str()));
+  std::optional<RGBA8Image> image(LoadTextureImage(path_str.c_str()));
   if (image.has_value())
   {
     std::shared_ptr<GPUTexture> ret(UploadTexture(path_str.c_str(), image.value()));
@@ -362,7 +362,7 @@ void ImGuiFullscreen::UploadAsyncTextures()
   std::unique_lock lock(s_texture_load_mutex);
   while (!s_texture_upload_queue.empty())
   {
-    std::pair<std::string, Common::RGBA8Image> it(std::move(s_texture_upload_queue.front()));
+    std::pair<std::string, RGBA8Image> it(std::move(s_texture_upload_queue.front()));
     s_texture_upload_queue.pop_front();
     lock.unlock();
 
@@ -395,7 +395,7 @@ void ImGuiFullscreen::TextureLoaderThread()
       s_texture_load_queue.pop_front();
 
       lock.unlock();
-      std::optional<Common::RGBA8Image> image(LoadTextureImage(path.c_str()));
+      std::optional<RGBA8Image> image(LoadTextureImage(path.c_str()));
       lock.lock();
 
       // don't bother queuing back if it doesn't exist

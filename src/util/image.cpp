@@ -1,19 +1,20 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "image.h"
-#include "byte_stream.h"
-#include "file_system.h"
-#include "log.h"
-#include "path.h"
-#include "scoped_guard.h"
+
+#include "common/byte_stream.h"
+#include "common/file_system.h"
+#include "common/log.h"
+#include "common/path.h"
+#include "common/scoped_guard.h"
+#include "common/string_util.h"
+
 #include "stb_image.h"
 #include "stb_image_resize.h"
 #include "stb_image_write.h"
-#include "string_util.h"
-Log_SetChannel(Image);
 
-using namespace Common;
+Log_SetChannel(Image);
 
 #if 0
 static bool PNGBufferLoader(RGBA8Image* image, const void* buffer, size_t buffer_size);
@@ -68,11 +69,25 @@ static const FormatHandler* GetFormatHandler(const std::string_view& extension)
 
 RGBA8Image::RGBA8Image() = default;
 
-RGBA8Image::RGBA8Image(const RGBA8Image& copy) : Image(copy) {}
+RGBA8Image::RGBA8Image(const RGBA8Image& copy) : Image(copy)
+{
+}
 
-RGBA8Image::RGBA8Image(u32 width, u32 height, const u32* pixels) : Image(width, height, pixels) {}
+RGBA8Image::RGBA8Image(u32 width, u32 height, const u32* pixels) : Image(width, height, pixels)
+{
+}
 
-RGBA8Image::RGBA8Image(RGBA8Image&& move) : Image(move) {}
+RGBA8Image::RGBA8Image(RGBA8Image&& move) : Image(move)
+{
+}
+
+RGBA8Image::RGBA8Image(u32 width, u32 height) : Image(width, height)
+{
+}
+
+RGBA8Image::RGBA8Image(u32 width, u32 height, std::vector<u32> pixels) : Image(width, height, std::move(pixels))
+{
+}
 
 RGBA8Image& RGBA8Image::operator=(const RGBA8Image& copy)
 {

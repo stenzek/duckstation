@@ -3,6 +3,7 @@
   <Import Project="..\..\dep\msvc\vsprops\Configurations.props" />
   <ItemGroup>
     <ClInclude Include="gpu_types.h" />
+    <ClInclude Include="image.h" />
     <ClInclude Include="imgui_animated.h" />
     <ClInclude Include="audio_stream.h" />
     <ClInclude Include="cd_image.h" />
@@ -158,6 +159,7 @@
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="http_downloader_winhttp.cpp" />
+    <ClCompile Include="image.cpp" />
     <ClCompile Include="imgui_fullscreen.cpp" />
     <ClCompile Include="imgui_manager.cpp" />
     <ClCompile Include="ini_settings_interface.cpp" />
@@ -262,6 +264,9 @@
     </ProjectReference>
     <ProjectReference Include="..\..\dep\glslang\glslang.vcxproj" Condition="'$(Platform)'!='ARM64'">
       <Project>{7f909e29-4808-4bd9-a60c-56c51a3aaec2}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dep\stb\stb.vcxproj">
+      <Project>{ed601289-ac1a-46b8-a8ed-17db9eb73423}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\dep\zstd\zstd.vcxproj">
       <Project>{73ee0c55-6ffe-44e7-9c12-baa52434a797}</Project>

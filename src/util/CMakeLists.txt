@@ -33,6 +33,8 @@ add_library(util
   host.h
   http_downloader.cpp
   http_downloader.h
+  image.cpp
+  image.h
   imgui_fullscreen.cpp
   imgui_fullscreen.h
   imgui_manager.cpp

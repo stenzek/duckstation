@@ -73,6 +73,7 @@
     <ClInclude Include="opengl_context_egl_x11.h" />
     <ClInclude Include="opengl_context_wgl.h" />
     <ClInclude Include="gpu_types.h" />
+    <ClInclude Include="image.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -154,11 +155,7 @@
     <ClCompile Include="opengl_context_egl_wayland.cpp" />
     <ClCompile Include="opengl_context_egl_x11.cpp" />
     <ClCompile Include="opengl_context_wgl.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Filter Include="gl">
-      <UniqueIdentifier>{e637fc5b-2483-4a31-abc3-89a16d45c223}</UniqueIdentifier>
-    </Filter>
+    <ClCompile Include="image.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="metal_shaders.metal" />

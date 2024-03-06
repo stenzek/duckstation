@@ -1,7 +1,8 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "postprocessing_shader_fx.h"
+#include "image.h"
 #include "input_manager.h"
 #include "shadergen.h"
 
@@ -12,7 +13,6 @@
 #include "common/assert.h"
 #include "common/error.h"
 #include "common/file_system.h"
-#include "common/image.h"
 #include "common/log.h"
 #include "common/path.h"
 #include "common/progress_callback.h"
@@ -928,7 +928,7 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
         return false;
       }
 
-      Common::RGBA8Image image;
+      RGBA8Image image;
       if (const std::string image_path =
             Path::Combine(EmuFolders::Shaders, Path::Combine("reshade" FS_OSPATH_SEPARATOR_STR "Textures", source));
           !image.LoadFromFile(image_path.c_str()))

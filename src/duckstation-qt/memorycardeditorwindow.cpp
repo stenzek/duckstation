@@ -1,13 +1,17 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "memorycardeditorwindow.h"
+#include "qtutils.h"
+
+#include "core/host.h"
+#include "core/settings.h"
+
+#include "common/assert.h"
 #include "common/file_system.h"
 #include "common/path.h"
 #include "common/string_util.h"
-#include "core/host.h"
-#include "core/settings.h"
-#include "qtutils.h"
+
 #include <QtCore/QFileInfo>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>

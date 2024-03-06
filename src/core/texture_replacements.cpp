@@ -90,7 +90,7 @@ void TextureReplacements::DumpVRAMWrite(u32 width, u32 height, const void* pixel
   if (filename.empty())
     return;
 
-  Common::RGBA8Image image;
+  RGBA8Image image;
   image.SetSize(width, height);
 
   const u16* src_pixels = reinterpret_cast<const u16*>(pixels);
@@ -274,7 +274,7 @@ const TextureReplacementTexture* TextureReplacements::LoadTexture(const std::str
   if (it != m_texture_cache.end())
     return &it->second;
 
-  Common::RGBA8Image image;
+  RGBA8Image image;
   if (!image.LoadFromFile(filename.c_str()))
   {
     Log_ErrorPrintf("Failed to load '%s'", filename.c_str());

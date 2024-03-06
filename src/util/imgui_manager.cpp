@@ -4,6 +4,7 @@
 #include "imgui_manager.h"
 #include "gpu_device.h"
 #include "host.h"
+#include "image.h"
 #include "imgui_fullscreen.h"
 #include "input_manager.h"
 
@@ -11,7 +12,6 @@
 #include "common/easing.h"
 #include "common/error.h"
 #include "common/file_system.h"
-#include "common/image.h"
 #include "common/log.h"
 #include "common/string_util.h"
 #include "common/timer.h"
@@ -1040,7 +1040,7 @@ void ImGuiManager::UpdateSoftwareCursorTexture(u32 index)
     return;
   }
 
-  Common::RGBA8Image image;
+  RGBA8Image image;
   if (!image.LoadFromFile(sc.image_path.c_str()))
   {
     Log_ErrorPrintf("Failed to load software cursor %u image '%s'", index, sc.image_path.c_str());

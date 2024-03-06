@@ -1,22 +1,25 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
-#include "assert.h"
-#include "types.h"
+
+#include "common/assert.h"
+#include "common/types.h"
+
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <optional>
 #include <vector>
 
-namespace Common {
 template<typename PixelType>
 class Image
 {
 public:
   Image() = default;
+  Image(u32 width, u32 height) { SetSize(width, height); }
   Image(u32 width, u32 height, const PixelType* pixels) { SetPixels(width, height, pixels); }
+  Image(u32 width, u32 height, std::vector<PixelType> pixels) { SetPixels(width, height, std::move(pixels)); }
   Image(const Image& copy)
   {
     m_width = copy.m_width;
@@ -114,7 +117,9 @@ public:
   static constexpr int DEFAULT_SAVE_QUALITY = 85;
 
   RGBA8Image();
+  RGBA8Image(u32 width, u32 height);
   RGBA8Image(u32 width, u32 height, const u32* pixels);
+  RGBA8Image(u32 width, u32 height, std::vector<u32> pixels);
   RGBA8Image(const RGBA8Image& copy);
   RGBA8Image(RGBA8Image&& move);
 
@@ -132,5 +137,3 @@ public:
   void Resize(u32 new_width, u32 new_height);
   void Resize(const RGBA8Image* src_image, u32 new_width, u32 new_height);
 };
-
-} // namespace Common

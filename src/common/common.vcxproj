@@ -18,7 +18,6 @@
     <ClInclude Include="file_system.h" />
     <ClInclude Include="hash_combine.h" />
     <ClInclude Include="heap_array.h" />
-    <ClInclude Include="image.h" />
     <ClInclude Include="intrin.h" />
     <ClInclude Include="layered_settings_interface.h" />
     <ClInclude Include="log.h" />
@@ -52,7 +51,6 @@
     <ClCompile Include="error.cpp" />
     <ClCompile Include="fastjmp.cpp" />
     <ClCompile Include="file_system.cpp" />
-    <ClCompile Include="image.cpp" />
     <ClCompile Include="layered_settings_interface.cpp" />
     <ClCompile Include="log.cpp" />
     <ClCompile Include="memmap.cpp" />
@@ -91,9 +89,6 @@
     </ProjectReference>
     <ProjectReference Include="..\..\dep\minizip\minizip.vcxproj">
       <Project>{8bda439c-6358-45fb-9994-2ff083babe06}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\dep\stb\stb.vcxproj">
-      <Project>{ed601289-ac1a-46b8-a8ed-17db9eb73423}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\dep\zlib\zlib.vcxproj">
       <Project>{7ff9fdb9-d504-47db-a16a-b08071999620}</Project>

@@ -1,10 +1,14 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
+
+#include "util/image.h"
+
 #include "common/hash_combine.h"
-#include "common/image.h"
+
 #include "types.h"
+
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -36,7 +40,7 @@ struct hash<TextureReplacementHash>
 };
 } // namespace std
 
-using TextureReplacementTexture = Common::RGBA8Image;
+using TextureReplacementTexture = RGBA8Image;
 
 class TextureReplacements
 {
