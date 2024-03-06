@@ -89,9 +89,9 @@ public:
 
   static bool ValidateConfig(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format);
 
-  static bool ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u8>& texture_data, u32& texture_data_stride,
+  static bool ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u32>& texture_data, u32& texture_data_stride,
                                         GPUTexture::Format format);
-  static void FlipTextureDataRGBA8(u32 width, u32 height, std::vector<u8>& texture_data, u32 texture_data_stride);
+  static void FlipTextureDataRGBA8(u32 width, u32 height, u8* texture_data, u32 texture_data_stride);
 
   ALWAYS_INLINE u32 GetWidth() const { return m_width; }
   ALWAYS_INLINE u32 GetHeight() const { return m_height; }

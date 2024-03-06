@@ -2446,7 +2446,7 @@ bool System::SaveStateToStream(ByteStream* state, u32 screenshot_size /* = 256 *
                                     ((display_aspect_ratio > 0.0f) ? display_aspect_ratio : 1.0f)));
     Log_VerbosePrintf("Saving %ux%u screenshot for state", screenshot_width, screenshot_height);
 
-    std::vector<u8> screenshot_buffer;
+    std::vector<u32> screenshot_buffer;
     u32 screenshot_stride;
     GPUTexture::Format screenshot_format;
     if (g_gpu->RenderScreenshotToBuffer(screenshot_width, screenshot_height,
@@ -2464,7 +2464,8 @@ bool System::SaveStateToStream(ByteStream* state, u32 screenshot_size /* = 256 *
       {
         if (g_gpu_device->UsesLowerLeftOrigin())
         {
-          GPUTexture::FlipTextureDataRGBA8(screenshot_width, screenshot_height, screenshot_buffer, screenshot_stride);
+          GPUTexture::FlipTextureDataRGBA8(screenshot_width, screenshot_height,
+                                           reinterpret_cast<u8*>(screenshot_buffer.data()), screenshot_stride);
         }
 
         header.offset_to_screenshot = static_cast<u32>(state->GetPosition());

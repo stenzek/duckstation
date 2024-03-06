@@ -230,7 +230,7 @@ bool GPUTexture::ValidateConfig(u32 width, u32 height, u32 layers, u32 levels, u
   return true;
 }
 
-bool GPUTexture::ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u8>& texture_data,
+bool GPUTexture::ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u32>& texture_data,
                                            u32& texture_data_stride, GPUTexture::Format format)
 {
   switch (format)
@@ -239,7 +239,7 @@ bool GPUTexture::ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u8
     {
       for (u32 y = 0; y < height; y++)
       {
-        u8* pixels = texture_data.data() + (y * texture_data_stride);
+        u8* pixels = reinterpret_cast<u8*>(texture_data.data()) + (y * texture_data_stride);
         for (u32 x = 0; x < width; x++)
         {
           u32 pixel;
@@ -258,12 +258,12 @@ bool GPUTexture::ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u8
 
     case Format::RGB565:
     {
-      std::vector<u8> temp(width * height * sizeof(u32));
+      std::vector<u32> temp(width * height);
 
       for (u32 y = 0; y < height; y++)
       {
-        const u8* pixels_in = texture_data.data() + (y * texture_data_stride);
-        u8* pixels_out = &temp[y * width * sizeof(u32)];
+        const u8* pixels_in = reinterpret_cast<const u8*>(texture_data.data()) + (y * texture_data_stride);
+        u8* pixels_out = reinterpret_cast<u8*>(temp.data()) + (y * width * sizeof(u32));
 
         for (u32 x = 0; x < width; x++)
         {
@@ -288,12 +288,12 @@ bool GPUTexture::ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u8
 
     case Format::RGBA5551:
     {
-      std::vector<u8> temp(width * height * sizeof(u32));
+      std::vector<u32> temp(width * height);
 
       for (u32 y = 0; y < height; y++)
       {
-        const u8* pixels_in = texture_data.data() + (y * texture_data_stride);
-        u8* pixels_out = &temp[y * width];
+        const u8* pixels_in = reinterpret_cast<const u8*>(texture_data.data()) + (y * texture_data_stride);
+        u8* pixels_out = reinterpret_cast<u8*>(temp.data()) + (y * width * sizeof(u32));
 
         for (u32 x = 0; x < width; x++)
         {
@@ -323,16 +323,16 @@ bool GPUTexture::ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u8
   }
 }
 
-void GPUTexture::FlipTextureDataRGBA8(u32 width, u32 height, std::vector<u8>& texture_data, u32 texture_data_stride)
+void GPUTexture::FlipTextureDataRGBA8(u32 width, u32 height, u8* texture_data, u32 texture_data_stride)
 {
-  std::vector<u8> temp(width * sizeof(u32));
+  std::unique_ptr<u8[]> temp = std::make_unique<u8[]>(texture_data_stride);
   for (u32 flip_row = 0; flip_row < (height / 2); flip_row++)
   {
     u8* top_ptr = &texture_data[flip_row * texture_data_stride];
     u8* bottom_ptr = &texture_data[((height - 1) - flip_row) * texture_data_stride];
-    std::memcpy(temp.data(), top_ptr, texture_data_stride);
+    std::memcpy(temp.get(), top_ptr, texture_data_stride);
     std::memcpy(top_ptr, bottom_ptr, texture_data_stride);
-    std::memcpy(bottom_ptr, temp.data(), texture_data_stride);
+    std::memcpy(bottom_ptr, temp.get(), texture_data_stride);
   }
 }
 

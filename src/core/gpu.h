@@ -201,12 +201,11 @@ public:
   Common::Rectangle<s32> CalculateDrawRect(s32 window_width, s32 window_height, bool apply_aspect_ratio = true) const;
 
   /// Helper function to save current display texture to PNG.
-  bool WriteDisplayTextureToFile(std::string filename, bool full_resolution = true, bool apply_aspect_ratio = true,
-                                 bool compress_on_thread = false);
+  bool WriteDisplayTextureToFile(std::string filename, bool compress_on_thread = false);
 
   /// Renders the display, optionally with postprocessing to the specified image.
   bool RenderScreenshotToBuffer(u32 width, u32 height, const Common::Rectangle<s32>& draw_rect, bool postfx,
-                                std::vector<u8>* out_pixels, u32* out_stride, GPUTexture::Format* out_format);
+                                std::vector<u32>* out_pixels, u32* out_stride, GPUTexture::Format* out_format);
 
   /// Helper function to save screenshot to PNG.
   bool RenderScreenshotToFile(std::string filename, DisplayScreenshotMode mode, u8 quality, bool compress_on_thread);

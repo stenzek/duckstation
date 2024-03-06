@@ -172,8 +172,6 @@ enum class DisplayScreenshotFormat : u8
 {
   PNG,
   JPEG,
-  TGA,
-  BMP,
   Count
 };
 

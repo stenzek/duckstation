@@ -1471,20 +1471,14 @@ const char* Settings::GetDisplayScreenshotModeDisplayName(DisplayScreenshotMode 
 static constexpr const std::array s_display_screenshot_format_names = {
   "PNG",
   "JPEG",
-  "TGA",
-  "BMP",
 };
 static constexpr const std::array s_display_screenshot_format_display_names = {
   TRANSLATE_NOOP("Settings", "PNG"),
   TRANSLATE_NOOP("Settings", "JPEG"),
-  TRANSLATE_NOOP("Settings", "TGA"),
-  TRANSLATE_NOOP("Settings", "BMP"),
 };
 static constexpr const std::array s_display_screenshot_format_extensions = {
   "png",
   "jpg",
-  "tga",
-  "bmp",
 };
 
 std::optional<DisplayScreenshotFormat> Settings::ParseDisplayScreenshotFormat(const char* str)
