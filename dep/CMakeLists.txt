@@ -37,6 +37,7 @@ if(WIN32 OR ANDROID)
   add_subdirectory(zlib EXCLUDE_FROM_ALL)
   add_subdirectory(zstd EXCLUDE_FROM_ALL)
   add_subdirectory(libpng EXCLUDE_FROM_ALL)
+  add_subdirectory(libjpeg EXCLUDE_FROM_ALL)
 endif()
 
 if(ENABLE_CUBEB)

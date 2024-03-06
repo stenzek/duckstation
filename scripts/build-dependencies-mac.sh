@@ -33,6 +33,7 @@ QT=6.6.0
 MOLTENVK=1.2.6
 ZSTD=1.5.5
 PNG=1.6.43
+JPEG=9f
 WEBP=1.3.2
 
 mkdir -p deps-build
@@ -48,6 +49,7 @@ cat > SHASUMS <<EOF
 b6a3d179aa9c41275ed0e35e502e5e3fd347dbe5117a0435a26868b231cd6246  v$MOLTENVK.tar.gz
 9c4396cc829cfae319a6e2615202e82aad41372073482fce286fac78646d3ee4  zstd-$ZSTD.tar.gz
 6a5ca0652392a2d7c9db2ae5b40210843c0bbc081cbd410825ab00cc59f14a6c  libpng-$PNG.tar.xz
+04705c110cb2469caa79fb71fba3d7bf834914706e9641a4589485c1f832565b  jpegsrc.v$JPEG.tar.gz
 2a499607df669e40258e53d0ade8035ba4ec0175244869d1025d460562aa09b4  libwebp-$WEBP.tar.gz
 039d53312acb5897a9054bd38c9ccbdab72500b71fdccdb3f4f0844b0dd39e0e  qtbase-everywhere-src-$QT.tar.xz
 e1542cb50176e237809895c6549598c08587c63703d100be54ac2d806834e384  qtimageformats-everywhere-src-$QT.tar.xz
@@ -62,6 +64,7 @@ curl -L \
   -O "https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz" \
   -O "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$WEBP.tar.gz" \
   -O "https://downloads.sourceforge.net/project/libpng/libpng16/$PNG/libpng-$PNG.tar.xz" \
+  -O "https://ijg.org/files/jpegsrc.v$JPEG.tar.gz" \
   -O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtbase-everywhere-src-$QT.tar.xz" \
   -O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtsvg-everywhere-src-$QT.tar.xz" \
   -O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttools-everywhere-src-$QT.tar.xz" \
@@ -199,6 +202,24 @@ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTA
 make -C build "-j$NPROCS"
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCMAKE_OSX_ARCHITECTURES="arm64" -DBUILD_SHARED_LIBS=ON -DPNG_TESTS=OFF -DPNG_STATIC=OFF -DPNG_SHARED=ON -DPNG_TOOLS=OFF -DPNG_ARM_NEON=on -B build-arm64
 make -C build-arm64 "-j$NPROCS"
+merge_binaries $(realpath build) $(realpath build-arm64)
+make -C build install
+cd ..
+
+echo "Installing libjpeg..."
+rm -fr "jpeg-$JPEG"
+tar xf "jpegsrc.v$JPEG.tar.gz"
+cd "jpeg-$JPEG"
+mkdir build
+cd build
+../configure --prefix="$INSTALLDIR" --disable-static --enable-shared --host="x86_64-apple-darwin" CFLAGS="-arch x86_64"
+make "-j$NPROCS"
+cd ..
+mkdir build-arm64
+cd build-arm64
+../configure --prefix="$INSTALLDIR" --disable-static --enable-shared --host="aarch64-apple-darwin" CFLAGS="-arch arm64"
+make "-j$NPROCS"
+cd ..
 merge_binaries $(realpath build) $(realpath build-arm64)
 make -C build install
 cd ..

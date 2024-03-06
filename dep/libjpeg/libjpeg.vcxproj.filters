@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="include\pngconf.h" />
+    <ClInclude Include="include\png.h" />
+    <ClInclude Include="src\pngdebug.h" />
+    <ClInclude Include="src\pnginfo.h" />
+    <ClInclude Include="src\pngpriv.h" />
+    <ClInclude Include="src\pngstruct.h" />
+    <ClInclude Include="include\pnglibconf.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\png.c" />
+    <ClCompile Include="src\pngerror.c" />
+    <ClCompile Include="src\pngget.c" />
+    <ClCompile Include="src\pngmem.c" />
+    <ClCompile Include="src\pngpread.c" />
+    <ClCompile Include="src\pngread.c" />
+    <ClCompile Include="src\pngrio.c" />
+    <ClCompile Include="src\pngrtran.c" />
+    <ClCompile Include="src\pngrutil.c" />
+    <ClCompile Include="src\pngset.c" />
+    <ClCompile Include="src\pngtrans.c" />
+    <ClCompile Include="src\pngwio.c" />
+    <ClCompile Include="src\pngwrite.c" />
+    <ClCompile Include="src\pngwtran.c" />
+    <ClCompile Include="src\pngwutil.c" />
+    <ClCompile Include="src\intel\intel_init.c">
+      <Filter>intel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\intel\filter_sse2_intrinsics.c">
+      <Filter>intel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arm\filter_neon_intrinsics.c">
+      <Filter>arm</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arm\palette_neon_intrinsics.c">
+      <Filter>arm</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arm\arm_init.c">
+      <Filter>arm</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="arm">
+      <UniqueIdentifier>{9f24e95e-025d-4ed8-8c41-2fb1c7a36026}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="intel">
+      <UniqueIdentifier>{8316b9c1-8c00-4bc8-ace7-c9b864890f2d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
