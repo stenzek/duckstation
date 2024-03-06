@@ -1,0 +1,63 @@
+libpng 1.6.43 - February 23, 2024
+=================================
+
+This is a public release of libpng, intended for use in production code.
+
+
+Files available for download
+----------------------------
+
+Source files with LF line endings (for Unix/Linux):
+
+ * libpng-1.6.43.tar.xz (LZMA-compressed, recommended)
+ * libpng-1.6.43.tar.gz (deflate-compressed)
+
+Source files with CRLF line endings (for Windows):
+
+ * lpng1643.7z (LZMA-compressed, recommended)
+ * lpng1643.zip (deflate-compressed)
+
+Other information:
+
+ * README.md
+ * LICENSE.md
+ * AUTHORS.md
+ * TRADEMARK.md
+
+
+Changes from version 1.6.42 to version 1.6.43
+---------------------------------------------
+
+ * Fixed the row width check in png_check_IHDR().
+   This corrected a bug that was specific to the 16-bit platforms,
+   and removed a spurious compiler warning from the 64-bit builds.
+   (Reported by Jacek Caban; fixed by John Bowler)
+ * Added eXIf chunk support to the push-mode reader in pngpread.c.
+   (Contributed by Chris Blume)
+ * Added contrib/pngexif for the benefit of the users who would like
+   to inspect the content of eXIf chunks.
+ * Added contrib/conftest/basic.dfa, a basic build-time configuration.
+   (Contributed by John Bowler)
+ * Fixed a preprocessor condition in pngread.c that broke build-time
+   configurations like contrib/conftest/pngcp.dfa.
+   (Contributed by John Bowler)
+ * Added CMake build support for LoongArch LSX.
+   (Contributed by GuXiWei)
+ * Fixed a CMake build error that occurred under a peculiar state of the
+   dependency tree. This was a regression introduced in libpng-1.6.41.
+   (Contributed by Dan Rosser)
+ * Marked the installed libpng headers as system headers in CMake.
+   (Contributed by Benjamin Buch)
+ * Updated the build support for RISCOS.
+   (Contributed by Cameron Cawley)
+ * Updated the makefiles to allow cross-platform builds to initialize
+   conventional make variables like AR and ARFLAGS.
+ * Added various improvements to the CI scripts in areas like version
+   consistency verification and text linting.
+ * Added version consistency verification to pngtest.c also.
+
+
+Send comments/corrections/commendations to png-mng-implement at lists.sf.net.
+Subscription is required; visit
+https://lists.sourceforge.net/lists/listinfo/png-mng-implement
+to subscribe.

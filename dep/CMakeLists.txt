@@ -35,9 +35,8 @@ disable_compiler_warnings_for_target(rapidyaml)
 # Build dependencies on Windows/Android.
 if(WIN32 OR ANDROID)
   add_subdirectory(zlib EXCLUDE_FROM_ALL)
-  disable_compiler_warnings_for_target(zlib)
   add_subdirectory(zstd EXCLUDE_FROM_ALL)
-  disable_compiler_warnings_for_target(zstd)
+  add_subdirectory(libpng EXCLUDE_FROM_ALL)
 endif()
 
 if(ENABLE_CUBEB)
