@@ -178,9 +178,6 @@
     <ProjectReference Include="..\..\dep\rcheevos\rcheevos.vcxproj">
       <Project>{4ba0a6d4-3ae1-42b2-9347-096fd023ff64}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\dep\stb\stb.vcxproj">
-      <Project>{ed601289-ac1a-46b8-a8ed-17db9eb73423}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\dep\vixl\vixl.vcxproj" Condition="'$(Platform)'=='ARM64'">
       <Project>{8906836e-f06e-46e8-b11a-74e5e8c7b8fb}</Project>
     </ProjectReference>

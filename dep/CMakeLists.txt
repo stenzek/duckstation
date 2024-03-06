@@ -1,8 +1,6 @@
 set(FMT_INSTALL OFF CACHE BOOL "")
 add_subdirectory(fmt EXCLUDE_FROM_ALL)
 disable_compiler_warnings_for_target(fmt)
-add_subdirectory(stb EXCLUDE_FROM_ALL)
-disable_compiler_warnings_for_target(stb)
 add_subdirectory(minizip EXCLUDE_FROM_ALL)
 disable_compiler_warnings_for_target(minizip)
 add_subdirectory(lzma EXCLUDE_FROM_ALL)

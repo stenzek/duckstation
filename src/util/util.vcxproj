@@ -253,6 +253,12 @@
     <ProjectReference Include="..\..\dep\libchdr\libchdr.vcxproj">
       <Project>{425d6c99-d1c8-43c2-b8ac-4d7b1d941017}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\dep\libjpeg\libjpeg.vcxproj">
+      <Project>{ec3b6685-0b6e-4767-84ab-39b75eead2e2}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dep\libpng\libpng.vcxproj">
+      <Project>{9fd2abcd-2dcd-4302-be5c-df0ba8431fa5}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\dep\reshadefx\reshadefx.vcxproj">
       <Project>{27b8d4bb-4f01-4432-bc14-9bf6ca458eee}</Project>
     </ProjectReference>
@@ -264,9 +270,6 @@
     </ProjectReference>
     <ProjectReference Include="..\..\dep\glslang\glslang.vcxproj" Condition="'$(Platform)'!='ARM64'">
       <Project>{7f909e29-4808-4bd9-a60c-56c51a3aaec2}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\dep\stb\stb.vcxproj">
-      <Project>{ed601289-ac1a-46b8-a8ed-17db9eb73423}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\dep\zstd\zstd.vcxproj">
       <Project>{73ee0c55-6ffe-44e7-9c12-baa52434a797}</Project>

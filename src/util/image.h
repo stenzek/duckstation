@@ -114,7 +114,7 @@ protected:
 class RGBA8Image : public Image<u32>
 {
 public:
-  static constexpr int DEFAULT_SAVE_QUALITY = 85;
+  static constexpr u8 DEFAULT_SAVE_QUALITY = 85;
 
   RGBA8Image();
   RGBA8Image(u32 width, u32 height);
@@ -130,10 +130,7 @@ public:
   bool LoadFromFile(const char* filename, std::FILE* fp);
   bool LoadFromBuffer(const char* filename, const void* buffer, size_t buffer_size);
 
-  bool SaveToFile(const char* filename, int quality = DEFAULT_SAVE_QUALITY) const;
-  bool SaveToFile(const char* filename, std::FILE* fp, int quality = DEFAULT_SAVE_QUALITY) const;
-  std::optional<std::vector<u8>> SaveToBuffer(const char* filename, int quality = DEFAULT_SAVE_QUALITY) const;
-
-  void Resize(u32 new_width, u32 new_height);
-  void Resize(const RGBA8Image* src_image, u32 new_width, u32 new_height);
+  bool SaveToFile(const char* filename, u8 quality = DEFAULT_SAVE_QUALITY) const;
+  bool SaveToFile(const char* filename, std::FILE* fp, u8 quality = DEFAULT_SAVE_QUALITY) const;
+  std::optional<std::vector<u8>> SaveToBuffer(const char* filename, u8 quality = DEFAULT_SAVE_QUALITY) const;
 };
