@@ -1,5 +1,5 @@
 if(ENABLE_SDL2)
-  find_package(SDL2 2.30.0 REQUIRED)
+  find_package(SDL2 2.30.1 REQUIRED)
 endif()
 if(NOT WIN32 AND NOT ANDROID)
   # From PCSX2: On macOS, Mono.framework contains an ancient version of libpng. We don't want that.
