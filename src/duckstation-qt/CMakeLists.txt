@@ -1,4 +1,4 @@
-find_package(Qt6 6.6.0 COMPONENTS Core Gui Widgets Network LinguistTools REQUIRED)
+find_package(Qt6 6.6.2 COMPONENTS Core Gui Widgets Network LinguistTools REQUIRED)
 
 include(CopyBaseTranslations)
 
