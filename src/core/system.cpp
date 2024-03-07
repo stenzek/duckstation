@@ -2471,7 +2471,7 @@ bool System::SaveStateToStream(ByteStream* state, u32 screenshot_size /* = 256 *
         header.offset_to_screenshot = static_cast<u32>(state->GetPosition());
         header.screenshot_width = screenshot_width;
         header.screenshot_height = screenshot_height;
-        header.screenshot_size = static_cast<u32>(screenshot_buffer.size());
+        header.screenshot_size = static_cast<u32>(screenshot_buffer.size() * sizeof(u32));
         if (!state->Write2(screenshot_buffer.data(), header.screenshot_size))
           return false;
       }
@@ -4480,7 +4480,8 @@ std::optional<ExtendedSaveStateInfo> System::InternalGetExtendedSaveStateInfo(By
       std::string().swap(ssi.media_path);
   }
 
-  if (header.screenshot_width > 0 && header.screenshot_height > 0 && header.screenshot_size > 0 &&
+  if (header.screenshot_width > 0 && header.screenshot_height > 0 &&
+      header.screenshot_size >= (header.screenshot_width * header.screenshot_height * sizeof(u32)) &&
       (static_cast<u64>(header.offset_to_screenshot) + static_cast<u64>(header.screenshot_size)) <= stream->GetSize())
   {
     stream->SeekAbsolute(header.offset_to_screenshot);
