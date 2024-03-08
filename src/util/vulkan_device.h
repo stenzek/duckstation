@@ -379,7 +379,7 @@ private:
   void WaitForCommandBufferCompletion(u32 index);
 
   void DoSubmitCommandBuffer(u32 index, VulkanSwapChain* present_swap_chain);
-  void DoPresent(VulkanSwapChain* present_swap_chain, bool acquire_next);
+  void DoPresent(VulkanSwapChain* present_swap_chain);
   void WaitForPresentComplete(std::unique_lock<std::mutex>& lock);
   void PresentThread();
   void StartPresentThread();
