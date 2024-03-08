@@ -1,12 +1,15 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "shadergen.h"
+
 #include "common/assert.h"
 #include "common/bitutils.h"
 #include "common/log.h"
+
 #include <cstdio>
 #include <cstring>
+#include <iomanip>
 
 #ifdef ENABLE_OPENGL
 #include "opengl_loader.h"
@@ -660,20 +663,18 @@ void ShaderGen::DeclareFragmentEntryPoint(
   }
 }
 
-std::string ShaderGen::GenerateScreenQuadVertexShader()
+std::string ShaderGen::GenerateScreenQuadVertexShader(float z /* = 0.0f */)
 {
   std::stringstream ss;
   WriteHeader(ss);
   DeclareVertexEntryPoint(ss, {}, 0, 1, {}, true);
-  ss << R"(
-{
-  v_tex0 = float2(float((v_id << 1) & 2u), float(v_id & 2u));
-  v_pos = float4(v_tex0 * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f), 0.0f, 1.0f);
-  #if API_OPENGL || API_OPENGL_ES || API_VULKAN
-    v_pos.y = -v_pos.y;
-  #endif
-}
-)";
+  ss << "{\n";
+  ss << "  v_tex0 = float2(float((v_id << 1) & 2u), float(v_id & 2u));\n";
+  ss << "  v_pos = float4(v_tex0 * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f), " << std::fixed << z << "f, 1.0f);\n";
+  ss << "  #if API_OPENGL || API_OPENGL_ES || API_VULKAN\n";
+  ss << "    v_pos.y = -v_pos.y;\n";
+  ss << "  #endif\n";
+  ss << "}\n";
 
   return ss.str();
 }

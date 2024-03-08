@@ -1721,8 +1721,10 @@ void MetalDevice::UnmapUniformBuffer(u32 size)
   }
 }
 
-void MetalDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds)
+void MetalDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds,
+                                   GPUPipeline::RenderPassFlag feedback_loop)
 {
+  DebugAssert(!feedback_loop);
   bool changed = (m_num_current_render_targets != num_rts || m_current_depth_target != ds);
   bool needs_ds_clear = (ds && ds->IsClearedOrInvalidated());
   bool needs_rt_clear = false;
@@ -1843,7 +1845,7 @@ void MetalDevice::UnbindTexture(MetalTexture* tex)
       if (m_current_render_targets[i] == tex)
       {
         Log_WarningPrint("Unbinding current RT");
-        SetRenderTargets(nullptr, 0, m_current_depth_target);
+        SetRenderTargets(nullptr, 0, m_current_depth_target, GPUPipeline::NoRenderPassFlags); // TODO: Wrong
         break;
       }
     }
@@ -1853,7 +1855,7 @@ void MetalDevice::UnbindTexture(MetalTexture* tex)
     if (m_current_depth_target == tex)
     {
       Log_WarningPrint("Unbinding current DS");
-      SetRenderTargets(nullptr, 0, nullptr);
+      SetRenderTargets(nullptr, 0, nullptr, GPUPipeline::NoRenderPassFlags);
     }
   }
 }
@@ -2092,6 +2094,11 @@ void MetalDevice::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
                             instanceCount:1
                                baseVertex:base_vertex
                              baseInstance:0];
+}
+
+void MetalDevice::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type)
+{
+  Panic("Barriers are not supported");
 }
 
 id<MTLBlitCommandEncoder> MetalDevice::GetBlitEncoder(bool is_inline)

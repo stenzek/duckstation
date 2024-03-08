@@ -29,7 +29,8 @@ public:
     TransparencyDisabled,
     TransparentAndOpaque,
     OnlyOpaque,
-    OnlyTransparent
+    OnlyTransparent,
+    ShaderBlend
   };
 
   GPU_HW();
@@ -115,6 +116,9 @@ private:
     u32 num_uniform_buffer_updates;
   };
 
+  /// Returns true if a depth buffer should be created.
+  bool NeedsDepthBuffer() const;
+
   bool CreateBuffers();
   void ClearFramebuffer();
   void DestroyBuffers();
@@ -131,6 +135,7 @@ private:
   void UpdateDepthBufferFromMaskBit();
   void ClearDepthBuffer();
   void SetScissor();
+  void SetVRAMRenderTarget();
   void MapGPUBuffer(u32 required_vertices, u32 required_indices);
   void UnmapGPUBuffer(u32 used_vertices, u32 used_indices);
   void DrawBatchVertices(BatchRenderMode render_mode, u32 num_indices, u32 base_index, u32 base_vertex);
@@ -158,7 +163,7 @@ private:
   bool NeedsTwoPassRendering() const;
 
   /// Returns true if the draw is going to use shader blending/framebuffer fetch.
-  bool NeedsShaderBlending(GPUTransparencyMode transparency) const;
+  bool NeedsShaderBlending(GPUTransparencyMode transparency, bool check_mask) const;
 
   void FillBackendCommandParameters(GPUBackendCommand* cmd) const;
   void FillDrawCommand(GPUBackendDrawCommand* cmd, GPURenderCommand rc) const;
@@ -236,6 +241,8 @@ private:
   bool m_clamp_uvs : 1 = false;
   bool m_compute_uv_range : 1 = false;
   bool m_pgxp_depth_buffer : 1 = false;
+  bool m_allow_shader_blend : 1 = false;
+  bool m_prefer_shader_blend : 1 = false;
   u8 m_texpage_dirty = 0;
 
   BatchConfig m_batch;
@@ -249,8 +256,8 @@ private:
   Common::Rectangle<u32> m_vram_dirty_write_rect;
   Common::Rectangle<u32> m_current_uv_range;
 
-  // [depth_test][render_mode][texture_mode][transparency_mode][dithering][interlacing]
-  DimensionalArray<std::unique_ptr<GPUPipeline>, 2, 2, 5, 9, 4, 3> m_batch_pipelines{};
+  // [depth_test][transparency_mode][render_mode][texture_mode][dithering][interlacing][check_mask]
+  DimensionalArray<std::unique_ptr<GPUPipeline>, 2, 2, 2, 9, 5, 5, 2> m_batch_pipelines{};
   std::unique_ptr<GPUPipeline> m_wireframe_pipeline;
 
   // [wrapped][interlaced]

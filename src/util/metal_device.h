@@ -249,7 +249,8 @@ public:
   void PushUniformBuffer(const void* data, u32 data_size) override;
   void* MapUniformBuffer(u32 size) override;
   void UnmapUniformBuffer(u32 size) override;
-  void SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds) override;
+  void SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds,
+                        GPUPipeline::RenderPassFlag feedback_loop) override;
   void SetPipeline(GPUPipeline* pipeline) override;
   void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) override;
   void SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer) override;
@@ -257,6 +258,7 @@ public:
   void SetScissor(s32 x, s32 y, s32 width, s32 height) override;
   void Draw(u32 vertex_count, u32 base_vertex) override;
   void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) override;
+  void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) override;
 
   bool GetHostRefreshRate(float* refresh_rate) override;
 
