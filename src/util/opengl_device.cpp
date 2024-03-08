@@ -1080,7 +1080,7 @@ void* OpenGLDevice::MapUniformBuffer(u32 size)
 void OpenGLDevice::UnmapUniformBuffer(u32 size)
 {
   const u32 pos = m_uniform_buffer->Unmap(size);
-  s_stats.buffer_streamed += pos;
+  s_stats.buffer_streamed += size;
   glBindBufferRange(GL_UNIFORM_BUFFER, 1, m_uniform_buffer->GetGLBufferId(), pos, size);
 }
 
