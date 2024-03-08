@@ -2406,8 +2406,9 @@ void CDROM::UpdatePositionWhileSeeking()
 {
   DebugAssert(IsSeeking());
 
-  const float completed_frac = 1.0f - (static_cast<float>(s_drive_event->GetTicksUntilNextExecution()) /
-                                       static_cast<float>(s_drive_event->GetInterval()));
+  const float completed_frac = 1.0f - std::min(static_cast<float>(s_drive_event->GetTicksUntilNextExecution()) /
+                                                 static_cast<float>(s_drive_event->GetInterval()),
+                                               1.0f);
 
   CDImage::LBA current_lba;
   if (s_seek_end_lba > s_seek_start_lba)
