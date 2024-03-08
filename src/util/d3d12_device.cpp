@@ -1190,6 +1190,7 @@ void D3D12Device::SetFeatures(FeatureMask disabled_features)
     /*!(disabled_features & FEATURE_MASK_TEXTURE_COPY_TO_SELF)*/ false; // TODO: Support with Enhanced Barriers
   m_features.supports_texture_buffers = !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS);
   m_features.texture_buffers_emulated_with_ssbo = false;
+  m_features.feedback_loops = false;
   m_features.geometry_shaders = !(disabled_features & FEATURE_MASK_GEOMETRY_SHADERS);
   m_features.partial_msaa_resolve = true;
   m_features.memory_import = false;
@@ -1548,8 +1549,10 @@ void D3D12Device::DestroyRootSignatures()
     it->Reset();
 }
 
-void D3D12Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds)
+void D3D12Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds,
+                                   GPUPipeline::RenderPassFlag feedback_loop)
 {
+  DebugAssert(!feedback_loop);
   if (InRenderPass())
     EndRenderPass();
 
@@ -2139,4 +2142,9 @@ void D3D12Device::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
   PreDrawCheck();
   s_stats.num_draws++;
   GetCommandList()->DrawIndexedInstanced(index_count, 1, base_index, base_vertex, 0);
+}
+
+void D3D12Device::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type)
+{
+  Panic("Barriers are not supported");
 }

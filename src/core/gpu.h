@@ -625,6 +625,7 @@ protected:
   {
     size_t host_buffer_streamed;
     u32 host_num_draws;
+    u32 host_num_barriers;
     u32 host_num_render_passes;
     u32 host_num_copies;
     u32 host_num_downloads;

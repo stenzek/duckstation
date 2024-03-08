@@ -819,10 +819,11 @@ bool GPU_HW::CompilePipelines()
   plconfig.input_layout.vertex_stride = sizeof(BatchVertex);
   plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
   plconfig.primitive = GPUPipeline::Primitive::Triangles;
+  plconfig.geometry_shader = nullptr;
   plconfig.SetTargetFormats(VRAM_RT_FORMAT, VRAM_DS_FORMAT);
   plconfig.samples = m_multisamples;
   plconfig.per_sample_shading = m_per_sample_shading;
-  plconfig.geometry_shader = nullptr;
+  plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
 
   // [depth_test][render_mode][texture_mode][transparency_mode][dithering][interlacing]
   for (u8 depth_test = 0; depth_test < 3; depth_test++)

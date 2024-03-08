@@ -1222,6 +1222,7 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
   plconfig.samples = 1;
   plconfig.per_sample_shading = false;
+  plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
 
   progress->PushState();
 

@@ -32,12 +32,15 @@ public:
 
   ALWAYS_INLINE VkPipeline GetPipeline() const { return m_pipeline; }
   ALWAYS_INLINE Layout GetLayout() const { return m_layout; }
+  ALWAYS_INLINE u8 GetVerticesPerPrimitive() const { return m_vertices_per_primitive; }
 
   void SetDebugName(const std::string_view& name) override;
 
 private:
-  VulkanPipeline(VkPipeline pipeline, Layout layout);
+  VulkanPipeline(VkPipeline pipeline, Layout layout, u8 vertices_per_primitive, RenderPassFlag render_pass_flags);
 
   VkPipeline m_pipeline;
   Layout m_layout;
+  u8 m_vertices_per_primitive;
+  RenderPassFlag m_render_pass_flags;
 };

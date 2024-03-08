@@ -505,7 +505,7 @@ void ShaderGen::DeclareFragmentEntryPoint(
   const std::initializer_list<std::pair<const char*, const char*>>& additional_inputs,
   bool declare_fragcoord /* = false */, u32 num_color_outputs /* = 1 */, bool depth_output /* = false */,
   bool msaa /* = false */, bool ssaa /* = false */, bool declare_sample_id /* = false */,
-  bool noperspective_color /* = false */, bool framebuffer_fetch /* = false */)
+  bool noperspective_color /* = false */, bool feedback_loop /* = false */)
 {
   if (m_glsl)
   {
@@ -560,21 +560,32 @@ void ShaderGen::DeclareFragmentEntryPoint(
       ss << "#define o_depth gl_FragDepth\n";
 
     const char* target_0_qualifier = "out";
-#ifdef ENABLE_OPENGL
-    if ((m_render_api == RenderAPI::OpenGL || m_render_api == RenderAPI::OpenGLES) && m_supports_framebuffer_fetch &&
-        framebuffer_fetch)
+
+    if (feedback_loop)
     {
-      if (GLAD_GL_EXT_shader_framebuffer_fetch)
+#ifdef ENABLE_OPENGL
+      if (m_render_api == RenderAPI::OpenGL || m_render_api == RenderAPI::OpenGLES)
       {
-        target_0_qualifier = "inout";
-        ss << "#define LAST_FRAG_COLOR o_col0\n";
+        Assert(m_supports_framebuffer_fetch);
+        if (GLAD_GL_EXT_shader_framebuffer_fetch)
+        {
+          target_0_qualifier = "inout";
+          ss << "#define LAST_FRAG_COLOR o_col0\n";
+        }
+        else if (GLAD_GL_ARM_shader_framebuffer_fetch)
+        {
+          ss << "#define LAST_FRAG_COLOR gl_LastFragColorARM\n";
+        }
       }
-      else if (GLAD_GL_ARM_shader_framebuffer_fetch)
-      {
-        ss << "#define LAST_FRAG_COLOR gl_LastFragColorARM\n";
-      }
-    }
 #endif
+#ifdef ENABLE_VULKAN
+      if (m_render_api == RenderAPI::Vulkan)
+      {
+        ss << "layout(input_attachment_index = 0, set = 2, binding = 0) uniform subpassInput u_input_rt;\n";
+        ss << "#define LAST_FRAG_COLOR subpassLoad(u_input_rt)\n";
+      }
+#endif
+    }
 
     if (m_use_glsl_binding_layout)
     {

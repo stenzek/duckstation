@@ -81,6 +81,7 @@ public:
     MAX_VERTEX_ATTRIBUTES = 16,
     MAX_VERTEX_BUFFERS = 8,
     MAX_ATTACHMENTS = GPUDevice::MAX_RENDER_TARGETS + 1,
+    MAX_INPUT_ATTACHMENTS = 1,
     MAX_DYNAMIC_STATE = 8
   };
 
@@ -144,6 +145,7 @@ public:
   void SetDynamicRendering();
   void AddDynamicRenderingColorAttachment(VkFormat format);
   void SetDynamicRenderingDepthAttachment(VkFormat depth_format, VkFormat stencil_format);
+  void AddDynamicRenderingInputAttachment(u32 color_attachment_index);
 
 private:
   VkGraphicsPipelineCreateInfo m_ci;
@@ -174,7 +176,9 @@ private:
   VkPipelineRasterizationLineStateCreateInfoEXT m_line_rasterization_state;
 
   VkPipelineRenderingCreateInfoKHR m_rendering;
+  VkRenderingAttachmentLocationInfoKHR m_rendering_input_attachment_locations;
   std::array<VkFormat, MAX_ATTACHMENTS> m_rendering_color_formats;
+  std::array<u32, MAX_INPUT_ATTACHMENTS> m_rendering_input_attachment_indices;
 };
 
 class ComputePipelineBuilder

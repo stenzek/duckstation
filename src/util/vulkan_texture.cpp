@@ -18,6 +18,7 @@ static constexpr const VkComponentMapping s_identity_swizzle{
 
 static VkImageLayout GetVkImageLayout(VulkanTexture::Layout layout)
 {
+  // TODO: Wrong for depth textures in feedback loop
   static constexpr std::array<VkImageLayout, static_cast<u32>(VulkanTexture::Layout::Count)> s_vk_layout_mapping = {{
     VK_IMAGE_LAYOUT_UNDEFINED,                        // Undefined
     VK_IMAGE_LAYOUT_PREINITIALIZED,                   // Preinitialized
@@ -34,15 +35,10 @@ static VkImageLayout GetVkImageLayout(VulkanTexture::Layout layout)
     VK_IMAGE_LAYOUT_GENERAL,                          // ComputeReadWriteImage
     VK_IMAGE_LAYOUT_GENERAL,                          // General
   }};
-  return (layout == VulkanTexture::Layout::FeedbackLoop && VulkanDevice::GetInstance().UseFeedbackLoopLayout()) ?
-           VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT :
+  return (layout == VulkanTexture::Layout::FeedbackLoop &&
+          VulkanDevice::GetInstance().GetOptionalExtensions().vk_khr_dynamic_rendering_local_read) ?
+           VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ_KHR :
            s_vk_layout_mapping[static_cast<u32>(layout)];
-}
-
-static VkAccessFlagBits GetFeedbackLoopInputAccessBits()
-{
-  return VulkanDevice::GetInstance().UseFeedbackLoopLayout() ? VK_ACCESS_SHADER_READ_BIT :
-                                                               VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
 }
 
 VulkanTexture::VulkanTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format,
@@ -111,8 +107,7 @@ std::unique_ptr<VulkanTexture> VulkanTexture::Create(u32 width, u32 height, u32 
       DebugAssert(levels == 1);
       ici.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
                   VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
-                  (dev.UseFeedbackLoopLayout() ? VK_IMAGE_USAGE_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT :
-                                                 VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT);
+                  VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
     }
     break;
 
@@ -120,8 +115,7 @@ std::unique_ptr<VulkanTexture> VulkanTexture::Create(u32 width, u32 height, u32 
     {
       DebugAssert(levels == 1);
       ici.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
-                  VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
-                  (dev.UseFeedbackLoopLayout() ? VK_IMAGE_USAGE_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT : 0);
+                  VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
       vci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
     }
     break;
@@ -588,7 +582,7 @@ void VulkanTexture::TransitionSubresourcesToLayout(VkCommandBuffer command_buffe
     case Layout::FeedbackLoop:
       barrier.srcAccessMask = (aspect == VK_IMAGE_ASPECT_COLOR_BIT) ?
                                 (VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-                                 GetFeedbackLoopInputAccessBits()) :
+                                 VK_ACCESS_INPUT_ATTACHMENT_READ_BIT) :
                                 (VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
                                  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT);
       srcStageMask = (aspect == VK_IMAGE_ASPECT_COLOR_BIT) ?
@@ -664,7 +658,7 @@ void VulkanTexture::TransitionSubresourcesToLayout(VkCommandBuffer command_buffe
     case Layout::FeedbackLoop:
       barrier.dstAccessMask = (aspect == VK_IMAGE_ASPECT_COLOR_BIT) ?
                                 (VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-                                 GetFeedbackLoopInputAccessBits()) :
+                                 VK_ACCESS_INPUT_ATTACHMENT_READ_BIT) :
                                 (VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
                                  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT);
       dstStageMask = (aspect == VK_IMAGE_ASPECT_COLOR_BIT) ?

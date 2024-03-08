@@ -133,6 +133,13 @@ public:
     MaxCount
   };
 
+  enum RenderPassFlag : u8
+  {
+    NoRenderPassFlags = 0,
+    ColorFeedbackLoop = (1 << 0),
+    SampleDepthBuffer = (1 << 1),
+  };
+
   enum class Primitive : u8
   {
     Points,
@@ -369,8 +376,9 @@ public:
 
     GPUTexture::Format color_formats[4];
     GPUTexture::Format depth_format;
-    u32 samples;
+    u8 samples;
     bool per_sample_shading;
+    RenderPassFlag render_pass_flags;
 
     void SetTargetFormats(GPUTexture::Format color_format,
                           GPUTexture::Format depth_format_ = GPUTexture::Format::Unknown);
@@ -425,11 +433,19 @@ public:
   enum FeatureMask : u32
   {
     FEATURE_MASK_DUAL_SOURCE_BLEND = (1 << 0),
-    FEATURE_MASK_FRAMEBUFFER_FETCH = (1 << 1),
-    FEATURE_MASK_TEXTURE_BUFFERS = (1 << 2),
-    FEATURE_MASK_GEOMETRY_SHADERS = (1 << 3),
-    FEATURE_MASK_TEXTURE_COPY_TO_SELF = (1 << 4),
-    FEATURE_MASK_MEMORY_IMPORT = (1 << 5),
+    FEATURE_MASK_FEEDBACK_LOOPS = (1 << 1),
+    FEATURE_MASK_FRAMEBUFFER_FETCH = (1 << 2),
+    FEATURE_MASK_TEXTURE_BUFFERS = (1 << 3),
+    FEATURE_MASK_GEOMETRY_SHADERS = (1 << 4),
+    FEATURE_MASK_TEXTURE_COPY_TO_SELF = (1 << 5),
+    FEATURE_MASK_MEMORY_IMPORT = (1 << 6),
+  };
+
+  enum class DrawBarrier : u32
+  {
+    None,
+    One,
+    Full
   };
 
   struct Features
@@ -441,6 +457,7 @@ public:
     bool texture_copy_to_self : 1;
     bool supports_texture_buffers : 1;
     bool texture_buffers_emulated_with_ssbo : 1;
+    bool feedback_loops : 1;
     bool geometry_shaders : 1;
     bool partial_msaa_resolve : 1;
     bool memory_import : 1;
@@ -454,6 +471,7 @@ public:
   {
     size_t buffer_streamed;
     u32 num_draws;
+    u32 num_barriers;
     u32 num_render_passes;
     u32 num_copies;
     u32 num_downloads;
@@ -616,18 +634,21 @@ public:
   void UploadUniformBuffer(const void* data, u32 data_size);
 
   /// Drawing setup abstraction.
-  virtual void SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds) = 0;
+  virtual void SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds,
+                                GPUPipeline::RenderPassFlag render_pass_flags = GPUPipeline::NoRenderPassFlags) = 0;
   virtual void SetPipeline(GPUPipeline* pipeline) = 0;
   virtual void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) = 0;
   virtual void SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer) = 0;
   virtual void SetViewport(s32 x, s32 y, s32 width, s32 height) = 0; // TODO: Rectangle
   virtual void SetScissor(s32 x, s32 y, s32 width, s32 height) = 0;
-  void SetRenderTarget(GPUTexture* rt, GPUTexture* ds = nullptr);
+  void SetRenderTarget(GPUTexture* rt, GPUTexture* ds = nullptr,
+                       GPUPipeline::RenderPassFlag render_pass_flags = GPUPipeline::NoRenderPassFlags);
   void SetViewportAndScissor(s32 x, s32 y, s32 width, s32 height);
 
   // Drawing abstraction.
   virtual void Draw(u32 vertex_count, u32 base_vertex) = 0;
   virtual void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) = 0;
+  virtual void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) = 0;
 
   /// Returns false if the window was completely occluded.
   virtual bool BeginPresent(bool skip_present) = 0;

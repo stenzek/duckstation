@@ -403,8 +403,9 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
     !(disabled_features & FEATURE_MASK_DUAL_SOURCE_BLEND) && (max_dual_source_draw_buffers > 0) &&
     (GLAD_GL_VERSION_3_3 || GLAD_GL_ARB_blend_func_extended || GLAD_GL_EXT_blend_func_extended);
 
-  m_features.framebuffer_fetch = !(disabled_features & FEATURE_MASK_FRAMEBUFFER_FETCH) &&
-                                 (GLAD_GL_EXT_shader_framebuffer_fetch || GLAD_GL_ARM_shader_framebuffer_fetch);
+  m_features.framebuffer_fetch =
+    !(disabled_features & (FEATURE_MASK_FEEDBACK_LOOPS | FEATURE_MASK_FRAMEBUFFER_FETCH)) &&
+    (GLAD_GL_EXT_shader_framebuffer_fetch || GLAD_GL_ARM_shader_framebuffer_fetch);
 
 #ifdef __APPLE__
   // Partial texture buffer uploads appear to be broken in macOS's OpenGL driver.
@@ -468,6 +469,8 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
   // glBlitFramebufer with same source/destination should be legal, but on Mali (at least Bifrost) it breaks.
   // So, blit from the shadow texture, like in the other renderers.
   m_features.texture_copy_to_self = !vendor_id_arm && !(disabled_features & FEATURE_MASK_TEXTURE_COPY_TO_SELF);
+
+  m_features.feedback_loops = m_features.framebuffer_fetch;
 
   m_features.geometry_shaders =
     !(disabled_features & FEATURE_MASK_GEOMETRY_SHADERS) && (GLAD_GL_VERSION_3_2 || GLAD_GL_ES_VERSION_3_2);
@@ -1035,6 +1038,11 @@ void OpenGLDevice::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
   glDrawElements(m_current_pipeline->GetTopology(), index_count, GL_UNSIGNED_SHORT, indices);
 }
 
+void OpenGLDevice::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type)
+{
+  Panic("Barriers are not supported");
+}
+
 void OpenGLDevice::MapVertexBuffer(u32 vertex_size, u32 vertex_count, void** map_ptr, u32* map_space,
                                    u32* map_base_vertex)
 {
@@ -1088,8 +1096,9 @@ void OpenGLDevice::UnmapUniformBuffer(u32 size)
   glBindBufferRange(GL_UNIFORM_BUFFER, 1, m_uniform_buffer->GetGLBufferId(), pos, size);
 }
 
-void OpenGLDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds)
+void OpenGLDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds, GPUPipeline::RenderPassFlag feedback_loop)
 {
+  //DebugAssert(!feedback_loop); TODO
   bool changed = (m_num_current_render_targets != num_rts || m_current_depth_target != ds);
   bool needs_ds_clear = (ds && ds->IsClearedOrInvalidated());
   bool needs_rt_clear = false;

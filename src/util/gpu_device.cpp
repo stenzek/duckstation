@@ -492,6 +492,7 @@ bool GPUDevice::CreateResources()
   plconfig.SetTargetFormats(HasSurface() ? m_window_info.surface_format : GPUTexture::Format::RGBA8);
   plconfig.samples = 1;
   plconfig.per_sample_shading = false;
+  plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
   plconfig.vertex_shader = imgui_vs.get();
   plconfig.geometry_shader = nullptr;
   plconfig.fragment_shader = imgui_fs.get();
@@ -615,9 +616,9 @@ void GPUDevice::UploadUniformBuffer(const void* data, u32 data_size)
   UnmapUniformBuffer(data_size);
 }
 
-void GPUDevice::SetRenderTarget(GPUTexture* rt, GPUTexture* ds /*= nullptr*/)
+void GPUDevice::SetRenderTarget(GPUTexture* rt, GPUTexture* ds, GPUPipeline::RenderPassFlag render_pass_flags)
 {
-  SetRenderTargets(rt ? &rt : nullptr, rt ? 1 : 0, ds);
+  SetRenderTargets(rt ? &rt : nullptr, rt ? 1 : 0, ds, render_pass_flags);
 }
 
 void GPUDevice::SetViewportAndScissor(s32 x, s32 y, s32 width, s32 height)

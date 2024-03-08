@@ -136,6 +136,7 @@ bool PostProcessing::GLSLShader::CompilePipeline(GPUTexture::Format format, u32 
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
   plconfig.samples = 1;
   plconfig.per_sample_shading = false;
+  plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
   plconfig.vertex_shader = vs.get();
   plconfig.fragment_shader = fs.get();
   plconfig.geometry_shader = nullptr;

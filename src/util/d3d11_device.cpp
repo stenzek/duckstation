@@ -186,6 +186,7 @@ void D3D11Device::SetFeatures(FeatureMask disabled_features)
   m_features.texture_copy_to_self = false;
   m_features.supports_texture_buffers = !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS);
   m_features.texture_buffers_emulated_with_ssbo = false;
+  m_features.feedback_loops = false;
   m_features.geometry_shaders = !(disabled_features & FEATURE_MASK_GEOMETRY_SHADERS);
   m_features.partial_msaa_resolve = false;
   m_features.memory_import = false;
@@ -935,9 +936,10 @@ void D3D11Device::UnmapUniformBuffer(u32 size)
   }
 }
 
-void D3D11Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds)
+void D3D11Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds, GPUPipeline::RenderPassFlag feedback_loop)
 {
   ID3D11RenderTargetView* rtvs[MAX_RENDER_TARGETS];
+  DebugAssert(!feedback_loop);
 
   bool changed = (m_num_current_render_targets != num_rts || m_current_depth_target != ds);
   m_current_depth_target = static_cast<D3D11Texture*>(ds);
@@ -1082,4 +1084,9 @@ void D3D11Device::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
   DebugAssert(!m_vertex_buffer.IsMapped() && !m_index_buffer.IsMapped());
   s_stats.num_draws++;
   m_context->DrawIndexed(index_count, base_index, base_vertex);
+}
+
+void D3D11Device::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type)
+{
+  Panic("Barriers are not supported");
 }

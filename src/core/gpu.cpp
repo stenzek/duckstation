@@ -1615,10 +1615,11 @@ bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_sm
   plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
   plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
+  plconfig.geometry_shader = nullptr;
   plconfig.depth_format = GPUTexture::Format::Unknown;
   plconfig.samples = 1;
   plconfig.per_sample_shading = false;
-  plconfig.geometry_shader = nullptr;
+  plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
 
   if (display)
   {
@@ -2707,10 +2708,10 @@ void GPU::GetStatsString(SmallStringBase& str)
 {
   if (IsHardwareRenderer())
   {
-    str.format("{} HW | {} P | {} DC | {} RP | {} RB | {} C | {} W",
+    str.format("{} HW | {} P | {} DC | {} B | {} RP | {} RB | {} C | {} W",
                GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()), m_stats.num_primitives,
-               m_stats.host_num_draws, m_stats.host_num_render_passes, m_stats.host_num_downloads, m_stats.num_copies,
-               m_stats.num_writes);
+               m_stats.host_num_draws, m_stats.host_num_barriers, m_stats.host_num_render_passes,
+               m_stats.host_num_downloads, m_stats.num_copies, m_stats.num_writes);
   }
   else
   {
@@ -2753,6 +2754,7 @@ void GPU::UpdateStatistics(u32 frame_count)
 
   UPDATE_GPU_STAT(buffer_streamed);
   UPDATE_GPU_STAT(num_draws);
+  UPDATE_GPU_STAT(num_barriers);
   UPDATE_GPU_STAT(num_render_passes);
   UPDATE_GPU_STAT(num_copies);
   UPDATE_GPU_STAT(num_downloads);
