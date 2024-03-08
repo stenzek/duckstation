@@ -23,6 +23,7 @@ public:
   ALWAYS_INLINE ID3D11Buffer* const* GetD3DBufferArray() const { return m_buffer.GetAddressOf(); }
   ALWAYS_INLINE u32 GetSize() const { return m_size; }
   ALWAYS_INLINE u32 GetPosition() const { return m_position; }
+  ALWAYS_INLINE bool IsMapped() const { return m_mapped; }
 
   bool Create(ID3D11Device* device, D3D11_BIND_FLAG bind_flags, u32 size);
   void Destroy();
@@ -43,4 +44,5 @@ private:
   u32 m_size;
   u32 m_position;
   bool m_use_map_no_overwrite = false;
+  bool m_mapped = false;
 };

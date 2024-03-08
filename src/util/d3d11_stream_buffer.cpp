@@ -74,6 +74,8 @@ void D3D11StreamBuffer::Destroy()
 
 D3D11StreamBuffer::MappingResult D3D11StreamBuffer::Map(ID3D11DeviceContext1* context, u32 alignment, u32 min_size)
 {
+  DebugAssert(!m_mapped);
+
   m_position = Common::AlignUp(m_position, alignment);
   if ((m_position + min_size) >= m_size || !m_use_map_no_overwrite)
   {
@@ -91,12 +93,16 @@ D3D11StreamBuffer::MappingResult D3D11StreamBuffer::Map(ID3D11DeviceContext1* co
     Panic("Map failed");
   }
 
+  m_mapped = true;
   return MappingResult{static_cast<char*>(sr.pData) + m_position, m_position, m_position / alignment,
                        (m_size - m_position) / alignment};
 }
 
 void D3D11StreamBuffer::Unmap(ID3D11DeviceContext1* context, u32 used_size)
 {
+  DebugAssert(m_mapped);
+
   context->Unmap(m_buffer.Get(), 0);
   m_position += used_size;
+  m_mapped = false;
 }

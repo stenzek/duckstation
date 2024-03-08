@@ -713,6 +713,10 @@ void GPU_HW::DestroyBuffers()
 {
   ClearDisplayTexture();
 
+  DebugAssert((m_batch_vertex_ptr != nullptr) == (m_batch_index_ptr != nullptr));
+  if (m_batch_vertex_ptr)
+    UnmapGPUBuffer(0, 0);
+
   m_vram_upload_buffer.reset();
   m_vram_readback_download_texture.reset();
   g_gpu_device->RecycleTexture(std::move(m_downsample_texture));
@@ -3054,13 +3058,14 @@ void GPU_HW::DispatchRenderCommand()
 
 void GPU_HW::FlushRender()
 {
-  if (m_batch_index_count == 0)
-    return;
-
   const u32 base_vertex = m_batch_base_vertex;
   const u32 base_index = m_batch_base_index;
   const u32 index_count = m_batch_index_count;
-  UnmapGPUBuffer(m_batch_vertex_count, m_batch_index_count);
+  DebugAssert((m_batch_vertex_ptr != nullptr) == (m_batch_index_ptr != nullptr));
+  if (m_batch_vertex_ptr)
+    UnmapGPUBuffer(m_batch_vertex_count, index_count);
+  if (index_count == 0)
+    return;
 
 #ifdef _DEBUG
   GL_SCOPE_FMT("Hardware Draw {}", ++s_draw_number);

@@ -1046,12 +1046,14 @@ void D3D11Device::SetScissor(s32 x, s32 y, s32 width, s32 height)
 
 void D3D11Device::Draw(u32 vertex_count, u32 base_vertex)
 {
+  DebugAssert(!m_vertex_buffer.IsMapped() && !m_index_buffer.IsMapped());
   s_stats.num_draws++;
   m_context->Draw(vertex_count, base_vertex);
 }
 
 void D3D11Device::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
 {
+  DebugAssert(!m_vertex_buffer.IsMapped() && !m_index_buffer.IsMapped());
   s_stats.num_draws++;
   m_context->DrawIndexed(index_count, base_index, base_vertex);
 }

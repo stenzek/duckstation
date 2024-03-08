@@ -76,6 +76,8 @@ bool GPU::Initialize()
 
 void GPU::UpdateSettings(const Settings& old_settings)
 {
+  FlushRender();
+
   m_force_progressive_scan = g_settings.gpu_disable_interlacing;
   m_fifo_size = g_settings.gpu_fifo_size;
   m_max_run_ahead = g_settings.gpu_max_run_ahead;
@@ -1665,6 +1667,8 @@ void GPU::SetDisplayParameters(s32 display_width, s32 display_height, s32 active
 
 bool GPU::PresentDisplay()
 {
+  FlushRender();
+
   if (!HasDisplayTexture())
     return g_gpu_device->BeginPresent(false);
 
