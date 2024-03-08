@@ -294,8 +294,7 @@ bool GPU_HW::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
   // invalidate the whole VRAM read texture when loading state
   if (sw.IsReading())
   {
-    if (m_batch_vertex_ptr)
-      UnmapGPUBuffer(0, 0);
+    DebugAssert(!m_batch_vertex_ptr && !m_batch_index_ptr);
     SetFullVRAMDirtyRectangle();
     ResetBatchVertexDepth();
   }
@@ -2492,7 +2491,7 @@ void GPU_HW::EnsureVertexBufferSpaceForCurrentCommand()
   // can we fit these vertices in the current depth buffer range?
   if ((m_current_depth + required_vertices) > MAX_BATCH_VERTEX_COUNTER_IDS)
   {
-    // implies FlushRender()
+    FlushRender();
     ResetBatchVertexDepth();
     MapGPUBuffer(required_vertices, required_indices);
     return;
@@ -2507,7 +2506,6 @@ void GPU_HW::ResetBatchVertexDepth()
     return;
 
   Log_PerfPrint("Resetting batch vertex depth");
-  FlushRender();
   UpdateDepthBufferFromMaskBit();
 
   m_current_depth = 1;
