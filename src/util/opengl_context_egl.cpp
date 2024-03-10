@@ -26,12 +26,18 @@ static bool LoadEGL()
   {
     DebugAssert(!s_egl_library.IsOpen());
 
-    const std::string egl_libname = DynamicLibrary::GetVersionedFilename("libEGL");
+    std::string egl_libname = DynamicLibrary::GetVersionedFilename("libEGL");
     Log_InfoFmt("Loading EGL from {}...", egl_libname);
 
     Error error;
     if (!s_egl_library.Open(egl_libname.c_str(), &error))
-      Log_ErrorFmt("Failed to load EGL: {}", error.GetDescription());
+    {
+      // Try versioned.
+      egl_libname = DynamicLibrary::GetVersionedFilename("libEGL", 1);
+      Log_InfoFmt("Loading EGL from {}...", egl_libname);
+      if (!s_egl_library.Open(egl_libname.c_str(), &error))
+        Log_ErrorFmt("Failed to load EGL: {}", error.GetDescription());
+    }
   }
 
   return s_egl_library.IsOpen();
