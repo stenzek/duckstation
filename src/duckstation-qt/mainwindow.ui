@@ -237,7 +237,6 @@
     </property>
     <addaction name="actionMemory_Card_Editor"/>
     <addaction name="actionCoverDownloader"/>
-    <addaction name="actionCheatManager"/>
     <addaction name="separator"/>
     <addaction name="actionOpenDataDirectory"/>
    </widget>
@@ -882,11 +881,6 @@
   <action name="actionMemory_Card_Editor">
    <property name="text">
     <string>Memory &amp;Card Editor</string>
-   </property>
-  </action>
-  <action name="actionCheatManager">
-   <property name="text">
-    <string>C&amp;heat Manager</string>
    </property>
   </action>
   <action name="actionCPUDebugger">

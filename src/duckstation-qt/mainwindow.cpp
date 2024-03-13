@@ -1072,7 +1072,7 @@ void MainWindow::onCheatsMenuAboutToShow()
 {
   m_ui.menuCheats->clear();
   connect(m_ui.menuCheats->addAction(tr("Cheat Manager")), &QAction::triggered, this,
-          &MainWindow::onToolsCheatManagerTriggered);
+          &MainWindow::openCheatManager);
   m_ui.menuCheats->addSeparator();
   populateCheatsMenu(m_ui.menuCheats);
 }
@@ -1790,7 +1790,6 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevo
   m_ui.actionScreenshot->setDisabled(starting || !running);
   m_ui.menuChangeDisc->setDisabled(starting || !running);
   m_ui.menuCheats->setDisabled(starting || !running || cheevos_challenge_mode);
-  m_ui.actionCheatManager->setDisabled(starting || !running || cheevos_challenge_mode);
   m_ui.actionCPUDebugger->setDisabled(cheevos_challenge_mode);
   m_ui.actionDumpRAM->setDisabled(starting || !running || cheevos_challenge_mode);
   m_ui.actionDumpVRAM->setDisabled(starting || !running || cheevos_challenge_mode);
@@ -2083,7 +2082,6 @@ void MainWindow::connectSignals()
   connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, &MainWindow::onCheckForUpdatesActionTriggered);
   connect(m_ui.actionMemory_Card_Editor, &QAction::triggered, this, &MainWindow::onToolsMemoryCardEditorTriggered);
   connect(m_ui.actionCoverDownloader, &QAction::triggered, this, &MainWindow::onToolsCoverDownloaderTriggered);
-  connect(m_ui.actionCheatManager, &QAction::triggered, this, &MainWindow::onToolsCheatManagerTriggered);
   connect(m_ui.actionCPUDebugger, &QAction::triggered, this, &MainWindow::openCPUDebugger);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableGDBServer, "Debug", "EnableGDBServer", false);
   connect(m_ui.actionOpenDataDirectory, &QAction::triggered, this, &MainWindow::onToolsOpenDataDirectoryTriggered);
@@ -2891,7 +2889,7 @@ void MainWindow::onToolsCoverDownloaderTriggered()
   dlg.exec();
 }
 
-void MainWindow::onToolsCheatManagerTriggered()
+void MainWindow::openCheatManager()
 {
   if (!m_cheat_manager_dialog)
     m_cheat_manager_dialog = new CheatManagerDialog(this);

@@ -164,7 +164,6 @@ private Q_SLOTS:
   void onCheckForUpdatesActionTriggered();
   void onToolsMemoryCardEditorTriggered();
   void onToolsCoverDownloaderTriggered();
-  void onToolsCheatManagerTriggered();
   void onToolsOpenDataDirectoryTriggered();
   void onSettingsTriggeredFromToolbar();
 
@@ -176,6 +175,7 @@ private Q_SLOTS:
 
   void onUpdateCheckComplete();
 
+  void openCheatManager();
   void openCPUDebugger();
   void onCPUDebuggerClosed();
 
