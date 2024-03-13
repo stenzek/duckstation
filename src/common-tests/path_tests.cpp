@@ -256,3 +256,13 @@ TEST(Path, RealPath)
 }
 
 #endif
+
+TEST(Path, CreateFileURL)
+{
+#ifdef _WIN32
+  ASSERT_EQ(Path::CreateFileURL("C:\\foo\\bar"), "file:///C:/foo/bar");
+  ASSERT_EQ(Path::CreateFileURL("\\\\server\\share\\file.txt"), "file://server/share/file.txt");
+#else
+  ASSERT_EQ(Path::CreateFileURL("/foo/bar"), "file:///foo/bar");
+#endif
+}
