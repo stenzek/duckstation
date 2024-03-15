@@ -182,6 +182,25 @@ void Path::SanitizeFileName(std::string* str, bool strip_slashes /* = true */)
 #endif
 }
 
+std::string Path::RemoveLengthLimits(std::string_view str)
+{
+  std::string ret;
+#ifdef _WIN32
+  ret.reserve(str.length() + 4);
+#endif
+  ret.append(str);
+  RemoveLengthLimits(&ret);
+  return ret;
+}
+
+void Path::RemoveLengthLimits(std::string* path)
+{
+  DebugAssert(IsAbsolute(*path));
+#ifdef _WIN32
+  path->insert(0, "\\\\?\\");
+#endif
+}
+
 bool Path::IsAbsolute(const std::string_view& path)
 {
 #ifdef _WIN32

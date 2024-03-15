@@ -239,7 +239,7 @@ static time_t s_discord_presence_time_epoch;
 
 static TinyString GetTimestampStringForFileName()
 {
-  return TinyString::from_format("{:%Y-%m-%d_%H-%M-%S}", fmt::localtime(std::time(nullptr)));
+  return TinyString::from_format("{:%Y-%m-%d-%H-%M-%S}", fmt::localtime(std::time(nullptr)));
 }
 
 bool System::Internal::ProcessStartup()
@@ -4348,17 +4348,23 @@ bool System::SaveScreenshot(const char* filename, DisplayScreenshotMode mode, Di
   std::string auto_filename;
   if (!filename)
   {
-    const auto& code = System::GetGameSerial();
+    const std::string& name = System::GetGameTitle();
     const char* extension = Settings::GetDisplayScreenshotFormatExtension(format);
-    if (code.empty())
-    {
-      auto_filename =
-        Path::Combine(EmuFolders::Screenshots, fmt::format("{}.{}", GetTimestampStringForFileName(), extension));
-    }
+    std::string basename;
+    if (name.empty())
+      basename = fmt::format("{}", GetTimestampStringForFileName());
     else
+      basename = fmt::format("{} {}", name, GetTimestampStringForFileName());
+
+    auto_filename = fmt::format("{}" FS_OSPATH_SEPARATOR_STR "{}.{}", EmuFolders::Screenshots, basename, extension);
+
+    // handle quick screenshots to the same filename
+    u32 next_suffix = 1;
+    while (FileSystem::FileExists(Path::RemoveLengthLimits(auto_filename).c_str()))
     {
-      auto_filename = Path::Combine(EmuFolders::Screenshots,
-                                    fmt::format("{}_{}.{}", code, GetTimestampStringForFileName(), extension));
+      auto_filename = fmt::format("{}" FS_OSPATH_SEPARATOR_STR "{} ({}).{}", EmuFolders::Screenshots, basename,
+                                  next_suffix, extension);
+      next_suffix++;
     }
 
     filename = auto_filename.c_str();

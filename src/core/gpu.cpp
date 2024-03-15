@@ -2209,7 +2209,8 @@ bool GPU::RenderScreenshotToFile(std::string filename, DisplayScreenshotMode mod
     return false;
   }
 
-  auto fp = FileSystem::OpenManagedCFile(filename.c_str(), "wb");
+  // These filenames tend to be fairly long, so remove any MAX_PATH limit.
+  auto fp = FileSystem::OpenManagedCFile(Path::RemoveLengthLimits(filename).c_str(), "wb");
   if (!fp)
   {
     Log_ErrorPrintf("Can't open file '%s': errno %d", filename.c_str(), errno);

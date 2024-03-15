@@ -28,6 +28,10 @@ void Canonicalize(std::string* path);
 std::string SanitizeFileName(const std::string_view& str, bool strip_slashes = true);
 void SanitizeFileName(std::string* str, bool strip_slashes = true);
 
+/// Mutates the path to remove any MAX_PATH limits (for Windows).
+std::string RemoveLengthLimits(std::string_view str);
+void RemoveLengthLimits(std::string* path);
+
 /// Returns true if the specified path is an absolute path (C:\Path on Windows or /path on Unix).
 bool IsAbsolute(const std::string_view& path);
 
