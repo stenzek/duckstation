@@ -4364,20 +4364,7 @@ bool System::SaveScreenshot(const char* filename, DisplayScreenshotMode mode, Di
     filename = auto_filename.c_str();
   }
 
-  if (FileSystem::FileExists(filename))
-  {
-    Host::AddFormattedOSDMessage(10.0f, TRANSLATE("OSDMessage", "Screenshot file '%s' already exists."), filename);
-    return false;
-  }
-
-  if (!g_gpu->RenderScreenshotToFile(filename, mode, quality, compress_on_thread))
-  {
-    Host::AddFormattedOSDMessage(10.0f, TRANSLATE("OSDMessage", "Failed to save screenshot to '%s'"), filename);
-    return false;
-  }
-
-  Host::AddFormattedOSDMessage(5.0f, TRANSLATE("OSDMessage", "Screenshot saved to '%s'."), filename);
-  return true;
+  return g_gpu->RenderScreenshotToFile(filename, mode, quality, compress_on_thread, true);
 }
 
 std::string System::GetGameSaveStateFileName(const std::string_view& serial, s32 slot)

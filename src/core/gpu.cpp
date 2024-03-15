@@ -22,8 +22,12 @@
 #include "common/file_system.h"
 #include "common/heap_array.h"
 #include "common/log.h"
+#include "common/path.h"
 #include "common/small_string.h"
 #include "common/string_util.h"
+
+#include "IconsFontAwesome5.h"
+#include "fmt/format.h"
 
 #include <cmath>
 #include <thread>
@@ -35,6 +39,15 @@ alignas(HOST_PAGE_SIZE) u16 g_vram[VRAM_SIZE / sizeof(u16)];
 
 const GPU::GP0CommandHandlerTable GPU::s_GP0_command_handler_table = GPU::GenerateGP0CommandHandlerTable();
 
+static bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string filename, FileSystem::ManagedCFilePtr fp,
+                                          u8 quality, bool clear_alpha, bool flip_y, std::vector<u32> texture_data,
+                                          u32 texture_data_stride, GPUTexture::Format texture_format,
+                                          bool display_osd_message, bool use_thread);
+static void JoinScreenshotThreads();
+
+static std::deque<std::thread> s_screenshot_threads;
+static std::mutex s_screenshot_threads_mutex;
+
 GPU::GPU()
 {
   ResetStatistics();
@@ -42,6 +55,8 @@ GPU::GPU()
 
 GPU::~GPU()
 {
+  JoinScreenshotThreads();
+
   if (g_gpu_device)
     g_gpu_device->SetGPUTimingEnabled(false);
 }
@@ -1907,39 +1922,117 @@ Common::Rectangle<s32> GPU::CalculateDrawRect(s32 window_width, s32 window_heigh
     static_cast<s32>(draw_rc.GetWidth()), static_cast<s32>(draw_rc.GetHeight()));
 }
 
-static bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string filename, FileSystem::ManagedCFilePtr fp,
-                                          u8 quality, bool clear_alpha, bool flip_y, std::vector<u32> texture_data,
-                                          u32 texture_data_stride, GPUTexture::Format texture_format)
+bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string filename, FileSystem::ManagedCFilePtr fp,
+                                   u8 quality, bool clear_alpha, bool flip_y, std::vector<u32> texture_data,
+                                   u32 texture_data_stride, GPUTexture::Format texture_format, bool display_osd_message,
+                                   bool use_thread)
 {
-
-  const char* extension = std::strrchr(filename.c_str(), '.');
-  if (!extension)
+  std::string osd_key;
+  if (display_osd_message)
   {
-    Log_ErrorPrintf("Unable to determine file extension for '%s'", filename.c_str());
-    return false;
+    // Use a 60 second timeout to give it plenty of time to actually save.
+    osd_key = fmt::format("ScreenshotSaver_{}", filename);
+    Host::AddIconOSDMessage(osd_key, ICON_FA_CAMERA,
+                            fmt::format(TRANSLATE_FS("GPU", "Saving screenshot to '{}'."), Path::GetFileName(filename)),
+                            60.0f);
   }
 
-  if (!GPUTexture::ConvertTextureDataToRGBA8(width, height, texture_data, texture_data_stride, texture_format))
-    return false;
+  static constexpr auto proc = [](u32 width, u32 height, std::string filename, FileSystem::ManagedCFilePtr fp,
+                                  u8 quality, bool clear_alpha, bool flip_y, std::vector<u32> texture_data,
+                                  u32 texture_data_stride, GPUTexture::Format texture_format, std::string osd_key,
+                                  bool use_thread) {
+    bool result;
 
-  if (clear_alpha)
+    const char* extension = std::strrchr(filename.c_str(), '.');
+    if (extension)
+    {
+      if (GPUTexture::ConvertTextureDataToRGBA8(width, height, texture_data, texture_data_stride, texture_format))
+      {
+        if (clear_alpha)
+        {
+          for (u32& pixel : texture_data)
+            pixel |= 0xFF000000u;
+        }
+
+        if (flip_y)
+          GPUTexture::FlipTextureDataRGBA8(width, height, reinterpret_cast<u8*>(texture_data.data()),
+                                           texture_data_stride);
+
+        Assert(texture_data_stride == sizeof(u32) * width);
+        RGBA8Image image(width, height, std::move(texture_data));
+        if (image.SaveToFile(filename.c_str(), fp.get(), quality))
+        {
+          result = true;
+        }
+        else
+        {
+          Log_ErrorPrintf("Unknown extension in filename '%s' or save error: '%s'", filename.c_str(), extension);
+          result = false;
+        }
+      }
+      else
+      {
+        result = false;
+      }
+    }
+    else
+    {
+      Log_ErrorPrintf("Unable to determine file extension for '%s'", filename.c_str());
+      result = false;
+    }
+
+    if (!osd_key.empty())
+    {
+      Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_CAMERA,
+                              fmt::format(result ? TRANSLATE_FS("GS", "Saved screenshot to '{}'.") :
+                                                   TRANSLATE_FS("GPU", "Failed to save screenshot to '{}'."),
+                                          Path::GetFileName(filename),
+                                          result ? Host::OSD_INFO_DURATION : Host::OSD_ERROR_DURATION));
+    }
+
+    if (use_thread)
+    {
+      // remove ourselves from the list, if the GS thread is waiting for us, we won't be in there
+      const auto this_id = std::this_thread::get_id();
+      std::unique_lock lock(s_screenshot_threads_mutex);
+      for (auto it = s_screenshot_threads.begin(); it != s_screenshot_threads.end(); ++it)
+      {
+        if (it->get_id() == this_id)
+        {
+          it->detach();
+          s_screenshot_threads.erase(it);
+          break;
+        }
+      }
+    }
+
+    return result;
+  };
+
+  if (!use_thread)
   {
-    for (u32& pixel : texture_data)
-      pixel |= 0xFF000000u;
+    return proc(width, height, std::move(filename), std::move(fp), quality, clear_alpha, flip_y,
+                std::move(texture_data), texture_data_stride, texture_format, std::move(osd_key), use_thread);
   }
 
-  if (flip_y)
-    GPUTexture::FlipTextureDataRGBA8(width, height, reinterpret_cast<u8*>(texture_data.data()), texture_data_stride);
-
-  Assert(texture_data_stride == sizeof(u32) * width);
-  RGBA8Image image(width, height, std::move(texture_data));
-  if (!image.SaveToFile(filename.c_str(), fp.get(), quality))
-  {
-    Log_ErrorPrintf("Unknown extension in filename '%s' or save error: '%s'", filename.c_str(), extension);
-    return false;
-  }
-
+  std::thread thread(proc, width, height, std::move(filename), std::move(fp), quality, clear_alpha, flip_y,
+                     std::move(texture_data), texture_data_stride, texture_format, std::move(osd_key), use_thread);
+  std::unique_lock lock(s_screenshot_threads_mutex);
+  s_screenshot_threads.push_back(std::move(thread));
   return true;
+}
+
+void JoinScreenshotThreads()
+{
+  std::unique_lock lock(s_screenshot_threads_mutex);
+  while (!s_screenshot_threads.empty())
+  {
+    std::thread save_thread(std::move(s_screenshot_threads.front()));
+    s_screenshot_threads.pop_front();
+    lock.unlock();
+    save_thread.join();
+    lock.lock();
+  }
 }
 
 bool GPU::WriteDisplayTextureToFile(std::string filename, bool compress_on_thread /* = false */)
@@ -1992,18 +2085,9 @@ bool GPU::WriteDisplayTextureToFile(std::string filename, bool compress_on_threa
   constexpr bool clear_alpha = true;
   const bool flip_y = g_gpu_device->UsesLowerLeftOrigin();
 
-  if (!compress_on_thread)
-  {
-    return CompressAndWriteTextureToFile(read_width, read_height, std::move(filename), std::move(fp),
-                                         g_settings.display_screenshot_quality, clear_alpha, flip_y,
-                                         std::move(texture_data), texture_data_stride, m_display_texture->GetFormat());
-  }
-
-  std::thread compress_thread(CompressAndWriteTextureToFile, read_width, read_height, std::move(filename),
-                              std::move(fp), g_settings.display_screenshot_quality, clear_alpha, flip_y,
-                              std::move(texture_data), texture_data_stride, m_display_texture->GetFormat());
-  compress_thread.detach();
-  return true;
+  return CompressAndWriteTextureToFile(
+    read_width, read_height, std::move(filename), std::move(fp), g_settings.display_screenshot_quality, clear_alpha,
+    flip_y, std::move(texture_data), texture_data_stride, m_display_texture->GetFormat(), false, compress_on_thread);
 }
 
 bool GPU::RenderScreenshotToBuffer(u32 width, u32 height, const Common::Rectangle<s32>& draw_rect, bool postfx,
@@ -2053,7 +2137,8 @@ bool GPU::RenderScreenshotToBuffer(u32 width, u32 height, const Common::Rectangl
   return true;
 }
 
-bool GPU::RenderScreenshotToFile(std::string filename, DisplayScreenshotMode mode, u8 quality, bool compress_on_thread)
+bool GPU::RenderScreenshotToFile(std::string filename, DisplayScreenshotMode mode, u8 quality, bool compress_on_thread,
+                                 bool show_osd_message)
 {
   u32 width = g_gpu_device->GetWindowWidth();
   u32 height = g_gpu_device->GetWindowHeight();
@@ -2131,18 +2216,9 @@ bool GPU::RenderScreenshotToFile(std::string filename, DisplayScreenshotMode mod
     return false;
   }
 
-  if (!compress_on_thread)
-  {
-    return CompressAndWriteTextureToFile(width, height, std::move(filename), std::move(fp), quality, true,
-                                         g_gpu_device->UsesLowerLeftOrigin(), std::move(pixels), pixels_stride,
-                                         pixels_format);
-  }
-
-  std::thread compress_thread(CompressAndWriteTextureToFile, width, height, std::move(filename), std::move(fp), quality,
-                              true, g_gpu_device->UsesLowerLeftOrigin(), std::move(pixels), pixels_stride,
-                              pixels_format);
-  compress_thread.detach();
-  return true;
+  return CompressAndWriteTextureToFile(width, height, std::move(filename), std::move(fp), quality, true,
+                                       g_gpu_device->UsesLowerLeftOrigin(), std::move(pixels), pixels_stride,
+                                       pixels_format, show_osd_message, compress_on_thread);
 }
 
 bool GPU::DumpVRAMToFile(const char* filename)
