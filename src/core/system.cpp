@@ -3684,6 +3684,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.gpu_downsample_mode != old_settings.gpu_downsample_mode ||
         g_settings.gpu_downsample_scale != old_settings.gpu_downsample_scale ||
         g_settings.gpu_wireframe_mode != old_settings.gpu_wireframe_mode ||
+        g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode ||
         g_settings.display_crop_mode != old_settings.display_crop_mode ||
         g_settings.display_aspect_ratio != old_settings.display_aspect_ratio ||
         g_settings.display_alignment != old_settings.display_alignment ||

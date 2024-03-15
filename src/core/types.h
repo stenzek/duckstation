@@ -77,6 +77,15 @@ enum class GPURenderer : u8
   Count
 };
 
+enum class DisplayDeinterlacingMode : u8
+{
+  Disabled,
+  Weave,
+  Blend,
+  Adaptive,
+  Count
+};
+
 enum class GPUTextureFilter : u8
 {
   Nearest,

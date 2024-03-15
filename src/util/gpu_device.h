@@ -650,6 +650,8 @@ public:
   bool UsesLowerLeftOrigin() const;
   static Common::Rectangle<s32> FlipToLowerLeft(const Common::Rectangle<s32>& rc, s32 target_height);
   void SetDisplayMaxFPS(float max_fps);
+  bool ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u32 new_height, GPUTexture::Type type,
+                     GPUTexture::Format format, bool preserve = true);
   bool ShouldSkipDisplayingFrame();
   void ThrottlePresentation();
 

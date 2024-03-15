@@ -129,6 +129,7 @@ struct Settings
   bool gpu_pgxp_cpu : 1 = false;
   bool gpu_pgxp_preserve_proj_fp : 1 = false;
   bool gpu_pgxp_depth_buffer : 1 = false;
+  DisplayDeinterlacingMode display_deinterlacing_mode = DEFAULT_DISPLAY_DEINTERLACING_MODE;
   DisplayCropMode display_crop_mode = DEFAULT_DISPLAY_CROP_MODE;
   DisplayAspectRatio display_aspect_ratio = DEFAULT_DISPLAY_ASPECT_RATIO;
   DisplayAlignment display_alignment = DEFAULT_DISPLAY_ALIGNMENT;
@@ -394,6 +395,10 @@ struct Settings
   static const char* GetGPUWireframeModeName(GPUWireframeMode mode);
   static const char* GetGPUWireframeModeDisplayName(GPUWireframeMode mode);
 
+  static std::optional<DisplayDeinterlacingMode> ParseDisplayDeinterlacingMode(const char* str);
+  static const char* GetDisplayDeinterlacingModeName(DisplayDeinterlacingMode mode);
+  static const char* GetDisplayDeinterlacingModeDisplayName(DisplayDeinterlacingMode mode);
+
   static std::optional<DisplayCropMode> ParseDisplayCropMode(const char* str);
   static const char* GetDisplayCropModeName(DisplayCropMode crop_mode);
   static const char* GetDisplayCropModeDisplayName(DisplayCropMode crop_mode);
@@ -483,6 +488,7 @@ struct Settings
   static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::Null;
 #endif
 
+  static constexpr DisplayDeinterlacingMode DEFAULT_DISPLAY_DEINTERLACING_MODE = DisplayDeinterlacingMode::Adaptive;
   static constexpr DisplayCropMode DEFAULT_DISPLAY_CROP_MODE = DisplayCropMode::Overscan;
   static constexpr DisplayAspectRatio DEFAULT_DISPLAY_ASPECT_RATIO = DisplayAspectRatio::Auto;
   static constexpr DisplayAlignment DEFAULT_DISPLAY_ALIGNMENT = DisplayAlignment::Center;

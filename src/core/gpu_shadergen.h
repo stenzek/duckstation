@@ -15,6 +15,13 @@ public:
   std::string GenerateDisplayFragmentShader(bool clamp_uv);
   std::string GenerateDisplaySharpBilinearFragmentShader();
 
+  std::string GenerateInterleavedFieldExtractFragmentShader();
+  std::string GenerateDeinterlaceWeaveFragmentShader();
+  std::string GenerateDeinterlaceBlendFragmentShader();
+  std::string GenerateFastMADReconstructFragmentShader();
+
+  std::string GenerateChromaSmoothingFragmentShader();
+
 private:
   void WriteDisplayUniformBuffer(std::stringstream& ss);
 };

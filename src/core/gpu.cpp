@@ -56,6 +56,8 @@ GPU::GPU()
 GPU::~GPU()
 {
   JoinScreenshotThreads();
+  DestroyDeinterlaceTextures();
+  g_gpu_device->RecycleTexture(std::move(m_chroma_smoothing_texture));
 
   if (g_gpu_device)
     g_gpu_device->SetGPUTimingEnabled(false);
@@ -78,7 +80,7 @@ bool GPU::Initialize()
   m_console_is_pal = System::IsPALRegion();
   UpdateCRTCConfig();
 
-  if (!CompileDisplayPipeline())
+  if (!CompileDisplayPipelines(true, true, g_settings.gpu_24bit_chroma_smoothing))
   {
     Host::ReportErrorAsync("Error", "Failed to compile base GPU pipelines.");
     return false;
@@ -107,10 +109,20 @@ void GPU::UpdateSettings(const Settings& old_settings)
   // Crop mode calls this, so recalculate the display area
   UpdateCRTCDisplayParameters();
 
-  if (g_settings.display_scaling != old_settings.display_scaling)
+  if (g_settings.display_scaling != old_settings.display_scaling ||
+      g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode ||
+      g_settings.gpu_24bit_chroma_smoothing != old_settings.gpu_24bit_chroma_smoothing)
   {
-    if (!CompileDisplayPipeline())
+    // Toss buffers on mode change.
+    if (g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode)
+      DestroyDeinterlaceTextures();
+
+    if (!CompileDisplayPipelines(g_settings.display_scaling != old_settings.display_scaling,
+                                 g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode,
+                                 g_settings.gpu_24bit_chroma_smoothing != old_settings.gpu_24bit_chroma_smoothing))
+    {
       Panic("Failed to compile display pipeline on settings change.");
+    }
   }
 
   g_gpu_device->SetGPUTimingEnabled(g_settings.display_show_gpu_usage);
@@ -1359,6 +1371,10 @@ void GPU::HandleGetGPUInfoCommand(u32 value)
 
 void GPU::ClearDisplay()
 {
+  ClearDisplayTexture();
+
+  // Just recycle the textures, it'll get re-fetched.
+  DestroyDeinterlaceTextures();
 }
 
 void GPU::UpdateDisplay()
@@ -1587,56 +1603,183 @@ void GPU::SetTextureWindow(u32 value)
   m_draw_mode.texture_window_changed = true;
 }
 
-bool GPU::CompileDisplayPipeline()
+bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_smoothing)
 {
   GPUShaderGen shadergen(g_gpu_device->GetRenderAPI(), g_gpu_device->GetFeatures().dual_source_blend,
                          g_gpu_device->GetFeatures().framebuffer_fetch);
 
   GPUPipeline::GraphicsConfig plconfig;
-  plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
   plconfig.input_layout.vertex_stride = 0;
   plconfig.primitive = GPUPipeline::Primitive::Triangles;
   plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
   plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
-  plconfig.SetTargetFormats(g_gpu_device->HasSurface() ? g_gpu_device->GetWindowFormat() : GPUTexture::Format::RGBA8);
   plconfig.depth_format = GPUTexture::Format::Unknown;
   plconfig.samples = 1;
   plconfig.per_sample_shading = false;
+  plconfig.geometry_shader = nullptr;
 
-  std::string vs = shadergen.GenerateDisplayVertexShader();
-  std::string fs;
-  switch (g_settings.display_scaling)
+  if (display)
   {
-    case DisplayScalingMode::BilinearSharp:
-      fs = shadergen.GenerateDisplaySharpBilinearFragmentShader();
-      break;
+    plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
+    plconfig.SetTargetFormats(g_gpu_device->HasSurface() ? g_gpu_device->GetWindowFormat() : GPUTexture::Format::RGBA8);
 
-    case DisplayScalingMode::BilinearSmooth:
-      fs = shadergen.GenerateDisplayFragmentShader(true);
-      break;
+    std::string vs = shadergen.GenerateDisplayVertexShader();
+    std::string fs;
+    switch (g_settings.display_scaling)
+    {
+      case DisplayScalingMode::BilinearSharp:
+        fs = shadergen.GenerateDisplaySharpBilinearFragmentShader();
+        break;
 
-    case DisplayScalingMode::Nearest:
-    case DisplayScalingMode::NearestInteger:
-    default:
-      fs = shadergen.GenerateDisplayFragmentShader(false);
-      break;
+      case DisplayScalingMode::BilinearSmooth:
+        fs = shadergen.GenerateDisplayFragmentShader(true);
+        break;
+
+      case DisplayScalingMode::Nearest:
+      case DisplayScalingMode::NearestInteger:
+      default:
+        fs = shadergen.GenerateDisplayFragmentShader(false);
+        break;
+    }
+
+    std::unique_ptr<GPUShader> vso = g_gpu_device->CreateShader(GPUShaderStage::Vertex, vs);
+    std::unique_ptr<GPUShader> fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment, fs);
+    if (!vso || !fso)
+      return false;
+    GL_OBJECT_NAME(vso, "Display Vertex Shader");
+    GL_OBJECT_NAME_FMT(fso, "Display Fragment Shader [{}]",
+                       Settings::GetDisplayScalingName(g_settings.display_scaling));
+
+    plconfig.vertex_shader = vso.get();
+    plconfig.fragment_shader = fso.get();
+    if (!(m_display_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+      return false;
+    GL_OBJECT_NAME_FMT(m_display_pipeline, "Display Pipeline [{}]",
+                       Settings::GetDisplayScalingName(g_settings.display_scaling));
   }
 
-  std::unique_ptr<GPUShader> vso = g_gpu_device->CreateShader(GPUShaderStage::Vertex, vs);
-  std::unique_ptr<GPUShader> fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment, fs);
-  if (!vso || !fso)
-    return false;
-  GL_OBJECT_NAME(vso, "Display Vertex Shader");
-  GL_OBJECT_NAME_FMT(fso, "Display Fragment Shader [{}]", Settings::GetDisplayScalingName(g_settings.display_scaling));
+  if (deinterlace)
+  {
+    plconfig.SetTargetFormats(GPUTexture::Format::RGBA8);
 
-  plconfig.vertex_shader = vso.get();
-  plconfig.fragment_shader = fso.get();
-  plconfig.geometry_shader = nullptr;
-  if (!(m_display_pipeline = g_gpu_device->CreatePipeline(plconfig)))
-    return false;
-  GL_OBJECT_NAME_FMT(m_display_pipeline, "Display Pipeline [{}]",
-                     Settings::GetDisplayScalingName(g_settings.display_scaling));
+    std::unique_ptr<GPUShader> vso =
+      g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GenerateScreenQuadVertexShader());
+    if (!vso)
+      return false;
+    GL_OBJECT_NAME(vso, "Deinterlace Vertex Shader");
+
+    std::unique_ptr<GPUShader> fso;
+    if (!(fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment,
+                                           shadergen.GenerateInterleavedFieldExtractFragmentShader())))
+    {
+      return false;
+    }
+
+    GL_OBJECT_NAME(fso, "Deinterlace Field Extract Fragment Shader");
+
+    plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
+    plconfig.vertex_shader = vso.get();
+    plconfig.fragment_shader = fso.get();
+    if (!(m_deinterlace_extract_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+      return false;
+
+    GL_OBJECT_NAME(m_deinterlace_extract_pipeline, "Deinterlace Field Extract Pipeline");
+
+    switch (g_settings.display_deinterlacing_mode)
+    {
+      case DisplayDeinterlacingMode::Disabled:
+        break;
+
+      case DisplayDeinterlacingMode::Weave:
+      {
+        if (!(fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment,
+                                               shadergen.GenerateDeinterlaceWeaveFragmentShader())))
+        {
+          return false;
+        }
+
+        GL_OBJECT_NAME(fso, "Weave Deinterlace Fragment Shader");
+
+        plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
+        plconfig.vertex_shader = vso.get();
+        plconfig.fragment_shader = fso.get();
+        if (!(m_deinterlace_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+          return false;
+
+        GL_OBJECT_NAME(m_deinterlace_pipeline, "Weave Deinterlace Pipeline");
+      }
+      break;
+
+      case DisplayDeinterlacingMode::Blend:
+      {
+        if (!(fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment,
+                                               shadergen.GenerateDeinterlaceBlendFragmentShader())))
+        {
+          return false;
+        }
+
+        GL_OBJECT_NAME(fso, "Blend Deinterlace Fragment Shader");
+
+        plconfig.layout = GPUPipeline::Layout::MultiTextureAndPushConstants;
+        plconfig.vertex_shader = vso.get();
+        plconfig.fragment_shader = fso.get();
+        if (!(m_deinterlace_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+          return false;
+
+        GL_OBJECT_NAME(m_deinterlace_pipeline, "Blend Deinterlace Pipeline");
+      }
+      break;
+
+      case DisplayDeinterlacingMode::Adaptive:
+      {
+        fso =
+          g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GenerateFastMADReconstructFragmentShader());
+        if (!fso)
+          return false;
+
+        GL_OBJECT_NAME(fso, "FastMAD Reconstruct Fragment Shader");
+
+        plconfig.layout = GPUPipeline::Layout::MultiTextureAndPushConstants;
+        plconfig.fragment_shader = fso.get();
+        if (!(m_deinterlace_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+          return false;
+
+        GL_OBJECT_NAME(m_deinterlace_pipeline, "FastMAD Reconstruct Pipeline");
+      }
+      break;
+
+      default:
+        UnreachableCode();
+    }
+  }
+
+  if (chroma_smoothing)
+  {
+    m_chroma_smoothing_pipeline.reset();
+    g_gpu_device->RecycleTexture(std::move(m_chroma_smoothing_texture));
+
+    if (g_settings.gpu_24bit_chroma_smoothing)
+    {
+      plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
+      plconfig.SetTargetFormats(GPUTexture::Format::RGBA8);
+
+      std::unique_ptr<GPUShader> vso =
+        g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GenerateScreenQuadVertexShader());
+      std::unique_ptr<GPUShader> fso =
+        g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GenerateChromaSmoothingFragmentShader());
+      if (!vso || !fso)
+        return false;
+      GL_OBJECT_NAME(vso, "Chroma Smoothing Vertex Shader");
+      GL_OBJECT_NAME(fso, "Chroma Smoothing Fragment Shader");
+
+      plconfig.vertex_shader = vso.get();
+      plconfig.fragment_shader = fso.get();
+      if (!(m_chroma_smoothing_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+        return false;
+      GL_OBJECT_NAME(m_chroma_smoothing_pipeline, "Chroma Smoothing Pipeline");
+    }
+  }
 
   return true;
 }
@@ -1802,6 +1945,226 @@ bool GPU::RenderDisplay(GPUTexture* target, const Common::Rectangle<s32>& draw_r
   {
     return true;
   }
+}
+
+void GPU::DestroyDeinterlaceTextures()
+{
+  for (std::unique_ptr<GPUTexture>& tex : m_deinterlace_buffers)
+    g_gpu_device->RecycleTexture(std::move(tex));
+  g_gpu_device->RecycleTexture(std::move(m_deinterlace_texture));
+  m_current_deinterlace_buffer = 0;
+}
+
+bool GPU::Deinterlace(GPUTexture* src, u32 x, u32 y, u32 width, u32 height, u32 field, u32 line_skip)
+{
+  switch (g_settings.display_deinterlacing_mode)
+  {
+    case DisplayDeinterlacingMode::Disabled:
+    {
+      if (line_skip == 0)
+      {
+        SetDisplayTexture(src, x, y, width, height);
+        return true;
+      }
+
+      // Still have to extract the field.
+      if (!DeinterlaceExtractField(0, src, x, y, width, height, line_skip)) [[unlikely]]
+        return false;
+
+      SetDisplayTexture(m_deinterlace_buffers[0].get(), 0, 0, width, height);
+      return true;
+    }
+
+    case DisplayDeinterlacingMode::Weave:
+    {
+      GL_SCOPE_FMT("DeinterlaceWeave({{{},{}}}, {}x{}, field={}, line_skip={})", x, y, width, height, field, line_skip);
+
+      const u32 full_height = height * 2;
+      if (!DeinterlaceSetTargetSize(width, full_height, true)) [[unlikely]]
+      {
+        ClearDisplayTexture();
+        return false;
+      }
+
+      src->MakeReadyForSampling();
+
+      g_gpu_device->SetRenderTarget(m_deinterlace_texture.get());
+      g_gpu_device->SetPipeline(m_deinterlace_pipeline.get());
+      g_gpu_device->SetTextureSampler(0, src, g_gpu_device->GetNearestSampler());
+      const u32 uniforms[] = {x, y, field, line_skip};
+      g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
+      g_gpu_device->SetViewportAndScissor(0, 0, width, full_height);
+      g_gpu_device->Draw(3, 0);
+
+      m_deinterlace_texture->MakeReadyForSampling();
+      SetDisplayTexture(m_deinterlace_texture.get(), 0, 0, width, full_height);
+      return true;
+    }
+
+    case DisplayDeinterlacingMode::Blend:
+    {
+      constexpr u32 NUM_BLEND_BUFFERS = 2;
+
+      GL_SCOPE_FMT("DeinterlaceBlend({{{},{}}}, {}x{}, field={}, line_skip={})", x, y, width, height, field, line_skip);
+
+      const u32 this_buffer = m_current_deinterlace_buffer;
+      m_current_deinterlace_buffer = (m_current_deinterlace_buffer + 1u) % NUM_BLEND_BUFFERS;
+      GL_INS_FMT("Current buffer: {}", this_buffer);
+      if (!DeinterlaceExtractField(this_buffer, src, x, y, width, height, line_skip) ||
+          !DeinterlaceSetTargetSize(width, height, false)) [[unlikely]]
+      {
+        ClearDisplayTexture();
+        return false;
+      }
+
+      // TODO: could be implemented with alpha blending instead..
+
+      g_gpu_device->InvalidateRenderTarget(m_deinterlace_texture.get());
+      g_gpu_device->SetRenderTarget(m_deinterlace_texture.get());
+      g_gpu_device->SetPipeline(m_deinterlace_pipeline.get());
+      g_gpu_device->SetTextureSampler(0, m_deinterlace_buffers[this_buffer].get(), g_gpu_device->GetNearestSampler());
+      g_gpu_device->SetTextureSampler(1, m_deinterlace_buffers[(this_buffer - 1) % NUM_BLEND_BUFFERS].get(),
+                                      g_gpu_device->GetNearestSampler());
+      g_gpu_device->SetViewportAndScissor(0, 0, width, height);
+      g_gpu_device->Draw(3, 0);
+
+      m_deinterlace_texture->MakeReadyForSampling();
+      SetDisplayTexture(m_deinterlace_texture.get(), 0, 0, width, height);
+      return true;
+    }
+
+    case DisplayDeinterlacingMode::Adaptive:
+    {
+      GL_SCOPE_FMT("DeinterlaceAdaptive({{{},{}}}, {}x{}, field={}, line_skip={})", x, y, width, height, field,
+                   line_skip);
+
+      const u32 full_height = height * 2;
+      const u32 this_buffer = m_current_deinterlace_buffer;
+      m_current_deinterlace_buffer = (m_current_deinterlace_buffer + 1u) % DEINTERLACE_BUFFER_COUNT;
+      GL_INS_FMT("Current buffer: {}", this_buffer);
+      if (!DeinterlaceExtractField(this_buffer, src, x, y, width, height, line_skip) ||
+          !DeinterlaceSetTargetSize(width, full_height, false)) [[unlikely]]
+      {
+        ClearDisplayTexture();
+        return false;
+      }
+
+      g_gpu_device->SetRenderTarget(m_deinterlace_texture.get());
+      g_gpu_device->SetPipeline(m_deinterlace_pipeline.get());
+      g_gpu_device->SetTextureSampler(0, m_deinterlace_buffers[this_buffer].get(), g_gpu_device->GetNearestSampler());
+      g_gpu_device->SetTextureSampler(1, m_deinterlace_buffers[(this_buffer - 1) % DEINTERLACE_BUFFER_COUNT].get(),
+                                      g_gpu_device->GetNearestSampler());
+      g_gpu_device->SetTextureSampler(2, m_deinterlace_buffers[(this_buffer - 2) % DEINTERLACE_BUFFER_COUNT].get(),
+                                      g_gpu_device->GetNearestSampler());
+      g_gpu_device->SetTextureSampler(3, m_deinterlace_buffers[(this_buffer - 3) % DEINTERLACE_BUFFER_COUNT].get(),
+                                      g_gpu_device->GetNearestSampler());
+      const u32 uniforms[] = {field, full_height};
+      g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
+      g_gpu_device->SetViewportAndScissor(0, 0, width, full_height);
+      g_gpu_device->Draw(3, 0);
+
+      m_deinterlace_texture->MakeReadyForSampling();
+      SetDisplayTexture(m_deinterlace_texture.get(), 0, 0, width, full_height);
+      return true;
+    }
+
+    default:
+      UnreachableCode();
+  }
+}
+
+bool GPU::DeinterlaceExtractField(u32 dst_bufidx, GPUTexture* src, u32 x, u32 y, u32 width, u32 height, u32 line_skip)
+{
+  if (!m_deinterlace_buffers[dst_bufidx] || m_deinterlace_buffers[dst_bufidx]->GetWidth() != width ||
+      m_deinterlace_buffers[dst_bufidx]->GetHeight() != height)
+  {
+    if (!g_gpu_device->ResizeTexture(&m_deinterlace_buffers[dst_bufidx], width, height, GPUTexture::Type::RenderTarget,
+                                     GPUTexture::Format::RGBA8, false)) [[unlikely]]
+    {
+      return false;
+    }
+
+    GL_OBJECT_NAME_FMT(m_deinterlace_buffers[dst_bufidx], "Blend Deinterlace Buffer {}", dst_bufidx);
+  }
+
+  GPUTexture* dst = m_deinterlace_buffers[dst_bufidx].get();
+  g_gpu_device->InvalidateRenderTarget(dst);
+
+  // If we're not skipping lines, then we can simply copy the texture.
+  if (line_skip == 0 && src->GetFormat() == dst->GetFormat())
+  {
+    GL_INS_FMT("DeinterlaceExtractField({{{},{}}} {}x{} line_skip={}) => copy direct", x, y, width, height, line_skip);
+    g_gpu_device->CopyTextureRegion(dst, 0, 0, 0, 0, src, x, y, 0, 0, width, height);
+  }
+  else
+  {
+    GL_SCOPE_FMT("DeinterlaceExtractField({{{},{}}} {}x{} line_skip={}) => shader copy", x, y, width, height,
+                 line_skip);
+
+    // Otherwise, we need to extract every other line from the texture.
+    src->MakeReadyForSampling();
+    g_gpu_device->SetRenderTarget(dst);
+    g_gpu_device->SetPipeline(m_deinterlace_extract_pipeline.get());
+    g_gpu_device->SetTextureSampler(0, src, g_gpu_device->GetNearestSampler());
+    const u32 uniforms[] = {x, y, line_skip};
+    g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
+    g_gpu_device->SetViewportAndScissor(0, 0, width, height);
+    g_gpu_device->Draw(3, 0);
+
+    GL_POP();
+  }
+
+  dst->MakeReadyForSampling();
+  return true;
+}
+
+bool GPU::DeinterlaceSetTargetSize(u32 width, u32 height, bool preserve)
+{
+  if (!m_deinterlace_texture || m_deinterlace_texture->GetWidth() != width ||
+      m_deinterlace_texture->GetHeight() != height)
+  {
+    if (!g_gpu_device->ResizeTexture(&m_deinterlace_texture, width, height, GPUTexture::Type::RenderTarget,
+                                     GPUTexture::Format::RGBA8, preserve)) [[unlikely]]
+    {
+      return false;
+    }
+
+    GL_OBJECT_NAME(m_deinterlace_texture, "Deinterlace target texture");
+  }
+
+  return true;
+}
+
+bool GPU::ApplyChromaSmoothing(GPUTexture* src, u32 x, u32 y, u32 width, u32 height)
+{
+  if (!m_chroma_smoothing_texture || m_chroma_smoothing_texture->GetWidth() != width ||
+      m_chroma_smoothing_texture->GetHeight() != height)
+  {
+    if (!g_gpu_device->ResizeTexture(&m_chroma_smoothing_texture, width, height, GPUTexture::Type::RenderTarget,
+                                     GPUTexture::Format::RGBA8, false))
+    {
+      ClearDisplayTexture();
+      return false;
+    }
+
+    GL_OBJECT_NAME(m_chroma_smoothing_texture, "Chroma smoothing texture");
+  }
+
+  GL_SCOPE_FMT("ApplyChromaSmoothing({{{},{}}}, {}x{})", x, y, width, height);
+
+  src->MakeReadyForSampling();
+  g_gpu_device->InvalidateRenderTarget(m_chroma_smoothing_texture.get());
+  g_gpu_device->SetRenderTarget(m_chroma_smoothing_texture.get());
+  g_gpu_device->SetPipeline(m_chroma_smoothing_pipeline.get());
+  g_gpu_device->SetTextureSampler(0, src, g_gpu_device->GetNearestSampler());
+  const u32 uniforms[] = {x, y, width - 1, height - 1};
+  g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
+  g_gpu_device->SetViewportAndScissor(0, 0, width, height);
+  g_gpu_device->Draw(3, 0);
+
+  m_chroma_smoothing_texture->MakeReadyForSampling();
+  SetDisplayTexture(m_chroma_smoothing_texture.get(), 0, 0, width, height);
+  return true;
 }
 
 Common::Rectangle<float> GPU::CalculateDrawRect(s32 window_width, s32 window_height, float* out_left_padding,

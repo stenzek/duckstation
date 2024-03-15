@@ -42,17 +42,13 @@ protected:
   void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) override;
 
   template<GPUTexture::Format display_format>
-  void CopyOut15Bit(u32 src_x, u32 src_y, u32 width, u32 height, u32 field, bool interlaced, bool interleaved);
-  void CopyOut15Bit(GPUTexture::Format display_format, u32 src_x, u32 src_y, u32 width, u32 height, u32 field,
-                    bool interlaced, bool interleaved);
+  bool CopyOut15Bit(u32 src_x, u32 src_y, u32 width, u32 height, u32 line_skip);
 
   template<GPUTexture::Format display_format>
-  void CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u32 field, bool interlaced,
-                    bool interleaved);
-  void CopyOut24Bit(GPUTexture::Format display_format, u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height,
-                    u32 field, bool interlaced, bool interleaved);
+  bool CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u32 line_skip);
 
-  void ClearDisplay() override;
+  bool CopyOut(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u32 line_skip, bool is_24bit);
+
   void UpdateDisplay() override;
 
   void DispatchRenderCommand() override;
@@ -62,10 +58,10 @@ protected:
 
   GPUTexture* GetDisplayTexture(u32 width, u32 height, GPUTexture::Format format);
 
-  FixedHeapArray<u8, GPU_MAX_DISPLAY_WIDTH * GPU_MAX_DISPLAY_HEIGHT * sizeof(u32)> m_display_texture_buffer;
+  FixedHeapArray<u8, GPU_MAX_DISPLAY_WIDTH * GPU_MAX_DISPLAY_HEIGHT * sizeof(u32)> m_upload_buffer;
   GPUTexture::Format m_16bit_display_format = GPUTexture::Format::RGB565;
   GPUTexture::Format m_24bit_display_format = GPUTexture::Format::RGBA8;
-  std::unique_ptr<GPUTexture> m_private_display_texture; // TODO: Move to base.
+  std::unique_ptr<GPUTexture> m_upload_texture;
 
   GPU_SW_Backend m_backend;
 };

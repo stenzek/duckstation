@@ -17,8 +17,6 @@ public:
   std::string GenerateBatchVertexShader(bool textured);
   std::string GenerateBatchFragmentShader(GPU_HW::BatchRenderMode render_mode, GPUTransparencyMode transparency,
                                           GPUTextureMode texture_mode, bool dithering, bool interlacing);
-  std::string GenerateDisplayFragmentShader(bool depth_24bit, GPU_HW::InterlacedRenderMode interlace_mode,
-                                            bool smooth_chroma);
   std::string GenerateWireframeGeometryShader();
   std::string GenerateWireframeFragmentShader();
   std::string GenerateVRAMReadFragmentShader();
@@ -26,6 +24,7 @@ public:
   std::string GenerateVRAMCopyFragmentShader();
   std::string GenerateVRAMFillFragmentShader(bool wrapped, bool interlaced);
   std::string GenerateVRAMUpdateDepthFragmentShader();
+  std::string GenerateVRAMExtractFragmentShader(bool depth_24bit);
 
   std::string GenerateAdaptiveDownsampleVertexShader();
   std::string GenerateAdaptiveDownsampleMipFragmentShader(bool first_pass);

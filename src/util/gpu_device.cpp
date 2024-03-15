@@ -959,6 +959,46 @@ void GPUDevice::SetDisplayMaxFPS(float max_fps)
   m_display_frame_interval = (max_fps > 0.0f) ? (1.0f / max_fps) : 0.0f;
 }
 
+bool GPUDevice::ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u32 new_height, GPUTexture::Type type,
+                              GPUTexture::Format format, bool preserve /* = true */)
+{
+  GPUTexture* old_tex = tex->get();
+  DebugAssert(!old_tex || (old_tex->GetLayers() == 1 && old_tex->GetLevels() == 1 && old_tex->GetSamples() == 1));
+  std::unique_ptr<GPUTexture> new_tex = FetchTexture(new_width, new_height, 1, 1, 1, type, format);
+  if (!new_tex) [[unlikely]]
+  {
+    Log_ErrorFmt("Failed to create new {}x{} texture", new_width, new_height);
+    return false;
+  }
+
+  if (old_tex)
+  {
+    if (old_tex->GetState() == GPUTexture::State::Cleared)
+    {
+      if (type == GPUTexture::Type::RenderTarget)
+        ClearRenderTarget(new_tex.get(), old_tex->GetClearColor());
+    }
+    else if (old_tex->GetState() == GPUTexture::State::Dirty)
+    {
+      const u32 copy_width = std::min(new_width, old_tex->GetWidth());
+      const u32 copy_height = std::min(new_height, old_tex->GetHeight());
+      if (type == GPUTexture::Type::RenderTarget)
+        ClearRenderTarget(new_tex.get(), 0);
+      CopyTextureRegion(new_tex.get(), 0, 0, 0, 0, old_tex, 0, 0, 0, 0, copy_width, copy_height);
+    }
+  }
+  else if (preserve)
+  {
+    // If we're expecting data to be there, make sure to clear it.
+    if (type == GPUTexture::Type::RenderTarget)
+      ClearRenderTarget(new_tex.get(), 0);
+  }
+
+  RecycleTexture(std::move(*tex));
+  *tex = std::move(new_tex);
+  return true;
+}
+
 bool GPUDevice::ShouldSkipDisplayingFrame()
 {
   if (m_display_frame_interval == 0.0f)

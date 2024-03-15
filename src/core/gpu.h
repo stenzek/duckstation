@@ -61,6 +61,7 @@ public:
     DOT_TIMER_INDEX = 0,
     HBLANK_TIMER_INDEX = 1,
     MAX_RESOLUTION_SCALE = 32,
+    DEINTERLACE_BUFFER_COUNT = 4,
   };
 
   enum : u16
@@ -239,6 +240,7 @@ protected:
                              bool remove_alpha);
 
   void SoftReset();
+  void ClearDisplay();
 
   // Sets dots per scanline
   void UpdateCRTCConfig();
@@ -313,7 +315,6 @@ protected:
   virtual void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask);
   virtual void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height);
   virtual void DispatchRenderCommand();
-  virtual void ClearDisplay();
   virtual void UpdateDisplay();
   virtual void DrawRendererStats();
 
@@ -578,6 +579,12 @@ protected:
 
   bool RenderDisplay(GPUTexture* target, const Common::Rectangle<s32>& draw_rect, bool postfx);
 
+  bool Deinterlace(GPUTexture* src, u32 x, u32 y, u32 width, u32 height, u32 field, u32 line_skip);
+  bool DeinterlaceExtractField(u32 dst_bufidx, GPUTexture* src, u32 x, u32 y, u32 width, u32 height, u32 line_skip);
+  bool DeinterlaceSetTargetSize(u32 width, u32 height, bool preserve);
+  void DestroyDeinterlaceTextures();
+  bool ApplyChromaSmoothing(GPUTexture* src, u32 x, u32 y, u32 width, u32 height);
+
   s32 m_display_width = 0;
   s32 m_display_height = 0;
   s32 m_display_active_left = 0;
@@ -585,6 +592,15 @@ protected:
   s32 m_display_active_width = 0;
   s32 m_display_active_height = 0;
   float m_display_aspect_ratio = 1.0f;
+
+  u32 m_current_deinterlace_buffer = 0;
+  std::unique_ptr<GPUPipeline> m_deinterlace_pipeline;
+  std::unique_ptr<GPUPipeline> m_deinterlace_extract_pipeline;
+  std::array<std::unique_ptr<GPUTexture>, DEINTERLACE_BUFFER_COUNT> m_deinterlace_buffers;
+  std::unique_ptr<GPUTexture> m_deinterlace_texture;
+
+  std::unique_ptr<GPUPipeline> m_chroma_smoothing_pipeline;
+  std::unique_ptr<GPUTexture> m_chroma_smoothing_texture;
 
   std::unique_ptr<GPUPipeline> m_display_pipeline;
   GPUTexture* m_display_texture = nullptr;
@@ -619,7 +635,7 @@ protected:
   Stats m_stats = {};
 
 private:
-  bool CompileDisplayPipeline();
+  bool CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_smoothing);
 
   using GP0CommandHandler = bool (GPU::*)();
   using GP0CommandHandlerTable = std::array<GP0CommandHandler, 256>;

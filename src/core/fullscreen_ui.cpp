@@ -3941,6 +3941,14 @@ void FullscreenUI::DrawDisplaySettingsPage()
                   &Settings::GetDisplayAspectRatioName, &Settings::GetDisplayAspectRatioDisplayName,
                   DisplayAspectRatio::Count);
 
+  DrawEnumSetting(
+    bsi, FSUI_CSTR("Deinterlacing Mode"),
+    FSUI_CSTR(
+      "Determines which algorithm is used to convert interlaced frames to progressive for display on your system."),
+    "Display", "DeinterlacingMode", Settings::DEFAULT_DISPLAY_DEINTERLACING_MODE,
+    &Settings::ParseDisplayDeinterlacingMode, &Settings::GetDisplayDeinterlacingModeName,
+    &Settings::GetDisplayDeinterlacingModeDisplayName, DisplayDeinterlacingMode::Count);
+
   DrawEnumSetting(bsi, FSUI_CSTR("Crop Mode"),
                   FSUI_CSTR("Determines how much of the area typically not visible on a consumer TV set to crop/hide."),
                   "Display", "CropMode", Settings::DEFAULT_DISPLAY_CROP_MODE, &Settings::ParseDisplayCropMode,

@@ -32,13 +32,6 @@ public:
     OnlyTransparent
   };
 
-  enum class InterlacedRenderMode : u8
-  {
-    None,
-    InterleavedFields,
-    SeparateFields
-  };
-
   GPU_HW();
   ~GPU_HW() override;
 
@@ -56,7 +49,6 @@ public:
   std::tuple<u32, u32> GetEffectiveDisplayResolution(bool scaled = true) override final;
   std::tuple<u32, u32> GetFullDisplayResolution(bool scaled = true) override final;
 
-  void ClearDisplay() override;
   void UpdateDisplay() override;
 
 private:
@@ -162,9 +154,6 @@ private:
   /// Returns the value to be written to the depth buffer for the current operation for mask bit emulation.
   float GetCurrentNormalizedVertexDepth() const;
 
-  /// Returns the interlaced mode to use when scanning out/displaying.
-  InterlacedRenderMode GetInterlacedRenderMode() const;
-
   /// Returns if the draw needs to be broken into opaque/transparent passes.
   bool NeedsTwoPassRendering() const;
 
@@ -212,7 +201,6 @@ private:
   std::unique_ptr<GPUTexture> m_vram_readback_texture;
   std::unique_ptr<GPUDownloadTexture> m_vram_readback_download_texture;
   std::unique_ptr<GPUTexture> m_vram_replacement_texture;
-  std::unique_ptr<GPUTexture> m_display_private_texture; // TODO: Move to base.
 
   std::unique_ptr<GPUTextureBuffer> m_vram_upload_buffer;
   std::unique_ptr<GPUTexture> m_vram_write_texture;
@@ -237,7 +225,6 @@ private:
   bool m_supports_framebuffer_fetch : 1 = false;
   bool m_per_sample_shading : 1 = false;
   bool m_scaled_dithering : 1 = false;
-  bool m_chroma_smoothing : 1 = false;
   bool m_disable_color_perspective : 1 = false;
 
   GPUTextureFilter m_texture_filtering = GPUTextureFilter::Nearest;
@@ -275,11 +262,10 @@ private:
 
   std::unique_ptr<GPUPipeline> m_vram_readback_pipeline;
   std::unique_ptr<GPUPipeline> m_vram_update_depth_pipeline;
-
-  // [depth_24][interlace_mode]
-  DimensionalArray<std::unique_ptr<GPUPipeline>, 3, 2> m_display_pipelines{};
-
   std::unique_ptr<GPUPipeline> m_vram_write_replacement_pipeline;
+
+  std::array<std::unique_ptr<GPUPipeline>, 2> m_vram_extract_pipeline; // [24bit]
+  std::unique_ptr<GPUTexture> m_vram_extract_texture;
 
   std::unique_ptr<GPUTexture> m_downsample_texture;
   std::unique_ptr<GPUPipeline> m_downsample_first_pass_pipeline;

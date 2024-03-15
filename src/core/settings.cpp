@@ -224,6 +224,11 @@ void Settings::Load(SettingsInterface& si)
   gpu_pgxp_depth_buffer = si.GetBoolValue("GPU", "PGXPDepthBuffer", false);
   SetPGXPDepthClearThreshold(si.GetFloatValue("GPU", "PGXPDepthClearThreshold", DEFAULT_GPU_PGXP_DEPTH_THRESHOLD));
 
+  display_deinterlacing_mode =
+    ParseDisplayDeinterlacingMode(si.GetStringValue("Display", "DeinterlacingMode",
+                                                    GetDisplayDeinterlacingModeName(DEFAULT_DISPLAY_DEINTERLACING_MODE))
+                                    .c_str())
+      .value_or(DEFAULT_DISPLAY_DEINTERLACING_MODE);
   display_crop_mode =
     ParseDisplayCropMode(
       si.GetStringValue("Display", "CropMode", GetDisplayCropModeName(DEFAULT_DISPLAY_CROP_MODE)).c_str())
@@ -498,6 +503,7 @@ void Settings::Save(SettingsInterface& si) const
   si.SetBoolValue("GPU", "PGXPDepthBuffer", gpu_pgxp_depth_buffer);
   si.SetFloatValue("GPU", "PGXPDepthClearThreshold", GetPGXPDepthClearThreshold());
 
+  si.SetStringValue("Display", "DeinterlacingMode", GetDisplayDeinterlacingModeName(display_deinterlacing_mode));
   si.SetStringValue("Display", "CropMode", GetDisplayCropModeName(display_crop_mode));
   si.SetIntValue("Display", "ActiveStartOffset", display_active_start_offset);
   si.SetIntValue("Display", "ActiveEndOffset", display_active_end_offset);
@@ -1196,6 +1202,44 @@ const char* Settings::GetGPUWireframeModeName(GPUWireframeMode mode)
 const char* Settings::GetGPUWireframeModeDisplayName(GPUWireframeMode mode)
 {
   return Host::TranslateToCString("GPUWireframeMode", s_wireframe_mode_display_names[static_cast<int>(mode)]);
+}
+
+static constexpr const std::array s_display_deinterlacing_mode_names = {
+  "Disabled",
+  "Weave",
+  "Blend",
+  "Adaptive",
+};
+static constexpr const std::array s_display_deinterlacing_mode_display_names = {
+  TRANSLATE_NOOP("DisplayDeinterlacingMode", "Disabled (Flickering)"),
+  TRANSLATE_NOOP("DisplayDeinterlacingMode", "Weave (Combing)"),
+  TRANSLATE_NOOP("DisplayDeinterlacingMode", "Blend (Blur)"),
+  TRANSLATE_NOOP("DisplayDeinterlacingMode", "Adaptive (FastMAD)"),
+};
+
+std::optional<DisplayDeinterlacingMode> Settings::ParseDisplayDeinterlacingMode(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_display_deinterlacing_mode_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<DisplayDeinterlacingMode>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetDisplayDeinterlacingModeName(DisplayDeinterlacingMode mode)
+{
+  return s_display_deinterlacing_mode_names[static_cast<int>(mode)];
+}
+
+const char* Settings::GetDisplayDeinterlacingModeDisplayName(DisplayDeinterlacingMode mode)
+{
+  return Host::TranslateToCString("DisplayDeinterlacingMode",
+                                  s_display_deinterlacing_mode_display_names[static_cast<int>(mode)]);
 }
 
 static constexpr const std::array s_display_crop_mode_names = {"None", "Overscan", "Borders"};
