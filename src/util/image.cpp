@@ -490,8 +490,9 @@ static bool WrapJPEGDecompress(RGBA8Image* image, T setup_func)
     u32* dst_ptr = image->GetRowPixels(y);
     for (u32 x = 0; x < info.image_width; x++)
     {
-      *(dst_ptr) =
+      *(dst_ptr++) =
         (ZeroExtend32(src_ptr[0]) | (ZeroExtend32(src_ptr[1]) << 8) | (ZeroExtend32(src_ptr[2]) << 16) | 0xFF000000u);
+      src_ptr += 3;
     }
   }
 
