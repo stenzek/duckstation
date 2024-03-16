@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "dma.h"
@@ -21,6 +21,8 @@
 #include "common/bitfield.h"
 #include "common/log.h"
 #include "common/string_util.h"
+
+#include "fmt/format.h"
 
 #include <array>
 #include <memory>
@@ -203,7 +205,19 @@ static constexpr std::array<bool (*)(), NUM_CHANNELS> s_channel_transfer_functio
   &TransferChannel<Channel::OTC>,
 }};
 
+[[maybe_unused]] static constexpr std::array<const char*, NUM_CHANNELS> s_channel_names = {
+  {"MDECin", "MDECout", "GPU", "CDROM", "SPU", "PIO", "OTC"}};
+
 }; // namespace DMA
+
+template<>
+struct fmt::formatter<DMA::Channel> : fmt::formatter<fmt::string_view>
+{
+  auto format(DMA::Channel channel, fmt::format_context& ctx) const
+  {
+    return formatter<fmt::string_view>::format(DMA::s_channel_names[static_cast<u32>(channel)], ctx);
+  }
+};
 
 u32 DMA::GetAddressMask()
 {
@@ -332,12 +346,13 @@ void DMA::WriteRegister(u32 offset, u32 value)
       case 0x00:
       {
         state.base_address = value & BASE_ADDRESS_MASK;
-        Log_TracePrintf("DMA channel %u base address <- 0x%08X", channel_index, state.base_address);
+        Log_TraceFmt("DMA channel {} base address <- 0x{:08X}", static_cast<Channel>(channel_index),
+                     state.base_address);
         return;
       }
       case 0x04:
       {
-        Log_TracePrintf("DMA channel %u block control <- 0x%08X", channel_index, value);
+        Log_TraceFmt("DMA channel {} block control <- 0x{:08X}", static_cast<Channel>(channel_index), value);
         state.block_control.bits = value;
         return;
       }
@@ -352,14 +367,42 @@ void DMA::WriteRegister(u32 offset, u32 value)
 
         state.channel_control.bits = (state.channel_control.bits & ~ChannelState::ChannelControl::WRITE_MASK) |
                                      (value & ChannelState::ChannelControl::WRITE_MASK);
-        Log_TracePrintf("DMA channel %u channel control <- 0x%08X", channel_index, state.channel_control.bits);
+        Log_TracePrintf("DMA channel {} channel control <- 0x{:08X}", static_cast<Channel>(channel_index),
+                        state.channel_control.bits);
 
         // start/trigger bit must be enabled for OTC
         if (static_cast<Channel>(channel_index) == Channel::OTC)
           SetRequest(static_cast<Channel>(channel_index), state.channel_control.start_trigger);
 
         if (CanTransferChannel(static_cast<Channel>(channel_index), ignore_halt))
-          s_channel_transfer_functions[channel_index]();
+        {
+          if (static_cast<Channel>(channel_index) != Channel::OTC &&
+              state.channel_control.sync_mode == SyncMode::Manual && state.channel_control.chopping_enable)
+          {
+            // Figure out how roughly many CPU cycles it'll take for the transfer to complete, and delay the transfer.
+            // Needed for Lagnacure Legend, which sets DICR to enable interrupts after CHCR to kickstart the transfer.
+            // This has an artificial 500 cycle cap, setting it too high causes Namco Museum Vol. 4 and a couple of
+            // other games to crash... so clearly something is missing here.
+            const u32 block_words = (1u << state.channel_control.chopping_dma_window_size);
+            const u32 cpu_cycles_per_block = (1u << state.channel_control.chopping_cpu_window_size);
+            const u32 blocks = state.block_control.manual.word_count / block_words;
+            const TickCount delay_cycles = std::min(static_cast<TickCount>(cpu_cycles_per_block * blocks), 500);
+            if (delay_cycles > 1 && true)
+            {
+              Log_DevFmt("Delaying {} transfer by {} cycles due to chopping", static_cast<Channel>(channel_index),
+                         delay_cycles);
+              HaltTransfer(delay_cycles);
+            }
+            else
+            {
+              s_channel_transfer_functions[channel_index]();
+            }
+          }
+          else
+          {
+            s_channel_transfer_functions[channel_index]();
+          }
+        }
         return;
       }
 
@@ -393,7 +436,7 @@ void DMA::WriteRegister(u32 offset, u32 value)
         Log_TracePrintf("DCIR <- 0x%08X", value);
         s_DICR.bits = (s_DICR.bits & ~DICR_WRITE_MASK) | (value & DICR_WRITE_MASK);
         s_DICR.bits = s_DICR.bits & ~(value & DICR_RESET_MASK);
-        s_DICR.UpdateMasterFlag();
+        UpdateIRQ();
         return;
       }
 
@@ -450,10 +493,8 @@ void DMA::UpdateIRQ()
 {
   s_DICR.UpdateMasterFlag();
   if (s_DICR.master_flag)
-  {
     Log_TracePrintf("Firing DMA master interrupt");
-    InterruptController::InterruptRequest(InterruptController::IRQ::DMA);
-  }
+  InterruptController::SetLineState(InterruptController::IRQ::DMA, s_DICR.master_flag);
 }
 
 // Plenty of games seem to suffer from this issue where they have a linked list DMA going while polling the
@@ -576,10 +617,10 @@ bool DMA::TransferChannel()
 
     case SyncMode::Request:
     {
-      Log_DebugPrintf("DMA%u: Copying %u blocks of size %u (%u total words) %s 0x%08X", static_cast<u32>(channel),
-                      cs.block_control.request.GetBlockCount(), cs.block_control.request.GetBlockSize(),
-                      cs.block_control.request.GetBlockCount() * cs.block_control.request.GetBlockSize(),
-                      copy_to_device ? "from" : "to", current_address & mask);
+      Log_DebugFmt("DMA[{}]: Copying {} blocks of size {} ({} total words) {} 0x{:08X}", channel,
+                   cs.block_control.request.GetBlockCount(), cs.block_control.request.GetBlockSize(),
+                   cs.block_control.request.GetBlockCount() * cs.block_control.request.GetBlockSize(),
+                   copy_to_device ? "from" : "to", current_address);
 
       const u32 block_size = cs.block_control.request.GetBlockSize();
       u32 blocks_remaining = cs.block_control.request.GetBlockCount();
@@ -638,10 +679,11 @@ bool DMA::TransferChannel()
   }
 
   // start/busy bit is cleared on end of transfer
+  Log_DebugFmt("DMA transfer for channel {} complete", channel);
   cs.channel_control.enable_busy = false;
   if (s_DICR.IsIRQEnabled(channel))
   {
-    Log_DebugPrintf("Set DMA interrupt for channel %u", static_cast<u32>(channel));
+    Log_DebugFmt("Setting DMA interrupt for channel {}", channel);
     s_DICR.SetIRQFlag(channel);
     UpdateIRQ();
   }
@@ -816,8 +858,6 @@ void DMA::DrawDebugStateWindow()
   static constexpr u32 NUM_COLUMNS = 10;
   static constexpr std::array<const char*, NUM_COLUMNS> column_names = {
     {"#", "Req", "Direction", "Chopping", "Mode", "Busy", "Enable", "Priority", "IRQ", "Flag"}};
-  static constexpr std::array<const char*, NUM_CHANNELS> channel_names = {
-    {"MDECin", "MDECout", "GPU", "CDROM", "SPU", "PIO", "OTC"}};
   static constexpr std::array<const char*, 4> sync_mode_names = {{"Manual", "Request", "LinkedList", "Reserved"}};
 
   const float framebuffer_scale = Host::GetOSDScale();
@@ -854,7 +894,7 @@ void DMA::DrawDebugStateWindow()
   {
     const ChannelState& cs = s_state[i];
 
-    ImGui::TextColored(cs.channel_control.enable_busy ? active : inactive, "%u[%s]", i, channel_names[i]);
+    ImGui::TextColored(cs.channel_control.enable_busy ? active : inactive, "%u[%s]", i, s_channel_names[i]);
     ImGui::NextColumn();
     ImGui::TextColored(cs.request ? active : inactive, cs.request ? "Yes" : "No");
     ImGui::NextColumn();

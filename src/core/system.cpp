@@ -1622,8 +1622,6 @@ bool System::Initialize(bool force_software_renderer)
   }
 
   DMA::Initialize();
-  InterruptController::Initialize();
-
   CDROM::Initialize();
   Pad::Initialize();
   Timers::Initialize();
@@ -1675,7 +1673,6 @@ void System::DestroySystem()
   Pad::Shutdown();
   CDROM::Shutdown();
   g_gpu.reset();
-  InterruptController::Shutdown();
   DMA::Shutdown();
   CPU::PGXP::Shutdown();
   CPU::CodeCache::Shutdown();

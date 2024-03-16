@@ -66,7 +66,6 @@ struct CounterState
 
 static void UpdateCountingEnabled(CounterState& cs);
 static void CheckForIRQ(u32 index, u32 old_counter);
-static void UpdateIRQ(u32 index);
 
 static void AddSysClkTicks(void*, TickCount sysclk_ticks, TickCount ticks_late);
 
@@ -236,17 +235,29 @@ void Timers::CheckForIRQ(u32 timer, u32 old_counter)
 
   if (interrupt_request)
   {
+    const InterruptController::IRQ irqnum =
+      static_cast<InterruptController::IRQ>(static_cast<u32>(InterruptController::IRQ::TMR0) + timer);
     if (!cs.mode.irq_pulse_n)
     {
-      // this is actually low for a few cycles
-      cs.mode.interrupt_request_n = false;
-      UpdateIRQ(timer);
+      if (!cs.irq_done || cs.mode.irq_repeat)
+      {
+        // this is actually low for a few cycles
+        Log_DebugPrintf("Raising timer %u pulse IRQ", timer);
+        InterruptController::SetLineState(irqnum, false);
+        InterruptController::SetLineState(irqnum, true);
+      }
+
+      cs.irq_done = true;
       cs.mode.interrupt_request_n = true;
     }
     else
     {
+      // TODO: How does the non-repeat mode work here?
       cs.mode.interrupt_request_n ^= true;
-      UpdateIRQ(timer);
+      if (!cs.mode.interrupt_request_n)
+        Log_DebugPrintf("Raising timer %u alternate IRQ", timer);
+
+      InterruptController::SetLineState(irqnum, !cs.mode.interrupt_request_n);
     }
   }
 }
@@ -371,10 +382,11 @@ void Timers::WriteRegister(u32 offset, u32 value)
       cs.use_external_clock = (cs.mode.clock_source & (timer_index == 2 ? 2 : 1)) != 0;
       cs.counter = 0;
       cs.irq_done = false;
+      InterruptController::SetLineState(
+        static_cast<InterruptController::IRQ>(static_cast<u32>(InterruptController::IRQ::TMR0) + timer_index), false);
 
       UpdateCountingEnabled(cs);
       CheckForIRQ(timer_index, cs.counter);
-      UpdateIRQ(timer_index);
       UpdateSysClkEvent();
     }
     break;
@@ -421,18 +433,6 @@ void Timers::UpdateCountingEnabled(CounterState& cs)
   }
 
   cs.external_counting_enabled = cs.use_external_clock && cs.counting_enabled;
-}
-
-void Timers::UpdateIRQ(u32 index)
-{
-  CounterState& cs = s_states[index];
-  if (cs.mode.interrupt_request_n || (!cs.mode.irq_repeat && cs.irq_done))
-    return;
-
-  Log_DebugPrintf("Raising timer %u IRQ", index);
-  cs.irq_done = true;
-  InterruptController::InterruptRequest(
-    static_cast<InterruptController::IRQ>(static_cast<u32>(InterruptController::IRQ::TMR0) + index));
 }
 
 TickCount Timers::GetTicksUntilNextInterrupt()

@@ -208,11 +208,9 @@ bool GPU::HandleClearCacheCommand()
 bool GPU::HandleInterruptRequestCommand()
 {
   Log_DebugPrintf("GP0 interrupt request");
-  if (!m_GPUSTAT.interrupt_request)
-  {
-    m_GPUSTAT.interrupt_request = true;
-    InterruptController::InterruptRequest(InterruptController::IRQ::GPU);
-  }
+
+  m_GPUSTAT.interrupt_request = true;
+  InterruptController::SetLineState(InterruptController::IRQ::GPU, m_GPUSTAT.interrupt_request);
 
   m_fifo.RemoveOne();
   AddCommandTicks(1);

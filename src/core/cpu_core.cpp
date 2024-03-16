@@ -398,15 +398,14 @@ void CPU::RaiseBreakException(u32 CAUSE_bits, u32 EPC, u32 instruction_bits)
   RaiseException(CAUSE_bits, EPC, GetExceptionVector());
 }
 
-void CPU::SetExternalInterrupt(u8 bit)
+void CPU::SetIRQRequest(bool state)
 {
-  g_state.cop0_regs.cause.Ip |= static_cast<u8>(1u << bit);
-  CheckForPendingInterrupt();
-}
-
-void CPU::ClearExternalInterrupt(u8 bit)
-{
-  g_state.cop0_regs.cause.Ip &= static_cast<u8>(~(1u << bit));
+  // Only uses bit 10.
+  constexpr u32 bit = (1u << 10);
+  const u32 old_cause = g_state.cop0_regs.cause.bits;
+  g_state.cop0_regs.cause.bits = (g_state.cop0_regs.cause.bits & ~bit) | (state ? bit : 0u);
+  if (old_cause ^ g_state.cop0_regs.cause.bits && state)
+    CheckForPendingInterrupt();
 }
 
 ALWAYS_INLINE_RELEASE void CPU::UpdateLoadDelay()

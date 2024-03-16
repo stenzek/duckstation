@@ -929,9 +929,14 @@ void SPU::WriteRegister(u32 offset, u16 value)
       s_SPUSTAT.mode = s_SPUCNT.mode.GetValue();
 
       if (!s_SPUCNT.irq9_enable)
+      {
         s_SPUSTAT.irq9_flag = false;
+        InterruptController::SetLineState(InterruptController::IRQ::SPU, false);
+      }
       else if (IsRAMIRQTriggerable())
+      {
         CheckForLateRAMIRQs();
+      }
 
       UpdateEventInterval();
       UpdateDMARequest();
@@ -1155,7 +1160,7 @@ void SPU::TriggerRAMIRQ()
 {
   DebugAssert(IsRAMIRQTriggerable());
   s_SPUSTAT.irq9_flag = true;
-  InterruptController::InterruptRequest(InterruptController::IRQ::SPU);
+  InterruptController::SetLineState(InterruptController::IRQ::SPU, true);
 }
 
 void SPU::CheckForLateRAMIRQs()

@@ -986,6 +986,7 @@ void CDROM::WriteRegister(u32 offset, u8 value)
       s_interrupt_flag_register &= ~(value & INTERRUPT_REGISTER_MASK);
       if (s_interrupt_flag_register == 0)
       {
+        InterruptController::SetLineState(InterruptController::IRQ::CDROM, false);
         if (HasPendingAsyncInterrupt())
           QueueDeliverAsyncInterrupt();
         else
@@ -1212,10 +1213,8 @@ void CDROM::UpdateStatusRegister()
 
 void CDROM::UpdateInterruptRequest()
 {
-  if ((s_interrupt_flag_register & s_interrupt_enable_register) == 0)
-    return;
-
-  InterruptController::InterruptRequest(InterruptController::IRQ::CDROM);
+  InterruptController::SetLineState(InterruptController::IRQ::CDROM,
+                                   (s_interrupt_flag_register & s_interrupt_enable_register) != 0);
 }
 
 bool CDROM::HasPendingDiscEvent()

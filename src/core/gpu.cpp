@@ -961,6 +961,7 @@ void GPU::CRTCTickEvent(TickCount ticks)
         m_crtc_state.current_scanline >= m_crtc_state.vertical_display_end)
     {
       Timers::SetGate(HBLANK_TIMER_INDEX, false);
+      InterruptController::SetLineState(InterruptController::IRQ::VBLANK, false);
       m_crtc_state.in_vblank = false;
     }
 
@@ -971,7 +972,6 @@ void GPU::CRTCTickEvent(TickCount ticks)
       if (new_vblank)
       {
         Log_DebugPrintf("Now in v-blank");
-        InterruptController::InterruptRequest(InterruptController::IRQ::VBLANK);
 
         // flush any pending draws and "scan out" the image
         // TODO: move present in here I guess
@@ -987,6 +987,7 @@ void GPU::CRTCTickEvent(TickCount ticks)
       }
 
       Timers::SetGate(HBLANK_TIMER_INDEX, new_vblank);
+      InterruptController::SetLineState(InterruptController::IRQ::VBLANK, new_vblank);
       m_crtc_state.in_vblank = new_vblank;
     }
 

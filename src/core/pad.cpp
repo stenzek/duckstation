@@ -639,6 +639,7 @@ void Pad::WriteRegister(u32 offset, u32 value)
       {
         // reset stat bits
         s_JOY_STAT.INTR = false;
+        InterruptController::SetLineState(InterruptController::IRQ::PAD, false);
       }
 
       if (!s_JOY_CTRL.SELECT)
@@ -883,7 +884,7 @@ void Pad::DoACK()
   {
     Log_DebugPrintf("Triggering ACK interrupt");
     s_JOY_STAT.INTR = true;
-    InterruptController::InterruptRequest(InterruptController::IRQ::IRQ7);
+    InterruptController::SetLineState(InterruptController::IRQ::PAD, true);
   }
 
   EndTransfer();
