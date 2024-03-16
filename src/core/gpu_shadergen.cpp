@@ -226,10 +226,10 @@ float3 YUVToRGB(float3 yuv)
 
 float3 SampleVRAMAverage2x2(uint2 icoords)
 {
-  float3 value = LOAD_TEXTURE(samp0, icoords, 0).rgb;
-  value += LOAD_TEXTURE(samp0, icoords + uint2(0, 1), 0).rgb;
-  value += LOAD_TEXTURE(samp0, icoords + uint2(1, 0), 0).rgb;
-  value += LOAD_TEXTURE(samp0, icoords + uint2(1, 1), 0).rgb;
+  float3 value = LOAD_TEXTURE(samp0, int2(icoords), 0).rgb;
+  value += LOAD_TEXTURE(samp0, int2(icoords + uint2(0, 1)), 0).rgb;
+  value += LOAD_TEXTURE(samp0, int2(icoords + uint2(1, 0)), 0).rgb;
+  value += LOAD_TEXTURE(samp0, int2(icoords + uint2(1, 1)), 0).rgb;
   return value * 0.25;
 }
 )";
@@ -243,7 +243,7 @@ float3 SampleVRAMAverage2x2(uint2 icoords)
   uint2 high = min(low + 2u, u_clamp_size);
   float2 coeff = vec2(base & 1) * 0.5 + 0.25;
 
-  float3 p = LOAD_TEXTURE(samp0, icoords, 0);
+  float3 p = LOAD_TEXTURE(samp0, int2(icoords), 0).rgb;
   float3 p00 = SampleVRAMAverage2x2(low);
   float3 p01 = SampleVRAMAverage2x2(uint2(low.x, high.y));
   float3 p10 = SampleVRAMAverage2x2(uint2(high.x, low.y));
