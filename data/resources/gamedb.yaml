@@ -77510,6 +77510,8 @@ SCUS-94309:
   controllers:
     - DigitalController
     - NeGcon
+  traits:
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Sony"
     developer: "Singletrac Entertainment Tech. Inc"
@@ -129183,6 +129185,8 @@ SLPS-00417:
   controllers:
     - DigitalController
     - NeGcon
+  traits:
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Sammy Studios"
     developer: "Sammy Studios"
