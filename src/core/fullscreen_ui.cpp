@@ -7107,5 +7107,8 @@ TRANSLATE_NOOP("FullscreenUI", "{} Frames");
 TRANSLATE_NOOP("FullscreenUI", "{} deleted.");
 TRANSLATE_NOOP("FullscreenUI", "{} does not exist.");
 TRANSLATE_NOOP("FullscreenUI", "{} is not a valid disc image.");
+TRANSLATE_NOOP("FullscreenUI", "%d sectors");
+TRANSLATE_NOOP("FullscreenUI", "%.2f Seconds");
+TRANSLATE_NOOP("FullscreenUI", "%d Frames");
 // TRANSLATION-STRING-AREA-END
 #endif
