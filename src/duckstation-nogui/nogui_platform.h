@@ -52,6 +52,9 @@ public:
 #ifdef __APPLE__
   static std::unique_ptr<NoGUIPlatform> CreateCocoaPlatform();
 #endif
+#ifdef ENABLE_SDL2
+  static std::unique_ptr<NoGUIPlatform> CreateSDLPlatform();
+#endif
 #ifdef NOGUI_PLATFORM_WAYLAND
   static std::unique_ptr<NoGUIPlatform> CreateWaylandPlatform();
 #endif

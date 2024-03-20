@@ -6,6 +6,7 @@
     <ClCompile Include="wayland_nogui_platform.cpp" />
     <ClCompile Include="x11_nogui_platform.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="sdl_nogui_platform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -15,6 +16,7 @@
     <ClInclude Include="wayland_nogui_platform.h" />
     <ClInclude Include="x11_nogui_platform.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="sdl_nogui_platform.h" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="duckstation-nogui.manifest" />

@@ -6,6 +6,7 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="sdl_nogui_platform.cpp" />
     <ClCompile Include="wayland_nogui_platform.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
@@ -19,6 +20,7 @@
     <ClInclude Include="nogui_platform.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="sdl_nogui_platform.h" />
     <ClInclude Include="wayland_nogui_platform.h">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClInclude>

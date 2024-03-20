@@ -46,6 +46,10 @@ public:
   static u32 GetRGBForPlayerId(SettingsInterface& si, u32 player_id);
   static u32 ParseRGBForPlayerId(const std::string_view& str, u32 player_id);
 
+  static bool IsHandledInputEvent(const SDL_Event* ev);
+
+  static bool ALLOW_EVENT_POLLING;
+
 private:
   struct ControllerData
   {

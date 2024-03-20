@@ -151,6 +151,8 @@ static void SDLLogCallback(void* userdata, int category, SDL_LogPriority priorit
   Log::Write("SDL", "SDL", priority_map[priority], message);
 }
 
+bool SDLInputSource::ALLOW_EVENT_POLLING = true;
+
 SDLInputSource::SDLInputSource() = default;
 
 SDLInputSource::~SDLInputSource()
@@ -322,6 +324,9 @@ void SDLInputSource::ShutdownSubsystem()
 
 void SDLInputSource::PollEvents()
 {
+  if (!ALLOW_EVENT_POLLING)
+    return;
+
   for (;;)
   {
     SDL_Event ev;
@@ -546,6 +551,28 @@ TinyString SDLInputSource::ConvertKeyToIcon(InputBindingKey key)
   }
 
   return ret;
+}
+
+bool SDLInputSource::IsHandledInputEvent(const SDL_Event* ev)
+{
+  switch (ev->type)
+  {
+    case SDL_CONTROLLERDEVICEADDED:
+    case SDL_CONTROLLERDEVICEREMOVED:
+    case SDL_JOYDEVICEADDED:
+    case SDL_JOYDEVICEREMOVED:
+    case SDL_CONTROLLERAXISMOTION:
+    case SDL_CONTROLLERBUTTONDOWN:
+    case SDL_CONTROLLERBUTTONUP:
+    case SDL_JOYAXISMOTION:
+    case SDL_JOYBUTTONDOWN:
+    case SDL_JOYBUTTONUP:
+    case SDL_JOYHATMOTION:
+      return true;
+
+    default:
+      return false;
+  }
 }
 
 bool SDLInputSource::ProcessSDLEvent(const SDL_Event* event)
@@ -859,7 +886,7 @@ bool SDLInputSource::HandleJoystickButtonEvent(const SDL_JoyButtonEvent* ev)
   if (it == m_controllers.end())
     return false;
   if (ev->button < it->joy_button_used_in_gc.size() && it->joy_button_used_in_gc[ev->button])
-    return false;                                                 // Will get handled by GC event
+    return false; // Will get handled by GC event
   const u32 button =
     ev->button + static_cast<u32>(std::size(s_sdl_button_names)); // Ensure we don't conflict with GC buttons
   const InputBindingKey key(MakeGenericControllerButtonKey(InputSourceType::SDL, it->player_id, button));

@@ -86,3 +86,12 @@ if(ENABLE_WAYLAND)
     X11::xkbcommon
   )
 endif()
+
+if(ENABLE_SDL2)
+  message(STATUS "Building SDL NoGUI Platform.")
+  target_sources(duckstation-nogui PRIVATE
+    sdl_nogui_platform.cpp
+    sdl_nogui_platform.h
+  )
+  target_link_libraries(duckstation-nogui PUBLIC SDL2::SDL2)
+endif()

@@ -870,13 +870,20 @@ std::unique_ptr<NoGUIPlatform> NoGUIHost::CreatePlatform()
 {
   std::unique_ptr<NoGUIPlatform> ret;
 
+  const char* platform = std::getenv("DUCKSTATION_NOGUI_PLATFORM");
+#ifdef ENABLE_SDL2
+  if (platform && StringUtil::Strcasecmp(platform, "sdl") == 0)
+    ret = NoGUIPlatform::CreateSDLPlatform();
+#endif
+
 #if defined(_WIN32)
-  ret = NoGUIPlatform::CreateWin32Platform();
+  if (!ret)
+    ret = NoGUIPlatform::CreateWin32Platform();
 #elif defined(__APPLE__)
-  ret = NoGUIPlatform::CreateCocoaPlatform();
+  if (!ret)
+    ret = NoGUIPlatform::CreateCocoaPlatform();
 #else
   // linux
-  const char* platform = std::getenv("DUCKSTATION_NOGUI_PLATFORM");
 #ifdef NOGUI_PLATFORM_WAYLAND
   if (!ret && (!platform || StringUtil::Strcasecmp(platform, "wayland") == 0) && std::getenv("WAYLAND_DISPLAY"))
     ret = NoGUIPlatform::CreateWaylandPlatform();
