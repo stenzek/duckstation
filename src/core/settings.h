@@ -341,7 +341,8 @@ struct Settings
   };
 
   void Load(SettingsInterface& si);
-  void Save(SettingsInterface& si) const;
+  void Save(SettingsInterface& si, bool ignore_base) const;
+  static void Clear(SettingsInterface& si);
 
   void FixIncompatibleSettings(bool display_osd_messages);
 

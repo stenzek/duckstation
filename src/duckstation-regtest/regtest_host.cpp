@@ -91,7 +91,7 @@ bool RegTestHost::InitializeConfig()
 
   // default settings for runner
   SettingsInterface& si = *s_base_settings_interface.get();
-  g_settings.Save(si);
+  g_settings.Save(si, false);
   si.SetStringValue("GPU", "Renderer", Settings::GetRendererName(GPURenderer::Software));
   si.SetBoolValue("GPU", "DisableShaderCache", true);
   si.SetStringValue("Pad1", "Type", Settings::GetControllerTypeName(ControllerType::AnalogController));

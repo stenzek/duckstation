@@ -975,7 +975,7 @@ void System::SetDefaultSettings(SettingsInterface& si)
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
     temp.controller_types[i] = g_settings.controller_types[i];
 
-  temp.Save(si);
+  temp.Save(si, false);
 }
 
 void System::ApplySettings(bool display_osd_messages)

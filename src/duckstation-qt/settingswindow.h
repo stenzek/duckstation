@@ -4,6 +4,8 @@
 #pragma once
 #include "ui_settingswindow.h"
 
+#include "util/ini_settings_interface.h"
+
 #include "common/types.h"
 
 #include <QtCore/QMap>
@@ -12,8 +14,6 @@
 #include <array>
 
 class QWheelEvent;
-
-class SettingsInterface;
 
 enum class DiscRegion : u8;
 
@@ -41,7 +41,7 @@ class SettingsWindow final : public QWidget
 public:
   SettingsWindow();
   SettingsWindow(const std::string& path, const std::string& serial, DiscRegion region,
-                 const GameDatabase::Entry* entry, std::unique_ptr<SettingsInterface> sif);
+                 const GameDatabase::Entry* entry, std::unique_ptr<INISettingsInterface> sif);
   ~SettingsWindow();
 
   static void openGamePropertiesDialog(const std::string& path, const std::string& serial, DiscRegion region);
@@ -51,7 +51,7 @@ public:
   static bool setGameSettingsBoolForSerial(const std::string& serial, const char* section, const char* key, bool value);
 
   ALWAYS_INLINE bool isPerGameSettings() const { return static_cast<bool>(m_sif); }
-  ALWAYS_INLINE SettingsInterface* getSettingsInterface() const { return m_sif.get(); }
+  ALWAYS_INLINE INISettingsInterface* getSettingsInterface() const { return m_sif.get(); }
 
   ALWAYS_INLINE InterfaceSettingsWidget* getGeneralSettingsWidget() const { return m_general_settings; }
   ALWAYS_INLINE BIOSSettingsWidget* getBIOSSettingsWidget() const { return m_bios_settings; }
@@ -98,6 +98,8 @@ public Q_SLOTS:
 private Q_SLOTS:
   void onCategoryCurrentRowChanged(int row);
   void onRestoreDefaultsClicked();
+  void onCopyGlobalSettingsClicked();
+  void onClearSettingsClicked();
 
 protected:
   void closeEvent(QCloseEvent* event) override;
@@ -109,13 +111,16 @@ private:
     MAX_SETTINGS_WIDGETS = 12
   };
 
+  void connectUi();
   void addPages();
+  void reloadPages();
+
   void addWidget(QWidget* widget, QString title, QString icon, QString help_text);
   bool handleWheelEvent(QWheelEvent* event);
 
   Ui::SettingsWindow m_ui;
 
-  std::unique_ptr<SettingsInterface> m_sif;
+  std::unique_ptr<INISettingsInterface> m_sif;
 
   InterfaceSettingsWidget* m_general_settings = nullptr;
   BIOSSettingsWidget* m_bios_settings = nullptr;
@@ -134,4 +139,6 @@ private:
 
   QObject* m_current_help_widget = nullptr;
   QMap<QObject*, QString> m_widget_help_text_map;
+
+  std::string m_game_list_filename;
 };

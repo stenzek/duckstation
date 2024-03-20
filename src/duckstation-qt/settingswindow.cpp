@@ -43,10 +43,11 @@ SettingsWindow::SettingsWindow() : QWidget()
   m_ui.setupUi(this);
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
   addPages();
+  connectUi();
 }
 
 SettingsWindow::SettingsWindow(const std::string& path, const std::string& serial, DiscRegion region,
-                               const GameDatabase::Entry* entry, std::unique_ptr<SettingsInterface> sif)
+                               const GameDatabase::Entry* entry, std::unique_ptr<INISettingsInterface> sif)
   : QWidget(), m_sif(std::move(sif))
 {
   m_ui.setupUi(this);
@@ -57,6 +58,7 @@ SettingsWindow::SettingsWindow(const std::string& path, const std::string& seria
             tr("<strong>Summary</strong><hr>This page shows information about the selected game, and allows you to "
                "validate your disc was dumped correctly."));
   addPages();
+  connectUi();
 
   s_open_game_properties_dialogs.push_back(this);
 }
@@ -167,10 +169,41 @@ void SettingsWindow::addPages()
 
   connect(m_advanced_settings, &AdvancedSettingsWidget::onShowDebugOptionsChanged, m_graphics_settings,
           &GraphicsSettingsWidget::onShowDebugSettingsChanged);
+}
 
+void SettingsWindow::reloadPages()
+{
+  const int min_count = isPerGameSettings() ? 1 : 0;
+  while (m_ui.settingsContainer->count() > min_count)
+  {
+    const int row = m_ui.settingsContainer->count() - 1;
+
+    delete m_ui.settingsCategory->takeItem(row);
+
+    QWidget* widget = m_ui.settingsContainer->widget(row);
+    m_ui.settingsContainer->removeWidget(widget);
+    delete widget;
+  }
+
+  addPages();
+}
+
+void SettingsWindow::connectUi()
+{
   if (isPerGameSettings())
   {
-    m_ui.buttonBox->button(QDialogButtonBox::RestoreDefaults)->setVisible(false);
+    m_ui.footerLayout->removeWidget(m_ui.restoreDefaults);
+    m_ui.restoreDefaults->deleteLater();
+    m_ui.restoreDefaults = nullptr;
+  }
+  else
+  {
+    m_ui.footerLayout->removeWidget(m_ui.copyGlobalSettings);
+    m_ui.copyGlobalSettings->deleteLater();
+    m_ui.copyGlobalSettings = nullptr;
+    m_ui.footerLayout->removeWidget(m_ui.clearGameSettings);
+    m_ui.clearGameSettings->deleteLater();
+    m_ui.clearGameSettings = nullptr;
   }
 
   m_ui.settingsCategory->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -178,9 +211,13 @@ void SettingsWindow::addPages()
   m_ui.settingsContainer->setCurrentIndex(0);
   m_ui.helpText->setText(m_category_help_text[0]);
   connect(m_ui.settingsCategory, &QListWidget::currentRowChanged, this, &SettingsWindow::onCategoryCurrentRowChanged);
-  connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &SettingsWindow::close);
-  connect(m_ui.buttonBox->button(QDialogButtonBox::RestoreDefaults), &QAbstractButton::clicked, this,
-          &SettingsWindow::onRestoreDefaultsClicked);
+  connect(m_ui.close, &QPushButton::clicked, this, &SettingsWindow::close);
+  if (m_ui.restoreDefaults)
+    connect(m_ui.restoreDefaults, &QPushButton::clicked, this, &SettingsWindow::onRestoreDefaultsClicked);
+  if (m_ui.copyGlobalSettings)
+    connect(m_ui.copyGlobalSettings, &QPushButton::clicked, this, &SettingsWindow::onCopyGlobalSettingsClicked);
+  if (m_ui.clearGameSettings)
+    connect(m_ui.clearGameSettings, &QPushButton::clicked, this, &SettingsWindow::onClearSettingsClicked);
 }
 
 void SettingsWindow::addWidget(QWidget* widget, QString title, QString icon, QString help_text)
@@ -230,6 +267,56 @@ void SettingsWindow::onRestoreDefaultsClicked()
   }
 
   g_emu_thread->setDefaultSettings(true, false);
+}
+
+void SettingsWindow::onCopyGlobalSettingsClicked()
+{
+  if (!isPerGameSettings())
+    return;
+
+  if (QMessageBox::question(
+        this, tr("DuckStation Settings"),
+        tr("The configuration for this game will be replaced by the current global settings.\n\nAny current setting "
+           "values will be overwritten.\n\nDo you want to continue?"),
+        QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+  {
+    return;
+  }
+
+  {
+    auto lock = Host::GetSettingsLock();
+    Settings temp;
+    temp.Load(*Host::Internal::GetBaseSettingsLayer());
+    temp.Save(*m_sif.get(), true);
+  }
+  m_sif->Save();
+  g_emu_thread->reloadGameSettings();
+
+  reloadPages();
+
+  QMessageBox::information(this, tr("DuckStation Settings"), tr("Per-game configuration copied from global settings."));
+}
+
+void SettingsWindow::onClearSettingsClicked()
+{
+  if (!isPerGameSettings())
+    return;
+
+  if (QMessageBox::question(this, tr("DuckStation Settings"),
+                            tr("The configuration for this game will be cleared.\n\nAny current setting values will be "
+                               "lost.\n\nDo you want to continue?"),
+                            QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+  {
+    return;
+  }
+
+  Settings::Clear(*m_sif.get());
+  m_sif->Save();
+  g_emu_thread->reloadGameSettings();
+
+  reloadPages();
+
+  QMessageBox::information(this, tr("DuckStation Settings"), tr("Per-game configuration cleared."));
 }
 
 void SettingsWindow::registerWidgetHelp(QObject* object, QString title, QString recommended_value, QString text)

@@ -2737,7 +2737,7 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
   save_state &= allow_save_to_state;
 
   // Only confirm on UI thread because we need to display a msgbox.
-  if (!m_is_closing && allow_confirm && g_settings.confim_power_off)
+  if (!m_is_closing && allow_confirm && Host::GetBaseBoolSettingValue("Main", "ConfirmPowerOff", true))
   {
     SystemLock lock(pauseAndLockSystem());
 
