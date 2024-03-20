@@ -203,6 +203,7 @@
     <ClCompile Include="postprocessing_shader.cpp" />
     <ClCompile Include="postprocessing_shader_fx.cpp" />
     <ClCompile Include="postprocessing_shader_glsl.cpp" />
+    <ClCompile Include="sdl_audio_stream.cpp" />
     <ClCompile Include="sdl_input_source.cpp" />
     <ClCompile Include="shadergen.cpp" />
     <ClCompile Include="shiftjis.cpp" />

@@ -89,10 +89,10 @@ u32 AudioStream::GetBufferedFramesRelaxed() const
   return (wpos + m_buffer_size - rpos) % m_buffer_size;
 }
 
-void AudioStream::ReadFrames(s16* bData, u32 nFrames)
+void AudioStream::ReadFrames(s16* samples, u32 num_frames)
 {
   const u32 available_frames = GetBufferedFramesRelaxed();
-  u32 frames_to_read = nFrames;
+  u32 frames_to_read = num_frames;
   u32 silence_frames = 0;
 
   if (m_filling)
@@ -102,7 +102,7 @@ void AudioStream::ReadFrames(s16* bData, u32 nFrames)
 
     if (available_frames < toFill)
     {
-      silence_frames = nFrames;
+      silence_frames = num_frames;
       frames_to_read = 0;
     }
     else
@@ -133,7 +133,7 @@ void AudioStream::ReadFrames(s16* bData, u32 nFrames)
     // towards the end of the buffer
     if (end > 0)
     {
-      std::memcpy(bData, &m_buffer[rpos], sizeof(s32) * end);
+      std::memcpy(samples, &m_buffer[rpos], sizeof(s32) * end);
       rpos += end;
       rpos = (rpos == m_buffer_size) ? 0 : rpos;
     }
@@ -142,7 +142,7 @@ void AudioStream::ReadFrames(s16* bData, u32 nFrames)
     const u32 start = frames_to_read - end;
     if (start > 0)
     {
-      std::memcpy(&bData[end * 2], &m_buffer[0], sizeof(s32) * start);
+      std::memcpy(&samples[end * 2], &m_buffer[0], sizeof(s32) * start);
       rpos = start;
     }
 
@@ -156,15 +156,15 @@ void AudioStream::ReadFrames(s16* bData, u32 nFrames)
       // super basic resampler - spread the input samples evenly across the output samples. will sound like ass and have
       // aliasing, but better than popping by inserting silence.
       const u32 increment =
-        static_cast<u32>(65536.0f * (static_cast<float>(frames_to_read / m_channels) / static_cast<float>(nFrames)));
+        static_cast<u32>(65536.0f * (static_cast<float>(frames_to_read / m_channels) / static_cast<float>(num_frames)));
 
       s16* resample_ptr = static_cast<s16*>(alloca(sizeof(s16) * frames_to_read));
-      std::memcpy(resample_ptr, bData, sizeof(s16) * frames_to_read);
+      std::memcpy(resample_ptr, samples, sizeof(s16) * frames_to_read);
 
-      s16* out_ptr = bData;
+      s16* out_ptr = samples;
       const u32 copy_stride = sizeof(SampleType) * m_channels;
       u32 resample_subpos = 0;
-      for (u32 i = 0; i < nFrames; i++)
+      for (u32 i = 0; i < num_frames; i++)
       {
         std::memcpy(out_ptr, resample_ptr, copy_stride);
         out_ptr += m_channels;
@@ -174,14 +174,26 @@ void AudioStream::ReadFrames(s16* bData, u32 nFrames)
         resample_subpos %= 65536u;
       }
 
-      Log_VerbosePrintf("Audio buffer underflow, resampled %u frames to %u", frames_to_read, nFrames);
+      Log_VerbosePrintf("Audio buffer underflow, resampled %u frames to %u", frames_to_read, num_frames);
     }
     else
     {
       // no data, fall back to silence
-      std::memset(bData + frames_to_read, 0, sizeof(s32) * silence_frames);
+      std::memset(samples + frames_to_read, 0, sizeof(s32) * silence_frames);
     }
   }
+}
+
+void AudioStream::ApplyVolume(s16* samples, u32 num_frames)
+{
+  if (m_volume == 100)
+    return;
+
+  const s32 volume_mult = static_cast<s32>(m_volume) * 32768;
+  const u32 num_samples = num_frames * m_channels;
+
+  while (num_samples > 0)
+    *samples = static_cast<s16>((static_cast<s16>(*samples) * volume_mult) >> 15);
 }
 
 void AudioStream::InternalWriteFrames(s32* bData, u32 nSamples)

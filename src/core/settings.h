@@ -484,6 +484,8 @@ struct Settings
   static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::XAudio2;
 #elif defined(__ANDROID__)
   static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::AAudio;
+#elif defined(ENABLE_SDL2)
+  static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::SDL;
 #else
   static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::Null;
 #endif

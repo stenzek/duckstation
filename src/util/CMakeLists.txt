@@ -189,7 +189,8 @@ if(ENABLE_VULKAN)
 endif()
 
 if(ENABLE_SDL2)
-  target_sources(util PRIVATE 
+  target_sources(util PRIVATE
+    sdl_audio_stream.cpp
     sdl_input_source.cpp
     sdl_input_source.h
   )

@@ -365,6 +365,11 @@ std::unique_ptr<AudioStream> Host::CreateAudioStream(AudioBackend backend, u32 s
       return AudioStream::CreateCubebAudioStream(sample_rate, channels, buffer_ms, latency_ms, stretch);
 #endif
 
+#ifdef ENABLE_SDL2
+    case AudioBackend::SDL:
+      return AudioStream::CreateSDLAudioStream(sample_rate, channels, buffer_ms, latency_ms, stretch);
+#endif
+
 #ifdef _WIN32
     case AudioBackend::XAudio2:
       return AudioStream::CreateXAudio2Stream(sample_rate, channels, buffer_ms, latency_ms, stretch);

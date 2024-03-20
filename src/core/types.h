@@ -190,6 +190,9 @@ enum class AudioBackend : u8
 #ifdef ENABLE_CUBEB
   Cubeb,
 #endif
+#ifdef ENABLE_SDL2
+  SDL,
+#endif
 #ifdef _WIN32
   XAudio2,
 #endif

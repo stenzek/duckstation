@@ -1559,6 +1559,9 @@ static constexpr const std::array s_audio_backend_names = {
 #ifdef ENABLE_CUBEB
   "Cubeb",
 #endif
+#ifdef ENABLE_SDL2
+  "SDL",
+#endif
 #ifdef _WIN32
   "XAudio2",
 #endif
@@ -1570,6 +1573,9 @@ static constexpr const std::array s_audio_backend_display_names = {
   TRANSLATE_NOOP("AudioBackend", "Null (No Output)"),
 #ifdef ENABLE_CUBEB
   TRANSLATE_NOOP("AudioBackend", "Cubeb"),
+#endif
+#ifdef ENABLE_SDL2
+  TRANSLATE_NOOP("AudioBackend", "SDL"),
 #endif
 #ifdef _WIN32
   TRANSLATE_NOOP("AudioBackend", "XAudio2"),

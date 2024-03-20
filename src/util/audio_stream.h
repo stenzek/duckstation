@@ -85,6 +85,10 @@ public:
   static std::vector<std::string> GetCubebDriverNames();
   static std::vector<std::pair<std::string, std::string>> GetCubebOutputDevices(const char* driver);
 #endif
+#ifdef ENABLE_SDL2
+  static std::unique_ptr<AudioStream> CreateSDLAudioStream(u32 sample_rate, u32 channels, u32 buffer_ms, u32 latency_ms,
+                                                           AudioStretchMode stretch);
+#endif
 #ifdef _WIN32
   static std::unique_ptr<AudioStream> CreateXAudio2Stream(u32 sample_rate, u32 channels, u32 buffer_ms, u32 latency_ms,
                                                           AudioStretchMode stretch);
@@ -94,7 +98,8 @@ protected:
   AudioStream(u32 sample_rate, u32 channels, u32 buffer_ms, AudioStretchMode stretch);
   void BaseInitialize();
 
-  void ReadFrames(s16* bData, u32 nSamples);
+  void ReadFrames(s16* samples, u32 num_frames);
+  void ApplyVolume(s16* samples, u32 num_frames);
 
   u32 m_sample_rate = 0;
   u32 m_channels = 0;

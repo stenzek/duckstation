@@ -156,6 +156,7 @@
     <ClCompile Include="opengl_context_egl_x11.cpp" />
     <ClCompile Include="opengl_context_wgl.cpp" />
     <ClCompile Include="image.cpp" />
+    <ClCompile Include="sdl_audio_stream.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="metal_shaders.metal" />
