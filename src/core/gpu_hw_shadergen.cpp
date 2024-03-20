@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "gpu_hw_shadergen.h"
@@ -25,7 +25,6 @@ void GPU_HW_ShaderGen::WriteCommonFunctions(std::stringstream& ss)
 
   ss << "CONSTANT uint RESOLUTION_SCALE = " << m_resolution_scale << "u;\n";
   ss << "CONSTANT uint2 VRAM_SIZE = uint2(" << VRAM_WIDTH << ", " << VRAM_HEIGHT << ") * RESOLUTION_SCALE;\n";
-  ss << "CONSTANT float2 RCP_VRAM_SIZE = float2(1.0, 1.0) / float2(VRAM_SIZE);\n";
   ss << "CONSTANT uint MULTISAMPLES = " << m_multisamples << "u;\n";
   ss << "CONSTANT bool PER_SAMPLE_SHADING = " << (m_per_sample_shading ? "true" : "false") << ";\n";
   ss << R"(
@@ -746,26 +745,27 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
     uint2 vicoord = texpage.xy + (index_coord * uint2(RESOLUTION_SCALE, RESOLUTION_SCALE));
 
     // load colour/palette
-    float4 texel = SAMPLE_TEXTURE(samp0, float2(vicoord) * RCP_VRAM_SIZE);
+    float4 texel = LOAD_TEXTURE(samp0, int2(vicoord), 0);
     uint vram_value = RGBA8ToRGBA5551(texel);
 
     // apply palette
     #if PALETTE_4_BIT
       uint subpixel = icoord.x & 3u;
       uint palette_index = (vram_value >> (subpixel * 4u)) & 0x0Fu;
+      uint2 palette_icoord = uint2((texpage.z + palette_index) * RESOLUTION_SCALE, texpage.w);
     #elif PALETTE_8_BIT
+      // can only wrap in X direction for 8-bit, 4-bit will fit in texpage size.
       uint subpixel = icoord.x & 1u;
       uint palette_index = (vram_value >> (subpixel * 8u)) & 0xFFu;
+      uint2 palette_icoord = uint2(((texpage.z + palette_index) & 0x3FFu) * RESOLUTION_SCALE, texpage.w);
     #endif
 
-    // sample palette. can wrap in X direction
-    uint2 palette_icoord = uint2(((texpage.z + palette_index) & 0x3FFu) * RESOLUTION_SCALE, texpage.w);
-    return SAMPLE_TEXTURE(samp0, float2(palette_icoord) * RCP_VRAM_SIZE);
+    return LOAD_TEXTURE(samp0, int2(palette_icoord), 0);
   #else
     // Direct texturing. Render-to-texture effects. Use upscaled coordinates.
     uint2 icoord = ApplyUpscaledTextureWindow(FloatToIntegerCoords(coords));
     uint2 direct_icoord = texpage.xy + icoord;
-    return SAMPLE_TEXTURE(samp0, float2(direct_icoord) * RCP_VRAM_SIZE);
+    return LOAD_TEXTURE(samp0, int2(direct_icoord), 0);
   #endif
 }
 
