@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "spu.h"
@@ -213,8 +213,9 @@ struct VolumeEnvelope
   u8 rate;
   bool decreasing;
   bool exponential;
+  bool phase_invert;
 
-  void Reset(u8 rate_, bool decreasing_, bool exponential_);
+  void Reset(u8 rate_, bool decreasing_, bool exponential_, bool phase_invert_);
   s16 Tick(s16 current_level);
 };
 
@@ -516,7 +517,7 @@ void SPU::Reset()
     v.is_first_block = 0;
     v.current_block_samples.fill(s16(0));
     v.adpcm_last_samples.fill(s32(0));
-    v.adsr_envelope.Reset(0, false, false);
+    v.adsr_envelope.Reset(0, false, false, false);
     v.adsr_phase = ADSRPhase::Off;
     v.adsr_target = 0;
     v.has_samples = false;
@@ -1662,11 +1663,12 @@ static constexpr ADSRTableEntries ComputeADSRTableEntries()
 
 static constexpr ADSRTableEntries s_adsr_table = ComputeADSRTableEntries();
 
-void SPU::VolumeEnvelope::Reset(u8 rate_, bool decreasing_, bool exponential_)
+void SPU::VolumeEnvelope::Reset(u8 rate_, bool decreasing_, bool exponential_, bool phase_invert_)
 {
   rate = rate_;
   decreasing = decreasing_;
   exponential = exponential_;
+  phase_invert = phase_invert_;
 
   const ADSRTableEntry& table_entry = s_adsr_table[BoolToUInt8(decreasing)][rate];
   counter = table_entry.ticks;
@@ -1709,8 +1711,16 @@ s16 SPU::VolumeEnvelope::Tick(s16 current_level)
     }
   }
 
-  return static_cast<s16>(
-    std::clamp<s32>(static_cast<s32>(current_level) + this_step, ENVELOPE_MIN_VOLUME, ENVELOPE_MAX_VOLUME));
+  if (phase_invert) [[unlikely]]
+  {
+    return static_cast<s16>(
+      std::clamp<s32>(static_cast<s32>(current_level) - this_step, -ENVELOPE_MAX_VOLUME, ENVELOPE_MIN_VOLUME));
+  }
+  else
+  {
+    return static_cast<s16>(
+      std::clamp<s32>(static_cast<s32>(current_level) + this_step, ENVELOPE_MIN_VOLUME, ENVELOPE_MAX_VOLUME));
+  }
 }
 
 void SPU::VolumeSweep::Reset(VolumeRegister reg)
@@ -1722,7 +1732,8 @@ void SPU::VolumeSweep::Reset(VolumeRegister reg)
     return;
   }
 
-  envelope.Reset(reg.sweep_rate, reg.sweep_direction_decrease, reg.sweep_exponential);
+  envelope.Reset(reg.sweep_rate, reg.sweep_direction_decrease, reg.sweep_exponential,
+                 !(reg.sweep_exponential && reg.sweep_direction_decrease) && reg.sweep_phase_negative);
   envelope_active = true;
 }
 
@@ -1742,28 +1753,29 @@ void SPU::Voice::UpdateADSREnvelope()
   {
     case ADSRPhase::Off:
       adsr_target = 0;
-      adsr_envelope.Reset(0, false, false);
+      adsr_envelope.Reset(0, false, false, false);
       return;
 
     case ADSRPhase::Attack:
       adsr_target = 32767; // 0 -> max
-      adsr_envelope.Reset(regs.adsr.attack_rate, false, regs.adsr.attack_exponential);
+      adsr_envelope.Reset(regs.adsr.attack_rate, false, regs.adsr.attack_exponential, false);
       break;
 
     case ADSRPhase::Decay:
       adsr_target = static_cast<s16>(std::min<s32>((u32(regs.adsr.sustain_level.GetValue()) + 1) * 0x800,
                                                    ENVELOPE_MAX_VOLUME)); // max -> sustain level
-      adsr_envelope.Reset(regs.adsr.decay_rate_shr2 << 2, true, true);
+      adsr_envelope.Reset(regs.adsr.decay_rate_shr2 << 2, true, true, false);
       break;
 
     case ADSRPhase::Sustain:
       adsr_target = 0;
-      adsr_envelope.Reset(regs.adsr.sustain_rate, regs.adsr.sustain_direction_decrease, regs.adsr.sustain_exponential);
+      adsr_envelope.Reset(regs.adsr.sustain_rate, regs.adsr.sustain_direction_decrease, regs.adsr.sustain_exponential,
+                          false);
       break;
 
     case ADSRPhase::Release:
       adsr_target = 0;
-      adsr_envelope.Reset(regs.adsr.release_rate_shr2 << 2, true, regs.adsr.release_exponential);
+      adsr_envelope.Reset(regs.adsr.release_rate_shr2 << 2, true, regs.adsr.release_exponential, false);
       break;
 
     default:
