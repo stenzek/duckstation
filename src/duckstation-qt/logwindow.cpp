@@ -59,6 +59,7 @@ void LogWindow::updateSettings()
   }
   else if (g_log_window)
   {
+    g_log_window->m_destroying = true;
     g_log_window->close();
     g_log_window->deleteLater();
     g_log_window = nullptr;
@@ -70,6 +71,7 @@ void LogWindow::destroy()
   if (!g_log_window)
     return;
 
+  g_log_window->m_destroying = true;
   g_log_window->close();
   g_log_window->deleteLater();
   g_log_window = nullptr;
@@ -306,6 +308,12 @@ void LogWindow::logCallback(void* pUserParam, const char* channelName, const cha
 
 void LogWindow::closeEvent(QCloseEvent* event)
 {
+  if (!m_destroying)
+  {
+    event->ignore();
+    return;
+  }
+
   Log::UnregisterCallback(&LogWindow::logCallback, this);
 
   saveSize();
