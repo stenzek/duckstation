@@ -189,11 +189,15 @@ void AudioStream::ApplyVolume(s16* samples, u32 num_frames)
   if (m_volume == 100)
     return;
 
-  const s32 volume_mult = static_cast<s32>(m_volume) * 32768;
-  const u32 num_samples = num_frames * m_channels;
+  const s32 volume_mult = static_cast<s32>((static_cast<float>(m_volume) / 100.0f) * 32768.0f);
 
+  u32 num_samples = num_frames * m_channels;
   while (num_samples > 0)
-    *samples = static_cast<s16>((static_cast<s16>(*samples) * volume_mult) >> 15);
+  {
+    *samples = static_cast<s16>((static_cast<s32>(*samples) * volume_mult) >> 15);
+    samples++;
+    num_samples--;
+  }
 }
 
 void AudioStream::InternalWriteFrames(s32* bData, u32 nSamples)
