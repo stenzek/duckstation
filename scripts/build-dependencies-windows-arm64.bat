@@ -44,6 +44,7 @@ cd "%BUILDDIR%"
 set QT=6.6.2
 set QTMINOR=6.6
 set SDL=SDL2-2.30.1
+set WEBP=1.3.2
 
 call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" c15ded54e9f32f8a1f9ed3e3dc072837a320ed23c5d0e95b7c18ecbe05c1187b || goto error
 call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" 3582dbc46df280365fc5d5e6cc8fcfc72ddbddbd330a03a98eec24b8b44fa4d0 || goto error
@@ -51,6 +52,7 @@ call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt
 call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtsvg-everywhere-src-%QT%.zip" 84ba758ef06b93532f2d098f0d08d7bbddf6f3e6273c9e0d3a58498338f85b18 || goto error
 call :downloadfile "qttools-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttools-everywhere-src-%QT%.zip" c760fbd229de8a02e793fa41ddd6843cd2cb9c93a4e99bc5384c646599aee996 || goto error
 call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttranslations-everywhere-src-%QT%.zip" a061e8d61eb7c03823ead92fe46b5722ed7b8119aeb84157d80f10a53c77d262 || goto error
+call :downloadfile "libwebp-%WEBP%.tar.gz" "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-%WEBP%.tar.gz" 2a499607df669e40258e53d0ade8035ba4ec0175244869d1025d460562aa09b4 || goto error
 
 if %DEBUG%==1 (
   echo Building debug and release libraries...
@@ -75,6 +77,15 @@ cmake -B build %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release %FORCEPDB% -DCMAKE_IN
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 copy build\SDL2.pdb "%INSTALLDIR%\bin" || goto error
+cd .. || goto error
+
+echo Building WebP...
+rmdir /S /Q "libwebp-%WEBP%"
+tar -xf "libwebp-%WEBP%.tar.gz" || goto error
+cd "libwebp-%WEBP%" || goto error
+cmake -B build %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DWEBP_BUILD_ANIM_UTILS=OFF -DWEBP_BUILD_CWEBP=OFF -DWEBP_BUILD_DWEBP=OFF -DWEBP_BUILD_GIF2WEBP=OFF -DWEBP_BUILD_IMG2WEBP=OFF -DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_WEBPMUX=OFF -DWEBP_BUILD_EXTRAS=OFF -DBUILD_SHARED_LIBS=ON -G Ninja || goto error
+cmake --build build --parallel || goto error
+ninja -C build install || goto error
 cd .. || goto error
 
 if %DEBUG%==1 (
@@ -109,7 +120,7 @@ rmdir /S /Q "qtimageformats-everywhere-src-%QT%"
 cd "qtimageformats-everywhere-src-%QT%" || goto error
 mkdir build || goto error
 cd build || goto error
-call "%INSTALLDIR%\bin\qt-configure-module.bat" .. -- %FORCEPDB% || goto error
+call "%INSTALLDIR%\bin\qt-configure-module.bat" .. -- %FORCEPDB% -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DFEATURE_system_webp=ON || goto error
 cmake --build . --parallel || goto error
 ninja install || goto error
 cd ..\.. || goto error
