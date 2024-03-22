@@ -588,8 +588,7 @@ void MainWindow::onSystemDestroyed()
   // If we're closing or in batch mode, quit the whole application now.
   if (m_is_closing || QtHost::InBatchMode())
   {
-    QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
-    QCoreApplication::quit();
+    quit();
     return;
   }
 
@@ -699,6 +698,22 @@ std::string MainWindow::getDeviceDiscPath(const QString& title)
 
   ret = std::move(devices[selected_index].first);
   return ret;
+}
+
+void MainWindow::quit()
+{
+  // Make sure VM is gone. It really should be if we're here.
+  if (s_system_valid)
+  {
+    g_emu_thread->shutdownSystem(false);
+    while (s_system_valid)
+      QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
+  }
+
+  // Ensure subwindows are removed before quitting. That way the log window cancelling
+  // the close event won't cancel the quit process.
+  destroySubWindows();
+  QGuiApplication::quit();
 }
 
 void MainWindow::recreate()
@@ -2786,7 +2801,7 @@ void MainWindow::requestExit(bool allow_confirm /* = true */)
   if (s_system_valid)
     m_is_closing = true;
   else
-    QGuiApplication::quit();
+    quit();
 }
 
 void MainWindow::checkForSettingChanges()
