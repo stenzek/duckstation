@@ -76,6 +76,7 @@ static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Tr
   "DisablePGXPTextureCorrection",
   "DisablePGXPColorCorrection",
   "DisablePGXPDepthBuffer",
+  "DisablePGXPPreserveProjFP",
   "ForcePGXPVertexCache",
   "ForcePGXPCPUMode",
   "ForceRecompilerMemoryExceptions",
@@ -533,6 +534,19 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     }
 
     settings.gpu_pgxp_color_correction = false;
+  }
+
+  if (HasTrait(Trait::DisablePGXPPreserveProjFP))
+  {
+    if (display_osd_messages && settings.gpu_pgxp_enable && settings.gpu_pgxp_preserve_proj_fp)
+    {
+      Host::AddIconOSDMessage(
+        "gamedb_disable_pgxp_texture", ICON_FA_MAGIC,
+        TRANSLATE_STR("OSDMessage", "PGXP projection precision preservation disabled by compatibility settings."),
+        osd_duration);
+    }
+
+    settings.gpu_pgxp_preserve_proj_fp = false;
   }
 
   if (HasTrait(Trait::ForcePGXPVertexCache))

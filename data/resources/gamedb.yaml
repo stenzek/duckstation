@@ -21128,6 +21128,8 @@ SCES-02105:
     - AnalogController
     - DigitalController
     - NeGcon
+  traits:
+    - DisablePGXPPreserveProjFP
   libcrypt: true
   metadata:
     publisher: "Sony"
@@ -21157,6 +21159,8 @@ SCUS-94426:
     - AnalogController
     - DigitalController
     - NeGcon
+  traits:
+    - DisablePGXPPreserveProjFP
   metadata:
     publisher: "Sony"
     developer: "Naughty Dog"
@@ -21173,6 +21177,8 @@ SCUS-94426:
     linkCable: false
 SCUS-94459:
   name: "CTR - Crash Team Racing (USA) (Demo)"
+  traits:
+    - DisablePGXPPreserveProjFP
 SLUS-01391:
   name: "Cabela's Big Game Hunter - Ultimate Challenge (USA)"
   controllers:
@@ -30290,6 +30296,8 @@ SCPS-45470:
     - AnalogController
     - DigitalController
     - NeGcon
+  traits:
+    - DisablePGXPPreserveProjFP
   metadata:
     publisher: "Sony"
     developer: "Naughty Dog"
@@ -30310,6 +30318,8 @@ SCPS-10118:
     - AnalogController
     - DigitalController
     - NeGcon
+  traits:
+    - DisablePGXPPreserveProjFP
   codes:
     - SCPS-10118
     - SCPS-91328
@@ -30329,12 +30339,16 @@ SCPS-10118:
     linkCable: false
 PCPX-96183:
   name: "Crash Bandicoot Racing (Japan) (Demo)"
+  traits:
+    - DisablePGXPPreserveProjFP
 SCPS-91230:
   name: "Crash Bandicoot Racing [Playstation the Best for Family]"
   controllers:
     - AnalogController
     - DigitalController
     - NeGcon
+  traits:
+    - DisablePGXPPreserveProjFP
   metadata:
     publisher: "Sony"
     developer: "Naughty Dog"
