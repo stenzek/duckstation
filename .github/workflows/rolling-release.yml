@@ -344,11 +344,6 @@ jobs:
       with:
         fetch-depth: 0
 
-    # Python 3.12 removed distutils, used by MoltenVK -> glslang.
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-
     - name: Install packages
       shell: bash
       run: |
