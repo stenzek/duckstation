@@ -900,7 +900,10 @@ bool System::RecreateGPU(GPURenderer renderer, bool force_recreate_device, bool 
   // create new renderer
   g_gpu.reset();
   if (force_recreate_device)
+  {
+    PostProcessing::Shutdown();
     Host::ReleaseGPUDevice();
+  }
 
   if (!CreateGPU(renderer, true))
   {
@@ -2042,6 +2045,7 @@ bool System::CreateGPU(GPURenderer renderer, bool is_switching)
       Log_ErrorPrintf("Failed to create fallback software renderer.");
       if (!s_keep_gpu_device_on_shutdown)
       {
+        PostProcessing::Shutdown();
         Host::ReleaseGPUDevice();
         Host::ReleaseRenderWindow();
       }
