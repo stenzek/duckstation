@@ -20,7 +20,9 @@
 
 Log_SetChannel(OpenGLDevice);
 
-static constexpr std::array<float, 4> s_clear_color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+static constexpr const std::array<float, 4> s_clear_color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+static constexpr const std::array<GLenum, GPUDevice::MAX_RENDER_TARGETS> s_draw_buffers = {
+  {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3}};
 
 OpenGLDevice::OpenGLDevice()
 {
@@ -632,6 +634,8 @@ GLuint OpenGLDevice::CreateFramebuffer(GPUTexture* const* rts, u32 num_rts, GPUT
     OpenGLTexture* const DS = static_cast<OpenGLTexture*>(ds);
     glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, DS->GetGLTarget(), DS->GetGLId(), 0);
   }
+
+  glDrawBuffers(num_rts, s_draw_buffers.data());
 
   if (glGetError() != GL_NO_ERROR || glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
   {
