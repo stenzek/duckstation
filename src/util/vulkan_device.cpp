@@ -1657,7 +1657,7 @@ bool VulkanDevice::IsBrokenMobileDriver() const
 
 VkRenderPass VulkanDevice::CreateCachedRenderPass(RenderPassCacheKey key)
 {
-  VkAttachmentReference color_reference;
+  std::array<VkAttachmentReference, MAX_RENDER_TARGETS> color_references;
   VkAttachmentReference* color_reference_ptr = nullptr;
   VkAttachmentReference depth_reference;
   VkAttachmentReference* depth_reference_ptr = nullptr;
@@ -1688,12 +1688,13 @@ VkRenderPass VulkanDevice::CreateCachedRenderPass(RenderPassCacheKey key)
                                     VK_ATTACHMENT_STORE_OP_DONT_CARE,
                                     layout,
                                     layout};
-    color_reference.attachment = num_attachments;
-    color_reference.layout = layout;
-    color_reference_ptr = &color_reference;
+    color_references[num_attachments].attachment = num_attachments;
+    color_references[num_attachments].layout = layout;
+    color_reference_ptr = color_references.data();
 
     if (key.color_feedback_loop)
     {
+      DebugAssert(i == 0);
       if (!UseFeedbackLoopLayout())
       {
         input_reference.attachment = num_attachments;
