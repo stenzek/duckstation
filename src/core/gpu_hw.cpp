@@ -3412,6 +3412,11 @@ void GPU_HW::UpdateDownsamplingLevels()
   g_gpu_device->RecycleTexture(std::move(m_downsample_texture));
 }
 
+void GPU_HW::OnBufferSwapped()
+{
+  GL_INS("OnBufferSwapped()");
+}
+
 void GPU_HW::DownsampleFramebuffer()
 {
   GPUTexture* source = m_display_texture;

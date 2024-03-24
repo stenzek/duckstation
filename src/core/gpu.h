@@ -318,6 +318,7 @@ protected:
   virtual void UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit) = 0;
   virtual void UpdateDisplay() = 0;
   virtual void DrawRendererStats();
+  virtual void OnBufferSwapped();
 
   ALWAYS_INLINE_RELEASE void AddDrawTriangleTicks(s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3, bool shaded,
                                                   bool textured, bool semitransparent)

@@ -200,6 +200,7 @@ private:
   void UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit) override;
   void FlushRender() override;
   void DrawRendererStats() override;
+  void OnBufferSwapped() override;
 
   bool BlitVRAMReplacementTexture(const TextureReplacementTexture* tex, u32 dst_x, u32 dst_y, u32 width, u32 height);
 
