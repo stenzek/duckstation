@@ -184,12 +184,19 @@ std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::Gra
                     config.depth.depth_write, compare_mapping[static_cast<u8>(config.depth.depth_test.GetValue())]);
   gpb.SetNoStencilState();
 
-  gpb.SetBlendAttachment(0, config.blend.enable, blend_mapping[static_cast<u8>(config.blend.src_blend.GetValue())],
-                         blend_mapping[static_cast<u8>(config.blend.dst_blend.GetValue())],
-                         op_mapping[static_cast<u8>(config.blend.blend_op.GetValue())],
-                         blend_mapping[static_cast<u8>(config.blend.src_alpha_blend.GetValue())],
-                         blend_mapping[static_cast<u8>(config.blend.dst_alpha_blend.GetValue())],
-                         op_mapping[static_cast<u8>(config.blend.alpha_blend_op.GetValue())], config.blend.write_mask);
+  for (u32 i = 0; i < MAX_RENDER_TARGETS; i++)
+  {
+    if (config.color_formats[i] == GPUTexture::Format::Unknown)
+      break;
+
+    gpb.SetBlendAttachment(i, config.blend.enable, blend_mapping[static_cast<u8>(config.blend.src_blend.GetValue())],
+                           blend_mapping[static_cast<u8>(config.blend.dst_blend.GetValue())],
+                           op_mapping[static_cast<u8>(config.blend.blend_op.GetValue())],
+                           blend_mapping[static_cast<u8>(config.blend.src_alpha_blend.GetValue())],
+                           blend_mapping[static_cast<u8>(config.blend.dst_alpha_blend.GetValue())],
+                           op_mapping[static_cast<u8>(config.blend.alpha_blend_op.GetValue())],
+                           config.blend.write_mask);
+  }
 
   const auto blend_constants = config.blend.GetConstantFloatColor();
   gpb.SetBlendConstants(blend_constants[0], blend_constants[1], blend_constants[2], blend_constants[3]);
