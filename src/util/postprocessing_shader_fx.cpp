@@ -1170,7 +1170,8 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
     if (needs_main_defn)
     {
       // dFdx/dFdy are not defined in the vertex shader.
-      const char* defns = (stage == GPUShaderStage::Vertex) ? "#define dFdx(x) x\n#define dFdy(x) x\n" : "";
+      const char* defns =
+        (stage == GPUShaderStage::Vertex) ? "#define dFdx(x) x\n#define dFdy(x) x\n#define discard\n" : "";
       const char* precision = (api == RenderAPI::OpenGLES) ?
                                 "precision highp float;\nprecision highp int;\nprecision highp sampler2D;\n" :
                                 "";
