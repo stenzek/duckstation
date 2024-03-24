@@ -1770,7 +1770,6 @@ bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_sm
     GL_OBJECT_NAME(vso, "Display Vertex Shader");
     GL_OBJECT_NAME_FMT(fso, "Display Fragment Shader [{}]",
                        Settings::GetDisplayScalingName(g_settings.display_scaling));
-
     plconfig.vertex_shader = vso.get();
     plconfig.fragment_shader = fso.get();
     if (!(m_display_pipeline = g_gpu_device->CreatePipeline(plconfig)))
@@ -1913,10 +1912,12 @@ void GPU::ClearDisplayTexture()
   m_display_texture_view_height = 0;
 }
 
-void GPU::SetDisplayTexture(GPUTexture* texture, s32 view_x, s32 view_y, s32 view_width, s32 view_height)
+void GPU::SetDisplayTexture(GPUTexture* texture, GPUTexture* depth_buffer, s32 view_x, s32 view_y, s32 view_width,
+                            s32 view_height)
 {
   DebugAssert(texture);
   m_display_texture = texture;
+  m_display_depth_buffer = depth_buffer;
   m_display_texture_view_x = view_x;
   m_display_texture_view_y = view_y;
   m_display_texture_view_width = view_width;
@@ -1957,10 +1958,10 @@ bool GPU::RenderDisplay(GPUTexture* target, const Common::Rectangle<s32>& draw_r
 
     // Now we can apply the post chain.
     GPUTexture* post_output_texture = PostProcessing::InternalChain.GetOutputTexture();
-    if (PostProcessing::InternalChain.Apply(display_texture, post_output_texture, 0, 0, display_texture_view_width,
-                                            display_texture_view_height, display_texture_view_width,
-                                            display_texture_view_height, m_crtc_state.display_width,
-                                            m_crtc_state.display_height))
+    if (PostProcessing::InternalChain.Apply(display_texture, m_display_depth_buffer, post_output_texture, 0, 0,
+                                            display_texture_view_width, display_texture_view_height,
+                                            display_texture_view_width, display_texture_view_height,
+                                            m_crtc_state.display_width, m_crtc_state.display_height))
     {
       display_texture_view_x = 0;
       display_texture_view_y = 0;
@@ -2075,7 +2076,7 @@ bool GPU::RenderDisplay(GPUTexture* target, const Common::Rectangle<s32>& draw_r
     const s32 orig_width = static_cast<s32>(std::ceil(static_cast<float>(m_crtc_state.display_width) * upscale_x));
     const s32 orig_height = static_cast<s32>(std::ceil(static_cast<float>(m_crtc_state.display_height) * upscale_y));
 
-    return PostProcessing::DisplayChain.Apply(PostProcessing::DisplayChain.GetInputTexture(), target,
+    return PostProcessing::DisplayChain.Apply(PostProcessing::DisplayChain.GetInputTexture(), nullptr, target,
                                               real_draw_rect.left, real_draw_rect.top, real_draw_rect.GetWidth(),
                                               real_draw_rect.GetHeight(), orig_width, orig_height,
                                               m_crtc_state.display_width, m_crtc_state.display_height);
@@ -2113,7 +2114,7 @@ bool GPU::Deinterlace(u32 field, u32 line_skip)
       if (!DeinterlaceExtractField(0, src, x, y, width, height, line_skip)) [[unlikely]]
         return false;
 
-      SetDisplayTexture(m_deinterlace_buffers[0].get(), 0, 0, width, height);
+      SetDisplayTexture(m_deinterlace_buffers[0].get(), m_display_depth_buffer, 0, 0, width, height);
       return true;
     }
 
@@ -2139,7 +2140,7 @@ bool GPU::Deinterlace(u32 field, u32 line_skip)
       g_gpu_device->Draw(3, 0);
 
       m_deinterlace_texture->MakeReadyForSampling();
-      SetDisplayTexture(m_deinterlace_texture.get(), 0, 0, width, full_height);
+      SetDisplayTexture(m_deinterlace_texture.get(), m_display_depth_buffer, 0, 0, width, full_height);
       return true;
     }
 
@@ -2171,7 +2172,7 @@ bool GPU::Deinterlace(u32 field, u32 line_skip)
       g_gpu_device->Draw(3, 0);
 
       m_deinterlace_texture->MakeReadyForSampling();
-      SetDisplayTexture(m_deinterlace_texture.get(), 0, 0, width, height);
+      SetDisplayTexture(m_deinterlace_texture.get(), m_display_depth_buffer, 0, 0, width, height);
       return true;
     }
 
@@ -2206,7 +2207,7 @@ bool GPU::Deinterlace(u32 field, u32 line_skip)
       g_gpu_device->Draw(3, 0);
 
       m_deinterlace_texture->MakeReadyForSampling();
-      SetDisplayTexture(m_deinterlace_texture.get(), 0, 0, width, full_height);
+      SetDisplayTexture(m_deinterlace_texture.get(), m_display_depth_buffer, 0, 0, width, full_height);
       return true;
     }
 
@@ -2309,7 +2310,7 @@ bool GPU::ApplyChromaSmoothing()
   g_gpu_device->Draw(3, 0);
 
   m_chroma_smoothing_texture->MakeReadyForSampling();
-  SetDisplayTexture(m_chroma_smoothing_texture.get(), 0, 0, width, height);
+  SetDisplayTexture(m_chroma_smoothing_texture.get(), m_display_depth_buffer, 0, 0, width, height);
   return true;
 }
 

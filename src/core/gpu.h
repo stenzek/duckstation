@@ -603,7 +603,8 @@ protected:
   u32 m_fifo_size = 128;
 
   void ClearDisplayTexture();
-  void SetDisplayTexture(GPUTexture* texture, s32 view_x, s32 view_y, s32 view_width, s32 view_height);
+  void SetDisplayTexture(GPUTexture* texture, GPUTexture* depth_texture, s32 view_x, s32 view_y, s32 view_width,
+                         s32 view_height);
 
   bool RenderDisplay(GPUTexture* target, const Common::Rectangle<s32>& draw_rect, bool postfx);
 
@@ -624,6 +625,7 @@ protected:
 
   std::unique_ptr<GPUPipeline> m_display_pipeline;
   GPUTexture* m_display_texture = nullptr;
+  GPUTexture* m_display_depth_buffer = nullptr;
   s32 m_display_texture_view_x = 0;
   s32 m_display_texture_view_y = 0;
   s32 m_display_texture_view_width = 0;

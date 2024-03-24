@@ -396,6 +396,7 @@ void PostProcessing::Chain::LoadStages()
   SettingsInterface& si = GetLoadSettingsInterface(m_section);
 
   m_enabled = si.GetBoolValue(m_section, "Enabled", false);
+  m_wants_depth_buffer = false;
 
   const u32 stage_count = Config::GetStageCount(si, m_section);
   if (stage_count == 0)
@@ -441,6 +442,13 @@ void PostProcessing::Chain::LoadStages()
     CheckTargets(g_gpu_device->GetWindowFormat(), g_gpu_device->GetWindowWidth(), g_gpu_device->GetWindowHeight(),
                  &progress);
   }
+
+  // must be down here, because we need to compile first, triggered by CheckTargets()
+  for (std::unique_ptr<Shader>& shader : m_stages)
+    m_wants_depth_buffer |= shader->WantsDepthBuffer();
+  m_needs_depth_buffer = m_enabled && m_wants_depth_buffer;
+  if (m_wants_depth_buffer)
+    DEV_LOG("Depth buffer is needed.");
 }
 
 void PostProcessing::Chain::ClearStages()
@@ -469,6 +477,7 @@ void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& setting
   progress.SetProgressRange(stage_count);
 
   const GPUTexture::Format prev_format = m_target_format;
+  m_wants_depth_buffer = false;
 
   for (u32 i = 0; i < stage_count; i++)
   {
@@ -516,6 +525,13 @@ void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& setting
     s_timer.Reset();
     DEV_LOG("Loaded {} post-processing stages.", stage_count);
   }
+
+  // must be down here, because we need to compile first, triggered by CheckTargets()
+  for (std::unique_ptr<Shader>& shader : m_stages)
+    m_wants_depth_buffer |= shader->WantsDepthBuffer();
+  m_needs_depth_buffer = m_enabled && m_wants_depth_buffer;
+  if (m_wants_depth_buffer)
+    DEV_LOG("Depth buffer is needed.");
 }
 
 void PostProcessing::Chain::Toggle()
@@ -534,12 +550,13 @@ void PostProcessing::Chain::Toggle()
                                         TRANSLATE_STR("OSDMessage", "Post-processing is now disabled."),
                           Host::OSD_QUICK_DURATION);
   m_enabled = new_enabled;
+  m_needs_depth_buffer = new_enabled && m_wants_depth_buffer;
   if (m_enabled)
     s_timer.Reset();
 }
 
 bool PostProcessing::Chain::CheckTargets(GPUTexture::Format target_format, u32 target_width, u32 target_height,
-                                         ProgressCallback* progress)
+                                         ProgressCallback* progress /* = nullptr */)
 {
   if (m_target_format == target_format && m_target_width == target_width && m_target_height == target_height)
     return true;
@@ -562,6 +579,8 @@ bool PostProcessing::Chain::CheckTargets(GPUTexture::Format target_format, u32 t
   progress->SetProgressRange(static_cast<u32>(m_stages.size()));
   progress->SetProgressValue(0);
 
+  m_wants_depth_buffer = false;
+
   for (size_t i = 0; i < m_stages.size(); i++)
   {
     Shader* const shader = m_stages[i].get();
@@ -580,11 +599,13 @@ bool PostProcessing::Chain::CheckTargets(GPUTexture::Format target_format, u32 t
     }
 
     progress->SetProgressValue(static_cast<u32>(i + 1));
+    m_wants_depth_buffer |= shader->WantsDepthBuffer();
   }
 
   m_target_format = target_format;
   m_target_width = target_width;
   m_target_height = target_height;
+  m_needs_depth_buffer = m_enabled && m_wants_depth_buffer;
   return true;
 }
 
@@ -598,21 +619,24 @@ void PostProcessing::Chain::DestroyTextures()
   g_gpu_device->RecycleTexture(std::move(m_input_texture));
 }
 
-bool PostProcessing::Chain::Apply(GPUTexture* input_color, GPUTexture* final_target, s32 final_left, s32 final_top,
-                                  s32 final_width, s32 final_height, s32 orig_width, s32 orig_height, s32 native_width,
-                                  s32 native_height)
+bool PostProcessing::Chain::Apply(GPUTexture* input_color, GPUTexture* input_depth, GPUTexture* final_target,
+                                  s32 final_left, s32 final_top, s32 final_width, s32 final_height, s32 orig_width,
+                                  s32 orig_height, s32 native_width, s32 native_height)
 {
   GL_SCOPE_FMT("{} Apply", m_section);
 
   GPUTexture* output = m_output_texture.get();
   input_color->MakeReadyForSampling();
+  if (input_depth)
+    input_depth->MakeReadyForSampling();
 
   for (const std::unique_ptr<Shader>& stage : m_stages)
   {
     const bool is_final = (stage.get() == m_stages.back().get());
 
-    if (!stage->Apply(input_color, is_final ? final_target : output, final_left, final_top, final_width, final_height,
-                      orig_width, orig_height, native_width, native_height, m_target_width, m_target_height))
+    if (!stage->Apply(input_color, input_depth, is_final ? final_target : output, final_left, final_top, final_width,
+                      final_height, orig_width, orig_height, native_width, native_height, m_target_width,
+                      m_target_height))
     {
       return false;
     }

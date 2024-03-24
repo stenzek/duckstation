@@ -62,6 +62,11 @@ bool PostProcessing::GLSLShader::IsValid() const
   return !m_name.empty() && !m_code.empty();
 }
 
+bool PostProcessing::GLSLShader::WantsDepthBuffer() const
+{
+  return false;
+}
+
 u32 PostProcessing::GLSLShader::GetUniformsSize() const
 {
   // lazy packing. todo improve.
@@ -162,9 +167,10 @@ bool PostProcessing::GLSLShader::CompilePipeline(GPUTexture::Format format, u32 
   return true;
 }
 
-bool PostProcessing::GLSLShader::Apply(GPUTexture* input, GPUTexture* final_target, s32 final_left, s32 final_top,
-                                       s32 final_width, s32 final_height, s32 orig_width, s32 orig_height,
-                                       s32 native_width, s32 native_height, u32 target_width, u32 target_height)
+bool PostProcessing::GLSLShader::Apply(GPUTexture* input_color, GPUTexture* input_depth, GPUTexture* final_target,
+                                       s32 final_left, s32 final_top, s32 final_width, s32 final_height, s32 orig_width,
+                                       s32 orig_height, s32 native_width, s32 native_height, u32 target_width,
+                                       u32 target_height)
 {
   GL_SCOPE_FMT("GLSL Shader {}", m_name);
 
@@ -181,7 +187,7 @@ bool PostProcessing::GLSLShader::Apply(GPUTexture* input, GPUTexture* final_targ
   }
 
   g_gpu_device->SetPipeline(m_pipeline.get());
-  g_gpu_device->SetTextureSampler(0, input, m_sampler.get());
+  g_gpu_device->SetTextureSampler(0, input_color, m_sampler.get());
   g_gpu_device->SetViewportAndScissor(final_left, final_top, final_width, final_height);
 
   const u32 uniforms_size = GetUniformsSize();

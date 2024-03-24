@@ -115,6 +115,7 @@ public:
   ~Chain();
 
   ALWAYS_INLINE bool HasStages() const { return m_stages.empty(); }
+  ALWAYS_INLINE bool NeedsDepthBuffer() const { return m_needs_depth_buffer; }
   ALWAYS_INLINE GPUTexture* GetInputTexture() const { return m_input_texture.get(); }
   ALWAYS_INLINE GPUTexture* GetOutputTexture() const { return m_output_texture.get(); }
 
@@ -133,8 +134,8 @@ public:
   bool CheckTargets(GPUTexture::Format target_format, u32 target_width, u32 target_height,
                     ProgressCallback* progress = nullptr);
 
-  bool Apply(GPUTexture* input_color, GPUTexture* final_target, s32 final_left, s32 final_top, s32 final_width,
-             s32 final_height, s32 orig_width, s32 orig_height, s32 native_width, s32 native_height);
+  bool Apply(GPUTexture* input_color, GPUTexture* input_depth, GPUTexture* final_target, s32 final_left, s32 final_top,
+             s32 final_width, s32 final_height, s32 orig_width, s32 orig_height, s32 native_width, s32 native_height);
 
 private:
   void ClearStagesWithError(const Error& error);
@@ -145,6 +146,8 @@ private:
   u32 m_target_width = 0;
   u32 m_target_height = 0;
   bool m_enabled = false;
+  bool m_wants_depth_buffer = false;
+  bool m_needs_depth_buffer = false;
 
   std::vector<std::unique_ptr<PostProcessing::Shader>> m_stages;
   std::unique_ptr<GPUTexture> m_input_texture;

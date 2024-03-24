@@ -25,7 +25,7 @@ public:
   std::string GenerateVRAMCopyFragmentShader();
   std::string GenerateVRAMFillFragmentShader(bool wrapped, bool interlaced);
   std::string GenerateVRAMUpdateDepthFragmentShader();
-  std::string GenerateVRAMExtractFragmentShader(bool depth_24bit);
+  std::string GenerateVRAMExtractFragmentShader(bool color_24bit, bool depth_buffer);
 
   std::string GenerateAdaptiveDownsampleVertexShader();
   std::string GenerateAdaptiveDownsampleMipFragmentShader(bool first_pass);

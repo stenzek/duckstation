@@ -17,15 +17,16 @@ public:
   ALWAYS_INLINE const std::string& GetCode() const { return m_code; }
 
   bool IsValid() const override;
+  bool WantsDepthBuffer() const override;
 
   bool LoadFromFile(std::string name, const char* filename, Error* error);
   bool LoadFromString(std::string name, std::string code, Error* error);
 
   bool ResizeOutput(GPUTexture::Format format, u32 width, u32 height) override;
   bool CompilePipeline(GPUTexture::Format format, u32 width, u32 height, ProgressCallback* progress) override;
-  bool Apply(GPUTexture* input, GPUTexture* final_target, s32 final_left, s32 final_top, s32 final_width,
-             s32 final_height, s32 orig_width, s32 orig_height, s32 native_width, s32 native_height, u32 target_width,
-             u32 target_height) override;
+  bool Apply(GPUTexture* input_color, GPUTexture* input_depth, GPUTexture* final_target, s32 final_left, s32 final_top,
+             s32 final_width, s32 final_height, s32 orig_width, s32 orig_height, s32 native_width, s32 native_height,
+             u32 target_width, u32 target_height) override;
 
 private:
   struct CommonUniforms

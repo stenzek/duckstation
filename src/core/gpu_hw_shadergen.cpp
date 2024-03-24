@@ -1031,16 +1031,19 @@ float3 ApplyDebanding(float2 frag_coord)
   return ss.str();
 }
 
-std::string GPU_HW_ShaderGen::GenerateVRAMExtractFragmentShader(bool depth_24bit)
+std::string GPU_HW_ShaderGen::GenerateVRAMExtractFragmentShader(bool color_24bit, bool depth_buffer)
 {
   std::stringstream ss;
   WriteHeader(ss);
-  DefineMacro(ss, "DEPTH_24BIT", depth_24bit);
+  DefineMacro(ss, "COLOR_24BIT", color_24bit);
+  DefineMacro(ss, "DEPTH_BUFFER", depth_buffer);
   DefineMacro(ss, "MULTISAMPLED", UsingMSAA());
 
   WriteCommonFunctions(ss);
   DeclareUniformBuffer(ss, {"uint2 u_vram_offset", "uint u_skip_x", "uint u_line_skip"}, true);
   DeclareTexture(ss, "samp0", 0, UsingMSAA());
+  if (depth_buffer)
+    DeclareTexture(ss, "samp1", 1, UsingMSAA());
 
   ss << R"(
 float4 LoadVRAM(int2 coords)
@@ -1055,6 +1058,22 @@ float4 LoadVRAM(int2 coords)
   return LOAD_TEXTURE(samp0, coords, 0);
 #endif
 }
+
+#if DEPTH_BUFFER
+float LoadDepth(int2 coords)
+{
+  // Need to duplicate because different types in different languages...
+#if MULTISAMPLING
+  float value = LOAD_TEXTURE_MS(samp1, coords, 0u).r;
+  FOR_UNROLL (uint sample_index = 1u; sample_index < MULTISAMPLES; sample_index++)
+    value += LOAD_TEXTURE_MS(samp1, coords, sample_index).r;
+  value /= float(MULTISAMPLES);
+  return value;
+#else
+  return LOAD_TEXTURE(samp1, coords, 0).r;
+#endif
+}
+#endif
 
 float3 SampleVRAM24(uint2 icoords)
 {
@@ -1075,15 +1094,20 @@ float3 SampleVRAM24(uint2 icoords)
 }
 )";
 
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, depth_buffer ? 2 : 1);
   ss << R"(
 {
   uint2 icoords = uint2(uint(v_pos.x) + u_skip_x, uint(v_pos.y) << u_line_skip);
+  int2 wrapped_coords = int2((icoords + u_vram_offset) % VRAM_SIZE);
 
-  #if DEPTH_24BIT
+  #if COLOR_24BIT
     o_col0 = float4(SampleVRAM24(icoords), 1.0);
   #else
-    o_col0 = float4(LoadVRAM(int2((icoords + u_vram_offset) % VRAM_SIZE)).rgb, 1.0);
+    o_col0 = float4(LoadVRAM(wrapped_coords).rgb, 1.0);
+  #endif
+
+  #if DEPTH_BUFFER
+    o_col1 = float4(LoadDepth(wrapped_coords), 0.0, 0.0, 0.0);
   #endif
 }
 )";

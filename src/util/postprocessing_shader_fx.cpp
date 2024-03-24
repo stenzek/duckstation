@@ -1,5 +1,4 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "postprocessing_shader_fx.h"
@@ -12,6 +11,7 @@
 #include "core/settings.h"
 
 #include "common/assert.h"
+#include "common/bitutils.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
@@ -368,6 +368,11 @@ bool PostProcessing::ReShadeFXShader::IsValid() const
   return m_valid;
 }
 
+bool PostProcessing::ReShadeFXShader::WantsDepthBuffer() const
+{
+  return m_wants_depth_buffer;
+}
+
 bool PostProcessing::ReShadeFXShader::CreateModule(s32 buffer_width, s32 buffer_height, reshadefx::module* mod,
                                                    std::string code, Error* error)
 {
@@ -396,6 +401,10 @@ bool PostProcessing::ReShadeFXShader::CreateModule(s32 buffer_width, s32 buffer_
   pp.add_macro_definition("BUFFER_RCP_WIDTH", std::to_string(1.0f / static_cast<float>(buffer_width)));
   pp.add_macro_definition("BUFFER_RCP_HEIGHT", std::to_string(1.0f / static_cast<float>(buffer_height)));
   pp.add_macro_definition("BUFFER_COLOR_BIT_DEPTH", "32");
+  pp.add_macro_definition("RESHADE_DEPTH_INPUT_IS_UPSIDE_DOWN", "0");
+  pp.add_macro_definition("RESHADE_DEPTH_INPUT_IS_LOGARITHMIC", "0");
+  pp.add_macro_definition("RESHADE_DEPTH_LINEARIZATION_FAR_PLANE", "1000.0");
+  pp.add_macro_definition("RESHADE_DEPTH_INPUT_IS_REVERSED", "0");
 
   switch (GetRenderAPI())
   {
@@ -435,7 +444,7 @@ bool PostProcessing::ReShadeFXShader::CreateModule(s32 buffer_width, s32 buffer_
 
   cg->write_result(*mod);
 
-  // FileSystem::WriteBinaryFile("D:\\out.txt", mod->code.data(), mod->code.size());
+  FileSystem::WriteBinaryFile("D:\\out.txt", mod->code.data(), mod->code.size());
   return true;
 }
 
@@ -837,9 +846,14 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
       *si = (ui.type.base == reshadefx::type::t_float) ? SourceOptionType::RandomF : SourceOptionType::Random;
       return true;
     }
-    else if (source == "overlay_active" || source == "has_depth")
+    else if (source == "overlay_active")
     {
       *si = SourceOptionType::Zero;
+      return true;
+    }
+    else if (source == "has_depth")
+    {
+      *si = SourceOptionType::HasDepth;
       return true;
     }
     else if (source == "bufferwidth")
@@ -1185,8 +1199,8 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
             }
             else if (ti.semantic == "DEPTH")
             {
-              WARNING_LOG("Shader '{}' uses input depth as '{}' which is not supported.", m_name, si.texture_name);
               sampler.texture_id = INPUT_DEPTH_TEXTURE;
+              m_wants_depth_buffer = true;
               break;
             }
             else if (!ti.semantic.empty())
@@ -1252,18 +1266,18 @@ const char* PostProcessing::ReShadeFXShader::GetTextureNameForID(TextureID id) c
     return m_textures[static_cast<size_t>(id)].reshade_name.c_str();
 }
 
-GPUTexture* PostProcessing::ReShadeFXShader::GetTextureByID(TextureID id, GPUTexture* input,
-                                                            GPUTexture* final_target) const
+GPUTexture* PostProcessing::ReShadeFXShader::GetTextureByID(TextureID id, GPUTexture* input_color,
+                                                            GPUTexture* input_depth, GPUTexture* final_target) const
 {
   if (id < 0)
   {
     if (id == INPUT_COLOR_TEXTURE)
     {
-      return input;
+      return input_color;
     }
     else if (id == INPUT_DEPTH_TEXTURE)
     {
-      return PostProcessing::GetDummyTexture();
+      return input_depth ? input_depth : GetDummyTexture();
     }
     else if (id == OUTPUT_COLOR_TEXTURE)
     {
@@ -1291,6 +1305,7 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
   m_valid = false;
   m_textures.clear();
   m_passes.clear();
+  m_wants_depth_buffer = false;
 
   std::string fxcode;
   if (!PreprocessorReadFileCallback(m_filename, fxcode))
@@ -1474,9 +1489,10 @@ bool PostProcessing::ReShadeFXShader::ResizeOutput(GPUTexture::Format format, u3
   return true;
 }
 
-bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUTexture* final_target, s32 final_left, s32 final_top,
-                                            s32 final_width, s32 final_height, s32 orig_width, s32 orig_height,
-                                            s32 native_width, s32 native_height, u32 target_width, u32 target_height)
+bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input_color, GPUTexture* input_depth, GPUTexture* final_target,
+                                            s32 final_left, s32 final_top, s32 final_width, s32 final_height,
+                                            s32 orig_width, s32 orig_height, s32 native_width, s32 native_height,
+                                            u32 target_width, u32 target_height)
 {
   GL_PUSH_FMT("PostProcessingShaderFX {}", m_name);
 
@@ -1503,6 +1519,13 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUTexture* final
         case SourceOptionType::Zero:
         {
           const u32 value = 0;
+          std::memcpy(dst, &value, sizeof(value));
+        }
+        break;
+
+        case SourceOptionType::HasDepth:
+        {
+          const u32 value = BoolToUInt32(input_depth != nullptr);
           std::memcpy(dst, &value, sizeof(value));
         }
         break;
@@ -1750,7 +1773,7 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUTexture* final
     // Sucks doing this twice, but we need to set the RT first (for DX11), and transition layouts (for VK).
     for (const Sampler& sampler : pass.samplers)
     {
-      GPUTexture* const tex = GetTextureByID(sampler.texture_id, input, final_target);
+      GPUTexture* const tex = GetTextureByID(sampler.texture_id, input_color, input_depth, final_target);
       if (tex)
         tex->MakeReadyForSampling();
     }
@@ -1771,7 +1794,7 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUTexture* final
       {
         GL_INS_FMT("Render Target {}: ID {} [{}]", i, pass.render_targets[i],
                    GetTextureNameForID(pass.render_targets[i]));
-        render_targets[i] = GetTextureByID(pass.render_targets[i], input, final_target);
+        render_targets[i] = GetTextureByID(pass.render_targets[i], input_color, input_depth, final_target);
         DebugAssert(render_targets[i]);
       }
 
@@ -1795,8 +1818,8 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUTexture* final
 
       GL_INS_FMT("Texture Sampler {}: ID {} [{}]", sampler.slot, sampler.texture_id,
                  GetTextureNameForID(sampler.texture_id));
-      g_gpu_device->SetTextureSampler(sampler.slot, GetTextureByID(sampler.texture_id, input, final_target),
-                                      sampler.sampler);
+      g_gpu_device->SetTextureSampler(
+        sampler.slot, GetTextureByID(sampler.texture_id, input_color, input_depth, final_target), sampler.sampler);
       bound_textures[sampler.slot] = true;
     }
 
@@ -1810,6 +1833,10 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUTexture* final
 
     g_gpu_device->Draw(pass.num_vertices, 0);
   }
+
+  // Don't leave any textures bound.
+  for (u32 i = 0; i < GPUDevice::MAX_TEXTURE_SAMPLERS; i++)
+    g_gpu_device->SetTextureSampler(i, nullptr, nullptr);
 
   GL_POP();
   m_frame_timer.Reset();
