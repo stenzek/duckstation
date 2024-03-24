@@ -484,17 +484,25 @@ void OpenGLDevice::CommitClear(OpenGLTexture* tex)
         {
           const float depth = tex->GetClearDepth();
           glDisable(GL_SCISSOR_TEST);
+          if (!m_last_depth_state.depth_write)
+            glDepthMask(GL_TRUE);
           glClearBufferfv(GL_DEPTH, 0, &depth);
+          if (!m_last_depth_state.depth_write)
+            glDepthMask(GL_FALSE);
           glEnable(GL_SCISSOR_TEST);
         }
         else
         {
           const auto color = tex->GetUNormClearColor();
           glDisable(GL_SCISSOR_TEST);
-          glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+          if (m_last_blend_state.write_mask != 0xf)
+            glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
           glClearBufferfv(GL_COLOR, 0, color.data());
-          glColorMask(m_last_blend_state.write_r, m_last_blend_state.write_g, m_last_blend_state.write_b,
-                      m_last_blend_state.write_a);
+          if (m_last_blend_state.write_mask != 0xf)
+          {
+            glColorMask(m_last_blend_state.write_r, m_last_blend_state.write_g, m_last_blend_state.write_b,
+                        m_last_blend_state.write_a);
+          }
           glEnable(GL_SCISSOR_TEST);
         }
 
@@ -529,10 +537,14 @@ void OpenGLDevice::CommitRTClearInFB(OpenGLTexture* tex, u32 idx)
     {
       const auto color = tex->GetUNormClearColor();
       glDisable(GL_SCISSOR_TEST);
-      glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+      if (m_last_blend_state.write_mask != 0xf)
+        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
       glClearBufferfv(GL_COLOR, static_cast<GLint>(idx), color.data());
-      glColorMask(m_last_blend_state.write_r, m_last_blend_state.write_g, m_last_blend_state.write_b,
-                  m_last_blend_state.write_a);
+      if (m_last_blend_state.write_mask != 0xf)
+      {
+        glColorMask(m_last_blend_state.write_r, m_last_blend_state.write_g, m_last_blend_state.write_b,
+                    m_last_blend_state.write_a);
+      }
       glEnable(GL_SCISSOR_TEST);
       tex->SetState(GPUTexture::State::Dirty);
     }
@@ -562,7 +574,11 @@ void OpenGLDevice::CommitDSClearInFB(OpenGLTexture* tex)
     {
       const float depth = tex->GetClearDepth();
       glDisable(GL_SCISSOR_TEST);
+      if (!m_last_depth_state.depth_write)
+        glDepthMask(GL_TRUE);
       glClearBufferfv(GL_DEPTH, 0, &depth);
+      if (!m_last_depth_state.depth_write)
+        glDepthMask(GL_FALSE);
       glEnable(GL_SCISSOR_TEST);
       tex->SetState(GPUTexture::State::Dirty);
     }
