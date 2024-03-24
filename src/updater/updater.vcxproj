@@ -31,7 +31,7 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\minizip\include;$(SolutionDir)src</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>%(AdditionalDependencies);Comctl32.lib;zlib.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);Comctl32.lib;zlibstatic.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="..\..\dep\msvc\vsprops\Targets.props" />
