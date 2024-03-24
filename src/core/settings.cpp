@@ -1563,14 +1563,17 @@ const char* Settings::GetDisplayScreenshotModeDisplayName(DisplayScreenshotMode 
 static constexpr const std::array s_display_screenshot_format_names = {
   "PNG",
   "JPEG",
+  "WebP",
 };
 static constexpr const std::array s_display_screenshot_format_display_names = {
   TRANSLATE_NOOP("Settings", "PNG"),
   TRANSLATE_NOOP("Settings", "JPEG"),
+  TRANSLATE_NOOP("Settings", "WebP"),
 };
 static constexpr const std::array s_display_screenshot_format_extensions = {
   "png",
   "jpg",
+  "webp",
 };
 
 std::optional<DisplayScreenshotFormat> Settings::ParseDisplayScreenshotFormat(const char* str)

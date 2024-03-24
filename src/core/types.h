@@ -181,6 +181,7 @@ enum class DisplayScreenshotFormat : u8
 {
   PNG,
   JPEG,
+  WebP,
   Count
 };
 
