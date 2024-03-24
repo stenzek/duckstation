@@ -56,7 +56,6 @@
     <ClCompile Include="string_util.cpp" />
     <ClCompile Include="md5_digest.cpp" />
     <ClCompile Include="progress_callback.cpp" />
-    <ClCompile Include="minizip_helpers.cpp" />
     <ClCompile Include="thirdparty\StackWalker.cpp">
       <Filter>thirdparty</Filter>
     </ClCompile>

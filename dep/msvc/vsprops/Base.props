@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Dependencies -->
+  <PropertyGroup Label="UserMacros">
+    <DepsRootDir Condition="'$(Platform)'=='x64'">$(SolutionDir)dep\msvc\deps-x64\</DepsRootDir>
+    <DepsRootDir Condition="'$(Platform)'=='ARM64'">$(SolutionDir)dep\msvc\deps-arm64\</DepsRootDir>
+    <DepsBinDir>$(DepsRootDir)bin\</DepsBinDir>
+    <DepsLibDir>$(DepsRootDir)lib\</DepsLibDir>
+    <DepsIncludeDir>$(DepsRootDir)include\</DepsIncludeDir>
+  </PropertyGroup>
+
   <PropertyGroup Condition="$(Configuration.Contains(Debug))">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
@@ -19,6 +28,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
       <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;_CRT_INTERNAL_NONSTDC_NAMES;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(DepsIncludeDir)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="!$(Configuration.Contains(Clang))">/Zc:__cplusplus /Zo /utf-8 %(AdditionalOptions)</AdditionalOptions>
       <!-- Force ThinLTO for Release builds, MSVC doesn't seem to do it otherwise. -->
       <AdditionalOptions Condition="$(Configuration.Contains(Clang)) And $(Configuration.Contains(ReleaseLTCG))"> -flto=thin %(AdditionalOptions)</AdditionalOptions>
@@ -26,6 +36,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(DepsLibDir)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
 

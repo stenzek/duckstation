@@ -33,7 +33,6 @@ add_library(common
   md5_digest.h
   memory_settings_interface.cpp
   memory_settings_interface.h
-  minizip_helpers.cpp
   minizip_helpers.h
   path.h
   perf_scope.cpp
@@ -61,7 +60,7 @@ add_library(common
 target_include_directories(common PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(common PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(common PUBLIC fmt Threads::Threads fast_float)
-target_link_libraries(common PRIVATE ZLIB::ZLIB minizip "${CMAKE_DL_LIBS}")
+target_link_libraries(common PRIVATE "${CMAKE_DL_LIBS}")
 
 if(WIN32)
   target_sources(common PRIVATE

@@ -9,11 +9,11 @@ if(NOT WIN32 AND NOT ANDROID)
     set(CMAKE_FIND_FRAMEWORK NEVER)
   endif()
 
-  find_package(Zstd REQUIRED)
-  find_package(WebP REQUIRED)
-  find_package(ZLIB REQUIRED)
-  find_package(PNG REQUIRED)
-  find_package(JPEG REQUIRED)
+  find_package(Zstd 1.5.5 REQUIRED)
+  find_package(WebP REQUIRED) # v1.3.2, spews an error on Linux because no pkg-config.
+  find_package(ZLIB 1.3 REQUIRED)
+  find_package(PNG 1.6.40 REQUIRED)
+  find_package(JPEG REQUIRED) # No version because flatpak uses libjpeg-turbo.
   find_package(CURL REQUIRED)
   if(APPLE)
     set(CMAKE_FIND_FRAMEWORK ${FIND_FRAMEWORK_BACKUP})

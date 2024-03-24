@@ -16,11 +16,6 @@
     <ClInclude Include="include\zip.h" />
     <ClInclude Include="src\crypt.h" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\zlib\zlib.vcxproj">
-      <Project>{7ff9fdb9-d504-47db-a16a-b08071999620}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8BDA439C-6358-45FB-9994-2FF083BABE06}</ProjectGuid>
   </PropertyGroup>

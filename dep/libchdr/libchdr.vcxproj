@@ -5,12 +5,6 @@
     <ProjectReference Include="..\lzma\lzma.vcxproj">
       <Project>{dd944834-7899-4c1c-a4c1-064b5009d239}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\zlib\zlib.vcxproj">
-      <Project>{7ff9fdb9-d504-47db-a16a-b08071999620}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\zstd\zstd.vcxproj">
-      <Project>{73ee0c55-6ffe-44e7-9c12-baa52434a797}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\libchdr_bitstream.c" />
@@ -36,7 +30,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\lzma\include;$(SolutionDir)dep\zstd\lib;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories);$(SolutionDir)dep\lzma\include</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <Import Project="..\msvc\vsprops\Targets.props" />

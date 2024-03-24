@@ -8,7 +8,7 @@
       <PreprocessorDefinitions>ENABLE_CUBEB=1;ENABLE_SDL2=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Platform)'!='ARM64'">%(PreprocessorDefinitions);ENABLE_OPENGL=1;ENABLE_VULKAN=1</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Platform)'=='ARM64'">%(PreprocessorDefinitions);SOUNDTOUCH_USE_NEON</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\xxhash\include;$(SolutionDir)dep\soundtouch\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\d3d12ma\include;$(SolutionDir)dep\zstd\lib;$(SolutionDir)dep\libpng\include;$(SolutionDir)dep\libjpeg\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\xxhash\include;$(SolutionDir)dep\soundtouch\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\d3d12ma\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Platform)'!='ARM64'">%(AdditionalIncludeDirectories);$(SolutionDir)dep\glad\include;$(SolutionDir)dep\vulkan\include;$(SolutionDir)dep\glslang</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -20,6 +20,35 @@
     </Link>
   </ItemDefinitionGroup>
 
-  <Import Project="..\..\dep\msvc\vsprops\SDL2Compile.props" />
   <Import Condition="$(Configuration.Contains('Debug'))" Project="..\..\dep\winpixeventruntime\WinPixEventRuntime.props" />
+
+  <!-- Dependency linking and DLL copying -->
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(DepsIncludeDir)SDL2</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies);libjpeg.lib;libpng16.lib;libwebp.lib;SDL2.lib;zlib.lib;zstd.lib</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <DepsDLLs Include="$(DepsBinDir)libjpeg.dll" />
+    <DepsDLLs Include="$(DepsBinDir)libpng16.dll" />
+    <DepsDLLs Include="$(DepsBinDir)libsharpyuv.dll" />
+    <DepsDLLs Include="$(DepsBinDir)libwebp.dll" />
+    <DepsDLLs Include="$(DepsBinDir)SDL2.dll" />
+    <DepsDLLs Include="$(DepsBinDir)zlib1.dll" />
+    <DepsDLLs Include="$(DepsBinDir)zstd.dll" />
+  </ItemGroup>
+  <Target Name="DepsCopyDLLs"
+    AfterTargets="Build"
+    Inputs="@(DepsDLLs)"
+    Outputs="@(DepsDLLs -> '$(OutDir)%(RecursiveDir)%(Filename)%(Extension)')">
+    <Message Text="Copying Dependency DLLs" Importance="High" />
+    <Copy
+      SourceFiles="@(DepsDLLs)"
+      DestinationFolder="$(OutDir)"
+      SkipUnchangedFiles="true"
+    />
+  </Target>
 </Project>

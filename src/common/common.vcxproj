@@ -56,7 +56,6 @@
     <ClCompile Include="memmap.cpp" />
     <ClCompile Include="memory_settings_interface.cpp" />
     <ClCompile Include="md5_digest.cpp" />
-    <ClCompile Include="minizip_helpers.cpp" />
     <ClCompile Include="perf_scope.cpp" />
     <ClCompile Include="progress_callback.cpp" />
     <ClCompile Include="sha1_digest.cpp" />
@@ -87,15 +86,6 @@
     <ProjectReference Include="..\..\dep\fmt\fmt.vcxproj">
       <Project>{8be398e6-b882-4248-9065-fecc8728e038}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\dep\minizip\minizip.vcxproj">
-      <Project>{8bda439c-6358-45fb-9994-2ff083babe06}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\dep\zlib\zlib.vcxproj">
-      <Project>{7ff9fdb9-d504-47db-a16a-b08071999620}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\dep\zstd\zstd.vcxproj">
-      <Project>{73ee0c55-6ffe-44e7-9c12-baa52434a797}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\marmasm.targets" />
@@ -113,7 +103,6 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\zstd\lib</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <Import Project="..\..\dep\msvc\vsprops\Targets.props" />

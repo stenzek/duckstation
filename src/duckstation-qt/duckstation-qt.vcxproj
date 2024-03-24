@@ -341,6 +341,9 @@
     <ProjectReference Include="..\..\dep\imgui\imgui.vcxproj">
       <Project>{bb08260f-6fbc-46af-8924-090ee71360c6}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\dep\minizip\minizip.vcxproj">
+      <Project>{8bda439c-6358-45fb-9994-2ff083babe06}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\common\common.vcxproj">
       <Project>{ee054e08-3799-4a59-a422-18259c105ffd}</Project>
     </ProjectReference>
@@ -378,6 +381,7 @@
     <ClCompile>
       <PreprocessorDefinitions>QT_NO_EXCEPTIONS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4127;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\minizip\include</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="$(Configuration.Contains(Clang))">

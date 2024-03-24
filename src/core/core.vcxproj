@@ -184,12 +184,6 @@
     <ProjectReference Include="..\..\dep\xxhash\xxhash.vcxproj">
       <Project>{09553c96-9f39-49bf-8ae6-7acbd07c410c}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\dep\zlib\zlib.vcxproj">
-      <Project>{7ff9fdb9-d504-47db-a16a-b08071999620}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\dep\zstd\zstd.vcxproj">
-      <Project>{73ee0c55-6ffe-44e7-9c12-baa52434a797}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\dep\zydis\zydis.vcxproj" Condition="'$(Platform)'=='x64' And $(Configuration.Contains('Debug'))">
       <Project>{c51a346a-86b2-46df-9bb3-d0aa7e5d8699}</Project>
     </ProjectReference>
