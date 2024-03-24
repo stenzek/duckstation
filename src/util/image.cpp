@@ -13,6 +13,8 @@
 
 #include <jpeglib.h>
 #include <png.h>
+#include <webp/decode.h>
+#include <webp/encode.h>
 
 // clang-format off
 #ifdef _MSC_VER
@@ -33,6 +35,11 @@ static bool JPEGBufferSaver(const RGBA8Image& image, std::vector<u8>* buffer, u8
 static bool JPEGFileLoader(RGBA8Image* image, const char* filename, std::FILE* fp);
 static bool JPEGFileSaver(const RGBA8Image& image, const char* filename, std::FILE* fp, u8 quality);
 
+static bool WebPBufferLoader(RGBA8Image* image, const void* buffer, size_t buffer_size);
+static bool WebPBufferSaver(const RGBA8Image& image, std::vector<u8>* buffer, u8 quality);
+static bool WebPFileLoader(RGBA8Image* image, const char* filename, std::FILE* fp);
+static bool WebPFileSaver(const RGBA8Image& image, const char* filename, std::FILE* fp, u8 quality);
+
 struct FormatHandler
 {
   const char* extension;
@@ -46,6 +53,7 @@ static constexpr FormatHandler s_format_handlers[] = {
   {"png", PNGBufferLoader, PNGBufferSaver, PNGFileLoader, PNGFileSaver},
   {"jpg", JPEGBufferLoader, JPEGBufferSaver, JPEGFileLoader, JPEGFileSaver},
   {"jpeg", JPEGBufferLoader, JPEGBufferSaver, JPEGFileLoader, JPEGFileSaver},
+  {"webp", WebPBufferLoader, WebPBufferSaver, WebPFileLoader, WebPFileSaver},
 };
 
 static const FormatHandler* GetFormatHandler(const std::string_view& extension)
@@ -606,4 +614,59 @@ bool JPEGBufferSaver(const RGBA8Image& image, std::vector<u8>* buffer, u8 qualit
 bool JPEGFileSaver(const RGBA8Image& image, const char* filename, std::FILE* fp, u8 quality)
 {
   return WrapJPEGCompress(image, quality, [fp](jpeg_compress_struct& info) { jpeg_stdio_dest(&info, fp); });
+}
+
+bool WebPBufferLoader(RGBA8Image* image, const void* buffer, size_t buffer_size)
+{
+  int width, height;
+  if (!WebPGetInfo(static_cast<const u8*>(buffer), buffer_size, &width, &height) || width <= 0 || height <= 0)
+  {
+    Log_ErrorPrint("WebPGetInfo() failed");
+    return false;
+  }
+
+  std::vector<u32> pixels;
+  pixels.resize(static_cast<u32>(width) * static_cast<u32>(height));
+  if (!WebPDecodeRGBAInto(static_cast<const u8*>(buffer), buffer_size, reinterpret_cast<u8*>(pixels.data()),
+                          sizeof(u32) * pixels.size(), sizeof(u32) * static_cast<u32>(width)))
+  {
+    Log_ErrorPrint("WebPDecodeRGBAInto() failed");
+    return false;
+  }
+
+  image->SetPixels(static_cast<u32>(width), static_cast<u32>(height), std::move(pixels));
+  return true;
+}
+
+bool WebPBufferSaver(const RGBA8Image& image, std::vector<u8>* buffer, u8 quality)
+{
+  u8* encoded_data;
+  const size_t encoded_size =
+    WebPEncodeRGBA(reinterpret_cast<const u8*>(image.GetPixels()), image.GetWidth(), image.GetHeight(),
+                   image.GetPitch(), static_cast<float>(quality), &encoded_data);
+  if (encoded_size == 0)
+    return false;
+
+  buffer->resize(encoded_size);
+  std::memcpy(buffer->data(), encoded_data, encoded_size);
+  WebPFree(encoded_data);
+  return true;
+}
+
+bool WebPFileLoader(RGBA8Image* image, const char* filename, std::FILE* fp)
+{
+  std::optional<std::vector<u8>> data = FileSystem::ReadBinaryFile(fp);
+  if (!data.has_value())
+    return false;
+
+  return WebPBufferLoader(image, data->data(), data->size());
+}
+
+bool WebPFileSaver(const RGBA8Image& image, const char* filename, std::FILE* fp, u8 quality)
+{
+  std::vector<u8> buffer;
+  if (!WebPBufferSaver(image, &buffer, quality))
+    return false;
+
+  return (std::fwrite(buffer.data(), buffer.size(), 1, fp) == 1);
 }
