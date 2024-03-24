@@ -46,7 +46,7 @@ std::string GPUShaderGen::GenerateDisplayFragmentShader(bool clamp_uv)
   WriteHeader(ss);
   WriteDisplayUniformBuffer(ss);
   DeclareTexture(ss, "samp0", 0);
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, false, 1);
+  DeclareFragmentEntryPoint(ss, 0, 1);
   if (clamp_uv)
     ss << "{\n  o_col0 = float4(SAMPLE_TEXTURE(samp0, ClampUV(v_tex0)).rgb, 1.0f);\n }";
   else
@@ -64,7 +64,7 @@ std::string GPUShaderGen::GenerateDisplaySharpBilinearFragmentShader()
 
   // Based on
   // https://github.com/rsn8887/Sharp-Bilinear-Shaders/blob/master/Copy_To_RetroPie/shaders/sharp-bilinear-simple.glsl
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, false, 1, false, false, false, false);
+  DeclareFragmentEntryPoint(ss, 0, 1);
   ss << R"(
 {
   float2 scale = u_params.xy;
@@ -234,7 +234,7 @@ float3 SampleVRAMAverage2x2(uint2 icoords)
 }
 )";
 
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true);
   ss << R"(
 {
   uint2 icoords = uint2(v_pos.xy) + u_sample_offset;

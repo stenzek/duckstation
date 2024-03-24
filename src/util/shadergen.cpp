@@ -542,10 +542,10 @@ void ShaderGen::DeclareVertexEntryPoint(
 
 void ShaderGen::DeclareFragmentEntryPoint(
   std::stringstream& ss, u32 num_color_inputs, u32 num_texcoord_inputs,
-  const std::initializer_list<std::pair<const char*, const char*>>& additional_inputs,
-  bool declare_fragcoord /* = false */, u32 num_color_outputs /* = 1 */, bool depth_output /* = false */,
-  bool msaa /* = false */, bool ssaa /* = false */, bool declare_sample_id /* = false */,
-  bool noperspective_color /* = false */, bool feedback_loop /* = false */)
+  const std::initializer_list<std::pair<const char*, const char*>>& additional_inputs /* =  */,
+  bool declare_fragcoord /* = false */, u32 num_color_outputs /* = 1 */, bool dual_source_output /* = false */,
+  bool depth_output /* = false */, bool msaa /* = false */, bool ssaa /* = false */,
+  bool declare_sample_id /* = false */, bool noperspective_color /* = false */, bool feedback_loop /* = false */)
 {
   if (m_glsl)
   {
@@ -650,7 +650,7 @@ void ShaderGen::DeclareFragmentEntryPoint(
 
     if (m_use_glsl_binding_layout)
     {
-      if (m_supports_dual_source_blend && num_color_outputs > 1)
+      if (dual_source_output && m_supports_dual_source_blend && num_color_outputs > 1)
       {
         for (u32 i = 0; i < num_color_outputs; i++)
         {
@@ -660,8 +660,11 @@ void ShaderGen::DeclareFragmentEntryPoint(
       }
       else
       {
-        Assert(num_color_outputs <= 1);
-        ss << "layout(location = 0) " << target_0_qualifier << " float4 o_col0;\n";
+        for (u32 i = 0; i < num_color_outputs; i++)
+        {
+          ss << "layout(location = " << i << ") " << ((i == 0) ? target_0_qualifier : "out") << " float4 o_col" << i
+             << ";\n";
+        }
       }
     }
     else
@@ -762,12 +765,11 @@ std::string ShaderGen::GenerateFillFragmentShader()
   std::stringstream ss;
   WriteHeader(ss);
   DeclareUniformBuffer(ss, {"float4 u_fill_color"}, true);
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, false, 1, true);
+  DeclareFragmentEntryPoint(ss, 0, 1);
 
   ss << R"(
 {
   o_col0 = u_fill_color;
-  o_depth = u_fill_color.a;
 }
 )";
 
@@ -780,7 +782,7 @@ std::string ShaderGen::GenerateCopyFragmentShader()
   WriteHeader(ss);
   DeclareUniformBuffer(ss, {"float4 u_src_rect"}, true);
   DeclareTexture(ss, "samp0", 0);
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, false, 1);
+  DeclareFragmentEntryPoint(ss, 0, 1);
 
   ss << R"(
 {
@@ -817,7 +819,7 @@ std::string ShaderGen::GenerateImGuiFragmentShader()
   std::stringstream ss;
   WriteHeader(ss);
   DeclareTexture(ss, "samp0", 0);
-  DeclareFragmentEntryPoint(ss, 1, 1, {}, false, 1);
+  DeclareFragmentEntryPoint(ss, 1, 1);
 
   ss << R"(
 {

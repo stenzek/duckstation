@@ -809,20 +809,21 @@ float3 ApplyDebanding(float2 frag_coord)
     {
       DeclareFragmentEntryPoint(ss, 1, 1,
                                 {{"nointerpolation", "uint4 v_texpage"}, {"nointerpolation", "float4 v_uv_limits"}},
-                                true, use_dual_source ? 2 : 1, m_write_mask_as_depth, UsingMSAA(),
+                                true, use_dual_source ? 2 : 1, use_dual_source, m_write_mask_as_depth, UsingMSAA(),
                                 UsingPerSampleShading(), false, m_disable_color_perspective, shader_blending);
     }
     else
     {
       DeclareFragmentEntryPoint(ss, 1, 1, {{"nointerpolation", "uint4 v_texpage"}}, true, use_dual_source ? 2 : 1,
-                                m_write_mask_as_depth, UsingMSAA(), UsingPerSampleShading(), false,
+                                use_dual_source, m_write_mask_as_depth, UsingMSAA(), UsingPerSampleShading(), false,
                                 m_disable_color_perspective, shader_blending);
     }
   }
   else
   {
-    DeclareFragmentEntryPoint(ss, 1, 0, {}, true, use_dual_source ? 2 : 1, m_write_mask_as_depth, UsingMSAA(),
-                              UsingPerSampleShading(), false, m_disable_color_perspective, shader_blending);
+    DeclareFragmentEntryPoint(ss, 1, 0, {}, true, use_dual_source ? 2 : 1, use_dual_source, m_write_mask_as_depth,
+                              UsingMSAA(), UsingPerSampleShading(), false, m_disable_color_perspective,
+                              shader_blending);
   }
 
   ss << R"(
@@ -1170,7 +1171,7 @@ std::string GPU_HW_ShaderGen::GenerateWireframeFragmentShader()
   WriteHeader(ss);
   WriteCommonFunctions(ss);
 
-  DeclareFragmentEntryPoint(ss, 0, 0, {}, false, 1);
+  DeclareFragmentEntryPoint(ss, 0, 0);
   ss << R"(
 {
   o_col0 = float4(1.0, 1.0, 1.0, 0.5);
@@ -1277,7 +1278,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_buffer, b
     ss << "#define GET_VALUE(buffer_offset) (LOAD_TEXTURE_BUFFER(samp0, int(buffer_offset)).r)\n\n";
   }
 
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, m_write_mask_as_depth);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, false, m_write_mask_as_depth);
   ss << R"(
 {
   uint2 coords = uint2(v_pos.xy) / uint2(RESOLUTION_SCALE, RESOLUTION_SCALE);
@@ -1326,7 +1327,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader()
 
   DeclareTexture(ss, "samp0", 0, msaa);
   DefineMacro(ss, "MSAA_COPY", msaa);
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, m_write_mask_as_depth, false, false, msaa);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, false, m_write_mask_as_depth, false, false, msaa);
   ss << R"(
 {
   uint2 dst_coords = uint2(v_pos.xy);
@@ -1373,7 +1374,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMFillFragmentShader(bool wrapped, bool 
   DeclareUniformBuffer(
     ss, {"uint2 u_dst_coords", "uint2 u_end_coords", "float4 u_fill_color", "uint u_interlaced_displayed_field"}, true);
 
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, interlaced || wrapped, 1, m_write_mask_as_depth, false, false, false);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, interlaced || wrapped, 1, false, m_write_mask_as_depth, false, false, false);
   ss << R"(
 {
 #if INTERLACED || WRAPPED
@@ -1409,7 +1410,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMUpdateDepthFragmentShader()
   WriteHeader(ss);
   WriteCommonFunctions(ss);
   DeclareTexture(ss, "samp0", 0, UsingMSAA());
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 0, true, false, false, UsingMSAA());
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 0, false, true, false, false, UsingMSAA());
 
   ss << R"(
 {
@@ -1484,7 +1485,7 @@ float4 get_bias(float4 c00, float4 c01, float4 c10, float4 c11)
 
 )";
 
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, false, 1, false, false, false, false);
+  DeclareFragmentEntryPoint(ss, 0, 1);
   ss << R"(
 {
   float2 uv = v_tex0 - (u_rcp_resolution * 0.25);
@@ -1516,7 +1517,7 @@ std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleBlurFragmentShader()
   DeclareTexture(ss, "samp0", 0, false);
 
   // mipmap_blur.glsl ported from parallel-rsx.
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, false, 1, false, false, false, false);
+  DeclareFragmentEntryPoint(ss, 0, 1);
   ss << R"(
 {
   float bias = 0.0;
@@ -1549,7 +1550,7 @@ std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleCompositeFragmentShader(
   DeclareTexture(ss, "samp1", 1, false);
 
   // mipmap_resolve.glsl ported from parallel-rsx.
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, false, false, false, false);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true);
   ss << R"(
 {
   float bias = SAMPLE_TEXTURE(samp1, v_tex0).r;
@@ -1572,7 +1573,7 @@ std::string GPU_HW_ShaderGen::GenerateBoxSampleDownsampleFragmentShader(u32 fact
 
   ss << "#define FACTOR " << factor << "\n";
 
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, false, false, false, false);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true);
   ss << R"(
 {
   float3 color = float3(0.0, 0.0, 0.0);
