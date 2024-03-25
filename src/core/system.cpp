@@ -3068,21 +3068,18 @@ std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardTyp
         // Playlist - use title if different.
         if (HasMediaSubImages() && s_running_game_entry && s_running_game_title != s_running_game_entry->title)
         {
-          card_path =
-            g_settings.GetGameMemoryCardPath(MemoryCard::SanitizeGameTitleForFileName(s_running_game_title), slot);
+          card_path = g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(s_running_game_title), slot);
         }
         // Multi-disc game - use disc set name.
         else if (s_running_game_entry && !s_running_game_entry->disc_set_name.empty())
         {
-          card_path = g_settings.GetGameMemoryCardPath(
-            MemoryCard::SanitizeGameTitleForFileName(s_running_game_entry->disc_set_name), slot);
+          card_path =
+            g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(s_running_game_entry->disc_set_name), slot);
         }
 
         // But prefer a disc-specific card if one already exists.
-        std::string disc_card_path =
-          g_settings.GetGameMemoryCardPath(MemoryCard::SanitizeGameTitleForFileName(
-                                             s_running_game_entry ? s_running_game_entry->title : s_running_game_title),
-                                           slot);
+        std::string disc_card_path = g_settings.GetGameMemoryCardPath(
+          Path::SanitizeFileName(s_running_game_entry ? s_running_game_entry->title : s_running_game_title), slot);
         if (disc_card_path != card_path)
         {
           if (card_path.empty() || !g_settings.memory_card_use_playlist_title ||
@@ -3122,8 +3119,7 @@ std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardTyp
       else
       {
         Host::RemoveKeyedOSDMessage(std::move(message_key));
-        return MemoryCard::Open(
-          g_settings.GetGameMemoryCardPath(MemoryCard::SanitizeGameTitleForFileName(file_title).c_str(), slot));
+        return MemoryCard::Open(g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(file_title).c_str(), slot));
       }
     }
 

@@ -856,12 +856,11 @@ void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidg
           break;
         case MemoryCardType::PerGameTitle:
         {
-          paths[i] = QString::fromStdString(
-            g_settings.GetGameMemoryCardPath(MemoryCard::SanitizeGameTitleForFileName(entry->title), i));
+          paths[i] = QString::fromStdString(g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(entry->title), i));
           if (!entry->disc_set_name.empty() && g_settings.memory_card_use_playlist_title && !QFile::exists(paths[i]))
           {
-            paths[i] = QString::fromStdString(
-              g_settings.GetGameMemoryCardPath(MemoryCard::SanitizeGameTitleForFileName(entry->disc_set_name), i));
+            paths[i] =
+              QString::fromStdString(g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(entry->disc_set_name), i));
           }
         }
         break;
@@ -869,8 +868,8 @@ void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidg
         case MemoryCardType::PerGameFileTitle:
         {
           const std::string display_name(FileSystem::GetDisplayNameFromPath(entry->path));
-          paths[i] = QString::fromStdString(g_settings.GetGameMemoryCardPath(
-            MemoryCard::SanitizeGameTitleForFileName(Path::GetFileTitle(display_name)), i));
+          paths[i] = QString::fromStdString(
+            g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(Path::GetFileTitle(display_name)), i));
         }
         break;
         default:
@@ -1086,8 +1085,7 @@ void MainWindow::onCheatsActionTriggered()
 void MainWindow::onCheatsMenuAboutToShow()
 {
   m_ui.menuCheats->clear();
-  connect(m_ui.menuCheats->addAction(tr("Cheat Manager")), &QAction::triggered, this,
-          &MainWindow::openCheatManager);
+  connect(m_ui.menuCheats->addAction(tr("Cheat Manager")), &QAction::triggered, this, &MainWindow::openCheatManager);
   m_ui.menuCheats->addSeparator();
   populateCheatsMenu(m_ui.menuCheats);
 }

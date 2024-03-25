@@ -20,8 +20,6 @@ public:
 
   static constexpr u32 STATE_SIZE = 1 + 1 + 2 + 1 + 1 + 1 + MemoryCardImage::DATA_SIZE + 1;
 
-  static std::string SanitizeGameTitleForFileName(const std::string_view& name);
-
   static std::unique_ptr<MemoryCard> Create();
   static std::unique_ptr<MemoryCard> Open(std::string_view filename);
 
