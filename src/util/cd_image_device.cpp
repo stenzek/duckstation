@@ -232,7 +232,6 @@ private:
   bool m_has_valid_subcode = false;
 
   std::array<u8, CD_RAW_SECTOR_WITH_SUBCODE_SIZE> m_buffer;
-  std::array<u8, SUBCHANNEL_BYTES_PER_FRAME> m_subq;
 };
 
 } // namespace
@@ -339,7 +338,7 @@ bool CDImageDeviceWin32::Open(const char* filename, Error* error)
     const TrackMode track_mode = control.data ? CDImage::TrackMode::Mode2Raw : CDImage::TrackMode::Audio;
 
     // TODO: How the hell do we handle pregaps here?
-    const u32 pregap_frames = (control.data && track_index == 0) ? 150 : 0;
+    const u32 pregap_frames = (track_index == 0) ? (FRAMES_PER_SECOND * 2) : 0;
     if (pregap_frames > 0)
     {
       Index pregap_index = {};
@@ -424,9 +423,22 @@ bool CDImageDeviceWin32::ReadSubChannelQ(SubChannelQ* subq, const Index& index, 
   if (m_current_lba != offset && !ReadSectorToBuffer(offset))
     return false;
 
-  // P, Q, ...
-  std::memcpy(subq->data.data(), m_subq.data(), SUBCHANNEL_BYTES_PER_FRAME);
-  return true;
+  if (m_scsi_read_mode == SCSIReadMode::SubQOnly)
+  {
+    // copy out subq
+    std::memcpy(subq->data.data(), m_buffer.data() + RAW_SECTOR_SIZE, SUBCHANNEL_BYTES_PER_FRAME);
+    return true;
+  }
+  else // if (m_scsi_read_mode == SCSIReadMode::Full || m_scsi_read_mode == SCSIReadMode::None)
+  {
+    // need to deinterleave the subcode
+    u8 deinterleaved_subcode[ALL_SUBCODE_SIZE];
+    DeinterleaveSubcode(m_buffer.data() + RAW_SECTOR_SIZE, deinterleaved_subcode);
+
+    // P, Q, ...
+    std::memcpy(subq->data.data(), deinterleaved_subcode + SUBCHANNEL_BYTES_PER_FRAME, SUBCHANNEL_BYTES_PER_FRAME);
+    return true;
+  }
 }
 
 bool CDImageDeviceWin32::HasNonStandardSubchannel() const
@@ -535,19 +547,6 @@ bool CDImageDeviceWin32::ReadSectorToBuffer(LBA lba)
       Log_ErrorFmt("Read of LBA {} failed: only got {} of {} bytes", lba, size.value(), expected_size);
       return false;
     }
-
-    if (m_scsi_read_mode == SCSIReadMode::Full)
-    {
-      // need to deinterleave the subcode
-      u8 deinterleaved_subcode[ALL_SUBCODE_SIZE];
-      DeinterleaveSubcode(m_buffer.data() + RAW_SECTOR_SIZE, deinterleaved_subcode);
-      std::memcpy(&m_subq, deinterleaved_subcode + SUBCHANNEL_BYTES_PER_FRAME, sizeof(m_subq)); // P,Q
-    }
-    else if (m_scsi_read_mode == SCSIReadMode::SubQOnly)
-    {
-      // copy out subq
-      std::memcpy(&m_subq, m_buffer.data() + RAW_SECTOR_SIZE, sizeof(m_subq));
-    }
   }
   else
   {
@@ -562,12 +561,58 @@ bool CDImageDeviceWin32::ReadSectorToBuffer(LBA lba)
 bool CDImageDeviceWin32::DetermineReadMode(bool try_sptd)
 {
   // Prefer raw reads if we can use them
-  const LBA track_1_lba = static_cast<LBA>(m_indices[m_tracks[0].first_index].file_offset);
-  const LBA track_1_subq_lba = track_1_lba + FRAMES_PER_SECOND * 2;
+  const Index& first_index = m_indices[m_tracks[0].first_index];
+  const LBA track_1_lba = static_cast<LBA>(first_index.file_offset);
+  const LBA track_1_subq_lba = first_index.start_lba_on_disc;
   const bool check_subcode = ShouldTryReadingSubcode();
 
-  Log_DevPrint("Trying raw reads...");
-  if (check_subcode && DoRawRead(track_1_lba))
+  if (try_sptd)
+  {
+    std::optional<u32> transfer_size;
+
+    Log_DevPrint("Trying SCSI read with full subcode...");
+    if (check_subcode && (transfer_size = DoSCSIRead(track_1_lba, SCSIReadMode::Full)).has_value())
+    {
+      if (VerifySCSIReadData(std::span<u8>(m_buffer.data(), transfer_size.value()), SCSIReadMode::Full,
+                             track_1_subq_lba))
+      {
+        Log_VerbosePrint("Using SCSI reads with subcode");
+        m_scsi_read_mode = SCSIReadMode::Full;
+        m_has_valid_subcode = true;
+        return true;
+      }
+    }
+
+    Log_WarningPrint("Full subcode failed, trying SCSI read with only subq...");
+    if (check_subcode && (transfer_size = DoSCSIRead(track_1_lba, SCSIReadMode::SubQOnly)).has_value())
+    {
+      if (VerifySCSIReadData(std::span<u8>(m_buffer.data(), transfer_size.value()), SCSIReadMode::SubQOnly,
+                             track_1_subq_lba))
+      {
+        Log_VerbosePrint("Using SCSI reads with subq only");
+        m_scsi_read_mode = SCSIReadMode::SubQOnly;
+        m_has_valid_subcode = true;
+        return true;
+      }
+    }
+
+    // As a last ditch effort, try SCSI without subcode.
+    Log_WarningPrint("Subq only failed failed, trying SCSI without subcode...");
+    if ((transfer_size = DoSCSIRead(track_1_lba, SCSIReadMode::Raw)).has_value())
+    {
+      if (VerifySCSIReadData(std::span<u8>(m_buffer.data(), transfer_size.value()), SCSIReadMode::Raw,
+                             track_1_subq_lba))
+      {
+        Log_WarningPrint("Using SCSI raw reads, libcrypt games will not run correctly");
+        m_scsi_read_mode = SCSIReadMode::Raw;
+        m_has_valid_subcode = false;
+        return true;
+      }
+    }
+  }
+
+  Log_WarningPrint("SCSI reads failed, trying raw read...");
+  if (DoRawRead(track_1_lba))
   {
     // verify subcode
     if (VerifySCSIReadData(std::span<u8>(m_buffer.data(), SCSIReadCommandOutputSize(SCSIReadMode::Full)),
@@ -578,51 +623,7 @@ bool CDImageDeviceWin32::DetermineReadMode(bool try_sptd)
       m_has_valid_subcode = true;
       return true;
     }
-  }
 
-  std::optional<u32> transfer_size;
-
-  Log_DevPrint("Trying SCSI read with full subcode...");
-  if (check_subcode && (transfer_size = DoSCSIRead(track_1_lba, SCSIReadMode::Full)).has_value())
-  {
-    if (VerifySCSIReadData(std::span<u8>(m_buffer.data(), transfer_size.value()), SCSIReadMode::Full, track_1_subq_lba))
-    {
-      Log_VerbosePrint("Using SCSI reads with subcode");
-      m_scsi_read_mode = SCSIReadMode::Full;
-      m_has_valid_subcode = true;
-      return true;
-    }
-  }
-
-  Log_WarningPrint("Full subcode failed, trying SCSI read with only subq...");
-  if (check_subcode && (transfer_size = DoSCSIRead(track_1_lba, SCSIReadMode::SubQOnly)).has_value())
-  {
-    if (VerifySCSIReadData(std::span<u8>(m_buffer.data(), transfer_size.value()), SCSIReadMode::SubQOnly,
-                           track_1_subq_lba))
-    {
-      Log_VerbosePrint("Using SCSI reads with subq only");
-      m_scsi_read_mode = SCSIReadMode::SubQOnly;
-      m_has_valid_subcode = true;
-      return true;
-    }
-  }
-
-  // As a last ditch effort, try SCSI without subcode.
-  Log_WarningPrint("Subq only failed failed, trying SCSI without subcode...");
-  if ((transfer_size = DoSCSIRead(track_1_lba, SCSIReadMode::Raw)).has_value())
-  {
-    if (VerifySCSIReadData(std::span<u8>(m_buffer.data(), transfer_size.value()), SCSIReadMode::Raw, track_1_subq_lba))
-    {
-      Log_WarningPrint("Using SCSI raw reads, libcrypt games will not run correctly");
-      m_scsi_read_mode = SCSIReadMode::Raw;
-      m_has_valid_subcode = false;
-      return true;
-    }
-  }
-
-  Log_WarningPrint("Raw SCSI read failed, trying raw but ignoring subcode...");
-  if (DoRawRead(track_1_lba))
-  {
     Log_WarningPrint("Using raw reads without subcode, libcrypt games will not run correctly");
     m_scsi_read_mode = SCSIReadMode::None;
     m_has_valid_subcode = false;
@@ -726,7 +727,6 @@ private:
   SCSIReadMode m_scsi_read_mode = SCSIReadMode::None;
 
   std::array<u8, RAW_SECTOR_SIZE + ALL_SUBCODE_SIZE> m_buffer;
-  std::array<u8, SUBCHANNEL_BYTES_PER_FRAME> m_subq;
 };
 
 } // namespace
@@ -814,7 +814,7 @@ bool CDImageDeviceLinux::Open(const char* filename, Error* error)
     const TrackMode track_mode = control.data ? CDImage::TrackMode::Mode2Raw : CDImage::TrackMode::Audio;
 
     // TODO: How the hell do we handle pregaps here?
-    const u32 pregap_frames = (control.data && track_index == 0) ? 150 : 0;
+    const u32 pregap_frames = (track_index == 0) ? 150 : 0;
     if (pregap_frames > 0)
     {
       Index pregap_index = {};
@@ -917,8 +917,22 @@ bool CDImageDeviceLinux::ReadSubChannelQ(SubChannelQ* subq, const Index& index, 
   if (m_current_lba != disc_lba && !ReadSectorToBuffer(disc_lba))
     return false;
 
-  std::memcpy(subq->data.data(), m_subq.data(), SUBCHANNEL_BYTES_PER_FRAME);
-  return true;
+  if (m_scsi_read_mode == SCSIReadMode::SubQOnly)
+  {
+    // copy out subq
+    std::memcpy(subq->data.data(), m_buffer.data() + RAW_SECTOR_SIZE, SUBCHANNEL_BYTES_PER_FRAME);
+    return true;
+  }
+  else // if (m_scsi_read_mode == SCSIReadMode::Full)
+  {
+    // need to deinterleave the subcode
+    u8 deinterleaved_subcode[ALL_SUBCODE_SIZE];
+    DeinterleaveSubcode(m_buffer.data() + RAW_SECTOR_SIZE, deinterleaved_subcode);
+
+    // P, Q, ...
+    std::memcpy(subq->data.data(), deinterleaved_subcode + SUBCHANNEL_BYTES_PER_FRAME, SUBCHANNEL_BYTES_PER_FRAME);
+    return true;
+  }
 }
 
 bool CDImageDeviceLinux::HasNonStandardSubchannel() const
@@ -1006,19 +1020,6 @@ bool CDImageDeviceLinux::ReadSectorToBuffer(LBA lba)
     {
       Log_ErrorFmt("Read of LBA {} failed: only got {} of {} bytes", lba, size.value(), expected_size);
       return false;
-    }
-
-    if (m_scsi_read_mode == SCSIReadMode::Full)
-    {
-      // need to deinterleave the subcode
-      u8 deinterleaved_subcode[ALL_SUBCODE_SIZE];
-      DeinterleaveSubcode(m_buffer.data() + RAW_SECTOR_SIZE, deinterleaved_subcode);
-      std::memcpy(&m_subq, deinterleaved_subcode + SUBCHANNEL_BYTES_PER_FRAME, sizeof(m_subq)); // P,Q
-    }
-    else if (m_scsi_read_mode == SCSIReadMode::SubQOnly)
-    {
-      // copy out subq
-      std::memcpy(&m_subq, m_buffer.data() + RAW_SECTOR_SIZE, sizeof(m_subq));
     }
   }
   else
