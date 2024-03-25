@@ -99,14 +99,15 @@ make -C build "-j$NPROCS"
 make -C build install
 cd ..
 
-echo "Installing Zlib..."
-rm -fr "zlib-$ZLIB"
-tar xf "zlib-$ZLIB.tar.gz"
-cd "zlib-$ZLIB"
-cmake -B build "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -DZLIB_BUILD_EXAMPLES=OFF
-make -C build "-j$NPROCS"
-make -C build install
-cd ..
+# Temporarily disabled, because the updater doesn't get fixup'd, so the dylib doesn't get added to its bundle.
+#echo "Installing Zlib..."
+#rm -fr "zlib-$ZLIB"
+#tar xf "zlib-$ZLIB.tar.gz"
+#cd "zlib-$ZLIB"
+#cmake -B build "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -DZLIB_BUILD_EXAMPLES=OFF
+#make -C build "-j$NPROCS"
+#make -C build install
+#cd ..
 
 echo "Installing Zstd..."
 rm -fr "zstd-$ZSTD"
