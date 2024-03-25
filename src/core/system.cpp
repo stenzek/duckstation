@@ -3360,7 +3360,8 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
       // TODO: We could pull the title from the PSF.
       s_running_game_title = Path::GetFileTitle(path);
     }
-    else if (image)
+    // Check for an audio CD. Those shouldn't set any title.
+    else if (image && image->GetTrack(1).mode != CDImage::TrackMode::Audio)
     {
       std::string id;
       GetGameDetailsFromImage(image, &id, &s_running_game_hash);
