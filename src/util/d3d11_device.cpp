@@ -79,6 +79,7 @@ bool D3D11Device::CreateDevice(const std::string_view& adapter, bool threaded_pr
     return false;
 
   ComPtr<IDXGIAdapter1> dxgi_adapter = D3DCommon::GetAdapterByName(m_dxgi_factory.Get(), adapter);
+  m_max_feature_level = D3DCommon::GetDeviceMaxFeatureLevel(dxgi_adapter.Get());
 
   static constexpr std::array<D3D_FEATURE_LEVEL, 3> requested_feature_levels = {
     {D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0}};
@@ -128,6 +129,7 @@ bool D3D11Device::CreateDevice(const std::string_view& adapter, bool threaded_pr
     Log_InfoPrintf("D3D Adapter: %s", D3DCommon::GetAdapterName(dxgi_adapter.Get()).c_str());
   else
     Log_ErrorPrint("Failed to obtain D3D adapter name.");
+  Log_InfoFmt("Max device feature level: {}", D3DCommon::GetFeatureLevelString(m_max_feature_level));
 
   BOOL allow_tearing_supported = false;
   hr = m_dxgi_factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported,
@@ -233,8 +235,7 @@ bool D3D11Device::CreateSwapChain()
   swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
   swap_chain_desc.SwapEffect = m_using_flip_model_swap_chain ? DXGI_SWAP_EFFECT_FLIP_DISCARD : DXGI_SWAP_EFFECT_DISCARD;
 
-  m_using_allow_tearing =
-    (m_allow_tearing_supported && m_using_flip_model_swap_chain && !m_is_exclusive_fullscreen);
+  m_using_allow_tearing = (m_allow_tearing_supported && m_using_flip_model_swap_chain && !m_is_exclusive_fullscreen);
   if (m_using_allow_tearing)
     swap_chain_desc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
@@ -456,9 +457,9 @@ std::string D3D11Device::GetDriverInfo() const
 
 bool D3D11Device::CreateBuffers()
 {
-  if (!m_vertex_buffer.Create(m_device.Get(), D3D11_BIND_VERTEX_BUFFER, VERTEX_BUFFER_SIZE) ||
-      !m_index_buffer.Create(m_device.Get(), D3D11_BIND_INDEX_BUFFER, INDEX_BUFFER_SIZE) ||
-      !m_uniform_buffer.Create(m_device.Get(), D3D11_BIND_CONSTANT_BUFFER, UNIFORM_BUFFER_SIZE))
+  if (!m_vertex_buffer.Create(D3D11_BIND_VERTEX_BUFFER, VERTEX_BUFFER_SIZE, VERTEX_BUFFER_SIZE) ||
+      !m_index_buffer.Create(D3D11_BIND_INDEX_BUFFER, INDEX_BUFFER_SIZE, INDEX_BUFFER_SIZE) ||
+      !m_uniform_buffer.Create(D3D11_BIND_CONSTANT_BUFFER, MIN_UNIFORM_BUFFER_SIZE, MAX_UNIFORM_BUFFER_SIZE))
   {
     Log_ErrorPrintf("Failed to create vertex/index/uniform buffers.");
     return false;
@@ -877,36 +878,61 @@ void D3D11Device::UnmapIndexBuffer(u32 used_index_count)
 
 void D3D11Device::PushUniformBuffer(const void* data, u32 data_size)
 {
-  const u32 used_space = Common::AlignUpPow2(data_size, UNIFORM_BUFFER_ALIGNMENT);
-  const auto res = m_uniform_buffer.Map(m_context.Get(), UNIFORM_BUFFER_ALIGNMENT, used_space);
+  const u32 req_align =
+    m_uniform_buffer.IsUsingMapNoOverwrite() ? UNIFORM_BUFFER_ALIGNMENT : UNIFORM_BUFFER_ALIGNMENT_DISCARD;
+  const u32 req_size = Common::AlignUpPow2(data_size, req_align);
+  const auto res = m_uniform_buffer.Map(m_context.Get(), req_align, req_size);
   std::memcpy(res.pointer, data, data_size);
-  m_uniform_buffer.Unmap(m_context.Get(), data_size);
+  m_uniform_buffer.Unmap(m_context.Get(), req_size);
   s_stats.buffer_streamed += data_size;
 
-  const UINT first_constant = (res.index_aligned * UNIFORM_BUFFER_ALIGNMENT) / 16u;
-  const UINT num_constants = (used_space * UNIFORM_BUFFER_ALIGNMENT) / 16u;
-  m_context->VSSetConstantBuffers1(0, 1, m_uniform_buffer.GetD3DBufferArray(), &first_constant, &num_constants);
-  m_context->PSSetConstantBuffers1(0, 1, m_uniform_buffer.GetD3DBufferArray(), &first_constant, &num_constants);
+  if (m_uniform_buffer.IsUsingMapNoOverwrite())
+  {
+    const UINT first_constant = (res.index_aligned * UNIFORM_BUFFER_ALIGNMENT) / 16u;
+    const UINT num_constants = req_size / 16u;
+    m_context->VSSetConstantBuffers1(0, 1, m_uniform_buffer.GetD3DBufferArray(), &first_constant, &num_constants);
+    m_context->PSSetConstantBuffers1(0, 1, m_uniform_buffer.GetD3DBufferArray(), &first_constant, &num_constants);
+  }
+  else
+  {
+    DebugAssert(res.index_aligned == 0);
+    m_context->VSSetConstantBuffers(0, 1, m_uniform_buffer.GetD3DBufferArray());
+    m_context->PSSetConstantBuffers(0, 1, m_uniform_buffer.GetD3DBufferArray());
+  }
 }
 
 void* D3D11Device::MapUniformBuffer(u32 size)
 {
-  const u32 used_space = Common::AlignUpPow2(size, UNIFORM_BUFFER_ALIGNMENT);
-  const auto res = m_uniform_buffer.Map(m_context.Get(), UNIFORM_BUFFER_ALIGNMENT, used_space);
+  const u32 req_align =
+    m_uniform_buffer.IsUsingMapNoOverwrite() ? UNIFORM_BUFFER_ALIGNMENT : UNIFORM_BUFFER_ALIGNMENT_DISCARD;
+  const u32 req_size = Common::AlignUpPow2(size, req_align);
+  const auto res = m_uniform_buffer.Map(m_context.Get(), req_align, req_size);
   return res.pointer;
 }
 
 void D3D11Device::UnmapUniformBuffer(u32 size)
 {
-  const u32 used_space = Common::AlignUpPow2(size, UNIFORM_BUFFER_ALIGNMENT);
-  const UINT first_constant = m_uniform_buffer.GetPosition() / 16u;
-  const UINT num_constants = used_space / 16u;
+  const u32 pos = m_uniform_buffer.GetPosition();
+  const u32 req_align =
+    m_uniform_buffer.IsUsingMapNoOverwrite() ? UNIFORM_BUFFER_ALIGNMENT : UNIFORM_BUFFER_ALIGNMENT_DISCARD;
+  const u32 req_size = Common::AlignUpPow2(size, req_align);
 
-  m_uniform_buffer.Unmap(m_context.Get(), used_space);
+  m_uniform_buffer.Unmap(m_context.Get(), req_size);
   s_stats.buffer_streamed += size;
 
-  m_context->VSSetConstantBuffers1(0, 1, m_uniform_buffer.GetD3DBufferArray(), &first_constant, &num_constants);
-  m_context->PSSetConstantBuffers1(0, 1, m_uniform_buffer.GetD3DBufferArray(), &first_constant, &num_constants);
+  if (m_uniform_buffer.IsUsingMapNoOverwrite())
+  {
+    const UINT first_constant = pos / 16u;
+    const UINT num_constants = req_size / 16u;
+    m_context->VSSetConstantBuffers1(0, 1, m_uniform_buffer.GetD3DBufferArray(), &first_constant, &num_constants);
+    m_context->PSSetConstantBuffers1(0, 1, m_uniform_buffer.GetD3DBufferArray(), &first_constant, &num_constants);
+  }
+  else
+  {
+    DebugAssert(pos == 0);
+    m_context->VSSetConstantBuffers(0, 1, m_uniform_buffer.GetD3DBufferArray());
+    m_context->PSSetConstantBuffers(0, 1, m_uniform_buffer.GetD3DBufferArray());
+  }
 }
 
 void D3D11Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds)

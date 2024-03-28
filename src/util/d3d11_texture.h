@@ -107,7 +107,7 @@ public:
   ALWAYS_INLINE ID3D11ShaderResourceView* GetSRV() const { return m_srv.Get(); }
   ALWAYS_INLINE ID3D11ShaderResourceView* const* GetSRVArray() const { return m_srv.GetAddressOf(); }
 
-  bool CreateBuffer(ID3D11Device* device);
+  bool CreateBuffer();
 
   // Inherited via GPUTextureBuffer
   void* Map(u32 required_elements) override;

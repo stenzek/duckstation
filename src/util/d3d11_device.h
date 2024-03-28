@@ -34,6 +34,7 @@ public:
   ALWAYS_INLINE static D3D11Device& GetInstance() { return *static_cast<D3D11Device*>(g_gpu_device.get()); }
   ALWAYS_INLINE static ID3D11Device* GetD3DDevice() { return GetInstance().m_device.Get(); }
   ALWAYS_INLINE static ID3D11DeviceContext1* GetD3DContext() { return GetInstance().m_context.Get(); }
+  ALWAYS_INLINE static D3D_FEATURE_LEVEL GetMaxFeatureLevel() { return GetInstance().m_max_feature_level; }
 
   RenderAPI GetRenderAPI() const override;
 
@@ -121,8 +122,10 @@ private:
 
   static constexpr u32 VERTEX_BUFFER_SIZE = 8 * 1024 * 1024;
   static constexpr u32 INDEX_BUFFER_SIZE = 4 * 1024 * 1024;
-  static constexpr u32 UNIFORM_BUFFER_SIZE = 2 * 1024 * 1024;
+  static constexpr u32 MAX_UNIFORM_BUFFER_SIZE = 2 * 1024 * 1024;
+  static constexpr u32 MIN_UNIFORM_BUFFER_SIZE = 16;
   static constexpr u32 UNIFORM_BUFFER_ALIGNMENT = 256;
+  static constexpr u32 UNIFORM_BUFFER_ALIGNMENT_DISCARD = 16;
   static constexpr u8 NUM_TIMESTAMP_QUERIES = 3;
 
   static void GetAdapterAndModeList(AdapterAndModeList* ret, IDXGIFactory5* factory);
@@ -161,6 +164,7 @@ private:
   BlendStateMap m_blend_states;
   InputLayoutMap m_input_layouts;
 
+  D3D_FEATURE_LEVEL m_max_feature_level = D3D_FEATURE_LEVEL_10_0;
   bool m_allow_tearing_supported = false;
   bool m_using_flip_model_swap_chain = true;
   bool m_using_allow_tearing = false;

@@ -28,6 +28,9 @@ namespace D3DCommon {
 const char* GetFeatureLevelString(D3D_FEATURE_LEVEL feature_level);
 const char* GetFeatureLevelShaderModelString(D3D_FEATURE_LEVEL feature_level);
 
+// returns max feature level of a device
+D3D_FEATURE_LEVEL GetDeviceMaxFeatureLevel(IDXGIAdapter1* adapter);
+
 // create a dxgi factory
 Microsoft::WRL::ComPtr<IDXGIFactory5> CreateFactory(bool debug, Error* error);
 

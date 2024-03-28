@@ -337,9 +337,10 @@ D3D11TextureBuffer::D3D11TextureBuffer(Format format, u32 size_in_elements) : GP
 
 D3D11TextureBuffer::~D3D11TextureBuffer() = default;
 
-bool D3D11TextureBuffer::CreateBuffer(ID3D11Device* device)
+bool D3D11TextureBuffer::CreateBuffer()
 {
-  if (!m_buffer.Create(device, D3D11_BIND_SHADER_RESOURCE, GetSizeInBytes()))
+  const u32 size_in_bytes = GetSizeInBytes();
+  if (!m_buffer.Create(D3D11_BIND_SHADER_RESOURCE, size_in_bytes, size_in_bytes))
     return false;
 
   static constexpr std::array<DXGI_FORMAT, static_cast<u32>(Format::MaxCount)> dxgi_formats = {{
@@ -348,7 +349,8 @@ bool D3D11TextureBuffer::CreateBuffer(ID3D11Device* device)
 
   CD3D11_SHADER_RESOURCE_VIEW_DESC srv_desc(m_buffer.GetD3DBuffer(), dxgi_formats[static_cast<u32>(m_format)], 0,
                                             m_size_in_elements);
-  const HRESULT hr = device->CreateShaderResourceView(m_buffer.GetD3DBuffer(), &srv_desc, m_srv.GetAddressOf());
+  const HRESULT hr =
+    D3D11Device::GetD3DDevice()->CreateShaderResourceView(m_buffer.GetD3DBuffer(), &srv_desc, m_srv.GetAddressOf());
   if (FAILED(hr))
   {
     Log_ErrorPrintf("CreateShaderResourceView() failed: %08X", hr);
@@ -383,7 +385,7 @@ std::unique_ptr<GPUTextureBuffer> D3D11Device::CreateTextureBuffer(GPUTextureBuf
                                                                    u32 size_in_elements)
 {
   std::unique_ptr<D3D11TextureBuffer> tb = std::make_unique<D3D11TextureBuffer>(format, size_in_elements);
-  if (!tb->CreateBuffer(m_device.Get()))
+  if (!tb->CreateBuffer())
     tb.reset();
 
   return tb;

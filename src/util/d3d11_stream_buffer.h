@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -24,8 +24,9 @@ public:
   ALWAYS_INLINE u32 GetSize() const { return m_size; }
   ALWAYS_INLINE u32 GetPosition() const { return m_position; }
   ALWAYS_INLINE bool IsMapped() const { return m_mapped; }
+  ALWAYS_INLINE bool IsUsingMapNoOverwrite() const { return m_use_map_no_overwrite; }
 
-  bool Create(ID3D11Device* device, D3D11_BIND_FLAG bind_flags, u32 size);
+  bool Create(D3D11_BIND_FLAG bind_flags, u32 min_size, u32 max_size);
   void Destroy();
 
   struct MappingResult
@@ -42,6 +43,7 @@ public:
 private:
   ComPtr<ID3D11Buffer> m_buffer;
   u32 m_size;
+  u32 m_max_size;
   u32 m_position;
   bool m_use_map_no_overwrite = false;
   bool m_mapped = false;

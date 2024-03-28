@@ -12,6 +12,7 @@
 
 #include "fmt/format.h"
 
+#include <d3d11.h>
 #include <d3dcompiler.h>
 #include <dxgi1_5.h>
 
@@ -21,11 +22,18 @@ static unsigned s_next_bad_shader_id = 1;
 
 const char* D3DCommon::GetFeatureLevelString(D3D_FEATURE_LEVEL feature_level)
 {
-  static constexpr std::array<std::tuple<D3D_FEATURE_LEVEL, const char*>, 4> feature_level_names = {{
+  static constexpr std::array<std::tuple<D3D_FEATURE_LEVEL, const char*>, 11> feature_level_names = {{
+    {D3D_FEATURE_LEVEL_1_0_CORE, "D3D_FEATURE_LEVEL_1_0_CORE"},
+    {D3D_FEATURE_LEVEL_9_1, "D3D_FEATURE_LEVEL_9_1"},
+    {D3D_FEATURE_LEVEL_9_2, "D3D_FEATURE_LEVEL_9_2"},
+    {D3D_FEATURE_LEVEL_9_3, "D3D_FEATURE_LEVEL_9_3"},
     {D3D_FEATURE_LEVEL_10_0, "D3D_FEATURE_LEVEL_10_0"},
     {D3D_FEATURE_LEVEL_10_1, "D3D_FEATURE_LEVEL_10_1"},
     {D3D_FEATURE_LEVEL_11_0, "D3D_FEATURE_LEVEL_11_0"},
     {D3D_FEATURE_LEVEL_11_1, "D3D_FEATURE_LEVEL_11_1"},
+    {D3D_FEATURE_LEVEL_12_0, "D3D_FEATURE_LEVEL_12_0"},
+    {D3D_FEATURE_LEVEL_12_1, "D3D_FEATURE_LEVEL_12_1"},
+    {D3D_FEATURE_LEVEL_12_2, "D3D_FEATURE_LEVEL_12_2"},
   }};
 
   for (const auto& [fl, name] : feature_level_names)
@@ -53,6 +61,22 @@ const char* D3DCommon::GetFeatureLevelShaderModelString(D3D_FEATURE_LEVEL featur
   }
 
   return "unk";
+}
+
+D3D_FEATURE_LEVEL D3DCommon::GetDeviceMaxFeatureLevel(IDXGIAdapter1* adapter)
+{
+  static constexpr std::array requested_feature_levels = {
+    D3D_FEATURE_LEVEL_12_2, D3D_FEATURE_LEVEL_12_1, D3D_FEATURE_LEVEL_12_0, D3D_FEATURE_LEVEL_11_1,
+    D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0};
+
+  D3D_FEATURE_LEVEL max_supported_level = requested_feature_levels.back();
+  HRESULT hr = D3D11CreateDevice(adapter, adapter ? D3D_DRIVER_TYPE_UNKNOWN : D3D_DRIVER_TYPE_HARDWARE, nullptr, 0,
+                                 requested_feature_levels.data(), static_cast<UINT>(requested_feature_levels.size()),
+                                 D3D11_SDK_VERSION, nullptr, &max_supported_level, nullptr);
+  if (FAILED(hr))
+    Log_WarningFmt("D3D11CreateDevice() for getting max feature level failed: 0x{:08X}", static_cast<unsigned>(hr));
+
+  return max_supported_level;
 }
 
 Microsoft::WRL::ComPtr<IDXGIFactory5> D3DCommon::CreateFactory(bool debug, Error* error)
