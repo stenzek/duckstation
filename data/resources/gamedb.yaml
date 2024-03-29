@@ -103668,6 +103668,10 @@ SCPS-10001:
   controllers:
     - DigitalController
     - NeGcon
+  traits:
+    - ForcePGXPCPUMode
+  codes:
+    - HASH-58C38FDD4440E3DB
   metadata:
     publisher: "Sony"
     developer: "Sony"
