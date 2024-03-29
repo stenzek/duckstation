@@ -1577,13 +1577,14 @@ void CPU::NewRec::X64Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize siz
   cg->mov(RWARG2, 24);
   cg->sub(RWARG2, cg->ecx);
 
+  const Reg32& temp = (RWARG3 == cg->ecx) ? RWARG4 : RWARG3;
   if (inst->op == InstructionOp::lwl)
   {
     // const u32 mask = UINT32_C(0x00FFFFFF) >> shift;
     // new_value = (value & mask) | (RWRET << (24 - shift));
-    cg->mov(addr, 0xFFFFFFu);
-    cg->shr(addr, cg->cl);
-    cg->and_(value, addr);
+    cg->mov(temp, 0xFFFFFFu);
+    cg->shr(temp, cg->cl);
+    cg->and_(value, temp);
     cg->mov(cg->ecx, RWARG2);
     cg->shl(RWRET, cg->cl);
     cg->or_(value, RWRET);
@@ -1593,28 +1594,42 @@ void CPU::NewRec::X64Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize siz
     // const u32 mask = UINT32_C(0xFFFFFF00) << (24 - shift);
     // new_value = (value & mask) | (RWRET >> shift);
     cg->shr(RWRET, cg->cl);
-    cg->mov(addr, 0xFFFFFF00u);
+    cg->mov(temp, 0xFFFFFF00u);
     cg->mov(cg->ecx, RWARG2);
-    cg->shl(addr, cg->cl);
-    cg->and_(value, addr);
+    cg->shl(temp, cg->cl);
+    cg->and_(value, temp);
     cg->or_(value, RWRET);
   }
 
   FreeHostReg(addr.getIdx());
+
+  if (g_settings.gpu_pgxp_enable)
+  {
+    DebugAssert(value != RWARG3);
+    cg->mov(RWARG3, value);
+    cg->mov(RWARG2, addr);
+    cg->and_(RWARG2, ~0x3u);
+    cg->mov(RWARG1, inst->bits);
+    cg->call(reinterpret_cast<const void*>(&PGXP::CPU_LW));
+  }
 }
 
 void CPU::NewRec::X64Compiler::Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                                             const std::optional<VirtualMemoryAddress>& address)
 {
+  const u32 index = static_cast<u32>(inst->r.rt.GetValue());
+  const auto [ptr, action] = GetGTERegisterPointer(index, true);
   const std::optional<Reg32> addr_reg = g_settings.gpu_pgxp_enable ?
                                           std::optional<Reg32>(Reg32(AllocateTempHostReg(HR_CALLEE_SAVED))) :
                                           std::optional<Reg32>();
   FlushForLoadStore(address, false, use_fastmem);
   const Reg32 addr = ComputeLoadStoreAddressArg(cf, address, addr_reg);
-  GenerateLoad(addr, MemoryAccessSize::Word, false, use_fastmem, []() { return RWRET; });
+  const Reg32 value = GenerateLoad(addr, MemoryAccessSize::Word, false, use_fastmem, [this, action]() {
+    return (action == GTERegisterAccessAction::CallHandler && g_settings.gpu_pgxp_enable) ?
+             Reg32(AllocateTempHostReg(HR_CALLEE_SAVED)) :
+             RWRET;
+  });
 
-  const u32 index = static_cast<u32>(inst->r.rt.GetValue());
-  const auto [ptr, action] = GetGTERegisterPointer(index, true);
   switch (action)
   {
     case GTERegisterAccessAction::Ignore:
@@ -1624,28 +1639,28 @@ void CPU::NewRec::X64Compiler::Compile_lwc2(CompileFlags cf, MemoryAccessSize si
 
     case GTERegisterAccessAction::Direct:
     {
-      cg->mov(cg->dword[PTR(ptr)], RWRET);
+      cg->mov(cg->dword[PTR(ptr)], value);
       break;
     }
 
     case GTERegisterAccessAction::SignExtend16:
     {
-      cg->movsx(RWRET, RWRET.cvt16());
-      cg->mov(cg->dword[PTR(ptr)], RWRET);
+      cg->movsx(RWARG3, value.cvt16());
+      cg->mov(cg->dword[PTR(ptr)], RWARG3);
       break;
     }
 
     case GTERegisterAccessAction::ZeroExtend16:
     {
-      cg->movzx(RWRET, RWRET.cvt16());
-      cg->mov(cg->dword[PTR(ptr)], RWRET);
+      cg->movzx(RWARG3, value.cvt16());
+      cg->mov(cg->dword[PTR(ptr)], RWARG3);
       break;
     }
 
     case GTERegisterAccessAction::CallHandler:
     {
       Flush(FLUSH_FOR_C_CALL);
-      cg->mov(RWARG2, RWRET);
+      cg->mov(RWARG2, value);
       cg->mov(RWARG1, index);
       cg->call(&GTE::WriteRegister);
       break;
@@ -1656,12 +1671,12 @@ void CPU::NewRec::X64Compiler::Compile_lwc2(CompileFlags cf, MemoryAccessSize si
       // SXY0 <- SXY1
       // SXY1 <- SXY2
       // SXY2 <- SXYP
-      DebugAssert(RWRET != RWARG1 && RWRET != RWARG2);
+      DebugAssert(value != RWARG1 && value != RWARG2);
       cg->mov(RWARG1, cg->dword[PTR(&g_state.gte_regs.SXY1[0])]);
       cg->mov(RWARG2, cg->dword[PTR(&g_state.gte_regs.SXY2[0])]);
       cg->mov(cg->dword[PTR(&g_state.gte_regs.SXY0[0])], RWARG1);
       cg->mov(cg->dword[PTR(&g_state.gte_regs.SXY1[0])], RWARG2);
-      cg->mov(cg->dword[PTR(&g_state.gte_regs.SXY2[0])], RWRET);
+      cg->mov(cg->dword[PTR(&g_state.gte_regs.SXY2[0])], value);
       break;
     }
 
@@ -1675,11 +1690,13 @@ void CPU::NewRec::X64Compiler::Compile_lwc2(CompileFlags cf, MemoryAccessSize si
   if (g_settings.gpu_pgxp_enable)
   {
     Flush(FLUSH_FOR_C_CALL);
-    cg->mov(RWARG3, RWRET);
+    cg->mov(RWARG3, value);
+    if (value != RWRET)
+      FreeHostReg(value.getIdx());
     cg->mov(RWARG2, addr);
+    FreeHostReg(addr_reg.value().getIdx());
     cg->mov(RWARG1, inst->bits);
     cg->call(reinterpret_cast<const void*>(&PGXP::CPU_LWC2));
-    FreeHostReg(addr_reg.value().getIdx());
   }
 }
 
@@ -1726,18 +1743,19 @@ void CPU::NewRec::X64Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize siz
   // TODO: this can take over rt's value if it's no longer needed
   // NOTE: can't trust T in cf because of the flush
   const Reg rt = inst->r.rt;
-  const Reg32 value = RWARG2;
+  const Reg32 value = g_settings.gpu_pgxp_enable ? Reg32(AllocateTempHostReg(HR_CALLEE_SAVED)) : RWARG2;
   DebugAssert(value != cg->ecx);
-  if (HasConstantReg(rt))
-    cg->mov(value, GetConstantRegU32(rt));
-  else if (const std::optional<u32> rtreg = CheckHostReg(HR_MODE_READ, HR_TYPE_CPU_REG, rt); rtreg.has_value())
-    cg->mov(value, Reg32(rtreg.value()));
-  else
-    cg->mov(value, MipsPtr(rt));
+  MoveMIPSRegToReg(value, rt);
 
   cg->mov(cg->ecx, addr);
   cg->and_(cg->ecx, 3);
   cg->shl(cg->ecx, 3); // *8
+
+  // Don't need the original address anymore.
+  if (g_settings.gpu_pgxp_enable)
+    cg->and_(addr, ~0x3u);
+  else
+    FreeHostReg(addr.getIdx());
 
   if (inst->op == InstructionOp::swl)
   {
@@ -1769,11 +1787,18 @@ void CPU::NewRec::X64Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize siz
     cg->or_(value, RWRET);
   }
 
-  FreeHostReg(addr.getIdx());
+  GenerateStore(addr, value, MemoryAccessSize::Word, use_fastmem);
 
-  cg->mov(RWARG1, addr);
-  cg->and_(RWARG1, ~0x3u);
-  GenerateStore(RWARG1, value, MemoryAccessSize::Word, use_fastmem);
+  if (g_settings.gpu_pgxp_enable)
+  {
+    Flush(FLUSH_FOR_C_CALL);
+    cg->mov(RWARG3, value);
+    FreeHostReg(value.getIdx());
+    cg->mov(RWARG2, addr);
+    FreeHostReg(addr.getIdx());
+    cg->mov(RWARG1, inst->bits);
+    cg->call(reinterpret_cast<const void*>(&PGXP::CPU_SW));
+  }
 }
 
 void CPU::NewRec::X64Compiler::Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,

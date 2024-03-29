@@ -19,10 +19,6 @@
 #include <unordered_map>
 #include <vector>
 
-#ifdef ENABLE_RECOMPILER
-// #include "cpu_recompiler_types.h"
-#endif
-
 namespace CPU::CodeCache {
 
 enum : u32
