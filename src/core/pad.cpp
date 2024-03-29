@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "pad.h"
@@ -18,6 +18,8 @@
 #include "common/bitutils.h"
 #include "common/fifo_queue.h"
 #include "common/log.h"
+
+#include "IconsFontAwesome5.h"
 
 #include <array>
 #include <memory>
@@ -257,16 +259,16 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
 
   if (card_present_in_state && !s_memory_cards[i] && g_settings.load_devices_from_save_states)
   {
-    Host::AddFormattedOSDMessage(
-      20.0f,
-      TRANSLATE("OSDMessage", "Memory card %u present in save state but not in system. Creating temporary card."),
-      i + 1u);
+    Host::AddIconOSDMessage(
+      fmt::format("card_load_warning_{}", i), ICON_FA_SD_CARD,
+      fmt::format(
+        TRANSLATE_FS("OSDMessage", "Memory card {} present in save state but not in system. Creating temporary card."),
+        i + 1u),
+      Host::OSD_ERROR_DURATION);
     s_memory_cards[i] = MemoryCard::Create();
   }
 
   MemoryCard* card_ptr = s_memory_cards[i].get();
-  std::unique_ptr<MemoryCard> card_from_state;
-
   if (card_present_in_state)
   {
     if (sw.IsReading() && !g_settings.load_devices_from_save_states)
@@ -284,22 +286,24 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
   if (sw.IsWriting())
     return true; // all done as far as writes concerned.
 
-  if (card_from_state)
+  if (card_ptr != s_memory_cards[i].get())
   {
     if (s_memory_cards[i])
     {
-      if (s_memory_cards[i]->GetData() == card_from_state->GetData())
+      if (s_memory_cards[i]->GetData() == card_ptr->GetData())
       {
-        card_from_state->SetFilename(s_memory_cards[i]->GetFilename());
-        s_memory_cards[i] = std::move(card_from_state);
+        Log_DevFmt("Card {} data matches, copying state", i + 1u);
+        s_memory_cards[i]->CopyState(card_ptr);
       }
       else
       {
-        Host::AddFormattedOSDMessage(
-          20.0f,
-          TRANSLATE("OSDMessage",
-                    "Memory card %u from save state does match current card data. Simulating replugging."),
-          i + 1u);
+        Host::AddIconOSDMessage(
+          fmt::format("card_load_warning_{}", i), ICON_FA_SD_CARD,
+          fmt::format(
+            TRANSLATE_FS("OSDMessage",
+                         "Memory card {} from save state does match current card data. Simulating replugging."),
+            i + 1u),
+          Host::OSD_WARNING_DURATION);
 
         // this is a potentially serious issue - some games cache info from memcards and jumping around
         // with savestates can lead to card corruption on the next save attempts (and may not be obvious
@@ -307,15 +311,17 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
         // for the game to decide it was removed and purge its cache. Once implemented, this could be
         // described as deferred re-plugging in the log.
 
-        Log_WarningPrintf("Memory card %u data mismatch. Using current data via instant-replugging.", i + 1u);
+        Log_WarningFmt("Memory card {} data mismatch. Using current data via instant-replugging.", i + 1u);
         s_memory_cards[i]->Reset();
       }
     }
     else
     {
-      Host::AddFormattedOSDMessage(
-        20.0f, TRANSLATE("OSDMessage", "Memory card %u present in save state but not in system. Ignoring card."),
-        i + 1u);
+      Host::AddIconOSDMessage(
+        fmt::format("card_load_warning_{}", i), ICON_FA_SD_CARD,
+        fmt::format(
+          TRANSLATE_FS("OSDMessage", "Memory card {} present in save state but not in system. Ignoring card."), i + 1u),
+        Host::OSD_ERROR_DURATION);
     }
 
     return true;
@@ -325,16 +331,21 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
   {
     if (g_settings.load_devices_from_save_states)
     {
-      Host::AddFormattedOSDMessage(
-        20.0f, TRANSLATE("OSDMessage", "Memory card %u present in system but not in save state. Removing card."),
-        i + 1u);
+      Host::AddIconOSDMessage(
+        fmt::format("card_load_warning_{}", i), ICON_FA_SD_CARD,
+        fmt::format(
+          TRANSLATE_FS("OSDMessage", "Memory card {} present in system but not in save state. Removing card."), i + 1u),
+        Host::OSD_ERROR_DURATION);
       s_memory_cards[i].reset();
     }
     else
     {
-      Host::AddFormattedOSDMessage(
-        20.0f, TRANSLATE("OSDMessage", "Memory card %u present in system but not in save state. Replugging card."),
-        i + 1u);
+      Host::AddIconOSDMessage(
+        fmt::format("card_load_warning_{}", i), ICON_FA_SD_CARD,
+        fmt::format(
+          TRANSLATE_FS("OSDMessage", "Memory card {} present in system but not in save state. Replugging card."),
+          i + 1u),
+        Host::OSD_WARNING_DURATION);
       s_memory_cards[i]->Reset();
     }
   }

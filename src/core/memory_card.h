@@ -30,6 +30,7 @@ public:
 
   void Reset();
   bool DoState(StateWrapper& sw);
+  void CopyState(const MemoryCard* src);
 
   void ResetTransferState();
   bool Transfer(const u8 data_in, u8* data_out);
