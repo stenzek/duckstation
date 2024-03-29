@@ -3106,7 +3106,7 @@ void GPU_HW::UpdateDisplay()
   const u32 scaled_display_width = m_crtc_state.display_vram_width * resolution_scale;
   const u32 scaled_display_height = m_crtc_state.display_vram_height * resolution_scale;
   const u32 read_height = interlaced ? (scaled_display_height / 2u) : scaled_display_height;
-  const u32 line_skip = m_GPUSTAT.vertical_resolution;
+  const u32 line_skip = BoolToUInt32(interlaced && m_GPUSTAT.vertical_resolution);
   bool drew_anything = false;
 
   if (IsDisplayDisabled())
