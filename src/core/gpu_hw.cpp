@@ -3181,7 +3181,7 @@ void GPU_HW::UpdateDisplay()
     }
   }
 
-  if (m_downsample_mode != GPUDownsampleMode::Disabled)
+  if (m_downsample_mode != GPUDownsampleMode::Disabled && !m_GPUSTAT.display_area_color_depth_24)
   {
     DebugAssert(m_display_texture);
     DownsampleFramebuffer(m_display_texture, m_display_texture_view_x, m_display_texture_view_y,
