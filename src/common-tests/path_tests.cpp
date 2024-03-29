@@ -247,7 +247,7 @@ TEST(Path, RemoveLengthLimits)
 {
 #ifdef _WIN32
   ASSERT_EQ(Path::RemoveLengthLimits("C:\\foo"), "\\\\?\\C:\\foo");
-  ASSERT_EQ(Path::RemoveLengthLimits("\\\\foo\\bar\\baz"), "\\\\?\\\\\\foo\\bar\\baz");
+  ASSERT_EQ(Path::RemoveLengthLimits("\\\\foo\\bar\\baz"), "\\\\?\\UNC\\foo\\bar\\baz");
 #else
   ASSERT_EQ(Path::RemoveLengthLimits("/foo/bar/baz"), "/foo/bar/baz");
 #endif

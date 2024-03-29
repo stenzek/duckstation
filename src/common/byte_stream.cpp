@@ -281,7 +281,7 @@ public:
     {
 #if defined(_WIN32)
       // delete the temporary file
-      if (!DeleteFileW(StringUtil::UTF8StringToWideString(m_temporaryFileName).c_str()))
+      if (!DeleteFileW(FileSystem::GetWin32Path(m_temporaryFileName).c_str()))
       {
         Log_WarningPrintf(
           "AtomicUpdatedFileByteStream::~AtomicUpdatedFileByteStream(): Failed to delete temporary file '%s'",
@@ -313,8 +313,8 @@ public:
 
 #if defined(_WIN32)
     // move the atomic file name to the original file name
-    if (!MoveFileExW(StringUtil::UTF8StringToWideString(m_temporaryFileName).c_str(),
-                     StringUtil::UTF8StringToWideString(m_originalFileName).c_str(), MOVEFILE_REPLACE_EXISTING))
+    if (!MoveFileExW(FileSystem::GetWin32Path(m_temporaryFileName).c_str(),
+                     FileSystem::GetWin32Path(m_originalFileName).c_str(), MOVEFILE_REPLACE_EXISTING))
     {
       Log_WarningPrintf("AtomicUpdatedFileByteStream::Commit(): Failed to rename temporary file '%s' to '%s'",
                         m_temporaryFileName.c_str(), m_originalFileName.c_str());
@@ -1039,7 +1039,7 @@ std::unique_ptr<ByteStream> ByteStream::OpenFile(const char* fileName, u32 openM
 
     // fill in random characters
     _mktemp_s(temporaryFileName, fileNameLength + 8);
-    const std::wstring wideTemporaryFileName(StringUtil::UTF8StringToWideString(temporaryFileName));
+    const std::wstring wideTemporaryFileName = FileSystem::GetWin32Path(temporaryFileName);
 
     // massive hack here
     DWORD desiredAccess = GENERIC_WRITE;

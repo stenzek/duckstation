@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "file_system.h"
@@ -53,6 +53,11 @@ static std::time_t ConvertFileTimeToUnixTime(const FILETIME& ft)
   const s64 full = static_cast<s64>((static_cast<u64>(ft.dwHighDateTime) << 32) | static_cast<u64>(ft.dwLowDateTime));
   return static_cast<std::time_t>(full / WINDOWS_TICK - SEC_TO_UNIX_EPOCH);
 }
+template<class T>
+static bool IsUNCPath(const T& path)
+{
+  return (path.length() >= 3 && path[0] == '\\' && path[1] == '\\');
+}
 #endif
 
 static inline bool FileSystemCharacterIsSane(char32_t c, bool strip_slashes)
@@ -97,7 +102,7 @@ static inline void PathAppendString(std::string& dst, const T& src)
 
 #ifdef _WIN32
   // special case for UNC paths here
-  if (dst.empty() && src.length() >= 3 && src[0] == '\\' && src[1] == '\\' && src[2] != '\\')
+  if (dst.empty() && IsUNCPath(src))
   {
     dst.append("\\\\");
     index = 2;
@@ -186,7 +191,7 @@ std::string Path::RemoveLengthLimits(std::string_view str)
 {
   std::string ret;
 #ifdef _WIN32
-  ret.reserve(str.length() + 4);
+  ret.reserve(str.length() + (IsUNCPath(str) ? 4 : 6));
 #endif
   ret.append(str);
   RemoveLengthLimits(&ret);
@@ -197,16 +202,73 @@ void Path::RemoveLengthLimits(std::string* path)
 {
   DebugAssert(IsAbsolute(*path));
 #ifdef _WIN32
-  path->insert(0, "\\\\?\\");
+  // Any forward slashes should be backslashes.
+  for (char& ch : *path)
+    ch = (ch == '/') ? '\\' : ch;
+
+  if (IsUNCPath(*path))
+  {
+    // \\server\path => \\?\UNC\server\path
+    DebugAssert((*path)[0] == '\\' && (*path)[1] == '\\');
+    path->erase(0, 2);
+    path->insert(0, "\\\\?\\UNC\\");
+  }
+  else
+  {
+    // C:\file => \\?\C:\file
+    path->insert(0, "\\\\?\\");
+  }
 #endif
 }
+
+#ifdef _WIN32
+
+bool FileSystem::GetWin32Path(std::wstring* dest, std::string_view str)
+{
+  const bool absolute = Path::IsAbsolute(str);
+  const bool unc = IsUNCPath(str);
+  const size_t skip = unc ? 2 : 0;
+
+  dest->clear();
+  if (str.empty())
+    return true;
+
+  int wlen = MultiByteToWideChar(CP_UTF8, 0, str.data() + skip, static_cast<int>(str.length() - skip), nullptr, 0);
+  if (wlen <= 0)
+    return false;
+
+  // Can't fix up non-absolute paths. Hopefully they don't go past MAX_PATH.
+  if (absolute)
+    dest->append(unc ? L"\\\\?\\UNC\\" : L"\\\\?\\");
+
+  const size_t start = dest->size();
+  dest->resize(start + static_cast<u32>(wlen));
+
+  wlen = MultiByteToWideChar(CP_UTF8, 0, str.data() + skip, static_cast<int>(str.length() - skip), dest->data() + start,
+                             wlen);
+  if (wlen <= 0)
+    return false;
+
+  dest->resize(start + static_cast<u32>(wlen));
+  return true;
+}
+
+std::wstring FileSystem::GetWin32Path(std::string_view str)
+{
+  std::wstring ret;
+  if (!GetWin32Path(&ret, str))
+    ret.clear();
+  return ret;
+}
+
+#endif
 
 bool Path::IsAbsolute(const std::string_view& path)
 {
 #ifdef _WIN32
   return (path.length() >= 3 && ((path[0] >= 'A' && path[0] <= 'Z') || (path[0] >= 'a' && path[0] <= 'z')) &&
           path[1] == ':' && (path[2] == '/' || path[2] == '\\')) ||
-         (path.length() >= 3 && path[0] == '\\' && path[1] == '\\');
+         IsUNCPath(path);
 #else
   return (path.length() >= 1 && path[0] == '/');
 #endif
@@ -237,16 +299,28 @@ std::string Path::RealPath(const std::string_view& path)
   symlink_buf.resize(path.size() + 1);
 
   // Check for any symbolic links throughout the path while adding components.
+  const bool skip_first = IsUNCPath(path);
   bool test_symlink = true;
   for (const std::string_view& comp : components)
   {
     if (!realpath.empty())
+    {
       realpath.push_back(FS_OSPATH_SEPARATOR_CHARACTER);
-    realpath.append(comp);
+      realpath.append(comp);
+    }
+    else if (skip_first)
+    {
+      realpath.append(comp);
+      continue;
+    }
+    else
+    {
+      realpath.append(comp);
+    }
     if (test_symlink)
     {
       DWORD attribs;
-      if (StringUtil::UTF8StringToWideString(wrealpath, realpath) &&
+      if (FileSystem::GetWin32Path(&wrealpath, realpath) &&
           (attribs = GetFileAttributesW(wrealpath.c_str())) != INVALID_FILE_ATTRIBUTES)
       {
         // if not a link, go to the next component
@@ -285,7 +359,14 @@ std::string Path::RealPath(const std::string_view& path)
 
   // GetFinalPathNameByHandleW() adds a \\?\ prefix, so remove it.
   if (realpath.starts_with("\\\\?\\") && IsAbsolute(std::string_view(realpath.data() + 4, realpath.size() - 4)))
+  {
     realpath.erase(0, 4);
+  }
+  else if (realpath.starts_with("\\\\?\\UNC\\"))
+  {
+    realpath.erase(0, 7);
+    realpath.insert(realpath.begin(), '\\');
+  }
 
 #else
   // Why this monstrosity instead of calling realpath()? realpath() only works on files that exist.
@@ -875,8 +956,8 @@ std::string Path::CreateFileURL(std::string_view path)
 std::FILE* FileSystem::OpenCFile(const char* filename, const char* mode, Error* error)
 {
 #ifdef _WIN32
-  const std::wstring wfilename(StringUtil::UTF8StringToWideString(filename));
-  const std::wstring wmode(StringUtil::UTF8StringToWideString(mode));
+  const std::wstring wfilename = GetWin32Path(filename);
+  const std::wstring wmode = StringUtil::UTF8StringToWideString(mode);
   if (!wfilename.empty() && !wmode.empty())
   {
     std::FILE* fp;
@@ -910,7 +991,7 @@ std::FILE* FileSystem::OpenCFile(const char* filename, const char* mode, Error* 
 int FileSystem::OpenFDFile(const char* filename, int flags, int mode, Error* error)
 {
 #ifdef _WIN32
-  const std::wstring wfilename(StringUtil::UTF8StringToWideString(filename));
+  const std::wstring wfilename(GetWin32Path(filename));
   if (!wfilename.empty())
     return _wopen(wfilename.c_str(), flags, mode);
 
@@ -926,8 +1007,8 @@ int FileSystem::OpenFDFile(const char* filename, int flags, int mode, Error* err
 std::FILE* FileSystem::OpenSharedCFile(const char* filename, const char* mode, FileShareMode share_mode, Error* error)
 {
 #ifdef _WIN32
-  const std::wstring wfilename(StringUtil::UTF8StringToWideString(filename));
-  const std::wstring wmode(StringUtil::UTF8StringToWideString(mode));
+  const std::wstring wfilename = GetWin32Path(filename);
+  const std::wstring wmode = StringUtil::UTF8StringToWideString(mode);
   if (wfilename.empty() || wmode.empty())
     return nullptr;
 
@@ -1170,8 +1251,7 @@ bool FileSystem::CopyFilePath(const char* source, const char* destination, bool 
 
   return true;
 #else
-  return CopyFileW(StringUtil::UTF8StringToWideString(source).c_str(),
-                   StringUtil::UTF8StringToWideString(destination).c_str(), !replace);
+  return CopyFileW(GetWin32Path(source).c_str(), GetWin32Path(destination).c_str(), !replace);
 #endif
 }
 
@@ -1212,7 +1292,7 @@ static u32 RecursiveFindFiles(const char* origin_path, const char* parent_path, 
   std::string utf8_filename;
   utf8_filename.reserve((sizeof(wfd.cFileName) / sizeof(wfd.cFileName[0])) * 2);
 
-  const HANDLE hFind = FindFirstFileW(StringUtil::UTF8StringToWideString(search_dir).c_str(), &wfd);
+  const HANDLE hFind = FindFirstFileW(FileSystem::GetWin32Path(search_dir).c_str(), &wfd);
   if (hFind == INVALID_HANDLE_VALUE)
     return 0;
 
@@ -1379,7 +1459,7 @@ bool FileSystem::StatFile(const char* path, struct stat* st)
     return false;
 
   // convert to wide string
-  const std::wstring wpath(StringUtil::UTF8StringToWideString(path));
+  const std::wstring wpath = GetWin32Path(path);
   if (wpath.empty())
     return false;
 
@@ -1412,7 +1492,7 @@ bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* sd)
     return false;
 
   // convert to wide string
-  const std::wstring wpath(StringUtil::UTF8StringToWideString(path));
+  const std::wstring wpath = GetWin32Path(path);
   if (wpath.empty())
     return false;
 
@@ -1490,7 +1570,7 @@ bool FileSystem::FileExists(const char* path)
     return false;
 
   // convert to wide string
-  const std::wstring wpath(StringUtil::UTF8StringToWideString(path));
+  const std::wstring wpath = GetWin32Path(path);
   if (wpath.empty())
     return false;
 
@@ -1512,7 +1592,7 @@ bool FileSystem::DirectoryExists(const char* path)
     return false;
 
   // convert to wide string
-  const std::wstring wpath(StringUtil::UTF8StringToWideString(path));
+  const std::wstring wpath = GetWin32Path(path);
   if (wpath.empty())
     return false;
 
@@ -1529,7 +1609,7 @@ bool FileSystem::DirectoryExists(const char* path)
 
 bool FileSystem::DirectoryIsEmpty(const char* path)
 {
-  std::wstring wpath(StringUtil::UTF8StringToWideString(path));
+  std::wstring wpath = GetWin32Path(path);
   wpath += L"\\*";
 
   WIN32_FIND_DATAW wfd;
@@ -1556,14 +1636,12 @@ bool FileSystem::DirectoryIsEmpty(const char* path)
 
 bool FileSystem::CreateDirectory(const char* Path, bool Recursive)
 {
-  const std::wstring wpath(StringUtil::UTF8StringToWideString(Path));
-
-  // has a path
-  if (wpath.empty())
+  const std::wstring win32_path = GetWin32Path(Path);
+  if (win32_path.empty())
     return false;
 
   // try just flat-out, might work if there's no other segments that have to be made
-  if (CreateDirectoryW(wpath.c_str(), nullptr))
+  if (CreateDirectoryW(win32_path.c_str(), nullptr))
     return true;
 
   if (!Recursive)
@@ -1574,7 +1652,7 @@ bool FileSystem::CreateDirectory(const char* Path, bool Recursive)
   if (lastError == ERROR_ALREADY_EXISTS)
   {
     // check the attributes
-    u32 Attributes = GetFileAttributesW(wpath.c_str());
+    u32 Attributes = GetFileAttributesW(win32_path.c_str());
     if (Attributes != INVALID_FILE_ATTRIBUTES && Attributes & FILE_ATTRIBUTE_DIRECTORY)
       return true;
     else
@@ -1584,36 +1662,26 @@ bool FileSystem::CreateDirectory(const char* Path, bool Recursive)
   {
     // part of the path does not exist, so we'll create the parent folders, then
     // the full path again.
-    const size_t pathLength = wpath.size();
-    std::wstring tempPath;
-    tempPath.reserve(pathLength);
-
-    // create directories along the path
+    const size_t pathLength = std::strlen(Path);
     for (size_t i = 0; i < pathLength; i++)
     {
-      if (wpath[i] == L'\\' || wpath[i] == L'/')
+      if (Path[i] == '\\' || Path[i] == '/')
       {
-        const BOOL result = CreateDirectoryW(tempPath.c_str(), nullptr);
+        const std::string_view ppath(Path, i);
+        const BOOL result = CreateDirectoryW(GetWin32Path(ppath).c_str(), nullptr);
         if (!result)
         {
           lastError = GetLastError();
           if (lastError != ERROR_ALREADY_EXISTS) // fine, continue to next path segment
             return false;
         }
-
-        // replace / with \.
-        tempPath.push_back('\\');
-      }
-      else
-      {
-        tempPath.push_back(wpath[i]);
       }
     }
 
     // re-create the end if it's not a separator, check / as well because windows can interpret them
-    if (wpath[pathLength - 1] != L'\\' && wpath[pathLength - 1] != L'/')
+    if (Path[pathLength - 1] != '\\' && Path[pathLength - 1] != '/')
     {
-      const BOOL result = CreateDirectoryW(wpath.c_str(), nullptr);
+      const BOOL result = CreateDirectoryW(win32_path.c_str(), nullptr);
       if (!result)
       {
         lastError = GetLastError();
@@ -1637,7 +1705,7 @@ bool FileSystem::DeleteFile(const char* path)
   if (path[0] == '\0')
     return false;
 
-  const std::wstring wpath(StringUtil::UTF8StringToWideString(path));
+  const std::wstring wpath = GetWin32Path(path);
   const DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
   if (fileAttributes == INVALID_FILE_ATTRIBUTES || fileAttributes & FILE_ATTRIBUTE_DIRECTORY)
     return false;
@@ -1647,8 +1715,8 @@ bool FileSystem::DeleteFile(const char* path)
 
 bool FileSystem::RenamePath(const char* old_path, const char* new_path)
 {
-  const std::wstring old_wpath(StringUtil::UTF8StringToWideString(old_path));
-  const std::wstring new_wpath(StringUtil::UTF8StringToWideString(new_path));
+  const std::wstring old_wpath = GetWin32Path(old_path);
+  const std::wstring new_wpath = GetWin32Path(new_path);
 
   if (!MoveFileExW(old_wpath.c_str(), new_wpath.c_str(), MOVEFILE_REPLACE_EXISTING))
   {
@@ -1661,7 +1729,7 @@ bool FileSystem::RenamePath(const char* old_path, const char* new_path)
 
 bool FileSystem::DeleteDirectory(const char* path)
 {
-  const std::wstring wpath(StringUtil::UTF8StringToWideString(path));
+  const std::wstring wpath = GetWin32Path(path);
   return RemoveDirectoryW(wpath.c_str());
 }
 
@@ -1709,13 +1777,13 @@ std::string FileSystem::GetWorkingDirectory()
 
 bool FileSystem::SetWorkingDirectory(const char* path)
 {
-  const std::wstring wpath(StringUtil::UTF8StringToWideString(path));
+  const std::wstring wpath = GetWin32Path(path);
   return (SetCurrentDirectoryW(wpath.c_str()) == TRUE);
 }
 
 bool FileSystem::SetPathCompression(const char* path, bool enable)
 {
-  const std::wstring wpath(StringUtil::UTF8StringToWideString(path));
+  const std::wstring wpath = GetWin32Path(path);
   const DWORD attrs = GetFileAttributesW(wpath.c_str());
   if (attrs == INVALID_FILE_ATTRIBUTES)
     return false;

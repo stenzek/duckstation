@@ -1,15 +1,19 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
+#include "platform_misc.h"
+
+#include "common/file_system.h"
 #include "common/log.h"
 #include "common/small_string.h"
 #include "common/string_util.h"
-#include "platform_misc.h"
+
 #include <cinttypes>
-Log_SetChannel(PlatformMisc);
 
 #include "common/windows_headers.h"
 #include <mmsystem.h>
+
+Log_SetChannel(PlatformMisc);
 
 static bool SetScreensaverInhibitWin32(bool inhibit)
 {
@@ -51,6 +55,6 @@ void PlatformMisc::ResumeScreensaver()
 
 bool PlatformMisc::PlaySoundAsync(const char* path)
 {
-  const std::wstring wpath(StringUtil::UTF8StringToWideString(path));
+  const std::wstring wpath(FileSystem::GetWin32Path(path));
   return PlaySoundW(wpath.c_str(), NULL, SND_ASYNC | SND_NODEFAULT);
 }

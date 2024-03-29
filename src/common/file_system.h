@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -180,4 +180,9 @@ bool SetWorkingDirectory(const char* path);
 /// Does nothing and returns false on non-Windows platforms.
 bool SetPathCompression(const char* path, bool enable);
 
+#ifdef _WIN32
+// Path limit remover, but also converts to a wide string at the same time.
+bool GetWin32Path(std::wstring* dest, std::string_view str);
+std::wstring GetWin32Path(std::string_view str);
+#endif
 }; // namespace FileSystem
