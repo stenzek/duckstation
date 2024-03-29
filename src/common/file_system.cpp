@@ -26,6 +26,8 @@
 
 #if defined(_WIN32)
 #include "windows_headers.h"
+#include <malloc.h>
+#include <pathcch.h>
 #include <share.h>
 #include <shlobj.h>
 #include <winioctl.h>
@@ -225,32 +227,50 @@ void Path::RemoveLengthLimits(std::string* path)
 
 bool FileSystem::GetWin32Path(std::wstring* dest, std::string_view str)
 {
-  const bool absolute = Path::IsAbsolute(str);
-  const bool unc = IsUNCPath(str);
-  const size_t skip = unc ? 2 : 0;
+  // Just convert to wide if it's a relative path, MAX_PATH still applies.
+  if (!Path::IsAbsolute(str))
+    return StringUtil::UTF8StringToWideString(*dest, str);
 
-  dest->clear();
-  if (str.empty())
-    return true;
-
-  int wlen = MultiByteToWideChar(CP_UTF8, 0, str.data() + skip, static_cast<int>(str.length() - skip), nullptr, 0);
-  if (wlen <= 0)
+  // PathCchCanonicalizeEx() thankfully takes care of everything.
+  // But need to widen the string first, avoid the stack allocation.
+  int wlen = MultiByteToWideChar(CP_UTF8, 0, str.data(), static_cast<int>(str.length()), nullptr, 0);
+  if (wlen <= 0) [[unlikely]]
     return false;
 
-  // Can't fix up non-absolute paths. Hopefully they don't go past MAX_PATH.
-  if (absolute)
-    dest->append(unc ? L"\\\\?\\UNC\\" : L"\\\\?\\");
-
-  const size_t start = dest->size();
-  dest->resize(start + static_cast<u32>(wlen));
-
-  wlen = MultiByteToWideChar(CP_UTF8, 0, str.data() + skip, static_cast<int>(str.length() - skip), dest->data() + start,
-                             wlen);
-  if (wlen <= 0)
+  // So copy it to a temp wide buffer first.
+  wchar_t* wstr_buf = static_cast<wchar_t*>(_malloca(sizeof(wchar_t) * (static_cast<size_t>(wlen) + 1)));
+  wlen = MultiByteToWideChar(CP_UTF8, 0, str.data(), static_cast<int>(str.length()), wstr_buf, wlen);
+  if (wlen <= 0) [[unlikely]]
+  {
+    _freea(wstr_buf);
     return false;
+  }
 
-  dest->resize(start + static_cast<u32>(wlen));
-  return true;
+  // And use PathCchCanonicalizeEx() to fix up any non-direct elements.
+  wstr_buf[wlen] = '\0';
+  dest->resize(std::max<size_t>(static_cast<size_t>(wlen) + (IsUNCPath(str) ? 9 : 5), 16));
+  for (;;)
+  {
+    const HRESULT hr =
+      PathCchCanonicalizeEx(dest->data(), dest->size(), wstr_buf, PATHCCH_ENSURE_IS_EXTENDED_LENGTH_PATH);
+    if (SUCCEEDED(hr))
+    {
+      dest->resize(std::wcslen(dest->data()));
+      _freea(wstr_buf);
+      return true;
+    }
+    else if (hr == HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER))
+    {
+      dest->resize(dest->size() * 2);
+      continue;
+    }
+    else [[unlikely]]
+    {
+      Log_ErrorFmt("PathCchCanonicalizeEx() returned {:08X}", static_cast<unsigned>(hr));
+      _freea(wstr_buf);
+      return false;
+    }
+  }
 }
 
 std::wstring FileSystem::GetWin32Path(std::string_view str)
