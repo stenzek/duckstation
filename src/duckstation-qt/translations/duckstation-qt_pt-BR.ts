@@ -13159,39 +13159,39 @@ Controles compatíveis: {3}
 Configure um controle compatível da lista acima.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="201"/>
+        <location filename="../../core/pad.cpp" line="203"/>
         <source>Save state contains controller type %s in port %u, but %s is used. Switching.</source>
         <translation>Estado rápido contém controle %s na porta %u, mas %s está em uso, mudando.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="207"/>
+        <location filename="../../core/pad.cpp" line="209"/>
         <source>Ignoring mismatched controller type %s in port %u.</source>
         <translation>Tipo de controle incompatível ignorado %s na porta %u.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="300"/>
-        <source>Memory card %u from save state does match current card data. Simulating replugging.</source>
-        <translation>O estado salvo do cartão %u corresponde ao estado no cartão de memória.</translation>
+        <location filename="../../core/pad.cpp" line="265"/>
+        <source>Memory card {} present in save state but not in system. Creating temporary card.</source>
+        <translation>O cartão de memória {} existe, mas não no compartimento atual.Criando cartão temporário.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="317"/>
-        <source>Memory card %u present in save state but not in system. Ignoring card.</source>
-        <translation>Cartão de memória %u presente em um estado salvo mas não no sistema, ignorando cartão.</translation>
+        <location filename="../../core/pad.cpp" line="303"/>
+        <source>Memory card {} from save state does match current card data. Simulating replugging.</source>
+        <translation>O cartão de memória {} do estado salvo não corresponde aos dados atuais do cartão. Reconectando.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="336"/>
-        <source>Memory card %u present in system but not in save state. Replugging card.</source>
-        <translation>Cartão de memória %u presente mas não condiz com o estado salvo atual, reconectando cartão.</translation>
+        <location filename="../../core/pad.cpp" line="323"/>
+        <source>Memory card {} present in save state but not in system. Ignoring card.</source>
+        <translation>O cartão de memória {} existe, mas não no compartimento atual. Ignorando cartão de memória.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="262"/>
-        <source>Memory card %u present in save state but not in system. Creating temporary card.</source>
-        <translation>Cartão de memória %u presente no estado salvo mas não no sistema, criando cartão temporário.</translation>
+        <location filename="../../core/pad.cpp" line="337"/>
+        <source>Memory card {} present in system but not in save state. Removing card.</source>
+        <translation>O cartão de memória {} existe, mas não no compartimento atual. Reconectando o cartão de memória.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="329"/>
-        <source>Memory card %u present in system but not in save state. Removing card.</source>
-        <translation>Cartão de memória %u presente no sistema mas não no estado salvo, removendo cartão.</translation>
+        <location filename="../../core/pad.cpp" line="346"/>
+        <source>Memory card {} present in system but not in save state. Replugging card.</source>
+        <translation>O cartão de memória {} existe, mas não no compartimento atual. Reconectando o cartão de memória.</translation>
     </message>
     <message>
         <location filename="../../core/cdrom.cpp" line="816"/>
@@ -13284,17 +13284,17 @@ Configure um controle compatível da lista acima.</translation>
         <translation>Alternando para o modo de execução pelo CPU {}.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card.cpp" line="275"/>
+        <location filename="../../core/memory_card.cpp" line="288"/>
         <source>Memory card &apos;{}&apos; could not be read, formatting.</source>
         <translation>Cartão de memória &apos;{}&apos; não pode ser lidro, formatando.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card.cpp" line="320"/>
+        <location filename="../../core/memory_card.cpp" line="333"/>
         <source>Failed to save memory card to &apos;{}&apos;.</source>
         <translation>Falha ao salvar para o cartão de memória &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/memory_card.cpp" line="331"/>
+        <location filename="../../core/memory_card.cpp" line="344"/>
         <source>Saved memory card to &apos;{}&apos;.</source>
         <translation>Salvo para o cartão de memória em &apos;{}&apos;.</translation>
     </message>
