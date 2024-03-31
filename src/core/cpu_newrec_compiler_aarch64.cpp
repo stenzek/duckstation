@@ -693,7 +693,7 @@ void CPU::NewRec::AArch64Compiler::Compile_Fallback()
 {
   Flush(FLUSH_FOR_INTERPRETER);
 
-  EmitCall(armAsm, &CPU::Recompiler::Thunks::InterpretInstruction);
+  EmitCall(reinterpret_cast<const void*>(&CPU::Recompiler::Thunks::InterpretInstruction));
 
   // TODO: make me less garbage
   // TODO: this is wrong, it flushes the load delay on the same cycle when we return.
@@ -1616,9 +1616,9 @@ void CPU::NewRec::AArch64Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize
   {
     // const u32 mask = UINT32_C(0x00FFFFFF) >> shift;
     // new_value = (value & mask) | (RWRET << (24 - shift));
-    EmitMov(RWARG4, 0xFFFFFFu);
-    armAsm->lsrv(RWARG4, RWARG4, RWARG2);
-    armAsm->and_(value, value, RWARG4);
+    EmitMov(RWSCRATCH, 0xFFFFFFu);
+    armAsm->lsrv(RWSCRATCH, RWSCRATCH, RWARG2);
+    armAsm->and_(value, value, RWSCRATCH);
     armAsm->lslv(RWRET, RWRET, RWARG3);
     armAsm->orr(value, value, RWRET);
   }
@@ -1627,9 +1627,9 @@ void CPU::NewRec::AArch64Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize
     // const u32 mask = UINT32_C(0xFFFFFF00) << (24 - shift);
     // new_value = (value & mask) | (RWRET >> shift);
     armAsm->lsrv(RWRET, RWRET, RWARG2);
-    EmitMov(RWARG4, 0xFFFFFF00u);
-    armAsm->lslv(RWARG4, RWARG4, RWARG3);
-    armAsm->and_(value, value, RWARG4);
+    EmitMov(RWSCRATCH, 0xFFFFFF00u);
+    armAsm->lslv(RWSCRATCH, RWSCRATCH, RWARG3);
+    armAsm->and_(value, value, RWSCRATCH);
     armAsm->orr(value, value, RWRET);
   }
 
@@ -1836,15 +1836,20 @@ void CPU::NewRec::AArch64Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize
 void CPU::NewRec::AArch64Compiler::Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                                                 const std::optional<VirtualMemoryAddress>& address)
 {
-  FlushForLoadStore(address, true, use_fastmem);
-
   const u32 index = static_cast<u32>(inst->r.rt.GetValue());
   const auto [ptr, action] = GetGTERegisterPointer(index, false);
+  const WRegister addr = (g_settings.gpu_pgxp_enable || action == GTERegisterAccessAction::CallHandler) ?
+                           WRegister(AllocateTempHostReg(HR_CALLEE_SAVED)) :
+                           RWARG1;
+  const WRegister data = g_settings.gpu_pgxp_enable ? WRegister(AllocateTempHostReg(HR_CALLEE_SAVED)) : RWARG2;
+  FlushForLoadStore(address, true, use_fastmem);
+  ComputeLoadStoreAddressArg(cf, address, addr);
+
   switch (action)
   {
     case GTERegisterAccessAction::Direct:
     {
-      armAsm->ldr(RWARG2, PTR(ptr));
+      armAsm->ldr(data, PTR(ptr));
     }
     break;
 
@@ -1854,7 +1859,7 @@ void CPU::NewRec::AArch64Compiler::Compile_swc2(CompileFlags cf, MemoryAccessSiz
       Flush(FLUSH_FOR_C_CALL);
       EmitMov(RWARG1, index);
       EmitCall(reinterpret_cast<const void*>(&GTE::ReadRegister));
-      armAsm->mov(RWARG2, RWRET);
+      armAsm->mov(data, RWRET);
     }
     break;
 
@@ -1865,29 +1870,23 @@ void CPU::NewRec::AArch64Compiler::Compile_swc2(CompileFlags cf, MemoryAccessSiz
     break;
   }
 
-  // PGXP makes this a giant pain.
+  GenerateStore(addr, data, size, use_fastmem);
   if (!g_settings.gpu_pgxp_enable)
   {
-    const WRegister addr = ComputeLoadStoreAddressArg(cf, address);
-    GenerateStore(addr, RWARG2, size, use_fastmem);
-    return;
+    if (addr.GetCode() != RWARG1.GetCode())
+      FreeHostReg(addr.GetCode());
   }
-
-  // TODO: This can be simplified because we don't need to validate in PGXP..
-  const WRegister addr_reg = WRegister(AllocateTempHostReg(HR_CALLEE_SAVED));
-  const WRegister data_backup = WRegister(AllocateTempHostReg(HR_CALLEE_SAVED));
-  FlushForLoadStore(address, true, use_fastmem);
-  ComputeLoadStoreAddressArg(cf, address, addr_reg);
-  armAsm->mov(data_backup, RWARG2);
-  GenerateStore(addr_reg, RWARG2, size, use_fastmem);
-
-  Flush(FLUSH_FOR_C_CALL);
-  armAsm->mov(RWARG3, data_backup);
-  armAsm->mov(RWARG2, addr_reg);
-  EmitMov(RWARG1, inst->bits);
-  EmitCall(reinterpret_cast<const void*>(&PGXP::CPU_SWC2));
-  FreeHostReg(addr_reg.GetCode());
-  FreeHostReg(data_backup.GetCode());
+  else
+  {
+    // TODO: This can be simplified because we don't need to validate in PGXP..
+    Flush(FLUSH_FOR_C_CALL);
+    armAsm->mov(RWARG3, data);
+    FreeHostReg(data.GetCode());
+    armAsm->mov(RWARG2, addr);
+    FreeHostReg(addr.GetCode());
+    EmitMov(RWARG1, inst->bits);
+    EmitCall(reinterpret_cast<const void*>(&PGXP::CPU_SWC2));
+  }
 }
 
 void CPU::NewRec::AArch64Compiler::Compile_mtc0(CompileFlags cf)

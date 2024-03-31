@@ -2143,15 +2143,20 @@ void CPU::NewRec::RISCV64Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize
 void CPU::NewRec::RISCV64Compiler::Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                                                 const std::optional<VirtualMemoryAddress>& address)
 {
-  FlushForLoadStore(address, true, use_fastmem);
-
   const u32 index = static_cast<u32>(inst->r.rt.GetValue());
   const auto [ptr, action] = GetGTERegisterPointer(index, false);
+  const GPR addr = (g_settings.gpu_pgxp_enable || action == GTERegisterAccessAction::CallHandler) ?
+                     GPR(AllocateTempHostReg(HR_CALLEE_SAVED)) :
+                     RARG1;
+  const GPR data = g_settings.gpu_pgxp_enable ? GPR(AllocateTempHostReg(HR_CALLEE_SAVED)) : RARG2;
+  FlushForLoadStore(address, true, use_fastmem);
+  ComputeLoadStoreAddressArg(cf, address, addr);
+
   switch (action)
   {
     case GTERegisterAccessAction::Direct:
     {
-      rvAsm->LW(RARG2, PTR(ptr));
+      rvAsm->LW(data, PTR(ptr));
     }
     break;
 
@@ -2161,7 +2166,7 @@ void CPU::NewRec::RISCV64Compiler::Compile_swc2(CompileFlags cf, MemoryAccessSiz
       Flush(FLUSH_FOR_C_CALL);
       EmitMov(RARG1, index);
       EmitCall(reinterpret_cast<const void*>(&GTE::ReadRegister));
-      rvAsm->MV(RARG2, RRET);
+      rvAsm->MV(data, RRET);
     }
     break;
 
@@ -2172,29 +2177,24 @@ void CPU::NewRec::RISCV64Compiler::Compile_swc2(CompileFlags cf, MemoryAccessSiz
     break;
   }
 
-  // PGXP makes this a giant pain.
+  GenerateStore(addr, data, size, use_fastmem);
+
   if (!g_settings.gpu_pgxp_enable)
   {
-    const GPR addr = ComputeLoadStoreAddressArg(cf, address);
-    GenerateStore(addr, RARG2, size, use_fastmem);
-    return;
+    if (addr.Index() != RARG1.Index())
+      FreeHostReg(addr.Index());
   }
-
-  // TODO: This can be simplified because we don't need to validate in PGXP..
-  const GPR addr_reg = GPR(AllocateTempHostReg(HR_CALLEE_SAVED));
-  const GPR data_backup = GPR(AllocateTempHostReg(HR_CALLEE_SAVED));
-  FlushForLoadStore(address, true, use_fastmem);
-  ComputeLoadStoreAddressArg(cf, address, addr_reg);
-  rvAsm->MV(data_backup, RARG2);
-  GenerateStore(addr_reg, RARG2, size, use_fastmem);
-
-  Flush(FLUSH_FOR_C_CALL);
-  rvAsm->MV(RARG3, data_backup);
-  rvAsm->MV(RARG2, addr_reg);
-  EmitMov(RARG1, inst->bits);
-  EmitCall(reinterpret_cast<const void*>(&PGXP::CPU_SWC2));
-  FreeHostReg(addr_reg.Index());
-  FreeHostReg(data_backup.Index());
+  else
+  {
+    // TODO: This can be simplified because we don't need to validate in PGXP..
+    Flush(FLUSH_FOR_C_CALL);
+    rvAsm->MV(RARG3, data);
+    FreeHostReg(data.Index());
+    rvAsm->MV(RARG2, addr);
+    FreeHostReg(addr.Index());
+    EmitMov(RARG1, inst->bits);
+    EmitCall(reinterpret_cast<const void*>(&PGXP::CPU_SWC2));
+  }
 }
 
 void CPU::NewRec::RISCV64Compiler::Compile_mtc0(CompileFlags cf)

@@ -616,8 +616,8 @@ u32 CPU::NewRec::Compiler::GetFreeHostReg(u32 flags)
         }
       }
 
-      Log_DebugPrintf("Freeing register %s in host register %s for allocation", GetHostRegName(lowest),
-                      GetRegName(ra.reg));
+      Log_DebugPrintf("Freeing register %s in host register %s for allocation", GetRegName(ra.reg),
+                      GetHostRegName(lowest));
     }
     break;
     case HR_TYPE_LOAD_DELAY_VALUE:
@@ -628,8 +628,8 @@ u32 CPU::NewRec::Compiler::GetFreeHostReg(u32 flags)
     break;
     case HR_TYPE_NEXT_LOAD_DELAY_VALUE:
     {
-      Log_DebugPrintf("Freeing next load delay register %s in host register %s due for allocation",
-                      GetHostRegName(lowest), GetRegName(ra.reg));
+      Log_DebugPrintf("Freeing next load delay register %s in host register %s due for allocation", GetRegName(ra.reg),
+                      GetHostRegName(lowest));
     }
     break;
     default:
@@ -875,6 +875,7 @@ void CPU::NewRec::Compiler::FlushHostReg(u32 reg)
 void CPU::NewRec::Compiler::FreeHostReg(u32 reg)
 {
   DebugAssert(IsHostRegAllocated(reg));
+  Log_DebugPrintf("Freeing host register %s", GetHostRegName(reg));
   FlushHostReg(reg);
   ClearHostReg(reg);
 }

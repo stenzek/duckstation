@@ -299,7 +299,6 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
 #undef RARG1
 #undef RARG2
 #undef RARG3
-#undef RARG4
 #undef RSCRATCH
 #undef RSTATE
 
