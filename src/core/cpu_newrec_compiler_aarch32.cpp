@@ -1785,7 +1785,13 @@ void CPU::NewRec::AArch32Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize
 {
   DebugAssert(size == MemoryAccessSize::Word && !sign);
 
+  // TODO: this can take over rt's value if it's no longer needed
+  // NOTE: can't trust T in cf because of the alloc
   const Register addr = Register(AllocateTempHostReg(HR_CALLEE_SAVED));
+  const Register value = g_settings.gpu_pgxp_enable ? Register(AllocateTempHostReg(HR_CALLEE_SAVED)) : RARG2;
+  if (g_settings.gpu_pgxp_enable)
+    MoveMIPSRegToReg(value, inst->r.rt);
+
   FlushForLoadStore(address, true, use_fastmem);
 
   // TODO: if address is constant, this can be simplified..
@@ -1794,20 +1800,13 @@ void CPU::NewRec::AArch32Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize
   armAsm->and_(RARG1, addr, armCheckLogicalConstant(~0x3u));
   GenerateLoad(RARG1, MemoryAccessSize::Word, false, use_fastmem, []() { return RRET; });
 
-  // TODO: this can take over rt's value if it's no longer needed
-  // NOTE: can't trust T in cf because of the flush
-  const Reg rt = inst->r.rt;
-  const Register value = g_settings.gpu_pgxp_enable ? Register(AllocateTempHostReg(HR_CALLEE_SAVED)) : RARG2;
-  MoveMIPSRegToReg(value, rt);
-
   armAsm->and_(RSCRATCH, addr, 3);
   armAsm->lsl(RSCRATCH, RSCRATCH, 3); // *8
+  armAsm->and_(addr, addr, armCheckLogicalConstant(~0x3u));
 
-  // Don't need the original address anymore.
+  // Need to load down here for PGXP-off, because it's in a volatile reg that can get overwritten by flush.
   if (!g_settings.gpu_pgxp_enable)
-    FreeHostReg(addr.GetCode());
-  else
-    armAsm->and_(addr, addr, armCheckLogicalConstant(~0x3u));
+    MoveMIPSRegToReg(value, inst->r.rt);
 
   if (inst->op == InstructionOp::swl)
   {
@@ -1836,10 +1835,15 @@ void CPU::NewRec::AArch32Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize
     armAsm->orr(value, value, RRET);
   }
 
-  GenerateStore(addr, value, MemoryAccessSize::Word, use_fastmem);
-
-  if (g_settings.gpu_pgxp_enable)
+  if (!g_settings.gpu_pgxp_enable)
   {
+    GenerateStore(addr, value, MemoryAccessSize::Word, use_fastmem);
+    FreeHostReg(addr.GetCode());
+  }
+  else
+  {
+    GenerateStore(addr, value, MemoryAccessSize::Word, use_fastmem);
+
     Flush(FLUSH_FOR_C_CALL);
     armAsm->mov(RARG3, value);
     FreeHostReg(value.GetCode());

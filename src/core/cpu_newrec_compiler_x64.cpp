@@ -1577,14 +1577,13 @@ void CPU::NewRec::X64Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize siz
   cg->mov(RWARG2, 24);
   cg->sub(RWARG2, cg->ecx);
 
-  const Reg32& temp = (RWARG3 == cg->ecx) ? RWARG4 : RWARG3;
   if (inst->op == InstructionOp::lwl)
   {
     // const u32 mask = UINT32_C(0x00FFFFFF) >> shift;
     // new_value = (value & mask) | (RWRET << (24 - shift));
-    cg->mov(temp, 0xFFFFFFu);
-    cg->shr(temp, cg->cl);
-    cg->and_(value, temp);
+    cg->mov(RWARG3, 0xFFFFFFu);
+    cg->shr(RWARG3, cg->cl);
+    cg->and_(value, RWARG3);
     cg->mov(cg->ecx, RWARG2);
     cg->shl(RWRET, cg->cl);
     cg->or_(value, RWRET);
@@ -1594,10 +1593,10 @@ void CPU::NewRec::X64Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize siz
     // const u32 mask = UINT32_C(0xFFFFFF00) << (24 - shift);
     // new_value = (value & mask) | (RWRET >> shift);
     cg->shr(RWRET, cg->cl);
-    cg->mov(temp, 0xFFFFFF00u);
+    cg->mov(RWARG3, 0xFFFFFF00u);
     cg->mov(cg->ecx, RWARG2);
-    cg->shl(temp, cg->cl);
-    cg->and_(value, temp);
+    cg->shl(RWARG3, cg->cl);
+    cg->and_(value, RWARG3);
     cg->or_(value, RWRET);
   }
 
@@ -1730,7 +1729,13 @@ void CPU::NewRec::X64Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize siz
 {
   DebugAssert(size == MemoryAccessSize::Word && !sign);
 
+  // TODO: this can take over rt's value if it's no longer needed
+  // NOTE: can't trust T in cf because of the alloc
   const Reg32 addr = Reg32(AllocateTempHostReg(HR_CALLEE_SAVED));
+  const Reg32 value = g_settings.gpu_pgxp_enable ? Reg32(AllocateTempHostReg(HR_CALLEE_SAVED)) : RWARG2;
+  if (g_settings.gpu_pgxp_enable)
+    MoveMIPSRegToReg(value, inst->r.rt);
+
   FlushForLoadStore(address, true, use_fastmem);
 
   // TODO: if address is constant, this can be simplified..
@@ -1740,22 +1745,15 @@ void CPU::NewRec::X64Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize siz
   cg->and_(RWARG1, ~0x3u);
   GenerateLoad(RWARG1, MemoryAccessSize::Word, false, use_fastmem, []() { return RWRET; });
 
-  // TODO: this can take over rt's value if it's no longer needed
-  // NOTE: can't trust T in cf because of the flush
-  const Reg rt = inst->r.rt;
-  const Reg32 value = g_settings.gpu_pgxp_enable ? Reg32(AllocateTempHostReg(HR_CALLEE_SAVED)) : RWARG2;
   DebugAssert(value != cg->ecx);
-  MoveMIPSRegToReg(value, rt);
-
   cg->mov(cg->ecx, addr);
   cg->and_(cg->ecx, 3);
   cg->shl(cg->ecx, 3); // *8
+  cg->and_(addr, ~0x3u);
 
-  // Don't need the original address anymore.
-  if (g_settings.gpu_pgxp_enable)
-    cg->and_(addr, ~0x3u);
-  else
-    FreeHostReg(addr.getIdx());
+  // Need to load down here for PGXP-off, because it's in a volatile reg that can get overwritten by flush.
+  if (!g_settings.gpu_pgxp_enable)
+    MoveMIPSRegToReg(value, inst->r.rt);
 
   if (inst->op == InstructionOp::swl)
   {
@@ -1787,10 +1785,15 @@ void CPU::NewRec::X64Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize siz
     cg->or_(value, RWRET);
   }
 
-  GenerateStore(addr, value, MemoryAccessSize::Word, use_fastmem);
-
-  if (g_settings.gpu_pgxp_enable)
+  if (!g_settings.gpu_pgxp_enable)
   {
+    GenerateStore(addr, value, MemoryAccessSize::Word, use_fastmem);
+    FreeHostReg(addr.getIdx());
+  }
+  else
+  {
+    GenerateStore(addr, value, MemoryAccessSize::Word, use_fastmem);
+
     Flush(FLUSH_FOR_C_CALL);
     cg->mov(RWARG3, value);
     FreeHostReg(value.getIdx());
