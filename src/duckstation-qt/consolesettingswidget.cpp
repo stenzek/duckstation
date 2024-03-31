@@ -141,6 +141,7 @@ void ConsoleSettingsWidget::onEnableCPUClockSpeedControlChecked(int state)
          "have confirmed the bug also occurs with overclocking disabled.\n\nThis warning will only be shown once.");
 
     QMessageBox mb(QMessageBox::Warning, tr("CPU Overclocking Warning"), message, QMessageBox::NoButton, this);
+    mb.setWindowModality(Qt::WindowModal);
     const QAbstractButton* const yes_button =
       mb.addButton(tr("Yes, I will confirm bugs without overclocking before reporting."), QMessageBox::YesRole);
     mb.addButton(tr("No, take me back to safety."), QMessageBox::NoRole);

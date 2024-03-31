@@ -1154,6 +1154,7 @@ std::optional<bool> MainWindow::promptForResumeState(const std::string& save_sta
   QMessageBox msgbox(this);
   msgbox.setIcon(QMessageBox::Question);
   msgbox.setWindowTitle(tr("Load Resume State"));
+  msgbox.setWindowModality(Qt::WindowModal);
   msgbox.setText(tr("A resume save state was found for this game, saved at:\n\n%1.\n\nDo you want to load this state, "
                     "or start from a fresh boot?")
                    .arg(QDateTime::fromSecsSinceEpoch(sd.ModificationTime, Qt::UTC).toLocalTime().toString()));
@@ -2749,6 +2750,7 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
     QMessageBox msgbox(lock.getDialogParent());
     msgbox.setIcon(QMessageBox::Question);
     msgbox.setWindowTitle(tr("Confirm Shutdown"));
+    msgbox.setWindowModality(Qt::WindowModal);
     msgbox.setText(tr("Are you sure you want to shut down the virtual machine?"));
 
     QCheckBox* save_cb = new QCheckBox(tr("Save State For Resume"), &msgbox);
@@ -2992,6 +2994,7 @@ void MainWindow::checkForUpdates(bool display_message)
     {
       QMessageBox mbox(this);
       mbox.setWindowTitle(tr("Updater Error"));
+      mbox.setWindowModality(Qt::WindowModal);
       mbox.setTextFormat(Qt::RichText);
 
       QString message;
