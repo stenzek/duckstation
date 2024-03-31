@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -8,12 +8,14 @@
 #include <string>
 #include <vector>
 
+class Error;
+
 class SettingsInterface
 {
 public:
   virtual ~SettingsInterface() = default;
 
-  virtual bool Save() = 0;
+  virtual bool Save(Error* error = nullptr) = 0;
   virtual void Clear() = 0;
 
   virtual bool GetIntValue(const char* section, const char* key, s32* value) const = 0;

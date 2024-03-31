@@ -1,16 +1,19 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "memory_settings_interface.h"
+
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/string_util.h"
 
 MemorySettingsInterface::MemorySettingsInterface() = default;
 
 MemorySettingsInterface::~MemorySettingsInterface() = default;
 
-bool MemorySettingsInterface::Save()
+bool MemorySettingsInterface::Save(Error* error /* = nullptr */)
 {
+  Error::SetStringView(error, "Memory settings cannot be saved.");
   return false;
 }
 
