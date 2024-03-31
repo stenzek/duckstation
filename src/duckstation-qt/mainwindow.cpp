@@ -2282,8 +2282,6 @@ void MainWindow::setStyleFromSettings()
     darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkGray);
 
     qApp->setPalette(darkPalette);
-
-    qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
   }
   else if (theme == "darkfusionblue")
   {
@@ -2319,8 +2317,6 @@ void MainWindow::setStyleFromSettings()
     darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkGray);
 
     qApp->setPalette(darkPalette);
-
-    qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
   }
   else if (theme == "greymatter")
   {
@@ -2353,8 +2349,6 @@ void MainWindow::setStyleFromSettings()
     darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkGray);
 
     qApp->setPalette(darkPalette);
-
-    qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #505a70; border: 1px solid white; }");
   }
   else if (theme == "darkruby")
   {
@@ -2385,8 +2379,6 @@ void MainWindow::setStyleFromSettings()
     darkPalette.setColor(QPalette::Disabled, QPalette::Light, slate.lighter());
 
     qApp->setPalette(darkPalette);
-
-    qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
   }
   else
   {
