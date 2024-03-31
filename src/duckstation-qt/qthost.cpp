@@ -89,7 +89,7 @@ static bool InitializeConfig(std::string settings_filename);
 static bool ShouldUsePortableMode();
 static void SetAppRoot();
 static void SetResourcesDirectory();
-static void SetDataDirectory();
+static bool SetDataDirectory();
 static bool SetCriticalFolders();
 static void SetDefaultSettings(SettingsInterface& si, bool system, bool controller);
 static void SaveSettings();
@@ -335,13 +335,13 @@ bool QtHost::InitializeConfig(std::string settings_filename)
   if (settings_filename.empty())
     settings_filename = Path::Combine(EmuFolders::DataRoot, "settings.ini");
 
-  Log_InfoPrintf("Loading config from %s.", settings_filename.c_str());
-  s_run_setup_wizard = s_run_setup_wizard || !FileSystem::FileExists(settings_filename.c_str());
+  const bool settings_exists = FileSystem::FileExists(settings_filename.c_str());
+  Log_InfoFmt("Loading config from {}.", settings_filename);
   s_base_settings_interface = std::make_unique<INISettingsInterface>(std::move(settings_filename));
   Host::Internal::SetBaseSettingsLayer(s_base_settings_interface.get());
 
   uint settings_version;
-  if (!s_base_settings_interface->Load() ||
+  if (!settings_exists || !s_base_settings_interface->Load() ||
       !s_base_settings_interface->GetUIntValue("Main", "SettingsVersion", &settings_version) ||
       settings_version != SETTINGS_VERSION)
   {
@@ -356,9 +356,22 @@ bool QtHost::InitializeConfig(std::string settings_filename)
     s_base_settings_interface->SetBoolValue("ControllerPorts", "ControllerSettingsMigrated", true);
     SetDefaultSettings(*s_base_settings_interface, true, true);
 
-    // Don't save if we're running the setup wizard. We want to run it next time if they don't finish it.
-    if (!s_run_setup_wizard)
-      s_base_settings_interface->Save();
+    // Flag for running the setup wizard if this is our first run. We want to run it next time if they don't finish it.
+    s_base_settings_interface->SetBoolValue("Main", "SetupWizardIncomplete", true);
+
+    // Make sure we can actually save the config, and the user doesn't have some permission issue.
+    Error error;
+    if (!s_base_settings_interface->Save(&error))
+    {
+      QMessageBox::critical(
+        nullptr, QStringLiteral("DuckStation"),
+        QStringLiteral(
+          "Failed to save configuration to\n\n%1\n\nThe error was: %2\n\nPlease ensure this directory is writable. You "
+          "can also try portable mode by creating portable.txt in the same directory you installed DuckStation into.")
+          .arg(QString::fromStdString(s_base_settings_interface->GetFileName()))
+          .arg(QString::fromStdString(error.GetDescription())));
+      return false;
+    }
   }
 
   // Setup wizard was incomplete last time?
@@ -391,7 +404,8 @@ bool QtHost::SetCriticalFolders()
 {
   SetAppRoot();
   SetResourcesDirectory();
-  SetDataDirectory();
+  if (!SetDataDirectory())
+    return false;
 
   // logging of directories in case something goes wrong super early
   Log_DevPrintf("AppRoot Directory: %s", EmuFolders::AppRoot.c_str());
@@ -438,16 +452,16 @@ void QtHost::SetResourcesDirectory()
 #endif
 }
 
-void QtHost::SetDataDirectory()
+bool QtHost::SetDataDirectory()
 {
   // Already set, e.g. by -portable.
   if (!EmuFolders::DataRoot.empty())
-    return;
+    return true;
 
   if (ShouldUsePortableMode())
   {
     EmuFolders::DataRoot = EmuFolders::AppRoot;
-    return;
+    return true;
   }
 
 #if defined(_WIN32)
@@ -491,13 +505,26 @@ void QtHost::SetDataDirectory()
   if (!EmuFolders::DataRoot.empty() && !FileSystem::DirectoryExists(EmuFolders::DataRoot.c_str()))
   {
     // we're in trouble if we fail to create this directory... but try to hobble on with portable
-    if (!FileSystem::EnsureDirectoryExists(EmuFolders::DataRoot.c_str(), false))
-      EmuFolders::DataRoot.clear();
+    Error error;
+    if (!FileSystem::EnsureDirectoryExists(EmuFolders::DataRoot.c_str(), false, &error))
+    {
+      // no point translating, config isn't loaded
+      QMessageBox::critical(
+        nullptr, QStringLiteral("DuckStation"),
+        QStringLiteral("Failed to create data directory at path\n\n%1\n\nThe error was: %2\nPlease ensure this "
+                       "directory is writable. You can also try portable mode by creating portable.txt in the same "
+                       "directory you installed DuckStation into.")
+          .arg(QString::fromStdString(EmuFolders::DataRoot))
+          .arg(QString::fromStdString(error.GetDescription())));
+      return false;
+    }
   }
 
   // couldn't determine the data directory? fallback to portable.
   if (EmuFolders::DataRoot.empty())
     EmuFolders::DataRoot = EmuFolders::AppRoot;
+
+  return true;
 }
 
 void Host::LoadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock)
@@ -2212,10 +2239,6 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
 
 bool QtHost::RunSetupWizard()
 {
-  // Set a flag in the config so that even though we created the ini, we'll run the wizard next time.
-  Host::SetBaseBoolSettingValue("Main", "SetupWizardIncomplete", true);
-  Host::CommitBaseSettingChanges();
-
   SetupWizardDialog dialog;
   if (dialog.exec() == QDialog::Rejected)
     return false;
