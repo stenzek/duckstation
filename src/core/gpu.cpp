@@ -2709,7 +2709,7 @@ void GPU::GetStatsString(SmallStringBase& str)
   {
     str.format("{} HW | {} P | {} DC | {} RP | {} RB | {} C | {} W",
                GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()), m_stats.num_primitives,
-               m_stats.host_num_draws, m_stats.host_num_render_passes, m_stats.num_reads, m_stats.num_copies,
+               m_stats.host_num_draws, m_stats.host_num_render_passes, m_stats.host_num_downloads, m_stats.num_copies,
                m_stats.num_writes);
   }
   else

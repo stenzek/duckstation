@@ -584,6 +584,7 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand()
   }
 
   // switch to pixel-by-pixel read state
+  m_counters.num_reads++;
   m_blitter_state = BlitterState::ReadingVRAM;
   m_command_total_words = 0;
   return true;
