@@ -346,7 +346,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                 "This can measurably improve performance in the Vulkan renderer."));
   dialog->registerWidgetHelp(
     m_ui.stretchDisplayVertically, tr("Stretch Vertically"), tr("Unchecked"),
-    tr("Prefers stretching the display vertically instead of horizontally, wheen applying the display aspect ratio."));
+    tr("Prefers stretching the display vertically instead of horizontally, when applying the display aspect ratio."));
 #ifdef _WIN32
   dialog->registerWidgetHelp(m_ui.blitSwapChain, tr("Use Blit Swap Chain"), tr("Unchecked"),
                              tr("Uses a blit presentation model instead of flipping when using the Direct3D 11 "
@@ -453,7 +453,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     m_ui.screenshotFormat, tr("Screenshot Format"), tr("PNG"),
     tr("Selects the format which will be used to save screenshots. JPEG produces smaller files, but loses detail."));
   dialog->registerWidgetHelp(m_ui.screenshotQuality, tr("Screenshot Quality"),
-                             QStringLiteral("%1%%").arg(Settings::DEFAULT_DISPLAY_SCREENSHOT_QUALITY),
+                             QStringLiteral("%1%").arg(Settings::DEFAULT_DISPLAY_SCREENSHOT_QUALITY),
                              tr("Selects the quality at which screenshots will be compressed. Higher values preserve "
                                 "more detail for JPEG, and reduce file size for PNG."));
 

@@ -2957,7 +2957,6 @@ void MainWindow::openCPUDebugger()
 
   Assert(!m_debugger_window);
   m_debugger_window = new DebuggerWindow();
-  m_debugger_window->setWindowIcon(windowIcon());
   connect(m_debugger_window, &DebuggerWindow::closed, this, &MainWindow::onCPUDebuggerClosed);
   m_debugger_window->show();
 }

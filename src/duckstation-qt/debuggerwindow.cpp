@@ -420,6 +420,8 @@ void DebuggerWindow::closeEvent(QCloseEvent* event)
 
 void DebuggerWindow::setupAdditionalUi()
 {
+  setWindowIcon(QtHost::GetAppIcon());
+
 #ifdef _WIN32
   QFont fixedFont;
   fixedFont.setFamily(QStringLiteral("Consolas"));
