@@ -1588,7 +1588,7 @@ void CPU::NewRec::AArch32Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize
 
   // We'd need to be careful here if we weren't overwriting it..
   ComputeLoadStoreAddressArg(cf, address, addr);
-  armAsm->and_(RARG1, addr, armCheckLogicalConstant(~0x3u));
+  armAsm->bic(RARG1, addr, 3);
   GenerateLoad(RARG1, MemoryAccessSize::Word, false, use_fastmem, []() { return RRET; });
 
   if (inst->r.rt == Reg::zero)
@@ -1660,7 +1660,7 @@ void CPU::NewRec::AArch32Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize
   {
     Flush(FLUSH_FOR_C_CALL);
     armAsm->mov(RARG3, value);
-    armAsm->and_(RARG2, addr, armCheckLogicalConstant(~0x3u));
+    armAsm->bic(RARG2, addr, 3);
     EmitMov(RARG1, inst->bits);
     EmitCall(reinterpret_cast<const void*>(&PGXP::CPU_LW));
   }
@@ -1797,12 +1797,12 @@ void CPU::NewRec::AArch32Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize
   // TODO: if address is constant, this can be simplified..
   // We'd need to be careful here if we weren't overwriting it..
   ComputeLoadStoreAddressArg(cf, address, addr);
-  armAsm->and_(RARG1, addr, armCheckLogicalConstant(~0x3u));
+  armAsm->bic(RARG1, addr, 3);
   GenerateLoad(RARG1, MemoryAccessSize::Word, false, use_fastmem, []() { return RRET; });
 
   armAsm->and_(RSCRATCH, addr, 3);
   armAsm->lsl(RSCRATCH, RSCRATCH, 3); // *8
-  armAsm->and_(addr, addr, armCheckLogicalConstant(~0x3u));
+  armAsm->bic(addr, addr, 3);
 
   // Need to load down here for PGXP-off, because it's in a volatile reg that can get overwritten by flush.
   if (!g_settings.gpu_pgxp_enable)

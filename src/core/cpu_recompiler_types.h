@@ -82,7 +82,6 @@ constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
 #define RARG1 vixl::aarch32::r0
 #define RARG2 vixl::aarch32::r1
 #define RARG3 vixl::aarch32::r2
-#define RARG4 vixl::aarch32::r3
 #define RSCRATCH vixl::aarch32::r12
 #define RSTATE vixl::aarch32::r4
 
