@@ -184,7 +184,7 @@ CONSTANT float3 SENSITIVITY = float3(0.08f, 0.08f, 0.08f);
     // Directly uses the pixel from the Current Field
     o_col0.rgb = cur;
   }
-  else if (row > 0 && row < u_height && mmax > 0.0f)
+  else if (row > 0u && row < u_height && mmax > 0.0f)
   {
     // Reconstructs the missing pixel as the average of the same pixel from the line above and the
     // line below it in the Current Field.
