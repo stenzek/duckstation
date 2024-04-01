@@ -348,7 +348,7 @@ private:
   /// Set dirty flags on everything to force re-bind at next draw time.
   void InvalidateCachedState();
 
-  bool IsRenderTargetBound(const GPUTexture* tex) const;
+  s32 IsRenderTargetBoundIndex(const GPUTexture* tex) const;
 
   /// Applies any changed state.
   VkPipelineLayout GetCurrentVkPipelineLayout() const;

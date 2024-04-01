@@ -212,6 +212,18 @@ VkImageLayout VulkanTexture::GetVkLayout() const
   return GetVkImageLayout(m_layout);
 }
 
+VkClearColorValue VulkanTexture::GetClearColorValue() const
+{
+  VkClearColorValue ccv;
+  std::memcpy(ccv.float32, GetUNormClearColor().data(), sizeof(ccv.float32));
+  return ccv;
+}
+
+VkClearDepthStencilValue VulkanTexture::GetClearDepthValue() const
+{
+  return VkClearDepthStencilValue{m_clear_value.depth, 0u};
+}
+
 VkCommandBuffer VulkanTexture::GetCommandBufferForUpdate()
 {
   VulkanDevice& dev = VulkanDevice::GetInstance();

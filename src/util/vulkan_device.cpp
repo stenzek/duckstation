@@ -2678,22 +2678,45 @@ void VulkanDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u
 void VulkanDevice::ClearRenderTarget(GPUTexture* t, u32 c)
 {
   GPUDevice::ClearRenderTarget(t, c);
-  if (InRenderPass() && IsRenderTargetBound(t))
-    EndRenderPass();
+  if (InRenderPass())
+  {
+    const s32 idx = IsRenderTargetBoundIndex(t);
+    if (idx >= 0)
+    {
+      // Use an attachment clear so the render pass isn't restarted.
+      const VkClearAttachment ca = {VK_IMAGE_ASPECT_COLOR_BIT,
+                                    static_cast<u32>(idx),
+                                    {.color = static_cast<VulkanTexture*>(t)->GetClearColorValue()}};
+      const VkClearRect rc = {{{0, 0}, {t->GetWidth(), t->GetHeight()}}, 0u, 1u};
+      vkCmdClearAttachments(m_current_command_buffer, 1, &ca, 1, &rc);
+      t->SetState(GPUTexture::State::Dirty);
+    }
+  }
 }
 
 void VulkanDevice::ClearDepth(GPUTexture* t, float d)
 {
   GPUDevice::ClearDepth(t, d);
   if (InRenderPass() && m_current_depth_target == t)
-    EndRenderPass();
+  {
+    // Use an attachment clear so the render pass isn't restarted.
+    const VkClearAttachment ca = {
+      VK_IMAGE_ASPECT_DEPTH_BIT, 0, {.depthStencil = static_cast<VulkanTexture*>(t)->GetClearDepthValue()}};
+    const VkClearRect rc = {{{0, 0}, {t->GetWidth(), t->GetHeight()}}, 0u, 1u};
+    vkCmdClearAttachments(m_current_command_buffer, 1, &ca, 1, &rc);
+    t->SetState(GPUTexture::State::Dirty);
+  }
 }
 
 void VulkanDevice::InvalidateRenderTarget(GPUTexture* t)
 {
   GPUDevice::InvalidateRenderTarget(t);
-  if (InRenderPass() && (t->IsRenderTarget() ? IsRenderTargetBound(t) : (m_current_depth_target == t)))
-    EndRenderPass();
+  if (InRenderPass() && (t->IsRenderTarget() ? (IsRenderTargetBoundIndex(t) >= 0) : (m_current_depth_target == t)))
+  {
+    // Invalidate includes leaving whatever's in the current buffer.
+    GL_INS_FMT("Invalidating current {}", t->IsRenderTarget() ? "RT" : "DS");
+    t->SetState(GPUTexture::State::Dirty);
+  }
 }
 
 bool VulkanDevice::CreateBuffers()
@@ -3462,15 +3485,15 @@ void VulkanDevice::InvalidateCachedState()
   m_current_pipeline = nullptr;
 }
 
-bool VulkanDevice::IsRenderTargetBound(const GPUTexture* tex) const
+s32 VulkanDevice::IsRenderTargetBoundIndex(const GPUTexture* tex) const
 {
   for (u32 i = 0; i < m_num_current_render_targets; i++)
   {
     if (m_current_render_targets[i] == tex)
-      return true;
+      return static_cast<s32>(i);
   }
 
-  return false;
+  return -1;
 }
 
 VkPipelineLayout VulkanDevice::GetCurrentVkPipelineLayout() const

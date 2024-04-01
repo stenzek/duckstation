@@ -47,6 +47,8 @@ public:
   ALWAYS_INLINE VkFormat GetVkFormat() const { return m_vk_format; }
 
   VkImageLayout GetVkLayout() const;
+  VkClearColorValue GetClearColorValue() const;
+  VkClearDepthStencilValue GetClearDepthValue() const;
 
   bool Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch, u32 layer = 0, u32 level = 0) override;
   bool Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32 height, u32 layer = 0, u32 level = 0) override;
