@@ -879,7 +879,7 @@ bool GPU_HW::CompilePipelines()
       {
         if (
           // Can't generate shader blending.
-          (render_mode == static_cast<u8>(BatchRenderMode::ShaderBlend) && !features.feedback_loops) ||
+          (render_mode == static_cast<u8>(BatchRenderMode::ShaderBlend) && !m_allow_shader_blend) ||
           // Don't need multipass shaders.
           (m_supports_framebuffer_fetch && (render_mode == static_cast<u8>(BatchRenderMode::OnlyOpaque) ||
                                             render_mode == static_cast<u8>(BatchRenderMode::OnlyTransparent))))
@@ -2482,7 +2482,7 @@ ALWAYS_INLINE_RELEASE bool GPU_HW::NeedsTwoPassRendering() const
   // We need two-pass rendering when using BG-FG blending and texturing, as the transparency can be enabled
   // on a per-pixel basis, and the opaque pixels shouldn't be blended at all.
 
-  return (m_batch.texture_mode != GPUTextureMode::Disabled && !m_supports_framebuffer_fetch &&
+  return (m_batch.texture_mode != GPUTextureMode::Disabled &&
           (m_batch.transparency_mode == GPUTransparencyMode::BackgroundMinusForeground ||
            (!m_supports_dual_source_blend && m_batch.transparency_mode != GPUTransparencyMode::Disabled)));
 }
