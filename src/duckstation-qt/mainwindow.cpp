@@ -931,7 +931,7 @@ void MainWindow::populateLoadStateMenu(const char* game_serial, QMenu* menu)
     if (path.isEmpty())
       return;
 
-    g_emu_thread->loadState(path);
+    g_emu_thread->loadState(QDir::toNativeSeparators(path));
   });
   QAction* load_from_state = menu->addAction(tr("Undo Load State"));
   load_from_state->setEnabled(System::CanUndoLoadState());
@@ -973,7 +973,7 @@ void MainWindow::populateSaveStateMenu(const char* game_serial, QMenu* menu)
     if (path.isEmpty())
       return;
 
-    g_emu_thread->saveState(path);
+    g_emu_thread->saveState(QDir::toNativeSeparators(path));
   });
   menu->addSeparator();
 
