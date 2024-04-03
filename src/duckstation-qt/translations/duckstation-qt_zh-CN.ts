@@ -4153,7 +4153,7 @@ You cannot undo this action.</source>
 <context>
     <name>CoverDownloadDialog</name>
     <message>
-        <location filename="../coverdownloaddialog.cpp" line="85"/>
+        <location filename="../coverdownloaddialog.cpp" line="87"/>
         <source>Stop</source>
         <translation>停止</translation>
     </message>
@@ -4164,12 +4164,12 @@ You cannot undo this action.</source>
     </message>
     <message>
         <location filename="../coverdownloaddialog.ui" line="95"/>
-        <location filename="../coverdownloaddialog.cpp" line="85"/>
+        <location filename="../coverdownloaddialog.cpp" line="87"/>
         <source>Start</source>
         <translation>开始</translation>
     </message>
     <message>
-        <location filename="../coverdownloaddialog.cpp" line="63"/>
+        <location filename="../coverdownloaddialog.cpp" line="65"/>
         <source>Download complete.</source>
         <translation>下载完成。</translation>
     </message>
@@ -4659,12 +4659,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>跟随加载/存储(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="667"/>
+        <location filename="../debuggerwindow.cpp" line="669"/>
         <source>Failed to add breakpoint. A breakpoint may already exist at this address.</source>
         <translation>无法添加断点。在该地址可能已经存在一个断点。</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="686"/>
+        <location filename="../debuggerwindow.cpp" line="688"/>
         <source>Failed to remove breakpoint. This breakpoint may not exist.</source>
         <translation>无法删除断点。此断点可能不存在。</translation>
     </message>
@@ -9037,12 +9037,12 @@ Do you want to load this save and continue?</source>
 <context>
     <name>GPU</name>
     <message>
-        <location filename="../../core/gpu.cpp" line="2300"/>
+        <location filename="../../core/gpu.cpp" line="2301"/>
         <source>Saving screenshot to &apos;{}&apos;.</source>
         <translation>保存屏幕截图到&apos;{}&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu.cpp" line="2352"/>
+        <location filename="../../core/gpu.cpp" line="2353"/>
         <source>Failed to save screenshot to &apos;{}&apos;.</source>
         <translation>无法保存屏幕截图到&apos;{}&apos;。</translation>
     </message>
@@ -9302,47 +9302,47 @@ Do you want to load this save and continue?</source>
 <context>
     <name>GPU_HW</name>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="348"/>
+        <location filename="../../core/gpu_hw.cpp" line="350"/>
         <source>Resolution scale set to {0}x (display {1}x{2}, VRAM {3}x{4})</source>
         <translation>分辨率比率设置为{0}x (显示{1}x{2}，显存{3}x{4})</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="361"/>
+        <location filename="../../core/gpu_hw.cpp" line="363"/>
         <source>Multisample anti-aliasing set to {}x (SSAA).</source>
         <translation>多重采样反锯齿设置为{}x (SSAA)。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="368"/>
+        <location filename="../../core/gpu_hw.cpp" line="370"/>
         <source>Multisample anti-aliasing set to {}x.</source>
         <translation>多重采样反锯齿设置为{}x。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="443"/>
+        <location filename="../../core/gpu_hw.cpp" line="444"/>
         <source>{}x MSAA is not supported, using {}x instead.</source>
         <translation>不支持{}x MSAA，使用{}x代替。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="455"/>
+        <location filename="../../core/gpu_hw.cpp" line="456"/>
         <source>SSAA is not supported, using MSAA instead.</source>
         <translation>不支持SSAA，使用MSAA代替。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="462"/>
+        <location filename="../../core/gpu_hw.cpp" line="463"/>
         <source>Texture filter &apos;{}&apos; is not supported with the current renderer.</source>
         <translation>当前渲染器不支持纹理过滤&apos;{}&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="474"/>
+        <location filename="../../core/gpu_hw.cpp" line="475"/>
         <source>Geometry shaders are not supported by your GPU, and are required for wireframe rendering.</source>
         <translation>您的GPU不支持几何着色器，需要线框渲染。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="487"/>
+        <location filename="../../core/gpu_hw.cpp" line="488"/>
         <source>Resolution scale {0}x is not divisible by downsample scale {1}x, using {2}x instead.</source>
         <translation>分辨率比率{0}x不能被缩减采样比率{1}x整除，使用{2}x代替。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="548"/>
+        <location filename="../../core/gpu_hw.cpp" line="549"/>
         <source>Resolution scale {0}x not supported for adaptive downsampling, using {1}x.</source>
         <translation>分辨率比率{0}x不支持自适应缩减采样，使用{1}x。</translation>
     </message>
@@ -9350,7 +9350,7 @@ Do you want to load this save and continue?</source>
 <context>
     <name>GS</name>
     <message>
-        <location filename="../../core/gpu.cpp" line="2351"/>
+        <location filename="../../core/gpu.cpp" line="2352"/>
         <source>Saved screenshot to &apos;{}&apos;.</source>
         <translation>保存屏幕截图到&apos;{}&apos;。</translation>
     </message>
@@ -10890,8 +10890,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>当禁用了快进或垂直同步时，在后台线程上呈现帧。这可以显著提高Vulkan渲染器的性能。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="349"/>
         <source>Prefers stretching the display vertically instead of horizontally, wheen applying the display aspect ratio.</source>
+        <translation type="vanished">在应用显示宽高比时，优先选择垂直拉伸显示，而不是水平拉伸显示。</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="349"/>
+        <source>Prefers stretching the display vertically instead of horizontally, when applying the display aspect ratio.</source>
         <translation>在应用显示宽高比时，优先选择垂直拉伸显示，而不是水平拉伸显示。</translation>
     </message>
     <message>
@@ -12348,7 +12352,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>启用金手指(&amp;E)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3003"/>
+        <location filename="../mainwindow.cpp" line="3002"/>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please follow the instructions under &quot;Downloading and Running&quot; at the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;抱歉，您正在尝试更新的DuckStation版本不是由官方GitHub所发行。为防止不兼容，自动更新程序仅在正式版本上启用。&lt;/p&gt;&lt;p&gt;要获取正式版本，请按照下面链接中的“下载并运行”下的说明进行操作：&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;lt;/p&gt;</translation>
     </message>
@@ -12852,12 +12856,12 @@ Are you sure you want to continue?</source>
         <translation>交换光盘</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2996"/>
+        <location filename="../mainwindow.cpp" line="2995"/>
         <source>Updater Error</source>
         <translation>更新程序错误</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3009"/>
+        <location filename="../mainwindow.cpp" line="3008"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation>当前平台不支持自动更新。</translation>
     </message>

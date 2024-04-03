@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #define IMGUI_DEFINE_MATH_OPERATORS
@@ -10,6 +10,7 @@
 
 #include "common/assert.h"
 #include "common/easing.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/lru_cache.h"
@@ -271,24 +272,37 @@ const std::shared_ptr<GPUTexture>& ImGuiFullscreen::GetPlaceholderTexture()
 std::optional<RGBA8Image> ImGuiFullscreen::LoadTextureImage(const char* path)
 {
   std::optional<RGBA8Image> image;
-
-  std::optional<std::vector<u8>> data;
   if (Path::IsAbsolute(path))
-    data = FileSystem::ReadBinaryFile(path);
-  else
-    data = Host::ReadResourceFile(path, true);
-  if (data.has_value())
   {
-    image = RGBA8Image();
-    if (!image->LoadFromBuffer(path, data->data(), data->size()))
+    Error error;
+    auto fp = FileSystem::OpenManagedCFile(path, "rb", &error);
+    if (fp)
     {
-      Log_ErrorPrintf("Failed to read texture resource '%s'", path);
-      image.reset();
+      image = RGBA8Image();
+      if (!image->LoadFromFile(path, fp.get()))
+        Log_ErrorFmt("Failed to read texture file '{}'", path);
+    }
+    else
+    {
+      Log_ErrorFmt("Failed to open texture file '{}': {}", path, error.GetDescription());
     }
   }
   else
   {
-    Log_ErrorPrintf("Failed to open texture resource '%s'", path);
+    std::optional<std::vector<u8>> data = Host::ReadResourceFile(path, true);
+    if (data.has_value())
+    {
+      image = RGBA8Image();
+      if (!image->LoadFromBuffer(path, data->data(), data->size()))
+      {
+        Log_ErrorFmt("Failed to read texture resource '{}'", path);
+        image.reset();
+      }
+    }
+    else
+    {
+      Log_ErrorFmt("Failed to open texture resource '{}'", path);
+    }
   }
 
   return image;

@@ -59543,6 +59543,8 @@ SCPS-10101:
     - NeGcon
   traits:
     - ForceInterpreter
+  codes:
+    - HASH-4F2265E8442F2BF8
   metadata:
     publisher: "Sony"
     developer: "Studio 33"
@@ -87855,6 +87857,9 @@ SLPS-02832:
   controllers:
     - AnalogController
     - DigitalController
+  settings:
+    dmaMaxSliceTicks: 100 # Fixes unaligned loads/crash.
+    dmaHaltTicks: 150
   metadata:
     publisher: "ArtDink"
     developer: "ArtDink"
@@ -103670,6 +103675,7 @@ SCPS-10001:
     - NeGcon
   traits:
     - ForcePGXPCPUMode
+    - ForceRecompilerICache # Fixes crash in pause screen.
   codes:
     - HASH-58C38FDD4440E3DB
   metadata:
@@ -130662,7 +130668,6 @@ SLUS-01265:
     rating: NoIssues
     versionTested: "0.1-1337-gcaf9943"
   controllers:
-    - AnalogController
     - DigitalController
   metadata:
     publisher: "UBI Soft Entertainment"

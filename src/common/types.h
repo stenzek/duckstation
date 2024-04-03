@@ -224,3 +224,6 @@ static constexpr u32 HOST_PAGE_SHIFT = 12;
                              static_cast<std::underlying_type<type_>::type>(rhs));                                     \
     return lhs;                                                                                                        \
   }
+
+// Compute the address of a base type given a field offset.
+#define BASE_FROM_RECORD_FIELD(ptr, base_type, field) ((base_type*)(((char*)ptr) - offsetof(base_type, field)))

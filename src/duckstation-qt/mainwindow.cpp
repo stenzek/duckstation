@@ -931,7 +931,7 @@ void MainWindow::populateLoadStateMenu(const char* game_serial, QMenu* menu)
     if (path.isEmpty())
       return;
 
-    g_emu_thread->loadState(path);
+    g_emu_thread->loadState(QDir::toNativeSeparators(path));
   });
   QAction* load_from_state = menu->addAction(tr("Undo Load State"));
   load_from_state->setEnabled(System::CanUndoLoadState());
@@ -973,7 +973,7 @@ void MainWindow::populateSaveStateMenu(const char* game_serial, QMenu* menu)
     if (path.isEmpty())
       return;
 
-    g_emu_thread->saveState(path);
+    g_emu_thread->saveState(QDir::toNativeSeparators(path));
   });
   menu->addSeparator();
 
@@ -2319,6 +2319,42 @@ void MainWindow::setStyleFromSettings()
 
     qApp->setPalette(darkPalette);
   }
+  	else if (theme == "cobaltsky")
+	{
+		// Custom palette by KamFretoZ, A soothing deep royal blue
+		// that are meant to be easy on the eyes as the main color.
+		// Alternative dark theme.
+		qApp->setStyle(QStyleFactory::create("Fusion"));
+
+		const QColor gray(150, 150, 150);
+		const QColor royalBlue(29, 41, 81);
+		const QColor darkishBlue(17, 30, 108);
+		const QColor lighterBlue(25, 32, 130);
+		const QColor highlight(36, 93, 218);
+		const QColor link(0, 202, 255);
+
+		QPalette darkPalette;
+		darkPalette.setColor(QPalette::Window, royalBlue);
+		darkPalette.setColor(QPalette::WindowText, Qt::white);
+		darkPalette.setColor(QPalette::Base, royalBlue.lighter());
+		darkPalette.setColor(QPalette::AlternateBase, darkishBlue);
+		darkPalette.setColor(QPalette::ToolTipBase, darkishBlue);
+		darkPalette.setColor(QPalette::ToolTipText, Qt::white);
+		darkPalette.setColor(QPalette::Text, Qt::white);
+		darkPalette.setColor(QPalette::Button, lighterBlue);
+		darkPalette.setColor(QPalette::ButtonText, Qt::white);
+		darkPalette.setColor(QPalette::Link, link);
+		darkPalette.setColor(QPalette::Highlight, highlight);
+		darkPalette.setColor(QPalette::HighlightedText, Qt::white);
+
+		darkPalette.setColor(QPalette::Active, QPalette::Button, lighterBlue);
+		darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray);
+		darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray);
+		darkPalette.setColor(QPalette::Disabled, QPalette::Text, gray);
+		darkPalette.setColor(QPalette::Disabled, QPalette::Light, gray);
+
+		qApp->setPalette(darkPalette);
+	}
   else if (theme == "greymatter")
   {
     qApp->setStyle(QStyleFactory::create("Fusion"));
