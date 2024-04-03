@@ -130662,7 +130662,6 @@ SLUS-01265:
     rating: NoIssues
     versionTested: "0.1-1337-gcaf9943"
   controllers:
-    - AnalogController
     - DigitalController
   metadata:
     publisher: "UBI Soft Entertainment"
