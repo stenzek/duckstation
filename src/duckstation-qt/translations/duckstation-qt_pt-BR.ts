@@ -2798,12 +2798,12 @@ This warning will only be shown once.</source>
         <translation>Ativar o aumento de velocidade do CPU quebra a experiência em alguns jogos, causa problemas, reduz o desempenho e pode aumentar muito o uso do computador. CPU e GPU como um todo! Ativando esta opção você concorda em não reportar nenhum bug relacionado sem ANTES confirmar que não foi causado por conta da ativação desta opção.</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="145"/>
+        <location filename="../consolesettingswidget.cpp" line="146"/>
         <source>Yes, I will confirm bugs without overclocking before reporting.</source>
         <translation>Sim! e confirmo que não irei reportar problemas por conta de overclock.</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="146"/>
+        <location filename="../consolesettingswidget.cpp" line="147"/>
         <source>No, take me back to safety.</source>
         <translation>Não, deixa pra lá.</translation>
     </message>
@@ -2813,7 +2813,7 @@ This warning will only be shown once.</source>
         <translation>Alerta de aumento de velocidade do CPU</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="188"/>
+        <location filename="../consolesettingswidget.cpp" line="189"/>
         <source>%1% (%2MHz)</source>
         <translation>%1% (%2MHz)</translation>
     </message>
@@ -4001,7 +4001,7 @@ Esta ação não poderá ser desfeita.</translation>
     </message>
     <message>
         <location filename="../coverdownloaddialog.ui" line="95"/>
-        <location filename="../coverdownloaddialog.cpp" line="85"/>
+        <location filename="../coverdownloaddialog.cpp" line="87"/>
         <source>Start</source>
         <translation>Iniciar</translation>
     </message>
@@ -4011,12 +4011,12 @@ Esta ação não poderá ser desfeita.</translation>
         <translation>Fechar</translation>
     </message>
     <message>
-        <location filename="../coverdownloaddialog.cpp" line="63"/>
+        <location filename="../coverdownloaddialog.cpp" line="65"/>
         <source>Download complete.</source>
         <translation>Download terminado.</translation>
     </message>
     <message>
-        <location filename="../coverdownloaddialog.cpp" line="85"/>
+        <location filename="../coverdownloaddialog.cpp" line="87"/>
         <source>Stop</source>
         <translation>Parar</translation>
     </message>
@@ -4459,12 +4459,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>Padrão encontrado em 0x%1.</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="667"/>
+        <location filename="../debuggerwindow.cpp" line="669"/>
         <source>Failed to add breakpoint. A breakpoint may already exist at this address.</source>
         <translation>Falha ao adicionar ponto de interrupção. Pode ser que já exista algum neste endereço.</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="686"/>
+        <location filename="../debuggerwindow.cpp" line="688"/>
         <source>Failed to remove breakpoint. This breakpoint may not exist.</source>
         <translation>Falha ao remover ponto de interrupção. O mesmo pode não existir.</translation>
     </message>
@@ -4772,44 +4772,44 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>EmuThread</name>
     <message>
-        <location filename="../qthost.cpp" line="733"/>
+        <location filename="../qthost.cpp" line="760"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="733"/>
+        <location filename="../qthost.cpp" line="760"/>
         <source>No resume save state found.</source>
         <translation>Salvamento rápido não encontrado.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1388"/>
+        <location filename="../qthost.cpp" line="1415"/>
         <source>Game: %1 (%2)
 </source>
         <translation>Jogo: %1 (%2)
 </translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1396"/>
+        <location filename="../qthost.cpp" line="1423"/>
         <source>Rich presence inactive or unsupported.</source>
         <translation>Presença rica do Discord inativa ou não suportada.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1400"/>
+        <location filename="../qthost.cpp" line="1427"/>
         <source>Game not loaded or no RetroAchievements available.</source>
         <translation>Jogo não carregado ou sem conquistas disponíveis.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1724"/>
+        <location filename="../qthost.cpp" line="1751"/>
         <source>%1x%2</source>
         <translation>%1x%2</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1733"/>
+        <location filename="../qthost.cpp" line="1760"/>
         <source>Game: %1 FPS</source>
         <translation>Jogo: %1 FPS</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1743"/>
+        <location filename="../qthost.cpp" line="1770"/>
         <source>Video: %1 FPS (%2%)</source>
         <translation>Vídeo: %1 FPS (%2%)</translation>
     </message>
@@ -8245,12 +8245,12 @@ Error was:</source>
 <context>
     <name>GPU</name>
     <message>
-        <location filename="../../core/gpu.cpp" line="2300"/>
+        <location filename="../../core/gpu.cpp" line="2301"/>
         <source>Saving screenshot to &apos;{}&apos;.</source>
         <translation>Salvando a captura de tela em &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu.cpp" line="2352"/>
+        <location filename="../../core/gpu.cpp" line="2353"/>
         <source>Failed to save screenshot to &apos;{}&apos;.</source>
         <translation>Falha ao salvar a captura de tela &apos;{}&apos;.</translation>
     </message>
@@ -8342,7 +8342,7 @@ Error was:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1715"/>
+        <location filename="../qthost.cpp" line="1742"/>
         <location filename="../../core/settings.cpp" line="1029"/>
         <source>Software</source>
         <translation>Software</translation>
@@ -8407,47 +8407,47 @@ Error was:</source>
 <context>
     <name>GPU_HW</name>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="348"/>
+        <location filename="../../core/gpu_hw.cpp" line="350"/>
         <source>Resolution scale set to {0}x (display {1}x{2}, VRAM {3}x{4})</source>
         <translation>Escala de resolução definida para {0}x (tela {1}x{2}, VRAM {3}x{4})</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="361"/>
+        <location filename="../../core/gpu_hw.cpp" line="363"/>
         <source>Multisample anti-aliasing set to {}x (SSAA).</source>
         <translation>Anti serrilhado múltiplo definido para {}x (SSAA).</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="368"/>
+        <location filename="../../core/gpu_hw.cpp" line="370"/>
         <source>Multisample anti-aliasing set to {}x.</source>
         <translation>Suavização de serrilhado definido para {}x.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="443"/>
+        <location filename="../../core/gpu_hw.cpp" line="444"/>
         <source>{}x MSAA is not supported, using {}x instead.</source>
         <translation>{}x MSAA não é compatível. Use {}x.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="455"/>
+        <location filename="../../core/gpu_hw.cpp" line="456"/>
         <source>SSAA is not supported, using MSAA instead.</source>
         <translation>Filtro SSAA não suportado, usando filtro MSAA.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="462"/>
+        <location filename="../../core/gpu_hw.cpp" line="463"/>
         <source>Texture filter &apos;{}&apos; is not supported with the current renderer.</source>
         <translation>O filtro de textura &apos;{}&apos; não é compatível com o renderizador atual.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="474"/>
+        <location filename="../../core/gpu_hw.cpp" line="475"/>
         <source>Geometry shaders are not supported by your GPU, and are required for wireframe rendering.</source>
         <translation>Os sombreadores não são compatíveis com sua GPU e são obrigatórios para a renderização no modo de wireframe.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="487"/>
+        <location filename="../../core/gpu_hw.cpp" line="488"/>
         <source>Resolution scale {0}x is not divisible by downsample scale {1}x, using {2}x instead.</source>
         <translation>A escala de resolução {0}x não é divisível pela escala de redução da resolução {1}x, usando {2}x.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="548"/>
+        <location filename="../../core/gpu_hw.cpp" line="549"/>
         <source>Resolution scale {0}x not supported for adaptive downsampling, using {1}x.</source>
         <translation>A escala de resolução {0}x não é compatível com a redução de amostra adaptável, usando {1}x.</translation>
     </message>
@@ -8455,7 +8455,7 @@ Error was:</source>
 <context>
     <name>GS</name>
     <message>
-        <location filename="../../core/gpu.cpp" line="2351"/>
+        <location filename="../../core/gpu.cpp" line="2352"/>
         <source>Saved screenshot to &apos;{}&apos;.</source>
         <translation>Captura de tela salva em &apos;{}&apos;.</translation>
     </message>
@@ -9822,11 +9822,6 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <translation>Apresenta quadros sequêncialmente em segundo plano quando o avanço rápido ou a sincronia vertical (v-sync) está desativada pode melhorar o desempenho no renderizador Vulkan.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="349"/>
-        <source>Prefers stretching the display vertically instead of horizontally, wheen applying the display aspect ratio.</source>
-        <translation>Dá preferência para esticar a tela verticalmente em vez de horizontalmente, ao aplicar a proporção da tela.</translation>
-    </message>
-    <message>
         <location filename="../graphicssettingswidget.cpp" line="352"/>
         <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
         <translation>Usado para transferir modelos de blocos ao invés de invertê-los. Normalmente em modo Dx11. Resulta em uma desempenho mais lento, pode ser útil para alguns aplicativos como Discord com a função de transmissão de tela ou ainda liberar taxas de quadros em alguns sistemas.</translation>
@@ -9860,6 +9855,11 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <location filename="../graphicssettingswidget.cpp" line="367"/>
         <source>Applies modern dithering techniques to further smooth out gradients when true color is enabled. This debanding is performed during rendering (as opposed to a post-processing step), which allows it to be fast while preserving detail. Debanding increases the file size of screenshots due to the subtle dithering pattern present in screenshots.</source>
         <translation>Aplica técnicas modernas de dithering para suavizar ainda mais os gradientes quando a cor verdadeira está ativada. Essa suavização é realizada durante a renderização (em vez de uma etapa de pós-processamento), o que permite que ela seja rápida e preserve os detalhes. A suavização aumenta o tamanho do arquivo das capturas de tela devido ao padrão sutil de pontilhamento presente nas capturas de tela.</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="349"/>
+        <source>Prefers stretching the display vertically instead of horizontally, when applying the display aspect ratio.</source>
+        <translation>Preferencialmente estica a imagem verticalmente em vez de horizontalmente, ao usar a opção de proporção de tela.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="377"/>
@@ -11179,8 +11179,8 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     </message>
     <message>
         <location filename="../mainwindow.ui" line="42"/>
-        <location filename="../mainwindow.cpp" line="1293"/>
-        <location filename="../mainwindow.cpp" line="1534"/>
+        <location filename="../mainwindow.cpp" line="1294"/>
+        <location filename="../mainwindow.cpp" line="1535"/>
         <source>Change Disc</source>
         <translation>Mudar disco</translation>
     </message>
@@ -11193,7 +11193,7 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     <message>
         <location filename="../mainwindow.ui" line="66"/>
         <location filename="../mainwindow.cpp" line="793"/>
-        <location filename="../mainwindow.cpp" line="1161"/>
+        <location filename="../mainwindow.cpp" line="1162"/>
         <source>Load State</source>
         <translation>Carregar estado</translation>
     </message>
@@ -11375,13 +11375,13 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     </message>
     <message>
         <location filename="../mainwindow.ui" line="965"/>
-        <location filename="../mainwindow.cpp" line="1335"/>
+        <location filename="../mainwindow.cpp" line="1336"/>
         <source>Start Big Picture Mode</source>
         <translation>Iniciar em modo tela grande</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="974"/>
-        <location filename="../mainwindow.cpp" line="1336"/>
+        <location filename="../mainwindow.cpp" line="1337"/>
         <source>Big Picture</source>
         <translation>Modo tela grande</translation>
     </message>
@@ -11703,12 +11703,12 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="654"/>
-        <location filename="../mainwindow.cpp" line="1278"/>
+        <location filename="../mainwindow.cpp" line="1279"/>
         <source>Select Disc Image</source>
         <translation>Escolha uma imagem de disco</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1263"/>
+        <location filename="../mainwindow.cpp" line="1264"/>
         <source>Start Disc</source>
         <translation>Iniciar disco</translation>
     </message>
@@ -11725,8 +11725,8 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     <message>
         <location filename="../mainwindow.cpp" line="305"/>
         <location filename="../mainwindow.cpp" line="1072"/>
-        <location filename="../mainwindow.cpp" line="1181"/>
-        <location filename="../mainwindow.cpp" line="1451"/>
+        <location filename="../mainwindow.cpp" line="1182"/>
+        <location filename="../mainwindow.cpp" line="1452"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
@@ -11860,7 +11860,7 @@ The saves will not be recoverable.</source>
         <translation>Carregar estado salvo</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1157"/>
+        <location filename="../mainwindow.cpp" line="1158"/>
         <source>A resume save state was found for this game, saved at:
 
 %1.
@@ -11873,43 +11873,43 @@ Do you want to load this state, or start from a fresh boot?</source>
 Você deseja que este arquivo seja carregado ou que seja reiniciado novamente?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1162"/>
+        <location filename="../mainwindow.cpp" line="1163"/>
         <source>Fresh Boot</source>
         <translation>Inicialização limpa</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1163"/>
+        <location filename="../mainwindow.cpp" line="1164"/>
         <source>Delete And Boot</source>
         <translation>Excluir e iniciar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1182"/>
+        <location filename="../mainwindow.cpp" line="1183"/>
         <source>Failed to delete save state file &apos;%1&apos;.</source>
         <translation>Falha ao apagar o arquivo de estado salvo &apos;%1&apos;.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1239"/>
+        <location filename="../mainwindow.cpp" line="1240"/>
         <source>Confirm Disc Change</source>
         <translation>Confirmar troca de disco</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1240"/>
+        <location filename="../mainwindow.cpp" line="1241"/>
         <source>Do you want to swap discs or boot the new image (via system reset)?</source>
         <translation>Deseja trocar discos ou inicializar outro (via reinicialização do sistema)?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1242"/>
+        <location filename="../mainwindow.cpp" line="1243"/>
         <source>Swap Disc</source>
         <translation>Trocar disco</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1243"/>
+        <location filename="../mainwindow.cpp" line="1244"/>
         <source>Reset</source>
         <translation>Redefinir</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1055"/>
-        <location filename="../mainwindow.cpp" line="1244"/>
+        <location filename="../mainwindow.cpp" line="1245"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
     </message>
@@ -11919,42 +11919,42 @@ Você deseja que este arquivo seja carregado ou que seja reiniciado novamente?</
         <translation>Gerenciador de trapaças</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1335"/>
+        <location filename="../mainwindow.cpp" line="1336"/>
         <source>Stop Big Picture Mode</source>
         <translation>Parar modo tela cheia</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1336"/>
+        <location filename="../mainwindow.cpp" line="1337"/>
         <source>Exit Big Picture</source>
         <translation>Sair do modo tela cheia</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1451"/>
+        <location filename="../mainwindow.cpp" line="1452"/>
         <source>You must select a disc to change discs.</source>
         <translation>Você deve escolher um disco para confirmar a troca</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1559"/>
+        <location filename="../mainwindow.cpp" line="1560"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</source>
         <translation>Todos os tipos de imagem de capa (*.jpg *.jpeg *.png *.webp)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1573"/>
+        <location filename="../mainwindow.cpp" line="1574"/>
         <source>You must select a different file to the current cover image.</source>
         <translation>Você deve selecionar um arquivo diferente da imagem de capa atual.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1597"/>
+        <location filename="../mainwindow.cpp" line="1598"/>
         <source>Failed to remove &apos;%1&apos;</source>
         <translation>Falha ao remover &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1606"/>
+        <location filename="../mainwindow.cpp" line="1607"/>
         <source>Confirm Reset</source>
         <translation>Confirmar redefinição</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1607"/>
+        <location filename="../mainwindow.cpp" line="1608"/>
         <source>Are you sure you want to reset the play time for &apos;%1&apos;?
 
 This action cannot be undone.</source>
@@ -11963,108 +11963,108 @@ This action cannot be undone.</source>
 Esta ação não poderá ser desfeita.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1487"/>
+        <location filename="../mainwindow.cpp" line="1488"/>
         <source>Properties...</source>
         <translation>Propriedades...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1491"/>
+        <location filename="../mainwindow.cpp" line="1492"/>
         <source>Open Containing Directory...</source>
         <translation>Abrir diretório...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1496"/>
+        <location filename="../mainwindow.cpp" line="1497"/>
         <source>Set Cover Image...</source>
         <translation>Definir imagem de capa...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1506"/>
+        <location filename="../mainwindow.cpp" line="1507"/>
         <source>Default Boot</source>
         <translation>Inicialização padrão</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1509"/>
+        <location filename="../mainwindow.cpp" line="1510"/>
         <source>Fast Boot</source>
         <translation>Inicialização rápida</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1515"/>
+        <location filename="../mainwindow.cpp" line="1516"/>
         <source>Full Boot</source>
         <translation>Inicialização completa</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1523"/>
+        <location filename="../mainwindow.cpp" line="1524"/>
         <source>Boot and Debug</source>
         <translation>Iniciar jogo com depurador</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1543"/>
+        <location filename="../mainwindow.cpp" line="1544"/>
         <source>Exclude From List</source>
         <translation>Excluir da lista</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1546"/>
+        <location filename="../mainwindow.cpp" line="1547"/>
         <source>Reset Play Time</source>
         <translation>Redefinir tempo de jogo</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1550"/>
+        <location filename="../mainwindow.cpp" line="1551"/>
         <source>Add Search Directory...</source>
         <translation>Adicionar um novo diretório...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1559"/>
+        <location filename="../mainwindow.cpp" line="1560"/>
         <source>Select Cover Image</source>
         <translation>Escolher imagem de capa</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1577"/>
+        <location filename="../mainwindow.cpp" line="1578"/>
         <source>Cover Already Exists</source>
         <translation>Capa já existe</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1578"/>
+        <location filename="../mainwindow.cpp" line="1579"/>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <translation>A capa para este jogo já existe, deseja substituí-lá?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1573"/>
-        <location filename="../mainwindow.cpp" line="1587"/>
-        <location filename="../mainwindow.cpp" line="1592"/>
-        <location filename="../mainwindow.cpp" line="1597"/>
+        <location filename="../mainwindow.cpp" line="1574"/>
+        <location filename="../mainwindow.cpp" line="1588"/>
+        <location filename="../mainwindow.cpp" line="1593"/>
+        <location filename="../mainwindow.cpp" line="1598"/>
         <source>Copy Error</source>
         <translation>Erro ao copiar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1587"/>
+        <location filename="../mainwindow.cpp" line="1588"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation>Falha ao remover capa existente &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1592"/>
+        <location filename="../mainwindow.cpp" line="1593"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
         <translation>Falha ao copiar &apos;%1&apos; para &apos;%2&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1751"/>
+        <location filename="../mainwindow.cpp" line="1752"/>
         <source>%1x Scale</source>
         <translation>Expandir para %1x</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2166"/>
-        <location filename="../mainwindow.cpp" line="2173"/>
-        <location filename="../mainwindow.cpp" line="2182"/>
+        <location filename="../mainwindow.cpp" line="2167"/>
+        <location filename="../mainwindow.cpp" line="2174"/>
+        <location filename="../mainwindow.cpp" line="2183"/>
         <source>Destination File</source>
         <translation>Destino do arquivo</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2166"/>
-        <location filename="../mainwindow.cpp" line="2182"/>
+        <location filename="../mainwindow.cpp" line="2167"/>
+        <location filename="../mainwindow.cpp" line="2183"/>
         <source>Binary Files (*.bin)</source>
         <translation>Arquivos binários (*.bin)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2174"/>
+        <location filename="../mainwindow.cpp" line="2175"/>
         <source>Binary Files (*.bin);;PNG Images (*.png)</source>
         <translation>Arquivos (*.bin);;Imagens (*.png)</translation>
     </message>
@@ -12104,46 +12104,46 @@ Esta ação não poderá ser desfeita.</translation>
         <translation>Escuro</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2759"/>
+        <location filename="../mainwindow.cpp" line="2752"/>
         <source>Confirm Shutdown</source>
         <translation>Confirmar desligamento</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2760"/>
+        <location filename="../mainwindow.cpp" line="2754"/>
         <source>Are you sure you want to shut down the virtual machine?</source>
         <translation>Tem certeza de que deseja desligar a máquina virtual?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2762"/>
+        <location filename="../mainwindow.cpp" line="2756"/>
         <source>Save State For Resume</source>
         <translation>Salvar estado e continuar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2837"/>
-        <location filename="../mainwindow.cpp" line="2842"/>
-        <location filename="../mainwindow.cpp" line="2867"/>
-        <location filename="../mainwindow.cpp" line="2876"/>
+        <location filename="../mainwindow.cpp" line="2831"/>
+        <location filename="../mainwindow.cpp" line="2836"/>
+        <location filename="../mainwindow.cpp" line="2861"/>
+        <location filename="../mainwindow.cpp" line="2870"/>
         <source>Memory Card Not Found</source>
         <translation>Cartão de memória não encontrado</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2838"/>
+        <location filename="../mainwindow.cpp" line="2832"/>
         <source>Memory card &apos;%1&apos; does not exist. Do you want to create an empty memory card?</source>
         <translation>Cartão de memória &apos;%1&apos; não existe, você deseja criar um cartão de memória vazio?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2843"/>
+        <location filename="../mainwindow.cpp" line="2837"/>
         <source>Failed to create memory card &apos;%1&apos;</source>
         <translation>Falha ao criar cartão de memória &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2868"/>
-        <location filename="../mainwindow.cpp" line="2877"/>
+        <location filename="../mainwindow.cpp" line="2862"/>
+        <location filename="../mainwindow.cpp" line="2871"/>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
         <translation>Cartão de memória &apos;%1&apos; não encotrado. Experimente iniciar o jogo e salvá-lo para que ele seja criado.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2893"/>
+        <location filename="../mainwindow.cpp" line="2887"/>
         <source>RA: Logged in as %1 (%2, %3 softcore). %4 unread messages.</source>
         <translation>RA: conectado como %1 (%2, %3 normal). %4 mensagens não lidas.</translation>
     </message>
@@ -12161,17 +12161,17 @@ As trapaças ficam guardadas no estado de salvamento rápido mesmo após serem d
 Tem certeza de que deseja continuar?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3002"/>
+        <location filename="../mainwindow.cpp" line="2995"/>
         <source>Updater Error</source>
         <translation>Erro na atualização</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3008"/>
+        <location filename="../mainwindow.cpp" line="3002"/>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please follow the instructions under &quot;Downloading and Running&quot; at the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;Desculpe, mas você está tentando atualizar uma versão não oficial do Duckstation. Para evitarmos imcompatibilidade, o atualizador automático só poderá ser usado nas versões oficiais! &lt;/p&gt;&lt;p&gt;Para obtê-las, siga as instruções de como e onde no link &quot;Baixando e rodando&quot; conforme abaixo:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3014"/>
+        <location filename="../mainwindow.cpp" line="3008"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation>Atualizações automáticas não são compatíveis com a plataforma atual.</translation>
     </message>
@@ -13501,9 +13501,9 @@ The URL was: %1</source>
         <location filename="../qthost.cpp" line="290"/>
         <location filename="../qthost.cpp" line="305"/>
         <location filename="../qthost.cpp" line="318"/>
-        <location filename="../qthost.cpp" line="2162"/>
-        <location filename="../qthost.cpp" line="2188"/>
-        <location filename="../qthost.cpp" line="2204"/>
+        <location filename="../qthost.cpp" line="2189"/>
+        <location filename="../qthost.cpp" line="2215"/>
+        <location filename="../qthost.cpp" line="2231"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
@@ -13558,22 +13558,22 @@ The URL was: %1</source>
         <translation>Falha ao gravar em &apos;%1&apos;.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2163"/>
+        <location filename="../qthost.cpp" line="2190"/>
         <source>File &apos;%1&apos; does not exist.</source>
         <translation>O arquivo &apos;%1&apos; não existe.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2189"/>
+        <location filename="../qthost.cpp" line="2216"/>
         <source>The specified save state does not exist.</source>
         <translation>O dado de salvamento não existe.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2205"/>
+        <location filename="../qthost.cpp" line="2232"/>
         <source>Cannot use no-gui mode, because no boot filename was specified.</source>
         <translation>Não é possível usar o modo no-gui, porque nenhum parâmetro de inicialização foi configurado.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2206"/>
+        <location filename="../qthost.cpp" line="2233"/>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
         <translation>Não é possível usar este modo porque nenhum parâmetro de inicialização foi configurado.</translation>
     </message>
@@ -13583,12 +13583,12 @@ The URL was: %1</source>
         <translation>Arquivo de fonte ausente</translation>
     </message>
     <message>
-        <location filename="../qttranslations.cpp" line="312"/>
+        <location filename="../qttranslations.cpp" line="313"/>
         <source>The font file &apos;%1&apos; is required for the On-Screen Display and Big Picture Mode to show messages in your language.&lt;br&gt;&lt;br&gt;Do you want to download this file now? These files are usually less than 10 megabytes in size.&lt;br&gt;&lt;br&gt;&lt;strong&gt;If you do not download this file, on-screen messages will not be readable.&lt;/strong&gt;</source>
         <translation>O arquivo de fonte &apos;%1&apos; é necessário para que a exibição na tela e o Modo Tela Grande mostrem mensagens no seu idioma.&lt;br&gt;&lt;br&gt;Gostaria de baixar este arquivo agora? Geralmente, esses arquivos têm menos de 10 megabytes.&lt;br&gt;&lt;br&gt;&lt;strong&gt;Se você não baixar este arquivo, as mensagens na tela não ficarão legíveis.&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../qttranslations.cpp" line="324"/>
+        <location filename="../qttranslations.cpp" line="325"/>
         <source>Downloading Files</source>
         <translation>Baixando arquivos</translation>
     </message>
