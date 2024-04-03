@@ -10791,7 +10791,7 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="77"/>
-        <location filename="../interfacesettingswidget.cpp" line="65"/>
+        <location filename="../interfacesettingswidget.cpp" line="66"/>
         <source>Confirm Power Off</source>
         <translation>Confirmar ao fechar</translation>
     </message>
@@ -10802,13 +10802,13 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="42"/>
-        <location filename="../interfacesettingswidget.cpp" line="84"/>
+        <location filename="../interfacesettingswidget.cpp" line="85"/>
         <source>Pause On Focus Loss</source>
         <translation>Pausa na perda do foco</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="49"/>
-        <location filename="../interfacesettingswidget.cpp" line="88"/>
+        <location filename="../interfacesettingswidget.cpp" line="89"/>
         <source>Apply Per-Game Settings</source>
         <translation>Aplicar configurações por jogo</translation>
     </message>
@@ -10819,19 +10819,19 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="63"/>
-        <location filename="../interfacesettingswidget.cpp" line="76"/>
+        <location filename="../interfacesettingswidget.cpp" line="77"/>
         <source>Inhibit Screensaver</source>
         <translation>Inibir proteção de tela</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="70"/>
-        <location filename="../interfacesettingswidget.cpp" line="82"/>
+        <location filename="../interfacesettingswidget.cpp" line="83"/>
         <source>Pause On Start</source>
         <translation>Pausar ao iniciar</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="84"/>
-        <location filename="../interfacesettingswidget.cpp" line="91"/>
+        <location filename="../interfacesettingswidget.cpp" line="92"/>
         <source>Enable Discord Presence</source>
         <translation>Ativar presença rica do Discord</translation>
     </message>
@@ -10842,7 +10842,7 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="100"/>
-        <location filename="../interfacesettingswidget.cpp" line="71"/>
+        <location filename="../interfacesettingswidget.cpp" line="72"/>
         <source>Start Fullscreen</source>
         <translation>Iniciar em tela cheia</translation>
     </message>
@@ -10853,7 +10853,7 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="114"/>
-        <location filename="../interfacesettingswidget.cpp" line="79"/>
+        <location filename="../interfacesettingswidget.cpp" line="80"/>
         <source>Render To Separate Window</source>
         <translation>Renderizar para uma janela separada</translation>
     </message>
@@ -10869,7 +10869,7 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="135"/>
-        <location filename="../interfacesettingswidget.cpp" line="73"/>
+        <location filename="../interfacesettingswidget.cpp" line="74"/>
         <source>Hide Cursor In Fullscreen</source>
         <translation>Esconder cursor em tela cheia</translation>
     </message>
@@ -10890,7 +10890,7 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="175"/>
-        <location filename="../interfacesettingswidget.cpp" line="97"/>
+        <location filename="../interfacesettingswidget.cpp" line="98"/>
         <source>Enable Automatic Update Check</source>
         <translation>Ativar verificação de atualização automática</translation>
     </message>
@@ -10900,86 +10900,86 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <translation>Verificar atualizações...</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="65"/>
-        <location filename="../interfacesettingswidget.cpp" line="68"/>
-        <location filename="../interfacesettingswidget.cpp" line="73"/>
-        <location filename="../interfacesettingswidget.cpp" line="76"/>
-        <location filename="../interfacesettingswidget.cpp" line="79"/>
-        <location filename="../interfacesettingswidget.cpp" line="88"/>
-        <location filename="../interfacesettingswidget.cpp" line="97"/>
+        <location filename="../interfacesettingswidget.cpp" line="66"/>
+        <location filename="../interfacesettingswidget.cpp" line="69"/>
+        <location filename="../interfacesettingswidget.cpp" line="74"/>
+        <location filename="../interfacesettingswidget.cpp" line="77"/>
+        <location filename="../interfacesettingswidget.cpp" line="80"/>
+        <location filename="../interfacesettingswidget.cpp" line="89"/>
+        <location filename="../interfacesettingswidget.cpp" line="98"/>
         <source>Checked</source>
         <translation>Marcado</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="66"/>
+        <location filename="../interfacesettingswidget.cpp" line="67"/>
         <source>Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.</source>
         <translation>Mostra uma janela de confirmação ao tentar fechar o emulador ou jogo quando uma tecla de atalho é pressionada.</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="68"/>
+        <location filename="../interfacesettingswidget.cpp" line="69"/>
         <source>Save State On Exit</source>
         <translation>Salvar estado ao fechar</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="69"/>
+        <location filename="../interfacesettingswidget.cpp" line="70"/>
         <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
         <translation>Salva automaticamente o estado do emulador ao desligar ou sair. Assim, você pode retomar diretamente de onde parou na próxima vez.</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="71"/>
-        <location filename="../interfacesettingswidget.cpp" line="82"/>
-        <location filename="../interfacesettingswidget.cpp" line="84"/>
-        <location filename="../interfacesettingswidget.cpp" line="91"/>
+        <location filename="../interfacesettingswidget.cpp" line="72"/>
+        <location filename="../interfacesettingswidget.cpp" line="83"/>
+        <location filename="../interfacesettingswidget.cpp" line="85"/>
+        <location filename="../interfacesettingswidget.cpp" line="92"/>
         <source>Unchecked</source>
         <translation>Desmarcado</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="72"/>
+        <location filename="../interfacesettingswidget.cpp" line="73"/>
         <source>Automatically switches to fullscreen mode when a game is started.</source>
         <translation>Muda para o modo tela cheia assim que um jogo é iniciado.</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="74"/>
+        <location filename="../interfacesettingswidget.cpp" line="75"/>
         <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
         <translation>Oculta o cursor do mouse quando o emulador está no modo de tela cheia.</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="77"/>
+        <location filename="../interfacesettingswidget.cpp" line="78"/>
         <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
         <translation>Evita que a proteção de tela seja ativada enquanto a emulação está em execução.</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="80"/>
+        <location filename="../interfacesettingswidget.cpp" line="81"/>
         <source>Renders the display of the simulated console to the main window of the application, over the game list. If checked, the display will render in a separate window.</source>
         <translation>Carrega o jogo na janela principal do emulador sob a janela da lista de jogos. Se desmarcado, o jogo irá rodar em uma janela separada.</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="83"/>
+        <location filename="../interfacesettingswidget.cpp" line="84"/>
         <source>Pauses the emulator when a game is started.</source>
         <translation>Pausa a emulação quando um jogo é iniciado.</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="85"/>
+        <location filename="../interfacesettingswidget.cpp" line="86"/>
         <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
         <translation>Pausa o emulador quando a janela é minimizada ou na mudança de foco para outro aplicativo aberto, e retoma quando volta ao foco.</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="89"/>
+        <location filename="../interfacesettingswidget.cpp" line="90"/>
         <source>When enabled, per-game settings will be applied, and incompatible enhancements will be disabled. You should leave this option enabled except when testing enhancements with incompatible games.</source>
         <translation>Quando ativada as configurações individuais por jogo serão aplicadas e os aprimoramentos incompatíveis serão desligados. Você pode deixar esta opção ativa exceto ao usar melhorias com jogos não compatíveis.</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="92"/>
+        <location filename="../interfacesettingswidget.cpp" line="93"/>
         <source>Shows the game you are currently playing as part of your profile in Discord.</source>
         <translation>Mostra o jogo que estiver jogando no seu perfil no Discord quando conectado.</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="98"/>
+        <location filename="../interfacesettingswidget.cpp" line="99"/>
         <source>Automatically checks for updates to the program on startup. Updates can be deferred until later or skipped entirely.</source>
         <translation>Verifica automaticamente se há atualizações na inicialização. As atualizações podem ser adiadas para mais tarde ou totalmente ignoradas.</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="105"/>
+        <location filename="../interfacesettingswidget.cpp" line="106"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
@@ -12090,60 +12090,65 @@ Esta ação não poderá ser desfeita.</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.cpp" line="17"/>
+        <source>Cobalt Sky</source>
+        <translation>Cobalto (Azul)</translation>
+    </message>
+    <message>
+        <location filename="../interfacesettingswidget.cpp" line="18"/>
         <source>Grey Matter</source>
         <translation>Matéria cinza</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="18"/>
+        <location filename="../interfacesettingswidget.cpp" line="19"/>
         <source>Dark Ruby</source>
         <translation>Rubi escuro</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="19"/>
+        <location filename="../interfacesettingswidget.cpp" line="20"/>
         <source>QDarkStyle</source>
         <translation>Escuro</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2752"/>
+        <location filename="../mainwindow.cpp" line="2788"/>
         <source>Confirm Shutdown</source>
         <translation>Confirmar desligamento</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2754"/>
+        <location filename="../mainwindow.cpp" line="2790"/>
         <source>Are you sure you want to shut down the virtual machine?</source>
         <translation>Tem certeza de que deseja desligar a máquina virtual?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2756"/>
+        <location filename="../mainwindow.cpp" line="2792"/>
         <source>Save State For Resume</source>
         <translation>Salvar estado e continuar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2831"/>
-        <location filename="../mainwindow.cpp" line="2836"/>
-        <location filename="../mainwindow.cpp" line="2861"/>
-        <location filename="../mainwindow.cpp" line="2870"/>
+        <location filename="../mainwindow.cpp" line="2867"/>
+        <location filename="../mainwindow.cpp" line="2872"/>
+        <location filename="../mainwindow.cpp" line="2897"/>
+        <location filename="../mainwindow.cpp" line="2906"/>
         <source>Memory Card Not Found</source>
         <translation>Cartão de memória não encontrado</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2832"/>
+        <location filename="../mainwindow.cpp" line="2868"/>
         <source>Memory card &apos;%1&apos; does not exist. Do you want to create an empty memory card?</source>
         <translation>Cartão de memória &apos;%1&apos; não existe, você deseja criar um cartão de memória vazio?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2837"/>
+        <location filename="../mainwindow.cpp" line="2873"/>
         <source>Failed to create memory card &apos;%1&apos;</source>
         <translation>Falha ao criar cartão de memória &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2862"/>
-        <location filename="../mainwindow.cpp" line="2871"/>
+        <location filename="../mainwindow.cpp" line="2898"/>
+        <location filename="../mainwindow.cpp" line="2907"/>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
         <translation>Cartão de memória &apos;%1&apos; não encotrado. Experimente iniciar o jogo e salvá-lo para que ele seja criado.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2887"/>
+        <location filename="../mainwindow.cpp" line="2923"/>
         <source>RA: Logged in as %1 (%2, %3 softcore). %4 unread messages.</source>
         <translation>RA: conectado como %1 (%2, %3 normal). %4 mensagens não lidas.</translation>
     </message>
@@ -12161,17 +12166,17 @@ As trapaças ficam guardadas no estado de salvamento rápido mesmo após serem d
 Tem certeza de que deseja continuar?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2995"/>
+        <location filename="../mainwindow.cpp" line="3031"/>
         <source>Updater Error</source>
         <translation>Erro na atualização</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3002"/>
+        <location filename="../mainwindow.cpp" line="3038"/>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please follow the instructions under &quot;Downloading and Running&quot; at the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;Desculpe, mas você está tentando atualizar uma versão não oficial do Duckstation. Para evitarmos imcompatibilidade, o atualizador automático só poderá ser usado nas versões oficiais! &lt;/p&gt;&lt;p&gt;Para obtê-las, siga as instruções de como e onde no link &quot;Baixando e rodando&quot; conforme abaixo:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3008"/>
+        <location filename="../mainwindow.cpp" line="3044"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation>Atualizações automáticas não são compatíveis com a plataforma atual.</translation>
     </message>
@@ -13145,12 +13150,17 @@ Usando a seguinte imagem &apos;{}&apos;, isso pode resultar em instabilidade.</t
         <translation>Modo de CPU PGXP forçado pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="589"/>
+        <location filename="../../core/game_database.cpp" line="587"/>
+        <source>PGXP CPU mode is enabled, but it is not required for this game. This may cause rendering errors.</source>
+        <translation>PGXP no modo de CPU está ativado, mas não é necessário para este jogo. Erros de renderização podem acontecer.</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="597"/>
         <source>PGXP Depth Buffer disabled by compatibility settings.</source>
         <translation>Alocação de profundidade de PGXP desativado pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="653"/>
+        <location filename="../../core/game_database.cpp" line="661"/>
         <source>Controller in port {0} ({1}) is not supported for {2}.
 Supported controllers: {3}
 Please configure a supported controller from the list above.</source>
