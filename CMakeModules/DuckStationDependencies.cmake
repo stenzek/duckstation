@@ -15,6 +15,7 @@ if(NOT WIN32 AND NOT ANDROID)
   find_package(PNG 1.6.40 REQUIRED)
   find_package(JPEG REQUIRED) # No version because flatpak uses libjpeg-turbo.
   find_package(CURL REQUIRED)
+  find_package(Freetype 2.13.1 REQUIRED)
   if(APPLE)
     set(CMAKE_FIND_FRAMEWORK ${FIND_FRAMEWORK_BACKUP})
   endif()

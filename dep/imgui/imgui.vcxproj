@@ -4,6 +4,7 @@
   <ItemGroup>
     <ClInclude Include="include\imconfig.h" />
     <ClInclude Include="include\imgui.h" />
+    <ClInclude Include="include\imgui_freetype.h" />
     <ClInclude Include="include\imgui_stdlib.h" />
     <ClInclude Include="src\imgui_internal.h" />
     <ClInclude Include="src\imstb_rectpack.h" />
@@ -13,6 +14,7 @@
   <ItemGroup>
     <ClCompile Include="src\imgui.cpp" />
     <ClCompile Include="src\imgui_draw.cpp" />
+    <ClCompile Include="src\imgui_freetype.cpp" />
     <ClCompile Include="src\imgui_stdlib.cpp" />
     <ClCompile Include="src\imgui_tables.cpp" />
     <ClCompile Include="src\imgui_widgets.cpp" />
@@ -27,7 +29,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)src;$(DepsIncludeDir)freetype2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <Import Project="..\msvc\vsprops\Targets.props" />
