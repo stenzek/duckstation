@@ -27,8 +27,14 @@ fi
 
 export MACOSX_DEPLOYMENT_TARGET=11.0
 
-INSTALLDIR="$1"
 NPROCS="$(getconf _NPROCESSORS_ONLN)"
+INSTALLDIR="$1"
+if [ "${INSTALLDIR:0:1}" != "/" ]; then
+	INSTALLDIR="$PWD/$INSTALLDIR"
+fi
+
+FREETYPE=2.13.2
+HARFBUZZ=8.3.1
 SDL=SDL2-2.30.2
 ZLIB=1.3.1
 ZSTD=1.5.5
@@ -37,10 +43,6 @@ LIBJPEG=9f
 LIBWEBP=1.3.2
 MOLTENVK=1.2.8
 QT=6.7.0
-
-if [ "${INSTALLDIR:0:1}" != "/" ]; then
-	INSTALLDIR="$PWD/$INSTALLDIR"
-fi
 
 mkdir -p deps-build
 cd deps-build
@@ -60,6 +62,8 @@ CMAKE_ARCH_ARM64=-DCMAKE_OSX_ARCHITECTURES="arm64"
 CMAKE_ARCH_UNIVERSAL=-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
 
 cat > SHASUMS <<EOF
+12991c4e55c506dd7f9b765933e62fd2be2e06d421505d7950a132e4f1bb484d  freetype-$FREETYPE.tar.xz
+19a54fe9596f7a47c502549fce8e8a10978c697203774008cc173f8360b19a9a  harfbuzz-$HARFBUZZ.tar.gz
 891d66ac8cae51361d3229e3336ebec1c407a8a2a063b61df14f5fdf3ab5ac31  $SDL.tar.gz
 9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23  zlib-$ZLIB.tar.gz
 9c4396cc829cfae319a6e2615202e82aad41372073482fce286fac78646d3ee4  zstd-$ZSTD.tar.gz
@@ -75,6 +79,8 @@ c8da6b239e82fe1e23465cbf0936c0da5a334438d3fb433e19c503cbb1abee7b  qttools-everyw
 EOF
 
 curl -L \
+	-O "https://download.savannah.gnu.org/releases/freetype/freetype-$FREETYPE.tar.xz" \
+	-o "harfbuzz-$HARFBUZZ.tar.gz" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$HARFBUZZ.tar.gz" \
 	-O "https://libsdl.org/release/$SDL.tar.gz" \
 	-O "http://zlib.net/zlib-$ZLIB.tar.gz" \
 	-O "https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz" \
@@ -151,6 +157,33 @@ merge_binaries $(realpath build) $(realpath build-arm64)
 make -C build install
 cd ..
 
+echo "Building FreeType without HarfBuzz..."
+rm -fr "freetype-$FREETYPE"
+tar xf "freetype-$FREETYPE.tar.xz"
+cd "freetype-$FREETYPE"
+cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_DISABLE_HARFBUZZ=TRUE -B build
+cmake --build build --parallel
+cmake --install build
+cd ..
+
+echo "Building HarfBuzz..."
+rm -fr "harfbuzz-$HARFBUZZ"
+tar xf "harfbuzz-$HARFBUZZ.tar.gz"
+cd "harfbuzz-$HARFBUZZ"
+cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -DHB_BUILD_UTILS=OFF -B build
+cmake --build build --parallel
+cmake --install build
+cd ..
+
+echo "Building FreeType with HarfBuzz..."
+rm -fr "freetype-$FREETYPE"
+tar xf "freetype-$FREETYPE.tar.xz"
+cd "freetype-$FREETYPE"
+cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_REQUIRE_HARFBUZZ=TRUE -B build
+cmake --build build --parallel
+cmake --install build
+cd ..
+
 echo "Installing WebP..."
 rm -fr "libwebp-$LIBWEBP"
 tar xf "libwebp-$LIBWEBP.tar.gz"
@@ -205,7 +238,7 @@ patch -u src/tools/macdeployqt/shared/shared.cpp <<EOF
  
      // Platforminputcontext plugins if QtGui is in use
 EOF
-cmake -B build "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DFEATURE_dbus=OFF -DFEATURE_framework=OFF -DFEATURE_icu=OFF -DFEATURE_opengl=OFF -DFEATURE_printsupport=OFF -DFEATURE_sql=OFF -DFEATURE_gssapi=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON
+cmake -B build "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DFEATURE_dbus=OFF -DFEATURE_framework=OFF -DFEATURE_icu=OFF -DFEATURE_opengl=OFF -DFEATURE_printsupport=OFF -DFEATURE_sql=OFF -DFEATURE_gssapi=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON
 make -C build "-j$NPROCS"
 make -C build install
 cd ..

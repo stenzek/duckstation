@@ -10,6 +10,8 @@ fi
 INSTALLDIR="$1"
 NPROCS="$(getconf _NPROCESSORS_ONLN)"
 
+FREETYPE=2.13.2
+HARFBUZZ=8.3.1
 LIBBACKTRACE=ad106d5fdd5d960bd33fae1c48a351af567fd075
 LIBJPEG=9f
 LIBPNG=1.6.43
@@ -23,6 +25,8 @@ mkdir -p deps-build
 cd deps-build
 
 cat > SHASUMS <<EOF
+12991c4e55c506dd7f9b765933e62fd2be2e06d421505d7950a132e4f1bb484d  freetype-$FREETYPE.tar.xz
+19a54fe9596f7a47c502549fce8e8a10978c697203774008cc173f8360b19a9a  harfbuzz-$HARFBUZZ.tar.gz
 fd6f417fe9e3a071cf1424a5152d926a34c4a3c5070745470be6cf12a404ed79  $LIBBACKTRACE.zip
 04705c110cb2469caa79fb71fba3d7bf834914706e9641a4589485c1f832565b  jpegsrc.v$LIBJPEG.tar.gz
 6a5ca0652392a2d7c9db2ae5b40210843c0bbc081cbd410825ab00cc59f14a6c  libpng-$LIBPNG.tar.xz
@@ -39,6 +43,8 @@ d73470e4217da388d8cd2a517ee8bb373853f33c569306e80f04397845157aea  qtwayland-ever
 EOF
 
 curl -C - -L \
+	-O "https://download.savannah.gnu.org/releases/freetype/freetype-$FREETYPE.tar.xz" \
+	-o "harfbuzz-$HARFBUZZ.tar.gz" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$HARFBUZZ.tar.gz" \
 	-O "https://github.com/ianlancetaylor/libbacktrace/archive/$LIBBACKTRACE.zip" \
 	-O "https://ijg.org/files/jpegsrc.v$LIBJPEG.tar.gz" \
 	-O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.xz" \
@@ -93,6 +99,33 @@ make "-j$NPROCS"
 make install
 cd ../..
 
+echo "Building FreeType without HarfBuzz..."
+rm -fr "freetype-$FREETYPE"
+tar xf "freetype-$FREETYPE.tar.xz"
+cd "freetype-$FREETYPE"
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_DISABLE_HARFBUZZ=TRUE -B build -G Ninja
+cmake --build build --parallel
+ninja -C build install
+cd ..
+
+echo "Building HarfBuzz..."
+rm -fr "harfbuzz-$HARFBUZZ"
+tar xf "harfbuzz-$HARFBUZZ.tar.gz"
+cd "harfbuzz-$HARFBUZZ"
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DHB_BUILD_UTILS=OFF -B build -G Ninja
+cmake --build build --parallel
+ninja -C build install
+cd ..
+
+echo "Building FreeType with HarfBuzz..."
+rm -fr "freetype-$FREETYPE"
+tar xf "freetype-$FREETYPE.tar.xz"
+cd "freetype-$FREETYPE"
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_REQUIRE_HARFBUZZ=TRUE -B build -G Ninja
+cmake --build build --parallel
+ninja -C build install
+cd ..
+
 echo "Building Zstandard..."
 rm -fr "zstd-$ZSTD"
 tar xf "zstd-$ZSTD.tar.gz"
@@ -117,9 +150,9 @@ echo "Building SDL..."
 rm -fr "$SDL"
 tar xf "$SDL.tar.gz"
 cd "$SDL"
-./configure --prefix "$INSTALLDIR" --disable-dbus --without-x --disable-video-opengl --disable-video-opengles --disable-video-vulkan --disable-wayland-shared --disable-ime --disable-oss --disable-alsa --disable-jack --disable-esd --disable-pipewire --disable-pulseaudio --disable-arts --disable-nas --disable-sndio --disable-fusionsound --disable-diskaudio
-make "-j$NPROCS"
-make install
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DSDL_SHARED=ON -DSDL_STATIC=OFF -G Ninja
+cmake --build build --parallel
+ninja -C build install
 cd ..
 
 # Couple notes:
@@ -133,7 +166,7 @@ tar xf "qtbase-everywhere-src-$QT.tar.xz"
 cd "qtbase-everywhere-src-$QT"
 mkdir build
 cd build
-../configure -prefix "$INSTALLDIR" -release -dbus-linked -gui -widgets -fontconfig -qt-doubleconversion -ssl -openssl-runtime -opengl desktop -qpa xcb,wayland -xkbcommon -- -DFEATURE_dbus=ON -DFEATURE_icu=OFF -DFEATURE_printsupport=OFF -DFEATURE_sql=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON
+../configure -prefix "$INSTALLDIR" -release -dbus-linked -gui -widgets -fontconfig -qt-doubleconversion -ssl -openssl-runtime -opengl desktop -qpa xcb,wayland -xkbcommon -- -DFEATURE_dbus=ON -DFEATURE_icu=OFF -DFEATURE_printsupport=OFF -DFEATURE_sql=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON
 cmake --build . --parallel
 ninja install
 cd ../../

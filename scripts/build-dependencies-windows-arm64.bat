@@ -42,6 +42,8 @@ echo INSTALLDIR=%INSTALLDIR%
 
 cd "%BUILDDIR%"
 
+set FREETYPE=2.13.2
+set HARFBUZZ=8.3.1
 set LIBJPEG=9f
 set LIBPNG=1643
 set QT=6.7.0
@@ -52,6 +54,8 @@ set ZLIB=1.3.1
 set ZLIBSHORT=131
 set ZSTD=1.5.5
 
+call :downloadfile "freetype-%FREETYPE%.tar.gz" https://download.savannah.gnu.org/releases/freetype/freetype-%FREETYPE%.tar.gz 1ac27e16c134a7f2ccea177faba19801131116fd682efc1f5737037c5db224b5 || goto error
+call :downloadfile "harfbuzz-%HARFBUZZ%.zip" https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip b2bc56184ae37324bc4829fde7d3f9e6916866ad711ee85792e457547c9fd127 || goto error
 call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lpng1643.zip fc466a1e638e635d6c66363bdf3f38555b81b0141d0b06ba45b49ccca327436d || goto error
 call :downloadfile "jpegsr%LIBJPEG%.zip" https://ijg.org/files/jpegsr%LIBJPEG%.zip 6255da8c89e09d694e6800688c76145eb6870a76ac0d36c74fccd61b3940aafa || goto error
 call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" 09a822abf6e97f80d09cf9c46115faebb3476b0d56c1c035aec8ec3f88382ae7 || goto error
@@ -100,6 +104,33 @@ cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
 
+echo Building FreeType without HarfBuzz...
+rmdir /S /Q "freetype-%FREETYPE%"
+tar -xf "freetype-%FREETYPE%.tar.gz" || goto error
+cd "freetype-%FREETYPE%" || goto error
+cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=TRUE -DFT_REQUIRE_PNG=TRUE -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_DISABLE_HARFBUZZ=TRUE -B build -G Ninja || goto error
+cmake --build build --parallel || goto error
+ninja -C build install || goto error
+cd .. || goto error
+
+echo Building HarfBuzz...
+rmdir /S /Q "harfbuzz-%HARFBUZZ%"
+%SEVENZIP% x "-x^!harfbuzz-%HARFBUZZ%\README" "harfbuzz-%HARFBUZZ%.zip" || goto error
+cd "harfbuzz-%HARFBUZZ%" || goto error
+cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DHB_BUILD_UTILS=OFF -B build -G Ninja || goto error
+cmake --build build --parallel || goto error
+ninja -C build install || goto error
+cd .. || goto error
+
+echo Building FreeType with HarfBuzz...
+rmdir /S /Q "freetype-%FREETYPE%"
+tar -xf "freetype-%FREETYPE%.tar.gz" || goto error
+cd "freetype-%FREETYPE%" || goto error
+cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=TRUE -DFT_REQUIRE_PNG=TRUE -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_REQUIRE_HARFBUZZ=TRUE -B build -G Ninja || goto error
+cmake --build build --parallel || goto error
+ninja -C build install || goto error
+cd .. || goto error
+
 echo Building Zstandard...
 rmdir /S /Q "zstd-%ZSTD%"
 %SEVENZIP% x "-x^!zstd-1.5.5\tests\cli-tests\bin" "zstd-%ZSTD%.zip" || goto error
@@ -138,7 +169,7 @@ echo Building Qt base...
 rmdir /S /Q "qtbase-everywhere-src-%QT%"
 %SEVENZIP% x "qtbase-everywhere-src-%QT%.zip" || goto error
 cd "qtbase-everywhere-src-%QT%" || goto error
-cmake -B build %ARM64TOOLCHAIN% -DFEATURE_sql=OFF -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DQT_HOST_PATH="%X64INSTALLDIR%" %FORCEPDB% -DINPUT_gui=yes -DINPUT_widgets=yes -DINPUT_ssl=yes -DINPUT_openssl=no -DINPUT_schannel=yes -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON %QTBUILDSPEC% || goto error
+cmake -B build %ARM64TOOLCHAIN% -DFEATURE_sql=OFF -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DQT_HOST_PATH="%X64INSTALLDIR%" %FORCEPDB% -DINPUT_gui=yes -DINPUT_widgets=yes -DINPUT_ssl=yes -DINPUT_openssl=no -DINPUT_schannel=yes -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON %QTBUILDSPEC% || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
