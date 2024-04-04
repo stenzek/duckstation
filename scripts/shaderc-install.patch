@@ -1,0 +1,71 @@
+--- a/libshaderc_util/src/compiler.cc
++++ b/libshaderc_util/src/compiler.cc
+@@ -341,6 +341,10 @@ std::tuple<bool, std::vector<uint32_t>, size_t> Compiler::Compile(
+   options.generateDebugInfo = generate_debug_info_;
+   options.disableOptimizer = true;
+   options.optimizeSize = false;
++  if (generate_debug_info_) {
++    options.emitNonSemanticShaderDebugInfo = true;
++    options.emitNonSemanticShaderDebugSource = true;
++  }
+   // Note the call to GlslangToSpv also populates compilation_output_data.
+   glslang::GlslangToSpv(*program.getIntermediate(used_shader_stage), spirv,
+                         &options);
+--- a/third_party/CMakeLists.txt
++++ b/third_party/CMakeLists.txt
+@@ -20,9 +20,9 @@ set(SHADERC_TINT_DIR "${SHADERC_THIRD_PARTY_ROOT_DIR}/tint" CACHE STRING
+ set(SHADERC_ABSL_DIR "${SHADERC_THIRD_PARTY_ROOT_DIR}/abseil_cpp" CACHE STRING
+   "Location of re2 source")
+ 
+-set( SKIP_GLSLANG_INSTALL ${SHADERC_SKIP_INSTALL} )
+-set( SKIP_SPIRV_TOOLS_INSTALL ${SHADERC_SKIP_INSTALL} )
+-set( SKIP_GOOGLETEST_INSTALL ${SHADERC_SKIP_INSTALL} )
++set( SKIP_GLSLANG_INSTALL ON )
++set( SKIP_SPIRV_TOOLS_INSTALL ON )
++set( SKIP_GOOGLETEST_INSTALL ON )
+ 
+ # Configure third party projects.
+ if(${SHADERC_ENABLE_TESTS})
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -117,6 +117,10 @@
+   endif()
+ endif(MSVC)
+ 
++if(NOT WIN32)
++  add_definitions("-fvisibility=hidden")
++endif()
++
+ 
+ # Configure subdirectories.
+ # We depend on these for later projects, so they should come first.
+@@ -158,5 +162,4 @@
+ endfunction()
+ 
+ define_pkg_config_file(shaderc -lshaderc_shared)
+-define_pkg_config_file(shaderc_static "-lshaderc ${EXTRA_STATIC_PKGCONFIG_LIBS} -lshaderc_util")
+-define_pkg_config_file(shaderc_combined -lshaderc_combined)
++
+
+--- a/libshaderc/CMakeLists.txt
++++ b/libshaderc/CMakeLists.txt
+@@ -54,7 +54,7 @@
+     DESTINATION
+       ${CMAKE_INSTALL_INCLUDEDIR}/shaderc)
+ 
+-  install(TARGETS shaderc shaderc_shared
++  install(TARGETS shaderc_shared
+     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+     BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR}
+@@ -96,10 +96,6 @@
+ 
+ shaderc_combine_static_lib(shaderc_combined shaderc)
+ 
+-if(SHADERC_ENABLE_INSTALL)
+-  install(TARGETS shaderc_combined DESTINATION ${CMAKE_INSTALL_LIBDIR})
+-endif(SHADERC_ENABLE_INSTALL)
+-
+ shaderc_add_tests(
+   TEST_PREFIX shaderc_combined
+   LINK_LIBS shaderc_combined ${CMAKE_THREAD_LIBS_INIT}
