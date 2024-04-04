@@ -1414,7 +1414,7 @@ Unread messages: {}</source>
     <message>
         <location filename="../../core/settings.cpp" line="1629"/>
         <source>SDL</source>
-        <translation type="unfinished"></translation>
+        <translation>SDL</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1632"/>
@@ -2652,7 +2652,7 @@ Unread messages: {}</source>
         <location filename="../consolesettingswidget.ui" line="314"/>
         <location filename="../consolesettingswidget.cpp" line="105"/>
         <source>Ignore Drive Subcode</source>
-        <translation type="unfinished"></translation>
+        <translation>Игнорировать субканал диска</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="323"/>
@@ -2822,7 +2822,7 @@ Unread messages: {}</source>
     <message>
         <location filename="../consolesettingswidget.cpp" line="106"/>
         <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Won&apos;t work with libcrypt games, but can improve read reliability on some drives.</source>
-        <translation type="unfinished"></translation>
+        <translation>Игноририровать субканал, предоставляемый приводом, при использовании физических дисков, вместо этого всегда генерирует данные подканала. Не будет работать с играми libcrypt, но может повысить надежность чтения на некоторых дисках.</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="139"/>
@@ -3792,13 +3792,13 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="309"/>
         <source>Controller Port %1 Macros</source>
-        <translation type="unfinished">Макросы порта контроллера %1</translation>
+        <translation>Макросы порта контроллера %1</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="318"/>
         <source>Macro %1
 %2</source>
-        <translation type="unfinished">Макрос %1
+        <translation>Макрос %1
 %2</translation>
     </message>
 </context>
@@ -3857,22 +3857,22 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllersettingswindow.cpp" line="103"/>
         <source>A profile with the name &apos;%1&apos; already exists.</source>
-        <translation type="unfinished">Профиль с именем &apos;%1&apos; уже существует.</translation>
+        <translation>Профиль с именем &apos;%1&apos; уже существует.</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="108"/>
         <source>Do you want to copy all bindings from the currently-selected profile to the new profile? Selecting No will create a completely empty profile.</source>
-        <translation type="unfinished">Вы хотите скопировать все привязки из текущего выбранного профиля в новый профиль? При выборе «Нет» будет создан полностью пустой профиль.</translation>
+        <translation>Вы хотите скопировать все привязки из текущего выбранного профиля в новый профиль? При выборе «Нет» будет создан полностью пустой профиль.</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="137"/>
         <source>Failed to save the new profile to &apos;%1&apos;.</source>
-        <translation type="unfinished">Не удалось сохранить новый профиль в &apos;%1&apos;.</translation>
+        <translation>Не удалось сохранить новый профиль в &apos;%1&apos;.</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="147"/>
         <source>Load Input Profile</source>
-        <translation type="unfinished">Загрузить профиль ввода</translation>
+        <translation>Загрузить профиль ввода</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="148"/>
@@ -3881,7 +3881,7 @@ This warning will only be shown once.</source>
 All current global bindings will be removed, and the profile bindings loaded.
 
 You cannot undo this action.</source>
-        <translation type="unfinished">Вы уверены, что хотите загрузить профиль ввода с именем &apos;%1&apos;?
+        <translation>Вы уверены, что хотите загрузить профиль ввода с именем &apos;%1&apos;?
 
 Все текущие глобальные привязки будут удалены, а привязки профиля загружены.
 
@@ -3890,21 +3890,21 @@ You cannot undo this action.</source>
     <message>
         <location filename="../controllersettingswindow.cpp" line="169"/>
         <source>Delete Input Profile</source>
-        <translation type="unfinished">Удалить профиль ввода</translation>
+        <translation>Удалить профиль ввода</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="170"/>
         <source>Are you sure you want to delete the input profile named &apos;%1&apos;?
 
 You cannot undo this action.</source>
-        <translation type="unfinished">Вы уверены, что хотите удалить профиль ввода с именем &apos;%1&apos;?
+        <translation>Вы уверены, что хотите удалить профиль ввода с именем &apos;%1&apos;?
 
 Вы не можете отменить это действие.</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="180"/>
         <source>Failed to delete &apos;%1&apos;.</source>
-        <translation type="unfinished">Не удалось удалить &apos;%1&apos;.</translation>
+        <translation>Не удалось удалить &apos;%1&apos;.</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="193"/>
@@ -3913,7 +3913,7 @@ You cannot undo this action.</source>
 All shared bindings and configuration will be lost, but your input profiles will remain.
 
 You cannot undo this action.</source>
-        <translation type="unfinished">Вы уверены, что хотите восстановить конфигурацию контроллера по умолчанию?
+        <translation>Вы уверены, что хотите восстановить конфигурацию контроллера по умолчанию?
 
 Все общие привязки и конфигурация будут потеряны, но ваши профили ввода останутся.
 
@@ -3922,14 +3922,14 @@ You cannot undo this action.</source>
     <message>
         <location filename="../controllersettingswindow.cpp" line="360"/>
         <source>Global Settings</source>
-        <translation type="unfinished">Глобальные настройки</translation>
+        <translation>Глобальные настройки</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="395"/>
         <location filename="../controllersettingswindow.cpp" line="434"/>
         <source>Controller Port %1%2
 %3</source>
-        <translation type="unfinished">Порт контроллера %1%2
+        <translation>Порт контроллера %1%2
 %3</translation>
     </message>
     <message>
@@ -3937,23 +3937,23 @@ You cannot undo this action.</source>
         <location filename="../controllersettingswindow.cpp" line="435"/>
         <source>Controller Port %1
 %2</source>
-        <translation type="unfinished">Порт контроллера %1
+        <translation>Порт контроллера %1
 %2</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="406"/>
         <source>Hotkeys</source>
-        <translation type="unfinished">Горячие клавиши</translation>
+        <translation>Горячие клавиши</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="458"/>
         <source>Shared</source>
-        <translation type="unfinished">Общий</translation>
+        <translation>Общий</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="480"/>
         <source>The input profile named &apos;%1&apos; cannot be found.</source>
-        <translation type="unfinished">Профиль ввода с именем &apos;%1&apos; не найден.</translation>
+        <translation>Профиль ввода с именем &apos;%1&apos; не найден.</translation>
     </message>
 </context>
 <context>
@@ -4068,7 +4068,7 @@ You cannot undo this action.</source>
     <message>
         <location filename="../debuggeraddbreakpointdialog.ui" line="14"/>
         <source>Add Breakpoint</source>
-        <translation type="unfinished">Добавить точку останова</translation>
+        <translation>Добавить точку останова</translation>
     </message>
     <message>
         <location filename="../debuggeraddbreakpointdialog.ui" line="20"/>
@@ -4084,7 +4084,7 @@ You cannot undo this action.</source>
         <location filename="../debuggeraddbreakpointdialog.ui" line="39"/>
         <source>Execute</source>
         <translatorcomment>*Исполнение</translatorcomment>
-        <translation type="unfinished">Выполнение</translation>
+        <translation>Выполнение</translation>
     </message>
     <message>
         <location filename="../debuggeraddbreakpointdialog.ui" line="49"/>
@@ -4464,7 +4464,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../debuggerwindow.cpp" line="198"/>
         <source>&amp;Remove</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&amp;Удалить</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="289"/>
@@ -4756,22 +4756,22 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/settings.cpp" line="1262"/>
         <source>Disabled (Flickering)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Отключено (мерцание)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1263"/>
         <source>Weave (Combing)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Волновой (расчесывание)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1264"/>
         <source>Blend (Blur)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Смешивание (размытие)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1265"/>
         <source>Adaptive (FastMAD)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Адаптивный (FastMAD)</translation>
     </message>
 </context>
 <context>
@@ -6478,17 +6478,17 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6493"/>
         <source>%.2f Seconds</source>
-        <translation type="unfinished"></translation>
+        <translation>%.2f секунд</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6494"/>
         <source>%d Frames</source>
-        <translation type="unfinished"></translation>
+        <translation>%d кадров</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6495"/>
         <source>%d sectors</source>
-        <translation type="unfinished"></translation>
+        <translation>%d секторов</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6595"/>
@@ -6498,12 +6498,12 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6666"/>
         <source>Deinterlacing Mode</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Режим деинтерлейсинга</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6685"/>
         <source>Determines which algorithm is used to convert interlaced frames to progressive for display on your system.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Определяет, какой алгоритм используется для преобразования чересстрочных кадров в прогрессивные для отображения в вашей системе.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6726"/>
@@ -7086,7 +7086,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6847"/>
         <source>Memory Card Settings</source>
-        <translation>Настройки карты памяти</translation>
+        <translation>Настройки карт памяти</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6848"/>
@@ -7321,7 +7321,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6895"/>
         <source>Performance enhancement - jumps directly between blocks instead of returning to the dispatcher.</source>
-        <translation type="unfinished">Повышение производительности — переходы напрямую между блоками вместо возврата к диспетчеру.</translation>
+        <translation type="unfinished">Повышение производительности - переходы напрямую между блоками вместо возврата к диспетчеру.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6896"/>
@@ -8028,7 +8028,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7044"/>
         <source>Summary</source>
-        <translation type="unfinished">Сводка</translation>
+        <translation>Сводка</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7045"/>
@@ -8120,7 +8120,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7065"/>
         <source>Title</source>
-        <translation type="unfinished">Заголовок</translation>
+        <translation>Заголовок</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7066"/>
@@ -8151,7 +8151,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7072"/>
         <source>Type</source>
-        <translation type="unfinished">Тип</translation>
+        <translation>Тип</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7076"/>
@@ -8331,12 +8331,12 @@ Error was:</source>
     <message>
         <location filename="../../core/gpu.cpp" line="2301"/>
         <source>Saving screenshot to &apos;{}&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранение снимка экрана в &apos;{}&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/gpu.cpp" line="2353"/>
         <source>Failed to save screenshot to &apos;{}&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось сохранить снимок экрана в &apos;{}&apos;.</translation>
     </message>
 </context>
 <context>
@@ -8542,7 +8542,7 @@ Error was:</source>
     <message>
         <location filename="../../core/gpu.cpp" line="2352"/>
         <source>Saved screenshot to &apos;{}&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Снимок экрана сохранен в &apos;{}&apos;.</translation>
     </message>
 </context>
 <context>
@@ -9258,7 +9258,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.ui" line="356"/>
         <source>Deinterlacing:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Деинтерлейсинг:</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="383"/>
@@ -9643,7 +9643,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="255"/>
         <source>Down-Sampling</source>
-        <translation type="unfinished">Понижающая выборка</translation>
+        <translation>Понижение разрешения</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="255"/>
@@ -9895,52 +9895,54 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="256"/>
         <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, but should be disabled for pure 3D games.</source>
-        <translation type="unfinished"></translation>
+        <translation>Понижает дискретизацию отрисованного изображения перед его отображением. Может улучшить общее качество изображения в смешанных 2D/3D-играх, но его следует отключить для полностью 3D-игр.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="264"/>
         <source>Smooths out the blockiness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. &lt;br&gt;The JINC2 and especially xBR filtering modes are very demanding, and may not be worth the speed penalty.</source>
-        <translation type="unfinished"></translation>
+        <translation>Сглаживает блочность увеличенных текстур 3D-объекта с помощью фильтрации. &lt;br&gt;Будет иметь больший эффект в масштабах с более высоким разрешением. &lt;br&gt;Режимы фильтрации JINC2 и особенно xBR очень требовательны и могут не стоить потери в скорости.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="273"/>
         <source>Deinterlacing</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Деинтерлейсинг</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="275"/>
         <source>Determines which algorithm is used to convert interlaced frames to progressive for display on your system. Generally, the &quot;Disable Interlacing&quot; enhancement provides better quality output, but some games require interlaced rendering.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Определяет, какой алгоритм используется для преобразования чересстрочных кадров в прогрессивные для отображения в вашей системе. Как правило, улучшение «Отключить чересстрочную развертку» обеспечивает лучшее качество вывода, но в некоторых играх требуется чересстрочная отрисовка.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="279"/>
         <source>Crop</source>
-        <translation type="unfinished"></translation>
+        <translation>Обрезка</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="293"/>
         <source>Forces the precision of colours output to the console&apos;s framebuffer to use the full 8 bits of precision per channel. This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering, which makes the transition between colours less sharp by applying a pattern around those pixels. Most games are compatible with this option, but there is a number which aren&apos;t and will have broken effects with it enabled.</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>*Дизеринг-Сглаживание *Трафарет-шаблон</translatorcomment>
+        <translation type="unfinished">Заставляет точность вывода цветов в кадровый буфер консоли использовать полные 8 бит точности на канал. Это дает более красивый вид градиентов за счет того, что некоторые цвета выглядят немного иначе. Отключение этой опции также включает дизеринг, который делает переход между цветами менее резким за счет применения трафарета вокруг этих пикселей. Большинство игр совместимы с этой опцией, но есть некоторые игры, в которых она отсутствует, и при ее включении эффекты будут неработающими.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="304"/>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;strong&gt;May not be compatible with all games.&lt;/strong&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Уменьшает количество «шатких» полигонов и «деформаций» текстур, которые часто встречаются в играх для PS1. &lt;strong&gt;Может быть совместимо не со всеми играми.&lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="314"/>
         <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs.</source>
-        <translation type="unfinished"></translation>
+        <translation>Сглаживает блочность между цветовыми переходами в 24-битном контенте, обычно в видеороликах.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="349"/>
         <source>Prefers stretching the display vertically instead of horizontally, when applying the display aspect ratio.</source>
-        <translation type="unfinished"></translation>
+        <translation>При применении соотношения сторон экрана предпочитает растягивать экран по вертикали, а не по горизонтали.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="373"/>
         <source>Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. Usually safe to enable.</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>*Дизеринг</translatorcomment>
+        <translation type="unfinished">Масштабирует шаблон дизеринга в соответствии со шкалой разрешения эмулируемого графического процессора. Это делает шаблон дизеринга гораздо менее очевидным при более высоких разрешениях. Обычно безопасно включать.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="377"/>
@@ -11015,7 +11017,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../interfacesettingswidget.cpp" line="69"/>
         <source>Save State On Exit</source>
-        <translation type="unfinished">Сохранить состояние при выходе</translation>
+        <translation>Сохранить состояние при выходе</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.cpp" line="70"/>
@@ -11850,6 +11852,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.cpp" line="813"/>
         <source>Resume (%1)</source>
+        <translatorcomment>*Возобновить</translatorcomment>
         <translation type="unfinished">Продолжить (%1)</translation>
     </message>
     <message>
@@ -12196,7 +12199,7 @@ This action cannot be undone.</source>
     <message>
         <location filename="../interfacesettingswidget.cpp" line="17"/>
         <source>Cobalt Sky</source>
-        <translation type="unfinished"></translation>
+        <translation>Кобальтовое небо</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.cpp" line="18"/>
@@ -12206,7 +12209,7 @@ This action cannot be undone.</source>
     <message>
         <location filename="../interfacesettingswidget.cpp" line="19"/>
         <source>Dark Ruby</source>
-        <translation type="unfinished"></translation>
+        <translation>Темный Рубин</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.cpp" line="20"/>
@@ -13403,7 +13406,7 @@ Using existing image &apos;{}&apos;, this may result in instability.</source>
     <message>
         <location filename="../../core/game_database.cpp" line="545"/>
         <source>PGXP projection precision preservation disabled by compatibility settings.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Сохранение точности проекции PGXP отключено настройками совместимости.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="557"/>
@@ -13419,7 +13422,7 @@ Using existing image &apos;{}&apos;, this may result in instability.</source>
     <message>
         <location filename="../../core/game_database.cpp" line="587"/>
         <source>PGXP CPU mode is enabled, but it is not required for this game. This may cause rendering errors.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Режим процессора PGXP включен, но для этой игры он не требуется. Это может вызвать ошибки отрисовки.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="597"/>
@@ -13942,7 +13945,7 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../../core/settings.cpp" line="1571"/>
         <source>WebP</source>
-        <translation type="unfinished"></translation>
+        <translation>WebP</translation>
     </message>
 </context>
 <context>
@@ -13978,22 +13981,22 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.ui" line="89"/>
         <source>Restore Defaults</source>
-        <translation type="unfinished">Сброс настроек</translation>
+        <translation>Сброс настроек</translation>
     </message>
     <message>
         <location filename="../settingswindow.ui" line="96"/>
         <source>Copy Global Settings</source>
-        <translation type="unfinished">Копировать глобальные настройки</translation>
+        <translation>Копировать глобальные настройки</translation>
     </message>
     <message>
         <location filename="../settingswindow.ui" line="103"/>
         <source>Clear Settings</source>
-        <translation type="unfinished">Очистить настройки</translation>
+        <translation>Очистить настройки</translation>
     </message>
     <message>
         <location filename="../settingswindow.ui" line="123"/>
         <source>Close</source>
-        <translation type="unfinished">Закрыть</translation>
+        <translation>Закрыть</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="56"/>
@@ -14003,7 +14006,7 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.cpp" line="58"/>
         <source>&lt;strong&gt;Summary&lt;/strong&gt;&lt;hr&gt;This page shows information about the selected game, and allows you to validate your disc was dumped correctly.</source>
-        <translation type="unfinished">&lt;strong&gt;Сводка&lt;/strong&gt;&lt;hr&gt;На этой странице отображается информация о выбранной игре и позволяет вам проверить правильность сброса вашего диска.</translation>
+        <translation>&lt;strong&gt;Сводка&lt;/strong&gt;&lt;hr&gt;На этой странице отображается информация о выбранной игре и позволяет вам проверить правильность дампа вашего диска.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="90"/>
@@ -14013,7 +14016,7 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.cpp" line="92"/>
         <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive.</source>
-        <translation type="unfinished">&lt;strong&gt;Настройки списка игр&lt;/strong&gt;&lt;hr&gt;В приведенном выше списке показаны каталоги, в которых DuckStation будет выполнять поиск для заполнения списка игр. Каталоги поиска можно добавлять, удалять и переключать на рекурсивные/нерекурсивные.</translation>
+        <translation>&lt;strong&gt;Настройки списка игр&lt;/strong&gt;&lt;hr&gt;В приведенном выше списке показаны каталоги, в которых DuckStation будет выполнять поиск для заполнения списка игр. Каталоги поиска можно добавлять, удалять и переключать на рекурсивные/нерекурсивные.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="98"/>
@@ -14033,17 +14036,17 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.cpp" line="99"/>
         <source>&lt;strong&gt;BIOS Settings&lt;/strong&gt;&lt;hr&gt;These options control which BIOS is used and how it will be patched.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation type="unfinished">&lt;strong&gt;Настройки BIOS&lt;/strong&gt;&lt;hr&gt;Эти параметры определяют, какой BIOS будет использоваться и как он будет исправлен.&lt;br&gt;&lt;br&gt;Наведите курсор на параметр, чтобы получить дополнительную информацию, и нажмите Shift+Wheel, чтобы прокрутить эту панель.</translation>
+        <translation>&lt;strong&gt;Настройки BIOS&lt;/strong&gt;&lt;hr&gt;Эти параметры определяют, какой BIOS будет использоваться и как он будет исправлен.&lt;br&gt;&lt;br&gt;Наведите курсор на параметр, чтобы получить дополнительную информацию, и нажмите Shift+Wheel, чтобы прокрутить эту панель.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="104"/>
         <source>&lt;strong&gt;Console Settings&lt;/strong&gt;&lt;hr&gt;These options determine the configuration of the simulated console.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation type="unfinished">&lt;strong&gt;Настройки консоли&lt;/strong&gt;&lt;hr&gt;Эти параметры определяют конфигурацию моделируемой консоли.&lt;br&gt;&lt;br&gt;Наведите указатель мыши на параметр, чтобы получить дополнительную информацию, и нажмите Shift+Wheel, чтобы прокрутить эту панель.</translation>
+        <translation>&lt;strong&gt;Настройки консоли&lt;/strong&gt;&lt;hr&gt;Эти параметры определяют конфигурацию моделируемой консоли.&lt;br&gt;&lt;br&gt;Наведите указатель мыши на параметр, чтобы получить дополнительную информацию, и нажмите Shift+Wheel, чтобы прокрутить эту панель.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="109"/>
         <source>&lt;strong&gt;Emulation Settings&lt;/strong&gt;&lt;hr&gt;These options determine the speed and runahead behavior of the system.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation type="unfinished">&lt;strong&gt;Настройки эмуляции&lt;/strong&gt;&lt;hr&gt;Эти параметры определяют скорость и поведение системы на опережение.&lt;br&gt;&lt;br&gt;Наведите указатель мыши на параметр, чтобы получить дополнительную информацию, и нажмите Shift+колесо, чтобы прокрутить эту панель.</translation>
+        <translation>&lt;strong&gt;Настройки эмуляции&lt;/strong&gt;&lt;hr&gt;Эти параметры определяют скорость и поведение системы на опережение.&lt;br&gt;&lt;br&gt;Наведите указатель мыши на параметр, чтобы получить дополнительную информацию, и нажмите Shift+колесо, чтобы прокрутить эту панель.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="112"/>
@@ -14053,12 +14056,12 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.cpp" line="114"/>
         <source>&lt;strong&gt;Memory Card Settings&lt;/strong&gt;&lt;hr&gt;This page lets you control what mode the memory card emulation will function in, and where the images for these cards will be stored on disk.</source>
-        <translation type="unfinished">&lt;strong&gt;Настройки карты памяти&lt;/strong&gt;&lt;hr&gt;Эта страница позволяет вам контролировать, в каком режиме будет работать эмуляция карты памяти и где изображения для этих карт будут храниться на диске.</translation>
+        <translation>&lt;strong&gt;Настройки карт памяти&lt;/strong&gt;&lt;hr&gt;Эта страница позволяет вам контролировать, в каком режиме будет работать эмуляция карт памяти и где образы этих карт будут храниться на диске.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="167"/>
         <source>&lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;hr&gt;These options control logging and internal behavior of the emulator. Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation type="unfinished">&lt;strong&gt;Расширенные настройки&lt;/strong&gt;&lt;hr&gt;Эти параметры управляют ведением журнала и внутренним поведением эмулятора. Наведите указатель мыши на параметр, чтобы получить дополнительную информацию, и нажмите Shift+колесо, чтобы прокрутить эту панель.</translation>
+        <translation>&lt;strong&gt;Расширенные настройки&lt;/strong&gt;&lt;hr&gt;Эти параметры управляют ведением журнала и внутренним поведением эмулятора. Наведите указатель мыши на параметр, чтобы получить дополнительную информацию, и нажмите Shift+колесо, чтобы прокрутить эту панель.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="122"/>
@@ -14088,7 +14091,7 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.cpp" line="124"/>
         <source>&lt;strong&gt;Post-Processing Settings&lt;/strong&gt;&lt;hr&gt;Post processing allows you to alter the appearance of the image displayed on the screen with various filters. Shaders will be executed in sequence.</source>
-        <translation type="unfinished">&lt;strong&gt;Настройки постобработки&lt;/strong&gt;&lt;hr&gt;Постобработка позволяет изменить внешний вид изображения, отображаемого на экране, с помощью различных фильтров. Шейдеры будут выполняться последовательно.</translation>
+        <translation>&lt;strong&gt;Настройки постобработки&lt;/strong&gt;&lt;hr&gt;Постобработка позволяет изменить внешний вид изображения, отображаемого на экране, с помощью различных фильтров. Шейдеры будут выполняться последовательно.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="127"/>
@@ -14098,7 +14101,7 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.cpp" line="129"/>
         <source>&lt;strong&gt;Audio Settings&lt;/strong&gt;&lt;hr&gt;These options control the audio output of the console. Mouse over an option for additional information.</source>
-        <translation type="unfinished">&lt;strong&gt;Настройки звука&lt;/strong&gt;&lt;hr&gt;Эти параметры управляют аудиовыходом консоли. Наведите указатель мыши на параметр для получения дополнительной информации.</translation>
+        <translation>&lt;strong&gt;Настройки звука&lt;/strong&gt;&lt;hr&gt;Эти параметры управляют аудиовыходом консоли. Наведите указатель мыши на параметр для получения дополнительной информации.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="132"/>
@@ -14118,7 +14121,7 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.cpp" line="162"/>
         <source>&lt;strong&gt;Folder Settings&lt;/strong&gt;&lt;hr&gt;These options control where DuckStation will save runtime data files.</source>
-        <translation type="unfinished">&lt;strong&gt;Настройки папки&lt;/strong&gt;&lt;hr&gt;Эти параметры определяют, где DuckStation будет сохранять файлы данных среды выполнения.</translation>
+        <translation>&lt;strong&gt;Настройки папки&lt;/strong&gt;&lt;hr&gt;Эти параметры определяют, где DuckStation будет сохранять файлы данных среды выполнения.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="165"/>
@@ -14133,7 +14136,7 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.cpp" line="263"/>
         <source>Are you sure you want to restore the default settings? Any preferences will be lost.</source>
-        <translation type="unfinished">Уверены, что хотите восстановить настройки по умолчанию? Персональные настройки будут потеряны.</translation>
+        <translation>Уверены, что хотите восстановить настройки по умолчанию? Персональные настройки будут потеряны.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="279"/>
@@ -14142,12 +14145,16 @@ Do you want to create this directory?</source>
 Any current setting values will be overwritten.
 
 Do you want to continue?</source>
-        <translation type="unfinished"></translation>
+        <translation>Конфигурация этой игры будет заменена текущими глобальными настройками.
+
+Любые текущие значения настроек будут перезаписаны.
+
+Вы хотите продолжить?</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="297"/>
         <source>Per-game configuration copied from global settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Конфигурация каждой игры скопирована из глобальных настроек.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="306"/>
@@ -14156,12 +14163,16 @@ Do you want to continue?</source>
 Any current setting values will be lost.
 
 Do you want to continue?</source>
-        <translation type="unfinished"></translation>
+        <translation>Конфигурация этой игры будет очищена.
+
+Любые текущие значения настроек будут потеряны.
+
+Вы хотите продолжить?</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="319"/>
         <source>Per-game configuration cleared.</source>
-        <translation type="unfinished"></translation>
+        <translation>Конфигурация для каждой игры удалена.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="329"/>
