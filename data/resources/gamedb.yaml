@@ -154550,6 +154550,8 @@ SLPS-02035:
   controllers:
     - AnalogController
     - DigitalController
+  codes:
+    - HASH-47E4F9A32562A162
   metadata:
     publisher: "Robot"
     developer: "Robot"
