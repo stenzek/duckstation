@@ -59544,7 +59544,7 @@ SCPS-10101:
   traits:
     - ForceInterpreter
   codes:
-    - HASH-4F2265E8442F2BF8
+    - HASH-E379E77CF0C4F433
   metadata:
     publisher: "Sony"
     developer: "Studio 33"
@@ -65086,9 +65086,7 @@ SLPM-86031:
   controllers:
     - DigitalController
   codes:
-    - SLPM-86031
-    - SLPM-87329
-    - SLPS-00002
+    - HASH-4B6CD9BD936C3CCE
   metadata:
     publisher: "Konami"
     developer: "Konami Computer Entertainment Tokyo, Inc"
@@ -133187,8 +133185,7 @@ SLPS-00001:
     - DigitalController
     - NeGcon
   codes:
-    - SLPS-00001
-    - SLPS-91001
+    - HASH-4521886FA4C26DE6
   metadata:
     publisher: "Namco"
     developer: "Namco"
@@ -171754,6 +171751,7 @@ SLPS-00025:
     - ForceRecompilerICache
   codes:
     - HASH-A8647D688C39B63F
+    - HASH-21D86F0985C11667
   metadata:
     publisher: "Takara"
     developer: "Takara"
