@@ -191,8 +191,7 @@ void CheatManagerDialog::connectUi()
   connect(m_ui.scanTable, &QTableWidget::itemChanged, this, &CheatManagerDialog::scanItemChanged);
   connect(m_ui.watchTable, &QTableWidget::itemChanged, this, &CheatManagerDialog::watchItemChanged);
 
-  connect(g_emu_thread, &EmuThread::cheatEnabled, this,
-          &CheatManagerDialog::setCheatCheckState);
+  connect(g_emu_thread, &EmuThread::cheatEnabled, this, &CheatManagerDialog::setCheatCheckState);
 }
 
 void CheatManagerDialog::showEvent(QShowEvent* event)
@@ -354,8 +353,7 @@ CheatList* CheatManagerDialog::getCheatList() const
   }
   if (!list)
   {
-    Host::RunOnCPUThread(
-      []() { System::SetCheatList(std::make_unique<CheatList>()); }, true);
+    Host::RunOnCPUThread([]() { System::SetCheatList(std::make_unique<CheatList>()); }, true);
     list = System::GetCheatList();
   }
 
@@ -655,7 +653,8 @@ void CheatManagerDialog::importClicked()
 void CheatManagerDialog::importFromFileTriggered()
 {
   const QString filter(tr("PCSXR/Libretro Cheat Files (*.cht *.txt);;All Files (*.*)"));
-  const QString filename(QFileDialog::getOpenFileName(this, tr("Import Cheats"), QString(), filter));
+  const QString filename =
+    QDir::toNativeSeparators(QFileDialog::getOpenFileName(this, tr("Import Cheats"), QString(), filter));
   if (filename.isEmpty())
     return;
 
@@ -702,7 +701,8 @@ void CheatManagerDialog::importFromTextTriggered()
 void CheatManagerDialog::exportClicked()
 {
   const QString filter(tr("PCSXR Cheat Files (*.cht);;All Files (*.*)"));
-  const QString filename(QFileDialog::getSaveFileName(this, tr("Export Cheats"), QString(), filter));
+  const QString filename =
+    QDir::toNativeSeparators(QFileDialog::getSaveFileName(this, tr("Export Cheats"), QString(), filter));
   if (filename.isEmpty())
     return;
 
@@ -748,8 +748,8 @@ void CheatManagerDialog::addToWatchClicked()
   for (int index = indexFirst; index <= indexLast; index++)
   {
     const MemoryScan::Result& res = m_scanner.GetResults()[static_cast<u32>(index)];
-    m_watch.AddEntry(fmt::format("0x{:08x}", res.address), res.address, m_scanner.GetSize(),
-                     m_scanner.GetValueSigned(), false);
+    m_watch.AddEntry(fmt::format("0x{:08x}", res.address), res.address, m_scanner.GetSize(), m_scanner.GetValueSigned(),
+                     false);
     updateWatch();
   }
 }
@@ -775,8 +775,8 @@ void CheatManagerDialog::addManualWatchAddressClicked()
   else if (index == 2 || index == 5)
     address.value() &= 0xFFFFFFFC;
 
-  m_watch.AddEntry(fmt::format("0x{:08x}", address.value()), address.value(),
-                   static_cast<MemoryAccessSize>(index % 3), (index > 3), false);
+  m_watch.AddEntry(fmt::format("0x{:08x}", address.value()), address.value(), static_cast<MemoryAccessSize>(index % 3),
+                   (index > 3), false);
   updateWatch();
 }
 

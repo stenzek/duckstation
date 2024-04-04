@@ -510,8 +510,8 @@ void MemoryCardEditorWindow::importCard(Card* card)
 {
   promptForSave(card);
 
-  QString filename =
-    QFileDialog::getOpenFileName(this, tr("Select Import File"), QString(), tr(MEMORY_CARD_IMPORT_FILTER));
+  QString filename = QDir::toNativeSeparators(
+    QFileDialog::getOpenFileName(this, tr("Select Import File"), QString(), tr(MEMORY_CARD_IMPORT_FILTER)));
   if (filename.isEmpty())
     return;
 
@@ -556,8 +556,8 @@ void MemoryCardEditorWindow::formatCard(Card* card)
 
 void MemoryCardEditorWindow::importSaveFile(Card* card)
 {
-  QString filename =
-    QFileDialog::getOpenFileName(this, tr("Select Import Save File"), QString(), tr(SINGLE_SAVEFILE_FILTER));
+  QString filename = QDir::toNativeSeparators(
+    QFileDialog::getOpenFileName(this, tr("Select Import Save File"), QString(), tr(SINGLE_SAVEFILE_FILTER)));
 
   if (filename.isEmpty())
     return;

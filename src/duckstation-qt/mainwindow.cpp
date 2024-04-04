@@ -926,12 +926,12 @@ void MainWindow::populateLoadStateMenu(const char* game_serial, QMenu* menu)
   menu->clear();
 
   connect(menu->addAction(tr("Load From File...")), &QAction::triggered, []() {
-    const QString path(
+    const QString path = QDir::toNativeSeparators(
       QFileDialog::getOpenFileName(g_main_window, tr("Select Save State File"), QString(), tr("Save States (*.sav)")));
     if (path.isEmpty())
       return;
 
-    g_emu_thread->loadState(QDir::toNativeSeparators(path));
+    g_emu_thread->loadState(path);
   });
   QAction* load_from_state = menu->addAction(tr("Undo Load State"));
   load_from_state->setEnabled(System::CanUndoLoadState());
@@ -968,7 +968,7 @@ void MainWindow::populateSaveStateMenu(const char* game_serial, QMenu* menu)
     if (!System::IsValid())
       return;
 
-    const QString path(
+    const QString path = QDir::toNativeSeparators(
       QFileDialog::getSaveFileName(g_main_window, tr("Select Save State File"), QString(), tr("Save States (*.sav)")));
     if (path.isEmpty())
       return;
@@ -1275,8 +1275,8 @@ void MainWindow::onStartBIOSActionTriggered()
 
 void MainWindow::onChangeDiscFromFileActionTriggered()
 {
-  QString filename =
-    QFileDialog::getOpenFileName(this, tr("Select Disc Image"), QString(), tr(DISC_IMAGE_FILTER), nullptr);
+  QString filename = QDir::toNativeSeparators(
+    QFileDialog::getOpenFileName(this, tr("Select Disc Image"), QString(), tr(DISC_IMAGE_FILTER), nullptr));
   if (filename.isEmpty())
     return;
 
@@ -2163,24 +2163,24 @@ void MainWindow::connectSignals()
       g_emu_thread->stopDumpingAudio();
   });
   connect(m_ui.actionDumpRAM, &QAction::triggered, [this]() {
-    const QString filename =
-      QFileDialog::getSaveFileName(this, tr("Destination File"), QString(), tr("Binary Files (*.bin)"));
+    const QString filename = QDir::toNativeSeparators(
+      QFileDialog::getSaveFileName(this, tr("Destination File"), QString(), tr("Binary Files (*.bin)")));
     if (filename.isEmpty())
       return;
 
     g_emu_thread->dumpRAM(filename);
   });
   connect(m_ui.actionDumpVRAM, &QAction::triggered, [this]() {
-    const QString filename = QFileDialog::getSaveFileName(this, tr("Destination File"), QString(),
-                                                          tr("Binary Files (*.bin);;PNG Images (*.png)"));
+    const QString filename = QDir::toNativeSeparators(QFileDialog::getSaveFileName(
+      this, tr("Destination File"), QString(), tr("Binary Files (*.bin);;PNG Images (*.png)")));
     if (filename.isEmpty())
       return;
 
     g_emu_thread->dumpVRAM(filename);
   });
   connect(m_ui.actionDumpSPURAM, &QAction::triggered, [this]() {
-    const QString filename =
-      QFileDialog::getSaveFileName(this, tr("Destination File"), QString(), tr("Binary Files (*.bin)"));
+    const QString filename = QDir::toNativeSeparators(
+      QFileDialog::getSaveFileName(this, tr("Destination File"), QString(), tr("Binary Files (*.bin)")));
     if (filename.isEmpty())
       return;
 
@@ -2319,42 +2319,42 @@ void MainWindow::setStyleFromSettings()
 
     qApp->setPalette(darkPalette);
   }
-  	else if (theme == "cobaltsky")
-	{
-		// Custom palette by KamFretoZ, A soothing deep royal blue
-		// that are meant to be easy on the eyes as the main color.
-		// Alternative dark theme.
-		qApp->setStyle(QStyleFactory::create("Fusion"));
+  else if (theme == "cobaltsky")
+  {
+    // Custom palette by KamFretoZ, A soothing deep royal blue
+    // that are meant to be easy on the eyes as the main color.
+    // Alternative dark theme.
+    qApp->setStyle(QStyleFactory::create("Fusion"));
 
-		const QColor gray(150, 150, 150);
-		const QColor royalBlue(29, 41, 81);
-		const QColor darkishBlue(17, 30, 108);
-		const QColor lighterBlue(25, 32, 130);
-		const QColor highlight(36, 93, 218);
-		const QColor link(0, 202, 255);
+    const QColor gray(150, 150, 150);
+    const QColor royalBlue(29, 41, 81);
+    const QColor darkishBlue(17, 30, 108);
+    const QColor lighterBlue(25, 32, 130);
+    const QColor highlight(36, 93, 218);
+    const QColor link(0, 202, 255);
 
-		QPalette darkPalette;
-		darkPalette.setColor(QPalette::Window, royalBlue);
-		darkPalette.setColor(QPalette::WindowText, Qt::white);
-		darkPalette.setColor(QPalette::Base, royalBlue.lighter());
-		darkPalette.setColor(QPalette::AlternateBase, darkishBlue);
-		darkPalette.setColor(QPalette::ToolTipBase, darkishBlue);
-		darkPalette.setColor(QPalette::ToolTipText, Qt::white);
-		darkPalette.setColor(QPalette::Text, Qt::white);
-		darkPalette.setColor(QPalette::Button, lighterBlue);
-		darkPalette.setColor(QPalette::ButtonText, Qt::white);
-		darkPalette.setColor(QPalette::Link, link);
-		darkPalette.setColor(QPalette::Highlight, highlight);
-		darkPalette.setColor(QPalette::HighlightedText, Qt::white);
+    QPalette darkPalette;
+    darkPalette.setColor(QPalette::Window, royalBlue);
+    darkPalette.setColor(QPalette::WindowText, Qt::white);
+    darkPalette.setColor(QPalette::Base, royalBlue.lighter());
+    darkPalette.setColor(QPalette::AlternateBase, darkishBlue);
+    darkPalette.setColor(QPalette::ToolTipBase, darkishBlue);
+    darkPalette.setColor(QPalette::ToolTipText, Qt::white);
+    darkPalette.setColor(QPalette::Text, Qt::white);
+    darkPalette.setColor(QPalette::Button, lighterBlue);
+    darkPalette.setColor(QPalette::ButtonText, Qt::white);
+    darkPalette.setColor(QPalette::Link, link);
+    darkPalette.setColor(QPalette::Highlight, highlight);
+    darkPalette.setColor(QPalette::HighlightedText, Qt::white);
 
-		darkPalette.setColor(QPalette::Active, QPalette::Button, lighterBlue);
-		darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray);
-		darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray);
-		darkPalette.setColor(QPalette::Disabled, QPalette::Text, gray);
-		darkPalette.setColor(QPalette::Disabled, QPalette::Light, gray);
+    darkPalette.setColor(QPalette::Active, QPalette::Button, lighterBlue);
+    darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray);
+    darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray);
+    darkPalette.setColor(QPalette::Disabled, QPalette::Text, gray);
+    darkPalette.setColor(QPalette::Disabled, QPalette::Light, gray);
 
-		qApp->setPalette(darkPalette);
-	}
+    qApp->setPalette(darkPalette);
+  }
   else if (theme == "greymatter")
   {
     qApp->setStyle(QStyleFactory::create("Fusion"));

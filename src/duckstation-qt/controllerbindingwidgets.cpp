@@ -627,7 +627,7 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
         QPushButton* browse_button = new QPushButton(tr("Browse..."), this);
         SettingWidgetBinder::BindWidgetToStringSetting(sif, le, section, std::move(key_name), si.StringDefaultValue());
         connect(browse_button, &QPushButton::clicked, [this, le]() {
-          QString path = QFileDialog::getOpenFileName(this, tr("Select File"));
+          QString path = QDir::toNativeSeparators(QFileDialog::getOpenFileName(this, tr("Select File")));
           if (!path.isEmpty())
             le->setText(path);
         });
