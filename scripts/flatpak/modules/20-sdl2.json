@@ -1,35 +1,15 @@
 {
   "name": "sdl2",
-  "buildsystem": "autotools",
-  "no-autogen": true,
-  "config-opts": [
-    "--disable-dbus",
-    "--without-x",
-    "--disable-video-opengl",
-    "--disable-video-opengles",
-    "--disable-video-vulkan",
-    "--disable-wayland-shared",
-    "--disable-ime",
-    "--disable-oss",
-    "--disable-alsa",
-    "--disable-jack",
-    "--disable-esd",
-    "--disable-pipewire",
-    "--disable-pulseaudio",
-    "--disable-arts",
-    "--disable-nas",
-    "--disable-sndio",
-    "--disable-fusionsound",
-    "--disable-diskaudio"
-  ],
+  "buildsystem": "cmake-ninja",
+  "builddir": true,
   "build-options": {
     "strip": true
   },
   "sources": [
     {
       "type": "archive",
-      "url": "https://libsdl.org/release/SDL2-2.30.1.tar.gz",
-      "sha256": "01215ffbc8cfc4ad165ba7573750f15ddda1f971d5a66e9dcaffd37c587f473a"
+      "url": "https://libsdl.org/release/SDL2-2.30.2.tar.gz",
+      "sha256": "891d66ac8cae51361d3229e3336ebec1c407a8a2a063b61df14f5fdf3ab5ac31"
     }
   ],
   "cleanup": [
@@ -38,8 +18,7 @@
     "/lib/*.a",
     "/lib/*.la",
     "/lib/cmake",
-    "/lib/pkgconfig",
-    "/share/aclocal"
+    "/lib/pkgconfig"
   ]
 }
 
