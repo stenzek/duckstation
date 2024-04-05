@@ -1820,13 +1820,17 @@ void QtHost::SaveSettings()
   AssertMsg(!g_emu_thread->isOnThread(), "Saving should happen on the UI thread.");
 
   {
+    Error error;
     auto lock = Host::GetSettingsLock();
-    if (!s_base_settings_interface->Save())
-      Log_ErrorPrintf("Failed to save settings.");
+    if (!s_base_settings_interface->Save(&error))
+      Log_ErrorFmt("Failed to save settings: {}", error.GetDescription());
   }
 
-  s_settings_save_timer->deleteLater();
-  s_settings_save_timer.release();
+  if (s_settings_save_timer)
+  {
+    s_settings_save_timer->deleteLater();
+    s_settings_save_timer.release();
+  }
 }
 
 void QtHost::QueueSettingsSave()
