@@ -164,12 +164,12 @@
 ;* 53WVPPPP QQQQTTTT - Improved Serial Repeater/Slide, pokes multiple serially changing
 ;  X0YYYYYY ZZZZZZZZ   addresses with a possible changing value.
 ;                    address_change = W ( 0 = increasing, 1 = decreasing)
-;                    value_change = V ( 0 = increasing, 1 = decreasing) 
+;                    value_change = V ( 0 = increasing, 1 = decreasing)
 ;                    poke_size = X0 (30 for byte, 80 for word or 90 for longword)
 ;                    start_address = YYYYYY
 ;                    start_value = ZZZZZZZZ
 ;                    number_of_addresses = PPPP (needs to be >02 to be worthwhile)
-;                    address_step = QQQQ (commonly 01 for type 30, 02 for 
+;                    address_step = QQQQ (commonly 01 for type 30, 02 for
 ;                                         type 80, 04 for type 90)
 ;                    value_step = TTTT (most commonly 0000)
 ;
@@ -286,11 +286,11 @@
 ;
 ;  These code types will only need to be used with very advanced cheats, only
 ;  use them if you need them as they may blow your mind....
-; 
+;
 ;  General Notes:
 ;  ==============
 ;  RegXX or RegYY means the immediate value of the register
-;  (RegXX) or (RegYY) means the indirect value of the register = contents of the 
+;  (RegXX) or (RegYY) means the indirect value of the register = contents of the
 ;                     address held in RegXX or RegYY
 ;  TTTTTTTT = Write to Address TTTTTTTT
 ;  (TTTTTTTT) = Read from Address TTTTTTTT
@@ -300,23 +300,23 @@
 ;  8 BIT operations:
 ;  =================
 ;* 510000XX TTTTTTTT - 8-Bit Address Write from Register, Poke address TTTTTTTT
-;                      with the 8-bit contents of Register XX. 
+;                      with the 8-bit contents of Register XX.
 ;                      u8Poke TTTTTTTT, RegXX
 ;* 510100XX TTTTTTTT - 8-Bit Address Read to Register, Peek the 8-bit contents of
 ;                      address TTTTTTTT and store it in Register XX.
-;                      u8Poke RegXX, (TTTTTTTT) 
-;* 510200XX 000000ZZ - 8-Bit Indirect Register Write, poke ZZ to the 32-Bit 
+;                      u8Poke RegXX, (TTTTTTTT)
+;* 510200XX 000000ZZ - 8-Bit Indirect Register Write, poke ZZ to the 32-Bit
 ;                      address stored in Register XX.
-;                      u8Poke (RegXX), ZZ 
-;* 5103YYXX 000000ZZ - 8-Bit Register Addition, add ZZ and the 8-bit contents 
+;                      u8Poke (RegXX), ZZ
+;* 5103YYXX 000000ZZ - 8-Bit Register Addition, add ZZ and the 8-bit contents
 ;                      of Register YY together and write it to Register XX.
-;                      u8Poke RegXX, RegYY + ZZ                  
-;* 5104YYXX 000000ZZ - 8-Bit Indirect Register Write with addition, add ZZ and  
-;                      the 8-bit contents of Register YY together and write it  
+;                      u8Poke RegXX, RegYY + ZZ
+;* 5104YYXX 000000ZZ - 8-Bit Indirect Register Write with addition, add ZZ and
+;                      the 8-bit contents of Register YY together and write it
 ;                      to the 32-Bit address stored in Register XX.
-;                      u8Poke (RegXX), RegYY + ZZ  
+;                      u8Poke (RegXX), RegYY + ZZ
 ;* 510500XX 000000ZZ - 8-Bit Direct Register Write, poke ZZ to Register XX.
-;                      u8Poke RegXX, ZZ  
+;                      u8Poke RegXX, ZZ
 ;* 5106YYXX ZZZZZZZZ - 8-Bit Indirect Register Read, Peek the 8-bit contents
 ;                      of (32-Bit address in Register YY + ZZZZZZZZ) and write it
 ;                      to Register XX.
@@ -327,21 +327,21 @@
 ;* 514000XX TTTTTTTT - 16-Bit Address Write from Register, Poke address TTTTTTTT
 ;                      with the 16-bit contents of Register XX.
 ;                      u16Poke TTTTTTTT, RegXX
-;* 514100XX TTTTTTTT - 16-Bit Address Read to Register, Peek the 16-bit contents 
+;* 514100XX TTTTTTTT - 16-Bit Address Read to Register, Peek the 16-bit contents
 ;                      of address TTTTTTTT and store it in Register XX.
-;                      u16Poke RegXX, (TTTTTTTT) 
-;* 514200XX 0000ZZZZ - 16-Bit Indirect Register Write, poke ZZZZ to the 32-Bit 
+;                      u16Poke RegXX, (TTTTTTTT)
+;* 514200XX 0000ZZZZ - 16-Bit Indirect Register Write, poke ZZZZ to the 32-Bit
 ;                      address stored in Register XX.
 ;                      u16Poke (RegXX), ZZZZ
-;* 5143YYXX 0000ZZZZ - 16-Bit Register Addition, add ZZZZ and the 16 bit contents 
+;* 5143YYXX 0000ZZZZ - 16-Bit Register Addition, add ZZZZ and the 16 bit contents
 ;                      of Register YY together and write it to Register XX.
-;                      u16Poke RegXX, RegYY + ZZZZ     
-;* 5144YYXX 0000ZZZZ - 16-Bit Indirect Register Write with addition, add ZZZZ  
-;                      and the 16 bit contents of Register YY together and write 
-;                      it to the 32-Bit address stored in Register XX.               
-;                      u16Poke (RegXX), RegYY + ZZZZ 
+;                      u16Poke RegXX, RegYY + ZZZZ
+;* 5144YYXX 0000ZZZZ - 16-Bit Indirect Register Write with addition, add ZZZZ
+;                      and the 16 bit contents of Register YY together and write
+;                      it to the 32-Bit address stored in Register XX.
+;                      u16Poke (RegXX), RegYY + ZZZZ
 ;* 514500XX 0000ZZZZ - 16-Bit Direct Register Write, poke ZZZZ to Register XX.
-;                      u16Poke RegXX, ZZZZ  
+;                      u16Poke RegXX, ZZZZ
 ;* 5146YYXX ZZZZZZZZ - 16-Bit Indirect Register Read, Peek the 16-bit contents
 ;                      of (32-Bit address in Register YY + ZZZZZZZZ) and write it
 ;                      to Register XX.
@@ -352,23 +352,23 @@
 ;* 518000XX TTTTTTTT - 32-Bit Address Write from Register, Poke address TTTTTTTT
 ;                      with the 32-bit contents of Register XX.
 ;                      u32Poke TTTTTTTT, RegXX
-;* 518100XX TTTTTTTT - 32-Bit Address Read to Register, Peek the 32-bit contents 
+;* 518100XX TTTTTTTT - 32-Bit Address Read to Register, Peek the 32-bit contents
 ;                      of address TTTTTTTT and store it in Register XX.
-;                      u32Poke RegXX, (TTTTTTTT) 
-;* 518200XX ZZZZZZZZ - 32-Bit Indirect Register Write, poke ZZZZZZZZ to the  
+;                      u32Poke RegXX, (TTTTTTTT)
+;* 518200XX ZZZZZZZZ - 32-Bit Indirect Register Write, poke ZZZZZZZZ to the
 ;                      32-Bit address stored in Register XX.
 ;                      u32Poke (RegXX), ZZZZZZZZ
-;* 5183YYXX ZZZZZZZZ - 32-Bit Register Addition, add ZZZZZZZZ and the 32 bit 
-;                      contents of Register YY together and write it to  
+;* 5183YYXX ZZZZZZZZ - 32-Bit Register Addition, add ZZZZZZZZ and the 32 bit
+;                      contents of Register YY together and write it to
 ;                      Register XX.
-;                      u32Poke RegXX, RegYY + ZZZZZZZZ   
-;* 5184YYXX 0000ZZZZ - 32-Bit Indirect Register Write with addition, add 
-;                      ZZZZZZZZ and the 32 bit contents of Register YY together 
-;                      and write it to the 32-Bit address stored in Register XX. 
-;                      u32Poke (RegXX), RegYY + ZZZZZZZZ  
+;                      u32Poke RegXX, RegYY + ZZZZZZZZ
+;* 5184YYXX 0000ZZZZ - 32-Bit Indirect Register Write with addition, add
+;                      ZZZZZZZZ and the 32 bit contents of Register YY together
+;                      and write it to the 32-Bit address stored in Register XX.
+;                      u32Poke (RegXX), RegYY + ZZZZZZZZ
 ;* 518500XX ZZZZZZZZ - 32-Bit Direct Register Write, poke ZZZZZZZZ to Register XX.
 ;                      u32Poke RegXX, ZZZZZZZZ. Note: This is useful to write
-;                      the actual address to a register.  
+;                      the actual address to a register.
 ;* 5186YYXX ZZZZZZZZ - 32-Bit Indirect Register Read, Peek the 32-bit contents
 ;                      of (32-Bit address in Register YY + ZZZZZZZZ) and write it
 ;                      to Register XX.
@@ -377,429 +377,429 @@
 ; Generic Register Operations:
 ; ============================
 ; All these generic register only codes are 32 Bit, but you can read any register
-; register as a u8, u16 or a u32. 
+; register as a u8, u16 or a u32.
 ;
 ;* 51C0YYXX 000000RR - Add Register YY to Register XX and store result in
-;                      Register RR. 
-;                      u32Poke RegRR, RegYY + RegXX  
+;                      Register RR.
+;                      u32Poke RegRR, RegYY + RegXX
 ;* 51C1YYXX 000000RR - Subtract Register XX from Register YY and store result in
-;                      Register RR. 
-;                      u32Poke RegRR, RegYY - RegXX  
+;                      Register RR.
+;                      u32Poke RegRR, RegYY - RegXX
 ;* 51C2YYXX 000000RR - Multiply Register YY by Register XX and store result in
-;                      Register RR. 
-;                      u32Poke RegRR, RegYY * RegXX  
+;                      Register RR.
+;                      u32Poke RegRR, RegYY * RegXX
 ;* 51C3YYXX 000000RR - Divide Register YY by Register XX and store result in
-;                      Register RR. Note: If Register XX contains 0, RR will be 
+;                      Register RR. Note: If Register XX contains 0, RR will be
 ;                      set to 0.
 ;                      u32Poke RegRR, RegYY / RegXX
 ;* 51C4YYXX 000000RR - Divide Register YY by Register XX and store remainder in
-;                      Register RR. Note: If Register XX contains 0, RR will be 
+;                      Register RR. Note: If Register XX contains 0, RR will be
 ;                      set to RegYY.
 ;                      u32Poke RegRR, RegYY % RegXX
 ;* 51C5YYXX 000000RR - Bitwise AND Register YY and Register XX and store result
-;                      in Register RR. 
-;                      u32Poke RegRR, RegYY & RegXX  
+;                      in Register RR.
+;                      u32Poke RegRR, RegYY & RegXX
 ;* 51C6YYXX 000000RR - Bitwise OR Register YY and Register XX and store result
-;                      in Register RR. 
-;                      u32Poke RegRR, RegYY | RegXX 
+;                      in Register RR.
+;                      u32Poke RegRR, RegYY | RegXX
 ;* 51C7YYXX 000000RR - Bitwise XOR Register YY and Register XX and store result
-;                      in Register RR. 
-;                      u32Poke RegRR, RegYY ^ RegXX 
-;* 51C800XX 000000RR - Bitwise NOT Register XX and store result in Register RR.  
+;                      in Register RR.
+;                      u32Poke RegRR, RegYY ^ RegXX
+;* 51C800XX 000000RR - Bitwise NOT Register XX and store result in Register RR.
 ;                      aka One's Complement
 ;                      u32Poke RegRR, ~RegXX
 ;* 51C9TTXX 000000RR - Bitwise LSHIFT Register XX by TT and store result in
-;                      Register RR. 
+;                      Register RR.
 ;                      u32Poke RegRR, RegXX << TT
 ;* 51CATTXX 000000RR - Bitwise RSHIFT Register XX by TT and store result in
-;                      Register RR. 
+;                      Register RR.
 ;                      u32Poke RegRR, RegXX >> TT
 ;*********************************NEW TO BE ADDED*********************************
 ;* 51D0YYXX ZZZZZZZZ - Bitwise AND Register YY with ZZZZZZZZ and store result
-;                      in Register XX. 
-;                      u32Poke RegXX, RegYY & ZZZZZZZZ  
+;                      in Register XX.
+;                      u32Poke RegXX, RegYY & ZZZZZZZZ
 ;* 51D1YYXX ZZZZZZZZ - Bitwise OR Register YY with ZZZZZZZZ and store result
-;                      in Register XX. 
-;                      u32Poke RegXX, RegYY | ZZZZZZZZ 
+;                      in Register XX.
+;                      u32Poke RegXX, RegYY | ZZZZZZZZ
 ;* 51D2YYXX ZZZZZZZZ - Bitwise XOR Register YY with ZZZZZZZZ and store result
-;                      in Register XX. 
+;                      in Register XX.
 ;                      u32Poke RegXX, RegYY ^ ZZZZZZZZ
 ;
 ; Register Block Conditionals:
 ; ============================
 ;
-;* 5200YYXX 00000000 - If u8RegYY == u8RegXX poke all following codes for rest 
+;* 5200YYXX 00000000 - If u8RegYY == u8RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5201YYXX 00000000 - If u8RegYY != u8RegXX poke all following codes for rest 
+;* 5201YYXX 00000000 - If u8RegYY != u8RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5202YYXX 00000000 - If u8RegYY > u8RegXX poke all following codes for rest 
+;* 5202YYXX 00000000 - If u8RegYY > u8RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5203YYXX 00000000 - If u8RegYY => u8RegXX poke all following codes for rest 
+;* 5203YYXX 00000000 - If u8RegYY => u8RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5204YYXX 00000000 - If u8RegYY < u8RegXX poke all following codes for rest 
+;* 5204YYXX 00000000 - If u8RegYY < u8RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5205YYXX 00000000 - If u8RegYY =< u8RegXX poke all following codes for rest 
+;* 5205YYXX 00000000 - If u8RegYY =< u8RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5206YYXX 00000000 - If u8RegYY & u8RegXX = u8RegXX poke all following codes for rest 
+;* 5206YYXX 00000000 - If u8RegYY & u8RegXX = u8RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5207YYXX 00000000 - If u8RegYY & u8RegXX != u8RegXX poke all following codes for rest 
+;* 5207YYXX 00000000 - If u8RegYY & u8RegXX != u8RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 520AYYXX 00000000 - If u8RegYY & u8RegXX = u8RegYY poke all following codes for rest 
+;* 520AYYXX 00000000 - If u8RegYY & u8RegXX = u8RegYY poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 520BYYXX 00000000 - If u8RegYY & u8RegXX != u8RegYY poke all following codes for rest 
+;* 520BYYXX 00000000 - If u8RegYY & u8RegXX != u8RegYY poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 521000XX 000000ZZ - If u8RegXX == ZZ poke all following codes for rest 
+;* 521000XX 000000ZZ - If u8RegXX == ZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 521100XX 000000ZZ - If u8RegXX != ZZ poke all following codes for rest 
+;* 521100XX 000000ZZ - If u8RegXX != ZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 521200XX 000000ZZ - If u8RegXX > ZZ poke all following codes for rest 
+;* 521200XX 000000ZZ - If u8RegXX > ZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 521300XX 000000ZZ - If u8RegXX => ZZ poke all following codes for rest 
+;* 521300XX 000000ZZ - If u8RegXX => ZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 521400XX 000000ZZ - If u8RegXX < ZZ poke all following codes for rest 
+;* 521400XX 000000ZZ - If u8RegXX < ZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 521500XX 000000ZZ - If u8RegXX =< ZZ poke all following codes for rest 
+;* 521500XX 000000ZZ - If u8RegXX =< ZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 521600XX 000000ZZ - If u8RegXX & ZZ = ZZ poke all following codes for rest 
+;* 521600XX 000000ZZ - If u8RegXX & ZZ = ZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 521700XX 000000ZZ - If u8RegXX & ZZ != ZZ poke all following codes for rest 
+;* 521700XX 000000ZZ - If u8RegXX & ZZ != ZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 521800XX 00TT00ZZ - If u8RegXX > ZZ && u8RegXX < TT poke all following codes for rest 
+;* 521800XX 00TT00ZZ - If u8RegXX > ZZ && u8RegXX < TT poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 521900XX 00TT00ZZ - If u8RegXX => ZZ && u8RegXX <= TT poke all following codes for rest 
+;* 521900XX 00TT00ZZ - If u8RegXX => ZZ && u8RegXX <= TT poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 521A00XX 000000ZZ - If u8RegXX & ZZ = u8RegXX poke all following codes for rest 
+;* 521A00XX 000000ZZ - If u8RegXX & ZZ = u8RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 521B00XX 000000ZZ - If u8RegXX & ZZ != u8RegXX poke all following codes for rest 
+;* 521B00XX 000000ZZ - If u8RegXX & ZZ != u8RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5220YYXX 00000000 - If u8(RegYY) == u8(RegXX) poke all following codes for rest 
+;* 5220YYXX 00000000 - If u8(RegYY) == u8(RegXX) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5221YYXX 00000000 - If u8(RegYY) != u8(RegXX) poke all following codes for rest 
+;* 5221YYXX 00000000 - If u8(RegYY) != u8(RegXX) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5222YYXX 00000000 - If u8(RegYY) > u8(RegXX) poke all following codes for rest 
+;* 5222YYXX 00000000 - If u8(RegYY) > u8(RegXX) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5223YYXX 00000000 - If u8(RegYY) => u8(RegXX) poke all following codes for rest 
+;* 5223YYXX 00000000 - If u8(RegYY) => u8(RegXX) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5224YYXX 00000000 - If u8(RegYY) < u8(RegXX) poke all following codes for rest 
+;* 5224YYXX 00000000 - If u8(RegYY) < u8(RegXX) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5225YYXX 00000000 - If u8(RegYY) =< u8(RegXX) poke all following codes for rest 
+;* 5225YYXX 00000000 - If u8(RegYY) =< u8(RegXX) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line
 ;
-;* 522600XX 000000ZZ - If u8(RegXX) & ZZ = ZZ poke all following codes for rest 
+;* 522600XX 000000ZZ - If u8(RegXX) & ZZ = ZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 522700XX 000000ZZ - If u8(RegXX) & ZZ != ZZ poke all following codes for rest 
+;* 522700XX 000000ZZ - If u8(RegXX) & ZZ != ZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 522800XX 00TT00ZZ - If u8(RegXX) > ZZ && u8(RegXX) < TT poke all following codes for rest 
+;* 522800XX 00TT00ZZ - If u8(RegXX) > ZZ && u8(RegXX) < TT poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 522900XX 00TT00ZZ - If u8(RegXX) => ZZ && u8(RegXX) <= TT poke all following codes for rest 
+;* 522900XX 00TT00ZZ - If u8(RegXX) => ZZ && u8(RegXX) <= TT poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 522A00XX 000000ZZ - If u8(RegXX) & ZZ = u8(RegXX) poke all following codes for rest 
+;* 522A00XX 000000ZZ - If u8(RegXX) & ZZ = u8(RegXX) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 522B00XX 000000ZZ - If u8(RegXX) & ZZ != u8(RegXX) poke all following codes for rest 
+;* 522B00XX 000000ZZ - If u8(RegXX) & ZZ != u8(RegXX) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 523000XX TTTTTTTT - If u8RegXX == (TTTTTTTT) poke all following codes for rest 
+;* 523000XX TTTTTTTT - If u8RegXX == (TTTTTTTT) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 523100XX TTTTTTTT - If u8RegXX != (TTTTTTTT) poke all following codes for rest 
+;* 523100XX TTTTTTTT - If u8RegXX != (TTTTTTTT) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 523200XX TTTTTTTT - If u8RegXX > (TTTTTTTT) poke all following codes for rest 
+;* 523200XX TTTTTTTT - If u8RegXX > (TTTTTTTT) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 523300XX TTTTTTTT - If u8RegXX => (TTTTTTTT) poke all following codes for rest 
+;* 523300XX TTTTTTTT - If u8RegXX => (TTTTTTTT) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 523400XX TTTTTTTT - If u8RegXX < (TTTTTTTT) poke all following codes for rest 
+;* 523400XX TTTTTTTT - If u8RegXX < (TTTTTTTT) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 523600XX TTTTTTTT - If u8RegXX & (TTTTTTTT) = (TTTTTTTT) poke all following codes for rest 
+;* 523600XX TTTTTTTT - If u8RegXX & (TTTTTTTT) = (TTTTTTTT) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 523700XX TTTTTTTT - If u8RegXX & (TTTTTTTT) != (TTTTTTTT) poke all following codes for rest 
+;* 523700XX TTTTTTTT - If u8RegXX & (TTTTTTTT) != (TTTTTTTT) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 523A00XX TTTTTTTT - If u8RegXX & (TTTTTTTT) = u8RegXX poke all following codes for rest 
+;* 523A00XX TTTTTTTT - If u8RegXX & (TTTTTTTT) = u8RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
-;                      
+;
 ;* 523B00XX TTTTTTTT - If u8RegXX & (TTTTTTTT) != u8RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5240YYXX 00000000 - If u16RegYY == u16RegXX poke all following codes for rest 
+;* 5240YYXX 00000000 - If u16RegYY == u16RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5241YYXX 00000000 - If u16RegYY != u16RegXX poke all following codes for rest 
+;* 5241YYXX 00000000 - If u16RegYY != u16RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5242YYXX 00000000 - If u16RegYY > u16RegXX poke all following codes for rest 
+;* 5242YYXX 00000000 - If u16RegYY > u16RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5243YYXX 00000000 - If u16RegYY => u16RegXX poke all following codes for rest 
+;* 5243YYXX 00000000 - If u16RegYY => u16RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5244YYXX 00000000 - If u16RegYY < u16RegXX poke all following codes for rest 
+;* 5244YYXX 00000000 - If u16RegYY < u16RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5245YYXX 00000000 - If u16RegYY =< u16RegXX poke all following codes for rest 
+;* 5245YYXX 00000000 - If u16RegYY =< u16RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5246YYXX 00000000 - If u16RegYY & u16RegXX = u16RegXX poke all following codes for rest 
+;* 5246YYXX 00000000 - If u16RegYY & u16RegXX = u16RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5247YYXX 00000000 - If u16RegYY & u16RegXX != u16RegXX poke all following codes for rest 
+;* 5247YYXX 00000000 - If u16RegYY & u16RegXX != u16RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 524AYYXX 00000000 - If u16RegYY & u16RegXX = u16RegYY poke all following codes for rest 
+;* 524AYYXX 00000000 - If u16RegYY & u16RegXX = u16RegYY poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 524BYYXX 00000000 - If u16RegYY & u16RegXX != u16RegYY poke all following codes for rest 
+;* 524BYYXX 00000000 - If u16RegYY & u16RegXX != u16RegYY poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 525000XX 0000ZZZZ - If u16RegXX == ZZZZ poke all following codes for rest 
+;* 525000XX 0000ZZZZ - If u16RegXX == ZZZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 525100XX 0000ZZZZ - If u16RegXX != ZZZZ poke all following codes for rest 
+;* 525100XX 0000ZZZZ - If u16RegXX != ZZZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 525200XX 0000ZZZZ - If u16RegXX > ZZZZ poke all following codes for rest 
+;* 525200XX 0000ZZZZ - If u16RegXX > ZZZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 525300XX 0000ZZZZ - If u16RegXX => ZZZZ poke all following codes for rest 
+;* 525300XX 0000ZZZZ - If u16RegXX => ZZZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 525400XX 0000ZZZZ - If u16RegXX < ZZZZ poke all following codes for rest 
+;* 525400XX 0000ZZZZ - If u16RegXX < ZZZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 525500XX 0000ZZZZ - If u16RegXX =< ZZZZ poke all following codes for rest 
+;* 525500XX 0000ZZZZ - If u16RegXX =< ZZZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 525600XX 0000ZZZZ - If u16RegXX & ZZZZ = ZZZZ poke all following codes for rest 
+;* 525600XX 0000ZZZZ - If u16RegXX & ZZZZ = ZZZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 525700XX 0000ZZZZ - If u16RegXX & ZZZZ != ZZZZ poke all following codes for rest 
+;* 525700XX 0000ZZZZ - If u16RegXX & ZZZZ != ZZZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 525800XX TTTTZZZZ - If u16RegXX > ZZZZ && u16RegXX < TTTT poke all following codes for rest 
+;* 525800XX TTTTZZZZ - If u16RegXX > ZZZZ && u16RegXX < TTTT poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 525900XX TTTTZZZZ - If u16RegXX => ZZZZ && u16RegXX <= TTTT poke all following codes for rest 
+;* 525900XX TTTTZZZZ - If u16RegXX => ZZZZ && u16RegXX <= TTTT poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 525A00XX 0000ZZZZ - If u16RegXX & ZZZZ = u16RegXX poke all following codes for rest 
+;* 525A00XX 0000ZZZZ - If u16RegXX & ZZZZ = u16RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 525B00XX 0000ZZZZ - If u16RegXX & ZZZZ != u16RegXX poke all following codes for rest 
+;* 525B00XX 0000ZZZZ - If u16RegXX & ZZZZ != u16RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5260YYXX 00000000 - If u16(RegYY) == u16(RegXX) poke all following codes for rest 
+;* 5260YYXX 00000000 - If u16(RegYY) == u16(RegXX) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5261YYXX 00000000 - If u16(RegYY) != u16(RegXX) poke all following codes for rest 
+;* 5261YYXX 00000000 - If u16(RegYY) != u16(RegXX) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5262YYXX 00000000 - If u16(RegYY) > u16(RegXX) poke all following codes for rest 
+;* 5262YYXX 00000000 - If u16(RegYY) > u16(RegXX) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5263YYXX 00000000 - If u16(RegYY) => u16(RegXX) poke all following codes for rest 
+;* 5263YYXX 00000000 - If u16(RegYY) => u16(RegXX) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5264YYXX 00000000 - If u16(RegYY) < u16(RegXX) poke all following codes for rest 
+;* 5264YYXX 00000000 - If u16(RegYY) < u16(RegXX) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5265YYXX 00000000 - If u16(RegYY) =< u16(RegXX) poke all following codes for rest 
+;* 5265YYXX 00000000 - If u16(RegYY) =< u16(RegXX) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line
 ;
-;* 526600XX 0000ZZZZ - If u16(RegXX) & ZZZZ = ZZZZ poke all following codes for rest 
+;* 526600XX 0000ZZZZ - If u16(RegXX) & ZZZZ = ZZZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 526700XX 0000ZZZZ - If u16(RegXX) & ZZZZ != ZZZZ poke all following codes for rest 
+;* 526700XX 0000ZZZZ - If u16(RegXX) & ZZZZ != ZZZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 526800XX TTTTZZZZ - If u16(RegXX) > ZZZZ && u16(RegXX) < TTTT poke all following codes for rest 
+;* 526800XX TTTTZZZZ - If u16(RegXX) > ZZZZ && u16(RegXX) < TTTT poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 526900XX TTTTZZZZ - If u16(RegXX) => ZZZZ && u16(RegXX) <= TTTT poke all following codes for rest 
+;* 526900XX TTTTZZZZ - If u16(RegXX) => ZZZZ && u16(RegXX) <= TTTT poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 526A00XX 0000ZZZZ - If u16(RegXX) & ZZZZ = u16(RegXX) poke all following codes for rest 
+;* 526A00XX 0000ZZZZ - If u16(RegXX) & ZZZZ = u16(RegXX) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 526B00XX 0000ZZZZ - If u16(RegXX) & ZZZZ != u16(RegXX) poke all following codes for rest 
+;* 526B00XX 0000ZZZZ - If u16(RegXX) & ZZZZ != u16(RegXX) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 527000XX TTTTTTTT - If u16RegXX == (TTTTTTTT) poke all following codes for rest 
+;* 527000XX TTTTTTTT - If u16RegXX == (TTTTTTTT) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 527100XX TTTTTTTT - If u16RegXX != (TTTTTTTT) poke all following codes for rest 
+;* 527100XX TTTTTTTT - If u16RegXX != (TTTTTTTT) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 527200XX TTTTTTTT - If u16RegXX > (TTTTTTTT) poke all following codes for rest 
+;* 527200XX TTTTTTTT - If u16RegXX > (TTTTTTTT) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 527300XX TTTTTTTT - If u16RegXX => (TTTTTTTT) poke all following codes for rest 
+;* 527300XX TTTTTTTT - If u16RegXX => (TTTTTTTT) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 527400XX TTTTTTTT - If u16RegXX < (TTTTTTTT) poke all following codes for rest 
+;* 527400XX TTTTTTTT - If u16RegXX < (TTTTTTTT) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 527600XX TTTTTTTT - If u16RegXX & (TTTTTTTT) = (TTTTTTTT) poke all following codes for rest 
+;* 527600XX TTTTTTTT - If u16RegXX & (TTTTTTTT) = (TTTTTTTT) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 527700XX TTTTTTTT - If u16RegXX & (TTTTTTTT) != (TTTTTTTT) poke all following codes for rest 
+;* 527700XX TTTTTTTT - If u16RegXX & (TTTTTTTT) != (TTTTTTTT) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 527A00XX TTTTTTTT - If u16RegXX & (TTTTTTTT) = u16RegXX poke all following codes for rest 
+;* 527A00XX TTTTTTTT - If u16RegXX & (TTTTTTTT) = u16RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
-;                      
+;
 ;* 527B00XX TTTTTTTT - If u16RegXX & (TTTTTTTT) != u16RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5280YYXX 00000000 - If u32RegYY == u32RegXX poke all following codes for rest 
+;* 5280YYXX 00000000 - If u32RegYY == u32RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5281YYXX 00000000 - If u32RegYY != u32RegXX poke all following codes for rest 
+;* 5281YYXX 00000000 - If u32RegYY != u32RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5282YYXX 00000000 - If u32RegYY > u32RegXX poke all following codes for rest 
+;* 5282YYXX 00000000 - If u32RegYY > u32RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5283YYXX 00000000 - If u32RegYY => u32RegXX poke all following codes for rest 
+;* 5283YYXX 00000000 - If u32RegYY => u32RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5284YYXX 00000000 - If u32RegYY < u32RegXX poke all following codes for rest 
+;* 5284YYXX 00000000 - If u32RegYY < u32RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5285YYXX 00000000 - If u32RegYY =< u32RegXX poke all following codes for rest 
+;* 5285YYXX 00000000 - If u32RegYY =< u32RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5286YYXX 00000000 - If u32RegYY & u32RegXX = u32RegXX poke all following codes for rest 
+;* 5286YYXX 00000000 - If u32RegYY & u32RegXX = u32RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 5287YYXX 00000000 - If u32RegYY & u32RegXX != u32RegXX poke all following codes for rest 
+;* 5287YYXX 00000000 - If u32RegYY & u32RegXX != u32RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 528AYYXX 00000000 - If u32RegYY & u32RegXX = u32RegYY poke all following codes for rest 
+;* 528AYYXX 00000000 - If u32RegYY & u32RegXX = u32RegYY poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 528BYYXX 00000000 - If u32RegYY & u32RegXX != u32RegYY poke all following codes for rest 
+;* 528BYYXX 00000000 - If u32RegYY & u32RegXX != u32RegYY poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 529000XX ZZZZZZZZ - If u32RegXX == ZZZZZZZZ poke all following codes for rest 
+;* 529000XX ZZZZZZZZ - If u32RegXX == ZZZZZZZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 529100XX ZZZZZZZZ - If u32RegXX != ZZZZZZZZ poke all following codes for rest 
+;* 529100XX ZZZZZZZZ - If u32RegXX != ZZZZZZZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 529200XX ZZZZZZZZ - If u32RegXX > ZZZZZZZZ poke all following codes for rest 
+;* 529200XX ZZZZZZZZ - If u32RegXX > ZZZZZZZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 529300XX ZZZZZZZZ - If u32RegXX => ZZZZZZZZ poke all following codes for rest 
+;* 529300XX ZZZZZZZZ - If u32RegXX => ZZZZZZZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 529400XX ZZZZZZZZ - If u32RegXX < ZZZZZZZZ poke all following codes for rest 
+;* 529400XX ZZZZZZZZ - If u32RegXX < ZZZZZZZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 529500XX ZZZZZZZZ - If u32RegXX =< ZZZZZZZZ poke all following codes for rest 
+;* 529500XX ZZZZZZZZ - If u32RegXX =< ZZZZZZZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 529600XX ZZZZZZZZ - If u32RegXX & ZZZZZZZZ = ZZZZZZZZ poke all following codes for rest 
+;* 529600XX ZZZZZZZZ - If u32RegXX & ZZZZZZZZ = ZZZZZZZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 529700XX ZZZZZZZZ - If u32RegXX & ZZZZZZZZ != ZZZZZZZZ poke all following codes for rest 
+;* 529700XX ZZZZZZZZ - If u32RegXX & ZZZZZZZZ != ZZZZZZZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 529A00XX ZZZZZZZZ - If u32RegXX & ZZZZZZZZ = u32RegXX poke all following codes for rest 
+;* 529A00XX ZZZZZZZZ - If u32RegXX & ZZZZZZZZ = u32RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 529B00XX ZZZZZZZZ - If u32RegXX & ZZZZZZZZ != u32RegXX poke all following codes for rest 
+;* 529B00XX ZZZZZZZZ - If u32RegXX & ZZZZZZZZ != u32RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 52A0YYXX 00000000 - If u32(RegYY) == u32(RegXX) poke all following codes for rest 
+;* 52A0YYXX 00000000 - If u32(RegYY) == u32(RegXX) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 52A1YYXX 00000000 - If u32(RegYY) != u32(RegXX) poke all following codes for rest 
+;* 52A1YYXX 00000000 - If u32(RegYY) != u32(RegXX) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 52A2YYXX 00000000 - If u32(RegYY) > u32(RegXX) poke all following codes for rest 
+;* 52A2YYXX 00000000 - If u32(RegYY) > u32(RegXX) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 52A3YYXX 00000000 - If u32(RegYY) => u32(RegXX) poke all following codes for rest 
+;* 52A3YYXX 00000000 - If u32(RegYY) => u32(RegXX) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 52A4YYXX 00000000 - If u32(RegYY) < u32(RegXX) poke all following codes for rest 
+;* 52A4YYXX 00000000 - If u32(RegYY) < u32(RegXX) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 52A5YYXX 00000000 - If u32(RegYY) =< u32(RegXX) poke all following codes for rest 
+;* 52A5YYXX 00000000 - If u32(RegYY) =< u32(RegXX) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line
 ;
-;* 52A600XX ZZZZZZZZ - If u32(RegXX) & ZZZZZZZZ = ZZZZZZZZ poke all following codes for rest 
+;* 52A600XX ZZZZZZZZ - If u32(RegXX) & ZZZZZZZZ = ZZZZZZZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 52A700XX ZZZZZZZZ - If u32(RegXX) & ZZZZZZZZ != ZZZZZZZZ poke all following codes for rest 
+;* 52A700XX ZZZZZZZZ - If u32(RegXX) & ZZZZZZZZ != ZZZZZZZZ poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 52AA00XX ZZZZZZZZ - If u32(RegXX) & ZZZZZZZZ = u32(RegXX) poke all following codes for rest 
+;* 52AA00XX ZZZZZZZZ - If u32(RegXX) & ZZZZZZZZ = u32(RegXX) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 52AB00XX ZZZZZZZZ - If u32(RegXX) & ZZZZZZZZ != u32(RegXX) poke all following codes for rest 
+;* 52AB00XX ZZZZZZZZ - If u32(RegXX) & ZZZZZZZZ != u32(RegXX) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 52B000XX TTTTTTTT - If u32RegXX == (TTTTTTTT) poke all following codes for rest 
+;* 52B000XX TTTTTTTT - If u32RegXX == (TTTTTTTT) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 52B100XX TTTTTTTT - If u32RegXX != (TTTTTTTT) poke all following codes for rest 
+;* 52B100XX TTTTTTTT - If u32RegXX != (TTTTTTTT) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 52B200XX TTTTTTTT - If u32RegXX > (TTTTTTTT) poke all following codes for rest 
+;* 52B200XX TTTTTTTT - If u32RegXX > (TTTTTTTT) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 52B300XX TTTTTTTT - If u32RegXX => (TTTTTTTT) poke all following codes for rest 
+;* 52B300XX TTTTTTTT - If u32RegXX => (TTTTTTTT) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 52B400XX TTTTTTTT - If u32RegXX < (TTTTTTTT) poke all following codes for rest 
+;* 52B400XX TTTTTTTT - If u32RegXX < (TTTTTTTT) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 52B600XX TTTTTTTT - If u32RegXX & (TTTTTTTT) = (TTTTTTTT) poke all following codes for rest 
+;* 52B600XX TTTTTTTT - If u32RegXX & (TTTTTTTT) = (TTTTTTTT) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 52B700XX TTTTTTTT - If u32RegXX & (TTTTTTTT) != (TTTTTTTT) poke all following codes for rest 
+;* 52B700XX TTTTTTTT - If u32RegXX & (TTTTTTTT) != (TTTTTTTT) poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 ;
-;* 52BA00XX TTTTTTTT - If u32RegXX & (TTTTTTTT) = u32RegXX poke all following codes for rest 
+;* 52BA00XX TTTTTTTT - If u32RegXX & (TTTTTTTT) = u32RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
-;                      
+;
 ;* 52BB00XX TTTTTTTT - If u32RegXX & (TTTTTTTT) != u32RegXX poke all following codes for rest
 ;  00000000 FFFF       of the cheat or until it reaches the 00000000 FFFF line.
 
@@ -2386,8 +2386,9 @@ A70AF0A0 10000C00
 801F444A FFFF
 
 ; [ Aquanaut's Holiday (USA) (1996) (Sony Computer Entertainment America) {SCUS-94603} <aquanaut> ]
-;:SCUS-94603
-;This game currently has no cheats
+:SCUS-94603
+#Widescreen 16-9:Enabling this code results in the camera shaking heavily while turning
+8013E788 0C00
 
 ; [ Arcade's Greatest Hits - The Atari Collection 2 (USA) (1998) (Midway Home Entertainment) {SLUS-00449} <arcadea2> ]
 :SLUS-00449
@@ -4456,12 +4457,12 @@ C007CB76 EFFF
 800C6DA0 0004
 800C6DA0 0032
 00000000 FFFF
-#Widescreen 16-9
+#Select Widescreen Type\Widescreen 16-9
 80043BC8 1555
 80043BCC 1555
-#Widescreen 16-9 (Vert-)
+#Select Widescreen Type\Widescreen 16-9 (Vert-)
 80043BC8 1555
-#Widescreen 16-9 (Vert- Adjusted)
+#Select Widescreen Type\Widescreen 16-9 (Vert- Adjusted)
 80043BC8 1555
 80043BCC 1150
 
@@ -5054,6 +5055,28 @@ A707C788 02000000
 300100D2 0001
 #Cheat Modifier - Level Select:pause game and select Load Level,100 Carrots,All Moves and All Boss Tokens
 3001008C 001F
+#Bugs Bunny can also push boxes (Hold triangle)
+A701ABD6 24001040
+D7200000 00000010
+A701ABD6 10402400
+#High Quality LOD
+A705AA0A 10402400
+#Jumping stationary plants carrots:WARNING - Turn off to access menus
+A70157A2 14442400
+#Disable summon restrictions:Allows you to summon your partner in some places that are normally not allowed
+A7012B3A 14402400
+#Bugs's helicopter can fly\Normal Rise
+A70198E4 1023FFF0
+A70198E6 00522442
+#Bugs's helicopter can fly\Slower Rise
+A70198E4 1023FFF8
+A70198E6 00522442
+#Avoid crashing on ground from big heights
+A702D8AA 16622400
+#Invincibility V1
+A70168B2 14402400
+#Invincibility V2
+A701C9DA 18401000
 #Widescreen 16-9
 A70990AC 10000C00
 
@@ -5184,13 +5207,13 @@ C207B08C 0001
 :SLUS-01489
 #Infinite BP
 8007B3B2 270F
-#Max Losses
+#Select Losses\Max Losses
 8009374E 270F
-#Max Wins
-8009374C 270F
-#No Losses
+#Select Losses\No Losses
 8009374E 0000
-#No Wins
+#Select Wins\Max Wins
+8009374C 270F
+#Select Wins\No Wins
 8009374C 0000
 #P1 Infinite HP
 800BD2A8 03E7
@@ -10626,7 +10649,7 @@ A71D3666 A2622400
 8016AE9C 1000
 8016AE9E 240A
 #Walk through walls "Press L3 to toggle on/off"
-D7010001 01000200 
+D7010001 01000200
 F51D16E6 12932400
 
 ; [ Bogey - Dead 6 (USA) (1996) (Sony Computer Entertainment America) {SCUS-94307} <bogey> ]
@@ -11509,17 +11532,17 @@ AAAAAAAA AAAAAAAA
 F402C000 00995000
 01004224 02008014
 999922AE 99998487
-??999999 99999999
+99999999 99999999
 99999999 99999999
 F402C000 00995000
 01004224 01006324
 999982AF 9999422C
-??999999 99999999
+99999999 99999999
 99999999 99999999
 F402C000 00995000
 01006324 A80282AF
 9999422C 999983AF
-??999999 99999999
+99999999 99999999
 99999999 99999999
 #Widescreen 16-9
 A71CBF20 10000C00
@@ -11631,6 +11654,62 @@ A70B88C6 10402400
 A7034A9E 10001840
 D7200000 00000003
 A7034A9E 18401000
+#Jump in Mid-Air
+A7048B96 14401000
+#Grab stuff from anywhere
+A7053C62 10402400
+A7054554 80085174
+A7054556 3C020801
+#Attract grains from anywhere
+A7053BFA 10402400
+A7053C1E 14402400
+#Attract grains from anywhere when you have the grain machine
+A7053BFA 10402400
+#Moon Jump
+A7048D68 00823000
+A7048D6A 86220C00
+9000C000 27BDFFE8
+9000C004 AFA80010
+9000C008 3C088009
+9000C00C 9108903B
+9000C014 00084027
+9000C018 31080040
+9000C01C 39080040
+9000C020 11000002
+9000C028 86220082
+9000C030 8FA80010
+9000C034 27BD0018
+9000C038 03E00008
+#Rapid Berry Throw
+A7049084 00863010
+A7049086 86230C00
+A7049088 000A0000
+A704908A 24020000
+9000C040 27BDFFE8
+9000C044 AFA80010
+9000C048 3C088009
+9000C04C 9108903B
+9000C054 00084027
+9000C058 31080080
+9000C05C 39080080
+9000C060 11000006
+9000C068 86230086
+9000C06C 3402000A
+9000C074 08003020
+9000C07C 27FF0008
+9000C080 8FA80010
+9000C084 27BD0018
+9000C088 03E00008
+#Select Jump Height\Normal
+80048D78 0100
+#Select Jump Height\2x
+80048D78 0080
+#Select Jump Height\4x
+80048D78 0040
+#Select Jump Height\10x
+80048D78 001A
+#Select Jump Height\0.5x
+80048D78 0200
 #Widescreen 16-9
 80027DC0 4CCC
 80027DC8 CCCD
@@ -11664,6 +11743,62 @@ A7034A9E 18401000
 800A6596 0300
 #Select Starting Berry\Homing Berry
 800A6596 0200
+#Jump in Mid-Air
+A7048B96 14401000
+#Grab stuff from anywhere
+A7053C62 10402400
+A7054554 80085174
+A7054556 3C020801
+#Attract grains from anywhere
+A7053BFA 10402400
+A7053C1E 14402400
+#Attract grains from anywhere when you have the grain machine
+A7053BFA 10402400
+#Moon Jump
+A7048D68 00823000
+A7048D6A 86220C00
+9000C000 27BDFFE8
+9000C004 AFA80010
+9000C008 3C088009
+9000C00C 9108903B
+9000C014 00084027
+9000C018 31080040
+9000C01C 39080040
+9000C020 11000002
+9000C028 86220082
+9000C030 8FA80010
+9000C034 27BD0018
+9000C038 03E00008
+#Rapid Berry Throw
+A7049084 00863010
+A7049086 86230C00
+A7049088 000A0000
+A704908A 24020000
+9000C040 27BDFFE8
+9000C044 AFA80010
+9000C048 3C088009
+9000C04C 9108903B
+9000C054 00084027
+9000C058 31080080
+9000C05C 39080080
+9000C060 11000006
+9000C068 86230086
+9000C06C 3402000A
+9000C074 08003020
+9000C07C 27FF0008
+9000C080 8FA80010
+9000C084 27BD0018
+9000C088 03E00008
+#Select Jump Height\Normal
+80048D78 0100
+#Select Jump Height\2x
+80048D78 0080
+#Select Jump Height\4x
+80048D78 0040
+#Select Jump Height\10x
+80048D78 001A
+#Select Jump Height\0.5x
+80048D78 0200
 #Widescreen 16-9
 80027DC0 4CCC
 80027DC8 CCCD
@@ -11762,6 +11897,65 @@ D00A9FBC 0100
 80086E06 AF82
 D00A9FBC 0200
 80086E06 2400
+#Disable HUDs (Press L3 to toggle on/off)
+D7010001 01000200
+F504835A 0C022400
+F50474B6 0C022400
+F50744EA 0C012400
+F5074496 0C012400
+F50479A6 0C022400
+F5047022 0C022400
+#Disable flying height cap
+A704B692 10401000
+#Collectables move with player
+A7044CEE 0C002400
+#Walk through walls (Press R3 to toggle on/off)
+D7010001 02000400
+F50527D2 14431000
+#Moon Jump
+;Moon Jump cheat by Teh69thSpartan
+;Toy Story 2 [Europe v1.1]
+A7049BA4 008E3000
+A7049BA6 86020C00
+;Toy Story 2 [USA v1.0]
+A7049B58 008E3000
+A7049B5A 86020C00
+;Toy Story 2 [USA v1.1]
+A7049BC4 008E3000
+A7049BC6 86020C00
+;Buzz Lightyear of Star Command [USA]
+A704BAA4 008E3000
+A704BAA6 86020C00
+;Buzz Lightyear of Star Command [Europe]
+A704BA78 008E3000
+A704BA7A 86020C00
+;Common
+9000C000 27BDFFE8
+9000C004 AFA80010
+9000C008 3C08800B
+9000C00C 9108CE6B
+9000C014 00084027
+9000C018 31080040
+9000C01C 39080040
+9000C020 11000002
+9000C028 8602008E
+9000C030 8FA80010
+9000C034 27BD0018
+9000C038 03E00008
+;Note: Affects the jumping platforms as well. Use also the Invincility codes if using this.
+;With these codes enabled, you start further than your starting point in some levels.
+;Please disable it in levels 10, 11, 12 and 13 to avoid problems.
+#Grab stuff from anywhere (L3/LS to toggle on/off):Use with Invincibility and Disable on Levels 10-13
+D7010001 01000200
+F50826CA 10402400
+F50826E2 10402400
+F50826FA 10402400
+F5082742 10402400
+#Grab dead enemies' triangles from anywhere
+A7070B12 10402400
+#Widescreen 16-9
+8002E804 4CCC
+8002E80C CCCC
 
 ; [ Transformers - Beast Wars Transmetals (USA) (2000) (BAM! Entertainment) {SLUS-01160} <bwtmetal> ]
 :SLUS-01160
@@ -11775,9 +11969,6 @@ E00D9B3D 0000
 #Unlock All Movies
 800D9924 FFFF
 800D9928 FFFF
-#Unlock All CG
-50000F02 0000
-800D992A 0103
 #Unlock All CG
 50000F02 0000
 800D992A 0103
@@ -12212,6 +12403,8 @@ C00BB544 000A
 #Have All Map Pieces
 50000901 0000
 300AA1F1 0001
+#Widescreen
+800B3234 0C00
 
 ; [ Championship Surfer (USA) (2000) (Mattel Interactive) {SLUS-01216} <chmpsurf> ]
 :SLUS-01216
@@ -12429,9 +12622,9 @@ A7066144 10000C00
 8006F048 FFFF
 #Have All Hints
 8006F04A FFFF
-#Turn Back To Alyssa
+#Select Character\Alyssa
 80070A20 0000
-#Turn Into Bates
+#Select Character\Bates
 80070A20 0020
 #Time Attack Mode Infinite Gun Ammo
 800709CC 0063
@@ -12730,16 +12923,12 @@ A70EC508 10000C00
 :SLUS-00288
 #P1 Infinite Lives
 800DC784 0009
-#P1 is Invisible
+#P1 Invincibility
 8008C9D4 0065
-#P1 is Immune To All Bullets
-8008C9D4 0066
 #P2 Infinite Lives
 800DC7AC 0009
-#P2 is Invisible
+#P2 Invincibility
 8008CA9C 0065
-#P2 is Immune To All Bullets
-8008CA9C 0066
 #Infinite Continues
 800DEC92 0009
 #Infinite Bamboo:This Cheat is for the cheat mode in the game - press L2, L1, DOWN, UP, R1, R2 to access
@@ -12867,14 +13056,14 @@ A70DCA08 10000C00
 #Infinite Check Point Time + Stop Total Timer
 8018B44C 67A4
 801FFEE0 044B
-#Extra Boards
+#Select Extra\Extra Boards
 801EF82E 0007
+#Select Extra\Always Be Snowman Boarder
+801EF82E 0017
 #Extra Tracks
 801EF82A 0005
 #High Stability
 801827A4 0000
-#Always Be Snowman Boarder
-801EF82E 0017
 #High Scoring
 90016210 00000000
 #Have Score Sheet
@@ -13013,8 +13202,8 @@ A70BCCC6 10701000
 90007628 03E00008
 #Instant Save Menu
 800A264C 0004
-#Level Select:Upto 0040
-30061948 ????
+#Level Select Modifier:You will need to manually edit '0040' (which is the max) in the code line to change the level
+30061948 0040
 #Always have All Gems + Keys
 90061988 2FBDF7BE
 900619AC 00140500
@@ -13064,8 +13253,38 @@ C005E72C 0102
 8002E02A 0C00
 8002E03E 0C00
 00000000 FFFF
-#Enemies/Objects Size Modifier (Values- 0100 - 1000)
-8001CC7C ????
+#Select Enemies/Objects Size\0100
+8001CC7C 0100
+#Select Enemies/Objects Size\0200
+8001CC7C 0200
+#Select Enemies/Objects Size\0300
+8001CC7C 0300
+#Select Enemies/Objects Size\0400
+8001CC7C 0400
+#Select Enemies/Objects Size\0500
+8001CC7C 0500
+#Select Enemies/Objects Size\0600
+8001CC7C 0600
+#Select Enemies/Objects Size\0700
+8001CC7C 0700
+#Select Enemies/Objects Size\0800
+8001CC7C 0800
+#Select Enemies/Objects Size\0900
+8001CC7C 0900
+#Select Enemies/Objects Size\0A00
+8001CC7C 0A00
+#Select Enemies/Objects Size\0B00
+8001CC7C 0B00
+#Select Enemies/Objects Size\0C00
+8001CC7C 0C00
+#Select Enemies/Objects Size\0D00
+8001CC7C 0D00
+#Select Enemies/Objects Size\0E00
+8001CC7C 0E00
+#Select Enemies/Objects Size\0F00
+8001CC7C 0F00
+#Select Enemies/Objects Size\1000
+8001CC7C 1000
 #Neon Crash:L1+R1-Enable, L2+R2-Disable
 D005E72C 0003
 80027F9A 2400
@@ -13337,8 +13556,144 @@ A605A6E0 00000002
 3005A785 0001
 #Warp Room 5 Unlocked
 3005A79B 0001
-#P1 Infinite Points
-8009D57C 000F
+#Select Crash Bash Arena Background\01. [Crate Crush] Jungle Bash
+90078CEA 24030024
+#Select Crash Bash Arena Background\02. [Crate Crush] Jungle Bash (Crystal)
+90078CEA 24030025
+#Select Crash Bash Arena Background\03. [Crate Crush] Space Bash
+90078CEA 24030022
+#Select Crash Bash Arena Background\04. [Crate Crush] Space Bash (Crystal)
+90078CEA 24030023
+#Select Crash Bash Arena Background\05. [Crate Crush] Snow Bash
+90078CEA 24030026
+#Select Crash Bash Arena Background\06. [Crate Crush] Snow Bash (Crystal)
+90078CEA 24030027
+#Select Crash Bash Arena Background\07. [Crate Crush] Drain Bash
+90078CEA 24030028
+#Select Crash Bash Arena Background\08. [Crate Crush] Drain Bash (Crystal)
+90078CEA 24030029
+#Select Crash Bash Arena Background\09. [Crate Crush] Tie Breaker (Has a Purple Skybox for some reason)
+90078CEA 2403002A
+#Select Crash Bash Arena Background\10. [Polar Push] Polar Panic
+90078CEA 24030083
+#Select Crash Bash Arena Background\11. [Polar Push] Polar Panic (Crystal)
+90078CEA 24030086
+#Select Crash Bash Arena Background\12. [Polar Push] Tilt Panic
+90078CEA 2403007F
+#Select Crash Bash Arena Background\13. [Polar Push] Tilt Panic (Crystal)
+90078CEA 24030093
+#Select Crash Bash Arena Background\14. [Polar Push] Melt Panic
+90078CEA 24030084
+#Select Crash Bash Arena Background\15. [Polar Push] Melt Panic (Crystal)
+90078CEA 24030097
+#Select Crash Bash Arena Background\16. [Polar Push] Manic Panic
+90078CEA 24030086
+#Select Crash Bash Arena Background\17. [Polar Push] Manic Panic (Crystal)
+90078CEA 24030096
+#Select Crash Bash Arena Background\18. [Pogo Pandemonium] Pogo Painter
+90078CEA 24030047
+#Select Crash Bash Arena Background\19. [Pogo Pandemonium] Pogo Painter (Crystal)
+90078CEA 2403004B
+#Select Crash Bash Arena Background\20. [Pogo Pandemonium] Pogo-A-Gogo
+90078CEA 24030048
+#Select Crash Bash Arena Background\21. [Pogo Pandemonium] Pogo-A-Gogo (Crystal)
+90078CEA 2403004C
+#Select Crash Bash Arena Background\22. [Pogo Pandemonium] El Pogo Loco
+90078CEA 24030049
+#Select Crash Bash Arena Background\23. [Pogo Pandemonium] El Pogo Loco (Crystal)
+90078CEA 2403004D
+#Select Crash Bash Arena Background\24. [Pogo Pandemonium] Pogo Padlock
+90078CEA 2403004A
+#Select Crash Bash Arena Background\25. [Pogo Pandemonium] Pogo Padlock (Crystal)
+90078CEA 2403004E
+#Select Crash Bash Arena Background\26. [Ballistix] CrashBall
+90078CEA 2403006A
+#Select Crash Bash Arena Background\27. [Ballistix] CrashBall (Crystal)
+90078CEA 2403006B
+#Select Crash Bash Arena Background\28. [Ballistix] Beach Ball
+90078CEA 2403006C
+#Select Crash Bash Arena Background\29. [Ballistix] Beach Ball (Crystal)
+90078CEA 2403006D
+#Select Crash Bash Arena Background\30. [Ballistix] N. Ballism
+90078CEA 2403006E
+#Select Crash Bash Arena Background\31. [Ballistix] N. Ballism (Crystal)
+90078CEA 2403006F
+#Select Crash Bash Arena Background\32. [Ballistix] Sky Balls
+90078CEA 24030070
+#Select Crash Bash Arena Background\33. [Ballistix] Sky Balls (Crystal)
+90078CEA 24030071
+#Select Crash Bash Arena Background\34. [Desert Fox] Desert Fox
+90078CEA 2403002F
+#Select Crash Bash Arena Background\35. [Desert Fox] Desert Fox (Crystal)
+90078CEA 24030034
+#Select Crash Bash Arena Background\36. [Desert Fox] Metal Fox
+90078CEA 24030031
+#Select Crash Bash Arena Background\37. [Desert Fox] Metal Fox (Crystal)
+90078CEA 24030036
+#Select Crash Bash Arena Background\38. [Desert Fox] Jungle Fox
+90078CEA 24030030
+#Select Crash Bash Arena Background\39. [Desert Fox] Jungle Fox (Crystal)
+90078CEA 24030035
+#Select Crash Bash Arena Background\40. [Desert Fox] Swamp Fox
+90078CEA 2403002E
+#Select Crash Bash Arena Background\41. [Desert Fox] Swamp Fox (Crystal)
+90078CEA 24030033
+#Select Crash Bash Arena Background\42. [Crash Dash] Dot Dash
+90078CEA 240300A1
+#Select Crash Bash Arena Background\43. [Crash Dash] Dot Dash (Crystal)
+90078CEA 240300B8
+#Select Crash Bash Arena Background\44. [Crash Dash] Toxic Dash
+90078CEA 240300A7
+#Select Crash Bash Arena Background\45. [Crash Dash] Toxic Dash (Crystal)
+90078CEA 240300B6
+#Select Crash Bash Arena Background\46. [Crash Dash] Splash Dash
+90078CEA 240300A8
+#Select Crash Bash Arena Background\47. [Crash Dash] Splash Dash (Crystal)
+90078CEA 240300B9
+#Select Crash Bash Arena Background\48. [Crash Dash] Dante's Dash
+90078CEA 240300A9
+#Select Crash Bash Arena Background\49. [Crash Dash] Dante's Dash (Crystal)
+90078CEA 240300B7
+#Select Crash Bash Arena Background\50. [Medieval Mayhem]Ring Ding
+90078CEA 2403007D
+#Select Crash Bash Arena Background\51. [Medieval Mayhem]Ring Ding (Crystal)
+90078CEA 2403007E
+#Select Crash Bash Arena Background\52. [Medieval Mayhem]Dragon Drop
+90078CEA 240300C3
+#Select Crash Bash Arena Background\53. [Medieval Mayhem]Dragon Drop (Crystal)
+90078CEA 240300BA
+#Select Crash Bash Arena Background\54. [Medieval Mayhem]Mallet Mash
+90078CEA 24030051
+#Select Crash Bash Arena Background\55. [Medieval Mayhem]Mallet Mash (Crystal)
+90078CEA 24030052
+#Select Crash Bash Arena Background\56. [Medieval Mayhem]Keg Kaboom
+90078CEA 2403005F
+#Select Crash Bash Arena Background\57. [Medieval Mayhem]Keg Kaboom (Crystal)
+90078CEA 24030060
+#Select Crash Bash Arena Background\58. [Boss] Papu Pummel
+90078CEA 2403002B
+#Select Crash Bash Arena Background\59. [Boss] Bearminator (Glitchy)
+90078CEA 2403008D
+#Select Crash Bash Arena Background\60. [Boss] Big Bad Fox
+90078CEA 24030032
+#Select Crash Bash Arena Background\61. [Boss] Oxide Ride (Crash)
+90078CEA 2403005C
+#Select Crash Bash Arena Background\62. [Misc] Tournament Stand (Glitchy)
+90078CEA 240300CD
+#Select Crash Bash Arena Background\63. [Misc] Warp Room 1 (Glitchy)
+90078CEA 240300CE
+#Select Crash Bash Arena Background\64. [Misc] Warp Room 2 (Glitchy)
+90078CEA 240300CF
+#Select Crash Bash Arena Background\65. [Misc] Warp Room 3 (Crash)
+90078CEA 240300D0
+#Select Crash Bash Arena Background\66. [Misc] Warp Room 4 (Infinite Loading)
+90078CEA 240300D1
+#Select Crash Bash Arena Background\67. [Misc] Warp Room 5 (Crash)
+90078CEA 240300D2
+#Select Crash Bash Arena Background\68. [Misc] Demo Warp Room
+90078CEA 240300D3
+#Select Crash Bash Arena Background\69. [Misc] No Background
+90078CEA 240300C5
 #Widescreen 16-9
 8001443C 0900
 8001443E 2402
@@ -13692,9 +14047,27 @@ A70126CA 14622400
 #Goal Appears Immediately
 90023610 24020000
 90023614 AE024330
-#Level Modifier last stage (10 STAGES 0-A)
-8011EFEC 000?
-#Play Last Stage
+#Select Stage\Stage 01 
+8011EFEC 0000
+#Select Stage\Stage 02 
+8011EFEC 0001
+#Select Stage\Stage 03 
+8011EFEC 0002
+#Select Stage\Stage 04 
+8011EFEC 0003
+#Select Stage\Stage 05 
+8011EFEC 0004
+#Select Stage\Stage 06 
+8011EFEC 0005
+#Select Stage\Stage 07 
+8011EFEC 0006
+#Select Stage\Stage 08 
+8011EFEC 0007
+#Select Stage\Stage 09 
+8011EFEC 0008
+#Select Stage\Stage 10 
+8011EFEC 0009
+#Select Stage\Stage 11 
 8011EFEC 000A
 
 ; [ The Crow - City of Angels (USA) (1997) (Acclaim Entertainment) {SLUS-00242} <crow> ]
@@ -16929,7 +17302,7 @@ A70C6C0C 00000001
 300C6194 0002
 #One Hit Kills
 A706F982 14401400
-#Toggle Open/Close Openable Doors (L2+R2):Warning some doors are never meant to be opened so they have no rooms (or floors) behind them, some open doors can also block your way 
+#Toggle Open/Close Openable Doors (L2+R2):Warning some doors are never meant to be opened so they have no rooms (or floors) behind them, some open doors can also block your way
 D7010001 00000003
 F5041E4E 10601400
 F5041F36 10401400
@@ -17102,7 +17475,7 @@ D008D310 0005
 800B3E86 270F
 #All Fire Cards
 50002201 0000
-300C9E16 0056 
+300C9E16 0056
 #All Ice Cards
 50002201 0000
 300C9E38 0056
@@ -23748,6 +24121,12 @@ F50252DE 12601000
 800A83E4 FFFF
 #Infinite HP 1
 90046890 10800002
+#Widescreen 16-9
+800297F4 0C00
+#Widescreen 16-9 (Alt)
+800297F4 0C00
+8002D91C 0C00
+
 
 ; [ Excalibur 2555 A.D. (USA) (1997) (Telstar Electronic Studios) {SLUS-00541} <exc2555> ]
 :SLUS-00541
@@ -25473,7 +25852,7 @@ E0082DEE 0000
 80078DF8 0000
 D005F146 0003
 800A44E4 0018
-#Unlimited card usage
+#Infinite card usage
 A709F2EA 18402400
 #Peek at teams cards before starting "Hold select"
 A709AF56 24000440
@@ -27213,6 +27592,8 @@ A71212A6 16221000
 E01AC8D9 00000040
 E01AC8DC 00000080
 601C2F8C 000003E8
+#All movies
+901FD004 FFFFFFFF
 
 ; [ Gauntlet Legends (USA) (2000) (Midway Home Entertainment) {SLUS-00624} <gauntleg> ]
 :SLUS-00624
@@ -27560,11 +27941,11 @@ D009823C 0400
 801276E4 00C8
 #Mission 5\Infinite HP
 8011FD4C 00C8
-#Mission 4\Freeze Timer
+#Mission 4\Infinite Time
 80122798 0DF7
 #Mission 4\Infinite HP
 801227A4 00C8
-#Mission 3\Freeze Timer
+#Mission 3\Infinite Time
 80120C24 0DF7
 #Mission 3\Infinite HP
 80120C30 00C8
@@ -28216,11 +28597,11 @@ D00D6F18 0600
 300B6F18 0001
 D00B6F18 0100
 300B6F18 0001
-#Simulation Mode A license in garage
+#Select Simulation Mode License\Simulation Mode A license in garage
 80058634 007C
-#Simulation Mode B license in garage
+#Select Simulation Mode License\Simulation Mode B license in garage
 80058634 007D
-#Simulation Mode IA license in garage
+#Select Simulation Mode License\Simulation Mode IA license in garage
 80058634 007E
 #All Manufacturers Unlocked (Single Race + Time Trial)Greatest Hits
 D004E204 0006
@@ -28368,11 +28749,11 @@ D00D6F18 0600
 300B6F18 0001
 D00B6F18 0100
 300B6F18 0001
-#Simulation Mode A license in garage
+#Select Simulation Mode License\Simulation Mode A license in garage
 80058634 007C
-#Simulation Mode B license in garage
+#Select Simulation Mode License\Simulation Mode B license in garage
 80058634 007D
-#Simulation Mode IA license in garage
+#Select Simulation Mode License\Simulation Mode IA license in garage
 80058634 007E
 #All Manufacturers Unlocked (Single Race + Time Trial)Greatest Hits
 D004E204 0006
@@ -28495,6 +28876,62 @@ A61D5476 00020001
 A61FFA82 02000300
 #More Misc.\Replay Screen Clear (Arcade Disc)
 A61FFA8A 02000300
+#Moon Jump 'L2/LT is for CPU cars, R2/RT is for Player'
+A70443D0 06309E70
+A70443D2 AE260C02
+900A7C00 3C05800A
+900A7C04 34A596B4
+900A7C08 16250013
+900A7C10 3C05801C
+900A7C14 34A597AA
+900A7C18 94A30000
+900A7C20 00031A42
+900A7C28 30630001
+900A7C30 14600005
+900A7C38 34021000
+900A7C40 00C23021
+900A7C48 AE260630
+900A7C50 03E00008
+900A7C58 3C05801C
+900A7C5C 34A597AA
+900A7C60 94A30000
+900A7C68 00031A02
+900A7C70 30630001
+900A7C78 14600005
+900A7C80 34021000
+900A7C88 00C23021
+900A7C90 AE260630
+900A7C98 03E00008
+#Nitrous 'Hold L3/LS'
+A7044374 00019E98
+A7044376 26730C02
+A7044378 18210001
+A704437A 00622673
+900A7CA0 3206000F
+900A7CA4 34050004
+900A7CA8 14C5001D
+900A7CB0 3C05801C
+900A7CB4 34A597AA
+900A7CB8 94A40000
+900A7CC0 00042082
+900A7CC8 30840001
+900A7CD0 14800013
+900A7CD8 1C600007
+900A7CE0 3C05FFF1
+900A7CE4 34A59000
+900A7CE8 0065302A
+900A7CEC 14C00002
+900A7CF4 2463D000
+900A7CFC 04600007
+900A7D04 3C05000E
+900A7D08 34A57000
+900A7D0C 0065302A
+900A7D10 10C00002
+900A7D18 24633000
+900A7D20 00621821
+900A7D28 03E00008
+#Low-Rider
+A7044386 14402400
 #Widescreen 16-9
 D0010000 FFE8
 8007B39C 0156
@@ -28956,6 +29393,62 @@ A61D5476 00020001
 A61FFA82 02000300
 #More Misc.\Replay Screen Clear (Arcade Disc)
 A61FFA8A 02000300
+#Moon Jump 'L2/LT is for CPU cars, R2/RT is for Player'
+A704433C 06309E70
+A704433E AE260C02
+900A79C0 3C05800A
+900A79C4 34A59454
+900A79C8 16250013
+900A79D0 3C05801C
+900A79D4 34A5957A
+900A79D8 94A30000
+900A79E0 00031A42
+900A79E8 30630001
+900A79F0 14600005
+900A79F8 34021000
+900A7A00 00C23021
+900A7A08 AE260630
+900A7A10 03E00008
+900A7A18 3C05801C
+900A7A1C 34A5957A
+900A7A20 94A30000
+900A7A28 00031A02
+900A7A30 30630001
+900A7A38 14600005
+900A7A40 34021000
+900A7A48 00C23021
+900A7A50 AE260630
+900A7A58 03E00008
+#Nitrous 'Hold L3/LS'
+A70442E0 00019E98
+A70442E2 26730C02
+A70442E4 18210001
+A70442E6 00622673
+900A7A60 3206000F
+900A7A64 34050004
+900A7A68 14C5001D
+900A7A70 3C05801C
+900A7A74 34A5957A
+900A7A78 94A40000
+900A7A80 00042082
+900A7A88 30840001
+900A7A90 14800013
+900A7A98 1C600007
+900A7AA0 3C05FFF1
+900A7AA4 34A59000
+900A7AA8 0065302A
+900A7AAC 14C00002
+900A7AB4 2463D000
+900A7ABC 04600007
+900A7AC4 3C05000E
+900A7AC8 34A57000
+900A7ACC 0065302A
+900A7AD0 10C00002
+900A7AD8 24633000
+900A7AE0 00621821
+900A7AE8 03E00008
+#Low-Rider
+A70442F2 14402400
 #16:9 Widescreen
 ;"Help" the game unload segments that normally are left unwritten to,
 ;so further cheat detection is more reliable. This is safe as it overwrites dead code.
@@ -30434,8 +30927,8 @@ C00DA1B2 FFFE
 80097E80 0000
 80097F18 0000
 80097FB0 0000
-
 00000000 FFFF
+
 ; [ Hot Shots Golf 2 (USA) (2000) (Sony Computer Entertainment America) {SCUS-94476} <hotshot2> ]
 :SCUS-94476
 #Misc.\Unlock All Characters
@@ -31404,11 +31897,9 @@ A60A6828 00010000
 ; [ Jade Cocoon - Story of the Tamamayu (USA) (1999) (Crave Entertainment) {SLUS-00854} <jadecoc> ]
 :SLUS-00854
 #Infinite HP
-8008BD40 0064
+8008BD40 03E7
 #Infinite Money
 8008B594 FFFF
-#Infinite HP In Battle
-8008BD40 03E7
 #All enemies At 0 HP - 1st PosItion
 800B1314 0000
 #Infinite Items all positions
@@ -31453,7 +31944,7 @@ A71C4B28 10000C00
 8004FD02 2400
 #Enable Level Select Cheat
 8004FCCE 2400
-#Widescreen hack 
+#Widescreen hack
 A7073FBA 0C022400
 A7073EEA 0C022400
 #Walk through walls "Press L3 to toggle on/off"
@@ -33614,7 +34105,7 @@ D30F0B72 0000
 800C4CE4 0032
 800C4CE8 0032
 800C4CEC 0064
-#Freeze Timer
+#Infinite Time
 800C4CF2 0009
 #Never Overheat
 800D1CB8 0000
@@ -33703,7 +34194,7 @@ E20D781C 0062
 A605D8D0 00000002
 #Max Points
 8004D71C FFFF
-#Freeze Timer
+#Infinite Time
 8004D724 0000
 #Unlock All Obstacle Courses
 8005D8EE 000F
@@ -33982,7 +34473,7 @@ D007B7C0 0140
 80084708 0000FFFF
 #Noa FAST LV UP after each battle
 80084B1C 0000FFFF
-#Gala FAST LV UP after each battle 
+#Gala FAST LV UP after each battle
 80084F30 0000FFFF
 #LV 99 Vahn (Applies after battle)
 90084708 0098967F
@@ -35502,9 +35993,9 @@ A60912F4 00000003
 #Don't wake the monster behind the mine lift (ASM):You can just walk through it
 800C0DE2 1400
 8009440E 1000
-#Zombies respawn less often
+#Select Zombies respawn rate\Less Often
 80096C92 1000
-#Zombies respawn more often
+#Select Zombies respawn rate\More Often
 80096C92 1400
 
 ; [ Mass Destruction (USA) (1997) (ASC Games) {SLUS-00462} <massdest> ]
@@ -35555,7 +36046,7 @@ A60912F4 00000003
 #Infinite Energy (Laundry 1)
 80030BA0 0064
 #Infinite Energy (Harold 1)
-80035120 0064 
+80035120 0064
 #Infinite Water (Laundry 1)
 80030C24 0820
 
@@ -35711,7 +36202,7 @@ D7100000 0000000C
 8003858E 00001440
 #Widescreen 16-9
 A7AF88FC 19991333
-#One hit kills 
+#One hit kills
 A7045F5E 1C802400
 #Moon Jump
 A7044CFA 24001040
@@ -35728,7 +36219,7 @@ D7010001 01000200
 F506400A 14401000
 F506B3C6 14402400
 F50412FA 14512400
-#Use right analog to turn camera 
+#Use right analog to turn camera
 A702FEF2 10001062
 D7200000 00020000
 A702FEF2 10621000
@@ -36362,8 +36853,6 @@ A706381A 0C002400
 800E1258 FFFF
 #Invincibility This code makes it so that Snake can't be hit by anything
 800AE1CA 0080
-#Never Reload
-800AE164 000D
 #Max Life
 800B7528 0600
 #Ghost Mode
@@ -39682,6 +40171,9 @@ E00C1E00 0000
 #Infinite Health - Battle Mode
 800C34E6 0000
 800C34E8 0000
+#Widescreen 16-9
+8002CED8 4CCC
+8002CFE0 CCCD
 
 ; [ Brave Fencer Musashi (USA) (1998) (Square Electronic Arts) {SLUS-00726} <musashi> ]
 :SLUS-00726
@@ -41959,9 +42451,9 @@ A611DD30 00000001
 #Have Gold Trophies\Have All Gold Trophies
 50000D01 0000
 30115F81 0001
-#Semi-Drunk Mode
+#Select Drunk Mode\Semi-Drunk Mode
 8013E6AC 002F
-#Drunk Mode
+#Select Drunk Mode\Drunk Mode
 8013E6AC 001F
 #Dash View
 8011491C 0001
@@ -42603,17 +43095,17 @@ C00A879E FFFE
 80081A94 000F
 #Infinite Fuel (BPC)
 90039998 00000000
-#Mission Island Mission
+#Select Mission\Island Mission
 80081A88 0102
-#Mission Peace Mission Part 1
+#Select Mission\Peace Mission Part 1
 80081A88 0202
-#Mission Peace Mission Part 2
+#Select Mission\Peace Mission Part 2
 80081A88 0302
-#Mission Dmz Mission
+#Select Mission\Dmz Mission
 80081A88 0402
-#Mission Fortress Mission
+#Select Mission\Fortress Mission
 80081A88 0502
-#Mission Lightning Mission
+#Select Mission\Lightning Mission
 80081A88 0602
 #Delta Apache\Infinite Fuel
 800F5982 3B20
@@ -43126,8 +43618,71 @@ A7150FF0 10000C00
 800EA79A 0200
 #Always have Fireball
 800ABD7C 0100
-#Level Modifier (OO-FF)
-8008A43C 00??
+#Select Level\1
+8008A43C 0000
+#Select Level\02
+8008A43C 0001
+#Select Level\03
+8008A43C 0002
+#Select Level\04
+8008A43C 0003
+#Select Level\05
+8008A43C 0004
+#Select Level\06
+8008A43C 0005
+#Select Level\07
+8008A43C 0006
+#Select Level\08
+8008A43C 0007
+#Select Level\09
+8008A43C 0008
+#Select Level\10
+8008A43C 0009
+#Select Level\11
+8008A43C 000A
+#Select Level\12
+8008A43C 000B
+#Select Level\13
+8008A43C 000C
+#Select Level\14
+8008A43C 000D
+#Select Level\15
+8008A43C 000E
+#Select Level\16
+8008A43C 000F
+#Select Level\17
+8008A43C 0010
+#Select Level\18
+8008A43C 0011
+#Select Level\19
+8008A43C 0012
+#Moon Jump
+D7200000 00000040
+900ABD88 00000001
+#Invincibility
+A7051016 10401000
+#Set any password to unlock all levels
+A706BA5A 14402400
+#Uncapped Fireball
+300ABD9C 0000
+#Rapid Fireball
+A7051A34 01003000
+A7051A36 3C050C00
+A7051A38 10240000
+A7051A3A 00650000
+9000C000 27BDFFE8
+9000C004 AFA80010
+9000C008 3C08800A
+9000C00C 91085C2B
+9000C014 00084027
+9000C018 31080080
+9000C01C 11000002
+9000C024 27FF0004
+9000C028 3C050100
+9000C02C 00651024
+9000C030 8FA80010
+9000C034 27BD0018
+9000C038 03E00008
 #Widescreen 16-9
 80008200 0000
 80008202 8C88
@@ -43166,6 +43721,46 @@ A7150FF0 10000C00
 801AE60A 0208
 #Fireball Always On
 80093120 0100
+#Uncapped Fireball
+30093140 0000
+#Rapid Fireball
+A7042644 01003000
+A7042646 3C050C00
+A7042648 10240000
+A704264A 00650000
+9000C000 27BDFFE8
+9000C004 AFA80010
+9000C008 3C088009
+9000C00C 9108C9AF
+9000C014 00084027
+9000C018 31080080
+9000C01C 11000002
+9000C024 27FF0004
+9000C028 3C050100
+9000C02C 00651024
+9000C030 8FA80010
+9000C034 27BD0018
+9000C038 03E00008
+#Grab stuff from anywhere
+A7030012 14402400
+A7030032 14402400
+A7030052 14402400
+A70300D6 10402400
+A70300EA 10402400
+#Moon Jump
+D7200000 00000040
+9009312C 00000001
+#Every coin gives the fireball & shield
+A70410C6 08012400
+A70410EE 08012400
+A7041186 08012400
+A704118E 08012400
+#Jump Height Modifier:You will need to manually edit '0002' in the code line or you will see NO effect
+800932D8 0002
+#Jumping Speed Modifier:You will need to manually edit '1000' in the code line or you will see NO effect
+800932C4 1000
+#Running Speed Modifier:You will need to manually edit '1778' in the code line or you will see NO effect
+800932BC 1778
 #Widescreen 16-9
 80066F64 2080
 80066F66 0800
@@ -43261,7 +43856,7 @@ F40DBC1E 00AA0800
 AAAAAAAA AAAAAAAA
 #Turn Aya and NPC's invisible
 A70182E6 00402400
-#Clear see through menu without lines 
+#Clear see through menu without lines
 A70455EA 0C012400
 #Clear see through menu with lines
 A7045EF6 0C012400
@@ -43318,7 +43913,7 @@ A70DC04A 1E201000
 A70DBAF6 10621000
 A70DBFFE 1C402400
 A70DC40A 10402400
-#Aim assist 
+#Aim assist
 A710946E 10402400
 
 ; [ Parasite Eve (USA) (1998) (Square Electronic Arts) {SLUS-00662 / SLUS-00668} <paraseve> ]
@@ -43671,9 +44266,9 @@ A708B3E8 10000C00
 800E7D10 0002
 #Max Rav-B
 800E7D12 0002
-#Infinite Srm Missiles
+#Select Infinite Missiles\Srm Missiles
 800E8004 0002
-#Infinite Mrm Missiles
+#Select Infinite Missiles\Mrm Missiles
 800E8004 0001
 #Invincibility
 800ED7C6 0003
@@ -44962,13 +45557,13 @@ E00B2985 0000
 800B05E4 03E7
 #Infinite Penguins (Level 2)
 800920CC 003C
-#Activate Cheat Invincibility
+#Activate Cheat\Invincibility
 8009AEC4 0400
-#Activate Cheat Enable Level Select
+#Activate Cheat\Enable Level Select
 8009AEC4 0004
-#Activate Cheat Upside Down Mode
+#Activate Cheat\Upside Down Mode
 8009AEC4 0100
-#Activate Cheat Jelly Mode
+#Activate Cheat\Jelly Mode
 8009AEC4 0800
 
 ; [ Psychic Detective (USA) (1996) (Electronic Arts) {SLUS-00165 / SLUS-00166 / SLUS-00167} <psydetec> ]
@@ -45509,7 +46104,7 @@ D00A9C80 0049
 :SCUS-94308
 #Unlock All Courses, Course Variations, Difficulty Levels, And 20 Vehicles
 80056456 0114
-#Freeze Timer
+#Infinite Time
 800659C0 0000
 #Freeze Lap Timer
 800659C4 0000
@@ -46474,7 +47069,7 @@ A7109412 0C002400
 800C51AC 0058
 #Invincibility (No Touch)
 F4105000 00FF5000
-2F004010 00000000 
+2F004010 00000000
 2080023C 10EA428C
 FFFF0010 FFFFFFFF
 FFFFFFFF FFFFFFFF
@@ -46775,9 +47370,9 @@ D7200000 01000004
 800464B2 00002400
 #Walk during cutscenes:Allows you to walk away from things that would otherwise freeze you in place
 A703847A 10401000
-#Jill shows up during interactions 
+#Jill shows up during interactions
 A70254F6 14401000
-#Increased Reverb 
+#Increased Reverb
 A707E99A 112B1000
 #Remove Cutscene Black Bars
 A7029D62 10601000
@@ -46811,6 +47406,11 @@ A70295E6 14622400
 A7050A5A 10402400
 #Touching a door opens it
 A70507C2 10402400
+#Invisible Enemy Mode
+A702418E 16422400
+A7019DBE 16C02400
+#Disable auto aim
+A704426E 04401000
 #60 FPS Beta
 800101BC 0000FFFF
 10027F44 00000001
@@ -46879,7 +47479,7 @@ A7047596 10402400
 800C51AC 0058
 #Invincibility (No Touch)
 F4105A18 00FF5000
-2D004010 00000000 
+2D004010 00000000
 2080023C 10EA428C
 FFFF0010 FFFFFFFF
 FFFFFFFF FFFFFFFF
@@ -46970,7 +47570,7 @@ A702BC9A 10C01000
 A706D342 14402400
 #Enemies will one hit kill you
 A70844AA 14401000
-#Remove Firing Speed Cap + Turbo Fire 
+#Remove Firing Speed Cap + Turbo Fire
 A7077D4C FFFE0000
 A7077D4E 24A23402
 E00B3CC4 00000028
@@ -47067,12 +47667,10 @@ A60BE36C 00000005
 #Have Progress Table Complete + All Trophies Complete
 50000D04 0000
 80111EFC FFFF
-#Freeze Timer In Time Trial Mode
+#Infinite Time In Time Trial Mode
 800B931C 0000
 #Start With Infinite Missiles
 800B9A0C FFFF
-#Infinite Retries
-800BE370 0003
 #Have All Stunt Arena Stars + Enable Clockwork Carnage
 800BE644 0014
 #Unlock Dynamo San
@@ -47785,6 +48383,8 @@ A60A7E0E 00960001
 800A83B0 0020
 #P2 No Specials
 800A83B0 0000
+#Widescreen 16-9
+80156450 0C00
 
 ; [ Robo Pit 2 (USA) (2003) (Mud Duck Productions) {SLUS-01563} <robopit2> ]
 :SLUS-01563
@@ -47861,13 +48461,13 @@ D0011CA6 0100
 3001109B 0001
 #Motron Blur Off
 3001109B 0000
-#Mirror Mode On
+#Select Mirror Mode\On
 80010B9A 0100
-#Mirror Mode Off
+#Select Mirror Mode\Off
 80010B9A 0000
-#Mega Time Attack On
+#Select Mega Time Attack\On
 80011094 0130
-#Mega Time Attack Off
+#Select Mega Time Attack\Off
 80011094 0030
 
 ; [ Romance of the Three Kingdoms IV - Wall of Fire (USA) (1996) (Koei) {SLUS-00195} <roman3k4> ]
@@ -48330,11 +48930,11 @@ A7193DE0 10000C00
 800CC69C FFFF
 #Extra Tracks-Play Expert
 800C8F20 0004
-#Always Play Medium Difficulty
+#Select Play Difficulty\Medium Difficulty
 800CC698 0001
-#Always Play Hard Difficulty
+#Select Play Difficulty\Hard Difficulty
 800CC698 0004
-#Always Play Expert Difficulty
+#Select Play Difficulty\Expert Difficulty
 800CC698 000F
 #Widescreen 16-9 (1P & Main Menu)
 800C7E6C 1333
@@ -50301,7 +50901,7 @@ A7199174 10000C00
 
 ; [ Saltwater Sportfishing (USA) (2001) (Take-Two Interactive Software) {SLUS-01397} <saltwatr> ]
 :SLUS-01397
-#Freeze Timer
+#Infinite Time
 3013E4D0 57F7
 #Unlock All Locations
 8013E66C FFFF
@@ -50875,6 +51475,15 @@ A71DD2E0 10000C00
 300BC0B9 0001
 #Enable Wasteland - Temple of Life
 300BC0B2 0001
+#Moon Jump
+300C1240 0010
+E00BB6F2 0010
+300C1240 0050
+#Moon Jump Alternate
+E00BB6F2 0010
+800C1280 0100
+#Jump Heigher:Manually change F800 to change jump height
+A703FCE4 F000F800
 
 ; [ Shadow Madness (USA) (1999) (Crave Entertainment) {SLUS-00468 / SLUS-00718} <shadwmad> ]
 :SLUS-00468
@@ -51029,6 +51638,12 @@ D007111C 0084
 80010068 03E7
 #Have All Sheep
 8001006A 0000
+#Skip Level (Press L3)
+A7010836 24001040
+D7200001 01000200
+A7010836 10402400
+#Uncap FPS:Untested, use at your own risk
+A70A5F3A 04812400
 
 ; [ Shellshock (USA) (1996) (U.S. Gold) {SLUS-00031} <shellshk> ]
 :SLUS-00031
@@ -51323,9 +51938,7 @@ A7044A92 10401000
 8014554C 0000
 #Always Good Polution (Graphs Menu)
 801453AC 0000
-#Always Good Traffic (Graphs Menu)
-801452DC 0000
-#Always Good Unemployment (Graphs Menu)
+#Always Good Traffic/Unemployment (Graphs Menu)
 801452DC 0000
 #Always Good Health (Graphs Menu)
 801457BC 0000
@@ -51467,7 +52080,7 @@ D008538A 0002
 :SLUS-00955GH
 #Infinite Money
 800BFFA0 FFFF
-#Freeze Timer
+#Infinite Time
 800D8AD0 0000
 #Points Multiplier
 800D8AB8 FFFF
@@ -52567,8 +53180,11 @@ D0093F34 00A4
 80087F62 0064
 
 ; [ Spec Ops - Covert Assault (USA) (2001) (Take-Two Interactive Software) {SLUS-01420} <specopca> ]
-;:SLUS-01420
-;This game currently has no cheats
+:SLUS-01420
+#Infinite Energy
+A702D13A 00520040
+#Infinite Ammo
+A702BF70 FFFF0000
 
 ; [ Spec Ops - Ranger Elite (USA) (2001) (Take-Two Interactive Software) {SLUS-01299} <specopre> ]
 :SLUS-01299
@@ -52968,7 +53584,7 @@ D007F032 EBFF
 800110B8 7248
 #Teleport Code (Press L3 To Store Location, R3 To Warp)
 D7000000 0200
-C2078A58 000A 
+C2078A58 000A
 8000C000 0000
 C2078B74 0004
 8000C00C 0000
@@ -54160,6 +54776,16 @@ D007143A FBFF
 30071FD1 0001
 #Unlock Level\Sorceress' Lair
 30071FD2 0001
+#Sorceress Lair - Out Of Bounds UFO:Allows you to explore the arena out of bounds and removes the height cap
+D008C6F6 1040
+8008C6F6 1000
+D003FBDE 1040
+8003FBDE 1000
+#Sorceress doesn't reset game or steal (AP Fix)
+D0079D70 1025
+80079D74 E7A5
+D0079D70 1025
+80079D76 0801
 #Widescreen 16-9:Do not play Crash Bash demo
 8004F744 2081
 8004F746 0800
@@ -54681,7 +55307,7 @@ D002B54C 0001
 #Misc.\Extra Menu Options/Debug With this code, when you got into your menus and such, you will be able to move past the end of the lists. If you highlight the very top option and press up, it will take you to the very bottom, which is a Debug type of menu. Press X on it, and then it will take y ou to a blank screen, Press X one more time, and the options will popup.
 D00D3898 FFE8
 900D38AC 240C000C
-#No clip (Field & Overworld) "Press L3 to toggle on/off" 
+#No clip (Field & Overworld) "Press L3 to toggle on/off"
 D7010001 01000200
 F50834B6 10401000
 F5082EBA 04611000
@@ -54746,8 +55372,6 @@ A703B05A 00402400
 8009A07C 03E8
 #Infinite Money
 8003A0C0 270F
-#Infinite Weapon
-80124576 03E7
 #Infinite Machine Gun Ammo
 80124576 00C8
 #Infinite Heatseeker Ammo
@@ -54835,9 +55459,9 @@ A703B05A 00402400
 :SLUS-00629
 #Infinite Turbo
 801B5B84 4000
-#Confidence Meter At Above Maximum
+#Select Confidence Meter\Above Maximum
 801B5C20 FFFF
-#Confidence Meter At Full
+#Select Confidence Meter\Full
 801B5C20 0FFF
 #Widescreen 16-9
 A71E9984 10000C00
@@ -57408,6 +58032,10 @@ A60AAEAA 008C0001
 80097F26 0101
 #Walk through stage boundaries
 A70433B2 14401000
+#Disable 'Tekken Ball' stage line boundary
+A70431D2 04412400
+#Hit 'Tekken Ball' ball from anywhere
+A7047EB6 14401000
 #Select CPU Cheat\Player 2 Cpu is unable to fight (Press L3 to toggle on/off)
 D7010001 00000200
 F502C2A2 14402400
@@ -61167,7 +61795,7 @@ A709FFE6 14401000
 D7010001 01000200
 F509A166 0C021400
 #Wireframe mode "Press R3 to toggle on/off"
-D7010001 02000400 
+D7010001 02000400
 A7039F9E 0C002400
 #Widescreen 16-9 (Vert-)
 800D2194 1333
@@ -62949,8 +63577,42 @@ A709EE4C 10000C00
 800BFF3A 07D0
 
 ; [ Disney Presents Tigger's Honey Hunt (USA, v1.1) (2003) (Global Star Software) {SLUS-01536CE} <tiggerhh> ]
-;:SLUS-01536CE
-;This game currently has no cheats
+:SLUS-01536CE
+#Infinite Life
+300C7094 0003
+#Have Hella Honey Pots
+800C7098 03E7
+#Have All Pictures
+900C7074 FFFFFFFF
+800C7078 FFFF
+#Walk through walls "Press L3 to toggle on/off"
+D7010001 01000200
+F508452E 10401000
+F50721A6 10401000
+#Invincibility
+A7071DF2 04411000
+#Moon Jump
+A708583A 24000C02
+D7200000 00000040
+A708583A 0C022400
+#Moon Jump 'alternate'
+A708586E 2400AE82
+D7200000 00000040
+A708586E AE822400
+#Moon & Multi Jumps
+A70466BA 24000441
+A70466BE 24022442
+A70466C0 009A0098
+A70466C2 A602AE02
+D7200000 00000040
+A70466BA 04412400
+A70466BE 24422402
+A70466C0 0098009A
+A70466C2 AE02A602
+#Increased Jump Height
+A7085822 0C022400
+#Collect Honey Pots from Anywhere
+A70707B6 10401400
 
 ; [ Disney Presents Tigger's Honey Hunt (USA, v1.0) (2000) (Take-Two Interactive Software) {SLUS-01210} <tiggerhha> ]
 :SLUS-01210
@@ -62965,6 +63627,30 @@ A709EE4C 10000C00
 D7010001 01000200
 F508452E 10401000
 F50721A6 10401000
+#Invincibility
+A7071DF2 04411000
+#Moon Jump
+A708583A 24000C02
+D7200000 00000040
+A708583A 0C022400
+#Moon Jump 'alternate'
+A708586E 2400AE82
+D7200000 00000040
+A708586E AE822400
+#Moon & Multi Jumps
+A70466BA 24000441
+A70466BE 24022442
+A70466C0 009A0098
+A70466C2 A602AE02
+D7200000 00000040
+A70466BA 04412400
+A70466BE 24422402
+A70466C0 0098009A
+A70466C2 AE02A602
+#Increased Jump Height
+A7085822 0C022400
+#Collect Honey Pots from Anywhere
+A70707B6 10401400
 
 ; [ Time Commando (USA) (1996) (Activision) {SLUS-00342} <timecomm> ]
 :SLUS-00342
@@ -63432,11 +64118,11 @@ A702A9DA 10401000
 A702A8B6 10401000
 #Don't clip through ground (Part 2)
 A704268E 14402400
-#Disable event messages 
+#Disable event messages
 A702DF2A 14401000
-#Disable AP received messages 
+#Disable AP received messages
 A7031BDA 10401000
-#Disable item acquired messages 
+#Disable item acquired messages
 A7030F16 10622400
 #Hit pigs from anywhere
 A7052E82 10432400
@@ -63688,6 +64374,50 @@ A7050CDA 00432400
 800CE5BC 0000
 #Infinite Disk Launcher Ammo
 800A15C4 0008
+#Moon Jump
+;Moon Jump cheat by Teh69thSpartan
+;Toy Story 2 [Europe v1.1]
+A7049BA4 008E3000
+A7049BA6 86020C00
+;Toy Story 2 [USA v1.0]
+A7049B58 008E3000
+A7049B5A 86020C00
+;Toy Story 2 [USA v1.1]
+A7049BC4 008E3000
+A7049BC6 86020C00
+;Buzz Lightyear of Star Command [USA]
+A704BAA4 008E3000
+A704BAA6 86020C00
+;Buzz Lightyear of Star Command [Europe]
+A704BA78 008E3000
+A704BA7A 86020C00
+;Common
+9000C000 27BDFFE8
+9000C004 AFA80010
+9000C008 3C08800B
+9000C00C 9108CE6B
+9000C014 00084027
+9000C018 31080040
+9000C01C 39080040
+9000C020 11000002
+9000C028 8602008E
+9000C030 8FA80010
+9000C034 27BD0018
+9000C038 03E00008
+#Rapid Laser:Square/X for Red Laser, Triangle/Y for Green Laser, Release for Yellow Laser
+300A11F0 0040
+D7200000 0010
+300A10E0 000B
+00000000 FFFF
+D7200000 0080
+300A10E0 000B
+00000000 FFFF
+D7200000 0010
+800A15E0 04B0
+00000000 FFFF
+D7200000 0080
+800A10E0 0000
+00000000 FFFF
 #Widescreen 16-9
 8002CA58 4CCC
 8002CA60 CCCC
@@ -63707,6 +64437,10 @@ A7078A66 18402400
 #Invincibility
 800B21C8 0009
 800B221C 002A
+#Invincibility Alt
+A706B146 10401000
+#Invincibility No Hit
+A706AF3E 14401000
 #Infinite Comic Shield
 800B2220 0287
 #Slinky Challenges - All Levels - Infinite Time
@@ -63735,6 +64469,137 @@ A7078A66 18402400
 800CE5BC 0000
 #Infinite Disk Launcher Ammo
 800A15C4 0008
+#Infinite Green Laser
+800A15E0 04B0
+#Hold L2/LT for Flying Shoes
+300A1674 0000
+D7200000 0001
+300A1674 0003
+#Hold R2/RT for Turbo Shoes
+300A12C0 0000
+D7200000 0002
+300A12C0 0008
+#No Falling
+300A1320 0000
+#Al's Penthouse is full of water
+800D5B38 0000
+#Insta-Charge Laser
+A704A5F0 20210040
+A704A5F2 00443404
+#Insta-Charge Spin
+A704AD14 1021003C
+A704AD16 00623402
+#Hit Anywhere
+A707E2F2 10402400
+#Laser Ricochet
+A707E476 13202400
+#Multi Jumps
+A7049928 00050001
+#Rapid Jumps
+A7049928 00050002
+A70499F8 00030002
+#Infinite Double Jumps
+A704995E 10402400
+#Infinite Single Jumps
+A70499BA A4202400
+A704D07A 00662400
+#Jump & Walk in Mid-Air "Hold L3/LS"
+A704974E 24001040
+D7200000 00000200
+A704974E 10402400
+#Moon Jump
+;Moon Jump cheat by Teh69thSpartan
+;Toy Story 2 [Europe v1.1]
+A7049BA4 008E3000
+A7049BA6 86020C00
+;Toy Story 2 [USA v1.0]
+A7049B58 008E3000
+A7049B5A 86020C00
+;Toy Story 2 [USA v1.1]
+A7049BC4 008E3000
+A7049BC6 86020C00
+;Buzz Lightyear of Star Command [USA]
+A704BAA4 008E3000
+A704BAA6 86020C00
+;Buzz Lightyear of Star Command [Europe]
+A704BA78 008E3000
+A704BA7A 86020C00
+;Common
+9000C000 27BDFFE8
+9000C004 AFA80010
+9000C008 3C08800B
+9000C00C 9108CE6B
+9000C014 00084027
+9000C018 31080040
+9000C01C 39080040
+9000C020 11000002
+9000C028 8602008E
+9000C030 8FA80010
+9000C034 27BD0018
+9000C038 03E00008
+#Increased 2nd Jump Height
+A70498BE 10402400
+#Grab the coins dropped by dead enemies from anywhere
+A706DD4C 10212000
+A706DD4E 00430800
+90008000 921B0008
+90008004 24010010
+90008008 103B0003
+90008010 0801B755
+90008018 0801B771
+#Grab the 5 items from anywhere
+A70D12E6 10402400
+A70D133E 10402400
+A70D19BE 10402400
+A70D14BA 10402400
+A70D19D2 10402400
+A70D1BDE 10402400
+A70D1842 10402400
+A70D17F2 10402400
+A70D17AA 10402400
+A70D1712 10402400
+#Grab anything from anywhere
+A7076AF6 10402400
+A7076CA0 00080003
+A7076CA2 92241000
+#Insta-KO Bosses
+A70C2F1A 0014000A
+A70C2F1A 00630009
+A70C2F1A 00130009
+A70C2F1A 001D0009
+A70C2FB2 001D0009
+A70C304A 001D0009
+#Insta-KO Mini-Bosses
+A70C33DA 00140009
+A70C3E8A 000A0001
+A70C3D5A 001E0001
+A70C30E2 00140001
+A70C2F1A 001D0009
+A70C46DA 001D0009
+A70C33DA 001E0001
+A70C35A2 001D0009
+A70C421A 001D0009
+A70C4A6A 001D0009
+#Hold R1+O/RB+B to Slump
+D7200000 00000028
+900A115C 00000001
+#Rapid Laser:Square/X for Red Laser, Triangle/Y for Green Laser, Release for Yellow Laser
+300A11F0 0040
+D7200000 0010
+300A10E0 000B
+00000000 FFFF
+D7200000 0080
+300A10E0 000B
+00000000 FFFF
+D7200000 0010
+800A15E0 04B0
+00000000 FFFF
+D7200000 0080
+800A10E0 0000
+00000000 FFFF
+#60 FPS
+800A1174 0001
+800A14D4 0001
 #Widescreen 16-9
 8002CA58 4CCC
 8002CA60 CCCC
@@ -63754,18 +64619,18 @@ E00C0D2B 0000
 #99 Tournament Points Car 1
 300BD690 0063
 #Widescreen 16-9
-80033E58 4CCC
-80033E5C CCCD
-8004DC1C 4CCC
-8004DC20 CCCD
-8004DD00 4CCC
-8004DD04 CCCD
-8004DDB4 4CCC
-8004DDBC CCCD
-8004E3AC 4CCC
-8004E3B0 CCCD
-8006D948 4CCC
-8006D950 CCCD
+A7033E58 66664CCC
+A7033E5C 6667CCCD
+A704DC1C 66664CCC
+A704DC20 6667CCCD
+A704DD00 66664CCC
+A704DD04 6667CCCD
+A704DDB4 66664CCC
+A704DDBC 6667CCCD
+A704E3AC 66664CCC
+A704E3B0 6667CCCD
+A706D948 66664CCC
+A706D950 6667CCCD
 
 ; [ Triple Play Baseball (USA) (2001) (Electronic Arts) {SLUS-01345} <tplay> ]
 :SLUS-01345
@@ -66117,10 +66982,64 @@ A71D2108 10000C00
 
 ; [ Twisted Metal 2 (USA) (1996) (Sony Computer Entertainment America) {SCUS-94306} <twistmt2> ]
 :SCUS-94306
-#Infinite Energy
-80187D00 006E
-#Widescreen 16-9
-A717ECCC 10000C00
+#Extra Vehicles Available
+80180D04 0101
+#P1 Infinite Armor
+80187D00 0096
+#P1 Infinite Turbos
+8018830A 00C8
+#P1 Infinite Napalm
+801882F0 0009
+#P1 Infinite Specials
+801882E6 0009
+#P1 Infinite Power Missiles
+801882EE 0009
+#P1 Infinite Homing Missiles
+801882EA 0009
+#P1 Infinite Fire Missiles
+801882E8 0009
+#P1 Infinite Lightning
+801882F4 0009
+#P1 Infinite Remote Bombs
+801882EC 0009
+#P1 Infinite Ricochet Bombs
+801882F2 0009
+#P1 All Infinite Weapons
+801882DA 0F0F
+#P1 Rapid Fire
+801882FE 0000
+#P1 Infinite Energy Bar:Advanced Attacks
+80188308 0400
+#P2 Infinite Armor
+80188514 0090
+#P2 Infinite Turbos
+80188B1E 00C8
+#P2 Infinite Napalm
+80188B04 0009
+#P2 Infinite Specials
+80188AFA 0009
+#P2 Infinite Fire Missiles
+80188AFC 0009
+#P2 Infinite Homing Missiles
+80188AFE 0009
+#P2 Infinite Power Missiles
+80188B02 0009
+#P2 Infinite Lightning
+80188B08 0009
+#P2 Infinite Remote Bombs
+80188B00 0009
+#P2 Infinite Ricochet Bombs
+80188B06 0009
+#P2 All Infinite Weapons
+80188AEE 0F0F
+#P2 Rapid Fire
+80188B12 0000
+#P2 Infinite Energy Bar:Advanced Attacks
+80188B1C 0400
+;#Infinite Energy
+;80187D00 006E
+;#Widescreen 16-9
+;A717ECCC 10000C00
 
 ; [ Twisted Metal III (USA, v1.1) (1998) (989 Studios) {SCUS-94249} <twistmt3> ]
 :SCUS-94249
@@ -67417,7 +68336,7 @@ A701FF9A 14402400
 A7060B12 14401000
 #Valyrie Mirrors dark attack colors (Dark Valkyrie battle)
 A70623F6 10621000
-#Valyrie Mirrors Dark Valkyrie colors experimental (Dark Valkyrie battle,"needs to be toggled on and off during load") 
+#Valyrie Mirrors Dark Valkyrie colors experimental (Dark Valkyrie battle,"needs to be toggled on and off during load")
 A7068192 06412400
 A706815E 14531000
 #Black and white characters in-battle
@@ -67454,7 +68373,7 @@ A7030602 10401000
 A709D36A 10402400
 A709D128 00060007
 A709D0D0 00050006
-#In-battle debug menu v2 "Hold L1+R1 in-battle" 
+#In-battle debug menu v2 "Hold L1+R1 in-battle"
 A709CE1A 24001040
 A709D19E 24001040
 A709D36A 24001040
@@ -67463,7 +68382,7 @@ A709D36A 10402400
 A709CE1A 10402400
 A709D19E 10402400
 A70A9762 00000006
-#Enable attacking guarded enemies in-battle 
+#Enable attacking guarded enemies in-battle
 A7030186 14402400
 #Enemy will not attack
 A7066452 17C02400
@@ -68043,9 +68962,9 @@ C0094DEE F0FF
 
 ; [ Virtual Pool (USA) (1997) (Interplay Productions) {SLUS-00034} <vpool> ]
 :SLUS-00034
-#Always Player A's Turn
+#Select Perm Turn\Player A
 800DAA64 0000
-#Always Player B's Turn
+#Select Perm Turn\Player B
 800DAA64 0001
 #Always Use Tracking Lines
 800A645C 0001
@@ -68194,12 +69113,12 @@ A60A30F8 00000005
 
 ; [ Vs. (USA) (1997) (THQ) {SLUS-00513} <vs> ]
 :SLUS-00513
+#Infinite Time
+8014F688 0DFA
 #P1 Infinite Health
 801435A4 012C
 #P2 Infinite Health
 80144A1C 012C
-#Freeze Timer
-8014F688 0DFA
 #P1 No Health
 801435A4 0000
 #P2 No Health
@@ -68552,7 +69471,7 @@ D008B190 0100
 #P1 Have Tired Spirit (White)
 800CEFC4 0064
 #P2 Have Tired Spirt (White)
-800CEFC4 0064
+800CF270 0064
 #Time Always At 00:00
 80075332 0000
 #Infinite Time To Fight Outside Ring
@@ -69332,9 +70251,9 @@ A7063ECA 14401000
 800A18A0 0501
 #Select Lap\16
 800A18A0 0F01
-#Weapons On
+#Select Weapons\On
 800A18A2 0001
-#Weapons Off
+#Select Weapons\Off
 800A18A2 0000
 #Lap Times is 0:00:00
 800BB750 0000
@@ -70271,6 +71190,9 @@ A708B416 A4222400
 A7083F56 A4252400
 A70859FA A4222400
 A708CF56 A4222400
+#Faster Text:Save frequently if you use this cheat
+30034964 00FF
+30034967 0034
 #In Battle\Battling Arena\Infinite Health
 800987E0 012C
 #In Battle\Battling Arena\Never Overheat
@@ -70601,8 +71523,6 @@ A701199A 04812400
 800BA194 0009
 #Enable Circuit Mode
 800E68EC 0F74
-#Enable Circuit Mode
-800E68EC 0F74
 #Enable Ollie-B
 800BA11C 0009
 #Enable Super Circuit Mode
@@ -70709,7 +71629,7 @@ A60A993C 00000016
 #P1 No LP
 800EA004 0000
 #P2 Infinite LP
-800EA004 270F
+800EA024 270F
 #P2 No LP
 800EA024 0000
 #Infinite Starchips
@@ -71264,203 +72184,203 @@ A61B40B6 00000098
 
 ; [ Thousand Arms (USA, Demo) (1999) (Atlus U.S.A.) {SLUS-90059} <1000armsd> ]
 ;:SLUS-90059
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Oddworld - Abe's Oddysee (USA, Demo) (1997) (GT Interactive Software) {SLUS-90004} <abeodyssd> ]
 ;:SLUS-90004
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Ape Escape (USA, Demo) (1999) (Sony Computer Entertainment America) {SCUS-94489} <apescaped> ]
 ;:SCUS-94489
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Bust A Groove (USA, Demo) (1998) (989 Studios) {SCUS-94376} <bagd> ]
 ;:SCUS-94376
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Burning Road (USA, Demo) (1996) (Playmates Interactive Entertainment) {SLUS-90002} <broadd> ]
 ;:SLUS-90002
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Crash Bash & Spyro - Year of the Dragon (USA, Demo) (2001) (Universal Interactive) {SCUS-94654} <cbsdemo> ]
 ;:SCUS-94654
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Contender (USA, Demo) (1999) (Sony Computer Entertainment America) {SCUS-94380} <contendrd> ]
 ;:SCUS-94380
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Cool Boarders 2001 (USA, Demo) (2000) (Sony Computer Entertainment America) {SCUS-94625} <coolb2k1d> ]
 ;:SCUS-94625
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Cool Boarders 4 (USA, Demo) (1999) (989 Studios) {SCUS-94388} <coolboa4d> ]
 ;:SCUS-94388
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Crime Killer (USA, Demo) (1998) (Interplay Entertainment) {SLUS-90020} <crimekld> ]
 ;:SLUS-90020
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Croc 2 (USA, Demo) (1999) (Fox Interactive) {SLUS-90056} <croc2d> ]
 ;:SLUS-90056
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Colony Wars - Vengeance (USA, Demo) (1998) (Psygnosis) {SLUS-90037A} <cwarsvngd> ]
 ;:SLUS-90037A
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Dino Crisis (USA, Demo) (1999) (Capcom Entertainment) {SLUS-90066} <dinocrisd> ]
 ;:SLUS-90066
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Driver 2 (USA, Demo) (2000) (Infogrames) {SLUS 90094} <driver2d> ]
 ;:SLUS-90094
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Driver - You Are the Wheelman (USA, Demo) (1999) (GT Interactive Software) {SLUS-90053} <driverd> ]
 ;:SLUS-90053
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Duke Nukem - Time to Kill (USA, Demo) (1998) (GT Interactive Software) {SLUS-90036} <dukenktkd> ]
 ;:SLUS-90036
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Final Fantasy VII Interactive Sampler CD (USA) (1996) (Sony Computer Entertainment America) {SCUS-94961} <ffant7s> ]
 ;:SCUS-94961
-;This game currently has no cheats
+;This sampler currently has no cheats
 
 ; [ Future Cop - L.A.P.D. (USA, Demo) (1998) (Electronic Arts) {SLUS-90034} <futurcopd> ]
 ;:SLUS-90034
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Grind Session (USA, Demo) (2000) (Sony Computer Entertainment America) {SCUS-94598} <grindsesd> ]
 ;:SCUS-94598
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Gran Turismo (USA, Demo) (1998) (Sony Computer Entertainment America) {SCUS-94257} <gtd> ]
 ;:SCUS-94257
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Hot Shots Golf 2 (USA, Demo) (2000) (Sony Computer Entertainment America) {SCUS-94495} <hotshot2d> ]
 ;:SCUS-94495
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Advanced Dungeons & Dragons - Iron & Blood - Warriors of Ravenloft (USA, Demo) (1996) (Acclaim Entertainment) {SLUS-00212} <ironblodd> ]
 ;:SLUS-00212
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Jade Cocoon - Story of the Tamamayu (USA, Demo) (1999) (Crave Entertainment) {SLUS-90054} <jadecocd> ]
 ;:SLUS-90054
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Um Jammer Lammy (USA, Demo) (1999) (Sony Computer Entertainment America) {SCUS-94398} <jamlammyd> ]
 ;:SCUS-94398
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Jet Moto 3 (USA, Demo) (1999) (989 Studios) {SCUS-94384} <jetmoto3d> ]
 ;:SCUS-94384
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Kagero - Deception II (USA, Demo) (1998) (Tecmo) {SLUS-90041} <kagerod> ]
 ;:SLUS-90041
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Legend of Legaia (USA, Demo) (1999) (Sony Computer Entertainment America) {SCUS-94366} <legaiad> ]
 ;:SCUS-94366
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Lunar 2 - Eternal Blue Complete (USA, Demo) (2000) (Working Designs) {SLUS-90083} <lunar2d> ]
 ;:SLUS-90083
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Lunar - Silver Star Story Complete (USA, Demo) (1999) (Working Designs) {SLUS-90055} <lunard> ]
 ;:SLUS-90055
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ MediEvil (USA, Demo) (1998) (Sony Computer Entertainment America) {SCUS-94291} <medievild> ]
 ;:SCUS-94291
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ MLB 2001 (USA, Demo) (2000) (Sony Computer Entertainment America) {SCUS-94479} <mlb2k1d> ]
 ;:SCUS-94479
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ MLB 2002 (USA, Demo) (2001) (Sony Computer Entertainment America) {SCUS-94648} <mlb2k2d> ]
 ;:SCUS-94648
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Mega Man Legends 2 (USA, Demo) (2000) (Capcom Entertainment) {SLUS-90078} <mmleg2d> ]
 ;:SLUS-90078
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Metal Gear Solid (USA, Demo) (1998) (Konami of America) {SLUS-90035} <mgsd> ]
 ;:SLUS-90035
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Metal Gear Solid - VR Missions (USA, Demo) (1999) (Konami of America) {SLUS-90062} <mgsvrd> ]
 ;:SLUS-90062
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Monster Rancher 2 (USA, Demo) (1999) (Tecmo) {SLUS-90071} <mranchr2d> ]
 ;:SLUS-90071
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Ms. Pac-Man Maze Madness (USA, Demo) (2000) (Namco Hometek) {SLUS-90080} <mspacmmd> ]
 ;:SLUS-90080
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ NBA ShootOut 2001 (USA, Demo) (2000) (Sony Computer Entertainment America) {SCUS-94582} <nbaso2k1d> ]
 ;:SCUS-94582
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ NBA ShootOut 2002 (USA, Demo) (2001) (Sony Computer Entertainment America) {SCUS-94660} <nbaso2k2d> ]
 ;:SCUS-94660
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ NCAA GameBreaker 2001 (USA, Demo) (2000) (Sony Computer Entertainment America) {SCUS-94574} <ncaag2k1d> ]
 ;:SCUS-94574
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ NFL GameDay 99 (USA, Demo) (1998) (989 Sports) {SCUS-94285} <nflgd99d> ]
 ;:SCUS-94285
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ NFL Xtreme (USA, Demo) (1998) (989 Sports) {SCUS-94271} <nflxtremd> ]
 ;:SCUS-94271
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ NHL FaceOff 2001 (USA, Demo) (2000) (Sony Computer Entertainment America) {SCUS-94578} <nhlfc2k1d> ]
 ;:SCUS-94578
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ NHL FaceOff 99 (USA, Demo) (1998) (989 Sports) {SCUS-94372} <nhlfce99d> ]
 ;:SCUS-94372
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Nuclear Strike - The Lost Missions (USA, Demo) (1997) (Electronic Arts) {SLUS 90006} <nstriked> ]
 ;:SLUS-90006
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ O.D.T. (USA, Demo) (1997) (Psygnosis) {SLUS-90043} <odtd> ]
 ;:SLUS-90043
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Pac-Man World (USA, Demo, v1.1) (1999) (Namco Hometek) {SLUS-90057} <pacmnwldd> ]
 ;:SLUS-90057
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ PaRappa the Rapper (USA, Demo) (1997) (Sony Computer Entertainment America) {SCUS 94195} <parappad> ]
 ;:SCUS-94195
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Pitfall 3D - Beyond the Jungle (USA, Demo) (1998) (Activision) {SLUS-90017} <pitfl3dd> ]
 ;:SLUS-90017
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Rascal (USA, Demo) (1998) (Psygnosis) {SLUS-90015} <rascald> ]
 ;:SLUS-90015
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Rayman (USA, Playable Game Preview) (1995) (Ubi Soft Entertainment Software) {SLUS-90001} <raymand> ]
 ;:SLUS-90001
@@ -71468,7 +72388,7 @@ A61B40B6 00000098
 
 ; [ Resident Evil 2 (USA, Demo) (1997) (Capcom Entertainment) {SLUS-90009} <revil2ud> ]
 ;:SLUS-90009
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Resident Evil 3 - Nemesis (USA, Demo) (1999) (Capcom Entertainment) {SLUS-90064} <revil3ud> ]
 :SLUS-90064
@@ -71489,176 +72409,176 @@ AAAAAAAA AAAAAAAA
 
 ; [ Rollcage (USA, Demo) (1999) (Psygnosis) {SLUS-90052} <rollcaged> ]
 ;:SLUS-90052
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Running Wild (USA, Demo) (1998) (989 Studios) {SCUS-94373} <runwildd> ]
 ;:SCUS-94373
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ SuperCross Circuit (USA, Demo) (1999) (989 Sports) {SCUS-94396} <scircuitd> ]
 ;:SCUS-94396
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Shadow Madness (USA, Demo) (1999) (Crave Entertainment) {SLUS-90031} <shadwmadd> ]
 ;:SLUS-90031
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Shipwreckers! (USA, Demo) (1997) (Psygnosis) {SLUS-90013} <shpwreckd> ]
 ;:SLUS-90013
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Speed Punks (USA, Demo) (2000) (Sony Computer Entertainment America) {SCUS-94572} <spdpunksd> ]
 ;:SCUS-94572
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Spyro 2 - Ripto's Rage! (USA, Demo) (1999) (Sony Computer Entertainment America) {SCUS-94460} <spyro2d> ]
 ;:SCUS-94460
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Spyro the Dragon (USA, Demo 1) (1998) (Sony Computer Entertainment America) {SCUS-94290} <spyrod1> ]
 ;:SCUS-94290
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Spyro the Dragon (USA, Demo 2) (1999) (Sony Computer Entertainment America) {SCUS-94439} <spyrod2> ]
 ;:SCUS-94439
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Sled Storm & Medal of Honor Demo CD (USA) (1999) (Electronic Arts) {SLUS-90072} <ssmhdemo> ]
 ;:SLUS-90072
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Tail Concerto (USA, Demo) (1999) (Atlus U.S.A.) {SLUS-90060} <tailcond> ]
 ;:SLUS-90060
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Thrasher - Skate and Destroy (USA, Demo) (1999) (Rockstar Games) {SLUS-90067} <thrasherd> ]
 ;:SLUS-90067
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Titan A.E. (USA, Demo) (2000) (Fox Interactive) {SLUS-90082} <titanaed> ]
 ;:SLUS-90082
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Tomba! (USA, Demo) (1998) (Sony Computer Entertainment America) {SCUS-94255} <tombad> ]
 ;:SCUS-94255
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Tomba! 2 - The Evil Swine Return (USA, Demo) (1999) (Sony Computer Entertainment America) {SCUS-94464} <tomba2d> ]
 ;:SCUS-94464
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Tyco R/C - Assault with a Battery (USA, Demo) (2000) (Mattel Interactive) {SLUS-90085} <tycorcd> ]
 ;:SLUS-90085
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Vigilante 8 (USA, Demo) (1998) (Activision) {SLUS-90022} <vigil8d> ]
 ;:SLUS-90022
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Wild Arms 2 (USA, Demo) (2000) (Sony Computer Entertainment America) {SCUS-94592} <wildarm2d> ]
 ;:SCUS-94592
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ WipEout 3 (USA, Demo) (1999) (Psygnosis) {SLUS-90063} <wipeout3d> ]
 ;:SLUS-90063
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ You Don't Know Jack (USA, Demo) (1999) (Sierra On-Line) {SLUS-90061} <ydkjd> ]
 ;:SLUS-90061
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ ASCII Entertainment Demo CD (USA) (1997) (ASCII Entertainment Software) {SLUS-90010} <asciidmo> ]
 ;:SLUS-90010
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Best Buy Demo CD (USA) (1998) (Sony Computer Entertainment America) {SCUS-94286} <bbuydemo> ]
 ;:SCUS-94286
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Eidos Demo CD Volume 3 (USA) (1998) (Eidos Interactive) {SLUS-90047} <eidoscd3> ]
 ;:SLUS-90047
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Eidos Demo CD Volume 4 (USA) (1999) (Eidos Interactive) {SLUS-90051} <eidoscd4> ]
 ;:SLUS-90051
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Eidos Demo CD Volume 6 (USA) (1999) (Eidos Interactive) {SLUS-90074} <eidoscd6> ]
 ;:SLUS-90074
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Eidos Demo CD (USA) (1998) (Eidos Interactive) {SLUS-90040} <eidoscd> ]
 ;:SLUS-90040
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Interactive CD Sampler Volume 1 (USA) (1995) (Sony Computer Entertainment America) {SCUS 94955} <icdsmp1> ]
 ;:SCUS-94955
-;This game currently has no cheats
+;This sampler currently has no cheats
 
 ; [ Interactive CD Sampler Disc Vol. 10 (USA) (1999) (Sony Computer Entertainment America) {PBPX-95011} <icdsmp10> ]
 ;:PBPX-95011
-;This game currently has no cheats
+;This sampler currently has no cheats
 
 ; [ Interactive CD Sampler Disc Vol. 11 (USA) (1999) (Sony Computer Entertainment America) {SCUS-94463} <icdsmp11> ]
 ;:SCUS-94463
-;This game currently has no cheats
+;This sampler currently has no cheats
 
 ; [ Interactive CD Sampler Pack Volume 2 (USA) (1996) (Sony Computer Entertainment America) {SCUS-94957} <icdsmp2> ]
 ;:SCUS-94957
-;This game currently has no cheats
+;This sampler currently has no cheats
 
 ; [ Interactive CD Sampler Pack Volume 3 (USA) (1996) (Sony Computer Entertainment America) {SCUS-94959} <icdsmp3> ]
 ;:SCUS-94959
-;This game currently has no cheats
+;This sampler currently has no cheats
 
 ; [ Interactive CD Sampler Pack Volume 3.5 (USA, SCUS-94177) (1997) (Sony Computer Entertainment America) {SCUS-94177, SCUS-94966} <icdsmp35> ]
 ;:SCUS-94177
 ;:SCUS-94966
-;This game currently has no cheats
+;This sampler currently has no cheats
 
 ; [ Interactive CD Sampler Pack Volume 3.5 (USA, SCUS-94966) (1997) (Sony Computer Entertainment America) {SCUS-94966} <icdsmp35a> ]
 ;:SCUS-94966
-;This game currently has no cheats
+;This sampler currently has no cheats
 
 ; [ Interactive CD Sampler Disc Volume 4 (USA) (1997) (Sony Computer Entertainment America) {PBPX 95002, SCUS-94418} <icdsmp4> ]
 ;:PBPX-95002
 ;:SCUS-94418
-;This game currently has no cheats
+;This sampler currently has no cheats
 
 ; [ Interactive CD Sampler Disk Volume 5 (USA, v1.1) (1997) (Sony Computer Entertainment America) {SCUS-94232} <icdsmp5> ]
 ;:SCUS-94232
-;This game currently has no cheats
+;This sampler currently has no cheats
 
 ; [ Interactive CD Sampler Disk Volume 5 (USA, v1.0) (1997) (Sony Computer Entertainment America) {SCUS-94232} <icdsmp5a> ]
 ;:SCUS-94232
-;This game currently has no cheats
+;This sampler currently has no cheats
 
 ; [ Interactive CD Sampler Disc 6 (USA) (1998) (Sony Computer Entertainment America) {PBPX-95004, SCUS-94242} <icdsmp6> ]
 ;:PBPX-95004
 ;:SCUS-94242
-;This game currently has no cheats
+;This sampler currently has no cheats
 
 ; [ Interactive CD Sampler Disc Volume 7 (USA, v1.1) (1998) (Sony Computer Entertainment America) {SCUS-94262} <icdsmp7> ]
 ;:SCUS-94262
-;This game currently has no cheats
+;This sampler currently has no cheats
 
 ; [ Interactive CD Sampler Disc Volume 7 (USA, v1.0) (1998) (Sony Computer Entertainment America) {PBPX-95006, SCUS-94258} <icdsmp7a> ]
 ;:PBPX-95006
 ;:SCUS-94258
-;This game currently has no cheats
+;This sampler currently has no cheats
 
 ; [ Interactive CD Sampler Disc Volume 8 (USA) (1998) (Sony Computer Entertainment America) {PBPX-95009, SCUS-94268} <icdsmp8> ]
 ;:PBPX-95009
 ;:SCUS-94268
-;This game currently has no cheats
+;This sampler currently has no cheats
 
 ; [ Interactive CD Sampler Disc Vol. 9 (USA, SCUS-94295) (1998) (Sony Computer Entertainment America) {SCUS-94295} <icdsmp9> ]
 ;:SCUS-94295
-;This game currently has no cheats
+;This sampler currently has no cheats
 
 ; [ Interactive CD Sampler Disc Vol. 9 (USA, PBPX-95010) (1998) (Sony Computer Entertainment America) {PBPX-95010} <icdsmp9a> ]
 ;:PBPX-95010
-;This game currently has no cheats
+;This sampler currently has no cheats
 
 ; [ Jampack Vol. 1 (USA) (1997) (Sony Computer Entertainment America) {SCUS-94176} <jampack1> ]
 ;:SCUS-94176
@@ -71670,11 +72590,11 @@ AAAAAAAA AAAAAAAA
 
 ; [ Namco Demo CD (USA) (1997) (Namco Hometek) {SLUS-90008} <namcodmo> ]
 ;:SLUS-90008
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Pizza Hut Demo CD (USA) (1998) (Sony Computer Entertainment America) {SCUS-94292} <pizzahud> ]
 ;:SCUS-94292
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Pizza Hut Disc 1 (USA) (1999) (Sony Computer Entertainment America) {SCUS-94480} <pizzahu1> ]
 ;:SCUS-94480
@@ -71686,39 +72606,39 @@ AAAAAAAA AAAAAAAA
 
 ; [ PlayStation Demo Disc Version 1.3 (USA) (2000) (Sony Computer Entertainment America) {SCUS-94618} <psdemo13> ]
 ;:SCUS-94618
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ PlayStation Demo Disc Version 1.4 (USA) (2001) (Sony Computer Entertainment America) {SCUS-94650} <psdemo14> ]
 ;:SCUS-94650
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ PlayStation Demo Disc Version 1.5 (USA) (2002) (Sony Computer Entertainment America) {SCUS-94674} <psdemo15> ]
 ;:SCUS-94674
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ PlayStation Demo Disc - Spring 2000 (USA) (2000) (Sony Computer Entertainment America) {SCUS-94595} <psdems2k> ]
 ;:SCUS-94595
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ PlayStation Developer's Demo Disc (USA, SCUS-94954) (1995) (Sony Computer Entertainment America) {SCUS-94954} <psdevdmo> ]
 ;:SCUS-94954
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ PlayStation Developer's Demo Disc (USA, SCUS-94950) (1995) (Sony Computer Entertainment America) {SCUS-94950} <psdevdmoa> ]
 ;:SCUS-94950
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ PlayStation Kiosk Demo Disc Version 1.16 (USA) (2001) (Sony Computer Entertainment America) {SCUS-94651} <psksk116> ]
 ;:SCUS-94651
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ PlayStation Kiosk Demo Disc Version 1.17 (USA) (2001) (Sony Computer Entertainment America) {SCUS-94663} <psksk117> ]
 ;:SCUS-94663
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ PlayStation Kiosk Demo Disc Version 1.18 (USA) (2002) (Sony Computer Entertainment America) {SCUS-94667} <psksk118> ]
 ;:SCUS-94667
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ PSone - Wherever, Whenever, Forever. (USA, No EDC) (2001) (Sony Computer Entertainment America) {SCUS-94799} <psone> ]
 ;:SCUS-94799
@@ -71739,15 +72659,15 @@ AAAAAAAA AAAAAAAA
 
 ; [ PlayStation Demo Disc - Shock Your System! (USA, SCUS-94496) (1999) (Sony Computer Entertainment America) {SCUS-94496} <psshock> ]
 ;:SCUS-94496
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ PlayStation Demo Disc - Shock Your System! (USA, SCUS-94483) (1999) (Sony Computer Entertainment America) {SCUS-94483} <psshocka> ]
 ;:SCUS-94483
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ PlayStation Demo Disc - Shock Your System! (USA, SCUS-94482) (1999) (Sony Computer Entertainment America) {SCUS-94482} <psshockb> ]
 ;:SCUS-94482
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Squaresoft on PlayStation 2000 Collector's CD Vol. 3 (USA) (2000) (Square Electronic Arts) {SLUS-90075} <squa2k_3> ]
 ;:SLUS-90075
@@ -71759,7 +72679,7 @@ AAAAAAAA AAAAAAAA
 
 ; [ Squaresoft on PlayStation 1998 Collector's CD Vol. 2 (USA, Final Fantasy VIII Demo) (1998) (Square Electronic Arts) {SLUS-90029} <squa98_2> ]
 ;:SLUS-90029
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Squaresoft on PlayStation Collector's CD (USA) (1998) (Square Electronic Arts) {SCUS-94256} <squarecd> ]
 ;:SCUS-94256
@@ -71767,223 +72687,223 @@ AAAAAAAA AAAAAAAA
 
 ; [ Toys &quot;R&quot; Us - Attack of the Killer Demos! (USA) (1999) (Sony Computer Entertainment America) {SCUS-94397} <toysattk> ]
 ;:SCUS-94397
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Toys &quot;R&quot; Us Demo Disc (USA) (1998) (Sony Computer Entertainment America) {SCUS-94266} <toysdemo> ]
 ;:SCUS-94266
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Toys &quot;R&quot; Us - Interactive CD Sampler Disc (USA) (1998) (Sony Computer Entertainment America) {SCUS-94371} <toyssmpl> ]
 ;:SCUS-94371
-;This game currently has no cheats
+;This sampler currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 01 (USA) (1997) (Sony Computer Entertainment America) {SCUS-94189} <opm01> ]
 ;:SCUS-94189
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 02 (USA) (1997) (Sony Computer Entertainment America) {SCUS-94198} <opm02> ]
 ;:SCUS-94198
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 03 (USA) (1997) (Sony Computer Entertainment America) {SCUS-94210} <opm03> ]
 ;:SCUS-94210
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 04 (USA) (1998) (Sony Computer Entertainment America) {SCUS-94211} <opm04> ]
 ;:SCUS-94211
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 05 (USA) (1998) (Sony Computer Entertainment America) {SCUS-94212} <opm05> ]
 ;:SCUS-94212
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 06 (USA) (1998) (Sony Computer Entertainment America) {SCUS-94213} <opm06> ]
 ;:SCUS-94213
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 07 (USA) (1998) (Sony Computer Entertainment America) {SCUS-94214} <opm07> ]
 ;:SCUS-94214
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 08 (USA) (1998) (Sony Computer Entertainment America) {SCUS-94215} <opm08> ]
 ;:SCUS-94215
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 09 (USA) (1998) (Sony Computer Entertainment America) {SCUS-94216} <opm09> ]
 ;:SCUS-94216
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 10 (USA) (1998) (Sony Computer Entertainment America) {SCUS-94217} <opm10> ]
 ;:SCUS-94217
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 11 (USA) (1998) (Sony Computer Entertainment America) {SCUS-94218} <opm11> ]
 ;:SCUS-94218
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 12 (USA) (1998) (Sony Computer Entertainment America) {SCUS-94219} <opm12> ]
 ;:SCUS-94219
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 13 (USA) (1998) (Sony Computer Entertainment America) {SCUS-94275} <opm13> ]
 ;:SCUS-94275
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 14 (USA) (1998) (Sony Computer Entertainment America) {SCUS-94276} <opm14> ]
 ;:SCUS-94276
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 15 (USA) (1998) (Sony Computer Entertainment America) {SCUS-94277} <opm15> ]
 ;:SCUS-94277
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 16 (USA) (1999) (Sony Computer Entertainment America) {SCUS-94278} <opm16> ]
 ;:SCUS-94278
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 17 (USA) (1999) (Sony Computer Entertainment America) {SCUS-94279} <opm17> ]
 ;:SCUS-94279
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 18 (USA) (1999) (Sony Computer Entertainment America) {SCUS-94280} <opm18> ]
 ;:SCUS-94280
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 19 (USA) (1999) (Sony Computer Entertainment America) {SCUS-94281} <opm19> ]
 ;:SCUS-94281
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 20 (USA) (1999) (Sony Computer Entertainment America) {SCUS-94282} <opm20> ]
 ;:SCUS-94282
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 21 (USA) (1999) (Sony Computer Entertainment America) {SCUS-94429} <opm21> ]
 ;:SCUS-94429
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 22 (USA) (1999) (Sony Computer Entertainment America) {SCUS-94430} <opm22> ]
 ;:SCUS-94430
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 23 (USA) (1999) (Sony Computer Entertainment America) {SCUS-94431} <opm23> ]
 ;:SCUS-94431
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 24 (USA) (1999) (Sony Computer Entertainment America) {SCUS-94432} <opm24> ]
 ;:SCUS-94432
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 25 (USA) (1999) (Sony Computer Entertainment America) {SCUS-94433} <opm25> ]
 ;:SCUS-94433
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 26 (USA) (1999) (Sony Computer Entertainment America) {SCUS-94434} <opm26> ]
 ;:SCUS-94434
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 27 (USA) (1999) (Sony Computer Entertainment America) {SCUS-94435} <opm27> ]
 ;:SCUS-94435
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 28 (USA) (2000) (Sony Computer Entertainment America) {SCUS-94436} <opm28> ]
 ;:SCUS-94436
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 29 (USA) (2000) (Sony Computer Entertainment America) {SCUS-94437} <opm29> ]
 ;:SCUS-94437
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 30 (USA) (2000) (Sony Computer Entertainment America) {SCUS-94438} <opm30> ]
 ;:SCUS-94438
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 31 (USA) (2000) (Sony Computer Entertainment America) {SCUS-94499} <opm31> ]
 ;:SCUS-94499
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 32 (USA) (2000) (Sony Computer Entertainment America) {SCUS-94583} <opm32> ]
 ;:SCUS-94583
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 33 (USA) (2000) (Sony Computer Entertainment America) {SCUS-94591} <opm33> ]
 ;:SCUS-94591
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 34 (USA) (2000) (Sony Computer Entertainment America) {SCUS-94593} <opm34> ]
 ;:SCUS-94593
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 35 (USA) (2000) (Sony Computer Entertainment America) {SCUS-94596} <opm35> ]
 ;:SCUS-94596
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 36 (USA) (2000) (Sony Computer Entertainment America) {SCUS-94599} <opm36> ]
 ;:SCUS-94599
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 37 (USA) (2000) (Sony Computer Entertainment America) {SCUS-94614} <opm37> ]
 ;:SCUS-94614
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 38 (USA) (2000) (Sony Computer Entertainment America) {SCUS-94617} <opm38> ]
 ;:SCUS-94617
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 39 (USA) (2000) (Sony Computer Entertainment America) {SCUS-94622} <opm39> ]
 ;:SCUS-94622
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 40 (USA) (2001) (Sony Computer Entertainment America) {SCUS-94628} <opm40> ]
 ;:SCUS-94628
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 41 (USA) (2001) (Sony Computer Entertainment America) {SCUS-94630} <opm41> ]
 ;:SCUS-94630
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 42 (USA) (2001) (Sony Computer Entertainment America) {SCUS-94631} <opm42> ]
 ;:SCUS-94631
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 43 (USA, No EDC) (2001) (Sony Computer Entertainment America) {SCUS-94634} <opm43> ]
 ;:SCUS-94634
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 43 (USA, EDC) (2001) (Sony Computer Entertainment America) {SCUS-94634} <opm43a> ]
 ;:SCUS-94634
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 44 (USA) (2001) (Sony Computer Entertainment America) {SCUS-94637} <opm44> ]
 ;:SCUS-94637
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 45 (USA) (2001) (Sony Computer Entertainment America) {SCUS-94645} <opm45> ]
 ;:SCUS-94645
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 46 (USA) (2001) (Sony Computer Entertainment America) {SCUS-94649} <opm46> ]
 ;:SCUS-94649
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 47 (USA) (2001) (Sony Computer Entertainment America) {SCUS-94652} <opm47> ]
 ;:SCUS-94652
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 48 (USA) (2001) (Sony Computer Entertainment America) {SCUS-94655} <opm48> ]
 ;:SCUS-94655
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 50 (USA) (2001) (Sony Computer Entertainment America) {SCUS-94658} <opm50> ]
 ;:SCUS-94658
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 52 (USA) (2002) (Sony Computer Entertainment America) {SCUS-94662} <opm52> ]
 ;:SCUS-94662
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Official U.S. PlayStation Magazine Demo Disc 54 (USA) (2002) (Sony Computer Entertainment America) {SCUS-94664} <opm54> ]
 ;:SCUS-94664
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ PlayStation Underground Number 1 (USA) (1997) (Sony Computer Entertainment America) {SCUS-94161 / SCUS-94161} <psu1> ]
 ;:SCUS-94161
@@ -72212,7 +73132,7 @@ C00460EC 0005
 
 ; [ Interactive CD Sampler Disc 6 (USA, EDC) (1998) (Sony Computer Entertainment America) {PBPX-95004} <icdsmp6a> ]
 ;:PBPX-95004
-;This game currently has no cheats
+;This sampler currently has no cheats
 
 ; [ 007 - Tomorrow Never Dies (Jpn) (2000) (Electronic Arts Square) {SLPS-02604} <007tndj> ]
 :SLPS-02604
@@ -72346,7 +73266,7 @@ A61B4054 00000003
 A61B4054 00000003
 #Start in Lap 5 Lap /1st
 A61B4054 00000003
-#Freeze Timer
+#Infinite Time
 801C56A6 0000
 
 ; [ Afraid Gear Another (Jpn) (2001) (Office Create) {SLPM-86834} <afragean> ]
@@ -73261,8 +74181,6 @@ A61429BA 04410440
 #Clear flag ON ED graphics, available character Voice system is filled AND OPEN
 301C036D 00FF
 301C036E 00FF
-#A debug mode
-80051492 1040
 #Filled Photographics Character that was referenced in the album only remain in the save data.
 9005A4F4 24020003
 9005A4F8 A4820050
@@ -74306,7 +75224,7 @@ D005C006 FFFE
 80011800 0006
 #Select Stage\7
 80011800 0007
-#Final Stage 8
+#Select Stage\Final Stage 8
 80011800 0008
 #P1 Hold L1 to Run
 E019EA38 0004
@@ -74520,9 +75438,9 @@ D01E4EEA 7FFF
 80073134 0000
 #Infinite Ammo All Weapons
 80073034 0009
-#Turn Back To Alyssa
+#Select Character\Alyssa
 80070A20 0000
-#Turn Into Bates
+#Select Character\Bates
 80070A20 0020
 #Sound test mode can be used immediately
 30071770 00FE
@@ -75564,9 +76482,6 @@ D002FE2A 2442
 800866FC 0063
 #Exp 99999
 90083FFC 0001869F
-#Money Max
-80089EEE 967F
-80089EF0 0098
 #I would like hear for free the poet Museum
 3008A205 00FF
 3008A207 00FF
@@ -75955,37 +76870,37 @@ A6089BF4 FFFF0000
 3004C99D 0063
 #POINTS 99
 3004C99E 0063
-#Bonus / voice actor interview Age
+#Select Bonus/voice actor interview\Age
 80046D58 0001
-#Bonus / voice actor interview iodide
+#Select Bonus/voice actor interview\iodide
 80046D58 0002
-#Bonus / voice actor interview nautical miles
+#Select Bonus/voice actor interview\nautical miles
 80046D58 0004
-#Bonus / voice actor interview unbiased
+#Select Bonus/voice actor interview\unbiased
 80046D58 0008
-#Bonus / voice actor interview Natsuno
+#Select Bonus/voice actor interview\Natsuno
 80046D58 0010
-#Bonus / voice actor interview Tomoe
+#Select Bonus/voice actor interview\Tomoe
 80046D58 0020
-#Bonus / voice actor interview Rico
+#Select Bonus/voice actor interview\Rico
 80046D58 0040
-#Bonus / voice actor interview Kaname
+#Select Bonus/voice actor interview\Kaname
 80046D58 0080
-#Bonus / voice actor interview Narisawa
+#Select Bonus/voice actor interview\Narisawa
 80046D58 0100
-#Bonus / voice actor interview Sakaki
+#Select Bonus/voice actor interview\Sakaki
 80046D58 0200
-#Bonus / voice actor interview Ray
+#Select Bonus/voice actor interview\Ray
 80046D58 0400
-#Bonus / voice actor interview Sarai
+#Select Bonus/voice actor interview\Sarai
 80046D58 0800
-#Sub character ending flag Narisawa
+#Select Sub character ending flag\Narisawa
 8004C8E0 0080
-#Sub character ending flag Sakaki
+#Select Sub character ending flag\Sakaki
 8004C8E0 0100
-#Sub character ending flag Ray
+#Select Sub character ending flag\Ray
 8004C8E0 0200
-#Sub character ending flag Sarai
+#Select Sub character ending flag\Sarai
 8004C8E0 0400
 
 ; [ élan plus (Jpn) (2000) (Visco) {SLPS-02759} <elanplus> ]
@@ -76330,25 +77245,25 @@ D00A6064 0008
 800859BC 03E7
 #Important item all
 301831FF 00FF
-#Profile Lodi Light
+#Select Profile\Lodi Light
 801834A2 0002
-#Profile Daisy Light
+#Select Profile\Daisy Light
 801834A2 0004
-#Profile Hazel nut Albero
+#Select Profile\Hazel nut Albero
 801834A2 0008
-#Profile Violet Meer
+#Select Profile\Violet Meer
 801834A2 0010
-#Profile root Pisutiru
+#Select Profile\root Pisutiru
 801834A2 0000
-#Profile R-7
+#Select Profile\R-7
 801834A2 0040
-#Profile Orchid Grace
+#Select Profile\Orchid Grace
 801834A2 0080
-#Profile anemone
+#Select Profile\anemone
 801834A2 0100
-#Profile Mantis root
+#Select Profile\Mantis root
 801834A2 0200
-#Profile Lady Bird Rouge
+#Select Profile\Lady Bird Rouge
 801834A2 0400
 
 ; [ EVE Zero (Jpn) (2000) (Game Village) {SLPM-86478~SLPM-86480} <eve0> ]
@@ -76451,9 +77366,9 @@ D011D778 0001
 800D8250 0004
 800D824A 001E
 800D824E 012C
-#Weapons TYPE-C / TYPE-D Bazooka
+#Select Weapon TYPE-C\TYPE-D Bazooka
 80061FE0 0003
-#Weapons TYPE-C / TYPE-D Rocket Launcher
+#Select Weapon TYPE-C\TYPE-D Rocket Launcher
 80061FE0 0004
 
 ; [ Family Diamond (Jpn) (2002) (Magnolia) {SLPS-03348} <famidiam> ]
@@ -76741,11 +77656,13 @@ A6021848 FFFF0000
 :SLPS-02259
 #Always 1st When Finished
 800FB6E0 0001
-#Freeze Timer
+#Infinite Time
 800FB6D8 0000
 #Speed Boost:Press X+R2
+D4000000 0042
 800E97DA 3E47
-#Instant Brake
+#Instant Brake:Press X+L2
+D4000000 0041
 800E97DA FF47
 
 ; [ Fox Junction (Jpn) (1998) (Trips) {SLPS-01355} <foxjunct> ]
@@ -77417,11 +78334,11 @@ D00A255C 1001
 
 ; [ Glint Glitters (Jpn) (1999) (Konami) {SLPM-86200 (VX226-J1)} <glintglt> ]
 :SLPM-86200
-#Infinite Money (20000) / win the 1st game
+#Select Infinite Money Amount/(20000) / win the 1st game
 8008CA78 4E20
-#Infinite Money (30000) / win the 2nd game
+#Select Infinite Money Amount/(30000) / win the 2nd game
 8008CA78 7530
-#Infinite Money (40000) / win the 3rd game
+#Select Infinite Money Amount/(40000) / win the 3rd game
 8008CA78 9C40
 
 ; [ Gallop Racer 2000 (Jpn) (2000) (Tecmo) {SLPS-02623} <glprac2k> ]
@@ -77570,13 +78487,6 @@ C0025A58 1021
 #JUDGEMENT SCORE 999999
 900BA304 000F423F
 #TRANSFORM form all
-800A6214 0002
-800A6218 0002
-800A621C 0002
-800A6220 0002
-800A6224 0002
-800A6228 0002
-#TRANSFORM form all (PAR2 only)
 50000604 0000
 800A6214 0002
 #EFFECT all (PAR2 only)
@@ -77983,7 +78893,7 @@ B0030004 0000
 :SLPM-86083
 #Infinite Screws 1
 80078618 0063
-#Infinite Screws 2
+#Infinite Screws 2/Coins
 8007861C 0063
 #Infinite HP
 8007860C 000A
@@ -77991,8 +78901,6 @@ B0030004 0000
 90078608 3B9AC9FF
 #Temperature rise 0
 80078610 0000
-#100 coins
-8007861C 0064
 #Game speed
 800403C0 0001
 
@@ -79915,9 +80823,6 @@ C00F2FFC 0007
 80188CF6 03E7
 #RPG Mode Max HP
 80188D04 03E7
-#RPG Mode All Items
-800BA006 FFFF
-900BA008 FFFFFFFF
 #P1 Infinite Health
 8016E998 0200
 #1 Hit Killed (Up To 4 Players Mode)
@@ -79967,17 +80872,9 @@ D007D270 6400
 9015F584 FFFFFFFF
 9015F588 FFFFFFFF
 8015F58C 000F
-#ViVi love degree
+#ViVi/LuLu/Kiki love degree
 8015F6C8 03E7
-#ViVi selection frequency
-8015F6D4 0003
-#LuLu love degree
-8015F6C8 03E7
-#LuLu selection frequency
-8015F6D4 0003
-#KiKi love degree
-8015F6C8 03E7
-#KiKi selection frequency
+#ViVi/LuLu/Kiki selection frequency
 8015F6D4 0003
 #Invincibility and boss killer blow
 A6178056 A487A480
@@ -81230,9 +82127,7 @@ D00CE928 0003
 
 ; [ Najavu no Daibouken - My Favorite Namjatown (Jpn) (2000) (Namco) {SLPM-86601} <najavu> ]
 :SLPM-86601
-#99 Diamonds On Imatation Game:
-80072A60 0063
-#99 Diamonds On Jumping Over Cliffs Game:
+#99 Diamonds On Imatation & Jumping Over Cliffs Games
 80072A60 0063
 #Have 9999 Diamonds
 800747AC 270F
@@ -82539,7 +83434,7 @@ E00CB336 0002
 :SLPM-86272
 #Infinite Health Sasami stage 1, 4, 8. 9 + 10
 800D60FC 091D
-#Infinite Health Sasami stage 2
+#Infinite Health Sasami stage 2 + 13
 800D6BFC 091D
 #Infinite Health Sasami stage 3 + 5
 800D64FC 091D
@@ -82551,8 +83446,6 @@ E00CB336 0002
 800D667C 091D
 #Infinite Health Sasami stage 12
 800D65FC 091D
-#Infinite Health Sasami stage 13
-800D6BFC 091D
 #Infinite Health Sasami stage 14
 800D63FC 091D
 
@@ -83653,6 +84546,77 @@ C004D900 3659
 00000000 FFFF
 #Not the devil appeared
 3010D15C 0080
+#Walk through walls (In-field)
+A7031A4A 10401000
+#Walk through walls (Overworld) 'Use d-pad':Don't turn code off after it is on. If you must, turn code off and reset the game.
+D7000000 00002000
+800453DE 00002400
+00000000 0000FFFF
+D7000000 00008000
+800453DE 00002400
+00000000 0000FFFF
+D7000000 00001000
+800453DE 00000C01
+00000000 0000FFFF
+D7000000 00004000
+800453DE 00000C01
+00000000 0000FFFF
+D7000000 00001000
+80045EE2 00002400
+00000000 0000FFFF
+D7000000 00004000
+80045EE2 00002400
+00000000 0000FFFF
+D7000000 00002000
+80045EE2 00000C01
+00000000 0000FFFF
+D7000000 00008000
+80045EE2 00000C01
+#Equip any item and ignore alignment/amount
+A711C8AA 10622400
+#Be able to unequip cursed items
+A711C10A 14621000
+#Show all equipable items:Also allows you to equip without needing to own it
+A704E4BA 10402400
+#Fast forward 'Hold L2 + R2'
+A7080A86 24000481
+D7200000 00000003
+A7080A86 04812400
+#No random battles V1
+A703053A 16421000
+A701698A 14621000
+#No random battles V2
+A703053A 16421000
+A7044542 10502400
+#Force battle on overworld 'Press L3'
+A703053A 16421000
+D7200000 01000200
+A7044542 10501000
+#Avoid traps
+A7032492 10401000
+#Disable reverb
+A707E772 10401000
+#Change midi 1
+A707E742 10402400
+#Change midi 2
+A707C5D2 10401000
+#Change midi 3
+A707C132 18402400
+#Hide overlays
+A701A75E 0C022400
+A7024866 0C002400
+A70247B2 0C002400
+#Party battle text takes on background
+A7020A7A 0C002400
+#Force talking with uninterested demons
+A71196E2 14402400
+A7054462 14402400
+#Select Alignment level\Law
+3010BF33 0000
+#Select Alignment level\Neutral
+3010BF33 0080
+#Select Alignment level\Chaos
+3010BF33 00FF
 
 ; [ The Shinri Game (Jpn) (1996) (Visit) {SLPS-00169} <shinri> ]
 ;:SLPS-00169
@@ -84001,9 +84965,7 @@ C009DC68 DEFF
 
 ; [ S.Q. - Sound Qube (Jpn) (1998) (Human) {SLPS-01309} <sndqube> ]
 :SLPS-01309
-#Infinite Energy
-80118F2D 0064
-#Infinite Time
+#Infinite Energy/Time
 80118F2D 0064
 
 ; [ Snobow Kids Plus (Jpn) (1999) (ASCII) {SLPS-01823} <snobokid> ]
@@ -84211,7 +85173,7 @@ D00C321C 00B8
 8005101E 1400
 #Infinite Web cartridge
 80051054 2400
-#Infinite TIME
+#Infinite Time
 8006E64A 1400
 #Unabated spider silk
 D0051018 1023
@@ -84231,8 +85193,6 @@ B0210001 0000
 #Physical strength is reduced
 D00535CC 1023
 300535CC 0023
-#Infinite Time
-8006E64A 1400
 
 ; [ Simple 1500 Series Vol.37 - The Illustration Puzzle & Slide Puzzle (Jpn) (2000) (D3 Publisher) {SLPS-02958} <ss037pzl> ]
 ;:SLPS-02958
@@ -84697,10 +85657,10 @@ D00F9BB6 1040
 :SLPS-00203
 #Credit MAX
 801E8214 0063
-#Freeze Timer
+#Infinite Time
 801E8F6E 0002
 801E8F70 3C00
-#Freeze Timer (Boss)
+#Infinite Time (Boss)
 801E8F9E 6400
 #P1 Infinite Lives
 301E8EF7 000F
@@ -84885,7 +85845,6 @@ D00F9BB6 1040
 90089274 000F423F
 #Max Status Hero
 800894F8 03E7
-80089A54 0063
 90089A1C 03E703E7
 90089A3C 63636363
 30089A40 0063
@@ -86300,7 +87259,7 @@ D01CCAD4 0100
 
 ; [ Kidou Senshi Z-Gundam (Jpn, Demo) (1997) (Bandai) {SLPM-80139} <zgundamd> ]
 ;:SLPM-80139
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Zig Zag Ball (Jpn) (1998) (Upstar) {SLPS-01483} <zigzagba> ]
 :SLPS-01483
@@ -86446,11 +87405,11 @@ D01CCAD4 0100
 
 ; [ Lalala PlayStation Trial Disk 1998 Summer (Jpn, Demo) (199?) (<unknown>) {PAPX-90052} <lalala> ]
 ;:PAPX-90052
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Armored Core (Jpn, Demo) (1997) (From Software) {SLPM-80118} <armcorejd> ]
 ;:SLPM-80118
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Clock Tower 2 (Jpn, Taikenban) (1996) (Human) {SLPM-80063} <clocktw2jd> ]
 ;:SLPM-80063
@@ -86458,27 +87417,27 @@ D01CCAD4 0100
 
 ; [ Granstream Denki (Jpn, Demo) (1997) (SCEI) {PCPX-96087} <granstrmjd> ]
 ;:PCPX-96087
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Koudelka (Jpn, Demo) (199?) (SNK) {SLPM-80490} <koudelkajd> ]
 ;:SLPM-80490
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Legaia Densetsu (Jpn, Demo) (1998) (SCEI) {PAPX-90055} <legaiajd> ]
 ;:PAPX-90055
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Rescue Shot Bubibo & BioHazard - Gun Survivor (Jpn, Demo) (200?) (SCEI) {SLPM-80522} <rshbhgsd> ]
 ;:SLPM-80522
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Square's Preview 5 (Jpn, Seiken Densetsu Demo) (1999) (Squaresoft) {SCPS-45417} <squarep5> ]
 ;:SCPS-45417
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Tamamayu Monogatari - Dennou Bijutsukan (Jpn, Demo) (199?) (Genki) {SLPM-80325} <tamamayd> ]
 ;:SLPM-80325
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Ape Escape (Euro) (1999) (Sony Computer Entertainment Europe) {SCES-01564} <apescapee> ]
 :SCES-01564
@@ -86741,15 +87700,15 @@ D005C4BC 0000
 
 ; [ Demo One (Version 1) (Euro) (1995?) (Sony Computer Entertainment Europe) {SCES-00048} <demo1_1> ]
 ;:SCES-00048
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Demo One (Version 2) (Euro) (1995?) (Sony Computer Entertainment Europe) {SCES-00120} <demo1_2> ]
 ;:SCES-00120
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Demo One (Version 4) (Ger) (1996?) (Sony Computer Entertainment Europe) {SCED-00457 (9644224)} <demo1_4g> ]
 ;:SCED-00457
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Disney/Pixar Monsters, Inc.: Skrämmarön (Swe) (2002) (Sony Computer Entertainment Europe) {SCES-03768 (9315629)} <monstincsw> ]
 :SCES-03768
@@ -86785,75 +87744,75 @@ D005C4BC 0000
 
 ; [ Euro Demo 21 (Euro) (1996?) (Sony Computer Entertainment Europe) {SCED-00817 (9668626)} <edemo21> ]
 ;:SCED-00817
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Euro Demo 22 (Euro) (1996?) (Sony Computer Entertainment Europe) {SCED-00818 (9678823)} <edemo22> ]
 ;:SCED-00818
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Euro Demo 28 (Euro) (1997?) (Sony Computer Entertainment Europe) {SCED-00824 (9680420)} <edemo28> ]
 ;:SCED-00824
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Euro Demo 58 (Euro) (2000?) (Sony Computer Entertainment Europe) {SCED-02632 (9151425)} <edemo58> ]
 ;:SCED-02632
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Euro Demo 60 (Euro) (2000?) (Sony Computer Entertainment Europe) {SCED-02634} <edemo60> ]
 ;:SCED-02634
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Euro Demo 62 (Euro) (2000?) (Sony Computer Entertainment Europe) {SCED-02636 (9151821)} <edemo62> ]
 ;:SCED-02636
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Euro Demo 63 (Euro) (2000?) (Sony Computer Entertainment Europe) {SCED-02637 (9151920)} <edemo63> ]
 ;:SCED-02637
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Euro Demo 64 (Euro) (2000?) (Sony Computer Entertainment Europe) {SCED-02638 (9152026)} <edemo64> ]
 ;:SCED-02638
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Euro Demo 65 (Euro) (2001?) (Sony Computer Entertainment Europe) {SCED-02639} <edemo65> ]
 ;:SCED-02639
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Euro Demo 66 (Euro) (2001?) (Sony Computer Entertainment Europe) {SCED-02640} <edemo66> ]
 ;:SCED-02640
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Euro Demo 67 (Euro) (2001?) (Sony Computer Entertainment Europe) {SCED-02641} <edemo67> ]
 ;:SCED-02641
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Euro Demo 68 (Euro) (2001?) (Sony Computer Entertainment Europe) {SCED-02642} <edemo68> ]
 ;:SCED-02642
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Euro Demo 69 (Euro) (2001?) (Sony Computer Entertainment Europe) {SCED-02643} <edemo69> ]
 ;:SCED-02643
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Euro Demo 70 (Euro) (2001?) (Sony Computer Entertainment Europe) {SCED-02644} <edemo70> ]
 ;:SCED-02644
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Euro Demo 71 (Euro) (2001?) (Sony Computer Entertainment Europe) {SCED-02645} <edemo71> ]
 ;:SCED-02645
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Euro Demo 72 (Euro) (2001?) (Sony Computer Entertainment Europe) {SCED-02646} <edemo72> ]
 ;:SCED-02646
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Euro Demo 73 (Euro) (2001?) (Sony Computer Entertainment Europe) {SCED-03450} <edemo73> ]
 ;:SCED-03450
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Euro Demo 74 (Euro) (2001?) (Sony Computer Entertainment Europe) {SCED-03451} <edemo74> ]
 ;:SCED-03451
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Everybody's Golf 2 (Euro) (2000) (Sony Computer Entertainment Europe) {SCES-02146} <evryglf2> ]
 :SCES-02146
@@ -87981,7 +88940,7 @@ D00D3C3A BFFF
 
 ; [ Point Blank (Euro, Demo) (1998) (Sony Computer Entertainment Europe) {SCED-00287 (9721925)} <ptblanked> ]
 ;:SCED-00287
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Point Blank (Euro, Rev. 1) (1997) (Sony Computer Entertainment Europe) {SCES-00886#} <ptblanke> ]
 :SCES-00886
@@ -88574,7 +89533,7 @@ D00988C0 0001
 
 ; [ Tenchu: Stealth Assassins (Euro, Demo) (1998) (Activision) {SLED-01467 (7005053)} <tenchude> ]
 ;:SLED-01467
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Test Drive 6 (Euro) (2000) (Cryo Interactive Entertainment) {SLES-02752} <td6e> ]
 :SLES-02752
@@ -89031,7 +89990,7 @@ A702E0C6 14621000
 
 ; [ Rockman Dash (Capcom Friendly Club Demo) (1997) (Capcom) {SLPM-80158} <rockmndp> ]
 ;:SLPM-80158
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Thrill Kill (Euro, Prototype) (1998) (Virgin Interactive) {SLES-01337?} <thkill> ]
 ;:SLES-01337?
@@ -89070,7 +90029,7 @@ AAAAAAAA AAAAAAAA
 
 ; [ Silent Hill (USA, Trade Demo) (1999) (Konami of America) {SLUS-80707} <silenthtd> ]
 ;:SLUS-80707
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ;*******************************************************************************
 ;* The following cheats for games not in the MAME software list, they are      *
@@ -89099,9 +90058,9 @@ AAAAAAAA AAAAAAAA
 D7010001 00000200
 F502ED9E 04401000
 F502EAD6 1C401000
-#FPS Unlocker 
+#FPS Unlocker
 A704C682 04812400
-#FPS Unlocker V2 
+#FPS Unlocker V2
 A704C816 14402400
 #Disable textures
 A7056002 14402400
@@ -90689,7 +91648,7 @@ D00B9F44 FCFF
 900C9364 012C012C
 #P2 Max Power
 900C9900 012C012C
-#2P Health 0 Press Select
+#P2 Health 0 Press Select
 D0062A62 0100
 800C8E78 0000
 D0062A62 0100
@@ -91053,7 +92012,7 @@ A605C4C2 ACA20000
 :SLES-03740
 #Start On Lap 2
 A61C338C 00000002
-#Freeze Timer
+#Infinite Time
 801C351C 0000
 
 ; [ All Star Racing 2 (Europe) {SLES-03933} ]
@@ -94335,14 +95294,14 @@ D0042B40 FFFF
 
 ; [ Battle Master (Japan) {SLPS-01064} ]
 :SLPS-01064
-#1P stamina
+#P1 stamina
 80159A38 0000
-#2P stamina
+#P2 stamina
 80159A3C 0001
 
 ; [ Battle Stations (Europe) {SLES-00662} ]
 :SLES-00662
-#1P Infinity Life
+#P1 Infinity Life
 800C368C 0064
 
 ; [ BattleRound USA (Japan) {SLPS-01127} ]
@@ -94453,7 +95412,7 @@ A604345C FFFF0000
 90060ACC 00000000
 #Infinite Energy
 9005D2A4 00000000
-#Freeze Timer
+#Infinite Time
 800EAB34 0000
 #No Overheat
 800EA846 0000
@@ -94488,7 +95447,7 @@ A604345C FFFF0000
 90060ACC 00000000
 #Infinite Energy
 9005D2A4 00000000
-#Freeze Timer
+#Infinite Time
 800EAB34 0000
 #No Overheat
 800EA846 0000
@@ -96337,7 +97296,7 @@ D01B19C8 001B
 D01B19C8 001B
 801B1A1E AE43
 #Walk through walls "Press L3 to toggle on/off"
-D7010001 01000200 
+D7010001 01000200
 F51D16E6 12932400
 
 ; [ Breath of Fire IV: Utsurowazaru Mono (Japan) {SLP-87159} ]
@@ -97155,9 +98114,9 @@ D00329C0 000E
 
 ; [ CT Special Forces (Europe) {SLES-03986} ]
 :SLES-03986
-#Co-OP Mode\P1 Infinite Energy 
+#Co-OP Mode\P1 Infinite Energy
 8009D8F0 0064
-#Co-OP Mode\P2 Infinite Energy 
+#Co-OP Mode\P2 Infinite Energy
 8009DA2C 0064
 #Co-OP Mode\P1 Infinite Grenades
 8009DA0C 0005
@@ -98782,6 +99741,9 @@ D00DDFDA FAFF
 
 ; [ Chibi Maruko-chan: Maruko Enikki World (Japan) {SLPS-00166} ]
 ; [ Chicken Run (Europe) {SLES-03188} ]
+:SLES-03188
+#Widescreen
+800B316C 0C00
 
 ; [ Chicken Run (Europe) {SLES-03285} ]
 :SLES-03285
@@ -99440,7 +100402,7 @@ E00CE0E5 0048
 #Infinite Repair- & Setup-Time
 800C5D0C 003C
 800C5C98 003C
-#Freeze Timer In Time Trial Mode
+#Infinite Time In Time Trial Mode
 800C5D3C 0000
 800C6900 0000
 
@@ -99507,7 +100469,7 @@ E00CE0E5 0048
 #Infinite Repair- & Setup-Time
 800C5D0C 003C
 800C5C98 003C
-#Freeze Timer In Time Trial Mode
+#Infinite Time In Time Trial Mode
 800C5D3C 0000
 800C6900 0000
 
@@ -99574,7 +100536,7 @@ E00CE0E5 0048
 #Infinite Repair- & Setup-Time
 800C5D0C 003C
 800C5C98 003C
-#Freeze Timer In Time Trial Mode
+#Infinite Time In Time Trial Mode
 800C5D3C 0000
 800C6900 0000
 
@@ -99641,7 +100603,7 @@ E00CE0E5 0048
 #Infinite Repair- & Setup-Time
 800C5D0C 003C
 800C5C98 003C
-#Freeze Timer In Time Trial Mode
+#Infinite Time In Time Trial Mode
 800C5D3C 0000
 800C6900 0000
 
@@ -99711,7 +100673,7 @@ E00CE0E5 0048
 #Infinite Repair- & Setup-Time
 800C5D0C 003C
 800C5C98 003C
-#Freeze Timer In Time Trial Mode
+#Infinite Time In Time Trial Mode
 800C5D3C 0000
 800C6900 0000
 
@@ -99778,7 +100740,7 @@ E00CE0E5 0048
 #Infinite Repair- & Setup-Time
 800C5D0C 003C
 800C5C98 003C
-#Freeze Timer In Time Trial Mode
+#Infinite Time In Time Trial Mode
 800C5D3C 0000
 800C6900 0000
 
@@ -99845,7 +100807,7 @@ E00CE0E5 0048
 #Infinite Repair- & Setup-Time
 800C5D0C 003C
 800C5C98 003C
-#Freeze Timer In Time Trial Mode
+#Infinite Time In Time Trial Mode
 800C5D3C 0000
 800C6900 0000
 
@@ -100947,6 +101909,104 @@ D005E714 0004
 8001E018 0000
 D005E714 0008
 8001E018 00C8
+#No enemies
+A701C906 AC902400
+#Infinite Aku-Aku Invincibility (you still have to get 3 Aku-Aku masks)
+A701F196 14401000
+#Running Speed Modifier:You will need to manually edit '0009' in the code line or you will see NO effect
+80052BAA 0009
+#Jumping Speed Modifier:You will need to manually edit '0009' in the code line or you will see NO effect
+80052BBA 0009
+#Spinning Speed Modifier:You will need to manually edit '000A' in the code line or you will see NO effect
+80052BCA 000A
+#Invincibility Speed Modifier:You will need to manually edit '000C' in the code line or you will see NO effect
+80052BDA 000C
+#Speed %Increaser for all moves:You will need to manually edit '0000' in the first code line or you will see NO effect
+9000C03C 240B0000
+9000C000 8E020124
+9000C004 27BDFFE0
+9000C008 AFA80010
+9000C00C AFA90014
+9000C010 AFAA0018
+9000C014 AFAB001C
+9000C01C 00004012
+9000C020 00004810
+9000C024 240A0064
+9000C028 244B0000
+9000C02C 016A001A
+9000C038 00005012
+9000C040 014B0018
+9000C04C 00005012
+9000C050 004A1021
+9000C054 01000013
+9000C058 01200011
+9000C05C 8FA80010
+9000C060 8FA90014
+9000C064 8FAA0018
+9000C068 8FAB001C
+9000C06C 27BD0020
+9000C070 03E00008
+A701FA78 01243000
+A701FA7A 8E020C00
+#Speed Multiplier for all moves:You will need to manually edit '0001' in the first code line or you will see NO effect
+9000C024 240A0001
+9000C000 8E020124
+9000C004 27BDFFE0
+9000C008 AFA80010
+9000C00C AFA90014
+9000C010 AFAA0018
+9000C014 AFAB001C
+9000C01C 00004012
+9000C020 00004810
+9000C028 004A0018
+9000C034 00001012
+9000C038 01000013
+9000C03C 01200011
+9000C040 8FA80010
+9000C044 8FA90014
+9000C048 8FAA0018
+9000C04C 8FAB001C
+9000C050 27BD0020
+9000C054 03E00008
+A701FA78 01243000
+A701FA7A 8E020C00
+#Select Moon Jump\Type 1
+A701FE94 18232C00
+A701FE96 00620C00
+A701FE98 00A80000
+A701FE9A AE030000
+9000B000 27BDFFE8
+9000B004 AFA80010
+9000B008 3C088005
+9000B00C 91087060
+9000B014 00084027
+9000B018 31080040
+9000B01C 15000002
+9000B024 00621823
+9000B028 AE0300A8
+9000B030 8FA80010
+9000B034 27BD0018
+9000B038 03E00008
+#Select Moon Jump\Type 2
+A701FE98 00A85A00
+A701FE9A AE030801
+A701FE9E 00642400
+90056800 3C148005
+90056804 36947060
+90056808 96930000
+90056810 00139982
+90056818 32730001
+90056820 16600005
+90056828 3063FFFF
+9005682C 3C14000C
+90056830 00741825
+90056838 AE0300A8
+9005683C 08007FA8
+90056840 0064182A
+#Widescreen
+A7017DC4 E4C70C00
+A7017DC6 0C002402
+A7017E06 A422A433
 
 ; [ Crash Bandicoot 2: Cortex Strikes Back (Europe) (Preview) {Unlicensed} ]
 
@@ -100999,6 +102059,18 @@ D006BD92 FFDE
 8001E9F4 00A8
 #Invincibility
 9001D264 24030004
+#Select Widescreen Type\Widescreen Hor+
+A7017F04 F5F70C00
+A7017F06 0C00241B
+A7017F08 20231000
+A7017F0A 00042402
+A7017F26 A662A67B
+#Select Widescreen Type\Widescreen Vert-
+A7017F04 F5F71000
+A7017F06 0C00241B
+A7017F08 20231555
+A7017F0A 00042402
+A7017F26 A662A67B
 
 ; [ Crash Bandicoot 3: Buttobi! Sekai Isshuu (Japan) (Tentou You Taikenban) {PCPX-96145} ]
 
@@ -103269,7 +104341,7 @@ D008F594 0002
 800C8EEC 00C8
 #P1 Infinite Magic
 800C8EEE 0708
-#2P Health 0 Press L2 Button
+#P2 Health 0 Press L2 Button
 D00BF862 0001
 800C8EEC 0000
 #Get Special Costumes (Press Triangle & Start)
@@ -104235,6 +105307,27 @@ D009E234 0028
 80048E86 6363
 50006402 0000
 80048ED4 6363
+#Increase DV Level after battle by 1
+8000C000 0004
+8000C002 8E28
+8000C004 000A
+8000C006 2508
+8000C008 0000
+8000C00A 0000
+8000C00C 0004
+8000C00E AE28
+8000C010 0008
+8000C012 8E29
+8000C014 0000
+8000C016 0000
+8000C018 0008
+8000C01A 03E0
+8000C01C 0000
+8000C01E 0000
+80017B0C 3000
+80017B0E 0C00
+80017B10 0000
+80017B12 0000
 #Max HP Kotemon
 800A4476 270F
 800A4478 270F
@@ -105491,6 +106584,24 @@ D007AD52 F0FF
 #Have All Green People
 800AA334 0005
 800AA398 0005
+#Moon Jump
+F4048000 00FF4000
+06000224 8C0002A6
+8E000286 00000000
+FFFFFFFF FFFFFFFF
+0030000C FFFFFFFF
+9000C000 27BDFFE8
+9000C004 AFA80010
+9000C008 3C08800B
+9000C00C 9108CE6B
+9000C014 00084027
+9000C018 31080040
+9000C01C 39080040
+9000C020 11000002
+9000C028 8602008E
+9000C030 8FA80010
+9000C034 27BD0018
+9000C038 03E00008
 
 ; [ Disney/Pixar A Bug's Life (Europe) {SCES-01489} ]
 :SCES-01489
@@ -105498,11 +106609,74 @@ D007AD52 F0FF
 800A6634 0004
 800B0232 0004
 #Infinite Lives
-800B022A 0009
+300A6640 0009
+;#Infinite Lives
+;800B022A 0009
 #Always spell FLIK
 800A6642 000F
 #Always have 50 grains of corn
 800A6640 3200
+#Jump in Mid-Air
+A7048C12 14401000
+#Invincibility
+A704A80E 1C001000
+#Invincibility No Hit
+A704AF0A 10401000
+#Always have the Super Jump
+A704820E 10402400
+A7055D12 10402400
+#Grab stuff from anywhere
+A7053CF2 10402400
+A70545E4 80085198
+A70545E6 3C020801
+#Moon Jump
+A7048DE4 00823000
+A7048DE6 86220C00
+9000C000 27BDFFE8
+9000C004 AFA80010
+9000C008 3C088009
+9000C00C 910890DB
+9000C014 00084027
+9000C018 31080040
+9000C01C 39080040
+9000C020 11000002
+9000C028 86220082
+9000C030 8FA80010
+9000C034 27BD0018
+9000C038 03E00008
+#Rapid Berry Throw
+A7049100 00863010
+A7049102 86230C00
+A7049104 000A0000
+A7049106 24020000
+9000C040 27BDFFE8
+9000C044 AFA80010
+9000C048 3C088009
+9000C04C 910890DB
+9000C054 00084027
+9000C058 31080080
+9000C05C 39080080
+9000C060 11000006
+9000C068 86230086
+9000C06C 3402000A
+9000C074 08003020
+9000C07C 27FF0008
+9000C080 8FA80010
+9000C084 27BD0018
+9000C088 03E00008
+#Select Jump Height\Normal
+80048DF4 0100
+#Select Jump Height\2x
+80048DF4 0080
+#Select Jump Height\4x
+80048DF4 0040
+#Select Jump Height\10x
+80048DF4 001A
+#Select Jump Height\0.5x
+80048DF4 0200
+#Widescreen 16-9
+A7027E24 66664CCC
+A7027E2C 6667CCCD
 
 ; [ Disney/Pixar A Bug's Life (France) {SCES-01520} ]
 :SCES-01520
@@ -105546,7 +106720,58 @@ D00891BA DFFF
 
 ; [ Disney/Pixar Bottega dei Giochi: A Bug's Life Megaminimondo (Italy) {SCES-02461} ]
 ; [ Disney/Pixar Buzz Lightyear da Commando Stellare (Italy) {SLES-03314} ]
+:SLES-03314
+#Moon Jump
+F4048000 00FF4000
+06000224 8C0002A6
+8E000286 00000000
+FFFFFFFF FFFFFFFF
+0030000C FFFFFFFF
+9000C000 27BDFFE8
+9000C004 AFA80010
+9000C008 3C08800B
+9000C00C 9108CE6B
+9000C014 00084027
+9000C018 31080040
+9000C01C 39080040
+9000C020 11000002
+9000C028 8602008E
+9000C030 8FA80010
+9000C034 27BD0018
+9000C038 03E00008
+
 ; [ Disney/Pixar Buzz Lightyear of Star Command aka Disney/Pixar's Buzz Lightyear of Star Command (Europe) {SLES-03310} ]
+:SLES-03310
+#Moon Jump
+;Moon Jump cheat by Teh69thSpartan
+;Toy Story 2 [Europe v1.1]
+A7049BA4 008E3000
+A7049BA6 86020C00
+;Toy Story 2 [USA v1.0]
+A7049B58 008E3000
+A7049B5A 86020C00
+;Toy Story 2 [USA v1.1]
+A7049BC4 008E3000
+A7049BC6 86020C00
+;Buzz Lightyear of Star Command [USA]
+A704BAA4 008E3000
+A704BAA6 86020C00
+;Buzz Lightyear of Star Command [Europe]
+A704BA78 008E3000
+A704BA7A 86020C00
+;Common
+9000C000 27BDFFE8
+9000C004 AFA80010
+9000C008 3C08800B
+9000C00C 9108CE6B
+9000C014 00084027
+9000C018 31080040
+9000C01C 39080040
+9000C020 11000002
+9000C028 8602008E
+9000C030 8FA80010
+9000C034 27BD0018
+9000C038 03E00008
 
 ; [ Disney/Pixar Captain Buzz Lightyear: Star Command (Germany) {SLES-03313} ]
 :SLES-03313
@@ -105572,6 +106797,24 @@ D00E6702 FDFF
 800B5C26 0188
 #Unendlich Jetpack-Treibstoff
 800AA928 0900
+#Moon Jump
+F4048000 00FF4000
+06000224 8C0002A6
+8E000286 00000000
+FFFFFFFF FFFFFFFF
+0030000C FFFFFFFF
+9000C000 27BDFFE8
+9000C004 AFA80010
+9000C008 3C08800B
+9000C00C 9108CE6B
+9000C014 00084027
+9000C018 31080040
+9000C01C 39080040
+9000C020 11000002
+9000C028 8602008E
+9000C030 8FA80010
+9000C034 27BD0018
+9000C038 03E00008
 
 ; [ Disney/Pixar Das grosse Krabbeln (Germany) {SCES-01521} ]
 :SCES-01521
@@ -105887,6 +107130,24 @@ D0082974 2000
 #Unverwundbar
 800B25B0 0001
 800B2604 0040
+#Moon Jump
+F4048000 00FF4000
+06000224 8C0002A6
+8E000286 00000000
+FFFFFFFF FFFFFFFF
+0030000C FFFFFFFF
+9000C000 27BDFFE8
+9000C004 AFA80010
+9000C008 3C08800B
+9000C00C 9108CE6B
+9000C014 00084027
+9000C018 31080040
+9000C01C 39080040
+9000C020 11000002
+9000C028 8602008E
+9000C030 8FA80010
+9000C034 27BD0018
+9000C038 03E00008
 
 ; [ Disney/Pixar Toy Story 2: Buzz Lightyear to the Rescue! aka Disney/Pixar's Toy Story 2: Buzz Lightyear to the Rescue! (Europe) Demo {SLED-02416} ]
 
@@ -105902,6 +107163,154 @@ D0082974 2000
 800A143C 0060
 #Have 99 Coins
 800B22C6 0063
+#Infinite Disk Launcher
+300A1664 0063
+#Infinite Grapple Hook
+300A1408 0063
+#Infinite Spin Attack
+800A143E 0000
+#Infinite Time for Challenges
+800A1400 0096
+800A1410 01C8
+#5 Objects in Challenges
+300A11A4 0005
+#Infinite Green Laser
+800A1680 04B0
+#Hold L2/LT for Flying Shoes
+300A1714 0000
+D7200000 0001
+300A1714 0003
+#Hold R2/RT for Turbo Shoes
+300A1360 0000
+D7200000 0002
+300A1360 0008
+#No Falling
+300A13C0 0000
+#Al's Penthouse is full of water
+800D5BB0 0000
+#Insta-Charge Laser
+A704A63C 20210040
+A704A63E 00443404
+#Insta-Charge Spin
+A704AD60 1021003C
+A704AD62 00623402
+#Invincibility
+A706B1A2 10401000
+#Invincibility No Hit
+A706AF9A 14401000
+#Hit Anywhere
+A707E392 10402400
+#Laser Ricochet
+A707E516 13202400
+#Multi Jumps
+A7049974 00050001
+#Rapid Jumps
+A7049974 00050002
+A7049A44 00030002
+#Infinite Double Jumps
+A70499AA 10402400
+#Infinite Single Jumps
+A7049A06 A4202400
+A704D0C6 00662400
+#Jump & Walk in Mid-Air 'Hold L3/LS'
+A704979A 24001040
+D7200000 00000200
+A704979A 10402400
+#Moon Jump
+;Moon Jump cheat by Teh69thSpartan
+;Toy Story 2 [Europe v1.1]
+A7049BA4 008E3000
+A7049BA6 86020C00
+;Toy Story 2 [USA v1.0]
+A7049B58 008E3000
+A7049B5A 86020C00
+;Toy Story 2 [USA v1.1]
+A7049BC4 008E3000
+A7049BC6 86020C00
+;Buzz Lightyear of Star Command [USA]
+A704BAA4 008E3000
+A704BAA6 86020C00
+;Buzz Lightyear of Star Command [Europe]
+A704BA78 008E3000
+A704BA7A 86020C00
+;Common
+9000C000 27BDFFE8
+9000C004 AFA80010
+9000C008 3C08800B
+9000C00C 9108CE6B
+9000C014 00084027
+9000C018 31080040
+9000C01C 39080040
+9000C020 11000002
+9000C028 8602008E
+9000C030 8FA80010
+9000C034 27BD0018
+9000C038 03E00008
+#Increased 2nd Jump Height
+A704990A 10402400
+#Grab the coins dropped by dead enemies from anywhere
+A706DDA8 10212000
+A706DDAA 00430800
+90008000 921B0008
+90008004 24010010
+90008008 103B0003
+90008010 0801B76C
+90008018 0801B788
+#Grab the 5 items from anywhere
+A70D135E 10402400
+A70D13B6 10402400
+A70D1A36 10402400
+A70D1532 10402400
+A70D1A4A 10402400
+A70D1C56 10402400
+A70D18BA 10402400
+A70D186A 10402400
+A70D1822 10402400
+A70D178A 10402400
+#Grab anything from anywhere
+A7076B52 10402400
+A7076CFC 0008DB43
+A7076CFE 92240801
+#Insta-KO Bosses
+A70C2F92 0014000A
+A70C2F92 00630009
+A70C2F92 00130009
+A70C2F92 001D0009
+A70C302A 001D0009
+A70C30C2 001D0009
+#Insta-KO Mini-Bosses
+A70C3452 00140009
+A70C3F02 000A0001
+A70C3DD2 001E0001
+A70C315A 00140001
+A70C2F92 001D0009
+A70C4752 001D0009
+A70C3452 001E0001
+A70C361A 001D0009
+A70C4292 001D0009
+A70C4AE2 001D0009
+#100%
+900C1690 1F801F1F
+900C1694 1F1F801F
+900C1698 801F1F80
+900C169C 00801F1F
+#Rapid Laser:Square/X for Red Laser, Triangle/Y for Green Laser, Release for Yellow Laser
+300A1290 0040
+D7200000 0010
+300A1180 000B
+00000000 FFFF
+D7200000 0080
+300A1180 000B
+00000000 FFFF
+D7200000 0010
+800A1680 04B0
+00000000 FFFF
+D7200000 0080
+800A1680 0000
+00000000 FFFF
+#50 FPS
+800A1214 0001
+800A1574 0001
 
 ; [ Disney/Pixar Toy Story 2: Buzz l'Eclair Ã  la Rescousse! (France) {SLES-02405} ]
 :SLES-02405
@@ -105913,6 +107322,24 @@ D0082974 2000
 800B2616 0063
 #Infinite Disk launcher ammo
 800A19B4 0008
+#Moon Jump
+F4048000 00FF4000
+06000224 8C0002A6
+8E000286 00000000
+FFFFFFFF FFFFFFFF
+0030000C FFFFFFFF
+9000C000 27BDFFE8
+9000C004 AFA80010
+9000C008 3C08800B
+9000C00C 9108CE6B
+9000C014 00084027
+9000C018 31080040
+9000C01C 39080040
+9000C020 11000002
+9000C028 8602008E
+9000C030 8FA80010
+9000C034 27BD0018
+9000C038 03E00008
 
 ; [ Disney/Pixar Toy Story 2: Woody e Buzz alla riscossa! (Italy) {SLES-02407} ]
 :SLES-02407
@@ -105957,7 +107384,7 @@ D00A41EA FFFE
 800B262E FFFF
 D00A41EA EFFE
 800B262E 000E
-#Green laser always full	l
+#Green laser always full
 800A19F0 04B0
 #Instant turnaround
 9004B01C 3402003C
@@ -105965,6 +107392,24 @@ D00A41EA EFFE
 9004A8F8 34040040
 #Stop timer
 800D3CA0 0000
+#Moon Jump
+F4048000 00FF4000
+06000224 8C0002A6
+8E000286 00000000
+FFFFFFFF FFFFFFFF
+0030000C FFFFFFFF
+9000C000 27BDFFE8
+9000C004 AFA80010
+9000C008 3C08800B
+9000C00C 9108CE6B
+9000C014 00084027
+9000C018 31080040
+9000C01C 39080040
+9000C020 11000002
+9000C028 8602008E
+9000C030 8FA80010
+9000C034 27BD0018
+9000C038 03E00008
 
 ; [ Disney/Pixar Toy Story 2: Â¡Buzz Lightyear al Rescate! (Spain) {SLES-02408} ]
 :SLES-02408
@@ -105980,6 +107425,24 @@ D00A41EA EFFE
 #All Movies Unlocked
 50000902 0000
 800C1A40 0101
+#Moon Jump
+F4048000 00FF4000
+06000224 8C0002A6
+8E000286 00000000
+FFFFFFFF FFFFFFFF
+0030000C FFFFFFFF
+9000C000 27BDFFE8
+9000C004 AFA80010
+9000C008 3C08800B
+9000C00C 9108CE6B
+9000C014 00084027
+9000C018 31080040
+9000C01C 39080040
+9000C020 11000002
+9000C028 8602008E
+9000C030 8FA80010
+9000C034 27BD0018
+9000C038 03E00008
 
 ; [ Disney/Pixar Toy Story Racer aka Disney/Pixar's Toy Story Racer (Europe) {SLES-03396} ]
 :SLES-03396
@@ -105988,6 +107451,19 @@ D00A41EA EFFE
 #All Characters Unlocked
 50000C08 0000
 300D741C 0001
+#Widescreen 16-9
+A7033E28 66664CCC
+A7033E2C 6667CCCD
+A704D6FC 66664CCC
+A704D799 6667CCCD
+A704D7E0 66664CCC
+A704D7E4 6667CCCD
+A704D894 66664CCC
+A704D89C 6667CCCD
+A704DE8C 66664CCC
+A704DE90 6667CCCD
+A706D404 66664CCC
+A706D40C 6667CCCD
 
 ; [ Disney/Pixar Toy Story Racer aka Disney/Pixar's Toy Story Racer (Europe) {SLES-03397} ]
 :SLES-03397
@@ -112885,13 +114361,13 @@ D30170E8 0000
 
 ; [ Formation Soccer '98: Ganbare Nippon in France (Japan) {SLPS-01419} ]
 :SLPS-01419
-#1P Score 9
+#P1 Score 9
 800CFF8C 0009
-#1P Score 0
+#P1 Score 0
 800CFF8C 0000
-#2P Score 9
+#P2 Score 9
 800CFF90 0009
-#2P Score 0
+#P2 Score 0
 800CFF90 0000
 
 ; [ Formula 1 (Europe) Rev 1 {SLES-00298} ]
@@ -112920,7 +114396,7 @@ D30170E8 0000
 3009DAF7 0001
 #Roving Camera (This code is one of the special options, but currently we have no idea what it actually does)
 3009DAF8 0001
-#Arcade Mode Freeze Timer
+#Arcade Mode Infinite Time
 800CEB2C 1350
 
 ; [ Formula 1 (Japan) {SIPS-60011} ]
@@ -113047,7 +114523,7 @@ A60AEE80 00020000
 3009DAF7 0001
 #Roving Camera (This code is one of the special options, but currently we have no idea what it actually does)
 3009DAF8 0001
-#Arcade Mode Freeze Timer
+#Arcade Mode Infinite Time
 800CEB2C 1350
 
 ; [ Formula GP (Europe) {SLES-03994} ]
@@ -113433,10 +114909,10 @@ D0079940 0C74
 80194F64 00A0
 D0079940 0C74
 80194F52 0030
-#1P multistage can jump
+#P1 multistage can jump
 D0079940 0C74
 30196AC8 0000
-#2P instant death press 1P SELECT button
+#P2 instant death press 1P SELECT button
 D00C8648 0100
 80194FAC 0000
 #Unlock everything
@@ -113455,7 +114931,7 @@ D0079940 0C74
 80198D0A 00B6
 #Infinite Continues
 801B6910 0005
-#2P Life = 0
+#P2 Life = 0
 301A4EEA 0000
 #Grand Battle 9999
 801B6FE8 270F
@@ -113465,7 +114941,7 @@ D0079940 0C74
 901B6960 0FFEFFE0
 #Max Card
 8019B760 FFFF
-#1P Special Moves level 3
+#P1 Special Moves level 3
 30198D1C 0003
 #P1 Invincibility
 D0198CEA 0000
@@ -113476,10 +114952,10 @@ D0198CEA 0000
 30199434 00FF
 D0198CEA 0000
 301A422E 00FF
-#1P deathblow all-you-can-eat
+#P1 deathblow all-you-can-eat
 D0198CEA 0000
 30198D1C 0003
-#2P HP 0
+#P2 HP 0
 30198D56 0000
 #All characters selectables and treasures
 801B6964 FFFF
@@ -113640,7 +115116,7 @@ D002C922 FCFF
 3002B66D 000?
 #Rangmodifizierer\4. Sau %RANGMODIFIZIERER
 3002B6AD 000?
-#Rangmodifizierer\5. Sau
+#Rangmodifizierer\5. Sau %RANGMODIFIZIERER
 3002B6ED 000?
 
 ; [ Fun + Learning (Europe) {Unlicensed} ]
@@ -113741,7 +115217,39 @@ D009FD5E 0030
 
 ; [ Fuujin Ryouiki Eretzvaju (Japan) Demo {SLP-80364} ]
 ; [ G Darius (Japan) (Tentou Demo-ban) {SLP-80205} ]
+
 ; [ G Darius (Japan, Asia) {SCPS-45202} ]
+#Infinite Credits
+800AB508 0002
+#Special Laser
+800DBDB6 01FF
+#P1 Infinite Lives
+800B9DBE 0005
+#P1 Infinite Shields
+800BA34A 0303
+#P1 Invincibility
+800B9DC2 0092
+#P1 Max Blue Weapon
+800BA328 0302
+#P1 Max Green Weapon
+800BA348 0502
+#P1 Max Red Weapon
+800BA2F8 0602
+#P2 Infinite Lives
+800BA4CA 0005
+#P2 Infinite Shields
+800BAA36 0303
+#P2 Invincibility
+800BA4CE 0092
+#P2 Max Blue Weapon
+800BAA54 0502
+#P2 Max Green Weapon
+800BAA34 0302
+#P2 Max Red Weapon
+800BAA04 0602
+#Can See Movies
+300D5438 001F
+800CF208 00FF
 
 ; [ G-Police (Europe) {SLES-00082 | SLES-10082} ]
 :SLES-00082
@@ -114596,6 +116104,8 @@ D003AF4C FFFF
 801B2C6A 0005
 #Unendlich Medizin\Platz 7 : Skip
 801B2C6C 0006
+#Unlock FMVs
+901FD2B4 FFFFFFFF
 
 ; [ Galerians (Japan) (Prototype) {SLPS-02192 | SLPS-02193} ]
 :SLPS-02192
@@ -115377,12 +116887,15 @@ D0091238 0000
 ;This game currently has no cheats
 
 ; [ Gradius Gaiden (Japan) {SLP-86042} ]
-;:SLP-86042
-;This game currently has no cheats
+:SLP-86042
+#Infinite Lives
+A7043A94 FFFF0000
+#Invincibility against Sprites
+A70420D6 10401000
 
 ; [ Gran Turismo (France) Demo {SCED-01279} ]
 ;:SCED-01279
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Gran Turismo (Japan) (Test Drive Disc) {PCPX-96085} ]
 ;:PCPX-96085
@@ -115390,7 +116903,7 @@ D0091238 0000
 
 ; [ Gran Turismo (Japan) Demo {PAPX-90026} ]
 ;:PAPX-90026
-;This game currently has no cheats
+;This demo currently has no cheats
 
 ; [ Gran Turismo (Japan, Asia) {SCPS-10045} ]
 :SCPS-10045
@@ -115415,6 +116928,8 @@ A702A548 00020001
 ; [ Gran Turismo 2 (Arcade + Gran Turismo Mode) (Japan, Asia) {SCPS-10116 | SCPS-10117} ]
 :SCPS-10116
 :SCPS-10117
+:SCPS-45457
+:SCPS-91326
 #Simulation Mode Codes\A Ton Of Cash
 901D0FC8 05F5E0FF
 #Simulation Mode Codes\Stop Race Timer (Really Helpful In License Tests)
@@ -118714,7 +120229,7 @@ D00C24BA F7FE
 90020FB4 00000000
 #Infinite Health
 900490E0 00000000
-#Freeze timer
+#Infinite Time
 8008BD48 0000
 
 ; [ In einem Land vor unserer Zeit: Die Rückkehr ins GroÃŸe Tal (Germany) {SLES-02983} ]
@@ -119881,9 +121396,9 @@ D0093B60 0000
 :SLES-00598
 #Infinite Health
 30010044 0050
-#Amount Of Pumpkins ?00-FF
-30010040 00??
-3005C2CE 00??
+#Amount Of Pumpkins:You will need to manually edit 'FF' (the max) in the code line as required
+30010040 00FF
+3005C2CE 00FF
 #Infinite Lives
 30010043 0063
 #All 5 Letters Press Select
@@ -120752,7 +122267,7 @@ E00E4DE0 000A
 :SLPS-02595
 #P1 Infinite Energy
 8006A724 0062
-#2P Energy 0
+#P2 Energy 0
 3006A83C 0000
 
 ; [ Kamen Rider (Japan) Demo {SLP-80326} ]
@@ -120974,7 +122489,7 @@ A70C3D18 10000C00
 8007DE94 0000
 #P2 No Overall Gauge
 8007DE9C 0000
-#Freeze Timer
+#Infinite Time
 8007EA7A 00B3
 
 ; [ Kensetsu Kikai Simulator: Kenki Ippai! (Japan) {SLPS-02605} ]
@@ -122321,17 +123836,17 @@ D0089A28 008C
 8011F390 00C8
 #Mission 3 Infinite Energy
 80120C30 00C8
-#Mission 3 Freeze Timer
+#Mission 3 Infinite Time
 80120C24 0DF7
 #Mission 4 Infinite Energy
 801227A4 00C8
-#Mission 4 Freeze Timer
+#Mission 4 Infinite Time
 80122798 0DF7
 #Mission 5 Infinite Energy
 8011FD4C 00C8
 #Mission 6 Infinite Energy
 801276E4 00C8
-#Mission 6 Freeze Timer
+#Mission 6 Infinite Time
 801276D8 0DF7
 #Mission 7 Infinite Energy
 80125D04 00C8
@@ -122339,7 +123854,7 @@ D0089A28 008C
 801204A8 00C8
 #Mission 9 Infinite Energy
 801253E4 00C8
-#Mission 9 Freeze Timer
+#Mission 9 Infinite Time
 801253D8 0DF7
 #Mission 10 Infinite Energy
 80125084 00C8
@@ -124790,8 +126305,8 @@ D00B6B1C 0900
 80055FBC 000A
 #Infinite Coins
 80055FC8 000A
-#Score Modifier
-80056064 00??
+#Score Modifier:You will need to manually edit '01' (the last 2 chars) in the code line as required
+80056064 0001
 #Walk Through Enemies (Press L1 + L2)
 D00562D0 0005
 80056078 0001
@@ -127595,7 +129110,7 @@ D006AA76 FCFF
 801237D2 0063
 #Infinite Health Battle Mode
 801237CC 03E8
-#1P Power Battle mode
+#P1 Power Battle mode
 801237D0 2710
 #More Gundam To Choose Battle Mode
 80060752 0003
@@ -128405,18 +129920,18 @@ C00B5858 0013
 :SLPS-00791
 #P1 Infinite HP
 800321FA 00A6
-#1P Always Has Full Aggressor
+#P1 Always Has Full Aggressor
 800321FC 0030
-#1P death blow
+#P1 death blow
 A60321FA 00A60001
 #P2 Infinite HP
 80032372 00A6
 #(Press SELECT button) 2P life 0
 D00B964C 0100
 80032372 0000
-#2P Always Has Full Aggressor
+#P2 Always Has Full Aggressor
 80032374 0030
-#2P death blow
+#P2 death blow
 A6032372 00A60001
 #? in Options is Available
 800326EC 0001
@@ -129507,7 +131022,7 @@ D0090060 0001
 800A02CE 4280
 #All Skiing Events\No Disqualification
 800B2D28 0000
-#All Skiing Events\Freeze Timer
+#All Skiing Events\Infinite Time
 8008D640 0000
 
 ; [ Nainai no Meitantei (Japan) {SLPS-02500} ]
@@ -136539,10 +138054,14 @@ A61CDB00 00010008
 300B3F82 0000
 #Main Game\P2 Slow Speed
 300B4002 0000
-#P1 Massive Ojama Puyos
+#P1 Select Ojama Puyos\Massive Amount
 800B3F8C 001E
-#P2 Massive Ojama Puyos
+#P1 Select Ojama Puyos\None
+800B3F8C 0000
+#P2 Select Ojama Puyos\Massive Amount
 800B400C 001E
+#P2 Select Ojama Puyos\None
+800B400C 0000
 #P1 Max Combo
 300B3F83 0007
 #P2 Max Combo
@@ -136553,10 +138072,6 @@ A61CDB00 00010008
 900B3F84 0098967F
 #P2 Max Score
 900B4004 0098967F
-#P1 No Ojama Puyos
-800B3F8C 0000
-#P2 No Ojama Puyos
-800B400C 0000
 #P1 No Zen-Keshi Bonus
 800B3F92 0000
 #P2 No Zen-Keshi Bonus
@@ -136605,10 +138120,14 @@ E00B0C84 0004
 300B3F82 0000
 #Main Game\P2 Slow Speed
 300B4002 0000
-#P1 Massive Ojama Puyos
+#P1 Select Ojama Puyos\Massive Amount
 800B3F8C 001E
-#P2 Massive Ojama Puyos
+#P1 Select Ojama Puyos\None
+800B3F8C 0000
+#P2 Select Ojama Puyos\Massive Amount
 800B400C 001E
+#P2 Select Ojama Puyos\None
+800B400C 0000
 #P1 Max Combo
 300B3F83 0007
 #P2 Max Combo
@@ -136619,10 +138138,6 @@ E00B0C84 0004
 900B3F84 0098967F
 #P2 Max Score
 900B4004 0098967F
-#P1 No Ojama Puyos
-800B3F8C 0000
-#P2 No Ojama Puyos
-800B400C 0000
 #P1 No Zen-Keshi Bonus
 800B3F92 0000
 #P2 No Zen-Keshi Bonus
@@ -140325,7 +141840,7 @@ A60C8784 0001FF0A
 A7015460 FFFF0000
 #Infinite Energy
 A703E126 00502400
-#Infinite Bombs 
+#Infinite Bombs
 A705DBDC FFFF0000
 
 ; [ Retrouve la Magie Disney sur PlayStation aka disney interactive / playstation demo disc (France) {SCED-03924} ]
@@ -140379,9 +141894,9 @@ A705DBDC FFFF0000
 #Maximum Experience
 800D400C FFFF
 800D4044 FFFF
-#1P MEC 99999
+#P1 MEC 99999
 900D3F50 0001869F
-#2P MEC 99999
+#P2 MEC 99999
 900D4000 0001869F
 
 ; [ Ridge Racer (Europe) {SCES-00001} ]
@@ -142511,7 +144026,7 @@ A61EAF80 00010000
 #Play As Zankuro
 800A6FDC 000D
 800A72E0 000D
-#2P strength 0
+#P2 strength 0
 800A5430 0000
 
 ; [ Samurai Spirits: Kenkaku Shinan Pack (Japan, Asia) {SCPS-45209} ]
@@ -143549,11 +145064,11 @@ D00DBA4A FFFE
 901CBDD4 FFFFFFFF
 801CBDD8 FFFF
 301CBDDA 00FF
-#1P Hp
+#P1 Hp
 800B0B38 0210
-#2P Hp
+#P2 Hp
 800FEC20 0210
-#1P Caught All Monster
+#P1 Caught All Monster
 901A1BAC FFFFFFFF
 901A1BB0 FFFFFFFF
 901A1BB4 FFFFFFFF
@@ -143750,9 +145265,9 @@ D00DBA4A FFFE
 
 ; [ Shin Nihon Pro Wrestling: Toukon Retsuden (Japan) {SLPS-00084} ]
 :SLPS-00084
-#1P always in fighting spirit rush state
+#P1 always in fighting spirit rush state
 80082D7C 0012
-#2P always in fighting spirit rush state
+#P2 always in fighting spirit rush state
 80083300 001A
 #Widescreen 16-9
 8002C634 0C00
@@ -145286,11 +146801,11 @@ A706FF6A 0C012400
 :SLPS-00450
 #Hidden Character
 8009C470 0001
-#1P Games Win 5
+#P1 Games Win 5
 800C2B68 0005
-#1P Games Win 6
+#P1 Games Win 6
 800C2B68 0006
-#1P PoinS 40
+#P1 Points 40
 8009C434 0003
 #To be able to put things as long as you allow the place in your own coat
 8009C624 0000
@@ -145304,11 +146819,11 @@ A706FF6A 0C012400
 
 ; [ Smash Court 2 (Japan) {SLPS-01693} ]
 :SLPS-01693
-#1P set count 1
+#P1 set count 1
 80088208 0001
-#1P set count 2
+#P1 set count 2
 80088208 0002
-#1P set count 3
+#P1 set count 3
 80088208 0003
 #Choose hidden character
 8009C470 0001
@@ -147227,7 +148742,7 @@ A703CA0E 0C002400
 #Matrix mode "Press L3 to toggle on/off"
 D7010001 01000200
 F504304A 04401000
-#No swim interval cap 
+#No swim interval cap
 F4076000 00AAFFFF
 AAAA4014 28000424
 AAAA0108 00000000
@@ -148152,7 +149667,7 @@ E0077774 0040
 3005768C 000A
 #Select Track\front line
 3005768C 000B
-#Quick win Press Select - just play until next Checkpoin
+#Quick win Press Select - just play until next Checkpoint
 D01BB362 FFFE
 801B5BD0 000?
 #Infinite Turbo boost
@@ -148468,14 +149983,14 @@ D01EF360 0103
 801874D4 0090
 #No energy 2P
 801874D4 0000
-#1P air deathblow
+#P1 air deathblow
 8018727E 0090
-#2P air deathblow
+#P2 air deathblow
 80187546 0090
 
 ; [ Street Fighter Zero 2 (Japan) {SLPS-00415} ]
 :SLPS-00415
-#1P Infinite Energy
+#P1 Infinite Energy
 3019801C 0090
 #P2 Infinite Energy
 80197FEC 0090
@@ -148682,7 +150197,7 @@ D004C226 8007
 80062C02 00F0
 D008F97E 2442
 8008F97C 0000
-#1P & 2P Invincibility
+#Invincibility
 80062C26 005A
 #Infinite Time Strider 1 Alt
 D008F97E 2442
@@ -150642,6 +152157,10 @@ D01755E9 073E
 80001B37 75FC
 
 ; [ Syphon Filter 3 (Italy) {SCES-03700} ]
+:SCES-03700
+#Widescreen
+80123550 0C00 
+
 ; [ Syphon Filter 3 (USA) Demo {SCUS-94661} ]
 
 ; [ Syphon Filter 3: Sentencia Final (Spain) (Platinum) {SCES-03701} ]
@@ -151081,13 +152600,13 @@ E00B2560 0040
 :SLPS-02672
 #P1 always has 99 AP
 8008222C 0063
-#1P) APMAX
+#P1 APMAX
 8008222C 0063
 8008B9BC 0063
-#(2P) APMAX
+#P2 APMAX
 80082230 0063
 8008BDE0 0063
-#1P favvorability UP
+#P1 favvorability UP
 9008AECC 00000000
 9008AED0 00FFFFFF
 9008AF54 00000000
@@ -151275,7 +152794,7 @@ D0119B80 0CF8
 80086FAE 03E7
 #Infinite & Max HP in Battle Mint
 80139064 03E7
-#Invencible
+#Invincibility (May not work)
 800FBDB4 0004
 #No Random Battle
 80087ADC 0000
@@ -151295,6 +152814,12 @@ A60DCC8C 02000000
 30087BEE 00FF
 50007602 0000
 80087B02 FFFF
+#Walk Through Walls In Stages
+D00E9364 ADCE
+800E9394 1000
+#Walk Through Walls on Overworld
+D00E7ECE 1440
+800E7ECE 1000
 #Debug Room Hold L2 while entering another map to enter the debug room, whose ID is 0005. You can level-up your characters and warp to various locations, including a completely-removed area..
 D007F378 0001
 80087AD0 0005
@@ -154411,7 +155936,7 @@ D005D434 0008
 
 ; [ Time Bokan Series: Bokan GoGoGo (Japan) {SLPS-03133} ]
 :SLPS-03133
-#Freeze Timer
+#Infinite Time
 8003E33C 0000
 8003E338 0000
 8003E340 0000
@@ -154759,7 +156284,7 @@ D005490A FCFF
 :SCPS-45025
 #P1 Infinite Energy
 80123E70 0100
-#1P Infinity Hp
+#P1 Infinity Hp
 80123E70 0100
 80124A80 0100
 #Hungry Indicator
@@ -157845,23 +159370,23 @@ D0092CD0 0000
 901256CC 03636302
 901256D0 63046363
 901256D4 63630563
-#1P designation character Van Raily
+#P1 Select Character\Van Raily
 30124D60 0000
-#1P designation character John Bishous
+#P1 Select Character\John Bishous
 30124D60 0001
-#1P designation character Lou Riche
+#P1 Select Character\Lou Riche
 30124D60 0002
-#1P designation character Tico
+#P1 Select Character\Tico
 30124D60 0003
-#1P designation character Abdoll Rerin)
+#P1 Select Character\Abdoll Rerin)
 30124D60 0004
-#1P designation character Ugetsu Tenrou
+#P1 Select Character\Ugetsu Tenrou
 30124D60 0005
-#1P designation character REM
+#P1 Select Character\REM
 30124D60 0006
-#1P designation character DYN
+#P1 Select Character\DYN
 30124D60 0007
-#1P designation character ERG
+#P1 Select Character\ERG
 30124D60 0008
 #Death blow
 A6049A1E 00430000
@@ -159495,6 +161020,8 @@ D011FA2E 8011
 #Enable all teleport locations
 50001202 0000
 80061C66 0101
+#No Slowdown
+8005E24C 0002
 #Max Item-Codes\Slot 1
 300614EA 0064
 #Max Item-Codes\Slot 2
@@ -159987,7 +161514,7 @@ A61DB544 00080009
 300CD39D 000C
 #P2 Select Character\Pyron
 300CD711 000C
-#Freeze Timer
+#Infinite Time
 800CD5D2 FF7F
 800CDAB6 0063
 
@@ -164670,7 +166197,7 @@ D0015F8C 0000
 :SCPS-10123
 #P1 dice always turn Adventure and battle mode
 801D5E10 0000
-#2P dice hail Adventure and battle mode
+#P2 dice hail Adventure and battle mode
 801D5EC4 0010
 801D5ECC 0010
 #Puzzle mode infinite times
@@ -165185,13 +166712,13 @@ D008A57C 0000
 :SLPS-03098
 #Player has 9999999 Money in story mode
 900E9F70 0098967F
-#1P Max money
+#P1 Max money
 900EA494 0098967F
-#2p has 0 money
+#P2 has 0 money
 900EA498 00000000
-#3p has 0 Money
+#P3 has 0 Money
 900EA49C 00000000
-#4p has 0 money
+#P4 has 0 money
 900EA4A0 00000000
 
 ; [ Youkai Hana Asobi (Japan) {SLP-86857} ]
