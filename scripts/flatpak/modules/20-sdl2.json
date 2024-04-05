@@ -2,6 +2,12 @@
   "name": "sdl2",
   "buildsystem": "cmake-ninja",
   "builddir": true,
+  "config-opts": [
+    "-DBUILD_SHARED_LIBS=ON",
+    "-DSDL_SHARED=ON",
+    "-DSDL_STATIC=OFF",
+    "-DSDL_TESTS=OFF"
+  ],
   "build-options": {
     "strip": true
   },
@@ -21,4 +27,3 @@
     "/lib/pkgconfig"
   ]
 }
-

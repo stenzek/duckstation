@@ -158,7 +158,7 @@ Due to Ubuntu LTS using older package versions, DuckStation releases use manuall
 
 Fedora package names (assumes you are using the dependency build script):
 ```
-alsa-lib-devel brotli-devel clang cmake dbus-devel egl-wayland-devel fontconfig-devel gcc-c++ libcurl-devel libdecor-devel libevdev-devel libICE-devel libinput-devel libSM-devel libX11-devel libXau-devel libxcb-devel libXcomposite-devel libXcursor-devel libXext-devel libXfixes-devel libXft-devel libXi-devel libxkbcommon-devel libxkbcommon-x11-devel libXpresent-devel libXrandr-devel libXrender-devel lld llvm make mesa-libEGL-devel mesa-libGL-devel ninja-build openssl-devel patch pcre2-devel perl-Digest-SHA pipewire-devel pulseaudio-libs-devel systemd-devel wayland-devel xcb-util-cursor-devel xcb-util-errors-devel xcb-util-image-devel xcb-util-keysyms-devel xcb-util-renderutil-devel zlib-devel
+alsa-lib-devel brotli-devel clang cmake dbus-devel egl-wayland-devel fontconfig-devel gcc-c++ libcurl-devel libdecor-devel libevdev-devel libICE-devel libinput-devel libSM-devel libX11-devel libXau-devel libxcb-devel libXcomposite-devel libXcursor-devel libXext-devel libXfixes-devel libXft-devel libXi-devel libxkbcommon-devel libxkbcommon-x11-devel libXpresent-devel libXrandr-devel libXrender-devel lld llvm make mesa-libEGL-devel mesa-libGL-devel ninja-build openssl-devel patch pcre2-devel perl-Digest-SHA pipewire-devel pulseaudio-libs-devel systemd-devel wayland-devel xcb-util-cursor-devel xcb-util-devel xcb-util-errors-devel xcb-util-image-devel xcb-util-keysyms-devel xcb-util-renderutil-devel xcb-util-wm-devel xcb-util-xrm-devel zlib-devel
 ```
 
 1. Clone the repository: `git clone https://github.com/stenzek/duckstation.git -b dev`.
