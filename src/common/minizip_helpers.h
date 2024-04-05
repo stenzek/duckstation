@@ -65,11 +65,7 @@ namespace MinizipHelpers {
 
 #undef FI
 
-  unzFile zf = unzOpen2_64("", &funcs);
-  if (!zf)
-    delete fi;
-
-  return zf;
+  return unzOpen2_64("", &funcs);
 }
 
 [[maybe_unused]] static unzFile OpenUnzFile(const char* filename)
