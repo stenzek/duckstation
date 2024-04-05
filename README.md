@@ -1,11 +1,11 @@
 # DuckStation - PlayStation 1, aka. PSX Emulator
 [Features](#features) | [Downloading and Running](#downloading-and-running) | [Building](#building) | [Disclaimers](#disclaimers)
 
-**Latest Builds for Windows 10/11, Linux (AppImage/Flatpak), and macOS:** https://github.com/stenzek/duckstation/releases/tag/latest
+**Latest Builds for Windows 10/11 (x64/ARM64), Linux (AppImage/Flatpak), and macOS (11.0+ Universal):** https://github.com/stenzek/duckstation/releases/tag/latest
 
 **Game Compatibility List:** https://docs.google.com/spreadsheets/d/e/2PACX-1vRE0jjiK_aldpICoy5kVQlpk2f81Vo6P4p9vfg4d7YoTOoDlH4PQHoXjTD2F7SdN8SSBLoEAItaIqQo/pubhtml
 
-**Wiki:** https://www.duckstation.org/wiki/
+**Discord Server:** https://www.duckstation.org/discord.html
 
 DuckStation is an simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability. The goal is to be as accurate as possible while maintaining performance suitable for low-end devices. "Hack" options are discouraged, the default configuration should support all playable games with only some of the enhancements having compatibility issues.
 
@@ -135,6 +135,7 @@ CHD images with built-in subchannel information are also supported.
 Requirements:
  - Visual Studio 2022
 
+
 1. Clone the respository: `git clone https://github.com/stenzek/duckstation.git`.
 2. Download the dependencies pack from https://github.com/stenzek/duckstation-ext-qt-minimal/releases/download/latest/deps-x64.7z, and extract it to `dep\msvc`.
 3. Open the Visual Studio solution `duckstation.sln` in the root, or "Open Folder" for cmake build.
@@ -145,17 +146,20 @@ Requirements:
 ### Linux
 Requirements (Debian/Ubuntu package names):
  - CMake (`cmake`)
- - SDL2 (at least version 2.30.0) (`libsdl2-dev` `libxrandr-dev`)
+ - SDL2 (at least version 2.30.2) (`libsdl2-dev` `libxrandr-dev`)
  - pkgconfig (`pkg-config`)
- - Qt 6 (at least version 6.6.0) (`qt6-base-dev` `qt6-base-private-dev` `qt6-base-dev-tools` `qt6-tools-dev` `libqt6svg6`)
+ - Qt 6 (at least version 6.7.0) (`qt6-base-dev` `qt6-base-private-dev` `qt6-base-dev-tools` `qt6-tools-dev` `libqt6svg6`)
  - git (`git`) (Note: needed to clone the repository and at build time)
  - When Wayland is enabled (default): (`libwayland-dev` `libwayland-egl-backend-dev` `extra-cmake-modules` `qt6-wayland`)
  - libcurl (`libcurl4-openssl-dev`)
  - Optional for faster building: Ninja (`ninja-build`)
 
+
+Due to Ubuntu LTS using older package versions, DuckStation releases use manually built dependency libraries. If you are using a distribution with older package versions, you can build the required library versions using the script found at https://github.com/stenzek/duckstation/blob/master/scripts/build-dependencies.sh.
+
 1. Clone the repository: `git clone https://github.com/stenzek/duckstation.git -b dev`.
 2. Create a build directory, either in-tree or elsewhere.
-3. Run CMake to configure the build system. Assuming a build subdirectory of `build-release`, run `cmake -Bbuild-release -DCMAKE_BUILD_TYPE=Release`. If you have installed Ninja, add `-GNinja` at the end of the CMake command line for faster builds.
+3. Run CMake to configure the build system. Assuming a build subdirectory of `build-release`, run `cmake -Bbuild-release -DCMAKE_BUILD_TYPE=Release`. If you have installed Ninja, add `-GNinja` at the end of the CMake command line for faster builds. If you used the dependency build script, the path you built the dependencies in should be supplied with `-DCMAKE_PREFIX_PATH=/path/to/deps`.
 4. Compile the source code. For the example above, run `cmake --build build-release --parallel`.
 5. Run the binary, located in the build directory under `bin/duckstation-qt`.
 
@@ -163,14 +167,12 @@ Requirements (Debian/Ubuntu package names):
 
 Requirements:
  - CMake
- - SDL2 (at least version 2.30.0)
- - Qt 6 (at least version 6.6.0)
+ - Xcode
 
-Optional (recommended for faster builds):
- - Ninja
 
 1. Clone the repository: `git clone https://github.com/stenzek/duckstation.git`.
-2. Run CMake to configure the build system: `cmake -Bbuild-release -DCMAKE_BUILD_TYPE=Release`. You may need to specify `-DQt6_DIR` depending on your system. If you have installed Ninja, add `-GNinja` at the end of the CMake command line for faster builds.
+2. Build the dependencies. `scripts/build-dependencies-mac.sh /PATH/TO/SAVE/DEPS` (substitute with your own location).
+2. Run CMake to configure the build system: `cmake -Bbuild-release -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/PATH/TO/SAVE/DEPS`. 
 4. Compile the source code: `cmake --build build-release --parallel`.
 5. Run the binary, located in the build directory under `bin/DuckStation.app`.
 
