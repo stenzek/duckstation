@@ -224,8 +224,8 @@ private:
 
   void switchToGameListView();
   void switchToEmulationView();
-  void saveGeometryToConfig();
-  void restoreGeometryFromConfig();
+  void saveStateToConfig();
+  void restoreStateFromConfig();
   void saveDisplayWindowGeometryToConfig();
   void restoreDisplayWindowGeometryFromConfig();
   void createDisplayWidget(bool fullscreen, bool render_to_main, bool use_main_window_pos);

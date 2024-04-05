@@ -162,7 +162,7 @@ void MainWindow::initialize()
   setupAdditionalUi();
   connectSignals();
 
-  restoreGeometryFromConfig();
+  restoreStateFromConfig();
   switchToGameListView();
   updateWindowTitle();
 
@@ -2462,29 +2462,76 @@ void MainWindow::onSettingsResetToDefault(bool system, bool controller)
   updateMenuSelectedTheme();
 }
 
-void MainWindow::saveGeometryToConfig()
+void MainWindow::saveStateToConfig()
 {
-  const QByteArray geometry = saveGeometry();
-  const QByteArray geometry_b64 = geometry.toBase64();
-  const std::string old_geometry_b64 = Host::GetBaseStringSettingValue("UI", "MainWindowGeometry");
+  if (!isVisible() || ((windowState() & Qt::WindowFullScreen) != Qt::WindowNoState))
+    return;
+
+  bool changed = false;
+
+  const QByteArray geometry(saveGeometry());
+  const QByteArray geometry_b64(geometry.toBase64());
+  const std::string old_geometry_b64(Host::GetBaseStringSettingValue("UI", "MainWindowGeometry"));
   if (old_geometry_b64 != geometry_b64.constData())
   {
     Host::SetBaseStringSettingValue("UI", "MainWindowGeometry", geometry_b64.constData());
-    Host::CommitBaseSettingChanges();
+    changed = true;
   }
+
+  const QByteArray state(saveState());
+  const QByteArray state_b64(state.toBase64());
+  const std::string old_state_b64(Host::GetBaseStringSettingValue("UI", "MainWindowState"));
+  if (old_state_b64 != state_b64.constData())
+  {
+    Host::SetBaseStringSettingValue("UI", "MainWindowState", state_b64.constData());
+    changed = true;
+  }
+
+  if (changed)
+    Host::CommitBaseSettingChanges();
 }
 
-void MainWindow::restoreGeometryFromConfig()
+void MainWindow::restoreStateFromConfig()
 {
-  const std::string geometry_b64 = Host::GetBaseStringSettingValue("UI", "MainWindowGeometry");
-  const QByteArray geometry = QByteArray::fromBase64(QByteArray::fromStdString(geometry_b64));
-  if (!geometry.isEmpty())
-    restoreGeometry(geometry);
+  {
+    const std::string geometry_b64 = Host::GetBaseStringSettingValue("UI", "MainWindowGeometry");
+    const QByteArray geometry = QByteArray::fromBase64(QByteArray::fromStdString(geometry_b64));
+    if (!geometry.isEmpty())
+      restoreGeometry(geometry);
+  }
+
+  {
+    const std::string state_b64 = Host::GetBaseStringSettingValue("UI", "MainWindowState");
+    const QByteArray state = QByteArray::fromBase64(QByteArray::fromStdString(state_b64));
+    if (!state.isEmpty())
+    {
+      restoreState(state);
+
+      // make sure we're not loading a dodgy config which had fullscreen set...
+      setWindowState(windowState() & ~(Qt::WindowFullScreen | Qt::WindowActive));
+    }
+
+    {
+      QSignalBlocker sb(m_ui.actionViewToolbar);
+      m_ui.actionViewToolbar->setChecked(!m_ui.toolBar->isHidden());
+    }
+    {
+      QSignalBlocker sb(m_ui.actionViewStatusBar);
+      m_ui.actionViewStatusBar->setChecked(!m_ui.statusBar->isHidden());
+    }
+  }
 }
 
 void MainWindow::saveDisplayWindowGeometryToConfig()
 {
-  const QByteArray geometry = getDisplayContainer()->saveGeometry();
+  QWidget* container = getDisplayContainer();
+  if (container->windowState() & Qt::WindowFullScreen)
+  {
+    // if we somehow ended up here, don't save the fullscreen state to the config
+    return;
+  }
+
+  const QByteArray geometry = container->saveGeometry();
   const QByteArray geometry_b64 = geometry.toBase64();
   const std::string old_geometry_b64 = Host::GetBaseStringSettingValue("UI", "DisplayWindowGeometry");
   if (old_geometry_b64 != geometry_b64.constData())
@@ -2500,9 +2547,17 @@ void MainWindow::restoreDisplayWindowGeometryFromConfig()
   const QByteArray geometry = QByteArray::fromBase64(QByteArray::fromStdString(geometry_b64));
   QWidget* container = getDisplayContainer();
   if (!geometry.isEmpty())
+  {
     container->restoreGeometry(geometry);
+
+    // make sure we're not loading a dodgy config which had fullscreen set...
+    container->setWindowState(container->windowState() & ~(Qt::WindowFullScreen | Qt::WindowActive));
+  }
   else
+  {
+    // default size
     container->resize(640, 480);
+  }
 }
 
 SettingsWindow* MainWindow::getSettingsDialog()
@@ -2640,7 +2695,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
   // If there's no VM, we can just exit as normal.
   if (!s_system_valid || !m_display_created)
   {
-    saveGeometryToConfig();
+    saveStateToConfig();
     if (m_display_created)
       g_emu_thread->stopFullscreenUI();
     destroySubWindows();
@@ -2657,7 +2712,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
     return;
 
   // Application will be exited in VM stopped handler.
-  saveGeometryToConfig();
+  saveStateToConfig();
   m_is_closing = true;
 }
 
