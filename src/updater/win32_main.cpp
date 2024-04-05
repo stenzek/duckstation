@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "updater.h"
@@ -7,9 +7,11 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
+#include "common/scoped_guard.h"
 #include "common/string_util.h"
 #include "common/windows_headers.h"
 
+#include <combaseapi.h>
 #include <shellapi.h>
 
 static void WaitForProcessToExit(int process_id)
@@ -25,6 +27,12 @@ static void WaitForProcessToExit(int process_id)
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nShowCmd)
 {
   Win32ProgressCallback progress;
+
+  const bool com_initialized = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+  const ScopedGuard com_guard = [com_initialized]() {
+    if (com_initialized)
+      CoUninitialize();
+  };
 
   int argc = 0;
   LPWSTR* argv = CommandLineToArgvW(lpCmdLine, &argc);
