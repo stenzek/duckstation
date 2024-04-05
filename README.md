@@ -154,8 +154,12 @@ Requirements (Debian/Ubuntu package names):
  - libcurl (`libcurl4-openssl-dev`)
  - Optional for faster building: Ninja (`ninja-build`)
 
-
 Due to Ubuntu LTS using older package versions, DuckStation releases use manually built dependency libraries. If you are using a distribution with older package versions, you can build the required library versions using the script found at https://github.com/stenzek/duckstation/blob/master/scripts/build-dependencies.sh.
+
+Fedora package names (assumes you are using the dependency build script):
+```
+alsa-lib-devel brotli-devel clang cmake dbus-devel egl-wayland-devel fontconfig-devel gcc-c++ libcurl-devel libdecor-devel libevdev-devel libICE-devel libinput-devel libSM-devel libX11-devel libXau-devel libxcb-devel libXcomposite-devel libXcursor-devel libXext-devel libXfixes-devel libXft-devel libXi-devel libxkbcommon-devel libxkbcommon-x11-devel libXpresent-devel libXrandr-devel libXrender-devel lld llvm make mesa-libEGL-devel mesa-libGL-devel ninja-build openssl-devel patch pcre2-devel perl-Digest-SHA pipewire-devel pulseaudio-libs-devel systemd-devel wayland-devel xcb-util-cursor-devel xcb-util-errors-devel xcb-util-image-devel xcb-util-keysyms-devel xcb-util-renderutil-devel zlib-devel
+```
 
 1. Clone the repository: `git clone https://github.com/stenzek/duckstation.git -b dev`.
 2. Create a build directory, either in-tree or elsewhere.
