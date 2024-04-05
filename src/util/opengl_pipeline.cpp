@@ -43,8 +43,6 @@ struct PipelineDiskCacheIndexEntry
 };
 static_assert(sizeof(PipelineDiskCacheIndexEntry) == 112); // No padding
 
-static unsigned s_next_bad_shader_id = 1;
-
 static GLenum GetGLShaderType(GPUShaderStage stage)
 {
   static constexpr std::array<GLenum, static_cast<u32>(GPUShaderStage::MaxCount)> mapping = {{
@@ -138,17 +136,8 @@ bool OpenGLShader::Compile()
     }
     else
     {
-      Log_ErrorPrintf("Shader failed to compile:\n%s", info_log.c_str());
-
-      auto fp = FileSystem::OpenManagedCFile(
-        GPUDevice::GetShaderDumpPath(fmt::format("bad_shader_{}.txt", s_next_bad_shader_id++)).c_str(), "wb");
-      if (fp)
-      {
-        std::fwrite(m_source.data(), m_source.size(), 1, fp.get());
-        std::fprintf(fp.get(), "\n\nCompile %s shader failed\n", GPUShader::GetStageName(m_stage));
-        std::fwrite(info_log.c_str(), info_log_length, 1, fp.get());
-      }
-
+      Log_ErrorFmt("Shader failed to compile:\n{}", info_log);
+      GPUDevice::DumpBadShader(m_source, info_log);
       glDeleteShader(shader);
       return false;
     }

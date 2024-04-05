@@ -518,6 +518,9 @@ public:
   /// Returns the directory bad shaders are saved to.
   static std::string GetShaderDumpPath(const std::string_view& name);
 
+  /// Dumps out a shader that failed compilation.
+  static void DumpBadShader(std::string_view code, std::string_view errors);
+
   /// Converts a RGBA8 value to 4 floating-point values.
   static std::array<float, 4> RGBA8ToFloat(u32 rgba);
 

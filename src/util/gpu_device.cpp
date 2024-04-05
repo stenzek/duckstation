@@ -736,6 +736,22 @@ std::string GPUDevice::GetShaderDumpPath(const std::string_view& name)
   return Path::Combine(EmuFolders::Dumps, name);
 }
 
+void GPUDevice::DumpBadShader(std::string_view code, std::string_view errors)
+{
+  static u32 next_bad_shader_id = 0;
+
+  const std::string filename = GetShaderDumpPath(fmt::format("bad_shader_{}.txt", ++next_bad_shader_id));
+  auto fp = FileSystem::OpenManagedCFile(filename.c_str(), "wb");
+  if (fp)
+  {
+    if (!code.empty())
+      std::fwrite(code.data(), code.size(), 1, fp.get());
+    std::fputs("\n\n**** ERRORS ****\n", fp.get());
+    if (!errors.empty())
+      std::fwrite(errors.data(), errors.size(), 1, fp.get());
+  }
+}
+
 std::array<float, 4> GPUDevice::RGBA8ToFloat(u32 rgba)
 {
   return std::array<float, 4>{static_cast<float>(rgba & UINT32_C(0xFF)) * (1.0f / 255.0f),

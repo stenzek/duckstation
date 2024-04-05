@@ -154,17 +154,6 @@ if(ENABLE_OPENGL)
   endif()
 endif()
 
-if(ENABLE_VULKAN OR APPLE)
-  target_sources(util PRIVATE
-    spirv_compiler.cpp
-    spirv_compiler.h
-  )
-  target_link_libraries(util PRIVATE glslang)
-  if(APPLE)
-    target_link_libraries(util PRIVATE spirv-cross)
-  endif()
-endif()
-
 if(ENABLE_VULKAN)
   target_sources(util PRIVATE
     vulkan_builders.cpp
@@ -186,6 +175,10 @@ if(ENABLE_VULKAN)
   )
   target_compile_definitions(util PUBLIC "ENABLE_VULKAN=1")
   target_link_libraries(util PUBLIC vulkan-headers)
+endif()
+
+if(ENABLE_VULKAN OR APPLE)
+  target_link_libraries(util PUBLIC Shaderc::shaderc_shared)
 endif()
 
 if(ENABLE_SDL2)
@@ -270,7 +263,7 @@ elseif(APPLE)
   find_library(IOK_LIBRARY IOKit REQUIRED)
   find_library(METAL_LIBRARY Metal)
   find_library(QUARTZCORE_LIBRARY QuartzCore)
-  target_link_libraries(util PRIVATE ${METAL_LIBRARY} ${QUARTZCORE_LIBRARY} ${IOK_LIBRARY})
+  target_link_libraries(util PRIVATE ${METAL_LIBRARY} ${QUARTZCORE_LIBRARY} ${IOK_LIBRARY} spirv-cross)
   set_source_files_properties(${MAC_SOURCES} PROPERTIES SKIP_PRECOMPILE_HEADERS TRUE)
 elseif(NOT ANDROID)
   target_sources(util PRIVATE

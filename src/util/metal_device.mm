@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "metal_device.h"
-#include "spirv_compiler.h"
 
 #include "common/align.h"
 #include "common/assert.h"
@@ -15,6 +14,10 @@
 // TODO FIXME...
 #define FMT_EXCEPTIONS 0
 #include "fmt/format.h"
+
+#include "shaderc/shaderc.hpp"
+#include "spirv-cross/spirv_cross.hpp"
+#include "spirv-cross/spirv_msl.hpp"
 
 #include <array>
 #include <pthread.h>
@@ -56,7 +59,7 @@ static constexpr std::array<MTLPixelFormat, static_cast<u32>(GPUTexture::Format:
   MTLPixelFormatBGR10A2Unorm, // RGB10A2
 };
 
-static unsigned s_next_bad_shader_id = 1;
+static std::unique_ptr<shaderc::Compiler> s_shaderc_compiler;
 
 static NSString* StringViewToNSString(const std::string_view& str)
 {
@@ -615,18 +618,8 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromMSL(GPUShaderStage stage
     {
       LogNSError(error, "Failed to compile %s shader", GPUShader::GetStageName(stage));
 
-      auto fp = FileSystem::OpenManagedCFile(
-        Path::Combine(EmuFolders::DataRoot, fmt::format("bad_shader_{}.txt", s_next_bad_shader_id++)).c_str(), "wb");
-      if (fp)
-      {
-        std::fwrite(source.data(), source.size(), 1, fp.get());
-        std::fprintf(fp.get(), "\n\nCompile %s failed: %u\n", GPUShader::GetStageName(stage),
-                     static_cast<u32>(error.code));
-
-        const char* utf_error = [error.description UTF8String];
-        std::fwrite(utf_error, std::strlen(utf_error), 1, fp.get());
-      }
-
+      const char* utf_error = [error.description UTF8String];
+      DumpBadShader(source, fmt::format("Error {}: {}", static_cast<u32>(error.code), utf_error ? utf_error : ""));
       return {};
     }
 
@@ -651,42 +644,90 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromSource(GPUShaderStage st
                                                                const char* entry_point,
                                                                DynamicHeapArray<u8>* out_binary /* = nullptr */)
 {
-  const u32 options = (m_debug_device ? SPIRVCompiler::DebugInfo : 0) | SPIRVCompiler::VulkanRules;
   static constexpr bool dump_shaders = false;
 
-  if (std::strcmp(entry_point, "main") != 0)
+  static constexpr const std::array<shaderc_shader_kind, static_cast<size_t>(GPUShaderStage::MaxCount)> stage_kinds = {{
+    shaderc_glsl_vertex_shader,
+    shaderc_glsl_fragment_shader,
+    shaderc_glsl_geometry_shader,
+    shaderc_glsl_compute_shader,
+  }};
+
+  // TODO: NOT thread safe, yet.
+  if (!s_shaderc_compiler)
+    s_shaderc_compiler = std::make_unique<shaderc::Compiler>();
+
+  shaderc::CompileOptions spv_options;
+  spv_options.SetSourceLanguage(shaderc_source_language_glsl);
+  spv_options.SetTargetEnvironment(shaderc_target_env_vulkan, 0);
+
+  if (m_debug_device)
   {
-    Log_ErrorPrintf("Entry point must be 'main', but got '%s' instead.", entry_point);
-    return {};
+    spv_options.SetOptimizationLevel(shaderc_optimization_level_zero);
+    spv_options.SetGenerateDebugInfo();
+  }
+  else
+  {
+    spv_options.SetOptimizationLevel(shaderc_optimization_level_performance);
   }
 
-  std::optional<SPIRVCompiler::SPIRVCodeVector> spirv = SPIRVCompiler::CompileShader(stage, source, options);
-  if (!spirv.has_value())
+  const shaderc::SpvCompilationResult result = s_shaderc_compiler->CompileGlslToSpv(
+    source.data(), source.length(), stage_kinds[static_cast<size_t>(stage)], "source", entry_point, spv_options);
+  if (result.GetCompilationStatus() != shaderc_compilation_status_success)
   {
-    Log_ErrorPrintf("Failed to compile shader to SPIR-V.");
+    const std::string errors = result.GetErrorMessage();
+    DumpBadShader(source, errors);
+    Log_ErrorFmt("Failed to compile shader to SPIR-V:\n{}", errors);
     return {};
   }
+  else if (result.GetNumWarnings() > 0)
+  {
+    Log_WarningFmt("Shader compiled with warnings:\n{}", result.GetErrorMessage());
+  }
 
-  std::optional<std::string> msl = SPIRVCompiler::CompileSPIRVToMSL(stage, spirv.value());
-  if (!msl.has_value())
+  spirv_cross::CompilerMSL compiler(result.cbegin(), std::distance(result.cbegin(), result.cend()));
+  spirv_cross::CompilerMSL::Options msl_options = compiler.get_msl_options();
+  msl_options.pad_fragment_output_components = true;
+
+  if (stage == GPUShaderStage::Fragment)
+  {
+    for (u32 i = 0; i < MAX_TEXTURE_SAMPLERS; i++)
+    {
+      spirv_cross::MSLResourceBinding rb;
+      rb.stage = spv::ExecutionModelFragment;
+      rb.desc_set = 1;
+      rb.binding = i;
+      rb.count = 1;
+      rb.msl_texture = i;
+      rb.msl_sampler = i;
+      rb.msl_buffer = i;
+      compiler.add_msl_resource_binding(rb);
+    }
+  }
+
+  compiler.set_msl_options(msl_options);
+
+  const std::string msl = compiler.compile();
+  if (msl.empty())
   {
     Log_ErrorPrintf("Failed to compile SPIR-V to MSL.");
     return {};
   }
   if constexpr (dump_shaders)
   {
-    DumpShader(s_next_bad_shader_id, "_input", source);
-    DumpShader(s_next_bad_shader_id, "_msl", msl.value());
-    s_next_bad_shader_id++;
+    static unsigned s_next_id = 0;
+    ++s_next_id;
+    DumpShader(s_next_id, "_input", source);
+    DumpShader(s_next_id, "_msl", msl);
   }
 
   if (out_binary)
   {
-    out_binary->resize(msl->size());
-    std::memcpy(out_binary->data(), msl->data(), msl->size());
+    out_binary->resize(msl.size());
+    std::memcpy(out_binary->data(), msl.data(), msl.size());
   }
 
-  return CreateShaderFromMSL(stage, msl.value(), "main0");
+  return CreateShaderFromMSL(stage, msl, "main0");
 }
 
 MetalPipeline::MetalPipeline(id<MTLRenderPipelineState> pipeline, id<MTLDepthStencilState> depth, MTLCullMode cull_mode,

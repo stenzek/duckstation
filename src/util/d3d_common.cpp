@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "d3d_common.h"
+#include "gpu_device.h"
 
 #include "common/assert.h"
 #include "common/error.h"
@@ -17,8 +18,6 @@
 #include <dxgi1_5.h>
 
 Log_SetChannel(D3DCommon);
-
-static unsigned s_next_bad_shader_id = 1;
 
 const char* D3DCommon::GetFeatureLevelString(D3D_FEATURE_LEVEL feature_level)
 {
@@ -424,31 +423,22 @@ std::optional<DynamicHeapArray<u8>> D3DCommon::CompileShader(D3D_FEATURE_LEVEL f
     D3DCompile(source.data(), source.size(), "0", nullptr, nullptr, entry_point, target,
                debug_device ? flags_debug : flags_non_debug, 0, blob.GetAddressOf(), error_blob.GetAddressOf());
 
-  std::string error_string;
+  std::string_view error_string;
   if (error_blob)
-  {
-    error_string.append(static_cast<const char*>(error_blob->GetBufferPointer()), error_blob->GetBufferSize());
-    error_blob.Reset();
-  }
+    error_string =
+      std::string_view(static_cast<const char*>(error_blob->GetBufferPointer()), error_blob->GetBufferSize());
 
   if (FAILED(hr))
   {
-    Log_ErrorPrintf("Failed to compile '%s':\n%s", target, error_string.c_str());
-
-    auto fp = FileSystem::OpenManagedCFile(
-      GPUDevice::GetShaderDumpPath(fmt::format("bad_shader_{}.txt", s_next_bad_shader_id++)).c_str(), "wb");
-    if (fp)
-    {
-      std::fwrite(source.data(), source.size(), 1, fp.get());
-      std::fprintf(fp.get(), "\n\nCompile as %s failed: %08X\n", target, static_cast<unsigned>(hr));
-      std::fwrite(error_string.c_str(), error_string.size(), 1, fp.get());
-    }
-
+    Log_ErrorFmt("Failed to compile '{}':\n{}", target, error_string);
+    GPUDevice::DumpBadShader(source, error_string);
     return {};
   }
 
   if (!error_string.empty())
-    Log_WarningPrintf("'%s' compiled with warnings:\n%s", target, error_string.c_str());
+    Log_WarningFmt("'{}' compiled with warnings:\n{}", target, error_string);
+
+  error_blob.Reset();
 
   return DynamicHeapArray<u8>(static_cast<const u8*>(blob->GetBufferPointer()), blob->GetBufferSize());
 }

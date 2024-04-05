@@ -32,7 +32,6 @@
     <ClInclude Include="opengl_pipeline.h" />
     <ClInclude Include="opengl_stream_buffer.h" />
     <ClInclude Include="opengl_texture.h" />
-    <ClInclude Include="spirv_compiler.h" />
     <ClInclude Include="vulkan_builders.h" />
     <ClInclude Include="vulkan_device.h" />
     <ClInclude Include="vulkan_entry_points.h" />
@@ -117,7 +116,6 @@
     <ClCompile Include="opengl_pipeline.cpp" />
     <ClCompile Include="opengl_stream_buffer.cpp" />
     <ClCompile Include="opengl_texture.cpp" />
-    <ClCompile Include="spirv_compiler.cpp" />
     <ClCompile Include="vulkan_builders.cpp" />
     <ClCompile Include="vulkan_device.cpp" />
     <ClCompile Include="vulkan_loader.cpp" />
