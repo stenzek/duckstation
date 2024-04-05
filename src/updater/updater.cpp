@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "updater.h"
@@ -21,7 +21,9 @@
 
 #ifdef _WIN32
 #include "common/windows_headers.h"
+#include <Shobjidl.h>
 #include <shellapi.h>
+#include <wrl/client.h>
 #else
 #include <sys/stat.h>
 #endif
@@ -87,16 +89,43 @@ bool Updater::RecursiveDeleteDirectory(const char* path, bool remove_dir)
   if (!remove_dir)
     return false;
 
-  // making this safer on Win32...
-  std::wstring wpath(StringUtil::UTF8StringToWideString(path));
-  wpath += L'\0';
+  Microsoft::WRL::ComPtr<IFileOperation> fo;
+  HRESULT hr = CoCreateInstance(CLSID_FileOperation, NULL, CLSCTX_ALL, IID_PPV_ARGS(fo.ReleaseAndGetAddressOf()));
+  if (FAILED(hr))
+  {
+    m_progress->DisplayFormattedError("CoCreateInstance() for IFileOperation failed: %08X", hr);
+    return false;
+  }
 
-  SHFILEOPSTRUCTW op = {};
-  op.wFunc = FO_DELETE;
-  op.pFrom = wpath.c_str();
-  op.fFlags = FOF_NOCONFIRMATION;
+  Microsoft::WRL::ComPtr<IShellItem> item;
+  hr = SHCreateItemFromParsingName(StringUtil::UTF8StringToWideString(path).c_str(), NULL,
+                                   IID_PPV_ARGS(item.ReleaseAndGetAddressOf()));
+  if (FAILED(hr))
+  {
+    m_progress->DisplayFormattedError("SHCreateItemFromParsingName() for delete failed: %08X", hr);
+    return false;
+  }
 
-  return (SHFileOperationW(&op) == 0 && !op.fAnyOperationsAborted);
+  hr = fo->SetOperationFlags(FOF_NOCONFIRMATION | FOF_SILENT);
+  if (FAILED(hr))
+    m_progress->DisplayFormattedWarning("IFileOperation::SetOperationFlags() failed: %08X", hr);
+
+  hr = fo->DeleteItem(item.Get(), nullptr);
+  if (FAILED(hr))
+  {
+    m_progress->DisplayFormattedError("IFileOperation::DeleteItem() failed: %08X", hr);
+    return false;
+  }
+
+  item.Reset();
+  hr = fo->PerformOperations();
+  if (FAILED(hr))
+  {
+    m_progress->DisplayFormattedError("IFileOperation::PerformOperations() failed: %08X", hr);
+    return false;
+  }
+
+  return true;
 #else
   FileSystem::FindResultsArray results;
   if (FileSystem::FindFiles(path, "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_FOLDERS | FILESYSTEM_FIND_HIDDEN_FILES,
@@ -382,9 +411,8 @@ bool Updater::CommitUpdate()
 
     Error error;
 #ifdef _WIN32
-    const bool result =
-      MoveFileExW(StringUtil::UTF8StringToWideString(staging_file_name).c_str(),
-                  StringUtil::UTF8StringToWideString(dest_file_name).c_str(), MOVEFILE_REPLACE_EXISTING);
+    const bool result = MoveFileExW(FileSystem::GetWin32Path(staging_file_name).c_str(),
+                                    FileSystem::GetWin32Path(dest_file_name).c_str(), MOVEFILE_REPLACE_EXISTING);
     if (!result)
       error.SetWin32(GetLastError());
 #elif defined(__APPLE__)
