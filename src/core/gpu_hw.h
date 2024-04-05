@@ -256,8 +256,6 @@ private:
   Common::Rectangle<u32> m_vram_dirty_write_rect;
   Common::Rectangle<u32> m_current_uv_range;
 
-  // [depth_test][transparency_mode][render_mode][texture_mode][dithering][interlacing][check_mask]
-  DimensionalArray<std::unique_ptr<GPUPipeline>, 2, 2, 2, 9, 5, 5, 2> m_batch_pipelines{};
   std::unique_ptr<GPUPipeline> m_wireframe_pipeline;
 
   // [wrapped][interlaced]
@@ -282,4 +280,7 @@ private:
   std::unique_ptr<GPUSampler> m_downsample_lod_sampler;
   std::unique_ptr<GPUSampler> m_downsample_composite_sampler;
   u32 m_downsample_scale_or_levels = 0;
+
+  // [depth_test][transparency_mode][render_mode][texture_mode][dithering][interlacing][check_mask]
+  DimensionalArray<std::unique_ptr<GPUPipeline>, 2, 2, 2, 9, 5, 5, 2> m_batch_pipelines{};
 };
