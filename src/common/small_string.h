@@ -102,25 +102,31 @@ public:
   bool equals(const char* str) const;
   bool equals(const SmallStringBase& str) const;
   bool equals(const std::string_view str) const;
+  bool equals(const std::string& str) const;
   bool iequals(const char* str) const;
   bool iequals(const SmallStringBase& str) const;
   bool iequals(const std::string_view str) const;
+  bool iequals(const std::string& str) const;
 
   // numerical compares
   int compare(const char* str) const;
   int compare(const SmallStringBase& str) const;
   int compare(const std::string_view str) const;
+  int compare(const std::string& str) const;
   int icompare(const char* str) const;
   int icompare(const SmallStringBase& str) const;
   int icompare(const std::string_view str) const;
+  int icompare(const std::string& str) const;
 
   // starts with / ends with
   bool starts_with(const char* str, bool case_sensitive = true) const;
-  bool starts_with(const std::string_view str, bool case_sensitive = true) const;
   bool starts_with(const SmallStringBase& str, bool case_sensitive = true) const;
+  bool starts_with(const std::string_view str, bool case_sensitive = true) const;
+  bool starts_with(const std::string& str, bool case_sensitive = true) const;
   bool ends_with(const char* str, bool case_sensitive = true) const;
-  bool ends_with(const std::string_view str, bool case_sensitive = true) const;
   bool ends_with(const SmallStringBase& str, bool case_sensitive = true) const;
+  bool ends_with(const std::string_view str, bool case_sensitive = true) const;
+  bool ends_with(const std::string& str, bool case_sensitive = true) const;
 
   // searches for a character inside a string
   // rfind is the same except it starts at the end instead of the start
@@ -132,6 +138,9 @@ public:
   // rfind is the same except it starts at the end instead of the start
   // returns -1 if it is not found, otherwise the offset in the string
   s32 find(const char* str, u32 offset = 0) const;
+
+  // returns the number of instances of the specified character
+  u32 count(char ch) const;
 
   // removes characters from string
   void erase(s32 offset, s32 count = std::numeric_limits<s32>::max());
@@ -182,15 +191,19 @@ public:
   ALWAYS_INLINE bool operator==(const char* str) const { return equals(str); }
   ALWAYS_INLINE bool operator==(const SmallStringBase& str) const { return equals(str); }
   ALWAYS_INLINE bool operator==(const std::string_view str) const { return equals(str); }
+  ALWAYS_INLINE bool operator==(const std::string& str) const { return equals(str); }
   ALWAYS_INLINE bool operator!=(const char* str) const { return !equals(str); }
   ALWAYS_INLINE bool operator!=(const SmallStringBase& str) const { return !equals(str); }
   ALWAYS_INLINE bool operator!=(const std::string_view str) const { return !equals(str); }
+  ALWAYS_INLINE bool operator!=(const std::string& str) const { return !equals(str); }
   ALWAYS_INLINE bool operator<(const char* str) const { return (compare(str) < 0); }
   ALWAYS_INLINE bool operator<(const SmallStringBase& str) const { return (compare(str) < 0); }
   ALWAYS_INLINE bool operator<(const std::string_view str) const { return (compare(str) < 0); }
+  ALWAYS_INLINE bool operator<(const std::string& str) const { return (compare(str) < 0); }
   ALWAYS_INLINE bool operator>(const char* str) const { return (compare(str) > 0); }
   ALWAYS_INLINE bool operator>(const SmallStringBase& str) const { return (compare(str) > 0); }
   ALWAYS_INLINE bool operator>(const std::string_view str) const { return (compare(str) > 0); }
+  ALWAYS_INLINE bool operator>(const std::string& str) const { return (compare(str) > 0); }
 
   SmallStringBase& operator=(const SmallStringBase& copy);
   SmallStringBase& operator=(const char* str);

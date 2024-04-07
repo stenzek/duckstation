@@ -455,7 +455,13 @@ bool SmallStringBase::equals(const SmallStringBase& str) const
 bool SmallStringBase::equals(const std::string_view str) const
 {
   return (m_length == static_cast<u32>(str.length()) &&
-          (m_length == 0 || CASE_N_COMPARE(m_buffer, str.data(), m_length) == 0));
+          (m_length == 0 || std::memcmp(m_buffer, str.data(), m_length) == 0));
+}
+
+bool SmallStringBase::equals(const std::string& str) const
+{
+  return (m_length == static_cast<u32>(str.length()) &&
+          (m_length == 0 || std::memcmp(m_buffer, str.data(), m_length) == 0));
 }
 
 bool SmallStringBase::iequals(const char* otherText) const
@@ -477,24 +483,108 @@ bool SmallStringBase::iequals(const std::string_view str) const
           (m_length == 0 || CASE_N_COMPARE(m_buffer, str.data(), m_length) == 0));
 }
 
-int SmallStringBase::compare(const SmallStringBase& str) const
+bool SmallStringBase::iequals(const std::string& str) const
 {
-  return std::strcmp(m_buffer, str.m_buffer);
+  return (m_length == static_cast<u32>(str.length()) &&
+          (m_length == 0 || CASE_N_COMPARE(m_buffer, str.data(), m_length) == 0));
 }
 
 int SmallStringBase::compare(const char* otherText) const
 {
-  return std::strcmp(m_buffer, otherText);
+  return compare(std::string_view(otherText));
 }
 
-int SmallStringBase::icompare(const SmallStringBase& otherString) const
+int SmallStringBase::compare(const SmallStringBase& str) const
 {
-  return CASE_COMPARE(m_buffer, otherString.m_buffer);
+  if (m_length == 0)
+    return (str.m_length == 0) ? 0 : -1;
+  else if (str.m_length == 0)
+    return 1;
+
+  const int res = std::strncmp(m_buffer, str.m_buffer, std::min(m_length, str.m_length));
+  if (m_length == str.m_length || res != 0)
+    return res;
+  else
+    return (m_length > str.m_length) ? 1 : -1;
+}
+
+int SmallStringBase::compare(const std::string_view str) const
+{
+  const u32 slength = static_cast<u32>(str.length());
+  if (m_length == 0)
+    return (slength == 0) ? 0 : -1;
+  else if (slength == 0)
+    return 1;
+
+  const int res = std::strncmp(m_buffer, str.data(), std::min(m_length, slength));
+  if (m_length == slength || res != 0)
+    return res;
+  else
+    return (m_length > slength) ? 1 : -1;
+}
+
+int SmallStringBase::compare(const std::string& str) const
+{
+  const u32 slength = static_cast<u32>(str.length());
+  if (m_length == 0)
+    return (slength == 0) ? 0 : -1;
+  else if (slength == 0)
+    return 1;
+
+  const int res = std::strncmp(m_buffer, str.data(), std::min(m_length, slength));
+  if (m_length == slength || res != 0)
+    return res;
+  else
+    return (m_length > slength) ? 1 : -1;
 }
 
 int SmallStringBase::icompare(const char* otherText) const
 {
-  return CASE_COMPARE(m_buffer, otherText);
+  return icompare(std::string_view(otherText));
+}
+
+int SmallStringBase::icompare(const SmallStringBase& str) const
+{
+  if (m_length == 0)
+    return (str.m_length == 0) ? 0 : -1;
+  else if (str.m_length == 0)
+    return 1;
+
+  const int res = CASE_N_COMPARE(m_buffer, str.m_buffer, std::min(m_length, str.m_length));
+  if (m_length == str.m_length || res != 0)
+    return res;
+  else
+    return (m_length > str.m_length) ? 1 : -1;
+}
+
+int SmallStringBase::icompare(const std::string_view str) const
+{
+  const u32 slength = static_cast<u32>(str.length());
+  if (m_length == 0)
+    return (slength == 0) ? 0 : -1;
+  else if (slength == 0)
+    return 1;
+
+  const int res = CASE_N_COMPARE(m_buffer, str.data(), std::min(m_length, slength));
+  if (m_length == slength || res != 0)
+    return res;
+  else
+    return (m_length > slength) ? 1 : -1;
+}
+
+int SmallStringBase::icompare(const std::string& str) const
+{
+  const u32 slength = static_cast<u32>(str.length());
+  if (m_length == 0)
+    return (slength == 0) ? 0 : -1;
+  else if (slength == 0)
+    return 1;
+
+  const int res = CASE_N_COMPARE(m_buffer, str.data(), std::min(m_length, slength));
+  if (m_length == slength || res != 0)
+    return res;
+  else
+    return (m_length > slength) ? 1 : -1;
 }
 
 bool SmallStringBase::starts_with(const char* str, bool case_sensitive) const
@@ -527,6 +617,16 @@ bool SmallStringBase::starts_with(const std::string_view str, bool case_sensitiv
                             (CASE_N_COMPARE(str.data(), m_buffer, other_length) == 0);
 }
 
+bool SmallStringBase::starts_with(const std::string& str, bool case_sensitive) const
+{
+  const u32 other_length = static_cast<u32>(str.length());
+  if (other_length > m_length)
+    return false;
+
+  return (case_sensitive) ? (std::strncmp(str.data(), m_buffer, other_length) == 0) :
+                            (CASE_N_COMPARE(str.data(), m_buffer, other_length) == 0);
+}
+
 bool SmallStringBase::ends_with(const char* str, bool case_sensitive) const
 {
   const u32 other_length = static_cast<u32>(std::strlen(str));
@@ -550,6 +650,17 @@ bool SmallStringBase::ends_with(const SmallStringBase& str, bool case_sensitive)
 }
 
 bool SmallStringBase::ends_with(const std::string_view str, bool case_sensitive) const
+{
+  const u32 other_length = static_cast<u32>(str.length());
+  if (other_length > m_length)
+    return false;
+
+  const u32 start_offset = m_length - other_length;
+  return (case_sensitive) ? (std::strncmp(str.data(), m_buffer + start_offset, other_length) == 0) :
+                            (CASE_N_COMPARE(str.data(), m_buffer + start_offset, other_length) == 0);
+}
+
+bool SmallStringBase::ends_with(const std::string& str, bool case_sensitive) const
 {
   const u32 other_length = static_cast<u32>(str.length());
   if (other_length > m_length)
@@ -599,6 +710,16 @@ s32 SmallStringBase::find(const char* str, u32 offset) const
   DebugAssert(offset <= m_length);
   const char* at = std::strstr(m_buffer + offset, str);
   return at ? static_cast<s32>(at - m_buffer) : -1;
+}
+
+u32 SmallStringBase::count(char ch) const
+{
+  const char* ptr = m_buffer;
+  const char* end = ptr + m_length;
+  u32 count = 0;
+  while (ptr != end)
+    count += static_cast<u32>(*(ptr++) == ch);
+  return count;
 }
 
 void SmallStringBase::resize(u32 new_size, char fill, bool shrink_if_smaller)
