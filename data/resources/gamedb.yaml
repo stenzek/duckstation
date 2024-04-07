@@ -37978,6 +37978,7 @@ SLES-03221:
     - DigitalController
   traits:
     - DisableWidescreen
+    - ForceRecompilerICache
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom"
@@ -37999,6 +38000,7 @@ SLES-03222:
     - DigitalController
   traits:
     - DisableWidescreen
+    - ForceRecompilerICache
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom"
@@ -38020,6 +38022,7 @@ SLES-03223:
     - DigitalController
   traits:
     - DisableWidescreen
+    - ForceRecompilerICache
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom"
@@ -38041,6 +38044,7 @@ SLES-03224:
     - DigitalController
   traits:
     - DisableWidescreen
+    - ForceRecompilerICache
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom"
@@ -38093,6 +38097,7 @@ SLES-03225:
     - DigitalController
   traits:
     - DisableWidescreen
+    - ForceRecompilerICache
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom"
@@ -140368,6 +140373,9 @@ SLES-02510:
   controllers:
     - AnalogController
     - DigitalController
+  settings:
+    dmaMaxSliceTicks: 100
+    dmaHaltTicks: 150
   metadata:
     publisher: "Ubi Soft Entertaiment"
     developer: "Realtime Associates Inc"
@@ -140387,6 +140395,9 @@ SLUS-00621:
   controllers:
     - AnalogController
     - DigitalController
+  settings:
+    dmaMaxSliceTicks: 100
+    dmaHaltTicks: 150
   metadata:
     publisher: "NewKidCo LLC"
     developer: "Realtime Associates Inc"
@@ -166206,7 +166217,6 @@ SLUS-01019:
   compatibility:
     rating: NoIssues
     versionTested: "0.1-1419-g34a515cd"
-    comments: "Messy graphics in \"Recompiler mode\". Use \"Interpreter mode\" to fix for now (Issue #710)."
   controllers:
     - AnalogController
     - DigitalController
