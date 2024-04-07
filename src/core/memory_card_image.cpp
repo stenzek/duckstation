@@ -516,6 +516,10 @@ bool MemoryCardImage::ImportCardGME(DataArray* data, const char* filename, std::
   static_assert(sizeof(GMEHeader) == 0xF40);
 #pragma pack(pop)
 
+  // some gme files are raw files in disguise...
+  if (file_data.size() == DATA_SIZE)
+    return ImportCardMCD(data, filename, std::move(file_data), error);
+
   constexpr u32 MIN_SIZE = sizeof(GMEHeader) + BLOCK_SIZE;
 
   if (file_data.size() < MIN_SIZE)
