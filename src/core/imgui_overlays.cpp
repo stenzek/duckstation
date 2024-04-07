@@ -837,19 +837,19 @@ void SaveStateSelectorUI::DestroyTextures()
 
 void SaveStateSelectorUI::RefreshHotkeyLegend()
 {
-  auto format_legend_entry = [](std::string binding, std::string_view caption) {
+  auto format_legend_entry = [](SmallString binding, std::string_view caption) {
     InputManager::PrettifyInputBinding(binding);
     return fmt::format("{} - {}", binding, caption);
   };
 
-  s_load_legend = format_legend_entry(Host::GetStringSettingValue("Hotkeys", "LoadSelectedSaveState"),
-                                      TRANSLATE_STR("SaveStateSelectorUI", "Load"));
-  s_save_legend = format_legend_entry(Host::GetStringSettingValue("Hotkeys", "SaveSelectedSaveState"),
-                                      TRANSLATE_STR("SaveStateSelectorUI", "Save"));
-  s_prev_legend = format_legend_entry(Host::GetStringSettingValue("Hotkeys", "SelectPreviousSaveStateSlot"),
-                                      TRANSLATE_STR("SaveStateSelectorUI", "Select Previous"));
-  s_next_legend = format_legend_entry(Host::GetStringSettingValue("Hotkeys", "SelectNextSaveStateSlot"),
-                                      TRANSLATE_STR("SaveStateSelectorUI", "Select Next"));
+  s_load_legend = format_legend_entry(Host::GetSmallStringSettingValue("Hotkeys", "LoadSelectedSaveState"),
+                                      TRANSLATE_SV("SaveStateSelectorUI", "Load"));
+  s_save_legend = format_legend_entry(Host::GetSmallStringSettingValue("Hotkeys", "SaveSelectedSaveState"),
+                                      TRANSLATE_SV("SaveStateSelectorUI", "Save"));
+  s_prev_legend = format_legend_entry(Host::GetSmallStringSettingValue("Hotkeys", "SelectPreviousSaveStateSlot"),
+                                      TRANSLATE_SV("SaveStateSelectorUI", "Select Previous"));
+  s_next_legend = format_legend_entry(Host::GetSmallStringSettingValue("Hotkeys", "SelectNextSaveStateSlot"),
+                                      TRANSLATE_SV("SaveStateSelectorUI", "Select Next"));
 }
 
 void SaveStateSelectorUI::SelectNextSlot(bool open_selector)

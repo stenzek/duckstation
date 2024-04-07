@@ -300,14 +300,15 @@ static s32 GetEffectiveIntSetting(SettingsInterface* bsi, const char* section, c
 static u32 GetEffectiveUIntSetting(SettingsInterface* bsi, const char* section, const char* key, u32 default_value);
 static float GetEffectiveFloatSetting(SettingsInterface* bsi, const char* section, const char* key,
                                       float default_value);
-static std::string GetEffectiveStringSetting(SettingsInterface* bsi, const char* section, const char* key,
-                                             const char* default_value);
+static TinyString GetEffectiveTinyStringSetting(SettingsInterface* bsi, const char* section, const char* key,
+                                                const char* default_value);
 static void DoCopyGameSettings();
 static void DoClearGameSettings();
 static void CopyGlobalControllerSettingsToGame();
 static void ResetControllerSettings();
 static void DoLoadInputProfile();
 static void DoSaveInputProfile();
+static void DoSaveNewInputProfile();
 static void DoSaveInputProfile(const std::string& name);
 
 static bool DrawToggleSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
@@ -1258,19 +1259,19 @@ float FullscreenUI::GetEffectiveFloatSetting(SettingsInterface* bsi, const char*
   return Host::Internal::GetBaseSettingsLayer()->GetFloatValue(section, key, default_value);
 }
 
-std::string FullscreenUI::GetEffectiveStringSetting(SettingsInterface* bsi, const char* section, const char* key,
-                                                    const char* default_value)
+TinyString FullscreenUI::GetEffectiveTinyStringSetting(SettingsInterface* bsi, const char* section, const char* key,
+                                                       const char* default_value)
 {
-  std::string ret;
-  std::optional<std::string> value;
+  TinyString ret;
+  std::optional<TinyString> value;
 
   if (IsEditingGameSettings(bsi))
-    value = bsi->GetOptionalStringValue(section, key, std::nullopt);
+    value = bsi->GetOptionalTinyStringValue(section, key, std::nullopt);
 
   if (value.has_value())
     ret = std::move(value.value());
   else
-    ret = Host::Internal::GetBaseSettingsLayer()->GetStringValue(section, key, default_value);
+    ret = Host::Internal::GetBaseSettingsLayer()->GetTinyStringValue(section, key, default_value);
 
   return ret;
 }
@@ -1285,8 +1286,8 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
   TinyString title;
   title.format("{}/{}", section, name);
 
-  std::string value = bsi->GetStringValue(section, name);
-  const bool oneline = (std::count_if(value.begin(), value.end(), [](char ch) { return (ch == '&'); }) <= 1);
+  SmallString value = bsi->GetSmallStringValue(section, name);
+  const bool oneline = value.count('&') <= 1;
 
   ImRect bb;
   bool visible, hovered, clicked;
@@ -1366,7 +1367,7 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
   {
     BeginInputBinding(bsi, type, section, name, display_name);
   }
-  else if (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false))
+  else if (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false))
   {
     bsi->DeleteValue(section, name);
     SetSettingsChanged(bsi);
@@ -2101,7 +2102,7 @@ void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* tit
                                          ImFont* summary_font)
 {
   const bool game_settings = IsEditingGameSettings(bsi);
-  const std::optional<std::string> value(bsi->GetOptionalStringValue(
+  const std::optional<SmallString> value(bsi->GetOptionalSmallStringValue(
     section, key, game_settings ? std::nullopt : std::optional<const char*>(default_value)));
 
   if (option_count == 0)
@@ -2173,7 +2174,7 @@ void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, const char* title, co
                                    ImFont* font /*= g_large_font*/, ImFont* summary_font /*= g_medium_font*/)
 {
   const bool game_settings = IsEditingGameSettings(bsi);
-  const std::optional<std::string> value(bsi->GetOptionalStringValue(
+  const std::optional<SmallString> value(bsi->GetOptionalSmallStringValue(
     section, key, game_settings ? std::nullopt : std::optional<const char*>(to_string_function(default_value))));
 
   const std::optional<DataType> typed_value(value.has_value() ? from_string_function(value->c_str()) : std::nullopt);
@@ -2723,7 +2724,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
   {
     // Have to do this the annoying way, because it's host-derived.
     const auto language_list = Host::GetAvailableLanguageList();
-    std::string current_language = bsi->GetStringValue("Main", "Language", "");
+    TinyString current_language = bsi->GetTinyStringValue("Main", "Language", "");
     const char* current_language_name = "Unknown";
     for (const auto& [language, code] : language_list)
     {
@@ -2816,7 +2817,7 @@ void FullscreenUI::DrawBIOSSettingsPage()
     TinyString title;
     title.format(FSUI_FSTR("BIOS for {}"), Settings::GetConsoleRegionDisplayName(region));
 
-    const std::optional<std::string> filename(bsi->GetOptionalStringValue(
+    const std::optional<SmallString> filename(bsi->GetOptionalSmallStringValue(
       "BIOS", config_keys[i], game_settings ? std::nullopt : std::optional<const char*>("")));
 
     if (MenuButtonWithValue(title,
@@ -3105,7 +3106,7 @@ void FullscreenUI::CopyGlobalControllerSettingsToGame()
 
 void FullscreenUI::DoLoadInputProfile()
 {
-  std::vector<std::string> profiles(InputManager::GetInputProfileNames());
+  std::vector<std::string> profiles = InputManager::GetInputProfileNames();
   if (profiles.empty())
   {
     ShowToast(std::string(), FSUI_STR("No input profiles available."));
@@ -3151,18 +3152,28 @@ void FullscreenUI::DoSaveInputProfile(const std::string& name)
     ShowToast(std::string(), fmt::format(FSUI_FSTR("Failed to save input profile '{}'."), name));
 }
 
+void FullscreenUI::DoSaveNewInputProfile()
+{
+  OpenInputStringDialog(FSUI_ICONSTR(ICON_FA_SAVE, "Save Profile"),
+    FSUI_STR("Enter the name of the input profile you wish to create."), std::string(),
+    FSUI_ICONSTR(ICON_FA_FOLDER_PLUS, "Create"), [](std::string title) {
+    if (!title.empty())
+      DoSaveInputProfile(title);
+  });
+}
+
 void FullscreenUI::DoSaveInputProfile()
 {
-  std::vector<std::string> profiles(InputManager::GetInputProfileNames());
+  std::vector<std::string> profiles = InputManager::GetInputProfileNames();
   if (profiles.empty())
   {
-    ShowToast(std::string(), FSUI_STR("No input profiles available."));
+    DoSaveNewInputProfile();
     return;
   }
 
   ImGuiFullscreen::ChoiceDialogOptions coptions;
   coptions.reserve(profiles.size() + 1);
-  coptions.emplace_back("Create New...", false);
+  coptions.emplace_back(FSUI_STR("Create New..."), false);
   for (std::string& name : profiles)
     coptions.emplace_back(std::move(name), false);
   OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_SAVE, "Save Profile"), false, std::move(coptions),
@@ -3170,22 +3181,12 @@ void FullscreenUI::DoSaveInputProfile()
                      if (index < 0)
                        return;
 
-                     if (index > 0)
-                     {
-                       DoSaveInputProfile(title);
-                       CloseChoiceDialog();
-                       return;
-                     }
-
                      CloseChoiceDialog();
 
-                     OpenInputStringDialog(FSUI_ICONSTR(ICON_FA_SAVE, "Save Profile"),
-                                           FSUI_STR("Enter the name of the input profile you wish to create."),
-                                           std::string(), FSUI_ICONSTR(ICON_FA_FOLDER_PLUS, "Create"),
-                                           [](std::string title) {
-                                             if (!title.empty())
-                                               DoSaveInputProfile(title);
-                                           });
+                     if (index > 0)
+                       DoSaveInputProfile(title);
+                     else
+                       DoSaveNewInputProfile();
                    });
 }
 
@@ -3281,7 +3282,7 @@ void FullscreenUI::DrawControllerSettingsPage()
   MultitapMode mtap_mode = g_settings.multitap_mode;
   if (IsEditingGameSettings(bsi))
   {
-    mtap_mode = Settings::ParseMultitapModeName(bsi->GetStringValue("ControllerPorts", "MultitapMode", "").c_str())
+    mtap_mode = Settings::ParseMultitapModeName(bsi->GetTinyStringValue("ControllerPorts", "MultitapMode", "").c_str())
                   .value_or(g_settings.multitap_mode);
   }
   const std::array<bool, 2> mtap_enabled = {
@@ -3312,7 +3313,8 @@ void FullscreenUI::DrawControllerSettingsPage()
     }
 
     const TinyString section = TinyString::from_format("Pad{}", global_slot + 1);
-    const std::string type = bsi->GetStringValue(section.c_str(), "Type", Controller::GetDefaultPadType(global_slot));
+    const TinyString type =
+      bsi->GetTinyStringValue(section.c_str(), "Type", Controller::GetDefaultPadType(global_slot));
     const Controller::ControllerInfo* ci = Controller::GetControllerInfo(type);
     if (MenuButton(TinyString::from_format("{}##type{}", FSUI_ICONSTR(ICON_FA_GAMEPAD, "Controller Type"), global_slot),
                    ci ? Host::TranslateToCString("ControllerType", ci->display_name) : FSUI_CSTR("Unknown")))
@@ -3371,8 +3373,8 @@ void FullscreenUI::DrawControllerSettingsPage()
                              TinyString::from_format("Macro{}", macro_index + 1),
                              TinyString::from_format(FSUI_FSTR("Macro {} Trigger"), macro_index + 1), nullptr);
 
-      std::string binds_string(
-        bsi->GetStringValue(section.c_str(), fmt::format("Macro{}Binds", macro_index + 1).c_str()));
+      SmallString binds_string =
+        bsi->GetSmallStringValue(section.c_str(), fmt::format("Macro{}Binds", macro_index + 1).c_str());
       TinyString pretty_binds_string;
       if (!binds_string.empty())
       {
@@ -3580,39 +3582,6 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
   BeginMenuButtons();
 
   MenuHeading(FSUI_CSTR("Settings and Operations"));
-  if (MenuButton(FSUI_ICONSTR(ICON_FA_PLUS, "Create Memory Card"),
-                 FSUI_CSTR("Creates a new memory card file or folder.")))
-  {
-    OpenInputStringDialog(
-      FSUI_ICONSTR(ICON_FA_PLUS, "Create Memory Card"),
-      FSUI_CSTR("Enter the name of the memory card you wish to create."),
-      "Card Name: ", FSUI_ICONSTR(ICON_FA_FOLDER_PLUS, "Create"), [](std::string memcard_name) {
-        if (memcard_name.empty())
-          return;
-
-        const std::string filename(Path::Combine(EmuFolders::MemoryCards, fmt::format("{}.mcd", memcard_name)));
-        if (!FileSystem::FileExists(filename.c_str()))
-        {
-          MemoryCardImage::DataArray data;
-          MemoryCardImage::Format(&data);
-          if (!FileSystem::WriteBinaryFile(filename.c_str(), data.data(), data.size()))
-          {
-            FileSystem::DeleteFile(filename.c_str());
-            ShowToast(std::string(), fmt::format(FSUI_FSTR("Failed to create memory card '{}'."), memcard_name));
-          }
-          else
-          {
-            ShowToast(std::string(), fmt::format(FSUI_FSTR("Memory card '{}' created."), memcard_name));
-          }
-        }
-        else
-        {
-          ShowToast(std::string(),
-                    fmt::format(FSUI_FSTR("A memory card with the name '{}' already exists."), memcard_name));
-        }
-      });
-  }
-
   DrawFolderSetting(bsi, FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Memory Card Directory"), "MemoryCards", "Directory",
                     EmuFolders::MemoryCards);
 
@@ -3642,11 +3611,11 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
 
     const MemoryCardType effective_type =
       Settings::ParseMemoryCardTypeName(
-        GetEffectiveStringSetting(bsi, "MemoryCards", type_keys[i], Settings::GetMemoryCardTypeName(default_type))
+        GetEffectiveTinyStringSetting(bsi, "MemoryCards", type_keys[i], Settings::GetMemoryCardTypeName(default_type))
           .c_str())
         .value_or(default_type);
     const bool is_shared = (effective_type == MemoryCardType::Shared);
-    std::optional<std::string> path_value(bsi->GetOptionalStringValue(
+    std::optional<SmallString> path_value(bsi->GetOptionalSmallStringValue(
       "MemoryCards", path_keys[i],
       IsEditingGameSettings(bsi) ? std::nullopt :
                                    std::optional<const char*>((i == 0) ? "shared_card_1.mcd" : "shared_card_2.mcd")));
@@ -3664,7 +3633,7 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
       if (path_value.has_value() && !path_value->empty())
       {
         options.emplace_back(fmt::format("{} (Current)", path_value.value()), true);
-        names.push_back(std::move(path_value.value()));
+        names.emplace_back(path_value.value().view());
       }
 
       FileSystem::FindResultsArray results;
@@ -3673,7 +3642,7 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
                             &results);
       for (FILESYSTEM_FIND_DATA& ffd : results)
       {
-        const bool selected = (path_value.has_value() && ffd.FileName == path_value.value());
+        const bool selected = (path_value.has_value() && path_value.value() == ffd.FileName);
         options.emplace_back(std::move(ffd.FileName), selected);
       }
 
@@ -3740,28 +3709,28 @@ void FullscreenUI::DrawDisplaySettingsPage()
 
   const GPURenderer renderer =
     Settings::ParseRendererName(
-      GetEffectiveStringSetting(bsi, "GPU", "Renderer", Settings::GetRendererName(Settings::DEFAULT_GPU_RENDERER))
+      GetEffectiveTinyStringSetting(bsi, "GPU", "Renderer", Settings::GetRendererName(Settings::DEFAULT_GPU_RENDERER))
         .c_str())
       .value_or(Settings::DEFAULT_GPU_RENDERER);
   const bool is_hardware = (renderer != GPURenderer::Software);
 
-  std::optional<std::string> adapter(
-    bsi->GetOptionalStringValue("GPU", "Adapter", game_settings ? std::nullopt : std::optional<const char*>("")));
+  std::optional<SmallString> strvalue =
+    bsi->GetOptionalSmallStringValue("GPU", "Adapter", game_settings ? std::nullopt : std::optional<const char*>(""));
 
   if (MenuButtonWithValue(FSUI_CSTR("GPU Adapter"), FSUI_CSTR("Selects the GPU to use for rendering."),
-                          adapter.has_value() ? (adapter->empty() ? FSUI_CSTR("Default") : adapter->c_str()) :
-                                                FSUI_CSTR("Use Global Setting")))
+                          strvalue.has_value() ? (strvalue->empty() ? FSUI_CSTR("Default") : strvalue->c_str()) :
+                                                 FSUI_CSTR("Use Global Setting")))
   {
     GPUDevice::AdapterAndModeList aml(g_gpu_device->GetAdapterAndModeList());
 
     ImGuiFullscreen::ChoiceDialogOptions options;
     options.reserve(aml.adapter_names.size() + 2);
     if (game_settings)
-      options.emplace_back(FSUI_STR("Use Global Setting"), !adapter.has_value());
-    options.emplace_back(FSUI_STR("Default"), adapter.has_value() && adapter->empty());
+      options.emplace_back(FSUI_STR("Use Global Setting"), !strvalue.has_value());
+    options.emplace_back(FSUI_STR("Default"), strvalue.has_value() && strvalue->empty());
     for (std::string& mode : aml.adapter_names)
     {
-      const bool checked = (adapter.has_value() && mode == adapter.value());
+      const bool checked = (strvalue.has_value() && strvalue.value() == mode);
       options.emplace_back(std::move(mode), checked);
     }
 
@@ -3789,24 +3758,24 @@ void FullscreenUI::DrawDisplaySettingsPage()
     OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_TV, "GPU Adapter"), false, std::move(options), std::move(callback));
   }
 
-  std::optional<std::string> fsmode(bsi->GetOptionalStringValue(
-    "GPU", "FullscreenMode", game_settings ? std::nullopt : std::optional<const char*>("")));
+  strvalue = bsi->GetOptionalSmallStringValue("GPU", "FullscreenMode",
+                                              game_settings ? std::nullopt : std::optional<const char*>(""));
 
   if (MenuButtonWithValue(
         FSUI_CSTR("Fullscreen Resolution"), FSUI_CSTR("Selects the resolution to use in fullscreen modes."),
-        fsmode.has_value() ? (fsmode->empty() ? FSUI_CSTR("Borderless Fullscreen") : fsmode->c_str()) :
-                             FSUI_CSTR("Use Global Setting")))
+        strvalue.has_value() ? (strvalue->empty() ? FSUI_CSTR("Borderless Fullscreen") : strvalue->c_str()) :
+                               FSUI_CSTR("Use Global Setting")))
   {
     GPUDevice::AdapterAndModeList aml(g_gpu_device->GetAdapterAndModeList());
 
     ImGuiFullscreen::ChoiceDialogOptions options;
     options.reserve(aml.fullscreen_modes.size() + 2);
     if (game_settings)
-      options.emplace_back(FSUI_STR("Use Global Setting"), !fsmode.has_value());
-    options.emplace_back(FSUI_STR("Borderless Fullscreen"), fsmode.has_value() && fsmode->empty());
+      options.emplace_back(FSUI_STR("Use Global Setting"), !strvalue.has_value());
+    options.emplace_back(FSUI_STR("Borderless Fullscreen"), strvalue.has_value() && strvalue->empty());
     for (std::string& mode : aml.fullscreen_modes)
     {
-      const bool checked = (fsmode.has_value() && mode == fsmode.value());
+      const bool checked = (strvalue.has_value() && strvalue.value() == mode);
       options.emplace_back(std::move(mode), checked);
     }
 
@@ -3966,8 +3935,8 @@ void FullscreenUI::DrawDisplaySettingsPage()
                   &Settings::GetDownsampleModeName, &Settings::GetDownsampleModeDisplayName, GPUDownsampleMode::Count,
                   (renderer != GPURenderer::Software));
   if (Settings::ParseDownsampleModeName(
-        GetEffectiveStringSetting(bsi, "GPU", "DownsampleMode",
-                                  Settings::GetDownsampleModeName(Settings::DEFAULT_GPU_DOWNSAMPLE_MODE))
+        GetEffectiveTinyStringSetting(bsi, "GPU", "DownsampleMode",
+                                      Settings::GetDownsampleModeName(Settings::DEFAULT_GPU_DOWNSAMPLE_MODE))
           .c_str())
         .value_or(Settings::DEFAULT_GPU_DOWNSAMPLE_MODE) == GPUDownsampleMode::Box)
   {
@@ -4581,13 +4550,14 @@ void FullscreenUI::DrawAchievementsSettingsPage()
     {
       ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
       ActiveButton(SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_USER, "Username: {}")),
-                                            bsi->GetStringValue("Cheevos", "Username")),
+                                            bsi->GetTinyStringValue("Cheevos", "Username")),
                    false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
       TinyString ts_string;
       ts_string.format(
         "{:%Y-%m-%d %H:%M:%S}",
-        fmt::localtime(StringUtil::FromChars<u64>(bsi->GetStringValue("Cheevos", "LoginTimestamp", "0")).value_or(0)));
+        fmt::localtime(
+          StringUtil::FromChars<u64>(bsi->GetTinyStringValue("Cheevos", "LoginTimestamp", "0")).value_or(0)));
       ActiveButton(
         SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_CLOCK, "Login token generated on {}")), ts_string),
         false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
@@ -5432,7 +5402,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
         }
 
         if (hovered &&
-            (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false)))
+            (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false)))
         {
           s_save_state_selector_submenu_index = static_cast<s32>(i);
         }
@@ -5550,7 +5520,7 @@ void FullscreenUI::DrawResumeStateSelector()
       }
     }
 
-    if (ActiveButton(FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Cancel"), false))
+    if (ActiveButton(FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Cancel"), false) || WantsToCloseMenu())
     {
       ImGui::CloseCurrentPopup();
       is_open = false;
@@ -5829,15 +5799,19 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       }
 
       if (pressed)
-        HandleGameListActivate(entry);
-
-      if (hovered)
-        selected_entry = entry;
-
-      if (selected_entry &&
-          (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false)))
       {
-        HandleGameListOptions(selected_entry);
+        HandleGameListActivate(entry);
+      }
+      else
+      {
+        if (hovered)
+          selected_entry = entry;
+
+        if (selected_entry &&
+            (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false)))
+        {
+          HandleGameListOptions(selected_entry);
+        }
       }
     }
 
@@ -6050,10 +6024,11 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
       ImGui::PopFont();
 
       if (pressed)
+      {
         HandleGameListActivate(entry);
-
-      if (hovered &&
-          (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false)))
+      }
+      else if (hovered &&
+               (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false)))
       {
         HandleGameListOptions(entry);
       }
@@ -6557,7 +6532,6 @@ TRANSLATE_NOOP("FullscreenUI", "900% [540 FPS (NTSC) / 450 FPS (PAL)]");
 TRANSLATE_NOOP("FullscreenUI", "9x");
 TRANSLATE_NOOP("FullscreenUI", "9x (18x Speed)");
 TRANSLATE_NOOP("FullscreenUI", "9x (for 4K)");
-TRANSLATE_NOOP("FullscreenUI", "A memory card with the name '{}' already exists.");
 TRANSLATE_NOOP("FullscreenUI", "A resume save state created at %s was found.\n\nDo you want to load this save and continue?");
 TRANSLATE_NOOP("FullscreenUI", "About DuckStation");
 TRANSLATE_NOOP("FullscreenUI", "Account");
@@ -6651,9 +6625,8 @@ TRANSLATE_NOOP("FullscreenUI", "Copy Settings");
 TRANSLATE_NOOP("FullscreenUI", "Cover Settings");
 TRANSLATE_NOOP("FullscreenUI", "Covers Directory");
 TRANSLATE_NOOP("FullscreenUI", "Create");
-TRANSLATE_NOOP("FullscreenUI", "Create Memory Card");
+TRANSLATE_NOOP("FullscreenUI", "Create New...");
 TRANSLATE_NOOP("FullscreenUI", "Create Save State Backups");
-TRANSLATE_NOOP("FullscreenUI", "Creates a new memory card file or folder.");
 TRANSLATE_NOOP("FullscreenUI", "Crop Mode");
 TRANSLATE_NOOP("FullscreenUI", "Culling Correction");
 TRANSLATE_NOOP("FullscreenUI", "Current Game");
@@ -6735,14 +6708,12 @@ TRANSLATE_NOOP("FullscreenUI", "Encore Mode");
 TRANSLATE_NOOP("FullscreenUI", "Enhancements");
 TRANSLATE_NOOP("FullscreenUI", "Ensures every frame generated is displayed for optimal pacing. Disable if you are having speed or sound issues.");
 TRANSLATE_NOOP("FullscreenUI", "Enter the name of the input profile you wish to create.");
-TRANSLATE_NOOP("FullscreenUI", "Enter the name of the memory card you wish to create.");
 TRANSLATE_NOOP("FullscreenUI", "Execution Mode");
 TRANSLATE_NOOP("FullscreenUI", "Exit");
 TRANSLATE_NOOP("FullscreenUI", "Exit And Save State");
 TRANSLATE_NOOP("FullscreenUI", "Exit Without Saving");
 TRANSLATE_NOOP("FullscreenUI", "Exits the program.");
 TRANSLATE_NOOP("FullscreenUI", "Failed to copy text to clipboard.");
-TRANSLATE_NOOP("FullscreenUI", "Failed to create memory card '{}'.");
 TRANSLATE_NOOP("FullscreenUI", "Failed to delete save state.");
 TRANSLATE_NOOP("FullscreenUI", "Failed to delete {}.");
 TRANSLATE_NOOP("FullscreenUI", "Failed to load '{}'.");
@@ -6846,7 +6817,6 @@ TRANSLATE_NOOP("FullscreenUI", "Memory Card Directory");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card Port {}");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card Settings");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card {} Type");
-TRANSLATE_NOOP("FullscreenUI", "Memory card '{}' created.");
 TRANSLATE_NOOP("FullscreenUI", "Minimal Output Latency");
 TRANSLATE_NOOP("FullscreenUI", "Move Down");
 TRANSLATE_NOOP("FullscreenUI", "Move Up");

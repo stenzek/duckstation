@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -15,6 +15,8 @@
 
 #include "core/input_types.h"
 #include "window_info.h"
+
+class SmallStringBase;
 
 /// Class, or source of an input event.
 enum class InputSourceType : u32
@@ -234,7 +236,7 @@ std::string ConvertInputBindingKeysToString(InputBindingInfo::Type binding_type,
                                             size_t num_keys);
 
 /// Represents a binding with icon fonts, if available.
-bool PrettifyInputBinding(std::string& binding);
+bool PrettifyInputBinding(SmallStringBase& binding);
 
 /// Returns a list of all hotkeys.
 std::vector<const HotkeyInfo*> GetHotkeyList();
