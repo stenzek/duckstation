@@ -3,6 +3,7 @@
 
 #include "byte_stream.h"
 #include "assert.h"
+#include "error.h"
 #include "file_system.h"
 #include "log.h"
 #include "string_util.h"
@@ -981,13 +982,16 @@ bool ByteStream::WriteSizePrefixedString(const std::string_view& str)
   return (Write2(&size, sizeof(size)) && (size == 0 || Write2(str.data(), size)));
 }
 
-std::unique_ptr<ByteStream> ByteStream::OpenFile(const char* fileName, u32 openMode)
+std::unique_ptr<ByteStream> ByteStream::OpenFile(const char* fileName, u32 openMode, Error* error)
 {
   if ((openMode & (BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE)) == BYTESTREAM_OPEN_WRITE)
   {
     // if opening with write but not create, the path must exist.
     if (!FileSystem::FileExists(fileName))
+    {
+      Error::SetStringView(error, "File does not exist.");
       return nullptr;
+    }
   }
 
   char modeString[16];
@@ -1050,12 +1054,16 @@ std::unique_ptr<ByteStream> ByteStream::OpenFile(const char* fileName, u32 openM
       CreateFileW(wideTemporaryFileName.c_str(), desiredAccess, FILE_SHARE_DELETE, NULL, CREATE_NEW, 0, NULL);
 
     if (hFile == INVALID_HANDLE_VALUE)
+    {
+      Error::SetWin32(error, "CreateFileW() failed: ", GetLastError());
       return nullptr;
+    }
 
     // get fd from this
     int fd = _open_osfhandle(reinterpret_cast<intptr_t>(hFile), 0);
     if (fd < 0)
     {
+      Error::SetErrno(error, "_open_osfhandle() failed: ", errno);
       CloseHandle(hFile);
       DeleteFileW(wideTemporaryFileName.c_str());
       return nullptr;
@@ -1065,6 +1073,7 @@ std::unique_ptr<ByteStream> ByteStream::OpenFile(const char* fileName, u32 openM
     FILE* pTemporaryFile = _fdopen(fd, modeString);
     if (!pTemporaryFile)
     {
+      Error::SetErrno(error, "_fdopen() failed: ", errno);
       _close(fd);
       DeleteFileW(wideTemporaryFileName.c_str());
       return nullptr;
@@ -1077,7 +1086,7 @@ std::unique_ptr<ByteStream> ByteStream::OpenFile(const char* fileName, u32 openM
     // do we need to copy the existing file into this one?
     if (!(openMode & BYTESTREAM_OPEN_TRUNCATE))
     {
-      FILE* pOriginalFile = FileSystem::OpenCFile(fileName, "rb");
+      std::FILE* pOriginalFile = FileSystem::OpenCFile(fileName, "rb", error);
       if (!pOriginalFile)
       {
         // this will delete the temporary file
@@ -1087,14 +1096,15 @@ std::unique_ptr<ByteStream> ByteStream::OpenFile(const char* fileName, u32 openM
 
       static const size_t BUFFERSIZE = 4096;
       u8 buffer[BUFFERSIZE];
-      while (!feof(pOriginalFile))
+      while (!std::feof(pOriginalFile))
       {
-        size_t nBytes = fread(buffer, BUFFERSIZE, sizeof(u8), pOriginalFile);
+        size_t nBytes = std::fread(buffer, BUFFERSIZE, sizeof(u8), pOriginalFile);
         if (nBytes == 0)
           break;
 
         if (pStream->Write(buffer, (u32)nBytes) != (u32)nBytes)
         {
+          Error::SetStringView(error, "Failed to copy file contents.");
           pStream->Discard();
           fclose(pOriginalFile);
           return nullptr;
@@ -1123,7 +1133,7 @@ std::unique_ptr<ByteStream> ByteStream::OpenFile(const char* fileName, u32 openM
 #endif
 
     // open the file
-    std::FILE* pTemporaryFile = FileSystem::OpenCFile(temporaryFileName, modeString);
+    std::FILE* pTemporaryFile = FileSystem::OpenCFile(temporaryFileName, modeString, error);
     if (pTemporaryFile == nullptr)
       return nullptr;
 
@@ -1134,7 +1144,7 @@ std::unique_ptr<ByteStream> ByteStream::OpenFile(const char* fileName, u32 openM
     // do we need to copy the existing file into this one?
     if (!(openMode & BYTESTREAM_OPEN_TRUNCATE))
     {
-      std::FILE* pOriginalFile = FileSystem::OpenCFile(fileName, "rb");
+      std::FILE* pOriginalFile = FileSystem::OpenCFile(fileName, "rb", error);
       if (!pOriginalFile)
       {
         // this will delete the temporary file
@@ -1152,6 +1162,7 @@ std::unique_ptr<ByteStream> ByteStream::OpenFile(const char* fileName, u32 openM
 
         if (pStream->Write(buffer, (u32)nBytes) != (u32)nBytes)
         {
+          Error::SetStringView(error, "Failed to copy file contents.");
           pStream->SetErrorState();
           std::fclose(pOriginalFile);
           return nullptr;
@@ -1169,7 +1180,7 @@ std::unique_ptr<ByteStream> ByteStream::OpenFile(const char* fileName, u32 openM
   else
   {
     // forward through
-    std::FILE* pFile = FileSystem::OpenCFile(fileName, modeString);
+    std::FILE* pFile = FileSystem::OpenCFile(fileName, modeString, error);
     if (!pFile)
       return nullptr;
 

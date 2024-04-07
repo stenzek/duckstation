@@ -10,6 +10,8 @@
 #include <string_view>
 #include <vector>
 
+class Error;
+
 // base byte stream creation functions
 enum BYTESTREAM_OPEN_MODE
 {
@@ -104,7 +106,7 @@ public:
 
   // base byte stream creation functions
   // opens a local file-based stream. fills in error if passed, and returns false if the file cannot be opened.
-  static std::unique_ptr<ByteStream> OpenFile(const char* FileName, u32 OpenMode);
+  static std::unique_ptr<ByteStream> OpenFile(const char* FileName, u32 OpenMode, Error* error = nullptr);
 
   // memory byte stream, caller is responsible for management, therefore it can be located on either the stack or on the
   // heap.
