@@ -111276,6 +111276,8 @@ SLES-00933:
     - AnalogController
     - DigitalController
     - NeGcon
+  traits:
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Psygnosis"
     developer: "Studio 33 Ltd"
@@ -111295,12 +111297,20 @@ SLES-00933:
     linkCable: false
 SLED-01196:
   name: "Newman Haas Racing (Europe) (En,Fr,De,It) (Demo)"
+  controllers:
+    - AnalogController
+    - DigitalController
+    - NeGcon
+  traits:
+    - ForcePGXPCPUMode
 SLUS-00602:
   name: "Newman Haas Racing (USA)"
   controllers:
     - AnalogController
     - DigitalController
     - NeGcon
+  traits:
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Psygnosis"
     developer: "Studio 33 Ltd"
