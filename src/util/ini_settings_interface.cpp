@@ -3,11 +3,11 @@
 
 #include "ini_settings_interface.h"
 
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
-#include "common/error.h"
 
 #include <algorithm>
 #include <iterator>
@@ -46,7 +46,9 @@ static std::string GetTemporaryFileName(const std::string& original_filename)
   return temporary_filename;
 }
 
-INISettingsInterface::INISettingsInterface(std::string filename) : m_filename(std::move(filename)), m_ini(true, true) {}
+INISettingsInterface::INISettingsInterface(std::string filename) : m_filename(std::move(filename)), m_ini(true, true)
+{
+}
 
 INISettingsInterface::~INISettingsInterface()
 {
@@ -186,6 +188,16 @@ bool INISettingsInterface::GetBoolValue(const char* section, const char* key, bo
 }
 
 bool INISettingsInterface::GetStringValue(const char* section, const char* key, std::string* value) const
+{
+  const char* str_value = m_ini.GetValue(section, key);
+  if (!str_value)
+    return false;
+
+  value->assign(str_value);
+  return true;
+}
+
+bool INISettingsInterface::GetStringValue(const char* section, const char* key, SmallStringBase* value) const
 {
   const char* str_value = m_ini.GetValue(section, key);
   if (!str_value)

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -29,6 +29,8 @@ class CDImage;
 namespace Host {
 // Base setting retrieval, bypasses layers.
 std::string GetBaseStringSettingValue(const char* section, const char* key, const char* default_value = "");
+SmallString GetBaseSmallStringSettingValue(const char* section, const char* key, const char* default_value = "");
+TinyString GetBaseTinyStringSettingValue(const char* section, const char* key, const char* default_value = "");
 bool GetBaseBoolSettingValue(const char* section, const char* key, bool default_value = false);
 s32 GetBaseIntSettingValue(const char* section, const char* key, s32 default_value = 0);
 u32 GetBaseUIntSettingValue(const char* section, const char* key, u32 default_value = 0);
@@ -53,6 +55,8 @@ void CommitBaseSettingChanges();
 
 // Settings access, thread-safe.
 std::string GetStringSettingValue(const char* section, const char* key, const char* default_value = "");
+SmallString GetSmallStringSettingValue(const char* section, const char* key, const char* default_value = "");
+TinyString GetTinyStringSettingValue(const char* section, const char* key, const char* default_value = "");
 bool GetBoolSettingValue(const char* section, const char* key, bool default_value = false);
 int GetIntSettingValue(const char* section, const char* key, s32 default_value = 0);
 u32 GetUIntSettingValue(const char* section, const char* key, u32 default_value = 0);

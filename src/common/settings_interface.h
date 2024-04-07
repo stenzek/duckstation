@@ -3,7 +3,9 @@
 
 #pragma once
 
+#include "small_string.h"
 #include "types.h"
+
 #include <optional>
 #include <string>
 #include <vector>
@@ -24,6 +26,7 @@ public:
   virtual bool GetDoubleValue(const char* section, const char* key, double* value) const = 0;
   virtual bool GetBoolValue(const char* section, const char* key, bool* value) const = 0;
   virtual bool GetStringValue(const char* section, const char* key, std::string* value) const = 0;
+  virtual bool GetStringValue(const char* section, const char* key, SmallStringBase* value) const = 0;
 
   virtual void SetIntValue(const char* section, const char* key, s32 value) = 0;
   virtual void SetUIntValue(const char* section, const char* key, u32 value) = 0;
@@ -82,6 +85,24 @@ public:
     return value;
   }
 
+  ALWAYS_INLINE SmallString GetSmallStringValue(const char* section, const char* key,
+                                                const char* default_value = "") const
+  {
+    SmallString value;
+    if (!GetStringValue(section, key, &value))
+      value.assign(default_value);
+    return value;
+  }
+
+  ALWAYS_INLINE SmallString GetTinyStringValue(const char* section, const char* key,
+                                               const char* default_value = "") const
+  {
+    TinyString value;
+    if (!GetStringValue(section, key, &value))
+      value.assign(default_value);
+    return value;
+  }
+
   ALWAYS_INLINE std::optional<s32> GetOptionalIntValue(const char* section, const char* key,
                                                        std::optional<s32> default_value = std::nullopt)
   {
@@ -122,7 +143,32 @@ public:
                          std::optional<const char*> default_value = std::nullopt) const
   {
     std::string ret;
-    return GetStringValue(section, key, &ret) ? std::optional<std::string>(ret) : default_value;
+    return GetStringValue(section, key, &ret) ?
+             std::optional<std::string>(ret) :
+             (default_value.has_value() ? std::optional<std::string>(default_value.value()) :
+                                          std::optional<std::string>());
+  }
+
+  ALWAYS_INLINE std::optional<SmallString>
+  GetOptionalSmallStringValue(const char* section, const char* key,
+                              std::optional<const char*> default_value = std::nullopt) const
+  {
+    SmallString ret;
+    return GetStringValue(section, key, &ret) ?
+             std::optional<SmallString>(ret) :
+             (default_value.has_value() ? std::optional<SmallString>(default_value.value()) :
+                                          std::optional<SmallString>());
+  }
+
+  ALWAYS_INLINE std::optional<TinyString>
+  GetOptionalTinyStringValue(const char* section, const char* key,
+                             std::optional<const char*> default_value = std::nullopt) const
+  {
+    TinyString ret;
+    return GetStringValue(section, key, &ret) ?
+             std::optional<TinyString>(ret) :
+             (default_value.has_value() ? std::optional<TinyString>(default_value.value()) :
+                                          std::optional<TinyString>());
   }
 
   ALWAYS_INLINE void SetOptionalIntValue(const char* section, const char* key, const std::optional<s32>& value)

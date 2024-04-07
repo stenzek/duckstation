@@ -53,6 +53,21 @@ std::string Host::GetBaseStringSettingValue(const char* section, const char* key
     ->GetStringValue(section, key, default_value);
 }
 
+SmallString Host::GetBaseSmallStringSettingValue(const char* section, const char* key,
+                                                 const char* default_value /*= ""*/)
+{
+  std::unique_lock lock(s_settings_mutex);
+  return s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)
+    ->GetSmallStringValue(section, key, default_value);
+}
+
+TinyString Host::GetBaseTinyStringSettingValue(const char* section, const char* key, const char* default_value /*= ""*/)
+{
+  std::unique_lock lock(s_settings_mutex);
+  return s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)
+    ->GetTinyStringValue(section, key, default_value);
+}
+
 bool Host::GetBaseBoolSettingValue(const char* section, const char* key, bool default_value /*= false*/)
 {
   std::unique_lock lock(s_settings_mutex);
@@ -98,6 +113,18 @@ std::string Host::GetStringSettingValue(const char* section, const char* key, co
 {
   std::unique_lock lock(s_settings_mutex);
   return s_layered_settings_interface.GetStringValue(section, key, default_value);
+}
+
+SmallString Host::GetSmallStringSettingValue(const char* section, const char* key, const char* default_value /*= ""*/)
+{
+  std::unique_lock lock(s_settings_mutex);
+  return s_layered_settings_interface.GetSmallStringValue(section, key, default_value);
+}
+
+TinyString Host::GetTinyStringSettingValue(const char* section, const char* key, const char* default_value /*= ""*/)
+{
+  std::unique_lock lock(s_settings_mutex);
+  return s_layered_settings_interface.GetTinyStringValue(section, key, default_value);
 }
 
 bool Host::GetBoolSettingValue(const char* section, const char* key, bool default_value /*= false*/)
