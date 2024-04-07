@@ -322,7 +322,7 @@ jobs:
         branch: master
         cache: true
         restore-cache: true
-        cache-key: flatpak-x64-${{ hashFiles('.scripts/flatpak/**/*.json') }}
+        cache-key: flatpak-x64-${{ hashFiles('scripts/flatpak/**/*.json') }}
 
     # fails due to screenshots..
     #- name: Validate build
