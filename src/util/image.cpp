@@ -292,7 +292,12 @@ bool PNGFileLoader(RGBA8Image* image, const char* filename, std::FILE* fp)
   if (setjmp(png_jmpbuf(png_ptr)))
     return false;
 
-  png_init_io(png_ptr, fp);
+  png_set_read_fn(png_ptr, fp, [](png_structp png_ptr, png_bytep data_ptr, png_size_t size) {
+    std::FILE* fp = static_cast<std::FILE*>(png_get_io_ptr(png_ptr));
+    if (std::fread(data_ptr, size, 1, fp) != 1)
+      png_error(png_ptr, "Read error");
+  });
+
   return PNGCommonLoader(image, png_ptr, info_ptr, new_data, row_pointers);
 }
 

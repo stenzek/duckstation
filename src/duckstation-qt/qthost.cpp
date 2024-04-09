@@ -696,8 +696,7 @@ void EmuThread::stopFullscreenUI()
     return;
   }
 
-  if (System::IsValid())
-    shutdownSystem();
+  setFullscreen(false, true);
 
   if (m_run_fullscreen_ui)
   {
@@ -1864,9 +1863,14 @@ void Host::RequestSystemShutdown(bool allow_confirm, bool save_state)
                             Q_ARG(bool, true), Q_ARG(bool, save_state));
 }
 
-void Host::RequestExit(bool allow_confirm)
+void Host::RequestExitApplication(bool allow_confirm)
 {
   QMetaObject::invokeMethod(g_main_window, "requestExit", Qt::QueuedConnection, Q_ARG(bool, allow_confirm));
+}
+
+void Host::RequestExitBigPicture()
+{
+  g_emu_thread->stopFullscreenUI();
 }
 
 std::optional<WindowInfo> Host::GetTopLevelWindowInfo()

@@ -119,6 +119,13 @@ const std::string& GetRichPresenceString();
 /// Should be called with the lock held.
 const std::string& GetGameTitle();
 
+/// Returns the logged-in user name.
+const char* GetLoggedInUserName();
+
+/// Returns the path to the user's profile avatar.
+/// Should be called with the lock held.
+std::string GetLoggedInUserBadgePath();
+
 /// Clears all cached state used to render the UI.
 void ClearUIState();
 

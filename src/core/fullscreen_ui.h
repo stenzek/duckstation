@@ -34,6 +34,7 @@ void OpenLeaderboardsWindow();
 bool IsLeaderboardsWindowOpen();
 void ReturnToMainWindow();
 void ReturnToPreviousWindow();
+void SetStandardSelectionFooterText(bool back_instead_of_cancel);
 #endif
 
 void Shutdown();
@@ -45,5 +46,13 @@ void TimeToPrintableString(SmallStringBase* str, time_t t);
 
 // Host UI triggers from Big Picture mode.
 namespace Host {
+/// Requests shut down and exit of the hosting application. This may not actually exit,
+/// if the user cancels the shutdown confirmation.
+void RequestExitApplication(bool allow_confirm);
+
+/// Requests Big Picture mode to be shut down, returning to the desktop interface.
+void RequestExitBigPicture();
+
+/// Requests the cover downloader be opened.
 void OnCoverDownloaderOpenRequested();
 } // namespace Host

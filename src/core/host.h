@@ -94,10 +94,6 @@ void DisplayLoadingScreen(const char* message, int progress_min = -1, int progre
 /// Safely executes a function on the VM thread.
 void RunOnCPUThread(std::function<void()> function, bool block = false);
 
-/// Requests shut down and exit of the hosting application. This may not actually exit,
-/// if the user cancels the shutdown confirmation.
-void RequestExit(bool allow_confirm);
-
 /// Attempts to create the rendering device backend.
 bool CreateGPUDevice(RenderAPI api);
 

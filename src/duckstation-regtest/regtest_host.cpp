@@ -299,7 +299,12 @@ void Host::RequestResizeHostDisplay(s32 width, s32 height)
   //
 }
 
-void Host::RequestExit(bool save_state_if_running)
+void Host::RequestExitApplication(bool save_state_if_running)
+{
+  //
+}
+
+void Host::RequestExitBigPicture()
 {
   //
 }
