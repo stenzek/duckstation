@@ -165,10 +165,6 @@ Czy chcesz włączyć tryb hardcore?</translation>
 <context>
     <name>AchievementSettingsWidget</name>
     <message>
-        <source>Form</source>
-        <translation type="vanished">Forma</translation>
-    </message>
-    <message>
         <location filename="../achievementsettingswidget.ui" line="42"/>
         <location filename="../achievementsettingswidget.cpp" line="46"/>
         <source>Enable Achievements</source>
@@ -272,10 +268,6 @@ Token logowania wygenerowany:</translation>
         <location filename="../achievementsettingswidget.ui" line="239"/>
         <source>Game Info</source>
         <translation>Informacje o grze</translation>
-    </message>
-    <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Pause Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation używa bazy osiągnięć RetroAchievements oraz śledzi za jego pomocą ich postęp. By móc zdobywać osiągnięcia, proszę utworzyć konto na &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;By przejrzeć listę osiągnięć podczas gry, użyj skrótu klawiszowego &lt;span style=&quot; font-weight:600;&quot;&gt;Otwórz menu podręczne&lt;/span&gt; i wybierz &lt;span style=&quot; font-weight:600;&quot;&gt;Osiągnięcia&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="46"/>
@@ -386,13 +378,13 @@ Token logowania wygenerowany %2.</translation>
 <context>
     <name>Achievements</name>
     <message>
-        <location filename="../../core/system.cpp" line="1168"/>
+        <location filename="../../core/system.cpp" line="1173"/>
         <source>Loading state</source>
         <translation>Zapis do załadowania</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1402"/>
-        <location filename="../../core/system.cpp" line="1414"/>
+        <location filename="../../core/system.cpp" line="1407"/>
+        <location filename="../../core/system.cpp" line="1419"/>
         <source>Resuming state</source>
         <translation>Zapis automatyczny do wznowienia</translation>
     </message>
@@ -707,10 +699,6 @@ Nieprzeczytane wiadomości: {}</translation>
 <context>
     <name>AdvancedSettingsWidget</name>
     <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
         <location filename="../advancedsettingswidget.ui" line="29"/>
         <source>Logging</source>
         <translation>Rejestr zdarzeń</translation>
@@ -781,18 +769,6 @@ Nieprzeczytane wiadomości: {}</translation>
         <translation>Przywróć domyślne</translation>
     </message>
     <message>
-        <source>PGXP Vertex Cache</source>
-        <translation type="vanished">Pamięć podręczna Wierzchołków PGXP</translation>
-    </message>
-    <message>
-        <source>PGXP Geometry Tolerance</source>
-        <translation type="vanished">Tolerancja Geometrii PGXP</translation>
-    </message>
-    <message>
-        <source>PGXP Depth Clear Threshold</source>
-        <translation type="vanished">Próg czyszczenia głębokości PGXP</translation>
-    </message>
-    <message>
         <location filename="../advancedsettingswidget.cpp" line="242"/>
         <source>Enable Recompiler Memory Exceptions</source>
         <translation>Włącz Wyjątki Pamięci Rekompilatora</translation>
@@ -801,30 +777,6 @@ Nieprzeczytane wiadomości: {}</translation>
         <location filename="../advancedsettingswidget.cpp" line="246"/>
         <source>Enable Recompiler Fast Memory Access</source>
         <translation>Włącz Dostęp Do Szybkiej Pamięci Rekompilatora</translation>
-    </message>
-    <message>
-        <source>Enable VRAM Write Texture Replacement</source>
-        <translation type="vanished">Włącz zastępowanie tekstur zapisu VRAM</translation>
-    </message>
-    <message>
-        <source>Preload Texture Replacements</source>
-        <translation type="vanished">Wczytaj wstępnie zamienniki tekstur</translation>
-    </message>
-    <message>
-        <source>Dump Replaceable VRAM Writes</source>
-        <translation type="vanished">Zrzuć wymienne zapisy VRAM</translation>
-    </message>
-    <message>
-        <source>Set Dumped VRAM Write Alpha Channel</source>
-        <translation type="vanished">Ustaw kanał alfa zapisu w pamięci VRAM</translation>
-    </message>
-    <message>
-        <source>Minimum Dumped VRAM Write Width</source>
-        <translation type="vanished">Minimalna szerokość zapisu w pamięci VRAM</translation>
-    </message>
-    <message>
-        <source>Minimum Dumped VRAM Write Height</source>
-        <translation type="vanished">Minimalna wysokość zapisu w pamięci VRAM</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="233"/>
@@ -847,26 +799,6 @@ Nieprzeczytane wiadomości: {}</translation>
         <translation>GPU Max Run-Ahead</translation>
     </message>
     <message>
-        <source>Use Debug Host GPU Device</source>
-        <translation type="vanished">Użyj debugowego urządzenia karty graficznej gospodarza</translation>
-    </message>
-    <message>
-        <source>Disable Shader Cache</source>
-        <translation type="vanished">Wyłącz pamięć podręczną cieni</translation>
-    </message>
-    <message>
-        <source>Disable Dual-Source Blend</source>
-        <translation type="vanished">Wyłącz mieszanie dwóch źródeł</translation>
-    </message>
-    <message>
-        <source>Disable Framebuffer Fetch</source>
-        <translation type="vanished">Wyłącz pobieranie bufora ramki</translation>
-    </message>
-    <message>
-        <source>Stretch Display Vertically</source>
-        <translation type="vanished">Rozciągnij ekran w pionie</translation>
-    </message>
-    <message>
         <location filename="../advancedsettingswidget.cpp" line="251"/>
         <source>CD-ROM Mechacon Version</source>
         <translation>Wersja mechacona na płycie CD-ROM</translation>
@@ -880,10 +812,6 @@ Nieprzeczytane wiadomości: {}</translation>
         <location filename="../advancedsettingswidget.cpp" line="256"/>
         <source>Allow Booting Without SBI File</source>
         <translation>Zezwól na start bez pliku SBI</translation>
-    </message>
-    <message>
-        <source>Create Save State Backups</source>
-        <translation type="vanished">Twórz kopie zapisów stanu</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="259"/>
@@ -969,39 +897,6 @@ Nieprzeczytane wiadomości: {}</translation>
         <translation>Kompresuj zapisy stanów</translation>
     </message>
     <message>
-        <source>Show Frame Times</source>
-        <translation type="vanished">Pokazuj czasy klatek</translation>
-    </message>
-    <message>
-        <source>Display FPS Limit</source>
-        <translation type="vanished">Limit FPS</translation>
-    </message>
-    <message>
-        <source>Disable All Enhancements</source>
-        <translation type="vanished">Wyłącz wszystkie ulepszenia</translation>
-    </message>
-    <message>
-        <source>Show Status Indicators</source>
-        <translation type="vanished">Pokazuj wskaźniki statusu</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="212"/>
-        <source>Apply Compatibility Settings</source>
-        <translation>Użyj ustawień kompatybilności</translation>
-    </message>
-    <message>
-        <source>Exclusive Fullscreen Control</source>
-        <translation type="vanished">Kontrola ekskluzywnego trybu pełnoekranowego</translation>
-    </message>
-    <message>
-        <source>Multisample Antialiasing</source>
-        <translation type="vanished">Wielopróbkowy antyaliasing</translation>
-    </message>
-    <message>
-        <source>Wireframe Mode</source>
-        <translation type="vanished">Tryb modelu szkieletowego</translation>
-    </message>
-    <message>
         <location filename="../advancedsettingswidget.cpp" line="223"/>
         <source>Display Active Start Offset</source>
         <translation>Wyświetl aktywne przesunięcie początkowe</translation>
@@ -1025,10 +920,6 @@ Nieprzeczytane wiadomości: {}</translation>
         <location filename="../advancedsettingswidget.cpp" line="244"/>
         <source>Enable Recompiler Block Linking</source>
         <translation>Włącz łączenie bloków rekompilatora</translation>
-    </message>
-    <message>
-        <source>Use Old MDEC Routines</source>
-        <translation type="vanished">Używaj starych funkcji MDEC</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="214"/>
@@ -1512,10 +1403,6 @@ Nieprzeczytane wiadomości: {}</translation>
 <context>
     <name>AudioSettingsWidget</name>
     <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
         <location filename="../audiosettingswidget.ui" line="29"/>
         <source>Configuration</source>
         <translation>Konfiguracja</translation>
@@ -1835,10 +1722,6 @@ Nieprzeczytane wiadomości: {}</translation>
 </context>
 <context>
     <name>BIOSSettingsWidget</name>
-    <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
     <message>
         <location filename="../biossettingswidget.ui" line="29"/>
         <source>BIOS Selection</source>
@@ -2560,10 +2443,6 @@ Nieprzeczytane wiadomości: {}</translation>
 <context>
     <name>ConsoleSettingsWidget</name>
     <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
         <location filename="../consolesettingswidget.ui" line="29"/>
         <source>Console</source>
         <translation>Konsola</translation>
@@ -2610,15 +2489,6 @@ Nieprzeczytane wiadomości: {}</translation>
         <location filename="../consolesettingswidget.ui" line="159"/>
         <source>CD-ROM Emulation</source>
         <translation>Emulacja napędu CD-ROM</translation>
-    </message>
-    <message>
-        <source>Enable Region Check</source>
-        <translation type="vanished">Włącz sprawdzanie regionu</translation>
-    </message>
-    <message>
-        <location filename="../consolesettingswidget.ui" line="300"/>
-        <source>Preload Image To RAM</source>
-        <translation>Wstępnie załaduj obraz do pamięci RAM</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="168"/>
@@ -2889,14 +2759,6 @@ Nieprzeczytane wiadomości: {}</translation>
         <translation>Redukuje przycięcia w emulacji poprzez asynchroniczny odczyt/dekompresję danych z płyty. Ustawienie większej liczby sektorów może ograniczyć przucinki podczas odgrywania FMV itp. w grach zapisanych na wolniejszych dyskach lub skompresowanych np. do formatu CHD.</translation>
     </message>
     <message>
-        <source>Checked</source>
-        <translation type="vanished">Zaznaczone</translation>
-    </message>
-    <message>
-        <source>Simulates the region check present in original, unmodified consoles.</source>
-        <translation type="vanished">Symuluje sprawdzenia regionu z oryginalnych, niemodyfikowanych konsol.</translation>
-    </message>
-    <message>
         <location filename="../consolesettingswidget.cpp" line="83"/>
         <location filename="../consolesettingswidget.cpp" line="99"/>
         <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some cases also eliminates stutter when games initiate audio track playback.</source>
@@ -2954,10 +2816,6 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
 <context>
     <name>ControllerBindingWidget</name>
     <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
         <location filename="../controllerbindingwidget.ui" line="29"/>
         <source>Controller Type</source>
         <translation>Typ kontrolera</translation>
@@ -3007,10 +2865,6 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
 </context>
 <context>
     <name>ControllerBindingWidget_AnalogController</name>
-    <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="43"/>
         <source>D-Pad</source>
@@ -3169,10 +3023,6 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
 <context>
     <name>ControllerBindingWidget_AnalogJoystick</name>
     <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="43"/>
         <source>D-Pad</source>
         <translation>Przyciski kierunkowe</translation>
@@ -3318,10 +3168,6 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
 <context>
     <name>ControllerBindingWidget_DigitalController</name>
     <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
         <location filename="../controllerbindingwidget_digital_controller.ui" line="43"/>
         <source>L1</source>
         <translation>L1</translation>
@@ -3423,10 +3269,6 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
 <context>
     <name>ControllerBindingWidget_GunCon</name>
     <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
         <location filename="../controllerbindingwidget_guncon.ui" line="131"/>
         <source>Side Buttons</source>
         <translation>Przyciski</translation>
@@ -3508,10 +3350,6 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
 <context>
     <name>ControllerBindingWidget_Mouse</name>
     <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
         <location filename="../controllerbindingwidget_mouse.ui" line="47"/>
         <source>Buttons</source>
         <translation>Przyciski</translation>
@@ -3535,10 +3373,6 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
 </context>
 <context>
     <name>ControllerBindingWidget_NeGcon</name>
-    <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
     <message>
         <location filename="../controllerbindingwidget_negcon.ui" line="56"/>
         <source>D-Pad</source>
@@ -3637,10 +3471,6 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
 <context>
     <name>ControllerCustomSettingsWidget</name>
     <message>
-        <source>%1 Settings</source>
-        <translation type="vanished">Ustawienia %1</translation>
-    </message>
-    <message>
         <location filename="../controllerbindingwidgets.cpp" line="654"/>
         <source>Restore Default Settings</source>
         <translation>Przywróć domyślne</translation>
@@ -3658,10 +3488,6 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
 </context>
 <context>
     <name>ControllerGlobalSettingsWidget</name>
-    <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="80"/>
         <source>Controller Multitap</source>
@@ -3849,10 +3675,6 @@ To ostrzeżenie zostanie wyświetlone tylko raz.</translation>
 </context>
 <context>
     <name>ControllerMacroEditWidget</name>
-    <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
     <message>
         <location filename="../controllermacroeditwidget.ui" line="29"/>
         <source>Binds/Buttons</source>
@@ -4259,41 +4081,6 @@ Tej operacji nie można cofnąć.</translation>
     </message>
 </context>
 <context>
-    <name>DebuggerMessage</name>
-    <message>
-        <source>Added breakpoint at 0x%08X.</source>
-        <translation type="vanished">Dodano punkt wstrzymania w 0x%08X.</translation>
-    </message>
-    <message>
-        <source>Removed breakpoint at 0x%08X.</source>
-        <translation type="vanished">Usunięto punkt wstrzymania w 0x%08X.</translation>
-    </message>
-    <message>
-        <source>0x%08X is not a call instruction.</source>
-        <translation type="vanished">0x%08X nie jest instrukcją wywołania.</translation>
-    </message>
-    <message>
-        <source>Can&apos;t step over double branch at 0x%08X</source>
-        <translation type="vanished">Nie można przejść przez podwójną gałąź przy 0x%08X</translation>
-    </message>
-    <message>
-        <source>Stepping over to 0x%08X.</source>
-        <translation type="vanished">Przechodzę do 0x%08X.</translation>
-    </message>
-    <message>
-        <source>Instruction read failed at %08X while searching for function end.</source>
-        <translation type="vanished">Odczyt instrukcji nie powiódł się w %08X podczas wyszukiwania końca funkcji.</translation>
-    </message>
-    <message>
-        <source>Stepping out to 0x%08X.</source>
-        <translation type="vanished">Wyjście do 0x%08X.</translation>
-    </message>
-    <message>
-        <source>No return instruction found after %u instructions for step-out at %08X.</source>
-        <translation type="vanished">Nie znaleziono instrukcji powrotu po %u instrukcji wyjścia w %08X.</translation>
-    </message>
-</context>
-<context>
     <name>DebuggerRegistersModel</name>
     <message>
         <location filename="../debuggermodels.cpp" line="367"/>
@@ -4530,10 +4317,6 @@ Tej operacji nie można cofnąć.</translation>
         <translation>Dodaj punkt wstrzymania</translation>
     </message>
     <message>
-        <source>Add &amp;Breakpoint</source>
-        <translation type="vanished">Dodaj punkt &amp;wstrzymania</translation>
-    </message>
-    <message>
         <location filename="../debuggerwindow.ui" line="420"/>
         <source>Ctrl+F9</source>
         <translation>Ctrl+F9</translation>
@@ -4647,10 +4430,6 @@ Ten plik może mieć kilka gigabajtów, więc pamiętaj o zużyciu dysku SSD.</t
         <translation>Nie udało się usunąć punktu wstrzymania. Ten punkt wstrzymania może nie istnieć.</translation>
     </message>
     <message>
-        <source>A breakpoint already exists at this address.</source>
-        <translation type="vanished">Punkt wstrzymania już istnieje pod tym adresem.</translation>
-    </message>
-    <message>
         <location filename="../debuggerwindow.cpp" line="229"/>
         <source>Debugger</source>
         <translation>Debugger</translation>
@@ -4664,10 +4443,6 @@ Ten plik może mieć kilka gigabajtów, więc pamiętaj o zużyciu dysku SSD.</t
         <location filename="../debuggerwindow.cpp" line="286"/>
         <source>View in &amp;Dump</source>
         <translation>Zobacz w &amp;Zrzucie</translation>
-    </message>
-    <message>
-        <source>Follow Load/Store</source>
-        <translation type="vanished">Śledź odczyt/zapis</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="341"/>
@@ -4969,234 +4744,7 @@ Ten plik może mieć kilka gigabajtów, więc pamiętaj o zużyciu dysku SSD.</t
     </message>
 </context>
 <context>
-    <name>DisplaySettingsWidget</name>
-    <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
-        <source>Basic</source>
-        <translation type="vanished">Podstawy</translation>
-    </message>
-    <message>
-        <source>Renderer:</source>
-        <translation type="vanished">Renderer:</translation>
-    </message>
-    <message>
-        <source>Adapter:</source>
-        <translation type="vanished">Adapter:</translation>
-    </message>
-    <message>
-        <source>Fullscreen Mode:</source>
-        <translation type="vanished">Tryb Pełnoekranowy:</translation>
-    </message>
-    <message>
-        <source>Threaded Rendering</source>
-        <translation type="vanished">Renderowanie wątkowe</translation>
-    </message>
-    <message>
-        <source>VSync</source>
-        <translation type="vanished">VSync</translation>
-    </message>
-    <message>
-        <source>Threaded Presentation</source>
-        <translation type="vanished">Prezentacja wątkowa</translation>
-    </message>
-    <message>
-        <source>Screen Display</source>
-        <translation type="vanished">Wyświetlacz</translation>
-    </message>
-    <message>
-        <source>Aspect Ratio:</source>
-        <translation type="vanished">Współczynnik proporcji:</translation>
-    </message>
-    <message>
-        <source>:</source>
-        <translation type="vanished">:</translation>
-    </message>
-    <message>
-        <source>Crop:</source>
-        <translation type="vanished">Kadrowanie:</translation>
-    </message>
-    <message>
-        <source>Show CPU Usage</source>
-        <translation type="vanished">Pokaż użycie CPU</translation>
-    </message>
-    <message>
-        <source>Show Controller Input</source>
-        <translation type="vanished">Pokaż wejścia kontrolera</translation>
-    </message>
-    <message>
-        <source>Position:</source>
-        <translation type="vanished">Pozycja:</translation>
-    </message>
-    <message>
-        <source>Internal Resolution Screenshots</source>
-        <translation type="vanished">Zrzuty ekranu z rozdzielczością wewnętrzną</translation>
-    </message>
-    <message>
-        <source>Scaling:</source>
-        <translation type="vanished">Skalowanie:</translation>
-    </message>
-    <message>
-        <source>On-Screen Display</source>
-        <translation type="vanished">Wyświetlacz ekranowy OSD</translation>
-    </message>
-    <message>
-        <source>Show Emulation Speed</source>
-        <translation type="vanished">Pokaż prędkość emulacji</translation>
-    </message>
-    <message>
-        <source>Show FPS</source>
-        <translation type="vanished">Pokaż klatki na sekundę</translation>
-    </message>
-    <message>
-        <source>Show Resolution</source>
-        <translation type="vanished">Pokaż rozdzielczość</translation>
-    </message>
-    <message>
-        <source>Show GPU Usage</source>
-        <translation type="vanished">Pokaż użycie GPU</translation>
-    </message>
-    <message>
-        <source>Show Settings Overlay</source>
-        <translation type="vanished">Wyświetl ustawienia</translation>
-    </message>
-    <message>
-        <source>Renderer</source>
-        <translation type="vanished">Renderer</translation>
-    </message>
-    <message>
-        <source>Chooses the backend to use for rendering the console/game visuals. &lt;br&gt;Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. &lt;br&gt;The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
-        <translation type="vanished">Określa sterownik renderowania grafiki. &lt;br&gt;W zależności od systemu i sprzętu mogą być dostępne sterowniki sprzętowe Direct3D 11 i OpenGL. &lt;br&gt;Renderowanie programowe zapewnia najlepszą zgodność, ale jest najwolniejsze i nie oferuje żadnych ulepszeń.</translation>
-    </message>
-    <message>
-        <source>Adapter</source>
-        <translation type="vanished">Adapter</translation>
-    </message>
-    <message>
-        <source>(Default)</source>
-        <translation type="vanished">(Domyślny)</translation>
-    </message>
-    <message>
-        <source>If your system contains multiple GPUs or adapters, you can select which GPU you wish to use for the hardware renderers. &lt;br&gt;This option is only supported in Direct3D and Vulkan. OpenGL will always use the default device.</source>
-        <translation type="vanished">Jeśli Twój system zawiera wiele procesorów graficznych lub adapterów, możesz wybrać, którego GPU chcesz używać do renderowania sprzętowego. &lt;br&gt;Ta opcja jest obsługiwana tylko w Direct3D i Vulkan. OpenGL zawsze będzie używać domyślnego urządzenia.</translation>
-    </message>
-    <message>
-        <source>Fullscreen Mode</source>
-        <translation type="vanished">Tryb Pełnoekranowy</translation>
-    </message>
-    <message>
-        <source>Chooses the fullscreen resolution and frequency.</source>
-        <translation type="vanished">Ustala rozdzielczość oraz częstotliwość odświeżania w trybie pełnoekranowym.</translation>
-    </message>
-    <message>
-        <source>Aspect Ratio</source>
-        <translation type="vanished">Współczynnik proporcji</translation>
-    </message>
-    <message>
-        <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto (Game Native) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
-        <translation type="vanished">Zmienia współczynnik proporcji używany do wyświetlania wyjścia konsoli na ekranie. Wartość domyślna to Auto (natywe gry), która automatycznie dostosowuje współczynnik proporcji, aby dopasować sposób, w jaki gra byłaby wyświetlana na typowym telewizorze z tamtego okresu.</translation>
-    </message>
-    <message>
-        <source>Crop Mode</source>
-        <translation type="vanished">Tryb kadrowania</translation>
-    </message>
-    <message>
-        <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. &lt;br&gt;Some games display content in the overscan area, or use it for screen effects. &lt;br&gt;May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
-        <translation type="vanished">Określa, jaka część obszaru zazwyczaj nie jest widoczna na odbiorniku telewizyjnym przeznaczonym do przycięcia/ukrycia. &lt;br&gt;Niektóre gry wyświetlają zawartość w obszarze overscan lub używają jej do efektów ekranowych. &lt;br&gt;Może nie wyświetlać się poprawnie z opcją &quot;Wszystkie ramki &quot;. &quot;Tylko obszar Overscan&quot; oferuje dobry kompromis między stabilnością a ukrywaniem czarnych ramek.</translation>
-    </message>
-    <message>
-        <source>Position</source>
-        <translation type="vanished">Pozycja</translation>
-    </message>
-    <message>
-        <source>Determines the position on the screen when black borders must be added.</source>
-        <translation type="vanished">Pozycjonuje ekran gdy dodane są czarne krawędzie.</translation>
-    </message>
-    <message>
-        <source>Scaling</source>
-        <translation type="vanished">Skalowanie</translation>
-    </message>
-    <message>
-        <source>Bilinear (Smooth)</source>
-        <translation type="vanished">Dwuliniowy (gładki)</translation>
-    </message>
-    <message>
-        <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
-        <translation type="vanished">Określa jak obraz emulowanej konsoli jest skalowany dla rozdzielczości twojego monitora.</translation>
-    </message>
-    <message>
-        <source>Checked</source>
-        <translation type="vanished">Zaznaczone</translation>
-    </message>
-    <message>
-        <source>Unchecked</source>
-        <translation type="vanished">Niezaznaczone</translation>
-    </message>
-    <message>
-        <source>Saves screenshots at internal render resolution and without postprocessing. If this option is disabled, the screenshots will be taken at the window&apos;s resolution. Internal resolution screenshots can be very large at high rendering scales.</source>
-        <translation type="vanished">Zapisuje zrzuty ekranu z wewnętrzną rozdzielczością i bez post-processingu. Gdy ta opcja jest wyłączona, zrzuty ekranu zostaną zapisane z rozdzielczością okna. Zrzuty ekranu z rozdzielczością wewnętrzną mogą być bardzo duże, gdy skala rozdzielczości jest wysoka.</translation>
-    </message>
-    <message>
-        <source>Enable this option to match DuckStation&apos;s refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (e.g. running at non-100% speed).</source>
-        <translation type="vanished">Włącz tę opcję, aby dopasować częstotliwość odświeżania DuckStation do bieżącego monitora lub ekranu. VSync jest automatycznie wyłączane, gdy nie jest to możliwe (np. Działa z prędkością inną niż 100%).</translation>
-    </message>
-    <message>
-        <source>Presents frames on a background thread when fast forwarding or vsync is disabled. This can measurably improve performance in the Vulkan renderer.</source>
-        <translation type="vanished">Przedstawia ramki w wątku w tle, gdy szybkie przewijanie do przodu lub v-sync jest wyłączone. Może to wymiernie poprawić wydajność w rendererze Vulkan.</translation>
-    </message>
-    <message>
-        <source>Uses a second thread for drawing graphics. Currently only available for the software renderer, but can provide a significant speed improvement, and is safe to use.</source>
-        <translation type="vanished">Używa drugiego wątku do rysowania grafiki. Obecnie dostępne tylko dla renderowania oprogramowania, ale może zapewnić znaczną poprawę szybkości i jest bezpieczne w użyciu.</translation>
-    </message>
-    <message>
-        <source>Show OSD Messages</source>
-        <translation type="vanished">Pokaż komunikaty OSD</translation>
-    </message>
-    <message>
-        <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
-        <translation type="vanished">Pokazuje komunikaty na ekranie, gdy wystąpią zdarzenia, takie jak tworzenie/ładowanie stanów zapisu, wykonywanie zrzutów ekranu itp.</translation>
-    </message>
-    <message>
-        <source>Shows the internal frame rate of the game in the top-right corner of the display.</source>
-        <translation type="vanished">Pokazuje wewnętrzną liczbę klatek na sekundę w grze w prawym górnym rogu ekranu.</translation>
-    </message>
-    <message>
-        <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
-        <translation type="vanished">Pokazuje bieżącą prędkość emulacji systemu w prawym górnym rogu ekranu jako wartość procentową.</translation>
-    </message>
-    <message>
-        <source>Shows the resolution of the game in the top-right corner of the display.</source>
-        <translation type="vanished">Pokazuje rozdzielczość gry w prawym górnym rogu ekranu.</translation>
-    </message>
-    <message>
-        <source>Shows the host&apos;s CPU usage based on threads in the top-right corner of the display. This does not display the emulated system CPU&apos;s usage. If a value close to 100% is being displayed, this means your host&apos;s CPU is likely the bottleneck. In this case, you should reduce enhancement-related settings such as overclocking.</source>
-        <translation type="vanished">Pokazuje użycie wątków procesora w prawym górnym rogu ekranu. Nie wyświetla użycia procesora emulowanej konsoli. Jeśli wartość zbliża się do 100%, prawdopodobnie oznacza to, że Twój procesor jest wąskim gardłem systemu. W takim przypadku rozważ wyłączenie/zmianę obciążających procesor opcji np. podkręcania emulowanego Playstation.</translation>
-    </message>
-    <message>
-        <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
-        <translation type="vanished">Pokazuje stan kontrolera w lewym dolnym rogu wyświetlacza.</translation>
-    </message>
-    <message>
-        <source>Use Blit Swap Chain</source>
-        <translation type="vanished">Użyj Blip Swap Chain</translation>
-    </message>
-    <message>
-        <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
-        <translation type="vanished">Używa modelu prezentacji Blit zamiast Flip podczas korzystania z renderera Direct3D 11. Zwykle skutkuje to mniejszą wydajnością, ale może być wymagane w przypadku niektórych aplikacji do przesyłania strumieniowego lub w celu zwolnienia liczby klatek na sekundę w niektórych systemach.</translation>
-    </message>
-    <message>
-        <source>Borderless Fullscreen</source>
-        <translation type="vanished">Pełny ekran bez obramowania</translation>
-    </message>
-</context>
-<context>
     <name>EmptyGameListWidget</name>
-    <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
     <message>
         <location filename="../emptygamelistwidget.ui" line="30"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;No games in supported formats were found.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Please add a directory with games to begin.&lt;/p&gt;&lt;p&gt;Game dumps in the following formats will be scanned and listed:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
@@ -5265,10 +4813,6 @@ Ten plik może mieć kilka gigabajtów, więc pamiętaj o zużyciu dysku SSD.</t
 </context>
 <context>
     <name>EmulationSettingsWidget</name>
-    <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="29"/>
         <source>Speed Control</source>
@@ -5446,10 +4990,6 @@ Ten plik może mieć kilka gigabajtów, więc pamiętaj o zużyciu dysku SSD.</t
         <translation>Koryguje prędkość emulacji, by dostosować częstotliwość odświeżania konsoli do częstotliwości odświeżania hosta, gdy opcje Synchronizacja Pionowa oraz Resampling Audio są włączone. Skutkuje to najlepszą możliwą płynnością animacji, kosztem przyspieszenia prędkości emulacji o mniej niż 1%. Do synchronizacji częstotliwości odświeżania nie dojdzie, jeśli częstotliwość odświeżania konsoli różni się zbytnio od częstotliwości odświeżania hosta. Użytkownicy używający monitorów o zmiennej częstotliwości odświeżania powinni wyłączyć tę opcję.</translation>
     </message>
     <message>
-        <source>Enable this option will ensure every frame the console renders is displayed to the screen, for optimal frame pacing. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
-        <translation type="vanished">Włączenie tej opcji spowoduje, że każda klatka renderowana przez konsolę zostanie wyświetlona na ekranie, w celu uzyskania optymalnego frame pacingu. W przypadku problemów z utrzymaniem pełnej prędkości emulacji lub problemów z dźwiękiem, spróbuj wyłączyć tę opcję.</translation>
-    </message>
-    <message>
         <location filename="../emulationsettingswidget.cpp" line="98"/>
         <source>Enabling this option will ensure every frame the console renders is displayed to the screen, for optimal frame pacing. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
         <translation>Włączenie tej opcji sprawi, że każda klatka renderowana przez konsolę zostanie wyświetlona na ekranie, co zapewni optymalne tempo klatek. Jeśli masz problemy z utrzymaniem pełnej prędkości lub występują zakłócenia dźwięku, spróbuj wyłączyć tę opcję.</translation>
@@ -5515,230 +5055,7 @@ Ten plik może mieć kilka gigabajtów, więc pamiętaj o zużyciu dysku SSD.</t
     </message>
 </context>
 <context>
-    <name>EnhancementSettingsWidget</name>
-    <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
-        <source>Rendering Enhancements</source>
-        <translation type="vanished">Ulepszenia renderowania</translation>
-    </message>
-    <message>
-        <source>Internal Resolution Scale:</source>
-        <translation type="vanished">Skala rozdzielczości wewnętrznej:</translation>
-    </message>
-    <message>
-        <source>Texture Filtering:</source>
-        <translation type="vanished">Filtrowanie tekstur:</translation>
-    </message>
-    <message>
-        <source>True Color Rendering (24-bit, disables dithering)</source>
-        <translation type="vanished">True Color Rendering (24-bit, wyłącza rozpraszanie)</translation>
-    </message>
-    <message>
-        <source>Scaled Dithering (scale dither pattern to resolution)</source>
-        <translation type="vanished">Skalowanie rozpraszania (skalowanie wzorca rozpraszania do rozdzielczości)</translation>
-    </message>
-    <message>
-        <source>Widescreen Hack (render 3D in display aspect ratio)</source>
-        <translation type="vanished">Łatka panoramiczna (renderowanie 3D w proporcjach ekranu)</translation>
-    </message>
-    <message>
-        <source>Software Renderer Readbacks (run in parallel for VRAM-&gt;CPU transfers)</source>
-        <translation type="vanished">Wspomaganie programowego renderera (działa równolegle dla transferów VRAM-&gt;CPU)</translation>
-    </message>
-    <message>
-        <source>Downsampling:</source>
-        <translation type="vanished">Próbkowanie w dół:</translation>
-    </message>
-    <message>
-        <source>x</source>
-        <translation type="vanished">x</translation>
-    </message>
-    <message>
-        <source>Display Enhancements</source>
-        <translation type="vanished">Ulepszenia wyświetlania</translation>
-    </message>
-    <message>
-        <source>Disable Interlacing (force progressive render/scan)</source>
-        <translation type="vanished">Wyłącz przeplot (wymuś renderowanie/skanowanie progresywne)</translation>
-    </message>
-    <message>
-        <source>Force NTSC Timings (60hz-on-PAL)</source>
-        <translation type="vanished">Wymuś taktowanie NTSC (60 Hz na PAL)</translation>
-    </message>
-    <message>
-        <source>Force 4:3 For 24-Bit Display (disable widescreen for FMVs)</source>
-        <translation type="vanished">Wymuś 4:3 dla 24-bitowego wyświetlacza (wyłącz panoramiczny ekran dla FMV)</translation>
-    </message>
-    <message>
-        <source>Chroma Smoothing For 24-Bit Display (reduce FMV color blockyness)</source>
-        <translation type="vanished">Wygładzanie Chroma dla 24-bit wyświetlacza (redukcja blokowania kolorów FMV)</translation>
-    </message>
-    <message>
-        <source>PGXP (Precision Geometry Transform Pipeline)</source>
-        <translation type="vanished">PGXP (Precision Geometry Transform Pipeline)</translation>
-    </message>
-    <message>
-        <source>Perspective Correct Textures</source>
-        <translation type="vanished">Korekta perspektywiczna - tekstury</translation>
-    </message>
-    <message>
-        <source>Geometry Correction</source>
-        <translation type="vanished">Korekta geometrii</translation>
-    </message>
-    <message>
-        <source>Perspective Correct Colors</source>
-        <translation type="vanished">Korekta perspektywiczna - kolory</translation>
-    </message>
-    <message>
-        <source>Culling Correction</source>
-        <translation type="vanished">Korekta Cullingu</translation>
-    </message>
-    <message>
-        <source>Preserve Projection Precision</source>
-        <translation type="vanished">Zachowaj precyzję projekcji</translation>
-    </message>
-    <message>
-        <source>Depth Buffer (Low Compatibility)</source>
-        <translation type="vanished">Bufor głębi (niska kompatybilność)</translation>
-    </message>
-    <message>
-        <source>CPU Mode (Very Slow)</source>
-        <translation type="vanished">Tryb CPU (bardzo wolny)</translation>
-    </message>
-    <message>
-        <source>Unchecked</source>
-        <translation type="vanished">Niezaznaczone</translation>
-    </message>
-    <message>
-        <source>Forces the rendering and display of frames to progressive mode. &lt;br&gt;This removes the &quot;combing&quot; effect seen in 480i games by rendering them in 480p. Usually safe to enable.&lt;br&gt; &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation type="vanished">Wymusza renderowanie i wyświetlanie klatek w trybie progresywnym. &lt;br&gt;Spowoduje to usunięcie &quot;czesania&quot; efekt widoczny w grach 480i poprzez renderowanie ich w rozdzielczości 480p. Zwykle włączanie jest bezpieczne.&lt;br&gt; &lt;b&gt;&lt;u&gt;Może nie być zgodne ze wszystkimi grami.&lt;/u&gt;&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>Resolution Scale</source>
-        <translation type="vanished">Skala rozdzielczości</translation>
-    </message>
-    <message>
-        <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
-        <translation type="vanished">Ustawienie wartości powyżej 1x zwiększy rozdzielczość renderowanych wielokątów 3D i linii. Dotyczy tylko zaplecza sprzętowego. &lt;br&gt;Ta opcja jest zwykle bezpieczna, ponieważ większość gier wygląda dobrze w wyższych rozdzielczościach. Wyższe rozdzielczości wymagają mocniejszego GPU.</translation>
-    </message>
-    <message>
-        <source>Disabled</source>
-        <translation type="vanished">Wyłączone</translation>
-    </message>
-    <message>
-        <source>Downsampling</source>
-        <translation type="vanished">Próbkowanie w dół</translation>
-    </message>
-    <message>
-        <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, but should be disabled for pure 3D games. Only applies to the hardware renderers.</source>
-        <translation type="vanished">Próbkuje w dół renderowany obraz przed jego wyświetleniem. Może poprawić ogólną jakość obrazu w mieszanych grach 2D/3D, ale należy ją wyłączyć w grach czysto 3D. Dotyczy tylko urządzeń renderujących.</translation>
-    </message>
-    <message>
-        <source>Downsampling Display Scale</source>
-        <translation type="vanished">Skala próbkowania w dół wyświetlanego obrazu</translation>
-    </message>
-    <message>
-        <source>1x</source>
-        <translation type="vanished">1x</translation>
-    </message>
-    <message>
-        <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
-        <translation type="vanished">Wybiera skalę rozdzielczości, która zostanie zastosowana do końcowego obrazu. 1x spowoduje zmniejszenie rozdzielczości do oryginalnej rozdzielczości konsoli.</translation>
-    </message>
-    <message>
-        <source>Forces the precision of colours output to the console&apos;s framebuffer to use the full 8 bits of precision per channel. This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering, which makes the transition between colours less sharp by applying a pattern around those pixels. Most games are compatible with this option, but there is a number which aren&apos;t and will have broken effects with it enabled. Only applies to the hardware renderers.</source>
-        <translation type="vanished">Wymusza precyzję kolorów wysyłanych do bufora ramki konsoli, aby używał pełnych 8 bitów precyzji na kanał. Daje to ładniejsze gradienty, kosztem tego, że niektóre kolory wyglądają nieco inaczej. Wyłączenie tej opcji włącza również rozpraszanie, co sprawia, że przejścia między kolorami są mniej ostre dzięki zastosowaniu wzoru wokół tych pikseli. Większość gier jest zgodnych z tą opcją, ale jest kilka, które nie są i będą miały zepsute efekty po włączeniu tej opcji. Dotyczy tylko urządzeń renderujących.</translation>
-    </message>
-    <message>
-        <source>Checked</source>
-        <translation type="vanished">Zaznaczone</translation>
-    </message>
-    <message>
-        <source>Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. &lt;br&gt;Usually safe to enable, and only supported by the hardware renderers.</source>
-        <translation type="vanished">Skaluje wzorzec rozpraszania do skali rozdzielczości emulowanego GPU. To sprawia, że wzór ditheringu jest znacznie mniej oczywisty przy wyższych rozdzielczościach. &lt;br&gt;Zazwyczaj bezpieczne włączanie i obsługiwane tylko przez sprzętowe renderery.</translation>
-    </message>
-    <message>
-        <source>Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. &lt;br&gt;For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster. &lt;br&gt;For variable frame rate games, it may not affect the speed.</source>
-        <translation type="vanished">Używa taktowania ramek NTSC, gdy konsola jest w trybie PAL, zmuszając gry PAL do działania z częstotliwością 60 Hz. &lt;br&gt;W przypadku większości gier, w których szybkość jest powiązana z liczbą klatek na sekundę, spowoduje to około 17% szybsze działanie gry. &lt;br&gt;W przypadku gier o zmiennej liczbie klatek na sekundę może to nie wpływać na szybkość.</translation>
-    </message>
-    <message>
-        <source>Force 4:3 For 24-bit Display</source>
-        <translation type="vanished">Wymuś 4:3 dla 24-bitowego okna</translation>
-    </message>
-    <message>
-        <source>Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.</source>
-        <translation type="vanished">Przełącza z powrotem do proporcji ekranu 4:3 podczas wyświetlania treści 24-bitowych, w FMVs.</translation>
-    </message>
-    <message>
-        <source>Chroma Smoothing For 24-Bit Display</source>
-        <translation type="vanished">Wygładzanie Chroma dla 24-bitowego okna</translation>
-    </message>
-    <message>
-        <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs. Only applies to the hardware renderers.</source>
-        <translation type="vanished">Wygładza blokowanie między przejściami kolorów w treści 24-bitowej, zwykle w FMVs. Dotyczy tylko urządzeń renderujących.</translation>
-    </message>
-    <message>
-        <source>Texture Filtering</source>
-        <translation type="vanished">Filtrowanie tekstur</translation>
-    </message>
-    <message>
-        <source>Smooths out the blockiness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers. &lt;br&gt;The JINC2 and especially xBR filtering modes are very demanding, and may not be worth the speed penalty.</source>
-        <translation type="vanished">Wygładza i uwydatnia tekstury obiektów 3D poprzez filtrowanie. &lt;br&gt;Im większa skala rozdzielczości, tym lepszy efekt. Dotyczy jedynie rendererów sprzętowych. &lt;br&gt;Tryby JINC2 oraz zwłaszcza xBR są bardzo wymagające sprzętowo, więc należy mieć na uwadze możliwe straty wydajności.</translation>
-    </message>
-    <message>
-        <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures. Requires geometry correction enabled.</source>
-        <translation type="vanished">Używa interpolacji perspektywicznej dla współrzędnych tekstur, co znacząco poprawia &quot;bujające się&quot; tekstury. Wymaga włączonej korekcji geometrii.</translation>
-    </message>
-    <message>
-        <source>Uses perspective-correct interpolation for vertex colors, which can improve visuals in some games, but cause rendering errors in others. Requires geometry correction enabled.</source>
-        <translation type="vanished">Używa interpolacji perspektywicznej dla kolorów, co może poprawić jakość obrazu w niektórych grach, ale może też powodować błędy w innych. Wymaga włączonej korekcji geometrii.</translation>
-    </message>
-    <message>
-        <source>Widescreen Hack</source>
-        <translation type="vanished">Widescreen Hack (Szeroki ekran tam gdzie go nie ma oryginalnie)</translation>
-    </message>
-    <message>
-        <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. &lt;br&gt;For 2D games, or games which use pre-rendered backgrounds, this enhancement will not work as expected. &lt;br&gt;&lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation type="vanished">Skaluje pozycje wierzchołków w przestrzeni ekranu do proporcji szerokoekranowych, zasadniczo zwiększając pole widzenia z 4:3 do wybranego współczynnika proporcji w grach 3D. &lt;br&gt;W przypadku gier 2D lub gier korzystających z wstępnie renderowanego tła to ulepszenie nie będzie działać zgodnie z oczekiwaniami. &lt;br&gt;&lt;b&gt;&lt;u&gt;Może nie być kompatybilny ze wszystkimi grami. &lt;/u&gt;&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>Use Software Renderer For Readbacks</source>
-        <translation type="vanished">Używa programowego renderera jako &quot;wsparcie&quot;</translation>
-    </message>
-    <message>
-        <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
-        <translation type="vanished">Uruchamia programowy renderer do odczytów VRAM, który działa równolegle ze sprzętowym. W niektórych przypadkach może to znacznie poprawić wydajność podczas używania graficznych ulepszeń.</translation>
-    </message>
-    <message>
-        <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;br&gt;Only works with the hardware renderers. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation type="vanished">Redukuje &quot;chybotanie&quot; wielokątów i &quot;wypaczanie&quot; teksturów, które są powszechne w grach na PS1. &lt;br&gt;Działa tylko ze sprzętowymi rendererami. &lt;b&gt;&lt;u&gt;Może nie być zgodne ze wszystkimi grami.&lt;/u&gt;&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
-        <translation type="vanished">Zwiększa precyzję usuwania wielokątów, zmniejszając liczbę otworów w geometrii. Wymaga włączonej korekcji geometrii.</translation>
-    </message>
-    <message>
-        <source>Attempts to reduce polygon Z-fighting by testing pixels against the depth values from PGXP. Low compatibility, but can work well in some games. Other games may need a threshold adjustment.</source>
-        <translation type="vanished">Próbuje zredukować Z-fighting wielokątów poprzez testowanie pikseli względem wartości głębi z PGXP. Niska kompatybilność, ale może działać dobrze w niektórych grach. Inne gry mogą wymagać dostosowania progu.</translation>
-    </message>
-    <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation type="vanished">Polepsza precyzję danych PGXP po dokonaniu projekcji. Może poprawić jakość grafiki w niektórych grach.</translation>
-    </message>
-    <message>
-        <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a very high performance cost.</source>
-        <translation type="vanished">Używa PGXP przy wszystkich instrukcjach, nie tylko operacjach na pamięci. Wymagane, by PGXP mogło poprawić chybotanie w niektórych grach, jednak mocno wpływa na wydajność.</translation>
-    </message>
-</context>
-<context>
     <name>FolderSettingsWidget</name>
-    <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
     <message>
         <location filename="../foldersettingswidget.ui" line="29"/>
         <source>Cache Directory</source>
@@ -6299,17 +5616,9 @@ Czy chcesz załadować ten zapis i kontynuować?</translation>
         <translation>Automatyczne przypisanie zakończyło się niepowodzeniem, nie znaleziono dostępnych urządzeń.</translation>
     </message>
     <message>
-        <source>Automatically Load Cheats</source>
-        <translation type="vanished">Automatycznie ładuj cheaty</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6594"/>
         <source>Automatically applies patches to disc images when they are present, currently only PPF is supported.</source>
         <translation>Automatycznie stosuje poprawki do obrazów płyt, jeśli są obecne. Obecnie obsługiwany jest tylko format PPF.</translation>
-    </message>
-    <message>
-        <source>Automatically loads and applies cheats on game start.</source>
-        <translation type="vanished">Automatycznie wczytuje i aktywuje cheaty przy starcie gry.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6596"/>
@@ -6837,10 +6146,6 @@ Czy chcesz załadować ten zapis i kontynuować?</translation>
         <translation>Ikona kaczki wykonana przez icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)</translation>
     </message>
     <message>
-        <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
-        <translation type="vanished">DuckStation potrafi automatycznie pobrać okładki gier. Nie posiadamy własnej bazy, użytkownik musi sam wprowadzić źródło okładek.</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6705"/>
         <source>DuckStation is a free and open-source simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability.</source>
         <translation>DuckStation to darmowy symulator/emulator konsoli Sony PlayStation(TM) o otwartym kodzie źródłowym, skupiający się na grywalności, szybkości i długoterminowej łatwości konserwacji.</translation>
@@ -6946,10 +6251,6 @@ Czy chcesz załadować ten zapis i kontynuować?</translation>
         <translation>Włącz zastępowanie tekstur zapisu VRAM</translation>
     </message>
     <message>
-        <source>Enable VSync</source>
-        <translation type="vanished">Włącz synchroninizację pionową</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6727"/>
         <source>Enable XInput Input Source</source>
         <translation>Włącz źródło sterowania XInput</translation>
@@ -7009,10 +6310,6 @@ Czy chcesz załadować ten zapis i kontynuować?</translation>
         <location filename="../../core/fullscreen_ui.cpp" line="6738"/>
         <source>Enter the name of the memory card you wish to create.</source>
         <translation>Wprowadź nazwę karty pamięci, którą chcesz utworzyć.</translation>
-    </message>
-    <message>
-        <source>Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
-        <translation type="vanished">Przykład: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6739"/>
@@ -7302,10 +6599,6 @@ Spowodowany błąd:</translation>
         <translation>Jeśli nie włączone, obecny łańcuch przetwarzania końcowego będzie ignorowany.</translation>
     </message>
     <message>
-        <source>In the form below, specify the URLs to download covers from, with one template URL per line. The following variables are available:</source>
-        <translation type="vanished">W formie poniżej, okreś adres/y URL, z których pobrane zostaną okładki, po jednym adresie dla każdego wiersza. Można wykorzystać poniższe wartości:</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6797"/>
         <source>Increase Timer Resolution</source>
         <translation>Zwiększ rozdzielczość timera</translation>
@@ -7354,14 +6647,6 @@ Spowodowany błąd:</translation>
         <location filename="../../core/fullscreen_ui.cpp" line="6806"/>
         <source>Interface Settings</source>
         <translation>Ustawienia interfejsu</translation>
-    </message>
-    <message>
-        <source>Internal Resolution Scale</source>
-        <translation type="vanished">Skala rozdzielczości wewnętrznej</translation>
-    </message>
-    <message>
-        <source>Internal Resolution Screenshots</source>
-        <translation type="vanished">Zrzuty ekranu z rozdzielczością wewnętrzną</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6493"/>
@@ -8185,10 +7470,6 @@ Spowodowany błąd:</translation>
         <translation>Zapisano {:%c}</translation>
     </message>
     <message>
-        <source>Saves screenshots at internal render resolution and without postprocessing.</source>
-        <translation type="vanished">Zapisuje zrzuty ekranu w wewnętrznej rozdzielczości renderowania i bez przetwarzania końcowego.</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6959"/>
         <source>Saves state periodically so you can rewind any mistakes while playing.</source>
         <translation>Okresowo zapisuje stan, dzięki czemu można cofnąć wszelkie błędy podczas rozgrywki.</translation>
@@ -8574,10 +7855,6 @@ Spowodowany błąd:</translation>
         <translation>Uruchom BIOS</translation>
     </message>
     <message>
-        <source>Start Download</source>
-        <translation type="vanished">Rozpocznij pobieranie</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7036"/>
         <source>Start File</source>
         <translation>Uruchom plik</translation>
@@ -8817,10 +8094,6 @@ Spowodowany błąd:</translation>
         <location filename="../../core/fullscreen_ui.cpp" line="7083"/>
         <source>Use Light Theme</source>
         <translation>Użyj jasnego motywu</translation>
-    </message>
-    <message>
-        <source>Use Serial File Names</source>
-        <translation type="vanished">Użyj numerów seryjnych</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7084"/>
@@ -9078,113 +8351,10 @@ Spowodowany błąd:</translation>
         <translation>OpenGL</translation>
     </message>
     <message>
-        <source>Hardware (D3D11)</source>
-        <translation type="vanished">Sprzętowe (D3D11)</translation>
-    </message>
-    <message>
-        <source>Hardware (D3D12)</source>
-        <translation type="vanished">Sprzętowe (D3D12)</translation>
-    </message>
-    <message>
-        <source>Hardware (Metal)</source>
-        <translation type="vanished">Sprzętowe (Metal)</translation>
-    </message>
-    <message>
-        <source>Hardware (Vulkan)</source>
-        <translation type="vanished">Sprzętowy (Vulkan)</translation>
-    </message>
-    <message>
-        <source>Hardware (OpenGL)</source>
-        <translation type="vanished">Sprzętowe (OpenGL)</translation>
-    </message>
-    <message>
         <location filename="../qthost.cpp" line="1742"/>
         <location filename="../../core/settings.cpp" line="1029"/>
         <source>Software</source>
         <translation>Programowy</translation>
-    </message>
-</context>
-<context>
-    <name>GPUSettingsWidget</name>
-    <message>
-        <source>Automatic based on window size</source>
-        <translation type="vanished">Automatyczne na podstawie rozmiaru okna</translation>
-    </message>
-    <message>
-        <source>1x</source>
-        <translation type="vanished">1x</translation>
-    </message>
-    <message>
-        <source>2x</source>
-        <translation type="vanished">2x</translation>
-    </message>
-    <message>
-        <source>3x (for 720p)</source>
-        <translation type="vanished">3x (dla 720p)</translation>
-    </message>
-    <message>
-        <source>4x</source>
-        <translation type="vanished">4x</translation>
-    </message>
-    <message>
-        <source>5x (for 1080p)</source>
-        <translation type="vanished">5x (dla 1080p)</translation>
-    </message>
-    <message>
-        <source>6x (for 1440p)</source>
-        <translation type="vanished">6x (dla 1440p)</translation>
-    </message>
-    <message>
-        <source>7x</source>
-        <translation type="vanished">7x</translation>
-    </message>
-    <message>
-        <source>8x</source>
-        <translation type="vanished">8x</translation>
-    </message>
-    <message>
-        <source>9x (for 4K)</source>
-        <translation type="vanished">9x (dla 4K)</translation>
-    </message>
-    <message>
-        <source>10x</source>
-        <translation type="vanished">10x</translation>
-    </message>
-    <message>
-        <source>11x</source>
-        <translation type="vanished">11x</translation>
-    </message>
-    <message>
-        <source>12x</source>
-        <translation type="vanished">12x</translation>
-    </message>
-    <message>
-        <source>13x</source>
-        <translation type="vanished">13x</translation>
-    </message>
-    <message>
-        <source>14x</source>
-        <translation type="vanished">14x</translation>
-    </message>
-    <message>
-        <source>15x</source>
-        <translation type="vanished">15x</translation>
-    </message>
-    <message>
-        <source>16x</source>
-        <translation type="vanished">16x</translation>
-    </message>
-    <message>
-        <source>Disabled</source>
-        <translation type="vanished">Wyłączone</translation>
-    </message>
-    <message>
-        <source>%1x MSAA</source>
-        <translation type="vanished">%1x MSAA</translation>
-    </message>
-    <message>
-        <source>%1x SSAA</source>
-        <translation type="vanished">%1x SSAA</translation>
     </message>
 </context>
 <context>
@@ -9505,10 +8675,6 @@ Spowodowany błąd:</translation>
 <context>
     <name>GameListSettingsWidget</name>
     <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
         <location filename="../gamelistsettingswidget.ui" line="31"/>
         <source>Search Directories (will be scanned for games)</source>
         <translation>Przeszukaj katalogi (znajdź gry)</translation>
@@ -9573,10 +8739,6 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
 </context>
 <context>
     <name>GameListWidget</name>
-    <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
     <message>
         <location filename="../gamelistwidget.ui" line="57"/>
         <source>Game List</source>
@@ -9812,177 +8974,6 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
         <location filename="../gamesummarywidget.cpp" line="362"/>
         <source>Search on Redump.org</source>
         <translation>Szukaj na Redump.org</translation>
-    </message>
-</context>
-<context>
-    <name>GeneralSettingsWidget</name>
-    <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
-        <source>Behaviour</source>
-        <translation type="vanished">Zachowanie</translation>
-    </message>
-    <message>
-        <source>Confirm Power Off</source>
-        <translation type="vanished">Potwierdź wyłączenie</translation>
-    </message>
-    <message>
-        <source>Pause On Start</source>
-        <translation type="vanished">Wstrzymaj na starcie</translation>
-    </message>
-    <message>
-        <source>Pause On Focus Loss</source>
-        <translation type="vanished">Wstrzymaj przy zmianie aktywnego okna</translation>
-    </message>
-    <message>
-        <source>Start Fullscreen</source>
-        <translation type="vanished">Uruchom na pełnym ekranie</translation>
-    </message>
-    <message>
-        <source>Save State On Exit</source>
-        <translation type="vanished">Zapisz stan przy wyjściu</translation>
-    </message>
-    <message>
-        <source>Apply Per-Game Settings</source>
-        <translation type="vanished">Zastosuj ustawienia dla poszczególnych gier</translation>
-    </message>
-    <message>
-        <source>Automatically Load Cheats</source>
-        <translation type="vanished">Automatycznie ładuj cheaty</translation>
-    </message>
-    <message>
-        <source>Save State On Shutdown</source>
-        <translation type="vanished">Zapisz stan przy wyjściu</translation>
-    </message>
-    <message>
-        <source>Create Save State Backups</source>
-        <translation type="vanished">Twórz kopie zapasowe zapisów stanu</translation>
-    </message>
-    <message>
-        <source>Inhibit Screensaver</source>
-        <translation type="vanished">Wstrzymaj wygaszacz ekranu</translation>
-    </message>
-    <message>
-        <source>Load Devices From Save States</source>
-        <translation type="vanished">Załaduj urządzenia z zapisów stanu</translation>
-    </message>
-    <message>
-        <source>Compress Save States</source>
-        <translation type="vanished">Kompresuj zapisy stanów</translation>
-    </message>
-    <message>
-        <source>Game Display</source>
-        <translation type="vanished">Ekran gry</translation>
-    </message>
-    <message>
-        <source>Double-Click Toggles Fullscreen</source>
-        <translation type="vanished">Podwójny klik przełącza tryb pełnego ekranu</translation>
-    </message>
-    <message>
-        <source>Render To Separate Window</source>
-        <translation type="vanished">Renderuj do oddzielnego okna</translation>
-    </message>
-    <message>
-        <source>Hide Main Window When Running</source>
-        <translation type="vanished">Ukryj okno główne gdy gra jest uruchomiona</translation>
-    </message>
-    <message>
-        <source>Disable Window Resizing</source>
-        <translation type="vanished">Nie pozwalaj na zmianę rozmiaru okna</translation>
-    </message>
-    <message>
-        <source>Hide Cursor In Fullscreen</source>
-        <translation type="vanished">Ukryj kursor na pełnym ekranie</translation>
-    </message>
-    <message>
-        <source>Automatic Updater</source>
-        <translation type="vanished">Automatyczny aktualizator</translation>
-    </message>
-    <message>
-        <source>Update Channel:</source>
-        <translation type="vanished">Kanał aktualizacji:</translation>
-    </message>
-    <message>
-        <source>Current Version:</source>
-        <translation type="vanished">Obecna wersja:</translation>
-    </message>
-    <message>
-        <source>Check for Updates...</source>
-        <translation type="vanished">Sprawdź aktualizacje...</translation>
-    </message>
-    <message>
-        <source>Checked</source>
-        <translation type="vanished">Zaznaczone</translation>
-    </message>
-    <message>
-        <source>Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.</source>
-        <translation type="vanished">Określa, czy zostanie wyświetlony monit o potwierdzenie zamknięcia emulatora/gry po naciśnięciu klawisza wyjścia.</translation>
-    </message>
-    <message>
-        <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
-        <translation type="vanished">Automatycznie zapisuje stan emulatora podczas wyłączania lub wychodzenia. Następnie można wznowić grę bezpośrednio od miejsca, w którym ją przerwano.</translation>
-    </message>
-    <message>
-        <source>Unchecked</source>
-        <translation type="vanished">Niezaznaczone</translation>
-    </message>
-    <message>
-        <source>Automatically switches to fullscreen mode when a game is started.</source>
-        <translation type="vanished">Automatycznie przełącza się do trybu pełnoekranowego po uruchomieniu gry.</translation>
-    </message>
-    <message>
-        <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
-        <translation type="vanished">Ukrywa wskaźnik/kursor myszy, gdy emulator jest w trybie pełnoekranowym.</translation>
-    </message>
-    <message>
-        <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
-        <translation type="vanished">Zapobiegaj aktywacji wygaszacza ekranu oraz uśpieniu, gdy emulacja jest uruchomiona.</translation>
-    </message>
-    <message>
-        <source>Renders the display of the simulated console to the main window of the application, over the game list. If checked, the display will render in a separate window.</source>
-        <translation type="vanished">Renderuje ekran konsoli do głównego okna aplikacji przykrywając listę gier. Jeśli ta opcja jest zaznaczona, ekran zostanie renderowany w osobnym oknie.</translation>
-    </message>
-    <message>
-        <source>Pauses the emulator when a game is started.</source>
-        <translation type="vanished">Wstrzymuje emulator podczas uruchamiania gry.</translation>
-    </message>
-    <message>
-        <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
-        <translation type="vanished">Wstrzymuje emulator po zminimalizowaniu okna lub przełączeniu do innej aplikacji i wznawia po przełączeniu z powrotem.</translation>
-    </message>
-    <message>
-        <source>When enabled, memory cards and controllers will be overwritten when save states are loaded. This can result in lost saves, and controller type mismatches. For deterministic save states, enable this option, otherwise leave disabled.</source>
-        <translation type="vanished">Gdy włączone, karty pamięci i kontrolery zostaną nadpisane po załadowaniu zapisów stanu. Może to spowodować utratę zapisów i niedopasowanie typu kontrolera. Dla deterministycznych stanów zapisywania włącz tę opcję, w przeciwnym razie pozostaw wyłączone.</translation>
-    </message>
-    <message>
-        <source>When enabled, per-game settings will be applied, and incompatible enhancements will be disabled. You should leave this option enabled except when testing enhancements with incompatible games.</source>
-        <translation type="vanished">Po włączeniu zostaną zastosowane ustawienia dla poszczególnych gier, a niezgodne ulepszenia zostaną wyłączone. Powinieneś pozostawić tę opcję włączoną, chyba że testujesz ulepszenia w niekompatybilnych grach.</translation>
-    </message>
-    <message>
-        <source>Automatically loads and applies cheats on game start.</source>
-        <translation type="vanished">Automatycznie wczytuje i aktywuje cheaty przy starcie gry.</translation>
-    </message>
-    <message>
-        <source>Enable Discord Presence</source>
-        <translation type="vanished">Włącz Discord Rich Presence</translation>
-    </message>
-    <message>
-        <source>Shows the game you are currently playing as part of your profile in Discord.</source>
-        <translation type="vanished">Pokazuje grę, w którą aktualnie grasz, jako część Twojego profilu w Discord.</translation>
-    </message>
-    <message>
-        <source>%1 (%2)</source>
-        <translation type="vanished">%1 (%2)</translation>
-    </message>
-    <message>
-        <source>Enable Automatic Update Check</source>
-        <translation type="vanished">Włącz automatyczne sprawdzanie aktualizacji</translation>
-    </message>
-    <message>
-        <source>Automatically checks for updates to the program on startup. Updates can be deferred until later or skipped entirely.</source>
-        <translation type="vanished">Automatycznie sprawdza dostępność aktualizacji programu podczas uruchamiania. Aktualizacje można odłożyć na później lub całkowicie pominąć.</translation>
     </message>
 </context>
 <context>
@@ -12290,7 +11281,7 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
     <message>
         <location filename="../mainwindow.ui" line="294"/>
         <source>Start &amp;File...</source>
-        <translation>Uruchom &amp;Plik...</translation>
+        <translation>Uruchom &amp;plik...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="303"/>
@@ -12368,14 +11359,6 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
         <translation>&amp;Skróty klawiszowe</translation>
     </message>
     <message>
-        <source>&amp;Display</source>
-        <translation type="vanished">&amp;Ekran</translation>
-    </message>
-    <message>
-        <source>&amp;Enhancements</source>
-        <translation type="vanished">U&amp;lepszenia</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.ui" line="450"/>
         <source>&amp;Post-Processing</source>
         <translation>&amp;Przetwarzanie końcowe</translation>
@@ -12404,10 +11387,6 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
         <location filename="../mainwindow.ui" line="586"/>
         <source>Game List</source>
         <translation>Lista gier</translation>
-    </message>
-    <message>
-        <source>General</source>
-        <translation type="vanished">Ogólne</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="604"/>
@@ -12480,7 +11459,7 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
     <message>
         <location filename="../mainwindow.ui" line="500"/>
         <source>Check for &amp;Updates...</source>
-        <translation>Sprawdź &amp;Aktualizacje...</translation>
+        <translation>Sprawdź &amp;aktualizacje...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="514"/>
@@ -12667,10 +11646,6 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
         <location filename="../mainwindow.ui" line="883"/>
         <source>Memory &amp;Card Editor</source>
         <translation>Edytor &amp;kart pamięci</translation>
-    </message>
-    <message>
-        <source>C&amp;heat Manager</source>
-        <translation type="vanished">Menedżer &amp;cheatów</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="888"/>
@@ -13191,10 +12166,6 @@ Tej czynności nie można cofnąć.</translation>
         <translation>RA: Zalogowano jako %1 (%2, %3 softcore). Liczba nieprzeczytanych wiadomości: %4.</translation>
     </message>
     <message>
-        <source>Do not show again</source>
-        <translation type="vanished">Nie pokazuj ponownie</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.cpp" line="1046"/>
         <source>Using cheats can have unpredictable effects on games, causing crashes, graphical glitches, and corrupted saves. By using the cheat manager, you agree that it is an unsupported configuration, and we will not provide you with any assistance when games break.
 
@@ -13270,104 +12241,104 @@ Czy na pewno chcesz kontynuować?</translation>
 <context>
     <name>MemoryCardEditorWindow</name>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="19"/>
+        <location filename="../memorycardeditorwindow.cpp" line="20"/>
         <source>All Memory Card Types (*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</source>
         <translation>Wszystkie typy kart pamięci (*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="22"/>
+        <location filename="../memorycardeditorwindow.cpp" line="23"/>
         <source>All Importable Memory Card Types (*.mcd *.mcr *.mc *.gme)</source>
         <translation>Wszystkie typy kart pamięci, które można importować (*.mcd *.mcr *.mc *.gme)</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="24"/>
+        <location filename="../memorycardeditorwindow.cpp" line="25"/>
         <source>Single Save Files (*.mcs);;All Files (*.*)</source>
         <translation>Pojedyncze pliki zapisów (*.mcs);;Wszystkie pliki (*.*)</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="31"/>
+        <location filename="../memorycardeditorwindow.cpp" line="32"/>
         <source>Delete File</source>
         <translation>Usuń plik</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="32"/>
+        <location filename="../memorycardeditorwindow.cpp" line="33"/>
         <source>Undelete File</source>
         <translation>Przywróć usunięty plik</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="33"/>
+        <location filename="../memorycardeditorwindow.cpp" line="34"/>
         <source>Export File</source>
         <translation>Eksportuj plik</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="34"/>
+        <location filename="../memorycardeditorwindow.cpp" line="35"/>
         <source>&lt;&lt;</source>
         <translation>&lt;&lt;</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="35"/>
+        <location filename="../memorycardeditorwindow.cpp" line="36"/>
         <source>&gt;&gt;</source>
         <translation>&gt;&gt;</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="52"/>
+        <location filename="../memorycardeditorwindow.cpp" line="53"/>
         <source>New Card...</source>
         <translation>Nowa karta...</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="53"/>
+        <location filename="../memorycardeditorwindow.cpp" line="54"/>
         <source>Open Card...</source>
         <translation>Otwórz kartę...</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="120"/>
+        <location filename="../memorycardeditorwindow.cpp" line="121"/>
         <source>Format Card</source>
         <translation>Sformatuj kartę</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="121"/>
+        <location filename="../memorycardeditorwindow.cpp" line="122"/>
         <source>Import File...</source>
         <translation>Importuj plik...</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="122"/>
+        <location filename="../memorycardeditorwindow.cpp" line="123"/>
         <source>Import Card...</source>
         <translation>Importuj kartę...</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="123"/>
+        <location filename="../memorycardeditorwindow.cpp" line="124"/>
         <source>Save</source>
         <translation>Zapisz</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="236"/>
-        <location filename="../memorycardeditorwindow.cpp" line="346"/>
-        <location filename="../memorycardeditorwindow.cpp" line="371"/>
-        <location filename="../memorycardeditorwindow.cpp" line="410"/>
-        <location filename="../memorycardeditorwindow.cpp" line="420"/>
-        <location filename="../memorycardeditorwindow.cpp" line="430"/>
-        <location filename="../memorycardeditorwindow.cpp" line="436"/>
-        <location filename="../memorycardeditorwindow.cpp" line="455"/>
-        <location filename="../memorycardeditorwindow.cpp" line="475"/>
-        <location filename="../memorycardeditorwindow.cpp" line="503"/>
-        <location filename="../memorycardeditorwindow.cpp" line="521"/>
-        <location filename="../memorycardeditorwindow.cpp" line="567"/>
+        <location filename="../memorycardeditorwindow.cpp" line="237"/>
+        <location filename="../memorycardeditorwindow.cpp" line="347"/>
+        <location filename="../memorycardeditorwindow.cpp" line="372"/>
+        <location filename="../memorycardeditorwindow.cpp" line="411"/>
+        <location filename="../memorycardeditorwindow.cpp" line="421"/>
+        <location filename="../memorycardeditorwindow.cpp" line="432"/>
+        <location filename="../memorycardeditorwindow.cpp" line="441"/>
+        <location filename="../memorycardeditorwindow.cpp" line="463"/>
+        <location filename="../memorycardeditorwindow.cpp" line="483"/>
+        <location filename="../memorycardeditorwindow.cpp" line="511"/>
+        <location filename="../memorycardeditorwindow.cpp" line="532"/>
+        <location filename="../memorycardeditorwindow.cpp" line="582"/>
         <source>Error</source>
         <translation>Błąd</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="236"/>
-        <location filename="../memorycardeditorwindow.cpp" line="346"/>
+        <location filename="../memorycardeditorwindow.cpp" line="237"/>
+        <location filename="../memorycardeditorwindow.cpp" line="347"/>
         <source>Failed to load memory card image.</source>
         <translation>Nie udało się załadować obrazu Karty Pamięci.</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="280"/>
+        <location filename="../memorycardeditorwindow.cpp" line="281"/>
         <source> (Deleted)</source>
         <translation> (Usunięto)</translation>
     </message>
     <message numerus="yes">
-        <location filename="../memorycardeditorwindow.cpp" line="300"/>
+        <location filename="../memorycardeditorwindow.cpp" line="301"/>
         <source>%n block(s) free%1</source>
         <translation>
             <numerusform>%n blok wolny%1</numerusform>
@@ -13376,95 +12347,105 @@ Czy na pewno chcesz kontynuować?</translation>
         </translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="314"/>
-        <location filename="../memorycardeditorwindow.cpp" line="340"/>
+        <location filename="../memorycardeditorwindow.cpp" line="315"/>
+        <location filename="../memorycardeditorwindow.cpp" line="341"/>
         <source>Select Memory Card</source>
         <translation>Wybierz kartę pamięci</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="372"/>
+        <location filename="../memorycardeditorwindow.cpp" line="373"/>
         <source>Failed to write card to &apos;%1&apos;</source>
         <translation>Nie udało się zapisać karty do &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="386"/>
+        <location filename="../memorycardeditorwindow.cpp" line="387"/>
         <source>Save memory card?</source>
         <translation>Zapisać kartę pamięci?</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="387"/>
+        <location filename="../memorycardeditorwindow.cpp" line="388"/>
         <source>Memory card &apos;%1&apos; is not saved, do you want to save before closing?</source>
         <translation>Karta pamięci &apos;%1&apos; nie jest zapisana, czy chcesz zapisać ją przed zamknięciem?</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="411"/>
+        <location filename="../memorycardeditorwindow.cpp" line="412"/>
         <source>Destination memory card already contains a save file with the same name (%1) as the one you are attempting to copy. Please delete this file from the destination memory card before copying.</source>
         <translation>Docelowa karta pamięci zawiera już zapis o tej samej nazwie (%1) jak kopiowany zapis. Proszę usunąć ten plik z docelowej karty pamięci, a następnie spróbować ponownie.</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="421"/>
+        <location filename="../memorycardeditorwindow.cpp" line="422"/>
         <source>Insufficient blocks, this file needs %1 but only %2 are available.</source>
         <translation>Za mało bloków, ten plik wymaga %1, ale dostępne są tylko %2.</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="430"/>
-        <source>Failed to read file %1</source>
-        <translation>Nie udało się odczytać pliku %1</translation>
+        <location filename="../memorycardeditorwindow.cpp" line="433"/>
+        <source>Failed to read file %1:
+%2</source>
+        <translation>Nie udało się odczytać pliku %1:
+%2</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="436"/>
-        <source>Failed to write file %1</source>
-        <translation>Nie udało się zapisać pliku %1</translation>
+        <location filename="../memorycardeditorwindow.cpp" line="442"/>
+        <source>Failed to write file %1:
+%2</source>
+        <translation>Nie udało się zapisać pliku %1:
+%2</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="455"/>
+        <location filename="../memorycardeditorwindow.cpp" line="512"/>
+        <source>Failed to export save file %1:
+%2</source>
+        <translation>Nie udało się eksportować pliku zapisu %1:
+%2</translation>
+    </message>
+    <message>
+        <location filename="../memorycardeditorwindow.cpp" line="533"/>
+        <source>Failed to import memory card from %1:
+%2</source>
+        <translation>Nie udało się zaimportować karty pamięci z %1:
+%2</translation>
+    </message>
+    <message>
+        <location filename="../memorycardeditorwindow.cpp" line="574"/>
+        <source>Select Save File</source>
+        <translation>Wybierz plik zapisu</translation>
+    </message>
+    <message>
+        <location filename="../memorycardeditorwindow.cpp" line="583"/>
+        <source>Failed to import save from %1:
+%2</source>
+        <translation>Nie udało się zaimportować pliku zapisu %1:
+%2</translation>
+    </message>
+    <message>
+        <location filename="../memorycardeditorwindow.cpp" line="463"/>
         <source>Failed to delete file %1</source>
         <translation>Nie udało się usunąć pliku %1</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="476"/>
+        <location filename="../memorycardeditorwindow.cpp" line="484"/>
         <source>Failed to undelete file %1. The file may have been partially overwritten by another save.</source>
         <translation>Błąd podczas przywracania pliku %1. Plik mógł zostać zastąpiony kolejnym zapisem.</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="491"/>
+        <location filename="../memorycardeditorwindow.cpp" line="499"/>
         <source>Select Single Savefile</source>
         <translation>Wybierz pojedynczy zapis</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="504"/>
-        <source>Failed to export save file %1. Check the log for more details.</source>
-        <translation>Nie udało się wyeksportować pliku zapisu %1. Dziennik zdarzeń może zawierać więcej informacji.</translation>
-    </message>
-    <message>
-        <location filename="../memorycardeditorwindow.cpp" line="514"/>
+        <location filename="../memorycardeditorwindow.cpp" line="524"/>
         <source>Select Import File</source>
         <translation>Wybierz importowany plik</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="521"/>
-        <source>Failed to import memory card. The log may contain more information.</source>
-        <translation>Nie udało się zaimportować karty pamięci. Dziennik może zawierać więcej informacji.</translation>
-    </message>
-    <message>
-        <location filename="../memorycardeditorwindow.cpp" line="538"/>
+        <location filename="../memorycardeditorwindow.cpp" line="552"/>
         <source>Format memory card?</source>
         <translation>Sformatować kartę pamięci?</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="539"/>
+        <location filename="../memorycardeditorwindow.cpp" line="553"/>
         <source>Formatting the memory card will destroy all saves, and they will not be recoverable. The memory card which will be formatted is located at &apos;%1&apos;.</source>
         <translation>Sformatowanie karty pamięci usunie wszystkie zapisy bez możliwości ich przywrócenia. Karta pamięci, która zostanie sformatowana, znajduje się w &apos;%1&apos;.</translation>
-    </message>
-    <message>
-        <location filename="../memorycardeditorwindow.cpp" line="560"/>
-        <source>Select Import Save File</source>
-        <translation>Wybierz importowany plik zapisu</translation>
-    </message>
-    <message>
-        <location filename="../memorycardeditorwindow.cpp" line="568"/>
-        <source>Failed to import save. Check if there is enough room on the memory card or if an existing save with the same name already exists.</source>
-        <translation>Nie udało się zaimportować zapisu. Proszę sprawdzić, czy karta pamięci ma wystarczająco wolnych bloków oraz czy zapis o tej samej nazwie już istnieje.</translation>
     </message>
 </context>
 <context>
@@ -13501,10 +12482,6 @@ Czy na pewno chcesz kontynuować?</translation>
         <translation>Podczas grania w grę wielopłytową i korzystania z kart pamięci przeznaczonych do poszczególnych gier (tytułów), do obsługi wszystkich dysków używana będzie jedna karta pamięci. Jeżeli opcja ta nie jest zaznaczona, dla każdej płyty będzie używana osobna karta pamięci.</translation>
     </message>
     <message>
-        <source>If one of the &quot;separate card per game&quot; memory card types is chosen, these memory cards will be saved to the memory cards directory.</source>
-        <translation type="vanished">Jeśli używana jest jedna z opcji &quot;oddzielnej karty na grę&quot;, karty te będą zapisywane w katalogu kart pamięci.</translation>
-    </message>
-    <message>
         <location filename="../memorycardsettingswidget.cpp" line="105"/>
         <source>Memory Card %1</source>
         <translation>Karta Pamięci %1</translation>
@@ -13530,10 +12507,6 @@ Czy na pewno chcesz kontynuować?</translation>
         <location filename="../memorycardsettingswidget.cpp" line="139"/>
         <source>Reset</source>
         <translation>Zresetuj</translation>
-    </message>
-    <message>
-        <source>Open Directory...</source>
-        <translation type="vanished">Otwórz katalog...</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="80"/>
@@ -13839,18 +12812,6 @@ Czy na pewno chcesz kontynuować?</translation>
         <source>Sets scaling for left trigger.</source>
         <translation>Ustawia skalowanie dla lewego triggera.</translation>
     </message>
-    <message>
-        <source>Sets deadzone size for steering axis.</source>
-        <translation type="vanished">Ustawia rozmiar martwego obszaru dla osi sterującej.</translation>
-    </message>
-    <message>
-        <source>Steering Axis Sensitivity</source>
-        <translation type="vanished">Czułość osi kierownicy</translation>
-    </message>
-    <message>
-        <source>Sets the steering axis scaling factor.</source>
-        <translation type="vanished">Ustawia współczynnik skalowania osi sterującej.</translation>
-    </message>
 </context>
 <context>
     <name>OSDMessage</name>
@@ -13860,17 +12821,17 @@ Czy na pewno chcesz kontynuować?</translation>
         <translation>Wymuszanie trybu analogowego jest wyłączone przez ustawienia gry. Kontroler uruchomi się w trybie cyfrowym.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1113"/>
+        <location filename="../../core/system.cpp" line="1118"/>
         <source>System reset.</source>
         <translation>Reset systemu.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1196"/>
+        <location filename="../../core/system.cpp" line="1201"/>
         <source>Loading state from &apos;%s&apos; failed. Resetting.</source>
         <translation>Ładowanie stanu z &apos;%s&apos; nie powiodło się. Resetowanie.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1240"/>
+        <location filename="../../core/system.cpp" line="1245"/>
         <source>Saving state to &apos;%s&apos; failed.</source>
         <translation>Zapisywanie stanu do &apos;%s&apos; nie powiodło się.</translation>
     </message>
@@ -13893,14 +12854,6 @@ Czy na pewno chcesz kontynuować?</translation>
         <location filename="../../core/settings.cpp" line="761"/>
         <source>Rewind is disabled because runahead is enabled.</source>
         <translation>Cofanie jest wyłączone - przewijanie jest aktywne.</translation>
-    </message>
-    <message>
-        <source>Switching to %s renderer...</source>
-        <translation type="vanished">Przełączenie na %s renderer...</translation>
-    </message>
-    <message>
-        <source>Memory card at &apos;%s&apos; could not be read, formatting.</source>
-        <translation type="vanished">Nie można odczytać karty pamięci &apos;%s&apos; - formatuję.</translation>
     </message>
     <message>
         <location filename="../../core/memory_card.cpp" line="288"/>
@@ -13953,47 +12906,27 @@ Czy na pewno chcesz kontynuować?</translation>
         <translation>Karta pamięci {} jest obecna w systemie, ale nie jest w stanie zapisu. Ponowne podłączenie karty.</translation>
     </message>
     <message>
-        <source>Memory card %u from save state does match current card data. Simulating replugging.</source>
-        <translation type="vanished">Karta pamięci %u ze stanu zapisu jest zgodna z aktualnymi danymi karty. Symulowanie ponownego podłączenia.</translation>
-    </message>
-    <message>
-        <source>Memory card %u present in save state but not in system. Ignoring card.</source>
-        <translation type="vanished">Karta pamięci %u jest w stanie zapisu, ale nie jest w systemie. Ignorowanie karty.</translation>
-    </message>
-    <message>
-        <source>Memory card %u present in system but not in save state. Replugging card.</source>
-        <translation type="vanished">Karta pamięci %u jest obecna w systemie, ale w chwili zapisu była nieaktywna. Podłączam kartę ponownie.</translation>
-    </message>
-    <message>
-        <source>Memory card %u present in save state but not in system. Creating temporary card.</source>
-        <translation type="vanished">Karta pamięci %u jest w stanie zapisu, ale nie jest w systemie. Tworzenie tymczasowej karty.</translation>
-    </message>
-    <message>
-        <source>Memory card %u present in system but not in save state. Removing card.</source>
-        <translation type="vanished">Karta pamięci %u jest obecna w systemie, ale nie jest w stanie zapisywania. Wyjmowanie karty.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="2039"/>
+        <location filename="../../core/system.cpp" line="2044"/>
         <source>Failed to initialize %s renderer, falling back to software renderer.</source>
         <translation>Nie udało się zainicjować renderera %s, przechodzę w tryb renderowania programowego.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2150"/>
+        <location filename="../../core/system.cpp" line="2155"/>
         <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
         <translation>OSTRZEŻENIE: przetaktowywanie procesora (%u%%) było inne w stanie zapisu (%u%%).</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3514"/>
+        <location filename="../../core/system.cpp" line="3519"/>
         <source>Failed to switch to subimage %u in &apos;%s&apos;: %s.</source>
         <translation>Nie udało się przełączyć na podobraz %u w &apos;%s&apos;: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3522"/>
+        <location filename="../../core/system.cpp" line="3527"/>
         <source>Switched to sub-image %s (%u) in &apos;%s&apos;.</source>
         <translation>Przełączono na podobraz %s (%u) w &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2796"/>
+        <location filename="../../core/system.cpp" line="2801"/>
         <source>No cheats are loaded.</source>
         <translation>Żadne cheaty nie są załadowane.</translation>
     </message>
@@ -14087,192 +13020,180 @@ Czy na pewno chcesz kontynuować?</translation>
         <translation>CD Audio odciszone.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4323"/>
+        <location filename="../../core/system.cpp" line="4328"/>
         <source>Started dumping audio to &apos;%s&apos;.</source>
         <translation>Rozpoczęto zrzucanie dźwięku do &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4328"/>
+        <location filename="../../core/system.cpp" line="4333"/>
         <source>Failed to start dumping audio to &apos;%s&apos;.</source>
         <translation>Nie udało się rozpocząć zrzutu dźwięku do &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4338"/>
+        <location filename="../../core/system.cpp" line="4343"/>
         <source>Stopped dumping audio.</source>
         <translation>Zatrzymano przesyłanie dźwięku.</translation>
     </message>
     <message>
-        <source>Screenshot file &apos;%s&apos; already exists.</source>
-        <translation type="vanished">Plik zrzutu ekranu &apos;%s&apos; już istnieje.</translation>
-    </message>
-    <message>
-        <source>Failed to save screenshot to &apos;%s&apos;</source>
-        <translation type="vanished">Nie udało się zapisać zrzutu ekranu w &apos;%s&apos;</translation>
-    </message>
-    <message>
-        <source>Screenshot saved to &apos;%s&apos;.</source>
-        <translation type="vanished">Zrzut ekranu został zapisany w &apos;%s&apos;.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4552"/>
+        <location filename="../../core/system.cpp" line="4557"/>
         <source>Failed to load cheats from &apos;%s&apos;.</source>
         <translation>Nie udało się załadować cheatów z &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4593"/>
+        <location filename="../../core/system.cpp" line="4598"/>
         <source>Failed to save cheat list to &apos;%s&apos;</source>
         <translation>Nie udało się zapisać listy cheatów do &apos;%s&apos;</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1188"/>
+        <location filename="../../core/system.cpp" line="1193"/>
         <source>Loading state from &apos;{}&apos;...</source>
         <translation>Wczytuję zapis stanu z &apos;{}&apos;...</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1239"/>
+        <location filename="../../core/system.cpp" line="1244"/>
         <source>Save State</source>
         <translation>Zapisz stan</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1248"/>
+        <location filename="../../core/system.cpp" line="1253"/>
         <source>State saved to &apos;{}&apos;.</source>
         <translation>Stan zapisany do &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2078"/>
+        <location filename="../../core/system.cpp" line="2083"/>
         <source>This save state was created with a different BIOS version or patch options. This may cause stability issues.</source>
         <translation>Ten stan gry zapisano, gdy używany był inny BIOS lub włączone zostały opcje &quot;łatające&quot;. Może to spowodować problemy ze stabilnością.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2316"/>
+        <location filename="../../core/system.cpp" line="2321"/>
         <source>Failed to open CD image from save state &apos;{}&apos;: {}.
 Using existing image &apos;{}&apos;, this may result in instability.</source>
         <translation>Nie udało się otworzyć obrazu płyty CD z zapisu stanu &apos;{}&apos;: {}.
 Używam obecnego obrazu &apos;{}&apos;, to może powodować brak stabilności.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2326"/>
-        <location filename="../../core/system.cpp" line="2345"/>
+        <location filename="../../core/system.cpp" line="2331"/>
+        <location filename="../../core/system.cpp" line="2350"/>
         <source>Error</source>
         <translation>Błąd</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2746"/>
+        <location filename="../../core/system.cpp" line="2751"/>
         <source>Rewinding is not enabled.</source>
         <translation>Cofanie jest nieaktywne.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2804"/>
+        <location filename="../../core/system.cpp" line="2809"/>
         <source>{} cheats are now active.</source>
         <translation>{} kod(ów) jest teraz aktywne.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2805"/>
+        <location filename="../../core/system.cpp" line="2810"/>
         <source>{} cheats are now inactive.</source>
         <translation>{} kod(ów) jest teraz nieaktywnych.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3203"/>
+        <location filename="../../core/system.cpp" line="3208"/>
         <source>Swapped memory card ports. Both ports have a memory card.</source>
         <translation>Zamieniono porty kart pamięci. W każdym jest karta pamięci.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3209"/>
+        <location filename="../../core/system.cpp" line="3214"/>
         <source>Swapped memory card ports. Port 2 has a memory card, Port 1 is empty.</source>
         <translation>Zamieniono porty kart pamięci. W 2. jest karta, 1. jest pusty.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3214"/>
+        <location filename="../../core/system.cpp" line="3219"/>
         <source>Swapped memory card ports. Port 1 has a memory card, Port 2 is empty.</source>
         <translation>Zamieniono porty kart pamięci. W 1. jest karta, 2. jest pusty.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3218"/>
+        <location filename="../../core/system.cpp" line="3223"/>
         <source>Swapped memory card ports. Neither port has a memory card.</source>
         <translation>Zamieniono porty kart pamięci. W żadnym nie ma karty pamięci.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3307"/>
+        <location filename="../../core/system.cpp" line="3312"/>
         <source>Failed to open disc image &apos;{}&apos;: {}.</source>
         <translation>Nie udało się otworzyć obrazu płyty &apos;{}&apos;: {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3321"/>
+        <location filename="../../core/system.cpp" line="3326"/>
         <source>Inserted disc &apos;{}&apos; ({}).</source>
         <translation>Włożono płytę  &apos;{}&apos; ({}).</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3579"/>
+        <location filename="../../core/system.cpp" line="3584"/>
         <source>Switching to {}{} GPU renderer.</source>
         <translation>Przełączenie na {}{} renderer karty graficznej.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3605"/>
+        <location filename="../../core/system.cpp" line="3610"/>
         <source>Switching to {} audio backend.</source>
         <translation>Przełączanie na sterownik dźwięku {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3629"/>
+        <location filename="../../core/system.cpp" line="3634"/>
         <source>Switching to {} CPU execution mode.</source>
         <translation>Przełączanie do trybu wykonywania procesora {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3648"/>
+        <location filename="../../core/system.cpp" line="3653"/>
         <source>Recompiler options changed, flushing all blocks.</source>
         <translation>Zmieniono opcje rekompilatora, czyszczenie wszystkich bloków.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4262"/>
+        <location filename="../../core/system.cpp" line="4267"/>
         <source>Failed to save undo load state.</source>
         <translation>Nie udało się zapisać stanu do automatycznego wczytania.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4559"/>
+        <location filename="../../core/system.cpp" line="4564"/>
         <source>{} cheats are enabled. This may result in instability.</source>
         <translation>{} kodów aktywnych. Może to spodować brak stabilności.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4609"/>
+        <location filename="../../core/system.cpp" line="4614"/>
         <source>Saved {} cheats to &apos;{}&apos;.</source>
         <translation>Zapisano {} kody do &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4624"/>
+        <location filename="../../core/system.cpp" line="4629"/>
         <source>Deleted cheat list &apos;{}&apos;.</source>
         <translation>Usunięto listę kodów &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4720"/>
+        <location filename="../../core/system.cpp" line="4725"/>
         <source>Widescreen hack is now enabled, and aspect ratio is set to {}.</source>
         <translation>Poprawki dla ekranu panoramicznego są teraz włączone, a format ekranu jest ustawiony na {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4728"/>
+        <location filename="../../core/system.cpp" line="4733"/>
         <source>Widescreen hack is now disabled, and aspect ratio is set to {}.</source>
         <translation>Poprawki dla ekranu panoramicznego są teraz wyłączone, a format ekranu jest ustawiony na {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4743"/>
+        <location filename="../../core/system.cpp" line="4748"/>
         <source>Switching to {} renderer...</source>
         <translation>Przełączenie  rendererowania na {}...</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4666"/>
+        <location filename="../../core/system.cpp" line="4671"/>
         <source>Cheat &apos;%s&apos; enabled.</source>
         <translation>Kod &apos;%s&apos; włączony.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4670"/>
+        <location filename="../../core/system.cpp" line="4675"/>
         <source>Cheat &apos;%s&apos; disabled.</source>
         <translation>Kod &apos;%s&apos; wyłączony.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4685"/>
+        <location filename="../../core/system.cpp" line="4690"/>
         <source>Applied cheat &apos;%s&apos;.</source>
         <translation>Zastosowano kod &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4689"/>
+        <location filename="../../core/system.cpp" line="4694"/>
         <source>Cheat &apos;%s&apos; is already enabled.</source>
         <translation>Cheat &apos;%s&apos; jest już włączony.</translation>
     </message>
@@ -14474,10 +13395,6 @@ Proszę skonfiguruj wspierany kontroler z listy powyżej.</translation>
 </context>
 <context>
     <name>PostProcessingSettingsWidget</name>
-    <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
     <message>
         <location filename="../postprocessingsettingswidget.ui" line="31"/>
         <source>Enable Post Processing</source>
@@ -14863,10 +13780,6 @@ Czy chcesz utworzyć katalog?</translation>
 <context>
     <name>Settings</name>
     <message>
-        <source>Automatic (Default)</source>
-        <translation type="vanished">Automatyczne (Domyślne)</translation>
-    </message>
-    <message>
         <location filename="../../core/settings.cpp" line="1462"/>
         <source>Disabled</source>
         <translation>Wyłączone</translation>
@@ -14993,14 +13906,6 @@ Czy chcesz utworzyć katalog?</translation>
         <translation>&lt;strong&gt;Podsumowanie&lt;/strong&gt;&lt;hr&gt;Ta sekcja pokazuje informacje o wybranej grze oraz umożliwia sprawdzenie, czy wykonałeś poprawny obraz dysku.</translation>
     </message>
     <message>
-        <source>General</source>
-        <translation type="vanished">Ogólne</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;General Settings&lt;/strong&gt;&lt;hr&gt;These options control how the emulator looks and behaves.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;Ustawienia ogólne&lt;/strong&gt;&lt;hr&gt;Te opcje sterują wyglądem i zachowaniem emulatora.&lt;br&gt;&lt;br&gt;Najedź myszą na opcję, aby uzyskać dodatkowe informacje.</translation>
-    </message>
-    <message>
         <location filename="../settingswindow.cpp" line="90"/>
         <source>Game List</source>
         <translation>Lista gier</translation>
@@ -15016,26 +13921,14 @@ Czy chcesz utworzyć katalog?</translation>
         <translation>BIOS</translation>
     </message>
     <message>
-        <source>&lt;strong&gt;BIOS Settings&lt;/strong&gt;&lt;hr&gt;These options control which BIOS is used and how it will be patched.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;Ustawienia BIOSu&lt;/strong&gt;&lt;hr&gt;Opcje te pozwalają ustawić, jaki BIOS ma być używany.&lt;br&gt;&lt;br&gt;Najedź myszką, by uzyskać dodatkowe informacje.</translation>
-    </message>
-    <message>
         <location filename="../settingswindow.cpp" line="102"/>
         <source>Console</source>
         <translation>Konsola</translation>
     </message>
     <message>
-        <source>&lt;strong&gt;Console Settings&lt;/strong&gt;&lt;hr&gt;These options determine the configuration of the simulated console.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;Ustawienia konsoli&lt;/strong&gt;&lt;hr&gt;Te opcje określają konfigurację symulowanej konsoli.&lt;br&gt;&lt;br&gt;Najedź myszą na opcję, aby uzyskać dodatkowe informacje.</translation>
-    </message>
-    <message>
         <location filename="../settingswindow.cpp" line="107"/>
         <source>Emulation</source>
         <translation>Emulacja</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Emulation Settings&lt;/strong&gt;&lt;hr&gt;These options determine the speed and runahead behavior of the system.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;Ustawienia emulacji&lt;/strong&gt;&lt;hr&gt;Te opcje określają prędkość i zachowanie systemu.&lt;br&gt;&lt;br&gt;Najedź myszką na opcję, aby uzyskać dodatkowe informacje.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="112"/>
@@ -15046,22 +13939,6 @@ Czy chcesz utworzyć katalog?</translation>
         <location filename="../settingswindow.cpp" line="114"/>
         <source>&lt;strong&gt;Memory Card Settings&lt;/strong&gt;&lt;hr&gt;This page lets you control what mode the memory card emulation will function in, and where the images for these cards will be stored on disk.</source>
         <translation>&lt;strong&gt;Ustawienia kart pamięci&lt;/strong&gt;&lt;hr&gt;Ta strona pozwala określić, w jakim trybie będzie działać emulacja kart pamięci i gdzie obrazy tych kart będą przechowywane na dysku.</translation>
-    </message>
-    <message>
-        <source>Display</source>
-        <translation type="vanished">Ekran</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Display Settings&lt;/strong&gt;&lt;hr&gt;These options control the how the frames generated by the console are displayed on the screen.</source>
-        <translation type="vanished">&lt;strong&gt;Ustawienia wyświetlania&lt;/strong&gt;&lt;hr&gt;Te opcje sterują sposobem wyświetlania na ekranie klatek generowanych przez konsolę.</translation>
-    </message>
-    <message>
-        <source>Enhancements</source>
-        <translation type="vanished">Ulepszenia</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Enhancement Settings&lt;/strong&gt;&lt;hr&gt;These options control enhancements which can improve visuals compared to the original console. Mouse over each option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;Ustawienia ulepszeń&lt;/strong&gt;&lt;hr&gt;Te opcje sterują ulepszeniami, które mogą poprawić efekty wizualne w porównaniu z oryginalną konsolą. Najedź myszą na każdą opcję, aby uzyskać dodatkowe informacje.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="82"/>
@@ -15134,10 +14011,6 @@ Czy chcesz utworzyć katalog?</translation>
         <translation>&lt;strong&gt;Ustawienia zaawansowane&lt;/strong&gt;&lt;hr&gt;Te opcje kontrolują rejestrowanie i wewnętrzne zachowanie emulatora. Najedź kursorem na opcję, aby uzyskać dodatkowe informacje, a następnie naciśnij Shift+kółko myszy, aby przewinąć ten panel.</translation>
     </message>
     <message>
-        <source>&lt;strong&gt;Achievement Settings&lt;/strong&gt;&lt;hr&gt;These options control RetroAchievements. Mouse over an option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;Ustawienia osiągnięć&lt;/strong&gt;&lt;hr&gt;Ustawienia osiągnięć. Najedź myszą na opcję, aby uzyskać dodatkowe informacje.</translation>
-    </message>
-    <message>
         <location filename="../settingswindow.cpp" line="160"/>
         <source>Folders</source>
         <translation>Katalogi</translation>
@@ -15151,10 +14024,6 @@ Czy chcesz utworzyć katalog?</translation>
         <location filename="../settingswindow.cpp" line="165"/>
         <source>Advanced</source>
         <translation>Zaawansowane</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;hr&gt;These options control logging and internal behavior of the emulator. Mouse over an option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;Ustawienia zaawansowane&lt;/strong&gt;&lt;hr&gt;Te opcje sterują rejestrowaniem i wewnętrznym działaniem emulatora. Najedź myszą na opcję, aby uzyskać dodatkowe informacje.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="262"/>
@@ -15489,73 +14358,73 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
 <context>
     <name>System</name>
     <message>
-        <location filename="../../core/system.cpp" line="2184"/>
+        <location filename="../../core/system.cpp" line="2189"/>
         <source>Failed to load %s BIOS.</source>
         <translation>Nie udało się wczytać BIOSu %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1510"/>
-        <location filename="../../core/system.cpp" line="3445"/>
+        <location filename="../../core/system.cpp" line="1515"/>
+        <location filename="../../core/system.cpp" line="3450"/>
         <source>Error</source>
         <translation>Błąd</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="956"/>
+        <location filename="../../core/system.cpp" line="961"/>
         <source>Compatibility settings are not enabled. Some games may not function correctly.</source>
         <translation>Ustawienia zgodności nie są włączone. Niektóre gry mogą nie działać poprawnie.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1511"/>
+        <location filename="../../core/system.cpp" line="1516"/>
         <source>Failed to load save state file &apos;{}&apos; for booting.</source>
         <translation>Nie udało się wczytać zapisu stanu gry z pliku.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2191"/>
+        <location filename="../../core/system.cpp" line="2196"/>
         <source>Incorrect BIOS image size</source>
         <translation>Nieprawidłowy rozmiar obrazu BIOSu</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2275"/>
+        <location filename="../../core/system.cpp" line="2280"/>
         <source>Save state is incompatible: minimum version is %u but state is version %u.</source>
         <translation>Zapis stanu jest niekompatybilny: minimalna wersja to %u, ale stan jest wersji %u.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2283"/>
+        <location filename="../../core/system.cpp" line="2288"/>
         <source>Save state is incompatible: maximum version is %u but state is version %u.</source>
         <translation>Zapis stanu jest niekompatybilny: maksymalna wersja to %u, ale stan jest wersji %u.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2327"/>
+        <location filename="../../core/system.cpp" line="2332"/>
         <source>Failed to open CD image &apos;{}&apos; used by save state: {}.</source>
         <translation>Nie udało się otworzyć obrazu płyty CD o nazwie &apos;{}&apos; używanej przez zapis stanu: {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2347"/>
+        <location filename="../../core/system.cpp" line="2352"/>
         <source>Failed to switch to subimage {} in CD image &apos;{}&apos; used by save state: {}.</source>
         <translation>Nie udało się przełączyć do podobrazu {} w obrazie płyty CD o nazwie &apos;{}&apos;, używanej przez zapis stanu: {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3039"/>
+        <location filename="../../core/system.cpp" line="3044"/>
         <source>Per-game memory card cannot be used for slot {} as the running game has no code. Using shared card instead.</source>
         <translation>Karty pamięci przeznaczonej na grę nie można używać w slocie {}, ponieważ działająca gra nie ma kodu. Zamiast tego użyj wspólnej karty.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3058"/>
+        <location filename="../../core/system.cpp" line="3063"/>
         <source>Per-game memory card cannot be used for slot {} as the running game has no title. Using shared card instead.</source>
         <translation>Karta pamięci przeznaczona na grę nie może być użyta dla slotu {}, ponieważ uruchomina gra nie posiada tytułu. Użyta zostanie współdzielona karta pamięci.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3092"/>
+        <location filename="../../core/system.cpp" line="3097"/>
         <source>Using disc-specific memory card &apos;{}&apos; instead of per-game card.</source>
         <translation>Używanie karty pamięci &apos;{}&apos; przeznaczonej dla konkretnej płyty zamiast karty przeznaczonej dla gry.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3114"/>
+        <location filename="../../core/system.cpp" line="3119"/>
         <source>Per-game memory card cannot be used for slot {} as the running game has no path. Using shared card instead.</source>
         <translation>Karty pamięci przeznaczonej na grę nie można używać w slocie {}, ponieważ działająca gra nie ma ścieżki. Zamiast tego użyj wspólnej karty.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3436"/>
+        <location filename="../../core/system.cpp" line="3441"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 {0}: {1}
@@ -15576,7 +14445,7 @@ Instrukcje dotyczące dodawania pliku SBI znajdziesz w pliku README.
 Czy chcesz kontynuować?</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3447"/>
+        <location filename="../../core/system.cpp" line="3452"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 {0}: {1}
@@ -15593,47 +14462,47 @@ Twój obraz jest niekompletny. Aby uruchomić tę grę, musisz dodać plik SBI.
 Nazwa pliku SBI musi odpowiadać nazwie obrazu płyty.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3849"/>
+        <location filename="../../core/system.cpp" line="3854"/>
         <source>CPU clock speed is set to {}% ({} / {}). This may crash games.</source>
         <translation>Szybkość zegara procesora jest ustawiona na {}% ({} / {}). Może to zepsuć niektóre gry.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3857"/>
+        <location filename="../../core/system.cpp" line="3862"/>
         <source>CD-ROM read speedup set to {}x (effective speed {}x). This may crash games.</source>
         <translation>Przyspieszenie odczytu CD-ROM-u ustawione na {}x (efektywna prędkość {}x). Może sprawić, że niektóre gry będą niestabilne.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3863"/>
+        <location filename="../../core/system.cpp" line="3868"/>
         <source>CD-ROM seek speedup set to {}. This may crash games.</source>
         <translation>Przyspieszenie przeszukiwania CD-ROM-u ustawione na {}. Może sprawić, że niektóre gry będą niestabilne.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3865"/>
+        <location filename="../../core/system.cpp" line="3870"/>
         <source>Instant</source>
         <translation>Natychmiastowe</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3870"/>
+        <location filename="../../core/system.cpp" line="3875"/>
         <source>Force NTSC timings is enabled. Games may run at incorrect speeds.</source>
         <translation>Opcja &quot;Wymuś synchronizację NTSC&quot; jest włączona. Gry mogą działać z nieprawidłową szybkością.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3875"/>
+        <location filename="../../core/system.cpp" line="3880"/>
         <source>Multisample anti-aliasing is enabled, some games may not render correctly.</source>
         <translation>Wygładzanie wielopróbkowe jest włączone, niektóre gry mogą nie renderować się poprawnie.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3878"/>
+        <location filename="../../core/system.cpp" line="3883"/>
         <source>8MB RAM is enabled, this may be incompatible with some games.</source>
         <translation>8MB RAM jest włączone, może to być niekompatybilne z niektórymi grami.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4455"/>
+        <location filename="../../core/system.cpp" line="4460"/>
         <source>Invalid version {} ({} version {})</source>
         <translation>Nieprawidłowa wersja {} ({} wersja {})</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3327"/>
+        <location filename="../../core/system.cpp" line="3332"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>Gra się zmieniła, wczytywanie właściwej karty pamięci.</translation>
     </message>
