@@ -1264,7 +1264,7 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
     {
       const ImVec2 logo_pos = LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING);
       const ImVec2 logo_size = LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
-      dl->AddImage(GetCachedTexture("fullscreenui/duck.png"), logo_pos, logo_pos + logo_size);
+      dl->AddImage(s_app_icon_texture.get(), logo_pos, logo_pos + logo_size);
       dl->AddText(heading_font, heading_font->FontSize,
                   ImVec2(logo_pos.x + logo_size.x + LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING), logo_pos.y),
                   ImGui::GetColorU32(ImGuiCol_Text), "DuckStation");
@@ -7038,7 +7038,7 @@ TRANSLATE_NOOP("FullscreenUI", "Completely exits the application, returning you 
 TRANSLATE_NOOP("FullscreenUI", "Configuration");
 TRANSLATE_NOOP("FullscreenUI", "Confirm Power Off");
 TRANSLATE_NOOP("FullscreenUI", "Console Settings");
-TRANSLATE_NOOP("FullscreenUI", "Contributor List: https://github.com/stenzek/duckstation/blob/master/CONTRIBUTORS.md");
+TRANSLATE_NOOP("FullscreenUI", "Contributor List");
 TRANSLATE_NOOP("FullscreenUI", "Controller Port {}");
 TRANSLATE_NOOP("FullscreenUI", "Controller Port {} Macros");
 TRANSLATE_NOOP("FullscreenUI", "Controller Port {} Settings");
@@ -7213,7 +7213,6 @@ TRANSLATE_NOOP("FullscreenUI", "Input profile '{}' saved.");
 TRANSLATE_NOOP("FullscreenUI", "Integration");
 TRANSLATE_NOOP("FullscreenUI", "Interface Settings");
 TRANSLATE_NOOP("FullscreenUI", "Internal Resolution");
-TRANSLATE_NOOP("FullscreenUI", "Issue Tracker");
 TRANSLATE_NOOP("FullscreenUI", "Last Played");
 TRANSLATE_NOOP("FullscreenUI", "Last Played: %s");
 TRANSLATE_NOOP("FullscreenUI", "Launch Options");
@@ -7293,6 +7292,7 @@ TRANSLATE_NOOP("FullscreenUI", "PGXP Depth Clear Threshold");
 TRANSLATE_NOOP("FullscreenUI", "PGXP Geometry Correction");
 TRANSLATE_NOOP("FullscreenUI", "PGXP Geometry Tolerance");
 TRANSLATE_NOOP("FullscreenUI", "PGXP Settings");
+TRANSLATE_NOOP("FullscreenUI", "Parent Directory");
 TRANSLATE_NOOP("FullscreenUI", "Patches");
 TRANSLATE_NOOP("FullscreenUI", "Patches the BIOS to skip the boot animation. Safe to enable.");
 TRANSLATE_NOOP("FullscreenUI", "Path");
