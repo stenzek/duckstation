@@ -8835,6 +8835,7 @@ SLPS-00948:
   controllers:
     - DigitalController
     - PlayStationMouse
+    - NeGcon
   metadata:
     publisher: "Taito"
     developer: "Taito"
@@ -18492,6 +18493,8 @@ SLES-00754:
   name: "Brahma Force (Europe)"
   controllers:
     - DigitalController
+  traits:
+    - ForceRecompilerICache
   metadata:
     publisher: "JVC Digital Studios"
     developer: "Genki Co. Ltd"
@@ -18510,6 +18513,8 @@ SLUS-00444:
   name: "Brahma Force - The Assault on Beltlogger 9 (USA)"
   controllers:
     - DigitalController
+  traits:
+    - ForceRecompilerICache
   metadata:
     publisher: "Jaleco"
     developer: "Genki Co. Ltd."
@@ -76747,6 +76752,7 @@ SLPS-00079:
   name: "J.League Soccer - Prime Goal EX (Japan)"
   controllers:
     - DigitalController
+    - NeGcon
   metadata:
     publisher: "Namco"
     developer: "Namco"
@@ -156197,6 +156203,7 @@ SLPS-00403:
   name: "Studio P (Japan)"
   controllers:
     - DigitalController
+    - NeGcon
   metadata:
     publisher: "Argent"
     developer: "Agenda"
@@ -163964,10 +163971,10 @@ SLUS-00283:
   compatibility:
     rating: NoIssues
     versionTested: "0.1-1969-g671033fd"
-    comments: "Surprisingly, even the Melt-O-Vision effect depicted on the Interplay logo in the Credits screen works! (tested in PGXP mode)"
   controllers:
     - DigitalController
     - PlayStationMouse
+    - NeGcon
   metadata:
     publisher: "Interplay"
     developer: "High Voltage Software"
