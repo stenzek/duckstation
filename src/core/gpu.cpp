@@ -467,7 +467,6 @@ void GPU::WriteRegister(u32 offset, u32 value)
     case 0x00:
       m_fifo.Push(value);
       ExecuteCommands();
-      UpdateCommandTickEvent();
       return;
 
     case 0x04:
@@ -495,16 +494,7 @@ void GPU::DMARead(u32* words, u32 word_count)
 
 void GPU::EndDMAWrite()
 {
-  m_fifo_pushed = true;
-  if (!m_syncing)
-  {
-    ExecuteCommands();
-    UpdateCommandTickEvent();
-  }
-  else
-  {
-    UpdateDMARequest();
-  }
+  ExecuteCommands();
 }
 
 /**
@@ -1029,26 +1019,24 @@ void GPU::CRTCTickEvent(TickCount ticks)
 void GPU::CommandTickEvent(TickCount ticks)
 {
   m_pending_command_ticks -= SystemTicksToGPUTicks(ticks);
-  m_command_tick_event->Deactivate();
 
-  // we can be syncing if this came from a DMA write. recursively executing commands would be bad.
-  if (!m_syncing)
-    ExecuteCommands();
-
-  UpdateGPUIdle();
-
-  if (m_pending_command_ticks <= 0)
-    m_pending_command_ticks = 0;
-  else
-    m_command_tick_event->SetIntervalAndSchedule(GPUTicksToSystemTicks(m_pending_command_ticks));
+  m_executing_commands = true;
+  ExecuteCommands();
+  UpdateCommandTickEvent();
+  m_executing_commands = false;
 }
 
 void GPU::UpdateCommandTickEvent()
 {
   if (m_pending_command_ticks <= 0)
+  {
+    m_pending_command_ticks = 0;
     m_command_tick_event->Deactivate();
-  else if (!m_command_tick_event->IsActive())
+  }
+  else
+  {
     m_command_tick_event->SetIntervalAndSchedule(GPUTicksToSystemTicks(m_pending_command_ticks));
+  }
 }
 
 void GPU::ConvertScreenCoordinatesToDisplayCoordinates(float window_x, float window_y, float* display_x,
@@ -1121,7 +1109,6 @@ u32 GPU::ReadGPUREAD()
 
         // end of transfer, catch up on any commands which were written (unlikely)
         ExecuteCommands();
-        UpdateCommandTickEvent();
         break;
       }
     }

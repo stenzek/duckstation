@@ -47,7 +47,7 @@ static constexpr PhysicalMemoryAddress LINKED_LIST_TERMINATOR = UINT32_C(0x00FFF
 
 static constexpr TickCount LINKED_LIST_HEADER_READ_TICKS = 10;
 static constexpr TickCount LINKED_LIST_BLOCK_SETUP_TICKS = 5;
-static constexpr TickCount HALT_TICKS_WHEN_TRANSMITTING_PAD = 100;
+static constexpr TickCount SLICE_SIZE_WHEN_TRANSMITTING_PAD = 10;
 
 struct ChannelState
 {
@@ -194,7 +194,7 @@ static TickCount TransferDeviceToMemory(u32 address, u32 increment, u32 word_cou
 template<Channel channel>
 static TickCount TransferMemoryToDevice(u32 address, u32 increment, u32 word_count);
 
-
+static TickCount GetMaxSliceTicks();
 
 // configuration
 static TickCount s_max_slice_ticks = 1000;
@@ -543,6 +543,17 @@ ALWAYS_INLINE_RELEASE void DMA::CompleteTransfer(Channel channel, ChannelState& 
   }
 }
 
+TickCount DMA::GetMaxSliceTicks()
+{
+  const TickCount max = Pad::IsTransmitting() ? SLICE_SIZE_WHEN_TRANSMITTING_PAD : s_max_slice_ticks;
+  if (!TimingEvents::IsRunningEvents())
+    return max;
+
+  const u32 current_ticks = TimingEvents::GetGlobalTickCounter();
+  const u32 max_ticks = TimingEvents::GetEventRunTickCounter() + static_cast<u32>(max);
+  return std::clamp(static_cast<TickCount>(max_ticks - current_ticks), 0, max);
+}
+
 template<DMA::Channel channel>
 bool DMA::TransferChannel()
 {
@@ -586,35 +597,13 @@ bool DMA::TransferChannel()
         return true;
       }
 
-      if constexpr (channel == Channel::GPU)
-      {
-        // Plenty of games seem to suffer from this issue where they have a linked list DMA going while polling the
-        // controller. Having a large slice size causes the serial transfer to complete before the silly busy wait
-        // in the BIOS poll routine returns, resulting in it thinking that the controller is disconnected. Some games
-        // are very sensitive to this (e.g. Newman Haas Racing), to the point that even using a slice size of 1 is
-        // insufficient for avoiding the race, probably due to the linked list layout.
-        //
-        // Therefore, without major refactoring to ensure the CPU runs every DMA block, and the associated performance
-        // penalty, we just halt the DMA until the serial transfers have completed. To reduce the chances of this
-        // significantly affecting timing, we add accumulate the ticks that have been "lost", and allow them to be
-        // "used up" when the transfer does happen.
-        //
-        if (Pad::IsTransmitting())
-        {
-          Log_DebugFmt("DMA transfer while transmitting pad - {} ticks are buffered", -s_halt_ticks_remaining);
-          if (!s_unhalt_event->IsActive())
-            s_unhalt_event->SetIntervalAndSchedule(HALT_TICKS_WHEN_TRANSMITTING_PAD);
-          return false;
-        }
-      }
-
       Log_DebugFmt("DMA[{}]: Copying linked list starting at 0x{:08X} to device", channel, current_address);
 
       // Prove to the compiler that nothing's going to modify these.
       const u8* const ram_ptr = Bus::g_ram;
       const u32 mask = Bus::g_ram_mask;
 
-      const TickCount slice_ticks = s_max_slice_ticks + -s_halt_ticks_remaining;
+      const TickCount slice_ticks = GetMaxSliceTicks();
       TickCount remaining_ticks = slice_ticks;
       while (cs.request && remaining_ticks > 0)
       {
@@ -658,9 +647,6 @@ bool DMA::TransferChannel()
       cs.base_address = current_address;
       if (cs.request)
       {
-        // don't actually delay the transfer for the buffered ticks, this variable is dual-purposed.
-        s_halt_ticks_remaining = std::max(s_halt_ticks_remaining, 0);
-
         // stall the transfer for a bit if we ran for too long
         HaltTransfer(s_halt_ticks);
         return false;
@@ -681,7 +667,7 @@ bool DMA::TransferChannel()
 
       const u32 block_size = cs.block_control.request.GetBlockSize();
       u32 blocks_remaining = cs.block_control.request.GetBlockCount();
-      TickCount ticks_remaining = s_max_slice_ticks;
+      TickCount ticks_remaining = GetMaxSliceTicks();
 
       if (copy_to_device)
       {

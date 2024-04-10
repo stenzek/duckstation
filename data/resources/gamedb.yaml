@@ -90470,7 +90470,7 @@ SLPS-02376:
     - DigitalController
   settings:
     dmaMaxSliceTicks: 100
-    dmaHaltTicks: 150
+    dmaHaltTicks: 200
   codes:
     - SLPS-02376
     - SLPS-02356

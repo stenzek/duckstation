@@ -17,11 +17,17 @@ static TimingEvent* s_active_events_tail;
 static TimingEvent* s_current_event = nullptr;
 static u32 s_active_event_count = 0;
 static u32 s_global_tick_counter = 0;
+static u32 s_event_run_tick_counter = 0;
 static bool s_frame_done = false;
 
 u32 GetGlobalTickCounter()
 {
   return s_global_tick_counter;
+}
+
+u32 GetEventRunTickCounter()
+{
+  return s_event_run_tick_counter;
 }
 
 void Initialize()
@@ -293,6 +299,7 @@ void RunEvents()
     if (pending_ticks >= s_active_events_head->GetDowncount())
     {
       CPU::ResetPendingTicks();
+      s_event_run_tick_counter = s_global_tick_counter + static_cast<u32>(pending_ticks);
 
       do
       {

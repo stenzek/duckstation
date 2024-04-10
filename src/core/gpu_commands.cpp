@@ -25,94 +25,93 @@ static constexpr u32 ReplaceZero(u32 value, u32 value_for_zero)
   return value == 0 ? value_for_zero : value;
 }
 
-void GPU::ExecuteCommands()
+void GPU::TryExecuteCommands()
 {
-  m_syncing = true;
-
-  for (;;)
+  while (m_pending_command_ticks <= m_max_run_ahead && !m_fifo.IsEmpty())
   {
-    if (m_pending_command_ticks <= m_max_run_ahead && !m_fifo.IsEmpty())
+    switch (m_blitter_state)
     {
-      switch (m_blitter_state)
+      case BlitterState::Idle:
       {
-        case BlitterState::Idle:
+        const u32 command = FifoPeek(0) >> 24;
+        if ((this->*s_GP0_command_handler_table[command])())
+          continue;
+        else
+          return;
+      }
+
+      case BlitterState::WritingVRAM:
+      {
+        DebugAssert(m_blit_remaining_words > 0);
+        const u32 words_to_copy = std::min(m_blit_remaining_words, m_fifo.GetSize());
+        m_blit_buffer.reserve(m_blit_buffer.size() + words_to_copy);
+        for (u32 i = 0; i < words_to_copy; i++)
+          m_blit_buffer.push_back(FifoPop());
+        m_blit_remaining_words -= words_to_copy;
+
+        Log_DebugPrintf("VRAM write burst of %u words, %u words remaining", words_to_copy, m_blit_remaining_words);
+        if (m_blit_remaining_words == 0)
+          FinishVRAMWrite();
+
+        continue;
+      }
+
+      case BlitterState::ReadingVRAM:
+      {
+        return;
+      }
+      break;
+
+      case BlitterState::DrawingPolyLine:
+      {
+        const u32 words_per_vertex = m_render_command.shading_enable ? 2 : 1;
+        u32 terminator_index =
+          m_render_command.shading_enable ? ((static_cast<u32>(m_blit_buffer.size()) & 1u) ^ 1u) : 0u;
+        for (; terminator_index < m_fifo.GetSize(); terminator_index += words_per_vertex)
         {
-          const u32 command = FifoPeek(0) >> 24;
-          if ((this->*s_GP0_command_handler_table[command])())
-            continue;
-          else
-            goto batch_done;
+          // polyline must have at least two vertices, and the terminator is (word & 0xf000f000) == 0x50005000.
+          // terminator is on the first word for the vertex
+          if ((FifoPeek(terminator_index) & UINT32_C(0xF000F000)) == UINT32_C(0x50005000))
+            break;
         }
 
-        case BlitterState::WritingVRAM:
+        const bool found_terminator = (terminator_index < m_fifo.GetSize());
+        const u32 words_to_copy = std::min(terminator_index, m_fifo.GetSize());
+        if (words_to_copy > 0)
         {
-          DebugAssert(m_blit_remaining_words > 0);
-          const u32 words_to_copy = std::min(m_blit_remaining_words, m_fifo.GetSize());
           m_blit_buffer.reserve(m_blit_buffer.size() + words_to_copy);
           for (u32 i = 0; i < words_to_copy; i++)
             m_blit_buffer.push_back(FifoPop());
-          m_blit_remaining_words -= words_to_copy;
+        }
 
-          Log_DebugPrintf("VRAM write burst of %u words, %u words remaining", words_to_copy, m_blit_remaining_words);
-          if (m_blit_remaining_words == 0)
-            FinishVRAMWrite();
-
+        Log_DebugPrintf("Added %u words to polyline", words_to_copy);
+        if (found_terminator)
+        {
+          // drop terminator
+          m_fifo.RemoveOne();
+          Log_DebugPrintf("Drawing poly-line with %u vertices", GetPolyLineVertexCount());
+          DispatchRenderCommand();
+          m_blit_buffer.clear();
+          EndCommand();
           continue;
         }
-
-        case BlitterState::ReadingVRAM:
-        {
-          goto batch_done;
-        }
-        break;
-
-        case BlitterState::DrawingPolyLine:
-        {
-          const u32 words_per_vertex = m_render_command.shading_enable ? 2 : 1;
-          u32 terminator_index =
-            m_render_command.shading_enable ? ((static_cast<u32>(m_blit_buffer.size()) & 1u) ^ 1u) : 0u;
-          for (; terminator_index < m_fifo.GetSize(); terminator_index += words_per_vertex)
-          {
-            // polyline must have at least two vertices, and the terminator is (word & 0xf000f000) == 0x50005000.
-            // terminator is on the first word for the vertex
-            if ((FifoPeek(terminator_index) & UINT32_C(0xF000F000)) == UINT32_C(0x50005000))
-              break;
-          }
-
-          const bool found_terminator = (terminator_index < m_fifo.GetSize());
-          const u32 words_to_copy = std::min(terminator_index, m_fifo.GetSize());
-          if (words_to_copy > 0)
-          {
-            m_blit_buffer.reserve(m_blit_buffer.size() + words_to_copy);
-            for (u32 i = 0; i < words_to_copy; i++)
-              m_blit_buffer.push_back(FifoPop());
-          }
-
-          Log_DebugPrintf("Added %u words to polyline", words_to_copy);
-          if (found_terminator)
-          {
-            // drop terminator
-            m_fifo.RemoveOne();
-            Log_DebugPrintf("Drawing poly-line with %u vertices", GetPolyLineVertexCount());
-            DispatchRenderCommand();
-            m_blit_buffer.clear();
-            EndCommand();
-            continue;
-          }
-        }
-        break;
       }
-    }
-
-  batch_done:
-    m_fifo_pushed = false;
-    UpdateDMARequest();
-    if (!m_fifo_pushed)
       break;
+    }
   }
+}
 
+void GPU::ExecuteCommands()
+{
+  const bool was_executing_from_event = std::exchange(m_executing_commands, true);
+
+  TryExecuteCommands();
+  UpdateDMARequest();
   UpdateGPUIdle();
-  m_syncing = false;
+
+  m_executing_commands = was_executing_from_event;
+  if (!was_executing_from_event)
+    UpdateCommandTickEvent();
 }
 
 void GPU::EndCommand()

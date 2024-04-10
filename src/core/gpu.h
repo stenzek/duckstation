@@ -307,6 +307,7 @@ protected:
   void WriteGP1(u32 value);
   void EndCommand();
   void ExecuteCommands();
+  void TryExecuteCommands();
   void HandleGetGPUInfoCommand(u32 value);
 
   // Rendering in the backend
@@ -542,8 +543,7 @@ protected:
   u32 m_GPUREAD_latch = 0;
 
   /// True if currently executing/syncing.
-  bool m_syncing = false;
-  bool m_fifo_pushed = false;
+  bool m_executing_commands = false;
 
   struct VRAMTransfer
   {

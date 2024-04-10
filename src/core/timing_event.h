@@ -81,6 +81,7 @@ public:
 namespace TimingEvents {
 
 u32 GetGlobalTickCounter();
+u32 GetEventRunTickCounter();
 
 void Initialize();
 void Reset();
