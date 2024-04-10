@@ -438,7 +438,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   dialog->registerWidgetHelp(
     m_ui.showInput, tr("Show Controller Input"), tr("Unchecked"),
     tr("Shows the current controller state of the system in the bottom-left corner of the display."));
-  dialog->registerWidgetHelp(m_ui.showInput, tr("Show Settings"), tr("Unchecked"),
+  dialog->registerWidgetHelp(m_ui.showSettings, tr("Show Settings"), tr("Unchecked"),
                              tr("Shows a summary of current settings in the bottom-right corner of the display."));
   dialog->registerWidgetHelp(m_ui.showStatusIndicators, tr("Show Status Indicators"), tr("Checked"),
                              tr("Shows indicators on screen when the system is not running in its \"normal\" state. "
