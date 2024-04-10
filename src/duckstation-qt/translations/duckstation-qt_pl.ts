@@ -1922,32 +1922,27 @@ Nieprzeczytane wiadomości: {}</translation>
         <translation>Menedżer kodów</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerwindow.ui" line="28"/>
-        <source>Cheat List</source>
-        <translation>Lista kodów</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="36"/>
+        <location filename="../cheatmanagerwindow.ui" line="26"/>
         <source>&amp;Add Group...</source>
         <translation>&amp;Dodaj grupę...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerwindow.ui" line="43"/>
+        <location filename="../cheatmanagerwindow.ui" line="33"/>
         <source>&amp;Add Code...</source>
         <translation>&amp;Dodaj kod...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerwindow.ui" line="50"/>
+        <location filename="../cheatmanagerwindow.ui" line="40"/>
         <source>&amp;Edit Code...</source>
         <translation>&amp;Edytuj kod...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerwindow.ui" line="60"/>
+        <location filename="../cheatmanagerwindow.ui" line="50"/>
         <source>&amp;Delete Code</source>
         <translation>&amp;Usuń kod</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerwindow.ui" line="70"/>
+        <location filename="../cheatmanagerwindow.ui" line="60"/>
         <location filename="../cheatmanagerwindow.cpp" line="167"/>
         <location filename="../cheatmanagerwindow.cpp" line="273"/>
         <location filename="../cheatmanagerwindow.cpp" line="278"/>
@@ -1955,292 +1950,44 @@ Nieprzeczytane wiadomości: {}</translation>
         <translation>Aktywuj</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerwindow.ui" line="77"/>
+        <location filename="../cheatmanagerwindow.ui" line="67"/>
         <source>Import...</source>
         <translation>Importuj...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerwindow.ui" line="87"/>
+        <location filename="../cheatmanagerwindow.ui" line="77"/>
         <source>Export...</source>
         <translation>Eksportuj...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerwindow.ui" line="94"/>
+        <location filename="../cheatmanagerwindow.ui" line="84"/>
         <source>Clear</source>
         <translation>Wyczyść</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerwindow.ui" line="101"/>
+        <location filename="../cheatmanagerwindow.ui" line="91"/>
         <source>Reset</source>
         <translation>Resetuj</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerwindow.ui" line="130"/>
+        <location filename="../cheatmanagerwindow.ui" line="120"/>
         <source>Name</source>
         <translation>Nazwa</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerwindow.ui" line="135"/>
-        <location filename="../cheatmanagerwindow.ui" line="602"/>
+        <location filename="../cheatmanagerwindow.ui" line="125"/>
         <source>Type</source>
         <translation>Typ</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerwindow.ui" line="140"/>
+        <location filename="../cheatmanagerwindow.ui" line="130"/>
         <source>Activation</source>
         <translation>Aktywacja</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerwindow.ui" line="145"/>
+        <location filename="../cheatmanagerwindow.ui" line="135"/>
         <source>Instructions</source>
         <translation>Instrukcje</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="154"/>
-        <source>Memory Scanner</source>
-        <translation>Skaner pamięci</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="189"/>
-        <location filename="../cheatmanagerwindow.ui" line="597"/>
-        <source>Address</source>
-        <translation>Adres</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="194"/>
-        <location filename="../cheatmanagerwindow.ui" line="607"/>
-        <source>Value</source>
-        <translation>Wartość</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="199"/>
-        <source>Previous Value</source>
-        <translation>Poprzednia wartość</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="209"/>
-        <source>Search Parameters</source>
-        <translation>Parametry wyszukiwania</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="215"/>
-        <source>Value:</source>
-        <translation>Wartość:</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="231"/>
-        <source>Signed</source>
-        <translation>Ze znakiem</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="236"/>
-        <source>Unsigned</source>
-        <translation>Bez znaku</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="248"/>
-        <source>Decimal</source>
-        <translation>Dziesiętna</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="253"/>
-        <source>Hex</source>
-        <translation>Szestnastkowa</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="263"/>
-        <source>Data Size:</source>
-        <translation>Rozmiar danych:</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="274"/>
-        <source>Byte (1 byte)</source>
-        <translation>Bajt (1 bajt)</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="279"/>
-        <source>Halfword (2 bytes)</source>
-        <translation>Półsłowo (2 bajty)</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="284"/>
-        <source>Word (4 bytes)</source>
-        <translation>Słowo (4 bajty)</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="292"/>
-        <source>Operator:</source>
-        <translation>Operator:</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="300"/>
-        <source>Equal to...</source>
-        <translation>Jest równy...</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="305"/>
-        <source>Not Equal to...</source>
-        <translation>Nie jest równy...</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="310"/>
-        <source>Greater Than...</source>
-        <translation>Większy niż...</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="315"/>
-        <source>Greater or Equal...</source>
-        <translation>Większy lub równy...</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="320"/>
-        <source>Less Than...</source>
-        <translation>Mniejszy niż...</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="325"/>
-        <source>Less or Equal...</source>
-        <translation>Mniejszy lub równy...</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="330"/>
-        <source>Increased By...</source>
-        <translation>Zwiększony o...</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="335"/>
-        <source>Decreased By...</source>
-        <translation>Zmniejszony o...</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="340"/>
-        <source>Changed By...</source>
-        <translation>Zmieniony o...</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="345"/>
-        <source>Equal to Previous (Unchanged Value)</source>
-        <translation>Równy poprzedniej (niezmieniona wartość)</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="350"/>
-        <source>Not Equal to Previous (Changed Value)</source>
-        <translation>Nie jest równy poprzedniej (zmieniona wartość)</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="355"/>
-        <source>Greater Than Previous</source>
-        <translation>Większy niż poprzedni</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="360"/>
-        <source>Greater or Equal to Previous</source>
-        <translation>Większy lub równy poprzedniemu</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="365"/>
-        <source>Less Than Previous</source>
-        <translation>Mniejszy niż poprzedni</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="370"/>
-        <source>Less or Equal to Previous</source>
-        <translation>Mniejszy lub równy poprzedniemu</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="375"/>
-        <source>Any Value</source>
-        <translation>Dowolna wartość</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="383"/>
-        <source>Start Address:</source>
-        <translation>Adres początkowy:</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="393"/>
-        <source>End Address:</source>
-        <translation>Adres końcowy:</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="403"/>
-        <source>Preset Range:</source>
-        <translation>Zakres ustawień wstępnych:</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="411"/>
-        <source>RAM</source>
-        <translation>RAM</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="416"/>
-        <source>Scratchpad</source>
-        <translation>Brudnopis</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="421"/>
-        <source>BIOS</source>
-        <translation>BIOS</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="434"/>
-        <source>New Search</source>
-        <translation>Nowe wyszukiwanie</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="444"/>
-        <source>Search Again</source>
-        <translation>Wyszukaj ponownie</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="454"/>
-        <source>Clear Results</source>
-        <translation>Wyczyść wyniki</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="466"/>
-        <source>Add Selected Results To Watch List</source>
-        <translation>Dodaj wybrane wyniki do listy obserwowania</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="502"/>
-        <source>Number of Results (Display limited to first 5000) : </source>
-        <translation>Ilość wyników (ograniczono do pierwszych 5000): </translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="542"/>
-        <source>0</source>
-        <translation>0</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="592"/>
-        <source>Simple Cheat Code or Description</source>
-        <translation>Prosty kod (oszustwa w grze) lub opis</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="612"/>
-        <source>Freeze</source>
-        <translation>Zamroź</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="622"/>
-        <source>Add Manual Address</source>
-        <translation>Dodaj adres ręcznie</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="632"/>
-        <source>Remove Selected Entries from Watch List</source>
-        <translation>Usuń wybrane wpisy z listy obserwowania</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="645"/>
-        <source>Load Watch</source>
-        <translation>Wczytaj listę obserwowanych</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerwindow.ui" line="658"/>
-        <source>Save Watch</source>
-        <translation>Zapisz listę obserwowanych</translation>
     </message>
     <message>
         <location filename="../cheatmanagerwindow.cpp" line="278"/>
