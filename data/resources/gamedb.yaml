@@ -90459,13 +90459,12 @@ SLPS-02376:
   name: "Little Princess - Marl Oukoku no Ningyou-hime 2 (Japan)"
   compatibility:
     rating: NoIssues
-    versionTested: "0.1-1641-gb2057ac6"
-    comments: "Can't pass the first screen of the game."
+    versionTested: "0.1-6598-g2b7de1f8e"
   controllers:
     - DigitalController
   settings:
     dmaMaxSliceTicks: 100
-    gpuMaxRunAhead: 1
+    dmaHaltTicks: 150
   codes:
     - SLPS-02376
     - SLPS-02356
