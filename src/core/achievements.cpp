@@ -1726,9 +1726,9 @@ void Achievements::ShowLoginNotification()
   if (g_settings.achievements_notifications && FullscreenUI::Initialize())
   {
     std::string badge_path = GetLoggedInUserBadgePath();
+    std::string title = user->display_name;
 
     //: Summary for login notification.
-    std::string title = user->display_name;
     std::string summary = fmt::format(TRANSLATE_FS("Achievements", "Score: {} ({} softcore)\nUnread messages: {}"),
                                       user->score, user->score_softcore, user->num_unread_messages);
 

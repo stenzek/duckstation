@@ -165,10 +165,6 @@ Do you want to enable hardcore mode?</source>
 <context>
     <name>AchievementSettingsWidget</name>
     <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
         <location filename="../achievementsettingswidget.cpp" line="52"/>
         <source>Displays popup messages on events such as achievement unlocks and game completion.</source>
         <translation>在成就解锁和游戏完成等事件上显示弹出消息。</translation>
@@ -358,10 +354,6 @@ Login token generated on %2.</source>
         <translation>通知</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Pause Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;DuckStation使用RetroAchievements作为成就数据库并以此来追踪进展。要使用成就，请注册一个账户于&lt;a href=&quot;https://retroachievements.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;retroachievements.org&lt;/span&gt;&lt;/a&gt;。&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;要查看游戏中的成就列表，按下热键&lt;span style=&quot; font-weight:600;&quot;&gt;打开暂停菜单&lt;/span&gt;并从菜单中选择&lt;span style=&quot; font-weight:600;&quot;&gt;成就&lt;/span&gt;。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
-    <message>
         <location filename="../achievementsettingswidget.cpp" line="73"/>
         <source>When enabled, the first disc in a playlist will be used for achievements, regardless of which disc is active.</source>
         <translation>当启用时，游戏列表中的第一张光盘将用于成就，无论该张光盘是否处于活动状态。</translation>
@@ -517,6 +509,7 @@ Leaderboard Position: {} of {}</source>
         <location filename="../../core/achievements.cpp" line="1732"/>
         <source>Score: {} ({} softcore)
 Unread messages: {}</source>
+        <extracomment>Summary for login notification.</extracomment>
         <translation>得分: {} ({}软核)
 未读消息: {}</translation>
     </message>
@@ -659,8 +652,8 @@ Unread messages: {}</source>
         <translation>排行榜下载失败</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1407"/>
-        <location filename="../../core/system.cpp" line="1419"/>
+        <location filename="../../core/system.cpp" line="1408"/>
+        <location filename="../../core/system.cpp" line="1420"/>
         <source>Resuming state</source>
         <translation>继续档</translation>
     </message>
@@ -680,7 +673,7 @@ Unread messages: {}</source>
         <translation>由于硬核模式关闭，提交得分被禁用。排行榜仅限读取。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1173"/>
+        <location filename="../../core/system.cpp" line="1174"/>
         <source>Loading state</source>
         <translation>读档</translation>
     </message>
@@ -704,14 +697,6 @@ Unread messages: {}</source>
 <context>
     <name>AdvancedSettingsWidget</name>
     <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
-        <source>Use Old MDEC Routines</source>
-        <translation type="vanished">使用旧的MDEC惯例</translation>
-    </message>
-    <message>
         <location filename="../advancedsettingswidget.ui" line="143"/>
         <source>Value</source>
         <translation>值</translation>
@@ -723,14 +708,6 @@ Unread messages: {}</source>
         <location filename="../advancedsettingswidget.cpp" line="196"/>
         <source>User Preference</source>
         <translation>用户偏好</translation>
-    </message>
-    <message>
-        <source>Set Dumped VRAM Write Alpha Channel</source>
-        <translation type="vanished">设置转储的显存写入Alpha通道</translation>
-    </message>
-    <message>
-        <source>Disable Shader Cache</source>
-        <translation type="vanished">禁用着色器缓存</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="214"/>
@@ -769,34 +746,6 @@ Unread messages: {}</source>
         <translation>将消息记录到所支持的调试游戏机。</translation>
     </message>
     <message>
-        <source>Show Settings Overlay</source>
-        <translation type="vanished">显示设置覆盖</translation>
-    </message>
-    <message>
-        <source>Exclusive Fullscreen Control</source>
-        <translation type="vanished">独占全屏控制</translation>
-    </message>
-    <message>
-        <source>Minimum Dumped VRAM Write Height</source>
-        <translation type="vanished">最小转储的显存写入高度</translation>
-    </message>
-    <message>
-        <source>Disable Dual-Source Blend</source>
-        <translation type="vanished">禁用双源混合</translation>
-    </message>
-    <message>
-        <source>Disable Framebuffer Fetch</source>
-        <translation type="vanished">禁用帧缓冲获取</translation>
-    </message>
-    <message>
-        <source>Disable Texture Buffers</source>
-        <translation type="vanished">禁用纹理缓冲</translation>
-    </message>
-    <message>
-        <source>Disable Texture Copy To Self</source>
-        <translation type="vanished">禁用纹理复制到自身</translation>
-    </message>
-    <message>
         <location filename="../advancedsettingswidget.cpp" line="251"/>
         <source>CD-ROM Mechacon Version</source>
         <translation>CD-ROM机械控制器版本</translation>
@@ -812,17 +761,9 @@ Unread messages: {}</source>
         <translation>启用PCDrv</translation>
     </message>
     <message>
-        <source>Preload Texture Replacements</source>
-        <translation type="vanished">预加载纹理替换</translation>
-    </message>
-    <message>
         <location filename="../advancedsettingswidget.cpp" line="229"/>
         <source>Display Line End Offset</source>
         <translation>显示线结束偏移</translation>
-    </message>
-    <message>
-        <source>Wireframe Mode</source>
-        <translation type="vanished">线框模式</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="233"/>
@@ -896,18 +837,10 @@ Unread messages: {}</source>
         <translation>DMA停顿时数</translation>
     </message>
     <message>
-        <source>Dump Replaceable VRAM Writes</source>
-        <translation type="vanished">转储可替换的显存写入</translation>
-    </message>
-    <message>
         <location filename="../advancedsettingswidget.ui" line="75"/>
         <location filename="../advancedsettingswidget.cpp" line="192"/>
         <source>Log To Debug Console</source>
         <translation>记录到调试游戏机</translation>
-    </message>
-    <message>
-        <source>Display FPS Limit</source>
-        <translation type="vanished">显示帧率限制</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="189"/>
@@ -915,17 +848,9 @@ Unread messages: {}</source>
         <translation>设置记录的消息的详细级别。更高的级别将记录更多的消息。</translation>
     </message>
     <message>
-        <source>Minimum Dumped VRAM Write Width</source>
-        <translation type="vanished">最小转储的显存写入宽度</translation>
-    </message>
-    <message>
         <location filename="../advancedsettingswidget.cpp" line="191"/>
         <source>Logs messages to the console window.</source>
         <translation>将消息记录到游戏机窗口。</translation>
-    </message>
-    <message>
-        <source>PGXP Depth Clear Threshold</source>
-        <translation type="vanished">PGXP深度清除阈值</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="188"/>
@@ -958,26 +883,14 @@ Unread messages: {}</source>
         <translation>显示带有额外统计信息和快速设置的调试菜单栏。</translation>
     </message>
     <message>
-        <source>Show Status Indicators</source>
-        <translation type="vanished">显示状态指示器</translation>
-    </message>
-    <message>
         <location filename="../advancedsettingswidget.cpp" line="244"/>
         <source>Enable Recompiler Block Linking</source>
         <translation>启用重新编译器块链接</translation>
     </message>
     <message>
-        <source>Multisample Antialiasing</source>
-        <translation type="vanished">多重采样反锯齿</translation>
-    </message>
-    <message>
         <location filename="../advancedsettingswidget.ui" line="47"/>
         <source>Log Filters:</source>
         <translation>日志筛选器:</translation>
-    </message>
-    <message>
-        <source>Disable All Enhancements</source>
-        <translation type="vanished">禁用全部增强</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="82"/>
@@ -989,10 +902,6 @@ Unread messages: {}</source>
         <location filename="../advancedsettingswidget.cpp" line="261"/>
         <source>PCDrv Root Directory</source>
         <translation>PCDrv根目录</translation>
-    </message>
-    <message>
-        <source>Use Debug Host GPU Device</source>
-        <translation type="vanished">使用调试本机GPU设备</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="260"/>
@@ -1016,33 +925,9 @@ Unread messages: {}</source>
         <translation>没有SBI文件情况下允许启动</translation>
     </message>
     <message>
-        <source>Stretch Display Vertically</source>
-        <translation type="vanished">垂直拉伸显示</translation>
-    </message>
-    <message>
-        <source>Enable VRAM Write Texture Replacement</source>
-        <translation type="vanished">启用显存写入纹理替换</translation>
-    </message>
-    <message>
-        <source>PGXP Geometry Tolerance</source>
-        <translation type="vanished">PGXP几何公差</translation>
-    </message>
-    <message>
-        <source>Create Save State Backups</source>
-        <translation type="vanished">创建存档备份</translation>
-    </message>
-    <message>
-        <source>Show Frame Times</source>
-        <translation type="vanished">显示帧时间</translation>
-    </message>
-    <message>
         <location filename="../advancedsettingswidget.cpp" line="195"/>
         <source>Logs messages to the window.</source>
         <translation>将消息记录到窗口。</translation>
-    </message>
-    <message>
-        <source>PGXP Vertex Cache</source>
-        <translation type="vanished">PGXP顶点缓存</translation>
     </message>
 </context>
 <context>
@@ -1533,10 +1418,6 @@ Unread messages: {}</source>
         <translation>100%</translation>
     </message>
     <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
         <location filename="../audiosettingswidget.cpp" line="69"/>
         <source>50 ms</source>
         <translation>50毫秒</translation>
@@ -1845,10 +1726,6 @@ Unread messages: {}</source>
 <context>
     <name>BIOSSettingsWidget</name>
     <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
         <location filename="../biossettingswidget.ui" line="101"/>
         <source>Open in Explorer...</source>
         <translation>在文件资源管理器打开…</translation>
@@ -2033,377 +1910,6 @@ Unread messages: {}</source>
         <location filename="../cheatcodeeditordialog.ui" line="53"/>
         <source>Activation:</source>
         <translation>激活:</translation>
-    </message>
-</context>
-<context>
-    <name>CheatManagerDialog</name>
-    <message>
-        <source>0</source>
-        <translation type="vanished">0</translation>
-    </message>
-    <message>
-        <source>Hex</source>
-        <translation type="vanished">十六进制</translation>
-    </message>
-    <message>
-        <source>RAM</source>
-        <translation type="vanished">内存</translation>
-    </message>
-    <message>
-        <source>BIOS</source>
-        <translation type="vanished">BIOS</translation>
-    </message>
-    <message>
-        <source>Byte</source>
-        <translation type="vanished">字节</translation>
-    </message>
-    <message>
-        <source>Name</source>
-        <translation type="vanished">名称</translation>
-    </message>
-    <message>
-        <source>Type</source>
-        <translation type="vanished">类型</translation>
-    </message>
-    <message>
-        <source>Word</source>
-        <translation type="vanished">单字</translation>
-    </message>
-    <message>
-        <source>Word (4 bytes)</source>
-        <translation type="vanished">单字 (4字节)</translation>
-    </message>
-    <message>
-        <source>Less or Equal to Previous</source>
-        <translation type="vanished">小于或等于前一个</translation>
-    </message>
-    <message>
-        <source>Start Address:</source>
-        <translation type="vanished">开始地址:</translation>
-    </message>
-    <message>
-        <source>Clear</source>
-        <translation type="vanished">清除</translation>
-    </message>
-    <message>
-        <source>Error</source>
-        <translation type="vanished">错误</translation>
-    </message>
-    <message>
-        <source>Reset</source>
-        <translation type="vanished">重置</translation>
-    </message>
-    <message>
-        <source>Value</source>
-        <translation type="vanished">值</translation>
-    </message>
-    <message>
-        <source>Activation</source>
-        <translation type="vanished">激活</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to remove all cheats? This is not reversible.</source>
-        <translation type="vanished">您确定想要删除全部金手指吗？这是不可逆的。</translation>
-    </message>
-    <message>
-        <source>Greater Than...</source>
-        <translation type="vanished">大于…</translation>
-    </message>
-    <message>
-        <source>This group name already exists.</source>
-        <translation type="vanished">已经存在此分组名。</translation>
-    </message>
-    <message>
-        <source>Preset Range:</source>
-        <translation type="vanished">预设范围:</translation>
-    </message>
-    <message>
-        <source>Group Name:</source>
-        <translation type="vanished">分组名:</translation>
-    </message>
-    <message>
-        <source>Greater or Equal...</source>
-        <translation type="vanished">大于或等于…</translation>
-    </message>
-    <message>
-        <source>Clear Results</source>
-        <translation type="vanished">清除结果</translation>
-    </message>
-    <message>
-        <source>&amp;Add Group...</source>
-        <translation type="vanished">新建分组(&amp;A)…</translation>
-    </message>
-    <message>
-        <source>Data Size:</source>
-        <translation type="vanished">数据大小:</translation>
-    </message>
-    <message>
-        <source>Add Manual Address</source>
-        <translation type="vanished">添加手动地址</translation>
-    </message>
-    <message>
-        <source>Freeze</source>
-        <translation type="vanished">冻结</translation>
-    </message>
-    <message>
-        <source>Import Cheats</source>
-        <translation type="vanished">导入金手指</translation>
-    </message>
-    <message>
-        <source>&amp;Edit Code...</source>
-        <translation type="vanished">编辑代码(&amp;E)…</translation>
-    </message>
-    <message>
-        <source>Are you sure you want to reset the cheat list? Any cheats not in the DuckStation database WILL BE LOST.</source>
-        <translation type="vanished">您确定想要重置金手指列表吗？任何不在DuckStation数据库中的金手指将会丢失。</translation>
-    </message>
-    <message>
-        <source>Halfword (2 bytes)</source>
-        <translation type="vanished">半字 (2字节)</translation>
-    </message>
-    <message>
-        <source>Confirm Clear</source>
-        <translation type="vanished">确认清除</translation>
-    </message>
-    <message>
-        <source>Confirm Reset</source>
-        <translation type="vanished">确认重置</translation>
-    </message>
-    <message>
-        <source>Remove Selected Entries from Watch List</source>
-        <translation type="vanished">从观察列表中删除选定条目</translation>
-    </message>
-    <message>
-        <source>New Search</source>
-        <translation type="vanished">新建搜索</translation>
-    </message>
-    <message>
-        <source>Unsigned</source>
-        <translation type="vanished">无正负之分的</translation>
-    </message>
-    <message>
-        <source>Signed</source>
-        <translation type="vanished">有正负之分的</translation>
-    </message>
-    <message>
-        <source>Toggle</source>
-        <translation type="vanished">开关</translation>
-    </message>
-    <message>
-        <source>Value:</source>
-        <translation type="vanished">值:</translation>
-    </message>
-    <message>
-        <source>Enter manual address:</source>
-        <translation type="vanished">输入手动地址:</translation>
-    </message>
-    <message>
-        <source>Memory Scanner</source>
-        <translation type="vanished">内存扫描器</translation>
-    </message>
-    <message>
-        <source>Failed to parse cheat file. The log may contain more information.</source>
-        <translation type="vanished">无法解析金手指文件。日志可能包含更多信息。</translation>
-    </message>
-    <message>
-        <source>Not Equal to Previous (Changed Value)</source>
-        <translation type="vanished">不等于前一个 (值有变化)</translation>
-    </message>
-    <message>
-        <source>Add Group</source>
-        <translation type="vanished">新建分组</translation>
-    </message>
-    <message>
-        <source>Load Watch</source>
-        <translation type="vanished">加载监视</translation>
-    </message>
-    <message>
-        <source>Less Than Previous</source>
-        <translation type="vanished">小于前一个</translation>
-    </message>
-    <message>
-        <source>Save Watch</source>
-        <translation type="vanished">保存监视</translation>
-    </message>
-    <message>
-        <source>Export...</source>
-        <translation type="vanished">导出…</translation>
-    </message>
-    <message>
-        <source>Import...</source>
-        <translation type="vanished">导入…</translation>
-    </message>
-    <message>
-        <source>Address</source>
-        <translation type="vanished">地址</translation>
-    </message>
-    <message>
-        <source>PCSXR/Libretro Cheat Files (*.cht *.txt);;All Files (*.*)</source>
-        <translation type="vanished">PCSXR/Libretro金手指文件 (*.cht *.txt);;全部文件 (*.*)</translation>
-    </message>
-    <message>
-        <source>Halfword</source>
-        <translation type="vanished">半字</translation>
-    </message>
-    <message>
-        <source>Not Equal to...</source>
-        <translation type="vanished">不等于…</translation>
-    </message>
-    <message>
-        <source>From File...</source>
-        <translation type="vanished">从文件…</translation>
-    </message>
-    <message>
-        <source>Cheat List</source>
-        <translation type="vanished">金手指列表</translation>
-    </message>
-    <message>
-        <source>Export Cheats</source>
-        <translation type="vanished">导出金手指</translation>
-    </message>
-    <message>
-        <source>Equal to Previous (Unchanged Value)</source>
-        <translation type="vanished">等于前一个 (值未变化)</translation>
-    </message>
-    <message>
-        <source>Failed to save cheat file. The log may contain more information.</source>
-        <translation type="vanished">无法保存金手指文件。日志可能包含更多信息。</translation>
-    </message>
-    <message>
-        <source>Scratchpad</source>
-        <translation type="vanished">暂存器</translation>
-    </message>
-    <message>
-        <source>&amp;Delete Code</source>
-        <translation type="vanished">删除代码(&amp;D)</translation>
-    </message>
-    <message>
-        <source>Add Selected Results To Watch List</source>
-        <translation type="vanished">将选定结果添加到观察列表</translation>
-    </message>
-    <message>
-        <source>Select data size:</source>
-        <translation type="vanished">选择数据大小:</translation>
-    </message>
-    <message>
-        <source>Byte (1 byte)</source>
-        <translation type="vanished">字节 (1字节)</translation>
-    </message>
-    <message>
-        <source>Greater Than Previous</source>
-        <translation type="vanished">大于前一个</translation>
-    </message>
-    <message>
-        <source>PCSXR Cheat Files (*.cht);;All Files (*.*)</source>
-        <translation type="vanished">PCSXR金手指文件 (*.cht);;全部文件 (*.*)</translation>
-    </message>
-    <message>
-        <source>Delete Code</source>
-        <translation type="vanished">删除代码</translation>
-    </message>
-    <message>
-        <source>Greater or Equal to Previous</source>
-        <translation type="vanished">大于或等于前一个</translation>
-    </message>
-    <message>
-        <source>Signed Halfword</source>
-        <translation type="vanished">有正负之分的半字</translation>
-    </message>
-    <message>
-        <source>Cheat Manager</source>
-        <translation type="vanished">金手指管理器</translation>
-    </message>
-    <message>
-        <source>Activate</source>
-        <translation type="vanished">激活</translation>
-    </message>
-    <message>
-        <source>Decimal</source>
-        <translation type="vanished">十进制</translation>
-    </message>
-    <message>
-        <source>Signed Word</source>
-        <translation type="vanished">有正负之分的单字</translation>
-    </message>
-    <message>
-        <source>Signed Byte</source>
-        <translation type="vanished">有正负之分的字节</translation>
-    </message>
-    <message>
-        <source>Any Value</source>
-        <translation type="vanished">任何值</translation>
-    </message>
-    <message>
-        <source>Number of Results (Display limited to first 5000) : </source>
-        <translation type="vanished">结果数量 (限显示前5000) : </translation>
-    </message>
-    <message>
-        <source>Operator:</source>
-        <translation type="vanished">操作员:</translation>
-    </message>
-    <message>
-        <source>Increased By...</source>
-        <translation type="vanished">增加了…</translation>
-    </message>
-    <message>
-        <source>Decreased By...</source>
-        <translation type="vanished">减少了…</translation>
-    </message>
-    <message>
-        <source>&amp;Add Code...</source>
-        <translation type="vanished">新建代码(&amp;A)…</translation>
-    </message>
-    <message>
-        <source>Are you sure you wish to delete the selected code? This action is not reversible.</source>
-        <translation type="vanished">您确定想要删除选中的代码吗？此操作是不可逆的。</translation>
-    </message>
-    <message>
-        <source>Previous Value</source>
-        <translation type="vanished">前一个值</translation>
-    </message>
-    <message>
-        <source>Less or Equal...</source>
-        <translation type="vanished">小于或等于…</translation>
-    </message>
-    <message>
-        <source>From Text...</source>
-        <translation type="vanished">从文本…</translation>
-    </message>
-    <message>
-        <source>Equal to...</source>
-        <translation type="vanished">等于…</translation>
-    </message>
-    <message>
-        <source>End Address:</source>
-        <translation type="vanished">结束地址:</translation>
-    </message>
-    <message>
-        <source>Instructions</source>
-        <translation type="vanished">指令</translation>
-    </message>
-    <message>
-        <source>Simple Cheat Code or Description</source>
-        <translation type="vanished">简单金手指代码或描述</translation>
-    </message>
-    <message>
-        <source>Cheat File Text:</source>
-        <translation type="vanished">金手指文件文本:</translation>
-    </message>
-    <message>
-        <source>Changed By...</source>
-        <translation type="vanished">更改了…</translation>
-    </message>
-    <message>
-        <source>Search Parameters</source>
-        <translation type="vanished">搜索参数</translation>
-    </message>
-    <message>
-        <source>Less Than...</source>
-        <translation type="vanished">小于…</translation>
-    </message>
-    <message>
-        <source>Search Again</source>
-        <translation type="vanished">再次搜索</translation>
     </message>
 </context>
 <context>
@@ -2697,10 +2203,6 @@ Unread messages: {}</source>
         <translation>100%</translation>
     </message>
     <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
         <location filename="../consolesettingswidget.cpp" line="91"/>
         <source>Reduces the simulated time for the CD-ROM sled to move to different areas of the disc. Can improve loading times, but crash games which do not expect the CD-ROM to operate faster.</source>
         <translation>减少CD-ROM滑橇移动到光盘不同区域的模拟时间。可以改善加载时间，不过对于那些不期望CD-ROM操作更快的游戏，反会引起崩溃。</translation>
@@ -2710,10 +2212,6 @@ Unread messages: {}</source>
         <location filename="../consolesettingswidget.cpp" line="64"/>
         <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
         <translation>启用主频控制 (超频/降频)</translation>
-    </message>
-    <message>
-        <source>Simulates the region check present in original, unmodified consoles.</source>
-        <translation type="vanished">模拟原始的，未修改的游戏机中存在的区域检查。</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="61"/>
@@ -2853,10 +2351,6 @@ This warning will only be shown once.</source>
         <translation>区域:</translation>
     </message>
     <message>
-        <source>Enable Region Check</source>
-        <translation type="vanished">启用区域检查</translation>
-    </message>
-    <message>
         <location filename="../consolesettingswidget.cpp" line="67"/>
         <source>Selects the percentage of the normal clock speed the emulated hardware will run at.</source>
         <translation>选择模拟硬件将运行时正常主频的百分比。</translation>
@@ -2876,10 +2370,6 @@ This warning will only be shown once.</source>
         <location filename="../consolesettingswidget.cpp" line="147"/>
         <source>No, take me back to safety.</source>
         <translation>不好，带我返回安全模式。</translation>
-    </message>
-    <message>
-        <source>Checked</source>
-        <translation type="vanished">勾选</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="64"/>
@@ -3041,10 +2531,6 @@ This warning will only be shown once.</source>
 <context>
     <name>ControllerBindingWidget</name>
     <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
         <location filename="../controllerbindingwidget.ui" line="117"/>
         <location filename="../controllerbindingwidgets.cpp" line="273"/>
         <source>Automatic Mapping</source>
@@ -3137,10 +2623,6 @@ This warning will only be shown once.</source>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="861"/>
         <source>Down</source>
         <translation>下</translation>
-    </message>
-    <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_analog_controller.ui" line="89"/>
@@ -3300,10 +2782,6 @@ This warning will only be shown once.</source>
         <translation>下</translation>
     </message>
     <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="89"/>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="258"/>
         <location filename="../controllerbindingwidget_analog_joystick.ui" line="781"/>
@@ -3435,10 +2913,6 @@ This warning will only be shown once.</source>
         <translation>下</translation>
     </message>
     <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
         <location filename="../controllerbindingwidget_digital_controller.ui" line="513"/>
         <source>Left</source>
         <translation>左</translation>
@@ -3535,10 +3009,6 @@ This warning will only be shown once.</source>
         <translation>射击</translation>
     </message>
     <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
         <location filename="../controllerbindingwidget_guncon.ui" line="266"/>
         <source>Left</source>
         <translation>左</translation>
@@ -3594,10 +3064,6 @@ This warning will only be shown once.</source>
 </context>
 <context>
     <name>ControllerBindingWidget_Mouse</name>
-    <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
     <message>
         <location filename="../controllerbindingwidget_mouse.ui" line="93"/>
         <source>Left</source>
@@ -3668,10 +3134,6 @@ This warning will only be shown once.</source>
         <translation>下</translation>
     </message>
     <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
         <location filename="../controllerbindingwidget_negcon.ui" line="102"/>
         <location filename="../controllerbindingwidget_negcon.ui" line="648"/>
         <source>Left</source>
@@ -3738,10 +3200,6 @@ This warning will only be shown once.</source>
         <source>Select File</source>
         <translation>选择文件</translation>
     </message>
-    <message>
-        <source>%1 Settings</source>
-        <translation type="vanished">%1设置</translation>
-    </message>
 </context>
 <context>
     <name>ControllerGlobalSettingsWidget</name>
@@ -3750,10 +3208,6 @@ This warning will only be shown once.</source>
         <location filename="../controllerglobalsettingswidget.ui" line="361"/>
         <source>10</source>
         <translation>10</translation>
-    </message>
-    <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="104"/>
@@ -3936,10 +3390,6 @@ This warning will only be shown once.</source>
 </context>
 <context>
     <name>ControllerMacroEditWidget</name>
-    <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
     <message>
         <location filename="../controllermacroeditwidget.ui" line="29"/>
         <source>Binds/Buttons</source>
@@ -4346,41 +3796,6 @@ You cannot undo this action.</source>
     </message>
 </context>
 <context>
-    <name>DebuggerMessage</name>
-    <message>
-        <source>Stepping over to 0x%08X.</source>
-        <translation type="vanished">跨越到0x%08X。</translation>
-    </message>
-    <message>
-        <source>Instruction read failed at %08X while searching for function end.</source>
-        <translation type="vanished">在搜索函数末端时，无法在%08X读取指令。</translation>
-    </message>
-    <message>
-        <source>0x%08X is not a call instruction.</source>
-        <translation type="vanished">0x%08X不是一个调用指令。</translation>
-    </message>
-    <message>
-        <source>Added breakpoint at 0x%08X.</source>
-        <translation type="vanished">在0x%08X添加断点。</translation>
-    </message>
-    <message>
-        <source>Removed breakpoint at 0x%08X.</source>
-        <translation type="vanished">在0x%08X清除断点。</translation>
-    </message>
-    <message>
-        <source>No return instruction found after %u instructions for step-out at %08X.</source>
-        <translation type="vanished">在%u指令用于跨出%08X后没有找到返回指令。</translation>
-    </message>
-    <message>
-        <source>Can&apos;t step over double branch at 0x%08X</source>
-        <translation type="vanished">无法在0x%08X跨越双分支。</translation>
-    </message>
-    <message>
-        <source>Stepping out to 0x%08X.</source>
-        <translation type="vanished">跨出到0x%08X。</translation>
-    </message>
-</context>
-<context>
     <name>DebuggerRegistersModel</name>
     <message>
         <location filename="../debuggermodels.cpp" line="369"/>
@@ -4422,10 +3837,6 @@ You cannot undo this action.</source>
         <location filename="../debuggerwindow.ui" line="317"/>
         <source>F5</source>
         <translation>F5</translation>
-    </message>
-    <message>
-        <source>Toggle B&amp;reakpoint</source>
-        <translation type="vanished">断点开关(&amp;R)</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="359"/>
@@ -4488,14 +3899,6 @@ You cannot undo this action.</source>
         <location filename="../debuggerwindow.cpp" line="368"/>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
         <translation>无效的搜索模式。它应当包含十六进制数字或问号。</translation>
-    </message>
-    <message>
-        <source>Follow Load/Store</source>
-        <translation type="vanished">跟随加载/存储</translation>
-    </message>
-    <message>
-        <source>Add &amp;Breakpoint</source>
-        <translation type="vanished">添加断点(&amp;B)</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="339"/>
@@ -4614,10 +4017,6 @@ You cannot undo this action.</source>
         <location filename="../qtutils.cpp" line="199"/>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
         <translation>无效的地址。它应当是十六进制 (0x12345678或12345678)</translation>
-    </message>
-    <message>
-        <source>A breakpoint already exists at this address.</source>
-        <translation type="vanished">在该地址已经存在一个断点。</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="149"/>
@@ -5060,246 +4459,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
 </context>
 <context>
-    <name>DisplaySettingsWidget</name>
-    <message>
-        <source>:</source>
-        <translation type="vanished">:</translation>
-    </message>
-    <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
-        <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto (Game Native) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
-        <translation type="vanished">对游戏机输出到屏幕的显示进行宽高比的更改。默认是自动 (游戏原设)，它将自动调整宽高比，以匹配那个时代的典型电视上呈现的游戏。</translation>
-    </message>
-    <message>
-        <source>Basic</source>
-        <translation type="vanished">基本</translation>
-    </message>
-    <message>
-        <source>Crop:</source>
-        <translation type="vanished">裁剪:</translation>
-    </message>
-    <message>
-        <source>Show GPU Statistics</source>
-        <translation type="vanished">显示GPU统计信息</translation>
-    </message>
-    <message>
-        <source>Enable this option to match DuckStation&apos;s refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (e.g. running at non-100% speed).</source>
-        <translation type="vanished">启用此选项以使DuckStation的刷新率与当前显示器或屏幕互相匹配。当不可能 (例如以非100%速度运行) 时，垂直同步将自动禁用。</translation>
-    </message>
-    <message>
-        <source>VSync</source>
-        <translation type="vanished">垂直同步</translation>
-    </message>
-    <message>
-        <source>Borderless Fullscreen</source>
-        <translation type="vanished">无边界全屏</translation>
-    </message>
-    <message>
-        <source>Screen Display</source>
-        <translation type="vanished">屏幕显示</translation>
-    </message>
-    <message>
-        <source>On-Screen Display</source>
-        <translation type="vanished">同屏显示</translation>
-    </message>
-    <message>
-        <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. &lt;br&gt;Some games display content in the overscan area, or use it for screen effects. &lt;br&gt;May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
-        <translation type="vanished">确定在消费者电视机上通常不可见的区域中有多少要裁剪/隐藏。&lt;br&gt;有些游戏在过扫描区域显示内容，或将其用于屏幕效果。&lt;br&gt;在“全部边界”设置下可能无法正确显示。“仅过扫描区域”在稳定性和隐藏黑色边界之间提供了一个很好的折衷。</translation>
-    </message>
-    <message>
-        <source>Aspect Ratio</source>
-        <translation type="vanished">宽高比</translation>
-    </message>
-    <message>
-        <source>Shows the host&apos;s CPU usage based on threads in the top-right corner of the display. This does not display the emulated system CPU&apos;s usage. If a value close to 100% is being displayed, this means your host&apos;s CPU is likely the bottleneck. In this case, you should reduce enhancement-related settings such as overclocking.</source>
-        <translation type="vanished">在显示右上角显示基于线程的本机的CPU使用情况。这并不显示模拟系统CPU的使用情况。如果显示的值接近100%，这意味着您的本机的CPU可能是瓶颈。在这种情况下，您应当减少与增强相关的设置，例如超频。</translation>
-    </message>
-    <message>
-        <source>Fullscreen Mode:</source>
-        <translation type="vanished">全屏模式:</translation>
-    </message>
-    <message>
-        <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
-        <translation type="vanished">在显示左下角显示系统的当前控制器状态。</translation>
-    </message>
-    <message>
-        <source>Show Resolution</source>
-        <translation type="vanished">显示分辨率</translation>
-    </message>
-    <message>
-        <source>Renderer:</source>
-        <translation type="vanished">渲染器:</translation>
-    </message>
-    <message>
-        <source>Show Emulation Speed</source>
-        <translation type="vanished">显示模拟速度</translation>
-    </message>
-    <message>
-        <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
-        <translation type="vanished">在显示右上角以百分比显示系统的当前模拟速度。</translation>
-    </message>
-    <message>
-        <source>Shows the internal frame rate of the game in the top-right corner of the display.</source>
-        <translation type="vanished">在显示右上角显示游戏的内部帧率。</translation>
-    </message>
-    <message>
-        <source>Crop Mode</source>
-        <translation type="vanished">裁剪模式</translation>
-    </message>
-    <message>
-        <source>Position</source>
-        <translation type="vanished">位置</translation>
-    </message>
-    <message>
-        <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
-        <translation type="vanished">确定如何将模拟游戏机的输出放大或缩小到您的显示器的分辨率。</translation>
-    </message>
-    <message>
-        <source>Presents frames on a background thread when fast forwarding or vsync is disabled. This can measurably improve performance in the Vulkan renderer.</source>
-        <translation type="vanished">当禁用了快进或垂直同步时，在后台线程上呈现帧。这可以显著提高Vulkan渲染器的性能。</translation>
-    </message>
-    <message>
-        <source>Adapter</source>
-        <translation type="vanished">适配器</translation>
-    </message>
-    <message>
-        <source>Show CPU Usage</source>
-        <translation type="vanished">显示CPU使用</translation>
-    </message>
-    <message>
-        <source>Show GPU Usage</source>
-        <translation type="vanished">显示GPU使用</translation>
-    </message>
-    <message>
-        <source>Threaded Presentation</source>
-        <translation type="vanished">线程呈现</translation>
-    </message>
-    <message>
-        <source>Fullscreen Mode</source>
-        <translation type="vanished">全屏模式</translation>
-    </message>
-    <message>
-        <source>If your system contains multiple GPUs or adapters, you can select which GPU you wish to use for the hardware renderers. &lt;br&gt;This option is only supported in Direct3D and Vulkan. OpenGL will always use the default device.</source>
-        <translation type="vanished">如果您的系统包含多个GPU或适配器，您可以选择想使用哪个GPU作为硬件渲染器。&lt;br&gt;此选项仅在Direct3D和Vulkan中受支持，OpenGL将始终使用默认设备。</translation>
-    </message>
-    <message>
-        <source>Chooses the backend to use for rendering the console/game visuals. &lt;br&gt;Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. &lt;br&gt;The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
-        <translation type="vanished">选择用来渲染游戏机/游戏视觉效果的后端。&lt;br&gt;根据您的系统和硬件，Direct3D 11和OpenGL硬件后端可能可用。&lt;br&gt;软件渲染器提供了最好的兼容性，但速度最慢，并且不提供任何增强。</translation>
-    </message>
-    <message>
-        <source>Show Controller Input</source>
-        <translation type="vanished">显示控制器输入</translation>
-    </message>
-    <message>
-        <source>Scaling:</source>
-        <translation type="vanished">缩放:</translation>
-    </message>
-    <message>
-        <source>Internal Resolution Screenshots</source>
-        <translation type="vanished">内置分辨率屏幕截图</translation>
-    </message>
-    <message>
-        <source>Scaling</source>
-        <translation type="vanished">缩放</translation>
-    </message>
-    <message>
-        <source>Show OSD Messages</source>
-        <translation type="vanished">显示OSD消息</translation>
-    </message>
-    <message>
-        <source>Checked</source>
-        <translation type="vanished">勾选</translation>
-    </message>
-    <message>
-        <source>Unchecked</source>
-        <translation type="vanished">不勾选</translation>
-    </message>
-    <message>
-        <source>Position:</source>
-        <translation type="vanished">位置:</translation>
-    </message>
-    <message>
-        <source>Chooses the fullscreen resolution and frequency.</source>
-        <translation type="vanished">选择全屏分辨率和频率。</translation>
-    </message>
-    <message>
-        <source>Adapter:</source>
-        <translation type="vanished">适配器:</translation>
-    </message>
-    <message>
-        <source>Show Settings Overlay</source>
-        <translation type="vanished">显示设置覆盖</translation>
-    </message>
-    <message>
-        <source>Uses a second thread for drawing graphics. Currently only available for the software renderer, but can provide a significant speed improvement, and is safe to use.</source>
-        <translation type="vanished">使用第二个线程来绘制图像。目前仅可用于软件渲染器，但可以提供显著的速度改进，并且可以安全使用。</translation>
-    </message>
-    <message>
-        <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
-        <translation type="vanished">在事件发生时显示同屏显示消息，例如正在创建/载入存档，正在截取屏幕截图，……等。</translation>
-    </message>
-    <message>
-        <source>Threaded Rendering</source>
-        <translation type="vanished">线程渲染</translation>
-    </message>
-    <message>
-        <source>(Default)</source>
-        <translation type="vanished">(默认)</translation>
-    </message>
-    <message>
-        <source>Saves screenshots at internal render resolution and without postprocessing. If this option is disabled, the screenshots will be taken at the window&apos;s resolution. Internal resolution screenshots can be very large at high rendering scales.</source>
-        <translation type="vanished">使用不带后处理的内置渲染分辨率来保存屏幕截图。如果此选项被禁用，屏幕截图将以窗口的分辨率截取。在高渲染缩放下，内置分辨率屏幕截图可能非常大。</translation>
-    </message>
-    <message>
-        <source>Renderer</source>
-        <translation type="vanished">渲染器</translation>
-    </message>
-    <message>
-        <source>Aspect Ratio:</source>
-        <translation type="vanished">宽高比:</translation>
-    </message>
-    <message>
-        <source>Determines the position on the screen when black borders must be added.</source>
-        <translation type="vanished">当黑色边框必须添加时，确定其在屏幕上的位置。</translation>
-    </message>
-    <message>
-        <source>Shows the resolution of the game in the top-right corner of the display.</source>
-        <translation type="vanished">在显示右上角显示游戏的分辨率。</translation>
-    </message>
-    <message>
-        <source>Use Blit Swap Chain</source>
-        <translation type="vanished">使用位块传输交换链</translation>
-    </message>
-    <message>
-        <source>Bilinear (Smooth)</source>
-        <translation type="vanished">双线性 (光滑)</translation>
-    </message>
-    <message>
-        <source>Shows information about the emulated GPU in the top-right corner of the display.</source>
-        <translation type="vanished">在显示右上角显示关于模拟的GPU的信息。</translation>
-    </message>
-    <message>
-        <source>Shows the host&apos;s GPU usage in the top-right corner of the display.</source>
-        <translation type="vanished">在显示右上角显示本机的GPU使用情况。</translation>
-    </message>
-    <message>
-        <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
-        <translation type="vanished">当使用Direct3D 11渲染器时，使用位块传输呈现模型而不是翻转。这通常会导致性能降低，但对于某些流应用程序或在某些系统上打开帧率可能需要这样。</translation>
-    </message>
-    <message>
-        <source>Show FPS</source>
-        <translation type="vanished">显示帧率</translation>
-    </message>
-</context>
-<context>
     <name>EmptyGameListWidget</name>
-    <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
     <message>
         <location filename="../emptygamelistwidget.ui" line="102"/>
         <source>Scan For New Games</source>
@@ -5368,14 +4528,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 </context>
 <context>
     <name>EmulationSettingsWidget</name>
-    <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
-        <source>Enable this option will ensure every frame the console renders is displayed to the screen, for optimal frame pacing. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
-        <translation type="vanished">启用此选项将确保游戏机渲染的每一帧都显示在屏幕上，以获得最佳的帧步调。如果您在保持全速时遇到困难，或者遇到音频故障，尝试禁用此选项。</translation>
-    </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="55"/>
         <source>Turbo Speed:</source>
@@ -5616,266 +4768,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
 </context>
 <context>
-    <name>EnhancementSettingsWidget</name>
-    <message>
-        <source>x</source>
-        <translation type="vanished">x</translation>
-    </message>
-    <message>
-        <source>1x</source>
-        <translation type="vanished">1x</translation>
-    </message>
-    <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
-        <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
-        <translation type="vanished">选择将应用于最终图像的分辨率比率。1x将缩减采样到原始的游戏机分辨率。</translation>
-    </message>
-    <message>
-        <source>Disabled</source>
-        <translation type="vanished">禁用</translation>
-    </message>
-    <message>
-        <source>Applies modern dithering techniques to further smooth out gradients when true color is enabled. This debanding is performed during rendering (as opposed to a post-processing step), which allows it to be fast while preserving detail. Debanding increases the file size of screenshots due to the subtle dithering pattern present in screenshots.</source>
-        <translation type="vanished">当启用真彩色时，应用现代抖动技术进一步平滑渐变。这种去条带是在渲染期间执行的 (与后处理步骤相反)，这使得它在保持细节的同时速度很快。由于屏幕截图中存在微妙的抖动模式，去条带会增加屏幕截图的文件大小。</translation>
-    </message>
-    <message>
-        <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;br&gt;Only works with the hardware renderers. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation type="vanished">减少在PS1游戏中常见的“抖动”多边形和扭曲纹理。&lt;br&gt;仅适用于硬件渲染器。&lt;b&gt;&lt;u&gt;可能不兼容全部游戏。&lt;/u&gt;&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
-        <translation type="vanished">将此值设置为超过1x将提高渲染3D多边形和线条的分辨率。仅适用于硬件后端。&lt;br&gt;此选项通常是安全的，大多数游戏在高分辨率下看起来很好。更高的分辨率需要更强大的GPU。</translation>
-    </message>
-    <message>
-        <source>Depth Buffer (Low Compatibility)</source>
-        <translation type="vanished">深度缓冲 (低兼容性)</translation>
-    </message>
-    <message>
-        <source>Perspective Correct Textures</source>
-        <translation type="vanished">透视校正纹理</translation>
-    </message>
-    <message>
-        <source>Use Software Renderer For Readbacks</source>
-        <translation type="vanished">使用软件渲染器进行回读</translation>
-    </message>
-    <message>
-        <source>Smooths out the blockiness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. Only applies to the hardware renderers. &lt;br&gt;The JINC2 and especially xBR filtering modes are very demanding, and may not be worth the speed penalty.</source>
-        <translation type="vanished">通过使用过滤来平滑3D物体上放大纹理的块状。&lt;br&gt;在较高的分辨率比率下会有更好的效果。仅适用于硬件渲染器。&lt;br&gt;JINC2，尤其是xBR过滤模式要求非常高，可能不值得付出速度降低的代价。</translation>
-    </message>
-    <message>
-        <source>Widescreen Hack</source>
-        <translation type="vanished">宽屏调整</translation>
-    </message>
-    <message>
-        <source>Chroma Smoothing For 24-Bit Display</source>
-        <translation type="vanished">24位显示色度平滑</translation>
-    </message>
-    <message>
-        <source>Force NTSC Timings (60hz-on-PAL)</source>
-        <translation type="vanished">强制NTSC计时 (60hz-PAL)</translation>
-    </message>
-    <message>
-        <source>Scaled Dithering (scale dither pattern to resolution)</source>
-        <translation type="vanished">缩放色彩抖动 (缩放色彩抖动图案到分辨率)</translation>
-    </message>
-    <message>
-        <source>Downsampling</source>
-        <translation type="vanished">缩减采样</translation>
-    </message>
-    <message>
-        <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a very high performance cost.</source>
-        <translation type="vanished">对全部指令使用PGXP，而不仅仅是内存操作。需要PGXP来校正某些游戏中的抖动，但有很高的性能成本。</translation>
-    </message>
-    <message>
-        <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, but should be disabled for pure 3D games. Only applies to the hardware renderers.</source>
-        <translation type="vanished">在显示渲染图像之前对其进行缩减采样。对混合2D/3D游戏可以提高整体图像质量，但对于纯3D游戏应当禁用。仅适用于硬件渲染器。</translation>
-    </message>
-    <message>
-        <source>Perspective Correct Colors</source>
-        <translation type="vanished">透视校正颜色</translation>
-    </message>
-    <message>
-        <source>Resolution Scale</source>
-        <translation type="vanished">分辨率比率</translation>
-    </message>
-    <message>
-        <source>Widescreen Hack (render 3D in display aspect ratio)</source>
-        <translation type="vanished">宽屏调整 (显示宽高比时渲染3D)</translation>
-    </message>
-    <message>
-        <source>Texture Filtering:</source>
-        <translation type="vanished">纹理过滤:</translation>
-    </message>
-    <message>
-        <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. &lt;br&gt;For 2D games, or games which use pre-rendered backgrounds, this enhancement will not work as expected. &lt;br&gt;&lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation type="vanished">将屏幕空间中的顶点位置缩放为宽屏宽高比，从本质上将3D游戏中的视野从4:3增加到选定的显示宽高比。&lt;br&gt;对于2D游戏，或者那些使用预渲染背景的游戏，此增强将无法按预期般工作。&lt;br&gt;&lt;b&gt;&lt;u&gt;可能不兼容全部游戏。&lt;/u&gt;&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>Rendering Enhancements</source>
-        <translation type="vanished">渲染增强</translation>
-    </message>
-    <message>
-        <source>Downsampling Display Scale</source>
-        <translation type="vanished">缩减采样显示比率</translation>
-    </message>
-    <message>
-        <source>Preserve Projection Precision</source>
-        <translation type="vanished">保持投影精度</translation>
-    </message>
-    <message>
-        <source>Disable Interlacing (force progressive render/scan)</source>
-        <translation type="vanished">禁用隔行扫描 (强制渐进式渲染/扫描)</translation>
-    </message>
-    <message>
-        <source>Force 4:3 For 24-bit Display</source>
-        <translation type="vanished">24位显示强制4:3</translation>
-    </message>
-    <message>
-        <source>Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. &lt;br&gt;For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster. &lt;br&gt;For variable frame rate games, it may not affect the speed.</source>
-        <translation type="vanished">当游戏机处于PAL模式时使用NTSC帧计时，强制PAL游戏以60hz运行。&lt;br&gt;对于大多数速度与帧率相关的游戏，这将导致游戏运行速度大约快17%。&lt;br&gt;对于可变帧率的游戏，它可能不会影响速度。</translation>
-    </message>
-    <message>
-        <source>True Color Rendering</source>
-        <translation type="vanished">真彩色渲染</translation>
-    </message>
-    <message>
-        <source>True Color Debanding</source>
-        <translation type="vanished">真彩色去条带</translation>
-    </message>
-    <message>
-        <source>Scaled Dithering</source>
-        <translation type="vanished">缩放色彩抖动</translation>
-    </message>
-    <message>
-        <source>Software Renderer Readbacks</source>
-        <translation type="vanished">软件渲染器回读</translation>
-    </message>
-    <message>
-        <source>Disable Interlacing</source>
-        <translation type="vanished">禁用隔行扫描</translation>
-    </message>
-    <message>
-        <source>Force 4:3 For FMVs</source>
-        <translation type="vanished">FMV强制4:3</translation>
-    </message>
-    <message>
-        <source>FMV Chroma Smoothing</source>
-        <translation type="vanished">FMV色度平滑</translation>
-    </message>
-    <message>
-        <source>Force NTSC Timings</source>
-        <translation type="vanished">强制NTSC计时</translation>
-    </message>
-    <message>
-        <source>Culling Correction</source>
-        <translation type="vanished">剔除校正</translation>
-    </message>
-    <message>
-        <source>CPU Mode (Very Slow)</source>
-        <translation type="vanished">CPU模式 (非常慢)</translation>
-    </message>
-    <message>
-        <source>Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.</source>
-        <translation type="vanished">当显示24位内容 (通常是FMV) 时，切换回4:3显示宽高比。</translation>
-    </message>
-    <message>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation type="vanished">为PGXP数据后投影增加额外的精度。可以改善某些游戏的视觉效果。</translation>
-    </message>
-    <message>
-        <source>Checked</source>
-        <translation type="vanished">勾选</translation>
-    </message>
-    <message>
-        <source>Unchecked</source>
-        <translation type="vanished">不勾选</translation>
-    </message>
-    <message>
-        <source>PGXP (Precision Geometry Transform Pipeline)</source>
-        <translation type="vanished">PGXP (精确几何转换管线)</translation>
-    </message>
-    <message>
-        <source>Attempts to reduce polygon Z-fighting by testing pixels against the depth values from PGXP. Low compatibility, but can work well in some games. Other games may need a threshold adjustment.</source>
-        <translation type="vanished">通过测试像素与PGXP的深度值来尝试减少多边形Z冲突。低兼容性，但在某些游戏中可以工作得很好。其他游戏可能需要调整阈值。</translation>
-    </message>
-    <message>
-        <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs. Only applies to the hardware renderers.</source>
-        <translation type="vanished">平滑24位内容 (通常是FMV) 中颜色过渡之间的块状。仅适用于硬件渲染器。</translation>
-    </message>
-    <message>
-        <source>True Color Rendering (24-bit, disables dithering)</source>
-        <translation type="vanished">真彩色渲染 (24位，禁用色彩抖动)</translation>
-    </message>
-    <message>
-        <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
-        <translation type="vanished">提高多边形剔除的精度，减少几何体中孔的数量。需要启用几何校正。</translation>
-    </message>
-    <message>
-        <source>Force 4:3 For 24-Bit Display (disable widescreen for FMVs)</source>
-        <translation type="vanished">24位显示强制4:3 (FMV禁用宽屏)</translation>
-    </message>
-    <message>
-        <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures. Requires geometry correction enabled.</source>
-        <translation type="vanished">对纹理坐标使用透视校正插值，矫直扭曲的纹理。需要启用几何校正。</translation>
-    </message>
-    <message>
-        <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
-        <translation type="vanished">为显存回读并行运行软件渲染器。在某些系统上，当使用硬件渲染器的图像增强时，这可能会导致更好的性能。</translation>
-    </message>
-    <message>
-        <source>Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. &lt;br&gt;Usually safe to enable, and only supported by the hardware renderers.</source>
-        <translation type="vanished">缩放色彩抖动图案到模拟GPU的分辨率比率。这使得色彩抖动图案在高分辨率下更加不明显。&lt;br&gt;通常可以安全启用，并且仅由硬件渲染器支持。</translation>
-    </message>
-    <message>
-        <source>Geometry Correction</source>
-        <translation type="vanished">几何校正</translation>
-    </message>
-    <message>
-        <source>Uses perspective-correct interpolation for vertex colors, which can improve visuals in some games, but cause rendering errors in others. Requires geometry correction enabled.</source>
-        <translation type="vanished">为顶点颜色使用透视校正插值，这可以改善某些游戏的视觉效果，但在其他游戏中会导致渲染错误。需要启用几何校正。</translation>
-    </message>
-    <message>
-        <source>Software Renderer Readbacks (run in parallel for VRAM-&gt;CPU transfers)</source>
-        <translation type="vanished">软件渲染器回读 (显存到CPU传输并行运行)</translation>
-    </message>
-    <message>
-        <source>Chroma Smoothing For 24-Bit Display (reduce FMV color blockyness)</source>
-        <translation type="vanished">24位显示色度平滑 (减少FMV色块)</translation>
-    </message>
-    <message>
-        <source>Display Enhancements</source>
-        <translation type="vanished">显示增强</translation>
-    </message>
-    <message>
-        <source>Internal Resolution Scale:</source>
-        <translation type="vanished">内置分辨率比率:</translation>
-    </message>
-    <message>
-        <source>Forces the rendering and display of frames to progressive mode. &lt;br&gt;This removes the &quot;combing&quot; effect seen in 480i games by rendering them in 480p. Usually safe to enable.&lt;br&gt; &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation type="vanished">强制以渐进模式渲染和显示帧。&lt;br&gt;这将通过对480p进行渲染的方式来消除480i游戏中出现的“梳理”效果。通常可以安全启用。&lt;br&gt;&lt;b&gt;&lt;u&gt;可能不兼容全部游戏。&lt;/u&gt;&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>Forces the precision of colours output to the console&apos;s framebuffer to use the full 8 bits of precision per channel. This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering, which makes the transition between colours less sharp by applying a pattern around those pixels. Most games are compatible with this option, but there is a number which aren&apos;t and will have broken effects with it enabled. Only applies to the hardware renderers.</source>
-        <translation type="vanished">对于输出到游戏机的帧缓冲，强制其颜色精度的每个通道使用全部8位精度。这会产生更好看的渐变，但代价是使一些颜色看起来略有不同。禁用该选项还会启用色彩抖动，通过在这些像素周围应用图案，使颜色之间的过渡不那么明显。大多数游戏都与此选项兼容，但有一部分游戏不兼容，并且在启用该选项后会产生破坏效果。仅适用于硬件渲染器。</translation>
-    </message>
-    <message>
-        <source>Downsampling:</source>
-        <translation type="vanished">缩减采样:</translation>
-    </message>
-    <message>
-        <source>Texture Filtering</source>
-        <translation type="vanished">纹理过滤</translation>
-    </message>
-</context>
-<context>
     <name>FolderSettingsWidget</name>
-    <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
     <message>
         <location filename="../foldersettingswidget.ui" line="52"/>
         <location filename="../foldersettingswidget.ui" line="92"/>
@@ -6309,10 +5202,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>设置目标模拟速度。不能保证在所有系统上都能达到这个速度。</translation>
     </message>
     <message>
-        <source>Enter the name of the memory card you wish to create.</source>
-        <translation type="vanished">输入您想要创建的记忆卡的名称。</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7201"/>
         <source>How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
         <translation>倒带档的保留数量。数值越高对内存的需求就越大。</translation>
@@ -6346,10 +5235,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7199"/>
         <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
         <translation>当模拟器处于全屏模式时隐藏鼠标指针/光标。</translation>
-    </message>
-    <message>
-        <source>Automatically loads and applies cheats on game start.</source>
-        <translation type="vanished">在游戏开始时自动加载和应用金手指。</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7180"/>
@@ -6450,10 +5335,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../../core/fullscreen_ui.cpp" line="6922"/>
         <source>30% [18 FPS (NTSC) / 15 FPS (PAL)]</source>
         <translation>30% [18 FPS (NTSC) / 15 FPS (PAL)]</translation>
-    </message>
-    <message>
-        <source>Change settings for the emulator.</source>
-        <translation type="vanished">更改模拟器的设置。</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7502"/>
@@ -6606,14 +5487,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>90% [54 FPS (NTSC) / 45 FPS (PAL)]</translation>
     </message>
     <message>
-        <source>${title}: Title of the game.
-${filetitle}: Name component of the game&apos;s filename.
-${serial}: Serial of the game.</source>
-        <translation type="vanished">${标题}: 游戏标题。
-${文件标题}: 含游戏文件名的组合名称。
-${序号}: 游戏序号。</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6992"/>
         <source>Automatic based on window size</source>
         <translation>自动根据窗口尺寸</translation>
@@ -6652,10 +5525,6 @@ ${序号}: 游戏序号。</translation>
         <location filename="../../core/fullscreen_ui.cpp" line="7231"/>
         <source>Load Resume State</source>
         <translation>读取继续档</translation>
-    </message>
-    <message>
-        <source>A memory card with the name &apos;{}&apos; already exists.</source>
-        <translation type="vanished">已经存在一个名称为&apos;{}&apos;的记忆卡。</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7458"/>
@@ -6895,10 +5764,6 @@ Error was:</source>
         <translation>删除层{} ({})。</translation>
     </message>
     <message>
-        <source>Enable VSync</source>
-        <translation type="vanished">启用垂直同步</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7144"/>
         <source>Ensures every frame generated is displayed for optimal pacing. Disable if you are having speed or sound issues.</source>
         <translation>确保生成的每一帧以最佳步调显示。如果您有速度或声音问题，请禁用。</translation>
@@ -6962,10 +5827,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7435"/>
         <source>Shows the host&apos;s CPU usage based on threads in the top-right corner of the display.</source>
         <translation>在显示右上角显示基于线程的本机的CPU使用情况。</translation>
-    </message>
-    <message>
-        <source>Internal Resolution Scale</source>
-        <translation type="vanished">内置分辨率比率</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7169"/>
@@ -7121,10 +5982,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7154"/>
         <source>Failed to delete save state.</source>
         <translation>无法删除存档。</translation>
-    </message>
-    <message>
-        <source>Memory card &apos;{}&apos; created.</source>
-        <translation type="vanished">记忆卡&apos;{}&apos;已创建。</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7289"/>
@@ -7295,10 +6152,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7330"/>
         <source>Region</source>
         <translation>区域</translation>
-    </message>
-    <message>
-        <source>Resume</source>
-        <translation type="vanished">继续</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7329"/>
@@ -7766,10 +6619,6 @@ Error was:</source>
         <translation>在模拟{}游戏机时使用的BIOS。</translation>
     </message>
     <message>
-        <source>Use Serial File Names</source>
-        <translation type="vanished">使用序号文件名</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7113"/>
         <source>DuckStation is a free and open-source simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability.</source>
         <translation>DuckStation是索尼PlayStation(TM) 游戏机的免费开源仿真器/模拟器，专注于可玩性，速度，以及长期可维护性。</translation>
@@ -8065,10 +6914,6 @@ Error was:</source>
         <translation>启用重新编译器内存异常</translation>
     </message>
     <message>
-        <source>Internal Resolution Screenshots</source>
-        <translation type="vanished">内置分辨率屏幕截图</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7129"/>
         <source>Enable Region Check</source>
         <translation>启用区域检查</translation>
@@ -8082,10 +6927,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7376"/>
         <source>Scaling</source>
         <translation>缩放</translation>
-    </message>
-    <message>
-        <source>Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
-        <translation type="vanished">范例: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7393"/>
@@ -8106,10 +6947,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7139"/>
         <source>Enables an additional three controller slots on each port. Not supported in all games.</source>
         <translation>在每个接口上启用额外的3个控制器档位。并非所有游戏都支持。</translation>
-    </message>
-    <message>
-        <source>Creates a new memory card file or folder.</source>
-        <translation type="vanished">创建一个新的记忆卡文件或文件夹。</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7151"/>
@@ -8182,10 +7019,6 @@ Error was:</source>
         <translation>倒带保存频率</translation>
     </message>
     <message>
-        <source>Create Memory Card</source>
-        <translation type="vanished">创建记忆卡</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7442"/>
         <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs. Only applies to the hardware renderers.</source>
         <translation>平滑24位内容 (通常是FMV) 中颜色过渡之间的块状。仅适用于硬件渲染器。</translation>
@@ -8211,10 +7044,6 @@ Error was:</source>
         <translation>快速启动</translation>
     </message>
     <message>
-        <source>Loads a global save state.</source>
-        <translation type="vanished">读取一个全局档。</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7444"/>
         <source>Sort By</source>
         <translation>排序依据</translation>
@@ -8228,10 +7057,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7244"/>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
         <translation>记录BIOS对printf()的调用。并非全部游戏都包含调试消息。</translation>
-    </message>
-    <message>
-        <source>Starts the console from where it was before it was last closed.</source>
-        <translation type="vanished">从上次关闭游戏机之前的位置启动游戏机。</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7208"/>
@@ -8327,10 +7152,6 @@ Error was:</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7166"/>
         <source>Force NTSC Timings</source>
         <translation>强制NTSC计时</translation>
-    </message>
-    <message>
-        <source>Issue Tracker</source>
-        <translation type="vanished">问题追踪器</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7189"/>
@@ -8478,10 +7299,6 @@ Error was:</source>
         <translation>伸缩模式</translation>
     </message>
     <message>
-        <source>Failed to create memory card &apos;{}&apos;.</source>
-        <translation type="vanished">无法创建记忆卡&apos;{}&apos;。</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7124"/>
         <source>Enable PGXP Vertex Cache</source>
         <translation>启用PGXP顶点缓存</translation>
@@ -8512,10 +7329,6 @@ Error was:</source>
         <translation>游戏区域复制到剪贴板。</translation>
     </message>
     <message>
-        <source>Exits the program.</source>
-        <translation type="vanished">退出程序。</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6906"/>
         <source>125% [75 FPS (NTSC) / 62 FPS (PAL)]</source>
         <translation>125% [75 FPS (NTSC) / 62 FPS (PAL)]</translation>
@@ -8541,17 +7354,9 @@ Error was:</source>
         <translation>当启用时，DuckStation将列出非官方集的成就。这些成就不会被RetroAchievements追踪。</translation>
     </message>
     <message>
-        <source>In the form below, specify the URLs to download covers from, with one template URL per line. The following variables are available:</source>
-        <translation type="vanished">在下面的表单中，指定要下载封面的URL，每行一个模板URL。可用的变量如下:</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7350"/>
         <source>Restores the state of the system prior to the last state loaded.</source>
         <translation>将系统进度恢复到读取末次存档之前。</translation>
-    </message>
-    <message>
-        <source>Start Download</source>
-        <translation type="vanished">开始下载</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7181"/>
@@ -8854,10 +7659,6 @@ Error was:</source>
         <translation>CD-ROM模拟</translation>
     </message>
     <message>
-        <source>Automatically Load Cheats</source>
-        <translation type="vanished">自动加载金手指</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7477"/>
         <source>This game has no achievements.</source>
         <translation>这个游戏没有成就。</translation>
@@ -9092,10 +7893,6 @@ Do you want to load this save and continue?</source>
         <translation>使用位块传输交换链</translation>
     </message>
     <message>
-        <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
-        <translation type="vanished">DuckStation可为当前没有封面集的游戏去自动下载封面。我们不托管任何封面图片，用户必须提供他们自己的图片来源。</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6981"/>
         <source>Apply Image Patches</source>
         <translation>应用镜像补丁</translation>
@@ -9104,10 +7901,6 @@ Do you want to load this save and continue?</source>
         <location filename="../../core/fullscreen_ui.cpp" line="7213"/>
         <source>Integration</source>
         <translation>整合</translation>
-    </message>
-    <message>
-        <source>Saves screenshots at internal render resolution and without postprocessing.</source>
-        <translation type="vanished">使用不带后处理的内置渲染分辨率来保存屏幕截图。</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6926"/>
@@ -9230,10 +8023,6 @@ Do you want to load this save and continue?</source>
         <translation>无法删除{}。</translation>
     </message>
     <message>
-        <source>Contributor List: https://github.com/stenzek/duckstation/blob/master/CONTRIBUTORS.md</source>
-        <translation type="vanished">贡献者列表: https://github.com/stenzek/duckstation/blob/master/CONTRIBUTORS.md</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7149"/>
         <source>Exit And Save State</source>
         <translation>退出同时存档</translation>
@@ -9267,12 +8056,12 @@ Do you want to load this save and continue?</source>
 <context>
     <name>GPU</name>
     <message>
-        <location filename="../../core/gpu.cpp" line="2301"/>
+        <location filename="../../core/gpu.cpp" line="2288"/>
         <source>Saving screenshot to &apos;{}&apos;.</source>
         <translation>保存屏幕截图到&apos;{}&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu.cpp" line="2353"/>
+        <location filename="../../core/gpu.cpp" line="2340"/>
         <source>Failed to save screenshot to &apos;{}&apos;.</source>
         <translation>无法保存屏幕截图到&apos;{}&apos;。</translation>
     </message>
@@ -9334,22 +8123,10 @@ Do you want to load this save and continue?</source>
 <context>
     <name>GPURenderer</name>
     <message>
-        <source>Hardware (Vulkan)</source>
-        <translation type="vanished">硬件 (Vulkan)</translation>
-    </message>
-    <message>
         <location filename="../qthost.cpp" line="1741"/>
         <location filename="../../core/settings.cpp" line="1029"/>
         <source>Software</source>
         <translation>软件</translation>
-    </message>
-    <message>
-        <source>Hardware (D3D11)</source>
-        <translation type="vanished">硬件 (D3D11)</translation>
-    </message>
-    <message>
-        <source>Hardware (D3D12)</source>
-        <translation type="vanished">硬件 (D3D12)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1016"/>
@@ -9380,97 +8157,6 @@ Do you want to load this save and continue?</source>
         <location filename="../../core/settings.cpp" line="1027"/>
         <source>OpenGL</source>
         <translation>OpenGL</translation>
-    </message>
-    <message>
-        <source>Hardware (Metal)</source>
-        <translation type="vanished">硬件 (Metal)</translation>
-    </message>
-    <message>
-        <source>Hardware (OpenGL)</source>
-        <translation type="vanished">硬件 (OpenGL)</translation>
-    </message>
-</context>
-<context>
-    <name>GPUSettingsWidget</name>
-    <message>
-        <source>1x</source>
-        <translation type="vanished">1x</translation>
-    </message>
-    <message>
-        <source>2x</source>
-        <translation type="vanished">2x</translation>
-    </message>
-    <message>
-        <source>4x</source>
-        <translation type="vanished">4x</translation>
-    </message>
-    <message>
-        <source>7x</source>
-        <translation type="vanished">7x</translation>
-    </message>
-    <message>
-        <source>8x</source>
-        <translation type="vanished">8x</translation>
-    </message>
-    <message>
-        <source>10x</source>
-        <translation type="vanished">10x</translation>
-    </message>
-    <message>
-        <source>11x</source>
-        <translation type="vanished">11x</translation>
-    </message>
-    <message>
-        <source>12x</source>
-        <translation type="vanished">12x</translation>
-    </message>
-    <message>
-        <source>13x</source>
-        <translation type="vanished">13x</translation>
-    </message>
-    <message>
-        <source>14x</source>
-        <translation type="vanished">14x</translation>
-    </message>
-    <message>
-        <source>15x</source>
-        <translation type="vanished">15x</translation>
-    </message>
-    <message>
-        <source>16x</source>
-        <translation type="vanished">16x</translation>
-    </message>
-    <message>
-        <source>Disabled</source>
-        <translation type="vanished">禁用</translation>
-    </message>
-    <message>
-        <source>Automatic based on window size</source>
-        <translation type="vanished">自动根据窗口尺寸</translation>
-    </message>
-    <message>
-        <source>%1x MSAA</source>
-        <translation type="vanished">%1x MSAA</translation>
-    </message>
-    <message>
-        <source>%1x SSAA</source>
-        <translation type="vanished">%1x SSAA</translation>
-    </message>
-    <message>
-        <source>6x (for 1440p)</source>
-        <translation type="vanished">6x (适合1440p)</translation>
-    </message>
-    <message>
-        <source>5x (for 1080p)</source>
-        <translation type="vanished">5x (适合1080p)</translation>
-    </message>
-    <message>
-        <source>9x (for 4K)</source>
-        <translation type="vanished">9x (适合4K)</translation>
-    </message>
-    <message>
-        <source>3x (for 720p)</source>
-        <translation type="vanished">3x (适合720p)</translation>
     </message>
 </context>
 <context>
@@ -9580,7 +8266,7 @@ Do you want to load this save and continue?</source>
 <context>
     <name>GS</name>
     <message>
-        <location filename="../../core/gpu.cpp" line="2352"/>
+        <location filename="../../core/gpu.cpp" line="2339"/>
         <source>Saved screenshot to &apos;{}&apos;.</source>
         <translation>保存屏幕截图到&apos;{}&apos;。</translation>
     </message>
@@ -9796,10 +8482,6 @@ Do you want to load this save and continue?</source>
         <translation>添加</translation>
     </message>
     <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
         <location filename="../gamelistsettingswidget.cpp" line="109"/>
         <source>Open Directory...</source>
         <translation>打开目录…</translation>
@@ -9858,10 +8540,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 </context>
 <context>
     <name>GameListWidget</name>
-    <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
     <message>
         <location filename="../gamelistwidget.ui" line="80"/>
         <source>Game Grid</source>
@@ -10016,10 +8694,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>序号匹配错误: %1 vs %2</translation>
     </message>
     <message>
-        <source>Serial Mismatch: %1 vs %2%3</source>
-        <translation type="vanished">序号匹配错误: %1 vs %2%3</translation>
-    </message>
-    <message>
         <location filename="../gamesummarywidget.ui" line="121"/>
         <source>Region:</source>
         <translation>区域:</translation>
@@ -10101,177 +8775,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../gamesummarywidget.ui" line="163"/>
         <source>Release Info:</source>
         <translation>发行信息:</translation>
-    </message>
-</context>
-<context>
-    <name>GeneralSettingsWidget</name>
-    <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
-    </message>
-    <message>
-        <source>Check for Updates...</source>
-        <translation type="vanished">检查更新…</translation>
-    </message>
-    <message>
-        <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
-        <translation type="vanished">当模拟器处于全屏模式时隐藏鼠标指针/光标。</translation>
-    </message>
-    <message>
-        <source>Automatically loads and applies cheats on game start.</source>
-        <translation type="vanished">在游戏开始时自动加载和应用金手指。</translation>
-    </message>
-    <message>
-        <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
-        <translation type="vanished">在最小化窗口或切换为其他应用程序时暂停模拟器，在切换回模拟器时取消暂停。</translation>
-    </message>
-    <message>
-        <source>Disable Window Resizing</source>
-        <translation type="vanished">禁用窗口大小调整</translation>
-    </message>
-    <message>
-        <source>Double-Click Toggles Fullscreen</source>
-        <translation type="vanished">双击切换全屏</translation>
-    </message>
-    <message>
-        <source>Load Devices From Save States</source>
-        <translation type="vanished">从存档载入设备</translation>
-    </message>
-    <message>
-        <source>Shows the game you are currently playing as part of your profile in Discord.</source>
-        <translation type="vanished">显示您当前正在玩的游戏并将它们作为您在Discord的个人资料的一部分。</translation>
-    </message>
-    <message>
-        <source>Automatically switches to fullscreen mode when a game is started.</source>
-        <translation type="vanished">当游戏开始时自动切换为全屏模式。</translation>
-    </message>
-    <message>
-        <source>Current Version:</source>
-        <translation type="vanished">当前版本:</translation>
-    </message>
-    <message>
-        <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
-        <translation type="vanished">禁止激活屏幕保护程序，同时防止本机在模拟运行时休眠。</translation>
-    </message>
-    <message>
-        <source>Enable Discord Presence</source>
-        <translation type="vanished">启用Discord-Presence</translation>
-    </message>
-    <message>
-        <source>Hide Main Window When Running</source>
-        <translation type="vanished">运行时隐藏主窗口</translation>
-    </message>
-    <message>
-        <source>Update Channel:</source>
-        <translation type="vanished">更新频道:</translation>
-    </message>
-    <message>
-        <source>When enabled, per-game settings will be applied, and incompatible enhancements will be disabled. You should leave this option enabled except when testing enhancements with incompatible games.</source>
-        <translation type="vanished">启用后，每个游戏将会应用各自独立的设置，并且不兼容的增强将被禁用。您应当保持此选项处于启用状态，除非要用不兼容游戏去测试增强功能。</translation>
-    </message>
-    <message>
-        <source>Compress Save States</source>
-        <translation type="vanished">压缩存档</translation>
-    </message>
-    <message>
-        <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
-        <translation type="vanished">在关闭或退出模拟器时自动存档。然后下次您可以直接从离开的地方继续。</translation>
-    </message>
-    <message>
-        <source>%1 (%2)</source>
-        <translation type="vanished">%1 (%2)</translation>
-    </message>
-    <message>
-        <source>Pause On Start</source>
-        <translation type="vanished">开始时暂停</translation>
-    </message>
-    <message>
-        <source>Pause On Focus Loss</source>
-        <translation type="vanished">失去焦点时暂停</translation>
-    </message>
-    <message>
-        <source>Checked</source>
-        <translation type="vanished">勾选</translation>
-    </message>
-    <message>
-        <source>Unchecked</source>
-        <translation type="vanished">不勾选</translation>
-    </message>
-    <message>
-        <source>Pauses the emulator when a game is started.</source>
-        <translation type="vanished">在游戏开始时暂停模拟器。</translation>
-    </message>
-    <message>
-        <source>Enable Automatic Update Check</source>
-        <translation type="vanished">开启自动更新检查</translation>
-    </message>
-    <message>
-        <source>Automatically checks for updates to the program on startup. Updates can be deferred until later or skipped entirely.</source>
-        <translation type="vanished">启动时自动检查程序的更新，可以选择稍后更新或完全跳过。</translation>
-    </message>
-    <message>
-        <source>Apply Per-Game Settings</source>
-        <translation type="vanished">应用每个游戏各自设置</translation>
-    </message>
-    <message>
-        <source>Start Fullscreen</source>
-        <translation type="vanished">全屏启动</translation>
-    </message>
-    <message>
-        <source>Save State On Exit</source>
-        <translation type="vanished">退出时存档</translation>
-    </message>
-    <message>
-        <source>Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.</source>
-        <translation type="vanished">当按下热键来关闭模拟器/游戏时，确定是否显示确认提示。</translation>
-    </message>
-    <message>
-        <source>When enabled, memory cards and controllers will be overwritten when save states are loaded. This can result in lost saves, and controller type mismatches. For deterministic save states, enable this option, otherwise leave disabled.</source>
-        <translation type="vanished">启用后，记忆卡和控制器将在载入存档时被覆盖。这可能导致保存丢失，以及控制器类型不匹配。如果您对要载入的存档很有把握，可以启用此选项，否则请保持禁用状态。</translation>
-    </message>
-    <message>
-        <source>Renders the display of the simulated console to the main window of the application, over the game list. If checked, the display will render in a separate window.</source>
-        <translation type="vanished">将模拟游戏机的显示渲染到程序主窗口，置于游戏列表上。如果选中此项，将会渲染到分离窗口来单独显示。</translation>
-    </message>
-    <message>
-        <source>Confirm Power Off</source>
-        <translation type="vanished">确认关机</translation>
-    </message>
-    <message>
-        <source>Automatically Load Cheats</source>
-        <translation type="vanished">自动加载金手指</translation>
-    </message>
-    <message>
-        <source>Create Save State Backups</source>
-        <translation type="vanished">创建存档备份</translation>
-    </message>
-    <message>
-        <source>Hide Cursor In Fullscreen</source>
-        <translation type="vanished">全屏时隐藏光标</translation>
-    </message>
-    <message>
-        <source>Render To Separate Window</source>
-        <translation type="vanished">渲染到分离窗口</translation>
-    </message>
-    <message>
-        <source>Inhibit Screensaver</source>
-        <translation type="vanished">禁用屏幕保护程序</translation>
-    </message>
-    <message>
-        <source>Behaviour</source>
-        <translation type="vanished">行为</translation>
-    </message>
-    <message>
-        <source>Automatic Updater</source>
-        <translation type="vanished">自动更新程序</translation>
-    </message>
-    <message>
-        <source>Game Display</source>
-        <translation type="vanished">游戏显示</translation>
-    </message>
-    <message>
-        <source>Save State On Shutdown</source>
-        <translation type="vanished">关机时存档</translation>
     </message>
 </context>
 <context>
@@ -11118,10 +9621,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../graphicssettingswidget.cpp" line="345"/>
         <source>Presents frames on a background thread when fast forwarding or vsync is disabled. This can measurably improve performance in the Vulkan renderer.</source>
         <translation>当禁用了快进或垂直同步时，在后台线程上呈现帧。这可以显著提高Vulkan渲染器的性能。</translation>
-    </message>
-    <message>
-        <source>Prefers stretching the display vertically instead of horizontally, wheen applying the display aspect ratio.</source>
-        <translation type="vanished">在应用显示宽高比时，优先选择垂直拉伸显示，而不是水平拉伸显示。</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="349"/>
@@ -12741,10 +11240,6 @@ Do you want to load this state, or start from a fresh boot?</source>
         <translation>游戏列表</translation>
     </message>
     <message>
-        <source>&amp;Enhancements</source>
-        <translation type="vanished">增强(&amp;E)</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.cpp" line="2803"/>
         <source>Save State For Resume</source>
         <translation>存档以便下次继续</translation>
@@ -13242,10 +11737,6 @@ Are you sure you want to continue?</source>
         <translation>DuckStation</translation>
     </message>
     <message>
-        <source>&amp;Display</source>
-        <translation type="vanished">显示(&amp;D)</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.ui" line="679"/>
         <source>Force NTSC Timings</source>
         <translation>强制NTSC计时</translation>
@@ -13413,10 +11904,6 @@ Are you sure you want to continue?</source>
         <translation>选择存档文件</translation>
     </message>
     <message>
-        <source>General</source>
-        <translation type="vanished">常规</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.ui" line="468"/>
         <source>&amp;Discord Server...</source>
         <translation>Discord服务器(&amp;D)…</translation>
@@ -13490,10 +11977,6 @@ The saves will not be recoverable.</source>
         <translation>目标文件</translation>
     </message>
     <message>
-        <source>Do not show again</source>
-        <translation type="vanished">不再显示</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.ui" line="412"/>
         <source>&amp;Hotkeys</source>
         <translation>热键(&amp;H)</translation>
@@ -13508,10 +11991,6 @@ The saves will not be recoverable.</source>
         <location filename="../mainwindow.ui" line="905"/>
         <source>Open Data Directory...</source>
         <translation>打开用户数据目录…</translation>
-    </message>
-    <message>
-        <source>C&amp;heat Manager</source>
-        <translation type="vanished">金手指管理器(&amp;H)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="697"/>
@@ -13741,14 +12220,6 @@ The saves will not be recoverable.</source>
 %2</translation>
     </message>
     <message>
-        <source>Failed to read file %1</source>
-        <translation type="vanished">无法读取文件%1</translation>
-    </message>
-    <message>
-        <source>Failed to write file %1</source>
-        <translation type="vanished">无法写入文件%1</translation>
-    </message>
-    <message>
         <location filename="../memorycardeditorwindow.cpp" line="463"/>
         <source>Failed to delete file %1</source>
         <translation>无法删除文件%1</translation>
@@ -13764,17 +12235,9 @@ The saves will not be recoverable.</source>
         <translation>选择单个保存文件</translation>
     </message>
     <message>
-        <source>Failed to export save file %1. Check the log for more details.</source>
-        <translation type="vanished">无法导出保存文件%1。查看日志获取更多细节。</translation>
-    </message>
-    <message>
         <location filename="../memorycardeditorwindow.cpp" line="524"/>
         <source>Select Import File</source>
         <translation>选择导入文件</translation>
-    </message>
-    <message>
-        <source>Failed to import memory card. The log may contain more information.</source>
-        <translation type="vanished">无法导入记忆卡。日志可能包含更多信息。</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="552"/>
@@ -13786,14 +12249,6 @@ The saves will not be recoverable.</source>
         <source>Formatting the memory card will destroy all saves, and they will not be recoverable. The memory card which will be formatted is located at &apos;%1&apos;.</source>
         <translation>格式化记忆卡会破坏全部保存，而且它们是无法恢复的。将被格式化的记忆卡位于&apos;%1&apos;。</translation>
     </message>
-    <message>
-        <source>Select Import Save File</source>
-        <translation type="vanished">选择导入保存文件</translation>
-    </message>
-    <message>
-        <source>Failed to import save. Check if there is enough room on the memory card or if an existing save with the same name already exists.</source>
-        <translation type="vanished">无法导入保存。检查记忆卡上是否有足够的空间，或者是否已经存在同名的保存。</translation>
-    </message>
 </context>
 <context>
     <name>MemoryCardSettingsWidget</name>
@@ -13802,10 +12257,6 @@ The saves will not be recoverable.</source>
         <location filename="../memorycardsettingswidget.cpp" line="139"/>
         <source>Reset</source>
         <translation>重置</translation>
-    </message>
-    <message>
-        <source>Open Directory...</source>
-        <translation type="vanished">打开目录…</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="152"/>
@@ -13863,10 +12314,6 @@ The saves will not be recoverable.</source>
         <location filename="../memorycardsettingswidget.cpp" line="144"/>
         <source>Shared Memory Card Path:</source>
         <translation>共用记忆卡路径:</translation>
-    </message>
-    <message>
-        <source>If one of the &quot;separate card per game&quot; memory card types is chosen, these memory cards will be saved to the memory cards directory.</source>
-        <translation type="vanished">如果在记忆卡类型中选择了“每个游戏独立记忆卡”中的其中之一，这些记忆卡将被保存到记忆卡目录。</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="85"/>
@@ -14463,18 +12910,6 @@ The saves will not be recoverable.</source>
         <translation>设置左触发器缩放。</translation>
     </message>
     <message>
-        <source>Sets deadzone size for steering axis.</source>
-        <translation type="vanished">设置转向轴死区大小。</translation>
-    </message>
-    <message>
-        <source>Sets the steering axis scaling factor.</source>
-        <translation type="vanished">设置转向轴缩放系数。</translation>
-    </message>
-    <message>
-        <source>Steering Axis Sensitivity</source>
-        <translation type="vanished">转向轴灵敏度</translation>
-    </message>
-    <message>
         <location filename="../../core/negcon.cpp" line="294"/>
         <source>Steering Axis Deadzone</source>
         <translation>转向轴死区</translation>
@@ -14488,12 +12923,12 @@ The saves will not be recoverable.</source>
         <translation>系统重启。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1201"/>
+        <location filename="../../core/system.cpp" line="1202"/>
         <source>Loading state from &apos;%s&apos; failed. Resetting.</source>
         <translation>从&apos;%s&apos;读档失败，重启中。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1245"/>
+        <location filename="../../core/system.cpp" line="1246"/>
         <source>Saving state to &apos;%s&apos; failed.</source>
         <translation>存档到&apos;%s&apos;失败。</translation>
     </message>
@@ -14518,38 +12953,34 @@ The saves will not be recoverable.</source>
         <translation>由于启用了预运行，倒带被禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3653"/>
+        <location filename="../../core/system.cpp" line="3656"/>
         <source>Recompiler options changed, flushing all blocks.</source>
         <translation>重新编译器选项已更改，刷新全部区块。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4564"/>
+        <location filename="../../core/system.cpp" line="4568"/>
         <source>{} cheats are enabled. This may result in instability.</source>
         <translation>{}金手指启用。这可能会导致不稳定。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4614"/>
+        <location filename="../../core/system.cpp" line="4618"/>
         <source>Saved {} cheats to &apos;{}&apos;.</source>
         <translation>保存{}金手指到&apos;{}&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4629"/>
+        <location filename="../../core/system.cpp" line="4633"/>
         <source>Deleted cheat list &apos;{}&apos;.</source>
         <translation>删除金手指列表&apos;{}&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4725"/>
+        <location filename="../../core/system.cpp" line="4729"/>
         <source>Widescreen hack is now enabled, and aspect ratio is set to {}.</source>
         <translation>宽屏调整现已启用，宽高比设置为{}。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4733"/>
+        <location filename="../../core/system.cpp" line="4737"/>
         <source>Widescreen hack is now disabled, and aspect ratio is set to {}.</source>
         <translation>宽屏调整现已禁用，宽高比设置为{}。</translation>
-    </message>
-    <message>
-        <source>Switching to %s renderer...</source>
-        <translation type="vanished">切换为%s渲染器...</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="274"/>
@@ -14587,12 +13018,12 @@ The saves will not be recoverable.</source>
         <translation>纹理替换重新加载。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4267"/>
+        <location filename="../../core/system.cpp" line="4270"/>
         <source>Failed to save undo load state.</source>
         <translation>无法保存撤消的读档。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2751"/>
+        <location filename="../../core/system.cpp" line="2754"/>
         <source>Rewinding is not enabled.</source>
         <translation>倒带未启用。</translation>
     </message>
@@ -14651,97 +13082,85 @@ The saves will not be recoverable.</source>
         <translation>CD音轨解除静音。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4328"/>
+        <location filename="../../core/system.cpp" line="4331"/>
         <source>Started dumping audio to &apos;%s&apos;.</source>
         <translation>开始转储音频到&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4333"/>
+        <location filename="../../core/system.cpp" line="4336"/>
         <source>Failed to start dumping audio to &apos;%s&apos;.</source>
         <translation>无法开始转储音频到&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4343"/>
+        <location filename="../../core/system.cpp" line="4346"/>
         <source>Stopped dumping audio.</source>
         <translation>停止转储音频。</translation>
     </message>
     <message>
-        <source>Screenshot file &apos;%s&apos; already exists.</source>
-        <translation type="vanished">已经存在屏幕截图文件&apos;%s&apos;。</translation>
-    </message>
-    <message>
-        <source>Failed to save screenshot to &apos;%s&apos;</source>
-        <translation type="vanished">无法保存屏幕截图到&apos;%s&apos;。</translation>
-    </message>
-    <message>
-        <source>Screenshot saved to &apos;%s&apos;.</source>
-        <translation type="vanished">屏幕截图已保存到&apos;%s&apos;。</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4557"/>
+        <location filename="../../core/system.cpp" line="4560"/>
         <source>Failed to load cheats from &apos;%s&apos;.</source>
         <translation>无法从&apos;%s&apos;加载金手指。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3208"/>
+        <location filename="../../core/system.cpp" line="3211"/>
         <source>Swapped memory card ports. Both ports have a memory card.</source>
         <translation>交换记忆卡接口。两个接口都有记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3214"/>
+        <location filename="../../core/system.cpp" line="3217"/>
         <source>Swapped memory card ports. Port 2 has a memory card, Port 1 is empty.</source>
         <translation>交换记忆卡接口。接口2有一个记忆卡，接口1是空的。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3219"/>
+        <location filename="../../core/system.cpp" line="3222"/>
         <source>Swapped memory card ports. Port 1 has a memory card, Port 2 is empty.</source>
         <translation>交换记忆卡接口。接口1有一个记忆卡，接口2是空的。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3223"/>
+        <location filename="../../core/system.cpp" line="3226"/>
         <source>Swapped memory card ports. Neither port has a memory card.</source>
         <translation>交换记忆卡接口。两个接口都没有记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4671"/>
+        <location filename="../../core/system.cpp" line="4675"/>
         <source>Cheat &apos;%s&apos; enabled.</source>
         <translation>金手指&apos;%s&apos;启用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4675"/>
+        <location filename="../../core/system.cpp" line="4679"/>
         <source>Cheat &apos;%s&apos; disabled.</source>
         <translation>金手指&apos;%s&apos;禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4598"/>
+        <location filename="../../core/system.cpp" line="4602"/>
         <source>Failed to save cheat list to &apos;%s&apos;</source>
         <translation>无法保存金手指列表到&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2321"/>
+        <location filename="../../core/system.cpp" line="2323"/>
         <source>Failed to open CD image from save state &apos;{}&apos;: {}.
 Using existing image &apos;{}&apos;, this may result in instability.</source>
         <translation>无法从存档&apos;{}&apos;: {}打开光盘镜像。
 使用现有镜像&apos;{}&apos;，这可能会导致不稳定。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2331"/>
-        <location filename="../../core/system.cpp" line="2350"/>
+        <location filename="../../core/system.cpp" line="2333"/>
+        <location filename="../../core/system.cpp" line="2352"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2801"/>
+        <location filename="../../core/system.cpp" line="2804"/>
         <source>No cheats are loaded.</source>
         <translation>没有加载的金手指。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4690"/>
+        <location filename="../../core/system.cpp" line="4694"/>
         <source>Applied cheat &apos;%s&apos;.</source>
         <translation>应用金手指&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4694"/>
+        <location filename="../../core/system.cpp" line="4698"/>
         <source>Cheat &apos;%s&apos; is already enabled.</source>
         <translation>金手指&apos;%s&apos;已经启用。</translation>
     </message>
@@ -14876,22 +13295,6 @@ Please configure a supported controller from the list above.</source>
 请从以上列表中配置支持的控制器。</translation>
     </message>
     <message>
-        <source>Memory card %u from save state does match current card data. Simulating replugging.</source>
-        <translation type="vanished">记忆卡%u从存档匹配了当前卡数据。模拟重插。</translation>
-    </message>
-    <message>
-        <source>Memory card %u present in save state but not in system. Ignoring card.</source>
-        <translation type="vanished">记忆卡%u当前接入存档中，没有接入系统。忽略记忆卡。</translation>
-    </message>
-    <message>
-        <source>Memory card %u present in system but not in save state. Replugging card.</source>
-        <translation type="vanished">记忆卡%u当前接入系统中，没有接入存档。重插记忆卡。</translation>
-    </message>
-    <message>
-        <source>Memory card %u present in save state but not in system. Creating temporary card.</source>
-        <translation type="vanished">记忆卡%u当前接入存档中，没有接入系统。创建临时记忆卡。</translation>
-    </message>
-    <message>
         <location filename="../../core/pad.cpp" line="203"/>
         <source>Save state contains controller type %s in port %u, but %s is used. Switching.</source>
         <translation>存档包含控制器类型%s接入接口%u，但%s已被占用。切换。</translation>
@@ -14927,10 +13330,6 @@ Please configure a supported controller from the list above.</source>
         <translation>记忆卡{}当前接入系统中，没有接入存档。重插记忆卡。</translation>
     </message>
     <message>
-        <source>Memory card %u present in system but not in save state. Removing card.</source>
-        <translation type="vanished">记忆卡%u当前接入系统中，没有接入存档。删除记忆卡。</translation>
-    </message>
-    <message>
         <location filename="../../core/cdrom.cpp" line="816"/>
         <source>CD image preloading not available for multi-disc image &apos;%s&apos;</source>
         <translation>光盘镜像预加载不适用于多光盘镜像&apos;%s&apos;。</translation>
@@ -14941,88 +13340,84 @@ Please configure a supported controller from the list above.</source>
         <translation>预缓存光盘镜像失败，这可能导致不稳定。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1193"/>
+        <location filename="../../core/system.cpp" line="1194"/>
         <source>Loading state from &apos;{}&apos;...</source>
         <translation>从&apos;{}&apos;读档。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1244"/>
+        <location filename="../../core/system.cpp" line="1245"/>
         <source>Save State</source>
         <translation>存档</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1253"/>
+        <location filename="../../core/system.cpp" line="1254"/>
         <source>State saved to &apos;{}&apos;.</source>
         <translation>存档到&apos;{}&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2044"/>
+        <location filename="../../core/system.cpp" line="2045"/>
         <source>Failed to initialize %s renderer, falling back to software renderer.</source>
         <translation>无法初始化%s渲染器，退回到软件渲染器。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2083"/>
+        <location filename="../../core/system.cpp" line="2084"/>
         <source>This save state was created with a different BIOS version or patch options. This may cause stability issues.</source>
         <translation>此存档是由不同的BIOS版本或补丁选项所创建的。这可能会导致稳定性问题。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2155"/>
+        <location filename="../../core/system.cpp" line="2156"/>
         <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
         <translation>警告: CPU超频 (%u%%) 不同于存档 (%u%%)。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2809"/>
+        <location filename="../../core/system.cpp" line="2812"/>
         <source>{} cheats are now active.</source>
         <translation>{}金手指现已处于活动状态。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2810"/>
+        <location filename="../../core/system.cpp" line="2813"/>
         <source>{} cheats are now inactive.</source>
         <translation>{}金手指现已处于未活动状态。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3312"/>
+        <location filename="../../core/system.cpp" line="3315"/>
         <source>Failed to open disc image &apos;{}&apos;: {}.</source>
         <translation>无法打开光盘镜像&apos;{}&apos;: {}。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3326"/>
+        <location filename="../../core/system.cpp" line="3329"/>
         <source>Inserted disc &apos;{}&apos; ({}).</source>
         <translation>插入光盘&apos;{}&apos; ({})。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3584"/>
+        <location filename="../../core/system.cpp" line="3587"/>
         <source>Switching to {}{} GPU renderer.</source>
         <translation>切换为{}{}GPU渲染器。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3610"/>
+        <location filename="../../core/system.cpp" line="3613"/>
         <source>Switching to {} audio backend.</source>
         <translation>切换为{}音频后端。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3634"/>
+        <location filename="../../core/system.cpp" line="3637"/>
         <source>Switching to {} CPU execution mode.</source>
         <translation>切换为{}CPU执行模式。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4748"/>
+        <location filename="../../core/system.cpp" line="4752"/>
         <source>Switching to {} renderer...</source>
         <translation>切换为{}渲染器…</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3519"/>
+        <location filename="../../core/system.cpp" line="3522"/>
         <source>Failed to switch to subimage %u in &apos;%s&apos;: %s.</source>
         <translation>无法切换为子镜像%u在&apos;%s&apos;: %s。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3527"/>
+        <location filename="../../core/system.cpp" line="3530"/>
         <source>Switched to sub-image %s (%u) in &apos;%s&apos;.</source>
         <translation>切换为子镜像%s (%u) 在&apos;%s&apos;。</translation>
-    </message>
-    <message>
-        <source>Memory card at &apos;%s&apos; could not be read, formatting.</source>
-        <translation type="vanished">无法读取位于&apos;%s&apos;的记忆卡，正在格式化。</translation>
     </message>
     <message>
         <location filename="../../core/memory_card.cpp" line="288"/>
@@ -15106,10 +13501,6 @@ Please configure a supported controller from the list above.</source>
         <location filename="../postprocessingsettingswidget.ui" line="94"/>
         <source>Add</source>
         <translation>添加</translation>
-    </message>
-    <message>
-        <source>Form</source>
-        <translation type="vanished">Form</translation>
     </message>
     <message>
         <location filename="../postprocessingsettingswidget.ui" line="134"/>
@@ -15491,10 +13882,6 @@ Do you want to create this directory?</source>
 <context>
     <name>Settings</name>
     <message>
-        <source>Automatic (Default)</source>
-        <translation type="vanished">自动 (默认)</translation>
-    </message>
-    <message>
         <location filename="../../core/settings.cpp" line="1462"/>
         <source>Disabled</source>
         <translation>禁用</translation>
@@ -15621,14 +14008,6 @@ Do you want to create this directory?</source>
         <translation>&lt;strong&gt;概述&lt;/strong&gt;&lt;hr&gt;此页面显示所选游戏的相关信息，并允许您验证您的光盘是否被正确转储。</translation>
     </message>
     <message>
-        <source>General</source>
-        <translation type="vanished">常规</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;General Settings&lt;/strong&gt;&lt;hr&gt;These options control how the emulator looks and behaves.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;常规设置&lt;/strong&gt;&lt;hr&gt;这些选项控制模拟器的外观和行为。&lt;br&gt;&lt;br&gt;将鼠标移至选项上可获取更多信息。</translation>
-    </message>
-    <message>
         <location filename="../settingswindow.cpp" line="90"/>
         <source>Game List</source>
         <translation>游戏列表</translation>
@@ -15644,30 +14023,14 @@ Do you want to create this directory?</source>
         <translation>BIOS</translation>
     </message>
     <message>
-        <source>&lt;strong&gt;BIOS Settings&lt;/strong&gt;&lt;hr&gt;These options control which BIOS is used and how it will be patched.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;BIOS设置&lt;/strong&gt;&lt;hr&gt;这些选项控制使用哪个BIOS以及如何打补丁。&lt;br&gt;&lt;br&gt;将鼠标移至选项上可获取更多信息。</translation>
-    </message>
-    <message>
         <location filename="../settingswindow.cpp" line="102"/>
         <source>Console</source>
         <translation>游戏机</translation>
     </message>
     <message>
-        <source>&lt;strong&gt;Console Settings&lt;/strong&gt;&lt;hr&gt;These options determine the configuration of the simulated console.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;游戏机设置&lt;/strong&gt;&lt;hr&gt;这些选项决定了模拟游戏机的配置。&lt;br&gt;&lt;br&gt;将鼠标移至选项上可获取更多信息。</translation>
-    </message>
-    <message>
         <location filename="../settingswindow.cpp" line="107"/>
         <source>Emulation</source>
         <translation>模拟</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Emulation Settings&lt;/strong&gt;&lt;hr&gt;These options determine the speed and runahead behavior of the system.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;模拟设置&lt;/strong&gt;&lt;hr&gt;这些选项决定了系统的速度和预运行行为。&lt;br&gt;&lt;br&gt;将鼠标移至选项上可获取更多信息。</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;General Settings&lt;/strong&gt;&lt;hr&gt;These options control how the emulator looks and behaves.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation type="vanished">&lt;strong&gt;常规设置&lt;/strong&gt;&lt;hr&gt;这些选项控制模拟器的外观和行为。&lt;br&gt;&lt;br&gt;将鼠标移至选项上可获取更多信息，Shift键+滚轮可滚动该面板。</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="82"/>
@@ -15720,33 +14083,9 @@ Do you want to create this directory?</source>
         <translation>&lt;strong&gt;成就设置&lt;/strong&gt;&lt;hr&gt;DuckStation使用RetroAchievements作为成就数据库并以此来追踪进展。要使用成就，请注册一个账户于retroachievements.org。要查看游戏中的成就列表，按下热键&lt;strong&gt;打开暂停菜单&lt;/strong&gt;并从菜单中选择&lt;strong&gt;成就&lt;/strong&gt;。将鼠标移至选项上可获取更多信息，Shift键+滚轮可滚动该面板。</translation>
     </message>
     <message>
-        <source>Display</source>
-        <translation type="vanished">显示</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Display Settings&lt;/strong&gt;&lt;hr&gt;These options control the how the frames generated by the console are displayed on the screen.</source>
-        <translation type="vanished">&lt;strong&gt;显示设置&lt;/strong&gt;&lt;hr&gt;这些选项控制游戏机生成何种画面显示在屏幕上。</translation>
-    </message>
-    <message>
-        <source>Enhancements</source>
-        <translation type="vanished">增强</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Enhancement Settings&lt;/strong&gt;&lt;hr&gt;These options control enhancements which can improve visuals compared to the original console. Mouse over each option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation type="vanished">&lt;strong&gt;增强设置&lt;/strong&gt;&lt;hr&gt;这些选项控制增强功能，与原始的游戏机相比，这些功能可以改善视觉效果。将鼠标移至选项上可获取更多信息，Shift键+滚轮可滚动该面板。</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Achievement Settings&lt;/strong&gt;&lt;hr&gt;These options control RetroAchievements. Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation type="vanished">&lt;strong&gt;成就设置&lt;/strong&gt;&lt;hr&gt;这些选项控制RetroAchievements。将鼠标移至选项上可获取更多信息，Shift键+滚轮可滚动该面板。</translation>
-    </message>
-    <message>
         <location filename="../settingswindow.cpp" line="167"/>
         <source>&lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;hr&gt;These options control logging and internal behavior of the emulator. Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
         <translation>&lt;strong&gt;高级设置&lt;/strong&gt;&lt;hr&gt;这些选项控制模拟器的日志记录和内部行为。将鼠标移至选项上可获取更多信息，Shift键+滚轮可滚动该面板。</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Enhancement Settings&lt;/strong&gt;&lt;hr&gt;These options control enhancements which can improve visuals compared to the original console. Mouse over each option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;增强设置&lt;/strong&gt;&lt;hr&gt;这些选项控制增强功能，与原始的游戏机相比，这些功能可以改善视觉效果。将鼠标移至每个选项上可获取更多信息。</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="122"/>
@@ -15774,10 +14113,6 @@ Do you want to create this directory?</source>
         <translation>成就</translation>
     </message>
     <message>
-        <source>&lt;strong&gt;Achievement Settings&lt;/strong&gt;&lt;hr&gt;These options control RetroAchievements. Mouse over an option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;成就设置&lt;/strong&gt;&lt;hr&gt;这些选项控制RetroAchievements。将鼠标移至选项上可获取更多信息。</translation>
-    </message>
-    <message>
         <location filename="../settingswindow.cpp" line="160"/>
         <source>Folders</source>
         <translation>文件夹</translation>
@@ -15791,10 +14126,6 @@ Do you want to create this directory?</source>
         <location filename="../settingswindow.cpp" line="165"/>
         <source>Advanced</source>
         <translation>高级</translation>
-    </message>
-    <message>
-        <source>&lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;hr&gt;These options control logging and internal behavior of the emulator. Mouse over an option for additional information.</source>
-        <translation type="vanished">&lt;strong&gt;高级设置&lt;/strong&gt;&lt;hr&gt;这些选项控制模拟器的日志记录和内部行为。将鼠标移至选项上可获取更多信息。</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="262"/>
@@ -16129,23 +14460,23 @@ Are you sure you want to continue?</source>
 <context>
     <name>System</name>
     <message>
-        <location filename="../../core/system.cpp" line="1515"/>
-        <location filename="../../core/system.cpp" line="3450"/>
+        <location filename="../../core/system.cpp" line="1516"/>
+        <location filename="../../core/system.cpp" line="3453"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2196"/>
+        <location filename="../../core/system.cpp" line="2197"/>
         <source>Incorrect BIOS image size</source>
         <translation>BIOS文件大小不正确</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2288"/>
+        <location filename="../../core/system.cpp" line="2290"/>
         <source>Save state is incompatible: maximum version is %u but state is version %u.</source>
         <translation>存档不兼容: 最高可兼容版本为%u但存档版本为%u。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2280"/>
+        <location filename="../../core/system.cpp" line="2282"/>
         <source>Save state is incompatible: minimum version is %u but state is version %u.</source>
         <translation>存档不兼容: 最低可兼容版本为%u但存档版本为%u。</translation>
     </message>
@@ -16155,42 +14486,42 @@ Are you sure you want to continue?</source>
         <translation>兼容性设置未启用。一些游戏可能无法正常运行。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1516"/>
+        <location filename="../../core/system.cpp" line="1517"/>
         <source>Failed to load save state file &apos;{}&apos; for booting.</source>
         <translation>无法通过载入存档文件&apos;{}&apos;来启动。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2332"/>
+        <location filename="../../core/system.cpp" line="2334"/>
         <source>Failed to open CD image &apos;{}&apos; used by save state: {}.</source>
         <translation>无法打开光盘镜像&apos;{}&apos;，正被存档: {}占用中。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2352"/>
+        <location filename="../../core/system.cpp" line="2354"/>
         <source>Failed to switch to subimage {} in CD image &apos;{}&apos; used by save state: {}.</source>
         <translation>无法切换为子镜像{}在光盘镜像&apos;{}&apos;内，正被存档: {}占用中。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3044"/>
+        <location filename="../../core/system.cpp" line="3047"/>
         <source>Per-game memory card cannot be used for slot {} as the running game has no code. Using shared card instead.</source>
         <translation>独立记忆卡不能用于档位{}，因为正在运行的游戏没有序号。使用共用记忆卡代替。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3063"/>
+        <location filename="../../core/system.cpp" line="3066"/>
         <source>Per-game memory card cannot be used for slot {} as the running game has no title. Using shared card instead.</source>
         <translation>独立记忆卡不能用于档位{}，因为正在运行的游戏没有标题。使用共用记忆卡代替。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3097"/>
+        <location filename="../../core/system.cpp" line="3100"/>
         <source>Using disc-specific memory card &apos;{}&apos; instead of per-game card.</source>
         <translation>使用特定于光盘的记忆卡&apos;{}&apos;而不是独立记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3119"/>
+        <location filename="../../core/system.cpp" line="3122"/>
         <source>Per-game memory card cannot be used for slot {} as the running game has no path. Using shared card instead.</source>
         <translation>独立记忆卡不能用于档位{}，因为正在运行的游戏没有路径。使用共用记忆卡代替。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3441"/>
+        <location filename="../../core/system.cpp" line="3444"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 {0}: {1}
@@ -16211,7 +14542,7 @@ Do you wish to continue?</source>
 您想要继续吗？</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3452"/>
+        <location filename="../../core/system.cpp" line="3455"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 {0}: {1}
@@ -16228,52 +14559,52 @@ The name of the SBI file must match the name of the disc image.</source>
 SBI文件的名称必须匹配光盘镜像的名称。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3854"/>
+        <location filename="../../core/system.cpp" line="3857"/>
         <source>CPU clock speed is set to {}% ({} / {}). This may crash games.</source>
         <translation>CPU主频设置为{}% ({} / {})。这可能会崩溃游戏。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3862"/>
+        <location filename="../../core/system.cpp" line="3865"/>
         <source>CD-ROM read speedup set to {}x (effective speed {}x). This may crash games.</source>
         <translation>CD-ROM读取加速设置为{}x (有效速率{}x)。这可能会崩溃游戏。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3868"/>
+        <location filename="../../core/system.cpp" line="3871"/>
         <source>CD-ROM seek speedup set to {}. This may crash games.</source>
         <translation>CD-ROM搜寻加速设置为{}。这可能会崩溃游戏。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3870"/>
+        <location filename="../../core/system.cpp" line="3873"/>
         <source>Instant</source>
         <translation>瞬时</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3875"/>
+        <location filename="../../core/system.cpp" line="3878"/>
         <source>Force NTSC timings is enabled. Games may run at incorrect speeds.</source>
         <translation>强制NTSC计时已启用。游戏可能以不正确的速度运行。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3880"/>
+        <location filename="../../core/system.cpp" line="3883"/>
         <source>Multisample anti-aliasing is enabled, some games may not render correctly.</source>
         <translation>多重采样反锯齿已启用，一些游戏可能无法正确渲染。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3883"/>
+        <location filename="../../core/system.cpp" line="3886"/>
         <source>8MB RAM is enabled, this may be incompatible with some games.</source>
         <translation>8MB内存已启用，这可能与某些游戏不兼容。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4460"/>
+        <location filename="../../core/system.cpp" line="4463"/>
         <source>Invalid version {} ({} version {})</source>
         <translation>无效版本{} ({}版本{})</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3332"/>
+        <location filename="../../core/system.cpp" line="3335"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>游戏变更，重新读取记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2189"/>
+        <location filename="../../core/system.cpp" line="2190"/>
         <source>Failed to load %s BIOS.</source>
         <translation>无法加载%sBIOS。</translation>
     </message>
