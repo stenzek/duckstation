@@ -270,7 +270,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     tr("Changes the aspect ratio used to display the console's output to the screen. The default is Auto (Game Native) "
        "which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era."));
   dialog->registerWidgetHelp(
-    m_ui.displayCropMode, tr("Deinterlacing"),
+    m_ui.displayDeinterlacing, tr("Deinterlacing"),
     QString::fromUtf8(Settings::GetDisplayDeinterlacingModeName(Settings::DEFAULT_DISPLAY_DEINTERLACING_MODE)),
     tr("Determines which algorithm is used to convert interlaced frames to progressive for display on your system. "
        "Generally, the \"Disable Interlacing\" enhancement provides better quality output, but some games require "
