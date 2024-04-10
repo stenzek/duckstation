@@ -3532,14 +3532,14 @@ void VulkanDevice::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* 
 {
   VulkanTexture* T = texture ? static_cast<VulkanTexture*>(texture) : m_null_texture.get();
   const VkSampler vsampler = static_cast<VulkanSampler*>(sampler ? sampler : m_nearest_sampler.get())->GetSampler();
-  if (m_current_textures[slot] != texture || m_current_samplers[slot] != vsampler)
+  if (m_current_textures[slot] != T || m_current_samplers[slot] != vsampler)
   {
     m_current_textures[slot] = T;
     m_current_samplers[slot] = vsampler;
     m_dirty_flags |= DIRTY_FLAG_TEXTURES_OR_SAMPLERS;
   }
 
-  if (T)
+  if (texture)
   {
     T->CommitClear();
     T->SetUseFenceCounter(GetCurrentFenceCounter());
