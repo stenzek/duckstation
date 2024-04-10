@@ -611,7 +611,7 @@ bool D3D11Device::BeginPresent(bool skip_present)
   if (!m_swap_chain)
   {
     // Note: Really slow on Intel...
-    m_context->Flush();
+    //m_context->Flush();
     TrimTexturePool();
     return false;
   }

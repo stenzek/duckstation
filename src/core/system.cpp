@@ -1115,7 +1115,8 @@ void System::ResetSystem()
   InternalReset();
   ResetPerformanceCounters();
   ResetThrottler();
-  Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "System reset."));
+  Host::AddIconOSDMessage("system_reset", ICON_FA_POWER_OFF, TRANSLATE_STR("OSDMessage", "System reset."),
+                          Host::OSD_QUICK_DURATION);
 }
 
 void System::PauseSystem(bool paused)
@@ -2232,6 +2233,7 @@ void System::InternalReset()
   s_frame_number = 1;
   s_internal_frame_number = 0;
   TimingEvents::Reset();
+  InterruptExecution();
   ResetPerformanceCounters();
 
   Achievements::ResetClient();
@@ -2407,6 +2409,7 @@ bool System::LoadStateFromStream(ByteStream* state, bool update_display, bool ig
   if (s_state == State::Starting)
     s_state = State::Running;
 
+  InterruptExecution();
   ResetPerformanceCounters();
   ResetThrottler();
   return true;
@@ -4560,13 +4563,14 @@ bool System::LoadCheatList()
 
   if (cl->GetEnabledCodeCount() > 0)
   {
-    Host::AddOSDMessage(
+    Host::AddIconOSDMessage(
+      "cheats_loaded", ICON_FA_EXCLAMATION_TRIANGLE,
       fmt::format(TRANSLATE_FS("OSDMessage", "{} cheats are enabled. This may result in instability."),
                   cl->GetEnabledCodeCount()),
-      30.0f);
+      Host::OSD_WARNING_DURATION);
   }
 
-  System::SetCheatList(std::move(cl));
+  SetCheatList(std::move(cl));
   return true;
 }
 
