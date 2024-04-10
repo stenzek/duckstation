@@ -27,7 +27,7 @@
     <ClCompile Include="biossettingswidget.cpp" />
     <ClCompile Include="memorycardeditorwindow.cpp" />
     <ClCompile Include="postprocessingsettingswidget.cpp" />
-    <ClCompile Include="cheatmanagerdialog.cpp" />
+    <ClCompile Include="cheatmanagerwindow.cpp" />
     <ClCompile Include="cheatcodeeditordialog.cpp" />
     <ClCompile Include="debuggerwindow.cpp" />
     <ClCompile Include="debuggermodels.cpp" />
@@ -73,7 +73,7 @@
     <ClCompile Include="$(IntDir)moc_cheatcodeeditordialog.cpp">
       <Filter>moc</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)moc_cheatmanagerdialog.cpp">
+    <ClCompile Include="$(IntDir)moc_cheatmanagerwindow.cpp">
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)moc_collapsiblewidget.cpp">
@@ -182,6 +182,10 @@
     <ClCompile Include="$(IntDir)moc_interfacesettingswidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
+    <ClCompile Include="memoryscannerwindow.cpp" />
+    <ClCompile Include="$(IntDir)moc_memoryscannerwindow.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
@@ -226,7 +230,7 @@
     <QtMoc Include="biossettingswidget.h" />
     <QtMoc Include="memorycardeditorwindow.h" />
     <QtMoc Include="postprocessingsettingswidget.h" />
-    <QtMoc Include="cheatmanagerdialog.h" />
+    <QtMoc Include="cheatmanagerwindow.h" />
     <QtMoc Include="cheatcodeeditordialog.h" />
     <QtMoc Include="debuggermodels.h" />
     <QtMoc Include="debuggerwindow.h" />
@@ -246,6 +250,7 @@
     <QtMoc Include="setupwizarddialog.h" />
     <QtMoc Include="logwindow.h" />
     <QtMoc Include="graphicssettingswidget.h" />
+    <QtMoc Include="memoryscannerwindow.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
@@ -261,7 +266,7 @@
     <QtUi Include="biossettingswidget.ui" />
     <QtUi Include="postprocessingsettingswidget.ui" />
     <QtUi Include="memorycardeditorwindow.ui" />
-    <QtUi Include="cheatmanagerdialog.ui" />
+    <QtUi Include="cheatmanagerwindow.ui" />
     <QtUi Include="cheatcodeeditordialog.ui" />
     <QtUi Include="emulationsettingswidget.ui" />
     <QtUi Include="achievementsettingswidget.ui" />
@@ -287,6 +292,7 @@
     <QtUi Include="controllerledsettingsdialog.ui" />
     <QtUi Include="debuggeraddbreakpointdialog.ui" />
     <QtUi Include="graphicssettingswidget.ui" />
+    <QtUi Include="memoryscannerwindow.ui" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="qt5.natvis" />

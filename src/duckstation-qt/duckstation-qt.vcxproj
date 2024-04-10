@@ -9,7 +9,7 @@
     <ClCompile Include="audiosettingswidget.cpp" />
     <ClCompile Include="autoupdaterdialog.cpp" />
     <ClCompile Include="biossettingswidget.cpp" />
-    <ClCompile Include="cheatmanagerdialog.cpp" />
+    <ClCompile Include="cheatmanagerwindow.cpp" />
     <ClCompile Include="cheatcodeeditordialog.cpp" />
     <ClCompile Include="collapsiblewidget.cpp" />
     <ClCompile Include="colorpickerbutton.cpp" />
@@ -30,6 +30,7 @@
     <ClCompile Include="inputbindingdialog.cpp" />
     <ClCompile Include="inputbindingwidgets.cpp" />
     <ClCompile Include="logwindow.cpp" />
+    <ClCompile Include="memoryscannerwindow.cpp" />
     <ClCompile Include="memoryviewwidget.cpp" />
     <ClCompile Include="displaywidget.cpp" />
     <ClCompile Include="gamelistsettingswidget.cpp" />
@@ -58,7 +59,7 @@
     <QtMoc Include="aboutdialog.h" />
     <QtMoc Include="audiosettingswidget.h" />
     <QtMoc Include="biossettingswidget.h" />
-    <QtMoc Include="cheatmanagerdialog.h" />
+    <QtMoc Include="cheatmanagerwindow.h" />
     <QtMoc Include="cheatcodeeditordialog.h" />
     <QtMoc Include="coverdownloaddialog.h" />
     <QtMoc Include="memorycardsettingswidget.h" />
@@ -86,6 +87,7 @@
     <QtMoc Include="memoryviewwidget.h" />
     <QtMoc Include="logwindow.h" />
     <QtMoc Include="graphicssettingswidget.h" />
+    <QtMoc Include="memoryscannerwindow.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="settingwidgetbinder.h" />
@@ -141,7 +143,7 @@
     <QtUi Include="memorycardeditorwindow.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <QtUi Include="cheatmanagerdialog.ui">
+    <QtUi Include="cheatmanagerwindow.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="cheatcodeeditordialog.ui">
@@ -224,7 +226,7 @@
     <ClCompile Include="$(IntDir)moc_autoupdaterdialog.cpp" />
     <ClCompile Include="$(IntDir)moc_advancedsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_biossettingswidget.cpp" />
-    <ClCompile Include="$(IntDir)moc_cheatmanagerdialog.cpp" />
+    <ClCompile Include="$(IntDir)moc_cheatmanagerwindow.cpp" />
     <ClCompile Include="$(IntDir)moc_cheatcodeeditordialog.cpp" />
     <ClCompile Include="$(IntDir)moc_collapsiblewidget.cpp" />
     <ClCompile Include="$(IntDir)moc_colorpickerbutton.cpp" />
@@ -255,6 +257,7 @@
     <ClCompile Include="$(IntDir)moc_mainwindow.cpp" />
     <ClCompile Include="$(IntDir)moc_memorycardsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_memorycardeditorwindow.cpp" />
+    <ClCompile Include="$(IntDir)moc_memoryscannerwindow.cpp" />
     <ClCompile Include="$(IntDir)moc_memoryviewwidget.cpp" />
     <ClCompile Include="$(IntDir)moc_postprocessingsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_qthost.cpp" />
@@ -327,6 +330,9 @@
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="graphicssettingswidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="memoryscannerwindow.ui">
       <FileType>Document</FileType>
     </QtUi>
     <None Include="translations\duckstation-qt_es-es.ts" />

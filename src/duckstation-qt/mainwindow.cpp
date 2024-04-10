@@ -5,7 +5,7 @@
 #include "aboutdialog.h"
 #include "achievementlogindialog.h"
 #include "autoupdaterdialog.h"
-#include "cheatmanagerdialog.h"
+#include "cheatmanagerwindow.h"
 #include "coverdownloaddialog.h"
 #include "debuggerwindow.h"
 #include "displaywidget.h"
@@ -14,6 +14,7 @@
 #include "interfacesettingswidget.h"
 #include "logwindow.h"
 #include "memorycardeditorwindow.h"
+#include "memoryscannerwindow.h"
 #include "qthost.h"
 #include "qtutils.h"
 #include "settingswindow.h"
@@ -601,12 +602,6 @@ void MainWindow::onSystemDestroyed()
   // reload played time
   if (m_game_list_widget->isShowingGameList())
     m_game_list_widget->refresh(false);
-
-  if (m_cheat_manager_dialog)
-  {
-    delete m_cheat_manager_dialog;
-    m_cheat_manager_dialog = nullptr;
-  }
 }
 
 void MainWindow::onRunningGameChanged(const QString& filename, const QString& game_serial, const QString& game_title)
@@ -752,33 +747,12 @@ void MainWindow::recreate()
 
 void MainWindow::destroySubWindows()
 {
-  if (m_debugger_window)
-  {
-    m_debugger_window->close();
-    m_debugger_window->deleteLater();
-    m_debugger_window = nullptr;
-  }
-
-  if (m_memory_card_editor_window)
-  {
-    m_memory_card_editor_window->close();
-    m_memory_card_editor_window->deleteLater();
-    m_memory_card_editor_window = nullptr;
-  }
-
-  if (m_controller_settings_window)
-  {
-    m_controller_settings_window->close();
-    m_controller_settings_window->deleteLater();
-    m_controller_settings_window = nullptr;
-  }
-
-  if (m_settings_window)
-  {
-    m_settings_window->close();
-    m_settings_window->deleteLater();
-    m_settings_window = nullptr;
-  }
+  QtUtils::CloseAndDeleteWindow(m_memory_scanner_window);
+  QtUtils::CloseAndDeleteWindow(m_debugger_window);
+  QtUtils::CloseAndDeleteWindow(m_cheat_manager_window);
+  QtUtils::CloseAndDeleteWindow(m_memory_card_editor_window);
+  QtUtils::CloseAndDeleteWindow(m_controller_settings_window);
+  QtUtils::CloseAndDeleteWindow(m_settings_window);
 
   SettingsWindow::closeGamePropertiesDialogs();
 
@@ -1805,6 +1779,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevo
   m_ui.menuChangeDisc->setDisabled(starting || !running);
   m_ui.menuCheats->setDisabled(starting || !running || cheevos_challenge_mode);
   m_ui.actionCPUDebugger->setDisabled(cheevos_challenge_mode);
+  m_ui.actionMemoryScanner->setDisabled(cheevos_challenge_mode);
   m_ui.actionDumpRAM->setDisabled(starting || !running || cheevos_challenge_mode);
   m_ui.actionDumpVRAM->setDisabled(starting || !running || cheevos_challenge_mode);
   m_ui.actionDumpSPURAM->setDisabled(starting || !running || cheevos_challenge_mode);
@@ -2094,7 +2069,8 @@ void MainWindow::connectSignals()
   connect(m_ui.actionAboutQt, &QAction::triggered, qApp, &QApplication::aboutQt);
   connect(m_ui.actionAbout, &QAction::triggered, this, &MainWindow::onAboutActionTriggered);
   connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, &MainWindow::onCheckForUpdatesActionTriggered);
-  connect(m_ui.actionMemory_Card_Editor, &QAction::triggered, this, &MainWindow::onToolsMemoryCardEditorTriggered);
+  connect(m_ui.actionMemoryCardEditor, &QAction::triggered, this, &MainWindow::onToolsMemoryCardEditorTriggered);
+  connect(m_ui.actionMemoryScanner, &QAction::triggered, this, &MainWindow::onToolsMemoryScannerTriggered);
   connect(m_ui.actionCoverDownloader, &QAction::triggered, this, &MainWindow::onToolsCoverDownloaderTriggered);
   connect(m_ui.actionCPUDebugger, &QAction::triggered, this, &MainWindow::openCPUDebugger);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableGDBServer, "Debug", "EnableGDBServer", false);
@@ -2571,17 +2547,7 @@ SettingsWindow* MainWindow::getSettingsDialog()
 void MainWindow::doSettings(const char* category /* = nullptr */)
 {
   SettingsWindow* dlg = getSettingsDialog();
-  if (!dlg->isVisible())
-  {
-    dlg->show();
-  }
-  else
-  {
-    dlg->raise();
-    dlg->activateWindow();
-    dlg->setFocus();
-  }
-
+  QtUtils::ShowOrRaiseWindow(dlg);
   if (category)
     dlg->setCategory(category);
 }
@@ -2592,17 +2558,7 @@ void MainWindow::doControllerSettings(
   if (!m_controller_settings_window)
     m_controller_settings_window = new ControllerSettingsWindow();
 
-  if (!m_controller_settings_window->isVisible())
-  {
-    m_controller_settings_window->show();
-  }
-  else
-  {
-    m_controller_settings_window->raise();
-    m_controller_settings_window->activateWindow();
-    m_controller_settings_window->setFocus();
-  }
-
+  QtUtils::ShowOrRaiseWindow(m_controller_settings_window);
   if (category != ControllerSettingsWindow::Category::Count)
     m_controller_settings_window->setCategory(category);
 }
@@ -2933,16 +2889,7 @@ void MainWindow::openMemoryCardEditor(const QString& card_a_path, const QString&
   if (!m_memory_card_editor_window)
     m_memory_card_editor_window = new MemoryCardEditorWindow();
 
-  if (!m_memory_card_editor_window->isVisible())
-  {
-    m_memory_card_editor_window->show();
-  }
-  else
-  {
-    m_memory_card_editor_window->raise();
-    m_memory_card_editor_window->activateWindow();
-    m_memory_card_editor_window->setFocus();
-  }
+  QtUtils::ShowOrRaiseWindow(m_memory_card_editor_window);
 
   if (!card_a_path.isEmpty())
   {
@@ -2987,19 +2934,9 @@ void MainWindow::onAchievementsChallengeModeChanged(bool enabled)
 {
   if (enabled)
   {
-    if (m_cheat_manager_dialog)
-    {
-      m_cheat_manager_dialog->close();
-      delete m_cheat_manager_dialog;
-      m_cheat_manager_dialog = nullptr;
-    }
-
-    if (m_debugger_window)
-    {
-      m_debugger_window->close();
-      delete m_debugger_window;
-      m_debugger_window = nullptr;
-    }
+    QtUtils::CloseAndDeleteWindow(m_cheat_manager_window);
+    QtUtils::CloseAndDeleteWindow(m_debugger_window);
+    QtUtils::CloseAndDeleteWindow(m_memory_scanner_window);
   }
 
   updateEmulationActions(false, System::IsValid(), enabled);
@@ -3019,44 +2956,52 @@ void MainWindow::onToolsCoverDownloaderTriggered()
   dlg.exec();
 }
 
+void MainWindow::onToolsMemoryScannerTriggered()
+{
+  if (Achievements::IsHardcoreModeActive())
+    return;
+
+  if (!m_memory_scanner_window)
+  {
+    m_memory_scanner_window = new MemoryScannerWindow();
+    connect(m_memory_scanner_window, &MemoryScannerWindow::closed, this, [this]() {
+      m_memory_scanner_window->deleteLater();
+      m_memory_scanner_window = nullptr;
+    });
+  }
+
+  QtUtils::ShowOrRaiseWindow(m_memory_scanner_window);
+}
+
 void MainWindow::openCheatManager()
 {
-  if (!m_cheat_manager_dialog)
-    m_cheat_manager_dialog = new CheatManagerDialog(this);
+  if (Achievements::IsHardcoreModeActive())
+    return;
 
-  if (!m_cheat_manager_dialog->isVisible())
+  if (!m_cheat_manager_window)
   {
-    m_cheat_manager_dialog->show();
+    m_cheat_manager_window = new CheatManagerWindow();
+    connect(m_cheat_manager_window, &CheatManagerWindow::closed, this, [this]() {
+      m_cheat_manager_window->deleteLater();
+      m_cheat_manager_window = nullptr;
+    });
   }
-  else
-  {
-    m_cheat_manager_dialog->raise();
-    m_cheat_manager_dialog->activateWindow();
-    m_cheat_manager_dialog->setFocus();
-  }
+
+  QtUtils::ShowOrRaiseWindow(m_cheat_manager_window);
 }
 
 void MainWindow::openCPUDebugger()
 {
-  if (m_debugger_window)
+  if (!m_debugger_window)
   {
-    m_debugger_window->raise();
-    m_debugger_window->activateWindow();
-    m_debugger_window->setFocus();
-    return;
+    m_debugger_window = new DebuggerWindow();
+    connect(m_debugger_window, &DebuggerWindow::closed, this, [this]() {
+      m_debugger_window->deleteLater();
+      m_debugger_window = nullptr;
+    });
   }
 
-  Assert(!m_debugger_window);
-  m_debugger_window = new DebuggerWindow();
-  connect(m_debugger_window, &DebuggerWindow::closed, this, &MainWindow::onCPUDebuggerClosed);
-  m_debugger_window->show();
-}
-
-void MainWindow::onCPUDebuggerClosed()
-{
-  Assert(m_debugger_window);
-  m_debugger_window->deleteLater();
-  m_debugger_window = nullptr;
+  QtUtils::ShowOrRaiseWindow(m_debugger_window);
 }
 
 void MainWindow::onToolsOpenDataDirectoryTriggered()
@@ -3067,13 +3012,9 @@ void MainWindow::onToolsOpenDataDirectoryTriggered()
 void MainWindow::onSettingsTriggeredFromToolbar()
 {
   if (s_system_valid)
-  {
     m_settings_toolbar_menu->exec(QCursor::pos());
-  }
   else
-  {
     doSettings();
-  }
 }
 
 void MainWindow::checkForUpdates(bool display_message)

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -24,13 +24,14 @@ class QLabel;
 class QThread;
 class QProgressBar;
 
+class MainWindow;
 class GameListWidget;
 class EmuThread;
 class AutoUpdaterDialog;
 class MemoryCardEditorWindow;
-class CheatManagerDialog;
+class CheatManagerWindow;
 class DebuggerWindow;
-class MainWindow;
+class MemoryScannerWindow;
 
 class GPUDevice;
 namespace Achievements {
@@ -95,6 +96,9 @@ public:
   ALWAYS_INLINE QLabel* getStatusResolutionWidget() const { return m_status_resolution_widget; }
   ALWAYS_INLINE QLabel* getStatusFPSWidget() const { return m_status_fps_widget; }
   ALWAYS_INLINE QLabel* getStatusVPSWidget() const { return m_status_vps_widget; }
+
+  /// Accessors for child windows.
+  CheatManagerWindow* getCheatManagerWindow() const { return m_cheat_manager_window; }
 
 public Q_SLOTS:
   /// Updates debug menu visibility (hides if disabled).
@@ -166,6 +170,7 @@ private Q_SLOTS:
   void onAboutActionTriggered();
   void onCheckForUpdatesActionTriggered();
   void onToolsMemoryCardEditorTriggered();
+  void onToolsMemoryScannerTriggered();
   void onToolsCoverDownloaderTriggered();
   void onToolsOpenDataDirectoryTriggered();
   void onSettingsTriggeredFromToolbar();
@@ -180,7 +185,6 @@ private Q_SLOTS:
 
   void openCheatManager();
   void openCPUDebugger();
-  void onCPUDebuggerClosed();
 
 protected:
   void showEvent(QShowEvent* event) override;
@@ -290,8 +294,9 @@ private:
 
   AutoUpdaterDialog* m_auto_updater_dialog = nullptr;
   MemoryCardEditorWindow* m_memory_card_editor_window = nullptr;
-  CheatManagerDialog* m_cheat_manager_dialog = nullptr;
+  CheatManagerWindow* m_cheat_manager_window = nullptr;
   DebuggerWindow* m_debugger_window = nullptr;
+  MemoryScannerWindow* m_memory_scanner_window = nullptr;
 
   bool m_was_paused_by_focus_loss = false;
   bool m_open_debugger_on_start = false;

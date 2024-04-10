@@ -1,32 +1,38 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
+
+#include "ui_cheatmanagerwindow.h"
+
 #include "core/cheats.h"
-#include "ui_cheatmanagerdialog.h"
+
 #include <QtCore/QTimer>
 #include <QtWidgets/QComboBox>
-#include <QtWidgets/QDialog>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QTableWidget>
+#include <QtWidgets/QWidget>
 #include <optional>
 
-class CheatManagerDialog : public QDialog
+class CheatManagerWindow : public QWidget
 {
   Q_OBJECT
 
 public:
-  CheatManagerDialog(QWidget* parent);
-  ~CheatManagerDialog();
+  CheatManagerWindow();
+  ~CheatManagerWindow();
+
+Q_SIGNALS:
+  void closed();
 
 protected:
   void showEvent(QShowEvent* event);
+  void closeEvent(QCloseEvent* event);
   void resizeEvent(QResizeEvent* event);
-
-private Q_SLOTS:
   void resizeColumns();
 
+private Q_SLOTS:
   CheatList* getCheatList() const;
   void updateCheatList();
   void saveCheatList();
@@ -47,29 +53,13 @@ private Q_SLOTS:
   void clearClicked();
   void resetClicked();
 
-  void addToWatchClicked();
-  void addManualWatchAddressClicked();
-  void removeWatchClicked();
-  void scanCurrentItemChanged(QTableWidgetItem* current, QTableWidgetItem* previous);
-  void watchCurrentItemChanged(QTableWidgetItem* current, QTableWidgetItem* previous);
-  void scanItemChanged(QTableWidgetItem* item);
-  void watchItemChanged(QTableWidgetItem* item);
-  void updateScanValue();
-  void updateScanUi();
-
 private:
   enum : int
   {
     MAX_DISPLAYED_SCAN_RESULTS = 5000
   };
 
-  void setupAdditionalUi();
   void connectUi();
-  void setUpdateTimerEnabled(bool enabled);
-  void updateResults();
-  void updateResultsValues();
-  void updateWatch();
-  void updateWatchValues();
   void fillItemForCheatCode(QTreeWidgetItem* item, u32 index, const CheatCode& code);
 
   QTreeWidgetItem* getItemForCheatIndex(u32 index) const;
@@ -77,15 +67,8 @@ private:
   QTreeWidgetItem* createItemForCheatGroup(const QString& group_name) const;
   QStringList getCheatGroupNames() const;
   int getSelectedCheatIndex() const;
-  int getSelectedResultIndexFirst() const;
-  int getSelectedResultIndexLast() const;
-  int getSelectedWatchIndexFirst() const;
-  int getSelectedWatchIndexLast() const;
 
-  Ui::CheatManagerDialog m_ui;
-
-  MemoryScan m_scanner;
-  MemoryWatchList m_watch;
+  Ui::CheatManagerWindow m_ui;
 
   QTimer* m_update_timer = nullptr;
 };

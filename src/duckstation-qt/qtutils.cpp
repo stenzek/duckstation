@@ -64,6 +64,23 @@ QWidget* GetRootWidget(QWidget* widget, bool stop_at_window_or_dialog)
   return widget;
 }
 
+void ShowOrRaiseWindow(QWidget* window)
+{
+  if (!window)
+    return;
+
+  if (!window->isVisible())
+  {
+    window->show();
+  }
+  else
+  {
+    window->raise();
+    window->activateWindow();
+    window->setFocus();
+  }
+}
+
 template<typename T>
 ALWAYS_INLINE_RELEASE static void ResizeColumnsForView(T* view, const std::initializer_list<int>& widths)
 {

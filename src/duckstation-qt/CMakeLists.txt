@@ -32,9 +32,9 @@ set(SRCS
   cheatcodeeditordialog.cpp
   cheatcodeeditordialog.h
   cheatcodeeditordialog.ui
-  cheatmanagerdialog.cpp
-  cheatmanagerdialog.h
-  cheatmanagerdialog.ui
+  cheatmanagerwindow.cpp
+  cheatmanagerwindow.h
+  cheatmanagerwindow.ui
   collapsiblewidget.cpp
   collapsiblewidget.h
   colorpickerbutton.cpp
@@ -121,6 +121,9 @@ set(SRCS
   memorycardeditorwindow.ui
   memorycardsettingswidget.cpp
   memorycardsettingswidget.h
+  memoryscannerwindow.cpp
+  memoryscannerwindow.h
+  memoryscannerwindow.ui
   memoryviewwidget.cpp
   memoryviewwidget.h
   postprocessingsettingswidget.cpp
