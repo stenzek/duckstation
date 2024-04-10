@@ -1915,477 +1915,184 @@ Nieprzeczytane wiadomości: {}</translation>
     </message>
 </context>
 <context>
-    <name>CheatManagerDialog</name>
+    <name>CheatManagerWindow</name>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="14"/>
+        <location filename="../cheatmanagerwindow.ui" line="14"/>
         <source>Cheat Manager</source>
-        <translation>Menedżer cheatów</translation>
+        <translation>Menedżer kodów</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="24"/>
-        <source>Cheat List</source>
-        <translation>Lista kodów</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="32"/>
+        <location filename="../cheatmanagerwindow.ui" line="26"/>
         <source>&amp;Add Group...</source>
         <translation>&amp;Dodaj grupę...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="39"/>
+        <location filename="../cheatmanagerwindow.ui" line="33"/>
         <source>&amp;Add Code...</source>
         <translation>&amp;Dodaj kod...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="46"/>
+        <location filename="../cheatmanagerwindow.ui" line="40"/>
         <source>&amp;Edit Code...</source>
         <translation>&amp;Edytuj kod...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="56"/>
+        <location filename="../cheatmanagerwindow.ui" line="50"/>
         <source>&amp;Delete Code</source>
         <translation>&amp;Usuń kod</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="66"/>
-        <location filename="../cheatmanagerdialog.cpp" line="396"/>
-        <location filename="../cheatmanagerdialog.cpp" line="434"/>
-        <location filename="../cheatmanagerdialog.cpp" line="439"/>
+        <location filename="../cheatmanagerwindow.ui" line="60"/>
+        <location filename="../cheatmanagerwindow.cpp" line="167"/>
+        <location filename="../cheatmanagerwindow.cpp" line="273"/>
+        <location filename="../cheatmanagerwindow.cpp" line="278"/>
         <source>Activate</source>
         <translation>Aktywuj</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="73"/>
+        <location filename="../cheatmanagerwindow.ui" line="67"/>
         <source>Import...</source>
         <translation>Importuj...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="83"/>
+        <location filename="../cheatmanagerwindow.ui" line="77"/>
         <source>Export...</source>
         <translation>Eksportuj...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="90"/>
+        <location filename="../cheatmanagerwindow.ui" line="84"/>
         <source>Clear</source>
         <translation>Wyczyść</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="97"/>
+        <location filename="../cheatmanagerwindow.ui" line="91"/>
         <source>Reset</source>
-        <translation>Zresetuj</translation>
+        <translation>Resetuj</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="126"/>
+        <location filename="../cheatmanagerwindow.ui" line="120"/>
         <source>Name</source>
         <translation>Nazwa</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="131"/>
-        <location filename="../cheatmanagerdialog.ui" line="598"/>
+        <location filename="../cheatmanagerwindow.ui" line="125"/>
         <source>Type</source>
         <translation>Typ</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="136"/>
+        <location filename="../cheatmanagerwindow.ui" line="130"/>
         <source>Activation</source>
         <translation>Aktywacja</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="141"/>
+        <location filename="../cheatmanagerwindow.ui" line="135"/>
         <source>Instructions</source>
         <translation>Instrukcje</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="150"/>
-        <source>Memory Scanner</source>
-        <translation>Skaner pamięci</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="185"/>
-        <location filename="../cheatmanagerdialog.ui" line="593"/>
-        <source>Address</source>
-        <translation>Adres</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="190"/>
-        <location filename="../cheatmanagerdialog.ui" line="603"/>
-        <source>Value</source>
-        <translation>Wartość</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="195"/>
-        <source>Previous Value</source>
-        <translation>Poprzednia wartość</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="205"/>
-        <source>Search Parameters</source>
-        <translation>Parametry wyszukiwania</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="211"/>
-        <source>Value:</source>
-        <translation>Wartość:</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="227"/>
-        <source>Signed</source>
-        <translation>Ze znakiem</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="232"/>
-        <source>Unsigned</source>
-        <translation>Bez znaku</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="244"/>
-        <source>Decimal</source>
-        <translation>Dziesiętny</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="249"/>
-        <source>Hex</source>
-        <translation>Hex</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="259"/>
-        <source>Data Size:</source>
-        <translation>Rozmiar Danych:</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="270"/>
-        <source>Byte (1 byte)</source>
-        <translation>Bajt (1 bajt)</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="275"/>
-        <source>Halfword (2 bytes)</source>
-        <translation>Półsłowo (2 bajty)</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="280"/>
-        <source>Word (4 bytes)</source>
-        <translation>Słowo (4 bajty)</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="288"/>
-        <source>Operator:</source>
-        <translation>Operator:</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="296"/>
-        <source>Equal to...</source>
-        <translation>Jest równy...</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="301"/>
-        <source>Not Equal to...</source>
-        <translation>Nie jest równy...</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="306"/>
-        <source>Greater Than...</source>
-        <translation>Większy niż...</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="311"/>
-        <source>Greater or Equal...</source>
-        <translation>Większy lub równy...</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="316"/>
-        <source>Less Than...</source>
-        <translation>Mniejszy niż...</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="321"/>
-        <source>Less or Equal...</source>
-        <translation>Mniejszy lub równy...</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="326"/>
-        <source>Increased By...</source>
-        <translation>Zwiększony o...</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="331"/>
-        <source>Decreased By...</source>
-        <translation>Zmniejszony o...</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="336"/>
-        <source>Changed By...</source>
-        <translation>Zmieniony o...</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="341"/>
-        <source>Equal to Previous (Unchanged Value)</source>
-        <translation>Równy poprzedniej (niezmieniona wartość)</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="346"/>
-        <source>Not Equal to Previous (Changed Value)</source>
-        <translation>Nie jest równy poprzedniej (zmieniona wartość)</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="351"/>
-        <source>Greater Than Previous</source>
-        <translation>Większy niż poprzedni</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="356"/>
-        <source>Greater or Equal to Previous</source>
-        <translation>Większy lub równy poprzedniemu</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="361"/>
-        <source>Less Than Previous</source>
-        <translation>Mniejszy niż poprzedni</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="366"/>
-        <source>Less or Equal to Previous</source>
-        <translation>Mniejszy lub równy poprzedniemu</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="371"/>
-        <source>Any Value</source>
-        <translation>Dowolna wartość</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="379"/>
-        <source>Start Address:</source>
-        <translation>Adres początkowy:</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="389"/>
-        <source>End Address:</source>
-        <translation>Adres końcowy:</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="399"/>
-        <source>Preset Range:</source>
-        <translation>Zakres ustawień wstępnych:</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="407"/>
-        <source>RAM</source>
-        <translation>RAM</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="412"/>
-        <source>Scratchpad</source>
-        <translation>Scratchpad</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="417"/>
-        <source>BIOS</source>
-        <translation>BIOS</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="430"/>
-        <source>New Search</source>
-        <translation>Nowe wyszukiwanie</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="440"/>
-        <source>Search Again</source>
-        <translation>Wyszukaj ponownie</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="450"/>
-        <source>Clear Results</source>
-        <translation>Wyczyść wyniki</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="462"/>
-        <source>Add Selected Results To Watch List</source>
-        <translation>Dodaj wybrane wyniki do listy obserwowania</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="498"/>
-        <source>Number of Results (Display limited to first 5000) : </source>
-        <translation>Ilość wyników (ograniczono do pierwszych 5000): </translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="538"/>
-        <source>0</source>
-        <translation>0</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="588"/>
-        <source>Simple Cheat Code or Description</source>
-        <translation>Kod cheatu lub opis</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="608"/>
-        <source>Freeze</source>
-        <translation>Zamroź</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="628"/>
-        <source>Remove Selected Entries from Watch List</source>
-        <translation>Usuń wybrane wpisy z listy obserwowania</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="618"/>
-        <source>Add Manual Address</source>
-        <translation>Dodaj adres ręcznie</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="641"/>
-        <source>Load Watch</source>
-        <translation>Wczytaj oglądane</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="654"/>
-        <source>Save Watch</source>
-        <translation>Zapisz oglądane</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.cpp" line="25"/>
-        <source>Byte</source>
-        <translation>Bajt</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.cpp" line="25"/>
-        <source>Halfword</source>
-        <translation>Półsłowo</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.cpp" line="26"/>
-        <source>Word</source>
-        <translation>Słowo</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.cpp" line="26"/>
-        <source>Signed Byte</source>
-        <translation>Bajt ze znakiem</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.cpp" line="27"/>
-        <source>Signed Halfword</source>
-        <translation>Półsłowo ze znakiem</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.cpp" line="27"/>
-        <source>Signed Word</source>
-        <translation>Słowo ze znakiem</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.cpp" line="439"/>
+        <location filename="../cheatmanagerwindow.cpp" line="278"/>
         <source>Toggle</source>
         <translation>Przełącznik</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="523"/>
+        <location filename="../cheatmanagerwindow.cpp" line="362"/>
         <source>Add Group</source>
         <translation>Dodaj grupę</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="523"/>
+        <location filename="../cheatmanagerwindow.cpp" line="362"/>
         <source>Group Name:</source>
         <translation>Nazwa grupy:</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="529"/>
-        <location filename="../cheatmanagerdialog.cpp" line="664"/>
-        <location filename="../cheatmanagerdialog.cpp" line="687"/>
-        <location filename="../cheatmanagerdialog.cpp" line="710"/>
+        <location filename="../cheatmanagerwindow.cpp" line="368"/>
+        <location filename="../cheatmanagerwindow.cpp" line="503"/>
+        <location filename="../cheatmanagerwindow.cpp" line="526"/>
+        <location filename="../cheatmanagerwindow.cpp" line="549"/>
         <source>Error</source>
         <translation>Błąd</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="529"/>
+        <location filename="../cheatmanagerwindow.cpp" line="368"/>
         <source>This group name already exists.</source>
         <translation>Ta nazwa grupy już istnieje.</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="620"/>
+        <location filename="../cheatmanagerwindow.cpp" line="459"/>
         <source>Delete Code</source>
         <translation>Usuń kod</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="621"/>
+        <location filename="../cheatmanagerwindow.cpp" line="460"/>
         <source>Are you sure you wish to delete the selected code? This action is not reversible.</source>
         <translation>Czy na pewno chcesz usunąć wybrany kod? Ta czynność jest nieodwracalna.</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="648"/>
+        <location filename="../cheatmanagerwindow.cpp" line="487"/>
         <source>From File...</source>
-        <translation>Z Pliku...</translation>
+        <translation>Z pliku...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="649"/>
+        <location filename="../cheatmanagerwindow.cpp" line="488"/>
         <source>From Text...</source>
         <translation>Z tekstu...</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="655"/>
+        <location filename="../cheatmanagerwindow.cpp" line="494"/>
         <source>PCSXR/Libretro Cheat Files (*.cht *.txt);;All Files (*.*)</source>
-        <translation>PCSXR / pliki cheatów libretro (* .cht * .txt) ;; Wszystkie pliki (*. *)</translation>
+        <translation>PCSXR / pliki kodów libretro (* .cht * .txt) ;; Wszystkie pliki (*. *)</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="657"/>
-        <location filename="../cheatmanagerdialog.cpp" line="680"/>
+        <location filename="../cheatmanagerwindow.cpp" line="496"/>
+        <location filename="../cheatmanagerwindow.cpp" line="519"/>
         <source>Import Cheats</source>
         <translation>Importuj kody</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="664"/>
-        <location filename="../cheatmanagerdialog.cpp" line="687"/>
+        <location filename="../cheatmanagerwindow.cpp" line="503"/>
+        <location filename="../cheatmanagerwindow.cpp" line="526"/>
         <source>Failed to parse cheat file. The log may contain more information.</source>
-        <translation>Nie udało się przeanalizować pliku cheatów. Dziennik może zawierać więcej informacji.</translation>
+        <translation>Nie udało się przeanalizować pliku kodów. Dziennik zdarzeń może zawierać więcej informacji.</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="680"/>
+        <location filename="../cheatmanagerwindow.cpp" line="519"/>
         <source>Cheat File Text:</source>
-        <translation>Tekst pliku cheatu:</translation>
+        <translation>Tekst pliku kodów:</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="703"/>
+        <location filename="../cheatmanagerwindow.cpp" line="542"/>
         <source>PCSXR Cheat Files (*.cht);;All Files (*.*)</source>
-        <translation>Pliki cheatów PCSXR (* .cht) ;; Wszystkie pliki (*. *)</translation>
+        <translation>Pliki kodów PCSXR (* .cht) ;; Wszystkie pliki (*. *)</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="705"/>
+        <location filename="../cheatmanagerwindow.cpp" line="544"/>
         <source>Export Cheats</source>
         <translation>Eksportuj kody</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="710"/>
+        <location filename="../cheatmanagerwindow.cpp" line="549"/>
         <source>Failed to save cheat file. The log may contain more information.</source>
-        <translation>Nie udało się zapisać pliku cheatów. Dziennik może zawierać więcej informacji.</translation>
+        <translation>Nie udało się zapisać pliku kodów. Dziennik zdarzeń może zawierać więcej informacji.</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="715"/>
+        <location filename="../cheatmanagerwindow.cpp" line="554"/>
         <source>Confirm Clear</source>
-        <translation>Potwierdź Wyczyszczenie</translation>
+        <translation>Potwierdź wyczyszczenie</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="716"/>
+        <location filename="../cheatmanagerwindow.cpp" line="555"/>
         <source>Are you sure you want to remove all cheats? This is not reversible.</source>
-        <translation>Czy na pewno usunąć wszystkie cheaty? Ta czynność jest nieodwracalna.</translation>
+        <translation>Czy na pewno usunąć wszystkie kody? Ta czynność jest nieodwracalna.</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="729"/>
+        <location filename="../cheatmanagerwindow.cpp" line="568"/>
         <source>Confirm Reset</source>
-        <translation>Potwierdź Reset</translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="730"/>
+        <location filename="../cheatmanagerwindow.cpp" line="569"/>
         <source>Are you sure you want to reset the cheat list? Any cheats not in the DuckStation database WILL BE LOST.</source>
-        <translation>Czy na pewno zresetować listę cheatów? Wszystkie cheaty spoza bazy DuckStation ZOSTANĄ USUNIĘTE.</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.cpp" line="759"/>
-        <source>Enter manual address:</source>
-        <translation>Wpisz adres ręcznie:</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.cpp" line="768"/>
-        <source>Select data size:</source>
-        <translation>Wybierz rozmiar danych:</translation>
+        <translation>Czy na pewno zresetować listę kodów? Wszystkie kody spoza bazy DuckStation ZOSTANĄ USUNIĘTE.</translation>
     </message>
 </context>
 <context>
@@ -4167,7 +3874,7 @@ Tej operacji nie można cofnąć.</translation>
     <message>
         <location filename="../debuggerwindow.ui" line="177"/>
         <source>Scratchpad</source>
-        <translation>Scratchpad</translation>
+        <translation>Brudnopis</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="184"/>
@@ -4403,7 +4110,7 @@ Tej operacji nie można cofnąć.</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="136"/>
-        <location filename="../qtutils.cpp" line="165"/>
+        <location filename="../qtutils.cpp" line="182"/>
         <source>Enter memory address:</source>
         <translation>Wpisz adres pamięci:</translation>
     </message>
@@ -4482,7 +4189,7 @@ Ten plik może mieć kilka gigabajtów, więc pamiętaj o zużyciu dysku SSD.</t
     </message>
     <message>
         <location filename="../debuggermodels.cpp" line="481"/>
-        <location filename="../qtutils.cpp" line="182"/>
+        <location filename="../qtutils.cpp" line="199"/>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
         <translation>Błędny adres. Powinien być zapisany szesnastkowo (0x12345678 lub 12345678)</translation>
     </message>
@@ -6728,7 +6435,7 @@ Spowodowany błąd:</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7150"/>
         <source>Exit DuckStation</source>
-        <translation>Wyjdź z DuckStation</translation>
+        <translation>Zamknij DuckStation</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7152"/>
@@ -11297,591 +11004,596 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
     </message>
     <message>
         <location filename="../mainwindow.ui" line="42"/>
-        <location filename="../mainwindow.cpp" line="1294"/>
-        <location filename="../mainwindow.cpp" line="1535"/>
+        <location filename="../mainwindow.cpp" line="1268"/>
+        <location filename="../mainwindow.cpp" line="1509"/>
         <source>Change Disc</source>
         <translation>Zmień płytę</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="57"/>
-        <location filename="../mainwindow.ui" line="550"/>
+        <location filename="../mainwindow.ui" line="56"/>
+        <location filename="../mainwindow.ui" line="523"/>
         <source>Cheats</source>
         <translation>Kody/Oszustwa</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="66"/>
-        <location filename="../mainwindow.cpp" line="793"/>
-        <location filename="../mainwindow.cpp" line="1162"/>
+        <location filename="../mainwindow.ui" line="64"/>
+        <location filename="../mainwindow.cpp" line="767"/>
+        <location filename="../mainwindow.cpp" line="1136"/>
         <source>Load State</source>
         <translation>Wczytaj stan</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="75"/>
+        <location filename="../mainwindow.ui" line="72"/>
         <source>Save State</source>
         <translation>Zapisz stan</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="105"/>
+        <location filename="../mainwindow.ui" line="101"/>
         <source>S&amp;ettings</source>
         <translation>&amp;Ustawienia</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="109"/>
+        <location filename="../mainwindow.ui" line="105"/>
         <source>Theme</source>
         <translation>Skórka</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="118"/>
+        <location filename="../mainwindow.ui" line="113"/>
         <source>Language</source>
         <translation>Język</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="152"/>
+        <location filename="../mainwindow.ui" line="146"/>
         <source>&amp;Help</source>
         <translation>&amp;Pomoc</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="166"/>
+        <location filename="../mainwindow.ui" line="160"/>
         <source>&amp;Debug</source>
         <translation>&amp;Debugowanie</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="170"/>
+        <location filename="../mainwindow.ui" line="164"/>
         <source>Switch GPU Renderer</source>
         <translation>Przełącz silnik renderujący karty graficznej</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="175"/>
+        <location filename="../mainwindow.ui" line="169"/>
         <source>Switch CPU Emulation Mode</source>
         <translation>Przełącz tryb emulacji CPU</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="180"/>
+        <location filename="../mainwindow.ui" line="174"/>
         <source>Switch Crop Mode</source>
         <translation>Przełącz tryb kadrowania</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="211"/>
+        <location filename="../mainwindow.ui" line="205"/>
         <source>&amp;View</source>
         <translation>&amp;Widok</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="215"/>
+        <location filename="../mainwindow.ui" line="209"/>
         <source>&amp;Window Size</source>
         <translation>&amp;Rozmiar okna</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="236"/>
+        <location filename="../mainwindow.ui" line="230"/>
         <source>&amp;Tools</source>
         <translation>&amp;Narzędzia</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="252"/>
+        <location filename="../mainwindow.ui" line="248"/>
         <source>toolBar</source>
         <translation>Pasek narzędzi</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="294"/>
+        <location filename="../mainwindow.ui" line="289"/>
         <source>Start &amp;File...</source>
         <translation>Uruchom &amp;plik...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="303"/>
+        <location filename="../mainwindow.ui" line="297"/>
         <source>Start &amp;Disc...</source>
         <translation>Uruchom &amp;Płytę...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="312"/>
+        <location filename="../mainwindow.ui" line="305"/>
         <source>Start &amp;BIOS</source>
         <translation>Uruchom &amp;BIOS</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="321"/>
+        <location filename="../mainwindow.ui" line="313"/>
         <source>&amp;Scan For New Games</source>
         <translation>Skanuj w poszukiwaniu nowych &amp;gier</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="330"/>
+        <location filename="../mainwindow.ui" line="321"/>
         <source>&amp;Rescan All Games</source>
         <translation>Przeskanuj ponownie &amp;wszystkie gry</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="339"/>
+        <location filename="../mainwindow.ui" line="329"/>
         <source>Power &amp;Off</source>
         <translation>&amp;Wyłącz zasilanie</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="348"/>
+        <location filename="../mainwindow.ui" line="337"/>
         <source>&amp;Reset</source>
         <translation>&amp;Resetuj</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="360"/>
+        <location filename="../mainwindow.ui" line="348"/>
         <source>&amp;Pause</source>
         <translation>&amp;Pauza</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="369"/>
+        <location filename="../mainwindow.ui" line="356"/>
         <source>&amp;Load State</source>
         <translation>&amp;Wczytaj stan</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="378"/>
+        <location filename="../mainwindow.ui" line="364"/>
         <source>&amp;Save State</source>
         <translation>&amp;Zapisz stan</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="387"/>
+        <location filename="../mainwindow.ui" line="372"/>
         <source>E&amp;xit</source>
         <translation>W&amp;yjdź</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="396"/>
+        <location filename="../mainwindow.ui" line="380"/>
         <source>B&amp;IOS</source>
         <translation>B&amp;IOS</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="405"/>
+        <location filename="../mainwindow.ui" line="388"/>
         <source>C&amp;onsole</source>
         <translation>K&amp;onsola</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="414"/>
+        <location filename="../mainwindow.ui" line="396"/>
         <source>E&amp;mulation</source>
         <translation>E&amp;mulacja</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="423"/>
+        <location filename="../mainwindow.ui" line="404"/>
         <source>&amp;Controllers</source>
         <translation>Kon&amp;trolery</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="432"/>
+        <location filename="../mainwindow.ui" line="412"/>
         <source>&amp;Hotkeys</source>
         <translation>&amp;Skróty klawiszowe</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="450"/>
+        <location filename="../mainwindow.ui" line="428"/>
         <source>&amp;Post-Processing</source>
         <translation>&amp;Przetwarzanie końcowe</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="505"/>
+        <location filename="../mainwindow.ui" line="481"/>
         <source>View Third-Party Notices...</source>
         <translation>Wyświetl notki innych firm...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="559"/>
+        <location filename="../mainwindow.ui" line="531"/>
         <source>Audio</source>
         <translation>Dźwięk</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="568"/>
+        <location filename="../mainwindow.ui" line="539"/>
         <source>Achievements</source>
         <translation>Osiągnięcia</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="577"/>
+        <location filename="../mainwindow.ui" line="547"/>
         <source>Folders</source>
         <translation>Katalogi</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="586"/>
+        <location filename="../mainwindow.ui" line="555"/>
         <source>Game List</source>
         <translation>Lista gier</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="604"/>
+        <location filename="../mainwindow.ui" line="571"/>
         <source>Advanced</source>
         <translation>Zaawansowane</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="622"/>
-        <location filename="../mainwindow.ui" line="634"/>
+        <location filename="../mainwindow.ui" line="587"/>
+        <location filename="../mainwindow.ui" line="598"/>
         <source>&amp;Settings</source>
         <translation>&amp;Ustawienia</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="754"/>
+        <location filename="../mainwindow.ui" line="718"/>
         <source>Show CD-ROM State</source>
         <translation>Pokaż stan CD-ROMu</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="804"/>
+        <location filename="../mainwindow.ui" line="766"/>
         <source>&amp;Memory Cards</source>
         <translation>&amp;Karty pamięci</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="965"/>
-        <location filename="../mainwindow.cpp" line="1336"/>
+        <location filename="../mainwindow.ui" line="921"/>
+        <location filename="../mainwindow.cpp" line="1310"/>
         <source>Start Big Picture Mode</source>
         <translation>Tryb &quot;Big Picture&quot;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="974"/>
-        <location filename="../mainwindow.cpp" line="1337"/>
+        <location filename="../mainwindow.ui" line="929"/>
+        <location filename="../mainwindow.cpp" line="1311"/>
         <source>Big Picture</source>
         <translation>Tryb &quot;Big Picture&quot;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="979"/>
+        <location filename="../mainwindow.ui" line="934"/>
         <source>Cover Downloader</source>
         <translation>Pobieranie okładek</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="459"/>
+        <location filename="../mainwindow.ui" line="436"/>
         <source>Fullscreen</source>
         <translation>Pełny ekran</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="441"/>
+        <location filename="../mainwindow.ui" line="420"/>
         <source>&amp;Graphics</source>
         <translation>&amp;Grafika</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="464"/>
+        <location filename="../mainwindow.ui" line="441"/>
         <source>Resolution Scale</source>
         <translation>Skalowanie rozdzielczości</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="473"/>
+        <location filename="../mainwindow.ui" line="450"/>
         <source>&amp;GitHub Repository...</source>
         <translation>Repozytorium &amp;GitHub...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="482"/>
+        <location filename="../mainwindow.ui" line="459"/>
         <source>&amp;Issue Tracker...</source>
         <translation>&amp;Lista Problemów...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="491"/>
+        <location filename="../mainwindow.ui" line="468"/>
         <source>&amp;Discord Server...</source>
         <translation>Serwer &amp;Discord...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="500"/>
+        <location filename="../mainwindow.ui" line="476"/>
         <source>Check for &amp;Updates...</source>
         <translation>Sprawdź &amp;aktualizacje...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="514"/>
+        <location filename="../mainwindow.ui" line="490"/>
         <source>About &amp;Qt...</source>
         <translation>O &amp;Qt...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="523"/>
+        <location filename="../mainwindow.ui" line="499"/>
         <source>&amp;About DuckStation...</source>
         <translation>&amp;O DuckStation...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="532"/>
+        <location filename="../mainwindow.ui" line="507"/>
         <source>Change Disc...</source>
         <translation>Zmień płytę...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="541"/>
+        <location filename="../mainwindow.ui" line="515"/>
         <source>Cheats...</source>
         <translation>Kody...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="595"/>
+        <location filename="../mainwindow.ui" line="563"/>
         <source>&amp;Interface</source>
         <translation>&amp;Interfejs</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="613"/>
+        <location filename="../mainwindow.ui" line="579"/>
         <source>Add Game Directory...</source>
         <translation>Dodaj katalog gier...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="642"/>
+        <location filename="../mainwindow.ui" line="606"/>
         <source>From File...</source>
         <translation>Z pliku...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="647"/>
+        <location filename="../mainwindow.ui" line="611"/>
         <source>From Device...</source>
         <translation>Z urządzenia...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="652"/>
+        <location filename="../mainwindow.ui" line="616"/>
         <source>From Game List...</source>
         <translation>Z listy gier...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="657"/>
+        <location filename="../mainwindow.ui" line="621"/>
         <source>Remove Disc</source>
         <translation>Wyjmij płytę</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="662"/>
+        <location filename="../mainwindow.ui" line="626"/>
         <source>Resume State</source>
         <translation>Wznów stan</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="667"/>
+        <location filename="../mainwindow.ui" line="631"/>
         <source>Global State</source>
         <translation>Globalny Stan</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="675"/>
+        <location filename="../mainwindow.ui" line="639"/>
         <source>Show VRAM</source>
         <translation>Pokaż VRAM</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="683"/>
+        <location filename="../mainwindow.ui" line="647"/>
         <source>Dump CPU to VRAM Copies</source>
         <translation>Zrzuć CPU do kopii VRAM</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="691"/>
+        <location filename="../mainwindow.ui" line="655"/>
         <source>Dump VRAM to CPU Copies</source>
         <translation>Zrzuć VRAM do kopii CPU</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="699"/>
+        <location filename="../mainwindow.ui" line="663"/>
         <source>Disable All Enhancements</source>
         <translation>Wyłącz wszystkie ulepszenia</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="707"/>
+        <location filename="../mainwindow.ui" line="671"/>
         <source>Disable Interlacing</source>
         <translation>Wyłącz przeplot</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="715"/>
+        <location filename="../mainwindow.ui" line="679"/>
         <source>Force NTSC Timings</source>
         <translation>Wymuś taktowanie NTSC</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="723"/>
+        <location filename="../mainwindow.ui" line="687"/>
         <source>Dump Audio</source>
         <translation>Zrzuć Dźwięk</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="728"/>
+        <location filename="../mainwindow.ui" line="692"/>
         <source>Dump RAM...</source>
         <translation>Zrzuć RAM...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="733"/>
+        <location filename="../mainwindow.ui" line="697"/>
         <source>Dump VRAM...</source>
         <translation>Zrzuć VRAM...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="738"/>
+        <location filename="../mainwindow.ui" line="702"/>
         <source>Dump SPU RAM...</source>
         <translation>Zrzuć SPU RAM...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="746"/>
+        <location filename="../mainwindow.ui" line="710"/>
         <source>Show GPU State</source>
         <translation>Pokaż stan karty graficznej</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="762"/>
+        <location filename="../mainwindow.ui" line="726"/>
         <source>Show SPU State</source>
         <translation>Pokaż stan SPU</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="770"/>
+        <location filename="../mainwindow.ui" line="734"/>
         <source>Show Timers State</source>
         <translation>Pokaż stan timerów</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="778"/>
+        <location filename="../mainwindow.ui" line="742"/>
         <source>Show MDEC State</source>
         <translation>Pokaż stan MDEC</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="786"/>
+        <location filename="../mainwindow.ui" line="750"/>
         <source>Show DMA State</source>
         <translation>Pokaż stan DMA</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="795"/>
+        <location filename="../mainwindow.ui" line="758"/>
         <source>&amp;Screenshot</source>
         <translation>&amp;Zrzut ekranu</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="813"/>
-        <location filename="../mainwindow.cpp" line="790"/>
+        <location filename="../mainwindow.ui" line="774"/>
+        <location filename="../mainwindow.cpp" line="764"/>
         <source>Resume</source>
         <translation>Wznów</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="816"/>
+        <location filename="../mainwindow.ui" line="777"/>
         <source>Resumes the last save state created.</source>
         <translation>Wznawia ostatni utworzony zapis stanu.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="827"/>
+        <location filename="../mainwindow.ui" line="788"/>
         <source>&amp;Toolbar</source>
         <translation>Pasek &amp;narzędzi</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="838"/>
+        <location filename="../mainwindow.ui" line="799"/>
         <source>Lock Toolbar</source>
         <translation>Zablokuj pasek narzędzi</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="849"/>
+        <location filename="../mainwindow.ui" line="810"/>
         <source>&amp;Status Bar</source>
         <translation>Pasek &amp;stanu</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="858"/>
+        <location filename="../mainwindow.ui" line="818"/>
         <source>Game &amp;List</source>
         <translation>&amp;Lista gier</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="866"/>
+        <location filename="../mainwindow.ui" line="826"/>
         <source>System &amp;Display</source>
         <translation>&amp;Wyświetlacz systemu</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="878"/>
+        <location filename="../mainwindow.ui" line="837"/>
         <source>Game &amp;Properties</source>
         <translation>Właściwości &amp;gry</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="883"/>
+        <location filename="../mainwindow.ui" line="842"/>
         <source>Memory &amp;Card Editor</source>
         <translation>Edytor &amp;kart pamięci</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="888"/>
+        <location filename="../mainwindow.ui" line="847"/>
         <source>CPU D&amp;ebugger</source>
         <translation>Debugger &amp;CPU</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="896"/>
+        <location filename="../mainwindow.ui" line="855"/>
         <source>Enable GDB Server</source>
         <translation>Włącz serwer GDB</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="905"/>
+        <location filename="../mainwindow.ui" line="863"/>
         <source>Game &amp;Grid</source>
         <translation>&amp;Siatka gier</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="916"/>
+        <location filename="../mainwindow.ui" line="874"/>
         <source>Show Titles (Grid View)</source>
         <translation>Pokaż Tytuły (Widok Siatki)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="921"/>
+        <location filename="../mainwindow.ui" line="879"/>
         <source>Zoom &amp;In (Grid View)</source>
         <translation>Po&amp;większ (Widok Siatki)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="924"/>
+        <location filename="../mainwindow.ui" line="882"/>
         <source>Ctrl++</source>
         <translation>Ctrl++</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="929"/>
+        <location filename="../mainwindow.ui" line="887"/>
         <source>Zoom &amp;Out (Grid View)</source>
         <translation>Po&amp;mniejsz (Widok Siatki)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="932"/>
+        <location filename="../mainwindow.ui" line="890"/>
         <source>Ctrl+-</source>
         <translation>Ctrl+-</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="937"/>
+        <location filename="../mainwindow.ui" line="895"/>
         <source>Refresh &amp;Covers (Grid View)</source>
         <translation>Odśwież &amp;Okładki (Widok Siatki)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="942"/>
+        <location filename="../mainwindow.ui" line="900"/>
         <source>Open Memory Card Directory...</source>
         <translation>Otwórz katalog kart pamięci...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="947"/>
+        <location filename="../mainwindow.ui" line="905"/>
         <source>Open Data Directory...</source>
         <translation>Otwórz katalog danych...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="956"/>
+        <location filename="../mainwindow.ui" line="913"/>
         <source>Power Off &amp;Without Saving</source>
         <translation>Wyłącz zasilanie bez &amp;zapisywania</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="62"/>
+        <location filename="../mainwindow.ui" line="939"/>
+        <source>Memory &amp;Scanner</source>
+        <translation>&amp;Skaner pamięci</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="63"/>
         <source>All File Types (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp *.PBP);;PlayStation Executables (*.exe *.psexe *.ps-exe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
         <translation>Wszystkie typy plików (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psf *.minipsf *.m3u);;Jednościeżkowe obrazy RAW (*.bin *.img *.iso);;Pliki CUE (*.cue);;obrazy MAME CHD (*.chd);;Obrazy Error Code Modeler (*.ecm);;Obrazy Media Descriptor Sidecar (*.mds);;Pliki PlayStation EBOOT (*.pbp *.PBP);;Pliki wykonywalne PlayStation (*.exe *.psexe *.ps-exe);;Pliki Portable Sound Format (*.psf *.minipsf);;Listy odtwarzania (*.m3u)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="305"/>
-        <location filename="../mainwindow.cpp" line="1072"/>
-        <location filename="../mainwindow.cpp" line="1182"/>
-        <location filename="../mainwindow.cpp" line="1452"/>
+        <location filename="../mainwindow.cpp" line="306"/>
+        <location filename="../mainwindow.cpp" line="1046"/>
+        <location filename="../mainwindow.cpp" line="1156"/>
+        <location filename="../mainwindow.cpp" line="1426"/>
         <source>Error</source>
         <translation>Błąd</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="305"/>
+        <location filename="../mainwindow.cpp" line="306"/>
         <source>Failed to get window info from widget</source>
         <translation>Nie udało się pobrać z widżetu informacji o oknie</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="553"/>
+        <location filename="../mainwindow.cpp" line="554"/>
         <source>Paused</source>
         <translation>Pauza</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="654"/>
-        <location filename="../mainwindow.cpp" line="1279"/>
+        <location filename="../mainwindow.cpp" line="649"/>
+        <location filename="../mainwindow.cpp" line="1253"/>
         <source>Select Disc Image</source>
         <translation>Wybierz obraz płyty</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="669"/>
+        <location filename="../mainwindow.cpp" line="664"/>
         <source>Could not find any CD-ROM devices. Please ensure you have a CD-ROM drive connected and sufficient permissions to access it.</source>
         <translation>Nie odnaleziono urządzeń CD-ROM. Upewnij się, że napęd CD-ROM jest podłączony i posiadasz odpowiednie uprawnienia dostępu.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="683"/>
+        <location filename="../mainwindow.cpp" line="678"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="687"/>
+        <location filename="../mainwindow.cpp" line="682"/>
         <source>Select disc drive:</source>
         <translation>Wybierz napęd:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="813"/>
+        <location filename="../mainwindow.cpp" line="787"/>
         <source>Resume (%1)</source>
         <translation>Wznawianie (%1)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="820"/>
-        <location filename="../mainwindow.cpp" line="944"/>
-        <location filename="../mainwindow.cpp" line="983"/>
+        <location filename="../mainwindow.cpp" line="794"/>
+        <location filename="../mainwindow.cpp" line="918"/>
+        <location filename="../mainwindow.cpp" line="957"/>
         <source>Game Save %1 (%2)</source>
         <translation>Zapis gry %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="829"/>
+        <location filename="../mainwindow.cpp" line="803"/>
         <source>Edit Memory Cards...</source>
         <translation>Edytuj karty pamięci...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="884"/>
+        <location filename="../mainwindow.cpp" line="858"/>
         <source>Delete Save States...</source>
         <translation>Usuń zapisane stany...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="890"/>
+        <location filename="../mainwindow.cpp" line="864"/>
         <source>Confirm Save State Deletion</source>
         <translation>Potwierdź usunięcie zapisanego stanu</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="891"/>
+        <location filename="../mainwindow.cpp" line="865"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
@@ -11890,87 +11602,87 @@ The saves will not be recoverable.</source>
 Zapisów nie będzie można odzyskać.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="928"/>
+        <location filename="../mainwindow.cpp" line="902"/>
         <source>Load From File...</source>
         <translation>Wczytaj z pliku...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="930"/>
-        <location filename="../mainwindow.cpp" line="972"/>
+        <location filename="../mainwindow.cpp" line="904"/>
+        <location filename="../mainwindow.cpp" line="946"/>
         <source>Select Save State File</source>
         <translation>Wybierz plik zapisu stanu</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="930"/>
-        <location filename="../mainwindow.cpp" line="972"/>
+        <location filename="../mainwindow.cpp" line="904"/>
+        <location filename="../mainwindow.cpp" line="946"/>
         <source>Save States (*.sav)</source>
         <translation>Zapisy stanu (*.sav)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="936"/>
+        <location filename="../mainwindow.cpp" line="910"/>
         <source>Undo Load State</source>
         <translation>Cofnij wczytanie stanu</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="944"/>
-        <location filename="../mainwindow.cpp" line="983"/>
+        <location filename="../mainwindow.cpp" line="918"/>
+        <location filename="../mainwindow.cpp" line="957"/>
         <source>Game Save %1 (Empty)</source>
         <translation>Zapis gry %1 (Pusty)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="950"/>
-        <location filename="../mainwindow.cpp" line="989"/>
+        <location filename="../mainwindow.cpp" line="924"/>
+        <location filename="../mainwindow.cpp" line="963"/>
         <source>Global Save %1 (%2)</source>
         <translation>Globalny zapis %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="950"/>
-        <location filename="../mainwindow.cpp" line="989"/>
+        <location filename="../mainwindow.cpp" line="924"/>
+        <location filename="../mainwindow.cpp" line="963"/>
         <source>Global Save %1 (Empty)</source>
         <translation>Globalny zapis %1 (Pusty)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="967"/>
+        <location filename="../mainwindow.cpp" line="941"/>
         <source>Save To File...</source>
         <translation>Zapisz do pliku...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1044"/>
+        <location filename="../mainwindow.cpp" line="1018"/>
         <source>Enable Cheats</source>
         <translation>Włącz kody</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1052"/>
+        <location filename="../mainwindow.cpp" line="1026"/>
         <source>Enable For All Games</source>
         <translation>Włącz dla wszystkich gier</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1053"/>
+        <location filename="../mainwindow.cpp" line="1027"/>
         <source>Enable For This Game</source>
         <translation>Włącz dla tej gier</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1072"/>
+        <location filename="../mainwindow.cpp" line="1046"/>
         <source>Failed to enable cheats for %1.</source>
         <translation>Nie udało się włączyć kodów dla &apos;%1&apos;.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1100"/>
+        <location filename="../mainwindow.cpp" line="1074"/>
         <source>&amp;Enabled Cheats</source>
         <translation>&amp;Włączone kody</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1102"/>
+        <location filename="../mainwindow.cpp" line="1076"/>
         <source>&amp;Apply Cheats</source>
         <translation>&amp;Zastosuj kody</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1156"/>
+        <location filename="../mainwindow.cpp" line="1130"/>
         <source>Load Resume State</source>
         <translation>Wczytaj automatyczny zapis</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1158"/>
+        <location filename="../mainwindow.cpp" line="1132"/>
         <source>A resume save state was found for this game, saved at:
 
 %1.
@@ -11983,176 +11695,176 @@ Do you want to load this state, or start from a fresh boot?</source>
 Wczytać go czy uruchomić grę od nowa?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1163"/>
+        <location filename="../mainwindow.cpp" line="1137"/>
         <source>Fresh Boot</source>
         <translation>Uruchom od nowa</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1164"/>
+        <location filename="../mainwindow.cpp" line="1138"/>
         <source>Delete And Boot</source>
         <translation>Usuń stan i uruchom od nowa</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1183"/>
+        <location filename="../mainwindow.cpp" line="1157"/>
         <source>Failed to delete save state file &apos;%1&apos;.</source>
         <translation>Nie udało się usunąć pliku zapisu &apos;%1&apos;.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1240"/>
+        <location filename="../mainwindow.cpp" line="1214"/>
         <source>Confirm Disc Change</source>
         <translation>Potwierdź zmianę płyty</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1241"/>
+        <location filename="../mainwindow.cpp" line="1215"/>
         <source>Do you want to swap discs or boot the new image (via system reset)?</source>
         <translation>Podmienić płyty czy zresetować system z nową płytą?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1243"/>
+        <location filename="../mainwindow.cpp" line="1217"/>
         <source>Swap Disc</source>
         <translation>Podmień płyty</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1244"/>
+        <location filename="../mainwindow.cpp" line="1218"/>
         <source>Reset</source>
         <translation>Zresetuj</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1055"/>
-        <location filename="../mainwindow.cpp" line="1245"/>
+        <location filename="../mainwindow.cpp" line="1029"/>
+        <location filename="../mainwindow.cpp" line="1219"/>
         <source>Cancel</source>
         <translation>Anuluj</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1264"/>
+        <location filename="../mainwindow.cpp" line="1238"/>
         <source>Start Disc</source>
         <translation>Uruchom płytę</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1088"/>
+        <location filename="../mainwindow.cpp" line="1062"/>
         <source>Cheat Manager</source>
         <translation>Menedżer cheatów</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1336"/>
+        <location filename="../mainwindow.cpp" line="1310"/>
         <source>Stop Big Picture Mode</source>
         <translation>Zatrzymaj tryb Big Picture</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1337"/>
+        <location filename="../mainwindow.cpp" line="1311"/>
         <source>Exit Big Picture</source>
         <translation>Wyjdź z trybu Big Picture</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1452"/>
+        <location filename="../mainwindow.cpp" line="1426"/>
         <source>You must select a disc to change discs.</source>
         <translation>Musisz wybrać płytę by móc ją podmienić.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1488"/>
+        <location filename="../mainwindow.cpp" line="1462"/>
         <source>Properties...</source>
         <translation>Właściwości...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1492"/>
+        <location filename="../mainwindow.cpp" line="1466"/>
         <source>Open Containing Directory...</source>
         <translation>Otwórz katalog zawierający...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1497"/>
+        <location filename="../mainwindow.cpp" line="1471"/>
         <source>Set Cover Image...</source>
         <translation>Ustaw obraz okładki...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1507"/>
+        <location filename="../mainwindow.cpp" line="1481"/>
         <source>Default Boot</source>
         <translation>Domyślny rozruch</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1510"/>
+        <location filename="../mainwindow.cpp" line="1484"/>
         <source>Fast Boot</source>
         <translation>Szybki rozruch</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1516"/>
+        <location filename="../mainwindow.cpp" line="1490"/>
         <source>Full Boot</source>
         <translation>Pełny rozruch</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1524"/>
+        <location filename="../mainwindow.cpp" line="1498"/>
         <source>Boot and Debug</source>
         <translation>Rozruch i debugowanie</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1544"/>
+        <location filename="../mainwindow.cpp" line="1518"/>
         <source>Exclude From List</source>
         <translation>Wyklucz z listy</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1547"/>
+        <location filename="../mainwindow.cpp" line="1521"/>
         <source>Reset Play Time</source>
         <translation>Zresetuj czas gry</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1551"/>
+        <location filename="../mainwindow.cpp" line="1525"/>
         <source>Add Search Directory...</source>
         <translation>Dodaj katalog wyszukiwania...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1560"/>
+        <location filename="../mainwindow.cpp" line="1534"/>
         <source>Select Cover Image</source>
         <translation>Wybierz obraz okładki</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1578"/>
+        <location filename="../mainwindow.cpp" line="1552"/>
         <source>Cover Already Exists</source>
         <translation>Okładka już istnieje</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1579"/>
+        <location filename="../mainwindow.cpp" line="1553"/>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <translation>Grafika okładki tej gry już istnieje, czy chcesz ją zastąpić?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1574"/>
-        <location filename="../mainwindow.cpp" line="1588"/>
-        <location filename="../mainwindow.cpp" line="1593"/>
-        <location filename="../mainwindow.cpp" line="1598"/>
+        <location filename="../mainwindow.cpp" line="1548"/>
+        <location filename="../mainwindow.cpp" line="1562"/>
+        <location filename="../mainwindow.cpp" line="1567"/>
+        <location filename="../mainwindow.cpp" line="1572"/>
         <source>Copy Error</source>
         <translation>Błąd kopiowania</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1560"/>
+        <location filename="../mainwindow.cpp" line="1534"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</source>
         <translation>Wszystkie typy obrazów okładek (*.jpg *.jpeg *.png *.webp)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1574"/>
+        <location filename="../mainwindow.cpp" line="1548"/>
         <source>You must select a different file to the current cover image.</source>
         <translation>Musisz wybrać inny plik niż obecny obraz okładki.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1588"/>
+        <location filename="../mainwindow.cpp" line="1562"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation>Nie udało się usunąć istniejącej okładki &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1593"/>
+        <location filename="../mainwindow.cpp" line="1567"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
         <translation>Nie udało się skopiować &apos;%1&apos; do &apos;%2&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1598"/>
+        <location filename="../mainwindow.cpp" line="1572"/>
         <source>Failed to remove &apos;%1&apos;</source>
         <translation>Nie udało się usunąć &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1607"/>
+        <location filename="../mainwindow.cpp" line="1581"/>
         <source>Confirm Reset</source>
         <translation>Potwierdź reset</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1608"/>
+        <location filename="../mainwindow.cpp" line="1582"/>
         <source>Are you sure you want to reset the play time for &apos;%1&apos;?
 
 This action cannot be undone.</source>
@@ -12161,25 +11873,25 @@ This action cannot be undone.</source>
 Tej czynności nie można cofnąć.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1752"/>
+        <location filename="../mainwindow.cpp" line="1726"/>
         <source>%1x Scale</source>
         <translation>%1x Skala</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2167"/>
-        <location filename="../mainwindow.cpp" line="2175"/>
-        <location filename="../mainwindow.cpp" line="2183"/>
+        <location filename="../mainwindow.cpp" line="2143"/>
+        <location filename="../mainwindow.cpp" line="2151"/>
+        <location filename="../mainwindow.cpp" line="2159"/>
         <source>Destination File</source>
         <translation>Plik docelowy</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2167"/>
-        <location filename="../mainwindow.cpp" line="2183"/>
+        <location filename="../mainwindow.cpp" line="2143"/>
+        <location filename="../mainwindow.cpp" line="2159"/>
         <source>Binary Files (*.bin)</source>
         <translation>Pliki binarne (*.bin)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2175"/>
+        <location filename="../mainwindow.cpp" line="2151"/>
         <source>Binary Files (*.bin);;PNG Images (*.png)</source>
         <translation>Pliki binarne (*.bin);;Obrazy PNG (*.png)</translation>
     </message>
@@ -12224,51 +11936,51 @@ Tej czynności nie można cofnąć.</translation>
         <translation>Q Ciemny Styl</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2843"/>
+        <location filename="../mainwindow.cpp" line="2799"/>
         <source>Confirm Shutdown</source>
         <translation>Potwierdź zamknięcie systemu</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2845"/>
+        <location filename="../mainwindow.cpp" line="2801"/>
         <source>Are you sure you want to shut down the virtual machine?</source>
         <translation>Czy na pewno chcesz zamknąć maszynę wirtualną?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2847"/>
+        <location filename="../mainwindow.cpp" line="2803"/>
         <source>Save State For Resume</source>
         <translation>Zapisz stan gry</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2922"/>
-        <location filename="../mainwindow.cpp" line="2927"/>
-        <location filename="../mainwindow.cpp" line="2952"/>
-        <location filename="../mainwindow.cpp" line="2961"/>
+        <location filename="../mainwindow.cpp" line="2878"/>
+        <location filename="../mainwindow.cpp" line="2883"/>
+        <location filename="../mainwindow.cpp" line="2899"/>
+        <location filename="../mainwindow.cpp" line="2908"/>
         <source>Memory Card Not Found</source>
         <translation>Nie znaleziono karty pamięci</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2923"/>
+        <location filename="../mainwindow.cpp" line="2879"/>
         <source>Memory card &apos;%1&apos; does not exist. Do you want to create an empty memory card?</source>
         <translation>Karta pamięci &apos;%1&apos; nieznaleziona. Czy chcesz utworzyć pustą kartę pamięci?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2928"/>
+        <location filename="../mainwindow.cpp" line="2884"/>
         <source>Failed to create memory card &apos;%1&apos;</source>
         <translation>Nie udało się utworzyć karty pamięci &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2953"/>
-        <location filename="../mainwindow.cpp" line="2962"/>
+        <location filename="../mainwindow.cpp" line="2900"/>
+        <location filename="../mainwindow.cpp" line="2909"/>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
         <translation>Nie znaleziono karty pamięci &apos;%1&apos;. Spróbuj uruchomić grę i zapisać, aby ją utworzyć.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2978"/>
+        <location filename="../mainwindow.cpp" line="2925"/>
         <source>RA: Logged in as %1 (%2, %3 softcore). %4 unread messages.</source>
         <translation>RA: Zalogowano jako %1 (%2, %3 softcore). Liczba nieprzeczytanych wiadomości: %4.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1046"/>
+        <location filename="../mainwindow.cpp" line="1020"/>
         <source>Using cheats can have unpredictable effects on games, causing crashes, graphical glitches, and corrupted saves. By using the cheat manager, you agree that it is an unsupported configuration, and we will not provide you with any assistance when games break.
 
 Cheats persist through save states even after being disabled, please remember to reset/reboot the game after turning off any codes.
@@ -12281,17 +11993,17 @@ Cheaty &quot;przechowywane&quot; są również w zapisach gry, także pamiętaj,
 Czy na pewno chcesz kontynuować?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3086"/>
+        <location filename="../mainwindow.cpp" line="3027"/>
         <source>Updater Error</source>
         <translation>Błąd aktualizacji</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3093"/>
+        <location filename="../mainwindow.cpp" line="3034"/>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please follow the instructions under &quot;Downloading and Running&quot; at the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;Przepraszamy, próbujesz zaktualizować wersję DuckStation, która nie jest oficjalną wersją z GitHub. Aby zapobiec niekompatybilnościom, automatyczne aktualizacje są włączone tylko w oficjalnych kompilacjach.&lt;/p&gt;&lt;p&gt;Aby uzyskać oficjalną kompilację, postępuj zgodnie z instrukcjami w sekcji &quot;Pobieranie i uruchamianie&quot; pod linkiem poniżej:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3099"/>
+        <location filename="../mainwindow.cpp" line="3040"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation>Aktualizacje automatyczne nie są obsługiwane na obecnej platformie.</translation>
     </message>
@@ -12662,6 +12374,307 @@ Czy na pewno chcesz kontynuować?</translation>
         <location filename="../../core/settings.cpp" line="1707"/>
         <source>Non-Persistent Card (Do Not Save)</source>
         <translation>Karta nietrwała (nie zapisuj)</translation>
+    </message>
+</context>
+<context>
+    <name>MemoryScannerWindow</name>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="14"/>
+        <source>Memory Scanner</source>
+        <translation>Skaner pamięci</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="46"/>
+        <location filename="../memoryscannerwindow.ui" line="384"/>
+        <source>Address</source>
+        <translation>Adres</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="51"/>
+        <location filename="../memoryscannerwindow.ui" line="394"/>
+        <source>Value</source>
+        <translation>Wartość</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="56"/>
+        <source>Previous Value</source>
+        <translation>Poprzednia wartość</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="64"/>
+        <source>Search Parameters</source>
+        <translation>Parametry wyszukiwania</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="70"/>
+        <source>Value:</source>
+        <translation>Wartość:</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="86"/>
+        <source>Signed</source>
+        <translation>Ze znakiem</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="91"/>
+        <source>Unsigned</source>
+        <translation>Bez znaku</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="103"/>
+        <source>Decimal</source>
+        <translatorcomment>Which value? Dziesiętna :)</translatorcomment>
+        <translation>Dziesiętna</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="108"/>
+        <source>Hex</source>
+        <translation>Szestnastkowa</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="118"/>
+        <source>Data Size:</source>
+        <translation>Rozmiar danych:</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="129"/>
+        <source>Byte (1 byte)</source>
+        <translation>Bajt (1 bajt)</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="134"/>
+        <source>Halfword (2 bytes)</source>
+        <translation>Półsłowo (2 bajty)</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="139"/>
+        <source>Word (4 bytes)</source>
+        <translation>Słowo (4 bajty)</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="147"/>
+        <source>Operator:</source>
+        <translation>Operator:</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="155"/>
+        <source>Equal to...</source>
+        <translation>Jest równy...</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="160"/>
+        <source>Not Equal to...</source>
+        <translation>Nie jest równy...</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="165"/>
+        <source>Greater Than...</source>
+        <translation>Większy niż...</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="170"/>
+        <source>Greater or Equal...</source>
+        <translation>Większy lub równy...</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="175"/>
+        <source>Less Than...</source>
+        <translation>Mniejszy niż...</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="180"/>
+        <source>Less or Equal...</source>
+        <translation>Mniejszy lub równy...</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="185"/>
+        <source>Increased By...</source>
+        <translation>Zwiększony o...</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="190"/>
+        <source>Decreased By...</source>
+        <translation>Zmniejszony o...</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="195"/>
+        <source>Changed By...</source>
+        <translation>Zmieniony o...</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="200"/>
+        <source>Equal to Previous (Unchanged Value)</source>
+        <translation>Równy poprzedniej (niezmieniona wartość)</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="205"/>
+        <source>Not Equal to Previous (Changed Value)</source>
+        <translation>Nie jest równy poprzedniej (zmieniona wartość)</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="210"/>
+        <source>Greater Than Previous</source>
+        <translation>Większy niż poprzedni</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="215"/>
+        <source>Greater or Equal to Previous</source>
+        <translation>Większy lub równy poprzedniemu</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="220"/>
+        <source>Less Than Previous</source>
+        <translation>Mniejszy niż poprzedni</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="225"/>
+        <source>Less or Equal to Previous</source>
+        <translation>Mniejszy lub równy poprzedniemu</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="230"/>
+        <source>Any Value</source>
+        <translation>Dowolna wartość</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="238"/>
+        <source>Start Address:</source>
+        <translation>Adres początkowy:</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="248"/>
+        <source>End Address:</source>
+        <translation>Adres końcowy:</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="258"/>
+        <source>Preset Range:</source>
+        <translation>Zakres ustawień wstępnych:</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="266"/>
+        <source>RAM</source>
+        <translation>RAM</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="271"/>
+        <source>Scratchpad</source>
+        <translation>Brudnopis</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="276"/>
+        <source>BIOS</source>
+        <translation>BIOS</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="284"/>
+        <source>Result Count:</source>
+        <translation>Liczba wyników:</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="291"/>
+        <source>0</source>
+        <translation>0</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="300"/>
+        <source>New Search</source>
+        <translation>Nowe wyszukiwanie</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="310"/>
+        <source>Search Again</source>
+        <translation>Wyszukaj ponownie</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="320"/>
+        <source>Clear Results</source>
+        <translation>Wyczyść wyniki</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="332"/>
+        <source>Add Selected Results To Watch List</source>
+        <translation>Dodaj wybrane wyniki do listy obserwowania</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="379"/>
+        <source>Simple Cheat Code or Description</source>
+        <translation>Prosty kod (oszustwa w grze) lub opis</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="389"/>
+        <source>Type</source>
+        <translation>Typ</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="399"/>
+        <source>Freeze</source>
+        <translation>Zamroź</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="415"/>
+        <source>Load Watch</source>
+        <translation>Wczytaj listę obserwowanych</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="428"/>
+        <source>Save Watch</source>
+        <translation>Zapisz listę obserwowanych</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="435"/>
+        <source>Add Manual Address</source>
+        <translation>Dodaj adres ręcznie</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="445"/>
+        <source>Remove Selected Entries from Watch List</source>
+        <translation>Usuń wybrane wpisy z listy obserwowania</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.cpp" line="25"/>
+        <source>Byte</source>
+        <translation>Bajt</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.cpp" line="25"/>
+        <source>Halfword</source>
+        <translation>Półsłowo</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.cpp" line="26"/>
+        <source>Word</source>
+        <translation>Słowo</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.cpp" line="26"/>
+        <source>Signed Byte</source>
+        <translation>Bajt ze znakiem</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.cpp" line="27"/>
+        <source>Signed Halfword</source>
+        <translation>Półsłowo ze znakiem</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.cpp" line="27"/>
+        <source>Signed Word</source>
+        <translation>Słowo ze znakiem</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.cpp" line="298"/>
+        <source>Enter manual address:</source>
+        <translation>Wpisz adres ręcznie:</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.cpp" line="307"/>
+        <source>Select data size:</source>
+        <translation>Wybierz rozmiar danych:</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.cpp" line="479"/>
+        <source>%1 (only showing first %2)</source>
+        <translation>%1 (pokazuj tylko pierwsze %2)</translation>
     </message>
 </context>
 <context>
@@ -13594,12 +13607,12 @@ Proszę skonfiguruj wspierany kontroler z listy powyżej.</translation>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../qtutils.cpp" line="152"/>
+        <location filename="../qtutils.cpp" line="169"/>
         <source>Failed to open URL</source>
         <translation>Nie udało się otworzyć adresu URL</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="153"/>
+        <location filename="../qtutils.cpp" line="170"/>
         <source>Failed to open URL.
 
 The URL was: %1</source>
