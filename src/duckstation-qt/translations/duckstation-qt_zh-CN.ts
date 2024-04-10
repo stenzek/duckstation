@@ -383,18 +383,18 @@ Login token generated at:</source>
 <context>
     <name>Achievements</name>
     <message>
-        <location filename="../../core/achievements.cpp" line="2678"/>
+        <location filename="../../core/achievements.cpp" line="2702"/>
         <source>Time</source>
         <translation>时间</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2679"/>
+        <location filename="../../core/achievements.cpp" line="2703"/>
         <source>Score</source>
         <translation>得分</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1789"/>
-        <location filename="../../core/achievements.cpp" line="1830"/>
+        <location filename="../../core/achievements.cpp" line="1811"/>
+        <location filename="../../core/achievements.cpp" line="1852"/>
         <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
         <translation>当硬核模式处于活动状态时，无法执行{0}。您想要禁用硬核模式吗？如果您选择“否”，{0}将会被取消。</translation>
     </message>
@@ -404,8 +404,8 @@ Login token generated at:</source>
         <translation>您已经解锁了{0}的{1}成就，并获得了{2}的{3}点数。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1788"/>
-        <location filename="../../core/achievements.cpp" line="1829"/>
+        <location filename="../../core/achievements.cpp" line="1810"/>
+        <location filename="../../core/achievements.cpp" line="1851"/>
         <source>Confirm Hardcore Mode</source>
         <translation>确认硬核模式</translation>
     </message>
@@ -514,153 +514,153 @@ Leaderboard Position: {} of {}</source>
         <translation>全部挂起的解锁请求已完成。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1741"/>
+        <location filename="../../core/achievements.cpp" line="1732"/>
         <source>Score: {} ({} softcore)
 Unread messages: {}</source>
         <translation>得分: {} ({}软核)
 未读消息: {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1813"/>
-        <location filename="../../core/achievements.cpp" line="1836"/>
+        <location filename="../../core/achievements.cpp" line="1835"/>
+        <location filename="../../core/achievements.cpp" line="1858"/>
         <source>Cannot {} while hardcode mode is active.</source>
         <translation>在硬核模式处于活动状态时无法{}。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1833"/>
+        <location filename="../../core/achievements.cpp" line="1855"/>
         <source>Yes</source>
         <translation>是</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1834"/>
+        <location filename="../../core/achievements.cpp" line="1856"/>
         <source>No</source>
         <translation>否</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2059"/>
+        <location filename="../../core/achievements.cpp" line="2081"/>
         <source>Active Challenge Achievements</source>
         <translation>活动的挑战成就</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2187"/>
+        <location filename="../../core/achievements.cpp" line="2209"/>
         <source> (Hardcore Mode)</source>
         <translation> (硬核模式)</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2201"/>
+        <location filename="../../core/achievements.cpp" line="2223"/>
         <source>You have unlocked all achievements and earned {} points!</source>
         <translation>您已经解锁了全部成就并获得了{}点数！</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2256"/>
+        <location filename="../../core/achievements.cpp" line="2278"/>
         <source>Unknown</source>
         <translation>未知</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2256"/>
+        <location filename="../../core/achievements.cpp" line="2278"/>
         <source>Locked</source>
         <translation>锁定</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2257"/>
+        <location filename="../../core/achievements.cpp" line="2279"/>
         <source>Unlocked</source>
         <translation>解锁</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2257"/>
+        <location filename="../../core/achievements.cpp" line="2279"/>
         <source>Unsupported</source>
         <translation>不支持</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2258"/>
+        <location filename="../../core/achievements.cpp" line="2280"/>
         <source>Unofficial</source>
         <translation>非官方</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2258"/>
+        <location filename="../../core/achievements.cpp" line="2280"/>
         <source>Recently Unlocked</source>
         <translation>最近解锁</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2259"/>
+        <location filename="../../core/achievements.cpp" line="2281"/>
         <source>Active Challenges</source>
         <translation>活动的挑战</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2259"/>
+        <location filename="../../core/achievements.cpp" line="2281"/>
         <source>Almost There</source>
         <translation>近在咫尺</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2364"/>
+        <location filename="../../core/achievements.cpp" line="2388"/>
         <source>{} points</source>
         <translation>{}点数</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2365"/>
+        <location filename="../../core/achievements.cpp" line="2389"/>
         <source>{} point</source>
         <translation>{}点数</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2313"/>
+        <location filename="../../core/achievements.cpp" line="2337"/>
         <source>XXX points</source>
         <translation>XXX点数</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2423"/>
+        <location filename="../../core/achievements.cpp" line="2447"/>
         <source>Unlocked: {}</source>
         <translation>解锁: {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2640"/>
+        <location filename="../../core/achievements.cpp" line="2664"/>
         <source>Show Best</source>
         <translation>显示最佳</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2640"/>
+        <location filename="../../core/achievements.cpp" line="2664"/>
         <source>Show Nearby</source>
         <translation>显示附近</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2668"/>
+        <location filename="../../core/achievements.cpp" line="2692"/>
         <source>Rank</source>
         <translation>排名</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2673"/>
+        <location filename="../../core/achievements.cpp" line="2697"/>
         <source>Name</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2680"/>
+        <location filename="../../core/achievements.cpp" line="2704"/>
         <source>Value</source>
         <translation>值</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2693"/>
+        <location filename="../../core/achievements.cpp" line="2717"/>
         <source>Date Submitted</source>
         <translation>日期提交</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2754"/>
+        <location filename="../../core/achievements.cpp" line="2779"/>
         <source>Downloading leaderboard data, please wait...</source>
         <translation>下载排行榜数据中，请稍候…</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2773"/>
-        <location filename="../../core/achievements.cpp" line="2782"/>
+        <location filename="../../core/achievements.cpp" line="2798"/>
+        <location filename="../../core/achievements.cpp" line="2807"/>
         <source>Loading...</source>
         <translation>读取中…</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2975"/>
-        <location filename="../../core/achievements.cpp" line="2995"/>
+        <location filename="../../core/achievements.cpp" line="3000"/>
+        <location filename="../../core/achievements.cpp" line="3020"/>
         <source>Leaderboard download failed</source>
         <translation>排行榜下载失败</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1402"/>
-        <location filename="../../core/system.cpp" line="1414"/>
+        <location filename="../../core/system.cpp" line="1407"/>
+        <location filename="../../core/system.cpp" line="1419"/>
         <source>Resuming state</source>
         <translation>继续档</translation>
     </message>
@@ -670,28 +670,28 @@ Unread messages: {}</source>
         <translation>{} (硬核模式)</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2206"/>
+        <location filename="../../core/achievements.cpp" line="2228"/>
         <source>You have unlocked {0} of {1} achievements, earning {2} of {3} possible points.</source>
         <translation>您已经解锁了{0}的{1}成就，获得了{2}的{3}可能的点数。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2619"/>
+        <location filename="../../core/achievements.cpp" line="2643"/>
         <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
         <translation>由于硬核模式关闭，提交得分被禁用。排行榜仅限读取。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1168"/>
+        <location filename="../../core/system.cpp" line="1173"/>
         <source>Loading state</source>
         <translation>读档</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2602"/>
+        <location filename="../../core/achievements.cpp" line="2626"/>
         <source>This game has {} leaderboards.</source>
         <translation>这个游戏有{}排行榜。</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1018"/>
-        <location filename="../../core/achievements.cpp" line="2214"/>
+        <location filename="../../core/achievements.cpp" line="2236"/>
         <source>This game has no achievements.</source>
         <translation>这个游戏没有成就。</translation>
     </message>
@@ -2038,475 +2038,553 @@ Unread messages: {}</source>
 <context>
     <name>CheatManagerDialog</name>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="538"/>
         <source>0</source>
-        <translation>0</translation>
+        <translation type="vanished">0</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="249"/>
         <source>Hex</source>
-        <translation>十六进制</translation>
+        <translation type="vanished">十六进制</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="407"/>
         <source>RAM</source>
-        <translation>内存</translation>
+        <translation type="vanished">内存</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="417"/>
         <source>BIOS</source>
-        <translation>BIOS</translation>
+        <translation type="vanished">BIOS</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="25"/>
         <source>Byte</source>
-        <translation>字节</translation>
+        <translation type="vanished">字节</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="126"/>
         <source>Name</source>
-        <translation>名称</translation>
+        <translation type="vanished">名称</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="131"/>
-        <location filename="../cheatmanagerdialog.ui" line="598"/>
         <source>Type</source>
-        <translation>类型</translation>
+        <translation type="vanished">类型</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="26"/>
         <source>Word</source>
-        <translation>单字</translation>
+        <translation type="vanished">单字</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="280"/>
         <source>Word (4 bytes)</source>
-        <translation>单字 (4字节)</translation>
+        <translation type="vanished">单字 (4字节)</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="366"/>
         <source>Less or Equal to Previous</source>
-        <translation>小于或等于前一个</translation>
+        <translation type="vanished">小于或等于前一个</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="379"/>
         <source>Start Address:</source>
-        <translation>开始地址:</translation>
+        <translation type="vanished">开始地址:</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="90"/>
         <source>Clear</source>
-        <translation>清除</translation>
+        <translation type="vanished">清除</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="531"/>
-        <location filename="../cheatmanagerdialog.cpp" line="665"/>
-        <location filename="../cheatmanagerdialog.cpp" line="688"/>
-        <location filename="../cheatmanagerdialog.cpp" line="710"/>
         <source>Error</source>
-        <translation>错误</translation>
+        <translation type="vanished">错误</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="97"/>
         <source>Reset</source>
-        <translation>重置</translation>
+        <translation type="vanished">重置</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="190"/>
-        <location filename="../cheatmanagerdialog.ui" line="603"/>
         <source>Value</source>
-        <translation>值</translation>
+        <translation type="vanished">值</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="136"/>
         <source>Activation</source>
-        <translation>激活</translation>
+        <translation type="vanished">激活</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="716"/>
         <source>Are you sure you want to remove all cheats? This is not reversible.</source>
-        <translation>您确定想要删除全部金手指吗？这是不可逆的。</translation>
+        <translation type="vanished">您确定想要删除全部金手指吗？这是不可逆的。</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="306"/>
         <source>Greater Than...</source>
-        <translation>大于…</translation>
+        <translation type="vanished">大于…</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="531"/>
         <source>This group name already exists.</source>
-        <translation>已经存在此分组名。</translation>
+        <translation type="vanished">已经存在此分组名。</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="399"/>
         <source>Preset Range:</source>
-        <translation>预设范围:</translation>
+        <translation type="vanished">预设范围:</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="525"/>
         <source>Group Name:</source>
-        <translation>分组名:</translation>
+        <translation type="vanished">分组名:</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="311"/>
         <source>Greater or Equal...</source>
-        <translation>大于或等于…</translation>
+        <translation type="vanished">大于或等于…</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="450"/>
         <source>Clear Results</source>
-        <translation>清除结果</translation>
+        <translation type="vanished">清除结果</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="32"/>
         <source>&amp;Add Group...</source>
-        <translation>新建分组(&amp;A)…</translation>
+        <translation type="vanished">新建分组(&amp;A)…</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="259"/>
         <source>Data Size:</source>
-        <translation>数据大小:</translation>
+        <translation type="vanished">数据大小:</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="618"/>
         <source>Add Manual Address</source>
-        <translation>添加手动地址</translation>
+        <translation type="vanished">添加手动地址</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="608"/>
         <source>Freeze</source>
-        <translation>冻结</translation>
+        <translation type="vanished">冻结</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="658"/>
-        <location filename="../cheatmanagerdialog.cpp" line="681"/>
         <source>Import Cheats</source>
-        <translation>导入金手指</translation>
+        <translation type="vanished">导入金手指</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="46"/>
         <source>&amp;Edit Code...</source>
-        <translation>编辑代码(&amp;E)…</translation>
+        <translation type="vanished">编辑代码(&amp;E)…</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="730"/>
         <source>Are you sure you want to reset the cheat list? Any cheats not in the DuckStation database WILL BE LOST.</source>
-        <translation>您确定想要重置金手指列表吗？任何不在DuckStation数据库中的金手指将会丢失。</translation>
+        <translation type="vanished">您确定想要重置金手指列表吗？任何不在DuckStation数据库中的金手指将会丢失。</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="275"/>
         <source>Halfword (2 bytes)</source>
-        <translation>半字 (2字节)</translation>
+        <translation type="vanished">半字 (2字节)</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="715"/>
         <source>Confirm Clear</source>
-        <translation>确认清除</translation>
+        <translation type="vanished">确认清除</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="729"/>
         <source>Confirm Reset</source>
-        <translation>确认重置</translation>
+        <translation type="vanished">确认重置</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="628"/>
         <source>Remove Selected Entries from Watch List</source>
-        <translation>从观察列表中删除选定条目</translation>
+        <translation type="vanished">从观察列表中删除选定条目</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="430"/>
         <source>New Search</source>
-        <translation>新建搜索</translation>
+        <translation type="vanished">新建搜索</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="232"/>
         <source>Unsigned</source>
-        <translation>无正负之分的</translation>
+        <translation type="vanished">无正负之分的</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="227"/>
         <source>Signed</source>
-        <translation>有正负之分的</translation>
+        <translation type="vanished">有正负之分的</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="441"/>
         <source>Toggle</source>
-        <translation>开关</translation>
+        <translation type="vanished">开关</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="211"/>
         <source>Value:</source>
-        <translation>值:</translation>
+        <translation type="vanished">值:</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="759"/>
         <source>Enter manual address:</source>
-        <translation>输入手动地址:</translation>
+        <translation type="vanished">输入手动地址:</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="150"/>
         <source>Memory Scanner</source>
-        <translation>内存扫描器</translation>
+        <translation type="vanished">内存扫描器</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="665"/>
-        <location filename="../cheatmanagerdialog.cpp" line="688"/>
         <source>Failed to parse cheat file. The log may contain more information.</source>
-        <translation>无法解析金手指文件。日志可能包含更多信息。</translation>
+        <translation type="vanished">无法解析金手指文件。日志可能包含更多信息。</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="346"/>
         <source>Not Equal to Previous (Changed Value)</source>
-        <translation>不等于前一个 (值有变化)</translation>
+        <translation type="vanished">不等于前一个 (值有变化)</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="525"/>
         <source>Add Group</source>
-        <translation>新建分组</translation>
+        <translation type="vanished">新建分组</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="641"/>
         <source>Load Watch</source>
-        <translation>加载监视</translation>
+        <translation type="vanished">加载监视</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="361"/>
         <source>Less Than Previous</source>
-        <translation>小于前一个</translation>
+        <translation type="vanished">小于前一个</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="654"/>
         <source>Save Watch</source>
-        <translation>保存监视</translation>
+        <translation type="vanished">保存监视</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="83"/>
         <source>Export...</source>
-        <translation>导出…</translation>
+        <translation type="vanished">导出…</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="73"/>
         <source>Import...</source>
-        <translation>导入…</translation>
+        <translation type="vanished">导入…</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="185"/>
-        <location filename="../cheatmanagerdialog.ui" line="593"/>
         <source>Address</source>
-        <translation>地址</translation>
+        <translation type="vanished">地址</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="657"/>
         <source>PCSXR/Libretro Cheat Files (*.cht *.txt);;All Files (*.*)</source>
-        <translation>PCSXR/Libretro金手指文件 (*.cht *.txt);;全部文件 (*.*)</translation>
+        <translation type="vanished">PCSXR/Libretro金手指文件 (*.cht *.txt);;全部文件 (*.*)</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="25"/>
         <source>Halfword</source>
-        <translation>半字</translation>
+        <translation type="vanished">半字</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="301"/>
         <source>Not Equal to...</source>
-        <translation>不等于…</translation>
+        <translation type="vanished">不等于…</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="650"/>
         <source>From File...</source>
-        <translation>从文件…</translation>
+        <translation type="vanished">从文件…</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="24"/>
         <source>Cheat List</source>
-        <translation>金手指列表</translation>
+        <translation type="vanished">金手指列表</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="705"/>
         <source>Export Cheats</source>
-        <translation>导出金手指</translation>
+        <translation type="vanished">导出金手指</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="341"/>
         <source>Equal to Previous (Unchanged Value)</source>
-        <translation>等于前一个 (值未变化)</translation>
+        <translation type="vanished">等于前一个 (值未变化)</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="710"/>
         <source>Failed to save cheat file. The log may contain more information.</source>
-        <translation>无法保存金手指文件。日志可能包含更多信息。</translation>
+        <translation type="vanished">无法保存金手指文件。日志可能包含更多信息。</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="412"/>
         <source>Scratchpad</source>
-        <translation>暂存器</translation>
+        <translation type="vanished">暂存器</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="56"/>
         <source>&amp;Delete Code</source>
-        <translation>删除代码(&amp;D)</translation>
+        <translation type="vanished">删除代码(&amp;D)</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="462"/>
         <source>Add Selected Results To Watch List</source>
-        <translation>将选定结果添加到观察列表</translation>
+        <translation type="vanished">将选定结果添加到观察列表</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="768"/>
         <source>Select data size:</source>
-        <translation>选择数据大小:</translation>
+        <translation type="vanished">选择数据大小:</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="270"/>
         <source>Byte (1 byte)</source>
-        <translation>字节 (1字节)</translation>
+        <translation type="vanished">字节 (1字节)</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="351"/>
         <source>Greater Than Previous</source>
-        <translation>大于前一个</translation>
+        <translation type="vanished">大于前一个</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="704"/>
         <source>PCSXR Cheat Files (*.cht);;All Files (*.*)</source>
-        <translation>PCSXR金手指文件 (*.cht);;全部文件 (*.*)</translation>
+        <translation type="vanished">PCSXR金手指文件 (*.cht);;全部文件 (*.*)</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="622"/>
         <source>Delete Code</source>
-        <translation>删除代码</translation>
+        <translation type="vanished">删除代码</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="356"/>
         <source>Greater or Equal to Previous</source>
-        <translation>大于或等于前一个</translation>
+        <translation type="vanished">大于或等于前一个</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="27"/>
         <source>Signed Halfword</source>
-        <translation>有正负之分的半字</translation>
+        <translation type="vanished">有正负之分的半字</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="14"/>
+        <source>Cheat Manager</source>
+        <translation type="vanished">金手指管理器</translation>
+    </message>
+    <message>
+        <source>Activate</source>
+        <translation type="vanished">激活</translation>
+    </message>
+    <message>
+        <source>Decimal</source>
+        <translation type="vanished">十进制</translation>
+    </message>
+    <message>
+        <source>Signed Word</source>
+        <translation type="vanished">有正负之分的单字</translation>
+    </message>
+    <message>
+        <source>Signed Byte</source>
+        <translation type="vanished">有正负之分的字节</translation>
+    </message>
+    <message>
+        <source>Any Value</source>
+        <translation type="vanished">任何值</translation>
+    </message>
+    <message>
+        <source>Number of Results (Display limited to first 5000) : </source>
+        <translation type="vanished">结果数量 (限显示前5000) : </translation>
+    </message>
+    <message>
+        <source>Operator:</source>
+        <translation type="vanished">操作员:</translation>
+    </message>
+    <message>
+        <source>Increased By...</source>
+        <translation type="vanished">增加了…</translation>
+    </message>
+    <message>
+        <source>Decreased By...</source>
+        <translation type="vanished">减少了…</translation>
+    </message>
+    <message>
+        <source>&amp;Add Code...</source>
+        <translation type="vanished">新建代码(&amp;A)…</translation>
+    </message>
+    <message>
+        <source>Are you sure you wish to delete the selected code? This action is not reversible.</source>
+        <translation type="vanished">您确定想要删除选中的代码吗？此操作是不可逆的。</translation>
+    </message>
+    <message>
+        <source>Previous Value</source>
+        <translation type="vanished">前一个值</translation>
+    </message>
+    <message>
+        <source>Less or Equal...</source>
+        <translation type="vanished">小于或等于…</translation>
+    </message>
+    <message>
+        <source>From Text...</source>
+        <translation type="vanished">从文本…</translation>
+    </message>
+    <message>
+        <source>Equal to...</source>
+        <translation type="vanished">等于…</translation>
+    </message>
+    <message>
+        <source>End Address:</source>
+        <translation type="vanished">结束地址:</translation>
+    </message>
+    <message>
+        <source>Instructions</source>
+        <translation type="vanished">指令</translation>
+    </message>
+    <message>
+        <source>Simple Cheat Code or Description</source>
+        <translation type="vanished">简单金手指代码或描述</translation>
+    </message>
+    <message>
+        <source>Cheat File Text:</source>
+        <translation type="vanished">金手指文件文本:</translation>
+    </message>
+    <message>
+        <source>Changed By...</source>
+        <translation type="vanished">更改了…</translation>
+    </message>
+    <message>
+        <source>Search Parameters</source>
+        <translation type="vanished">搜索参数</translation>
+    </message>
+    <message>
+        <source>Less Than...</source>
+        <translation type="vanished">小于…</translation>
+    </message>
+    <message>
+        <source>Search Again</source>
+        <translation type="vanished">再次搜索</translation>
+    </message>
+</context>
+<context>
+    <name>CheatManagerWindow</name>
+    <message>
+        <location filename="../cheatmanagerwindow.ui" line="14"/>
         <source>Cheat Manager</source>
         <translation>金手指管理器</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="66"/>
-        <location filename="../cheatmanagerdialog.cpp" line="398"/>
-        <location filename="../cheatmanagerdialog.cpp" line="436"/>
-        <location filename="../cheatmanagerdialog.cpp" line="441"/>
-        <source>Activate</source>
-        <translation>激活</translation>
+        <location filename="../cheatmanagerwindow.ui" line="26"/>
+        <source>&amp;Add Group...</source>
+        <translation>新建分组(&amp;A)…</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="244"/>
-        <source>Decimal</source>
-        <translation>十进制</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.cpp" line="27"/>
-        <source>Signed Word</source>
-        <translation>有正负之分的单字</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.cpp" line="26"/>
-        <source>Signed Byte</source>
-        <translation>有正负之分的字节</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="371"/>
-        <source>Any Value</source>
-        <translation>任何值</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="498"/>
-        <source>Number of Results (Display limited to first 5000) : </source>
-        <translation>结果数量 (限显示前5000) : </translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="288"/>
-        <source>Operator:</source>
-        <translation>操作员:</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="326"/>
-        <source>Increased By...</source>
-        <translation>增加了…</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="331"/>
-        <source>Decreased By...</source>
-        <translation>减少了…</translation>
-    </message>
-    <message>
-        <location filename="../cheatmanagerdialog.ui" line="39"/>
+        <location filename="../cheatmanagerwindow.ui" line="33"/>
         <source>&amp;Add Code...</source>
         <translation>新建代码(&amp;A)…</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="623"/>
-        <source>Are you sure you wish to delete the selected code? This action is not reversible.</source>
-        <translation>您确定想要删除选中的代码吗？此操作是不可逆的。</translation>
+        <location filename="../cheatmanagerwindow.ui" line="40"/>
+        <source>&amp;Edit Code...</source>
+        <translation>编辑代码(&amp;E)…</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="195"/>
-        <source>Previous Value</source>
-        <translation>前一个值</translation>
+        <location filename="../cheatmanagerwindow.ui" line="50"/>
+        <source>&amp;Delete Code</source>
+        <translation>删除代码(&amp;D)</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="321"/>
-        <source>Less or Equal...</source>
-        <translation>小于或等于…</translation>
+        <location filename="../cheatmanagerwindow.ui" line="60"/>
+        <location filename="../cheatmanagerwindow.cpp" line="167"/>
+        <location filename="../cheatmanagerwindow.cpp" line="273"/>
+        <location filename="../cheatmanagerwindow.cpp" line="278"/>
+        <source>Activate</source>
+        <translation>激活</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="651"/>
-        <source>From Text...</source>
-        <translation>从文本…</translation>
+        <location filename="../cheatmanagerwindow.ui" line="67"/>
+        <source>Import...</source>
+        <translation>导入…</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="296"/>
-        <source>Equal to...</source>
-        <translation>等于…</translation>
+        <location filename="../cheatmanagerwindow.ui" line="77"/>
+        <source>Export...</source>
+        <translation>导出…</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="389"/>
-        <source>End Address:</source>
-        <translation>结束地址:</translation>
+        <location filename="../cheatmanagerwindow.ui" line="84"/>
+        <source>Clear</source>
+        <translation>清除</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="141"/>
+        <location filename="../cheatmanagerwindow.ui" line="91"/>
+        <source>Reset</source>
+        <translation>重置</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerwindow.ui" line="120"/>
+        <source>Name</source>
+        <translation>名称</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerwindow.ui" line="125"/>
+        <source>Type</source>
+        <translation>类型</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerwindow.ui" line="130"/>
+        <source>Activation</source>
+        <translation>激活</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerwindow.ui" line="135"/>
         <source>Instructions</source>
         <translation>指令</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="588"/>
-        <source>Simple Cheat Code or Description</source>
-        <translation>简单金手指代码或描述</translation>
+        <location filename="../cheatmanagerwindow.cpp" line="278"/>
+        <source>Toggle</source>
+        <translation>开关</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.cpp" line="681"/>
+        <location filename="../cheatmanagerwindow.cpp" line="362"/>
+        <source>Add Group</source>
+        <translation>新建分组</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerwindow.cpp" line="362"/>
+        <source>Group Name:</source>
+        <translation>分组名:</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerwindow.cpp" line="368"/>
+        <location filename="../cheatmanagerwindow.cpp" line="503"/>
+        <location filename="../cheatmanagerwindow.cpp" line="526"/>
+        <location filename="../cheatmanagerwindow.cpp" line="549"/>
+        <source>Error</source>
+        <translation>错误</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerwindow.cpp" line="368"/>
+        <source>This group name already exists.</source>
+        <translation>已经存在此分组名。</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerwindow.cpp" line="459"/>
+        <source>Delete Code</source>
+        <translation>删除代码</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerwindow.cpp" line="460"/>
+        <source>Are you sure you wish to delete the selected code? This action is not reversible.</source>
+        <translation>您确定想要删除选中的代码吗？此操作是不可逆的。</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerwindow.cpp" line="487"/>
+        <source>From File...</source>
+        <translation>从文件…</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerwindow.cpp" line="488"/>
+        <source>From Text...</source>
+        <translation>从文本…</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerwindow.cpp" line="494"/>
+        <source>PCSXR/Libretro Cheat Files (*.cht *.txt);;All Files (*.*)</source>
+        <translation>PCSXR/Libretro金手指文件 (*.cht *.txt);;全部文件 (*.*)</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerwindow.cpp" line="496"/>
+        <location filename="../cheatmanagerwindow.cpp" line="519"/>
+        <source>Import Cheats</source>
+        <translation>导入金手指</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerwindow.cpp" line="503"/>
+        <location filename="../cheatmanagerwindow.cpp" line="526"/>
+        <source>Failed to parse cheat file. The log may contain more information.</source>
+        <translation>无法解析金手指文件。日志可能包含更多信息。</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerwindow.cpp" line="519"/>
         <source>Cheat File Text:</source>
         <translation>金手指文件文本:</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="336"/>
-        <source>Changed By...</source>
-        <translation>更改了…</translation>
+        <location filename="../cheatmanagerwindow.cpp" line="542"/>
+        <source>PCSXR Cheat Files (*.cht);;All Files (*.*)</source>
+        <translation>PCSXR金手指文件 (*.cht);;全部文件 (*.*)</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="205"/>
-        <source>Search Parameters</source>
-        <translation>搜索参数</translation>
+        <location filename="../cheatmanagerwindow.cpp" line="544"/>
+        <source>Export Cheats</source>
+        <translation>导出金手指</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="316"/>
-        <source>Less Than...</source>
-        <translation>小于…</translation>
+        <location filename="../cheatmanagerwindow.cpp" line="549"/>
+        <source>Failed to save cheat file. The log may contain more information.</source>
+        <translation>无法保存金手指文件。日志可能包含更多信息。</translation>
     </message>
     <message>
-        <location filename="../cheatmanagerdialog.ui" line="440"/>
-        <source>Search Again</source>
-        <translation>再次搜索</translation>
+        <location filename="../cheatmanagerwindow.cpp" line="554"/>
+        <source>Confirm Clear</source>
+        <translation>确认清除</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerwindow.cpp" line="555"/>
+        <source>Are you sure you want to remove all cheats? This is not reversible.</source>
+        <translation>您确定想要删除全部金手指吗？这是不可逆的。</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerwindow.cpp" line="568"/>
+        <source>Confirm Reset</source>
+        <translation>确认重置</translation>
+    </message>
+    <message>
+        <location filename="../cheatmanagerwindow.cpp" line="569"/>
+        <source>Are you sure you want to reset the cheat list? Any cheats not in the DuckStation database WILL BE LOST.</source>
+        <translation>您确定想要重置金手指列表吗？任何不在DuckStation数据库中的金手指将会丢失。</translation>
     </message>
 </context>
 <context>
@@ -2650,7 +2728,7 @@ Unread messages: {}</source>
     <message>
         <location filename="../consolesettingswidget.cpp" line="74"/>
         <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>启用额外的6MB内存以获得总共2+6=8MB内存，通常出现在开发型游戏机。游戏必须使用更大的堆大小才能使用这些额外的内存。依赖于内存镜像的标题可能会破裂，所以它应当只与兼容的mod一起使用。</translation>
+        <translation>启用额外的6MB内存以获得总共2+6=8MB内存，通常出现在开发型游戏机。游戏必须使用更大的堆大小才能使用这些额外的内存。依赖于内存镜像的标题可能会破裂，所以它应当仅被用于可兼容的mod。</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="33"/>
@@ -2911,7 +2989,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../consolesettingswidget.cpp" line="102"/>
         <source>Automatically applies patches to disc images when they are present in the same directory. Currently only PPF patches are supported with this option.</source>
-        <translation>当补丁和光盘镜像共存于同一目录中时，自动应用补丁，目前这个选项只支持PPF补丁。</translation>
+        <translation>当补丁和光盘镜像共存于同一目录中时，自动应用补丁，目前这个选项仅支持PPF补丁。</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="221"/>
@@ -4381,7 +4459,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="136"/>
-        <location filename="../qtutils.cpp" line="699"/>
+        <location filename="../qtutils.cpp" line="182"/>
         <source>Enter memory address:</source>
         <translation>输入内存地址:</translation>
     </message>
@@ -4533,7 +4611,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <location filename="../debuggermodels.cpp" line="481"/>
-        <location filename="../qtutils.cpp" line="716"/>
+        <location filename="../qtutils.cpp" line="199"/>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
         <translation>无效的地址。它应当是十六进制 (0x12345678或12345678)</translation>
     </message>
@@ -5246,44 +5324,44 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>EmuThread</name>
     <message>
-        <location filename="../qthost.cpp" line="1751"/>
+        <location filename="../qthost.cpp" line="1750"/>
         <source>%1x%2</source>
         <translation>%1x%2</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="760"/>
+        <location filename="../qthost.cpp" line="759"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="760"/>
+        <location filename="../qthost.cpp" line="759"/>
         <source>No resume save state found.</source>
         <translation>没有找到可继续存档。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1427"/>
+        <location filename="../qthost.cpp" line="1426"/>
         <source>Game not loaded or no RetroAchievements available.</source>
         <translation>游戏未加载或RetroAchievements不可用。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1760"/>
+        <location filename="../qthost.cpp" line="1759"/>
         <source>Game: %1 FPS</source>
         <translation>游戏: %1帧/秒</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1423"/>
+        <location filename="../qthost.cpp" line="1422"/>
         <source>Rich presence inactive or unsupported.</source>
         <translation>Rich Presence不活动或不支持。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1415"/>
+        <location filename="../qthost.cpp" line="1414"/>
         <source>Game: %1 (%2)
 </source>
         <translation>游戏: %1 (%2)
 </translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1770"/>
+        <location filename="../qthost.cpp" line="1769"/>
         <source>Video: %1 FPS (%2%)</source>
         <translation>视频: %1帧/秒 (%2%)</translation>
     </message>
@@ -5469,7 +5547,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="207"/>
         <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>倒带被禁用，因为启用了预运行。预运行会显著增加系统需求。</translation>
+        <translation>由于启用了预运行，倒带被禁用。预运行会显著增加系统需求。</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="85"/>
@@ -5866,317 +5944,406 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>FullscreenUI</name>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6512"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6914"/>
         <source>1x</source>
         <translation>1x</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6517"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6919"/>
         <source>2x</source>
         <translation>2x</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6523"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6925"/>
         <source>3x</source>
         <translation>3x</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6530"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6932"/>
         <source>4x</source>
         <translation>4x</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6535"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6937"/>
         <source>5x</source>
         <translation>5x</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6541"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6943"/>
         <source>6x</source>
         <translation>6x</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6547"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6949"/>
         <source>7x</source>
         <translation>7x</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6552"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6954"/>
         <source>8x</source>
         <translation>8x</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6557"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6959"/>
         <source>9x</source>
         <translation>9x</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6578"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6963"/>
+        <source>About</source>
+        <translation>关于</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="6980"/>
         <source>Applies modern dithering techniques to further smooth out gradients when true color is enabled.</source>
         <translation>当启用真彩色时，应用现代抖动技术进一步平滑渐变。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6583"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6985"/>
         <source>Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization behavior, filling in gaps introduced by upscaling.</source>
         <translation>尝试检测依赖于非放大光栅化行为的一个像素高/宽的线条，填补由放大带来的空白。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6586"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6988"/>
         <source>Audio Control</source>
         <translation>音频控制</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6595"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6997"/>
         <source>Automatically loads and applies cheats on game start. Cheats can break games and saves.</source>
         <translation>游戏启动时自动加载并应用金手指。金手指会破坏游戏和保存。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6618"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7006"/>
+        <source>Back</source>
+        <translation>返回</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7017"/>
+        <source>Change Page</source>
+        <translation>更改页面</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7018"/>
+        <source>Change Selection</source>
+        <translation>更改选择</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7019"/>
+        <source>Change View</source>
+        <translation>更改视图</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7020"/>
+        <source>Changes settings for the application.</source>
+        <translation>更改应用程序的设置。</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7024"/>
         <source>Chooses the language used for UI elements.</source>
         <translation>选择用于UI元素的语言。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6631"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7037"/>
+        <source>Completely exits the application, returning you to your desktop.</source>
+        <translation>完全退出本应用程序，带您回到您的桌面。</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7038"/>
         <source>Configuration</source>
         <translation>配置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6666"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7041"/>
+        <source>Contributor List</source>
+        <translation>贡献者名单</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7058"/>
+        <source>Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.</source>
+        <translation>找不到任何CD/DVD-ROM设备。请确保您已连接驱动器，并有足够的访问权限。</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7062"/>
+        <source>Create New...</source>
+        <translation>创建新...</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7073"/>
         <source>Deinterlacing Mode</source>
         <translation>逐行扫描模式</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6678"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7077"/>
+        <source>Desktop Mode</source>
+        <translation>桌面模式</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7086"/>
         <source>Determines that field that the game list will be sorted by.</source>
         <translation>确定游戏列表将按哪个字段排序。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6681"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7089"/>
         <source>Determines the format that screenshots will be saved/compressed with.</source>
         <translation>确定将保存/压缩屏幕截图的格式。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6683"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7091"/>
         <source>Determines the size of screenshots created by DuckStation.</source>
         <translation>确定DuckStation创建的屏幕截图的大小。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6685"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7093"/>
         <source>Determines which algorithm is used to convert interlaced frames to progressive for display on your system.</source>
         <translation>确定使用哪种算法将隔行扫描帧转换为逐行扫描帧，以便在您的系统上显示。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6711"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7119"/>
         <source>Enable Cheats</source>
         <translation>启用金手指</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6754"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7145"/>
+        <source>Enter Value</source>
+        <translation>输入值</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7150"/>
+        <source>Exit DuckStation</source>
+        <translation>退出DuckStation</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7152"/>
+        <source>Exits Big Picture mode, returning to the desktop interface.</source>
+        <translation>退出大视画模式，回到本软件的桌面界面。</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7162"/>
         <source>File Size</source>
         <translation>文件大小</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6755"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7163"/>
         <source>File Size: %.2f MB</source>
         <translation>文件大小: %.2f MB</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6787"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7195"/>
         <source>Graphics Settings</source>
         <translation>图像设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6807"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7215"/>
         <source>Internal Resolution</source>
         <translation>内置分辨率</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6817"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7218"/>
+        <source>Launch Options</source>
+        <translation>启动选项</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7220"/>
+        <source>Launch a game from a file, disc, or starts the console without any disc inserted.</source>
+        <translation>从文件、光盘来启动游戏，或在未插入任何光盘的情况下来启动游戏机。</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7226"/>
         <source>Line Detection</source>
         <translation>线检测</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6818"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7227"/>
         <source>List Settings</source>
         <translation>列表设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6855"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7229"/>
+        <source>Load Global State</source>
+        <translation>读取全局档</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7263"/>
         <source>Multitap</source>
         <translation>多接头</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6870"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7267"/>
+        <source>Navigate</source>
+        <translation>导航</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7279"/>
         <source>OK</source>
         <translation>好</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6496"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6898"/>
         <source>-</source>
         <translation>-</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6501"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6903"/>
         <source>10x</source>
         <translation>10x</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6503"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6905"/>
         <source>11x</source>
         <translation>11x</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6505"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6907"/>
         <source>12x</source>
         <translation>12x</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6506"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6908"/>
         <source>13x</source>
         <translation>13x</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6507"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6909"/>
         <source>14x</source>
         <translation>14x</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6509"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6911"/>
         <source>15x</source>
         <translation>15x</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6510"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6912"/>
         <source>16x</source>
         <translation>16x</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6740"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7148"/>
         <source>Exit</source>
         <translation>退出</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6888"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7298"/>
         <source>Path</source>
         <translation>路径</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7072"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7492"/>
         <source>Type</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6982"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7399"/>
         <source>Session: {}</source>
         <translation>会话: {}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6527"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6929"/>
         <source>40% [24 FPS (NTSC) / 20 FPS (PAL)]</source>
         <translation>40% [24 FPS (NTSC) / 20 FPS (PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6935"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7345"/>
         <source>Reset Settings</source>
         <translation>重置设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7108"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7528"/>
         <source>Writes textures which can be replaced to the dump directory.</source>
         <translation>写入可以替换为转储目录的纹理。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6669"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7076"/>
         <source>Depth Buffer</source>
         <translation>深度缓冲</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6936"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7346"/>
         <source>Reset System</source>
         <translation>重启系统</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6686"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7094"/>
         <source>Device Settings</source>
         <translation>设备设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6589"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6991"/>
         <source>Automatic Mapping</source>
         <translation>自动映射</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6626"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7032"/>
         <source>Close</source>
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6533"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6935"/>
         <source>50% [30 FPS (NTSC) / 25 FPS (PAL)]</source>
         <translation>50% [30 FPS (NTSC) / 25 FPS (PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6832"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7241"/>
         <source>Login</source>
         <translation>登入</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7065"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7484"/>
         <source>Title</source>
         <translation>标题</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6978"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7395"/>
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
         <translation>选择将应用于最终图像的分辨率比率。1x将缩减采样到原始的游戏机分辨率。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6737"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7146"/>
         <source>Enter the name of the input profile you wish to create.</source>
         <translation>输入您想要创建的输入控制档的名称。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6988"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7405"/>
         <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached on all systems.</source>
         <translation>设置目标模拟速度。不能保证在所有系统上都能达到这个速度。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6738"/>
         <source>Enter the name of the memory card you wish to create.</source>
-        <translation>输入您想要创建的记忆卡的名称。</translation>
+        <translation type="vanished">输入您想要创建的记忆卡的名称。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6793"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7201"/>
         <source>How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
         <translation>倒带档的保留数量。数值越高对内存的需求就越大。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7109"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7529"/>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
         <translation>成就的“挑战”模式，包括排行榜追踪。禁用存档，金手指，和减速功能。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6765"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7173"/>
         <source>GPU Renderer</source>
         <translation>GPU渲染器</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6690"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7098"/>
         <source>Disabled</source>
         <translation>禁用</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6836"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7245"/>
         <source>Logs in to RetroAchievements.</source>
         <translation>登入到RetroAchievements。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7026"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7443"/>
         <source>Smooths out the blockiness of magnified textures on 3D objects.</source>
         <translation>平滑3D物体上放大纹理的块状。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6791"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7199"/>
         <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
         <translation>当模拟器处于全屏模式时隐藏鼠标指针/光标。</translation>
     </message>
@@ -6185,257 +6352,256 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation type="vanished">在游戏开始时自动加载和应用金手指。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6772"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7180"/>
         <source>Game Slot {0}##game_slot_{0}</source>
         <translation>游戏档位{0}##游戏_档位_{0}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7046"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7465"/>
         <source>Switches between full screen and windowed when the window is double-clicked.</source>
         <translation>当双击窗口时，在全屏和窗口之间切换。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6854"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7262"/>
         <source>Moves this shader lower in the chain, applying it later.</source>
         <translation>移动此着色器到链中更低的位置，更晚地应用它。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6585"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6987"/>
         <source>Audio Backend</source>
         <translation>音频后端</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7053"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7472"/>
         <source>Texture Replacements</source>
         <translation>纹理替换</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6996"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7413"/>
         <source>Shared Card Name</source>
         <translation>共用记忆卡名称</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6841"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7250"/>
         <source>Macro {} Buttons</source>
         <translation>宏{}按键</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6861"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7270"/>
         <source>No cheats found for {}.</source>
         <translation>没有找到{}的金手指。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6951"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7364"/>
         <source>Runahead/Rewind</source>
         <translation>预运行/倒带</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6892"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7302"/>
         <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
         <translation>在最小化窗口或切换为其他应用程序时暂停模拟器，在切换回模拟器时取消暂停。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7030"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7447"/>
         <source>Spectator Mode</source>
         <translation>观众模式</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7071"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7491"/>
         <source>Turbo Speed</source>
         <translation>涡轮速度</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7083"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7503"/>
         <source>Use Light Theme</source>
         <translation>使用浅色主题</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6853"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7261"/>
         <source>Moves this shader higher in the chain, applying it earlier.</source>
         <translation>移动此着色器到链中更高的位置，更早地应用它。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6571"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6973"/>
         <source>Adds a new shader to the chain.</source>
         <translation>添加一个新的着色器到链。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6691"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7099"/>
         <source>Disables dithering and uses the full 8 bits per channel of color information.</source>
         <translation>禁用色彩抖动并使用每个通道完整的8位颜色信息。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6514"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6916"/>
         <source>20% [12 FPS (NTSC) / 10 FPS (PAL)]</source>
         <translation>20% [12 FPS (NTSC) / 10 FPS (PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7022"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7439"/>
         <source>Simulates the region check present in original, unmodified consoles.</source>
         <translation>模拟原始的，未修改的游戏机中存在的区域检查。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6797"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7205"/>
         <source>Increase Timer Resolution</source>
         <translation>提高计时器分辨率</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6520"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6922"/>
         <source>30% [18 FPS (NTSC) / 15 FPS (PAL)]</source>
         <translation>30% [18 FPS (NTSC) / 15 FPS (PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6614"/>
         <source>Change settings for the emulator.</source>
-        <translation>更改模拟器的设置。</translation>
+        <translation type="vanished">更改模拟器的设置。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7082"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7502"/>
         <source>Use Global Setting</source>
         <translation>使用全局设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6570"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6972"/>
         <source>Adds a new directory to the game search list.</source>
         <translation>在游戏搜索列表中添加一个新目录。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6607"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7010"/>
         <source>Borderless Fullscreen</source>
         <translation>无边界全屏</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6698"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7106"/>
         <source>Double-Click Toggles Fullscreen</source>
         <translation>双击切换全屏</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6895"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7305"/>
         <source>Performance enhancement - jumps directly between blocks instead of returning to the dispatcher.</source>
         <translation>性能增强——直接跳到块之间，而不是返回到分配器。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6934"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7344"/>
         <source>Reset Play Time</source>
         <translation>重置游戏时长</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6966"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7379"/>
         <source>Screen Display</source>
         <translation>屏幕显示</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6899"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7309"/>
         <source>Port {} Controller Type</source>
         <translation>接口{}控制器类型</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7096"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7516"/>
         <source>Value: {} | Default: {} | Minimum: {} | Maximum: {}</source>
         <translation>值: {} | 默认: {} | 最小: {} | 最大: {}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7029"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7446"/>
         <source>Sound Effects</source>
         <translation>声音效果</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6863"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7272"/>
         <source>No resume save state found.</source>
         <translation>没有找到可继续存档。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7103"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7523"/>
         <source>When enabled, the minimum supported output latency will be used for the host API.</source>
         <translation>当启用时，本机API将使用最小支持的输出延迟。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6672"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7080"/>
         <source>Determines how large the on-screen messages and monitor are.</source>
         <translation>确定同屏消息和显示器的大小。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6829"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7238"/>
         <source>Log To System Console</source>
         <translation>记录到系统游戏机</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7092"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7512"/>
         <source>Uses perspective-correct interpolation for colors, which can improve visuals in some games.</source>
         <translation>使用透视校正插值的颜色，这可以改善某些游戏的视觉效果。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6659"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7066"/>
         <source>Current Game</source>
         <translation>当前游戏</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6798"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7206"/>
         <source>Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games.</source>
         <translation>在3D游戏中将视野从4:3增加到选定的显示宽高比。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6872"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7281"/>
         <source>On-Screen Display</source>
         <translation>同屏显示</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6588"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6990"/>
         <source>Auto-Detect</source>
         <translation>自动检测</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6794"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7202"/>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
         <translation>倒带档的创建频率。频率越高对系统的需求就越大。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6760"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7168"/>
         <source>Forces a full rescan of all games previously identified.</source>
         <translation>强制完全重新扫描之前识别的所有游戏。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6905"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7315"/>
         <source>Preload Replacement Textures</source>
         <translation>预加载替换纹理</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7055"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7474"/>
         <source>The XInput source provides support for XBox 360/XBox One/XBox Series controllers.</source>
         <translation>XInput源提供了对XBox 360/XBox One/XBox系列控制器的支持。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6999"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7416"/>
         <source>Show Enhancement Settings</source>
         <translation>显示增强设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6906"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7316"/>
         <source>Presents frames on a background thread when fast forwarding or vsync is disabled.</source>
         <translation>当禁用了快进或垂直同步时，在后台线程上呈现帧。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7019"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7436"/>
         <source>Shows the host&apos;s GPU usage in the top-right corner of the display.</source>
         <translation>在显示右上角显示本机的GPU使用情况。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6550"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6952"/>
         <source>80% [48 FPS (NTSC) / 40 FPS (PAL)]</source>
         <translation>80% [48 FPS (NTSC) / 40 FPS (PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6954"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7367"/>
         <source>Save Profile</source>
         <translation>保存控制档</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6846"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7255"/>
         <source>Memory Card Port {}</source>
         <translation>记忆卡接口{}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6555"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6957"/>
         <source>90% [54 FPS (NTSC) / 45 FPS (PAL)]</source>
         <translation>90% [54 FPS (NTSC) / 45 FPS (PAL)]</translation>
     </message>
@@ -6448,284 +6614,283 @@ ${文件标题}: 含游戏文件名的组合名称。
 ${序号}: 游戏序号。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6590"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6992"/>
         <source>Automatic based on window size</source>
         <translation>自动根据窗口尺寸</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6819"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7228"/>
         <source>Load Devices From Save States</source>
         <translation>从存档载入设备</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6897"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7307"/>
         <source>Perspective Correct Textures</source>
         <translation>透视校正纹理</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6728"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7136"/>
         <source>Enable debugging when supported by the host&apos;s renderer API. Only for developer use.</source>
         <translation>当本机的渲染器API支持时，启用调试。仅供开发人员使用。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7085"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7505"/>
         <source>Use Software Renderer For Readbacks</source>
         <translation>使用软件渲染器进行回读</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7050"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7469"/>
         <source>Test Unofficial Achievements</source>
         <translation>测试非官方成就</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6858"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7266"/>
         <source>Mute CD Audio</source>
         <translation>静音CD音轨</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6821"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7231"/>
         <source>Load Resume State</source>
         <translation>读取继续档</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6560"/>
         <source>A memory card with the name &apos;{}&apos; already exists.</source>
-        <translation>已经存在一个名称为&apos;{}&apos;的记忆卡。</translation>
+        <translation type="vanished">已经存在一个名称为&apos;{}&apos;的记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7038"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7458"/>
         <source>Start the console without any disc inserted.</source>
         <translation>启动游戏机而不插入任何光盘。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6843"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7252"/>
         <source>Macro {} Trigger</source>
         <translation>宏{}触发器</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6749"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7157"/>
         <source>Failed to load shader {}. It may be invalid.
 Error was:</source>
         <translation>无法加载着色器{}。它可能是无效的。
 错误是:</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7113"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7535"/>
         <source>{} does not exist.</source>
         <translation>{}不存在。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6831"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7240"/>
         <source>Logging Settings</source>
         <translation>日志记录设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7010"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7427"/>
         <source>Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.</source>
         <translation>当挑战/最高成就处于活动状态，在屏幕右下角显示图标。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6725"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7133"/>
         <source>Enable TTY Logging</source>
         <translation>启用TTY日志记录</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6820"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7230"/>
         <source>Load Profile</source>
         <translation>加载控制档</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6979"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7396"/>
         <source>Selects the resolution to use in fullscreen modes.</source>
         <translation>选择要在全屏模式下使用的分辨率。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6582"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6984"/>
         <source>Aspect Ratio</source>
         <translation>宽高比</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6917"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7327"/>
         <source>Reduces &quot;wobbly&quot; polygons by attempting to preserve the fractional component through memory transfers.</source>
         <translation>尝试通过内存传输来保留部分的构成组件，从而减少“抖动的”多边形。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7089"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7509"/>
         <source>Uses a light coloured theme instead of the default dark theme.</source>
         <translation>使用浅色主题代替默认的深色主题。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6894"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7304"/>
         <source>Per-game controller configuration initialized with global settings.</source>
         <translation>游戏各自控制器配置初始化为全局设置。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6707"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7115"/>
         <source>Emulation Settings</source>
         <translation>模拟设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6857"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7265"/>
         <source>Mute All Sound</source>
         <translation>静音全部声音</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7079"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7499"/>
         <source>Unlimited</source>
         <translation>无限制</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6677"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7085"/>
         <source>Determines quality of audio when not running at 100% speed.</source>
         <translation>当不以100％速度运行时，确定音频的质量。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6528"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6930"/>
         <source>400% [240 FPS (NTSC) / 200 FPS (PAL)]</source>
         <translation>400% [240 FPS (NTSC) / 200 FPS (PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6646"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7053"/>
         <source>Controls the volume of the audio played on the host.</source>
         <translation>控制本机播放的音频的音量。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6539"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6941"/>
         <source>60% [36 FPS (NTSC) / 30 FPS (PAL)]</source>
         <translation>60% [36 FPS (NTSC) / 30 FPS (PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6878"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7287"/>
         <source>Output Volume</source>
         <translation>输出音量</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6922"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7332"/>
         <source>Release Date: %s</source>
         <translation>发行日期: %s</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6637"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7044"/>
         <source>Controller Port {} Settings</source>
         <translation>控制器接口{}设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7033"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7450"/>
         <source>Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some games, and break others.</source>
         <translation>以指定的系数加快CD-ROM的搜寻速度。可能会提高某些游戏的加载速度，但破坏其他游戏。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6942"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7351"/>
         <source>Resume Game</source>
         <translation>继续游戏</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6719"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7127"/>
         <source>Enable Recompiler ICache</source>
         <translation>启用重新编译器ICache</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6789"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7197"/>
         <source>Hardcore mode will be enabled on next game restart.</source>
         <translation>硬核模式将在下次游戏重启时启用。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6619"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7025"/>
         <source>Chroma Smoothing For 24-Bit Display</source>
         <translation>24位显示色度平滑</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6926"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7336"/>
         <source>Remove From List</source>
         <translation>从列表中删除</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6732"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7140"/>
         <source>Enables more precise frame pacing at the cost of battery life.</source>
         <translation>以电池寿命为代价启用更精确的帧步调。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6564"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6966"/>
         <source>Achievement Notifications</source>
         <translation>成就通知</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6713"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7121"/>
         <source>Enable Fast Boot</source>
         <translation>启用快速启动</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6497"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6899"/>
         <source>1 Frame</source>
         <translation>1帧</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6545"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6947"/>
         <source>70% [42 FPS (NTSC) / 35 FPS (PAL)]</source>
         <translation>70% [42 FPS (NTSC) / 35 FPS (PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6723"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7131"/>
         <source>Enable SDL Input Source</source>
         <translation>启用SDL输入源</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6830"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7239"/>
         <source>Logging</source>
         <translation>日志记录</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6945"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7358"/>
         <source>Rewind Save Slots</source>
         <translation>倒带保存档位</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6925"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7335"/>
         <source>Remove From Chain</source>
         <translation>从链上删除</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6767"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7175"/>
         <source>Game Grid</source>
         <translation>游戏方格</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6768"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7176"/>
         <source>Game List</source>
         <translation>游戏列表</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6837"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7246"/>
         <source>Logs messages to duckstation.log in the user directory.</source>
         <translation>将消息记录到用户数据目录中的duckstation.log。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6839"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7248"/>
         <source>Logs messages to the debug console where supported.</source>
         <translation>将消息记录到所支持的调试游戏机。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6671"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7079"/>
         <source>Details unavailable for game not scanned in game list.</source>
         <translation>游戏列表中未扫描出来的游戏，详情不可用。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6714"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7122"/>
         <source>Enable In-Game Overlays</source>
         <translation>启用游戏内覆盖</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6640"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7047"/>
         <source>Controller Port {}{} Settings</source>
         <translation>控制器接口{}{}设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7034"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7451"/>
         <source>Stage {}: {}</source>
         <translation>层{}: {}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6927"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7337"/>
         <source>Removed stage {} ({}).</source>
         <translation>删除层{} ({})。</translation>
     </message>
@@ -6734,67 +6899,67 @@ Error was:</source>
         <translation type="vanished">启用垂直同步</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6736"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7144"/>
         <source>Ensures every frame generated is displayed for optimal pacing. Disable if you are having speed or sound issues.</source>
         <translation>确保生成的每一帧以最佳步调显示。如果您有速度或声音问题，请禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6869"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7278"/>
         <source>Not Scanning Subdirectories</source>
         <translation>不扫描子目录</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6943"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7356"/>
         <source>Reverses the game list sort order from the default (usually ascending to descending).</source>
         <translation>颠倒默认的游戏列表排序顺序(通常是升序到降序)。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6946"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7359"/>
         <source>Rewind for {0} frames, lasting {1:.2f} seconds will require up to {2} MB of RAM and {3} MB of VRAM.</source>
         <translation>倒带{0}帧，持续{1:.2f}秒将需要多达{2}MB内存和{3}MB显存。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6947"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7360"/>
         <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>倒带被禁用，因为启用了预运行。预运行会显著增加系统需求。</translation>
+        <translation>由于启用了预运行，倒带被禁用。预运行会显著增加系统需求。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6948"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7361"/>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
         <translation>倒带未启用。请注意，启用倒带可能会显著增加系统需求。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6964"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7377"/>
         <source>Scan For New Games</source>
         <translation>扫描新游戏</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6904"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7314"/>
         <source>Preload Images to RAM</source>
         <translation>预加载镜像到内存</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7056"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7475"/>
         <source>The audio backend determines how frames produced by the emulator are submitted to the host.</source>
         <translation>音频后端决定如何将模拟器生成的帧提交给本机。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6778"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7186"/>
         <source>Game settings have been cleared for &apos;{}&apos;.</source>
         <translation>&apos;{}&apos;的游戏设置已经被清除。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6987"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7404"/>
         <source>Sets the fast forward speed. It is not guaranteed that this speed will be reached on all systems.</source>
         <translation>设置快进速度。不能保证在所有系统上都能达到这个速度。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6622"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7028"/>
         <source>Clear Shaders</source>
         <translation>清除着色器</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7018"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7435"/>
         <source>Shows the host&apos;s CPU usage based on threads in the top-right corner of the display.</source>
         <translation>在显示右上角显示基于线程的本机的CPU使用情况。</translation>
     </message>
@@ -6803,802 +6968,800 @@ Error was:</source>
         <translation type="vanished">内置分辨率比率</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6761"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7169"/>
         <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
         <translation>强制静音CD-ROM中的CD-DA和XA音轨。可用于在某些游戏中禁用背景音乐。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6515"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6917"/>
         <source>200% [120 FPS (NTSC) / 100 FPS (PAL)]</source>
         <translation>200% [120 FPS (NTSC) / 100 FPS (PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7086"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7506"/>
         <source>Username: {}</source>
         <translation>用户名: {}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7014"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7431"/>
         <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
         <translation>在显示左下角显示系统的当前控制器状态。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6668"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7075"/>
         <source>Delete State</source>
         <translation>删除档</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7088"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7508"/>
         <source>Uses a blit presentation model instead of flipping. This may be needed on some systems.</source>
         <translation>使用位块传输呈现模型而不是翻转。在某些系统上可能需要这样。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7051"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7470"/>
         <source>Texture Dumping</source>
         <translation>纹理转储</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6652"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7060"/>
         <source>Covers Directory</source>
         <translation>封面目录</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7097"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7517"/>
         <source>When enabled and logged in, DuckStation will scan for achievements on startup.</source>
         <translation>当启用并登入时，DuckStation将在启动时扫描成就。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7031"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7448"/>
         <source>Speed Control</source>
         <translation>速度控制</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6534"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6936"/>
         <source>500% [300 FPS (NTSC) / 250 FPS (PAL)]</source>
         <translation>500% [300 FPS (NTSC) / 250 FPS (PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6845"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7254"/>
         <source>Memory Card Directory</source>
         <translation>记忆卡目录</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7100"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7520"/>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
         <translation>当启用时，每个会话将表现得如同没有解锁成就。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7068"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7488"/>
         <source>Toggle every %d frames</source>
         <translation>每%d帧触发一次</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6785"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7193"/>
         <source>Global Slot {0} - {1}##global_slot_{0}</source>
         <translation>全局档位{0} - {1}##全局_档位_{0}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6852"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7260"/>
         <source>Move Up</source>
         <translation>上移</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6700"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7108"/>
         <source>Downloads covers from a user-specified URL template.</source>
         <translation>从用户指定的URL模板下载封面。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6610"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7013"/>
         <source>CPU Emulation</source>
         <translation>CPU模拟</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6665"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7072"/>
         <source>Default: Enabled</source>
         <translation>默认: 启用</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6909"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7319"/>
         <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
         <translation>禁止激活屏幕保护程序，同时防止本机在模拟运行时休眠。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6612"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7015"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6774"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7182"/>
         <source>Game not loaded or no RetroAchievements available.</source>
         <translation>游戏未加载或RetroAchievements不可用。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6712"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7120"/>
         <source>Enable Discord Presence</source>
         <translation>启用Discord-Presence</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6710"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7118"/>
         <source>Enable Achievements</source>
         <translation>启用成就</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6939"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7349"/>
         <source>Resolution change will be applied after restarting.</source>
         <translation>分辨率更改将在重新启动后生效。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6653"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7061"/>
         <source>Create</source>
         <translation>创建</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7005"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7422"/>
         <source>Show Resolution</source>
         <translation>显示分辨率</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6593"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6995"/>
         <source>Automatic mapping failed, no devices are available.</source>
         <translation>自动映射失败，没有可用的设备。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6930"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7340"/>
         <source>Rendering</source>
         <translation>渲染</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6625"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7031"/>
         <source>Clears the mask/transparency bit in VRAM write dumps.</source>
         <translation>清除显存写入转储中的掩码/透明位。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6746"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7154"/>
         <source>Failed to delete save state.</source>
         <translation>无法删除存档。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6849"/>
         <source>Memory card &apos;{}&apos; created.</source>
-        <translation>记忆卡&apos;{}&apos;已创建。</translation>
+        <translation type="vanished">记忆卡&apos;{}&apos;已创建。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6880"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7289"/>
         <source>Overlays or replaces normal triangle drawing with a wireframe/line view.</source>
         <translation>用线框/线视图覆盖或替换常规三角形绘图。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6498"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6900"/>
         <source>10 Frames</source>
         <translation>10帧</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6538"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6940"/>
         <source>6 Frames</source>
         <translation>6帧</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6544"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6946"/>
         <source>7 Frames</source>
         <translation>7帧</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6549"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6951"/>
         <source>8 Frames</source>
         <translation>8帧</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6554"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6956"/>
         <source>9 Frames</source>
         <translation>9帧</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6513"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6915"/>
         <source>2 Frames</source>
         <translation>2帧</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6519"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6921"/>
         <source>3 Frames</source>
         <translation>3帧</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6526"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6928"/>
         <source>4 Frames</source>
         <translation>4帧</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6532"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6934"/>
         <source>5 Frames</source>
         <translation>5帧</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6780"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7188"/>
         <source>Game title copied to clipboard.</source>
         <translation>游戏标题复制到剪贴板。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6722"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7130"/>
         <source>Enable Rewinding</source>
         <translation>启用倒带</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6546"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6948"/>
         <source>700% [420 FPS (NTSC) / 350 FPS (PAL)]</source>
         <translation>700% [420 FPS (NTSC) / 350 FPS (PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6702"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7110"/>
         <source>Downsampling</source>
         <translation>缩减采样</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7067"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7486"/>
         <source>Toggle Fast Forward</source>
         <translation>快进开关</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6903"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7313"/>
         <source>Post-processing shaders reloaded.</source>
         <translation>后处理着色器重新加载。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6693"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7101"/>
         <source>Discord Server</source>
         <translation>Discord服务器</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6908"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7318"/>
         <source>Prevents the emulator from producing any audible sound.</source>
         <translation>防止模拟器产生任何可听见的声音。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6893"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7303"/>
         <source>Per-Game Configuration</source>
         <translation>游戏各自配置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6834"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7243"/>
         <source>Logout</source>
         <translation>登出</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6748"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7156"/>
         <source>Failed to load &apos;{}&apos;.</source>
         <translation>无法加载&apos;{}&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7110"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7530"/>
         <source>&quot;PlayStation&quot; and &quot;PSX&quot; are registered trademarks of Sony Interactive Entertainment Europe Limited. This software is not affiliated in any way with Sony Interactive Entertainment.</source>
         <translation>“PlayStation”和“PSX”是索尼互动娱乐欧洲有限公司的注册商标。本软件不以任何方式隶属于索尼互动娱乐公司。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6809"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7216"/>
         <source>Last Played</source>
         <translation>最近游玩</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6759"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7167"/>
         <source>Forces PAL games to run at NTSC timings, i.e. 60hz. Some PAL games will run at their &quot;normal&quot; speeds, while others will break.</source>
         <translation>强制PAL游戏运行在NTSC时间，即60hz。一些PAL游戏将以他们的“正常”速度运行，而另一些则会中断。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7062"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7481"/>
         <source>Time Played</source>
         <translation>游玩时长</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6989"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7406"/>
         <source>Sets the turbo speed. It is not guaranteed that this speed will be reached on all systems.</source>
         <translation>设置涡轮转速。不能保证在所有系统上都能达到这个速度。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6688"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7096"/>
         <source>Disable Interlacing</source>
         <translation>禁用隔行扫描</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6529"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6931"/>
         <source>450% [270 FPS (NTSC) / 225 FPS (PAL)]</source>
         <translation>450% [270 FPS (NTSC) / 225 FPS (PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6928"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7338"/>
         <source>Removes this shader from the chain.</source>
         <translation>从链中删除此着色器。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6611"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7014"/>
         <source>CPU Mode</source>
         <translation>CPU模式</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6824"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7233"/>
         <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
         <translation>将全部替换纹理加载到内存，减少运行时的卡顿。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6970"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7383"/>
         <source>Search Directories</source>
         <translation>搜索目录</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6783"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7191"/>
         <source>Genre: %s</source>
         <translation>游戏类型: %s</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6920"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7330"/>
         <source>Region</source>
         <translation>区域</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6941"/>
         <source>Resume</source>
-        <translation>继续</translation>
+        <translation type="vanished">继续</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6919"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7329"/>
         <source>Reduces polygon Z-fighting through depth testing. Low compatibility with games.</source>
         <translation>通过深度测试减少多边形Z冲突。与游戏的兼容性低。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7015"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7432"/>
         <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
         <translation>在显示右上角以百分比显示系统的当前模拟速度。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6862"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7271"/>
         <source>No input profiles available.</source>
         <translation>没有可用的输入控制档。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6569"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6971"/>
         <source>Add Shader</source>
         <translation>添加着色器</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6887"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7297"/>
         <source>Patches the BIOS to skip the boot animation. Safe to enable.</source>
         <translation>对BIOS应用补丁以跳过启动动画。安全启用。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6981"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7398"/>
         <source>Serial</source>
         <translation>序号</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6724"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7132"/>
         <source>Enable Subdirectory Scanning</source>
         <translation>启用子目录扫描</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6848"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7257"/>
         <source>Memory Card {} Type</source>
         <translation>记忆卡{}格式</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6896"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7306"/>
         <source>Perspective Correct Colors</source>
         <translation>透视校正颜色</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6965"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7378"/>
         <source>Scanning Subdirectories</source>
         <translation>扫描子目录</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6623"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7029"/>
         <source>Clears a shader from the chain.</source>
         <translation>从链中清除一个着色器。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6866"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7275"/>
         <source>None (Double Speed)</source>
         <translation>无 (2倍速)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6953"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7366"/>
         <source>SDL DualShock 4 / DualSense Enhanced Mode</source>
         <translation>SDL DualShock 4/DualSense增强模式</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6770"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7178"/>
         <source>Game Properties</source>
         <translation>游戏属性</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6696"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7104"/>
         <source>Displays popup messages on events such as achievement unlocks and leaderboard submissions.</source>
         <translation>在诸如成就解锁和排行榜提交等事件中显示弹出消息。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6806"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7214"/>
         <source>Interface Settings</source>
         <translation>界面设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6689"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7097"/>
         <source>Disable Subdirectory Scanning</source>
         <translation>禁用子目录扫描</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6810"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7217"/>
         <source>Last Played: %s</source>
         <translation>最近游玩: %s</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6923"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7333"/>
         <source>Reload Shaders</source>
         <translation>重新加载着色器</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6660"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7067"/>
         <source>Debugging Settings</source>
         <translation>调试设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7009"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7426"/>
         <source>Shows enhancement settings in the bottom-right corner of the screen.</source>
         <translation>在屏幕右下角显示增强设置。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6641"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7048"/>
         <source>Controller Settings</source>
         <translation>控制器设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6635"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7042"/>
         <source>Controller Port {}</source>
         <translation>控制器接口{}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6516"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6918"/>
         <source>250% [150 FPS (NTSC) / 125 FPS (PAL)]</source>
         <translation>250% [150 FPS (NTSC) / 125 FPS (PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6875"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7284"/>
         <source>Optimal Frame Pacing</source>
         <translation>最佳帧步调</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7114"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7536"/>
         <source>{} is not a valid disc image.</source>
         <translation>{}不是有效的光盘镜像。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6657"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7064"/>
         <source>Crop Mode</source>
         <translation>裁剪模式</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6958"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7371"/>
         <source>Saved {:%c}</source>
         <translation>保存{:%c}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6511"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6913"/>
         <source>175% [105 FPS (NTSC) / 87 FPS (PAL)]</source>
         <translation>175% [105 FPS (NTSC) / 87 FPS (PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7048"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7467"/>
         <source>Synchronizes presentation of the console&apos;s frames to the host. Enable for smoother animations.</source>
         <translation>将游戏机的帧呈现同步到本机。启用更顺畅的动画。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7081"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7501"/>
         <source>Use Debug GPU Device</source>
         <translation>使用调试GPU设备</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6871"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7280"/>
         <source>OSD Scale</source>
         <translation>OSD比率</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6644"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7051"/>
         <source>Controls</source>
         <translation>控制</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6822"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7232"/>
         <source>Load State</source>
         <translation>读档</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7047"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7466"/>
         <source>Sync To Host Refresh Rate</source>
         <translation>同步到本机刷新速率</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6929"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7339"/>
         <source>Renames existing save states when saving to a backup file.</source>
         <translation>重新命名现有存档，当保存到一个备用文件时。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6584"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6986"/>
         <source>Attempts to map the selected port to a chosen controller.</source>
         <translation>尝试将选定接口映射到所选控制器。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6876"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7285"/>
         <source>Options</source>
         <translation>选项</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6886"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7296"/>
         <source>Patches</source>
         <translation>补丁</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6602"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7004"/>
         <source>BIOS for {}</source>
         <translation>{}的BIOS</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7024"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7441"/>
         <source>Slow Boot</source>
         <translation>慢性启动</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6900"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7310"/>
         <source>Position</source>
         <translation>位置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6815"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7224"/>
         <source>Leaderboards are not enabled.</source>
         <translation>排行榜没有启用。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7028"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7445"/>
         <source>Sort Reversed</source>
         <translation>排序颠倒</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6961"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7374"/>
         <source>Scales internal VRAM resolution by the specified multiplier. Some games require 1x VRAM resolution.</source>
         <translation>通过指定的乘法器缩放内部显存分辨率。有些游戏需要1x的显存分辨率。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6674"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7082"/>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide.</source>
         <translation>确定在消费者电视机上通常不可见的区域中有多少要裁剪/隐藏。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6676"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7084"/>
         <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
         <translation>确定如何将模拟游戏机的输出放大或缩小到您的显示器的分辨率。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6692"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7100"/>
         <source>Disables interlaced rendering and display in the GPU. Some games can render in 480p this way, but others will break.</source>
         <translation>在GPU中禁用隔行渲染和显示。一些游戏可以用这种方式渲染480p，但另一些游戏会崩溃。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6567"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6969"/>
         <source>Achievements are not enabled.</source>
         <translation>成就没有启用。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6898"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7308"/>
         <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
         <translation>为成就解锁和排行榜提交等事件播放声音效果。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6633"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7040"/>
         <source>Console Settings</source>
         <translation>游戏机设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6650"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7057"/>
         <source>Copy Settings</source>
         <translation>套用设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6604"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7007"/>
         <source>Back To Pause Menu</source>
         <translation>返回暂停菜单</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6938"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7348"/>
         <source>Resets memory card directory to default (user directory).</source>
         <translation>重置记忆卡目录为默认 (用户目录)。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6788"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7196"/>
         <source>Hardcore Mode</source>
         <translation>硬核模式</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6599"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7001"/>
         <source>BIOS Directory</source>
         <translation>BIOS目录</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7012"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7429"/>
         <source>Shows on-screen-display messages when events occur.</source>
         <translation>在事件发生时显示同屏显示消息。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6587"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6989"/>
         <source>Audio Settings</source>
         <translation>音频设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6916"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7326"/>
         <source>Recompiler Fast Memory Access</source>
         <translation>重新编译器快速内存访问</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7054"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7473"/>
         <source>The SDL input source supports most controllers.</source>
         <translation>SDL输入源支持大多数控制器。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6804"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7212"/>
         <source>Input profile &apos;{}&apos; saved.</source>
         <translation>输入控制档&apos;{}&apos;已保存。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6956"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7369"/>
         <source>Save State</source>
         <translation>存档</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6756"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7164"/>
         <source>File Title</source>
         <translation>文件标题</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6706"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7114"/>
         <source>Dump Replaceable VRAM Writes</source>
         <translation>转储可替换的显存写入</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6518"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6920"/>
         <source>2x (Quad Speed)</source>
         <translation>2x (4倍速)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6844"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7253"/>
         <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
         <translation>以较小的性能成本，使游戏运行更接近他们的游戏机帧率。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7090"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7510"/>
         <source>Uses a second thread for drawing graphics. Speed boost, and safe to use.</source>
         <translation>使用第二个线程来绘制图像。速度提升，安全使用。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6827"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7236"/>
         <source>Log To Debug Console</source>
         <translation>记录到调试游戏机</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6596"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6998"/>
         <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
         <translation>在关闭或退出模拟器时自动存档。然后下次您可以直接从离开的地方继续。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6694"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7102"/>
         <source>Display FPS Limit</source>
         <translation>显示帧率限制</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6703"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7111"/>
         <source>Downsampling Display Scale</source>
         <translation>缩减采样显示比率</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6563"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6965"/>
         <source>Account</source>
         <translation>账户</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6959"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7372"/>
         <source>Saves state periodically so you can rewind any mistakes while playing.</source>
         <translation>周期地自动存档以使您可以在游戏时倒回任何错误。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6792"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7200"/>
         <source>Hotkey Settings</source>
         <translation>热键设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6990"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7407"/>
         <source>Sets the verbosity of messages logged. Higher levels will log more messages.</source>
         <translation>设置记录的消息的详细级别。更高的级别将记录更多的消息。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7064"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7483"/>
         <source>Timing out in {:.0f} seconds...</source>
         <translation>{:.0f}秒种后超时…</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6907"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7317"/>
         <source>Preserve Projection Precision</source>
         <translation>保持投影精度</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6867"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7276"/>
         <source>None (Normal Speed)</source>
         <translation>无 (正常速度)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6860"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7269"/>
         <source>No Game Selected</source>
         <translation>没有选定的游戏</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6879"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7288"/>
         <source>Overclocking Percentage</source>
         <translation>超频百分比</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6901"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7311"/>
         <source>Post-Processing Settings</source>
         <translation>后处理设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6902"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7312"/>
         <source>Post-processing chain cleared.</source>
         <translation>后处理链清理。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6932"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7342"/>
         <source>Rescan All Games</source>
         <translation>重新扫描全部游戏</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6663"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7070"/>
         <source>Default View</source>
         <translation>默认视图</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6662"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7069"/>
         <source>Default Boot</source>
         <translation>默认启动</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7093"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7513"/>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.</source>
         <translation>对纹理坐标使用透视校正插值，矫直扭曲的纹理。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6955"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7368"/>
         <source>Save Screenshot</source>
         <translation>保存屏幕截图</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6757"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7165"/>
         <source>Force 4:3 For 24-Bit Display</source>
         <translation>24位显示强制4:3</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7091"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7511"/>
         <source>Uses game-specific settings for controllers for this game.</source>
         <translation>为此游戏的控制器使用特定于游戏的设置。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6764"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7172"/>
         <source>GPU Adapter</source>
         <translation>GPU适配器</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6620"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7026"/>
         <source>Clean Boot</source>
         <translation>清除启动</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6883"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7292"/>
         <source>PGXP Geometry Correction</source>
         <translation>PGXP几何校正</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6603"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7005"/>
         <source>BIOS to use when emulating {} consoles.</source>
         <translation>在模拟{}游戏机时使用的BIOS。</translation>
     </message>
@@ -7607,297 +7770,297 @@ Error was:</source>
         <translation type="vanished">使用序号文件名</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6705"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7113"/>
         <source>DuckStation is a free and open-source simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability.</source>
         <translation>DuckStation是索尼PlayStation(TM) 游戏机的免费开源仿真器/模拟器，专注于可玩性，速度，以及长期可维护性。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7043"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7462"/>
         <source>Stretches the display to match the aspect ratio by multiplying vertically instead of horizontally.</source>
         <translation>通过垂直相乘而不是水平相乘来拉伸显示以匹配宽高比。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6825"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7234"/>
         <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay.</source>
         <translation>将游戏镜像加载到内存中。对于在游戏过程中可能变得不可靠的网络路径非常有用。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6838"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7247"/>
         <source>Logs messages to the console window.</source>
         <translation>将消息记录到游戏机窗口。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6882"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7291"/>
         <source>PGXP Depth Clear Threshold</source>
         <translation>PGXP深度清除阈值</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6997"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7414"/>
         <source>Show CPU Usage</source>
         <translation>显示CPU使用</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7003"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7420"/>
         <source>Show GPU Usage</source>
         <translation>显示GPU使用</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6734"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7142"/>
         <source>Encore Mode</source>
         <translation>回演模式</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7098"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7518"/>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>当启用时，DuckStation将假定全部成就都被锁定，并且不会向服务器发送任何解锁通知。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6762"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7170"/>
         <source>From File...</source>
         <translation>从文件…</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6952"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7365"/>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance.</source>
         <translation>为显存回读并行运行软件渲染器。在某些系统上，这可能会导致更好的性能。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6816"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7225"/>
         <source>Limits how many frames are displayed to the screen. These frames are still rendered.</source>
         <translation>限制屏幕上显示的帧数。这些帧仍会渲染。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6680"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7088"/>
         <source>Determines the emulated hardware type.</source>
         <translation>确定模拟硬件类型。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6960"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7373"/>
         <source>Scaled Dithering</source>
         <translation>缩放色彩抖动</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6616"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7022"/>
         <source>Cheat List</source>
         <translation>金手指列表</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6574"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6976"/>
         <source>Advanced Settings</source>
         <translation>高级设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7060"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7479"/>
         <source>Threaded Presentation</source>
         <translation>线程呈现</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7104"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7524"/>
         <source>When playing a multi-disc game and using per-game (title) memory cards, use a single memory card for all discs.</source>
         <translation>当进行多光盘游戏并且选用每个游戏独立记忆卡 (游戏标题) 时，全部光盘使用一个单记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6885"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7294"/>
         <source>PGXP Settings</source>
         <translation>PGXP设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7070"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7490"/>
         <source>True Color Rendering</source>
         <translation>真彩色渲染</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6658"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7065"/>
         <source>Culling Correction</source>
         <translation>剔除校正</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6591"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6993"/>
         <source>Automatic mapping completed for {}.</source>
         <translation>{}的自动映射完成。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6701"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7109"/>
         <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games.</source>
         <translation>在显示渲染图像之前对其进行缩减采样。对混合2D/3D游戏可以提高整体图像质量。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6910"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7320"/>
         <source>Provides vibration and LED control support over Bluetooth.</source>
         <translation>通过蓝牙提供振动和LED控制支持。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6874"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7283"/>
         <source>Operations</source>
         <translation>操作</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6890"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7300"/>
         <source>Pause On Start</source>
         <translation>开始时暂停</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6573"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6975"/>
         <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host when VSync and Audio Resampling are enabled.</source>
         <translation>调整模拟速度，使得在垂直同步和音频重新采样启用时，游戏机的刷新率跟本机互相匹配。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6868"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7277"/>
         <source>Not Logged In</source>
         <translation>未登入</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6984"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7401"/>
         <source>Set VRAM Write Dump Alpha Channel</source>
         <translation>设置显存写入转储Alpha通道</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6697"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7105"/>
         <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
         <translation>在开始，提交，或挑战排行榜失败时，显示弹出消息。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7021"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7438"/>
         <source>Simulates the CPU&apos;s instruction cache in the recompiler. Can help with games running too fast.</source>
         <translation>在重新编译器中模拟CPU的指令缓存。可以帮助解决游戏运行过快的问题。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6521"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6923"/>
         <source>300% [180 FPS (NTSC) / 150 FPS (PAL)]</source>
         <translation>300% [180 FPS (NTSC) / 150 FPS (PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6565"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6967"/>
         <source>Achievements</source>
         <translation>成就</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6889"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7299"/>
         <source>Pause On Focus Loss</source>
         <translation>失去焦点时暂停</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6949"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7362"/>
         <source>Rich presence inactive or unsupported.</source>
         <translation>Rich Presence不活动或不支持。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6581"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6983"/>
         <source>Are you sure you want to clear the current post-processing chain? All configuration will be lost.</source>
         <translation>您确定想要清除当前的后处理链吗？全部配置都将丢失。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6859"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7268"/>
         <source>No Binding</source>
         <translation>没有绑定</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6983"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7400"/>
         <source>Set Input Binding</source>
         <translation>设置输入绑定</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6813"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7222"/>
         <source>Leaderboard Notifications</source>
         <translation>排行榜通知</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6615"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7021"/>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen.</source>
         <translation>对游戏机输出到屏幕的显示进行宽高比的更改。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7101"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7521"/>
         <source>When enabled, memory cards and controllers will be overwritten when save states are loaded.</source>
         <translation>当启用时，记忆卡和控制器将在载入存档时被覆盖。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7045"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7464"/>
         <source>Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.</source>
         <translation>当显示24位内容 (通常是FMV) 时，切换回4:3显示宽高比。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6594"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6996"/>
         <source>Automatically applies patches to disc images when they are present, currently only PPF is supported.</source>
-        <translation>当补丁和光盘镜像共存时，自动应用补丁，目前只支持PPF。</translation>
+        <translation>当补丁和光盘镜像共存时，自动应用补丁，目前仅支持PPF。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6826"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7235"/>
         <source>Log Level</source>
         <translation>日志级别</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7006"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7423"/>
         <source>Show Speed</source>
         <translation>显示速度</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7036"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7454"/>
         <source>Start File</source>
         <translation>启动文件</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7035"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7452"/>
         <source>Start BIOS</source>
         <translation>启动BIOS</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7040"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7459"/>
         <source>Stores the current settings to an input profile.</source>
         <translation>存储当前设置到一个输入控制档。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6543"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6945"/>
         <source>6x (for 1440p)</source>
         <translation>6x (适合1440p)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6998"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7415"/>
         <source>Show Controller Input</source>
         <translation>显示控制器输入</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6537"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6939"/>
         <source>5x (for 1080p)</source>
         <translation>5x (适合1080p)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6709"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7117"/>
         <source>Enable 8MB RAM</source>
         <translation>启用8MB内存</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6627"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7033"/>
         <source>Close Game</source>
         <translation>关闭游戏</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7049"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7468"/>
         <source>Temporarily disables all enhancements, useful when testing.</source>
         <translation>暂时禁用全部增强功能，在测试时很有用。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6628"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7034"/>
         <source>Close Menu</source>
         <translation>关闭菜单</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6847"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7256"/>
         <source>Memory Card Settings</source>
         <translation>记忆卡设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6864"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7273"/>
         <source>No save present in this slot.</source>
         <translation>此档位中没有保存。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6572"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6974"/>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
         <translation>为PGXP数据后投影增加额外的精度。可以改善某些游戏的视觉效果。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6720"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7128"/>
         <source>Enable Recompiler Memory Exceptions</source>
         <translation>启用重新编译器内存异常</translation>
     </message>
@@ -7906,17 +8069,17 @@ Error was:</source>
         <translation type="vanished">内置分辨率屏幕截图</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6721"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7129"/>
         <source>Enable Region Check</source>
         <translation>启用区域检查</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6624"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7030"/>
         <source>Clears all settings set for this game.</source>
         <translation>清除此游戏的全部设置。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6963"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7376"/>
         <source>Scaling</source>
         <translation>缩放</translation>
     </message>
@@ -7925,462 +8088,455 @@ Error was:</source>
         <translation type="vanished">范例: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6976"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7393"/>
         <source>Selects the percentage of the normal clock speed the emulated hardware will run at.</source>
         <translation>选择模拟硬件将运行时正常主频的百分比。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7004"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7421"/>
         <source>Show OSD Messages</source>
         <translation>显示OSD消息</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6775"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7183"/>
         <source>Game path copied to clipboard.</source>
         <translation>游戏路径复制到剪贴板。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6731"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7139"/>
         <source>Enables an additional three controller slots on each port. Not supported in all games.</source>
         <translation>在每个接口上启用额外的3个控制器档位。并非所有游戏都支持。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6656"/>
         <source>Creates a new memory card file or folder.</source>
-        <translation>创建一个新的记忆卡文件或文件夹。</translation>
+        <translation type="vanished">创建一个新的记忆卡文件或文件夹。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6742"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7151"/>
         <source>Exit Without Saving</source>
         <translation>退出不保存</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6912"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7322"/>
         <source>Quick Save</source>
         <translation>快速保存</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6673"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7081"/>
         <source>Determines how much latency there is between the audio being picked up by the host API, and played through speakers.</source>
         <translation>确定在本机API拾取音频和通过扬声器播放音频之间有多少延迟。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6642"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7049"/>
         <source>Controller Type</source>
         <translation>控制器类型</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6727"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7135"/>
         <source>Enable XInput Input Source</source>
         <translation>启用XInput输入源</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6891"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7301"/>
         <source>Pauses the emulator when a game is started.</source>
         <translation>在游戏开始时暂停模拟器。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6566"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6968"/>
         <source>Achievements Settings</source>
         <translation>成就设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6750"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7158"/>
         <source>Failed to save input profile &apos;{}&apos;.</source>
         <translation>无法保存输入控制档&apos;{}&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6881"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7290"/>
         <source>PGXP (Precision Geometry Transform Pipeline)</source>
         <translation>PGXP (精确几何转换管线)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6802"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7210"/>
         <source>Input Sources</source>
         <translation>输入源</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6667"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7074"/>
         <source>Delete Save</source>
         <translation>删除保存</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6568"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6970"/>
         <source>Add Search Directory</source>
         <translation>添加搜索目录</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7084"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7504"/>
         <source>Use Single Card For Multi-Disc Games</source>
         <translation>为多光盘游戏使用单记忆卡</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6944"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7357"/>
         <source>Rewind Save Frequency</source>
         <translation>倒带保存频率</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6654"/>
         <source>Create Memory Card</source>
-        <translation>创建记忆卡</translation>
+        <translation type="vanished">创建记忆卡</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7025"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7442"/>
         <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs. Only applies to the hardware renderers.</source>
         <translation>平滑24位内容 (通常是FMV) 中颜色过渡之间的块状。仅适用于硬件渲染器。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6974"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7390"/>
         <source>Select Macro {} Binds</source>
         <translation>设置宏{}绑定</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6601"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7003"/>
         <source>BIOS Settings</source>
         <translation>BIOS设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6985"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7402"/>
         <source>Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.</source>
         <translation>设置一个阈值，当超过时丢弃精确值。可能有助于解决某些游戏中的故障。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6751"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7159"/>
         <source>Fast Boot</source>
         <translation>快速启动</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6823"/>
         <source>Loads a global save state.</source>
-        <translation>读取一个全局档。</translation>
+        <translation type="vanished">读取一个全局档。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7027"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7444"/>
         <source>Sort By</source>
         <translation>排序依据</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6651"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7059"/>
         <source>Cover Settings</source>
         <translation>封面设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6835"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7244"/>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
         <translation>记录BIOS对printf()的调用。并非全部游戏都包含调试消息。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7039"/>
         <source>Starts the console from where it was before it was last closed.</source>
-        <translation>从上次关闭游戏机之前的位置启动游戏机。</translation>
+        <translation type="vanished">从上次关闭游戏机之前的位置启动游戏机。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6800"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7208"/>
         <source>Infinite/Instantaneous</source>
         <translation>无限的/瞬时的</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6717"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7125"/>
         <source>Enable Post Processing</source>
         <translation>启用后处理</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6704"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7112"/>
         <source>Duck icon by icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)</source>
         <translation>鸭子图标由icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7007"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7424"/>
         <source>Show Status Indicators</source>
         <translation>显示状态指示器</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6918"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7328"/>
         <source>Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.</source>
         <translation>通过在工作线程上异步读取/解压缩CD数据来减少模拟中的故障。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6771"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7179"/>
         <source>Game Quick Save</source>
         <translation>游戏快速保存</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6718"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7126"/>
         <source>Enable Recompiler Block Linking</source>
         <translation>启用重新编译器块链接</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7008"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7425"/>
         <source>Shows a visual history of frame times in the upper-left corner of the display.</source>
         <translation>在显示左上角显示帧时间的可视历史记录。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7016"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7433"/>
         <source>Shows the current rendering resolution of the system in the top-right corner of the display.</source>
         <translation>在显示右上角显示系统的当前渲染分辨率。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6795"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7203"/>
         <source>Identifies any new files added to the game directories.</source>
         <translation>标识添加到游戏目录的任何新文件。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6812"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7221"/>
         <source>Launch a game from images scanned from your game directories.</source>
         <translation>以您的游戏目录扫描出的镜像来启动游戏。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6661"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7068"/>
         <source>Default</source>
         <translation>默认</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7044"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7463"/>
         <source>Summary</source>
         <translation>概述</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6580"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6982"/>
         <source>Apply Per-Game Settings</source>
         <translation>应用每个游戏各自设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6670"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7078"/>
         <source>Details</source>
         <translation>详情</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6699"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7107"/>
         <source>Download Covers</source>
         <translation>下载封面</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7037"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7455"/>
         <source>Start Fullscreen</source>
         <translation>全屏启动</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7057"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7476"/>
         <source>The selected memory card image will be used in shared mode for this slot.</source>
         <translation>所选的记忆卡文件将在共用模式下用于此档位。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6758"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7166"/>
         <source>Force NTSC Timings</source>
         <translation>强制NTSC计时</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6808"/>
         <source>Issue Tracker</source>
-        <translation>问题追踪器</translation>
+        <translation type="vanished">问题追踪器</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6781"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7189"/>
         <source>Game type copied to clipboard.</source>
         <translation>游戏格式复制到剪贴板。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6957"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7370"/>
         <source>Save State On Exit</source>
         <translation>退出时存档</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6687"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7095"/>
         <source>Disable All Enhancements</source>
         <translation>禁用全部增强</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6828"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7237"/>
         <source>Log To File</source>
         <translation>记录到文件</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6777"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7185"/>
         <source>Game serial copied to clipboard.</source>
         <translation>游戏序号复制到剪贴板。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6629"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7035"/>
         <source>Compatibility Rating</source>
         <translation>兼容性评定</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6500"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6902"/>
         <source>1000% [600 FPS (NTSC) / 500 FPS (PAL)]</source>
         <translation>1000% [600 FPS (NTSC) / 500 FPS (PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7059"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7478"/>
         <source>This game has no leaderboards.</source>
         <translation>这个游戏没有排行榜。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6684"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7092"/>
         <source>Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.</source>
         <translation>当按下热键来关闭模拟器/游戏时，确定是否显示确认提示。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6769"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7177"/>
         <source>Game List Settings</source>
         <translation>游戏列表设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6991"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7408"/>
         <source>Sets which sort of memory card image will be used for slot {}.</source>
         <translation>设置档位{}将使用哪种类型的记忆卡文件。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6744"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7153"/>
         <source>Failed to copy text to clipboard.</source>
         <translation>无法复制文本到剪贴板。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6933"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7343"/>
         <source>Reset Memory Card Directory</source>
         <translation>重置记忆卡目录</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6695"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7103"/>
         <source>Display Settings</source>
         <translation>显示设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6873"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7282"/>
         <source>Open in File Browser</source>
         <translation>在文件浏览器中打开</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6911"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7321"/>
         <source>Push a controller button or axis now.</source>
         <translation>现在按下控制器按键或轴。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6975"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7392"/>
         <source>Selects the GPU to use for rendering.</source>
         <translation>选择用于渲染的GPU。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7087"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7507"/>
         <source>Uses PGXP for all instructions, not just memory operations.</source>
         <translation>对全部指令使用PGXP，而不仅仅是内存操作。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7061"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7480"/>
         <source>Threaded Rendering</source>
         <translation>线程渲染</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6522"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6924"/>
         <source>350% [210 FPS (NTSC) / 175 FPS (PAL)]</source>
         <translation>350% [210 FPS (NTSC) / 175 FPS (PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7102"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7522"/>
         <source>When enabled, per-game settings will be applied, and incompatible enhancements will be disabled.</source>
         <translation>启用后，每个游戏将会应用各自独立的设置，并且不兼容的增强将被禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6840"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7249"/>
         <source>Logs out of RetroAchievements.</source>
         <translation>登出RetroAchievements。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6921"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7331"/>
         <source>Region: </source>
         <translation>区域: </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6606"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7009"/>
         <source>Behavior</source>
         <translation>行为</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6733"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7141"/>
         <source>Enables the replacement of background textures in supported games.</source>
         <translation>允许在支持的游戏中替换背景纹理。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6865"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7274"/>
         <source>No save states found.</source>
         <translation>没有找到存档。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6913"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7323"/>
         <source>RAIntegration is being used instead of the built-in achievements implementation.</source>
         <translation>正在用RAIntegration而不是内置的成就实现。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6608"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7011"/>
         <source>Buffer Size</source>
         <translation>缓冲大小</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7042"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7461"/>
         <source>Stretch Mode</source>
         <translation>伸缩模式</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6745"/>
         <source>Failed to create memory card &apos;{}&apos;.</source>
-        <translation>无法创建记忆卡&apos;{}&apos;。</translation>
+        <translation type="vanished">无法创建记忆卡&apos;{}&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6716"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7124"/>
         <source>Enable PGXP Vertex Cache</source>
         <translation>启用PGXP顶点缓存</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6992"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7409"/>
         <source>Setting {} binding {}.</source>
         <translation>设置{}绑定{}。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6811"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7219"/>
         <source>Launch a game by selecting a file/disc image.</source>
         <translation>通过选择文件/光盘镜像来启动游戏。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7023"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7440"/>
         <source>Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.</source>
         <translation>提前模拟系统并回滚/回放以减少输入滞后。非常高的系统需求。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6730"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7138"/>
         <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
         <translation>启用额外的6MB内存以获得总共2+6=8MB内存，通常出现在开发型游戏机。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6776"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7184"/>
         <source>Game region copied to clipboard.</source>
         <translation>游戏区域复制到剪贴板。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6743"/>
         <source>Exits the program.</source>
-        <translation>退出程序。</translation>
+        <translation type="vanished">退出程序。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6504"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6906"/>
         <source>125% [75 FPS (NTSC) / 62 FPS (PAL)]</source>
         <translation>125% [75 FPS (NTSC) / 62 FPS (PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6950"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7363"/>
         <source>Runahead</source>
         <translation>预运行</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7077"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7497"/>
         <source>Unknown</source>
         <translation>未知</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6630"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7036"/>
         <source>Compatibility: </source>
         <translation>兼容性: </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7099"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7519"/>
         <source>When enabled, DuckStation will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.</source>
         <translation>当启用时，DuckStation将列出非官方集的成就。这些成就不会被RetroAchievements追踪。</translation>
     </message>
@@ -8389,7 +8545,7 @@ Error was:</source>
         <translation type="vanished">在下面的表单中，指定要下载封面的URL，每行一个模板URL。可用的变量如下:</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6940"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7350"/>
         <source>Restores the state of the system prior to the last state loaded.</source>
         <translation>将系统进度恢复到读取末次存档之前。</translation>
     </message>
@@ -8398,227 +8554,302 @@ Error was:</source>
         <translation type="vanished">开始下载</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6773"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7181"/>
         <source>Game compatibility rating copied to clipboard.</source>
         <translation>游戏兼容性评定复制到剪贴板。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6708"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7116"/>
         <source>Emulation Speed</source>
         <translation>模拟速度</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6597"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6999"/>
         <source>Automatically switches to fullscreen mode when the program is started.</source>
         <translation>当程序开始时自动切换为全屏模式。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6715"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7123"/>
         <source>Enable Overclocking</source>
         <translation>启动超频</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6851"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7259"/>
         <source>Move Down</source>
         <translation>下移</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6675"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7083"/>
         <source>Determines how the emulated CPU executes instructions.</source>
         <translation>确定模拟CPU如何执行指令。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6786"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7194"/>
         <source>Global Slot {0}##global_slot_{0}</source>
         <translation>全局档位{0}##全局_档位_{0}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6799"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7207"/>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry.</source>
         <translation>提高多边形剔除的精度，减少几何体中孔的数量。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6577"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6979"/>
         <source>Allows loading protected games without subchannel information.</source>
         <translation>允许加载没有子通道信息的受保护游戏。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6493"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6895"/>
         <source>%.2f Seconds</source>
         <translation>%.2f秒</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6494"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6896"/>
         <source>%d Frames</source>
         <translation>%d帧</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6495"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6897"/>
         <source>%d sectors</source>
         <translation>%d扇区</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6562"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6964"/>
         <source>About DuckStation</source>
         <translation>关于Duckstation</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6639"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7046"/>
         <source>Controller Port {}{} Macros</source>
         <translation>控制器接口{}{}宏</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6967"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7295"/>
+        <source>Parent Directory</source>
+        <translation>父目录</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7352"/>
+        <source>Resume Last Session</source>
+        <translation>回到前次节点</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7353"/>
+        <source>Return To Game</source>
+        <translation>返回游戏</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7354"/>
+        <source>Return to desktop mode, or exit the application.</source>
+        <translation>回到桌面模式，或退出本应用程序。</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7355"/>
+        <source>Return to the previous menu.</source>
+        <translation>返回前一个菜单。</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7380"/>
         <source>Screenshot Format</source>
         <translation>屏幕截图格式</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6968"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7381"/>
         <source>Screenshot Quality</source>
         <translation>屏幕截图质量</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6969"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7382"/>
         <source>Screenshot Size</source>
         <translation>屏幕截图大小</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6977"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7385"/>
+        <source>Select</source>
+        <translation>选择</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7387"/>
+        <source>Select Disc Drive</source>
+        <translation>选择光盘驱动</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7389"/>
+        <source>Select Game</source>
+        <translation>选择游戏</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7391"/>
+        <source>Select State</source>
+        <translation>选择存档</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7394"/>
         <source>Selects the quality at which screenshots will be compressed.</source>
         <translation>选择压缩屏幕截图的质量。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6980"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7397"/>
         <source>Selects the view that the game list will open to.</source>
         <translation>选择游戏列表将打开的视图。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7002"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7419"/>
         <source>Show GPU Statistics</source>
         <translation>显示GPU统计信息</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7011"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7428"/>
         <source>Shows information about the emulated GPU in the top-right corner of the display.</source>
         <translation>在显示右上角显示关于模拟的GPU的信息。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7017"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7434"/>
         <source>Shows the game you are currently playing as part of your profile in Discord.</source>
         <translation>显示您当前正在玩的游戏并将它们作为您在Discord的个人资料的一部分。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7069"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7453"/>
+        <source>Start Disc</source>
+        <translation>启动光盘</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7456"/>
+        <source>Start Game</source>
+        <translation>启动游戏</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7457"/>
+        <source>Start a game from a disc in your PC&apos;s DVD drive.</source>
+        <translation>以您电脑DVD驱动器中的光盘来启动游戏。</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7487"/>
+        <source>Toggle Fullscreen</source>
+        <translation>全屏开关</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7489"/>
         <source>True Color Debanding</source>
         <translation>真彩色去条带</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7073"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7493"/>
         <source>UI Language</source>
         <translation>UI语言</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7074"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7494"/>
         <source>Uncompressed Size</source>
         <translation>未压缩的大小</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7075"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7495"/>
         <source>Uncompressed Size: %.2f MB</source>
         <translation>未压缩的大小: %.2f MB</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7078"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7498"/>
         <source>Unknown File Size</source>
         <translation>未知文件大小</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7095"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7515"/>
         <source>VSync</source>
         <translation>垂直同步</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7106"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7526"/>
         <source>Widescreen Hack</source>
         <translation>宽屏调整</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7111"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7531"/>
+        <source>{:%H:%M}</source>
+        <translation>{:%H:%M}</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7532"/>
+        <source>{:%Y-%m-%d %H:%M:%S}</source>
+        <translation>{:%Y-%m-%d %H:%M:%S}</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="7533"/>
         <source>{} Frames</source>
         <translation>{}帧</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7112"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7534"/>
         <source>{} deleted.</source>
         <translation>{}删除。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6575"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6977"/>
         <source>All Time: {}</source>
         <translation>全部时长: {}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6993"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7410"/>
         <source>Settings</source>
         <translation>设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6739"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7147"/>
         <source>Execution Mode</source>
         <translation>执行模式</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7063"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7482"/>
         <source>Time Played: %s</source>
         <translation>游玩时长: %s</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6617"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7023"/>
         <source>Chooses the backend to use for rendering the console/game visuals.</source>
         <translation>选择用于渲染游戏机/游戏视觉效果的后端。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6636"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7043"/>
         <source>Controller Port {} Macros</source>
         <translation>控制器接口{}宏</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6856"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7264"/>
         <source>Multitap Mode</source>
         <translation>多接头模式</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6664"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7071"/>
         <source>Default: Disabled</source>
         <translation>默认: 禁用</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7032"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7449"/>
         <source>Speeds up CD-ROM reads by the specified factor. May improve loading speeds in some games, and break others.</source>
         <translation>以指定的系数加快CD-ROM的读取速度。可能会提高某些游戏的加载速度，但破坏其他游戏。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6994"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7411"/>
         <source>Settings and Operations</source>
         <translation>设置与操作</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6600"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7002"/>
         <source>BIOS Selection</source>
         <translation>BIOS选择</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6763"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7171"/>
         <source>Fullscreen Resolution</source>
         <translation>全屏分辨率</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6632"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7039"/>
         <source>Confirm Power Off</source>
         <translation>确认关机</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6609"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7012"/>
         <source>CD-ROM Emulation</source>
         <translation>CD-ROM模拟</translation>
     </message>
@@ -8627,207 +8858,207 @@ Error was:</source>
         <translation type="vanished">自动加载金手指</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7058"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7477"/>
         <source>This game has no achievements.</source>
         <translation>这个游戏没有成就。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6499"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6901"/>
         <source>100% [60 FPS (NTSC) / 50 FPS (PAL)]</source>
         <translation>100% [60 FPS (NTSC) / 50 FPS (PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6559"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6961"/>
         <source>9x (for 4K)</source>
         <translation>9x (适合4K)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6643"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7050"/>
         <source>Controller settings reset to default.</source>
         <translation>控制器设置重置为默认。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6613"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7016"/>
         <source>Change Disc</source>
         <translation>更换光盘</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7076"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7496"/>
         <source>Undo Load State</source>
         <translation>撤消读档</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6576"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6978"/>
         <source>Allow Booting Without SBI File</source>
         <translation>没有SBI文件情况下允许启动</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6972"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7386"/>
         <source>Select Device</source>
         <translation>选择设备</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7041"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7460"/>
         <source>Stretch Display Vertically</source>
         <translation>垂直拉伸显示</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6931"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7341"/>
         <source>Replaces these settings with a previously saved input profile.</source>
         <translation>用先前保存的输入控制档替换这些设置。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6937"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7347"/>
         <source>Resets all configuration to defaults (including bindings).</source>
         <translation>重置全部配置为默认 (包括绑定)。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6605"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7008"/>
         <source>Backend Settings</source>
         <translation>后端设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6833"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7242"/>
         <source>Login token generated on {}</source>
         <translation>登入令牌生成于{}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6796"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7204"/>
         <source>If not enabled, the current post processing chain will be ignored.</source>
         <translation>如果未启用，则将忽略当前的后处理链。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6735"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7143"/>
         <source>Enhancements</source>
         <translation>增强</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6726"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7134"/>
         <source>Enable VRAM Write Texture Replacement</source>
         <translation>启用显存写入纹理替换</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6784"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7192"/>
         <source>GitHub Repository</source>
         <translation>GitHub仓库</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6779"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7187"/>
         <source>Game settings initialized with global settings for &apos;{}&apos;.</source>
         <translation>游戏设置初始化为&apos;{}&apos;的全局设置。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6766"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7174"/>
         <source>GPU adapter will be applied after restarting.</source>
         <translation>将在重启后应用GPU适配器。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6814"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7223"/>
         <source>Leaderboards</source>
         <translation>排行榜</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6884"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7293"/>
         <source>PGXP Geometry Tolerance</source>
         <translation>PGXP几何公差</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6655"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7063"/>
         <source>Create Save State Backups</source>
         <translation>创建存档备份</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6551"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6953"/>
         <source>800% [480 FPS (NTSC) / 400 FPS (PAL)]</source>
         <translation>800% [480 FPS (NTSC) / 400 FPS (PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6995"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7412"/>
         <source>Shader {} added as stage {}.</source>
         <translation>着色器{}添加为层{}。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7094"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7514"/>
         <source>Uses screen positions to resolve PGXP data. May improve visuals in some games.</source>
         <translation>使用屏幕位置来解析PGXP数据。可以改善某些游戏的视觉效果。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6638"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7045"/>
         <source>Controller Port {}{}</source>
         <translation>控制器接口{}{}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6790"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7198"/>
         <source>Hide Cursor In Fullscreen</source>
         <translation>全屏时隐藏光标</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6647"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7054"/>
         <source>Copies the current global settings to this game.</source>
         <translation>套用当前全局设置到此游戏中。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6621"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7027"/>
         <source>Clear Settings</source>
         <translation>清除设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6531"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6933"/>
         <source>4x (8x Speed)</source>
         <translation>4x (8倍速)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6915"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7325"/>
         <source>Readahead Sectors</source>
         <translation>预读扇区</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6850"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7258"/>
         <source>Minimal Output Latency</source>
         <translation>最小输出延迟</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6556"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6958"/>
         <source>900% [540 FPS (NTSC) / 450 FPS (PAL)]</source>
         <translation>900% [540 FPS (NTSC) / 450 FPS (PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7001"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7418"/>
         <source>Show Frame Times</source>
         <translation>显示帧时间</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6729"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7137"/>
         <source>Enables alignment and bus exceptions. Not needed for any known games.</source>
         <translation>启用对齐和总线异常。任何已知的游戏都不需要。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6877"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7286"/>
         <source>Output Latency</source>
         <translation>输出延迟</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6645"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7052"/>
         <source>Controls the volume of the audio played on the host when fast forwarding.</source>
         <translation>控制快进时本机播放的音频的音量。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6801"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7209"/>
         <source>Inhibit Screensaver</source>
         <translation>禁用屏幕保护程序</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6682"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7090"/>
         <source>Determines the position on the screen when black borders must be added.</source>
         <translation>当黑色边框必须添加时，确定其在屏幕上的位置。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6924"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7334"/>
         <source>Reloads the shaders from disk, applying any changes.</source>
         <translation>从磁盘重新加载着色器，应用任何更改。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6561"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6962"/>
         <source>A resume save state created at %s was found.
 
 Do you want to load this save and continue?</source>
@@ -8836,27 +9067,27 @@ Do you want to load this save and continue?</source>
 您想要读取此档并继续？</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7107"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7527"/>
         <source>Wireframe Rendering</source>
         <translation>线框渲染</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6525"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6927"/>
         <source>3x (for 720p)</source>
         <translation>3x (适合720p)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7013"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7430"/>
         <source>Shows persistent icons when turbo is active or when paused.</source>
         <translation>当涡轮处于活动状态或暂停时，显示持续的图标。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6540"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6942"/>
         <source>600% [360 FPS (NTSC) / 300 FPS (PAL)]</source>
         <translation>600% [360 FPS (NTSC) / 300 FPS (PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7080"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7500"/>
         <source>Use Blit Swap Chain</source>
         <translation>使用位块传输交换链</translation>
     </message>
@@ -8865,12 +9096,12 @@ Do you want to load this save and continue?</source>
         <translation type="vanished">DuckStation可为当前没有封面集的游戏去自动下载封面。我们不托管任何封面图片，用户必须提供他们自己的图片来源。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6579"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6981"/>
         <source>Apply Image Patches</source>
         <translation>应用镜像补丁</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6805"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7213"/>
         <source>Integration</source>
         <translation>整合</translation>
     </message>
@@ -8879,157 +9110,156 @@ Do you want to load this save and continue?</source>
         <translation type="vanished">使用不带后处理的内置渲染分辨率来保存屏幕截图。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6524"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6926"/>
         <source>3x (6x Speed)</source>
         <translation>3x (6倍速)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7105"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7525"/>
         <source>When this option is chosen, the clock speed set below will be used.</source>
         <translation>当选择此选项时，将使用下列设置的主频。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6962"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7375"/>
         <source>Scales the dithering pattern with the internal rendering resolution, making it less noticeable. Usually safe to enable.</source>
         <translation>缩放色彩抖动模式与内部渲染分辨率，使其不太明显。通常可以安全启用。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7066"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7485"/>
         <source>Toggle Analog</source>
         <translation>模拟切换</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6649"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7056"/>
         <source>Copy Global Settings</source>
         <translation>套用全局设置</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7020"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7437"/>
         <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
         <translation>在显示右上角显示系统的每秒显示帧数 (或垂直同步)。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7000"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7417"/>
         <source>Show FPS</source>
         <translation>显示帧率</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7052"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7471"/>
         <source>Texture Filtering</source>
         <translation>纹理过滤</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6782"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7190"/>
         <source>Game: {} ({})</source>
         <translation>游戏: {} ({})</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6508"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6910"/>
         <source>150% [90 FPS (NTSC) / 75 FPS (PAL)]</source>
         <translation>150% [90 FPS (NTSC) / 75 FPS (PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6973"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7388"/>
         <source>Select Disc Image</source>
         <translation>选择光盘镜像</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6598"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7000"/>
         <source>Avoids calls to C++ code, significantly speeding up the recompiler.</source>
         <translation>避免调用C++代码，大大加快重新编译器的速度。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6592"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6994"/>
         <source>Automatic mapping failed for {}.</source>
         <translation>{}的自动映射失败。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6803"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7211"/>
         <source>Input profile &apos;{}&apos; loaded.</source>
         <translation>输入控制档&apos;{}&apos;已加载。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6648"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7055"/>
         <source>Copies the global controller configuration to this game.</source>
         <translation>套用全局控制器配置到此游戏中。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6502"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6904"/>
         <source>10x (20x Speed)</source>
         <translation>10x (20倍速)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6558"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6960"/>
         <source>9x (18x Speed)</source>
         <translation>9x (18倍速)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6542"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6944"/>
         <source>6x (12x Speed)</source>
         <translation>6x (12倍速)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6548"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6950"/>
         <source>7x (14x Speed)</source>
         <translation>7x (14倍速)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6553"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6955"/>
         <source>8x (16x Speed)</source>
         <translation>8x (16倍速)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6536"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="6938"/>
         <source>5x (10x Speed)</source>
         <translation>5x (10倍速)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6842"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7251"/>
         <source>Macro {} Frequency</source>
         <translation>宏{}频率</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6986"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7403"/>
         <source>Sets a threshold for discarding the emulated depth buffer. May help in some games.</source>
         <translation>设置丢弃模拟深度缓冲区的阈值。可能对某些游戏有帮助。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6747"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7155"/>
         <source>Failed to delete {}.</source>
         <translation>无法删除{}。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6634"/>
         <source>Contributor List: https://github.com/stenzek/duckstation/blob/master/CONTRIBUTORS.md</source>
-        <translation>贡献者列表: https://github.com/stenzek/duckstation/blob/master/CONTRIBUTORS.md</translation>
+        <translation type="vanished">贡献者列表: https://github.com/stenzek/duckstation/blob/master/CONTRIBUTORS.md</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6741"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7149"/>
         <source>Exit And Save State</source>
         <translation>退出同时存档</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6914"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7324"/>
         <source>Read Speedup</source>
         <translation>读取加速</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6753"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7161"/>
         <source>Fast Forward Volume</source>
         <translation>快进音量</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6679"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7087"/>
         <source>Determines the amount of audio buffered before being pulled by the host API.</source>
         <translation>确定在被本机API提取之前缓冲的音频数量。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6971"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7384"/>
         <source>Seek Speedup</source>
         <translation>搜寻加速</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="6752"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7160"/>
         <source>Fast Forward Speed</source>
         <translation>快进速度</translation>
     </message>
@@ -9108,7 +9338,7 @@ Do you want to load this save and continue?</source>
         <translation type="vanished">硬件 (Vulkan)</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1742"/>
+        <location filename="../qthost.cpp" line="1741"/>
         <location filename="../../core/settings.cpp" line="1029"/>
         <source>Software</source>
         <translation>软件</translation>
@@ -11877,13 +12107,13 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="42"/>
-        <location filename="../interfacesettingswidget.cpp" line="84"/>
+        <location filename="../interfacesettingswidget.cpp" line="85"/>
         <source>Pause On Focus Loss</source>
         <translation>失去焦点时暂停</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="49"/>
-        <location filename="../interfacesettingswidget.cpp" line="88"/>
+        <location filename="../interfacesettingswidget.cpp" line="89"/>
         <source>Apply Per-Game Settings</source>
         <translation>应用每个游戏各自设置</translation>
     </message>
@@ -11894,25 +12124,25 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="63"/>
-        <location filename="../interfacesettingswidget.cpp" line="76"/>
+        <location filename="../interfacesettingswidget.cpp" line="77"/>
         <source>Inhibit Screensaver</source>
         <translation>禁用屏幕保护程序</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="70"/>
-        <location filename="../interfacesettingswidget.cpp" line="82"/>
+        <location filename="../interfacesettingswidget.cpp" line="83"/>
         <source>Pause On Start</source>
         <translation>开始时暂停</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="77"/>
-        <location filename="../interfacesettingswidget.cpp" line="65"/>
+        <location filename="../interfacesettingswidget.cpp" line="66"/>
         <source>Confirm Power Off</source>
         <translation>确认关机</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="84"/>
-        <location filename="../interfacesettingswidget.cpp" line="91"/>
+        <location filename="../interfacesettingswidget.cpp" line="92"/>
         <source>Enable Discord Presence</source>
         <translation>启用Discord-Presence</translation>
     </message>
@@ -11923,7 +12153,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="100"/>
-        <location filename="../interfacesettingswidget.cpp" line="71"/>
+        <location filename="../interfacesettingswidget.cpp" line="72"/>
         <source>Start Fullscreen</source>
         <translation>全屏启动</translation>
     </message>
@@ -11934,7 +12164,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="114"/>
-        <location filename="../interfacesettingswidget.cpp" line="79"/>
+        <location filename="../interfacesettingswidget.cpp" line="80"/>
         <source>Render To Separate Window</source>
         <translation>渲染到分离窗口</translation>
     </message>
@@ -11950,7 +12180,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="135"/>
-        <location filename="../interfacesettingswidget.cpp" line="73"/>
+        <location filename="../interfacesettingswidget.cpp" line="74"/>
         <source>Hide Cursor In Fullscreen</source>
         <translation>全屏时隐藏光标</translation>
     </message>
@@ -11971,7 +12201,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="175"/>
-        <location filename="../interfacesettingswidget.cpp" line="97"/>
+        <location filename="../interfacesettingswidget.cpp" line="98"/>
         <source>Enable Automatic Update Check</source>
         <translation>开启自动更新检查</translation>
     </message>
@@ -11981,86 +12211,86 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>检查更新…</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="65"/>
-        <location filename="../interfacesettingswidget.cpp" line="68"/>
-        <location filename="../interfacesettingswidget.cpp" line="73"/>
-        <location filename="../interfacesettingswidget.cpp" line="76"/>
-        <location filename="../interfacesettingswidget.cpp" line="79"/>
-        <location filename="../interfacesettingswidget.cpp" line="88"/>
-        <location filename="../interfacesettingswidget.cpp" line="97"/>
+        <location filename="../interfacesettingswidget.cpp" line="66"/>
+        <location filename="../interfacesettingswidget.cpp" line="69"/>
+        <location filename="../interfacesettingswidget.cpp" line="74"/>
+        <location filename="../interfacesettingswidget.cpp" line="77"/>
+        <location filename="../interfacesettingswidget.cpp" line="80"/>
+        <location filename="../interfacesettingswidget.cpp" line="89"/>
+        <location filename="../interfacesettingswidget.cpp" line="98"/>
         <source>Checked</source>
         <translation>勾选</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="66"/>
+        <location filename="../interfacesettingswidget.cpp" line="67"/>
         <source>Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.</source>
         <translation>当按下热键来关闭模拟器/游戏时，确定是否显示确认提示。</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="68"/>
+        <location filename="../interfacesettingswidget.cpp" line="69"/>
         <source>Save State On Exit</source>
         <translation>退出时存档</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="69"/>
+        <location filename="../interfacesettingswidget.cpp" line="70"/>
         <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
         <translation>在关闭或退出模拟器时自动存档。然后下次您可以直接从离开的地方继续。</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="71"/>
-        <location filename="../interfacesettingswidget.cpp" line="82"/>
-        <location filename="../interfacesettingswidget.cpp" line="84"/>
-        <location filename="../interfacesettingswidget.cpp" line="91"/>
+        <location filename="../interfacesettingswidget.cpp" line="72"/>
+        <location filename="../interfacesettingswidget.cpp" line="83"/>
+        <location filename="../interfacesettingswidget.cpp" line="85"/>
+        <location filename="../interfacesettingswidget.cpp" line="92"/>
         <source>Unchecked</source>
         <translation>不勾选</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="72"/>
+        <location filename="../interfacesettingswidget.cpp" line="73"/>
         <source>Automatically switches to fullscreen mode when a game is started.</source>
         <translation>当游戏开始时自动切换为全屏模式。</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="74"/>
+        <location filename="../interfacesettingswidget.cpp" line="75"/>
         <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
         <translation>当模拟器处于全屏模式时隐藏鼠标指针/光标。</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="77"/>
+        <location filename="../interfacesettingswidget.cpp" line="78"/>
         <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
         <translation>禁止激活屏幕保护程序，同时防止本机在模拟运行时休眠。</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="80"/>
+        <location filename="../interfacesettingswidget.cpp" line="81"/>
         <source>Renders the display of the simulated console to the main window of the application, over the game list. If checked, the display will render in a separate window.</source>
         <translation>将模拟游戏机的显示渲染到程序主窗口，置于游戏列表上。如果选中此项，将会渲染到分离窗口来单独显示。</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="83"/>
+        <location filename="../interfacesettingswidget.cpp" line="84"/>
         <source>Pauses the emulator when a game is started.</source>
         <translation>在游戏开始时暂停模拟器。</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="85"/>
+        <location filename="../interfacesettingswidget.cpp" line="86"/>
         <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
         <translation>在最小化窗口或切换为其他应用程序时暂停模拟器，在切换回模拟器时取消暂停。</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="89"/>
+        <location filename="../interfacesettingswidget.cpp" line="90"/>
         <source>When enabled, per-game settings will be applied, and incompatible enhancements will be disabled. You should leave this option enabled except when testing enhancements with incompatible games.</source>
         <translation>启用后，每个游戏将会应用各自独立的设置，并且不兼容的增强将被禁用。您应当保持此选项处于启用状态，除非要用不兼容游戏去测试增强功能。</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="92"/>
+        <location filename="../interfacesettingswidget.cpp" line="93"/>
         <source>Shows the game you are currently playing as part of your profile in Discord.</source>
         <translation>显示您当前正在玩的游戏并将它们作为您在Discord的个人资料的一部分。</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="98"/>
+        <location filename="../interfacesettingswidget.cpp" line="99"/>
         <source>Automatically checks for updates to the program on startup. Updates can be deferred until later or skipped entirely.</source>
         <translation>启动时自动检查程序的更新，可以选择稍后更新或完全跳过。</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="105"/>
+        <location filename="../interfacesettingswidget.cpp" line="106"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
@@ -12254,140 +12484,140 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../mainwindow.ui" line="152"/>
+        <location filename="../mainwindow.ui" line="146"/>
         <source>&amp;Help</source>
         <translation>帮助(&amp;H)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="211"/>
+        <location filename="../mainwindow.ui" line="205"/>
         <source>&amp;View</source>
-        <translation>查看(&amp;V)</translation>
+        <translation>视图(&amp;V)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1524"/>
+        <location filename="../mainwindow.cpp" line="1498"/>
         <source>Boot and Debug</source>
         <translation>启动和调试</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1497"/>
+        <location filename="../mainwindow.cpp" line="1471"/>
         <source>Set Cover Image...</source>
         <translation>设置封面图片…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="921"/>
+        <location filename="../mainwindow.ui" line="879"/>
         <source>Zoom &amp;In (Grid View)</source>
         <translation>放大(&amp;I) (方格视图)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="396"/>
+        <location filename="../mainwindow.ui" line="380"/>
         <source>B&amp;IOS</source>
         <translation>BIOS(&amp;I)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="387"/>
+        <location filename="../mainwindow.ui" line="372"/>
         <source>E&amp;xit</source>
         <translation>退出(&amp;X)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="559"/>
+        <location filename="../mainwindow.ui" line="531"/>
         <source>Audio</source>
         <translation>声音</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="305"/>
-        <location filename="../mainwindow.cpp" line="1072"/>
-        <location filename="../mainwindow.cpp" line="1182"/>
-        <location filename="../mainwindow.cpp" line="1452"/>
+        <location filename="../mainwindow.cpp" line="306"/>
+        <location filename="../mainwindow.cpp" line="1046"/>
+        <location filename="../mainwindow.cpp" line="1156"/>
+        <location filename="../mainwindow.cpp" line="1426"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1244"/>
+        <location filename="../mainwindow.cpp" line="1218"/>
         <source>Reset</source>
         <translation>重置</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="109"/>
+        <location filename="../mainwindow.ui" line="105"/>
         <source>Theme</source>
         <translation>主题</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="838"/>
+        <location filename="../mainwindow.ui" line="799"/>
         <source>Lock Toolbar</source>
         <translation>锁定工具栏</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="804"/>
+        <location filename="../mainwindow.ui" line="766"/>
         <source>&amp;Memory Cards</source>
         <translation>记忆卡(&amp;M)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="967"/>
+        <location filename="../mainwindow.cpp" line="941"/>
         <source>Save To File...</source>
         <translation>存档到文件…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1452"/>
+        <location filename="../mainwindow.cpp" line="1426"/>
         <source>You must select a disc to change discs.</source>
         <translation>您必须选择一张光盘用以更换光盘。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="770"/>
+        <location filename="../mainwindow.ui" line="734"/>
         <source>Show Timers State</source>
         <translation>显示计时器状态</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1337"/>
+        <location filename="../mainwindow.cpp" line="1311"/>
         <source>Exit Big Picture</source>
         <translation>退出大视画</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="175"/>
+        <location filename="../mainwindow.ui" line="169"/>
         <source>Switch CPU Emulation Mode</source>
         <translation>切换CPU模拟模式</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1100"/>
+        <location filename="../mainwindow.cpp" line="1074"/>
         <source>&amp;Enabled Cheats</source>
         <translation>启用金手指(&amp;E)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3002"/>
+        <location filename="../mainwindow.cpp" line="3034"/>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;To obtain an official build, please follow the instructions under &quot;Downloading and Running&quot; at the link below:&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;抱歉，您正在尝试更新的DuckStation版本不是由官方GitHub所发行。为防止不兼容，自动更新程序仅在正式版本上启用。&lt;/p&gt;&lt;p&gt;要获取正式版本，请按照下面链接中的“下载并运行”下的说明进行操作：&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/stenzek/duckstation/&quot;&gt;https://github.com/stenzek/duckstation/&lt;/a&gt;lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="683"/>
+        <location filename="../mainwindow.ui" line="647"/>
         <source>Dump CPU to VRAM Copies</source>
         <translation>转储CPU到显存拷贝</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="738"/>
+        <location filename="../mainwindow.ui" line="702"/>
         <source>Dump SPU RAM...</source>
         <translation>转储SPU内存…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1574"/>
+        <location filename="../mainwindow.cpp" line="1548"/>
         <source>You must select a different file to the current cover image.</source>
         <translation>您必须选择与当前封面图像不同的文件。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1547"/>
+        <location filename="../mainwindow.cpp" line="1521"/>
         <source>Reset Play Time</source>
         <translation>重置游戏时长</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="303"/>
+        <location filename="../mainwindow.ui" line="297"/>
         <source>Start &amp;Disc...</source>
         <translation>启动光盘(&amp;D)…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1578"/>
+        <location filename="../mainwindow.cpp" line="1552"/>
         <source>Cover Already Exists</source>
         <translation>封面已经存在</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1158"/>
+        <location filename="../mainwindow.cpp" line="1132"/>
         <source>A resume save state was found for this game, saved at:
 
 %1.
@@ -12400,113 +12630,113 @@ Do you want to load this state, or start from a fresh boot?</source>
 您想要读取此档，还是从头全新开始？</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="866"/>
+        <location filename="../mainwindow.ui" line="826"/>
         <source>System &amp;Display</source>
         <translation>系统显示(&amp;D)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="321"/>
+        <location filename="../mainwindow.ui" line="313"/>
         <source>&amp;Scan For New Games</source>
         <translation>扫描新游戏(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1240"/>
+        <location filename="../mainwindow.cpp" line="1214"/>
         <source>Confirm Disc Change</source>
         <translation>确认更换光盘</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2862"/>
-        <location filename="../mainwindow.cpp" line="2871"/>
+        <location filename="../mainwindow.cpp" line="2900"/>
+        <location filename="../mainwindow.cpp" line="2909"/>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
         <translation>没有找到记忆卡&apos;%1&apos;。尝试开始游戏并保存创建它。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="829"/>
+        <location filename="../mainwindow.cpp" line="803"/>
         <source>Edit Memory Cards...</source>
         <translation>管理记忆卡…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="878"/>
+        <location filename="../mainwindow.ui" line="837"/>
         <source>Game &amp;Properties</source>
         <translation>游戏属性(&amp;P)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1560"/>
+        <location filename="../mainwindow.cpp" line="1534"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</source>
         <translation>全部封面图片格式 (*.jpg *.jpeg *.png *.webp)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="942"/>
+        <location filename="../mainwindow.ui" line="900"/>
         <source>Open Memory Card Directory...</source>
         <translation>打开记忆卡目录…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="723"/>
+        <location filename="../mainwindow.ui" line="687"/>
         <source>Dump Audio</source>
         <translation>转储音频</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1156"/>
+        <location filename="../mainwindow.cpp" line="1130"/>
         <source>Load Resume State</source>
         <translation>读取继续档</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="884"/>
+        <location filename="../mainwindow.cpp" line="858"/>
         <source>Delete Save States...</source>
         <translation>删除存档…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="166"/>
+        <location filename="../mainwindow.ui" line="160"/>
         <source>&amp;Debug</source>
         <translation>调试(&amp;D)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="360"/>
+        <location filename="../mainwindow.ui" line="348"/>
         <source>&amp;Pause</source>
         <translation>暂停(&amp;P)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="348"/>
+        <location filename="../mainwindow.ui" line="337"/>
         <source>&amp;Reset</source>
         <translation>重启(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="236"/>
+        <location filename="../mainwindow.ui" line="230"/>
         <source>&amp;Tools</source>
         <translation>工具(&amp;T)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2752"/>
+        <location filename="../mainwindow.cpp" line="2799"/>
         <source>Confirm Shutdown</source>
         <translation>确认关机</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="662"/>
+        <location filename="../mainwindow.ui" line="626"/>
         <source>Resume State</source>
         <translation>继续档</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1516"/>
+        <location filename="../mainwindow.cpp" line="1490"/>
         <source>Full Boot</source>
         <translation>完全启动</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="473"/>
+        <location filename="../mainwindow.ui" line="450"/>
         <source>&amp;GitHub Repository...</source>
         <translation>GitHub仓库(&amp;G)…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="813"/>
+        <location filename="../mainwindow.cpp" line="787"/>
         <source>Resume (%1)</source>
         <translation>继续 (%1)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="482"/>
+        <location filename="../mainwindow.ui" line="459"/>
         <source>&amp;Issue Tracker...</source>
         <translation>问题追踪器(&amp;I)…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="586"/>
+        <location filename="../mainwindow.ui" line="555"/>
         <source>Game List</source>
         <translation>游戏列表</translation>
     </message>
@@ -12515,33 +12745,33 @@ Do you want to load this state, or start from a fresh boot?</source>
         <translation type="vanished">增强(&amp;E)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2756"/>
+        <location filename="../mainwindow.cpp" line="2803"/>
         <source>Save State For Resume</source>
         <translation>存档以便下次继续</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="459"/>
+        <location filename="../mainwindow.ui" line="436"/>
         <source>Fullscreen</source>
         <translation>全屏</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="950"/>
-        <location filename="../mainwindow.cpp" line="989"/>
+        <location filename="../mainwindow.cpp" line="924"/>
+        <location filename="../mainwindow.cpp" line="963"/>
         <source>Global Save %1 (%2)</source>
         <translation>全局档%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="450"/>
+        <location filename="../mainwindow.ui" line="428"/>
         <source>&amp;Post-Processing</source>
         <translation>后处理(&amp;P)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="888"/>
+        <location filename="../mainwindow.ui" line="847"/>
         <source>CPU D&amp;ebugger</source>
         <translation>CPU调试器(&amp;E)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1608"/>
+        <location filename="../mainwindow.cpp" line="1582"/>
         <source>Are you sure you want to reset the play time for &apos;%1&apos;?
 
 This action cannot be undone.</source>
@@ -12550,60 +12780,60 @@ This action cannot be undone.</source>
 此操作不可撤消。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="778"/>
+        <location filename="../mainwindow.ui" line="742"/>
         <source>Show MDEC State</source>
         <translation>显示MDEC状态</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="215"/>
+        <location filename="../mainwindow.ui" line="209"/>
         <source>&amp;Window Size</source>
         <translation>窗口尺寸(&amp;W)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="937"/>
+        <location filename="../mainwindow.ui" line="895"/>
         <source>Refresh &amp;Covers (Grid View)</source>
         <translation>刷新封面(&amp;C) (方格视图)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2832"/>
+        <location filename="../mainwindow.cpp" line="2879"/>
         <source>Memory card &apos;%1&apos; does not exist. Do you want to create an empty memory card?</source>
         <translation>记忆卡&apos;%1&apos;不存在。您想要创建一个空的记忆卡吗？</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="965"/>
-        <location filename="../mainwindow.cpp" line="1336"/>
+        <location filename="../mainwindow.ui" line="921"/>
+        <location filename="../mainwindow.cpp" line="1310"/>
         <source>Start Big Picture Mode</source>
         <translation>启动大视画模式</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="691"/>
+        <location filename="../mainwindow.ui" line="655"/>
         <source>Dump VRAM to CPU Copies</source>
         <translation>转储显存到CPU拷贝</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1055"/>
-        <location filename="../mainwindow.cpp" line="1245"/>
+        <location filename="../mainwindow.cpp" line="1029"/>
+        <location filename="../mainwindow.cpp" line="1219"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="57"/>
-        <location filename="../mainwindow.ui" line="550"/>
+        <location filename="../mainwindow.ui" line="56"/>
+        <location filename="../mainwindow.ui" line="523"/>
         <source>Cheats</source>
         <translation>金手指</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="505"/>
+        <location filename="../mainwindow.ui" line="481"/>
         <source>View Third-Party Notices...</source>
         <translation>查看第三方通知…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="924"/>
+        <location filename="../mainwindow.ui" line="882"/>
         <source>Ctrl++</source>
         <translation>Ctrl++</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="932"/>
+        <location filename="../mainwindow.ui" line="890"/>
         <source>Ctrl+-</source>
         <translation>Ctrl+-</translation>
     </message>
@@ -12614,16 +12844,21 @@ This action cannot be undone.</source>
     </message>
     <message>
         <location filename="../interfacesettingswidget.cpp" line="17"/>
+        <source>Cobalt Sky</source>
+        <translation>钴蓝天空</translation>
+    </message>
+    <message>
+        <location filename="../interfacesettingswidget.cpp" line="18"/>
         <source>Grey Matter</source>
         <translation>灰质</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="18"/>
+        <location filename="../interfacesettingswidget.cpp" line="19"/>
         <source>Dark Ruby</source>
         <translation>黑红宝石</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1046"/>
+        <location filename="../mainwindow.cpp" line="1020"/>
         <source>Using cheats can have unpredictable effects on games, causing crashes, graphical glitches, and corrupted saves. By using the cheat manager, you agree that it is an unsupported configuration, and we will not provide you with any assistance when games break.
 
 Cheats persist through save states even after being disabled, please remember to reset/reboot the game after turning off any codes.
@@ -12636,12 +12871,12 @@ Are you sure you want to continue?</source>
 您确定想要继续吗？</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="728"/>
+        <location filename="../mainwindow.ui" line="692"/>
         <source>Dump RAM...</source>
         <translation>转储内存…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1607"/>
+        <location filename="../mainwindow.cpp" line="1581"/>
         <source>Confirm Reset</source>
         <translation>确认重置</translation>
     </message>
@@ -12651,348 +12886,353 @@ Are you sure you want to continue?</source>
         <translation>本地</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="687"/>
+        <location filename="../mainwindow.cpp" line="682"/>
         <source>Select disc drive:</source>
         <translation>选择光盘驱动:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="707"/>
+        <location filename="../mainwindow.ui" line="671"/>
         <source>Disable Interlacing</source>
         <translation>禁用隔行扫描</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="553"/>
+        <location filename="../mainwindow.cpp" line="554"/>
         <source>Paused</source>
         <translation>暂停</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="916"/>
+        <location filename="../mainwindow.ui" line="874"/>
         <source>Show Titles (Grid View)</source>
         <translation>显示标题 (方格视图)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="929"/>
+        <location filename="../mainwindow.ui" line="887"/>
         <source>Zoom &amp;Out (Grid View)</source>
         <translation>缩小(&amp;O) (方格视图)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="813"/>
-        <location filename="../mainwindow.cpp" line="790"/>
+        <location filename="../mainwindow.ui" line="774"/>
+        <location filename="../mainwindow.cpp" line="764"/>
         <source>Resume</source>
         <translation>继续</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="532"/>
+        <location filename="../mainwindow.ui" line="507"/>
         <source>Change Disc...</source>
         <translation>更换光盘…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="647"/>
+        <location filename="../mainwindow.ui" line="611"/>
         <source>From Device...</source>
         <translation>从设备…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2837"/>
+        <location filename="../mainwindow.cpp" line="2884"/>
         <source>Failed to create memory card &apos;%1&apos;</source>
         <translation>无法创建记忆卡&apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="883"/>
+        <location filename="../mainwindow.ui" line="842"/>
         <source>Memory &amp;Card Editor</source>
         <translation>记忆卡编辑器(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2167"/>
-        <location filename="../mainwindow.cpp" line="2183"/>
+        <location filename="../mainwindow.cpp" line="2143"/>
+        <location filename="../mainwindow.cpp" line="2159"/>
         <source>Binary Files (*.bin)</source>
         <translation>二进制文件 (*.bin)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="669"/>
+        <location filename="../mainwindow.cpp" line="664"/>
         <source>Could not find any CD-ROM devices. Please ensure you have a CD-ROM drive connected and sufficient permissions to access it.</source>
         <translation>找不到任何CD-ROM设备。请确保您连接了一个CD-ROM驱动，并有足够的权限访问它。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="66"/>
-        <location filename="../mainwindow.cpp" line="793"/>
-        <location filename="../mainwindow.cpp" line="1162"/>
+        <location filename="../mainwindow.ui" line="64"/>
+        <location filename="../mainwindow.cpp" line="767"/>
+        <location filename="../mainwindow.cpp" line="1136"/>
         <source>Load State</source>
         <translation>读档</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="464"/>
+        <location filename="../mainwindow.ui" line="441"/>
         <source>Resolution Scale</source>
         <translation>分辨率比率</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="170"/>
+        <location filename="../mainwindow.ui" line="164"/>
         <source>Switch GPU Renderer</source>
         <translation>切换GPU渲染器</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="312"/>
+        <location filename="../mainwindow.ui" line="305"/>
         <source>Start &amp;BIOS</source>
         <translation>启动BIOS(&amp;B)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="369"/>
+        <location filename="../mainwindow.ui" line="356"/>
         <source>&amp;Load State</source>
         <translation>读档(&amp;L)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="294"/>
+        <location filename="../mainwindow.ui" line="289"/>
         <source>Start &amp;File...</source>
         <translation>启动文件(&amp;F)…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="675"/>
+        <location filename="../mainwindow.ui" line="639"/>
         <source>Show VRAM</source>
         <translation>显示显存</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2887"/>
+        <location filename="../mainwindow.cpp" line="2925"/>
         <source>RA: Logged in as %1 (%2, %3 softcore). %4 unread messages.</source>
         <translation>RA: 以%1 (%2, %3软核) 登入。%4未读消息。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="62"/>
+        <location filename="../mainwindow.cpp" line="63"/>
         <source>All File Types (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psf *.minipsf *.m3u);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp *.PBP);;PlayStation Executables (*.exe *.psexe *.ps-exe);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)</source>
         <translation>全部文件格式 (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psf *.minipsf *.m3u);;单轨原生镜像 (*.bin *.img *.iso);;Cue表单 (*.cue);;MAME CHD镜像 (*.chd);;错误码建模镜像 (*.ecm);;媒体描述符边车镜像 (*.mds);;PlayStation EBOOT文件 (*.pbp *.PBP);;PlayStation可执行文件 (*.exe *.psexe *.ps-exe);;便携式声音格式文件 (*.psf *.minipsf);;播放列表 (*.m3u)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1164"/>
+        <location filename="../mainwindow.cpp" line="1138"/>
         <source>Delete And Boot</source>
         <translation>删除并启动</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="974"/>
-        <location filename="../mainwindow.cpp" line="1337"/>
+        <location filename="../mainwindow.ui" line="929"/>
+        <location filename="../mainwindow.cpp" line="1311"/>
         <source>Big Picture</source>
         <translation>大视画</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="514"/>
+        <location filename="../mainwindow.ui" line="490"/>
         <source>About &amp;Qt...</source>
         <translation>关于Qt(&amp;Q)…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="500"/>
+        <location filename="../mainwindow.ui" line="476"/>
         <source>Check for &amp;Updates...</source>
         <translation>检查更新(&amp;U)…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="330"/>
+        <location filename="../mainwindow.ui" line="321"/>
         <source>&amp;Rescan All Games</source>
         <translation>重新扫描全部游戏(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2175"/>
+        <location filename="../mainwindow.cpp" line="2151"/>
         <source>Binary Files (*.bin);;PNG Images (*.png)</source>
         <translation>二进制文件 (*.bin);;PNG图片 (*.png)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="905"/>
+        <location filename="../mainwindow.ui" line="863"/>
         <source>Game &amp;Grid</source>
         <translation>游戏方格(&amp;G)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="858"/>
+        <location filename="../mainwindow.ui" line="818"/>
         <source>Game &amp;List</source>
         <translation>游戏列表(&amp;L)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="75"/>
+        <location filename="../mainwindow.ui" line="72"/>
         <source>Save State</source>
         <translation>存档</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="378"/>
+        <location filename="../mainwindow.ui" line="364"/>
         <source>&amp;Save State</source>
         <translation>存档(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="441"/>
+        <location filename="../mainwindow.ui" line="420"/>
         <source>&amp;Graphics</source>
         <translation>图像(&amp;G)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="595"/>
+        <location filename="../mainwindow.ui" line="563"/>
         <source>&amp;Interface</source>
         <translation>界面(&amp;I)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="652"/>
+        <location filename="../mainwindow.ui" line="616"/>
         <source>From Game List...</source>
         <translation>从游戏列表…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="956"/>
+        <location filename="../mainwindow.ui" line="913"/>
         <source>Power Off &amp;Without Saving</source>
         <translation>关机不保存(&amp;W)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1560"/>
+        <location filename="../mainwindow.ui" line="939"/>
+        <source>Memory &amp;Scanner</source>
+        <translation>内存扫描器(&amp;S)</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1534"/>
         <source>Select Cover Image</source>
         <translation>选择封面图片</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="896"/>
+        <location filename="../mainwindow.ui" line="855"/>
         <source>Enable GDB Server</source>
         <translation>启用GDB服务器</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1507"/>
+        <location filename="../mainwindow.cpp" line="1481"/>
         <source>Default Boot</source>
         <translation>默认启动</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1551"/>
+        <location filename="../mainwindow.cpp" line="1525"/>
         <source>Add Search Directory...</source>
         <translation>添加搜索目录…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1243"/>
+        <location filename="../mainwindow.cpp" line="1217"/>
         <source>Swap Disc</source>
         <translation>交换光盘</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2995"/>
+        <location filename="../mainwindow.cpp" line="3027"/>
         <source>Updater Error</source>
         <translation>更新程序错误</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3008"/>
+        <location filename="../mainwindow.cpp" line="3040"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation>当前平台不支持自动更新。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="683"/>
+        <location filename="../mainwindow.cpp" line="678"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="746"/>
+        <location filename="../mainwindow.ui" line="710"/>
         <source>Show GPU State</source>
         <translation>显示GPU状态</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="762"/>
+        <location filename="../mainwindow.ui" line="726"/>
         <source>Show SPU State</source>
         <translation>显示SPU状态</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="642"/>
+        <location filename="../mainwindow.ui" line="606"/>
         <source>From File...</source>
         <translation>从文件…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="118"/>
+        <location filename="../mainwindow.ui" line="113"/>
         <source>Language</source>
         <translation>语言</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1579"/>
+        <location filename="../mainwindow.cpp" line="1553"/>
         <source>A cover image for this game already exists, do you wish to replace it?</source>
         <translation>该游戏的封面图片已经存在，您想要替换它吗？</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1241"/>
+        <location filename="../mainwindow.cpp" line="1215"/>
         <source>Do you want to swap discs or boot the new image (via system reset)?</source>
         <translation>您想要交换光盘还是启动新镜像 (通过系统重启)？</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="928"/>
+        <location filename="../mainwindow.cpp" line="902"/>
         <source>Load From File...</source>
         <translation>从文件读档…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="950"/>
-        <location filename="../mainwindow.cpp" line="989"/>
+        <location filename="../mainwindow.cpp" line="924"/>
+        <location filename="../mainwindow.cpp" line="963"/>
         <source>Global Save %1 (Empty)</source>
         <translation>全局档%1 (空)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="568"/>
+        <location filename="../mainwindow.ui" line="539"/>
         <source>Achievements</source>
         <translation>成就</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="944"/>
-        <location filename="../mainwindow.cpp" line="983"/>
+        <location filename="../mainwindow.cpp" line="918"/>
+        <location filename="../mainwindow.cpp" line="957"/>
         <source>Game Save %1 (Empty)</source>
         <translation>游戏档%1 (空)</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="19"/>
+        <location filename="../interfacesettingswidget.cpp" line="20"/>
         <source>QDarkStyle</source>
         <translation>暗夜</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1264"/>
+        <location filename="../mainwindow.cpp" line="1238"/>
         <source>Start Disc</source>
         <translation>启动光盘</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="979"/>
+        <location filename="../mainwindow.ui" line="934"/>
         <source>Cover Downloader</source>
         <translation>封面下载器</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="613"/>
+        <location filename="../mainwindow.ui" line="579"/>
         <source>Add Game Directory...</source>
         <translation>添加游戏目录…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1163"/>
+        <location filename="../mainwindow.cpp" line="1137"/>
         <source>Fresh Boot</source>
         <translation>全新启动</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="930"/>
-        <location filename="../mainwindow.cpp" line="972"/>
+        <location filename="../mainwindow.cpp" line="904"/>
+        <location filename="../mainwindow.cpp" line="946"/>
         <source>Save States (*.sav)</source>
         <translation>存档 (*.sav)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="523"/>
+        <location filename="../mainwindow.ui" line="499"/>
         <source>&amp;About DuckStation...</source>
         <translation>关于DuckStation(&amp;A)…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1492"/>
+        <location filename="../mainwindow.cpp" line="1466"/>
         <source>Open Containing Directory...</source>
         <translation>打开包含目录…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1752"/>
+        <location filename="../mainwindow.cpp" line="1726"/>
         <source>%1x Scale</source>
         <translation>%1x缩放</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1510"/>
+        <location filename="../mainwindow.cpp" line="1484"/>
         <source>Fast Boot</source>
         <translation>快速启动</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2831"/>
-        <location filename="../mainwindow.cpp" line="2836"/>
-        <location filename="../mainwindow.cpp" line="2861"/>
-        <location filename="../mainwindow.cpp" line="2870"/>
+        <location filename="../mainwindow.cpp" line="2878"/>
+        <location filename="../mainwindow.cpp" line="2883"/>
+        <location filename="../mainwindow.cpp" line="2899"/>
+        <location filename="../mainwindow.cpp" line="2908"/>
         <source>Memory Card Not Found</source>
         <translation>没有找到记忆卡</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1088"/>
+        <location filename="../mainwindow.cpp" line="1062"/>
         <source>Cheat Manager</source>
         <translation>金手指管理器</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="667"/>
+        <location filename="../mainwindow.ui" line="631"/>
         <source>Global State</source>
         <translation>全局档</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1593"/>
+        <location filename="../mainwindow.cpp" line="1567"/>
         <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
         <translation>无法复制&apos;%1&apos;到&apos;%2&apos;</translation>
     </message>
@@ -13006,50 +13246,50 @@ Are you sure you want to continue?</source>
         <translation type="vanished">显示(&amp;D)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="715"/>
+        <location filename="../mainwindow.ui" line="679"/>
         <source>Force NTSC Timings</source>
         <translation>强制NTSC计时</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1336"/>
+        <location filename="../mainwindow.cpp" line="1310"/>
         <source>Stop Big Picture Mode</source>
         <translation>停止大视画模式</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="699"/>
+        <location filename="../mainwindow.ui" line="663"/>
         <source>Disable All Enhancements</source>
         <translation>禁用全部增强</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1574"/>
-        <location filename="../mainwindow.cpp" line="1588"/>
-        <location filename="../mainwindow.cpp" line="1593"/>
-        <location filename="../mainwindow.cpp" line="1598"/>
+        <location filename="../mainwindow.cpp" line="1548"/>
+        <location filename="../mainwindow.cpp" line="1562"/>
+        <location filename="../mainwindow.cpp" line="1567"/>
+        <location filename="../mainwindow.cpp" line="1572"/>
         <source>Copy Error</source>
         <translation>复制错误</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="816"/>
+        <location filename="../mainwindow.ui" line="777"/>
         <source>Resumes the last save state created.</source>
         <translation>继续末次创建的存档。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="252"/>
+        <location filename="../mainwindow.ui" line="248"/>
         <source>toolBar</source>
         <translation>工具栏</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="827"/>
+        <location filename="../mainwindow.ui" line="788"/>
         <source>&amp;Toolbar</source>
         <translation>工具栏(&amp;T)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="754"/>
+        <location filename="../mainwindow.ui" line="718"/>
         <source>Show CD-ROM State</source>
         <translation>显示CD-ROM状态</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="541"/>
+        <location filename="../mainwindow.ui" line="515"/>
         <source>Cheats...</source>
         <translation>金手指…</translation>
     </message>
@@ -13059,7 +13299,7 @@ Are you sure you want to continue?</source>
         <translation>暗黑融合 (蓝)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="795"/>
+        <location filename="../mainwindow.ui" line="758"/>
         <source>&amp;Screenshot</source>
         <translation>屏幕截图(&amp;S)</translation>
     </message>
@@ -13074,101 +13314,101 @@ Are you sure you want to continue?</source>
         <translation>系统(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="604"/>
+        <location filename="../mainwindow.ui" line="571"/>
         <source>Advanced</source>
         <translation>高级</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="849"/>
+        <location filename="../mainwindow.ui" line="810"/>
         <source>&amp;Status Bar</source>
         <translation>状态栏(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="423"/>
+        <location filename="../mainwindow.ui" line="404"/>
         <source>&amp;Controllers</source>
         <translation>控制器(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="657"/>
+        <location filename="../mainwindow.ui" line="621"/>
         <source>Remove Disc</source>
         <translation>删除光盘</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="414"/>
+        <location filename="../mainwindow.ui" line="396"/>
         <source>E&amp;mulation</source>
         <translation>模拟(&amp;M)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="786"/>
+        <location filename="../mainwindow.ui" line="750"/>
         <source>Show DMA State</source>
         <translation>显示DMA状态</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="339"/>
+        <location filename="../mainwindow.ui" line="329"/>
         <source>Power &amp;Off</source>
         <translation>关机(&amp;O)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2754"/>
+        <location filename="../mainwindow.cpp" line="2801"/>
         <source>Are you sure you want to shut down the virtual machine?</source>
         <translation>您确定想要关闭虚拟机吗？</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="105"/>
+        <location filename="../mainwindow.ui" line="101"/>
         <source>S&amp;ettings</source>
         <translation>设置(&amp;E)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="622"/>
-        <location filename="../mainwindow.ui" line="634"/>
+        <location filename="../mainwindow.ui" line="587"/>
+        <location filename="../mainwindow.ui" line="598"/>
         <source>&amp;Settings</source>
         <translation>设置(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="180"/>
+        <location filename="../mainwindow.ui" line="174"/>
         <source>Switch Crop Mode</source>
         <translation>切换裁剪模式</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1598"/>
+        <location filename="../mainwindow.cpp" line="1572"/>
         <source>Failed to remove &apos;%1&apos;</source>
         <translation>无法删除&apos;%1&apos;</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="42"/>
-        <location filename="../mainwindow.cpp" line="1294"/>
-        <location filename="../mainwindow.cpp" line="1535"/>
+        <location filename="../mainwindow.cpp" line="1268"/>
+        <location filename="../mainwindow.cpp" line="1509"/>
         <source>Change Disc</source>
         <translation>更换光盘</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="936"/>
+        <location filename="../mainwindow.cpp" line="910"/>
         <source>Undo Load State</source>
         <translation>撤消读档</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="577"/>
+        <location filename="../mainwindow.ui" line="547"/>
         <source>Folders</source>
         <translation>文件夹</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="405"/>
+        <location filename="../mainwindow.ui" line="388"/>
         <source>C&amp;onsole</source>
         <translation>游戏机(&amp;O)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="305"/>
+        <location filename="../mainwindow.cpp" line="306"/>
         <source>Failed to get window info from widget</source>
         <translation>无法从小部件获取窗口信息</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1488"/>
+        <location filename="../mainwindow.cpp" line="1462"/>
         <source>Properties...</source>
         <translation>属性…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="930"/>
-        <location filename="../mainwindow.cpp" line="972"/>
+        <location filename="../mainwindow.cpp" line="904"/>
+        <location filename="../mainwindow.cpp" line="946"/>
         <source>Select Save State File</source>
         <translation>选择存档文件</translation>
     </message>
@@ -13177,59 +13417,59 @@ Are you sure you want to continue?</source>
         <translation type="vanished">常规</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="491"/>
+        <location filename="../mainwindow.ui" line="468"/>
         <source>&amp;Discord Server...</source>
         <translation>Discord服务器(&amp;D)…</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="820"/>
-        <location filename="../mainwindow.cpp" line="944"/>
-        <location filename="../mainwindow.cpp" line="983"/>
+        <location filename="../mainwindow.cpp" line="794"/>
+        <location filename="../mainwindow.cpp" line="918"/>
+        <location filename="../mainwindow.cpp" line="957"/>
         <source>Game Save %1 (%2)</source>
         <translation>游戏档%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="890"/>
+        <location filename="../mainwindow.cpp" line="864"/>
         <source>Confirm Save State Deletion</source>
         <translation>确认存档删除</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1044"/>
+        <location filename="../mainwindow.cpp" line="1018"/>
         <source>Enable Cheats</source>
         <translation>启用金手指</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1052"/>
+        <location filename="../mainwindow.cpp" line="1026"/>
         <source>Enable For All Games</source>
         <translation>为全部游戏启用</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1053"/>
+        <location filename="../mainwindow.cpp" line="1027"/>
         <source>Enable For This Game</source>
         <translation>为这个游戏启用</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1072"/>
+        <location filename="../mainwindow.cpp" line="1046"/>
         <source>Failed to enable cheats for %1.</source>
         <translation>无法启用%1的金手指。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1102"/>
+        <location filename="../mainwindow.cpp" line="1076"/>
         <source>&amp;Apply Cheats</source>
         <translation>应用金手指(&amp;A)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1544"/>
+        <location filename="../mainwindow.cpp" line="1518"/>
         <source>Exclude From List</source>
         <translation>从列表中排除</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1588"/>
+        <location filename="../mainwindow.cpp" line="1562"/>
         <source>Failed to remove existing cover &apos;%1&apos;</source>
         <translation>无法删除现有封面&apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="891"/>
+        <location filename="../mainwindow.cpp" line="865"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
@@ -13238,14 +13478,14 @@ The saves will not be recoverable.</source>
 保存将是不可恢复的。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1183"/>
+        <location filename="../mainwindow.cpp" line="1157"/>
         <source>Failed to delete save state file &apos;%1&apos;.</source>
         <translation>无法删除存档文件&apos;%1&apos;。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2167"/>
-        <location filename="../mainwindow.cpp" line="2174"/>
-        <location filename="../mainwindow.cpp" line="2183"/>
+        <location filename="../mainwindow.cpp" line="2143"/>
+        <location filename="../mainwindow.cpp" line="2151"/>
+        <location filename="../mainwindow.cpp" line="2159"/>
         <source>Destination File</source>
         <translation>目标文件</translation>
     </message>
@@ -13254,18 +13494,18 @@ The saves will not be recoverable.</source>
         <translation type="vanished">不再显示</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="432"/>
+        <location filename="../mainwindow.ui" line="412"/>
         <source>&amp;Hotkeys</source>
         <translation>热键(&amp;H)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="654"/>
-        <location filename="../mainwindow.cpp" line="1279"/>
+        <location filename="../mainwindow.cpp" line="649"/>
+        <location filename="../mainwindow.cpp" line="1253"/>
         <source>Select Disc Image</source>
         <translation>选择光盘镜像</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="947"/>
+        <location filename="../mainwindow.ui" line="905"/>
         <source>Open Data Directory...</source>
         <translation>打开用户数据目录…</translation>
     </message>
@@ -13274,7 +13514,7 @@ The saves will not be recoverable.</source>
         <translation type="vanished">金手指管理器(&amp;H)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="733"/>
+        <location filename="../mainwindow.ui" line="697"/>
         <source>Dump VRAM...</source>
         <translation>转储显存…</translation>
     </message>
@@ -13326,199 +13566,233 @@ The saves will not be recoverable.</source>
 <context>
     <name>MemoryCardEditorWindow</name>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="19"/>
+        <location filename="../memorycardeditorwindow.cpp" line="20"/>
         <source>All Memory Card Types (*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</source>
         <translation>全部记忆卡格式 (*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="22"/>
+        <location filename="../memorycardeditorwindow.cpp" line="23"/>
         <source>All Importable Memory Card Types (*.mcd *.mcr *.mc *.gme)</source>
         <translation>全部可导入记忆卡格式 (*.mcd *.mcr *.mc *.gme)</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="24"/>
+        <location filename="../memorycardeditorwindow.cpp" line="25"/>
         <source>Single Save Files (*.mcs);;All Files (*.*)</source>
         <translation>单个保存文件 (*.mcs);;全部文件 (*.*)</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="31"/>
+        <location filename="../memorycardeditorwindow.cpp" line="32"/>
         <source>Delete File</source>
         <translation>删除文件</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="32"/>
+        <location filename="../memorycardeditorwindow.cpp" line="33"/>
         <source>Undelete File</source>
         <translation>还原文件</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="33"/>
+        <location filename="../memorycardeditorwindow.cpp" line="34"/>
         <source>Export File</source>
         <translation>导出文件</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="34"/>
+        <location filename="../memorycardeditorwindow.cpp" line="35"/>
         <source>&lt;&lt;</source>
         <translation>&lt;&lt;复制</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="35"/>
+        <location filename="../memorycardeditorwindow.cpp" line="36"/>
         <source>&gt;&gt;</source>
         <translation>复制&gt;&gt;</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="52"/>
+        <location filename="../memorycardeditorwindow.cpp" line="53"/>
         <source>New Card...</source>
         <translation>新建记忆卡…</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="53"/>
+        <location filename="../memorycardeditorwindow.cpp" line="54"/>
         <source>Open Card...</source>
         <translation>打开记忆卡…</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="120"/>
+        <location filename="../memorycardeditorwindow.cpp" line="121"/>
         <source>Format Card</source>
         <translation>格式化记忆卡</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="121"/>
+        <location filename="../memorycardeditorwindow.cpp" line="122"/>
         <source>Import File...</source>
         <translation>导入文件…</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="122"/>
+        <location filename="../memorycardeditorwindow.cpp" line="123"/>
         <source>Import Card...</source>
         <translation>导入记忆卡…</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="123"/>
+        <location filename="../memorycardeditorwindow.cpp" line="124"/>
         <source>Save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="236"/>
-        <location filename="../memorycardeditorwindow.cpp" line="346"/>
-        <location filename="../memorycardeditorwindow.cpp" line="371"/>
-        <location filename="../memorycardeditorwindow.cpp" line="410"/>
-        <location filename="../memorycardeditorwindow.cpp" line="420"/>
-        <location filename="../memorycardeditorwindow.cpp" line="430"/>
-        <location filename="../memorycardeditorwindow.cpp" line="436"/>
-        <location filename="../memorycardeditorwindow.cpp" line="455"/>
-        <location filename="../memorycardeditorwindow.cpp" line="475"/>
-        <location filename="../memorycardeditorwindow.cpp" line="503"/>
-        <location filename="../memorycardeditorwindow.cpp" line="521"/>
-        <location filename="../memorycardeditorwindow.cpp" line="567"/>
+        <location filename="../memorycardeditorwindow.cpp" line="237"/>
+        <location filename="../memorycardeditorwindow.cpp" line="347"/>
+        <location filename="../memorycardeditorwindow.cpp" line="372"/>
+        <location filename="../memorycardeditorwindow.cpp" line="411"/>
+        <location filename="../memorycardeditorwindow.cpp" line="421"/>
+        <location filename="../memorycardeditorwindow.cpp" line="432"/>
+        <location filename="../memorycardeditorwindow.cpp" line="441"/>
+        <location filename="../memorycardeditorwindow.cpp" line="463"/>
+        <location filename="../memorycardeditorwindow.cpp" line="483"/>
+        <location filename="../memorycardeditorwindow.cpp" line="511"/>
+        <location filename="../memorycardeditorwindow.cpp" line="532"/>
+        <location filename="../memorycardeditorwindow.cpp" line="582"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="236"/>
-        <location filename="../memorycardeditorwindow.cpp" line="346"/>
+        <location filename="../memorycardeditorwindow.cpp" line="237"/>
+        <location filename="../memorycardeditorwindow.cpp" line="347"/>
         <source>Failed to load memory card image.</source>
         <translation>无法读取记忆卡文件。</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="280"/>
+        <location filename="../memorycardeditorwindow.cpp" line="281"/>
         <source> (Deleted)</source>
         <translation> (已删除)</translation>
     </message>
     <message numerus="yes">
-        <location filename="../memorycardeditorwindow.cpp" line="300"/>
+        <location filename="../memorycardeditorwindow.cpp" line="301"/>
         <source>%n block(s) free%1</source>
         <translation>
             <numerusform>%n格 空余%1</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="314"/>
-        <location filename="../memorycardeditorwindow.cpp" line="340"/>
+        <location filename="../memorycardeditorwindow.cpp" line="315"/>
+        <location filename="../memorycardeditorwindow.cpp" line="341"/>
         <source>Select Memory Card</source>
         <translation>选择记忆卡</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="372"/>
+        <location filename="../memorycardeditorwindow.cpp" line="373"/>
         <source>Failed to write card to &apos;%1&apos;</source>
         <translation>无法写入记忆卡到&apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="386"/>
+        <location filename="../memorycardeditorwindow.cpp" line="387"/>
         <source>Save memory card?</source>
         <translation>保存记忆卡？</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="387"/>
+        <location filename="../memorycardeditorwindow.cpp" line="388"/>
         <source>Memory card &apos;%1&apos; is not saved, do you want to save before closing?</source>
         <translation>记忆卡&apos;%1&apos;未保存，您想要在关闭前保存吗？</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="411"/>
+        <location filename="../memorycardeditorwindow.cpp" line="412"/>
         <source>Destination memory card already contains a save file with the same name (%1) as the one you are attempting to copy. Please delete this file from the destination memory card before copying.</source>
         <translation>目标记忆卡已经包含一个与您正在尝试复制的文件同名 (%1) 的保存文件。复制前请先在目标记忆卡中删除该文件。</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="421"/>
+        <location filename="../memorycardeditorwindow.cpp" line="422"/>
         <source>Insufficient blocks, this file needs %1 but only %2 are available.</source>
         <translation>空间不足，此文件需要%1格，但仅有%2格可用。</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="430"/>
+        <location filename="../memorycardeditorwindow.cpp" line="433"/>
+        <source>Failed to read file %1:
+%2</source>
+        <translation>无法读取文件%1:
+%2</translation>
+    </message>
+    <message>
+        <location filename="../memorycardeditorwindow.cpp" line="442"/>
+        <source>Failed to write file %1:
+%2</source>
+        <translation>无法写入文件%1:
+%2</translation>
+    </message>
+    <message>
+        <location filename="../memorycardeditorwindow.cpp" line="512"/>
+        <source>Failed to export save file %1:
+%2</source>
+        <translation>无法导出保存文件%1:
+%2</translation>
+    </message>
+    <message>
+        <location filename="../memorycardeditorwindow.cpp" line="533"/>
+        <source>Failed to import memory card from %1:
+%2</source>
+        <translation>无法导入记忆卡来自%1:
+%2</translation>
+    </message>
+    <message>
+        <location filename="../memorycardeditorwindow.cpp" line="574"/>
+        <source>Select Save File</source>
+        <translation>选择保存文件</translation>
+    </message>
+    <message>
+        <location filename="../memorycardeditorwindow.cpp" line="583"/>
+        <source>Failed to import save from %1:
+%2</source>
+        <translation>无法导入保存来自%1:
+%2</translation>
+    </message>
+    <message>
         <source>Failed to read file %1</source>
-        <translation>无法读取文件%1</translation>
+        <translation type="vanished">无法读取文件%1</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="436"/>
         <source>Failed to write file %1</source>
-        <translation>无法写入文件%1</translation>
+        <translation type="vanished">无法写入文件%1</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="455"/>
+        <location filename="../memorycardeditorwindow.cpp" line="463"/>
         <source>Failed to delete file %1</source>
         <translation>无法删除文件%1</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="476"/>
+        <location filename="../memorycardeditorwindow.cpp" line="484"/>
         <source>Failed to undelete file %1. The file may have been partially overwritten by another save.</source>
         <translation>无法还原文件%1。该文件可能已被其他保存部分覆盖。</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="491"/>
+        <location filename="../memorycardeditorwindow.cpp" line="499"/>
         <source>Select Single Savefile</source>
         <translation>选择单个保存文件</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="504"/>
         <source>Failed to export save file %1. Check the log for more details.</source>
-        <translation>无法导出保存文件%1。查看日志获取更多细节。</translation>
+        <translation type="vanished">无法导出保存文件%1。查看日志获取更多细节。</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="514"/>
+        <location filename="../memorycardeditorwindow.cpp" line="524"/>
         <source>Select Import File</source>
         <translation>选择导入文件</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="521"/>
         <source>Failed to import memory card. The log may contain more information.</source>
-        <translation>无法导入记忆卡。日志可能包含更多信息。</translation>
+        <translation type="vanished">无法导入记忆卡。日志可能包含更多信息。</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="538"/>
+        <location filename="../memorycardeditorwindow.cpp" line="552"/>
         <source>Format memory card?</source>
         <translation>格式化记忆卡？</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="539"/>
+        <location filename="../memorycardeditorwindow.cpp" line="553"/>
         <source>Formatting the memory card will destroy all saves, and they will not be recoverable. The memory card which will be formatted is located at &apos;%1&apos;.</source>
         <translation>格式化记忆卡会破坏全部保存，而且它们是无法恢复的。将被格式化的记忆卡位于&apos;%1&apos;。</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="560"/>
         <source>Select Import Save File</source>
-        <translation>选择导入保存文件</translation>
+        <translation type="vanished">选择导入保存文件</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="568"/>
         <source>Failed to import save. Check if there is enough room on the memory card or if an existing save with the same name already exists.</source>
-        <translation>无法导入保存。检查记忆卡上是否有足够的空间，或者是否已经存在同名的保存。</translation>
+        <translation type="vanished">无法导入保存。检查记忆卡上是否有足够的空间，或者是否已经存在同名的保存。</translation>
     </message>
 </context>
 <context>
@@ -13641,6 +13915,306 @@ The saves will not be recoverable.</source>
         <location filename="../../core/settings.cpp" line="1707"/>
         <source>Non-Persistent Card (Do Not Save)</source>
         <translation>非持续记忆卡 (不保存)</translation>
+    </message>
+</context>
+<context>
+    <name>MemoryScannerWindow</name>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="14"/>
+        <source>Memory Scanner</source>
+        <translation>内存扫描器</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="46"/>
+        <location filename="../memoryscannerwindow.ui" line="384"/>
+        <source>Address</source>
+        <translation>地址</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="51"/>
+        <location filename="../memoryscannerwindow.ui" line="394"/>
+        <source>Value</source>
+        <translation>值</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="56"/>
+        <source>Previous Value</source>
+        <translation>前一个值</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="64"/>
+        <source>Search Parameters</source>
+        <translation>搜索参数</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="70"/>
+        <source>Value:</source>
+        <translation>值:</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="86"/>
+        <source>Signed</source>
+        <translation>有正负之分的</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="91"/>
+        <source>Unsigned</source>
+        <translation>无正负之分的</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="103"/>
+        <source>Decimal</source>
+        <translation>十进制</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="108"/>
+        <source>Hex</source>
+        <translation>十六进制</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="118"/>
+        <source>Data Size:</source>
+        <translation>数据大小:</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="129"/>
+        <source>Byte (1 byte)</source>
+        <translation>字节 (1字节)</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="134"/>
+        <source>Halfword (2 bytes)</source>
+        <translation>半字 (2字节)</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="139"/>
+        <source>Word (4 bytes)</source>
+        <translation>单字 (4字节)</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="147"/>
+        <source>Operator:</source>
+        <translation>操作员:</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="155"/>
+        <source>Equal to...</source>
+        <translation>等于…</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="160"/>
+        <source>Not Equal to...</source>
+        <translation>不等于…</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="165"/>
+        <source>Greater Than...</source>
+        <translation>大于…</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="170"/>
+        <source>Greater or Equal...</source>
+        <translation>大于或等于…</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="175"/>
+        <source>Less Than...</source>
+        <translation>小于…</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="180"/>
+        <source>Less or Equal...</source>
+        <translation>小于或等于…</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="185"/>
+        <source>Increased By...</source>
+        <translation>增加了…</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="190"/>
+        <source>Decreased By...</source>
+        <translation>减少了…</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="195"/>
+        <source>Changed By...</source>
+        <translation>更改了…</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="200"/>
+        <source>Equal to Previous (Unchanged Value)</source>
+        <translation>等于前一个 (值未变化)</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="205"/>
+        <source>Not Equal to Previous (Changed Value)</source>
+        <translation>不等于前一个 (值有变化)</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="210"/>
+        <source>Greater Than Previous</source>
+        <translation>大于前一个</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="215"/>
+        <source>Greater or Equal to Previous</source>
+        <translation>大于或等于前一个</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="220"/>
+        <source>Less Than Previous</source>
+        <translation>小于前一个</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="225"/>
+        <source>Less or Equal to Previous</source>
+        <translation>小于或等于前一个</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="230"/>
+        <source>Any Value</source>
+        <translation>任何值</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="238"/>
+        <source>Start Address:</source>
+        <translation>开始地址:</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="248"/>
+        <source>End Address:</source>
+        <translation>结束地址:</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="258"/>
+        <source>Preset Range:</source>
+        <translation>预设范围:</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="266"/>
+        <source>RAM</source>
+        <translation>内存</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="271"/>
+        <source>Scratchpad</source>
+        <translation>暂存器</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="276"/>
+        <source>BIOS</source>
+        <translation>BIOS</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="284"/>
+        <source>Result Count:</source>
+        <translation>结果计数:</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="291"/>
+        <source>0</source>
+        <translation>0</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="300"/>
+        <source>New Search</source>
+        <translation>新建搜索</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="310"/>
+        <source>Search Again</source>
+        <translation>再次搜索</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="320"/>
+        <source>Clear Results</source>
+        <translation>清除结果</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="332"/>
+        <source>Add Selected Results To Watch List</source>
+        <translation>将选定结果添加到观察列表</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="379"/>
+        <source>Simple Cheat Code or Description</source>
+        <translation>简单金手指代码或描述</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="389"/>
+        <source>Type</source>
+        <translation>类型</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="399"/>
+        <source>Freeze</source>
+        <translation>冻结</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="415"/>
+        <source>Load Watch</source>
+        <translation>加载监视</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="428"/>
+        <source>Save Watch</source>
+        <translation>保存监视</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="435"/>
+        <source>Add Manual Address</source>
+        <translation>添加手动地址</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="445"/>
+        <source>Remove Selected Entries from Watch List</source>
+        <translation>从观察列表中删除选定条目</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.cpp" line="25"/>
+        <source>Byte</source>
+        <translation>字节</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.cpp" line="25"/>
+        <source>Halfword</source>
+        <translation>半字</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.cpp" line="26"/>
+        <source>Word</source>
+        <translation>单字</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.cpp" line="26"/>
+        <source>Signed Byte</source>
+        <translation>有正负之分的字节</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.cpp" line="27"/>
+        <source>Signed Halfword</source>
+        <translation>有正负之分的半字</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.cpp" line="27"/>
+        <source>Signed Word</source>
+        <translation>有正负之分的单字</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.cpp" line="298"/>
+        <source>Enter manual address:</source>
+        <translation>输入手动地址:</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.cpp" line="307"/>
+        <source>Select data size:</source>
+        <translation>选择数据大小:</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.cpp" line="479"/>
+        <source>%1 (only showing first %2)</source>
+        <translation>%1 (仅显示第一个%2)</translation>
     </message>
 </context>
 <context>
@@ -13909,17 +14483,17 @@ The saves will not be recoverable.</source>
 <context>
     <name>OSDMessage</name>
     <message>
-        <location filename="../../core/system.cpp" line="1113"/>
+        <location filename="../../core/system.cpp" line="1118"/>
         <source>System reset.</source>
         <translation>系统重启。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1196"/>
+        <location filename="../../core/system.cpp" line="1201"/>
         <source>Loading state from &apos;%s&apos; failed. Resetting.</source>
         <translation>从&apos;%s&apos;读档失败，重启中。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1240"/>
+        <location filename="../../core/system.cpp" line="1245"/>
         <source>Saving state to &apos;%s&apos; failed.</source>
         <translation>存档到&apos;%s&apos;失败。</translation>
     </message>
@@ -13941,35 +14515,35 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../../core/settings.cpp" line="761"/>
         <source>Rewind is disabled because runahead is enabled.</source>
-        <translation>倒带被禁用，因为启用了预运行。</translation>
+        <translation>由于启用了预运行，倒带被禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3648"/>
+        <location filename="../../core/system.cpp" line="3653"/>
         <source>Recompiler options changed, flushing all blocks.</source>
         <translation>重新编译器选项已更改，刷新全部区块。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4559"/>
+        <location filename="../../core/system.cpp" line="4564"/>
         <source>{} cheats are enabled. This may result in instability.</source>
         <translation>{}金手指启用。这可能会导致不稳定。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4609"/>
+        <location filename="../../core/system.cpp" line="4614"/>
         <source>Saved {} cheats to &apos;{}&apos;.</source>
         <translation>保存{}金手指到&apos;{}&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4624"/>
+        <location filename="../../core/system.cpp" line="4629"/>
         <source>Deleted cheat list &apos;{}&apos;.</source>
         <translation>删除金手指列表&apos;{}&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4720"/>
+        <location filename="../../core/system.cpp" line="4725"/>
         <source>Widescreen hack is now enabled, and aspect ratio is set to {}.</source>
         <translation>宽屏调整现已启用，宽高比设置为{}。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4728"/>
+        <location filename="../../core/system.cpp" line="4733"/>
         <source>Widescreen hack is now disabled, and aspect ratio is set to {}.</source>
         <translation>宽屏调整现已禁用，宽高比设置为{}。</translation>
     </message>
@@ -14013,12 +14587,12 @@ The saves will not be recoverable.</source>
         <translation>纹理替换重新加载。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4262"/>
+        <location filename="../../core/system.cpp" line="4267"/>
         <source>Failed to save undo load state.</source>
         <translation>无法保存撤消的读档。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2746"/>
+        <location filename="../../core/system.cpp" line="2751"/>
         <source>Rewinding is not enabled.</source>
         <translation>倒带未启用。</translation>
     </message>
@@ -14077,17 +14651,17 @@ The saves will not be recoverable.</source>
         <translation>CD音轨解除静音。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4323"/>
+        <location filename="../../core/system.cpp" line="4328"/>
         <source>Started dumping audio to &apos;%s&apos;.</source>
         <translation>开始转储音频到&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4328"/>
+        <location filename="../../core/system.cpp" line="4333"/>
         <source>Failed to start dumping audio to &apos;%s&apos;.</source>
         <translation>无法开始转储音频到&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4338"/>
+        <location filename="../../core/system.cpp" line="4343"/>
         <source>Stopped dumping audio.</source>
         <translation>停止转储音频。</translation>
     </message>
@@ -14104,70 +14678,70 @@ The saves will not be recoverable.</source>
         <translation type="vanished">屏幕截图已保存到&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4552"/>
+        <location filename="../../core/system.cpp" line="4557"/>
         <source>Failed to load cheats from &apos;%s&apos;.</source>
         <translation>无法从&apos;%s&apos;加载金手指。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3203"/>
+        <location filename="../../core/system.cpp" line="3208"/>
         <source>Swapped memory card ports. Both ports have a memory card.</source>
         <translation>交换记忆卡接口。两个接口都有记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3209"/>
+        <location filename="../../core/system.cpp" line="3214"/>
         <source>Swapped memory card ports. Port 2 has a memory card, Port 1 is empty.</source>
         <translation>交换记忆卡接口。接口2有一个记忆卡，接口1是空的。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3214"/>
+        <location filename="../../core/system.cpp" line="3219"/>
         <source>Swapped memory card ports. Port 1 has a memory card, Port 2 is empty.</source>
         <translation>交换记忆卡接口。接口1有一个记忆卡，接口2是空的。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3218"/>
+        <location filename="../../core/system.cpp" line="3223"/>
         <source>Swapped memory card ports. Neither port has a memory card.</source>
         <translation>交换记忆卡接口。两个接口都没有记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4666"/>
+        <location filename="../../core/system.cpp" line="4671"/>
         <source>Cheat &apos;%s&apos; enabled.</source>
         <translation>金手指&apos;%s&apos;启用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4670"/>
+        <location filename="../../core/system.cpp" line="4675"/>
         <source>Cheat &apos;%s&apos; disabled.</source>
         <translation>金手指&apos;%s&apos;禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4593"/>
+        <location filename="../../core/system.cpp" line="4598"/>
         <source>Failed to save cheat list to &apos;%s&apos;</source>
         <translation>无法保存金手指列表到&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2316"/>
+        <location filename="../../core/system.cpp" line="2321"/>
         <source>Failed to open CD image from save state &apos;{}&apos;: {}.
 Using existing image &apos;{}&apos;, this may result in instability.</source>
         <translation>无法从存档&apos;{}&apos;: {}打开光盘镜像。
 使用现有镜像&apos;{}&apos;，这可能会导致不稳定。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2326"/>
-        <location filename="../../core/system.cpp" line="2345"/>
+        <location filename="../../core/system.cpp" line="2331"/>
+        <location filename="../../core/system.cpp" line="2350"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2796"/>
+        <location filename="../../core/system.cpp" line="2801"/>
         <source>No cheats are loaded.</source>
         <translation>没有加载的金手指。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4685"/>
+        <location filename="../../core/system.cpp" line="4690"/>
         <source>Applied cheat &apos;%s&apos;.</source>
         <translation>应用金手指&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4689"/>
+        <location filename="../../core/system.cpp" line="4694"/>
         <source>Cheat &apos;%s&apos; is already enabled.</source>
         <translation>金手指&apos;%s&apos;已经启用。</translation>
     </message>
@@ -14283,12 +14857,17 @@ Using existing image &apos;{}&apos;, this may result in instability.</source>
         <translation>通过兼容性设置强制PGXP在CPU模式。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="589"/>
+        <location filename="../../core/game_database.cpp" line="587"/>
+        <source>PGXP CPU mode is enabled, but it is not required for this game. This may cause rendering errors.</source>
+        <translation>PGXP CPU模式已启用，但此游戏不需要该模式。这可能会导致渲染错误。</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="597"/>
         <source>PGXP Depth Buffer disabled by compatibility settings.</source>
         <translation>通过兼容性设置禁用PGXP深度缓冲。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="653"/>
+        <location filename="../../core/game_database.cpp" line="661"/>
         <source>Controller in port {0} ({1}) is not supported for {2}.
 Supported controllers: {3}
 Please configure a supported controller from the list above.</source>
@@ -14362,82 +14941,82 @@ Please configure a supported controller from the list above.</source>
         <translation>预缓存光盘镜像失败，这可能导致不稳定。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1188"/>
+        <location filename="../../core/system.cpp" line="1193"/>
         <source>Loading state from &apos;{}&apos;...</source>
         <translation>从&apos;{}&apos;读档。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1239"/>
+        <location filename="../../core/system.cpp" line="1244"/>
         <source>Save State</source>
         <translation>存档</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1248"/>
+        <location filename="../../core/system.cpp" line="1253"/>
         <source>State saved to &apos;{}&apos;.</source>
         <translation>存档到&apos;{}&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2039"/>
+        <location filename="../../core/system.cpp" line="2044"/>
         <source>Failed to initialize %s renderer, falling back to software renderer.</source>
         <translation>无法初始化%s渲染器，退回到软件渲染器。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2078"/>
+        <location filename="../../core/system.cpp" line="2083"/>
         <source>This save state was created with a different BIOS version or patch options. This may cause stability issues.</source>
         <translation>此存档是由不同的BIOS版本或补丁选项所创建的。这可能会导致稳定性问题。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2150"/>
+        <location filename="../../core/system.cpp" line="2155"/>
         <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
         <translation>警告: CPU超频 (%u%%) 不同于存档 (%u%%)。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2804"/>
+        <location filename="../../core/system.cpp" line="2809"/>
         <source>{} cheats are now active.</source>
         <translation>{}金手指现已处于活动状态。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2805"/>
+        <location filename="../../core/system.cpp" line="2810"/>
         <source>{} cheats are now inactive.</source>
         <translation>{}金手指现已处于未活动状态。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3307"/>
+        <location filename="../../core/system.cpp" line="3312"/>
         <source>Failed to open disc image &apos;{}&apos;: {}.</source>
         <translation>无法打开光盘镜像&apos;{}&apos;: {}。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3321"/>
+        <location filename="../../core/system.cpp" line="3326"/>
         <source>Inserted disc &apos;{}&apos; ({}).</source>
         <translation>插入光盘&apos;{}&apos; ({})。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3579"/>
+        <location filename="../../core/system.cpp" line="3584"/>
         <source>Switching to {}{} GPU renderer.</source>
         <translation>切换为{}{}GPU渲染器。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3605"/>
+        <location filename="../../core/system.cpp" line="3610"/>
         <source>Switching to {} audio backend.</source>
         <translation>切换为{}音频后端。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3629"/>
+        <location filename="../../core/system.cpp" line="3634"/>
         <source>Switching to {} CPU execution mode.</source>
         <translation>切换为{}CPU执行模式。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4743"/>
+        <location filename="../../core/system.cpp" line="4748"/>
         <source>Switching to {} renderer...</source>
         <translation>切换为{}渲染器…</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3514"/>
+        <location filename="../../core/system.cpp" line="3519"/>
         <source>Failed to switch to subimage %u in &apos;%s&apos;: %s.</source>
         <translation>无法切换为子镜像%u在&apos;%s&apos;: %s。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3522"/>
+        <location filename="../../core/system.cpp" line="3527"/>
         <source>Switched to sub-image %s (%u) in &apos;%s&apos;.</source>
         <translation>切换为子镜像%s (%u) 在&apos;%s&apos;。</translation>
     </message>
@@ -14624,7 +15203,7 @@ Please configure a supported controller from the list above.</source>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../qtutils.cpp" line="687"/>
+        <location filename="../qtutils.cpp" line="170"/>
         <source>Failed to open URL.
 
 The URL was: %1</source>
@@ -14633,7 +15212,7 @@ The URL was: %1</source>
 URL: %1</translation>
     </message>
     <message>
-        <location filename="../qtutils.cpp" line="686"/>
+        <location filename="../qtutils.cpp" line="169"/>
         <source>Failed to open URL</source>
         <translation>无法打开URL</translation>
     </message>
@@ -14668,9 +15247,9 @@ URL: %1</translation>
         <location filename="../qthost.cpp" line="290"/>
         <location filename="../qthost.cpp" line="305"/>
         <location filename="../qthost.cpp" line="318"/>
-        <location filename="../qthost.cpp" line="2189"/>
-        <location filename="../qthost.cpp" line="2215"/>
-        <location filename="../qthost.cpp" line="2231"/>
+        <location filename="../qthost.cpp" line="2197"/>
+        <location filename="../qthost.cpp" line="2223"/>
+        <location filename="../qthost.cpp" line="2239"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
@@ -14725,22 +15304,22 @@ URL: %1</translation>
         <translation>无法写入到&apos;%1&apos;。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2216"/>
+        <location filename="../qthost.cpp" line="2224"/>
         <source>The specified save state does not exist.</source>
         <translation>指定的存档不存在。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2232"/>
+        <location filename="../qthost.cpp" line="2240"/>
         <source>Cannot use no-gui mode, because no boot filename was specified.</source>
         <translation>无法使用no-gui模式，因为没有指定的启动文件名。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2233"/>
+        <location filename="../qthost.cpp" line="2241"/>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
         <translation>无法使用批处理模式，因为没有指定的启动文件名。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2190"/>
+        <location filename="../qthost.cpp" line="2198"/>
         <source>File &apos;%1&apos; does not exist.</source>
         <translation>文件&apos;%1&apos;不存在。</translation>
     </message>
@@ -15354,7 +15933,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../setupwizarddialog.ui" line="292"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation will automatically scan and identify games from the selected directories below, and populate the game list. These games should be dumped from discs you own. Utilities such as ImgBurn can be used to create images of game discs in .bin/.cue format.&lt;/p&gt;&lt;p&gt;Supported formats for dumps include: &lt;span style=&quot; font-weight:700;&quot;&gt;.cue&lt;/span&gt; (Cue Sheets), &lt;span style=&quot; font-weight:700;&quot;&gt;.iso/.img&lt;/span&gt; (Single Track Image), &lt;span style=&quot; font-weight:700;&quot;&gt;.ecm&lt;/span&gt; (Error Code Modeling Image), &lt;span style=&quot; font-weight:700;&quot;&gt;.mds&lt;/span&gt; (Media Descriptor Sidecar), &lt;span style=&quot; font-weight:700;&quot;&gt;.chd&lt;/span&gt; (Compressed Hunks of Data), &lt;span style=&quot; font-weight:700;&quot;&gt;.pbp&lt;/span&gt; (PlayStation Portable, Only Decrypted).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation将从以下选择的目录中自动扫描并识别游戏，并填充游戏列表。这些游戏应当从您自己的光盘中转储而来。像Imgburn之类的应用程序可被用于创建.bin/.cue格式的游戏光盘镜像。&lt;/p&gt;&lt;p&gt;支持的转储格式包括: &lt;span style=&quot; font-weight:700;&quot;&gt;.cue&lt;/span&gt; (Cue表单)，&lt;span style=&quot; font-weight:700;&quot;&gt;.iso/.img&lt;/span&gt; (单轨镜像)，&lt;span style=&quot; font-weight:700;&quot;&gt;.ecm&lt;/span&gt; (错误码建模镜像)，&lt;span style=&quot; font-weight:700;&quot;&gt;.mds&lt;/span&gt; (媒体描述符边车)，&lt;span style=&quot; font-weight:700;&quot;&gt;.chd&lt;/span&gt; (大块压缩数据)，&lt;span style=&quot; font-weight:700;&quot;&gt;.pbp&lt;/span&gt; (掌上PlayStation，限解密的)。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation将从以下选择的目录中自动扫描并识别游戏，并填充游戏列表。这些游戏应当从您自己的光盘中转储而来。像Imgburn之类的应用程序可被用于创建.bin/.cue格式的游戏光盘镜像。&lt;/p&gt;&lt;p&gt;支持的转储格式包括: &lt;span style=&quot; font-weight:700;&quot;&gt;.cue&lt;/span&gt; (Cue表单)，&lt;span style=&quot; font-weight:700;&quot;&gt;.iso/.img&lt;/span&gt; (单轨镜像)，&lt;span style=&quot; font-weight:700;&quot;&gt;.ecm&lt;/span&gt; (错误码建模镜像)，&lt;span style=&quot; font-weight:700;&quot;&gt;.mds&lt;/span&gt; (媒体描述符边车)，&lt;span style=&quot; font-weight:700;&quot;&gt;.chd&lt;/span&gt; (大块压缩数据)，&lt;span style=&quot; font-weight:700;&quot;&gt;.pbp&lt;/span&gt; (掌上PlayStation，仅解密的)。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="353"/>
@@ -15550,68 +16129,68 @@ Are you sure you want to continue?</source>
 <context>
     <name>System</name>
     <message>
-        <location filename="../../core/system.cpp" line="1510"/>
-        <location filename="../../core/system.cpp" line="3445"/>
+        <location filename="../../core/system.cpp" line="1515"/>
+        <location filename="../../core/system.cpp" line="3450"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2191"/>
+        <location filename="../../core/system.cpp" line="2196"/>
         <source>Incorrect BIOS image size</source>
         <translation>BIOS文件大小不正确</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2283"/>
+        <location filename="../../core/system.cpp" line="2288"/>
         <source>Save state is incompatible: maximum version is %u but state is version %u.</source>
         <translation>存档不兼容: 最高可兼容版本为%u但存档版本为%u。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2275"/>
+        <location filename="../../core/system.cpp" line="2280"/>
         <source>Save state is incompatible: minimum version is %u but state is version %u.</source>
         <translation>存档不兼容: 最低可兼容版本为%u但存档版本为%u。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="956"/>
+        <location filename="../../core/system.cpp" line="961"/>
         <source>Compatibility settings are not enabled. Some games may not function correctly.</source>
-        <translation>未启用兼容性设置。一些游戏可能无法正常运行。</translation>
+        <translation>兼容性设置未启用。一些游戏可能无法正常运行。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="1511"/>
+        <location filename="../../core/system.cpp" line="1516"/>
         <source>Failed to load save state file &apos;{}&apos; for booting.</source>
         <translation>无法通过载入存档文件&apos;{}&apos;来启动。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2327"/>
+        <location filename="../../core/system.cpp" line="2332"/>
         <source>Failed to open CD image &apos;{}&apos; used by save state: {}.</source>
         <translation>无法打开光盘镜像&apos;{}&apos;，正被存档: {}占用中。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2347"/>
+        <location filename="../../core/system.cpp" line="2352"/>
         <source>Failed to switch to subimage {} in CD image &apos;{}&apos; used by save state: {}.</source>
         <translation>无法切换为子镜像{}在光盘镜像&apos;{}&apos;内，正被存档: {}占用中。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3039"/>
+        <location filename="../../core/system.cpp" line="3044"/>
         <source>Per-game memory card cannot be used for slot {} as the running game has no code. Using shared card instead.</source>
         <translation>独立记忆卡不能用于档位{}，因为正在运行的游戏没有序号。使用共用记忆卡代替。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3058"/>
+        <location filename="../../core/system.cpp" line="3063"/>
         <source>Per-game memory card cannot be used for slot {} as the running game has no title. Using shared card instead.</source>
         <translation>独立记忆卡不能用于档位{}，因为正在运行的游戏没有标题。使用共用记忆卡代替。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3092"/>
+        <location filename="../../core/system.cpp" line="3097"/>
         <source>Using disc-specific memory card &apos;{}&apos; instead of per-game card.</source>
         <translation>使用特定于光盘的记忆卡&apos;{}&apos;而不是独立记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3114"/>
+        <location filename="../../core/system.cpp" line="3119"/>
         <source>Per-game memory card cannot be used for slot {} as the running game has no path. Using shared card instead.</source>
         <translation>独立记忆卡不能用于档位{}，因为正在运行的游戏没有路径。使用共用记忆卡代替。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3436"/>
+        <location filename="../../core/system.cpp" line="3441"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 {0}: {1}
@@ -15632,7 +16211,7 @@ Do you wish to continue?</source>
 您想要继续吗？</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3447"/>
+        <location filename="../../core/system.cpp" line="3452"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 {0}: {1}
@@ -15649,52 +16228,52 @@ The name of the SBI file must match the name of the disc image.</source>
 SBI文件的名称必须匹配光盘镜像的名称。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3849"/>
+        <location filename="../../core/system.cpp" line="3854"/>
         <source>CPU clock speed is set to {}% ({} / {}). This may crash games.</source>
         <translation>CPU主频设置为{}% ({} / {})。这可能会崩溃游戏。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3857"/>
+        <location filename="../../core/system.cpp" line="3862"/>
         <source>CD-ROM read speedup set to {}x (effective speed {}x). This may crash games.</source>
         <translation>CD-ROM读取加速设置为{}x (有效速率{}x)。这可能会崩溃游戏。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3863"/>
+        <location filename="../../core/system.cpp" line="3868"/>
         <source>CD-ROM seek speedup set to {}. This may crash games.</source>
         <translation>CD-ROM搜寻加速设置为{}。这可能会崩溃游戏。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3865"/>
+        <location filename="../../core/system.cpp" line="3870"/>
         <source>Instant</source>
         <translation>瞬时</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3870"/>
-        <source>Force NTSC timings is enabled. Games may run at incorrect speeds.</source>
-        <translation>启用强制NTSC计时。游戏可能以不正确的速度运行。</translation>
-    </message>
-    <message>
         <location filename="../../core/system.cpp" line="3875"/>
+        <source>Force NTSC timings is enabled. Games may run at incorrect speeds.</source>
+        <translation>强制NTSC计时已启用。游戏可能以不正确的速度运行。</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="3880"/>
         <source>Multisample anti-aliasing is enabled, some games may not render correctly.</source>
-        <translation>启用多重采样反锯齿，一些游戏可能无法正确渲染。</translation>
+        <translation>多重采样反锯齿已启用，一些游戏可能无法正确渲染。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3878"/>
+        <location filename="../../core/system.cpp" line="3883"/>
         <source>8MB RAM is enabled, this may be incompatible with some games.</source>
-        <translation>启用8MB内存，这可能与某些游戏不兼容。</translation>
+        <translation>8MB内存已启用，这可能与某些游戏不兼容。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4455"/>
+        <location filename="../../core/system.cpp" line="4460"/>
         <source>Invalid version {} ({} version {})</source>
         <translation>无效版本{} ({}版本{})</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3327"/>
+        <location filename="../../core/system.cpp" line="3332"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>游戏变更，重新读取记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2184"/>
+        <location filename="../../core/system.cpp" line="2189"/>
         <source>Failed to load %s BIOS.</source>
         <translation>无法加载%sBIOS。</translation>
     </message>
