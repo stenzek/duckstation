@@ -22746,6 +22746,8 @@ SLES-01182:
     - AnalogController
     - DigitalController
     - NeGcon
+  settings:
+    dmaMaxSliceTicks: 100
   metadata:
     publisher: "THQ"
     developer: "Interactive Entertainment"
@@ -22766,9 +22768,9 @@ SLES-01182:
 SLUS-00882:
   name: "Castrol Honda Superbike Racing (USA)"
   compatibility:
-    rating: GraphicalAudioIssues
-    versionTested: "0.1-2499-g770dd5a6"
-    comments: "Graphical issues in loading screens (Issue #181)"
+    rating: NoIssues
+  settings:
+    dmaMaxSliceTicks: 100
   controllers:
     - AnalogController
     - DigitalController
@@ -176412,6 +176414,8 @@ SLES-02731:
   controllers:
     - AnalogController
     - DigitalController
+  settings:
+    dmaMaxSliceTicks: 100
   metadata:
     publisher: "JVC"
     developer: "Victor Interactive Software, Inc"
@@ -176433,6 +176437,8 @@ SLPS-02477:
   controllers:
     - AnalogController
     - DigitalController
+  settings:
+    dmaMaxSliceTicks: 100
   metadata:
     publisher: "Victor Interactive Software"
     developer: "Victor Interactive Software, Inc"
@@ -176452,6 +176458,8 @@ SLPS-03198:
   controllers:
     - AnalogController
     - DigitalController
+  settings:
+    dmaMaxSliceTicks: 100
   metadata:
     publisher: "Victor Interactive Software"
     developer: "Victor Interactive Software, Inc"
@@ -176475,8 +176483,7 @@ SLUS-01138:
     - AnalogController
     - DigitalController
   settings:
-    dmaMaxSliceTicks: 200
-    gpuMaxRunAhead: 1
+    dmaMaxSliceTicks: 100
   metadata:
     publisher: "Jaleco USA, Inc"
     developer: "Victor Interactive Software, Inc"
@@ -176496,6 +176503,8 @@ SLPS-91523:
   controllers:
     - AnalogController
     - DigitalController
+  settings:
+    dmaMaxSliceTicks: 100
   metadata:
     publisher: "Jaleco Entertainment"
     developer: "Victor Interactive Software, Inc"
