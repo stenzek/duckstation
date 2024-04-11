@@ -71,7 +71,6 @@
     <ClInclude Include="opengl_context_egl_wayland.h" />
     <ClInclude Include="opengl_context_egl_x11.h" />
     <ClInclude Include="opengl_context_wgl.h" />
-    <ClInclude Include="gpu_types.h" />
     <ClInclude Include="image.h" />
   </ItemGroup>
   <ItemGroup>

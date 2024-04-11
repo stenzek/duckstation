@@ -6,7 +6,6 @@
 #include "types.h"
 
 #include "util/audio_stream.h"
-#include "util/gpu_types.h"
 
 #include "common/log.h"
 #include "common/settings_interface.h"
@@ -18,6 +17,8 @@
 #include <string>
 #include <string_view>
 #include <vector>
+
+enum class RenderAPI : u32;
 
 struct SettingInfo
 {

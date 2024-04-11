@@ -5,7 +5,6 @@
 
 #include "gpu_shader_cache.h"
 #include "gpu_texture.h"
-#include "gpu_types.h"
 #include "window_info.h"
 
 #include "common/bitfield.h"
@@ -25,6 +24,17 @@
 #include <vector>
 
 class Error;
+
+enum class RenderAPI : u32
+{
+  None,
+  D3D11,
+  D3D12,
+  Vulkan,
+  OpenGL,
+  OpenGLES,
+  Metal
+};
 
 class GPUSampler
 {
