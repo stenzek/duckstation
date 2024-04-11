@@ -108,7 +108,7 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
 
   m_ui.cpuClockSpeed->setEnabled(m_dialog->getEffectiveBoolValue("CPU", "OverclockEnable", false));
 
-  connect(m_ui.enableCPUClockSpeedControl, &QCheckBox::stateChanged, this,
+  connect(m_ui.enableCPUClockSpeedControl, &QCheckBox::checkStateChanged, this,
           &ConsoleSettingsWidget::onEnableCPUClockSpeedControlChecked);
   connect(m_ui.cpuClockSpeed, &QSlider::valueChanged, this, &ConsoleSettingsWidget::onCPUClockSpeedValueChanged);
 

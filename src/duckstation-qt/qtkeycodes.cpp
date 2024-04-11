@@ -180,11 +180,7 @@ static constexpr KeyCodeName s_qt_key_names[] = {{Qt::Key_Escape, "Escape", ICON
                                                  {Qt::Key_twosuperior, "twosuperior", nullptr},
                                                  {Qt::Key_threesuperior, "threesuperior", nullptr},
                                                  {Qt::Key_acute, "acute", nullptr},
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 7, 0))
                                                  {Qt::Key_micro, "micro", nullptr},
-#else
-                                                 {Qt::Key_mu, "mu", nullptr},
-#endif
                                                  {Qt::Key_paragraph, "paragraph", nullptr},
                                                  {Qt::Key_periodcentered, "periodcentered", nullptr},
                                                  {Qt::Key_cedilla, "cedilla", nullptr},

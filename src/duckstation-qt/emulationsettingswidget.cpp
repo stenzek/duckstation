@@ -68,9 +68,9 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
   }
   connect(m_ui.turboSpeed, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &EmulationSettingsWidget::onTurboSpeedIndexChanged);
-  connect(m_ui.vsync, &QCheckBox::stateChanged, this, &EmulationSettingsWidget::onVSyncChanged);
+  connect(m_ui.vsync, &QCheckBox::checkStateChanged, this, &EmulationSettingsWidget::onVSyncChanged);
 
-  connect(m_ui.rewindEnable, &QCheckBox::stateChanged, this, &EmulationSettingsWidget::updateRewind);
+  connect(m_ui.rewindEnable, &QCheckBox::checkStateChanged, this, &EmulationSettingsWidget::updateRewind);
   connect(m_ui.rewindSaveFrequency, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
           &EmulationSettingsWidget::updateRewind);
   connect(m_ui.rewindSaveSlots, QOverload<int>::of(&QSpinBox::valueChanged), this,

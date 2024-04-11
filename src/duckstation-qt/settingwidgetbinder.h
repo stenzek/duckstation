@@ -265,7 +265,7 @@ struct SettingAccessor<QCheckBox>
   template<typename F>
   static void connectValueChanged(QCheckBox* widget, F func)
   {
-    widget->connect(widget, &QCheckBox::stateChanged, func);
+    widget->connect(widget, &QCheckBox::checkStateChanged, func);
   }
 };
 

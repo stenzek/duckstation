@@ -73,11 +73,11 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
     tr(
       "When enabled, the first disc in a playlist will be used for achievements, regardless of which disc is active."));
 
-  connect(m_ui.enable, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
-  connect(m_ui.hardcoreMode, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
-  connect(m_ui.hardcoreMode, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::onHardcoreModeStateChanged);
-  connect(m_ui.achievementNotifications, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
-  connect(m_ui.leaderboardNotifications, &QCheckBox::stateChanged, this, &AchievementSettingsWidget::updateEnableState);
+  connect(m_ui.enable, &QCheckBox::checkStateChanged, this, &AchievementSettingsWidget::updateEnableState);
+  connect(m_ui.hardcoreMode, &QCheckBox::checkStateChanged, this, &AchievementSettingsWidget::updateEnableState);
+  connect(m_ui.hardcoreMode, &QCheckBox::checkStateChanged, this, &AchievementSettingsWidget::onHardcoreModeStateChanged);
+  connect(m_ui.achievementNotifications, &QCheckBox::checkStateChanged, this, &AchievementSettingsWidget::updateEnableState);
+  connect(m_ui.leaderboardNotifications, &QCheckBox::checkStateChanged, this, &AchievementSettingsWidget::updateEnableState);
   connect(m_ui.achievementNotificationsDuration, &QSlider::valueChanged, this,
           &AchievementSettingsWidget::onAchievementsNotificationDurationSliderChanged);
   connect(m_ui.leaderboardNotificationsDuration, &QSlider::valueChanged, this,

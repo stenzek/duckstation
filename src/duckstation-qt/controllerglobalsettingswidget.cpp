@@ -19,7 +19,7 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLSource, "InputSources", "SDL", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLEnhancedMode, "InputSources",
                                                "SDLControllerEnhancedMode", false);
-  connect(m_ui.enableSDLSource, &QCheckBox::stateChanged, this,
+  connect(m_ui.enableSDLSource, &QCheckBox::checkStateChanged, this,
           &ControllerGlobalSettingsWidget::updateSDLOptionsEnabled);
   connect(m_ui.ledSettings, &QToolButton::clicked, this, &ControllerGlobalSettingsWidget::ledSettingsClicked);
 
@@ -62,7 +62,7 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
   {
     m_ui.useProfileHotkeyBindings->setChecked(
       m_dialog->getBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false));
-    connect(m_ui.useProfileHotkeyBindings, &QCheckBox::stateChanged, this, [this](int new_state) {
+    connect(m_ui.useProfileHotkeyBindings, &QCheckBox::checkStateChanged, this, [this](int new_state) {
       m_dialog->setBoolValue("ControllerPorts", "UseProfileHotkeyBindings", (new_state == Qt::Checked));
       emit bindingSetupChanged();
     });

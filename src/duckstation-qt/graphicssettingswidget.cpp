@@ -94,8 +94,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
           &GraphicsSettingsWidget::onAspectRatioChanged);
   connect(m_ui.gpuDownsampleMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &GraphicsSettingsWidget::onDownsampleModeChanged);
-  connect(m_ui.trueColor, &QCheckBox::stateChanged, this, &GraphicsSettingsWidget::onTrueColorChanged);
-  connect(m_ui.pgxpEnable, &QCheckBox::stateChanged, this, &GraphicsSettingsWidget::updatePGXPSettingsEnabled);
+  connect(m_ui.trueColor, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onTrueColorChanged);
+  connect(m_ui.pgxpEnable, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::updatePGXPSettingsEnabled);
 
   if (!dialog->isPerGameSettings() ||
       (dialog->containsSettingValue("GPU", "Multisamples") || dialog->containsSettingValue("GPU", "PerSampleShading")))
@@ -158,9 +158,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpCPU, "GPU", "PGXPCPU", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpVertexCache, "GPU", "PGXPVertexCache", false);
 
-  connect(m_ui.pgxpTextureCorrection, &QCheckBox::stateChanged, this,
+  connect(m_ui.pgxpTextureCorrection, &QCheckBox::checkStateChanged, this,
           &GraphicsSettingsWidget::updatePGXPSettingsEnabled);
-  connect(m_ui.pgxpDepthBuffer, &QCheckBox::stateChanged, this, &GraphicsSettingsWidget::updatePGXPSettingsEnabled);
+  connect(m_ui.pgxpDepthBuffer, &QCheckBox::checkStateChanged, this,
+          &GraphicsSettingsWidget::updatePGXPSettingsEnabled);
 
   // OSD Tab
 
@@ -206,9 +207,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                               "DumpVRAMWriteHeightThreshold",
                                               Settings::DEFAULT_VRAM_WRITE_DUMP_HEIGHT_THRESHOLD);
 
-  connect(m_ui.vramWriteReplacement, &QCheckBox::stateChanged, this,
+  connect(m_ui.vramWriteReplacement, &QCheckBox::checkStateChanged, this,
           &GraphicsSettingsWidget::onEnableAnyTextureReplacementsChanged);
-  connect(m_ui.vramWriteDumping, &QCheckBox::stateChanged, this,
+  connect(m_ui.vramWriteDumping, &QCheckBox::checkStateChanged, this,
           &GraphicsSettingsWidget::onEnableVRAMWriteDumpingChanged);
 
   // Debugging Tab

@@ -176,9 +176,9 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showDebugMenu, "Main", "ShowDebugMenu", false);
 
   connect(m_ui.resetToDefaultButton, &QPushButton::clicked, this, &AdvancedSettingsWidget::onResetToDefaultClicked);
-  connect(m_ui.showDebugMenu, &QCheckBox::stateChanged, g_main_window, &MainWindow::updateDebugMenuVisibility,
+  connect(m_ui.showDebugMenu, &QCheckBox::checkStateChanged, g_main_window, &MainWindow::updateDebugMenuVisibility,
           Qt::QueuedConnection);
-  connect(m_ui.showDebugMenu, &QCheckBox::stateChanged, this, &AdvancedSettingsWidget::onShowDebugOptionsStateChanged);
+  connect(m_ui.showDebugMenu, &QCheckBox::checkStateChanged, this, &AdvancedSettingsWidget::onShowDebugOptionsStateChanged);
 
   m_ui.tweakOptionTable->setColumnWidth(0, 380);
   m_ui.tweakOptionTable->setColumnWidth(1, 170);

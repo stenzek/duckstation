@@ -52,7 +52,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.createSaveStateBackups, "Main", "CreateSaveStateBackups",
                                                Settings::DEFAULT_SAVE_STATE_BACKUPS);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableDiscordPresence, "Main", "EnableDiscordPresence", false);
-  connect(m_ui.renderToSeparateWindow, &QCheckBox::stateChanged, this,
+  connect(m_ui.renderToSeparateWindow, &QCheckBox::checkStateChanged, this,
           &InterfaceSettingsWidget::onRenderToSeparateWindowChanged);
 
   onRenderToSeparateWindowChanged();

@@ -348,7 +348,7 @@ void PostProcessingShaderConfigWidget::createUi()
       QCheckBox* checkbox = new QCheckBox(QString::fromStdString(option.ui_name), this);
       checkbox->setToolTip(tooltip);
       checkbox->setChecked(option.value[0].int_value != 0);
-      connect(checkbox, &QCheckBox::stateChanged, [this, &option](int state) {
+      connect(checkbox, &QCheckBox::checkStateChanged, [this, &option](Qt::CheckState state) {
         option.value[0].int_value = (state == Qt::Checked) ? 1 : 0;
         updateConfigForOption(option);
       });
