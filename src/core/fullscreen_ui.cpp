@@ -4180,11 +4180,10 @@ void FullscreenUI::DrawDisplaySettingsPage()
       "GPU", "UseSoftwareRendererForReadbacks", false);
   }
 
-  DrawEnumSetting(
-    bsi, FSUI_CSTR("VSync"),
-    FSUI_CSTR("Synchronizes presentation of the console's frames to the host. Enable for smoother animations."),
-    "Display", "SyncMode", Settings::DEFAULT_DISPLAY_SYNC_MODE, &Settings::ParseDisplaySyncMode,
-    &Settings::GetDisplaySyncModeName, &Settings::GetDisplaySyncModeDisplayName, DisplaySyncMode::Count);
+  DrawToggleSetting(bsi, FSUI_CSTR("VSync"),
+                    FSUI_CSTR("Synchronizes presentation of the console's frames to the host. GSync/FreeSync users "
+                              "should enable Optimal Frame Pacing instead."),
+                    "Display", "VSync", false);
 
   DrawToggleSetting(
     bsi, FSUI_CSTR("Sync To Host Refresh Rate"),
@@ -4192,10 +4191,11 @@ void FullscreenUI::DrawDisplaySettingsPage()
               "Resampling are enabled."),
     "Main", "SyncToHostRefreshRate", false);
 
-  DrawToggleSetting(bsi, FSUI_CSTR("Optimal Frame Pacing"),
-                    FSUI_CSTR("Ensures every frame generated is displayed for optimal pacing. Disable if you are "
-                              "having speed or sound issues."),
-                    "Display", "DisplayAllFrames", false);
+  DrawToggleSetting(
+    bsi, FSUI_CSTR("Optimal Frame Pacing"),
+    FSUI_CSTR("Ensures every frame generated is displayed for optimal pacing. Enable for variable refresh displays, "
+              "such as GSync/FreeSync. Disable if you are having speed or sound issues."),
+    "Display", "OptimalFramePacing", false);
 
   MenuHeading(FSUI_CSTR("Rendering"));
 

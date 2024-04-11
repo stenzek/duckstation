@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>584</width>
-    <height>450</height>
+    <height>430</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -260,6 +260,16 @@
             </item>
            </layout>
           </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Deinterlacing:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QComboBox" name="displayDeinterlacing"/>
+          </item>
           <item row="5" column="0">
            <widget class="QLabel" name="label_7">
             <property name="text">
@@ -280,50 +290,12 @@
           <item row="6" column="1">
            <widget class="QComboBox" name="displayScaling"/>
           </item>
-          <item row="7" column="0">
-           <widget class="QLabel" name="label_2">
-            <property name="text">
-             <string>VSync:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="1">
-           <widget class="QComboBox" name="displaySyncMode"/>
-          </item>
-          <item row="8" column="0" colspan="2">
+          <item row="7" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_2">
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="pgxpEnable">
-              <property name="text">
-               <string>PGXP Geometry Correction</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="trueColor">
-              <property name="text">
-               <string>True Color Rendering</string>
-              </property>
-             </widget>
-            </item>
             <item row="1" column="1">
              <widget class="QCheckBox" name="pgxpDepthBuffer">
               <property name="text">
                <string>PGXP Depth Buffer (Low Compatibility)</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QCheckBox" name="force43For24Bit">
-              <property name="text">
-               <string>Force 4:3 For FMVs</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QCheckBox" name="chromaSmoothingFor24Bit">
-              <property name="text">
-               <string>FMV Chroma Smoothing</string>
               </property>
              </widget>
             </item>
@@ -334,13 +306,6 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="1">
-             <widget class="QCheckBox" name="widescreenHack">
-              <property name="text">
-               <string>Widescreen Rendering</string>
-              </property>
-             </widget>
-            </item>
             <item row="3" column="1">
              <widget class="QCheckBox" name="forceNTSCTimings">
               <property name="text">
@@ -348,17 +313,42 @@
               </property>
              </widget>
             </item>
+            <item row="2" column="0">
+             <widget class="QCheckBox" name="force43For24Bit">
+              <property name="text">
+               <string>Force 4:3 For FMVs</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="trueColor">
+              <property name="text">
+               <string>True Color Rendering</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QCheckBox" name="chromaSmoothingFor24Bit">
+              <property name="text">
+               <string>FMV Chroma Smoothing</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="widescreenHack">
+              <property name="text">
+               <string>Widescreen Rendering</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="pgxpEnable">
+              <property name="text">
+               <string>PGXP Geometry Correction</string>
+              </property>
+             </widget>
+            </item>
            </layout>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_3">
-            <property name="text">
-             <string>Deinterlacing:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QComboBox" name="displayDeinterlacing"/>
           </item>
          </layout>
         </widget>
@@ -366,7 +356,7 @@
        <item>
         <spacer name="verticalSpacer_3">
          <property name="orientation">
-          <enum>Qt::Vertical</enum>
+          <enum>Qt::Orientation::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -437,20 +427,6 @@
           </item>
           <item row="3" column="0" colspan="2">
            <layout class="QGridLayout" name="advancedDisplayOptionsLayout">
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="gpuThread">
-              <property name="text">
-               <string>Threaded Rendering</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QCheckBox" name="threadedPresentation">
-              <property name="text">
-               <string>Threaded Presentation</string>
-              </property>
-             </widget>
-            </item>
             <item row="1" column="1">
              <widget class="QCheckBox" name="blitSwapChain">
               <property name="text">
@@ -462,6 +438,20 @@
              <widget class="QCheckBox" name="stretchDisplayVertically">
               <property name="text">
                <string>Stretch Vertically</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="threadedPresentation">
+              <property name="text">
+               <string>Threaded Presentation</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="gpuThread">
+              <property name="text">
+               <string>Threaded Rendering</string>
               </property>
              </widget>
             </item>
@@ -488,17 +478,17 @@
           </item>
           <item row="2" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_5">
-            <item row="0" column="1">
-             <widget class="QCheckBox" name="scaledDithering">
-              <property name="text">
-               <string>Scaled Dithering</string>
-              </property>
-             </widget>
-            </item>
             <item row="0" column="0">
              <widget class="QCheckBox" name="debanding">
               <property name="text">
                <string>True Color Debanding</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="scaledDithering">
+              <property name="text">
+               <string>Scaled Dithering</string>
               </property>
              </widget>
             </item>
@@ -527,7 +517,7 @@
        <item>
         <spacer name="verticalSpacer">
          <property name="orientation">
-          <enum>Qt::Vertical</enum>
+          <enum>Qt::Orientation::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -657,7 +647,7 @@
        <item>
         <spacer name="verticalSpacer_4">
          <property name="orientation">
-          <enum>Qt::Vertical</enum>
+          <enum>Qt::Orientation::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -799,7 +789,7 @@
        <item>
         <spacer name="verticalSpacer_5">
          <property name="orientation">
-          <enum>Qt::Vertical</enum>
+          <enum>Qt::Orientation::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -874,7 +864,7 @@
        <item>
         <spacer name="verticalSpacer_7">
          <property name="orientation">
-          <enum>Qt::Vertical</enum>
+          <enum>Qt::Orientation::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -1008,7 +998,7 @@
        <item>
         <spacer name="verticalSpacer_2">
          <property name="orientation">
-          <enum>Qt::Vertical</enum>
+          <enum>Qt::Orientation::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -1111,7 +1101,7 @@
        <item>
         <spacer name="verticalSpacer_6">
          <property name="orientation">
-          <enum>Qt::Vertical</enum>
+          <enum>Qt::Orientation::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>

@@ -248,10 +248,6 @@ void Settings::Load(SettingsInterface& si)
   display_scaling =
     ParseDisplayScaling(si.GetStringValue("Display", "Scaling", GetDisplayScalingName(DEFAULT_DISPLAY_SCALING)).c_str())
       .value_or(DEFAULT_DISPLAY_SCALING);
-  display_sync_mode =
-    ParseDisplaySyncMode(
-      si.GetStringValue("Display", "SyncMode", GetDisplaySyncModeName(DEFAULT_DISPLAY_SYNC_MODE)).c_str())
-      .value_or(DEFAULT_DISPLAY_SYNC_MODE);
   display_exclusive_fullscreen_control =
     ParseDisplayExclusiveFullscreenControl(
       si.GetStringValue("Display", "ExclusiveFullscreenControl",
@@ -270,6 +266,8 @@ void Settings::Load(SettingsInterface& si)
       .value_or(DEFAULT_DISPLAY_SCREENSHOT_FORMAT);
   display_screenshot_quality = static_cast<u8>(
     std::clamp<u32>(si.GetUIntValue("Display", "ScreenshotQuality", DEFAULT_DISPLAY_SCREENSHOT_QUALITY), 1, 100));
+  display_optimal_frame_pacing = si.GetBoolValue("Display", "OptimalFramePacing", false);
+  display_vsync = si.GetBoolValue("Display", "VSync", false);
   display_force_4_3_for_24bit = si.GetBoolValue("Display", "Force4_3For24Bit", false);
   display_active_start_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveStartOffset", 0));
   display_active_end_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveEndOffset", 0));
@@ -286,7 +284,6 @@ void Settings::Load(SettingsInterface& si)
   display_show_status_indicators = si.GetBoolValue("Display", "ShowStatusIndicators", true);
   display_show_inputs = si.GetBoolValue("Display", "ShowInputs", false);
   display_show_enhancements = si.GetBoolValue("Display", "ShowEnhancements", false);
-  display_all_frames = si.GetBoolValue("Display", "DisplayAllFrames", false);
   display_stretch_vertically = si.GetBoolValue("Display", "StretchVertically", false);
   display_max_fps = si.GetFloatValue("Display", "MaxFPS", DEFAULT_DISPLAY_MAX_FPS);
   display_osd_scale = si.GetFloatValue("Display", "OSDScale", DEFAULT_OSD_SCALE);
@@ -523,7 +520,8 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(display_aspect_ratio));
   si.SetStringValue("Display", "Alignment", GetDisplayAlignmentName(display_alignment));
   si.SetStringValue("Display", "Scaling", GetDisplayScalingName(display_scaling));
-  si.SetStringValue("Display", "SyncMode", GetDisplaySyncModeName(display_sync_mode));
+  si.SetBoolValue("Display", "OptimalFramePacing", display_optimal_frame_pacing);
+  si.SetBoolValue("Display", "VSync", display_vsync);
   si.SetStringValue("Display", "ExclusiveFullscreenControl",
                     GetDisplayExclusiveFullscreenControlName(display_exclusive_fullscreen_control));
   si.SetStringValue("Display", "ScreenshotMode", GetDisplayScreenshotModeName(display_screenshot_mode));
@@ -547,7 +545,6 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
     si.SetFloatValue("Display", "OSDScale", display_osd_scale);
   }
 
-  si.SetBoolValue("Display", "DisplayAllFrames", display_all_frames);
   si.SetBoolValue("Display", "StretchVertically", display_stretch_vertically);
   si.SetFloatValue("Display", "MaxFPS", display_max_fps);
 
@@ -1450,43 +1447,6 @@ const char* Settings::GetDisplayScalingName(DisplayScalingMode mode)
 const char* Settings::GetDisplayScalingDisplayName(DisplayScalingMode mode)
 {
   return Host::TranslateToCString("DisplayScalingMode", s_display_scaling_display_names[static_cast<int>(mode)]);
-}
-
-static constexpr const std::array s_display_sync_mode_names = {
-  "Disabled",
-  "VSync",
-  "VSyncRelaxed",
-  "VRR",
-};
-static constexpr const std::array s_display_sync_mode_display_names = {
-  TRANSLATE_NOOP("Settings", "Disabled"),
-  TRANSLATE_NOOP("Settings", "VSync"),
-  TRANSLATE_NOOP("Settings", "Relaxed VSync"),
-  TRANSLATE_NOOP("Settings", "VRR/FreeSync/GSync"),
-};
-
-std::optional<DisplaySyncMode> Settings::ParseDisplaySyncMode(const char* str)
-{
-  int index = 0;
-  for (const char* name : s_display_sync_mode_names)
-  {
-    if (StringUtil::Strcasecmp(name, str) == 0)
-      return static_cast<DisplaySyncMode>(index);
-
-    index++;
-  }
-
-  return std::nullopt;
-}
-
-const char* Settings::GetDisplaySyncModeName(DisplaySyncMode mode)
-{
-  return s_display_sync_mode_names[static_cast<size_t>(mode)];
-}
-
-const char* Settings::GetDisplaySyncModeDisplayName(DisplaySyncMode mode)
-{
-  return Host::TranslateToCString("Settings", s_display_sync_mode_display_names[static_cast<size_t>(mode)]);
 }
 
 static constexpr const std::array s_display_exclusive_fullscreen_mode_names = {

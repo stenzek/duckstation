@@ -631,7 +631,7 @@ bool D3D11Device::BeginPresent(bool skip_present)
   // This blows our our GPU usage number considerably, so read the timestamp before the final blit
   // in this configuration. It does reduce accuracy a little, but better than seeing 100% all of
   // the time, when it's more like a couple of percent.
-  if ((m_sync_mode == DisplaySyncMode::VSync || m_sync_mode == DisplaySyncMode::VSyncRelaxed) && m_gpu_timing_enabled)
+  if (m_vsync_enabled && m_gpu_timing_enabled)
     PopTimestampQuery();
 
   static constexpr float clear_color[4] = {0.0f, 0.0f, 0.0f, 1.0f};
@@ -648,11 +648,11 @@ void D3D11Device::EndPresent()
 {
   DebugAssert(m_num_current_render_targets == 0 && !m_current_depth_target);
 
-  if (m_sync_mode != DisplaySyncMode::VSync && m_sync_mode != DisplaySyncMode::VSyncRelaxed && m_gpu_timing_enabled)
+  if (m_vsync_enabled && m_gpu_timing_enabled)
     PopTimestampQuery();
 
   // DirectX has no concept of tear-or-sync. I guess if we measured times ourselves, we could implement it.
-  if (m_sync_mode == DisplaySyncMode::VSync || m_sync_mode == DisplaySyncMode::VSyncRelaxed)
+  if (m_vsync_enabled)
     m_swap_chain->Present(BoolToUInt32(1), 0);
   else if (m_using_allow_tearing) // Disabled or VRR, VRR requires the allow tearing flag :/
     m_swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);

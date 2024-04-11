@@ -139,7 +139,7 @@ bool OpenGLContextWGL::SwapBuffers()
   return ::SwapBuffers(m_dc);
 }
 
-bool OpenGLContextWGL::IsCurrent()
+bool OpenGLContextWGL::IsCurrent() const
 {
   return (m_rc && wglGetCurrentContext() == m_rc);
 }

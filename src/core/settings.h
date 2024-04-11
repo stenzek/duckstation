@@ -134,7 +134,6 @@ struct Settings
   DisplayAspectRatio display_aspect_ratio = DEFAULT_DISPLAY_ASPECT_RATIO;
   DisplayAlignment display_alignment = DEFAULT_DISPLAY_ALIGNMENT;
   DisplayScalingMode display_scaling = DEFAULT_DISPLAY_SCALING;
-  DisplaySyncMode display_sync_mode = DEFAULT_DISPLAY_SYNC_MODE;
   DisplayExclusiveFullscreenControl display_exclusive_fullscreen_control = DEFAULT_DISPLAY_EXCLUSIVE_FULLSCREEN_CONTROL;
   DisplayScreenshotMode display_screenshot_mode = DEFAULT_DISPLAY_SCREENSHOT_MODE;
   DisplayScreenshotFormat display_screenshot_format = DEFAULT_DISPLAY_SCREENSHOT_FORMAT;
@@ -145,6 +144,8 @@ struct Settings
   s16 display_active_end_offset = 0;
   s8 display_line_start_offset = 0;
   s8 display_line_end_offset = 0;
+  bool display_optimal_frame_pacing : 1 = false;
+  bool display_vsync : 1 = false;
   bool display_force_4_3_for_24bit : 1 = false;
   bool gpu_24bit_chroma_smoothing : 1 = false;
   bool display_show_osd_messages : 1 = true;
@@ -158,7 +159,6 @@ struct Settings
   bool display_show_status_indicators : 1 = true;
   bool display_show_inputs : 1 = false;
   bool display_show_enhancements : 1 = false;
-  bool display_all_frames : 1 = false;
   bool display_stretch_vertically : 1 = false;
   float display_osd_scale = 100.0f;
   float display_max_fps = DEFAULT_DISPLAY_MAX_FPS;
@@ -416,10 +416,6 @@ struct Settings
   static const char* GetDisplayScalingName(DisplayScalingMode mode);
   static const char* GetDisplayScalingDisplayName(DisplayScalingMode mode);
 
-  static std::optional<DisplaySyncMode> ParseDisplaySyncMode(const char* str);
-  static const char* GetDisplaySyncModeName(DisplaySyncMode mode);
-  static const char* GetDisplaySyncModeDisplayName(DisplaySyncMode mode);
-
   static std::optional<DisplayExclusiveFullscreenControl> ParseDisplayExclusiveFullscreenControl(const char* str);
   static const char* GetDisplayExclusiveFullscreenControlName(DisplayExclusiveFullscreenControl mode);
   static const char* GetDisplayExclusiveFullscreenControlDisplayName(DisplayExclusiveFullscreenControl mode);
@@ -496,7 +492,6 @@ struct Settings
   static constexpr DisplayAspectRatio DEFAULT_DISPLAY_ASPECT_RATIO = DisplayAspectRatio::Auto;
   static constexpr DisplayAlignment DEFAULT_DISPLAY_ALIGNMENT = DisplayAlignment::Center;
   static constexpr DisplayScalingMode DEFAULT_DISPLAY_SCALING = DisplayScalingMode::BilinearSmooth;
-  static constexpr DisplaySyncMode DEFAULT_DISPLAY_SYNC_MODE = DisplaySyncMode::Disabled;
   static constexpr DisplayExclusiveFullscreenControl DEFAULT_DISPLAY_EXCLUSIVE_FULLSCREEN_CONTROL =
     DisplayExclusiveFullscreenControl::Automatic;
   static constexpr DisplayScreenshotMode DEFAULT_DISPLAY_SCREENSHOT_MODE = DisplayScreenshotMode::ScreenResolution;

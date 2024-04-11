@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "vulkan_swap_chain.h"
@@ -70,22 +70,10 @@ static const char* PresentModeToString(VkPresentModeKHR mode)
   }
 }
 
-static VkPresentModeKHR GetPreferredPresentModeForVsyncMode(DisplaySyncMode mode)
-{
-  static constexpr std::array<VkPresentModeKHR, static_cast<size_t>(DisplaySyncMode::Count)> modes = {{
-    VK_PRESENT_MODE_IMMEDIATE_KHR,    // Disabled
-    VK_PRESENT_MODE_FIFO_KHR,         // VSync
-    VK_PRESENT_MODE_FIFO_RELAXED_KHR, // VSyncRelaxed
-    VK_PRESENT_MODE_IMMEDIATE_KHR,    // VRR ??
-  }};
-
-  return modes[static_cast<size_t>(mode)];
-}
-
-VulkanSwapChain::VulkanSwapChain(const WindowInfo& wi, VkSurfaceKHR surface, VkPresentModeKHR requested_present_mode,
+VulkanSwapChain::VulkanSwapChain(const WindowInfo& wi, VkSurfaceKHR surface, bool vsync,
                                  std::optional<bool> exclusive_fullscreen_control)
-  : m_window_info(wi), m_surface(surface), m_requested_present_mode(requested_present_mode),
-    m_exclusive_fullscreen_control(exclusive_fullscreen_control)
+  : m_window_info(wi), m_surface(surface), m_exclusive_fullscreen_control(exclusive_fullscreen_control),
+    m_vsync_enabled(vsync)
 {
 }
 
@@ -220,13 +208,11 @@ void VulkanSwapChain::DestroyVulkanSurface(VkInstance instance, WindowInfo* wi, 
 #endif
 }
 
-std::unique_ptr<VulkanSwapChain> VulkanSwapChain::Create(const WindowInfo& wi, VkSurfaceKHR surface,
-                                                         DisplaySyncMode sync_mode,
+std::unique_ptr<VulkanSwapChain> VulkanSwapChain::Create(const WindowInfo& wi, VkSurfaceKHR surface, bool vsync,
                                                          std::optional<bool> exclusive_fullscreen_control)
 {
-  const VkPresentModeKHR requested_mode = GetPreferredPresentModeForVsyncMode(sync_mode);
   std::unique_ptr<VulkanSwapChain> swap_chain =
-    std::unique_ptr<VulkanSwapChain>(new VulkanSwapChain(wi, surface, requested_mode, exclusive_fullscreen_control));
+    std::unique_ptr<VulkanSwapChain>(new VulkanSwapChain(wi, surface, vsync, exclusive_fullscreen_control));
   if (!swap_chain->CreateSwapChain())
     return nullptr;
 
@@ -306,7 +292,7 @@ std::optional<VkPresentModeKHR> VulkanSwapChain::SelectPresentMode(VkSurfaceKHR 
   }
   else if (requested_mode != VK_PRESENT_MODE_FIFO_KHR && CheckForMode(VK_PRESENT_MODE_MAILBOX_KHR))
   {
-    // Prefer mailbox over fifo for adaptive vsync/no-vsync.
+    // Prefer mailbox over fifo for adaptive vsync/no-vsync. This way it'll only delay one frame.
     selected_mode = VK_PRESENT_MODE_MAILBOX_KHR;
   }
   else if (requested_mode == VK_PRESENT_MODE_FIFO_RELAXED_KHR && CheckForMode(VK_PRESENT_MODE_FIFO_KHR))
@@ -333,7 +319,11 @@ bool VulkanSwapChain::CreateSwapChain()
 
   // Select swap chain format and present mode
   std::optional<VkSurfaceFormatKHR> surface_format = SelectSurfaceFormat(m_surface);
-  std::optional<VkPresentModeKHR> present_mode = SelectPresentMode(m_surface, m_requested_present_mode);
+
+  // Prefer relaxed vsync if available, stalling is bad.
+  const VkPresentModeKHR requested_mode =
+    m_vsync_enabled ? VK_PRESENT_MODE_FIFO_RELAXED_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR;
+  std::optional<VkPresentModeKHR> present_mode = SelectPresentMode(m_surface, requested_mode);
   if (!surface_format.has_value() || !present_mode.has_value())
     return false;
 
@@ -643,13 +633,12 @@ bool VulkanSwapChain::ResizeSwapChain(u32 new_width, u32 new_height, float new_s
   return true;
 }
 
-bool VulkanSwapChain::SetSyncMode(DisplaySyncMode mode)
+bool VulkanSwapChain::SetVSyncEnabled(bool enabled)
 {
-  const VkPresentModeKHR present_mode = GetPreferredPresentModeForVsyncMode(mode);
-  if (m_requested_present_mode == present_mode)
+  if (m_vsync_enabled == enabled)
     return true;
 
-  m_requested_present_mode = present_mode;
+  m_vsync_enabled = enabled;
 
   // Recreate the swap chain with the new present mode.
   Log_VerbosePrintf("Recreating swap chain to change present mode.");

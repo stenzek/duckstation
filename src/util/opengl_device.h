@@ -100,7 +100,7 @@ public:
   void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) override;
   void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) override;
 
-  void SetSyncMode(DisplaySyncMode mode) override;
+  void SetVSyncEnabled(bool enabled) override;
 
   bool BeginPresent(bool skip_present) override;
   void EndPresent() override;

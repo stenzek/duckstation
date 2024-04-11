@@ -166,8 +166,8 @@ static const GameDatabase::Entry* s_running_game_entry = nullptr;
 static System::GameHash s_running_game_hash;
 static bool s_was_fast_booted;
 
-static float s_throttle_frequency = 60.0f;
-static float s_target_speed = 1.0f;
+static float s_throttle_frequency = 0.0f;
+static float s_target_speed = 0.0f;
 static Common::Timer::Value s_frame_period = 0;
 static Common::Timer::Value s_next_frame_time = 0;
 static bool s_last_frame_skipped = false;
@@ -177,8 +177,8 @@ static bool s_system_interrupted = false;
 static bool s_frame_step_request = false;
 static bool s_fast_forward_enabled = false;
 static bool s_turbo_enabled = false;
-static bool s_throttler_enabled = true;
-static bool s_display_all_frames = true;
+static bool s_throttler_enabled = false;
+static bool s_optimal_frame_pacing = false;
 static bool s_syncing_to_host = false;
 
 static float s_average_frame_time_accumulator = 0.0f;
@@ -1862,13 +1862,11 @@ void System::FrameDone()
   }
 
   // TODO: Kick cmdbuffer early
-  const DisplaySyncMode sync_mode = g_gpu_device->GetSyncMode();
-  const bool throttle_after_present = (sync_mode == DisplaySyncMode::Disabled);
-  if (!throttle_after_present && s_throttler_enabled && !IsExecutionInterrupted())
+  if (s_optimal_frame_pacing && s_throttler_enabled && !IsExecutionInterrupted())
     Throttle();
 
   const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
-  if (current_time < s_next_frame_time || s_display_all_frames || s_last_frame_skipped)
+  if (current_time < s_next_frame_time || s_syncing_to_host || s_optimal_frame_pacing || s_last_frame_skipped)
   {
     s_last_frame_skipped = !PresentDisplay(true);
   }
@@ -1878,7 +1876,7 @@ void System::FrameDone()
     s_last_frame_skipped = true;
   }
 
-  if (throttle_after_present && s_throttler_enabled && !IsExecutionInterrupted())
+  if (!s_optimal_frame_pacing && s_throttler_enabled && !IsExecutionInterrupted())
     Throttle();
 
   // Input poll already done above
@@ -1949,7 +1947,7 @@ void System::Throttle()
   // Use a spinwait if we undersleep for all platforms except android.. don't want to burn battery.
   // Linux also seems to do a much better job of waking up at the requested time.
 #if !defined(__linux__) && !defined(__ANDROID__)
-  Common::Timer::SleepUntil(s_next_frame_time, g_settings.display_all_frames);
+  Common::Timer::SleepUntil(s_next_frame_time, g_settings.display_optimal_frame_pacing);
 #else
   Common::Timer::SleepUntil(s_next_frame_time, false);
 #endif
@@ -2648,7 +2646,7 @@ void System::UpdateSpeedLimiterState()
                      g_settings.turbo_speed :
                      (s_fast_forward_enabled ? g_settings.fast_forward_speed : g_settings.emulation_speed);
   s_throttler_enabled = (s_target_speed != 0.0f);
-  s_display_all_frames = !s_throttler_enabled || g_settings.display_all_frames;
+  s_optimal_frame_pacing = s_throttler_enabled && g_settings.display_optimal_frame_pacing;
 
   s_syncing_to_host = false;
   if (g_settings.sync_to_host_refresh_rate && (g_settings.audio_stretch_mode != AudioStretchMode::Off) &&
@@ -2667,14 +2665,10 @@ void System::UpdateSpeedLimiterState()
   }
 
   // When syncing to host and using vsync, we don't need to sleep.
-  if (s_syncing_to_host && s_display_all_frames)
+  if (s_syncing_to_host && IsVSyncEffectivelyEnabled())
   {
-    const DisplaySyncMode effective_sync_mode = GetEffectiveDisplaySyncMode();
-    if (effective_sync_mode == DisplaySyncMode::VSync || effective_sync_mode == DisplaySyncMode::VSyncRelaxed)
-    {
-      Log_InfoPrintf("Using host vsync for throttling.");
-      s_throttler_enabled = false;
-    }
+    Log_InfoPrintf("Using host vsync for throttling.");
+    s_throttler_enabled = false;
   }
 
   Log_VerbosePrintf("Target speed: %f%%", s_target_speed * 100.0f);
@@ -2707,25 +2701,22 @@ void System::UpdateSpeedLimiterState()
 
 void System::UpdateDisplaySync()
 {
-  const DisplaySyncMode display_sync_mode = GetEffectiveDisplaySyncMode();
-  const bool syncing_to_host_vsync =
-    (s_syncing_to_host &&
-     (display_sync_mode == DisplaySyncMode::VSync || display_sync_mode == DisplaySyncMode::VSyncRelaxed) &&
-     s_display_all_frames);
+  const bool vsync_enabled = IsVSyncEffectivelyEnabled();
+  const bool syncing_to_host_vsync = (s_syncing_to_host && vsync_enabled);
   const float max_display_fps = (s_throttler_enabled || s_syncing_to_host) ? 0.0f : g_settings.display_max_fps;
-  Log_VerbosePrintf("Display sync: %s%s", Settings::GetDisplaySyncModeDisplayName(display_sync_mode),
-                    syncing_to_host_vsync ? " (for throttling)" : "");
-  Log_VerbosePrintf("Max display fps: %f (%s)", max_display_fps,
-                    s_display_all_frames ? "displaying all frames" : "skipping displaying frames when needed");
+  Log_VerboseFmt("VSync: {}{}", vsync_enabled ? "Enabled" : "Disabled",
+                 syncing_to_host_vsync ? " (for throttling)" : "");
+  Log_VerboseFmt("Max display fps: {}", max_display_fps);
+  Log_VerboseFmt("Preset timing: {}", s_optimal_frame_pacing ? "consistent" : "immediate");
 
   g_gpu_device->SetDisplayMaxFPS(max_display_fps);
-  g_gpu_device->SetSyncMode(display_sync_mode);
+  g_gpu_device->SetVSyncEnabled(vsync_enabled);
 }
 
-DisplaySyncMode System::GetEffectiveDisplaySyncMode()
+bool System::IsVSyncEffectivelyEnabled()
 {
   // Disable vsync if running outside 100%.
-  return (IsValid() && IsRunningAtNonStandardSpeed()) ? DisplaySyncMode::Disabled : g_settings.display_sync_mode;
+  return (g_settings.display_vsync && IsValid() && !IsRunningAtNonStandardSpeed());
 }
 
 bool System::IsFastForwardEnabled()
@@ -3780,12 +3771,12 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     DMA::SetHaltTicks(g_settings.dma_halt_ticks);
 
     if (g_settings.audio_backend != old_settings.audio_backend ||
-        g_settings.display_sync_mode != old_settings.display_sync_mode ||
         g_settings.increase_timer_resolution != old_settings.increase_timer_resolution ||
         g_settings.emulation_speed != old_settings.emulation_speed ||
         g_settings.fast_forward_speed != old_settings.fast_forward_speed ||
         g_settings.display_max_fps != old_settings.display_max_fps ||
-        g_settings.display_all_frames != old_settings.display_all_frames ||
+        g_settings.display_optimal_frame_pacing != old_settings.display_optimal_frame_pacing ||
+        g_settings.display_vsync != old_settings.display_vsync ||
         g_settings.sync_to_host_refresh_rate != old_settings.sync_to_host_refresh_rate)
     {
       UpdateSpeedLimiterState();

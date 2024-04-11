@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -25,7 +25,7 @@ public:
   static void DestroyVulkanSurface(VkInstance instance, WindowInfo* wi, VkSurfaceKHR surface);
 
   // Create a new swap chain from a pre-existing surface.
-  static std::unique_ptr<VulkanSwapChain> Create(const WindowInfo& wi, VkSurfaceKHR surface, DisplaySyncMode sync_mode,
+  static std::unique_ptr<VulkanSwapChain> Create(const WindowInfo& wi, VkSurfaceKHR surface, bool vsync,
                                                  std::optional<bool> exclusive_fullscreen_control);
 
   ALWAYS_INLINE VkSurfaceKHR GetSurface() const { return m_surface; }
@@ -73,10 +73,10 @@ public:
   bool ResizeSwapChain(u32 new_width = 0, u32 new_height = 0, float new_scale = 1.0f);
 
   // Change vsync enabled state. This may fail as it causes a swapchain recreation.
-  bool SetSyncMode(DisplaySyncMode mode);
+  bool SetVSyncEnabled(bool enabled);
 
 private:
-  VulkanSwapChain(const WindowInfo& wi, VkSurfaceKHR surface, VkPresentModeKHR requested_present_mode,
+  VulkanSwapChain(const WindowInfo& wi, VkSurfaceKHR surface, bool vsync,
                   std::optional<bool> exclusive_fullscreen_control);
 
   static std::optional<VkSurfaceFormatKHR> SelectSurfaceFormat(VkSurfaceKHR surface);
@@ -111,11 +111,11 @@ private:
   std::vector<ImageSemaphores> m_semaphores;
 
   VkFormat m_format = VK_FORMAT_UNDEFINED;
-  VkPresentModeKHR m_requested_present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
   VkPresentModeKHR m_actual_present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
   u32 m_current_image = 0;
   u32 m_current_semaphore = 0;
 
   std::optional<VkResult> m_image_acquire_result;
   std::optional<bool> m_exclusive_fullscreen_control;
+  bool m_vsync_enabled = false;
 };

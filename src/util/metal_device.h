@@ -265,7 +265,7 @@ public:
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;
 
-  void SetSyncMode(DisplaySyncMode mode) override;
+  void SetVSyncEnabled(bool enabled) override;
 
   bool BeginPresent(bool skip_present) override;
   void EndPresent() override;

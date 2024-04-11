@@ -16,8 +16,9 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
 
   m_ui.setupUi(this);
 
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vsync, "Display", "VSync", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.syncToHostRefreshRate, "Main", "SyncToHostRefreshRate", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.displayAllFrames, "Display", "DisplayAllFrames", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.optimalFramePacing, "Display", "OptimalFramePacing", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.rewindEnable, "Main", "RewindEnable", false);
   SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.rewindSaveFrequency, "Main", "RewindFrequency", 10.0f);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.rewindSaveSlots, "Main", "RewindSaveSlots", 10);
@@ -67,6 +68,7 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
   }
   connect(m_ui.turboSpeed, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &EmulationSettingsWidget::onTurboSpeedIndexChanged);
+  connect(m_ui.vsync, &QCheckBox::stateChanged, this, &EmulationSettingsWidget::onVSyncChanged);
 
   connect(m_ui.rewindEnable, &QCheckBox::stateChanged, this, &EmulationSettingsWidget::updateRewind);
   connect(m_ui.rewindSaveFrequency, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
@@ -88,16 +90,22 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
     tr("Sets the turbo speed. This speed will be used when the turbo hotkey is pressed/toggled. Turboing will take "
        "priority over fast forwarding if both hotkeys are pressed/toggled."));
   dialog->registerWidgetHelp(
+    m_ui.vsync, tr("Display Vertical Sync (VSync)"), tr("Unchecked"),
+    tr("Synchronizes presentation of the console's frames to the host. Enabling may result in smoother animations, at "
+       "the cost of increased input lag. <strong>GSync/FreeSync users should enable Optimal Frame Pacing "
+       "instead.</strong>"));
+  dialog->registerWidgetHelp(
     m_ui.syncToHostRefreshRate, tr("Sync To Host Refresh Rate"), tr("Unchecked"),
     tr("Adjusts the emulation speed so the console's refresh rate matches the host's refresh rate when both VSync and "
        "Audio Resampling settings are enabled. This results in the smoothest animations possible, at the cost of "
        "potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if "
        "the console's refresh rate is too far from the host's refresh rate. Users with variable refresh rate displays "
        "should disable this option."));
-  dialog->registerWidgetHelp(m_ui.displayAllFrames, tr("Optimal Frame Pacing"), tr("Unchecked"),
-                             tr("Enabling this option will ensure every frame the console renders is displayed to the "
-                                "screen, for optimal frame pacing. If you are having difficulties maintaining full "
-                                "speed, or are getting audio glitches, try disabling this option."));
+  dialog->registerWidgetHelp(
+    m_ui.optimalFramePacing, tr("Optimal Frame Pacing"), tr("Unchecked"),
+    tr("Enabling this option will ensure every frame the console renders is displayed to the screen, at a consistent "
+       "rate, for optimal frame pacing. If you have a GSync/FreeSync display, enable this option. If you are having "
+       "difficulties maintaining full speed, or are getting audio glitches, try disabling this option."));
   dialog->registerWidgetHelp(
     m_ui.rewindEnable, tr("Rewinding"), tr("Unchecked"),
     tr("<b>Enable Rewinding:</b> Saves state periodically so you can rewind any mistakes while playing.<br> "
@@ -110,6 +118,7 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
     tr(
       "Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements."));
 
+  onVSyncChanged();
   updateRewind();
 }
 
@@ -173,6 +182,12 @@ void EmulationSettingsWidget::onTurboSpeedIndexChanged(int index)
   bool okay;
   const float value = m_ui.turboSpeed->currentData().toFloat(&okay);
   m_dialog->setFloatSettingValue("Main", "TurboSpeed", okay ? value : 0.0f);
+}
+
+void EmulationSettingsWidget::onVSyncChanged()
+{
+  const bool vsync = m_dialog->getEffectiveBoolValue("Display", "VSync", false);
+  m_ui.syncToHostRefreshRate->setEnabled(vsync);
 }
 
 void EmulationSettingsWidget::updateRewind()

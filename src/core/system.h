@@ -453,7 +453,7 @@ void ToggleWidescreen();
 bool IsRunningAtNonStandardSpeed();
 
 /// Returns true if vsync should be used.
-DisplaySyncMode GetEffectiveDisplaySyncMode();
+bool IsVSyncEffectivelyEnabled();
 
 /// Quick switch between software and hardware rendering.
 void ToggleSoftwareRendering();

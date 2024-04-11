@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>672</width>
-    <height>518</height>
+    <width>568</width>
+    <height>369</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -61,15 +61,22 @@
       </item>
       <item row="3" column="0" colspan="2">
        <layout class="QGridLayout" name="gridLayout">
-        <item row="1" column="1">
+        <item row="0" column="0">
+         <widget class="QCheckBox" name="vsync">
+          <property name="text">
+           <string>Display Vertical Sync (VSync)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
          <widget class="QCheckBox" name="syncToHostRefreshRate">
           <property name="text">
            <string>Sync To Host Refresh Rate</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="2">
-         <widget class="QCheckBox" name="displayAllFrames">
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="optimalFramePacing">
           <property name="text">
            <string>Optimal Frame Pacing</string>
           </property>
@@ -215,7 +222,7 @@
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>

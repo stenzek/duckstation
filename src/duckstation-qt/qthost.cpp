@@ -92,6 +92,7 @@ static void SetResourcesDirectory();
 static bool SetDataDirectory();
 static bool SetCriticalFolders();
 static void SetDefaultSettings(SettingsInterface& si, bool system, bool controller);
+static void MigrateSettings();
 static void SaveSettings();
 static bool RunSetupWizard();
 static std::string GetResourcePath(std::string_view name, bool allow_override);
@@ -379,6 +380,7 @@ bool QtHost::InitializeConfig(std::string settings_filename)
 
   EmuFolders::LoadConfig(*s_base_settings_interface.get());
   EmuFolders::EnsureFoldersExist();
+  MigrateSettings();
 
   // We need to create the console window early, otherwise it appears behind the main window.
   if (!Log::IsConsoleOutputEnabled() &&
@@ -593,6 +595,21 @@ void QtHost::SetDefaultSettings(SettingsInterface& si, bool system, bool control
     InputManager::SetDefaultSourceConfig(si);
     Settings::SetDefaultControllerConfig(si);
     Settings::SetDefaultHotkeyConfig(si);
+  }
+}
+
+void QtHost::MigrateSettings()
+{
+  SmallString value;
+  if (s_base_settings_interface->GetStringValue("Display", "SyncMode", &value))
+  {
+    s_base_settings_interface->SetBoolValue("Display", "VSync", (value == "VSync" || value == "VSyncRelaxed"));
+    s_base_settings_interface->SetBoolValue(
+      "Display", "OptimalFramePacing",
+      (value == "VRR" || s_base_settings_interface->GetBoolValue("Display", "DisplayAllFrames", false)));
+    s_base_settings_interface->DeleteValue("Display", "SyncMode");
+    s_base_settings_interface->DeleteValue("Display", "DisplayAllFrames");
+    s_base_settings_interface->Save();
   }
 }
 
@@ -1551,7 +1568,7 @@ void EmuThread::run()
       if (g_gpu_device)
       {
         System::PresentDisplay(false);
-        if (!g_gpu_device->IsVSyncActive())
+        if (!g_gpu_device->IsVSyncEnabled())
           g_gpu_device->ThrottlePresentation();
       }
     }

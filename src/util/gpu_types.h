@@ -13,12 +13,3 @@ enum class RenderAPI : u32
   OpenGLES,
   Metal
 };
-
-enum class DisplaySyncMode : u8
-{
-  Disabled,
-  VSync,
-  VSyncRelaxed,
-  VRR,
-  Count
-};

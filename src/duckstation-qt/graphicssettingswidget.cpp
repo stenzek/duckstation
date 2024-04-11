@@ -75,9 +75,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayScaling, "Display", "Scaling",
                                                &Settings::ParseDisplayScaling, &Settings::GetDisplayScalingName,
                                                Settings::DEFAULT_DISPLAY_SCALING);
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displaySyncMode, "Display", "SyncMode",
-                                               &Settings::ParseDisplaySyncMode, &Settings::GetDisplaySyncModeName,
-                                               Settings::DEFAULT_DISPLAY_SYNC_MODE);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.gpuDownsampleScale, "GPU", "DownsampleScale", 1);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.trueColor, "GPU", "TrueColor", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableInterlacing, "GPU", "DisableInterlacing", true);
@@ -284,10 +281,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   dialog->registerWidgetHelp(
     m_ui.displayScaling, tr("Scaling"), tr("Bilinear (Smooth)"),
     tr("Determines how the emulated console's output is upscaled or downscaled to your monitor's resolution."));
-  dialog->registerWidgetHelp(
-    m_ui.displaySyncMode, tr("VSync"), tr("Unchecked"),
-    tr("Enable this option to match DuckStation's refresh rate with your current monitor or screen. "
-       "VSync is automatically disabled when it is not possible (e.g. running at non-100% speed)."));
   dialog->registerWidgetHelp(
     m_ui.trueColor, tr("True Color Rendering"), tr("Checked"),
     tr("Forces the precision of colours output to the console's framebuffer to use the full 8 bits of precision per "
@@ -548,12 +541,6 @@ void GraphicsSettingsWidget::setupAdditionalUi()
   {
     m_ui.displayScaling->addItem(
       QString::fromUtf8(Settings::GetDisplayScalingDisplayName(static_cast<DisplayScalingMode>(i))));
-  }
-
-  for (u32 i = 0; i < static_cast<u32>(DisplaySyncMode::Count); i++)
-  {
-    m_ui.displaySyncMode->addItem(
-      QString::fromUtf8(Settings::GetDisplaySyncModeDisplayName(static_cast<DisplaySyncMode>(i))));
   }
 
   // Advanced Tab

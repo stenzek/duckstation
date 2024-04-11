@@ -238,12 +238,12 @@ void OpenGLDevice::InsertDebugMessage(const char* msg)
 #endif
 }
 
-void OpenGLDevice::SetSyncMode(DisplaySyncMode mode)
+void OpenGLDevice::SetVSyncEnabled(bool enabled)
 {
-  if (m_sync_mode == mode)
+  if (m_vsync_enabled == enabled)
     return;
 
-  m_sync_mode = mode;
+  m_vsync_enabled = enabled;
   SetSwapInterval();
 }
 
@@ -582,14 +582,13 @@ void OpenGLDevice::SetSwapInterval()
     return;
 
   // Window framebuffer has to be bound to call SetSwapInterval.
-  const s32 interval =
-    (m_sync_mode == DisplaySyncMode::VSync) ? 1 : ((m_sync_mode == DisplaySyncMode::VSyncRelaxed) ? -1 : 0);
+  const s32 interval = m_vsync_enabled ? (m_gl_context->SupportsNegativeSwapInterval() ? -1 : 1) : 0;
   GLint current_fbo = 0;
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
   if (!m_gl_context->SetSwapInterval(interval))
-    Log_WarningPrintf("Failed to set swap interval to %d", interval);
+    Log_WarningFmt("Failed to set swap interval to {}", interval);
 
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
 }
@@ -1096,9 +1095,10 @@ void OpenGLDevice::UnmapUniformBuffer(u32 size)
   glBindBufferRange(GL_UNIFORM_BUFFER, 1, m_uniform_buffer->GetGLBufferId(), pos, size);
 }
 
-void OpenGLDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds, GPUPipeline::RenderPassFlag feedback_loop)
+void OpenGLDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds,
+                                    GPUPipeline::RenderPassFlag feedback_loop)
 {
-  //DebugAssert(!feedback_loop); TODO
+  // DebugAssert(!feedback_loop); TODO
   bool changed = (m_num_current_render_targets != num_rts || m_current_depth_target != ds);
   bool needs_ds_clear = (ds && ds->IsClearedOrInvalidated());
   bool needs_rt_clear = false;
