@@ -722,7 +722,12 @@ void EmuThread::bootSystem(std::shared_ptr<SystemBootParameters> params)
 
   setInitialState(params->override_fullscreen);
 
-  System::BootSystem(std::move(*params));
+  Error error;
+  if (!System::BootSystem(std::move(*params), &error))
+  {
+    emit errorReported(tr("Error"),
+                       tr("Failed to boot system: %1").arg(QString::fromStdString(error.GetDescription())));
+  }
 }
 
 void EmuThread::bootOrLoadState(std::string path)
@@ -731,7 +736,12 @@ void EmuThread::bootOrLoadState(std::string path)
 
   if (System::IsValid())
   {
-    System::LoadState(path.c_str());
+    Error error;
+    if (!System::LoadState(path.c_str(), &error))
+    {
+      emit errorReported(tr("Error"),
+                         tr("Failed to load state: %1").arg(QString::fromStdString(error.GetDescription())));
+    }
   }
   else
   {
@@ -1241,7 +1251,9 @@ void EmuThread::saveState(const QString& filename, bool block_until_done /* = fa
   if (!System::IsValid())
     return;
 
-  System::SaveState(filename.toUtf8().data(), g_settings.create_save_state_backups);
+  Error error;
+  if (!System::SaveState(filename.toUtf8().data(), &error, g_settings.create_save_state_backups))
+    emit errorReported(tr("Error"), tr("Failed to save state: %1").arg(QString::fromStdString(error.GetDescription())));
 }
 
 void EmuThread::saveState(bool global, qint32 slot, bool block_until_done /* = false */)
@@ -1256,10 +1268,14 @@ void EmuThread::saveState(bool global, qint32 slot, bool block_until_done /* = f
   if (!global && System::GetGameSerial().empty())
     return;
 
-  System::SaveState((global ? System::GetGlobalSaveStateFileName(slot) :
-                              System::GetGameSaveStateFileName(System::GetGameSerial(), slot))
-                      .c_str(),
-                    g_settings.create_save_state_backups);
+  Error error;
+  if (!System::SaveState((global ? System::GetGlobalSaveStateFileName(slot) :
+                                   System::GetGameSaveStateFileName(System::GetGameSerial(), slot))
+                           .c_str(),
+                         &error, g_settings.create_save_state_backups))
+  {
+    emit errorReported(tr("Error"), tr("Failed to save state: %1").arg(QString::fromStdString(error.GetDescription())));
+  }
 }
 
 void EmuThread::undoLoadState()

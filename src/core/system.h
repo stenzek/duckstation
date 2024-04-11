@@ -241,14 +241,14 @@ void ApplySettings(bool display_osd_messages);
 /// Reloads game specific settings, and applys any changes present.
 bool ReloadGameSettings(bool display_osd_messages);
 
-bool BootSystem(SystemBootParameters parameters);
+bool BootSystem(SystemBootParameters parameters, Error* error);
 void PauseSystem(bool paused);
 void ResetSystem();
 
 /// Loads state from the specified filename.
-bool LoadState(const char* filename);
-bool SaveState(const char* filename, bool backup_existing_save);
-bool SaveResumeState();
+bool LoadState(const char* filename, Error* error);
+bool SaveState(const char* filename, Error* error, bool backup_existing_save);
+bool SaveResumeState(Error* error);
 
 /// Memory save states - only for internal use.
 struct MemorySaveState
@@ -258,8 +258,8 @@ struct MemorySaveState
 };
 bool SaveMemoryState(MemorySaveState* mss);
 bool LoadMemoryState(const MemorySaveState& mss);
-bool LoadStateFromStream(ByteStream* stream, bool update_display, bool ignore_media = false);
-bool SaveStateToStream(ByteStream* state, u32 screenshot_size = 256, u32 compression_method = 0,
+bool LoadStateFromStream(ByteStream* stream, Error* error, bool update_display, bool ignore_media = false);
+bool SaveStateToStream(ByteStream* state, Error* error, u32 screenshot_size = 256, u32 compression_method = 0,
                        bool ignore_media = false);
 
 /// Runs the VM until the CPU execution is canceled.

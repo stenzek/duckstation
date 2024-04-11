@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "achievements.h"
@@ -18,6 +18,7 @@
 #include "util/input_manager.h"
 #include "util/postprocessing.h"
 
+#include "common/error.h"
 #include "common/file_system.h"
 
 #include "IconsFontAwesome5.h"
@@ -67,7 +68,7 @@ static void HotkeyLoadStateSlot(bool global, s32 slot)
 
   if (!global && System::GetGameSerial().empty())
   {
-    Host::AddKeyedOSDMessage("LoadState", TRANSLATE_NOOP("OSDMessage", "Cannot load state for game without serial."),
+    Host::AddKeyedOSDMessage("LoadState", TRANSLATE_STR("OSDMessage", "Cannot load state for game without serial."),
                              Host::OSD_ERROR_DURATION);
     return;
   }
@@ -77,12 +78,19 @@ static void HotkeyLoadStateSlot(bool global, s32 slot)
   if (!FileSystem::FileExists(path.c_str()))
   {
     Host::AddKeyedOSDMessage("LoadState",
-                             fmt::format(TRANSLATE_NOOP("OSDMessage", "No save state found in slot {}."), slot),
+                             fmt::format(TRANSLATE_FS("OSDMessage", "No save state found in slot {}."), slot),
                              Host::OSD_INFO_DURATION);
     return;
   }
 
-  System::LoadState(path.c_str());
+  Error error;
+  if (!System::LoadState(path.c_str(), &error))
+  {
+    Host::AddKeyedOSDMessage(
+      "LoadState",
+      fmt::format(TRANSLATE_FS("OSDMessage", "Failed to load state from slot {0}:\n{1}"), slot, error.GetDescription()),
+      Host::OSD_ERROR_DURATION);
+  }
 }
 
 static void HotkeySaveStateSlot(bool global, s32 slot)
@@ -92,14 +100,21 @@ static void HotkeySaveStateSlot(bool global, s32 slot)
 
   if (!global && System::GetGameSerial().empty())
   {
-    Host::AddKeyedOSDMessage("LoadState", TRANSLATE_NOOP("OSDMessage", "Cannot save state for game without serial."),
+    Host::AddKeyedOSDMessage("SaveState", TRANSLATE_STR("OSDMessage", "Cannot save state for game without serial."),
                              Host::OSD_ERROR_DURATION);
     return;
   }
 
   std::string path(global ? System::GetGlobalSaveStateFileName(slot) :
                             System::GetGameSaveStateFileName(System::GetGameSerial(), slot));
-  System::SaveState(path.c_str(), g_settings.create_save_state_backups);
+  Error error;
+  if (!System::SaveState(path.c_str(), &error, g_settings.create_save_state_backups))
+  {
+    Host::AddKeyedOSDMessage(
+      "SaveState",
+      fmt::format(TRANSLATE_FS("OSDMessage", "Failed to save state to slot {0}:\n{1}"), slot, error.GetDescription()),
+      Host::OSD_ERROR_DURATION);
+  }
 }
 
 #ifndef __ANDROID__

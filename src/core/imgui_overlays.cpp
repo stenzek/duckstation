@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #define IMGUI_DEFINE_MATH_OPERATORS
@@ -26,6 +26,7 @@
 #include "common/align.h"
 #include "common/assert.h"
 #include "common/easing.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/intrin.h"
 #include "common/log.h"
@@ -1114,7 +1115,14 @@ void SaveStateSelectorUI::LoadCurrentSlot()
   {
     if (FileSystem::FileExists(path.c_str()))
     {
-      System::LoadState(path.c_str());
+      Error error;
+      if (!System::LoadState(path.c_str(), &error))
+      {
+        Host::AddKeyedOSDMessage("LoadState",
+                                 fmt::format(TRANSLATE_FS("OSDMessage", "Failed to load state from slot {0}:\n{1}"),
+                                             GetCurrentSlot(), error.GetDescription()),
+                                 Host::OSD_ERROR_DURATION);
+      }
     }
     else
     {
@@ -1133,7 +1141,16 @@ void SaveStateSelectorUI::LoadCurrentSlot()
 void SaveStateSelectorUI::SaveCurrentSlot()
 {
   if (std::string path = GetCurrentSlotPath(); !path.empty())
-    System::SaveState(path.c_str(), g_settings.create_save_state_backups);
+  {
+    Error error;
+    if (!System::SaveState(path.c_str(), &error, g_settings.create_save_state_backups))
+    {
+      Host::AddKeyedOSDMessage("SaveState",
+                               fmt::format(TRANSLATE_FS("OSDMessage", "Failed to save state to slot {0}:\n{1}"),
+                                           GetCurrentSlot(), error.GetDescription()),
+                               Host::OSD_ERROR_DURATION);
+    }
+  }
 
   Close();
 }

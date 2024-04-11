@@ -923,7 +923,12 @@ void FullscreenUI::DoStartPath(std::string path, std::string state, std::optiona
     if (System::IsValid())
       return;
 
-    System::BootSystem(std::move(params));
+    Error error;
+    if (!System::BootSystem(std::move(params), &error))
+    {
+      Host::ReportErrorAsync(TRANSLATE_SV("System", "Error"),
+                             fmt::format(TRANSLATE_FS("System", "Failed to boot system: {}"), error.GetDescription()));
+    }
   });
 }
 
@@ -964,13 +969,7 @@ void FullscreenUI::DoStartFile()
 
 void FullscreenUI::DoStartBIOS()
 {
-  Host::RunOnCPUThread([]() {
-    if (System::IsValid())
-      return;
-
-    SystemBootParameters params;
-    System::BootSystem(std::move(params));
-  });
+  DoStartDisc(std::string());
 }
 
 void FullscreenUI::DoStartDisc(std::string path)
@@ -979,9 +978,14 @@ void FullscreenUI::DoStartDisc(std::string path)
     if (System::IsValid())
       return;
 
+    Error error;
     SystemBootParameters params;
     params.filename = std::move(path);
-    System::BootSystem(std::move(params));
+    if (!System::BootSystem(std::move(params), &error))
+    {
+      Host::ReportErrorAsync(TRANSLATE_SV("System", "Error"),
+                             fmt::format(TRANSLATE_FS("System", "Failed to boot system: {}"), error.GetDescription()));
+    }
   });
 }
 
@@ -5923,14 +5927,16 @@ void FullscreenUI::DoLoadState(std::string path)
 
     if (System::IsValid())
     {
-      System::LoadState(path.c_str());
+      Error error;
+      if (!System::LoadState(path.c_str(), &error))
+      {
+        Host::ReportErrorAsync(TRANSLATE_SV("System", "Error"),
+                               fmt::format(TRANSLATE_FS("System", "Failed to load state: {}"), error.GetDescription()));
+      }
     }
     else
     {
-      SystemBootParameters params;
-      params.filename = std::move(boot_path);
-      params.save_state = std::move(path);
-      System::BootSystem(std::move(params));
+      DoStartPath(std::move(boot_path), std::move(path));
     }
   });
 }
@@ -5944,7 +5950,12 @@ void FullscreenUI::DoSaveState(s32 slot, bool global)
 
     std::string filename(global ? System::GetGlobalSaveStateFileName(slot) :
                                   System::GetGameSaveStateFileName(System::GetGameSerial(), slot));
-    System::SaveState(filename.c_str(), g_settings.create_save_state_backups);
+    Error error;
+    if (!System::SaveState(filename.c_str(), &error, g_settings.create_save_state_backups))
+    {
+      Host::ReportErrorAsync(TRANSLATE_SV("System", "Error"),
+                             fmt::format(TRANSLATE_FS("System", "Failed to save state: {}"), error.GetDescription()));
+    }
   });
 }
 

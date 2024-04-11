@@ -71,7 +71,7 @@ std::unique_ptr<CDImage> CDImage::Open(const char* filename, bool allow_patches,
     }
     else
     {
-      Log_ErrorPrintf("Invalid filename: '%s'", filename);
+      Error::SetStringFmt(error, "Invalid filename: '{}'", Path::GetFileName(filename));
       return nullptr;
     }
   }
@@ -110,7 +110,7 @@ std::unique_ptr<CDImage> CDImage::Open(const char* filename, bool allow_patches,
   }
   else
   {
-    Log_ErrorPrintf("Unknown extension '%s' from filename '%s'", extension, filename);
+    Error::SetStringFmt(error, "Unknown extension '{}' from filename '{}'", extension, Path::GetFileName(filename));
     return nullptr;
   }
 

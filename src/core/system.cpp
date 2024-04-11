@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "system.h"
@@ -1164,28 +1164,35 @@ void System::PauseSystem(bool paused)
   }
 }
 
-bool System::LoadState(const char* filename)
+bool System::LoadState(const char* filename, Error* error)
 {
   if (!IsValid())
+  {
+    Error::SetStringView(error, "System is not booted.");
     return false;
+  }
 
   if (Achievements::IsHardcoreModeActive())
   {
     Achievements::ConfirmHardcoreModeDisableAsync(TRANSLATE("Achievements", "Loading state"),
                                                   [filename = std::string(filename)](bool approved) {
                                                     if (approved)
-                                                      LoadState(filename.c_str());
+                                                      LoadState(filename.c_str(), nullptr);
                                                   });
-    return false;
+    return true;
   }
 
   Common::Timer load_timer;
 
-  std::unique_ptr<ByteStream> stream = ByteStream::OpenFile(filename, BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
+  std::unique_ptr<ByteStream> stream =
+    ByteStream::OpenFile(filename, BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED, error);
   if (!stream)
+  {
+    Error::AddPrefixFmt(error, "Failed to open '{}': ", Path::GetFileName(filename));
     return false;
+  }
 
-  Log_InfoPrintf("Loading state from '%s'...", filename);
+  Log_InfoFmt("Loading state from '{}'...", filename);
 
   {
     const std::string display_name(FileSystem::GetDisplayNameFromPath(filename));
@@ -1196,11 +1203,8 @@ bool System::LoadState(const char* filename)
 
   SaveUndoLoadState();
 
-  if (!LoadStateFromStream(stream.get(), true))
+  if (!LoadStateFromStream(stream.get(), error, true))
   {
-    Host::ReportFormattedErrorAsync("Load State Error",
-                                    TRANSLATE("OSDMessage", "Loading state from '%s' failed. Resetting."), filename);
-
     if (m_undo_load_state)
       UndoLoadState();
 
@@ -1217,7 +1221,7 @@ bool System::LoadState(const char* filename)
   return true;
 }
 
-bool System::SaveState(const char* filename, bool backup_existing_save)
+bool System::SaveState(const char* filename, Error* error, bool backup_existing_save)
 {
   if (backup_existing_save && FileSystem::FileExists(filename))
   {
@@ -1229,21 +1233,24 @@ bool System::SaveState(const char* filename, bool backup_existing_save)
   Common::Timer save_timer;
 
   std::unique_ptr<ByteStream> stream =
-    ByteStream::OpenFile(filename, BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE | BYTESTREAM_OPEN_TRUNCATE |
-                                     BYTESTREAM_OPEN_ATOMIC_UPDATE | BYTESTREAM_OPEN_STREAMED);
+    ByteStream::OpenFile(filename,
+                         BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE | BYTESTREAM_OPEN_TRUNCATE |
+                           BYTESTREAM_OPEN_ATOMIC_UPDATE | BYTESTREAM_OPEN_STREAMED,
+                         error);
   if (!stream)
+  {
+    Error::AddPrefixFmt(error, "Failed to save state to '{}': ", Path::GetFileName(filename));
     return false;
+  }
 
   Log_InfoPrintf("Saving state to '%s'...", filename);
 
   const u32 screenshot_size = 256;
-  const bool result = SaveStateToStream(stream.get(), screenshot_size,
+  const bool result = SaveStateToStream(stream.get(), error, screenshot_size,
                                         g_settings.compress_save_states ? SAVE_STATE_HEADER::COMPRESSION_TYPE_ZSTD :
                                                                           SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE);
   if (!result)
   {
-    Host::ReportFormattedErrorAsync(TRANSLATE("OSDMessage", "Save State"),
-                                    TRANSLATE("OSDMessage", "Saving state to '%s' failed."), filename);
     stream->Discard();
   }
   else
@@ -1259,16 +1266,19 @@ bool System::SaveState(const char* filename, bool backup_existing_save)
   return result;
 }
 
-bool System::SaveResumeState()
+bool System::SaveResumeState(Error* error)
 {
   if (s_running_game_serial.empty())
+  {
+    Error::SetStringView(error, "Cannot save resume state without serial.");
     return false;
+  }
 
   const std::string path(GetGameSaveStateFileName(s_running_game_serial, -1));
-  return SaveState(path.c_str(), false);
+  return SaveState(path.c_str(), error, false);
 }
 
-bool System::BootSystem(SystemBootParameters parameters)
+bool System::BootSystem(SystemBootParameters parameters, Error* error)
 {
   if (!parameters.save_state.empty())
   {
@@ -1279,9 +1289,9 @@ bool System::BootSystem(SystemBootParameters parameters)
   }
 
   if (parameters.filename.empty())
-    Log_InfoPrintf("Boot Filename: <BIOS/Shell>");
+    Log_InfoPrint("Boot Filename: <BIOS/Shell>");
   else
-    Log_InfoPrintf("Boot Filename: %s", parameters.filename.c_str());
+    Log_InfoFmt("Boot Filename: {}", parameters.filename);
 
   Assert(s_state == State::Shutdown);
   s_state = State::Starting;
@@ -1291,7 +1301,6 @@ bool System::BootSystem(SystemBootParameters parameters)
   Host::OnSystemStarting();
 
   // Load CD image up and detect region.
-  Error error;
   std::unique_ptr<CDImage> disc;
   DiscRegion disc_region = DiscRegion::NonPS1;
   std::string exe_boot;
@@ -1317,11 +1326,10 @@ bool System::BootSystem(SystemBootParameters parameters)
     else
     {
       Log_InfoPrintf("Loading CD image '%s'...", parameters.filename.c_str());
-      disc = CDImage::Open(parameters.filename.c_str(), g_settings.cdrom_load_image_patches, &error);
+      disc = CDImage::Open(parameters.filename.c_str(), g_settings.cdrom_load_image_patches, error);
       if (!disc)
       {
-        Host::ReportErrorAsync("Error", fmt::format("Failed to load CD image '{}': {}",
-                                                    Path::GetFileName(parameters.filename), error.GetDescription()));
+        Error::AddPrefixFmt(error, "Failed to open CD image '{}':\n", Path::GetFileName(parameters.filename));
         s_state = State::Shutdown;
         Host::OnSystemDestroyed();
         Host::OnIdleStateChanged();
@@ -1357,11 +1365,10 @@ bool System::BootSystem(SystemBootParameters parameters)
   Log_InfoPrintf("Console Region: %s", Settings::GetConsoleRegionDisplayName(s_region));
 
   // Switch subimage.
-  if (disc && parameters.media_playlist_index != 0 && !disc->SwitchSubImage(parameters.media_playlist_index, &error))
+  if (disc && parameters.media_playlist_index != 0 && !disc->SwitchSubImage(parameters.media_playlist_index, error))
   {
-    Host::ReportErrorAsync("Error",
-                           fmt::format("Failed to switch to subimage {} in '{}': {}", parameters.media_playlist_index,
-                                       parameters.filename, error.GetDescription()));
+    Error::AddPrefixFmt(error, "Failed to switch to subimage {} in '{}':\n", parameters.media_playlist_index,
+                        Path::GetFileName(parameters.filename));
     s_state = State::Shutdown;
     Host::OnSystemDestroyed();
     Host::OnIdleStateChanged();
@@ -1375,8 +1382,8 @@ bool System::BootSystem(SystemBootParameters parameters)
   {
     if (!FileSystem::FileExists(parameters.override_exe.c_str()) || !IsExeFileName(parameters.override_exe))
     {
-      Host::ReportFormattedErrorAsync("Error", "File '%s' is not a valid executable to boot.",
-                                      parameters.override_exe.c_str());
+      Error::SetStringFmt(error, "File '{}' is not a valid executable to boot.",
+                          Path::GetFileName(parameters.override_exe));
       s_state = State::Shutdown;
       Host::OnSystemDestroyed();
       Host::OnIdleStateChanged();
@@ -1410,7 +1417,7 @@ bool System::BootSystem(SystemBootParameters parameters)
                                                       if (approved)
                                                       {
                                                         parameters.disable_achievements_hardcore_mode = true;
-                                                        BootSystem(std::move(parameters));
+                                                        BootSystem(std::move(parameters), nullptr);
                                                       }
                                                     });
       cancelled = true;
@@ -1462,13 +1469,13 @@ bool System::BootSystem(SystemBootParameters parameters)
   // Load EXE late after BIOS.
   if (!exe_boot.empty() && !LoadEXE(exe_boot.c_str()))
   {
-    Host::ReportFormattedErrorAsync("Error", "Failed to load EXE file '%s'", exe_boot.c_str());
+    Error::SetStringFmt(error, "Failed to load EXE file '{}'", Path::GetFileName(exe_boot));
     DestroySystem();
     return false;
   }
   else if (!psf_boot.empty() && !PSFLoader::Load(psf_boot.c_str()))
   {
-    Host::ReportFormattedErrorAsync("Error", "Failed to load PSF file '%s'", psf_boot.c_str());
+    Error::SetStringFmt(error, "Failed to load PSF file '{}'", Path::GetFileName(psf_boot));
     DestroySystem();
     return false;
   }
@@ -1509,17 +1516,16 @@ bool System::BootSystem(SystemBootParameters parameters)
   if (!parameters.save_state.empty())
   {
     std::unique_ptr<ByteStream> stream =
-      ByteStream::OpenFile(parameters.save_state.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
+      ByteStream::OpenFile(parameters.save_state.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED, error);
     if (!stream)
     {
-      Host::ReportErrorAsync(
-        TRANSLATE("System", "Error"),
-        fmt::format(TRANSLATE_FS("System", "Failed to load save state file '{}' for booting."), parameters.save_state));
+      Error::AddPrefixFmt(error, "Failed to load save state file '{}' for booting:\n",
+                          Path::GetFileName(parameters.save_state));
       DestroySystem();
       return false;
     }
 
-    if (!LoadStateFromStream(stream.get(), true))
+    if (!LoadStateFromStream(stream.get(), error, true))
     {
       DestroySystem();
       return false;
@@ -1974,13 +1980,16 @@ void System::IncrementInternalFrameNumber()
 
 void System::RecreateSystem()
 {
+  Error error;
   Assert(!IsShutdown());
 
   const bool was_paused = System::IsPaused();
   std::unique_ptr<ByteStream> stream = ByteStream::CreateGrowableMemoryStream(nullptr, 8 * 1024);
-  if (!System::SaveStateToStream(stream.get(), 0, SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE) || !stream->SeekAbsolute(0))
+  if (!System::SaveStateToStream(stream.get(), &error, 0, SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE) ||
+      !stream->SeekAbsolute(0))
   {
-    Host::ReportErrorAsync("Error", "Failed to save state before system recreation. Shutting down.");
+    Host::ReportErrorAsync(
+      "Error", fmt::format("Failed to save state before system recreation. Shutting down:\n", error.GetDescription()));
     DestroySystem();
     return;
   }
@@ -1988,13 +1997,13 @@ void System::RecreateSystem()
   DestroySystem();
 
   SystemBootParameters boot_params;
-  if (!BootSystem(std::move(boot_params)))
+  if (!BootSystem(std::move(boot_params), &error))
   {
-    Host::ReportErrorAsync("Error", "Failed to boot system after recreation.");
+    Host::ReportErrorAsync("Error", fmt::format("Failed to boot system after recreation:\n{}", error.GetDescription()));
     return;
   }
 
-  if (!LoadStateFromStream(stream.get(), false))
+  if (!LoadStateFromStream(stream.get(), &error, false))
   {
     DestroySystem();
     return;
@@ -2265,36 +2274,35 @@ std::string System::GetMediaPathFromSaveState(const char* path)
   return ret;
 }
 
-bool System::LoadStateFromStream(ByteStream* state, bool update_display, bool ignore_media)
+bool System::LoadStateFromStream(ByteStream* state, Error* error, bool update_display, bool ignore_media)
 {
   Assert(IsValid());
 
   SAVE_STATE_HEADER header;
-  if (!state->Read2(&header, sizeof(header)))
+  if (!state->Read2(&header, sizeof(header)) || header.magic != SAVE_STATE_MAGIC)
+  {
+    Error::SetStringView(error, "Incorrect file format.");
     return false;
-
-  if (header.magic != SAVE_STATE_MAGIC)
-    return false;
+  }
 
   if (header.version < SAVE_STATE_MINIMUM_VERSION)
   {
-    Host::ReportFormattedErrorAsync(
-      "Error", TRANSLATE("System", "Save state is incompatible: minimum version is %u but state is version %u."),
+    Error::SetStringFmt(
+      error, TRANSLATE_FS("System", "Save state is incompatible: minimum version is {0} but state is version {1}."),
       SAVE_STATE_MINIMUM_VERSION, header.version);
     return false;
   }
 
   if (header.version > SAVE_STATE_VERSION)
   {
-    Host::ReportFormattedErrorAsync(
-      "Error", TRANSLATE("System", "Save state is incompatible: maximum version is %u but state is version %u."),
+    Error::SetStringFmt(
+      error, TRANSLATE_FS("System", "Save state is incompatible: maximum version is {0} but state is version {1}."),
       SAVE_STATE_VERSION, header.version);
     return false;
   }
 
   if (!ignore_media)
   {
-    Error error;
     std::string media_filename;
     std::unique_ptr<CDImage> media;
     if (header.media_filename_length > 0)
@@ -2314,7 +2322,9 @@ bool System::LoadStateFromStream(ByteStream* state, bool update_display, bool ig
       }
       else
       {
-        media = CDImage::Open(media_filename.c_str(), g_settings.cdrom_load_image_patches, &error);
+        Error local_error;
+        media =
+          CDImage::Open(media_filename.c_str(), g_settings.cdrom_load_image_patches, error ? error : &local_error);
         if (!media)
         {
           if (old_media)
@@ -2322,17 +2332,16 @@ bool System::LoadStateFromStream(ByteStream* state, bool update_display, bool ig
             Host::AddOSDMessage(
               fmt::format(TRANSLATE_FS("OSDMessage", "Failed to open CD image from save state '{}': {}.\nUsing "
                                                      "existing image '{}', this may result in instability."),
-                          media_filename, error.GetDescription(), old_media->GetFileName()),
+                          media_filename, error ? error->GetDescription() : local_error.GetDescription(),
+                          old_media->GetFileName()),
               Host::OSD_CRITICAL_ERROR_DURATION);
             media = std::move(old_media);
             header.media_subimage_index = media->GetCurrentSubImage();
           }
           else
           {
-            Host::ReportErrorAsync(
-              TRANSLATE_SV("OSDMessage", "Error"),
-              fmt::format(TRANSLATE_FS("System", "Failed to open CD image '{}' used by save state: {}."),
-                          media_filename, error.GetDescription()));
+            Error::AddPrefixFmt(error, TRANSLATE_FS("System", "Failed to open CD image '{}' used by save state:\n"),
+                                Path::GetFileName(media_filename));
             return false;
           }
         }
@@ -2346,18 +2355,16 @@ bool System::LoadStateFromStream(ByteStream* state, bool update_display, bool ig
       const u32 num_subimages = media->HasSubImages() ? media->GetSubImageCount() : 1;
       if (header.media_subimage_index >= num_subimages ||
           (media->HasSubImages() && media->GetCurrentSubImage() != header.media_subimage_index &&
-           !media->SwitchSubImage(header.media_subimage_index, &error)))
+           !media->SwitchSubImage(header.media_subimage_index, error)))
       {
-        Host::ReportErrorAsync(
-          TRANSLATE_SV("OSDMessage", "Error"),
-          fmt::format(
-            TRANSLATE_FS("System", "Failed to switch to subimage {} in CD image '{}' used by save state: {}."),
-            header.media_subimage_index + 1u, media_filename, error.GetDescription()));
+        Error::AddPrefixFmt(
+          error, TRANSLATE_FS("System", "Failed to switch to subimage {} in CD image '{}' used by save state:\n"),
+          header.media_subimage_index + 1u, Path::GetFileName(media_filename));
         return false;
       }
       else
       {
-        Log_InfoPrintf("Switched to subimage %u in '%s'", header.media_subimage_index, media_filename.c_str());
+        Log_InfoFmt("Switched to subimage {} in '{}'", header.media_subimage_index, media_filename.c_str());
       }
     }
 
@@ -2391,18 +2398,24 @@ bool System::LoadStateFromStream(ByteStream* state, bool update_display, bool ig
   {
     StateWrapper sw(state, StateWrapper::Mode::Read, header.version);
     if (!DoState(sw, nullptr, update_display, false))
+    {
+      Error::SetStringView(error, "Save state stream is corrupted.");
       return false;
+    }
   }
   else if (header.data_compression_type == SAVE_STATE_HEADER::COMPRESSION_TYPE_ZSTD)
   {
     std::unique_ptr<ByteStream> dstream(ByteStream::CreateZstdDecompressStream(state, header.data_compressed_size));
     StateWrapper sw(dstream.get(), StateWrapper::Mode::Read, header.version);
     if (!DoState(sw, nullptr, update_display, false))
+    {
+      Error::SetStringView(error, "Save state stream is corrupted.");
       return false;
+    }
   }
   else
   {
-    Host::ReportFormattedErrorAsync("Error", "Unknown save state compression type %u", header.data_compression_type);
+    Error::SetStringFmt(error, "Unknown save state compression type {}", header.data_compression_type);
     return false;
   }
 
@@ -2415,7 +2428,7 @@ bool System::LoadStateFromStream(ByteStream* state, bool update_display, bool ig
   return true;
 }
 
-bool System::SaveStateToStream(ByteStream* state, u32 screenshot_size /* = 256 */,
+bool System::SaveStateToStream(ByteStream* state, Error* error, u32 screenshot_size /* = 256 */,
                                u32 compression_method /* = SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE*/,
                                bool ignore_media /* = false*/)
 {
@@ -4210,7 +4223,15 @@ void System::ShutdownSystem(bool save_resume_state)
     return;
 
   if (save_resume_state)
-    SaveResumeState();
+  {
+    Error error;
+    if (!SaveResumeState(&error))
+    {
+      Host::ReportErrorAsync(
+        TRANSLATE_SV("System", "Error"),
+        fmt::format(TRANSLATE_FS("System", "Failed to save resume state: {}"), error.GetDescription()));
+    }
+  }
 
   s_state = State::Stopping;
   if (!s_system_executing)
@@ -4245,10 +4266,12 @@ bool System::UndoLoadState()
 
   Assert(IsValid());
 
+  Error error;
   m_undo_load_state->SeekAbsolute(0);
-  if (!LoadStateFromStream(m_undo_load_state.get(), true))
+  if (!LoadStateFromStream(m_undo_load_state.get(), &error, true))
   {
-    Host::ReportErrorAsync("Error", "Failed to load undo state, resetting system.");
+    Host::ReportErrorAsync("Error",
+                           fmt::format("Failed to load undo state, resetting system:\n", error.GetDescription()));
     m_undo_load_state.reset();
     ResetSystem();
     return false;
@@ -4264,10 +4287,13 @@ bool System::SaveUndoLoadState()
   if (m_undo_load_state)
     m_undo_load_state.reset();
 
+  Error error;
   m_undo_load_state = ByteStream::CreateGrowableMemoryStream(nullptr, System::MAX_SAVE_STATE_SIZE);
-  if (!SaveStateToStream(m_undo_load_state.get()))
+  if (!SaveStateToStream(m_undo_load_state.get(), &error))
   {
-    Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Failed to save undo load state."), 15.0f);
+    Host::AddOSDMessage(
+      fmt::format(TRANSLATE_FS("OSDMessage", "Failed to save undo load state:\n{}"), error.GetDescription()),
+      Host::OSD_CRITICAL_ERROR_DURATION);
     m_undo_load_state.reset();
     return false;
   }

@@ -662,11 +662,12 @@ int main(int argc, char* argv[])
 
   RegTestHost::HookSignals();
 
+  Error error;
   int result = -1;
   Log_InfoPrintf("Trying to boot '%s'...", autoboot->filename.c_str());
-  if (!System::BootSystem(std::move(autoboot.value())))
+  if (!System::BootSystem(std::move(autoboot.value()), &error))
   {
-    Log_ErrorPrint("Failed to boot system.");
+    Log_ErrorFmt("Failed to boot system: {}", error.GetDescription());
     goto cleanup;
   }
 
