@@ -2141,7 +2141,6 @@ void ImGuiFullscreen::DrawFileSelector()
   ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBg, UIPrimaryDarkColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
-  ImGui::PushStyleColor(ImGuiCol_PopupBg, MulAlpha(UIBackgroundColor, 0.95f));
 
   bool is_open = !WantsToCloseMenu();
   bool directory_selected = false;
@@ -2182,7 +2181,7 @@ void ImGuiFullscreen::DrawFileSelector()
     is_open = false;
   }
 
-  ImGui::PopStyleColor(4);
+  ImGui::PopStyleColor(3);
   ImGui::PopStyleVar(3);
   ImGui::PopFont();
 
@@ -2270,7 +2269,6 @@ void ImGuiFullscreen::DrawChoiceDialog()
   ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBg, UIPrimaryDarkColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
-  ImGui::PushStyleColor(ImGuiCol_PopupBg, MulAlpha(UIBackgroundColor, 0.95f));
 
   const float width = LayoutScale(600.0f);
   const float title_height =
@@ -2339,7 +2337,7 @@ void ImGuiFullscreen::DrawChoiceDialog()
     is_open = false;
   }
 
-  ImGui::PopStyleColor(4);
+  ImGui::PopStyleColor(3);
   ImGui::PopStyleVar(3);
   ImGui::PopFont();
 
@@ -2394,7 +2392,6 @@ void ImGuiFullscreen::DrawInputDialog()
   ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBg, UIPrimaryDarkColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
-  ImGui::PushStyleColor(ImGuiCol_PopupBg, MulAlpha(UIBackgroundColor, 0.95f));
 
   bool is_open = true;
   if (ImGui::BeginPopupModal(s_input_dialog_title.c_str(), &is_open,
@@ -2450,7 +2447,7 @@ void ImGuiFullscreen::DrawInputDialog()
   else
     GetInputDialogHelpText(s_fullscreen_footer_text);
 
-  ImGui::PopStyleColor(4);
+  ImGui::PopStyleColor(3);
   ImGui::PopStyleVar(3);
   ImGui::PopFont();
 }
@@ -2551,7 +2548,6 @@ void ImGuiFullscreen::DrawMessageDialog()
   ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBg, UIPrimaryDarkColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
-  ImGui::PushStyleColor(ImGuiCol_PopupBg, MulAlpha(UIBackgroundColor, 0.95f));
 
   bool is_open = true;
   const u32 flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
@@ -2581,7 +2577,7 @@ void ImGuiFullscreen::DrawMessageDialog()
     ImGui::EndPopup();
   }
 
-  ImGui::PopStyleColor(4);
+  ImGui::PopStyleColor(3);
   ImGui::PopStyleVar(4);
   ImGui::PopFont();
 

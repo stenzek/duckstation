@@ -5596,7 +5596,6 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
         ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
         ImGui::PushStyleColor(ImGuiCol_TitleBg, UIPrimaryDarkColor);
         ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
-        ImGui::PushStyleColor(ImGuiCol_PopupBg, MulAlpha(UIBackgroundColor, 0.95f));
 
         const float width = LayoutScale(600.0f);
         const float title_height =
@@ -5680,7 +5679,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
             QueueResetFocus();
         }
 
-        ImGui::PopStyleColor(4);
+        ImGui::PopStyleColor(3);
         ImGui::PopStyleVar(3);
         ImGui::PopFont();
         ImGuiFullscreen::PopResetLayout();
