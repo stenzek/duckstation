@@ -4,7 +4,6 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)src;%(AdditionalIncludeDirectories);$(SolutionDir)dep\fast_float\include;$(SolutionDir)dep\fmt\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);FMT_EXCEPTIONS=0</PreprocessorDefinitions>
-      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
   </ItemDefinitionGroup>
 

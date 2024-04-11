@@ -223,17 +223,13 @@ endif()
 # Prevent fmt from being built with exceptions, or being thrown at call sites.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DFMT_EXCEPTIONS=0")
 
-# Use C++17 for building dependencies (some aren't C++20-aware, e.g. reshadefx).
-set(CMAKE_CXX_STANDARD 17)
+# Use C++20.
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Recursively include the source tree.
 include(DuckStationDependencies)
 add_subdirectory(dep)
-
-# Use C++20 for building the main libraries.
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_subdirectory(src)
 
 if(ANDROID)
