@@ -122,7 +122,8 @@ public:
   float GetAndResetAccumulatedGPUTime() override;
 
   bool BeginPresent(bool skip_present) override;
-  void EndPresent() override;
+  void EndPresent(bool explicit_present) override;
+  void SubmitPresent() override;
 
   // Global state accessors
   ALWAYS_INLINE static D3D12Device& GetInstance() { return *static_cast<D3D12Device*>(g_gpu_device.get()); }

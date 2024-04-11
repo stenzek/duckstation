@@ -207,7 +207,7 @@ void Host::DisplayLoadingScreen(const char* message, int progress_min /*= -1*/, 
   if (g_gpu_device->BeginPresent(false))
   {
     g_gpu_device->RenderImGui();
-    g_gpu_device->EndPresent();
+    g_gpu_device->EndPresent(false);
   }
 
   ImGui::NewFrame();

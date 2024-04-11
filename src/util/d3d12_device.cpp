@@ -1093,7 +1093,7 @@ bool D3D12Device::BeginPresent(bool frame_skip)
   return true;
 }
 
-void D3D12Device::EndPresent()
+void D3D12Device::EndPresent(bool explicit_present)
 {
   DebugAssert(InRenderPass() && m_num_current_render_targets == 0 && !m_current_depth_target);
   EndRenderPass();
@@ -1106,6 +1106,15 @@ void D3D12Device::EndPresent()
                                              D3D12_RESOURCE_STATE_PRESENT);
 
   SubmitCommandList(false);
+  TrimTexturePool();
+
+  if (!explicit_present)
+    SubmitPresent();
+}
+
+void D3D12Device::SubmitPresent()
+{
+  DebugAssert(m_swap_chain);
 
   // DirectX has no concept of tear-or-sync. I guess if we measured times ourselves, we could implement it.
   if (m_vsync_enabled)
@@ -1114,8 +1123,6 @@ void D3D12Device::EndPresent()
     m_swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
   else
     m_swap_chain->Present(0, 0);
-
-  TrimTexturePool();
 }
 
 #ifdef _DEBUG
@@ -1194,6 +1201,7 @@ void D3D12Device::SetFeatures(FeatureMask disabled_features)
   m_features.geometry_shaders = !(disabled_features & FEATURE_MASK_GEOMETRY_SHADERS);
   m_features.partial_msaa_resolve = true;
   m_features.memory_import = false;
+  m_features.explicit_present = true;
   m_features.gpu_timing = true;
   m_features.shader_cache = true;
   m_features.pipeline_cache = true;

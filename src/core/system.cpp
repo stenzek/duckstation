@@ -112,7 +112,7 @@ static void WarnAboutUnsafeSettings();
 static void LogUnsafeSettingsToConsole(const std::string& messages);
 
 /// Throttles the system, i.e. sleeps until it's time to execute the next frame.
-static void Throttle();
+static void Throttle(Common::Timer::Value current_time);
 
 static void SetRewinding(bool enabled);
 static bool SaveRewindState();
@@ -1861,23 +1861,34 @@ void System::FrameDone()
     SaveRunaheadState();
   }
 
-  // TODO: Kick cmdbuffer early
-  if (s_optimal_frame_pacing && s_throttler_enabled && !IsExecutionInterrupted())
-    Throttle();
-
   const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
   if (current_time < s_next_frame_time || s_syncing_to_host || s_optimal_frame_pacing || s_last_frame_skipped)
   {
-    s_last_frame_skipped = !PresentDisplay(true);
+    const bool throttle_before_present = (s_optimal_frame_pacing && s_throttler_enabled && !IsExecutionInterrupted());
+    const bool explicit_present = (throttle_before_present && g_gpu_device->GetFeatures().explicit_present);
+    if (explicit_present)
+    {
+      s_last_frame_skipped = !PresentDisplay(!throttle_before_present, true);
+      Throttle(current_time);
+      g_gpu_device->SubmitPresent();
+    }
+    else
+    {
+      if (throttle_before_present)
+        Throttle(current_time);
+
+      s_last_frame_skipped = !PresentDisplay(!throttle_before_present, false);
+
+      if (!throttle_before_present && s_throttler_enabled && !IsExecutionInterrupted())
+        Throttle(current_time);
+    }
   }
   else if (current_time >= s_next_frame_time)
   {
     Log_DebugPrintf("Skipping displaying frame");
     s_last_frame_skipped = true;
+    Throttle(current_time);
   }
-
-  if (!s_optimal_frame_pacing && s_throttler_enabled && !IsExecutionInterrupted())
-    Throttle();
 
   // Input poll already done above
   if (s_runahead_frames == 0)
@@ -1931,12 +1942,11 @@ void System::ResetThrottler()
   s_next_frame_time = Common::Timer::GetCurrentValue() + s_frame_period;
 }
 
-void System::Throttle()
+void System::Throttle(Common::Timer::Value current_time)
 {
   // If we're running too slow, advance the next frame time based on the time we lost. Effectively skips
   // running those frames at the intended time, because otherwise if we pause in the debugger, we'll run
   // hundreds of frames when we resume.
-  Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
   if (current_time > s_next_frame_time)
   {
     const Common::Timer::Value diff = static_cast<s64>(current_time) - static_cast<s64>(s_next_frame_time);
@@ -4108,7 +4118,7 @@ void System::DoRewind()
   Host::PumpMessagesOnCPUThread();
   Internal::IdlePollUpdate();
 
-  Throttle();
+  Throttle(Common::Timer::GetCurrentValue());
 }
 
 void System::SaveRunaheadState()
@@ -4803,7 +4813,7 @@ void System::HostDisplayResized()
   g_gpu->UpdateResolutionScale();
 }
 
-bool System::PresentDisplay(bool allow_skip_present)
+bool System::PresentDisplay(bool allow_skip_present, bool explicit_present)
 {
   const bool skip_present = allow_skip_present && g_gpu_device->ShouldSkipDisplayingFrame();
 
@@ -4835,7 +4845,7 @@ bool System::PresentDisplay(bool allow_skip_present)
   if (do_present)
   {
     g_gpu_device->RenderImGui();
-    g_gpu_device->EndPresent();
+    g_gpu_device->EndPresent(explicit_present);
 
     if (g_gpu_device->IsGPUTimingEnabled())
     {
@@ -4856,7 +4866,7 @@ bool System::PresentDisplay(bool allow_skip_present)
 
 void System::InvalidateDisplay()
 {
-  PresentDisplay(false);
+  PresentDisplay(false, false);
 
   if (g_gpu)
     g_gpu->RestoreDeviceContext();

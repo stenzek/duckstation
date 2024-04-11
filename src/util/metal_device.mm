@@ -241,6 +241,7 @@ void MetalDevice::SetFeatures(FeatureMask disabled_features)
   m_features.geometry_shaders = false;
   m_features.partial_msaa_resolve = false;
   m_features.memory_import = true;
+  m_features.explicit_present = false;
   m_features.shader_cache = true;
   m_features.pipeline_cache = false;
   m_features.prefer_unused_textures = true;
@@ -2206,8 +2207,11 @@ bool MetalDevice::BeginPresent(bool skip_present)
   }
 }
 
-void MetalDevice::EndPresent()
+void MetalDevice::EndPresent(bool explicit_present)
 {
+  DebugAssert(!explicit_present);
+
+  // TODO: Explicit present
   DebugAssert(m_num_current_render_targets == 0 && !m_current_depth_target);
   EndAnyEncoding();
 
@@ -2216,6 +2220,11 @@ void MetalDevice::EndPresent()
   m_layer_drawable = nil;
   SubmitCommandBuffer();
   TrimTexturePool();
+}
+
+void MetalDevice::SubmitPresent()
+{
+  Panic("Not supported by this API.");
 }
 
 void MetalDevice::CreateCommandBuffer()

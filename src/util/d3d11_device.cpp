@@ -190,6 +190,7 @@ void D3D11Device::SetFeatures(FeatureMask disabled_features)
   m_features.geometry_shaders = !(disabled_features & FEATURE_MASK_GEOMETRY_SHADERS);
   m_features.partial_msaa_resolve = false;
   m_features.memory_import = false;
+  m_features.explicit_present = false;
   m_features.gpu_timing = true;
   m_features.shader_cache = true;
   m_features.pipeline_cache = false;
@@ -644,8 +645,9 @@ bool D3D11Device::BeginPresent(bool skip_present)
   return true;
 }
 
-void D3D11Device::EndPresent()
+void D3D11Device::EndPresent(bool explicit_present)
 {
+  DebugAssert(!explicit_present);
   DebugAssert(m_num_current_render_targets == 0 && !m_current_depth_target);
 
   if (m_vsync_enabled && m_gpu_timing_enabled)
@@ -663,6 +665,11 @@ void D3D11Device::EndPresent()
     KickTimestampQuery();
 
   TrimTexturePool();
+}
+
+void D3D11Device::SubmitPresent()
+{
+  Panic("Not supported by this API.");
 }
 
 GPUDevice::AdapterAndModeList D3D11Device::StaticGetAdapterAndModeList()

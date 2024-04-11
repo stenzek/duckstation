@@ -1233,8 +1233,8 @@ void VulkanDevice::WaitForCommandBufferCompletion(u32 index)
   }
 }
 
-void VulkanDevice::SubmitCommandBuffer(VulkanSwapChain* present_swap_chain /* = nullptr */,
-                                       bool submit_on_thread /* = false */)
+void VulkanDevice::EndAndSubmitCommandBuffer(VulkanSwapChain* present_swap_chain, bool explicit_present,
+                                             bool submit_on_thread)
 {
   if (m_last_submit_failed.load(std::memory_order_acquire))
     return;
@@ -1272,10 +1272,10 @@ void VulkanDevice::SubmitCommandBuffer(VulkanSwapChain* present_swap_chain /* = 
   std::unique_lock<std::mutex> lock(m_present_mutex);
   WaitForPresentComplete(lock);
 
-  if (!submit_on_thread || !m_present_thread.joinable())
+  if (!submit_on_thread || explicit_present || !m_present_thread.joinable())
   {
     DoSubmitCommandBuffer(m_current_frame, present_swap_chain);
-    if (present_swap_chain)
+    if (present_swap_chain && !explicit_present)
       DoPresent(present_swap_chain);
     return;
   }
@@ -1471,7 +1471,7 @@ void VulkanDevice::SubmitCommandBuffer(bool wait_for_completion)
   DebugAssert(!InRenderPass());
 
   const u32 current_frame = m_current_frame;
-  SubmitCommandBuffer();
+  EndAndSubmitCommandBuffer(nullptr, false, false);
   MoveToNextCommandBuffer();
 
   if (wait_for_completion)
@@ -2409,7 +2409,7 @@ bool VulkanDevice::BeginPresent(bool frame_skip)
   return true;
 }
 
-void VulkanDevice::EndPresent()
+void VulkanDevice::EndPresent(bool explicit_present)
 {
   DebugAssert(InRenderPass() && m_num_current_render_targets == 0 && !m_current_depth_target);
   EndRenderPass();
@@ -2418,10 +2418,16 @@ void VulkanDevice::EndPresent()
   VulkanTexture::TransitionSubresourcesToLayout(cmdbuf, m_swap_chain->GetCurrentImage(), GPUTexture::Type::RenderTarget,
                                                 0, 1, 0, 1, VulkanTexture::Layout::ColorAttachment,
                                                 VulkanTexture::Layout::PresentSrc);
-  SubmitCommandBuffer(m_swap_chain.get(), !m_swap_chain->IsPresentModeSynchronizing());
+  EndAndSubmitCommandBuffer(m_swap_chain.get(), explicit_present, !m_swap_chain->IsPresentModeSynchronizing());
   MoveToNextCommandBuffer();
   InvalidateCachedState();
   TrimTexturePool();
+}
+
+void VulkanDevice::SubmitPresent()
+{
+  DebugAssert(m_swap_chain);
+  DoPresent(m_swap_chain.get());
 }
 
 #ifdef _DEBUG
@@ -2543,6 +2549,7 @@ bool VulkanDevice::CheckFeatures(FeatureMask disabled_features)
 
   m_features.partial_msaa_resolve = true;
   m_features.memory_import = m_optional_extensions.vk_ext_external_memory_host;
+  m_features.explicit_present = true;
   m_features.shader_cache = true;
   m_features.pipeline_cache = true;
   m_features.prefer_unused_textures = true;
@@ -3032,7 +3039,7 @@ void VulkanDevice::RenderBlankFrame()
   VulkanTexture::TransitionSubresourcesToLayout(cmdbuf, image, GPUTexture::Type::RenderTarget, 0, 1, 0, 1,
                                                 VulkanTexture::Layout::TransferDst, VulkanTexture::Layout::PresentSrc);
 
-  SubmitCommandBuffer(m_swap_chain.get(), !m_swap_chain->IsPresentModeSynchronizing());
+  EndAndSubmitCommandBuffer(m_swap_chain.get(), false, !m_swap_chain->IsPresentModeSynchronizing());
   MoveToNextCommandBuffer();
 
   InvalidateCachedState();

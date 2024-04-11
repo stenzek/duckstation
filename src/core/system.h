@@ -466,7 +466,7 @@ void RequestDisplaySize(float scale = 0.0f);
 void HostDisplayResized();
 
 /// Renders the display.
-bool PresentDisplay(bool allow_skip_present);
+bool PresentDisplay(bool allow_skip_present, bool explicit_present);
 void InvalidateDisplay();
 
 //////////////////////////////////////////////////////////////////////////

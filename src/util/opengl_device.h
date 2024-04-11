@@ -103,7 +103,8 @@ public:
   void SetVSyncEnabled(bool enabled) override;
 
   bool BeginPresent(bool skip_present) override;
-  void EndPresent() override;
+  void EndPresent(bool explicit_present) override;
+  void SubmitPresent() override;
 
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;

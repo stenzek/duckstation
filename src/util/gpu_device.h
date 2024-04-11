@@ -471,6 +471,7 @@ public:
     bool geometry_shaders : 1;
     bool partial_msaa_resolve : 1;
     bool memory_import : 1;
+    bool explicit_present : 1;
     bool gpu_timing : 1;
     bool shader_cache : 1;
     bool pipeline_cache : 1;
@@ -665,7 +666,8 @@ public:
 
   /// Returns false if the window was completely occluded.
   virtual bool BeginPresent(bool skip_present) = 0;
-  virtual void EndPresent() = 0;
+  virtual void EndPresent(bool explicit_submit) = 0;
+  virtual void SubmitPresent() = 0;
 
   /// Renders ImGui screen elements. Call before EndPresent().
   void RenderImGui();

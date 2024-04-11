@@ -268,7 +268,8 @@ public:
   void SetVSyncEnabled(bool enabled) override;
 
   bool BeginPresent(bool skip_present) override;
-  void EndPresent() override;
+  void EndPresent(bool explicit_submit) override;
+  void SubmitPresent() override;
 
   void WaitForFenceCounter(u64 counter);
 

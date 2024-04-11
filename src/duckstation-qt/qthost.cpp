@@ -1567,7 +1567,7 @@ void EmuThread::run()
       System::Internal::IdlePollUpdate();
       if (g_gpu_device)
       {
-        System::PresentDisplay(false);
+        System::PresentDisplay(false, false);
         if (!g_gpu_device->IsVSyncEnabled())
           g_gpu_device->ThrottlePresentation();
       }

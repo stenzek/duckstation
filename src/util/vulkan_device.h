@@ -131,7 +131,8 @@ public:
   void SetVSyncEnabled(bool enabled) override;
 
   bool BeginPresent(bool skip_present) override;
-  void EndPresent() override;
+  void EndPresent(bool explicit_present) override;
+  void SubmitPresent() override;
 
   // Global state accessors
   ALWAYS_INLINE static VulkanDevice& GetInstance() { return *static_cast<VulkanDevice*>(g_gpu_device.get()); }
@@ -306,7 +307,7 @@ private:
   bool IsDeviceImgTec() const;
   bool IsBrokenMobileDriver() const;
 
-  void SubmitCommandBuffer(VulkanSwapChain* present_swap_chain = nullptr, bool submit_on_thread = false);
+  void EndAndSubmitCommandBuffer(VulkanSwapChain* present_swap_chain, bool explicit_present, bool submit_on_thread);
   void MoveToNextCommandBuffer();
   void WaitForPresentComplete();
 
