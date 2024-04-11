@@ -3071,9 +3071,9 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                          if (static_cast<u32>(index) >= language_list.size())
                            return;
 
-                         ImGuiFullscreen::CloseChoiceDialog();
                          Host::RunOnCPUThread(
                            [language = language_list[index].second]() { Host::ChangeLanguage(language); });
+                         ImGuiFullscreen::CloseChoiceDialog();
                        });
     }
   }
