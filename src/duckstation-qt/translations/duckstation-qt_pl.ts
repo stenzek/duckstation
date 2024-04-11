@@ -1386,22 +1386,22 @@ Nieprzeczytane wiadomości: {}</translation>
 <context>
     <name>AudioBackend</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1624"/>
+        <location filename="../../core/settings.cpp" line="1584"/>
         <source>Null (No Output)</source>
         <translation>Null (brak wyjścia)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1626"/>
+        <location filename="../../core/settings.cpp" line="1586"/>
         <source>Cubeb</source>
         <translation>Cubeb</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1629"/>
+        <location filename="../../core/settings.cpp" line="1589"/>
         <source>SDL</source>
         <translation>SDL</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1632"/>
+        <location filename="../../core/settings.cpp" line="1592"/>
         <source>XAudio2</source>
         <translation>XAudio2</translation>
     </message>
@@ -1515,12 +1515,12 @@ Nieprzeczytane wiadomości: {}</translation>
     <message>
         <location filename="../audiosettingswidget.cpp" line="65"/>
         <source>The audio backend determines how frames produced by the emulator are submitted to the host. Cubeb provides the lowest latency, if you encounter issues, try the SDL backend. The null backend disables all host audio output.</source>
-        <translation>Sterownik audio określa, za pomocą jakiego interfejsu ramki produkowane przez emulator są przesyłane do hosta. Cubeb zapewnia najniższe opóźnienie, jeśli napotkasz problemy, wypróbuj sterownik SDL. Sterownik Null wyłącza wszystkie wyjścia audio hosta.</translation>
+        <translation>Sterownik audio określa, za pomocą jakiego interfejsu ramki produkowane przez emulator są przesyłane do gospodarza. Cubeb zapewnia najniższe opóźnienie, jeśli napotkasz problemy, wypróbuj sterownik SDL. Sterownik Null wyłącza wszystkie wyjścia audio gospodarza.</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="70"/>
         <source>The buffer size determines the size of the chunks of audio which will be pulled by the host. Smaller values reduce the output latency, but may cause hitches if the emulation speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of this value, so using a low value here may not significantly change latency.</source>
-        <translation>Rozmiar bufora określa rozmiar fragmentów audio, które będą pobierane przez hosta. Mniejsze wartości zmniejszają opóźnienie wyjściowe, ale mogą powodować zacięcia, jeśli prędkość emulacji jest nierówna. Zauważ, że sterownik Cubeb używa mniejszych fragmentów niezależnie od tej wartości, więc użycie niskiej wartości tutaj może nie zmienić znacząco opóźnienia.</translation>
+        <translation type="unfinished">Rozmiar bufora określa rozmiar fragmentów audio, które będą pobierane przez gospodarza. Mniejsze wartości zmniejszają opóźnienie wyjściowe, ale mogą powodować zacięcia, jeśli prędkość emulacji jest nierówna. Zauważ, że sterownik Cubeb używa mniejszych fragmentów niezależnie od tej wartości, więc użycie niskiej wartości tutaj może nie zmienić znacząco opóźnienia.</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="69"/>
@@ -1552,12 +1552,12 @@ Nieprzeczytane wiadomości: {}</translation>
     <message>
         <location filename="../audiosettingswidget.cpp" line="78"/>
         <source>Controls the volume of the audio played on the host.</source>
-        <translation>Ustawia głośność dźwięku odtwarzanego przez hosta.</translation>
+        <translation type="unfinished">Ustawia głośność dźwięku odtwarzanego przez gospodarza.</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="80"/>
         <source>Controls the volume of the audio played on the host when fast forwarding.</source>
-        <translation>Ustawia głośność dźwięku odtwarzanego przez hosta podczas szybkiego przewijania.</translation>
+        <translation type="unfinished">Ustawia głośność dźwięku odtwarzanego przez gospodarza podczas szybkiego przewijania.</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="87"/>
@@ -1833,22 +1833,22 @@ Nieprzeczytane wiadomości: {}</translation>
 <context>
     <name>CPUExecutionMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="940"/>
+        <location filename="../../core/settings.cpp" line="937"/>
         <source>Interpreter (Slowest)</source>
         <translation>Interpreter (Najwolniejszy)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="941"/>
+        <location filename="../../core/settings.cpp" line="938"/>
         <source>Cached Interpreter (Faster)</source>
         <translation>Buforowany interpreter (Szybszy)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="942"/>
+        <location filename="../../core/settings.cpp" line="939"/>
         <source>Recompiler (Fastest)</source>
         <translation>Rekompilator (Najszybszy)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="943"/>
+        <location filename="../../core/settings.cpp" line="940"/>
         <source>New Recompiler (Experimental)</source>
         <translation>Nowy rekompilator (Eksperymentalny)</translation>
     </message>
@@ -1856,17 +1856,17 @@ Nieprzeczytane wiadomości: {}</translation>
 <context>
     <name>CPUFastmemMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="971"/>
+        <location filename="../../core/settings.cpp" line="968"/>
         <source>Disabled (Slowest)</source>
         <translation>Wyłączone (Najwolniejsze)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="972"/>
+        <location filename="../../core/settings.cpp" line="969"/>
         <source>MMap (Hardware, Fastest, 64-Bit Only)</source>
         <translation>MMap (Sprzętowy, najszybszy, tylko 64-bitowy)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="973"/>
+        <location filename="../../core/settings.cpp" line="970"/>
         <source>LUT (Faster)</source>
         <translation>LUT (Szybciej)</translation>
     </message>
@@ -2133,22 +2133,22 @@ Nieprzeczytane wiadomości: {}</translation>
 <context>
     <name>ConsoleRegion</name>
     <message>
-        <location filename="../../core/settings.cpp" line="880"/>
+        <location filename="../../core/settings.cpp" line="877"/>
         <source>Auto-Detect</source>
         <translation>Automatyczne wykrywanie</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="880"/>
+        <location filename="../../core/settings.cpp" line="877"/>
         <source>NTSC-J (Japan)</source>
         <translation>NTSC-J (Japonia)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="881"/>
+        <location filename="../../core/settings.cpp" line="878"/>
         <source>NTSC-U/C (US, Canada)</source>
         <translation>NTSC-U/C (USA, Kanada)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="881"/>
+        <location filename="../../core/settings.cpp" line="878"/>
         <source>PAL (Europe, Australia)</source>
         <translation>PAL (Europa, Australia)</translation>
     </message>
@@ -3631,36 +3631,36 @@ Tej operacji nie można cofnąć.</translation>
 <context>
     <name>ControllerType</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1667"/>
+        <location filename="../../core/settings.cpp" line="1627"/>
         <source>None</source>
         <translation>Brak</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="184"/>
-        <location filename="../../core/settings.cpp" line="1668"/>
+        <location filename="../../core/settings.cpp" line="1628"/>
         <source>Digital Controller</source>
         <translation>Kontroler cyfrowy</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1669"/>
+        <location filename="../../core/settings.cpp" line="1629"/>
         <source>Analog Controller (DualShock)</source>
         <translation>Kontroler analogowy (DualShock)</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="411"/>
-        <location filename="../../core/settings.cpp" line="1670"/>
+        <location filename="../../core/settings.cpp" line="1630"/>
         <source>Analog Joystick</source>
         <translation>Joystick Analogowy</translation>
     </message>
     <message>
         <location filename="../../core/playstation_mouse.cpp" line="222"/>
-        <location filename="../../core/settings.cpp" line="1672"/>
+        <location filename="../../core/settings.cpp" line="1632"/>
         <source>PlayStation Mouse</source>
         <translation>Mysz PlayStation</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="345"/>
-        <location filename="../../core/settings.cpp" line="1673"/>
+        <location filename="../../core/settings.cpp" line="1633"/>
         <source>NeGcon</source>
         <translation>Kontroler Namco (NeGcon)</translation>
     </message>
@@ -3671,7 +3671,7 @@ Tej operacji nie można cofnąć.</translation>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="306"/>
-        <location filename="../../core/settings.cpp" line="1671"/>
+        <location filename="../../core/settings.cpp" line="1631"/>
         <source>GunCon</source>
         <translation>GunCon</translation>
     </message>
@@ -4336,27 +4336,27 @@ Ten plik może mieć kilka gigabajtów, więc pamiętaj o zużyciu dysku SSD.</t
 <context>
     <name>DiscRegion</name>
     <message>
-        <location filename="../../core/settings.cpp" line="909"/>
+        <location filename="../../core/settings.cpp" line="906"/>
         <source>NTSC-J (Japan)</source>
         <translation>NTSC-J (Japonia)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="909"/>
+        <location filename="../../core/settings.cpp" line="906"/>
         <source>NTSC-U/C (US, Canada)</source>
         <translation>NTSC-U/C (US, Kanada)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="910"/>
+        <location filename="../../core/settings.cpp" line="907"/>
         <source>PAL (Europe, Australia)</source>
         <translation>PAL (Europa, Australia)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="910"/>
+        <location filename="../../core/settings.cpp" line="907"/>
         <source>Other</source>
         <translation>Inne</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="911"/>
+        <location filename="../../core/settings.cpp" line="908"/>
         <source>Non-PS1</source>
         <translation>Nieprzenaczony dla systemu PlayStation 1</translation>
     </message>
@@ -4364,17 +4364,17 @@ Ten plik może mieć kilka gigabajtów, więc pamiętaj o zużyciu dysku SSD.</t
 <context>
     <name>DisplayAlignment</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1391"/>
+        <location filename="../../core/settings.cpp" line="1388"/>
         <source>Left / Top</source>
         <translation>Lewo / Góra</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1391"/>
+        <location filename="../../core/settings.cpp" line="1388"/>
         <source>Center</source>
         <translation>Środek</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1392"/>
+        <location filename="../../core/settings.cpp" line="1389"/>
         <source>Right / Bottom</source>
         <translation>Prawo / Dół</translation>
     </message>
@@ -4382,17 +4382,17 @@ Ten plik może mieć kilka gigabajtów, więc pamiętaj o zużyciu dysku SSD.</t
 <context>
     <name>DisplayAspectRatio</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1324"/>
+        <location filename="../../core/settings.cpp" line="1321"/>
         <source>Auto (Game Native)</source>
         <translation>Auto (natywne gry)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1325"/>
+        <location filename="../../core/settings.cpp" line="1322"/>
         <source>Stretch To Fill</source>
         <translation>Rozciągnij by wypełnić</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1326"/>
+        <location filename="../../core/settings.cpp" line="1323"/>
         <source>Custom</source>
         <translation>Niestandardowy</translation>
     </message>
@@ -4400,17 +4400,17 @@ Ten plik może mieć kilka gigabajtów, więc pamiętaj o zużyciu dysku SSD.</t
 <context>
     <name>DisplayCropMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1295"/>
+        <location filename="../../core/settings.cpp" line="1292"/>
         <source>None</source>
         <translation>Brak</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1295"/>
+        <location filename="../../core/settings.cpp" line="1292"/>
         <source>Only Overscan Area</source>
         <translation>Tylko obszar Overscan</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1296"/>
+        <location filename="../../core/settings.cpp" line="1293"/>
         <source>All Borders</source>
         <translation>Wszystkie ramki</translation>
     </message>
@@ -4418,22 +4418,22 @@ Ten plik może mieć kilka gigabajtów, więc pamiętaj o zużyciu dysku SSD.</t
 <context>
     <name>DisplayDeinterlacingMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1262"/>
+        <location filename="../../core/settings.cpp" line="1259"/>
         <source>Disabled (Flickering)</source>
         <translation>Wyłączone (Migocący)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1263"/>
+        <location filename="../../core/settings.cpp" line="1260"/>
         <source>Weave (Combing)</source>
         <translation>Splot (czesanie)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1264"/>
+        <location filename="../../core/settings.cpp" line="1261"/>
         <source>Blend (Blur)</source>
         <translation>Mieszanie (rozmycie)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1265"/>
+        <location filename="../../core/settings.cpp" line="1262"/>
         <source>Adaptive (FastMAD)</source>
         <translation>Adaptacyjne (FastMAD)</translation>
     </message>
@@ -4441,22 +4441,22 @@ Ten plik może mieć kilka gigabajtów, więc pamiętaj o zużyciu dysku SSD.</t
 <context>
     <name>DisplayScalingMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1425"/>
+        <location filename="../../core/settings.cpp" line="1422"/>
         <source>Nearest-Neighbor</source>
         <translation>Najbliższy-Sąsiadujący</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1426"/>
+        <location filename="../../core/settings.cpp" line="1423"/>
         <source>Bilinear (Smooth)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1427"/>
+        <location filename="../../core/settings.cpp" line="1424"/>
         <source>Nearest-Neighbor (Integer)</source>
         <translation>Najbliższy sąsiad</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1428"/>
+        <location filename="../../core/settings.cpp" line="1425"/>
         <source>Bilinear (Sharp)</source>
         <translation>Dwuliniowy (ostry)</translation>
     </message>
@@ -4487,64 +4487,64 @@ Ten plik może mieć kilka gigabajtów, więc pamiętaj o zużyciu dysku SSD.</t
 <context>
     <name>EmuThread</name>
     <message>
-        <location filename="../qthost.cpp" line="728"/>
-        <location filename="../qthost.cpp" line="742"/>
-        <location filename="../qthost.cpp" line="769"/>
-        <location filename="../qthost.cpp" line="1256"/>
-        <location filename="../qthost.cpp" line="1277"/>
+        <location filename="../qthost.cpp" line="736"/>
+        <location filename="../qthost.cpp" line="750"/>
+        <location filename="../qthost.cpp" line="777"/>
+        <location filename="../qthost.cpp" line="1264"/>
+        <location filename="../qthost.cpp" line="1285"/>
         <source>Error</source>
         <translation>Błąd</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="729"/>
+        <location filename="../qthost.cpp" line="737"/>
         <source>Failed to boot system: %1</source>
         <translation>Nie udało się uruchomić systemu: %1</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="743"/>
+        <location filename="../qthost.cpp" line="751"/>
         <source>Failed to load state: %1</source>
         <translation>NIe udało się wczytać stanu: %1</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="769"/>
+        <location filename="../qthost.cpp" line="777"/>
         <source>No resume save state found.</source>
         <translation>Nie znaleziono zapisu do automatycznego wczytania.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1256"/>
-        <location filename="../qthost.cpp" line="1277"/>
+        <location filename="../qthost.cpp" line="1264"/>
+        <location filename="../qthost.cpp" line="1285"/>
         <source>Failed to save state: %1</source>
         <translation>NIe udało się wczytać stanu: %1</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1430"/>
+        <location filename="../qthost.cpp" line="1438"/>
         <source>Game: %1 (%2)
 </source>
         <translation>Gra: %1 (%2)
 </translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1438"/>
+        <location filename="../qthost.cpp" line="1446"/>
         <source>Rich presence inactive or unsupported.</source>
         <translation>Rich presence wyłączony lub niewspierany.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1442"/>
+        <location filename="../qthost.cpp" line="1450"/>
         <source>Game not loaded or no RetroAchievements available.</source>
         <translation>Nie wczytano gry lub brak dostępnych RetroAchievementów.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1766"/>
+        <location filename="../qthost.cpp" line="1774"/>
         <source>%1x%2</source>
         <translation>%1x%2</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1775"/>
+        <location filename="../qthost.cpp" line="1783"/>
         <source>Game: %1 FPS</source>
         <translation>Gra: %1 FPS</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1785"/>
+        <location filename="../qthost.cpp" line="1793"/>
         <source>Video: %1 FPS (%2%)</source>
         <translation>Video: %1 FPS (%2%)</translation>
     </message>
@@ -4573,207 +4573,219 @@ Ten plik może mieć kilka gigabajtów, więc pamiętaj o zużyciu dysku SSD.</t
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="67"/>
-        <location filename="../emulationsettingswidget.cpp" line="91"/>
-        <source>Sync To Host Refresh Rate</source>
-        <translation>Synchronizuj z częstotliwością odświeżania hosta</translation>
+        <location filename="../emulationsettingswidget.cpp" line="93"/>
+        <source>Display Vertical Sync (VSync)</source>
+        <translation>Wyświetl synchronizację pionową wyświetlacza (VSync)</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="74"/>
-        <location filename="../emulationsettingswidget.cpp" line="97"/>
-        <source>Optimal Frame Pacing</source>
-        <translation>Optymalny Frame Pacing</translation>
+        <location filename="../emulationsettingswidget.cpp" line="98"/>
+        <source>Sync To Host Refresh Rate</source>
+        <translation>Synchronizuj z częstotliwością odświeżania gospodarza</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="86"/>
+        <location filename="../emulationsettingswidget.ui" line="81"/>
+        <location filename="../emulationsettingswidget.cpp" line="105"/>
+        <source>Optimal Frame Pacing</source>
+        <translation>Optymalne tempo klatek</translation>
+    </message>
+    <message>
+        <location filename="../emulationsettingswidget.ui" line="93"/>
         <source>Rewind/Runahead</source>
         <translation>Przewijanie/przyśpieszenie</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="92"/>
+        <location filename="../emulationsettingswidget.ui" line="99"/>
         <source>Enable Rewinding</source>
         <translation>Włącz przewijanie do tyłu</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="99"/>
+        <location filename="../emulationsettingswidget.ui" line="106"/>
         <source>Rewind Save Frequency:</source>
         <translation>Częstotliwość zapisów przewijania do tyłu:</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="106"/>
+        <location filename="../emulationsettingswidget.ui" line="113"/>
         <source> Seconds</source>
         <translation> sekund</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="119"/>
+        <location filename="../emulationsettingswidget.ui" line="126"/>
         <source>Rewind Buffer Size:</source>
         <translation>Wielkość bufora przewijania:</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="126"/>
+        <location filename="../emulationsettingswidget.ui" line="133"/>
         <source> Frames</source>
         <translation> klatek</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="139"/>
+        <location filename="../emulationsettingswidget.ui" line="146"/>
         <source>Runahead:</source>
         <translation>Przyśpieszenie:</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="147"/>
-        <location filename="../emulationsettingswidget.cpp" line="109"/>
+        <location filename="../emulationsettingswidget.ui" line="154"/>
+        <location filename="../emulationsettingswidget.cpp" line="117"/>
         <source>Disabled</source>
         <translation>Wyłączony</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="152"/>
+        <location filename="../emulationsettingswidget.ui" line="159"/>
         <source>1 Frame</source>
         <translation>1 klatka</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="157"/>
+        <location filename="../emulationsettingswidget.ui" line="164"/>
         <source>2 Frames</source>
         <translation>2 klatki</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="162"/>
+        <location filename="../emulationsettingswidget.ui" line="169"/>
         <source>3 Frames</source>
         <translation>3 klatki</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="167"/>
+        <location filename="../emulationsettingswidget.ui" line="174"/>
         <source>4 Frames</source>
         <translation>4 klatki</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="172"/>
+        <location filename="../emulationsettingswidget.ui" line="179"/>
         <source>5 Frames</source>
         <translation>5 klatek</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="177"/>
+        <location filename="../emulationsettingswidget.ui" line="184"/>
         <source>6 Frames</source>
         <translation>6 klatek</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="182"/>
+        <location filename="../emulationsettingswidget.ui" line="189"/>
         <source>7 Frames</source>
         <translation>7 klatek</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="187"/>
+        <location filename="../emulationsettingswidget.ui" line="194"/>
         <source>8 Frames</source>
         <translation>8 klatek</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="192"/>
+        <location filename="../emulationsettingswidget.ui" line="199"/>
         <source>9 Frames</source>
         <translation>9 klatek</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="197"/>
+        <location filename="../emulationsettingswidget.ui" line="204"/>
         <source>10 Frames</source>
         <translation>10 klatek</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="205"/>
+        <location filename="../emulationsettingswidget.ui" line="212"/>
         <source>TextLabel</source>
         <translation>TextLabel</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="80"/>
+        <location filename="../emulationsettingswidget.cpp" line="82"/>
         <source>Emulation Speed</source>
         <translation>Prędkość emulacji</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="81"/>
+        <location filename="../emulationsettingswidget.cpp" line="83"/>
         <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached, and if not, the emulator will run as fast as it can manage.</source>
         <translation>Ustawia docelową prędkość emulacji. Nie ma gwarancji, że ta prędkość zostanie osiągnięta, a jeśli nie, emulator będzie działał tak szybko, jak tylko może.</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="84"/>
+        <location filename="../emulationsettingswidget.cpp" line="86"/>
         <source>Fast Forward Speed</source>
         <translation>Prędkość szybkiego przewijania</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="84"/>
-        <location filename="../emulationsettingswidget.cpp" line="87"/>
+        <location filename="../emulationsettingswidget.cpp" line="86"/>
+        <location filename="../emulationsettingswidget.cpp" line="89"/>
         <source>User Preference</source>
         <translation>Preferencja Użytkownika</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="85"/>
+        <location filename="../emulationsettingswidget.cpp" line="87"/>
         <source>Sets the fast forward speed. This speed will be used when the fast forward hotkey is pressed/toggled.</source>
         <translation>Ustawia docelową prędkość szybkiego przewijania. Prędkość ta zostanie zastosowana po wciśnięciu przycisku szybkiego przewijania.</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="87"/>
+        <location filename="../emulationsettingswidget.cpp" line="89"/>
         <source>Turbo Speed</source>
         <translation>Prędkość Turbo</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="88"/>
+        <location filename="../emulationsettingswidget.cpp" line="90"/>
         <source>Sets the turbo speed. This speed will be used when the turbo hotkey is pressed/toggled. Turboing will take priority over fast forwarding if both hotkeys are pressed/toggled.</source>
         <translation>Ustawia docelową prędkość turbo.  Prędkość ta zostanie zastosowana po wciśnięciu przycisku turbo. W przypadku wciśnięcia jednocześnie klawiszy szybkiego przewijania oraz turbo, priorytet ma prędkość turbo.</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="91"/>
-        <location filename="../emulationsettingswidget.cpp" line="97"/>
-        <location filename="../emulationsettingswidget.cpp" line="102"/>
+        <location filename="../emulationsettingswidget.cpp" line="93"/>
+        <location filename="../emulationsettingswidget.cpp" line="98"/>
+        <location filename="../emulationsettingswidget.cpp" line="105"/>
+        <location filename="../emulationsettingswidget.cpp" line="110"/>
         <source>Unchecked</source>
         <translation>Niezaznaczone</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="92"/>
+        <location filename="../emulationsettingswidget.cpp" line="94"/>
+        <source>Synchronizes presentation of the console&apos;s frames to the host. Enabling may result in smoother animations, at the cost of increased input lag. &lt;strong&gt;GSync/FreeSync users should enable Optimal Frame Pacing instead.&lt;/strong&gt;</source>
+        <translation>Synchronizuje wyświetlanie klatek konsoli z gospodarzem. Włączenie tej opcji, może spowodować płynniejsze animację kosztem zwiększonego opóźnienia wejściowego. &lt;strong&gt;Użytkownicy GSync/FreeSync powinni zamiast tego włączyć &apos;Optymalne tempo klatek&apos;.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <location filename="../emulationsettingswidget.cpp" line="99"/>
         <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when both VSync and Audio Resampling settings are enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation>Koryguje prędkość emulacji, by dostosować częstotliwość odświeżania konsoli do częstotliwości odświeżania hosta, gdy opcje Synchronizacja Pionowa oraz Resampling Audio są włączone. Skutkuje to najlepszą możliwą płynnością animacji, kosztem przyspieszenia prędkości emulacji o mniej niż 1%. Do synchronizacji częstotliwości odświeżania nie dojdzie, jeśli częstotliwość odświeżania konsoli różni się zbytnio od częstotliwości odświeżania hosta. Użytkownicy używający monitorów o zmiennej częstotliwości odświeżania powinni wyłączyć tę opcję.</translation>
+        <translation type="unfinished">Koryguje prędkość emulacji, by dostosować częstotliwość odświeżania konsoli do częstotliwości odświeżania gospodarza, gdy opcje Synchronizacja pionowa oraz Resampling Audio są włączone. Skutkuje to najlepszą możliwą płynnością animacji, kosztem przyspieszenia prędkości emulacji o mniej niż 1%. Do synchronizacji częstotliwości odświeżania nie dojdzie, jeśli częstotliwość odświeżania konsoli różni się zbytnio od częstotliwości odświeżania hosta. Użytkownicy używający monitorów o zmiennej częstotliwości odświeżania powinni wyłączyć tę opcję.</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="98"/>
-        <source>Enabling this option will ensure every frame the console renders is displayed to the screen, for optimal frame pacing. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
-        <translation>Włączenie tej opcji sprawi, że każda klatka renderowana przez konsolę zostanie wyświetlona na ekranie, co zapewni optymalne tempo klatek. Jeśli masz problemy z utrzymaniem pełnej prędkości lub występują zakłócenia dźwięku, spróbuj wyłączyć tę opcję.</translation>
+        <location filename="../emulationsettingswidget.cpp" line="106"/>
+        <source>Enabling this option will ensure every frame the console renders is displayed to the screen, at a consistent rate, for optimal frame pacing. If you have a GSync/FreeSync display, enable this option. If you are having difficulties maintaining full speed, or are getting audio glitches, try disabling this option.</source>
+        <translation>Włączenie tej opcji zapewni, że każda klatka renderowana przez konsolę będzie wyświetlana na ekranie ze stałą szybkością i optymalnym tempem klatek. Jeśli masz wyświetlacz GSync/FreeSync, włącz tę opcję. Jeśli masz problemy z utrzymaniem pełnej prędkości lub występują zakłócenia dźwięku, spróbuj wyłączyć tę opcję.</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="102"/>
+        <location filename="../emulationsettingswidget.cpp" line="110"/>
         <source>Rewinding</source>
         <translation>Przewijanie do tyłu</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="103"/>
+        <location filename="../emulationsettingswidget.cpp" line="111"/>
         <source>&lt;b&gt;Enable Rewinding:&lt;/b&gt; Saves state periodically so you can rewind any mistakes while playing.&lt;br&gt; &lt;b&gt;Rewind Save Frequency:&lt;/b&gt; How often a rewind state will be created. Higher frequencies have greater system requirements.&lt;br&gt; &lt;b&gt;Rewind Buffer Size:&lt;/b&gt; How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
         <translation>&lt;b&gt;Włącz przewijanie do tyłu:&lt;/b&gt; Okresowo zapisuje stan, umożliwiając na przewinięcie pomyłek podczas gry.&lt;br&gt;&lt;b&gt;Częstotliwość zapisów przewijania:&lt;/b&gt; Określa odstęp czasu między zapisami stanu. Częstsze zapisy zwiększają wymagania sprzętowe.&lt;br&gt;&lt;b&gt;Wielkość bufora przewijania:&lt;/b&gt; Przechowywana ilość zapisów stanu. Wyższe wartości zwiększają wymagania sprzętowe.</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="109"/>
+        <location filename="../emulationsettingswidget.cpp" line="117"/>
         <source>Runahead</source>
         <translation>Przyśpieszenie</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="110"/>
+        <location filename="../emulationsettingswidget.cpp" line="118"/>
         <source>Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.</source>
         <translation>Symuluje system z wyprzedzeniem i następnie przywraca w celu zmniejszenia czasu reakcji. Bardzo wysokie wymagania sprzętowe.</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="123"/>
+        <location filename="../emulationsettingswidget.cpp" line="132"/>
         <source>Use Global Setting [Unlimited]</source>
         <translation>Użyj globalnych ustawień [bez limitu]</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="125"/>
+        <location filename="../emulationsettingswidget.cpp" line="134"/>
         <source>Use Global Setting [%1%]</source>
         <translation>Użyj globalnych ustawień [%1]</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="128"/>
+        <location filename="../emulationsettingswidget.cpp" line="137"/>
         <source>Unlimited</source>
         <translation>Nieograniczona</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="134"/>
+        <location filename="../emulationsettingswidget.cpp" line="143"/>
         <source>%1% [%2 FPS (NTSC) / %3 FPS (PAL)]</source>
         <translation>%1% [%2 FPS (NTSC) / %3 FPS (PAL)]</translation>
     </message>
     <message numerus="yes">
-        <location filename="../emulationsettingswidget.cpp" line="196"/>
+        <location filename="../emulationsettingswidget.cpp" line="211"/>
         <source>Rewind for %n frame(s), lasting %1 second(s) will require up to %2MB of RAM and %3MB of VRAM.</source>
         <translation>
             <numerusform>Przewijanie do tyłu %n klatki, trwające %1 sekund wymaga do %2MB pamięci RAM i %3MB pamięci VRAM.</numerusform>
@@ -4782,12 +4794,12 @@ Ten plik może mieć kilka gigabajtów, więc pamiętaj o zużyciu dysku SSD.</t
         </translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="207"/>
+        <location filename="../emulationsettingswidget.cpp" line="222"/>
         <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
         <translation>Przewijanie do tyłu jest wyłączone, ponieważ runahead jest włączony. Runahead znacząco zwiększa wymagania sprzętowe.</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.cpp" line="213"/>
+        <location filename="../emulationsettingswidget.cpp" line="228"/>
         <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
         <translation>Przewijanie do tyłu jest wyłączone. Proszę zwrócić uwagę, że włączenie przewijania do tyłu może znacząco zwiększyć wymagania sprzętowe.</translation>
     </message>
@@ -8110,17 +8122,17 @@ Spowodowany błąd:</translation>
 <context>
     <name>GPUDownsampleMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1198"/>
+        <location filename="../../core/settings.cpp" line="1195"/>
         <source>Disabled</source>
         <translation>Wyłączone</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1199"/>
+        <location filename="../../core/settings.cpp" line="1196"/>
         <source>Box (Downsample 3D/Smooth All)</source>
         <translation>Box Pudełkowe (Downsample 3D/Wygładź wszystko)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1200"/>
+        <location filename="../../core/settings.cpp" line="1197"/>
         <source>Adaptive (Preserve 3D/Smooth 2D)</source>
         <translation>Adaptacyjne (Zachowaj 3D / Wygładź 2D)</translation>
     </message>
@@ -8128,22 +8140,22 @@ Spowodowany błąd:</translation>
 <context>
     <name>GPULineDetectMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1166"/>
+        <location filename="../../core/settings.cpp" line="1163"/>
         <source>Disabled</source>
         <translation>Wyłączone</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1167"/>
+        <location filename="../../core/settings.cpp" line="1164"/>
         <source>Quads</source>
         <translation>Quady</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1168"/>
+        <location filename="../../core/settings.cpp" line="1165"/>
         <source>Triangles (Basic)</source>
         <translation>Trójkąty (Podstawowe)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1169"/>
+        <location filename="../../core/settings.cpp" line="1166"/>
         <source>Triangles (Aggressive)</source>
         <translation>Trójkąty (Agresywne)</translation>
     </message>
@@ -8151,38 +8163,38 @@ Spowodowany błąd:</translation>
 <context>
     <name>GPURenderer</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1016"/>
+        <location filename="../../core/settings.cpp" line="1013"/>
         <source>Automatic</source>
         <translation>Automatyczne</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1018"/>
+        <location filename="../../core/settings.cpp" line="1015"/>
         <source>Direct3D 11</source>
         <translation>Direct3D 11</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1018"/>
+        <location filename="../../core/settings.cpp" line="1015"/>
         <source>Direct3D 12</source>
         <translation>Direct3D 12</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1021"/>
+        <location filename="../../core/settings.cpp" line="1018"/>
         <source>Metal</source>
         <translation>Metal</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1024"/>
+        <location filename="../../core/settings.cpp" line="1021"/>
         <source>Vulkan</source>
         <translation>Vulkan</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1027"/>
+        <location filename="../../core/settings.cpp" line="1024"/>
         <source>OpenGL</source>
         <translation>OpenGL</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="1757"/>
-        <location filename="../../core/settings.cpp" line="1029"/>
+        <location filename="../qthost.cpp" line="1765"/>
+        <location filename="../../core/settings.cpp" line="1026"/>
         <source>Software</source>
         <translation>Programowy</translation>
     </message>
@@ -8190,37 +8202,37 @@ Spowodowany błąd:</translation>
 <context>
     <name>GPUTextureFilter</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1126"/>
+        <location filename="../../core/settings.cpp" line="1123"/>
         <source>Nearest-Neighbor</source>
         <translation>Najbliższy-Sąsiadujący</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1127"/>
+        <location filename="../../core/settings.cpp" line="1124"/>
         <source>Bilinear</source>
         <translation>Dwuliniowe</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1128"/>
+        <location filename="../../core/settings.cpp" line="1125"/>
         <source>Bilinear (No Edge Blending)</source>
         <translation>Dwuliniowe (bez łączenia krawędzi)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1129"/>
+        <location filename="../../core/settings.cpp" line="1126"/>
         <source>JINC2 (Slow)</source>
         <translation>JINC2 (Wolny)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1130"/>
+        <location filename="../../core/settings.cpp" line="1127"/>
         <source>JINC2 (Slow, No Edge Blending)</source>
         <translation>JINC2 (Wolny, bez łączenia krawędzi)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1131"/>
+        <location filename="../../core/settings.cpp" line="1128"/>
         <source>xBR (Very Slow)</source>
         <translation>xBR (Bardzo wolny)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1132"/>
+        <location filename="../../core/settings.cpp" line="1129"/>
         <source>xBR (Very Slow, No Edge Blending)</source>
         <translation>xBR (Bardzo wolny, bez łączenia krawędzi)</translation>
     </message>
@@ -8228,17 +8240,17 @@ Spowodowany błąd:</translation>
 <context>
     <name>GPUWireframeMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1228"/>
+        <location filename="../../core/settings.cpp" line="1225"/>
         <source>Disabled</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1228"/>
+        <location filename="../../core/settings.cpp" line="1225"/>
         <source>Overlay Wireframe</source>
         <translation>Nakładka szkieletowa</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1229"/>
+        <location filename="../../core/settings.cpp" line="1226"/>
         <source>Only Wireframe</source>
         <translation>Tylko model szkieletowy</translation>
     </message>
@@ -8925,7 +8937,7 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="200"/>
-        <location filename="../graphicssettingswidget.ui" line="986"/>
+        <location filename="../graphicssettingswidget.ui" line="976"/>
         <source>x</source>
         <translation>x</translation>
     </message>
@@ -8945,1022 +8957,1006 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
         <translation>:</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="266"/>
+        <location filename="../graphicssettingswidget.ui" line="276"/>
         <source>Crop:</source>
         <translation>Kadrowanie:</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="276"/>
+        <location filename="../graphicssettingswidget.ui" line="286"/>
         <source>Scaling:</source>
         <translation>Skalowanie:</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="286"/>
-        <source>VSync:</source>
-        <translation>Synchronizacja pionowa:</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="298"/>
-        <location filename="../graphicssettingswidget.cpp" line="303"/>
+        <location filename="../graphicssettingswidget.ui" line="347"/>
+        <location filename="../graphicssettingswidget.cpp" line="297"/>
         <source>PGXP Geometry Correction</source>
         <translation>Korecja geometryczna PGXP</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="305"/>
-        <location filename="../graphicssettingswidget.cpp" line="292"/>
+        <location filename="../graphicssettingswidget.ui" line="326"/>
+        <location filename="../graphicssettingswidget.cpp" line="286"/>
         <source>True Color Rendering</source>
         <translation>Renderowanie True Color</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="312"/>
+        <location filename="../graphicssettingswidget.ui" line="298"/>
         <source>PGXP Depth Buffer (Low Compatibility)</source>
         <translation>Bufor głębi PGXP (niska kompatybilność)</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="319"/>
-        <location filename="../graphicssettingswidget.cpp" line="311"/>
+        <location filename="../graphicssettingswidget.cpp" line="305"/>
         <source>Force 4:3 For FMVs</source>
         <translation>Wymuś 4:3 dla FMV</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="326"/>
-        <location filename="../graphicssettingswidget.cpp" line="313"/>
+        <location filename="../graphicssettingswidget.ui" line="333"/>
+        <location filename="../graphicssettingswidget.cpp" line="307"/>
         <source>FMV Chroma Smoothing</source>
         <translation>Wygładzanie chromatyczne dla FMV</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="333"/>
-        <location filename="../graphicssettingswidget.cpp" line="316"/>
+        <location filename="../graphicssettingswidget.ui" line="305"/>
+        <location filename="../graphicssettingswidget.cpp" line="310"/>
         <source>Disable Interlacing</source>
         <translation>Wyłącz przeplot</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="340"/>
-        <location filename="../graphicssettingswidget.cpp" line="299"/>
+        <location filename="../graphicssettingswidget.cpp" line="293"/>
         <source>Widescreen Rendering</source>
         <translation>Renderowanie panoramiczne</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="347"/>
-        <location filename="../graphicssettingswidget.cpp" line="322"/>
+        <location filename="../graphicssettingswidget.ui" line="312"/>
+        <location filename="../graphicssettingswidget.cpp" line="316"/>
         <source>Force NTSC Timings</source>
         <translation>Wymuś taktowanie NTSC</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="356"/>
+        <location filename="../graphicssettingswidget.ui" line="266"/>
         <source>Deinterlacing:</source>
         <translation>Usuwanie przeplotu:</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="383"/>
+        <location filename="../graphicssettingswidget.ui" line="373"/>
         <source>Advanced</source>
         <translation>Zaawansowane</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="398"/>
+        <location filename="../graphicssettingswidget.ui" line="388"/>
         <source>Display Options</source>
         <translation>Ustawienia wyświetlania</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="404"/>
+        <location filename="../graphicssettingswidget.ui" line="394"/>
         <source>Exclusive Fullscreen:</source>
         <translation>Ekskluzywny pełny ekran:</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="421"/>
+        <location filename="../graphicssettingswidget.ui" line="411"/>
         <source>Screen Position:</source>
         <translation>Pozycja ekranu:</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="431"/>
+        <location filename="../graphicssettingswidget.ui" line="421"/>
         <source>Display FPS Limit:</source>
         <translation>Wyświetl limit klatek:</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="443"/>
-        <location filename="../graphicssettingswidget.cpp" line="341"/>
+        <location filename="../graphicssettingswidget.ui" line="454"/>
+        <location filename="../graphicssettingswidget.cpp" line="335"/>
         <source>Threaded Rendering</source>
         <translation>Renderowanie wątkowe</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="450"/>
-        <location filename="../graphicssettingswidget.cpp" line="344"/>
+        <location filename="../graphicssettingswidget.ui" line="447"/>
+        <location filename="../graphicssettingswidget.cpp" line="338"/>
         <source>Threaded Presentation</source>
         <translation>Prezentacja wątkowa</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="457"/>
-        <location filename="../graphicssettingswidget.cpp" line="351"/>
+        <location filename="../graphicssettingswidget.ui" line="433"/>
+        <location filename="../graphicssettingswidget.cpp" line="345"/>
         <source>Use Blit Swap Chain</source>
         <translation>Użyj łańcucha podmiany Blit</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="464"/>
-        <location filename="../graphicssettingswidget.cpp" line="348"/>
+        <location filename="../graphicssettingswidget.ui" line="440"/>
+        <location filename="../graphicssettingswidget.cpp" line="342"/>
         <source>Stretch Vertically</source>
         <translation>Rozciągnij w pionie</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="476"/>
-        <location filename="../graphicssettingswidget.ui" line="1040"/>
+        <location filename="../graphicssettingswidget.ui" line="466"/>
+        <location filename="../graphicssettingswidget.ui" line="1030"/>
         <source>Rendering Options</source>
         <translation>Ustawienia renderowania</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="482"/>
+        <location filename="../graphicssettingswidget.ui" line="472"/>
         <source>Line Detection:</source>
         <translation>Wykrywanie linii:</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="494"/>
-        <location filename="../graphicssettingswidget.cpp" line="372"/>
+        <location filename="../graphicssettingswidget.ui" line="491"/>
+        <location filename="../graphicssettingswidget.cpp" line="366"/>
         <source>Scaled Dithering</source>
         <translation>Skalowane rozpraszanie</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="501"/>
-        <location filename="../graphicssettingswidget.cpp" line="366"/>
+        <location filename="../graphicssettingswidget.ui" line="484"/>
+        <location filename="../graphicssettingswidget.cpp" line="360"/>
         <source>True Color Debanding</source>
         <translation>Depasmowanie prawdziwych kolorów</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="508"/>
-        <location filename="../graphicssettingswidget.cpp" line="376"/>
+        <location filename="../graphicssettingswidget.ui" line="498"/>
+        <location filename="../graphicssettingswidget.cpp" line="370"/>
         <source>Software Renderer Readbacks</source>
         <translation>Programowe renderowanie jako &quot;wsparcie&quot;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="517"/>
+        <location filename="../graphicssettingswidget.ui" line="507"/>
         <source>Multi-Sampling:</source>
         <translation>Wielopróbkowanie:</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="544"/>
+        <location filename="../graphicssettingswidget.ui" line="534"/>
         <source>PGXP</source>
         <translation>PGXP</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="568"/>
+        <location filename="../graphicssettingswidget.ui" line="558"/>
         <source>Geometry Tolerance:</source>
         <translation>Tolerancja geometryczna:</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="578"/>
-        <location filename="../graphicssettingswidget.ui" line="973"/>
-        <location filename="../graphicssettingswidget.ui" line="993"/>
+        <location filename="../graphicssettingswidget.ui" line="568"/>
+        <location filename="../graphicssettingswidget.ui" line="963"/>
+        <location filename="../graphicssettingswidget.ui" line="983"/>
         <source>px</source>
         <translation>px</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="597"/>
+        <location filename="../graphicssettingswidget.ui" line="587"/>
         <source>Depth Clear Threshold:</source>
         <translation>Próg czyszczenia głębi:</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="613"/>
-        <location filename="../graphicssettingswidget.cpp" line="390"/>
+        <location filename="../graphicssettingswidget.ui" line="603"/>
+        <location filename="../graphicssettingswidget.cpp" line="384"/>
         <source>Perspective Correct Textures</source>
         <translation>Korekta perspektywiczna - tekstury</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="620"/>
-        <location filename="../graphicssettingswidget.cpp" line="394"/>
+        <location filename="../graphicssettingswidget.ui" line="610"/>
+        <location filename="../graphicssettingswidget.cpp" line="388"/>
         <source>Perspective Correct Colors</source>
         <translation>Korekta perspektywiczna - kolory</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="627"/>
-        <location filename="../graphicssettingswidget.cpp" line="397"/>
+        <location filename="../graphicssettingswidget.ui" line="617"/>
+        <location filename="../graphicssettingswidget.cpp" line="391"/>
         <source>Culling Correction</source>
         <translation>Korekta cullingu</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="634"/>
-        <location filename="../graphicssettingswidget.cpp" line="401"/>
+        <location filename="../graphicssettingswidget.ui" line="624"/>
+        <location filename="../graphicssettingswidget.cpp" line="395"/>
         <source>Preserve Projection Precision</source>
         <translation>Zachowaj precyzję projekcji</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="641"/>
-        <location filename="../graphicssettingswidget.cpp" line="403"/>
+        <location filename="../graphicssettingswidget.ui" line="631"/>
+        <location filename="../graphicssettingswidget.cpp" line="397"/>
         <source>CPU Mode</source>
         <translation>Tryb procesora</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="648"/>
-        <location filename="../graphicssettingswidget.cpp" line="407"/>
+        <location filename="../graphicssettingswidget.ui" line="638"/>
+        <location filename="../graphicssettingswidget.cpp" line="401"/>
         <source>Vertex Cache</source>
         <translation>Pamięć podręczna wierzchołków</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="674"/>
+        <location filename="../graphicssettingswidget.ui" line="664"/>
         <source>OSD</source>
         <translation>OSD</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="698"/>
+        <location filename="../graphicssettingswidget.ui" line="688"/>
         <source>OSD Scale:</source>
         <translation>Skala OSD:</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="705"/>
-        <location filename="../graphicssettingswidget.ui" line="859"/>
+        <location filename="../graphicssettingswidget.ui" line="695"/>
+        <location filename="../graphicssettingswidget.ui" line="849"/>
         <source>%</source>
         <translation>%</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="720"/>
-        <location filename="../graphicssettingswidget.cpp" line="439"/>
+        <location filename="../graphicssettingswidget.ui" line="710"/>
+        <location filename="../graphicssettingswidget.cpp" line="433"/>
         <source>Show Controller Input</source>
         <translation>Pokaż wejście kontrolera</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="727"/>
-        <location filename="../graphicssettingswidget.cpp" line="443"/>
+        <location filename="../graphicssettingswidget.ui" line="717"/>
+        <location filename="../graphicssettingswidget.cpp" line="437"/>
         <source>Show Status Indicators</source>
         <translation>Pokazuj wskaźniki statusu</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="734"/>
-        <location filename="../graphicssettingswidget.cpp" line="424"/>
+        <location filename="../graphicssettingswidget.ui" line="724"/>
+        <location filename="../graphicssettingswidget.cpp" line="418"/>
         <source>Show FPS</source>
         <translation>Pokaż klatki na sekundę</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="741"/>
-        <location filename="../graphicssettingswidget.cpp" line="416"/>
+        <location filename="../graphicssettingswidget.ui" line="731"/>
+        <location filename="../graphicssettingswidget.cpp" line="410"/>
         <source>Show OSD Messages</source>
         <translation>Pokaż komunikaty na ekranie</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="748"/>
-        <location filename="../graphicssettingswidget.cpp" line="419"/>
+        <location filename="../graphicssettingswidget.ui" line="738"/>
+        <location filename="../graphicssettingswidget.cpp" line="413"/>
         <source>Show Resolution</source>
         <translation>Pokaż rozdzielczość</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="755"/>
-        <location filename="../graphicssettingswidget.cpp" line="441"/>
+        <location filename="../graphicssettingswidget.ui" line="745"/>
+        <location filename="../graphicssettingswidget.cpp" line="435"/>
         <source>Show Settings</source>
         <translation>Pokaż ustawienia</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="762"/>
-        <location filename="../graphicssettingswidget.cpp" line="427"/>
+        <location filename="../graphicssettingswidget.ui" line="752"/>
+        <location filename="../graphicssettingswidget.cpp" line="421"/>
         <source>Show CPU Usage</source>
         <translation>Pokaż użycie procesora</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="769"/>
-        <location filename="../graphicssettingswidget.cpp" line="433"/>
+        <location filename="../graphicssettingswidget.ui" line="759"/>
+        <location filename="../graphicssettingswidget.cpp" line="427"/>
         <source>Show GPU Statistics</source>
         <translation>Pokaż statystyki karty graficznej</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="776"/>
-        <location filename="../graphicssettingswidget.cpp" line="422"/>
+        <location filename="../graphicssettingswidget.ui" line="766"/>
+        <location filename="../graphicssettingswidget.cpp" line="416"/>
         <source>Show Emulation Speed</source>
         <translation>Pokaż prędkość emulacji</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="783"/>
-        <location filename="../graphicssettingswidget.cpp" line="436"/>
+        <location filename="../graphicssettingswidget.ui" line="773"/>
+        <location filename="../graphicssettingswidget.cpp" line="430"/>
         <source>Show Frame Times</source>
         <translation>Pokazuj czasy klatek</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="790"/>
-        <location filename="../graphicssettingswidget.cpp" line="431"/>
+        <location filename="../graphicssettingswidget.ui" line="780"/>
+        <location filename="../graphicssettingswidget.cpp" line="425"/>
         <source>Show GPU Usage</source>
         <translation>Pokaż użycie karty graficznej</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="816"/>
+        <location filename="../graphicssettingswidget.ui" line="806"/>
         <source>Capture</source>
         <translation>Przechwytywanie</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="831"/>
+        <location filename="../graphicssettingswidget.ui" line="821"/>
         <source>Screenshots</source>
         <translation>Zrzuty ekranu</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="837"/>
+        <location filename="../graphicssettingswidget.ui" line="827"/>
         <source>Screenshot Size:</source>
         <translation>Rozmiar zrzutu ekranu:</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="852"/>
+        <location filename="../graphicssettingswidget.ui" line="842"/>
         <source>Quality:</source>
         <translation>Jakość:</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="891"/>
+        <location filename="../graphicssettingswidget.ui" line="881"/>
         <source>Texture Replacements</source>
         <translation>Podmienanie tekstur</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="906"/>
+        <location filename="../graphicssettingswidget.ui" line="896"/>
         <source>General Settings</source>
         <translation>Ustawienia ogólne</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="914"/>
-        <location filename="../graphicssettingswidget.cpp" line="462"/>
+        <location filename="../graphicssettingswidget.ui" line="904"/>
+        <location filename="../graphicssettingswidget.cpp" line="456"/>
         <source>Enable VRAM Write Replacement</source>
         <translation>Włącz zastępowanie zapisu VRAM</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="921"/>
-        <location filename="../graphicssettingswidget.cpp" line="465"/>
+        <location filename="../graphicssettingswidget.ui" line="911"/>
+        <location filename="../graphicssettingswidget.cpp" line="459"/>
         <source>Preload Texture Replacements</source>
         <translation>Wczytaj wstępnie zamienniki tekstur</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="928"/>
-        <location filename="../graphicssettingswidget.cpp" line="467"/>
+        <location filename="../graphicssettingswidget.ui" line="918"/>
+        <location filename="../graphicssettingswidget.cpp" line="461"/>
         <source>Use Old MDEC Routines</source>
         <translation>Używaj starych funkcji MDEC</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="940"/>
+        <location filename="../graphicssettingswidget.ui" line="930"/>
         <source>VRAM Write Dumping</source>
         <translation>Zrzuć zapisy VRAM</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="948"/>
-        <location filename="../graphicssettingswidget.cpp" line="472"/>
+        <location filename="../graphicssettingswidget.ui" line="938"/>
+        <location filename="../graphicssettingswidget.cpp" line="466"/>
         <source>Enable VRAM Write Dumping</source>
         <translation>Włącz zrzuty zapisu VRAM</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="955"/>
-        <location filename="../graphicssettingswidget.cpp" line="470"/>
+        <location filename="../graphicssettingswidget.ui" line="945"/>
+        <location filename="../graphicssettingswidget.cpp" line="464"/>
         <source>Set Alpha Channel</source>
         <translation>Ustaw kanał alpha</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="964"/>
+        <location filename="../graphicssettingswidget.ui" line="954"/>
         <source>Dump Size Threshold:</source>
         <translation>Próg rozmiaru zrzutu:</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="1025"/>
+        <location filename="../graphicssettingswidget.ui" line="1015"/>
         <source>Debugging</source>
         <translation>Debugowanie</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="1046"/>
+        <location filename="../graphicssettingswidget.ui" line="1036"/>
         <source>Wireframe Mode:</source>
         <translation>Tryb modelu szkieletowego:</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="1059"/>
+        <location filename="../graphicssettingswidget.ui" line="1049"/>
         <source>Device Options</source>
         <translation>Ustawienia urządzenia</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="1067"/>
-        <location filename="../graphicssettingswidget.cpp" line="494"/>
+        <location filename="../graphicssettingswidget.ui" line="1057"/>
+        <location filename="../graphicssettingswidget.cpp" line="488"/>
         <source>Disable Framebuffer Fetch</source>
         <translation>Wyłącz pobieranie bufora ramki</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="1074"/>
+        <location filename="../graphicssettingswidget.ui" line="1064"/>
         <source>Disable Texture Copy To Self</source>
         <translation>Wyłącz kopiowanie samej siebie dla tekstur</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="1081"/>
-        <location filename="../graphicssettingswidget.cpp" line="491"/>
+        <location filename="../graphicssettingswidget.ui" line="1071"/>
+        <location filename="../graphicssettingswidget.cpp" line="485"/>
         <source>Disable Dual-Source Blending</source>
         <translation>Wyłącz mieszanie dwóch źródeł</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="1088"/>
-        <location filename="../graphicssettingswidget.cpp" line="486"/>
+        <location filename="../graphicssettingswidget.ui" line="1078"/>
+        <location filename="../graphicssettingswidget.cpp" line="480"/>
         <source>Use Debug Device</source>
         <translation>Użyj urządzenia do debugowania</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="1095"/>
-        <location filename="../graphicssettingswidget.cpp" line="489"/>
+        <location filename="../graphicssettingswidget.ui" line="1085"/>
+        <location filename="../graphicssettingswidget.cpp" line="483"/>
         <source>Disable Shader Cache</source>
         <translation>Wyłącz pamięć podręczną cieni</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="1102"/>
-        <location filename="../graphicssettingswidget.cpp" line="498"/>
+        <location filename="../graphicssettingswidget.ui" line="1092"/>
+        <location filename="../graphicssettingswidget.cpp" line="492"/>
         <source>Disable Texture Buffers</source>
         <translation>Wyłącz bufory tekstur</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="240"/>
+        <location filename="../graphicssettingswidget.cpp" line="238"/>
         <source>Renderer</source>
         <translation>Podmiot renderujący</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="241"/>
+        <location filename="../graphicssettingswidget.cpp" line="239"/>
         <source>Chooses the backend to use for rendering the console/game visuals. &lt;br&gt;Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. &lt;br&gt;The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
         <translation>Określa sterownik renderowania grafiki. &lt;br&gt;W zależności od systemu i sprzętu mogą być dostępne sterowniki sprzętowe Direct3D 11 i OpenGL. &lt;br&gt;Renderowanie programowe zapewnia najlepszą zgodność, ale jest najwolniejsze i nie oferuje żadnych ulepszeń.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="245"/>
+        <location filename="../graphicssettingswidget.cpp" line="243"/>
         <source>Adapter</source>
         <translation>Karta graficzna</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="245"/>
-        <location filename="../graphicssettingswidget.cpp" line="718"/>
+        <location filename="../graphicssettingswidget.cpp" line="243"/>
+        <location filename="../graphicssettingswidget.cpp" line="706"/>
         <source>(Default)</source>
         <translation>(Domyślny)</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="246"/>
+        <location filename="../graphicssettingswidget.cpp" line="244"/>
         <source>If your system contains multiple GPUs or adapters, you can select which GPU you wish to use for the hardware renderers. &lt;br&gt;This option is only supported in Direct3D and Vulkan. OpenGL will always use the default device.</source>
         <translation>Jeśli Twój system zawiera wiele procesorów graficznych lub adapterów, możesz wybrać, którego GPU chcesz używać do renderowania sprzętowego. &lt;br&gt;Ta opcja jest obsługiwana tylko w Direct3D i Vulkan. OpenGL zawsze będzie używać domyślnego urządzenia.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="250"/>
+        <location filename="../graphicssettingswidget.cpp" line="248"/>
         <source>Internal Resolution</source>
         <translation>Rozdzielczość wewnętrzna</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="251"/>
+        <location filename="../graphicssettingswidget.cpp" line="249"/>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
         <translation>Ustawienie wartości powyżej 1x zwiększy rozdzielczość renderowanych wielokątów 3D i linii. Dotyczy tylko sterownika sprzętowego. &lt;br&gt;Ta opcja jest zwykle bezpieczna, ponieważ większość gier wygląda dobrze w wyższych rozdzielczościach. Wyższe rozdzielczości wymagają mocniejszej karty graficznej.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="255"/>
+        <location filename="../graphicssettingswidget.cpp" line="253"/>
         <source>Down-Sampling</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="255"/>
-        <location filename="../graphicssettingswidget.cpp" line="362"/>
-        <location filename="../graphicssettingswidget.cpp" line="481"/>
-        <location filename="../graphicssettingswidget.cpp" line="576"/>
+        <location filename="../graphicssettingswidget.cpp" line="253"/>
+        <location filename="../graphicssettingswidget.cpp" line="356"/>
+        <location filename="../graphicssettingswidget.cpp" line="475"/>
+        <location filename="../graphicssettingswidget.cpp" line="564"/>
         <source>Disabled</source>
         <translation>Wyłączone</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="256"/>
+        <location filename="../graphicssettingswidget.cpp" line="254"/>
         <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, but should be disabled for pure 3D games.</source>
         <translation>Próbkuje wyrenderowany obraz w dół przed jego wyświetleniem. Może poprawić ogólną jakość obrazu w mieszanych grach 2D/3D, ale należy ją wyłączyć w grach czystych 3D.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="258"/>
+        <location filename="../graphicssettingswidget.cpp" line="256"/>
         <source>Down-Sampling Display Scale</source>
         <translation>Skala wyświetlania z próbkowaniem w dół</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="258"/>
+        <location filename="../graphicssettingswidget.cpp" line="256"/>
         <source>1x</source>
         <translation>1x</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="259"/>
+        <location filename="../graphicssettingswidget.cpp" line="257"/>
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
         <translation>Wybiera skalę rozdzielczości, która zostanie zastosowana do końcowego obrazu. 1x spowoduje zmniejszenie rozdzielczości do oryginalnej rozdzielczości konsoli.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="262"/>
+        <location filename="../graphicssettingswidget.cpp" line="260"/>
         <source>Texture Filtering</source>
         <translation>Filtrowanie tekstur</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="264"/>
+        <location filename="../graphicssettingswidget.cpp" line="262"/>
         <source>Smooths out the blockiness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. &lt;br&gt;The JINC2 and especially xBR filtering modes are very demanding, and may not be worth the speed penalty.</source>
         <translation>Wygładza blokowość powiększonych tekstur na obiekcie 3D za pomocą filtrowania. &lt;br&gt;Będzie miał większy wpływ na skale o wyższej rozdzielczości. &lt;br&gt;Tryby filtrowania JINC2, a zwłaszcza xBR, są bardzo wymagające i mogą nie być warte spadku na wydajności.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="268"/>
+        <location filename="../graphicssettingswidget.cpp" line="266"/>
         <source>Aspect Ratio</source>
         <translation>Format obrazu</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="270"/>
+        <location filename="../graphicssettingswidget.cpp" line="268"/>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto (Game Native) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
         <translation>Zmienia format obrazu używany do wyświetlania wyjścia konsoli na ekranie. Wartość domyślna to Auto (natywe gry), która automatycznie dostosowuje współczynnik proporcji, aby dopasować sposób, w jaki gra byłaby wyświetlana na typowym telewizorze z tamtego okresu.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="273"/>
+        <location filename="../graphicssettingswidget.cpp" line="271"/>
         <source>Deinterlacing</source>
         <translation>Usuwanie przeplotu</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="275"/>
+        <location filename="../graphicssettingswidget.cpp" line="273"/>
         <source>Determines which algorithm is used to convert interlaced frames to progressive for display on your system. Generally, the &quot;Disable Interlacing&quot; enhancement provides better quality output, but some games require interlaced rendering.</source>
         <translation>Określa, który algorytm jest używany do konwersji klatek z przeplotem na klatki progresywne w celu wyświetlenia w systemie. Ogólnie rzecz biorąc, ulepszenie „Wyłącz przeplot” zapewnia lepszą jakość wydruku, ale niektóre gry wymagają renderowania z przeplotem.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="279"/>
+        <location filename="../graphicssettingswidget.cpp" line="277"/>
         <source>Crop</source>
         <translation>Kadrowanie</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="281"/>
+        <location filename="../graphicssettingswidget.cpp" line="279"/>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. Some games display content in the overscan area, or use it for screen effects. May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
         <translation>Określa, jaka część obszaru zwykle niewidocznego na telewizorze konsumenckim ma zostać przycięta/ukryta. Niektóre gry wyświetlają zawartość w obszarze overscan lub wykorzystują ją do efektów ekranowych. Może nie wyświetlać się poprawnie przy ustawieniu „Wszystkie obramowania”. „Tylko Overscan” oferuje dobry kompromis pomiędzy stabilnością a ukrywaniem czarnych granic.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="285"/>
+        <location filename="../graphicssettingswidget.cpp" line="283"/>
         <source>Scaling</source>
         <translation>Skalowanie</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="285"/>
+        <location filename="../graphicssettingswidget.cpp" line="283"/>
         <source>Bilinear (Smooth)</source>
         <translation>Dwuliniowy (gładki)</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="286"/>
+        <location filename="../graphicssettingswidget.cpp" line="284"/>
         <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
         <translation>Określa, w jaki sposób sygnał wyjściowy emulowanej konsoli jest zwiększany lub zmniejszany do rozdzielczości monitora.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="288"/>
-        <source>VSync</source>
-        <translation>Synchronizacja pionowa</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="288"/>
-        <location filename="../graphicssettingswidget.cpp" line="299"/>
-        <location filename="../graphicssettingswidget.cpp" line="303"/>
+        <location filename="../graphicssettingswidget.cpp" line="293"/>
+        <location filename="../graphicssettingswidget.cpp" line="297"/>
+        <location filename="../graphicssettingswidget.cpp" line="301"/>
+        <location filename="../graphicssettingswidget.cpp" line="305"/>
         <location filename="../graphicssettingswidget.cpp" line="307"/>
-        <location filename="../graphicssettingswidget.cpp" line="311"/>
-        <location filename="../graphicssettingswidget.cpp" line="313"/>
-        <location filename="../graphicssettingswidget.cpp" line="322"/>
-        <location filename="../graphicssettingswidget.cpp" line="348"/>
-        <location filename="../graphicssettingswidget.cpp" line="351"/>
-        <location filename="../graphicssettingswidget.cpp" line="366"/>
-        <location filename="../graphicssettingswidget.cpp" line="376"/>
-        <location filename="../graphicssettingswidget.cpp" line="394"/>
+        <location filename="../graphicssettingswidget.cpp" line="316"/>
+        <location filename="../graphicssettingswidget.cpp" line="342"/>
+        <location filename="../graphicssettingswidget.cpp" line="345"/>
+        <location filename="../graphicssettingswidget.cpp" line="360"/>
+        <location filename="../graphicssettingswidget.cpp" line="370"/>
+        <location filename="../graphicssettingswidget.cpp" line="388"/>
+        <location filename="../graphicssettingswidget.cpp" line="395"/>
+        <location filename="../graphicssettingswidget.cpp" line="397"/>
         <location filename="../graphicssettingswidget.cpp" line="401"/>
-        <location filename="../graphicssettingswidget.cpp" line="403"/>
-        <location filename="../graphicssettingswidget.cpp" line="407"/>
-        <location filename="../graphicssettingswidget.cpp" line="419"/>
-        <location filename="../graphicssettingswidget.cpp" line="422"/>
-        <location filename="../graphicssettingswidget.cpp" line="424"/>
+        <location filename="../graphicssettingswidget.cpp" line="413"/>
+        <location filename="../graphicssettingswidget.cpp" line="416"/>
+        <location filename="../graphicssettingswidget.cpp" line="418"/>
+        <location filename="../graphicssettingswidget.cpp" line="421"/>
+        <location filename="../graphicssettingswidget.cpp" line="425"/>
         <location filename="../graphicssettingswidget.cpp" line="427"/>
-        <location filename="../graphicssettingswidget.cpp" line="431"/>
+        <location filename="../graphicssettingswidget.cpp" line="430"/>
         <location filename="../graphicssettingswidget.cpp" line="433"/>
-        <location filename="../graphicssettingswidget.cpp" line="436"/>
-        <location filename="../graphicssettingswidget.cpp" line="439"/>
-        <location filename="../graphicssettingswidget.cpp" line="441"/>
-        <location filename="../graphicssettingswidget.cpp" line="462"/>
-        <location filename="../graphicssettingswidget.cpp" line="465"/>
-        <location filename="../graphicssettingswidget.cpp" line="467"/>
-        <location filename="../graphicssettingswidget.cpp" line="472"/>
-        <location filename="../graphicssettingswidget.cpp" line="486"/>
-        <location filename="../graphicssettingswidget.cpp" line="489"/>
-        <location filename="../graphicssettingswidget.cpp" line="491"/>
-        <location filename="../graphicssettingswidget.cpp" line="494"/>
-        <location filename="../graphicssettingswidget.cpp" line="498"/>
-        <location filename="../graphicssettingswidget.cpp" line="501"/>
+        <location filename="../graphicssettingswidget.cpp" line="435"/>
+        <location filename="../graphicssettingswidget.cpp" line="456"/>
+        <location filename="../graphicssettingswidget.cpp" line="459"/>
+        <location filename="../graphicssettingswidget.cpp" line="461"/>
+        <location filename="../graphicssettingswidget.cpp" line="466"/>
+        <location filename="../graphicssettingswidget.cpp" line="480"/>
+        <location filename="../graphicssettingswidget.cpp" line="483"/>
+        <location filename="../graphicssettingswidget.cpp" line="485"/>
+        <location filename="../graphicssettingswidget.cpp" line="488"/>
+        <location filename="../graphicssettingswidget.cpp" line="492"/>
+        <location filename="../graphicssettingswidget.cpp" line="495"/>
         <source>Unchecked</source>
         <translation>Niezaznaczone</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="289"/>
-        <source>Enable this option to match DuckStation&apos;s refresh rate with your current monitor or screen. VSync is automatically disabled when it is not possible (e.g. running at non-100% speed).</source>
-        <translation>Włącz tę opcję, aby dopasować częstotliwość odświeżania DuckStation do bieżącego monitora lub ekranu. Synchronizacja pionowa jest automatycznie wyłączane, gdy nie jest to możliwe (np. Działa z prędkością inną niż 100%).</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="292"/>
-        <location filename="../graphicssettingswidget.cpp" line="316"/>
-        <location filename="../graphicssettingswidget.cpp" line="341"/>
-        <location filename="../graphicssettingswidget.cpp" line="344"/>
-        <location filename="../graphicssettingswidget.cpp" line="372"/>
-        <location filename="../graphicssettingswidget.cpp" line="390"/>
-        <location filename="../graphicssettingswidget.cpp" line="397"/>
-        <location filename="../graphicssettingswidget.cpp" line="416"/>
-        <location filename="../graphicssettingswidget.cpp" line="443"/>
-        <location filename="../graphicssettingswidget.cpp" line="470"/>
+        <location filename="../graphicssettingswidget.cpp" line="286"/>
+        <location filename="../graphicssettingswidget.cpp" line="310"/>
+        <location filename="../graphicssettingswidget.cpp" line="335"/>
+        <location filename="../graphicssettingswidget.cpp" line="338"/>
+        <location filename="../graphicssettingswidget.cpp" line="366"/>
+        <location filename="../graphicssettingswidget.cpp" line="384"/>
+        <location filename="../graphicssettingswidget.cpp" line="391"/>
+        <location filename="../graphicssettingswidget.cpp" line="410"/>
+        <location filename="../graphicssettingswidget.cpp" line="437"/>
+        <location filename="../graphicssettingswidget.cpp" line="464"/>
         <source>Checked</source>
         <translation>Zaznaczone</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="293"/>
+        <location filename="../graphicssettingswidget.cpp" line="287"/>
         <source>Forces the precision of colours output to the console&apos;s framebuffer to use the full 8 bits of precision per channel. This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering, which makes the transition between colours less sharp by applying a pattern around those pixels. Most games are compatible with this option, but there is a number which aren&apos;t and will have broken effects with it enabled.</source>
         <translation>Wymusza precyzję kolorów wysyłanych do bufora ramki konsoli, aby korzystała z pełnych 8 bitów precyzji na kanał. Daje to ładniej wyglądające gradienty kosztem sprawiania, że niektóre kolory wyglądają nieco inaczej. Wyłączenie opcji włącza również rozpraszanie, które powoduje, że przejścia między kolorami są mniej ostre poprzez zastosowanie wzoru wokół tych pikseli. Większość gier jest kompatybilna z tą opcją, ale jest wiele gier, które nie są i będą miały zepsute efekty po włączeniu tej opcji.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="300"/>
+        <location filename="../graphicssettingswidget.cpp" line="294"/>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
         <translation>Skaluje położenie wierzchołków w przestrzeni ekranu do proporcji ekranu panoramicznego, zasadniczo zwiększając pole widzenia z 4:3 do wybranego współczynnika proporcji wyświetlania w grach 3D. &lt;b&gt;&lt;u&gt;Może nie być kompatybilny ze wszystkimi grami.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="304"/>
+        <location filename="../graphicssettingswidget.cpp" line="298"/>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;strong&gt;May not be compatible with all games.&lt;/strong&gt;</source>
         <translation>Redukuje &quot;chybotanie&quot; wielokątów i &quot;wypaczanie&quot; teksturów, które są powszechne w grach na PS1. &lt;br&gt;Działa tylko ze sprzętowymi rendererami. &lt;b&gt;&lt;u&gt;Może nie być zgodne ze wszystkimi grami.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="307"/>
+        <location filename="../graphicssettingswidget.cpp" line="301"/>
         <source>PGXP Depth Buffer</source>
         <translation>Bufor głębi PGXP</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="308"/>
+        <location filename="../graphicssettingswidget.cpp" line="302"/>
         <source>Attempts to reduce polygon Z-fighting by testing pixels against the depth values from PGXP. Low compatibility, but can work well in some games. Other games may need a threshold adjustment.</source>
         <translation>Próbuje zredukować konflikt wielokątów &apos;Z&apos; poprzez testowanie pikseli względem wartości głębi z PGXP. Niska kompatybilność, ale może działać dobrze w niektórych grach. Inne gry mogą wymagać dostosowania progu.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="312"/>
+        <location filename="../graphicssettingswidget.cpp" line="306"/>
         <source>Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.</source>
         <translation>Przełącza z powrotem do formatu obrazu 4:3 podczas wyświetlania treści 24-bitowych, w FMVs.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="314"/>
+        <location filename="../graphicssettingswidget.cpp" line="308"/>
         <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs.</source>
         <translation>Wygładza blokowość pomiędzy przejściami kolorów w treści 24-bitowej, zwykle FMV.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="317"/>
+        <location filename="../graphicssettingswidget.cpp" line="311"/>
         <source>Forces the rendering and display of frames to progressive mode. &lt;br&gt;This removes the &quot;combing&quot; effect seen in 480i games by rendering them in 480p. Usually safe to enable.&lt;br&gt;&lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
         <translation>Wymusza renderowanie i wyświetlanie klatek w trybie progresywnym. &lt;br&gt;Usuwa to efekt „czesania” występujący w grach 480i poprzez renderowanie ich w rozdzielczości 480p. Zwykle można bezpiecznie włączyć.&lt;br&gt;&lt;b&gt;&lt;u&gt;Może nie być kompatybilny ze wszystkimi grami.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="323"/>
+        <location filename="../graphicssettingswidget.cpp" line="317"/>
         <source>Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. &lt;br&gt;For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster. &lt;br&gt;For variable frame rate games, it may not affect the speed.</source>
         <translation>Używa taktowania ramek NTSC, gdy konsola jest w trybie PAL, zmuszając gry PAL do działania z częstotliwością 60 Hz. &lt;br&gt;W przypadku większości gier, w których szybkość jest powiązana z liczbą klatek na sekundę, spowoduje to około 17% szybsze działanie gry. &lt;br&gt;W przypadku gier o zmiennej liczbie klatek na sekundę może to nie wpływać na szybkość.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="329"/>
+        <location filename="../graphicssettingswidget.cpp" line="323"/>
         <source>Fullscreen Mode</source>
         <translation>Tryb pełnoekranowy</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="329"/>
-        <location filename="../graphicssettingswidget.cpp" line="738"/>
+        <location filename="../graphicssettingswidget.cpp" line="323"/>
+        <location filename="../graphicssettingswidget.cpp" line="726"/>
         <source>Borderless Fullscreen</source>
         <translation>Pełny ekran bez obramowania</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="330"/>
+        <location filename="../graphicssettingswidget.cpp" line="324"/>
         <source>Chooses the fullscreen resolution and frequency.</source>
         <translation>Ustala rozdzielczość oraz częstotliwość odświeżania w trybie pełnoekranowym.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="331"/>
+        <location filename="../graphicssettingswidget.cpp" line="325"/>
         <source>Exclusive Fullscreen Control</source>
         <translation>Kontrola ekskluzywnego trybu pełnoekranowego</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="331"/>
+        <location filename="../graphicssettingswidget.cpp" line="325"/>
         <source>Automatic</source>
         <translation>Automatyczne</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="332"/>
+        <location filename="../graphicssettingswidget.cpp" line="326"/>
         <source>Controls whether exclusive fullscreen can be utilized by Vulkan drivers.</source>
         <translation>Kontroluje, czy sterowniki Vulkan mogą korzystać z eksluzywnego trybu pełnoekranowego.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="334"/>
+        <location filename="../graphicssettingswidget.cpp" line="328"/>
         <source>Position</source>
         <translation>Pozycja</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="336"/>
+        <location filename="../graphicssettingswidget.cpp" line="330"/>
         <source>Determines the position on the screen when black borders must be added.</source>
         <translation>Określa pozycję na ekranie, gdy należy dodać czarne obramowania.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="338"/>
+        <location filename="../graphicssettingswidget.cpp" line="332"/>
         <source>Display FPS Limit</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="338"/>
+        <location filename="../graphicssettingswidget.cpp" line="332"/>
         <source>0</source>
         <translation>0</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="339"/>
+        <location filename="../graphicssettingswidget.cpp" line="333"/>
         <source>Limits the number of frames that are &lt;strong&gt;displayed&lt;/strong&gt; every second. Discard frames are &lt;strong&gt;still rendered.&lt;/strong&gt; This option can increase frame rates when fast forwarding on some systems.</source>
         <translation>Ogranicza liczbę klatek &lt;strong&gt;wyświetlanych&lt;/strong&gt; co sekundę. Odrzuć klatki &lt;strong&gt;nadal są renderowane.&lt;/strong&gt; Ta opcja może zwiększyć liczbę klatek na sekundę podczas szybkiego przewijania do przodu w niektórych systemach.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="342"/>
+        <location filename="../graphicssettingswidget.cpp" line="336"/>
         <source>Uses a second thread for drawing graphics. Currently only available for the software renderer, but can provide a significant speed improvement, and is safe to use.</source>
         <translation>Używa drugiego wątku do rysowania grafiki. Obecnie dostępne tylko dla renderowania oprogramowania, ale może zapewnić znaczną poprawę szybkości i jest bezpieczne w użyciu.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="345"/>
+        <location filename="../graphicssettingswidget.cpp" line="339"/>
         <source>Presents frames on a background thread when fast forwarding or vsync is disabled. This can measurably improve performance in the Vulkan renderer.</source>
         <translation>Przedstawia ramki w wątku w tle, gdy szybkie przewijanie do przodu lub synchornizacja pionowa jest wyłączona. Może to wymiernie poprawić wydajność w renderowaniu Vulkan.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="349"/>
+        <location filename="../graphicssettingswidget.cpp" line="343"/>
         <source>Prefers stretching the display vertically instead of horizontally, when applying the display aspect ratio.</source>
         <translation>Woli rozciągać obraz w pionie zamiast w poziomie, stosując format obrazu monitora.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="352"/>
+        <location filename="../graphicssettingswidget.cpp" line="346"/>
         <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
         <translation>Używa modelu prezentacji Blit zamiast Flip podczas korzystania z renderera Direct3D 11. Zwykle skutkuje to mniejszą wydajnością, ale może być wymagane w przypadku niektórych aplikacji do przesyłania strumieniowego lub w celu zwolnienia liczby klatek na sekundę w niektórych systemach.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="357"/>
+        <location filename="../graphicssettingswidget.cpp" line="351"/>
         <source>Line Detection</source>
         <translation>Wykrywanie linii</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="359"/>
+        <location filename="../graphicssettingswidget.cpp" line="353"/>
         <source>Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization behavior, filling in gaps introduced by upscaling.</source>
         <translation>Próbuje wykryć linie o wysokości/szerokości jednego piksela, które opierają się na zachowaniu rasteryzacji nieupskalowanej, wypełniając luki powstałe w wyniku skalowania w górę.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="362"/>
+        <location filename="../graphicssettingswidget.cpp" line="356"/>
         <source>Multi-Sampling</source>
         <translation>Wielopróbkowanie</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="363"/>
+        <location filename="../graphicssettingswidget.cpp" line="357"/>
         <source>Uses multi-sampled anti-aliasing when rendering 3D polygons. Can improve visuals with a lower performance requirement compared to upscaling, &lt;strong&gt;but often introduces rendering errors.&lt;/strong&gt;</source>
         <translation>Używa wielopróbkowego antyaliasingu podczas renderowania wielokątów 3D. Może poprawić grafikę przy niższych wymaganiach dotyczących wydajności w porównaniu do skalowania w górę, &lt;strong&gt;ale często powoduje błędy renderowania.&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="367"/>
+        <location filename="../graphicssettingswidget.cpp" line="361"/>
         <source>Applies modern dithering techniques to further smooth out gradients when true color is enabled. This debanding is performed during rendering (as opposed to a post-processing step), which allows it to be fast while preserving detail. Debanding increases the file size of screenshots due to the subtle dithering pattern present in screenshots.</source>
         <translation>Stosuje nowoczesne techniki rozpraszania w celu dalszego wygładzenia gradientów, gdy włączona jest funkcja True Color. To usuwanie pasm odbywa się podczas renderowania (a nie na etapie przetwarzania końcowego), co pozwala na szybkie działanie przy jednoczesnym zachowaniu szczegółów. Usuwanie pasków zwiększa rozmiar pliku zrzutów ekranu ze względu na subtelny wzór rozpraszania obecny na zrzutach ekranu.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="373"/>
+        <location filename="../graphicssettingswidget.cpp" line="367"/>
         <source>Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. Usually safe to enable.</source>
         <translation>Skaluje wzór rozpraszania do skali rozdzielczości emulowanego procesora graficznego. To sprawia, że wzór drgań jest mniej oczywisty przy wyższych rozdzielczościach. Zwykle można bezpiecznie włączyć.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="377"/>
+        <location filename="../graphicssettingswidget.cpp" line="371"/>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
         <translation>Uruchamia programowy render do odczytów VRAM, który działa równolegle ze sprzętowym. W niektórych przypadkach może to znacznie poprawić wydajność podczas używania graficznych ulepszeń.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="383"/>
+        <location filename="../graphicssettingswidget.cpp" line="377"/>
         <source>Geometry Tolerance</source>
         <translation>Tolerancja geometryczna</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="383"/>
+        <location filename="../graphicssettingswidget.cpp" line="377"/>
         <source>-1.00px (Disabled)</source>
         <translation>-1.00px (Wyłączone)</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="384"/>
+        <location filename="../graphicssettingswidget.cpp" line="378"/>
         <source>Discards precise geometry when it is found to be offset past the specified threshold. This can help with games that have vertices significantly moved by PGXP, but is still a hack/workaround.</source>
         <translation>Odrzuca dokładną geometrię, gdy okaże się, że jest ona przesunięta poza określony próg. Może to pomóc w grach, których wierzchołki są znacznie przesunięte przez PGXP, ale nadal jest to tylko obejście.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="386"/>
+        <location filename="../graphicssettingswidget.cpp" line="380"/>
         <source>Depth Clear Threshold</source>
         <translation>Próg czyszczenia głębi</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="388"/>
+        <location filename="../graphicssettingswidget.cpp" line="382"/>
         <source>Determines the increase in depth that will result in the depth buffer being cleared. Can help with depth issues in some games, but is still a hack/workaround.</source>
         <translation>Określa wzrost głębokości, który spowoduje wyczyszczenie bufora głębi. Może pomóc w przypadku problemów z głębią w niektórych grach, ale nadal jest to obejście.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="391"/>
+        <location filename="../graphicssettingswidget.cpp" line="385"/>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures. Requires geometry correction enabled.</source>
         <translation>Używa interpolacji perspektywicznej dla współrzędnych tekstur, co znacząco poprawia &quot;bujające się&quot; tekstury. Wymaga włączonej korekcji geometrii.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="395"/>
+        <location filename="../graphicssettingswidget.cpp" line="389"/>
         <source>Uses perspective-correct interpolation for vertex colors, which can improve visuals in some games, but cause rendering errors in others. Requires geometry correction enabled.</source>
         <translation>Używa interpolacji perspektywicznej dla kolorów, co może poprawić jakość obrazu w niektórych grach, ale może też powodować błędy w innych. Wymaga włączonej korekcji geometrii.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="398"/>
+        <location filename="../graphicssettingswidget.cpp" line="392"/>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
         <translation>Zwiększa precyzję usuwania wielokątów, zmniejszając liczbę otworów w geometrii. Wymaga włączonej korekcji geometrii.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="402"/>
+        <location filename="../graphicssettingswidget.cpp" line="396"/>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
         <translation>Dodaje dodatkową precyzję danych PGXP po dokonaniu projekcji. Może poprawić jakość grafiki w niektórych grach.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="404"/>
+        <location filename="../graphicssettingswidget.cpp" line="398"/>
         <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost.</source>
         <translation>Używa PGXP do wszystkich instrukcji, nie tylko operacji na pamięci. Wymagany, aby PGXP korygował wahania w niektórych grach, ale wiąże się z wysokim kosztem wydajności.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="408"/>
+        <location filename="../graphicssettingswidget.cpp" line="402"/>
         <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt;</source>
         <translation>Wykorzystuje pozycje wierzchołków w przestrzeni ekranu, aby uzyskać dokładne pozycje, zamiast śledzić dostępy do pamięci. Może zapewnić kompatybilność z PGXP w niektórych grach, ale &lt;strong&gt;zazwyczaj nie zapewnia żadnych korzyści.&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="414"/>
+        <location filename="../graphicssettingswidget.cpp" line="408"/>
         <source>OSD Scale</source>
         <translation>Skala wyświetlacza ekranowego (OSD)</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="414"/>
+        <location filename="../graphicssettingswidget.cpp" line="408"/>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="415"/>
+        <location filename="../graphicssettingswidget.cpp" line="409"/>
         <source>Changes the size at which on-screen elements, including status and messages are displayed.</source>
         <translation>Zmienia rozmiar wyświetlanych elementów na ekranie, w tym stanu i komunikatów.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="417"/>
+        <location filename="../graphicssettingswidget.cpp" line="411"/>
         <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
         <translation>Pokazuje komunikaty na ekranie, gdy wystąpią zdarzenia, takie jak tworzenie/ładowanie stanów zapisu, wykonywanie zrzutów ekranu itp.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="420"/>
+        <location filename="../graphicssettingswidget.cpp" line="414"/>
         <source>Shows the resolution of the game in the top-right corner of the display.</source>
         <translation>Pokazuje rozdzielczość gry w prawym górnym rogu ekranu.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="423"/>
+        <location filename="../graphicssettingswidget.cpp" line="417"/>
         <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
         <translation>Pokazuje bieżącą prędkość emulacji systemu w prawym górnym rogu ekranu jako wartość procentową.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="425"/>
+        <location filename="../graphicssettingswidget.cpp" line="419"/>
         <source>Shows the internal frame rate of the game in the top-right corner of the display.</source>
         <translation>Pokazuje wewnętrzną liczbę klatek na sekundę w grze w prawym górnym rogu ekranu.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="428"/>
+        <location filename="../graphicssettingswidget.cpp" line="422"/>
         <source>Shows the host&apos;s CPU usage based on threads in the top-right corner of the display. This does not display the emulated system CPU&apos;s usage. If a value close to 100% is being displayed, this means your host&apos;s CPU is likely the bottleneck. In this case, you should reduce enhancement-related settings such as overclocking.</source>
         <translation>Pokazuje użycie wątków procesora w prawym górnym rogu ekranu. Nie wyświetla użycia procesora emulowanej konsoli. Jeśli wartość zbliża się do 100%, prawdopodobnie oznacza to, że Twój procesor jest wąskim gardłem systemu. W takim przypadku rozważ wyłączenie/zmianę obciążających procesor opcji np. podkręcania emulowanego Playstation.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="432"/>
+        <location filename="../graphicssettingswidget.cpp" line="426"/>
         <source>Shows the host&apos;s GPU usage in the top-right corner of the display.</source>
         <translation>Pokazuje wykorzystanie karty graficznej gospodarza w prawym górnym rogu wyświetlacza.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="434"/>
+        <location filename="../graphicssettingswidget.cpp" line="428"/>
         <source>Shows information about the emulated GPU in the top-right corner of the display.</source>
         <translation>Pokazuje informacje o emulowanym GPU w prawym górnym rogu wyświetlacza.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="437"/>
+        <location filename="../graphicssettingswidget.cpp" line="431"/>
         <source>Shows the history of frame rendering times as a graph in the top-right corner of the display.</source>
         <translation>Pokazuje historię czasów renderowania klatek w postaci wykresu w prawym górnym rogu wyświetlacza.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="440"/>
+        <location filename="../graphicssettingswidget.cpp" line="434"/>
         <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
         <translation>Pokazuje stan kontrolera w lewym dolnym rogu wyświetlacza.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="442"/>
+        <location filename="../graphicssettingswidget.cpp" line="436"/>
         <source>Shows a summary of current settings in the bottom-right corner of the display.</source>
         <translation>Pokazuje podsumowanie bieżących ustawień w prawym dolnym rogu ekranu.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="444"/>
+        <location filename="../graphicssettingswidget.cpp" line="438"/>
         <source>Shows indicators on screen when the system is not running in its &quot;normal&quot; state. For example, fast forwarding, or being paused.</source>
         <translation>Pokazuje wskaźniki na ekranie, gdy system nie działa w swoim „normalnym” stanie. Na przykład szybkie przewijanie do przodu lub wstrzymanie.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="449"/>
+        <location filename="../graphicssettingswidget.cpp" line="443"/>
         <source>Screenshot Size</source>
         <translation>Rozmiar zrzutu ekranu</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="449"/>
+        <location filename="../graphicssettingswidget.cpp" line="443"/>
         <source>Screen Resolution</source>
         <translation>Rozdzielczość ekranu</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="450"/>
+        <location filename="../graphicssettingswidget.cpp" line="444"/>
         <source>Determines the resolution at which screenshots will be saved. Internal resolutions preserve more detail at the cost of file size.</source>
         <translation>Określa rozdzielczość, w jakiej będą zapisywane zrzuty ekranu. Wewnętrzne rozdzielczości pozwalają zachować więcej szczegółów kosztem rozmiaru pliku.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="453"/>
+        <location filename="../graphicssettingswidget.cpp" line="447"/>
         <source>Screenshot Format</source>
         <translation>Format zrzutu ekranu</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="453"/>
+        <location filename="../graphicssettingswidget.cpp" line="447"/>
         <source>PNG</source>
         <translation>PNG</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="454"/>
+        <location filename="../graphicssettingswidget.cpp" line="448"/>
         <source>Selects the format which will be used to save screenshots. JPEG produces smaller files, but loses detail.</source>
         <translation>Wybiera format, w jakim będą zapisywane zrzuty ekranu. JPEG tworzy mniejsze pliki, ale traci szczegóły.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="455"/>
+        <location filename="../graphicssettingswidget.cpp" line="449"/>
         <source>Screenshot Quality</source>
         <translation>Jakość zrzutu ekranu</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="457"/>
+        <location filename="../graphicssettingswidget.cpp" line="451"/>
         <source>Selects the quality at which screenshots will be compressed. Higher values preserve more detail for JPEG, and reduce file size for PNG.</source>
         <translation>Wybiera jakość kompresji zrzutów ekranu. Wyższe wartości pozwalają zachować więcej szczegółów w przypadku formatu JPEG i zmniejszyć rozmiar pliku w przypadku formatu PNG.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="463"/>
+        <location filename="../graphicssettingswidget.cpp" line="457"/>
         <source>Enables the replacement of background textures in supported games. &lt;strong&gt;This is not general texture replacement.&lt;/strong&gt;</source>
         <translation>Umożliwia wymianę tekstur tła w obsługiwanych grach. &lt;strong&gt;To nie jest ogólna wymiana tekstur.&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="466"/>
+        <location filename="../graphicssettingswidget.cpp" line="460"/>
         <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
         <translation>Ładuje wszystkie podmienione tekstury do pamięci RAM, ograniczając zacinanie się podczas gry.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="468"/>
+        <location filename="../graphicssettingswidget.cpp" line="462"/>
         <source>Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.</source>
         <translation>Włącza starsze, mniej dokładne procedury dekodowania MDEC. Może być wymagane, aby stare tła zastępcze pasowały/wczytywały.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="471"/>
+        <location filename="../graphicssettingswidget.cpp" line="465"/>
         <source>Clears the mask/transparency bit in VRAM write dumps.</source>
         <translation>Czyści bit maski/przezroczystości w zrzutach zapisu VRAM.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="473"/>
+        <location filename="../graphicssettingswidget.cpp" line="467"/>
         <source>Writes backgrounds that can be replaced to the dump directory.</source>
         <translation>Zapisuje tła, które można zastąpić w katalogu zrzutu.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="474"/>
-        <location filename="../graphicssettingswidget.cpp" line="476"/>
+        <location filename="../graphicssettingswidget.cpp" line="468"/>
+        <location filename="../graphicssettingswidget.cpp" line="470"/>
         <source>Dump Size Threshold</source>
         <translation>Próg rozmiaru zrzutu</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="474"/>
-        <location filename="../graphicssettingswidget.cpp" line="476"/>
+        <location filename="../graphicssettingswidget.cpp" line="468"/>
+        <location filename="../graphicssettingswidget.cpp" line="470"/>
         <source>128px</source>
         <translation>128px</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="475"/>
-        <location filename="../graphicssettingswidget.cpp" line="477"/>
+        <location filename="../graphicssettingswidget.cpp" line="469"/>
+        <location filename="../graphicssettingswidget.cpp" line="471"/>
         <source>Determines the threshold that triggers a VRAM write to be dumped.</source>
         <translation>Określa próg, który wyzwala zrzut zapisu VRAM.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="481"/>
+        <location filename="../graphicssettingswidget.cpp" line="475"/>
         <source>Wireframe Mode</source>
         <translation>Tryb modelu szkieletowego</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="482"/>
+        <location filename="../graphicssettingswidget.cpp" line="476"/>
         <source>Draws a wireframe outline of the triangles rendered by the console&apos;s GPU, either as a replacement or an overlay.</source>
         <translation>Rysuje szkieletowy zarys trójkątów renderowanych przez kartę graficzną konsoli jako zamiennik lub nakładkę.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="487"/>
+        <location filename="../graphicssettingswidget.cpp" line="481"/>
         <source>Enable debugging when supported by the host&apos;s renderer API. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
         <translation>Włącz debugowanie, jeśli jest obsługiwane przez interfejs API modułu renderującego gospodarza. &lt;strong&gt;Tylko do użytku programisty.&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="490"/>
+        <location filename="../graphicssettingswidget.cpp" line="484"/>
         <source>Forces shaders to be compiled for every run of the program. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
         <translation>Wymusza kompilację shaderów przy każdym uruchomieniu programu. &lt;strong&gt;Tylko do użytku programisty.&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="492"/>
+        <location filename="../graphicssettingswidget.cpp" line="486"/>
         <source>Prevents dual-source blending from being used. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
         <translation>Zapobiega używaniu mieszania z dwóch źródeł. Przydatne do testowania uszkodzonych sterowników graficznych. &lt;strong&gt;Tylko do użytku programisty.&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="495"/>
+        <location filename="../graphicssettingswidget.cpp" line="489"/>
         <source>Prevents the framebuffer fetch extensions from being used. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
         <translation>Zapobiega używaniu rozszerzeń pobierania bufora ramki. Przydatne do testowania uszkodzonych sterowników graficznych. &lt;strong&gt;Tylko do użytku programisty.&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="499"/>
+        <location filename="../graphicssettingswidget.cpp" line="493"/>
         <source>Forces VRAM updates through texture updates, instead of texture buffers and draws. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
         <translation>Wymusza aktualizacje VRAM poprzez aktualizacje tekstur, zamiast buforów tekstur i rysowań. Przydatne do testowania uszkodzonych sterowników graficznych. &lt;strong&gt;Tylko do użytku programisty.&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="501"/>
+        <location filename="../graphicssettingswidget.cpp" line="495"/>
         <source>Disable Texture Copies To Self</source>
         <translation>Wyłącz kopiowanie samej siebie dla tekstur</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="502"/>
+        <location filename="../graphicssettingswidget.cpp" line="496"/>
         <source>Disables the use of self-copy updates for the VRAM texture. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
         <translation>Wyłącza możliwość korzystania z samokopiujących się aktualizacji tekstury VRAM. Przydatne do testowania uszkodzonych sterowników graficznych. &lt;strong&gt;Tylko do użytku programisty.&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="575"/>
+        <location filename="../graphicssettingswidget.cpp" line="563"/>
         <source>Use Global Setting</source>
         <translation>Użyj globalnych ustawień</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="578"/>
+        <location filename="../graphicssettingswidget.cpp" line="566"/>
         <source>%1x MSAA</source>
         <translation>%1x MSAA</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="580"/>
+        <location filename="../graphicssettingswidget.cpp" line="568"/>
         <source>%1x SSAA</source>
         <translation>%1x SSAA</translation>
     </message>
@@ -10828,52 +10824,52 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
 <context>
     <name>LogLevel</name>
     <message>
-        <location filename="../../core/settings.cpp" line="848"/>
+        <location filename="../../core/settings.cpp" line="845"/>
         <source>None</source>
         <translation>Żadne</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="848"/>
+        <location filename="../../core/settings.cpp" line="845"/>
         <source>Error</source>
         <translation>Błędy</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="849"/>
+        <location filename="../../core/settings.cpp" line="846"/>
         <source>Warning</source>
         <translation>Ostrzeżenia</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="849"/>
+        <location filename="../../core/settings.cpp" line="846"/>
         <source>Performance</source>
         <translation>Wydajność</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="850"/>
+        <location filename="../../core/settings.cpp" line="847"/>
         <source>Information</source>
         <translation>Informacje</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="850"/>
+        <location filename="../../core/settings.cpp" line="847"/>
         <source>Verbose</source>
         <translation>Dokładny</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="851"/>
+        <location filename="../../core/settings.cpp" line="848"/>
         <source>Developer</source>
         <translation>Deweloperski</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="851"/>
+        <location filename="../../core/settings.cpp" line="848"/>
         <source>Profile</source>
         <translation>Profilowanie</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="852"/>
+        <location filename="../../core/settings.cpp" line="849"/>
         <source>Debug</source>
         <translation>Debugowanie</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="852"/>
+        <location filename="../../core/settings.cpp" line="849"/>
         <source>Trace</source>
         <translation>Trace</translation>
     </message>
@@ -12367,32 +12363,32 @@ Czy na pewno chcesz kontynuować?</translation>
 <context>
     <name>MemoryCardType</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1702"/>
+        <location filename="../../core/settings.cpp" line="1662"/>
         <source>No Memory Card</source>
         <translation>Brak karty pamięci</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1703"/>
+        <location filename="../../core/settings.cpp" line="1663"/>
         <source>Shared Between All Games</source>
         <translation>Współdzielone pomiędzy wszystkie gry</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1704"/>
+        <location filename="../../core/settings.cpp" line="1664"/>
         <source>Separate Card Per Game (Serial)</source>
         <translation>Oddzielna karta na grę (numer seryjny)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1705"/>
+        <location filename="../../core/settings.cpp" line="1665"/>
         <source>Separate Card Per Game (Title)</source>
         <translation>Oddzielna karta na grę (tytuł)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1706"/>
+        <location filename="../../core/settings.cpp" line="1666"/>
         <source>Separate Card Per Game (File Title)</source>
         <translation>Oddzielna karta na grę (nazwa pliku)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1707"/>
+        <location filename="../../core/settings.cpp" line="1667"/>
         <source>Non-Persistent Card (Do Not Save)</source>
         <translation>Karta nietrwała (nie zapisuj)</translation>
     </message>
@@ -12701,22 +12697,22 @@ Czy na pewno chcesz kontynuować?</translation>
 <context>
     <name>MultitapMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1759"/>
+        <location filename="../../core/settings.cpp" line="1719"/>
         <source>Disabled</source>
         <translation>Wyłączony</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1759"/>
+        <location filename="../../core/settings.cpp" line="1719"/>
         <source>Enable on Port 1 Only</source>
         <translation>Włączony tylko na porcie 1</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1760"/>
+        <location filename="../../core/settings.cpp" line="1720"/>
         <source>Enable on Port 2 Only</source>
         <translation>Włączony tylko na porcie 2</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1760"/>
+        <location filename="../../core/settings.cpp" line="1720"/>
         <source>Enable on Ports 1 and 2</source>
         <translation>Włączony na portach 1 i 2</translation>
     </message>
@@ -12962,22 +12958,22 @@ Czy na pewno chcesz kontynuować?</translation>
         <translation>Reset systemu.</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="728"/>
+        <location filename="../../core/settings.cpp" line="725"/>
         <source>PGXP is incompatible with the software renderer, disabling PGXP.</source>
         <translation>PGXP jest niekompatybilny z rendererem programowym, wyłączam PGXP.</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="746"/>
+        <location filename="../../core/settings.cpp" line="743"/>
         <source>Rewind is not supported on 32-bit ARM for Android.</source>
         <translation>Cofanie nie jest wspierane na Androidzie na platformie 32-bit ARM.</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="752"/>
+        <location filename="../../core/settings.cpp" line="749"/>
         <source>Runahead is not supported on 32-bit ARM for Android.</source>
         <translation>Przewijanie nie jest wspierane na Androidzie na platformie 32-bit ARM.</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="761"/>
+        <location filename="../../core/settings.cpp" line="758"/>
         <source>Rewind is disabled because runahead is enabled.</source>
         <translation>Cofanie jest wyłączone - przewijanie jest aktywne.</translation>
     </message>
@@ -13032,27 +13028,27 @@ Czy na pewno chcesz kontynuować?</translation>
         <translation>Karta pamięci {} jest obecna w systemie, ale nie jest w stanie zapisu. Ponowne podłączenie karty.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2054"/>
+        <location filename="../../core/system.cpp" line="2052"/>
         <source>Failed to initialize %s renderer, falling back to software renderer.</source>
         <translation>Nie udało się zainicjować renderera %s, przechodzę w tryb renderowania programowego.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2165"/>
+        <location filename="../../core/system.cpp" line="2163"/>
         <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
         <translation>OSTRZEŻENIE: przetaktowywanie procesora (%u%%) było inne w stanie zapisu (%u%%).</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3535"/>
+        <location filename="../../core/system.cpp" line="3526"/>
         <source>Failed to switch to subimage %u in &apos;%s&apos;: %s.</source>
         <translation>Nie udało się przełączyć na podobraz %u w &apos;%s&apos;: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3543"/>
+        <location filename="../../core/system.cpp" line="3534"/>
         <source>Switched to sub-image %s (%u) in &apos;%s&apos;.</source>
         <translation>Przełączono na podobraz %s (%u) w &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2817"/>
+        <location filename="../../core/system.cpp" line="2808"/>
         <source>No cheats are loaded.</source>
         <translation>Żadne cheaty nie są załadowane.</translation>
     </message>
@@ -13162,27 +13158,27 @@ Czy na pewno chcesz kontynuować?</translation>
         <translation>CD Audio odciszone.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4357"/>
+        <location filename="../../core/system.cpp" line="4348"/>
         <source>Started dumping audio to &apos;%s&apos;.</source>
         <translation>Rozpoczęto zrzucanie dźwięku do &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4362"/>
+        <location filename="../../core/system.cpp" line="4353"/>
         <source>Failed to start dumping audio to &apos;%s&apos;.</source>
         <translation>Nie udało się rozpocząć zrzutu dźwięku do &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4372"/>
+        <location filename="../../core/system.cpp" line="4363"/>
         <source>Stopped dumping audio.</source>
         <translation>Zatrzymano przesyłanie dźwięku.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4586"/>
+        <location filename="../../core/system.cpp" line="4577"/>
         <source>Failed to load cheats from &apos;%s&apos;.</source>
         <translation>Nie udało się załadować cheatów z &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4628"/>
+        <location filename="../../core/system.cpp" line="4619"/>
         <source>Failed to save cheat list to &apos;%s&apos;</source>
         <translation>Nie udało się zapisać listy cheatów do &apos;%s&apos;</translation>
     </message>
@@ -13197,136 +13193,136 @@ Czy na pewno chcesz kontynuować?</translation>
         <translation>Stan zapisany do &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2093"/>
+        <location filename="../../core/system.cpp" line="2091"/>
         <source>This save state was created with a different BIOS version or patch options. This may cause stability issues.</source>
         <translation>Ten stan gry zapisano, gdy używany był inny BIOS lub włączone zostały opcje &quot;łatające&quot;. Może to spowodować problemy ze stabilnością.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2333"/>
+        <location filename="../../core/system.cpp" line="2331"/>
         <source>Failed to open CD image from save state &apos;{}&apos;: {}.
 Using existing image &apos;{}&apos;, this may result in instability.</source>
         <translation>Nie udało się otworzyć obrazu płyty CD z zapisu stanu &apos;{}&apos;: {}.
 Używam obecnego obrazu &apos;{}&apos;, to może powodować brak stabilności.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2767"/>
+        <location filename="../../core/system.cpp" line="2758"/>
         <source>Rewinding is not enabled.</source>
         <translation>Cofanie jest nieaktywne.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2825"/>
+        <location filename="../../core/system.cpp" line="2816"/>
         <source>{} cheats are now active.</source>
         <translation>{} kod(ów) jest teraz aktywne.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2826"/>
+        <location filename="../../core/system.cpp" line="2817"/>
         <source>{} cheats are now inactive.</source>
         <translation>{} kod(ów) jest teraz nieaktywnych.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3224"/>
+        <location filename="../../core/system.cpp" line="3215"/>
         <source>Swapped memory card ports. Both ports have a memory card.</source>
         <translation>Zamieniono porty kart pamięci. W każdym jest karta pamięci.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3230"/>
+        <location filename="../../core/system.cpp" line="3221"/>
         <source>Swapped memory card ports. Port 2 has a memory card, Port 1 is empty.</source>
         <translation>Zamieniono porty kart pamięci. W 2. jest karta, 1. jest pusty.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3235"/>
+        <location filename="../../core/system.cpp" line="3226"/>
         <source>Swapped memory card ports. Port 1 has a memory card, Port 2 is empty.</source>
         <translation>Zamieniono porty kart pamięci. W 1. jest karta, 2. jest pusty.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3239"/>
+        <location filename="../../core/system.cpp" line="3230"/>
         <source>Swapped memory card ports. Neither port has a memory card.</source>
         <translation>Zamieniono porty kart pamięci. W żadnym nie ma karty pamięci.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3328"/>
+        <location filename="../../core/system.cpp" line="3319"/>
         <source>Failed to open disc image &apos;{}&apos;: {}.</source>
         <translation>Nie udało się otworzyć obrazu płyty &apos;{}&apos;: {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3342"/>
+        <location filename="../../core/system.cpp" line="3333"/>
         <source>Inserted disc &apos;{}&apos; ({}).</source>
         <translation>Włożono płytę  &apos;{}&apos; ({}).</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3600"/>
+        <location filename="../../core/system.cpp" line="3591"/>
         <source>Switching to {}{} GPU renderer.</source>
         <translation>Przełączenie na {}{} renderer karty graficznej.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3626"/>
+        <location filename="../../core/system.cpp" line="3617"/>
         <source>Switching to {} audio backend.</source>
         <translation>Przełączanie na sterownik dźwięku {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3650"/>
+        <location filename="../../core/system.cpp" line="3641"/>
         <source>Switching to {} CPU execution mode.</source>
         <translation>Przełączanie do trybu wykonywania procesora {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3669"/>
+        <location filename="../../core/system.cpp" line="3660"/>
         <source>Recompiler options changed, flushing all blocks.</source>
         <translation>Zmieniono opcje rekompilatora, czyszczenie wszystkich bloków.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4594"/>
+        <location filename="../../core/system.cpp" line="4585"/>
         <source>{} cheats are enabled. This may result in instability.</source>
         <translation>{} kodów aktywnych. Może to spodować brak stabilności.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4644"/>
+        <location filename="../../core/system.cpp" line="4635"/>
         <source>Saved {} cheats to &apos;{}&apos;.</source>
         <translation>Zapisano {} kody do &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4659"/>
+        <location filename="../../core/system.cpp" line="4650"/>
         <source>Deleted cheat list &apos;{}&apos;.</source>
         <translation>Usunięto listę kodów &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4755"/>
+        <location filename="../../core/system.cpp" line="4746"/>
         <source>Widescreen hack is now enabled, and aspect ratio is set to {}.</source>
         <translation>Poprawki dla ekranu panoramicznego są teraz włączone, a format ekranu jest ustawiony na {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4763"/>
+        <location filename="../../core/system.cpp" line="4754"/>
         <source>Widescreen hack is now disabled, and aspect ratio is set to {}.</source>
         <translation>Poprawki dla ekranu panoramicznego są teraz wyłączone, a format ekranu jest ustawiony na {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4778"/>
+        <location filename="../../core/system.cpp" line="4769"/>
         <source>Switching to {} renderer...</source>
         <translation>Przełączenie  rendererowania na {}...</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4701"/>
+        <location filename="../../core/system.cpp" line="4692"/>
         <source>Cheat &apos;%s&apos; enabled.</source>
         <translation>Kod &apos;%s&apos; włączony.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4295"/>
+        <location filename="../../core/system.cpp" line="4286"/>
         <source>Failed to save undo load state:
 {}</source>
         <translation>Nie udało się zapisać stanu sprzed wczytania stanu:
 {}</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4705"/>
+        <location filename="../../core/system.cpp" line="4696"/>
         <source>Cheat &apos;%s&apos; disabled.</source>
         <translation>Kod &apos;%s&apos; wyłączony.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4720"/>
+        <location filename="../../core/system.cpp" line="4711"/>
         <source>Applied cheat &apos;%s&apos;.</source>
         <translation>Zastosowano kod &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4724"/>
+        <location filename="../../core/system.cpp" line="4715"/>
         <source>Cheat &apos;%s&apos; is already enabled.</source>
         <translation>Cheat &apos;%s&apos; jest już włączony.</translation>
     </message>
@@ -13660,88 +13656,88 @@ Adres URL to: %1</translation>
 <context>
     <name>QtHost</name>
     <message>
-        <location filename="../qthost.cpp" line="180"/>
-        <location filename="../qthost.cpp" line="203"/>
-        <location filename="../qthost.cpp" line="211"/>
-        <location filename="../qthost.cpp" line="247"/>
-        <location filename="../qthost.cpp" line="267"/>
-        <location filename="../qthost.cpp" line="277"/>
-        <location filename="../qthost.cpp" line="290"/>
-        <location filename="../qthost.cpp" line="305"/>
-        <location filename="../qthost.cpp" line="318"/>
-        <location filename="../qthost.cpp" line="2213"/>
-        <location filename="../qthost.cpp" line="2239"/>
-        <location filename="../qthost.cpp" line="2255"/>
+        <location filename="../qthost.cpp" line="181"/>
+        <location filename="../qthost.cpp" line="204"/>
+        <location filename="../qthost.cpp" line="212"/>
+        <location filename="../qthost.cpp" line="248"/>
+        <location filename="../qthost.cpp" line="268"/>
+        <location filename="../qthost.cpp" line="278"/>
+        <location filename="../qthost.cpp" line="291"/>
+        <location filename="../qthost.cpp" line="306"/>
+        <location filename="../qthost.cpp" line="319"/>
+        <location filename="../qthost.cpp" line="2221"/>
+        <location filename="../qthost.cpp" line="2247"/>
+        <location filename="../qthost.cpp" line="2263"/>
         <source>Error</source>
         <translation>Błąd</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="181"/>
+        <location filename="../qthost.cpp" line="182"/>
         <source>Failed to create HTTPDownloader.</source>
         <translation>Nie udało się utworzyć HTTPDownloader.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="188"/>
+        <location filename="../qthost.cpp" line="189"/>
         <source>Downloading %1...</source>
         <translation>Pobieranie %1...</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="204"/>
+        <location filename="../qthost.cpp" line="205"/>
         <source>Download failed with HTTP status code %1.</source>
         <translation>Pobieranie zakończyło się niepowodzeniem z błędem HTTP status code %1.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="212"/>
+        <location filename="../qthost.cpp" line="213"/>
         <source>Download failed: Data is empty.</source>
         <translation>Pobieranie nie powiodło się: Dane są puste.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="248"/>
+        <location filename="../qthost.cpp" line="249"/>
         <source>Failed to write &apos;%1&apos;.</source>
         <translation>Nie udało się zapisać &apos;%1&apos;.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="268"/>
+        <location filename="../qthost.cpp" line="269"/>
         <source>Failed to open downloaded zip file.</source>
         <translation>Nie udało się otworzyć pobranego pliku zip.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="278"/>
+        <location filename="../qthost.cpp" line="279"/>
         <source>Failed to locate &apos;%1&apos; in zip.</source>
         <translation>Nie udało się odnaleźć &apos;%1&apos; w zipie.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="291"/>
+        <location filename="../qthost.cpp" line="292"/>
         <source>Failed to open &apos;%1&apos;: %2.</source>
         <translation>Nie udało się otworzyć &apos;%1&apos;: %2.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="306"/>
+        <location filename="../qthost.cpp" line="307"/>
         <source>Failed to read &apos;%1&apos; from zip.</source>
         <translation>Nie udało się odczytać &apos;%1&apos; z zipa.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="319"/>
+        <location filename="../qthost.cpp" line="320"/>
         <source>Failed to write to &apos;%1&apos;.</source>
         <translation>Nie udało się zapisać do &apos;%1&apos;.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2214"/>
+        <location filename="../qthost.cpp" line="2222"/>
         <source>File &apos;%1&apos; does not exist.</source>
         <translation>Plik &apos;%1&apos; nie istnieje.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2240"/>
+        <location filename="../qthost.cpp" line="2248"/>
         <source>The specified save state does not exist.</source>
         <translation>Określony zapis stanu gry nie istnieje.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2256"/>
+        <location filename="../qthost.cpp" line="2264"/>
         <source>Cannot use no-gui mode, because no boot filename was specified.</source>
         <translation>Nie można użyć trybu bez graficznego interfejsu użytkownika, ponieważ nie określono pliku, który ma zostać wczytany.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2257"/>
+        <location filename="../qthost.cpp" line="2265"/>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
         <translation>Nie można użyć trybu przetwarzania wsadowego, ponieważ nie określono pliku/plików do wczytania.</translation>
     </message>
@@ -13913,67 +13909,47 @@ Czy chcesz utworzyć katalog?</translation>
 <context>
     <name>Settings</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1462"/>
-        <source>Disabled</source>
-        <translation>Wyłączone</translation>
-    </message>
-    <message>
-        <location filename="../../core/settings.cpp" line="1463"/>
-        <source>VSync</source>
-        <translation>Synchronizacja pionowa</translation>
-    </message>
-    <message>
-        <location filename="../../core/settings.cpp" line="1464"/>
-        <source>Relaxed VSync</source>
-        <translation>Zrelaskowana synchornizacja pionowa</translation>
-    </message>
-    <message>
-        <location filename="../../core/settings.cpp" line="1465"/>
-        <source>VRR/FreeSync/GSync</source>
-        <translation>VRR/FreeSync/GSync</translation>
-    </message>
-    <message>
-        <location filename="../../core/settings.cpp" line="1498"/>
+        <location filename="../../core/settings.cpp" line="1458"/>
         <source>Automatic</source>
         <translation>Automatyczne</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1499"/>
+        <location filename="../../core/settings.cpp" line="1459"/>
         <source>Disallowed</source>
         <translation>Niedozwolone</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1500"/>
+        <location filename="../../core/settings.cpp" line="1460"/>
         <source>Allowed</source>
         <translation>Dozwolone</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1534"/>
+        <location filename="../../core/settings.cpp" line="1494"/>
         <source>Screen Resolution</source>
         <translation>Rozdzielczość ekranu</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1535"/>
+        <location filename="../../core/settings.cpp" line="1495"/>
         <source>Internal Resolution</source>
         <translation>Rozdzielczość wewnętrzna</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1536"/>
+        <location filename="../../core/settings.cpp" line="1496"/>
         <source>Internal Resolution (Aspect Uncorrected)</source>
         <translation>Rozdzielczość wewnętrzna (Format obrazu niepoprawiony)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1569"/>
+        <location filename="../../core/settings.cpp" line="1529"/>
         <source>PNG</source>
         <translation>PNG</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1570"/>
+        <location filename="../../core/settings.cpp" line="1530"/>
         <source>JPEG</source>
         <translation>JPEG</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1571"/>
+        <location filename="../../core/settings.cpp" line="1531"/>
         <source>WebP</source>
         <translation>WebP</translation>
     </message>
@@ -14491,7 +14467,7 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
 <context>
     <name>System</name>
     <message>
-        <location filename="../../core/system.cpp" line="2199"/>
+        <location filename="../../core/system.cpp" line="2197"/>
         <source>Failed to load %s BIOS.</source>
         <translation>Nie udało się wczytać BIOSu %s.</translation>
     </message>
@@ -14500,8 +14476,8 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
         <location filename="../../core/fullscreen_ui.cpp" line="986"/>
         <location filename="../../core/fullscreen_ui.cpp" line="5932"/>
         <location filename="../../core/fullscreen_ui.cpp" line="5955"/>
-        <location filename="../../core/system.cpp" line="3466"/>
-        <location filename="../../core/system.cpp" line="4231"/>
+        <location filename="../../core/system.cpp" line="3457"/>
+        <location filename="../../core/system.cpp" line="4222"/>
         <source>Error</source>
         <translation>Błąd</translation>
     </message>
@@ -14527,56 +14503,56 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
         <translation>Ustawienia zgodności nie są włączone. Niektóre gry mogą nie działać poprawnie.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2206"/>
+        <location filename="../../core/system.cpp" line="2204"/>
         <source>Incorrect BIOS image size</source>
         <translation>Nieprawidłowy rozmiar obrazu BIOSu</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2291"/>
+        <location filename="../../core/system.cpp" line="2289"/>
         <source>Save state is incompatible: minimum version is {0} but state is version {1}.</source>
         <translation>Zapis stanu nie jest kompatybilny, minimalna wspierana wersja to {0}, ale wersja zapisu stanu to {1}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2299"/>
+        <location filename="../../core/system.cpp" line="2297"/>
         <source>Save state is incompatible: maximum version is {0} but state is version {1}.</source>
         <translation>Zapis stanu nie jest kompatybilny, maksymalnie wspierana wersja to {0}, ale wersja zapisu stanu to {1}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2343"/>
+        <location filename="../../core/system.cpp" line="2341"/>
         <source>Failed to open CD image &apos;{}&apos; used by save state:
 </source>
         <translation>Nie udało się otworzyć obrazu płyty CD o nazwie &apos;{}&apos; używanej przez zapis stanu:
 </translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2361"/>
+        <location filename="../../core/system.cpp" line="2359"/>
         <source>Failed to switch to subimage {} in CD image &apos;{}&apos; used by save state:
 </source>
         <translation>Nie udało się przełączyć do podobrazu {} w obrazie płyty CD o nazwie &apos;{}&apos;, używanej przez zapis stanu:
 </translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3060"/>
+        <location filename="../../core/system.cpp" line="3051"/>
         <source>Per-game memory card cannot be used for slot {} as the running game has no code. Using shared card instead.</source>
         <translation>Karty pamięci przeznaczonej na grę nie można używać w slocie {}, ponieważ działająca gra nie ma kodu. Zamiast tego użyj wspólnej karty.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3079"/>
+        <location filename="../../core/system.cpp" line="3070"/>
         <source>Per-game memory card cannot be used for slot {} as the running game has no title. Using shared card instead.</source>
         <translation>Karta pamięci przeznaczona na grę nie może być użyta dla slotu {}, ponieważ uruchomina gra nie posiada tytułu. Użyta zostanie współdzielona karta pamięci.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3113"/>
+        <location filename="../../core/system.cpp" line="3104"/>
         <source>Using disc-specific memory card &apos;{}&apos; instead of per-game card.</source>
         <translation>Używanie karty pamięci &apos;{}&apos; przeznaczonej dla konkretnej płyty zamiast karty przeznaczonej dla gry.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3135"/>
+        <location filename="../../core/system.cpp" line="3126"/>
         <source>Per-game memory card cannot be used for slot {} as the running game has no path. Using shared card instead.</source>
         <translation>Karty pamięci przeznaczonej na grę nie można używać w slocie {}, ponieważ działająca gra nie ma ścieżki. Zamiast tego użyj wspólnej karty.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3457"/>
+        <location filename="../../core/system.cpp" line="3448"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 {0}: {1}
@@ -14597,7 +14573,7 @@ Instrukcje dotyczące dodawania pliku SBI znajdziesz w pliku README.
 Czy chcesz kontynuować?</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3468"/>
+        <location filename="../../core/system.cpp" line="3459"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 {0}: {1}
@@ -14614,52 +14590,52 @@ Twój obraz jest niekompletny. Aby uruchomić tę grę, musisz dodać plik SBI.
 Nazwa pliku SBI musi odpowiadać nazwie obrazu płyty.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3870"/>
+        <location filename="../../core/system.cpp" line="3861"/>
         <source>CPU clock speed is set to {}% ({} / {}). This may crash games.</source>
         <translation>Szybkość zegara procesora jest ustawiona na {}% ({} / {}). Może to zepsuć niektóre gry.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3878"/>
+        <location filename="../../core/system.cpp" line="3869"/>
         <source>CD-ROM read speedup set to {}x (effective speed {}x). This may crash games.</source>
         <translation>Przyspieszenie odczytu CD-ROM-u ustawione na {}x (efektywna prędkość {}x). Może sprawić, że niektóre gry będą niestabilne.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3884"/>
+        <location filename="../../core/system.cpp" line="3875"/>
         <source>CD-ROM seek speedup set to {}. This may crash games.</source>
         <translation>Przyspieszenie przeszukiwania CD-ROM-u ustawione na {}. Może sprawić, że niektóre gry będą niestabilne.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3886"/>
+        <location filename="../../core/system.cpp" line="3877"/>
         <source>Instant</source>
         <translation>Natychmiastowe</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3891"/>
+        <location filename="../../core/system.cpp" line="3882"/>
         <source>Force NTSC timings is enabled. Games may run at incorrect speeds.</source>
         <translation>Opcja &quot;Wymuś synchronizację NTSC&quot; jest włączona. Gry mogą działać z nieprawidłową szybkością.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3896"/>
+        <location filename="../../core/system.cpp" line="3887"/>
         <source>Multisample anti-aliasing is enabled, some games may not render correctly.</source>
         <translation>Wygładzanie wielopróbkowe jest włączone, niektóre gry mogą nie renderować się poprawnie.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3899"/>
+        <location filename="../../core/system.cpp" line="3890"/>
         <source>8MB RAM is enabled, this may be incompatible with some games.</source>
         <translation>8MB RAM jest włączone, może to być niekompatybilne z niektórymi grami.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4232"/>
+        <location filename="../../core/system.cpp" line="4223"/>
         <source>Failed to save resume state: {}</source>
         <translation>Nie udało się zapisać stanu wznowienia: {}</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4489"/>
+        <location filename="../../core/system.cpp" line="4480"/>
         <source>Invalid version {} ({} version {})</source>
         <translation>Nieprawidłowa wersja {} ({} wersja {})</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3348"/>
+        <location filename="../../core/system.cpp" line="3339"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>Gra się zmieniła, wczytywanie właściwej karty pamięci.</translation>
     </message>
