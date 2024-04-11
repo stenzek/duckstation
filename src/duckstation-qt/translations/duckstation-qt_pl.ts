@@ -1520,7 +1520,7 @@ Nieprzeczytane wiadomości: {}</translation>
     <message>
         <location filename="../audiosettingswidget.cpp" line="70"/>
         <source>The buffer size determines the size of the chunks of audio which will be pulled by the host. Smaller values reduce the output latency, but may cause hitches if the emulation speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of this value, so using a low value here may not significantly change latency.</source>
-        <translation type="unfinished">Rozmiar bufora określa rozmiar fragmentów audio, które będą pobierane przez gospodarza. Mniejsze wartości zmniejszają opóźnienie wyjściowe, ale mogą powodować zacięcia, jeśli prędkość emulacji jest nierówna. Zauważ, że sterownik Cubeb używa mniejszych fragmentów niezależnie od tej wartości, więc użycie niskiej wartości tutaj może nie zmienić znacząco opóźnienia.</translation>
+        <translation>Rozmiar bufora określa rozmiar fragmentów audio, które będą pobierane przez gospodarza. Mniejsze wartości zmniejszają opóźnienie wyjściowe, ale mogą powodować zacięcia, jeśli prędkość emulacji jest nierówna. Zauważ, że sterownik Cubeb używa mniejszych fragmentów niezależnie od tej wartości, więc użycie niskiej wartości tutaj może nie zmienić znacząco opóźnienia.</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="69"/>
@@ -1552,12 +1552,12 @@ Nieprzeczytane wiadomości: {}</translation>
     <message>
         <location filename="../audiosettingswidget.cpp" line="78"/>
         <source>Controls the volume of the audio played on the host.</source>
-        <translation type="unfinished">Ustawia głośność dźwięku odtwarzanego przez gospodarza.</translation>
+        <translation>Ustawia głośność dźwięku odtwarzanego przez gospodarza.</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="80"/>
         <source>Controls the volume of the audio played on the host when fast forwarding.</source>
-        <translation type="unfinished">Ustawia głośność dźwięku odtwarzanego przez gospodarza podczas szybkiego przewijania.</translation>
+        <translation>Ustawia głośność dźwięku odtwarzanego przez gospodarza podczas szybkiego przewijania.</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="87"/>
@@ -4574,8 +4574,8 @@ Ten plik może mieć kilka gigabajtów, więc pamiętaj o zużyciu dysku SSD.</t
     <message>
         <location filename="../emulationsettingswidget.ui" line="67"/>
         <location filename="../emulationsettingswidget.cpp" line="93"/>
-        <source>Display Vertical Sync (VSync)</source>
-        <translation>Wyświetl synchronizację pionową wyświetlacza (VSync)</translation>
+        <source>Vertical Sync (VSync)</source>
+        <translation>Synchronizacja pionowa (VSync)</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="74"/>
@@ -4737,7 +4737,7 @@ Ten plik może mieć kilka gigabajtów, więc pamiętaj o zużyciu dysku SSD.</t
     <message>
         <location filename="../emulationsettingswidget.cpp" line="99"/>
         <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host&apos;s refresh rate when both VSync and Audio Resampling settings are enabled. This results in the smoothest animations possible, at the cost of potentially increasing the emulation speed by less than 1%. Sync To Host Refresh Rate will not take effect if the console&apos;s refresh rate is too far from the host&apos;s refresh rate. Users with variable refresh rate displays should disable this option.</source>
-        <translation type="unfinished">Koryguje prędkość emulacji, by dostosować częstotliwość odświeżania konsoli do częstotliwości odświeżania gospodarza, gdy opcje Synchronizacja pionowa oraz Resampling Audio są włączone. Skutkuje to najlepszą możliwą płynnością animacji, kosztem przyspieszenia prędkości emulacji o mniej niż 1%. Do synchronizacji częstotliwości odświeżania nie dojdzie, jeśli częstotliwość odświeżania konsoli różni się zbytnio od częstotliwości odświeżania hosta. Użytkownicy używający monitorów o zmiennej częstotliwości odświeżania powinni wyłączyć tę opcję.</translation>
+        <translation>Koryguje prędkość emulacji, by dostosować częstotliwość odświeżania konsoli do częstotliwości odświeżania gospodarza, gdy opcje Synchronizacja pionowa oraz Resampling Audio są włączone. Skutkuje to najlepszą możliwą płynnością animacji, kosztem przyspieszenia prędkości emulacji o mniej niż 1%. Do synchronizacji częstotliwości odświeżania nie dojdzie, jeśli częstotliwość odświeżania konsoli różni się zbytnio od częstotliwości odświeżania hosta. Użytkownicy używający monitorów o zmiennej częstotliwości odświeżania powinni wyłączyć tę opcję.</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="106"/>
@@ -13028,27 +13028,27 @@ Czy na pewno chcesz kontynuować?</translation>
         <translation>Karta pamięci {} jest obecna w systemie, ale nie jest w stanie zapisu. Ponowne podłączenie karty.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2052"/>
+        <location filename="../../core/system.cpp" line="2062"/>
         <source>Failed to initialize %s renderer, falling back to software renderer.</source>
         <translation>Nie udało się zainicjować renderera %s, przechodzę w tryb renderowania programowego.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2163"/>
+        <location filename="../../core/system.cpp" line="2173"/>
         <source>WARNING: CPU overclock (%u%%) was different in save state (%u%%).</source>
         <translation>OSTRZEŻENIE: przetaktowywanie procesora (%u%%) było inne w stanie zapisu (%u%%).</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3526"/>
+        <location filename="../../core/system.cpp" line="3536"/>
         <source>Failed to switch to subimage %u in &apos;%s&apos;: %s.</source>
         <translation>Nie udało się przełączyć na podobraz %u w &apos;%s&apos;: %s.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3534"/>
+        <location filename="../../core/system.cpp" line="3544"/>
         <source>Switched to sub-image %s (%u) in &apos;%s&apos;.</source>
         <translation>Przełączono na podobraz %s (%u) w &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2808"/>
+        <location filename="../../core/system.cpp" line="2818"/>
         <source>No cheats are loaded.</source>
         <translation>Żadne cheaty nie są załadowane.</translation>
     </message>
@@ -13158,27 +13158,27 @@ Czy na pewno chcesz kontynuować?</translation>
         <translation>CD Audio odciszone.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4348"/>
+        <location filename="../../core/system.cpp" line="4358"/>
         <source>Started dumping audio to &apos;%s&apos;.</source>
         <translation>Rozpoczęto zrzucanie dźwięku do &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4353"/>
+        <location filename="../../core/system.cpp" line="4363"/>
         <source>Failed to start dumping audio to &apos;%s&apos;.</source>
         <translation>Nie udało się rozpocząć zrzutu dźwięku do &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4363"/>
+        <location filename="../../core/system.cpp" line="4373"/>
         <source>Stopped dumping audio.</source>
         <translation>Zatrzymano przesyłanie dźwięku.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4577"/>
+        <location filename="../../core/system.cpp" line="4587"/>
         <source>Failed to load cheats from &apos;%s&apos;.</source>
         <translation>Nie udało się załadować cheatów z &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4619"/>
+        <location filename="../../core/system.cpp" line="4629"/>
         <source>Failed to save cheat list to &apos;%s&apos;</source>
         <translation>Nie udało się zapisać listy cheatów do &apos;%s&apos;</translation>
     </message>
@@ -13193,136 +13193,136 @@ Czy na pewno chcesz kontynuować?</translation>
         <translation>Stan zapisany do &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2091"/>
+        <location filename="../../core/system.cpp" line="2101"/>
         <source>This save state was created with a different BIOS version or patch options. This may cause stability issues.</source>
         <translation>Ten stan gry zapisano, gdy używany był inny BIOS lub włączone zostały opcje &quot;łatające&quot;. Może to spowodować problemy ze stabilnością.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2331"/>
+        <location filename="../../core/system.cpp" line="2341"/>
         <source>Failed to open CD image from save state &apos;{}&apos;: {}.
 Using existing image &apos;{}&apos;, this may result in instability.</source>
         <translation>Nie udało się otworzyć obrazu płyty CD z zapisu stanu &apos;{}&apos;: {}.
 Używam obecnego obrazu &apos;{}&apos;, to może powodować brak stabilności.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2758"/>
+        <location filename="../../core/system.cpp" line="2768"/>
         <source>Rewinding is not enabled.</source>
         <translation>Cofanie jest nieaktywne.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2816"/>
+        <location filename="../../core/system.cpp" line="2826"/>
         <source>{} cheats are now active.</source>
         <translation>{} kod(ów) jest teraz aktywne.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2817"/>
+        <location filename="../../core/system.cpp" line="2827"/>
         <source>{} cheats are now inactive.</source>
         <translation>{} kod(ów) jest teraz nieaktywnych.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3215"/>
+        <location filename="../../core/system.cpp" line="3225"/>
         <source>Swapped memory card ports. Both ports have a memory card.</source>
         <translation>Zamieniono porty kart pamięci. W każdym jest karta pamięci.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3221"/>
+        <location filename="../../core/system.cpp" line="3231"/>
         <source>Swapped memory card ports. Port 2 has a memory card, Port 1 is empty.</source>
         <translation>Zamieniono porty kart pamięci. W 2. jest karta, 1. jest pusty.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3226"/>
+        <location filename="../../core/system.cpp" line="3236"/>
         <source>Swapped memory card ports. Port 1 has a memory card, Port 2 is empty.</source>
         <translation>Zamieniono porty kart pamięci. W 1. jest karta, 2. jest pusty.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3230"/>
+        <location filename="../../core/system.cpp" line="3240"/>
         <source>Swapped memory card ports. Neither port has a memory card.</source>
         <translation>Zamieniono porty kart pamięci. W żadnym nie ma karty pamięci.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3319"/>
+        <location filename="../../core/system.cpp" line="3329"/>
         <source>Failed to open disc image &apos;{}&apos;: {}.</source>
         <translation>Nie udało się otworzyć obrazu płyty &apos;{}&apos;: {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3333"/>
+        <location filename="../../core/system.cpp" line="3343"/>
         <source>Inserted disc &apos;{}&apos; ({}).</source>
         <translation>Włożono płytę  &apos;{}&apos; ({}).</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3591"/>
+        <location filename="../../core/system.cpp" line="3601"/>
         <source>Switching to {}{} GPU renderer.</source>
         <translation>Przełączenie na {}{} renderer karty graficznej.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3617"/>
+        <location filename="../../core/system.cpp" line="3627"/>
         <source>Switching to {} audio backend.</source>
         <translation>Przełączanie na sterownik dźwięku {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3641"/>
+        <location filename="../../core/system.cpp" line="3651"/>
         <source>Switching to {} CPU execution mode.</source>
         <translation>Przełączanie do trybu wykonywania procesora {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3660"/>
+        <location filename="../../core/system.cpp" line="3670"/>
         <source>Recompiler options changed, flushing all blocks.</source>
         <translation>Zmieniono opcje rekompilatora, czyszczenie wszystkich bloków.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4585"/>
+        <location filename="../../core/system.cpp" line="4595"/>
         <source>{} cheats are enabled. This may result in instability.</source>
         <translation>{} kodów aktywnych. Może to spodować brak stabilności.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4635"/>
+        <location filename="../../core/system.cpp" line="4645"/>
         <source>Saved {} cheats to &apos;{}&apos;.</source>
         <translation>Zapisano {} kody do &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4650"/>
+        <location filename="../../core/system.cpp" line="4660"/>
         <source>Deleted cheat list &apos;{}&apos;.</source>
         <translation>Usunięto listę kodów &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4746"/>
+        <location filename="../../core/system.cpp" line="4756"/>
         <source>Widescreen hack is now enabled, and aspect ratio is set to {}.</source>
         <translation>Poprawki dla ekranu panoramicznego są teraz włączone, a format ekranu jest ustawiony na {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4754"/>
+        <location filename="../../core/system.cpp" line="4764"/>
         <source>Widescreen hack is now disabled, and aspect ratio is set to {}.</source>
         <translation>Poprawki dla ekranu panoramicznego są teraz wyłączone, a format ekranu jest ustawiony na {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4769"/>
+        <location filename="../../core/system.cpp" line="4779"/>
         <source>Switching to {} renderer...</source>
         <translation>Przełączenie  rendererowania na {}...</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4692"/>
+        <location filename="../../core/system.cpp" line="4702"/>
         <source>Cheat &apos;%s&apos; enabled.</source>
         <translation>Kod &apos;%s&apos; włączony.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4286"/>
+        <location filename="../../core/system.cpp" line="4296"/>
         <source>Failed to save undo load state:
 {}</source>
         <translation>Nie udało się zapisać stanu sprzed wczytania stanu:
 {}</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4696"/>
+        <location filename="../../core/system.cpp" line="4706"/>
         <source>Cheat &apos;%s&apos; disabled.</source>
         <translation>Kod &apos;%s&apos; wyłączony.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4711"/>
+        <location filename="../../core/system.cpp" line="4721"/>
         <source>Applied cheat &apos;%s&apos;.</source>
         <translation>Zastosowano kod &apos;%s&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4715"/>
+        <location filename="../../core/system.cpp" line="4725"/>
         <source>Cheat &apos;%s&apos; is already enabled.</source>
         <translation>Cheat &apos;%s&apos; jest już włączony.</translation>
     </message>
@@ -14467,7 +14467,7 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
 <context>
     <name>System</name>
     <message>
-        <location filename="../../core/system.cpp" line="2197"/>
+        <location filename="../../core/system.cpp" line="2207"/>
         <source>Failed to load %s BIOS.</source>
         <translation>Nie udało się wczytać BIOSu %s.</translation>
     </message>
@@ -14476,8 +14476,8 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
         <location filename="../../core/fullscreen_ui.cpp" line="986"/>
         <location filename="../../core/fullscreen_ui.cpp" line="5932"/>
         <location filename="../../core/fullscreen_ui.cpp" line="5955"/>
-        <location filename="../../core/system.cpp" line="3457"/>
-        <location filename="../../core/system.cpp" line="4222"/>
+        <location filename="../../core/system.cpp" line="3467"/>
+        <location filename="../../core/system.cpp" line="4232"/>
         <source>Error</source>
         <translation>Błąd</translation>
     </message>
@@ -14503,56 +14503,56 @@ Skanowanie rekursywne zajmuje więcej czasu, ale identyfikuje pliki w podkatalog
         <translation>Ustawienia zgodności nie są włączone. Niektóre gry mogą nie działać poprawnie.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2204"/>
+        <location filename="../../core/system.cpp" line="2214"/>
         <source>Incorrect BIOS image size</source>
         <translation>Nieprawidłowy rozmiar obrazu BIOSu</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2289"/>
+        <location filename="../../core/system.cpp" line="2299"/>
         <source>Save state is incompatible: minimum version is {0} but state is version {1}.</source>
         <translation>Zapis stanu nie jest kompatybilny, minimalna wspierana wersja to {0}, ale wersja zapisu stanu to {1}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2297"/>
+        <location filename="../../core/system.cpp" line="2307"/>
         <source>Save state is incompatible: maximum version is {0} but state is version {1}.</source>
         <translation>Zapis stanu nie jest kompatybilny, maksymalnie wspierana wersja to {0}, ale wersja zapisu stanu to {1}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2341"/>
+        <location filename="../../core/system.cpp" line="2351"/>
         <source>Failed to open CD image &apos;{}&apos; used by save state:
 </source>
         <translation>Nie udało się otworzyć obrazu płyty CD o nazwie &apos;{}&apos; używanej przez zapis stanu:
 </translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2359"/>
+        <location filename="../../core/system.cpp" line="2369"/>
         <source>Failed to switch to subimage {} in CD image &apos;{}&apos; used by save state:
 </source>
         <translation>Nie udało się przełączyć do podobrazu {} w obrazie płyty CD o nazwie &apos;{}&apos;, używanej przez zapis stanu:
 </translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3051"/>
+        <location filename="../../core/system.cpp" line="3061"/>
         <source>Per-game memory card cannot be used for slot {} as the running game has no code. Using shared card instead.</source>
         <translation>Karty pamięci przeznaczonej na grę nie można używać w slocie {}, ponieważ działająca gra nie ma kodu. Zamiast tego użyj wspólnej karty.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3070"/>
+        <location filename="../../core/system.cpp" line="3080"/>
         <source>Per-game memory card cannot be used for slot {} as the running game has no title. Using shared card instead.</source>
         <translation>Karta pamięci przeznaczona na grę nie może być użyta dla slotu {}, ponieważ uruchomina gra nie posiada tytułu. Użyta zostanie współdzielona karta pamięci.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3104"/>
+        <location filename="../../core/system.cpp" line="3114"/>
         <source>Using disc-specific memory card &apos;{}&apos; instead of per-game card.</source>
         <translation>Używanie karty pamięci &apos;{}&apos; przeznaczonej dla konkretnej płyty zamiast karty przeznaczonej dla gry.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3126"/>
+        <location filename="../../core/system.cpp" line="3136"/>
         <source>Per-game memory card cannot be used for slot {} as the running game has no path. Using shared card instead.</source>
         <translation>Karty pamięci przeznaczonej na grę nie można używać w slocie {}, ponieważ działająca gra nie ma ścieżki. Zamiast tego użyj wspólnej karty.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3448"/>
+        <location filename="../../core/system.cpp" line="3458"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 {0}: {1}
@@ -14573,7 +14573,7 @@ Instrukcje dotyczące dodawania pliku SBI znajdziesz w pliku README.
 Czy chcesz kontynuować?</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3459"/>
+        <location filename="../../core/system.cpp" line="3469"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 {0}: {1}
@@ -14590,52 +14590,52 @@ Twój obraz jest niekompletny. Aby uruchomić tę grę, musisz dodać plik SBI.
 Nazwa pliku SBI musi odpowiadać nazwie obrazu płyty.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3861"/>
+        <location filename="../../core/system.cpp" line="3871"/>
         <source>CPU clock speed is set to {}% ({} / {}). This may crash games.</source>
         <translation>Szybkość zegara procesora jest ustawiona na {}% ({} / {}). Może to zepsuć niektóre gry.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3869"/>
+        <location filename="../../core/system.cpp" line="3879"/>
         <source>CD-ROM read speedup set to {}x (effective speed {}x). This may crash games.</source>
         <translation>Przyspieszenie odczytu CD-ROM-u ustawione na {}x (efektywna prędkość {}x). Może sprawić, że niektóre gry będą niestabilne.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3875"/>
+        <location filename="../../core/system.cpp" line="3885"/>
         <source>CD-ROM seek speedup set to {}. This may crash games.</source>
         <translation>Przyspieszenie przeszukiwania CD-ROM-u ustawione na {}. Może sprawić, że niektóre gry będą niestabilne.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3877"/>
+        <location filename="../../core/system.cpp" line="3887"/>
         <source>Instant</source>
         <translation>Natychmiastowe</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3882"/>
+        <location filename="../../core/system.cpp" line="3892"/>
         <source>Force NTSC timings is enabled. Games may run at incorrect speeds.</source>
         <translation>Opcja &quot;Wymuś synchronizację NTSC&quot; jest włączona. Gry mogą działać z nieprawidłową szybkością.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3887"/>
+        <location filename="../../core/system.cpp" line="3897"/>
         <source>Multisample anti-aliasing is enabled, some games may not render correctly.</source>
         <translation>Wygładzanie wielopróbkowe jest włączone, niektóre gry mogą nie renderować się poprawnie.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3890"/>
+        <location filename="../../core/system.cpp" line="3900"/>
         <source>8MB RAM is enabled, this may be incompatible with some games.</source>
         <translation>8MB RAM jest włączone, może to być niekompatybilne z niektórymi grami.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4223"/>
+        <location filename="../../core/system.cpp" line="4233"/>
         <source>Failed to save resume state: {}</source>
         <translation>Nie udało się zapisać stanu wznowienia: {}</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4480"/>
+        <location filename="../../core/system.cpp" line="4490"/>
         <source>Invalid version {} ({} version {})</source>
         <translation>Nieprawidłowa wersja {} ({} wersja {})</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3339"/>
+        <location filename="../../core/system.cpp" line="3349"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>Gra się zmieniła, wczytywanie właściwej karty pamięci.</translation>
     </message>
