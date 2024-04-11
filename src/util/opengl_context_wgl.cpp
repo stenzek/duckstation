@@ -160,6 +160,11 @@ bool OpenGLContextWGL::DoneCurrent()
   return wglMakeCurrent(m_dc, nullptr);
 }
 
+bool OpenGLContextWGL::SupportsNegativeSwapInterval() const
+{
+  return GLAD_WGL_EXT_swap_control && GLAD_WGL_EXT_swap_control_tear;
+}
+
 bool OpenGLContextWGL::SetSwapInterval(s32 interval)
 {
   if (!GLAD_WGL_EXT_swap_control)

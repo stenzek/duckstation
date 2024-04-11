@@ -123,7 +123,7 @@ bool OpenGLContextAGL::SwapBuffers()
   return true;
 }
 
-bool OpenGLContextAGL::IsCurrent()
+bool OpenGLContextAGL::IsCurrent() const
 {
   return (m_context != nil && [NSOpenGLContext currentContext] == m_context);
 }
@@ -138,6 +138,11 @@ bool OpenGLContextAGL::DoneCurrent()
 {
   [NSOpenGLContext clearCurrentContext];
   return true;
+}
+
+bool OpenGLContextAGL::SupportsNegativeSwapInterval() const
+{
+  return false;
 }
 
 bool OpenGLContextAGL::SetSwapInterval(s32 interval)

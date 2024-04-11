@@ -291,7 +291,7 @@ bool OpenGLContextEGL::SwapBuffers()
   return eglSwapBuffers(m_display, m_surface);
 }
 
-bool OpenGLContextEGL::IsCurrent()
+bool OpenGLContextEGL::IsCurrent() const
 {
   return m_context && eglGetCurrentContext() == m_context;
 }
@@ -310,6 +310,11 @@ bool OpenGLContextEGL::MakeCurrent()
 bool OpenGLContextEGL::DoneCurrent()
 {
   return eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+}
+
+bool OpenGLContextEGL::SupportsNegativeSwapInterval() const
+{
+  return m_supports_negative_swap_interval;
 }
 
 bool OpenGLContextEGL::SetSwapInterval(s32 interval)
@@ -473,10 +478,10 @@ void OpenGLContextEGL::DestroySurface()
 
 bool OpenGLContextEGL::CreateContext(const Version& version, EGLContext share_context)
 {
-  Log_DevPrintf("Trying version %u.%u (%s)", version.major_version, version.minor_version,
-                version.profile == OpenGLContext::Profile::ES ?
-                  "ES" :
-                  (version.profile == OpenGLContext::Profile::Core ? "Core" : "None"));
+  Log_DevFmt("Trying version {}.{} ({})", version.major_version, version.minor_version,
+             version.profile == OpenGLContext::Profile::ES ?
+               "ES" :
+               (version.profile == OpenGLContext::Profile::Core ? "Core" : "None"));
   int surface_attribs[16] = {
     EGL_RENDERABLE_TYPE,
     (version.profile == Profile::ES) ?
@@ -531,14 +536,14 @@ bool OpenGLContextEGL::CreateContext(const Version& version, EGLContext share_co
   EGLint num_configs;
   if (!eglChooseConfig(m_display, surface_attribs, nullptr, 0, &num_configs) || num_configs == 0)
   {
-    Log_ErrorPrintf("eglChooseConfig() failed: %d", eglGetError());
+    Log_ErrorFmt("eglChooseConfig() failed: 0x{:x}", static_cast<unsigned>(eglGetError()));
     return false;
   }
 
   std::vector<EGLConfig> configs(static_cast<u32>(num_configs));
   if (!eglChooseConfig(m_display, surface_attribs, configs.data(), num_configs, &num_configs))
   {
-    Log_ErrorPrintf("eglChooseConfig() failed: %d", eglGetError());
+    Log_ErrorFmt("eglChooseConfig() failed: 0x{:x}", static_cast<unsigned>(eglGetError()));
     return false;
   }
   configs.resize(static_cast<u32>(num_configs));
@@ -555,7 +560,7 @@ bool OpenGLContextEGL::CreateContext(const Version& version, EGLContext share_co
 
   if (!config.has_value())
   {
-    Log_WarningPrintf("No EGL configs matched exactly, using first.");
+    Log_WarningPrint("No EGL configs matched exactly, using first.");
     config = configs.front();
   }
 
@@ -573,21 +578,33 @@ bool OpenGLContextEGL::CreateContext(const Version& version, EGLContext share_co
 
   if (!eglBindAPI((version.profile == Profile::ES) ? EGL_OPENGL_ES_API : EGL_OPENGL_API))
   {
-    Log_ErrorPrintf("eglBindAPI(%s) failed", (version.profile == Profile::ES) ? "EGL_OPENGL_ES_API" : "EGL_OPENGL_API");
+    Log_ErrorFmt("eglBindAPI({}) failed", (version.profile == Profile::ES) ? "EGL_OPENGL_ES_API" : "EGL_OPENGL_API");
     return false;
   }
 
   m_context = eglCreateContext(m_display, config.value(), share_context, attribs);
   if (!m_context)
   {
-    Log_ErrorPrintf("eglCreateContext() failed: %d", eglGetError());
+    Log_ErrorFmt("eglCreateContext() failed: 0x{:x}", static_cast<unsigned>(eglGetError()));
     return false;
   }
 
-  Log_InfoPrintf("Got version %u.%u (%s)", version.major_version, version.minor_version,
-                 version.profile == OpenGLContext::Profile::ES ?
-                   "ES" :
-                   (version.profile == OpenGLContext::Profile::Core ? "Core" : "None"));
+  Log_InfoFmt("Got version {}.{} ({})", version.major_version, version.minor_version,
+              version.profile == OpenGLContext::Profile::ES ?
+                "ES" :
+                (version.profile == OpenGLContext::Profile::Core ? "Core" : "None"));
+
+  EGLint min_swap_interval, max_swap_interval;
+  m_supports_negative_swap_interval = false;
+  if (eglGetConfigAttrib(m_display, config.value(), EGL_MIN_SWAP_INTERVAL, &min_swap_interval) &&
+      eglGetConfigAttrib(m_display, config.value(), EGL_MAX_SWAP_INTERVAL, &max_swap_interval))
+  {
+    Log_VerboseFmt("EGL_MIN_SWAP_INTERVAL = {}", min_swap_interval);
+    Log_VerboseFmt("EGL_MAX_SWAP_INTERVAL = {}", max_swap_interval);
+    m_supports_negative_swap_interval = (min_swap_interval <= -1);
+  }
+
+  Log_InfoFmt("Negative swap interval/tear-control is {}supported", m_supports_negative_swap_interval ? "" : "NOT ");
 
   m_config = config.value();
   m_version = version;

@@ -25,9 +25,10 @@ public:
   bool ChangeSurface(const WindowInfo& new_wi) override;
   void ResizeSurface(u32 new_surface_width = 0, u32 new_surface_height = 0) override;
   bool SwapBuffers() override;
-  bool IsCurrent() override;
+  bool IsCurrent() const override;
   bool MakeCurrent() override;
   bool DoneCurrent() override;
+  bool SupportsNegativeSwapInterval() const override;
   bool SetSwapInterval(s32 interval) override;
   std::unique_ptr<OpenGLContext> CreateSharedContext(const WindowInfo& wi, Error* error) override;
 
