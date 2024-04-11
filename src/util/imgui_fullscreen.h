@@ -54,6 +54,7 @@ extern ImVec4 UIBackgroundColor;
 extern ImVec4 UIBackgroundTextColor;
 extern ImVec4 UIBackgroundLineColor;
 extern ImVec4 UIBackgroundHighlightColor;
+extern ImVec4 UIPopupBackgroundColor;
 extern ImVec4 UIDisabledColor;
 extern ImVec4 UIPrimaryColor;
 extern ImVec4 UIPrimaryLightColor;
