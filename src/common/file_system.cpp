@@ -465,6 +465,10 @@ std::string Path::RealPath(const std::string_view& path)
   }
 #endif
 
+  // Get rid of any current/parent directory components before returning.
+  // This should be fine on Linux, since any symbolic links have already replaced the leading portion.
+  Path::Canonicalize(&realpath);
+
   return realpath;
 }
 
