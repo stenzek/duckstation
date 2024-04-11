@@ -90,7 +90,7 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
     tr("Sets the turbo speed. This speed will be used when the turbo hotkey is pressed/toggled. Turboing will take "
        "priority over fast forwarding if both hotkeys are pressed/toggled."));
   dialog->registerWidgetHelp(
-    m_ui.vsync, tr("Display Vertical Sync (VSync)"), tr("Unchecked"),
+    m_ui.vsync, tr("Vertical Sync (VSync)"), tr("Unchecked"),
     tr("Synchronizes presentation of the console's frames to the host. Enabling may result in smoother animations, at "
        "the cost of increased input lag. <strong>GSync/FreeSync users should enable Optimal Frame Pacing "
        "instead.</strong>"));
