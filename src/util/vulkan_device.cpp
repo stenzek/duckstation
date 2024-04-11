@@ -395,6 +395,8 @@ bool VulkanDevice::SelectDeviceExtensions(ExtensionList* extension_list, bool en
     m_optional_extensions.vk_khr_dynamic_rendering &&
     SupportsExtension(VK_KHR_DYNAMIC_RENDERING_LOCAL_READ_EXTENSION_NAME, false);
   m_optional_extensions.vk_khr_push_descriptor = SupportsExtension(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME, false);
+  m_optional_extensions.vk_khr_shader_non_semantic_info =
+    SupportsExtension(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME, false);
   m_optional_extensions.vk_ext_external_memory_host =
     SupportsExtension(VK_EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME, false);
 
@@ -849,8 +851,7 @@ bool VulkanDevice::CreateCommandBuffers()
     pool_sizes[num_pools++] = {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, MAX_INPUT_ATTACHMENT_DESCRIPTORS_PER_FRAME};
 
     VkDescriptorPoolCreateInfo pool_create_info = {
-      VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO, nullptr,   0, MAX_DESCRIPTOR_SETS_PER_FRAME,
-      static_cast<u32>(std::size(pool_sizes)),       pool_sizes};
+      VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO, nullptr, 0, MAX_DESCRIPTOR_SETS_PER_FRAME, num_pools, pool_sizes};
 
     res = vkCreateDescriptorPool(m_device, &pool_create_info, nullptr, &resources.descriptor_pool);
     if (res != VK_SUCCESS)
