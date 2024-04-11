@@ -1856,6 +1856,7 @@ static std::string LoadPathFromSettings(SettingsInterface& si, const std::string
     value = def;
   if (!Path::IsAbsolute(value))
     value = Path::Combine(root, value);
+  value = Path::RealPath(value);
   return value;
 }
 
