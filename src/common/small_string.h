@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -97,6 +97,8 @@ public:
 
   template<typename... T>
   void format(fmt::format_string<T...> fmt, T&&... args);
+
+  void vformat(fmt::string_view fmt, fmt::format_args args);
 
   // compare one string to another
   bool equals(const char* str) const;
@@ -316,6 +318,8 @@ public:
   template<typename... T>
   static SmallStackString from_format(fmt::format_string<T...> fmt, T&&... args);
 
+  static SmallStackString from_vformat(fmt::string_view fmt, fmt::format_args args);
+
 private:
   char m_stack_buffer[L + 1];
 
@@ -357,6 +361,14 @@ ALWAYS_INLINE SmallStackString<L> SmallStackString<L>::from_format(fmt::format_s
 {
   SmallStackString<L> ret;
   fmt::vformat_to(std::back_inserter(ret), fmt, fmt::make_format_args(args...));
+  return ret;
+}
+
+template<u32 L>
+ALWAYS_INLINE SmallStackString<L> SmallStackString<L>::from_vformat(fmt::string_view fmt, fmt::format_args args)
+{
+  SmallStackString<L> ret;
+  fmt::vformat_to(std::back_inserter(ret), fmt, args);
   return ret;
 }
 

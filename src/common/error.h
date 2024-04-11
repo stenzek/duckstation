@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "small_string.h"
 #include "types.h"
 
 #include "fmt/core.h"
@@ -93,6 +94,31 @@ public:
   void AddSuffix(std::string_view suffix);
   static void AddPrefix(Error* errptr, std::string_view prefix);
   static void AddSuffix(Error* errptr, std::string_view prefix);
+
+  template<typename... T>
+  void AddPrefixFmt(fmt::format_string<T...> fmt, T&&... args)
+  {
+    AddPrefix(TinyString::from_vformat(fmt::string_view(fmt), fmt::make_format_args(args...)));
+  }
+
+  template<typename... T>
+  void AddSuffixFmt(fmt::format_string<T...> fmt, T&&... args)
+  {
+    AddSuffix(TinyString::from_vformat(fmt::string_view(fmt), fmt::make_format_args(args...)));
+  }
+
+  template<typename... T>
+  static void AddPrefixFmt(Error* errptr, fmt::format_string<T...> fmt, T&&... args)
+  {
+    if (errptr)
+      Error::AddPrefix(errptr, TinyString::from_vformat(fmt::string_view(fmt), fmt::make_format_args(args...)));
+  }
+  template<typename... T>
+  static void AddSuffixFmt(Error* errptr, fmt::format_string<T...> fmt, T&&... args)
+  {
+    if (errptr)
+      Error::AddSuffix(errptr, TinyString::from_vformat(fmt::string_view(fmt), fmt::make_format_args(args...)));
+  }
 
   Error& operator=(const Error& e);
   Error& operator=(Error&& e);

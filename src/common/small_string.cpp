@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "small_string.h"
@@ -437,6 +437,12 @@ void SmallStringBase::assign(const std::string_view str)
 {
   clear();
   append(str.data(), static_cast<u32>(str.size()));
+}
+
+void SmallStringBase::vformat(fmt::string_view fmt, fmt::format_args args)
+{
+  clear();
+  fmt::vformat_to(std::back_inserter(*this), fmt, args);
 }
 
 bool SmallStringBase::equals(const char* str) const
