@@ -2178,57 +2178,57 @@ Unread messages: {}</source>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="296"/>
-        <source>Equal to...</source>
+        <source>Equal to Value</source>
         <translation>같음...</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="301"/>
-        <source>Not Equal to...</source>
+        <source>Not Equal to Value</source>
         <translation>같지 않음...</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="306"/>
-        <source>Greater Than...</source>
+        <source>Greater Than Value</source>
         <translation>보다 큰...</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="311"/>
-        <source>Greater or Equal...</source>
+        <source>Greater or Equal to Value</source>
         <translation>크거나 같음...</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="316"/>
-        <source>Less Than...</source>
+        <source>Less Than Value</source>
         <translation>작음...</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="321"/>
-        <source>Less or Equal...</source>
+        <source>Less or Equal to Value</source>
         <translation>작거나 같음...</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="326"/>
-        <source>Increased By...</source>
+        <source>Increased By Value</source>
         <translation>증가...</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="331"/>
-        <source>Decreased By...</source>
+        <source>Decreased By Value</source>
         <translation>감소...</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="336"/>
-        <source>Changed By...</source>
+        <source>Changed By Value</source>
         <translation>변경...</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="341"/>
-        <source>Equal to Previous (Unchanged Value)</source>
+        <source>Equal to Previous Result (Unchanged Value)</source>
         <translation>이전과 같음(변경되지 않음)</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="346"/>
-        <source>Not Equal to Previous (Changed Value)</source>
+        <source>Not Equal to Previous Result (Changed Value)</source>
         <translation>이전과 같지 않음(변경된 값)</translation>
     </message>
     <message>
@@ -2238,27 +2238,27 @@ Unread messages: {}</source>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="351"/>
-        <source>Greater Than Previous</source>
+        <source>Greater Than Previous Result</source>
         <translation>이전보다 큼</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="356"/>
-        <source>Greater or Equal to Previous</source>
+        <source>Greater or Equal to Previous Result</source>
         <translation>이전보다 크거나 같음</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="361"/>
-        <source>Less Than Previous</source>
+        <source>Less Than Previous Result</source>
         <translation>이전보다 작음</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="366"/>
-        <source>Less or Equal to Previous</source>
+        <source>Less or Equal to Previous Result</source>
         <translation>이전보다 작거나 같음</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="371"/>
-        <source>Any Value</source>
+        <source>Any Value ('New Search' or 'Reset Result Value')</source>
         <translation>모든 값</translation>
     </message>
     <message>
