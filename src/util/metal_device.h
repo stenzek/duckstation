@@ -376,8 +376,9 @@ private:
   id<MTLCommandBuffer> m_render_cmdbuf = nil;
   id<MTLRenderCommandEncoder> m_render_encoder = nil;
 
+  u8 m_num_current_render_targets = 0;
+  GPUPipeline::RenderPassFlag m_current_feedback_loop = GPUPipeline::NoRenderPassFlags;
   std::array<MetalTexture*, MAX_RENDER_TARGETS> m_current_render_targets = {};
-  u32 m_num_current_render_targets = 0;
   MetalTexture* m_current_depth_target = nullptr;
 
   MetalPipeline* m_current_pipeline = nullptr;

@@ -222,6 +222,13 @@ void MetalDevice::SetFeatures(FeatureMask disabled_features)
     m_max_texture_size = 8192;
   }
 
+  // Framebuffer fetch requires MSL 2.3 and an Apple GPU family.
+  const bool supports_fbfetch = [m_device supportsFamily:MTLGPUFamilyApple1];
+
+  // If fbfetch is disabled, barriers aren't supported on Apple GPUs.
+  const bool supports_barriers =
+    ([m_device supportsFamily:MTLGPUFamilyMac1] && ![m_device supportsFamily:MTLGPUFamilyApple3]);
+
   m_max_multisamples = 0;
   for (u32 multisamples = 1; multisamples < 16; multisamples *= 2)
   {
@@ -231,13 +238,13 @@ void MetalDevice::SetFeatures(FeatureMask disabled_features)
   }
 
   m_features.dual_source_blend = !(disabled_features & FEATURE_MASK_DUAL_SOURCE_BLEND);
-  m_features.framebuffer_fetch = !(disabled_features & FEATURE_MASK_FRAMEBUFFER_FETCH) && false; // TODO
+  m_features.framebuffer_fetch = !(disabled_features & FEATURE_MASK_FRAMEBUFFER_FETCH) && supports_fbfetch;
   m_features.per_sample_shading = true;
   m_features.noperspective_interpolation = true;
   m_features.texture_copy_to_self = !(disabled_features & FEATURE_MASK_TEXTURE_COPY_TO_SELF);
   m_features.supports_texture_buffers = !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS);
   m_features.texture_buffers_emulated_with_ssbo = true;
-  m_features.feedback_loops = false;
+  m_features.feedback_loops = (m_features.framebuffer_fetch || supports_barriers);
   m_features.geometry_shaders = false;
   m_features.partial_msaa_resolve = false;
   m_features.memory_import = true;
@@ -687,6 +694,9 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromSource(GPUShaderStage st
   spirv_cross::CompilerMSL compiler(result.cbegin(), std::distance(result.cbegin(), result.cend()));
   spirv_cross::CompilerMSL::Options msl_options = compiler.get_msl_options();
   msl_options.pad_fragment_output_components = true;
+  msl_options.use_framebuffer_fetch_subpasses = m_features.framebuffer_fetch;
+  if (m_features.framebuffer_fetch)
+    msl_options.set_msl_version(2, 3);
 
   if (stage == GPUShaderStage::Fragment)
   {
@@ -700,6 +710,16 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromSource(GPUShaderStage st
       rb.msl_texture = i;
       rb.msl_sampler = i;
       rb.msl_buffer = i;
+      compiler.add_msl_resource_binding(rb);
+    }
+
+    if (!m_features.framebuffer_fetch)
+    {
+      spirv_cross::MSLResourceBinding rb;
+      rb.stage = spv::ExecutionModelFragment;
+      rb.desc_set = 2;
+      rb.binding = 0;
+      rb.msl_texture = MAX_TEXTURE_SAMPLERS;
       compiler.add_msl_resource_binding(rb);
     }
   }
@@ -1764,8 +1784,9 @@ void MetalDevice::UnmapUniformBuffer(u32 size)
 void MetalDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds,
                                    GPUPipeline::RenderPassFlag feedback_loop)
 {
-  DebugAssert(!feedback_loop);
-  bool changed = (m_num_current_render_targets != num_rts || m_current_depth_target != ds);
+  bool changed = (m_num_current_render_targets != num_rts || m_current_depth_target != ds ||
+                  (!m_features.framebuffer_fetch && ((feedback_loop & GPUPipeline::ColorFeedbackLoop) !=
+                                                     (m_current_feedback_loop & GPUPipeline::ColorFeedbackLoop))));
   bool needs_ds_clear = (ds && ds->IsClearedOrInvalidated());
   bool needs_rt_clear = false;
 
@@ -1779,7 +1800,8 @@ void MetalDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTextu
   }
   for (u32 i = num_rts; i < m_num_current_render_targets; i++)
     m_current_render_targets[i] = nullptr;
-  m_num_current_render_targets = num_rts;
+  m_num_current_render_targets = static_cast<u8>(num_rts);
+  m_current_feedback_loop = feedback_loop;
 
   if (changed || needs_rt_clear || needs_ds_clear)
   {
@@ -2077,6 +2099,13 @@ void MetalDevice::SetInitialEncoderState()
   [m_render_encoder setFragmentSamplerStates:m_current_samplers.data() withRange:NSMakeRange(0, MAX_TEXTURE_SAMPLERS)];
   if (m_current_ssbo)
     [m_render_encoder setFragmentBuffer:m_current_ssbo offset:0 atIndex:1];
+
+  if (!m_features.framebuffer_fetch && (m_current_feedback_loop & GPUPipeline::ColorFeedbackLoop))
+  {
+    DebugAssert(m_current_render_targets[0]);
+    [m_render_encoder setFragmentTexture:m_current_render_targets[0]->GetMTLTexture() atIndex:MAX_TEXTURE_SAMPLERS];
+  }
+
   SetViewportInRenderEncoder();
   SetScissorInRenderEncoder();
 }
@@ -2138,7 +2167,118 @@ void MetalDevice::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
 
 void MetalDevice::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type)
 {
-  Panic("Barriers are not supported");
+  // Shouldn't be using this with framebuffer fetch.
+  DebugAssert(!m_features.framebuffer_fetch);
+
+  const bool skip_first_barrier = !InRenderPass();
+  PreDrawCheck();
+
+  // TODO: The first barrier is unnecessary if we're starting the render pass.
+
+  u32 index_offset = base_index * sizeof(u16);
+
+  switch (type)
+  {
+    case GPUDevice::DrawBarrier::None:
+    {
+      s_stats.num_draws++;
+
+      [m_render_encoder drawIndexedPrimitives:m_current_pipeline->GetPrimitive()
+                                   indexCount:index_count
+                                    indexType:MTLIndexTypeUInt16
+                                  indexBuffer:m_index_buffer.GetBuffer()
+                            indexBufferOffset:index_offset
+                                instanceCount:1
+                                   baseVertex:base_vertex
+                                 baseInstance:0];
+    }
+    break;
+
+    case GPUDevice::DrawBarrier::One:
+    {
+      DebugAssert(m_num_current_render_targets == 1);
+      s_stats.num_draws++;
+
+      if (!skip_first_barrier)
+      {
+        s_stats.num_barriers++;
+        [m_render_encoder memoryBarrierWithScope:MTLBarrierScopeRenderTargets
+                                     afterStages:MTLRenderStageFragment
+                                    beforeStages:MTLRenderStageFragment];
+      }
+
+      [m_render_encoder drawIndexedPrimitives:m_current_pipeline->GetPrimitive()
+                                   indexCount:index_count
+                                    indexType:MTLIndexTypeUInt16
+                                  indexBuffer:m_index_buffer.GetBuffer()
+                            indexBufferOffset:index_offset
+                                instanceCount:1
+                                   baseVertex:base_vertex
+                                 baseInstance:0];
+    }
+    break;
+
+    case GPUDevice::DrawBarrier::Full:
+    {
+      DebugAssert(m_num_current_render_targets == 1);
+
+      static constexpr const u8 vertices_per_primitive[][2] = {
+        {1, 1}, // MTLPrimitiveTypePoint
+        {2, 2}, // MTLPrimitiveTypeLine
+        {2, 1}, // MTLPrimitiveTypeLineStrip
+        {3, 3}, // MTLPrimitiveTypeTriangle
+        {3, 1}, // MTLPrimitiveTypeTriangleStrip
+      };
+
+      const u32 first_step =
+        vertices_per_primitive[static_cast<size_t>(m_current_pipeline->GetPrimitive())][0] * sizeof(u16);
+      const u32 index_step =
+        vertices_per_primitive[static_cast<size_t>(m_current_pipeline->GetPrimitive())][1] * sizeof(u16);
+      const u32 end_offset = (base_index + index_count) * sizeof(u16);
+
+      // first primitive
+      if (!skip_first_barrier)
+      {
+        s_stats.num_barriers++;
+        [m_render_encoder memoryBarrierWithScope:MTLBarrierScopeRenderTargets
+                                     afterStages:MTLRenderStageFragment
+                                    beforeStages:MTLRenderStageFragment];
+      }
+      s_stats.num_draws++;
+      [m_render_encoder drawIndexedPrimitives:m_current_pipeline->GetPrimitive()
+                                   indexCount:index_count
+                                    indexType:MTLIndexTypeUInt16
+                                  indexBuffer:m_index_buffer.GetBuffer()
+                            indexBufferOffset:index_offset
+                                instanceCount:1
+                                   baseVertex:base_vertex
+                                 baseInstance:0];
+
+      index_offset += first_step;
+
+      // remaining primitices
+      for (; index_offset < end_offset; index_offset += index_step)
+      {
+        s_stats.num_barriers++;
+        s_stats.num_draws++;
+
+        [m_render_encoder memoryBarrierWithScope:MTLBarrierScopeRenderTargets
+                                     afterStages:MTLRenderStageFragment
+                                    beforeStages:MTLRenderStageFragment];
+        [m_render_encoder drawIndexedPrimitives:m_current_pipeline->GetPrimitive()
+                                     indexCount:index_count
+                                      indexType:MTLIndexTypeUInt16
+                                    indexBuffer:m_index_buffer.GetBuffer()
+                              indexBufferOffset:index_offset
+                                  instanceCount:1
+                                     baseVertex:base_vertex
+                                   baseInstance:0];
+      }
+    }
+    break;
+
+      DefaultCaseIsUnreachable();
+  }
 }
 
 id<MTLBlitCommandEncoder> MetalDevice::GetBlitEncoder(bool is_inline)
@@ -2199,6 +2339,7 @@ bool MetalDevice::BeginPresent(bool skip_present)
     s_stats.num_render_passes++;
     std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
     m_num_current_render_targets = 0;
+    m_current_feedback_loop = GPUPipeline::NoRenderPassFlags;
     m_current_depth_target = nullptr;
     m_current_pipeline = nullptr;
     m_current_depth_state = nil;

@@ -1062,7 +1062,8 @@ bool GPU_HW::CompilePipelines()
         return false;
 
       plconfig.fragment_shader = fs.get();
-      plconfig.depth = GPUPipeline::DepthState::GetAlwaysWriteState();
+      plconfig.depth = needs_depth_buffer ? GPUPipeline::DepthState::GetAlwaysWriteState() :
+                                            GPUPipeline::DepthState::GetNoTestsState();
 
       if (!(m_vram_fill_pipelines[wrapped][interlaced] = g_gpu_device->CreatePipeline(plconfig)))
         return false;
@@ -1137,7 +1138,7 @@ bool GPU_HW::CompilePipelines()
       return false;
 
     plconfig.fragment_shader = fs.get();
-    plconfig.depth = GPUPipeline::DepthState::GetAlwaysWriteState();
+    plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
     if (!(m_vram_write_replacement_pipeline = g_gpu_device->CreatePipeline(plconfig)))
       return false;
 

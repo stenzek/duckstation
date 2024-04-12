@@ -3886,5 +3886,7 @@ void VulkanDevice::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 b
       }
     }
     break;
+
+      DefaultCaseIsUnreachable();
   }
 }

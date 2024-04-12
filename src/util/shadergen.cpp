@@ -123,6 +123,15 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
   else if (m_spirv)
     ss << "#version 450 core\n\n";
 
+#ifdef __APPLE__
+  // TODO: Do this for Vulkan as well.
+  if (m_render_api == RenderAPI::Metal)
+  {
+    if (!m_supports_framebuffer_fetch)
+      ss << "#extension GL_EXT_samplerless_texture_functions : require\n";
+  }
+#endif
+
 #ifdef ENABLE_OPENGL
   // Extension enabling for OpenGL.
   if (m_render_api == RenderAPI::OpenGL || m_render_api == RenderAPI::OpenGLES)
@@ -586,6 +595,22 @@ void ShaderGen::DeclareFragmentEntryPoint(
       {
         ss << "layout(input_attachment_index = 0, set = 2, binding = 0) uniform subpassInput u_input_rt;\n";
         ss << "#define LAST_FRAG_COLOR subpassLoad(u_input_rt)\n";
+      }
+#endif
+#ifdef __APPLE__
+      if (m_render_api == RenderAPI::Metal)
+      {
+        if (m_supports_framebuffer_fetch)
+        {
+          // Set doesn't matter, because it's transformed to color0.
+          ss << "layout(input_attachment_index = 0, set = 2, binding = 0) uniform subpassInput u_input_rt;\n";
+          ss << "#define LAST_FRAG_COLOR subpassLoad(u_input_rt)\n";
+        }
+        else
+        {
+          ss << "layout(set = 2, binding = 0) uniform texture2D u_input_rt;\n";
+          ss << "#define LAST_FRAG_COLOR texelFetch(u_input_rt, int2(gl_FragCoord.xy), 0)\n";
+        }
       }
 #endif
     }
