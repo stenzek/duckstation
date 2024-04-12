@@ -24,6 +24,7 @@
     "/lib/*.a",
     "/lib/*.la",
     "/lib/cmake",
-    "/lib/pkgconfig"
+    "/lib/pkgconfig",
+    "/share/aclocal"
   ]
 }
