@@ -341,12 +341,24 @@ void MetalDevice::DestroyDevice()
     [it.second release];
   m_cleanup_objects.clear();
 
+  for (auto& it : m_depth_states)
+  {
+    if (it.second != nil)
+      [it.second release];
+  }
+  m_depth_states.clear();
   for (auto& it : m_resolve_pipelines)
   {
     if (it.second != nil)
       [it.second release];
   }
   m_resolve_pipelines.clear();
+  for (auto& it : m_clear_pipelines)
+  {
+    if (it.second != nil)
+      [it.second release];
+  }
+  m_clear_pipelines.clear();
   if (m_shaders != nil)
   {
     [m_shaders release];
@@ -518,13 +530,6 @@ void MetalDevice::DestroyBuffers()
   m_uniform_buffer.Destroy();
   m_vertex_buffer.Destroy();
   m_index_buffer.Destroy();
-
-  for (auto& it : m_depth_states)
-  {
-    if (it.second != nil)
-      [it.second release];
-  }
-  m_depth_states.clear();
 }
 
 bool MetalDevice::IsRenderTargetBound(const GPUTexture* tex) const
@@ -870,7 +875,23 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Grap
     {
       if (config.color_formats[i] == GPUTexture::Format::Unknown)
         break;
-      desc.colorAttachments[0].pixelFormat = s_pixel_format_mapping[static_cast<u8>(config.color_formats[i])];
+
+      MTLRenderPipelineColorAttachmentDescriptor* ca = desc.colorAttachments[0];
+      ca.pixelFormat = s_pixel_format_mapping[static_cast<u8>(config.color_formats[i])];
+      ca.writeMask = (config.blend.write_r ? MTLColorWriteMaskRed : MTLColorWriteMaskNone) |
+                     (config.blend.write_g ? MTLColorWriteMaskGreen : MTLColorWriteMaskNone) |
+                     (config.blend.write_b ? MTLColorWriteMaskBlue : MTLColorWriteMaskNone) |
+                     (config.blend.write_a ? MTLColorWriteMaskAlpha : MTLColorWriteMaskNone);
+      ca.blendingEnabled = config.blend.enable;
+      if (config.blend.enable)
+      {
+        ca.sourceRGBBlendFactor = blend_mapping[static_cast<u8>(config.blend.src_blend.GetValue())];
+        ca.destinationRGBBlendFactor = blend_mapping[static_cast<u8>(config.blend.dst_blend.GetValue())];
+        ca.rgbBlendOperation = op_mapping[static_cast<u8>(config.blend.blend_op.GetValue())];
+        ca.sourceAlphaBlendFactor = blend_mapping[static_cast<u8>(config.blend.src_alpha_blend.GetValue())];
+        ca.destinationAlphaBlendFactor = blend_mapping[static_cast<u8>(config.blend.dst_alpha_blend.GetValue())];
+        ca.alphaBlendOperation = op_mapping[static_cast<u8>(config.blend.alpha_blend_op.GetValue())];
+      }
     }
     desc.depthAttachmentPixelFormat = s_pixel_format_mapping[static_cast<u8>(config.depth_format)];
 
@@ -907,13 +928,6 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Grap
     if (depth == nil)
       return {};
 
-    // Blending state
-    MTLRenderPipelineColorAttachmentDescriptor* ca = desc.colorAttachments[0];
-    ca.writeMask = (config.blend.write_r ? MTLColorWriteMaskRed : MTLColorWriteMaskNone) |
-                   (config.blend.write_g ? MTLColorWriteMaskGreen : MTLColorWriteMaskNone) |
-                   (config.blend.write_b ? MTLColorWriteMaskBlue : MTLColorWriteMaskNone) |
-                   (config.blend.write_a ? MTLColorWriteMaskAlpha : MTLColorWriteMaskNone);
-
     // General
     const MTLPrimitiveType primitive = primitives[static_cast<u8>(config.primitive)];
     desc.rasterSampleCount = config.samples;
@@ -925,17 +939,6 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Grap
       desc.vertexBuffers[1].mutability = MTLMutabilityImmutable;
     if (config.layout == GPUPipeline::Layout::SingleTextureBufferAndPushConstants)
       desc.fragmentBuffers[1].mutability = MTLMutabilityImmutable;
-
-    ca.blendingEnabled = config.blend.enable;
-    if (config.blend.enable)
-    {
-      ca.sourceRGBBlendFactor = blend_mapping[static_cast<u8>(config.blend.src_blend.GetValue())];
-      ca.destinationRGBBlendFactor = blend_mapping[static_cast<u8>(config.blend.dst_blend.GetValue())];
-      ca.rgbBlendOperation = op_mapping[static_cast<u8>(config.blend.blend_op.GetValue())];
-      ca.sourceAlphaBlendFactor = blend_mapping[static_cast<u8>(config.blend.src_alpha_blend.GetValue())];
-      ca.destinationAlphaBlendFactor = blend_mapping[static_cast<u8>(config.blend.dst_alpha_blend.GetValue())];
-      ca.alphaBlendOperation = op_mapping[static_cast<u8>(config.blend.alpha_blend_op.GetValue())];
-    }
 
     NSError* error = nullptr;
     id<MTLRenderPipelineState> pipeline = [m_device newRenderPipelineStateWithDescriptor:desc error:&error];
@@ -1585,7 +1588,43 @@ void MetalDevice::ClearDepth(GPUTexture* t, float d)
 {
   GPUDevice::ClearDepth(t, d);
   if (InRenderPass() && m_current_depth_target == t)
-    EndRenderPass();
+  {
+    const ClearPipelineConfig config = GetCurrentClearPipelineConfig();
+    id<MTLRenderPipelineState> pipeline = GetClearDepthPipeline(config);
+    id<MTLDepthStencilState> depth = GetDepthState(GPUPipeline::DepthState::GetAlwaysWriteState());
+
+    const Common::Rectangle<s32> rect(0, 0, t->GetWidth(), t->GetHeight());
+    const bool set_vp = (m_current_viewport != rect);
+    const bool set_scissor = (m_current_scissor != rect);
+    if (set_vp)
+    {
+      [m_render_encoder setViewport:(MTLViewport){0.0, 0.0, static_cast<double>(t->GetWidth()),
+                                                  static_cast<double>(t->GetHeight()), 0.0, 1.0}];
+    }
+    if (set_scissor)
+      [m_render_encoder setScissorRect:(MTLScissorRect){0u, 0u, t->GetWidth(), t->GetHeight()}];
+
+    [m_render_encoder setRenderPipelineState:pipeline];
+    if (m_current_cull_mode != MTLCullModeNone)
+      [m_render_encoder setCullMode:MTLCullModeNone];
+    if (depth != m_current_depth_state)
+      [m_render_encoder setDepthStencilState:depth];
+    [m_render_encoder setVertexBytes:&d length:sizeof(d) atIndex:0];
+    [m_render_encoder drawPrimitives:m_current_pipeline->GetPrimitive() vertexStart:0 vertexCount:3];
+    s_stats.num_draws++;
+
+    [m_render_encoder setVertexBuffer:m_uniform_buffer.GetBuffer() offset:m_current_uniform_buffer_position atIndex:0];
+    if (m_current_pipeline)
+      [m_render_encoder setRenderPipelineState:m_current_pipeline->GetPipelineState()];
+    if (m_current_cull_mode != MTLCullModeNone)
+      [m_render_encoder setCullMode:m_current_cull_mode];
+    if (depth != m_current_depth_state)
+      [m_render_encoder setDepthStencilState:m_current_depth_state];
+    if (set_vp)
+      SetViewportInRenderEncoder();
+    if (set_scissor)
+      SetScissorInRenderEncoder();
+  }
 }
 
 void MetalDevice::InvalidateRenderTarget(GPUTexture* t)
@@ -1632,6 +1671,51 @@ void MetalDevice::CommitClear(MetalTexture* tex)
       [encoder endEncoding];
     }
   }
+}
+
+MetalDevice::ClearPipelineConfig MetalDevice::GetCurrentClearPipelineConfig() const
+{
+  ClearPipelineConfig config = {};
+  for (u32 i = 0; i < m_num_current_render_targets; i++)
+    config.color_formats[i] = m_current_render_targets[i]->GetFormat();
+
+  config.depth_format = m_current_depth_target ? m_current_depth_target->GetFormat() : GPUTexture::Format::Unknown;
+  config.samples =
+    m_current_depth_target ? m_current_depth_target->GetSamples() : m_current_render_targets[0]->GetSamples();
+  return config;
+}
+
+id<MTLRenderPipelineState> MetalDevice::GetClearDepthPipeline(const ClearPipelineConfig& config)
+{
+  const auto iter = std::find_if(m_clear_pipelines.begin(), m_clear_pipelines.end(),
+                                 [&config](const auto& it) { return (it.first == config); });
+  if (iter != m_clear_pipelines.end())
+    return iter->second;
+
+  MTLRenderPipelineDescriptor* desc = [[MTLRenderPipelineDescriptor new] autorelease];
+  desc.vertexFunction = [GetFunctionFromLibrary(m_shaders, @"depthClearVertex") autorelease];
+  desc.fragmentFunction = [GetFunctionFromLibrary(m_shaders, @"depthClearFragment") autorelease];
+
+  for (u32 i = 0; i < MAX_RENDER_TARGETS; i++)
+  {
+    if (config.color_formats[i] == GPUTexture::Format::Unknown)
+      break;
+    desc.colorAttachments[i].pixelFormat = s_pixel_format_mapping[static_cast<u8>(config.color_formats[i])];
+    desc.colorAttachments[i].writeMask = MTLColorWriteMaskNone;
+  }
+  desc.depthAttachmentPixelFormat = s_pixel_format_mapping[static_cast<u8>(config.depth_format)];
+  desc.rasterizationEnabled = TRUE;
+  desc.inputPrimitiveTopology = MTLPrimitiveTopologyClassTriangle;
+  desc.rasterSampleCount = config.samples;
+  desc.vertexBuffers[0].mutability = MTLMutabilityImmutable;
+
+  NSError* error = nullptr;
+  id<MTLRenderPipelineState> pipeline = [m_device newRenderPipelineStateWithDescriptor:desc error:&error];
+  if (pipeline == nil)
+    LogNSError(error, "Failed to create clear render pipeline state");
+
+  m_clear_pipelines.emplace_back(config, pipeline);
+  return pipeline;
 }
 
 MetalTextureBuffer::MetalTextureBuffer(Format format, u32 size_in_elements) : GPUTextureBuffer(format, size_in_elements)

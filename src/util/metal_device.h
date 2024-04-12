@@ -306,6 +306,19 @@ private:
 
   using DepthStateMap = std::unordered_map<u8, id<MTLDepthStencilState>>;
 
+  struct ClearPipelineConfig
+  {
+    GPUTexture::Format color_formats[MAX_RENDER_TARGETS];
+    GPUTexture::Format depth_format;
+    u8 samples;
+    u8 pad[2];
+
+    bool operator==(const ClearPipelineConfig& c) const { return (std::memcmp(this, &c, sizeof(*this)) == 0); }
+    bool operator!=(const ClearPipelineConfig& c) const { return (std::memcmp(this, &c, sizeof(*this)) != 0); }
+    bool operator<(const ClearPipelineConfig& c) const { return (std::memcmp(this, &c, sizeof(*this)) < 0); }
+  };
+  static_assert(sizeof(ClearPipelineConfig) == 8);
+
   ALWAYS_INLINE NSView* GetWindowView() const { return (__bridge NSView*)m_window_info.window_handle; }
 
   void SetFeatures(FeatureMask disabled_features);
@@ -313,6 +326,8 @@ private:
 
   id<MTLFunction> GetFunctionFromLibrary(id<MTLLibrary> library, NSString* name);
   id<MTLComputePipelineState> CreateComputePipeline(id<MTLFunction> function, NSString* name);
+  ClearPipelineConfig GetCurrentClearPipelineConfig() const;
+  id<MTLRenderPipelineState> GetClearDepthPipeline(const ClearPipelineConfig& config);
 
   std::unique_ptr<GPUShader> CreateShaderFromMSL(GPUShaderStage stage, const std::string_view& source,
                                                  const std::string_view& entry_point);
@@ -368,6 +383,7 @@ private:
   id<MTLLibrary> m_shaders = nil;
   std::vector<std::pair<std::pair<GPUTexture::Format, GPUTexture::Format>, id<MTLComputePipelineState>>>
     m_resolve_pipelines;
+  std::vector<std::pair<ClearPipelineConfig, id<MTLRenderPipelineState>>> m_clear_pipelines;
 
   id<MTLCommandBuffer> m_upload_cmdbuf = nil;
   id<MTLBlitCommandEncoder> m_upload_encoder = nil;
