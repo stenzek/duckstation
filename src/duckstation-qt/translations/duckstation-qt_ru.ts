@@ -12675,37 +12675,37 @@ Are you sure you want to continue?</source>
         <translation type="unfinished">Оператор:</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="155"/>
+        <location filename="../memoryscannerwindow.ui" line="205"/>
         <source>Equal to Value</source>
         <translation type="unfinished">Равно...</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="160"/>
+        <location filename="../memoryscannerwindow.ui" line="210"/>
         <source>Not Equal to Value</source>
         <translation type="unfinished">Не равно...</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="165"/>
+        <location filename="../memoryscannerwindow.ui" line="225"/>
         <source>Greater Than Value</source>
         <translation type="unfinished">Больше, чем...</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="170"/>
+        <location filename="../memoryscannerwindow.ui" line="230"/>
         <source>Greater or Equal to Value</source>
         <translation type="unfinished">Больше или равно...</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="175"/>
+        <location filename="../memoryscannerwindow.ui" line="215"/>
         <source>Less Than Value</source>
         <translation type="unfinished">Меньше, чем...</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="180"/>
+        <location filename="../memoryscannerwindow.ui" line="220"/>
         <source>Less or Equal Value</source>
         <translation type="unfinished">Меньше или равно...</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="185"/>
+        <location filename="../memoryscannerwindow.ui" line="195"/>
         <source>Increased By Value</source>
         <translation type="unfinished">Увеличилось на...</translation>
     </message>
@@ -12715,42 +12715,42 @@ Are you sure you want to continue?</source>
         <translation type="unfinished">Уменьшилось на...</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="195"/>
+        <location filename="../memoryscannerwindow.ui" line="200"/>
         <source>Changed By Value</source>
         <translation type="unfinished">Изменилось на...</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="200"/>
+        <location filename="../memoryscannerwindow.ui" line="185"/>
         <source>Equal to Previous Result (Unchanged Value)</source>
         <translation type="unfinished">Равно предыдущему (неизменное значение)</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="205"/>
+        <location filename="../memoryscannerwindow.ui" line="180"/>
         <source>Not Equal to Previous Result (Changed Value)</source>
         <translation type="unfinished">Не равно предыдущему (измененное значение)</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="210"/>
+        <location filename="../memoryscannerwindow.ui" line="170"/>
         <source>Greater Than Previous Result</source>
         <translation type="unfinished">Больше, чем предыдущий</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="215"/>
+        <location filename="../memoryscannerwindow.ui" line="175"/>
         <source>Greater or Equal to Previous Result</source>
         <translation type="unfinished">Больше или равно предыдущему</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="220"/>
+        <location filename="../memoryscannerwindow.ui" line="160"/>
         <source>Less Than Previous Result</source>
         <translation type="unfinished">Меньше, чем предыдущий</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="225"/>
+        <location filename="../memoryscannerwindow.ui" line="165"/>
         <source>Less or Equal to Previous Result</source>
         <translation type="unfinished">Меньше или равно предыдущему</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="230"/>
+        <location filename="../memoryscannerwindow.ui" line="155"/>
         <source>Any Value ('New Search' or 'Reset Result Value')</source>
         <translation type="unfinished">Любое значение</translation>
     </message>

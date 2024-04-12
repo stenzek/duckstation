@@ -12474,37 +12474,37 @@ Czy na pewno chcesz kontynuować?</translation>
         <translation>Operator:</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="155"/>
+        <location filename="../memoryscannerwindow.ui" line="205"/>
         <source>Equal to Value</source>
         <translation>Jest równy...</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="160"/>
+        <location filename="../memoryscannerwindow.ui" line="210"/>
         <source>Not Equal to Value</source>
         <translation>Nie jest równy...</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="165"/>
+        <location filename="../memoryscannerwindow.ui" line="225"/>
         <source>Greater Than Value</source>
         <translation>Większy niż...</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="170"/>
+        <location filename="../memoryscannerwindow.ui" line="230"/>
         <source>Greater or Equal to Value</source>
         <translation>Większy lub równy...</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="175"/>
+        <location filename="../memoryscannerwindow.ui" line="215"/>
         <source>Less Than Value</source>
         <translation>Mniejszy niż...</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="180"/>
+        <location filename="../memoryscannerwindow.ui" line="220"/>
         <source>Less or Equal to Value</source>
         <translation>Mniejszy lub równy...</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="185"/>
+        <location filename="../memoryscannerwindow.ui" line="195"/>
         <source>Increased By Value</source>
         <translation>Zwiększony o...</translation>
     </message>
@@ -12514,42 +12514,42 @@ Czy na pewno chcesz kontynuować?</translation>
         <translation>Zmniejszony o...</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="195"/>
+        <location filename="../memoryscannerwindow.ui" line="200"/>
         <source>Changed By Value</source>
         <translation>Zmieniony o...</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="200"/>
+        <location filename="../memoryscannerwindow.ui" line="185"/>
         <source>Equal to Previous Result (Unchanged Value)</source>
         <translation>Równy poprzedniej (niezmieniona wartość)</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="205"/>
+        <location filename="../memoryscannerwindow.ui" line="180"/>
         <source>Not Equal to Previous Result (Changed Value)</source>
         <translation>Nie jest równy poprzedniej (zmieniona wartość)</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="210"/>
+        <location filename="../memoryscannerwindow.ui" line="170"/>
         <source>Greater Than Previous Result</source>
         <translation>Większy niż poprzedni</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="215"/>
+        <location filename="../memoryscannerwindow.ui" line="175"/>
         <source>Greater or Equal to Previous Result</source>
         <translation>Większy lub równy poprzedniemu</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="220"/>
+        <location filename="../memoryscannerwindow.ui" line="160"/>
         <source>Less Than Previous Result</source>
         <translation>Mniejszy niż poprzedni</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="225"/>
+        <location filename="../memoryscannerwindow.ui" line="165"/>
         <source>Less or Equal to Previous Result</source>
         <translation>Mniejszy lub równy poprzedniemu</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="230"/>
+        <location filename="../memoryscannerwindow.ui" line="155"/>
         <source>Any Value ('New Search' or 'Reset Result Value')</source>
         <translation>Dowolna wartość</translation>
     </message>
