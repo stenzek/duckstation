@@ -90,6 +90,10 @@ MemoryScannerWindow::MemoryScannerWindow() : QWidget()
 {
   m_ui.setupUi(this);
   connectUi();
+
+  char tempvar[256];
+  sprintf(tempvar, "Address of RAM for HxD Usage: 0x%p", Bus::g_ram);
+  m_ui.cheatEngineAddress->setText(tempvar);
 }
 
 MemoryScannerWindow::~MemoryScannerWindow() = default;
