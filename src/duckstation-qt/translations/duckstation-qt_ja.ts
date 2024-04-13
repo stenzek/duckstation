@@ -2164,57 +2164,57 @@ Unread messages: {}</source>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="296"/>
-        <source>Equal to...</source>
+        <source>Equal to Value</source>
         <translation>&quot;値&quot;と等しい</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="301"/>
-        <source>Not Equal to...</source>
+        <source>Not Equal to Value</source>
         <translation>&quot;値&quot;と異なる</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="306"/>
-        <source>Greater Than...</source>
+        <source>Greater Than Value</source>
         <translation>&quot;値&quot;より大きい</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="311"/>
-        <source>Greater or Equal...</source>
+        <source>Greater or Equal to Value</source>
         <translation>&quot;値&quot;より大きいか等しい</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="316"/>
-        <source>Less Than...</source>
+        <source>Less Than Value</source>
         <translation>&quot;値&quot;より小さい</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="321"/>
-        <source>Less or Equal...</source>
+        <source>Less or Equal to Value</source>
         <translation>&quot;値&quot;より小さいか等しい</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="326"/>
-        <source>Increased By...</source>
+        <source>Increased By Value</source>
         <translation>&quot;値&quot;ずつ増加</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="331"/>
-        <source>Decreased By...</source>
+        <source>Decreased By Value</source>
         <translation>&quot;値&quot;ずつ減少</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="336"/>
-        <source>Changed By...</source>
+        <source>Changed By Value</source>
         <translation>&quot;値&quot;ずつ変化</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="341"/>
-        <source>Equal to Previous (Unchanged Value)</source>
+        <source>Equal to Previous Result (Unchanged Value)</source>
         <translation>以前と等しい (変更されていない値)</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="346"/>
-        <source>Not Equal to Previous (Changed Value)</source>
+        <source>Not Equal to Previous Result (Changed Value)</source>
         <translation>以前と異なる (変更された値)</translation>
     </message>
     <message>
@@ -2224,27 +2224,27 @@ Unread messages: {}</source>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="351"/>
-        <source>Greater Than Previous</source>
+        <source>Greater Than Previous Result</source>
         <translation>以前より大きい</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="356"/>
-        <source>Greater or Equal to Previous</source>
+        <source>Greater or Equal to Previous Result</source>
         <translation>以前より大きいか等しい</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="361"/>
-        <source>Less Than Previous</source>
+        <source>Less Than Previous Result</source>
         <translation>以前より小さい</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="366"/>
-        <source>Less or Equal to Previous</source>
+        <source>Less or Equal to Previous Result</source>
         <translation>以前より小さいか等しい</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="371"/>
-        <source>Any Value</source>
+        <source>Any Value ('New Search' or 'Reset Result Value')</source>
         <translation>任意の値</translation>
     </message>
     <message>

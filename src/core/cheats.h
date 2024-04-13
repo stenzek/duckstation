@@ -204,22 +204,22 @@ class MemoryScan
 public:
   enum class Operator
   {
-    Equal,
-    NotEqual,
-    GreaterThan,
-    GreaterEqual,
-    LessThan,
-    LessEqual,
-    IncreasedBy,
-    DecreasedBy,
-    ChangedBy,
-    EqualLast,
-    NotEqualLast,
-    GreaterThanLast,
-    GreaterEqualLast,
+    Any,
     LessThanLast,
     LessEqualLast,
-    Any
+    GreaterThanLast,
+    GreaterEqualLast,
+    NotEqualLast,
+    EqualLast,
+    DecreasedBy,
+    IncreasedBy,
+    ChangedBy,
+    Equal,
+    NotEqual,
+    LessThan,
+    LessEqual,
+    GreaterThan,
+    GreaterEqual
   };
 
   struct Result

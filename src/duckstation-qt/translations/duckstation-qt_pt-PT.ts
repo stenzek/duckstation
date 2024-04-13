@@ -2165,82 +2165,82 @@ Unread messages: {}</source>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="296"/>
-        <source>Equal to...</source>
+        <source>Equal to Value</source>
         <translation>Igual a...</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="301"/>
-        <source>Not Equal to...</source>
+        <source>Not Equal to Value</source>
         <translation>Diferente de...</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="306"/>
-        <source>Greater Than...</source>
+        <source>Greater Than Value</source>
         <translation>Maior Que...</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="311"/>
-        <source>Greater or Equal...</source>
+        <source>Greater or Equal to Value</source>
         <translation>Maior ou Igual...</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="316"/>
-        <source>Less Than...</source>
+        <source>Less Than Value</source>
         <translation>Menor Que...</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="321"/>
-        <source>Less or Equal...</source>
+        <source>Less or Equal to Value</source>
         <translation>Menor ou Igual...</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="326"/>
-        <source>Increased By...</source>
+        <source>Increased By Value</source>
         <translation>Aumentado Por...</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="331"/>
-        <source>Decreased By...</source>
+        <source>Decreased By Value</source>
         <translation>Diminuido Por...</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="336"/>
-        <source>Changed By...</source>
+        <source>Changed By Value</source>
         <translation>Mudado Por...</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="341"/>
-        <source>Equal to Previous (Unchanged Value)</source>
+        <source>Equal to Previous Result (Unchanged Value)</source>
         <translation>Igual ao Anteriror (Valor Inalterado)</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="346"/>
-        <source>Not Equal to Previous (Changed Value)</source>
+        <source>Not Equal to Previous Result (Changed Value)</source>
         <translation>Diferente do Anterior (Valor Alterado)</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="351"/>
-        <source>Greater Than Previous</source>
+        <source>Greater Than Previous Result</source>
         <translation>Maior Que o Anterior</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="356"/>
-        <source>Greater or Equal to Previous</source>
+        <source>Greater or Equal to Previous Result</source>
         <translation>Maior ou Igual ao Anterior</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="361"/>
-        <source>Less Than Previous</source>
+        <source>Less Than Previous Result</source>
         <translation>Menor que o Anterior</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="366"/>
-        <source>Less or Equal to Previous</source>
+        <source>Less or Equal to Previous Result</source>
         <translation>Menor ou Igual ao Anterior</translation>
     </message>
     <message>
         <location filename="../cheatmanagerdialog.ui" line="371"/>
-        <source>Any Value</source>
+        <source>Any Value ('New Search' or 'Reset Result Value')</source>
         <translation>Qualquer Valor</translation>
     </message>
     <message>

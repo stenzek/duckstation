@@ -152,82 +152,82 @@
        <widget class="QComboBox" name="scanOperator">
         <item>
          <property name="text">
-          <string>Equal to...</string>
+          <string>Any Value ('New Search' or 'Reset Result Value')</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Not Equal to...</string>
+          <string>Less Than Previous Result</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Greater Than...</string>
+          <string>Less or Equal to Previous Result</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Greater or Equal...</string>
+          <string>Greater Than Previous Result</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Less Than...</string>
+          <string>Greater or Equal to Previous Result</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Less or Equal...</string>
+          <string>Not Equal to Previous Result (Changed Value)</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Increased By...</string>
+          <string>Equal to Previous Result (Unchanged Value)</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Decreased By...</string>
+          <string>Decreased By Value</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Changed By...</string>
+          <string>Increased By Value</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Equal to Previous (Unchanged Value)</string>
+          <string>Changed By Value</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Not Equal to Previous (Changed Value)</string>
+          <string>Equal to Value</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Greater Than Previous</string>
+          <string>Not Equal to Value</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Greater or Equal to Previous</string>
+          <string>Less Than Value</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Less Than Previous</string>
+          <string>Less or Equal to Value</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Less or Equal to Previous</string>
+          <string>Greater Than Value</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Any Value</string>
+          <string>Greater or Equal to Value</string>
          </property>
         </item>
        </widget>
@@ -446,6 +446,48 @@
          </property>
         </widget>
        </item>
+       
+             <item>
+              <widget class="QTextEdit" name="cheatEngineAddress">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>833</width>
+                 <height>40</height>
+                </size>
+               </property>               
+               <property name="inputMethodHints">
+                <set>Qt::ImhNone</set>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <property name="verticalScrollBarPolicy">
+                <enum>Qt::ScrollBarAlwaysOff</enum>
+               </property>
+               <property name="horizontalScrollBarPolicy">
+                <enum>Qt::ScrollBarAlwaysOff</enum>
+               </property>
+               <property name="readOnly">
+                <bool>false</bool>
+               </property>
+               <property name="acceptRichText">
+                <bool>false</bool>
+               </property>
+               <property name="textInteractionFlags">
+                <set>Qt::TextEditable</set>
+               </property>
+               <property name="placeholderText">
+                <string notr="true"/>
+               </property>
+               <property name="text">
+                <string>cheat engine address string</string>
+               </property>
+              </widget>
+             </item>
+       
        <item>
         <spacer name="horizontalSpacer_2">
          <property name="orientation">
