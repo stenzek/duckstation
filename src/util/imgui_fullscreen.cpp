@@ -1488,7 +1488,7 @@ bool ImGuiFullscreen::RangeButton(const char* title, const char* summary, s32* v
   if (!visible)
     return false;
 
-  const std::string value_text(StringUtil::StdStringFromFormat(format, *value));
+  const SmallString value_text = SmallString::from_sprintf(format, *value);
   const ImVec2 value_size(ImGui::CalcTextSize(value_text.c_str()));
 
   const float midpoint = bb.Min.y + font->FontSize + LayoutScale(4.0f);
@@ -1521,7 +1521,8 @@ bool ImGuiFullscreen::RangeButton(const char* title, const char* summary, s32* v
   bool changed = false;
 
   ImGui::SetNextWindowSize(LayoutScale(500.0f, 180.0f));
-  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+  ImGui::SetNextWindowPos((ImGui::GetIO().DisplaySize - LayoutScale(0.0f, LAYOUT_FOOTER_HEIGHT)) * 0.5f,
+                          ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
   ImGui::PushFont(g_large_font);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
@@ -1560,7 +1561,7 @@ bool ImGuiFullscreen::RangeButton(const char* title, const char* summary, float*
   if (!visible)
     return false;
 
-  const std::string value_text(StringUtil::StdStringFromFormat(format, *value));
+  const SmallString value_text = SmallString::from_sprintf(format, *value);
   const ImVec2 value_size(ImGui::CalcTextSize(value_text.c_str()));
 
   const float midpoint = bb.Min.y + font->FontSize + LayoutScale(4.0f);
@@ -1593,7 +1594,8 @@ bool ImGuiFullscreen::RangeButton(const char* title, const char* summary, float*
   bool changed = false;
 
   ImGui::SetNextWindowSize(LayoutScale(500.0f, 180.0f));
-  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+  ImGui::SetNextWindowPos((ImGui::GetIO().DisplaySize - LayoutScale(0.0f, LAYOUT_FOOTER_HEIGHT)) * 0.5f,
+                          ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
   ImGui::PushFont(g_large_font);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
@@ -2127,8 +2129,9 @@ void ImGuiFullscreen::DrawFileSelector()
   if (!s_file_selector_open)
     return;
 
-  ImGui::SetNextWindowSize(LayoutScale(1000.0f, 680.0f));
-  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+  ImGui::SetNextWindowSize(LayoutScale(1000.0f, 650.0f));
+  ImGui::SetNextWindowPos((ImGui::GetIO().DisplaySize - LayoutScale(0.0f, LAYOUT_FOOTER_HEIGHT)) * 0.5f,
+                          ImGuiCond_Always, ImVec2(0.5f, 0.5f));
   ImGui::OpenPopup(s_file_selector_title.c_str());
 
   FileSelectorItem* selected = nullptr;
@@ -2278,7 +2281,8 @@ void ImGuiFullscreen::DrawChoiceDialog()
              title_height + LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + (LAYOUT_MENU_BUTTON_Y_PADDING * 2.0f)) *
                               static_cast<float>(s_choice_dialog_options.size()));
   ImGui::SetNextWindowSize(ImVec2(width, height));
-  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+  ImGui::SetNextWindowPos((ImGui::GetIO().DisplaySize - LayoutScale(0.0f, LAYOUT_FOOTER_HEIGHT)) * 0.5f,
+                          ImGuiCond_Always, ImVec2(0.5f, 0.5f));
   ImGui::OpenPopup(s_choice_dialog_title.c_str());
 
   bool is_open = !WantsToCloseMenu();
@@ -2381,7 +2385,8 @@ void ImGuiFullscreen::DrawInputDialog()
     return;
 
   ImGui::SetNextWindowSize(LayoutScale(700.0f, 0.0f));
-  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+  ImGui::SetNextWindowPos((ImGui::GetIO().DisplaySize - LayoutScale(0.0f, LAYOUT_FOOTER_HEIGHT)) * 0.5f,
+                          ImGuiCond_Always, ImVec2(0.5f, 0.5f));
   ImGui::OpenPopup(s_input_dialog_title.c_str());
 
   ImGui::PushFont(g_large_font);
@@ -2536,7 +2541,8 @@ void ImGuiFullscreen::DrawMessageDialog()
   const char* win_id = s_message_dialog_title.empty() ? "##messagedialog" : s_message_dialog_title.c_str();
 
   ImGui::SetNextWindowSize(LayoutScale(700.0f, 0.0f));
-  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+  ImGui::SetNextWindowPos((ImGui::GetIO().DisplaySize - LayoutScale(0.0f, LAYOUT_FOOTER_HEIGHT)) * 0.5f,
+                          ImGuiCond_Always, ImVec2(0.5f, 0.5f));
   ImGui::OpenPopup(win_id);
 
   ImGui::PushFont(g_large_font);
@@ -2557,7 +2563,7 @@ void ImGuiFullscreen::DrawMessageDialog()
   if (ImGui::BeginPopupModal(win_id, &is_open, flags))
   {
     BeginMenuButtons();
-    QueueResetFocus();
+    ResetFocusHere();
 
     ImGui::TextWrapped("%s", s_message_dialog_message.c_str());
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(20.0f));

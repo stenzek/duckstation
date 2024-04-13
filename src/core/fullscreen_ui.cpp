@@ -1917,8 +1917,8 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, const char* title
   const bool game_settings = IsEditingGameSettings(bsi);
   const std::optional<int> value =
     bsi->GetOptionalIntValue(section, key, game_settings ? std::nullopt : std::optional<int>(default_value));
-  const std::string value_text(value.has_value() ? StringUtil::StdStringFromFormat(format, value.value()) :
-                                                   FSUI_STR("Use Global Setting"));
+  const SmallString value_text =
+    value.has_value() ? SmallString::from_sprintf(format, value.value()) : SmallString(FSUI_VSTR("Use Global Setting"));
 
   if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height, font, summary_font))
     ImGui::OpenPopup(title);
@@ -1975,8 +1975,8 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, const char* tit
   const bool game_settings = IsEditingGameSettings(bsi);
   const std::optional<float> value =
     bsi->GetOptionalFloatValue(section, key, game_settings ? std::nullopt : std::optional<float>(default_value));
-  const std::string value_text(value.has_value() ? StringUtil::StdStringFromFormat(format, value.value() * multiplier) :
-                                                   FSUI_STR("Use Global Setting"));
+  const SmallString value_text = value.has_value() ? SmallString::from_sprintf(format, value.value() * multiplier) :
+                                                     SmallString(FSUI_VSTR("Use Global Setting"));
 
   if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height, font, summary_font))
     ImGui::OpenPopup(title);
@@ -2036,8 +2036,8 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* t
   const bool game_settings = IsEditingGameSettings(bsi);
   const std::optional<float> value =
     bsi->GetOptionalFloatValue(section, key, game_settings ? std::nullopt : std::optional<float>(default_value));
-  const std::string value_text(value.has_value() ? StringUtil::StdStringFromFormat(format, value.value() * multiplier) :
-                                                   FSUI_STR("Use Global Setting"));
+  const SmallString value_text = value.has_value() ? SmallString::from_sprintf(format, value.value() * multiplier) :
+                                                     SmallString(FSUI_VSTR("Use Global Setting"));
 
   static bool manual_input = false;
 
@@ -2174,12 +2174,12 @@ void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
     bsi->GetOptionalIntValue(section, right_key, game_settings ? std::nullopt : std::optional<int>(default_right));
   const std::optional<int> bottom_value =
     bsi->GetOptionalIntValue(section, bottom_key, game_settings ? std::nullopt : std::optional<int>(default_bottom));
-  const std::string value_text(fmt::format(
+  const SmallString value_text = SmallString::from_format(
     "{}/{}/{}/{}",
-    left_value.has_value() ? StringUtil::StdStringFromFormat(format, left_value.value()) : std::string("Default"),
-    top_value.has_value() ? StringUtil::StdStringFromFormat(format, top_value.value()) : std::string("Default"),
-    right_value.has_value() ? StringUtil::StdStringFromFormat(format, right_value.value()) : std::string("Default"),
-    bottom_value.has_value() ? StringUtil::StdStringFromFormat(format, bottom_value.value()) : std::string("Default")));
+    left_value.has_value() ? TinyString::from_sprintf(format, left_value.value()) : TinyString(FSUI_VSTR("Default")),
+    top_value.has_value() ? TinyString::from_sprintf(format, top_value.value()) : TinyString(FSUI_VSTR("Default")),
+    right_value.has_value() ? TinyString::from_sprintf(format, right_value.value()) : TinyString(FSUI_VSTR("Default")),
+    bottom_value.has_value() ? TinyString::from_sprintf(format, bottom_value.value()) : TinyString(FSUI_VSTR("Default")));
 
   if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height, font, summary_font))
     ImGui::OpenPopup(title);
@@ -3514,12 +3514,16 @@ void FullscreenUI::DoSaveInputProfile()
                      if (index < 0)
                        return;
 
-                     CloseChoiceDialog();
-
                      if (index > 0)
+                     {
                        DoSaveInputProfile(title);
+                       CloseChoiceDialog();
+                     }
                      else
+                     {
+                       CloseChoiceDialog();
                        DoSaveNewInputProfile();
+                     }
                    });
 }
 
@@ -6136,6 +6140,9 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
     return;
   }
 
+  if (!AreAnyDialogsOpen() && WantsToCloseMenu())
+    ReturnToPreviousWindow();
+
   auto game_list_lock = GameList::GetLock();
   const GameList::Entry* selected_entry = nullptr;
   PopulateGameListEntryList();
@@ -6346,11 +6353,8 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
     return;
   }
 
-  if (WantsToCloseMenu())
-  {
-    if (ImGui::IsWindowFocused())
-      ReturnToPreviousWindow();
-  }
+  if (ImGui::IsWindowFocused() && WantsToCloseMenu())
+    ReturnToPreviousWindow();
 
   ResetFocusHere();
   BeginMenuButtons();
@@ -6537,13 +6541,10 @@ void FullscreenUI::DrawGameListSettingsWindow()
     return;
   }
 
-  if (WantsToCloseMenu())
+  if (ImGui::IsWindowFocused() && WantsToCloseMenu())
   {
-    if (ImGui::IsWindowFocused())
-    {
-      s_current_main_window = MainWindowType::GameList;
-      QueueResetFocus();
-    }
+    s_current_main_window = MainWindowType::GameList;
+    QueueResetFocus();
   }
 
   auto lock = Host::GetSettingsLock();
@@ -7151,7 +7152,7 @@ TRANSLATE_NOOP("FullscreenUI", "Enables more precise frame pacing at the cost of
 TRANSLATE_NOOP("FullscreenUI", "Enables the replacement of background textures in supported games.");
 TRANSLATE_NOOP("FullscreenUI", "Encore Mode");
 TRANSLATE_NOOP("FullscreenUI", "Enhancements");
-TRANSLATE_NOOP("FullscreenUI", "Ensures every frame generated is displayed for optimal pacing. Disable if you are having speed or sound issues.");
+TRANSLATE_NOOP("FullscreenUI", "Ensures every frame generated is displayed for optimal pacing. Enable for variable refresh displays, such as GSync/FreeSync. Disable if you are having speed or sound issues.");
 TRANSLATE_NOOP("FullscreenUI", "Enter Value");
 TRANSLATE_NOOP("FullscreenUI", "Enter the name of the input profile you wish to create.");
 TRANSLATE_NOOP("FullscreenUI", "Execution Mode");
@@ -7474,7 +7475,7 @@ TRANSLATE_NOOP("FullscreenUI", "Summary");
 TRANSLATE_NOOP("FullscreenUI", "Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.");
 TRANSLATE_NOOP("FullscreenUI", "Switches between full screen and windowed when the window is double-clicked.");
 TRANSLATE_NOOP("FullscreenUI", "Sync To Host Refresh Rate");
-TRANSLATE_NOOP("FullscreenUI", "Synchronizes presentation of the console's frames to the host. Enable for smoother animations.");
+TRANSLATE_NOOP("FullscreenUI", "Synchronizes presentation of the console's frames to the host. GSync/FreeSync users should enable Optimal Frame Pacing instead.");
 TRANSLATE_NOOP("FullscreenUI", "Temporarily disables all enhancements, useful when testing.");
 TRANSLATE_NOOP("FullscreenUI", "Test Unofficial Achievements");
 TRANSLATE_NOOP("FullscreenUI", "Texture Dumping");

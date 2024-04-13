@@ -342,7 +342,7 @@ private:
 #endif
 
 template<u32 L>
-ALWAYS_INLINE SmallStackString<L> SmallStackString<L>::from_sprintf(const char* format, ...)
+SmallStackString<L> SmallStackString<L>::from_sprintf(const char* format, ...)
 {
   std::va_list ap;
   va_start(ap, format);
