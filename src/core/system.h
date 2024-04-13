@@ -2,10 +2,13 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
-#include "common/timer.h"
+
 #include "settings.h"
 #include "timing_event.h"
 #include "types.h"
+
+#include "common/timer.h"
+
 #include <memory>
 #include <optional>
 #include <string>
@@ -13,6 +16,7 @@
 class ByteStream;
 class CDImage;
 class Error;
+class SmallStringBase;
 class StateWrapper;
 
 class Controller;
@@ -230,6 +234,7 @@ float GetGPUUsage();
 float GetGPUAverageTime();
 const FrameTimeHistory& GetFrameTimeHistory();
 u32 GetFrameTimeHistoryPos();
+void FormatLatencyStats(SmallStringBase& str);
 
 /// Loads global settings (i.e. EmuConfig).
 void LoadSettings(bool display_osd_messages);
@@ -282,8 +287,6 @@ void SetThrottleFrequency(float frequency);
 /// Updates the throttle period, call when target emulation speed changes.
 void UpdateThrottlePeriod();
 void ResetThrottler();
-
-void UpdatePerformanceCounters();
 void ResetPerformanceCounters();
 
 /// Resets vsync/max present fps state.

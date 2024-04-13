@@ -146,6 +146,7 @@ struct Settings
   s8 display_line_start_offset = 0;
   s8 display_line_end_offset = 0;
   bool display_optimal_frame_pacing : 1 = false;
+  bool display_pre_frame_sleep : 1 = false;
   bool display_vsync : 1 = false;
   bool display_force_4_3_for_24bit : 1 = false;
   bool gpu_24bit_chroma_smoothing : 1 = false;
@@ -154,6 +155,7 @@ struct Settings
   bool display_show_speed : 1 = false;
   bool display_show_gpu_stats : 1 = false;
   bool display_show_resolution : 1 = false;
+  bool display_show_latency_stats : 1 = false;
   bool display_show_cpu_usage : 1 = false;
   bool display_show_gpu_usage : 1 = false;
   bool display_show_frame_times : 1 = false;
@@ -161,8 +163,9 @@ struct Settings
   bool display_show_inputs : 1 = false;
   bool display_show_enhancements : 1 = false;
   bool display_stretch_vertically : 1 = false;
-  float display_osd_scale = 100.0f;
+  float display_pre_frame_sleep_buffer = DEFAULT_DISPLAY_PRE_FRAME_SLEEP_BUFFER;
   float display_max_fps = DEFAULT_DISPLAY_MAX_FPS;
+  float display_osd_scale = 100.0f;
   float gpu_pgxp_tolerance = -1.0f;
   float gpu_pgxp_depth_clear_threshold = DEFAULT_GPU_PGXP_DEPTH_THRESHOLD / GPU_PGXP_DEPTH_THRESHOLD_SCALE;
 
@@ -498,6 +501,7 @@ struct Settings
   static constexpr DisplayScreenshotMode DEFAULT_DISPLAY_SCREENSHOT_MODE = DisplayScreenshotMode::ScreenResolution;
   static constexpr DisplayScreenshotFormat DEFAULT_DISPLAY_SCREENSHOT_FORMAT = DisplayScreenshotFormat::PNG;
   static constexpr u8 DEFAULT_DISPLAY_SCREENSHOT_QUALITY = 85;
+  static constexpr float DEFAULT_DISPLAY_PRE_FRAME_SLEEP_BUFFER = 2.0f;
   static constexpr float DEFAULT_OSD_SCALE = 100.0f;
 
   static constexpr u8 DEFAULT_CDROM_READAHEAD_SECTORS = 8;

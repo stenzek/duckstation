@@ -174,6 +174,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showGPU, "Display", "ShowGPU", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showInput, "Display", "ShowInputs", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showGPUStatistics, "Display", "ShowGPUStatistics", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showLatencyStatistics, "Display", "ShowLatencyStatistics",
+                                               false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showStatusIndicators, "Display", "ShowStatusIndicators", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showFrameTimes, "Display", "ShowFrameTimes", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showSettings, "Display", "ShowEnhancements", false);
@@ -426,6 +428,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                              tr("Shows the host's GPU usage in the top-right corner of the display."));
   dialog->registerWidgetHelp(m_ui.showGPUStatistics, tr("Show GPU Statistics"), tr("Unchecked"),
                              tr("Shows information about the emulated GPU in the top-right corner of the display."));
+  dialog->registerWidgetHelp(
+    m_ui.showLatencyStatistics, tr("Show Latency Statistics"), tr("Unchecked"),
+    tr("Shows information about input and audio latency in the top-right corner of the display."));
   dialog->registerWidgetHelp(
     m_ui.showFrameTimes, tr("Show Frame Times"), tr("Unchecked"),
     tr("Shows the history of frame rendering times as a graph in the top-right corner of the display."));

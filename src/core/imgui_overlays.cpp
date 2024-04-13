@@ -349,6 +349,12 @@ void ImGuiManager::DrawPerformanceOverlay()
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
     }
 
+    if (g_settings.display_show_latency_stats)
+    {
+      System::FormatLatencyStats(text);
+      DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
+    }
+
     if (g_settings.display_show_cpu_usage)
     {
       text.format("{:.2f}ms | {:.2f}ms | {:.2f}ms", System::GetMinimumFrameTime(), System::GetAverageFrameTime(),
@@ -410,15 +416,6 @@ void ImGuiManager::DrawPerformanceOverlay()
         FormatProcessorStat(text, System::GetSWThreadUsage(), System::GetSWThreadAverageTime());
         DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
       }
-
-#if 0
-      {
-        AudioStream* stream = g_spu.GetOutputStream();
-        const u32 frames = stream->GetBufferedFramesRelaxed();
-        text.fmt("Audio: {:<4u}f/{:<3u}ms", frames, AudioStream::GetMSForBufferSize(stream->GetSampleRate(), frames));
-        DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
-      }
-#endif
     }
 
     if (g_settings.display_show_gpu_usage && g_gpu_device->IsGPUTimingEnabled())

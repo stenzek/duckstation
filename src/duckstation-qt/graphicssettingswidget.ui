@@ -704,20 +704,6 @@
           </item>
           <item row="1" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_3">
-            <item row="4" column="0">
-             <widget class="QCheckBox" name="showInput">
-              <property name="text">
-               <string>Show Controller Input</string>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="0">
-             <widget class="QCheckBox" name="showStatusIndicators">
-              <property name="text">
-               <string>Show Status Indicators</string>
-              </property>
-             </widget>
-            </item>
             <item row="1" column="1">
              <widget class="QCheckBox" name="showFPS">
               <property name="text">
@@ -729,20 +715,6 @@
              <widget class="QCheckBox" name="showOSDMessages">
               <property name="text">
                <string>Show OSD Messages</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QCheckBox" name="showResolution">
-              <property name="text">
-               <string>Show Resolution</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="1">
-             <widget class="QCheckBox" name="showSettings">
-              <property name="text">
-               <string>Show Settings</string>
               </property>
              </widget>
             </item>
@@ -767,17 +739,52 @@
               </property>
              </widget>
             </item>
-            <item row="3" column="1">
+            <item row="2" column="1">
+             <widget class="QCheckBox" name="showGPU">
+              <property name="text">
+               <string>Show GPU Usage</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QCheckBox" name="showSettings">
+              <property name="text">
+               <string>Show Settings</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="showStatusIndicators">
+              <property name="text">
+               <string>Show Status Indicators</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0">
+             <widget class="QCheckBox" name="showInput">
+              <property name="text">
+               <string>Show Controller Input</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
              <widget class="QCheckBox" name="showFrameTimes">
               <property name="text">
                <string>Show Frame Times</string>
               </property>
              </widget>
             </item>
-            <item row="2" column="1">
-             <widget class="QCheckBox" name="showGPU">
+            <item row="3" column="1">
+             <widget class="QCheckBox" name="showResolution">
               <property name="text">
-               <string>Show GPU Usage</string>
+               <string>Show Resolution</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QCheckBox" name="showLatencyStatistics">
+              <property name="text">
+               <string>Show Latency Statistics</string>
               </property>
              </widget>
             </item>

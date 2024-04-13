@@ -267,6 +267,9 @@ void Settings::Load(SettingsInterface& si)
   display_screenshot_quality = static_cast<u8>(
     std::clamp<u32>(si.GetUIntValue("Display", "ScreenshotQuality", DEFAULT_DISPLAY_SCREENSHOT_QUALITY), 1, 100));
   display_optimal_frame_pacing = si.GetBoolValue("Display", "OptimalFramePacing", false);
+  display_pre_frame_sleep = si.GetBoolValue("Display", "PreFrameSleep", false);
+  display_pre_frame_sleep_buffer =
+    si.GetFloatValue("Display", "PreFrameSleepBuffer", DEFAULT_DISPLAY_PRE_FRAME_SLEEP_BUFFER);
   display_vsync = si.GetBoolValue("Display", "VSync", false);
   display_force_4_3_for_24bit = si.GetBoolValue("Display", "Force4_3For24Bit", false);
   display_active_start_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveStartOffset", 0));
@@ -278,6 +281,7 @@ void Settings::Load(SettingsInterface& si)
   display_show_speed = si.GetBoolValue("Display", "ShowSpeed", false);
   display_show_gpu_stats = si.GetBoolValue("Display", "ShowGPUStatistics", false);
   display_show_resolution = si.GetBoolValue("Display", "ShowResolution", false);
+  display_show_latency_stats = si.GetBoolValue("Display", "ShowLatencyStatistics", false);
   display_show_cpu_usage = si.GetBoolValue("Display", "ShowCPU", false);
   display_show_gpu_usage = si.GetBoolValue("Display", "ShowGPU", false);
   display_show_frame_times = si.GetBoolValue("Display", "ShowFrameTimes", false);
@@ -521,6 +525,8 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetStringValue("Display", "Alignment", GetDisplayAlignmentName(display_alignment));
   si.SetStringValue("Display", "Scaling", GetDisplayScalingName(display_scaling));
   si.SetBoolValue("Display", "OptimalFramePacing", display_optimal_frame_pacing);
+  si.SetBoolValue("Display", "PreFrameSleep", display_pre_frame_sleep);
+  si.SetFloatValue("Display", "PreFrameSleepBuffer", display_pre_frame_sleep_buffer);
   si.SetBoolValue("Display", "VSync", display_vsync);
   si.SetStringValue("Display", "ExclusiveFullscreenControl",
                     GetDisplayExclusiveFullscreenControlName(display_exclusive_fullscreen_control));
@@ -535,6 +541,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
     si.SetBoolValue("Display", "ShowFPS", display_show_fps);
     si.SetBoolValue("Display", "ShowSpeed", display_show_speed);
     si.SetBoolValue("Display", "ShowResolution", display_show_resolution);
+    si.SetBoolValue("Display", "ShowLatencyStatistics", display_show_latency_stats);
     si.SetBoolValue("Display", "ShowGPUStatistics", display_show_gpu_stats);
     si.SetBoolValue("Display", "ShowCPU", display_show_cpu_usage);
     si.SetBoolValue("Display", "ShowGPU", display_show_gpu_usage);

@@ -45,6 +45,7 @@
 #include "util/postprocessing.h"
 #include "util/state_wrapper.h"
 
+#include "common/align.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
@@ -113,6 +114,9 @@ static void LogUnsafeSettingsToConsole(const std::string& messages);
 
 /// Throttles the system, i.e. sleeps until it's time to execute the next frame.
 static void Throttle(Common::Timer::Value current_time);
+static void UpdatePerformanceCounters();
+static void AccumulatePreFrameSleepTime();
+static void UpdatePreFrameSleepTime();
 
 static void SetRewinding(bool enabled);
 static bool SaveRewindState();
@@ -166,12 +170,6 @@ static const GameDatabase::Entry* s_running_game_entry = nullptr;
 static System::GameHash s_running_game_hash;
 static bool s_was_fast_booted;
 
-static float s_throttle_frequency = 0.0f;
-static float s_target_speed = 0.0f;
-static Common::Timer::Value s_frame_period = 0;
-static Common::Timer::Value s_next_frame_time = 0;
-static bool s_last_frame_skipped = false;
-
 static bool s_system_executing = false;
 static bool s_system_interrupted = false;
 static bool s_frame_step_request = false;
@@ -179,7 +177,20 @@ static bool s_fast_forward_enabled = false;
 static bool s_turbo_enabled = false;
 static bool s_throttler_enabled = false;
 static bool s_optimal_frame_pacing = false;
+static bool s_pre_frame_sleep = false;
 static bool s_syncing_to_host = false;
+static bool s_last_frame_skipped = false;
+
+static float s_throttle_frequency = 0.0f;
+static float s_target_speed = 0.0f;
+
+static Common::Timer::Value s_frame_period = 0;
+static Common::Timer::Value s_next_frame_time = 0;
+
+static Common::Timer::Value s_frame_start_time = 0;
+static Common::Timer::Value s_last_active_frame_time = 0;
+static Common::Timer::Value s_pre_frame_sleep_time = 0;
+static Common::Timer::Value s_max_active_frame_time = 0;
 
 static float s_average_frame_time_accumulator = 0.0f;
 static float s_minimum_frame_time_accumulator = 0.0f;
@@ -1861,7 +1872,15 @@ void System::FrameDone()
     SaveRunaheadState();
   }
 
-  const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
+  Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
+
+  // pre-frame sleep accounting (input lag reduction)
+  const Common::Timer::Value pre_frame_sleep_until = s_next_frame_time + s_pre_frame_sleep_time;
+  s_last_active_frame_time = current_time - s_frame_start_time;
+  if (s_pre_frame_sleep)
+    AccumulatePreFrameSleepTime();
+
+  // explicit present (frame pacing)
   if (current_time < s_next_frame_time || s_syncing_to_host || s_optimal_frame_pacing || s_last_frame_skipped)
   {
     const bool throttle_before_present = (s_optimal_frame_pacing && s_throttler_enabled && !IsExecutionInterrupted());
@@ -1889,6 +1908,25 @@ void System::FrameDone()
     s_last_frame_skipped = true;
     Throttle(current_time);
   }
+
+  // pre-frame sleep (input lag reduction)
+  current_time = Common::Timer::GetCurrentValue();
+  if (s_pre_frame_sleep)
+  {
+    // don't sleep if it's under 1ms, because we're just going to overshoot (or spin).
+    if (pre_frame_sleep_until > current_time &&
+        Common::Timer::ConvertValueToMilliseconds(pre_frame_sleep_until - current_time) >= 1)
+    {
+      Common::Timer::SleepUntil(pre_frame_sleep_until, true);
+      current_time = Common::Timer::GetCurrentValue();
+    }
+    else
+    {
+      Log_WarningPrint("Skipping pre-frame sleep");
+    }
+  }
+
+  s_frame_start_time = current_time;
 
   // Input poll already done above
   if (s_runahead_frames == 0)
@@ -1940,6 +1978,7 @@ void System::UpdateThrottlePeriod()
 void System::ResetThrottler()
 {
   s_next_frame_time = Common::Timer::GetCurrentValue() + s_frame_period;
+  s_pre_frame_sleep_time = 0;
 }
 
 void System::Throttle(Common::Timer::Value current_time)
@@ -2624,6 +2663,9 @@ void System::UpdatePerformanceCounters()
   if (g_settings.display_show_gpu_stats)
     g_gpu->UpdateStatistics(frames_run);
 
+  if (s_pre_frame_sleep)
+    UpdatePreFrameSleepTime();
+
   Log_VerbosePrintf("FPS: %.2f VPS: %.2f CPU: %.2f GPU: %.2f Average: %.2fms Min: %.2fms Max: %.2f ms", s_fps, s_vps,
                     s_cpu_thread_usage, s_gpu_usage, s_average_frame_time, s_minimum_frame_time, s_maximum_frame_time);
 
@@ -2649,6 +2691,56 @@ void System::ResetPerformanceCounters()
   ResetThrottler();
 }
 
+void System::AccumulatePreFrameSleepTime()
+{
+  DebugAssert(s_pre_frame_sleep);
+
+  s_max_active_frame_time = std::max(s_max_active_frame_time, s_last_active_frame_time);
+
+  // in case one frame runs over, adjust to compensate
+  const Common::Timer::Value max_sleep_time_for_this_frame =
+    s_frame_period - std::min(s_last_active_frame_time, s_frame_period);
+  if (max_sleep_time_for_this_frame < s_pre_frame_sleep_time)
+  {
+    s_pre_frame_sleep_time = Common::AlignDown(max_sleep_time_for_this_frame,
+                                               static_cast<unsigned int>(Common::Timer::ConvertMillisecondsToValue(1)));
+    Log_DevFmt("Adjust pre-frame time to {} ms due to overrun of {} ms",
+               Common::Timer::ConvertValueToMilliseconds(s_pre_frame_sleep_time),
+               Common::Timer::ConvertValueToMilliseconds(s_last_active_frame_time));
+  }
+}
+
+void System::UpdatePreFrameSleepTime()
+{
+  DebugAssert(s_pre_frame_sleep);
+
+  const Common::Timer::Value expected_frame_time =
+    s_max_active_frame_time + Common::Timer::ConvertMillisecondsToValue(g_settings.display_pre_frame_sleep_buffer);
+  s_pre_frame_sleep_time = Common::AlignDown(s_frame_period - std::min(expected_frame_time, s_frame_period),
+                                             static_cast<unsigned int>(Common::Timer::ConvertMillisecondsToValue(1)));
+  Log_DevFmt("Set pre-frame time to {} ms (expected frame time of {} ms)",
+             Common::Timer::ConvertValueToMilliseconds(s_pre_frame_sleep_time),
+             Common::Timer::ConvertValueToMilliseconds(expected_frame_time));
+
+  s_max_active_frame_time = 0;
+}
+
+void System::FormatLatencyStats(SmallStringBase& str)
+{
+  AudioStream* audio_stream = SPU::GetOutputStream();
+  const u32 audio_latency =
+    AudioStream::GetMSForBufferSize(audio_stream->GetSampleRate(), audio_stream->GetBufferedFramesRelaxed());
+
+  const double active_frame_time = std::ceil(Common::Timer::ConvertValueToMilliseconds(s_last_active_frame_time));
+  const double pre_frame_time = std::ceil(Common::Timer::ConvertValueToMilliseconds(s_pre_frame_sleep_time));
+  const double input_latency = std::ceil(
+    Common::Timer::ConvertValueToMilliseconds(s_frame_period - s_pre_frame_sleep_time) -
+    Common::Timer::ConvertValueToMilliseconds(static_cast<Common::Timer::Value>(s_runahead_frames) * s_frame_period));
+
+  str.format("AF: {:.0f}ms | PF: {:.0f}ms | IL: {:.0f}ms | AL: {}ms", active_frame_time, pre_frame_time, input_latency,
+             audio_latency);
+}
+
 void System::UpdateSpeedLimiterState()
 {
   const float old_target_speed = s_target_speed;
@@ -2657,6 +2749,7 @@ void System::UpdateSpeedLimiterState()
                      (s_fast_forward_enabled ? g_settings.fast_forward_speed : g_settings.emulation_speed);
   s_throttler_enabled = (s_target_speed != 0.0f);
   s_optimal_frame_pacing = s_throttler_enabled && g_settings.display_optimal_frame_pacing;
+  s_pre_frame_sleep = s_throttler_enabled && g_settings.display_pre_frame_sleep;
 
   s_syncing_to_host = false;
   if (g_settings.sync_to_host_refresh_rate && (g_settings.audio_stretch_mode != AudioStretchMode::Off) &&
@@ -3786,6 +3879,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.fast_forward_speed != old_settings.fast_forward_speed ||
         g_settings.display_max_fps != old_settings.display_max_fps ||
         g_settings.display_optimal_frame_pacing != old_settings.display_optimal_frame_pacing ||
+        g_settings.display_pre_frame_sleep != old_settings.display_pre_frame_sleep ||
+        g_settings.display_pre_frame_sleep_buffer != old_settings.display_pre_frame_sleep_buffer ||
         g_settings.display_vsync != old_settings.display_vsync ||
         g_settings.sync_to_host_refresh_rate != old_settings.sync_to_host_refresh_rate)
     {

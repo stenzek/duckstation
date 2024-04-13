@@ -22,6 +22,8 @@ private Q_SLOTS:
   void onFastForwardSpeedIndexChanged(int index);
   void onTurboSpeedIndexChanged(int index);
   void onVSyncChanged();
+  void onOptimalFramePacingChanged();
+  void onPreFrameSleepChanged();
   void updateRewind();
 
 private:

@@ -3350,32 +3350,62 @@ void FullscreenUI::DrawEmulationSettingsPage()
 
   MenuHeading(FSUI_CSTR("Speed Control"));
   DrawFloatListSetting(
-    bsi, FSUI_CSTR("Emulation Speed"),
+    bsi, FSUI_ICONSTR(ICON_FA_STOPWATCH, "Emulation Speed"),
     FSUI_CSTR("Sets the target emulation speed. It is not guaranteed that this speed will be reached on all systems."),
     "Main", "EmulationSpeed", 1.0f, emulation_speed_titles.data(), emulation_speed_values.data(),
     emulation_speed_titles.size(), true);
   DrawFloatListSetting(
-    bsi, FSUI_CSTR("Fast Forward Speed"),
+    bsi, FSUI_ICONSTR(ICON_FA_BOLT, "Fast Forward Speed"),
     FSUI_CSTR("Sets the fast forward speed. It is not guaranteed that this speed will be reached on all systems."),
     "Main", "FastForwardSpeed", 0.0f, emulation_speed_titles.data(), emulation_speed_values.data(),
     emulation_speed_titles.size(), true);
   DrawFloatListSetting(
-    bsi, FSUI_CSTR("Turbo Speed"),
+    bsi, FSUI_ICONSTR(ICON_FA_BOLT, "Turbo Speed"),
     FSUI_CSTR("Sets the turbo speed. It is not guaranteed that this speed will be reached on all systems."), "Main",
     "TurboSpeed", 2.0f, emulation_speed_titles.data(), emulation_speed_values.data(), emulation_speed_titles.size(),
     true);
 
+  MenuHeading(FSUI_CSTR("Latency Control"));
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TV, "Vertical Sync (VSync)"),
+                    FSUI_CSTR("Synchronizes presentation of the console's frames to the host. GSync/FreeSync users "
+                              "should enable Optimal Frame Pacing instead."),
+                    "Display", "VSync", false);
+
+  DrawToggleSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Sync To Host Refresh Rate"),
+    FSUI_CSTR("Adjusts the emulation speed so the console's refresh rate matches the host when VSync is enabled."),
+    "Main", "SyncToHostRefreshRate", false);
+
+  DrawToggleSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_TACHOMETER_ALT, "Optimal Frame Pacing"),
+    FSUI_CSTR("Ensures every frame generated is displayed for optimal pacing. Enable for variable refresh displays, "
+              "such as GSync/FreeSync. Disable if you are having speed or sound issues."),
+    "Display", "OptimalFramePacing", false);
+
+  const bool optimal_frame_pacing_active = GetEffectiveBoolSetting(bsi, "Display", "OptimalFramePacing", false);
+  DrawToggleSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_STOPWATCH_20, "Reduce Input Latency"),
+    FSUI_CSTR("Reduces input latency by delaying the start of frame until closer to the presentation time."), "Display",
+    "PreFrameSleep", false, optimal_frame_pacing_active);
+  const bool pre_frame_sleep_active =
+    (optimal_frame_pacing_active && GetEffectiveBoolSetting(bsi, "Display", "PreFrameSleep", false));
+  DrawFloatRangeSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_BATTERY_FULL, "Frame Time Buffer"),
+    FSUI_CSTR("Specifies the amount of buffer time added, which reduces the additional sleep time introduced."),
+    "Display", "PreFrameSleepBuffer", Settings::DEFAULT_DISPLAY_PRE_FRAME_SLEEP_BUFFER, 0.0f, 20.0f, "%.1f", 1.0f,
+    pre_frame_sleep_active);
+
   MenuHeading(FSUI_CSTR("Runahead/Rewind"));
 
-  DrawToggleSetting(bsi, FSUI_CSTR("Enable Rewinding"),
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BACKWARD, "Enable Rewinding"),
                     FSUI_CSTR("Saves state periodically so you can rewind any mistakes while playing."), "Main",
                     "RewindEnable", false);
   DrawFloatRangeSetting(
-    bsi, FSUI_CSTR("Rewind Save Frequency"),
+    bsi, FSUI_ICONSTR(ICON_FA_SAVE, "Rewind Save Frequency"),
     FSUI_CSTR("How often a rewind state will be created. Higher frequencies have greater system requirements."), "Main",
     "RewindFrequency", 10.0f, 0.0f, 3600.0f, FSUI_CSTR("%.2f Seconds"));
   DrawIntRangeSetting(
-    bsi, FSUI_CSTR("Rewind Save Slots"),
+    bsi, FSUI_ICONSTR(ICON_FA_GLASS_WHISKEY, "Rewind Save Slots"),
     FSUI_CSTR("How many saves will be kept for rewinding. Higher values have greater memory requirements."), "Main",
     "RewindSaveSlots", 10, 1, 10000, FSUI_CSTR("%d Frames"));
 
@@ -3389,7 +3419,7 @@ void FullscreenUI::DrawEmulationSettingsPage()
     FSUI_NSTR("8 Frames"), FSUI_NSTR("9 Frames"), FSUI_NSTR("10 Frames")};
 
   DrawIntListSetting(
-    bsi, FSUI_CSTR("Runahead"),
+    bsi, FSUI_ICONSTR(ICON_FA_RUNNING, "Runahead"),
     FSUI_CSTR(
       "Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements."),
     "Main", "RunaheadFrameCount", 0, runahead_options.data(), runahead_options.size(), true);
@@ -4183,23 +4213,6 @@ void FullscreenUI::DrawDisplaySettingsPage()
                 "in greater performance."),
       "GPU", "UseSoftwareRendererForReadbacks", false);
   }
-
-  DrawToggleSetting(bsi, FSUI_CSTR("VSync"),
-                    FSUI_CSTR("Synchronizes presentation of the console's frames to the host. GSync/FreeSync users "
-                              "should enable Optimal Frame Pacing instead."),
-                    "Display", "VSync", false);
-
-  DrawToggleSetting(
-    bsi, FSUI_CSTR("Sync To Host Refresh Rate"),
-    FSUI_CSTR("Adjusts the emulation speed so the console's refresh rate matches the host when VSync and Audio "
-              "Resampling are enabled."),
-    "Main", "SyncToHostRefreshRate", false);
-
-  DrawToggleSetting(
-    bsi, FSUI_CSTR("Optimal Frame Pacing"),
-    FSUI_CSTR("Ensures every frame generated is displayed for optimal pacing. Enable for variable refresh displays, "
-              "such as GSync/FreeSync. Disable if you are having speed or sound issues."),
-    "Display", "OptimalFramePacing", false);
 
   MenuHeading(FSUI_CSTR("Rendering"));
 
@@ -6983,7 +6996,7 @@ TRANSLATE_NOOP("FullscreenUI", "Add Shader");
 TRANSLATE_NOOP("FullscreenUI", "Adds a new directory to the game search list.");
 TRANSLATE_NOOP("FullscreenUI", "Adds a new shader to the chain.");
 TRANSLATE_NOOP("FullscreenUI", "Adds additional precision to PGXP data post-projection. May improve visuals in some games.");
-TRANSLATE_NOOP("FullscreenUI", "Adjusts the emulation speed so the console's refresh rate matches the host when VSync and Audio Resampling are enabled.");
+TRANSLATE_NOOP("FullscreenUI", "Adjusts the emulation speed so the console's refresh rate matches the host when VSync is enabled.");
 TRANSLATE_NOOP("FullscreenUI", "Advanced Settings");
 TRANSLATE_NOOP("FullscreenUI", "All Time: {}");
 TRANSLATE_NOOP("FullscreenUI", "Allow Booting Without SBI File");
@@ -7178,6 +7191,7 @@ TRANSLATE_NOOP("FullscreenUI", "Force NTSC Timings");
 TRANSLATE_NOOP("FullscreenUI", "Forces PAL games to run at NTSC timings, i.e. 60hz. Some PAL games will run at their \"normal\" speeds, while others will break.");
 TRANSLATE_NOOP("FullscreenUI", "Forces a full rescan of all games previously identified.");
 TRANSLATE_NOOP("FullscreenUI", "Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.");
+TRANSLATE_NOOP("FullscreenUI", "Frame Time Buffer");
 TRANSLATE_NOOP("FullscreenUI", "From File...");
 TRANSLATE_NOOP("FullscreenUI", "Fullscreen Resolution");
 TRANSLATE_NOOP("FullscreenUI", "GPU Adapter");
@@ -7226,6 +7240,7 @@ TRANSLATE_NOOP("FullscreenUI", "Interface Settings");
 TRANSLATE_NOOP("FullscreenUI", "Internal Resolution");
 TRANSLATE_NOOP("FullscreenUI", "Last Played");
 TRANSLATE_NOOP("FullscreenUI", "Last Played: %s");
+TRANSLATE_NOOP("FullscreenUI", "Latency Control");
 TRANSLATE_NOOP("FullscreenUI", "Launch Options");
 TRANSLATE_NOOP("FullscreenUI", "Launch a game by selecting a file/disc image.");
 TRANSLATE_NOOP("FullscreenUI", "Launch a game from a file, disc, or starts the console without any disc inserted.");
@@ -7335,8 +7350,10 @@ TRANSLATE_NOOP("FullscreenUI", "RAIntegration is being used instead of the built
 TRANSLATE_NOOP("FullscreenUI", "Read Speedup");
 TRANSLATE_NOOP("FullscreenUI", "Readahead Sectors");
 TRANSLATE_NOOP("FullscreenUI", "Recompiler Fast Memory Access");
+TRANSLATE_NOOP("FullscreenUI", "Reduce Input Latency");
 TRANSLATE_NOOP("FullscreenUI", "Reduces \"wobbly\" polygons by attempting to preserve the fractional component through memory transfers.");
 TRANSLATE_NOOP("FullscreenUI", "Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.");
+TRANSLATE_NOOP("FullscreenUI", "Reduces input latency by delaying the start of frame until closer to the presentation time.");
 TRANSLATE_NOOP("FullscreenUI", "Reduces polygon Z-fighting through depth testing. Low compatibility with games.");
 TRANSLATE_NOOP("FullscreenUI", "Region");
 TRANSLATE_NOOP("FullscreenUI", "Region: ");
@@ -7455,6 +7472,7 @@ TRANSLATE_NOOP("FullscreenUI", "Smooths out the blockiness of magnified textures
 TRANSLATE_NOOP("FullscreenUI", "Sort By");
 TRANSLATE_NOOP("FullscreenUI", "Sort Reversed");
 TRANSLATE_NOOP("FullscreenUI", "Sound Effects");
+TRANSLATE_NOOP("FullscreenUI", "Specifies the amount of buffer time added, which reduces the additional sleep time introduced.");
 TRANSLATE_NOOP("FullscreenUI", "Spectator Mode");
 TRANSLATE_NOOP("FullscreenUI", "Speed Control");
 TRANSLATE_NOOP("FullscreenUI", "Speeds up CD-ROM reads by the specified factor. May improve loading speeds in some games, and break others.");
@@ -7523,8 +7541,8 @@ TRANSLATE_NOOP("FullscreenUI", "Uses game-specific settings for controllers for 
 TRANSLATE_NOOP("FullscreenUI", "Uses perspective-correct interpolation for colors, which can improve visuals in some games.");
 TRANSLATE_NOOP("FullscreenUI", "Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.");
 TRANSLATE_NOOP("FullscreenUI", "Uses screen positions to resolve PGXP data. May improve visuals in some games.");
-TRANSLATE_NOOP("FullscreenUI", "VSync");
 TRANSLATE_NOOP("FullscreenUI", "Value: {} | Default: {} | Minimum: {} | Maximum: {}");
+TRANSLATE_NOOP("FullscreenUI", "Vertical Sync (VSync)");
 TRANSLATE_NOOP("FullscreenUI", "When enabled and logged in, DuckStation will scan for achievements on startup.");
 TRANSLATE_NOOP("FullscreenUI", "When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.");
 TRANSLATE_NOOP("FullscreenUI", "When enabled, DuckStation will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.");
