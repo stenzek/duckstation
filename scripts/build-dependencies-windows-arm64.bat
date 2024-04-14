@@ -58,6 +58,7 @@ set SHADERC=2024.0
 set SHADERC_GLSLANG=d73712b8f6c9047b09e99614e20d456d5ada2390
 set SHADERC_SPIRVHEADERS=8b246ff75c6615ba4532fe4fde20f1be090c3764
 set SHADERC_SPIRVTOOLS=04896c462d9f3f504c99a4698605b6524af813c1
+set SPIRV_CROSS=vulkan-sdk-1.3.280.0
 
 call :downloadfile "freetype-%FREETYPE%.tar.gz" https://download.savannah.gnu.org/releases/freetype/freetype-%FREETYPE%.tar.gz 1ac27e16c134a7f2ccea177faba19801131116fd682efc1f5737037c5db224b5 || goto error
 call :downloadfile "harfbuzz-%HARFBUZZ%.zip" https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip b2bc56184ae37324bc4829fde7d3f9e6916866ad711ee85792e457547c9fd127 || goto error
@@ -77,6 +78,7 @@ call :downloadfile "shaderc-%SHADERC%.zip" "https://github.com/google/shaderc/ar
 call :downloadfile "shaderc-glslang-%SHADERC_GLSLANG%.zip" "https://github.com/KhronosGroup/glslang/archive/%SHADERC_GLSLANG%.zip" 58a0d4b670986f8618c371b088f2ee11006596e8c71fe499ec044d5ea469d39b || goto error
 call :downloadfile "shaderc-spirv-headers-%SHADERC_SPIRVHEADERS%.zip" "https://github.com/KhronosGroup/SPIRV-Headers/archive/%SHADERC_SPIRVHEADERS%.zip" 1385538d16f8875e76209388187b3814cb0b0e9cecc3bc440faa7665b570ff47 || goto error
 call :downloadfile "shaderc-spirv-tools-%SHADERC_SPIRVTOOLS%.zip" "https://github.com/KhronosGroup/SPIRV-Tools/archive/%SHADERC_SPIRVTOOLS%.zip" 4eb9a3fc940ed1b05f968c181763dfdb8e637cbfbf57c625112b3ad0f76e2c28 || goto error
+call :downloadfile "SPIRV-Cross-%SPIRV_CROSS%.zip" "https://github.com/KhronosGroup/SPIRV-Cross/archive/refs/tags/%SPIRV_CROSS%.zip" 8428a0faf339b3fed2e9acb0b7a8176e7f5384c712b8d7f1e09505650dd10e93 || goto error
 
 if %DEBUG%==1 (
   echo Building debug and release libraries...
@@ -242,6 +244,15 @@ rename "SPIRV-Tools-%SHADERC_SPIRVTOOLS%" "spirv-tools" || goto error
 cd .. || goto error
 %PATCH% -p1 < "%SCRIPTDIR%\shaderc-changes.patch" || goto error
 cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DSHADERC_SKIP_TESTS=ON -DSHADERC_SKIP_EXAMPLES=ON -DSHADERC_SKIP_COPYRIGHT_CHECK=ON -DSHADERC_ENABLE_SHARED_CRT=ON -B build -G Ninja || goto error
+cmake --build build --parallel || goto error
+ninja -C build install || goto error
+cd .. || goto error
+
+echo Building SPIRV-Cross...
+rmdir /S /Q "SPIRV-Cross-%SPIRV_CROSS%"
+%SEVENZIP% x "SPIRV-Cross-%SPIRV_CROSS%.zip" || goto error
+cd "SPIRV-Cross-%SPIRV_CROSS%" || goto error
+cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DSPIRV_CROSS_SHARED=ON -DSPIRV_CROSS_STATIC=OFF -DSPIRV_CROSS_CLI=OFF -DSPIRV_CROSS_ENABLE_TESTS=OFF -DSPIRV_CROSS_ENABLE_GLSL=ON -DSPIRV_CROSS_ENABLE_HLSL=ON -DSPIRV_CROSS_ENABLE_MSL=OFF -DSPIRV_CROSS_ENABLE_CPP=OFF -DSPIRV_CROSS_ENABLE_REFLECT=OFF -DSPIRV_CROSS_ENABLE_C_API=ON -DSPIRV_CROSS_ENABLE_UTIL=ON -B build -G Ninja
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error

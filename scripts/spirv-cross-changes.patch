@@ -1,0 +1,14 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -73,9 +73,9 @@
+ set(spirv-cross-link-flags "")
+ 
+ message(STATUS "SPIRV-Cross: Finding Git version for SPIRV-Cross.")
+-set(spirv-cross-build-version "unknown")
++set(spirv-cross-build-version "vulkan-sdk-1.3.280.0")
+ find_package(Git)
+-if (GIT_FOUND)
++if (FALSE)
+ 	execute_process(
+ 		COMMAND ${GIT_EXECUTABLE} describe --always --tags --dirty=+
+ 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
