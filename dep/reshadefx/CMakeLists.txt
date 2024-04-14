@@ -21,7 +21,6 @@ add_library(reshadefx
 target_include_directories(reshadefx PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}/include"
   "${CMAKE_CURRENT_SOURCE_DIR}/src"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../spirv-cross/include/spirv-cross" # SPIR-V
 )
 target_include_directories(reshadefx INTERFACE
   "${CMAKE_CURRENT_SOURCE_DIR}/include"
