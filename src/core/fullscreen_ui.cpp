@@ -3109,6 +3109,10 @@ void FullscreenUI::DrawInterfaceSettingsPage()
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BARS, "Show GPU Statistics"),
                     FSUI_CSTR("Shows information about the emulated GPU in the top-right corner of the display."),
                     "Display", "ShowGPUStatistics", false);
+  DrawToggleSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_STOPWATCH, "Show Latency Statistics"),
+    FSUI_CSTR("Shows information about input and audio latency in the top-right corner of the display."), "Display",
+    "ShowLatencyStatistics", false);
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BATTERY_HALF, "Show CPU Usage"),
                     FSUI_CSTR("Shows the host's CPU usage based on threads in the top-right corner of the display."),
                     "Display", "ShowCPU", false);
@@ -7446,6 +7450,7 @@ TRANSLATE_NOOP("FullscreenUI", "Show FPS");
 TRANSLATE_NOOP("FullscreenUI", "Show Frame Times");
 TRANSLATE_NOOP("FullscreenUI", "Show GPU Statistics");
 TRANSLATE_NOOP("FullscreenUI", "Show GPU Usage");
+TRANSLATE_NOOP("FullscreenUI", "Show Latency Statistics");
 TRANSLATE_NOOP("FullscreenUI", "Show OSD Messages");
 TRANSLATE_NOOP("FullscreenUI", "Show Resolution");
 TRANSLATE_NOOP("FullscreenUI", "Show Speed");
@@ -7453,6 +7458,7 @@ TRANSLATE_NOOP("FullscreenUI", "Show Status Indicators");
 TRANSLATE_NOOP("FullscreenUI", "Shows a visual history of frame times in the upper-left corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Shows enhancement settings in the bottom-right corner of the screen.");
 TRANSLATE_NOOP("FullscreenUI", "Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.");
+TRANSLATE_NOOP("FullscreenUI", "Shows information about input and audio latency in the top-right corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Shows information about the emulated GPU in the top-right corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Shows on-screen-display messages when events occur.");
 TRANSLATE_NOOP("FullscreenUI", "Shows persistent icons when turbo is active or when paused.");
