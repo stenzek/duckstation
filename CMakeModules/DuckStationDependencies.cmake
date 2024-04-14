@@ -22,6 +22,9 @@ if(NOT WIN32 AND NOT ANDROID)
   endif()
 
   if(APPLE)
+    # SPIRV-Cross is currently only used on MacOS.
+    find_package(spirv_cross_c_shared REQUIRED)
+
     set(CMAKE_FIND_FRAMEWORK ${FIND_FRAMEWORK_BACKUP})
   endif()
 endif()

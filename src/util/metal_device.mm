@@ -9,6 +9,7 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
+#include "common/scoped_guard.h"
 #include "common/string_util.h"
 
 // TODO FIXME...
@@ -16,8 +17,7 @@
 #include "fmt/format.h"
 
 #include "shaderc/shaderc.hpp"
-#include "spirv-cross/spirv_cross.hpp"
-#include "spirv-cross/spirv_msl.hpp"
+#include "spirv_cross_c.h"
 
 #include <array>
 #include <pthread.h>
@@ -696,62 +696,136 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromSource(GPUShaderStage st
     Log_WarningFmt("Shader compiled with warnings:\n{}", result.GetErrorMessage());
   }
 
-  spirv_cross::CompilerMSL compiler(result.cbegin(), std::distance(result.cbegin(), result.cend()));
-  spirv_cross::CompilerMSL::Options msl_options = compiler.get_msl_options();
-  msl_options.pad_fragment_output_components = true;
-  msl_options.use_framebuffer_fetch_subpasses = m_features.framebuffer_fetch;
-  if (m_features.framebuffer_fetch)
-    msl_options.set_msl_version(2, 3);
+  spvc_context sctx;
+  spvc_result sres;
+  if ((sres = spvc_context_create(&sctx)) != SPVC_SUCCESS)
+  {
+    Log_ErrorFmt("spvc_context_create() failed: {}", static_cast<int>(sres));
+    return {};
+  }
+
+  const ScopedGuard sctx_guard = [&sctx]() { spvc_context_destroy(sctx); };
+
+  spvc_context_set_error_callback(
+    sctx, [](void*, const char* error) { Log_ErrorFmt("SPIRV-Cross reported an error: {}", error); }, nullptr);
+
+  spvc_parsed_ir sir;
+  if ((sres = spvc_context_parse_spirv(sctx, result.cbegin(), std::distance(result.cbegin(), result.cend()), &sir)) !=
+      SPVC_SUCCESS)
+  {
+    Log_ErrorFmt("spvc_context_parse_spirv() failed: {}", static_cast<int>(sres));
+    DumpBadShader(source, std::string_view());
+    return {};
+  }
+
+  spvc_compiler scompiler;
+  if ((sres = spvc_context_create_compiler(sctx, SPVC_BACKEND_MSL, sir, SPVC_CAPTURE_MODE_TAKE_OWNERSHIP,
+                                           &scompiler)) != SPVC_SUCCESS)
+  {
+    Log_ErrorFmt("spvc_context_create_compiler() failed: {}", static_cast<int>(sres));
+    return {};
+  }
+
+  spvc_compiler_options soptions;
+  if ((sres = spvc_compiler_create_compiler_options(scompiler, &soptions)) != SPVC_SUCCESS)
+  {
+    Log_ErrorFmt("spvc_compiler_create_compiler_options() failed: {}", static_cast<int>(sres));
+    return {};
+  }
+
+  if ((sres = spvc_compiler_options_set_bool(soptions, SPVC_COMPILER_OPTION_MSL_PAD_FRAGMENT_OUTPUT_COMPONENTS,
+                                             true)) != SPVC_SUCCESS)
+  {
+    Log_ErrorFmt("spvc_compiler_options_set_bool(SPVC_COMPILER_OPTION_MSL_PAD_FRAGMENT_OUTPUT_COMPONENTS) failed: {}",
+                 static_cast<int>(sres));
+    return {};
+  }
+
+  if ((sres = spvc_compiler_options_set_bool(soptions, SPVC_COMPILER_OPTION_MSL_FRAMEBUFFER_FETCH_SUBPASS,
+                                             m_features.framebuffer_fetch)) != SPVC_SUCCESS)
+  {
+    Log_ErrorFmt("spvc_compiler_options_set_bool(SPVC_COMPILER_OPTION_MSL_FRAMEBUFFER_FETCH_SUBPASS) failed: {}",
+                 static_cast<int>(sres));
+    return {};
+  }
+
+  if (m_features.framebuffer_fetch &&
+      ((sres = spvc_compiler_options_set_uint(soptions, SPVC_COMPILER_OPTION_MSL_VERSION,
+                                              SPVC_MAKE_MSL_VERSION(2, 3, 0))) != SPVC_SUCCESS))
+  {
+    Log_ErrorFmt("spvc_compiler_options_set_uint(SPVC_COMPILER_OPTION_MSL_VERSION) failed: {}", static_cast<int>(sres));
+    return {};
+  }
 
   if (stage == GPUShaderStage::Fragment)
   {
     for (u32 i = 0; i < MAX_TEXTURE_SAMPLERS; i++)
     {
-      spirv_cross::MSLResourceBinding rb;
-      rb.stage = spv::ExecutionModelFragment;
-      rb.desc_set = 1;
-      rb.binding = i;
-      rb.count = 1;
-      rb.msl_texture = i;
-      rb.msl_sampler = i;
-      rb.msl_buffer = i;
-      compiler.add_msl_resource_binding(rb);
+      const spvc_msl_resource_binding rb = {.stage = SpvExecutionModelFragment,
+                                            .desc_set = 1,
+                                            .binding = i,
+                                            .msl_buffer = i,
+                                            .msl_texture = i,
+                                            .msl_sampler = i};
+
+      if ((sres = spvc_compiler_msl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
+      {
+        Log_ErrorFmt("spvc_compiler_msl_add_resource_binding() failed: {}", static_cast<int>(sres));
+        return {};
+      }
     }
 
     if (!m_features.framebuffer_fetch)
     {
-      spirv_cross::MSLResourceBinding rb;
-      rb.stage = spv::ExecutionModelFragment;
-      rb.desc_set = 2;
-      rb.binding = 0;
-      rb.msl_texture = MAX_TEXTURE_SAMPLERS;
-      compiler.add_msl_resource_binding(rb);
+      const spvc_msl_resource_binding rb = {
+        .stage = SpvExecutionModelFragment, .desc_set = 2, .binding = 0, .msl_texture = MAX_TEXTURE_SAMPLERS};
+
+      if ((sres = spvc_compiler_msl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
+      {
+        Log_ErrorFmt("spvc_compiler_msl_add_resource_binding() for FB failed: {}", static_cast<int>(sres));
+        return {};
+      }
     }
   }
 
-  compiler.set_msl_options(msl_options);
-
-  const std::string msl = compiler.compile();
-  if (msl.empty())
+  if ((sres = spvc_compiler_install_compiler_options(scompiler, soptions)) != SPVC_SUCCESS)
   {
-    Log_ErrorPrintf("Failed to compile SPIR-V to MSL.");
+    Log_ErrorFmt("spvc_compiler_install_compiler_options() failed: {}", static_cast<int>(sres));
     return {};
   }
+
+  const char* msl;
+  if ((sres = spvc_compiler_compile(scompiler, &msl)) != SPVC_SUCCESS)
+  {
+    Log_ErrorFmt("spvc_compiler_compile() failed: {}", static_cast<int>(sres));
+    DumpBadShader(source, std::string_view());
+    return {};
+  }
+
+  const size_t msl_length = msl ? std::strlen(msl) : 0;
+  if (msl_length == 0)
+  {
+    Log_ErrorPrint("Failed to compile SPIR-V to MSL.");
+    DumpBadShader(source, std::string_view());
+    return {};
+  }
+
+  const std::string_view mslv(msl, msl_length);
   if constexpr (dump_shaders)
   {
     static unsigned s_next_id = 0;
     ++s_next_id;
     DumpShader(s_next_id, "_input", source);
-    DumpShader(s_next_id, "_msl", msl);
+    DumpShader(s_next_id, "_msl", mslv);
   }
 
   if (out_binary)
   {
-    out_binary->resize(msl.size());
-    std::memcpy(out_binary->data(), msl.data(), msl.size());
+    out_binary->resize(mslv.size());
+    std::memcpy(out_binary->data(), mslv.data(), mslv.size());
   }
 
-  return CreateShaderFromMSL(stage, msl, "main0");
+  return CreateShaderFromMSL(stage, mslv, "main0");
 }
 
 MetalPipeline::MetalPipeline(id<MTLRenderPipelineState> pipeline, id<MTLDepthStencilState> depth, MTLCullMode cull_mode,

@@ -68,7 +68,3 @@ if(WIN32)
   add_subdirectory(winpixeventruntime EXCLUDE_FROM_ALL)
 endif()
 
-if(APPLE)
-  add_subdirectory(spirv-cross EXCLUDE_FROM_ALL)
-  disable_compiler_warnings_for_target(spirv-cross)
-endif()
