@@ -427,9 +427,10 @@ void Log::SetFileOutputParams(bool enabled, const char* filename, bool timestamp
   if (enabled)
   {
     s_file_handle.reset(FileSystem::OpenCFile(filename, "wb"));
-    if (!s_file_handle)
+    if (!s_file_handle) [[unlikely]]
     {
-      Log::Writef("Log", __FUNCTION__, LOGLEVEL_ERROR, "Failed to open log file '%s'", filename);
+      ExecuteCallbacks("Log", __FUNCTION__, LOGLEVEL_ERROR,
+                       TinyString::from_format("Failed to open log file '{}'", filename), lock);
       return;
     }
 
