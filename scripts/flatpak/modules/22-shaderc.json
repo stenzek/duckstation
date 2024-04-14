@@ -37,7 +37,7 @@
     },
     {
       "type": "patch",
-      "path": "shaderc-install.patch"
+      "path": "../../shaderc-changes.patch"
     }
   ],
   "cleanup": [

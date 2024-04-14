@@ -327,7 +327,7 @@ mv "SPIRV-Headers-$SHADERC_SPIRVHEADERS" "spirv-headers"
 tar xf "../../shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz"
 mv "SPIRV-Tools-$SHADERC_SPIRVTOOLS" "spirv-tools"
 cd ..
-patch -p1 < "$SCRIPTDIR/shaderc-install.patch"
+patch -p1 < "$SCRIPTDIR/shaderc-changes.patch"
 cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DSHADERC_SKIP_TESTS=ON -DSHADERC_SKIP_EXAMPLES=ON -DSHADERC_SKIP_COPYRIGHT_CHECK=ON -B build
 make -C build "-j$NPROCS"
 make -C build install
