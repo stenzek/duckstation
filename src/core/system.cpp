@@ -1920,10 +1920,6 @@ void System::FrameDone()
       Common::Timer::SleepUntil(pre_frame_sleep_until, true);
       current_time = Common::Timer::GetCurrentValue();
     }
-    else
-    {
-      Log_WarningPrint("Skipping pre-frame sleep");
-    }
   }
 
   s_frame_start_time = current_time;
