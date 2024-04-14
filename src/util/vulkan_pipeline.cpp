@@ -65,9 +65,11 @@ std::unique_ptr<GPUShader> VulkanDevice::CreateShaderFromSource(GPUShaderStage s
 
   if (m_debug_device)
   {
-    options.SetOptimizationLevel(shaderc_optimization_level_zero);
+    options.SetGenerateDebugInfo();
     if (m_optional_extensions.vk_khr_shader_non_semantic_info)
-      options.SetGenerateDebugInfo();
+      options.SetEmitNonSemanticDebugInfo();
+
+    options.SetOptimizationLevel(shaderc_optimization_level_zero);
   }
   else
   {
