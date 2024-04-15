@@ -93,9 +93,7 @@ bool NeGconRumble::DoState(StateWrapper& sw, bool apply_input_state)
 
   sw.Do(&m_analog_mode);
   sw.Do(&m_dualshock_enabled);
-  //sw.DoEx(&m_legacy_rumble_unlocked, 44, false);
   sw.Do(&m_configuration_mode);
-  //sw.Do(&m_command_param);
   sw.DoEx(&m_status_byte, 55, static_cast<u8>(0x5A));
 
   u16 button_state = m_button_state;
@@ -151,25 +149,6 @@ float NeGconRumble::GetBindState(u32 index) const
   {
     return 0.0f;
   }
-  //if (index == (static_cast<u32>(Button::Count) + static_cast<u32>(HalfAxis::SteeringLeft)) ||
-  //    index == (static_cast<u32>(Button::Count) + static_cast<u32>(HalfAxis::SteeringRight)))
-  //{
-  //  return static_cast<float>(m_half_axis_state[index - static_cast<u32>(Button::Count)]) * (1.0f / 255.0f);
-  //}
-  //else if (index >= static_cast<u32>(Button::Count))
-  //{
-  //  // less one because of the two steering axes
-  //  const u32 sub_index = index - (static_cast<u32>(Button::Analog) + 1);
-  //  if (sub_index >= m_axis_state.size())
-  //    return 0.0f;
-
-  //  return static_cast<float>(m_axis_state[sub_index]) * (1.0f / 255.0f);
-  //}
-  //else
-  //{
-  //  const u32 bit = s_button_indices[index];
-  //  return static_cast<float>(((m_button_state >> bit) & 1u) ^ 1u);
-  //}
 }
 
 void NeGconRumble::SetBindState(u32 index, float value)
@@ -326,21 +305,6 @@ void NeGconRumble::UpdateHostVibration()
 u8 NeGconRumble::GetExtraButtonMaskLSB() const
 {
   return 0xFF;
-  //if (!m_analog_dpad_in_digital_mode || m_analog_mode || m_configuration_mode)
-  //  return 0xFF;
-
-  //static constexpr u8 NEG_THRESHOLD = static_cast<u8>(128.0f - (127.0 * 0.5f));
-  //static constexpr u8 POS_THRESHOLD = static_cast<u8>(128.0f + (127.0 * 0.5f));
-
-  //const bool left = (m_axis_state[static_cast<u8>(Axis::LeftX)] <= NEG_THRESHOLD);
-  //const bool right = (m_axis_state[static_cast<u8>(Axis::LeftX)] >= POS_THRESHOLD);
-  //const bool up = (m_axis_state[static_cast<u8>(Axis::LeftY)] <= NEG_THRESHOLD);
-  //const bool down = (m_axis_state[static_cast<u8>(Axis::LeftY)] >= POS_THRESHOLD);
-
-  //return ~((static_cast<u8>(left) << static_cast<u8>(Button::Left)) |
-  //         (static_cast<u8>(right) << static_cast<u8>(Button::Right)) |
-  //         (static_cast<u8>(up) << static_cast<u8>(Button::Up)) |
-  //         (static_cast<u8>(down) << static_cast<u8>(Button::Down)));
 }
 
 void NeGconRumble::ResetRumbleConfig()
@@ -367,7 +331,6 @@ u8 NeGconRumble::GetResponseNumHalfwords() const
   if (m_configuration_mode || m_analog_mode)
     return 0x3;
 
-  //return (0x1 + m_digital_mode_extra_halfwords);
   return (0x1);
 }
 

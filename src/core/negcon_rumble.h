@@ -85,12 +85,6 @@ private:
     Command47,         // 0x47
     Command4C,         // 0x4C
     GetSetRumble       // 0x4D
-    //ButtonsLSB,
-    //ButtonsMSB,
-    //AnalogSteering,
-    //AnalogI,
-    //AnalogII,
-    //AnalogL
   };
 
   bool m_force_analog_on_reset = true;
