@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "negcon_rumble.h"
+#include "IconsFontAwesome5.h"
+#include "common/assert.h"
+#include "common/log.h"
 #include "host.h"
 #include "settings.h"
 #include "system.h"
@@ -123,8 +126,8 @@ bool NeGconRumble::DoState(StateWrapper& sw, bool apply_input_state)
                                 fmt::format(m_analog_mode ?
                                               TRANSLATE_FS("AnalogController", "Controller {} switched to analog mode.") :
                                               TRANSLATE_FS("AnalogController", "Controller {} switched to digital mode."),
-                                            m_index + 1u),
-                                5.0f);
+                    m_index + 1u),
+        5.0f);
     }
   }
   return true;
@@ -265,8 +268,8 @@ void NeGconRumble::SetAnalogMode(bool enabled, bool show_message)
                             fmt::format(enabled ?
                                           TRANSLATE_FS("AnalogController", "Controller {} switched to analog mode.") :
                                           TRANSLATE_FS("AnalogController", "Controller {} switched to digital mode."),
-                                        m_index + 1u),
-                            5.0f);
+                  m_index + 1u),
+      5.0f);
   }
   m_analog_mode = enabled;
 }
