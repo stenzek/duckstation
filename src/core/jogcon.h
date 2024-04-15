@@ -144,9 +144,9 @@ private:
   bool m_force_analog_on_reset = false;
   bool m_analog_dpad_in_digital_mode = false;
   float m_analog_deadzone = 0.0f;
-  float m_analog_sensitivity = 1.33f;
+  float m_analog_sensitivity = 1.0f;
   float m_button_deadzone = 0.0f;
-  u8 m_rumble_bias = 8;
+  u8 m_rumble_bias = 0;
   u8 m_invert_left_stick = 0;
   u8 m_invert_right_stick = 0;
 

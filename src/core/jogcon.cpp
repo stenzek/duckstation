@@ -1,15 +1,24 @@
 // SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
-#include "IconsFontAwesome5.h"
 #include "jogcon.h"
-#include "common/log.h"
-#include "common/string_util.h"
 #include "host.h"
 #include "settings.h"
 #include "system.h"
+
+#include "util/imgui_manager.h"
+#include "util/input_manager.h"
 #include "util/state_wrapper.h"
+
+#include "common/bitutils.h"
+#include "common/log.h"
+#include "common/string_util.h"
+
+#include "IconsFontAwesome5.h"
+#include "IconsPromptFont.h"
+
 #include <cmath>
+
 Log_SetChannel(JogCon);
 
 JogCon::JogCon(u32 index) : Controller(index)
@@ -58,12 +67,12 @@ void JogCon::Reset()
 
   if (m_force_analog_on_reset)
   {
-    if (g_settings.controller_disable_analog_mode_forcing || System::IsRunningBIOS())
+    if (g_settings.controller_disable_analog_mode_forcing || System::IsRunningUnknownGame())
     {
       Host::AddIconOSDMessage(
         fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
-        Host::TranslateStdString(
-          "OSDMessage", "Analog mode forcing is disabled by game settings. Controller will start in digital mode."),
+        TRANSLATE_STR("OSDMessage",
+                      "Analog mode forcing is disabled by game settings. Controller will start in digital mode."),
         10.0f);
     }
     else
@@ -111,14 +120,12 @@ bool JogCon::DoState(StateWrapper& sw, bool apply_input_state)
 
     if (old_analog_mode != m_analog_mode)
     {
-      Host::AddIconOSDMessage(
-        fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
-        fmt::format((m_analog_mode ?
-                       Host::TranslateString("JogCon", "Controller {} switched to analog mode.") :
-                       Host::TranslateString("JogCon", "Controller {} switched to digital mode."))
-                      .GetCharArray(),
-                    m_index + 1u),
-        5.0f);
+      Host::AddIconOSDMessage(fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
+                              fmt::format(m_analog_mode ?
+                                            TRANSLATE_FS("JogCon", "Controller {} switched to analog mode.") :
+                                            TRANSLATE_FS("JogCon", "Controller {} switched to digital mode."),
+                                          m_index + 1u),
+                              5.0f);
     }
   }
   return true;
@@ -299,13 +306,12 @@ void JogCon::SetAnalogMode(bool enabled, bool show_message)
   Log_InfoPrintf("Controller %u switched to %s mode.", m_index + 1u, enabled ? "analog" : "digital");
   if (show_message)
   {
-    Host::AddIconOSDMessage(
-      fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
-      fmt::format((enabled ? Host::TranslateString("JogCon", "Controller {} switched to analog mode.") :
-                             Host::TranslateString("JogCon", "Controller {} switched to digital mode."))
-                    .GetCharArray(),
-                  m_index + 1u),
-      5.0f);
+    Host::AddIconOSDMessage(fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
+                            fmt::format(enabled ?
+                                          TRANSLATE_FS("JogCon", "Controller {} switched to analog mode.") :
+                                          TRANSLATE_FS("JogCon", "Controller {} switched to digital mode."),
+                                        m_index + 1u),
+                            5.0f);
   }
   m_analog_mode = enabled;
 }
@@ -316,10 +322,9 @@ void JogCon::ProcessAnalogModeToggle()
   {
     Host::AddIconOSDMessage(
       fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
-      fmt::format((m_analog_mode ?
-                     Host::TranslateString("JogCon", "Controller {} is locked to analog mode by the game.") :
-                     Host::TranslateString("JogCon", "Controller {} is locked to digital mode by the game."))
-                    .GetCharArray(),
+      fmt::format(m_analog_mode ?
+                    TRANSLATE_FS("JogCon", "Controller {} is locked to analog mode by the game.") :
+                    TRANSLATE_FS("JogCon", "Controller {} is locked to digital mode by the game."),
                   m_index + 1u),
       5.0f);
   }
@@ -339,7 +344,7 @@ void JogCon::SetMotorState(u32 motor, u8 value)
   if (m_motor_state[motor] != value)
   {
     m_motor_state[motor] = value;
-    // UpdateHostVibration();
+    UpdateHostVibration();
 
     JogconCommand command = static_cast<JogconCommand>((value & 0xC0) >> 4);
     JogconDirection direction = static_cast<JogconDirection>((value & 0x30) >> 4);
@@ -360,16 +365,14 @@ void JogCon::UpdateHostVibration()
   std::array<float, NUM_MOTORS> hvalues;
   for (u32 motor = 0; motor < NUM_MOTORS; motor++)
   {
-    // Curve from https://github.com/KrossX/Pokopom/blob/master/Pokopom/Input_XInput.cpp#L210
-    const u8 state = m_motor_state[motor];
-    const double x = static_cast<double>(std::min<u32>(state + static_cast<u32>(m_rumble_bias), 255));
-    const double strength = 0.006474549734772402 * std::pow(x, 3.0) - 1.258165252213538 * std::pow(x, 2.0) +
-                            156.82454281087692 * x + 3.637978807091713e-11;
+     const u8 state = m_motor_state[motor];
+     const double x = static_cast<double>(state);
+     const double strength = (state << 8) + state;
 
-    hvalues[motor] = (state != 0) ? static_cast<float>(strength / 65535.0) : 0.0f;
+     hvalues[motor] = (state != 0) ? static_cast<float>(strength / 65535.0) : 0.0f;
   }
 
-  Host::SetPadVibrationIntensity(m_index, hvalues[0], hvalues[1]);
+  InputManager::SetPadVibrationIntensity(m_index, hvalues[0], hvalues[1]);
 }
 
 u8 JogCon::GetExtraButtonMaskLSB() const
@@ -829,95 +832,95 @@ std::unique_ptr<JogCon> JogCon::Create(u32 index)
 }
 
 static const Controller::ControllerBindingInfo s_binding_info[] = {
-#define BUTTON(name, display_name, button, genb)                                                                       \
+#define BUTTON(name, display_name, icon_name, button, genb)                                                            \
   {                                                                                                                    \
-    name, display_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb                                 \
+    name, display_name, icon_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb                      \
   }
-#define AXIS(name, display_name, halfaxis, genb)                                                                       \
+#define AXIS(name, display_name, icon_name, halfaxis, genb)                                                            \
   {                                                                                                                    \
-    name, display_name, static_cast<u32>(JogCon::Button::Count) + static_cast<u32>(halfaxis),                \
+    name, display_name, icon_name, static_cast<u32>(JogCon::Button::Count) + static_cast<u32>(halfaxis),     \
       InputBindingInfo::Type::HalfAxis, genb                                                                           \
   }
 
-  BUTTON("Up", "D-Pad Up", JogCon::Button::Up, GenericInputBinding::DPadUp),
-  BUTTON("Right", "D-Pad Right", JogCon::Button::Right, GenericInputBinding::DPadRight),
-  BUTTON("Down", "D-Pad Down", JogCon::Button::Down, GenericInputBinding::DPadDown),
-  BUTTON("Left", "D-Pad Left", JogCon::Button::Left, GenericInputBinding::DPadLeft),
-  BUTTON("Triangle", "Triangle", JogCon::Button::Triangle, GenericInputBinding::Triangle),
-  BUTTON("Circle", "Circle", JogCon::Button::Circle, GenericInputBinding::Circle),
-  BUTTON("Cross", "Cross", JogCon::Button::Cross, GenericInputBinding::Cross),
-  BUTTON("Square", "Square", JogCon::Button::Square, GenericInputBinding::Square),
-  BUTTON("Select", "Select", JogCon::Button::Select, GenericInputBinding::Select),
-  BUTTON("Start", "Start", JogCon::Button::Start, GenericInputBinding::Start),
-  BUTTON("Analog", "Analog Toggle", JogCon::Button::Analog, GenericInputBinding::System),
-  BUTTON("L1", "L1", JogCon::Button::L1, GenericInputBinding::L1),
-  BUTTON("R1", "R1", JogCon::Button::R1, GenericInputBinding::R1),
-  BUTTON("L2", "L2", JogCon::Button::L2, GenericInputBinding::L2),
-  BUTTON("R2", "R2", JogCon::Button::R2, GenericInputBinding::R2),
-  BUTTON("L3", "L3", JogCon::Button::L3, GenericInputBinding::L3),
-  BUTTON("R3", "R3", JogCon::Button::R3, GenericInputBinding::R3),
+  // clang-format off
+  BUTTON("Up", TRANSLATE_NOOP("JogCon", "D-Pad Up"), ICON_PF_DPAD_UP, JogCon::Button::Up, GenericInputBinding::DPadUp),
+  BUTTON("Right", TRANSLATE_NOOP("JogCon", "D-Pad Right"), ICON_PF_DPAD_RIGHT, JogCon::Button::Right, GenericInputBinding::DPadRight),
+  BUTTON("Down", TRANSLATE_NOOP("JogCon", "D-Pad Down"), ICON_PF_DPAD_DOWN, JogCon::Button::Down, GenericInputBinding::DPadDown),
+  BUTTON("Left", TRANSLATE_NOOP("JogCon", "D-Pad Left"), ICON_PF_DPAD_LEFT, JogCon::Button::Left, GenericInputBinding::DPadLeft),
+  BUTTON("Triangle", TRANSLATE_NOOP("JogCon", "Triangle"), ICON_PF_BUTTON_TRIANGLE, JogCon::Button::Triangle, GenericInputBinding::Triangle),
+  BUTTON("Circle", TRANSLATE_NOOP("JogCon", "Circle"), ICON_PF_BUTTON_CIRCLE, JogCon::Button::Circle, GenericInputBinding::Circle),
+  BUTTON("Cross", TRANSLATE_NOOP("JogCon", "Cross"), ICON_PF_BUTTON_CROSS, JogCon::Button::Cross, GenericInputBinding::Cross),
+  BUTTON("Square", TRANSLATE_NOOP("JogCon", "Square"), ICON_PF_BUTTON_SQUARE, JogCon::Button::Square, GenericInputBinding::Square),
+  BUTTON("Select", TRANSLATE_NOOP("JogCon", "Select"), ICON_PF_SELECT_SHARE, JogCon::Button::Select, GenericInputBinding::Select),
+  BUTTON("Start", TRANSLATE_NOOP("JogCon", "Start"),ICON_PF_START, JogCon::Button::Start, GenericInputBinding::Start),
+  BUTTON("Analog", TRANSLATE_NOOP("JogCon", "Analog Toggle"), ICON_PF_ANALOG_LEFT_RIGHT, JogCon::Button::Analog, GenericInputBinding::System),
+  BUTTON("L1", TRANSLATE_NOOP("JogCon", "L1"), ICON_PF_LEFT_SHOULDER_L1, JogCon::Button::L1, GenericInputBinding::L1),
+  BUTTON("R1", TRANSLATE_NOOP("JogCon", "R1"), ICON_PF_RIGHT_SHOULDER_R1, JogCon::Button::R1, GenericInputBinding::R1),
+  BUTTON("L2", TRANSLATE_NOOP("JogCon", "L2"), ICON_PF_LEFT_TRIGGER_L2, JogCon::Button::L2, GenericInputBinding::L2),
+  BUTTON("R2", TRANSLATE_NOOP("JogCon", "R2"), ICON_PF_RIGHT_TRIGGER_R2, JogCon::Button::R2, GenericInputBinding::R2),
+  BUTTON("L3", TRANSLATE_NOOP("JogCon", "L3"), ICON_PF_LEFT_ANALOG_CLICK, JogCon::Button::L3, GenericInputBinding::L3),
+  BUTTON("R3", TRANSLATE_NOOP("JogCon", "R3"), ICON_PF_RIGHT_ANALOG_CLICK, JogCon::Button::R3, GenericInputBinding::R3),
 
-  AXIS("LLeft", "Left Stick Left", JogCon::HalfAxis::LLeft, GenericInputBinding::LeftStickLeft),
-  AXIS("LRight", "Left Stick Right", JogCon::HalfAxis::LRight, GenericInputBinding::LeftStickRight),
-  AXIS("LDown", "Left Stick Down", JogCon::HalfAxis::LDown, GenericInputBinding::LeftStickDown),
-  AXIS("LUp", "Left Stick Up", JogCon::HalfAxis::LUp, GenericInputBinding::LeftStickUp),
-  AXIS("RLeft", "Right Stick Left", JogCon::HalfAxis::RLeft, GenericInputBinding::RightStickLeft),
-  AXIS("RRight", "Right Stick Right", JogCon::HalfAxis::RRight, GenericInputBinding::RightStickRight),
-  AXIS("RDown", "Right Stick Down", JogCon::HalfAxis::RDown, GenericInputBinding::RightStickDown),
-  AXIS("RUp", "Right Stick Up", JogCon::HalfAxis::RUp, GenericInputBinding::RightStickUp),
+  AXIS("LLeft", TRANSLATE_NOOP("JogCon", "Left Stick Left"), ICON_PF_LEFT_ANALOG_LEFT, JogCon::HalfAxis::LLeft, GenericInputBinding::LeftStickLeft),
+  AXIS("LRight", TRANSLATE_NOOP("JogCon", "Left Stick Right"), ICON_PF_LEFT_ANALOG_RIGHT, JogCon::HalfAxis::LRight, GenericInputBinding::LeftStickRight),
+  AXIS("LDown", TRANSLATE_NOOP("JogCon", "Left Stick Down"), ICON_PF_LEFT_ANALOG_DOWN, JogCon::HalfAxis::LDown, GenericInputBinding::LeftStickDown),
+  AXIS("LUp", TRANSLATE_NOOP("JogCon", "Left Stick Up"), ICON_PF_LEFT_ANALOG_UP, JogCon::HalfAxis::LUp, GenericInputBinding::LeftStickUp),
+  AXIS("RLeft", TRANSLATE_NOOP("JogCon", "Right Stick Left"), ICON_PF_RIGHT_ANALOG_LEFT, JogCon::HalfAxis::RLeft, GenericInputBinding::RightStickLeft),
+  AXIS("RRight", TRANSLATE_NOOP("JogCon", "Right Stick Right"), ICON_PF_RIGHT_ANALOG_RIGHT, JogCon::HalfAxis::RRight, GenericInputBinding::RightStickRight),
+  AXIS("RDown", TRANSLATE_NOOP("JogCon", "Right Stick Down"), ICON_PF_RIGHT_ANALOG_DOWN, JogCon::HalfAxis::RDown, GenericInputBinding::RightStickDown),
+  AXIS("RUp", TRANSLATE_NOOP("JogCon", "Right Stick Up"), ICON_PF_RIGHT_ANALOG_UP, JogCon::HalfAxis::RUp, GenericInputBinding::RightStickUp),
+// clang-format on
 
 #undef AXIS
 #undef BUTTON
 };
 
-static const char* s_invert_settings[] = {TRANSLATABLE("JogCon", "Not Inverted"),
-                                          TRANSLATABLE("JogCon", "Invert Left/Right"),
-                                          TRANSLATABLE("JogCon", "Invert Up/Down"),
-                                          TRANSLATABLE("JogCon", "Invert Left/Right + Up/Down"), nullptr};
+static const char* s_invert_settings[] = {TRANSLATE_NOOP("JogCon", "Not Inverted"),
+                                          TRANSLATE_NOOP("JogCon", "Invert Left/Right"),
+                                          TRANSLATE_NOOP("JogCon", "Invert Up/Down"),
+                                          TRANSLATE_NOOP("JogCon", "Invert Left/Right + Up/Down"), nullptr};
 
 static const SettingInfo s_settings[] = {
-  {SettingInfo::Type::Boolean, "ForceAnalogOnReset", TRANSLATABLE("JogCon", "Force Analog Mode on Reset"),
-   TRANSLATABLE("JogCon", "Forces the controller to analog mode when the console is reset/powered on. May "
-                                    "cause issues with games, so it is recommended to leave this option off."),
-   "true"},
+  {SettingInfo::Type::Boolean, "ForceAnalogOnReset", TRANSLATE_NOOP("JogCon", "Force Analog Mode on Reset"),
+   TRANSLATE_NOOP("JogCon", "Forces the controller to analog mode when the console is reset/powered on."),
+   "true", nullptr, nullptr, nullptr, nullptr, nullptr, 0.0f},
   {SettingInfo::Type::Boolean, "AnalogDPadInDigitalMode",
-   TRANSLATABLE("JogCon", "Use Analog Sticks for D-Pad in Digital Mode"),
-   TRANSLATABLE("JogCon",
-                "Allows you to use the analog sticks to control the d-pad in digital mode, as well as the buttons."),
-   "true"},
-  {SettingInfo::Type::Float, "AnalogDeadzone", TRANSLATABLE("JogCon", "Analog Deadzone"),
-   TRANSLATABLE("JogCon",
-                "Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored."),
+   TRANSLATE_NOOP("JogCon", "Use Analog Sticks for D-Pad in Digital Mode"),
+   TRANSLATE_NOOP("JogCon",
+                  "Allows you to use the analog sticks to control the d-pad in digital mode, as well as the buttons."),
+   "true", nullptr, nullptr, nullptr, nullptr, nullptr, 0.0f},
+  {SettingInfo::Type::Float, "AnalogDeadzone", TRANSLATE_NOOP("JogCon", "Analog Deadzone"),
+   TRANSLATE_NOOP("JogCon",
+                  "Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored."),
    "0.00f", "0.00f", "1.00f", "0.01f", "%.0f%%", nullptr, 100.0f},
-  {SettingInfo::Type::Float, "AnalogSensitivity", TRANSLATABLE("JogCon", "Analog Sensitivity"),
-   TRANSLATABLE(
+  {SettingInfo::Type::Float, "AnalogSensitivity", TRANSLATE_NOOP("JogCon", "Analog Sensitivity"),
+   TRANSLATE_NOOP(
      "JogCon",
      "Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent "
      "controllers, e.g. DualShock 4, Xbox One Controller."),
    "1.33f", "0.01f", "2.00f", "0.01f", "%.0f%%", nullptr, 100.0f},
-  {SettingInfo::Type::Float, "ButtonDeadzone", TRANSLATABLE("JogCon", "Button/Trigger Deadzone"),
-   TRANSLATABLE("JogCon", "Sets the deadzone for activating buttons/triggers, "
-                                    "i.e. the fraction of the trigger which will be ignored."),
-   "0.25", "0.00", "1.00", "0.01", "%.0f%%", nullptr, 100.0f},
-  {SettingInfo::Type::Integer, "VibrationBias", TRANSLATABLE("JogCon", "Vibration Bias"),
-   TRANSLATABLE("JogCon", "Sets the rumble bias value. If rumble in some games is too weak or not "
-                                    "functioning, try increasing this value."),
+  {SettingInfo::Type::Float, "ButtonDeadzone", TRANSLATE_NOOP("JogCon", "Button/Trigger Deadzone"),
+   TRANSLATE_NOOP("JogCon", "Sets the deadzone for activating buttons/triggers, "
+                                      "i.e. the fraction of the trigger which will be ignored."),
+   "0.25", "0.01", "1.00", "0.01", "%.0f%%", nullptr, 100.0f},
+  {SettingInfo::Type::Integer, "VibrationBias", TRANSLATE_NOOP("JogCon", "Vibration Bias"),
+   TRANSLATE_NOOP("JogCon", "Sets the rumble bias value. If rumble in some games is too weak or not "
+                                      "functioning, try increasing this value."),
    "8", "0", "255", "1", "%d", nullptr, 1.0f},
-  {SettingInfo::Type::IntegerList, "InvertLeftStick", TRANSLATABLE("JogCon", "Invert Left Stick"),
-   TRANSLATABLE("JogCon", "Inverts the direction of the left analog stick."), "0", "0", "3", nullptr, nullptr,
-   s_invert_settings, 0.0f},
-  {SettingInfo::Type::IntegerList, "InvertRightStick", TRANSLATABLE("JogCon", "Invert Right Stick"),
-   TRANSLATABLE("JogCon", "Inverts the direction of the right analog stick."), "0", "0", "3", nullptr,
+  {SettingInfo::Type::IntegerList, "InvertLeftStick", TRANSLATE_NOOP("JogCon", "Invert Left Stick"),
+   TRANSLATE_NOOP("JogCon", "Inverts the direction of the left analog stick."), "0", "0", "3", nullptr,
+   nullptr, s_invert_settings, 0.0f},
+  {SettingInfo::Type::IntegerList, "InvertRightStick", TRANSLATE_NOOP("JogCon", "Invert Right Stick"),
+   TRANSLATE_NOOP("JogCon", "Inverts the direction of the right analog stick."), "0", "0", "3", nullptr,
    nullptr, s_invert_settings, 0.0f},
 };
 
 const Controller::ControllerInfo JogCon::INFO = {ControllerType::JogCon,
                                                            "JogCon",
-                                                           TRANSLATABLE("ControllerType", "JogCon"),
+                                                           TRANSLATE_NOOP("ControllerType", "JogCon"),
+                                                           ICON_PF_GAMEPAD,
                                                            s_binding_info,
-                                                           countof(s_binding_info),
                                                            s_settings,
-                                                           countof(s_settings),
                                                            Controller::VibrationCapabilities::LargeSmallMotors};
 
 void JogCon::LoadSettings(SettingsInterface& si, const char* section)
