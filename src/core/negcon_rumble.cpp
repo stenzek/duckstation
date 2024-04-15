@@ -2,14 +2,23 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "negcon_rumble.h"
-#include "IconsFontAwesome5.h"
-#include "common/assert.h"
-#include "common/log.h"
 #include "host.h"
+#include "settings.h"
 #include "system.h"
+
+#include "util/imgui_manager.h"
+#include "util/input_manager.h"
 #include "util/state_wrapper.h"
-#include <array>
+
+#include "common/bitutils.h"
+#include "common/log.h"
+#include "common/string_util.h"
+
+#include "IconsFontAwesome5.h"
+#include "IconsPromptFont.h"
+
 #include <cmath>
+
 Log_SetChannel(NeGconRumble);
 
 
@@ -57,12 +66,12 @@ void NeGconRumble::Reset()
 
   if (m_force_analog_on_reset)
   {
-    if (g_settings.controller_disable_analog_mode_forcing || System::IsRunningBIOS())
+    if (g_settings.controller_disable_analog_mode_forcing || System::IsRunningUnknownGame())
     {
       Host::AddIconOSDMessage(
         fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
-        Host::TranslateStdString(
-          "OSDMessage", "Analog mode forcing is disabled by game settings. Controller will start in digital mode."),
+        TRANSLATE_STR("OSDMessage",
+                      "Analog mode forcing is disabled by game settings. Controller will start in digital mode."),
         10.0f);
     }
     else
@@ -110,14 +119,12 @@ bool NeGconRumble::DoState(StateWrapper& sw, bool apply_input_state)
 
     if (old_analog_mode != m_analog_mode)
     {
-      Host::AddIconOSDMessage(
-        fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
-        fmt::format((m_analog_mode ?
-                       Host::TranslateString("AnalogController", "Controller {} switched to analog mode.") :
-                       Host::TranslateString("AnalogController", "Controller {} switched to digital mode."))
-                      .GetCharArray(),
-                    m_index + 1u),
-        5.0f);
+        Host::AddIconOSDMessage(fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
+                                fmt::format(m_analog_mode ?
+                                              TRANSLATE_FS("AnalogController", "Controller {} switched to analog mode.") :
+                                              TRANSLATE_FS("AnalogController", "Controller {} switched to digital mode."),
+                                            m_index + 1u),
+                                5.0f);
     }
   }
   return true;
@@ -254,13 +261,12 @@ void NeGconRumble::SetAnalogMode(bool enabled, bool show_message)
   Log_InfoPrintf("Controller %u switched to %s mode.", m_index + 1u, enabled ? "analog" : "digital");
   if (show_message)
   {
-    Host::AddIconOSDMessage(
-      fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
-      fmt::format((enabled ? Host::TranslateString("AnalogController", "Controller {} switched to analog mode.") :
-                             Host::TranslateString("AnalogController", "Controller {} switched to digital mode."))
-                    .GetCharArray(),
-                  m_index + 1u),
-      5.0f);
+    Host::AddIconOSDMessage(fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
+                            fmt::format(enabled ?
+                                          TRANSLATE_FS("AnalogController", "Controller {} switched to analog mode.") :
+                                          TRANSLATE_FS("AnalogController", "Controller {} switched to digital mode."),
+                                        m_index + 1u),
+                            5.0f);
   }
   m_analog_mode = enabled;
 }
@@ -271,10 +277,9 @@ void NeGconRumble::ProcessAnalogModeToggle()
   {
     Host::AddIconOSDMessage(
       fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
-      fmt::format((m_analog_mode ?
-                     Host::TranslateString("AnalogController", "Controller {} is locked to analog mode by the game.") :
-                     Host::TranslateString("AnalogController", "Controller {} is locked to digital mode by the game."))
-                    .GetCharArray(),
+      fmt::format(m_analog_mode ?
+                    TRANSLATE_FS("AnalogController", "Controller {} is locked to analog mode by the game.") :
+                    TRANSLATE_FS("AnalogController", "Controller {} is locked to digital mode by the game."),
                   m_index + 1u),
       5.0f);
   }
@@ -312,7 +317,7 @@ void NeGconRumble::UpdateHostVibration()
     hvalues[motor] = (state != 0) ? static_cast<float>(strength / 65535.0) : 0.0f;
   }
 
-  Host::SetPadVibrationIntensity(m_index, hvalues[0], hvalues[1]);
+  InputManager::SetPadVibrationIntensity(m_index, hvalues[0], hvalues[1]);
 }
 
 u8 NeGconRumble::GetExtraButtonMaskLSB() const
@@ -752,52 +757,49 @@ std::unique_ptr<NeGconRumble> NeGconRumble::Create(u32 index)
 }
 
 static const Controller::ControllerBindingInfo s_binding_info[] = {
-#define BUTTON(name, display_name, button, genb)                                                                       \
+#define BUTTON(name, display_name, icon_name, button, genb)                                                            \
   {                                                                                                                    \
-    name, display_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb                                 \
+    name, display_name, icon_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb                      \
   }
-#define AXIS(name, display_name, halfaxis, genb)                                                                       \
+#define AXIS(name, display_name, icon_name, halfaxis, genb)                                                            \
   {                                                                                                                    \
-    name, display_name, static_cast<u32>(NeGconRumble::Button::Count) + static_cast<u32>(halfaxis),                          \
+    name, display_name, icon_name, static_cast<u32>(NeGconRumble::Button::Count) + static_cast<u32>(halfaxis),     \
       InputBindingInfo::Type::HalfAxis, genb                                                                           \
   }
 
-  BUTTON("Up", "D-Pad Up", NeGconRumble::Button::Up, GenericInputBinding::DPadUp),
-  BUTTON("Right", "D-Pad Right", NeGconRumble::Button::Right, GenericInputBinding::DPadRight),
-  BUTTON("Down", "D-Pad Down", NeGconRumble::Button::Down, GenericInputBinding::DPadDown),
-  BUTTON("Left", "D-Pad Left", NeGconRumble::Button::Left, GenericInputBinding::DPadLeft),
-  BUTTON("Start", "Start", NeGconRumble::Button::Start, GenericInputBinding::Start),
-  BUTTON("A", "A Button", NeGconRumble::Button::A, GenericInputBinding::Circle),
-  BUTTON("B", "B Button", NeGconRumble::Button::B, GenericInputBinding::Triangle),
-  AXIS("I", "I Button", NeGconRumble::HalfAxis::I, GenericInputBinding::R2),
-  AXIS("II", "II Button", NeGconRumble::HalfAxis::II, GenericInputBinding::L2),
-  AXIS("L", "Left Trigger", NeGconRumble::HalfAxis::L, GenericInputBinding::L1),
-  BUTTON("R", "Right Trigger", NeGconRumble::Button::R, GenericInputBinding::R1),
-  AXIS("SteeringLeft", "Steering (Twist) Left", NeGconRumble::HalfAxis::SteeringLeft, GenericInputBinding::LeftStickLeft),
-  AXIS("SteeringRight", "Steering (Twist) Right", NeGconRumble::HalfAxis::SteeringRight, GenericInputBinding::LeftStickRight),
-  BUTTON("Analog", "Analog Toggle", NeGconRumble::Button::Analog, GenericInputBinding::System),
+  // clang-format off
+  BUTTON("Up", TRANSLATE_NOOP("NeGconRumble", "D-Pad Up"), ICON_PF_DPAD_UP, NeGconRumble::Button::Up, GenericInputBinding::DPadUp),
+  BUTTON("Right", TRANSLATE_NOOP("NeGconRumble", "D-Pad Right"), ICON_PF_DPAD_RIGHT, NeGconRumble::Button::Right, GenericInputBinding::DPadRight),
+  BUTTON("Down", TRANSLATE_NOOP("NeGconRumble", "D-Pad Down"), ICON_PF_DPAD_DOWN, NeGconRumble::Button::Down, GenericInputBinding::DPadDown),
+  BUTTON("Left", TRANSLATE_NOOP("NeGconRumble", "D-Pad Left"), ICON_PF_DPAD_LEFT, NeGconRumble::Button::Left, GenericInputBinding::DPadLeft),
+  BUTTON("Start", TRANSLATE_NOOP("NeGconRumble", "Start"),ICON_PF_START, NeGconRumble::Button::Start, GenericInputBinding::Start),
+  BUTTON("A", TRANSLATE_NOOP("NeGconRumble", "A Button"), ICON_PF_BUTTON_A, NeGconRumble::Button::A, GenericInputBinding::Circle),
+  BUTTON("B", TRANSLATE_NOOP("NeGconRumble", "B Button"), ICON_PF_BUTTON_B, NeGconRumble::Button::B, GenericInputBinding::Triangle),
+  AXIS("I", TRANSLATE_NOOP("NeGconRumble", "I Button"), ICON_PF_RIGHT_TRIGGER_R2, NeGconRumble::HalfAxis::I, GenericInputBinding::R2),
+  AXIS("II", TRANSLATE_NOOP("NeGconRumble", "II Button"), ICON_PF_LEFT_TRIGGER_L2, NeGconRumble::HalfAxis::II, GenericInputBinding::L2),
+  AXIS("L", TRANSLATE_NOOP("NeGconRumble", "Left Trigger"), ICON_PF_LEFT_ANALOG_LEFT, NeGconRumble::HalfAxis::L, GenericInputBinding::L1),
+  BUTTON("R", TRANSLATE_NOOP("NeGconRumble", "Right Trigger"), ICON_PF_RIGHT_SHOULDER_R1, NeGconRumble::Button::R, GenericInputBinding::R1),
+  AXIS("SteeringLeft", TRANSLATE_NOOP("NeGconRumble", "Steering (Twist) Left"), ICON_PF_LEFT_ANALOG_LEFT, NeGconRumble::HalfAxis::SteeringLeft, GenericInputBinding::LeftStickLeft),
+  AXIS("SteeringRight", TRANSLATE_NOOP("NeGconRumble", "Steering (Twist) Right"), ICON_PF_LEFT_ANALOG_LEFT, NeGconRumble::HalfAxis::SteeringRight, GenericInputBinding::LeftStickRight),
+  BUTTON("Analog", TRANSLATE_NOOP("NeGconRumble", "Analog Toggle"), ICON_PF_ANALOG_LEFT_RIGHT, NeGconRumble::Button::Analog, GenericInputBinding::System),
+// clang-format on
 
 #undef AXIS
 #undef BUTTON
 };
 
 static const SettingInfo s_settings[] = {
-  {SettingInfo::Type::Float, "SteeringDeadzone", TRANSLATABLE("NeGconRumble", "Steering Axis Deadzone"),
-   TRANSLATABLE("NeGconRumble", "Sets deadzone size for steering axis."), "0.00f", "0.00f", "0.99f", "0.01f", "%.0f%%",
-   nullptr, 100.0f},
-  {SettingInfo::Type::Float, "SteeringSensitivity", TRANSLATABLE("NeGconRumble", "Steering Axis Sensitivity"),
-   TRANSLATABLE("NeGconRumble", "Sets the steering axis scaling factor."), "1.00f", "0.01f", "2.00f", "0.01f", "%.0f%%",
+  {SettingInfo::Type::Float, "SteeringDeadzone", TRANSLATE_NOOP("NeGconRumble", "Steering Axis Deadzone"),
+   TRANSLATE_NOOP("NeGconRumble", "Sets deadzone size for steering axis."), "0.00f", "0.00f", "0.99f", "0.01f", "%.0f%%", nullptr,
+   100.0f},
+  {SettingInfo::Type::Float, "SteeringSensitivity", TRANSLATE_NOOP("NeGconRumble", "Steering Axis Sensitivity"),
+   TRANSLATE_NOOP("NeGconRumble", "Sets the steering axis scaling factor."), "1.00f", "0.01f", "2.00f", "0.01f", "%.0f%%",
    nullptr, 100.0f},
 };
 
-const Controller::ControllerInfo NeGconRumble::INFO = {ControllerType::NeGconRumble,
-                                                 "NeGconRumble",
-                                                 TRANSLATABLE("ControllerType", "NeGconRumble"),
-                                                 s_binding_info,
-                                                 countof(s_binding_info),
-                                                 s_settings,
-                                                 countof(s_settings),
-                                                 Controller::VibrationCapabilities::LargeSmallMotors};
+const Controller::ControllerInfo NeGconRumble::INFO = {
+  ControllerType::NeGconRumble, "NeGconRumble",   TRANSLATE_NOOP("ControllerType", "NeGconRumble"),    ICON_PF_GAMEPAD,
+  s_binding_info,         s_settings, Controller::VibrationCapabilities::LargeSmallMotors};
 
 void NeGconRumble::LoadSettings(SettingsInterface& si, const char* section)
 {
