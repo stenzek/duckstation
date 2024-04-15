@@ -2551,11 +2551,10 @@ void GPU_HW::EnsureVertexBufferSpaceForCurrentCommand()
 
 void GPU_HW::ResetBatchVertexDepth()
 {
-  if (m_pgxp_depth_buffer || !m_vram_depth_texture)
-    return;
-
   Log_PerfPrint("Resetting batch vertex depth");
-  UpdateDepthBufferFromMaskBit();
+
+  if (m_vram_depth_texture && !m_pgxp_depth_buffer)
+    UpdateDepthBufferFromMaskBit();
 
   m_current_depth = 1;
 }
