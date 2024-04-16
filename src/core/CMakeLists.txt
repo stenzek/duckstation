@@ -83,6 +83,8 @@ add_library(core
   multitap.h
   negcon.cpp
   negcon.h
+  negcon_rumble.cpp
+  negcon_rumble.h
   pad.cpp
   pad.h
   pcdrv.cpp

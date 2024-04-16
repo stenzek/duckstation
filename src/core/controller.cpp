@@ -9,6 +9,7 @@
 #include "guncon.h"
 #include "host.h"
 #include "negcon.h"
+#include "negcon_rumble.h"
 #include "playstation_mouse.h"
 #include "util/state_wrapper.h"
 
@@ -21,8 +22,8 @@ static const Controller::ControllerInfo s_none_info = {ControllerType::None,
                                                        Controller::VibrationCapabilities::NoVibration};
 
 static const Controller::ControllerInfo* s_controller_info[] = {
-  &s_none_info,  &DigitalController::INFO, &AnalogController::INFO, &AnalogJoystick::INFO, &NeGcon::INFO,
-  &GunCon::INFO, &PlayStationMouse::INFO,
+  &s_none_info,  &DigitalController::INFO, &AnalogController::INFO, &AnalogJoystick::INFO,
+  &NeGcon::INFO, &NeGconRumble::INFO,&GunCon::INFO, &PlayStationMouse::INFO,
 };
 
 Controller::Controller(u32 index) : m_index(index)
@@ -99,6 +100,9 @@ std::unique_ptr<Controller> Controller::Create(ControllerType type, u32 index)
 
     case ControllerType::NeGcon:
       return NeGcon::Create(index);
+    
+    case ControllerType::NeGconRumble:
+      return NeGconRumble::Create(index);
 
     case ControllerType::None:
     default:
