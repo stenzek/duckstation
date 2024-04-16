@@ -67,63 +67,32 @@ extern ImVec4 UISecondaryWeakColor; // Not currently used.
 extern ImVec4 UISecondaryStrongColor;
 extern ImVec4 UISecondaryTextColor;
 
-ALWAYS_INLINE static float DPIScale(float v)
-{
-  return ImGui::GetIO().DisplayFramebufferScale.x * v;
-}
-
-ALWAYS_INLINE static float DPIScale(int v)
-{
-  return ImGui::GetIO().DisplayFramebufferScale.x * static_cast<float>(v);
-}
-
-ALWAYS_INLINE static ImVec2 DPIScale(const ImVec2& v)
-{
-  const ImVec2& fbs = ImGui::GetIO().DisplayFramebufferScale;
-  return ImVec2(v.x * fbs.x, v.y * fbs.y);
-}
-
-ALWAYS_INLINE static float WindowWidthScale(float v)
-{
-  return ImGui::GetWindowWidth() * v;
-}
-
-ALWAYS_INLINE static float WindowHeightScale(float v)
-{
-  return ImGui::GetWindowHeight() * v;
-}
-
 ALWAYS_INLINE static float LayoutScale(float v)
 {
-  return g_layout_scale * v;
+  return ImCeil(g_layout_scale * v);
 }
 
 ALWAYS_INLINE static ImVec2 LayoutScale(const ImVec2& v)
 {
-  return ImVec2(v.x * g_layout_scale, v.y * g_layout_scale);
+  return ImVec2(ImCeil(v.x * g_layout_scale), ImCeil(v.y * g_layout_scale));
 }
 
 ALWAYS_INLINE static ImVec2 LayoutScale(float x, float y)
 {
-  return ImVec2(x * g_layout_scale, y * g_layout_scale);
-}
-
-ALWAYS_INLINE static ImVec2 LayoutScaleAndOffset(float x, float y)
-{
-  return ImVec2(g_layout_padding_left + x * g_layout_scale, g_layout_padding_top + y * g_layout_scale);
+  return ImVec2(ImCeil(x * g_layout_scale), ImCeil(y * g_layout_scale));
 }
 
 ALWAYS_INLINE static float LayoutUnscale(float v)
 {
-  return g_rcp_layout_scale * v;
+  return ImCeil(g_rcp_layout_scale * v);
 }
 ALWAYS_INLINE static ImVec2 LayoutUnscale(const ImVec2& v)
 {
-  return ImVec2(v.x * g_rcp_layout_scale, v.y * g_rcp_layout_scale);
+  return ImVec2(ImCeil(v.x * g_rcp_layout_scale), ImCeil(v.y * g_rcp_layout_scale));
 }
 ALWAYS_INLINE static ImVec2 LayoutUnscale(float x, float y)
 {
-  return ImVec2(x * g_rcp_layout_scale, y * g_rcp_layout_scale);
+  return ImVec2(ImCeil(x * g_rcp_layout_scale), ImCeil(y * g_rcp_layout_scale));
 }
 
 ALWAYS_INLINE static ImVec4 ModAlpha(const ImVec4& v, float a)

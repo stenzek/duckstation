@@ -117,7 +117,6 @@ using ImGuiFullscreen::BeginNavBar;
 using ImGuiFullscreen::CenterImage;
 using ImGuiFullscreen::CloseChoiceDialog;
 using ImGuiFullscreen::CloseFileSelector;
-using ImGuiFullscreen::DPIScale;
 using ImGuiFullscreen::DrawShadowedText;
 using ImGuiFullscreen::EndFullscreenColumns;
 using ImGuiFullscreen::EndFullscreenColumnWindow;
