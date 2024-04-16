@@ -51,9 +51,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
   }
 
   const int parent_process_id = StringUtil::FromChars<int>(StringUtil::WideStringToUTF8String(argv[0])).value_or(0);
-  std::string destination_directory = StringUtil::WideStringToUTF8String(argv[1]);
+  std::string destination_directory = Path::ToNativePath(StringUtil::WideStringToUTF8String(argv[1]));
   std::string staging_directory = Path::Combine(destination_directory, "UPDATE_STAGING");
-  std::string zip_path = StringUtil::WideStringToUTF8String(argv[2]);
+  std::string zip_path = Path::ToNativePath(StringUtil::WideStringToUTF8String(argv[2]));
   std::wstring program_to_launch(argv[3]);
   LocalFree(argv);
 
