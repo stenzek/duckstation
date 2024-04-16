@@ -10,12 +10,6 @@
 #include <vector>
 
 #include "ui_controllerbindingwidget.h"
-#include "ui_controllerbindingwidget_analog_controller.h"
-#include "ui_controllerbindingwidget_analog_joystick.h"
-#include "ui_controllerbindingwidget_digital_controller.h"
-#include "ui_controllerbindingwidget_guncon.h"
-#include "ui_controllerbindingwidget_mouse.h"
-#include "ui_controllerbindingwidget_negcon.h"
 #include "ui_controllermacroeditwidget.h"
 #include "ui_controllermacrowidget.h"
 
@@ -26,7 +20,6 @@ class ControllerSettingsWindow;
 class ControllerCustomSettingsWidget;
 class ControllerMacroWidget;
 class ControllerMacroEditWidget;
-class ControllerBindingWidget_Base;
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -38,12 +31,11 @@ public:
   ControllerBindingWidget(QWidget* parent, ControllerSettingsWindow* dialog, u32 port);
   ~ControllerBindingWidget();
 
-  QIcon getIcon() const;
-
   ALWAYS_INLINE ControllerSettingsWindow* getDialog() const { return m_dialog; }
   ALWAYS_INLINE const std::string& getConfigSection() const { return m_config_section; }
   ALWAYS_INLINE ControllerType getControllerType() const { return m_controller_type; }
   ALWAYS_INLINE u32 getPortNumber() const { return m_port_number; }
+  ALWAYS_INLINE const QIcon& getIcon() { return m_icon; }
 
 private Q_SLOTS:
   void onTypeChanged();
@@ -56,6 +48,8 @@ private Q_SLOTS:
 private:
   void populateControllerTypes();
   void populateWidgets();
+  void createBindingWidgets(QWidget* parent);
+  void bindBindingWidgets(QWidget* parent);
   void updateHeaderToolButtons();
   void doDeviceAutomaticBinding(const QString& device);
   void saveAndRefresh();
@@ -68,7 +62,8 @@ private:
   ControllerType m_controller_type;
   u32 m_port_number;
 
-  ControllerBindingWidget_Base* m_bindings_widget = nullptr;
+  QIcon m_icon;
+  QWidget* m_bindings_widget = nullptr;
   ControllerCustomSettingsWidget* m_settings_widget = nullptr;
   ControllerMacroWidget* m_macros_widget = nullptr;
 };
@@ -145,143 +140,3 @@ private Q_SLOTS:
 private:
   ControllerBindingWidget* m_parent;
 };
-
-//////////////////////////////////////////////////////////////////////////
-
-class ControllerBindingWidget_Base : public QWidget
-{
-  Q_OBJECT
-
-public:
-  ControllerBindingWidget_Base(ControllerBindingWidget* parent);
-  virtual ~ControllerBindingWidget_Base();
-
-  ALWAYS_INLINE ControllerSettingsWindow* getDialog() const
-  {
-    return static_cast<ControllerBindingWidget*>(parent())->getDialog();
-  }
-  ALWAYS_INLINE const std::string& getConfigSection() const
-  {
-    return static_cast<ControllerBindingWidget*>(parent())->getConfigSection();
-  }
-  ALWAYS_INLINE ControllerType getControllerType() const
-  {
-    return static_cast<ControllerBindingWidget*>(parent())->getControllerType();
-  }
-  ALWAYS_INLINE u32 getPortNumber() const { return static_cast<ControllerBindingWidget*>(parent())->getPortNumber(); }
-
-  virtual QIcon getIcon() const;
-
-protected:
-  void initBindingWidgets();
-};
-
-//////////////////////////////////////////////////////////////////////////
-
-class ControllerBindingWidget_DigitalController final : public ControllerBindingWidget_Base
-{
-  Q_OBJECT
-
-public:
-  ControllerBindingWidget_DigitalController(ControllerBindingWidget* parent);
-  ~ControllerBindingWidget_DigitalController();
-
-  QIcon getIcon() const override;
-
-  static ControllerBindingWidget_Base* createInstance(ControllerBindingWidget* parent);
-
-private:
-  Ui::ControllerBindingWidget_DigitalController m_ui;
-};
-
-//////////////////////////////////////////////////////////////////////////
-
-class ControllerBindingWidget_AnalogController final : public ControllerBindingWidget_Base
-{
-  Q_OBJECT
-
-public:
-  ControllerBindingWidget_AnalogController(ControllerBindingWidget* parent);
-  ~ControllerBindingWidget_AnalogController();
-
-  QIcon getIcon() const override;
-
-  static ControllerBindingWidget_Base* createInstance(ControllerBindingWidget* parent);
-
-private:
-  Ui::ControllerBindingWidget_AnalogController m_ui;
-};
-
-//////////////////////////////////////////////////////////////////////////
-
-class ControllerBindingWidget_AnalogJoystick final : public ControllerBindingWidget_Base
-{
-  Q_OBJECT
-
-public:
-  ControllerBindingWidget_AnalogJoystick(ControllerBindingWidget* parent);
-  ~ControllerBindingWidget_AnalogJoystick();
-
-  QIcon getIcon() const override;
-
-  static ControllerBindingWidget_Base* createInstance(ControllerBindingWidget* parent);
-
-private:
-  Ui::ControllerBindingWidget_AnalogJoystick m_ui;
-};
-
-//////////////////////////////////////////////////////////////////////////
-
-class ControllerBindingWidget_NeGcon final : public ControllerBindingWidget_Base
-{
-  Q_OBJECT
-
-public:
-  ControllerBindingWidget_NeGcon(ControllerBindingWidget* parent);
-  ~ControllerBindingWidget_NeGcon();
-
-  QIcon getIcon() const override;
-
-  static ControllerBindingWidget_Base* createInstance(ControllerBindingWidget* parent);
-
-private:
-  Ui::ControllerBindingWidget_NeGcon m_ui;
-};
-
-//////////////////////////////////////////////////////////////////////////
-
-class ControllerBindingWidget_GunCon final : public ControllerBindingWidget_Base
-{
-  Q_OBJECT
-
-public:
-  ControllerBindingWidget_GunCon(ControllerBindingWidget* parent);
-  ~ControllerBindingWidget_GunCon();
-
-  QIcon getIcon() const override;
-
-  static ControllerBindingWidget_Base* createInstance(ControllerBindingWidget* parent);
-
-private:
-  Ui::ControllerBindingWidget_GunCon m_ui;
-};
-
-//////////////////////////////////////////////////////////////////////////
-
-class ControllerBindingWidget_Mouse final : public ControllerBindingWidget_Base
-{
-  Q_OBJECT
-
-public:
-  ControllerBindingWidget_Mouse(ControllerBindingWidget* parent);
-  ~ControllerBindingWidget_Mouse();
-
-  QIcon getIcon() const override;
-
-  static ControllerBindingWidget_Base* createInstance(ControllerBindingWidget* parent);
-
-private:
-  Ui::ControllerBindingWidget_Mouse m_ui;
-};
-
-//////////////////////////////////////////////////////////////////////////

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1276</width>
+    <width>1279</width>
     <height>672</height>
    </rect>
   </property>
@@ -34,13 +34,13 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>150</width>
+       <width>160</width>
        <height>0</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
-       <width>150</width>
+       <width>160</width>
        <height>16777215</height>
       </size>
      </property>
@@ -82,8 +82,7 @@
           <string>New Profile</string>
          </property>
          <property name="icon">
-          <iconset theme="add-line">
-           <normaloff>.</normaloff>.</iconset>
+          <iconset theme="add-line"/>
          </property>
         </widget>
        </item>
@@ -103,8 +102,7 @@
           <string>Delete Profile</string>
          </property>
          <property name="icon">
-          <iconset theme="minus-line">
-           <normaloff>.</normaloff>.</iconset>
+          <iconset theme="minus-line"/>
          </property>
         </widget>
        </item>
@@ -123,7 +121,7 @@
      <item>
       <widget class="QDialogButtonBox" name="buttonBox">
        <property name="standardButtons">
-        <set>QDialogButtonBox::Close</set>
+        <set>QDialogButtonBox::StandardButton::Close</set>
        </property>
       </widget>
      </item>
@@ -132,7 +130,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../resources/resources.qrc"/>
+  <include location="resources/resources.qrc"/>
  </resources>
  <connections/>
 </ui>
