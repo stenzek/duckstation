@@ -18,6 +18,9 @@ public:
   ~AudioSettingsWidget();
 
 private Q_SLOTS:
+  void onExpansionModeChanged();
+  void onStretchModeChanged();
+
   void updateDriverNames();
   void updateLatencyLabel();
   void updateVolumeLabel();
@@ -25,6 +28,9 @@ private Q_SLOTS:
   void onOutputVolumeChanged(int new_value);
   void onFastForwardVolumeChanged(int new_value);
   void onOutputMutedChanged(int new_state);
+
+  void onExpansionSettingsClicked();
+  void onStretchSettingsClicked();
 
 private:
   Ui::AudioSettingsWidget m_ui;

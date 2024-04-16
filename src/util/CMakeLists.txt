@@ -179,12 +179,9 @@ if(NOT ANDROID)
     sdl_input_source.cpp
     sdl_input_source.h
   )
-  target_compile_definitions(util PUBLIC
-    "ENABLE_CUBEB=1"
-    "ENABLE_SDL2=1"
-  )
   target_link_libraries(util PUBLIC
     cubeb
+    freesurround
     SDL2::SDL2
   )
 endif()
@@ -225,7 +222,7 @@ if(WIN32)
     xinput_source.h
   )
   target_link_libraries(util PRIVATE d3d12ma)
-  target_link_libraries(util PRIVATE d3d11.lib d3d12.lib d3dcompiler.lib dxgi.lib winmm.lib Dwmapi.lib winhttp.lib)
+  target_link_libraries(util PRIVATE d3d11.lib d3d12.lib d3dcompiler.lib dxgi.lib winmm.lib Dwmapi.lib winhttp.lib xaudio2.lib)
 
   if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     target_link_libraries(util PRIVATE WinPixEventRuntime::WinPixEventRuntime)

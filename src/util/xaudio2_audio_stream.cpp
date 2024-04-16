@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "util/audio_stream.h"
 
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/log.h"
 #include "common/windows_headers.h"
 
@@ -20,13 +21,13 @@ namespace {
 class XAudio2AudioStream final : public AudioStream, private IXAudio2VoiceCallback
 {
 public:
-  XAudio2AudioStream(u32 sample_rate, u32 channels, u32 buffer_ms, AudioStretchMode stretch);
+  XAudio2AudioStream(u32 sample_rate, const AudioStreamParameters& parameters);
   ~XAudio2AudioStream();
 
   void SetPaused(bool paused) override;
   void SetOutputVolume(u32 volume) override;
 
-  bool OpenDevice(u32 latency_ms);
+  bool OpenDevice(Error* error);
   void CloseDevice();
   void EnqueueBuffer();
 
@@ -56,15 +57,13 @@ private:
   u32 m_enqueue_buffer_size = 0;
   u32 m_current_buffer = 0;
   bool m_buffer_enqueued = false;
-
-  HMODULE m_xaudio2_library = {};
   bool m_com_initialized_by_us = false;
 };
 
 } // namespace
 
-XAudio2AudioStream::XAudio2AudioStream(u32 sample_rate, u32 channels, u32 buffer_ms, AudioStretchMode stretch)
-  : AudioStream(sample_rate, channels, buffer_ms, stretch)
+XAudio2AudioStream::XAudio2AudioStream(u32 sample_rate, const AudioStreamParameters& parameters)
+  : AudioStream(sample_rate, parameters)
 {
 }
 
@@ -73,98 +72,110 @@ XAudio2AudioStream::~XAudio2AudioStream()
   if (IsOpen())
     CloseDevice();
 
-  if (m_xaudio2_library)
-    FreeLibrary(m_xaudio2_library);
-
   if (m_com_initialized_by_us)
     CoUninitialize();
 }
 
-std::unique_ptr<AudioStream> AudioStream::CreateXAudio2Stream(u32 sample_rate, u32 channels, u32 buffer_ms,
-                                                              u32 latency_ms, AudioStretchMode stretch)
+std::unique_ptr<AudioStream> AudioStream::CreateXAudio2Stream(u32 sample_rate, const AudioStreamParameters& parameters,
+                                                              Error* error)
 {
-  std::unique_ptr<XAudio2AudioStream> stream(
-    std::make_unique<XAudio2AudioStream>(sample_rate, channels, buffer_ms, stretch));
-  if (!stream->OpenDevice(latency_ms))
+  std::unique_ptr<XAudio2AudioStream> stream(std::make_unique<XAudio2AudioStream>(sample_rate, parameters));
+  if (!stream->OpenDevice(error))
     stream.reset();
   return stream;
 }
 
-bool XAudio2AudioStream::OpenDevice(u32 latency_ms)
+bool XAudio2AudioStream::OpenDevice(Error* error)
 {
   DebugAssert(!IsOpen());
 
-  m_xaudio2_library = LoadLibraryW(XAUDIO2_DLL_W);
-  if (!m_xaudio2_library)
+  if (m_parameters.expansion_mode == AudioExpansionMode::QuadraphonicLFE)
   {
-    Log_ErrorPrintf("Failed to load '%s', make sure you're using Windows 10", XAUDIO2_DLL_A);
+    Log_ErrorPrint("QuadraphonicLFE is not supported by XAudio2.");
     return false;
   }
 
-  using PFNXAUDIO2CREATE =
-    HRESULT(STDAPICALLTYPE*)(IXAudio2 * *ppXAudio2, UINT32 Flags, XAUDIO2_PROCESSOR XAudio2Processor);
-  PFNXAUDIO2CREATE xaudio2_create =
-    reinterpret_cast<PFNXAUDIO2CREATE>(GetProcAddress(m_xaudio2_library, "XAudio2Create"));
-  if (!xaudio2_create)
-    return false;
+  static constexpr const std::array<SampleReader, static_cast<size_t>(AudioExpansionMode::Count)> sample_readers = {{
+    // Disabled
+    &StereoSampleReaderImpl,
+    // StereoLFE
+    &SampleReaderImpl<AudioExpansionMode::StereoLFE, READ_CHANNEL_FRONT_LEFT, READ_CHANNEL_FRONT_RIGHT,
+                      READ_CHANNEL_LFE>,
+    // Quadraphonic
+    &SampleReaderImpl<AudioExpansionMode::Quadraphonic, READ_CHANNEL_FRONT_LEFT, READ_CHANNEL_FRONT_RIGHT,
+                      READ_CHANNEL_REAR_LEFT, READ_CHANNEL_REAR_RIGHT>,
+    // QuadraphonicLFE
+    nullptr,
+    // Surround51
+    &SampleReaderImpl<AudioExpansionMode::Surround51, READ_CHANNEL_FRONT_LEFT, READ_CHANNEL_FRONT_RIGHT,
+                      READ_CHANNEL_FRONT_CENTER, READ_CHANNEL_LFE, READ_CHANNEL_REAR_LEFT, READ_CHANNEL_REAR_RIGHT>,
+    // Surround71
+    &SampleReaderImpl<AudioExpansionMode::Surround71, READ_CHANNEL_FRONT_LEFT, READ_CHANNEL_FRONT_RIGHT,
+                      READ_CHANNEL_FRONT_CENTER, READ_CHANNEL_LFE, READ_CHANNEL_REAR_LEFT, READ_CHANNEL_REAR_RIGHT,
+                      READ_CHANNEL_SIDE_LEFT, READ_CHANNEL_SIDE_RIGHT>,
+  }};
 
   HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
   m_com_initialized_by_us = SUCCEEDED(hr);
   if (FAILED(hr) && hr != RPC_E_CHANGED_MODE && hr != S_FALSE)
   {
-    Log_ErrorPrintf("Failed to initialize COM");
+    Error::SetHResult(error, "CoInitializeEx() failed: ", hr);
     return false;
   }
 
-  hr = xaudio2_create(m_xaudio.ReleaseAndGetAddressOf(), 0, XAUDIO2_DEFAULT_PROCESSOR);
+  hr = XAudio2Create(m_xaudio.ReleaseAndGetAddressOf(), 0, XAUDIO2_DEFAULT_PROCESSOR);
   if (FAILED(hr))
   {
-    Log_ErrorPrintf("XAudio2Create() failed: %08X", hr);
+    Error::SetHResult(error, "XAudio2Create() failed: ", hr);
     return false;
   }
 
-  hr = m_xaudio->CreateMasteringVoice(&m_mastering_voice, m_channels, m_sample_rate, 0, nullptr);
+  hr = m_xaudio->CreateMasteringVoice(&m_mastering_voice, m_output_channels, m_sample_rate, 0, nullptr);
   if (FAILED(hr))
   {
-    Log_ErrorPrintf("CreateMasteringVoice() failed: %08X", hr);
+    Error::SetHResult(error, "CreateMasteringVoice() failed: ", hr);
     return false;
   }
 
+  // TODO: CHANNEL LAYOUT
   WAVEFORMATEX wf = {};
   wf.cbSize = sizeof(wf);
-  wf.nAvgBytesPerSec = m_sample_rate * m_channels * sizeof(s16);
-  wf.nBlockAlign = static_cast<WORD>(sizeof(s16) * m_channels);
-  wf.nChannels = static_cast<WORD>(m_channels);
+  wf.nAvgBytesPerSec = m_sample_rate * m_output_channels * sizeof(s16);
+  wf.nBlockAlign = static_cast<WORD>(sizeof(s16) * m_output_channels);
+  wf.nChannels = static_cast<WORD>(m_output_channels);
   wf.nSamplesPerSec = m_sample_rate;
   wf.wBitsPerSample = sizeof(s16) * 8;
   wf.wFormatTag = WAVE_FORMAT_PCM;
   hr = m_xaudio->CreateSourceVoice(&m_source_voice, &wf, 0, 1.0f, this);
   if (FAILED(hr))
   {
-    Log_ErrorPrintf("CreateMasteringVoice() failed: %08X", hr);
+    Error::SetHResult(error, "CreateMasteringVoice() failed: ", hr);
     return false;
   }
 
   hr = m_source_voice->SetFrequencyRatio(1.0f);
   if (FAILED(hr))
   {
-    Log_ErrorPrintf("SetFrequencyRatio() failed: %08X", hr);
+    Error::SetHResult(error, "SetFrequencyRatio() failed: ", hr);
     return false;
   }
 
-  m_enqueue_buffer_size = std::max<u32>(INTERNAL_BUFFER_SIZE, GetBufferSizeForMS(m_sample_rate, latency_ms));
+  m_enqueue_buffer_size =
+    std::max<u32>(INTERNAL_BUFFER_SIZE, GetBufferSizeForMS(m_sample_rate, (m_parameters.output_latency_ms == 0) ?
+                                                                            m_parameters.buffer_ms :
+                                                                            m_parameters.output_latency_ms));
   Log_DevPrintf("Allocating %u buffers of %u frames", NUM_BUFFERS, m_enqueue_buffer_size);
   for (u32 i = 0; i < NUM_BUFFERS; i++)
-    m_enqueue_buffers[i] = std::make_unique<SampleType[]>(m_enqueue_buffer_size * m_channels);
+    m_enqueue_buffers[i] = std::make_unique<SampleType[]>(m_enqueue_buffer_size * m_output_channels);
 
-  BaseInitialize();
+  BaseInitialize(sample_readers[static_cast<size_t>(m_parameters.expansion_mode)]);
   m_volume = 100;
   m_paused = false;
 
   hr = m_source_voice->Start(0, 0);
   if (FAILED(hr))
   {
-    Log_ErrorPrintf("Start() failed: %08X", hr);
+    Error::SetHResult(error, "Start() failed: ", hr);
     return false;
   }
 
@@ -220,9 +231,9 @@ void XAudio2AudioStream::EnqueueBuffer()
   ReadFrames(samples, m_enqueue_buffer_size);
 
   const XAUDIO2_BUFFER buf = {
-    static_cast<UINT32>(0),                                                // flags
-    static_cast<UINT32>(sizeof(s16) * m_channels * m_enqueue_buffer_size), // bytes
-    reinterpret_cast<const BYTE*>(samples),                                // data
+    static_cast<UINT32>(0),                                                       // flags
+    static_cast<UINT32>(sizeof(s16) * m_output_channels * m_enqueue_buffer_size), // bytes
+    reinterpret_cast<const BYTE*>(samples),                                       // data
     0u,
     0u,
     0u,

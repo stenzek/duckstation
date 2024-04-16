@@ -76,10 +76,9 @@ public:
   static std::unique_ptr<InputSource> CreateXInputSource();
   static std::unique_ptr<InputSource> CreateWin32RawInputSource();
 #endif
-#ifdef ENABLE_SDL2
+#ifndef __ANDROID__
   static std::unique_ptr<InputSource> CreateSDLSource();
-#endif
-#ifdef __ANDROID__
+#else
   static std::unique_ptr<InputSource> CreateAndroidSource();
 #endif
 };

@@ -21,6 +21,7 @@
 class SettingsInterface;
 struct WindowInfo;
 enum class AudioBackend : u8;
+enum class AudioExpansionMode : u8;
 enum class AudioStretchMode : u8;
 enum class RenderAPI : u32;
 class AudioStream;
@@ -71,11 +72,6 @@ SettingsInterface* GetSettingsInterface();
 /// Returns the settings interface that controller bindings should be loaded from.
 /// If an input profile is being used, this will be the input layer, otherwise the layered interface.
 SettingsInterface* GetSettingsInterfaceForBindings();
-
-
-
-std::unique_ptr<AudioStream> CreateAudioStream(AudioBackend backend, u32 sample_rate, u32 channels, u32 buffer_ms,
-                                               u32 latency_ms, AudioStretchMode stretch);
 
 /// Debugger feedback.
 void ReportDebuggerMessage(const std::string_view& message);

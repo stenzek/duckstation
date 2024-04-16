@@ -166,6 +166,11 @@ QString QtHost::GetResourcesBasePath()
   return QString::fromStdString(EmuFolders::Resources);
 }
 
+INISettingsInterface* QtHost::GetBaseSettingsInterface()
+{
+  return s_base_settings_interface.get();
+}
+
 QIcon QtHost::GetAppIcon()
 {
   return QIcon(QStringLiteral(":/icons/duck.png"));

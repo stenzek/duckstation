@@ -338,6 +338,12 @@
     <QtUi Include="controllerbindingwidget_negconrumble.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="audioexpansionsettingsdialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="audiostretchsettingsdialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <None Include="translations\duckstation-qt_es-es.ts" />
     <None Include="translations\duckstation-qt_tr.ts" />
   </ItemGroup>

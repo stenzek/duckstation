@@ -21,6 +21,8 @@ class ByteStream;
 class QComboBox;
 class QFrame;
 class QKeyEvent;
+class QLabel;
+class QSlider;
 class QTableView;
 class QTreeView;
 class QVariant;
@@ -95,6 +97,9 @@ QString StringViewToQString(const std::string_view& str);
 
 /// Sets a widget to italics if the setting value is inherited.
 void SetWidgetFontForInheritedSetting(QWidget* widget, bool inherited);
+
+/// Binds a label to a slider's value.
+void BindLabelToSlider(QSlider* slider, QLabel* label, float range = 1.0f);
 
 /// Changes whether a window is resizable.
 void SetWindowResizeable(QWidget* widget, bool resizeable);

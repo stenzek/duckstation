@@ -2748,8 +2748,8 @@ void System::UpdateSpeedLimiterState()
   s_pre_frame_sleep = s_throttler_enabled && g_settings.display_pre_frame_sleep;
 
   s_syncing_to_host = false;
-  if (g_settings.sync_to_host_refresh_rate && (g_settings.audio_stretch_mode != AudioStretchMode::Off) &&
-      s_target_speed == 1.0f && IsValid())
+  if (g_settings.sync_to_host_refresh_rate &&
+      (g_settings.audio_stream_parameters.stretch_mode != AudioStretchMode::Off) && s_target_speed == 1.0f && IsValid())
   {
     float host_refresh_rate;
     if (g_gpu_device->GetHostRefreshRate(&host_refresh_rate))
@@ -2780,7 +2780,8 @@ void System::UpdateSpeedLimiterState()
 
     // Adjust nominal rate when resampling, or syncing to host.
     const bool rate_adjust =
-      (s_syncing_to_host || g_settings.audio_stretch_mode == AudioStretchMode::Resample) && s_target_speed > 0.0f;
+      (s_syncing_to_host || g_settings.audio_stream_parameters.stretch_mode == AudioStretchMode::Resample) &&
+      s_target_speed > 0.0f;
     stream->SetNominalRate(rate_adjust ? s_target_speed : 1.0f);
 
     if (old_target_speed < s_target_speed)
@@ -3714,17 +3715,15 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       {
         Host::AddIconOSDMessage("AudioBackendSwitch", ICON_FA_HEADPHONES,
                                 fmt::format(TRANSLATE_FS("OSDMessage", "Switching to {} audio backend."),
-                                            Settings::GetAudioBackendName(g_settings.audio_backend)),
+                                            AudioStream::GetBackendDisplayName(g_settings.audio_backend)),
                                 Host::OSD_INFO_DURATION);
       }
 
       SPU::RecreateOutputStream();
     }
-    if (g_settings.audio_stretch_mode != old_settings.audio_stretch_mode)
-      SPU::GetOutputStream()->SetStretchMode(g_settings.audio_stretch_mode);
-    if (g_settings.audio_buffer_ms != old_settings.audio_buffer_ms ||
-        g_settings.audio_output_latency_ms != old_settings.audio_output_latency_ms ||
-        g_settings.audio_stretch_mode != old_settings.audio_stretch_mode)
+    if (g_settings.audio_stream_parameters.stretch_mode != old_settings.audio_stream_parameters.stretch_mode)
+      SPU::GetOutputStream()->SetStretchMode(g_settings.audio_stream_parameters.stretch_mode);
+    if (g_settings.audio_stream_parameters != old_settings.audio_stream_parameters)
     {
       SPU::RecreateOutputStream();
       UpdateSpeedLimiterState();

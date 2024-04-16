@@ -602,10 +602,9 @@ static std::array<const char*, static_cast<u32>(InputSourceType::Count)> s_input
   "XInput",
   "RawInput",
 #endif
-#ifdef ENABLE_SDL2
+#ifndef __ANDROID__
   "SDL",
-#endif
-#ifdef __ANDROID__
+#else
   "Android",
 #endif
 }};
@@ -638,12 +637,10 @@ bool InputManager::GetInputSourceDefaultEnabled(InputSourceType type)
       return false;
 #endif
 
-#ifdef ENABLE_SDL2
+#ifndef __ANDROID__
     case InputSourceType::SDL:
       return true;
-#endif
-
-#ifdef __ANDROID__
+#else
     case InputSourceType::Android:
       return true;
 #endif
@@ -1953,10 +1950,9 @@ void InputManager::ReloadSources(SettingsInterface& si, std::unique_lock<std::mu
   UpdateInputSourceState(si, settings_lock, InputSourceType::XInput, &InputSource::CreateXInputSource);
   UpdateInputSourceState(si, settings_lock, InputSourceType::RawInput, &InputSource::CreateWin32RawInputSource);
 #endif
-#ifdef ENABLE_SDL2
+#ifndef __ANDROID__
   UpdateInputSourceState(si, settings_lock, InputSourceType::SDL, &InputSource::CreateSDLSource);
-#endif
-#ifdef __ANDROID__
+#else
   UpdateInputSourceState(si, settings_lock, InputSourceType::Android, &InputSource::CreateAndroidSource);
 #endif
 }

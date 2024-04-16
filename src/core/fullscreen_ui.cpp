@@ -3628,14 +3628,12 @@ void FullscreenUI::DrawControllerSettingsPage()
 
   MenuHeading(FSUI_CSTR("Input Sources"));
 
-#ifdef ENABLE_SDL2
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_COG, "Enable SDL Input Source"),
                     FSUI_CSTR("The SDL input source supports most controllers."), "InputSources", "SDL", true, true,
                     false);
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_WIFI, "SDL DualShock 4 / DualSense Enhanced Mode"),
                     FSUI_CSTR("Provides vibration and LED control support over Bluetooth."), "InputSources",
                     "SDLControllerEnhancedMode", false, bsi->GetBoolValue("InputSources", "SDL", true), false);
-#endif
 #ifdef _WIN32
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_COG, "Enable XInput Input Source"),
                     FSUI_CSTR("The XInput source provides support for XBox 360/XBox One/XBox Series controllers."),
@@ -4800,25 +4798,30 @@ void FullscreenUI::DrawAudioSettingsPage()
   DrawEnumSetting(
     bsi, FSUI_CSTR("Audio Backend"),
     FSUI_CSTR("The audio backend determines how frames produced by the emulator are submitted to the host."), "Audio",
-    "Backend", Settings::DEFAULT_AUDIO_BACKEND, &Settings::ParseAudioBackend, &Settings::GetAudioBackendName,
-    &Settings::GetAudioBackendDisplayName, AudioBackend::Count);
+    "Backend", AudioStream::DEFAULT_BACKEND, &AudioStream::ParseBackendName, &AudioStream::GetBackendName,
+    &AudioStream::GetBackendDisplayName, AudioBackend::Count);
+  DrawEnumSetting(bsi, FSUI_CSTR("Expansion Mode"),
+                  FSUI_CSTR("Determines how audio is expanded from stereo to surround for supported games."), "Audio",
+                  "ExpansionMode", AudioStreamParameters::DEFAULT_EXPANSION_MODE, &AudioStream::ParseExpansionMode,
+                  &AudioStream::GetExpansionModeName, &AudioStream::GetExpansionModeDisplayName,
+                  AudioExpansionMode::Count);
   DrawEnumSetting(bsi, FSUI_CSTR("Stretch Mode"),
                   FSUI_CSTR("Determines quality of audio when not running at 100% speed."), "Audio", "StretchMode",
-                  Settings::DEFAULT_AUDIO_STRETCH_MODE, &AudioStream::ParseStretchMode,
+                  AudioStreamParameters::DEFAULT_STRETCH_MODE, &AudioStream::ParseStretchMode,
                   &AudioStream::GetStretchModeName, &AudioStream::GetStretchModeDisplayName, AudioStretchMode::Count);
   DrawIntRangeSetting(bsi, FSUI_CSTR("Buffer Size"),
                       FSUI_CSTR("Determines the amount of audio buffered before being pulled by the host API."),
-                      "Audio", "BufferMS", Settings::DEFAULT_AUDIO_BUFFER_MS, 10, 500, "%d ms");
+                      "Audio", "BufferMS", AudioStreamParameters::DEFAULT_BUFFER_MS, 10, 500, "%d ms");
 
   const u32 output_latency =
-    GetEffectiveUIntSetting(bsi, "Audio", "OutputLatencyMS", Settings::DEFAULT_AUDIO_OUTPUT_LATENCY_MS);
+    GetEffectiveUIntSetting(bsi, "Audio", "OutputLatencyMS", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS);
   bool output_latency_minimal = (output_latency == 0);
   if (ToggleButton(FSUI_CSTR("Minimal Output Latency"),
                    FSUI_CSTR("When enabled, the minimum supported output latency will be used for the host API."),
                    &output_latency_minimal))
   {
     bsi->SetUIntValue("Audio", "OutputLatencyMS",
-                      output_latency_minimal ? 0 : Settings::DEFAULT_AUDIO_OUTPUT_LATENCY_MS);
+                      output_latency_minimal ? 0 : AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS);
     SetSettingsChanged(bsi);
   }
   if (!output_latency_minimal)
@@ -4827,7 +4830,7 @@ void FullscreenUI::DrawAudioSettingsPage()
       bsi, FSUI_CSTR("Output Latency"),
       FSUI_CSTR("Determines how much latency there is between the audio being picked up by the host API, and "
                 "played through speakers."),
-      "Audio", "OutputLatencyMS", Settings::DEFAULT_AUDIO_OUTPUT_LATENCY_MS, 1, 500, "%d ms");
+      "Audio", "OutputLatencyMS", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS, 1, 500, "%d ms");
   }
 
   EndMenuButtons();
@@ -7109,6 +7112,7 @@ TRANSLATE_NOOP("FullscreenUI", "Depth Buffer");
 TRANSLATE_NOOP("FullscreenUI", "Desktop Mode");
 TRANSLATE_NOOP("FullscreenUI", "Details");
 TRANSLATE_NOOP("FullscreenUI", "Details unavailable for game not scanned in game list.");
+TRANSLATE_NOOP("FullscreenUI", "Determines how audio is expanded from stereo to surround for supported games.");
 TRANSLATE_NOOP("FullscreenUI", "Determines how large the on-screen messages and monitor are.");
 TRANSLATE_NOOP("FullscreenUI", "Determines how much latency there is between the audio being picked up by the host API, and played through speakers.");
 TRANSLATE_NOOP("FullscreenUI", "Determines how much of the area typically not visible on a consumer TV set to crop/hide.");
@@ -7182,6 +7186,7 @@ TRANSLATE_NOOP("FullscreenUI", "Exit And Save State");
 TRANSLATE_NOOP("FullscreenUI", "Exit DuckStation");
 TRANSLATE_NOOP("FullscreenUI", "Exit Without Saving");
 TRANSLATE_NOOP("FullscreenUI", "Exits Big Picture mode, returning to the desktop interface.");
+TRANSLATE_NOOP("FullscreenUI", "Expansion Mode");
 TRANSLATE_NOOP("FullscreenUI", "Failed to copy text to clipboard.");
 TRANSLATE_NOOP("FullscreenUI", "Failed to delete save state.");
 TRANSLATE_NOOP("FullscreenUI", "Failed to delete {}.");

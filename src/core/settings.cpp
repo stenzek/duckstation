@@ -306,16 +306,12 @@ void Settings::Load(SettingsInterface& si)
   cdrom_seek_speedup = si.GetIntValue("CDROM", "SeekSpeedup", 1);
 
   audio_backend =
-    ParseAudioBackend(si.GetStringValue("Audio", "Backend", GetAudioBackendName(DEFAULT_AUDIO_BACKEND)).c_str())
-      .value_or(DEFAULT_AUDIO_BACKEND);
+    AudioStream::ParseBackendName(
+      si.GetStringValue("Audio", "Backend", AudioStream::GetBackendName(AudioStream::DEFAULT_BACKEND)).c_str())
+      .value_or(AudioStream::DEFAULT_BACKEND);
   audio_driver = si.GetStringValue("Audio", "Driver");
   audio_output_device = si.GetStringValue("Audio", "OutputDevice");
-  audio_stretch_mode =
-    AudioStream::ParseStretchMode(
-      si.GetStringValue("Audio", "StretchMode", AudioStream::GetStretchModeName(DEFAULT_AUDIO_STRETCH_MODE)).c_str())
-      .value_or(DEFAULT_AUDIO_STRETCH_MODE);
-  audio_output_latency_ms = si.GetUIntValue("Audio", "OutputLatencyMS", DEFAULT_AUDIO_OUTPUT_LATENCY_MS);
-  audio_buffer_ms = si.GetUIntValue("Audio", "BufferMS", DEFAULT_AUDIO_BUFFER_MS);
+  audio_stream_parameters.Load(si, "Audio");
   audio_output_volume = si.GetUIntValue("Audio", "OutputVolume", 100);
   audio_fast_forward_volume = si.GetUIntValue("Audio", "FastForwardVolume", 100);
 
@@ -422,6 +418,9 @@ void Settings::Load(SettingsInterface& si)
     si.GetIntValue("TextureReplacements", "DumpVRAMWriteHeightThreshold", 128);
 
 #ifdef __ANDROID__
+  // No expansion due to license incompatibility.
+  audio_expansion_mode = AudioExpansionMode::Disabled;
+
   // Android users are incredibly silly and don't understand that stretch is in the aspect ratio list...
   if (si.GetBoolValue("Display", "Stretch", false))
     display_aspect_ratio = DisplayAspectRatio::MatchWindow;
@@ -563,12 +562,10 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetIntValue("CDROM", "ReadSpeedup", cdrom_read_speedup);
   si.SetIntValue("CDROM", "SeekSpeedup", cdrom_seek_speedup);
 
-  si.SetStringValue("Audio", "Backend", GetAudioBackendName(audio_backend));
+  si.SetStringValue("Audio", "Backend", AudioStream::GetBackendName(audio_backend));
   si.SetStringValue("Audio", "Driver", audio_driver.c_str());
   si.SetStringValue("Audio", "OutputDevice", audio_output_device.c_str());
-  si.SetStringValue("Audio", "StretchMode", AudioStream::GetStretchModeName(audio_stretch_mode));
-  si.SetUIntValue("Audio", "BufferMS", audio_buffer_ms);
-  si.SetUIntValue("Audio", "OutputLatencyMS", audio_output_latency_ms);
+  audio_stream_parameters.Save(si, "Audio");
   si.SetUIntValue("Audio", "OutputVolume", audio_output_volume);
   si.SetUIntValue("Audio", "FastForwardVolume", audio_fast_forward_volume);
   si.SetBoolValue("Audio", "OutputMuted", audio_output_muted);
@@ -1570,64 +1567,9 @@ const char* Settings::GetDisplayScreenshotFormatExtension(DisplayScreenshotForma
   return s_display_screenshot_format_extensions[static_cast<size_t>(format)];
 }
 
-static constexpr const std::array s_audio_backend_names = {
-  "Null",
-#ifdef ENABLE_CUBEB
-  "Cubeb",
-#endif
-#ifdef ENABLE_SDL2
-  "SDL",
-#endif
-#ifdef _WIN32
-  "XAudio2",
-#endif
-#ifdef __ANDROID__
-  "AAudio",  "OpenSLES",
-#endif
-};
-static constexpr const std::array s_audio_backend_display_names = {
-  TRANSLATE_NOOP("AudioBackend", "Null (No Output)"),
-#ifdef ENABLE_CUBEB
-  TRANSLATE_NOOP("AudioBackend", "Cubeb"),
-#endif
-#ifdef ENABLE_SDL2
-  TRANSLATE_NOOP("AudioBackend", "SDL"),
-#endif
-#ifdef _WIN32
-  TRANSLATE_NOOP("AudioBackend", "XAudio2"),
-#endif
-#ifdef __ANDROID__
-  "AAudio",
-  "OpenSL ES",
-#endif
-};
-
-std::optional<AudioBackend> Settings::ParseAudioBackend(const char* str)
-{
-  int index = 0;
-  for (const char* name : s_audio_backend_names)
-  {
-    if (StringUtil::Strcasecmp(name, str) == 0)
-      return static_cast<AudioBackend>(index);
-
-    index++;
-  }
-
-  return std::nullopt;
-}
-
-const char* Settings::GetAudioBackendName(AudioBackend backend)
-{
-  return s_audio_backend_names[static_cast<int>(backend)];
-}
-
-const char* Settings::GetAudioBackendDisplayName(AudioBackend backend)
-{
-  return Host::TranslateToCString("AudioBackend", s_audio_backend_display_names[static_cast<int>(backend)]);
-}
-
 static constexpr const std::array s_controller_type_names = {
-  "None", "DigitalController", "AnalogController", "AnalogJoystick", "GunCon", "PlayStationMouse", "NeGcon", "NeGconRumble"};
+  "None",   "DigitalController", "AnalogController", "AnalogJoystick",
+  "GunCon", "PlayStationMouse",  "NeGcon",           "NeGconRumble"};
 static constexpr const std::array s_controller_display_names = {
   TRANSLATE_NOOP("ControllerType", "None"),
   TRANSLATE_NOOP("ControllerType", "Digital Controller"),
@@ -2031,8 +1973,9 @@ static const char* s_log_filters[] = {
   "WAVWriter",
   "WindowInfo",
 
-#ifdef ENABLE_CUBEB
+#ifndef __ANDROID__
   "CubebAudioStream",
+  "SDLAudioStream",
 #endif
 
 #ifdef ENABLE_OPENGL

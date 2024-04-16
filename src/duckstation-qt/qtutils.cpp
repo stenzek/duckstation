@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "qtutils.h"
@@ -17,9 +17,11 @@
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QInputDialog>
+#include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QScrollBar>
+#include <QtWidgets/QSlider>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QTableView>
@@ -216,6 +218,15 @@ void SetWidgetFontForInheritedSetting(QWidget* widget, bool inherited)
     new_font.setItalic(inherited);
     widget->setFont(new_font);
   }
+}
+
+void BindLabelToSlider(QSlider* slider, QLabel* label, float range /*= 1.0f*/)
+{
+  auto update_label = [label, range](int new_value) {
+    label->setText(QString::number(static_cast<int>(new_value) / range));
+  };
+  update_label(slider->value());
+  QObject::connect(slider, &QSlider::valueChanged, label, std::move(update_label));
 }
 
 void SetWindowResizeable(QWidget* widget, bool resizeable)

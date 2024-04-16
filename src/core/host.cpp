@@ -380,34 +380,3 @@ void Host::ReleaseGPUDevice()
   g_gpu_device.reset();
 }
 
-#ifndef __ANDROID__
-
-std::unique_ptr<AudioStream> Host::CreateAudioStream(AudioBackend backend, u32 sample_rate, u32 channels, u32 buffer_ms,
-                                                     u32 latency_ms, AudioStretchMode stretch)
-{
-  switch (backend)
-  {
-#ifdef ENABLE_CUBEB
-    case AudioBackend::Cubeb:
-      return AudioStream::CreateCubebAudioStream(sample_rate, channels, buffer_ms, latency_ms, stretch);
-#endif
-
-#ifdef ENABLE_SDL2
-    case AudioBackend::SDL:
-      return AudioStream::CreateSDLAudioStream(sample_rate, channels, buffer_ms, latency_ms, stretch);
-#endif
-
-#ifdef _WIN32
-    case AudioBackend::XAudio2:
-      return AudioStream::CreateXAudio2Stream(sample_rate, channels, buffer_ms, latency_ms, stretch);
-#endif
-
-    case AudioBackend::Null:
-      return AudioStream::CreateNullStream(sample_rate, channels, buffer_ms);
-
-    default:
-      return nullptr;
-  }
-}
-
-#endif

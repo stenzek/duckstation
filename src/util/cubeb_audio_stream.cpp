@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "host.h"
@@ -7,6 +7,7 @@
 #include "core/settings.h"
 
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/log.h"
 #include "common/scoped_guard.h"
 #include "common/string_util.h"
@@ -26,13 +27,13 @@ namespace {
 class CubebAudioStream : public AudioStream
 {
 public:
-  CubebAudioStream(u32 sample_rate, u32 channels, u32 buffer_ms, AudioStretchMode stretch);
+  CubebAudioStream(u32 sample_rate, const AudioStreamParameters& parameters);
   ~CubebAudioStream();
 
   void SetPaused(bool paused) override;
   void SetOutputVolume(u32 volume) override;
 
-  bool Initialize(u32 latency_ms);
+  bool Initialize(Error* error);
 
 private:
   static void LogCallback(const char* fmt, ...);
@@ -51,8 +52,34 @@ private:
 };
 } // namespace
 
-CubebAudioStream::CubebAudioStream(u32 sample_rate, u32 channels, u32 buffer_ms, AudioStretchMode stretch)
-  : AudioStream(sample_rate, channels, buffer_ms, stretch)
+static TinyString GetCubebErrorString(int rv)
+{
+  TinyString ret;
+  switch (rv)
+  {
+    // clang-format off
+#define C(e) case e: ret.assign(#e); break
+    // clang-format on
+
+    C(CUBEB_OK);
+    C(CUBEB_ERROR);
+    C(CUBEB_ERROR_INVALID_FORMAT);
+    C(CUBEB_ERROR_INVALID_PARAMETER);
+    C(CUBEB_ERROR_NOT_SUPPORTED);
+    C(CUBEB_ERROR_DEVICE_UNAVAILABLE);
+
+    default:
+      return "CUBEB_ERROR_UNKNOWN";
+
+#undef C
+  }
+
+  ret.append_format(" ({})", rv);
+  return ret;
+}
+
+CubebAudioStream::CubebAudioStream(u32 sample_rate, const AudioStreamParameters& parameters)
+  : AudioStream(sample_rate, parameters)
 {
 }
 
@@ -95,14 +122,14 @@ void CubebAudioStream::DestroyContextAndStream()
 #endif
 }
 
-bool CubebAudioStream::Initialize(u32 latency_ms)
+bool CubebAudioStream::Initialize(Error* error)
 {
 #ifdef _WIN32
   HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
   m_com_initialized_by_us = SUCCEEDED(hr);
   if (FAILED(hr) && hr != RPC_E_CHANGED_MODE)
   {
-    Host::ReportErrorAsync("Error", "Failed to initialize COM for Cubeb");
+    Error::SetHResult(error, "CoInitializeEx() failed: ", hr);
     return false;
   }
 #endif
@@ -113,45 +140,72 @@ bool CubebAudioStream::Initialize(u32 latency_ms)
     cubeb_init(&m_context, "DuckStation", g_settings.audio_driver.empty() ? nullptr : g_settings.audio_driver.c_str());
   if (rv != CUBEB_OK)
   {
-    Host::ReportFormattedErrorAsync("Error", "Could not initialize cubeb context: %d", rv);
+    Error::SetStringFmt(error, "Could not initialize cubeb context: {}", GetCubebErrorString(rv));
     return false;
   }
+
+  static constexpr const std::array<std::pair<cubeb_channel_layout, SampleReader>,
+                                    static_cast<size_t>(AudioExpansionMode::Count)>
+    channel_setups = {{
+      // Disabled
+      {CUBEB_LAYOUT_STEREO, StereoSampleReaderImpl},
+      // StereoLFE
+      {CUBEB_LAYOUT_STEREO_LFE, &SampleReaderImpl<AudioExpansionMode::StereoLFE, READ_CHANNEL_FRONT_LEFT,
+                                                  READ_CHANNEL_FRONT_RIGHT, READ_CHANNEL_LFE>},
+      // Quadraphonic
+      {CUBEB_LAYOUT_QUAD, &SampleReaderImpl<AudioExpansionMode::Quadraphonic, READ_CHANNEL_FRONT_LEFT,
+                                            READ_CHANNEL_FRONT_RIGHT, READ_CHANNEL_REAR_LEFT, READ_CHANNEL_REAR_RIGHT>},
+      // QuadraphonicLFE
+      {CUBEB_LAYOUT_QUAD_LFE,
+       &SampleReaderImpl<AudioExpansionMode::QuadraphonicLFE, READ_CHANNEL_FRONT_LEFT, READ_CHANNEL_FRONT_RIGHT,
+                         READ_CHANNEL_LFE, READ_CHANNEL_REAR_LEFT, READ_CHANNEL_REAR_RIGHT>},
+      // Surround51
+      {CUBEB_LAYOUT_3F2_LFE_BACK,
+       &SampleReaderImpl<AudioExpansionMode::Surround51, READ_CHANNEL_FRONT_LEFT, READ_CHANNEL_FRONT_RIGHT,
+                         READ_CHANNEL_FRONT_CENTER, READ_CHANNEL_LFE, READ_CHANNEL_REAR_LEFT, READ_CHANNEL_REAR_RIGHT>},
+      // Surround71
+      {CUBEB_LAYOUT_3F4_LFE,
+       &SampleReaderImpl<AudioExpansionMode::Surround71, READ_CHANNEL_FRONT_LEFT, READ_CHANNEL_FRONT_RIGHT,
+                         READ_CHANNEL_FRONT_CENTER, READ_CHANNEL_LFE, READ_CHANNEL_REAR_LEFT, READ_CHANNEL_REAR_RIGHT,
+                         READ_CHANNEL_SIDE_LEFT, READ_CHANNEL_SIDE_RIGHT>},
+    }};
 
   cubeb_stream_params params = {};
   params.format = CUBEB_SAMPLE_S16LE;
   params.rate = m_sample_rate;
-  params.channels = m_channels;
-  params.layout = CUBEB_LAYOUT_UNDEFINED;
+  params.channels = m_output_channels;
+  params.layout = channel_setups[static_cast<size_t>(m_parameters.expansion_mode)].first;
   params.prefs = CUBEB_STREAM_PREF_NONE;
 
-  u32 latency_frames = GetBufferSizeForMS(m_sample_rate, (latency_ms == 0) ? m_buffer_ms : latency_ms);
+  u32 latency_frames = GetBufferSizeForMS(
+    m_sample_rate, (m_parameters.output_latency_ms == 0) ? m_parameters.buffer_ms : m_parameters.output_latency_ms);
   u32 min_latency_frames = 0;
   rv = cubeb_get_min_latency(m_context, &params, &min_latency_frames);
   if (rv == CUBEB_ERROR_NOT_SUPPORTED)
   {
-    Log_DevPrintf("(Cubeb) Cubeb backend does not support latency queries, using latency of %d ms (%u frames).",
-                  m_buffer_ms, latency_frames);
+    Log_DevFmt("Cubeb backend does not support latency queries, using latency of {} ms ({} frames).",
+               m_parameters.buffer_ms, latency_frames);
   }
   else
   {
     if (rv != CUBEB_OK)
     {
-      Log_ErrorPrintf("(Cubeb) Could not get minimum latency: %d", rv);
+      Error::SetStringFmt(error, "cubeb_get_min_latency() failed: {}", GetCubebErrorString(rv));
       DestroyContextAndStream();
       return false;
     }
 
     const u32 minimum_latency_ms = GetMSForBufferSize(m_sample_rate, min_latency_frames);
-    Log_DevPrintf("(Cubeb) Minimum latency: %u ms (%u audio frames)", minimum_latency_ms, min_latency_frames);
-    if (latency_ms == 0)
+    Log_DevFmt("Minimum latency: {} ms ({} audio frames)", minimum_latency_ms, min_latency_frames);
+    if (m_parameters.output_latency_ms == 0)
     {
       // use minimum
       latency_frames = min_latency_frames;
     }
-    else if (minimum_latency_ms > latency_ms)
+    else if (minimum_latency_ms > m_parameters.output_latency_ms)
     {
-      Log_WarningPrintf("(Cubeb) Minimum latency is above requested latency: %u vs %u, adjusting to compensate.",
-                        min_latency_frames, latency_frames);
+      Log_WarningFmt("Minimum latency is above requested latency: {} vs {}, adjusting to compensate.",
+                     min_latency_frames, latency_frames);
       latency_frames = min_latency_frames;
     }
   }
@@ -171,8 +225,8 @@ bool CubebAudioStream::Initialize(u32 latency_ms)
         const cubeb_device_info& di = devices.device[i];
         if (di.device_id && selected_device_name == di.device_id)
         {
-          Log_InfoPrintf("Using output device '%s' (%s).", di.device_id,
-                         di.friendly_name ? di.friendly_name : di.device_id);
+          Log_InfoFmt("Using output device '{}' ({}).", di.device_id,
+                      di.friendly_name ? di.friendly_name : di.device_id);
           selected_device = di.devid;
           break;
         }
@@ -186,11 +240,11 @@ bool CubebAudioStream::Initialize(u32 latency_ms)
     }
     else
     {
-      Log_WarningPrintf("cubeb_enumerate_devices() returned %d, using default device.", rv);
+      Log_WarningFmt("cubeb_enumerate_devices() returned {}, using default device.", GetCubebErrorString(rv));
     }
   }
 
-  BaseInitialize();
+  BaseInitialize(channel_setups[static_cast<size_t>(m_parameters.expansion_mode)].second);
   m_volume = 100;
   m_paused = false;
 
@@ -205,7 +259,7 @@ bool CubebAudioStream::Initialize(u32 latency_ms)
 
   if (rv != CUBEB_OK)
   {
-    Log_ErrorPrintf("(Cubeb) Could not create stream: %d", rv);
+    Error::SetStringFmt(error, "cubeb_stream_init() failed: {}", GetCubebErrorString(rv));
     DestroyContextAndStream();
     return false;
   }
@@ -213,7 +267,7 @@ bool CubebAudioStream::Initialize(u32 latency_ms)
   rv = cubeb_stream_start(stream);
   if (rv != CUBEB_OK)
   {
-    Log_ErrorPrintf("(Cubeb) Could not start stream: %d", rv);
+    Error::SetStringFmt(error, "cubeb_stream_start() failed: {}", GetCubebErrorString(rv));
     DestroyContextAndStream();
     return false;
   }
@@ -263,12 +317,11 @@ void CubebAudioStream::SetOutputVolume(u32 volume)
   m_volume = volume;
 }
 
-std::unique_ptr<AudioStream> AudioStream::CreateCubebAudioStream(u32 sample_rate, u32 channels, u32 buffer_ms,
-                                                                 u32 latency_ms, AudioStretchMode stretch)
+std::unique_ptr<AudioStream> AudioStream::CreateCubebAudioStream(u32 sample_rate,
+                                                                 const AudioStreamParameters& parameters, Error* error)
 {
-  std::unique_ptr<CubebAudioStream> stream(
-    std::make_unique<CubebAudioStream>(sample_rate, channels, buffer_ms, stretch));
-  if (!stream->Initialize(latency_ms))
+  std::unique_ptr<CubebAudioStream> stream = std::make_unique<CubebAudioStream>(sample_rate, parameters);
+  if (!stream->Initialize(error))
     stream.reset();
   return stream;
 }

@@ -29,10 +29,9 @@ enum class InputSourceType : u32
   XInput,
   RawInput,
 #endif
-#ifdef ENABLE_SDL2
+#ifndef __ANDROID__
   SDL,
-#endif
-#ifdef __ANDROID__
+#else
   Android,
 #endif
   Count,

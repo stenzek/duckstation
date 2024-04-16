@@ -294,6 +294,8 @@
     <QtUi Include="graphicssettingswidget.ui" />
     <QtUi Include="memoryscannerwindow.ui" />
     <QtUi Include="controllerbindingwidget_negconrumble.ui" />
+    <QtUi Include="audioexpansionsettingsdialog.ui" />
+    <QtUi Include="audiostretchsettingsdialog.ui" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="qt5.natvis" />

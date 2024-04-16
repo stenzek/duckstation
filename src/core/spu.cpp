@@ -16,6 +16,7 @@
 
 #include "common/bitfield.h"
 #include "common/bitutils.h"
+#include "common/error.h"
 #include "common/fifo_queue.h"
 #include "common/log.h"
 #include "common/path.h"
@@ -43,7 +44,6 @@ namespace {
 enum : u32
 {
   SPU_BASE = 0x1F801C00,
-  NUM_CHANNELS = 2,
   NUM_VOICES = 24,
   NUM_VOICE_REGISTERS = 8,
   VOICE_ADDRESS_SHIFT = 3,
@@ -422,7 +422,7 @@ void SPU::Initialize()
                                                  &SPU::Execute, nullptr, false);
   s_transfer_event = TimingEvents::CreateTimingEvent(
     "SPU Transfer", TRANSFER_TICKS_PER_HALFWORD, TRANSFER_TICKS_PER_HALFWORD, &SPU::ExecuteTransfer, nullptr, false);
-  s_null_audio_stream = AudioStream::CreateNullStream(SAMPLE_RATE, NUM_CHANNELS, g_settings.audio_buffer_ms);
+  s_null_audio_stream = AudioStream::CreateNullStream(SAMPLE_RATE, g_settings.audio_stream_parameters.buffer_ms);
 
   CreateOutputStream();
   Reset();
@@ -430,19 +430,24 @@ void SPU::Initialize()
 
 void SPU::CreateOutputStream()
 {
-  Log_InfoFmt("Creating '{}' audio stream, sample rate = {}, channels = {}, buffer = {}, latency = {}, stretching = {}",
-              Settings::GetAudioBackendName(g_settings.audio_backend), static_cast<u32>(SAMPLE_RATE),
-              static_cast<u32>(NUM_CHANNELS), g_settings.audio_buffer_ms, g_settings.audio_output_latency_ms,
-              AudioStream::GetStretchModeName(g_settings.audio_stretch_mode));
+  Log_InfoFmt(
+    "Creating '{}' audio stream, sample rate = {}, expansion = {}, buffer = {}, latency = {}, stretching = {}",
+    AudioStream::GetBackendName(g_settings.audio_backend), static_cast<u32>(SAMPLE_RATE),
+    AudioStream::GetExpansionModeName(g_settings.audio_stream_parameters.expansion_mode),
+    g_settings.audio_stream_parameters.buffer_ms, g_settings.audio_stream_parameters.output_latency_ms,
+    AudioStream::GetStretchModeName(g_settings.audio_stream_parameters.stretch_mode));
 
+  Error error;
   s_audio_stream =
-    Host::CreateAudioStream(g_settings.audio_backend, SAMPLE_RATE, NUM_CHANNELS, g_settings.audio_buffer_ms,
-                            g_settings.audio_output_latency_ms, g_settings.audio_stretch_mode);
+    AudioStream::CreateStream(g_settings.audio_backend, SAMPLE_RATE, g_settings.audio_stream_parameters, &error);
   if (!s_audio_stream)
   {
-    Host::ReportErrorAsync("Error", "Failed to create or configure audio stream, falling back to null output.");
+    Host::ReportErrorAsync(
+      "Error",
+      fmt::format("Failed to create or configure audio stream, falling back to null output. The error was:\n{}",
+                  error.GetDescription()));
     s_audio_stream.reset();
-    s_audio_stream = AudioStream::CreateNullStream(SAMPLE_RATE, NUM_CHANNELS, g_settings.audio_buffer_ms);
+    s_audio_stream = AudioStream::CreateNullStream(SAMPLE_RATE, g_settings.audio_stream_parameters.buffer_ms);
   }
 
   s_audio_stream->SetOutputVolume(System::GetAudioOutputVolume());

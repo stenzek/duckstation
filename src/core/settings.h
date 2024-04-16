@@ -178,14 +178,12 @@ struct Settings
   u32 cdrom_read_speedup = 1;
   u32 cdrom_seek_speedup = 1;
 
-  AudioBackend audio_backend = DEFAULT_AUDIO_BACKEND;
-  AudioStretchMode audio_stretch_mode = DEFAULT_AUDIO_STRETCH_MODE;
   std::string audio_driver;
   std::string audio_output_device;
-  u32 audio_output_latency_ms = DEFAULT_AUDIO_OUTPUT_LATENCY_MS;
-  u32 audio_buffer_ms = DEFAULT_AUDIO_BUFFER_MS;
   u32 audio_output_volume = 100;
   u32 audio_fast_forward_volume = 100;
+  AudioStreamParameters audio_stream_parameters;
+  AudioBackend audio_backend = AudioStream::DEFAULT_BACKEND;
   bool audio_output_muted : 1 = false;
 
   bool use_old_mdec_routines : 1 = false;
@@ -432,10 +430,6 @@ struct Settings
   static const char* GetDisplayScreenshotFormatDisplayName(DisplayScreenshotFormat mode);
   static const char* GetDisplayScreenshotFormatExtension(DisplayScreenshotFormat mode);
 
-  static std::optional<AudioBackend> ParseAudioBackend(const char* str);
-  static const char* GetAudioBackendName(AudioBackend backend);
-  static const char* GetAudioBackendDisplayName(AudioBackend backend);
-
   static std::optional<ControllerType> ParseControllerTypeName(std::string_view str);
   static const char* GetControllerTypeName(ControllerType type);
   static const char* GetControllerTypeDisplayName(ControllerType type);
@@ -478,18 +472,6 @@ struct Settings
   static constexpr CPUFastmemMode DEFAULT_CPU_FASTMEM_MODE = CPUFastmemMode::Disabled;
 #endif
 
-#if defined(ENABLE_CUBEB)
-  static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::Cubeb;
-#elif defined(_WIN32)
-  static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::XAudio2;
-#elif defined(__ANDROID__)
-  static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::AAudio;
-#elif defined(ENABLE_SDL2)
-  static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::SDL;
-#else
-  static constexpr AudioBackend DEFAULT_AUDIO_BACKEND = AudioBackend::Null;
-#endif
-
   static constexpr DisplayDeinterlacingMode DEFAULT_DISPLAY_DEINTERLACING_MODE = DisplayDeinterlacingMode::Adaptive;
   static constexpr DisplayCropMode DEFAULT_DISPLAY_CROP_MODE = DisplayCropMode::Overscan;
   static constexpr DisplayAspectRatio DEFAULT_DISPLAY_ASPECT_RATIO = DisplayAspectRatio::Auto;
@@ -516,15 +498,6 @@ struct Settings
   static constexpr s32 DEFAULT_LEADERBOARD_NOTIFICATION_TIME = 10;
 
   static constexpr LOGLEVEL DEFAULT_LOG_LEVEL = LOGLEVEL_INFO;
-
-#ifndef __ANDROID__
-  static constexpr u32 DEFAULT_AUDIO_BUFFER_MS = 50;
-  static constexpr u32 DEFAULT_AUDIO_OUTPUT_LATENCY_MS = 20;
-#else
-  static constexpr u32 DEFAULT_AUDIO_BUFFER_MS = 100;
-  static constexpr u32 DEFAULT_AUDIO_OUTPUT_LATENCY_MS = 20;
-#endif
-  static constexpr AudioStretchMode DEFAULT_AUDIO_STRETCH_MODE = AudioStretchMode::TimeStretch;
 
   static constexpr bool DEFAULT_SAVE_STATE_COMPRESSION = true;
 
