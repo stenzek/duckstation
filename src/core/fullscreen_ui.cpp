@@ -6612,7 +6612,7 @@ void FullscreenUI::DrawGameListSettingsWindow()
                          if (index == 0)
                          {
                            // Open in file browser
-                           Host::OpenURL(Path::CreateFileURL(dir));
+                           ExitFullscreenAndOpenURL(Path::CreateFileURL(dir));
                          }
                          else if (index == 1)
                          {
