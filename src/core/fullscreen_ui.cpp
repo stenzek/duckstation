@@ -6482,6 +6482,7 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
 {
   ImGuiFullscreen::ChoiceDialogOptions options = {
     {FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties"), false},
+    {FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Open Containing Directory"), false},
     {FSUI_ICONSTR(ICON_FA_PLAY, "Resume Game"), false},
     {FSUI_ICONSTR(ICON_FA_UNDO, "Load State"), false},
     {FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Default Boot"), false},
@@ -6499,22 +6500,25 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
         case 0: // Open Game Properties
           SwitchToGameSettingsForPath(entry_path);
           break;
-        case 1: // Resume Game
+        case 1: // Open Containing Directory
+          ExitFullscreenAndOpenURL(Path::CreateFileURL(Path::GetDirectory(entry_path)));
+          break;
+        case 2: // Resume Game
           DoStartPath(entry_path, System::GetGameSaveStateFileName(entry_serial, -1));
           break;
-        case 2: // Load State
+        case 3: // Load State
           OpenLoadStateSelectorForGame(entry_path);
           break;
-        case 3: // Default Boot
+        case 4: // Default Boot
           DoStartPath(entry_path);
           break;
-        case 4: // Fast Boot
+        case 5: // Fast Boot
           DoStartPath(entry_path, {}, true);
           break;
-        case 5: // Slow Boot
+        case 6: // Slow Boot
           DoStartPath(entry_path, {}, false);
           break;
-        case 6: // Reset Play Time
+        case 7: // Reset Play Time
           GameList::ClearPlayedTimeForSerial(entry_serial);
           break;
         default:
@@ -7309,6 +7313,7 @@ TRANSLATE_NOOP("FullscreenUI", "Not Scanning Subdirectories");
 TRANSLATE_NOOP("FullscreenUI", "OK");
 TRANSLATE_NOOP("FullscreenUI", "OSD Scale");
 TRANSLATE_NOOP("FullscreenUI", "On-Screen Display");
+TRANSLATE_NOOP("FullscreenUI", "Open Containing Directory");
 TRANSLATE_NOOP("FullscreenUI", "Open in File Browser");
 TRANSLATE_NOOP("FullscreenUI", "Operations");
 TRANSLATE_NOOP("FullscreenUI", "Optimal Frame Pacing");

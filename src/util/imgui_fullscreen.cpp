@@ -2277,7 +2277,7 @@ void ImGuiFullscreen::DrawChoiceDialog()
   const float title_height =
     g_large_font->FontSize + ImGui::GetStyle().FramePadding.y * 2.0f + ImGui::GetStyle().WindowPadding.y * 2.0f;
   const float height =
-    std::min(LayoutScale(450.0f),
+    std::min(LayoutScale(480.0f),
              title_height + LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + (LAYOUT_MENU_BUTTON_Y_PADDING * 2.0f)) *
                               static_cast<float>(s_choice_dialog_options.size()));
   ImGui::SetNextWindowSize(ImVec2(width, height));
