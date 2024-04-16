@@ -6611,8 +6611,8 @@ void FullscreenUI::DrawGameListSettingsWindow()
 
                          if (index == 0)
                          {
-                           // Open in file browser... todo
-                           Host::ReportErrorAsync("Error", "Not implemented");
+                           // Open in file browser
+                           Host::OpenURL(Path::CreateFileURL(dir));
                          }
                          else if (index == 1)
                          {
