@@ -14,6 +14,7 @@
 #include "ui_controllerbindingwidget_guncon.h"
 #include "ui_controllerbindingwidget_mouse.h"
 #include "ui_controllerbindingwidget_negcon.h"
+#include "ui_controllerbindingwidget_negconrumble.h"
 
 #include "core/controller.h"
 #include "core/host.h"
@@ -147,6 +148,15 @@ void ControllerBindingWidget::populateWidgets()
     case ControllerType::NeGcon:
     {
       Ui::ControllerBindingWidget_NeGcon ui;
+      ui.setupUi(m_bindings_widget);
+      bindBindingWidgets(m_bindings_widget);
+      m_icon = QIcon::fromTheme(QStringLiteral("negcon-line"));
+    }
+    break;
+
+    case ControllerType::NeGconRumble:
+    {
+      Ui::ControllerBindingWidget_NeGconRumble ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
       m_icon = QIcon::fromTheme(QStringLiteral("negcon-line"));

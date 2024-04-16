@@ -77,7 +77,7 @@ private:
   {
     Idle,
     Ready,
-    ReadPad, // 0x42
+    ReadPad,           // 0x42
     ConfigModeSetMode, // 0x43
     SetAnalogMode,     // 0x44
     GetAnalogMode,     // 0x45
@@ -129,7 +129,7 @@ private:
   std::array<u8, 6> m_rumble_config{};
   int m_rumble_config_large_motor_index = -1;
   int m_rumble_config_small_motor_index = -1;
-  
+
   bool m_analog_toggle_queued = false;
   u8 m_status_byte = 0;
 

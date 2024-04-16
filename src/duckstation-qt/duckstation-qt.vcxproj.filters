@@ -293,6 +293,7 @@
     <QtUi Include="debuggeraddbreakpointdialog.ui" />
     <QtUi Include="graphicssettingswidget.ui" />
     <QtUi Include="memoryscannerwindow.ui" />
+    <QtUi Include="controllerbindingwidget_negconrumble.ui" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="qt5.natvis" />

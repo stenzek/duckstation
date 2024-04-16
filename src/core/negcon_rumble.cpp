@@ -24,10 +24,9 @@
 
 Log_SetChannel(NeGconRumble);
 
-
 // Mapping of Button to index of corresponding bit in m_button_state
 static constexpr std::array<u8, static_cast<size_t>(NeGconRumble::Button::Count)> s_button_indices = {3, 4,  5,  6,
-                                                                                                7, 11, 12, 13};
+                                                                                                      7, 11, 12, 13};
 NeGconRumble::NeGconRumble(u32 index) : Controller(index)
 {
   m_status_byte = 0x5A;
@@ -120,12 +119,12 @@ bool NeGconRumble::DoState(StateWrapper& sw, bool apply_input_state)
 
     if (old_analog_mode != m_analog_mode)
     {
-        Host::AddIconOSDMessage(fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
-                                fmt::format(m_analog_mode ?
-                                              TRANSLATE_FS("AnalogController", "Controller {} switched to analog mode.") :
-                                              TRANSLATE_FS("AnalogController", "Controller {} switched to digital mode."),
-                    m_index + 1u),
-        5.0f);
+      Host::AddIconOSDMessage(fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
+                              fmt::format(m_analog_mode ?
+                                            TRANSLATE_FS("AnalogController", "Controller {} switched to analog mode.") :
+                                            TRANSLATE_FS("AnalogController", "Controller {} switched to digital mode."),
+                                          m_index + 1u),
+                              5.0f);
     }
   }
   return true;
@@ -168,7 +167,7 @@ void NeGconRumble::SetBindState(u32 index, float value)
   }
   // Steering Axis: -1..1 -> 0..255
   else if (index == (static_cast<u32>(Button::Count) + static_cast<u32>(HalfAxis::SteeringLeft)) ||
-      index == (static_cast<u32>(Button::Count) + static_cast<u32>(HalfAxis::SteeringRight)))
+           index == (static_cast<u32>(Button::Count) + static_cast<u32>(HalfAxis::SteeringRight)))
   {
     value *= m_steering_sensitivity;
     if (value < m_steering_deadzone)
@@ -247,8 +246,8 @@ void NeGconRumble::SetAnalogMode(bool enabled, bool show_message)
                             fmt::format(enabled ?
                                           TRANSLATE_FS("AnalogController", "Controller {} switched to analog mode.") :
                                           TRANSLATE_FS("AnalogController", "Controller {} switched to digital mode."),
-                  m_index + 1u),
-      5.0f);
+                                        m_index + 1u),
+                            5.0f);
   }
   m_analog_mode = enabled;
 }
@@ -347,7 +346,6 @@ u8 NeGconRumble::GetModeID() const
 
 u8 NeGconRumble::GetIDByte() const
 {
-  auto tteste = GetResponseNumHalfwords();
   return Truncate8((GetModeID() << 4) | GetResponseNumHalfwords());
 }
 
@@ -482,7 +480,7 @@ bool NeGconRumble::Transfer(const u8 data_in, u8* data_out)
         case 4:
         {
           if (m_configuration_mode || m_analog_mode)
-             m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::Steering)];
+            m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::Steering)];
 
           if (m_dualshock_enabled)
             SetMotorStateForConfigIndex(rumble_index, data_in);
@@ -502,7 +500,7 @@ bool NeGconRumble::Transfer(const u8 data_in, u8* data_out)
         case 6:
         {
           if (m_configuration_mode || m_analog_mode)
-             m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::II)];
+            m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::II)];
 
           if (m_dualshock_enabled)
             SetMotorStateForConfigIndex(rumble_index, data_in);
@@ -512,7 +510,7 @@ bool NeGconRumble::Transfer(const u8 data_in, u8* data_out)
         case 7:
         {
           if (m_configuration_mode || m_analog_mode)
-             m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::L)];
+            m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::L)];
 
           if (m_dualshock_enabled)
             SetMotorStateForConfigIndex(rumble_index, data_in);
@@ -548,7 +546,7 @@ bool NeGconRumble::Transfer(const u8 data_in, u8* data_out)
           case 4:
           {
             if (m_configuration_mode || m_analog_mode)
-               m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::Steering)];
+              m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::Steering)];
           }
           break;
 
@@ -562,14 +560,14 @@ bool NeGconRumble::Transfer(const u8 data_in, u8* data_out)
           case 6:
           {
             if (m_configuration_mode || m_analog_mode)
-               m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::II)];
+              m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::II)];
           }
           break;
 
           case 7:
           {
             if (m_configuration_mode || m_analog_mode)
-               m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::L)];
+              m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::L)];
           }
           break;
 
@@ -692,7 +690,6 @@ bool NeGconRumble::Transfer(const u8 data_in, u8* data_out)
     break;
 
       DefaultCaseIsUnreachable();
-
   }
 
   *data_out = m_tx_buffer[m_command_step];
@@ -714,7 +711,6 @@ bool NeGconRumble::Transfer(const u8 data_in, u8* data_out)
   }
 
   return ack;
-
 }
 
 std::unique_ptr<NeGconRumble> NeGconRumble::Create(u32 index)
@@ -729,7 +725,7 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
   }
 #define AXIS(name, display_name, icon_name, halfaxis, genb)                                                            \
   {                                                                                                                    \
-    name, display_name, icon_name, static_cast<u32>(NeGconRumble::Button::Count) + static_cast<u32>(halfaxis),     \
+    name, display_name, icon_name, static_cast<u32>(NeGconRumble::Button::Count) + static_cast<u32>(halfaxis),         \
       InputBindingInfo::Type::HalfAxis, genb                                                                           \
   }
 
@@ -756,16 +752,20 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 
 static const SettingInfo s_settings[] = {
   {SettingInfo::Type::Float, "SteeringDeadzone", TRANSLATE_NOOP("NeGconRumble", "Steering Axis Deadzone"),
-   TRANSLATE_NOOP("NeGconRumble", "Sets deadzone size for steering axis."), "0.00f", "0.00f", "0.99f", "0.01f", "%.0f%%", nullptr,
-   100.0f},
+   TRANSLATE_NOOP("NeGconRumble", "Sets deadzone size for steering axis."), "0.00f", "0.00f", "0.99f", "0.01f",
+   "%.0f%%", nullptr, 100.0f},
   {SettingInfo::Type::Float, "SteeringSensitivity", TRANSLATE_NOOP("NeGconRumble", "Steering Axis Sensitivity"),
-   TRANSLATE_NOOP("NeGconRumble", "Sets the steering axis scaling factor."), "1.00f", "0.01f", "2.00f", "0.01f", "%.0f%%",
-   nullptr, 100.0f},
+   TRANSLATE_NOOP("NeGconRumble", "Sets the steering axis scaling factor."), "1.00f", "0.01f", "2.00f", "0.01f",
+   "%.0f%%", nullptr, 100.0f},
 };
 
-const Controller::ControllerInfo NeGconRumble::INFO = {
-  ControllerType::NeGconRumble, "NeGconRumble",   TRANSLATE_NOOP("ControllerType", "NeGconRumble"),    ICON_PF_GAMEPAD,
-  s_binding_info,         s_settings, Controller::VibrationCapabilities::LargeSmallMotors};
+const Controller::ControllerInfo NeGconRumble::INFO = {ControllerType::NeGconRumble,
+                                                       "NeGconRumble",
+                                                       TRANSLATE_NOOP("ControllerType", "NeGcon with Rumble"),
+                                                       ICON_PF_GAMEPAD,
+                                                       s_binding_info,
+                                                       s_settings,
+                                                       Controller::VibrationCapabilities::LargeSmallMotors};
 
 void NeGconRumble::LoadSettings(SettingsInterface& si, const char* section)
 {

@@ -48,6 +48,7 @@ set(SRCS
   controllerbindingwidget_guncon.ui
   controllerbindingwidget_mouse.ui
   controllerbindingwidget_negcon.ui
+  controllerbindingwidget_negconrumble.ui
   controllerbindingwidgets.cpp
   controllerbindingwidgets.h
   controllerbindingwidget.ui
