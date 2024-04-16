@@ -21,12 +21,16 @@ echo "Updating files in ${OUTDIR}..."
 mkdir -p "${OUTDIR}"
 rm -fr "${OUTDIR}/modules"
 cp -a "${SCRIPTDIR}/modules" "${OUTDIR}/modules"
+cp "${SCRIPTDIR}/../shaderc-changes.patch" "${OUTDIR}/modules"
 
 echo "Generate AppStream XML..."
 "${SCRIPTDIR}/../../scripts/generate-metainfo.sh" "${OUTDIR}"
 
 echo "Patching Manifest Sources..."
-jq ".modules[2].sources = ["\
+jq ".sources[4] = {\"type\": \"patch\", \"path\": \"shaderc-changes.patch\"}" \
+"${SCRIPTDIR}/modules/22-shaderc.json" > "${OUTDIR}/modules/22-shaderc.json"
+
+jq ".modules[3].sources = ["\
 "{\"type\": \"git\", \"url\": \"https://github.com/stenzek/duckstation.git\", \"commit\": \"${GIT_HASH}\", \"disable-shallow-clone\": true},"\
 "{\"type\": \"file\", \"path\": \"org.duckstation.DuckStation.metainfo.xml\", \"dest\": \"scripts/flatpak\"}]" \
 "${SCRIPTDIR}/${APPID}.json" > "${OUTMANIFEST}"
