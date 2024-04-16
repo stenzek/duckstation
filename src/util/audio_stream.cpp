@@ -156,12 +156,12 @@ void AudioStream::ReadFrames(s16* samples, u32 num_frames)
       // super basic resampler - spread the input samples evenly across the output samples. will sound like ass and have
       // aliasing, but better than popping by inserting silence.
       const u32 increment =
-        static_cast<u32>(65536.0f * (static_cast<float>(frames_to_read / m_channels) / static_cast<float>(num_frames)));
+        static_cast<u32>(65536.0f * (static_cast<float>(frames_to_read) / static_cast<float>(num_frames)));
 
-      s16* resample_ptr = static_cast<s16*>(alloca(sizeof(s16) * frames_to_read));
-      std::memcpy(resample_ptr, samples, sizeof(s16) * frames_to_read);
+      SampleType* resample_ptr = static_cast<SampleType*>(alloca(frames_to_read * m_channels * sizeof(SampleType)));
+      std::memcpy(resample_ptr, samples, frames_to_read * m_channels * sizeof(SampleType));
 
-      s16* out_ptr = samples;
+      SampleType* out_ptr = samples;
       const u32 copy_stride = sizeof(SampleType) * m_channels;
       u32 resample_subpos = 0;
       for (u32 i = 0; i < num_frames; i++)
@@ -174,12 +174,12 @@ void AudioStream::ReadFrames(s16* samples, u32 num_frames)
         resample_subpos %= 65536u;
       }
 
-      Log_VerbosePrintf("Audio buffer underflow, resampled %u frames to %u", frames_to_read, num_frames);
+      Log_VerboseFmt("Audio buffer underflow, resampled {} frames to {}", frames_to_read, num_frames);
     }
     else
     {
       // no data, fall back to silence
-      std::memset(samples + frames_to_read, 0, sizeof(s32) * silence_frames);
+      std::memset(samples + (frames_to_read * m_channels), 0, sizeof(s16) * m_channels * silence_frames);
     }
   }
 }
