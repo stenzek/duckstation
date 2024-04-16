@@ -2698,7 +2698,7 @@ static QString getFilenameFromMimeData(const QMimeData* md)
     // only one url accepted
     const QList<QUrl> urls(md->urls());
     if (urls.size() == 1)
-      filename = urls.front().toLocalFile();
+      filename = QDir::toNativeSeparators(urls.front().toLocalFile());
   }
 
   return filename;
