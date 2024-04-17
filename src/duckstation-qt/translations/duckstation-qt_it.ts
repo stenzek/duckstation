@@ -7940,7 +7940,7 @@ L&apos;errore è:</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7154"/>
         <source>Release Date: %s</source>
-        <translation>Data di Uscita: &s</translation>
+        <translation>Data di Uscita: %s</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7155"/>
