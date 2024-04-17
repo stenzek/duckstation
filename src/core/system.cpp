@@ -1115,7 +1115,7 @@ void System::ResetSystem()
   if (!Achievements::ConfirmSystemReset())
     return;
 
-  if (Achievements::ResetHardcoreMode())
+  if (Achievements::ResetHardcoreMode(false))
   {
     // Make sure a pre-existing cheat file hasn't been loaded when resetting
     // after enabling HC mode.
@@ -3502,7 +3502,7 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
     g_texture_replacements.SetGameID(s_running_game_serial);
 
   if (booting)
-    Achievements::ResetHardcoreMode();
+    Achievements::ResetHardcoreMode(true);
 
   Achievements::GameChanged(s_running_game_path, image);
 

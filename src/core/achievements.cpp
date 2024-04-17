@@ -129,6 +129,7 @@ static void ClearGameHash();
 static std::string GetGameHash(CDImage* image);
 static void SetHardcoreMode(bool enabled, bool force_display_message);
 static bool IsLoggedInOrLoggingIn();
+static bool CanEnableHardcoreMode();
 static void ShowLoginSuccess(const rc_client_t* client);
 static void ShowLoginNotification();
 static void IdentifyGame(const std::string& path, CDImage* image);
@@ -497,7 +498,7 @@ void Achievements::UpdateSettings(const Settings& old_config)
     // Hardcore mode can only be enabled through reset (ResetChallengeMode()).
     if (s_hardcore_mode && !g_settings.achievements_hardcore_mode)
     {
-      ResetHardcoreMode();
+      ResetHardcoreMode(false);
     }
     else if (!s_hardcore_mode && g_settings.achievements_hardcore_mode)
     {
@@ -927,13 +928,21 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
     return;
   }
 
+  const bool has_achievements = rc_client_has_achievements(client);
+  const bool has_leaderboards = rc_client_has_leaderboards(client);
+
+  // If the game has a RetroAchievements entry but no achievements or leaderboards,
+  // enforcing hardcore mode is pointless.
+  if (!has_achievements && !has_leaderboards)
+    DisableHardcoreMode();
+
   // We should have matched hardcore mode state.
   Assert(s_hardcore_mode == (rc_client_get_hardcore_enabled(client) != 0));
 
   s_game_id = info->id;
   s_game_title = info->title;
-  s_has_achievements = rc_client_has_achievements(client);
-  s_has_leaderboards = rc_client_has_leaderboards(client);
+  s_has_achievements = has_achievements;
+  s_has_leaderboards = has_leaderboards;
   s_has_rich_presence = rc_client_has_rich_presence(client);
   s_game_icon = {};
 
@@ -1373,7 +1382,7 @@ void Achievements::DisableHardcoreMode()
   SetHardcoreMode(false, true);
 }
 
-bool Achievements::ResetHardcoreMode()
+bool Achievements::ResetHardcoreMode(bool is_booting)
 {
   if (!IsActive())
     return false;
@@ -1385,6 +1394,9 @@ bool Achievements::ResetHardcoreMode()
   const bool wanted_hardcore_mode =
     (IsLoggedInOrLoggingIn() || s_load_game_request) && g_settings.achievements_hardcore_mode;
   if (s_hardcore_mode == wanted_hardcore_mode)
+    return false;
+
+  if (!is_booting && wanted_hardcore_mode && !CanEnableHardcoreMode())
     return false;
 
   SetHardcoreMode(wanted_hardcore_mode, false);
@@ -1595,6 +1607,11 @@ std::string Achievements::GetLeaderboardUserBadgePath(const rc_client_leaderboar
 bool Achievements::IsLoggedInOrLoggingIn()
 {
   return (rc_client_get_user_info(s_client) != nullptr || s_login_request);
+}
+
+bool Achievements::CanEnableHardcoreMode()
+{
+  return (s_load_game_request || s_has_achievements || s_has_leaderboards);
 }
 
 bool Achievements::Login(const char* username, const char* password, Error* error)

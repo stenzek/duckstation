@@ -75,7 +75,7 @@ void Logout();
 void GameChanged(const std::string& path, CDImage* image);
 
 /// Re-enables hardcore mode if it is enabled in the settings.
-bool ResetHardcoreMode();
+bool ResetHardcoreMode(bool is_booting);
 
 /// Forces hardcore mode off until next reset.
 void DisableHardcoreMode();
