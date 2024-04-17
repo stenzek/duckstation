@@ -5400,7 +5400,7 @@ Questo file può pesare anche diversi GB, quindi bisogna tenere conto dell&apos;
     <message>
         <location filename="../emulationsettingswidget.cpp" line="110"/>
         <source>Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.</source>
-        <translation>Simula il sistema in anticipo e torna indietro/rigioca per ridurre l&aposinput lag. Requisiti di sistema molto elevati.</translation>
+        <translation>Simula il sistema in anticipo e torna indietro/rigioca per ridurre l&apos;input lag. Requisiti di sistema molto elevati.</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="123"/>
