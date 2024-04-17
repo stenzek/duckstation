@@ -5426,8 +5426,8 @@ Questo file può pesare anche diversi GB, quindi bisogna tenere conto dell&apos;
         <location filename="../emulationsettingswidget.cpp" line="196"/>
         <source>Rewind for %n frame(s), lasting %1 second(s) will require up to %2MB of RAM and %3MB of VRAM.</source>
         <translation>
-            <numerusform>Riavvolge di %n (fotogramma), per una durata di %1 secondi richiede fino a %2MB di RAM e %3MB di VRAM.</numerusform>
-            <numerusform>Riavvolge di %n (fotogrammi), per una durata di %1 secondi richiede fino a %2MB di RAM e %3MB di VRAM.</numerusform>
+            <numerusform>Riavvolgi di %n (fotogramma), per una durata di %1 secondi richiede fino a %2MB di RAM e %3MB di VRAM.</numerusform>
+            <numerusform>Riavvolgi di %n (fotogrammi), per una durata di %1 secondi richiede fino a %2MB di RAM e %3MB di VRAM.</numerusform>
         </translation>
     </message>
     <message>
@@ -5598,7 +5598,7 @@ Questo file può pesare anche diversi GB, quindi bisogna tenere conto dell&apos;
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="73"/>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
-        <translation>Impostare questo oltre 1x migliorerà la risoluzione di poligoni e linee renderati in 3D . Si applica soltanto ai backend hardware. &lt;br&gt;Questa opzione è solitamente sicura, con la maggior parte dei giochi visualizzata normalmente a risoluzioni più alte. Risoluzioni più alte richiedono una GPU più potente.</translation>
+        <translation>Impostare questo oltre 1x migliorerà la risoluzione di poligoni e linee renderati in 3D. Si applica soltanto ai backend hardware. &lt;br&gt;Questa opzione è solitamente sicura, con la maggior parte dei giochi visualizzata normalmente a risoluzioni più alte. Risoluzioni più alte richiedono una GPU più potente.</translation>
     </message>
     <message>
         <location filename="../enhancementsettingswidget.cpp" line="59"/>
