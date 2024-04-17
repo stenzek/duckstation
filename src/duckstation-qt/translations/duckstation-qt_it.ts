@@ -6848,7 +6848,7 @@ Vuoi caricare questo stato e continuare?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6936"/>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
-        <translation>DuckStation può scaricare automaticamente le copertine per i giochi che attualmente non hanno una copertina impostata. Non forniamo alcuna immagine di copertina, l&aposutente deve fornire la propria fonte per le immagini.</translation>
+        <translation>DuckStation può scaricare automaticamente le copertine per i giochi che attualmente non hanno una copertina impostata. Non forniamo alcuna immagine di copertina, l&apos;utente deve fornire la propria fonte per le immagini.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6937"/>
