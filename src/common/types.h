@@ -185,6 +185,13 @@ static constexpr u32 HOST_PAGE_MASK = HOST_PAGE_SIZE - 1;
 static constexpr u32 HOST_PAGE_SHIFT = 12;
 #endif
 
+// Host cache line sizes.
+#if defined(__APPLE__) && defined(__aarch64__)
+static constexpr u32 HOST_CACHE_LINE_SIZE = 128; // Apple Silicon uses 128b cache lines.
+#else
+static constexpr u32 HOST_CACHE_LINE_SIZE = 64; // Everything else is 64b.
+#endif
+
 // Enum class bitwise operators
 #define IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(type_)                                                                  \
   ALWAYS_INLINE constexpr type_ operator&(type_ lhs, type_ rhs)                                                        \
