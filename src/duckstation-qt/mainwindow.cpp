@@ -1066,15 +1066,13 @@ void MainWindow::onCheatsMenuAboutToShow()
 
 void MainWindow::populateCheatsMenu(QMenu* menu)
 {
-  if (!s_system_valid)
-    return;
-
-  const bool has_cheat_list = System::HasCheatList();
+  const bool has_cheat_list = (s_system_valid && System::HasCheatList());
 
   QMenu* enabled_menu = menu->addMenu(tr("&Enabled Cheats"));
-  enabled_menu->setEnabled(false);
+  enabled_menu->setEnabled(s_system_valid);
   QMenu* apply_menu = menu->addMenu(tr("&Apply Cheats"));
-  apply_menu->setEnabled(false);
+  apply_menu->setEnabled(s_system_valid);
+
   if (has_cheat_list)
   {
     CheatList* cl = System::GetCheatList();
@@ -1773,11 +1771,11 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevo
   m_ui.actionReset->setDisabled(starting || !running);
   m_ui.actionPause->setDisabled(starting || !running);
   m_ui.actionChangeDisc->setDisabled(starting || !running);
-  m_ui.actionCheats->setDisabled(starting || !running || cheevos_challenge_mode);
-  m_ui.actionCheatsToolbar->setDisabled(starting || !running || cheevos_challenge_mode);
+  m_ui.actionCheats->setDisabled(cheevos_challenge_mode);
+  m_ui.actionCheatsToolbar->setDisabled(cheevos_challenge_mode);
   m_ui.actionScreenshot->setDisabled(starting || !running);
   m_ui.menuChangeDisc->setDisabled(starting || !running);
-  m_ui.menuCheats->setDisabled(starting || !running || cheevos_challenge_mode);
+  m_ui.menuCheats->setDisabled(cheevos_challenge_mode);
   m_ui.actionCPUDebugger->setDisabled(cheevos_challenge_mode);
   m_ui.actionMemoryScanner->setDisabled(cheevos_challenge_mode);
   m_ui.actionDumpRAM->setDisabled(starting || !running || cheevos_challenge_mode);
