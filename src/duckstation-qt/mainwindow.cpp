@@ -2391,6 +2391,39 @@ void MainWindow::setStyleFromSettings()
 
     qApp->setPalette(darkPalette);
   }
+  else if (theme == "purplerain")
+  {
+    qApp->setStyle(QStyleFactory::create("Fusion"));
+
+    const QColor darkPurple(73, 41, 121);
+    const QColor darkerPurple(53, 29, 87);
+    const QColor gold(250, 207, 0);
+
+    QPalette darkPalette;
+    darkPalette.setColor(QPalette::Window, darkPurple);
+    darkPalette.setColor(QPalette::WindowText, Qt::white);
+    darkPalette.setColor(QPalette::Base, darkerPurple);
+    darkPalette.setColor(QPalette::AlternateBase, darkPurple);
+    darkPalette.setColor(QPalette::ToolTipBase, darkPurple);
+    darkPalette.setColor(QPalette::ToolTipText, Qt::white);
+    darkPalette.setColor(QPalette::Text, Qt::white);
+    darkPalette.setColor(QPalette::Button, darkerPurple);
+    darkPalette.setColor(QPalette::ButtonText, Qt::white);
+    darkPalette.setColor(QPalette::Link, gold);
+    darkPalette.setColor(QPalette::Highlight, gold);
+    darkPalette.setColor(QPalette::HighlightedText, Qt::black);
+    darkPalette.setColor(QPalette::PlaceholderText, QColor(Qt::white).darker());
+
+    darkPalette.setColor(QPalette::Active, QPalette::Button, darkerPurple);
+    darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, darkPurple.lighter());
+    darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, darkPurple.lighter());
+    darkPalette.setColor(QPalette::Disabled, QPalette::Text, darkPurple.lighter());
+    darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkPurple);
+
+    qApp->setPalette(darkPalette);
+
+    qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #505a70; border: 1px solid white; }");
+  }
   else
   {
     qApp->setStyle(s_unthemed_style_name);
