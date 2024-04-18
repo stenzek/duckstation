@@ -446,48 +446,6 @@
          </property>
         </widget>
        </item>
-       
-             <item>
-              <widget class="QTextEdit" name="cheatEngineAddress">
-               <property name="enabled">
-                <bool>true</bool>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>833</width>
-                 <height>40</height>
-                </size>
-               </property>               
-               <property name="inputMethodHints">
-                <set>Qt::ImhNone</set>
-               </property>
-               <property name="frameShape">
-                <enum>QFrame::NoFrame</enum>
-               </property>
-               <property name="verticalScrollBarPolicy">
-                <enum>Qt::ScrollBarAlwaysOff</enum>
-               </property>
-               <property name="horizontalScrollBarPolicy">
-                <enum>Qt::ScrollBarAlwaysOff</enum>
-               </property>
-               <property name="readOnly">
-                <bool>false</bool>
-               </property>
-               <property name="acceptRichText">
-                <bool>false</bool>
-               </property>
-               <property name="textInteractionFlags">
-                <set>Qt::TextEditable</set>
-               </property>
-               <property name="placeholderText">
-                <string notr="true"/>
-               </property>
-               <property name="text">
-                <string>cheat engine address string</string>
-               </property>
-              </widget>
-             </item>
-       
        <item>
         <spacer name="horizontalSpacer_2">
          <property name="orientation">
@@ -500,6 +458,28 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="cheatEngineAddress">
+         <property name="frameShape">
+          <enum>QFrame::Shape::Panel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Shadow::Sunken</enum>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="textFormat">
+          <enum>Qt::TextFormat::PlainText</enum>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+         </property>
+         <property name="textInteractionFlags">
+          <set>Qt::TextInteractionFlag::LinksAccessibleByMouse|Qt::TextInteractionFlag::TextEditable|Qt::TextInteractionFlag::TextEditorInteraction|Qt::TextInteractionFlag::TextSelectableByKeyboard|Qt::TextInteractionFlag::TextSelectableByMouse</set>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
