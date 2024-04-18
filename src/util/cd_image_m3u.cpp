@@ -99,7 +99,8 @@ bool CDImageM3u::Open(const char* path, bool apply_patches, Error* error)
       continue;
 
     Entry entry;
-    std::string entry_filename(line.begin() + start_offset, line.begin() + end_offset + 1);
+    std::string entry_filename =
+      Path::ToNativePath(std::string_view(line.begin() + start_offset, line.begin() + end_offset + 1));
     entry.title = Path::GetFileTitle(entry_filename);
     if (!Path::IsAbsolute(entry_filename))
       entry.filename = Path::BuildRelativePath(path, entry_filename);
