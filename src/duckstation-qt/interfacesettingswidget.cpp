@@ -17,7 +17,7 @@ const char* InterfaceSettingsWidget::THEME_NAMES[] = {
   QT_TRANSLATE_NOOP("MainWindow", "Cobalt Sky"),
   QT_TRANSLATE_NOOP("MainWindow", "Grey Matter"),
   QT_TRANSLATE_NOOP("MainWindow", "Dark Ruby"),
-  QT_TRANSLATE_NOOP("MainWindow", "Purplerain"),
+  QT_TRANSLATE_NOOP("MainWindow", "Purple Rain"),
   nullptr,
 };
 
