@@ -17,12 +17,12 @@ const char* InterfaceSettingsWidget::THEME_NAMES[] = {
   QT_TRANSLATE_NOOP("MainWindow", "Cobalt Sky"),
   QT_TRANSLATE_NOOP("MainWindow", "Grey Matter"),
   QT_TRANSLATE_NOOP("MainWindow", "Dark Ruby"),
-  QT_TRANSLATE_NOOP("MainWindow", "QDarkStyle"),
+  QT_TRANSLATE_NOOP("MainWindow", "Purplerain"),
   nullptr,
 };
 
 const char* InterfaceSettingsWidget::THEME_VALUES[] = {
-  "",  "fusion", "darkfusion", "darkfusionblue", "cobaltsky","greymatter", "darkruby", "qdarkstyle", nullptr,
+  "","fusion", "darkfusion", "darkfusionblue", "cobaltsky", "greymatter", "darkruby", "purplerain", nullptr,
 };
 
 const char* InterfaceSettingsWidget::DEFAULT_THEME_NAME = "darkfusion";
