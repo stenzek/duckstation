@@ -103686,6 +103686,8 @@ SCPS-10001:
   traits:
     - ForcePGXPCPUMode
     - ForceRecompilerICache # Fixes crash in pause screen.
+  settings:
+    dmaMaxSliceTicks: 400 # Fixes random hang.
   codes:
     - HASH-58C38FDD4440E3DB
     - HASH-71CB04066AE13303
