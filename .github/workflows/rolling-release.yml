@@ -281,7 +281,7 @@ jobs:
   linux-flatpak-build:
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.6
+      image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.7
       options: --privileged
     timeout-minutes: 120
     steps:
