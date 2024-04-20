@@ -144,28 +144,21 @@ Requirements:
 6. Run `duckstation-qt-x64-Release.exe` or whichever config you used.
 
 ### Linux
-Requirements (Debian/Ubuntu package names):
- - CMake (`cmake`)
- - SDL2 (at least version 2.30.2) (`libsdl2-dev` `libxrandr-dev`)
- - pkgconfig (`pkg-config`)
- - Qt 6 (at least version 6.7.0) (`qt6-base-dev` `qt6-base-private-dev` `qt6-base-dev-tools` `qt6-tools-dev` `libqt6svg6`)
- - git (`git`) (Note: needed to clone the repository and at build time)
- - When Wayland is enabled (default): (`libwayland-dev` `libwayland-egl-backend-dev` `extra-cmake-modules` `qt6-wayland`)
- - libcurl (`libcurl4-openssl-dev`)
- - Optional for faster building: Ninja (`ninja-build`)
 
-Due to Ubuntu LTS using older package versions, DuckStation releases use manually built dependency libraries. If you are using a distribution with older package versions, you can build the required library versions using the script found at https://github.com/stenzek/duckstation/blob/master/scripts/build-dependencies.sh.
+#### Required Dependencies
 
-Fedora package names (assumes you are using the dependency build script):
+Fedora package names:
 ```
 alsa-lib-devel brotli-devel clang cmake dbus-devel egl-wayland-devel fontconfig-devel gcc-c++ libcurl-devel libdecor-devel libevdev-devel libICE-devel libinput-devel libSM-devel libX11-devel libXau-devel libxcb-devel libXcomposite-devel libXcursor-devel libXext-devel libXfixes-devel libXft-devel libXi-devel libxkbcommon-devel libxkbcommon-x11-devel libXpresent-devel libXrandr-devel libXrender-devel lld llvm make mesa-libEGL-devel mesa-libGL-devel ninja-build openssl-devel patch pcre2-devel perl-Digest-SHA pipewire-devel pulseaudio-libs-devel systemd-devel wayland-devel xcb-util-cursor-devel xcb-util-devel xcb-util-errors-devel xcb-util-image-devel xcb-util-keysyms-devel xcb-util-renderutil-devel xcb-util-wm-devel xcb-util-xrm-devel zlib-devel
 ```
 
-1. Clone the repository: `git clone https://github.com/stenzek/duckstation.git -b dev`.
-2. Create a build directory, either in-tree or elsewhere.
-3. Run CMake to configure the build system. Assuming a build subdirectory of `build-release`, run `cmake -Bbuild-release -DCMAKE_BUILD_TYPE=Release`. If you have installed Ninja, add `-GNinja` at the end of the CMake command line for faster builds. If you used the dependency build script, the path you built the dependencies in should be supplied with `-DCMAKE_PREFIX_PATH=/path/to/deps`.
-4. Compile the source code. For the example above, run `cmake --build build-release --parallel`.
-5. Run the binary, located in the build directory under `bin/duckstation-qt`.
+#### Building
+
+1. Clone the repository: `git clone https://github.com/stenzek/duckstation.git`, `cd duckstation`.
+2. Build dependencies. You can save these outside of the tree if you like. This will take a while. `scripts/linux/build-dependencies-linux.sh deps`.
+3. Run CMake to configure the build system. Assuming a build subdirectory of `build-release`, run `cmake -B build-release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_EXE_LINKER_FLAGS_INIT="-fuse-ld=lld" -DCMAKE_MODULE_LINKER_FLAGS_INIT="-fuse-ld=lld" -DCMAKE_SHARED_LINKER_FLAGS_INIT="-fuse-ld=lld" -DCMAKE_PREFIX_PATH="$PWD/deps" -G Ninja`.
+4. Compile the source code. For the example above, run `ninja -C build`
+5. Run the binary, located in the build directory under `./build-release/bin/duckstation-qt`.
 
 ### macOS
 
@@ -175,8 +168,8 @@ Requirements:
 
 
 1. Clone the repository: `git clone https://github.com/stenzek/duckstation.git`.
-2. Build the dependencies. `scripts/build-dependencies-mac.sh /PATH/TO/SAVE/DEPS` (substitute with your own location).
-2. Run CMake to configure the build system: `cmake -Bbuild-release -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/PATH/TO/SAVE/DEPS`. 
+2. Build the dependencies. This will take a while. `scripts/build-dependencies-mac.sh deps`.
+2. Run CMake to configure the build system: `cmake -Bbuild-release -DCMAKE_BUILD_TYPE=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCMAKE_PREFIX_PATH="$PWD/deps"`. 
 4. Compile the source code: `cmake --build build-release --parallel`.
 5. Run the binary, located in the build directory under `bin/DuckStation.app`.
 
