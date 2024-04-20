@@ -20,11 +20,9 @@ if(WIN32)
     src/wgl.c
   )
 else()
-  if(ENABLE_EGL)
-    target_sources(glad PRIVATE
-      include/EGL/eglplatform.h
-      include/glad/egl.h
-      src/egl.c
-    )
-  endif()
+  target_sources(glad PRIVATE
+    include/EGL/eglplatform.h
+    include/glad/egl.h
+    src/egl.c
+  )
 endif()

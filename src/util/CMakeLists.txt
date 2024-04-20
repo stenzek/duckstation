@@ -78,14 +78,6 @@ target_include_directories(util PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(util PUBLIC common simpleini imgui)
 target_link_libraries(util PRIVATE libchdr JPEG::JPEG PNG::PNG WebP::libwebp ZLIB::ZLIB soundtouch xxhash Zstd::Zstd reshadefx)
 
-if(ENABLE_CUBEB)
-  target_sources(util PRIVATE
-    cubeb_audio_stream.cpp
-  )
-  target_compile_definitions(util PUBLIC "ENABLE_CUBEB=1")
-  target_link_libraries(util PRIVATE cubeb)
-endif()
-
 if(ENABLE_X11)
   target_compile_definitions(util PRIVATE "-DENABLE_X11=1")
   target_link_libraries(util PRIVATE X11::X11 X11::Xrandr)
@@ -180,26 +172,21 @@ if(ENABLE_VULKAN OR APPLE)
   target_link_libraries(util PUBLIC Shaderc::shaderc_shared)
 endif()
 
-if(ENABLE_SDL2)
+if(NOT ANDROID)
   target_sources(util PRIVATE
+    cubeb_audio_stream.cpp
     sdl_audio_stream.cpp
     sdl_input_source.cpp
     sdl_input_source.h
   )
-  target_compile_definitions(util PUBLIC "ENABLE_SDL2=1")
-  target_link_libraries(util PUBLIC SDL2::SDL2)
-
-  # Copy bundled SDL2 to output on Windows.
-  if(WIN32)
-    # Copy SDL2 DLL to binary directory.
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-      get_property(SDL2_DLL_PATH TARGET SDL2::SDL2 PROPERTY IMPORTED_LOCATION_DEBUG)
-    else()
-      get_property(SDL2_DLL_PATH TARGET SDL2::SDL2 PROPERTY IMPORTED_LOCATION_RELEASE)
-    endif()
-    add_custom_command(TARGET util POST_BUILD
-      COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SDL2_DLL_PATH}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/SDL2.dll")
-  endif()
+  target_compile_definitions(util PUBLIC
+    "ENABLE_CUBEB=1"
+    "ENABLE_SDL2=1"
+  )
+  target_link_libraries(util PUBLIC
+    cubeb
+    SDL2::SDL2
+  )
 endif()
 
 if(WIN32)

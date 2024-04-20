@@ -5,6 +5,17 @@ project(duckstation C CXX)
 cmake_policy(SET CMP0069 NEW)
 set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
 
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+  message(FATAL_ERROR "DuckStation does not support in-tree builds. Please make a build directory that is not the source"
+                      "directory and generate your CMake project there using either `cmake -B build_directory` or by "
+                      "running cmake from the build directory.")
+endif()
+
+if(NOT CMAKE_BUILD_TYPE MATCHES "Debug|Devel|MinSizeRel|RelWithDebInfo|Release")
+  message(STATUS "CMAKE_BUILD_TYPE not set, defaulting to Release.")
+  set(CMAKE_BUILD_TYPE "Release")
+endif()
+
 message(STATUS "CMake Version: ${CMAKE_VERSION}")
 message(STATUS "CMake System Name: ${CMAKE_SYSTEM_NAME}")
 message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
@@ -13,57 +24,18 @@ message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules/")
 include(DuckStationUtils)
 
-# Platform detection.
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-  set(LINUX TRUE)
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD")
-  set(FREEBSD TRUE)
-endif()
+# Detect system attributes.
+detect_operating_system()
+detect_compiler()
+detect_architecture()
+detect_page_size()
 
-# Renderer options.
-option(ENABLE_OPENGL "Build with OpenGL renderer" ON)
-option(ENABLE_VULKAN "Build with Vulkan renderer" ON)
-
-# Global options.
-if(NOT ANDROID)
-  option(BUILD_NOGUI_FRONTEND "Build the NoGUI frontend" OFF)
-  option(BUILD_QT_FRONTEND "Build the Qt frontend" ON)
-  option(BUILD_REGTEST "Build regression test runner" OFF)
-  option(BUILD_TESTS "Build unit tests" OFF)
-
-  set(ENABLE_CUBEB ON)
-  set(ENABLE_DISCORD_PRESENCE ON)
-  set(ENABLE_SDL2 ON)
-
-  if(LINUX OR FREEBSD)
-    option(ENABLE_X11 "Support X11 window system" ON)
-    option(ENABLE_WAYLAND "Support Wayland window system" ON)
-  endif()
-  if(APPLE)
-    option(SKIP_POSTPROCESS_BUNDLE "Disable bundle post-processing, including Qt additions" OFF)
-  endif()
-endif()
-
-# Everything except Windows/Mac use EGL.
-if(ENABLE_OPENGL AND (LINUX OR FREEBSD OR ANDROID))
-  set(ENABLE_EGL TRUE)
-endif()
-
-if(ENABLE_X11)
-  find_package(X11 REQUIRED)
-  if (NOT X11_Xrandr_FOUND)
-    message(FATAL_ERROR "XRandR extension is required")
-  endif()
-endif()
-if(ENABLE_WAYLAND)
-  message(STATUS "Wayland support enabled")
-endif()
-
+# Build options. Depends on system attributes.
+include(DuckStationBuildOptions)
 
 # Set _DEBUG macro for Debug builds.
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
-
 
 # Release build optimizations for MSVC.
 if(MSVC)
@@ -88,100 +60,15 @@ if(MSVC)
   set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO "${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO} /OPT:REF /OPT:ICF")
 endif()
 
-
-# Default symbol visibility to hidden, that way we don't go through the PLT for intra-library calls.
-if(ANDROID)
-  cmake_policy(SET CMP0063 NEW)
-  set(CMAKE_POLICY_DEFAULT_CMP0063 NEW)
-  set(CMAKE_C_VISIBILITY_PRESET hidden)
-  set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-semantic-interposition")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-semantic-interposition")
-endif()
-
-
 # Warning disables.
-if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    include(CheckCXXFlag)
-    check_cxx_flag(-Wall COMPILER_SUPPORTS_WALL)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-switch")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-switch")
-    if(NOT ANDROID)
-      check_cxx_flag(-Wno-class-memaccess COMPILER_SUPPORTS_MEMACCESS)
-      check_cxx_flag(-Wno-invalid-offsetof COMPILER_SUPPORTS_OFFSETOF)
-    endif()
+if(COMPILER_CLANG OR COMPILER_CLANG_CL OR COMPILER_GCC)
+  include(CheckCXXFlag)
+  check_cxx_flag(-Wall COMPILER_SUPPORTS_WALL)
+  check_cxx_flag(-Wno-class-memaccess COMPILER_SUPPORTS_MEMACCESS)
+  check_cxx_flag(-Wno-invalid-offsetof COMPILER_SUPPORTS_OFFSETOF)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-switch")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-switch")
 endif()
-
-
-# Detect processor type.
-if(APPLE AND NOT "${CMAKE_OSX_ARCHITECTURES}" STREQUAL "")
-  # Universal binaries.
-  if("x86_64" IN_LIST CMAKE_OSX_ARCHITECTURES)
-    set(CPU_ARCH_X64 TRUE)
-    message(STATUS "Building x86_64 MacOS binaries.")
-  endif()
-  if("arm64" IN_LIST CMAKE_OSX_ARCHITECTURES)
-    set(CPU_ARCH_ARM64 TRUE)
-    message(STATUS "Building ARM64 MacOS binaries.")
-  endif()
-elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "amd64" OR
-       "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "AMD64" OR "${CMAKE_OSX_ARCHITECTURES}" STREQUAL "x86_64")
-  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(CPU_ARCH_X64 TRUE)
-    message(STATUS "Building x86_64 binaries.")
-  else()
-    # Cross-compiling 32-bit build. 32-bit hosts are not supported.
-    set(CPU_ARCH_X86 TRUE)
-    message(FATAL_ERROR "Building x86_32 binaries is not supported.")
-  endif()
-elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "i386" OR
-       "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "i686")
-  set(CPU_ARCH_X86 TRUE)
-  message(FATAL_ERROR "Building x86_32 binaries is not supported.")
-elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm64")
-  if(CMAKE_SIZEOF_VOID_P EQUAL 8) # Might have an A64 kernel, e.g. Raspbian.
-    set(CPU_ARCH_ARM64 TRUE)
-    message(STATUS "Building ARM64 binaries.")
-  else()
-    set(CPU_ARCH_ARM32 TRUE)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -marm -march=armv7-a")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -marm -march=armv7-a")
-    message(STATUS "Building ARM32 binaries on ARM64.")
-  endif()
-elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "armv7-a" OR
-       "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "armv7l")
-  set(CPU_ARCH_ARM32 TRUE)
-  message(STATUS "Building ARM32 binaries.")
-  if(ANDROID)
-    # Force ARM mode, since apparently ANDROID_ARM_MODE isn't working..
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -marm")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -marm")
-  else()
-    # Enable NEON.
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -marm -march=armv7-a")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -marm -march=armv7-a")
-  endif()
-elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "riscv64")
-  set(CPU_ARCH_RISCV64 TRUE)
-  message(STATUS "Building RISC-V 64 binaries.")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -finline-atomics")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -finline-atomics")
-
-  # Still need this, apparently.
-  link_libraries("-latomic")
-
-  if(NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-    # Frame pointers generate an annoying amount of code on leaf functions.
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fomit-frame-pointer")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fomit-frame-pointer")
-  endif()
-else()
-  message(FATAL_ERROR "Unknown system processor: ${CMAKE_SYSTEM_PROCESSOR}")
-endif()
-
-# Detect page size if needed.
-detect_page_size()
-
 
 # We don't need exceptions, disable them to save a bit of code size.
 if(MSVC)
@@ -193,29 +80,15 @@ else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -fno-rtti")
 endif()
 
-
 # Write binaries to a seperate directory.
-if(WIN32)
-  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin/${CPU_ARCH}")
-else()
-  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
-endif()
-
-# Needed for Linux - put shared libraries in the binary directory.
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-
-
-# Enable threads everywhere.
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
-
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
 
 # Enable large file support on Linux 32-bit platforms.
-# Android is deliberately ommitted here as it didn't support 64-bit ops on files until Android 7/N.
-if((LINUX OR FREEBSD) AND (CPU_ARCH_X86 OR CPU_ARCH_ARM32))
+if(CMAKE_SIZEOF_VOID_P EQUAL 4)
   add_definitions("-D_FILE_OFFSET_BITS=64")
 endif()
 
+# Optional unit tests.
 if(BUILD_TESTS)
   enable_testing()
 endif()
@@ -232,6 +105,5 @@ include(DuckStationDependencies)
 add_subdirectory(dep)
 add_subdirectory(src)
 
-if(ANDROID)
-  add_subdirectory(android/app/src/cpp)
-endif()
+# Output build summary.
+include(DuckStationBuildSummary)

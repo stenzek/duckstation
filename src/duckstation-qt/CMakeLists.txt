@@ -195,14 +195,31 @@ if(WIN32)
             "${WINDEPLOYQT_EXE}" --libdir="${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
                                  --plugindir="${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/QtPlugins"
                                  $<IF:$<CONFIG:Debug>,--debug,--release>
-                                 --no-translations
                                  --no-compiler-runtime
+                                 --no-system-d3d-compiler
+                                 --no-system-dxc-compiler
+                                 --no-translations
                                  "$<TARGET_FILE:duckstation-qt>"
   )
   add_custom_command(TARGET duckstation-qt POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/qt.conf.win" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/qt.conf"
   )
   #set_source_files_properties(${TS_FILES} PROPERTIES OUTPUT_LOCATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/translations")
+
+  set(DEPS_TO_COPY freetype.dll harfbuzz.dll libjpeg.dll libpng16.dll libsharpyuv.dll libwebp.dll SDL2.dll shaderc_shared.dll zlib1.dll zstd.dll)
+  foreach(DEP ${DEPS_TO_COPY})
+    list(APPEND DEP_BINS "${CMAKE_PREFIX_PATH}/bin/${DEP}")
+  endforeach()
+  add_custom_command(TARGET duckstation-qt POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${DEP_BINS} "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+  )
+  if(CMAKE_BUILD_TYPE MATCHES "Debug")
+    get_property(WINPIXEVENTRUNTIME_DLL TARGET WinPixEventRuntime::WinPixEventRuntime PROPERTY IMPORTED_LOCATION)
+    message(STATUS WP "${WINPIXEVENTRUNTIME_DLL}")
+    add_custom_command(TARGET duckstation-qt POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different "${WINPIXEVENTRUNTIME_DLL}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+    )
+  endif()
 elseif(APPLE)
   # Don't generate a bundle for XCode, it makes code signing fail...
   if(NOT CMAKE_GENERATOR MATCHES "Xcode")
@@ -226,21 +243,21 @@ elseif(APPLE)
   # Copy icon into the bundle
   target_sources(duckstation-qt PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/DuckStation.icns")
   set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/DuckStation.icns" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+endif()
 
-  # Translation setup
-  qt_add_lrelease(duckstation-qt TS_FILES ${TS_FILES} QM_FILES_OUTPUT_VARIABLE QM_FILES)
-  foreach (QM_FILE IN LISTS QM_FILES)
-    target_sources(duckstation-qt PRIVATE ${QM_FILE})
-    set_source_files_properties(${QM_FILE} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/translations)
-  endforeach()
-  copy_base_translations(duckstation-qt)
-else()
-  qt_add_lrelease(duckstation-qt TS_FILES ${TS_FILES} QM_FILES_OUTPUT_VARIABLE QM_FILES)
+# Translation setup.
+qt_add_lrelease(duckstation-qt TS_FILES ${TS_FILES} QM_FILES_OUTPUT_VARIABLE QM_FILES)
+if(NOT APPLE)
   set(QM_OUTPUT_DIR "$<TARGET_FILE_DIR:duckstation-qt>/translations")
   add_custom_command(TARGET duckstation-qt POST_BUILD COMMAND "${CMAKE_COMMAND}" -E make_directory "${QM_OUTPUT_DIR}")
   foreach (QM_FILE IN LISTS QM_FILES)
     get_filename_component(QM_FILE_NAME ${QM_FILE} NAME)
     add_custom_command(TARGET duckstation-qt POST_BUILD COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${QM_FILE}" "${QM_OUTPUT_DIR}/${QM_FILE_NAME}")
   endforeach()
-  copy_base_translations(duckstation-qt)
+else()
+  foreach (QM_FILE IN LISTS QM_FILES)
+    target_sources(duckstation-qt PRIVATE ${QM_FILE})
+    set_source_files_properties(${QM_FILE} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/translations)
+  endforeach()
 endif()
+copy_base_translations(duckstation-qt)

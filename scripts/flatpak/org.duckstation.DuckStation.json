@@ -24,6 +24,7 @@
     {
       "name": "duckstation",
       "buildsystem": "cmake-ninja",
+      "builddir": true,
       "no-make-install": true,
       "build-options": {
         "strip": false,
@@ -48,10 +49,10 @@
         }
       ],
       "post-install": [
-        "cp -a \"${FLATPAK_BUILDER_BUILDDIR}/bin\" ${FLATPAK_DEST}",
-        "install -Dm644 scripts/org.duckstation.DuckStation.png ${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/org.duckstation.DuckStation.png",
-        "install -Dm644 scripts/org.duckstation.DuckStation.desktop ${FLATPAK_DEST}/share/applications/org.duckstation.DuckStation.desktop",
-        "install -Dm644 scripts/flatpak/org.duckstation.DuckStation.metainfo.xml ${FLATPAK_DEST}/share/metainfo/org.duckstation.DuckStation.metainfo.xml"
+        "cp -a bin \"${FLATPAK_DEST}\"",
+        "install -Dm644 \"${FLATPAK_BUILDER_BUILDDIR}/scripts/org.duckstation.DuckStation.png\" \"${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/org.duckstation.DuckStation.png\"",
+        "install -Dm644 \"${FLATPAK_BUILDER_BUILDDIR}/scripts/org.duckstation.DuckStation.desktop\" \"${FLATPAK_DEST}/share/applications/org.duckstation.DuckStation.desktop\"",
+        "install -Dm644 \"${FLATPAK_BUILDER_BUILDDIR}/scripts/flatpak/org.duckstation.DuckStation.metainfo.xml\" \"${FLATPAK_DEST}/share/metainfo/org.duckstation.DuckStation.metainfo.xml\""
       ]
     }
   ]

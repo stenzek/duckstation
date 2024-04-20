@@ -27,6 +27,4 @@ target_include_directories(reshadefx INTERFACE
 )
 
 # reshadefx is not C++20-compatible.
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
+set_property(TARGET reshadefx PROPERTY CXX_STANDARD 17)
