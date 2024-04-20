@@ -238,11 +238,11 @@ jobs:
       uses: actions/cache@v3.3.2
       with:
         path: ~/deps
-        key: deps ${{ hashFiles('scripts/build-dependencies.sh') }}
+        key: deps ${{ hashFiles('scripts/build-dependencies-linux.sh') }}
 
     - name: Build Dependencies
       if: steps.cache-deps.outputs.cache-hit != 'true'
-      run: scripts/build-dependencies.sh "$HOME/deps"
+      run: scripts/build-dependencies-linux.sh "$HOME/deps"
 
     - name: Tag as preview build
       if: github.ref == 'refs/heads/master'
