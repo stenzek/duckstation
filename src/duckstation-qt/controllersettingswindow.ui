@@ -69,7 +69,7 @@
        <item>
         <widget class="QLabel" name="label">
          <property name="text">
-          <string>Profile:</string>
+          <string>Editing Profile:</string>
          </property>
         </widget>
        </item>
@@ -89,7 +89,7 @@
        <item>
         <widget class="QPushButton" name="loadProfile">
          <property name="text">
-          <string>Load Profile</string>
+          <string>Activate Profile</string>
          </property>
          <property name="icon">
           <iconset theme="folder-open-line"/>
