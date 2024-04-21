@@ -183,8 +183,6 @@ void CPU::Shutdown()
 
 void CPU::Reset()
 {
-  g_state.pending_ticks = 0;
-  g_state.downcount = 0;
   g_state.exception_raised = false;
   g_state.bus_error = false;
 
@@ -208,8 +206,11 @@ void CPU::Reset()
   if (g_settings.gpu_pgxp_enable)
     PGXP::Reset();
 
-  // TODO: This consumes cycles...
+  // This consumes cycles, so do it first.
   SetPC(RESET_VECTOR);
+
+  g_state.pending_ticks = 0;
+  g_state.downcount = 0;
 }
 
 bool CPU::DoState(StateWrapper& sw)

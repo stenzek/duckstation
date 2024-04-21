@@ -164,6 +164,10 @@ void GPU::Reset(bool clear_vram)
   if (clear_vram)
     std::memset(g_vram, 0, sizeof(g_vram));
 
+  // Force event to reschedule itself.
+  m_crtc_tick_event->Deactivate();
+  m_command_tick_event->Deactivate();
+
   SoftReset();
   UpdateDisplay();
 }
@@ -211,7 +215,6 @@ void GPU::SoftReset()
   SetTextureWindow(0);
   UpdateDMARequest();
   UpdateCRTCConfig();
-  UpdateCRTCTickEvent();
   UpdateCommandTickEvent();
   UpdateGPUIdle();
 }
@@ -342,7 +345,6 @@ bool GPU::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_displ
     if (update_display)
       UpdateDisplay();
 
-    UpdateCRTCTickEvent();
     UpdateCommandTickEvent();
   }
 

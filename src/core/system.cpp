@@ -2266,6 +2266,7 @@ void System::InternalReset()
   if (IsShutdown())
     return;
 
+  TimingEvents::Reset();
   CPU::Reset();
   CPU::CodeCache::Reset();
   if (g_settings.gpu_pgxp_enable)
@@ -2284,7 +2285,6 @@ void System::InternalReset()
   PCDrv::Reset();
   s_frame_number = 1;
   s_internal_frame_number = 0;
-  TimingEvents::Reset();
   InterruptExecution();
   ResetPerformanceCounters();
 

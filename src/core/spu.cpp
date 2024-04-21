@@ -529,8 +529,9 @@ void SPU::Reset()
     v.ignore_loop_address = false;
   }
 
-  s_transfer_fifo.Clear();
+  s_tick_event->Deactivate();
   s_transfer_event->Deactivate();
+  s_transfer_fifo.Clear();
   s_ram.fill(0);
   UpdateEventInterval();
 }

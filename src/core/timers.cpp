@@ -75,9 +75,9 @@ static void UpdateSysClkEvent();
 static std::unique_ptr<TimingEvent> s_sysclk_event;
 
 static std::array<CounterState, NUM_TIMERS> s_states{};
-static TickCount s_syclk_ticks_carry = 0; // 0 unless overclocking is enabled
-static u32 s_sysclk_div_8_carry = 0;      // partial ticks for timer 3 with sysclk/8
-};                                        // namespace Timers
+static TickCount s_sysclk_ticks_carry = 0; // 0 unless overclocking is enabled
+static u32 s_sysclk_div_8_carry = 0;       // partial ticks for timer 3 with sysclk/8
+};                                         // namespace Timers
 
 void Timers::Initialize()
 {
@@ -105,7 +105,8 @@ void Timers::Reset()
     cs.irq_done = false;
   }
 
-  s_syclk_ticks_carry = 0;
+  s_sysclk_event->Deactivate();
+  s_sysclk_ticks_carry = 0;
   s_sysclk_div_8_carry = 0;
   UpdateSysClkEvent();
 }
@@ -124,7 +125,7 @@ bool Timers::DoState(StateWrapper& sw)
     sw.Do(&cs.irq_done);
   }
 
-  sw.Do(&s_syclk_ticks_carry);
+  sw.Do(&s_sysclk_ticks_carry);
   sw.Do(&s_sysclk_div_8_carry);
 
   if (sw.IsReading())
@@ -135,7 +136,7 @@ bool Timers::DoState(StateWrapper& sw)
 
 void Timers::CPUClocksChanged()
 {
-  s_syclk_ticks_carry = 0;
+  s_sysclk_ticks_carry = 0;
 }
 
 bool Timers::IsUsingExternalClock(u32 timer)
@@ -264,7 +265,7 @@ void Timers::CheckForIRQ(u32 timer, u32 old_counter)
 
 void Timers::AddSysClkTicks(void*, TickCount sysclk_ticks, TickCount ticks_late)
 {
-  sysclk_ticks = System::UnscaleTicksToOverclock(sysclk_ticks, &s_syclk_ticks_carry);
+  sysclk_ticks = System::UnscaleTicksToOverclock(sysclk_ticks, &s_sysclk_ticks_carry);
 
   if (!s_states[0].external_counting_enabled && s_states[0].counting_enabled)
     AddTicks(0, sysclk_ticks);
