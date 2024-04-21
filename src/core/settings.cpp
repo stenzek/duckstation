@@ -684,7 +684,6 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
 {
   if (g_settings.disable_all_enhancements)
   {
-    Log_WarningPrintf("All enhancements disabled by config setting.");
     g_settings.cpu_overclock_enable = false;
     g_settings.cpu_overclock_active = false;
     g_settings.enable_8mb_ram = false;
@@ -712,7 +711,9 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
 
   if (g_settings.pcdrv_enable && g_settings.pcdrv_root.empty())
   {
-    Log_WarningPrintf("Disabling PCDrv because no root directory is specified.");
+    Host::AddKeyedOSDMessage("pcdrv_disabled_no_root",
+                             TRANSLATE_STR("OSDMessage", "Disabling PCDrv because no root directory is specified."),
+                             Host::OSD_WARNING_DURATION);
     g_settings.pcdrv_enable = false;
   }
 
@@ -756,8 +757,9 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
 
   if (g_settings.IsRunaheadEnabled() && g_settings.rewind_enable)
   {
-    Host::AddKeyedOSDMessage("rewind_disabled_android",
-                             TRANSLATE_STR("OSDMessage", "Rewind is disabled because runahead is enabled."), 10.0f);
+    Host::AddKeyedOSDMessage("rewind_disabled",
+                             TRANSLATE_STR("OSDMessage", "Rewind is disabled because runahead is enabled."),
+                             Host::OSD_WARNING_DURATION);
     g_settings.rewind_enable = false;
   }
 

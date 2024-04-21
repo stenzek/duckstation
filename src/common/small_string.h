@@ -176,7 +176,12 @@ public:
   ALWAYS_INLINE const char* end_ptr() const { return m_buffer + m_length; }
 
   // STL adapters
+  ALWAYS_INLINE char& front() { return m_buffer[0]; }
+  ALWAYS_INLINE const char& front() const { return m_buffer[0]; }
+  ALWAYS_INLINE char& back() { return m_buffer[m_length - 1]; }
+  ALWAYS_INLINE const char& back() const { return m_buffer[m_length - 1]; }
   ALWAYS_INLINE void push_back(value_type&& val) { append(val); }
+  ALWAYS_INLINE void pop_back() { erase(-1); }
 
   // returns a string view for this string
   std::string_view view() const;

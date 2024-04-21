@@ -110,7 +110,7 @@ static bool DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_dis
 static bool CreateGPU(GPURenderer renderer, bool is_switching);
 static bool SaveUndoLoadState();
 static void WarnAboutUnsafeSettings();
-static void LogUnsafeSettingsToConsole(const std::string& messages);
+static void LogUnsafeSettingsToConsole(const SmallStringBase& messages);
 
 /// Throttles the system, i.e. sleeps until it's time to execute the next frame.
 static void Throttle(Common::Timer::Value current_time);
@@ -1017,9 +1017,9 @@ void System::ApplySettings(bool display_osd_messages)
 
   if (IsValid())
   {
+    WarnAboutUnsafeSettings();
     ResetPerformanceCounters();
-    if (s_system_executing)
-      s_system_interrupted = true;
+    InterruptExecution();
   }
 }
 
@@ -3952,13 +3952,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
 
 void System::WarnAboutUnsafeSettings()
 {
-  std::string messages;
-  auto append = [&messages](const char* icon, std::string_view msg) {
-    messages += icon;
-    messages += ' ';
-    messages += msg;
-    messages += '\n';
-  };
+  LargeString messages;
+  auto append = [&messages](const char* icon, std::string_view msg) { messages.append_format("{} {}\n", icon, msg); };
 
   if (g_settings.cpu_overclock_active)
   {
@@ -3993,6 +3988,15 @@ void System::WarnAboutUnsafeSettings()
   }
   if (g_settings.enable_8mb_ram)
     append(ICON_FA_MICROCHIP, TRANSLATE_SV("System", "8MB RAM is enabled, this may be incompatible with some games."));
+  if (g_settings.disable_all_enhancements)
+    append(ICON_FA_COGS, TRANSLATE_SV("System", "All enhancements are currently disabled."));
+
+  if (s_cheat_list && s_cheat_list->GetEnabledCodeCount() > 0)
+  {
+    append(ICON_FA_EXCLAMATION_TRIANGLE,
+           fmt::format(TRANSLATE_FS("System", "{} cheats are enabled. This may crash games."),
+                       s_cheat_list->GetEnabledCodeCount()));
+  }
 
   if (!messages.empty())
   {
@@ -4000,7 +4004,7 @@ void System::WarnAboutUnsafeSettings()
       messages.pop_back();
 
     LogUnsafeSettingsToConsole(messages);
-    Host::AddKeyedOSDMessage("performance_settings_warning", std::move(messages), Host::OSD_WARNING_DURATION);
+    Host::AddKeyedOSDMessage("performance_settings_warning", std::string(messages.view()), Host::OSD_WARNING_DURATION);
   }
   else
   {
@@ -4008,16 +4012,16 @@ void System::WarnAboutUnsafeSettings()
   }
 }
 
-void System::LogUnsafeSettingsToConsole(const std::string& messages)
+void System::LogUnsafeSettingsToConsole(const SmallStringBase& messages)
 {
   // a not-great way of getting rid of the icons for the console message
-  std::string console_messages = messages;
+  LargeString console_messages = messages;
   for (;;)
   {
-    const std::string::size_type pos = console_messages.find("\xef");
-    if (pos != std::string::npos)
+    const s32 pos = console_messages.find("\xef");
+    if (pos >= 0)
     {
-      console_messages.erase(pos, pos + 3);
+      console_messages.erase(pos, 3);
       console_messages.insert(pos, "[Unsafe Settings]");
     }
     else
@@ -4025,7 +4029,7 @@ void System::LogUnsafeSettingsToConsole(const std::string& messages)
       break;
     }
   }
-  Log_WarningPrint(console_messages.c_str());
+  Log_WarningPrint(console_messages);
 }
 
 void System::CalculateRewindMemoryUsage(u32 num_saves, u32 resolution_scale, u64* ram_usage, u64* vram_usage)
@@ -4679,17 +4683,9 @@ bool System::LoadCheatList()
   std::unique_ptr<CheatList> cl = std::make_unique<CheatList>();
   if (!cl->LoadFromFile(filename.c_str(), CheatList::Format::Autodetect))
   {
-    Host::AddFormattedOSDMessage(15.0f, TRANSLATE("OSDMessage", "Failed to load cheats from '%s'."), filename.c_str());
+    Host::AddIconOSDMessage("cheats_loaded", ICON_FA_EXCLAMATION_TRIANGLE,
+                            fmt::format(TRANSLATE_FS("OSDMessage", "Failed to load cheats from '{}'."), filename));
     return false;
-  }
-
-  if (cl->GetEnabledCodeCount() > 0)
-  {
-    Host::AddIconOSDMessage(
-      "cheats_loaded", ICON_FA_EXCLAMATION_TRIANGLE,
-      fmt::format(TRANSLATE_FS("OSDMessage", "{} cheats are enabled. This may result in instability."),
-                  cl->GetEnabledCodeCount()),
-      Host::OSD_WARNING_DURATION);
   }
 
   SetCheatList(std::move(cl));
