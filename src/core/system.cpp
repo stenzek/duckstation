@@ -1495,19 +1495,19 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   if (CDROM::HasMedia() && (parameters.override_fast_boot.has_value() ? parameters.override_fast_boot.value() :
                                                                         g_settings.bios_patch_fast_boot))
   {
-    if (CDROM::IsMediaPS1Disc())
+    if (!CDROM::IsMediaPS1Disc())
     {
       Log_ErrorPrint("Not fast booting non-PS1 disc.");
     }
-    else if (s_bios_image_info && s_bios_image_info->patch_compatible)
+    else if (!s_bios_image_info || !s_bios_image_info->patch_compatible)
+    {
+      Log_ErrorPrint("Not patching fast boot, as BIOS is not patch compatible.");
+    }
+    else
     {
       // TODO: Fast boot without patches...
       BIOS::PatchBIOSFastBoot(Bus::g_bios, Bus::BIOS_SIZE);
       s_was_fast_booted = true;
-    }
-    else
-    {
-      Log_ErrorPrint("Not patching fast boot, as BIOS is not patch compatible.");
     }
   }
 
