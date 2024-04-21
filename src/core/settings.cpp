@@ -320,7 +320,6 @@ void Settings::Load(SettingsInterface& si)
   audio_fast_forward_volume = si.GetUIntValue("Audio", "FastForwardVolume", 100);
 
   audio_output_muted = si.GetBoolValue("Audio", "OutputMuted", false);
-  audio_dump_on_boot = si.GetBoolValue("Audio", "DumpOnBoot", false);
 
   use_old_mdec_routines = si.GetBoolValue("Hacks", "UseOldMDECRoutines", false);
   pcdrv_enable = si.GetBoolValue("PCDrv", "Enabled", false);
@@ -573,7 +572,6 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetUIntValue("Audio", "OutputVolume", audio_output_volume);
   si.SetUIntValue("Audio", "FastForwardVolume", audio_fast_forward_volume);
   si.SetBoolValue("Audio", "OutputMuted", audio_output_muted);
-  si.SetBoolValue("Audio", "DumpOnBoot", audio_dump_on_boot);
 
   si.SetBoolValue("Hacks", "UseOldMDECRoutines", use_old_mdec_routines);
 

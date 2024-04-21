@@ -33,6 +33,8 @@ class CheatManagerWindow;
 class DebuggerWindow;
 class MemoryScannerWindow;
 
+struct SystemBootParameters;
+
 class GPUDevice;
 namespace Achievements {
 enum class LoginRequestReason;
@@ -269,6 +271,7 @@ private:
   /// Fills menu with the current cheat options.
   void populateCheatsMenu(QMenu* menu);
 
+  std::shared_ptr<SystemBootParameters> getSystemBootParameters(std::string file);
   std::optional<bool> promptForResumeState(const std::string& save_state_path);
   void startFile(std::string path, std::optional<std::string> save_path, std::optional<bool> fast_boot);
   void startFileOrChangeDisc(const QString& path);

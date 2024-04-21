@@ -29,7 +29,6 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
                                               Settings::DEFAULT_AUDIO_BUFFER_MS);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.outputLatencyMS, "Audio", "OutputLatencyMS",
                                               Settings::DEFAULT_AUDIO_OUTPUT_LATENCY_MS);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.startDumpingOnBoot, "Audio", "DumpOnBoot", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.muteCDAudio, "CDROM", "MuteCDAudio", false);
   connect(m_ui.audioBackend, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::updateDriverNames);
   updateDriverNames();
@@ -71,9 +70,6 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
        "host. Smaller values reduce the output latency, but may cause hitches if the emulation "
        "speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of "
        "this value, so using a low value here may not significantly change latency."));
-  dialog->registerWidgetHelp(
-    m_ui.startDumpingOnBoot, tr("Start Dumping On Boot"), tr("Unchecked"),
-    tr("Start dumping audio to file as soon as the emulator is started. Mainly useful as a debug option."));
   dialog->registerWidgetHelp(m_ui.volume, tr("Output Volume"), "100%",
                              tr("Controls the volume of the audio played on the host."));
   dialog->registerWidgetHelp(m_ui.fastForwardVolume, tr("Fast Forward Volume"), "100%",

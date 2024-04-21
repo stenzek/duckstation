@@ -187,7 +187,6 @@ struct Settings
   u32 audio_output_volume = 100;
   u32 audio_fast_forward_volume = 100;
   bool audio_output_muted : 1 = false;
-  bool audio_dump_on_boot : 1 = false;
 
   bool use_old_mdec_routines : 1 = false;
   bool pcdrv_enable : 1 = false;

@@ -56,6 +56,7 @@ struct SystemBootParameters
   bool force_software_renderer = false;
   bool fast_forward_to_first_frame = false;
   bool disable_achievements_hardcore_mode = false;
+  bool start_audio_dump = false;
 };
 
 struct SaveStateInfo

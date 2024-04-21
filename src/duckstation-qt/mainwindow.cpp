@@ -1117,6 +1117,13 @@ void MainWindow::populateCheatsMenu(QMenu* menu)
   }
 }
 
+std::shared_ptr<SystemBootParameters> MainWindow::getSystemBootParameters(std::string file)
+{
+  std::shared_ptr<SystemBootParameters> ret = std::make_shared<SystemBootParameters>(std::move(file));
+  ret->start_audio_dump = m_ui.actionDumpAudio->isChecked();
+  return ret;
+}
+
 std::optional<bool> MainWindow::promptForResumeState(const std::string& save_state_path)
 {
   FILESYSTEM_STAT_DATA sd;
@@ -1163,8 +1170,7 @@ std::optional<bool> MainWindow::promptForResumeState(const std::string& save_sta
 
 void MainWindow::startFile(std::string path, std::optional<std::string> save_path, std::optional<bool> fast_boot)
 {
-  std::shared_ptr<SystemBootParameters> params = std::make_shared<SystemBootParameters>();
-  params->filename = std::move(path);
+  std::shared_ptr<SystemBootParameters> params = getSystemBootParameters(std::move(path));
   params->override_fast_boot = fast_boot;
   if (save_path.has_value())
     params->save_state = std::move(save_path.value());
@@ -1237,12 +1243,12 @@ void MainWindow::onStartDiscActionTriggered()
   if (path.empty())
     return;
 
-  g_emu_thread->bootSystem(std::make_shared<SystemBootParameters>(std::move(path)));
+  g_emu_thread->bootSystem(getSystemBootParameters(std::move(path)));
 }
 
 void MainWindow::onStartBIOSActionTriggered()
 {
-  g_emu_thread->bootSystem(std::make_shared<SystemBootParameters>());
+  g_emu_thread->bootSystem(getSystemBootParameters(std::string()));
 }
 
 void MainWindow::onChangeDiscFromFileActionTriggered()
@@ -1477,16 +1483,16 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
       menu.addSeparator();
 
       connect(menu.addAction(tr("Default Boot")), &QAction::triggered,
-              [entry]() { g_emu_thread->bootSystem(std::make_shared<SystemBootParameters>(entry->path)); });
+              [this, entry]() { g_emu_thread->bootSystem(getSystemBootParameters(entry->path)); });
 
-      connect(menu.addAction(tr("Fast Boot")), &QAction::triggered, [entry]() {
-        auto boot_params = std::make_shared<SystemBootParameters>(entry->path);
+      connect(menu.addAction(tr("Fast Boot")), &QAction::triggered, [this, entry]() {
+        std::shared_ptr<SystemBootParameters> boot_params = getSystemBootParameters(entry->path);
         boot_params->override_fast_boot = true;
         g_emu_thread->bootSystem(std::move(boot_params));
       });
 
-      connect(menu.addAction(tr("Full Boot")), &QAction::triggered, [entry]() {
-        auto boot_params = std::make_shared<SystemBootParameters>(entry->path);
+      connect(menu.addAction(tr("Full Boot")), &QAction::triggered, [this, entry]() {
+        std::shared_ptr<SystemBootParameters> boot_params = getSystemBootParameters(entry->path);
         boot_params->override_fast_boot = false;
         g_emu_thread->bootSystem(std::move(boot_params));
       });
@@ -1496,7 +1502,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
         connect(menu.addAction(tr("Boot and Debug")), &QAction::triggered, [this, entry]() {
           m_open_debugger_on_start = true;
 
-          auto boot_params = std::make_shared<SystemBootParameters>(entry->path);
+          std::shared_ptr<SystemBootParameters> boot_params = getSystemBootParameters(entry->path);
           boot_params->override_start_paused = true;
           g_emu_thread->bootSystem(std::move(boot_params));
         });

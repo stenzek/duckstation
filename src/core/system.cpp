@@ -1549,7 +1549,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   if (parameters.fast_forward_to_first_frame)
     FastForwardToFirstFrame();
 
-  if (g_settings.audio_dump_on_boot)
+  if (parameters.start_audio_dump)
     StartDumpingAudio();
 
   if (g_settings.start_paused || parameters.override_start_paused.value_or(false))
