@@ -110,7 +110,7 @@ void AchievementLoginDialog::processLoginResult(bool result, const QString& mess
           tr("Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?")) ==
           QMessageBox::Yes)
     {
-      g_emu_thread->resetSystem();
+      g_emu_thread->resetSystem(true);
     }
   }
 

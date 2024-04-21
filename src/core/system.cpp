@@ -3300,6 +3300,18 @@ bool System::HasMemoryCard(u32 slot)
   return (Pad::GetMemoryCard(slot) != nullptr);
 }
 
+bool System::IsSavingMemoryCards()
+{
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  {
+    MemoryCard* card = Pad::GetMemoryCard(i);
+    if (card && card->IsOrWasRecentlyWriting())
+      return true;
+  }
+
+  return false;
+}
+
 void System::SwapMemoryCards()
 {
   if (!IsValid())

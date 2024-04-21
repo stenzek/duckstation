@@ -700,7 +700,7 @@ void MainWindow::quit()
   // Make sure VM is gone. It really should be if we're here.
   if (s_system_valid)
   {
-    g_emu_thread->shutdownSystem(false);
+    g_emu_thread->shutdownSystem(false, true);
     while (s_system_valid)
       QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
   }
@@ -990,7 +990,7 @@ void MainWindow::populateChangeDiscSubImageMenu(QMenu* menu, QActionGroup* actio
       QString path = QString::fromStdString(glentry->path);
       action->setCheckable(true);
       action->setChecked(path == s_current_game_path);
-      connect(action, &QAction::triggered, [path = std::move(path)]() { g_emu_thread->changeDisc(path); });
+      connect(action, &QAction::triggered, [path = std::move(path)]() { g_emu_thread->changeDisc(path, false, true); });
       menu->addAction(action);
     }
   }
@@ -1232,9 +1232,7 @@ void MainWindow::promptForDiscChange(const QString& path)
 
   switchToEmulationView();
 
-  g_emu_thread->changeDisc(path);
-  if (reset_system)
-    g_emu_thread->resetSystem();
+  g_emu_thread->changeDisc(path, reset_system, true);
 }
 
 void MainWindow::onStartDiscActionTriggered()
@@ -1258,7 +1256,7 @@ void MainWindow::onChangeDiscFromFileActionTriggered()
   if (filename.isEmpty())
     return;
 
-  g_emu_thread->changeDisc(filename);
+  g_emu_thread->changeDisc(filename, false, true);
 }
 
 void MainWindow::onChangeDiscFromGameListActionTriggered()
@@ -1273,7 +1271,7 @@ void MainWindow::onChangeDiscFromDeviceActionTriggered()
   if (path.empty())
     return;
 
-  g_emu_thread->changeDisc(QString::fromStdString(path));
+  g_emu_thread->changeDisc(QString::fromStdString(path), false, true);
 }
 
 void MainWindow::onChangeDiscMenuAboutToShow()
@@ -1317,7 +1315,7 @@ void MainWindow::onFullscreenUIStateChange(bool running)
 
 void MainWindow::onRemoveDiscActionTriggered()
 {
-  g_emu_thread->changeDisc(QString());
+  g_emu_thread->changeDisc(QString(), false, true);
 }
 
 void MainWindow::onViewToolbarActionToggled(bool checked)
@@ -1511,7 +1509,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
     else
     {
       connect(menu.addAction(tr("Change Disc")), &QAction::triggered, [this, entry]() {
-        g_emu_thread->changeDisc(QString::fromStdString(entry->path));
+        g_emu_thread->changeDisc(QString::fromStdString(entry->path), false, true);
         g_emu_thread->setSystemPaused(false);
         switchToEmulationView();
       });
@@ -2031,8 +2029,8 @@ void MainWindow::connectSignals()
           [this]() { requestShutdown(true, true, g_settings.save_state_on_exit); });
   connect(m_ui.actionPowerOffWithoutSaving, &QAction::triggered, this,
           [this]() { requestShutdown(false, false, false); });
-  connect(m_ui.actionReset, &QAction::triggered, g_emu_thread, &EmuThread::resetSystem);
-  connect(m_ui.actionPause, &QAction::toggled, [](bool active) { g_emu_thread->setSystemPaused(active); });
+  connect(m_ui.actionReset, &QAction::triggered, this, []() { g_emu_thread->resetSystem(true); });
+  connect(m_ui.actionPause, &QAction::toggled, this, [](bool active) { g_emu_thread->setSystemPaused(active); });
   connect(m_ui.actionScreenshot, &QAction::triggered, g_emu_thread, &EmuThread::saveScreenshot);
   connect(m_ui.actionScanForNewGames, &QAction::triggered, this, [this]() { refreshGameList(false); });
   connect(m_ui.actionRescanAllGames, &QAction::triggered, this, [this]() { refreshGameList(true); });
@@ -2862,7 +2860,7 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
     updateWindowState(true);
 
   // Now we can actually shut down the VM.
-  g_emu_thread->shutdownSystem(save_state);
+  g_emu_thread->shutdownSystem(save_state, true);
   return true;
 }
 

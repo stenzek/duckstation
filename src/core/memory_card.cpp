@@ -270,6 +270,11 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
   return ack;
 }
 
+bool MemoryCard::IsOrWasRecentlyWriting() const
+{
+  return (m_state == State::WriteData || m_save_event->IsActive());
+}
+
 std::unique_ptr<MemoryCard> MemoryCard::Create()
 {
   std::unique_ptr<MemoryCard> mc = std::make_unique<MemoryCard>();

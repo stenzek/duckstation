@@ -1067,23 +1067,72 @@ void EmuThread::enumerateVibrationMotors()
   onVibrationMotorsEnumerated(qmotors);
 }
 
-void EmuThread::shutdownSystem(bool save_state /* = true */)
+void EmuThread::confirmActionIfMemoryCardBusy(const QString& action, bool cancel_resume_on_accept,
+                                              std::function<void(bool)> callback) const
+{
+  DebugAssert(isOnThread());
+
+  if (!System::IsValid() || !System::IsSavingMemoryCards())
+  {
+    callback(true);
+    return;
+  }
+
+  QtHost::RunOnUIThread([action, cancel_resume_on_accept, callback = std::move(callback)]() mutable {
+    auto lock = g_main_window->pauseAndLockSystem();
+
+    const bool result =
+      (QMessageBox::question(lock.getDialogParent(), tr("Memory Card Busy"),
+                             tr("WARNING: Your game is still saving to the memory card. Continuing to %1 may "
+                                "IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 "
+                                "seconds for it to finish saving.\n\nDo you want to %1 anyway?")
+                               .arg(action)) != QMessageBox::No);
+
+    if (cancel_resume_on_accept)
+      lock.cancelResume();
+
+    Host::RunOnCPUThread([result, callback = std::move(callback)]() { callback(result); });
+  });
+}
+
+void EmuThread::shutdownSystem(bool save_state, bool check_memcard_busy)
 {
   if (!isOnThread())
   {
     System::CancelPendingStartup();
-    QMetaObject::invokeMethod(this, "shutdownSystem", Qt::QueuedConnection, Q_ARG(bool, save_state));
+    QMetaObject::invokeMethod(this, "shutdownSystem", Qt::QueuedConnection, Q_ARG(bool, save_state),
+                              Q_ARG(bool, check_memcard_busy));
+    return;
+  }
+
+  if (check_memcard_busy && System::IsSavingMemoryCards())
+  {
+    confirmActionIfMemoryCardBusy(tr("shut down"), true, [save_state](bool result) {
+      if (result)
+        g_emu_thread->shutdownSystem(save_state, false);
+      else
+        g_emu_thread->setSystemPaused(false);
+    });
     return;
   }
 
   System::ShutdownSystem(save_state);
 }
 
-void EmuThread::resetSystem()
+void EmuThread::resetSystem(bool check_memcard_busy)
 {
   if (!isOnThread())
   {
-    QMetaObject::invokeMethod(this, &EmuThread::resetSystem, Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, "resetSystem", Qt::QueuedConnection, Q_ARG(bool, check_memcard_busy));
+    return;
+  }
+
+  if (check_memcard_busy && System::IsSavingMemoryCards())
+  {
+    confirmActionIfMemoryCardBusy(tr("reset"), false, [](bool result) {
+      if (result)
+        g_emu_thread->resetSystem(false);
+    });
     return;
   }
 
@@ -1103,11 +1152,21 @@ void EmuThread::setSystemPaused(bool paused, bool wait_until_paused /* = false *
   System::PauseSystem(paused);
 }
 
-void EmuThread::changeDisc(const QString& new_disc_filename)
+void EmuThread::changeDisc(const QString& new_disc_filename, bool reset_system, bool check_memcard_busy)
 {
   if (!isOnThread())
   {
-    QMetaObject::invokeMethod(this, "changeDisc", Qt::QueuedConnection, Q_ARG(const QString&, new_disc_filename));
+    QMetaObject::invokeMethod(this, "changeDisc", Qt::QueuedConnection, Q_ARG(const QString&, new_disc_filename),
+                              Q_ARG(bool, reset_system), Q_ARG(bool, check_memcard_busy));
+    return;
+  }
+
+  if (check_memcard_busy && System::IsSavingMemoryCards())
+  {
+    confirmActionIfMemoryCardBusy(tr("change disc"), false, [new_disc_filename, reset_system](bool result) {
+      if (result)
+        g_emu_thread->changeDisc(new_disc_filename, reset_system, false);
+    });
     return;
   }
 
@@ -1118,6 +1177,9 @@ void EmuThread::changeDisc(const QString& new_disc_filename)
     System::InsertMedia(new_disc_filename.toStdString().c_str());
   else
     System::RemoveMedia();
+
+  if (reset_system)
+    System::ResetSystem();
 }
 
 void EmuThread::changeDiscFromPlaylist(quint32 index)

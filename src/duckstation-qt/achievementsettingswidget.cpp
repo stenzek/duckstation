@@ -154,7 +154,7 @@ void AchievementSettingsWidget::onHardcoreModeStateChanged()
     return;
   }
 
-  g_emu_thread->resetSystem();
+  g_emu_thread->resetSystem(true);
 }
 
 void AchievementSettingsWidget::onAchievementsNotificationDurationSliderChanged()

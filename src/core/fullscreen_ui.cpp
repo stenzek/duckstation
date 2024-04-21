@@ -272,8 +272,9 @@ static void DoStartBIOS();
 static void DoStartDisc(std::string path);
 static void DoStartDisc();
 static void DoToggleFastForward();
-static void DoShutdown(bool save_state);
-static void DoReset();
+static void ConfirmIfSavingMemoryCards(std::string_view action, std::function<void(bool)> callback);
+static void RequestShutdown(bool save_state);
+static void RequestReset();
 static void DoChangeDiscFromFile();
 static void DoChangeDisc();
 static void DoRequestExit();
@@ -1026,14 +1027,44 @@ void FullscreenUI::DoStartDisc()
                    });
 }
 
-void FullscreenUI::DoShutdown(bool save_state)
+void FullscreenUI::ConfirmIfSavingMemoryCards(std::string_view action, std::function<void(bool)> callback)
 {
-  Host::RunOnCPUThread([save_state]() { Host::RequestSystemShutdown(false, save_state); });
+  if (!System::IsSavingMemoryCards())
+  {
+    callback(true);
+    return;
+  }
+
+  OpenConfirmMessageDialog(
+    FSUI_ICONSTR(ICON_PF_MEMORY_CARD, "Memory Card Busy"),
+    fmt::format(FSUI_FSTR("WARNING: Your game is still saving to the memory card. Continuing to {0} may IRREVERSIBLY "
+                          "DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to "
+                          "finish saving.\n\nDo you want to {0} anyway?"),
+                action),
+    std::move(callback),
+    fmt::format(
+      fmt::runtime(FSUI_ICONSTR(ICON_FA_EXCLAMATION_TRIANGLE, "Yes, {} now and risk memory card corruption.")), action),
+    FSUI_ICONSTR(ICON_FA_PLAY, "No, resume the game."));
 }
 
-void FullscreenUI::DoReset()
+void FullscreenUI::RequestShutdown(bool save_state)
 {
-  Host::RunOnCPUThread(System::ResetSystem);
+  ConfirmIfSavingMemoryCards(FSUI_VSTR("shut down"), [save_state](bool result) {
+    if (result)
+      Host::RunOnCPUThread([save_state]() { Host::RequestSystemShutdown(false, save_state); });
+    else
+      ClosePauseMenu();
+  });
+}
+
+void FullscreenUI::RequestReset()
+{
+  ConfirmIfSavingMemoryCards(FSUI_VSTR("reset"), [](bool result) {
+    if (result)
+      Host::RunOnCPUThread(System::ResetSystem);
+    else
+      ClosePauseMenu();
+  });
 }
 
 void FullscreenUI::DoToggleFastForward()
@@ -1048,27 +1079,35 @@ void FullscreenUI::DoToggleFastForward()
 
 void FullscreenUI::DoChangeDiscFromFile()
 {
-  auto callback = [](const std::string& path) {
-    if (!path.empty())
+  ConfirmIfSavingMemoryCards(FSUI_VSTR("change disc"), [](bool result) {
+    if (!result)
     {
-      if (!GameList::IsScannableFilename(path))
-      {
-        ShowToast({},
-                  fmt::format(FSUI_FSTR("{} is not a valid disc image."), FileSystem::GetDisplayNameFromPath(path)));
-      }
-      else
-      {
-        Host::RunOnCPUThread([path]() { System::InsertMedia(path.c_str()); });
-      }
+      ClosePauseMenu();
+      return;
     }
 
-    QueueResetFocus();
-    CloseFileSelector();
-    ReturnToPreviousWindow();
-  };
+    auto callback = [](const std::string& path) {
+      if (!path.empty())
+      {
+        if (!GameList::IsScannableFilename(path))
+        {
+          ShowToast({},
+                    fmt::format(FSUI_FSTR("{} is not a valid disc image."), FileSystem::GetDisplayNameFromPath(path)));
+        }
+        else
+        {
+          Host::RunOnCPUThread([path]() { System::InsertMedia(path.c_str()); });
+        }
+      }
 
-  OpenFileSelector(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), false, std::move(callback),
-                   GetDiscImageFilters(), std::string(Path::GetDirectory(System::GetDiscPath())));
+      QueueResetFocus();
+      CloseFileSelector();
+      ReturnToPreviousWindow();
+    };
+
+    OpenFileSelector(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), false, std::move(callback),
+                     GetDiscImageFilters(), std::string(Path::GetDirectory(System::GetDiscPath())));
+  });
 }
 
 void FullscreenUI::DoChangeDisc()
@@ -5277,7 +5316,7 @@ void FullscreenUI::DrawPauseMenu()
         {
           // skip submenu when we can't save anyway
           if (!has_game)
-            DoShutdown(false);
+            RequestShutdown(false);
           else
             OpenPauseSubMenu(PauseSubMenu::Exit);
         }
@@ -5298,14 +5337,14 @@ void FullscreenUI::DrawPauseMenu()
         if (ActiveButton(FSUI_ICONSTR(ICON_FA_SYNC, "Reset System"), false))
         {
           ClosePauseMenu();
-          DoReset();
+          RequestReset();
         }
 
         if (ActiveButton(FSUI_ICONSTR(ICON_FA_SAVE, "Exit And Save State"), false))
-          DoShutdown(true);
+          RequestShutdown(true);
 
         if (ActiveButton(FSUI_ICONSTR(ICON_FA_POWER_OFF, "Exit Without Saving"), false))
-          DoShutdown(false);
+          RequestShutdown(false);
       }
       break;
 

@@ -301,6 +301,7 @@ void ResetControllers();
 void UpdateMemoryCardTypes();
 void UpdatePerGameMemoryCards();
 bool HasMemoryCard(u32 slot);
+bool IsSavingMemoryCards();
 
 /// Swaps memory cards in slot 1/2.
 void SwapMemoryCards();
