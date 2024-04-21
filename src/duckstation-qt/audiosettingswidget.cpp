@@ -107,10 +107,15 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
   dialog->registerWidgetHelp(m_ui.expansionMode, tr("Expansion Mode"), tr("Disabled (Stereo)"),
                              tr("Determines how audio is expanded from stereo to surround for supported games. This "
                                 "includes games that support Dolby Pro Logic/Pro Logic II."));
+  dialog->registerWidgetHelp(m_ui.expansionSettings, tr("Expansion Settings"), tr("N/A"),
+                             tr("These settings fine-tune the behavior of the FreeSurround-based channel expander."));
   dialog->registerWidgetHelp(
     m_ui.stretchMode, tr("Stretch Mode"), tr("Time Stretching"),
     tr("When running outside of 100% speed, adjusts the tempo on audio instead of dropping frames. Produces "
        "much nicer fast forward/slowdown audio at a small cost to performance."));
+  dialog->registerWidgetHelp(m_ui.stretchSettings, tr("Stretch Settings"), tr("N/A"),
+                             tr("These settings fine-tune the behavior of the SoundTouch audio time stretcher when "
+                                "running outside of 100% speed."));
 }
 
 AudioSettingsWidget::~AudioSettingsWidget() = default;

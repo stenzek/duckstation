@@ -159,6 +159,9 @@
         </item>
         <item>
          <widget class="QToolButton" name="expansionSettings">
+          <property name="toolTip">
+           <string>Expansion Settings</string>
+          </property>
           <property name="icon">
            <iconset theme="settings-3-line"/>
           </property>
@@ -173,6 +176,9 @@
         </item>
         <item>
          <widget class="QToolButton" name="stretchSettings">
+          <property name="toolTip">
+           <string>Stretch Settings</string>
+          </property>
           <property name="icon">
            <iconset theme="settings-3-line"/>
           </property>
