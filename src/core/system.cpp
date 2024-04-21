@@ -3763,6 +3763,11 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       if (g_settings.cpu_recompiler_icache != old_settings.cpu_recompiler_icache)
         CPU::ClearICache();
     }
+    else if (g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter &&
+             g_settings.bios_tty_logging != old_settings.bios_tty_logging)
+    {
+      CPU::UpdateDebugDispatcherFlag();
+    }
 
     if (g_settings.enable_cheats != old_settings.enable_cheats)
     {

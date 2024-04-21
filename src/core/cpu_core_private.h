@@ -25,7 +25,6 @@ ALWAYS_INLINE static void CheckForPendingInterrupt()
 }
 
 void DispatchInterrupt();
-bool UpdateDebugDispatcherFlag();
 
 // icache stuff
 ALWAYS_INLINE static bool IsCachedAddress(VirtualMemoryAddress address)

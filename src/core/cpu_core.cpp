@@ -170,6 +170,7 @@ void CPU::Initialize()
   s_break_after_instruction = false;
 
   UpdateMemoryPointers();
+  UpdateDebugDispatcherFlag();
 
   GTE::Initialize();
 }
@@ -1972,7 +1973,6 @@ bool CPU::UpdateDebugDispatcherFlag()
 {
   const bool has_any_breakpoints = HasAnyBreakpoints() || s_single_step;
 
-  // TODO: cop0 breakpoints
   const auto& dcic = g_state.cop0_regs.dcic;
   const bool has_cop0_breakpoints = dcic.super_master_enable_1 && dcic.super_master_enable_2 &&
                                     dcic.execution_breakpoint_enable && IsCop0ExecutionBreakpointUnmasked();

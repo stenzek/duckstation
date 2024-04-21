@@ -125,6 +125,7 @@ void Shutdown();
 void Reset();
 bool DoState(StateWrapper& sw);
 void ClearICache();
+bool UpdateDebugDispatcherFlag();
 void UpdateMemoryPointers();
 void ExecutionModeChanged();
 
