@@ -4387,6 +4387,7 @@ void FullscreenUI::DrawDisplaySettingsPage()
 void FullscreenUI::PopulatePostProcessingChain(SettingsInterface* si)
 {
   const u32 stages = PostProcessing::Config::GetStageCount(*si);
+  s_postprocessing_stages.clear();
   s_postprocessing_stages.reserve(stages);
   for (u32 i = 0; i < stages; i++)
   {
@@ -4414,12 +4415,12 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
   MenuHeading(FSUI_CSTR("Controls"));
 
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MAGIC, "Enable Post Processing"),
-                    FSUI_CSTR("If not enabled, the current post processing chain will be ignored."), "Display",
-                    "PostProcessing", false);
+                    FSUI_CSTR("If not enabled, the current post processing chain will be ignored."), "PostProcessing",
+                    "Enabled", false);
 
   if (MenuButton(FSUI_ICONSTR(ICON_FA_SEARCH, "Reload Shaders"),
                  FSUI_CSTR("Reloads the shaders from disk, applying any changes."),
-                 bsi->GetBoolValue("Display", "PostProcessing", false)))
+                 bsi->GetBoolValue("PostProcessing", "Enabled", false)))
   {
     if (System::IsValid() && PostProcessing::ReloadShaders())
       ShowToast(std::string(), FSUI_STR("Post-processing shaders reloaded."));
