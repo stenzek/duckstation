@@ -1165,8 +1165,6 @@ void System::PauseSystem(bool paused)
     if (g_settings.inhibit_screensaver)
       PlatformMisc::SuspendScreensaver();
 
-    UpdateDisplaySync();
-
     Host::OnSystemResumed();
     Host::OnIdleStateChanged();
 
@@ -1559,10 +1557,8 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   if (g_settings.start_paused || parameters.override_start_paused.value_or(false))
     PauseSystem(true);
 
+  UpdateSpeedLimiterState();
   ResetPerformanceCounters();
-  if (IsRunning())
-    UpdateSpeedLimiterState();
-
   return true;
 }
 
@@ -2795,9 +2791,7 @@ void System::UpdateSpeedLimiterState()
     ResetThrottler();
   }
 
-  // Defer vsync update until we unpause, in case of fullscreen UI.
-  if (IsRunning())
-    UpdateDisplaySync();
+  UpdateDisplaySync();
 
   if (g_settings.increase_timer_resolution)
     SetTimerResolutionIncreased(s_throttler_enabled);
