@@ -1,4 +1,3 @@
 https://github.com/crosire/reshade-shaders
 https://github.com/Matsilagi/RSRetroArch/
-https://github.com/akgunter/crt-royale-reshade
-https://github.com/HelelSingh/CRT-Guest-ReShade
+https://github.com/akgunter/crt-royale-reshade https://github.com/HelelSingh/CRT-Guest-ReShade
