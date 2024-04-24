@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -21,6 +21,7 @@
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QFileDialog>
+#include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
@@ -33,6 +34,7 @@ namespace SettingWidgetBinder {
 static constexpr const char* NULLABLE_PROPERTY = "SettingWidgetBinder_isNullable";
 static constexpr const char* IS_NULL_PROPERTY = "SettingWidgetBinder_isNull";
 static constexpr const char* GLOBAL_VALUE_PROPERTY = "SettingWidgetBinder_globalValue";
+static constexpr const char* IS_UPDATING_PROPERTY = "SettingWidgetBinder_isUpdating";
 
 template<typename T>
 struct SettingAccessor
@@ -272,43 +274,121 @@ struct SettingAccessor<QCheckBox>
 template<>
 struct SettingAccessor<QSlider>
 {
+  static bool isNullable(const QSlider* widget) { return widget->property(NULLABLE_PROPERTY).toBool(); }
+
   static bool getBoolValue(const QSlider* widget) { return widget->value() > 0; }
   static void setBoolValue(QSlider* widget, bool value) { widget->setValue(value ? 1 : 0); }
-  static void makeNullableBool(QSlider* widget, bool globalSetting) { widget->setEnabled(false); }
-  static std::optional<bool> getNullableBoolValue(const QSlider* widget) { return getBoolValue(widget); }
+  static void makeNullableBool(QSlider* widget, bool globalSetting)
+  {
+    widget->setProperty(NULLABLE_PROPERTY, QVariant(true));
+    widget->setProperty(GLOBAL_VALUE_PROPERTY, QVariant(globalSetting));
+  }
+  static std::optional<bool> getNullableBoolValue(const QSlider* widget)
+  {
+    if (widget->property(IS_NULL_PROPERTY).toBool())
+      return std::nullopt;
+
+    return getBoolValue(widget);
+  }
   static void setNullableBoolValue(QSlider* widget, std::optional<bool> value)
   {
-    setBoolValue(widget, value.value_or(false));
+    widget->setProperty(IS_NULL_PROPERTY, QVariant(!value.has_value()));
+    setBoolValue(widget, value.has_value() ? value.value() : widget->property(GLOBAL_VALUE_PROPERTY).toBool());
   }
 
   static int getIntValue(const QSlider* widget) { return widget->value(); }
   static void setIntValue(QSlider* widget, int value) { widget->setValue(value); }
-  static void makeNullableInt(QSlider* widget, int globalValue) { widget->setEnabled(false); }
-  static std::optional<int> getNullableIntValue(const QSlider* widget) { return getIntValue(widget); }
-  static void setNullableIntValue(QSlider* widget, std::optional<int> value) { setIntValue(widget, value.value_or(0)); }
+  static void makeNullableInt(QSlider* widget, int globalValue)
+  {
+    widget->setProperty(NULLABLE_PROPERTY, QVariant(true));
+    widget->setProperty(GLOBAL_VALUE_PROPERTY, QVariant(globalValue));
+  }
+  static std::optional<int> getNullableIntValue(const QSlider* widget)
+  {
+    if (widget->property(IS_NULL_PROPERTY).toBool())
+      return std::nullopt;
+
+    return getIntValue(widget);
+  }
+  static void setNullableIntValue(QSlider* widget, std::optional<int> value)
+  {
+    widget->setProperty(IS_NULL_PROPERTY, QVariant(!value.has_value()));
+    setIntValue(widget, value.has_value() ? value.value() : widget->property(GLOBAL_VALUE_PROPERTY).toInt());
+  }
 
   static float getFloatValue(const QSlider* widget) { return static_cast<float>(widget->value()); }
   static void setFloatValue(QSlider* widget, float value) { widget->setValue(static_cast<int>(value)); }
   static void makeNullableFloat(QSlider* widget, float globalValue) { widget->setEnabled(false); }
-  static std::optional<float> getNullableFloatValue(const QSlider* widget) { return getFloatValue(widget); }
+  static std::optional<float> getNullableFloatValue(const QSlider* widget)
+  {
+    if (widget->property(IS_NULL_PROPERTY).toBool())
+      return std::nullopt;
+
+    return getFloatValue(widget);
+  }
   static void setNullableFloatValue(QSlider* widget, std::optional<float> value)
   {
-    setFloatValue(widget, value.value_or(0.0f));
+    widget->setProperty(IS_NULL_PROPERTY, QVariant(!value.has_value()));
+    setFloatValue(widget, value.has_value() ? value.value() : widget->property(GLOBAL_VALUE_PROPERTY).toFloat());
   }
 
   static QString getStringValue(const QSlider* widget) { return QString::number(widget->value()); }
   static void setStringValue(QSlider* widget, const QString& value) { widget->setValue(value.toInt()); }
   static void makeNullableString(QSlider* widget, const QString& globalValue) { widget->setEnabled(false); }
-  static std::optional<QString> getNullableStringValue(const QSlider* widget) { return getStringValue(widget); }
+  static std::optional<QString> getNullableStringValue(const QSlider* widget)
+  {
+    if (widget->property(IS_NULL_PROPERTY).toBool())
+      return std::nullopt;
+
+    return getStringValue(widget);
+  }
   static void setNullableStringValue(QSlider* widget, std::optional<QString> value)
   {
-    setStringValue(widget, value.value_or(QString()));
+    widget->setProperty(IS_NULL_PROPERTY, QVariant(!value.has_value()));
+    setStringValue(widget, value.has_value() ? value.value() : widget->property(GLOBAL_VALUE_PROPERTY).toString());
   }
 
   template<typename F>
   static void connectValueChanged(QSlider* widget, F func)
   {
-    widget->connect(widget, &QSlider::valueChanged, func);
+    if (!isNullable(widget) || widget->contextMenuPolicy() == Qt::CustomContextMenu)
+    {
+      widget->connect(widget, &QSlider::valueChanged, func);
+    }
+    else
+    {
+      // How much do I hate this? A _lot_. We need to be able to run handlers (e.g. for labels), which get connected to
+      // valueChanged() above, but the user changing the control also triggers valueChanged()... so catch the recursion.
+      widget->setProperty(IS_UPDATING_PROPERTY, QVariant(false));
+
+      widget->setContextMenuPolicy(Qt::CustomContextMenu);
+      widget->connect(widget, &QSlider::customContextMenuRequested, widget, [widget, func](const QPoint& pt) {
+        QMenu menu(widget);
+        widget->connect(menu.addAction(qApp->translate("SettingWidgetBinder", "Reset")), &QAction::triggered, widget,
+                        [widget, func = std::move(func)]() {
+                          if (widget->property(IS_UPDATING_PROPERTY).toBool())
+                            return;
+
+                          const bool old = widget->blockSignals(true);
+                          setNullableIntValue(widget, std::nullopt);
+                          widget->blockSignals(old);
+                          func();
+
+                          widget->setProperty(IS_UPDATING_PROPERTY, QVariant(true));
+                          emit widget->valueChanged(widget->value());
+                          widget->setProperty(IS_UPDATING_PROPERTY, QVariant(false));
+                        });
+        menu.exec(widget->mapToGlobal(pt));
+      });
+      widget->connect(widget, &QSlider::valueChanged, widget, [widget, func = std::move(func)]() {
+        if (widget->property(IS_UPDATING_PROPERTY).toBool())
+          return;
+
+        if (widget->property(IS_NULL_PROPERTY).toBool())
+          widget->setProperty(IS_NULL_PROPERTY, QVariant(false));
+        func();
+      });
+    }
   }
 };
 
@@ -703,6 +783,45 @@ static void BindWidgetToIntSetting(SettingsInterface* sif, WidgetType* widget, s
         Host::CommitBaseSettingChanges();
         g_emu_thread->applySettings();
       });
+  }
+}
+
+template<typename T>
+static inline void BindWidgetAndLabelToIntSetting(SettingsInterface* sif, T* slider, QLabel* label,
+                                                  const QString& label_suffix, std::string section, std::string key,
+                                                  s32 default_value)
+{
+  using Accessor = SettingAccessor<T>;
+
+  BindWidgetToIntSetting(sif, slider, std::move(section), std::move(key), default_value);
+  if (sif)
+  {
+    QFont orig_font(label->font());
+    QFont bold_font(orig_font);
+    bold_font.setBold(true);
+
+    Accessor::connectValueChanged(
+      slider, [slider, label, label_suffix, bold_font = std::move(bold_font), orig_font = std::move(orig_font)]() {
+        std::optional<int> value = Accessor::getNullableIntValue(slider);
+        if (value.has_value())
+        {
+          label->setFont(bold_font);
+          label->setText(QStringLiteral("%1%2").arg(value.value()).arg(label_suffix));
+        }
+        else
+        {
+          const int global_value = Accessor::getIntValue(slider);
+          label->setFont(orig_font);
+          label->setText(QStringLiteral("%1%2").arg(global_value).arg(label_suffix));
+        }
+      });
+  }
+  else
+  {
+    Accessor::connectValueChanged(slider, [slider, label, label_suffix]() {
+      const int global_value = Accessor::getIntValue(slider);
+      label->setText(QStringLiteral("%1%2").arg(global_value).arg(label_suffix));
+    });
   }
 }
 
