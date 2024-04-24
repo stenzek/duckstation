@@ -31,9 +31,8 @@ public:
   ~CubebAudioStream();
 
   void SetPaused(bool paused) override;
-  void SetOutputVolume(u32 volume) override;
 
-  bool Initialize(Error* error);
+  bool Initialize(const char* driver_name, const char* device_name, Error* error);
 
 private:
   static void LogCallback(const char* fmt, ...);
@@ -122,7 +121,7 @@ void CubebAudioStream::DestroyContextAndStream()
 #endif
 }
 
-bool CubebAudioStream::Initialize(Error* error)
+bool CubebAudioStream::Initialize(const char* driver_name, const char* device_name, Error* error)
 {
 #ifdef _WIN32
   HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
@@ -245,8 +244,6 @@ bool CubebAudioStream::Initialize(Error* error)
   }
 
   BaseInitialize(channel_setups[static_cast<size_t>(m_parameters.expansion_mode)].second);
-  m_volume = 100;
-  m_paused = false;
 
   char stream_name[32];
   std::snprintf(stream_name, sizeof(stream_name), "%p", this);
@@ -302,26 +299,13 @@ void CubebAudioStream::SetPaused(bool paused)
   m_paused = paused;
 }
 
-void CubebAudioStream::SetOutputVolume(u32 volume)
-{
-  if (volume == m_volume)
-    return;
-
-  int rv = cubeb_stream_set_volume(stream, static_cast<float>(volume) / 100.0f);
-  if (rv != CUBEB_OK)
-  {
-    Log_ErrorPrintf("cubeb_stream_set_volume() failed: %d", rv);
-    return;
-  }
-
-  m_volume = volume;
-}
-
 std::unique_ptr<AudioStream> AudioStream::CreateCubebAudioStream(u32 sample_rate,
-                                                                 const AudioStreamParameters& parameters, Error* error)
+                                                                 const AudioStreamParameters& parameters,
+                                                                 const char* driver_name, const char* device_name,
+                                                                 Error* error)
 {
   std::unique_ptr<CubebAudioStream> stream = std::make_unique<CubebAudioStream>(sample_rate, parameters);
-  if (!stream->Initialize(error))
+  if (!stream->Initialize(driver_name, device_name, error))
     stream.reset();
   return stream;
 }
@@ -335,16 +319,16 @@ std::vector<std::string> AudioStream::GetCubebDriverNames()
   return names;
 }
 
-std::vector<std::pair<std::string, std::string>> AudioStream::GetCubebOutputDevices(const char* driver)
+std::vector<AudioStream::DeviceInfo> AudioStream::GetCubebOutputDevices(const char* driver)
 {
-  std::vector<std::pair<std::string, std::string>> ret;
-  ret.emplace_back(std::string(), TRANSLATE_STR("CommonHost", "Default Output Device"));
+  std::vector<AudioStream::DeviceInfo> ret;
+  ret.emplace_back(std::string(), TRANSLATE_STR("AudioStream", "Default Output Device"), 0);
 
   cubeb* context;
   int rv = cubeb_init(&context, "DuckStation", (driver && *driver) ? driver : nullptr);
   if (rv != CUBEB_OK)
   {
-    Log_ErrorPrintf("cubeb_init() failed: %d", rv);
+    Log_ErrorFmt("cubeb_init() failed: {}", GetCubebErrorString(rv));
     return ret;
   }
 
@@ -354,11 +338,23 @@ std::vector<std::pair<std::string, std::string>> AudioStream::GetCubebOutputDevi
   rv = cubeb_enumerate_devices(context, CUBEB_DEVICE_TYPE_OUTPUT, &devices);
   if (rv != CUBEB_OK)
   {
-    Log_ErrorPrintf("cubeb_enumerate_devices() failed: %d", rv);
+    Log_ErrorFmt("cubeb_enumerate_devices() failed: {}", GetCubebErrorString(rv));
     return ret;
   }
 
   ScopedGuard devices_cleanup([context, &devices]() { cubeb_device_collection_destroy(context, &devices); });
+
+  // we need stream parameters to query latency
+  cubeb_stream_params params = {};
+  params.format = CUBEB_SAMPLE_S16LE;
+  params.rate = 48000;
+  params.channels = 2;
+  params.layout = CUBEB_LAYOUT_UNDEFINED;
+  params.prefs = CUBEB_STREAM_PREF_NONE;
+
+  u32 min_latency = 0;
+  cubeb_get_min_latency(context, &params, &min_latency);
+  ret[0].minimum_latency_frames = min_latency;
 
   for (size_t i = 0; i < devices.count; i++)
   {
@@ -366,7 +362,7 @@ std::vector<std::pair<std::string, std::string>> AudioStream::GetCubebOutputDevi
     if (!di.device_id)
       continue;
 
-    ret.emplace_back(di.device_id, di.friendly_name ? di.friendly_name : di.device_id);
+    ret.emplace_back(di.device_id, di.friendly_name ? di.friendly_name : di.device_id, min_latency);
   }
 
   return ret;

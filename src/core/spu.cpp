@@ -439,7 +439,8 @@ void SPU::CreateOutputStream()
 
   Error error;
   s_audio_stream =
-    AudioStream::CreateStream(g_settings.audio_backend, SAMPLE_RATE, g_settings.audio_stream_parameters, &error);
+    AudioStream::CreateStream(g_settings.audio_backend, SAMPLE_RATE, g_settings.audio_stream_parameters,
+                              g_settings.audio_driver.c_str(), g_settings.audio_output_device.c_str(), &error);
   if (!s_audio_stream)
   {
     Host::ReportErrorAsync(

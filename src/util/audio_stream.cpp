@@ -38,6 +38,13 @@ static constexpr const std::array<std::pair<u8, u8>, static_cast<size_t>(AudioEx
     {u8(8), u8(8)}, // Surround71
   }};
 
+AudioStream::DeviceInfo::DeviceInfo(std::string name_, std::string display_name_, u32 minimum_latency_)
+  : name(std::move(name_)), display_name(std::move(display_name_)), minimum_latency_frames(minimum_latency_)
+{
+}
+
+AudioStream::DeviceInfo::~DeviceInfo() = default;
+
 AudioStream::AudioStream(u32 sample_rate, const AudioStreamParameters& parameters)
   : m_sample_rate(sample_rate), m_parameters(parameters),
     m_internal_channels(s_expansion_channel_count[static_cast<size_t>(parameters.expansion_mode)].first),
@@ -65,21 +72,49 @@ std::unique_ptr<AudioStream> AudioStream::CreateNullStream(u32 sample_rate, u32 
 
 #ifndef __ANDROID__
 
+std::vector<std::string> AudioStream::GetDriverNames(AudioBackend backend)
+{
+  std::vector<std::string> ret;
+  switch (backend)
+  {
+    case AudioBackend::Cubeb:
+      ret = GetCubebDriverNames();
+      break;
+
+    default:
+      break;
+  }
+
+  return ret;
+}
+
+std::vector<AudioStream::DeviceInfo> AudioStream::GetOutputDevices(AudioBackend backend, const char* driver)
+{
+  std::vector<AudioStream::DeviceInfo> ret;
+  switch (backend)
+  {
+    case AudioBackend::Cubeb:
+      ret = GetCubebOutputDevices(driver);
+      break;
+
+    default:
+      break;
+  }
+
+  return ret;
+}
+
 std::unique_ptr<AudioStream> AudioStream::CreateStream(AudioBackend backend, u32 sample_rate,
-                                                       const AudioStreamParameters& parameters, Error* error)
+                                                       const AudioStreamParameters& parameters, const char* driver_name,
+                                                       const char* device_name, Error* error /* = nullptr */)
 {
   switch (backend)
   {
     case AudioBackend::Cubeb:
-      return CreateCubebAudioStream(sample_rate, parameters, error);
+      return CreateCubebAudioStream(sample_rate, parameters, driver_name, device_name, error);
 
     case AudioBackend::SDL:
       return CreateSDLAudioStream(sample_rate, parameters, error);
-
-#ifdef _WIN32
-    case AudioBackend::XAudio2:
-      return CreateXAudio2Stream(sample_rate, parameters, error);
-#endif
 
     case AudioBackend::Null:
       return CreateNullStream(sample_rate, parameters.buffer_ms);
@@ -118,9 +153,6 @@ static constexpr const std::array s_backend_names = {
   "AAudio",
   "OpenSLES",
 #endif
-#ifdef _WIN32
-  "XAudio2",
-#endif
 };
 static constexpr const std::array s_backend_display_names = {
   TRANSLATE_NOOP("AudioStream", "Null (No Output)"),
@@ -130,9 +162,6 @@ static constexpr const std::array s_backend_display_names = {
 #else
   "AAudio",
   "OpenSL ES",
-#endif
-#ifdef _WIN32
-  TRANSLATE_NOOP("AudioStream", "XAudio2"),
 #endif
 };
 
@@ -327,26 +356,24 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames)
       std::memset(samples + (frames_to_read * m_output_channels), 0, silence_frames * m_output_channels * sizeof(s16));
     }
   }
+
+  if (m_volume != 100)
+  {
+    const s32 volume_mult = static_cast<s32>((static_cast<float>(m_volume) / 100.0f) * 32768.0f);
+
+    u32 num_samples = num_frames * m_output_channels;
+    while (num_samples > 0)
+    {
+      *samples = static_cast<s16>((static_cast<s32>(*samples) * volume_mult) >> 15);
+      samples++;
+      num_samples--;
+    }
+  }
 }
 
 void AudioStream::StereoSampleReaderImpl(SampleType* dest, const SampleType* src, u32 num_frames)
 {
   std::memcpy(dest, src, num_frames * 2 * sizeof(SampleType));
-}
-
-void AudioStream::ApplyVolume(s16* samples, u32 num_samples)
-{
-  if (m_volume == 100)
-    return;
-
-  const s32 volume_mult = static_cast<s32>((static_cast<float>(m_volume) / 100.0f) * 32768.0f);
-
-  while (num_samples > 0)
-  {
-    *samples = static_cast<s16>((static_cast<s32>(*samples) * volume_mult) >> 15);
-    samples++;
-    num_samples--;
-  }
 }
 
 void AudioStream::InternalWriteFrames(s16* data, u32 num_frames)

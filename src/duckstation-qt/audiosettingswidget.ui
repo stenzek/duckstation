@@ -92,6 +92,13 @@
          </widget>
         </item>
         <item>
+         <widget class="QLabel" name="outputLatencyLabel">
+          <property name="text">
+           <string>0 ms</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QCheckBox" name="outputLatencyMinimal">
           <property name="text">
            <string>Minimal</string>
@@ -207,7 +214,7 @@
         <item>
          <widget class="QSlider" name="volume">
           <property name="maximum">
-           <number>100</number>
+           <number>200</number>
           </property>
           <property name="value">
            <number>100</number>
@@ -246,7 +253,7 @@
         <item>
          <widget class="QSlider" name="fastForwardVolume">
           <property name="maximum">
-           <number>100</number>
+           <number>200</number>
           </property>
           <property name="value">
            <number>100</number>

@@ -105,7 +105,6 @@
     <ClCompile Include="platform_misc_win32.cpp" />
     <ClCompile Include="sdl_input_source.cpp" />
     <ClCompile Include="win32_raw_input_source.cpp" />
-    <ClCompile Include="xaudio2_audio_stream.cpp" />
     <ClCompile Include="xinput_source.cpp" />
     <ClCompile Include="dinput_source.cpp" />
     <ClCompile Include="input_manager.cpp" />

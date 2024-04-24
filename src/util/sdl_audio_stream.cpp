@@ -19,7 +19,6 @@ public:
   ~SDLAudioStream();
 
   void SetPaused(bool paused) override;
-  void SetOutputVolume(u32 volume) override;
 
   bool OpenDevice(Error* error);
   void CloseDevice();
@@ -120,8 +119,6 @@ bool SDLAudioStream::OpenDevice(Error* error)
   Log_DevFmt("Requested {} frame buffer, got {} frame buffer", spec.samples, obtained_spec.samples);
 
   BaseInitialize(sample_readers[static_cast<size_t>(m_parameters.expansion_mode)]);
-  m_volume = 100;
-  m_paused = false;
   SDL_PauseAudioDevice(m_device_id, 0);
 
   return true;
@@ -148,10 +145,4 @@ void SDLAudioStream::AudioCallback(void* userdata, uint8_t* stream, int len)
   const u32 num_frames = len / sizeof(SampleType) / this_ptr->m_output_channels;
 
   this_ptr->ReadFrames(reinterpret_cast<SampleType*>(stream), num_frames);
-  this_ptr->ApplyVolume(reinterpret_cast<SampleType*>(stream), num_frames);
-}
-
-void SDLAudioStream::SetOutputVolume(u32 volume)
-{
-  m_volume = volume;
 }

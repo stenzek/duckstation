@@ -35,9 +35,6 @@ enum class AudioBackend : u8
   AAudio,
   OpenSLES,
 #endif
-#ifdef _WIN32
-  XAudio2,
-#endif
   Count
 };
 
@@ -93,7 +90,7 @@ struct AudioStreamParameters
   static constexpr u16 DEFAULT_BUFFER_MS = 100;
   static constexpr u16 DEFAULT_OUTPUT_LATENCY_MS = 20;
 #endif
-  static constexpr u16 DEFAULT_EXPAND_BLOCK_SIZE = 1024;
+  static constexpr u16 DEFAULT_EXPAND_BLOCK_SIZE = 2048;
   static constexpr float DEFAULT_EXPAND_CIRCULAR_WRAP = 90.0f;
   static constexpr float DEFAULT_EXPAND_SHIFT = 0.0f;
   static constexpr float DEFAULT_EXPAND_DEPTH = 1.0f;
@@ -136,6 +133,16 @@ public:
   static constexpr AudioBackend DEFAULT_BACKEND = AudioBackend::AAudio;
 #endif
 
+  struct DeviceInfo
+  {
+    std::string name;
+    std::string display_name;
+    u32 minimum_latency_frames;
+
+    DeviceInfo(std::string name_, std::string display_name_, u32 minimum_latency_);
+    ~DeviceInfo();
+  };
+
 public:
   virtual ~AudioStream();
 
@@ -169,7 +176,7 @@ public:
   /// Temporarily pauses the stream, preventing it from requesting data.
   virtual void SetPaused(bool paused);
 
-  virtual void SetOutputVolume(u32 volume);
+  void SetOutputVolume(u32 volume);
 
   void BeginWrite(SampleType** buffer_ptr, u32* num_frames);
   void WriteFrames(const SampleType* frames, u32 num_frames);
@@ -184,14 +191,12 @@ public:
 
   void SetStretchMode(AudioStretchMode mode);
 
+  static std::vector<std::string> GetDriverNames(AudioBackend backend);
+  static std::vector<DeviceInfo> GetOutputDevices(AudioBackend backend, const char* driver);
   static std::unique_ptr<AudioStream> CreateStream(AudioBackend backend, u32 sample_rate,
-                                                   const AudioStreamParameters& parameters, Error* error = nullptr);
+                                                   const AudioStreamParameters& parameters, const char* driver_name,
+                                                   const char* device_name, Error* error = nullptr);
   static std::unique_ptr<AudioStream> CreateNullStream(u32 sample_rate, u32 buffer_ms);
-
-#ifndef __ANDROID__
-  static std::vector<std::string> GetCubebDriverNames();
-  static std::vector<std::pair<std::string, std::string>> GetCubebOutputDevices(const char* driver);
-#endif
 
 protected:
   enum ReadChannel : u8
@@ -220,10 +225,8 @@ protected:
   static void SampleReaderImpl(SampleType* dest, const SampleType* src, u32 num_frames);
   static void StereoSampleReaderImpl(SampleType* dest, const SampleType* src, u32 num_frames);
 
-  void ApplyVolume(SampleType* samples, u32 num_samples);
-
   u32 m_sample_rate = 0;
-  u32 m_volume = 0;
+  u32 m_volume = 100;
   AudioStreamParameters m_parameters;
   u8 m_internal_channels = 0;
   u8 m_output_channels = 0;
@@ -236,6 +239,16 @@ private:
   static constexpr u32 AVERAGING_WINDOW = 50;
   static constexpr u32 STRETCH_RESET_THRESHOLD = 5;
   static constexpr u32 TARGET_IPS = 691;
+
+#ifndef __ANDROID__
+  static std::vector<std::string> GetCubebDriverNames();
+  static std::vector<DeviceInfo> GetCubebOutputDevices(const char* driver);
+  static std::unique_ptr<AudioStream> CreateCubebAudioStream(u32 sample_rate, const AudioStreamParameters& parameters,
+                                                             const char* driver_name, const char* device_name,
+                                                             Error* error);
+  static std::unique_ptr<AudioStream> CreateSDLAudioStream(u32 sample_rate, const AudioStreamParameters& parameters,
+                                                           Error* error);
+#endif
 
   ALWAYS_INLINE bool IsExpansionEnabled() const { return m_parameters.expansion_mode != AudioExpansionMode::Disabled; }
   ALWAYS_INLINE bool IsStretchEnabled() const { return m_parameters.stretch_mode != AudioStretchMode::Off; }
@@ -293,17 +306,6 @@ private:
   std::unique_ptr<float[]> m_expand_buffer;
   float* m_expand_output_buffer = nullptr;
   u32 m_expand_buffer_pos = 0;
-#endif
-
-#ifndef __ANDROID__
-  static std::unique_ptr<AudioStream> CreateCubebAudioStream(u32 sample_rate, const AudioStreamParameters& parameters,
-                                                             Error* error);
-  static std::unique_ptr<AudioStream> CreateSDLAudioStream(u32 sample_rate, const AudioStreamParameters& parameters,
-                                                           Error* error);
-#endif
-#ifdef _WIN32
-  static std::unique_ptr<AudioStream> CreateXAudio2Stream(u32 sample_rate, const AudioStreamParameters& parameters,
-                                                          Error* error);
 #endif
 };
 
