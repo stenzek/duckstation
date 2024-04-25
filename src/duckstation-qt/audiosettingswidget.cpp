@@ -84,6 +84,8 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
                                                         tr("%"), "Audio", "FastForwardVolume", 100);
     SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.muted, "Audio", "OutputMuted", false);
   }
+  connect(m_ui.resetVolume, &QToolButton::clicked, this, [this]() { resetVolume(false); });
+  connect(m_ui.resetFastForwardVolume, &QToolButton::clicked, this, [this]() { resetVolume(true); });
 
   dialog->registerWidgetHelp(
     m_ui.audioBackend, tr("Audio Backend"), QStringLiteral("Cubeb"),
@@ -117,6 +119,12 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
   dialog->registerWidgetHelp(m_ui.stretchSettings, tr("Stretch Settings"), tr("N/A"),
                              tr("These settings fine-tune the behavior of the SoundTouch audio time stretcher when "
                                 "running outside of 100% speed."));
+  dialog->registerWidgetHelp(m_ui.resetVolume, tr("Reset Volume"), tr("N/A"),
+                             m_dialog->isPerGameSettings() ? tr("Resets volume back to the global/inherited setting.") :
+                                                             tr("Resets volume back to the default, i.e. full."));
+  dialog->registerWidgetHelp(m_ui.resetFastForwardVolume, tr("Reset Fast Forward Volume"), tr("N/A"),
+                             m_dialog->isPerGameSettings() ? tr("Resets volume back to the global/inherited setting.") :
+                                                             tr("Resets volume back to the default, i.e. full."));
 }
 
 AudioSettingsWidget::~AudioSettingsWidget() = default;
@@ -478,4 +486,30 @@ void AudioSettingsWidget::onStretchSettingsClicked()
   });
 
   dlg.exec();
+}
+
+void AudioSettingsWidget::resetVolume(bool fast_forward)
+{
+  const char* key = fast_forward ? "FastForwardVolume" : "OutputVolume";
+  QSlider* const slider = fast_forward ? m_ui.fastForwardVolume : m_ui.volume;
+  QLabel* const label = fast_forward ? m_ui.fastForwardVolumeLabel : m_ui.volumeLabel;
+
+  if (m_dialog->isPerGameSettings())
+  {
+    m_dialog->removeSettingValue("Audio", key);
+
+    const int value = m_dialog->getEffectiveIntValue("Audio", key, 100);
+    QSignalBlocker sb(slider);
+    slider->setValue(value);
+    label->setText(QStringLiteral("%1%2").arg(value).arg(tr("%")));
+
+    // remove bold font if it was previously overridden
+    QFont font(label->font());
+    font.setBold(false);
+    label->setFont(font);
+  }
+  else
+  {
+    slider->setValue(100);
+  }
 }

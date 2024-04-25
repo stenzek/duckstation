@@ -246,6 +246,16 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QToolButton" name="resetVolume">
+          <property name="toolTip">
+           <string>Stretch Settings</string>
+          </property>
+          <property name="icon">
+           <iconset theme="refresh-line"/>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
       <item row="1" column="1">
@@ -282,6 +292,16 @@
           </property>
           <property name="alignment">
            <set>Qt::AlignmentFlag::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QToolButton" name="resetFastForwardVolume">
+          <property name="toolTip">
+           <string>Stretch Settings</string>
+          </property>
+          <property name="icon">
+           <iconset theme="refresh-line"/>
           </property>
          </widget>
         </item>

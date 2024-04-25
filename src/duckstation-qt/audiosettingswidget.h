@@ -42,6 +42,7 @@ private:
   AudioBackend getEffectiveBackend() const;
   AudioExpansionMode getEffectiveExpansionMode() const;
   u32 getEffectiveExpansionBlockSize() const;
+  void resetVolume(bool fast_forward);
 
   Ui::AudioSettingsWidget m_ui;
   SettingsWindow* m_dialog;

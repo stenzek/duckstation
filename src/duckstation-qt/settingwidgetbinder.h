@@ -34,7 +34,6 @@ namespace SettingWidgetBinder {
 static constexpr const char* NULLABLE_PROPERTY = "SettingWidgetBinder_isNullable";
 static constexpr const char* IS_NULL_PROPERTY = "SettingWidgetBinder_isNull";
 static constexpr const char* GLOBAL_VALUE_PROPERTY = "SettingWidgetBinder_globalValue";
-static constexpr const char* IS_UPDATING_PROPERTY = "SettingWidgetBinder_isUpdating";
 
 template<typename T>
 struct SettingAccessor
@@ -351,39 +350,25 @@ struct SettingAccessor<QSlider>
   template<typename F>
   static void connectValueChanged(QSlider* widget, F func)
   {
-    if (!isNullable(widget) || widget->contextMenuPolicy() == Qt::CustomContextMenu)
+    if (!isNullable(widget))
     {
       widget->connect(widget, &QSlider::valueChanged, func);
     }
     else
     {
-      // How much do I hate this? A _lot_. We need to be able to run handlers (e.g. for labels), which get connected to
-      // valueChanged() above, but the user changing the control also triggers valueChanged()... so catch the recursion.
-      widget->setProperty(IS_UPDATING_PROPERTY, QVariant(false));
-
       widget->setContextMenuPolicy(Qt::CustomContextMenu);
       widget->connect(widget, &QSlider::customContextMenuRequested, widget, [widget, func](const QPoint& pt) {
         QMenu menu(widget);
         widget->connect(menu.addAction(qApp->translate("SettingWidgetBinder", "Reset")), &QAction::triggered, widget,
                         [widget, func = std::move(func)]() {
-                          if (widget->property(IS_UPDATING_PROPERTY).toBool())
-                            return;
-
                           const bool old = widget->blockSignals(true);
                           setNullableIntValue(widget, std::nullopt);
                           widget->blockSignals(old);
                           func();
-
-                          widget->setProperty(IS_UPDATING_PROPERTY, QVariant(true));
-                          emit widget->valueChanged(widget->value());
-                          widget->setProperty(IS_UPDATING_PROPERTY, QVariant(false));
                         });
         menu.exec(widget->mapToGlobal(pt));
       });
       widget->connect(widget, &QSlider::valueChanged, widget, [widget, func = std::move(func)]() {
-        if (widget->property(IS_UPDATING_PROPERTY).toBool())
-          return;
-
         if (widget->property(IS_NULL_PROPERTY).toBool())
           widget->setProperty(IS_NULL_PROPERTY, QVariant(false));
         func();
@@ -786,42 +771,84 @@ static void BindWidgetToIntSetting(SettingsInterface* sif, WidgetType* widget, s
   }
 }
 
-template<typename T>
-static inline void BindWidgetAndLabelToIntSetting(SettingsInterface* sif, T* slider, QLabel* label,
+template<typename WidgetType>
+static inline void BindWidgetAndLabelToIntSetting(SettingsInterface* sif, WidgetType* widget, QLabel* label,
                                                   const QString& label_suffix, std::string section, std::string key,
-                                                  s32 default_value)
+                                                  int default_value, int option_offset = 0)
 {
-  using Accessor = SettingAccessor<T>;
+  using Accessor = SettingAccessor<WidgetType>;
 
-  BindWidgetToIntSetting(sif, slider, std::move(section), std::move(key), default_value);
+  const s32 global_value =
+    Host::GetBaseIntSettingValue(section.c_str(), key.c_str(), static_cast<s32>(default_value)) - option_offset;
+
   if (sif)
   {
     QFont orig_font(label->font());
     QFont bold_font(orig_font);
     bold_font.setBold(true);
 
-    Accessor::connectValueChanged(
-      slider, [slider, label, label_suffix, bold_font = std::move(bold_font), orig_font = std::move(orig_font)]() {
-        std::optional<int> value = Accessor::getNullableIntValue(slider);
-        if (value.has_value())
+    Accessor::makeNullableInt(widget, global_value);
+
+    int sif_value;
+    if (sif->GetIntValue(section.c_str(), key.c_str(), &sif_value))
+    {
+      Accessor::setNullableIntValue(widget, sif_value - option_offset);
+      if (label)
+      {
+        label->setText(QStringLiteral("%1%2").arg(sif_value).arg(label_suffix));
+        label->setFont(bold_font);
+      }
+    }
+    else
+    {
+      Accessor::setNullableIntValue(widget, std::nullopt);
+      if (label)
+        label->setText(QStringLiteral("%1%2").arg(global_value).arg(label_suffix));
+    }
+
+    Accessor::connectValueChanged(widget, [sif, widget, label, label_suffix, section = std::move(section),
+                                           key = std::move(key), option_offset, global_value,
+                                           bold_font = std::move(bold_font), orig_font = std::move(orig_font)]() {
+      if (std::optional<int> new_value = Accessor::getNullableIntValue(widget); new_value.has_value())
+      {
+        sif->SetIntValue(section.c_str(), key.c_str(), new_value.value() + option_offset);
+        if (label)
         {
           label->setFont(bold_font);
-          label->setText(QStringLiteral("%1%2").arg(value.value()).arg(label_suffix));
+          label->setText(QStringLiteral("%1%2").arg(new_value.value()).arg(label_suffix));
         }
-        else
+      }
+      else
+      {
+        sif->DeleteValue(section.c_str(), key.c_str());
+        if (label)
         {
-          const int global_value = Accessor::getIntValue(slider);
           label->setFont(orig_font);
           label->setText(QStringLiteral("%1%2").arg(global_value).arg(label_suffix));
         }
-      });
+      }
+
+      sif->Save();
+      g_emu_thread->reloadGameSettings();
+    });
   }
   else
   {
-    Accessor::connectValueChanged(slider, [slider, label, label_suffix]() {
-      const int global_value = Accessor::getIntValue(slider);
+    Accessor::setIntValue(widget, static_cast<int>(global_value));
+
+    if (label)
       label->setText(QStringLiteral("%1%2").arg(global_value).arg(label_suffix));
-    });
+
+    Accessor::connectValueChanged(
+      widget, [widget, label, label_suffix, section = std::move(section), key = std::move(key), option_offset]() {
+        const int new_value = Accessor::getIntValue(widget);
+        Host::SetBaseIntSettingValue(section.c_str(), key.c_str(), new_value + option_offset);
+        Host::CommitBaseSettingChanges();
+        g_emu_thread->applySettings();
+
+        if (label)
+          label->setText(QStringLiteral("%1%2").arg(new_value).arg(label_suffix));
+      });
   }
 }
 

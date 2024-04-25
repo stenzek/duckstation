@@ -4821,10 +4821,10 @@ void FullscreenUI::DrawAudioSettingsPage()
 
   DrawIntRangeSetting(bsi, FSUI_CSTR("Output Volume"),
                       FSUI_CSTR("Controls the volume of the audio played on the host."), "Audio", "OutputVolume", 100,
-                      0, 100, "%d%%");
+                      0, 200, "%d%%");
   DrawIntRangeSetting(bsi, FSUI_CSTR("Fast Forward Volume"),
                       FSUI_CSTR("Controls the volume of the audio played on the host when fast forwarding."), "Audio",
-                      "FastForwardVolume", 100, 0, 100, "%d%%");
+                      "FastForwardVolume", 200, 0, 100, "%d%%");
   DrawToggleSetting(bsi, FSUI_CSTR("Mute All Sound"),
                     FSUI_CSTR("Prevents the emulator from producing any audible sound."), "Audio", "OutputMuted",
                     false);

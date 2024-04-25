@@ -518,7 +518,7 @@ DEFINE_HOTKEY("AudioVolumeUp", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOO
                 {
                   g_settings.audio_output_muted = false;
 
-                  const s32 volume = std::min<s32>(System::GetAudioOutputVolume() + 10, 100);
+                  const s32 volume = std::min<s32>(System::GetAudioOutputVolume() + 10, 200);
                   g_settings.audio_output_volume = volume;
                   g_settings.audio_fast_forward_volume = volume;
                   SPU::GetOutputStream()->SetOutputVolume(volume);
