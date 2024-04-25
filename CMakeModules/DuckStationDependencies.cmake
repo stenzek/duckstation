@@ -28,6 +28,12 @@ if(ENABLE_X11)
   endif()
 endif()
 
+if(ENABLE_WAYLAND)
+  find_package(ECM REQUIRED NO_MODULE)
+  list(APPEND CMAKE_MODULE_PATH "${ECM_MODULE_PATH}")
+  find_package(Wayland REQUIRED Egl)
+endif()
+
 if(ENABLE_VULKAN OR APPLE)
   find_package(Shaderc REQUIRED)
 endif()
