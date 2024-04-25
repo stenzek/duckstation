@@ -40,7 +40,7 @@ public:
   void DeleteValue(const char* section, const char* key) override;
   void ClearSection(const char* section) override;
   void RemoveSection(const char* section) override;
-  void RemoveEmptySections();
+  void RemoveEmptySections() override;
 
   std::vector<std::string> GetStringList(const char* section, const char* key) const override;
   void SetStringList(const char* section, const char* key, const std::vector<std::string>& items) override;
