@@ -29,6 +29,10 @@
       "build-options": {
         "strip": false,
         "no-debuginfo": true,
+        "cflags": "",
+        "cflags-override": true,
+        "cxxflags": "",
+        "cxxflags-override": true,
         "config-opts": [
           "-DCMAKE_BUILD_TYPE=Release",
           "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON",
