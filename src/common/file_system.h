@@ -86,7 +86,7 @@ bool DirectoryExists(const char* path);
 bool DirectoryIsEmpty(const char* path);
 
 /// Delete file
-bool DeleteFile(const char* path);
+bool DeleteFile(const char* path, Error* error = nullptr);
 
 /// Rename file
 bool RenamePath(const char* OldPath, const char* NewPath, Error* error = nullptr);

@@ -336,7 +336,7 @@ void ControllerBindingWidget::doDeviceAutomaticBinding(const QString& device)
   else
   {
     result = InputManager::MapController(*m_dialog->getProfileSettingsInterface(), m_port_number, mapping);
-    m_dialog->getProfileSettingsInterface()->Save();
+    QtHost::SaveGameSettings(m_dialog->getProfileSettingsInterface(), false);
     g_emu_thread->reloadInputBindings();
   }
 

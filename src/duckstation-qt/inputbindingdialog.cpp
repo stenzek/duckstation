@@ -234,7 +234,7 @@ void InputBindingDialog::saveListToSettings()
       m_sif->SetStringList(m_section_name.c_str(), m_key_name.c_str(), m_bindings);
     else
       m_sif->DeleteValue(m_section_name.c_str(), m_key_name.c_str());
-    m_sif->Save();
+    QtHost::SaveGameSettings(m_sif, false);
     g_emu_thread->reloadGameSettings();
   }
   else

@@ -41,15 +41,13 @@ void PostProcessingSettingsWidget::commitSettingsUpdate()
 {
   if (m_dialog->isPerGameSettings())
   {
-    m_dialog->getSettingsInterface()->Save();
-    g_emu_thread->reloadGameSettings(false);
+    m_dialog->saveAndReloadGameSettings();
   }
   else
   {
     Host::CommitBaseSettingChanges();
+    g_emu_thread->updatePostProcessingSettings();
   }
-
-  g_emu_thread->updatePostProcessingSettings();
 }
 
 void PostProcessingSettingsWidget::connectUi()

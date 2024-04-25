@@ -836,7 +836,29 @@ void FullscreenUI::Render()
   {
     if (s_game_settings_interface)
     {
-      s_game_settings_interface->Save();
+      Error error;
+      s_game_settings_interface->RemoveEmptySections();
+
+      if (s_game_settings_interface->IsEmpty())
+      {
+        if (FileSystem::FileExists(s_game_settings_interface->GetFileName().c_str()) &&
+            !FileSystem::DeleteFile(s_game_settings_interface->GetFileName().c_str(), &error))
+        {
+          ImGuiFullscreen::OpenInfoMessageDialog(
+            FSUI_STR("Error"), fmt::format(FSUI_FSTR("An error occurred while deleting empty game settings:\n{}"),
+                                           error.GetDescription()));
+        }
+      }
+      else
+      {
+        if (!s_game_settings_interface->Save(&error))
+        {
+          ImGuiFullscreen::OpenInfoMessageDialog(
+            FSUI_STR("Error"),
+            fmt::format(FSUI_FSTR("An error occurred while saving game settings:\n{}"), error.GetDescription()));
+        }
+      }
+
       if (System::IsValid())
         Host::RunOnCPUThread([]() { System::ReloadGameSettings(false); });
     }
@@ -7052,6 +7074,8 @@ TRANSLATE_NOOP("FullscreenUI", "Advanced Settings");
 TRANSLATE_NOOP("FullscreenUI", "All Time: {}");
 TRANSLATE_NOOP("FullscreenUI", "Allow Booting Without SBI File");
 TRANSLATE_NOOP("FullscreenUI", "Allows loading protected games without subchannel information.");
+TRANSLATE_NOOP("FullscreenUI", "An error occurred while deleting empty game settings:\n{}");
+TRANSLATE_NOOP("FullscreenUI", "An error occurred while saving game settings:\n{}");
 TRANSLATE_NOOP("FullscreenUI", "Applies modern dithering techniques to further smooth out gradients when true color is enabled.");
 TRANSLATE_NOOP("FullscreenUI", "Apply Image Patches");
 TRANSLATE_NOOP("FullscreenUI", "Apply Per-Game Settings");
@@ -7220,6 +7244,7 @@ TRANSLATE_NOOP("FullscreenUI", "Enhancements");
 TRANSLATE_NOOP("FullscreenUI", "Ensures every frame generated is displayed for optimal pacing. Enable for variable refresh displays, such as GSync/FreeSync. Disable if you are having speed or sound issues.");
 TRANSLATE_NOOP("FullscreenUI", "Enter Value");
 TRANSLATE_NOOP("FullscreenUI", "Enter the name of the input profile you wish to create.");
+TRANSLATE_NOOP("FullscreenUI", "Error");
 TRANSLATE_NOOP("FullscreenUI", "Execution Mode");
 TRANSLATE_NOOP("FullscreenUI", "Exit");
 TRANSLATE_NOOP("FullscreenUI", "Exit And Save State");
@@ -7330,6 +7355,7 @@ TRANSLATE_NOOP("FullscreenUI", "Macro {} Buttons");
 TRANSLATE_NOOP("FullscreenUI", "Macro {} Frequency");
 TRANSLATE_NOOP("FullscreenUI", "Macro {} Trigger");
 TRANSLATE_NOOP("FullscreenUI", "Makes games run closer to their console framerate, at a small cost to performance.");
+TRANSLATE_NOOP("FullscreenUI", "Memory Card Busy");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card Directory");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card Port {}");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card Settings");
@@ -7351,6 +7377,7 @@ TRANSLATE_NOOP("FullscreenUI", "No input profiles available.");
 TRANSLATE_NOOP("FullscreenUI", "No resume save state found.");
 TRANSLATE_NOOP("FullscreenUI", "No save present in this slot.");
 TRANSLATE_NOOP("FullscreenUI", "No save states found.");
+TRANSLATE_NOOP("FullscreenUI", "No, resume the game.");
 TRANSLATE_NOOP("FullscreenUI", "None (Double Speed)");
 TRANSLATE_NOOP("FullscreenUI", "None (Normal Speed)");
 TRANSLATE_NOOP("FullscreenUI", "Not Logged In");
@@ -7599,6 +7626,7 @@ TRANSLATE_NOOP("FullscreenUI", "Uses perspective-correct interpolation for textu
 TRANSLATE_NOOP("FullscreenUI", "Uses screen positions to resolve PGXP data. May improve visuals in some games.");
 TRANSLATE_NOOP("FullscreenUI", "Value: {} | Default: {} | Minimum: {} | Maximum: {}");
 TRANSLATE_NOOP("FullscreenUI", "Vertical Sync (VSync)");
+TRANSLATE_NOOP("FullscreenUI", "WARNING: Your game is still saving to the memory card. Continuing to {0} may IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to finish saving.\n\nDo you want to {0} anyway?");
 TRANSLATE_NOOP("FullscreenUI", "When enabled and logged in, DuckStation will scan for achievements on startup.");
 TRANSLATE_NOOP("FullscreenUI", "When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.");
 TRANSLATE_NOOP("FullscreenUI", "When enabled, DuckStation will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.");
@@ -7611,8 +7639,12 @@ TRANSLATE_NOOP("FullscreenUI", "When this option is chosen, the clock speed set 
 TRANSLATE_NOOP("FullscreenUI", "Widescreen Hack");
 TRANSLATE_NOOP("FullscreenUI", "Wireframe Rendering");
 TRANSLATE_NOOP("FullscreenUI", "Writes textures which can be replaced to the dump directory.");
+TRANSLATE_NOOP("FullscreenUI", "Yes, {} now and risk memory card corruption.");
 TRANSLATE_NOOP("FullscreenUI", "\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.");
 TRANSLATE_NOOP("FullscreenUI", "\"PlayStation\" and \"PSX\" are registered trademarks of Sony Interactive Entertainment Europe Limited. This software is not affiliated in any way with Sony Interactive Entertainment.");
+TRANSLATE_NOOP("FullscreenUI", "change disc");
+TRANSLATE_NOOP("FullscreenUI", "reset");
+TRANSLATE_NOOP("FullscreenUI", "shut down");
 TRANSLATE_NOOP("FullscreenUI", "{:%H:%M}");
 TRANSLATE_NOOP("FullscreenUI", "{:%Y-%m-%d %H:%M:%S}");
 TRANSLATE_NOOP("FullscreenUI", "{} Frames");

@@ -218,7 +218,7 @@ void InputBindingWidget::setNewBinding()
     if (m_sif)
     {
       m_sif->SetStringValue(m_section_name.c_str(), m_key_name.c_str(), new_binding.c_str());
-      m_sif->Save();
+      QtHost::SaveGameSettings(m_sif, false);
       g_emu_thread->reloadGameSettings();
     }
     else
@@ -239,7 +239,7 @@ void InputBindingWidget::clearBinding()
   if (m_sif)
   {
     m_sif->DeleteValue(m_section_name.c_str(), m_key_name.c_str());
-    m_sif->Save();
+    QtHost::SaveGameSettings(m_sif, false);
     g_emu_thread->reloadGameSettings();
   }
   else

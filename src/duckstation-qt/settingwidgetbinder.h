@@ -710,7 +710,7 @@ static void BindWidgetToBoolSetting(SettingsInterface* sif, WidgetType* widget, 
       else
         sif->DeleteValue(section.c_str(), key.c_str());
 
-      sif->Save();
+      QtHost::SaveGameSettings(sif, true);
       g_emu_thread->reloadGameSettings();
     });
   }
@@ -753,7 +753,7 @@ static void BindWidgetToIntSetting(SettingsInterface* sif, WidgetType* widget, s
         else
           sif->DeleteValue(section.c_str(), key.c_str());
 
-        sif->Save();
+        QtHost::SaveGameSettings(sif, true);
         g_emu_thread->reloadGameSettings();
       });
   }
@@ -828,7 +828,7 @@ static inline void BindWidgetAndLabelToIntSetting(SettingsInterface* sif, Widget
         }
       }
 
-      sif->Save();
+      QtHost::SaveGameSettings(sif, true);
       g_emu_thread->reloadGameSettings();
     });
   }
@@ -876,7 +876,7 @@ static void BindWidgetToFloatSetting(SettingsInterface* sif, WidgetType* widget,
       else
         sif->DeleteValue(section.c_str(), key.c_str());
 
-      sif->Save();
+      QtHost::SaveGameSettings(sif, true);
       g_emu_thread->reloadGameSettings();
     });
   }
@@ -917,7 +917,7 @@ static void BindWidgetToNormalizedSetting(SettingsInterface* sif, WidgetType* wi
       else
         sif->DeleteValue(section.c_str(), key.c_str());
 
-      sif->Save();
+      QtHost::SaveGameSettings(sif, true);
       g_emu_thread->reloadGameSettings();
     });
   }
@@ -959,7 +959,7 @@ static void BindWidgetToStringSetting(SettingsInterface* sif, WidgetType* widget
       else
         sif->DeleteValue(section.c_str(), key.c_str());
 
-      sif->Save();
+      QtHost::SaveGameSettings(sif, true);
       g_emu_thread->reloadGameSettings();
     });
   }
@@ -1024,7 +1024,7 @@ static void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
           sif->DeleteValue(section.c_str(), key.c_str());
         }
 
-        sif->Save();
+        QtHost::SaveGameSettings(sif, true);
         g_emu_thread->reloadGameSettings();
       });
   }
@@ -1092,7 +1092,7 @@ static void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
         else
           sif->DeleteValue(section.c_str(), key.c_str());
 
-        sif->Save();
+        QtHost::SaveGameSettings(sif, true);
         g_emu_thread->reloadGameSettings();
       });
   }
@@ -1160,7 +1160,7 @@ static void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
         else
           sif->DeleteValue(section.c_str(), key.c_str());
 
-        sif->Save();
+        QtHost::SaveGameSettings(sif, true);
         g_emu_thread->reloadGameSettings();
       });
   }

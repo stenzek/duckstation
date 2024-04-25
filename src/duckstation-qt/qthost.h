@@ -280,6 +280,9 @@ QString GetResourcesBasePath();
 /// Returns the base settings interface. Should lock before manipulating.
 INISettingsInterface* GetBaseSettingsInterface();
 
+/// Saves a game settings interface.
+bool SaveGameSettings(SettingsInterface* sif, bool delete_if_empty);
+
 /// Downloads the specified URL to the provided path.
 bool DownloadFile(QWidget* parent, const QString& title, std::string url, const char* path);
 

@@ -19,6 +19,11 @@ void LayeredSettingsInterface::Clear()
   Panic("Attempting to clear layered settings interface");
 }
 
+bool LayeredSettingsInterface::IsEmpty()
+{
+  return false;
+}
+
 bool LayeredSettingsInterface::GetIntValue(const char* section, const char* key, s32* value) const
 {
   for (u32 layer = FIRST_LAYER; layer <= LAST_LAYER; layer++)
@@ -168,6 +173,16 @@ void LayeredSettingsInterface::DeleteValue(const char* section, const char* key)
 void LayeredSettingsInterface::ClearSection(const char* section)
 {
   Panic("Attempt to call ClearSection() on layered settings interface");
+}
+
+void LayeredSettingsInterface::RemoveSection(const char* section)
+{
+  Panic("Attempt to call RemoveSection() on layered settings interface");
+}
+
+void LayeredSettingsInterface::RemoveEmptySections()
+{
+  Panic("Attempt to call RemoveEmptySections() on layered settings interface");
 }
 
 std::vector<std::string> LayeredSettingsInterface::GetStringList(const char* section, const char* key) const

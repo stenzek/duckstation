@@ -289,8 +289,7 @@ void SettingsWindow::onCopyGlobalSettingsClicked()
     temp.Load(*Host::Internal::GetBaseSettingsLayer());
     temp.Save(*m_sif.get(), true);
   }
-  m_sif->Save();
-  g_emu_thread->reloadGameSettings();
+  saveAndReloadGameSettings();
 
   reloadPages();
 
@@ -311,8 +310,7 @@ void SettingsWindow::onClearSettingsClicked()
   }
 
   Settings::Clear(*m_sif.get());
-  m_sif->Save();
-  g_emu_thread->reloadGameSettings();
+  saveAndReloadGameSettings();
 
   reloadPages();
 
@@ -524,8 +522,7 @@ void SettingsWindow::setBoolSettingValue(const char* section, const char* key, s
   if (m_sif)
   {
     value.has_value() ? m_sif->SetBoolValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
-    m_sif->Save();
-    g_emu_thread->reloadGameSettings();
+    saveAndReloadGameSettings();
   }
   else
   {
@@ -541,8 +538,7 @@ void SettingsWindow::setIntSettingValue(const char* section, const char* key, st
   if (m_sif)
   {
     value.has_value() ? m_sif->SetIntValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
-    m_sif->Save();
-    g_emu_thread->reloadGameSettings();
+    saveAndReloadGameSettings();
   }
   else
   {
@@ -558,8 +554,7 @@ void SettingsWindow::setFloatSettingValue(const char* section, const char* key, 
   if (m_sif)
   {
     value.has_value() ? m_sif->SetFloatValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
-    m_sif->Save();
-    g_emu_thread->reloadGameSettings();
+    saveAndReloadGameSettings();
   }
   else
   {
@@ -575,8 +570,7 @@ void SettingsWindow::setStringSettingValue(const char* section, const char* key,
   if (m_sif)
   {
     value.has_value() ? m_sif->SetStringValue(section, key, value.value()) : m_sif->DeleteValue(section, key);
-    m_sif->Save();
-    g_emu_thread->reloadGameSettings();
+    saveAndReloadGameSettings();
   }
   else
   {
@@ -600,8 +594,7 @@ void SettingsWindow::removeSettingValue(const char* section, const char* key)
   if (m_sif)
   {
     m_sif->DeleteValue(section, key);
-    m_sif->Save();
-    g_emu_thread->reloadGameSettings();
+    saveAndReloadGameSettings();
   }
   else
   {
@@ -609,6 +602,13 @@ void SettingsWindow::removeSettingValue(const char* section, const char* key)
     Host::CommitBaseSettingChanges();
     g_emu_thread->applySettings();
   }
+}
+
+void SettingsWindow::saveAndReloadGameSettings()
+{
+  DebugAssert(m_sif);
+  QtHost::SaveGameSettings(m_sif.get(), true);
+  g_emu_thread->reloadGameSettings(false);
 }
 
 void SettingsWindow::openGamePropertiesDialog(const std::string& path, const std::string& serial, DiscRegion region)

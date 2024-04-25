@@ -278,8 +278,7 @@ void ControllerSettingsWindow::setBoolValue(const char* section, const char* key
   if (m_profile_interface)
   {
     m_profile_interface->SetBoolValue(section, key, value);
-    m_profile_interface->Save();
-    g_emu_thread->reloadGameSettings();
+    saveAndReloadGameSettings();
   }
   else
   {
@@ -294,8 +293,7 @@ void ControllerSettingsWindow::setIntValue(const char* section, const char* key,
   if (m_profile_interface)
   {
     m_profile_interface->SetIntValue(section, key, value);
-    m_profile_interface->Save();
-    g_emu_thread->reloadGameSettings();
+    saveAndReloadGameSettings();
   }
   else
   {
@@ -310,8 +308,7 @@ void ControllerSettingsWindow::setStringValue(const char* section, const char* k
   if (m_profile_interface)
   {
     m_profile_interface->SetStringValue(section, key, value);
-    m_profile_interface->Save();
-    g_emu_thread->reloadGameSettings();
+    saveAndReloadGameSettings();
   }
   else
   {
@@ -319,6 +316,13 @@ void ControllerSettingsWindow::setStringValue(const char* section, const char* k
     Host::CommitBaseSettingChanges();
     g_emu_thread->applySettings();
   }
+}
+
+void ControllerSettingsWindow::saveAndReloadGameSettings()
+{
+  DebugAssert(m_profile_interface);
+  QtHost::SaveGameSettings(m_profile_interface.get(), false);
+  g_emu_thread->reloadGameSettings(false);
 }
 
 void ControllerSettingsWindow::clearSettingValue(const char* section, const char* key)

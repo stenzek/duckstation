@@ -1736,17 +1736,29 @@ bool FileSystem::CreateDirectory(const char* Path, bool Recursive, Error* error)
   }
 }
 
-bool FileSystem::DeleteFile(const char* path)
+bool FileSystem::DeleteFile(const char* path, Error* error)
 {
   if (path[0] == '\0')
+  {
+    Error::SetStringView(error, "Path is empty.");
     return false;
+  }
 
   const std::wstring wpath = GetWin32Path(path);
   const DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
   if (fileAttributes == INVALID_FILE_ATTRIBUTES || fileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+  {
+    Error::SetStringView(error, "File does not exist.");
     return false;
+  }
 
-  return (DeleteFileW(wpath.c_str()) == TRUE);
+  if (!DeleteFileW(wpath.c_str()))
+  {
+    Error::SetWin32(error, "DeleteFileW() failed: ", GetLastError());
+    return false;
+  }
+
+  return true;
 }
 
 bool FileSystem::RenamePath(const char* old_path, const char* new_path, Error* error)
@@ -2241,16 +2253,28 @@ bool FileSystem::CreateDirectory(const char* path, bool recursive, Error* error)
   }
 }
 
-bool FileSystem::DeleteFile(const char* path)
+bool FileSystem::DeleteFile(const char* path, Error* error)
 {
   if (path[0] == '\0')
+  {
+    Error::SetStringView(error, "Path is empty.");
     return false;
+  }
 
   struct stat sysStatData;
   if (stat(path, &sysStatData) != 0 || S_ISDIR(sysStatData.st_mode))
+  {
+    Error::SetStringView(error, "File does not exist.");
     return false;
+  }
 
-  return (unlink(path) == 0);
+  if (unlink(path) != 0)
+  {
+    Error::SetErrno(error, "unlink() failed: ", errno);
+    return false;
+  }
+
+  return true;
 }
 
 bool FileSystem::RenamePath(const char* old_path, const char* new_path, Error* error)

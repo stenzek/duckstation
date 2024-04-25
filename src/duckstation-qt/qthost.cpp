@@ -171,6 +171,42 @@ INISettingsInterface* QtHost::GetBaseSettingsInterface()
   return s_base_settings_interface.get();
 }
 
+bool QtHost::SaveGameSettings(SettingsInterface* sif, bool delete_if_empty)
+{
+  INISettingsInterface* ini = static_cast<INISettingsInterface*>(sif);
+  Error error;
+
+  // if there's no keys, just toss the whole thing out
+  if (delete_if_empty && ini->IsEmpty())
+  {
+    Log_InfoFmt("Removing empty gamesettings ini {}", Path::GetFileName(ini->GetFileName()));
+    if (FileSystem::FileExists(ini->GetFileName().c_str()) &&
+        !FileSystem::DeleteFile(ini->GetFileName().c_str(), &error))
+    {
+      Host::ReportErrorAsync(
+        TRANSLATE_SV("QtHost", "Error"),
+        fmt::format(TRANSLATE_FS("QtHost", "An error occurred while deleting empty game settings:\n{}"),
+                    error.GetDescription()));
+      return false;
+    }
+
+    return true;
+  }
+
+  // clean unused sections, stops the file being bloated
+  sif->RemoveEmptySections();
+
+  if (!sif->Save(&error))
+  {
+    Host::ReportErrorAsync(
+      TRANSLATE_SV("QtHost", "Error"),
+      fmt::format(TRANSLATE_FS("QtHost", "An error occurred while saving game settings:\n{}"), error.GetDescription()));
+    return false;
+  }
+
+  return true;
+}
+
 QIcon QtHost::GetAppIcon()
 {
   return QIcon(QStringLiteral(":/icons/duck.png"));
