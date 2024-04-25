@@ -123,16 +123,6 @@ void CubebAudioStream::DestroyContextAndStream()
 
 bool CubebAudioStream::Initialize(const char* driver_name, const char* device_name, Error* error)
 {
-#ifdef _WIN32
-  HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-  m_com_initialized_by_us = SUCCEEDED(hr);
-  if (FAILED(hr) && hr != RPC_E_CHANGED_MODE)
-  {
-    Error::SetHResult(error, "CoInitializeEx() failed: ", hr);
-    return false;
-  }
-#endif
-
   cubeb_set_log_callback(CUBEB_LOG_NORMAL, LogCallback);
 
   int rv =

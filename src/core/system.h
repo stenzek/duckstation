@@ -490,10 +490,10 @@ void UpdateDiscordPresence(bool update_session_time);
 
 namespace Internal {
 /// Called on process startup.
-bool ProcessStartup();
+bool CPUThreadInitialize();
 
 /// Called on process shutdown.
-void ProcessShutdown();
+void CPUThreadShutdown();
 
 /// Polls input, updates subsystems which are present while paused/inactive.
 void IdlePollUpdate();

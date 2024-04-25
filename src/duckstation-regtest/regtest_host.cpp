@@ -657,7 +657,7 @@ int main(int argc, char* argv[])
     return EXIT_FAILURE;
   }
 
-  if (!System::Internal::ProcessStartup())
+  if (!System::Internal::CPUThreadInitialize())
     return EXIT_FAILURE;
 
   RegTestHost::HookSignals();
@@ -689,6 +689,6 @@ int main(int argc, char* argv[])
   result = 0;
 
 cleanup:
-  System::Internal::ProcessShutdown();
+  System::Internal::CPUThreadShutdown();
   return result;
 }

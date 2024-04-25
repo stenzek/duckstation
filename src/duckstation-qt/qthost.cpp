@@ -1603,7 +1603,7 @@ void EmuThread::run()
   m_started_semaphore.release();
 
   // input source setup must happen on emu thread
-  if (!System::Internal::ProcessStartup())
+  if (!System::Internal::CPUThreadInitialize())
   {
     moveToThread(m_ui_thread);
     return;
@@ -1645,7 +1645,7 @@ void EmuThread::run()
     System::ShutdownSystem(false);
 
   destroyBackgroundControllerPollTimer();
-  System::Internal::ProcessShutdown();
+  System::Internal::CPUThreadShutdown();
 
   // move back to UI thread
   moveToThread(m_ui_thread);

@@ -72,6 +72,7 @@ Log_SetChannel(System);
 #ifdef _WIN32
 #include "common/windows_headers.h"
 #include <mmsystem.h>
+#include <objbase.h>
 #endif
 
 #ifdef ENABLE_DISCORD_PRESENCE
@@ -253,8 +254,20 @@ static TinyString GetTimestampStringForFileName()
   return TinyString::from_format("{:%Y-%m-%d-%H-%M-%S}", fmt::localtime(std::time(nullptr)));
 }
 
-bool System::Internal::ProcessStartup()
+bool System::Internal::CPUThreadInitialize()
 {
+#ifdef _WIN32
+  // On Win32, we have a bunch of things which use COM (e.g. SDL, Cubeb, etc).
+  // We need to initialize COM first, before anything else does, because otherwise they might
+  // initialize it in single-threaded/apartment mode, which can't be changed to multithreaded.
+  HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+  if (FAILED(hr))
+  {
+    Host::ReportErrorAsync("Error", fmt::format("CoInitializeEx() failed: {:08X}", static_cast<unsigned>(hr)));
+    return false;
+  }
+#endif
+
   if (!Bus::AllocateMemory())
     return false;
 
@@ -279,7 +292,7 @@ bool System::Internal::ProcessStartup()
   return true;
 }
 
-void System::Internal::ProcessShutdown()
+void System::Internal::CPUThreadShutdown()
 {
 #ifdef ENABLE_DISCORD_PRESENCE
   ShutdownDiscordPresence();
@@ -291,6 +304,10 @@ void System::Internal::ProcessShutdown()
 
   CPU::CodeCache::ProcessShutdown();
   Bus::ReleaseMemory();
+
+#ifdef _WIN32
+  CoUninitialize();
+#endif
 }
 
 void System::Internal::IdlePollUpdate()
