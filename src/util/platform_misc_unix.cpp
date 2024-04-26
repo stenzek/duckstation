@@ -1,17 +1,18 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "input_manager.h"
 #include "platform_misc.h"
 
 #include "common/log.h"
+#include "common/path.h"
 #include "common/scoped_guard.h"
 #include "common/small_string.h"
 
 #include <cinttypes>
+#include <dbus/dbus.h>
 #include <spawn.h>
 #include <unistd.h>
-#include <dbus/dbus.h>
 
 Log_SetChannel(PlatformMisc);
 
@@ -102,7 +103,7 @@ void PlatformMisc::SuspendScreensaver()
 
   if (!SetScreensaverInhibit(true))
   {
-    Log_ErrorPrintf("Failed to suspend screensaver.");
+    Log_ErrorPrint("Failed to suspend screensaver.");
     return;
   }
 
@@ -130,7 +131,29 @@ bool PlatformMisc::PlaySoundAsync(const char* path)
 
   // Since we set SA_NOCLDWAIT in Qt, we don't need to wait here.
   int res = posix_spawnp(&pid, cmdname, nullptr, nullptr, const_cast<char**>(argv), environ);
-  return (res == 0);
+  if (res == 0)
+    return true;
+
+  // Try gst-play-1.0.
+  const char* gst_play_cmdname = "gst-play-1.0";
+  const char* gst_play_argv[] = {cmdname, path, nullptr};
+  res = posix_spawnp(&pid, gst_play_cmdname, nullptr, nullptr, const_cast<char**>(gst_play_argv), environ);
+  if (res == 0)
+    return true;
+
+  // gst-launch? Bit messier for sure.
+  TinyString location_str = TinyString::from_format("location={}", path);
+  TinyString parse_str = TinyString::from_format("{}parse", Path::GetExtension(path));
+  const char* gst_launch_cmdname = "gst-launch-1.0";
+  const char* gst_launch_argv[] = {gst_launch_cmdname, "filesrc", location_str.c_str(), "!",
+                                   parse_str.c_str(),  "!",       "alsasink",           nullptr};
+  res = posix_spawnp(&pid, gst_launch_cmdname, nullptr, nullptr, const_cast<char**>(gst_launch_argv), environ);
+  if (res == 0)
+    return true;
+
+  Log_ErrorFmt("Failed to play sound effect {}. Make sure you have aplay, gst-play-1.0, or gst-launch-1.0 available.",
+               path);
+  return false;
 #else
   return false;
 #endif
