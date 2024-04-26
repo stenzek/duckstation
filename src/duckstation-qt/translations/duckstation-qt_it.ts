@@ -202,7 +202,7 @@ Vuoi abilitare la modalità Hardcore?</translation>
         <location filename="../achievementsettingswidget.ui" line="49"/>
         <location filename="../achievementsettingswidget.cpp" line="68"/>
         <source>Test Unofficial Achievements</source>
-        <translation>Prova Obiettivi non ufficiali</translation>
+        <translation>Prova Obiettivi Non Ufficiali</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="56"/>
@@ -9376,7 +9376,7 @@ L&apos;errore è:</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7558"/>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
-        <translation>Quando abilitato, DuckStation presumerà che tutti gli achievements siano bloccati e non manderà alcuna notifica di sblocco al server.</translation>
+        <translation>Quando abilitato, DuckStation presumerà che tutti gli obiettivi siano bloccati e non manderà alcuna notifica di sblocco al server.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7559"/>
@@ -12784,7 +12784,7 @@ Scansionare ricorsivamente richiede più tempo, ma identificherà file anche nel
     <message>
         <location filename="../mainwindow.ui" line="539"/>
         <source>Achievements</source>
-        <translation>Achievements</translation>
+        <translation>Obiettivi</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="547"/>
@@ -12825,7 +12825,7 @@ Scansionare ricorsivamente richiede più tempo, ma identificherà file anche nel
         <location filename="../mainwindow.ui" line="921"/>
         <location filename="../mainwindow.cpp" line="1308"/>
         <source>Start Big Picture Mode</source>
-        <translation>Avvia modalità grande immagine</translation>
+        <translation>Avvia Modalità Big Picture</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="929"/>
