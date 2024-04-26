@@ -1963,7 +1963,7 @@ void CPU::NewRec::RISCV64Compiler::Compile_lwc2(CompileFlags cf, MemoryAccessSiz
     g_settings.gpu_pgxp_enable ? std::optional<GPR>(GPR(AllocateTempHostReg(HR_CALLEE_SAVED))) : std::optional<GPR>();
   FlushForLoadStore(address, false, use_fastmem);
   const GPR addr = ComputeLoadStoreAddressArg(cf, address, addr_reg);
-  const GPR value = GenerateLoad(addr, MemoryAccessSize::Word, false, use_fastmem, [this, action]() {
+  const GPR value = GenerateLoad(addr, MemoryAccessSize::Word, false, use_fastmem, [this, action = action]() {
     return (action == GTERegisterAccessAction::CallHandler && g_settings.gpu_pgxp_enable) ?
              GPR(AllocateTempHostReg(HR_CALLEE_SAVED)) :
              RRET;

@@ -1676,7 +1676,7 @@ void CPU::NewRec::AArch32Compiler::Compile_lwc2(CompileFlags cf, MemoryAccessSiz
                                              std::optional<Register>();
   FlushForLoadStore(address, false, use_fastmem);
   const Register addr = ComputeLoadStoreAddressArg(cf, address, addr_reg);
-  const Register value = GenerateLoad(addr, MemoryAccessSize::Word, false, use_fastmem, [this, action]() {
+  const Register value = GenerateLoad(addr, MemoryAccessSize::Word, false, use_fastmem, [this, action = action]() {
     return (action == GTERegisterAccessAction::CallHandler && g_settings.gpu_pgxp_enable) ?
              Register(AllocateTempHostReg(HR_CALLEE_SAVED)) :
              RRET;

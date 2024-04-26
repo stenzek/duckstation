@@ -1655,7 +1655,7 @@ void CPU::NewRec::AArch64Compiler::Compile_lwc2(CompileFlags cf, MemoryAccessSiz
                                  std::optional<WRegister>();
   FlushForLoadStore(address, false, use_fastmem);
   const WRegister addr = ComputeLoadStoreAddressArg(cf, address, addr_reg);
-  const WRegister value = GenerateLoad(addr, MemoryAccessSize::Word, false, use_fastmem, [this, action]() {
+  const WRegister value = GenerateLoad(addr, MemoryAccessSize::Word, false, use_fastmem, [this, action = action]() {
     return (action == GTERegisterAccessAction::CallHandler && g_settings.gpu_pgxp_enable) ?
              WRegister(AllocateTempHostReg(HR_CALLEE_SAVED)) :
              RWRET;

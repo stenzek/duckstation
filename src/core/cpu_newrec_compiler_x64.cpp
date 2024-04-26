@@ -1623,7 +1623,7 @@ void CPU::NewRec::X64Compiler::Compile_lwc2(CompileFlags cf, MemoryAccessSize si
                                           std::optional<Reg32>();
   FlushForLoadStore(address, false, use_fastmem);
   const Reg32 addr = ComputeLoadStoreAddressArg(cf, address, addr_reg);
-  const Reg32 value = GenerateLoad(addr, MemoryAccessSize::Word, false, use_fastmem, [this, action]() {
+  const Reg32 value = GenerateLoad(addr, MemoryAccessSize::Word, false, use_fastmem, [this, action = action]() {
     return (action == GTERegisterAccessAction::CallHandler && g_settings.gpu_pgxp_enable) ?
              Reg32(AllocateTempHostReg(HR_CALLEE_SAVED)) :
              RWRET;
