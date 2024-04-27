@@ -629,9 +629,9 @@ void ImGuiManager::DrawInputsOverlay()
       continue;
 
     if (cinfo->icon_name)
-      text.append_format("{} {}", cinfo->icon_name, port + 1u);
+      text.format("{} {}", cinfo->icon_name, port + 1u);
     else
-      text.append_format("{} |", port + 1u);
+      text.format("{} |", port + 1u);
 
     for (const Controller::ControllerBindingInfo& bi : cinfo->bindings)
     {
