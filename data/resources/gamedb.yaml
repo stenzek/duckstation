@@ -103685,10 +103685,10 @@ SCPS-10001:
     - NeGcon
   traits:
     - ForcePGXPCPUMode
-    - ForceRecompilerICache # Fixes crash in pause screen.
+    - ForceInterpreter # Fixes crash in pause screen and random hang on the 2nd track.
   settings:
-    dmaMaxSliceTicks: 400 # Fixes random hang.
-    dmaHaltTicks: 155 # Fixes random hang.
+    dmaMaxSliceTicks: 400 # Fixes random hang on the 3rd track.
+    dmaHaltTicks: 155 # Fixes random hang on the 3rd track.
   codes:
     - HASH-58C38FDD4440E3DB
     - HASH-71CB04066AE13303
@@ -111396,6 +111396,8 @@ SLPS-02507:
   name: "Next Tetris DLX, The (Japan)"
   controllers:
     - DigitalController
+  traits:
+    - ForceRecompilerICache
   metadata:
     publisher: "Bullet Proof Software"
     developer: "Blue Planet Interactive"
