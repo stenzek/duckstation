@@ -27,10 +27,10 @@ static constexpr u32 NUM_TIMERS = 3;
 
 enum class SyncMode : u8
 {
-  PauseOnGate = 0,
-  ResetOnGate = 1,
-  ResetAndRunOnGate = 2,
-  FreeRunOnGate = 3
+  PauseWhileGateActive = 0,
+  ResetOnGateEnd = 1,
+  ResetAndRunOnGateStart = 2,
+  FreeRunOnGateEnd = 3
 };
 
 union CounterMode
@@ -166,25 +166,31 @@ void Timers::SetGate(u32 timer, bool state)
   if (!cs.mode.sync_enable)
     return;
 
-  if (cs.counting_enabled && !cs.use_external_clock)
+  // Because the gate prevents counting in or outside of the gate, we need a correct counter.
+  // For reset, we _can_ skip it, until the gate clears.
+  if (!cs.use_external_clock && (cs.mode.sync_mode != SyncMode::ResetOnGateEnd || !state))
     s_sysclk_event->InvokeEarly();
 
-  if (state)
+  switch (cs.mode.sync_mode)
   {
-    switch (cs.mode.sync_mode)
-    {
-      case SyncMode::ResetOnGate:
-      case SyncMode::ResetAndRunOnGate:
-        cs.counter = 0;
-        break;
+    case SyncMode::PauseWhileGateActive:
+      break;
 
-      case SyncMode::FreeRunOnGate:
-        cs.mode.sync_enable = false;
-        break;
+    case SyncMode::ResetOnGateEnd:
+      cs.counter = state ? cs.counter : 0;
+      break;
 
-      default:
-        break;
-    }
+    case SyncMode::ResetAndRunOnGateStart:
+      // PS2 hardwires the counter to 0 outside of gate. Needs to be tested for PSX too.
+      cs.counter = state ? 0 : cs.counter;
+      break;
+
+    case SyncMode::FreeRunOnGateEnd:
+      cs.mode.sync_enable &= state;
+      break;
+
+    default:
+      UnreachableCode();
   }
 
   UpdateCountingEnabled(cs);
@@ -414,18 +420,21 @@ void Timers::UpdateCountingEnabled(CounterState& cs)
   {
     switch (cs.mode.sync_mode)
     {
-      case SyncMode::PauseOnGate:
+      case SyncMode::PauseWhileGateActive:
         cs.counting_enabled = !cs.gate;
         break;
 
-      case SyncMode::ResetOnGate:
+      case SyncMode::ResetOnGateEnd:
         cs.counting_enabled = true;
         break;
 
-      case SyncMode::ResetAndRunOnGate:
-      case SyncMode::FreeRunOnGate:
+      case SyncMode::ResetAndRunOnGateStart:
+      case SyncMode::FreeRunOnGateEnd:
         cs.counting_enabled = cs.gate;
         break;
+
+      default:
+        UnreachableCode();
     }
   }
   else
@@ -489,7 +498,7 @@ void Timers::DrawDebugStateWindow()
 
   const float framebuffer_scale = Host::GetOSDScale();
 
-  ImGui::SetNextWindowSize(ImVec2(800.0f * framebuffer_scale, 100.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
+  ImGui::SetNextWindowSize(ImVec2(800.0f * framebuffer_scale, 115.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
   if (!ImGui::Begin("Timer State", nullptr))
   {
     ImGui::End();

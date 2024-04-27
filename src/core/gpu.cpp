@@ -607,24 +607,10 @@ void GPU::UpdateCRTCConfig()
   static constexpr std::array<u16, 8> dot_clock_dividers = {{10, 8, 5, 4, 7, 7, 7, 7}};
   CRTCState& cs = m_crtc_state;
 
-  if (m_GPUSTAT.pal_mode)
-  {
-    cs.vertical_total = PAL_TOTAL_LINES;
-    cs.current_scanline %= PAL_TOTAL_LINES;
-    cs.horizontal_total = PAL_TICKS_PER_LINE;
-    cs.horizontal_sync_start = PAL_HSYNC_TICKS;
-    cs.current_tick_in_scanline %= System::ScaleTicksToOverclock(PAL_TICKS_PER_LINE);
-  }
-  else
-  {
-    cs.vertical_total = NTSC_TOTAL_LINES;
-    cs.current_scanline %= NTSC_TOTAL_LINES;
-    cs.horizontal_total = NTSC_TICKS_PER_LINE;
-    cs.horizontal_sync_start = NTSC_HSYNC_TICKS;
-    cs.current_tick_in_scanline %= System::ScaleTicksToOverclock(NTSC_TICKS_PER_LINE);
-  }
-
-  cs.in_hblank = (cs.current_tick_in_scanline >= cs.horizontal_sync_start);
+  cs.vertical_total = m_GPUSTAT.pal_mode ? PAL_TOTAL_LINES : NTSC_TOTAL_LINES;
+  cs.horizontal_total = m_GPUSTAT.pal_mode ? PAL_TICKS_PER_LINE : NTSC_TICKS_PER_LINE;
+  cs.horizontal_active_start = m_GPUSTAT.pal_mode ? PAL_HORIZONTAL_ACTIVE_START : NTSC_HORIZONTAL_ACTIVE_START;
+  cs.horizontal_active_end = m_GPUSTAT.pal_mode ? PAL_HORIZONTAL_ACTIVE_END : NTSC_HORIZONTAL_ACTIVE_END;
 
   const u8 horizontal_resolution_index = m_GPUSTAT.horizontal_resolution_1 | (m_GPUSTAT.horizontal_resolution_2 << 2);
   cs.dot_clock_divider = dot_clock_dividers[horizontal_resolution_index];
@@ -658,7 +644,16 @@ void GPU::UpdateCRTCConfig()
     static_cast<u16>(System::ScaleTicksToOverclock(static_cast<TickCount>(cs.horizontal_display_start)));
   cs.horizontal_display_end =
     static_cast<u16>(System::ScaleTicksToOverclock(static_cast<TickCount>(cs.horizontal_display_end)));
+  cs.horizontal_active_start =
+    static_cast<u16>(System::ScaleTicksToOverclock(static_cast<TickCount>(cs.horizontal_active_start)));
+  cs.horizontal_active_end =
+    static_cast<u16>(System::ScaleTicksToOverclock(static_cast<TickCount>(cs.horizontal_active_end)));
   cs.horizontal_total = static_cast<u16>(System::ScaleTicksToOverclock(static_cast<TickCount>(cs.horizontal_total)));
+
+  cs.current_tick_in_scanline %= cs.horizontal_total;
+  cs.UpdateHBlankFlag();
+
+  cs.current_scanline %= cs.vertical_total;
 
   System::SetThrottleFrequency(ComputeVerticalFrequency());
 
@@ -872,20 +867,36 @@ void GPU::UpdateCRTCTickEvent()
     ticks_until_event = std::min(ticks_until_event, std::max<TickCount>(ticks_until_irq, 0));
   }
 
-#if 0
-  const TickCount ticks_until_hblank =
-    (m_crtc_state.current_tick_in_scanline >= m_crtc_state.horizontal_display_end) ?
-    (m_crtc_state.horizontal_total - m_crtc_state.current_tick_in_scanline + m_crtc_state.horizontal_display_end) :
-    (m_crtc_state.horizontal_display_end - m_crtc_state.current_tick_in_scanline);
-#endif
+  if (Timers::IsSyncEnabled(DOT_TIMER_INDEX))
+  {
+    // This could potentially be optimized to skip the time the gate is active, if we're resetting and free running.
+    // But realistically, I've only seen sync off (most games), or reset+pause on gate (Konami Lightgun games).
+    TickCount ticks_until_hblank_start_or_end;
+    if (m_crtc_state.current_tick_in_scanline >= m_crtc_state.horizontal_active_end)
+    {
+      ticks_until_hblank_start_or_end =
+        m_crtc_state.horizontal_total - m_crtc_state.current_tick_in_scanline + m_crtc_state.horizontal_active_start;
+    }
+    else if (m_crtc_state.current_tick_in_scanline < m_crtc_state.horizontal_active_start)
+    {
+      ticks_until_hblank_start_or_end = m_crtc_state.horizontal_active_start - m_crtc_state.current_tick_in_scanline;
+    }
+    else
+    {
+      ticks_until_hblank_start_or_end = m_crtc_state.horizontal_active_end - m_crtc_state.current_tick_in_scanline;
+    }
+
+    ticks_until_event = std::min(ticks_until_event, ticks_until_hblank_start_or_end);
+  }
 
   m_crtc_tick_event->Schedule(CRTCTicksToSystemTicks(ticks_until_event, m_crtc_state.fractional_ticks));
 }
 
 bool GPU::IsCRTCScanlinePending() const
 {
+  // TODO: Most of these should be fields, not lines.
   const TickCount ticks = (GetPendingCRTCTicks() + m_crtc_state.current_tick_in_scanline);
-  return (ticks >= (m_crtc_state.in_hblank ? m_crtc_state.horizontal_total : m_crtc_state.horizontal_sync_start));
+  return (ticks >= m_crtc_state.horizontal_total);
 }
 
 bool GPU::IsCommandCompletionPending() const
@@ -896,28 +907,32 @@ bool GPU::IsCommandCompletionPending() const
 void GPU::CRTCTickEvent(TickCount ticks)
 {
   // convert cpu/master clock to GPU ticks, accounting for partial cycles because of the non-integer divider
-  {
-    const TickCount gpu_ticks = SystemTicksToCRTCTicks(ticks, &m_crtc_state.fractional_ticks);
-    m_crtc_state.current_tick_in_scanline += gpu_ticks;
+  const TickCount prev_tick = m_crtc_state.current_tick_in_scanline;
+  const TickCount gpu_ticks = SystemTicksToCRTCTicks(ticks, &m_crtc_state.fractional_ticks);
+  m_crtc_state.current_tick_in_scanline += gpu_ticks;
 
-    if (Timers::IsUsingExternalClock(DOT_TIMER_INDEX))
-    {
-      m_crtc_state.fractional_dot_ticks += gpu_ticks;
-      const TickCount dots = m_crtc_state.fractional_dot_ticks / m_crtc_state.dot_clock_divider;
-      m_crtc_state.fractional_dot_ticks = m_crtc_state.fractional_dot_ticks % m_crtc_state.dot_clock_divider;
-      if (dots > 0)
-        Timers::AddTicks(DOT_TIMER_INDEX, dots);
-    }
+  if (Timers::IsUsingExternalClock(DOT_TIMER_INDEX))
+  {
+    m_crtc_state.fractional_dot_ticks += gpu_ticks;
+    const TickCount dots = m_crtc_state.fractional_dot_ticks / m_crtc_state.dot_clock_divider;
+    m_crtc_state.fractional_dot_ticks = m_crtc_state.fractional_dot_ticks % m_crtc_state.dot_clock_divider;
+    if (dots > 0)
+      Timers::AddTicks(DOT_TIMER_INDEX, dots);
   }
 
   if (m_crtc_state.current_tick_in_scanline < m_crtc_state.horizontal_total)
   {
-    // short path when we execute <1 line.. this shouldn't occur often.
-    const bool old_hblank = m_crtc_state.in_hblank;
-    const bool new_hblank = (m_crtc_state.current_tick_in_scanline >= m_crtc_state.horizontal_sync_start);
-    m_crtc_state.in_hblank = new_hblank;
-    if (!old_hblank && new_hblank && Timers::IsUsingExternalClock(HBLANK_TIMER_INDEX))
-      Timers::AddTicks(HBLANK_TIMER_INDEX, 1);
+    // short path when we execute <1 line.. this shouldn't occur often, except when gated (konami lightgun games).
+    m_crtc_state.UpdateHBlankFlag();
+    Timers::SetGate(DOT_TIMER_INDEX, m_crtc_state.in_hblank);
+    if (Timers::IsUsingExternalClock(HBLANK_TIMER_INDEX))
+    {
+      const u32 hblank_timer_ticks =
+        BoolToUInt32(m_crtc_state.current_tick_in_scanline >= m_crtc_state.horizontal_active_end) -
+        BoolToUInt32(prev_tick >= m_crtc_state.horizontal_active_end);
+      if (hblank_timer_ticks > 0)
+        Timers::AddTicks(HBLANK_TIMER_INDEX, static_cast<TickCount>(hblank_timer_ticks));
+    }
 
     UpdateCRTCTickEvent();
     return;
@@ -927,16 +942,23 @@ void GPU::CRTCTickEvent(TickCount ticks)
   m_crtc_state.current_tick_in_scanline %= m_crtc_state.horizontal_total;
 #if 0
   Log_WarningPrintf("Old line: %u, new line: %u, drawing %u", m_crtc_state.current_scanline,
-                    m_crtc_state.current_scanline + lines_to_draw, lines_to_draw);
+    m_crtc_state.current_scanline + lines_to_draw, lines_to_draw);
 #endif
 
-  const bool old_hblank = m_crtc_state.in_hblank;
-  const bool new_hblank = (m_crtc_state.current_tick_in_scanline >= m_crtc_state.horizontal_sync_start);
-  m_crtc_state.in_hblank = new_hblank;
+  m_crtc_state.UpdateHBlankFlag();
+  Timers::SetGate(DOT_TIMER_INDEX, m_crtc_state.in_hblank);
+
   if (Timers::IsUsingExternalClock(HBLANK_TIMER_INDEX))
   {
-    const u32 hblank_timer_ticks = BoolToUInt32(!old_hblank) + BoolToUInt32(new_hblank) + (lines_to_draw - 1);
-    Timers::AddTicks(HBLANK_TIMER_INDEX, static_cast<TickCount>(hblank_timer_ticks));
+    // lines_to_draw => number of times ticks passed horizontal_total.
+    // Subtract one if we were previously in hblank, but only on that line. If it was previously less than
+    // horizontal_active_start, we still want to add one, because hblank would have gone inactive, and then active again
+    // during the line. Finally add the current line being drawn, if hblank went inactive->active during the line.
+    const u32 hblank_timer_ticks =
+      lines_to_draw - BoolToUInt32(prev_tick >= m_crtc_state.horizontal_active_end) +
+      BoolToUInt32(m_crtc_state.current_tick_in_scanline >= m_crtc_state.horizontal_active_end);
+    if (hblank_timer_ticks > 0)
+      Timers::AddTicks(HBLANK_TIMER_INDEX, static_cast<TickCount>(hblank_timer_ticks));
   }
 
   while (lines_to_draw > 0)
@@ -1080,9 +1102,43 @@ bool GPU::ConvertDisplayCoordinatesToBeamTicksAndLines(float display_x, float di
 
   *out_line = (static_cast<u32>(std::round(display_y)) >> BoolToUInt8(m_GPUSTAT.vertical_interlace)) +
               m_crtc_state.vertical_visible_start;
-  *out_tick = static_cast<u32>(std::round(display_x * static_cast<float>(m_crtc_state.dot_clock_divider))) +
+  *out_tick = static_cast<u32>(System::ScaleTicksToOverclock(
+                static_cast<TickCount>(std::round(display_x * static_cast<float>(m_crtc_state.dot_clock_divider))))) +
               m_crtc_state.horizontal_visible_start;
   return true;
+}
+
+void GPU::GetBeamPosition(u32* out_ticks, u32* out_line)
+{
+  const u32 current_tick = (GetPendingCRTCTicks() + m_crtc_state.current_tick_in_scanline);
+  *out_line =
+    (m_crtc_state.current_scanline + (current_tick / m_crtc_state.horizontal_total)) % m_crtc_state.vertical_total;
+  *out_ticks = current_tick % m_crtc_state.horizontal_total;
+}
+
+TickCount GPU::GetSystemTicksUntilTicksAndLine(u32 ticks, u32 line)
+{
+  u32 current_tick, current_line;
+  GetBeamPosition(&current_tick, &current_line);
+
+  u32 ticks_to_target;
+  if (ticks >= current_tick)
+  {
+    ticks_to_target = ticks - current_tick;
+  }
+  else
+  {
+    ticks_to_target = (m_crtc_state.horizontal_total - current_tick) + ticks;
+    current_line = (current_line + 1) % m_crtc_state.vertical_total;
+  }
+
+  const u32 lines_to_target =
+    (line >= current_line) ? (line - current_line) : ((m_crtc_state.vertical_total - current_line) + line);
+
+  const TickCount total_ticks_to_target =
+    static_cast<TickCount>((lines_to_target * m_crtc_state.horizontal_total) + ticks_to_target);
+
+  return CRTCTicksToSystemTicks(total_ticks_to_target, m_crtc_state.fractional_ticks);
 }
 
 u32 GPU::ReadGPUREAD()
