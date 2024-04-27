@@ -175,10 +175,16 @@ void ControllerBindingWidget::populateWidgets()
     }
     break;
 
+    case ControllerType::None:
+    {
+      m_icon = QIcon::fromTheme(QStringLiteral("controller-strike-line"));
+    }
+    break;
+
     default:
     {
       createBindingWidgets(m_bindings_widget);
-      m_icon = QIcon::fromTheme(QStringLiteral("controller-strike-line"));
+      m_icon = QIcon::fromTheme(QStringLiteral("controller-line"));
     }
     break;
   }
@@ -435,6 +441,7 @@ void ControllerBindingWidget::createBindingWidgets(QWidget* parent)
   if (!axis_gbox && !button_gbox)
   {
     delete scrollarea_widget;
+    delete scrollarea;
     return;
   }
 
