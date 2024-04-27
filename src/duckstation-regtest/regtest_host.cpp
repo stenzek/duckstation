@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "core/achievements.h"
+#include "core/controller.h"
 #include "core/fullscreen_ui.h"
 #include "core/game_list.h"
 #include "core/gpu.h"
@@ -94,8 +95,8 @@ bool RegTestHost::InitializeConfig()
   g_settings.Save(si, false);
   si.SetStringValue("GPU", "Renderer", Settings::GetRendererName(GPURenderer::Software));
   si.SetBoolValue("GPU", "DisableShaderCache", true);
-  si.SetStringValue("Pad1", "Type", Settings::GetControllerTypeName(ControllerType::AnalogController));
-  si.SetStringValue("Pad2", "Type", Settings::GetControllerTypeName(ControllerType::None));
+  si.SetStringValue("Pad1", "Type", Controller::GetControllerInfo(ControllerType::AnalogController)->name);
+  si.SetStringValue("Pad2", "Type", Controller::GetControllerInfo(ControllerType::None)->name);
   si.SetStringValue("MemoryCards", "Card1Type", Settings::GetMemoryCardTypeName(MemoryCardType::NonPersistent));
   si.SetStringValue("MemoryCards", "Card2Type", Settings::GetMemoryCardTypeName(MemoryCardType::None));
   si.SetStringValue("ControllerPorts", "MultitapMode", Settings::GetMultitapModeName(MultitapMode::Disabled));
