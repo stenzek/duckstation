@@ -230,6 +230,7 @@ void ControllerBindingWidget::onTypeChanged()
   if (sif)
   {
     sif->SetStringValue(m_config_section.c_str(), "Type", Settings::GetControllerTypeName(m_controller_type));
+    QtHost::SaveGameSettings(sif, false);
     g_emu_thread->reloadGameSettings();
   }
   else
