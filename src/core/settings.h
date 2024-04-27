@@ -430,10 +430,6 @@ struct Settings
   static const char* GetDisplayScreenshotFormatDisplayName(DisplayScreenshotFormat mode);
   static const char* GetDisplayScreenshotFormatExtension(DisplayScreenshotFormat mode);
 
-  static std::optional<ControllerType> ParseControllerTypeName(std::string_view str);
-  static const char* GetControllerTypeName(ControllerType type);
-  static const char* GetControllerTypeDisplayName(ControllerType type);
-
   static std::optional<MemoryCardType> ParseMemoryCardTypeName(const char* str);
   static const char* GetMemoryCardTypeName(MemoryCardType type);
   static const char* GetMemoryCardTypeDisplayName(MemoryCardType type);

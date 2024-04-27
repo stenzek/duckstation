@@ -335,13 +335,8 @@ void Settings::Load(SettingsInterface& si)
       si.GetStringValue("ControllerPorts", "MultitapMode", GetMultitapModeName(DEFAULT_MULTITAP_MODE)).c_str())
       .value_or(DEFAULT_MULTITAP_MODE);
 
-  controller_types[0] = ParseControllerTypeName(si.GetStringValue(Controller::GetSettingsSection(0).c_str(), "Type",
-                                                                  GetControllerTypeName(DEFAULT_CONTROLLER_1_TYPE))
-                                                  .c_str())
-                          .value_or(DEFAULT_CONTROLLER_1_TYPE);
-
   const std::array<bool, 2> mtap_enabled = {{IsPort1MultitapEnabled(), IsPort2MultitapEnabled()}};
-  for (u32 i = 1; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
     // Ignore types when multitap not enabled
     const auto [port, slot] = Controller::ConvertPadToPortAndSlot(i);
@@ -351,10 +346,10 @@ void Settings::Load(SettingsInterface& si)
       continue;
     }
 
-    controller_types[i] = ParseControllerTypeName(si.GetStringValue(Controller::GetSettingsSection(i).c_str(), "Type",
-                                                                    GetControllerTypeName(DEFAULT_CONTROLLER_2_TYPE))
-                                                    .c_str())
-                            .value_or(DEFAULT_CONTROLLER_2_TYPE);
+    const ControllerType default_type = (i == 0) ? DEFAULT_CONTROLLER_1_TYPE : DEFAULT_CONTROLLER_2_TYPE;
+    const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(si.GetTinyStringValue(
+      Controller::GetSettingsSection(i).c_str(), "Type", Controller::GetControllerInfo(default_type)->name));
+    controller_types[i] = cinfo ? cinfo->type : default_type;
   }
 
   memory_card_types[0] =
@@ -588,7 +583,11 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("BIOS", "PatchFastBoot", bios_patch_fast_boot);
 
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
-    si.SetStringValue(Controller::GetSettingsSection(i).c_str(), "Type", GetControllerTypeName(controller_types[i]));
+  {
+    const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(controller_types[i]);
+    DebugAssert(cinfo);
+    si.SetStringValue(Controller::GetSettingsSection(i).c_str(), "Type", cinfo->name);
+  }
 
   si.SetStringValue("MemoryCards", "Card1Type", GetMemoryCardTypeName(memory_card_types[0]));
   si.SetStringValue("MemoryCards", "Card2Type", GetMemoryCardTypeName(memory_card_types[1]));
@@ -1567,43 +1566,6 @@ const char* Settings::GetDisplayScreenshotFormatDisplayName(DisplayScreenshotFor
 const char* Settings::GetDisplayScreenshotFormatExtension(DisplayScreenshotFormat format)
 {
   return s_display_screenshot_format_extensions[static_cast<size_t>(format)];
-}
-
-static constexpr const std::array s_controller_type_names = {
-  "None",   "DigitalController", "AnalogController", "AnalogJoystick",
-  "GunCon", "PlayStationMouse",  "NeGcon",           "NeGconRumble"};
-static constexpr const std::array s_controller_display_names = {
-  TRANSLATE_NOOP("ControllerType", "None"),
-  TRANSLATE_NOOP("ControllerType", "Digital Controller"),
-  TRANSLATE_NOOP("ControllerType", "Analog Controller (DualShock)"),
-  TRANSLATE_NOOP("ControllerType", "Analog Joystick"),
-  TRANSLATE_NOOP("ControllerType", "GunCon"),
-  TRANSLATE_NOOP("ControllerType", "PlayStation Mouse"),
-  TRANSLATE_NOOP("ControllerType", "NeGcon"),
-  TRANSLATE_NOOP("ControllerType", "NeGcon Rumble")};
-
-std::optional<ControllerType> Settings::ParseControllerTypeName(std::string_view str)
-{
-  int index = 0;
-  for (const char* name : s_controller_type_names)
-  {
-    if (StringUtil::EqualNoCase(str, name))
-      return static_cast<ControllerType>(index);
-
-    index++;
-  }
-
-  return std::nullopt;
-}
-
-const char* Settings::GetControllerTypeName(ControllerType type)
-{
-  return s_controller_type_names[static_cast<int>(type)];
-}
-
-const char* Settings::GetControllerTypeDisplayName(ControllerType type)
-{
-  return Host::TranslateToCString("ControllerType", s_controller_display_names[static_cast<int>(type)]);
 }
 
 static constexpr const std::array s_memory_card_type_names = {"None",         "Shared",           "PerGame",

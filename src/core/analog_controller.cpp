@@ -873,13 +873,14 @@ static const SettingInfo s_settings[] = {
    nullptr, s_invert_settings, 0.0f},
 };
 
-const Controller::ControllerInfo AnalogController::INFO = {ControllerType::AnalogController,
-                                                           "AnalogController",
-                                                           TRANSLATE_NOOP("ControllerType", "Analog Controller"),
-                                                           ICON_PF_GAMEPAD,
-                                                           s_binding_info,
-                                                           s_settings,
-                                                           Controller::VibrationCapabilities::LargeSmallMotors};
+const Controller::ControllerInfo AnalogController::INFO = {
+  ControllerType::AnalogController,
+  "AnalogController",
+  TRANSLATE_NOOP("ControllerType", "Analog Controller"),
+  ICON_PF_GAMEPAD,
+  s_binding_info,
+  s_settings,
+  Controller::VibrationCapabilities::LargeSmallMotors};
 
 void AnalogController::LoadSettings(SettingsInterface& si, const char* section)
 {

@@ -23,8 +23,13 @@ static const Controller::ControllerInfo s_none_info = {ControllerType::None,
 
 static const Controller::ControllerInfo* s_controller_info[] = {
   &s_none_info,  &DigitalController::INFO, &AnalogController::INFO, &AnalogJoystick::INFO,
-  &NeGcon::INFO, &NeGconRumble::INFO,&GunCon::INFO, &PlayStationMouse::INFO,
+  &NeGcon::INFO, &NeGconRumble::INFO,      &GunCon::INFO,           &PlayStationMouse::INFO,
 };
+
+const char* Controller::ControllerInfo::GetDisplayName() const
+{
+  return Host::TranslateToCString("ControllerType", display_name);
+}
 
 Controller::Controller(u32 index) : m_index(index)
 {
@@ -100,7 +105,7 @@ std::unique_ptr<Controller> Controller::Create(ControllerType type, u32 index)
 
     case ControllerType::NeGcon:
       return NeGcon::Create(index);
-    
+
     case ControllerType::NeGconRumble:
       return NeGconRumble::Create(index);
 
@@ -112,8 +117,8 @@ std::unique_ptr<Controller> Controller::Create(ControllerType type, u32 index)
 
 const char* Controller::GetDefaultPadType(u32 pad)
 {
-  return Settings::GetControllerTypeName((pad == 0) ? Settings::DEFAULT_CONTROLLER_1_TYPE :
-                                                      Settings::DEFAULT_CONTROLLER_2_TYPE);
+  return GetControllerInfo((pad == 0) ? Settings::DEFAULT_CONTROLLER_1_TYPE : Settings::DEFAULT_CONTROLLER_2_TYPE)
+    ->name;
 }
 
 const Controller::ControllerInfo* Controller::GetControllerInfo(ControllerType type)
@@ -127,7 +132,7 @@ const Controller::ControllerInfo* Controller::GetControllerInfo(ControllerType t
   return nullptr;
 }
 
-const Controller::ControllerInfo* Controller::GetControllerInfo(const std::string_view& name)
+const Controller::ControllerInfo* Controller::GetControllerInfo(std::string_view name)
 {
   for (const ControllerInfo* info : s_controller_info)
   {

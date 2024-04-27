@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -33,7 +33,7 @@ public:
 
   ALWAYS_INLINE ControllerSettingsWindow* getDialog() const { return m_dialog; }
   ALWAYS_INLINE const std::string& getConfigSection() const { return m_config_section; }
-  ALWAYS_INLINE ControllerType getControllerType() const { return m_controller_type; }
+  ALWAYS_INLINE const Controller::ControllerInfo* getControllerInfo() const { return m_controller_info; }
   ALWAYS_INLINE u32 getPortNumber() const { return m_port_number; }
   ALWAYS_INLINE const QIcon& getIcon() { return m_icon; }
 
@@ -59,7 +59,7 @@ private:
   ControllerSettingsWindow* m_dialog;
 
   std::string m_config_section;
-  ControllerType m_controller_type;
+  const Controller::ControllerInfo* m_controller_info;
   u32 m_port_number;
 
   QIcon m_icon;

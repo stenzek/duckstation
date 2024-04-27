@@ -185,7 +185,7 @@ enum class DisplayScreenshotFormat : u8
   Count
 };
 
-enum class ControllerType
+enum class ControllerType : u8
 {
   None,
   DigitalController,

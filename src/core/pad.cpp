@@ -187,13 +187,17 @@ u32 Pad::GetMaximumRollbackFrames()
 
 bool Pad::DoStateController(StateWrapper& sw, u32 i)
 {
-  ControllerType controller_type = s_controllers[i] ? s_controllers[i]->GetType() : ControllerType::None;
+  const ControllerType controller_type = s_controllers[i] ? s_controllers[i]->GetType() : ControllerType::None;
   ControllerType state_controller_type = controller_type;
 
-  sw.Do(&state_controller_type);
+  // Data type change...
+  u32 state_controller_type_value = static_cast<u32>(state_controller_type);
+  sw.Do(&state_controller_type_value);
+  state_controller_type = static_cast<ControllerType>(state_controller_type_value);
 
   if (controller_type != state_controller_type)
   {
+    const Controller::ControllerInfo* state_cinfo = Controller::GetControllerInfo(state_controller_type);
     Assert(sw.GetMode() == StateWrapper::Mode::Read);
 
     // UI notification portion is separated from emulation portion (intentional condition check redundancy)
@@ -201,19 +205,19 @@ bool Pad::DoStateController(StateWrapper& sw, u32 i)
     {
       Host::AddFormattedOSDMessage(
         10.0f, TRANSLATE("OSDMessage", "Save state contains controller type %s in port %u, but %s is used. Switching."),
-        Settings::GetControllerTypeName(state_controller_type), i + 1u,
-        Settings::GetControllerTypeName(controller_type));
+        state_cinfo ? state_cinfo->GetDisplayName() : "", i + 1u,
+        Controller::GetControllerInfo(controller_type)->GetDisplayName());
     }
     else
     {
       Host::AddFormattedOSDMessage(10.0f, TRANSLATE("OSDMessage", "Ignoring mismatched controller type %s in port %u."),
-                                   Settings::GetControllerTypeName(state_controller_type), i + 1u);
+                                   state_cinfo ? state_cinfo->GetDisplayName() : "", i + 1u);
     }
 
     // dev-friendly untranslated console log.
     Log_DevPrintf("Controller type mismatch in slot %u: state=%s(%u) ui=%s(%u) load_from_state=%s", i + 1u,
-                  Settings::GetControllerTypeName(state_controller_type), static_cast<unsigned>(state_controller_type),
-                  Settings::GetControllerTypeName(controller_type), static_cast<unsigned>(controller_type),
+                  state_cinfo ? state_cinfo->name : "", static_cast<unsigned>(state_controller_type),
+                  Controller::GetControllerInfo(controller_type)->name, static_cast<unsigned>(controller_type),
                   g_settings.load_devices_from_save_states ? "yes" : "no");
 
     if (g_settings.load_devices_from_save_states)

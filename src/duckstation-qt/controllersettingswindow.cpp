@@ -390,9 +390,7 @@ void ControllerSettingsWindow::createWidgets()
     m_port_bindings[global_slot] = new ControllerBindingWidget(m_ui.settingsContainer, this, global_slot);
     m_ui.settingsContainer->addWidget(m_port_bindings[global_slot]);
 
-    const Controller::ControllerInfo* ci =
-      Controller::GetControllerInfo(m_port_bindings[global_slot]->getControllerType());
-    const QString display_name(ci ? qApp->translate("ControllerType", ci->display_name) : QStringLiteral("Unknown"));
+    const QString display_name(QString::fromUtf8(m_port_bindings[global_slot]->getControllerInfo()->GetDisplayName()));
 
     QListWidgetItem* item = new QListWidgetItem();
     item->setText(mtap_enabled[port] ?
@@ -431,8 +429,7 @@ void ControllerSettingsWindow::updateListDescription(u32 global_slot, Controller
       const std::array<bool, 2> mtap_enabled = getEnabledMultitaps();
       const auto [port, slot] = Controller::ConvertPadToPortAndSlot(global_slot);
 
-      const Controller::ControllerInfo* ci = Controller::GetControllerInfo(widget->getControllerType());
-      const QString display_name(ci ? qApp->translate("ControllerType", ci->display_name) : QStringLiteral("Unknown"));
+      const QString display_name = QString::fromUtf8(widget->getControllerInfo()->GetDisplayName());
 
       item->setText(mtap_enabled[port] ?
                       (tr("Controller Port %1%2\n%3").arg(port + 1).arg(s_mtap_slot_names[slot]).arg(display_name)) :

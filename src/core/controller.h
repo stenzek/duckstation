@@ -49,6 +49,9 @@ public:
     std::span<const ControllerBindingInfo> bindings;
     std::span<const SettingInfo> settings;
     VibrationCapabilities vibration_caps;
+
+    /// Returns localized controller type name.
+    const char* GetDisplayName() const;
   };
 
   /// Default stick deadzone/sensitivity.
@@ -106,7 +109,7 @@ public:
 
   /// Returns general information for the specified controller type.
   static const ControllerInfo* GetControllerInfo(ControllerType type);
-  static const ControllerInfo* GetControllerInfo(const std::string_view& name);
+  static const ControllerInfo* GetControllerInfo(std::string_view name);
 
   /// Converts a global pad index to a multitap port and slot.
   static std::tuple<u32, u32> ConvertPadToPortAndSlot(u32 index);

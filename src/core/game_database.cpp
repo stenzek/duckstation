@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "game_database.h"
+#include "controller.h"
 #include "host.h"
 #include "system.h"
 
@@ -652,15 +653,16 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
           if (!supported_controller_string.empty())
             supported_controller_string.append(", ");
 
-          supported_controller_string.append(Settings::GetControllerTypeDisplayName(supported_ctype));
+          supported_controller_string.append(Controller::GetControllerInfo(supported_ctype)->GetDisplayName());
         }
 
         Host::AddKeyedOSDMessage(
           "gamedb_controller_unsupported",
-          fmt::format(
-            TRANSLATE_FS("OSDMessage", "Controller in port {0} ({1}) is not supported for {2}.\nSupported controllers: "
-                                       "{3}\nPlease configure a supported controller from the list above."),
-            i + 1u, Settings::GetControllerTypeDisplayName(ctype), System::GetGameTitle(), supported_controller_string),
+          fmt::format(TRANSLATE_FS("OSDMessage",
+                                   "Controller in port {0} ({1}) is not supported for {2}.\nSupported controllers: "
+                                   "{3}\nPlease configure a supported controller from the list above."),
+                      i + 1u, Controller::GetControllerInfo(ctype)->GetDisplayName(), System::GetGameTitle(),
+                      supported_controller_string),
           Host::OSD_CRITICAL_ERROR_DURATION);
       }
     }
@@ -981,8 +983,8 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
         return false;
       }
 
-      std::optional<ControllerType> ctype = Settings::ParseControllerTypeName(controller_str);
-      if (!ctype.has_value())
+      const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(controller_str);
+      if (!cinfo)
       {
         Log_WarningFmt("Invalid controller type {} in {}", controller_str, entry->serial);
         continue;
@@ -994,7 +996,7 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
         first = false;
       }
 
-      entry->supported_controllers |= (1u << static_cast<u16>(ctype.value()));
+      entry->supported_controllers |= (1u << static_cast<u16>(cinfo->type));
     }
   }
 

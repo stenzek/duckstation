@@ -6,6 +6,7 @@
 #include "qtprogresscallback.h"
 #include "settingswindow.h"
 
+#include "core/controller.h"
 #include "core/game_database.h"
 #include "core/game_list.h"
 
@@ -113,7 +114,7 @@ void GameSummaryWidget::populateUi(const std::string& path, const std::string& s
         {
           if (!controllers.isEmpty())
             controllers.append(", ");
-          controllers.append(Settings::GetControllerTypeDisplayName(static_cast<ControllerType>(i)));
+          controllers.append(Controller::GetControllerInfo(static_cast<ControllerType>(i))->GetDisplayName());
         }
       }
     }
