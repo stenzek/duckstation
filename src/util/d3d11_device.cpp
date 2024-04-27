@@ -612,7 +612,7 @@ bool D3D11Device::BeginPresent(bool skip_present)
   if (!m_swap_chain)
   {
     // Note: Really slow on Intel...
-    //m_context->Flush();
+    m_context->Flush();
     TrimTexturePool();
     return false;
   }
@@ -650,7 +650,7 @@ void D3D11Device::EndPresent(bool explicit_present)
   DebugAssert(!explicit_present);
   DebugAssert(m_num_current_render_targets == 0 && !m_current_depth_target);
 
-  if (m_vsync_enabled && m_gpu_timing_enabled)
+  if (!m_vsync_enabled && m_gpu_timing_enabled)
     PopTimestampQuery();
 
   // DirectX has no concept of tear-or-sync. I guess if we measured times ourselves, we could implement it.
