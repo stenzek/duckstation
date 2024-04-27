@@ -195,6 +195,7 @@ enum class ControllerType : u8
   PlayStationMouse,
   NeGcon,
   NeGconRumble,
+  Justifier,
   Count
 };
 

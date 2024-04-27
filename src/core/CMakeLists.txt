@@ -73,6 +73,8 @@ add_library(core
   imgui_overlays.h
   interrupt_controller.cpp
   interrupt_controller.h
+  justifier.cpp
+  justifier.h
   mdec.cpp
   mdec.h
   memory_card.cpp

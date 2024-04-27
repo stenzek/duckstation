@@ -8,10 +8,12 @@
 #include "qtutils.h"
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
+
 #include "ui_controllerbindingwidget_analog_controller.h"
 #include "ui_controllerbindingwidget_analog_joystick.h"
 #include "ui_controllerbindingwidget_digital_controller.h"
 #include "ui_controllerbindingwidget_guncon.h"
+#include "ui_controllerbindingwidget_justifier.h"
 #include "ui_controllerbindingwidget_mouse.h"
 #include "ui_controllerbindingwidget_negcon.h"
 #include "ui_controllerbindingwidget_negconrumble.h"
@@ -172,6 +174,15 @@ void ControllerBindingWidget::populateWidgets()
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
       m_icon = QIcon::fromTheme(QStringLiteral("mouse-line"));
+    }
+    break;
+
+    case ControllerType::Justifier:
+    {
+      Ui::ControllerBindingWidget_Justifier ui;
+      ui.setupUi(m_bindings_widget);
+      bindBindingWidgets(m_bindings_widget);
+      m_icon = QIcon::fromTheme(QStringLiteral("guncon-line"));
     }
     break;
 

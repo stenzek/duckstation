@@ -273,7 +273,7 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
   }
 
   // clang-format off
-  BUTTON("Trigger", TRANSLATE_NOOP("GunCon", "Trigger"), nullptr, GunCon::Binding::Trigger, GenericInputBinding::R2),
+  BUTTON("Trigger", TRANSLATE_NOOP("GunCon", "Trigger"), ICON_PF_CROSS, GunCon::Binding::Trigger, GenericInputBinding::R2),
   BUTTON("ShootOffscreen", TRANSLATE_NOOP("GunCon", "Shoot Offscreen"), nullptr, GunCon::Binding::ShootOffscreen, GenericInputBinding::L2),
   BUTTON("A", TRANSLATE_NOOP("GunCon", "A"), ICON_PF_BUTTON_A, GunCon::Binding::A, GenericInputBinding::Cross),
   BUTTON("B", TRANSLATE_NOOP("GunCon", "B"), ICON_PF_BUTTON_B, GunCon::Binding::B, GenericInputBinding::Circle),

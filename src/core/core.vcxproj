@@ -59,6 +59,7 @@
     <ClCompile Include="hotkeys.cpp" />
     <ClCompile Include="imgui_overlays.cpp" />
     <ClCompile Include="interrupt_controller.cpp" />
+    <ClCompile Include="justifier.cpp" />
     <ClCompile Include="mdec.cpp" />
     <ClCompile Include="memory_card.cpp" />
     <ClCompile Include="memory_card_image.cpp" />
@@ -138,6 +139,7 @@
     <ClInclude Include="imgui_overlays.h" />
     <ClInclude Include="input_types.h" />
     <ClInclude Include="interrupt_controller.h" />
+    <ClInclude Include="justifier.h" />
     <ClInclude Include="mdec.h" />
     <ClInclude Include="memory_card.h" />
     <ClInclude Include="memory_card_image.h" />

@@ -8679,7 +8679,7 @@ SLES-00578:
   name: "Area 51 (Europe) (En,Fr,De,Es)"
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
     - PlayStationMouse
   metadata:
     publisher: "GT Interactive / Midway"
@@ -8702,7 +8702,7 @@ SLES-03783:
   name: "Area 51 (Europe) (En,Fr,De,Es) (Midway Classics)"
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
     - PlayStationMouse
   metadata:
     publisher: "GT Interactive / Midway"
@@ -8725,7 +8725,7 @@ SLPS-00726:
   name: "Area 51 (Japan)"
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
     - PlayStationMouse
   metadata:
     publisher: "Soft Bank"
@@ -8745,7 +8745,7 @@ SLPS-00725:
   name: "Area 51 (Japan) (Special Pack)"
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
     - PlayStationMouse
   metadata:
     publisher: "Soft Bank"
@@ -8768,7 +8768,7 @@ SLUS-00164:
     versionTested: "0.1-986-gfc911de1"
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
     - PlayStationMouse
   metadata:
     publisher: "Midway"
@@ -31509,7 +31509,7 @@ SLES-00292:
   name: "Crypt Killer (Europe)"
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
   metadata:
     publisher: "Konami"
     developer: "Konami"
@@ -31528,7 +31528,7 @@ SLUS-00335:
   name: "Crypt Killer (USA)"
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
   metadata:
     publisher: "Konami"
     developer: "Konami"
@@ -37025,7 +37025,7 @@ SLES-00445:
   controllers:
     - DigitalController
     - PlayStationMouse
-    - KonamiJustifier
+    - Justifier
   metadata:
     publisher: "Fox Interactive / Electronic Arts"
     developer: "Probe Entertainment Limited"
@@ -37050,7 +37050,7 @@ SLPS-00585:
   controllers:
     - DigitalController
     - PlayStationMouse
-    - KonamiJustifier
+    - Justifier
   metadata:
     publisher: "Electronic Arts Victor"
     developer: "Probe Entertainment Limited"
@@ -37073,7 +37073,7 @@ SLUS-00119:
   controllers:
     - DigitalController
     - PlayStationMouse
-    - KonamiJustifier
+    - Justifier
   metadata:
     publisher: "Fox Interactive"
     developer: "Probe Entertainment Limited"
@@ -37095,7 +37095,7 @@ SLES-02746:
     - DigitalController
     - PlayStationMouse
     - GunCon
-    - KonamiJustifier
+    - Justifier
   metadata:
     publisher: "Fox Interactive"
     developer: "N-Space"
@@ -37117,7 +37117,7 @@ SLES-02747:
     - DigitalController
     - PlayStationMouse
     - GunCon
-    - KonamiJustifier
+    - Justifier
   metadata:
     publisher: "Fox Interactive"
     developer: "N-Space"
@@ -37139,7 +37139,7 @@ SLES-02748:
     - DigitalController
     - PlayStationMouse
     - GunCon
-    - KonamiJustifier
+    - Justifier
   metadata:
     publisher: "Fox Interactive"
     developer: "N-Space"
@@ -37161,7 +37161,7 @@ SLES-02749:
     - DigitalController
     - PlayStationMouse
     - GunCon
-    - KonamiJustifier
+    - Justifier
   metadata:
     publisher: "Fox Interactive"
     developer: "N-Space"
@@ -37183,7 +37183,7 @@ SLUS-01015:
     - DigitalController
     - PlayStationMouse
     - GunCon
-    - KonamiJustifier
+    - Justifier
   metadata:
     publisher: "Fox Interactive"
     developer: "N-Space"
@@ -48310,7 +48310,7 @@ SLUS-00654:
     - AnalogController
     - DigitalController
     - GunCon
-    - KonamiJustifier
+    - Justifier
     - PlayStationMouse
   metadata:
     publisher: "Working Designs"
@@ -63836,7 +63836,7 @@ SCPS-10038:
     - AnalogController
     - DigitalController
     - GunCon
-    - KonamiJustifier
+    - Justifier
     - PlayStationMouse
   metadata:
     publisher: "Sony"
@@ -70483,7 +70483,7 @@ SLPM-86021:
   name: "Henry Explorers (Japan)"
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
   metadata:
     publisher: "Konami"
     developer: "Konami"
@@ -72407,7 +72407,7 @@ SCPS-10016:
   name: "Horned Owl (Japan)"
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
     - PlayStationMouse
   codes:
     - SCPS-10016
@@ -79170,7 +79170,7 @@ SLES-00755:
   controllers:
     - DigitalController
     - GunCon
-    - KonamiJustifier
+    - Justifier
   metadata:
     publisher: "Gremlin Graphics"
     developer: "Gremlin Graphics"
@@ -79193,7 +79193,7 @@ SLUS-00630:
   controllers:
     - DigitalController
     - GunCon
-    - KonamiJustifier
+    - Justifier
   metadata:
     publisher: "Activision"
     developer: "Gremlin Graphics"
@@ -89788,7 +89788,7 @@ SLES-00542:
   name: "Lethal Enforcers (Europe)"
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
   metadata:
     publisher: "Konami"
     developer: "Konami"
@@ -89807,7 +89807,7 @@ SLPM-86025:
   name: "Lethal Enforcers Deluxe Pack (Japan)"
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
   metadata:
     publisher: "Konami"
     developer: "Konami"
@@ -89826,7 +89826,7 @@ SLUS-00293:
   name: "Lethal Enforcers I & II (USA)"
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
   metadata:
     publisher: "Konami"
     developer: "Konami"
@@ -96536,7 +96536,7 @@ SLES-01001:
     - AnalogController
     - DigitalController
     - GunCon
-    - KonamiJustifier
+    - Justifier
   metadata:
     publisher: "Midway"
     developer: "Tantalus Entertainment"
@@ -96563,7 +96563,7 @@ SLUS-00503:
     - AnalogController
     - DigitalController
     - GunCon
-    - KonamiJustifier
+    - Justifier
   metadata:
     publisher: "Midway"
     developer: "Tantalus Entertainment"
@@ -99864,7 +99864,7 @@ SLPS-00583:
   name: "Mighty Hits (Japan)"
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
   metadata:
     publisher: "Altron"
     developer: "Altron"
@@ -99885,7 +99885,7 @@ SLES-02244:
     - AnalogController
     - DigitalController
     - GunCon
-    - KonamiJustifier
+    - Justifier
   metadata:
     publisher: "JVC"
     developer: "Altron"
@@ -99908,7 +99908,7 @@ SLPS-02165:
     - AnalogController
     - DigitalController
     - GunCon
-    - KonamiJustifier
+    - Justifier
   metadata:
     publisher: "Altron"
     developer: "Altron"
@@ -126754,7 +126754,7 @@ SCUS-94408:
   name: "Project - Horned Owl (USA)"
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
     - PlayStationMouse
   metadata:
     publisher: "Sony"
@@ -143583,7 +143583,7 @@ SCPS-45380:
   controllers:
     - AnalogController
     - DigitalController
-    - KonamiJustifier
+    - Justifier
   metadata:
     publisher: "Konami"
     developer: "KCET"
@@ -143610,7 +143610,7 @@ SLES-01514:
   controllers:
     - AnalogController
     - DigitalController
-    - KonamiJustifier
+    - Justifier
   traits:
     - ForceRecompilerICache
   metadata:
@@ -143641,7 +143641,7 @@ SLPM-86192:
   controllers:
     - AnalogController
     - DigitalController
-    - KonamiJustifier
+    - Justifier
   traits:
     - ForceRecompilerICache
   metadata:
@@ -143665,7 +143665,7 @@ SLPM-86498:
   controllers:
     - AnalogController
     - DigitalController
-    - KonamiJustifier
+    - Justifier
   codes:
     - SLPM-86498
     - SLPM-87029
@@ -143692,7 +143692,7 @@ SLUS-00707:
   controllers:
     - AnalogController
     - DigitalController
-    - KonamiJustifier
+    - Justifier
   traits:
     - ForceRecompilerICache
   metadata:
@@ -153685,7 +153685,7 @@ SLES-00654:
       - SLES-10654
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
   settings:
     dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
@@ -153712,7 +153712,7 @@ SLES-10654:
       - SLES-10654
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
   settings:
     dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
@@ -153739,7 +153739,7 @@ SLES-00656:
       - SLES-10656
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
   settings:
     dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
@@ -153766,7 +153766,7 @@ SLES-10656:
       - SLES-10656
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
   settings:
     dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
@@ -153793,7 +153793,7 @@ SLES-00584:
       - SLES-10584
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
   settings:
     dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
@@ -153820,7 +153820,7 @@ SLES-10584:
       - SLES-10584
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
   settings:
     dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
@@ -153847,7 +153847,7 @@ SLES-00643:
       - SLES-10643
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
   settings:
     dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
@@ -153874,7 +153874,7 @@ SLES-10643:
       - SLES-10643
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
   settings:
     dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
@@ -153901,7 +153901,7 @@ SLPS-00638:
       - SLPS-00639
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
   settings:
     dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
@@ -153928,7 +153928,7 @@ SLPS-00639:
       - SLPS-00639
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
   settings:
     dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
@@ -153958,7 +153958,7 @@ SLES-00644:
     versionTested: "0.1-4423-g32ab7c13"
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
   settings:
     dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
@@ -153988,7 +153988,7 @@ SLES-10644:
     versionTested: "0.1-4423-g32ab7c13"
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
   settings:
     dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
@@ -154015,7 +154015,7 @@ SLUS-00381:
       - SLUS-00386
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
   settings:
     dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1
@@ -154045,7 +154045,7 @@ SLUS-00386:
       - SLUS-00386
   controllers:
     - DigitalController
-    - KonamiJustifier
+    - Justifier
   settings:
     dmaMaxSliceTicks: 200
     gpuMaxRunAhead: 1

@@ -296,6 +296,7 @@
     <QtUi Include="controllerbindingwidget_negconrumble.ui" />
     <QtUi Include="audioexpansionsettingsdialog.ui" />
     <QtUi Include="audiostretchsettingsdialog.ui" />
+    <QtUi Include="controllerbindingwidget_justifier.ui" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="qt5.natvis" />

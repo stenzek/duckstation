@@ -8,6 +8,7 @@
 #include "fmt/format.h"
 #include "guncon.h"
 #include "host.h"
+#include "justifier.h"
 #include "negcon.h"
 #include "negcon_rumble.h"
 #include "playstation_mouse.h"
@@ -22,8 +23,9 @@ static const Controller::ControllerInfo s_none_info = {ControllerType::None,
                                                        Controller::VibrationCapabilities::NoVibration};
 
 static const Controller::ControllerInfo* s_controller_info[] = {
-  &s_none_info,  &DigitalController::INFO, &AnalogController::INFO, &AnalogJoystick::INFO,
-  &NeGcon::INFO, &NeGconRumble::INFO,      &GunCon::INFO,           &PlayStationMouse::INFO,
+  &s_none_info,     &DigitalController::INFO, &AnalogController::INFO, &AnalogJoystick::INFO,
+  &NeGcon::INFO,    &NeGconRumble::INFO,      &GunCon::INFO,           &PlayStationMouse::INFO,
+  &Justifier::INFO,
 };
 
 const char* Controller::ControllerInfo::GetDisplayName() const
@@ -99,6 +101,9 @@ std::unique_ptr<Controller> Controller::Create(ControllerType type, u32 index)
 
     case ControllerType::GunCon:
       return GunCon::Create(index);
+
+    case ControllerType::Justifier:
+      return Justifier::Create(index);
 
     case ControllerType::PlayStationMouse:
       return PlayStationMouse::Create(index);
