@@ -1,9 +1,11 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
 
 #include "gpu_device.h"
+
+#include "common/small_string.h"
 
 #include <sstream>
 #include <string>
@@ -15,6 +17,10 @@ public:
   ~ShaderGen();
 
   static bool UseGLSLBindingLayout();
+
+#ifdef ENABLE_OPENGL
+  static TinyString GetGLSLVersionString(RenderAPI render_api);
+#endif
 
   std::string GenerateScreenQuadVertexShader(float z = 0.0f);
   std::string GenerateUVQuadVertexShader();
@@ -30,10 +36,6 @@ protected:
 
   const char* GetInterpolationQualifier(bool interface_block, bool centroid_interpolation, bool sample_interpolation,
                                         bool is_out) const;
-
-#ifdef ENABLE_OPENGL
-  void SetGLSLVersionString();
-#endif
 
   void DefineMacro(std::stringstream& ss, const char* name, bool enabled);
   void DefineMacro(std::stringstream& ss, const char* name, s32 value);
@@ -64,5 +66,5 @@ protected:
   bool m_use_glsl_binding_layout;
   bool m_has_uniform_buffer = false;
 
-  std::string m_glsl_version_string;
+  TinyString m_glsl_version_string;
 };

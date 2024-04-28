@@ -1175,8 +1175,13 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
       const char* precision = (api == RenderAPI::OpenGLES) ?
                                 "precision highp float;\nprecision highp int;\nprecision highp sampler2D;\n" :
                                 "";
-      real_code = fmt::format("#version {}\n#define ENTRY_POINT_{}\n{}\n{}\n{}",
-                              (api == RenderAPI::OpenGLES) ? "320 es" : "460 core", name, defns, precision, code);
+
+      TinyString version_string = "#version 460 core\n";
+#ifdef ENABLE_OPENGL
+      if (api == RenderAPI::OpenGL || api == RenderAPI::OpenGLES)
+        version_string = ShaderGen::GetGLSLVersionString(api);
+#endif
+      real_code = fmt::format("{}\n#define ENTRY_POINT_{}\n{}\n{}\n{}", version_string, name, defns, precision, code);
 
       for (const Sampler& sampler : samplers)
       {

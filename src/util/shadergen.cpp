@@ -28,7 +28,7 @@ ShaderGen::ShaderGen(RenderAPI render_api, bool supports_dual_source_blend, bool
   {
 #ifdef ENABLE_OPENGL
     if (m_render_api == RenderAPI::OpenGL || m_render_api == RenderAPI::OpenGLES)
-      SetGLSLVersionString();
+      m_glsl_version_string = GetGLSLVersionString(m_render_api);
 
     m_use_glsl_interface_blocks = (IsVulkan() || IsMetal() || GLAD_GL_ES_VERSION_3_2 || GLAD_GL_VERSION_3_2);
     m_use_glsl_binding_layout = (IsVulkan() || IsMetal() || UseGLSLBindingLayout());
@@ -72,10 +72,10 @@ void ShaderGen::DefineMacro(std::stringstream& ss, const char* name, s32 value)
 }
 
 #ifdef ENABLE_OPENGL
-void ShaderGen::SetGLSLVersionString()
+TinyString ShaderGen::GetGLSLVersionString(RenderAPI render_api)
 {
   const char* glsl_version = reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION));
-  const bool glsl_es = (m_render_api == RenderAPI::OpenGLES);
+  const bool glsl_es = (render_api == RenderAPI::OpenGLES);
   Assert(glsl_version != nullptr);
 
   // Skip any strings in front of the version code.
@@ -100,19 +100,16 @@ void ShaderGen::SetGLSLVersionString()
   }
   else
   {
-    Log_ErrorPrintf("Invalid GLSL version string: '%s' ('%s')", glsl_version, glsl_version_start);
+    Log_ErrorFmt("Invalid GLSL version string: '{}' ('{}')", glsl_version, glsl_version_start);
     if (glsl_es)
     {
       major_version = 3;
       minor_version = 0;
     }
-    m_glsl_version_string = glsl_es ? "300" : "130";
   }
 
-  char buf[128];
-  std::snprintf(buf, sizeof(buf), "#version %d%02d%s", major_version, minor_version,
-                (glsl_es && major_version >= 3) ? " es" : "");
-  m_glsl_version_string = buf;
+  return TinyString::from_format("#version {}{:02d}{}", major_version, minor_version,
+                                 (glsl_es && major_version >= 3) ? " es" : "");
 }
 #endif
 
