@@ -325,7 +325,7 @@ void CPU::NewRec::AArch32Compiler::GenerateICacheCheckAndUpdate()
         continue;
 
       const u32 line = GetICacheLine(current_pc);
-      const u32 offset = offsetof(State, icache_tags) + (line * sizeof(u32));
+      const u32 offset = OFFSETOF(State, icache_tags) + (line * sizeof(u32));
 
       Label cache_hit;
       armAsm->ldr(existing_tag_reg, MemOperand(RSTATE, offset));
@@ -654,7 +654,7 @@ void CPU::NewRec::AArch32Compiler::Flush(u32 flags)
     // TODO: make it a function?
     armAsm->ldrb(RARG1, PTR(&g_state.load_delay_reg));
     armAsm->ldr(RARG2, PTR(&g_state.load_delay_value));
-    EmitMov(RSCRATCH, offsetof(CPU::State, regs.r[0]));
+    EmitMov(RSCRATCH, OFFSETOF(CPU::State, regs.r[0]));
     armAsm->add(RARG1, RSCRATCH, vixl::aarch32::Operand(RARG1, LSL, 2));
     armAsm->str(RARG2, MemOperand(RSTATE, RARG1));
     EmitMov(RSCRATCH, static_cast<u8>(Reg::count));

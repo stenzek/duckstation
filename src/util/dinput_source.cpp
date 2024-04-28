@@ -207,10 +207,10 @@ bool DInputSource::AddDevice(ControllerData& cd, const std::string& name)
 
   cd.num_buttons = caps.dwButtons;
 
-  static constexpr const u32 axis_offsets[] = {offsetof(DIJOYSTATE, lX),           offsetof(DIJOYSTATE, lY),
-                                               offsetof(DIJOYSTATE, lZ),           offsetof(DIJOYSTATE, lRz),
-                                               offsetof(DIJOYSTATE, lRx),          offsetof(DIJOYSTATE, lRy),
-                                               offsetof(DIJOYSTATE, rglSlider[0]), offsetof(DIJOYSTATE, rglSlider[1])};
+  static constexpr const u32 axis_offsets[] = {OFFSETOF(DIJOYSTATE, lX),           OFFSETOF(DIJOYSTATE, lY),
+                                               OFFSETOF(DIJOYSTATE, lZ),           OFFSETOF(DIJOYSTATE, lRz),
+                                               OFFSETOF(DIJOYSTATE, lRx),          OFFSETOF(DIJOYSTATE, lRy),
+                                               OFFSETOF(DIJOYSTATE, rglSlider[0]), OFFSETOF(DIJOYSTATE, rglSlider[1])};
   for (const u32 offset : axis_offsets)
   {
     // ask for 16 bits of axis range

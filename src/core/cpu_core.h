@@ -114,8 +114,8 @@ struct State
 
   std::array<u8, SCRATCHPAD_SIZE> scratchpad = {};
 
-  static constexpr u32 GPRRegisterOffset(u32 index) { return offsetof(State, regs.r) + (sizeof(u32) * index); }
-  static constexpr u32 GTERegisterOffset(u32 index) { return offsetof(State, gte_regs.r32) + (sizeof(u32) * index); }
+  static constexpr u32 GPRRegisterOffset(u32 index) { return OFFSETOF(State, regs.r) + (sizeof(u32) * index); }
+  static constexpr u32 GTERegisterOffset(u32 index) { return OFFSETOF(State, gte_regs.r32) + (sizeof(u32) * index); }
 };
 
 extern State g_state;

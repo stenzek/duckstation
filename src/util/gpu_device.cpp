@@ -472,11 +472,11 @@ bool GPUDevice::CreateResources()
 
   static constexpr GPUPipeline::VertexAttribute imgui_attributes[] = {
     GPUPipeline::VertexAttribute::Make(0, GPUPipeline::VertexAttribute::Semantic::Position, 0,
-                                       GPUPipeline::VertexAttribute::Type::Float, 2, offsetof(ImDrawVert, pos)),
+                                       GPUPipeline::VertexAttribute::Type::Float, 2, OFFSETOF(ImDrawVert, pos)),
     GPUPipeline::VertexAttribute::Make(1, GPUPipeline::VertexAttribute::Semantic::TexCoord, 0,
-                                       GPUPipeline::VertexAttribute::Type::Float, 2, offsetof(ImDrawVert, uv)),
+                                       GPUPipeline::VertexAttribute::Type::Float, 2, OFFSETOF(ImDrawVert, uv)),
     GPUPipeline::VertexAttribute::Make(2, GPUPipeline::VertexAttribute::Semantic::Color, 0,
-                                       GPUPipeline::VertexAttribute::Type::UNorm8, 4, offsetof(ImDrawVert, col)),
+                                       GPUPipeline::VertexAttribute::Type::UNorm8, 4, OFFSETOF(ImDrawVert, col)),
   };
 
   GPUPipeline::GraphicsConfig plconfig;

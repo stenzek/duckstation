@@ -226,7 +226,7 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
     // Downcount isn't set on entry, so we need to initialize it
     rvMoveAddressToReg(rvAsm, RARG1, TimingEvents::GetHeadEventPtr());
     rvAsm->LD(RARG1, 0, RARG1);
-    rvAsm->LW(RARG1, offsetof(TimingEvent, m_downcount), RARG1);
+    rvAsm->LW(RARG1, OFFSETOF(TimingEvent, m_downcount), RARG1);
     rvAsm->SW(RARG1, PTR(&g_state.downcount));
 
     // Fall through to event dispatcher
@@ -545,7 +545,7 @@ void CPU::NewRec::RISCV64Compiler::GenerateICacheCheckAndUpdate()
         continue;
 
       const u32 line = GetICacheLine(current_pc);
-      const u32 offset = offsetof(State, icache_tags) + (line * sizeof(u32));
+      const u32 offset = OFFSETOF(State, icache_tags) + (line * sizeof(u32));
 
       // TODO: Verify sign extension here...
       Label cache_hit;
@@ -900,7 +900,7 @@ void CPU::NewRec::RISCV64Compiler::Flush(u32 flags)
     rvAsm->LW(RARG2, PTR(&g_state.load_delay_value));
     rvAsm->SLLI(RARG1, RARG1, 2); // *4
     rvAsm->ADD(RARG1, RARG1, RSTATE);
-    rvAsm->SW(RARG2, offsetof(CPU::State, regs.r[0]), RARG1);
+    rvAsm->SW(RARG2, OFFSETOF(CPU::State, regs.r[0]), RARG1);
     rvAsm->LI(RSCRATCH, static_cast<u8>(Reg::count));
     rvAsm->SB(RSCRATCH, PTR(&g_state.load_delay_reg));
     m_load_delay_dirty = false;

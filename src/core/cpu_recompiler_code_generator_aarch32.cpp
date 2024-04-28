@@ -1421,7 +1421,7 @@ void CodeGenerator::EnsureMembaseLoaded()
   if (m_membase_loaded)
     return;
 
-  m_emit->Ldr(GetFastmemBasePtrReg(), a32::MemOperand(GetCPUPtrReg(), offsetof(State, fastmem_base)));
+  m_emit->Ldr(GetFastmemBasePtrReg(), a32::MemOperand(GetCPUPtrReg(), OFFSETOF(State, fastmem_base)));
   m_membase_loaded = true;
 }
 
@@ -1521,12 +1521,12 @@ void CodeGenerator::EmitLoadGuestMemoryFastmem(Instruction instruction, const Co
 
   // we add the ticks *after* the add here, since we counted incorrectly, then correct for it below
   DebugAssert(m_delayed_cycles_add > 0);
-  EmitAddCPUStructField(offsetof(State, pending_ticks), Value::FromConstantU32(static_cast<u32>(m_delayed_cycles_add)));
+  EmitAddCPUStructField(OFFSETOF(State, pending_ticks), Value::FromConstantU32(static_cast<u32>(m_delayed_cycles_add)));
   m_delayed_cycles_add += Bus::RAM_READ_TICKS;
 
   EmitLoadGuestMemorySlowmem(instruction, info, address, size, result, true);
 
-  EmitAddCPUStructField(offsetof(State, pending_ticks),
+  EmitAddCPUStructField(OFFSETOF(State, pending_ticks),
                         Value::FromConstantU32(static_cast<u32>(-m_delayed_cycles_add)));
 
   // return to the block code
@@ -1670,11 +1670,11 @@ void CodeGenerator::EmitStoreGuestMemoryFastmem(Instruction instruction, const C
   SwitchToFarCode();
 
   DebugAssert(m_delayed_cycles_add > 0);
-  EmitAddCPUStructField(offsetof(State, pending_ticks), Value::FromConstantU32(static_cast<u32>(m_delayed_cycles_add)));
+  EmitAddCPUStructField(OFFSETOF(State, pending_ticks), Value::FromConstantU32(static_cast<u32>(m_delayed_cycles_add)));
 
   EmitStoreGuestMemorySlowmem(instruction, info, address, size, actual_value, true);
 
-  EmitAddCPUStructField(offsetof(State, pending_ticks),
+  EmitAddCPUStructField(OFFSETOF(State, pending_ticks),
                         Value::FromConstantU32(static_cast<u32>(-m_delayed_cycles_add)));
 
   // return to the block code
@@ -1845,9 +1845,9 @@ void CodeGenerator::EmitFlushInterpreterLoadDelay()
   Value reg = Value::FromHostReg(&m_register_cache, 0, RegSize_32);
   Value value = Value::FromHostReg(&m_register_cache, 1, RegSize_32);
 
-  const a32::MemOperand load_delay_reg(GetCPUPtrReg(), offsetof(State, load_delay_reg));
-  const a32::MemOperand load_delay_value(GetCPUPtrReg(), offsetof(State, load_delay_value));
-  const a32::MemOperand regs_base(GetCPUPtrReg(), offsetof(State, regs.r[0]));
+  const a32::MemOperand load_delay_reg(GetCPUPtrReg(), OFFSETOF(State, load_delay_reg));
+  const a32::MemOperand load_delay_value(GetCPUPtrReg(), OFFSETOF(State, load_delay_value));
+  const a32::MemOperand regs_base(GetCPUPtrReg(), OFFSETOF(State, regs.r[0]));
 
   a32::Label skip_flush;
 
@@ -1863,7 +1863,7 @@ void CodeGenerator::EmitFlushInterpreterLoadDelay()
 
   // reg = offset(r[0] + reg << 2)
   m_emit->Lsl(GetHostReg32(reg), GetHostReg32(reg), 2);
-  m_emit->Add(GetHostReg32(reg), GetHostReg32(reg), offsetof(State, regs.r[0]));
+  m_emit->Add(GetHostReg32(reg), GetHostReg32(reg), OFFSETOF(State, regs.r[0]));
 
   // r[reg] = value
   m_emit->Str(GetHostReg32(value), a32::MemOperand(GetCPUPtrReg(), GetHostReg32(reg)));
@@ -1880,10 +1880,10 @@ void CodeGenerator::EmitMoveNextInterpreterLoadDelay()
   Value reg = Value::FromHostReg(&m_register_cache, 0, RegSize_32);
   Value value = Value::FromHostReg(&m_register_cache, 1, RegSize_32);
 
-  const a32::MemOperand load_delay_reg(GetCPUPtrReg(), offsetof(State, load_delay_reg));
-  const a32::MemOperand load_delay_value(GetCPUPtrReg(), offsetof(State, load_delay_value));
-  const a32::MemOperand next_load_delay_reg(GetCPUPtrReg(), offsetof(State, next_load_delay_reg));
-  const a32::MemOperand next_load_delay_value(GetCPUPtrReg(), offsetof(State, next_load_delay_value));
+  const a32::MemOperand load_delay_reg(GetCPUPtrReg(), OFFSETOF(State, load_delay_reg));
+  const a32::MemOperand load_delay_value(GetCPUPtrReg(), OFFSETOF(State, load_delay_value));
+  const a32::MemOperand next_load_delay_reg(GetCPUPtrReg(), OFFSETOF(State, next_load_delay_reg));
+  const a32::MemOperand next_load_delay_value(GetCPUPtrReg(), OFFSETOF(State, next_load_delay_value));
 
   m_emit->ldrb(GetHostReg32(reg), next_load_delay_reg);
   m_emit->ldr(GetHostReg32(value), next_load_delay_value);
@@ -1898,7 +1898,7 @@ void CodeGenerator::EmitCancelInterpreterLoadDelayForReg(Reg reg)
   if (!m_load_delay_dirty)
     return;
 
-  const a32::MemOperand load_delay_reg(GetCPUPtrReg(), offsetof(State, load_delay_reg));
+  const a32::MemOperand load_delay_reg(GetCPUPtrReg(), OFFSETOF(State, load_delay_reg));
   Value temp = Value::FromHostReg(&m_register_cache, RSCRATCH, RegSize_8);
 
   a32::Label skip_cancel;
@@ -1919,7 +1919,7 @@ void CodeGenerator::EmitICacheCheckAndUpdate()
 {
   if (GetSegmentForAddress(m_pc) >= Segment::KSEG1)
   {
-    EmitAddCPUStructField(offsetof(State, pending_ticks),
+    EmitAddCPUStructField(OFFSETOF(State, pending_ticks),
                           Value::FromConstantU32(static_cast<u32>(m_block->uncached_fetch_ticks)));
   }
   else
@@ -1929,7 +1929,7 @@ void CodeGenerator::EmitICacheCheckAndUpdate()
     const auto& existing_tag_reg = a32::r2;
 
     VirtualMemoryAddress current_pc = m_pc & ICACHE_TAG_ADDRESS_MASK;
-    m_emit->ldr(ticks_reg, a32::MemOperand(GetCPUPtrReg(), offsetof(State, pending_ticks)));
+    m_emit->ldr(ticks_reg, a32::MemOperand(GetCPUPtrReg(), OFFSETOF(State, pending_ticks)));
     m_emit->Mov(current_tag_reg, current_pc);
 
     for (u32 i = 0; i < m_block->icache_line_count; i++, current_pc += ICACHE_LINE_SIZE)
@@ -1939,7 +1939,7 @@ void CodeGenerator::EmitICacheCheckAndUpdate()
         continue;
 
       const u32 line = GetICacheLine(current_pc);
-      const u32 offset = offsetof(State, icache_tags) + (line * sizeof(u32));
+      const u32 offset = OFFSETOF(State, icache_tags) + (line * sizeof(u32));
 
       a32::Label cache_hit;
       m_emit->ldr(existing_tag_reg, a32::MemOperand(GetCPUPtrReg(), offset));
@@ -1954,7 +1954,7 @@ void CodeGenerator::EmitICacheCheckAndUpdate()
         m_emit->add(current_tag_reg, current_tag_reg, ICACHE_LINE_SIZE);
     }
 
-    m_emit->str(ticks_reg, a32::MemOperand(GetCPUPtrReg(), offsetof(State, pending_ticks)));
+    m_emit->str(ticks_reg, a32::MemOperand(GetCPUPtrReg(), OFFSETOF(State, pending_ticks)));
   }
 }
 
@@ -2036,10 +2036,10 @@ bool foo(const void* a, const void* b)
 
 void CodeGenerator::EmitStallUntilGTEComplete()
 {
-  static_assert(offsetof(State, pending_ticks) + sizeof(u32) == offsetof(State, gte_completion_tick));
+  static_assert(OFFSETOF(State, pending_ticks) + sizeof(u32) == OFFSETOF(State, gte_completion_tick));
 
-  m_emit->ldr(GetHostReg32(RARG1), a32::MemOperand(GetCPUPtrReg(), offsetof(State, pending_ticks)));
-  m_emit->ldr(GetHostReg32(RARG2), a32::MemOperand(GetCPUPtrReg(), offsetof(State, gte_completion_tick)));
+  m_emit->ldr(GetHostReg32(RARG1), a32::MemOperand(GetCPUPtrReg(), OFFSETOF(State, pending_ticks)));
+  m_emit->ldr(GetHostReg32(RARG2), a32::MemOperand(GetCPUPtrReg(), OFFSETOF(State, gte_completion_tick)));
 
   if (m_delayed_cycles_add > 0)
   {
@@ -2049,7 +2049,7 @@ void CodeGenerator::EmitStallUntilGTEComplete()
 
   m_emit->cmp(GetHostReg32(RARG2), GetHostReg32(RARG1));
   m_emit->mov(a32::hi, GetHostReg32(RARG1), GetHostReg32(RARG2));
-  m_emit->str(GetHostReg32(RARG1), a32::MemOperand(GetCPUPtrReg(), offsetof(State, pending_ticks)));
+  m_emit->str(GetHostReg32(RARG1), a32::MemOperand(GetCPUPtrReg(), OFFSETOF(State, pending_ticks)));
 }
 
 void CodeGenerator::EmitBranch(const void* address, bool allow_scratch)

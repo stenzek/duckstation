@@ -473,7 +473,7 @@ std::optional<u32> CDImageDeviceWin32::DoSCSICommand(u8 cmd[SCSI_CMD_LENGTH], st
   sptd.cmd.DataIn = out_buffer.empty() ? SCSI_IOCTL_DATA_UNSPECIFIED : SCSI_IOCTL_DATA_IN;
   sptd.cmd.DataTransferLength = static_cast<u32>(out_buffer.size());
   sptd.cmd.TimeOutValue = 10;
-  sptd.cmd.SenseInfoOffset = offsetof(SPTDBuffer, sense);
+  sptd.cmd.SenseInfoOffset = OFFSETOF(SPTDBuffer, sense);
   sptd.cmd.DataBuffer = out_buffer.empty() ? nullptr : out_buffer.data();
   std::memcpy(sptd.cmd.Cdb, cmd, SCSI_CMD_LENGTH);
 

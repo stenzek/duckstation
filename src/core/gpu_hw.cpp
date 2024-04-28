@@ -838,15 +838,15 @@ bool GPU_HW::CompilePipelines()
 
   static constexpr GPUPipeline::VertexAttribute vertex_attributes[] = {
     GPUPipeline::VertexAttribute::Make(0, GPUPipeline::VertexAttribute::Semantic::Position, 0,
-                                       GPUPipeline::VertexAttribute::Type::Float, 4, offsetof(BatchVertex, x)),
+                                       GPUPipeline::VertexAttribute::Type::Float, 4, OFFSETOF(BatchVertex, x)),
     GPUPipeline::VertexAttribute::Make(1, GPUPipeline::VertexAttribute::Semantic::Color, 0,
-                                       GPUPipeline::VertexAttribute::Type::UNorm8, 4, offsetof(BatchVertex, color)),
+                                       GPUPipeline::VertexAttribute::Type::UNorm8, 4, OFFSETOF(BatchVertex, color)),
     GPUPipeline::VertexAttribute::Make(2, GPUPipeline::VertexAttribute::Semantic::TexCoord, 0,
-                                       GPUPipeline::VertexAttribute::Type::UInt32, 1, offsetof(BatchVertex, u)),
+                                       GPUPipeline::VertexAttribute::Type::UInt32, 1, OFFSETOF(BatchVertex, u)),
     GPUPipeline::VertexAttribute::Make(3, GPUPipeline::VertexAttribute::Semantic::TexCoord, 1,
-                                       GPUPipeline::VertexAttribute::Type::UInt32, 1, offsetof(BatchVertex, texpage)),
+                                       GPUPipeline::VertexAttribute::Type::UInt32, 1, OFFSETOF(BatchVertex, texpage)),
     GPUPipeline::VertexAttribute::Make(4, GPUPipeline::VertexAttribute::Semantic::TexCoord, 2,
-                                       GPUPipeline::VertexAttribute::Type::UNorm8, 4, offsetof(BatchVertex, uv_limits)),
+                                       GPUPipeline::VertexAttribute::Type::UNorm8, 4, OFFSETOF(BatchVertex, uv_limits)),
   };
   static constexpr u32 NUM_BATCH_VERTEX_ATTRIBUTES = 2;
   static constexpr u32 NUM_BATCH_TEXTURED_VERTEX_ATTRIBUTES = 4;
