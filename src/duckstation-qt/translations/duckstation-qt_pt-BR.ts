@@ -2075,22 +2075,22 @@ Mensagens não lidas: {}</translation>
 <context>
     <name>CPUExecutionMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="941"/>
+        <location filename="../../core/settings.cpp" line="940"/>
         <source>Interpreter (Slowest)</source>
         <translation>Interpretador (mais lento)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="942"/>
+        <location filename="../../core/settings.cpp" line="941"/>
         <source>Cached Interpreter (Faster)</source>
         <translation>Interpretador armazenado (rápido)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="943"/>
+        <location filename="../../core/settings.cpp" line="942"/>
         <source>Recompiler (Fastest)</source>
         <translation>Recompilador (mais rápido)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="944"/>
+        <location filename="../../core/settings.cpp" line="943"/>
         <source>New Recompiler (Experimental)</source>
         <translation>Novo recompilador (experimental)</translation>
     </message>
@@ -2098,17 +2098,17 @@ Mensagens não lidas: {}</translation>
 <context>
     <name>CPUFastmemMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="972"/>
+        <location filename="../../core/settings.cpp" line="971"/>
         <source>Disabled (Slowest)</source>
         <translation>Desativado (Lento)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="973"/>
+        <location filename="../../core/settings.cpp" line="972"/>
         <source>MMap (Hardware, Fastest, 64-Bit Only)</source>
         <translation>MMap (hardware, mais rápido)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="974"/>
+        <location filename="../../core/settings.cpp" line="973"/>
         <source>LUT (Faster)</source>
         <translation>LUT (rápido)</translation>
     </message>
@@ -2367,22 +2367,22 @@ Mensagens não lidas: {}</translation>
 <context>
     <name>ConsoleRegion</name>
     <message>
-        <location filename="../../core/settings.cpp" line="881"/>
+        <location filename="../../core/settings.cpp" line="880"/>
         <source>Auto-Detect</source>
         <translation>Detectar automaticamente</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="881"/>
+        <location filename="../../core/settings.cpp" line="880"/>
         <source>NTSC-J (Japan)</source>
         <translation>NTSC-J (Japão)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="882"/>
+        <location filename="../../core/settings.cpp" line="881"/>
         <source>NTSC-U/C (US, Canada)</source>
         <translation>NTSC-U/C (US, Canadá)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="882"/>
+        <location filename="../../core/settings.cpp" line="881"/>
         <source>PAL (Europe, Australia)</source>
         <translation>PAL (Europeu, Austrália)</translation>
     </message>
@@ -2785,38 +2785,38 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <location filename="../controllerbindingwidget.ui" line="117"/>
-        <location filename="../controllerbindingwidgets.cpp" line="324"/>
+        <location filename="../controllerbindingwidgets.cpp" line="345"/>
         <source>Automatic Mapping</source>
         <translation>Mapeamento automático</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget.ui" line="131"/>
-        <location filename="../controllerbindingwidgets.cpp" line="273"/>
+        <location filename="../controllerbindingwidgets.cpp" line="294"/>
         <source>Clear Mapping</source>
         <translation>Limpar mapeamento</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="263"/>
+        <location filename="../controllerbindingwidgets.cpp" line="284"/>
         <source>No devices available</source>
         <translation>Nenhum dispositivo disponível</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="274"/>
+        <location filename="../controllerbindingwidgets.cpp" line="295"/>
         <source>Are you sure you want to clear all mappings for this controller? This action cannot be undone.</source>
         <translation>Tem certeza de que deseja limpar todos as atribuições para este controle? Essa ação não pode ser desfeita.</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="325"/>
+        <location filename="../controllerbindingwidgets.cpp" line="346"/>
         <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
         <translation>Nenhuma atribuição genérica foi gerada para o dispositivo &apos;%1&apos;. O controle pode não suportar o mapeamento automático gerado pelo emulador.</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="386"/>
+        <location filename="../controllerbindingwidgets.cpp" line="404"/>
         <source>Axes</source>
         <translation>Eixo</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="414"/>
+        <location filename="../controllerbindingwidgets.cpp" line="432"/>
         <source>Buttons</source>
         <translation>Botões</translation>
     </message>
@@ -3269,12 +3269,12 @@ This warning will only be shown once.</source>
     </message>
     <message>
         <location filename="../controllerbindingwidget_guncon.ui" line="476"/>
-        <source>&lt;p&gt;By default, GunCon will use the mouse pointer. To use the mouse, you &lt;strong&gt;do not&lt;/strong&gt; need to configure any bindings apart from the trigger and buttons.&lt;/p&gt;
+        <source>&lt;p&gt;By default, lightguns will use the mouse pointer. To use the mouse, you &lt;strong&gt;do not&lt;/strong&gt; need to configure any bindings apart from the trigger and buttons.&lt;/p&gt;
 
 &lt;p&gt;If you want to use a controller, or lightgun which simulates a controller instead of a mouse, then you should bind it to Relative Aiming. Otherwise, Relative Aiming should be &lt;strong&gt;left unbound&lt;/strong&gt;.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;Por padrão, o controle GunCon usará o ponteiro do mouse. Para usar o mouse, você &lt;strong&gt;não&lt;/strong&gt; precisa configurar nenhuma atribuição além do gatilho e dos botões.&lt;/p&gt;
+        <translation>&lt;p&gt;Por padrão, os controles do tipo pistola usarão o ponteiro do mouse. Para usar o mouse, &lt;strong&gt;não é necessário atribuir nehum botão além do gatilho e dos botões.&lt;/p&gt;
 
-&lt;p&gt;Se você quiser usar um controle ou lightgun que simule um controle em vez de um mouse, você deve vinculá-lo à Mira Relativa. Caso contrário, a Mira Relativa deve ser &lt;strong&gt;deixada desvinculada&lt;/strong&gt;.&lt;/p&gt;</translation>
+&lt;p&gt;Se quiser usar um controle ou um revólver que simule um controle ao invés do mouse, você deverá associá-lo à &lt;strong&gt;mira relativa. Caso contrário deixe como está&lt;/strong&gt;.&lt;/p&gt;</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_guncon.ui" line="65"/>
@@ -3303,6 +3303,87 @@ This warning will only be shown once.</source>
         <location filename="../controllerbindingwidget_guncon.ui" line="75"/>
         <source>Fire</source>
         <translation>Atirar</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerBindingWidget_Justifier</name>
+    <message>
+        <location filename="../controllerbindingwidget_justifier.ui" line="29"/>
+        <source>Trigger</source>
+        <translation>Gatilho</translation>
+    </message>
+    <message>
+        <location filename="../controllerbindingwidget_justifier.ui" line="35"/>
+        <source>Fire Offscreen</source>
+        <translation>Atirar fora da tela</translation>
+    </message>
+    <message>
+        <location filename="../controllerbindingwidget_justifier.ui" line="65"/>
+        <location filename="../controllerbindingwidget_justifier.ui" line="105"/>
+        <location filename="../controllerbindingwidget_justifier.ui" line="167"/>
+        <location filename="../controllerbindingwidget_justifier.ui" line="207"/>
+        <source>PushButton</source>
+        <translation>Pressione um botão</translation>
+    </message>
+    <message>
+        <location filename="../controllerbindingwidget_justifier.ui" line="75"/>
+        <source>Fire</source>
+        <translation>Atirar</translation>
+    </message>
+    <message>
+        <location filename="../controllerbindingwidget_justifier.ui" line="131"/>
+        <source>Side Buttons</source>
+        <translation>Botões frontais</translation>
+    </message>
+    <message>
+        <location filename="../controllerbindingwidget_justifier.ui" line="137"/>
+        <source>Back</source>
+        <translation>Voltar</translation>
+    </message>
+    <message>
+        <location filename="../controllerbindingwidget_justifier.ui" line="177"/>
+        <source>Start</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../controllerbindingwidget_justifier.ui" line="220"/>
+        <source>Relative Aiming</source>
+        <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
+        <translation>Mira relativa</translation>
+    </message>
+    <message>
+        <location filename="../controllerbindingwidget_justifier.ui" line="226"/>
+        <source>Down</source>
+        <translation>Baixo</translation>
+    </message>
+    <message>
+        <location filename="../controllerbindingwidget_justifier.ui" line="266"/>
+        <source>Left</source>
+        <translation>Esquerda</translation>
+    </message>
+    <message>
+        <location filename="../controllerbindingwidget_justifier.ui" line="306"/>
+        <source>Up</source>
+        <translation>Cima</translation>
+    </message>
+    <message>
+        <location filename="../controllerbindingwidget_justifier.ui" line="346"/>
+        <source>Right</source>
+        <translation>Direita</translation>
+    </message>
+    <message>
+        <location filename="../controllerbindingwidget_justifier.ui" line="470"/>
+        <source>Pointer Setup</source>
+        <translation>Configuração do ponteiro</translation>
+    </message>
+    <message>
+        <location filename="../controllerbindingwidget_justifier.ui" line="476"/>
+        <source>&lt;p&gt;By default, lightguns will use the mouse pointer. To use the mouse, you &lt;strong&gt;do not&lt;/strong&gt; need to configure any bindings apart from the trigger and buttons.&lt;/p&gt;
+
+&lt;p&gt;If you want to use a controller, or lightgun which simulates a controller instead of a mouse, then you should bind it to Relative Aiming. Otherwise, Relative Aiming should be &lt;strong&gt;left unbound&lt;/strong&gt;.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;Por padrão, os controles do tipo pistola usarão o ponteiro do mouse. Para usar o mouse, &lt;strong&gt;não é necessário atribuir nehum botão além do gatilho e dos botões.&lt;/p&gt;
+
+&lt;p&gt;Se quiser usar um controle ou um revólver que simule um controle ao invés do mouse, você deverá associá-lo à &lt;strong&gt;mira relativa. Caso contrário deixe como está&lt;/strong&gt;.&lt;/p&gt;</translation>
     </message>
 </context>
 <context>
@@ -3522,17 +3603,17 @@ This warning will only be shown once.</source>
 <context>
     <name>ControllerCustomSettingsWidget</name>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="855"/>
+        <location filename="../controllerbindingwidgets.cpp" line="867"/>
         <source>Restore Default Settings</source>
         <translation>Restaurar a configuração original</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="828"/>
+        <location filename="../controllerbindingwidgets.cpp" line="840"/>
         <source>Browse...</source>
         <translation>Buscar...</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="831"/>
+        <location filename="../controllerbindingwidgets.cpp" line="843"/>
         <source>Select File</source>
         <translation>Escolha o arquivo</translation>
     </message>
@@ -3767,27 +3848,27 @@ This warning will only be shown once.</source>
         <translation>Definir...</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="611"/>
+        <location filename="../controllerbindingwidgets.cpp" line="623"/>
         <source>Not Configured</source>
         <translation>Não configurado</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="617"/>
+        <location filename="../controllerbindingwidgets.cpp" line="629"/>
         <source>Set Frequency</source>
         <translation>Definir frequência</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="617"/>
+        <location filename="../controllerbindingwidgets.cpp" line="629"/>
         <source>Frequency: </source>
         <translation>Frequência: </translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="646"/>
+        <location filename="../controllerbindingwidgets.cpp" line="658"/>
         <source>Macro will not repeat.</source>
         <translation>O macro não se repetirá.</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="648"/>
+        <location filename="../controllerbindingwidgets.cpp" line="660"/>
         <source>Macro will toggle buttons every %1 frames.</source>
         <translation>O macro alternará os botões a cada %1 quadros.</translation>
     </message>
@@ -3795,12 +3876,12 @@ This warning will only be shown once.</source>
 <context>
     <name>ControllerMacroWidget</name>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="510"/>
+        <location filename="../controllerbindingwidgets.cpp" line="526"/>
         <source>Controller Port %1 Macros</source>
         <translation>Porta do controle %1 Macros</translation>
     </message>
     <message>
-        <location filename="../controllerbindingwidgets.cpp" line="519"/>
+        <location filename="../controllerbindingwidgets.cpp" line="535"/>
         <source>Macro %1
 %2</source>
         <translation>Macro %1
@@ -3855,7 +3936,7 @@ This warning will only be shown once.</source>
         <location filename="../controllersettingswindow.cpp" line="103"/>
         <location filename="../controllersettingswindow.cpp" line="136"/>
         <location filename="../controllersettingswindow.cpp" line="180"/>
-        <location filename="../controllersettingswindow.cpp" line="484"/>
+        <location filename="../controllersettingswindow.cpp" line="481"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
@@ -3929,33 +4010,33 @@ Esta ação não poderá ser desfeita.</translation>
         <translation>Configurações globais</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="399"/>
-        <location filename="../controllersettingswindow.cpp" line="438"/>
+        <location filename="../controllersettingswindow.cpp" line="397"/>
+        <location filename="../controllersettingswindow.cpp" line="435"/>
         <source>Controller Port %1%2
 %3</source>
         <translation>Porta do controle %1%2
 %3</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="400"/>
-        <location filename="../controllersettingswindow.cpp" line="439"/>
+        <location filename="../controllersettingswindow.cpp" line="398"/>
+        <location filename="../controllersettingswindow.cpp" line="436"/>
         <source>Controller Port %1
 %2</source>
         <translation>Porta do controle %1
 %2</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="410"/>
+        <location filename="../controllersettingswindow.cpp" line="408"/>
         <source>Hotkeys</source>
         <translation>Atalhos</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="462"/>
+        <location filename="../controllersettingswindow.cpp" line="459"/>
         <source>Shared</source>
         <translation>Compartilhado</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="484"/>
+        <location filename="../controllersettingswindow.cpp" line="481"/>
         <source>The input profile named &apos;%1&apos; cannot be found.</source>
         <translation>O perfil de entrada &apos;%1&apos; não pôde ser encontrado.</translation>
     </message>
@@ -3963,57 +4044,37 @@ Esta ação não poderá ser desfeita.</translation>
 <context>
     <name>ControllerType</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1576"/>
-        <source>None</source>
-        <translation>Nenhum</translation>
-    </message>
-    <message>
-        <location filename="../../core/settings.cpp" line="1583"/>
-        <source>NeGcon Rumble</source>
-        <translation>Vibração neGcon</translation>
-    </message>
-    <message>
         <location filename="../../core/digital_controller.cpp" line="184"/>
-        <location filename="../../core/settings.cpp" line="1577"/>
         <source>Digital Controller</source>
         <translation>Controle digital</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1578"/>
-        <source>Analog Controller (DualShock)</source>
-        <translation>Controle analógico (dualshock)</translation>
-    </message>
-    <message>
         <location filename="../../core/analog_joystick.cpp" line="411"/>
-        <location filename="../../core/settings.cpp" line="1579"/>
         <source>Analog Joystick</source>
         <translation>Controle analógico</translation>
     </message>
     <message>
         <location filename="../../core/playstation_mouse.cpp" line="222"/>
-        <location filename="../../core/settings.cpp" line="1581"/>
         <source>PlayStation Mouse</source>
         <translation>Mouse Playstation</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="345"/>
-        <location filename="../../core/settings.cpp" line="1582"/>
         <source>NeGcon</source>
         <translation>NeGcon</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="878"/>
+        <location filename="../../core/analog_controller.cpp" line="879"/>
         <source>Analog Controller</source>
         <translation>Controle analógico</translation>
     </message>
     <message>
         <location filename="../../core/guncon.cpp" line="306"/>
-        <location filename="../../core/settings.cpp" line="1580"/>
         <source>GunCon</source>
         <translation>GunCon</translation>
     </message>
     <message>
-        <location filename="../../core/controller.cpp" line="18"/>
+        <location filename="../../core/controller.cpp" line="19"/>
         <source>Not Connected</source>
         <translation>Não conectado</translation>
     </message>
@@ -4021,6 +4082,11 @@ Esta ação não poderá ser desfeita.</translation>
         <location filename="../../core/negcon_rumble.cpp" line="764"/>
         <source>NeGcon with Rumble</source>
         <translation>NeGcon com vibração</translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="388"/>
+        <source>Justifier</source>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -4677,27 +4743,27 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>DiscRegion</name>
     <message>
-        <location filename="../../core/settings.cpp" line="910"/>
+        <location filename="../../core/settings.cpp" line="909"/>
         <source>NTSC-J (Japan)</source>
         <translation>NTSC-J (Japão)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="910"/>
+        <location filename="../../core/settings.cpp" line="909"/>
         <source>NTSC-U/C (US, Canada)</source>
         <translation>NTSC-U/C (US, Canadá)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="911"/>
+        <location filename="../../core/settings.cpp" line="910"/>
         <source>PAL (Europe, Australia)</source>
         <translation>PAL (Europeu, Austrália)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="911"/>
+        <location filename="../../core/settings.cpp" line="910"/>
         <source>Other</source>
         <translation>Outros</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="912"/>
+        <location filename="../../core/settings.cpp" line="911"/>
         <source>Non-PS1</source>
         <translation></translation>
     </message>
@@ -4705,17 +4771,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>DisplayAlignment</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1392"/>
+        <location filename="../../core/settings.cpp" line="1391"/>
         <source>Left / Top</source>
         <translation>Topo superior</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1392"/>
+        <location filename="../../core/settings.cpp" line="1391"/>
         <source>Center</source>
         <translation>Centro</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1393"/>
+        <location filename="../../core/settings.cpp" line="1392"/>
         <source>Right / Bottom</source>
         <translation>Esquerda inferior</translation>
     </message>
@@ -4723,17 +4789,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>DisplayAspectRatio</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1325"/>
+        <location filename="../../core/settings.cpp" line="1324"/>
         <source>Auto (Game Native)</source>
         <translation>Auto (resolução nativa)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1326"/>
+        <location filename="../../core/settings.cpp" line="1325"/>
         <source>Stretch To Fill</source>
         <translation>Esticar para preencher</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1327"/>
+        <location filename="../../core/settings.cpp" line="1326"/>
         <source>Custom</source>
         <translation>Personalizado</translation>
     </message>
@@ -4741,17 +4807,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>DisplayCropMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1296"/>
+        <location filename="../../core/settings.cpp" line="1295"/>
         <source>None</source>
         <translation>Nenhuma</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1296"/>
+        <location filename="../../core/settings.cpp" line="1295"/>
         <source>Only Overscan Area</source>
         <translation>Somente área renderizada</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1297"/>
+        <location filename="../../core/settings.cpp" line="1296"/>
         <source>All Borders</source>
         <translation>Todas as bordas</translation>
     </message>
@@ -4759,22 +4825,22 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>DisplayDeinterlacingMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1263"/>
+        <location filename="../../core/settings.cpp" line="1262"/>
         <source>Disabled (Flickering)</source>
         <translation>Oscilação (desativada)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1264"/>
+        <location filename="../../core/settings.cpp" line="1263"/>
         <source>Weave (Combing)</source>
         <translation>Ondulação</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1265"/>
+        <location filename="../../core/settings.cpp" line="1264"/>
         <source>Blend (Blur)</source>
         <translation>Desfoque</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1266"/>
+        <location filename="../../core/settings.cpp" line="1265"/>
         <source>Adaptive (FastMAD)</source>
         <translation>Adaptativo (rápido)</translation>
     </message>
@@ -4782,22 +4848,22 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>DisplayScalingMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1426"/>
+        <location filename="../../core/settings.cpp" line="1425"/>
         <source>Nearest-Neighbor</source>
         <translation>Nearest-Neighbor</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1427"/>
+        <location filename="../../core/settings.cpp" line="1426"/>
         <source>Bilinear (Smooth)</source>
         <translation>Bilinear (suave)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1428"/>
+        <location filename="../../core/settings.cpp" line="1427"/>
         <source>Nearest-Neighbor (Integer)</source>
         <translation>Nearest-Neighbor (integro)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1429"/>
+        <location filename="../../core/settings.cpp" line="1428"/>
         <source>Bilinear (Sharp)</source>
         <translation>Bilinear (forte)</translation>
     </message>
@@ -8612,12 +8678,12 @@ Deseja fazer {0} mesmo assim?</translation>
 <context>
     <name>GPU</name>
     <message>
-        <location filename="../../core/gpu.cpp" line="2290"/>
+        <location filename="../../core/gpu.cpp" line="2346"/>
         <source>Saving screenshot to &apos;{}&apos;.</source>
         <translation>Salvando a captura de tela em &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu.cpp" line="2342"/>
+        <location filename="../../core/gpu.cpp" line="2398"/>
         <source>Failed to save screenshot to &apos;{}&apos;.</source>
         <translation>Falha ao salvar a captura de tela &apos;{}&apos;.</translation>
     </message>
@@ -8638,17 +8704,17 @@ Deseja fazer {0} mesmo assim?</translation>
 <context>
     <name>GPUDownsampleMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1199"/>
+        <location filename="../../core/settings.cpp" line="1198"/>
         <source>Disabled</source>
         <translation>Desativado</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1200"/>
+        <location filename="../../core/settings.cpp" line="1199"/>
         <source>Box (Downsample 3D/Smooth All)</source>
         <translation>Misto (Reduz 3D / Suaviza tudo)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1201"/>
+        <location filename="../../core/settings.cpp" line="1200"/>
         <source>Adaptive (Preserve 3D/Smooth 2D)</source>
         <translation>Adaptativo (Preserva o 3D / Suaviza 2D)</translation>
     </message>
@@ -8656,22 +8722,22 @@ Deseja fazer {0} mesmo assim?</translation>
 <context>
     <name>GPULineDetectMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1167"/>
+        <location filename="../../core/settings.cpp" line="1166"/>
         <source>Disabled</source>
         <translation>Desativado</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1168"/>
+        <location filename="../../core/settings.cpp" line="1167"/>
         <source>Quads</source>
         <translation>Quadrantes</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1169"/>
+        <location filename="../../core/settings.cpp" line="1168"/>
         <source>Triangles (Basic)</source>
         <translation>Triângulos (básico)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1170"/>
+        <location filename="../../core/settings.cpp" line="1169"/>
         <source>Triangles (Aggressive)</source>
         <translation>Triângulos (agressivo)</translation>
     </message>
@@ -8679,38 +8745,38 @@ Deseja fazer {0} mesmo assim?</translation>
 <context>
     <name>GPURenderer</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1017"/>
+        <location filename="../../core/settings.cpp" line="1016"/>
         <source>Automatic</source>
         <translation>Automático</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1019"/>
+        <location filename="../../core/settings.cpp" line="1018"/>
         <source>Direct3D 11</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1019"/>
+        <location filename="../../core/settings.cpp" line="1018"/>
         <source>Direct3D 12</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1022"/>
+        <location filename="../../core/settings.cpp" line="1021"/>
         <source>Metal</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1025"/>
+        <location filename="../../core/settings.cpp" line="1024"/>
         <source>Vulkan</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1028"/>
+        <location filename="../../core/settings.cpp" line="1027"/>
         <source>OpenGL</source>
         <translation></translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="1868"/>
-        <location filename="../../core/settings.cpp" line="1030"/>
+        <location filename="../../core/settings.cpp" line="1029"/>
         <source>Software</source>
         <translation>Software</translation>
     </message>
@@ -8718,37 +8784,37 @@ Deseja fazer {0} mesmo assim?</translation>
 <context>
     <name>GPUTextureFilter</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1127"/>
+        <location filename="../../core/settings.cpp" line="1126"/>
         <source>Nearest-Neighbor</source>
         <translation>Nearest-Neighbor</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1128"/>
+        <location filename="../../core/settings.cpp" line="1127"/>
         <source>Bilinear</source>
         <translation>Bi-linear</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1130"/>
+        <location filename="../../core/settings.cpp" line="1129"/>
         <source>JINC2 (Slow)</source>
         <translation>JINC2 (Lento)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1131"/>
+        <location filename="../../core/settings.cpp" line="1130"/>
         <source>JINC2 (Slow, No Edge Blending)</source>
         <translation>JINC2 (Lento, sem AA)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1132"/>
+        <location filename="../../core/settings.cpp" line="1131"/>
         <source>xBR (Very Slow)</source>
         <translation>xBR (Muito lento)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1133"/>
+        <location filename="../../core/settings.cpp" line="1132"/>
         <source>xBR (Very Slow, No Edge Blending)</source>
         <translation>xBR (Muito lento sem AA)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1129"/>
+        <location filename="../../core/settings.cpp" line="1128"/>
         <source>Bilinear (No Edge Blending)</source>
         <translation>Bi-linear (sem AA)</translation>
     </message>
@@ -8756,17 +8822,17 @@ Deseja fazer {0} mesmo assim?</translation>
 <context>
     <name>GPUWireframeMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1229"/>
+        <location filename="../../core/settings.cpp" line="1228"/>
         <source>Disabled</source>
         <translation>Desativado</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1229"/>
+        <location filename="../../core/settings.cpp" line="1228"/>
         <source>Overlay Wireframe</source>
         <translation>Sobreposição</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1230"/>
+        <location filename="../../core/settings.cpp" line="1229"/>
         <source>Only Wireframe</source>
         <translation>Esboço</translation>
     </message>
@@ -8822,7 +8888,7 @@ Deseja fazer {0} mesmo assim?</translation>
 <context>
     <name>GS</name>
     <message>
-        <location filename="../../core/gpu.cpp" line="2341"/>
+        <location filename="../../core/gpu.cpp" line="2397"/>
         <source>Saved screenshot to &apos;{}&apos;.</source>
         <translation>Captura de tela salva em &apos;{}&apos;.</translation>
     </message>
@@ -8903,32 +8969,32 @@ Deseja fazer {0} mesmo assim?</translation>
 <context>
     <name>GameListCompatibilityRating</name>
     <message>
-        <location filename="../../core/game_database.cpp" line="56"/>
+        <location filename="../../core/game_database.cpp" line="57"/>
         <source>Unknown</source>
         <translation>Desconhecido</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="57"/>
+        <location filename="../../core/game_database.cpp" line="58"/>
         <source>Doesn&apos;t Boot</source>
         <translation>Não funciona</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="58"/>
+        <location filename="../../core/game_database.cpp" line="59"/>
         <source>Crashes In Intro</source>
         <translation>Quebra logo no início</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="59"/>
+        <location filename="../../core/game_database.cpp" line="60"/>
         <source>Crashes In-Game</source>
         <translation>Quebra durante o jogo</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="60"/>
+        <location filename="../../core/game_database.cpp" line="61"/>
         <source>Graphical/Audio Issues</source>
         <translation>Problemas de áudio e vídeo</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="61"/>
+        <location filename="../../core/game_database.cpp" line="62"/>
         <source>No Issues</source>
         <translation>Sem problemas</translation>
     </message>
@@ -9235,100 +9301,100 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <translation>Editar...</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="68"/>
-        <location filename="../gamesummarywidget.cpp" line="78"/>
-        <location filename="../gamesummarywidget.cpp" line="105"/>
-        <location filename="../gamesummarywidget.cpp" line="121"/>
-        <location filename="../gamesummarywidget.cpp" line="126"/>
+        <location filename="../gamesummarywidget.cpp" line="69"/>
+        <location filename="../gamesummarywidget.cpp" line="79"/>
+        <location filename="../gamesummarywidget.cpp" line="106"/>
+        <location filename="../gamesummarywidget.cpp" line="122"/>
         <location filename="../gamesummarywidget.cpp" line="127"/>
         <location filename="../gamesummarywidget.cpp" line="128"/>
         <location filename="../gamesummarywidget.cpp" line="129"/>
         <location filename="../gamesummarywidget.cpp" line="130"/>
+        <location filename="../gamesummarywidget.cpp" line="131"/>
         <source>Unknown</source>
         <translation>Desconhecido</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="70"/>
+        <location filename="../gamesummarywidget.cpp" line="71"/>
         <source>%1 (Published by %2)</source>
         <translation>%1 (Publicado por %2)</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="76"/>
+        <location filename="../gamesummarywidget.cpp" line="77"/>
         <source>Published by %1</source>
         <translation>Publicado por %1</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="83"/>
+        <location filename="../gamesummarywidget.cpp" line="84"/>
         <source>Released %1</source>
         <translation>Lançado %1</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="89"/>
+        <location filename="../gamesummarywidget.cpp" line="90"/>
         <source>%1-%2 players</source>
         <translation>%1-%2 Jogadores</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="91"/>
+        <location filename="../gamesummarywidget.cpp" line="92"/>
         <source>%1 players</source>
         <translation>%1 Jogadores</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="98"/>
+        <location filename="../gamesummarywidget.cpp" line="99"/>
         <source>%1-%2 memory card blocks</source>
         <translation>%1-%2 blocos de cartão de memória</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="100"/>
+        <location filename="../gamesummarywidget.cpp" line="101"/>
         <source>%1 memory card blocks</source>
         <translation>%1 blocos de cartão de memória</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="140"/>
+        <location filename="../gamesummarywidget.cpp" line="141"/>
         <source>Use Global Settings</source>
         <translation>Usar configuração global</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="182"/>
+        <location filename="../gamesummarywidget.cpp" line="183"/>
         <source>Track %1</source>
         <translation>Faixa %1</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="190"/>
+        <location filename="../gamesummarywidget.cpp" line="191"/>
         <source>&lt;not computed&gt;</source>
         <translation>&lt;Não calculado&gt;</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="218"/>
+        <location filename="../gamesummarywidget.cpp" line="219"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="218"/>
+        <location filename="../gamesummarywidget.cpp" line="219"/>
         <source>Failed to open CD image for hashing.</source>
         <translation>Falha ao abrir a imagem do CD.</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="258"/>
+        <location filename="../gamesummarywidget.cpp" line="259"/>
         <source>Verifying hashes...</source>
         <translation>Calculando valores...</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="317"/>
+        <location filename="../gamesummarywidget.cpp" line="318"/>
         <source>Revision: %1</source>
         <translation>Revisão: %1</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="317"/>
+        <location filename="../gamesummarywidget.cpp" line="318"/>
         <source>N/A</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="322"/>
+        <location filename="../gamesummarywidget.cpp" line="323"/>
         <source>Serial Mismatch: %1 vs %2</source>
         <translation>Número de série incompatível: %1 vs %2 {1 ?}</translation>
     </message>
     <message>
-        <location filename="../gamesummarywidget.cpp" line="362"/>
+        <location filename="../gamesummarywidget.cpp" line="363"/>
         <source>Search on Redump.org</source>
         <translation>Procurar em Redump.org</translation>
     </message>
@@ -11354,54 +11420,193 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     </message>
 </context>
 <context>
+    <name>Justifier</name>
+    <message>
+        <location filename="../../core/justifier.cpp" line="335"/>
+        <source>Trigger</source>
+        <translation>Gatilho</translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="336"/>
+        <source>Shoot Offscreen</source>
+        <translation>Atirar para fora da tela</translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="337"/>
+        <source>Start</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="338"/>
+        <source>Back</source>
+        <translation>Voltar</translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="340"/>
+        <source>Relative Left</source>
+        <translation>Relativo para esquerda</translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="341"/>
+        <source>Relative Right</source>
+        <translation>Relativo para direita</translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="342"/>
+        <source>Relative Up</source>
+        <translation>Relativo para cima</translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="343"/>
+        <source>Relative Down</source>
+        <translation>Relativo para baixo</translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="350"/>
+        <source>Crosshair Image Path</source>
+        <translation>Caminho da imagem da mira</translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="351"/>
+        <source>Path to an image to use as a crosshair/cursor.</source>
+        <translation>Caminho da imagem a ser usada como cursor.</translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="353"/>
+        <source>Crosshair Image Scale</source>
+        <translation>Escala de mira</translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="354"/>
+        <source>Scale of crosshair image on screen.</source>
+        <translation>Escala da mira em tela.</translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="356"/>
+        <source>Cursor Color</source>
+        <translation>Cor do cursor</translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="357"/>
+        <source>Applies a color to the chosen crosshair images, can be used for multiple players. Specify in HTML/CSS format (e.g. #aabbcc)</source>
+        <translation>Aplica uma cor às imagens de mira escolhidas, pode ser usado por vários jogadores. Especifique no formato HTML/CSS (por exemplo, #aabbcc)</translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="361"/>
+        <source>X Scale</source>
+        <translation>Dimensão X (verticalmente)</translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="362"/>
+        <source>Scales X coordinates relative to the center of the screen.</source>
+        <translation>Dimensionar coordenadas X em relação ao centro da tela .</translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="364"/>
+        <source>Line Start Offset</source>
+        <translation>Deslocamento do início da linha</translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="365"/>
+        <source>Offset applied to lightgun vertical position that the Justifier will first trigger on.</source>
+        <translation>Deslocamento aplicado à posição vertical da pistola em que será acionado pela primeira vez.</translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="368"/>
+        <source>Line End Offset</source>
+        <translation>Deslocamento do final da linha</translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="369"/>
+        <source>Offset applied to lightgun vertical position that the Justifier will last trigger on.</source>
+        <translation>Deslocamento aplicado à posição vertical da pistola em que será acionado pela última vez.</translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="371"/>
+        <source>Tick Offset</source>
+        <translation>Deslocamento de tique (gatilho)</translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="372"/>
+        <source>Offset applied to lightgun horizontal position that the Justifier will trigger on.</source>
+        <translation>Deslocamento aplicado à posição horizontal da pistola em que será acionado.</translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="374"/>
+        <source>Off-Screen Out-Of-Bounds Frames</source>
+        <translation>Quadros fora da tela e fora dos limites</translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="375"/>
+        <source>Number of frames that the Justifier is pointed out-of-bounds for an off-screen shot.</source>
+        <translation>Número de quadros em que a pistola é apontada para fora dos limites para um tiro fora da tela.</translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="377"/>
+        <location filename="../../core/justifier.cpp" line="380"/>
+        <source>Off-Screen Trigger Frames</source>
+        <translation>Quadros de acionamento fora da tela</translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="378"/>
+        <source>Number of frames that the trigger is held for an off-screen shot.</source>
+        <translation>Número de quadros em que o gatilho é mantido para uma foto fora da tela.</translation>
+    </message>
+    <message>
+        <location filename="../../core/justifier.cpp" line="381"/>
+        <source>Number of frames that the Justifier is pointed out-of-bounds after the trigger is released, for an off-screen shot.</source>
+        <translation>Número de quadros em que a pistola é apontado para fora dos limites depois que o gatilho é liberado, para uma quadro fora da tela.</translation>
+    </message>
+</context>
+<context>
     <name>LogLevel</name>
     <message>
-        <location filename="../../core/settings.cpp" line="849"/>
+        <location filename="../../core/settings.cpp" line="848"/>
         <source>None</source>
         <translation>Nenhum</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="849"/>
+        <location filename="../../core/settings.cpp" line="848"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="850"/>
+        <location filename="../../core/settings.cpp" line="849"/>
         <source>Warning</source>
         <translation>Alerta</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="850"/>
+        <location filename="../../core/settings.cpp" line="849"/>
         <source>Performance</source>
         <translation>Desempenho</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="851"/>
+        <location filename="../../core/settings.cpp" line="850"/>
         <source>Information</source>
         <translation>Informação</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="852"/>
+        <location filename="../../core/settings.cpp" line="851"/>
         <source>Developer</source>
         <translation>Desenvolvedor</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="852"/>
+        <location filename="../../core/settings.cpp" line="851"/>
         <source>Profile</source>
         <translation>Perfil</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="851"/>
+        <location filename="../../core/settings.cpp" line="850"/>
         <source>Verbose</source>
         <translation>Detalhado</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="853"/>
+        <location filename="../../core/settings.cpp" line="852"/>
         <source>Debug</source>
         <translation>Depurar</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="853"/>
+        <location filename="../../core/settings.cpp" line="852"/>
         <source>Trace</source>
         <translation>Rastreio</translation>
     </message>
@@ -12892,32 +13097,32 @@ Tem certeza de que deseja continuar?</translation>
 <context>
     <name>MemoryCardType</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1612"/>
+        <location filename="../../core/settings.cpp" line="1574"/>
         <source>No Memory Card</source>
         <translation>Sem cartão de memória</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1613"/>
+        <location filename="../../core/settings.cpp" line="1575"/>
         <source>Shared Between All Games</source>
         <translation>Compartilhada entre jogos</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1614"/>
+        <location filename="../../core/settings.cpp" line="1576"/>
         <source>Separate Card Per Game (Serial)</source>
         <translation>Cartão separado por jogo (Serial)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1615"/>
+        <location filename="../../core/settings.cpp" line="1577"/>
         <source>Separate Card Per Game (Title)</source>
         <translation>Cartão separado por jogo (título)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1616"/>
+        <location filename="../../core/settings.cpp" line="1578"/>
         <source>Separate Card Per Game (File Title)</source>
         <translation>Separar cartão por jogo (título do arquivo)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1617"/>
+        <location filename="../../core/settings.cpp" line="1579"/>
         <source>Non-Persistent Card (Do Not Save)</source>
         <translation>Cartão não persistente (não salvar)</translation>
     </message>
@@ -13230,22 +13435,22 @@ Tem certeza de que deseja continuar?</translation>
 <context>
     <name>MultitapMode</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1669"/>
+        <location filename="../../core/settings.cpp" line="1631"/>
         <source>Disabled</source>
         <translation>Desativado</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1669"/>
+        <location filename="../../core/settings.cpp" line="1631"/>
         <source>Enable on Port 1 Only</source>
         <translation>Ativar somente na porta 1</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1670"/>
+        <location filename="../../core/settings.cpp" line="1632"/>
         <source>Enable on Port 2 Only</source>
         <translation>Ativar somente na porta 2</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1670"/>
+        <location filename="../../core/settings.cpp" line="1632"/>
         <source>Enable on Ports 1 and 2</source>
         <translation>Ativar nas portas 1 e 2</translation>
     </message>
@@ -13579,27 +13784,27 @@ Tem certeza de que deseja continuar?</translation>
         <translation>Sistema reiniciado.</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="715"/>
+        <location filename="../../core/settings.cpp" line="714"/>
         <source>Disabling PCDrv because no root directory is specified.</source>
         <translation>PCDrv desativado porque nenhum diretório raiz foi especificado.</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="728"/>
+        <location filename="../../core/settings.cpp" line="727"/>
         <source>PGXP is incompatible with the software renderer, disabling PGXP.</source>
         <translation>PGXP é incompatível com o rederizador por software, desligando PGXP.</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="746"/>
+        <location filename="../../core/settings.cpp" line="745"/>
         <source>Rewind is not supported on 32-bit ARM for Android.</source>
         <translation>O retrocesso não é compatível com o a plataforma ARM de 32 bits para Android.</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="752"/>
+        <location filename="../../core/settings.cpp" line="751"/>
         <source>Runahead is not supported on 32-bit ARM for Android.</source>
         <translation>Pulo de quadros não é compatível com a versão de 32Bits.</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="761"/>
+        <location filename="../../core/settings.cpp" line="760"/>
         <source>Rewind is disabled because runahead is enabled.</source>
         <translation>Função de retrocesso desligada porque o avanço rápido está ligado.</translation>
     </message>
@@ -13837,97 +14042,97 @@ Usando a seguinte imagem &apos;{}&apos;, isso pode resultar em instabilidade.</t
         <translation>Texturas de pós-processamento recarregadas.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="372"/>
+        <location filename="../../core/game_database.cpp" line="373"/>
         <source>CPU interpreter forced by compatibility settings.</source>
         <translation>Interpretador do CPU forçado pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="384"/>
+        <location filename="../../core/game_database.cpp" line="385"/>
         <source>Software renderer forced by compatibility settings.</source>
         <translation>Renderizador de software forçado pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="397"/>
+        <location filename="../../core/game_database.cpp" line="398"/>
         <source>Using software renderer for readbacks based on compatibility settings.</source>
         <translation>Usando o renderizador de software para releituras com base nas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="409"/>
+        <location filename="../../core/game_database.cpp" line="410"/>
         <source>Interlacing forced by compatibility settings.</source>
         <translation>Entrelaçamento forçado pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="421"/>
+        <location filename="../../core/game_database.cpp" line="422"/>
         <source>True color disabled by compatibility settings.</source>
         <translation>Cor real desativada pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="433"/>
+        <location filename="../../core/game_database.cpp" line="434"/>
         <source>Upscaling disabled by compatibility settings.</source>
         <translation>Aumento de escala desativado pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="445"/>
+        <location filename="../../core/game_database.cpp" line="446"/>
         <source>Texture filtering disabled by compatibility settings.</source>
         <translation>Filtragem de textura desativada pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="457"/>
+        <location filename="../../core/game_database.cpp" line="458"/>
         <source>Scaled dithering disabled by compatibility settings.</source>
         <translation>Escalonamento do dithering desativado pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="469"/>
+        <location filename="../../core/game_database.cpp" line="470"/>
         <source>Widescreen rendering disabled by compatibility settings.</source>
         <translation>Renderização de tela utra larga desativada pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="481"/>
+        <location filename="../../core/game_database.cpp" line="482"/>
         <source>Forcing NTSC Timings disallowed by compatibility settings.</source>
         <translation>Temporizações NTSC não permitidas pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="494"/>
+        <location filename="../../core/game_database.cpp" line="495"/>
         <source>PGXP geometry correction disabled by compatibility settings.</source>
         <translation>Correção da geometria do PGXP desativada pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="505"/>
+        <location filename="../../core/game_database.cpp" line="506"/>
         <source>PGXP culling disabled by compatibility settings.</source>
         <translation>Opções de PGXP desativadas pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="518"/>
+        <location filename="../../core/game_database.cpp" line="519"/>
         <source>PGXP perspective corrected textures disabled by compatibility settings.</source>
         <translation>Perspectiva PGXP corrigiu as texturas desativadas pelas configurações por jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="532"/>
+        <location filename="../../core/game_database.cpp" line="533"/>
         <source>PGXP perspective corrected colors disabled by compatibility settings.</source>
         <translation>Perspectiva PGXP corrigiu as cores desativadas pelas configurações por jogo.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="545"/>
+        <location filename="../../core/game_database.cpp" line="546"/>
         <source>PGXP projection precision preservation disabled by compatibility settings.</source>
         <translation>PGXP desativado pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="557"/>
+        <location filename="../../core/game_database.cpp" line="558"/>
         <source>PGXP vertex cache forced by compatibility settings.</source>
         <translation>Cache de vértices PGXP forçado por configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="570"/>
+        <location filename="../../core/game_database.cpp" line="571"/>
         <source>PGXP CPU mode forced by compatibility settings.</source>
         <translation>Modo de CPU PGXP forçado pelas configurações de compatibilidade.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="587"/>
+        <location filename="../../core/game_database.cpp" line="588"/>
         <source>PGXP CPU mode is enabled, but it is not required for this game. This may cause rendering errors.</source>
         <translation>PGXP no modo de CPU está ativado, mas não é necessário para este jogo. Erros de renderização podem acontecer.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="597"/>
+        <location filename="../../core/game_database.cpp" line="598"/>
         <source>PGXP Depth Buffer disabled by compatibility settings.</source>
         <translation>Alocação de profundidade de PGXP desativado pelas configurações de compatibilidade.</translation>
     </message>
@@ -13941,37 +14146,37 @@ Controles compatíveis: {3}
 Configure um controle compatível da lista acima.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="203"/>
+        <location filename="../../core/pad.cpp" line="207"/>
         <source>Save state contains controller type %s in port %u, but %s is used. Switching.</source>
         <translation>Estado rápido contém controle %s na porta %u, mas %s está em uso, mudando.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="209"/>
+        <location filename="../../core/pad.cpp" line="213"/>
         <source>Ignoring mismatched controller type %s in port %u.</source>
         <translation>Tipo de controle incompatível ignorado %s na porta %u.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="265"/>
+        <location filename="../../core/pad.cpp" line="269"/>
         <source>Memory card {} present in save state but not in system. Creating temporary card.</source>
         <translation>O cartão de memória {} existe, mas não no compartimento atual.Criando cartão temporário.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="303"/>
+        <location filename="../../core/pad.cpp" line="307"/>
         <source>Memory card {} from save state does match current card data. Simulating replugging.</source>
         <translation>O cartão de memória {} do estado salvo não corresponde aos dados atuais do cartão. Reconectando.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="323"/>
+        <location filename="../../core/pad.cpp" line="327"/>
         <source>Memory card {} present in save state but not in system. Ignoring card.</source>
         <translation>O cartão de memória {} existe, mas não no compartimento atual. Ignorando cartão de memória.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="337"/>
+        <location filename="../../core/pad.cpp" line="341"/>
         <source>Memory card {} present in system but not in save state. Removing card.</source>
         <translation>O cartão de memória {} existe, mas não no compartimento atual. Reconectando o cartão de memória.</translation>
     </message>
     <message>
-        <location filename="../../core/pad.cpp" line="346"/>
+        <location filename="../../core/pad.cpp" line="350"/>
         <source>Memory card {} present in system but not in save state. Replugging card.</source>
         <translation>O cartão de memória {} existe, mas não no compartimento atual. Reconectando o cartão de memória.</translation>
     </message>
@@ -14552,47 +14757,47 @@ Deseja criar esse diretório?</translation>
 <context>
     <name>Settings</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1462"/>
+        <location filename="../../core/settings.cpp" line="1461"/>
         <source>Automatic</source>
         <translation>Automático</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1463"/>
+        <location filename="../../core/settings.cpp" line="1462"/>
         <source>Disallowed</source>
         <translation>Não permitido</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1464"/>
+        <location filename="../../core/settings.cpp" line="1463"/>
         <source>Allowed</source>
         <translation>Permitido</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1498"/>
+        <location filename="../../core/settings.cpp" line="1497"/>
         <source>Screen Resolution</source>
         <translation>Resolução da tela</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1499"/>
+        <location filename="../../core/settings.cpp" line="1498"/>
         <source>Internal Resolution</source>
         <translation>Resolução interna</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1500"/>
+        <location filename="../../core/settings.cpp" line="1499"/>
         <source>Internal Resolution (Aspect Uncorrected)</source>
         <translation>Resolução interna (aspecto não corrigido)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1533"/>
+        <location filename="../../core/settings.cpp" line="1532"/>
         <source>PNG</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1534"/>
+        <location filename="../../core/settings.cpp" line="1533"/>
         <source>JPEG</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1535"/>
+        <location filename="../../core/settings.cpp" line="1534"/>
         <source>WebP</source>
         <translation></translation>
     </message>
