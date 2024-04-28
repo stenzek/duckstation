@@ -8,6 +8,7 @@
 #include "platform_misc.h"
 
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/log.h"
 #include "common/string_util.h"
 
@@ -338,6 +339,11 @@ void DInputSource::UpdateMotorState(InputBindingKey large_key, InputBindingKey s
   // not supported
 }
 
+bool DInputSource::ContainsDevice(std::string_view device) const
+{
+  return device.starts_with("DInput-");
+}
+
 std::optional<InputBindingKey> DInputSource::ParseKeyString(std::string_view device, std::string_view binding)
 {
   if (!device.starts_with("DInput-") || binding.empty())
@@ -441,6 +447,12 @@ TinyString DInputSource::ConvertKeyToString(InputBindingKey key)
 
 TinyString DInputSource::ConvertKeyToIcon(InputBindingKey key)
 {
+  return {};
+}
+
+std::unique_ptr<ForceFeedbackDevice> DInputSource::CreateForceFeedbackDevice(std::string_view device, Error* error)
+{
+  Error::SetStringView(error, "Not supported on this input source.");
   return {};
 }
 

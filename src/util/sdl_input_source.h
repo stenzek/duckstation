@@ -34,9 +34,12 @@ public:
   void UpdateMotorState(InputBindingKey large_key, InputBindingKey small_key, float large_intensity,
                         float small_intensity) override;
 
+  bool ContainsDevice(std::string_view device) const override;
   std::optional<InputBindingKey> ParseKeyString(std::string_view device, std::string_view binding) override;
   TinyString ConvertKeyToString(InputBindingKey key) override;
   TinyString ConvertKeyToIcon(InputBindingKey key) override;
+
+  std::unique_ptr<ForceFeedbackDevice> CreateForceFeedbackDevice(std::string_view device, Error* error) override;
 
   bool ProcessSDLEvent(const SDL_Event* event);
 
@@ -102,4 +105,24 @@ private:
   bool m_enable_iokit_driver = false;
   bool m_enable_mfi_driver = false;
 #endif
+};
+
+class SDLForceFeedbackDevice : public ForceFeedbackDevice
+{
+public:
+  SDLForceFeedbackDevice(SDL_Joystick* joystick, SDL_Haptic* haptic);
+  ~SDLForceFeedbackDevice() override;
+
+  void SetConstantForce(s32 level) override;
+  void DisableForce(Effect force) override;
+
+private:
+  void CreateEffects(SDL_Joystick* joystick);
+  void DestroyEffects();
+
+  SDL_Haptic* m_haptic = nullptr;
+
+  SDL_HapticEffect m_constant_effect;
+  int m_constant_effect_id = -1;
+  bool m_constant_effect_running = false;
 };

@@ -1651,7 +1651,7 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
   if (!visible)
     return;
 
-  if (oneline)
+  if (oneline && type != InputBindingInfo::Type::Pointer && type != InputBindingInfo::Type::Device)
     InputManager::PrettifyInputBinding(value);
 
   if (show_type)
@@ -1676,6 +1676,9 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
           break;
         case InputBindingInfo::Type::Macro:
           title.format(ICON_FA_PIZZA_SLICE " {}", display_name);
+          break;
+        case InputBindingInfo::Type::Device:
+          title.format(ICON_FA_GAMEPAD " {}", display_name);
           break;
         default:
           title = display_name;

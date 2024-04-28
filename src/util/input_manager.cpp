@@ -2,17 +2,20 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "input_manager.h"
+#include "imgui_manager.h"
+#include "input_source.h"
+
+#include "core/controller.h"
+#include "core/host.h"
+#include "core/system.h"
+
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
 #include "common/timer.h"
-#include "core/controller.h"
-#include "core/host.h"
-#include "core/system.h"
-#include "imgui_manager.h"
-#include "input_source.h"
 
 #include "IconsPromptFont.h"
 
@@ -303,7 +306,8 @@ bool InputManager::ParseBindingAndGetSource(std::string_view binding, InputBindi
 
 std::string InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key)
 {
-  if (binding_type == InputBindingInfo::Type::Pointer || binding_type == InputBindingInfo::Type::RelativePointer)
+  if (binding_type == InputBindingInfo::Type::Pointer || binding_type == InputBindingInfo::Type::RelativePointer ||
+      binding_type == InputBindingInfo::Type::Device)
   {
     // pointer and device bindings don't have a data part
     if (key.source_type == InputSourceType::Pointer)
@@ -356,7 +360,8 @@ std::string InputManager::ConvertInputBindingKeysToString(InputBindingInfo::Type
                                                           const InputBindingKey* keys, size_t num_keys)
 {
   // can't have a chord of devices/pointers
-  if (binding_type == InputBindingInfo::Type::Pointer || binding_type == InputBindingInfo::Type::Pointer)
+  if (binding_type == InputBindingInfo::Type::Pointer || binding_type == InputBindingInfo::Type::RelativePointer ||
+      binding_type == InputBindingInfo::Type::Device)
   {
     // so only take the first
     if (num_keys > 0)
@@ -888,6 +893,8 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
       break;
 
       case InputBindingInfo::Type::Pointer:
+      case InputBindingInfo::Type::Device:
+        // handled in device
         break;
 
       default:
@@ -1583,6 +1590,19 @@ void InputManager::OnInputDeviceDisconnected(InputBindingKey key, std::string_vi
   Host::OnInputDeviceDisconnected(key, identifier);
 }
 
+std::unique_ptr<ForceFeedbackDevice> InputManager::CreateForceFeedbackDevice(const std::string_view device,
+                                                                             Error* error)
+{
+  for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
+  {
+    if (s_input_sources[i] && s_input_sources[i]->ContainsDevice(device))
+      return s_input_sources[i]->CreateForceFeedbackDevice(device, error);
+  }
+
+  Error::SetStringFmt(error, "No input source matched device '{}'", device);
+  return {};
+}
+
 // ------------------------------------------------------------------------
 // Vibration
 // ------------------------------------------------------------------------
@@ -2103,4 +2123,8 @@ void InputManager::ReloadSources(const SettingsInterface& si, std::unique_lock<s
 #endif
 
   UpdatePointerCount();
+}
+
+ForceFeedbackDevice::~ForceFeedbackDevice()
+{
 }

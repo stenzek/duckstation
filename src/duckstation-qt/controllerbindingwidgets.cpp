@@ -405,7 +405,8 @@ void ControllerBindingWidget::createBindingWidgets(QWidget* parent)
   for (const Controller::ControllerBindingInfo& bi : m_controller_info->bindings)
   {
     if (bi.type == InputBindingInfo::Type::Axis || bi.type == InputBindingInfo::Type::HalfAxis ||
-        bi.type == InputBindingInfo::Type::Pointer || bi.type == InputBindingInfo::Type::RelativePointer)
+        bi.type == InputBindingInfo::Type::Pointer || bi.type == InputBindingInfo::Type::RelativePointer ||
+        bi.type == InputBindingInfo::Type::Device)
     {
       if (!axis_gbox)
       {

@@ -16,6 +16,7 @@
 #include "core/input_types.h"
 #include "window_info.h"
 
+class Error;
 class SmallStringBase;
 
 /// Class, or source of an input event.
@@ -169,6 +170,22 @@ enum class InputPointerAxis : u8
 
 /// External input source class.
 class InputSource;
+
+/// Force feedback interface.
+class ForceFeedbackDevice
+{
+public:
+  enum class Effect
+  {
+    Constant,
+  };
+
+  virtual ~ForceFeedbackDevice();
+
+  virtual void SetConstantForce(s32 level) = 0;
+
+  virtual void DisableForce(Effect force) = 0;
+};
 
 namespace InputManager {
 /// Minimum interval between vibration updates when the effect is continuous.
@@ -360,6 +377,9 @@ void OnInputDeviceConnected(std::string_view identifier, std::string_view device
 
 /// Called when an input device is disconnected.
 void OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier);
+
+/// Creates a force feedback device interface for the specified source and device.
+std::unique_ptr<ForceFeedbackDevice> CreateForceFeedbackDevice(const std::string_view device, Error* error = nullptr);
 } // namespace InputManager
 
 namespace Host {

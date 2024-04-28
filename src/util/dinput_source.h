@@ -46,9 +46,12 @@ public:
   void UpdateMotorState(InputBindingKey large_key, InputBindingKey small_key, float large_intensity,
                         float small_intensity) override;
 
+  bool ContainsDevice(std::string_view device) const override;
   std::optional<InputBindingKey> ParseKeyString(std::string_view device, std::string_view binding) override;
   TinyString ConvertKeyToString(InputBindingKey key) override;
   TinyString ConvertKeyToIcon(InputBindingKey key) override;
+
+  std::unique_ptr<ForceFeedbackDevice> CreateForceFeedbackDevice(std::string_view device, Error* error) override;
 
 private:
   template<typename T>

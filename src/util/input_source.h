@@ -14,7 +14,10 @@
 #include "common/types.h"
 #include "input_manager.h"
 
+class Error;
 class SettingsInterface;
+
+class ForceFeedbackDevice;
 
 class InputSource
 {
@@ -29,6 +32,7 @@ public:
 
   virtual void PollEvents() = 0;
 
+  virtual bool ContainsDevice(std::string_view device) const = 0;
   virtual std::optional<InputBindingKey> ParseKeyString(std::string_view device, std::string_view binding) = 0;
   virtual TinyString ConvertKeyToString(InputBindingKey key) = 0;
   virtual TinyString ConvertKeyToIcon(InputBindingKey key) = 0;
@@ -49,6 +53,9 @@ public:
   /// Concurrently update both motors where possible, to avoid redundant packets.
   virtual void UpdateMotorState(InputBindingKey large_key, InputBindingKey small_key, float large_intensity,
                                 float small_intensity);
+
+  /// Creates a force-feedback device from this source.
+  virtual std::unique_ptr<ForceFeedbackDevice> CreateForceFeedbackDevice(std::string_view device, Error* error) = 0;
 
   /// Creates a key for a generic controller axis event.
   static InputBindingKey MakeGenericControllerAxisKey(InputSourceType clazz, u32 controller_index, s32 axis_index);

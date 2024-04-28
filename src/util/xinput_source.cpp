@@ -5,6 +5,7 @@
 #include "input_manager.h"
 
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/log.h"
 #include "common/string_util.h"
 
@@ -251,6 +252,11 @@ std::vector<std::pair<std::string, std::string>> XInputSource::EnumerateDevices(
   return ret;
 }
 
+bool XInputSource::ContainsDevice(std::string_view device) const
+{
+  return device.starts_with("XInput-");
+}
+
 std::optional<InputBindingKey> XInputSource::ParseKeyString(std::string_view device, std::string_view binding)
 {
   if (!device.starts_with("XInput-") || binding.empty())
@@ -362,6 +368,12 @@ TinyString XInputSource::ConvertKeyToIcon(InputBindingKey key)
   }
 
   return ret;
+}
+
+std::unique_ptr<ForceFeedbackDevice> XInputSource::CreateForceFeedbackDevice(std::string_view device, Error* error)
+{
+  Error::SetStringView(error, "Not supported on this input source.");
+  return {};
 }
 
 std::vector<InputBindingKey> XInputSource::EnumerateMotors()
