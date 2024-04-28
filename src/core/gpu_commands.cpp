@@ -239,8 +239,8 @@ bool GPU::HandleSetTextureWindowCommand()
 bool GPU::HandleSetDrawingAreaTopLeftCommand()
 {
   const u32 param = FifoPop() & 0x00FFFFFFu;
-  const u32 left = param & VRAM_WIDTH_MASK;
-  const u32 top = (param >> 10) & VRAM_HEIGHT_MASK;
+  const u32 left = param & DRAWING_AREA_COORD_MASK;
+  const u32 top = (param >> 10) & DRAWING_AREA_COORD_MASK;
   Log_DebugPrintf("Set drawing area top-left: (%u, %u)", left, top);
   if (m_drawing_area.left != left || m_drawing_area.top != top)
   {
@@ -260,8 +260,8 @@ bool GPU::HandleSetDrawingAreaBottomRightCommand()
 {
   const u32 param = FifoPop() & 0x00FFFFFFu;
 
-  const u32 right = param & VRAM_WIDTH_MASK;
-  const u32 bottom = (param >> 10) & VRAM_HEIGHT_MASK;
+  const u32 right = param & DRAWING_AREA_COORD_MASK;
+  const u32 bottom = (param >> 10) & DRAWING_AREA_COORD_MASK;
   Log_DebugPrintf("Set drawing area bottom-right: (%u, %u)", m_drawing_area.right, m_drawing_area.bottom);
   if (m_drawing_area.right != right || m_drawing_area.bottom != bottom)
   {
