@@ -2428,6 +2428,13 @@ void MainWindow::setStyleFromSettings()
 
     qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #505a70; border: 1px solid white; }");
   }
+#ifdef _WIN32
+  else if (theme == "windowsvista")
+  {
+    qApp->setStyle(QStyleFactory::create("windowsvista"));
+    qApp->setStyleSheet(QString());
+  }
+#endif
   else
   {
     qApp->setStyle(s_unthemed_style_name);

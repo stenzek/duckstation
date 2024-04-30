@@ -11,6 +11,9 @@
 
 const char* InterfaceSettingsWidget::THEME_NAMES[] = {
   QT_TRANSLATE_NOOP("MainWindow", "Native"),
+#ifdef _WIN32
+  QT_TRANSLATE_NOOP("MainWindow", "Classic Windows"),
+#endif
   QT_TRANSLATE_NOOP("MainWindow", "Fusion"),
   QT_TRANSLATE_NOOP("MainWindow", "Dark Fusion (Gray)"),
   QT_TRANSLATE_NOOP("MainWindow", "Dark Fusion (Blue)"),
@@ -22,7 +25,18 @@ const char* InterfaceSettingsWidget::THEME_NAMES[] = {
 };
 
 const char* InterfaceSettingsWidget::THEME_VALUES[] = {
-  "","fusion", "darkfusion", "darkfusionblue", "cobaltsky", "greymatter", "darkruby", "purplerain", nullptr,
+  "",
+#ifdef _WIN32
+  "windowsvista",
+#endif
+  "fusion",
+  "darkfusion",
+  "darkfusionblue",
+  "cobaltsky",
+  "greymatter",
+  "darkruby",
+  "purplerain",
+  nullptr,
 };
 
 const char* InterfaceSettingsWidget::DEFAULT_THEME_NAME = "darkfusion";
