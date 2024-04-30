@@ -1645,6 +1645,11 @@ void VulkanDevice::DisableDebugUtils()
   }
 }
 
+bool VulkanDevice::IsDeviceNVIDIA() const
+{
+  return (m_device_properties.vendorID == 0x10DE);
+}
+
 bool VulkanDevice::IsDeviceAdreno() const
 {
   // Assume turnip is fine...
@@ -2700,13 +2705,22 @@ void VulkanDevice::ClearRenderTarget(GPUTexture* t, u32 c)
     const s32 idx = IsRenderTargetBoundIndex(t);
     if (idx >= 0)
     {
-      // Use an attachment clear so the render pass isn't restarted.
-      const VkClearAttachment ca = {VK_IMAGE_ASPECT_COLOR_BIT,
-                                    static_cast<u32>(idx),
-                                    {.color = static_cast<VulkanTexture*>(t)->GetClearColorValue()}};
-      const VkClearRect rc = {{{0, 0}, {t->GetWidth(), t->GetHeight()}}, 0u, 1u};
-      vkCmdClearAttachments(m_current_command_buffer, 1, &ca, 1, &rc);
-      t->SetState(GPUTexture::State::Dirty);
+      VulkanTexture* T = static_cast<VulkanTexture*>(t);
+
+      if (IsDeviceNVIDIA())
+      {
+        EndRenderPass();
+      }
+      else
+      {
+        // Use an attachment clear so the render pass isn't restarted.
+        const VkClearAttachment ca = {VK_IMAGE_ASPECT_COLOR_BIT,
+                                      static_cast<u32>(idx),
+                                      {.color = static_cast<VulkanTexture*>(T)->GetClearColorValue()}};
+        const VkClearRect rc = {{{0, 0}, {T->GetWidth(), T->GetHeight()}}, 0u, 1u};
+        vkCmdClearAttachments(m_current_command_buffer, 1, &ca, 1, &rc);
+        T->SetState(GPUTexture::State::Dirty);
+      }
     }
   }
 }
@@ -2716,12 +2730,24 @@ void VulkanDevice::ClearDepth(GPUTexture* t, float d)
   GPUDevice::ClearDepth(t, d);
   if (InRenderPass() && m_current_depth_target == t)
   {
-    // Use an attachment clear so the render pass isn't restarted.
-    const VkClearAttachment ca = {
-      VK_IMAGE_ASPECT_DEPTH_BIT, 0, {.depthStencil = static_cast<VulkanTexture*>(t)->GetClearDepthValue()}};
-    const VkClearRect rc = {{{0, 0}, {t->GetWidth(), t->GetHeight()}}, 0u, 1u};
-    vkCmdClearAttachments(m_current_command_buffer, 1, &ca, 1, &rc);
-    t->SetState(GPUTexture::State::Dirty);
+    // Using vkCmdClearAttachments() within a render pass on NVIDIA seems to cause dependency issues
+    // between draws that are testing depth which precede it. The result is flickering where Z tests
+    // should be failing. Breaking/restarting the render pass isn't enough to work around the bug,
+    // it needs an explicit pipeline barrier.
+    VulkanTexture* T = static_cast<VulkanTexture*>(t);
+    if (IsDeviceNVIDIA())
+    {
+      EndRenderPass();
+      T->TransitionSubresourcesToLayout(GetCurrentCommandBuffer(), 0, 1, 0, 1, T->GetLayout(), T->GetLayout());
+    }
+    else
+    {
+      // Use an attachment clear so the render pass isn't restarted.
+      const VkClearAttachment ca = {VK_IMAGE_ASPECT_DEPTH_BIT, 0, {.depthStencil = T->GetClearDepthValue()}};
+      const VkClearRect rc = {{{0, 0}, {T->GetWidth(), T->GetHeight()}}, 0u, 1u};
+      vkCmdClearAttachments(m_current_command_buffer, 1, &ca, 1, &rc);
+      T->SetState(GPUTexture::State::Dirty);
+    }
   }
 }
 
@@ -3202,13 +3228,23 @@ void VulkanDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUText
 
 void VulkanDevice::BeginRenderPass()
 {
-  // TODO: Stats
   DebugAssert(!InRenderPass());
 
   // All textures should be in shader read only optimal already, but just in case..
   const u32 num_textures = GetActiveTexturesForLayout(m_current_pipeline_layout);
   for (u32 i = 0; i < num_textures; i++)
     m_current_textures[i]->TransitionToLayout(VulkanTexture::Layout::ShaderReadOnly);
+
+  // NVIDIA drivers appear to return random garbage when sampling the RT via a feedback loop, if the load op for
+  // the render pass is CLEAR. Using vkCmdClearAttachments() doesn't work, so we have to clear the image instead.
+  if (m_current_feedback_loop & GPUPipeline::ColorFeedbackLoop)
+  {
+    for (u32 i = 0; i < m_num_current_render_targets; i++)
+    {
+      if (m_current_render_targets[i]->GetState() == GPUTexture::State::Cleared)
+        m_current_render_targets[i]->CommitClear(m_current_command_buffer);
+    }
+  }
 
   if (m_optional_extensions.vk_khr_dynamic_rendering && (m_optional_extensions.vk_khr_dynamic_rendering_local_read ||
                                                          !(m_current_feedback_loop & GPUPipeline::ColorFeedbackLoop)))

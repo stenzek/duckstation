@@ -302,6 +302,9 @@ private:
   bool EnableDebugUtils();
   void DisableDebugUtils();
 
+  /// Returns true if running on an NVIDIA GPU.
+  bool IsDeviceNVIDIA() const;
+
   // Vendor queries.
   bool IsDeviceAdreno() const;
   bool IsDeviceMali() const;
