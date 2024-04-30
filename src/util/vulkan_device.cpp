@@ -3704,20 +3704,14 @@ void VulkanDevice::PreDrawCheck()
   const u32 update_mask = (m_current_feedback_loop ? ~0u : ~DIRTY_FLAG_INPUT_ATTACHMENT);
   const u32 dirty = m_dirty_flags & update_mask;
   m_dirty_flags = m_dirty_flags & ~update_mask;
-  if (dirty & DIRTY_FLAG_PIPELINE_LAYOUT && !(dirty & DIRTY_FLAG_INPUT_ATTACHMENT))
-    m_dirty_flags |= DIRTY_FLAG_INPUT_ATTACHMENT; // TODO: FOR NEXT TIME
 
   if (dirty != 0)
   {
-    if (dirty & (DIRTY_FLAG_PIPELINE_LAYOUT | DIRTY_FLAG_DYNAMIC_OFFSETS | DIRTY_FLAG_TEXTURES_OR_SAMPLERS |
-                 DIRTY_FLAG_INPUT_ATTACHMENT))
+    if (!UpdateDescriptorSets(dirty))
     {
-      if (!UpdateDescriptorSets(dirty))
-      {
-        SubmitCommandBufferAndRestartRenderPass("out of descriptor sets");
-        PreDrawCheck();
-        return;
-      }
+      SubmitCommandBufferAndRestartRenderPass("out of descriptor sets");
+      PreDrawCheck();
+      return;
     }
   }
 }
@@ -3800,7 +3794,8 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(u32 dirty)
                 layout == GPUPipeline::Layout::SingleTextureAndPushConstants ||
                 layout == GPUPipeline::Layout::SingleTextureBufferAndPushConstants)
   {
-    if (dirty & DIRTY_FLAG_INPUT_ATTACHMENT)
+    if ((dirty & DIRTY_FLAG_INPUT_ATTACHMENT) ||
+        (dirty & DIRTY_FLAG_PIPELINE_LAYOUT && (m_current_feedback_loop & GPUPipeline::ColorFeedbackLoop)))
     {
       VkDescriptorSet ids = AllocateDescriptorSet(m_feedback_loop_ds_layout);
       if (ids == VK_NULL_HANDLE)
