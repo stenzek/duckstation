@@ -677,15 +677,7 @@ void GPU_SW::DispatchRenderCommand()
       if (!IsDrawingAreaIsValid())
         return;
 
-      const u32 clip_left = static_cast<u32>(std::clamp<s32>(cmd->x, m_drawing_area.left, m_drawing_area.right));
-      const u32 clip_right =
-        static_cast<u32>(std::clamp<s32>(cmd->x + cmd->width, m_drawing_area.left, m_drawing_area.right)) + 1u;
-      const u32 clip_top = static_cast<u32>(std::clamp<s32>(cmd->y, m_drawing_area.top, m_drawing_area.bottom));
-      const u32 clip_bottom =
-        static_cast<u32>(std::clamp<s32>(cmd->y + cmd->height, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
-
-      // cmd->bounds.Set(Truncate16(clip_left), Truncate16(clip_top), Truncate16(clip_right), Truncate16(clip_bottom));
-      AddDrawRectangleTicks(clip_right - clip_left, clip_bottom - clip_top, rc.texture_enable, rc.transparency_enable);
+      AddDrawRectangleTicks(cmd->x, cmd->y, cmd->width, cmd->height, rc.texture_enable, rc.transparency_enable);
 
       m_backend.PushCommand(cmd);
     }
@@ -737,14 +729,7 @@ void GPU_SW::DispatchRenderCommand()
           return;
         }
 
-        const u32 clip_left = static_cast<u32>(std::clamp<s32>(min_x, m_drawing_area.left, m_drawing_area.right));
-        const u32 clip_right = static_cast<u32>(std::clamp<s32>(max_x, m_drawing_area.left, m_drawing_area.right)) + 1u;
-        const u32 clip_top = static_cast<u32>(std::clamp<s32>(min_y, m_drawing_area.top, m_drawing_area.bottom));
-        const u32 clip_bottom =
-          static_cast<u32>(std::clamp<s32>(max_y, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
-        // cmd->bounds.Set(Truncate16(clip_left), Truncate16(clip_top), Truncate16(clip_right),
-        // Truncate16(clip_bottom));
-        AddDrawLineTicks(clip_right - clip_left, clip_bottom - clip_top, rc.shading_enable);
+        AddDrawLineTicks(min_x, min_y, max_x, max_y, rc.shading_enable);
 
         m_backend.PushCommand(cmd);
       }
@@ -760,7 +745,6 @@ void GPU_SW::DispatchRenderCommand()
         cmd->vertices[0].x = start_vp.x + m_drawing_offset.x;
         cmd->vertices[0].y = start_vp.y + m_drawing_offset.y;
         cmd->vertices[0].color = m_render_command.color_for_first_vertex;
-        // cmd->bounds.SetInvalid();
 
         const bool shaded = m_render_command.shading_enable;
         for (u32 i = 1; i < num_vertices; i++)
@@ -780,16 +764,7 @@ void GPU_SW::DispatchRenderCommand()
           }
           else
           {
-            const u32 clip_left = static_cast<u32>(std::clamp<s32>(min_x, m_drawing_area.left, m_drawing_area.right));
-            const u32 clip_right =
-              static_cast<u32>(std::clamp<s32>(max_x, m_drawing_area.left, m_drawing_area.right)) + 1u;
-            const u32 clip_top = static_cast<u32>(std::clamp<s32>(min_y, m_drawing_area.top, m_drawing_area.bottom));
-            const u32 clip_bottom =
-              static_cast<u32>(std::clamp<s32>(max_y, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
-
-            // cmd->bounds.Include(Truncate16(clip_left), Truncate16(clip_right), Truncate16(clip_top),
-            // Truncate16(clip_bottom));
-            AddDrawLineTicks(clip_right - clip_left, clip_bottom - clip_top, m_render_command.shading_enable);
+            AddDrawLineTicks(min_x, min_y, max_x, max_y, rc.shading_enable);
           }
         }
 

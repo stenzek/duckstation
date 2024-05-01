@@ -299,22 +299,6 @@ protected:
     return (m_drawing_area.left <= m_drawing_area.right && m_drawing_area.top <= m_drawing_area.bottom);
   }
 
-  /// Clamps the specified coordinates to the drawing area.
-  ALWAYS_INLINE void ClampCoordinatesToDrawingArea(s32* x, s32* y)
-  {
-    const s32 x_value = *x;
-    if (x_value < static_cast<s32>(m_drawing_area.left))
-      *x = m_drawing_area.left;
-    else if (x_value >= static_cast<s32>(m_drawing_area.right))
-      *x = m_drawing_area.right - 1;
-
-    const s32 y_value = *y;
-    if (y_value < static_cast<s32>(m_drawing_area.top))
-      *y = m_drawing_area.top;
-    else if (y_value >= static_cast<s32>(m_drawing_area.bottom))
-      *y = m_drawing_area.bottom - 1;
-  }
-
   void AddCommandTicks(TickCount ticks);
 
   void WriteGP1(u32 value);
@@ -332,15 +316,21 @@ protected:
   virtual void UpdateDisplay();
   virtual void DrawRendererStats();
 
-  ALWAYS_INLINE void AddDrawTriangleTicks(s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3, bool shaded, bool textured,
-                                          bool semitransparent)
+  ALWAYS_INLINE_RELEASE void AddDrawTriangleTicks(s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3, bool shaded,
+                                                  bool textured, bool semitransparent)
   {
     // This will not produce the correct results for triangles which are partially outside the clip area.
     // However, usually it'll undershoot not overshoot. If we wanted to make this more accurate, we'd need to intersect
     // the edges with the clip rectangle.
-    ClampCoordinatesToDrawingArea(&x1, &y1);
-    ClampCoordinatesToDrawingArea(&x2, &y2);
-    ClampCoordinatesToDrawingArea(&x3, &y3);
+    // TODO: Coordinates are exclusive, so off by one here...
+    const s32 clip_right = static_cast<s32>(m_drawing_area.right) + 1;
+    const s32 clip_bottom = static_cast<s32>(m_drawing_area.bottom) + 1;
+    x1 = std::clamp(x1, static_cast<s32>(m_drawing_area.left), clip_right);
+    x2 = std::clamp(x2, static_cast<s32>(m_drawing_area.left), clip_right);
+    x3 = std::clamp(x3, static_cast<s32>(m_drawing_area.left), clip_right);
+    y1 = std::clamp(y1, static_cast<s32>(m_drawing_area.top), clip_bottom);
+    y2 = std::clamp(y2, static_cast<s32>(m_drawing_area.top), clip_bottom);
+    y3 = std::clamp(y3, static_cast<s32>(m_drawing_area.top), clip_bottom);
 
     TickCount pixels = std::abs((x1 * y2 + x2 * y3 + x3 * y1 - x1 * y3 - x2 * y1 - x3 * y2) / 2);
     if (textured)
@@ -352,24 +342,44 @@ protected:
 
     AddCommandTicks(pixels);
   }
-  ALWAYS_INLINE void AddDrawRectangleTicks(u32 width, u32 height, bool textured, bool semitransparent)
+  ALWAYS_INLINE_RELEASE void AddDrawRectangleTicks(s32 x, s32 y, u32 width, u32 height, bool textured,
+                                                   bool semitransparent)
   {
-    u32 ticks_per_row = width;
+    // We do -1 on the inside of the clamp, in case the rectangle is entirely clipped.
+    u32 drawn_width = static_cast<u32>(
+      std::clamp<s32>(x + static_cast<s32>(width), static_cast<s32>(m_drawing_area.left),
+                      static_cast<s32>(m_drawing_area.right) + 1) -
+      std::clamp<s32>(x, static_cast<s32>(m_drawing_area.left), static_cast<s32>(m_drawing_area.right) + 1));
+    u32 drawn_height = static_cast<u32>(
+      std::clamp<s32>(y + static_cast<s32>(height), static_cast<s32>(m_drawing_area.top),
+                      static_cast<s32>(m_drawing_area.bottom) + 1) -
+      std::clamp<s32>(y, static_cast<s32>(m_drawing_area.top), static_cast<s32>(m_drawing_area.bottom) + 1));
+
+    u32 ticks_per_row = drawn_width;
     if (textured)
-      ticks_per_row += width;
+      ticks_per_row += drawn_width;
     if (semitransparent || m_GPUSTAT.check_mask_before_draw)
-      ticks_per_row += (width + 1u) / 2u;
+      ticks_per_row += (drawn_width + 1u) / 2u;
     if (m_GPUSTAT.SkipDrawingToActiveField())
-      height = std::max<u32>(height / 2, 1u);
+      drawn_height = std::max<u32>(drawn_height / 2, 1u);
 
-    AddCommandTicks(ticks_per_row * height);
+    AddCommandTicks(ticks_per_row * drawn_height);
   }
-  ALWAYS_INLINE void AddDrawLineTicks(u32 width, u32 height, bool shaded)
+  ALWAYS_INLINE_RELEASE void AddDrawLineTicks(s32 min_x, s32 min_y, s32 max_x, s32 max_y, bool shaded)
   {
-    if (m_GPUSTAT.SkipDrawingToActiveField())
-      height = std::max<u32>(height / 2, 1u);
+    // We do -1 on the inside of the clamp, in case the rectangle is entirely clipped.
+    // Lines are inclusive?
+    u32 drawn_width = static_cast<u32>(
+      std::clamp<s32>(max_x + 1, static_cast<s32>(m_drawing_area.left), static_cast<s32>(m_drawing_area.right) + 1) -
+      std::clamp<s32>(min_x, static_cast<s32>(m_drawing_area.left), static_cast<s32>(m_drawing_area.right) + 1));
+    u32 drawn_height = static_cast<u32>(
+      std::clamp<s32>(max_y + 1, static_cast<s32>(m_drawing_area.top), static_cast<s32>(m_drawing_area.bottom) + 1) -
+      std::clamp<s32>(min_y, static_cast<s32>(m_drawing_area.top), static_cast<s32>(m_drawing_area.bottom) + 1));
 
-    AddCommandTicks(std::max(width, height));
+    if (m_GPUSTAT.SkipDrawingToActiveField())
+      drawn_height = std::max<u32>(drawn_height / 2, 1u);
+
+    AddCommandTicks(std::max(drawn_width, drawn_height));
   }
 
   std::unique_ptr<TimingEvent> m_crtc_tick_event;

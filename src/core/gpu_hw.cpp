@@ -2213,14 +2213,7 @@ void GPU_HW::LoadVertices()
       }
 
       IncludeDrawnDirtyRectangle(pos_x, pos_y, pos_x + rectangle_width, pos_y + rectangle_height);
-
-      const u32 clip_left = static_cast<u32>(std::clamp<s32>(pos_x, m_drawing_area.left, m_drawing_area.right));
-      const u32 clip_right =
-        static_cast<u32>(std::clamp<s32>(pos_x + rectangle_width, m_drawing_area.left, m_drawing_area.right)) + 1u;
-      const u32 clip_top = static_cast<u32>(std::clamp<s32>(pos_y, m_drawing_area.top, m_drawing_area.bottom));
-      const u32 clip_bottom =
-        static_cast<u32>(std::clamp<s32>(pos_y + rectangle_height, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
-      AddDrawRectangleTicks(clip_right - clip_left, clip_bottom - clip_top, rc.texture_enable, rc.transparency_enable);
+      AddDrawRectangleTicks(pos_x, pos_y, rectangle_width, rectangle_height, rc.texture_enable, rc.transparency_enable);
 
       if (m_sw_renderer)
       {
@@ -2276,15 +2269,8 @@ void GPU_HW::LoadVertices()
           return;
         }
 
-        IncludeDrawnDirtyRectangle(min_x, min_y, max_x, max_y);
-
-        const u32 clip_left = static_cast<u32>(std::clamp<s32>(min_x, m_drawing_area.left, m_drawing_area.right));
-        const u32 clip_right = static_cast<u32>(std::clamp<s32>(max_x, m_drawing_area.left, m_drawing_area.right)) + 1u;
-        const u32 clip_top = static_cast<u32>(std::clamp<s32>(min_y, m_drawing_area.top, m_drawing_area.bottom));
-        const u32 clip_bottom =
-          static_cast<u32>(std::clamp<s32>(max_y, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
-
-        AddDrawLineTicks(clip_right - clip_left, clip_bottom - clip_top, rc.shading_enable);
+        IncludeDrawnDirtyRectangle(min_x, min_y, max_x + 1, max_y + 1);
+        AddDrawLineTicks(min_x, min_y, max_x, max_y, rc.shading_enable);
 
         // TODO: Should we do a PGXP lookup here? Most lines are 2D.
         DrawLine(static_cast<float>(start_x), static_cast<float>(start_y), start_color, static_cast<float>(end_x),
@@ -2343,16 +2329,8 @@ void GPU_HW::LoadVertices()
           }
           else
           {
-            IncludeDrawnDirtyRectangle(min_x, min_y, max_x, max_y);
-
-            const u32 clip_left = static_cast<u32>(std::clamp<s32>(min_x, m_drawing_area.left, m_drawing_area.right));
-            const u32 clip_right =
-              static_cast<u32>(std::clamp<s32>(max_x, m_drawing_area.left, m_drawing_area.right)) + 1u;
-            const u32 clip_top = static_cast<u32>(std::clamp<s32>(min_y, m_drawing_area.top, m_drawing_area.bottom));
-            const u32 clip_bottom =
-              static_cast<u32>(std::clamp<s32>(max_y, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
-
-            AddDrawLineTicks(clip_right - clip_left, clip_bottom - clip_top, rc.shading_enable);
+            IncludeDrawnDirtyRectangle(min_x, min_y, max_x + 1, max_y + 1);
+            AddDrawLineTicks(min_x, min_y, max_x, max_y, rc.shading_enable);
 
             // TODO: Should we do a PGXP lookup here? Most lines are 2D.
             DrawLine(static_cast<float>(start_x), static_cast<float>(start_y), start_color, static_cast<float>(end_x),
