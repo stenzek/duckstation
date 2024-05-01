@@ -48,6 +48,12 @@ static void JoinScreenshotThreads();
 static std::deque<std::thread> s_screenshot_threads;
 static std::mutex s_screenshot_threads_mutex;
 
+// #define PSX_GPU_STATS
+#ifdef PSX_GPU_STATS
+static u64 s_active_gpu_cycles = 0;
+static u32 s_active_gpu_cycles_frames = 0;
+#endif
+
 GPU::GPU()
 {
   ResetStatistics();
@@ -87,6 +93,11 @@ bool GPU::Initialize()
   }
 
   g_gpu_device->SetGPUTimingEnabled(g_settings.display_show_gpu_usage);
+
+#ifdef PSX_GPU_STATS
+  s_active_gpu_cycles = 0;
+  s_active_gpu_cycles_frames = 0;
+#endif
 
   return true;
 }
@@ -536,6 +547,9 @@ TickCount GPU::SystemTicksToCRTCTicks(TickCount sysclk_ticks, TickCount* fractio
 void GPU::AddCommandTicks(TickCount ticks)
 {
   m_pending_command_ticks += ticks;
+#ifdef PSX_GPU_STATS
+  s_active_gpu_cycles += ticks;
+#endif
 }
 
 void GPU::SynchronizeCRTC()
@@ -998,6 +1012,20 @@ void GPU::CRTCTickEvent(TickCount ticks)
           m_crtc_state.interlaced_display_field = m_crtc_state.interlaced_field ^ 1u;
         else
           m_crtc_state.interlaced_display_field = 0;
+
+#ifdef PSX_GPU_STATS
+        if ((++s_active_gpu_cycles_frames) == 60)
+        {
+          const double busy_frac =
+            static_cast<double>(s_active_gpu_cycles) /
+            static_cast<double>(SystemTicksToGPUTicks(System::ScaleTicksToOverclock(System::MASTER_CLOCK)) *
+                                (ComputeVerticalFrequency() / 60.0f));
+          Log_DevFmt("PSX GPU Usage: {:.2f}% [{:.0f} cycles avg per frame]", busy_frac * 100,
+                     static_cast<double>(s_active_gpu_cycles) / static_cast<double>(s_active_gpu_cycles_frames));
+          s_active_gpu_cycles = 0;
+          s_active_gpu_cycles_frames = 0;
+        }
+#endif
       }
 
       Timers::SetGate(HBLANK_TIMER_INDEX, new_vblank);
