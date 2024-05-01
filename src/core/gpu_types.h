@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -17,6 +17,7 @@ enum : u32
   VRAM_HEIGHT_MASK = VRAM_HEIGHT - 1,
   TEXTURE_PAGE_WIDTH = 256,
   TEXTURE_PAGE_HEIGHT = 256,
+  GPU_CLUT_SIZE = 256,
 
   // In interlaced modes, we can exceed the 512 height of VRAM, up to 576 in PAL games.
   GPU_MAX_DISPLAY_WIDTH = 720,
@@ -259,9 +260,10 @@ enum class GPUBackendCommandType : u8
   UpdateVRAM,
   CopyVRAM,
   SetDrawingArea,
+  UpdateCLUT,
   DrawPolygon,
   DrawRectangle,
-  DrawLine
+  DrawLine,
 };
 
 union GPUBackendCommandParameters
@@ -334,6 +336,12 @@ struct GPUBackendCopyVRAMCommand : public GPUBackendCommand
 struct GPUBackendSetDrawingAreaCommand : public GPUBackendCommand
 {
   GPUDrawingArea new_area;
+};
+
+struct GPUBackendUpdateCLUTCommand : public GPUBackendCommand
+{
+  GPUTexturePaletteReg reg;
+  bool clut_is_8bit;
 };
 
 struct GPUBackendDrawCommand : public GPUBackendCommand

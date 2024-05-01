@@ -73,6 +73,12 @@ GPUBackendSetDrawingAreaCommand* GPUBackend::NewSetDrawingAreaCommand()
     AllocateCommand(GPUBackendCommandType::SetDrawingArea, sizeof(GPUBackendSetDrawingAreaCommand)));
 }
 
+GPUBackendUpdateCLUTCommand* GPUBackend::NewUpdateCLUTCommand()
+{
+  return static_cast<GPUBackendUpdateCLUTCommand*>(
+    AllocateCommand(GPUBackendCommandType::UpdateCLUT, sizeof(GPUBackendUpdateCLUTCommand)));
+}
+
 GPUBackendDrawPolygonCommand* GPUBackend::NewDrawPolygonCommand(u32 num_vertices)
 {
   const u32 size = sizeof(GPUBackendDrawPolygonCommand) + (num_vertices * sizeof(GPUBackendDrawPolygonCommand::Vertex));
@@ -309,6 +315,13 @@ void GPUBackend::HandleCommand(const GPUBackendCommand* cmd)
     }
     break;
 
+    case GPUBackendCommandType::UpdateCLUT:
+    {
+      const GPUBackendUpdateCLUTCommand* ccmd = static_cast<const GPUBackendUpdateCLUTCommand*>(cmd);
+      UpdateCLUT(ccmd->reg, ccmd->clut_is_8bit);
+    }
+    break;
+
     case GPUBackendCommandType::DrawPolygon:
     {
       DrawPolygon(static_cast<const GPUBackendDrawPolygonCommand*>(cmd));
@@ -328,6 +341,6 @@ void GPUBackend::HandleCommand(const GPUBackendCommand* cmd)
     break;
 
     default:
-      break;
+      UnreachableCode();
   }
 }

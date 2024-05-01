@@ -3110,6 +3110,13 @@ void GPU_HW::DispatchRenderCommand()
   LoadVertices();
 }
 
+void GPU_HW::UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit)
+{
+  // Not done in HW
+  GL_INS_FMT("Reloading CLUT from {},{}, {} not implemented", reg.GetXBase(), reg.GetYBase(),
+             clut_is_8bit ? "8-bit" : "4-bit");
+}
+
 void GPU_HW::FlushRender()
 {
   const u32 base_vertex = m_batch_base_vertex;

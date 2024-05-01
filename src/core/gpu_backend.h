@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -33,6 +33,7 @@ public:
   GPUBackendUpdateVRAMCommand* NewUpdateVRAMCommand(u32 num_words);
   GPUBackendCopyVRAMCommand* NewCopyVRAMCommand();
   GPUBackendSetDrawingAreaCommand* NewSetDrawingAreaCommand();
+  GPUBackendUpdateCLUTCommand* NewUpdateCLUTCommand();
   GPUBackendDrawPolygonCommand* NewDrawPolygonCommand(u32 num_vertices);
   GPUBackendDrawRectangleCommand* NewDrawRectangleCommand();
   GPUBackendDrawLineCommand* NewDrawLineCommand(u32 num_vertices);
@@ -60,6 +61,7 @@ protected:
   virtual void DrawLine(const GPUBackendDrawLineCommand* cmd) = 0;
   virtual void FlushRender() = 0;
   virtual void DrawingAreaChanged() = 0;
+  virtual void UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit) = 0;
 
   void HandleCommand(const GPUBackendCommand* cmd);
 

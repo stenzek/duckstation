@@ -824,6 +824,19 @@ void GPU_SW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
   m_backend.PushCommand(cmd);
 }
 
+void GPU_SW::FlushRender()
+{
+}
+
+void GPU_SW::UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit)
+{
+  GPUBackendUpdateCLUTCommand* cmd = m_backend.NewUpdateCLUTCommand();
+  FillBackendCommandParameters(cmd);
+  cmd->reg.bits = reg.bits;
+  cmd->clut_is_8bit = clut_is_8bit;
+  m_backend.PushCommand(cmd);
+}
+
 std::unique_ptr<GPU> GPU::CreateSoftwareRenderer()
 {
   std::unique_ptr<GPU_SW> gpu(std::make_unique<GPU_SW>());

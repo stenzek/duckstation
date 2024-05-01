@@ -198,6 +198,7 @@ bool GPU::HandleClearCacheCommand()
 {
   Log_DebugPrintf("GP0 clear cache");
   m_draw_mode.SetTexturePageChanged();
+  InvalidateCLUT();
   m_fifo.RemoveOne();
   AddCommandTicks(1);
   EndCommand();
@@ -347,6 +348,7 @@ bool GPU::HandleRenderPolygonCommand()
     SetDrawMode((texpage_attribute & GPUDrawModeReg::POLYGON_TEXPAGE_MASK) |
                 (m_draw_mode.mode_reg.bits & ~GPUDrawModeReg::POLYGON_TEXPAGE_MASK));
     SetTexturePalette(Truncate16(FifoPeek(2) >> 16));
+    UpdateCLUTIfNeeded(m_draw_mode.mode_reg.texture_mode, m_draw_mode.palette_reg);
   }
 
   m_counters.num_vertices += num_vertices;
@@ -371,7 +373,10 @@ bool GPU::HandleRenderRectangleCommand()
     SynchronizeCRTC();
 
   if (rc.texture_enable)
+  {
     SetTexturePalette(Truncate16(FifoPeek(2) >> 16));
+    UpdateCLUTIfNeeded(m_draw_mode.mode_reg.texture_mode, m_draw_mode.palette_reg);
+  }
 
   const TickCount setup_ticks = 16;
   AddCommandTicks(setup_ticks);

@@ -1,8 +1,11 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
+
+#include "gpu.h"
 #include "gpu_backend.h"
+
 #include <array>
 #include <memory>
 #include <vector>
@@ -97,6 +100,7 @@ protected:
   void DrawRectangle(const GPUBackendDrawRectangleCommand* cmd) override;
   void FlushRender() override;
   void DrawingAreaChanged() override;
+  void UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit) override;
 
   //////////////////////////////////////////////////////////////////////////
   // Rasterization

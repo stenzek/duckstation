@@ -47,8 +47,8 @@ public:
 
   void UpdateSettings(const Settings& old_settings) override;
   void UpdateResolutionScale() override final;
-  std::tuple<u32, u32> GetEffectiveDisplayResolution(bool scaled = true) override final;
-  std::tuple<u32, u32> GetFullDisplayResolution(bool scaled = true) override final;
+  std::tuple<u32, u32> GetEffectiveDisplayResolution(bool scaled = true) override;
+  std::tuple<u32, u32> GetFullDisplayResolution(bool scaled = true) override;
 
   void UpdateDisplay() override;
 
@@ -176,6 +176,7 @@ private:
   void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask) override;
   void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) override;
   void DispatchRenderCommand() override;
+  void UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit) override;
   void FlushRender() override;
   void DrawRendererStats() override;
 

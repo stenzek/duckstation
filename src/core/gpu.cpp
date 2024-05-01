@@ -36,6 +36,7 @@ Log_SetChannel(GPU);
 
 std::unique_ptr<GPU> g_gpu;
 alignas(HOST_PAGE_SIZE) u16 g_vram[VRAM_SIZE / sizeof(u16)];
+u16 g_gpu_clut[GPU_CLUT_SIZE];
 
 const GPU::GP0CommandHandlerTable GPU::s_GP0_command_handler_table = GPU::GenerateGP0CommandHandlerTable();
 
@@ -173,7 +174,10 @@ void GPU::Reset(bool clear_vram)
   m_crtc_state.interlaced_display_field = 0;
 
   if (clear_vram)
+  {
     std::memset(g_vram, 0, sizeof(g_vram));
+    std::memset(g_gpu_clut, 0, sizeof(g_gpu_clut));
+  }
 
   // Force event to reschedule itself.
   m_crtc_tick_event->Deactivate();
@@ -224,6 +228,7 @@ void GPU::SoftReset()
   SetDrawMode(0);
   SetTexturePalette(0);
   SetTextureWindow(0);
+  InvalidateCLUT();
   UpdateDMARequest();
   UpdateCRTCConfig();
   UpdateCommandTickEvent();
@@ -307,6 +312,18 @@ bool GPU::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_displ
   sw.Do(&m_pending_command_ticks);
   sw.Do(&m_command_total_words);
   sw.Do(&m_GPUREAD_latch);
+
+  if (sw.GetVersion() < 64) [[unlikely]]
+  {
+    // Clear CLUT cache and let it populate later.
+    InvalidateCLUT();
+  }
+  else
+  {
+    sw.Do(&m_current_clut_reg_bits);
+    sw.Do(&m_current_clut_is_8bit);
+    sw.DoArray(g_gpu_clut, std::size(g_gpu_clut));
+  }
 
   sw.Do(&m_vram_transfer.x);
   sw.Do(&m_vram_transfer.y);
@@ -1443,16 +1460,33 @@ void GPU::HandleGetGPUInfoCommand(u32 value)
   }
 }
 
+void GPU::UpdateCLUTIfNeeded(GPUTextureMode texmode, GPUTexturePaletteReg clut)
+{
+  if (texmode >= GPUTextureMode::Direct16Bit)
+    return;
+
+  const bool needs_8bit = (texmode == GPUTextureMode::Palette8Bit);
+  if ((clut.bits != m_current_clut_reg_bits) || BoolToUInt8(needs_8bit) > BoolToUInt8(m_current_clut_is_8bit))
+  {
+    Log_DebugFmt("Reloading CLUT from {},{}, {}", clut.GetXBase(), clut.GetYBase(), needs_8bit ? "8-bit" : "4-bit");
+    UpdateCLUT(clut, needs_8bit);
+    m_current_clut_reg_bits = clut.bits;
+    m_current_clut_is_8bit = needs_8bit;
+  }
+}
+
+void GPU::InvalidateCLUT()
+{
+  m_current_clut_reg_bits = std::numeric_limits<decltype(m_current_clut_reg_bits)>::max(); // will never match
+  m_current_clut_is_8bit = false;
+}
+
 void GPU::ClearDisplay()
 {
   ClearDisplayTexture();
 
   // Just recycle the textures, it'll get re-fetched.
   DestroyDeinterlaceTextures();
-}
-
-void GPU::UpdateDisplay()
-{
 }
 
 void GPU::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
@@ -1615,14 +1649,6 @@ void GPU::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 he
   }
 }
 
-void GPU::DispatchRenderCommand()
-{
-}
-
-void GPU::FlushRender()
-{
-}
-
 void GPU::SetDrawMode(u16 value)
 {
   GPUDrawModeReg new_mode_reg{static_cast<u16>(value & GPUDrawModeReg::MASK)};
@@ -1675,6 +1701,31 @@ void GPU::SetTextureWindow(u32 value)
   m_draw_mode.texture_window.or_y = (offset_y & mask_y) * 8u;
   m_draw_mode.texture_window_value = value;
   m_draw_mode.texture_window_changed = true;
+}
+
+void GPU::ReadCLUT(u16* dest, GPUTexturePaletteReg reg, bool clut_is_8bit)
+{
+  const u16* src_row = &g_vram[reg.GetYBase() * VRAM_WIDTH];
+  const u32 start_x = reg.GetXBase();
+  if (!clut_is_8bit)
+  {
+    // Wraparound can't happen in 4-bit mode.
+    std::memcpy(dest, &src_row[start_x], sizeof(u16) * 16);
+  }
+  else
+  {
+    if ((start_x + 256) > VRAM_WIDTH) [[unlikely]]
+    {
+      const u32 end = VRAM_WIDTH - start_x;
+      const u32 start = 256 - end;
+      std::memcpy(dest, &src_row[start_x], sizeof(u16) * end);
+      std::memcpy(dest + end, src_row, sizeof(u16) * start);
+    }
+    else
+    {
+      std::memcpy(dest, &src_row[start_x], sizeof(u16) * 256);
+    }
+  }
 }
 
 bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_smoothing)

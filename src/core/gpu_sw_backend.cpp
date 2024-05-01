@@ -1,8 +1,8 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
-#include "gpu.h"
 #include "gpu_sw_backend.h"
+#include "gpu.h"
 #include "system.h"
 
 #include "util/gpu_device.h"
@@ -93,10 +93,8 @@ void ALWAYS_INLINE_RELEASE GPU_SW_Backend::ShadePixel(const GPUBackendDrawComman
         const u16 palette_value =
           GetPixel((cmd->draw_mode.GetTexturePageBaseX() + ZeroExtend32(texcoord_x / 4)) % VRAM_WIDTH,
                    (cmd->draw_mode.GetTexturePageBaseY() + ZeroExtend32(texcoord_y)) % VRAM_HEIGHT);
-        const u16 palette_index = (palette_value >> ((texcoord_x % 4) * 4)) & 0x0Fu;
-
-        texture_color.bits =
-          GetPixel((cmd->palette.GetXBase() + ZeroExtend32(palette_index)) % VRAM_WIDTH, cmd->palette.GetYBase());
+        const size_t palette_index = (palette_value >> ((texcoord_x % 4) * 4)) & 0x0Fu;
+        texture_color.bits = g_gpu_clut[palette_index];
       }
       break;
 
@@ -105,9 +103,8 @@ void ALWAYS_INLINE_RELEASE GPU_SW_Backend::ShadePixel(const GPUBackendDrawComman
         const u16 palette_value =
           GetPixel((cmd->draw_mode.GetTexturePageBaseX() + ZeroExtend32(texcoord_x / 2)) % VRAM_WIDTH,
                    (cmd->draw_mode.GetTexturePageBaseY() + ZeroExtend32(texcoord_y)) % VRAM_HEIGHT);
-        const u16 palette_index = (palette_value >> ((texcoord_x % 2) * 8)) & 0xFFu;
-        texture_color.bits =
-          GetPixel((cmd->palette.GetXBase() + ZeroExtend32(palette_index)) % VRAM_WIDTH, cmd->palette.GetYBase());
+        const size_t palette_index = (palette_value >> ((texcoord_x % 2) * 8)) & 0xFFu;
+        texture_color.bits = g_gpu_clut[palette_index];
       }
       break;
 
@@ -869,9 +866,18 @@ void GPU_SW_Backend::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 wi
   }
 }
 
-void GPU_SW_Backend::FlushRender() {}
+void GPU_SW_Backend::FlushRender()
+{
+}
 
-void GPU_SW_Backend::DrawingAreaChanged() {}
+void GPU_SW_Backend::DrawingAreaChanged()
+{
+}
+
+void GPU_SW_Backend::UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit)
+{
+  GPU::ReadCLUT(g_gpu_clut, reg, clut_is_8bit);
+}
 
 GPU_SW_Backend::DrawLineFunction GPU_SW_Backend::GetDrawLineFunction(bool shading_enable, bool transparency_enable,
                                                                      bool dithering_enable)

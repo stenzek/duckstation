@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -200,7 +200,7 @@ public:
   bool DumpVRAMToFile(const char* filename);
 
   // Ensures all buffered vertices are drawn.
-  virtual void FlushRender();
+  virtual void FlushRender() = 0;
 
   ALWAYS_INLINE const void* GetDisplayTextureHandle() const { return m_display_texture; }
   ALWAYS_INLINE s32 GetDisplayWidth() const { return m_display_width; }
@@ -224,6 +224,9 @@ public:
 
   /// Draws the current display texture, with any post-processing.
   bool PresentDisplay();
+
+  /// Reads the CLUT from the specified coordinates, accounting for wrap-around.
+  static void ReadCLUT(u16* dest, GPUTexturePaletteReg reg, bool clut_is_8bit);
 
 protected:
   TickCount CRTCTicksToSystemTicks(TickCount crtc_ticks, TickCount fractional_ticks) const;
@@ -306,14 +309,17 @@ protected:
   void ExecuteCommands();
   void TryExecuteCommands();
   void HandleGetGPUInfoCommand(u32 value);
+  void UpdateCLUTIfNeeded(GPUTextureMode texmode, GPUTexturePaletteReg clut);
+  void InvalidateCLUT();
 
   // Rendering in the backend
   virtual void ReadVRAM(u32 x, u32 y, u32 width, u32 height);
   virtual void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color);
   virtual void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask);
   virtual void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height);
-  virtual void DispatchRenderCommand();
-  virtual void UpdateDisplay();
+  virtual void DispatchRenderCommand() = 0;
+  virtual void UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit) = 0;
+  virtual void UpdateDisplay() = 0;
   virtual void DrawRendererStats();
 
   ALWAYS_INLINE_RELEASE void AddDrawTriangleTicks(s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3, bool shaded,
@@ -568,6 +574,11 @@ protected:
   /// GPUREAD value for non-VRAM-reads.
   u32 m_GPUREAD_latch = 0;
 
+  // These are the bits from the palette register, but zero extended to 32-bit, so we can have an "invalid" value.
+  // If an extra byte is ever not needed here for padding, the 8-bit flag could be packed into the MSB of this value.
+  u32 m_current_clut_reg_bits = {};
+  bool m_current_clut_is_8bit = false;
+
   /// True if currently executing/syncing.
   bool m_executing_commands = false;
 
@@ -693,3 +704,4 @@ private:
 
 extern std::unique_ptr<GPU> g_gpu;
 extern u16 g_vram[VRAM_SIZE / sizeof(u16)];
+extern u16 g_gpu_clut[GPU_CLUT_SIZE];
