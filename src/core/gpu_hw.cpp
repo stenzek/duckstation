@@ -77,7 +77,7 @@ ALWAYS_INLINE static bool IsBlendedTextureFiltering(GPUTextureFilter filter)
 }
 
 /// Computes the area affected by a VRAM transfer, including wrap-around of X.
-static Common::Rectangle<u32> GetVRAMTransferBounds(u32 x, u32 y, u32 width, u32 height)
+ALWAYS_INLINE_RELEASE static Common::Rectangle<u32> GetVRAMTransferBounds(u32 x, u32 y, u32 width, u32 height)
 {
   Common::Rectangle<u32> out_rc = Common::Rectangle<u32>::FromExtents(x % VRAM_WIDTH, y % VRAM_HEIGHT, width, height);
   if (out_rc.right > VRAM_WIDTH)
@@ -244,6 +244,7 @@ void GPU_HW::Reset(bool clear_vram)
   m_batch_ubo_data = {};
   m_batch_ubo_dirty = true;
   m_current_depth = 1;
+  SetClampedDrawingArea();
 
   if (clear_vram)
     ClearFramebuffer();
@@ -500,6 +501,20 @@ void GPU_HW::CheckSettings()
   }
 }
 
+void GPU_HW::SetClampedDrawingArea()
+{
+  if (!IsDrawingAreaIsValid()) [[unlikely]]
+  {
+    m_clamped_drawing_area = {};
+    return;
+  }
+
+  m_clamped_drawing_area.right = std::min(m_drawing_area.right + 1, static_cast<u32>(VRAM_WIDTH));
+  m_clamped_drawing_area.left = std::min(m_drawing_area.left, std::min(m_clamped_drawing_area.right, VRAM_WIDTH - 1));
+  m_clamped_drawing_area.bottom = std::min(m_drawing_area.bottom + 1, static_cast<u32>(VRAM_HEIGHT));
+  m_clamped_drawing_area.top = std::min(m_drawing_area.top, std::min(m_drawing_area.bottom, VRAM_HEIGHT - 1));
+}
+
 u32 GPU_HW::CalculateResolutionScale() const
 {
   const u32 max_resolution_scale = GetMaxResolutionScale();
@@ -590,6 +605,26 @@ void GPU_HW::ClearVRAMDirtyRectangle()
 {
   m_vram_dirty_draw_rect.SetInvalid();
   m_vram_dirty_write_rect.SetInvalid();
+}
+
+void GPU_HW::IncludeDrawnDirtyRectangle(s32 min_x, s32 min_y, s32 max_x, s32 max_y)
+{
+  const u32 clamped_min_x = std::clamp(min_x, static_cast<s32>(m_clamped_drawing_area.left),
+                                       static_cast<s32>(m_clamped_drawing_area.right - 1));
+  const u32 clamped_max_x =
+    std::clamp(max_x, static_cast<s32>(m_clamped_drawing_area.left), static_cast<s32>(m_clamped_drawing_area.right));
+  m_vram_dirty_draw_rect.left = std::min(m_vram_dirty_draw_rect.left, clamped_min_x);
+  m_vram_dirty_draw_rect.right = std::max(m_vram_dirty_draw_rect.right, clamped_max_x);
+
+  const u32 clamped_min_y = std::clamp(min_y, static_cast<s32>(m_clamped_drawing_area.top),
+                                       static_cast<s32>(m_clamped_drawing_area.bottom - 1));
+  const u32 clamped_max_y =
+    std::clamp(max_y, static_cast<s32>(m_clamped_drawing_area.top), static_cast<s32>(m_clamped_drawing_area.bottom));
+  m_vram_dirty_draw_rect.top = std::min(m_vram_dirty_draw_rect.top, clamped_min_y);
+  m_vram_dirty_draw_rect.bottom = std::max(m_vram_dirty_draw_rect.bottom, clamped_max_y);
+
+  DebugAssert(m_vram_dirty_draw_rect.left < VRAM_WIDTH && m_vram_dirty_draw_rect.right <= VRAM_WIDTH);
+  DebugAssert(m_vram_dirty_draw_rect.top < VRAM_HEIGHT && m_vram_dirty_draw_rect.bottom <= VRAM_HEIGHT);
 }
 
 std::tuple<u32, u32> GPU_HW::GetEffectiveDisplayResolution(bool scaled /* = true */)
@@ -2004,13 +2039,9 @@ void GPU_HW::LoadVertices()
       }
       else
       {
-        const u32 clip_left = static_cast<u32>(std::clamp<s32>(min_x, m_drawing_area.left, m_drawing_area.right));
-        const u32 clip_right = static_cast<u32>(std::clamp<s32>(max_x, m_drawing_area.left, m_drawing_area.right)) + 1u;
-        const u32 clip_top = static_cast<u32>(std::clamp<s32>(min_y, m_drawing_area.top, m_drawing_area.bottom));
-        const u32 clip_bottom =
-          static_cast<u32>(std::clamp<s32>(max_y, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
+        // TODO: Cull triangles that fall entirely off-screen.
+        IncludeDrawnDirtyRectangle(min_x, min_y, max_x, max_y);
 
-        m_vram_dirty_draw_rect.Include(clip_left, clip_right, clip_top, clip_bottom);
         AddDrawTriangleTicks(native_vertex_positions[0][0], native_vertex_positions[0][1],
                              native_vertex_positions[1][0], native_vertex_positions[1][1],
                              native_vertex_positions[2][0], native_vertex_positions[2][1], rc.shading_enable,
@@ -2041,14 +2072,8 @@ void GPU_HW::LoadVertices()
         }
         else
         {
-          const u32 clip_left = static_cast<u32>(std::clamp<s32>(min_x_123, m_drawing_area.left, m_drawing_area.right));
-          const u32 clip_right =
-            static_cast<u32>(std::clamp<s32>(max_x_123, m_drawing_area.left, m_drawing_area.right)) + 1u;
-          const u32 clip_top = static_cast<u32>(std::clamp<s32>(min_y_123, m_drawing_area.top, m_drawing_area.bottom));
-          const u32 clip_bottom =
-            static_cast<u32>(std::clamp<s32>(max_y_123, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
+          IncludeDrawnDirtyRectangle(min_x_123, min_y_123, max_x_123, max_y_123);
 
-          m_vram_dirty_draw_rect.Include(clip_left, clip_right, clip_top, clip_bottom);
           AddDrawTriangleTicks(native_vertex_positions[2][0], native_vertex_positions[2][1],
                                native_vertex_positions[1][0], native_vertex_positions[1][1],
                                native_vertex_positions[3][0], native_vertex_positions[3][1], rc.shading_enable,
@@ -2187,14 +2212,14 @@ void GPU_HW::LoadVertices()
         tex_top = 0;
       }
 
+      IncludeDrawnDirtyRectangle(pos_x, pos_y, pos_x + rectangle_width, pos_y + rectangle_height);
+
       const u32 clip_left = static_cast<u32>(std::clamp<s32>(pos_x, m_drawing_area.left, m_drawing_area.right));
       const u32 clip_right =
         static_cast<u32>(std::clamp<s32>(pos_x + rectangle_width, m_drawing_area.left, m_drawing_area.right)) + 1u;
       const u32 clip_top = static_cast<u32>(std::clamp<s32>(pos_y, m_drawing_area.top, m_drawing_area.bottom));
       const u32 clip_bottom =
         static_cast<u32>(std::clamp<s32>(pos_y + rectangle_height, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
-
-      m_vram_dirty_draw_rect.Include(clip_left, clip_right, clip_top, clip_bottom);
       AddDrawRectangleTicks(clip_right - clip_left, clip_bottom - clip_top, rc.texture_enable, rc.transparency_enable);
 
       if (m_sw_renderer)
@@ -2251,13 +2276,14 @@ void GPU_HW::LoadVertices()
           return;
         }
 
+        IncludeDrawnDirtyRectangle(min_x, min_y, max_x, max_y);
+
         const u32 clip_left = static_cast<u32>(std::clamp<s32>(min_x, m_drawing_area.left, m_drawing_area.right));
         const u32 clip_right = static_cast<u32>(std::clamp<s32>(max_x, m_drawing_area.left, m_drawing_area.right)) + 1u;
         const u32 clip_top = static_cast<u32>(std::clamp<s32>(min_y, m_drawing_area.top, m_drawing_area.bottom));
         const u32 clip_bottom =
           static_cast<u32>(std::clamp<s32>(max_y, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
 
-        m_vram_dirty_draw_rect.Include(clip_left, clip_right, clip_top, clip_bottom);
         AddDrawLineTicks(clip_right - clip_left, clip_bottom - clip_top, rc.shading_enable);
 
         // TODO: Should we do a PGXP lookup here? Most lines are 2D.
@@ -2317,6 +2343,8 @@ void GPU_HW::LoadVertices()
           }
           else
           {
+            IncludeDrawnDirtyRectangle(min_x, min_y, max_x, max_y);
+
             const u32 clip_left = static_cast<u32>(std::clamp<s32>(min_x, m_drawing_area.left, m_drawing_area.right));
             const u32 clip_right =
               static_cast<u32>(std::clamp<s32>(max_x, m_drawing_area.left, m_drawing_area.right)) + 1u;
@@ -2324,7 +2352,6 @@ void GPU_HW::LoadVertices()
             const u32 clip_bottom =
               static_cast<u32>(std::clamp<s32>(max_y, m_drawing_area.top, m_drawing_area.bottom)) + 1u;
 
-            m_vram_dirty_draw_rect.Include(clip_left, clip_right, clip_top, clip_bottom);
             AddDrawLineTicks(clip_right - clip_left, clip_bottom - clip_top, rc.shading_enable);
 
             // TODO: Should we do a PGXP lookup here? Most lines are 2D.
@@ -3087,6 +3114,7 @@ void GPU_HW::DispatchRenderCommand()
     if (m_drawing_area_changed)
     {
       m_drawing_area_changed = false;
+      SetClampedDrawingArea();
       SetScissor();
 
       if (m_pgxp_depth_buffer && m_last_depth_z < 1.0f)

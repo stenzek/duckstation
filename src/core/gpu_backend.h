@@ -63,7 +63,7 @@ protected:
 
   void HandleCommand(const GPUBackendCommand* cmd);
 
-  Common::Rectangle<u32> m_drawing_area{};
+  GPUDrawingArea m_drawing_area = {};
 
   Threading::KernelSemaphore m_sync_semaphore;
   std::atomic_bool m_gpu_thread_sleeping{false};

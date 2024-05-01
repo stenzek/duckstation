@@ -196,7 +196,7 @@ void GPU::SoftReset()
   m_GPUSTAT.vertical_interlace = false;
   m_GPUSTAT.display_disable = true;
   m_GPUSTAT.dma_direction = DMADirection::Off;
-  m_drawing_area.Set(0, 0, 0, 0);
+  m_drawing_area = {};
   m_drawing_area_changed = true;
   m_drawing_offset = {};
   std::memset(&m_crtc_state.regs, 0, sizeof(m_crtc_state.regs));

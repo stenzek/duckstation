@@ -294,7 +294,10 @@ protected:
   }
 
   /// Returns true if the drawing area is valid (i.e. left <= right, top <= bottom).
-  ALWAYS_INLINE bool IsDrawingAreaIsValid() const { return m_drawing_area.Valid(); }
+  ALWAYS_INLINE bool IsDrawingAreaIsValid() const
+  {
+    return (m_drawing_area.left <= m_drawing_area.right && m_drawing_area.top <= m_drawing_area.bottom);
+  }
 
   /// Clamps the specified coordinates to the drawing area.
   ALWAYS_INLINE void ClampCoordinatesToDrawingArea(s32* x, s32* y)
@@ -457,13 +460,8 @@ protected:
     ALWAYS_INLINE void ClearTextureWindowChangedFlag() { texture_window_changed = false; }
   } m_draw_mode = {};
 
-  Common::Rectangle<u32> m_drawing_area{0, 0, VRAM_WIDTH, VRAM_HEIGHT};
-
-  struct DrawingOffset
-  {
-    s32 x;
-    s32 y;
-  } m_drawing_offset = {};
+  GPUDrawingArea m_drawing_area = {};
+  GPUDrawingOffset m_drawing_offset = {};
 
   bool m_console_is_pal = false;
   bool m_set_texture_disable_mask = false;

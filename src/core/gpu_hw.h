@@ -131,6 +131,7 @@ private:
   void PrintSettingsToLog();
   void CheckSettings();
 
+  void SetClampedDrawingArea();
   void UpdateVRAMReadTexture(bool drawn, bool written);
   void UpdateDepthBufferFromMaskBit();
   void ClearDepthBuffer();
@@ -149,6 +150,7 @@ private:
   void SetFullVRAMDirtyRectangle();
   void ClearVRAMDirtyRectangle();
   void IncludeVRAMDirtyRectangle(Common::Rectangle<u32>& rect, const Common::Rectangle<u32>& new_rect);
+  void IncludeDrawnDirtyRectangle(s32 min_x, s32 min_y, s32 max_x, s32 max_y);
   void CheckForTexPageOverlap(u32 texpage, u32 min_u, u32 min_v, u32 max_u, u32 max_v);
 
   bool IsFlushed() const;
@@ -252,6 +254,7 @@ private:
   BatchUBOData m_batch_ubo_data = {};
 
   // Bounding box of VRAM area that the GPU has drawn into.
+  GPUDrawingArea m_clamped_drawing_area = {};
   Common::Rectangle<u32> m_vram_dirty_draw_rect;
   Common::Rectangle<u32> m_vram_dirty_write_rect;
   Common::Rectangle<u32> m_current_uv_range;

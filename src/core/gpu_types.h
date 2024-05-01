@@ -83,6 +83,21 @@ enum class GPUInterlacedDisplayMode : u8
   SeparateFields
 };
 
+// NOTE: Inclusive, not exclusive on the upper bounds.
+struct GPUDrawingArea
+{
+  u32 left;
+  u32 top;
+  u32 right;
+  u32 bottom;
+};
+
+struct GPUDrawingOffset
+{
+  s32 x;
+  s32 y;
+};
+
 union GPURenderCommand
 {
   u32 bits;
@@ -318,7 +333,7 @@ struct GPUBackendCopyVRAMCommand : public GPUBackendCommand
 
 struct GPUBackendSetDrawingAreaCommand : public GPUBackendCommand
 {
-  Common::Rectangle<u32> new_area;
+  GPUDrawingArea new_area;
 };
 
 struct GPUBackendDrawCommand : public GPUBackendCommand
