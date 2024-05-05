@@ -16,7 +16,11 @@
 
 #include <QtCore/QDateTime>
 #include <QtCore/QFuture>
+#include <QtCore/QStringBuilder>
+#include <QtWidgets/QDialog>
+#include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QTextBrowser>
 
 GameSummaryWidget::GameSummaryWidget(const std::string& path, const std::string& serial, DiscRegion region,
                                      const GameDatabase::Entry* entry, SettingsWindow* dialog, QWidget* parent)
@@ -47,6 +51,7 @@ GameSummaryWidget::GameSummaryWidget(const std::string& path, const std::string&
 
   populateUi(path, serial, region, entry);
 
+  connect(m_ui.compatibilityComments, &QToolButton::clicked, this, &GameSummaryWidget::onCompatibilityCommentsClicked);
   connect(m_ui.inputProfile, &QComboBox::currentIndexChanged, this, &GameSummaryWidget::onInputProfileChanged);
   connect(m_ui.computeHashes, &QAbstractButton::clicked, this, &GameSummaryWidget::onComputeHashClicked);
 }
@@ -121,6 +126,8 @@ void GameSummaryWidget::populateUi(const std::string& path, const std::string& s
     if (controllers.isEmpty())
       controllers = tr("Unknown");
     m_ui.controllers->setText(controllers);
+
+    m_compatibility_comments = QString::fromStdString(entry->GenerateCompatibilityReport());
   }
   else
   {
@@ -137,6 +144,8 @@ void GameSummaryWidget::populateUi(const std::string& path, const std::string& s
     if (gentry)
       m_ui.entryType->setCurrentIndex(static_cast<int>(gentry->type));
   }
+
+  m_ui.compatibilityComments->setVisible(!m_compatibility_comments.isEmpty());
 
   m_ui.inputProfile->addItem(QIcon::fromTheme(QStringLiteral("controller-digital-line")), tr("Use Global Settings"));
   for (const std::string& name : InputManager::GetInputProfileNames())
@@ -194,6 +203,26 @@ void GameSummaryWidget::populateTracksInfo()
     status->setTextAlignment(Qt::AlignCenter);
     m_ui.tracks->setItem(row, 5, status);
   }
+}
+
+void GameSummaryWidget::onCompatibilityCommentsClicked()
+{
+  QDialog dlg(QtUtils::GetRootWidget(this));
+  dlg.resize(QSize(700, 400));
+  dlg.setWindowModality(Qt::WindowModal);
+  dlg.setWindowTitle(tr("Compatibility Report"));
+
+  QVBoxLayout* layout = new QVBoxLayout(&dlg);
+
+  QTextBrowser* tb = new QTextBrowser(&dlg);
+  tb->setMarkdown(m_compatibility_comments);
+  layout->addWidget(tb, 1);
+
+  QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close, &dlg);
+  connect(bb->button(QDialogButtonBox::Close), &QPushButton::clicked, &dlg, &QDialog::accept);
+  layout->addWidget(bb);
+
+  dlg.exec();
 }
 
 void GameSummaryWidget::onInputProfileChanged(int index)

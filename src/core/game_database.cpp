@@ -34,7 +34,7 @@ namespace GameDatabase {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 7,
+  GAME_DATABASE_CACHE_VERSION = 8,
 };
 
 static Entry* GetMutableEntry(std::string_view serial);
@@ -54,12 +54,10 @@ static constexpr const std::array<const char*, static_cast<int>(CompatibilityRat
     {"Unknown", "DoesntBoot", "CrashesInIntro", "CrashesInGame", "GraphicalAudioIssues", "NoIssues"}};
 
 static constexpr const std::array<const char*, static_cast<size_t>(CompatibilityRating::Count)>
-  s_compatibility_rating_display_names = {{TRANSLATE_NOOP("GameListCompatibilityRating", "Unknown"),
-                                           TRANSLATE_NOOP("GameListCompatibilityRating", "Doesn't Boot"),
-                                           TRANSLATE_NOOP("GameListCompatibilityRating", "Crashes In Intro"),
-                                           TRANSLATE_NOOP("GameListCompatibilityRating", "Crashes In-Game"),
-                                           TRANSLATE_NOOP("GameListCompatibilityRating", "Graphical/Audio Issues"),
-                                           TRANSLATE_NOOP("GameListCompatibilityRating", "No Issues")}};
+  s_compatibility_rating_display_names = {
+    {TRANSLATE_NOOP("GameDatabase", "Unknown"), TRANSLATE_NOOP("GameDatabase", "Doesn't Boot"),
+     TRANSLATE_NOOP("GameDatabase", "Crashes In Intro"), TRANSLATE_NOOP("GameDatabase", "Crashes In-Game"),
+     TRANSLATE_NOOP("GameDatabase", "Graphical/Audio Issues"), TRANSLATE_NOOP("GameDatabase", "No Issues")}};
 
 static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Trait::Count)> s_trait_names = {{
   "ForceInterpreter",
@@ -84,6 +82,31 @@ static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Tr
   "ForceRecompilerICache",
   "ForceRecompilerLUTFastmem",
   "IsLibCryptProtected",
+}};
+
+static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Trait::Count)> s_trait_display_names = {{
+  TRANSLATE_NOOP("GameDatabase", "Force Interpreter"),
+  TRANSLATE_NOOP("GameDatabase", "Force Software Renderer"),
+  TRANSLATE_NOOP("GameDatabase", "Force Software Renderer For Readbacks"),
+  TRANSLATE_NOOP("GameDatabase", "Force Interlacing"),
+  TRANSLATE_NOOP("GameDatabase", "Disable True Color"),
+  TRANSLATE_NOOP("GameDatabase", "Disable Upscaling"),
+  TRANSLATE_NOOP("GameDatabase", "Disable Texture Filtering"),
+  TRANSLATE_NOOP("GameDatabase", "Disable Scaled Dithering"),
+  TRANSLATE_NOOP("GameDatabase", "Disable Force NTSC Timings"),
+  TRANSLATE_NOOP("GameDatabase", "Disable Widescreen"),
+  TRANSLATE_NOOP("GameDatabase", "Disable PGXP"),
+  TRANSLATE_NOOP("GameDatabase", "Disable PGXP Culling"),
+  TRANSLATE_NOOP("GameDatabase", "Disable PGXP Texture Correction"),
+  TRANSLATE_NOOP("GameDatabase", "Disable PGXP Color Correction"),
+  TRANSLATE_NOOP("GameDatabase", "Disable PGXP Depth Buffer"),
+  TRANSLATE_NOOP("GameDatabase", "Disable PGXP Preserve Projection Floating Point"),
+  TRANSLATE_NOOP("GameDatabase", "Force PGXP Vertex Cache"),
+  TRANSLATE_NOOP("GameDatabase", "Force PGXP CPU Mode"),
+  TRANSLATE_NOOP("GameDatabase", "Force Recompiler Memory Exceptions"),
+  TRANSLATE_NOOP("GameDatabase", "Force Recompiler ICache"),
+  TRANSLATE_NOOP("GameDatabase", "Force Recompiler LUT Fastmem"),
+  TRANSLATE_NOOP("GameDatabase", "Is LibCrypt Protected"),
 }};
 
 static constexpr const char* GAMEDB_YAML_FILENAME = "gamedb.yaml";
@@ -325,6 +348,17 @@ GameDatabase::Entry* GameDatabase::GetMutableEntry(std::string_view serial)
   return nullptr;
 }
 
+const char* GameDatabase::GetTraitName(Trait trait)
+{
+  return s_trait_names[static_cast<size_t>(trait)];
+}
+
+const char* GameDatabase::GetTraitDisplayName(Trait trait)
+{
+  return Host::TranslateToCString("GameDatabase", s_trait_display_names[static_cast<size_t>(trait)]);
+  "";
+}
+
 const char* GameDatabase::GetCompatibilityRatingName(CompatibilityRating rating)
 {
   return s_compatibility_rating_names[static_cast<int>(rating)];
@@ -333,8 +367,7 @@ const char* GameDatabase::GetCompatibilityRatingName(CompatibilityRating rating)
 const char* GameDatabase::GetCompatibilityRatingDisplayName(CompatibilityRating rating)
 {
   return (rating >= CompatibilityRating::Unknown && rating < CompatibilityRating::Count) ?
-           Host::TranslateToCString("GameListCompatibilityRating",
-                                    s_compatibility_rating_display_names[static_cast<int>(rating)]) :
+           Host::TranslateToCString("GameDatabase", s_compatibility_rating_display_names[static_cast<size_t>(rating)]) :
            "";
 }
 
@@ -672,6 +705,122 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 }
 
 template<typename T>
+static inline void AppendIntegerSetting(SmallStringBase& str, bool& heading, std::string_view title,
+                                        const std::optional<T>& value)
+{
+  if (!value.has_value())
+    return;
+
+  if (!heading)
+  {
+    heading = true;
+    str.append_format("**{}**\n\n", TRANSLATE_SV("GameDatabase", "Settings"));
+  }
+
+  str.append_format(" - {}: {}\n", title, value.value());
+}
+
+static inline void AppendFloatSetting(SmallStringBase& str, bool& heading, std::string_view title,
+                                      const std::optional<float>& value)
+{
+  if (!value.has_value())
+    return;
+
+  if (!heading)
+  {
+    heading = true;
+    str.append_format("**{}**\n\n", TRANSLATE_SV("GameDatabase", "Settings"));
+  }
+
+  str.append_format(" - {}: {:.2f}\n", title, value.value());
+}
+
+template<typename T>
+static inline void AppendEnumSetting(SmallStringBase& str, bool& heading, std::string_view title,
+                                     const char* (*get_display_name_func)(T), const std::optional<T>& value)
+{
+  if (!value.has_value())
+    return;
+
+  if (!heading)
+  {
+    heading = true;
+    str.append_format("**{}**\n\n", TRANSLATE_SV("GameDatabase", "Settings"));
+  }
+
+  str.append_format(" - {}: {}\n", title, get_display_name_func(value.value()));
+}
+
+std::string GameDatabase::Entry::GenerateCompatibilityReport() const
+{
+  LargeString ret;
+  ret.append_format("**{}:** {}\n\n", TRANSLATE_SV("GameDatabase", "Title"), title);
+  ret.append_format("**{}:** {}\n\n", TRANSLATE_SV("GameDatabase", "Serial"), serial);
+  ret.append_format("**{}:** {}\n\n", TRANSLATE_SV("GameDatabase", "Rating"),
+                    GetCompatibilityRatingDisplayName(compatibility));
+
+  if (!compatibility_version_tested.empty())
+    ret.append_format("**{}:**\n{}\n\n", TRANSLATE_SV("GameDatabase", "Version Tested"), compatibility_version_tested);
+
+  if (!compatibility_comments.empty())
+    ret.append_format("**{}**\n\n{}\n\n", TRANSLATE_SV("GameDatabase", "Comments"), compatibility_comments);
+
+  if (supported_controllers != 0)
+  {
+    ret.append_format("**{}**\n\n", TRANSLATE_SV("GameDatabase", "Supported Controllers"));
+
+    for (u32 j = 0; j < static_cast<u32>(ControllerType::Count); j++)
+    {
+      if ((supported_controllers & (static_cast<u16>(1) << j)) == 0)
+        continue;
+
+      ret.append_format(" - {}\n", Controller::GetControllerInfo(static_cast<ControllerType>(j))->GetDisplayName());
+    }
+
+    ret.append("\n");
+  }
+
+  if (traits.any())
+  {
+    ret.append_format("**{}**\n\n", TRANSLATE_SV("GameDatabase", "Traits"));
+    for (u32 i = 0; i < static_cast<u32>(Trait::Count); i++)
+    {
+      if (traits.test(i))
+        ret.append_format(" - {}\n", GetTraitDisplayName(static_cast<Trait>(i)));
+    }
+    ret.append("\n");
+  }
+
+  bool settings_heading = false;
+  AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "Display Active Start Offset"),
+                       display_active_start_offset);
+  AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "Display Active End Offset"),
+                       display_active_end_offset);
+  AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "Display Line Start Offset"),
+                       display_line_start_offset);
+  AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "Display Line End Offset"),
+                       display_line_end_offset);
+  AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "DMA Max Slice Ticks"), dma_max_slice_ticks);
+  AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "DMA Halt Ticks"), dma_halt_ticks);
+  AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU FIFO Size"), gpu_fifo_size);
+  AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU Max Runahead"), gpu_max_run_ahead);
+  AppendFloatSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU PGXP Tolerance"), gpu_pgxp_tolerance);
+  AppendFloatSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU PGXP Depth Threshold"),
+                     gpu_pgxp_depth_threshold);
+  AppendEnumSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU Line Detect Mode"),
+                    &Settings::GetLineDetectModeDisplayName, gpu_line_detect_mode);
+
+  if (!disc_set_name.empty())
+  {
+    ret.append_format("**{}:** {}\n", TRANSLATE_SV("GameDatabase", "Disc Set"), disc_set_name);
+    for (const std::string& ds_serial : disc_set_serials)
+      ret.append_format(" - {}\n", ds_serial);
+  }
+
+  return std::string(ret.view());
+}
+
+template<typename T>
 bool ReadOptionalFromStream(ByteStream* stream, std::optional<T>* dest)
 {
   bool has_value;
@@ -748,7 +897,9 @@ bool GameDatabase::LoadFromCache()
 
     if (!stream->ReadSizePrefixedString(&entry.serial) || !stream->ReadSizePrefixedString(&entry.title) ||
         !stream->ReadSizePrefixedString(&entry.genre) || !stream->ReadSizePrefixedString(&entry.developer) ||
-        !stream->ReadSizePrefixedString(&entry.publisher) || !stream->ReadU64(&entry.release_date) ||
+        !stream->ReadSizePrefixedString(&entry.publisher) ||
+        !stream->ReadSizePrefixedString(&entry.compatibility_version_tested) ||
+        !stream->ReadSizePrefixedString(&entry.compatibility_comments) || !stream->ReadU64(&entry.release_date) ||
         !stream->ReadU8(&entry.min_players) || !stream->ReadU8(&entry.max_players) ||
         !stream->ReadU8(&entry.min_blocks) || !stream->ReadU8(&entry.max_blocks) ||
         !stream->ReadU16(&entry.supported_controllers) || !stream->ReadU8(&compatibility) ||
@@ -834,6 +985,8 @@ bool GameDatabase::SaveToCache()
     result = result && stream->WriteSizePrefixedString(entry.genre);
     result = result && stream->WriteSizePrefixedString(entry.developer);
     result = result && stream->WriteSizePrefixedString(entry.publisher);
+    result = result && stream->WriteSizePrefixedString(entry.compatibility_version_tested);
+    result = result && stream->WriteSizePrefixedString(entry.compatibility_comments);
     result = result && stream->WriteU64(entry.release_date);
     result = result && stream->WriteU8(entry.min_players);
     result = result && stream->WriteU8(entry.max_players);
@@ -1020,6 +1173,9 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
         Log_WarningFmt("Unknown compatibility rating {} in {}", rating_str, entry->serial);
       }
     }
+
+    GetStringFromObject(compatibility, "versionTested", &entry->compatibility_version_tested);
+    GetStringFromObject(compatibility, "comments", &entry->compatibility_comments);
   }
 
   if (const ryml::ConstNodeRef traits = value.find_child(to_csubstr("traits")); traits.valid() && traits.has_children())

@@ -270,9 +270,13 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="editCompatibility">
+      <widget class="QToolButton" name="compatibilityComments">
        <property name="text">
-        <string>Edit...</string>
+        <string>Comments</string>
+       </property>
+       <property name="icon">
+        <iconset theme="information-line">
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>

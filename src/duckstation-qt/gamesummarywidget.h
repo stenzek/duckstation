@@ -25,6 +25,7 @@ public:
   ~GameSummaryWidget();
 
 private Q_SLOTS:
+  void onCompatibilityCommentsClicked();
   void onInputProfileChanged(int index);
   void onComputeHashClicked();
 
@@ -38,4 +39,5 @@ private:
 
   std::string m_path;
   std::string m_redump_search_keyword;
+  QString m_compatibility_comments;
 };

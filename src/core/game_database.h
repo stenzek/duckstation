@@ -62,6 +62,8 @@ struct Entry
   std::string genre;
   std::string developer;
   std::string publisher;
+  std::string compatibility_version_tested;
+  std::string compatibility_comments;
   u64 release_date;
   u8 min_players;
   u8 max_players;
@@ -89,6 +91,8 @@ struct Entry
   ALWAYS_INLINE bool HasTrait(Trait trait) const { return traits[static_cast<int>(trait)]; }
 
   void ApplySettings(Settings& settings, bool display_osd_messages) const;
+
+  std::string GenerateCompatibilityReport() const;
 };
 
 void EnsureLoaded();
@@ -99,6 +103,9 @@ const Entry* GetEntryForGameDetails(const std::string& id, u64 hash);
 const Entry* GetEntryForSerial(std::string_view serial);
 std::string GetSerialForDisc(CDImage* image);
 std::string GetSerialForPath(const char* path);
+
+const char* GetTraitName(Trait trait);
+const char* GetTraitDisplayName(Trait trait);
 
 const char* GetCompatibilityRatingName(CompatibilityRating rating);
 const char* GetCompatibilityRatingDisplayName(CompatibilityRating rating);
