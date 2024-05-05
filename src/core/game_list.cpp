@@ -479,7 +479,8 @@ void GameList::DeleteCacheFile()
 
 static bool IsPathExcluded(const std::vector<std::string>& excluded_paths, const std::string& path)
 {
-  return (std::find(excluded_paths.begin(), excluded_paths.end(), path) != excluded_paths.end());
+  return std::find_if(excluded_paths.begin(), excluded_paths.end(),
+                      [&path](const std::string& entry) { return path.starts_with(entry); }) != excluded_paths.end();
 }
 
 void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache,

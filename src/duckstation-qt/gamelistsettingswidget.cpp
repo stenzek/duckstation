@@ -44,9 +44,15 @@ GameListSettingsWidget::GameListSettingsWidget(SettingsWindow* dialog, QWidget* 
           &GameListSettingsWidget::onAddSearchDirectoryButtonClicked);
   connect(m_ui.removeSearchDirectoryButton, &QPushButton::clicked, this,
           &GameListSettingsWidget::onRemoveSearchDirectoryButtonClicked);
-  connect(m_ui.addExcludedPath, &QPushButton::clicked, this, &GameListSettingsWidget::onAddExcludedPathButtonClicked);
+  connect(m_ui.searchDirectoryList->selectionModel(), &QItemSelectionModel::selectionChanged, this,
+          &GameListSettingsWidget::onSearchDirectoriesSelectionChanged);
+  connect(m_ui.addExcludedFile, &QPushButton::clicked, this, &GameListSettingsWidget::onAddExcludedFileButtonClicked);
+  connect(m_ui.addExcludedFolder, &QPushButton::clicked, this,
+          &GameListSettingsWidget::onAddExcludedFolderButtonClicked);
   connect(m_ui.removeExcludedPath, &QPushButton::clicked, this,
           &GameListSettingsWidget::onRemoveExcludedPathButtonClicked);
+  connect(m_ui.excludedPaths, &QListWidget::itemSelectionChanged, this,
+          &GameListSettingsWidget::onExcludedPathsSelectionChanged);
   connect(m_ui.rescanAllGames, &QPushButton::clicked, this, &GameListSettingsWidget::onRescanAllGamesClicked);
   connect(m_ui.scanForNewGames, &QPushButton::clicked, this, &GameListSettingsWidget::onScanForNewGamesClicked);
 
@@ -73,6 +79,8 @@ void GameListSettingsWidget::refreshExclusionList()
   const std::vector<std::string> paths(Host::GetBaseStringListSetting("GameList", "ExcludedPaths"));
   for (const std::string& path : paths)
     m_ui.excludedPaths->addItem(QString::fromStdString(path));
+
+  m_ui.removeExcludedPath->setEnabled(false);
 }
 
 void GameListSettingsWidget::resizeEvent(QResizeEvent* event)
@@ -147,10 +155,25 @@ void GameListSettingsWidget::onRemoveSearchDirectoryButtonClicked()
   m_search_directories_model->removeEntry(row);
 }
 
-void GameListSettingsWidget::onAddExcludedPathButtonClicked()
+void GameListSettingsWidget::onSearchDirectoriesSelectionChanged()
+{
+  m_ui.removeSearchDirectoryButton->setEnabled(m_ui.searchDirectoryList->selectionModel()->hasSelection());
+}
+
+void GameListSettingsWidget::onAddExcludedFileButtonClicked()
 {
   QString path =
     QDir::toNativeSeparators(QFileDialog::getOpenFileName(QtUtils::GetRootWidget(this), tr("Select Path")));
+  if (path.isEmpty())
+    return;
+
+  addExcludedPath(path.toStdString());
+}
+
+void GameListSettingsWidget::onAddExcludedFolderButtonClicked()
+{
+  QString path =
+    QDir::toNativeSeparators(QFileDialog::getExistingDirectory(QtUtils::GetRootWidget(this), tr("Select Directory")));
   if (path.isEmpty())
     return;
 
@@ -169,6 +192,11 @@ void GameListSettingsWidget::onRemoveExcludedPathButtonClicked()
   delete item;
 
   g_main_window->refreshGameList(false);
+}
+
+void GameListSettingsWidget::onExcludedPathsSelectionChanged()
+{
+  m_ui.removeExcludedPath->setEnabled(!m_ui.excludedPaths->selectedItems().isEmpty());
 }
 
 void GameListSettingsWidget::onRescanAllGamesClicked()

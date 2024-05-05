@@ -38,6 +38,7 @@ private Q_SLOTS:
   void onDirectoryListContextMenuRequested(const QPoint& point);
   void onAddSearchDirectoryButtonClicked();
   void onRemoveSearchDirectoryButtonClicked();
+  void onSearchDirectoryListSelectionChanged();
   void refreshDirectoryList();
   void resizeDirectoryListColumns();
 

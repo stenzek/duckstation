@@ -251,6 +251,8 @@ void SetupWizardDialog::setupGameListPage()
           &SetupWizardDialog::onAddSearchDirectoryButtonClicked);
   connect(m_ui.removeSearchDirectoryButton, &QPushButton::clicked, this,
           &SetupWizardDialog::onRemoveSearchDirectoryButtonClicked);
+  connect(m_ui.searchDirectoryList, &QTableWidget::itemSelectionChanged, this,
+          &SetupWizardDialog::onSearchDirectoryListSelectionChanged);
 
   refreshDirectoryList();
 }
@@ -314,6 +316,11 @@ void SetupWizardDialog::onRemoveSearchDirectoryButtonClicked()
   refreshDirectoryList();
 }
 
+void SetupWizardDialog::onSearchDirectoryListSelectionChanged()
+{
+  m_ui.removeSearchDirectoryButton->setEnabled(!m_ui.searchDirectoryList->selectedItems().isEmpty());
+}
+
 void SetupWizardDialog::addPathToTable(const std::string& path, bool recursive)
 {
   const int row = m_ui.searchDirectoryList->rowCount();
@@ -359,6 +366,7 @@ void SetupWizardDialog::refreshDirectoryList()
     addPathToTable(entry, true);
 
   m_ui.searchDirectoryList->sortByColumn(0, Qt::AscendingOrder);
+  m_ui.removeSearchDirectoryButton->setEnabled(false);
 }
 
 void SetupWizardDialog::resizeDirectoryListColumns()
