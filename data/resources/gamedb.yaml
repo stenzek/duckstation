@@ -22747,6 +22747,8 @@ SLUS-01384:
     linkCable: false
 SLES-01182:
   name: "Castrol Honda Superbike Racing (Europe) (En,Fr,De,It)"
+  compatibility:
+    comments: "Intro logos require the software renderer to display correctly."
   controllers:
     - AnalogController
     - DigitalController
@@ -22774,6 +22776,7 @@ SLUS-00882:
   name: "Castrol Honda Superbike Racing (USA)"
   compatibility:
     rating: NoIssues
+    comments: "Intro logos require the software renderer to display correctly."
   settings:
     dmaMaxSliceTicks: 100
   controllers:
@@ -140956,6 +140959,8 @@ SLES-02282:
     linkCable: false
 SLES-00888:
   name: "Shadow Master (Europe) (En,Fr,De,Es,It)"
+  compatibility:
+    comments: "Intro logos require the software renderer to display correctly."
   controllers:
     - AnalogController
     - DigitalController
@@ -140984,8 +140989,7 @@ SLUS-00545:
   compatibility:
     rating: NoIssues
     versionTested: "0.1-2598-g9e198706"
-    comments: "The game first 2 screens (\"Shadow Master/Psygnosis all right reserved\" and Dolby Digital screens - yes, they are barely readable normally) just blink up in the\
-      \ screen, being barely redable. But this seems to happen in original console too (as seem in this capture e.g.: https://www.youtube.com/watch?v=9Inwdc4boHU)."
+    comments: "Intro logos require the software renderer to display correctly."
   controllers:
     - AnalogController
     - DigitalController
