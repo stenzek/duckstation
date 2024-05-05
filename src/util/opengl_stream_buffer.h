@@ -24,7 +24,7 @@ public:
   void Bind();
   void Unbind();
 
-  void SetDebugName(const std::string_view& name);
+  void SetDebugName(std::string_view name);
 
   struct MappingResult
   {

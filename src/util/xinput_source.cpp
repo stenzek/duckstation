@@ -250,8 +250,7 @@ std::vector<std::pair<std::string, std::string>> XInputSource::EnumerateDevices(
   return ret;
 }
 
-std::optional<InputBindingKey> XInputSource::ParseKeyString(const std::string_view& device,
-                                                            const std::string_view& binding)
+std::optional<InputBindingKey> XInputSource::ParseKeyString(std::string_view device, std::string_view binding)
 {
   if (!device.starts_with("XInput-") || binding.empty())
     return std::nullopt;
@@ -351,7 +350,7 @@ TinyString XInputSource::ConvertKeyToIcon(InputBindingKey key)
       if (key.data < std::size(s_axis_icons) && key.modifier != InputModifier::FullAxis)
       {
         ret.format("XInput-{}  {}", static_cast<u32>(key.source_index),
-                s_axis_icons[key.data][key.modifier == InputModifier::None]);
+                   s_axis_icons[key.data][key.modifier == InputModifier::None]);
       }
     }
     else if (key.source_subtype == InputSubclass::ControllerButton)
@@ -384,7 +383,7 @@ std::vector<InputBindingKey> XInputSource::EnumerateMotors()
   return ret;
 }
 
-bool XInputSource::GetGenericBindingMapping(const std::string_view& device, GenericInputBindingMapping* mapping)
+bool XInputSource::GetGenericBindingMapping(std::string_view device, GenericInputBindingMapping* mapping)
 {
   if (!device.starts_with("XInput-"))
     return false;

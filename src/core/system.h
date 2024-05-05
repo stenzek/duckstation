@@ -112,16 +112,16 @@ using GameHash = u64;
 extern TickCount g_ticks_per_second;
 
 /// Returns true if the filename is a PlayStation executable we can inject.
-bool IsExeFileName(const std::string_view& path);
+bool IsExeFileName(std::string_view path);
 
 /// Returns true if the filename is a Portable Sound Format file we can uncompress/load.
-bool IsPsfFileName(const std::string_view& path);
+bool IsPsfFileName(std::string_view path);
 
 /// Returns true if the filename is one we can load.
-bool IsLoadableFilename(const std::string_view& path);
+bool IsLoadableFilename(std::string_view path);
 
 /// Returns true if the filename is a save state.
-bool IsSaveStateFilename(const std::string_view& path);
+bool IsSaveStateFilename(std::string_view path);
 
 /// Returns the preferred console type for a disc.
 ConsoleRegion GetConsoleRegionForDiscRegion(DiscRegion region);
@@ -139,10 +139,10 @@ DiscRegion GetRegionForPsf(const char* path);
 std::optional<DiscRegion> GetRegionForPath(const char* image_path);
 
 /// Returns the path for the game settings ini file for the specified serial.
-std::string GetGameSettingsPath(const std::string_view& game_serial);
+std::string GetGameSettingsPath(std::string_view game_serial);
 
 /// Returns the path for the input profile ini file with the specified name (may not exist).
-std::string GetInputProfilePath(const std::string_view& name);
+std::string GetInputProfilePath(std::string_view name);
 
 State GetState();
 void SetState(State new_state);
@@ -332,7 +332,7 @@ u32 GetMediaSubImageCount();
 u32 GetMediaSubImageIndex();
 
 /// Returns the index of the specified path in the playlist, or UINT32_MAX if it does not exist.
-u32 GetMediaSubImageIndexForTitle(const std::string_view& title);
+u32 GetMediaSubImageIndexForTitle(std::string_view title);
 
 /// Returns the path to the specified playlist index.
 std::string GetMediaSubImageTitle(u32 index);
@@ -374,7 +374,7 @@ void DoFrameStep();
 void DoToggleCheats();
 
 /// Returns the path to a save state file. Specifying an index of -1 is the "resume" save state.
-std::string GetGameSaveStateFileName(const std::string_view& serial, s32 slot);
+std::string GetGameSaveStateFileName(std::string_view serial, s32 slot);
 
 /// Returns the path to a save state file. Specifying an index of -1 is the "resume" save state.
 std::string GetGlobalSaveStateFileName(s32 slot);

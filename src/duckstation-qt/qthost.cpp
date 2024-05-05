@@ -1699,7 +1699,7 @@ void EmuThread::wakeThread()
     QMetaObject::invokeMethod(m_event_loop, "quit", Qt::QueuedConnection);
 }
 
-void Host::ReportFatalError(const std::string_view& title, const std::string_view& message)
+void Host::ReportFatalError(std::string_view title, std::string_view message)
 {
   auto cb = [title = QtUtils::StringViewToQString(title), message = QtUtils::StringViewToQString(message)]() {
     QMessageBox::critical(g_main_window && g_main_window->isVisible() ? g_main_window : nullptr, title, message);
@@ -1727,7 +1727,7 @@ void Host::ReportFatalError(const std::string_view& title, const std::string_vie
   }
 }
 
-void Host::ReportErrorAsync(const std::string_view& title, const std::string_view& message)
+void Host::ReportErrorAsync(std::string_view title, std::string_view message)
 {
   if (!title.empty() && !message.empty())
   {
@@ -1745,7 +1745,7 @@ void Host::ReportErrorAsync(const std::string_view& title, const std::string_vie
     Q_ARG(const QString&, message.empty() ? QString() : QString::fromUtf8(message.data(), message.size())));
 }
 
-bool Host::ConfirmMessage(const std::string_view& title, const std::string_view& message)
+bool Host::ConfirmMessage(std::string_view title, std::string_view message)
 {
   auto lock = g_emu_thread->pauseAndLockSystem();
 
@@ -1753,12 +1753,12 @@ bool Host::ConfirmMessage(const std::string_view& title, const std::string_view&
                                              QString::fromUtf8(message.data(), message.size()));
 }
 
-void Host::OpenURL(const std::string_view& url)
+void Host::OpenURL(std::string_view url)
 {
   QtHost::RunOnUIThread([url = QtUtils::StringViewToQString(url)]() { QtUtils::OpenURL(g_main_window, QUrl(url)); });
 }
 
-bool Host::CopyTextToClipboard(const std::string_view& text)
+bool Host::CopyTextToClipboard(std::string_view text)
 {
   QtHost::RunOnUIThread([text = QtUtils::StringViewToQString(text)]() {
     QClipboard* clipboard = QGuiApplication::clipboard();
@@ -1768,7 +1768,7 @@ bool Host::CopyTextToClipboard(const std::string_view& text)
   return true;
 }
 
-void Host::ReportDebuggerMessage(const std::string_view& message)
+void Host::ReportDebuggerMessage(std::string_view message)
 {
   emit g_emu_thread->debuggerMessageReported(QString::fromUtf8(message));
 }
@@ -1777,14 +1777,14 @@ void Host::AddFixedInputBindings(SettingsInterface& si)
 {
 }
 
-void Host::OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name)
+void Host::OnInputDeviceConnected(std::string_view identifier, std::string_view device_name)
 {
   emit g_emu_thread->onInputDeviceConnected(
     identifier.empty() ? QString() : QString::fromUtf8(identifier.data(), identifier.size()),
     device_name.empty() ? QString() : QString::fromUtf8(device_name.data(), device_name.size()));
 }
 
-void Host::OnInputDeviceDisconnected(const std::string_view& identifier)
+void Host::OnInputDeviceDisconnected(std::string_view identifier)
 {
   emit g_emu_thread->onInputDeviceDisconnected(
     identifier.empty() ? QString() : QString::fromUtf8(identifier.data(), identifier.size()));

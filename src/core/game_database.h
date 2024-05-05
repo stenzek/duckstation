@@ -96,7 +96,7 @@ void Unload();
 
 const Entry* GetEntryForDisc(CDImage* image);
 const Entry* GetEntryForGameDetails(const std::string& id, u64 hash);
-const Entry* GetEntryForSerial(const std::string_view& serial);
+const Entry* GetEntryForSerial(std::string_view serial);
 std::string GetSerialForDisc(CDImage* image);
 std::string GetSerialForPath(const char* path);
 

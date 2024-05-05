@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <cstring>
 #include <optional>
+#include <string_view>
 #include <vector>
 
 template<typename PixelType>
@@ -127,10 +128,10 @@ public:
   RGBA8Image& operator=(RGBA8Image&& move);
 
   bool LoadFromFile(const char* filename);
-  bool LoadFromFile(const char* filename, std::FILE* fp);
-  bool LoadFromBuffer(const char* filename, const void* buffer, size_t buffer_size);
+  bool LoadFromFile(std::string_view filename, std::FILE* fp);
+  bool LoadFromBuffer(std::string_view filename, const void* buffer, size_t buffer_size);
 
   bool SaveToFile(const char* filename, u8 quality = DEFAULT_SAVE_QUALITY) const;
-  bool SaveToFile(const char* filename, std::FILE* fp, u8 quality = DEFAULT_SAVE_QUALITY) const;
-  std::optional<std::vector<u8>> SaveToBuffer(const char* filename, u8 quality = DEFAULT_SAVE_QUALITY) const;
+  bool SaveToFile(std::string_view filename, std::FILE* fp, u8 quality = DEFAULT_SAVE_QUALITY) const;
+  std::optional<std::vector<u8>> SaveToBuffer(std::string_view filename, u8 quality = DEFAULT_SAVE_QUALITY) const;
 };

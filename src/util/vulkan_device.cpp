@@ -1917,7 +1917,7 @@ bool VulkanDevice::HasSurface() const
   return static_cast<bool>(m_swap_chain);
 }
 
-bool VulkanDevice::CreateDevice(const std::string_view& adapter, bool threaded_presentation,
+bool VulkanDevice::CreateDevice(std::string_view adapter, bool threaded_presentation,
                                 std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features,
                                 Error* error)
 {

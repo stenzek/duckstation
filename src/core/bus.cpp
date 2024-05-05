@@ -369,7 +369,7 @@ void Bus::AddTTYCharacter(char ch)
   }
 }
 
-void Bus::AddTTYString(const std::string_view& str)
+void Bus::AddTTYString(std::string_view str)
 {
   for (char ch : str)
     AddTTYCharacter(ch);

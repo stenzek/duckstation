@@ -296,7 +296,7 @@ static void ResampleXAADPCM(const s16* frames_in, u32 num_frames_in);
 static TinyString LBAToMSFString(CDImage::LBA lba);
 
 static void CreateFileMap();
-static void CreateFileMap(IsoReader& iso, const std::string_view& dir);
+static void CreateFileMap(IsoReader& iso, std::string_view dir);
 static const std::string* LookupFileMap(u32 lba, u32* start_lba, u32* end_lba);
 
 static std::unique_ptr<TimingEvent> s_command_event;
@@ -3317,7 +3317,7 @@ void CDROM::CreateFileMap()
   Log_DevFmt("Found {} files", s_file_map.size());
 }
 
-void CDROM::CreateFileMap(IsoReader& iso, const std::string_view& dir)
+void CDROM::CreateFileMap(IsoReader& iso, std::string_view dir)
 {
   for (auto& [path, entry] : iso.GetEntriesInDirectory(dir))
   {

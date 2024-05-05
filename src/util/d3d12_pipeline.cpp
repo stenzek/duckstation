@@ -21,7 +21,7 @@ D3D12Shader::D3D12Shader(GPUShaderStage stage, Bytecode bytecode) : GPUShader(st
 
 D3D12Shader::~D3D12Shader() = default;
 
-void D3D12Shader::SetDebugName(const std::string_view& name)
+void D3D12Shader::SetDebugName(std::string_view name)
 {
 }
 
@@ -32,7 +32,7 @@ std::unique_ptr<GPUShader> D3D12Device::CreateShaderFromBinary(GPUShaderStage st
   return std::unique_ptr<GPUShader>(new D3D12Shader(stage, std::move(bytecode)));
 }
 
-std::unique_ptr<GPUShader> D3D12Device::CreateShaderFromSource(GPUShaderStage stage, const std::string_view& source,
+std::unique_ptr<GPUShader> D3D12Device::CreateShaderFromSource(GPUShaderStage stage, std::string_view source,
                                                                const char* entry_point,
                                                                DynamicHeapArray<u8>* out_binary)
 {
@@ -63,7 +63,7 @@ D3D12Pipeline::~D3D12Pipeline()
   D3D12Device::GetInstance().DeferObjectDestruction(std::move(m_pipeline));
 }
 
-void D3D12Pipeline::SetDebugName(const std::string_view& name)
+void D3D12Pipeline::SetDebugName(std::string_view name)
 {
   D3D12::SetObjectName(m_pipeline.Get(), name);
 }

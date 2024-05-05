@@ -346,7 +346,7 @@ bool CDImage::HasNonStandardSubchannel() const
   return false;
 }
 
-std::string CDImage::GetMetadata(const std::string_view& type) const
+std::string CDImage::GetMetadata(std::string_view type) const
 {
   std::string result;
   if (type == "title")
@@ -378,7 +378,7 @@ bool CDImage::SwitchSubImage(u32 index, Error* error)
   return false;
 }
 
-std::string CDImage::GetSubImageMetadata(u32 index, const std::string_view& type) const
+std::string CDImage::GetSubImageMetadata(u32 index, std::string_view type) const
 {
   return {};
 }

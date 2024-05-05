@@ -37,8 +37,8 @@ enum : u32
   GAME_DATABASE_CACHE_VERSION = 7,
 };
 
-static Entry* GetMutableEntry(const std::string_view& serial);
-static const Entry* GetEntryForId(const std::string_view& code);
+static Entry* GetMutableEntry(std::string_view serial);
+static const Entry* GetEntryForId(std::string_view code);
 
 static bool LoadFromCache();
 static bool SaveToCache();
@@ -110,7 +110,7 @@ ALWAYS_INLINE std::string_view to_stringview(const c4::substr& s)
   return std::string_view(s.data(), s.size());
 }
 
-ALWAYS_INLINE c4::csubstr to_csubstr(const std::string_view& sv)
+ALWAYS_INLINE c4::csubstr to_csubstr(std::string_view sv)
 {
   return c4::csubstr(sv.data(), sv.length());
 }
@@ -239,7 +239,7 @@ void GameDatabase::Unload()
   s_loaded = false;
 }
 
-const GameDatabase::Entry* GameDatabase::GetEntryForId(const std::string_view& code)
+const GameDatabase::Entry* GameDatabase::GetEntryForId(std::string_view code)
 {
   if (code.empty())
     return nullptr;
@@ -307,14 +307,14 @@ const GameDatabase::Entry* GameDatabase::GetEntryForGameDetails(const std::strin
   return nullptr;
 }
 
-const GameDatabase::Entry* GameDatabase::GetEntryForSerial(const std::string_view& serial)
+const GameDatabase::Entry* GameDatabase::GetEntryForSerial(std::string_view serial)
 {
   EnsureLoaded();
 
   return GetMutableEntry(serial);
 }
 
-GameDatabase::Entry* GameDatabase::GetMutableEntry(const std::string_view& serial)
+GameDatabase::Entry* GameDatabase::GetMutableEntry(std::string_view serial)
 {
   for (Entry& entry : s_entries)
   {

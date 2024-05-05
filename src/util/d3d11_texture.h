@@ -26,7 +26,7 @@ public:
   ALWAYS_INLINE ID3D11SamplerState* GetSamplerState() const { return m_ss.Get(); }
   ALWAYS_INLINE ID3D11SamplerState* const* GetSamplerStateArray() const { return m_ss.GetAddressOf(); }
 
-  void SetDebugName(const std::string_view& name) override;
+  void SetDebugName(std::string_view name) override;
 
 private:
   D3D11Sampler(ComPtr<ID3D11SamplerState> ss);
@@ -85,7 +85,7 @@ public:
   bool Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32 height, u32 layer = 0, u32 level = 0) override;
   void Unmap() override;
 
-  void SetDebugName(const std::string_view& name) override;
+  void SetDebugName(std::string_view name) override;
 
 private:
   D3D11Texture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format,
@@ -113,7 +113,7 @@ public:
   void* Map(u32 required_elements) override;
   void Unmap(u32 used_elements) override;
 
-  void SetDebugName(const std::string_view& name) override;
+  void SetDebugName(std::string_view name) override;
 
 private:
   D3D11StreamBuffer m_buffer;

@@ -29,8 +29,7 @@ public:
 
   virtual void PollEvents() = 0;
 
-  virtual std::optional<InputBindingKey> ParseKeyString(const std::string_view& device,
-                                                        const std::string_view& binding) = 0;
+  virtual std::optional<InputBindingKey> ParseKeyString(std::string_view device, std::string_view binding) = 0;
   virtual TinyString ConvertKeyToString(InputBindingKey key) = 0;
   virtual TinyString ConvertKeyToIcon(InputBindingKey key) = 0;
 
@@ -42,7 +41,7 @@ public:
 
   /// Retrieves bindings that match the generic bindings for the specified device.
   /// Returns false if it's not one of our devices.
-  virtual bool GetGenericBindingMapping(const std::string_view& device, GenericInputBindingMapping* mapping) = 0;
+  virtual bool GetGenericBindingMapping(std::string_view device, GenericInputBindingMapping* mapping) = 0;
 
   /// Informs the source of a new vibration motor state. Changes may not take effect until the next PollEvents() call.
   virtual void UpdateMotorState(InputBindingKey key, float intensity) = 0;
@@ -65,8 +64,8 @@ public:
   static InputBindingKey MakeGenericControllerMotorKey(InputSourceType clazz, u32 controller_index, s32 motor_index);
 
   /// Parses a generic controller key string.
-  static std::optional<InputBindingKey> ParseGenericControllerKey(InputSourceType clazz, const std::string_view& source,
-                                                                  const std::string_view& sub_binding);
+  static std::optional<InputBindingKey> ParseGenericControllerKey(InputSourceType clazz, std::string_view source,
+                                                                  std::string_view sub_binding);
 
   /// Converts a generic controller key to a string.
   static std::string ConvertGenericControllerKeyToString(InputBindingKey key);

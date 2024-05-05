@@ -51,7 +51,7 @@ bool IsValid(const DataArray& data);
 u32 GetFreeBlockCount(const DataArray& data);
 std::vector<FileInfo> EnumerateFiles(const DataArray& data, bool include_deleted);
 bool ReadFile(const DataArray& data, const FileInfo& fi, std::vector<u8>* buffer, Error* error);
-bool WriteFile(DataArray* data, const std::string_view& filename, const std::vector<u8>& buffer, Error* error);
+bool WriteFile(DataArray* data, std::string_view filename, const std::vector<u8>& buffer, Error* error);
 bool DeleteFile(DataArray* data, const FileInfo& fi, bool clear_sectors);
 bool UndeleteFile(DataArray* data, const FileInfo& fi);
 bool ImportCard(DataArray* data, const char* filename, Error* error);

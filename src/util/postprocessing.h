@@ -63,8 +63,8 @@ struct ShaderOption
   ValueVector value;
   std::vector<std::string> choice_options;
 
-  static u32 ParseIntVector(const std::string_view& line, ValueVector* values);
-  static u32 ParseFloatVector(const std::string_view& line, ValueVector* values);
+  static u32 ParseIntVector(std::string_view line, ValueVector* values);
+  static u32 ParseFloatVector(std::string_view line, ValueVector* values);
 
   static constexpr ValueVector MakeIntVector(s32 x, s32 y = 0, s32 z = 0, s32 w = 0)
   {

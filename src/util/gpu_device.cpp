@@ -270,8 +270,8 @@ bool GPUDevice::IsSameRenderAPI(RenderAPI lhs, RenderAPI rhs)
                          (rhs == RenderAPI::OpenGL || rhs == RenderAPI::OpenGLES)));
 }
 
-bool GPUDevice::Create(const std::string_view& adapter, const std::string_view& shader_cache_path,
-                       u32 shader_cache_version, bool debug_device, bool vsync, bool threaded_presentation,
+bool GPUDevice::Create(std::string_view adapter, std::string_view shader_cache_path, u32 shader_cache_version,
+                       bool debug_device, bool vsync, bool threaded_presentation,
                        std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features, Error* error)
 {
   m_vsync_enabled = vsync;
@@ -318,7 +318,7 @@ bool GPUDevice::SupportsExclusiveFullscreen() const
   return false;
 }
 
-void GPUDevice::OpenShaderCache(const std::string_view& base_path, u32 version)
+void GPUDevice::OpenShaderCache(std::string_view base_path, u32 version)
 {
   if (m_features.shader_cache && !base_path.empty())
   {
@@ -388,7 +388,7 @@ void GPUDevice::CloseShaderCache()
   }
 }
 
-std::string GPUDevice::GetShaderCacheBaseName(const std::string_view& type) const
+std::string GPUDevice::GetShaderCacheBaseName(std::string_view type) const
 {
   const std::string_view debug_suffix = m_debug_device ? "_debug" : "";
 
@@ -641,7 +641,7 @@ void GPUDevice::InvalidateRenderTarget(GPUTexture* t)
   t->SetState(GPUTexture::State::Invalidated);
 }
 
-std::unique_ptr<GPUShader> GPUDevice::CreateShader(GPUShaderStage stage, const std::string_view& source,
+std::unique_ptr<GPUShader> GPUDevice::CreateShader(GPUShaderStage stage, std::string_view source,
                                                    const char* entry_point /* = "main" */)
 {
   std::unique_ptr<GPUShader> shader;
@@ -730,7 +730,7 @@ std::string GPUDevice::GetFullscreenModeString(u32 width, u32 height, float refr
   return fmt::format("{} x {} @ {} hz", width, height, refresh_rate);
 }
 
-std::string GPUDevice::GetShaderDumpPath(const std::string_view& name)
+std::string GPUDevice::GetShaderDumpPath(std::string_view name)
 {
   return Path::Combine(EmuFolders::Dumps, name);
 }

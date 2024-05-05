@@ -336,7 +336,7 @@ u32 D3D12::RootSignatureBuilder::AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE 
 
 #ifdef _DEBUG
 
-void D3D12::SetObjectName(ID3D12Object* object, const std::string_view& name)
+void D3D12::SetObjectName(ID3D12Object* object, std::string_view name)
 {
   object->SetName(StringUtil::UTF8StringToWideString(name).c_str());
 }

@@ -12,10 +12,10 @@
 Log_SetChannel(CueParser);
 
 namespace CueParser {
-static bool TokenMatch(const std::string_view& s1, const char* token);
+static bool TokenMatch(std::string_view s1, const char* token);
 }
 
-bool CueParser::TokenMatch(const std::string_view& s1, const char* token)
+bool CueParser::TokenMatch(std::string_view s1, const char* token)
 {
   const size_t token_len = std::strlen(token);
   if (s1.length() != token_len)
@@ -124,7 +124,7 @@ std::string_view CueParser::File::GetToken(const char*& line)
   return ret;
 }
 
-std::optional<CueParser::MSF> CueParser::File::GetMSF(const std::string_view& token)
+std::optional<CueParser::MSF> CueParser::File::GetMSF(std::string_view token)
 {
   static const s32 max_values[] = {std::numeric_limits<s32>::max(), 60, 75};
 

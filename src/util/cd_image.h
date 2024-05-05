@@ -307,7 +307,7 @@ public:
   virtual bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) = 0;
 
   // Retrieve image metadata.
-  virtual std::string GetMetadata(const std::string_view& type) const;
+  virtual std::string GetMetadata(std::string_view type) const;
 
   // Returns true if this image type has sub-images (e.g. m3u).
   virtual bool HasSubImages() const;
@@ -322,7 +322,7 @@ public:
   virtual bool SwitchSubImage(u32 index, Error* error);
 
   // Retrieve sub-image metadata.
-  virtual std::string GetSubImageMetadata(u32 index, const std::string_view& type) const;
+  virtual std::string GetSubImageMetadata(u32 index, std::string_view type) const;
 
   // Returns true if the source supports precaching, which may be more optimal than an in-memory copy.
   virtual PrecacheResult Precache(ProgressCallback* progress = ProgressCallback::NullProgressCallback);

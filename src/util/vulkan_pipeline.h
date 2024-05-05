@@ -15,7 +15,7 @@ public:
 
   ALWAYS_INLINE VkShaderModule GetModule() const { return m_module; }
 
-  void SetDebugName(const std::string_view& name) override;
+  void SetDebugName(std::string_view name) override;
 
 private:
   VulkanShader(GPUShaderStage stage, VkShaderModule mod);
@@ -34,7 +34,7 @@ public:
   ALWAYS_INLINE Layout GetLayout() const { return m_layout; }
   ALWAYS_INLINE u8 GetVerticesPerPrimitive() const { return m_vertices_per_primitive; }
 
-  void SetDebugName(const std::string_view& name) override;
+  void SetDebugName(std::string_view name) override;
 
 private:
   VulkanPipeline(VkPipeline pipeline, Layout layout, u8 vertices_per_primitive, RenderPassFlag render_pass_flags);

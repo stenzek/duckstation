@@ -156,7 +156,7 @@ public:
   // Instructs the backend that we're finished rendering to this texture. It may transition it to a new layout.
   virtual void MakeReadyForSampling();
 
-  virtual void SetDebugName(const std::string_view& name) = 0;
+  virtual void SetDebugName(std::string_view name) = 0;
 
 protected:
   GPUTexture(u16 width, u16 height, u8 layers, u8 levels, u8 samples, Type type, Format format);

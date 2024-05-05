@@ -474,7 +474,7 @@ void VulkanTexture::OverrideImageLayout(Layout new_layout)
   m_layout = new_layout;
 }
 
-void VulkanTexture::SetDebugName(const std::string_view& name)
+void VulkanTexture::SetDebugName(std::string_view name)
 {
   VulkanDevice& dev = VulkanDevice::GetInstance();
   Vulkan::SetObjectName(dev.GetVulkanDevice(), m_image, name);
@@ -751,7 +751,7 @@ VulkanSampler::~VulkanSampler()
   // Cleaned up by main class.
 }
 
-void VulkanSampler::SetDebugName(const std::string_view& name)
+void VulkanSampler::SetDebugName(std::string_view name)
 {
   Vulkan::SetObjectName(VulkanDevice::GetInstance().GetVulkanDevice(), m_sampler, name);
 }
@@ -915,7 +915,7 @@ void VulkanTextureBuffer::Unmap(u32 used_elements)
   m_buffer.CommitMemory(size);
 }
 
-void VulkanTextureBuffer::SetDebugName(const std::string_view& name)
+void VulkanTextureBuffer::SetDebugName(std::string_view name)
 {
   VulkanDevice& dev = VulkanDevice::GetInstance();
   Vulkan::SetObjectName(dev.GetVulkanDevice(), m_buffer.GetBuffer(), name);

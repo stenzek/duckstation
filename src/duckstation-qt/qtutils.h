@@ -93,7 +93,7 @@ void OpenURL(QWidget* parent, const char* url);
 std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, const QString& label, bool code);
 
 /// Converts a std::string_view to a QString safely.
-QString StringViewToQString(const std::string_view& str);
+QString StringViewToQString(std::string_view str);
 
 /// Sets a widget to italics if the setting value is inherited.
 void SetWidgetFontForInheritedSetting(QWidget* widget, bool inherited);

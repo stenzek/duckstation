@@ -20,7 +20,7 @@ struct TextureReplacementHash
   u64 high;
 
   std::string ToString() const;
-  bool ParseString(const std::string_view& sv);
+  bool ParseString(std::string_view sv);
 
   bool operator<(const TextureReplacementHash& rhs) const { return std::tie(low, high) < std::tie(rhs.low, rhs.high); }
   bool operator==(const TextureReplacementHash& rhs) const { return low == rhs.low && high == rhs.high; }

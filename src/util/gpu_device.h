@@ -88,7 +88,7 @@ public:
   GPUSampler();
   virtual ~GPUSampler();
 
-  virtual void SetDebugName(const std::string_view& name) = 0;
+  virtual void SetDebugName(std::string_view name) = 0;
 
   static Config GetNearestConfig();
   static Config GetLinearConfig();
@@ -114,7 +114,7 @@ public:
 
   ALWAYS_INLINE GPUShaderStage GetStage() const { return m_stage; }
 
-  virtual void SetDebugName(const std::string_view& name) = 0;
+  virtual void SetDebugName(std::string_view name) = 0;
 
 protected:
   GPUShaderStage m_stage;
@@ -397,7 +397,7 @@ public:
   GPUPipeline();
   virtual ~GPUPipeline();
 
-  virtual void SetDebugName(const std::string_view& name) = 0;
+  virtual void SetDebugName(std::string_view name) = 0;
 };
 
 class GPUTextureBuffer
@@ -423,7 +423,7 @@ public:
   virtual void* Map(u32 required_elements) = 0;
   virtual void Unmap(u32 used_elements) = 0;
 
-  virtual void SetDebugName(const std::string_view& name) = 0;
+  virtual void SetDebugName(std::string_view name) = 0;
 
 protected:
   Format m_format;
@@ -527,7 +527,7 @@ public:
   static std::string GetFullscreenModeString(u32 width, u32 height, float refresh_rate);
 
   /// Returns the directory bad shaders are saved to.
-  static std::string GetShaderDumpPath(const std::string_view& name);
+  static std::string GetShaderDumpPath(std::string_view name);
 
   /// Dumps out a shader that failed compilation.
   static void DumpBadShader(std::string_view code, std::string_view errors);
@@ -572,9 +572,9 @@ public:
 
   virtual RenderAPI GetRenderAPI() const = 0;
 
-  bool Create(const std::string_view& adapter, const std::string_view& shader_cache_path, u32 shader_cache_version,
-              bool debug_device, bool vsync, bool threaded_presentation,
-              std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features, Error* error);
+  bool Create(std::string_view adapter, std::string_view shader_cache_path, u32 shader_cache_version, bool debug_device,
+              bool vsync, bool threaded_presentation, std::optional<bool> exclusive_fullscreen_control,
+              FeatureMask disabled_features, Error* error);
   void Destroy();
 
   virtual bool HasSurface() const = 0;
@@ -622,7 +622,7 @@ public:
   virtual void InvalidateRenderTarget(GPUTexture* t);
 
   /// Shader abstraction.
-  std::unique_ptr<GPUShader> CreateShader(GPUShaderStage stage, const std::string_view& source,
+  std::unique_ptr<GPUShader> CreateShader(GPUShaderStage stage, std::string_view source,
                                           const char* entry_point = "main");
   virtual std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config) = 0;
 
@@ -701,17 +701,17 @@ public:
   static void ResetStatistics();
 
 protected:
-  virtual bool CreateDevice(const std::string_view& adapter, bool threaded_presentation,
+  virtual bool CreateDevice(std::string_view adapter, bool threaded_presentation,
                             std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features,
                             Error* error) = 0;
   virtual void DestroyDevice() = 0;
 
-  std::string GetShaderCacheBaseName(const std::string_view& type) const;
+  std::string GetShaderCacheBaseName(std::string_view type) const;
   virtual bool ReadPipelineCache(const std::string& filename);
   virtual bool GetPipelineCacheData(DynamicHeapArray<u8>* data);
 
   virtual std::unique_ptr<GPUShader> CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data) = 0;
-  virtual std::unique_ptr<GPUShader> CreateShaderFromSource(GPUShaderStage stage, const std::string_view& source,
+  virtual std::unique_ptr<GPUShader> CreateShaderFromSource(GPUShaderStage stage, std::string_view source,
                                                             const char* entry_point,
                                                             DynamicHeapArray<u8>* out_binary) = 0;
 
@@ -764,7 +764,7 @@ private:
 
   using TexturePool = std::deque<TexturePoolEntry>;
 
-  void OpenShaderCache(const std::string_view& base_path, u32 version);
+  void OpenShaderCache(std::string_view base_path, u32 version);
   void CloseShaderCache();
   bool CreateResources();
   void DestroyResources();

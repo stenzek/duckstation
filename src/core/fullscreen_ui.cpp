@@ -229,8 +229,8 @@ static void DrawLandingWindow();
 static void DrawStartGameWindow();
 static void DrawExitWindow();
 static void DrawPauseMenu();
-static void ExitFullscreenAndOpenURL(const std::string_view& url);
-static void CopyTextToClipboard(std::string title, const std::string_view& text);
+static void ExitFullscreenAndOpenURL(std::string_view url);
+static void CopyTextToClipboard(std::string title, std::string_view text);
 static void DrawAboutWindow();
 static void OpenAboutWindow();
 static void FixStateIfPaused();
@@ -293,7 +293,7 @@ static void SwitchToSettings();
 static void SwitchToGameSettings();
 static void SwitchToGameSettings(const GameList::Entry* entry);
 static void SwitchToGameSettingsForPath(const std::string& path);
-static void SwitchToGameSettingsForSerial(const std::string_view& serial);
+static void SwitchToGameSettingsForSerial(std::string_view serial);
 static void DrawSettingsWindow();
 static void DrawSummarySettingsPage();
 static void DrawInterfaceSettingsPage();
@@ -391,8 +391,8 @@ static void DrawFolderSetting(SettingsInterface* bsi, const char* title, const c
 static void PopulateGraphicsAdapterList();
 static void PopulateGameListDirectoryCache(SettingsInterface* si);
 static void PopulatePostProcessingChain(SettingsInterface* si);
-static void BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::Type type, const std::string_view& section,
-                              const std::string_view& key, const std::string_view& display_name);
+static void BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::Type type, std::string_view section,
+                              std::string_view key, std::string_view display_name);
 static void DrawInputBindingWindow();
 static void DrawInputBindingButton(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section,
                                    const char* name, const char* display_name, const char* icon_name,
@@ -1754,9 +1754,8 @@ void FullscreenUI::ClearInputBindingVariables()
   s_input_binding_value_ranges = {};
 }
 
-void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::Type type,
-                                     const std::string_view& section, const std::string_view& key,
-                                     const std::string_view& display_name)
+void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::Type type, std::string_view section,
+                                     std::string_view key, std::string_view display_name)
 {
   if (s_input_binding_type != InputBindingInfo::Type::Unknown)
   {
@@ -2738,7 +2737,7 @@ void FullscreenUI::SwitchToSettings()
   s_settings_page = SettingsPage::Interface;
 }
 
-void FullscreenUI::SwitchToGameSettingsForSerial(const std::string_view& serial)
+void FullscreenUI::SwitchToGameSettingsForSerial(std::string_view serial)
 {
   s_game_settings_entry.reset();
   s_game_settings_interface = std::make_unique<INISettingsInterface>(System::GetGameSettingsPath(serial));
@@ -6837,7 +6836,7 @@ void FullscreenUI::OpenAboutWindow()
   s_about_window_open = true;
 }
 
-void FullscreenUI::ExitFullscreenAndOpenURL(const std::string_view& url)
+void FullscreenUI::ExitFullscreenAndOpenURL(std::string_view url)
 {
   Host::RunOnCPUThread([url = std::string(url)]() {
     if (Host::IsFullscreen())
@@ -6847,7 +6846,7 @@ void FullscreenUI::ExitFullscreenAndOpenURL(const std::string_view& url)
   });
 }
 
-void FullscreenUI::CopyTextToClipboard(std::string title, const std::string_view& text)
+void FullscreenUI::CopyTextToClipboard(std::string title, std::string_view text)
 {
   if (Host::CopyTextToClipboard(text))
     ShowToast(std::string(), std::move(title));

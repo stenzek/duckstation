@@ -33,7 +33,7 @@ public:
   bool HasSubImages() const override;
   u32 GetSubImageCount() const override;
   u32 GetCurrentSubImage() const override;
-  std::string GetSubImageMetadata(u32 index, const std::string_view& type) const override;
+  std::string GetSubImageMetadata(u32 index, std::string_view type) const override;
   bool SwitchSubImage(u32 index, Error* error) override;
 
 protected:
@@ -159,7 +159,7 @@ bool CDImageM3u::SwitchSubImage(u32 index, Error* error)
   return true;
 }
 
-std::string CDImageM3u::GetSubImageMetadata(u32 index, const std::string_view& type) const
+std::string CDImageM3u::GetSubImageMetadata(u32 index, std::string_view type) const
 {
   if (index > m_entries.size())
     return {};

@@ -205,7 +205,7 @@ std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, 
   return address;
 }
 
-QString StringViewToQString(const std::string_view& str)
+QString StringViewToQString(std::string_view str)
 {
   return str.empty() ? QString() : QString::fromUtf8(str.data(), str.size());
 }

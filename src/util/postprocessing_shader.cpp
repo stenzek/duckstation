@@ -13,7 +13,7 @@
 
 Log_SetChannel(PostProcessing);
 
-void PostProcessing::Shader::ParseKeyValue(const std::string_view& line, std::string_view* key, std::string_view* value)
+void PostProcessing::Shader::ParseKeyValue(std::string_view line, std::string_view* key, std::string_view* value)
 {
   size_t key_start = 0;
   while (key_start < line.size() && std::isspace(line[key_start]))
@@ -105,7 +105,7 @@ void PostProcessing::Shader::LoadOptions(const SettingsInterface& si, const char
   }
 }
 
-const PostProcessing::ShaderOption* PostProcessing::Shader::GetOptionByName(const std::string_view& name) const
+const PostProcessing::ShaderOption* PostProcessing::Shader::GetOptionByName(std::string_view name) const
 {
   for (const ShaderOption& option : m_options)
   {
@@ -116,7 +116,7 @@ const PostProcessing::ShaderOption* PostProcessing::Shader::GetOptionByName(cons
   return nullptr;
 }
 
-PostProcessing::ShaderOption* PostProcessing::Shader::GetOptionByName(const std::string_view& name)
+PostProcessing::ShaderOption* PostProcessing::Shader::GetOptionByName(std::string_view name)
 {
   for (ShaderOption& option : m_options)
   {

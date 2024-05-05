@@ -78,7 +78,7 @@ OpenGLShader::~OpenGLShader()
     glDeleteShader(m_id.value());
 }
 
-void OpenGLShader::SetDebugName(const std::string_view& name)
+void OpenGLShader::SetDebugName(std::string_view name)
 {
 #ifdef _DEBUG
   if (glObjectLabel)
@@ -163,7 +163,7 @@ std::unique_ptr<GPUShader> OpenGLDevice::CreateShaderFromBinary(GPUShaderStage s
   return {};
 }
 
-std::unique_ptr<GPUShader> OpenGLDevice::CreateShaderFromSource(GPUShaderStage stage, const std::string_view& source,
+std::unique_ptr<GPUShader> OpenGLDevice::CreateShaderFromSource(GPUShaderStage stage, std::string_view source,
                                                                 const char* entry_point,
                                                                 DynamicHeapArray<u8>* out_binary)
 {
@@ -440,7 +440,8 @@ void OpenGLDevice::UnrefProgram(const OpenGLPipeline::ProgramCacheKey& key)
     m_program_cache.erase(it);
 }
 
-OpenGLPipeline::VertexArrayCache::const_iterator OpenGLDevice::LookupVAOCache(const OpenGLPipeline::VertexArrayCacheKey& key)
+OpenGLPipeline::VertexArrayCache::const_iterator
+OpenGLDevice::LookupVAOCache(const OpenGLPipeline::VertexArrayCacheKey& key)
 {
   OpenGLPipeline::VertexArrayCache::iterator it = m_vao_cache.find(key);
   if (it != m_vao_cache.end())
@@ -546,7 +547,7 @@ OpenGLPipeline::~OpenGLPipeline()
   dev.UnrefVAO(m_key.va_key);
 }
 
-void OpenGLPipeline::SetDebugName(const std::string_view& name)
+void OpenGLPipeline::SetDebugName(std::string_view name)
 {
 #ifdef _DEBUG
   if (glObjectLabel)

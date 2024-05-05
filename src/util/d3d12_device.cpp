@@ -117,7 +117,7 @@ D3D12Device::ComPtr<ID3D12RootSignature> D3D12Device::CreateRootSignature(const 
   return rs;
 }
 
-bool D3D12Device::CreateDevice(const std::string_view& adapter, bool threaded_presentation,
+bool D3D12Device::CreateDevice(std::string_view adapter, bool threaded_presentation,
                                std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features,
                                Error* error)
 {

@@ -194,16 +194,16 @@ const char* InputSourceToString(InputSourceType clazz);
 bool GetInputSourceDefaultEnabled(InputSourceType type);
 
 /// Parses an input class string.
-std::optional<InputSourceType> ParseInputSourceString(const std::string_view& str);
+std::optional<InputSourceType> ParseInputSourceString(std::string_view str);
 
 /// Parses a pointer device string, i.e. tells you which pointer is specified.
-std::optional<u32> GetIndexFromPointerBinding(const std::string_view& str);
+std::optional<u32> GetIndexFromPointerBinding(std::string_view str);
 
 /// Returns the device name for a pointer index (e.g. Pointer-0).
 std::string GetPointerDeviceName(u32 pointer_index);
 
 /// Converts a key code from a human-readable string to an identifier.
-std::optional<u32> ConvertHostKeyboardStringToCode(const std::string_view& str);
+std::optional<u32> ConvertHostKeyboardStringToCode(std::string_view str);
 
 /// Converts a key code from an identifier to a human-readable string.
 std::optional<std::string> ConvertHostKeyboardCodeToString(u32 code);
@@ -225,7 +225,7 @@ InputBindingKey MakePointerAxisKey(u32 index, InputPointerAxis axis);
 InputBindingKey MakeSensorAxisKey(InputSubclass sensor, u32 axis);
 
 /// Parses an input binding key string.
-std::optional<InputBindingKey> ParseInputBindingKey(const std::string_view& binding);
+std::optional<InputBindingKey> ParseInputBindingKey(std::string_view binding);
 
 /// Converts a input key to a string.
 std::string ConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key);
@@ -247,7 +247,7 @@ std::vector<std::pair<std::string, std::string>> EnumerateDevices();
 std::vector<InputBindingKey> EnumerateMotors();
 
 /// Retrieves bindings that match the generic bindings for the specified device.
-GenericInputBindingMapping GetGenericBindingMapping(const std::string_view& device);
+GenericInputBindingMapping GetGenericBindingMapping(std::string_view device);
 
 /// Returns true if the specified input source is enabled.
 bool IsInputSourceEnabled(SettingsInterface& si, InputSourceType type);
@@ -277,10 +277,10 @@ bool HasAnyBindingsForKey(InputBindingKey key);
 bool HasAnyBindingsForSource(InputBindingKey key);
 
 /// Parses a string binding into its components. Use with external AddBinding().
-bool ParseBindingAndGetSource(const std::string_view& binding, InputBindingKey* key, InputSource** source);
+bool ParseBindingAndGetSource(std::string_view binding, InputBindingKey* key, InputSource** source);
 
 /// Externally adds a fixed binding. Be sure to call *after* ReloadBindings() otherwise it will be lost.
-void AddBinding(const std::string_view& binding, const InputEventHandler& handler);
+void AddBinding(std::string_view binding, const InputEventHandler& handler);
 
 /// Adds an external vibration binding.
 void AddVibrationBinding(u32 pad_index, const InputBindingKey* motor_0_binding, InputSource* motor_0_source,
@@ -348,10 +348,10 @@ bool MapController(SettingsInterface& si, u32 controller,
 std::vector<std::string> GetInputProfileNames();
 
 /// Called when a new input device is connected.
-void OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name);
+void OnInputDeviceConnected(std::string_view identifier, std::string_view device_name);
 
 /// Called when an input device is disconnected.
-void OnInputDeviceDisconnected(const std::string_view& identifier);
+void OnInputDeviceDisconnected(std::string_view identifier);
 } // namespace InputManager
 
 namespace Host {
@@ -359,10 +359,10 @@ namespace Host {
 void AddFixedInputBindings(SettingsInterface& si);
 
 /// Called when a new input device is connected.
-void OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name);
+void OnInputDeviceConnected(std::string_view identifier, std::string_view device_name);
 
 /// Called when an input device is disconnected.
-void OnInputDeviceDisconnected(const std::string_view& identifier);
+void OnInputDeviceDisconnected(std::string_view identifier);
 
 /// Enables "relative" mouse mode, locking the cursor position and returning relative coordinates.
 void SetMouseMode(bool relative, bool hide_cursor);

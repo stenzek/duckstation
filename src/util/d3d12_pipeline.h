@@ -25,7 +25,7 @@ public:
   ALWAYS_INLINE const u8* GetBytecodeData() const { return m_bytecode.data(); }
   ALWAYS_INLINE u32 GetBytecodeSize() const { return static_cast<u32>(m_bytecode.size()); }
 
-  void SetDebugName(const std::string_view& name) override;
+  void SetDebugName(std::string_view name) override;
 
 private:
   D3D12Shader(GPUShaderStage stage, Bytecode bytecode);
@@ -48,7 +48,7 @@ public:
   ALWAYS_INLINE const std::array<float, 4>& GetBlendConstantsF() const { return m_blend_constants_f; }
   ALWAYS_INLINE bool HasVertexStride() const { return (m_vertex_stride > 0); }
 
-  void SetDebugName(const std::string_view& name) override;
+  void SetDebugName(std::string_view name) override;
 
   static std::string GetPipelineName(const GraphicsConfig& config);
 

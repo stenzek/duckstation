@@ -55,7 +55,7 @@ public:
   void Unmap() override;
   void MakeReadyForSampling() override;
 
-  void SetDebugName(const std::string_view& name) override;
+  void SetDebugName(std::string_view name) override;
 
   void TransitionToLayout(Layout layout);
   void CommitClear();
@@ -119,7 +119,7 @@ public:
 
   ALWAYS_INLINE VkSampler GetSampler() const { return m_sampler; }
 
-  void SetDebugName(const std::string_view& name) override;
+  void SetDebugName(std::string_view name) override;
 
 private:
   VulkanSampler(VkSampler sampler);
@@ -145,7 +145,7 @@ public:
   void* Map(u32 required_elements) override;
   void Unmap(u32 used_elements) override;
 
-  void SetDebugName(const std::string_view& name) override;
+  void SetDebugName(std::string_view name) override;
 
 private:
   VulkanStreamBuffer m_buffer;

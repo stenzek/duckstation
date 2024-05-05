@@ -16,7 +16,7 @@ class OpenGLShader final : public GPUShader
 public:
   ~OpenGLShader() override;
 
-  void SetDebugName(const std::string_view& name) override;
+  void SetDebugName(std::string_view name) override;
 
   bool Compile();
 
@@ -103,7 +103,7 @@ public:
   ALWAYS_INLINE const BlendState& GetBlendState() const { return m_blend_state; }
   ALWAYS_INLINE GLenum GetTopology() const { return m_topology; }
 
-  void SetDebugName(const std::string_view& name) override;
+  void SetDebugName(std::string_view name) override;
 
 private:
   OpenGLPipeline(const ProgramCacheKey& key, GLuint program, VertexArrayCache::const_iterator vao,

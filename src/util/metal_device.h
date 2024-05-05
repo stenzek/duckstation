@@ -45,7 +45,7 @@ public:
 
   ALWAYS_INLINE id<MTLSamplerState> GetSamplerState() const { return m_ss; }
 
-  void SetDebugName(const std::string_view& name) override;
+  void SetDebugName(std::string_view name) override;
 
 private:
   MetalSampler(id<MTLSamplerState> ss);
@@ -63,7 +63,7 @@ public:
   ALWAYS_INLINE id<MTLLibrary> GetLibrary() const { return m_library; }
   ALWAYS_INLINE id<MTLFunction> GetFunction() const { return m_function; }
 
-  void SetDebugName(const std::string_view& name) override;
+  void SetDebugName(std::string_view name) override;
 
 private:
   MetalShader(GPUShaderStage stage, id<MTLLibrary> library, id<MTLFunction> function);
@@ -84,7 +84,7 @@ public:
   ALWAYS_INLINE MTLCullMode GetCullMode() const { return m_cull_mode; }
   ALWAYS_INLINE MTLPrimitiveType GetPrimitive() const { return m_primitive; }
 
-  void SetDebugName(const std::string_view& name) override;
+  void SetDebugName(std::string_view name) override;
 
 private:
   MetalPipeline(id<MTLRenderPipelineState> pipeline, id<MTLDepthStencilState> depth, MTLCullMode cull_mode,
@@ -114,7 +114,7 @@ public:
 
   void MakeReadyForSampling() override;
 
-  void SetDebugName(const std::string_view& name) override;
+  void SetDebugName(std::string_view name) override;
 
   // Call when the texture is bound to the pipeline, or read from in a copy.
   ALWAYS_INLINE void SetUseFenceCounter(u64 counter) { m_use_fence_counter = counter; }
@@ -179,7 +179,7 @@ public:
   void* Map(u32 required_elements) override;
   void Unmap(u32 used_elements) override;
 
-  void SetDebugName(const std::string_view& name) override;
+  void SetDebugName(std::string_view name) override;
 
 private:
   MetalStreamBuffer m_buffer;
@@ -232,7 +232,7 @@ public:
   void InvalidateRenderTarget(GPUTexture* t) override;
 
   std::unique_ptr<GPUShader> CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data) override;
-  std::unique_ptr<GPUShader> CreateShaderFromSource(GPUShaderStage stage, const std::string_view& source,
+  std::unique_ptr<GPUShader> CreateShaderFromSource(GPUShaderStage stage, std::string_view source,
                                                     const char* entry_point,
                                                     DynamicHeapArray<u8>* out_binary = nullptr) override;
   std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config) override;
@@ -291,7 +291,7 @@ public:
   static AdapterAndModeList StaticGetAdapterAndModeList();
 
 protected:
-  bool CreateDevice(const std::string_view& adapter, bool threaded_presentation,
+  bool CreateDevice(std::string_view adapter, bool threaded_presentation,
                     std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features,
                     Error* error) override;
   void DestroyDevice() override;
@@ -329,8 +329,8 @@ private:
   ClearPipelineConfig GetCurrentClearPipelineConfig() const;
   id<MTLRenderPipelineState> GetClearDepthPipeline(const ClearPipelineConfig& config);
 
-  std::unique_ptr<GPUShader> CreateShaderFromMSL(GPUShaderStage stage, const std::string_view& source,
-                                                 const std::string_view& entry_point);
+  std::unique_ptr<GPUShader> CreateShaderFromMSL(GPUShaderStage stage, std::string_view source,
+                                                 std::string_view entry_point);
 
   id<MTLDepthStencilState> GetDepthState(const GPUPipeline::DepthState& ds);
 

@@ -141,8 +141,8 @@ public:
   u32 GetSubImageCount() const override;
   u32 GetCurrentSubImage() const override;
   bool SwitchSubImage(u32 index, Error* error) override;
-  std::string GetMetadata(const std::string_view& type) const override;
-  std::string GetSubImageMetadata(u32 index, const std::string_view& type) const override;
+  std::string GetMetadata(std::string_view type) const override;
+  std::string GetSubImageMetadata(u32 index, std::string_view type) const override;
 
 protected:
   bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
@@ -915,7 +915,7 @@ bool CDImagePBP::HasSubImages() const
   return m_disc_offsets.size() > 1;
 }
 
-std::string CDImagePBP::GetMetadata(const std::string_view& type) const
+std::string CDImagePBP::GetMetadata(std::string_view type) const
 {
   if (type == "title")
   {
@@ -953,7 +953,7 @@ bool CDImagePBP::SwitchSubImage(u32 index, Error* error)
   return true;
 }
 
-std::string CDImagePBP::GetSubImageMetadata(u32 index, const std::string_view& type) const
+std::string CDImagePBP::GetSubImageMetadata(u32 index, std::string_view type) const
 {
   if (type == "title")
   {

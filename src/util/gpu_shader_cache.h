@@ -46,12 +46,11 @@ public:
 
   bool IsOpen() const { return (m_index_file != nullptr); }
 
-  bool Open(const std::string_view& base_filename, u32 version);
+  bool Open(std::string_view base_filename, u32 version);
   bool Create();
   void Close();
 
-  static CacheIndexKey GetCacheKey(GPUShaderStage stage, const std::string_view& shader_code,
-                                   const std::string_view& entry_point);
+  static CacheIndexKey GetCacheKey(GPUShaderStage stage, std::string_view shader_code, std::string_view entry_point);
 
   bool Lookup(const CacheIndexKey& key, ShaderBinary* binary);
   bool Insert(const CacheIndexKey& key, const void* data, u32 data_size);

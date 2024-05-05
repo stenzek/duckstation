@@ -33,7 +33,7 @@ Log_SetChannel(PostProcessing);
 
 namespace PostProcessing {
 template<typename T>
-static u32 ParseVector(const std::string_view& line, ShaderOption::ValueVector* values);
+static u32 ParseVector(std::string_view line, ShaderOption::ValueVector* values);
 
 static TinyString ValueToString(ShaderOption::Type type, u32 vector_size, const ShaderOption::ValueVector& value);
 
@@ -63,7 +63,7 @@ static std::unique_ptr<GPUTexture> s_dummy_texture;
 } // namespace PostProcessing
 
 template<typename T>
-u32 PostProcessing::ParseVector(const std::string_view& line, ShaderOption::ValueVector* values)
+u32 PostProcessing::ParseVector(std::string_view line, ShaderOption::ValueVector* values)
 {
   u32 index = 0;
   size_t start = 0;
@@ -102,12 +102,12 @@ u32 PostProcessing::ParseVector(const std::string_view& line, ShaderOption::Valu
   return size;
 }
 
-u32 PostProcessing::ShaderOption::ParseFloatVector(const std::string_view& line, ValueVector* values)
+u32 PostProcessing::ShaderOption::ParseFloatVector(std::string_view line, ValueVector* values)
 {
   return ParseVector<float>(line, values);
 }
 
-u32 PostProcessing::ShaderOption::ParseIntVector(const std::string_view& line, ValueVector* values)
+u32 PostProcessing::ShaderOption::ParseIntVector(std::string_view line, ValueVector* values)
 {
   return ParseVector<s32>(line, values);
 }

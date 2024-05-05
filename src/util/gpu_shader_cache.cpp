@@ -56,7 +56,7 @@ std::size_t GPUShaderCache::CacheIndexEntryHash::operator()(const CacheIndexKey&
   return h;
 }
 
-bool GPUShaderCache::Open(const std::string_view& base_filename, u32 version)
+bool GPUShaderCache::Open(std::string_view base_filename, u32 version)
 {
   m_base_filename = base_filename;
   m_version = version;
@@ -214,8 +214,8 @@ bool GPUShaderCache::ReadExisting(const std::string& index_filename, const std::
   return true;
 }
 
-GPUShaderCache::CacheIndexKey GPUShaderCache::GetCacheKey(GPUShaderStage stage, const std::string_view& shader_code,
-                                                          const std::string_view& entry_point)
+GPUShaderCache::CacheIndexKey GPUShaderCache::GetCacheKey(GPUShaderStage stage, std::string_view shader_code,
+                                                          std::string_view entry_point)
 {
   union
   {

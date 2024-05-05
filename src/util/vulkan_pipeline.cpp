@@ -23,7 +23,7 @@ VulkanShader::~VulkanShader()
   vkDestroyShaderModule(VulkanDevice::GetInstance().GetVulkanDevice(), m_module, nullptr);
 }
 
-void VulkanShader::SetDebugName(const std::string_view& name)
+void VulkanShader::SetDebugName(std::string_view name)
 {
   Vulkan::SetObjectName(VulkanDevice::GetInstance().GetVulkanDevice(), m_module, name);
 }
@@ -44,7 +44,7 @@ std::unique_ptr<GPUShader> VulkanDevice::CreateShaderFromBinary(GPUShaderStage s
   return std::unique_ptr<GPUShader>(new VulkanShader(stage, mod));
 }
 
-std::unique_ptr<GPUShader> VulkanDevice::CreateShaderFromSource(GPUShaderStage stage, const std::string_view& source,
+std::unique_ptr<GPUShader> VulkanDevice::CreateShaderFromSource(GPUShaderStage stage, std::string_view source,
                                                                 const char* entry_point,
                                                                 DynamicHeapArray<u8>* out_binary)
 {
@@ -115,7 +115,7 @@ VulkanPipeline::~VulkanPipeline()
   VulkanDevice::GetInstance().DeferPipelineDestruction(m_pipeline);
 }
 
-void VulkanPipeline::SetDebugName(const std::string_view& name)
+void VulkanPipeline::SetDebugName(std::string_view name)
 {
   Vulkan::SetObjectName(VulkanDevice::GetInstance().GetVulkanDevice(), m_pipeline, name);
 }

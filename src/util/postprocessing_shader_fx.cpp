@@ -438,7 +438,7 @@ bool PostProcessing::ReShadeFXShader::CreateModule(s32 buffer_width, s32 buffer_
   return true;
 }
 
-static bool HasAnnotationWithName(const reshadefx::uniform_info& uniform, const std::string_view& annotation_name)
+static bool HasAnnotationWithName(const reshadefx::uniform_info& uniform, const std::string_view annotation_name)
 {
   for (const reshadefx::annotation& an : uniform.annotations)
   {

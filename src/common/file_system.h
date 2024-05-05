@@ -61,7 +61,7 @@ namespace FileSystem {
 using FindResultsArray = std::vector<FILESYSTEM_FIND_DATA>;
 
 /// Returns the display name of a filename. Usually this is the same as the path.
-std::string GetDisplayNameFromPath(const std::string_view& path);
+std::string GetDisplayNameFromPath(std::string_view path);
 
 /// Returns a list of "root directories" (i.e. root/home directories on Linux, drive letters on Windows).
 std::vector<std::string> GetRootDirectoryList();
@@ -145,7 +145,7 @@ std::optional<std::vector<u8>> ReadBinaryFile(std::FILE* fp);
 std::optional<std::string> ReadFileToString(const char* filename, Error* error = nullptr);
 std::optional<std::string> ReadFileToString(std::FILE* fp);
 bool WriteBinaryFile(const char* filename, const void* data, size_t data_length);
-bool WriteStringToFile(const char* filename, const std::string_view& sv);
+bool WriteStringToFile(const char* filename, std::string_view sv);
 
 /// creates a directory in the local filesystem
 /// if the directory already exists, the return value will be true.

@@ -117,7 +117,7 @@ bool GameList::IsGameListLoaded()
   return s_game_list_loaded;
 }
 
-bool GameList::IsScannableFilename(const std::string_view& path)
+bool GameList::IsScannableFilename(std::string_view path)
 {
   // we don't scan bin files because they'll duplicate
   if (StringUtil::EndsWithNoCase(path, ".bin"))
@@ -707,7 +707,7 @@ std::string GameList::GetCoverImagePathForEntry(const Entry* entry)
   return GetCoverImagePath(entry->path, entry->serial, entry->title);
 }
 
-static std::string GetFullCoverPath(const std::string_view& filename, const std::string_view& extension)
+static std::string GetFullCoverPath(std::string_view filename, std::string_view extension)
 {
   return fmt::format("{}" FS_OSPATH_SEPARATOR_STR "{}.{}", EmuFolders::Covers, filename, extension);
 }

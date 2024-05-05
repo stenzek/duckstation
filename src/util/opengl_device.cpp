@@ -272,7 +272,7 @@ bool OpenGLDevice::HasSurface() const
   return m_window_info.type != WindowInfo::Type::Surfaceless;
 }
 
-bool OpenGLDevice::CreateDevice(const std::string_view& adapter, bool threaded_presentation,
+bool OpenGLDevice::CreateDevice(std::string_view adapter, bool threaded_presentation,
                                 std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features,
                                 Error* error)
 {

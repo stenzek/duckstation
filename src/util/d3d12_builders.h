@@ -126,10 +126,10 @@ private:
 };
 
 #ifdef _DEBUG
-void SetObjectName(ID3D12Object* object, const std::string_view& name);
+void SetObjectName(ID3D12Object* object, std::string_view name);
 void SetObjectNameFormatted(ID3D12Object* object, const char* format, ...);
 #else
-static inline void SetObjectName(ID3D12Object* object, const std::string_view& name)
+static inline void SetObjectName(ID3D12Object* object, std::string_view name)
 {
 }
 static inline void SetObjectNameFormatted(ID3D12Object* object, const char* format, ...)

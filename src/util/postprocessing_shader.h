@@ -41,8 +41,8 @@ public:
   std::vector<ShaderOption> TakeOptions();
   void LoadOptions(const SettingsInterface& si, const char* section);
 
-  const ShaderOption* GetOptionByName(const std::string_view& name) const;
-  ShaderOption* GetOptionByName(const std::string_view& name);
+  const ShaderOption* GetOptionByName(std::string_view name) const;
+  ShaderOption* GetOptionByName(std::string_view name);
 
   virtual bool ResizeOutput(GPUTexture::Format format, u32 width, u32 height) = 0;
 
@@ -52,7 +52,7 @@ public:
                      s32 final_height, s32 orig_width, s32 orig_height, u32 target_width, u32 target_height) = 0;
 
 protected:
-  static void ParseKeyValue(const std::string_view& line, std::string_view* key, std::string_view* value);
+  static void ParseKeyValue(std::string_view line, std::string_view* key, std::string_view* value);
 
   virtual void OnOptionChanged(const ShaderOption& option);
 

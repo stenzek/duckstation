@@ -102,7 +102,7 @@ public:
   bool WriteS16(s16 dest);
   bool WriteS32(s32 dest);
   bool WriteS64(s64 dest);
-  bool WriteSizePrefixedString(const std::string_view& str);
+  bool WriteSizePrefixedString(std::string_view str);
 
   // base byte stream creation functions
   // opens a local file-based stream. fills in error if passed, and returns false if the file cannot be opened.
@@ -139,7 +139,7 @@ public:
   static u32 CopyBytes(ByteStream* pSourceStream, u32 byteCount, ByteStream* pDestinationStream);
 
   static std::string ReadStreamToString(ByteStream* stream, bool seek_to_start = true);
-  static bool WriteStreamToString(const std::string_view& sv, ByteStream* stream);
+  static bool WriteStreamToString(std::string_view sv, ByteStream* stream);
 
   static std::vector<u8> ReadBinaryStream(ByteStream* stream, bool seek_to_start = true);
   static bool WriteBinaryToStream(ByteStream* stream, const void* data, size_t data_length);

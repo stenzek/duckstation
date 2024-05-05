@@ -307,7 +307,7 @@ std::vector<InputBindingKey> DInputSource::EnumerateMotors()
   return {};
 }
 
-bool DInputSource::GetGenericBindingMapping(const std::string_view& device, GenericInputBindingMapping* mapping)
+bool DInputSource::GetGenericBindingMapping(std::string_view device, GenericInputBindingMapping* mapping)
 {
   return {};
 }
@@ -323,8 +323,7 @@ void DInputSource::UpdateMotorState(InputBindingKey large_key, InputBindingKey s
   // not supported
 }
 
-std::optional<InputBindingKey> DInputSource::ParseKeyString(const std::string_view& device,
-                                                            const std::string_view& binding)
+std::optional<InputBindingKey> DInputSource::ParseKeyString(std::string_view device, std::string_view binding)
 {
   if (!device.starts_with("DInput-") || binding.empty())
     return std::nullopt;

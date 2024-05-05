@@ -17,7 +17,7 @@ const std::string& GetGameIconPath();
 
 std::string GetAchievementBadgePath(const rc_client_achievement_t* achievement, int state,
                                     bool download_if_missing = true);
-std::string GetUserBadgePath(const std::string_view& username);
+std::string GetUserBadgePath(std::string_view username);
 std::string GetLeaderboardUserBadgePath(const rc_client_leaderboard_entry_t* entry);
 
 void OpenLeaderboard(const rc_client_leaderboard_t* lboard);

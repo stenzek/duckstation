@@ -15,7 +15,7 @@
 #error ARC should not be enabled.
 #endif
 
-NSString* CocoaTools::StringViewToNSString(const std::string_view& str)
+NSString* CocoaTools::StringViewToNSString(std::string_view str)
 {
   if (str.empty())
     return nil;

@@ -176,7 +176,7 @@ bool CrashHandler::Install()
   return (s_veh_handle != nullptr);
 }
 
-void CrashHandler::SetWriteDirectory(const std::string_view& dump_directory)
+void CrashHandler::SetWriteDirectory(std::string_view dump_directory)
 {
   if (!s_veh_handle)
     return;
@@ -384,7 +384,7 @@ bool CrashHandler::Install()
   return true;
 }
 
-void CrashHandler::SetWriteDirectory(const std::string_view& dump_directory)
+void CrashHandler::SetWriteDirectory(std::string_view dump_directory)
 {
 }
 
@@ -404,7 +404,7 @@ bool CrashHandler::Install()
   return false;
 }
 
-void CrashHandler::SetWriteDirectory(const std::string_view& dump_directory)
+void CrashHandler::SetWriteDirectory(std::string_view dump_directory)
 {
 }
 

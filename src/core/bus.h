@@ -209,6 +209,6 @@ std::optional<PhysicalMemoryAddress> SearchMemory(PhysicalMemoryAddress start_ad
 
 // TTY Logging.
 void AddTTYCharacter(char ch);
-void AddTTYString(const std::string_view& str);
+void AddTTYString(std::string_view str);
 
 } // namespace Bus

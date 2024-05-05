@@ -13,7 +13,7 @@ class Error;
 #import <Cocoa/Cocoa.h>
 
 namespace CocoaTools {
-NSString* StringViewToNSString(const std::string_view& str);
+NSString* StringViewToNSString(std::string_view str);
 
 /// Converts NSError to a human-readable string.
 std::string NSErrorToString(NSError* error);

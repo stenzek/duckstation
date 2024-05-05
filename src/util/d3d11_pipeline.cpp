@@ -46,7 +46,7 @@ ID3D11ComputeShader* D3D11Shader::GetComputeShader() const
   return static_cast<ID3D11ComputeShader*>(m_shader.Get());
 }
 
-void D3D11Shader::SetDebugName(const std::string_view& name)
+void D3D11Shader::SetDebugName(std::string_view name)
 {
   SetD3DDebugObjectName(m_shader.Get(), name);
 }
@@ -92,7 +92,7 @@ std::unique_ptr<GPUShader> D3D11Device::CreateShaderFromBinary(GPUShaderStage st
   return std::unique_ptr<GPUShader>(new D3D11Shader(stage, std::move(shader), std::move(bytecode)));
 }
 
-std::unique_ptr<GPUShader> D3D11Device::CreateShaderFromSource(GPUShaderStage stage, const std::string_view& source,
+std::unique_ptr<GPUShader> D3D11Device::CreateShaderFromSource(GPUShaderStage stage, std::string_view source,
                                                                const char* entry_point,
                                                                DynamicHeapArray<u8>* out_binary)
 {
@@ -123,7 +123,7 @@ D3D11Pipeline::~D3D11Pipeline()
   D3D11Device::GetInstance().UnbindPipeline(this);
 }
 
-void D3D11Pipeline::SetDebugName(const std::string_view& name)
+void D3D11Pipeline::SetDebugName(std::string_view name)
 {
   // can't label this directly
 }

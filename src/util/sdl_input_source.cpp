@@ -243,7 +243,7 @@ u32 SDLInputSource::GetRGBForPlayerId(SettingsInterface& si, u32 player_id)
     player_id);
 }
 
-u32 SDLInputSource::ParseRGBForPlayerId(const std::string_view& str, u32 player_id)
+u32 SDLInputSource::ParseRGBForPlayerId(std::string_view str, u32 player_id)
 {
   if (player_id >= MAX_LED_COLORS)
     return 0;
@@ -355,8 +355,7 @@ std::vector<std::pair<std::string, std::string>> SDLInputSource::EnumerateDevice
   return ret;
 }
 
-std::optional<InputBindingKey> SDLInputSource::ParseKeyString(const std::string_view& device,
-                                                              const std::string_view& binding)
+std::optional<InputBindingKey> SDLInputSource::ParseKeyString(std::string_view device, std::string_view binding)
 {
   if (!device.starts_with("SDL-") || binding.empty())
     return std::nullopt;
@@ -638,7 +637,7 @@ bool SDLInputSource::ProcessSDLEvent(const SDL_Event* event)
   }
 }
 
-SDL_Joystick* SDLInputSource::GetJoystickForDevice(const std::string_view& device)
+SDL_Joystick* SDLInputSource::GetJoystickForDevice(std::string_view device)
 {
   if (!device.starts_with("SDL-"))
     return nullptr;
@@ -952,7 +951,7 @@ std::vector<InputBindingKey> SDLInputSource::EnumerateMotors()
   return ret;
 }
 
-bool SDLInputSource::GetGenericBindingMapping(const std::string_view& device, GenericInputBindingMapping* mapping)
+bool SDLInputSource::GetGenericBindingMapping(std::string_view device, GenericInputBindingMapping* mapping)
 {
   if (!device.starts_with("SDL-"))
     return false;

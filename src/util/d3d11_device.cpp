@@ -31,7 +31,7 @@ static std::mutex s_instance_mutex;
 static constexpr std::array<float, 4> s_clear_color = {};
 static constexpr GPUTexture::Format s_swap_chain_format = GPUTexture::Format::RGBA8;
 
-void SetD3DDebugObjectName(ID3D11DeviceChild* obj, const std::string_view& name)
+void SetD3DDebugObjectName(ID3D11DeviceChild* obj, std::string_view name)
 {
 #ifdef _DEBUG
   // WKPDID_D3DDebugObjectName
@@ -64,7 +64,7 @@ bool D3D11Device::HasSurface() const
   return static_cast<bool>(m_swap_chain);
 }
 
-bool D3D11Device::CreateDevice(const std::string_view& adapter, bool threaded_presentation,
+bool D3D11Device::CreateDevice(std::string_view adapter, bool threaded_presentation,
                                std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features,
                                Error* error)
 {
@@ -943,7 +943,8 @@ void D3D11Device::UnmapUniformBuffer(u32 size)
   }
 }
 
-void D3D11Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds, GPUPipeline::RenderPassFlag feedback_loop)
+void D3D11Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds,
+                                   GPUPipeline::RenderPassFlag feedback_loop)
 {
   ID3D11RenderTargetView* rtvs[MAX_RENDER_TARGETS];
   DebugAssert(!feedback_loop);

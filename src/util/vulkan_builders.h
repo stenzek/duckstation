@@ -419,7 +419,7 @@ static inline void SetFormattedObjectName(VkDevice device, T object_handle, cons
 }
 
 template<typename T>
-static inline void SetObjectName(VkDevice device, T object_handle, const std::string_view& sv)
+static inline void SetObjectName(VkDevice device, T object_handle, std::string_view sv)
 {
 #ifdef ENABLE_VULKAN_DEBUG_OBJECTS
   SetFormattedObjectName(device, object_handle, "%.*s", static_cast<int>(sv.length()), sv.data());

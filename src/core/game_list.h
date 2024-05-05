@@ -68,7 +68,7 @@ struct Entry
 const char* GetEntryTypeName(EntryType type);
 const char* GetEntryTypeDisplayName(EntryType type);
 
-bool IsScannableFilename(const std::string_view& path);
+bool IsScannableFilename(std::string_view path);
 
 /// Populates a game list entry struct with information from the iso/elf.
 /// Do *not* call while the system is running, it will mess with CDVD state.

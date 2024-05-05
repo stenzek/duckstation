@@ -38,7 +38,7 @@ D3D11Sampler::D3D11Sampler(ComPtr<ID3D11SamplerState> ss) : m_ss(std::move(ss))
 
 D3D11Sampler::~D3D11Sampler() = default;
 
-void D3D11Sampler::SetDebugName(const std::string_view& name)
+void D3D11Sampler::SetDebugName(std::string_view name)
 {
   SetD3DDebugObjectName(m_ss.Get(), name);
 }
@@ -209,7 +209,7 @@ void D3D11Texture::Unmap()
   m_mapped_subresource = 0;
 }
 
-void D3D11Texture::SetDebugName(const std::string_view& name)
+void D3D11Texture::SetDebugName(std::string_view name)
 {
   SetD3DDebugObjectName(m_texture.Get(), name);
 }
@@ -376,7 +376,7 @@ void D3D11TextureBuffer::Unmap(u32 used_elements)
   m_buffer.Unmap(D3D11Device::GetD3DContext(), size);
 }
 
-void D3D11TextureBuffer::SetDebugName(const std::string_view& name)
+void D3D11TextureBuffer::SetDebugName(std::string_view name)
 {
   SetD3DDebugObjectName(m_buffer.GetD3DBuffer(), name);
 }

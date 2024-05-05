@@ -95,7 +95,7 @@ std::string CDImageHasher::HashToString(const Hash& hash)
                      hash[11], hash[12], hash[13], hash[14], hash[15]);
 }
 
-std::optional<CDImageHasher::Hash> CDImageHasher::HashFromString(const std::string_view& str)
+std::optional<CDImageHasher::Hash> CDImageHasher::HashFromString(std::string_view str)
 {
   auto decoded = StringUtil::DecodeHex(str);
   if (decoded && decoded->size() == std::tuple_size_v<Hash>)

@@ -276,7 +276,7 @@ void Log::ConsoleOutputLogCallback(void* pUserParam, const char* channelName, co
                             });
 #elif !defined(__ANDROID__)
   FormatLogMessageAndPrint(channelName, functionName, level, message, s_console_output_timestamps, true, true,
-                           [level](const std::string_view& message) {
+                           [level](std::string_view message) {
                              const int outputFd = (level <= LOGLEVEL_WARNING) ? STDERR_FILENO : STDOUT_FILENO;
                              write(outputFd, message.data(), message.length());
                            });
@@ -413,9 +413,9 @@ void Log::FileOutputLogCallback(void* pUserParam, const char* channelName, const
   if (!s_file_output_enabled)
     return;
 
-  FormatLogMessageAndPrint(
-    channelName, functionName, level, message, true, false, true,
-    [](const std::string_view& message) { std::fwrite(message.data(), 1, message.size(), s_file_handle.get()); });
+  FormatLogMessageAndPrint(channelName, functionName, level, message, true, false, true, [](std::string_view message) {
+    std::fwrite(message.data(), 1, message.size(), s_file_handle.get());
+  });
 }
 
 void Log::SetFileOutputParams(bool enabled, const char* filename, bool timestamps /* = true */)

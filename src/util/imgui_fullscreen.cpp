@@ -43,8 +43,8 @@ using MessageDialogCallbackVariant = std::variant<InfoMessageDialogCallback, Con
 
 static constexpr float MENU_BACKGROUND_ANIMATION_TIME = 0.5f;
 
-static std::optional<RGBA8Image> LoadTextureImage(const char* path);
-static std::shared_ptr<GPUTexture> UploadTexture(const char* path, const RGBA8Image& image);
+static std::optional<RGBA8Image> LoadTextureImage(std::string_view path);
+static std::shared_ptr<GPUTexture> UploadTexture(std::string_view path, const RGBA8Image& image);
 static void TextureLoaderThread();
 
 static void DrawFileSelector();
@@ -282,17 +282,18 @@ const std::shared_ptr<GPUTexture>& ImGuiFullscreen::GetPlaceholderTexture()
   return s_placeholder_texture;
 }
 
-std::optional<RGBA8Image> ImGuiFullscreen::LoadTextureImage(const char* path)
+std::optional<RGBA8Image> ImGuiFullscreen::LoadTextureImage(std::string_view path)
 {
   std::optional<RGBA8Image> image;
   if (Path::IsAbsolute(path))
   {
     Error error;
-    auto fp = FileSystem::OpenManagedCFile(path, "rb", &error);
+    std::string path_str(path);
+    auto fp = FileSystem::OpenManagedCFile(path_str.c_str(), "rb", &error);
     if (fp)
     {
       image = RGBA8Image();
-      if (!image->LoadFromFile(path, fp.get()))
+      if (!image->LoadFromFile(path_str.c_str(), fp.get()))
         Log_ErrorFmt("Failed to read texture file '{}'", path);
     }
     else
@@ -321,28 +322,27 @@ std::optional<RGBA8Image> ImGuiFullscreen::LoadTextureImage(const char* path)
   return image;
 }
 
-std::shared_ptr<GPUTexture> ImGuiFullscreen::UploadTexture(const char* path, const RGBA8Image& image)
+std::shared_ptr<GPUTexture> ImGuiFullscreen::UploadTexture(std::string_view path, const RGBA8Image& image)
 {
   std::unique_ptr<GPUTexture> texture =
     g_gpu_device->FetchTexture(image.GetWidth(), image.GetHeight(), 1, 1, 1, GPUTexture::Type::Texture,
                                GPUTexture::Format::RGBA8, image.GetPixels(), image.GetPitch());
   if (!texture)
   {
-    Log_ErrorPrintf("failed to create %ux%u texture for resource", image.GetWidth(), image.GetHeight());
+    Log_ErrorFmt("failed to create {}x{} texture for resource", image.GetWidth(), image.GetHeight());
     return {};
   }
 
-  Log_DevPrintf("Uploaded texture resource '%s' (%ux%u)", path, image.GetWidth(), image.GetHeight());
+  Log_DevFmt("Uploaded texture resource '{}' ({}x{})", path, image.GetWidth(), image.GetHeight());
   return std::shared_ptr<GPUTexture>(texture.release(), GPUDevice::PooledTextureDeleter());
 }
 
-std::shared_ptr<GPUTexture> ImGuiFullscreen::LoadTexture(const std::string_view& path)
+std::shared_ptr<GPUTexture> ImGuiFullscreen::LoadTexture(std::string_view path)
 {
-  std::string path_str(path);
-  std::optional<RGBA8Image> image(LoadTextureImage(path_str.c_str()));
+  std::optional<RGBA8Image> image(LoadTextureImage(path));
   if (image.has_value())
   {
-    std::shared_ptr<GPUTexture> ret(UploadTexture(path_str.c_str(), image.value()));
+    std::shared_ptr<GPUTexture> ret(UploadTexture(path, image.value()));
     if (ret)
       return ret;
   }
@@ -350,7 +350,7 @@ std::shared_ptr<GPUTexture> ImGuiFullscreen::LoadTexture(const std::string_view&
   return s_placeholder_texture;
 }
 
-GPUTexture* ImGuiFullscreen::GetCachedTexture(const std::string_view& name)
+GPUTexture* ImGuiFullscreen::GetCachedTexture(std::string_view name)
 {
   std::shared_ptr<GPUTexture>* tex_ptr = s_texture_cache.Lookup(name);
   if (!tex_ptr)
@@ -362,7 +362,7 @@ GPUTexture* ImGuiFullscreen::GetCachedTexture(const std::string_view& name)
   return tex_ptr->get();
 }
 
-GPUTexture* ImGuiFullscreen::GetCachedTextureAsync(const std::string_view& name)
+GPUTexture* ImGuiFullscreen::GetCachedTextureAsync(std::string_view name)
 {
   std::shared_ptr<GPUTexture>* tex_ptr = s_texture_cache.Lookup(name);
   if (!tex_ptr)

@@ -118,7 +118,7 @@ struct AchievementProgressIndicator
 };
 } // namespace
 
-static void ReportError(const std::string_view& sv);
+static void ReportError(std::string_view sv);
 template<typename... T>
 static void ReportFmtError(fmt::format_string<T...> fmt, T&&... args);
 template<typename... T>
@@ -242,7 +242,7 @@ const rc_client_user_game_summary_t& Achievements::GetGameSummary()
   return s_game_summary;
 }
 
-void Achievements::ReportError(const std::string_view& sv)
+void Achievements::ReportError(std::string_view sv)
 {
   std::string error = fmt::format("Achievements error: {}", sv);
   Log_ErrorPrint(error.c_str());
@@ -1576,7 +1576,7 @@ std::string Achievements::GetAchievementBadgePath(const rc_client_achievement_t*
   return path;
 }
 
-std::string Achievements::GetUserBadgePath(const std::string_view& username)
+std::string Achievements::GetUserBadgePath(std::string_view username)
 {
   // definitely want to sanitize usernames... :)
   std::string path;

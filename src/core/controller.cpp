@@ -157,7 +157,7 @@ std::vector<std::pair<std::string, std::string>> Controller::GetControllerTypeNa
   return ret;
 }
 
-std::optional<u32> Controller::GetBindIndex(ControllerType type, const std::string_view& bind_name)
+std::optional<u32> Controller::GetBindIndex(ControllerType type, std::string_view bind_name)
 {
   const ControllerInfo* info = GetControllerInfo(type);
   if (!info)
@@ -172,7 +172,7 @@ std::optional<u32> Controller::GetBindIndex(ControllerType type, const std::stri
   return std::nullopt;
 }
 
-Controller::VibrationCapabilities Controller::GetControllerVibrationCapabilities(const std::string_view& type)
+Controller::VibrationCapabilities Controller::GetControllerVibrationCapabilities(std::string_view type)
 {
   const ControllerInfo* info = GetControllerInfo(type);
   return info ? info->vibration_caps : VibrationCapabilities::NoVibration;

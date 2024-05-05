@@ -134,7 +134,7 @@ std::vector<std::string> D3DCommon::GetAdapterNames(IDXGIFactory5* factory)
   return adapter_names;
 }
 
-std::vector<std::string> D3DCommon::GetFullscreenModes(IDXGIFactory5* factory, const std::string_view& adapter_name)
+std::vector<std::string> D3DCommon::GetFullscreenModes(IDXGIFactory5* factory, std::string_view adapter_name)
 {
   std::vector<std::string> modes;
   HRESULT hr;
@@ -250,7 +250,7 @@ bool D3DCommon::GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, 
   return true;
 }
 
-Microsoft::WRL::ComPtr<IDXGIAdapter1> D3DCommon::GetAdapterByName(IDXGIFactory5* factory, const std::string_view& name)
+Microsoft::WRL::ComPtr<IDXGIAdapter1> D3DCommon::GetAdapterByName(IDXGIFactory5* factory, std::string_view name)
 {
   if (name.empty())
     return {};
@@ -296,8 +296,7 @@ Microsoft::WRL::ComPtr<IDXGIAdapter1> D3DCommon::GetFirstAdapter(IDXGIFactory5* 
   return adapter;
 }
 
-Microsoft::WRL::ComPtr<IDXGIAdapter1> D3DCommon::GetChosenOrFirstAdapter(IDXGIFactory5* factory,
-                                                                         const std::string_view& name)
+Microsoft::WRL::ComPtr<IDXGIAdapter1> D3DCommon::GetChosenOrFirstAdapter(IDXGIFactory5* factory, std::string_view name)
 {
   Microsoft::WRL::ComPtr<IDXGIAdapter1> adapter = GetAdapterByName(factory, name);
   if (!adapter)
@@ -374,7 +373,7 @@ std::string D3DCommon::GetDriverVersionFromLUID(const LUID& luid)
 }
 
 std::optional<DynamicHeapArray<u8>> D3DCommon::CompileShader(D3D_FEATURE_LEVEL feature_level, bool debug_device,
-                                                             GPUShaderStage stage, const std::string_view& source,
+                                                             GPUShaderStage stage, std::string_view source,
                                                              const char* entry_point)
 {
   const char* target;

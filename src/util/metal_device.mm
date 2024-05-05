@@ -61,7 +61,7 @@ static constexpr std::array<MTLPixelFormat, static_cast<u32>(GPUTexture::Format:
 
 static std::unique_ptr<shaderc::Compiler> s_shaderc_compiler;
 
-static NSString* StringViewToNSString(const std::string_view& str)
+static NSString* StringViewToNSString(std::string_view str)
 {
   if (str.empty())
     return nil;
@@ -137,7 +137,7 @@ void MetalDevice::SetVSyncEnabled(bool enabled)
     [m_layer setDisplaySyncEnabled:enabled];
 }
 
-bool MetalDevice::CreateDevice(const std::string_view& adapter, bool threaded_presentation,
+bool MetalDevice::CreateDevice(std::string_view adapter, bool threaded_presentation,
                                std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features,
                                Error* error)
 {
@@ -592,7 +592,7 @@ MetalShader::~MetalShader()
   MetalDevice::DeferRelease(m_library);
 }
 
-void MetalShader::SetDebugName(const std::string_view& name)
+void MetalShader::SetDebugName(std::string_view name)
 {
   @autoreleasepool
   {
@@ -604,7 +604,7 @@ void MetalShader::SetDebugName(const std::string_view& name)
 namespace EmuFolders {
 extern std::string DataRoot;
 }
-static void DumpShader(u32 n, const std::string_view& suffix, const std::string_view& data)
+static void DumpShader(u32 n, std::string_view suffix, std::string_view data)
 {
   if (data.empty())
     return;
@@ -617,8 +617,8 @@ static void DumpShader(u32 n, const std::string_view& suffix, const std::string_
   std::fwrite(data.data(), data.length(), 1, fp.get());
 }
 
-std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromMSL(GPUShaderStage stage, const std::string_view& source,
-                                                            const std::string_view& entry_point)
+std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromMSL(GPUShaderStage stage, std::string_view source,
+                                                            std::string_view entry_point)
 {
   @autoreleasepool
   {
@@ -651,7 +651,7 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromBinary(GPUShaderStage st
   return CreateShaderFromMSL(stage, str_data, "main0");
 }
 
-std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromSource(GPUShaderStage stage, const std::string_view& source,
+std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromSource(GPUShaderStage stage, std::string_view source,
                                                                const char* entry_point,
                                                                DynamicHeapArray<u8>* out_binary /* = nullptr */)
 {
@@ -839,7 +839,7 @@ MetalPipeline::~MetalPipeline()
   MetalDevice::DeferRelease(m_pipeline);
 }
 
-void MetalPipeline::SetDebugName(const std::string_view& name)
+void MetalPipeline::SetDebugName(std::string_view name)
 {
   // readonly property :/
 }
@@ -1188,7 +1188,7 @@ void MetalTexture::MakeReadyForSampling()
     dev.EndRenderPass();
 }
 
-void MetalTexture::SetDebugName(const std::string_view& name)
+void MetalTexture::SetDebugName(std::string_view name)
 {
   @autoreleasepool
   {
@@ -1434,7 +1434,7 @@ MetalSampler::MetalSampler(id<MTLSamplerState> ss) : m_ss(ss)
 
 MetalSampler::~MetalSampler() = default;
 
-void MetalSampler::SetDebugName(const std::string_view& name)
+void MetalSampler::SetDebugName(std::string_view name)
 {
   // lame.. have to put it on the descriptor :/
 }
@@ -1831,7 +1831,7 @@ void MetalTextureBuffer::Unmap(u32 used_elements)
   m_buffer.CommitMemory(size);
 }
 
-void MetalTextureBuffer::SetDebugName(const std::string_view& name)
+void MetalTextureBuffer::SetDebugName(std::string_view name)
 {
   @autoreleasepool
   {

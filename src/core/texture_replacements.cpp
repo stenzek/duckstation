@@ -45,7 +45,7 @@ std::string TextureReplacementHash::ToString() const
   return StringUtil::StdStringFromFormat("%" PRIx64 "%" PRIx64, high, low);
 }
 
-bool TextureReplacementHash::ParseString(const std::string_view& sv)
+bool TextureReplacementHash::ParseString(std::string_view sv)
 {
   if (sv.length() != 32)
     return false;

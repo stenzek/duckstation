@@ -105,7 +105,7 @@ ALWAYS_INLINE static ImVec4 MulAlpha(const ImVec4& v, float a)
   return ImVec4(v.x, v.y, v.z, v.w * a);
 }
 
-ALWAYS_INLINE static std::string_view RemoveHash(const std::string_view& s)
+ALWAYS_INLINE static std::string_view RemoveHash(std::string_view s)
 {
   const std::string_view::size_type pos = s.find('#');
   return (pos != std::string_view::npos) ? s.substr(0, pos) : s;
@@ -127,9 +127,9 @@ void Shutdown();
 
 /// Texture cache.
 const std::shared_ptr<GPUTexture>& GetPlaceholderTexture();
-std::shared_ptr<GPUTexture> LoadTexture(const std::string_view& path);
-GPUTexture* GetCachedTexture(const std::string_view& name);
-GPUTexture* GetCachedTextureAsync(const std::string_view& name);
+std::shared_ptr<GPUTexture> LoadTexture(std::string_view path);
+GPUTexture* GetCachedTexture(std::string_view name);
+GPUTexture* GetCachedTextureAsync(std::string_view name);
 bool InvalidateCachedTexture(const std::string& path);
 void UploadAsyncTextures();
 

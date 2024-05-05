@@ -350,7 +350,7 @@ void OpenGLTexture::Unmap()
   sb->Unbind();
 }
 
-void OpenGLTexture::SetDebugName(const std::string_view& name)
+void OpenGLTexture::SetDebugName(std::string_view name)
 {
 #ifdef _DEBUG
   if (glObjectLabel)
@@ -375,7 +375,7 @@ OpenGLSampler::~OpenGLSampler()
   OpenGLDevice::GetInstance().UnbindSampler(m_id);
 }
 
-void OpenGLSampler::SetDebugName(const std::string_view& name)
+void OpenGLSampler::SetDebugName(std::string_view name)
 {
 #ifdef _DEBUG
   if (glObjectLabel)
@@ -660,7 +660,7 @@ void OpenGLTextureBuffer::Unmap(u32 used_elements)
   m_buffer->Unmap(size);
 }
 
-void OpenGLTextureBuffer::SetDebugName(const std::string_view& name)
+void OpenGLTextureBuffer::SetDebugName(std::string_view name)
 {
 #ifdef _DEBUG
   if (glObjectLabel)

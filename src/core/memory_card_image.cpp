@@ -329,8 +329,7 @@ bool MemoryCardImage::ReadFile(const DataArray& data, const FileInfo& fi, std::v
   return true;
 }
 
-bool MemoryCardImage::WriteFile(DataArray* data, const std::string_view& filename, const std::vector<u8>& buffer,
-                                Error* error)
+bool MemoryCardImage::WriteFile(DataArray* data, std::string_view filename, const std::vector<u8>& buffer, Error* error)
 {
   if (buffer.empty())
   {

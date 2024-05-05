@@ -116,13 +116,13 @@ bool RegTestHost::InitializeConfig()
   return true;
 }
 
-void Host::ReportFatalError(const std::string_view& title, const std::string_view& message)
+void Host::ReportFatalError(std::string_view title, std::string_view message)
 {
   Log_ErrorPrintf("ReportFatalError: %.*s", static_cast<int>(message.size()), message.data());
   abort();
 }
 
-void Host::ReportErrorAsync(const std::string_view& title, const std::string_view& message)
+void Host::ReportErrorAsync(std::string_view title, std::string_view message)
 {
   if (!title.empty() && !message.empty())
   {
@@ -135,7 +135,7 @@ void Host::ReportErrorAsync(const std::string_view& title, const std::string_vie
   }
 }
 
-bool Host::ConfirmMessage(const std::string_view& title, const std::string_view& message)
+bool Host::ConfirmMessage(std::string_view title, std::string_view message)
 {
   if (!title.empty() && !message.empty())
   {
@@ -150,7 +150,7 @@ bool Host::ConfirmMessage(const std::string_view& title, const std::string_view&
   return true;
 }
 
-void Host::ReportDebuggerMessage(const std::string_view& message)
+void Host::ReportDebuggerMessage(std::string_view message)
 {
   Log_ErrorPrintf("ReportDebuggerMessage: %.*s", static_cast<int>(message.size()), message.data());
 }
@@ -165,7 +165,7 @@ bool Host::ChangeLanguage(const char* new_language)
   return false;
 }
 
-s32 Host::Internal::GetTranslatedStringImpl(const std::string_view& context, const std::string_view& msg, char* tbuf,
+s32 Host::Internal::GetTranslatedStringImpl(std::string_view context, std::string_view msg, char* tbuf,
                                             size_t tbuf_space)
 {
   if (msg.size() > tbuf_space)
@@ -347,12 +347,12 @@ void Host::BeginPresentFrame()
   }
 }
 
-void Host::OpenURL(const std::string_view& url)
+void Host::OpenURL(std::string_view url)
 {
   //
 }
 
-bool Host::CopyTextToClipboard(const std::string_view& text)
+bool Host::CopyTextToClipboard(std::string_view text)
 {
   return false;
 }
@@ -387,7 +387,7 @@ void Host::OnCoverDownloaderOpenRequested()
   // noop
 }
 
-std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::string_view& str)
+std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(std::string_view str)
 {
   return std::nullopt;
 }
@@ -407,12 +407,12 @@ void Host::AddFixedInputBindings(SettingsInterface& si)
   // noop
 }
 
-void Host::OnInputDeviceConnected(const std::string_view& identifier, const std::string_view& device_name)
+void Host::OnInputDeviceConnected(std::string_view identifier, std::string_view device_name)
 {
   // noop
 }
 
-void Host::OnInputDeviceDisconnected(const std::string_view& identifier)
+void Host::OnInputDeviceDisconnected(std::string_view identifier)
 {
   // noop
 }

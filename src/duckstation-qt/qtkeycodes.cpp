@@ -458,7 +458,7 @@ static constexpr KeyCodeName s_qt_key_names[] = {{Qt::Key_Escape, "Escape", ICON
                                                  {Qt::Key_Camera, "Camera", nullptr},
                                                  {Qt::Key_CameraFocus, "CameraFocus", nullptr}};
 
-std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(const std::string_view& str)
+std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(std::string_view str)
 {
   std::string_view compare_name = str;
   u32 modifier_bits = 0;

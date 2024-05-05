@@ -73,7 +73,7 @@ public:
   void InvalidateRenderTarget(GPUTexture* t) override;
 
   std::unique_ptr<GPUShader> CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data) override;
-  std::unique_ptr<GPUShader> CreateShaderFromSource(GPUShaderStage stage, const std::string_view& source,
+  std::unique_ptr<GPUShader> CreateShaderFromSource(GPUShaderStage stage, std::string_view source,
                                                     const char* entry_point, DynamicHeapArray<u8>* out_binary) override;
   std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config) override;
 
@@ -130,7 +130,7 @@ public:
   void UnbindPipeline(const OpenGLPipeline* pl);
 
 protected:
-  bool CreateDevice(const std::string_view& adapter, bool threaded_presentation,
+  bool CreateDevice(std::string_view adapter, bool threaded_presentation,
                     std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features,
                     Error* error) override;
   void DestroyDevice() override;

@@ -540,18 +540,18 @@ u32 System::GetFrameTimeHistoryPos()
   return s_frame_time_history_pos;
 }
 
-bool System::IsExeFileName(const std::string_view& path)
+bool System::IsExeFileName(std::string_view path)
 {
   return (StringUtil::EndsWithNoCase(path, ".exe") || StringUtil::EndsWithNoCase(path, ".psexe") ||
           StringUtil::EndsWithNoCase(path, ".ps-exe"));
 }
 
-bool System::IsPsfFileName(const std::string_view& path)
+bool System::IsPsfFileName(std::string_view path)
 {
   return (StringUtil::EndsWithNoCase(path, ".psf") || StringUtil::EndsWithNoCase(path, ".minipsf"));
 }
 
-bool System::IsLoadableFilename(const std::string_view& path)
+bool System::IsLoadableFilename(std::string_view path)
 {
   static constexpr const std::array extensions = {
     ".bin", ".cue",     ".img",    ".iso", ".chd", ".ecm", ".mds", // discs
@@ -570,7 +570,7 @@ bool System::IsLoadableFilename(const std::string_view& path)
   return false;
 }
 
-bool System::IsSaveStateFilename(const std::string_view& path)
+bool System::IsSaveStateFilename(std::string_view path)
 {
   return StringUtil::EndsWithNoCase(path, ".sav");
 }
@@ -907,13 +907,13 @@ std::optional<DiscRegion> System::GetRegionForPath(const char* image_path)
   return GetRegionForImage(cdi.get());
 }
 
-std::string System::GetGameSettingsPath(const std::string_view& game_serial)
+std::string System::GetGameSettingsPath(std::string_view game_serial)
 {
   const std::string sanitized_serial(Path::SanitizeFileName(game_serial));
   return Path::Combine(EmuFolders::GameSettings, fmt::format("{}.ini", sanitized_serial));
 }
 
-std::string System::GetInputProfilePath(const std::string_view& name)
+std::string System::GetInputProfilePath(std::string_view name)
 {
   return Path::Combine(EmuFolders::InputProfiles, fmt::format("{}.ini", name));
 }
@@ -3614,7 +3614,7 @@ u32 System::GetMediaSubImageIndex()
   return cdi ? cdi->GetCurrentSubImage() : 0;
 }
 
-u32 System::GetMediaSubImageIndexForTitle(const std::string_view& title)
+u32 System::GetMediaSubImageIndexForTitle(std::string_view title)
 {
   const CDImage* cdi = CDROM::GetMedia();
   if (!cdi)
@@ -4533,7 +4533,7 @@ bool System::SaveScreenshot(const char* filename, DisplayScreenshotMode mode, Di
   return g_gpu->RenderScreenshotToFile(filename, mode, quality, compress_on_thread, true);
 }
 
-std::string System::GetGameSaveStateFileName(const std::string_view& serial, s32 slot)
+std::string System::GetGameSaveStateFileName(std::string_view serial, s32 slot)
 {
   if (slot < 0)
     return Path::Combine(EmuFolders::SaveStates, fmt::format("{}_resume.sav", serial));

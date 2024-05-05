@@ -68,7 +68,7 @@ private:
   void SetError(u32 line_number, Error* error, const char* format, ...);
 
   static std::string_view GetToken(const char*& line);
-  static std::optional<MSF> GetMSF(const std::string_view& token);
+  static std::optional<MSF> GetMSF(std::string_view token);
 
   bool ParseLine(const char* line, u32 line_number, Error* error);
 

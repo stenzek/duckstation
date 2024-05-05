@@ -29,7 +29,7 @@ void OpenGLStreamBuffer::Unbind()
   glBindBuffer(m_target, 0);
 }
 
-void OpenGLStreamBuffer::SetDebugName(const std::string_view& name)
+void OpenGLStreamBuffer::SetDebugName(std::string_view name)
 {
 #ifdef _DEBUG
   if (glObjectLabel)

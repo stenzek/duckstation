@@ -42,7 +42,7 @@ public:
   void Unmap() override;
   void MakeReadyForSampling() override;
 
-  void SetDebugName(const std::string_view& name) override;
+  void SetDebugName(std::string_view name) override;
 
   void TransitionToState(D3D12_RESOURCE_STATES state);
   void CommitClear();
@@ -115,7 +115,7 @@ public:
 
   ALWAYS_INLINE const D3D12DescriptorHandle& GetDescriptor() const { return m_descriptor; }
 
-  void SetDebugName(const std::string_view& name) override;
+  void SetDebugName(std::string_view name) override;
 
 private:
   D3D12Sampler(D3D12DescriptorHandle descriptor);
@@ -140,7 +140,7 @@ public:
   void* Map(u32 required_elements) override;
   void Unmap(u32 used_elements) override;
 
-  void SetDebugName(const std::string_view& name) override;
+  void SetDebugName(std::string_view name) override;
 
 private:
   D3D12StreamBuffer m_buffer;

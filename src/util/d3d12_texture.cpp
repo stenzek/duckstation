@@ -591,7 +591,7 @@ void D3D12Texture::ActuallyCommitClear(ID3D12GraphicsCommandList* cmdlist)
   SetState(State::Dirty);
 }
 
-void D3D12Texture::SetDebugName(const std::string_view& name)
+void D3D12Texture::SetDebugName(std::string_view name)
 {
   D3D12::SetObjectName(m_resource.Get(), name);
 }
@@ -673,7 +673,7 @@ D3D12Sampler::~D3D12Sampler()
   // Cleaned up by main class.
 }
 
-void D3D12Sampler::SetDebugName(const std::string_view& name)
+void D3D12Sampler::SetDebugName(std::string_view name)
 {
 }
 
@@ -813,7 +813,7 @@ void D3D12TextureBuffer::Unmap(u32 used_elements)
   m_buffer.CommitMemory(size);
 }
 
-void D3D12TextureBuffer::SetDebugName(const std::string_view& name)
+void D3D12TextureBuffer::SetDebugName(std::string_view name)
 {
   D3D12::SetObjectName(m_buffer.GetBuffer(), name);
 }

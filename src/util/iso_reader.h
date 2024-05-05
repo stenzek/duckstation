@@ -141,7 +141,7 @@ public:
   IsoReader();
   ~IsoReader();
 
-  static std::string_view RemoveVersionIdentifierFromPath(const std::string_view& path);
+  static std::string_view RemoveVersionIdentifierFromPath(std::string_view path);
 
   ALWAYS_INLINE const CDImage* GetImage() const { return m_image; }
   ALWAYS_INLINE u32 GetTrackNumber() const { return m_track_number; }
@@ -150,15 +150,15 @@ public:
 
   bool Open(CDImage* image, u32 track_number, Error* error = nullptr);
 
-  std::vector<std::string> GetFilesInDirectory(const std::string_view& path, Error* error = nullptr);
-  std::vector<std::pair<std::string, ISODirectoryEntry>> GetEntriesInDirectory(const std::string_view& path,
+  std::vector<std::string> GetFilesInDirectory(std::string_view path, Error* error = nullptr);
+  std::vector<std::pair<std::string, ISODirectoryEntry>> GetEntriesInDirectory(std::string_view path,
                                                                                Error* error = nullptr);
 
-  std::optional<ISODirectoryEntry> LocateFile(const std::string_view& path, Error* error);
+  std::optional<ISODirectoryEntry> LocateFile(std::string_view path, Error* error);
 
-  bool FileExists(const std::string_view& path, Error* error = nullptr);
-  bool DirectoryExists(const std::string_view& path, Error* error = nullptr);
-  bool ReadFile(const std::string_view& path, std::vector<u8>* data, Error* error = nullptr);
+  bool FileExists(std::string_view path, Error* error = nullptr);
+  bool DirectoryExists(std::string_view path, Error* error = nullptr);
+  bool ReadFile(std::string_view path, std::vector<u8>* data, Error* error = nullptr);
   bool ReadFile(const ISODirectoryEntry& de, std::vector<u8>* data, Error* error = nullptr);
 
 private:
@@ -167,7 +167,7 @@ private:
   bool ReadSector(u8* buf, u32 lsn, Error* error);
   bool ReadPVD(Error* error);
 
-  std::optional<ISODirectoryEntry> LocateFile(const std::string_view& path, u8* sector_buffer, u32 directory_record_lba,
+  std::optional<ISODirectoryEntry> LocateFile(std::string_view path, u8* sector_buffer, u32 directory_record_lba,
                                               u32 directory_record_size, Error* error);
 
   CDImage* m_image;

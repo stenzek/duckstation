@@ -4,13 +4,10 @@
 #pragma once
 #include <string_view>
 
-namespace GDBProtocol
-{
+namespace GDBProtocol {
+bool IsPacketInterrupt(std::string_view data);
+bool IsPacketContinue(std::string_view data);
 
-  bool IsPacketInterrupt(const std::string_view& data);
-  bool IsPacketContinue(const std::string_view& data);
-
-  bool IsPacketComplete(const std::string_view& data);
-  std::string ProcessPacket(const std::string_view& data);
-
+bool IsPacketComplete(std::string_view data);
+std::string ProcessPacket(std::string_view data);
 } // namespace GDBProtocol

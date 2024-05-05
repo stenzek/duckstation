@@ -976,7 +976,7 @@ bool ByteStream::WriteS64(s64 dest)
   return Write2(&dest, sizeof(s64));
 }
 
-bool ByteStream::WriteSizePrefixedString(const std::string_view& str)
+bool ByteStream::WriteSizePrefixedString(std::string_view str)
 {
   const u32 size = static_cast<u32>(str.size());
   return (Write2(&size, sizeof(size)) && (size == 0 || Write2(str.data(), size)));
@@ -1315,7 +1315,7 @@ std::string ByteStream::ReadStreamToString(ByteStream* stream, bool seek_to_star
   return ret;
 }
 
-bool ByteStream::WriteStreamToString(const std::string_view& sv, ByteStream* stream)
+bool ByteStream::WriteStreamToString(std::string_view sv, ByteStream* stream)
 {
   if (sv.size() > std::numeric_limits<u32>::max())
     return false;

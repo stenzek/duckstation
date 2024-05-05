@@ -83,8 +83,7 @@ void Win32RawInputSource::UpdateMotorState(InputBindingKey large_key, InputBindi
 {
 }
 
-std::optional<InputBindingKey> Win32RawInputSource::ParseKeyString(const std::string_view& device,
-                                                                   const std::string_view& binding)
+std::optional<InputBindingKey> Win32RawInputSource::ParseKeyString(std::string_view device, std::string_view binding)
 {
   return std::nullopt;
 }
@@ -104,7 +103,7 @@ std::vector<InputBindingKey> Win32RawInputSource::EnumerateMotors()
   return {};
 }
 
-bool Win32RawInputSource::GetGenericBindingMapping(const std::string_view& device, GenericInputBindingMapping* mapping)
+bool Win32RawInputSource::GetGenericBindingMapping(std::string_view device, GenericInputBindingMapping* mapping)
 {
   return {};
 }
