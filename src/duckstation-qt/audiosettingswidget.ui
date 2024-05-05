@@ -249,7 +249,7 @@
         <item>
          <widget class="QToolButton" name="resetVolume">
           <property name="toolTip">
-           <string>Stretch Settings</string>
+           <string>Reset Volume</string>
           </property>
           <property name="icon">
            <iconset theme="refresh-line"/>
@@ -298,7 +298,7 @@
         <item>
          <widget class="QToolButton" name="resetFastForwardVolume">
           <property name="toolTip">
-           <string>Stretch Settings</string>
+           <string>Reset Fast Forward Volume</string>
           </property>
           <property name="icon">
            <iconset theme="refresh-line"/>

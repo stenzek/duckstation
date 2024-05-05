@@ -181,7 +181,7 @@ AudioBackend AudioSettingsWidget::getEffectiveBackend() const
 void AudioSettingsWidget::updateDriverNames()
 {
   const AudioBackend backend = getEffectiveBackend();
-  const std::vector<std::string> names = AudioStream::GetDriverNames(backend);
+  const std::vector<std::pair<std::string, std::string>> names = AudioStream::GetDriverNames(backend);
 
   m_ui.driver->disconnect();
   m_ui.driver->clear();
@@ -193,11 +193,11 @@ void AudioSettingsWidget::updateDriverNames()
   else
   {
     m_ui.driver->setEnabled(true);
-    for (const std::string& name : names)
-      m_ui.driver->addItem(QString::fromStdString(name));
+    for (const auto& [name, display_name] : names)
+      m_ui.driver->addItem(QString::fromStdString(display_name), QString::fromStdString(name));
 
     SettingWidgetBinder::BindWidgetToStringSetting(m_dialog->getSettingsInterface(), m_ui.driver, "Audio", "Driver",
-                                                   std::move(names.front()));
+                                                   std::move(names.front().first));
     connect(m_ui.driver, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::updateDeviceNames);
   }
 
@@ -223,11 +223,22 @@ void AudioSettingsWidget::updateDeviceNames()
   else
   {
     m_ui.outputDevice->setEnabled(true);
+
+    bool is_known_device = false;
     for (const AudioStream::DeviceInfo& di : devices)
     {
       m_ui.outputDevice->addItem(QString::fromStdString(di.display_name), QString::fromStdString(di.name));
       if (di.name == current_device)
+      {
         m_output_device_latency = di.minimum_latency_frames;
+        is_known_device = true;
+      }
+    }
+
+    if (!is_known_device)
+    {
+      m_ui.outputDevice->addItem(tr("Unknown Device \"%1\"").arg(QString::fromStdString(current_device)),
+                                 QString::fromStdString(current_device));
     }
 
     SettingWidgetBinder::BindWidgetToStringSetting(m_dialog->getSettingsInterface(), m_ui.outputDevice, "Audio",

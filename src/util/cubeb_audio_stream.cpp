@@ -300,19 +300,21 @@ std::unique_ptr<AudioStream> AudioStream::CreateCubebAudioStream(u32 sample_rate
   return stream;
 }
 
-std::vector<std::string> AudioStream::GetCubebDriverNames()
+std::vector<std::pair<std::string, std::string>> AudioStream::GetCubebDriverNames()
 {
-  std::vector<std::string> names;
+  std::vector<std::pair<std::string, std::string>> names;
+  names.emplace_back(std::string(), TRANSLATE_STR("AudioStream", "Default"));
+
   const char** cubeb_names = cubeb_get_backend_names();
   for (u32 i = 0; cubeb_names[i] != nullptr; i++)
-    names.emplace_back(cubeb_names[i]);
+    names.emplace_back(cubeb_names[i], cubeb_names[i]);
   return names;
 }
 
 std::vector<AudioStream::DeviceInfo> AudioStream::GetCubebOutputDevices(const char* driver)
 {
   std::vector<AudioStream::DeviceInfo> ret;
-  ret.emplace_back(std::string(), TRANSLATE_STR("AudioStream", "Default Output Device"), 0);
+  ret.emplace_back(std::string(), TRANSLATE_STR("AudioStream", "Default"), 0);
 
   cubeb* context;
   int rv = cubeb_init(&context, "DuckStation", (driver && *driver) ? driver : nullptr);

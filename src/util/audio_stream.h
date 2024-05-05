@@ -191,7 +191,7 @@ public:
 
   void SetStretchMode(AudioStretchMode mode);
 
-  static std::vector<std::string> GetDriverNames(AudioBackend backend);
+  static std::vector<std::pair<std::string, std::string>> GetDriverNames(AudioBackend backend);
   static std::vector<DeviceInfo> GetOutputDevices(AudioBackend backend, const char* driver);
   static std::unique_ptr<AudioStream> CreateStream(AudioBackend backend, u32 sample_rate,
                                                    const AudioStreamParameters& parameters, const char* driver_name,
@@ -241,13 +241,18 @@ private:
   static constexpr u32 TARGET_IPS = 691;
 
 #ifndef __ANDROID__
-  static std::vector<std::string> GetCubebDriverNames();
+  static std::vector<std::pair<std::string, std::string>> GetCubebDriverNames();
   static std::vector<DeviceInfo> GetCubebOutputDevices(const char* driver);
   static std::unique_ptr<AudioStream> CreateCubebAudioStream(u32 sample_rate, const AudioStreamParameters& parameters,
                                                              const char* driver_name, const char* device_name,
                                                              Error* error);
   static std::unique_ptr<AudioStream> CreateSDLAudioStream(u32 sample_rate, const AudioStreamParameters& parameters,
                                                            Error* error);
+#else
+  static std::unique_ptr<AudioStream> CreateAAudioAudioStream(u32 sample_rate, const AudioStreamParameters& parameters,
+                                                              Error* error);
+  static std::unique_ptr<AudioStream> CreateOpenSLESAudioStream(u32 sample_rate,
+                                                                const AudioStreamParameters& parameters, Error* error);
 #endif
 
   ALWAYS_INLINE bool IsExpansionEnabled() const { return m_parameters.expansion_mode != AudioExpansionMode::Disabled; }

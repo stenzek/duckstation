@@ -70,16 +70,16 @@ std::unique_ptr<AudioStream> AudioStream::CreateNullStream(u32 sample_rate, u32 
   return stream;
 }
 
-#ifndef __ANDROID__
-
-std::vector<std::string> AudioStream::GetDriverNames(AudioBackend backend)
+std::vector<std::pair<std::string, std::string>> AudioStream::GetDriverNames(AudioBackend backend)
 {
-  std::vector<std::string> ret;
+  std::vector<std::pair<std::string, std::string>> ret;
   switch (backend)
   {
+#ifndef __ANDROID__
     case AudioBackend::Cubeb:
       ret = GetCubebDriverNames();
       break;
+#endif
 
     default:
       break;
@@ -93,9 +93,11 @@ std::vector<AudioStream::DeviceInfo> AudioStream::GetOutputDevices(AudioBackend 
   std::vector<AudioStream::DeviceInfo> ret;
   switch (backend)
   {
+#ifndef __ANDROID__
     case AudioBackend::Cubeb:
       ret = GetCubebOutputDevices(driver);
       break;
+#endif
 
     default:
       break;
@@ -110,11 +112,19 @@ std::unique_ptr<AudioStream> AudioStream::CreateStream(AudioBackend backend, u32
 {
   switch (backend)
   {
+#ifndef __ANDROID__
     case AudioBackend::Cubeb:
       return CreateCubebAudioStream(sample_rate, parameters, driver_name, device_name, error);
 
     case AudioBackend::SDL:
       return CreateSDLAudioStream(sample_rate, parameters, error);
+#else
+    case AudioBackend::AAudio:
+      return CreateAAudioAudioStream(sample_rate, parameters, error);
+
+    case AudioBackend::OpenSLES:
+      return CreateOpenSLESAudioStream(sample_rate, parameters, error);
+#endif
 
     case AudioBackend::Null:
       return CreateNullStream(sample_rate, parameters.buffer_ms);
@@ -124,8 +134,6 @@ std::unique_ptr<AudioStream> AudioStream::CreateStream(AudioBackend backend, u32
       return nullptr;
   }
 }
-
-#endif
 
 u32 AudioStream::GetAlignedBufferSize(u32 size)
 {
