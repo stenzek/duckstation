@@ -174,21 +174,18 @@ static constexpr size_t TOTAL_SIZE = LUT_OFFSET + LUT_SIZE;
 #define FIXUP_WORD_WRITE_VALUE(size, offset, value)                                                                    \
   ((size == MemoryAccessSize::Word) ? (value) : ((value) << (((offset) & 3u) * 8)))
 
-bool Bus::AllocateMemory()
+bool Bus::AllocateMemory(Error* error)
 {
-  Error error;
   s_shmem_handle =
-    MemMap::CreateSharedMemory(MemMap::GetFileMappingName("duckstation").c_str(), MemoryMap::TOTAL_SIZE, &error);
+    MemMap::CreateSharedMemory(MemMap::GetFileMappingName("duckstation").c_str(), MemoryMap::TOTAL_SIZE, error);
   if (!s_shmem_handle)
   {
 #ifndef __linux__
-    error.AddSuffix("\nYou may need to close some programs to free up additional memory.");
+    Error::AddSuffix(error, "\nYou may need to close some programs to free up additional memory.");
 #else
-    error.AddSuffix(
-      "\nYou may need to close some programs to free up additional memory, or increase the size of /dev/shm.");
+    Error::AddSuffix(
+      error, "\nYou may need to close some programs to free up additional memory, or increase the size of /dev/shm.");
 #endif
-
-    Host::ReportFatalError("Memory Allocation Failed", error.GetDescription());
     return false;
   }
 
@@ -198,7 +195,7 @@ bool Bus::AllocateMemory()
                                                                MemoryMap::RAM_SIZE, PageProtect::ReadWrite));
   if (!g_ram || !g_unprotected_ram)
   {
-    Host::ReportFatalError("Memory Allocation Failed", "Failed to map memory for RAM");
+    Error::SetStringView(error, "Failed to map memory for RAM");
     ReleaseMemory();
     return false;
   }
@@ -209,7 +206,7 @@ bool Bus::AllocateMemory()
                                                     MemoryMap::BIOS_SIZE, PageProtect::ReadWrite));
   if (!g_bios)
   {
-    Host::ReportFatalError("Memory Allocation Failed", "Failed to map memory for BIOS");
+    Error::SetStringView(error, "Failed to map memory for BIOS");
     ReleaseMemory();
     return false;
   }
@@ -220,7 +217,7 @@ bool Bus::AllocateMemory()
                                                                   MemoryMap::LUT_SIZE, PageProtect::ReadWrite));
   if (!g_memory_handlers)
   {
-    Host::ReportFatalError("Memory Allocation Failed", "Failed to map memory for LUTs");
+    Error::SetStringView(error, "Failed to map memory for LUTs");
     ReleaseMemory();
     return false;
   }
@@ -232,8 +229,7 @@ bool Bus::AllocateMemory()
 #ifdef ENABLE_MMAP_FASTMEM
   if (!s_fastmem_arena.Create(FASTMEM_ARENA_SIZE))
   {
-    // TODO: maybe make this non-fatal?
-    Host::ReportFatalError("Memory Allocation Failed", "Failed to create fastmem arena");
+    Error::SetStringView(error, "Failed to create fastmem arena");
     ReleaseMemory();
     return false;
   }

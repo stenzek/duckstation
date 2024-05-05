@@ -658,8 +658,14 @@ int main(int argc, char* argv[])
     return EXIT_FAILURE;
   }
 
-  if (!System::Internal::CPUThreadInitialize())
-    return EXIT_FAILURE;
+  {
+    Error startup_error;
+    if (!System::Internal::CPUThreadInitialize(&startup_error))
+    {
+      Log_ErrorFmt("CPUThreadInitialize() failed: {}", startup_error.GetDescription());
+      return EXIT_FAILURE;
+    }
+  }
 
   RegTestHost::HookSignals();
 

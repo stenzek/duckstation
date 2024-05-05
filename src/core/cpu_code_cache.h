@@ -6,6 +6,8 @@
 #include "bus.h"
 #include "cpu_types.h"
 
+class Error;
+
 namespace CPU::CodeCache {
 
 /// Returns true if any recompiler is in use.
@@ -15,7 +17,7 @@ bool IsUsingAnyRecompiler();
 bool IsUsingFastmem();
 
 /// Allocates resources, call once at startup.
-bool ProcessStartup();
+bool ProcessStartup(Error* error);
 
 /// Frees resources, call once at shutdown.
 void ProcessShutdown();

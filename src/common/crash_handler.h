@@ -8,5 +8,4 @@ namespace CrashHandler {
 bool Install();
 void SetWriteDirectory(std::string_view dump_directory);
 void WriteDumpForCaller();
-void Uninstall();
 } // namespace CrashHandler

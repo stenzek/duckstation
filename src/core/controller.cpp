@@ -172,12 +172,6 @@ std::optional<u32> Controller::GetBindIndex(ControllerType type, std::string_vie
   return std::nullopt;
 }
 
-Controller::VibrationCapabilities Controller::GetControllerVibrationCapabilities(std::string_view type)
-{
-  const ControllerInfo* info = GetControllerInfo(type);
-  return info ? info->vibration_caps : VibrationCapabilities::NoVibration;
-}
-
 std::tuple<u32, u32> Controller::ConvertPadToPortAndSlot(u32 index)
 {
   if (index > 4)                          // [5,6,7]

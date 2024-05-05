@@ -254,7 +254,7 @@ static TinyString GetTimestampStringForFileName()
   return TinyString::from_format("{:%Y-%m-%d-%H-%M-%S}", fmt::localtime(std::time(nullptr)));
 }
 
-bool System::Internal::CPUThreadInitialize()
+bool System::Internal::CPUThreadInitialize(Error* error)
 {
 #ifdef _WIN32
   // On Win32, we have a bunch of things which use COM (e.g. SDL, Cubeb, etc).
@@ -263,15 +263,15 @@ bool System::Internal::CPUThreadInitialize()
   HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
   if (FAILED(hr))
   {
-    Host::ReportErrorAsync("Error", fmt::format("CoInitializeEx() failed: {:08X}", static_cast<unsigned>(hr)));
+    Error::SetHResult(error, "CoInitializeEx() failed: ", hr);
     return false;
   }
 #endif
 
-  if (!Bus::AllocateMemory())
+  if (!Bus::AllocateMemory(error))
     return false;
 
-  if (!CPU::CodeCache::ProcessStartup())
+  if (!CPU::CodeCache::ProcessStartup(error))
     return false;
 
   // This will call back to Host::LoadSettings() -> ReloadSources().

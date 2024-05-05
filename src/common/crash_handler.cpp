@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "crash_handler.h"
+#include "dynamic_library.h"
 #include "file_system.h"
 #include "string_util.h"
 #include <cinttypes>
@@ -74,7 +75,7 @@ static bool WriteMinidump(HMODULE hDbgHelp, HANDLE hFile, HANDLE hProcess, DWORD
 }
 
 static std::wstring s_write_directory;
-static HMODULE s_dbghelp_module = nullptr;
+static DynamicLibrary s_dbghelp_module;
 static PVOID s_veh_handle = nullptr;
 static bool s_in_crash_handler = false;
 
@@ -115,8 +116,8 @@ static void WriteMinidumpAndCallstack(PEXCEPTION_POINTERS exi)
                                MiniDumpWithThreadInfo | MiniDumpWithIndirectlyReferencedMemory);
   const HANDLE hMinidumpFile = CreateFileW(filename, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr);
   if (hMinidumpFile == INVALID_HANDLE_VALUE ||
-      !WriteMinidump(s_dbghelp_module, hMinidumpFile, GetCurrentProcess(), GetCurrentProcessId(), GetCurrentThreadId(),
-                     exi, minidump_type))
+      !WriteMinidump(static_cast<HMODULE>(s_dbghelp_module.GetHandle()), hMinidumpFile, GetCurrentProcess(),
+                     GetCurrentProcessId(), GetCurrentThreadId(), exi, minidump_type))
   {
     static const char error_message[] = "Failed to write minidump file.\n";
     if (hFile != INVALID_HANDLE_VALUE)
@@ -170,7 +171,9 @@ bool CrashHandler::Install()
 {
   // load dbghelp at install/startup, that way we're not LoadLibrary()'ing after a crash
   // .. because that probably wouldn't go down well.
-  s_dbghelp_module = StackWalker::LoadDbgHelpLibrary();
+  HMODULE mod = StackWalker::LoadDbgHelpLibrary();
+  if (mod)
+    s_dbghelp_module.Adopt(mod);
 
   s_veh_handle = AddVectoredExceptionHandler(0, ExceptionHandler);
   return (s_veh_handle != nullptr);
@@ -187,21 +190,6 @@ void CrashHandler::SetWriteDirectory(std::string_view dump_directory)
 void CrashHandler::WriteDumpForCaller()
 {
   WriteMinidumpAndCallstack(nullptr);
-}
-
-void CrashHandler::Uninstall()
-{
-  if (s_veh_handle)
-  {
-    RemoveVectoredExceptionHandler(s_veh_handle);
-    s_veh_handle = nullptr;
-  }
-
-  if (s_dbghelp_module)
-  {
-    FreeLibrary(s_dbghelp_module);
-    s_dbghelp_module = nullptr;
-  }
 }
 
 #elif defined(ENABLE_LIBBACKTRACE)
@@ -244,8 +232,8 @@ const char* CrashHandler::GetSignalName(int signal_no)
 {
   switch (signal_no)
   {
-    // Don't need to list all of them, there's only a couple we register.
-    // clang-format off
+      // Don't need to list all of them, there's only a couple we register.
+      // clang-format off
     case SIGSEGV: return "SIGSEGV";
     case SIGBUS: return "SIGBUS";
     default: return "UNKNOWN";
@@ -392,11 +380,6 @@ void CrashHandler::WriteDumpForCaller()
 {
 }
 
-void CrashHandler::Uninstall()
-{
-  // We can't really unchain the signal handlers... so, YOLO.
-}
-
 #else
 
 bool CrashHandler::Install()
@@ -409,10 +392,6 @@ void CrashHandler::SetWriteDirectory(std::string_view dump_directory)
 }
 
 void CrashHandler::WriteDumpForCaller()
-{
-}
-
-void CrashHandler::Uninstall()
 {
 }
 

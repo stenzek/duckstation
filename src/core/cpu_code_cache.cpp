@@ -72,8 +72,6 @@ static void SetRegAccess(InstructionInfo* inst, Reg reg, bool write);
 static void AddBlockToPageList(Block* block);
 static void RemoveBlockFromPageList(Block* block);
 
-static Common::PageFaultHandler::HandlerResult ExceptionHandler(void* exception_pc, void* fault_address, bool is_write);
-
 static Block* CreateCachedInterpreterBlock(u32 pc);
 [[noreturn]] static void ExecuteCachedInterpreter();
 template<PGXPMode pgxp_mode>
@@ -99,8 +97,7 @@ static void UnlinkBlockExits(Block* block);
 static void ClearASMFunctions();
 static void CompileASMFunctions();
 static bool CompileBlock(Block* block);
-static Common::PageFaultHandler::HandlerResult HandleFastmemException(void* exception_pc, void* fault_address,
-                                                                      bool is_write);
+static PageFaultHandler::HandlerResult HandleFastmemException(void* exception_pc, void* fault_address, bool is_write);
 static void BackpatchLoadStore(void* host_pc, const LoadstoreBackpatchInfo& info);
 static void RemoveBackpatchInfoForRange(const void* host_code, u32 size);
 
@@ -165,7 +162,7 @@ bool CPU::CodeCache::IsUsingFastmem()
   return IsUsingAnyRecompiler() && g_settings.cpu_fastmem_mode != CPUFastmemMode::Disabled;
 }
 
-bool CPU::CodeCache::ProcessStartup()
+bool CPU::CodeCache::ProcessStartup(Error* error)
 {
   AllocateLUTs();
 
@@ -178,24 +175,19 @@ bool CPU::CodeCache::ProcessStartup()
 #endif
   if (!has_buffer && !s_code_buffer.Allocate(RECOMPILER_CODE_CACHE_SIZE, RECOMPILER_FAR_CODE_CACHE_SIZE))
   {
-    Host::ReportFatalError("Error", "Failed to initialize code space");
+    Error::SetStringView(error, "Failed to initialize code space");
     return false;
   }
 #endif
 
-  if (!Common::PageFaultHandler::InstallHandler(ExceptionHandler))
-  {
-    Host::ReportFatalError("Error", "Failed to install page fault handler");
+  if (!PageFaultHandler::Install(error))
     return false;
-  }
 
   return true;
 }
 
 void CPU::CodeCache::ProcessShutdown()
 {
-  Common::PageFaultHandler::RemoveHandler(ExceptionHandler);
-
 #ifdef ENABLE_RECOMPILER_SUPPORT
   s_code_buffer.Destroy();
 #endif
@@ -747,8 +739,8 @@ void CPU::CodeCache::ClearBlocks()
   std::memset(s_lut_block_pointers.get(), 0, sizeof(Block*) * GetLUTSlotCount(false));
 }
 
-Common::PageFaultHandler::HandlerResult CPU::CodeCache::ExceptionHandler(void* exception_pc, void* fault_address,
-                                                                         bool is_write)
+PageFaultHandler::HandlerResult PageFaultHandler::HandlePageFault(void* exception_pc, void* fault_address,
+                                                                  bool is_write)
 {
   if (static_cast<const u8*>(fault_address) >= Bus::g_ram &&
       static_cast<const u8*>(fault_address) < (Bus::g_ram + Bus::RAM_8MB_SIZE))
@@ -759,14 +751,14 @@ Common::PageFaultHandler::HandlerResult CPU::CodeCache::ExceptionHandler(void* e
     const u32 page_index = Bus::GetRAMCodePageIndex(guest_address);
     Log_DevFmt("Page fault on protected RAM @ 0x{:08X} (page #{}), invalidating code cache.", guest_address,
                page_index);
-    InvalidateBlocksWithPageIndex(page_index);
-    return Common::PageFaultHandler::HandlerResult::ContinueExecution;
+    CPU::CodeCache::InvalidateBlocksWithPageIndex(page_index);
+    return PageFaultHandler::HandlerResult::ContinueExecution;
   }
 
 #ifdef ENABLE_RECOMPILER_SUPPORT
-  return HandleFastmemException(exception_pc, fault_address, is_write);
+  return CPU::CodeCache::HandleFastmemException(exception_pc, fault_address, is_write);
 #else
-  return Common::PageFaultHandler::HandlerResult::ExecuteNextHandler;
+  return PageFaultHandler::HandlerResult::ExecuteNextHandler;
 #endif
 }
 
@@ -1593,8 +1585,8 @@ void CPU::CodeCache::AddLoadStoreInfo(void* code_address, u32 code_size, u32 gue
   s_fastmem_backpatch_info.emplace(code_address, info);
 }
 
-Common::PageFaultHandler::HandlerResult CPU::CodeCache::HandleFastmemException(void* exception_pc, void* fault_address,
-                                                                               bool is_write)
+PageFaultHandler::HandlerResult CPU::CodeCache::HandleFastmemException(void* exception_pc, void* fault_address,
+                                                                       bool is_write)
 {
   // TODO: Catch general RAM writes, not just fastmem
   PhysicalMemoryAddress guest_address;
@@ -1606,7 +1598,7 @@ Common::PageFaultHandler::HandlerResult CPU::CodeCache::HandleFastmemException(v
         (static_cast<u8*>(fault_address) - static_cast<u8*>(g_state.fastmem_base)) >=
           static_cast<ptrdiff_t>(Bus::FASTMEM_ARENA_SIZE))
     {
-      return Common::PageFaultHandler::HandlerResult::ExecuteNextHandler;
+      return PageFaultHandler::HandlerResult::ExecuteNextHandler;
     }
 
     guest_address = static_cast<PhysicalMemoryAddress>(
@@ -1618,7 +1610,7 @@ Common::PageFaultHandler::HandlerResult CPU::CodeCache::HandleFastmemException(v
     {
       Log_DevFmt("Ignoring fault due to RAM write @ 0x{:08X}", guest_address);
       InvalidateBlocksWithPageIndex(Bus::GetRAMCodePageIndex(guest_address));
-      return Common::PageFaultHandler::HandlerResult::ContinueExecution;
+      return PageFaultHandler::HandlerResult::ContinueExecution;
     }
   }
   else
@@ -1635,7 +1627,7 @@ Common::PageFaultHandler::HandlerResult CPU::CodeCache::HandleFastmemException(v
   if (iter == s_fastmem_backpatch_info.end())
   {
     Log_ErrorFmt("No backpatch info found for {}", exception_pc);
-    return Common::PageFaultHandler::HandlerResult::ExecuteNextHandler;
+    return PageFaultHandler::HandlerResult::ExecuteNextHandler;
   }
 
   LoadstoreBackpatchInfo& info = iter->second;
@@ -1670,7 +1662,7 @@ Common::PageFaultHandler::HandlerResult CPU::CodeCache::HandleFastmemException(v
   // and store the pc in the faulting list, so that we don't emit another fastmem loadstore
   s_fastmem_faulting_pcs.insert(info.guest_pc);
   s_fastmem_backpatch_info.erase(iter);
-  return Common::PageFaultHandler::HandlerResult::ContinueExecution;
+  return PageFaultHandler::HandlerResult::ContinueExecution;
 }
 
 bool CPU::CodeCache::HasPreviouslyFaultedOnPC(u32 guest_pc)

@@ -104,9 +104,6 @@ public:
   /// Gets the integer code for an axis in the specified controller type.
   static std::optional<u32> GetBindIndex(ControllerType type, std::string_view bind_name);
 
-  /// Returns the vibration configuration for the specified controller type.
-  static VibrationCapabilities GetControllerVibrationCapabilities(std::string_view type);
-
   /// Returns general information for the specified controller type.
   static const ControllerInfo* GetControllerInfo(ControllerType type);
   static const ControllerInfo* GetControllerInfo(std::string_view name);

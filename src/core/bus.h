@@ -14,6 +14,8 @@
 #include <string_view>
 #include <vector>
 
+class Error;
+
 class StateWrapper;
 
 namespace Bus {
@@ -109,7 +111,7 @@ enum : u32
 static constexpr size_t FASTMEM_ARENA_SIZE = UINT64_C(0x100000000);
 #endif
 
-bool AllocateMemory();
+bool AllocateMemory(Error* error);
 void ReleaseMemory();
 
 bool Initialize();

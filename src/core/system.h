@@ -490,7 +490,7 @@ void UpdateDiscordPresence(bool update_session_time);
 
 namespace Internal {
 /// Called on process startup.
-bool CPUThreadInitialize();
+bool CPUThreadInitialize(Error* error);
 
 /// Called on process shutdown.
 void CPUThreadShutdown();

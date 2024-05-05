@@ -1639,10 +1639,14 @@ void EmuThread::run()
   m_started_semaphore.release();
 
   // input source setup must happen on emu thread
-  if (!System::Internal::CPUThreadInitialize())
   {
-    moveToThread(m_ui_thread);
-    return;
+    Error startup_error;
+    if (!System::Internal::CPUThreadInitialize(&startup_error))
+    {
+      Host::ReportFatalError("Fatal Startup Error", startup_error.GetDescription());
+      moveToThread(m_ui_thread);
+      return;
+    }
   }
 
   // bind buttons/axises
