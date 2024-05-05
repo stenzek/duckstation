@@ -259,6 +259,7 @@ void AudioSettingsWidget::updateLatencyLabel()
 
   //: Preserve the %1 variable, adapt the latter ms (and/or any possible spaces in between) to your language's ruleset.
   m_ui.outputLatencyLabel->setText(minimal_output ? tr("N/A") : tr("%1 ms").arg(config_output_latency_ms));
+  m_ui.bufferMSLabel->setText(tr("%1 ms").arg(config_buffer_ms));
 
   const u32 output_latency_ms = minimal_output ?
                                   AudioStream::GetMSForBufferSize(SPU::SAMPLE_RATE, m_output_device_latency) :
