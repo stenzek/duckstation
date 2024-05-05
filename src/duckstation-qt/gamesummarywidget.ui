@@ -219,7 +219,7 @@
      <item>
       <widget class="QPushButton" name="computeHashes">
        <property name="text">
-        <string>Compute Hashes...</string>
+        <string>Verify</string>
        </property>
       </widget>
      </item>
