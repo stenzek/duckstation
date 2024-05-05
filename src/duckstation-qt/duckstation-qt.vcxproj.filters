@@ -22,7 +22,6 @@
     <ClCompile Include="$(IntDir)qrc_resources.cpp" />
     <ClCompile Include="inputbindingdialog.cpp" />
     <ClCompile Include="gamelistmodel.cpp" />
-    <ClCompile Include="gamelistsearchdirectoriesmodel.cpp" />
     <ClCompile Include="autoupdaterdialog.cpp" />
     <ClCompile Include="biossettingswidget.cpp" />
     <ClCompile Include="memorycardeditorwindow.cpp" />
@@ -116,9 +115,6 @@
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)moc_gamelistrefreshthread.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)moc_gamelistsearchdirectoriesmodel.cpp">
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)moc_gamelistsettingswidget.cpp">
@@ -225,7 +221,6 @@
     <QtMoc Include="memorycardsettingswidget.h" />
     <QtMoc Include="inputbindingdialog.h" />
     <QtMoc Include="gamelistmodel.h" />
-    <QtMoc Include="gamelistsearchdirectoriesmodel.h" />
     <QtMoc Include="autoupdaterdialog.h" />
     <QtMoc Include="biossettingswidget.h" />
     <QtMoc Include="memorycardeditorwindow.h" />

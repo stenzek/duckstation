@@ -87,8 +87,6 @@ set(SRCS
   gamelistmodel.h
   gamelistrefreshthread.cpp
   gamelistrefreshthread.h
-  gamelistsearchdirectoriesmodel.cpp
-  gamelistsearchdirectoriesmodel.h
   gamelistsettingswidget.cpp
   gamelistsettingswidget.h
   gamelistsettingswidget.ui

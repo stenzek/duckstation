@@ -1,14 +1,13 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
-#include <string>
 #include <QtWidgets/QWidget>
+#include <string>
 
 #include "ui_gamelistsettingswidget.h"
 
 class SettingsWindow;
-class GameListSearchDirectoriesModel;
 
 class GameListSettingsWidget : public QWidget
 {
@@ -25,7 +24,6 @@ public Q_SLOTS:
   void addSearchDirectory(QWidget* parent_widget);
 
 private Q_SLOTS:
-  void onDirectoryListItemClicked(const QModelIndex& index);
   void onDirectoryListContextMenuRequested(const QPoint& point);
   void onAddSearchDirectoryButtonClicked();
   void onRemoveSearchDirectoryButtonClicked();
@@ -38,10 +36,13 @@ private Q_SLOTS:
   void onRescanAllGamesClicked();
 
 protected:
-  void resizeEvent(QResizeEvent* event);
+  bool event(QEvent* event) override;
 
 private:
-  Ui::GameListSettingsWidget m_ui;
+  void addPathToTable(const std::string& path, bool recursive);
+  void refreshDirectoryList();
+  void addSearchDirectory(const QString& path, bool recursive);
+  void removeSearchDirectory(const QString& path);
 
-  GameListSearchDirectoriesModel* m_search_directories_model = nullptr;
+  Ui::GameListSettingsWidget m_ui;
 };

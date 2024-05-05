@@ -59,6 +59,9 @@
        <property name="icon">
         <iconset theme="folder-add-line"/>
        </property>
+       <property name="toolButtonStyle">
+        <enum>Qt::ToolButtonTextBesideIcon</enum>
+       </property>
       </widget>
      </item>
      <item>
@@ -75,12 +78,26 @@
        <property name="icon">
         <iconset theme="folder-reduce-line"/>
        </property>
+       <property name="toolButtonStyle">
+        <enum>Qt::ToolButtonTextBesideIcon</enum>
+       </property>
       </widget>
      </item>
     </layout>
    </item>
    <item>
-    <widget class="QTableView" name="searchDirectoryList"/>
+    <widget class="QTableWidget" name="searchDirectoryList">
+     <column>
+      <property name="text">
+       <string>Search Directory</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Scan Recursively</string>
+      </property>
+     </column>
+    </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
