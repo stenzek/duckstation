@@ -76,7 +76,6 @@ static bool WriteMinidump(HMODULE hDbgHelp, HANDLE hFile, HANDLE hProcess, DWORD
 
 static std::wstring s_write_directory;
 static DynamicLibrary s_dbghelp_module;
-static PVOID s_veh_handle = nullptr;
 static bool s_in_crash_handler = false;
 
 static void GenerateCrashFilename(wchar_t* buf, size_t len, const wchar_t* prefix, const wchar_t* extension)
@@ -138,32 +137,13 @@ static void WriteMinidumpAndCallstack(PEXCEPTION_POINTERS exi)
 
 static LONG NTAPI ExceptionHandler(PEXCEPTION_POINTERS exi)
 {
-  if (s_in_crash_handler)
-    return EXCEPTION_CONTINUE_SEARCH;
+  // if the debugger is attached, or we're recursively crashing, let it take care of it.
+  if (!s_in_crash_handler)
+    WriteMinidumpAndCallstack(exi);
 
-  switch (exi->ExceptionRecord->ExceptionCode)
-  {
-    case EXCEPTION_ACCESS_VIOLATION:
-    case EXCEPTION_BREAKPOINT:
-    case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
-    case EXCEPTION_INT_DIVIDE_BY_ZERO:
-    case EXCEPTION_INT_OVERFLOW:
-    case EXCEPTION_PRIV_INSTRUCTION:
-    case EXCEPTION_ILLEGAL_INSTRUCTION:
-    case EXCEPTION_NONCONTINUABLE_EXCEPTION:
-    case EXCEPTION_STACK_OVERFLOW:
-    case EXCEPTION_GUARD_PAGE:
-      break;
-
-    default:
-      return EXCEPTION_CONTINUE_SEARCH;
-  }
-
-  // if the debugger is attached, let it take care of it.
-  if (IsDebuggerPresent())
-    return EXCEPTION_CONTINUE_SEARCH;
-
-  WriteMinidumpAndCallstack(exi);
+  // returning EXCEPTION_CONTINUE_SEARCH makes sense, except for the fact that it seems to leave zombie processes
+  // around. instead, force ourselves to terminate.
+  TerminateProcess(GetCurrentProcess(), 0xFEFEFEFEu);
   return EXCEPTION_CONTINUE_SEARCH;
 }
 
@@ -175,15 +155,12 @@ bool CrashHandler::Install()
   if (mod)
     s_dbghelp_module.Adopt(mod);
 
-  s_veh_handle = AddVectoredExceptionHandler(0, ExceptionHandler);
-  return (s_veh_handle != nullptr);
+  SetUnhandledExceptionFilter(ExceptionHandler);
+  return true;
 }
 
 void CrashHandler::SetWriteDirectory(std::string_view dump_directory)
 {
-  if (!s_veh_handle)
-    return;
-
   s_write_directory = StringUtil::UTF8StringToWideString(dump_directory);
 }
 
