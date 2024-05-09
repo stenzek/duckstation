@@ -315,17 +315,24 @@ jobs:
         arch: x86_64
         build-bundle: true
         verbose: true
-        #mirror-screenshots-url: https://dl.flathub.org/media
-        #branch: ${{ inputs.branch }}
-        branch: master
+        mirror-screenshots-url: https://dl.flathub.org/media
+        branch: stable
         cache: true
         restore-cache: true
         cache-key: flatpak-x64-${{ hashFiles('scripts/flatpak/**/*.json') }}
 
-    # fails due to screenshots..
-    #- name: Validate build
-    #  run: |
-    #    flatpak-builder-lint repo repo
+    - name: Push to Flathub stable
+      if: github.ref == 'refs/heads/dev'
+      uses: flathub-infra/flatpak-github-actions/flat-manager@23796715b3dfa4c86ddf50cf29c3cc8b3c82dca8
+      with:
+        flat-manager-url: https://hub.flathub.org/
+        repository: stable
+        token: ${{ secrets.FLATHUB_STABLE_TOKEN }}
+        build-log-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+    - name: Validate build
+      run: |
+        flatpak-builder-lint repo repo
 
     - name: Upload Flatpak
       uses: actions/upload-artifact@v1

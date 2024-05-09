@@ -20,12 +20,17 @@
   <screenshots>
     <screenshot type="default">
       <image>https://raw.githubusercontent.com/stenzek/duckstation/md-images/main-qt.png</image>
+      <caption>Desktop Interface</caption>
     </screenshot>
     <screenshot>
       <image>https://raw.githubusercontent.com/stenzek/duckstation/md-images/bigduck.png</image>
+      <caption>Big Picture Mode Interface</caption>
     </screenshot>
   </screenshots>
   <releases>
     <release version="@GIT_VERSION@" date="@GIT_DATE@" />
   </releases>
+  <custom>
+    <value key="flathub::manifest">https://raw.githubusercontent.com/stenzek/duckstation/@GIT_HASH@/scripts/flatpak/org.duckstation.DuckStation.json</value>
+  </custom>
 </component>
