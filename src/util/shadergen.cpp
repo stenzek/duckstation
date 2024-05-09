@@ -609,7 +609,7 @@ void ShaderGen::DeclareFragmentEntryPoint(
         }
         else
         {
-          ss << "layout(set = 2, binding = 0) uniform " << (msaa ? "texture2D" : "texture2DMS") << "u_input_rt;\n";
+          ss << "layout(set = 2, binding = 0) uniform " << (msaa ? "texture2DMS" : "texture2D") << " u_input_rt;\n";
           ss << "#define LAST_FRAG_COLOR texelFetch(u_input_rt, int2(gl_FragCoord.xy), " << (msaa ? "gl_SampleID" : "0")
              << ")\n";
         }
