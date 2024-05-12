@@ -1982,7 +1982,7 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, const char* title
   if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height, font, summary_font))
     ImGui::OpenPopup(title);
 
-  ImGui::SetNextWindowSize(LayoutScale(500.0f, 190.0f));
+  ImGui::SetNextWindowSize(LayoutScale(500.0f, 192.0f));
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
   ImGui::PushFont(g_large_font);
@@ -2040,7 +2040,7 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, const char* tit
   if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height, font, summary_font))
     ImGui::OpenPopup(title);
 
-  ImGui::SetNextWindowSize(LayoutScale(500.0f, 190.0f));
+  ImGui::SetNextWindowSize(LayoutScale(500.0f, 192.0f));
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
   ImGui::PushFont(g_large_font);
@@ -2106,7 +2106,7 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* t
     manual_input = false;
   }
 
-  ImGui::SetNextWindowSize(LayoutScale(500.0f, 190.0f));
+  ImGui::SetNextWindowSize(LayoutScale(500.0f, 192.0f));
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
   ImGui::PushFont(g_large_font);
@@ -2358,7 +2358,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
     manual_input = false;
   }
 
-  ImGui::SetNextWindowSize(LayoutScale(500.0f, 190.0f));
+  ImGui::SetNextWindowSize(LayoutScale(500.0f, 192.0f));
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
   ImGui::PushFont(g_large_font);
@@ -2826,8 +2826,9 @@ void FullscreenUI::DoClearGameSettings()
 void FullscreenUI::DrawSettingsWindow()
 {
   ImGuiIO& io = ImGui::GetIO();
-  ImVec2 heading_size = ImVec2(
-    io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + LAYOUT_MENU_BUTTON_Y_PADDING * 2.0f + 2.0f));
+  const ImVec2 heading_size =
+    ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
+                               (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
 
   const float bg_alpha = System::IsValid() ? (s_settings_page == SettingsPage::PostProcessing ? 0.50f : 0.90f) : 1.0f;
 
@@ -3327,7 +3328,7 @@ void FullscreenUI::DrawConsoleSettingsPage()
     u32 oc_numerator = GetEffectiveUIntSetting(bsi, "CPU", "OverclockNumerator", 1);
     u32 oc_denominator = GetEffectiveUIntSetting(bsi, "CPU", "OverclockDenominator", 1);
     s32 oc_percent = static_cast<s32>(Settings::CPUOverclockFractionToPercent(oc_numerator, oc_denominator));
-    if (RangeButton(FSUI_CSTR("Overclocking Percentage"),
+    if (RangeButton(FSUI_ICONSTR(ICON_FA_TACHOMETER_ALT, "Overclocking Percentage"),
                     FSUI_CSTR("Selects the percentage of the normal clock speed the emulated hardware will run at."),
                     &oc_percent, 10, 1000, 10, "%d%%"))
     {

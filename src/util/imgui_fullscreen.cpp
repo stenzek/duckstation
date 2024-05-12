@@ -1480,7 +1480,7 @@ bool ImGuiFullscreen::ThreeWayToggleButton(const char* title, const char* summar
 bool ImGuiFullscreen::RangeButton(const char* title, const char* summary, s32* value, s32 min, s32 max, s32 increment,
                                   const char* format, bool enabled /*= true*/,
                                   float height /*= LAYOUT_MENU_BUTTON_HEIGHT*/, ImFont* font /*= g_large_font*/,
-                                  ImFont* summary_font /*= g_medium_font*/)
+                                  ImFont* summary_font /*= g_medium_font*/, const char* ok_text /*= "OK"*/)
 {
   ImRect bb;
   bool visible, hovered;
@@ -1520,7 +1520,7 @@ bool ImGuiFullscreen::RangeButton(const char* title, const char* summary, s32* v
 
   bool changed = false;
 
-  ImGui::SetNextWindowSize(LayoutScale(500.0f, 180.0f));
+  ImGui::SetNextWindowSize(LayoutScale(500.0f, 192.0f));
   ImGui::SetNextWindowPos((ImGui::GetIO().DisplaySize - LayoutScale(0.0f, LAYOUT_FOOTER_HEIGHT)) * 0.5f,
                           ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
@@ -1528,23 +1528,28 @@ bool ImGuiFullscreen::RangeButton(const char* title, const char* summary, s32* v
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
                                                               ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 
   if (ImGui::BeginPopupModal(title, nullptr,
                              ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
   {
-    ImGui::SetNextItemWidth(LayoutScale(450.0f));
+    BeginMenuButtons();
+
+    const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
+    ImGui::SetNextItemWidth(end);
+
     changed = ImGui::SliderInt("##value", value, min, max, format, ImGuiSliderFlags_NoInput);
 
-    BeginMenuButtons();
-    if (MenuButton("OK", nullptr, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+    if (MenuButtonWithoutSummary(ok_text, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font, ImVec2(0.5f, 0.0f)))
       ImGui::CloseCurrentPopup();
     EndMenuButtons();
 
     ImGui::EndPopup();
   }
 
-  ImGui::PopStyleVar(3);
+  ImGui::PopStyleVar(4);
   ImGui::PopFont();
 
   return changed;
@@ -1553,7 +1558,7 @@ bool ImGuiFullscreen::RangeButton(const char* title, const char* summary, s32* v
 bool ImGuiFullscreen::RangeButton(const char* title, const char* summary, float* value, float min, float max,
                                   float increment, const char* format, bool enabled /*= true*/,
                                   float height /*= LAYOUT_MENU_BUTTON_HEIGHT*/, ImFont* font /*= g_large_font*/,
-                                  ImFont* summary_font /*= g_medium_font*/)
+                                  ImFont* summary_font /*= g_medium_font*/, const char* ok_text /*= "OK"*/)
 {
   ImRect bb;
   bool visible, hovered;
@@ -1593,7 +1598,7 @@ bool ImGuiFullscreen::RangeButton(const char* title, const char* summary, float*
 
   bool changed = false;
 
-  ImGui::SetNextWindowSize(LayoutScale(500.0f, 180.0f));
+  ImGui::SetNextWindowSize(LayoutScale(500.0f, 192.0f));
   ImGui::SetNextWindowPos((ImGui::GetIO().DisplaySize - LayoutScale(0.0f, LAYOUT_FOOTER_HEIGHT)) * 0.5f,
                           ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
@@ -1601,23 +1606,27 @@ bool ImGuiFullscreen::RangeButton(const char* title, const char* summary, float*
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
                                                               ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 
   if (ImGui::BeginPopupModal(title, nullptr,
                              ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
   {
-    ImGui::SetNextItemWidth(LayoutScale(450.0f));
+    BeginMenuButtons();
+
+    const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
+    ImGui::SetNextItemWidth(end);
+
     changed = ImGui::SliderFloat("##value", value, min, max, format, ImGuiSliderFlags_NoInput);
 
-    BeginMenuButtons();
-    if (MenuButton("OK", nullptr, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+    if (MenuButtonWithoutSummary(ok_text, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font, ImVec2(0.5f, 0.0f)))
       ImGui::CloseCurrentPopup();
     EndMenuButtons();
 
     ImGui::EndPopup();
   }
 
-  ImGui::PopStyleVar(3);
+  ImGui::PopStyleVar(4);
   ImGui::PopFont();
 
   return changed;
@@ -1719,8 +1728,8 @@ void ImGuiFullscreen::BeginNavBar(float x_padding /*= LAYOUT_MENU_BUTTON_X_PADDI
 
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(x_padding, y_padding));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, LayoutScale(1.0f, 1.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(1.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, LayoutScale(1.0f, 0.0f));
   PushPrimaryColor();
 }
 
@@ -2277,9 +2286,9 @@ void ImGuiFullscreen::DrawChoiceDialog()
   const float title_height =
     g_large_font->FontSize + ImGui::GetStyle().FramePadding.y * 2.0f + ImGui::GetStyle().WindowPadding.y * 2.0f;
   const float height =
-    std::min(LayoutScale(480.0f),
-             title_height + LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + (LAYOUT_MENU_BUTTON_Y_PADDING * 2.0f)) *
-                              static_cast<float>(s_choice_dialog_options.size()));
+    std::min(LayoutScale(480.0f), title_height + (LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
+                                                  LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) *
+                                                   static_cast<float>(s_choice_dialog_options.size()));
   ImGui::SetNextWindowSize(ImVec2(width, height));
   ImGui::SetNextWindowPos((ImGui::GetIO().DisplaySize - LayoutScale(0.0f, LAYOUT_FOOTER_HEIGHT)) * 0.5f,
                           ImGuiCond_Always, ImVec2(0.5f, 0.5f));

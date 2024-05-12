@@ -212,10 +212,10 @@ bool ThreeWayToggleButton(const char* title, const char* summary, std::optional<
                           ImFont* summary_font = g_medium_font);
 bool RangeButton(const char* title, const char* summary, s32* value, s32 min, s32 max, s32 increment,
                  const char* format = "%d", bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT,
-                 ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+                 ImFont* font = g_large_font, ImFont* summary_font = g_medium_font, const char* ok_text = "OK");
 bool RangeButton(const char* title, const char* summary, float* value, float min, float max, float increment,
                  const char* format = "%f", bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT,
-                 ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+                 ImFont* font = g_large_font, ImFont* summary_font = g_medium_font, const char* ok_text = "OK");
 bool EnumChoiceButtonImpl(const char* title, const char* summary, s32* value_pointer,
                           const char* (*to_display_name_function)(s32 value, void* opaque), void* opaque, u32 count,
                           bool enabled, float height, ImFont* font, ImFont* summary_font);
