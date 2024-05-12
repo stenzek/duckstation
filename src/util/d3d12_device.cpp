@@ -287,21 +287,42 @@ void D3D12Device::DestroyDevice()
 
 bool D3D12Device::ReadPipelineCache(const std::string& filename)
 {
-  std::optional<std::vector<u8>> data;
+  std::optional<std::vector<u8>> data = FileSystem::ReadBinaryFile(filename.c_str());
 
-  auto fp = FileSystem::OpenManagedCFile(filename.c_str(), "rb");
-  if (fp)
-    data = FileSystem::ReadBinaryFile(fp.get());
-
-  const HRESULT hr =
+  HRESULT hr =
     m_device->CreatePipelineLibrary(data.has_value() ? data->data() : nullptr, data.has_value() ? data->size() : 0,
                                     IID_PPV_ARGS(m_pipeline_library.ReleaseAndGetAddressOf()));
-  if (FAILED(hr))
-    Log_WarningPrintf("CreatePipelineLibrary() failed with HRESULT %08X, pipeline caching will not be available.", hr);
-  else if (data.has_value())
-    s_pipeline_cache_data = std::move(data.value());
+  if (SUCCEEDED(hr))
+  {
+    if (data.has_value())
+      s_pipeline_cache_data = std::move(data.value());
 
-  return SUCCEEDED(hr);
+    return true;
+  }
+
+  // Try without the cache data.
+  if (data.has_value())
+  {
+    Log_WarningFmt("CreatePipelineLibrary() failed, trying without cache data. Error: {}",
+                   Error::CreateHResult(hr).GetDescription());
+
+    hr = m_device->CreatePipelineLibrary(nullptr, 0, IID_PPV_ARGS(m_pipeline_library.ReleaseAndGetAddressOf()));
+    if (SUCCEEDED(hr))
+    {
+      // Delete cache file, it's no longer relevant.
+      Log_InfoFmt("Deleting pipeline cache file {}", filename);
+      FileSystem::DeleteFile(filename.c_str());
+    }
+  }
+
+  if (FAILED(hr))
+  {
+    Log_WarningFmt("CreatePipelineLibrary() failed, pipeline caching will not be available. Error: {}",
+                   Error::CreateHResult(hr).GetDescription());
+    return false;
+  }
+
+  return true;
 }
 
 bool D3D12Device::GetPipelineCacheData(DynamicHeapArray<u8>* data)
