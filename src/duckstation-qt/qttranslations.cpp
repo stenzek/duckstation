@@ -173,6 +173,11 @@ s32 Host::Internal::GetTranslatedStringImpl(std::string_view context, std::strin
   return static_cast<s32>(translated_size);
 }
 
+std::string Host::TranslatePluralToString(const char* context, const char* msg, const char* disambiguation, int count)
+{
+  return qApp->translate(context, msg, disambiguation, count).toStdString();
+}
+
 std::span<const std::pair<const char*, const char*>> Host::GetAvailableLanguageList()
 {
   static constexpr const std::pair<const char*, const char*> languages[] = {{"English", "en"},

@@ -178,6 +178,23 @@ s32 Host::Internal::GetTranslatedStringImpl(std::string_view context, std::strin
   return static_cast<s32>(msg.size());
 }
 
+std::string Host::TranslatePluralToString(const char* context, const char* msg, const char* disambiguation, int count)
+{
+  TinyString count_str = TinyString::from_format("{}", count);
+
+  std::string ret(msg);
+  for (;;)
+  {
+    std::string::size_type pos = ret.find("%n");
+    if (pos == std::string::npos)
+      break;
+
+    ret.replace(pos, pos + 2, count_str.view());
+  }
+
+  return ret;
+}
+
 void Host::LoadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock)
 {
 }

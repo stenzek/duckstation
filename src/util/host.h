@@ -59,6 +59,9 @@ std::string_view TranslateToStringView(std::string_view context, std::string_vie
 /// Returns a localized version of the specified string within the specified context.
 std::string TranslateToString(std::string_view context, std::string_view msg);
 
+/// Returns a localized version of the specified string within the specified context, adjusting for plurals using %n.
+std::string TranslatePluralToString(const char* context, const char* msg, const char* disambiguation, int count);
+
 /// Clears the translation cache. All previously used strings should be considered invalid.
 void ClearTranslationCache();
 
@@ -73,6 +76,10 @@ s32 GetTranslatedStringImpl(std::string_view context, std::string_view msg, char
 #define TRANSLATE_SV(context, msg) Host::TranslateToStringView(context, msg)
 #define TRANSLATE_STR(context, msg) Host::TranslateToString(context, msg)
 #define TRANSLATE_FS(context, msg) fmt::runtime(Host::TranslateToStringView(context, msg))
+#define TRANSLATE_PLURAL_STR(context, msg, disambiguation, count)                                                      \
+  Host::TranslatePluralToString(context, msg, disambiguation, count)
+#define TRANSLATE_PLURAL_FS(context, msg, disambiguation, count)                                                       \
+  fmt::runtime(Host::TranslatePluralToString(context, msg, disambiguation, count))
 
 // Does not translate the string at runtime, but allows the UI to in its own way.
 #define TRANSLATE_NOOP(context, msg) msg

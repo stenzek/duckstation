@@ -2476,7 +2476,7 @@ bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string filename, 
     if (!osd_key.empty())
     {
       Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_CAMERA,
-                              fmt::format(result ? TRANSLATE_FS("GS", "Saved screenshot to '{}'.") :
+                              fmt::format(result ? TRANSLATE_FS("GPU", "Saved screenshot to '{}'.") :
                                                    TRANSLATE_FS("GPU", "Failed to save screenshot to '{}'."),
                                           Path::GetFileName(filename),
                                           result ? Host::OSD_INFO_DURATION : Host::OSD_ERROR_DURATION));

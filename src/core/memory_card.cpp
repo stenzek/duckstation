@@ -336,7 +336,7 @@ bool MemoryCard::SaveIfChanged(bool display_osd_message)
       Host::AddIconOSDMessage(
         std::move(osd_key), ICON_FA_SD_CARD,
         fmt::format(TRANSLATE_FS("OSDMessage", "Failed to save memory card to '{}'."), Path::GetFileName(display_name)),
-        20.0f);
+        Host::OSD_ERROR_DURATION);
     }
 
     return false;
@@ -346,7 +346,8 @@ bool MemoryCard::SaveIfChanged(bool display_osd_message)
   {
     Host::AddIconOSDMessage(
       std::move(osd_key), ICON_FA_SD_CARD,
-      fmt::format(TRANSLATE_FS("OSDMessage", "Saved memory card to '{}'."), Path::GetFileName(display_name)), 5.0f);
+      fmt::format(TRANSLATE_FS("OSDMessage", "Saved memory card to '{}'."), Path::GetFileName(display_name)),
+      Host::OSD_QUICK_DURATION);
   }
 
   return true;

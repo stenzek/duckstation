@@ -146,11 +146,10 @@ static bool CanPause()
   const float delta = static_cast<float>(Common::Timer::ConvertValueToSeconds(time - s_last_pause_time));
   if (delta < PAUSE_INTERVAL)
   {
-    Host::AddIconOSDMessage(
-      "PauseCooldown", ICON_FA_CLOCK,
-      fmt::format(TRANSLATE_FS("Hotkeys", "You cannot pause until another {:.1f} seconds have passed."),
-                  PAUSE_INTERVAL - delta),
-      Host::OSD_QUICK_DURATION);
+    Host::AddIconOSDMessage("PauseCooldown", ICON_FA_CLOCK,
+                            TRANSLATE_PLURAL_STR("Hotkeys", "You cannot pause until another %n second(s) have passed.",
+                                                 "", static_cast<int>(std::ceil(PAUSE_INTERVAL - delta))),
+                            Host::OSD_QUICK_DURATION);
     return false;
   }
 
@@ -543,36 +542,35 @@ DEFINE_HOTKEY("AudioVolumeDown", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_N
 
 // NOTE: All save/load state hotkeys are deferred, because it can trigger setting reapply, which reloads bindings.
 DEFINE_HOTKEY("LoadSelectedSaveState", TRANSLATE_NOOP("Hotkeys", "Save States"),
-              TRANSLATE_NOOP("Hotkeys", "Load From Selected Slot"),
-              [](s32 pressed) {
+              TRANSLATE_NOOP("Hotkeys", "Load From Selected Slot"), [](s32 pressed) {
                 if (!pressed)
                   Host::RunOnCPUThread(SaveStateSelectorUI::LoadCurrentSlot);
               })
-DEFINE_HOTKEY(
-  "SaveSelectedSaveState", TRANSLATE_NOOP("Hotkeys", "Save States"), TRANSLATE_NOOP("Hotkeys", "Save To Selected Slot"),
-  [](s32 pressed) {
-    if (!pressed)
-      Host::RunOnCPUThread(SaveStateSelectorUI::SaveCurrentSlot);
-  }) DEFINE_HOTKEY("SelectPreviousSaveStateSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
-                   TRANSLATE_NOOP("Hotkeys", "Select Previous Save Slot"),
-                   [](s32 pressed) {
-                     if (!pressed)
-                       Host::RunOnCPUThread([]() { SaveStateSelectorUI::SelectPreviousSlot(true); });
-                   }) DEFINE_HOTKEY("SelectNextSaveStateSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
-                                    TRANSLATE_NOOP("Hotkeys", "Select Next Save Slot"),
-                                    [](s32 pressed) {
-                                      if (!pressed)
-                                        Host::RunOnCPUThread([]() { SaveStateSelectorUI::SelectNextSlot(true); });
-                                    }) DEFINE_HOTKEY("SaveStateAndSelectNextSlot",
-                                                     TRANSLATE_NOOP("Hotkeys", "Save States"),
-                                                     TRANSLATE_NOOP("Hotkeys", "Save State and Select Next Slot"),
-                                                     [](s32 pressed) {
-                                                       if (!pressed && System::IsValid())
-                                                       {
-                                                         SaveStateSelectorUI::SaveCurrentSlot();
-                                                         SaveStateSelectorUI::SelectNextSlot(false);
-                                                       }
-                                                     })
+DEFINE_HOTKEY("SaveSelectedSaveState", TRANSLATE_NOOP("Hotkeys", "Save States"),
+              TRANSLATE_NOOP("Hotkeys", "Save To Selected Slot"),
+              [](s32 pressed) {
+                if (!pressed)
+                  Host::RunOnCPUThread(SaveStateSelectorUI::SaveCurrentSlot);
+              })
+DEFINE_HOTKEY("SelectPreviousSaveStateSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
+              TRANSLATE_NOOP("Hotkeys", "Select Previous Save Slot"),
+              [](s32 pressed) {
+                if (!pressed)
+                  Host::RunOnCPUThread([]() { SaveStateSelectorUI::SelectPreviousSlot(true); });
+              }) DEFINE_HOTKEY("SelectNextSaveStateSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
+                               TRANSLATE_NOOP("Hotkeys", "Select Next Save Slot"),
+                               [](s32 pressed) {
+                                 if (!pressed)
+                                   Host::RunOnCPUThread([]() { SaveStateSelectorUI::SelectNextSlot(true); });
+                               }) DEFINE_HOTKEY("SaveStateAndSelectNextSlot", TRANSLATE_NOOP("Hotkeys", "Save States"),
+                                                TRANSLATE_NOOP("Hotkeys", "Save State and Select Next Slot"),
+                                                [](s32 pressed) {
+                                                  if (!pressed && System::IsValid())
+                                                  {
+                                                    SaveStateSelectorUI::SaveCurrentSlot();
+                                                    SaveStateSelectorUI::SelectNextSlot(false);
+                                                  }
+                                                })
 
   DEFINE_HOTKEY("UndoLoadState", TRANSLATE_NOOP("Hotkeys", "Save States"), TRANSLATE_NOOP("Hotkeys", "Undo Load State"),
                 [](s32 pressed) {
@@ -593,71 +591,79 @@ DEFINE_HOTKEY(
                     Host::RunOnCPUThread([]() { HotkeySaveStateSlot(global, slot); });                                 \
                 })
 
-    MAKE_LOAD_STATE_HOTKEY(false, 1, TRANSLATE_NOOP("Hotkeys", "Load Game State 1")) MAKE_SAVE_STATE_HOTKEY(
-      false, 1, TRANSLATE_NOOP("Hotkeys", "Save Game State 1"))
-      MAKE_LOAD_STATE_HOTKEY(false, 2, TRANSLATE_NOOP("Hotkeys", "Load Game State 2")) MAKE_SAVE_STATE_HOTKEY(
-        false, 2, TRANSLATE_NOOP("Hotkeys", "Save Game State 2"))
-        MAKE_LOAD_STATE_HOTKEY(false, 3, TRANSLATE_NOOP("Hotkeys", "Load Game State 3")) MAKE_SAVE_STATE_HOTKEY(
-          false, 3, TRANSLATE_NOOP("Hotkeys", "Save Game State 3"))
-          MAKE_LOAD_STATE_HOTKEY(false, 4, TRANSLATE_NOOP("Hotkeys", "Load Game State 4")) MAKE_SAVE_STATE_HOTKEY(
-            false, 4,
-            TRANSLATE_NOOP("Hotkeys", "Save Game State 4")) MAKE_LOAD_STATE_HOTKEY(false, 5,
-                                                                                   TRANSLATE_NOOP("Hotkeys",
-                                                                                                  "Load Game State 5"))
-            MAKE_SAVE_STATE_HOTKEY(false, 5, TRANSLATE_NOOP("Hotkeys", "Save Game State 5")) MAKE_LOAD_STATE_HOTKEY(
-              false, 6,
-              TRANSLATE_NOOP("Hotkeys", "Load Game State 6"))
-              MAKE_SAVE_STATE_HOTKEY(false, 6, TRANSLATE_NOOP("Hotkeys", "Save Game State 6")) MAKE_LOAD_STATE_HOTKEY(
-                false, 7,
-                TRANSLATE_NOOP("Hotkeys", "Load Game State 7"))
-                MAKE_SAVE_STATE_HOTKEY(false, 7, TRANSLATE_NOOP("Hotkeys", "Save Game State 7")) MAKE_LOAD_STATE_HOTKEY(
-                  false, 8,
-                  TRANSLATE_NOOP("Hotkeys", "Load Game State 8"))
-                  MAKE_SAVE_STATE_HOTKEY(false, 8, TRANSLATE_NOOP("Hotkeys", "Save Game State 8"))
-                    MAKE_LOAD_STATE_HOTKEY(false, 9, TRANSLATE_NOOP("Hotkeys", "Load Game State 9"))
-                      MAKE_SAVE_STATE_HOTKEY(false, 9, TRANSLATE_NOOP("Hotkeys", "Save Game State 9"))
-                        MAKE_LOAD_STATE_HOTKEY(false, 10, TRANSLATE_NOOP("Hotkeys", "Load Game State 10"))
-                          MAKE_SAVE_STATE_HOTKEY(false, 10, TRANSLATE_NOOP("Hotkeys", "Save Game State 10"))
+    MAKE_LOAD_STATE_HOTKEY(false, 1, TRANSLATE_NOOP("Hotkeys", "Load Game State 1"))
+      MAKE_SAVE_STATE_HOTKEY(false, 1, TRANSLATE_NOOP("Hotkeys", "Save Game State 1"))
+        MAKE_LOAD_STATE_HOTKEY(false, 2, TRANSLATE_NOOP("Hotkeys", "Load Game State 2")) MAKE_SAVE_STATE_HOTKEY(
+          false, 2, TRANSLATE_NOOP("Hotkeys", "Save Game State 2"))
+          MAKE_LOAD_STATE_HOTKEY(false, 3, TRANSLATE_NOOP("Hotkeys", "Load Game State 3")) MAKE_SAVE_STATE_HOTKEY(
+            false, 3, TRANSLATE_NOOP("Hotkeys", "Save Game State 3"))
+            MAKE_LOAD_STATE_HOTKEY(false, 4, TRANSLATE_NOOP("Hotkeys", "Load Game State 4")) MAKE_SAVE_STATE_HOTKEY(
+              false, 4, TRANSLATE_NOOP("Hotkeys", "Save Game State 4"))
+              MAKE_LOAD_STATE_HOTKEY(false, 5, TRANSLATE_NOOP("Hotkeys", "Load Game State 5")) MAKE_SAVE_STATE_HOTKEY(
+                false, 5, TRANSLATE_NOOP("Hotkeys", "Save Game State 5"))
+                MAKE_LOAD_STATE_HOTKEY(false, 6, TRANSLATE_NOOP("Hotkeys", "Load Game State 6")) MAKE_SAVE_STATE_HOTKEY(
+                  false, 6, TRANSLATE_NOOP("Hotkeys", "Save Game State 6"))
+                  MAKE_LOAD_STATE_HOTKEY(false, 7, TRANSLATE_NOOP("Hotkeys", "Load Game State 7"))
+                    MAKE_SAVE_STATE_HOTKEY(false, 7, TRANSLATE_NOOP("Hotkeys", "Save Game State 7"))
+                      MAKE_LOAD_STATE_HOTKEY(false, 8, TRANSLATE_NOOP("Hotkeys", "Load Game State 8"))
+                        MAKE_SAVE_STATE_HOTKEY(false, 8, TRANSLATE_NOOP("Hotkeys", "Save Game State 8"))
+                          MAKE_LOAD_STATE_HOTKEY(false, 9, TRANSLATE_NOOP("Hotkeys", "Load Game State 9"))
+                            MAKE_SAVE_STATE_HOTKEY(false, 9, TRANSLATE_NOOP("Hotkeys", "Save Game State 9"))
+                              MAKE_LOAD_STATE_HOTKEY(false, 10, TRANSLATE_NOOP("Hotkeys", "Load Game State 10"))
+                                MAKE_SAVE_STATE_HOTKEY(false, 10, TRANSLATE_NOOP("Hotkeys", "Save Game State 10"))
 
-                            MAKE_LOAD_STATE_HOTKEY(true, 1, TRANSLATE_NOOP("Hotkeys", "Load Global State 1"))
-                              MAKE_SAVE_STATE_HOTKEY(true, 1, TRANSLATE_NOOP("Hotkeys", "Save Global State 1"))
-                                MAKE_LOAD_STATE_HOTKEY(true, 2, TRANSLATE_NOOP("Hotkeys", "Load Global State 2"))
-                                  MAKE_SAVE_STATE_HOTKEY(true, 2, TRANSLATE_NOOP("Hotkeys", "Save Global State 2"))
-                                    MAKE_LOAD_STATE_HOTKEY(true, 3, TRANSLATE_NOOP("Hotkeys", "Load Global State 3"))
-                                      MAKE_SAVE_STATE_HOTKEY(true, 3, TRANSLATE_NOOP("Hotkeys", "Save Global State 3"))
-                                        MAKE_LOAD_STATE_HOTKEY(true,
-                                                               4, TRANSLATE_NOOP("Hotkeys", "Load Global State 4"))
-                                          MAKE_SAVE_STATE_HOTKEY(true,
-                                                                 4, TRANSLATE_NOOP("Hotkeys", "Save Global State 4"))
-                                            MAKE_LOAD_STATE_HOTKEY(true,
-                                                                   5, TRANSLATE_NOOP("Hotkeys", "Load Global State 5"))
-                                              MAKE_SAVE_STATE_HOTKEY(
-                                                true, 5, TRANSLATE_NOOP("Hotkeys", "Save Global State 5"))
-                                                MAKE_LOAD_STATE_HOTKEY(
-                                                  true, 6, TRANSLATE_NOOP("Hotkeys", "Load Global State 6"))
-                                                  MAKE_SAVE_STATE_HOTKEY(
-                                                    true, 6, TRANSLATE_NOOP("Hotkeys", "Save Global State 6"))
-                                                    MAKE_LOAD_STATE_HOTKEY(
-                                                      true, 7, TRANSLATE_NOOP("Hotkeys", "Load Global State 7"))
-                                                      MAKE_SAVE_STATE_HOTKEY(
-                                                        true, 7, TRANSLATE_NOOP("Hotkeys", "Save Global State 7"))
-                                                        MAKE_LOAD_STATE_HOTKEY(
-                                                          true, 8, TRANSLATE_NOOP("Hotkeys", "Load Global State 8"))
-                                                          MAKE_SAVE_STATE_HOTKEY(
-                                                            true, 8, TRANSLATE_NOOP("Hotkeys", "Save Global State 8"))
-                                                            MAKE_LOAD_STATE_HOTKEY(
-                                                              true, 9, TRANSLATE_NOOP("Hotkeys", "Load Global State 9"))
-                                                              MAKE_SAVE_STATE_HOTKEY(
-                                                                true, 9,
-                                                                TRANSLATE_NOOP("Hotkeys", "Save Global State 9"))
-                                                                MAKE_LOAD_STATE_HOTKEY(
-                                                                  true, 10,
-                                                                  TRANSLATE_NOOP("Hotkeys", "Load Global State 10"))
-                                                                  MAKE_SAVE_STATE_HOTKEY(
-                                                                    true, 10,
-                                                                    TRANSLATE_NOOP("Hotkeys", "Save Global State 10"))
+                                  MAKE_LOAD_STATE_HOTKEY(true, 1, TRANSLATE_NOOP("Hotkeys", "Load Global State 1"))
+                                    MAKE_SAVE_STATE_HOTKEY(true, 1, TRANSLATE_NOOP("Hotkeys", "Save Global State 1"))
+                                      MAKE_LOAD_STATE_HOTKEY(true, 2, TRANSLATE_NOOP("Hotkeys", "Load Global State 2"))
+                                        MAKE_SAVE_STATE_HOTKEY(true, 2,
+                                                               TRANSLATE_NOOP("Hotkeys", "Save Global State 2"))
+                                          MAKE_LOAD_STATE_HOTKEY(true,
+                                                                 3, TRANSLATE_NOOP("Hotkeys", "Load Global State 3"))
+                                            MAKE_SAVE_STATE_HOTKEY(true, 3,
+                                                                   TRANSLATE_NOOP("Hotkeys", "Save Global State 3"))
+                                              MAKE_LOAD_STATE_HOTKEY(true, 4,
+                                                                     TRANSLATE_NOOP("Hotkeys", "Load Global State 4"))
+                                                MAKE_SAVE_STATE_HOTKEY(true, 4,
+                                                                       TRANSLATE_NOOP("Hotkeys", "Save Global State 4"))
+                                                  MAKE_LOAD_STATE_HOTKEY(true, 5,
+                                                                         TRANSLATE_NOOP("Hotkeys",
+                                                                                        "Load Global State 5"))
+                                                    MAKE_SAVE_STATE_HOTKEY(true, 5,
+                                                                           TRANSLATE_NOOP("Hotkeys",
+                                                                                          "Save Global State 5"))
+                                                      MAKE_LOAD_STATE_HOTKEY(true, 6,
+                                                                             TRANSLATE_NOOP("Hotkeys",
+                                                                                            "Load Global State 6"))
+                                                        MAKE_SAVE_STATE_HOTKEY(true, 6,
+                                                                               TRANSLATE_NOOP("Hotkeys",
+                                                                                              "Save Global State 6"))
+                                                          MAKE_LOAD_STATE_HOTKEY(true, 7,
+                                                                                 TRANSLATE_NOOP("Hotkeys",
+                                                                                                "Load Global State 7"))
+                                                            MAKE_SAVE_STATE_HOTKEY(
+                                                              true, 7, TRANSLATE_NOOP("Hotkeys", "Save Global State 7"))
+                                                              MAKE_LOAD_STATE_HOTKEY(
+                                                                true, 8,
+                                                                TRANSLATE_NOOP("Hotkeys", "Load Global State 8"))
+                                                                MAKE_SAVE_STATE_HOTKEY(
+                                                                  true, 8,
+                                                                  TRANSLATE_NOOP("Hotkeys", "Save Global State 8"))
+                                                                  MAKE_LOAD_STATE_HOTKEY(
+                                                                    true, 9,
+                                                                    TRANSLATE_NOOP("Hotkeys", "Load Global State 9"))
+                                                                    MAKE_SAVE_STATE_HOTKEY(
+                                                                      true, 9,
+                                                                      TRANSLATE_NOOP("Hotkeys", "Save Global State 9"))
+                                                                      MAKE_LOAD_STATE_HOTKEY(
+                                                                        true, 10,
+                                                                        TRANSLATE_NOOP("Hotkeys",
+                                                                                       "Load Global State 10"))
+                                                                        MAKE_SAVE_STATE_HOTKEY(
+                                                                          true, 10,
+                                                                          TRANSLATE_NOOP("Hotkeys",
+                                                                                         "Save Global State 10"))
 
 #undef MAKE_SAVE_STATE_HOTKEY
 #undef MAKE_LOAD_STATE_HOTKEY
 
-                                                                    END_HOTKEY_LIST()
+                                                                          END_HOTKEY_LIST()

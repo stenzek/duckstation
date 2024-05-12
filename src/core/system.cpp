@@ -2935,12 +2935,12 @@ void System::DoToggleCheats()
   }
 
   cl->SetMasterEnable(!cl->GetMasterEnable());
-  Host::AddKeyedOSDMessage(
-    "ToggleCheats",
+  Host::AddIconOSDMessage(
+    "ToggleCheats", ICON_FA_EXCLAMATION_TRIANGLE,
     cl->GetMasterEnable() ?
-      fmt::format(TRANSLATE_FS("OSDMessage", "{} cheats are now active."), cl->GetEnabledCodeCount()) :
-      fmt::format(TRANSLATE_FS("OSDMessage", "{} cheats are now inactive."), cl->GetEnabledCodeCount()),
-    10.0f);
+      TRANSLATE_PLURAL_STR("System", "%n cheat(s) are now active.", "", cl->GetEnabledCodeCount()) :
+      TRANSLATE_PLURAL_STR("System", "%n cheat(s) are now inactive.", "", cl->GetEnabledCodeCount()),
+    Host::OSD_QUICK_DURATION);
 }
 
 static bool LoadEXEToRAM(const char* filename, bool patch_bios)
@@ -3993,25 +3993,26 @@ void System::WarnAboutUnsafeSettings()
 
   if (g_settings.cpu_overclock_active)
   {
-    append(ICON_FA_MICROCHIP,
-           fmt::format(TRANSLATE_FS("System", "CPU clock speed is set to {}% ({} / {}). This may crash games."),
-                       g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator,
-                       g_settings.cpu_overclock_denominator));
+    append(
+      ICON_FA_MICROCHIP,
+      SmallString::from_format(TRANSLATE_FS("System", "CPU clock speed is set to {}% ({} / {}). This may crash games."),
+                               g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator,
+                               g_settings.cpu_overclock_denominator));
   }
   if (g_settings.cdrom_read_speedup > 1)
   {
-    append(
-      ICON_FA_COMPACT_DISC,
-      fmt::format(TRANSLATE_FS("System", "CD-ROM read speedup set to {}x (effective speed {}x). This may crash games."),
-                  g_settings.cdrom_read_speedup, g_settings.cdrom_read_speedup * 2));
+    append(ICON_FA_COMPACT_DISC,
+           SmallString::from_format(
+             TRANSLATE_FS("System", "CD-ROM read speedup set to {}x (effective speed {}x). This may crash games."),
+             g_settings.cdrom_read_speedup, g_settings.cdrom_read_speedup * 2));
   }
   if (g_settings.cdrom_seek_speedup != 1)
   {
     append(ICON_FA_COMPACT_DISC,
-           fmt::format(TRANSLATE_FS("System", "CD-ROM seek speedup set to {}. This may crash games."),
-                       (g_settings.cdrom_seek_speedup == 0) ?
-                         TinyString(TRANSLATE_SV("System", "Instant")) :
-                         TinyString::from_format("{}x", g_settings.cdrom_seek_speedup)));
+           SmallString::from_format(TRANSLATE_FS("System", "CD-ROM seek speedup set to {}. This may crash games."),
+                                    (g_settings.cdrom_seek_speedup == 0) ?
+                                      TinyString(TRANSLATE_SV("System", "Instant")) :
+                                      TinyString::from_format("{}x", g_settings.cdrom_seek_speedup)));
   }
   if (g_settings.gpu_force_ntsc_timings)
   {
@@ -4030,8 +4031,8 @@ void System::WarnAboutUnsafeSettings()
   if (s_cheat_list && s_cheat_list->GetEnabledCodeCount() > 0)
   {
     append(ICON_FA_EXCLAMATION_TRIANGLE,
-           fmt::format(TRANSLATE_FS("System", "{} cheats are enabled. This may crash games."),
-                       s_cheat_list->GetEnabledCodeCount()));
+           TRANSLATE_PLURAL_STR("System", "%n cheat(s) are enabled. This may crash games.", "",
+                                s_cheat_list->GetEnabledCodeCount()));
   }
 
   if (!messages.empty())
