@@ -102,7 +102,7 @@ static std::string GetExecutableNameForImage(IsoReader& iso, bool strip_subdirec
 static bool ReadExecutableFromImage(IsoReader& iso, std::string* out_executable_name,
                                     std::vector<u8>* out_executable_data);
 
-static bool LoadBIOS(const std::string& override_bios_path);
+static bool LoadBIOS(const std::string& override_bios_path, Error* error);
 static void InternalReset();
 static void ClearRunningGame();
 static void DestroySystem();
@@ -1465,7 +1465,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   }
 
   // Load BIOS image.
-  if (!LoadBIOS(parameters.override_bios))
+  if (!LoadBIOS(parameters.override_bios, error))
   {
     s_state = State::Shutdown;
     ClearRunningGame();
@@ -2251,20 +2251,29 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
   return !sw.HasError();
 }
 
-bool System::LoadBIOS(const std::string& override_bios_path)
+bool System::LoadBIOS(const std::string& override_bios_path, Error* error)
 {
-  std::optional<BIOS::Image> bios_image(
-    override_bios_path.empty() ? BIOS::GetBIOSImage(s_region) : FileSystem::ReadBinaryFile(override_bios_path.c_str()));
-  if (!bios_image.has_value())
+  std::optional<BIOS::Image> bios_image;
+  if (!override_bios_path.empty())
   {
-    Host::ReportFormattedErrorAsync("Error", TRANSLATE("System", "Failed to load %s BIOS."),
-                                    Settings::GetConsoleRegionName(s_region));
-    return false;
+    bios_image = FileSystem::ReadBinaryFile(override_bios_path.c_str(), error);
+    if (!bios_image.has_value())
+    {
+      Error::AddPrefixFmt(error, TRANSLATE_FS("System", "Failed to load {} BIOS."),
+                          Settings::GetConsoleRegionName(s_region));
+      return false;
+    }
+  }
+  else
+  {
+    bios_image = BIOS::GetBIOSImage(s_region, error);
+    if (!bios_image.has_value())
+      return false;
   }
 
   if (bios_image->size() != static_cast<u32>(Bus::BIOS_SIZE))
   {
-    Host::ReportFormattedErrorAsync("Error", TRANSLATE("System", "Incorrect BIOS image size"));
+    Error::SetStringView(error, TRANSLATE_SV("System", "Incorrect BIOS image size"));
     return false;
   }
 
