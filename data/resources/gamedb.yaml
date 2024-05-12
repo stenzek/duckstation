@@ -44991,6 +44991,8 @@ SCES-01705:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Improves sprite positioning.
   metadata:
     publisher: "Sony"
     developer: "Namco"
@@ -45015,6 +45017,8 @@ SCES-11705:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Improves sprite positioning.
   metadata:
     publisher: "Sony"
     developer: "Namco"
@@ -45039,6 +45043,8 @@ SCES-02565:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Improves sprite positioning.
   metadata:
     publisher: "Sony"
     developer: "Namco"
@@ -45063,6 +45069,8 @@ SCES-12565:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Improves sprite positioning.
   metadata:
     publisher: "Sony"
     developer: "Namco"
@@ -45087,6 +45095,8 @@ SCES-02566:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Improves sprite positioning.
   metadata:
     publisher: "Sony"
     developer: "Namco"
@@ -45111,6 +45121,8 @@ SCES-12566:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Improves sprite positioning.
   metadata:
     publisher: "Sony"
     developer: "Namco"
@@ -45135,6 +45147,8 @@ SCES-02567:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Improves sprite positioning.
   metadata:
     publisher: "Sony"
     developer: "Namco"
@@ -45159,6 +45173,8 @@ SCES-12567:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Improves sprite positioning.
   metadata:
     publisher: "Sony"
     developer: "Namco"
@@ -45183,6 +45199,8 @@ SLPS-02190:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Improves sprite positioning.
   metadata:
     publisher: "Namco"
     developer: "Namco"
@@ -45207,6 +45225,8 @@ SLPS-02191:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Improves sprite positioning.
   metadata:
     publisher: "Namco"
     developer: "Namco"
@@ -45231,6 +45251,8 @@ SCES-02568:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Improves sprite positioning.
   metadata:
     publisher: "Sony"
     developer: "Namco"
@@ -45255,6 +45277,8 @@ SCES-12568:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Improves sprite positioning.
   metadata:
     publisher: "Sony"
     developer: "Namco"
@@ -45282,6 +45306,8 @@ SLUS-01092:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Improves sprite positioning.
   metadata:
     publisher: "Namco"
     developer: "Namco"
@@ -45306,6 +45332,8 @@ SLUS-01164:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Improves sprite positioning.
   metadata:
     publisher: "Namco"
     developer: "Namco"
