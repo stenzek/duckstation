@@ -131,7 +131,7 @@ static bool FastForwardToFirstFrame();
 
 static bool UpdateGameSettingsLayer();
 static void UpdateRunningGame(const char* path, CDImage* image, bool booting);
-static bool CheckForSBIFile(CDImage* image);
+static bool CheckForSBIFile(CDImage* image, Error* error);
 static std::unique_ptr<MemoryCard> GetMemoryCardForSlot(u32 slot, MemoryCardType type);
 
 static void UpdateSessionTime(const std::string& prev_serial);
@@ -1421,7 +1421,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   }
 
   // Check for SBI.
-  if (!CheckForSBIFile(disc.get()))
+  if (!CheckForSBIFile(disc.get(), error))
   {
     s_state = State::Shutdown;
     ClearRunningGame();
@@ -3556,7 +3556,7 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
   Host::OnGameChanged(s_running_game_path, s_running_game_serial, s_running_game_title);
 }
 
-bool System::CheckForSBIFile(CDImage* image)
+bool System::CheckForSBIFile(CDImage* image, Error* error)
 {
   if (!s_running_game_entry || !s_running_game_entry->HasTrait(GameDatabase::Trait::IsLibCryptProtected) || !image ||
       image->HasNonStandardSubchannel())
@@ -3569,31 +3569,30 @@ bool System::CheckForSBIFile(CDImage* image)
 
   if (Host::GetBoolSettingValue("CDROM", "AllowBootingWithoutSBIFile", false))
   {
-    return Host::ConfirmMessage(
-      "Confirm Unsupported Configuration",
-      LargeString::from_format(
-        TRANSLATE_FS("System", "You are attempting to run a libcrypt protected game without an SBI file:\n\n{0}: "
-                               "{1}\n\nThe game will likely not run properly.\n\nPlease check the README for "
-                               "instructions on how to add an SBI file.\n\nDo you wish to continue?"),
-        s_running_game_serial, s_running_game_title));
+    if (Host::ConfirmMessage(
+          "Confirm Unsupported Configuration",
+          LargeString::from_format(
+            TRANSLATE_FS("System", "You are attempting to run a libcrypt protected game without an SBI file:\n\n{0}: "
+                                   "{1}\n\nThe game will likely not run properly.\n\nPlease check the README for "
+                                   "instructions on how to add an SBI file.\n\nDo you wish to continue?"),
+            s_running_game_serial, s_running_game_title)))
+    {
+      return true;
+    }
   }
-  else
-  {
 #ifndef __ANDROID__
-    Host::ReportErrorAsync(
-      TRANSLATE("System", "Error"),
-      LargeString::from_format(
-        TRANSLATE_FS("System", "You are attempting to run a libcrypt protected game without an SBI file:\n\n{0}: "
-                               "{1}\n\nYour dump is incomplete, you must add the SBI file to run this game. \n\nThe "
-                               "name of the SBI file must match the name of the disc image."),
-        s_running_game_serial, s_running_game_title));
+  Error::SetStringFmt(
+    error,
+    TRANSLATE_FS("System", "You are attempting to run a libcrypt protected game without an SBI file:\n\n{0}: "
+                           "{1}\n\nYour dump is incomplete, you must add the SBI file to run this game. \n\nThe "
+                           "name of the SBI file must match the name of the disc image."),
+    s_running_game_serial, s_running_game_title);
 #else
-    // Shorter because no confirm messages.
-    Host::ReportErrorAsync("Missing SBI file.", "The selected game requires a SBI file to run properly.");
+  // Shorter because no confirm messages.
+  Error::SetStringView(error, "Missing SBI file.", "The selected game requires a SBI file to run properly.");
 #endif
 
-    return false;
-  }
+  return false;
 }
 
 bool System::HasMediaSubImages()
