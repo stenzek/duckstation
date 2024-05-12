@@ -2179,8 +2179,8 @@ void Achievements::DrawAchievementsWindow()
   const float heading_height = ImGuiFullscreen::LayoutScale(heading_height_unscaled);
 
   if (ImGuiFullscreen::BeginFullscreenWindow(
-        ImVec2(0.0f, 0.0f), ImVec2(display_size.x, heading_height), "achievements_heading", heading_background, 0.0f,
-        0.0f, ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse))
+        ImVec2(), ImVec2(display_size.x, heading_height), "achievements_heading", heading_background, 0.0f, ImVec2(),
+        ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse))
   {
     ImRect bb;
     bool visible, hovered;
@@ -2289,7 +2289,7 @@ void Achievements::DrawAchievementsWindow()
   if (ImGuiFullscreen::BeginFullscreenWindow(
         ImVec2(0.0f, heading_height),
         ImVec2(display_size.x, display_size.y - heading_height - LayoutScale(ImGuiFullscreen::LAYOUT_FOOTER_HEIGHT)),
-        "achievements", background, 0.0f, 0.0f, 0))
+        "achievements", background, 0.0f, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f), 0))
   {
     static bool buckets_collapsed[NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS] = {};
     static const char* bucket_names[NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS] = {
@@ -2563,8 +2563,8 @@ void Achievements::DrawLeaderboardsWindow()
   const float column_spacing = spacing * 2.0f;
 
   if (ImGuiFullscreen::BeginFullscreenWindow(
-        ImVec2(0.0f, 0.0f), ImVec2(display_size.x, heading_height), "leaderboards_heading", heading_background, 0.0f,
-        0.0f, ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse))
+        ImVec2(), ImVec2(display_size.x, heading_height), "leaderboards_heading", heading_background, 0.0f, ImVec2(),
+        ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse))
   {
     bool visible, hovered;
     bool pressed = ImGuiFullscreen::MenuButtonFrame("leaderboards_heading", false, heading_height_unscaled, &visible,
@@ -2754,7 +2754,7 @@ void Achievements::DrawLeaderboardsWindow()
     if (ImGuiFullscreen::BeginFullscreenWindow(
           ImVec2(0.0f, heading_height),
           ImVec2(display_size.x, display_size.y - heading_height - LayoutScale(ImGuiFullscreen::LAYOUT_FOOTER_HEIGHT)),
-          "leaderboards", background, 0.0f, 0.0f, 0))
+          "leaderboards", background, 0.0f, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f), 0))
     {
       ImGuiFullscreen::BeginMenuButtons();
 
@@ -2774,7 +2774,7 @@ void Achievements::DrawLeaderboardsWindow()
     if (ImGuiFullscreen::BeginFullscreenWindow(
           ImVec2(0.0f, heading_height),
           ImVec2(display_size.x, display_size.y - heading_height - LayoutScale(ImGuiFullscreen::LAYOUT_FOOTER_HEIGHT)),
-          "leaderboard", background, 0.0f, 0.0f, 0))
+          "leaderboard", background, 0.0f, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f), 0))
     {
       ImGuiFullscreen::BeginMenuButtons();
 
