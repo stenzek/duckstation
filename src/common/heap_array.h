@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <type_traits>
+#include <span>
 
 template<typename T, std::size_t SIZE, std::size_t ALIGNMENT = 0>
 class FixedHeapArray
@@ -72,6 +73,9 @@ public:
   void fill(const_reference value) { std::fill(begin(), end(), value); }
 
   void swap(this_type& move) { std::swap(m_data, move.m_data); }
+
+  std::span<T, SIZE> span() { return std::span<T, SIZE>(m_data); }
+  std::span<const T, SIZE> cspan() const { return std::span<const T, SIZE>(m_data); }
 
   this_type& operator=(const this_type& rhs)
   {
@@ -313,6 +317,9 @@ public:
     move.m_data = nullptr;
     move.m_size = 0;
   }
+
+  std::span<T> span() { return std::span<T>(m_data, m_size); }
+  std::span<const T> cspan() const { return std::span<const T>(m_data, m_size); }
 
   this_type& operator=(const this_type& rhs)
   {
