@@ -108,7 +108,7 @@ static void ClearRunningGame();
 static void DestroySystem();
 static std::string GetMediaPathFromSaveState(const char* path);
 static bool DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display, bool is_memory_state);
-static bool CreateGPU(GPURenderer renderer, bool is_switching);
+static bool CreateGPU(GPURenderer renderer, bool is_switching, Error* error);
 static bool SaveUndoLoadState();
 static void WarnAboutUnsafeSettings();
 static void LogUnsafeSettingsToConsole(const SmallStringBase& messages);
@@ -126,7 +126,7 @@ static void DoRewind();
 static void SaveRunaheadState();
 static bool DoRunahead();
 
-static bool Initialize(bool force_software_renderer);
+static bool Initialize(bool force_software_renderer, Error* error);
 static bool FastForwardToFirstFrame();
 
 static bool UpdateGameSettingsLayer();
@@ -938,10 +938,11 @@ bool System::RecreateGPU(GPURenderer renderer, bool force_recreate_device, bool 
     Host::ReleaseGPUDevice();
   }
 
-  if (!CreateGPU(renderer, true))
+  Error error;
+  if (!CreateGPU(renderer, true, &error))
   {
     if (!IsStartupCancelled())
-      Host::ReportErrorAsync("Error", "Failed to recreate GPU.");
+      Host::ReportErrorAsync("Error", error.GetDescription());
 
     DestroySystem();
     return false;
@@ -1474,7 +1475,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   }
 
   // Component setup.
-  if (!Initialize(parameters.force_software_renderer))
+  if (!Initialize(parameters.force_software_renderer, error))
   {
     s_state = State::Shutdown;
     ClearRunningGame();
@@ -1579,7 +1580,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   return true;
 }
 
-bool System::Initialize(bool force_software_renderer)
+bool System::Initialize(bool force_software_renderer, Error* error)
 {
   g_ticks_per_second = ScaleTicksToOverclock(MASTER_CLOCK);
   s_max_slice_ticks = ScaleTicksToOverclock(MASTER_CLOCK / 10);
@@ -1636,7 +1637,7 @@ bool System::Initialize(bool force_software_renderer)
 
   CPU::CodeCache::Initialize();
 
-  if (!CreateGPU(force_software_renderer ? GPURenderer::Software : g_settings.gpu_renderer, false))
+  if (!CreateGPU(force_software_renderer ? GPURenderer::Software : g_settings.gpu_renderer, false, error))
   {
     Bus::Shutdown();
     CPU::Shutdown();
@@ -2076,7 +2077,7 @@ void System::RecreateSystem()
     PauseSystem(true);
 }
 
-bool System::CreateGPU(GPURenderer renderer, bool is_switching)
+bool System::CreateGPU(GPURenderer renderer, bool is_switching, Error* error)
 {
   const RenderAPI api = Settings::GetRenderAPIForRenderer(renderer);
 
@@ -2085,13 +2086,13 @@ bool System::CreateGPU(GPURenderer renderer, bool is_switching)
   {
     if (g_gpu_device)
     {
-      Log_WarningPrintf("Recreating GPU device, expecting %s got %s", GPUDevice::RenderAPIToString(api),
-                        GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()));
+      Log_WarningFmt("Recreating GPU device, expecting {} got {}", GPUDevice::RenderAPIToString(api),
+                     GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()));
       PostProcessing::Shutdown();
     }
 
     Host::ReleaseGPUDevice();
-    if (!Host::CreateGPUDevice(api))
+    if (!Host::CreateGPUDevice(api, error))
     {
       Host::ReleaseRenderWindow();
       return false;
@@ -2108,8 +2109,8 @@ bool System::CreateGPU(GPURenderer renderer, bool is_switching)
 
   if (!g_gpu)
   {
-    Log_ErrorPrintf("Failed to initialize %s renderer, falling back to software renderer",
-                    Settings::GetRendererName(renderer));
+    Log_ErrorFmt("Failed to initialize {} renderer, falling back to software renderer",
+                 Settings::GetRendererName(renderer));
     Host::AddFormattedOSDMessage(
       30.0f, TRANSLATE("OSDMessage", "Failed to initialize %s renderer, falling back to software renderer."),
       Settings::GetRendererName(renderer));
@@ -2117,7 +2118,7 @@ bool System::CreateGPU(GPURenderer renderer, bool is_switching)
     g_gpu = GPU::CreateSoftwareRenderer();
     if (!g_gpu)
     {
-      Log_ErrorPrintf("Failed to create fallback software renderer.");
+      Log_ErrorPrint("Failed to create fallback software renderer.");
       if (!s_keep_gpu_device_on_shutdown)
       {
         PostProcessing::Shutdown();

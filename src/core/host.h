@@ -18,6 +18,7 @@
 #include <string_view>
 #include <vector>
 
+class Error;
 class SettingsInterface;
 struct WindowInfo;
 enum class AudioBackend : u8;
@@ -91,7 +92,7 @@ void DisplayLoadingScreen(const char* message, int progress_min = -1, int progre
 void RunOnCPUThread(std::function<void()> function, bool block = false);
 
 /// Attempts to create the rendering device backend.
-bool CreateGPUDevice(RenderAPI api);
+bool CreateGPUDevice(RenderAPI api, Error* error);
 
 /// Handles fullscreen transitions and such.
 void UpdateDisplayWindow();

@@ -268,7 +268,7 @@ void Host::ReportFormattedDebuggerMessage(const char* format, ...)
   ReportDebuggerMessage(message);
 }
 
-bool Host::CreateGPUDevice(RenderAPI api)
+bool Host::CreateGPUDevice(RenderAPI api, Error* error)
 {
   DebugAssert(!g_gpu_device);
 
@@ -292,29 +292,32 @@ bool Host::CreateGPUDevice(RenderAPI api)
   if (g_settings.gpu_disable_texture_copy_to_self)
     disabled_features |= GPUDevice::FEATURE_MASK_TEXTURE_COPY_TO_SELF;
 
-  Error error;
+  Error create_error;
   if (!g_gpu_device || !g_gpu_device->Create(
                          g_settings.gpu_adapter,
                          g_settings.gpu_disable_shader_cache ? std::string_view() : std::string_view(EmuFolders::Cache),
                          SHADER_CACHE_VERSION, g_settings.gpu_use_debug_device, System::IsVSyncEffectivelyEnabled(),
                          g_settings.gpu_threaded_presentation, exclusive_fullscreen_control,
-                         static_cast<GPUDevice::FeatureMask>(disabled_features), &error))
+                         static_cast<GPUDevice::FeatureMask>(disabled_features), &create_error))
   {
-    Log_ErrorPrintf("Failed to create GPU device.");
+    Log_ErrorFmt("Failed to create GPU device: {}", create_error.GetDescription());
     if (g_gpu_device)
       g_gpu_device->Destroy();
     g_gpu_device.reset();
 
-    Host::ReportErrorAsync(
-      "Error", fmt::format("Failed to create render device:\n\n{}\n\nThis may be due to your GPU not supporting the "
-                           "chosen renderer ({}), or because your graphics drivers need to be updated.",
-                           error.GetDescription(), GPUDevice::RenderAPIToString(api)));
+    Error::SetStringFmt(
+      error,
+      TRANSLATE_FS("System", "Failed to create render device:\n\n{0}\n\nThis may be due to your GPU not supporting the "
+                             "chosen renderer ({1}), or because your graphics drivers need to be updated."),
+      create_error.GetDescription(), GPUDevice::RenderAPIToString(api));
     return false;
   }
 
-  if (!ImGuiManager::Initialize(g_settings.display_osd_scale / 100.0f, g_settings.display_show_osd_messages, &error))
+  if (!ImGuiManager::Initialize(g_settings.display_osd_scale / 100.0f, g_settings.display_show_osd_messages,
+                                &create_error))
   {
-    Host::ReportErrorAsync("Error", fmt::format("Failed to initialize ImGuiManager: {}", error.GetDescription()));
+    Log_ErrorFmt("Failed to initialize ImGuiManager: {}", create_error.GetDescription());
+    Error::SetStringFmt(error, "Failed to initialize ImGuiManager: {}", create_error.GetDescription());
     g_gpu_device->Destroy();
     g_gpu_device.reset();
     return false;
@@ -379,4 +382,3 @@ void Host::ReleaseGPUDevice()
   g_gpu_device->Destroy();
   g_gpu_device.reset();
 }
-
