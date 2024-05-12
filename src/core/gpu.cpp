@@ -1987,6 +1987,7 @@ bool GPU::RenderDisplay(GPUTexture* target, const Common::Rectangle<s32>& draw_r
       break;
 
     case DisplayScalingMode::BilinearSmooth:
+    case DisplayScalingMode::BlinearInteger:
       texture_filter_linear = true;
       break;
 
@@ -2297,6 +2298,8 @@ Common::Rectangle<float> GPU::CalculateDrawRect(s32 window_width, s32 window_hei
                                                 float* out_top_padding, float* out_scale, float* out_x_scale,
                                                 bool apply_aspect_ratio /* = true */) const
 {
+  const bool integer_scale = (g_settings.display_scaling == DisplayScalingMode::NearestInteger ||
+                              g_settings.display_scaling == DisplayScalingMode::BlinearInteger);
   const float window_ratio = static_cast<float>(window_width) / static_cast<float>(window_height);
   const float x_scale =
     apply_aspect_ratio ?
@@ -2325,12 +2328,12 @@ Common::Rectangle<float> GPU::CalculateDrawRect(s32 window_width, s32 window_hei
   {
     // align in middle vertically
     scale = static_cast<float>(window_width) / display_width;
-    if (g_settings.display_scaling == DisplayScalingMode::NearestInteger)
+    if (integer_scale)
       scale = std::max(std::floor(scale), 1.0f);
 
     if (out_left_padding)
     {
-      if (g_settings.display_scaling == DisplayScalingMode::NearestInteger)
+      if (integer_scale)
         *out_left_padding = std::max<float>((static_cast<float>(window_width) - display_width * scale) / 2.0f, 0.0f);
       else
         *out_left_padding = 0.0f;
@@ -2359,7 +2362,7 @@ Common::Rectangle<float> GPU::CalculateDrawRect(s32 window_width, s32 window_hei
   {
     // align in middle horizontally
     scale = static_cast<float>(window_height) / display_height;
-    if (g_settings.display_scaling == DisplayScalingMode::NearestInteger)
+    if (integer_scale)
       scale = std::max(std::floor(scale), 1.0f);
 
     if (out_left_padding)
@@ -2384,7 +2387,7 @@ Common::Rectangle<float> GPU::CalculateDrawRect(s32 window_width, s32 window_hei
 
     if (out_top_padding)
     {
-      if (g_settings.display_scaling == DisplayScalingMode::NearestInteger)
+      if (integer_scale)
         *out_top_padding = std::max<float>((static_cast<float>(window_height) - (display_height * scale)) / 2.0f, 0.0f);
       else
         *out_top_padding = 0.0f;

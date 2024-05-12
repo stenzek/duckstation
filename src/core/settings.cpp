@@ -1417,15 +1417,17 @@ const char* Settings::GetDisplayAlignmentDisplayName(DisplayAlignment alignment)
 
 static constexpr const std::array s_display_scaling_names = {
   "Nearest",
-  "BilinearSmooth",
   "NearestInteger",
+  "BilinearSmooth",
   "BilinearSharp",
+  "BilinearInteger",
 };
 static constexpr const std::array s_display_scaling_display_names = {
   TRANSLATE_NOOP("DisplayScalingMode", "Nearest-Neighbor"),
-  TRANSLATE_NOOP("DisplayScalingMode", "Bilinear (Smooth)"),
   TRANSLATE_NOOP("DisplayScalingMode", "Nearest-Neighbor (Integer)"),
+  TRANSLATE_NOOP("DisplayScalingMode", "Bilinear (Smooth)"),
   TRANSLATE_NOOP("DisplayScalingMode", "Bilinear (Sharp)"),
+  TRANSLATE_NOOP("DisplayScalingMode", "Bilinear (Integer)"),
 };
 
 std::optional<DisplayScalingMode> Settings::ParseDisplayScaling(const char* str)

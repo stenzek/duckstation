@@ -155,9 +155,10 @@ enum class DisplayAlignment : u8
 enum class DisplayScalingMode : u8
 {
   Nearest,
-  BilinearSmooth,
   NearestInteger,
+  BilinearSmooth,
   BilinearSharp,
+  BlinearInteger,
   Count
 };
 
