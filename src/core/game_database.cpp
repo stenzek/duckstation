@@ -356,7 +356,6 @@ const char* GameDatabase::GetTraitName(Trait trait)
 const char* GameDatabase::GetTraitDisplayName(Trait trait)
 {
   return Host::TranslateToCString("GameDatabase", s_trait_display_names[static_cast<size_t>(trait)]);
-  "";
 }
 
 const char* GameDatabase::GetCompatibilityRatingName(CompatibilityRating rating)
