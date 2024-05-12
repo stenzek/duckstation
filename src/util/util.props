@@ -27,7 +27,7 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(DepsIncludeDir)SDL2</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>%(AdditionalDependencies);freetype.lib;libjpeg.lib;libpng16.lib;libwebp.lib;SDL2.lib;shaderc_shared.lib;zlib.lib;zstd.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);freetype.lib;libjpeg.lib;libpng16.lib;libwebp.lib;SDL2.lib;zlib.lib;zstd.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

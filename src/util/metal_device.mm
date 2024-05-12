@@ -16,7 +16,6 @@
 #define FMT_EXCEPTIONS 0
 #include "fmt/format.h"
 
-#include "shaderc/shaderc.hpp"
 #include "spirv_cross_c.h"
 
 #include <array>
@@ -58,8 +57,6 @@ static constexpr std::array<MTLPixelFormat, static_cast<u32>(GPUTexture::Format:
   MTLPixelFormatRGBA32Float,  // RGBA32F
   MTLPixelFormatBGR10A2Unorm, // RGB10A2
 };
-
-static std::unique_ptr<shaderc::Compiler> s_shaderc_compiler;
 
 static NSString* StringViewToNSString(std::string_view str)
 {
@@ -657,44 +654,12 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromSource(GPUShaderStage st
 {
   static constexpr bool dump_shaders = false;
 
-  static constexpr const std::array<shaderc_shader_kind, static_cast<size_t>(GPUShaderStage::MaxCount)> stage_kinds = {{
-    shaderc_glsl_vertex_shader,
-    shaderc_glsl_fragment_shader,
-    shaderc_glsl_geometry_shader,
-    shaderc_glsl_compute_shader,
-  }};
-
-  // TODO: NOT thread safe, yet.
-  if (!s_shaderc_compiler)
-    s_shaderc_compiler = std::make_unique<shaderc::Compiler>();
-
-  shaderc::CompileOptions spv_options;
-  spv_options.SetSourceLanguage(shaderc_source_language_glsl);
-  spv_options.SetTargetEnvironment(shaderc_target_env_vulkan, 0);
-
-  if (m_debug_device)
-  {
-    spv_options.SetOptimizationLevel(shaderc_optimization_level_zero);
-    spv_options.SetGenerateDebugInfo();
-  }
-  else
-  {
-    spv_options.SetOptimizationLevel(shaderc_optimization_level_performance);
-  }
-
-  const shaderc::SpvCompilationResult result = s_shaderc_compiler->CompileGlslToSpv(
-    source.data(), source.length(), stage_kinds[static_cast<size_t>(stage)], "source", entry_point, spv_options);
-  if (result.GetCompilationStatus() != shaderc_compilation_status_success)
-  {
-    const std::string errors = result.GetErrorMessage();
-    DumpBadShader(source, errors);
-    Log_ErrorFmt("Failed to compile shader to SPIR-V:\n{}", errors);
+  DynamicHeapArray<u8> local_binary;
+  DynamicHeapArray<u8>* dest_binary = out_binary ? out_binary : &local_binary;
+  if (!CompileGLSLShaderToVulkanSpv(stage, source, entry_point, false, dest_binary))
     return {};
-  }
-  else if (result.GetNumWarnings() > 0)
-  {
-    Log_WarningFmt("Shader compiled with warnings:\n{}", result.GetErrorMessage());
-  }
+
+  AssertMsg((dest_binary->size() % 4) == 0, "Compile result should be 4 byte aligned.");
 
   spvc_context sctx;
   spvc_result sres;
@@ -710,8 +675,7 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromSource(GPUShaderStage st
     sctx, [](void*, const char* error) { Log_ErrorFmt("SPIRV-Cross reported an error: {}", error); }, nullptr);
 
   spvc_parsed_ir sir;
-  if ((sres = spvc_context_parse_spirv(sctx, result.cbegin(), std::distance(result.cbegin(), result.cend()), &sir)) !=
-      SPVC_SUCCESS)
+  if ((sres = spvc_context_parse_spirv(sctx, reinterpret_cast<const u32*>(dest_binary->data()), dest_binary->size() / 4, &sir)) != SPVC_SUCCESS)
   {
     Log_ErrorFmt("spvc_context_parse_spirv() failed: {}", static_cast<int>(sres));
     DumpBadShader(source, std::string_view());

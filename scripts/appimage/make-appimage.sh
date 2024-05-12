@@ -55,6 +55,10 @@ BINARY=duckstation-qt
 APPDIRNAME=DuckStation.AppDir
 STRIP=strip
 
+declare -a MANUAL_LIBS=(
+	"libshaderc_shared.so"
+)
+
 declare -a MANUAL_QT_LIBS=(
 	"libQt6WaylandEglClientHwIntegration.so.6"
 )
@@ -90,6 +94,24 @@ fi
 OUTDIR=$(realpath "./$APPDIRNAME")
 rm -fr "$OUTDIR"
 
+echo "Locating extra libraries..."
+EXTRA_LIBS_ARGS=""
+for lib in "${MANUAL_LIBS[@]}"; do
+	srcpath=$(find "$DEPSDIR" -name "$lib")
+	if [ ! -f "$srcpath" ]; then
+		echo "Missinge extra library $lib. Exiting."
+		exit 1
+	fi
+
+	echo "Found $lib at $srcpath."
+
+	if [ "$EXTRA_LIBS_ARGS" == "" ]; then
+		EXTRA_LIBS_ARGS="--library=$srcpath"
+	else
+		EXTRA_LIBS_ARGS="$EXTRA_LIBS_ARGS,$srcpath"
+	fi
+done
+
 # Why the nastyness? linuxdeploy strips our main binary, and there's no option to turn it off.
 # It also doesn't strip the Qt libs. We can't strip them after running linuxdeploy, because
 # patchelf corrupts the libraries (but they still work), but patchelf+strip makes them crash
@@ -112,9 +134,9 @@ EXTRA_PLATFORM_PLUGINS="libqwayland-egl.so;libqwayland-generic.so" \
 DEPLOY_PLATFORM_THEMES="1" \
 QMAKE="$DEPSDIR/bin/qmake" \
 NO_STRIP="1" \
-$LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/duckstation-qt" \
+$LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/duckstation-qt" $EXTRA_LIBS_ARGS \
 --desktop-file="$ROOTDIR/scripts/org.duckstation.DuckStation.desktop" \
---icon-file="$ROOTDIR/scripts/org.duckstation.DuckStation.png"
+--icon-file="$ROOTDIR/scripts/org.duckstation.DuckStation.png" \
 
 echo "Copying resources into AppDir..."
 cp -a "$BUILDDIR/bin/resources" "$OUTDIR/usr/bin"

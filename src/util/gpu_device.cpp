@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "gpu_device.h"
@@ -8,6 +8,7 @@
 #include "shadergen.h"
 
 #include "common/assert.h"
+#include "common/dynamic_library.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
@@ -34,6 +35,10 @@ Log_SetChannel(GPUDevice);
 
 #ifdef ENABLE_VULKAN
 #include "vulkan_device.h"
+#endif
+
+#if defined(ENABLE_VULKAN) || defined(__APPLE__)
+#include "shaderc/shaderc.h"
 #endif
 
 std::unique_ptr<GPUDevice> g_gpu_device;
@@ -1105,3 +1110,166 @@ std::unique_ptr<GPUDevice> GPUDevice::CreateDeviceForAPI(RenderAPI api)
       return {};
   }
 }
+
+#if defined(ENABLE_VULKAN) || defined(__APPLE__)
+#define SHADERC_INIT_FUNCTIONS(X)                                                                                      \
+  X(shaderc_compiler_initialize)                                                                                       \
+  X(shaderc_compiler_release)
+
+#define SHADERC_FUNCTIONS(X)                                                                                           \
+  X(shaderc_compile_options_initialize)                                                                                \
+  X(shaderc_compile_options_release)                                                                                   \
+  X(shaderc_compile_options_set_source_language)                                                                       \
+  X(shaderc_compile_options_set_generate_debug_info)                                                                   \
+  X(shaderc_compile_options_set_emit_non_semantic_debug_info)                                                          \
+  X(shaderc_compile_options_set_optimization_level)                                                                    \
+  X(shaderc_compile_options_set_target_env)                                                                            \
+  X(shaderc_compile_into_spv)                                                                                          \
+  X(shaderc_result_release)                                                                                            \
+  X(shaderc_result_get_length)                                                                                         \
+  X(shaderc_result_get_num_warnings)                                                                                   \
+  X(shaderc_result_get_compilation_status)                                                                             \
+  X(shaderc_result_get_bytes)                                                                                          \
+  X(shaderc_result_get_error_message)
+
+// TODO: NOT thread safe, yet.
+namespace dyn_shaderc {
+static bool Open();
+
+static DynamicLibrary s_library;
+static std::unique_ptr<struct shaderc_compiler, void (*)(shaderc_compiler_t)> s_compiler(nullptr, nullptr);
+
+#define ADD_FUNC(F) static decltype(&::F) F;
+SHADERC_FUNCTIONS(ADD_FUNC)
+#undef ADD_FUNC
+
+} // namespace dyn_shaderc
+
+bool dyn_shaderc::Open()
+{
+  if (s_library.IsOpen())
+    return true;
+
+  Error error;
+  if (!s_library.Open(DynamicLibrary::GetVersionedFilename("shaderc_shared").c_str(), &error))
+  {
+    Log_ErrorFmt("Failed to load shaderc: {}", error.GetDescription());
+    return false;
+  }
+
+#define LOAD_FUNC(F)                                                                                                   \
+  if (!s_library.GetSymbol(#F, &F))                                                                                    \
+  {                                                                                                                    \
+    Log_ErrorFmt("Failed to find function {}", #F);                                                                    \
+    s_library.Close();                                                                                                 \
+    return false;                                                                                                      \
+  }
+#define LOAD_INIT_FUNC(F)                                                                                              \
+  decltype(&::F) p##F;                                                                                                 \
+  if (!s_library.GetSymbol(#F, &p##F))                                                                                 \
+  {                                                                                                                    \
+    Log_ErrorFmt("Failed to find function {}", #F);                                                                    \
+    s_library.Close();                                                                                                 \
+    return false;                                                                                                      \
+  }
+
+  SHADERC_FUNCTIONS(LOAD_FUNC)
+  SHADERC_INIT_FUNCTIONS(LOAD_INIT_FUNC)
+#undef LOAD_FUNC
+#undef LOAD_INIT_FUNC
+
+  s_compiler = decltype(s_compiler)(pshaderc_compiler_initialize(), pshaderc_compiler_release);
+  return true;
+}
+
+#undef SHADERC_FUNCTIONS
+#undef SHADERC_INIT_FUNCTIONS
+
+bool GPUDevice::CompileGLSLShaderToVulkanSpv(GPUShaderStage stage, std::string_view source, const char* entry_point,
+                                             bool nonsemantic_debug_info, DynamicHeapArray<u8>* out_binary)
+{
+  static constexpr const std::array<shaderc_shader_kind, static_cast<size_t>(GPUShaderStage::MaxCount)> stage_kinds = {{
+    shaderc_glsl_vertex_shader,
+    shaderc_glsl_fragment_shader,
+    shaderc_glsl_geometry_shader,
+    shaderc_glsl_compute_shader,
+  }};
+
+  // TODO: Move to library.
+  static constexpr const std::pair<shaderc_compilation_status, const char*> status_names[] = {
+    {shaderc_compilation_status_success, "shaderc_compilation_status_success"},
+    {shaderc_compilation_status_invalid_stage, "shaderc_compilation_status_invalid_stage"},
+    {shaderc_compilation_status_compilation_error, "shaderc_compilation_status_compilation_error"},
+    {shaderc_compilation_status_internal_error, "shaderc_compilation_status_internal_error"},
+    {shaderc_compilation_status_null_result_object, "shaderc_compilation_status_null_result_object"},
+    {shaderc_compilation_status_invalid_assembly, "shaderc_compilation_status_invalid_assembly"},
+    {shaderc_compilation_status_validation_error, "shaderc_compilation_status_validation_error"},
+    {shaderc_compilation_status_transformation_error, "shaderc_compilation_status_transformation_error"},
+    {shaderc_compilation_status_configuration_error, "shaderc_compilation_status_configuration_error"},
+  };
+
+  if (!dyn_shaderc::Open())
+    return false;
+
+  const std::unique_ptr<struct shaderc_compile_options, void (*)(shaderc_compile_options_t)> options(
+    dyn_shaderc::shaderc_compile_options_initialize(), dyn_shaderc::shaderc_compile_options_release);
+  if (!options)
+  {
+    Log_ErrorPrint("Failed to create shaderc options.");
+    return false;
+  }
+
+  dyn_shaderc::shaderc_compile_options_set_source_language(options.get(), shaderc_source_language_glsl);
+  dyn_shaderc::shaderc_compile_options_set_target_env(options.get(), shaderc_target_env_vulkan, 0);
+
+  if (m_debug_device)
+  {
+    dyn_shaderc::shaderc_compile_options_set_generate_debug_info(options.get());
+    if (nonsemantic_debug_info)
+      dyn_shaderc::shaderc_compile_options_set_emit_non_semantic_debug_info(options.get());
+
+    dyn_shaderc::shaderc_compile_options_set_optimization_level(options.get(), shaderc_optimization_level_zero);
+  }
+  else
+  {
+    dyn_shaderc::shaderc_compile_options_set_optimization_level(options.get(), shaderc_optimization_level_performance);
+  }
+
+  const std::unique_ptr<struct shaderc_compilation_result, void (*)(shaderc_compilation_result_t)> result(
+    dyn_shaderc::shaderc_compile_into_spv(dyn_shaderc::s_compiler.get(), source.data(), source.length(),
+                                          stage_kinds[static_cast<size_t>(stage)], "source", entry_point,
+                                          options.get()),
+    dyn_shaderc::shaderc_result_release);
+  const shaderc_compilation_status status = result ? dyn_shaderc::shaderc_result_get_compilation_status(result.get()) :
+                                                     shaderc_compilation_status_null_result_object;
+  if (status != shaderc_compilation_status_success)
+  {
+    const char* status_name = "UNKNOWN";
+    for (const auto& it : status_names)
+    {
+      if (status == it.first)
+      {
+        status_name = it.second;
+        break;
+      }
+    }
+
+    const std::string_view errors(result ? dyn_shaderc::shaderc_result_get_error_message(result.get()) :
+                                           "null result object");
+    Log_ErrorFmt("Failed to compile shader to SPIR-V: {}\n{}", status_name, errors);
+    DumpBadShader(source, errors);
+    return false;
+  }
+
+  const size_t num_warnings = dyn_shaderc::shaderc_result_get_num_warnings(result.get());
+  if (num_warnings > 0)
+    Log_WarningFmt("Shader compiled with warnings:\n{}", dyn_shaderc::shaderc_result_get_error_message(result.get()));
+
+  const size_t spirv_size = dyn_shaderc::shaderc_result_get_length(result.get());
+  DebugAssert(spirv_size > 0);
+  out_binary->resize(spirv_size);
+  std::memcpy(out_binary->data(), dyn_shaderc::shaderc_result_get_bytes(result.get()), spirv_size);
+  return true;
+}
+
+#endif

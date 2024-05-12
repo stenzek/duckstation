@@ -36,6 +36,12 @@ endif()
 
 if(ENABLE_VULKAN OR APPLE)
   find_package(Shaderc REQUIRED)
+
+  if(LINUX AND ENABLE_VULKAN)
+    # We need to add the rpath for shaderc to the executable.
+    get_filename_component(SHADERC_LIBRARY_DIRECTORY ${SHADERC_LIBRARY} DIRECTORY)
+    list(APPEND CMAKE_BUILD_RPATH ${SHADERC_LIBRARY_DIRECTORY})
+  endif()
 endif()
 
 if(APPLE)

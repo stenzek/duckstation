@@ -719,6 +719,11 @@ protected:
 
   void TrimTexturePool();
 
+#if defined(ENABLE_VULKAN) || defined(__APPLE__)
+  bool CompileGLSLShaderToVulkanSpv(GPUShaderStage stage, std::string_view source, const char* entry_point,
+                                    bool nonsemantic_debug_info, DynamicHeapArray<u8>* out_binary);
+#endif
+
   Features m_features = {};
   u32 m_max_texture_size = 0;
   u32 m_max_multisamples = 0;

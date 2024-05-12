@@ -169,7 +169,8 @@ if(ENABLE_VULKAN)
 endif()
 
 if(ENABLE_VULKAN OR APPLE)
-  target_link_libraries(util PUBLIC Shaderc::shaderc_shared)
+  # shaderc is loaded dynamically to reduce module loads on startup.
+  target_include_directories(util PUBLIC ${SHADERC_INCLUDE_DIR})
 endif()
 
 if(NOT ANDROID)

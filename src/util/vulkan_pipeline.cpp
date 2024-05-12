@@ -8,11 +8,7 @@
 #include "common/assert.h"
 #include "common/log.h"
 
-#include "shaderc/shaderc.hpp"
-
 Log_SetChannel(VulkanDevice);
-
-static std::unique_ptr<shaderc::Compiler> s_shaderc_compiler;
 
 VulkanShader::VulkanShader(GPUShaderStage stage, VkShaderModule mod) : GPUShader(stage), m_module(mod)
 {
@@ -48,57 +44,17 @@ std::unique_ptr<GPUShader> VulkanDevice::CreateShaderFromSource(GPUShaderStage s
                                                                 const char* entry_point,
                                                                 DynamicHeapArray<u8>* out_binary)
 {
-  static constexpr const std::array<shaderc_shader_kind, static_cast<size_t>(GPUShaderStage::MaxCount)> stage_kinds = {{
-    shaderc_glsl_vertex_shader,
-    shaderc_glsl_fragment_shader,
-    shaderc_glsl_geometry_shader,
-    shaderc_glsl_compute_shader,
-  }};
-
-  // TODO: NOT thread safe, yet.
-  if (!s_shaderc_compiler)
-    s_shaderc_compiler = std::make_unique<shaderc::Compiler>();
-
-  shaderc::CompileOptions options;
-  options.SetSourceLanguage(shaderc_source_language_glsl);
-  options.SetTargetEnvironment(shaderc_target_env_vulkan, 0);
-
-  if (m_debug_device)
+  DynamicHeapArray<u8> local_binary;
+  DynamicHeapArray<u8>* dest_binary = out_binary ? out_binary : &local_binary;
+  if (!CompileGLSLShaderToVulkanSpv(stage, source, entry_point, m_optional_extensions.vk_khr_shader_non_semantic_info,
+                                    dest_binary))
   {
-    options.SetGenerateDebugInfo();
-    if (m_optional_extensions.vk_khr_shader_non_semantic_info)
-      options.SetEmitNonSemanticDebugInfo();
-
-    options.SetOptimizationLevel(shaderc_optimization_level_zero);
-  }
-  else
-  {
-    options.SetOptimizationLevel(shaderc_optimization_level_performance);
-  }
-
-  const shaderc::SpvCompilationResult result = s_shaderc_compiler->CompileGlslToSpv(
-    source.data(), source.length(), stage_kinds[static_cast<size_t>(stage)], "source", entry_point, options);
-  if (result.GetCompilationStatus() != shaderc_compilation_status_success)
-  {
-    const std::string errors = result.GetErrorMessage();
-    DumpBadShader(source, errors);
-    Log_ErrorFmt("Failed to compile shader to SPIR-V:\n{}", errors);
     return {};
   }
-  else if (result.GetNumWarnings() > 0)
-  {
-    Log_WarningFmt("Shader compiled with warnings:\n{}", result.GetErrorMessage());
-  }
 
-  const size_t spirv_size = std::distance(result.cbegin(), result.cend()) * sizeof(*result.cbegin());
-  DebugAssert(spirv_size > 0);
-  if (out_binary)
-  {
-    out_binary->resize(spirv_size);
-    std::copy(result.cbegin(), result.cend(), reinterpret_cast<uint32_t*>(out_binary->data()));
-  }
+  AssertMsg((dest_binary->size() % 4) == 0, "Compile result should be 4 byte aligned.");
 
-  return CreateShaderFromBinary(stage, std::span<const u8>(reinterpret_cast<const u8*>(result.cbegin()), spirv_size));
+  return CreateShaderFromBinary(stage, dest_binary->cspan());
 }
 
 //////////////////////////////////////////////////////////////////////////
