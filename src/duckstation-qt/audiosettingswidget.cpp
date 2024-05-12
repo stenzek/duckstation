@@ -209,7 +209,8 @@ void AudioSettingsWidget::updateDeviceNames()
   const AudioBackend backend = getEffectiveBackend();
   const std::string driver_name = m_dialog->getEffectiveStringValue("Audio", "Driver", "");
   const std::string current_device = m_dialog->getEffectiveStringValue("Audio", "Device", "");
-  const std::vector<AudioStream::DeviceInfo> devices = AudioStream::GetOutputDevices(backend, driver_name.c_str());
+  const std::vector<AudioStream::DeviceInfo> devices =
+    AudioStream::GetOutputDevices(backend, driver_name.c_str(), SPU::SAMPLE_RATE);
 
   m_ui.outputDevice->disconnect();
   m_ui.outputDevice->clear();

@@ -88,14 +88,14 @@ std::vector<std::pair<std::string, std::string>> AudioStream::GetDriverNames(Aud
   return ret;
 }
 
-std::vector<AudioStream::DeviceInfo> AudioStream::GetOutputDevices(AudioBackend backend, const char* driver)
+std::vector<AudioStream::DeviceInfo> AudioStream::GetOutputDevices(AudioBackend backend, const char* driver, u32 sample_rate)
 {
   std::vector<AudioStream::DeviceInfo> ret;
   switch (backend)
   {
 #ifndef __ANDROID__
     case AudioBackend::Cubeb:
-      ret = GetCubebOutputDevices(driver);
+      ret = GetCubebOutputDevices(driver, sample_rate);
       break;
 #endif
 

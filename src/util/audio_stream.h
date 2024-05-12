@@ -192,7 +192,7 @@ public:
   void SetStretchMode(AudioStretchMode mode);
 
   static std::vector<std::pair<std::string, std::string>> GetDriverNames(AudioBackend backend);
-  static std::vector<DeviceInfo> GetOutputDevices(AudioBackend backend, const char* driver);
+  static std::vector<DeviceInfo> GetOutputDevices(AudioBackend backend, const char* driver, u32 sample_rate);
   static std::unique_ptr<AudioStream> CreateStream(AudioBackend backend, u32 sample_rate,
                                                    const AudioStreamParameters& parameters, const char* driver_name,
                                                    const char* device_name, Error* error = nullptr);
@@ -242,7 +242,7 @@ private:
 
 #ifndef __ANDROID__
   static std::vector<std::pair<std::string, std::string>> GetCubebDriverNames();
-  static std::vector<DeviceInfo> GetCubebOutputDevices(const char* driver);
+  static std::vector<DeviceInfo> GetCubebOutputDevices(const char* driver, u32 sample_rate);
   static std::unique_ptr<AudioStream> CreateCubebAudioStream(u32 sample_rate, const AudioStreamParameters& parameters,
                                                              const char* driver_name, const char* device_name,
                                                              Error* error);

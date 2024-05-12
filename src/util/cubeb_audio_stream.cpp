@@ -311,7 +311,7 @@ std::vector<std::pair<std::string, std::string>> AudioStream::GetCubebDriverName
   return names;
 }
 
-std::vector<AudioStream::DeviceInfo> AudioStream::GetCubebOutputDevices(const char* driver)
+std::vector<AudioStream::DeviceInfo> AudioStream::GetCubebOutputDevices(const char* driver, u32 sample_rate)
 {
   std::vector<AudioStream::DeviceInfo> ret;
   ret.emplace_back(std::string(), TRANSLATE_STR("AudioStream", "Default"), 0);
@@ -339,7 +339,7 @@ std::vector<AudioStream::DeviceInfo> AudioStream::GetCubebOutputDevices(const ch
   // we need stream parameters to query latency
   cubeb_stream_params params = {};
   params.format = CUBEB_SAMPLE_S16LE;
-  params.rate = 48000;
+  params.rate = sample_rate;
   params.channels = 2;
   params.layout = CUBEB_LAYOUT_UNDEFINED;
   params.prefs = CUBEB_STREAM_PREF_NONE;
