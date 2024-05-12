@@ -971,6 +971,7 @@ void AudioStreamParameters::Load(SettingsInterface& si, const char* section)
 #endif
   output_latency_ms = static_cast<u16>(std::min<u32>(
     si.GetUIntValue(section, "OutputLatencyMS", DEFAULT_OUTPUT_LATENCY_MS), std::numeric_limits<u16>::max()));
+  output_latency_minimal = si.GetBoolValue(section, "OutputLatencyMinimal", DEFAULT_OUTPUT_LATENCY_MINIMAL);
   buffer_ms = static_cast<u16>(
     std::min<u32>(si.GetUIntValue(section, "BufferMS", DEFAULT_BUFFER_MS), std::numeric_limits<u16>::max()));
 
@@ -1011,6 +1012,7 @@ void AudioStreamParameters::Save(SettingsInterface& si, const char* section) con
   si.SetStringValue(section, "ExpansionMode", AudioStream::GetExpansionModeName(expansion_mode));
   si.SetUIntValue(section, "BufferMS", buffer_ms);
   si.SetUIntValue(section, "OutputLatencyMS", output_latency_ms);
+  si.SetBoolValue(section, "OutputLatencyMinimal", output_latency_minimal);
 
   si.SetUIntValue(section, "StretchSequenceLengthMS", stretch_sequence_length_ms);
   si.SetUIntValue(section, "StretchSeekWindowMS", stretch_seekwindow_ms);
@@ -1036,6 +1038,7 @@ void AudioStreamParameters::Clear(SettingsInterface& si, const char* section)
   si.DeleteValue(section, "ExpansionMode");
   si.DeleteValue(section, "BufferMS");
   si.DeleteValue(section, "OutputLatencyMS");
+  si.DeleteValue(section, "OutputLatencyMinimal");
 
   si.DeleteValue(section, "StretchSequenceLengthMS");
   si.DeleteValue(section, "StretchSeekWindowMS");

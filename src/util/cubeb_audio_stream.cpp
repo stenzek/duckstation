@@ -186,7 +186,7 @@ bool CubebAudioStream::Initialize(const char* driver_name, const char* device_na
 
     const u32 minimum_latency_ms = GetMSForBufferSize(m_sample_rate, min_latency_frames);
     Log_DevFmt("Minimum latency: {} ms ({} audio frames)", minimum_latency_ms, min_latency_frames);
-    if (m_parameters.output_latency_ms == 0)
+    if (m_parameters.output_latency_minimal)
     {
       // use minimum
       latency_frames = min_latency_frames;

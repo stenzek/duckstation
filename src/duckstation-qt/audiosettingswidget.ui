@@ -77,6 +77,9 @@
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
          <widget class="QSlider" name="outputLatencyMS">
+          <property name="minimum">
+           <number>1</number>
+          </property>
           <property name="maximum">
            <number>500</number>
           </property>

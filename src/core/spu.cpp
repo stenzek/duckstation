@@ -431,10 +431,11 @@ void SPU::Initialize()
 void SPU::CreateOutputStream()
 {
   Log_InfoFmt(
-    "Creating '{}' audio stream, sample rate = {}, expansion = {}, buffer = {}, latency = {}, stretching = {}",
+    "Creating '{}' audio stream, sample rate = {}, expansion = {}, buffer = {}, latency = {}{}, stretching = {}",
     AudioStream::GetBackendName(g_settings.audio_backend), static_cast<u32>(SAMPLE_RATE),
     AudioStream::GetExpansionModeName(g_settings.audio_stream_parameters.expansion_mode),
     g_settings.audio_stream_parameters.buffer_ms, g_settings.audio_stream_parameters.output_latency_ms,
+    g_settings.audio_stream_parameters.output_latency_minimal ? " (or minimal)" : "",
     AudioStream::GetStretchModeName(g_settings.audio_stream_parameters.stretch_mode));
 
   Error error;

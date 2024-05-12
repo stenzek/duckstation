@@ -49,6 +49,8 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
                                               AudioStreamParameters::DEFAULT_BUFFER_MS);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.outputLatencyMS, "Audio", "OutputLatencyMS",
                                               AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.outputLatencyMinimal, "Audio", "OutputLatencyMinimal",
+                                               AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MINIMAL);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.muteCDAudio, "CDROM", "MuteCDAudio", false);
   connect(m_ui.audioBackend, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::updateDriverNames);
   connect(m_ui.expansionMode, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::onExpansionModeChanged);
@@ -256,7 +258,8 @@ void AudioSettingsWidget::updateLatencyLabel()
     m_dialog->getEffectiveIntValue("Audio", "BufferMS", AudioStreamParameters::DEFAULT_BUFFER_MS);
   const u32 config_output_latency_ms =
     m_dialog->getEffectiveIntValue("Audio", "OutputLatencyMS", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS);
-  const bool minimal_output = (config_output_latency_ms == 0);
+  const bool minimal_output = m_dialog->getEffectiveBoolValue("Audio", "OutputLatencyMinimal",
+                                                              AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MINIMAL);
 
   //: Preserve the %1 variable, adapt the latter ms (and/or any possible spaces in between) to your language's ruleset.
   m_ui.outputLatencyLabel->setText(minimal_output ? tr("N/A") : tr("%1 ms").arg(config_output_latency_ms));
@@ -296,20 +299,6 @@ void AudioSettingsWidget::updateLatencyLabel()
       m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 ms (minimum output latency unknown)").arg(config_buffer_ms));
     }
   }
-
-  const u32 value =
-    m_dialog->getEffectiveIntValue("Audio", "OutputLatencyMS", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS);
-
-  {
-    QSignalBlocker sb(m_ui.outputLatencyMS);
-    m_ui.outputLatencyMS->setValue(value);
-    m_ui.outputLatencyMS->setEnabled(value != 0);
-  }
-
-  {
-    QSignalBlocker sb(m_ui.outputLatencyMinimal);
-    m_ui.outputLatencyMinimal->setChecked(value == 0);
-  }
 }
 
 void AudioSettingsWidget::updateVolumeLabel()
@@ -320,9 +309,8 @@ void AudioSettingsWidget::updateVolumeLabel()
 
 void AudioSettingsWidget::onMinimalOutputLatencyChecked(Qt::CheckState state)
 {
-  const u32 value = (state == Qt::Checked) ? 0u : AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS;
-  m_dialog->setIntSettingValue("Audio", "OutputLatencyMS", value);
-
+  const bool minimal = m_dialog->getEffectiveBoolValue("SPU2/Output", "OutputLatencyMinimal", false);
+  m_ui.outputLatencyMS->setEnabled(!minimal);
   updateLatencyLabel();
 }
 

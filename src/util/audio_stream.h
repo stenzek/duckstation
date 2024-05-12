@@ -63,6 +63,8 @@ struct AudioStreamParameters
   AudioExpansionMode expansion_mode = DEFAULT_EXPANSION_MODE;
   u16 buffer_ms = DEFAULT_BUFFER_MS;
   u16 output_latency_ms = DEFAULT_OUTPUT_LATENCY_MS;
+  bool output_latency_minimal = DEFAULT_OUTPUT_LATENCY_MINIMAL;
+  bool pad1 = false;
 
   u16 stretch_sequence_length_ms = DEFAULT_STRETCH_SEQUENCE_LENGTH;
   u16 stretch_seekwindow_ms = DEFAULT_STRETCH_SEEKWINDOW;
@@ -90,6 +92,7 @@ struct AudioStreamParameters
   static constexpr u16 DEFAULT_BUFFER_MS = 100;
   static constexpr u16 DEFAULT_OUTPUT_LATENCY_MS = 20;
 #endif
+  static constexpr bool DEFAULT_OUTPUT_LATENCY_MINIMAL = false;
   static constexpr u16 DEFAULT_EXPAND_BLOCK_SIZE = 2048;
   static constexpr float DEFAULT_EXPAND_CIRCULAR_WRAP = 90.0f;
   static constexpr float DEFAULT_EXPAND_SHIFT = 0.0f;

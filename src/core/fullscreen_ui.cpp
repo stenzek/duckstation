@@ -4873,19 +4873,8 @@ void FullscreenUI::DrawAudioSettingsPage()
   DrawIntRangeSetting(bsi, FSUI_CSTR("Buffer Size"),
                       FSUI_CSTR("Determines the amount of audio buffered before being pulled by the host API."),
                       "Audio", "BufferMS", AudioStreamParameters::DEFAULT_BUFFER_MS, 10, 500, FSUI_CSTR("%d ms"));
-
-  const u32 output_latency =
-    GetEffectiveUIntSetting(bsi, "Audio", "OutputLatencyMS", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS);
-  bool output_latency_minimal = (output_latency == 0);
-  if (ToggleButton(FSUI_CSTR("Minimal Output Latency"),
-                   FSUI_CSTR("When enabled, the minimum supported output latency will be used for the host API."),
-                   &output_latency_minimal))
-  {
-    bsi->SetUIntValue("Audio", "OutputLatencyMS",
-                      output_latency_minimal ? 0 : AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS);
-    SetSettingsChanged(bsi);
-  }
-  if (!output_latency_minimal)
+  if (!GetEffectiveBoolSetting(bsi, "Audio", "OutputLatencyMinimal",
+                               AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MINIMAL))
   {
     DrawIntRangeSetting(
       bsi, FSUI_CSTR("Output Latency"),
@@ -4893,6 +4882,9 @@ void FullscreenUI::DrawAudioSettingsPage()
                 "played through speakers."),
       "Audio", "OutputLatencyMS", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS, 1, 500, FSUI_CSTR("%d ms"));
   }
+  DrawToggleSetting(bsi, FSUI_CSTR("Minimal Output Latency"),
+                    FSUI_CSTR("When enabled, the minimum supported output latency will be used for the host API."),
+                    "Audio", "OutputLatencyMinimal", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MINIMAL);
 
   EndMenuButtons();
 }
