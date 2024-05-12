@@ -106,6 +106,9 @@ void SetSoftwareCursorPosition(u32 index, float pos_x, float pos_y);
 
 /// Adds software cursors to ImGui render list.
 void RenderSoftwareCursors();
+
+/// Strips icon characters from a string.
+std::string StripIconCharacters(std::string_view str);
 } // namespace ImGuiManager
 
 namespace Host {

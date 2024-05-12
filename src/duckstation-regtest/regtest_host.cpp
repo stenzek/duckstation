@@ -12,6 +12,7 @@
 #include "scmversion/scmversion.h"
 
 #include "util/gpu_device.h"
+#include "util/imgui_fullscreen.h"
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
 #include "util/platform_misc.h"
@@ -385,6 +386,18 @@ void Host::OnAchievementsHardcoreModeChanged(bool enabled)
 void Host::OnCoverDownloaderOpenRequested()
 {
   // noop
+}
+
+bool Host::ShouldPreferHostFileSelector()
+{
+  return false;
+}
+
+void Host::OpenHostFileSelectorAsync(std::string_view title, bool select_directory, FileSelectorCallback callback,
+                                     FileSelectorFilters filters /* = FileSelectorFilters() */,
+                                     std::string_view initial_directory /* = std::string_view() */)
+{
+  callback(std::string());
 }
 
 std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(std::string_view str)
