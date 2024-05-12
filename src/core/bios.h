@@ -1,12 +1,16 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>.
+// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>.
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
+
 #include "types.h"
+
 #include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
+
+class Error;
 
 namespace BIOS {
 enum : u32
@@ -58,7 +62,7 @@ struct PSEXEHeader
 static_assert(sizeof(PSEXEHeader) == 0x800);
 #pragma pack(pop)
 
-std::optional<Image> LoadImageFromFile(const char* filename);
+std::optional<Image> LoadImageFromFile(const char* filename, Error* error);
 Hash GetImageHash(const Image& image);
 
 const ImageInfo* GetInfoForImage(const Image& image);
@@ -74,14 +78,11 @@ bool IsValidPSExeHeader(const PSEXEHeader& header, u32 file_size);
 DiscRegion GetPSExeDiscRegion(const PSEXEHeader& header);
 
 /// Loads the BIOS image for the specified region.
-std::optional<std::vector<u8>> GetBIOSImage(ConsoleRegion region);
+std::optional<std::vector<u8>> GetBIOSImage(ConsoleRegion region, Error* error);
 
 /// Searches for a BIOS image for the specified region in the specified directory. If no match is found, the first
 /// BIOS image within 512KB and 4MB will be used.
-std::optional<std::vector<u8>> FindBIOSImageInDirectory(ConsoleRegion region, const char* directory);
-
-/// Returns a BIOS image which matches the specified hash.
-std::string FindBIOSPathWithHash(const char* directory, const BIOS::Hash& hash);
+std::optional<std::vector<u8>> FindBIOSImageInDirectory(ConsoleRegion region, const char* directory, Error* error);
 
 /// Returns a list of filenames and descriptions for BIOS images in a directory.
 std::vector<std::pair<std::string, const BIOS::ImageInfo*>> FindBIOSImagesInDirectory(const char* directory);

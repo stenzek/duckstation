@@ -1,16 +1,20 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "bios.h"
+#include "cpu_disasm.h"
+#include "host.h"
+#include "settings.h"
+
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/md5_digest.h"
 #include "common/path.h"
-#include "cpu_disasm.h"
-#include "host.h"
-#include "settings.h"
+
 #include <cerrno>
+
 Log_SetChannel(BIOS);
 
 static constexpr BIOS::Hash MakeHashFromString(const char str[])
@@ -164,13 +168,13 @@ BIOS::Hash BIOS::GetImageHash(const BIOS::Image& image)
   return hash;
 }
 
-std::optional<BIOS::Image> BIOS::LoadImageFromFile(const char* filename)
+std::optional<BIOS::Image> BIOS::LoadImageFromFile(const char* filename, Error* error)
 {
   Image ret(BIOS_SIZE);
-  auto fp = FileSystem::OpenManagedCFile(filename, "rb");
+  auto fp = FileSystem::OpenManagedCFile(filename, "rb", error);
   if (!fp)
   {
-    Log_ErrorPrintf("Failed to open BIOS image '%s', errno=%d", filename, errno);
+    Error::AddPrefixFmt(error, "Failed to open BIOS '{}': ", Path::GetFileName(filename));
     return std::nullopt;
   }
 
@@ -180,14 +184,15 @@ std::optional<BIOS::Image> BIOS::LoadImageFromFile(const char* filename)
 
   if (size != BIOS_SIZE && size != BIOS_SIZE_PS2 && size != BIOS_SIZE_PS3)
   {
-    Log_ErrorPrintf("BIOS image '%s' size mismatch, expecting either %u or %u or %u bytes but got %u bytes", filename,
-                    BIOS_SIZE, BIOS_SIZE_PS2, BIOS_SIZE_PS3, size);
+    Error::SetStringFmt(error, "BIOS image '{}' size mismatch, expecting either {} or {} bytes but got {} bytes",
+                        Path::GetFileName(filename), static_cast<unsigned>(BIOS_SIZE),
+                        static_cast<unsigned>(BIOS_SIZE_PS2), size);
     return std::nullopt;
   }
 
   if (std::fread(ret.data(), 1, ret.size(), fp.get()) != ret.size())
   {
-    Log_ErrorPrintf("Failed to read BIOS image '%s'", filename);
+    Error::SetErrno(error, TinyString::from_format("Failed to read BIOS '{}': ", Path::GetFileName(filename)), errno);
     return std::nullopt;
   }
 
@@ -326,7 +331,7 @@ DiscRegion BIOS::GetPSExeDiscRegion(const PSEXEHeader& header)
     return DiscRegion::Other;
 }
 
-std::optional<std::vector<u8>> BIOS::GetBIOSImage(ConsoleRegion region)
+std::optional<std::vector<u8>> BIOS::GetBIOSImage(ConsoleRegion region, Error* error)
 {
   std::string bios_name;
   switch (region)
@@ -345,31 +350,37 @@ std::optional<std::vector<u8>> BIOS::GetBIOSImage(ConsoleRegion region)
       break;
   }
 
+  std::optional<Image> image;
+
   if (bios_name.empty())
   {
     // auto-detect
-    return FindBIOSImageInDirectory(region, EmuFolders::Bios.c_str());
+    image = FindBIOSImageInDirectory(region, EmuFolders::Bios.c_str(), error);
   }
-
-  // try the configured path
-  std::optional<Image> image = LoadImageFromFile(Path::Combine(EmuFolders::Bios, bios_name).c_str());
-  if (!image.has_value())
+  else
   {
-    Host::ReportFormattedErrorAsync("Error", TRANSLATE("HostInterface", "Failed to load configured BIOS file '%s'"),
-                                    bios_name.c_str());
-    return std::nullopt;
+    // try the configured path
+    image = LoadImageFromFile(Path::Combine(EmuFolders::Bios, bios_name).c_str(), error);
   }
 
-  const ImageInfo* ii = GetInfoForImage(image.value());
-  if (!ii || !IsValidBIOSForRegion(region, ii->region))
-    Log_WarningPrintf("BIOS '%s' does not match region. This may cause issues.", bios_name.c_str());
+  // verify region
+  if (image.has_value())
+  {
+    const ImageInfo* ii = GetInfoForImage(image.value());
+    if (!ii || !IsValidBIOSForRegion(region, ii->region))
+    {
+      Log_WarningFmt("BIOS region {} does not match requested region {}. This may cause issues.",
+                     ii ? Settings::GetConsoleRegionName(ii->region) : "UNKNOWN",
+                     Settings::GetConsoleRegionName(region));
+    }
+  }
 
   return image;
 }
 
-std::optional<std::vector<u8>> BIOS::FindBIOSImageInDirectory(ConsoleRegion region, const char* directory)
+std::optional<std::vector<u8>> BIOS::FindBIOSImageInDirectory(ConsoleRegion region, const char* directory, Error* error)
 {
-  Log_InfoPrintf("Searching for a %s BIOS in '%s'...", Settings::GetConsoleRegionDisplayName(region), directory);
+  Log_InfoFmt("Searching for a {} BIOS in '{}'...", Settings::GetConsoleRegionName(region), directory);
 
   FileSystem::FindResultsArray results;
   FileSystem::FindFiles(
@@ -383,20 +394,21 @@ std::optional<std::vector<u8>> BIOS::FindBIOSImageInDirectory(ConsoleRegion regi
   {
     if (fd.Size != BIOS_SIZE && fd.Size != BIOS_SIZE_PS2 && fd.Size != BIOS_SIZE_PS3)
     {
-      Log_WarningPrintf("Skipping '%s': incorrect size", fd.FileName.c_str());
+      Log_WarningFmt("Skipping '{}': incorrect size", fd.FileName.c_str());
       continue;
     }
 
     std::string full_path(Path::Combine(directory, fd.FileName));
-    std::optional<Image> found_image = LoadImageFromFile(full_path.c_str());
+    std::optional<Image> found_image = LoadImageFromFile(full_path.c_str(), nullptr);
     if (!found_image)
       continue;
 
     const ImageInfo* ii = GetInfoForImage(found_image.value());
     if (ii && IsValidBIOSForRegion(region, ii->region))
     {
-      Log_InfoPrintf("Using BIOS '%s': %s", fd.FileName.c_str(), ii->description);
-      return found_image;
+      Log_InfoFmt("Using BIOS '{}': {}", fd.FileName.c_str(), ii->description);
+      fallback_image = std::move(found_image);
+      return fallback_image;
     }
 
     // don't let an unknown bios take precedence over a known one
@@ -410,51 +422,22 @@ std::optional<std::vector<u8>> BIOS::FindBIOSImageInDirectory(ConsoleRegion regi
 
   if (!fallback_image.has_value())
   {
-    Host::ReportFormattedErrorAsync("Error", TRANSLATE("HostInterface", "No BIOS image found for %s region"),
-                                    Settings::GetConsoleRegionDisplayName(region));
-    return std::nullopt;
+    Error::SetStringFmt(error, TRANSLATE_FS("System", "No BIOS image found for {} region."),
+                        Settings::GetConsoleRegionName(region));
+    return fallback_image;
   }
 
   if (!fallback_info)
   {
-    Log_WarningPrintf("Using unknown BIOS '%s'. This may crash.", fallback_path.c_str());
+    Log_WarningFmt("Using unknown BIOS '{}'. This may crash.", Path::GetFileName(fallback_path));
   }
   else
   {
-    Log_WarningPrintf("Falling back to possibly-incompatible image '%s': %s", fallback_path.c_str(),
-                      fallback_info->description);
+    Log_WarningFmt("Falling back to possibly-incompatible image '{}': {}", Path::GetFileName(fallback_path),
+                   fallback_info->description);
   }
 
   return fallback_image;
-}
-
-std::string BIOS::FindBIOSPathWithHash(const char* directory, const Hash& hash)
-{
-  FileSystem::FindResultsArray files;
-  FileSystem::FindFiles(directory, "*",
-                        FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RELATIVE_PATHS, &files);
-
-  std::string ret;
-
-  for (FILESYSTEM_FIND_DATA& fd : files)
-  {
-    if (fd.Size != BIOS_SIZE && fd.Size != BIOS_SIZE_PS2 && fd.Size != BIOS_SIZE_PS3)
-      continue;
-
-    std::string full_path(Path::Combine(directory, fd.FileName));
-    std::optional<Image> found_image = LoadImageFromFile(full_path.c_str());
-    if (!found_image)
-      continue;
-
-    const BIOS::Hash found_hash = GetImageHash(found_image.value());
-    if (found_hash == hash)
-    {
-      ret = std::move(full_path);
-      break;
-    }
-  }
-
-  return ret;
 }
 
 std::vector<std::pair<std::string, const BIOS::ImageInfo*>> BIOS::FindBIOSImagesInDirectory(const char* directory)
@@ -471,7 +454,7 @@ std::vector<std::pair<std::string, const BIOS::ImageInfo*>> BIOS::FindBIOSImages
       continue;
 
     std::string full_path(Path::Combine(directory, fd.FileName));
-    std::optional<Image> found_image = LoadImageFromFile(full_path.c_str());
+    std::optional<Image> found_image = LoadImageFromFile(full_path.c_str(), nullptr);
     if (!found_image)
       continue;
 
@@ -484,5 +467,5 @@ std::vector<std::pair<std::string, const BIOS::ImageInfo*>> BIOS::FindBIOSImages
 
 bool BIOS::HasAnyBIOSImages()
 {
-  return FindBIOSImageInDirectory(ConsoleRegion::Auto, EmuFolders::Bios.c_str()).has_value();
+  return FindBIOSImageInDirectory(ConsoleRegion::Auto, EmuFolders::Bios.c_str(), nullptr).has_value();
 }
