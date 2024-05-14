@@ -6,7 +6,6 @@
 
 FIND_PATH(
     SHADERC_INCLUDE_DIR shaderc/shaderc.h
-    HINTS /usr/include /usr/local/include
     ${SHADERC_PATH_INCLUDES}
 )
 

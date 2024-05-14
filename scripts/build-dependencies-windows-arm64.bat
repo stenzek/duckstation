@@ -54,10 +54,10 @@ set ZLIB=1.3.1
 set ZLIBSHORT=131
 set ZSTD=1.5.5
 
-set SHADERC=2024.0
-set SHADERC_GLSLANG=d73712b8f6c9047b09e99614e20d456d5ada2390
-set SHADERC_SPIRVHEADERS=8b246ff75c6615ba4532fe4fde20f1be090c3764
-set SHADERC_SPIRVTOOLS=04896c462d9f3f504c99a4698605b6524af813c1
+set SHADERC=2024.1
+set SHADERC_GLSLANG=142052fa30f9eca191aa9dcf65359fcaed09eeec
+set SHADERC_SPIRVHEADERS=5e3ad389ee56fca27c9705d093ae5387ce404df4
+set SHADERC_SPIRVTOOLS=dd4b663e13c07fea4fbb3f70c1c91c86731099f7
 set SPIRV_CROSS=vulkan-sdk-1.3.280.0
 
 call :downloadfile "freetype-%FREETYPE%.tar.gz" https://download.savannah.gnu.org/releases/freetype/freetype-%FREETYPE%.tar.gz 1ac27e16c134a7f2ccea177faba19801131116fd682efc1f5737037c5db224b5 || goto error
@@ -74,10 +74,10 @@ call :downloadfile "libwebp-%WEBP%.tar.gz" "https://storage.googleapis.com/downl
 call :downloadfile "zlib%ZLIBSHORT%.zip" "https://zlib.net/zlib%ZLIBSHORT%.zip" 72af66d44fcc14c22013b46b814d5d2514673dda3d115e64b690c1ad636e7b17 || goto error
 call :downloadfile "zstd-%ZSTD%.zip" "https://github.com/facebook/zstd/archive/refs/tags/v%ZSTD%.zip" c5c8daa1d40dabc51790c62a5b86af2b36dfc4e1a738ff10dc4a46ea4e68ee51 || goto error
 
-call :downloadfile "shaderc-%SHADERC%.zip" "https://github.com/google/shaderc/archive/refs/tags/v%SHADERC%.zip" 5397160432fb5b780e9372327060b1be47acafcd0689fea44fd939e7305668ba || goto error
-call :downloadfile "shaderc-glslang-%SHADERC_GLSLANG%.zip" "https://github.com/KhronosGroup/glslang/archive/%SHADERC_GLSLANG%.zip" 58a0d4b670986f8618c371b088f2ee11006596e8c71fe499ec044d5ea469d39b || goto error
-call :downloadfile "shaderc-spirv-headers-%SHADERC_SPIRVHEADERS%.zip" "https://github.com/KhronosGroup/SPIRV-Headers/archive/%SHADERC_SPIRVHEADERS%.zip" 1385538d16f8875e76209388187b3814cb0b0e9cecc3bc440faa7665b570ff47 || goto error
-call :downloadfile "shaderc-spirv-tools-%SHADERC_SPIRVTOOLS%.zip" "https://github.com/KhronosGroup/SPIRV-Tools/archive/%SHADERC_SPIRVTOOLS%.zip" 4eb9a3fc940ed1b05f968c181763dfdb8e637cbfbf57c625112b3ad0f76e2c28 || goto error
+call :downloadfile "shaderc-%SHADERC%.zip" "https://github.com/google/shaderc/archive/refs/tags/v%SHADERC%.zip" 6c9f42ed6bf42750f5369b089909abfdcf0101488b4a1f41116d5159d00af8e7 || goto error
+call :downloadfile "shaderc-glslang-%SHADERC_GLSLANG%.zip" "https://github.com/KhronosGroup/glslang/archive/%SHADERC_GLSLANG%.zip" 03ad8a6fa987af4653d0cfe6bdaed41bcf617f1366a151fb1574da75950cd3e8 || goto error
+call :downloadfile "shaderc-spirv-headers-%SHADERC_SPIRVHEADERS%.zip" "https://github.com/KhronosGroup/SPIRV-Headers/archive/%SHADERC_SPIRVHEADERS%.zip" fa59a54334feaba5702b9c25724c3f4746123865769b36dd5a28d9ef5e9d39ab || goto error
+call :downloadfile "shaderc-spirv-tools-%SHADERC_SPIRVTOOLS%.zip" "https://github.com/KhronosGroup/SPIRV-Tools/archive/%SHADERC_SPIRVTOOLS%.zip" bf385994c20293485b378c27dfdbd77a31b949deabccd9218a977f173eda9f6f || goto error
 call :downloadfile "SPIRV-Cross-%SPIRV_CROSS%.zip" "https://github.com/KhronosGroup/SPIRV-Cross/archive/refs/tags/%SPIRV_CROSS%.zip" 8428a0faf339b3fed2e9acb0b7a8176e7f5384c712b8d7f1e09505650dd10e93 || goto error
 
 if %DEBUG%==1 (

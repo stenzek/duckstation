@@ -1121,14 +1121,13 @@ std::unique_ptr<GPUDevice> GPUDevice::CreateDeviceForAPI(RenderAPI api)
   X(shaderc_compile_options_release)                                                                                   \
   X(shaderc_compile_options_set_source_language)                                                                       \
   X(shaderc_compile_options_set_generate_debug_info)                                                                   \
-  X(shaderc_compile_options_set_emit_non_semantic_debug_info)                                                          \
   X(shaderc_compile_options_set_optimization_level)                                                                    \
   X(shaderc_compile_options_set_target_env)                                                                            \
+  X(shaderc_compilation_status_to_string)                                                                              \
   X(shaderc_compile_into_spv)                                                                                          \
   X(shaderc_result_release)                                                                                            \
   X(shaderc_result_get_length)                                                                                         \
   X(shaderc_result_get_num_warnings)                                                                                   \
-  X(shaderc_result_get_compilation_status)                                                                             \
   X(shaderc_result_get_bytes)                                                                                          \
   X(shaderc_result_get_error_message)
 
@@ -1195,81 +1194,46 @@ bool GPUDevice::CompileGLSLShaderToVulkanSpv(GPUShaderStage stage, std::string_v
     shaderc_glsl_compute_shader,
   }};
 
-  // TODO: Move to library.
-  static constexpr const std::pair<shaderc_compilation_status, const char*> status_names[] = {
-    {shaderc_compilation_status_success, "shaderc_compilation_status_success"},
-    {shaderc_compilation_status_invalid_stage, "shaderc_compilation_status_invalid_stage"},
-    {shaderc_compilation_status_compilation_error, "shaderc_compilation_status_compilation_error"},
-    {shaderc_compilation_status_internal_error, "shaderc_compilation_status_internal_error"},
-    {shaderc_compilation_status_null_result_object, "shaderc_compilation_status_null_result_object"},
-    {shaderc_compilation_status_invalid_assembly, "shaderc_compilation_status_invalid_assembly"},
-    {shaderc_compilation_status_validation_error, "shaderc_compilation_status_validation_error"},
-    {shaderc_compilation_status_transformation_error, "shaderc_compilation_status_transformation_error"},
-    {shaderc_compilation_status_configuration_error, "shaderc_compilation_status_configuration_error"},
-  };
-
   if (!dyn_shaderc::Open())
     return false;
 
-  const std::unique_ptr<struct shaderc_compile_options, void (*)(shaderc_compile_options_t)> options(
-    dyn_shaderc::shaderc_compile_options_initialize(), dyn_shaderc::shaderc_compile_options_release);
-  if (!options)
+  shaderc_compile_options_t options = dyn_shaderc::shaderc_compile_options_initialize();
+  AssertMsg(options, "shaderc_compile_options_initialize() failed");
+
+  dyn_shaderc::shaderc_compile_options_set_source_language(options, shaderc_source_language_glsl);
+  dyn_shaderc::shaderc_compile_options_set_target_env(options, shaderc_target_env_vulkan, 0);
+  dyn_shaderc::shaderc_compile_options_set_generate_debug_info(options, m_debug_device,
+                                                               m_debug_device && nonsemantic_debug_info);
+  dyn_shaderc::shaderc_compile_options_set_optimization_level(
+    options, m_debug_device ? shaderc_optimization_level_zero : shaderc_optimization_level_performance);
+
+  shaderc_compilation_result_t result;
+  const shaderc_compilation_status status = dyn_shaderc::shaderc_compile_into_spv(
+    dyn_shaderc::s_compiler.get(), source.data(), source.length(), stage_kinds[static_cast<size_t>(stage)], "source",
+    entry_point, options, &result);
+  if (status != shaderc_compilation_status_success)
   {
-    Log_ErrorPrint("Failed to create shaderc options.");
-    return false;
-  }
-
-  dyn_shaderc::shaderc_compile_options_set_source_language(options.get(), shaderc_source_language_glsl);
-  dyn_shaderc::shaderc_compile_options_set_target_env(options.get(), shaderc_target_env_vulkan, 0);
-
-  if (m_debug_device)
-  {
-    dyn_shaderc::shaderc_compile_options_set_generate_debug_info(options.get());
-    if (nonsemantic_debug_info)
-      dyn_shaderc::shaderc_compile_options_set_emit_non_semantic_debug_info(options.get());
-
-    dyn_shaderc::shaderc_compile_options_set_optimization_level(options.get(), shaderc_optimization_level_zero);
+    const std::string_view errors(result ? dyn_shaderc::shaderc_result_get_error_message(result) :
+                                           "null result object");
+    Log_ErrorFmt("Failed to compile shader to SPIR-V: {}\n{}",
+                 dyn_shaderc::shaderc_compilation_status_to_string(status), errors);
+    DumpBadShader(source, errors);
   }
   else
   {
-    dyn_shaderc::shaderc_compile_options_set_optimization_level(options.get(), shaderc_optimization_level_performance);
+    const size_t num_warnings = dyn_shaderc::shaderc_result_get_num_warnings(result);
+    if (num_warnings > 0)
+      Log_WarningFmt("Shader compiled with warnings:\n{}", dyn_shaderc::shaderc_result_get_error_message(result));
+
+    const size_t spirv_size = dyn_shaderc::shaderc_result_get_length(result);
+    DebugAssert(spirv_size > 0);
+    out_binary->resize(spirv_size);
+    std::memcpy(out_binary->data(), dyn_shaderc::shaderc_result_get_bytes(result), spirv_size);
   }
 
-  const std::unique_ptr<struct shaderc_compilation_result, void (*)(shaderc_compilation_result_t)> result(
-    dyn_shaderc::shaderc_compile_into_spv(dyn_shaderc::s_compiler.get(), source.data(), source.length(),
-                                          stage_kinds[static_cast<size_t>(stage)], "source", entry_point,
-                                          options.get()),
-    dyn_shaderc::shaderc_result_release);
-  const shaderc_compilation_status status = result ? dyn_shaderc::shaderc_result_get_compilation_status(result.get()) :
-                                                     shaderc_compilation_status_null_result_object;
-  if (status != shaderc_compilation_status_success)
-  {
-    const char* status_name = "UNKNOWN";
-    for (const auto& it : status_names)
-    {
-      if (status == it.first)
-      {
-        status_name = it.second;
-        break;
-      }
-    }
-
-    const std::string_view errors(result ? dyn_shaderc::shaderc_result_get_error_message(result.get()) :
-                                           "null result object");
-    Log_ErrorFmt("Failed to compile shader to SPIR-V: {}\n{}", status_name, errors);
-    DumpBadShader(source, errors);
-    return false;
-  }
-
-  const size_t num_warnings = dyn_shaderc::shaderc_result_get_num_warnings(result.get());
-  if (num_warnings > 0)
-    Log_WarningFmt("Shader compiled with warnings:\n{}", dyn_shaderc::shaderc_result_get_error_message(result.get()));
-
-  const size_t spirv_size = dyn_shaderc::shaderc_result_get_length(result.get());
-  DebugAssert(spirv_size > 0);
-  out_binary->resize(spirv_size);
-  std::memcpy(out_binary->data(), dyn_shaderc::shaderc_result_get_bytes(result.get()), spirv_size);
-  return true;
+  dyn_shaderc::shaderc_result_release(result);
+  dyn_shaderc::shaderc_compile_options_release(options);
+  return (status == shaderc_compilation_status_success);
 }
 
 #endif
