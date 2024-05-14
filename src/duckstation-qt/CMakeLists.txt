@@ -241,6 +241,10 @@ elseif(APPLE)
     endif()
   endif()
 
+  # Copy shaderc into the bundle
+  target_sources(duckstation-qt PRIVATE "${SHADERC_LIBRARY}")
+  set_source_files_properties("${SHADERC_LIBRARY}" PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks)
+
   # Copy icon into the bundle
   target_sources(duckstation-qt PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/DuckStation.icns")
   set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/DuckStation.icns" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)

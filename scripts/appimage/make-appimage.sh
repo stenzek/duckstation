@@ -61,7 +61,7 @@ declare -a EXCLUDE_LIBS=(
 )
 
 declare -a MANUAL_LIBS=(
-	"libshaderc_shared.so"
+	"libshaderc_shared.so.1"
 )
 
 declare -a MANUAL_QT_LIBS=(

@@ -1150,7 +1150,14 @@ bool dyn_shaderc::Open()
     return true;
 
   Error error;
-  if (!s_library.Open(DynamicLibrary::GetVersionedFilename("shaderc_shared").c_str(), &error))
+
+#ifdef _WIN32
+  const std::string libname = DynamicLibrary::GetVersionedFilename("shaderc_shared");
+#else
+  // Use versioned, bundle post-processing adds it..
+  const std::string libname = DynamicLibrary::GetVersionedFilename("shaderc_shared", 1);
+#endif
+  if (!s_library.Open(libname.c_str(), &error))
   {
     Log_ErrorFmt("Failed to load shaderc: {}", error.GetDescription());
     return false;
