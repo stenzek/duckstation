@@ -139,3 +139,58 @@ int main() {
     set(HOST_PAGE_SIZE ${detect_page_size_output} CACHE STRING "Reported host page size")
   endif()
 endfunction()
+
+function(detect_cache_line_size)
+  # This is only needed for ARM64, or if the user hasn't overridden it explicitly.
+  if(NOT CPU_ARCH_ARM64 OR HOST_CACHE_LINE_SIZE)
+    return()
+  endif()
+
+  if(NOT LINUX)
+    # For universal Apple builds, we use preprocessor macros to determine page size.
+    # Similar for Windows, except it's always 64 bytes.
+    return()
+  endif()
+
+  if(CMAKE_CROSSCOMPILING)
+    message(WARNING "Cross-compiling and can't determine page size, assuming default.")
+    return()
+  endif()
+
+  message(STATUS "Determining host cache line size")
+  set(detect_cache_line_size_file ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/src.c)
+  file(WRITE ${detect_cache_line_size_file} "
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+int main() {
+  int l1i = sysconf(_SC_LEVEL1_DCACHE_LINESIZE);
+  int l1d = sysconf(_SC_LEVEL1_ICACHE_LINESIZE);
+  int res = (l1i > l1d) ? l1i : l1d;
+  for (int index = 0; index < 16; index++) {
+    char buf[128];
+    snprintf(buf, sizeof(buf), \"/sys/devices/system/cpu/cpu0/cache/index%d/coherency_line_size\", index);
+    FILE* fp = fopen(buf, \"rb\");
+    if (!fp)
+      break;
+    fread(buf, sizeof(buf), 1, fp);
+    fclose(fp);
+    int val = atoi(buf);
+    res = (val > res) ? val : res;
+  }
+  printf(\"%d\", res);
+  return (res > 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+}")
+  try_run(
+    detect_cache_line_size_run_result
+    detect_cache_line_size_compile_result
+    ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}
+    ${detect_cache_line_size_file}
+    RUN_OUTPUT_VARIABLE detect_cache_line_size_output)
+  if(NOT detect_cache_line_size_compile_result OR NOT detect_cache_line_size_run_result EQUAL 0)
+    message(FATAL_ERROR "Could not determine host cache line size.")
+  else()
+    message(STATUS "Host cache line size: ${detect_cache_line_size_output}")
+    set(HOST_CACHE_LINE_SIZE ${detect_cache_line_size_output} CACHE STRING "Reported host cache line size")
+  endif()
+endfunction()

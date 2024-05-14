@@ -192,7 +192,9 @@ static constexpr u32 HOST_PAGE_SHIFT = 12;
 #endif
 
 // Host cache line sizes.
-#if defined(__APPLE__) && defined(__aarch64__)
+#if defined(OVERRIDE_HOST_CACHE_LINE_SIZE)
+static constexpr u32 HOST_CACHE_LINE_SIZE = OVERRIDE_HOST_CACHE_LINE_SIZE;
+#elif defined(__APPLE__) && defined(__aarch64__)
 static constexpr u32 HOST_CACHE_LINE_SIZE = 128; // Apple Silicon uses 128b cache lines.
 #else
 static constexpr u32 HOST_CACHE_LINE_SIZE = 64; // Everything else is 64b.
