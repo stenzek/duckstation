@@ -194,6 +194,11 @@ bool MainWindow::confirmMessage(const QString& title, const QString& message)
   return (QMessageBox::question(this, title, message) == QMessageBox::Yes);
 }
 
+void MainWindow::onStatusMessage(const QString& message)
+{
+  m_ui.statusBar->showMessage(message);
+}
+
 void MainWindow::registerForDeviceNotifications()
 {
 #ifdef _WIN32
@@ -2093,6 +2098,7 @@ void MainWindow::connectSignals()
           Qt::QueuedConnection);
   connect(g_emu_thread, &EmuThread::errorReported, this, &MainWindow::reportError, Qt::BlockingQueuedConnection);
   connect(g_emu_thread, &EmuThread::messageConfirmed, this, &MainWindow::confirmMessage, Qt::BlockingQueuedConnection);
+  connect(g_emu_thread, &EmuThread::statusMessage, this, &MainWindow::onStatusMessage);
   connect(g_emu_thread, &EmuThread::onAcquireRenderWindowRequested, this, &MainWindow::acquireRenderWindow,
           Qt::BlockingQueuedConnection);
   connect(g_emu_thread, &EmuThread::onReleaseRenderWindowRequested, this, &MainWindow::releaseRenderWindow);
@@ -2108,7 +2114,6 @@ void MainWindow::connectSignals()
   connect(g_emu_thread, &EmuThread::mouseModeRequested, this, &MainWindow::onMouseModeRequested);
   connect(g_emu_thread, &EmuThread::fullscreenUIStateChange, this, &MainWindow::onFullscreenUIStateChange);
   connect(g_emu_thread, &EmuThread::achievementsLoginRequested, this, &MainWindow::onAchievementsLoginRequested);
-  connect(g_emu_thread, &EmuThread::achievementsLoginSucceeded, this, &MainWindow::onAchievementsLoginSucceeded);
   connect(g_emu_thread, &EmuThread::achievementsChallengeModeChanged, this,
           &MainWindow::onAchievementsChallengeModeChanged);
   connect(g_emu_thread, &EmuThread::onCoverDownloaderOpenRequested, this, &MainWindow::onToolsCoverDownloaderTriggered);
@@ -2959,17 +2964,6 @@ void MainWindow::onAchievementsLoginRequested(Achievements::LoginRequestReason r
 
   AchievementLoginDialog dlg(lock.getDialogParent(), reason);
   dlg.exec();
-}
-
-void MainWindow::onAchievementsLoginSucceeded(const QString& display_name, quint32 points, quint32 sc_points,
-                                              quint32 unread_messages)
-{
-  const QString message = tr("RA: Logged in as %1 (%2, %3 softcore). %4 unread messages.")
-                            .arg(display_name)
-                            .arg(points)
-                            .arg(sc_points)
-                            .arg(unread_messages);
-  m_ui.statusBar->showMessage(message);
 }
 
 void MainWindow::onAchievementsChallengeModeChanged(bool enabled)

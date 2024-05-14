@@ -442,7 +442,7 @@ void Host::OnInputDeviceConnected(std::string_view identifier, std::string_view 
   // noop
 }
 
-void Host::OnInputDeviceDisconnected(std::string_view identifier)
+void Host::OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier)
 {
   // noop
 }

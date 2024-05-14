@@ -178,7 +178,8 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
   connect(m_ui.resetToDefaultButton, &QPushButton::clicked, this, &AdvancedSettingsWidget::onResetToDefaultClicked);
   connect(m_ui.showDebugMenu, &QCheckBox::checkStateChanged, g_main_window, &MainWindow::updateDebugMenuVisibility,
           Qt::QueuedConnection);
-  connect(m_ui.showDebugMenu, &QCheckBox::checkStateChanged, this, &AdvancedSettingsWidget::onShowDebugOptionsStateChanged);
+  connect(m_ui.showDebugMenu, &QCheckBox::checkStateChanged, this,
+          &AdvancedSettingsWidget::onShowDebugOptionsStateChanged);
 
   m_ui.tweakOptionTable->setColumnWidth(0, 380);
   m_ui.tweakOptionTable->setColumnWidth(1, 170);
@@ -209,6 +210,12 @@ void AdvancedSettingsWidget::onShowDebugOptionsStateChanged()
 
 void AdvancedSettingsWidget::addTweakOptions()
 {
+  if (!m_dialog->isPerGameSettings())
+  {
+    addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Apply Game Settings"), "Main", "ApplyGameSettings",
+                          true);
+  }
+
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Apply Compatibility Settings"), "Main",
                         "ApplyCompatibilitySettings", true);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Increase Timer Resolution"), "Main",
@@ -267,6 +274,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   {
     int i = 0;
 
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);  // Apply Game Settings
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);  // Apply compatibility settings
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);  // Increase Timer Resolution
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Load Devices From Save States

@@ -50,10 +50,11 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.inhibitScreensaver, "Main", "InhibitScreensaver", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnFocusLoss, "Main", "PauseOnFocusLoss", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnControllerDisconnection, "Main",
+                                               "PauseOnControllerDisconnection", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnStart, "Main", "StartPaused", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.saveStateOnExit, "Main", "SaveStateOnExit", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.confirmPowerOff, "Main", "ConfirmPowerOff", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.applyGameSettings, "Main", "ApplyGameSettings", true);
 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.startFullscreen, "Main", "StartFullscreen", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.doubleClickTogglesFullscreen, "Main",
@@ -70,11 +71,6 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
           &InterfaceSettingsWidget::onRenderToSeparateWindowChanged);
 
   onRenderToSeparateWindowChanged();
-
-  if (m_dialog->isPerGameSettings())
-  {
-    m_ui.applyGameSettings->setEnabled(false);
-  }
 
   dialog->registerWidgetHelp(
     m_ui.confirmPowerOff, tr("Confirm Power Off"), tr("Checked"),
@@ -99,10 +95,12 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
   dialog->registerWidgetHelp(m_ui.pauseOnFocusLoss, tr("Pause On Focus Loss"), tr("Unchecked"),
                              tr("Pauses the emulator when you minimize the window or switch to another application, "
                                 "and unpauses when you switch back."));
+  dialog->registerWidgetHelp(m_ui.pauseOnControllerDisconnection, tr("Pause On Controller Disconnection"),
+                             tr("Unchecked"),
+                             tr("Pauses the emulator when a controller with bindings is disconnected."));
   dialog->registerWidgetHelp(
-    m_ui.applyGameSettings, tr("Apply Per-Game Settings"), tr("Checked"),
-    tr("When enabled, per-game settings will be applied, and incompatible enhancements will be disabled. You should "
-       "leave this option enabled except when testing enhancements with incompatible games."));
+    m_ui.createSaveStateBackups, tr("Create Save State Backups"), tr("Checked"),
+    tr("Backs up any previous save state when creating a new save state, with a .bak extension."));
   dialog->registerWidgetHelp(m_ui.enableDiscordPresence, tr("Enable Discord Presence"), tr("Unchecked"),
                              tr("Shows the game you are currently playing as part of your profile in Discord."));
 

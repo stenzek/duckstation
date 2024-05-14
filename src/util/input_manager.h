@@ -351,7 +351,7 @@ std::vector<std::string> GetInputProfileNames();
 void OnInputDeviceConnected(std::string_view identifier, std::string_view device_name);
 
 /// Called when an input device is disconnected.
-void OnInputDeviceDisconnected(std::string_view identifier);
+void OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier);
 } // namespace InputManager
 
 namespace Host {
@@ -362,7 +362,7 @@ void AddFixedInputBindings(SettingsInterface& si);
 void OnInputDeviceConnected(std::string_view identifier, std::string_view device_name);
 
 /// Called when an input device is disconnected.
-void OnInputDeviceDisconnected(std::string_view identifier);
+void OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier);
 
 /// Enables "relative" mouse mode, locking the cursor position and returning relative coordinates.
 void SetMouseMode(bool relative, bool hide_cursor);

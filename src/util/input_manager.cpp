@@ -1440,9 +1440,9 @@ void InputManager::OnInputDeviceConnected(std::string_view identifier, std::stri
   Host::OnInputDeviceConnected(identifier, device_name);
 }
 
-void InputManager::OnInputDeviceDisconnected(std::string_view identifier)
+void InputManager::OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier)
 {
-  Host::OnInputDeviceDisconnected(identifier);
+  Host::OnInputDeviceDisconnected(key, identifier);
 }
 
 // ------------------------------------------------------------------------

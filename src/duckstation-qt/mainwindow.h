@@ -123,6 +123,7 @@ public Q_SLOTS:
 private Q_SLOTS:
   void reportError(const QString& title, const QString& message);
   bool confirmMessage(const QString& title, const QString& message);
+  void onStatusMessage(const QString& message);
 
   std::optional<WindowInfo> acquireRenderWindow(bool recreate_window, bool fullscreen, bool render_to_main,
                                                 bool surfaceless, bool use_main_window_pos);
@@ -139,8 +140,6 @@ private Q_SLOTS:
   void onSystemResumed();
   void onRunningGameChanged(const QString& filename, const QString& game_serial, const QString& game_title);
   void onAchievementsLoginRequested(Achievements::LoginRequestReason reason);
-  void onAchievementsLoginSucceeded(const QString& display_name, quint32 points, quint32 sc_points,
-                                    quint32 unread_messages);
   void onAchievementsChallengeModeChanged(bool enabled);
   void onApplicationStateChanged(Qt::ApplicationState state);
 

@@ -144,6 +144,7 @@ void Settings::Load(SettingsInterface& si)
   start_paused = si.GetBoolValue("Main", "StartPaused", false);
   start_fullscreen = si.GetBoolValue("Main", "StartFullscreen", false);
   pause_on_focus_loss = si.GetBoolValue("Main", "PauseOnFocusLoss", false);
+  pause_on_controller_disconnection = si.GetBoolValue("Main", "PauseOnControllerDisconnection", false);
   save_state_on_exit = si.GetBoolValue("Main", "SaveStateOnExit", true);
   create_save_state_backups = si.GetBoolValue("Main", "CreateSaveStateBackups", DEFAULT_SAVE_STATE_BACKUPS);
   compress_save_states = si.GetBoolValue("Main", "CompressSaveStates", DEFAULT_SAVE_STATE_COMPRESSION);
@@ -439,12 +440,11 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
     si.SetBoolValue("Main", "StartPaused", start_paused);
     si.SetBoolValue("Main", "StartFullscreen", start_fullscreen);
     si.SetBoolValue("Main", "PauseOnFocusLoss", pause_on_focus_loss);
+    si.SetBoolValue("Main", "PauseOnControllerDisconnection", pause_on_controller_disconnection);
     si.SetBoolValue("Main", "SaveStateOnExit", save_state_on_exit);
     si.SetBoolValue("Main", "CreateSaveStateBackups", create_save_state_backups);
     si.SetBoolValue("Main", "CompressSaveStates", compress_save_states);
     si.SetBoolValue("Main", "ConfirmPowerOff", confim_power_off);
-    si.SetBoolValue("Main", "ApplyCompatibilitySettings", apply_compatibility_settings);
-    si.SetBoolValue("Main", "ApplyGameSettings", apply_game_settings);
     si.SetBoolValue("Main", "EnableDiscordPresence", enable_discord_presence);
   }
 

@@ -122,6 +122,7 @@ public:
 Q_SIGNALS:
   void errorReported(const QString& title, const QString& message);
   bool messageConfirmed(const QString& title, const QString& message);
+  void statusMessage(const QString& message);
   void debuggerMessageReported(const QString& message);
   void settingsResetToDefault(bool system, bool controller);
   void onInputDevicesEnumerated(const QList<QPair<QString, QString>>& devices);
@@ -144,8 +145,6 @@ Q_SIGNALS:
   void mouseModeRequested(bool relative, bool hide_cursor);
   void fullscreenUIStateChange(bool running);
   void achievementsLoginRequested(Achievements::LoginRequestReason reason);
-  void achievementsLoginSucceeded(const QString& display_name, quint32 points, quint32 sc_points,
-                                  quint32 unread_messages);
   void achievementsRefreshed(quint32 id, const QString& game_info_string);
   void achievementsChallengeModeChanged(bool enabled);
   void cheatEnabled(quint32 index, bool enabled);

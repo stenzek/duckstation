@@ -1529,7 +1529,13 @@ void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
 
 void Host::OnAchievementsLoginSuccess(const char* username, u32 points, u32 sc_points, u32 unread_messages)
 {
-  emit g_emu_thread->achievementsLoginSucceeded(QString::fromUtf8(username), points, sc_points, unread_messages);
+  const QString message = qApp->translate("QtHost", "RA: Logged in as %1 (%2, %3 softcore). %4 unread messages.")
+                            .arg(QString::fromUtf8(username))
+                            .arg(points)
+                            .arg(sc_points)
+                            .arg(unread_messages);
+
+  emit g_emu_thread->statusMessage(message);
 }
 
 void Host::OnAchievementsRefreshed()
@@ -1844,12 +1850,40 @@ void Host::OnInputDeviceConnected(std::string_view identifier, std::string_view 
   emit g_emu_thread->onInputDeviceConnected(
     identifier.empty() ? QString() : QString::fromUtf8(identifier.data(), identifier.size()),
     device_name.empty() ? QString() : QString::fromUtf8(device_name.data(), device_name.size()));
+
+  if (System::IsValid() || g_emu_thread->isRunningFullscreenUI())
+  {
+    Host::AddIconOSDMessage(fmt::format("controller_connected_{}", identifier), ICON_FA_GAMEPAD,
+                            fmt::format(TRANSLATE_FS("QtHost", "Controller {} connected."), identifier),
+                            Host::OSD_INFO_DURATION);
+  }
 }
 
-void Host::OnInputDeviceDisconnected(std::string_view identifier)
+void Host::OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier)
 {
   emit g_emu_thread->onInputDeviceDisconnected(
     identifier.empty() ? QString() : QString::fromUtf8(identifier.data(), identifier.size()));
+
+  if (g_settings.pause_on_controller_disconnection && System::GetState() == System::State::Running &&
+      InputManager::HasAnyBindingsForSource(key))
+  {
+    std::string message =
+      fmt::format(TRANSLATE_FS("QtHost", "System paused because controller {} was disconnected."), identifier);
+    Host::RunOnCPUThread([message = QString::fromStdString(message)]() {
+      System::PauseSystem(true);
+
+      // has to be done after pause, otherwise pause message takes precedence
+      emit g_emu_thread->statusMessage(message);
+    });
+    Host::AddIconOSDMessage(fmt::format("controller_connected_{}", identifier), ICON_FA_GAMEPAD, std::move(message),
+                            Host::OSD_WARNING_DURATION);
+  }
+  else if (System::IsValid() || g_emu_thread->isRunningFullscreenUI())
+  {
+    Host::AddIconOSDMessage(fmt::format("controller_connected_{}", identifier), ICON_FA_GAMEPAD,
+                            fmt::format(TRANSLATE_FS("QtHost", "Controller {} disconnected."), identifier),
+                            Host::OSD_INFO_DURATION);
+  }
 }
 
 ALWAYS_INLINE std::string QtHost::GetResourcePath(std::string_view filename, bool allow_override)
