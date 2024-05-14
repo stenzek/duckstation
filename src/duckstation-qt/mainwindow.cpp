@@ -809,52 +809,7 @@ void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidg
   connect(open_memory_cards_action, &QAction::triggered, [entry]() {
     QString paths[2];
     for (u32 i = 0; i < 2; i++)
-    {
-      MemoryCardType type = g_settings.memory_card_types[i];
-      if (entry->serial.empty() && type == MemoryCardType::PerGame)
-        type = MemoryCardType::Shared;
-
-      switch (type)
-      {
-        case MemoryCardType::None:
-          continue;
-        case MemoryCardType::Shared:
-          if (g_settings.memory_card_paths[i].empty())
-          {
-            paths[i] = QString::fromStdString(g_settings.GetSharedMemoryCardPath(i));
-          }
-          else
-          {
-            QFileInfo path(QString::fromStdString(g_settings.memory_card_paths[i]));
-            path.makeAbsolute();
-            paths[i] = QDir::toNativeSeparators(path.canonicalFilePath());
-          }
-          break;
-        case MemoryCardType::PerGame:
-          paths[i] = QString::fromStdString(g_settings.GetGameMemoryCardPath(entry->serial, i));
-          break;
-        case MemoryCardType::PerGameTitle:
-        {
-          paths[i] = QString::fromStdString(g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(entry->title), i));
-          if (!entry->disc_set_name.empty() && g_settings.memory_card_use_playlist_title && !QFile::exists(paths[i]))
-          {
-            paths[i] =
-              QString::fromStdString(g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(entry->disc_set_name), i));
-          }
-        }
-        break;
-
-        case MemoryCardType::PerGameFileTitle:
-        {
-          const std::string display_name(FileSystem::GetDisplayNameFromPath(entry->path));
-          paths[i] = QString::fromStdString(
-            g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(Path::GetFileTitle(display_name)), i));
-        }
-        break;
-        default:
-          break;
-      }
-    }
+      paths[i] = QString::fromStdString(System::GetGameMemoryCardPath(entry->serial, entry->path, i));
 
     g_main_window->openMemoryCardEditor(paths[0], paths[1]);
   });

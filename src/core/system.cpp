@@ -4634,6 +4634,103 @@ void System::DeleteSaveStates(const char* serial, bool resume)
   }
 }
 
+std::string System::GetGameMemoryCardPath(std::string_view serial, std::string_view path, u32 slot)
+{
+  const char* section = "MemoryCards";
+  const TinyString type_key = TinyString::from_format("Card{}Type", slot + 1);
+  const MemoryCardType default_type =
+    (slot == 0) ? Settings::DEFAULT_MEMORY_CARD_1_TYPE : Settings::DEFAULT_MEMORY_CARD_2_TYPE;
+  const MemoryCardType global_type =
+    Settings::ParseMemoryCardTypeName(
+      Host::GetBaseTinyStringSettingValue(section, type_key, Settings::GetMemoryCardTypeName(default_type)))
+      .value_or(default_type);
+
+  MemoryCardType type = global_type;
+  std::unique_ptr<INISettingsInterface> ini;
+  if (!serial.empty())
+  {
+    std::string game_settings_path = GetGameSettingsPath(serial);
+    if (FileSystem::FileExists(game_settings_path.c_str()))
+    {
+      ini = std::make_unique<INISettingsInterface>(std::move(game_settings_path));
+      if (!ini->Load())
+      {
+        ini.reset();
+      }
+      else if (ini->ContainsValue(section, type_key))
+      {
+        type = Settings::ParseMemoryCardTypeName(
+                 ini->GetTinyStringValue(section, type_key, Settings::GetMemoryCardTypeName(global_type)))
+                 .value_or(global_type);
+      }
+    }
+  }
+  else if (type == MemoryCardType::PerGame)
+  {
+    // always shared without serial
+    type = MemoryCardType::Shared;
+  }
+
+  std::string ret;
+  switch (type)
+  {
+    case MemoryCardType::None:
+      break;
+
+    case MemoryCardType::Shared:
+    {
+      const TinyString path_key = TinyString::from_format("Card{}Path", slot + 1);
+      std::string global_path =
+        Host::GetBaseStringSettingValue(section, path_key, Settings::GetDefaultSharedMemoryCardName(slot + 1).c_str());
+      if (ini && ini->ContainsValue(section, path_key))
+        ret = ini->GetStringValue(section, path_key, global_path.c_str());
+      else
+        ret = std::move(global_path);
+
+      if (!Path::IsAbsolute(ret))
+        ret = Path::Combine(EmuFolders::MemoryCards, ret);
+    }
+    break;
+
+    case MemoryCardType::PerGame:
+      ret = g_settings.GetGameMemoryCardPath(serial, slot);
+      break;
+
+    case MemoryCardType::PerGameTitle:
+    {
+      const GameDatabase::Entry* entry = GameDatabase::GetEntryForSerial(serial);
+      if (entry)
+      {
+        ret = g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(entry->title), slot);
+
+        // Use disc set name if there isn't a per-disc card present.
+        const bool global_use_playlist_title = Host::GetBaseBoolSettingValue(section, "UsePlaylistTitle", true);
+        const bool use_playlist_title =
+          ini ? ini->GetBoolValue(section, "UsePlaylistTitle", global_use_playlist_title) : global_use_playlist_title;
+        if (entry->disc_set_name.empty() && use_playlist_title && !FileSystem::FileExists(ret.c_str()))
+          ret = g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(entry->disc_set_name), slot);
+      }
+      else
+      {
+        ret = g_settings.GetGameMemoryCardPath(
+          Path::SanitizeFileName(Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path))), slot);
+      }
+    }
+    break;
+
+    case MemoryCardType::PerGameFileTitle:
+    {
+      ret = g_settings.GetGameMemoryCardPath(
+        Path::SanitizeFileName(Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path))), slot);
+    }
+    break;
+    default:
+      break;
+  }
+
+  return ret;
+}
+
 std::string System::GetMostRecentResumeSaveStatePath()
 {
   std::vector<FILESYSTEM_FIND_DATA> files;

@@ -407,6 +407,9 @@ std::optional<ExtendedSaveStateInfo> GetExtendedSaveStateInfo(const char* path);
 /// Deletes save states for the specified game code. If resume is set, the resume state is deleted too.
 void DeleteSaveStates(const char* serial, bool resume);
 
+/// Returns the path to the memory card for the specified game, considering game settings.
+std::string GetGameMemoryCardPath(std::string_view serial, std::string_view path, u32 slot);
+
 /// Returns intended output volume considering fast forwarding.
 s32 GetAudioOutputVolume();
 void UpdateVolume();
