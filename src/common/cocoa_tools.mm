@@ -107,6 +107,17 @@ void CocoaTools::RemoveThemeChangeHandler(void* ctx)
   [s_themeChangeHandler removeCallback:ctx];
 }
 
+std::optional<std::string> CocoaTools::GetBundlePath()
+{
+  std::optional<std::string> ret;
+  @autoreleasepool {
+    NSURL* url = [NSURL fileURLWithPath:[[NSBundle mainBundle] bundlePath]];
+    if (url)
+      ret = std::string([url fileSystemRepresentation]);
+  }
+  return ret;
+}
+
 std::optional<std::string> CocoaTools::GetNonTranslocatedBundlePath()
 {
   // See https://objective-see.com/blog/blog_0x15.html

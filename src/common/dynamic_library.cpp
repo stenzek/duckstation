@@ -4,7 +4,9 @@
 #include "common/dynamic_library.h"
 #include "common/assert.h"
 #include "common/error.h"
+#include "common/file_system.h"
 #include "common/log.h"
+#include "common/path.h"
 #include "common/small_string.h"
 #include "common/string_util.h"
 
@@ -15,6 +17,9 @@
 #include "common/windows_headers.h"
 #else
 #include <dlfcn.h>
+#ifdef __APPLE__
+#include "common/cocoa_tools.h"
+#endif
 #endif
 
 Log_SetChannel(DynamicLibrary);
@@ -92,6 +97,27 @@ bool DynamicLibrary::Open(const char* filename, Error* error)
   m_handle = dlopen(filename, RTLD_NOW);
   if (!m_handle)
   {
+#ifdef __APPLE__
+    // On MacOS, try searching in Frameworks.
+    if (!Path::IsAbsolute(filename))
+    {
+      std::optional<std::string> bundle_path = CocoaTools::GetBundlePath();
+      if (bundle_path.has_value())
+      {
+        std::string frameworks_path = fmt::format("{}/Contents/Frameworks/{}", bundle_path.value(), filename);
+        if (FileSystem::FileExists(frameworks_path.c_str()))
+        {
+          m_handle = dlopen(frameworks_path.c_str(), RTLD_NOW);
+          if (m_handle)
+          {
+            Error::Clear(error);
+            return true;
+          }
+        }
+      }
+    }
+#endif
+
     const char* err = dlerror();
     Error::SetStringFmt(error, "Loading {} failed: {}", filename, err ? err : "<UNKNOWN>");
     return false;

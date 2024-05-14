@@ -31,6 +31,9 @@ void RemoveThemeChangeHandler(void* ctx);
 /// Moves a file from one location to another, using NSFileManager.
 bool MoveFile(const char* source, const char* destination, Error* error);
 
+/// Returns the bundle path.
+std::optional<std::string> GetBundlePath();
+
 /// Get the bundle path to the actual application without any translocation fun
 std::optional<std::string> GetNonTranslocatedBundlePath();
 

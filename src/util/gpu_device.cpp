@@ -1112,11 +1112,9 @@ std::unique_ptr<GPUDevice> GPUDevice::CreateDeviceForAPI(RenderAPI api)
 }
 
 #if defined(ENABLE_VULKAN) || defined(__APPLE__)
-#define SHADERC_INIT_FUNCTIONS(X)                                                                                      \
-  X(shaderc_compiler_initialize)                                                                                       \
-  X(shaderc_compiler_release)
-
 #define SHADERC_FUNCTIONS(X)                                                                                           \
+  X(shaderc_compiler_initialize)                                                                                       \
+  X(shaderc_compiler_release)                                                                                          \
   X(shaderc_compile_options_initialize)                                                                                \
   X(shaderc_compile_options_release)                                                                                   \
   X(shaderc_compile_options_set_source_language)                                                                       \
@@ -1134,9 +1132,10 @@ std::unique_ptr<GPUDevice> GPUDevice::CreateDeviceForAPI(RenderAPI api)
 // TODO: NOT thread safe, yet.
 namespace dyn_shaderc {
 static bool Open();
+static void Close();
 
 static DynamicLibrary s_library;
-static std::unique_ptr<struct shaderc_compiler, void (*)(shaderc_compiler_t)> s_compiler(nullptr, nullptr);
+static shaderc_compiler_t s_compiler = nullptr;
 
 #define ADD_FUNC(F) static decltype(&::F) F;
 SHADERC_FUNCTIONS(ADD_FUNC)
@@ -1167,25 +1166,38 @@ bool dyn_shaderc::Open()
   if (!s_library.GetSymbol(#F, &F))                                                                                    \
   {                                                                                                                    \
     Log_ErrorFmt("Failed to find function {}", #F);                                                                    \
-    s_library.Close();                                                                                                 \
-    return false;                                                                                                      \
-  }
-#define LOAD_INIT_FUNC(F)                                                                                              \
-  decltype(&::F) p##F;                                                                                                 \
-  if (!s_library.GetSymbol(#F, &p##F))                                                                                 \
-  {                                                                                                                    \
-    Log_ErrorFmt("Failed to find function {}", #F);                                                                    \
-    s_library.Close();                                                                                                 \
+    Close();                                                                                                           \
     return false;                                                                                                      \
   }
 
   SHADERC_FUNCTIONS(LOAD_FUNC)
-  SHADERC_INIT_FUNCTIONS(LOAD_INIT_FUNC)
 #undef LOAD_FUNC
-#undef LOAD_INIT_FUNC
 
-  s_compiler = decltype(s_compiler)(pshaderc_compiler_initialize(), pshaderc_compiler_release);
+  s_compiler = shaderc_compiler_initialize();
+  if (!s_compiler)
+  {
+    Log_ErrorPrint("shaderc_compiler_initialize() failed");
+    Close();
+    return false;
+  }
+
+  std::atexit(&dyn_shaderc::Close);
   return true;
+}
+
+void dyn_shaderc::Close()
+{
+  if (s_compiler)
+  {
+    shaderc_compiler_release(s_compiler);
+    s_compiler = nullptr;
+  }
+
+#define UNLOAD_FUNC(F) F = nullptr;
+  SHADERC_FUNCTIONS(UNLOAD_FUNC)
+#undef UNLOAD_FUNC
+
+  s_library.Close();
 }
 
 #undef SHADERC_FUNCTIONS
@@ -1216,7 +1228,7 @@ bool GPUDevice::CompileGLSLShaderToVulkanSpv(GPUShaderStage stage, std::string_v
 
   shaderc_compilation_result_t result;
   const shaderc_compilation_status status = dyn_shaderc::shaderc_compile_into_spv(
-    dyn_shaderc::s_compiler.get(), source.data(), source.length(), stage_kinds[static_cast<size_t>(stage)], "source",
+    dyn_shaderc::s_compiler, source.data(), source.length(), stage_kinds[static_cast<size_t>(stage)], "source",
     entry_point, options, &result);
   if (status != shaderc_compilation_status_success)
   {

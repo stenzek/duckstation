@@ -1845,7 +1845,7 @@ GPUDevice::AdapterAndModeList VulkanDevice::StaticGetAdapterAndModeList()
   }
   else
   {
-    if (Vulkan::LoadVulkanLibrary())
+    if (Vulkan::LoadVulkanLibrary(nullptr))
     {
       ScopedGuard lib_guard([]() { Vulkan::UnloadVulkanLibrary(); });
       OptionalExtensions oe = {};
@@ -1857,6 +1857,8 @@ GPUDevice::AdapterAndModeList VulkanDevice::StaticGetAdapterAndModeList()
 
         vkDestroyInstance(instance, nullptr);
       }
+
+      Vulkan::UnloadVulkanLibrary();
     }
   }
 
@@ -1925,9 +1927,10 @@ bool VulkanDevice::CreateDevice(std::string_view adapter, bool threaded_presenta
   bool enable_debug_utils = m_debug_device;
   bool enable_validation_layer = m_debug_device;
 
-  if (!Vulkan::LoadVulkanLibrary())
+  if (!Vulkan::LoadVulkanLibrary(error))
   {
-    Error::SetStringView(error, "Failed to load Vulkan library. Does your GPU and/or driver support Vulkan?");
+    Error::AddPrefix(error,
+                     "Failed to load Vulkan library. Does your GPU and/or driver support Vulkan?\nThe error was:");
     return false;
   }
 

@@ -1,7 +1,9 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
+
+class Error;
 
 #define VK_NO_PROTOTYPES
 
@@ -93,7 +95,7 @@
 
 namespace Vulkan {
 bool IsVulkanLibraryLoaded();
-bool LoadVulkanLibrary();
+bool LoadVulkanLibrary(Error* error);
 bool LoadVulkanInstanceFunctions(VkInstance instance);
 bool LoadVulkanDeviceFunctions(VkDevice device);
 void UnloadVulkanLibrary();

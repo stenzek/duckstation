@@ -7,6 +7,7 @@
 #include "vulkan_loader.h"
 
 #include "common/assert.h"
+#include "common/dynamic_library.h"
 #include "common/log.h"
 
 #include <cstdarg>
@@ -14,14 +15,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
-
-#ifndef _WIN32
-#include <dlfcn.h>
-#endif
-
-#ifdef __APPLE__
-#include <mach-o/dyld.h>
-#endif
 
 Log_SetChannel(VulkanDevice);
 
@@ -47,134 +40,51 @@ void Vulkan::ResetVulkanLibraryFunctionPointers()
 #undef VULKAN_MODULE_ENTRY_POINT
 }
 
-#if defined(_WIN32)
-
-static HMODULE s_vulkan_module;
+static DynamicLibrary s_vulkan_library;
 
 bool Vulkan::IsVulkanLibraryLoaded()
 {
-  return s_vulkan_module != NULL;
+  return s_vulkan_library.IsOpen();
 }
 
-bool Vulkan::LoadVulkanLibrary()
+bool Vulkan::LoadVulkanLibrary(Error* error)
 {
-  AssertMsg(!s_vulkan_module, "Vulkan module is not loaded.");
+  AssertMsg(!s_vulkan_library.IsOpen(), "Vulkan module is not loaded.");
 
-  s_vulkan_module = LoadLibraryA("vulkan-1.dll");
-  if (!s_vulkan_module)
-  {
-    Log_ErrorPrintf("Failed to load vulkan-1.dll");
-    return false;
-  }
-
-  bool required_functions_missing = false;
-  auto LoadFunction = [&](FARPROC* func_ptr, const char* name, bool is_required) {
-    *func_ptr = GetProcAddress(s_vulkan_module, name);
-    if (!(*func_ptr) && is_required)
-    {
-      Log_ErrorPrintf("Vulkan: Failed to load required module function %s", name);
-      required_functions_missing = true;
-    }
-  };
-
-#define VULKAN_MODULE_ENTRY_POINT(name, required) LoadFunction(reinterpret_cast<FARPROC*>(&name), #name, required);
-#include "vulkan_entry_points.inl"
-#undef VULKAN_MODULE_ENTRY_POINT
-
-  if (required_functions_missing)
-  {
-    ResetVulkanLibraryFunctionPointers();
-    FreeLibrary(s_vulkan_module);
-    s_vulkan_module = nullptr;
-    return false;
-  }
-
-  return true;
-}
-
-void Vulkan::UnloadVulkanLibrary()
-{
-  ResetVulkanLibraryFunctionPointers();
-  if (s_vulkan_module)
-    FreeLibrary(s_vulkan_module);
-  s_vulkan_module = nullptr;
-}
-
-#else
-
-static void* s_vulkan_module;
-
-bool Vulkan::IsVulkanLibraryLoaded()
-{
-  return s_vulkan_module != nullptr;
-}
-
-bool Vulkan::LoadVulkanLibrary()
-{
-  AssertMsg(!s_vulkan_module, "Vulkan module is not loaded.");
-
-#if defined(__APPLE__)
+#ifdef __APPLE__
   // Check if a path to a specific Vulkan library has been specified.
   char* libvulkan_env = getenv("LIBVULKAN_PATH");
   if (libvulkan_env)
-    s_vulkan_module = dlopen(libvulkan_env, RTLD_NOW);
-  if (!s_vulkan_module)
+    s_vulkan_library.Open(libvulkan_env, error);
+  if (!s_vulkan_library.IsOpen() &&
+      !s_vulkan_library.Open(DynamicLibrary::GetVersionedFilename("MoltenVK").c_str(), error))
   {
-    unsigned path_size = 0;
-    _NSGetExecutablePath(nullptr, &path_size);
-    std::string path;
-    path.resize(path_size);
-    if (_NSGetExecutablePath(path.data(), &path_size) == 0)
-    {
-      path[path_size] = 0;
-
-      size_t pos = path.rfind('/');
-      if (pos != std::string::npos)
-      {
-        path.erase(pos);
-        path += "/../Frameworks/libMoltenVK.dylib";
-        s_vulkan_module = dlopen(path.c_str(), RTLD_NOW);
-      }
-    }
+    return false;
   }
-  if (!s_vulkan_module)
-    s_vulkan_module = dlopen("libvulkan.dylib", RTLD_NOW);
 #else
-  // Names of libraries to search. Desktop should use libvulkan.so.1 or libvulkan.so.
-  static const char* search_lib_names[] = {"libvulkan.so.1", "libvulkan.so"};
-  for (size_t i = 0; i < sizeof(search_lib_names) / sizeof(search_lib_names[0]); i++)
+  // try versioned first, then unversioned.
+  if (!s_vulkan_library.Open(DynamicLibrary::GetVersionedFilename("vulkan", 1).c_str(), error) &&
+      !s_vulkan_library.Open(DynamicLibrary::GetVersionedFilename("vulkan").c_str(), error))
   {
-    s_vulkan_module = dlopen(search_lib_names[i], RTLD_NOW);
-    if (s_vulkan_module)
-      break;
+    return false;
   }
 #endif
 
-  if (!s_vulkan_module)
-  {
-    Log_ErrorPrintf("Failed to load or locate libvulkan.so");
-    return false;
-  }
-
   bool required_functions_missing = false;
-  auto LoadFunction = [&](void** func_ptr, const char* name, bool is_required) {
-    *func_ptr = dlsym(s_vulkan_module, name);
-    if (!(*func_ptr) && is_required)
-    {
-      Log_ErrorPrintf("Vulkan: Failed to load required module function %s", name);
-      required_functions_missing = true;
-    }
-  };
 
-#define VULKAN_MODULE_ENTRY_POINT(name, required) LoadFunction(reinterpret_cast<void**>(&name), #name, required);
+#define VULKAN_MODULE_ENTRY_POINT(name, required)                                                                      \
+  if (!s_vulkan_library.GetSymbol(#name, &name))                                                                       \
+  {                                                                                                                    \
+    Log_ErrorFmt("Vulkan: Failed to load required module function {}", #name);                                         \
+    required_functions_missing = true;                                                                                 \
+  }
 #include "vulkan_entry_points.inl"
 #undef VULKAN_MODULE_ENTRY_POINT
 
   if (required_functions_missing)
   {
     ResetVulkanLibraryFunctionPointers();
-    dlclose(s_vulkan_module);
-    s_vulkan_module = nullptr;
+    s_vulkan_library.Close();
     return false;
   }
 
@@ -184,12 +94,8 @@ bool Vulkan::LoadVulkanLibrary()
 void Vulkan::UnloadVulkanLibrary()
 {
   ResetVulkanLibraryFunctionPointers();
-  if (s_vulkan_module)
-    dlclose(s_vulkan_module);
-  s_vulkan_module = nullptr;
+  s_vulkan_library.Close();
 }
-
-#endif
 
 bool Vulkan::LoadVulkanInstanceFunctions(VkInstance instance)
 {
