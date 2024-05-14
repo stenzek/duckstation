@@ -97,8 +97,8 @@ public:
     return value;
   }
 
-  ALWAYS_INLINE SmallString GetTinyStringValue(const char* section, const char* key,
-                                               const char* default_value = "") const
+  ALWAYS_INLINE TinyString GetTinyStringValue(const char* section, const char* key,
+                                              const char* default_value = "") const
   {
     TinyString value;
     if (!GetStringValue(section, key, &value))
