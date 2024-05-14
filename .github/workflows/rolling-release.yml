@@ -86,12 +86,6 @@ jobs:
       run: |
         "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-x64-release-symbols.zip ./bin/x64/*.pdb
 
-    - name: Upload x64 release symbols artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: "windows"
-        path: "duckstation-windows-x64-release-symbols.zip"
-
     - name: Remove extra bloat before archiving
       shell: cmd
       run: |
@@ -107,7 +101,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: "windows"
-        path: "duckstation-windows-x64-release.zip"
+        path: "duckstation-windows-x64-release*.zip"
 
 
   windows-arm64-build:
@@ -177,12 +171,6 @@ jobs:
       run: |
         "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-arm64-release-symbols.zip ./bin/ARM64/*.pdb
 
-    - name: Upload arm64 release symbols artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: "windows-arm64"
-        path: "duckstation-windows-arm64-release-symbols.zip"
-
     - name: Remove extra bloat before archiving
       shell: cmd
       run: |
@@ -198,7 +186,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: "windows-arm64"
-        path: "duckstation-windows-arm64-release.zip"
+        path: "duckstation-windows-arm64-release*.zip"
 
 
   linux-build:
@@ -405,30 +393,13 @@ jobs:
     runs-on: "ubuntu-22.04"
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
     steps:
-      - name: Download Windows Artifacts
+      - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: "windows"
+          path: ./artifacts/
 
-      - name: Download Windows ARM64 Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: "windows-arm64"
-
-      - name: Download Qt AppImage Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: "linux-x64-appimage-qt"
-
-      - name: Download Flatpak Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: "linux-flatpak"
-
-      - name: Download MacOS Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: "macos"
+      - name: Display Downloaded Artifacts
+        run: find ./artifacts/
 
       - name: Create preview release
         if: github.ref == 'refs/heads/master'
@@ -439,13 +410,13 @@ jobs:
           prerelease: true
           title: "Latest Preview Build"
           files: |
-            windows/duckstation-windows-x64-release.zip
-            windows/duckstation-windows-x64-release-symbols.zip
-            windows-arm64/duckstation-windows-arm64-release.zip
-            windows-arm64/duckstation-windows-arm64-release-symbols.zip
-            linux-x64-appimage-qt/DuckStation-x64.AppImage
-            linux-flatpak/duckstation-x64.flatpak
-            macos/duckstation-mac-release.zip
+            ./artifacts/windows/duckstation-windows-x64-release.zip
+            ./artifacts/windows/duckstation-windows-x64-release-symbols.zip
+            ./artifacts/windows-arm64/duckstation-windows-arm64-release.zip
+            ./artifacts/windows-arm64/duckstation-windows-arm64-release-symbols.zip
+            ./artifacts/linux-x64-appimage-qt/DuckStation-x64.AppImage
+            ./artifacts/linux-flatpak/duckstation-x64.flatpak
+            ./artifacts/macos/duckstation-mac-release.zip
 
       - name: Create dev release
         if: github.ref == 'refs/heads/dev'
@@ -456,11 +427,11 @@ jobs:
           prerelease: false
           title: "Latest Rolling Release"
           files: |
-            windows/duckstation-windows-x64-release.zip
-            windows/duckstation-windows-x64-release-symbols.zip
-            windows-arm64/duckstation-windows-arm64-release.zip
-            windows-arm64/duckstation-windows-arm64-release-symbols.zip
-            linux-x64-appimage-qt/DuckStation-x64.AppImage
-            linux-flatpak/duckstation-x64.flatpak
-            macos/duckstation-mac-release.zip
+            ./artifacts/windows/duckstation-windows-x64-release.zip
+            ./artifacts/windows/duckstation-windows-x64-release-symbols.zip
+            ./artifacts/windows-arm64/duckstation-windows-arm64-release.zip
+            ./artifacts/windows-arm64/duckstation-windows-arm64-release-symbols.zip
+            ./artifacts/linux-x64-appimage-qt/DuckStation-x64.AppImage
+            ./artifacts/linux-flatpak/duckstation-x64.flatpak
+            ./artifacts/macos/duckstation-mac-release.zip
 
