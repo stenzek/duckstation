@@ -102,7 +102,7 @@ static std::string GetExecutableNameForImage(IsoReader& iso, bool strip_subdirec
 static bool ReadExecutableFromImage(IsoReader& iso, std::string* out_executable_name,
                                     std::vector<u8>* out_executable_data);
 
-static bool LoadBIOS(const std::string& override_bios_path, Error* error);
+static bool LoadBIOS(Error* error);
 static void InternalReset();
 static void ClearRunningGame();
 static void DestroySystem();
@@ -127,7 +127,6 @@ static void SaveRunaheadState();
 static bool DoRunahead();
 
 static bool Initialize(bool force_software_renderer, Error* error);
-static bool FastForwardToFirstFrame();
 
 static bool UpdateGameSettingsLayer();
 static void UpdateRunningGame(const char* path, CDImage* image, bool booting);
@@ -1465,7 +1464,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   }
 
   // Load BIOS image.
-  if (!LoadBIOS(parameters.override_bios, error))
+  if (!LoadBIOS(error))
   {
     s_state = State::Shutdown;
     ClearRunningGame();
@@ -1565,9 +1564,6 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
 
   if (parameters.load_image_to_ram || g_settings.cdrom_load_image_to_ram)
     CDROM::PrecacheMedia();
-
-  if (parameters.fast_forward_to_first_frame)
-    FastForwardToFirstFrame();
 
   if (parameters.start_audio_dump)
     StartDumpingAudio();
@@ -1764,25 +1760,6 @@ void System::ClearRunningGame()
 #ifdef ENABLE_DISCORD_PRESENCE
   UpdateDiscordPresence(true);
 #endif
-}
-
-bool System::FastForwardToFirstFrame()
-{
-  // If we're taking more than 60 seconds to load the game, oof..
-  static constexpr u32 MAX_FRAMES_TO_SKIP = 30 * 60;
-  const u32 current_frame_number = s_frame_number;
-  const u32 current_internal_frame_number = s_internal_frame_number;
-
-  SPU::SetAudioOutputMuted(true);
-  while (s_internal_frame_number == current_internal_frame_number &&
-         (s_frame_number - current_frame_number) <= MAX_FRAMES_TO_SKIP)
-  {
-    Panic("Fixme");
-    // System::RunFrame();
-  }
-  SPU::SetAudioOutputMuted(false);
-
-  return (s_internal_frame_number != current_internal_frame_number);
 }
 
 void System::Execute()
@@ -2251,31 +2228,11 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
   return !sw.HasError();
 }
 
-bool System::LoadBIOS(const std::string& override_bios_path, Error* error)
+bool System::LoadBIOS(Error* error)
 {
-  std::optional<BIOS::Image> bios_image;
-  if (!override_bios_path.empty())
-  {
-    bios_image = FileSystem::ReadBinaryFile(override_bios_path.c_str(), error);
-    if (!bios_image.has_value())
-    {
-      Error::AddPrefixFmt(error, TRANSLATE_FS("System", "Failed to load {} BIOS."),
-                          Settings::GetConsoleRegionName(s_region));
-      return false;
-    }
-  }
-  else
-  {
-    bios_image = BIOS::GetBIOSImage(s_region, error);
-    if (!bios_image.has_value())
-      return false;
-  }
-
-  if (bios_image->size() != static_cast<u32>(Bus::BIOS_SIZE))
-  {
-    Error::SetStringView(error, TRANSLATE_SV("System", "Incorrect BIOS image size"));
+  std::optional<BIOS::Image> bios_image = BIOS::GetBIOSImage(s_region, error);
+  if (!bios_image.has_value())
     return false;
-  }
 
   s_bios_hash = BIOS::GetImageHash(bios_image.value());
   s_bios_image_info = BIOS::GetInfoForImage(bios_image.value(), s_bios_hash);
