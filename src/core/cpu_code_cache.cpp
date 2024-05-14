@@ -89,8 +89,6 @@ static std::vector<Block*> s_blocks;
 // for compiling - reuse to avoid allocations
 static BlockInstructionList s_block_instructions;
 
-#ifdef ENABLE_RECOMPILER_SUPPORT
-
 static void BacklinkBlocks(u32 pc, const void* dst);
 static void UnlinkBlockExits(Block* block);
 
@@ -143,18 +141,12 @@ static JitCodeBuffer s_code_buffer;
 static u32 s_total_instructions_compiled = 0;
 static u32 s_total_host_instructions_emitted = 0;
 #endif
-
-#endif // ENABLE_RECOMPILER_SUPPORT
 } // namespace CPU::CodeCache
 
 bool CPU::CodeCache::IsUsingAnyRecompiler()
 {
-#ifdef ENABLE_RECOMPILER_SUPPORT
   return (g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler ||
           g_settings.cpu_execution_mode == CPUExecutionMode::NewRec);
-#else
-  return false;
-#endif
 }
 
 bool CPU::CodeCache::IsUsingFastmem()
@@ -166,7 +158,6 @@ bool CPU::CodeCache::ProcessStartup(Error* error)
 {
   AllocateLUTs();
 
-#ifdef ENABLE_RECOMPILER_SUPPORT
 #ifdef USE_STATIC_CODE_BUFFER
   const bool has_buffer =
     s_code_buffer.Initialize(s_code_storage, sizeof(s_code_storage), RECOMPILER_FAR_CODE_CACHE_SIZE, HOST_PAGE_SIZE);
@@ -178,7 +169,6 @@ bool CPU::CodeCache::ProcessStartup(Error* error)
     Error::SetStringView(error, "Failed to initialize code space");
     return false;
   }
-#endif
 
   if (!PageFaultHandler::Install(error))
     return false;
@@ -188,10 +178,7 @@ bool CPU::CodeCache::ProcessStartup(Error* error)
 
 void CPU::CodeCache::ProcessShutdown()
 {
-#ifdef ENABLE_RECOMPILER_SUPPORT
   s_code_buffer.Destroy();
-#endif
-
   DeallocateLUTs();
 }
 
@@ -199,14 +186,12 @@ void CPU::CodeCache::Initialize()
 {
   Assert(s_blocks.empty());
 
-#ifdef ENABLE_RECOMPILER_SUPPORT
   if (IsUsingAnyRecompiler())
   {
     s_code_buffer.Reset();
     CompileASMFunctions();
     ResetCodeLUT();
   }
-#endif
 
   Bus::UpdateFastmemViews(IsUsingAnyRecompiler() ? g_settings.cpu_fastmem_mode : CPUFastmemMode::Disabled);
   CPU::UpdateMemoryPointers();
@@ -215,10 +200,7 @@ void CPU::CodeCache::Initialize()
 void CPU::CodeCache::Shutdown()
 {
   ClearBlocks();
-
-#ifdef ENABLE_RECOMPILER_SUPPORT
   ClearASMFunctions();
-#endif
 
   Bus::UpdateFastmemViews(CPUFastmemMode::Disabled);
   CPU::UpdateMemoryPointers();
@@ -228,7 +210,6 @@ void CPU::CodeCache::Reset()
 {
   ClearBlocks();
 
-#ifdef ENABLE_RECOMPILER_SUPPORT
   if (IsUsingAnyRecompiler())
   {
     ClearASMFunctions();
@@ -236,12 +217,10 @@ void CPU::CodeCache::Reset()
     CompileASMFunctions();
     ResetCodeLUT();
   }
-#endif
 }
 
 void CPU::CodeCache::Execute()
 {
-#ifdef ENABLE_RECOMPILER_SUPPORT
   if (IsUsingAnyRecompiler())
   {
     g_enter_recompiler();
@@ -251,9 +230,6 @@ void CPU::CodeCache::Execute()
   {
     ExecuteCachedInterpreter();
   }
-#else
-  ExecuteCachedInterpreter();
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -677,13 +653,11 @@ CPU::CodeCache::PageProtectionMode CPU::CodeCache::GetProtectionModeForBlock(con
 
 void CPU::CodeCache::InvalidateBlock(Block* block, BlockState new_state)
 {
-#ifdef ENABLE_RECOMPILER_SUPPORT
   if (block->state == BlockState::Valid)
   {
     SetCodeLUT(block->pc, g_compile_or_revalidate_block);
     BacklinkBlocks(block->pc, g_compile_or_revalidate_block);
   }
-#endif
 
   block->state = new_state;
 }
@@ -723,11 +697,9 @@ void CPU::CodeCache::ClearBlocks()
     ppi = {};
   }
 
-#ifdef ENABLE_RECOMPILER_SUPPORT
   s_fastmem_backpatch_info.clear();
   s_fastmem_faulting_pcs.clear();
   s_block_links.clear();
-#endif
 
   for (Block* block : s_blocks)
   {
@@ -755,11 +727,7 @@ PageFaultHandler::HandlerResult PageFaultHandler::HandlePageFault(void* exceptio
     return PageFaultHandler::HandlerResult::ContinueExecution;
   }
 
-#ifdef ENABLE_RECOMPILER_SUPPORT
   return CPU::CodeCache::HandleFastmemException(exception_pc, fault_address, is_write);
-#else
-  return PageFaultHandler::HandlerResult::ExecuteNextHandler;
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1303,8 +1271,6 @@ void CPU::CodeCache::FillBlockRegInfo(Block* block)
 // MARK: - Recompiler Glue
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifdef ENABLE_RECOMPILER_SUPPORT
-
 void CPU::CodeCache::CompileOrRevalidateBlock(u32 start_pc)
 {
   // TODO: this doesn't currently handle when the cache overflows...
@@ -1588,7 +1554,6 @@ void CPU::CodeCache::AddLoadStoreInfo(void* code_address, u32 code_size, u32 gue
 PageFaultHandler::HandlerResult CPU::CodeCache::HandleFastmemException(void* exception_pc, void* fault_address,
                                                                        bool is_write)
 {
-  // TODO: Catch general RAM writes, not just fastmem
   PhysicalMemoryAddress guest_address;
 
 #ifdef ENABLE_MMAP_FASTMEM
@@ -1705,5 +1670,3 @@ void CPU::CodeCache::RemoveBackpatchInfoForRange(const void* host_code, u32 size
   // erase the whole range at once
   s_fastmem_backpatch_info.erase(start_iter, end_iter);
 }
-
-#endif // ENABLE_RECOMPILER_SUPPORT

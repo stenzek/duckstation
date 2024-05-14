@@ -542,7 +542,7 @@ u32 CPU::NewRec::Compiler::GetFreeHostReg(u32 flags)
 
   // find register with lowest counter
   u32 lowest = NUM_HOST_REGS;
-  u16 lowest_count = std::numeric_limits<u16>::max();
+  u32 lowest_count = std::numeric_limits<u32>::max();
   for (u32 i = 0; i < NUM_HOST_REGS; i++)
   {
     const HostRegAlloc& ra = m_host_regs[i];
@@ -577,7 +577,7 @@ u32 CPU::NewRec::Compiler::GetFreeHostReg(u32 flags)
       if (iinfo->UsedTest(ra.reg) && flags & HR_CALLEE_SAVED)
       {
         u32 caller_saved_lowest = NUM_HOST_REGS;
-        u16 caller_saved_lowest_count = std::numeric_limits<u16>::max();
+        u32 caller_saved_lowest_count = std::numeric_limits<u32>::max();
         for (u32 i = 0; i < NUM_HOST_REGS; i++)
         {
           constexpr u32 caller_req_flags = HR_USABLE;
@@ -1274,8 +1274,8 @@ void CPU::NewRec::Compiler::CompileInstruction()
     case InstructionOp::sb: CompileLoadStoreTemplate(&Compiler::Compile_sxx, MemoryAccessSize::Byte, true, false, TF_READS_S | TF_READS_T); SpecExec_sxx(MemoryAccessSize::Byte); break;
     case InstructionOp::sh: CompileLoadStoreTemplate(&Compiler::Compile_sxx, MemoryAccessSize::HalfWord, true, false, TF_READS_S | TF_READS_T); SpecExec_sxx(MemoryAccessSize::HalfWord); break;
     case InstructionOp::sw: CompileLoadStoreTemplate(&Compiler::Compile_sxx, MemoryAccessSize::Word, true, false, TF_READS_S | TF_READS_T); SpecExec_sxx(MemoryAccessSize::Word); break;
-    case InstructionOp::swl: CompileLoadStoreTemplate(&Compiler::Compile_swx, MemoryAccessSize::Word, false, false, TF_READS_S | /*TF_READS_T | TF_WRITES_T | */TF_LOAD_DELAY); SpecExec_swx(false); break;
-    case InstructionOp::swr: CompileLoadStoreTemplate(&Compiler::Compile_swx, MemoryAccessSize::Word, false, false, TF_READS_S | /*TF_READS_T | TF_WRITES_T | */TF_LOAD_DELAY); SpecExec_swx(true); break;
+    case InstructionOp::swl: CompileLoadStoreTemplate(&Compiler::Compile_swx, MemoryAccessSize::Word, false, false, TF_READS_S /*| TF_READS_T*/); SpecExec_swx(false); break;
+    case InstructionOp::swr: CompileLoadStoreTemplate(&Compiler::Compile_swx, MemoryAccessSize::Word, false, false, TF_READS_S /*| TF_READS_T*/); SpecExec_swx(true); break;
 
     case InstructionOp::cop0:
       {

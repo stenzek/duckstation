@@ -229,9 +229,6 @@ void InterpretUncachedBlock();
 
 void LogCurrentState();
 
-#if defined(ENABLE_RECOMPILER) || defined(ENABLE_NEWREC)
-#define ENABLE_RECOMPILER_SUPPORT 1
-
 #if defined(_DEBUG) || false
 // Enable disassembly of host assembly code.
 #define ENABLE_HOST_DISASSEMBLY 1
@@ -277,7 +274,5 @@ extern const void* g_discard_and_recompile_block;
 extern PerfScope MIPSPerfScope;
 
 #endif // ENABLE_RECOMPILER_PROFILING
-
-#endif // ENABLE_RECOMPILER
 
 } // namespace CPU::CodeCache
