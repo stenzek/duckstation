@@ -87,7 +87,7 @@ jobs:
         "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-x64-release-symbols.zip ./bin/x64/*.pdb
 
     - name: Upload x64 release symbols artifact
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: "windows"
         path: "duckstation-windows-x64-release-symbols.zip"
@@ -104,7 +104,7 @@ jobs:
         "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-x64-release.zip ./bin/x64/*
 
     - name: Upload x64 release artifact
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: "windows"
         path: "duckstation-windows-x64-release.zip"
@@ -178,7 +178,7 @@ jobs:
         "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-arm64-release-symbols.zip ./bin/ARM64/*.pdb
 
     - name: Upload arm64 release symbols artifact
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: "windows-arm64"
         path: "duckstation-windows-arm64-release-symbols.zip"
@@ -195,7 +195,7 @@ jobs:
         "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-arm64-release.zip ./bin/ARM64/*
 
     - name: Upload arm64 release artifact
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: "windows-arm64"
         path: "duckstation-windows-arm64-release.zip"
@@ -272,7 +272,7 @@ jobs:
         scripts/appimage/make-appimage.sh $(realpath .) $(realpath ./build) $HOME/deps DuckStation-x64
 
     - name: Upload Qt AppImage
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: "linux-x64-appimage-qt"
         path: "DuckStation-x64.AppImage"
@@ -335,7 +335,7 @@ jobs:
         flatpak-builder-lint repo repo
 
     - name: Upload Flatpak
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: "linux-flatpak"
         path: "duckstation-x64.flatpak"
@@ -394,7 +394,7 @@ jobs:
         zip -r duckstation-mac-release.zip DuckStation.app/
 
     - name: Upload macOS .app
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: "macos"
         path: "build/duckstation-mac-release.zip"
@@ -406,27 +406,27 @@ jobs:
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
     steps:
       - name: Download Windows Artifacts
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v4
         with:
           name: "windows"
 
       - name: Download Windows ARM64 Artifact
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v4
         with:
           name: "windows-arm64"
 
       - name: Download Qt AppImage Artifact
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v4
         with:
           name: "linux-x64-appimage-qt"
 
       - name: Download Flatpak Artifact
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v4
         with:
           name: "linux-flatpak"
 
       - name: Download MacOS Artifact
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v4
         with:
           name: "macos"
 
