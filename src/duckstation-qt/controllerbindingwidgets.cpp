@@ -569,7 +569,7 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
 
   // load binds (single string joined by &)
   const std::string binds_string(
-    dialog->getStringValue(section.c_str(), fmt::format("Macro{}Binds", index + 1u).c_str(), ""));
+    dialog->getStringValue(section.c_str(), TinyString::from_format("Macro{}Binds", index + 1u), ""));
   const std::vector<std::string_view> buttons_split(StringUtil::SplitString(binds_string, '&', true));
 
   for (const std::string_view& button : buttons_split)
@@ -597,7 +597,10 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
     m_ui.bindList->addItem(item);
   }
 
-  m_frequency = dialog->getIntValue(section.c_str(), fmt::format("Macro{}Frequency", index + 1u).c_str(), 0);
+  m_frequency = dialog->getIntValue(section.c_str(), TinyString::from_format("Macro{}Frequency", index + 1u), 0);
+  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(dialog->getProfileSettingsInterface(), m_ui.triggerToggle,
+                                                              section.c_str(), fmt::format("Macro{}Toggle", index + 1u),
+                                                              false);
   updateFrequencyText();
 
   m_ui.trigger->initialize(dialog->getProfileSettingsInterface(), InputBindingInfo::Type::Macro, section,

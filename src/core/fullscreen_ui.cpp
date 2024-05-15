@@ -3803,6 +3803,11 @@ void FullscreenUI::DrawControllerSettingsPage()
       DrawInputBindingButton(bsi, InputBindingInfo::Type::Macro, section.c_str(),
                              TinyString::from_format("Macro{}", macro_index + 1),
                              TinyString::from_format(FSUI_FSTR("Macro {} Trigger"), macro_index + 1), nullptr);
+      DrawToggleSetting(bsi,
+                        TinyString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_GAMEPAD, "Macro {} Press To Toggle")),
+                                                macro_index + 1),
+                        nullptr, section.c_str(), TinyString::from_format("Macro{}Toggle", macro_index + 1), false,
+                        true, false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
       SmallString binds_string =
         bsi->GetSmallStringValue(section.c_str(), fmt::format("Macro{}Binds", macro_index + 1).c_str());
