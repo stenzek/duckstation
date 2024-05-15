@@ -1847,7 +1847,6 @@ GPUDevice::AdapterAndModeList VulkanDevice::StaticGetAdapterAndModeList()
   {
     if (Vulkan::LoadVulkanLibrary(nullptr))
     {
-      ScopedGuard lib_guard([]() { Vulkan::UnloadVulkanLibrary(); });
       OptionalExtensions oe = {};
       const VkInstance instance = CreateVulkanInstance(WindowInfo(), &oe, false, false);
       if (instance != VK_NULL_HANDLE)
