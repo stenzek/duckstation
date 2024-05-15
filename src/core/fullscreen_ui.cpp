@@ -1310,8 +1310,9 @@ void FullscreenUI::SwitchToLanding()
 void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
 {
   const ImGuiIO& io = ImGui::GetIO();
-  const ImVec2 heading_size = ImVec2(
-    io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + LAYOUT_MENU_BUTTON_Y_PADDING * 2.0f + 2.0f));
+  const ImVec2 heading_size =
+    ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
+                               (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
   *menu_pos = ImVec2(0.0f, heading_size.y);
   *menu_size = ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT));
 
@@ -5605,8 +5606,9 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
     return;
   }
 
-  ImVec2 heading_size = ImVec2(
-    io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + LAYOUT_MENU_BUTTON_Y_PADDING * 2.0f + 2.0f));
+  const ImVec2 heading_size =
+    ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
+                               (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
 
   ImGui::PushStyleColor(ImGuiCol_ChildBg, ModAlpha(UIPrimaryColor, 0.9f));
 
@@ -6131,8 +6133,9 @@ void FullscreenUI::DrawGameListWindow()
   PopulateGameListEntryList();
 
   ImGuiIO& io = ImGui::GetIO();
-  ImVec2 heading_size = ImVec2(
-    io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + LAYOUT_MENU_BUTTON_Y_PADDING * 2.0f + 2.0f));
+  const ImVec2 heading_size =
+    ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
+                               (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
 
   const float bg_alpha = System::IsValid() ? 0.90f : 1.0f;
 
@@ -6590,8 +6593,9 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
 void FullscreenUI::DrawGameListSettingsWindow()
 {
   ImGuiIO& io = ImGui::GetIO();
-  ImVec2 heading_size = ImVec2(
-    io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + LAYOUT_MENU_BUTTON_Y_PADDING * 2.0f + 2.0f));
+  const ImVec2 heading_size =
+    ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
+                               (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
 
   const float bg_alpha = System::IsValid() ? 0.90f : 1.0f;
 
