@@ -88,7 +88,8 @@ std::vector<std::pair<std::string, std::string>> AudioStream::GetDriverNames(Aud
   return ret;
 }
 
-std::vector<AudioStream::DeviceInfo> AudioStream::GetOutputDevices(AudioBackend backend, const char* driver, u32 sample_rate)
+std::vector<AudioStream::DeviceInfo> AudioStream::GetOutputDevices(AudioBackend backend, const char* driver,
+                                                                   u32 sample_rate)
 {
   std::vector<AudioStream::DeviceInfo> ret;
   switch (backend)
@@ -367,12 +368,57 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames)
 
   if (m_volume != 100)
   {
-    const s32 volume_mult = static_cast<s32>((static_cast<float>(m_volume) / 100.0f) * 32768.0f);
-
     u32 num_samples = num_frames * m_output_channels;
+#if defined(CPU_ARCH_SSE)
+    const u32 aligned_samples = Common::AlignDownPow2(num_samples, 8);
+    num_samples -= aligned_samples;
+
+    const __m128 volume_multv = _mm_set1_ps(m_volume / 100.0f);
+    const SampleType* const aligned_samples_end = samples + aligned_samples;
+    for (; samples != aligned_samples_end; samples += 8)
+    {
+      __m128i iv = _mm_loadu_si128(reinterpret_cast<const __m128i*>(samples));
+      __m128i iv1 = _mm_unpacklo_epi16(iv, iv); // [0, 0, 1, 1, 2, 2, 3, 3]
+      __m128i iv2 = _mm_unpackhi_epi16(iv, iv); // [4, 4, 5, 5, 6, 6, 7, 7]
+      iv1 = _mm_srai_epi32(iv1, 16);            // [0, 1, 2, 3]
+      iv2 = _mm_srai_epi32(iv2, 16);            // [4, 5, 6, 7]
+      __m128 fv1 = _mm_cvtepi32_ps(iv1);        // [f0, f1, f2, f3]
+      __m128 fv2 = _mm_cvtepi32_ps(iv2);        // [f4, f5, f6, f7]
+      fv1 = _mm_mul_ps(fv1, volume_multv);      // [f0, f1, f2, f3]
+      fv2 = _mm_mul_ps(fv2, volume_multv);      // [f4, f5, f6, f7]
+      iv1 = _mm_cvtps_epi32(fv1);               // [0, 1, 2, 3]
+      iv2 = _mm_cvtps_epi32(fv2);               // [4, 5, 6, 7]
+      iv = _mm_packs_epi32(iv1, iv2);           // [0, 1, 2, 3, 4, 5, 6, 7]
+      _mm_storeu_si128(reinterpret_cast<__m128i*>(samples), iv);
+    }
+#elif defined(CPU_ARCH_NEON)
+    const u32 aligned_samples = Common::AlignDownPow2(num_samples, 8);
+    num_samples -= aligned_samples;
+
+    const float32x4_t volume_multv = vdupq_n_f32(m_volume / 100.0f);
+    const SampleType* const aligned_samples_end = samples + aligned_samples;
+    for (; samples != aligned_samples_end; samples += 8)
+    {
+      int16x8_t iv = vld1q_s16(samples);
+      int32x4_t iv1 = vreinterpretq_s32_s16(vzip1q_s16(iv, iv)); // [0, 0, 1, 1, 2, 2, 3, 3]
+      int32x4_t iv2 = vreinterpretq_s32_s16(vzip2q_s16(iv, iv)); // [4, 4, 5, 5, 6, 6, 7, 7]
+      iv1 = vshrq_n_s32(iv1, 16);                                // [0, 1, 2, 3]
+      iv2 = vshrq_n_s32(iv2, 16);                                // [4, 5, 6, 7]
+      float32x4_t fv1 = vcvtq_f32_s32(iv1);                      // [f0, f1, f2, f3]
+      float32x4_t fv2 = vcvtq_f32_s32(iv2);                      // [f4, f5, f6, f7]
+      fv1 = vmulq_f32(fv1, volume_multv);                        // [f0, f1, f2, f3]
+      fv2 = vmulq_f32(fv2, volume_multv);                        // [f4, f5, f6, f7]
+      iv1 = vcvtq_s32_f32(fv1);                                  // [0, 1, 2, 3]
+      iv2 = vcvtq_s32_f32(fv2);                                  // [4, 5, 6, 7]
+      iv = vcombine_s16(vqmovn_s32(iv1), vqmovn_s32(iv2));       // [0, 1, 2, 3, 4, 5, 6, 7]
+      vst1q_s16(samples, iv);
+    }
+#endif
+
+    const float volume_mult = static_cast<float>(m_volume) / 100.0f;
     while (num_samples > 0)
     {
-      *samples = static_cast<s16>((static_cast<s32>(*samples) * volume_mult) >> 15);
+      *samples = static_cast<s16>(std::clamp(static_cast<float>(*samples) * volume_mult, -32768.0f, 32767.0f));
       samples++;
       num_samples--;
     }
@@ -572,7 +618,7 @@ static void S16ChunkToFloat(const s16* src, float* dst, u32 num_samples)
   const u32 iterations = (num_samples + 7) / 8;
   for (u32 i = 0; i < iterations; i++)
   {
-    const int16x8_t sv = vreinterpretq_s16_s32(vld1q_s16(src));
+    const int16x8_t sv = vld1q_s16(src);
     src += 8;
 
     int32x4_t iv1 = vreinterpretq_s32_s16(vzip1q_s16(sv, sv)); // [0, 0, 1, 1, 2, 2, 3, 3]
