@@ -316,6 +316,8 @@ void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, std::vector<u8
   {
     reportError("Failed to download latest release info: HTTP %d", status_code);
   }
+
+  emit updateCheckCompleted();
 #endif
 }
 
