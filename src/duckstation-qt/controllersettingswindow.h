@@ -76,7 +76,7 @@ private Q_SLOTS:
   void onCategoryCurrentRowChanged(int row);
   void onCurrentProfileChanged(int index);
   void onNewProfileClicked();
-  void onLoadProfileClicked();
+  void onApplyProfileClicked();
   void onDeleteProfileClicked();
   void onRestoreDefaultsClicked();
 

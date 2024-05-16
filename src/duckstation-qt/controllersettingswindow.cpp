@@ -39,7 +39,7 @@ ControllerSettingsWindow::ControllerSettingsWindow() : QWidget()
           &ControllerSettingsWindow::onCurrentProfileChanged);
   connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &ControllerSettingsWindow::close);
   connect(m_ui.newProfile, &QPushButton::clicked, this, &ControllerSettingsWindow::onNewProfileClicked);
-  connect(m_ui.loadProfile, &QPushButton::clicked, this, &ControllerSettingsWindow::onLoadProfileClicked);
+  connect(m_ui.applyProfile, &QPushButton::clicked, this, &ControllerSettingsWindow::onApplyProfileClicked);
   connect(m_ui.deleteProfile, &QPushButton::clicked, this, &ControllerSettingsWindow::onDeleteProfileClicked);
   connect(m_ui.restoreDefaults, &QPushButton::clicked, this, &ControllerSettingsWindow::onRestoreDefaultsClicked);
 
@@ -117,15 +117,28 @@ void ControllerSettingsWindow::onNewProfileClicked()
     // copy from global or the current profile
     if (!m_profile_interface)
     {
+      const int hkres = QMessageBox::question(
+        this, tr("Create Input Profile"),
+        tr("Do you want to copy the current hotkey bindings from global settings to the new input profile?"),
+        QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+      if (hkres == QMessageBox::Cancel)
+        return;
+
+      const bool copy_hotkey_bindings = (hkres == QMessageBox::Yes);
+      if (copy_hotkey_bindings)
+        temp_si.SetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", true);
+
       // from global
       auto lock = Host::GetSettingsLock();
-      InputManager::CopyConfiguration(&temp_si, *Host::Internal::GetBaseSettingsLayer(), true, true, false);
+      InputManager::CopyConfiguration(&temp_si, *Host::Internal::GetBaseSettingsLayer(), true, true,
+                                      copy_hotkey_bindings);
     }
     else
     {
       // from profile
-      const bool copy_hotkey_bindings = m_profile_interface->GetBoolValue("Pad", "UseProfileHotkeyBindings", false);
-      temp_si.SetBoolValue("Pad", "UseProfileHotkeyBindings", copy_hotkey_bindings);
+      const bool copy_hotkey_bindings =
+        m_profile_interface->GetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false);
+      temp_si.SetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", copy_hotkey_bindings);
       InputManager::CopyConfiguration(&temp_si, *m_profile_interface, true, true, copy_hotkey_bindings);
     }
   }
@@ -142,7 +155,7 @@ void ControllerSettingsWindow::onNewProfileClicked()
   switchProfile(profile_name);
 }
 
-void ControllerSettingsWindow::onLoadProfileClicked()
+void ControllerSettingsWindow::onApplyProfileClicked()
 {
   if (QMessageBox::question(this, tr("Load Input Profile"),
                             tr("Are you sure you want to load the input profile named '%1'?\n\n"
@@ -154,8 +167,11 @@ void ControllerSettingsWindow::onLoadProfileClicked()
   }
 
   {
+    const bool copy_hotkey_bindings =
+      m_profile_interface->GetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false);
     auto lock = Host::GetSettingsLock();
-    InputManager::CopyConfiguration(Host::Internal::GetBaseSettingsLayer(), *m_profile_interface, true, true, false);
+    InputManager::CopyConfiguration(Host::Internal::GetBaseSettingsLayer(), *m_profile_interface, true, true,
+                                    copy_hotkey_bindings);
     QtHost::QueueSettingsSave();
   }
   g_emu_thread->applySettings();
@@ -412,7 +428,7 @@ void ControllerSettingsWindow::createWidgets()
     m_ui.settingsContainer->addWidget(m_hotkey_settings);
   }
 
-  m_ui.loadProfile->setEnabled(isEditingProfile());
+  m_ui.applyProfile->setEnabled(isEditingProfile());
   m_ui.deleteProfile->setEnabled(isEditingProfile());
   m_ui.restoreDefaults->setEnabled(isEditingGlobalSettings());
 }
