@@ -4904,7 +4904,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/settings.cpp" line="1324"/>
         <source>Auto (Game Native)</source>
-        <translation>Авто (нативно игре)</translation>
+        <translation>Автоматически (нативно игре)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1325"/>
@@ -9274,7 +9274,7 @@ Do you want to {0} anyway?</source>
     <message>
         <location filename="../../core/game_database.cpp" line="94"/>
         <source>Disable Texture Filtering</source>
-        <translation>Отключить: Фильтрацию текстур</translation>
+        <translation>Отключить: Фильтрация текстур</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="95"/>
@@ -10591,7 +10591,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="270"/>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto (Game Native) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
-        <translation type="unfinished">Изменяет соотношение сторон, используемое для отображения вывода консоли на экран. По умолчанию установлено значение «Авто» (нативно игре), которое автоматически настраивает соотношение сторон экрана в соответствии с тем, как игра будет отображаться на типичном телевизоре той эпохи.</translation>
+        <translation type="unfinished">Изменяет соотношение сторон, используемое для отображения вывода консоли на экран. По умолчанию установлено значение «Автоматически» (нативно игре), которое автоматически настраивает соотношение сторон экрана в соответствии с тем, как игра будет отображаться на типичном телевизоре той эпохи.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="281"/>
