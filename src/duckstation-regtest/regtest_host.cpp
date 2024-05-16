@@ -690,7 +690,8 @@ int main(int argc, char* argv[])
 
   {
     Error startup_error;
-    if (!System::Internal::CPUThreadInitialize(&startup_error))
+    if (!System::Internal::PerformEarlyHardwareChecks(&startup_error) ||
+        !System::Internal::CPUThreadInitialize(&startup_error))
     {
       Log_ErrorFmt("CPUThreadInitialize() failed: {}", startup_error.GetDescription());
       return EXIT_FAILURE;

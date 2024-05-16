@@ -496,6 +496,9 @@ void UpdateDiscordPresence(bool update_session_time);
 #endif
 
 namespace Internal {
+/// Performs mandatory hardware checks.
+bool PerformEarlyHardwareChecks(Error* error);
+
 /// Called on process startup.
 bool CPUThreadInitialize(Error* error);
 

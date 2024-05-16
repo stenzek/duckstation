@@ -85,6 +85,7 @@ static constexpr u32 FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL = 8;
 // Local function declarations
 //////////////////////////////////////////////////////////////////////////
 namespace QtHost {
+static bool PerformEarlyHardwareChecks();
 static void RegisterTypes();
 static bool InitializeConfig(std::string settings_filename);
 static bool ShouldUsePortableMode();
@@ -123,6 +124,27 @@ EmuThread::EmuThread(QThread* ui_thread) : QThread(), m_ui_thread(ui_thread)
 }
 
 EmuThread::~EmuThread() = default;
+
+bool QtHost::PerformEarlyHardwareChecks()
+{
+  Error error;
+  const bool okay = System::Internal::PerformEarlyHardwareChecks(&error);
+  if (okay && !error.IsValid())
+    return true;
+
+  if (okay)
+  {
+    QMessageBox::warning(nullptr, QStringLiteral("Hardware Check Warning"),
+                         QString::fromStdString(error.GetDescription()));
+  }
+  else
+  {
+    QMessageBox::critical(nullptr, QStringLiteral("Hardware Check Failed"),
+                          QString::fromStdString(error.GetDescription()));
+  }
+
+  return okay;
+}
 
 void QtHost::RegisterTypes()
 {
@@ -1700,8 +1722,8 @@ void EmuThread::run()
     Error startup_error;
     if (!System::Internal::CPUThreadInitialize(&startup_error))
     {
-      Host::ReportFatalError("Fatal Startup Error", startup_error.GetDescription());
       moveToThread(m_ui_thread);
+      Host::ReportFatalError("Fatal Startup Error", startup_error.GetDescription());
       return;
     }
   }
@@ -2481,6 +2503,9 @@ int main(int argc, char* argv[])
   QtHost::RegisterTypes();
 
   QApplication app(argc, argv);
+
+  if (!QtHost::PerformEarlyHardwareChecks())
+    return EXIT_FAILURE;
 
   std::shared_ptr<SystemBootParameters> autoboot;
   if (!QtHost::ParseCommandLineParametersAndInitializeConfig(app, autoboot))

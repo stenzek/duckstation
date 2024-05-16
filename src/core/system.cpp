@@ -94,6 +94,8 @@ SystemBootParameters::SystemBootParameters(std::string filename_) : filename(std
 SystemBootParameters::~SystemBootParameters() = default;
 
 namespace System {
+static void CheckCacheLineSize();
+
 static std::optional<ExtendedSaveStateInfo> InternalGetExtendedSaveStateInfo(ByteStream* stream);
 
 static void LoadInputBindings(SettingsInterface& si, std::unique_lock<std::mutex>& lock);
@@ -255,6 +257,44 @@ static TinyString GetTimestampStringForFileName()
   return TinyString::from_format("{:%Y-%m-%d-%H-%M-%S}", fmt::localtime(std::time(nullptr)));
 }
 
+bool System::Internal::PerformEarlyHardwareChecks(Error* error)
+{
+  // Check page size. If it doesn't match, it is a fatal error.
+  const size_t runtime_host_page_size = PlatformMisc::GetRuntimePageSize();
+  if (runtime_host_page_size == 0)
+  {
+    Error::SetStringFmt(error, "Cannot determine size of page. Continuing with expectation of {} byte pages.",
+                        runtime_host_page_size);
+  }
+  else if (HOST_PAGE_SIZE != runtime_host_page_size)
+  {
+    Error::SetStringFmt(
+      error, "Page size mismatch. This build was compiled with {} byte pages, but the system has {} byte pages.",
+      HOST_PAGE_SIZE, runtime_host_page_size);
+    CPUThreadShutdown();
+    return false;
+  }
+
+  return true;
+}
+
+void System::CheckCacheLineSize()
+{
+  const size_t runtime_cache_line_size = PlatformMisc::GetRuntimeCacheLineSize();
+  if (runtime_cache_line_size == 0)
+  {
+    Log_ErrorFmt("Cannot determine size of cache line. Continuing with expectation of {} byte lines.",
+                 runtime_cache_line_size);
+  }
+  else if (HOST_CACHE_LINE_SIZE != runtime_cache_line_size)
+  {
+    // Not fatal, but does have performance implications.
+    Log_WarningFmt(
+      "Cache line size mismatch. This build was compiled with {} byte lines, but the system has {} byte lines.",
+      HOST_CACHE_LINE_SIZE, runtime_cache_line_size);
+  }
+}
+
 bool System::Internal::CPUThreadInitialize(Error* error)
 {
 #ifdef _WIN32
@@ -269,14 +309,16 @@ bool System::Internal::CPUThreadInitialize(Error* error)
   }
 #endif
 
-  if (!Bus::AllocateMemory(error))
+  if (!Bus::AllocateMemory(error) || !CPU::CodeCache::ProcessStartup(error))
+  {
+    CPUThreadShutdown();
     return false;
-
-  if (!CPU::CodeCache::ProcessStartup(error))
-    return false;
+  }
 
   // This will call back to Host::LoadSettings() -> ReloadSources().
   LoadSettings(false);
+
+  CheckCacheLineSize();
 
 #ifdef ENABLE_RAINTEGRATION
   if (Host::GetBaseBoolSettingValue("Cheevos", "UseRAIntegration", false))
