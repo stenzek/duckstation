@@ -1030,11 +1030,7 @@ void EmuThread::reloadInputSources()
     return;
   }
 
-  std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
-  SettingsInterface* si = Host::GetSettingsInterface();
-  SettingsInterface* bindings_si = Host::GetSettingsInterfaceForBindings();
-  InputManager::ReloadSources(*si, lock);
-  InputManager::ReloadBindings(*si, *bindings_si);
+  System::ReloadInputSources();
 }
 
 void EmuThread::reloadInputBindings()
@@ -1045,10 +1041,7 @@ void EmuThread::reloadInputBindings()
     return;
   }
 
-  auto lock = Host::GetSettingsLock();
-  SettingsInterface* si = Host::GetSettingsInterface();
-  SettingsInterface* bindings_si = Host::GetSettingsInterfaceForBindings();
-  InputManager::ReloadBindings(*si, *bindings_si);
+  System::ReloadInputBindings();
 }
 
 void EmuThread::reloadInputDevices()

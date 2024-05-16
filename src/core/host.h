@@ -70,10 +70,6 @@ std::vector<std::string> GetStringListSetting(const char* section, const char* k
 std::unique_lock<std::mutex> GetSettingsLock();
 SettingsInterface* GetSettingsInterface();
 
-/// Returns the settings interface that controller bindings should be loaded from.
-/// If an input profile is being used, this will be the input layer, otherwise the layered interface.
-SettingsInterface* GetSettingsInterfaceForBindings();
-
 /// Debugger feedback.
 void ReportDebuggerMessage(std::string_view message);
 void ReportFormattedDebuggerMessage(const char* format, ...);
@@ -120,9 +116,9 @@ SettingsInterface* GetInputSettingsLayer();
 void SetBaseSettingsLayer(SettingsInterface* sif);
 
 /// Sets the game settings layer. Called by VMManager when the game changes.
-void SetGameSettingsLayer(SettingsInterface* sif);
+void SetGameSettingsLayer(SettingsInterface* sif, std::unique_lock<std::mutex>& lock);
 
 /// Sets the input profile settings layer. Called by VMManager when the game changes.
-void SetInputSettingsLayer(SettingsInterface* sif);
+void SetInputSettingsLayer(SettingsInterface* sif, std::unique_lock<std::mutex>& lock);
 } // namespace Internal
 } // namespace Host

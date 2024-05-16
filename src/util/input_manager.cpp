@@ -1320,9 +1320,10 @@ void InputManager::CopyConfiguration(SettingsInterface* dest_si, const SettingsI
 
       for (u32 i = 0; i < NUM_MACRO_BUTTONS_PER_CONTROLLER; i++)
       {
-        dest_si->CopyStringListValue(src_si, section.c_str(), fmt::format("Macro{}", i + 1).c_str());
-        dest_si->CopyStringValue(src_si, section.c_str(), fmt::format("Macro{}Binds", i + 1).c_str());
-        dest_si->CopyUIntValue(src_si, section.c_str(), fmt::format("Macro{}Frequency", i + 1).c_str());
+        dest_si->CopyStringListValue(src_si, section.c_str(), TinyString::from_format("Macro{}", i + 1));
+        dest_si->CopyStringValue(src_si, section.c_str(), TinyString::from_format("Macro{}Binds", i + 1));
+        dest_si->CopyUIntValue(src_si, section.c_str(), TinyString::from_format("Macro{}Frequency", i + 1));
+        dest_si->CopyBoolValue(src_si, section.c_str(), TinyString::from_format("Macro{}Toggle", i + 1));
       }
     }
 
@@ -1717,7 +1718,8 @@ bool InputManager::DoEventHook(InputBindingKey key, float value)
 // Binding Updater
 // ------------------------------------------------------------------------
 
-void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& binding_si)
+void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& binding_si,
+                                  SettingsInterface& hotkey_binding_si)
 {
   PauseVibration();
 
@@ -1730,8 +1732,7 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
   Host::AddFixedInputBindings(binding_si);
 
   // Hotkeys use the base configuration, except if the custom hotkeys option is enabled.
-  const bool use_profile_hotkeys = si.GetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false);
-  AddHotkeyBindings(use_profile_hotkeys ? binding_si : si);
+  AddHotkeyBindings(hotkey_binding_si);
 
   // If there's an input profile, we load pad bindings from it alone, rather than
   // falling back to the base configuration.

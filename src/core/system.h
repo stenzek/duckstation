@@ -245,6 +245,12 @@ void ApplySettings(bool display_osd_messages);
 /// Reloads game specific settings, and applys any changes present.
 bool ReloadGameSettings(bool display_osd_messages);
 
+/// Reloads input sources.
+void ReloadInputSources();
+
+/// Reloads input bindings.
+void ReloadInputBindings();
+
 bool BootSystem(SystemBootParameters parameters, Error* error);
 void PauseSystem(bool paused);
 void ResetSystem();

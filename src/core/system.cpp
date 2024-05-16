@@ -96,6 +96,8 @@ SystemBootParameters::~SystemBootParameters() = default;
 namespace System {
 static std::optional<ExtendedSaveStateInfo> InternalGetExtendedSaveStateInfo(ByteStream* stream);
 
+static void LoadInputBindings(SettingsInterface& si, std::unique_lock<std::mutex>& lock);
+
 static bool LoadEXE(const char* filename);
 
 static std::string GetExecutableNameForImage(IsoReader& iso, bool strip_subdirectories);
@@ -970,7 +972,7 @@ void System::LoadSettings(bool display_osd_messages)
 
   Host::LoadSettings(si, lock);
   InputManager::ReloadSources(si, lock);
-  InputManager::ReloadBindings(si, *Host::GetSettingsInterfaceForBindings());
+  LoadInputBindings(si, lock);
 
   // apply compatibility settings
   if (g_settings.apply_compatibility_settings)
@@ -991,6 +993,57 @@ void System::LoadSettings(bool display_osd_messages)
   }
 
   g_settings.FixIncompatibleSettings(display_osd_messages);
+}
+
+void System::ReloadInputSources()
+{
+  std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
+  SettingsInterface* si = Host::GetSettingsInterface();
+  InputManager::ReloadSources(*si, lock);
+
+  // skip loading bindings if we're not running, since it'll get done on startup anyway
+  if (IsValid())
+    LoadInputBindings(*si, lock);
+}
+
+void System::ReloadInputBindings()
+{
+  // skip loading bindings if we're not running, since it'll get done on startup anyway
+  if (!IsValid())
+    return;
+
+  std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
+  SettingsInterface* si = Host::GetSettingsInterface();
+  LoadInputBindings(*si, lock);
+}
+
+void System::LoadInputBindings(SettingsInterface& si, std::unique_lock<std::mutex>& lock)
+{
+  // Hotkeys use the base configuration, except if the custom hotkeys option is enabled.
+  if (SettingsInterface* isi = Host::Internal::GetInputSettingsLayer())
+  {
+    const bool use_profile_hotkeys = isi->GetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false);
+    if (use_profile_hotkeys)
+    {
+      InputManager::ReloadBindings(si, *isi, *isi);
+    }
+    else
+    {
+      // Temporarily disable the input profile layer, so it doesn't take precedence.
+      Host::Internal::SetInputSettingsLayer(nullptr, lock);
+      InputManager::ReloadBindings(si, *isi, si);
+      Host::Internal::SetInputSettingsLayer(s_input_settings_interface.get(), lock);
+    }
+  }
+  else if (SettingsInterface* gsi = Host::Internal::GetGameSettingsLayer();
+           gsi && gsi->GetBoolValue("ControllerPorts", "UseGameSettingsForController", false))
+  {
+    InputManager::ReloadBindings(si, *gsi, si);
+  }
+  else
+  {
+    InputManager::ReloadBindings(si, si, si);
+  }
 }
 
 void System::SetDefaultSettings(SettingsInterface& si)
@@ -1072,53 +1125,42 @@ bool System::UpdateGameSettingsLayer()
   }
 
   std::string input_profile_name;
-  bool use_game_settings_for_controller = false;
   if (new_interface)
   {
-    new_interface->GetBoolValue("ControllerPorts", "UseGameSettingsForController", &use_game_settings_for_controller);
-    if (!use_game_settings_for_controller)
+    if (!new_interface->GetBoolValue("ControllerPorts", "UseGameSettingsForController", false))
       new_interface->GetStringValue("ControllerPorts", "InputProfileName", &input_profile_name);
   }
 
   if (!s_game_settings_interface && !new_interface && s_input_profile_name == input_profile_name)
     return false;
 
-  Host::Internal::SetGameSettingsLayer(new_interface.get());
+  auto lock = Host::GetSettingsLock();
+  Host::Internal::SetGameSettingsLayer(new_interface.get(), lock);
   s_game_settings_interface = std::move(new_interface);
 
   std::unique_ptr<INISettingsInterface> input_interface;
-  if (!use_game_settings_for_controller)
+  if (!input_profile_name.empty())
   {
-    if (!input_profile_name.empty())
+    const std::string filename(GetInputProfilePath(input_profile_name));
+    if (FileSystem::FileExists(filename.c_str()))
     {
-      const std::string filename(GetInputProfilePath(input_profile_name));
-      if (FileSystem::FileExists(filename.c_str()))
+      Log_InfoFmt("Loading input profile from '{}'...", Path::GetFileName(filename));
+      input_interface = std::make_unique<INISettingsInterface>(std::move(filename));
+      if (!input_interface->Load())
       {
-        Log_InfoPrintf("Loading input profile from '%s'...", filename.c_str());
-        input_interface = std::make_unique<INISettingsInterface>(std::move(filename));
-        if (!input_interface->Load())
-        {
-          Log_ErrorPrintf("Failed to parse input profile ini '%s'", input_interface->GetFileName().c_str());
-          input_interface.reset();
-          input_profile_name = {};
-        }
-      }
-      else
-      {
-        Log_InfoPrintf("No input profile found (tried '%s')", filename.c_str());
+        Log_ErrorFmt("Failed to parse input profile ini '{}'", Path::GetFileName(input_interface->GetFileName()));
+        input_interface.reset();
         input_profile_name = {};
       }
     }
-
-    Host::Internal::SetInputSettingsLayer(input_interface ? input_interface.get() :
-                                                            Host::Internal::GetBaseSettingsLayer());
-  }
-  else
-  {
-    // using game settings for bindings too
-    Host::Internal::SetInputSettingsLayer(s_game_settings_interface.get());
+    else
+    {
+      Log_WarningFmt("No input profile found (tried '{}')", Path::GetFileName(filename));
+      input_profile_name = {};
+    }
   }
 
+  Host::Internal::SetInputSettingsLayer(input_interface.get(), lock);
   s_input_settings_interface = std::move(input_interface);
   s_input_profile_name = std::move(input_profile_name);
   return true;
@@ -3084,7 +3126,7 @@ void System::UpdateControllers()
       std::unique_ptr<Controller> controller = Controller::Create(type, i);
       if (controller)
       {
-        controller->LoadSettings(*Host::GetSettingsInterfaceForBindings(), Controller::GetSettingsSection(i).c_str());
+        controller->LoadSettings(*Host::GetSettingsInterface(), Controller::GetSettingsSection(i).c_str());
         Pad::SetController(i, std::move(controller));
       }
     }
@@ -3099,7 +3141,7 @@ void System::UpdateControllerSettings()
   {
     Controller* controller = Pad::GetController(i);
     if (controller)
-      controller->LoadSettings(*Host::GetSettingsInterfaceForBindings(), Controller::GetSettingsSection(i).c_str());
+      controller->LoadSettings(*Host::GetSettingsInterface(), Controller::GetSettingsSection(i).c_str());
   }
 }
 
