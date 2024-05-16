@@ -337,6 +337,9 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Use Xcode 15.4
+      run: sudo xcode-select -s /Applications/Xcode_15.4.app
+
     - name: Install packages
       shell: bash
       run: |
@@ -347,7 +350,7 @@ jobs:
       uses: actions/cache@v4.0.2
       with:
         path: ~/deps
-        key: deps-mac ${{ hashFiles('scripts/build-dependencies-mac.sh') }}
+        key: deps-macQ ${{ hashFiles('scripts/build-dependencies-mac.sh') }}
 
     - name: Build Dependencies
       if: steps.cache-deps-mac.outputs.cache-hit != 'true'
