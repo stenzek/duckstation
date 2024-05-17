@@ -975,31 +975,38 @@ void CPU::PGXP::CPU_SUB(u32 instr, u32 rsVal, u32 rtVal)
   Validate(&g_state.pgxp_gpr[rs(instr)], rsVal);
   Validate(&g_state.pgxp_gpr[rt(instr)], rtVal);
 
-  // iCB: Only require one valid input
-  if (((g_state.pgxp_gpr[rt(instr)].flags & VALID_XY) != VALID_XY) !=
-      ((g_state.pgxp_gpr[rs(instr)].flags & VALID_XY) != VALID_XY))
+  PGXP_value ret;
+  if (rtVal == 0)
   {
-    MakeValid(&g_state.pgxp_gpr[rs(instr)], rsVal);
-    MakeValid(&g_state.pgxp_gpr[rt(instr)], rtVal);
+    ret = g_state.pgxp_gpr[rs(instr)];
   }
+  else
+  {
+    // iCB: Only require one valid input
+    if (((g_state.pgxp_gpr[rt(instr)].flags & VALID_XY) != VALID_XY) !=
+        ((g_state.pgxp_gpr[rs(instr)].flags & VALID_XY) != VALID_XY))
+    {
+      MakeValid(&g_state.pgxp_gpr[rs(instr)], rsVal);
+      MakeValid(&g_state.pgxp_gpr[rt(instr)], rtVal);
+    }
 
-  PGXP_value ret = g_state.pgxp_gpr[rs(instr)];
+    ret = g_state.pgxp_gpr[rs(instr)];
+    ret.x = (float)f16Unsign(ret.x);
+    ret.x -= (float)f16Unsign(g_state.pgxp_gpr[rt(instr)].x);
 
-  ret.x = (float)f16Unsign(ret.x);
-  ret.x -= (float)f16Unsign(g_state.pgxp_gpr[rt(instr)].x);
+    // carry on over/underflow
+    float of = (ret.x > USHRT_MAX) ? 1.f : (ret.x < 0) ? -1.f : 0.f;
+    ret.x = (float)f16Sign(ret.x);
+    // ret.x -= of * (USHRT_MAX + 1);
+    ret.y -= g_state.pgxp_gpr[rt(instr)].y - of;
 
-  // carry on over/underflow
-  float of = (ret.x > USHRT_MAX) ? 1.f : (ret.x < 0) ? -1.f : 0.f;
-  ret.x = (float)f16Sign(ret.x);
-  // ret.x -= of * (USHRT_MAX + 1);
-  ret.y -= g_state.pgxp_gpr[rt(instr)].y - of;
+    // truncate on overflow/underflow
+    ret.y += (ret.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (ret.y < SHRT_MIN) ? USHRT_MAX + 1 : 0.f;
 
-  // truncate on overflow/underflow
-  ret.y += (ret.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (ret.y < SHRT_MIN) ? USHRT_MAX + 1 : 0.f;
+    ret.flags &= (g_state.pgxp_gpr[rt(instr)].flags & VALID_XY) | ~VALID_XY;
 
-  ret.flags &= (g_state.pgxp_gpr[rt(instr)].flags & VALID_XY) | ~VALID_XY;
-
-  ret.value = rsVal - rtVal;
+    ret.value = rsVal - rtVal;
+  }
 
   if (!(ret.flags & VALID_Z) && (g_state.pgxp_gpr[rt(instr)].flags & VALID_Z))
   {
