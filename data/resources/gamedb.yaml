@@ -27300,6 +27300,8 @@ SCUS-94409:
     versionTested: "0.1-3968-gd9151ceb"
   controllers:
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Psygnosis"
     developer: "Psygnosis"
@@ -90060,6 +90062,8 @@ SLES-00613:
     versionTested: "0.1-986-gfc911de1"
   controllers:
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Psygnosis"
     developer: "Psygnosis"
@@ -90076,10 +90080,14 @@ SLES-00613:
     linkCable: false
 SLED-00690:
   name: "Lifeforce Tenka (Europe) (Demo)"
+  traits:
+    - ForcePGXPCPUMode
 SLES-00614:
   name: "Lifeforce Tenka (France)"
   controllers:
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Psygnosis"
     developer: "Psygnosis"
@@ -90098,6 +90106,8 @@ SLES-00615:
   name: "Lifeforce Tenka (Germany)"
   controllers:
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Psygnosis"
     developer: "Psygnosis"
@@ -90116,6 +90126,8 @@ SLES-00616:
   name: "Lifeforce Tenka (Italy)"
   controllers:
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Psygnosis"
     developer: "Psygnosis"
@@ -90134,6 +90146,8 @@ SLES-00617:
   name: "Lifeforce Tenka (Spain)"
   controllers:
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode
   metadata:
     publisher: "Psygnosis"
     developer: "Psygnosis"
