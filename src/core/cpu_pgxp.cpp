@@ -20,6 +20,8 @@ Log_SetChannel(CPU::PGXP);
 // #define LOG_VALUES 1
 // #define LOG_LOOKUPS 1
 
+// TODO: Get rid of all the rs/rt subscripting.
+
 namespace CPU::PGXP {
 namespace {
 
@@ -29,17 +31,27 @@ enum : u32
   VERTEX_CACHE_HEIGHT = 0x800 * 2,
   VERTEX_CACHE_SIZE = VERTEX_CACHE_WIDTH * VERTEX_CACHE_HEIGHT,
   PGXP_MEM_SIZE = (static_cast<u32>(Bus::RAM_8MB_SIZE) + static_cast<u32>(CPU::SCRATCHPAD_SIZE)) / 4,
-  PGXP_MEM_SCRATCH_OFFSET = Bus::RAM_8MB_SIZE / 4
+  PGXP_MEM_SCRATCH_OFFSET = Bus::RAM_8MB_SIZE / 4,
 };
 
-#define ALL 0xFFFFFFFF
-#define VALID_0 (1 << 0)
-#define VALID_1 (1 << 1)
-#define VALID_2 (1 << 2)
-#define VALID_01 (VALID_0 | VALID_1)
-#define VALID_012 (VALID_0 | VALID_1 | VALID_2)
-#define VALID_ALL (VALID_0 | VALID_1 | VALID_2)
-#define INV_VALID_ALL (ALL ^ VALID_ALL)
+enum : u32
+{
+  COMP_X,
+  COMP_Y,
+  COMP_Z,
+};
+
+enum : u32
+{
+  ALL = 0xFFFFFFFFu,
+  VALID_X = (1u << 0),
+  VALID_Y = (1u << 1),
+  VALID_Z = (1u << 2),
+  VALID_XY = (VALID_X | VALID_Y),
+  VALID_XYZ = (VALID_X | VALID_Y | VALID_Z),
+  VALID_ALL = (VALID_X | VALID_Y | VALID_Z),
+  INV_VALID_ALL = (ALL ^ VALID_ALL),
+};
 
 union psx_value
 {
@@ -107,8 +119,8 @@ static void LogValueStr(SmallStringBase& str, const char* name, u32 rval, const 
 #endif
 // clang-format on
 
-static const PGXP_value PGXP_value_invalid = {0.f, 0.f, 0.f, 0, 0};
-static const PGXP_value PGXP_value_zero = {0.f, 0.f, 0.f, 0, VALID_ALL};
+static constexpr PGXP_value PGXP_value_invalid = {0.f, 0.f, 0.f, 0, 0};
+static constexpr PGXP_value PGXP_value_zero = {0.f, 0.f, 0.f, 0, VALID_ALL};
 
 static PGXP_value* s_mem = nullptr;
 static PGXP_value* s_vertex_cache = nullptr;
@@ -200,13 +212,13 @@ void CPU::PGXP::Shutdown()
 
 ALWAYS_INLINE_RELEASE void CPU::PGXP::MakeValid(PGXP_value* pV, u32 psxV)
 {
-  if ((pV->flags & VALID_01) == VALID_01)
+  if ((pV->flags & VALID_XY) == VALID_XY)
     return;
 
   pV->x = static_cast<float>(static_cast<s16>(Truncate16(psxV)));
   pV->y = static_cast<float>(static_cast<s16>(Truncate16(psxV >> 16)));
   pV->z = 0.0f;
-  pV->flags = VALID_01;
+  pV->flags = VALID_XY;
   pV->value = psxV;
 }
 
@@ -286,13 +298,13 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::ValidateAndCopyMem16(PGXP_value* dest, u32
   {
     val.w.h = static_cast<u16>(value);
     mask.w.h = 0xFFFF;
-    valid_mask = VALID_1;
+    valid_mask = VALID_Y;
   }
   else
   {
     val.w.l = static_cast<u16>(value);
     mask.w.l = 0xFFFF;
-    valid_mask = VALID_0;
+    valid_mask = VALID_X;
   }
 
   // validate and copy whole value
@@ -303,19 +315,19 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::ValidateAndCopyMem16(PGXP_value* dest, u32
   if (hiword)
   {
     dest->x = dest->y;
-    dest->SetValidComp(0, dest->GetValidComp(1));
+    dest->SetValid(COMP_X, dest->HasValid(COMP_Y));
   }
 
   // only set y as valid if x is also valid.. don't want to make fake values
-  if (dest->GetValidComp(0))
+  if (dest->HasValid(COMP_X))
   {
     dest->y = (dest->x < 0) ? -1.f * sign : 0.f;
-    dest->SetValidComp(1, true);
+    dest->SetValid(COMP_Y);
   }
   else
   {
     dest->y = 0.0f;
-    dest->SetValidComp(1, false);
+    dest->SetValid(COMP_Y, false);
   }
 
   dest->value = value;
@@ -340,37 +352,38 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::WriteMem16(const PGXP_value* src, u32 addr
   if (hiword)
   {
     dest->y = src->x;
-    dest->SetValidComp(1, src->GetValidComp(0));
+    dest->SetValid(COMP_Y, src->HasValid(COMP_X));
     dest->value = (dest->value & UINT32_C(0x0000FFFF)) | (src->value << 16);
   }
   else
   {
     dest->x = src->x;
-    dest->SetValidComp(0, src->GetValidComp(0));
+    dest->SetValid(COMP_X, src->HasValid(COMP_X));
     dest->value = (dest->value & UINT32_C(0xFFFF0000)) | (src->value & UINT32_C(0x0000FFFF));
   }
 
   // overwrite z/w if valid
-  if (src->GetValidComp(2))
+  // TODO: Check modified
+  if (src->HasValid(COMP_Z))
   {
     dest->z = src->z;
-    dest->SetValidComp(2, true);
+    dest->SetValid(COMP_Z);
   }
 }
 
 ALWAYS_INLINE_RELEASE void CPU::PGXP::CopyZIfMissing(PGXP_value& dst, const PGXP_value& src)
 {
-  if (dst.GetValidComp(2))
+  if (dst.HasValid(COMP_Z))
     return;
 
   dst.z = src.z;
-  dst.flags |= (src.flags & VALID_2);
+  dst.flags |= (src.flags & VALID_Z);
 }
 
 ALWAYS_INLINE_RELEASE void CPU::PGXP::SelectZ(PGXP_value& dst, const PGXP_value& src1, const PGXP_value& src2)
 {
-  dst.z = src1.GetValidComp(2) ? src1.z : src2.z;
-  dst.flags |= ((src1.flags | src2.flags) & VALID_2);
+  dst.z = src1.HasValid(COMP_Z) ? src1.z : src2.z;
+  dst.flags |= ((src1.flags | src2.flags) & VALID_Z);
 }
 
 #ifdef LOG_VALUES
@@ -418,11 +431,11 @@ void CPU::PGXP::LogValueStr(SmallStringBase& str, const char* name, u32 rval, co
     if (val->flags != 0)
     {
       str.append(", valid=");
-      if (val->flags & VALID_0)
+      if (val->flags & VALID_X)
         str.append('X');
-      if (val->flags & VALID_1)
+      if (val->flags & VALID_Y)
         str.append('Y');
-      if (val->flags & VALID_2)
+      if (val->flags & VALID_Z)
         str.append('Z');
     }
 
@@ -459,7 +472,7 @@ int CPU::PGXP::GTE_NCLIP_valid(u32 sxy0, u32 sxy1, u32 sxy2)
   Validate(&SXY2, sxy2);
 
   // Don't use accurate clipping for game-constructed values, which don't have a valid Z.
-  return (((SXY0.flags & SXY1.flags & SXY2.flags & VALID_012) == VALID_012));
+  return (((SXY0.flags & SXY1.flags & SXY2.flags & VALID_XYZ) == VALID_XYZ));
 }
 
 float CPU::PGXP::GTE_NCLIP()
@@ -595,7 +608,7 @@ bool CPU::PGXP::GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, i
                                  float* out_w)
 {
   const PGXP_value* vert = GetPtr(addr);
-  if (vert && ((vert->flags & VALID_01) == VALID_01) && (vert->value == value))
+  if (vert && ((vert->flags & VALID_XY) == VALID_XY) && (vert->value == value))
   {
     // There is a value here with valid X and Y coordinates
     *out_x = TruncateVertexPosition(vert->x) + static_cast<float>(xOffs);
@@ -611,7 +624,7 @@ bool CPU::PGXP::GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, i
     if (IsWithinTolerance(*out_x, *out_y, x, y))
     {
       // check validity of z component
-      return ((vert->flags & VALID_2) == VALID_2);
+      return ((vert->flags & VALID_Z) == VALID_Z);
     }
   }
 
@@ -622,7 +635,7 @@ bool CPU::PGXP::GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, i
 
     // Look in cache for valid vertex
     vert = GetCachedVertex(psx_x, psx_y);
-    if (vert && (vert->flags & VALID_01) == VALID_01)
+    if (vert && (vert->flags & VALID_XY) == VALID_XY)
     {
       *out_x = TruncateVertexPosition(vert->x) + static_cast<float>(xOffs);
       *out_y = TruncateVertexPosition(vert->y) + static_cast<float>(yOffs);
@@ -723,29 +736,31 @@ void CPU::PGXP::CPU_ADDI(u32 instr, u32 rsVal)
   LOG_VALUES_C1(rs(instr), rsVal);
 
   // Rt = Rs + Imm (signed)
-  Validate(&g_state.pgxp_gpr[rs(instr)], rsVal);
-  PGXP_value ret = g_state.pgxp_gpr[rs(instr)];
+  PGXP_value& prsVal = g_state.pgxp_gpr[rs(instr)];
+  Validate(&prsVal, rsVal);
 
   psx_value tempImm;
   tempImm.d = SignExtend32(static_cast<u16>(imm(instr)));
 
-  if (tempImm.d != 0)
-  {
-    ret.x = (float)f16Unsign(ret.x);
-    ret.x += (float)tempImm.w.l;
+  PGXP_value& prtVal = g_state.pgxp_gpr[rt(instr)];
+  prtVal = prsVal;
 
-    // carry on over/underflow
-    float of = (ret.x > USHRT_MAX) ? 1.f : (ret.x < 0) ? -1.f : 0.f;
-    ret.x = (float)f16Sign(ret.x);
-    // ret.x -= of * (USHRT_MAX + 1);
-    ret.y += tempImm.sw.h + of;
+  if (tempImm.d == 0)
+    return;
 
-    // truncate on overflow/underflow
-    ret.y += (ret.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (ret.y < SHRT_MIN) ? USHRT_MAX + 1 : 0.f;
-  }
+  prtVal.x = (float)f16Unsign(prtVal.x);
+  prtVal.x += (float)tempImm.w.l;
 
-  g_state.pgxp_gpr[rt(instr)] = ret;
-  g_state.pgxp_gpr[rt(instr)].value = rsVal + imm_sext(instr);
+  // carry on over/underflow
+  float of = (prtVal.x > USHRT_MAX) ? 1.f : (prtVal.x < 0) ? -1.f : 0.f;
+  prtVal.x = (float)f16Sign(prtVal.x);
+  // ret.x -= of * (USHRT_MAX + 1);
+  prtVal.y += tempImm.sw.h + of;
+
+  // truncate on overflow/underflow
+  prtVal.y += (prtVal.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (prtVal.y < SHRT_MIN) ? USHRT_MAX + 1 : 0.f;
+
+  prtVal.value = rsVal + tempImm.d;
 }
 
 void CPU::PGXP::CPU_ANDI(u32 instr, u32 rsVal)
@@ -754,33 +769,35 @@ void CPU::PGXP::CPU_ANDI(u32 instr, u32 rsVal)
 
   // Rt = Rs & Imm
   const u32 rtVal = rsVal & imm(instr);
-  Validate(&g_state.pgxp_gpr[rs(instr)], rsVal);
-  PGXP_value ret = g_state.pgxp_gpr[rs(instr)];
+  PGXP_value& prsVal = g_state.pgxp_gpr[rs(instr)];
+  Validate(&prsVal, rsVal);
 
   psx_value vRt;
   vRt.d = rtVal;
 
-  ret.y = 0.f; // remove upper 16-bits
+  PGXP_value& prtVal = g_state.pgxp_gpr[rt(instr)];
+  prtVal = prsVal;
+
+  prtVal.value = rtVal;
+  prtVal.y = 0.f; // remove upper 16-bits
+  prtVal.SetValid(COMP_Y);
 
   switch (imm(instr))
   {
     case 0:
       // if 0 then x == 0
-      ret.x = 0.f;
+      // TODO: x should be valid here
+      prtVal.x = 0.f;
       break;
     case 0xFFFF:
       // if saturated then x == x
       break;
     default:
       // otherwise x is low precision value
-      ret.x = vRt.sw.l;
-      ret.flags |= VALID_0;
+      prtVal.x = vRt.sw.l;
+      prtVal.SetValid(COMP_X);
+      break;
   }
-
-  ret.flags |= VALID_1;
-
-  g_state.pgxp_gpr[rt(instr)] = ret;
-  g_state.pgxp_gpr[rt(instr)].value = rtVal;
 }
 
 void CPU::PGXP::CPU_ORI(u32 instr, u32 rsVal)
@@ -804,7 +821,8 @@ void CPU::PGXP::CPU_ORI(u32 instr, u32 rsVal)
     default:
       // otherwise x is low precision value
       ret.x = vRt.sw.l;
-      ret.flags |= VALID_0;
+      ret.SetValid(COMP_X);
+      break;
   }
 
   ret.value = rtVal;
@@ -832,7 +850,8 @@ void CPU::PGXP::CPU_XORI(u32 instr, u32 rsVal)
     default:
       // otherwise x is low precision value
       ret.x = vRt.sw.l;
-      ret.flags |= VALID_0;
+      ret.SetValid(COMP_X);
+      break;
   }
 
   ret.value = rtVal;
@@ -851,7 +870,7 @@ void CPU::PGXP::CPU_SLTI(u32 instr, u32 rsVal)
   tempImm.w.h = imm(instr);
   ret.y = 0.f;
   ret.x = (g_state.pgxp_gpr[rs(instr)].x < tempImm.sw.h) ? 1.f : 0.f;
-  ret.flags |= VALID_1;
+  ret.SetValid(COMP_Y);
   ret.value = BoolToUInt32(static_cast<s32>(rsVal) < imm_sext(instr));
 
   g_state.pgxp_gpr[rt(instr)] = ret;
@@ -869,7 +888,7 @@ void CPU::PGXP::CPU_SLTIU(u32 instr, u32 rsVal)
   tempImm.w.h = imm(instr);
   ret.y = 0.f;
   ret.x = (f16Unsign(g_state.pgxp_gpr[rs(instr)].x) < tempImm.w.h) ? 1.f : 0.f;
-  ret.flags |= VALID_1;
+  ret.SetValid(COMP_Y);
   ret.value = BoolToUInt32(rsVal < imm(instr));
 
   g_state.pgxp_gpr[rt(instr)] = ret;
@@ -886,7 +905,7 @@ void CPU::PGXP::CPU_LUI(u32 instr)
   g_state.pgxp_gpr[rt(instr)] = PGXP_value_zero;
   g_state.pgxp_gpr[rt(instr)].y = (float)(s16)imm(instr);
   g_state.pgxp_gpr[rt(instr)].value = static_cast<u32>(imm(instr)) << 16;
-  g_state.pgxp_gpr[rt(instr)].flags = VALID_01;
+  g_state.pgxp_gpr[rt(instr)].flags = VALID_XY;
 }
 
 ////////////////////////////////////
@@ -913,8 +932,8 @@ void CPU::PGXP::CPU_ADD(u32 instr, u32 rsVal, u32 rtVal)
   else
   {
     // iCB: Only require one valid input
-    if (((g_state.pgxp_gpr[rt(instr)].flags & VALID_01) != VALID_01) !=
-        ((g_state.pgxp_gpr[rs(instr)].flags & VALID_01) != VALID_01))
+    if (((g_state.pgxp_gpr[rt(instr)].flags & VALID_XY) != VALID_XY) !=
+        ((g_state.pgxp_gpr[rs(instr)].flags & VALID_XY) != VALID_XY))
     {
       MakeValid(&g_state.pgxp_gpr[rs(instr)], rsVal);
       MakeValid(&g_state.pgxp_gpr[rt(instr)], rtVal);
@@ -936,13 +955,13 @@ void CPU::PGXP::CPU_ADD(u32 instr, u32 rsVal, u32 rtVal)
 
     // TODO: decide which "z/w" component to use
 
-    ret.flags &= (g_state.pgxp_gpr[rt(instr)].flags & VALID_01);
+    ret.flags &= (g_state.pgxp_gpr[rt(instr)].flags & VALID_XY) | ~VALID_XY;
   }
 
-  if (!(ret.flags & VALID_2) && (g_state.pgxp_gpr[rt(instr)].flags & VALID_2))
+  if (!(ret.flags & VALID_Z) && (g_state.pgxp_gpr[rt(instr)].flags & VALID_Z))
   {
     ret.z = g_state.pgxp_gpr[rt(instr)].z;
-    ret.SetValidComp(2, true);
+    ret.SetValid(COMP_Z);
   }
 
   ret.value = rsVal + rtVal;
@@ -959,8 +978,8 @@ void CPU::PGXP::CPU_SUB(u32 instr, u32 rsVal, u32 rtVal)
   Validate(&g_state.pgxp_gpr[rt(instr)], rtVal);
 
   // iCB: Only require one valid input
-  if (((g_state.pgxp_gpr[rt(instr)].flags & VALID_01) != VALID_01) !=
-      ((g_state.pgxp_gpr[rs(instr)].flags & VALID_01) != VALID_01))
+  if (((g_state.pgxp_gpr[rt(instr)].flags & VALID_XY) != VALID_XY) !=
+      ((g_state.pgxp_gpr[rs(instr)].flags & VALID_XY) != VALID_XY))
   {
     MakeValid(&g_state.pgxp_gpr[rs(instr)], rsVal);
     MakeValid(&g_state.pgxp_gpr[rt(instr)], rtVal);
@@ -980,14 +999,14 @@ void CPU::PGXP::CPU_SUB(u32 instr, u32 rsVal, u32 rtVal)
   // truncate on overflow/underflow
   ret.y += (ret.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (ret.y < SHRT_MIN) ? USHRT_MAX + 1 : 0.f;
 
-  ret.flags &= (g_state.pgxp_gpr[rt(instr)].flags & VALID_01);
+  ret.flags &= (g_state.pgxp_gpr[rt(instr)].flags & VALID_XY) | ~VALID_XY;
 
   ret.value = rsVal - rtVal;
 
-  if (!(ret.flags & VALID_2) && (g_state.pgxp_gpr[rt(instr)].flags & VALID_2))
+  if (!(ret.flags & VALID_Z) && (g_state.pgxp_gpr[rt(instr)].flags & VALID_Z))
   {
     ret.z = g_state.pgxp_gpr[rt(instr)].z;
-    ret.flags |= VALID_2;
+    ret.SetValid(COMP_Z);
   }
 
   g_state.pgxp_gpr[rd(instr)] = ret;
@@ -1003,8 +1022,8 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_BITWISE(u32 instr, u32 rdVal, u32 rsVa
   Validate(&g_state.pgxp_gpr[rt(instr)], rtVal);
 
   // iCB: Only require one valid input
-  if (((g_state.pgxp_gpr[rt(instr)].flags & VALID_01) != VALID_01) !=
-      ((g_state.pgxp_gpr[rs(instr)].flags & VALID_01) != VALID_01))
+  if (((g_state.pgxp_gpr[rt(instr)].flags & VALID_XY) != VALID_XY) !=
+      ((g_state.pgxp_gpr[rs(instr)].flags & VALID_XY) != VALID_XY))
   {
     MakeValid(&g_state.pgxp_gpr[rs(instr)], rsVal);
     MakeValid(&g_state.pgxp_gpr[rt(instr)], rtVal);
@@ -1016,7 +1035,7 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_BITWISE(u32 instr, u32 rdVal, u32 rsVa
   valt.d = rtVal;
 
   PGXP_value ret;
-  ret.flags = VALID_01;
+  ret.flags = VALID_XY;
 
   if (vald.w.l == 0)
   {
@@ -1025,17 +1044,17 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_BITWISE(u32 instr, u32 rdVal, u32 rsVa
   else if (vald.w.l == vals.w.l)
   {
     ret.x = g_state.pgxp_gpr[rs(instr)].x;
-    ret.SetValidComp(0, g_state.pgxp_gpr[rs(instr)].GetValidComp(0));
+    ret.SetValid(COMP_X, g_state.pgxp_gpr[rs(instr)].HasValid(COMP_X));
   }
   else if (vald.w.l == valt.w.l)
   {
     ret.x = g_state.pgxp_gpr[rt(instr)].x;
-    ret.SetValidComp(0, g_state.pgxp_gpr[rt(instr)].GetValidComp(0));
+    ret.SetValid(COMP_X, g_state.pgxp_gpr[rt(instr)].HasValid(COMP_X));
   }
   else
   {
     ret.x = (float)vald.sw.l;
-    ret.SetValidComp(0, true);
+    ret.SetValid(COMP_X);
   }
 
   if (vald.w.h == 0)
@@ -1045,17 +1064,17 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_BITWISE(u32 instr, u32 rdVal, u32 rsVa
   else if (vald.w.h == vals.w.h)
   {
     ret.y = g_state.pgxp_gpr[rs(instr)].y;
-    ret.SetValidComp(1, g_state.pgxp_gpr[rs(instr)].GetValidComp(1));
+    ret.SetValid(COMP_Y, g_state.pgxp_gpr[rs(instr)].HasValid(COMP_Y));
   }
   else if (vald.w.h == valt.w.h)
   {
     ret.y = g_state.pgxp_gpr[rt(instr)].y;
-    ret.SetValidComp(1, g_state.pgxp_gpr[rt(instr)].GetValidComp(1));
+    ret.SetValid(COMP_Y, g_state.pgxp_gpr[rt(instr)].HasValid(COMP_Y));
   }
   else
   {
     ret.y = (float)vald.sw.h;
-    ret.SetValidComp(1, true);
+    ret.SetValid(COMP_Y);
   }
 
   // iCB Hack: Force validity if even one half is valid
@@ -1064,20 +1083,20 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_BITWISE(u32 instr, u32 rdVal, u32 rsVa
   // /iCB Hack
 
   // Get a valid W
-  if (g_state.pgxp_gpr[rs(instr)].GetValidComp(2))
+  if (g_state.pgxp_gpr[rs(instr)].HasValid(COMP_Z))
   {
     ret.z = g_state.pgxp_gpr[rs(instr)].z;
-    ret.SetValidComp(2, true);
+    ret.SetValid(COMP_Z);
   }
-  else if (g_state.pgxp_gpr[rt(instr)].GetValidComp(2))
+  else if (g_state.pgxp_gpr[rt(instr)].HasValid(COMP_Z))
   {
     ret.z = g_state.pgxp_gpr[rt(instr)].z;
-    ret.SetValidComp(2, true);
+    ret.SetValid(COMP_Z);
   }
   else
   {
     ret.z = 0.0f;
-    ret.SetValidComp(2, false);
+    ret.SetValid(COMP_Z, false);
   }
 
   ret.value = rdVal;
@@ -1129,8 +1148,8 @@ void CPU::PGXP::CPU_SLT(u32 instr, u32 rsVal, u32 rtVal)
   Validate(&g_state.pgxp_gpr[rt(instr)], rtVal);
 
   // iCB: Only require one valid input
-  if (((g_state.pgxp_gpr[rt(instr)].flags & VALID_01) != VALID_01) !=
-      ((g_state.pgxp_gpr[rs(instr)].flags & VALID_01) != VALID_01))
+  if (((g_state.pgxp_gpr[rt(instr)].flags & VALID_XY) != VALID_XY) !=
+      ((g_state.pgxp_gpr[rs(instr)].flags & VALID_XY) != VALID_XY))
   {
     MakeValid(&g_state.pgxp_gpr[rs(instr)], rsVal);
     MakeValid(&g_state.pgxp_gpr[rt(instr)], rtVal);
@@ -1138,7 +1157,7 @@ void CPU::PGXP::CPU_SLT(u32 instr, u32 rsVal, u32 rtVal)
 
   PGXP_value ret = g_state.pgxp_gpr[rs(instr)];
   ret.y = 0.f;
-  ret.SetValidComp(1, true);
+  ret.SetValid(COMP_Y);
 
   ret.x = (g_state.pgxp_gpr[rs(instr)].y < g_state.pgxp_gpr[rt(instr)].y)                       ? 1.f :
           (f16Unsign(g_state.pgxp_gpr[rs(instr)].x) < f16Unsign(g_state.pgxp_gpr[rt(instr)].x)) ? 1.f :
@@ -1157,8 +1176,8 @@ void CPU::PGXP::CPU_SLTU(u32 instr, u32 rsVal, u32 rtVal)
   Validate(&g_state.pgxp_gpr[rt(instr)], rtVal);
 
   // iCB: Only require one valid input
-  if (((g_state.pgxp_gpr[rt(instr)].flags & VALID_01) != VALID_01) !=
-      ((g_state.pgxp_gpr[rs(instr)].flags & VALID_01) != VALID_01))
+  if (((g_state.pgxp_gpr[rt(instr)].flags & VALID_XY) != VALID_XY) !=
+      ((g_state.pgxp_gpr[rs(instr)].flags & VALID_XY) != VALID_XY))
   {
     MakeValid(&g_state.pgxp_gpr[rs(instr)], rsVal);
     MakeValid(&g_state.pgxp_gpr[rt(instr)], rtVal);
@@ -1166,7 +1185,7 @@ void CPU::PGXP::CPU_SLTU(u32 instr, u32 rsVal, u32 rtVal)
 
   PGXP_value ret = g_state.pgxp_gpr[rs(instr)];
   ret.y = 0.f;
-  ret.SetValidComp(1, true);
+  ret.SetValid(COMP_Y);
 
   ret.x = (f16Unsign(g_state.pgxp_gpr[rs(instr)].y) < f16Unsign(g_state.pgxp_gpr[rt(instr)].y)) ? 1.f :
           (f16Unsign(g_state.pgxp_gpr[rs(instr)].x) < f16Unsign(g_state.pgxp_gpr[rt(instr)].x)) ? 1.f :
@@ -1189,8 +1208,8 @@ void CPU::PGXP::CPU_MULT(u32 instr, u32 rsVal, u32 rtVal)
   Validate(&g_state.pgxp_gpr[rt(instr)], rtVal);
 
   // iCB: Only require one valid input
-  if (((g_state.pgxp_gpr[rt(instr)].flags & VALID_01) != VALID_01) !=
-      ((g_state.pgxp_gpr[rs(instr)].flags & VALID_01) != VALID_01))
+  if (((g_state.pgxp_gpr[rt(instr)].flags & VALID_XY) != VALID_XY) !=
+      ((g_state.pgxp_gpr[rs(instr)].flags & VALID_XY) != VALID_XY))
   {
     MakeValid(&g_state.pgxp_gpr[rs(instr)], rsVal);
     MakeValid(&g_state.pgxp_gpr[rt(instr)], rtVal);
@@ -1242,8 +1261,8 @@ void CPU::PGXP::CPU_MULTU(u32 instr, u32 rsVal, u32 rtVal)
   Validate(&g_state.pgxp_gpr[rt(instr)], rtVal);
 
   // iCB: Only require one valid input
-  if (((g_state.pgxp_gpr[rt(instr)].flags & VALID_01) != VALID_01) !=
-      ((g_state.pgxp_gpr[rs(instr)].flags & VALID_01) != VALID_01))
+  if (((g_state.pgxp_gpr[rt(instr)].flags & VALID_XY) != VALID_XY) !=
+      ((g_state.pgxp_gpr[rs(instr)].flags & VALID_XY) != VALID_XY))
   {
     MakeValid(&g_state.pgxp_gpr[rs(instr)], rsVal);
     MakeValid(&g_state.pgxp_gpr[rt(instr)], rtVal);
@@ -1296,8 +1315,8 @@ void CPU::PGXP::CPU_DIV(u32 instr, u32 rsVal, u32 rtVal)
   Validate(&g_state.pgxp_gpr[rt(instr)], rtVal);
 
   //// iCB: Only require one valid input
-  if (((g_state.pgxp_gpr[rt(instr)].flags & VALID_01) != VALID_01) !=
-      ((g_state.pgxp_gpr[rs(instr)].flags & VALID_01) != VALID_01))
+  if (((g_state.pgxp_gpr[rt(instr)].flags & VALID_XY) != VALID_XY) !=
+      ((g_state.pgxp_gpr[rs(instr)].flags & VALID_XY) != VALID_XY))
   {
     MakeValid(&g_state.pgxp_gpr[rs(instr)], rsVal);
     MakeValid(&g_state.pgxp_gpr[rt(instr)], rtVal);
@@ -1353,8 +1372,8 @@ void CPU::PGXP::CPU_DIVU(u32 instr, u32 rsVal, u32 rtVal)
   Validate(&g_state.pgxp_gpr[rt(instr)], rtVal);
 
   //// iCB: Only require one valid input
-  if (((g_state.pgxp_gpr[rt(instr)].flags & VALID_01) != VALID_01) !=
-      ((g_state.pgxp_gpr[rs(instr)].flags & VALID_01) != VALID_01))
+  if (((g_state.pgxp_gpr[rt(instr)].flags & VALID_XY) != VALID_XY) !=
+      ((g_state.pgxp_gpr[rs(instr)].flags & VALID_XY) != VALID_XY))
   {
     MakeValid(&g_state.pgxp_gpr[rs(instr)], rsVal);
     MakeValid(&g_state.pgxp_gpr[rt(instr)], rtVal);
@@ -1566,7 +1585,7 @@ void CPU::PGXP::CPU_SRA(u32 instr, u32 rtVal)
   // and it's not originally from a 3D value. Too many false positives in P2/etc.
   // What we probably should do is not set the valid flag on non-3D values to begin
   // with, only letting them become valid when used in another expression.
-  if (!(ret.flags & VALID_2) && sh < 16)
+  if (!(ret.flags & VALID_Z) && sh < 16)
   {
     ret.flags = 0;
     MakeValid(&ret, rdVal);

@@ -58,12 +58,13 @@ struct PGXP_value
   u32 value;
   u32 flags;
 
-  ALWAYS_INLINE void SetValidComp(u32 comp, bool valid)
+  ALWAYS_INLINE void SetValid(u32 comp, bool valid = true)
   {
-    flags = (flags & ~(1u << comp)) | (static_cast<u32>(valid) << comp);
+    const u32 mask = (1u << comp);
+    flags = valid ? (flags | mask) : (flags & ~mask);
   }
 
-  ALWAYS_INLINE bool GetValidComp(u32 comp) const { return ConvertToBoolUnchecked((flags >> comp) & 1); }
+  ALWAYS_INLINE bool HasValid(u32 comp) const { return ConvertToBoolUnchecked((flags >> comp) & 1); }
 };
 
 struct State
