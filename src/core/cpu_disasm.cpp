@@ -204,13 +204,13 @@ static constexpr const std::array<const char*, 64> s_gte_register_names = {
    "lcm_4", "rfc",   "gfc",   "bfc",   "ofx",   "ofy",   "h",    "dqa",  "dqb",  "zsf3",  "zsf4",  "flag"}};
 
 static constexpr const std::array<GTEInstructionTable, 64> s_gte_instructions = {{
-  {"rtps", true, true, false},      // 0x00
-  {"nclip", false, false, false},   // 0x01
+  {"UNKNOWN", false, false, false}, // 0x00
+  {"rtps", true, true, false},      // 0x01
   {"UNKNOWN", false, false, false}, // 0x02
   {"UNKNOWN", false, false, false}, // 0x03
   {"UNKNOWN", false, false, false}, // 0x04
   {"UNKNOWN", false, false, false}, // 0x05
-  {"UNKNOWN", false, false, false}, // 0x06
+  {"nclip", false, false, false},   // 0x06
   {"UNKNOWN", false, false, false}, // 0x07
   {"UNKNOWN", false, false, false}, // 0x08
   {"UNKNOWN", false, false, false}, // 0x09
