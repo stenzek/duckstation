@@ -44,9 +44,8 @@ bool SetupWizardDialog::canShowNextPage()
       {
         if (QMessageBox::question(
               this, tr("Warning"),
-              tr("No BIOS images were found. DuckStation <strong>will not</strong> be able to run games without a "
-                 "BIOS image.<br><br>Are you sure you wish to continue without selecting a BIOS image?")) !=
-            QMessageBox::Yes)
+              tr("No BIOS images were found. DuckStation WILL NOT be able to run games without a BIOS image.\n\nAre "
+                 "you sure you wish to continue without selecting a BIOS image?")) != QMessageBox::Yes)
         {
           return false;
         }
