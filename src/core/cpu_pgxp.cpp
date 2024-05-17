@@ -43,14 +43,12 @@ enum : u32
 
 enum : u32
 {
-  ALL = 0xFFFFFFFFu,
   VALID_X = (1u << 0),
   VALID_Y = (1u << 1),
   VALID_Z = (1u << 2),
   VALID_XY = (VALID_X | VALID_Y),
   VALID_XYZ = (VALID_X | VALID_Y | VALID_Z),
   VALID_ALL = (VALID_X | VALID_Y | VALID_Z),
-  INV_VALID_ALL = (ALL ^ VALID_ALL),
 };
 
 union psx_value
@@ -224,12 +222,12 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::MakeValid(PGXP_value* pV, u32 psxV)
 
 ALWAYS_INLINE_RELEASE void CPU::PGXP::Validate(PGXP_value* pV, u32 psxV)
 {
-  pV->flags &= (pV->value == psxV) ? ALL : INV_VALID_ALL;
+  pV->flags = (pV->value == psxV) ? pV->flags : 0;
 }
 
 ALWAYS_INLINE_RELEASE void CPU::PGXP::MaskValidate(PGXP_value* pV, u32 psxV, u32 mask, u32 validMask)
 {
-  pV->flags &= ((pV->value & mask) == (psxV & mask)) ? ALL : (ALL ^ (validMask));
+  pV->flags = ((pV->value & mask) == (psxV & mask)) ? pV->flags : (pV->flags & ~validMask);
 }
 
 ALWAYS_INLINE_RELEASE double CPU::PGXP::f16Sign(double in)
