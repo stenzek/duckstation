@@ -56,12 +56,14 @@ struct PGXP_value
   float y;
   float z;
   u32 value;
-  union
+  u32 flags;
+
+  ALWAYS_INLINE void SetValidComp(u32 comp, bool valid)
   {
-    u32 flags;
-    u8 compFlags[4];
-    u16 halfFlags[2];
-  };
+    flags = (flags & ~(1u << comp)) | (static_cast<u32>(valid) << comp);
+  }
+
+  ALWAYS_INLINE bool GetValidComp(u32 comp) const { return ConvertToBoolUnchecked((flags >> comp) & 1); }
 };
 
 struct State

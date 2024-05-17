@@ -32,16 +32,13 @@ enum : u32
   PGXP_MEM_SCRATCH_OFFSET = Bus::RAM_8MB_SIZE / 4
 };
 
-#define NONE 0
 #define ALL 0xFFFFFFFF
-#define VALID 1
-#define VALID_0 (VALID << 0)
-#define VALID_1 (VALID << 8)
-#define VALID_2 (VALID << 16)
-#define VALID_3 (VALID << 24)
+#define VALID_0 (1 << 0)
+#define VALID_1 (1 << 1)
+#define VALID_2 (1 << 2)
 #define VALID_01 (VALID_0 | VALID_1)
 #define VALID_012 (VALID_0 | VALID_1 | VALID_2)
-#define VALID_ALL (VALID_0 | VALID_1 | VALID_2 | VALID_3)
+#define VALID_ALL (VALID_0 | VALID_1 | VALID_2)
 #define INV_VALID_ALL (ALL ^ VALID_ALL)
 
 union psx_value
@@ -85,6 +82,9 @@ static void CPU_BITWISE(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
 static void WriteMem(const PGXP_value* value, u32 addr);
 static void WriteMem16(const PGXP_value* src, u32 addr);
 
+static void CopyZIfMissing(PGXP_value& dst, const PGXP_value& src);
+static void SelectZ(PGXP_value& dst, const PGXP_value& src1, const PGXP_value& src2);
+
 #ifdef LOG_VALUES
 static void LogInstruction(u32 pc, u32 instr);
 static void LogValue(const char* name, u32 rval, const PGXP_value* val);
@@ -107,8 +107,8 @@ static void LogValueStr(SmallStringBase& str, const char* name, u32 rval, const 
 #endif
 // clang-format on
 
-static const PGXP_value PGXP_value_invalid = {0.f, 0.f, 0.f, 0, {0}};
-static const PGXP_value PGXP_value_zero = {0.f, 0.f, 0.f, 0, {VALID_ALL}};
+static const PGXP_value PGXP_value_invalid = {0.f, 0.f, 0.f, 0, 0};
+static const PGXP_value PGXP_value_zero = {0.f, 0.f, 0.f, 0, VALID_ALL};
 
 static PGXP_value* s_mem = nullptr;
 static PGXP_value* s_vertex_cache = nullptr;
@@ -303,19 +303,19 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::ValidateAndCopyMem16(PGXP_value* dest, u32
   if (hiword)
   {
     dest->x = dest->y;
-    dest->compFlags[0] = dest->compFlags[1];
+    dest->SetValidComp(0, dest->GetValidComp(1));
   }
 
   // only set y as valid if x is also valid.. don't want to make fake values
-  if (dest->compFlags[0] == VALID)
+  if (dest->GetValidComp(0))
   {
     dest->y = (dest->x < 0) ? -1.f * sign : 0.f;
-    dest->compFlags[1] = VALID;
+    dest->SetValidComp(1, true);
   }
   else
   {
     dest->y = 0.0f;
-    dest->compFlags[1] = 0;
+    dest->SetValidComp(1, false);
   }
 
   dest->value = value;
@@ -340,22 +340,37 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::WriteMem16(const PGXP_value* src, u32 addr
   if (hiword)
   {
     dest->y = src->x;
-    dest->compFlags[1] = src->compFlags[0];
+    dest->SetValidComp(1, src->GetValidComp(0));
     dest->value = (dest->value & UINT32_C(0x0000FFFF)) | (src->value << 16);
   }
   else
   {
     dest->x = src->x;
-    dest->compFlags[0] = src->compFlags[0];
+    dest->SetValidComp(0, src->GetValidComp(0));
     dest->value = (dest->value & UINT32_C(0xFFFF0000)) | (src->value & UINT32_C(0x0000FFFF));
   }
 
   // overwrite z/w if valid
-  if (src->compFlags[2] == VALID)
+  if (src->GetValidComp(2))
   {
     dest->z = src->z;
-    dest->compFlags[2] = src->compFlags[2];
+    dest->SetValidComp(2, true);
   }
+}
+
+ALWAYS_INLINE_RELEASE void CPU::PGXP::CopyZIfMissing(PGXP_value& dst, const PGXP_value& src)
+{
+  if (dst.GetValidComp(2))
+    return;
+
+  dst.z = src.z;
+  dst.flags |= (src.flags & VALID_2);
+}
+
+ALWAYS_INLINE_RELEASE void CPU::PGXP::SelectZ(PGXP_value& dst, const PGXP_value& src1, const PGXP_value& src2)
+{
+  dst.z = src1.GetValidComp(2) ? src1.z : src2.z;
+  dst.flags |= ((src1.flags | src2.flags) & VALID_2);
 }
 
 #ifdef LOG_VALUES
@@ -929,13 +944,13 @@ void CPU::PGXP::CPU_ADD(u32 instr, u32 rsVal, u32 rtVal)
 
     // TODO: decide which "z/w" component to use
 
-    ret.halfFlags[0] &= g_state.pgxp_gpr[rt(instr)].halfFlags[0];
+    ret.flags &= (g_state.pgxp_gpr[rt(instr)].flags & VALID_01);
   }
 
   if (!(ret.flags & VALID_2) && (g_state.pgxp_gpr[rt(instr)].flags & VALID_2))
   {
     ret.z = g_state.pgxp_gpr[rt(instr)].z;
-    ret.flags |= VALID_2;
+    ret.SetValidComp(2, true);
   }
 
   ret.value = rsVal + rtVal;
@@ -974,7 +989,7 @@ void CPU::PGXP::CPU_SUB(u32 instr, u32 rsVal, u32 rtVal)
   // truncate on overflow/underflow
   ret.y += (ret.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (ret.y < SHRT_MIN) ? USHRT_MAX + 1 : 0.f;
 
-  ret.halfFlags[0] &= g_state.pgxp_gpr[rt(instr)].halfFlags[0];
+  ret.flags &= (g_state.pgxp_gpr[rt(instr)].flags & VALID_01);
 
   ret.value = rsVal - rtVal;
 
@@ -1020,17 +1035,17 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_BITWISE(u32 instr, u32 rdVal, u32 rsVa
   else if (vald.w.l == vals.w.l)
   {
     ret.x = g_state.pgxp_gpr[rs(instr)].x;
-    ret.compFlags[0] = g_state.pgxp_gpr[rs(instr)].compFlags[0];
+    ret.SetValidComp(0, g_state.pgxp_gpr[rs(instr)].GetValidComp(0));
   }
   else if (vald.w.l == valt.w.l)
   {
     ret.x = g_state.pgxp_gpr[rt(instr)].x;
-    ret.compFlags[0] = g_state.pgxp_gpr[rt(instr)].compFlags[0];
+    ret.SetValidComp(0, g_state.pgxp_gpr[rt(instr)].GetValidComp(0));
   }
   else
   {
     ret.x = (float)vald.sw.l;
-    ret.compFlags[0] = VALID;
+    ret.SetValidComp(0, true);
   }
 
   if (vald.w.h == 0)
@@ -1040,17 +1055,17 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_BITWISE(u32 instr, u32 rdVal, u32 rsVa
   else if (vald.w.h == vals.w.h)
   {
     ret.y = g_state.pgxp_gpr[rs(instr)].y;
-    ret.compFlags[1] &= g_state.pgxp_gpr[rs(instr)].compFlags[1];
+    ret.SetValidComp(1, g_state.pgxp_gpr[rs(instr)].GetValidComp(1));
   }
   else if (vald.w.h == valt.w.h)
   {
     ret.y = g_state.pgxp_gpr[rt(instr)].y;
-    ret.compFlags[1] &= g_state.pgxp_gpr[rt(instr)].compFlags[1];
+    ret.SetValidComp(1, g_state.pgxp_gpr[rt(instr)].GetValidComp(1));
   }
   else
   {
     ret.y = (float)vald.sw.h;
-    ret.compFlags[1] = VALID;
+    ret.SetValidComp(1, true);
   }
 
   // iCB Hack: Force validity if even one half is valid
@@ -1059,20 +1074,20 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_BITWISE(u32 instr, u32 rdVal, u32 rsVa
   // /iCB Hack
 
   // Get a valid W
-  if ((g_state.pgxp_gpr[rs(instr)].flags & VALID_2) == VALID_2)
+  if (g_state.pgxp_gpr[rs(instr)].GetValidComp(2))
   {
     ret.z = g_state.pgxp_gpr[rs(instr)].z;
-    ret.compFlags[2] = g_state.pgxp_gpr[rs(instr)].compFlags[2];
+    ret.SetValidComp(2, true);
   }
-  else if ((g_state.pgxp_gpr[rt(instr)].flags & VALID_2) == VALID_2)
+  else if (g_state.pgxp_gpr[rt(instr)].GetValidComp(2))
   {
     ret.z = g_state.pgxp_gpr[rt(instr)].z;
-    ret.compFlags[2] = g_state.pgxp_gpr[rt(instr)].compFlags[2];
+    ret.SetValidComp(2, true);
   }
   else
   {
     ret.z = 0.0f;
-    ret.compFlags[2] = 0;
+    ret.SetValidComp(2, false);
   }
 
   ret.value = rdVal;
@@ -1134,7 +1149,7 @@ void CPU::PGXP::CPU_SLT(u32 instr, u32 rsVal, u32 rtVal)
 
   ret = g_state.pgxp_gpr[rs(instr)];
   ret.y = 0.f;
-  ret.compFlags[1] = VALID;
+  ret.SetValidComp(1, true);
 
   ret.x = (g_state.pgxp_gpr[rs(instr)].y < g_state.pgxp_gpr[rt(instr)].y)                       ? 1.f :
           (f16Unsign(g_state.pgxp_gpr[rs(instr)].x) < f16Unsign(g_state.pgxp_gpr[rt(instr)].x)) ? 1.f :
@@ -1163,7 +1178,7 @@ void CPU::PGXP::CPU_SLTU(u32 instr, u32 rsVal, u32 rtVal)
 
   ret = g_state.pgxp_gpr[rs(instr)];
   ret.y = 0.f;
-  ret.compFlags[1] = VALID;
+  ret.SetValidComp(1, true);
 
   ret.x = (f16Unsign(g_state.pgxp_gpr[rs(instr)].y) < f16Unsign(g_state.pgxp_gpr[rt(instr)].y)) ? 1.f :
           (f16Unsign(g_state.pgxp_gpr[rs(instr)].x) < f16Unsign(g_state.pgxp_gpr[rt(instr)].x)) ? 1.f :
@@ -1193,10 +1208,11 @@ void CPU::PGXP::CPU_MULT(u32 instr, u32 rsVal, u32 rtVal)
     MakeValid(&g_state.pgxp_gpr[rt(instr)], rtVal);
   }
 
-  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)] = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)] = g_state.pgxp_gpr[rs(instr)];
+  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)] = g_state.pgxp_gpr[rs(instr)];
+  CopyZIfMissing(g_state.pgxp_gpr[static_cast<u8>(Reg::lo)], g_state.pgxp_gpr[rs(instr)]);
 
-  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].halfFlags[0] = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].halfFlags[0] =
-    (g_state.pgxp_gpr[rs(instr)].halfFlags[0] & g_state.pgxp_gpr[rt(instr)].halfFlags[0]);
+  // Z/valid is the same
+  g_state.pgxp_gpr[static_cast<u8>(Reg::hi)] = g_state.pgxp_gpr[static_cast<u8>(Reg::lo)];
 
   double xx, xy, yx, yy;
   double lx = 0, ly = 0, hx = 0, hy = 0;
@@ -1245,10 +1261,11 @@ void CPU::PGXP::CPU_MULTU(u32 instr, u32 rsVal, u32 rtVal)
     MakeValid(&g_state.pgxp_gpr[rt(instr)], rtVal);
   }
 
-  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)] = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)] = g_state.pgxp_gpr[rs(instr)];
+  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)] = g_state.pgxp_gpr[rs(instr)];
+  CopyZIfMissing(g_state.pgxp_gpr[static_cast<u8>(Reg::lo)], g_state.pgxp_gpr[rs(instr)]);
 
-  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].halfFlags[0] = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].halfFlags[0] =
-    (g_state.pgxp_gpr[rs(instr)].halfFlags[0] & g_state.pgxp_gpr[rt(instr)].halfFlags[0]);
+  // Z/valid is the same
+  g_state.pgxp_gpr[static_cast<u8>(Reg::hi)] = g_state.pgxp_gpr[static_cast<u8>(Reg::lo)];
 
   double xx, xy, yx, yy;
   double lx = 0, ly = 0, hx = 0, hy = 0;
@@ -1298,10 +1315,11 @@ void CPU::PGXP::CPU_DIV(u32 instr, u32 rsVal, u32 rtVal)
     MakeValid(&g_state.pgxp_gpr[rt(instr)], rtVal);
   }
 
-  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)] = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)] = g_state.pgxp_gpr[rs(instr)];
+  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)] = g_state.pgxp_gpr[rs(instr)];
+  CopyZIfMissing(g_state.pgxp_gpr[static_cast<u8>(Reg::lo)], g_state.pgxp_gpr[rs(instr)]);
 
-  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].halfFlags[0] = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].halfFlags[0] =
-    (g_state.pgxp_gpr[rs(instr)].halfFlags[0] & g_state.pgxp_gpr[rt(instr)].halfFlags[0]);
+  // Z/valid is the same
+  g_state.pgxp_gpr[static_cast<u8>(Reg::hi)] = g_state.pgxp_gpr[static_cast<u8>(Reg::lo)];
 
   double vs = f16Unsign(g_state.pgxp_gpr[rs(instr)].x) + (g_state.pgxp_gpr[rs(instr)].y) * (double)(1 << 16);
   double vt = f16Unsign(g_state.pgxp_gpr[rt(instr)].x) + (g_state.pgxp_gpr[rt(instr)].y) * (double)(1 << 16);
@@ -1354,10 +1372,11 @@ void CPU::PGXP::CPU_DIVU(u32 instr, u32 rsVal, u32 rtVal)
     MakeValid(&g_state.pgxp_gpr[rt(instr)], rtVal);
   }
 
-  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)] = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)] = g_state.pgxp_gpr[rs(instr)];
+  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)] = g_state.pgxp_gpr[rs(instr)];
+  CopyZIfMissing(g_state.pgxp_gpr[static_cast<u8>(Reg::lo)], g_state.pgxp_gpr[rs(instr)]);
 
-  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].halfFlags[0] = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].halfFlags[0] =
-    (g_state.pgxp_gpr[rs(instr)].halfFlags[0] & g_state.pgxp_gpr[rt(instr)].halfFlags[0]);
+  // Z/valid is the same
+  g_state.pgxp_gpr[static_cast<u8>(Reg::hi)] = g_state.pgxp_gpr[static_cast<u8>(Reg::lo)];
 
   double vs = f16Unsign(g_state.pgxp_gpr[rs(instr)].x) + f16Unsign(g_state.pgxp_gpr[rs(instr)].y) * (double)(1 << 16);
   double vt = f16Unsign(g_state.pgxp_gpr[rt(instr)].x) + f16Unsign(g_state.pgxp_gpr[rt(instr)].y) * (double)(1 << 16);
