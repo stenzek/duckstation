@@ -46,6 +46,8 @@ enum : u32
   VALID_X = (1u << 0),
   VALID_Y = (1u << 1),
   VALID_Z = (1u << 2),
+  VALID_TAINTED_Z = (1u << 31),
+
   VALID_XY = (VALID_X | VALID_Y),
   VALID_XYZ = (VALID_X | VALID_Y | VALID_Z),
   VALID_ALL = (VALID_X | VALID_Y | VALID_Z),
@@ -118,7 +120,7 @@ static void LogValueStr(SmallStringBase& str, const char* name, u32 rval, const 
 // clang-format on
 
 static constexpr PGXP_value PGXP_value_invalid = {0.f, 0.f, 0.f, 0, 0};
-static constexpr PGXP_value PGXP_value_zero = {0.f, 0.f, 0.f, 0, VALID_ALL};
+static constexpr PGXP_value PGXP_value_zero = {0.f, 0.f, 0.f, 0, VALID_XY};
 
 static PGXP_value* s_mem = nullptr;
 static PGXP_value* s_vertex_cache = nullptr;
@@ -216,7 +218,7 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::MakeValid(PGXP_value* pV, u32 psxV)
   pV->x = static_cast<float>(static_cast<s16>(Truncate16(psxV)));
   pV->y = static_cast<float>(static_cast<s16>(Truncate16(psxV >> 16)));
   pV->z = 0.0f;
-  pV->flags = VALID_XY;
+  pV->flags = VALID_XY | VALID_TAINTED_Z;
   pV->value = psxV;
 }
 
@@ -371,16 +373,17 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::WriteMem16(const PGXP_value* src, u32 addr
 
 ALWAYS_INLINE_RELEASE void CPU::PGXP::CopyZIfMissing(PGXP_value& dst, const PGXP_value& src)
 {
-  if (dst.HasValid(COMP_Z))
-    return;
-
-  dst.z = src.z;
+  dst.z = dst.HasValid(COMP_Z) ? dst.z : src.z;
   dst.flags |= (src.flags & VALID_Z);
 }
 
 ALWAYS_INLINE_RELEASE void CPU::PGXP::SelectZ(PGXP_value& dst, const PGXP_value& src1, const PGXP_value& src2)
 {
-  dst.z = src1.HasValid(COMP_Z) ? src1.z : src2.z;
+  // Prefer src2 if src1 is missing Z, or is potentially an imprecise value, when src2 is precise.
+  dst.z = (!(src1.flags & VALID_Z) ||
+           (src1.flags & VALID_TAINTED_Z && (src2.flags & (VALID_Z | VALID_TAINTED_Z)) == VALID_Z)) ?
+            src2.z :
+            src1.z;
   dst.flags |= ((src1.flags | src2.flags) & VALID_Z);
 }
 
@@ -426,7 +429,7 @@ void CPU::PGXP::LogValueStr(SmallStringBase& str, const char* name, u32 rval, co
 
     str.append_format(", {{{},{},{}}}", val->x, val->y, val->z);
 
-    if (val->flags != 0)
+    if (val->flags & VALID_ALL)
     {
       str.append(", valid=");
       if (val->flags & VALID_X)
@@ -436,6 +439,9 @@ void CPU::PGXP::LogValueStr(SmallStringBase& str, const char* name, u32 rval, co
       if (val->flags & VALID_Z)
         str.append('Z');
     }
+
+    // if (val->flags & VALID_TAINTED_Z)
+    // str.append(", tainted");
 
     str.append(']');
   }
@@ -759,6 +765,8 @@ void CPU::PGXP::CPU_ADDI(u32 instr, u32 rsVal)
   prtVal.y += (prtVal.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (prtVal.y < SHRT_MIN) ? USHRT_MAX + 1 : 0.f;
 
   prtVal.value = rsVal + tempImm.d;
+
+  prtVal.flags |= VALID_TAINTED_Z;
 }
 
 void CPU::PGXP::CPU_ANDI(u32 instr, u32 rsVal)
@@ -779,13 +787,14 @@ void CPU::PGXP::CPU_ANDI(u32 instr, u32 rsVal)
   prtVal.value = rtVal;
   prtVal.y = 0.f; // remove upper 16-bits
   prtVal.SetValid(COMP_Y);
+  prtVal.flags |= VALID_TAINTED_Z;
 
   switch (imm(instr))
   {
     case 0:
       // if 0 then x == 0
-      // TODO: x should be valid here
-      prtVal.x = 0.f;
+      prtVal.x = 0.0f;
+      prtVal.SetValid(COMP_X);
       break;
     case 0xFFFF:
       // if saturated then x == x
@@ -820,6 +829,7 @@ void CPU::PGXP::CPU_ORI(u32 instr, u32 rsVal)
       // otherwise x is low precision value
       ret.x = vRt.sw.l;
       ret.SetValid(COMP_X);
+      ret.flags |= VALID_TAINTED_Z;
       break;
   }
 
@@ -849,6 +859,7 @@ void CPU::PGXP::CPU_XORI(u32 instr, u32 rsVal)
       // otherwise x is low precision value
       ret.x = vRt.sw.l;
       ret.SetValid(COMP_X);
+      ret.flags |= VALID_TAINTED_Z;
       break;
   }
 
@@ -869,6 +880,7 @@ void CPU::PGXP::CPU_SLTI(u32 instr, u32 rsVal)
   ret.y = 0.f;
   ret.x = (g_state.pgxp_gpr[rs(instr)].x < tempImm.sw.h) ? 1.f : 0.f;
   ret.SetValid(COMP_Y);
+  ret.flags |= VALID_TAINTED_Z;
   ret.value = BoolToUInt32(static_cast<s32>(rsVal) < imm_sext(instr));
 
   g_state.pgxp_gpr[rt(instr)] = ret;
@@ -887,6 +899,7 @@ void CPU::PGXP::CPU_SLTIU(u32 instr, u32 rsVal)
   ret.y = 0.f;
   ret.x = (f16Unsign(g_state.pgxp_gpr[rs(instr)].x) < tempImm.w.h) ? 1.f : 0.f;
   ret.SetValid(COMP_Y);
+  ret.flags |= VALID_TAINTED_Z;
   ret.value = BoolToUInt32(rsVal < imm(instr));
 
   g_state.pgxp_gpr[rt(instr)] = ret;
@@ -922,10 +935,12 @@ void CPU::PGXP::CPU_ADD(u32 instr, u32 rsVal, u32 rtVal)
   if (rtVal == 0)
   {
     ret = g_state.pgxp_gpr[rs(instr)];
+    CopyZIfMissing(ret, g_state.pgxp_gpr[rt(instr)]);
   }
   else if (rsVal == 0)
   {
     ret = g_state.pgxp_gpr[rt(instr)];
+    CopyZIfMissing(ret, g_state.pgxp_gpr[rs(instr)]);
   }
   else
   {
@@ -951,15 +966,8 @@ void CPU::PGXP::CPU_ADD(u32 instr, u32 rsVal, u32 rtVal)
     // truncate on overflow/underflow
     ret.y += (ret.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (ret.y < SHRT_MIN) ? USHRT_MAX + 1 : 0.f;
 
-    // TODO: decide which "z/w" component to use
-
-    ret.flags &= (g_state.pgxp_gpr[rt(instr)].flags & VALID_XY) | ~VALID_XY;
-  }
-
-  if (!(ret.flags & VALID_Z) && (g_state.pgxp_gpr[rt(instr)].flags & VALID_Z))
-  {
-    ret.z = g_state.pgxp_gpr[rt(instr)].z;
-    ret.SetValid(COMP_Z);
+    SelectZ(ret, ret, g_state.pgxp_gpr[rt(instr)]);
+    ret.flags |= VALID_TAINTED_Z;
   }
 
   ret.value = rsVal + rtVal;
@@ -979,6 +987,7 @@ void CPU::PGXP::CPU_SUB(u32 instr, u32 rsVal, u32 rtVal)
   if (rtVal == 0)
   {
     ret = g_state.pgxp_gpr[rs(instr)];
+    CopyZIfMissing(ret, g_state.pgxp_gpr[rs(instr)]);
   }
   else
   {
@@ -1003,16 +1012,11 @@ void CPU::PGXP::CPU_SUB(u32 instr, u32 rsVal, u32 rtVal)
     // truncate on overflow/underflow
     ret.y += (ret.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (ret.y < SHRT_MIN) ? USHRT_MAX + 1 : 0.f;
 
-    ret.flags &= (g_state.pgxp_gpr[rt(instr)].flags & VALID_XY) | ~VALID_XY;
-
-    ret.value = rsVal - rtVal;
+    SelectZ(ret, ret, g_state.pgxp_gpr[rt(instr)]);
+    ret.flags |= VALID_TAINTED_Z;
   }
 
-  if (!(ret.flags & VALID_Z) && (g_state.pgxp_gpr[rt(instr)].flags & VALID_Z))
-  {
-    ret.z = g_state.pgxp_gpr[rt(instr)].z;
-    ret.SetValid(COMP_Z);
-  }
+  ret.value = rsVal - rtVal;
 
   g_state.pgxp_gpr[rd(instr)] = ret;
 }
@@ -1040,7 +1044,7 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_BITWISE(u32 instr, u32 rdVal, u32 rsVa
   valt.d = rtVal;
 
   PGXP_value ret;
-  ret.flags = VALID_XY;
+  ret.flags = VALID_XY | VALID_TAINTED_Z;
 
   if (vald.w.l == 0)
   {
@@ -1163,6 +1167,7 @@ void CPU::PGXP::CPU_SLT(u32 instr, u32 rsVal, u32 rtVal)
   PGXP_value ret = g_state.pgxp_gpr[rs(instr)];
   ret.y = 0.f;
   ret.SetValid(COMP_Y);
+  ret.flags |= VALID_TAINTED_Z;
 
   ret.x = (g_state.pgxp_gpr[rs(instr)].y < g_state.pgxp_gpr[rt(instr)].y)                       ? 1.f :
           (f16Unsign(g_state.pgxp_gpr[rs(instr)].x) < f16Unsign(g_state.pgxp_gpr[rt(instr)].x)) ? 1.f :
@@ -1191,6 +1196,7 @@ void CPU::PGXP::CPU_SLTU(u32 instr, u32 rsVal, u32 rtVal)
   PGXP_value ret = g_state.pgxp_gpr[rs(instr)];
   ret.y = 0.f;
   ret.SetValid(COMP_Y);
+  ret.flags |= VALID_TAINTED_Z;
 
   ret.x = (f16Unsign(g_state.pgxp_gpr[rs(instr)].y) < f16Unsign(g_state.pgxp_gpr[rt(instr)].y)) ? 1.f :
           (f16Unsign(g_state.pgxp_gpr[rs(instr)].x) < f16Unsign(g_state.pgxp_gpr[rt(instr)].x)) ? 1.f :
@@ -1248,8 +1254,10 @@ void CPU::PGXP::CPU_MULT(u32 instr, u32 rsVal, u32 rtVal)
 
   g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].x = (float)f16Sign(lx);
   g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].y = (float)f16Sign(ly);
+  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].flags |= VALID_TAINTED_Z;
   g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].x = (float)f16Sign(hx);
   g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].y = (float)f16Sign(hy);
+  g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].flags |= VALID_TAINTED_Z;
 
   // compute PSX value
   const u64 result = static_cast<u64>(static_cast<s64>(SignExtend64(rsVal)) * static_cast<s64>(SignExtend64(rtVal)));
@@ -1301,8 +1309,10 @@ void CPU::PGXP::CPU_MULTU(u32 instr, u32 rsVal, u32 rtVal)
 
   g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].x = (float)f16Sign(lx);
   g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].y = (float)f16Sign(ly);
+  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].flags |= VALID_TAINTED_Z;
   g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].x = (float)f16Sign(hx);
   g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].y = (float)f16Sign(hy);
+  g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].flags |= VALID_TAINTED_Z;
 
   // compute PSX value
   const u64 result = ZeroExtend64(rsVal) * ZeroExtend64(rtVal);
@@ -1339,10 +1349,12 @@ void CPU::PGXP::CPU_DIV(u32 instr, u32 rsVal, u32 rtVal)
   double lo = vs / vt;
   g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].y = (float)f16Sign(f16Overflow(lo));
   g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].x = (float)f16Sign(lo);
+  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].flags |= VALID_TAINTED_Z;
 
   double hi = fmod(vs, vt);
   g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].y = (float)f16Sign(f16Overflow(hi));
   g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].x = (float)f16Sign(hi);
+  g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].flags |= VALID_TAINTED_Z;
 
   // compute PSX value
   if (static_cast<s32>(rtVal) == 0)
@@ -1396,10 +1408,12 @@ void CPU::PGXP::CPU_DIVU(u32 instr, u32 rsVal, u32 rtVal)
   double lo = vs / vt;
   g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].y = (float)f16Sign(f16Overflow(lo));
   g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].x = (float)f16Sign(lo);
+  g_state.pgxp_gpr[static_cast<u8>(Reg::lo)].flags |= VALID_TAINTED_Z;
 
   double hi = fmod(vs, vt);
   g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].y = (float)f16Sign(f16Overflow(hi));
   g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].x = (float)f16Sign(hi);
+  g_state.pgxp_gpr[static_cast<u8>(Reg::hi)].flags |= VALID_TAINTED_Z;
 
   if (rtVal == 0)
   {
@@ -1460,6 +1474,7 @@ void CPU::PGXP::CPU_SLL(u32 instr, u32 rtVal)
   prdVal.x = static_cast<float>(x);
   prdVal.y = static_cast<float>(y);
   prdVal.value = rdVal;
+  prdVal.flags |= VALID_TAINTED_Z;
 }
 
 void CPU::PGXP::CPU_SRL(u32 instr, u32 rtVal)
@@ -1525,6 +1540,7 @@ void CPU::PGXP::CPU_SRL(u32 instr, u32 rtVal)
   prdVal.x = static_cast<float>(x);
   prdVal.y = static_cast<float>(y);
   prdVal.value = rdVal;
+  prdVal.flags |= VALID_TAINTED_Z;
 }
 
 void CPU::PGXP::CPU_SRA(u32 instr, u32 rtVal)
@@ -1590,6 +1606,7 @@ void CPU::PGXP::CPU_SRA(u32 instr, u32 rtVal)
   prdVal.x = static_cast<float>(x);
   prdVal.y = static_cast<float>(y);
   prdVal.value = rdVal;
+  prdVal.flags |= VALID_TAINTED_Z;
 
   // Use low precision/rounded values when we're not shifting an entire component,
   // and it's not originally from a 3D value. Too many false positives in P2/etc.
@@ -1649,6 +1666,7 @@ void CPU::PGXP::CPU_SLLV(u32 instr, u32 rtVal, u32 rsVal)
   prdVal.x = static_cast<float>(x);
   prdVal.y = static_cast<float>(y);
   prdVal.value = rdVal;
+  prdVal.flags |= VALID_TAINTED_Z;
 }
 
 void CPU::PGXP::CPU_SRLV(u32 instr, u32 rtVal, u32 rsVal)
@@ -1708,12 +1726,12 @@ void CPU::PGXP::CPU_SRLV(u32 instr, u32 rtVal, u32 rsVal)
   else
     y = y / (1 << sh);
 
-
   PGXP_value& prdVal = g_state.pgxp_gpr[rd(instr)];
   prdVal = prtVal;
   prdVal.x = static_cast<float>(f16Sign(x));
   prdVal.y = static_cast<float>(f16Sign(y));
   prdVal.value = rdVal;
+  prdVal.flags |= VALID_TAINTED_Z;
 }
 
 void CPU::PGXP::CPU_SRAV(u32 instr, u32 rtVal, u32 rsVal)
@@ -1778,6 +1796,7 @@ void CPU::PGXP::CPU_SRAV(u32 instr, u32 rtVal, u32 rsVal)
   prdVal.x = static_cast<float>(f16Sign(x));
   prdVal.y = static_cast<float>(f16Sign(y));
   prdVal.value = rdVal;
+  prdVal.flags |= VALID_TAINTED_Z;
 }
 
 void CPU::PGXP::CPU_MFC0(u32 instr, u32 rdVal)
