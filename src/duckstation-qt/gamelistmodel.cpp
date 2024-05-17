@@ -213,6 +213,17 @@ void GameListModel::invalidateCoverForPath(const std::string& path)
   emit dataChanged(mi, mi, {Qt::DecorationRole});
 }
 
+QString GameListModel::formatTimespan(time_t timespan)
+{
+  // avoid an extra string conversion
+  const u32 hours = static_cast<u32>(timespan / 3600);
+  const u32 minutes = static_cast<u32>((timespan % 3600) / 60);
+  if (hours > 0)
+    return qApp->translate("GameList", "%n hours", "", hours);
+  else
+    return qApp->translate("GameList", "%n minutes", "", minutes);
+}
+
 int GameListModel::getCoverArtWidth() const
 {
   return std::max(static_cast<int>(static_cast<float>(COVER_ART_WIDTH) * m_cover_scale), 1);
@@ -316,7 +327,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
           if (ge->total_played_time == 0)
             return {};
           else
-            return QtUtils::StringViewToQString(GameList::FormatTimespan(ge->total_played_time));
+            return formatTimespan(ge->total_played_time);
         }
 
         case Column_LastPlayed:

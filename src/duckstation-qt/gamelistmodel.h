@@ -84,6 +84,8 @@ private:
   void loadOrGenerateCover(const GameList::Entry* ge);
   void invalidateCoverForPath(const std::string& path);
 
+  static QString formatTimespan(time_t timespan);
+
   float m_cover_scale = 0.0f;
   bool m_show_titles_for_covers = false;
 

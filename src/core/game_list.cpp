@@ -1065,7 +1065,7 @@ TinyString GameList::FormatTimespan(std::time_t timespan, bool long_format)
   else
   {
     if (hours > 0)
-      ret.format(TRANSLATE_FS("GameList", "{} hours"), hours);
+      ret.assign(TRANSLATE_PLURAL_STR("GameList", "%n hours", "", hours));
     else
       ret.assign(TRANSLATE_PLURAL_STR("GameList", "%n minutes", "", minutes));
   }
