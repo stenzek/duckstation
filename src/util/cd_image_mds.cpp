@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "assert.h"
@@ -71,10 +71,10 @@ CDImageMds::~CDImageMds()
 
 bool CDImageMds::OpenAndParse(const char* filename, Error* error)
 {
-  std::FILE* mds_fp = FileSystem::OpenCFile(filename, "rb", error);
+  std::FILE* mds_fp = FileSystem::OpenSharedCFile(filename, "rb", FileSystem::FileShareMode::DenyWrite, error);
   if (!mds_fp)
   {
-    Log_ErrorPrintf("Failed to open mds '%s': errno %d", filename, errno);
+    Error::AddPrefixFmt(error, "Failed to open mds '{}': ", Path::GetFileName(filename));
     return false;
   }
 
@@ -83,15 +83,15 @@ bool CDImageMds::OpenAndParse(const char* filename, Error* error)
   if (!mds_data_opt.has_value() || mds_data_opt->size() < 0x54)
   {
     Log_ErrorPrintf("Failed to read mds file '%s'", filename);
-    Error::SetString(error, fmt::format("Failed to read mds file '{}'", filename));
+    Error::SetStringFmt(error, "Failed to read mds file '{}'", filename);
     return false;
   }
 
   std::string mdf_filename(Path::ReplaceExtension(filename, "mdf"));
-  m_mdf_file = FileSystem::OpenCFile(mdf_filename.c_str(), "rb", error);
+  m_mdf_file = FileSystem::OpenSharedCFile(mdf_filename.c_str(), "rb", FileSystem::FileShareMode::DenyWrite, error);
   if (!m_mdf_file)
   {
-    Log_ErrorPrintf("Failed to open mdf file '%s': errno %d", mdf_filename.c_str(), errno);
+    Error::AddPrefixFmt(error, "Failed to open mdf file '{}': ", Path::GetFileName(mdf_filename));
     return false;
   }
 
@@ -100,7 +100,7 @@ bool CDImageMds::OpenAndParse(const char* filename, Error* error)
   if (std::memcmp(&mds[0], expected_signature, sizeof(expected_signature) - 1) != 0)
   {
     Log_ErrorPrintf("Incorrect signature in '%s'", filename);
-    Error::SetString(error, fmt::format("Incorrect signature in '{}'", filename));
+    Error::SetStringFmt(error, "Incorrect signature in '{}'", Path::GetFileName(filename));
     return false;
   }
 
@@ -109,7 +109,7 @@ bool CDImageMds::OpenAndParse(const char* filename, Error* error)
   if ((session_offset + 24) > mds.size())
   {
     Log_ErrorPrintf("Invalid session offset in '%s'", filename);
-    Error::SetString(error, fmt::format("Invalid session offset in '{}'", filename));
+    Error::SetStringFmt(error, "Invalid session offset in '{}'", Path::GetFileName(filename));
     return false;
   }
 
@@ -120,8 +120,8 @@ bool CDImageMds::OpenAndParse(const char* filename, Error* error)
   if (track_count > 99 || track_offset >= mds.size())
   {
     Log_ErrorPrintf("Invalid track count/block offset %u/%u in '%s'", track_count, track_offset, filename);
-    Error::SetString(
-      error, fmt::format("Invalid track count/block offset {}/{} in '{}'", track_count, track_offset, filename));
+    Error::SetStringFmt(error, "Invalid track count/block offset {}/{} in '{}'", track_count, track_offset,
+                        Path::GetFileName(filename));
     return false;
   }
 
@@ -140,7 +140,7 @@ bool CDImageMds::OpenAndParse(const char* filename, Error* error)
     if ((track_offset + sizeof(TrackEntry)) > mds.size())
     {
       Log_ErrorPrintf("End of file in '%s' at track %u", filename, track_number);
-      Error::SetString(error, fmt::format("End of file in '{}' at track {}", filename, track_number));
+      Error::SetStringFmt(error, "End of file in '{}' at track {}", Path::GetFileName(filename), track_number);
       return false;
     }
 
@@ -151,8 +151,7 @@ bool CDImageMds::OpenAndParse(const char* filename, Error* error)
     if (PackedBCDToBinary(track.track_number) != track_number)
     {
       Log_ErrorPrintf("Unexpected track number 0x%02X in track %u", track.track_number, track_number);
-      Error::SetString(error,
-                       fmt::format("Unexpected track number 0x{:02X} in track {}", track.track_number, track_number));
+      Error::SetStringFmt(error, "Unexpected track number 0x{:02X} in track {}", track.track_number, track_number);
       return false;
     }
 
@@ -163,7 +162,7 @@ bool CDImageMds::OpenAndParse(const char* filename, Error* error)
     if ((track.extra_offset + sizeof(u32) + sizeof(u32)) > mds.size())
     {
       Log_ErrorPrintf("Invalid extra offset %u in track %u", track.extra_offset, track_number);
-      Error::SetString(error, fmt::format("Invalid extra offset {} in track {}", track.extra_offset, track_number));
+      Error::SetStringFmt(error, "Invalid extra offset {} in track {}", track.extra_offset, track_number);
       return false;
     }
 
@@ -186,8 +185,7 @@ bool CDImageMds::OpenAndParse(const char* filename, Error* error)
       if (track_pregap > track_start_lba)
       {
         Log_ErrorPrintf("Track pregap %u is too large for start lba %u", track_pregap, track_start_lba);
-        Error::SetString(error,
-                         fmt::format("Track pregap {} is too large for start lba {}", track_pregap, track_start_lba));
+        Error::SetStringFmt(error, "Track pregap {} is too large for start lba {}", track_pregap, track_start_lba);
         return false;
       }
 
@@ -238,7 +236,7 @@ bool CDImageMds::OpenAndParse(const char* filename, Error* error)
   if (m_tracks.empty())
   {
     Log_ErrorPrintf("File '%s' contains no tracks", filename);
-    Error::SetString(error, fmt::format("File '{}' contains no tracks", filename));
+    Error::SetStringFmt(error, "File '{}' contains no tracks", Path::GetFileName(filename));
     return false;
   }
 

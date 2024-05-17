@@ -14,7 +14,6 @@
 #include "fmt/format.h"
 
 #include <algorithm>
-#include <cerrno>
 #include <cinttypes>
 #include <map>
 
@@ -60,13 +59,10 @@ CDImageCueSheet::~CDImageCueSheet()
 
 bool CDImageCueSheet::OpenAndParse(const char* filename, Error* error)
 {
-  std::FILE* fp = FileSystem::OpenCFile(filename, "rb");
+  std::FILE* fp = FileSystem::OpenSharedCFile(filename, "rb", FileSystem::FileShareMode::DenyWrite, error);
   if (!fp)
   {
-    Log_ErrorPrintf("Failed to open cuesheet '%s': errno %d", filename, errno);
-    if (error)
-      error->SetErrno(errno);
-
+    Error::AddPrefixFmt(error, "Failed to open cuesheet '{}': ", Path::GetFileName(filename));
     return false;
   }
 
@@ -123,9 +119,8 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Error* error)
       {
         Log_ErrorPrintf("Failed to open track filename '%s' (from '%s' and '%s'): %s", track_full_filename.c_str(),
                         track_filename.c_str(), filename, track_error.GetDescription().c_str());
-        Error::SetString(error,
-                         fmt::format("Failed to open track filename '{}' (from '{}' and '{}'): {}", track_full_filename,
-                                     track_filename, filename, track_error.GetDescription()));
+        Error::SetStringFmt(error, "Failed to open track filename '{}' (from '{}' and '{}'): {}", track_full_filename,
+                            track_filename, Path::GetFileName(filename), track_error.GetDescription());
         return false;
       }
 
@@ -156,8 +151,8 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Error* error)
       {
         Log_ErrorPrintf("Failed to open track %u in '%s': track start is out of range (%u vs %" PRIu64 ")", track_num,
                         filename, track_start, file_size);
-        Error::SetString(error, fmt::format("Failed to open track {} in '{}': track start is out of range ({} vs {}))",
-                                            track_num, filename, track_start, file_size));
+        Error::SetStringFmt(error, "Failed to open track {} in '{}': track start is out of range ({} vs {}))",
+                            track_num, Path::GetFileName(filename), track_start, file_size);
         return false;
       }
 
@@ -291,7 +286,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Error* error)
   if (m_tracks.empty())
   {
     Log_ErrorPrintf("File '%s' contains no tracks", filename);
-    Error::SetString(error, fmt::format("File '{}' contains no tracks", filename));
+    Error::SetStringFmt(error, "File '{}' contains no tracks", Path::GetFileName(filename));
     return false;
   }
 

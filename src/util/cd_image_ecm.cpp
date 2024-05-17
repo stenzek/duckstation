@@ -1,15 +1,18 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "cd_image.h"
 #include "cd_subchannel_replacement.h"
+
 #include "common/assert.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
+#include "common/path.h"
+
 #include <array>
-#include <cerrno>
 #include <map>
+
 Log_SetChannel(CDImageEcm);
 
 // unecm.c by Neill Corlett (c) 2002, GPL licensed
@@ -232,13 +235,10 @@ CDImageEcm::~CDImageEcm()
 bool CDImageEcm::Open(const char* filename, Error* error)
 {
   m_filename = filename;
-  m_fp = FileSystem::OpenCFile(filename, "rb");
+  m_fp = FileSystem::OpenSharedCFile(filename, "rb", FileSystem::FileShareMode::DenyWrite, error);
   if (!m_fp)
   {
-    Log_ErrorPrintf("Failed to open binfile '%s': errno %d", filename, errno);
-    if (error)
-      error->SetErrno(errno);
-
+    Error::AddPrefixFmt(error, "Failed to open binfile '{}': ", Path::GetFileName(filename));
     return false;
   }
 
@@ -258,7 +258,7 @@ bool CDImageEcm::Open(const char* filename, Error* error)
       header[3] != 0)
   {
     Log_ErrorPrintf("Failed to read/invalid header");
-    Error::SetString(error, "Failed to read/invalid header");
+    Error::SetStringView(error, "Failed to read/invalid header");
     return false;
   }
 
@@ -272,7 +272,7 @@ bool CDImageEcm::Open(const char* filename, Error* error)
     if (bits == EOF)
     {
       Log_ErrorPrintf("Unexpected EOF after %zu chunks", m_data_map.size());
-      Error::SetString(error, fmt::format("Unexpected EOF after {} chunks", m_data_map.size()));
+      Error::SetStringFmt(error, "Unexpected EOF after {} chunks", m_data_map.size());
       return false;
     }
 
@@ -286,7 +286,7 @@ bool CDImageEcm::Open(const char* filename, Error* error)
       if (bits == EOF)
       {
         Log_ErrorPrintf("Unexpected EOF after %zu chunks", m_data_map.size());
-        Error::SetString(error, fmt::format("Unexpected EOF after {} chunks", m_data_map.size()));
+        Error::SetStringFmt(error, "Unexpected EOF after {} chunks", m_data_map.size());
         return false;
       }
 
@@ -304,7 +304,7 @@ bool CDImageEcm::Open(const char* filename, Error* error)
     if (count >= 0x80000000u)
     {
       Log_ErrorPrintf("Corrupted header after %zu chunks", m_data_map.size());
-      Error::SetString(error, fmt::format("Corrupted header after {} chunks", m_data_map.size()));
+      Error::SetStringFmt(error, "Corrupted header after {} chunks", m_data_map.size());
       return false;
     }
 
@@ -321,7 +321,7 @@ bool CDImageEcm::Open(const char* filename, Error* error)
         if (static_cast<s64>(file_offset) > file_size)
         {
           Log_ErrorPrintf("Out of file bounds after %zu chunks", m_data_map.size());
-          Error::SetString(error, fmt::format("Out of file bounds after {} chunks", m_data_map.size()));
+          Error::SetStringFmt(error, "Out of file bounds after {} chunks", m_data_map.size());
         }
       }
     }
@@ -338,7 +338,7 @@ bool CDImageEcm::Open(const char* filename, Error* error)
         if (static_cast<s64>(file_offset) > file_size)
         {
           Log_ErrorPrintf("Out of file bounds after %zu chunks", m_data_map.size());
-          Error::SetString(error, fmt::format("Out of file bounds after {} chunks", m_data_map.size()));
+          Error::SetStringFmt(error, "Out of file bounds after {} chunks", m_data_map.size());
         }
       }
     }
@@ -346,8 +346,7 @@ bool CDImageEcm::Open(const char* filename, Error* error)
     if (std::fseek(m_fp, file_offset, SEEK_SET) != 0)
     {
       Log_ErrorPrintf("Failed to seek to offset %u after %zu chunks", file_offset, m_data_map.size());
-      Error::SetString(error,
-                       fmt::format("Failed to seek to offset {} after {} chunks", file_offset, m_data_map.size()));
+      Error::SetStringFmt(error, "Failed to seek to offset {} after {} chunks", file_offset, m_data_map.size());
       return false;
     }
   }
@@ -355,7 +354,7 @@ bool CDImageEcm::Open(const char* filename, Error* error)
   if (m_data_map.empty())
   {
     Log_ErrorPrintf("No data in image '%s'", filename);
-    Error::SetString(error, fmt::format("No data in image '{}'", filename));
+    Error::SetStringFmt(error, "No data in image '{}'", filename);
     return false;
   }
 

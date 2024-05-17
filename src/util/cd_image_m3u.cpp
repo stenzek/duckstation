@@ -61,7 +61,7 @@ CDImageM3u::~CDImageM3u() = default;
 
 bool CDImageM3u::Open(const char* path, bool apply_patches, Error* error)
 {
-  std::FILE* fp = FileSystem::OpenCFile(path, "rb");
+  std::FILE* fp = FileSystem::OpenSharedCFile(path, "rb", FileSystem::FileShareMode::DenyWrite, error);
   if (!fp)
     return false;
 

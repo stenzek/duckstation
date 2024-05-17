@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "cd_image.h"
@@ -403,12 +403,10 @@ bool CDImagePBP::IsValidEboot(Error* error)
 
 bool CDImagePBP::Open(const char* filename, Error* error)
 {
-  m_file = FileSystem::OpenCFile(filename, "rb");
+  m_file = FileSystem::OpenSharedCFile(filename, "rb", FileSystem::FileShareMode::DenyWrite, error);
   if (!m_file)
   {
-    if (error)
-      error->SetErrno(errno);
-
+    Error::AddPrefixFmt(error, "Failed to open '{}': ", Path::GetFileName(filename));
     return false;
   }
 

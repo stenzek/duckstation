@@ -66,7 +66,7 @@ CDImagePPF::~CDImagePPF() = default;
 
 bool CDImagePPF::Open(const char* filename, std::unique_ptr<CDImage> parent_image)
 {
-  auto fp = FileSystem::OpenManagedCFile(filename, "rb");
+  auto fp = FileSystem::OpenManagedSharedCFile(filename, "rb", FileSystem::FileShareMode::DenyWrite);
   if (!fp)
   {
     Log_ErrorPrintf("Failed to open '%s'", filename);
