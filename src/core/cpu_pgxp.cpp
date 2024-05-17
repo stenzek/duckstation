@@ -1419,13 +1419,12 @@ void CPU::PGXP::CPU_SLL(u32 instr, u32 rtVal)
   // Rd = Rt << Sa
   const u32 rdVal = rtVal << sa(instr);
   const u32 sh = sa(instr);
-  Validate(&g_state.pgxp_gpr[rt(instr)], rtVal);
-
-  PGXP_value ret = g_state.pgxp_gpr[rt(instr)];
+  PGXP_value& prtVal = g_state.pgxp_gpr[rt(instr)];
+  Validate(&prtVal, rtVal);
 
   // TODO: Shift flags
-  double x = f16Unsign(g_state.pgxp_gpr[rt(instr)].x);
-  double y = f16Unsign(g_state.pgxp_gpr[rt(instr)].y);
+  double x = f16Unsign(prtVal.x);
+  double y = f16Unsign(prtVal.y);
   if (sh >= 32)
   {
     x = 0.f;
@@ -1451,11 +1450,11 @@ void CPU::PGXP::CPU_SLL(u32 instr, u32 rtVal)
     y = f16Sign(y);
   }
 
-  ret.x = (float)x;
-  ret.y = (float)y;
-
-  ret.value = rdVal;
-  g_state.pgxp_gpr[rd(instr)] = ret;
+  PGXP_value& prdVal = g_state.pgxp_gpr[rd(instr)];
+  prdVal = prtVal;
+  prdVal.x = static_cast<float>(x);
+  prdVal.y = static_cast<float>(y);
+  prdVal.value = rdVal;
 }
 
 void CPU::PGXP::CPU_SRL(u32 instr, u32 rtVal)
@@ -1465,9 +1464,11 @@ void CPU::PGXP::CPU_SRL(u32 instr, u32 rtVal)
   // Rd = Rt >> Sa
   const u32 rdVal = rtVal >> sa(instr);
   const u32 sh = sa(instr);
-  Validate(&g_state.pgxp_gpr[rt(instr)], rtVal);
+  PGXP_value& prtVal = g_state.pgxp_gpr[rt(instr)];
+  Validate(&prtVal, rtVal);
 
-  double x = g_state.pgxp_gpr[rt(instr)].x, y = f16Unsign(g_state.pgxp_gpr[rt(instr)].y);
+  double x = prtVal.x;
+  double y = f16Unsign(prtVal.y);
 
   psx_value iX;
   iX.d = rtVal;
@@ -1514,11 +1515,11 @@ void CPU::PGXP::CPU_SRL(u32 instr, u32 rtVal)
   x = f16Sign(x);
   y = f16Sign(y);
 
-  PGXP_value ret = g_state.pgxp_gpr[rt(instr)];
-  ret.x = (float)x;
-  ret.y = (float)y;
-  ret.value = rdVal;
-  g_state.pgxp_gpr[rd(instr)] = ret;
+  PGXP_value& prdVal = g_state.pgxp_gpr[rd(instr)];
+  prdVal = prtVal;
+  prdVal.x = static_cast<float>(x);
+  prdVal.y = static_cast<float>(y);
+  prdVal.value = rdVal;
 }
 
 void CPU::PGXP::CPU_SRA(u32 instr, u32 rtVal)
@@ -1528,10 +1529,11 @@ void CPU::PGXP::CPU_SRA(u32 instr, u32 rtVal)
   // Rd = Rt >> Sa
   const u32 rdVal = static_cast<u32>(static_cast<s32>(rtVal) >> sa(instr));
   const u32 sh = sa(instr);
-  Validate(&g_state.pgxp_gpr[rt(instr)], rtVal);
-  PGXP_value ret = g_state.pgxp_gpr[rt(instr)];
+  PGXP_value& prtVal = g_state.pgxp_gpr[rt(instr)];
+  Validate(&prtVal, rtVal);
 
-  double x = g_state.pgxp_gpr[rt(instr)].x, y = g_state.pgxp_gpr[rt(instr)].y;
+  double x = prtVal.x;
+  double y = prtVal.y;
 
   psx_value iX;
   iX.d = rtVal;
@@ -1578,21 +1580,21 @@ void CPU::PGXP::CPU_SRA(u32 instr, u32 rtVal)
   x = f16Sign(x);
   y = f16Sign(y);
 
-  ret.x = (float)x;
-  ret.y = (float)y;
+  PGXP_value& prdVal = g_state.pgxp_gpr[rd(instr)];
+  prdVal = prtVal;
+  prdVal.x = static_cast<float>(x);
+  prdVal.y = static_cast<float>(y);
+  prdVal.value = rdVal;
 
   // Use low precision/rounded values when we're not shifting an entire component,
   // and it's not originally from a 3D value. Too many false positives in P2/etc.
   // What we probably should do is not set the valid flag on non-3D values to begin
   // with, only letting them become valid when used in another expression.
-  if (!(ret.flags & VALID_Z) && sh < 16)
+  if (!(prdVal.flags & VALID_Z) && sh < 16)
   {
-    ret.flags = 0;
-    MakeValid(&ret, rdVal);
+    prdVal.flags = 0;
+    MakeValid(&prdVal, rdVal);
   }
-
-  ret.value = rdVal;
-  g_state.pgxp_gpr[rd(instr)] = ret;
 }
 
 ////////////////////////////////////
@@ -1605,11 +1607,13 @@ void CPU::PGXP::CPU_SLLV(u32 instr, u32 rtVal, u32 rsVal)
   // Rd = Rt << Rs
   const u32 rdVal = rtVal << rsVal;
   const u32 sh = rsVal & 0x1F;
-  Validate(&g_state.pgxp_gpr[rt(instr)], rtVal);
-  Validate(&g_state.pgxp_gpr[rs(instr)], rsVal);
+  PGXP_value& prtVal = g_state.pgxp_gpr[rt(instr)];
+  PGXP_value& prsVal = g_state.pgxp_gpr[rs(instr)];
+  Validate(&prtVal, rtVal);
+  Validate(&prsVal, rsVal);
 
-  double x = f16Unsign(g_state.pgxp_gpr[rt(instr)].x);
-  double y = f16Unsign(g_state.pgxp_gpr[rt(instr)].y);
+  double x = f16Unsign(prtVal.x);
+  double y = f16Unsign(prtVal.y);
   if (sh >= 32)
   {
     x = 0.f;
@@ -1635,11 +1639,11 @@ void CPU::PGXP::CPU_SLLV(u32 instr, u32 rtVal, u32 rsVal)
     y = f16Sign(y);
   }
 
-  PGXP_value ret = g_state.pgxp_gpr[rt(instr)];
-  ret.x = (float)x;
-  ret.y = (float)y;
-  ret.value = rdVal;
-  g_state.pgxp_gpr[rd(instr)] = ret;
+  PGXP_value& prdVal = g_state.pgxp_gpr[rd(instr)];
+  prdVal = prtVal;
+  prdVal.x = static_cast<float>(x);
+  prdVal.y = static_cast<float>(y);
+  prdVal.value = rdVal;
 }
 
 void CPU::PGXP::CPU_SRLV(u32 instr, u32 rtVal, u32 rsVal)
@@ -1649,10 +1653,13 @@ void CPU::PGXP::CPU_SRLV(u32 instr, u32 rtVal, u32 rsVal)
   // Rd = Rt >> Sa
   const u32 rdVal = rtVal >> rsVal;
   const u32 sh = rsVal & 0x1F;
-  Validate(&g_state.pgxp_gpr[rt(instr)], rtVal);
-  Validate(&g_state.pgxp_gpr[rs(instr)], rsVal);
+  PGXP_value& prtVal = g_state.pgxp_gpr[rt(instr)];
+  PGXP_value& prsVal = g_state.pgxp_gpr[rs(instr)];
+  Validate(&prtVal, rtVal);
+  Validate(&prsVal, rsVal);
 
-  double x = g_state.pgxp_gpr[rt(instr)].x, y = f16Unsign(g_state.pgxp_gpr[rt(instr)].y);
+  double x = prtVal.x;
+  double y = f16Unsign(prtVal.y);
 
   psx_value iX;
   iX.d = rtVal;
@@ -1696,14 +1703,12 @@ void CPU::PGXP::CPU_SRLV(u32 instr, u32 rtVal, u32 rsVal)
   else
     y = y / (1 << sh);
 
-  x = f16Sign(x);
-  y = f16Sign(y);
 
-  PGXP_value ret = g_state.pgxp_gpr[rt(instr)];
-  ret.x = (float)x;
-  ret.y = (float)y;
-  ret.value = rdVal;
-  g_state.pgxp_gpr[rd(instr)] = ret;
+  PGXP_value& prdVal = g_state.pgxp_gpr[rd(instr)];
+  prdVal = prtVal;
+  prdVal.x = static_cast<float>(f16Sign(x));
+  prdVal.y = static_cast<float>(f16Sign(y));
+  prdVal.value = rdVal;
 }
 
 void CPU::PGXP::CPU_SRAV(u32 instr, u32 rtVal, u32 rsVal)
@@ -1713,10 +1718,13 @@ void CPU::PGXP::CPU_SRAV(u32 instr, u32 rtVal, u32 rsVal)
   // Rd = Rt >> Sa
   const u32 rdVal = static_cast<u32>(static_cast<s32>(rtVal) >> rsVal);
   const u32 sh = rsVal & 0x1F;
-  Validate(&g_state.pgxp_gpr[rt(instr)], rtVal);
-  Validate(&g_state.pgxp_gpr[rs(instr)], rsVal);
+  PGXP_value& prtVal = g_state.pgxp_gpr[rt(instr)];
+  PGXP_value& prsVal = g_state.pgxp_gpr[rs(instr)];
+  Validate(&prtVal, rtVal);
+  Validate(&prsVal, rsVal);
 
-  double x = g_state.pgxp_gpr[rt(instr)].x, y = g_state.pgxp_gpr[rt(instr)].y;
+  double x = prtVal.x;
+  double y = prtVal.y;
 
   psx_value iX;
   iX.d = rtVal;
@@ -1760,13 +1768,11 @@ void CPU::PGXP::CPU_SRAV(u32 instr, u32 rtVal, u32 rsVal)
   else
     y = y / (1 << sh);
 
-  PGXP_value ret = g_state.pgxp_gpr[rt(instr)];
-  x = f16Sign(x);
-  y = f16Sign(y);
-  ret.x = (float)x;
-  ret.y = (float)y;
-  ret.value = rdVal;
-  g_state.pgxp_gpr[rd(instr)] = ret;
+  PGXP_value& prdVal = g_state.pgxp_gpr[rd(instr)];
+  prdVal = prtVal;
+  prdVal.x = static_cast<float>(f16Sign(x));
+  prdVal.y = static_cast<float>(f16Sign(y));
+  prdVal.value = rdVal;
 }
 
 void CPU::PGXP::CPU_MFC0(u32 instr, u32 rdVal)
