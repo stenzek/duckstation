@@ -44993,6 +44993,7 @@ SCES-01705:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Improves sprite positioning.
+    - DisableTrueColor # Stops flicker in some cutscenes.
   metadata:
     publisher: "Sony"
     developer: "Namco"
@@ -45019,6 +45020,7 @@ SCES-11705:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Improves sprite positioning.
+    - DisableTrueColor # Stops flicker in some cutscenes.
   metadata:
     publisher: "Sony"
     developer: "Namco"
@@ -45045,6 +45047,7 @@ SCES-02565:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Improves sprite positioning.
+    - DisableTrueColor # Stops flicker in some cutscenes.
   metadata:
     publisher: "Sony"
     developer: "Namco"
@@ -45071,6 +45074,7 @@ SCES-12565:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Improves sprite positioning.
+    - DisableTrueColor # Stops flicker in some cutscenes.
   metadata:
     publisher: "Sony"
     developer: "Namco"
@@ -45097,6 +45101,7 @@ SCES-02566:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Improves sprite positioning.
+    - DisableTrueColor # Stops flicker in some cutscenes.
   metadata:
     publisher: "Sony"
     developer: "Namco"
@@ -45123,6 +45128,7 @@ SCES-12566:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Improves sprite positioning.
+    - DisableTrueColor # Stops flicker in some cutscenes.
   metadata:
     publisher: "Sony"
     developer: "Namco"
@@ -45149,6 +45155,7 @@ SCES-02567:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Improves sprite positioning.
+    - DisableTrueColor # Stops flicker in some cutscenes.
   metadata:
     publisher: "Sony"
     developer: "Namco"
@@ -45175,6 +45182,7 @@ SCES-12567:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Improves sprite positioning.
+    - DisableTrueColor # Stops flicker in some cutscenes.
   metadata:
     publisher: "Sony"
     developer: "Namco"
@@ -45201,6 +45209,7 @@ SLPS-02190:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Improves sprite positioning.
+    - DisableTrueColor # Stops flicker in some cutscenes.
   metadata:
     publisher: "Namco"
     developer: "Namco"
@@ -45227,6 +45236,7 @@ SLPS-02191:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Improves sprite positioning.
+    - DisableTrueColor # Stops flicker in some cutscenes.
   metadata:
     publisher: "Namco"
     developer: "Namco"
@@ -45253,6 +45263,7 @@ SCES-02568:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Improves sprite positioning.
+    - DisableTrueColor # Stops flicker in some cutscenes.
   metadata:
     publisher: "Sony"
     developer: "Namco"
@@ -45279,6 +45290,7 @@ SCES-12568:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Improves sprite positioning.
+    - DisableTrueColor # Stops flicker in some cutscenes.
   metadata:
     publisher: "Sony"
     developer: "Namco"
@@ -45308,6 +45320,7 @@ SLUS-01092:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Improves sprite positioning.
+    - DisableTrueColor # Stops flicker in some cutscenes.
   metadata:
     publisher: "Namco"
     developer: "Namco"
@@ -45334,6 +45347,7 @@ SLUS-01164:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Improves sprite positioning.
+    - DisableTrueColor # Stops flicker in some cutscenes.
   metadata:
     publisher: "Namco"
     developer: "Namco"
