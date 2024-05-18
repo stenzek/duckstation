@@ -82,6 +82,7 @@ public Q_SLOTS:
   void showGameList();
   void showGameGrid();
   void setShowCoverTitles(bool enabled);
+  void setMergeDiscSets(bool enabled);
   void gridZoomIn();
   void gridZoomOut();
   void gridIntScale(int int_scale);

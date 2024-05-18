@@ -38,6 +38,14 @@ class GameListSortModel final : public QSortFilterProxyModel
 public:
   explicit GameListSortModel(GameListModel* parent) : QSortFilterProxyModel(parent), m_model(parent) {}
 
+  bool getMergeDiscSets() const { return m_merge_disc_sets; }
+
+  void setMergeDiscSets(bool enabled)
+  {
+    m_merge_disc_sets = enabled;
+    invalidateRowsFilter();
+  }
+
   void setFilterType(GameList::EntryType type)
   {
     m_filter_type = type;
@@ -56,18 +64,28 @@ public:
 
   bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override
   {
-    if (m_filter_type != GameList::EntryType::Count || m_filter_region != DiscRegion::Count || !m_filter_name.isEmpty())
+    const auto lock = GameList::GetLock();
+    const GameList::Entry* entry = GameList::GetEntryByIndex(source_row);
+
+    if (m_merge_disc_sets)
     {
-      const auto lock = GameList::GetLock();
-      const GameList::Entry* entry = GameList::GetEntryByIndex(source_row);
-      if (m_filter_type != GameList::EntryType::Count && entry->type != m_filter_type)
-        return false;
-      if (m_filter_region != DiscRegion::Count && entry->region != m_filter_region)
-        return false;
-      if (!m_filter_name.isEmpty() &&
-          !QString::fromStdString(entry->title).contains(m_filter_name, Qt::CaseInsensitive))
+      if (entry->disc_set_member)
         return false;
     }
+    else
+    {
+      if (entry->IsDiscSet())
+        return false;
+    }
+
+    if (m_filter_type != GameList::EntryType::Count && entry->type != m_filter_type)
+      return false;
+
+    if (m_filter_region != DiscRegion::Count && entry->region != m_filter_region)
+      return false;
+
+    if (!m_filter_name.isEmpty() && !QString::fromStdString(entry->title).contains(m_filter_name, Qt::CaseInsensitive))
+      return false;
 
     return QSortFilterProxyModel::filterAcceptsRow(source_row, source_parent);
   }
@@ -82,6 +100,7 @@ private:
   GameList::EntryType m_filter_type = GameList::EntryType::Count;
   DiscRegion m_filter_region = DiscRegion::Count;
   QString m_filter_name;
+  bool m_merge_disc_sets = true;
 };
 
 GameListWidget::GameListWidget(QWidget* parent /* = nullptr */) : QWidget(parent)
@@ -94,11 +113,13 @@ void GameListWidget::initialize()
 {
   const float cover_scale = Host::GetBaseFloatSettingValue("UI", "GameListCoverArtScale", 0.45f);
   const bool show_cover_titles = Host::GetBaseBoolSettingValue("UI", "GameListShowCoverTitles", true);
+  const bool merge_disc_sets = Host::GetBaseBoolSettingValue("UI", "GameListMergeDiscSets", true);
   m_model = new GameListModel(cover_scale, show_cover_titles, this);
   m_model->updateCacheSize(width(), height());
 
   m_sort_model = new GameListSortModel(m_model);
   m_sort_model->setSourceModel(m_model);
+  m_sort_model->setMergeDiscSets(merge_disc_sets);
 
   m_ui.setupUi(this);
   for (u32 type = 0; type < static_cast<u32>(GameList::EntryType::Count); type++)
@@ -117,6 +138,7 @@ void GameListWidget::initialize()
   connect(m_ui.viewGameGrid, &QPushButton::clicked, this, &GameListWidget::showGameGrid);
   connect(m_ui.gridScale, &QSlider::valueChanged, this, &GameListWidget::gridIntScale);
   connect(m_ui.viewGridTitles, &QPushButton::toggled, this, &GameListWidget::setShowCoverTitles);
+  connect(m_ui.viewMergeDiscSets, &QPushButton::toggled, this, &GameListWidget::setMergeDiscSets);
   connect(m_ui.filterType, &QComboBox::currentIndexChanged, this, [this](int index) {
     m_sort_model->setFilterType((index == 0) ? GameList::EntryType::Count :
                                                static_cast<GameList::EntryType>(index - 1));
@@ -429,6 +451,21 @@ void GameListWidget::setShowCoverTitles(bool enabled)
   emit layoutChange();
 }
 
+void GameListWidget::setMergeDiscSets(bool enabled)
+{
+  if (m_sort_model->getMergeDiscSets() == enabled)
+  {
+    updateToolbar();
+    return;
+  }
+
+  Host::SetBaseBoolSettingValue("UI", "GameListMergeDiscSets", enabled);
+  Host::CommitBaseSettingChanges();
+  m_sort_model->setMergeDiscSets(enabled);
+  updateToolbar();
+  emit layoutChange();
+}
+
 void GameListWidget::updateToolbar()
 {
   const bool grid_view = isShowingGameGrid();
@@ -443,6 +480,10 @@ void GameListWidget::updateToolbar()
   {
     QSignalBlocker sb(m_ui.viewGridTitles);
     m_ui.viewGridTitles->setChecked(m_model->getShowCoverTitles());
+  }
+  {
+    QSignalBlocker sb(m_ui.viewMergeDiscSets);
+    m_ui.viewMergeDiscSets->setChecked(m_sort_model->getMergeDiscSets());
   }
   {
     QSignalBlocker sb(m_ui.gridScale);

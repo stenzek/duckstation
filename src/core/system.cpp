@@ -952,8 +952,11 @@ std::optional<DiscRegion> System::GetRegionForPath(const char* image_path)
 
 std::string System::GetGameSettingsPath(std::string_view game_serial)
 {
-  const std::string sanitized_serial(Path::SanitizeFileName(game_serial));
-  return Path::Combine(EmuFolders::GameSettings, fmt::format("{}.ini", sanitized_serial));
+  // multi-disc games => always use the first disc
+  const GameDatabase::Entry* entry = GameDatabase::GetEntryForSerial(game_serial);
+  const std::string_view serial_for_path =
+    (entry && !entry->disc_set_serials.empty()) ? entry->disc_set_serials.front() : game_serial;
+  return Path::Combine(EmuFolders::GameSettings, fmt::format("{}.ini", Path::SanitizeFileName(serial_for_path)));
 }
 
 std::string System::GetInputProfilePath(std::string_view name)

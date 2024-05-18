@@ -182,6 +182,10 @@
     <ClCompile Include="$(IntDir)moc_memoryscannerwindow.cpp">
       <Filter>moc</Filter>
     </ClCompile>
+    <ClCompile Include="selectdiscdialog.cpp" />
+    <ClCompile Include="$(IntDir)moc_selectdiscdialog.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
@@ -246,6 +250,7 @@
     <QtMoc Include="logwindow.h" />
     <QtMoc Include="graphicssettingswidget.h" />
     <QtMoc Include="memoryscannerwindow.h" />
+    <QtMoc Include="selectdiscdialog.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
@@ -292,6 +297,7 @@
     <QtUi Include="audioexpansionsettingsdialog.ui" />
     <QtUi Include="audiostretchsettingsdialog.ui" />
     <QtUi Include="controllerbindingwidget_justifier.ui" />
+    <QtUi Include="selectdiscdialog.ui" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="qt5.natvis" />

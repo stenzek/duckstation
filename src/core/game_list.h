@@ -25,6 +25,7 @@ namespace GameList {
 enum class EntryType
 {
   Disc,
+  DiscSet,
   PSExe,
   Playlist,
   PSF,
@@ -57,12 +58,14 @@ struct Entry
   u8 min_blocks = 0;
   u8 max_blocks = 0;
   s8 disc_set_index = -1;
+  bool disc_set_member = false;
 
   GameDatabase::CompatibilityRating compatibility = GameDatabase::CompatibilityRating::Unknown;
 
   size_t GetReleaseDateString(char* buffer, size_t buffer_size) const;
 
   ALWAYS_INLINE bool IsDisc() const { return (type == EntryType::Disc); }
+  ALWAYS_INLINE bool IsDiscSet() const { return (type == EntryType::DiscSet); }
 };
 
 const char* GetEntryTypeName(EntryType type);
@@ -77,10 +80,11 @@ bool PopulateEntryFromPath(const std::string& path, Entry* entry);
 // Game list access. It's the caller's responsibility to hold the lock while manipulating the entry in any way.
 std::unique_lock<std::recursive_mutex> GetLock();
 const Entry* GetEntryByIndex(u32 index);
-const Entry* GetEntryForPath(const char* path);
+const Entry* GetEntryForPath(std::string_view path);
 const Entry* GetEntryBySerial(std::string_view serial);
 const Entry* GetEntryBySerialAndHash(std::string_view serial, u64 hash);
-std::vector<const Entry*> GetDiscSetMembers(std::string_view disc_set_name);
+std::vector<const Entry*> GetDiscSetMembers(std::string_view disc_set_name, bool sort_by_most_recent = false);
+const Entry* GetFirstDiscSetMember(std::string_view disc_set_name);
 u32 GetEntryCount();
 
 bool IsGameListLoaded();

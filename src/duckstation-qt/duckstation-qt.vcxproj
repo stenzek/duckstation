@@ -50,6 +50,7 @@
     <ClCompile Include="qtkeycodes.cpp" />
     <ClCompile Include="qtprogresscallback.cpp" />
     <ClCompile Include="qtutils.cpp" />
+    <ClCompile Include="selectdiscdialog.cpp" />
     <ClCompile Include="settingswindow.cpp" />
     <ClCompile Include="setupwizarddialog.cpp" />
   </ItemGroup>
@@ -88,6 +89,7 @@
     <QtMoc Include="memoryscannerwindow.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
+    <QtMoc Include="selectdiscdialog.h" />
     <ClInclude Include="settingwidgetbinder.h" />
     <QtMoc Include="consolesettingswidget.h" />
     <QtMoc Include="emulationsettingswidget.h" />
@@ -257,6 +259,7 @@
     <ClCompile Include="$(IntDir)moc_memoryscannerwindow.cpp" />
     <ClCompile Include="$(IntDir)moc_memoryviewwidget.cpp" />
     <ClCompile Include="$(IntDir)moc_postprocessingsettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_selectdiscdialog.cpp" />
     <ClCompile Include="$(IntDir)moc_qthost.cpp" />
     <ClCompile Include="$(IntDir)moc_qtprogresscallback.cpp" />
     <ClCompile Include="$(IntDir)moc_settingswindow.cpp" />
@@ -342,6 +345,9 @@
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="controllerbindingwidget_justifier.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="selectdiscdialog.ui">
       <FileType>Document</FileType>
     </QtUi>
     <None Include="translations\duckstation-qt_es-es.ts" />
