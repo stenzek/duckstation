@@ -55,11 +55,6 @@ BINARY=duckstation-qt
 APPDIRNAME=DuckStation.AppDir
 STRIP=strip
 
-declare -a EXCLUDE_LIBS=(
-	'libcrypto.so*'
-	'libssl.so*'
-)
-
 declare -a MANUAL_LIBS=(
 	"libshaderc_shared.so.1"
 )
@@ -100,7 +95,7 @@ OUTDIR=$(realpath "./$APPDIRNAME")
 rm -fr "$OUTDIR"
 
 echo "Locating extra libraries..."
-declare -a EXTRA_LIBS_ARGS=()
+EXTRA_LIBS_ARGS=""
 for lib in "${MANUAL_LIBS[@]}"; do
 	srcpath=$(find "$DEPSDIR" -name "$lib")
 	if [ ! -f "$srcpath" ]; then
@@ -110,12 +105,11 @@ for lib in "${MANUAL_LIBS[@]}"; do
 
 	echo "Found $lib at $srcpath."
 
-	EXTRA_LIBS_ARGS+=("--library=$srcpath")
-done
-
-declare -a EXCLUDE_LIBS_ARGS=()
-for lib in "${EXCLUDE_LIBS[@]}"; do
-	EXCLUDE_LIBS_ARGS+=("--exclude-library=$lib")
+	if [ "$EXTRA_LIBS_ARGS" == "" ]; then
+		EXTRA_LIBS_ARGS="--library=$srcpath"
+	else
+		EXTRA_LIBS_ARGS="$EXTRA_LIBS_ARGS,$srcpath"
+	fi
 done
 
 # Why the nastyness? linuxdeploy strips our main binary, and there's no option to turn it off.
@@ -140,8 +134,7 @@ EXTRA_PLATFORM_PLUGINS="libqwayland-egl.so;libqwayland-generic.so" \
 DEPLOY_PLATFORM_THEMES="1" \
 QMAKE="$DEPSDIR/bin/qmake" \
 NO_STRIP="1" \
-$LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/duckstation-qt" \
-"${EXTRA_LIBS_ARGS[@]}" "${EXCLUDE_LIBS_ARGS[@]}" \
+$LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/duckstation-qt" $EXTRA_LIBS_ARGS \
 --desktop-file="$ROOTDIR/scripts/org.duckstation.DuckStation.desktop" \
 --icon-file="$ROOTDIR/scripts/org.duckstation.DuckStation.png" \
 
