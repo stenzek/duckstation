@@ -830,7 +830,7 @@ void GameList::CreateDiscSetEntries(const PlayedTimeMap& played_time_map)
         continue;
       }
 
-      Log_InfoFmt("Adding {} to disc set {}", other_entry.path, disc_set_name);
+      Log_DevFmt("Adding {} to disc set {}", Path::GetFileName(other_entry.path), disc_set_name);
       other_entry.disc_set_member = true;
       set_entry.last_modified_time = std::min(set_entry.last_modified_time, other_entry.last_modified_time);
       set_entry.file_size += other_entry.file_size;
@@ -838,7 +838,7 @@ void GameList::CreateDiscSetEntries(const PlayedTimeMap& played_time_map)
       num_parts++;
     }
 
-    Log_InfoFmt("Created disc set {} from {} entries", disc_set_name, num_parts);
+    Log_DevFmt("Created disc set {} from {} entries", disc_set_name, num_parts);
 
     // entry is done :)
     s_entries.push_back(std::move(set_entry));
