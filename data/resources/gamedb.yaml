@@ -30661,6 +30661,8 @@ SCPS-10003:
   name: "Crime Crackers (Japan)"
   controllers:
     - DigitalController
+  codes:
+    - HASH-111C340E270B10A8
   metadata:
     publisher: "Sony"
     developer: "Media Vision Entertainment"
@@ -65511,6 +65513,8 @@ SLPS-00104:
   name: "Gouketsuji Ichizoku 2 - Chotto dake Saikyou Densetsu (Japan)"
   controllers:
     - DigitalController
+  codes:
+    - HASH-407D4E2254F5ABBE
   metadata:
     publisher: "Atlus Co"
     developer: "A.I"
@@ -111475,8 +111479,6 @@ SLES-01987:
   name: "Next Tetris, The (Europe) (En,Fr,De,Es,It,Nl)"
   controllers:
     - DigitalController
-  traits:
-    - ForceRecompilerICache
   metadata:
     publisher: "Atari / Hasbro Interactive"
     developer: "Blue Planet Interactive"
