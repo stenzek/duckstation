@@ -140,7 +140,7 @@ void GameSummaryWidget::populateUi(const std::string& path, const std::string& s
 
   {
     auto lock = GameList::GetLock();
-    const GameList::Entry* gentry = GameList::GetEntryForPath(path.c_str());
+    const GameList::Entry* gentry = GameList::GetEntryForPath(path);
     if (gentry)
       m_ui.entryType->setCurrentIndex(static_cast<int>(gentry->type));
   }

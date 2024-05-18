@@ -515,7 +515,7 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache,
     }
 
     std::unique_lock lock(s_mutex);
-    if (GetEntryForPath(ffd.FileName.c_str()) ||
+    if (GetEntryForPath(ffd.FileName) ||
         AddFileFromCache(ffd.FileName, ffd.ModificationTime, played_time_map) || only_cache)
     {
       continue;
@@ -590,13 +590,18 @@ const GameList::Entry* GameList::GetEntryByIndex(u32 index)
   return (index < s_entries.size()) ? &s_entries[index] : nullptr;
 }
 
-const GameList::Entry* GameList::GetEntryForPath(const char* path)
+const GameList::Entry* GameList::GetEntryForPath(std::string_view path)
 {
-  const size_t path_length = std::strlen(path);
   for (const Entry& entry : s_entries)
   {
-    if (entry.path.size() == path_length && StringUtil::Strcasecmp(entry.path.c_str(), path) == 0)
+    // Use case-insensitive compare on Windows, since it's the same file.
+#ifdef _WIN32
+    if (StringUtil::EqualNoCase(entry.path, path))
       return &entry;
+#else
+    if (entry.path == path)
+      return &entry;
+#endif
   }
 
   return nullptr;
@@ -606,11 +611,8 @@ const GameList::Entry* GameList::GetEntryBySerial(std::string_view serial)
 {
   for (const Entry& entry : s_entries)
   {
-    if (entry.serial.length() == serial.length() &&
-        StringUtil::Strncasecmp(entry.serial.c_str(), serial.data(), serial.length()) == 0)
-    {
+    if (entry.serial ==  serial)
       return &entry;
-    }
   }
 
   return nullptr;
@@ -1191,7 +1193,7 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
     // make sure it didn't get done already
     {
       std::unique_lock lock(s_mutex);
-      const GameList::Entry* entry = GetEntryForPath(entry_path.c_str());
+      const GameList::Entry* entry = GetEntryForPath(entry_path);
       if (!entry || !GetCoverImagePathForEntry(entry).empty())
       {
         progress->IncrementProgressValue();
@@ -1210,7 +1212,7 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
           return;
 
         std::unique_lock lock(s_mutex);
-        const GameList::Entry* entry = GetEntryForPath(entry_path.c_str());
+        const GameList::Entry* entry = GetEntryForPath(entry_path);
         if (!entry || !GetCoverImagePathForEntry(entry).empty())
           return;
 

@@ -2754,7 +2754,7 @@ void FullscreenUI::SwitchToGameSettings()
     return;
 
   auto lock = GameList::GetLock();
-  const GameList::Entry* entry = GameList::GetEntryForPath(System::GetDiscPath().c_str());
+  const GameList::Entry* entry = GameList::GetEntryForPath(System::GetDiscPath());
   if (!entry)
   {
     SwitchToGameSettingsForSerial(System::GetGameSerial());
@@ -2767,7 +2767,7 @@ void FullscreenUI::SwitchToGameSettings()
 void FullscreenUI::SwitchToGameSettingsForPath(const std::string& path)
 {
   auto lock = GameList::GetLock();
-  const GameList::Entry* entry = GameList::GetEntryForPath(path.c_str());
+  const GameList::Entry* entry = GameList::GetEntryForPath(path);
   if (entry)
     SwitchToGameSettings(entry);
 }
@@ -5535,7 +5535,7 @@ u32 FullscreenUI::PopulateSaveStateListEntries(const std::string& title, const s
 bool FullscreenUI::OpenLoadStateSelectorForGame(const std::string& game_path)
 {
   auto lock = GameList::GetLock();
-  const GameList::Entry* entry = GameList::GetEntryForPath(game_path.c_str());
+  const GameList::Entry* entry = GameList::GetEntryForPath(game_path);
   if (entry)
   {
     s_save_state_selector_loading = true;
@@ -6823,7 +6823,7 @@ GPUTexture* FullscreenUI::GetCoverForCurrentGame()
 {
   auto lock = GameList::GetLock();
 
-  const GameList::Entry* entry = GameList::GetEntryForPath(System::GetDiscPath().c_str());
+  const GameList::Entry* entry = GameList::GetEntryForPath(System::GetDiscPath());
   if (!entry)
     return s_fallback_disc_texture.get();
 
