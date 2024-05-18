@@ -82,6 +82,7 @@ static bool OpenCacheForWriting();
 static bool WriteEntryToCache(const Entry* entry);
 static void CloseCacheFileStream();
 static void DeleteCacheFile();
+static void CreateDiscSetEntries(const PlayedTimeMap& played_time_map);
 
 static std::string GetPlayedTimeFile();
 static bool ParsePlayedTimeLine(char* line, std::string& serial, PlayedTimeEntry& entry);
@@ -100,15 +101,16 @@ static bool s_game_list_loaded = false;
 
 const char* GameList::GetEntryTypeName(EntryType type)
 {
-  static std::array<const char*, static_cast<int>(EntryType::Count)> names = {{"Disc", "PSExe", "Playlist", "PSF"}};
+  static std::array<const char*, static_cast<int>(EntryType::Count)> names = {
+    {"Disc", "DiscSet", "PSExe", "Playlist", "PSF"}};
   return names[static_cast<int>(type)];
 }
 
 const char* GameList::GetEntryTypeDisplayName(EntryType type)
 {
   static std::array<const char*, static_cast<int>(EntryType::Count)> names = {
-    {TRANSLATE_NOOP("GameList", "Disc"), TRANSLATE_NOOP("GameList", "PS-EXE"), TRANSLATE_NOOP("GameList", "Playlist"),
-     TRANSLATE_NOOP("GameList", "PSF")}};
+    {TRANSLATE_NOOP("GameList", "Disc"), TRANSLATE_NOOP("GameList", "Disc Set"), TRANSLATE_NOOP("GameList", "PS-EXE"),
+     TRANSLATE_NOOP("GameList", "Playlist"), TRANSLATE_NOOP("GameList", "PSF")}};
   return Host::TranslateToCString("GameList", names[static_cast<int>(type)]);
 }
 
@@ -515,8 +517,8 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache,
     }
 
     std::unique_lock lock(s_mutex);
-    if (GetEntryForPath(ffd.FileName) ||
-        AddFileFromCache(ffd.FileName, ffd.ModificationTime, played_time_map) || only_cache)
+    if (GetEntryForPath(ffd.FileName) || AddFileFromCache(ffd.FileName, ffd.ModificationTime, played_time_map) ||
+        only_cache)
     {
       continue;
     }
@@ -611,7 +613,7 @@ const GameList::Entry* GameList::GetEntryBySerial(std::string_view serial)
 {
   for (const Entry& entry : s_entries)
   {
-    if (entry.serial ==  serial)
+    if (entry.serial == serial)
       return &entry;
   }
 
@@ -629,17 +631,49 @@ const GameList::Entry* GameList::GetEntryBySerialAndHash(std::string_view serial
   return nullptr;
 }
 
-std::vector<const GameList::Entry*> GameList::GetDiscSetMembers(std::string_view disc_set_name)
+std::vector<const GameList::Entry*> GameList::GetDiscSetMembers(std::string_view disc_set_name,
+                                                                bool sort_by_most_recent)
 {
   std::vector<const Entry*> ret;
   for (const Entry& entry : s_entries)
   {
-    if (/*!entry.disc_set_member || */ disc_set_name != entry.disc_set_name)
+    if (!entry.disc_set_member || disc_set_name != entry.disc_set_name)
       continue;
 
     ret.push_back(&entry);
   }
+
+  if (sort_by_most_recent)
+  {
+    std::sort(ret.begin(), ret.end(), [](const Entry* lhs, const Entry* rhs) {
+      if (lhs->last_played_time == rhs->last_played_time)
+        return (lhs->disc_set_index < rhs->disc_set_index);
+      else
+        return (lhs->last_played_time > rhs->last_played_time);
+    });
+  }
+  else
+  {
+    std::sort(ret.begin(), ret.end(),
+              [](const Entry* lhs, const Entry* rhs) { return (lhs->disc_set_index < rhs->disc_set_index); });
+  }
+
   return ret;
+}
+
+const GameList::Entry* GameList::GetFirstDiscSetMember(std::string_view disc_set_name)
+{
+  for (const Entry& entry : s_entries)
+  {
+    if (!entry.disc_set_member || disc_set_name != entry.disc_set_name)
+      continue;
+
+    // Disc set should not have been created without the first disc being present.
+    if (entry.disc_set_index == 0)
+      return &entry;
+  }
+
+  return nullptr;
 }
 
 u32 GameList::GetEntryCount()
@@ -703,6 +737,112 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
   // don't need unused cache entries
   CloseCacheFileStream();
   s_cache_map.clear();
+
+  // merge multi-disc games
+  CreateDiscSetEntries(played_time);
+}
+
+void GameList::CreateDiscSetEntries(const PlayedTimeMap& played_time_map)
+{
+  std::unique_lock lock(s_mutex);
+
+  for (size_t i = 0; i < s_entries.size(); i++)
+  {
+    const Entry& entry = s_entries[i];
+
+    // only first discs can create sets
+    if (entry.type != EntryType::Disc || entry.disc_set_member || entry.disc_set_index != 0)
+      continue;
+
+    // already have a disc set by this name?
+    const std::string& disc_set_name = entry.disc_set_name;
+    if (GetEntryForPath(disc_set_name.c_str()))
+      continue;
+
+    const GameDatabase::Entry* dbentry = GameDatabase::GetEntryForSerial(entry.serial);
+    if (!dbentry)
+      continue;
+
+    // need at least two discs for a set
+    bool found_another_disc = false;
+    for (const Entry& other_entry : s_entries)
+    {
+      if (other_entry.type != EntryType::Disc || other_entry.disc_set_member ||
+          other_entry.disc_set_name != disc_set_name || other_entry.disc_set_index == entry.disc_set_index)
+      {
+        continue;
+      }
+      found_another_disc = true;
+      break;
+    }
+    if (!found_another_disc)
+    {
+      Log_DevFmt("Not creating disc set {}, only one disc found", disc_set_name);
+      continue;
+    }
+
+    Entry set_entry;
+    set_entry.type = EntryType::DiscSet;
+    set_entry.region = entry.region;
+    set_entry.path = disc_set_name;
+    set_entry.serial = entry.serial;
+    set_entry.title = entry.disc_set_name;
+    set_entry.genre = entry.developer;
+    set_entry.publisher = entry.publisher;
+    set_entry.developer = entry.developer;
+    set_entry.hash = entry.hash;
+    set_entry.file_size = 0;
+    set_entry.uncompressed_size = 0;
+    set_entry.last_modified_time = entry.last_modified_time;
+    set_entry.last_played_time = 0;
+    set_entry.total_played_time = 0;
+    set_entry.release_date = entry.release_date;
+    set_entry.supported_controllers = entry.supported_controllers;
+    set_entry.min_players = entry.min_players;
+    set_entry.max_players = entry.max_players;
+    set_entry.min_blocks = entry.min_blocks;
+    set_entry.max_blocks = entry.max_blocks;
+    set_entry.compatibility = entry.compatibility;
+
+    // figure out play time for all discs, and sum it
+    // we do this via lookups, rather than the other entries, because of duplicates
+    for (const std::string& set_serial : dbentry->disc_set_serials)
+    {
+      const auto it = played_time_map.find(set_serial);
+      if (it == played_time_map.end())
+        continue;
+
+      set_entry.last_played_time =
+        (set_entry.last_played_time == 0) ?
+          it->second.last_played_time :
+          ((it->second.last_played_time != 0) ? std::min(set_entry.last_played_time, it->second.last_played_time) :
+                                                set_entry.last_played_time);
+      set_entry.total_played_time += it->second.total_played_time;
+    }
+
+    // mark all discs for this set as part of it, so we don't try to add them again, and for filtering
+    u32 num_parts = 0;
+    for (Entry& other_entry : s_entries)
+    {
+      if (other_entry.type != EntryType::Disc || other_entry.disc_set_member ||
+          other_entry.disc_set_name != disc_set_name)
+      {
+        continue;
+      }
+
+      Log_InfoFmt("Adding {} to disc set {}", other_entry.path, disc_set_name);
+      other_entry.disc_set_member = true;
+      set_entry.last_modified_time = std::min(set_entry.last_modified_time, other_entry.last_modified_time);
+      set_entry.file_size += other_entry.file_size;
+      set_entry.uncompressed_size += other_entry.uncompressed_size;
+      num_parts++;
+    }
+
+    Log_InfoFmt("Created disc set {} from {} entries", disc_set_name, num_parts);
+
+    // entry is done :)
+    s_entries.push_back(std::move(set_entry));
+  }
 }
 
 std::string GameList::GetCoverImagePathForEntry(const Entry* entry)
@@ -959,9 +1099,23 @@ void GameList::AddPlayedTimeForSerial(const std::string& serial, std::time_t las
   Log_VerbosePrintf("Add %u seconds play time to %s -> now %u", static_cast<unsigned>(add_time), serial.c_str(),
                     static_cast<unsigned>(pt.total_played_time));
 
+  const GameDatabase::Entry* dbentry = GameDatabase::GetEntryForSerial(serial);
+
   std::unique_lock<std::recursive_mutex> lock(s_mutex);
   for (GameList::Entry& entry : s_entries)
   {
+    // add it to the disc set, if any
+    if (entry.type == EntryType::DiscSet)
+    {
+      if (dbentry && dbentry->disc_set_name == entry.path)
+      {
+        entry.last_played_time = pt.last_played_time;
+        entry.total_played_time = pt.total_played_time;
+      }
+
+      continue;
+    }
+
     if (entry.serial != serial)
       continue;
 

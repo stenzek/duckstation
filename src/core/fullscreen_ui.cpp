@@ -464,6 +464,7 @@ static void DrawGameList(const ImVec2& heading_size);
 static void DrawGameGrid(const ImVec2& heading_size);
 static void HandleGameListActivate(const GameList::Entry* entry);
 static void HandleGameListOptions(const GameList::Entry* entry);
+static void HandleSelectDiscForDiscSet(std::string_view disc_set_name);
 static void DrawGameListSettingsWindow();
 static void SwitchToGameList();
 static void PopulateGameListEntryList();
@@ -5919,7 +5920,7 @@ bool FullscreenUI::OpenLoadStateSelectorForGameResume(const GameList::Entry* ent
 
 void FullscreenUI::DrawResumeStateSelector()
 {
-  ImGui::SetNextWindowSize(LayoutScale(800.0f, 600.0f));
+  ImGui::SetNextWindowSize(LayoutScale(800.0f, 602.0f));
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
   ImGui::OpenPopup(FSUI_CSTR("Load Resume State"));
 
@@ -6048,11 +6049,27 @@ void FullscreenUI::PopulateGameListEntryList()
 {
   const s32 sort = Host::GetBaseIntSettingValue("Main", "FullscreenUIGameSort", 0);
   const bool reverse = Host::GetBaseBoolSettingValue("Main", "FullscreenUIGameSortReverse", false);
+  const bool merge_disc_sets = Host::GetBaseBoolSettingValue("Main", "FullscreenUIMergeDiscSets", true);
 
   const u32 count = GameList::GetEntryCount();
-  s_game_list_sorted_entries.resize(count);
+  s_game_list_sorted_entries.clear();
+  s_game_list_sorted_entries.reserve(count);
   for (u32 i = 0; i < count; i++)
-    s_game_list_sorted_entries[i] = GameList::GetEntryByIndex(i);
+  {
+    const GameList::Entry* entry = GameList::GetEntryByIndex(i);
+    if (merge_disc_sets)
+    {
+      if (entry->disc_set_member)
+        continue;
+    }
+    else
+    {
+      if (entry->IsDiscSet())
+        continue;
+    }
+
+    s_game_list_sorted_entries.push_back(entry);
+  }
 
   std::sort(s_game_list_sorted_entries.begin(), s_game_list_sorted_entries.end(),
             [sort, reverse](const GameList::Entry* lhs, const GameList::Entry* rhs) {
@@ -6539,6 +6556,12 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 
 void FullscreenUI::HandleGameListActivate(const GameList::Entry* entry)
 {
+  if (entry->IsDiscSet())
+  {
+    HandleSelectDiscForDiscSet(entry->path);
+    return;
+  }
+
   // launch game
   if (!OpenLoadStateSelectorForGameResume(entry))
     DoStartPath(entry->path);
@@ -6546,53 +6569,121 @@ void FullscreenUI::HandleGameListActivate(const GameList::Entry* entry)
 
 void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
 {
-  ImGuiFullscreen::ChoiceDialogOptions options = {
-    {FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties"), false},
-    {FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Open Containing Directory"), false},
-    {FSUI_ICONSTR(ICON_FA_PLAY, "Resume Game"), false},
-    {FSUI_ICONSTR(ICON_FA_UNDO, "Load State"), false},
-    {FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Default Boot"), false},
-    {FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Fast Boot"), false},
-    {FSUI_ICONSTR(ICON_FA_MAGIC, "Slow Boot"), false},
-    {FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Reset Play Time"), false},
-    {FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close Menu"), false},
-  };
+  if (!entry->IsDiscSet())
+  {
+    ImGuiFullscreen::ChoiceDialogOptions options = {
+      {FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties"), false},
+      {FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Open Containing Directory"), false},
+      {FSUI_ICONSTR(ICON_FA_PLAY, "Resume Game"), false},
+      {FSUI_ICONSTR(ICON_FA_UNDO, "Load State"), false},
+      {FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Default Boot"), false},
+      {FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Fast Boot"), false},
+      {FSUI_ICONSTR(ICON_FA_MAGIC, "Slow Boot"), false},
+      {FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Reset Play Time"), false},
+      {FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close Menu"), false},
+    };
 
-  OpenChoiceDialog(
-    entry->title.c_str(), false, std::move(options),
-    [entry_path = entry->path, entry_serial = entry->serial](s32 index, const std::string& title, bool checked) {
-      switch (index)
-      {
-        case 0: // Open Game Properties
-          SwitchToGameSettingsForPath(entry_path);
-          break;
-        case 1: // Open Containing Directory
-          ExitFullscreenAndOpenURL(Path::CreateFileURL(Path::GetDirectory(entry_path)));
-          break;
-        case 2: // Resume Game
-          DoStartPath(entry_path, System::GetGameSaveStateFileName(entry_serial, -1));
-          break;
-        case 3: // Load State
-          OpenLoadStateSelectorForGame(entry_path);
-          break;
-        case 4: // Default Boot
-          DoStartPath(entry_path);
-          break;
-        case 5: // Fast Boot
-          DoStartPath(entry_path, {}, true);
-          break;
-        case 6: // Slow Boot
-          DoStartPath(entry_path, {}, false);
-          break;
-        case 7: // Reset Play Time
-          GameList::ClearPlayedTimeForSerial(entry_serial);
-          break;
-        default:
-          break;
-      }
+    OpenChoiceDialog(
+      entry->title.c_str(), false, std::move(options),
+      [entry_path = entry->path, entry_serial = entry->serial](s32 index, const std::string& title, bool checked) {
+        switch (index)
+        {
+          case 0: // Open Game Properties
+            SwitchToGameSettingsForPath(entry_path);
+            break;
+          case 1: // Open Containing Directory
+            ExitFullscreenAndOpenURL(Path::CreateFileURL(Path::GetDirectory(entry_path)));
+            break;
+          case 2: // Resume Game
+            DoStartPath(entry_path, System::GetGameSaveStateFileName(entry_serial, -1));
+            break;
+          case 3: // Load State
+            OpenLoadStateSelectorForGame(entry_path);
+            break;
+          case 4: // Default Boot
+            DoStartPath(entry_path);
+            break;
+          case 5: // Fast Boot
+            DoStartPath(entry_path, {}, true);
+            break;
+          case 6: // Slow Boot
+            DoStartPath(entry_path, {}, false);
+            break;
+          case 7: // Reset Play Time
+            GameList::ClearPlayedTimeForSerial(entry_serial);
+            break;
+          default:
+            break;
+        }
 
-      CloseChoiceDialog();
-    });
+        CloseChoiceDialog();
+      });
+  }
+  else
+  {
+    // shouldn't fail
+    const GameList::Entry* first_disc_entry = GameList::GetFirstDiscSetMember(entry->path);
+    if (!first_disc_entry)
+      return;
+
+    ImGuiFullscreen::ChoiceDialogOptions options = {
+      {FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties"), false},
+      {FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc"), false},
+      {FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close Menu"), false},
+    };
+
+    OpenChoiceDialog(entry->title.c_str(), false, std::move(options),
+                     [entry_path = first_disc_entry->path,
+                      disc_set_name = entry->path](s32 index, const std::string& title, bool checked) {
+                       switch (index)
+                       {
+                         case 0: // Open Game Properties
+                           SwitchToGameSettingsForPath(entry_path);
+                           break;
+                         case 1: // Select Disc
+                           HandleSelectDiscForDiscSet(disc_set_name);
+                           break;
+                         default:
+                           break;
+                       }
+
+                       CloseChoiceDialog();
+                     });
+  }
+}
+
+void FullscreenUI::HandleSelectDiscForDiscSet(std::string_view disc_set_name)
+{
+  auto lock = GameList::GetLock();
+  const std::vector<const GameList::Entry*> entries = GameList::GetDiscSetMembers(disc_set_name, true);
+  if (entries.empty())
+    return;
+
+  ImGuiFullscreen::ChoiceDialogOptions options;
+  std::vector<std::string> paths;
+  paths.reserve(entries.size());
+
+  for (const GameList::Entry* entry : entries)
+  {
+    std::string title = fmt::format(fmt::runtime(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Disc {} | {}")),
+                                    entry->disc_set_index + 1, Path::GetFileName(entry->path));
+    options.emplace_back(std::move(title), false);
+    paths.push_back(entry->path);
+  }
+  options.emplace_back(FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close Menu"), false);
+
+  OpenChoiceDialog(SmallString::from_format("Select Disc for {}", disc_set_name), false, std::move(options),
+                   [paths = std::move(paths)](s32 index, const std::string& title, bool checked) {
+                     if (static_cast<u32>(index) < paths.size())
+                     {
+                       auto lock = GameList::GetLock();
+                       const GameList::Entry* entry = GameList::GetEntryForPath(paths[index]);
+                       if (entry)
+                         HandleGameListActivate(entry);
+                     }
+
+                     CloseChoiceDialog();
+                   });
 }
 
 void FullscreenUI::DrawGameListSettingsWindow()
@@ -6742,6 +6833,9 @@ void FullscreenUI::DrawGameListSettingsWindow()
       bsi, FSUI_ICONSTR(ICON_FA_SORT_ALPHA_DOWN, "Sort Reversed"),
       FSUI_CSTR("Reverses the game list sort order from the default (usually ascending to descending)."), "Main",
       "FullscreenUIGameSortReverse", false);
+    DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIST, "Merge Multi-Disc Games"),
+                      FSUI_CSTR("Merges multi-disc games into one item in the game list."), "Main",
+                      "FullscreenUIMergeDiscSets", true);
   }
 
   MenuHeading(FSUI_CSTR("Cover Settings"));

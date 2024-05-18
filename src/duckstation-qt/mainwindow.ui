@@ -220,6 +220,7 @@
     <addaction name="actionFullscreen"/>
     <addaction name="menuWindowSize"/>
     <addaction name="separator"/>
+    <addaction name="actionMergeDiscSets" />
     <addaction name="actionGridViewShowTitles"/>
     <addaction name="actionGridViewZoomIn"/>
     <addaction name="actionGridViewZoomOut"/>
@@ -861,6 +862,17 @@
    </property>
    <property name="text">
     <string>Game &amp;Grid</string>
+   </property>
+  </action>
+  <action name="actionMergeDiscSets">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Merge Multi-Disc Games</string>
    </property>
   </action>
   <action name="actionGridViewShowTitles">

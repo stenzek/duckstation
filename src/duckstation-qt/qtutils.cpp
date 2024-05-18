@@ -304,6 +304,7 @@ QIcon GetIconForEntryType(GameList::EntryType type)
     case GameList::EntryType::Disc:
       return QIcon::fromTheme(QStringLiteral("disc-line"));
     case GameList::EntryType::Playlist:
+    case GameList::EntryType::DiscSet:
       return QIcon::fromTheme(QStringLiteral("play-list-2-line"));
     case GameList::EntryType::PSF:
       return QIcon::fromTheme(QStringLiteral("file-music-line"));
