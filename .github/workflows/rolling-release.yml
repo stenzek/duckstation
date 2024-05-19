@@ -23,7 +23,7 @@ jobs:
     runs-on: windows-2022
     timeout-minutes: 120
     steps:
-    - uses: actions/checkout@v4.1.4
+    - uses: actions/checkout@v4.1.6
       with:
         fetch-depth: 0
 
@@ -98,7 +98,7 @@ jobs:
         "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-x64-release.zip ./bin/x64/*
 
     - name: Upload x64 release artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v4.3.3
       with:
         name: "windows"
         path: "duckstation-windows-x64-release*.zip"
@@ -108,7 +108,7 @@ jobs:
     runs-on: windows-2022
     timeout-minutes: 120
     steps:
-    - uses: actions/checkout@v4.1.4
+    - uses: actions/checkout@v4.1.6
       with:
         fetch-depth: 0
         submodules: true
@@ -183,7 +183,7 @@ jobs:
         "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-arm64-release.zip ./bin/ARM64/*
 
     - name: Upload arm64 release artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v4.3.3
       with:
         name: "windows-arm64"
         path: "duckstation-windows-arm64-release*.zip"
@@ -201,7 +201,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y --allow-downgrades 'libc6=2.35-0ubuntu*' 'libc6-dev=2.35-0ubuntu*' libstdc++6=12.3.0-1ubuntu1~22.04 libgcc-s1=12.3.0-1ubuntu1~22.04
 
-    - uses: actions/checkout@v4.1.4
+    - uses: actions/checkout@v4.1.6
       with:
         fetch-depth: 0
 
@@ -260,7 +260,7 @@ jobs:
         scripts/appimage/make-appimage.sh $(realpath .) $(realpath ./build) $HOME/deps DuckStation-x64
 
     - name: Upload Qt AppImage
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v4.3.3
       with:
         name: "linux-x64-appimage-qt"
         path: "DuckStation-x64.AppImage"
@@ -273,7 +273,7 @@ jobs:
       options: --privileged
     timeout-minutes: 120
     steps:
-    - uses: actions/checkout@v4.1.4
+    - uses: actions/checkout@v4.1.6
       with:
         fetch-depth: 0
         set-safe-directory: ${{ env.GITHUB_WORKSPACE }}
@@ -323,7 +323,7 @@ jobs:
         flatpak-builder-lint repo repo
 
     - name: Upload Flatpak
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v4.3.3
       with:
         name: "linux-flatpak"
         path: "duckstation-x64.flatpak"
@@ -333,7 +333,7 @@ jobs:
     runs-on: macos-14
     timeout-minutes: 120
     steps:
-    - uses: actions/checkout@v4.1.4
+    - uses: actions/checkout@v4.1.6
       with:
         fetch-depth: 0
 
@@ -385,7 +385,7 @@ jobs:
         zip -r duckstation-mac-release.zip DuckStation.app/
 
     - name: Upload macOS .app
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v4.3.3
       with:
         name: "macos"
         path: "build/duckstation-mac-release.zip"
@@ -393,11 +393,11 @@ jobs:
 
   create-release:
     needs: [windows-build, windows-arm64-build, linux-build, linux-flatpak-build, macos-build]
-    runs-on: "ubuntu-22.04"
+    runs-on: ubuntu-22.04
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4.1.7
         with:
           path: ./artifacts/
 
