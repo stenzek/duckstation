@@ -45379,6 +45379,8 @@ SLUS-01206:
   controllers:
     - AnalogController
     - DigitalController
+  codes:
+    - SLUSP01206
   metadata:
     publisher: "Enix"
     developer: "Heart Beat / Tamtam / Tose Software"
@@ -45403,6 +45405,8 @@ SLUS-01346:
   controllers:
     - AnalogController
     - DigitalController
+  codes:
+    - SLUSP01346
   metadata:
     publisher: "Enix"
     developer: "Heart Beat / Tamtam / Tose Software"
@@ -80122,6 +80126,11 @@ SLPS-01384:
     linkCable: false
 SLPS-01972:
   name: "Kagayaku Kisetsu e (Japan) (Disc 1) (Genteiban)"
+  discSet:
+    name: "Kagayaku Kisetsu e (Japan)"
+    serials:
+      - SLPS-01972
+      - SLPS-01973
   controllers:
     - AnalogController
     - DigitalController
@@ -80141,6 +80150,11 @@ SLPS-01972:
     linkCable: false
 SLPS-01973:
   name: "Kagayaku Kisetsu e (Japan) (Disc 2) (Special Disc)"
+  discSet:
+    name: "Kagayaku Kisetsu e (Japan)"
+    serials:
+      - SLPS-01972
+      - SLPS-01973
   controllers:
     - AnalogController
     - DigitalController
@@ -99175,6 +99189,12 @@ SLUS-00776:
     linkCable: false
 SCPS-45414:
   name: "Metal Gear Solid - Integral (Japan, Asia) (Disc 3) (VR-Disc)"
+  discSet:
+    name: "Metal Gear Solid - Integral (Japan, Asia) (En,Ja)"
+    serials:
+      - SCPS-45412
+      - SCPS-45413
+      - SCPS-45414
   controllers:
     - AnalogController
     - DigitalController
@@ -99205,6 +99225,7 @@ SCPS-45412:
     serials:
       - SCPS-45412
       - SCPS-45413
+      - SCPS-45414
   compatibility:
     rating: NoIssues
     versionTested: "0.1-3652-g4c3d2cd3"
@@ -99238,6 +99259,7 @@ SCPS-45413:
     serials:
       - SCPS-45412
       - SCPS-45413
+      - SCPS-45414
   compatibility:
     rating: NoIssues
     versionTested: "0.1-4011-g2bf0771a"
@@ -147399,6 +147421,11 @@ SLPS-03522:
     linkCable: false
 SLPS-03556:
   name: "Sister Princess 2 - Premium Fan Disc (Japan) (Disc A)"
+  discSet:
+    name: "Sister Princess 2 - Premium Fan Disc (Japan)"
+    serials:
+      - SLPS-03556
+      - SLPS-03557
   controllers:
     - DigitalController
   metadata:
@@ -147417,6 +147444,11 @@ SLPS-03556:
     linkCable: false
 SLPS-03557:
   name: "Sister Princess 2 - Premium Fan Disc (Japan) (Disc B)"
+  discSet:
+    name: "Sister Princess 2 - Premium Fan Disc (Japan)"
+    serials:
+      - SLPS-03556
+      - SLPS-03557
   controllers:
     - DigitalController
   metadata:
