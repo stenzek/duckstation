@@ -3454,6 +3454,14 @@ void FullscreenUI::DrawEmulationSettingsPage()
     bsi, FSUI_ICONSTR(ICON_FA_STOPWATCH_20, "Reduce Input Latency"),
     FSUI_CSTR("Reduces input latency by delaying the start of frame until closer to the presentation time."), "Display",
     "PreFrameSleep", false, optimal_frame_pacing_active);
+
+  DrawToggleSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_CHARGING_STATION, "Skip Duplicate Frame Display"),
+    FSUI_CSTR("Skips the presentation/display of frames that are not unique. Can result in worse frame pacing."),
+    "Display", "SkipPresentingDuplicateFrames", false,
+    !(GetEffectiveBoolSetting(bsi, "Display", "VSync", false) &&
+      GetEffectiveBoolSetting(bsi, "Main", "SyncToHostRefreshRate", false)));
+
   const bool pre_frame_sleep_active =
     (optimal_frame_pacing_active && GetEffectiveBoolSetting(bsi, "Display", "PreFrameSleep", false));
   DrawFloatRangeSetting(
@@ -7652,6 +7660,8 @@ TRANSLATE_NOOP("FullscreenUI", "Shows the number of frames (or v-syncs) displaye
 TRANSLATE_NOOP("FullscreenUI", "Simulates the CPU's instruction cache in the recompiler. Can help with games running too fast.");
 TRANSLATE_NOOP("FullscreenUI", "Simulates the region check present in original, unmodified consoles.");
 TRANSLATE_NOOP("FullscreenUI", "Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.");
+TRANSLATE_NOOP("FullscreenUI", "Skip Duplicate Frame Display");
+TRANSLATE_NOOP("FullscreenUI", "Skips the presentation/display of frames that are not unique. Can result in worse frame pacing.");
 TRANSLATE_NOOP("FullscreenUI", "Slow Boot");
 TRANSLATE_NOOP("FullscreenUI", "Smooths out blockyness between colour transitions in 24-bit content, usually FMVs. Only applies to the hardware renderers.");
 TRANSLATE_NOOP("FullscreenUI", "Smooths out the blockiness of magnified textures on 3D objects.");

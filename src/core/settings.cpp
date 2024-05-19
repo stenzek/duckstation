@@ -271,6 +271,7 @@ void Settings::Load(SettingsInterface& si)
   display_pre_frame_sleep = si.GetBoolValue("Display", "PreFrameSleep", false);
   display_pre_frame_sleep_buffer =
     si.GetFloatValue("Display", "PreFrameSleepBuffer", DEFAULT_DISPLAY_PRE_FRAME_SLEEP_BUFFER);
+  display_skip_presenting_duplicate_frames = si.GetBoolValue("Display", "SkipPresentingDuplicateFrames", false);
   display_vsync = si.GetBoolValue("Display", "VSync", false);
   display_force_4_3_for_24bit = si.GetBoolValue("Display", "Force4_3For24Bit", false);
   display_active_start_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveStartOffset", 0));
@@ -519,6 +520,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetStringValue("Display", "Scaling", GetDisplayScalingName(display_scaling));
   si.SetBoolValue("Display", "OptimalFramePacing", display_optimal_frame_pacing);
   si.SetBoolValue("Display", "PreFrameSleep", display_pre_frame_sleep);
+  si.SetBoolValue("Display", "SkipPresentingDuplicateFrames", display_skip_presenting_duplicate_frames);
   si.SetFloatValue("Display", "PreFrameSleepBuffer", display_pre_frame_sleep_buffer);
   si.SetBoolValue("Display", "VSync", display_vsync);
   si.SetStringValue("Display", "ExclusiveFullscreenControl",

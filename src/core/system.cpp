@@ -150,6 +150,7 @@ static void PollDiscordPresence();
 
 static constexpr const float PERFORMANCE_COUNTER_UPDATE_INTERVAL = 1.0f;
 static constexpr const char FALLBACK_EXE_NAME[] = "PSX.EXE";
+static constexpr u32 MAX_SKIPPED_FRAME_COUNT = 2; // 20fps minimum
 
 static std::unique_ptr<INISettingsInterface> s_game_settings_interface;
 static std::unique_ptr<INISettingsInterface> s_input_settings_interface;
@@ -183,7 +184,10 @@ static bool s_throttler_enabled = false;
 static bool s_optimal_frame_pacing = false;
 static bool s_pre_frame_sleep = false;
 static bool s_syncing_to_host = false;
-static bool s_last_frame_skipped = false;
+static bool s_syncing_to_host_with_vsync = false;
+static bool s_skip_presenting_duplicate_frames = false;
+static u32 s_skipped_frame_count = 0;
+static u32 s_last_presented_internal_frame_number = 0;
 
 static float s_throttle_frequency = 0.0f;
 static float s_target_speed = 0.0f;
@@ -1963,32 +1967,43 @@ void System::FrameDone()
     AccumulatePreFrameSleepTime();
 
   // explicit present (frame pacing)
-  if (current_time < s_next_frame_time || s_syncing_to_host || s_optimal_frame_pacing || s_last_frame_skipped)
+  const bool is_unique_frame = (s_last_presented_internal_frame_number != s_internal_frame_number);
+  s_last_presented_internal_frame_number = s_internal_frame_number;
+
+  const bool skip_this_frame =
+    (((s_skip_presenting_duplicate_frames && !is_unique_frame) ||
+      (!s_optimal_frame_pacing && (current_time > s_next_frame_time || g_gpu_device->ShouldSkipDisplayingFrame()))) &&
+     !s_syncing_to_host_with_vsync && (s_skipped_frame_count < MAX_SKIPPED_FRAME_COUNT) && !IsExecutionInterrupted());
+  if (!skip_this_frame)
   {
+    s_skipped_frame_count = 0;
+
     const bool throttle_before_present = (s_optimal_frame_pacing && s_throttler_enabled && !IsExecutionInterrupted());
     const bool explicit_present = (throttle_before_present && g_gpu_device->GetFeatures().explicit_present);
     if (explicit_present)
     {
-      s_last_frame_skipped = !PresentDisplay(!throttle_before_present, true);
+      const bool do_present = PresentDisplay(false, true);
       Throttle(current_time);
-      g_gpu_device->SubmitPresent();
+      if (do_present)
+        g_gpu_device->SubmitPresent();
     }
     else
     {
       if (throttle_before_present)
         Throttle(current_time);
 
-      s_last_frame_skipped = !PresentDisplay(!throttle_before_present, false);
+      PresentDisplay(false, false);
 
       if (!throttle_before_present && s_throttler_enabled && !IsExecutionInterrupted())
         Throttle(current_time);
     }
   }
-  else if (current_time >= s_next_frame_time)
+  else
   {
-    Log_DebugPrintf("Skipping displaying frame");
-    s_last_frame_skipped = true;
-    Throttle(current_time);
+    Log_DebugPrint("Skipping displaying frame");
+    s_skipped_frame_count++;
+    if (s_throttler_enabled)
+      Throttle(current_time);
   }
 
   // pre-frame sleep (input lag reduction)
@@ -2810,15 +2825,20 @@ void System::FormatLatencyStats(SmallStringBase& str)
 
 void System::UpdateSpeedLimiterState()
 {
+  DebugAssert(IsValid());
+
   const float old_target_speed = s_target_speed;
   s_target_speed = s_turbo_enabled ?
                      g_settings.turbo_speed :
                      (s_fast_forward_enabled ? g_settings.fast_forward_speed : g_settings.emulation_speed);
   s_throttler_enabled = (s_target_speed != 0.0f);
-  s_optimal_frame_pacing = s_throttler_enabled && g_settings.display_optimal_frame_pacing;
-  s_pre_frame_sleep = s_throttler_enabled && g_settings.display_pre_frame_sleep;
+  s_optimal_frame_pacing = (s_throttler_enabled && g_settings.display_optimal_frame_pacing) ||
+                           g_gpu_device->GetWindowInfo().IsSurfaceless(); // surfaceless check for regtest
+  s_skip_presenting_duplicate_frames = s_throttler_enabled && g_settings.display_skip_presenting_duplicate_frames;
+  s_pre_frame_sleep = s_optimal_frame_pacing && g_settings.display_pre_frame_sleep;
 
   s_syncing_to_host = false;
+  s_syncing_to_host_with_vsync = false;
   if (g_settings.sync_to_host_refresh_rate &&
       (g_settings.audio_stream_parameters.stretch_mode != AudioStretchMode::Off) && s_target_speed == 1.0f && IsValid())
   {
@@ -2835,7 +2855,8 @@ void System::UpdateSpeedLimiterState()
   }
 
   // When syncing to host and using vsync, we don't need to sleep.
-  if (s_syncing_to_host && IsVSyncEffectivelyEnabled())
+  s_syncing_to_host_with_vsync = (s_syncing_to_host && IsVSyncEffectivelyEnabled());
+  if (s_syncing_to_host_with_vsync)
   {
     Log_InfoPrintf("Using host vsync for throttling.");
     s_throttler_enabled = false;
@@ -2843,25 +2864,21 @@ void System::UpdateSpeedLimiterState()
 
   Log_VerbosePrintf("Target speed: %f%%", s_target_speed * 100.0f);
 
-  if (IsValid())
-  {
-    // Update audio output.
-    AudioStream* stream = SPU::GetOutputStream();
-    stream->SetOutputVolume(GetAudioOutputVolume());
+  // Update audio output.
+  AudioStream* stream = SPU::GetOutputStream();
+  stream->SetOutputVolume(GetAudioOutputVolume());
 
-    // Adjust nominal rate when resampling, or syncing to host.
-    const bool rate_adjust =
-      (s_syncing_to_host || g_settings.audio_stream_parameters.stretch_mode == AudioStretchMode::Resample) &&
-      s_target_speed > 0.0f;
-    stream->SetNominalRate(rate_adjust ? s_target_speed : 1.0f);
+  // Adjust nominal rate when resampling, or syncing to host.
+  const bool rate_adjust =
+    (s_syncing_to_host || g_settings.audio_stream_parameters.stretch_mode == AudioStretchMode::Resample) &&
+    s_target_speed > 0.0f;
+  stream->SetNominalRate(rate_adjust ? s_target_speed : 1.0f);
 
-    if (old_target_speed < s_target_speed)
-      stream->UpdateTargetTempo(s_target_speed);
+  if (old_target_speed < s_target_speed)
+    stream->UpdateTargetTempo(s_target_speed);
 
-    UpdateThrottlePeriod();
-    ResetThrottler();
-  }
-
+  UpdateThrottlePeriod();
+  ResetThrottler();
   UpdateDisplaySync();
 
   if (g_settings.increase_timer_resolution)
@@ -3959,6 +3976,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.fast_forward_speed != old_settings.fast_forward_speed ||
         g_settings.display_max_fps != old_settings.display_max_fps ||
         g_settings.display_optimal_frame_pacing != old_settings.display_optimal_frame_pacing ||
+        g_settings.display_skip_presenting_duplicate_frames != old_settings.display_skip_presenting_duplicate_frames ||
         g_settings.display_pre_frame_sleep != old_settings.display_pre_frame_sleep ||
         g_settings.display_pre_frame_sleep_buffer != old_settings.display_pre_frame_sleep_buffer ||
         g_settings.display_vsync != old_settings.display_vsync ||
@@ -5082,10 +5100,8 @@ void System::HostDisplayResized()
   g_gpu->UpdateResolutionScale();
 }
 
-bool System::PresentDisplay(bool allow_skip_present, bool explicit_present)
+bool System::PresentDisplay(bool skip_present, bool explicit_present)
 {
-  const bool skip_present = allow_skip_present && g_gpu_device->ShouldSkipDisplayingFrame();
-
   Host::BeginPresentFrame();
 
   // acquire for IO.MousePos.

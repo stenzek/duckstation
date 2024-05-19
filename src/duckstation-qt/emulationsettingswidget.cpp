@@ -20,6 +20,8 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.syncToHostRefreshRate, "Main", "SyncToHostRefreshRate", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.optimalFramePacing, "Display", "OptimalFramePacing", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.preFrameSleep, "Display", "PreFrameSleep", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.skipPresentingDuplicateFrames, "Display",
+                                               "SkipPresentingDuplicateFrames", false);
   SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.preFrameSleepBuffer, "Display", "PreFrameSleepBuffer",
                                                 Settings::DEFAULT_DISPLAY_PRE_FRAME_SLEEP_BUFFER);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.rewindEnable, "Main", "RewindEnable", false);
@@ -71,7 +73,9 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
   }
   connect(m_ui.turboSpeed, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &EmulationSettingsWidget::onTurboSpeedIndexChanged);
-  connect(m_ui.vsync, &QCheckBox::checkStateChanged, this, &EmulationSettingsWidget::onVSyncChanged);
+  connect(m_ui.vsync, &QCheckBox::checkStateChanged, this, &EmulationSettingsWidget::updateSkipDuplicateFramesEnabled);
+  connect(m_ui.syncToHostRefreshRate, &QCheckBox::checkStateChanged, this,
+          &EmulationSettingsWidget::updateSkipDuplicateFramesEnabled);
   connect(m_ui.optimalFramePacing, &QCheckBox::checkStateChanged, this,
           &EmulationSettingsWidget::onOptimalFramePacingChanged);
   connect(m_ui.preFrameSleep, &QCheckBox::checkStateChanged, this, &EmulationSettingsWidget::onPreFrameSleepChanged);
@@ -122,6 +126,11 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
                                 "introduced. Higher values increase input latency, but decrease the risk of overrun, "
                                 "or missed frames. Lower values require faster hardware."));
   dialog->registerWidgetHelp(
+    m_ui.skipPresentingDuplicateFrames, tr("Skip Duplicate Frame Display"), tr("Unchecked"),
+    tr("Skips the presentation/display of frames that are not unique. Can be combined with driver-level frame "
+       "generation to increase perceptible frame rate. Can result in worse frame pacing, and is not compatible with "
+       "syncing to host refresh."));
+  dialog->registerWidgetHelp(
     m_ui.rewindEnable, tr("Rewinding"), tr("Unchecked"),
     tr("<b>Enable Rewinding:</b> Saves state periodically so you can rewind any mistakes while playing.<br> "
        "<b>Rewind Save Frequency:</b> How often a rewind state will be created. Higher frequencies have greater system "
@@ -133,8 +142,8 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
     tr(
       "Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements."));
 
-  onVSyncChanged();
   onOptimalFramePacingChanged();
+  updateSkipDuplicateFramesEnabled();
   updateRewind();
 }
 
@@ -200,12 +209,6 @@ void EmulationSettingsWidget::onTurboSpeedIndexChanged(int index)
   m_dialog->setFloatSettingValue("Main", "TurboSpeed", okay ? value : 0.0f);
 }
 
-void EmulationSettingsWidget::onVSyncChanged()
-{
-  const bool vsync = m_dialog->getEffectiveBoolValue("Display", "VSync", false);
-  m_ui.syncToHostRefreshRate->setEnabled(vsync);
-}
-
 void EmulationSettingsWidget::onOptimalFramePacingChanged()
 {
   const bool optimal_frame_pacing_enabled = m_dialog->getEffectiveBoolValue("Display", "OptimalFramePacing", false);
@@ -219,6 +222,13 @@ void EmulationSettingsWidget::onPreFrameSleepChanged()
   const bool show_buffer_size = (m_ui.preFrameSleep->isEnabled() && pre_frame_sleep_enabled);
   m_ui.preFrameSleepBuffer->setVisible(show_buffer_size);
   m_ui.preFrameSleepBufferLabel->setVisible(show_buffer_size);
+}
+
+void EmulationSettingsWidget::updateSkipDuplicateFramesEnabled()
+{
+  const bool vsync = m_dialog->getEffectiveBoolValue("Display", "VSync", false);
+  const bool sync_to_host = m_dialog->getEffectiveBoolValue("Main", "SyncToHostRefreshRate", false) && vsync;
+  m_ui.skipPresentingDuplicateFrames->setEnabled(!sync_to_host);
 }
 
 void EmulationSettingsWidget::updateRewind()

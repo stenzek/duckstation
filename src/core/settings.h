@@ -148,6 +148,7 @@ struct Settings
   s8 display_line_end_offset = 0;
   bool display_optimal_frame_pacing : 1 = false;
   bool display_pre_frame_sleep : 1 = false;
+  bool display_skip_presenting_duplicate_frames : 1 = false;
   bool display_vsync : 1 = false;
   bool display_force_4_3_for_24bit : 1 = false;
   bool gpu_24bit_chroma_smoothing : 1 = false;
