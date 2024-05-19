@@ -150,7 +150,8 @@ static void PollDiscordPresence();
 
 static constexpr const float PERFORMANCE_COUNTER_UPDATE_INTERVAL = 1.0f;
 static constexpr const char FALLBACK_EXE_NAME[] = "PSX.EXE";
-static constexpr u32 MAX_SKIPPED_FRAME_COUNT = 2; // 20fps minimum
+static constexpr u32 MAX_SKIPPED_DUPLICATE_FRAME_COUNT = 2; // 20fps minimum
+static constexpr u32 MAX_SKIPPED_TIMEOUT_FRAME_COUNT = 1;   // 30fps minimum
 
 static std::unique_ptr<INISettingsInterface> s_game_settings_interface;
 static std::unique_ptr<INISettingsInterface> s_input_settings_interface;
@@ -1970,10 +1971,12 @@ void System::FrameDone()
   const bool is_unique_frame = (s_last_presented_internal_frame_number != s_internal_frame_number);
   s_last_presented_internal_frame_number = s_internal_frame_number;
 
-  const bool skip_this_frame =
-    (((s_skip_presenting_duplicate_frames && !is_unique_frame) ||
-      (!s_optimal_frame_pacing && (current_time > s_next_frame_time || g_gpu_device->ShouldSkipDisplayingFrame()))) &&
-     !s_syncing_to_host_with_vsync && (s_skipped_frame_count < MAX_SKIPPED_FRAME_COUNT) && !IsExecutionInterrupted());
+  const bool skip_this_frame = (((s_skip_presenting_duplicate_frames && !is_unique_frame &&
+                                  s_skipped_frame_count < MAX_SKIPPED_DUPLICATE_FRAME_COUNT) ||
+                                 (!s_optimal_frame_pacing && current_time > s_next_frame_time &&
+                                  s_skipped_frame_count < MAX_SKIPPED_TIMEOUT_FRAME_COUNT) ||
+                                 g_gpu_device->ShouldSkipDisplayingFrame()) &&
+                                !s_syncing_to_host_with_vsync && !IsExecutionInterrupted());
   if (!skip_this_frame)
   {
     s_skipped_frame_count = 0;
