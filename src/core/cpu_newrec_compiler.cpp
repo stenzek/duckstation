@@ -1358,6 +1358,9 @@ void CPU::NewRec::Compiler::CompileBranchDelaySlot(bool dirty_pc /* = true */)
   // Update load delay at the end of the previous instruction.
   UpdateLoadDelay();
 
+  // Don't need the branch instruction's inputs.
+  ClearHostRegsNeeded();
+
   // TODO: Move cycle add before this.
   inst++;
   iinfo++;
@@ -1500,7 +1503,18 @@ void CPU::NewRec::Compiler::CompileTemplate(void (Compiler::*const_func)(Compile
   UpdateHostRegCounters();
 
   if (tflags & TF_CAN_SWAP_DELAY_SLOT && TrySwapDelaySlot(cf.MipsS(), cf.MipsT()))
+  {
+    // CompileBranchDelaySlot() clears needed, so need to reset.
     cf.delay_slot_swapped = true;
+    if (tflags & TF_READS_S)
+      MarkRegsNeeded(HR_TYPE_CPU_REG, rs);
+    if (tflags & TF_READS_T)
+      MarkRegsNeeded(HR_TYPE_CPU_REG, rt);
+    if (tflags & TF_READS_LO)
+      MarkRegsNeeded(HR_TYPE_CPU_REG, Reg::lo);
+    if (tflags & TF_READS_HI)
+      MarkRegsNeeded(HR_TYPE_CPU_REG, Reg::hi);
+  }
 
   if (tflags & TF_READS_S &&
       (tflags & TF_NEEDS_REG_S || !cf.const_s || (tflags & TF_WRITES_D && rd != Reg::zero && rd == rs)))
