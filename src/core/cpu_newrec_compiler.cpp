@@ -391,23 +391,22 @@ bool CPU::NewRec::Compiler::TrySwapDelaySlot(Reg rs, Reg rt, Reg rd)
     case InstructionOp::lbu:
     case InstructionOp::lhu:
     case InstructionOp::lwr:
-    case InstructionOp::sb:
-    case InstructionOp::sh:
-    case InstructionOp::swl:
-    case InstructionOp::sw:
-    case InstructionOp::swr:
     {
       if ((rs != Reg::zero && rs == opcode_rt) || (rt != Reg::zero && rt == opcode_rt) ||
-          (rd != Reg::zero && (rd == opcode_rs || rd == opcode_rt)) ||
-          (HasLoadDelay() && (m_load_delay_register == opcode_rs || m_load_delay_register == opcode_rt)))
+          (rd != Reg::zero && (rd == opcode_rs || rd == opcode_rt)))
       {
         goto is_unsafe;
       }
     }
     break;
 
-    case InstructionOp::lwc2: // LWC2
-    case InstructionOp::swc2: // SWC2
+    case InstructionOp::sb:
+    case InstructionOp::sh:
+    case InstructionOp::swl:
+    case InstructionOp::sw:
+    case InstructionOp::swr:
+    case InstructionOp::lwc2:
+    case InstructionOp::swc2:
       break;
 
     case InstructionOp::funct: // SPECIAL
@@ -432,9 +431,7 @@ bool CPU::NewRec::Compiler::TrySwapDelaySlot(Reg rs, Reg rt, Reg rd)
         case InstructionFunct::sltu:
         {
           if ((rs != Reg::zero && rs == opcode_rd) || (rt != Reg::zero && rt == opcode_rd) ||
-              (rd != Reg::zero && (rd == opcode_rs || rd == opcode_rt)) ||
-              (HasLoadDelay() && (m_load_delay_register == opcode_rs || m_load_delay_register == opcode_rt ||
-                                  m_load_delay_register == opcode_rd)))
+              (rd != Reg::zero && (rd == opcode_rs || rd == opcode_rt)))
           {
             goto is_unsafe;
           }
@@ -445,11 +442,7 @@ bool CPU::NewRec::Compiler::TrySwapDelaySlot(Reg rs, Reg rt, Reg rd)
         case InstructionFunct::multu:
         case InstructionFunct::div:
         case InstructionFunct::divu:
-        {
-          if (HasLoadDelay() && (m_load_delay_register == opcode_rs || m_load_delay_register == opcode_rt))
-            goto is_unsafe;
-        }
-        break;
+          break;
 
         default:
           goto is_unsafe;
@@ -470,7 +463,7 @@ bool CPU::NewRec::Compiler::TrySwapDelaySlot(Reg rs, Reg rt, Reg rd)
           case CopCommonInstruction::cfcn: // CFC0
           {
             if ((rs != Reg::zero && rs == opcode_rt) || (rt != Reg::zero && rt == opcode_rt) ||
-                (rd != Reg::zero && rd == opcode_rt) || (HasLoadDelay() && m_load_delay_register == opcode_rt))
+                (rd != Reg::zero && rd == opcode_rt))
             {
               goto is_unsafe;
             }
