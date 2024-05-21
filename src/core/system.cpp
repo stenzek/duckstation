@@ -4815,7 +4815,7 @@ std::string System::GetGameMemoryCardPath(std::string_view serial, std::string_v
         const bool global_use_playlist_title = Host::GetBaseBoolSettingValue(section, "UsePlaylistTitle", true);
         const bool use_playlist_title =
           ini ? ini->GetBoolValue(section, "UsePlaylistTitle", global_use_playlist_title) : global_use_playlist_title;
-        if (entry->disc_set_name.empty() && use_playlist_title && !FileSystem::FileExists(ret.c_str()))
+        if (!entry->disc_set_name.empty() && use_playlist_title && !FileSystem::FileExists(ret.c_str()))
           ret = g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(entry->disc_set_name), slot);
       }
       else
