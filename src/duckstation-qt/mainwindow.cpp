@@ -767,42 +767,48 @@ void MainWindow::destroySubWindows()
 
 void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidget* parent_window, QMenu* menu)
 {
-  QAction* resume_action = menu->addAction(tr("Resume"));
-  resume_action->setEnabled(false);
+  QAction* resume_action = nullptr;
+  QMenu* load_state_menu = nullptr;
 
-  QMenu* load_state_menu = menu->addMenu(tr("Load State"));
-  load_state_menu->setEnabled(false);
-
-  if (!entry->serial.empty())
+  if (!entry->IsDiscSet())
   {
-    std::vector<SaveStateInfo> available_states(System::GetAvailableSaveStates(entry->serial.c_str()));
-    const QString timestamp_format = QLocale::system().dateTimeFormat(QLocale::ShortFormat);
-    const bool challenge_mode = Achievements::IsHardcoreModeActive();
-    for (SaveStateInfo& ssi : available_states)
+    resume_action = menu->addAction(tr("Resume"));
+    resume_action->setEnabled(false);
+
+    load_state_menu = menu->addMenu(tr("Load State"));
+    load_state_menu->setEnabled(false);
+
+    if (!entry->serial.empty())
     {
-      if (ssi.global)
-        continue;
-
-      const s32 slot = ssi.slot;
-      const QDateTime timestamp(QDateTime::fromSecsSinceEpoch(static_cast<qint64>(ssi.timestamp)));
-      const QString timestamp_str(timestamp.toString(timestamp_format));
-
-      QAction* action;
-      if (slot < 0)
+      std::vector<SaveStateInfo> available_states(System::GetAvailableSaveStates(entry->serial.c_str()));
+      const QString timestamp_format = QLocale::system().dateTimeFormat(QLocale::ShortFormat);
+      const bool challenge_mode = Achievements::IsHardcoreModeActive();
+      for (SaveStateInfo& ssi : available_states)
       {
-        resume_action->setText(tr("Resume (%1)").arg(timestamp_str));
-        resume_action->setEnabled(!challenge_mode);
-        action = resume_action;
-      }
-      else
-      {
-        load_state_menu->setEnabled(true);
-        action = load_state_menu->addAction(tr("Game Save %1 (%2)").arg(slot).arg(timestamp_str));
-      }
+        if (ssi.global)
+          continue;
 
-      action->setDisabled(challenge_mode);
-      connect(action, &QAction::triggered,
-              [this, entry, path = std::move(ssi.path)]() { startFile(entry->path, std::move(path), std::nullopt); });
+        const s32 slot = ssi.slot;
+        const QDateTime timestamp(QDateTime::fromSecsSinceEpoch(static_cast<qint64>(ssi.timestamp)));
+        const QString timestamp_str(timestamp.toString(timestamp_format));
+
+        QAction* action;
+        if (slot < 0)
+        {
+          resume_action->setText(tr("Resume (%1)").arg(timestamp_str));
+          resume_action->setEnabled(!challenge_mode);
+          action = resume_action;
+        }
+        else
+        {
+          load_state_menu->setEnabled(true);
+          action = load_state_menu->addAction(tr("Game Save %1 (%2)").arg(slot).arg(timestamp_str));
+        }
+
+        action->setDisabled(challenge_mode);
+        connect(action, &QAction::triggered,
+                [this, entry, path = std::move(ssi.path)]() { startFile(entry->path, std::move(path), std::nullopt); });
+      }
     }
   }
 
@@ -815,23 +821,26 @@ void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidg
     g_main_window->openMemoryCardEditor(paths[0], paths[1]);
   });
 
-  const bool has_any_states = resume_action->isEnabled() || load_state_menu->isEnabled();
-  QAction* delete_save_states_action = menu->addAction(tr("Delete Save States..."));
-  delete_save_states_action->setEnabled(has_any_states);
-  if (has_any_states)
+  if (!entry->IsDiscSet())
   {
-    connect(delete_save_states_action, &QAction::triggered, [parent_window, entry] {
-      if (QMessageBox::warning(
-            parent_window, tr("Confirm Save State Deletion"),
-            tr("Are you sure you want to delete all save states for %1?\n\nThe saves will not be recoverable.")
-              .arg(QString::fromStdString(entry->serial)),
-            QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
-      {
-        return;
-      }
+    const bool has_any_states = resume_action->isEnabled() || load_state_menu->isEnabled();
+    QAction* delete_save_states_action = menu->addAction(tr("Delete Save States..."));
+    delete_save_states_action->setEnabled(has_any_states);
+    if (has_any_states)
+    {
+      connect(delete_save_states_action, &QAction::triggered, [parent_window, entry] {
+        if (QMessageBox::warning(
+              parent_window, tr("Confirm Save State Deletion"),
+              tr("Are you sure you want to delete all save states for %1?\n\nThe saves will not be recoverable.")
+                .arg(QString::fromStdString(entry->serial)),
+              QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+        {
+          return;
+        }
 
-      System::DeleteSaveStates(entry->serial.c_str(), true);
-    });
+        System::DeleteSaveStates(entry->serial.c_str(), true);
+      });
+    }
   }
 }
 
@@ -1511,11 +1520,20 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
           SettingsWindow::openGamePropertiesDialog(first_disc->path, first_disc->serial, first_disc->region);
       });
 
+      connect(menu.addAction(tr("Set Cover Image...")), &QAction::triggered,
+              [this, entry]() { setGameListEntryCoverImage(entry); });
+
+      menu.addSeparator();
+
+      populateGameListContextMenu(entry, this, &menu);
+
       menu.addSeparator();
 
       connect(menu.addAction(tr("Select Disc")), &QAction::triggered, this, &MainWindow::onGameListEntryActivated);
     }
   }
+
+  menu.addSeparator();
 
   connect(menu.addAction(tr("Add Search Directory...")), &QAction::triggered,
           [this]() { getSettingsDialog()->getGameListSettingsWidget()->addSearchDirectory(this); });
