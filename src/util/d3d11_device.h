@@ -96,7 +96,7 @@ public:
   void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) override;
   void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) override;
 
-  bool GetHostRefreshRate(float* refresh_rate) override;
+  std::optional<float> GetHostRefreshRate() override;
 
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;

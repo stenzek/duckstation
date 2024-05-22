@@ -119,9 +119,9 @@ bool MetalDevice::HasSurface() const
   return (m_layer != nil);
 }
 
-bool MetalDevice::GetHostRefreshRate(float* refresh_rate)
+std::optional<float> MetalDevice::GetHostRefreshRate()
 {
-  return GPUDevice::GetHostRefreshRate(refresh_rate);
+  return GPUDevice::GetHostRefreshRate();
 }
 
 void MetalDevice::SetVSyncEnabled(bool enabled)

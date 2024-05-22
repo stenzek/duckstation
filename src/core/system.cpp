@@ -2845,12 +2845,11 @@ void System::UpdateSpeedLimiterState()
   if (g_settings.sync_to_host_refresh_rate &&
       (g_settings.audio_stream_parameters.stretch_mode != AudioStretchMode::Off) && s_target_speed == 1.0f && IsValid())
   {
-    float host_refresh_rate;
-    if (g_gpu_device->GetHostRefreshRate(&host_refresh_rate))
+    if (std::optional<float> host_refresh_rate = g_gpu_device->GetHostRefreshRate(); host_refresh_rate.has_value())
     {
-      const float ratio = host_refresh_rate / System::GetThrottleFrequency();
+      const float ratio = host_refresh_rate.value() / System::GetThrottleFrequency();
       s_syncing_to_host = (ratio >= 0.95f && ratio <= 1.05f);
-      Log_InfoPrintf("Refresh rate: Host=%fhz Guest=%fhz Ratio=%f - %s", host_refresh_rate,
+      Log_InfoPrintf("Refresh rate: Host=%fhz Guest=%fhz Ratio=%f - %s", host_refresh_rate.value(),
                      System::GetThrottleFrequency(), ratio, s_syncing_to_host ? "can sync" : "can't sync");
       if (s_syncing_to_host)
         s_target_speed *= ratio;

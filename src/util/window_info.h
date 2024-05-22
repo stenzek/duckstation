@@ -1,9 +1,12 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
+
 #include "gpu_texture.h"
 #include "common/types.h"
+
+#include <optional>
 
 // Contains the information required to create a graphics context in a window.
 struct WindowInfo
@@ -38,5 +41,5 @@ struct WindowInfo
   // Changes the window to be surfaceless (i.e. no handle/size/etc).
   void SetSurfaceless();
 
-  static bool QueryRefreshRateForWindow(const WindowInfo& wi, float* refresh_rate);
+  static std::optional<float> QueryRefreshRateForWindow(const WindowInfo& wi);
 };

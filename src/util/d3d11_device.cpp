@@ -585,7 +585,7 @@ void D3D11Device::InvalidateRenderTarget(GPUTexture* t)
     static_cast<D3D11Texture*>(t)->CommitClear(m_context.Get());
 }
 
-bool D3D11Device::GetHostRefreshRate(float* refresh_rate)
+std::optional<float> D3D11Device::GetHostRefreshRate()
 {
   if (m_swap_chain && m_is_exclusive_fullscreen)
   {
@@ -595,13 +595,12 @@ bool D3D11Device::GetHostRefreshRate(float* refresh_rate)
     {
       Log_InfoPrintf("using fs rr: %u %u", desc.BufferDesc.RefreshRate.Numerator,
                      desc.BufferDesc.RefreshRate.Denominator);
-      *refresh_rate = static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
-                      static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
-      return true;
+      return static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
+             static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
     }
   }
 
-  return GPUDevice::GetHostRefreshRate(refresh_rate);
+  return GPUDevice::GetHostRefreshRate();
 }
 
 bool D3D11Device::BeginPresent(bool skip_present)

@@ -1052,15 +1052,12 @@ void GPUDevice::ThrottlePresentation()
   Common::Timer::SleepUntil(m_last_frame_displayed_time, false);
 }
 
-bool GPUDevice::GetHostRefreshRate(float* refresh_rate)
+std::optional<float> GPUDevice::GetHostRefreshRate()
 {
   if (m_window_info.surface_refresh_rate > 0.0f)
-  {
-    *refresh_rate = m_window_info.surface_refresh_rate;
-    return true;
-  }
+    return m_window_info.surface_refresh_rate;
 
-  return WindowInfo::QueryRefreshRateForWindow(m_window_info, refresh_rate);
+  return WindowInfo::QueryRefreshRateForWindow(m_window_info);
 }
 
 bool GPUDevice::SetGPUTimingEnabled(bool enabled)

@@ -689,7 +689,7 @@ public:
 
   virtual bool SupportsTextureFormat(GPUTexture::Format format) const = 0;
 
-  virtual bool GetHostRefreshRate(float* refresh_rate);
+  virtual std::optional<float> GetHostRefreshRate();
 
   /// Enables/disables GPU frame timing.
   virtual bool SetGPUTimingEnabled(bool enabled);
