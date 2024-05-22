@@ -453,6 +453,7 @@ void SPU::CreateOutputStream()
   }
 
   s_audio_stream->SetOutputVolume(System::GetAudioOutputVolume());
+  s_audio_stream->SetNominalRate(System::GetAudioNominalRate());
   s_audio_stream->SetPaused(System::IsPaused());
 }
 

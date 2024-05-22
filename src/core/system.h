@@ -285,6 +285,7 @@ void SingleStepCPU();
 
 /// Sets target emulation speed.
 float GetTargetSpeed();
+float GetAudioNominalRate();
 
 /// Adjusts the throttle frequency, i.e. how many times we should sleep per second.
 void SetThrottleFrequency(float frequency);

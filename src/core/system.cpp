@@ -2681,6 +2681,11 @@ float System::GetTargetSpeed()
   return s_target_speed;
 }
 
+float System::GetAudioNominalRate()
+{
+  return s_throttler_enabled ? s_target_speed : 1.0f;
+}
+
 void System::UpdatePerformanceCounters()
 {
   const float frame_time = static_cast<float>(s_frame_timer.GetTimeMillisecondsAndReset());
@@ -2869,15 +2874,7 @@ void System::UpdateSpeedLimiterState()
   // Update audio output.
   AudioStream* stream = SPU::GetOutputStream();
   stream->SetOutputVolume(GetAudioOutputVolume());
-
-  // Adjust nominal rate when resampling, or syncing to host.
-  const bool rate_adjust =
-    (s_syncing_to_host || g_settings.audio_stream_parameters.stretch_mode == AudioStretchMode::Resample) &&
-    s_target_speed > 0.0f;
-  stream->SetNominalRate(rate_adjust ? s_target_speed : 1.0f);
-
-  if (old_target_speed < s_target_speed)
-    stream->UpdateTargetTempo(s_target_speed);
+  stream->SetNominalRate(GetAudioNominalRate());
 
   UpdateThrottlePeriod();
   ResetThrottler();

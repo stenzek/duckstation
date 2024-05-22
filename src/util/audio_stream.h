@@ -190,7 +190,6 @@ public:
   /// Nominal rate is used for both resampling and timestretching, input samples are assumed to be this amount faster
   /// than the sample rate.
   void SetNominalRate(float tempo);
-  void UpdateTargetTempo(float tempo);
 
   void SetStretchMode(AudioStretchMode mode);
 

@@ -541,25 +541,8 @@ void AudioStream::SetNominalRate(float tempo)
   m_nominal_rate = tempo;
   if (m_parameters.stretch_mode == AudioStretchMode::Resample)
     m_soundtouch->setRate(tempo);
-}
-
-void AudioStream::UpdateTargetTempo(float tempo)
-{
-  if (m_parameters.stretch_mode != AudioStretchMode::TimeStretch)
-    return;
-
-  // undo sqrt()
-  if (tempo)
-    tempo *= tempo;
-
-  m_average_position = AVERAGING_WINDOW;
-  m_average_available = AVERAGING_WINDOW;
-  std::fill_n(m_average_fullness.data(), AVERAGING_WINDOW, tempo);
-  m_soundtouch->setTempo(tempo);
-  m_stretch_reset = 0;
-  m_stretch_inactive = false;
-  m_stretch_ok_count = 0;
-  m_dynamic_target_usage = static_cast<float>(m_target_buffer_size) * m_nominal_rate;
+  else if (m_parameters.stretch_mode == AudioStretchMode::TimeStretch && m_stretch_inactive)
+    m_soundtouch->setTempo(tempo);
 }
 
 void AudioStream::SetStretchMode(AudioStretchMode mode)
