@@ -82,7 +82,8 @@ ALWAYS_INLINE static void WriteFmt(const char* channelName, const char* function
 } // namespace Log
 
 // log wrappers
-#define Log_SetChannel(ChannelName) [[maybe_unused]] static const char* ___LogChannel___ = #ChannelName;
+#define Log_SetChannel(ChannelName)                                                                                    \
+  [[maybe_unused]] [[maybe_unused]] static const char* ___LogChannel___ = #ChannelName;
 #define Log_ErrorPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_ERROR, msg)
 #define Log_ErrorPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_ERROR, __VA_ARGS__)
 #define Log_ErrorFmt(...) Log::WriteFmt(___LogChannel___, __func__, LOGLEVEL_ERROR, __VA_ARGS__)
