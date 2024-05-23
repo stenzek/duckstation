@@ -2594,10 +2594,16 @@ void GPU_HW::UpdateSoftwareRenderer(bool copy_vram_from_hw)
     FlushRender();
     ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
 
-    // Sync the drawing area.
-    GPUBackendSetDrawingAreaCommand* cmd = sw_renderer->NewSetDrawingAreaCommand();
-    cmd->new_area = m_drawing_area;
-    sw_renderer->PushCommand(cmd);
+    // Sync the drawing area and CLUT.
+    GPUBackendSetDrawingAreaCommand* clip_cmd = sw_renderer->NewSetDrawingAreaCommand();
+    clip_cmd->new_area = m_drawing_area;
+    sw_renderer->PushCommand(clip_cmd);
+
+    GPUBackendUpdateCLUTCommand* clut_cmd = sw_renderer->NewUpdateCLUTCommand();
+    FillBackendCommandParameters(clut_cmd);
+    clut_cmd->reg.bits = m_current_clut_reg_bits;
+    clut_cmd->clut_is_8bit = m_current_clut_is_8bit;
+    sw_renderer->PushCommand(clut_cmd);
   }
 
   m_sw_renderer = std::move(sw_renderer);
@@ -3115,6 +3121,16 @@ void GPU_HW::UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit)
   // Not done in HW
   GL_INS_FMT("Reloading CLUT from {},{}, {} not implemented", reg.GetXBase(), reg.GetYBase(),
              clut_is_8bit ? "8-bit" : "4-bit");
+
+  // But need to forward through to SW if using that for readbacks
+  if (m_sw_renderer)
+  {
+    GPUBackendUpdateCLUTCommand* cmd = m_sw_renderer->NewUpdateCLUTCommand();
+    FillBackendCommandParameters(cmd);
+    cmd->reg.bits = reg.bits;
+    cmd->clut_is_8bit = clut_is_8bit;
+    m_sw_renderer->PushCommand(cmd);
+  }
 }
 
 void GPU_HW::FlushRender()

@@ -1481,6 +1481,11 @@ void GPU::InvalidateCLUT()
   m_current_clut_is_8bit = false;
 }
 
+bool GPU::IsCLUTValid() const
+{
+  return (m_current_clut_reg_bits != std::numeric_limits<decltype(m_current_clut_reg_bits)>::max());
+}
+
 void GPU::ClearDisplay()
 {
   ClearDisplayTexture();

@@ -311,6 +311,7 @@ protected:
   void HandleGetGPUInfoCommand(u32 value);
   void UpdateCLUTIfNeeded(GPUTextureMode texmode, GPUTexturePaletteReg clut);
   void InvalidateCLUT();
+  bool IsCLUTValid() const;
 
   // Rendering in the backend
   virtual void ReadVRAM(u32 x, u32 y, u32 width, u32 height);
