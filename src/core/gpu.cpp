@@ -19,6 +19,7 @@
 #include "util/state_wrapper.h"
 
 #include "common/align.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/heap_array.h"
 #include "common/log.h"
@@ -2702,15 +2703,15 @@ bool GPU::RenderScreenshotToFile(std::string filename, DisplayScreenshotMode mod
   if (!RenderScreenshotToBuffer(width, height, draw_rect, !internal_resolution, &pixels, &pixels_stride,
                                 &pixels_format))
   {
-    Log_ErrorPrintf("Failed to render %ux%u screenshot", width, height);
+    Log_ErrorFmt("Failed to render {}x{} screenshot", width, height);
     return false;
   }
 
-  // These filenames tend to be fairly long, so remove any MAX_PATH limit.
-  auto fp = FileSystem::OpenManagedCFile(Path::RemoveLengthLimits(filename).c_str(), "wb");
+  Error error;
+  auto fp = FileSystem::OpenManagedCFile(filename.c_str(), "wb", &error);
   if (!fp)
   {
-    Log_ErrorPrintf("Can't open file '%s': errno %d", filename.c_str(), errno);
+    Log_ErrorFmt("Can't open file '{}': {}", Path::GetFileName(filename), error.GetDescription());
     return false;
   }
 

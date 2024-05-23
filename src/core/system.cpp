@@ -4595,7 +4595,7 @@ bool System::SaveScreenshot(const char* filename, DisplayScreenshotMode mode, Di
 
     // handle quick screenshots to the same filename
     u32 next_suffix = 1;
-    while (FileSystem::FileExists(Path::RemoveLengthLimits(auto_filename).c_str()))
+    while (FileSystem::FileExists(auto_filename.c_str()))
     {
       auto_filename = fmt::format("{}" FS_OSPATH_SEPARATOR_STR "{} ({}).{}", EmuFolders::Screenshots, basename,
                                   next_suffix, extension);
