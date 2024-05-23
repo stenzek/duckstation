@@ -6085,8 +6085,10 @@ void FullscreenUI::PopulateGameListEntryList()
               {
                 case 0: // Type
                 {
-                  if (lhs->type != rhs->type)
-                    return reverse ? (lhs->type > rhs->type) : (lhs->type < rhs->type);
+                  const GameList::EntryType lst = lhs->GetSortType();
+                  const GameList::EntryType rst = rhs->GetSortType();
+                  if (lst != rst)
+                    return reverse ? (lst > rst) : (lst < rst);
                 }
                 break;
 

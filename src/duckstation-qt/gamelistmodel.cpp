@@ -351,7 +351,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
       switch (index.column())
       {
         case Column_Type:
-          return static_cast<int>(ge->type);
+          return static_cast<int>(ge->GetSortType());
 
         case Column_Serial:
           return QString::fromStdString(ge->serial);
@@ -494,10 +494,12 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
   {
     case Column_Type:
     {
-      if (left->type == right->type)
+      const GameList::EntryType lst = left->GetSortType();
+      const GameList::EntryType rst = right->GetSortType();
+      if (lst == rst)
         return titlesLessThan(left_row, right_row);
 
-      return (static_cast<int>(left->type) < static_cast<int>(right->type));
+      return (static_cast<int>(lst) < static_cast<int>(rst));
     }
 
     case Column_Serial:

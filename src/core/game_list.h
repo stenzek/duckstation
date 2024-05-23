@@ -66,6 +66,7 @@ struct Entry
 
   ALWAYS_INLINE bool IsDisc() const { return (type == EntryType::Disc); }
   ALWAYS_INLINE bool IsDiscSet() const { return (type == EntryType::DiscSet); }
+  ALWAYS_INLINE EntryType GetSortType() const { return (type == EntryType::DiscSet) ? EntryType::Disc : type; }
 };
 
 const char* GetEntryTypeName(EntryType type);
