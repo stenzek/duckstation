@@ -40,7 +40,7 @@ bool D3D11StreamBuffer::Create(D3D11_BIND_FLAG bind_flags, u32 min_size, u32 max
       m_use_map_no_overwrite = options.MapNoOverwriteOnDynamicConstantBuffer;
       if (m_use_map_no_overwrite && D3D11Device::GetMaxFeatureLevel() < D3D_FEATURE_LEVEL_12_0)
       {
-        Log_WarningPrint("Ignoring MapNoOverwriteOnDynamicConstantBuffer on driver due to feature level.");
+        WARNING_LOG("Ignoring MapNoOverwriteOnDynamicConstantBuffer on driver due to feature level.");
         m_use_map_no_overwrite = false;
       }
 
@@ -55,14 +55,14 @@ bool D3D11StreamBuffer::Create(D3D11_BIND_FLAG bind_flags, u32 min_size, u32 max
 
     if (!m_use_map_no_overwrite)
     {
-      Log_WarningFmt("Unable to use MAP_NO_OVERWRITE on buffer with bind flag {}, this may affect performance. "
-                     "Update your driver/operating system.",
-                     static_cast<unsigned>(bind_flags));
+      WARNING_LOG("Unable to use MAP_NO_OVERWRITE on buffer with bind flag {}, this may affect performance. "
+                  "Update your driver/operating system.",
+                  static_cast<unsigned>(bind_flags));
     }
   }
   else
   {
-    Log_WarningFmt("ID3D11Device::CheckFeatureSupport() failed: {}", Error::CreateHResult(hr).GetDescription());
+    WARNING_LOG("ID3D11Device::CheckFeatureSupport() failed: {}", Error::CreateHResult(hr).GetDescription());
     m_use_map_no_overwrite = false;
   }
 
@@ -72,7 +72,7 @@ bool D3D11StreamBuffer::Create(D3D11_BIND_FLAG bind_flags, u32 min_size, u32 max
   hr = D3D11Device::GetD3DDevice()->CreateBuffer(&desc, nullptr, &buffer);
   if (FAILED(hr)) [[unlikely]]
   {
-    Log_ErrorFmt("Creating buffer failed: {}", Error::CreateHResult(hr).GetDescription());
+    ERROR_LOG("Creating buffer failed: {}", Error::CreateHResult(hr).GetDescription());
     return false;
   }
 
@@ -106,7 +106,7 @@ D3D11StreamBuffer::MappingResult D3D11StreamBuffer::Map(ID3D11DeviceContext1* co
       Assert(min_size < m_max_size);
 
       const u32 new_size = std::min(m_max_size, Common::AlignUp(std::max(m_size * 2, min_size), alignment));
-      Log_WarningFmt("Growing buffer from {} bytes to {} bytes", m_size, new_size);
+      WARNING_LOG("Growing buffer from {} bytes to {} bytes", m_size, new_size);
 
       D3D11_BUFFER_DESC new_desc;
       m_buffer->GetDesc(&new_desc);
@@ -115,7 +115,7 @@ D3D11StreamBuffer::MappingResult D3D11StreamBuffer::Map(ID3D11DeviceContext1* co
       hr = D3D11Device::GetD3DDevice()->CreateBuffer(&new_desc, nullptr, m_buffer.ReleaseAndGetAddressOf());
       if (FAILED(hr)) [[unlikely]]
       {
-        Log_ErrorFmt("Creating buffer failed: {}", Error::CreateHResult(hr).GetDescription());
+        ERROR_LOG("Creating buffer failed: {}", Error::CreateHResult(hr).GetDescription());
         Panic("Failed to grow buffer");
       }
 
@@ -128,8 +128,8 @@ D3D11StreamBuffer::MappingResult D3D11StreamBuffer::Map(ID3D11DeviceContext1* co
   hr = context->Map(m_buffer.Get(), 0, map_type, 0, &sr);
   if (FAILED(hr)) [[unlikely]]
   {
-    Log_ErrorFmt("Map failed: 0x{:08X} (alignment {}, minsize {}, size {}, position [], map type {})",
-                 static_cast<unsigned>(hr), alignment, min_size, m_size, m_position, static_cast<u32>(map_type));
+    ERROR_LOG("Map failed: 0x{:08X} (alignment {}, minsize {}, size {}, position [], map type {})",
+              static_cast<unsigned>(hr), alignment, min_size, m_size, m_position, static_cast<u32>(map_type));
     Panic("Map failed");
   }
 

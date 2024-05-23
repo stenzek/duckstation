@@ -196,7 +196,7 @@ std::optional<BIOS::Image> BIOS::LoadImageFromFile(const char* filename, Error* 
     return std::nullopt;
   }
 
-  Log_DevPrint(
+  DEV_LOG(
     fmt::format("Hash for BIOS '{}': {}", FileSystem::GetDisplayNameFromPath(filename), GetImageHash(ret).ToString())
       .c_str());
   return ret;
@@ -223,7 +223,7 @@ const BIOS::ImageInfo* BIOS::GetInfoForImage(const Image& image, const Hash& has
       return &ii;
   }
 
-  Log_WarningFmt("Unknown BIOS hash: {}", hash.ToString());
+  WARNING_LOG("Unknown BIOS hash: {}", hash.ToString());
   return nullptr;
 }
 
@@ -246,14 +246,14 @@ void BIOS::PatchBIOS(u8* image, u32 image_size, u32 address, u32 value, u32 mask
   SmallString old_disasm, new_disasm;
   CPU::DisassembleInstruction(&old_disasm, address, existing_value);
   CPU::DisassembleInstruction(&new_disasm, address, new_value);
-  Log_DevFmt("BIOS-Patch 0x{:08X} (+0x{:X}): 0x{:08X} {} -> {:08X} {}", address, offset, existing_value, old_disasm,
-             new_value, new_disasm);
+  DEV_LOG("BIOS-Patch 0x{:08X} (+0x{:X}): 0x{:08X} {} -> {:08X} {}", address, offset, existing_value, old_disasm,
+          new_value, new_disasm);
 }
 
 bool BIOS::PatchBIOSFastBoot(u8* image, u32 image_size)
 {
   // Replace the shell entry point with a return back to the bootstrap.
-  Log_InfoPrint("Patching BIOS to skip intro");
+  INFO_LOG("Patching BIOS to skip intro");
   PatchBIOS(image, image_size, 0x1FC18000, 0x3C011F80); // lui at, 1f80
   PatchBIOS(image, image_size, 0x1FC18004, 0x3C0A0300); // lui t2, 0300h
   PatchBIOS(image, image_size, 0x1FC18008, 0xAC2A1814); // sw zero, 1814h(at)        ; turn the display on
@@ -308,8 +308,8 @@ bool BIOS::IsValidPSExeHeader(const PSEXEHeader& header, u32 file_size)
 
   if ((header.file_size + sizeof(PSEXEHeader)) > file_size)
   {
-    Log_WarningFmt("Incorrect file size in PS-EXE header: {} bytes should not be greater than {} bytes",
-                   header.file_size, static_cast<unsigned>(file_size - sizeof(PSEXEHeader)));
+    WARNING_LOG("Incorrect file size in PS-EXE header: {} bytes should not be greater than {} bytes", header.file_size,
+                static_cast<unsigned>(file_size - sizeof(PSEXEHeader)));
   }
 
   return true;
@@ -369,9 +369,8 @@ std::optional<std::vector<u8>> BIOS::GetBIOSImage(ConsoleRegion region, Error* e
     const ImageInfo* ii = GetInfoForImage(image.value());
     if (!ii || !IsValidBIOSForRegion(region, ii->region))
     {
-      Log_WarningFmt("BIOS region {} does not match requested region {}. This may cause issues.",
-                     ii ? Settings::GetConsoleRegionName(ii->region) : "UNKNOWN",
-                     Settings::GetConsoleRegionName(region));
+      WARNING_LOG("BIOS region {} does not match requested region {}. This may cause issues.",
+                  ii ? Settings::GetConsoleRegionName(ii->region) : "UNKNOWN", Settings::GetConsoleRegionName(region));
     }
   }
 
@@ -380,7 +379,7 @@ std::optional<std::vector<u8>> BIOS::GetBIOSImage(ConsoleRegion region, Error* e
 
 std::optional<std::vector<u8>> BIOS::FindBIOSImageInDirectory(ConsoleRegion region, const char* directory, Error* error)
 {
-  Log_InfoFmt("Searching for a {} BIOS in '{}'...", Settings::GetConsoleRegionName(region), directory);
+  INFO_LOG("Searching for a {} BIOS in '{}'...", Settings::GetConsoleRegionName(region), directory);
 
   FileSystem::FindResultsArray results;
   FileSystem::FindFiles(
@@ -394,7 +393,7 @@ std::optional<std::vector<u8>> BIOS::FindBIOSImageInDirectory(ConsoleRegion regi
   {
     if (fd.Size != BIOS_SIZE && fd.Size != BIOS_SIZE_PS2 && fd.Size != BIOS_SIZE_PS3)
     {
-      Log_WarningFmt("Skipping '{}': incorrect size", fd.FileName.c_str());
+      WARNING_LOG("Skipping '{}': incorrect size", fd.FileName.c_str());
       continue;
     }
 
@@ -406,7 +405,7 @@ std::optional<std::vector<u8>> BIOS::FindBIOSImageInDirectory(ConsoleRegion regi
     const ImageInfo* ii = GetInfoForImage(found_image.value());
     if (ii && IsValidBIOSForRegion(region, ii->region))
     {
-      Log_InfoFmt("Using BIOS '{}': {}", fd.FileName.c_str(), ii->description);
+      INFO_LOG("Using BIOS '{}': {}", fd.FileName.c_str(), ii->description);
       fallback_image = std::move(found_image);
       return fallback_image;
     }
@@ -429,12 +428,12 @@ std::optional<std::vector<u8>> BIOS::FindBIOSImageInDirectory(ConsoleRegion regi
 
   if (!fallback_info)
   {
-    Log_WarningFmt("Using unknown BIOS '{}'. This may crash.", Path::GetFileName(fallback_path));
+    WARNING_LOG("Using unknown BIOS '{}'. This may crash.", Path::GetFileName(fallback_path));
   }
   else
   {
-    Log_WarningFmt("Falling back to possibly-incompatible image '{}': {}", Path::GetFileName(fallback_path),
-                   fallback_info->description);
+    WARNING_LOG("Falling back to possibly-incompatible image '{}': {}", Path::GetFileName(fallback_path),
+                fallback_info->description);
   }
 
   return fallback_image;

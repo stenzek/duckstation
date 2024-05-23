@@ -190,39 +190,39 @@ bool GPUTexture::ValidateConfig(u32 width, u32 height, u32 layers, u32 levels, u
 {
   if (width > MAX_WIDTH || height > MAX_HEIGHT || layers > MAX_LAYERS || levels > MAX_LEVELS || samples > MAX_SAMPLES)
   {
-    Log_ErrorFmt("Invalid dimensions: {}x{}x{} {} {}.", width, height, layers, levels, samples);
+    ERROR_LOG("Invalid dimensions: {}x{}x{} {} {}.", width, height, layers, levels, samples);
     return false;
   }
 
   const u32 max_texture_size = g_gpu_device->GetMaxTextureSize();
   if (width > max_texture_size || height > max_texture_size)
   {
-    Log_ErrorFmt("Texture width ({}) or height ({}) exceeds max texture size ({}).", width, height, max_texture_size);
+    ERROR_LOG("Texture width ({}) or height ({}) exceeds max texture size ({}).", width, height, max_texture_size);
     return false;
   }
 
   const u32 max_samples = g_gpu_device->GetMaxMultisamples();
   if (samples > max_samples)
   {
-    Log_ErrorFmt("Texture samples ({}) exceeds max samples ({}).", samples, max_samples);
+    ERROR_LOG("Texture samples ({}) exceeds max samples ({}).", samples, max_samples);
     return false;
   }
 
   if (samples > 1 && levels > 1)
   {
-    Log_ErrorPrint("Multisampled textures can't have mip levels.");
+    ERROR_LOG("Multisampled textures can't have mip levels.");
     return false;
   }
 
   if (layers > 1 && type != Type::Texture && type != Type::DynamicTexture)
   {
-    Log_ErrorPrint("Texture arrays are not supported on targets.");
+    ERROR_LOG("Texture arrays are not supported on targets.");
     return false;
   }
 
   if (levels > 1 && type != Type::Texture && type != Type::DynamicTexture)
   {
-    Log_ErrorPrint("Mipmaps are not supported on targets.");
+    ERROR_LOG("Mipmaps are not supported on targets.");
     return false;
   }
 
@@ -317,7 +317,7 @@ bool GPUTexture::ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u3
     }
 
     default:
-      [[unlikely]] Log_ErrorFmt("Unknown pixel format {}", static_cast<u32>(format));
+      [[unlikely]] ERROR_LOG("Unknown pixel format {}", static_cast<u32>(format));
       return false;
   }
 }

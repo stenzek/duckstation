@@ -110,11 +110,11 @@ bool MemoryCardImage::LoadFromFile(DataArray* data, const char* filename)
   const size_t num_read = stream->Read(data->data(), DATA_SIZE);
   if (num_read != DATA_SIZE)
   {
-    Log_ErrorFmt("Only read {} of {} sectors from '{}'", num_read / FRAME_SIZE, static_cast<u32>(NUM_FRAMES), filename);
+    ERROR_LOG("Only read {} of {} sectors from '{}'", num_read / FRAME_SIZE, static_cast<u32>(NUM_FRAMES), filename);
     return false;
   }
 
-  Log_VerboseFmt("Loaded memory card from {}", filename);
+  VERBOSE_LOG("Loaded memory card from {}", filename);
   return true;
 }
 
@@ -125,18 +125,18 @@ bool MemoryCardImage::SaveToFile(const DataArray& data, const char* filename)
                                      BYTESTREAM_OPEN_ATOMIC_UPDATE | BYTESTREAM_OPEN_STREAMED);
   if (!stream)
   {
-    Log_ErrorFmt("Failed to open '{}' for writing.", filename);
+    ERROR_LOG("Failed to open '{}' for writing.", filename);
     return false;
   }
 
   if (!stream->Write2(data.data(), DATA_SIZE) || !stream->Commit())
   {
-    Log_ErrorFmt("Failed to write sectors to '{}'", filename);
+    ERROR_LOG("Failed to write sectors to '{}'", filename);
     stream->Discard();
     return false;
   }
 
-  Log_VerboseFmt("Saved memory card to '{}'", filename);
+  VERBOSE_LOG("Saved memory card to '{}'", filename);
   return true;
 }
 
@@ -267,7 +267,7 @@ std::vector<MemoryCardImage::FileInfo> MemoryCardImage::EnumerateFiles(const Dat
     if (fi.num_blocks == FRAMES_PER_BLOCK)
     {
       // invalid
-      Log_WarningFmt("Invalid block chain in block {}", dir_frame);
+      WARNING_LOG("Invalid block chain in block {}", dir_frame);
       continue;
     }
 
@@ -281,7 +281,7 @@ std::vector<MemoryCardImage::FileInfo> MemoryCardImage::EnumerateFiles(const Dat
       num_icon_frames = 3;
     else
     {
-      Log_WarningFmt("Unknown icon flag 0x{:02X}", tf->icon_flag);
+      WARNING_LOG("Unknown icon flag 0x{:02X}", tf->icon_flag);
       continue;
     }
 
@@ -385,13 +385,13 @@ bool MemoryCardImage::WriteFile(DataArray* data, std::string_view filename, cons
       std::memset(data_block + size_to_copy, 0, size_to_zero);
   }
 
-  Log_InfoFmt("Wrote {} byte ({} block) file to memory card", buffer.size(), num_blocks);
+  INFO_LOG("Wrote {} byte ({} block) file to memory card", buffer.size(), num_blocks);
   return true;
 }
 
 bool MemoryCardImage::DeleteFile(DataArray* data, const FileInfo& fi, bool clear_sectors)
 {
-  Log_InfoFmt("Deleting '{}' from memory card ({} blocks)", fi.filename, fi.num_blocks);
+  INFO_LOG("Deleting '{}' from memory card ({} blocks)", fi.filename, fi.num_blocks);
 
   u32 block_number = fi.first_block;
   for (u32 i = 0; i < fi.num_blocks && (block_number > 0 && block_number < NUM_BLOCKS); i++)
@@ -424,11 +424,11 @@ bool MemoryCardImage::UndeleteFile(DataArray* data, const FileInfo& fi)
 {
   if (!fi.deleted)
   {
-    Log_ErrorFmt("File '{}' is not deleted", fi.filename);
+    ERROR_LOG("File '{}' is not deleted", fi.filename);
     return false;
   }
 
-  Log_InfoFmt("Undeleting '{}' from memory card ({} blocks)", fi.filename, fi.num_blocks);
+  INFO_LOG("Undeleting '{}' from memory card ({} blocks)", fi.filename, fi.num_blocks);
 
   // check that all blocks are present first
   u32 block_number = fi.first_block;
@@ -442,8 +442,8 @@ bool MemoryCardImage::UndeleteFile(DataArray* data, const FileInfo& fi)
     {
       if (df->block_allocation_state != 0xA1)
       {
-        Log_ErrorFmt("Incorrect block state for {}, expected 0xA1 got 0x{:02X}", this_block_number,
-                     df->block_allocation_state);
+        ERROR_LOG("Incorrect block state for {}, expected 0xA1 got 0x{:02X}", this_block_number,
+                  df->block_allocation_state);
         return false;
       }
     }
@@ -451,8 +451,8 @@ bool MemoryCardImage::UndeleteFile(DataArray* data, const FileInfo& fi)
     {
       if (df->block_allocation_state != 0xA3)
       {
-        Log_ErrorFmt("Incorrect block state for %u, expected 0xA3 got 0x{:02X}", this_block_number,
-                     df->block_allocation_state);
+        ERROR_LOG("Incorrect block state for %u, expected 0xA3 got 0x{:02X}", this_block_number,
+                  df->block_allocation_state);
         return false;
       }
     }
@@ -460,8 +460,8 @@ bool MemoryCardImage::UndeleteFile(DataArray* data, const FileInfo& fi)
     {
       if (df->block_allocation_state != 0xA2)
       {
-        Log_ErrorFmt("Incorrect block state for {}, expected 0xA2 got 0x{:02X}", this_block_number,
-                     df->block_allocation_state);
+        ERROR_LOG("Incorrect block state for {}, expected 0xA2 got 0x{:02X}", this_block_number,
+                  df->block_allocation_state);
         return false;
       }
     }
@@ -532,8 +532,8 @@ bool MemoryCardImage::ImportCardGME(DataArray* data, const char* filename, std::
   const u32 expected_size = sizeof(GMEHeader) + DATA_SIZE;
   if (file_data.size() < expected_size)
   {
-    Log_WarningFmt("GME memory card '{}' is too small (got {} expected {}), padding with zeroes", filename,
-                   file_data.size(), expected_size);
+    WARNING_LOG("GME memory card '{}' is too small (got {} expected {}), padding with zeroes", filename,
+                file_data.size(), expected_size);
     file_data.resize(expected_size);
   }
 

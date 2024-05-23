@@ -153,7 +153,7 @@ D3D11Device::ComPtr<ID3D11RasterizerState> D3D11Device::GetRasterizationState(co
 
   HRESULT hr = m_device->CreateRasterizerState(&desc, drs.GetAddressOf());
   if (FAILED(hr)) [[unlikely]]
-    Log_ErrorFmt("Failed to create depth state with {:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("Failed to create depth state with {:08X}", static_cast<unsigned>(hr));
 
   m_rasterization_states.emplace(rs.key, drs);
   return drs;
@@ -188,7 +188,7 @@ D3D11Device::ComPtr<ID3D11DepthStencilState> D3D11Device::GetDepthState(const GP
 
   HRESULT hr = m_device->CreateDepthStencilState(&desc, dds.GetAddressOf());
   if (FAILED(hr)) [[unlikely]]
-    Log_ErrorFmt("Failed to create depth state with {:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("Failed to create depth state with {:08X}", static_cast<unsigned>(hr));
 
   m_depth_states.emplace(ds.key, dds);
   return dds;
@@ -246,7 +246,7 @@ D3D11Device::ComPtr<ID3D11BlendState> D3D11Device::GetBlendState(const GPUPipeli
 
   HRESULT hr = m_device->CreateBlendState(&blend_desc, dbs.GetAddressOf());
   if (FAILED(hr)) [[unlikely]]
-    Log_ErrorFmt("Failed to create blend state with {:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("Failed to create blend state with {:08X}", static_cast<unsigned>(hr));
 
   m_blend_states.emplace(bs.key, dbs);
   return dbs;
@@ -298,7 +298,7 @@ D3D11Device::ComPtr<ID3D11InputLayout> D3D11Device::GetInputLayout(const GPUPipe
   HRESULT hr = m_device->CreateInputLayout(elems, static_cast<UINT>(il.vertex_attributes.size()),
                                            vs->GetBytecode().data(), vs->GetBytecode().size(), dil.GetAddressOf());
   if (FAILED(hr)) [[unlikely]]
-    Log_ErrorFmt("Failed to create input layout with {:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("Failed to create input layout with {:08X}", static_cast<unsigned>(hr));
 
   m_input_layouts.emplace(il, dil);
   return dil;

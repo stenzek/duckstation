@@ -75,37 +75,37 @@ void HostInterfaceProgressCallback::Redraw(bool force)
 
 void HostInterfaceProgressCallback::DisplayError(const char* message)
 {
-  Log_ErrorPrint(message);
+  ERROR_LOG(message);
 }
 
 void HostInterfaceProgressCallback::DisplayWarning(const char* message)
 {
-  Log_WarningPrint(message);
+  WARNING_LOG(message);
 }
 
 void HostInterfaceProgressCallback::DisplayInformation(const char* message)
 {
-  Log_InfoPrint(message);
+  INFO_LOG(message);
 }
 
 void HostInterfaceProgressCallback::DisplayDebugMessage(const char* message)
 {
-  Log_DevPrint(message);
+  DEV_LOG(message);
 }
 
 void HostInterfaceProgressCallback::ModalError(const char* message)
 {
-  Log_ErrorPrint(message);
+  ERROR_LOG(message);
   Host::ReportErrorAsync("Error", message);
 }
 
 bool HostInterfaceProgressCallback::ModalConfirmation(const char* message)
 {
-  Log_InfoPrint(message);
+  INFO_LOG(message);
   return Host::ConfirmMessage("Confirm", message);
 }
 
 void HostInterfaceProgressCallback::ModalInformation(const char* message)
 {
-  Log_InfoPrint(message);
+  INFO_LOG(message);
 }

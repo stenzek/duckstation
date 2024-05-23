@@ -105,8 +105,8 @@ private:
       const size_t ret = ZSTD_compressStream2(m_cstream, &outbuf, &inbuf, action);
       if (ZSTD_isError(ret))
       {
-        Log_ErrorFmt("ZSTD_compressStream2() failed: {} ({})", static_cast<unsigned>(ZSTD_getErrorCode(ret)),
-                     ZSTD_getErrorString(ZSTD_getErrorCode(ret)));
+        ERROR_LOG("ZSTD_compressStream2() failed: {} ({})", static_cast<unsigned>(ZSTD_getErrorCode(ret)),
+                  ZSTD_getErrorString(ZSTD_getErrorCode(ret)));
         SetErrorState();
         return false;
       }
@@ -284,8 +284,8 @@ private:
       size_t ret = ZSTD_decompressStream(m_cstream, &outbuf, &m_in_buffer);
       if (ZSTD_isError(ret))
       {
-        Log_ErrorFmt("ZSTD_decompressStream() failed: {} ({})", static_cast<unsigned>(ZSTD_getErrorCode(ret)),
-                     ZSTD_getErrorString(ZSTD_getErrorCode(ret)));
+        ERROR_LOG("ZSTD_decompressStream() failed: {} ({})", static_cast<unsigned>(ZSTD_getErrorCode(ret)),
+                  ZSTD_getErrorString(ZSTD_getErrorCode(ret)));
         m_in_buffer.pos = m_in_buffer.size;
         m_output_buffer_rpos = 0;
         m_output_buffer_wpos = 0;

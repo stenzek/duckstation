@@ -27,7 +27,7 @@ bool MetalStreamBuffer::Create(id<MTLDevice> device, u32 size)
     id<MTLBuffer> new_buffer = [device newBufferWithLength:size options:options];
     if (new_buffer == nil)
     {
-      Log_ErrorPrint("Failed to create buffer.");
+      ERROR_LOG("Failed to create buffer.");
       return false;
     }
 
@@ -63,7 +63,7 @@ bool MetalStreamBuffer::ReserveMemory(u32 num_bytes, u32 alignment)
   // Check for sane allocations
   if (required_bytes > m_size) [[unlikely]]
   {
-    Log_ErrorFmt("Attempting to allocate {} bytes from a {} byte stream buffer", num_bytes, m_size);
+    ERROR_LOG("Attempting to allocate {} bytes from a {} byte stream buffer", num_bytes, m_size);
     Panic("Stream buffer overflow");
     return false;
   }

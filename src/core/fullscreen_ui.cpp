@@ -5491,7 +5491,7 @@ void FullscreenUI::PopulateSaveStateScreenshot(SaveStateListEntry* li, const Ext
   }
 
   if (!li->preview_texture)
-    Log_ErrorPrint("Failed to upload save state image to GPU");
+    ERROR_LOG("Failed to upload save state image to GPU");
 }
 
 void FullscreenUI::ClearSaveStateEntryList()

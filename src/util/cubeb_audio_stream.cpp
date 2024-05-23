@@ -94,7 +94,7 @@ void CubebAudioStream::LogCallback(const char* fmt, ...)
   va_start(ap, fmt);
   str.vsprintf(fmt, ap);
   va_end(ap);
-  Log_DevPrint(str);
+  DEV_LOG(str);
 }
 
 void CubebAudioStream::DestroyContextAndStream()
@@ -172,8 +172,8 @@ bool CubebAudioStream::Initialize(const char* driver_name, const char* device_na
   rv = cubeb_get_min_latency(m_context, &params, &min_latency_frames);
   if (rv == CUBEB_ERROR_NOT_SUPPORTED)
   {
-    Log_DevFmt("Cubeb backend does not support latency queries, using latency of {} ms ({} frames).",
-               m_parameters.buffer_ms, latency_frames);
+    DEV_LOG("Cubeb backend does not support latency queries, using latency of {} ms ({} frames).",
+            m_parameters.buffer_ms, latency_frames);
   }
   else
   {
@@ -185,7 +185,7 @@ bool CubebAudioStream::Initialize(const char* driver_name, const char* device_na
     }
 
     const u32 minimum_latency_ms = GetMSForBufferSize(m_sample_rate, min_latency_frames);
-    Log_DevFmt("Minimum latency: {} ms ({} audio frames)", minimum_latency_ms, min_latency_frames);
+    DEV_LOG("Minimum latency: {} ms ({} audio frames)", minimum_latency_ms, min_latency_frames);
     if (m_parameters.output_latency_minimal)
     {
       // use minimum
@@ -193,8 +193,8 @@ bool CubebAudioStream::Initialize(const char* driver_name, const char* device_na
     }
     else if (minimum_latency_ms > m_parameters.output_latency_ms)
     {
-      Log_WarningFmt("Minimum latency is above requested latency: {} vs {}, adjusting to compensate.",
-                     min_latency_frames, latency_frames);
+      WARNING_LOG("Minimum latency is above requested latency: {} vs {}, adjusting to compensate.", min_latency_frames,
+                  latency_frames);
       latency_frames = min_latency_frames;
     }
   }
@@ -214,8 +214,7 @@ bool CubebAudioStream::Initialize(const char* driver_name, const char* device_na
         const cubeb_device_info& di = devices.device[i];
         if (di.device_id && selected_device_name == di.device_id)
         {
-          Log_InfoFmt("Using output device '{}' ({}).", di.device_id,
-                      di.friendly_name ? di.friendly_name : di.device_id);
+          INFO_LOG("Using output device '{}' ({}).", di.device_id, di.friendly_name ? di.friendly_name : di.device_id);
           selected_device = di.devid;
           break;
         }
@@ -229,7 +228,7 @@ bool CubebAudioStream::Initialize(const char* driver_name, const char* device_na
     }
     else
     {
-      Log_WarningFmt("cubeb_enumerate_devices() returned {}, using default device.", GetCubebErrorString(rv));
+      WARNING_LOG("cubeb_enumerate_devices() returned {}, using default device.", GetCubebErrorString(rv));
     }
   }
 
@@ -282,7 +281,7 @@ void CubebAudioStream::SetPaused(bool paused)
   const int rv = paused ? cubeb_stream_stop(stream) : cubeb_stream_start(stream);
   if (rv != CUBEB_OK)
   {
-    Log_ErrorFmt("Could not {} stream: {}", paused ? "pause" : "resume", rv);
+    ERROR_LOG("Could not {} stream: {}", paused ? "pause" : "resume", rv);
     return;
   }
 
@@ -320,7 +319,7 @@ std::vector<AudioStream::DeviceInfo> AudioStream::GetCubebOutputDevices(const ch
   int rv = cubeb_init(&context, "DuckStation", (driver && *driver) ? driver : nullptr);
   if (rv != CUBEB_OK)
   {
-    Log_ErrorFmt("cubeb_init() failed: {}", GetCubebErrorString(rv));
+    ERROR_LOG("cubeb_init() failed: {}", GetCubebErrorString(rv));
     return ret;
   }
 
@@ -330,7 +329,7 @@ std::vector<AudioStream::DeviceInfo> AudioStream::GetCubebOutputDevices(const ch
   rv = cubeb_enumerate_devices(context, CUBEB_DEVICE_TYPE_OUTPUT, &devices);
   if (rv != CUBEB_OK)
   {
-    Log_ErrorFmt("cubeb_enumerate_devices() failed: {}", GetCubebErrorString(rv));
+    ERROR_LOG("cubeb_enumerate_devices() failed: {}", GetCubebErrorString(rv));
     return ret;
   }
 

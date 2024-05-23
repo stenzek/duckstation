@@ -50,14 +50,14 @@ bool CDSubChannelReplacement::LoadSBI(const std::string& path)
   char header[4];
   if (std::fread(header, sizeof(header), 1, fp.get()) != 1)
   {
-    Log_ErrorFmt("Failed to read header for '{}'", path);
+    ERROR_LOG("Failed to read header for '{}'", path);
     return true;
   }
 
   static constexpr char expected_header[] = {'S', 'B', 'I', '\0'};
   if (std::memcmp(header, expected_header, sizeof(header)) != 0)
   {
-    Log_ErrorFmt("Invalid header in '{}'", path);
+    ERROR_LOG("Invalid header in '{}'", path);
     return true;
   }
 
@@ -69,14 +69,14 @@ bool CDSubChannelReplacement::LoadSBI(const std::string& path)
     if (!IsValidPackedBCD(entry.minute_bcd) || !IsValidPackedBCD(entry.second_bcd) ||
         !IsValidPackedBCD(entry.frame_bcd))
     {
-      Log_ErrorFmt("Invalid position [{:02x}:{:02x}:{:02x}] in '{}'", entry.minute_bcd, entry.second_bcd,
-                   entry.frame_bcd, path);
+      ERROR_LOG("Invalid position [{:02x}:{:02x}:{:02x}] in '{}'", entry.minute_bcd, entry.second_bcd, entry.frame_bcd,
+                path);
       return false;
     }
 
     if (entry.type != 1)
     {
-      Log_ErrorFmt("Invalid type 0x{:02X} in '{}'", entry.type, path);
+      ERROR_LOG("Invalid type 0x{:02X} in '{}'", entry.type, path);
       return false;
     }
 
@@ -93,7 +93,7 @@ bool CDSubChannelReplacement::LoadSBI(const std::string& path)
     m_replacement_subq.emplace(lba, subq);
   }
 
-  Log_InfoFmt("Loaded {} replacement sectors from SBI '{}'", m_replacement_subq.size(), path);
+  INFO_LOG("Loaded {} replacement sectors from SBI '{}'", m_replacement_subq.size(), path);
   return true;
 }
 
@@ -111,8 +111,8 @@ bool CDSubChannelReplacement::LoadLSD(const std::string& path)
     if (!IsValidPackedBCD(entry.minute_bcd) || !IsValidPackedBCD(entry.second_bcd) ||
         !IsValidPackedBCD(entry.frame_bcd))
     {
-      Log_ErrorFmt("Invalid position [{:02x}:{:02x}:{:02x}] in '{}'", entry.minute_bcd, entry.second_bcd,
-                   entry.frame_bcd, path);
+      ERROR_LOG("Invalid position [{:02x}:{:02x}:{:02x}] in '{}'", entry.minute_bcd, entry.second_bcd, entry.frame_bcd,
+                path);
       return false;
     }
 
@@ -121,12 +121,12 @@ bool CDSubChannelReplacement::LoadLSD(const std::string& path)
     CDImage::SubChannelQ subq;
     std::copy_n(entry.data, countof(entry.data), subq.data.data());
 
-    Log_DebugFmt("{:02x}:{:02x}:{:02x}: CRC {}", entry.minute_bcd, entry.second_bcd, entry.frame_bcd,
-                 subq.IsCRCValid() ? "VALID" : "INVALID");
+    DEBUG_LOG("{:02x}:{:02x}:{:02x}: CRC {}", entry.minute_bcd, entry.second_bcd, entry.frame_bcd,
+              subq.IsCRCValid() ? "VALID" : "INVALID");
     m_replacement_subq.emplace(lba, subq);
   }
 
-  Log_InfoFmt("Loaded {} replacement sectors from LSD '{}'", m_replacement_subq.size(), path);
+  INFO_LOG("Loaded {} replacement sectors from LSD '{}'", m_replacement_subq.size(), path);
   return true;
 }
 

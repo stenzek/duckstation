@@ -165,14 +165,14 @@ static bool GetUIntFromObject(const ryml::ConstNodeRef& object, std::string_view
   const c4::csubstr val = member.val();
   if (val.empty())
   {
-    Log_ErrorFmt("Unexpected empty value in {}", key);
+    ERROR_LOG("Unexpected empty value in {}", key);
     return false;
   }
 
   const std::optional<T> opt_value = StringUtil::FromChars<T>(to_stringview(val));
   if (!opt_value.has_value())
   {
-    Log_ErrorFmt("Unexpected non-uint value in {}", key);
+    ERROR_LOG("Unexpected non-uint value in {}", key);
     return false;
   }
 
@@ -195,14 +195,14 @@ static std::optional<T> GetOptionalTFromObject(const ryml::ConstNodeRef& object,
       if (!ret.has_value())
       {
         if constexpr (std::is_floating_point_v<T>)
-          Log_ErrorFmt("Unexpected non-float value in {}", key);
+          ERROR_LOG("Unexpected non-float value in {}", key);
         else if constexpr (std::is_integral_v<T>)
-          Log_ErrorFmt("Unexpected non-int value in {}", key);
+          ERROR_LOG("Unexpected non-int value in {}", key);
       }
     }
     else
     {
-      Log_ErrorFmt("Unexpected empty value in {}", key);
+      ERROR_LOG("Unexpected empty value in {}", key);
     }
   }
 
@@ -223,11 +223,11 @@ static std::optional<T> ParseOptionalTFromObject(const ryml::ConstNodeRef& objec
     {
       ret = from_string_function(TinyString(to_stringview(val)));
       if (!ret.has_value())
-        Log_ErrorFmt("Unknown value for {}: {}", key, to_stringview(val));
+        ERROR_LOG("Unknown value for {}: {}", key, to_stringview(val));
     }
     else
     {
-      Log_ErrorFmt("Unexpected empty value in {}", key);
+      ERROR_LOG("Unexpected empty value in {}", key);
     }
   }
 
@@ -252,7 +252,7 @@ void GameDatabase::EnsureLoaded()
     SaveToCache();
   }
 
-  Log_InfoFmt("Database load of {} entries took {:.0f}ms.", s_entries.size(), timer.GetTimeMilliseconds());
+  INFO_LOG("Database load of {} entries took {:.0f}ms.", s_entries.size(), timer.GetTimeMilliseconds());
 }
 
 void GameDatabase::Unload()
@@ -307,7 +307,7 @@ const GameDatabase::Entry* GameDatabase::GetEntryForDisc(CDImage* image)
   if (entry)
     return entry;
 
-  Log_WarningFmt("No entry found for disc '{}'", id);
+  WARNING_LOG("No entry found for disc '{}'", id);
   return nullptr;
 }
 
@@ -636,19 +636,19 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 
   if (HasTrait(Trait::ForceRecompilerMemoryExceptions))
   {
-    Log_WarningPrint("Memory exceptions for recompiler forced by compatibility settings.");
+    WARNING_LOG("Memory exceptions for recompiler forced by compatibility settings.");
     settings.cpu_recompiler_memory_exceptions = true;
   }
 
   if (HasTrait(Trait::ForceRecompilerICache))
   {
-    Log_WarningPrint("ICache for recompiler forced by compatibility settings.");
+    WARNING_LOG("ICache for recompiler forced by compatibility settings.");
     settings.cpu_recompiler_icache = true;
   }
 
   if (settings.cpu_fastmem_mode == CPUFastmemMode::MMap && HasTrait(Trait::ForceRecompilerLUTFastmem))
   {
-    Log_WarningPrint("LUT fastmem for recompiler forced by compatibility settings.");
+    WARNING_LOG("LUT fastmem for recompiler forced by compatibility settings.");
     settings.cpu_fastmem_mode = CPUFastmemMode::LUT;
   }
 
@@ -861,7 +861,7 @@ bool GameDatabase::LoadFromCache()
     ByteStream::OpenFile(GetCacheFile().c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED));
   if (!stream)
   {
-    Log_DevPrint("Cache does not exist, loading full database.");
+    DEV_LOG("Cache does not exist, loading full database.");
     return false;
   }
 
@@ -873,13 +873,13 @@ bool GameDatabase::LoadFromCache()
       !stream->ReadU32(&num_entries) || !stream->ReadU32(&num_codes) || signature != GAME_DATABASE_CACHE_SIGNATURE ||
       version != GAME_DATABASE_CACHE_VERSION)
   {
-    Log_DevPrint("Cache header is corrupted or version mismatch.");
+    DEV_LOG("Cache header is corrupted or version mismatch.");
     return false;
   }
 
   if (gamedb_ts != file_gamedb_ts)
   {
-    Log_DevPrint("Cache is out of date, recreating.");
+    DEV_LOG("Cache is out of date, recreating.");
     return false;
   }
 
@@ -917,7 +917,7 @@ bool GameDatabase::LoadFromCache()
         !ReadOptionalFromStream(stream.get(), &entry.gpu_line_detect_mode) ||
         !stream->ReadSizePrefixedString(&entry.disc_set_name) || !stream->ReadU32(&num_disc_set_serials))
     {
-      Log_DevPrint("Cache entry is corrupted.");
+      DEV_LOG("Cache entry is corrupted.");
       return false;
     }
 
@@ -928,7 +928,7 @@ bool GameDatabase::LoadFromCache()
       {
         if (!stream->ReadSizePrefixedString(&entry.disc_set_serials.emplace_back()))
         {
-          Log_DevPrint("Cache entry is corrupted.");
+          DEV_LOG("Cache entry is corrupted.");
           return false;
         }
       }
@@ -950,7 +950,7 @@ bool GameDatabase::LoadFromCache()
     if (!stream->ReadSizePrefixedString(&code) || !stream->ReadU32(&index) ||
         index >= static_cast<u32>(s_entries.size()))
     {
-      Log_DevPrint("Cache code entry is corrupted.");
+      DEV_LOG("Cache code entry is corrupted.");
       return false;
     }
 
@@ -1037,11 +1037,11 @@ void GameDatabase::SetRymlCallbacks()
 {
   ryml::Callbacks callbacks = ryml::get_callbacks();
   callbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location loc, void* userdata) {
-    Log_ErrorFmt("Parse error at {}:{} (bufpos={}): {}", loc.line, loc.col, loc.offset, std::string_view(msg, msg_len));
+    ERROR_LOG("Parse error at {}:{} (bufpos={}): {}", loc.line, loc.col, loc.offset, std::string_view(msg, msg_len));
   };
   ryml::set_callbacks(callbacks);
   c4::set_error_callback(
-    [](const char* msg, size_t msg_size) { Log_ErrorFmt("C4 error: {}", std::string_view(msg, msg_size)); });
+    [](const char* msg, size_t msg_size) { ERROR_LOG("C4 error: {}", std::string_view(msg, msg_size)); });
 }
 
 bool GameDatabase::LoadGameDBYaml()
@@ -1049,7 +1049,7 @@ bool GameDatabase::LoadGameDBYaml()
   const std::optional<std::string> gamedb_data = Host::ReadResourceFileToString(GAMEDB_YAML_FILENAME, false);
   if (!gamedb_data.has_value())
   {
-    Log_ErrorPrint("Failed to read game database");
+    ERROR_LOG("Failed to read game database");
     return false;
   }
 
@@ -1082,7 +1082,7 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
   entry->serial = to_stringview(value.key());
   if (entry->serial.empty())
   {
-    Log_ErrorPrint("Missing serial for entry.");
+    ERROR_LOG("Missing serial for entry.");
     return false;
   }
 
@@ -1131,14 +1131,14 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
       const std::string_view controller_str = to_stringview(controller.val());
       if (controller_str.empty())
       {
-        Log_WarningFmt("controller is not a string in {}", entry->serial);
+        WARNING_LOG("controller is not a string in {}", entry->serial);
         return false;
       }
 
       const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(controller_str);
       if (!cinfo)
       {
-        Log_WarningFmt("Invalid controller type {} in {}", controller_str, entry->serial);
+        WARNING_LOG("Invalid controller type {} in {}", controller_str, entry->serial);
         continue;
       }
 
@@ -1169,7 +1169,7 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
       }
       else
       {
-        Log_WarningFmt("Unknown compatibility rating {} in {}", rating_str, entry->serial);
+        WARNING_LOG("Unknown compatibility rating {} in {}", rating_str, entry->serial);
       }
     }
 
@@ -1184,14 +1184,14 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
       const std::string_view trait_str = to_stringview(trait.val());
       if (trait_str.empty())
       {
-        Log_WarningFmt("Empty trait in {}", entry->serial);
+        WARNING_LOG("Empty trait in {}", entry->serial);
         continue;
       }
 
       const auto iter = std::find(s_trait_names.begin(), s_trait_names.end(), trait_str);
       if (iter == s_trait_names.end())
       {
-        Log_WarningFmt("Unknown trait {} in {}", trait_str, entry->serial);
+        WARNING_LOG("Unknown trait {} in {}", trait_str, entry->serial);
         continue;
       }
 
@@ -1210,7 +1210,7 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
     }
     else
     {
-      Log_WarningFmt("Invalid libcrypt value in {}", entry->serial);
+      WARNING_LOG("Invalid libcrypt value in {}", entry->serial);
     }
   }
 
@@ -1244,14 +1244,14 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
         const std::string_view serial_str = to_stringview(serial.val());
         if (serial_str.empty())
         {
-          Log_WarningFmt("Empty disc set serial in {}", entry->serial);
+          WARNING_LOG("Empty disc set serial in {}", entry->serial);
           continue;
         }
 
         if (std::find(entry->disc_set_serials.begin(), entry->disc_set_serials.end(), serial_str) !=
             entry->disc_set_serials.end())
         {
-          Log_WarningFmt("Duplicate serial {} in disc set serials for {}", serial_str, entry->serial);
+          WARNING_LOG("Duplicate serial {} in disc set serials for {}", serial_str, entry->serial);
           continue;
         }
 
@@ -1272,7 +1272,7 @@ bool GameDatabase::ParseYamlCodes(u32 index, const ryml::ConstNodeRef& value, st
     auto iter = s_code_lookup.find(serial);
     if (iter != s_code_lookup.end())
     {
-      Log_WarningFmt("Duplicate code '{}'", serial);
+      WARNING_LOG("Duplicate code '{}'", serial);
       return false;
     }
 
@@ -1286,14 +1286,14 @@ bool GameDatabase::ParseYamlCodes(u32 index, const ryml::ConstNodeRef& value, st
     const std::string_view current_code_str = to_stringview(current_code.val());
     if (current_code_str.empty())
     {
-      Log_WarningFmt("code is not a string in {}", serial);
+      WARNING_LOG("code is not a string in {}", serial);
       continue;
     }
 
     auto iter = s_code_lookup.find(current_code_str);
     if (iter != s_code_lookup.end())
     {
-      Log_WarningFmt("Duplicate code '{}' in {}", current_code_str, serial);
+      WARNING_LOG("Duplicate code '{}' in {}", current_code_str, serial);
       continue;
     }
 
@@ -1320,7 +1320,7 @@ bool GameDatabase::LoadTrackHashes()
   std::optional<std::string> gamedb_data(Host::ReadResourceFileToString(DISCDB_YAML_FILENAME, false));
   if (!gamedb_data.has_value())
   {
-    Log_ErrorPrint("Failed to read game database");
+    ERROR_LOG("Failed to read game database");
     return false;
   }
 
@@ -1338,14 +1338,14 @@ bool GameDatabase::LoadTrackHashes()
     const std::string_view serial = to_stringview(current.key());
     if (serial.empty() || !current.has_children())
     {
-      Log_WarningPrint("entry is not an object");
+      WARNING_LOG("entry is not an object");
       continue;
     }
 
     const ryml::ConstNodeRef track_data = current.find_child(to_csubstr("trackData"));
     if (!track_data.valid() || !track_data.has_children())
     {
-      Log_WarningFmt("trackData is missing in {}", serial);
+      WARNING_LOG("trackData is missing in {}", serial);
       continue;
     }
 
@@ -1355,7 +1355,7 @@ bool GameDatabase::LoadTrackHashes()
       const ryml::ConstNodeRef tracks = track_revisions.find_child(to_csubstr("tracks"));
       if (!tracks.valid() || !tracks.has_children())
       {
-        Log_WarningFmt("tracks member is missing in {}", serial);
+        WARNING_LOG("tracks member is missing in {}", serial);
         continue;
       }
 
@@ -1368,7 +1368,7 @@ bool GameDatabase::LoadTrackHashes()
         std::string_view md5_str;
         if (!md5.valid() || (md5_str = to_stringview(md5.val())).empty())
         {
-          Log_WarningFmt("md5 is missing in track in {}", serial);
+          WARNING_LOG("md5 is missing in track in {}", serial);
           continue;
         }
 
@@ -1380,7 +1380,7 @@ bool GameDatabase::LoadTrackHashes()
         }
         else
         {
-          Log_WarningFmt("invalid md5 in {}", serial);
+          WARNING_LOG("invalid md5 in {}", serial);
         }
       }
       revision++;
@@ -1390,8 +1390,8 @@ bool GameDatabase::LoadTrackHashes()
   }
 
   ryml::reset_callbacks();
-  Log_InfoFmt("Loaded {} track hashes from {} serials in {:.0f}ms.", s_track_hashes_map.size(), serials,
-              load_timer.GetTimeMilliseconds());
+  INFO_LOG("Loaded {} track hashes from {} serials in {:.0f}ms.", s_track_hashes_map.size(), serials,
+           load_timer.GetTimeMilliseconds());
   return !s_track_hashes_map.empty();
 }
 

@@ -61,19 +61,19 @@ bool JitCodeBuffer::Allocate(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_siz
   for (u32 offset = 0; offset < steps; offset++)
   {
     const u8* addr = max_address - (offset * step);
-    Log_VerboseFmt("Trying {} (base {}, offset {}, displacement 0x{:X})", static_cast<const void*>(addr),
-                   static_cast<const void*>(base), offset, static_cast<ptrdiff_t>(addr - base));
+    VERBOSE_LOG("Trying {} (base {}, offset {}, displacement 0x{:X})", static_cast<const void*>(addr),
+                static_cast<const void*>(base), offset, static_cast<ptrdiff_t>(addr - base));
     if (TryAllocateAt(addr))
       break;
   }
   if (m_code_ptr)
   {
-    Log_InfoFmt("Allocated JIT buffer of size {} at {} (0x{:X} bytes away)", m_total_size,
-                static_cast<void*>(m_code_ptr), static_cast<ptrdiff_t>(m_code_ptr - base));
+    INFO_LOG("Allocated JIT buffer of size {} at {} (0x{:X} bytes away)", m_total_size, static_cast<void*>(m_code_ptr),
+             static_cast<ptrdiff_t>(m_code_ptr - base));
   }
   else
   {
-    Log_ErrorPrint("Failed to allocate JIT buffer in range, expect crashes.");
+    ERROR_LOG("Failed to allocate JIT buffer in range, expect crashes.");
     if (!TryAllocateAt(nullptr))
       return false;
   }
@@ -104,7 +104,7 @@ bool JitCodeBuffer::TryAllocateAt(const void* addr)
   if (!m_code_ptr)
   {
     if (!addr)
-      Log_ErrorFmt("VirtualAlloc(RWX, %u) for internal buffer failed: {}", m_total_size, GetLastError());
+      ERROR_LOG("VirtualAlloc(RWX, %u) for internal buffer failed: {}", m_total_size, GetLastError());
     return false;
   }
 
@@ -134,14 +134,14 @@ bool JitCodeBuffer::TryAllocateAt(const void* addr)
   if (!m_code_ptr)
   {
     if (!addr)
-      Log_ErrorFmt("mmap(RWX, %u) for internal buffer failed: {}", m_total_size, errno);
+      ERROR_LOG("mmap(RWX, %u) for internal buffer failed: {}", m_total_size, errno);
 
     return false;
   }
   else if (addr && m_code_ptr != addr)
   {
     if (munmap(m_code_ptr, m_total_size) != 0)
-      Log_ErrorFmt("Failed to munmap() incorrectly hinted allocation: {}", errno);
+      ERROR_LOG("Failed to munmap() incorrectly hinted allocation: {}", errno);
     m_code_ptr = nullptr;
     return false;
   }
@@ -163,7 +163,7 @@ bool JitCodeBuffer::Initialize(void* buffer, u32 size, u32 far_code_size /* = 0 
   DWORD old_protect = 0;
   if (!VirtualProtect(buffer, size, PAGE_EXECUTE_READWRITE, &old_protect))
   {
-    Log_ErrorFmt("VirtualProtect(RWX) for external buffer failed: {}", GetLastError());
+    ERROR_LOG("VirtualProtect(RWX) for external buffer failed: {}", GetLastError());
     return false;
   }
 
@@ -174,7 +174,7 @@ bool JitCodeBuffer::Initialize(void* buffer, u32 size, u32 far_code_size /* = 0 
     if (!VirtualProtect(buffer, guard_size, PAGE_NOACCESS, &old_guard_protect) ||
         !VirtualProtect(guard_at_end, guard_size, PAGE_NOACCESS, &old_guard_protect))
     {
-      Log_ErrorFmt("VirtualProtect(NOACCESS) for guard page failed: {}", GetLastError());
+      ERROR_LOG("VirtualProtect(NOACCESS) for guard page failed: {}", GetLastError());
       return false;
     }
   }
@@ -184,7 +184,7 @@ bool JitCodeBuffer::Initialize(void* buffer, u32 size, u32 far_code_size /* = 0 
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__) || defined(__FreeBSD__)
   if (mprotect(buffer, size, PROT_READ | PROT_WRITE | PROT_EXEC) != 0)
   {
-    Log_ErrorFmt("mprotect(RWX) for external buffer failed: {}", errno);
+    ERROR_LOG("mprotect(RWX) for external buffer failed: {}", errno);
     return false;
   }
 
@@ -193,7 +193,7 @@ bool JitCodeBuffer::Initialize(void* buffer, u32 size, u32 far_code_size /* = 0 
     u8* guard_at_end = (static_cast<u8*>(buffer) + size) - guard_size;
     if (mprotect(buffer, guard_size, PROT_NONE) != 0 || mprotect(guard_at_end, guard_size, PROT_NONE) != 0)
     {
-      Log_ErrorFmt("mprotect(NONE) for guard page failed: {}", errno);
+      ERROR_LOG("mprotect(NONE) for guard page failed: {}", errno);
       return false;
     }
   }
@@ -229,10 +229,10 @@ void JitCodeBuffer::Destroy()
   {
 #if defined(_WIN32)
     if (!VirtualFree(m_code_ptr, 0, MEM_RELEASE))
-      Log_ErrorFmt("Failed to free code pointer %p", static_cast<void*>(m_code_ptr));
+      ERROR_LOG("Failed to free code pointer %p", static_cast<void*>(m_code_ptr));
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__) || defined(__FreeBSD__)
     if (munmap(m_code_ptr, m_total_size) != 0)
-      Log_ErrorFmt("Failed to free code pointer %p", static_cast<void*>(m_code_ptr));
+      ERROR_LOG("Failed to free code pointer %p", static_cast<void*>(m_code_ptr));
 #endif
   }
   else if (m_code_ptr)
@@ -240,10 +240,10 @@ void JitCodeBuffer::Destroy()
 #if defined(_WIN32)
     DWORD old_protect = 0;
     if (!VirtualProtect(m_code_ptr, m_total_size, m_old_protection, &old_protect))
-      Log_ErrorFmt("Failed to restore protection on %p", static_cast<void*>(m_code_ptr));
+      ERROR_LOG("Failed to restore protection on %p", static_cast<void*>(m_code_ptr));
 #else
     if (mprotect(m_code_ptr, m_total_size, m_old_protection) != 0)
-      Log_ErrorFmt("Failed to restore protection on %p", static_cast<void*>(m_code_ptr));
+      ERROR_LOG("Failed to restore protection on %p", static_cast<void*>(m_code_ptr));
 #endif
   }
 

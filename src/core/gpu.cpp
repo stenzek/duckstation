@@ -486,7 +486,7 @@ u32 GPU::ReadRegister(u32 offset)
     }
 
     default:
-      Log_ErrorFmt("Unhandled register read: {:02X}", offset);
+      ERROR_LOG("Unhandled register read: {:02X}", offset);
       return UINT32_C(0xFFFFFFFF);
   }
 }
@@ -505,7 +505,7 @@ void GPU::WriteRegister(u32 offset, u32 value)
       return;
 
     default:
-      Log_ErrorFmt("Unhandled register write: {:02X} <- {:08X}", offset, value);
+      ERROR_LOG("Unhandled register write: {:02X} <- {:08X}", offset, value);
       return;
   }
 }
@@ -514,7 +514,7 @@ void GPU::DMARead(u32* words, u32 word_count)
 {
   if (m_GPUSTAT.dma_direction != DMADirection::GPUREADtoCPU)
   {
-    Log_ErrorPrint("Invalid DMA direction from GPU DMA read");
+    ERROR_LOG("Invalid DMA direction from GPU DMA read");
     std::fill_n(words, word_count, UINT32_C(0xFFFFFFFF));
     return;
   }
@@ -1017,7 +1017,7 @@ void GPU::CRTCTickEvent(TickCount ticks)
     {
       if (new_vblank)
       {
-        Log_DebugPrint("Now in v-blank");
+        DEBUG_LOG("Now in v-blank");
 
         // flush any pending draws and "scan out" the image
         // TODO: move present in here I guess
@@ -1038,8 +1038,8 @@ void GPU::CRTCTickEvent(TickCount ticks)
             static_cast<double>(s_active_gpu_cycles) /
             static_cast<double>(SystemTicksToGPUTicks(System::ScaleTicksToOverclock(System::MASTER_CLOCK)) *
                                 (ComputeVerticalFrequency() / 60.0f));
-          Log_DevFmt("PSX GPU Usage: {:.2f}% [{:.0f} cycles avg per frame]", busy_frac * 100,
-                     static_cast<double>(s_active_gpu_cycles) / static_cast<double>(s_active_gpu_cycles_frames));
+          DEV_LOG("PSX GPU Usage: {:.2f}% [{:.0f} cycles avg per frame]", busy_frac * 100,
+                  static_cast<double>(s_active_gpu_cycles) / static_cast<double>(s_active_gpu_cycles_frames));
           s_active_gpu_cycles = 0;
           s_active_gpu_cycles_frames = 0;
         }
@@ -1123,10 +1123,10 @@ void GPU::ConvertScreenCoordinatesToDisplayCoordinates(float window_x, float win
   *display_x = scaled_display_x * static_cast<float>(m_crtc_state.display_width);
   *display_y = scaled_display_y * static_cast<float>(m_crtc_state.display_height);
 
-  Log_DevFmt("win {:.0f},{:.0f} -> local {:.0f},{:.0f}, disp {:.2f},{:.2f} (size {},{} frac {},{})", window_x, window_y,
-             window_x - draw_rc.left, window_y - draw_rc.top, *display_x, *display_y, m_crtc_state.display_width,
-             m_crtc_state.display_height, *display_x / static_cast<float>(m_crtc_state.display_width),
-             *display_y / static_cast<float>(m_crtc_state.display_height));
+  DEV_LOG("win {:.0f},{:.0f} -> local {:.0f},{:.0f}, disp {:.2f},{:.2f} (size {},{} frac {},{})", window_x, window_y,
+          window_x - draw_rc.left, window_y - draw_rc.top, *display_x, *display_y, m_crtc_state.display_width,
+          m_crtc_state.display_height, *display_x / static_cast<float>(m_crtc_state.display_width),
+          *display_y / static_cast<float>(m_crtc_state.display_height));
 }
 
 bool GPU::ConvertDisplayCoordinatesToBeamTicksAndLines(float display_x, float display_y, float x_scale, u32* out_tick,
@@ -1207,7 +1207,7 @@ u32 GPU::ReadGPUREAD()
 
       if (++m_vram_transfer.row == m_vram_transfer.height)
       {
-        Log_DebugPrint("End of VRAM->CPU transfer");
+        DEBUG_LOG("End of VRAM->CPU transfer");
         m_vram_transfer = {};
         m_blitter_state = BlitterState::Idle;
 
@@ -1230,7 +1230,7 @@ void GPU::WriteGP1(u32 value)
   {
     case 0x00: // Reset GPU
     {
-      Log_DebugPrint("GP1 reset GPU");
+      DEBUG_LOG("GP1 reset GPU");
       m_command_tick_event->InvokeEarly();
       SynchronizeCRTC();
       SoftReset();
@@ -1239,7 +1239,7 @@ void GPU::WriteGP1(u32 value)
 
     case 0x01: // Clear FIFO
     {
-      Log_DebugPrint("GP1 clear FIFO");
+      DEBUG_LOG("GP1 clear FIFO");
       m_command_tick_event->InvokeEarly();
       SynchronizeCRTC();
 
@@ -1262,7 +1262,7 @@ void GPU::WriteGP1(u32 value)
 
     case 0x02: // Acknowledge Interrupt
     {
-      Log_DebugPrint("Acknowledge interrupt");
+      DEBUG_LOG("Acknowledge interrupt");
       m_GPUSTAT.interrupt_request = false;
     }
     break;
@@ -1270,7 +1270,7 @@ void GPU::WriteGP1(u32 value)
     case 0x03: // Display on/off
     {
       const bool disable = ConvertToBoolUnchecked(value & 0x01);
-      Log_DebugFmt("Display {}", disable ? "disabled" : "enabled");
+      DEBUG_LOG("Display {}", disable ? "disabled" : "enabled");
       SynchronizeCRTC();
 
       if (!m_GPUSTAT.display_disable && disable && m_GPUSTAT.vertical_interlace && !m_force_progressive_scan)
@@ -1282,7 +1282,7 @@ void GPU::WriteGP1(u32 value)
 
     case 0x04: // DMA Direction
     {
-      Log_DebugFmt("DMA direction <- 0x{:02X}", static_cast<u32>(param));
+      DEBUG_LOG("DMA direction <- 0x{:02X}", static_cast<u32>(param));
       if (m_GPUSTAT.dma_direction != static_cast<DMADirection>(param))
       {
         m_GPUSTAT.dma_direction = static_cast<DMADirection>(param);
@@ -1294,7 +1294,7 @@ void GPU::WriteGP1(u32 value)
     case 0x05: // Set display start address
     {
       const u32 new_value = param & CRTCState::Regs::DISPLAY_ADDRESS_START_MASK;
-      Log_DebugFmt("Display address start <- 0x{:08X}", new_value);
+      DEBUG_LOG("Display address start <- 0x{:08X}", new_value);
 
       System::IncrementInternalFrameNumber();
       if (m_crtc_state.regs.display_address_start != new_value)
@@ -1309,7 +1309,7 @@ void GPU::WriteGP1(u32 value)
     case 0x06: // Set horizontal display range
     {
       const u32 new_value = param & CRTCState::Regs::HORIZONTAL_DISPLAY_RANGE_MASK;
-      Log_DebugFmt("Horizontal display range <- 0x{:08X}", new_value);
+      DEBUG_LOG("Horizontal display range <- 0x{:08X}", new_value);
 
       if (m_crtc_state.regs.horizontal_display_range != new_value)
       {
@@ -1323,7 +1323,7 @@ void GPU::WriteGP1(u32 value)
     case 0x07: // Set vertical display range
     {
       const u32 new_value = param & CRTCState::Regs::VERTICAL_DISPLAY_RANGE_MASK;
-      Log_DebugFmt("Vertical display range <- 0x{:08X}", new_value);
+      DEBUG_LOG("Vertical display range <- 0x{:08X}", new_value);
 
       if (m_crtc_state.regs.vertical_display_range != new_value)
       {
@@ -1358,7 +1358,7 @@ void GPU::WriteGP1(u32 value)
       new_GPUSTAT.vertical_interlace = dm.vertical_interlace;
       new_GPUSTAT.horizontal_resolution_2 = dm.horizontal_resolution_2;
       new_GPUSTAT.reverse_flag = dm.reverse_flag;
-      Log_DebugFmt("Set display mode <- 0x{:08X}", dm.bits);
+      DEBUG_LOG("Set display mode <- 0x{:08X}", dm.bits);
 
       if (!m_GPUSTAT.vertical_interlace && dm.vertical_interlace && !m_force_progressive_scan)
       {
@@ -1381,7 +1381,7 @@ void GPU::WriteGP1(u32 value)
     case 0x09: // Allow texture disable
     {
       m_set_texture_disable_mask = ConvertToBoolUnchecked(param & 0x01);
-      Log_DebugFmt("Set texture disable mask <- {}", m_set_texture_disable_mask ? "allowed" : "ignored");
+      DEBUG_LOG("Set texture disable mask <- {}", m_set_texture_disable_mask ? "allowed" : "ignored");
     }
     break;
 
@@ -1406,7 +1406,7 @@ void GPU::WriteGP1(u32 value)
     }
     break;
 
-      [[unlikely]] default : Log_ErrorFmt("Unimplemented GP1 command 0x{:02X}", command);
+      [[unlikely]] default : ERROR_LOG("Unimplemented GP1 command 0x{:02X}", command);
       break;
   }
 }
@@ -1425,14 +1425,14 @@ void GPU::HandleGetGPUInfoCommand(u32 value)
 
     case 0x02: // Get Texture Window
     {
-      Log_DebugPrint("Get texture window");
+      DEBUG_LOG("Get texture window");
       m_GPUREAD_latch = m_draw_mode.texture_window_value;
     }
     break;
 
     case 0x03: // Get Draw Area Top Left
     {
-      Log_DebugPrint("Get drawing area top left");
+      DEBUG_LOG("Get drawing area top left");
       m_GPUREAD_latch =
         ((m_drawing_area.left & UINT32_C(0b1111111111)) | ((m_drawing_area.top & UINT32_C(0b1111111111)) << 10));
     }
@@ -1440,7 +1440,7 @@ void GPU::HandleGetGPUInfoCommand(u32 value)
 
     case 0x04: // Get Draw Area Bottom Right
     {
-      Log_DebugPrint("Get drawing area bottom right");
+      DEBUG_LOG("Get drawing area bottom right");
       m_GPUREAD_latch =
         ((m_drawing_area.right & UINT32_C(0b1111111111)) | ((m_drawing_area.bottom & UINT32_C(0b1111111111)) << 10));
     }
@@ -1448,13 +1448,13 @@ void GPU::HandleGetGPUInfoCommand(u32 value)
 
     case 0x05: // Get Drawing Offset
     {
-      Log_DebugPrint("Get drawing offset");
+      DEBUG_LOG("Get drawing offset");
       m_GPUREAD_latch =
         ((m_drawing_offset.x & INT32_C(0b11111111111)) | ((m_drawing_offset.y & INT32_C(0b11111111111)) << 11));
     }
     break;
 
-      [[unlikely]] default : Log_WarningFmt("Unhandled GetGPUInfo(0x{:02X})", subcommand);
+      [[unlikely]] default : WARNING_LOG("Unhandled GetGPUInfo(0x{:02X})", subcommand);
       break;
   }
 }
@@ -1467,7 +1467,7 @@ void GPU::UpdateCLUTIfNeeded(GPUTextureMode texmode, GPUTexturePaletteReg clut)
   const bool needs_8bit = (texmode == GPUTextureMode::Palette8Bit);
   if ((clut.bits != m_current_clut_reg_bits) || BoolToUInt8(needs_8bit) > BoolToUInt8(m_current_clut_is_8bit))
   {
-    Log_DebugFmt("Reloading CLUT from {},{}, {}", clut.GetXBase(), clut.GetYBase(), needs_8bit ? "8-bit" : "4-bit");
+    DEBUG_LOG("Reloading CLUT from {},{}, {}", clut.GetXBase(), clut.GetYBase(), needs_8bit ? "8-bit" : "4-bit");
     UpdateCLUT(clut, needs_8bit);
     m_current_clut_reg_bits = clut.bits;
     m_current_clut_is_8bit = needs_8bit;
@@ -1697,7 +1697,7 @@ void GPU::SetTextureWindow(u32 value)
   const u8 mask_y = Truncate8((value >> 5) & UINT32_C(0x1F));
   const u8 offset_x = Truncate8((value >> 10) & UINT32_C(0x1F));
   const u8 offset_y = Truncate8((value >> 15) & UINT32_C(0x1F));
-  Log_DebugFmt("Set texture window {:02X} {:02X} {:02X} {:02X}", mask_x, mask_y, offset_x, offset_y);
+  DEBUG_LOG("Set texture window {:02X} {:02X} {:02X} {:02X}", mask_x, mask_y, offset_x, offset_y);
 
   m_draw_mode.texture_window.and_x = ~(mask_x * 8);
   m_draw_mode.texture_window.and_y = ~(mask_y * 8);
@@ -2462,7 +2462,7 @@ bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string filename, 
         }
         else
         {
-          Log_ErrorFmt("Unknown extension in filename '{}' or save error: '{}'", filename, extension);
+          ERROR_LOG("Unknown extension in filename '{}' or save error: '{}'", filename, extension);
           result = false;
         }
       }
@@ -2473,7 +2473,7 @@ bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string filename, 
     }
     else
     {
-      Log_ErrorFmt("Unable to determine file extension for '{}'", filename);
+      ERROR_LOG("Unable to determine file extension for '{}'", filename);
       result = false;
     }
 
@@ -2556,8 +2556,8 @@ bool GPU::WriteDisplayTextureToFile(std::string filename, bool compress_on_threa
   {
     if (!(dltex = g_gpu_device->CreateDownloadTexture(read_width, read_height, m_display_texture->GetFormat())))
     {
-      Log_ErrorFmt("Failed to create {}x{} {} download texture", read_width, read_height,
-                   GPUTexture::GetFormatName(m_display_texture->GetFormat()));
+      ERROR_LOG("Failed to create {}x{} {} download texture", read_width, read_height,
+                GPUTexture::GetFormatName(m_display_texture->GetFormat()));
       return false;
     }
   }
@@ -2575,7 +2575,7 @@ bool GPU::WriteDisplayTextureToFile(std::string filename, bool compress_on_threa
   auto fp = FileSystem::OpenManagedCFile(filename.c_str(), "wb", &error);
   if (!fp)
   {
-    Log_ErrorFmt("Can't open file '{}': {}", Path::GetFileName(filename), error.GetDescription());
+    ERROR_LOG("Can't open file '{}': {}", Path::GetFileName(filename), error.GetDescription());
     return false;
   }
 
@@ -2616,7 +2616,7 @@ bool GPU::RenderScreenshotToBuffer(u32 width, u32 height, const Common::Rectangl
   {
     if (!(dltex = g_gpu_device->CreateDownloadTexture(width, height, hdformat)))
     {
-      Log_ErrorFmt("Failed to create {}x{} download texture", width, height);
+      ERROR_LOG("Failed to create {}x{} download texture", width, height);
       return false;
     }
   }
@@ -2702,7 +2702,7 @@ bool GPU::RenderScreenshotToFile(std::string filename, DisplayScreenshotMode mod
   if (!RenderScreenshotToBuffer(width, height, draw_rect, !internal_resolution, &pixels, &pixels_stride,
                                 &pixels_format))
   {
-    Log_ErrorFmt("Failed to render {}x{} screenshot", width, height);
+    ERROR_LOG("Failed to render {}x{} screenshot", width, height);
     return false;
   }
 
@@ -2710,7 +2710,7 @@ bool GPU::RenderScreenshotToFile(std::string filename, DisplayScreenshotMode mod
   auto fp = FileSystem::OpenManagedCFile(filename.c_str(), "wb", &error);
   if (!fp)
   {
-    Log_ErrorFmt("Can't open file '{}': {}", Path::GetFileName(filename), error.GetDescription());
+    ERROR_LOG("Can't open file '{}': {}", Path::GetFileName(filename), error.GetDescription());
     return false;
   }
 
@@ -2734,7 +2734,7 @@ bool GPU::DumpVRAMToFile(const char* filename)
   }
   else
   {
-    Log_ErrorFmt("Unknown extension: '{}'", filename);
+    ERROR_LOG("Unknown extension: '{}'", filename);
     return false;
   }
 }

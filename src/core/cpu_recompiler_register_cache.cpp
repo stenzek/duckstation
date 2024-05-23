@@ -231,21 +231,21 @@ bool RegisterCache::AllocateHostReg(HostReg reg, HostRegState state /*= HostRegS
 void RegisterCache::DiscardHostReg(HostReg reg)
 {
   DebugAssert(IsHostRegInUse(reg));
-  Log_DebugFmt("Discarding host register {}", m_code_generator.GetHostRegName(reg));
+  DEBUG_LOG("Discarding host register {}", m_code_generator.GetHostRegName(reg));
   m_state.host_reg_state[reg] |= HostRegState::Discarded;
 }
 
 void RegisterCache::UndiscardHostReg(HostReg reg)
 {
   DebugAssert(IsHostRegInUse(reg));
-  Log_DebugFmt("Undiscarding host register {}", m_code_generator.GetHostRegName(reg));
+  DEBUG_LOG("Undiscarding host register {}", m_code_generator.GetHostRegName(reg));
   m_state.host_reg_state[reg] &= ~HostRegState::Discarded;
 }
 
 void RegisterCache::FreeHostReg(HostReg reg)
 {
   DebugAssert(IsHostRegInUse(reg));
-  Log_DebugFmt("Freeing host register {}", m_code_generator.GetHostRegName(reg));
+  DEBUG_LOG("Freeing host register {}", m_code_generator.GetHostRegName(reg));
   m_state.host_reg_state[reg] &= ~HostRegState::InUse;
 }
 
@@ -279,7 +279,7 @@ Value RegisterCache::AllocateScratch(RegSize size, HostReg reg /* = HostReg_Inva
       Panic("Failed to allocate specific host register");
   }
 
-  Log_DebugFmt("Allocating host register {} as scratch", m_code_generator.GetHostRegName(reg));
+  DEBUG_LOG("Allocating host register {} as scratch", m_code_generator.GetHostRegName(reg));
   return Value::FromScratch(this, reg, size);
 }
 
@@ -542,8 +542,8 @@ Value RegisterCache::ReadGuestRegister(Reg guest_reg, bool cache /* = true */, b
         host_reg = forced_host_reg;
       }
 
-      Log_DebugFmt("Allocated host register {} for constant guest register {} (0x{:X})",
-                   m_code_generator.GetHostRegName(host_reg), GetRegName(guest_reg), cache_value.constant_value);
+      DEBUG_LOG("Allocated host register {} for constant guest register {} (0x{:X})",
+                m_code_generator.GetHostRegName(host_reg), GetRegName(guest_reg), cache_value.constant_value);
 
       m_code_generator.EmitCopyValue(host_reg, cache_value);
       cache_value.AddHostReg(this, host_reg);
@@ -576,8 +576,8 @@ Value RegisterCache::ReadGuestRegister(Reg guest_reg, bool cache /* = true */, b
 
   m_code_generator.EmitLoadGuestRegister(host_reg, guest_reg);
 
-  Log_DebugFmt("Loading guest register {} to host register {}{}", GetRegName(guest_reg),
-               m_code_generator.GetHostRegName(host_reg, RegSize_32), cache ? " (cached)" : "");
+  DEBUG_LOG("Loading guest register {} to host register {}{}", GetRegName(guest_reg),
+            m_code_generator.GetHostRegName(host_reg, RegSize_32), cache ? " (cached)" : "");
 
   if (cache)
   {
@@ -604,23 +604,22 @@ Value RegisterCache::ReadGuestRegisterToScratch(Reg guest_reg)
 
     if (cache_value.IsConstant())
     {
-      Log_DebugFmt("Copying guest register {} from constant 0x{:08X} to scratch host register {}",
-                   GetRegName(guest_reg), static_cast<u32>(cache_value.constant_value),
-                   m_code_generator.GetHostRegName(host_reg, RegSize_32));
+      DEBUG_LOG("Copying guest register {} from constant 0x{:08X} to scratch host register {}", GetRegName(guest_reg),
+                static_cast<u32>(cache_value.constant_value), m_code_generator.GetHostRegName(host_reg, RegSize_32));
     }
     else
     {
-      Log_DebugFmt("Copying guest register {} from {} to scratch host register {}", GetRegName(guest_reg),
-                   m_code_generator.GetHostRegName(cache_value.host_reg, RegSize_32),
-                   m_code_generator.GetHostRegName(host_reg, RegSize_32));
+      DEBUG_LOG("Copying guest register {} from {} to scratch host register {}", GetRegName(guest_reg),
+                m_code_generator.GetHostRegName(cache_value.host_reg, RegSize_32),
+                m_code_generator.GetHostRegName(host_reg, RegSize_32));
     }
   }
   else
   {
     m_code_generator.EmitLoadGuestRegister(host_reg, guest_reg);
 
-    Log_DebugFmt("Loading guest register {} to scratch host register {}", GetRegName(guest_reg),
-                 m_code_generator.GetHostRegName(host_reg, RegSize_32));
+    DEBUG_LOG("Loading guest register {} to scratch host register {}", GetRegName(guest_reg),
+              m_code_generator.GetHostRegName(host_reg, RegSize_32));
   }
 
   return Value::FromScratch(this, host_reg, RegSize_32);
@@ -636,7 +635,7 @@ Value RegisterCache::WriteGuestRegister(Reg guest_reg, Value&& value)
   // cancel any load delay delay
   if (m_state.load_delay_register == guest_reg)
   {
-    Log_DebugFmt("Cancelling load delay of register {} because of non-delayed write", GetRegName(guest_reg));
+    DEBUG_LOG("Cancelling load delay of register {} because of non-delayed write", GetRegName(guest_reg));
     m_state.load_delay_register = Reg::count;
     m_state.load_delay_value.ReleaseAndClear();
   }
@@ -645,8 +644,8 @@ Value RegisterCache::WriteGuestRegister(Reg guest_reg, Value&& value)
   if (cache_value.IsInHostRegister() && value.IsInHostRegister() && cache_value.host_reg == value.host_reg)
   {
     // updating the register value.
-    Log_DebugFmt("Updating guest register {} (in host register {})", GetRegName(guest_reg),
-                 m_code_generator.GetHostRegName(value.host_reg, RegSize_32));
+    DEBUG_LOG("Updating guest register {} (in host register {})", GetRegName(guest_reg),
+              m_code_generator.GetHostRegName(value.host_reg, RegSize_32));
     cache_value = std::move(value);
     cache_value.SetDirty();
     return cache_value;
@@ -668,8 +667,8 @@ Value RegisterCache::WriteGuestRegister(Reg guest_reg, Value&& value)
   // If it's a temporary, we can bind that to the guest register.
   if (value.IsScratch())
   {
-    Log_DebugFmt("Binding scratch register {} to guest register {}",
-                 m_code_generator.GetHostRegName(value.host_reg, RegSize_32), GetRegName(guest_reg));
+    DEBUG_LOG("Binding scratch register {} to guest register {}",
+              m_code_generator.GetHostRegName(value.host_reg, RegSize_32), GetRegName(guest_reg));
 
     cache_value = std::move(value);
     cache_value.flags &= ~ValueFlags::Scratch;
@@ -683,9 +682,9 @@ Value RegisterCache::WriteGuestRegister(Reg guest_reg, Value&& value)
   cache_value.SetHostReg(this, host_reg, RegSize_32);
   cache_value.SetDirty();
 
-  Log_DebugFmt("Copying non-scratch register {} to {} to guest register {}",
-               m_code_generator.GetHostRegName(value.host_reg, RegSize_32),
-               m_code_generator.GetHostRegName(host_reg, RegSize_32), GetRegName(guest_reg));
+  DEBUG_LOG("Copying non-scratch register {} to {} to guest register {}",
+            m_code_generator.GetHostRegName(value.host_reg, RegSize_32),
+            m_code_generator.GetHostRegName(host_reg, RegSize_32), GetRegName(guest_reg));
 
   return Value::FromHostReg(this, cache_value.host_reg, RegSize_32);
 }
@@ -700,7 +699,7 @@ void RegisterCache::WriteGuestRegisterDelayed(Reg guest_reg, Value&& value)
   // two load delays in a row? cancel the first one.
   if (guest_reg == m_state.load_delay_register)
   {
-    Log_DebugFmt("Cancelling load delay of register {} due to new load delay", GetRegName(guest_reg));
+    DEBUG_LOG("Cancelling load delay of register {} due to new load delay", GetRegName(guest_reg));
     m_state.load_delay_register = Reg::count;
     m_state.load_delay_value.ReleaseAndClear();
   }
@@ -716,8 +715,8 @@ void RegisterCache::WriteGuestRegisterDelayed(Reg guest_reg, Value&& value)
   // If it's a temporary, we can bind that to the guest register.
   if (value.IsScratch())
   {
-    Log_DebugFmt("Binding scratch register {} to load-delayed guest register {}",
-                 m_code_generator.GetHostRegName(value.host_reg, RegSize_32), GetRegName(guest_reg));
+    DEBUG_LOG("Binding scratch register {} to load-delayed guest register {}",
+              m_code_generator.GetHostRegName(value.host_reg, RegSize_32), GetRegName(guest_reg));
 
     cache_value = std::move(value);
     return;
@@ -727,9 +726,9 @@ void RegisterCache::WriteGuestRegisterDelayed(Reg guest_reg, Value&& value)
   cache_value = AllocateScratch(RegSize_32);
   m_code_generator.EmitCopyValue(cache_value.host_reg, value);
 
-  Log_DebugFmt("Copying non-scratch register {} to {} to load-delayed guest register {}",
-               m_code_generator.GetHostRegName(value.host_reg, RegSize_32),
-               m_code_generator.GetHostRegName(cache_value.host_reg, RegSize_32), GetRegName(guest_reg));
+  DEBUG_LOG("Copying non-scratch register {} to {} to load-delayed guest register {}",
+            m_code_generator.GetHostRegName(value.host_reg, RegSize_32),
+            m_code_generator.GetHostRegName(cache_value.host_reg, RegSize_32), GetRegName(guest_reg));
 }
 
 void RegisterCache::UpdateLoadDelay()
@@ -758,7 +757,7 @@ void RegisterCache::CancelLoadDelay()
   if (m_state.load_delay_register == Reg::count)
     return;
 
-  Log_DebugFmt("Cancelling load delay of register {}", GetRegName(m_state.load_delay_register));
+  DEBUG_LOG("Cancelling load delay of register {}", GetRegName(m_state.load_delay_register));
   m_state.load_delay_register = Reg::count;
   m_state.load_delay_value.ReleaseAndClear();
 }
@@ -769,7 +768,7 @@ void RegisterCache::WriteLoadDelayToCPU(bool clear)
   Assert(m_state.next_load_delay_register == Reg::count);
   if (m_state.load_delay_register != Reg::count)
   {
-    Log_DebugFmt("Flushing pending load delay of {}", GetRegName(m_state.load_delay_register));
+    DEBUG_LOG("Flushing pending load delay of {}", GetRegName(m_state.load_delay_register));
     m_code_generator.EmitStoreInterpreterLoadDelay(m_state.load_delay_register, m_state.load_delay_value);
     if (clear)
     {
@@ -804,13 +803,12 @@ void RegisterCache::FlushGuestRegister(Reg guest_reg, bool invalidate, bool clea
   {
     if (cache_value.IsInHostRegister())
     {
-      Log_DebugFmt("Flushing guest register {} from host register {}", GetRegName(guest_reg),
-                   m_code_generator.GetHostRegName(cache_value.host_reg, RegSize_32));
+      DEBUG_LOG("Flushing guest register {} from host register {}", GetRegName(guest_reg),
+                m_code_generator.GetHostRegName(cache_value.host_reg, RegSize_32));
     }
     else if (cache_value.IsConstant())
     {
-      Log_DebugFmt("Flushing guest register {} from constant 0x{:X}", GetRegName(guest_reg),
-                   cache_value.constant_value);
+      DEBUG_LOG("Flushing guest register {} from constant 0x{:X}", GetRegName(guest_reg), cache_value.constant_value);
     }
     m_code_generator.EmitStoreGuestRegister(guest_reg, cache_value);
     if (clear_dirty)
@@ -833,7 +831,7 @@ void RegisterCache::InvalidateGuestRegister(Reg guest_reg)
     ClearRegisterFromOrder(guest_reg);
   }
 
-  Log_DebugFmt("Invalidating guest register {}", GetRegName(guest_reg));
+  DEBUG_LOG("Invalidating guest register {}", GetRegName(guest_reg));
   cache_value.Clear();
 }
 
@@ -875,7 +873,7 @@ bool RegisterCache::EvictOneGuestRegister()
 
   // evict the register used the longest time ago
   Reg evict_reg = m_state.guest_reg_order[m_state.guest_reg_order_count - 1];
-  Log_DebugFmt("Evicting guest register {}", GetRegName(evict_reg));
+  DEBUG_LOG("Evicting guest register {}", GetRegName(evict_reg));
   FlushGuestRegister(evict_reg, true, true);
 
   return HasFreeHostRegister();

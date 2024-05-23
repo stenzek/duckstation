@@ -279,8 +279,7 @@ void CPU::CodeCache::DisassembleAndLogHostCode(const void* start, u32 size)
   protected:
     void ProcessOutput(const a64::Instruction* instr) override
     {
-      Log_DebugFmt("0x{:016X}  {:08X}\t\t{}", reinterpret_cast<uint64_t>(instr), instr->GetInstructionBits(),
-                   GetOutput());
+      DEBUG_LOG("0x{:016X}  {:08X}\t\t{}", reinterpret_cast<uint64_t>(instr), instr->GetInstructionBits(), GetOutput());
     }
   };
 
@@ -290,7 +289,7 @@ void CPU::CodeCache::DisassembleAndLogHostCode(const void* start, u32 size)
   decoder.Decode(static_cast<const a64::Instruction*>(start),
                  reinterpret_cast<const a64::Instruction*>(static_cast<const u8*>(start) + size));
 #else
-  Log_ErrorPrint("Not compiled with ENABLE_HOST_DISASSEMBLY.");
+  ERROR_LOG("Not compiled with ENABLE_HOST_DISASSEMBLY.");
 #endif
 }
 
@@ -2059,7 +2058,7 @@ void CodeGenerator::EmitUpdateFastmemBase()
 
 void CodeGenerator::BackpatchLoadStore(void* host_pc, const CodeCache::LoadstoreBackpatchInfo& lbi)
 {
-  Log_DevFmt("Backpatching {} (guest PC 0x{:08X}) to slowmem at {}", host_pc, lbi.guest_pc, lbi.thunk_address);
+  DEV_LOG("Backpatching {} (guest PC 0x{:08X}) to slowmem at {}", host_pc, lbi.guest_pc, lbi.thunk_address);
 
   // check jump distance
   const s64 jump_distance =

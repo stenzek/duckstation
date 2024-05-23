@@ -89,9 +89,9 @@ D3D12Device::ComPtr<ID3DBlob> D3D12Device::SerializeRootSignature(const D3D12_RO
     D3D12SerializeRootSignature(desc, D3D_ROOT_SIGNATURE_VERSION_1, blob.GetAddressOf(), error_blob.GetAddressOf());
   if (FAILED(hr)) [[unlikely]]
   {
-    Log_ErrorFmt("D3D12SerializeRootSignature() failed: {:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("D3D12SerializeRootSignature() failed: {:08X}", static_cast<unsigned>(hr));
     if (error_blob)
-      Log_ErrorPrint(static_cast<const char*>(error_blob->GetBufferPointer()));
+      ERROR_LOG(static_cast<const char*>(error_blob->GetBufferPointer()));
 
     return {};
   }
@@ -110,7 +110,7 @@ D3D12Device::ComPtr<ID3D12RootSignature> D3D12Device::CreateRootSignature(const 
     m_device->CreateRootSignature(0, blob->GetBufferPointer(), blob->GetBufferSize(), IID_PPV_ARGS(rs.GetAddressOf()));
   if (FAILED(hr)) [[unlikely]]
   {
-    Log_ErrorFmt("CreateRootSignature() failed: {:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("CreateRootSignature() failed: {:08X}", static_cast<unsigned>(hr));
     return {};
   }
 
@@ -142,7 +142,7 @@ bool D3D12Device::CreateDevice(std::string_view adapter, bool threaded_presentat
     }
     else
     {
-      Log_ErrorPrint("Debug layer requested but not available.");
+      ERROR_LOG("Debug layer requested but not available.");
       m_debug_device = false;
     }
   }
@@ -160,7 +160,7 @@ bool D3D12Device::CreateDevice(std::string_view adapter, bool threaded_presentat
   {
     const LUID luid(m_device->GetAdapterLuid());
     if (FAILED(m_dxgi_factory->EnumAdapterByLuid(luid, IID_PPV_ARGS(m_adapter.GetAddressOf()))))
-      Log_ErrorPrint("Failed to get lookup adapter by device LUID");
+      ERROR_LOG("Failed to get lookup adapter by device LUID");
   }
 
   if (m_debug_device)
@@ -303,22 +303,22 @@ bool D3D12Device::ReadPipelineCache(const std::string& filename)
   // Try without the cache data.
   if (data.has_value())
   {
-    Log_WarningFmt("CreatePipelineLibrary() failed, trying without cache data. Error: {}",
-                   Error::CreateHResult(hr).GetDescription());
+    WARNING_LOG("CreatePipelineLibrary() failed, trying without cache data. Error: {}",
+                Error::CreateHResult(hr).GetDescription());
 
     hr = m_device->CreatePipelineLibrary(nullptr, 0, IID_PPV_ARGS(m_pipeline_library.ReleaseAndGetAddressOf()));
     if (SUCCEEDED(hr))
     {
       // Delete cache file, it's no longer relevant.
-      Log_InfoFmt("Deleting pipeline cache file {}", filename);
+      INFO_LOG("Deleting pipeline cache file {}", filename);
       FileSystem::DeleteFile(filename.c_str());
     }
   }
 
   if (FAILED(hr))
   {
-    Log_WarningFmt("CreatePipelineLibrary() failed, pipeline caching will not be available. Error: {}",
-                   Error::CreateHResult(hr).GetDescription());
+    WARNING_LOG("CreatePipelineLibrary() failed, pipeline caching will not be available. Error: {}",
+                Error::CreateHResult(hr).GetDescription());
     return false;
   }
 
@@ -333,7 +333,7 @@ bool D3D12Device::GetPipelineCacheData(DynamicHeapArray<u8>* data)
   const size_t size = m_pipeline_library->GetSerializedSize();
   if (size == 0)
   {
-    Log_WarningPrint("Empty serialized pipeline state returned.");
+    WARNING_LOG("Empty serialized pipeline state returned.");
     return false;
   }
 
@@ -341,7 +341,7 @@ bool D3D12Device::GetPipelineCacheData(DynamicHeapArray<u8>* data)
   const HRESULT hr = m_pipeline_library->Serialize(data->data(), data->size());
   if (FAILED(hr))
   {
-    Log_ErrorFmt("Serialize() failed with HRESULT {:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("Serialize() failed with HRESULT {:08X}", static_cast<unsigned>(hr));
     data->deallocate();
     return false;
   }
@@ -362,7 +362,7 @@ bool D3D12Device::CreateCommandLists()
                                             IID_PPV_ARGS(res.command_allocators[j].GetAddressOf()));
       if (FAILED(hr))
       {
-        Log_ErrorFmt("CreateCommandAllocator() failed: {:08X}", static_cast<unsigned>(hr));
+        ERROR_LOG("CreateCommandAllocator() failed: {:08X}", static_cast<unsigned>(hr));
         return false;
       }
 
@@ -370,7 +370,7 @@ bool D3D12Device::CreateCommandLists()
                                        IID_PPV_ARGS(res.command_lists[j].GetAddressOf()));
       if (FAILED(hr))
       {
-        Log_ErrorFmt("CreateCommandList() failed: {:08X}", static_cast<unsigned>(hr));
+        ERROR_LOG("CreateCommandList() failed: {:08X}", static_cast<unsigned>(hr));
         return false;
       }
 
@@ -378,7 +378,7 @@ bool D3D12Device::CreateCommandLists()
       hr = res.command_lists[j]->Close();
       if (FAILED(hr))
       {
-        Log_ErrorFmt("Close() failed: {:08X}", static_cast<unsigned>(hr));
+        ERROR_LOG("Close() failed: {:08X}", static_cast<unsigned>(hr));
         return false;
       }
     }
@@ -386,13 +386,13 @@ bool D3D12Device::CreateCommandLists()
     if (!res.descriptor_allocator.Create(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
                                          MAX_DESCRIPTORS_PER_FRAME))
     {
-      Log_ErrorPrint("Failed to create per frame descriptor allocator");
+      ERROR_LOG("Failed to create per frame descriptor allocator");
       return false;
     }
 
     if (!res.sampler_allocator.Create(m_device.Get(), MAX_SAMPLERS_PER_FRAME))
     {
-      Log_ErrorPrint("Failed to create per frame sampler allocator");
+      ERROR_LOG("Failed to create per frame sampler allocator");
       return false;
     }
   }
@@ -439,7 +439,7 @@ void D3D12Device::MoveToNextCommandList()
     }
     else
     {
-      Log_WarningFmt("Map() for timestamp query failed: {:08X}", static_cast<unsigned>(hr));
+      WARNING_LOG("Map() for timestamp query failed: {:08X}", static_cast<unsigned>(hr));
     }
   }
 
@@ -490,7 +490,7 @@ bool D3D12Device::CreateDescriptorHeaps()
 
   if (!m_descriptor_heap_manager.Allocate(&m_null_srv_descriptor))
   {
-    Log_ErrorPrint("Failed to allocate null descriptor");
+    ERROR_LOG("Failed to allocate null descriptor");
     return false;
   }
 
@@ -551,7 +551,7 @@ void D3D12Device::SubmitCommandList(bool wait_for_completion)
     hr = res.command_lists[0]->Close();
     if (FAILED(hr)) [[unlikely]]
     {
-      Log_ErrorFmt("Closing init command list failed with HRESULT {:08X}", static_cast<unsigned>(hr));
+      ERROR_LOG("Closing init command list failed with HRESULT {:08X}", static_cast<unsigned>(hr));
       Panic("TODO cannot continue");
     }
   }
@@ -560,7 +560,7 @@ void D3D12Device::SubmitCommandList(bool wait_for_completion)
   hr = res.command_lists[1]->Close();
   if (FAILED(hr)) [[unlikely]]
   {
-    Log_ErrorFmt("Closing main command list failed with HRESULT {:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("Closing main command list failed with HRESULT {:08X}", static_cast<unsigned>(hr));
     Panic("TODO cannot continue");
   }
 
@@ -592,7 +592,7 @@ void D3D12Device::SubmitCommandList(bool wait_for_completion, const char* reason
   const std::string reason_str(StringUtil::StdStringFromFormatV(reason, ap));
   va_end(ap);
 
-  Log_WarningFmt("Executing command buffer due to '{}'", reason_str);
+  WARNING_LOG("Executing command buffer due to '{}'", reason_str);
   SubmitCommandList(wait_for_completion);
 }
 
@@ -647,7 +647,7 @@ bool D3D12Device::CreateTimestampQuery()
   HRESULT hr = m_device->CreateQueryHeap(&desc, IID_PPV_ARGS(m_timestamp_query_heap.GetAddressOf()));
   if (FAILED(hr))
   {
-    Log_ErrorFmt("CreateQueryHeap() for timestamp failed with {:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("CreateQueryHeap() for timestamp failed with {:08X}", static_cast<unsigned>(hr));
     m_features.gpu_timing = false;
     return false;
   }
@@ -669,7 +669,7 @@ bool D3D12Device::CreateTimestampQuery()
                                    IID_PPV_ARGS(m_timestamp_query_buffer.GetAddressOf()));
   if (FAILED(hr))
   {
-    Log_ErrorFmt("CreateResource() for timestamp failed with {:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("CreateResource() for timestamp failed with {:08X}", static_cast<unsigned>(hr));
     m_features.gpu_timing = false;
     return false;
   }
@@ -678,7 +678,7 @@ bool D3D12Device::CreateTimestampQuery()
   hr = m_command_queue->GetTimestampFrequency(&frequency);
   if (FAILED(hr))
   {
-    Log_ErrorFmt("GetTimestampFrequency() failed: {:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("GetTimestampFrequency() failed: {:08X}", static_cast<unsigned>(hr));
     m_features.gpu_timing = false;
     return false;
   }
@@ -860,12 +860,12 @@ bool D3D12Device::CreateSwapChain()
     fs_desc.Scaling = fullscreen_mode.Scaling;
     fs_desc.Windowed = FALSE;
 
-    Log_VerboseFmt("Creating a {}x{} exclusive fullscreen swap chain", fs_sd_desc.Width, fs_sd_desc.Height);
+    VERBOSE_LOG("Creating a {}x{} exclusive fullscreen swap chain", fs_sd_desc.Width, fs_sd_desc.Height);
     hr = m_dxgi_factory->CreateSwapChainForHwnd(m_command_queue.Get(), window_hwnd, &fs_sd_desc, &fs_desc,
                                                 fullscreen_output.Get(), m_swap_chain.ReleaseAndGetAddressOf());
     if (FAILED(hr))
     {
-      Log_WarningPrint("Failed to create fullscreen swap chain, trying windowed.");
+      WARNING_LOG("Failed to create fullscreen swap chain, trying windowed.");
       m_is_exclusive_fullscreen = false;
       m_using_allow_tearing = m_allow_tearing_supported;
     }
@@ -873,14 +873,14 @@ bool D3D12Device::CreateSwapChain()
 
   if (!m_is_exclusive_fullscreen)
   {
-    Log_VerboseFmt("Creating a {}x{} windowed swap chain", swap_chain_desc.Width, swap_chain_desc.Height);
+    VERBOSE_LOG("Creating a {}x{} windowed swap chain", swap_chain_desc.Width, swap_chain_desc.Height);
     hr = m_dxgi_factory->CreateSwapChainForHwnd(m_command_queue.Get(), window_hwnd, &swap_chain_desc, nullptr, nullptr,
                                                 m_swap_chain.ReleaseAndGetAddressOf());
   }
 
   hr = m_dxgi_factory->MakeWindowAssociation(window_hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
   if (FAILED(hr))
-    Log_WarningPrint("MakeWindowAssociation() to disable ALT+ENTER failed");
+    WARNING_LOG("MakeWindowAssociation() to disable ALT+ENTER failed");
 
   if (!CreateSwapChainRTV())
   {
@@ -908,7 +908,7 @@ bool D3D12Device::CreateSwapChainRTV()
     hr = m_swap_chain->GetBuffer(i, IID_PPV_ARGS(backbuffer.GetAddressOf()));
     if (FAILED(hr))
     {
-      Log_ErrorFmt("GetBuffer for RTV failed: 0x{:08X}", static_cast<unsigned>(hr));
+      ERROR_LOG("GetBuffer for RTV failed: 0x{:08X}", static_cast<unsigned>(hr));
       DestroySwapChainRTVs();
       return false;
     }
@@ -918,7 +918,7 @@ bool D3D12Device::CreateSwapChainRTV()
     D3D12DescriptorHandle rtv;
     if (!m_rtv_heap_manager.Allocate(&rtv))
     {
-      Log_ErrorPrint("Failed to allocate RTV handle");
+      ERROR_LOG("Failed to allocate RTV handle");
       DestroySwapChainRTVs();
       return false;
     }
@@ -930,7 +930,7 @@ bool D3D12Device::CreateSwapChainRTV()
   m_window_info.surface_width = swap_chain_desc.BufferDesc.Width;
   m_window_info.surface_height = swap_chain_desc.BufferDesc.Height;
   m_window_info.surface_format = s_swap_chain_format;
-  Log_VerboseFmt("Swap chain buffer size: {}x{}", m_window_info.surface_width, m_window_info.surface_height);
+  VERBOSE_LOG("Swap chain buffer size: {}x{}", m_window_info.surface_width, m_window_info.surface_height);
 
   if (m_window_info.type == WindowInfo::Type::Win32)
   {
@@ -1014,7 +1014,7 @@ bool D3D12Device::UpdateWindow()
 
   if (!CreateSwapChain())
   {
-    Log_ErrorPrint("Failed to create swap chain on updated window");
+    ERROR_LOG("Failed to create swap chain on updated window");
     return false;
   }
 
@@ -1040,7 +1040,7 @@ void D3D12Device::ResizeWindow(s32 new_window_width, s32 new_window_height, floa
   HRESULT hr = m_swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN,
                                            m_using_allow_tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
   if (FAILED(hr))
-    Log_ErrorFmt("ResizeBuffers() failed: 0x{:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("ResizeBuffers() failed: 0x{:08X}", static_cast<unsigned>(hr));
 
   if (!CreateSwapChainRTV())
     Panic("Failed to recreate swap chain RTV after resize");
@@ -1096,7 +1096,7 @@ std::optional<float> D3D12Device::GetHostRefreshRate()
     if (SUCCEEDED(m_swap_chain->GetDesc(&desc)) && desc.BufferDesc.RefreshRate.Numerator > 0 &&
         desc.BufferDesc.RefreshRate.Denominator > 0)
     {
-      Log_DevFmt("using fs rr: {} {}", desc.BufferDesc.RefreshRate.Numerator, desc.BufferDesc.RefreshRate.Denominator);
+      DEV_LOG("using fs rr: {} {}", desc.BufferDesc.RefreshRate.Numerator, desc.BufferDesc.RefreshRate.Denominator);
       return static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
              static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
     }
@@ -1426,25 +1426,25 @@ bool D3D12Device::CreateBuffers()
 {
   if (!m_vertex_buffer.Create(VERTEX_BUFFER_SIZE))
   {
-    Log_ErrorPrint("Failed to allocate vertex buffer");
+    ERROR_LOG("Failed to allocate vertex buffer");
     return false;
   }
 
   if (!m_index_buffer.Create(INDEX_BUFFER_SIZE))
   {
-    Log_ErrorPrint("Failed to allocate index buffer");
+    ERROR_LOG("Failed to allocate index buffer");
     return false;
   }
 
   if (!m_uniform_buffer.Create(VERTEX_UNIFORM_BUFFER_SIZE))
   {
-    Log_ErrorPrint("Failed to allocate uniform buffer");
+    ERROR_LOG("Failed to allocate uniform buffer");
     return false;
   }
 
   if (!m_texture_upload_buffer.Create(TEXTURE_BUFFER_SIZE))
   {
-    Log_ErrorPrint("Failed to allocate texture upload buffer");
+    ERROR_LOG("Failed to allocate texture upload buffer");
     return false;
   }
 

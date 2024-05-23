@@ -259,18 +259,18 @@ void SDLInputSource::SetHints()
   if (const std::string upath = Path::Combine(EmuFolders::DataRoot, CONTROLLER_DB_FILENAME);
       FileSystem::FileExists(upath.c_str()))
   {
-    Log_InfoFmt("Using Controller DB from user directory: '{}'", upath);
+    INFO_LOG("Using Controller DB from user directory: '{}'", upath);
     SDL_SetHint(SDL_HINT_GAMECONTROLLERCONFIG_FILE, upath.c_str());
   }
   else if (const std::string rpath = EmuFolders::GetOverridableResourcePath(CONTROLLER_DB_FILENAME);
            FileSystem::FileExists(rpath.c_str()))
   {
-    Log_InfoPrint("Using Controller DB from resources.");
+    INFO_LOG("Using Controller DB from resources.");
     SDL_SetHint(SDL_HINT_GAMECONTROLLERCONFIG_FILE, rpath.c_str());
   }
   else
   {
-    Log_ErrorFmt("Controller DB not found, it should be named '{}'", CONTROLLER_DB_FILENAME);
+    ERROR_LOG("Controller DB not found, it should be named '{}'", CONTROLLER_DB_FILENAME);
   }
 
   SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, m_controller_enhanced_mode ? "1" : "0");
@@ -279,8 +279,8 @@ void SDLInputSource::SetHints()
   SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS3, "1");
 
 #ifdef __APPLE__
-  Log_InfoFmt("IOKit is {}, MFI is {}.", m_enable_iokit_driver ? "enabled" : "disabled",
-              m_enable_mfi_driver ? "enabled" : "disabled");
+  INFO_LOG("IOKit is {}, MFI is {}.", m_enable_iokit_driver ? "enabled" : "disabled",
+           m_enable_mfi_driver ? "enabled" : "disabled");
   SDL_SetHint(SDL_HINT_JOYSTICK_IOKIT, m_enable_iokit_driver ? "1" : "0");
   SDL_SetHint(SDL_HINT_JOYSTICK_MFI, m_enable_mfi_driver ? "1" : "0");
 #endif
@@ -293,7 +293,7 @@ bool SDLInputSource::InitializeSubsystem()
 {
   if (SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) < 0)
   {
-    Log_ErrorPrint("SDL_InitSubSystem(SDL_INIT_JOYSTICK |SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) failed");
+    ERROR_LOG("SDL_InitSubSystem(SDL_INIT_JOYSTICK |SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) failed");
     return false;
   }
 
@@ -306,7 +306,7 @@ bool SDLInputSource::InitializeSubsystem()
 
   // we should open the controllers as the connected events come in, so no need to do any more here
   m_sdl_subsystem_initialized = true;
-  Log_InfoFmt("{} controller mappings are loaded.", SDL_GameControllerNumMappings());
+  INFO_LOG("{} controller mappings are loaded.", SDL_GameControllerNumMappings());
   return true;
 }
 
@@ -580,14 +580,14 @@ bool SDLInputSource::ProcessSDLEvent(const SDL_Event* event)
   {
     case SDL_CONTROLLERDEVICEADDED:
     {
-      Log_InfoFmt("Controller {} inserted", event->cdevice.which);
+      INFO_LOG("Controller {} inserted", event->cdevice.which);
       OpenDevice(event->cdevice.which, true);
       return true;
     }
 
     case SDL_CONTROLLERDEVICEREMOVED:
     {
-      Log_InfoFmt("Controller {} removed", event->cdevice.which);
+      INFO_LOG("Controller {} removed", event->cdevice.which);
       CloseDevice(event->cdevice.which);
       return true;
     }
@@ -598,7 +598,7 @@ bool SDLInputSource::ProcessSDLEvent(const SDL_Event* event)
       if (SDL_IsGameController(event->jdevice.which))
         return false;
 
-      Log_InfoFmt("Joystick {} inserted", event->jdevice.which);
+      INFO_LOG("Joystick {} inserted", event->jdevice.which);
       OpenDevice(event->cdevice.which, false);
       return true;
     }
@@ -610,7 +610,7 @@ bool SDLInputSource::ProcessSDLEvent(const SDL_Event* event)
           it != m_controllers.end() && it->game_controller)
         return false;
 
-      Log_InfoFmt("Joystick {} removed", event->jdevice.which);
+      INFO_LOG("Joystick {} removed", event->jdevice.which);
       CloseDevice(event->cdevice.which);
       return true;
     }
@@ -700,7 +700,7 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 
   if (!gcontroller && !joystick)
   {
-    Log_ErrorFmt("Failed to open controller {}", index);
+    ERROR_LOG("Failed to open controller {}", index);
     if (gcontroller)
       SDL_GameControllerClose(gcontroller);
 
@@ -712,9 +712,8 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
   if (player_id < 0 || GetControllerDataForPlayerId(player_id) != m_controllers.end())
   {
     const int free_player_id = GetFreePlayerId();
-    Log_WarningFmt(
-      "Controller {} (joystick {}) returned player ID {}, which is invalid or in use. Using ID {} instead.", index,
-      joystick_id, player_id, free_player_id);
+    WARNING_LOG("Controller {} (joystick {}) returned player ID {}, which is invalid or in use. Using ID {} instead.",
+                index, joystick_id, player_id, free_player_id);
     player_id = free_player_id;
   }
 
@@ -722,8 +721,8 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
   if (!name)
     name = "Unknown Device";
 
-  Log_VerboseFmt("Opened {} {} (instance id {}, player id {}): {}", is_gamecontroller ? "game controller" : "joystick",
-                 index, joystick_id, player_id, name);
+  VERBOSE_LOG("Opened {} {} (instance id {}, player id {}): {}", is_gamecontroller ? "game controller" : "joystick",
+              index, joystick_id, player_id, name);
 
   ControllerData cd = {};
   cd.player_id = player_id;
@@ -749,7 +748,7 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
     for (size_t i = 0; i < std::size(s_sdl_button_names); i++)
       mark_bind(SDL_GameControllerGetBindForButton(gcontroller, static_cast<SDL_GameControllerButton>(i)));
 
-    Log_VerboseFmt("Controller {} has {} axes and {} buttons", player_id, num_axes, num_buttons);
+    VERBOSE_LOG("Controller {} has {} axes and {} buttons", player_id, num_axes, num_buttons);
   }
   else
   {
@@ -758,14 +757,14 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
     if (num_hats > 0)
       cd.last_hat_state.resize(static_cast<size_t>(num_hats), u8(0));
 
-    Log_VerboseFmt("Joystick {} has {} axes, {} buttons and {} hats", player_id, SDL_JoystickNumAxes(joystick),
-                   SDL_JoystickNumButtons(joystick), num_hats);
+    VERBOSE_LOG("Joystick {} has {} axes, {} buttons and {} hats", player_id, SDL_JoystickNumAxes(joystick),
+                SDL_JoystickNumButtons(joystick), num_hats);
   }
 
   cd.use_game_controller_rumble = (gcontroller && SDL_GameControllerRumble(gcontroller, 0, 0, 0) == 0);
   if (cd.use_game_controller_rumble)
   {
-    Log_VerboseFmt("Rumble is supported on '{}' via gamecontroller", name);
+    VERBOSE_LOG("Rumble is supported on '{}' via gamecontroller", name);
   }
   else
   {
@@ -784,25 +783,25 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
       }
       else
       {
-        Log_ErrorFmt("Failed to create haptic left/right effect: {}", SDL_GetError());
+        ERROR_LOG("Failed to create haptic left/right effect: {}", SDL_GetError());
         if (SDL_HapticRumbleSupported(haptic) && SDL_HapticRumbleInit(haptic) != 0)
         {
           cd.haptic = haptic;
         }
         else
         {
-          Log_ErrorFmt("No haptic rumble supported: {}", SDL_GetError());
+          ERROR_LOG("No haptic rumble supported: {}", SDL_GetError());
           SDL_HapticClose(haptic);
         }
       }
     }
 
     if (cd.haptic)
-      Log_VerboseFmt("Rumble is supported on '{}' via haptic", name);
+      VERBOSE_LOG("Rumble is supported on '{}' via haptic", name);
   }
 
   if (!cd.haptic && !cd.use_game_controller_rumble)
-    Log_VerboseFmt("Rumble is not supported on '{}'", name);
+    VERBOSE_LOG("Rumble is not supported on '{}'", name);
 
   if (player_id >= 0 && static_cast<u32>(player_id) < MAX_LED_COLORS && gcontroller &&
       SDL_GameControllerHasLED(gcontroller))

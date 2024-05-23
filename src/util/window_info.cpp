@@ -37,7 +37,7 @@ static std::optional<float> GetRefreshRateFromDisplayConfig(HWND hwnd)
   const HMONITOR monitor = MonitorFromWindow(hwnd, 0);
   if (!monitor) [[unlikely]]
   {
-    Log_ErrorFmt("{}() failed: {}", "MonitorFromWindow", Error::CreateWin32(GetLastError()).GetDescription());
+    ERROR_LOG("{}() failed: {}", "MonitorFromWindow", Error::CreateWin32(GetLastError()).GetDescription());
     return std::nullopt;
   }
 
@@ -45,7 +45,7 @@ static std::optional<float> GetRefreshRateFromDisplayConfig(HWND hwnd)
   mi.cbSize = sizeof(mi);
   if (!GetMonitorInfoW(monitor, &mi))
   {
-    Log_ErrorFmt("{}() failed: {}", "GetMonitorInfoW", Error::CreateWin32(GetLastError()).GetDescription());
+    ERROR_LOG("{}() failed: {}", "GetMonitorInfoW", Error::CreateWin32(GetLastError()).GetDescription());
     return std::nullopt;
   }
 
@@ -59,7 +59,7 @@ static std::optional<float> GetRefreshRateFromDisplayConfig(HWND hwnd)
     LONG res = GetDisplayConfigBufferSizes(QDC_ONLY_ACTIVE_PATHS, &path_size, &mode_size);
     if (res != ERROR_SUCCESS)
     {
-      Log_ErrorFmt("{}() failed: {}", "GetDisplayConfigBufferSizes", Error::CreateWin32(res).GetDescription());
+      ERROR_LOG("{}() failed: {}", "GetDisplayConfigBufferSizes", Error::CreateWin32(res).GetDescription());
       return std::nullopt;
     }
 
@@ -71,7 +71,7 @@ static std::optional<float> GetRefreshRateFromDisplayConfig(HWND hwnd)
       break;
     if (res != ERROR_INSUFFICIENT_BUFFER)
     {
-      Log_ErrorFmt("{}() failed: {}", "QueryDisplayConfig", Error::CreateWin32(res).GetDescription());
+      ERROR_LOG("{}() failed: {}", "QueryDisplayConfig", Error::CreateWin32(res).GetDescription());
       return std::nullopt;
     }
   }
@@ -85,7 +85,7 @@ static std::optional<float> GetRefreshRateFromDisplayConfig(HWND hwnd)
     LONG res = DisplayConfigGetDeviceInfo(&sdn.header);
     if (res != ERROR_SUCCESS)
     {
-      Log_ErrorFmt("{}() failed: {}", "DisplayConfigGetDeviceInfo", Error::CreateWin32(res).GetDescription());
+      ERROR_LOG("{}() failed: {}", "DisplayConfigGetDeviceInfo", Error::CreateWin32(res).GetDescription());
       continue;
     }
 
@@ -198,8 +198,8 @@ private:
   {
     char error_string[256] = {};
     XGetErrorText(display, ee->error_code, error_string, sizeof(error_string));
-    Log_WarningFmt("X11 Error: {} (Error {} Minor {} Request {})", error_string, ee->error_code, ee->minor_code,
-                   ee->request_code);
+    WARNING_LOG("X11 Error: {} (Error {} Minor {} Request {})", error_string, ee->error_code, ee->minor_code,
+                ee->request_code);
 
     s_current_error_inhibiter->m_had_error = true;
     return 0;
@@ -222,7 +222,7 @@ static std::optional<float> GetRefreshRateFromXRandR(const WindowInfo& wi)
   XRRScreenResources* res = XRRGetScreenResources(display, window);
   if (!res)
   {
-    Log_ErrorPrint("XRRGetScreenResources() failed");
+    ERROR_LOG("XRRGetScreenResources() failed");
     return std::nullopt;
   }
 
@@ -232,29 +232,29 @@ static std::optional<float> GetRefreshRateFromXRandR(const WindowInfo& wi)
   XRRMonitorInfo* mi = XRRGetMonitors(display, window, True, &num_monitors);
   if (num_monitors < 0)
   {
-    Log_ErrorPrint("XRRGetMonitors() failed");
+    ERROR_LOG("XRRGetMonitors() failed");
     return std::nullopt;
   }
   else if (num_monitors > 1)
   {
-    Log_WarningFmt("XRRGetMonitors() returned {} monitors, using first", num_monitors);
+    WARNING_LOG("XRRGetMonitors() returned {} monitors, using first", num_monitors);
   }
 
   ScopedGuard mi_guard([mi]() { XRRFreeMonitors(mi); });
   if (mi->noutput <= 0)
   {
-    Log_ErrorPrint("Monitor has no outputs");
+    ERROR_LOG("Monitor has no outputs");
     return std::nullopt;
   }
   else if (mi->noutput > 1)
   {
-    Log_WarningFmt("Monitor has {} outputs, using first", mi->noutput);
+    WARNING_LOG("Monitor has {} outputs, using first", mi->noutput);
   }
 
   XRROutputInfo* oi = XRRGetOutputInfo(display, res, mi->outputs[0]);
   if (!oi)
   {
-    Log_ErrorPrint("XRRGetOutputInfo() failed");
+    ERROR_LOG("XRRGetOutputInfo() failed");
     return std::nullopt;
   }
 
@@ -263,7 +263,7 @@ static std::optional<float> GetRefreshRateFromXRandR(const WindowInfo& wi)
   XRRCrtcInfo* ci = XRRGetCrtcInfo(display, res, oi->crtc);
   if (!ci)
   {
-    Log_ErrorPrint("XRRGetCrtcInfo() failed");
+    ERROR_LOG("XRRGetCrtcInfo() failed");
     return std::nullopt;
   }
 
@@ -280,13 +280,13 @@ static std::optional<float> GetRefreshRateFromXRandR(const WindowInfo& wi)
   }
   if (!mode)
   {
-    Log_ErrorFmt("Failed to look up mode {} (of {})", static_cast<int>(ci->mode), res->nmode);
+    ERROR_LOG("Failed to look up mode {} (of {})", static_cast<int>(ci->mode), res->nmode);
     return std::nullopt;
   }
 
   if (mode->dotClock == 0 || mode->hTotal == 0 || mode->vTotal == 0)
   {
-    Log_ErrorFmt("Modeline is invalid: {}/{}/{}", mode->dotClock, mode->hTotal, mode->vTotal);
+    ERROR_LOG("Modeline is invalid: {}/{}/{}", mode->dotClock, mode->hTotal, mode->vTotal);
     return std::nullopt;
   }
 

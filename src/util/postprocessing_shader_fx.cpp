@@ -286,7 +286,7 @@ bool PostProcessing::ReShadeFXShader::LoadFromFile(std::string name, std::string
   std::optional<std::string> data = FileSystem::ReadFileToString(filename.c_str(), error);
   if (!data.has_value())
   {
-    Log_ErrorFmt("Failed to read '{}'.", filename);
+    ERROR_LOG("Failed to read '{}'.", filename);
     return false;
   }
 
@@ -526,8 +526,8 @@ GetVectorAnnotationValue(const reshadefx::uniform_info& uniform, const std::stri
       }
       else
       {
-        Log_ErrorFmt("Unhandled string value for '{}' (annotation type: {}, uniform type {})", uniform.name,
-                     an.type.description(), uniform.type.description());
+        ERROR_LOG("Unhandled string value for '{}' (annotation type: {}, uniform type {})", uniform.name,
+                  an.type.description(), uniform.type.description());
       }
 
       break;
@@ -576,7 +576,7 @@ bool PostProcessing::ReShadeFXShader::CreateOptions(const reshadefx::module& mod
       return false;
     if (so != SourceOptionType::None)
     {
-      Log_DevFmt("Add source based option {} at offset {} ({})", static_cast<u32>(so), ui.offset, ui.name);
+      DEV_LOG("Add source based option {} at offset {} ({})", static_cast<u32>(so), ui.offset, ui.name);
 
       SourceOption sopt;
       sopt.source = so;
@@ -709,8 +709,8 @@ bool PostProcessing::ReShadeFXShader::CreateOptions(const reshadefx::module& mod
 
     if (!ui_type.empty() && opt.vector_size > 1)
     {
-      Log_WarningFmt("Uniform '{}' has UI type of '{}' but is vector not scalar ({}), ignoring", opt.name, ui_type,
-                     opt.vector_size);
+      WARNING_LOG("Uniform '{}' has UI type of '{}' but is vector not scalar ({}), ignoring", opt.name, ui_type,
+                  opt.vector_size);
     }
     else if (!ui_type.empty())
     {
@@ -746,7 +746,7 @@ bool PostProcessing::ReShadeFXShader::CreateOptions(const reshadefx::module& mod
             [](const ShaderOption& lhs, const ShaderOption& rhs) { return lhs.category < rhs.category; });
 
   m_uniforms_size = mod.total_uniform_size;
-  Log_DevFmt("{}: {} options", m_filename, m_options.size());
+  DEV_LOG("{}: {} options", m_filename, m_options.size());
   return true;
 }
 
@@ -818,7 +818,7 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
     }
     else if (source == "mousebutton")
     {
-      Log_WarningFmt("Ignoring mousebutton source in uniform '{}', not supported.", ui.name);
+      WARNING_LOG("Ignoring mousebutton source in uniform '{}', not supported.", ui.name);
       *si = SourceOptionType::Zero;
       return true;
     }
@@ -910,14 +910,14 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
 
     if (!ti.semantic.empty())
     {
-      Log_DevFmt("Ignoring semantic {} texture {}", ti.semantic, ti.unique_name);
+      DEV_LOG("Ignoring semantic {} texture {}", ti.semantic, ti.unique_name);
       continue;
     }
     if (ti.render_target)
     {
       tex.rt_scale = 1.0f;
       tex.format = MapTextureFormat(ti.format);
-      Log_DevFmt("Creating render target '{}' {}", ti.unique_name, GPUTexture::GetFormatName(tex.format));
+      DEV_LOG("Creating render target '{}' {}", ti.unique_name, GPUTexture::GetFormatName(tex.format));
     }
     else
     {
@@ -953,7 +953,7 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
         return false;
       }
 
-      Log_DevFmt("Loaded {}x{} texture ({})", image.GetWidth(), image.GetHeight(), source);
+      DEV_LOG("Loaded {}x{} texture ({})", image.GetWidth(), image.GetHeight(), source);
     }
 
     tex.reshade_name = ti.unique_name;
@@ -1028,7 +1028,7 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
             }
             else if (ti.semantic == "DEPTH")
             {
-              Log_WarningFmt("Shader '{}' uses input depth as '{}' which is not supported.", m_name, si.texture_name);
+              WARNING_LOG("Shader '{}' uses input depth as '{}' which is not supported.", m_name, si.texture_name);
               sampler.texture_id = INPUT_DEPTH_TEXTURE;
               break;
             }
@@ -1059,7 +1059,7 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
           return false;
         }
 
-        Log_DevFmt("Pass {} Texture {} => {}", pi.name, si.texture_name, sampler.texture_id);
+        DEV_LOG("Pass {} Texture {} => {}", pi.name, si.texture_name, sampler.texture_id);
 
         sampler.sampler = GetSampler(MapSampler(si));
         if (!sampler.sampler)
@@ -1138,7 +1138,7 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
   std::string fxcode;
   if (!PreprocessorReadFileCallback(m_filename, fxcode))
   {
-    Log_ErrorFmt("Failed to re-read shader for pipeline: '{}'", m_filename);
+    ERROR_LOG("Failed to re-read shader for pipeline: '{}'", m_filename);
     return false;
   }
 
@@ -1150,7 +1150,7 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
   reshadefx::module mod;
   if (!CreateModule(width, height, &mod, std::move(fxcode), &error))
   {
-    Log_ErrorFmt("Failed to create module for '{}': {}", m_name, error.GetDescription());
+    ERROR_LOG("Failed to create module for '{}': {}", m_name, error.GetDescription());
     return false;
   }
 
@@ -1158,7 +1158,7 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
 
   if (!CreatePasses(format, mod, &error))
   {
-    Log_ErrorFmt("Failed to create passes for '{}': {}", m_name, error.GetDescription());
+    ERROR_LOG("Failed to create passes for '{}': {}", m_name, error.GetDescription());
     return false;
   }
 
@@ -1213,7 +1213,7 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
     std::unique_ptr<GPUShader> sshader =
       g_gpu_device->CreateShader(stage, real_code, needs_main_defn ? "main" : name.c_str());
     if (!sshader)
-      Log_ErrorFmt("Failed to compile function '{}'", name);
+      ERROR_LOG("Failed to compile function '{}'", name);
 
     return sshader;
   };
@@ -1276,7 +1276,7 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
       pass.pipeline = g_gpu_device->CreatePipeline(plconfig);
       if (!pass.pipeline)
       {
-        Log_ErrorFmt("Failed to create pipeline for pass '{}'", info.name);
+        ERROR_LOG("Failed to create pipeline for pass '{}'", info.name);
         progress->PopState();
         return false;
       }
@@ -1307,7 +1307,7 @@ bool PostProcessing::ReShadeFXShader::ResizeOutput(GPUTexture::Format format, u3
     tex.texture = g_gpu_device->FetchTexture(t_width, t_height, 1, 1, 1, GPUTexture::Type::RenderTarget, tex.format);
     if (!tex.texture)
     {
-      Log_ErrorFmt("Failed to create {}x{} texture", t_width, t_height);
+      ERROR_LOG("Failed to create {}x{} texture", t_width, t_height);
       return {};
     }
   }

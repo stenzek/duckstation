@@ -14,17 +14,16 @@
 
 enum LOGLEVEL
 {
-  LOGLEVEL_NONE = 0,    // Silences all log traffic
-  LOGLEVEL_ERROR = 1,   // "ErrorPrint"
-  LOGLEVEL_WARNING = 2, // "WarningPrint"
-  LOGLEVEL_PERF = 3,    // "PerfPrint" // TODO: Purge
-  LOGLEVEL_INFO = 4,    // "InfoPrint"
-  LOGLEVEL_VERBOSE = 5, // "VerbosePrint"
-  LOGLEVEL_DEV = 6,     // "DevPrint"
-  LOGLEVEL_PROFILE = 7, // "ProfilePrint" // TODO: Purge
-  LOGLEVEL_DEBUG = 8,   // "DebugPrint"
-  LOGLEVEL_TRACE = 9,   // "TracePrint"
-  LOGLEVEL_COUNT = 10
+  LOGLEVEL_NONE, // Silences all log traffic
+  LOGLEVEL_ERROR,
+  LOGLEVEL_WARNING,
+  LOGLEVEL_INFO,
+  LOGLEVEL_VERBOSE,
+  LOGLEVEL_DEV,
+  LOGLEVEL_DEBUG,
+  LOGLEVEL_TRACE,
+
+  LOGLEVEL_COUNT
 };
 
 namespace Log {
@@ -65,91 +64,57 @@ void SetLogLevel(LOGLEVEL level);
 void SetLogFilter(std::string_view filter);
 
 // writes a message to the log
+void Write(const char* channelName, LOGLEVEL level, std::string_view message);
 void Write(const char* channelName, const char* functionName, LOGLEVEL level, std::string_view message);
-void Writef(const char* channelName, const char* functionName, LOGLEVEL level, const char* format, ...)
-  printflike(4, 5);
-void Writev(const char* channelName, const char* functionName, LOGLEVEL level, const char* format, va_list ap);
+void WriteFmtArgs(const char* channelName, LOGLEVEL level, fmt::string_view fmt, fmt::format_args args);
 void WriteFmtArgs(const char* channelName, const char* functionName, LOGLEVEL level, fmt::string_view fmt,
                   fmt::format_args args);
 
-template<typename... T>
-ALWAYS_INLINE static void WriteFmt(const char* channelName, const char* functionName, LOGLEVEL level,
-                                   fmt::format_string<T...> fmt, T&&... args)
+ALWAYS_INLINE static void FastWrite(const char* channelName, LOGLEVEL level, std::string_view message)
 {
   if (level <= GetLogLevel())
-    return WriteFmtArgs(channelName, functionName, level, fmt, fmt::make_format_args(args...));
+    Write(channelName, level, message);
+}
+ALWAYS_INLINE static void FastWrite(const char* channelName, const char* functionName, LOGLEVEL level,
+                                    std::string_view message)
+{
+  if (level <= GetLogLevel())
+    Write(channelName, functionName, level, message);
+}
+template<typename... T>
+ALWAYS_INLINE static void FastWrite(const char* channelName, LOGLEVEL level, fmt::format_string<T...> fmt, T&&... args)
+{
+  if (level <= GetLogLevel())
+    WriteFmtArgs(channelName, level, fmt, fmt::make_format_args(args...));
+}
+template<typename... T>
+ALWAYS_INLINE static void FastWrite(const char* channelName, const char* functionName, LOGLEVEL level,
+                                    fmt::format_string<T...> fmt, T&&... args)
+{
+  if (level <= GetLogLevel())
+    WriteFmtArgs(channelName, functionName, level, fmt, fmt::make_format_args(args...));
 }
 } // namespace Log
 
 // log wrappers
-#define Log_SetChannel(ChannelName)                                                                                    \
-  [[maybe_unused]] [[maybe_unused]] static const char* ___LogChannel___ = #ChannelName;
-#define Log_ErrorPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_ERROR, msg)
-#define Log_ErrorPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_ERROR, __VA_ARGS__)
-#define Log_ErrorFmt(...) Log::WriteFmt(___LogChannel___, __func__, LOGLEVEL_ERROR, __VA_ARGS__)
-#define Log_WarningPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_WARNING, msg)
-#define Log_WarningPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_WARNING, __VA_ARGS__)
-#define Log_WarningFmt(...) Log::WriteFmt(___LogChannel___, __func__, LOGLEVEL_WARNING, __VA_ARGS__)
-#define Log_PerfPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_PERF, msg)
-#define Log_PerfPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_PERF, __VA_ARGS__)
-#define Log_PerfFmt(...) Log::WriteFmt(___LogChannel___, __func__, LOGLEVEL_PERF, __VA_ARGS__)
-#define Log_InfoPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_INFO, msg)
-#define Log_InfoPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_INFO, __VA_ARGS__)
-#define Log_InfoFmt(...) Log::WriteFmt(___LogChannel___, __func__, LOGLEVEL_INFO, __VA_ARGS__)
-#define Log_VerbosePrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_VERBOSE, msg)
-#define Log_VerbosePrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_VERBOSE, __VA_ARGS__)
-#define Log_VerboseFmt(...) Log::WriteFmt(___LogChannel___, __func__, LOGLEVEL_VERBOSE, __VA_ARGS__)
-#define Log_DevPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_DEV, msg)
-#define Log_DevPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_DEV, __VA_ARGS__)
-#define Log_DevFmt(...) Log::WriteFmt(___LogChannel___, __func__, LOGLEVEL_DEV, __VA_ARGS__)
-#define Log_ProfilePrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_PROFILE, msg)
-#define Log_ProfilePrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_PROFILE, __VA_ARGS__)
-#define Log_ProfileFmt(...) Log::WriteFmt(___LogChannel___, __func__, LOGLEVEL_PROFILE, __VA_ARGS__)
+#define Log_SetChannel(ChannelName) [[maybe_unused]] static const char* ___LogChannel___ = #ChannelName;
 
-#define Log_ErrorVisible() Log::IsLogVisible(LOGLEVEL_ERROR, ___LogChannel___)
-#define Log_WarningVisible() Log::IsLogVisible(LOGLEVEL_WARNING, ___LogChannel___)
-#define Log_PerfVisible() Log::IsLogVisible(LOGLEVEL_PERF, ___LogChannel___)
-#define Log_InfoVisible() Log::IsLogVisible(LOGLEVEL_INFO, ___LogChannel___)
-#define Log_VerboseVisible() Log::IsLogVisible(LOGLEVEL_VERBOSE, ___LogChannel___)
-#define Log_DevVisible() Log::IsLogVisible(LOGLEVEL_DEV, ___LogChannel___)
-#define Log_ProfileVisible() Log::IsLogVisible(LOGLEVEL_PROFILE, ___LogChannel___)
+#define ERROR_LOG(...) Log::FastWrite(___LogChannel___, __func__, LOGLEVEL_ERROR, __VA_ARGS__)
+#define WARNING_LOG(...) Log::FastWrite(___LogChannel___, __func__, LOGLEVEL_WARNING, __VA_ARGS__)
+#define INFO_LOG(...) Log::FastWrite(___LogChannel___, LOGLEVEL_INFO, __VA_ARGS__)
+#define VERBOSE_LOG(...) Log::FastWrite(___LogChannel___, LOGLEVEL_VERBOSE, __VA_ARGS__)
+#define DEV_LOG(...) Log::FastWrite(___LogChannel___, LOGLEVEL_DEV, __VA_ARGS__)
 
 #ifdef _DEBUG
-#define Log_DebugPrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_DEBUG, msg)
-#define Log_DebugPrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_DEBUG, __VA_ARGS__)
-#define Log_DebugFmt(...) Log::WriteFmt(___LogChannel___, __func__, LOGLEVEL_DEBUG, __VA_ARGS__)
-#define Log_TracePrint(msg) Log::Write(___LogChannel___, __func__, LOGLEVEL_TRACE, msg)
-#define Log_TracePrintf(...) Log::Writef(___LogChannel___, __func__, LOGLEVEL_TRACE, __VA_ARGS__)
-#define Log_TraceFmt(...) Log::WriteFmt(___LogChannel___, __func__, LOGLEVEL_TRACE, __VA_ARGS__)
-
-#define Log_DebugVisible() Log::IsLogVisible(LOGLEVEL_DEBUG, ___LogChannel___)
-#define Log_TraceVisible() Log::IsLogVisible(LOGLEVEL_TRACE, ___LogChannel___)
+#define DEBUG_LOG(...) Log::FastWrite(___LogChannel___, LOGLEVEL_DEBUG, __VA_ARGS__)
+#define TRACE_LOG(...) Log::FastWrite(___LogChannel___, LOGLEVEL_TRACE, __VA_ARGS__)
 #else
-#define Log_DebugPrint(msg)                                                                                            \
+#define DEBUG_LOG(...)                                                                                                 \
   do                                                                                                                   \
   {                                                                                                                    \
   } while (0)
-#define Log_DebugPrintf(...)                                                                                           \
+#define TRACE_LOG(...)                                                                                                 \
   do                                                                                                                   \
   {                                                                                                                    \
   } while (0)
-#define Log_DebugFmt(...)                                                                                              \
-  do                                                                                                                   \
-  {                                                                                                                    \
-  } while (0)
-#define Log_TracePrint(msg)                                                                                            \
-  do                                                                                                                   \
-  {                                                                                                                    \
-  } while (0)
-#define Log_TracePrintf(...)                                                                                           \
-  do                                                                                                                   \
-  {                                                                                                                    \
-  } while (0)
-#define Log_TraceFmt(...)                                                                                              \
-  do                                                                                                                   \
-  {                                                                                                                    \
-  } while (0)
-
-#define Log_DebugVisible() false
-#define Log_TraceVisible() false
 #endif

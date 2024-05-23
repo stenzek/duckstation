@@ -73,7 +73,7 @@ add_string:
          Internal::GetTranslatedStringImpl(context, msg, &s_translation_string_cache[s_translation_string_cache_pos],
                                            TRANSLATION_STRING_CACHE_SIZE - 1 - s_translation_string_cache_pos)) < 0)
   {
-    Log_ErrorPrint("WARNING: Clearing translation string cache, it might need to be larger.");
+    ERROR_LOG("WARNING: Clearing translation string cache, it might need to be larger.");
     s_translation_string_cache_pos = 0;
     if ((len =
            Internal::GetTranslatedStringImpl(context, msg, &s_translation_string_cache[s_translation_string_cache_pos],

@@ -288,13 +288,13 @@ void System::CheckCacheLineSize()
   const size_t runtime_cache_line_size = PlatformMisc::GetRuntimeCacheLineSize();
   if (runtime_cache_line_size == 0)
   {
-    Log_ErrorFmt("Cannot determine size of cache line. Continuing with expectation of {} byte lines.",
-                 runtime_cache_line_size);
+    ERROR_LOG("Cannot determine size of cache line. Continuing with expectation of {} byte lines.",
+              runtime_cache_line_size);
   }
   else if (HOST_CACHE_LINE_SIZE != runtime_cache_line_size)
   {
     // Not fatal, but does have performance implications.
-    Log_WarningFmt(
+    WARNING_LOG(
       "Cache line size mismatch. This build was compiled with {} byte lines, but the system has {} byte lines.",
       HOST_CACHE_LINE_SIZE, runtime_cache_line_size);
   }
@@ -680,7 +680,7 @@ bool System::GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash
   XXH64_update(state, &track_1_length, sizeof(track_1_length));
   const GameHash hash = XXH64_digest(state);
   XXH64_freeState(state);
-  Log_DevFmt("Hash for '{}' - {:016X}", exe_name, hash);
+  DEV_LOG("Hash for '{}' - {:016X}", exe_name, hash);
 
   if (exe_name != FALLBACK_EXE_NAME)
   {
@@ -798,7 +798,7 @@ std::string System::GetExecutableNameForImage(IsoReader& iso, bool strip_subdire
     if (code.compare(0, 6, "cdrom:") == 0)
       code.erase(0, 6);
     else
-      Log_WarningFmt("Unknown prefix in executable path: '{}'", code);
+      WARNING_LOG("Unknown prefix in executable path: '{}'", code);
 
     // remove leading slashes
     while (code[0] == '/' || code[0] == '\\')
@@ -836,12 +836,12 @@ bool System::ReadExecutableFromImage(IsoReader& iso, std::string* out_executable
                                      std::vector<u8>* out_executable_data)
 {
   const std::string executable_path = GetExecutableNameForImage(iso, false);
-  Log_DevFmt("Executable path: '{}'", executable_path);
+  DEV_LOG("Executable path: '{}'", executable_path);
   if (!executable_path.empty() && out_executable_data)
   {
     if (!iso.ReadFile(executable_path.c_str(), out_executable_data))
     {
-      Log_ErrorFmt("Failed to read executable '{}' from disc", executable_path);
+      ERROR_LOG("Failed to read executable '{}' from disc", executable_path);
       return false;
     }
   }
@@ -979,7 +979,7 @@ bool System::RecreateGPU(GPURenderer renderer, bool force_recreate_device, bool 
   StateWrapper sw(state_stream.get(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
   const bool state_valid = g_gpu->DoState(sw, nullptr, false) && TimingEvents::DoState(sw);
   if (!state_valid)
-    Log_ErrorPrint("Failed to save old GPU state when switching renderers");
+    ERROR_LOG("Failed to save old GPU state when switching renderers");
 
   // create new renderer
   g_gpu.reset();
@@ -1119,7 +1119,7 @@ void System::SetDefaultSettings(SettingsInterface& si)
 
 void System::ApplySettings(bool display_osd_messages)
 {
-  Log_DevPrint("Applying settings...");
+  DEV_LOG("Applying settings...");
 
   const Settings old_config(std::move(g_settings));
   g_settings = Settings();
@@ -1160,17 +1160,17 @@ bool System::UpdateGameSettingsLayer()
     std::string filename(GetGameSettingsPath(s_running_game_serial));
     if (FileSystem::FileExists(filename.c_str()))
     {
-      Log_InfoFmt("Loading game settings from '%s'...", Path::GetFileName(filename));
+      INFO_LOG("Loading game settings from '%s'...", Path::GetFileName(filename));
       new_interface = std::make_unique<INISettingsInterface>(std::move(filename));
       if (!new_interface->Load())
       {
-        Log_ErrorFmt("Failed to parse game settings ini '%s'", new_interface->GetFileName());
+        ERROR_LOG("Failed to parse game settings ini '%s'", new_interface->GetFileName());
         new_interface.reset();
       }
     }
     else
     {
-      Log_InfoFmt("No game settings found (tried '%s')", Path::GetFileName(filename));
+      INFO_LOG("No game settings found (tried '%s')", Path::GetFileName(filename));
     }
   }
 
@@ -1194,18 +1194,18 @@ bool System::UpdateGameSettingsLayer()
     const std::string filename(GetInputProfilePath(input_profile_name));
     if (FileSystem::FileExists(filename.c_str()))
     {
-      Log_InfoFmt("Loading input profile from '{}'...", Path::GetFileName(filename));
+      INFO_LOG("Loading input profile from '{}'...", Path::GetFileName(filename));
       input_interface = std::make_unique<INISettingsInterface>(std::move(filename));
       if (!input_interface->Load())
       {
-        Log_ErrorFmt("Failed to parse input profile ini '{}'", Path::GetFileName(input_interface->GetFileName()));
+        ERROR_LOG("Failed to parse input profile ini '{}'", Path::GetFileName(input_interface->GetFileName()));
         input_interface.reset();
         input_profile_name = {};
       }
     }
     else
     {
-      Log_WarningFmt("No input profile found (tried '{}')", Path::GetFileName(filename));
+      WARNING_LOG("No input profile found (tried '{}')", Path::GetFileName(filename));
       input_profile_name = {};
     }
   }
@@ -1310,7 +1310,7 @@ bool System::LoadState(const char* filename, Error* error)
     return false;
   }
 
-  Log_InfoFmt("Loading state from '{}'...", filename);
+  INFO_LOG("Loading state from '{}'...", filename);
 
   {
     const std::string display_name(FileSystem::GetDisplayNameFromPath(filename));
@@ -1335,7 +1335,7 @@ bool System::LoadState(const char* filename, Error* error)
   if (IsPaused())
     InvalidateDisplay();
 
-  Log_VerboseFmt("Loading state took {:.2f} msec", load_timer.GetTimeMilliseconds());
+  VERBOSE_LOG("Loading state took {:.2f} msec", load_timer.GetTimeMilliseconds());
   return true;
 }
 
@@ -1347,8 +1347,8 @@ bool System::SaveState(const char* filename, Error* error, bool backup_existing_
     const std::string backup_filename = Path::ReplaceExtension(filename, "bak");
     if (!FileSystem::RenamePath(filename, backup_filename.c_str(), &backup_error))
     {
-      Log_ErrorFmt("Failed to rename save state backup '{}': {}", Path::GetFileName(backup_filename),
-                   backup_error.GetDescription());
+      ERROR_LOG("Failed to rename save state backup '{}': {}", Path::GetFileName(backup_filename),
+                backup_error.GetDescription());
     }
   }
 
@@ -1365,7 +1365,7 @@ bool System::SaveState(const char* filename, Error* error, bool backup_existing_
     return false;
   }
 
-  Log_InfoFmt("Saving state to '{}'...", filename);
+  INFO_LOG("Saving state to '{}'...", filename);
 
   const u32 screenshot_size = 256;
   const bool result = SaveStateToStream(stream.get(), error, screenshot_size,
@@ -1384,7 +1384,7 @@ bool System::SaveState(const char* filename, Error* error, bool backup_existing_
     stream->Commit();
   }
 
-  Log_VerboseFmt("Saving state took {:.2f} msec", save_timer.GetTimeMilliseconds());
+  VERBOSE_LOG("Saving state took {:.2f} msec", save_timer.GetTimeMilliseconds());
   return result;
 }
 
@@ -1411,9 +1411,9 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   }
 
   if (parameters.filename.empty())
-    Log_InfoPrint("Boot Filename: <BIOS/Shell>");
+    INFO_LOG("Boot Filename: <BIOS/Shell>");
   else
-    Log_InfoFmt("Boot Filename: {}", parameters.filename);
+    INFO_LOG("Boot Filename: {}", parameters.filename);
 
   Assert(s_state == State::Shutdown);
   s_state = State::Starting;
@@ -1437,7 +1437,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
       {
         const DiscRegion file_region =
           (do_exe_boot ? GetRegionForExe(parameters.filename.c_str()) : GetRegionForPsf(parameters.filename.c_str()));
-        Log_InfoFmt("EXE/PSF Region: {}", Settings::GetDiscRegionDisplayName(file_region));
+        INFO_LOG("EXE/PSF Region: {}", Settings::GetDiscRegionDisplayName(file_region));
         s_region = GetConsoleRegionForDiscRegion(file_region);
       }
       if (do_psf_boot)
@@ -1447,7 +1447,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     }
     else
     {
-      Log_InfoFmt("Loading CD image '{}'...", Path::GetFileName(parameters.filename));
+      INFO_LOG("Loading CD image '{}'...", Path::GetFileName(parameters.filename));
       disc = CDImage::Open(parameters.filename.c_str(), g_settings.cdrom_load_image_patches, error);
       if (!disc)
       {
@@ -1464,14 +1464,14 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
         if (disc_region != DiscRegion::Other)
         {
           s_region = GetConsoleRegionForDiscRegion(disc_region);
-          Log_InfoFmt("Auto-detected console {} region for '{}' (region {})", Settings::GetConsoleRegionName(s_region),
-                      parameters.filename, Settings::GetDiscRegionName(disc_region));
+          INFO_LOG("Auto-detected console {} region for '{}' (region {})", Settings::GetConsoleRegionName(s_region),
+                   parameters.filename, Settings::GetDiscRegionName(disc_region));
         }
         else
         {
           s_region = ConsoleRegion::NTSC_U;
-          Log_WarningFmt("Could not determine console region for disc region {}. Defaulting to {}.",
-                         Settings::GetDiscRegionName(disc_region), Settings::GetConsoleRegionName(s_region));
+          WARNING_LOG("Could not determine console region for disc region {}. Defaulting to {}.",
+                      Settings::GetDiscRegionName(disc_region), Settings::GetConsoleRegionName(s_region));
         }
       }
     }
@@ -1483,7 +1483,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
       s_region = ConsoleRegion::NTSC_U;
   }
 
-  Log_InfoFmt("Console Region: {}", Settings::GetConsoleRegionDisplayName(s_region));
+  INFO_LOG("Console Region: {}", Settings::GetConsoleRegionDisplayName(s_region));
 
   // Switch subimage.
   if (disc && parameters.media_playlist_index != 0 && !disc->SwitchSubImage(parameters.media_playlist_index, error))
@@ -1511,7 +1511,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
       return false;
     }
 
-    Log_InfoFmt("Overriding boot executable: '{}'", parameters.override_exe);
+    INFO_LOG("Overriding boot executable: '{}'", parameters.override_exe);
     exe_boot = std::move(parameters.override_exe);
   }
 
@@ -1607,11 +1607,11 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   {
     if (!CDROM::IsMediaPS1Disc())
     {
-      Log_ErrorPrint("Not fast booting non-PS1 disc.");
+      ERROR_LOG("Not fast booting non-PS1 disc.");
     }
     else if (!s_bios_image_info || !s_bios_image_info->patch_compatible)
     {
-      Log_ErrorPrint("Not patching fast boot, as BIOS is not patch compatible.");
+      ERROR_LOG("Not patching fast boot, as BIOS is not patch compatible.");
     }
     else
     {
@@ -2006,7 +2006,7 @@ void System::FrameDone()
   }
   else
   {
-    Log_DebugPrint("Skipping displaying frame");
+    DEBUG_LOG("Skipping displaying frame");
     s_skipped_frame_count++;
     if (s_throttler_enabled)
       Throttle(current_time);
@@ -2171,8 +2171,8 @@ bool System::CreateGPU(GPURenderer renderer, bool is_switching, Error* error)
   {
     if (g_gpu_device)
     {
-      Log_WarningFmt("Recreating GPU device, expecting {} got {}", GPUDevice::RenderAPIToString(api),
-                     GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()));
+      WARNING_LOG("Recreating GPU device, expecting {} got {}", GPUDevice::RenderAPIToString(api),
+                  GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()));
       PostProcessing::Shutdown();
     }
 
@@ -2194,8 +2194,8 @@ bool System::CreateGPU(GPURenderer renderer, bool is_switching, Error* error)
 
   if (!g_gpu)
   {
-    Log_ErrorFmt("Failed to initialize {} renderer, falling back to software renderer",
-                 Settings::GetRendererName(renderer));
+    ERROR_LOG("Failed to initialize {} renderer, falling back to software renderer",
+              Settings::GetRendererName(renderer));
     Host::AddFormattedOSDMessage(
       30.0f, TRANSLATE("OSDMessage", "Failed to initialize %s renderer, falling back to software renderer."),
       Settings::GetRendererName(renderer));
@@ -2203,7 +2203,7 @@ bool System::CreateGPU(GPURenderer renderer, bool is_switching, Error* error)
     g_gpu = GPU::CreateSoftwareRenderer();
     if (!g_gpu)
     {
-      Log_ErrorPrint("Failed to create fallback software renderer.");
+      ERROR_LOG("Failed to create fallback software renderer.");
       if (!s_keep_gpu_device_on_shutdown)
       {
         PostProcessing::Shutdown();
@@ -2233,7 +2233,7 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
     sw.DoBytesEx(bios_hash.bytes, sizeof(bios_hash.bytes), 58, s_bios_hash.bytes);
     if (bios_hash != s_bios_hash)
     {
-      Log_WarningFmt("BIOS hash mismatch: System: {} | State: {}", s_bios_hash.ToString(), bios_hash.ToString());
+      WARNING_LOG("BIOS hash mismatch: System: {} | State: {}", s_bios_hash.ToString(), bios_hash.ToString());
       Host::AddKeyedOSDMessage("StateBIOSMismatch",
                                TRANSLATE_STR("OSDMessage",
                                              "This save state was created with a different BIOS version or patch "
@@ -2344,9 +2344,9 @@ bool System::LoadBIOS(Error* error)
   s_bios_hash = BIOS::GetImageHash(bios_image.value());
   s_bios_image_info = BIOS::GetInfoForImage(bios_image.value(), s_bios_hash);
   if (s_bios_image_info)
-    Log_InfoFmt("Using BIOS: {}", s_bios_image_info->description);
+    INFO_LOG("Using BIOS: {}", s_bios_image_info->description);
   else
-    Log_WarningFmt("Using an unknown BIOS: {}", s_bios_hash.ToString());
+    WARNING_LOG("Using an unknown BIOS: {}", s_bios_hash.ToString());
 
   std::memcpy(Bus::g_bios, bios_image->data(), Bus::BIOS_SIZE);
   return true;
@@ -2451,7 +2451,7 @@ bool System::LoadStateFromStream(ByteStream* state, Error* error, bool update_di
       std::unique_ptr<CDImage> old_media = CDROM::RemoveMedia(false);
       if (old_media && old_media->GetFileName() == media_filename)
       {
-        Log_InfoFmt("Re-using same media '{}'", media_filename);
+        INFO_LOG("Re-using same media '{}'", media_filename);
         media = std::move(old_media);
       }
       else
@@ -2498,7 +2498,7 @@ bool System::LoadStateFromStream(ByteStream* state, Error* error, bool update_di
       }
       else
       {
-        Log_InfoFmt("Switched to subimage {} in '{}'", header.media_subimage_index, media_filename.c_str());
+        INFO_LOG("Switched to subimage {} in '{}'", header.media_subimage_index, media_filename.c_str());
       }
     }
 
@@ -2600,7 +2600,7 @@ bool System::SaveStateToStream(ByteStream* state, Error* error, u32 screenshot_s
     const u32 screenshot_height =
       std::max(1u, static_cast<u32>(static_cast<float>(screenshot_width) /
                                     ((display_aspect_ratio > 0.0f) ? display_aspect_ratio : 1.0f)));
-    Log_VerboseFmt("Saving {}x{} screenshot for state", screenshot_width, screenshot_height);
+    VERBOSE_LOG("Saving {}x{} screenshot for state", screenshot_width, screenshot_height);
 
     std::vector<u32> screenshot_buffer;
     u32 screenshot_stride;
@@ -2613,8 +2613,8 @@ bool System::SaveStateToStream(ByteStream* state, Error* error, u32 screenshot_s
     {
       if (screenshot_stride != (screenshot_width * sizeof(u32)))
       {
-        Log_WarningFmt("Failed to save {}x{} screenshot for save state due to incorrect stride(%u)", screenshot_width,
-                       screenshot_height, screenshot_stride);
+        WARNING_LOG("Failed to save {}x{} screenshot for save state due to incorrect stride(%u)", screenshot_width,
+                    screenshot_height, screenshot_stride);
       }
       else
       {
@@ -2634,8 +2634,8 @@ bool System::SaveStateToStream(ByteStream* state, Error* error, u32 screenshot_s
     }
     else
     {
-      Log_WarningFmt("Failed to save {}x{} screenshot for save state due to render/conversion failure",
-                     screenshot_width, screenshot_height);
+      WARNING_LOG("Failed to save {}x{} screenshot for save state due to render/conversion failure", screenshot_width,
+                  screenshot_height);
     }
   }
 
@@ -2758,9 +2758,8 @@ void System::UpdatePerformanceCounters()
   if (s_pre_frame_sleep)
     UpdatePreFrameSleepTime();
 
-  Log_VerboseFmt("FPS: {:.2f} VPS: {:.2f} CPU: {:.2f} GPU: {:.2f} Average: {:.2f}ms Min: {:.2f}ms Max: {:.2f}ms", s_fps,
-                 s_vps, s_cpu_thread_usage, s_gpu_usage, s_average_frame_time, s_minimum_frame_time,
-                 s_maximum_frame_time);
+  VERBOSE_LOG("FPS: {:.2f} VPS: {:.2f} CPU: {:.2f} GPU: {:.2f} Average: {:.2f}ms Min: {:.2f}ms Max: {:.2f}ms", s_fps,
+              s_vps, s_cpu_thread_usage, s_gpu_usage, s_average_frame_time, s_minimum_frame_time, s_maximum_frame_time);
 
   Host::OnPerformanceCountersUpdated();
 }
@@ -2797,9 +2796,9 @@ void System::AccumulatePreFrameSleepTime()
   {
     s_pre_frame_sleep_time = Common::AlignDown(max_sleep_time_for_this_frame,
                                                static_cast<unsigned int>(Common::Timer::ConvertMillisecondsToValue(1)));
-    Log_DevFmt("Adjust pre-frame time to {} ms due to overrun of {} ms",
-               Common::Timer::ConvertValueToMilliseconds(s_pre_frame_sleep_time),
-               Common::Timer::ConvertValueToMilliseconds(s_last_active_frame_time));
+    DEV_LOG("Adjust pre-frame time to {} ms due to overrun of {} ms",
+            Common::Timer::ConvertValueToMilliseconds(s_pre_frame_sleep_time),
+            Common::Timer::ConvertValueToMilliseconds(s_last_active_frame_time));
   }
 }
 
@@ -2811,9 +2810,9 @@ void System::UpdatePreFrameSleepTime()
     s_max_active_frame_time + Common::Timer::ConvertMillisecondsToValue(g_settings.display_pre_frame_sleep_buffer);
   s_pre_frame_sleep_time = Common::AlignDown(s_frame_period - std::min(expected_frame_time, s_frame_period),
                                              static_cast<unsigned int>(Common::Timer::ConvertMillisecondsToValue(1)));
-  Log_DevFmt("Set pre-frame time to {} ms (expected frame time of {} ms)",
-             Common::Timer::ConvertValueToMilliseconds(s_pre_frame_sleep_time),
-             Common::Timer::ConvertValueToMilliseconds(expected_frame_time));
+  DEV_LOG("Set pre-frame time to {} ms (expected frame time of {} ms)",
+          Common::Timer::ConvertValueToMilliseconds(s_pre_frame_sleep_time),
+          Common::Timer::ConvertValueToMilliseconds(expected_frame_time));
 
   s_max_active_frame_time = 0;
 }
@@ -2856,8 +2855,8 @@ void System::UpdateSpeedLimiterState()
     {
       const float ratio = host_refresh_rate.value() / System::GetThrottleFrequency();
       s_syncing_to_host = (ratio >= 0.95f && ratio <= 1.05f);
-      Log_InfoFmt("Refresh rate: Host={}hz Guest={}hz Ratio={} - {}", host_refresh_rate.value(),
-                  System::GetThrottleFrequency(), ratio, s_syncing_to_host ? "can sync" : "can't sync");
+      INFO_LOG("Refresh rate: Host={}hz Guest={}hz Ratio={} - {}", host_refresh_rate.value(),
+               System::GetThrottleFrequency(), ratio, s_syncing_to_host ? "can sync" : "can't sync");
       if (s_syncing_to_host)
         s_target_speed *= ratio;
     }
@@ -2867,11 +2866,11 @@ void System::UpdateSpeedLimiterState()
   s_syncing_to_host_with_vsync = (s_syncing_to_host && IsHostVSyncEffectivelyEnabled());
   if (s_syncing_to_host_with_vsync)
   {
-    Log_InfoPrint("Using host vsync for throttling.");
+    INFO_LOG("Using host vsync for throttling.");
     s_throttler_enabled = false;
   }
 
-  Log_VerboseFmt("Target speed: {}%", s_target_speed * 100.0f);
+  VERBOSE_LOG("Target speed: {}%", s_target_speed * 100.0f);
 
   // Update audio output.
   AudioStream* stream = SPU::GetOutputStream();
@@ -2890,10 +2889,10 @@ void System::UpdateDisplaySync()
 {
   const bool vsync_enabled = IsHostVSyncEffectivelyEnabled();
   const float max_display_fps = (s_throttler_enabled || s_syncing_to_host) ? 0.0f : g_settings.display_max_fps;
-  Log_VerboseFmt("VSync: {}{}", vsync_enabled ? "Enabled" : "Disabled",
-                 s_syncing_to_host_with_vsync ? " (for throttling)" : "");
-  Log_VerboseFmt("Max display fps: {}", max_display_fps);
-  Log_VerboseFmt("Preset timing: {}", s_optimal_frame_pacing ? "consistent" : "immediate");
+  VERBOSE_LOG("VSync: {}{}", vsync_enabled ? "Enabled" : "Disabled",
+              s_syncing_to_host_with_vsync ? " (for throttling)" : "");
+  VERBOSE_LOG("Max display fps: {}", max_display_fps);
+  VERBOSE_LOG("Preset timing: {}", s_optimal_frame_pacing ? "consistent" : "immediate");
 
   g_gpu_device->SetDisplayMaxFPS(max_display_fps);
   g_gpu_device->SetVSyncEnabled(vsync_enabled, vsync_enabled && !IsHostVSyncUsedForTiming());
@@ -3015,7 +3014,7 @@ static bool LoadEXEToRAM(const char* filename, bool patch_bios)
   std::FILE* fp = FileSystem::OpenCFile(filename, "rb");
   if (!fp)
   {
-    Log_ErrorFmt("Failed to open exe file '{}'", filename);
+    ERROR_LOG("Failed to open exe file '{}'", filename);
     return false;
   }
 
@@ -3026,7 +3025,7 @@ static bool LoadEXEToRAM(const char* filename, bool patch_bios)
   BIOS::PSEXEHeader header;
   if (std::fread(&header, sizeof(header), 1, fp) != 1 || !BIOS::IsValidPSExeHeader(header, file_size))
   {
-    Log_ErrorFmt("'{}' is not a valid PS-EXE", filename);
+    ERROR_LOG("'{}' is not a valid PS-EXE", filename);
     std::fclose(fp);
     return false;
   }
@@ -3076,7 +3075,7 @@ bool System::LoadEXE(const char* filename)
   const std::string libps_path(Path::BuildRelativePath(filename, "libps.exe"));
   if (!libps_path.empty() && FileSystem::FileExists(libps_path.c_str()) && !LoadEXEToRAM(libps_path.c_str(), false))
   {
-    Log_ErrorFmt("Failed to load libps.exe from '{}'", libps_path.c_str());
+    ERROR_LOG("Failed to load libps.exe from '{}'", libps_path.c_str());
     return false;
   }
 
@@ -3359,7 +3358,7 @@ void System::UpdateMemoryCardTypes()
     if (card)
     {
       if (const std::string& filename = card->GetFilename(); !filename.empty())
-        Log_InfoFmt("Memory Card Slot {}: {}", i + 1, filename);
+        INFO_LOG("Memory Card Slot {}: {}", i + 1, filename);
 
       Pad::SetMemoryCard(i, std::move(card));
     }
@@ -3380,7 +3379,7 @@ void System::UpdatePerGameMemoryCards()
     if (card)
     {
       if (const std::string& filename = card->GetFilename(); !filename.empty())
-        Log_InfoFmt("Memory Card Slot {}: {}", i + 1, filename);
+        INFO_LOG("Memory Card Slot {}: {}", i + 1, filename);
 
       Pad::SetMemoryCard(i, std::move(card));
     }
@@ -3528,7 +3527,7 @@ bool System::InsertMedia(const char* path)
   const DiscRegion region = GetRegionForImage(image.get());
   UpdateRunningGame(path, image.get(), false);
   CDROM::InsertMedia(std::move(image), region);
-  Log_InfoFmt("Inserted media from {} ({}, {})", s_running_game_path, s_running_game_serial, s_running_game_title);
+  INFO_LOG("Inserted media from {} ({}, {})", s_running_game_path, s_running_game_serial, s_running_game_title);
   if (g_settings.cdrom_load_image_to_ram)
     CDROM::PrecacheMedia();
 
@@ -3641,7 +3640,7 @@ bool System::CheckForSBIFile(CDImage* image, Error* error)
     return true;
   }
 
-  Log_WarningFmt("SBI file missing but required for {} ({})", s_running_game_serial, s_running_game_title);
+  WARNING_LOG("SBI file missing but required for {} ({})", s_running_game_serial, s_running_game_title);
 
   if (Host::GetBoolSettingValue("CDROM", "AllowBootingWithoutSBIFile", false))
   {
@@ -4133,7 +4132,7 @@ void System::LogUnsafeSettingsToConsole(const SmallStringBase& messages)
       break;
     }
   }
-  Log_WarningPrint(console_messages);
+  WARNING_LOG(console_messages);
 }
 
 void System::CalculateRewindMemoryUsage(u32 num_saves, u32 resolution_scale, u64* ram_usage, u64* vram_usage)
@@ -4163,9 +4162,9 @@ void System::UpdateMemorySaveStateSettings()
 
     u64 ram_usage, vram_usage;
     CalculateRewindMemoryUsage(g_settings.rewind_save_slots, g_settings.gpu_resolution_scale, &ram_usage, &vram_usage);
-    Log_InfoFmt("Rewind is enabled, saving every {} frames, with {} slots and {}MB RAM and {}MB VRAM usage",
-                std::max(s_rewind_save_frequency, 1), g_settings.rewind_save_slots, ram_usage / 1048576,
-                vram_usage / 1048576);
+    INFO_LOG("Rewind is enabled, saving every {} frames, with {} slots and {}MB RAM and {}MB VRAM usage",
+             std::max(s_rewind_save_frequency, 1), g_settings.rewind_save_slots, ram_usage / 1048576,
+             vram_usage / 1048576);
   }
   else
   {
@@ -4179,7 +4178,7 @@ void System::UpdateMemorySaveStateSettings()
   s_runahead_frames = g_settings.runahead_frames;
   s_runahead_replay_pending = false;
   if (s_runahead_frames > 0)
-    Log_InfoFmt("Runahead is active with {} frames", s_runahead_frames);
+    INFO_LOG("Runahead is active with {} frames", s_runahead_frames);
 }
 
 bool System::LoadMemoryState(const MemorySaveState& mss)
@@ -4209,7 +4208,7 @@ bool System::SaveMemoryState(MemorySaveState* mss)
   StateWrapper sw(mss->state_stream.get(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
   if (!DoState(sw, &host_texture, false, true))
   {
-    Log_ErrorPrint("Failed to create rewind state.");
+    ERROR_LOG("Failed to create rewind state.");
     delete host_texture;
     return false;
   }
@@ -4239,8 +4238,8 @@ bool System::SaveRewindState()
   s_rewind_states.push_back(std::move(mss));
 
 #ifdef PROFILE_MEMORY_SAVE_STATES
-  Log_DevFmt("Saved rewind state ({} bytes, took {:.4f} ms)", s_rewind_states.back().state_stream->GetSize(),
-             save_timer.GetTimeMilliseconds());
+  DEV_LOG("Saved rewind state ({} bytes, took {:.4f} ms)", s_rewind_states.back().state_stream->GetSize(),
+          save_timer.GetTimeMilliseconds());
 #endif
 
   return true;
@@ -4269,7 +4268,7 @@ bool System::LoadRewindState(u32 skip_saves /*= 0*/, bool consume_state /*=true 
     s_rewind_states.pop_back();
 
 #ifdef PROFILE_MEMORY_SAVE_STATES
-  Log_DevFmt("Rewind load took {:.4f} ms", load_timer.GetTimeMilliseconds());
+  DEV_LOG("Rewind load took {:.4f} ms", load_timer.GetTimeMilliseconds());
 #endif
 
   return true;
@@ -4336,7 +4335,7 @@ void System::SaveRunaheadState()
 
   if (!SaveMemoryState(&mss))
   {
-    Log_ErrorPrint("Failed to save runahead state.");
+    ERROR_LOG("Failed to save runahead state.");
     return;
   }
 
@@ -4352,7 +4351,7 @@ bool System::DoRunahead()
   if (s_runahead_replay_pending)
   {
 #ifdef PROFILE_MEMORY_SAVE_STATES
-    Log_DevFmt("runahead starting at frame {}", s_frame_number);
+    DEV_LOG("runahead starting at frame {}", s_frame_number);
     replay_timer.Reset();
 #endif
 
@@ -4374,7 +4373,7 @@ bool System::DoRunahead()
     SPU::SetAudioOutputMuted(true);
 
 #ifdef PROFILE_MEMORY_SAVE_STATES
-    Log_VerboseFmt("Rewound to frame {}, took {:.2f} ms", s_frame_number, replay_timer.GetTimeMilliseconds());
+    VERBOSE_LOG("Rewound to frame {}, took {:.2f} ms", s_frame_number, replay_timer.GetTimeMilliseconds());
 #endif
 
     // we don't want to save the frame we just loaded. but we are "one frame ahead", because the frame we just tossed
@@ -4395,14 +4394,14 @@ bool System::DoRunahead()
   }
 
 #ifdef PROFILE_MEMORY_SAVE_STATES
-  Log_VerboseFmt("Running {} frames to catch up took {:.2f} ms", s_runahead_frames, replay_timer.GetTimeMilliseconds());
+  VERBOSE_LOG("Running {} frames to catch up took {:.2f} ms", s_runahead_frames, replay_timer.GetTimeMilliseconds());
 #endif
 
   // we're all caught up. this frame gets saved in DoMemoryStates().
   SPU::SetAudioOutputMuted(false);
 
 #ifdef PROFILE_MEMORY_SAVE_STATES
-  Log_DevFmt("runahead ending at frame {}, took {:.2f} ms", s_frame_number, replay_timer.GetTimeMilliseconds());
+  DEV_LOG("runahead ending at frame {}, took {:.2f} ms", s_frame_number, replay_timer.GetTimeMilliseconds());
 #endif
 
   return false;
@@ -4414,7 +4413,7 @@ void System::SetRunaheadReplayFlag()
     return;
 
 #ifdef PROFILE_MEMORY_SAVE_STATES
-  Log_DevPrint("Runahead rewind pending...");
+  DEV_LOG("Runahead rewind pending...");
 #endif
 
   s_runahead_replay_pending = true;
@@ -4480,7 +4479,7 @@ bool System::UndoLoadState()
     return false;
   }
 
-  Log_InfoPrint("Loaded undo save state.");
+  INFO_LOG("Loaded undo save state.");
   m_undo_load_state.reset();
   return true;
 }
@@ -4501,7 +4500,7 @@ bool System::SaveUndoLoadState()
     return false;
   }
 
-  Log_InfoFmt("Saved undo load state: {} bytes", m_undo_load_state->GetSize());
+  INFO_LOG("Saved undo load state: {} bytes", m_undo_load_state->GetSize());
   return true;
 }
 
@@ -4737,11 +4736,11 @@ void System::DeleteSaveStates(const char* serial, bool resume)
     if (si.global || (!resume && si.slot < 0))
       continue;
 
-    Log_InfoFmt("Removing save state '{}'", Path::GetFileName(si.path));
+    INFO_LOG("Removing save state '{}'", Path::GetFileName(si.path));
 
     Error error;
     if (!FileSystem::DeleteFile(si.path.c_str(), &error)) [[unlikely]]
-      Log_ErrorFmt("Failed to delete save state file '{}': {}", Path::GetFileName(si.path), error.GetDescription());
+      ERROR_LOG("Failed to delete save state file '{}': {}", Path::GetFileName(si.path), error.GetDescription());
   }
 }
 
@@ -4903,7 +4902,7 @@ bool System::LoadCheatListFromDatabase()
   if (!cl->LoadFromPackage(s_running_game_serial))
     return false;
 
-  Log_InfoFmt("Loaded {} cheats from database.", cl->GetCodeCount());
+  INFO_LOG("Loaded {} cheats from database.", cl->GetCodeCount());
   SetCheatList(std::move(cl));
   return true;
 }

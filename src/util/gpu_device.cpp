@@ -241,7 +241,7 @@ RenderAPI GPUDevice::GetPreferredAPI()
     preferred_renderer = RenderAPI::Vulkan;
 #else
     // Uhhh, what?
-    Log_ErrorPrint("Somehow don't have any renderers available...");
+    ERROR_LOG("Somehow don't have any renderers available...");
     preferred_renderer = RenderAPI::None;
 #endif
   }
@@ -296,7 +296,7 @@ bool GPUDevice::Create(std::string_view adapter, std::string_view shader_cache_p
     return false;
   }
 
-  Log_InfoFmt("Graphics Driver Info:\n{}", GetDriverInfo());
+  INFO_LOG("Graphics Driver Info:\n{}", GetDriverInfo());
 
   OpenShaderCache(shader_cache_path, shader_cache_version);
 
@@ -332,9 +332,9 @@ void GPUDevice::OpenShaderCache(std::string_view base_path, u32 version)
     const std::string filename = Path::Combine(base_path, basename);
     if (!m_shader_cache.Open(filename.c_str(), version))
     {
-      Log_WarningPrint("Failed to open shader cache. Creating new cache.");
+      WARNING_LOG("Failed to open shader cache. Creating new cache.");
       if (!m_shader_cache.Create())
-        Log_ErrorPrint("Failed to create new shader cache.");
+        ERROR_LOG("Failed to create new shader cache.");
 
       // Squish the pipeline cache too, it's going to be stale.
       if (m_features.pipeline_cache)
@@ -343,7 +343,7 @@ void GPUDevice::OpenShaderCache(std::string_view base_path, u32 version)
           Path::Combine(base_path, TinyString::from_format("{}.bin", GetShaderCacheBaseName("pipelines")));
         if (FileSystem::FileExists(pc_filename.c_str()))
         {
-          Log_InfoFmt("Removing old pipeline cache '{}'", Path::GetFileName(pc_filename));
+          INFO_LOG("Removing old pipeline cache '{}'", Path::GetFileName(pc_filename));
           FileSystem::DeleteFile(pc_filename.c_str());
         }
       }
@@ -363,7 +363,7 @@ void GPUDevice::OpenShaderCache(std::string_view base_path, u32 version)
     if (ReadPipelineCache(filename))
       s_pipeline_cache_path = std::move(filename);
     else
-      Log_WarningPrint("Failed to read pipeline cache.");
+      WARNING_LOG("Failed to read pipeline cache.");
   }
 }
 
@@ -380,14 +380,13 @@ void GPUDevice::CloseShaderCache()
       FILESYSTEM_STAT_DATA sd;
       if (!FileSystem::StatFile(s_pipeline_cache_path.c_str(), &sd) || sd.Size != static_cast<s64>(data.size()))
       {
-        Log_InfoFmt("Writing {} bytes to '{}'", data.size(), Path::GetFileName(s_pipeline_cache_path));
+        INFO_LOG("Writing {} bytes to '{}'", data.size(), Path::GetFileName(s_pipeline_cache_path));
         if (!FileSystem::WriteBinaryFile(s_pipeline_cache_path.c_str(), data.data(), data.size()))
-          Log_ErrorFmt("Failed to write pipeline cache to '{}'", Path::GetFileName(s_pipeline_cache_path));
+          ERROR_LOG("Failed to write pipeline cache to '{}'", Path::GetFileName(s_pipeline_cache_path));
       }
       else
       {
-        Log_InfoFmt("Skipping updating pipeline cache '{}' due to no changes.",
-                    Path::GetFileName(s_pipeline_cache_path));
+        INFO_LOG("Skipping updating pipeline cache '{}' due to no changes.", Path::GetFileName(s_pipeline_cache_path));
       }
     }
 
@@ -455,7 +454,7 @@ bool GPUDevice::AcquireWindow(bool recreate_window)
   if (!wi.has_value())
     return false;
 
-  Log_InfoFmt("Render window is {}x{}.", wi->surface_width, wi->surface_height);
+  INFO_LOG("Render window is {}x{}.", wi->surface_width, wi->surface_height);
   m_window_info = wi.value();
   return true;
 }
@@ -506,7 +505,7 @@ bool GPUDevice::CreateResources()
   m_imgui_pipeline = CreatePipeline(plconfig);
   if (!m_imgui_pipeline)
   {
-    Log_ErrorPrint("Failed to compile ImGui pipeline.");
+    ERROR_LOG("Failed to compile ImGui pipeline.");
     return false;
   }
   GL_OBJECT_NAME(m_imgui_pipeline, "ImGui Pipeline");
@@ -666,7 +665,7 @@ std::unique_ptr<GPUShader> GPUDevice::CreateShader(GPUShaderStage stage, std::st
     if (shader)
       return shader;
 
-    Log_ErrorPrint("Failed to create shader from binary (driver changed?). Clearing cache.");
+    ERROR_LOG("Failed to create shader from binary (driver changed?). Clearing cache.");
     m_shader_cache.Clear();
   }
 
@@ -874,7 +873,7 @@ std::unique_ptr<GPUTexture> GPUDevice::FetchTexture(u32 width, u32 height, u32 l
     else
     {
       // This shouldn't happen...
-      Log_ErrorFmt("Failed to upload {}x{} to pooled texture", width, height);
+      ERROR_LOG("Failed to upload {}x{} to pooled texture", width, height);
     }
   }
 
@@ -913,7 +912,7 @@ void GPUDevice::RecycleTexture(std::unique_ptr<GPUTexture> texture)
   const u32 max_size = is_texture ? MAX_TEXTURE_POOL_SIZE : MAX_TARGET_POOL_SIZE;
   while (pool.size() > max_size)
   {
-    Log_ProfileFmt("Trim {}x{} texture from pool", pool.front().texture->GetWidth(), pool.front().texture->GetHeight());
+    DEBUG_LOG("Trim {}x{} texture from pool", pool.front().texture->GetWidth(), pool.front().texture->GetHeight());
     pool.pop_front();
   }
 }
@@ -931,8 +930,8 @@ void GPUDevice::TrimTexturePool()
   GL_INS_FMT("Target Pool Size: {}", m_target_pool.size());
   GL_INS_FMT("VRAM Usage: {:.2f} MB", s_total_vram_usage / 1048576.0);
 
-  Log_DebugFmt("Texture Pool Size: {} Target Pool Size: {} VRAM: {:.2f} MB", m_texture_pool.size(),
-               m_target_pool.size(), s_total_vram_usage / 1048756.0);
+  DEBUG_LOG("Texture Pool Size: {} Target Pool Size: {} VRAM: {:.2f} MB", m_texture_pool.size(), m_target_pool.size(),
+            s_total_vram_usage / 1048756.0);
 
   if (m_texture_pool.empty() && m_target_pool.empty())
     return;
@@ -947,7 +946,7 @@ void GPUDevice::TrimTexturePool()
       if (delta < POOL_PURGE_DELAY)
         break;
 
-      Log_ProfileFmt("Trim {}x{} texture from pool", it->texture->GetWidth(), it->texture->GetHeight());
+      DEBUG_LOG("Trim {}x{} texture from pool", it->texture->GetWidth(), it->texture->GetHeight());
       it = pool.erase(it);
     }
   }
@@ -990,7 +989,7 @@ bool GPUDevice::ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u
   std::unique_ptr<GPUTexture> new_tex = FetchTexture(new_width, new_height, 1, 1, 1, type, format);
   if (!new_tex) [[unlikely]]
   {
-    Log_ErrorFmt("Failed to create new {}x{} texture", new_width, new_height);
+    ERROR_LOG("Failed to create new {}x{} texture", new_width, new_height);
     return false;
   }
 
@@ -1157,14 +1156,14 @@ bool dyn_shaderc::Open()
 #endif
   if (!s_library.Open(libname.c_str(), &error))
   {
-    Log_ErrorFmt("Failed to load shaderc: {}", error.GetDescription());
+    ERROR_LOG("Failed to load shaderc: {}", error.GetDescription());
     return false;
   }
 
 #define LOAD_FUNC(F)                                                                                                   \
   if (!s_library.GetSymbol(#F, &F))                                                                                    \
   {                                                                                                                    \
-    Log_ErrorFmt("Failed to find function {}", #F);                                                                    \
+    ERROR_LOG("Failed to find function {}", #F);                                                                       \
     Close();                                                                                                           \
     return false;                                                                                                      \
   }
@@ -1175,7 +1174,7 @@ bool dyn_shaderc::Open()
   s_compiler = shaderc_compiler_initialize();
   if (!s_compiler)
   {
-    Log_ErrorPrint("shaderc_compiler_initialize() failed");
+    ERROR_LOG("shaderc_compiler_initialize() failed");
     Close();
     return false;
   }
@@ -1233,15 +1232,15 @@ bool GPUDevice::CompileGLSLShaderToVulkanSpv(GPUShaderStage stage, std::string_v
   {
     const std::string_view errors(result ? dyn_shaderc::shaderc_result_get_error_message(result) :
                                            "null result object");
-    Log_ErrorFmt("Failed to compile shader to SPIR-V: {}\n{}",
-                 dyn_shaderc::shaderc_compilation_status_to_string(status), errors);
+    ERROR_LOG("Failed to compile shader to SPIR-V: {}\n{}", dyn_shaderc::shaderc_compilation_status_to_string(status),
+              errors);
     DumpBadShader(source, errors);
   }
   else
   {
     const size_t num_warnings = dyn_shaderc::shaderc_result_get_num_warnings(result);
     if (num_warnings > 0)
-      Log_WarningFmt("Shader compiled with warnings:\n{}", dyn_shaderc::shaderc_result_get_error_message(result));
+      WARNING_LOG("Shader compiled with warnings:\n{}", dyn_shaderc::shaderc_result_get_error_message(result));
 
     const size_t spirv_size = dyn_shaderc::shaderc_result_get_length(result);
     DebugAssert(spirv_size > 0);

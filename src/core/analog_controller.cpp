@@ -296,7 +296,7 @@ void AnalogController::SetAnalogMode(bool enabled, bool show_message)
   if (m_analog_mode == enabled)
     return;
 
-  Log_InfoFmt("Controller {} switched to {} mode.", m_index + 1u, m_analog_mode ? "analog" : "digital");
+  INFO_LOG("Controller {} switched to {} mode.", m_index + 1u, m_analog_mode ? "analog" : "digital");
   if (show_message)
   {
     Host::AddIconOSDMessage(
@@ -432,12 +432,12 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
 
       if (data_in == 0x01)
       {
-        Log_DebugPrint("ACK controller access");
+        DEBUG_LOG("ACK controller access");
         m_command = Command::Ready;
         return true;
       }
 
-      Log_DevFmt("Unknown data_in = 0x{:02X}", data_in);
+      DEV_LOG("Unknown data_in = 0x{:02X}", data_in);
       return false;
     }
     break;
@@ -508,7 +508,7 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
       else
       {
         if (m_configuration_mode)
-          Log_ErrorFmt("Unimplemented config mode command 0x{:02X}", data_in);
+          ERROR_LOG("Unimplemented config mode command 0x{:02X}", data_in);
 
         *data_out = 0xFF;
         return false;
@@ -658,7 +658,7 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
           m_status_byte = 0x5A;
         }
 
-        Log_DevFmt("0x{:02x}({}) config mode", m_rx_buffer[2], m_configuration_mode ? "enter" : "leave");
+        DEV_LOG("0x{:02x}({}) config mode", m_rx_buffer[2], m_configuration_mode ? "enter" : "leave");
       }
     }
     break;
@@ -667,14 +667,14 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
     {
       if (m_command_step == 2)
       {
-        Log_DevFmt("analog mode val 0x{:02x}", data_in);
+        DEV_LOG("analog mode val 0x{:02x}", data_in);
 
         if (data_in == 0x00 || data_in == 0x01)
           SetAnalogMode((data_in == 0x01), true);
       }
       else if (m_command_step == 3)
       {
-        Log_DevFmt("analog mode lock 0x{:02x}", data_in);
+        DEV_LOG("analog mode lock 0x{:02x}", data_in);
 
         if (data_in == 0x02 || data_in == 0x03)
           m_analog_locked = (data_in == 0x03);
@@ -771,10 +771,10 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
   {
     m_command = Command::Idle;
 
-    Log_DebugFmt("Rx: {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x}", m_rx_buffer[0], m_rx_buffer[1],
-                 m_rx_buffer[2], m_rx_buffer[3], m_rx_buffer[4], m_rx_buffer[5], m_rx_buffer[6], m_rx_buffer[7]);
-    Log_DebugFmt("Tx: {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x}", m_tx_buffer[0], m_tx_buffer[1],
-                 m_tx_buffer[2], m_tx_buffer[3], m_tx_buffer[4], m_tx_buffer[5], m_tx_buffer[6], m_tx_buffer[7]);
+    DEBUG_LOG("Rx: {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x}", m_rx_buffer[0], m_rx_buffer[1],
+              m_rx_buffer[2], m_rx_buffer[3], m_rx_buffer[4], m_rx_buffer[5], m_rx_buffer[6], m_rx_buffer[7]);
+    DEBUG_LOG("Tx: {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x}", m_tx_buffer[0], m_tx_buffer[1],
+              m_tx_buffer[2], m_tx_buffer[3], m_tx_buffer[4], m_tx_buffer[5], m_tx_buffer[6], m_tx_buffer[7]);
 
     m_rx_buffer.fill(0x00);
     m_tx_buffer.fill(0x00);

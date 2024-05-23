@@ -53,9 +53,9 @@ void InterruptController::SetLineState(IRQ irq, bool state)
 
 #ifdef _DEBUG
   if (!(prev_state & bit) && state)
-    Log_DebugFmt("{} IRQ triggered", s_irq_names[static_cast<size_t>(irq)]);
+    DEBUG_LOG("{} IRQ triggered", s_irq_names[static_cast<size_t>(irq)]);
   else if ((prev_state & bit) && !state)
-    Log_DebugFmt("{} IRQ line inactive", s_irq_names[static_cast<size_t>(irq)]);
+    DEBUG_LOG("{} IRQ line inactive", s_irq_names[static_cast<size_t>(irq)]);
 #endif
 
   s_interrupt_status_register |= (state ? (prev_state ^ s_interrupt_line_state) : 0u) & s_interrupt_line_state;
@@ -72,8 +72,8 @@ u32 InterruptController::ReadRegister(u32 offset)
     case 0x04: // I_MASK
       return s_interrupt_mask_register;
 
-    default: [[unlikely]]
-      Log_ErrorFmt("Invalid read at offset 0x{:08X}", offset);
+    [[unlikely]] default:
+      ERROR_LOG("Invalid read at offset 0x{:08X}", offset);
       return UINT32_C(0xFFFFFFFF);
   }
 }
@@ -89,7 +89,7 @@ void InterruptController::WriteRegister(u32 offset, u32 value)
       for (u32 i = 0; i < static_cast<u32>(IRQ::MaxCount); i++)
       {
         if (cleared_bits & (1u << i))
-          Log_DebugFmt("{} IRQ cleared", s_irq_names[i]);
+          DEBUG_LOG("{} IRQ cleared", s_irq_names[i]);
       }
 #endif
 
@@ -100,14 +100,14 @@ void InterruptController::WriteRegister(u32 offset, u32 value)
 
     case 0x04: // I_MASK
     {
-      Log_DebugFmt("Interrupt mask <- 0x{:08X}", value);
+      DEBUG_LOG("Interrupt mask <- 0x{:08X}", value);
       s_interrupt_mask_register = value & REGISTER_WRITE_MASK;
       UpdateCPUInterruptRequest();
     }
     break;
 
-    default: [[unlikely]]
-      Log_ErrorFmt("Invalid write at offset 0x{:08X}", offset);
+    default:
+      [[unlikely]] ERROR_LOG("Invalid write at offset 0x{:08X}", offset);
       break;
   }
 }

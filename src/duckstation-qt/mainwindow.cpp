@@ -246,10 +246,9 @@ bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, qintptr
 std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, bool fullscreen, bool render_to_main,
                                                           bool surfaceless, bool use_main_window_pos)
 {
-  Log_DevFmt(
-    "acquireRenderWindow() recreate={} fullscreen={} render_to_main={} surfaceless={} use_main_window_pos={}",
-    recreate_window ? "true" : "false", fullscreen ? "true" : "false", render_to_main ? "true" : "false",
-    surfaceless ? "true" : "false", use_main_window_pos ? "true" : "false");
+  DEV_LOG("acquireRenderWindow() recreate={} fullscreen={} render_to_main={} surfaceless={} use_main_window_pos={}",
+          recreate_window ? "true" : "false", fullscreen ? "true" : "false", render_to_main ? "true" : "false",
+          surfaceless ? "true" : "false", use_main_window_pos ? "true" : "false");
 
   QWidget* container =
     m_display_container ? static_cast<QWidget*>(m_display_container) : static_cast<QWidget*>(m_display_widget);
@@ -269,7 +268,7 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, 
   if (m_display_created && !recreate_window && !is_rendering_to_main && !render_to_main &&
       has_container == needs_container && !needs_container && !changing_surfaceless)
   {
-    Log_DevFmt("Toggling to {} without recreating surface", (fullscreen ? "fullscreen" : "windowed"));
+    DEV_LOG("Toggling to {} without recreating surface", (fullscreen ? "fullscreen" : "windowed"));
 
     // since we don't destroy the display widget, we need to save it here
     if (!is_fullscreen && !is_rendering_to_main)

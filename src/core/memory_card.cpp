@@ -143,7 +143,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
       const u8 bits = m_data[ZeroExtend32(m_address) * MemoryCardImage::FRAME_SIZE + m_sector_offset];
       if (m_sector_offset == 0)
       {
-        Log_DevFmt("Reading memory card sector {}", m_address);
+        DEV_LOG("Reading memory card sector {}", m_address);
         m_checksum = Truncate8(m_address >> 8) ^ Truncate8(m_address) ^ bits;
       }
       else
@@ -177,7 +177,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
     {
       if (m_sector_offset == 0)
       {
-        Log_InfoFmt("Writing memory card sector {}", m_address);
+        INFO_LOG("Writing memory card sector {}", m_address);
         m_checksum = Truncate8(m_address >> 8) ^ Truncate8(m_address) ^ data_in;
         m_FLAG.no_write_yet = false;
       }
@@ -251,7 +251,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
         default:
           [[unlikely]]
           {
-            Log_ErrorFmt("Invalid command 0x{:02X}", data_in);
+            ERROR_LOG("Invalid command 0x{:02X}", data_in);
             *data_out = m_FLAG.bits;
             ack = false;
             m_state = State::Idle;
@@ -265,8 +265,8 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
       break;
   }
 
-  Log_DebugFmt("Transfer, old_state={}, new_state={}, data_in=0x{:02X}, data_out=0x{:02X}, ack={}",
-               static_cast<u32>(old_state), static_cast<u32>(m_state), data_in, *data_out, ack ? "true" : "false");
+  DEBUG_LOG("Transfer, old_state={}, new_state={}, data_in=0x{:02X}, data_out=0x{:02X}, ack={}",
+            static_cast<u32>(old_state), static_cast<u32>(m_state), data_in, *data_out, ack ? "true" : "false");
   m_last_byte = data_in;
   return ack;
 }
@@ -289,7 +289,7 @@ std::unique_ptr<MemoryCard> MemoryCard::Open(std::string_view filename)
   mc->m_filename = filename;
   if (!mc->LoadFromFile())
   {
-    Log_InfoFmt("Memory card at '{}' could not be read, formatting.", mc->m_filename);
+    INFO_LOG("Memory card at '{}' could not be read, formatting.", mc->m_filename);
     Host::AddIconOSDMessage(fmt::format("memory_card_{}", filename), ICON_FA_SD_CARD,
                             fmt::format(TRANSLATE_FS("OSDMessage", "Memory card '{}' could not be read, formatting."),
                                         Path::GetFileName(filename), Host::OSD_INFO_DURATION));

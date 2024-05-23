@@ -87,6 +87,6 @@ bool StateWrapper::DoMarker(const char* marker)
   if (m_mode == Mode::Write || file_value.equals(marker))
     return true;
 
-  Log_ErrorFmt("Marker mismatch at offset {}: found '{}' expected '{}'", m_stream->GetPosition(), file_value, marker);
+  ERROR_LOG("Marker mismatch at offset {}: found '{}' expected '{}'", m_stream->GetPosition(), file_value, marker);
   return false;
 }

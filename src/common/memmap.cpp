@@ -36,7 +36,7 @@ bool MemMap::MemProtect(void* baseaddr, size_t size, PageProtect mode)
   DWORD old_protect;
   if (!VirtualProtect(baseaddr, size, static_cast<DWORD>(mode), &old_protect))
   {
-    Log_ErrorFmt("VirtualProtect() failed with error {}", GetLastError());
+    ERROR_LOG("VirtualProtect() failed with error {}", GetLastError());
     return false;
   }
 
@@ -205,7 +205,7 @@ u8* SharedMemoryMappingArea::Map(void* file_handle, size_t file_offset, void* ma
   if (!MapViewOfFile3(static_cast<HANDLE>(file_handle), GetCurrentProcess(), map_base, file_offset, map_size,
                       MEM_REPLACE_PLACEHOLDER, PAGE_READWRITE, nullptr, 0))
   {
-    Log_ErrorFmt("MapViewOfFile3() failed: {}", GetLastError());
+    ERROR_LOG("MapViewOfFile3() failed: {}", GetLastError());
     return nullptr;
   }
 
@@ -231,7 +231,7 @@ bool SharedMemoryMappingArea::Unmap(void* map_base, size_t map_size)
   // unmap the specified range
   if (!UnmapViewOfFile2(GetCurrentProcess(), map_base, MEM_PRESERVE_PLACEHOLDER))
   {
-    Log_ErrorFmt("UnmapViewOfFile2() failed: {}", GetLastError());
+    ERROR_LOG("UnmapViewOfFile2() failed: {}", GetLastError());
     return false;
   }
 
@@ -287,7 +287,7 @@ bool MemMap::MemProtect(void* baseaddr, size_t size, PageProtect mode)
   const int result = mprotect(baseaddr, size, static_cast<int>(mode));
   if (result != 0) [[unlikely]]
   {
-    Log_ErrorFmt("mprotect() for {} at {} failed", size, baseaddr);
+    ERROR_LOG("mprotect() for {} at {} failed", size, baseaddr);
     return false;
   }
 

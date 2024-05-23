@@ -52,7 +52,7 @@ static std::string s_dump_game_directory;
 bool RegTestHost::SetFolders()
 {
   std::string program_path(FileSystem::GetProgramPath());
-  Log_InfoFmt("Program Path: {}", program_path);
+  INFO_LOG("Program Path: {}", program_path);
 
   EmuFolders::AppRoot = Path::Canonicalize(Path::GetDirectory(program_path));
   EmuFolders::DataRoot = EmuFolders::AppRoot;
@@ -67,9 +67,9 @@ bool RegTestHost::SetFolders()
   // On Windows/Linux, these are in the binary directory.
   EmuFolders::Resources = Path::Combine(EmuFolders::AppRoot, "resources");
 
-  Log_DevFmt("AppRoot Directory: {}", EmuFolders::AppRoot);
-  Log_DevFmt("DataRoot Directory: {}", EmuFolders::DataRoot);
-  Log_DevFmt("Resources Directory: {}", EmuFolders::Resources);
+  DEV_LOG("AppRoot Directory: {}", EmuFolders::AppRoot);
+  DEV_LOG("DataRoot Directory: {}", EmuFolders::DataRoot);
+  DEV_LOG("Resources Directory: {}", EmuFolders::Resources);
 
   // Write crash dumps to the data directory, since that'll be accessible for certain.
   CrashHandler::SetWriteDirectory(EmuFolders::DataRoot);
@@ -77,7 +77,7 @@ bool RegTestHost::SetFolders()
   // the resources directory should exist, bail out if not
   if (!FileSystem::DirectoryExists(EmuFolders::Resources.c_str()))
   {
-    Log_ErrorPrint("Resources directory is missing, your installation is incomplete.");
+    ERROR_LOG("Resources directory is missing, your installation is incomplete.");
     return false;
   }
 
@@ -119,31 +119,31 @@ bool RegTestHost::InitializeConfig()
 
 void Host::ReportFatalError(std::string_view title, std::string_view message)
 {
-  Log_ErrorFmt("ReportFatalError: {}", message);
+  ERROR_LOG("ReportFatalError: {}", message);
   abort();
 }
 
 void Host::ReportErrorAsync(std::string_view title, std::string_view message)
 {
   if (!title.empty() && !message.empty())
-    Log_ErrorFmt("ReportErrorAsync: {}: {}", title, message);
+    ERROR_LOG("ReportErrorAsync: {}: {}", title, message);
   else if (!message.empty())
-    Log_ErrorFmt("ReportErrorAsync: {}", message);
+    ERROR_LOG("ReportErrorAsync: {}", message);
 }
 
 bool Host::ConfirmMessage(std::string_view title, std::string_view message)
 {
   if (!title.empty() && !message.empty())
-    Log_ErrorFmt("ConfirmMessage: {}: {}", title, message);
+    ERROR_LOG("ConfirmMessage: {}: {}", title, message);
   else if (!message.empty())
-    Log_ErrorFmt("ConfirmMessage: {}", message);
+    ERROR_LOG("ConfirmMessage: {}", message);
 
   return true;
 }
 
 void Host::ReportDebuggerMessage(std::string_view message)
 {
-  Log_ErrorFmt("ReportDebuggerMessage: {}", message);
+  ERROR_LOG("ReportDebuggerMessage: {}", message);
 }
 
 std::span<const std::pair<const char*, const char*>> Host::GetAvailableLanguageList()
@@ -209,7 +209,7 @@ std::optional<std::vector<u8>> Host::ReadResourceFile(std::string_view filename,
   const std::string path(Path::Combine(EmuFolders::Resources, filename));
   std::optional<std::vector<u8>> ret(FileSystem::ReadBinaryFile(path.c_str()));
   if (!ret.has_value())
-    Log_ErrorFmt("Failed to read resource file '{}'", filename);
+    ERROR_LOG("Failed to read resource file '{}'", filename);
   return ret;
 }
 
@@ -218,7 +218,7 @@ std::optional<std::string> Host::ReadResourceFileToString(std::string_view filen
   const std::string path(Path::Combine(EmuFolders::Resources, filename));
   std::optional<std::string> ret(FileSystem::ReadFileToString(path.c_str()));
   if (!ret.has_value())
-    Log_ErrorFmt("Failed to read resource file to string '{}'", filename);
+    ERROR_LOG("Failed to read resource file to string '{}'", filename);
   return ret;
 }
 
@@ -228,7 +228,7 @@ std::optional<std::time_t> Host::GetResourceFileTimestamp(std::string_view filen
   FILESYSTEM_STAT_DATA sd;
   if (!FileSystem::StatFile(path.c_str(), &sd))
   {
-    Log_ErrorFmt("Failed to stat resource file '{}'", filename);
+    ERROR_LOG("Failed to stat resource file '{}'", filename);
     return std::nullopt;
   }
 
@@ -272,21 +272,21 @@ void Host::OnPerformanceCountersUpdated()
 
 void Host::OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name)
 {
-  Log_InfoFmt("Disc Path: {}", disc_path);
-  Log_InfoFmt("Game Serial: {}", game_serial);
-  Log_InfoFmt("Game Name: {}", game_name);
+  INFO_LOG("Disc Path: {}", disc_path);
+  INFO_LOG("Game Serial: {}", game_serial);
+  INFO_LOG("Game Name: {}", game_name);
 
   if (!s_dump_base_directory.empty())
   {
     s_dump_game_directory = Path::Combine(s_dump_base_directory, game_name);
     if (!FileSystem::DirectoryExists(s_dump_game_directory.c_str()))
     {
-      Log_InfoFmt("Creating directory '{}'...", s_dump_game_directory);
+      INFO_LOG("Creating directory '{}'...", s_dump_game_directory);
       if (!FileSystem::CreateDirectory(s_dump_game_directory.c_str(), false))
         Panic("Failed to create dump directory.");
     }
 
-    Log_InfoFmt("Dumping frames to '{}'...", s_dump_game_directory);
+    INFO_LOG("Dumping frames to '{}'...", s_dump_game_directory);
   }
 }
 
@@ -540,7 +540,7 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
         s_dump_base_directory = argv[++i];
         if (s_dump_base_directory.empty())
         {
-          Log_ErrorPrint("Invalid dump directory specified.");
+          ERROR_LOG("Invalid dump directory specified.");
           return false;
         }
 
@@ -551,7 +551,7 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
         s_frame_dump_interval = StringUtil::FromChars<u32>(argv[++i]).value_or(0);
         if (s_frames_to_run <= 0)
         {
-          Log_ErrorFmt("Invalid dump interval specified: {}", argv[i]);
+          ERROR_LOG("Invalid dump interval specified: {}", argv[i]);
           return false;
         }
 
@@ -562,7 +562,7 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
         s_frames_to_run = StringUtil::FromChars<u32>(argv[++i]).value_or(0);
         if (s_frames_to_run == 0)
         {
-          Log_ErrorFmt("Invalid frame count specified: {}", argv[i]);
+          ERROR_LOG("Invalid frame count specified: {}", argv[i]);
           return false;
         }
 
@@ -573,7 +573,7 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
         std::optional<LOGLEVEL> level = Settings::ParseLogLevelName(argv[++i]);
         if (!level.has_value())
         {
-          Log_ErrorPrint("Invalid log level specified.");
+          ERROR_LOG("Invalid log level specified.");
           return false;
         }
 
@@ -586,7 +586,7 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
         std::optional<GPURenderer> renderer = Settings::ParseRendererName(argv[++i]);
         if (!renderer.has_value())
         {
-          Log_ErrorPrint("Invalid renderer specified.");
+          ERROR_LOG("Invalid renderer specified.");
           return false;
         }
 
@@ -598,11 +598,11 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
         const u32 upscale = StringUtil::FromChars<u32>(argv[++i]).value_or(0);
         if (upscale == 0)
         {
-          Log_ErrorPrint("Invalid upscale value.");
+          ERROR_LOG("Invalid upscale value.");
           return false;
         }
 
-        Log_InfoFmt("Setting upscale to {}.", upscale);
+        INFO_LOG("Setting upscale to {}.", upscale);
         s_base_settings_interface->SetIntValue("GPU", "ResolutionScale", static_cast<s32>(upscale));
         continue;
       }
@@ -611,24 +611,24 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
         const std::optional<CPUExecutionMode> cpu = Settings::ParseCPUExecutionMode(argv[++i]);
         if (!cpu.has_value())
         {
-          Log_ErrorPrint("Invalid CPU execution mode.");
+          ERROR_LOG("Invalid CPU execution mode.");
           return false;
         }
 
-        Log_InfoFmt("Setting CPU execution mode to {}.", Settings::GetCPUExecutionModeName(cpu.value()));
+        INFO_LOG("Setting CPU execution mode to {}.", Settings::GetCPUExecutionModeName(cpu.value()));
         s_base_settings_interface->SetStringValue("CPU", "ExecutionMode",
                                                   Settings::GetCPUExecutionModeName(cpu.value()));
         continue;
       }
       else if (CHECK_ARG("-pgxp"))
       {
-        Log_InfoPrint("Enabling PGXP.");
+        INFO_LOG("Enabling PGXP.");
         s_base_settings_interface->SetBoolValue("GPU", "PGXPEnable", true);
         continue;
       }
       else if (CHECK_ARG("-pgxp-cpu"))
       {
-        Log_InfoPrint("Enabling PGXP CPU mode.");
+        INFO_LOG("Enabling PGXP CPU mode.");
         s_base_settings_interface->SetBoolValue("GPU", "PGXPEnable", true);
         s_base_settings_interface->SetBoolValue("GPU", "PGXPCPU", true);
         continue;
@@ -640,7 +640,7 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
       }
       else if (argv[i][0] == '-')
       {
-        Log_ErrorFmt("Unknown parameter: '{}'", argv[i]);
+        ERROR_LOG("Unknown parameter: '{}'", argv[i]);
         return false;
       }
 
@@ -674,7 +674,7 @@ int main(int argc, char* argv[])
 
   if (!autoboot || autoboot->filename.empty())
   {
-    Log_ErrorPrint("No boot path specified.");
+    ERROR_LOG("No boot path specified.");
     return EXIT_FAILURE;
   }
 
@@ -683,7 +683,7 @@ int main(int argc, char* argv[])
     if (!System::Internal::PerformEarlyHardwareChecks(&startup_error) ||
         !System::Internal::CPUThreadInitialize(&startup_error))
     {
-      Log_ErrorFmt("CPUThreadInitialize() failed: {}", startup_error.GetDescription());
+      ERROR_LOG("CPUThreadInitialize() failed: {}", startup_error.GetDescription());
       return EXIT_FAILURE;
     }
   }
@@ -692,10 +692,10 @@ int main(int argc, char* argv[])
 
   Error error;
   int result = -1;
-  Log_InfoFmt("Trying to boot '{}'...", autoboot->filename);
+  INFO_LOG("Trying to boot '{}'...", autoboot->filename);
   if (!System::BootSystem(std::move(autoboot.value()), &error))
   {
-    Log_ErrorFmt("Failed to boot system: {}", error.GetDescription());
+    ERROR_LOG("Failed to boot system: {}", error.GetDescription());
     goto cleanup;
   }
 
@@ -703,17 +703,17 @@ int main(int argc, char* argv[])
   {
     if (s_dump_base_directory.empty())
     {
-      Log_ErrorPrint("Dump directory not specified.");
+      ERROR_LOG("Dump directory not specified.");
       goto cleanup;
     }
 
-    Log_InfoFmt("Dumping every {}th frame to '{}'.", s_frame_dump_interval, s_dump_base_directory);
+    INFO_LOG("Dumping every {}th frame to '{}'.", s_frame_dump_interval, s_dump_base_directory);
   }
 
-  Log_InfoFmt("Running for %d frames...", s_frames_to_run);
+  INFO_LOG("Running for %d frames...", s_frames_to_run);
   System::Execute();
 
-  Log_InfoPrint("Exiting with success.");
+  INFO_LOG("Exiting with success.");
   result = 0;
 
 cleanup:

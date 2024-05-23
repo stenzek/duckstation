@@ -57,7 +57,7 @@ bool WAVWriter::Open(const char* filename, u32 sample_rate, u32 num_channels)
 
   if (!WriteHeader())
   {
-    Log_ErrorPrint("Failed to write header to file");
+    ERROR_LOG("Failed to write header to file");
     m_sample_rate = 0;
     m_num_channels = 0;
     std::fclose(m_file);
@@ -74,7 +74,7 @@ void WAVWriter::Close()
     return;
 
   if (std::fseek(m_file, 0, SEEK_SET) != 0 || !WriteHeader())
-    Log_ErrorPrint("Failed to re-write header on file, file may be unplayable");
+    ERROR_LOG("Failed to re-write header on file, file may be unplayable");
 
   std::fclose(m_file);
   m_file = nullptr;
@@ -88,7 +88,7 @@ void WAVWriter::WriteFrames(const s16* samples, u32 num_frames)
   const u32 num_frames_written =
     static_cast<u32>(std::fwrite(samples, sizeof(s16) * m_num_channels, num_frames, m_file));
   if (num_frames_written != num_frames)
-    Log_ErrorFmt("Only wrote {} of {} frames to output file", num_frames_written, num_frames);
+    ERROR_LOG("Only wrote {} of {} frames to output file", num_frames_written, num_frames);
 
   m_num_frames += num_frames_written;
 }

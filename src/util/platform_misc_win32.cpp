@@ -21,7 +21,7 @@ static bool SetScreensaverInhibitWin32(bool inhibit)
 {
   if (SetThreadExecutionState(ES_CONTINUOUS | (inhibit ? (ES_DISPLAY_REQUIRED | ES_SYSTEM_REQUIRED) : 0)) == NULL)
   {
-    Log_ErrorFmt("SetThreadExecutionState() failed: {}", GetLastError());
+    ERROR_LOG("SetThreadExecutionState() failed: {}", GetLastError());
     return false;
   }
 
@@ -37,7 +37,7 @@ void PlatformMisc::SuspendScreensaver()
 
   if (!SetScreensaverInhibitWin32(true))
   {
-    Log_ErrorPrint("Failed to suspend screensaver.");
+    ERROR_LOG("Failed to suspend screensaver.");
     return;
   }
 
@@ -50,7 +50,7 @@ void PlatformMisc::ResumeScreensaver()
     return;
 
   if (!SetScreensaverInhibitWin32(false))
-    Log_ErrorPrint("Failed to resume screensaver.");
+    ERROR_LOG("Failed to resume screensaver.");
 
   s_screensaver_suspended = false;
 }

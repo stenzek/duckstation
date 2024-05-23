@@ -167,7 +167,7 @@ static std::optional<std::string> Cmd$G(std::string_view data)
   }
   else
   {
-    Log_ErrorFmt("Wrong payload size for 'G' command, expected {} got {}", NUM_GDB_REGISTERS * 8, data.size());
+    ERROR_LOG("Wrong payload size for 'G' command, expected {} got {}", NUM_GDB_REGISTERS * 8, data.size());
   }
 
   return {""};
@@ -308,7 +308,7 @@ std::string ProcessPacket(std::string_view data)
   {
     if (trimmedData[0] == '-')
     {
-      Log_ErrorPrint("Received negative ack");
+      ERROR_LOG("Received negative ack");
     }
     trimmedData = trimmedData.substr(1);
   }
@@ -317,7 +317,7 @@ std::string ProcessPacket(std::string_view data)
   auto packet = DeserializePacket(trimmedData);
   if (!packet)
   {
-    Log_ErrorFmt("Malformed packet '{}'", trimmedData);
+    ERROR_LOG("Malformed packet '{}'", trimmedData);
     return "-";
   }
 
@@ -329,7 +329,7 @@ std::string ProcessPacket(std::string_view data)
   {
     if (packet->starts_with(command.first))
     {
-      Log_DebugFmt("Processing command '{}'", command.first);
+      DEBUG_LOG("Processing command '{}'", command.first);
 
       // Invoke command, remove command name from payload.
       reply = command.second(packet->substr(strlen(command.first)));
@@ -339,7 +339,7 @@ std::string ProcessPacket(std::string_view data)
   }
 
   if (!processed)
-    Log_WarningFmt("Failed to process packet '{}'", trimmedData);
+    WARNING_LOG("Failed to process packet '{}'", trimmedData);
 
   return reply ? "+" + SerializePacket(*reply) : "+";
 }

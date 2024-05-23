@@ -70,14 +70,14 @@ Value CodeGenerator::EmitLoadGuestMemory(Instruction instruction, const CodeCach
   {
     if (!use_fastmem)
     {
-      Log_ProfileFmt("Non-constant load at 0x{:08X}, speculative address 0x{:08X}, using fastmem = {}", info.pc,
-                     *address_spec, use_fastmem ? "yes" : "no");
+      DEBUG_LOG("Non-constant load at 0x{:08X}, speculative address 0x{:08X}, using fastmem = {}", info.pc,
+                *address_spec, use_fastmem ? "yes" : "no");
     }
   }
   else
   {
-    Log_ProfileFmt("Non-constant load at 0x{:08X}, speculative address UNKNOWN, using fastmem = {}", info.pc,
-                   use_fastmem ? "yes" : "no");
+    DEBUG_LOG("Non-constant load at 0x{:08X}, speculative address UNKNOWN, using fastmem = {}", info.pc,
+              use_fastmem ? "yes" : "no");
   }
 
   if (CodeCache::IsUsingFastmem() && use_fastmem)
@@ -145,14 +145,14 @@ void CodeGenerator::EmitStoreGuestMemory(Instruction instruction, const CodeCach
   {
     if (!use_fastmem)
     {
-      Log_ProfileFmt("Non-constant store at 0x{:08X}, speculative address 0x{:08X}, using fastmem = {}", info.pc,
-                     *address_spec, use_fastmem ? "yes" : "no");
+      DEBUG_LOG("Non-constant store at 0x{:08X}, speculative address 0x{:08X}, using fastmem = {}", info.pc,
+                *address_spec, use_fastmem ? "yes" : "no");
     }
   }
   else
   {
-    Log_ProfileFmt("Non-constant store at 0x{:08X}, speculative address UNKNOWN, using fastmem = {}", info.pc,
-                   use_fastmem ? "yes" : "no");
+    DEBUG_LOG("Non-constant store at 0x{:08X}, speculative address UNKNOWN, using fastmem = {}", info.pc,
+              use_fastmem ? "yes" : "no");
   }
 
   if (CodeCache::IsUsingFastmem() && use_fastmem)

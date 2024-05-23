@@ -119,7 +119,7 @@ std::unique_ptr<OpenGLTexture> OpenGLTexture::Create(u32 width, u32 height, u32 
 
   if (layers > 1 && data)
   {
-    Log_ErrorPrint("Loading texture array data not currently supported");
+    ERROR_LOG("Loading texture array data not currently supported");
     return nullptr;
   }
 
@@ -224,7 +224,7 @@ std::unique_ptr<OpenGLTexture> OpenGLTexture::Create(u32 width, u32 height, u32 
   GLenum error = glGetError();
   if (error != GL_NO_ERROR)
   {
-    Log_ErrorFmt("Failed to create texture: 0x{:X}", error);
+    ERROR_LOG("Failed to create texture: 0x{:X}", error);
     glDeleteTextures(1, &id);
     return nullptr;
   }
@@ -411,7 +411,7 @@ std::unique_ptr<GPUSampler> OpenGLDevice::CreateSampler(const GPUSampler::Config
   glGenSamplers(1, &sampler);
   if (glGetError() != GL_NO_ERROR)
   {
-    Log_ErrorFmt("Failed to create sampler: {:X}", sampler);
+    ERROR_LOG("Failed to create sampler: {:X}", sampler);
     return {};
   }
 
@@ -630,7 +630,7 @@ bool OpenGLTextureBuffer::CreateBuffer()
     glGenTextures(1, &m_texture_id);
     if (const GLenum err = glGetError(); err != GL_NO_ERROR)
     {
-      Log_ErrorFmt("Failed to create texture for buffer: 0x{:X}", err);
+      ERROR_LOG("Failed to create texture for buffer: 0x{:X}", err);
       return false;
     }
 
@@ -683,7 +683,7 @@ std::unique_ptr<GPUTextureBuffer> OpenGLDevice::CreateTextureBuffer(GPUTextureBu
     glGetInteger64v(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &max_ssbo_size);
     if (static_cast<GLint64>(buffer_size) > max_ssbo_size)
     {
-      Log_ErrorFmt("Buffer size of {} not supported, max is {}", buffer_size, max_ssbo_size);
+      ERROR_LOG("Buffer size of {} not supported, max is {}", buffer_size, max_ssbo_size);
       return {};
     }
   }
@@ -701,7 +701,7 @@ std::unique_ptr<GPUTextureBuffer> OpenGLDevice::CreateTextureBuffer(GPUTextureBu
     glGenTextures(1, &texture_id);
     if (const GLenum err = glGetError(); err != GL_NO_ERROR)
     {
-      Log_ErrorFmt("Failed to create texture for buffer: 0x{:X}", err);
+      ERROR_LOG("Failed to create texture for buffer: 0x{:X}", err);
       return {};
     }
 
@@ -776,7 +776,7 @@ std::unique_ptr<OpenGLDownloadTexture> OpenGLDownloadTexture::Create(u32 width, 
 
     if (!buffer_map)
     {
-      Log_ErrorPrint("Failed to map persistent download buffer");
+      ERROR_LOG("Failed to map persistent download buffer");
       glDeleteBuffers(1, &buffer_id);
       return {};
     }

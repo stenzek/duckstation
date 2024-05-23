@@ -11,7 +11,7 @@ GDBConnection::GDBConnection(GDBServer* parent, intptr_t descriptor) : QTcpSocke
 {
   if (!setSocketDescriptor(descriptor))
   {
-    Log_ErrorFmt("{} failed to set socket descriptor: {}", descriptor, errorString().toStdString());
+    ERROR_LOG("{} failed to set socket descriptor: {}", descriptor, errorString().toStdString());
     deleteLater();
     return;
   }
@@ -21,7 +21,7 @@ GDBConnection::GDBConnection(GDBServer* parent, intptr_t descriptor) : QTcpSocke
   connect(this, &QTcpSocket::readyRead, this, &GDBConnection::receivedData);
   connect(this, &QTcpSocket::disconnected, this, &GDBConnection::gotDisconnected);
 
-  Log_InfoFmt("{} client connected", m_descriptor);
+  INFO_LOG("{} client connected", m_descriptor);
 
   m_seen_resume = System::IsPaused();
   g_emu_thread->setSystemPaused(true);
@@ -29,7 +29,7 @@ GDBConnection::GDBConnection(GDBServer* parent, intptr_t descriptor) : QTcpSocke
 
 void GDBConnection::gotDisconnected()
 {
-  Log_InfoFmt("{} client disconnected", m_descriptor);
+  INFO_LOG("{} client disconnected", m_descriptor);
   deleteLater();
 }
 
@@ -46,19 +46,19 @@ void GDBConnection::receivedData()
 
       if (GDBProtocol::IsPacketInterrupt(m_readBuffer))
       {
-        Log_DebugFmt("{} > Interrupt request", m_descriptor);
+        DEBUG_LOG("{} > Interrupt request", m_descriptor);
         g_emu_thread->setSystemPaused(true);
         m_readBuffer.erase();
       }
       else if (GDBProtocol::IsPacketContinue(m_readBuffer))
       {
-        Log_DebugFmt("{} > Continue request", m_descriptor);
+        DEBUG_LOG("{} > Continue request", m_descriptor);
         g_emu_thread->setSystemPaused(false);
         m_readBuffer.erase();
       }
       else if (GDBProtocol::IsPacketComplete(m_readBuffer))
       {
-        Log_DebugFmt("{} > %s", m_descriptor, m_readBuffer.c_str());
+        DEBUG_LOG("{} > %s", m_descriptor, m_readBuffer.c_str());
         writePacket(GDBProtocol::ProcessPacket(m_readBuffer));
         m_readBuffer.erase();
       }
@@ -66,7 +66,7 @@ void GDBConnection::receivedData()
   }
   if (bytesRead == -1)
   {
-    Log_ErrorFmt("{} failed to read from socket: %s", m_descriptor, errorString().toStdString());
+    ERROR_LOG("{} failed to read from socket: %s", m_descriptor, errorString().toStdString());
   }
 }
 
@@ -89,7 +89,7 @@ void GDBConnection::onEmulationResumed()
 
 void GDBConnection::writePacket(std::string_view packet)
 {
-  Log_DebugFmt("{} < {}", m_descriptor, packet);
+  DEBUG_LOG("{} < {}", m_descriptor, packet);
   if (write(packet.data(), packet.length()) == -1)
-    Log_ErrorFmt("{} failed to write to socket: {}", m_descriptor, errorString().toStdString());
+    ERROR_LOG("{} failed to write to socket: {}", m_descriptor, errorString().toStdString());
 }

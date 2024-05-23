@@ -100,7 +100,7 @@ TinyString ShaderGen::GetGLSLVersionString(RenderAPI render_api)
   }
   else
   {
-    Log_ErrorFmt("Invalid GLSL version string: '{}' ('{}')", glsl_version, glsl_version_start);
+    ERROR_LOG("Invalid GLSL version string: '{}' ('{}')", glsl_version, glsl_version_start);
     if (glsl_es)
     {
       major_version = 3;

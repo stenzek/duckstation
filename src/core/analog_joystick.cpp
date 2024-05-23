@@ -240,7 +240,7 @@ void AnalogJoystick::ToggleAnalogMode()
 {
   m_analog_mode = !m_analog_mode;
 
-  Log_InfoFmt("Joystick {} switched to {} mode.", m_index + 1u, m_analog_mode ? "analog" : "digital");
+  INFO_LOG("Joystick {} switched to {} mode.", m_index + 1u, m_analog_mode ? "analog" : "digital");
   Host::AddIconOSDMessage(
     fmt::format("analog_mode_toggle_{}", m_index), ICON_FA_GAMEPAD,
     m_analog_mode ? fmt::format(TRANSLATE_FS("Controller", "Controller {} switched to analog mode."), m_index + 1u) :

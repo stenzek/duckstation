@@ -71,7 +71,7 @@ bool Win32ProgressCallback::Create()
     wc.lpszClassName = CLASS_NAME;
     if (!RegisterClassExA(&wc))
     {
-      Log_ErrorPrint("Failed to register window class");
+      ERROR_LOG("Failed to register window class");
       return false;
     }
 
@@ -83,7 +83,7 @@ bool Win32ProgressCallback::Create()
                     CW_USEDEFAULT, WINDOW_WIDTH, WINDOW_HEIGHT, nullptr, nullptr, GetModuleHandle(nullptr), this);
   if (!m_window_hwnd)
   {
-    Log_ErrorPrint("Failed to create window");
+    ERROR_LOG("Failed to create window");
     return false;
   }
 
@@ -187,7 +187,7 @@ LRESULT CALLBACK Win32ProgressCallback::WndProc(HWND hwnd, UINT msg, WPARAM wpar
 
 void Win32ProgressCallback::DisplayError(const char* message)
 {
-  Log_ErrorPrint(message);
+  ERROR_LOG(message);
   SendMessageA(m_list_box_hwnd, LB_ADDSTRING, 0, reinterpret_cast<LPARAM>(message));
   SendMessageA(m_list_box_hwnd, WM_VSCROLL, SB_BOTTOM, 0);
   PumpMessages();
@@ -195,7 +195,7 @@ void Win32ProgressCallback::DisplayError(const char* message)
 
 void Win32ProgressCallback::DisplayWarning(const char* message)
 {
-  Log_WarningPrint(message);
+  WARNING_LOG(message);
   SendMessageA(m_list_box_hwnd, LB_ADDSTRING, 0, reinterpret_cast<LPARAM>(message));
   SendMessageA(m_list_box_hwnd, WM_VSCROLL, SB_BOTTOM, 0);
   PumpMessages();
@@ -203,7 +203,7 @@ void Win32ProgressCallback::DisplayWarning(const char* message)
 
 void Win32ProgressCallback::DisplayInformation(const char* message)
 {
-  Log_InfoPrint(message);
+  INFO_LOG(message);
   SendMessageA(m_list_box_hwnd, LB_ADDSTRING, 0, reinterpret_cast<LPARAM>(message));
   SendMessageA(m_list_box_hwnd, WM_VSCROLL, SB_BOTTOM, 0);
   PumpMessages();
@@ -211,7 +211,7 @@ void Win32ProgressCallback::DisplayInformation(const char* message)
 
 void Win32ProgressCallback::DisplayDebugMessage(const char* message)
 {
-  Log_DevPrint(message);
+  DEV_LOG(message);
 }
 
 void Win32ProgressCallback::ModalError(const char* message)

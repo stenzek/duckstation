@@ -127,7 +127,7 @@ bool XInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex
   }
   if (!m_xinput_module)
   {
-    Log_ErrorPrint("Failed to load XInput module.");
+    ERROR_LOG("Failed to load XInput module.");
     return false;
   }
 
@@ -146,7 +146,7 @@ bool XInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex
 
   if (!m_xinput_get_state || !m_xinput_set_state || !m_xinput_get_capabilities)
   {
-    Log_ErrorPrint("Failed to get XInput function pointers.");
+    ERROR_LOG("Failed to get XInput function pointers.");
     return false;
   }
 
@@ -227,7 +227,7 @@ void XInputSource::PollEvents()
     else
     {
       if (result != ERROR_DEVICE_NOT_CONNECTED)
-        Log_WarningFmt("XInputGetState({}) failed: 0x{:08X} / 0x{:08X}", i, result, GetLastError());
+        WARNING_LOG("XInputGetState({}) failed: 0x{:08X} / 0x{:08X}", i, result, GetLastError());
 
       if (was_connected)
         HandleControllerDisconnection(i);
@@ -424,11 +424,11 @@ bool XInputSource::GetGenericBindingMapping(std::string_view device, GenericInpu
 
 void XInputSource::HandleControllerConnection(u32 index)
 {
-  Log_InfoFmt("XInput controller {} connected.", index);
+  INFO_LOG("XInput controller {} connected.", index);
 
   XINPUT_CAPABILITIES caps = {};
   if (m_xinput_get_capabilities(index, 0, &caps) != ERROR_SUCCESS)
-    Log_WarningFmt("Failed to get XInput capabilities for controller {}", index);
+    WARNING_LOG("Failed to get XInput capabilities for controller {}", index);
 
   ControllerData& cd = m_controllers[index];
   cd.connected = true;
@@ -441,7 +441,7 @@ void XInputSource::HandleControllerConnection(u32 index)
 
 void XInputSource::HandleControllerDisconnection(u32 index)
 {
-  Log_InfoFmt("XInput controller {} disconnected.", index);
+  INFO_LOG("XInput controller {} disconnected.", index);
 
   InputManager::OnInputDeviceDisconnected({{
                                             .source_type = InputSourceType::XInput,

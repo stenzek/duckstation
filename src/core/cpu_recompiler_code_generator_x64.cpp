@@ -259,8 +259,8 @@ void CPU::CodeCache::DisassembleAndLogHostCode(const void* start, u32 size)
         else
           hex.append("   ");
       }
-      Log::WriteFmt("HostCode", "", LOGLEVEL_DEBUG, "  {:016X} {} {}",
-                    static_cast<u64>(reinterpret_cast<uintptr_t>(ptr)), hex, buffer);
+      Log::FastWrite("HostCode", "", LOGLEVEL_DEBUG, "  {:016X} {} {}",
+                     static_cast<u64>(reinterpret_cast<uintptr_t>(ptr)), hex, buffer);
     }
 
     ptr += disas_instruction.length;
@@ -293,12 +293,12 @@ u32 CPU::CodeCache::GetHostInstructionCount(const void* start, u32 size)
 
 void CPU::CodeCache::DisassembleAndLogHostCode(const void* start, u32 size)
 {
-  Log_ErrorPrint("Not compiled with ENABLE_HOST_DISASSEMBLY.");
+  ERROR_LOG("Not compiled with ENABLE_HOST_DISASSEMBLY.");
 }
 
 u32 CPU::CodeCache::GetHostInstructionCount(const void* start, u32 size)
 {
-  Log_ErrorPrint("Not compiled with ENABLE_HOST_DISASSEMBLY.");
+  ERROR_LOG("Not compiled with ENABLE_HOST_DISASSEMBLY.");
   return 0;
 }
 
@@ -2518,7 +2518,7 @@ void CodeGenerator::EmitUpdateFastmemBase()
 
 void CodeGenerator::BackpatchLoadStore(void* host_pc, const CodeCache::LoadstoreBackpatchInfo& lbi)
 {
-  Log_ProfileFmt("Backpatching {} (guest PC 0x{:08X}) to slowmem", host_pc, lbi.guest_pc);
+  DEV_LOG("Backpatching {} (guest PC 0x{:08X}) to slowmem", host_pc, lbi.guest_pc);
 
   // turn it into a jump to the slowmem handler
   Xbyak::CodeGenerator cg(lbi.code_size, host_pc);

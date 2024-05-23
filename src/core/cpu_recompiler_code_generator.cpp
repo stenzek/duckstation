@@ -980,7 +980,7 @@ void CodeGenerator::BlockPrologue()
 
   if (m_block->protection == CodeCache::PageProtectionMode::ManualCheck)
   {
-    Log_DebugFmt("Generate manual protection for PC {:08X}", m_block->pc);
+    DEBUG_LOG("Generate manual protection for PC {:08X}", m_block->pc);
     const u8* ram_ptr = Bus::g_ram + VirtualAddressToPhysical(m_block->pc);
     const u8* shadow_ptr = reinterpret_cast<const u8*>(m_block->Instructions());
     EmitBlockProtectCheck(ram_ptr, shadow_ptr, m_block->size * sizeof(Instruction));
@@ -1079,7 +1079,7 @@ void CodeGenerator::InstructionEpilogue(Instruction instruction, const CodeCache
   if (m_load_delay_dirty)
   {
     // we have to invalidate the register cache, since the load delayed register might've been cached
-    Log_DebugPrint("Emitting delay slot flush");
+    DEBUG_LOG("Emitting delay slot flush");
     EmitFlushInterpreterLoadDelay();
     m_register_cache.InvalidateAllNonDirtyGuestRegisters();
     m_load_delay_dirty = false;
@@ -1088,7 +1088,7 @@ void CodeGenerator::InstructionEpilogue(Instruction instruction, const CodeCache
   // copy if the previous instruction was a load, reset the current value on the next instruction
   if (m_next_load_delay_dirty)
   {
-    Log_DebugPrint("Emitting delay slot flush (with move next)");
+    DEBUG_LOG("Emitting delay slot flush (with move next)");
     EmitMoveNextInterpreterLoadDelay();
     m_next_load_delay_dirty = false;
     m_load_delay_dirty = true;
@@ -1097,7 +1097,7 @@ void CodeGenerator::InstructionEpilogue(Instruction instruction, const CodeCache
 
 void CodeGenerator::TruncateBlockAtCurrentInstruction()
 {
-  Log_DevFmt("Truncating block {:08X} at {:08X}", m_block->pc, m_current_instruction.info->pc);
+  DEV_LOG("Truncating block {:08X} at {:08X}", m_block->pc, m_current_instruction.info->pc);
   m_block_end.instruction = m_current_instruction.instruction + 1;
   m_block_end.info = m_current_instruction.info + 1;
   WriteNewPC(CalculatePC(), true);
@@ -1141,7 +1141,7 @@ void CodeGenerator::AddPendingCycles(bool commit)
 void CodeGenerator::AddGTETicks(TickCount ticks)
 {
   m_gte_done_cycle = m_delayed_cycles_add + ticks;
-  Log_DebugFmt("Adding {} GTE ticks", ticks);
+  DEBUG_LOG("Adding {} GTE ticks", ticks);
 }
 
 void CodeGenerator::StallUntilGTEComplete()
@@ -1151,7 +1151,7 @@ void CodeGenerator::StallUntilGTEComplete()
     // simple case - in block scheduling
     if (m_gte_done_cycle > m_delayed_cycles_add)
     {
-      Log_DebugFmt("Stalling for {} ticks from GTE", m_gte_done_cycle - m_delayed_cycles_add);
+      DEBUG_LOG("Stalling for {} ticks from GTE", m_gte_done_cycle - m_delayed_cycles_add);
       m_delayed_cycles_add += (m_gte_done_cycle - m_delayed_cycles_add);
     }
 
@@ -1667,9 +1667,8 @@ bool CodeGenerator::Compile_Store(Instruction instruction, const CodeCache::Inst
         VirtualAddressToPhysical(m_block->pc + (m_block->size * sizeof(Instruction)));
       if (phys_addr >= block_start && phys_addr < block_end)
       {
-        Log_WarningFmt(
-          "Instruction {:08X} speculatively writes to {:08X} inside block {:08X}-{:08X}. Truncating block.", info.pc,
-          phys_addr, block_start, block_end);
+        WARNING_LOG("Instruction {:08X} speculatively writes to {:08X} inside block {:08X}-{:08X}. Truncating block.",
+                    info.pc, phys_addr, block_start, block_end);
         TruncateBlockAtCurrentInstruction();
       }
     }
@@ -1710,7 +1709,7 @@ bool CodeGenerator::Compile_LoadLeftRight(Instruction instruction, const CodeCac
     // we don't actually care if it's our target reg or not, if it's not, it won't affect anything
     if (m_load_delay_dirty)
     {
-      Log_DevFmt("Flushing interpreter load delay for lwl/lwr instruction at 0x{:08X}", info.pc);
+      DEV_LOG("Flushing interpreter load delay for lwl/lwr instruction at 0x{:08X}", info.pc);
       EmitFlushInterpreterLoadDelay();
       m_register_cache.InvalidateGuestRegister(instruction.r.rt);
       m_load_delay_dirty = false;
@@ -2387,8 +2386,8 @@ bool CodeGenerator::Compile_Branch(Instruction instruction, const CodeCache::Ins
 
       if (branch_target.IsConstant())
       {
-        Log_WarningFmt("Misaligned constant target branch 0x{:08X}, this is strange",
-                       Truncate32(branch_target.constant_value));
+        WARNING_LOG("Misaligned constant target branch 0x{:08X}, this is strange",
+                    Truncate32(branch_target.constant_value));
       }
       else
       {

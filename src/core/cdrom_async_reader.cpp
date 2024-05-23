@@ -25,7 +25,7 @@ void CDROMAsyncReader::StartThread(u32 readahead_count)
 
   m_shutdown_flag.store(false);
   m_read_thread = std::thread(&CDROMAsyncReader::WorkerThreadEntryPoint, this);
-  Log_InfoFmt("Read thread started with readahead of {} sectors", readahead_count);
+  INFO_LOG("Read thread started with readahead of {} sectors", readahead_count);
 }
 
 void CDROMAsyncReader::StopThread()
@@ -82,7 +82,7 @@ bool CDROMAsyncReader::Precache(ProgressCallback* callback)
       const CDImage::LBA lba = m_media->GetPositionOnDisc();
       if (!memory_image->Seek(lba)) [[unlikely]]
       {
-        Log_ErrorFmt("Failed to seek to LBA {} in memory image", lba);
+        ERROR_LOG("Failed to seek to LBA {} in memory image", lba);
         return false;
       }
 
@@ -115,7 +115,7 @@ void CDROMAsyncReader::QueueReadSector(CDImage::LBA lba)
     const u32 buffer_front = m_buffer_front.load();
     if (m_buffers[buffer_front].lba == lba)
     {
-      Log_DebugFmt("Skipping re-reading same sector {}", lba);
+      DEBUG_LOG("Skipping re-reading same sector {}", lba);
       return;
     }
 
@@ -124,7 +124,7 @@ void CDROMAsyncReader::QueueReadSector(CDImage::LBA lba)
     if (m_buffer_count > 1 && m_buffers[next_buffer].lba == lba)
     {
       // great, don't need a seek, but still kick the thread to start reading ahead again
-      Log_DebugFmt("Readahead buffer hit for sector {}", lba);
+      DEBUG_LOG("Readahead buffer hit for sector {}", lba);
       m_buffer_front.store(next_buffer);
       m_buffer_count.fetch_sub(1);
       m_can_readahead.store(true);
@@ -134,7 +134,7 @@ void CDROMAsyncReader::QueueReadSector(CDImage::LBA lba)
   }
 
   // we need to toss away our readahead and start fresh
-  Log_DebugFmt("Readahead buffer miss, queueing seek to {}", lba);
+  DEBUG_LOG("Readahead buffer miss, queueing seek to {}", lba);
   std::unique_lock<std::mutex> lock(m_mutex);
   m_next_position_set.store(true);
   m_next_position = lba;
@@ -156,7 +156,7 @@ bool CDROMAsyncReader::ReadSectorUncached(CDImage::LBA lba, CDImage::SubChannelQ
   const bool result = InternalReadSectorUncached(lba, subq, data);
   if (!m_media->Seek(prev_lba)) [[unlikely]]
   {
-    Log_ErrorFmt("Failed to re-seek to cached position {}", prev_lba);
+    ERROR_LOG("Failed to re-seek to cached position {}", prev_lba);
     m_can_readahead.store(false);
   }
 
@@ -167,13 +167,13 @@ bool CDROMAsyncReader::InternalReadSectorUncached(CDImage::LBA lba, CDImage::Sub
 {
   if (m_media->GetPositionOnDisc() != lba && !m_media->Seek(lba)) [[unlikely]]
   {
-    Log_WarningFmt("Seek to LBA {} failed", lba);
+    WARNING_LOG("Seek to LBA {} failed", lba);
     return false;
   }
 
   if (!m_media->ReadRawSector(data, subq)) [[unlikely]]
   {
-    Log_WarningFmt("Read of LBA {} failed", lba);
+    WARNING_LOG("Read of LBA {} failed", lba);
     return false;
   }
 
@@ -185,12 +185,12 @@ bool CDROMAsyncReader::WaitForReadToComplete()
   // Safe without locking with memory_order_seq_cst.
   if (!m_next_position_set.load() && m_buffer_count.load() > 0)
   {
-    Log_TraceFmt("Returning sector {}", m_buffers[m_buffer_front.load()].lba);
+    TRACE_LOG("Returning sector {}", m_buffers[m_buffer_front.load()].lba);
     return m_buffers[m_buffer_front.load()].result;
   }
 
   Common::Timer wait_timer;
-  Log_DebugPrint("Sector read pending, waiting");
+  DEBUG_LOG("Sector read pending, waiting");
 
   std::unique_lock<std::mutex> lock(m_mutex);
   m_notify_read_complete_cv.wait(
@@ -204,9 +204,9 @@ bool CDROMAsyncReader::WaitForReadToComplete()
   const u32 front = m_buffer_front.load();
   const double wait_time = wait_timer.GetTimeMilliseconds();
   if (wait_time > 1.0f) [[unlikely]]
-    Log_WarningFmt("Had to wait {:.2f} msec for LBA {}", wait_time, m_buffers[front].lba);
+    WARNING_LOG("Had to wait {:.2f} msec for LBA {}", wait_time, m_buffers[front].lba);
 
-  Log_TraceFmt("Returning sector {} after waiting", m_buffers[front].lba);
+  TRACE_LOG("Returning sector {} after waiting", m_buffers[front].lba);
   return m_buffers[front].result;
 }
 
@@ -238,18 +238,18 @@ bool CDROMAsyncReader::ReadSectorIntoBuffer(std::unique_lock<std::mutex>& lock)
   m_is_reading.store(true);
   lock.unlock();
 
-  Log_TraceFmt("Reading LBA {}...", buffer.lba);
+  TRACE_LOG("Reading LBA {}...", buffer.lba);
 
   buffer.result = m_media->ReadRawSector(buffer.data.data(), &buffer.subq);
   if (buffer.result) [[likely]]
   {
     const double read_time = timer.GetTimeMilliseconds();
     if (read_time > 1.0f) [[unlikely]]
-      Log_DevFmt("Read LBA {} took {:.2f} msec", buffer.lba, read_time);
+      DEV_LOG("Read LBA {} took {:.2f} msec", buffer.lba, read_time);
   }
   else
   {
-    Log_ErrorFmt("Read of LBA {} failed", buffer.lba);
+    ERROR_LOG("Read of LBA {} failed", buffer.lba);
   }
 
   lock.lock();
@@ -269,7 +269,7 @@ void CDROMAsyncReader::ReadSectorNonThreaded(CDImage::LBA lba)
 
   if (m_media->GetPositionOnDisc() != lba && !m_media->Seek(lba))
   {
-    Log_WarningFmt("Seek to LBA {} failed", lba);
+    WARNING_LOG("Seek to LBA {} failed", lba);
     m_seek_error.store(true);
     return;
   }
@@ -277,18 +277,18 @@ void CDROMAsyncReader::ReadSectorNonThreaded(CDImage::LBA lba)
   BufferSlot& buffer = m_buffers.front();
   buffer.lba = m_media->GetPositionOnDisc();
 
-  Log_TraceFmt("Reading LBA {}...", buffer.lba);
+  TRACE_LOG("Reading LBA {}...", buffer.lba);
 
   buffer.result = m_media->ReadRawSector(buffer.data.data(), &buffer.subq);
   if (buffer.result) [[likely]]
   {
     const double read_time = timer.GetTimeMilliseconds();
     if (read_time > 1.0f) [[unlikely]]
-      Log_DevFmt("Read LBA {} took {:.2f} msec", buffer.lba, read_time);
+      DEV_LOG("Read LBA {} took {:.2f} msec", buffer.lba, read_time);
   }
   else
   {
-    Log_ErrorFmt("Read of LBA {} failed", buffer.lba);
+    ERROR_LOG("Read of LBA {} failed", buffer.lba);
   }
 
   m_buffer_count.fetch_add(1);
@@ -296,7 +296,7 @@ void CDROMAsyncReader::ReadSectorNonThreaded(CDImage::LBA lba)
 
 void CDROMAsyncReader::CancelReadahead()
 {
-  Log_DevPrint("Cancelling readahead");
+  DEV_LOG("Cancelling readahead");
 
   std::unique_lock lock(m_mutex);
 
@@ -332,7 +332,7 @@ void CDROMAsyncReader::WorkerThreadEntryPoint()
         lock.unlock();
 
         // seek without lock held in case it takes time
-        Log_DebugFmt("Seeking to LBA {}...", seek_location);
+        DEBUG_LOG("Seeking to LBA {}...", seek_location);
         const bool seek_result = (m_media->GetPositionOnDisc() == seek_location || m_media->Seek(seek_location));
 
         lock.lock();
@@ -346,7 +346,7 @@ void CDROMAsyncReader::WorkerThreadEntryPoint()
         if (!seek_result) [[unlikely]]
         {
           // add the error result, and don't try to read ahead
-          Log_WarningFmt("Seek to LBA {} failed", seek_location);
+          WARNING_LOG("Seek to LBA {} failed", seek_location);
           m_seek_error.store(true);
           m_notify_read_complete_cv.notify_all();
           break;
@@ -360,7 +360,7 @@ void CDROMAsyncReader::WorkerThreadEntryPoint()
         break;
 
       // readahead time! read as many sectors as we have space for
-      Log_DebugFmt("Reading ahead {} sectors...", static_cast<u32>(m_buffers.size()) - m_buffer_count.load());
+      DEBUG_LOG("Reading ahead {} sectors...", static_cast<u32>(m_buffers.size()) - m_buffer_count.load());
       while (m_buffer_count.load() < static_cast<u32>(m_buffers.size()))
       {
         if (m_next_position_set.load())

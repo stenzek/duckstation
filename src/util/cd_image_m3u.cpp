@@ -107,11 +107,11 @@ bool CDImageM3u::Open(const char* path, bool apply_patches, Error* error)
     else
       entry.filename = std::move(entry_filename);
 
-    Log_DevFmt("Read path from m3u: '{}'", entry.filename);
+    DEV_LOG("Read path from m3u: '{}'", entry.filename);
     m_entries.push_back(std::move(entry));
   }
 
-  Log_InfoFmt("Loaded {} paths from m3u '{}'", m_entries.size(), path);
+  INFO_LOG("Loaded {} paths from m3u '{}'", m_entries.size(), path);
   return !m_entries.empty() && SwitchSubImage(0, error);
 }
 
@@ -146,7 +146,7 @@ bool CDImageM3u::SwitchSubImage(u32 index, Error* error)
   std::unique_ptr<CDImage> new_image = CDImage::Open(entry.filename.c_str(), m_apply_patches, error);
   if (!new_image)
   {
-    Log_ErrorFmt("Failed to load subimage {} ({})", index, entry.filename);
+    ERROR_LOG("Failed to load subimage {} ({})", index, entry.filename);
     return false;
   }
 

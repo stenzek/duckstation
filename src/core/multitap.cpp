@@ -148,7 +148,7 @@ bool Multitap::Transfer(const u8 data_in, u8* data_out)
 
       if (!ack)
       {
-        Log_DevPrint("Memory card transfer ended");
+        DEV_LOG("Memory card transfer ended");
         m_transfer_state = TransferState::Idle;
       }
     }
@@ -206,7 +206,7 @@ bool Multitap::Transfer(const u8 data_in, u8* data_out)
 
       if (!ack)
       {
-        Log_DevPrint("Controller transfer ended");
+        DEV_LOG("Controller transfer ended");
         m_transfer_state = TransferState::Idle;
       }
     }

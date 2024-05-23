@@ -74,7 +74,7 @@ AutoUpdaterDialog::AutoUpdaterDialog(QWidget* parent /* = nullptr */) : QDialog(
 
   m_http = HTTPDownloader::Create(Host::GetHTTPUserAgent());
   if (!m_http)
-    Log_ErrorPrint("Failed to create HTTP downloader, auto updater will not be available.");
+    ERROR_LOG("Failed to create HTTP downloader, auto updater will not be available.");
 }
 
 AutoUpdaterDialog::~AutoUpdaterDialog() = default;
@@ -86,7 +86,7 @@ bool AutoUpdaterDialog::isSupported()
   // For Linux, we need to check whether we're running from the appimage.
   if (!std::getenv("APPIMAGE"))
   {
-    Log_InfoPrint("We're a CI release, but not running from an AppImage. Disabling automatic updater.");
+    INFO_LOG("We're a CI release, but not running from an AppImage. Disabling automatic updater.");
     return false;
   }
 
@@ -165,7 +165,7 @@ void AutoUpdaterDialog::httpPollTimerPoll()
 
   if (!m_http->HasAnyRequests())
   {
-    Log_VerbosePrint("All HTTP requests done.");
+    VERBOSE_LOG("All HTTP requests done.");
     m_http_poll_timer->stop();
   }
 }
@@ -465,16 +465,16 @@ bool AutoUpdaterDialog::updateNeeded() const
 {
   QString last_checked_sha = QString::fromStdString(Host::GetBaseStringSettingValue("AutoUpdater", "LastVersion"));
 
-  Log_InfoFmt("Current SHA: {}", g_scm_hash_str);
-  Log_InfoFmt("Latest SHA: {}", m_latest_sha.toUtf8().constData());
-  Log_InfoFmt("Last Checked SHA: {}", last_checked_sha.toUtf8().constData());
+  INFO_LOG("Current SHA: {}", g_scm_hash_str);
+  INFO_LOG("Latest SHA: {}", m_latest_sha.toUtf8().constData());
+  INFO_LOG("Last Checked SHA: {}", last_checked_sha.toUtf8().constData());
   if (m_latest_sha == g_scm_hash_str || m_latest_sha == last_checked_sha)
   {
-    Log_InfoPrint("No update needed.");
+    INFO_LOG("No update needed.");
     return false;
   }
 
-  Log_InfoPrint("Update needed.");
+  INFO_LOG("Update needed.");
   return true;
 }
 
@@ -697,8 +697,8 @@ bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
     zip_file.close();
   }
 
-  Log_InfoFmt("Beginning update:\nUpdater path: {}\nZip path: {}\nStaging directory: {}\nOutput directory: {}",
-              updater_app, zip_path, staging_directory, bundle_path.value());
+  INFO_LOG("Beginning update:\nUpdater path: {}\nZip path: {}\nStaging directory: {}\nOutput directory: {}",
+           updater_app, zip_path, staging_directory, bundle_path.value());
 
   const std::string_view args[] = {
     zip_path,
@@ -735,9 +735,9 @@ bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
 
   const QString new_appimage_path(qappimage_path + QStringLiteral(".new"));
   const QString backup_appimage_path(qappimage_path + QStringLiteral(".backup"));
-  Log_InfoFmt("APPIMAGE = {}", appimage_path);
-  Log_InfoFmt("Backup AppImage path = {}", backup_appimage_path.toUtf8().constData());
-  Log_InfoFmt("New AppImage path = {}", new_appimage_path.toUtf8().constData());
+  INFO_LOG("APPIMAGE = {}", appimage_path);
+  INFO_LOG("Backup AppImage path = {}", backup_appimage_path.toUtf8().constData());
+  INFO_LOG("New AppImage path = {}", new_appimage_path.toUtf8().constData());
 
   // Remove old "new" appimage and existing backup appimage.
   if (QFile::exists(new_appimage_path) && !QFile::remove(new_appimage_path))
@@ -809,11 +809,10 @@ void AutoUpdaterDialog::cleanupAfterUpdate()
   if (!QFile::exists(backup_appimage_path))
     return;
 
-  Log_InfoPrint(QStringLiteral("Removing backup AppImage %1").arg(backup_appimage_path).toStdString().c_str());
+  INFO_LOG(QStringLiteral("Removing backup AppImage %1").arg(backup_appimage_path).toStdString().c_str());
   if (!QFile::remove(backup_appimage_path))
   {
-    Log_ErrorPrint(
-      QStringLiteral("Failed to remove backup AppImage %1").arg(backup_appimage_path).toStdString().c_str());
+    ERROR_LOG(QStringLiteral("Failed to remove backup AppImage %1").arg(backup_appimage_path).toStdString().c_str());
   }
 }
 

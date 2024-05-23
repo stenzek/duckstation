@@ -249,7 +249,7 @@ void Timers::CheckForIRQ(u32 timer, u32 old_counter)
       if (!cs.irq_done || cs.mode.irq_repeat)
       {
         // this is actually low for a few cycles
-        Log_DebugFmt("Raising timer {} pulse IRQ", timer);
+        DEBUG_LOG("Raising timer {} pulse IRQ", timer);
         InterruptController::SetLineState(irqnum, false);
         InterruptController::SetLineState(irqnum, true);
       }
@@ -262,7 +262,7 @@ void Timers::CheckForIRQ(u32 timer, u32 old_counter)
       // TODO: How does the non-repeat mode work here?
       cs.mode.interrupt_request_n ^= true;
       if (!cs.mode.interrupt_request_n)
-        Log_DebugFmt("Raising timer {} alternate IRQ", timer);
+        DEBUG_LOG("Raising timer {} alternate IRQ", timer);
 
       InterruptController::SetLineState(irqnum, !cs.mode.interrupt_request_n);
     }
@@ -297,7 +297,7 @@ u32 Timers::ReadRegister(u32 offset)
   const u32 port_offset = offset & u32(0x0F);
   if (timer_index >= 3) [[unlikely]]
   {
-    Log_ErrorFmt("Timer read out of range: offset 0x{:02X}", offset);
+    ERROR_LOG("Timer read out of range: offset 0x{:02X}", offset);
     return UINT32_C(0xFFFFFFFF);
   }
 
@@ -340,7 +340,7 @@ u32 Timers::ReadRegister(u32 offset)
       return cs.target;
 
     default:
-      [[unlikely]] Log_ErrorFmt("Read unknown register in timer {} (offset 0x{:02X})", timer_index, offset);
+      [[unlikely]] ERROR_LOG("Read unknown register in timer {} (offset 0x{:02X})", timer_index, offset);
       return UINT32_C(0xFFFFFFFF);
   }
 }
@@ -351,7 +351,7 @@ void Timers::WriteRegister(u32 offset, u32 value)
   const u32 port_offset = offset & u32(0x0F);
   if (timer_index >= 3) [[unlikely]]
   {
-    Log_ErrorFmt("Timer write out of range: offset 0{:02X} value 0x{:08X}", offset, value);
+    ERROR_LOG("Timer write out of range: offset 0{:02X} value 0x{:08X}", offset, value);
     return;
   }
 
@@ -372,7 +372,7 @@ void Timers::WriteRegister(u32 offset, u32 value)
     case 0x00:
     {
       const u32 old_counter = cs.counter;
-      Log_DebugFmt("Timer {} write counter {}", timer_index, value);
+      DEBUG_LOG("Timer {} write counter {}", timer_index, value);
       cs.counter = value & u32(0xFFFF);
       CheckForIRQ(timer_index, old_counter);
       if (timer_index == 2 || !cs.external_counting_enabled)
@@ -384,7 +384,7 @@ void Timers::WriteRegister(u32 offset, u32 value)
     {
       static constexpr u32 WRITE_MASK = 0b1110001111111111;
 
-      Log_DebugFmt("Timer {} write mode register 0x{:04X}", timer_index, value);
+      DEBUG_LOG("Timer {} write mode register 0x{:04X}", timer_index, value);
       cs.mode.bits = (value & WRITE_MASK) | (cs.mode.bits & ~WRITE_MASK);
       cs.use_external_clock = (cs.mode.clock_source & (timer_index == 2 ? 2 : 1)) != 0;
       cs.counter = 0;
@@ -400,7 +400,7 @@ void Timers::WriteRegister(u32 offset, u32 value)
 
     case 0x08:
     {
-      Log_DebugFmt("Timer %u write target 0x{:04X}", timer_index, ZeroExtend32(Truncate16(value)));
+      DEBUG_LOG("Timer %u write target 0x{:04X}", timer_index, ZeroExtend32(Truncate16(value)));
       cs.target = value & u32(0xFFFF);
       CheckForIRQ(timer_index, cs.counter);
       if (timer_index == 2 || !cs.external_counting_enabled)
@@ -409,7 +409,7 @@ void Timers::WriteRegister(u32 offset, u32 value)
     break;
 
     default:
-      Log_ErrorFmt("Write unknown register in timer {} (offset 0x{:02X}, value 0x{:X})", timer_index, offset, value);
+      ERROR_LOG("Write unknown register in timer {} (offset 0x{:02X}, value 0x{:X})", timer_index, offset, value);
       break;
   }
 }

@@ -266,7 +266,7 @@ bool FileSystem::GetWin32Path(std::wstring* dest, std::string_view str)
     }
     else [[unlikely]]
     {
-      Log_ErrorFmt("PathCchCanonicalizeEx() returned {:08X}", static_cast<unsigned>(hr));
+      ERROR_LOG("PathCchCanonicalizeEx() returned {:08X}", static_cast<unsigned>(hr));
       _freea(wstr_buf);
       return false;
     }
@@ -2407,13 +2407,13 @@ static bool SetLock(int fd, bool lock)
   const off_t offs = lseek(fd, 0, SEEK_CUR);
   if (offs < 0)
   {
-    Log_ErrorFmt("lseek({}) failed: {}", fd, errno);
+    ERROR_LOG("lseek({}) failed: {}", fd, errno);
     return false;
   }
 
   if (offs != 0 && lseek(fd, 0, SEEK_SET) < 0)
   {
-    Log_ErrorFmt("lseek({}, 0) failed: {}", fd, errno);
+    ERROR_LOG("lseek({}, 0) failed: {}", fd, errno);
     return false;
   }
 
@@ -2422,7 +2422,7 @@ static bool SetLock(int fd, bool lock)
     Panic("Repositioning file descriptor after lock failed.");
 
   if (!res)
-    Log_ErrorFmt("lockf() for {} failed: {}", lock ? "lock" : "unlock", errno);
+    ERROR_LOG("lockf() for {} failed: {}", lock ? "lock" : "unlock", errno);
 
   return res;
 }

@@ -10,7 +10,9 @@
 #include <limits>
 Log_SetChannel(ProgressCallback);
 
-ProgressCallback::~ProgressCallback() {}
+ProgressCallback::~ProgressCallback()
+{
+}
 
 void ProgressCallback::SetFormattedStatusText(const char* Format, ...)
 {
@@ -133,18 +135,18 @@ public:
   void SetProgressValue(u32 value) override {}
   void IncrementProgressValue() override {}
 
-  void DisplayError(const char* message) override { Log_ErrorPrint(message); }
-  void DisplayWarning(const char* message) override { Log_WarningPrint(message); }
-  void DisplayInformation(const char* message) override { Log_InfoPrint(message); }
-  void DisplayDebugMessage(const char* message) override { Log_DevPrint(message); }
+  void DisplayError(const char* message) override { ERROR_LOG(message); }
+  void DisplayWarning(const char* message) override { WARNING_LOG(message); }
+  void DisplayInformation(const char* message) override { INFO_LOG(message); }
+  void DisplayDebugMessage(const char* message) override { DEV_LOG(message); }
 
-  void ModalError(const char* message) override { Log_ErrorPrint(message); }
+  void ModalError(const char* message) override { ERROR_LOG(message); }
   bool ModalConfirmation(const char* message) override
   {
-    Log_InfoPrint(message);
+    INFO_LOG(message);
     return false;
   }
-  void ModalInformation(const char* message) override { Log_InfoPrint(message); }
+  void ModalInformation(const char* message) override { INFO_LOG(message); }
 };
 
 static NullProgressCallbacks s_nullProgressCallbacks;
@@ -365,42 +367,42 @@ void ConsoleProgressCallback::Redraw(bool update_value_only)
 void ConsoleProgressCallback::DisplayError(const char* message)
 {
   Clear();
-  Log_ErrorPrint(message);
+  ERROR_LOG(message);
   Redraw(false);
 }
 
 void ConsoleProgressCallback::DisplayWarning(const char* message)
 {
   Clear();
-  Log_WarningPrint(message);
+  WARNING_LOG(message);
   Redraw(false);
 }
 
 void ConsoleProgressCallback::DisplayInformation(const char* message)
 {
   Clear();
-  Log_InfoPrint(message);
+  INFO_LOG(message);
   Redraw(false);
 }
 
 void ConsoleProgressCallback::DisplayDebugMessage(const char* message)
 {
   Clear();
-  Log_DevPrint(message);
+  DEV_LOG(message);
   Redraw(false);
 }
 
 void ConsoleProgressCallback::ModalError(const char* message)
 {
   Clear();
-  Log_ErrorPrint(message);
+  ERROR_LOG(message);
   Redraw(false);
 }
 
 bool ConsoleProgressCallback::ModalConfirmation(const char* message)
 {
   Clear();
-  Log_InfoPrint(message);
+  INFO_LOG(message);
   Redraw(false);
   return false;
 }
@@ -408,6 +410,6 @@ bool ConsoleProgressCallback::ModalConfirmation(const char* message)
 void ConsoleProgressCallback::ModalInformation(const char* message)
 {
   Clear();
-  Log_InfoPrint(message);
+  INFO_LOG(message);
   Redraw(false);
 }

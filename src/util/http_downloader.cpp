@@ -103,7 +103,7 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
         Common::Timer::ConvertValueToSeconds(current_time - req->start_time) >= m_timeout)
     {
       // request timed out
-      Log_ErrorFmt("Request for '{}' timed out", req->url);
+      ERROR_LOG("Request for '{}' timed out", req->url);
 
       req->state.store(Request::State::Cancelled);
       m_pending_http_requests.erase(m_pending_http_requests.begin() + index);
@@ -120,7 +120,7 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
              req->progress->IsCancelled())
     {
       // request timed out
-      Log_ErrorFmt("Request for '{}' cancelled", req->url);
+      ERROR_LOG("Request for '{}' cancelled", req->url);
 
       req->state.store(Request::State::Cancelled);
       m_pending_http_requests.erase(m_pending_http_requests.begin() + index);
@@ -153,8 +153,8 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
     }
 
     // request complete
-    Log_VerboseFmt("Request for '{}' complete, returned status code {} and {} bytes", req->url, req->status_code,
-                   req->data.size());
+    VERBOSE_LOG("Request for '{}' complete, returned status code {} and {} bytes", req->url, req->status_code,
+                req->data.size());
     m_pending_http_requests.erase(m_pending_http_requests.begin() + index);
 
     // run callback with lock unheld

@@ -110,15 +110,15 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Error* error)
         track_fp = FileSystem::OpenCFile(alternative_filename.c_str(), "rb");
         if (track_fp)
         {
-          Log_WarningFmt("Your cue sheet references an invalid file '{}', but this was found at '{}' instead.",
-                         track_filename, alternative_filename);
+          WARNING_LOG("Your cue sheet references an invalid file '{}', but this was found at '{}' instead.",
+                      track_filename, alternative_filename);
         }
       }
 
       if (!track_fp)
       {
-        Log_ErrorFmt("Failed to open track filename '{}' (from '{}' and '{}'): {}", track_full_filename, track_filename,
-                     filename, track_error.GetDescription());
+        ERROR_LOG("Failed to open track filename '{}' (from '{}' and '{}'): {}", track_full_filename, track_filename,
+                  filename, track_error.GetDescription());
         Error::SetStringFmt(error, "Failed to open track filename '{}' (from '{}' and '{}'): {}", track_full_filename,
                             track_filename, Path::GetFileName(filename), track_error.GetDescription());
         return false;
@@ -149,8 +149,8 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Error* error)
       file_size /= track_sector_size;
       if (track_start >= file_size)
       {
-        Log_ErrorFmt("Failed to open track {} in '{}': track start is out of range ({} vs {})", track_num, filename,
-                     track_start, file_size);
+        ERROR_LOG("Failed to open track {} in '{}': track start is out of range ({} vs {})", track_num, filename,
+                  track_start, file_size);
         Error::SetStringFmt(error, "Failed to open track {} in '{}': track start is out of range ({} vs {}))",
                             track_num, Path::GetFileName(filename), track_start, file_size);
         return false;
@@ -285,7 +285,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Error* error)
 
   if (m_tracks.empty())
   {
-    Log_ErrorFmt("File '{}' contains no tracks", filename);
+    ERROR_LOG("File '{}' contains no tracks", filename);
     Error::SetStringFmt(error, "File '{}' contains no tracks", Path::GetFileName(filename));
     return false;
   }

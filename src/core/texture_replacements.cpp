@@ -113,9 +113,9 @@ void TextureReplacements::DumpVRAMWrite(u32 width, u32 height, const void* pixel
     }
   }
 
-  Log_InfoFmt("Dumping {}x{} VRAM write to '{}'", width, height, Path::GetFileName(filename));
+  INFO_LOG("Dumping {}x{} VRAM write to '{}'", width, height, Path::GetFileName(filename));
   if (!image.SaveToFile(filename.c_str())) [[unlikely]]
-    Log_ErrorFmt("Failed to dump {}x{} VRAM write to '{}'", width, height, filename);
+    ERROR_LOG("Failed to dump {}x{} VRAM write to '{}'", width, height, filename);
 }
 
 void TextureReplacements::Shutdown()
@@ -255,7 +255,7 @@ void TextureReplacements::FindTextures(const std::string& dir)
         auto it = m_vram_write_replacements.find(hash);
         if (it != m_vram_write_replacements.end())
         {
-          Log_WarningFmt("Duplicate VRAM write replacement: '{}' and '{}'", it->second, fd.FileName);
+          WARNING_LOG("Duplicate VRAM write replacement: '{}' and '{}'", it->second, fd.FileName);
           continue;
         }
 
@@ -265,7 +265,7 @@ void TextureReplacements::FindTextures(const std::string& dir)
     }
   }
 
-  Log_InfoFmt("Found {} replacement VRAM writes for '{}'", m_vram_write_replacements.size(), m_game_id);
+  INFO_LOG("Found {} replacement VRAM writes for '{}'", m_vram_write_replacements.size(), m_game_id);
 }
 
 const TextureReplacementTexture* TextureReplacements::LoadTexture(const std::string& filename)
@@ -277,11 +277,11 @@ const TextureReplacementTexture* TextureReplacements::LoadTexture(const std::str
   RGBA8Image image;
   if (!image.LoadFromFile(filename.c_str()))
   {
-    Log_ErrorFmt("Failed to load '%s'", Path::GetFileName(filename));
+    ERROR_LOG("Failed to load '%s'", Path::GetFileName(filename));
     return nullptr;
   }
 
-  Log_InfoFmt("Loaded '{}': {}x{}", Path::GetFileName(filename), image.GetWidth(), image.GetHeight());
+  INFO_LOG("Loaded '{}': {}x{}", Path::GetFileName(filename), image.GetWidth(), image.GetHeight());
   it = m_texture_cache.emplace(filename, std::move(image)).first;
   return &it->second;
 }

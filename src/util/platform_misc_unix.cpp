@@ -30,7 +30,7 @@ static bool SetScreensaverInhibitDBus(const bool inhibit_requested, const char* 
   ScopedGuard cleanup = [&]() {
     if (dbus_error_is_set(&error))
     {
-      Log_ErrorFmt("SetScreensaverInhibitDBus error: {}", error.message);
+      ERROR_LOG("SetScreensaverInhibitDBus error: {}", error.message);
       dbus_error_free(&error);
     }
     if (message)
@@ -103,7 +103,7 @@ void PlatformMisc::SuspendScreensaver()
 
   if (!SetScreensaverInhibit(true))
   {
-    Log_ErrorPrint("Failed to suspend screensaver.");
+    ERROR_LOG("Failed to suspend screensaver.");
     return;
   }
 
@@ -116,7 +116,7 @@ void PlatformMisc::ResumeScreensaver()
     return;
 
   if (!SetScreensaverInhibit(false))
-    Log_ErrorPrint("Failed to resume screensaver.");
+    ERROR_LOG("Failed to resume screensaver.");
 
   s_screensaver_suspended = false;
 }
@@ -179,8 +179,8 @@ bool PlatformMisc::PlaySoundAsync(const char* path)
   if (res == 0)
     return true;
 
-  Log_ErrorFmt("Failed to play sound effect {}. Make sure you have aplay, gst-play-1.0, or gst-launch-1.0 available.",
-               path);
+  ERROR_LOG("Failed to play sound effect {}. Make sure you have aplay, gst-play-1.0, or gst-launch-1.0 available.",
+            path);
   return false;
 #else
   return false;

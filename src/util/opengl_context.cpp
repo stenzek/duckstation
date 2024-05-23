@@ -67,13 +67,13 @@ static void DisableBrokenExtensions(const char* gl_vendor, const char* gl_render
       // Log_VerbosePrint("Keeping copy_image for driver version '%s'", gl_version);
 
       // Framebuffer blits still end up faster.
-      Log_VerbosePrint("Newer Mali driver detected, disabling GL_{EXT,OES}_copy_image.");
+      VERBOSE_LOG("Newer Mali driver detected, disabling GL_{EXT,OES}_copy_image.");
       GLAD_GL_EXT_copy_image = 0;
       GLAD_GL_OES_copy_image = 0;
     }
     else
     {
-      Log_VerbosePrint("Older Mali driver detected, disabling GL_{EXT,OES}_copy_image, disjoint_timer_query.");
+      VERBOSE_LOG("Older Mali driver detected, disabling GL_{EXT,OES}_copy_image, disjoint_timer_query.");
       GLAD_GL_EXT_copy_image = 0;
       GLAD_GL_OES_copy_image = 0;
       GLAD_GL_EXT_disjoint_timer_query = 0;
@@ -86,13 +86,13 @@ static void DisableBrokenExtensions(const char* gl_vendor, const char* gl_render
     if ((std::sscanf(gl_version, "OpenGL ES %d.%d V@%d", &gl_major_version, &gl_minor_version, &major_version) == 3 &&
          gl_major_version >= 3 && gl_minor_version >= 2 && major_version < 502))
     {
-      Log_VerboseFmt("Disabling GL_EXT_shader_framebuffer_fetch on Adreno version {}", major_version);
+      VERBOSE_LOG("Disabling GL_EXT_shader_framebuffer_fetch on Adreno version {}", major_version);
       GLAD_GL_EXT_shader_framebuffer_fetch = 0;
       GLAD_GL_ARM_shader_framebuffer_fetch = 0;
     }
     else
     {
-      Log_VerboseFmt("Keeping GL_EXT_shader_framebuffer_fetch on Adreno version {}", major_version);
+      VERBOSE_LOG("Keeping GL_EXT_shader_framebuffer_fetch on Adreno version {}", major_version);
     }
   }
 
@@ -175,7 +175,7 @@ std::unique_ptr<OpenGLContext> OpenGLContext::Create(const WindowInfo& wi, Error
   if (!context)
     return nullptr;
 
-  Log_InfoPrint(context->IsGLES() ? "Created an OpenGL ES context" : "Created an OpenGL context");
+  INFO_LOG(context->IsGLES() ? "Created an OpenGL ES context" : "Created an OpenGL context");
 
   // TODO: Not thread-safe.
   static OpenGLContext* context_being_created;
@@ -203,10 +203,10 @@ std::unique_ptr<OpenGLContext> OpenGLContext::Create(const WindowInfo& wi, Error
   const char* gl_renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
   const char* gl_version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
   const char* gl_shading_language_version = reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION));
-  Log_InfoFmt("GL_VENDOR: {}", gl_vendor);
-  Log_InfoFmt("GL_RENDERER: {}", gl_renderer);
-  Log_InfoFmt("GL_VERSION: {}", gl_version);
-  Log_InfoFmt("GL_SHADING_LANGUAGE_VERSION: {}", gl_shading_language_version);
+  INFO_LOG("GL_VENDOR: {}", gl_vendor);
+  INFO_LOG("GL_RENDERER: {}", gl_renderer);
+  INFO_LOG("GL_VERSION: {}", gl_version);
+  INFO_LOG("GL_SHADING_LANGUAGE_VERSION: {}", gl_shading_language_version);
 
   DisableBrokenExtensions(gl_vendor, gl_renderer, gl_version);
 

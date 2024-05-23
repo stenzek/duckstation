@@ -219,7 +219,7 @@ void Justifier::UpdatePosition()
       !g_gpu->ConvertDisplayCoordinatesToBeamTicksAndLines(display_x, display_y, m_x_scale, &tick, &line) ||
       m_shoot_offscreen)
   {
-    Log_DevFmt("Lightgun out of range for window coordinates {:.0f},{:.0f}", window_x, window_y);
+    DEV_LOG("Lightgun out of range for window coordinates {:.0f},{:.0f}", window_x, window_y);
     m_position_valid = false;
     UpdateIRQEvent();
     return;
@@ -236,8 +236,8 @@ void Justifier::UpdatePosition()
                                                      static_cast<s32>(g_gpu->GetCRTCActiveStartLine()),
                                                      static_cast<s32>(g_gpu->GetCRTCActiveEndLine())));
 
-  Log_DevFmt("Lightgun window coordinates {},{} -> dpy {},{} -> tick {} line {} [{}-{}]", window_x, window_y, display_x,
-             display_y, tick, line, m_irq_first_line, m_irq_last_line);
+  DEV_LOG("Lightgun window coordinates {},{} -> dpy {},{} -> tick {} line {} [{}-{}]", window_x, window_y, display_x,
+          display_y, tick, line, m_irq_first_line, m_irq_last_line);
 
   UpdateIRQEvent();
 }
@@ -260,7 +260,7 @@ void Justifier::UpdateIRQEvent()
     target_line = current_line + 1;
 
   const TickCount ticks_until_pos = g_gpu->GetSystemTicksUntilTicksAndLine(m_irq_tick, target_line);
-  Log_DebugFmt("Triggering IRQ in {} ticks @ tick {} line {}", ticks_until_pos, m_irq_tick, target_line);
+  DEBUG_LOG("Triggering IRQ in {} ticks @ tick {} line {}", ticks_until_pos, m_irq_tick, target_line);
   m_irq_event->Schedule(ticks_until_pos);
 }
 
@@ -272,13 +272,13 @@ void Justifier::IRQEvent()
 
   const u32 expected_line = (s_irq_current_line == m_irq_last_line) ? m_irq_first_line : (s_irq_current_line + 1);
   if (line < expected_line)
-    Log_WarningFmt("IRQ event fired {} lines too early", expected_line - line);
+    WARNING_LOG("IRQ event fired {} lines too early", expected_line - line);
   else if (line > expected_line)
-    Log_WarningFmt("IRQ event fired {} lines too late", line - expected_line);
+    WARNING_LOG("IRQ event fired {} lines too late", line - expected_line);
   if (ticks < m_irq_tick)
-    Log_WarningFmt("IRQ event fired {} ticks too early", m_irq_tick - ticks);
+    WARNING_LOG("IRQ event fired {} ticks too early", m_irq_tick - ticks);
   else if (ticks > m_irq_tick)
-    Log_WarningFmt("IRQ event fired {} ticks too late", ticks - m_irq_tick);
+    WARNING_LOG("IRQ event fired {} ticks too late", ticks - m_irq_tick);
   s_irq_current_line = line;
 #endif
 

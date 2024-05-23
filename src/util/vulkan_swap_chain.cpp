@@ -253,9 +253,9 @@ std::optional<VkSurfaceFormatKHR> VulkanSwapChain::SelectSurfaceFormat(VkSurface
       return VkSurfaceFormatKHR{format, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};
   }
 
-  Log_ErrorPrint("Failed to find a suitable format for swap chain buffers. Available formats were:");
+  ERROR_LOG("Failed to find a suitable format for swap chain buffers. Available formats were:");
   for (const VkSurfaceFormatKHR& sf : surface_formats)
-    Log_ErrorFmt("  {}", static_cast<unsigned>(sf.format));
+    ERROR_LOG("  {}", static_cast<unsigned>(sf.format));
 
   return std::nullopt;
 }
@@ -302,8 +302,8 @@ std::optional<VkPresentModeKHR> VulkanSwapChain::SelectPresentMode(VkSurfaceKHR 
     selected_mode = VK_PRESENT_MODE_FIFO_KHR;
   }
 
-  Log_DevFmt("Preferred present mode: {}, selected: {}", PresentModeToString(requested_mode),
-             PresentModeToString(selected_mode));
+  DEV_LOG("Preferred present mode: {}, selected: {}", PresentModeToString(requested_mode),
+          PresentModeToString(selected_mode));
 
   return selected_mode;
 }
@@ -333,7 +333,7 @@ bool VulkanSwapChain::CreateSwapChain()
   u32 image_count = std::clamp<u32>(
     (m_requested_present_mode == VK_PRESENT_MODE_MAILBOX_KHR) ? 3 : 2, surface_capabilities.minImageCount,
     (surface_capabilities.maxImageCount == 0) ? std::numeric_limits<u32>::max() : surface_capabilities.maxImageCount);
-  Log_DevFmt("Creating a swap chain with {} images", image_count);
+  DEV_LOG("Creating a swap chain with {} images", image_count);
 
   // Determine the dimensions of the swap chain. Values of -1 indicate the size we specify here
   // determines window size? Android sometimes lags updating currentExtent, so don't use it.
@@ -367,7 +367,7 @@ bool VulkanSwapChain::CreateSwapChain()
   VkImageUsageFlags image_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
   if ((surface_capabilities.supportedUsageFlags & image_usage) != image_usage)
   {
-    Log_ErrorPrint("Vulkan: Swap chain does not support usage as color attachment");
+    ERROR_LOG("Vulkan: Swap chain does not support usage as color attachment");
     return false;
   }
 
@@ -422,19 +422,19 @@ bool VulkanSwapChain::CreateSwapChain()
       exclusive_win32_info.hmonitor =
         MonitorFromWindow(reinterpret_cast<HWND>(m_window_info.window_handle), MONITOR_DEFAULTTONEAREST);
       if (!exclusive_win32_info.hmonitor)
-        Log_ErrorPrint("MonitorFromWindow() for exclusive fullscreen exclusive override failed.");
+        ERROR_LOG("MonitorFromWindow() for exclusive fullscreen exclusive override failed.");
 
       Vulkan::AddPointerToChain(&swap_chain_info, &exclusive_info);
       Vulkan::AddPointerToChain(&swap_chain_info, &exclusive_win32_info);
     }
     else
     {
-      Log_ErrorPrint("Exclusive fullscreen control requested, but VK_EXT_full_screen_exclusive is not supported.");
+      ERROR_LOG("Exclusive fullscreen control requested, but VK_EXT_full_screen_exclusive is not supported.");
     }
   }
 #else
   if (m_exclusive_fullscreen_control.has_value())
-    Log_ErrorPrint("Exclusive fullscreen control requested, but is not supported on this platform.");
+    ERROR_LOG("Exclusive fullscreen control requested, but is not supported on this platform.");
 #endif
 
   res = vkCreateSwapchainKHR(dev.GetVulkanDevice(), &swap_chain_info, nullptr, &m_swap_chain);
@@ -456,7 +456,7 @@ bool VulkanSwapChain::CreateSwapChain()
   m_actual_present_mode = present_mode.value();
   if (m_window_info.surface_format == GPUTexture::Format::Unknown)
   {
-    Log_ErrorFmt("Unknown Vulkan surface format {}", static_cast<u32>(surface_format->format));
+    ERROR_LOG("Unknown Vulkan surface format {}", static_cast<u32>(surface_format->format));
     return false;
   }
 
@@ -632,7 +632,7 @@ bool VulkanSwapChain::SetRequestedPresentMode(VkPresentModeKHR mode)
   m_requested_present_mode = mode;
 
   // Recreate the swap chain with the new present mode.
-  Log_VerbosePrint("Recreating swap chain to change present mode.");
+  VERBOSE_LOG("Recreating swap chain to change present mode.");
   DestroySwapChainImages();
   if (!CreateSwapChain())
   {

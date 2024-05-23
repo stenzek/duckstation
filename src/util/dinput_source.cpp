@@ -64,7 +64,7 @@ bool DInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex
   m_dinput_module = LoadLibraryW(L"dinput8");
   if (!m_dinput_module)
   {
-    Log_ErrorPrint("Failed to load DInput module.");
+    ERROR_LOG("Failed to load DInput module.");
     return false;
   }
 
@@ -74,7 +74,7 @@ bool DInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex
     reinterpret_cast<PFNGETDFDIJOYSTICK>(GetProcAddress(m_dinput_module, "GetdfDIJoystick"));
   if (!create || !get_joystick_data_format)
   {
-    Log_ErrorPrint("Failed to get DInput function pointers.");
+    ERROR_LOG("Failed to get DInput function pointers.");
     return false;
   }
 
@@ -83,7 +83,7 @@ bool DInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex
   m_joystick_data_format = get_joystick_data_format();
   if (FAILED(hr) || !m_joystick_data_format)
   {
-    Log_ErrorFmt("DirectInput8Create() failed: {}", static_cast<unsigned>(hr));
+    ERROR_LOG("DirectInput8Create() failed: {}", static_cast<unsigned>(hr));
     return false;
   }
 
@@ -94,7 +94,7 @@ bool DInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex
 
   if (!toplevel_wi.has_value() || toplevel_wi->type != WindowInfo::Type::Win32)
   {
-    Log_ErrorPrint("Missing top level window, cannot add DInput devices.");
+    ERROR_LOG("Missing top level window, cannot add DInput devices.");
     return false;
   }
 
@@ -123,7 +123,7 @@ bool DInputSource::ReloadDevices()
   std::vector<DIDEVICEINSTANCEW> devices;
   m_dinput->EnumDevices(DI8DEVCLASS_GAMECTRL, EnumCallback, &devices, DIEDFL_ATTACHEDONLY);
 
-  Log_VerboseFmt("Enumerated {} devices", devices.size());
+  VERBOSE_LOG("Enumerated {} devices", devices.size());
 
   bool changed = false;
   for (DIDEVICEINSTANCEW inst : devices)
@@ -141,9 +141,9 @@ bool DInputSource::ReloadDevices()
     HRESULT hr = m_dinput->CreateDevice(inst.guidInstance, cd.device.GetAddressOf(), nullptr);
     if (FAILED(hr)) [[unlikely]]
     {
-      Log_WarningFmt("Failed to create instance of device [{}, {}]",
-                     StringUtil::WideStringToUTF8String(inst.tszProductName),
-                     StringUtil::WideStringToUTF8String(inst.tszInstanceName));
+      WARNING_LOG("Failed to create instance of device [{}, {}]",
+                  StringUtil::WideStringToUTF8String(inst.tszProductName),
+                  StringUtil::WideStringToUTF8String(inst.tszInstanceName));
       continue;
     }
 
@@ -179,24 +179,24 @@ bool DInputSource::AddDevice(ControllerData& cd, const std::string& name)
     hr = cd.device->SetCooperativeLevel(m_toplevel_window, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
     if (FAILED(hr))
     {
-      Log_ErrorFmt("Failed to set cooperative level for '{}'", name);
+      ERROR_LOG("Failed to set cooperative level for '{}'", name);
       return false;
     }
 
-    Log_WarningFmt("Failed to set exclusive mode for '{}'", name);
+    WARNING_LOG("Failed to set exclusive mode for '{}'", name);
   }
 
   hr = cd.device->SetDataFormat(m_joystick_data_format);
   if (FAILED(hr))
   {
-    Log_ErrorFmt("Failed to set data format for '{}'", name);
+    ERROR_LOG("Failed to set data format for '{}'", name);
     return false;
   }
 
   hr = cd.device->Acquire();
   if (FAILED(hr))
   {
-    Log_ErrorFmt("Failed to acquire device '{}'", name);
+    ERROR_LOG("Failed to acquire device '{}'", name);
     return false;
   }
 
@@ -205,7 +205,7 @@ bool DInputSource::AddDevice(ControllerData& cd, const std::string& name)
   hr = cd.device->GetCapabilities(&caps);
   if (FAILED(hr))
   {
-    Log_ErrorFmt("Failed to get capabilities for '{}'", name);
+    ERROR_LOG("Failed to get capabilities for '{}'", name);
     return false;
   }
 
@@ -239,14 +239,14 @@ bool DInputSource::AddDevice(ControllerData& cd, const std::string& name)
   if (hr == DI_NOEFFECT)
     cd.needs_poll = false;
   else if (hr != DI_OK)
-    Log_WarningFmt("Polling device '{}' failed: {:08X}", name, static_cast<unsigned>(hr));
+    WARNING_LOG("Polling device '{}' failed: {:08X}", name, static_cast<unsigned>(hr));
 
   hr = cd.device->GetDeviceState(sizeof(cd.last_state), &cd.last_state);
   if (hr != DI_OK)
-    Log_WarningFmt("GetDeviceState() for '{}' failed: {:08X}", name, static_cast<unsigned>(hr));
+    WARNING_LOG("GetDeviceState() for '{}' failed: {:08X}", name, static_cast<unsigned>(hr));
 
-  Log_InfoFmt("{} has {} buttons, {} axes, {} hats", name, cd.num_buttons, static_cast<u32>(cd.axis_offsets.size()),
-              cd.num_hats);
+  INFO_LOG("{} has {} buttons, {} axes, {} hats", name, cd.num_buttons, static_cast<u32>(cd.axis_offsets.size()),
+           cd.num_hats);
 
   return (cd.num_buttons > 0 || !cd.axis_offsets.empty() || cd.num_hats > 0);
 }
@@ -278,7 +278,7 @@ void DInputSource::PollEvents()
     }
     else if (hr != DI_OK)
     {
-      Log_WarningFmt("GetDeviceState() failed: {:08X}", static_cast<unsigned>(hr));
+      WARNING_LOG("GetDeviceState() failed: {:08X}", static_cast<unsigned>(hr));
       i++;
       continue;
     }

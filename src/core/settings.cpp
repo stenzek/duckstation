@@ -735,7 +735,7 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
 #ifndef ENABLE_MMAP_FASTMEM
   if (g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
   {
-    Log_WarningPrint("mmap fastmem is not available on this platform, using LUT instead.");
+    WARNING_LOG("mmap fastmem is not available on this platform, using LUT instead.");
     g_settings.cpu_fastmem_mode = CPUFastmemMode::LUT;
   }
 #endif
@@ -770,7 +770,7 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     // be unlinked. Which would be thousands of blocks.
     if (g_settings.cpu_recompiler_block_linking)
     {
-      Log_WarningPrint("Disabling block linking due to runahead.");
+      WARNING_LOG("Disabling block linking due to runahead.");
       g_settings.cpu_recompiler_block_linking = false;
     }
   }
@@ -844,14 +844,15 @@ void Settings::SetDefaultControllerConfig(SettingsInterface& si)
 #endif
 }
 
-static constexpr const std::array s_log_level_names = {"None",    "Error", "Warning", "Perf",  "Info",
-                                                       "Verbose", "Dev",   "Profile", "Debug", "Trace"};
+static constexpr const std::array s_log_level_names = {
+  "None", "Error", "Warning", "Info", "Verbose", "Dev", "Debug", "Trace",
+};
 static constexpr const std::array s_log_level_display_names = {
-  TRANSLATE_NOOP("LogLevel", "None"),        TRANSLATE_NOOP("LogLevel", "Error"),
-  TRANSLATE_NOOP("LogLevel", "Warning"),     TRANSLATE_NOOP("LogLevel", "Performance"),
-  TRANSLATE_NOOP("LogLevel", "Information"), TRANSLATE_NOOP("LogLevel", "Verbose"),
-  TRANSLATE_NOOP("LogLevel", "Developer"),   TRANSLATE_NOOP("LogLevel", "Profile"),
-  TRANSLATE_NOOP("LogLevel", "Debug"),       TRANSLATE_NOOP("LogLevel", "Trace")};
+  TRANSLATE_NOOP("LogLevel", "None"),    TRANSLATE_NOOP("LogLevel", "Error"),
+  TRANSLATE_NOOP("LogLevel", "Warning"), TRANSLATE_NOOP("LogLevel", "Information"),
+  TRANSLATE_NOOP("LogLevel", "Verbose"), TRANSLATE_NOOP("LogLevel", "Developer"),
+  TRANSLATE_NOOP("LogLevel", "Debug"),   TRANSLATE_NOOP("LogLevel", "Trace"),
+};
 
 std::optional<LOGLEVEL> Settings::ParseLogLevelName(const char* str)
 {
@@ -1418,11 +1419,7 @@ const char* Settings::GetDisplayAlignmentDisplayName(DisplayAlignment alignment)
 }
 
 static constexpr const std::array s_display_scaling_names = {
-  "Nearest",
-  "NearestInteger",
-  "BilinearSmooth",
-  "BilinearSharp",
-  "BilinearInteger",
+  "Nearest", "NearestInteger", "BilinearSmooth", "BilinearSharp", "BilinearInteger",
 };
 static constexpr const std::array s_display_scaling_display_names = {
   TRANSLATE_NOOP("DisplayScalingMode", "Nearest-Neighbor"),
@@ -1752,20 +1749,20 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
   Textures = LoadPathFromSettings(si, DataRoot, "Folders", "Textures", "textures");
   UserResources = LoadPathFromSettings(si, DataRoot, "Folders", "UserResources", "resources");
 
-  Log_DevFmt("BIOS Directory: {}", Bios);
-  Log_DevFmt("Cache Directory: {}", Cache);
-  Log_DevFmt("Cheats Directory: {}", Cheats);
-  Log_DevFmt("Covers Directory: {}", Covers);
-  Log_DevFmt("Dumps Directory: {}", Dumps);
-  Log_DevFmt("Game Settings Directory: {}", GameSettings);
-  Log_DevFmt("Input Profile Directory: {}", InputProfiles);
-  Log_DevFmt("MemoryCards Directory: {}", MemoryCards);
-  Log_DevFmt("Resources Directory: {}", Resources);
-  Log_DevFmt("SaveStates Directory: {}", SaveStates);
-  Log_DevFmt("Screenshots Directory: {}", Screenshots);
-  Log_DevFmt("Shaders Directory: {}", Shaders);
-  Log_DevFmt("Textures Directory: {}", Textures);
-  Log_DevFmt("User Resources Directory: {}", UserResources);
+  DEV_LOG("BIOS Directory: {}", Bios);
+  DEV_LOG("Cache Directory: {}", Cache);
+  DEV_LOG("Cheats Directory: {}", Cheats);
+  DEV_LOG("Covers Directory: {}", Covers);
+  DEV_LOG("Dumps Directory: {}", Dumps);
+  DEV_LOG("Game Settings Directory: {}", GameSettings);
+  DEV_LOG("Input Profile Directory: {}", InputProfiles);
+  DEV_LOG("MemoryCards Directory: {}", MemoryCards);
+  DEV_LOG("Resources Directory: {}", Resources);
+  DEV_LOG("SaveStates Directory: {}", SaveStates);
+  DEV_LOG("Screenshots Directory: {}", Screenshots);
+  DEV_LOG("Shaders Directory: {}", Shaders);
+  DEV_LOG("Textures Directory: {}", Textures);
+  DEV_LOG("User Resources Directory: {}", UserResources);
 }
 
 void EmuFolders::Save(SettingsInterface& si)
@@ -1841,7 +1838,7 @@ std::string EmuFolders::GetOverridableResourcePath(std::string_view name)
   if (FileSystem::FileExists(upath.c_str()))
   {
     if (UserResources != Resources)
-      Log_WarningFmt("Using user-provided resource file {}", name);
+      WARNING_LOG("Using user-provided resource file {}", name);
   }
   else
   {

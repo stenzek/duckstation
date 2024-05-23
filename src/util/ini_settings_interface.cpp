@@ -122,7 +122,7 @@ bool INISettingsInterface::Save(Error* error /* = nullptr */)
 
   if (err != SI_OK)
   {
-    Log_WarningFmt("Failed to save settings to '{}'.", m_filename);
+    WARNING_LOG("Failed to save settings to '{}'.", m_filename);
     return false;
   }
 
@@ -363,7 +363,7 @@ std::vector<std::pair<std::string, std::string>> INISettingsInterface::GetKeyVal
     {
       if (!m_ini.GetAllValues(section, key.pItem, values)) // [[unlikely]]
       {
-        Log_ErrorPrint("Got no values for a key returned from GetAllKeys!");
+        ERROR_LOG("Got no values for a key returned from GetAllKeys!");
         continue;
       }
       for (const Entry& value : values)

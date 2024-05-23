@@ -86,7 +86,7 @@ std::unique_ptr<GPUSampler> D3D11Device::CreateSampler(const GPUSampler::Config&
   const HRESULT hr = m_device->CreateSamplerState(&desc, ss.GetAddressOf());
   if (FAILED(hr)) [[unlikely]]
   {
-    Log_ErrorFmt("CreateSamplerState() failed: {:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("CreateSamplerState() failed: {:08X}", static_cast<unsigned>(hr));
     return {};
   }
 
@@ -189,7 +189,7 @@ bool D3D11Texture::Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32
   HRESULT hr = context->Map(m_texture.Get(), srnum, discard ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_READ_WRITE, 0, &sr);
   if (FAILED(hr)) [[unlikely]]
   {
-    Log_ErrorFmt("Map pixels texture failed: {:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("Map pixels texture failed: {:08X}", static_cast<unsigned>(hr));
     return false;
   }
 
@@ -267,10 +267,9 @@ std::unique_ptr<D3D11Texture> D3D11Texture::Create(ID3D11Device* device, u32 wid
   const HRESULT tex_hr = device->CreateTexture2D(&desc, initial_data ? &srd : nullptr, texture.GetAddressOf());
   if (FAILED(tex_hr))
   {
-    Log_ErrorFmt(
-      "Create texture failed: 0x{:08X} ({}x{} levels:{} samples:{} format:{} bind_flags:{:X} initial_data:{})",
-      static_cast<unsigned>(tex_hr), width, height, levels, samples, static_cast<unsigned>(format), bind_flags,
-      initial_data);
+    ERROR_LOG("Create texture failed: 0x{:08X} ({}x{} levels:{} samples:{} format:{} bind_flags:{:X} initial_data:{})",
+              static_cast<unsigned>(tex_hr), width, height, levels, samples, static_cast<unsigned>(format), bind_flags,
+              initial_data);
     return nullptr;
   }
 
@@ -291,7 +290,7 @@ std::unique_ptr<D3D11Texture> D3D11Texture::Create(ID3D11Device* device, u32 wid
     const HRESULT hr = device->CreateShaderResourceView(texture.Get(), &srv_desc, srv.GetAddressOf());
     if (FAILED(hr)) [[unlikely]]
     {
-      Log_ErrorFmt("Create SRV for texture failed: 0x{:08X}", static_cast<unsigned>(hr));
+      ERROR_LOG("Create SRV for texture failed: 0x{:08X}", static_cast<unsigned>(hr));
       return nullptr;
     }
   }
@@ -306,7 +305,7 @@ std::unique_ptr<D3D11Texture> D3D11Texture::Create(ID3D11Device* device, u32 wid
     const HRESULT hr = device->CreateRenderTargetView(texture.Get(), &rtv_desc, rtv.GetAddressOf());
     if (FAILED(hr)) [[unlikely]]
     {
-      Log_ErrorFmt("Create RTV for texture failed: 0x{:08X}", static_cast<unsigned>(hr));
+      ERROR_LOG("Create RTV for texture failed: 0x{:08X}", static_cast<unsigned>(hr));
       return nullptr;
     }
 
@@ -321,7 +320,7 @@ std::unique_ptr<D3D11Texture> D3D11Texture::Create(ID3D11Device* device, u32 wid
     const HRESULT hr = device->CreateDepthStencilView(texture.Get(), &dsv_desc, dsv.GetAddressOf());
     if (FAILED(hr)) [[unlikely]]
     {
-      Log_ErrorFmt("Create DSV for texture failed: 0x{:08X}", static_cast<unsigned>(hr));
+      ERROR_LOG("Create DSV for texture failed: 0x{:08X}", static_cast<unsigned>(hr));
       return nullptr;
     }
 
@@ -354,7 +353,7 @@ bool D3D11TextureBuffer::CreateBuffer()
     D3D11Device::GetD3DDevice()->CreateShaderResourceView(m_buffer.GetD3DBuffer(), &srv_desc, m_srv.GetAddressOf());
   if (FAILED(hr)) [[unlikely]]
   {
-    Log_ErrorFmt("CreateShaderResourceView() failed: {:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("CreateShaderResourceView() failed: {:08X}", static_cast<unsigned>(hr));
     return false;
   }
 
@@ -421,7 +420,7 @@ std::unique_ptr<D3D11DownloadTexture> D3D11DownloadTexture::Create(u32 width, u3
   HRESULT hr = D3D11Device::GetD3DDevice()->CreateTexture2D(&desc, nullptr, tex.GetAddressOf());
   if (FAILED(hr))
   {
-    Log_ErrorFmt("CreateTexture2D() failed: {:08X}", hr);
+    ERROR_LOG("CreateTexture2D() failed: {:08X}", hr);
     return {};
   }
 
@@ -471,7 +470,7 @@ bool D3D11DownloadTexture::Map(u32 x, u32 y, u32 width, u32 height)
   HRESULT hr = D3D11Device::GetD3DContext()->Map(m_texture.Get(), 0, D3D11_MAP_READ, 0, &sr);
   if (FAILED(hr))
   {
-    Log_ErrorFmt("Map() failed: {:08X}", hr);
+    ERROR_LOG("Map() failed: {:08X}", hr);
     return false;
   }
 
@@ -517,6 +516,6 @@ std::unique_ptr<GPUDownloadTexture> D3D11Device::CreateDownloadTexture(u32 width
                                                                        void* memory, size_t memory_size,
                                                                        u32 memory_stride)
 {
-  Log_ErrorPrint("D3D11 cannot import memory for download textures");
+  ERROR_LOG("D3D11 cannot import memory for download textures");
   return {};
 }

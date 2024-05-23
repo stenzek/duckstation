@@ -149,14 +149,14 @@ VkInstance VulkanDevice::CreateVulkanInstance(const WindowInfo& wi, OptionalExte
   }
   else
   {
-    Log_WarningPrint("Driver does not provide vkEnumerateInstanceVersion().");
+    WARNING_LOG("Driver does not provide vkEnumerateInstanceVersion().");
   }
 
   // Cap out at 1.1 for consistency.
   const u32 apiVersion = std::min(maxApiVersion, VK_API_VERSION_1_1);
-  Log_InfoFmt("Supported instance version: {}.{}.{}, requesting version {}.{}.{}", VK_API_VERSION_MAJOR(maxApiVersion),
-              VK_API_VERSION_MINOR(maxApiVersion), VK_API_VERSION_PATCH(maxApiVersion),
-              VK_API_VERSION_MAJOR(apiVersion), VK_API_VERSION_MINOR(apiVersion), VK_API_VERSION_PATCH(apiVersion));
+  INFO_LOG("Supported instance version: {}.{}.{}, requesting version {}.{}.{}", VK_API_VERSION_MAJOR(maxApiVersion),
+           VK_API_VERSION_MINOR(maxApiVersion), VK_API_VERSION_PATCH(maxApiVersion), VK_API_VERSION_MAJOR(apiVersion),
+           VK_API_VERSION_MINOR(apiVersion), VK_API_VERSION_PATCH(apiVersion));
 
   // Remember to manually update this every release. We don't pull in svnrev.h here, because
   // it's only the major/minor version, and rebuilding the file every time something else changes
@@ -212,7 +212,7 @@ bool VulkanDevice::SelectInstanceExtensions(ExtensionList* extension_list, const
 
   if (extension_count == 0)
   {
-    Log_ErrorPrint("Vulkan: No extensions supported by instance.");
+    ERROR_LOG("Vulkan: No extensions supported by instance.");
     return false;
   }
 
@@ -226,13 +226,13 @@ bool VulkanDevice::SelectInstanceExtensions(ExtensionList* extension_list, const
                        return !strcmp(name, properties.extensionName);
                      }) != available_extension_list.end())
     {
-      Log_DevFmt("Enabling extension: {}", name);
+      DEV_LOG("Enabling extension: {}", name);
       extension_list->push_back(name);
       return true;
     }
 
     if (required)
-      Log_ErrorFmt("Vulkan: Missing required extension {}.", name);
+      ERROR_LOG("Vulkan: Missing required extension {}.", name);
 
     return false;
   };
@@ -264,7 +264,7 @@ bool VulkanDevice::SelectInstanceExtensions(ExtensionList* extension_list, const
 
   // VK_EXT_debug_utils
   if (enable_debug_utils && !SupportsExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, false))
-    Log_WarningPrint("Vulkan: Debug report requested, but extension is not available.");
+    WARNING_LOG("Vulkan: Debug report requested, but extension is not available.");
 
   // Needed for exclusive fullscreen control.
   SupportsExtension(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME, false);
@@ -291,8 +291,8 @@ VulkanDevice::GPUList VulkanDevice::EnumerateGPUs(VkInstance instance)
   res = vkEnumeratePhysicalDevices(instance, &gpu_count, physical_devices.data());
   if (res == VK_INCOMPLETE)
   {
-    Log_WarningFmt("First vkEnumeratePhysicalDevices() call returned {} devices, but second returned {}",
-                   physical_devices.size(), gpu_count);
+    WARNING_LOG("First vkEnumeratePhysicalDevices() call returned {} devices, but second returned {}",
+                physical_devices.size(), gpu_count);
   }
   else if (res != VK_SUCCESS)
   {
@@ -344,7 +344,7 @@ bool VulkanDevice::SelectDeviceExtensions(ExtensionList* extension_list, bool en
 
   if (extension_count == 0)
   {
-    Log_ErrorPrint("Vulkan: No extensions supported by device.");
+    ERROR_LOG("Vulkan: No extensions supported by device.");
     return false;
   }
 
@@ -362,7 +362,7 @@ bool VulkanDevice::SelectDeviceExtensions(ExtensionList* extension_list, bool en
       if (std::none_of(extension_list->begin(), extension_list->end(),
                        [&](const char* existing_name) { return (std::strcmp(existing_name, name) == 0); }))
       {
-        Log_DevFmt("Enabling extension: {}", name);
+        DEV_LOG("Enabling extension: {}", name);
         extension_list->push_back(name);
       }
 
@@ -370,7 +370,7 @@ bool VulkanDevice::SelectDeviceExtensions(ExtensionList* extension_list, bool en
     }
 
     if (required)
-      Log_ErrorFmt("Vulkan: Missing required extension {}.", name);
+      ERROR_LOG("Vulkan: Missing required extension {}.", name);
 
     return false;
   };
@@ -413,8 +413,8 @@ bool VulkanDevice::SelectDeviceExtensions(ExtensionList* extension_list, bool en
 #ifdef _WIN32
   m_optional_extensions.vk_ext_full_screen_exclusive =
     enable_surface && SupportsExtension(VK_EXT_FULL_SCREEN_EXCLUSIVE_EXTENSION_NAME, false);
-  Log_InfoFmt("VK_EXT_full_screen_exclusive is {}",
-              m_optional_extensions.vk_ext_full_screen_exclusive ? "supported" : "NOT supported");
+  INFO_LOG("VK_EXT_full_screen_exclusive is {}",
+           m_optional_extensions.vk_ext_full_screen_exclusive ? "supported" : "NOT supported");
 #endif
 
   return true;
@@ -450,13 +450,13 @@ bool VulkanDevice::CreateDevice(VkSurfaceKHR surface, bool enable_validation_lay
   vkGetPhysicalDeviceQueueFamilyProperties(m_physical_device, &queue_family_count, nullptr);
   if (queue_family_count == 0)
   {
-    Log_ErrorPrint("No queue families found on specified vulkan physical device.");
+    ERROR_LOG("No queue families found on specified vulkan physical device.");
     return false;
   }
 
   std::vector<VkQueueFamilyProperties> queue_family_properties(queue_family_count);
   vkGetPhysicalDeviceQueueFamilyProperties(m_physical_device, &queue_family_count, queue_family_properties.data());
-  Log_DevFmt("{} vulkan queue families", queue_family_count);
+  DEV_LOG("{} vulkan queue families", queue_family_count);
 
   // Find graphics and present queues.
   m_graphics_queue_family_index = queue_family_count;
@@ -498,12 +498,12 @@ bool VulkanDevice::CreateDevice(VkSurfaceKHR surface, bool enable_validation_lay
   }
   if (m_graphics_queue_family_index == queue_family_count)
   {
-    Log_ErrorPrint("Vulkan: Failed to find an acceptable graphics queue.");
+    ERROR_LOG("Vulkan: Failed to find an acceptable graphics queue.");
     return false;
   }
   if (surface != VK_NULL_HANDLE && m_present_queue_family_index == queue_family_count)
   {
-    Log_ErrorPrint("Vulkan: Failed to find an acceptable present queue.");
+    ERROR_LOG("Vulkan: Failed to find an acceptable present queue.");
     return false;
   }
 
@@ -593,11 +593,11 @@ bool VulkanDevice::CreateDevice(VkSurfaceKHR surface, bool enable_validation_lay
   m_features.gpu_timing = (m_device_properties.limits.timestampComputeAndGraphics != 0 &&
                            queue_family_properties[m_graphics_queue_family_index].timestampValidBits > 0 &&
                            m_device_properties.limits.timestampPeriod > 0);
-  Log_DevFmt("GPU timing is {} (TS={} TS valid bits={}, TS period={})",
-             m_features.gpu_timing ? "supported" : "not supported",
-             static_cast<u32>(m_device_properties.limits.timestampComputeAndGraphics),
-             queue_family_properties[m_graphics_queue_family_index].timestampValidBits,
-             m_device_properties.limits.timestampPeriod);
+  DEV_LOG("GPU timing is {} (TS={} TS valid bits={}, TS period={})",
+          m_features.gpu_timing ? "supported" : "not supported",
+          static_cast<u32>(m_device_properties.limits.timestampComputeAndGraphics),
+          queue_family_properties[m_graphics_queue_family_index].timestampValidBits,
+          m_device_properties.limits.timestampPeriod);
 
   ProcessDeviceExtensions();
   return true;
@@ -631,8 +631,7 @@ void VulkanDevice::ProcessDeviceExtensions()
     if (!vkGetPhysicalDeviceFeatures2KHR || !vkGetPhysicalDeviceProperties2KHR ||
         !vkGetPhysicalDeviceMemoryProperties2KHR)
     {
-      Log_ErrorPrint(
-        "One or more functions from VK_KHR_get_physical_device_properties2 is missing, disabling extension.");
+      ERROR_LOG("One or more functions from VK_KHR_get_physical_device_properties2 is missing, disabling extension.");
       m_optional_extensions.vk_khr_get_physical_device_properties2 = false;
       vkGetPhysicalDeviceFeatures2 = nullptr;
       vkGetPhysicalDeviceProperties2 = nullptr;
@@ -691,43 +690,42 @@ void VulkanDevice::ProcessDeviceExtensions()
     {
       m_optional_extensions.vk_khr_dynamic_rendering = false;
       m_optional_extensions.vk_khr_dynamic_rendering_local_read = false;
-      Log_WarningPrint("Disabling VK_KHR_dynamic_rendering on broken mobile driver.");
+      WARNING_LOG("Disabling VK_KHR_dynamic_rendering on broken mobile driver.");
     }
     if (m_optional_extensions.vk_khr_push_descriptor)
     {
       m_optional_extensions.vk_khr_push_descriptor = false;
-      Log_WarningPrint("Disabling VK_KHR_push_descriptor on broken mobile driver.");
+      WARNING_LOG("Disabling VK_KHR_push_descriptor on broken mobile driver.");
     }
   }
 
-  Log_InfoFmt("VK_EXT_memory_budget is {}", m_optional_extensions.vk_ext_memory_budget ? "supported" : "NOT supported");
-  Log_InfoFmt("VK_EXT_rasterization_order_attachment_access is {}",
-              m_optional_extensions.vk_ext_rasterization_order_attachment_access ? "supported" : "NOT supported");
-  Log_InfoFmt("VK_KHR_get_memory_requirements2 is {}",
-              m_optional_extensions.vk_khr_get_memory_requirements2 ? "supported" : "NOT supported");
-  Log_InfoFmt("VK_KHR_bind_memory2 is {}", m_optional_extensions.vk_khr_bind_memory2 ? "supported" : "NOT supported");
-  Log_InfoFmt("VK_KHR_get_physical_device_properties2 is {}",
-              m_optional_extensions.vk_khr_get_physical_device_properties2 ? "supported" : "NOT supported");
-  Log_InfoFmt("VK_KHR_dedicated_allocation is {}",
-              m_optional_extensions.vk_khr_dedicated_allocation ? "supported" : "NOT supported");
-  Log_InfoFmt("VK_KHR_dynamic_rendering is {}",
-              m_optional_extensions.vk_khr_dynamic_rendering ? "supported" : "NOT supported");
-  Log_InfoFmt("VK_KHR_dynamic_rendering_local_read is {}",
-              m_optional_extensions.vk_khr_dynamic_rendering_local_read ? "supported" : "NOT supported");
-  Log_InfoFmt("VK_KHR_push_descriptor is {}",
-              m_optional_extensions.vk_khr_push_descriptor ? "supported" : "NOT supported");
-  Log_InfoFmt("VK_EXT_external_memory_host is {}",
-              m_optional_extensions.vk_ext_external_memory_host ? "supported" : "NOT supported");
+  INFO_LOG("VK_EXT_memory_budget is {}", m_optional_extensions.vk_ext_memory_budget ? "supported" : "NOT supported");
+  INFO_LOG("VK_EXT_rasterization_order_attachment_access is {}",
+           m_optional_extensions.vk_ext_rasterization_order_attachment_access ? "supported" : "NOT supported");
+  INFO_LOG("VK_KHR_get_memory_requirements2 is {}",
+           m_optional_extensions.vk_khr_get_memory_requirements2 ? "supported" : "NOT supported");
+  INFO_LOG("VK_KHR_bind_memory2 is {}", m_optional_extensions.vk_khr_bind_memory2 ? "supported" : "NOT supported");
+  INFO_LOG("VK_KHR_get_physical_device_properties2 is {}",
+           m_optional_extensions.vk_khr_get_physical_device_properties2 ? "supported" : "NOT supported");
+  INFO_LOG("VK_KHR_dedicated_allocation is {}",
+           m_optional_extensions.vk_khr_dedicated_allocation ? "supported" : "NOT supported");
+  INFO_LOG("VK_KHR_dynamic_rendering is {}",
+           m_optional_extensions.vk_khr_dynamic_rendering ? "supported" : "NOT supported");
+  INFO_LOG("VK_KHR_dynamic_rendering_local_read is {}",
+           m_optional_extensions.vk_khr_dynamic_rendering_local_read ? "supported" : "NOT supported");
+  INFO_LOG("VK_KHR_push_descriptor is {}",
+           m_optional_extensions.vk_khr_push_descriptor ? "supported" : "NOT supported");
+  INFO_LOG("VK_EXT_external_memory_host is {}",
+           m_optional_extensions.vk_ext_external_memory_host ? "supported" : "NOT supported");
 }
 
 bool VulkanDevice::CreateAllocator()
 {
   const u32 apiVersion = std::min(m_device_properties.apiVersion, VK_API_VERSION_1_1);
-  Log_InfoFmt("Supported device API version: {}.{}.{}, using version {}.{}.{} for allocator.",
-              VK_API_VERSION_MAJOR(m_device_properties.apiVersion),
-              VK_API_VERSION_MINOR(m_device_properties.apiVersion),
-              VK_API_VERSION_PATCH(m_device_properties.apiVersion), VK_API_VERSION_MAJOR(apiVersion),
-              VK_API_VERSION_MINOR(apiVersion), VK_API_VERSION_PATCH(apiVersion));
+  INFO_LOG("Supported device API version: {}.{}.{}, using version {}.{}.{} for allocator.",
+           VK_API_VERSION_MAJOR(m_device_properties.apiVersion), VK_API_VERSION_MINOR(m_device_properties.apiVersion),
+           VK_API_VERSION_PATCH(m_device_properties.apiVersion), VK_API_VERSION_MAJOR(apiVersion),
+           VK_API_VERSION_MINOR(apiVersion), VK_API_VERSION_PATCH(apiVersion));
 
   VmaAllocatorCreateInfo ci = {};
   ci.vulkanApiVersion = apiVersion;
@@ -740,19 +738,19 @@ bool VulkanDevice::CreateAllocator()
   {
     if (m_optional_extensions.vk_khr_get_memory_requirements2 && m_optional_extensions.vk_khr_dedicated_allocation)
     {
-      Log_DevPrint("Enabling VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT on < Vulkan 1.1.");
+      DEV_LOG("Enabling VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT on < Vulkan 1.1.");
       ci.flags |= VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
     }
     if (m_optional_extensions.vk_khr_bind_memory2)
     {
-      Log_DevPrint("Enabling VMA_ALLOCATOR_CREATE_KHR_BIND_MEMORY2_BIT on < Vulkan 1.1.");
+      DEV_LOG("Enabling VMA_ALLOCATOR_CREATE_KHR_BIND_MEMORY2_BIT on < Vulkan 1.1.");
       ci.flags |= VMA_ALLOCATOR_CREATE_KHR_BIND_MEMORY2_BIT;
     }
   }
 
   if (m_optional_extensions.vk_ext_memory_budget)
   {
-    Log_DevPrint("Enabling VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT.");
+    DEV_LOG("Enabling VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT.");
     ci.flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
   }
 
@@ -783,8 +781,8 @@ bool VulkanDevice::CreateAllocator()
 
       if (heap_size_limits[type.heapIndex] == VK_WHOLE_SIZE)
       {
-        Log_WarningFmt("Disabling allocation from upload heap #{} ({:.2f} MB) due to debug device.", type.heapIndex,
-                       static_cast<float>(heap.size) / 1048576.0f);
+        WARNING_LOG("Disabling allocation from upload heap #{} ({:.2f} MB) due to debug device.", type.heapIndex,
+                    static_cast<float>(heap.size) / 1048576.0f);
         heap_size_limits[type.heapIndex] = 0;
         has_upload_heap = true;
       }
@@ -1179,7 +1177,7 @@ void VulkanDevice::WaitForCommandBufferCompletion(u32 index)
   // We might be waiting for the buffer we just submitted to the worker thread.
   if (m_queued_present.command_buffer_index == index && !m_present_done.load(std::memory_order_acquire))
   {
-    Log_WarningFmt("Waiting for threaded submission of cmdbuffer {}", index);
+    WARNING_LOG("Waiting for threaded submission of cmdbuffer {}", index);
     WaitForPresentComplete();
   }
 
@@ -1194,7 +1192,7 @@ void VulkanDevice::WaitForCommandBufferCompletion(u32 index)
 
     if (res == VK_TIMEOUT && (++timeouts) <= MAX_TIMEOUTS)
     {
-      Log_ErrorFmt("vkWaitForFences() for cmdbuffer {} failed with VK_TIMEOUT, trying again.", index);
+      ERROR_LOG("vkWaitForFences() for cmdbuffer {} failed with VK_TIMEOUT, trying again.", index);
       continue;
     }
     else if (res != VK_SUCCESS)
@@ -1506,7 +1504,7 @@ void VulkanDevice::SubmitCommandBuffer(bool wait_for_completion, const char* rea
   const std::string reason_str(StringUtil::StdStringFromFormatV(reason, ap));
   va_end(ap);
 
-  Log_WarningFmt("Executing command buffer due to '{}'", reason_str);
+  WARNING_LOG("Executing command buffer due to '{}'", reason_str);
   SubmitCommandBuffer(wait_for_completion);
 }
 
@@ -1588,23 +1586,23 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugMessengerCallback(VkDebugUtilsMessageSeverit
 {
   if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
   {
-    Log_ErrorFmt("Vulkan debug report: ({}) {}", pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "",
-                 pCallbackData->pMessage);
+    ERROR_LOG("Vulkan debug report: ({}) {}", pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "",
+              pCallbackData->pMessage);
   }
   else if (severity & (VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT))
   {
-    Log_WarningFmt("Vulkan debug report: ({}) {}", pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "",
-                   pCallbackData->pMessage);
+    WARNING_LOG("Vulkan debug report: ({}) {}", pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "",
+                pCallbackData->pMessage);
   }
   else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
   {
-    Log_InfoFmt("Vulkan debug report: ({}) {}", pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "",
-                pCallbackData->pMessage);
+    INFO_LOG("Vulkan debug report: ({}) {}", pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "",
+             pCallbackData->pMessage);
   }
   else
   {
-    Log_DevFmt("Vulkan debug report: ({}) {}", pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "",
-               pCallbackData->pMessage);
+    DEV_LOG("Vulkan debug report: ({}) {}", pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "",
+            pCallbackData->pMessage);
   }
 
   return VK_FALSE;
@@ -1894,12 +1892,12 @@ bool VulkanDevice::IsSuitableDefaultRenderer()
 
   // Check the first GPU, should be enough.
   const std::string& name = aml.adapter_names.front();
-  Log_InfoFmt("Using Vulkan GPU '{}' for automatic renderer check.", name);
+  INFO_LOG("Using Vulkan GPU '{}' for automatic renderer check.", name);
 
   // Any software rendering (LLVMpipe, SwiftShader).
   if (StringUtil::StartsWithNoCase(name, "llvmpipe") || StringUtil::StartsWithNoCase(name, "SwiftShader"))
   {
-    Log_InfoPrint("Not using Vulkan for software renderer.");
+    INFO_LOG("Not using Vulkan for software renderer.");
     return false;
   }
 
@@ -1907,11 +1905,11 @@ bool VulkanDevice::IsSuitableDefaultRenderer()
   // Plus, the Ivy Bridge and Haswell drivers are incomplete.
   if (StringUtil::StartsWithNoCase(name, "Intel"))
   {
-    Log_InfoPrint("Not using Vulkan for Intel GPU.");
+    INFO_LOG("Not using Vulkan for Intel GPU.");
     return false;
   }
 
-  Log_InfoPrint("Allowing Vulkan as default renderer.");
+  INFO_LOG("Allowing Vulkan as default renderer.");
   return true;
 #endif
 }
@@ -1957,13 +1955,13 @@ bool VulkanDevice::CreateDevice(std::string_view adapter, bool threaded_presenta
         return false;
       }
 
-      Log_ErrorPrint("Vulkan validation/debug layers requested but are unavailable. Creating non-debug device.");
+      ERROR_LOG("Vulkan validation/debug layers requested but are unavailable. Creating non-debug device.");
     }
   }
 
   if (!Vulkan::LoadVulkanInstanceFunctions(m_instance))
   {
-    Log_ErrorPrint("Failed to load Vulkan instance functions");
+    ERROR_LOG("Failed to load Vulkan instance functions");
     Error::SetStringView(error, "Failed to load Vulkan instance functions");
     return false;
   }
@@ -1980,7 +1978,7 @@ bool VulkanDevice::CreateDevice(std::string_view adapter, bool threaded_presenta
     u32 gpu_index = 0;
     for (; gpu_index < static_cast<u32>(gpus.size()); gpu_index++)
     {
-      Log_InfoFmt("GPU {}: {}", gpu_index, gpus[gpu_index].second);
+      INFO_LOG("GPU {}: {}", gpu_index, gpus[gpu_index].second);
       if (gpus[gpu_index].second == adapter)
       {
         m_physical_device = gpus[gpu_index].first;
@@ -1990,13 +1988,13 @@ bool VulkanDevice::CreateDevice(std::string_view adapter, bool threaded_presenta
 
     if (gpu_index == static_cast<u32>(gpus.size()))
     {
-      Log_WarningFmt("Requested GPU '{}' not found, using first ({})", adapter, gpus[0].second);
+      WARNING_LOG("Requested GPU '{}' not found, using first ({})", adapter, gpus[0].second);
       m_physical_device = gpus[0].first;
     }
   }
   else
   {
-    Log_InfoFmt("No GPU requested, using first ({})", gpus[0].second);
+    INFO_LOG("No GPU requested, using first ({})", gpus[0].second);
     m_physical_device = gpus[0].first;
   }
 
@@ -2144,33 +2142,33 @@ bool VulkanDevice::ValidatePipelineCacheHeader(const VK_PIPELINE_CACHE_HEADER& h
 {
   if (header.header_length < sizeof(VK_PIPELINE_CACHE_HEADER))
   {
-    Log_ErrorPrint("Pipeline cache failed validation: Invalid header length");
+    ERROR_LOG("Pipeline cache failed validation: Invalid header length");
     return false;
   }
 
   if (header.header_version != VK_PIPELINE_CACHE_HEADER_VERSION_ONE)
   {
-    Log_ErrorPrint("Pipeline cache failed validation: Invalid header version");
+    ERROR_LOG("Pipeline cache failed validation: Invalid header version");
     return false;
   }
 
   if (header.vendor_id != m_device_properties.vendorID)
   {
-    Log_ErrorFmt("Pipeline cache failed validation: Incorrect vendor ID (file: 0x{:X}, device: 0x{:X})",
-                 header.vendor_id, m_device_properties.vendorID);
+    ERROR_LOG("Pipeline cache failed validation: Incorrect vendor ID (file: 0x{:X}, device: 0x{:X})", header.vendor_id,
+              m_device_properties.vendorID);
     return false;
   }
 
   if (header.device_id != m_device_properties.deviceID)
   {
-    Log_ErrorFmt("Pipeline cache failed validation: Incorrect device ID (file: 0x{:X}, device: 0x{:X})",
-                 header.device_id, m_device_properties.deviceID);
+    ERROR_LOG("Pipeline cache failed validation: Incorrect device ID (file: 0x{:X}, device: 0x{:X})", header.device_id,
+              m_device_properties.deviceID);
     return false;
   }
 
   if (std::memcmp(header.uuid, m_device_properties.pipelineCacheUUID, VK_UUID_SIZE) != 0)
   {
-    Log_ErrorPrint("Pipeline cache failed validation: Incorrect UUID");
+    ERROR_LOG("Pipeline cache failed validation: Incorrect UUID");
     return false;
   }
 
@@ -2199,7 +2197,7 @@ bool VulkanDevice::ReadPipelineCache(const std::string& filename)
     {
       if (data->size() < sizeof(VK_PIPELINE_CACHE_HEADER))
       {
-        Log_ErrorFmt("Pipeline cache at '{}' is too small", Path::GetFileName(filename));
+        ERROR_LOG("Pipeline cache at '{}' is too small", Path::GetFileName(filename));
         return false;
       }
 
@@ -2266,14 +2264,14 @@ bool VulkanDevice::UpdateWindow()
   VkSurfaceKHR surface = VulkanSwapChain::CreateVulkanSurface(m_instance, m_physical_device, &m_window_info);
   if (surface == VK_NULL_HANDLE)
   {
-    Log_ErrorPrint("Failed to create new surface for swap chain");
+    ERROR_LOG("Failed to create new surface for swap chain");
     return false;
   }
 
   m_swap_chain = VulkanSwapChain::Create(m_window_info, surface, SelectPresentMode(), m_exclusive_fullscreen_control);
   if (!m_swap_chain)
   {
-    Log_ErrorPrint("Failed to create swap chain");
+    ERROR_LOG("Failed to create swap chain");
     VulkanSwapChain::DestroyVulkanSurface(m_instance, &m_window_info, surface);
     return false;
   }
@@ -2302,7 +2300,7 @@ void VulkanDevice::ResizeWindow(s32 new_window_width, s32 new_window_height, flo
   if (!m_swap_chain->ResizeSwapChain(new_window_width, new_window_height, new_window_scale))
   {
     // AcquireNextImage() will fail, and we'll recreate the surface.
-    Log_ErrorPrint("Failed to resize swap chain. Next present will fail.");
+    ERROR_LOG("Failed to resize swap chain. Next present will fail.");
     return;
   }
 
@@ -2405,10 +2403,10 @@ bool VulkanDevice::BeginPresent(bool frame_skip)
     }
     else if (res == VK_ERROR_SURFACE_LOST_KHR)
     {
-      Log_WarningPrint("Surface lost, attempting to recreate");
+      WARNING_LOG("Surface lost, attempting to recreate");
       if (!m_swap_chain->RecreateSurface(m_window_info))
       {
-        Log_ErrorPrint("Failed to recreate surface after loss");
+        ERROR_LOG("Failed to recreate surface after loss");
         SubmitCommandBuffer(false);
         TrimTexturePool();
         return false;
@@ -2544,7 +2542,7 @@ bool VulkanDevice::CheckFeatures(FeatureMask disabled_features)
     m_optional_extensions.vk_ext_rasterization_order_attachment_access;
 
   if (!m_features.dual_source_blend)
-    Log_WarningPrint("Vulkan driver is missing dual-source blending. This will have an impact on performance.");
+    WARNING_LOG("Vulkan driver is missing dual-source blending. This will have an impact on performance.");
 
   m_features.noperspective_interpolation = true;
   m_features.texture_copy_to_self = !(disabled_features & FEATURE_MASK_TEXTURE_COPY_TO_SELF);
@@ -2557,7 +2555,7 @@ bool VulkanDevice::CheckFeatures(FeatureMask disabled_features)
   m_features.texture_buffers_emulated_with_ssbo = true;
 #else
   const u32 max_texel_buffer_elements = m_device_properties.limits.maxTexelBufferElements;
-  Log_InfoFmt("Max texel buffer elements: {}", max_texel_buffer_elements);
+  INFO_LOG("Max texel buffer elements: {}", max_texel_buffer_elements);
   if (max_texel_buffer_elements < MIN_TEXEL_BUFFER_ELEMENTS)
   {
     m_features.texture_buffers_emulated_with_ssbo = true;
@@ -2565,7 +2563,7 @@ bool VulkanDevice::CheckFeatures(FeatureMask disabled_features)
 #endif
 
   if (m_features.texture_buffers_emulated_with_ssbo)
-    Log_WarningPrint("Emulating texture buffers with SSBOs.");
+    WARNING_LOG("Emulating texture buffers with SSBOs.");
 
   m_features.geometry_shaders =
     !(disabled_features & FEATURE_MASK_GEOMETRY_SHADERS) && m_device_features.geometryShader;
@@ -2773,25 +2771,25 @@ bool VulkanDevice::CreateBuffers()
 {
   if (!m_vertex_buffer.Create(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VERTEX_BUFFER_SIZE))
   {
-    Log_ErrorPrint("Failed to allocate vertex buffer");
+    ERROR_LOG("Failed to allocate vertex buffer");
     return false;
   }
 
   if (!m_index_buffer.Create(VK_BUFFER_USAGE_INDEX_BUFFER_BIT, INDEX_BUFFER_SIZE))
   {
-    Log_ErrorPrint("Failed to allocate index buffer");
+    ERROR_LOG("Failed to allocate index buffer");
     return false;
   }
 
   if (!m_uniform_buffer.Create(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VERTEX_UNIFORM_BUFFER_SIZE))
   {
-    Log_ErrorPrint("Failed to allocate uniform buffer");
+    ERROR_LOG("Failed to allocate uniform buffer");
     return false;
   }
 
   if (!m_texture_upload_buffer.Create(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, TEXTURE_BUFFER_SIZE))
   {
-    Log_ErrorPrint("Failed to allocate texture upload buffer");
+    ERROR_LOG("Failed to allocate texture upload buffer");
     return false;
   }
 
@@ -3069,7 +3067,7 @@ void VulkanDevice::RenderBlankFrame()
   VkResult res = m_swap_chain->AcquireNextImage();
   if (res != VK_SUCCESS)
   {
-    Log_ErrorPrint("Failed to acquire image for blank frame present");
+    ERROR_LOG("Failed to acquire image for blank frame present");
     return;
   }
 
@@ -3172,7 +3170,7 @@ bool VulkanDevice::TryImportHostMemory(void* data, size_t data_size, VkBufferUsa
   *out_memory = imported_memory;
   *out_buffer = imported_buffer;
   *out_offset = data_offset;
-  Log_DevFmt("Imported {} byte buffer covering {} bytes at {}", data_size, data_size_aligned, data);
+  DEV_LOG("Imported {} byte buffer covering {} bytes at {}", data_size, data_size_aligned, data);
   return true;
 }
 
@@ -3216,7 +3214,7 @@ void VulkanDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUText
         m_num_current_render_targets, m_current_depth_target, feedback_loop);
       if (m_current_framebuffer == VK_NULL_HANDLE)
       {
-        Log_ErrorPrint("Failed to create framebuffer");
+        ERROR_LOG("Failed to create framebuffer");
         return;
       }
     }
@@ -3355,7 +3353,7 @@ void VulkanDevice::BeginRenderPass()
         m_current_render_targets.data(), m_num_current_render_targets, m_current_depth_target, m_current_feedback_loop);
       if (bi.renderPass == VK_NULL_HANDLE)
       {
-        Log_ErrorPrint("Failed to create render pass");
+        ERROR_LOG("Failed to create render pass");
         return;
       }
 
@@ -3640,7 +3638,7 @@ void VulkanDevice::UnbindTexture(VulkanTexture* tex)
     {
       if (m_current_render_targets[i] == tex)
       {
-        Log_WarningPrint("Unbinding current RT");
+        WARNING_LOG("Unbinding current RT");
         SetRenderTargets(nullptr, 0, m_current_depth_target);
         break;
       }
@@ -3652,7 +3650,7 @@ void VulkanDevice::UnbindTexture(VulkanTexture* tex)
   {
     if (m_current_depth_target == tex)
     {
-      Log_WarningPrint("Unbinding current DS");
+      WARNING_LOG("Unbinding current DS");
       SetRenderTargets(nullptr, 0, nullptr);
     }
 

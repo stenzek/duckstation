@@ -106,7 +106,7 @@ u32 SIO::ReadRegister(u32 offset)
   {
     case 0x00: // SIO_DATA
     {
-      Log_ErrorPrint("Read SIO_DATA");
+      ERROR_LOG("Read SIO_DATA");
 
       const u8 value = 0xFF;
       return (ZeroExtend32(value) | (ZeroExtend32(value) << 8) | (ZeroExtend32(value) << 16) |
@@ -129,7 +129,7 @@ u32 SIO::ReadRegister(u32 offset)
       return ZeroExtend32(s_SIO_BAUD);
 
     [[unlikely]] default:
-      Log_ErrorFmt("Unknown register read: 0x{:X}", offset);
+      ERROR_LOG("Unknown register read: 0x{:X}", offset);
       return UINT32_C(0xFFFFFFFF);
   }
 }
@@ -140,13 +140,13 @@ void SIO::WriteRegister(u32 offset, u32 value)
   {
     case 0x00: // SIO_DATA
     {
-      Log_WarningFmt("SIO_DATA (W) <- 0x{:02X}", value);
+      WARNING_LOG("SIO_DATA (W) <- 0x{:02X}", value);
       return;
     }
 
     case 0x0A: // SIO_CTRL
     {
-      Log_DebugFmt("SIO_CTRL <- 0x{:04X}", value);
+      DEBUG_LOG("SIO_CTRL <- 0x{:04X}", value);
 
       s_SIO_CTRL.bits = Truncate16(value);
       if (s_SIO_CTRL.RESET)
@@ -157,20 +157,20 @@ void SIO::WriteRegister(u32 offset, u32 value)
 
     case 0x08: // SIO_MODE
     {
-      Log_DebugFmt("SIO_MODE <- 0x{:08X}", value);
+      DEBUG_LOG("SIO_MODE <- 0x{:08X}", value);
       s_SIO_MODE.bits = Truncate16(value);
       return;
     }
 
     case 0x0E:
     {
-      Log_DebugFmt("SIO_BAUD <- 0x{:08X}", value);
+      DEBUG_LOG("SIO_BAUD <- 0x{:08X}", value);
       s_SIO_BAUD = Truncate16(value);
       return;
     }
 
     default:
-      Log_ErrorFmt("Unknown register write: 0x{:X} <- 0x{:08X}", offset, value);
+      ERROR_LOG("Unknown register write: 0x{:X} <- 0x{:08X}", offset, value);
       return;
   }
 }

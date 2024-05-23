@@ -119,7 +119,7 @@ std::unique_ptr<GPUTexture> D3D12Device::CreateTexture(u32 width, u32 height, u3
   {
     // OOM isn't fatal.
     if (hr != E_OUTOFMEMORY)
-      Log_ErrorFmt("Create texture failed: 0x{:08X}", static_cast<unsigned>(hr));
+      ERROR_LOG("Create texture failed: 0x{:08X}", static_cast<unsigned>(hr));
 
     return {};
   }
@@ -186,7 +186,7 @@ bool D3D12Device::CreateSRVDescriptor(ID3D12Resource* resource, u32 layers, u32 
 {
   if (!m_descriptor_heap_manager.Allocate(dh))
   {
-    Log_ErrorPrint("Failed to allocate SRV descriptor");
+    ERROR_LOG("Failed to allocate SRV descriptor");
     return false;
   }
 
@@ -229,7 +229,7 @@ bool D3D12Device::CreateRTVDescriptor(ID3D12Resource* resource, u32 samples, DXG
 {
   if (!m_rtv_heap_manager.Allocate(dh))
   {
-    Log_ErrorPrint("Failed to allocate SRV descriptor");
+    ERROR_LOG("Failed to allocate SRV descriptor");
     return false;
   }
 
@@ -244,7 +244,7 @@ bool D3D12Device::CreateDSVDescriptor(ID3D12Resource* resource, u32 samples, DXG
 {
   if (!m_dsv_heap_manager.Allocate(dh))
   {
-    Log_ErrorPrint("Failed to allocate SRV descriptor");
+    ERROR_LOG("Failed to allocate SRV descriptor");
     return false;
   }
 
@@ -259,7 +259,7 @@ bool D3D12Device::CreateUAVDescriptor(ID3D12Resource* resource, u32 samples, DXG
 {
   if (!m_descriptor_heap_manager.Allocate(dh))
   {
-    Log_ErrorPrint("Failed to allocate UAV descriptor");
+    ERROR_LOG("Failed to allocate UAV descriptor");
     return false;
   }
 
@@ -358,9 +358,9 @@ ID3D12Resource* D3D12Texture::AllocateUploadStagingBuffer(const void* data, u32 
   HRESULT hr = D3D12Device::GetInstance().GetAllocator()->CreateResource(
     &allocation_desc, &resource_desc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, allocation.GetAddressOf(),
     IID_PPV_ARGS(resource.GetAddressOf()));
-  if (FAILED(hr))[[unlikely]]
+  if (FAILED(hr)) [[unlikely]]
   {
-    Log_ErrorFmt("CreateResource() failed with {:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("CreateResource() failed with {:08X}", static_cast<unsigned>(hr));
     return nullptr;
   }
 
@@ -368,7 +368,7 @@ ID3D12Resource* D3D12Texture::AllocateUploadStagingBuffer(const void* data, u32 
   hr = resource->Map(0, nullptr, &map_ptr);
   if (FAILED(hr)) [[unlikely]]
   {
-    Log_ErrorFmt("Map() failed with {:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("Map() failed with {:08X}", static_cast<unsigned>(hr));
     return nullptr;
   }
 
@@ -421,7 +421,7 @@ bool D3D12Texture::Update(u32 x, u32 y, u32 width, u32 height, const void* data,
                                                    required_size);
       if (!sbuffer.ReserveMemory(required_size, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT)) [[unlikely]]
       {
-        Log_ErrorFmt("Failed to reserve texture upload memory ({} bytes).", required_size);
+        ERROR_LOG("Failed to reserve texture upload memory ({} bytes).", required_size);
         return false;
       }
     }
@@ -872,7 +872,7 @@ std::unique_ptr<D3D12DownloadTexture> D3D12DownloadTexture::Create(u32 width, u3
     IID_PPV_ARGS(buffer.GetAddressOf()));
   if (FAILED(hr))
   {
-    Log_ErrorFmt("CreateResource() failed with HRESULT {:08X}", hr);
+    ERROR_LOG("CreateResource() failed with HRESULT {:08X}", hr);
     return {};
   }
 
@@ -954,7 +954,7 @@ bool D3D12DownloadTexture::Map(u32 x, u32 y, u32 width, u32 height)
   const HRESULT hr = m_buffer->Map(0, &read_range, reinterpret_cast<void**>(const_cast<u8**>(&m_map_pointer)));
   if (FAILED(hr))
   {
-    Log_ErrorFmt("Map() failed with HRESULT {:08X}", hr);
+    ERROR_LOG("Map() failed with HRESULT {:08X}", hr);
     return false;
   }
 
@@ -1006,6 +1006,6 @@ std::unique_ptr<GPUDownloadTexture> D3D12Device::CreateDownloadTexture(u32 width
                                                                        void* memory, size_t memory_size,
                                                                        u32 memory_stride)
 {
-  Log_ErrorPrint("D3D12 cannot import memory for download textures");
+  ERROR_LOG("D3D12 cannot import memory for download textures");
   return {};
 }

@@ -33,7 +33,7 @@ static s32 GetFreeFileHandle()
 
   if (s_files.size() >= MAX_FILES)
   {
-    Log_ErrorPrint("Too many open files.");
+    ERROR_LOG("Too many open files.");
     return -1;
   }
 
@@ -45,7 +45,7 @@ static s32 GetFreeFileHandle()
 static void CloseAllFiles()
 {
   if (!s_files.empty())
-    Log_DevFmt("Closing {} open files.", s_files.size());
+    DEV_LOG("Closing {} open files.", s_files.size());
 
   s_files.clear();
 }
@@ -54,7 +54,7 @@ static FILE* GetFileFromHandle(u32 handle)
 {
   if (handle >= static_cast<u32>(s_files.size()) || !s_files[handle])
   {
-    Log_ErrorFmt("Invalid file handle {}", static_cast<s32>(handle));
+    ERROR_LOG("Invalid file handle {}", static_cast<s32>(handle));
     return nullptr;
   }
 
@@ -65,7 +65,7 @@ static bool CloseFileHandle(u32 handle)
 {
   if (handle >= static_cast<u32>(s_files.size()) || !s_files[handle])
   {
-    Log_ErrorFmt("Invalid file handle {}", static_cast<s32>(handle));
+    ERROR_LOG("Invalid file handle {}", static_cast<s32>(handle));
     return false;
   }
 
@@ -85,9 +85,9 @@ static std::string ResolveHostPath(const std::string& path)
       !canonicalized_path.starts_with(root) ||                            // and start with the host root,
       canonicalized_path[root.length()] != FS_OSPATH_SEPARATOR_CHARACTER) // and we can't access a sibling.
   {
-    Log_ErrorFmt("Denying access to path outside of PCDrv directory. Requested path: '{}', "
-                 "Resolved path: '{}', Root directory: '{}'",
-                 path, root, canonicalized_path);
+    ERROR_LOG("Denying access to path outside of PCDrv directory. Requested path: '{}', "
+              "Resolved path: '{}', Root directory: '{}'",
+              path, root, canonicalized_path);
     canonicalized_path.clear();
   }
 
@@ -99,8 +99,8 @@ void PCDrv::Initialize()
   if (!g_settings.pcdrv_enable)
     return;
 
-  Log_WarningFmt("{} PCDrv is enabled at '{}'", g_settings.pcdrv_enable_writes ? "Read/Write" : "Read-Only",
-                 g_settings.pcdrv_root);
+  WARNING_LOG("{} PCDrv is enabled at '{}'", g_settings.pcdrv_enable_writes ? "Read/Write" : "Read-Only",
+              g_settings.pcdrv_root);
 }
 
 void PCDrv::Reset()
@@ -126,7 +126,7 @@ bool PCDrv::HandleSyscall(u32 instruction_bits, CPU::Registers& regs)
   {
     case 0x101: // PCinit
     {
-      Log_DevPrint("PCinit");
+      DEV_LOG("PCinit");
       CloseAllFiles();
       regs.v0 = 0;
       regs.v1 = 0;
@@ -142,11 +142,11 @@ bool PCDrv::HandleSyscall(u32 instruction_bits, CPU::Registers& regs)
       std::string filename;
       if (!CPU::SafeReadMemoryCString(regs.a1, &filename))
       {
-        Log_ErrorFmt("{}: Invalid string", func);
+        ERROR_LOG("{}: Invalid string", func);
         return false;
       }
 
-      Log_DebugFmt("{}: '{}' mode {}", func, filename, mode);
+      DEBUG_LOG("{}: '{}' mode {}", func, filename, mode);
       if ((filename = ResolveHostPath(filename)).empty())
       {
         RETURN_ERROR();
@@ -155,7 +155,7 @@ bool PCDrv::HandleSyscall(u32 instruction_bits, CPU::Registers& regs)
 
       if (!is_open && !g_settings.pcdrv_enable_writes)
       {
-        Log_ErrorFmt("{}: Writes are not enabled", func);
+        ERROR_LOG("{}: Writes are not enabled", func);
         RETURN_ERROR();
         return true;
       }
@@ -163,7 +163,7 @@ bool PCDrv::HandleSyscall(u32 instruction_bits, CPU::Registers& regs)
       // Directories are unsupported for now, ignore other attributes
       if (mode & PCDRV_ATTRIBUTE_DIRECTORY)
       {
-        Log_ErrorFmt("{}: Directories are unsupported", func);
+        ERROR_LOG("{}: Directories are unsupported", func);
         RETURN_ERROR();
         return true;
       }
@@ -180,12 +180,12 @@ bool PCDrv::HandleSyscall(u32 instruction_bits, CPU::Registers& regs)
                                                      is_open ? (g_settings.pcdrv_enable_writes ? "r+b" : "rb") : "w+b");
       if (!s_files[handle])
       {
-        Log_ErrorFmt("{}: Failed to open '{}'", func, filename);
+        ERROR_LOG("{}: Failed to open '{}'", func, filename);
         RETURN_ERROR();
         return true;
       }
 
-      Log_ErrorFmt("PCDrv: Opened '{}' => {}", filename, handle);
+      ERROR_LOG("PCDrv: Opened '{}' => {}", filename, handle);
       regs.v0 = 0;
       regs.v1 = static_cast<u32>(handle);
       return true;
@@ -193,7 +193,7 @@ bool PCDrv::HandleSyscall(u32 instruction_bits, CPU::Registers& regs)
 
     case 0x104: // PCclose
     {
-      Log_DebugFmt("PCclose({})", regs.a1);
+      DEBUG_LOG("PCclose({})", regs.a1);
 
       if (!CloseFileHandle(regs.a1))
       {
@@ -208,7 +208,7 @@ bool PCDrv::HandleSyscall(u32 instruction_bits, CPU::Registers& regs)
 
     case 0x105: // PCread
     {
-      Log_DebugFmt("PCread({}, {}, 0x{:08X})", regs.a1, regs.a2, regs.a3);
+      DEBUG_LOG("PCread({}, {}, 0x{:08X})", regs.a1, regs.a2, regs.a3);
 
       std::FILE* fp = GetFileFromHandle(regs.a1);
       if (!fp)
@@ -246,7 +246,7 @@ bool PCDrv::HandleSyscall(u32 instruction_bits, CPU::Registers& regs)
 
     case 0x106: // PCwrite
     {
-      Log_DebugFmt("PCwrite({}, {}, 0x{:08x})", regs.a1, regs.a2, regs.a3);
+      DEBUG_LOG("PCwrite({}, {}, 0x{:08x})", regs.a1, regs.a2, regs.a3);
 
       std::FILE* fp = GetFileFromHandle(regs.a1);
       if (!fp)
@@ -281,7 +281,7 @@ bool PCDrv::HandleSyscall(u32 instruction_bits, CPU::Registers& regs)
 
     case 0x107: // PClseek
     {
-      Log_DebugFmt("PClseek({}, {}, {})", regs.a1, regs.a2, regs.a3);
+      DEBUG_LOG("PClseek({}, {}, {})", regs.a1, regs.a2, regs.a3);
 
       std::FILE* fp = GetFileFromHandle(regs.a1);
       if (!fp)
@@ -311,7 +311,7 @@ bool PCDrv::HandleSyscall(u32 instruction_bits, CPU::Registers& regs)
 
       if (FileSystem::FSeek64(fp, offset, hmode) != 0)
       {
-        Log_ErrorFmt("FSeek for PCDrv failed: {} {}", offset, hmode);
+        ERROR_LOG("FSeek for PCDrv failed: {} {}", offset, hmode);
         RETURN_ERROR();
         return true;
       }

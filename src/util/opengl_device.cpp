@@ -254,13 +254,13 @@ static void GLAD_API_PTR GLDebugCallback(GLenum source, GLenum type, GLuint id, 
   switch (severity)
   {
     case GL_DEBUG_SEVERITY_HIGH_KHR:
-      Log_ErrorPrint(message);
+      ERROR_LOG(message);
       break;
     case GL_DEBUG_SEVERITY_MEDIUM_KHR:
-      Log_WarningPrint(message);
+      WARNING_LOG(message);
       break;
     case GL_DEBUG_SEVERITY_LOW_KHR:
-      Log_InfoPrint(message);
+      INFO_LOG(message);
       break;
     case GL_DEBUG_SEVERITY_NOTIFICATION:
       // Log_DebugPrint(message);
@@ -280,7 +280,7 @@ bool OpenGLDevice::CreateDevice(std::string_view adapter, bool threaded_presenta
   m_gl_context = OpenGLContext::Create(m_window_info, error);
   if (!m_gl_context)
   {
-    Log_ErrorPrint("Failed to create any GL context");
+    ERROR_LOG("Failed to create any GL context");
     m_gl_context.reset();
     return false;
   }
@@ -351,32 +351,32 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
   if (std::strstr(vendor, "Advanced Micro Devices") || std::strstr(vendor, "ATI Technologies Inc.") ||
       std::strstr(vendor, "ATI"))
   {
-    Log_InfoPrint("AMD GPU detected.");
+    INFO_LOG("AMD GPU detected.");
     vendor_id_amd = true;
   }
   else if (std::strstr(vendor, "NVIDIA Corporation"))
   {
-    Log_InfoPrint("NVIDIA GPU detected.");
+    INFO_LOG("NVIDIA GPU detected.");
     // vendor_id_nvidia = true;
   }
   else if (std::strstr(vendor, "Intel"))
   {
-    Log_InfoPrint("Intel GPU detected.");
+    INFO_LOG("Intel GPU detected.");
     vendor_id_intel = true;
   }
   else if (std::strstr(vendor, "ARM"))
   {
-    Log_InfoPrint("ARM GPU detected.");
+    INFO_LOG("ARM GPU detected.");
     vendor_id_arm = true;
   }
   else if (std::strstr(vendor, "Qualcomm"))
   {
-    Log_InfoPrint("Qualcomm GPU detected.");
+    INFO_LOG("Qualcomm GPU detected.");
     vendor_id_qualcomm = true;
   }
   else if (std::strstr(vendor, "Imagination Technologies") || std::strstr(renderer, "PowerVR"))
   {
-    Log_InfoPrint("PowerVR GPU detected.");
+    INFO_LOG("PowerVR GPU detected.");
     vendor_id_powervr = true;
   }
 
@@ -387,14 +387,14 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
   m_disable_pbo =
     (!GLAD_GL_VERSION_4_4 && !GLAD_GL_ARB_buffer_storage && !GLAD_GL_EXT_buffer_storage) || is_shitty_mobile_driver;
   if (m_disable_pbo && !is_shitty_mobile_driver)
-    Log_WarningPrint("Not using PBOs for texture uploads because buffer_storage is unavailable.");
+    WARNING_LOG("Not using PBOs for texture uploads because buffer_storage is unavailable.");
 
   GLint max_texture_size = 1024;
   GLint max_samples = 1;
   glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
-  Log_DevFmt("GL_MAX_TEXTURE_SIZE: {}", max_texture_size);
+  DEV_LOG("GL_MAX_TEXTURE_SIZE: {}", max_texture_size);
   glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
-  Log_DevFmt("GL_MAX_SAMPLES: {}", max_samples);
+  DEV_LOG("GL_MAX_SAMPLES: {}", max_samples);
   m_max_texture_size = std::max(1024u, static_cast<u32>(max_texture_size));
   m_max_multisamples = std::max(1u, static_cast<u32>(max_samples));
 
@@ -423,11 +423,11 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
   {
     GLint max_texel_buffer_size = 0;
     glGetIntegerv(GL_MAX_TEXTURE_BUFFER_SIZE, reinterpret_cast<GLint*>(&max_texel_buffer_size));
-    Log_DevFmt("GL_MAX_TEXTURE_BUFFER_SIZE: {}", max_texel_buffer_size);
+    DEV_LOG("GL_MAX_TEXTURE_BUFFER_SIZE: {}", max_texel_buffer_size);
     if (max_texel_buffer_size < static_cast<GLint>(MIN_TEXEL_BUFFER_ELEMENTS))
     {
-      Log_WarningFmt("GL_MAX_TEXTURE_BUFFER_SIZE ({}) is below required minimum ({}), not using texture buffers.",
-                     max_texel_buffer_size, MIN_TEXEL_BUFFER_ELEMENTS);
+      WARNING_LOG("GL_MAX_TEXTURE_BUFFER_SIZE ({}) is below required minimum ({}), not using texture buffers.",
+                  max_texel_buffer_size, MIN_TEXEL_BUFFER_ELEMENTS);
       m_features.supports_texture_buffers = false;
     }
   }
@@ -444,18 +444,18 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
       glGetInteger64v(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &max_ssbo_size);
     }
 
-    Log_DevFmt("GL_MAX_FRAGMENT_SHADER_STORAGE_BLOCKS: {}", max_fragment_storage_blocks);
-    Log_DevFmt("GL_MAX_SHADER_STORAGE_BLOCK_SIZE: {}", max_ssbo_size);
+    DEV_LOG("GL_MAX_FRAGMENT_SHADER_STORAGE_BLOCKS: {}", max_fragment_storage_blocks);
+    DEV_LOG("GL_MAX_SHADER_STORAGE_BLOCK_SIZE: {}", max_ssbo_size);
     m_features.texture_buffers_emulated_with_ssbo =
       (max_fragment_storage_blocks > 0 && max_ssbo_size >= static_cast<GLint64>(1024 * 512 * sizeof(u16)));
     if (m_features.texture_buffers_emulated_with_ssbo)
     {
-      Log_InfoPrint("Using shader storage buffers for VRAM writes.");
+      INFO_LOG("Using shader storage buffers for VRAM writes.");
       m_features.supports_texture_buffers = true;
     }
     else
     {
-      Log_WarningPrint("Both texture buffers and SSBOs are not supported. Performance will suffer.");
+      WARNING_LOG("Both texture buffers and SSBOs are not supported. Performance will suffer.");
     }
   }
 
@@ -490,14 +490,14 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
     // check that there's at least one format and the extension isn't being "faked"
     GLint num_formats = 0;
     glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &num_formats);
-    Log_DevFmt("{} program binary formats supported by driver", num_formats);
+    DEV_LOG("{} program binary formats supported by driver", num_formats);
     m_features.pipeline_cache = (num_formats > 0);
   }
 
   if (!m_features.pipeline_cache)
   {
-    Log_WarningPrint("Your GL driver does not support program binaries. Hopefully it has a built-in cache, otherwise "
-                     "startup will be slow due to compiling shaders.");
+    WARNING_LOG("Your GL driver does not support program binaries. Hopefully it has a built-in cache, otherwise "
+                "startup will be slow due to compiling shaders.");
   }
 
   // Mobile drivers prefer textures to not be updated mid-frame.
@@ -506,7 +506,7 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
   if (vendor_id_intel)
   {
     // Intel drivers corrupt image on readback when syncs are used for downloads.
-    Log_WarningPrint("Disabling async downloads with PBOs due to it being broken on Intel drivers.");
+    WARNING_LOG("Disabling async downloads with PBOs due to it being broken on Intel drivers.");
     m_disable_async_download = true;
   }
 
@@ -536,7 +536,7 @@ bool OpenGLDevice::UpdateWindow()
 
   if (!m_gl_context->ChangeSurface(m_window_info))
   {
-    Log_ErrorPrint("Failed to change surface");
+    ERROR_LOG("Failed to change surface");
     return false;
   }
 
@@ -590,7 +590,7 @@ void OpenGLDevice::SetSwapInterval()
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
   if (!m_gl_context->SetSwapInterval(interval))
-    Log_WarningFmt("Failed to set swap interval to {}", interval);
+    WARNING_LOG("Failed to set swap interval to {}", interval);
 
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
 }
@@ -643,7 +643,7 @@ GLuint OpenGLDevice::CreateFramebuffer(GPUTexture* const* rts, u32 num_rts, GPUT
 
   if (glGetError() != GL_NO_ERROR || glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
   {
-    Log_ErrorFmt("Failed to create GL framebuffer: {}", static_cast<s32>(glGetError()));
+    ERROR_LOG("Failed to create GL framebuffer: {}", static_cast<s32>(glGetError()));
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, OpenGLDevice::GetInstance().m_current_fbo);
     glDeleteFramebuffers(1, &fbo_id);
     return {};
@@ -681,7 +681,7 @@ void OpenGLDevice::DestroySurface()
 
   m_window_info.SetSurfaceless();
   if (!m_gl_context->ChangeSurface(m_window_info))
-    Log_ErrorPrint("Failed to switch to surfaceless");
+    ERROR_LOG("Failed to switch to surfaceless");
 }
 
 bool OpenGLDevice::CreateBuffers()
@@ -690,7 +690,7 @@ bool OpenGLDevice::CreateBuffers()
       !(m_index_buffer = OpenGLStreamBuffer::Create(GL_ELEMENT_ARRAY_BUFFER, INDEX_BUFFER_SIZE)) ||
       !(m_uniform_buffer = OpenGLStreamBuffer::Create(GL_UNIFORM_BUFFER, UNIFORM_BUFFER_SIZE))) [[unlikely]]
   {
-    Log_ErrorPrint("Failed to create one or more device buffers.");
+    ERROR_LOG("Failed to create one or more device buffers.");
     return false;
   }
 
@@ -705,7 +705,7 @@ bool OpenGLDevice::CreateBuffers()
     if (!(m_texture_stream_buffer = OpenGLStreamBuffer::Create(GL_PIXEL_UNPACK_BUFFER, TEXTURE_STREAM_BUFFER_SIZE)))
       [[unlikely]]
     {
-      Log_ErrorPrint("Failed to create texture stream buffer");
+      ERROR_LOG("Failed to create texture stream buffer");
       return false;
     }
 
@@ -720,7 +720,7 @@ bool OpenGLDevice::CreateBuffers()
   glGenFramebuffers(static_cast<GLsizei>(std::size(fbos)), fbos);
   if (const GLenum err = glGetError(); err != GL_NO_ERROR) [[unlikely]]
   {
-    Log_ErrorFmt("Failed to create framebuffers: {}", err);
+    ERROR_LOG("Failed to create framebuffers: {}", err);
     return false;
   }
   m_read_fbo = fbos[0];
@@ -839,7 +839,7 @@ void OpenGLDevice::PopTimestampQuery()
     glGetIntegerv(GL_GPU_DISJOINT_EXT, &disjoint);
     if (disjoint)
     {
-      Log_VerbosePrint("GPU timing disjoint, resetting.");
+      VERBOSE_LOG("GPU timing disjoint, resetting.");
       if (m_timestamp_query_started)
         glEndQueryEXT(GL_TIME_ELAPSED);
 
@@ -953,7 +953,7 @@ void OpenGLDevice::UnbindTexture(OpenGLTexture* tex)
     {
       if (m_current_render_targets[i] == tex)
       {
-        Log_WarningPrint("Unbinding current RT");
+        WARNING_LOG("Unbinding current RT");
         SetRenderTargets(nullptr, 0, m_current_depth_target);
         break;
       }
@@ -965,7 +965,7 @@ void OpenGLDevice::UnbindTexture(OpenGLTexture* tex)
   {
     if (m_current_depth_target == tex)
     {
-      Log_WarningPrint("Unbinding current DS");
+      WARNING_LOG("Unbinding current DS");
       SetRenderTargets(nullptr, 0, nullptr);
     }
 
@@ -1130,7 +1130,7 @@ void OpenGLDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUText
     {
       if ((fbo = m_framebuffer_manager.Lookup(rts, num_rts, ds, 0)) == 0)
       {
-        Log_ErrorFmt("Failed to get FBO for {} render targets", num_rts);
+        ERROR_LOG("Failed to get FBO for {} render targets", num_rts);
         m_current_fbo = 0;
         std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
         m_num_current_render_targets = 0;

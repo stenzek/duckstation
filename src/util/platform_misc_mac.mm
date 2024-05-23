@@ -32,7 +32,7 @@ static bool SetScreensaverInhibitMacOS(bool inhibit)
     if (IOPMAssertionCreateWithName(kIOPMAssertionTypePreventUserIdleDisplaySleep, kIOPMAssertionLevelOn, reason,
                                     &s_prevent_idle_assertion) != kIOReturnSuccess)
     {
-      Log_ErrorPrint("IOPMAssertionCreateWithName() failed");
+      ERROR_LOG("IOPMAssertionCreateWithName() failed");
       return false;
     }
 
@@ -54,7 +54,7 @@ void PlatformMisc::SuspendScreensaver()
 
     if (!SetScreensaverInhibitMacOS(true))
     {
-      Log_ErrorPrint("Failed to suspend screensaver.");
+      ERROR_LOG("Failed to suspend screensaver.");
       return;
     }
 
@@ -67,7 +67,7 @@ void PlatformMisc::ResumeScreensaver()
     return;
 
   if (!SetScreensaverInhibitMacOS(false))
-    Log_ErrorPrint("Failed to resume screensaver.");
+    ERROR_LOG("Failed to resume screensaver.");
 
   s_screensaver_suspended = false;
 }
@@ -116,7 +116,7 @@ bool CocoaTools::CreateMetalLayer(WindowInfo* wi)
   CAMetalLayer* layer = [CAMetalLayer layer];
   if (layer == nil)
   {
-    Log_ErrorPrint("Failed to create CAMetalLayer");
+    ERROR_LOG("Failed to create CAMetalLayer");
     return false;
   }
 

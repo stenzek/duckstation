@@ -183,7 +183,7 @@ void GPUBackend::StartGPUThread()
   m_gpu_loop_done.store(false);
   m_use_gpu_thread = true;
   m_gpu_thread.Start([this]() { RunGPULoop(); });
-  Log_InfoPrint("GPU thread started.");
+  INFO_LOG("GPU thread started.");
 }
 
 void GPUBackend::StopGPUThread()
@@ -195,7 +195,7 @@ void GPUBackend::StopGPUThread()
   WakeGPUThread();
   m_gpu_thread.Join();
   m_use_gpu_thread = false;
-  Log_InfoPrint("GPU thread stopped.");
+  INFO_LOG("GPU thread stopped.");
 }
 
 void GPUBackend::Sync(bool allow_sleep)

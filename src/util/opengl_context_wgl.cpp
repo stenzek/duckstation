@@ -29,7 +29,7 @@ static bool ReloadWGL(HDC dc)
 {
   if (!gladLoadWGL(dc, [](const char* name) { return (GLADapiproc)wglGetProcAddress(name); }))
   {
-    Log_ErrorPrint("Loading GLAD WGL functions failed");
+    ERROR_LOG("Loading GLAD WGL functions failed");
     return false;
   }
 
@@ -112,14 +112,14 @@ bool OpenGLContextWGL::ChangeSurface(const WindowInfo& new_wi)
   m_wi = new_wi;
   if (!InitializeDC(&error))
   {
-    Log_ErrorFmt("Failed to change surface: {}", error.GetDescription());
+    ERROR_LOG("Failed to change surface: {}", error.GetDescription());
     return false;
   }
 
   if (was_current && !wglMakeCurrent(m_dc, m_rc))
   {
     error.SetWin32(GetLastError());
-    Log_ErrorFmt("Failed to make context current again after surface change: {}", error.GetDescription());
+    ERROR_LOG("Failed to make context current again after surface change: {}", error.GetDescription());
     return false;
   }
 
@@ -148,7 +148,7 @@ bool OpenGLContextWGL::MakeCurrent()
 {
   if (!wglMakeCurrent(m_dc, m_rc))
   {
-    Log_ErrorFmt("wglMakeCurrent() failed: {}", GetLastError());
+    ERROR_LOG("wglMakeCurrent() failed: {}", GetLastError());
     return false;
   }
 

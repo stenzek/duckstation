@@ -422,7 +422,7 @@ std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const s
       return shader;
   }
 
-  Log_ErrorFmt("Failed to load shader '{}'", shader_name);
+  ERROR_LOG("Failed to load shader '{}'", shader_name);
   return {};
 }
 
@@ -499,7 +499,7 @@ void PostProcessing::LoadStages()
   if (stage_count > 0)
   {
     s_timer.Reset();
-    Log_DevFmt("Loaded {} post-processing stages.", stage_count);
+    DEV_LOG("Loaded {} post-processing stages.", stage_count);
   }
 
   // precompile shaders
@@ -577,7 +577,7 @@ void PostProcessing::UpdateSettings()
   if (stage_count > 0)
   {
     s_timer.Reset();
-    Log_DevFmt("Loaded {} post-processing stages.", stage_count);
+    DEV_LOG("Loaded {} post-processing stages.", stage_count);
   }
 }
 
@@ -647,7 +647,7 @@ GPUSampler* PostProcessing::GetSampler(const GPUSampler::Config& config)
 
   std::unique_ptr<GPUSampler> sampler = g_gpu_device->CreateSampler(config);
   if (!sampler)
-    Log_ErrorFmt("Failed to create GPU sampler with config={:X}", config.key);
+    ERROR_LOG("Failed to create GPU sampler with config={:X}", config.key);
 
   it = s_samplers.emplace(config.key, std::move(sampler)).first;
   return it->second.get();
@@ -662,7 +662,7 @@ GPUTexture* PostProcessing::GetDummyTexture()
   s_dummy_texture = g_gpu_device->FetchTexture(1, 1, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
                                                &zero, sizeof(zero));
   if (!s_dummy_texture)
-    Log_ErrorPrint("Failed to create dummy texture.");
+    ERROR_LOG("Failed to create dummy texture.");
 
   return s_dummy_texture.get();
 }
@@ -700,7 +700,7 @@ bool PostProcessing::CheckTargets(GPUTexture::Format target_format, u32 target_w
     if (!shader->CompilePipeline(target_format, target_width, target_height, progress) ||
         !shader->ResizeOutput(target_format, target_width, target_height))
     {
-      Log_ErrorPrint("Failed to compile one or more post-processing shaders, disabling.");
+      ERROR_LOG("Failed to compile one or more post-processing shaders, disabling.");
       Host::AddIconOSDMessage(
         "PostProcessLoadFail", ICON_FA_EXCLAMATION_TRIANGLE,
         fmt::format("Failed to compile post-processing shader '{}'. Disabling post-processing.", shader->GetName()));

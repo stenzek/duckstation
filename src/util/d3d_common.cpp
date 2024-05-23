@@ -73,7 +73,7 @@ D3D_FEATURE_LEVEL D3DCommon::GetDeviceMaxFeatureLevel(IDXGIAdapter1* adapter)
                                  requested_feature_levels.data(), static_cast<UINT>(requested_feature_levels.size()),
                                  D3D11_SDK_VERSION, nullptr, &max_supported_level, nullptr);
   if (FAILED(hr))
-    Log_WarningFmt("D3D11CreateDevice() for getting max feature level failed: 0x{:08X}", static_cast<unsigned>(hr));
+    WARNING_LOG("D3D11CreateDevice() for getting max feature level failed: 0x{:08X}", static_cast<unsigned>(hr));
 
   return max_supported_level;
 }
@@ -124,7 +124,7 @@ std::vector<std::string> D3DCommon::GetAdapterNames(IDXGIFactory5* factory)
 
     if (FAILED(hr))
     {
-      Log_ErrorFmt("IDXGIFactory2::EnumAdapters() returned {:08X}", static_cast<unsigned>(hr));
+      ERROR_LOG("IDXGIFactory2::EnumAdapters() returned {:08X}", static_cast<unsigned>(hr));
       continue;
     }
 
@@ -146,21 +146,21 @@ std::vector<std::string> D3DCommon::GetFullscreenModes(IDXGIFactory5* factory, s
   Microsoft::WRL::ComPtr<IDXGIOutput> output;
   if (FAILED(hr = adapter->EnumOutputs(0, &output)))
   {
-    Log_ErrorFmt("EnumOutputs() failed: {:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("EnumOutputs() failed: {:08X}", static_cast<unsigned>(hr));
     return modes;
   }
 
   UINT num_modes = 0;
   if (FAILED(hr = output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0, &num_modes, nullptr)))
   {
-    Log_ErrorFmt("GetDisplayModeList() failed: {:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("GetDisplayModeList() failed: {:08X}", static_cast<unsigned>(hr));
     return modes;
   }
 
   std::vector<DXGI_MODE_DESC> dmodes(num_modes);
   if (FAILED(hr = output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0, &num_modes, dmodes.data())))
   {
-    Log_ErrorFmt("GetDisplayModeList() (2) failed: {:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("GetDisplayModeList() (2) failed: {:08X}", static_cast<unsigned>(hr));
     return modes;
   }
 
@@ -223,11 +223,11 @@ bool D3DCommon::GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, 
   {
     if (!first_output)
     {
-      Log_ErrorPrint("No DXGI output found. Can't use exclusive fullscreen.");
+      ERROR_LOG("No DXGI output found. Can't use exclusive fullscreen.");
       return false;
     }
 
-    Log_WarningPrint("No DXGI output found for window, using first.");
+    WARNING_LOG("No DXGI output found for window, using first.");
     intersecting_output = std::move(first_output);
   }
 
@@ -241,7 +241,7 @@ bool D3DCommon::GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, 
   if (FAILED(hr = intersecting_output->FindClosestMatchingMode(&request_mode, fullscreen_mode, nullptr)) ||
       request_mode.Format != format)
   {
-    Log_ErrorFmt("Failed to find closest matching mode, hr={:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("Failed to find closest matching mode, hr={:08X}", static_cast<unsigned>(hr));
     return false;
   }
 
@@ -268,21 +268,21 @@ Microsoft::WRL::ComPtr<IDXGIAdapter1> D3DCommon::GetAdapterByName(IDXGIFactory5*
 
     if (FAILED(hr))
     {
-      Log_ErrorFmt("IDXGIFactory2::EnumAdapters() returned {:08X}", static_cast<unsigned>(hr));
+      ERROR_LOG("IDXGIFactory2::EnumAdapters() returned {:08X}", static_cast<unsigned>(hr));
       continue;
     }
 
     std::string adapter_name = FixupDuplicateAdapterNames(adapter_names, GetAdapterName(adapter.Get()));
     if (adapter_name == name)
     {
-      Log_VerboseFmt("Found adapter '{}'", adapter_name);
+      VERBOSE_LOG("Found adapter '{}'", adapter_name);
       return adapter;
     }
 
     adapter_names.push_back(std::move(adapter_name));
   }
 
-  Log_ErrorFmt("Adapter '{}' not found.", name);
+  ERROR_LOG("Adapter '{}' not found.", name);
   return {};
 }
 
@@ -291,7 +291,7 @@ Microsoft::WRL::ComPtr<IDXGIAdapter1> D3DCommon::GetFirstAdapter(IDXGIFactory5* 
   Microsoft::WRL::ComPtr<IDXGIAdapter1> adapter;
   HRESULT hr = factory->EnumAdapters1(0, adapter.GetAddressOf());
   if (FAILED(hr))
-    Log_ErrorFmt("IDXGIFactory2::EnumAdapters() for first adapter returned {:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("IDXGIFactory2::EnumAdapters() for first adapter returned {:08X}", static_cast<unsigned>(hr));
 
   return adapter;
 }
@@ -317,7 +317,7 @@ std::string D3DCommon::GetAdapterName(IDXGIAdapter1* adapter)
   }
   else
   {
-    Log_ErrorFmt("IDXGIAdapter1::GetDesc() returned {:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("IDXGIAdapter1::GetDesc() returned {:08X}", static_cast<unsigned>(hr));
   }
 
   if (ret.empty())
@@ -429,13 +429,13 @@ std::optional<DynamicHeapArray<u8>> D3DCommon::CompileShader(D3D_FEATURE_LEVEL f
 
   if (FAILED(hr))
   {
-    Log_ErrorFmt("Failed to compile '{}':\n{}", target, error_string);
+    ERROR_LOG("Failed to compile '{}':\n{}", target, error_string);
     GPUDevice::DumpBadShader(source, error_string);
     return {};
   }
 
   if (!error_string.empty())
-    Log_WarningFmt("'{}' compiled with warnings:\n{}", target, error_string);
+    WARNING_LOG("'{}' compiled with warnings:\n{}", target, error_string);
 
   error_blob.Reset();
 

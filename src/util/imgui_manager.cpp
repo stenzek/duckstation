@@ -663,7 +663,7 @@ bool ImGuiManager::AddFullscreenFontsIfMissing()
 
   if (!AddImGuiFonts(true))
   {
-    Log_ErrorPrint("Failed to lazily allocate fullscreen fonts.");
+    ERROR_LOG("Failed to lazily allocate fullscreen fonts.");
     AddImGuiFonts(false);
   }
 
@@ -686,9 +686,9 @@ void Host::AddOSDMessage(std::string message, float duration /*= 2.0f*/)
 void Host::AddKeyedOSDMessage(std::string key, std::string message, float duration /* = 2.0f */)
 {
   if (!key.empty())
-    Log_InfoFmt("OSD [{}]: {}", key, message);
+    INFO_LOG("OSD [{}]: {}", key, message);
   else
-    Log_InfoFmt("OSD: {}", message);
+    INFO_LOG("OSD: {}", message);
 
   if (!ImGuiManager::s_show_osd_messages)
     return;
@@ -1045,7 +1045,7 @@ void ImGuiManager::UpdateSoftwareCursorTexture(u32 index)
   RGBA8Image image;
   if (!image.LoadFromFile(sc.image_path.c_str()))
   {
-    Log_ErrorFmt("Failed to load software cursor {} image '{}'", index, sc.image_path);
+    ERROR_LOG("Failed to load software cursor {} image '{}'", index, sc.image_path);
     return;
   }
   g_gpu_device->RecycleTexture(std::move(sc.texture));
@@ -1053,8 +1053,8 @@ void ImGuiManager::UpdateSoftwareCursorTexture(u32 index)
                                           GPUTexture::Format::RGBA8, image.GetPixels(), image.GetPitch());
   if (!sc.texture)
   {
-    Log_ErrorFmt("Failed to upload {}x{} software cursor {} image '{}'", image.GetWidth(), image.GetHeight(), index,
-                 sc.image_path);
+    ERROR_LOG("Failed to upload {}x{} software cursor {} image '{}'", image.GetWidth(), image.GetHeight(), index,
+              sc.image_path);
     return;
   }
 

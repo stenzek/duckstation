@@ -150,19 +150,19 @@ void CocoaProgressCallback::UpdateProgress()
 
 void CocoaProgressCallback::DisplayError(const char* message)
 {
-  Log_ErrorPrint(message);
+  ERROR_LOG(message);
   AppendMessage(message);
 }
 
 void CocoaProgressCallback::DisplayWarning(const char* message)
 {
-  Log_WarningPrint(message);
+  WARNING_LOG(message);
   AppendMessage(message);
 }
 
 void CocoaProgressCallback::DisplayInformation(const char* message)
 {
-  Log_InfoPrint(message);
+  INFO_LOG(message);
   AppendMessage(message);
 }
 
@@ -185,7 +185,7 @@ void CocoaProgressCallback::AppendMessage(const char* message)
 
 void CocoaProgressCallback::DisplayDebugMessage(const char* message)
 {
-  Log_DevPrint(message);
+  DEV_LOG(message);
 }
 
 void CocoaProgressCallback::ModalError(const char* message)

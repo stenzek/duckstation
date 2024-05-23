@@ -131,7 +131,7 @@ bool RGBA8Image::LoadFromFile(std::string_view filename, std::FILE* fp)
   const FormatHandler* handler = GetFormatHandler(extension);
   if (!handler || !handler->file_loader)
   {
-    Log_ErrorFmt("Unknown extension '{}'", extension);
+    ERROR_LOG("Unknown extension '{}'", extension);
     return false;
   }
 
@@ -144,7 +144,7 @@ bool RGBA8Image::LoadFromBuffer(std::string_view filename, const void* buffer, s
   const FormatHandler* handler = GetFormatHandler(extension);
   if (!handler || !handler->buffer_loader)
   {
-    Log_ErrorFmt("Unknown extension '{}'", extension);
+    ERROR_LOG("Unknown extension '{}'", extension);
     return false;
   }
 
@@ -157,7 +157,7 @@ bool RGBA8Image::SaveToFile(std::string_view filename, std::FILE* fp, u8 quality
   const FormatHandler* handler = GetFormatHandler(extension);
   if (!handler || !handler->file_saver)
   {
-    Log_ErrorFmt("Unknown extension '{}'", extension);
+    ERROR_LOG("Unknown extension '{}'", extension);
     return false;
   }
 
@@ -175,7 +175,7 @@ std::optional<std::vector<u8>> RGBA8Image::SaveToBuffer(std::string_view filenam
   const FormatHandler* handler = GetFormatHandler(extension);
   if (!handler || !handler->file_saver)
   {
-    Log_ErrorFmt("Unknown extension '{}'", extension);
+    ERROR_LOG("Unknown extension '{}'", extension);
     return ret;
   }
 
@@ -438,7 +438,7 @@ static bool HandleJPEGError(JPEGErrorHandler* eh)
     JPEGErrorHandler* eh = (JPEGErrorHandler*)cinfo->err;
     char msg[JMSG_LENGTH_MAX];
     eh->err.format_message(cinfo, msg);
-    Log_ErrorFmt("libjpeg fatal error: {}", msg);
+    ERROR_LOG("libjpeg fatal error: {}", msg);
     longjmp(eh->jbuf, 1);
   };
 
@@ -465,13 +465,13 @@ static bool WrapJPEGDecompress(RGBA8Image* image, T setup_func)
   const int herr = jpeg_read_header(&info, TRUE);
   if (herr != JPEG_HEADER_OK)
   {
-    Log_ErrorFmt("jpeg_read_header() returned {}", herr);
+    ERROR_LOG("jpeg_read_header() returned {}", herr);
     return false;
   }
 
   if (info.image_width == 0 || info.image_height == 0 || info.num_components < 3)
   {
-    Log_ErrorFmt("Invalid image dimensions: {}x{}x{}", info.image_width, info.image_height, info.num_components);
+    ERROR_LOG("Invalid image dimensions: {}x{}x{}", info.image_width, info.image_height, info.num_components);
     return false;
   }
 
@@ -480,7 +480,7 @@ static bool WrapJPEGDecompress(RGBA8Image* image, T setup_func)
 
   if (!jpeg_start_decompress(&info))
   {
-    Log_ErrorFmt("jpeg_start_decompress() returned failure");
+    ERROR_LOG("jpeg_start_decompress() returned failure");
     return false;
   }
 
@@ -493,7 +493,7 @@ static bool WrapJPEGDecompress(RGBA8Image* image, T setup_func)
   {
     if (jpeg_read_scanlines(&info, scanline_buffer, 1) != 1)
     {
-      Log_ErrorFmt("jpeg_read_scanlines() failed at row {}", y);
+      ERROR_LOG("jpeg_read_scanlines() failed at row {}", y);
       result = false;
       break;
     }
@@ -622,7 +622,7 @@ static bool WrapJPEGCompress(const RGBA8Image& image, u8 quality, T setup_func)
 
     if (jpeg_write_scanlines(&info, scanline_buffer, 1) != 1)
     {
-      Log_ErrorFmt("jpeg_write_scanlines() failed at row {}", y);
+      ERROR_LOG("jpeg_write_scanlines() failed at row {}", y);
       result = false;
       break;
     }
@@ -723,7 +723,7 @@ bool WebPBufferLoader(RGBA8Image* image, const void* buffer, size_t buffer_size)
   int width, height;
   if (!WebPGetInfo(static_cast<const u8*>(buffer), buffer_size, &width, &height) || width <= 0 || height <= 0)
   {
-    Log_ErrorPrint("WebPGetInfo() failed");
+    ERROR_LOG("WebPGetInfo() failed");
     return false;
   }
 
@@ -732,7 +732,7 @@ bool WebPBufferLoader(RGBA8Image* image, const void* buffer, size_t buffer_size)
   if (!WebPDecodeRGBAInto(static_cast<const u8*>(buffer), buffer_size, reinterpret_cast<u8*>(pixels.data()),
                           sizeof(u32) * pixels.size(), sizeof(u32) * static_cast<u32>(width)))
   {
-    Log_ErrorPrint("WebPDecodeRGBAInto() failed");
+    ERROR_LOG("WebPDecodeRGBAInto() failed");
     return false;
   }
 

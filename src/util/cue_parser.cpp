@@ -79,7 +79,7 @@ void CueParser::File::SetError(u32 line_number, Error* error, const char* format
   str.vsprintf(format, ap);
   va_end(ap);
 
-  Log_ErrorFmt("Cue parse error at line {}: {}", line_number, str.c_str());
+  ERROR_LOG("Cue parse error at line {}: {}", line_number, str.c_str());
   Error::SetString(error, fmt::format("Cue parse error at line {}: {}", line_number, str));
 }
 
@@ -194,7 +194,7 @@ bool CueParser::File::ParseLine(const char* line, u32 line_number, Error* error)
 
   if (TokenMatch(command, "POSTGAP"))
   {
-    Log_WarningFmt("Ignoring '{}' command", command);
+    WARNING_LOG("Ignoring '{}' command", command);
     return true;
   }
 
@@ -231,7 +231,7 @@ bool CueParser::File::HandleFileCommand(const char* line, u32 line_number, Error
   }
 
   m_current_file = filename;
-  Log_DebugFmt("File '{}'", filename);
+  DEBUG_LOG("File '{}'", filename);
   return true;
 }
 
@@ -392,7 +392,7 @@ bool CueParser::File::HandleFlagCommand(const char* line, u32 line_number, Error
     else if (TokenMatch(token, "SCMS"))
       m_current_track->SetFlag(TrackFlag::SerialCopyManagement);
     else
-      Log_WarningFmt("Unknown track flag '{}'", token);
+      WARNING_LOG("Unknown track flag '{}'", token);
   }
 
   return true;
@@ -428,7 +428,7 @@ bool CueParser::File::CompleteLastTrack(u32 line_number, Error* error)
   const MSF* index0 = m_current_track->GetIndex(0);
   if (index0 && m_current_track->zero_pregap.has_value())
   {
-    Log_WarningFmt("Zero pregap and index 0 specified in track {}, ignoring zero pregap", m_current_track->number);
+    WARNING_LOG("Zero pregap and index 0 specified in track {}, ignoring zero pregap", m_current_track->number);
     m_current_track->zero_pregap.reset();
   }
 

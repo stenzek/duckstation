@@ -410,7 +410,7 @@ void CPU::NewRec::AArch64Compiler::EndAndLinkBlock(const std::optional<u32>& new
     if (newpc.value() == m_block->pc)
     {
       // Special case: ourselves! No need to backlink then.
-      Log_DebugFmt("Linking block at {:08X} to self", m_block->pc);
+      DEBUG_LOG("Linking block at {:08X} to self", m_block->pc);
       armEmitJmp(armAsm, armAsm->GetBuffer()->GetStartAddress<const void*>(), true);
     }
     else
@@ -542,7 +542,7 @@ void CPU::NewRec::AArch64Compiler::MoveSToReg(const vixl::aarch64::WRegister& ds
   }
   else
   {
-    Log_WarningFmt("Hit memory path in MoveSToReg() for {}", GetRegName(cf.MipsS()));
+    WARNING_LOG("Hit memory path in MoveSToReg() for {}", GetRegName(cf.MipsS()));
     armAsm->ldr(dst, PTR(&g_state.regs.r[cf.mips_s]));
   }
 }
@@ -564,7 +564,7 @@ void CPU::NewRec::AArch64Compiler::MoveTToReg(const vixl::aarch64::WRegister& ds
   }
   else
   {
-    Log_WarningFmt("Hit memory path in MoveTToReg() for {}", GetRegName(cf.MipsT()));
+    WARNING_LOG("Hit memory path in MoveTToReg() for {}", GetRegName(cf.MipsT()));
     armAsm->ldr(dst, PTR(&g_state.regs.r[cf.mips_t]));
   }
 }
@@ -1906,7 +1906,7 @@ void CPU::NewRec::AArch64Compiler::Compile_mtc0(CompileFlags cf)
   if (mask == 0)
   {
     // if it's a read-only register, ignore
-    Log_DebugFmt("Ignoring write to read-only cop0 reg {}", static_cast<u32>(reg));
+    DEBUG_LOG("Ignoring write to read-only cop0 reg {}", static_cast<u32>(reg));
     return;
   }
 
@@ -1961,7 +1961,7 @@ void CPU::NewRec::AArch64Compiler::Compile_mtc0(CompileFlags cf)
   if (reg == Cop0Reg::DCIC && g_settings.cpu_recompiler_memory_exceptions)
   {
     // TODO: DCIC handling for debug breakpoints
-    Log_WarningPrint("TODO: DCIC handling for debug breakpoints");
+    WARNING_LOG("TODO: DCIC handling for debug breakpoints");
   }
 }
 

@@ -290,7 +290,7 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames)
     else
     {
       m_filling = false;
-      Log_VerboseFmt("Underrun compensation done ({} frames buffered)", toFill);
+      VERBOSE_LOG("Underrun compensation done ({} frames buffered)", toFill);
     }
   }
 
@@ -357,7 +357,7 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames)
         resample_subpos %= 65536u;
       }
 
-      Log_VerboseFmt("Audio buffer underflow, resampled {} frames to {}", frames_to_read, num_frames);
+      VERBOSE_LOG("Audio buffer underflow, resampled {} frames to {}", frames_to_read, num_frames);
     }
     else
     {
@@ -441,7 +441,7 @@ void AudioStream::InternalWriteFrames(s16* data, u32 num_frames)
     }
     else
     {
-      Log_DebugPrint("Buffer overrun, chunk dropped");
+      DEBUG_LOG("Buffer overrun, chunk dropped");
       return;
     }
   }
@@ -498,7 +498,7 @@ void AudioStream::AllocateBuffer()
   if (IsExpansionEnabled())
     m_expand_buffer = std::make_unique<float[]>(m_parameters.expand_block_size * NUM_INPUT_CHANNELS);
 
-  Log_DevFmt(
+  DEV_LOG(
     "Allocated buffer of {} frames for buffer of {} ms [expansion {} (block size {}), stretch {}, target size {}].",
     m_buffer_size, m_parameters.buffer_ms, GetExpansionModeName(m_parameters.expansion_mode),
     m_parameters.expand_block_size, GetStretchModeName(m_parameters.stretch_mode), m_target_buffer_size);
@@ -891,7 +891,7 @@ void AudioStream::UpdateStretchTempo()
   // state vars
   if (m_stretch_reset >= STRETCH_RESET_THRESHOLD)
   {
-    Log_VerbosePrint("___ Stretcher is being reset.");
+    VERBOSE_LOG("___ Stretcher is being reset.");
     m_stretch_inactive = false;
     m_stretch_ok_count = 0;
     m_dynamic_target_usage = base_target_usage;
@@ -928,13 +928,13 @@ void AudioStream::UpdateStretchTempo()
 
     if (m_stretch_ok_count >= INACTIVE_MIN_OK_COUNT)
     {
-      Log_VerbosePrint("=== Stretcher is now inactive.");
+      VERBOSE_LOG("=== Stretcher is now inactive.");
       m_stretch_inactive = true;
     }
   }
   else if (!IsInRange(tempo, 1.0f / INACTIVE_BAD_FACTOR, INACTIVE_BAD_FACTOR))
   {
-    Log_VerboseFmt("~~~ Stretcher is now active @ tempo {}.", tempo);
+    VERBOSE_LOG("~~~ Stretcher is now active @ tempo {}.", tempo);
     m_stretch_inactive = false;
     m_stretch_ok_count = 0;
   }
@@ -951,9 +951,9 @@ void AudioStream::UpdateStretchTempo()
 
     if (Common::Timer::ConvertValueToSeconds(now - last_log_time) > 1.0f)
     {
-      Log_VerboseFmt("buffers: {:4d} ms ({:3.0f}%), tempo: {}, comp: {:2.3f}, iters: {}, reset:{}",
-                     (ibuffer_usage * 1000u) / m_sample_rate, 100.0f * buffer_usage / base_target_usage, tempo,
-                     m_dynamic_target_usage / base_target_usage, iterations, m_stretch_reset);
+      VERBOSE_LOG("buffers: {:4d} ms ({:3.0f}%), tempo: {}, comp: {:2.3f}, iters: {}, reset:{}",
+                  (ibuffer_usage * 1000u) / m_sample_rate, 100.0f * buffer_usage / base_target_usage, tempo,
+                  m_dynamic_target_usage / base_target_usage, iterations, m_stretch_reset);
 
       last_log_time = now;
       iterations = 0;

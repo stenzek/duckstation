@@ -68,15 +68,11 @@ static NSString* StringViewToNSString(std::string_view str)
                                               encoding:NSUTF8StringEncoding];
 }
 
-static void LogNSError(NSError* error, const char* desc, ...)
+static void LogNSError(NSError* error, std::string_view message)
 {
-  std::va_list ap;
-  va_start(ap, desc);
-  Log::Writev("MetalDevice", "", LOGLEVEL_ERROR, desc, ap);
-  va_end(ap);
-
-  Log::Writef("MetalDevice", "", LOGLEVEL_ERROR, "  NSError Code: %u", static_cast<u32>(error.code));
-  Log::Writef("MetalDevice", "", LOGLEVEL_ERROR, "  NSError Description: %s", [error.description UTF8String]);
+  Log::FastWrite("MetalDevice", LOGLEVEL_ERROR, message);
+  Log::FastWrite("MetalDevice", LOGLEVEL_ERROR, "  NSError Code: {}", static_cast<u32>(error.code));
+  Log::FastWrite("MetalDevice", LOGLEVEL_ERROR, "  NSError Description: {}", [error.description UTF8String]);
 }
 
 static GPUTexture::Format GetTextureFormatForMTLFormat(MTLPixelFormat fmt)
@@ -156,7 +152,7 @@ bool MetalDevice::CreateDevice(std::string_view adapter, bool threaded_presentat
       }
 
       if (device == nil)
-        Log_ErrorFmt("Failed to find device named '{}'. Trying default.", adapter);
+        ERROR_LOG("Failed to find device named '{}'. Trying default.", adapter);
     }
 
     if (device == nil)
@@ -178,7 +174,7 @@ bool MetalDevice::CreateDevice(std::string_view adapter, bool threaded_presentat
 
     m_device = [device retain];
     m_queue = [queue retain];
-    Log_InfoFmt("Metal Device: {}", [[m_device name] UTF8String]);
+    INFO_LOG("Metal Device: {}", [[m_device name] UTF8String]);
 
     SetFeatures(disabled_features);
 
@@ -381,7 +377,7 @@ bool MetalDevice::CreateLayer()
     RunOnMainThread([this]() {
       @autoreleasepool
       {
-        Log_InfoFmt("Creating a {}x{} Metal layer.", m_window_info.surface_width, m_window_info.surface_height);
+        INFO_LOG("Creating a {}x{} Metal layer.", m_window_info.surface_width, m_window_info.surface_height);
         const auto size =
           CGSizeMake(static_cast<float>(m_window_info.surface_width), static_cast<float>(m_window_info.surface_height));
         m_layer = [CAMetalLayer layer];
@@ -393,12 +389,12 @@ bool MetalDevice::CreateLayer()
         m_window_info.surface_format = GetTextureFormatForMTLFormat(layer_fmt);
         if (m_window_info.surface_format == GPUTexture::Format::Unknown)
         {
-          Log_ErrorFmt("Invalid pixel format {} in layer, using BGRA8.", static_cast<u32>(layer_fmt));
+          ERROR_LOG("Invalid pixel format {} in layer, using BGRA8.", static_cast<u32>(layer_fmt));
           [m_layer setPixelFormat:MTLPixelFormatBGRA8Unorm];
           m_window_info.surface_format = GPUTexture::Format::BGRA8;
         }
 
-        Log_VerboseFmt("Metal layer pixel format is {}.", GPUTexture::GetFormatName(m_window_info.surface_format));
+        VERBOSE_LOG("Metal layer pixel format is {}.", GPUTexture::GetFormatName(m_window_info.surface_format));
 
         NSView* view = GetWindowView();
         [view setWantsLayer:TRUE];
@@ -469,7 +465,7 @@ bool MetalDevice::UpdateWindow()
 
   if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateLayer())
   {
-    Log_ErrorPrint("Failed to create layer on updated window");
+    ERROR_LOG("Failed to create layer on updated window");
     return false;
   }
 
@@ -515,7 +511,7 @@ bool MetalDevice::CreateBuffers()
       !m_uniform_buffer.Create(m_device, UNIFORM_BUFFER_SIZE) ||
       !m_texture_upload_buffer.Create(m_device, TEXTURE_STREAM_BUFFER_SIZE))
   {
-    Log_ErrorPrint("Failed to create vertex/index/uniform buffers.");
+    ERROR_LOG("Failed to create vertex/index/uniform buffers.");
     return false;
   }
 
@@ -625,7 +621,7 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromMSL(GPUShaderStage stage
     id<MTLLibrary> library = [m_device newLibraryWithSource:ns_source options:nil error:&error];
     if (!library)
     {
-      LogNSError(error, "Failed to compile %s shader", GPUShader::GetStageName(stage));
+      LogNSError(error, TinyString::from_format("Failed to compile {} shader", GPUShader::GetStageName(stage)));
 
       const char* utf_error = [error.description UTF8String];
       DumpBadShader(source, fmt::format("Error {}: {}", static_cast<u32>(error.code), utf_error ? utf_error : ""));
@@ -635,7 +631,7 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromMSL(GPUShaderStage stage
     id<MTLFunction> function = [library newFunctionWithName:StringViewToNSString(entry_point)];
     if (!function)
     {
-      Log_ErrorPrint("Failed to get main function in compiled library");
+      ERROR_LOG("Failed to get main function in compiled library");
       return {};
     }
 
@@ -666,19 +662,19 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromSource(GPUShaderStage st
   spvc_result sres;
   if ((sres = spvc_context_create(&sctx)) != SPVC_SUCCESS)
   {
-    Log_ErrorFmt("spvc_context_create() failed: {}", static_cast<int>(sres));
+    ERROR_LOG("spvc_context_create() failed: {}", static_cast<int>(sres));
     return {};
   }
 
   const ScopedGuard sctx_guard = [&sctx]() { spvc_context_destroy(sctx); };
 
   spvc_context_set_error_callback(
-    sctx, [](void*, const char* error) { Log_ErrorFmt("SPIRV-Cross reported an error: {}", error); }, nullptr);
+    sctx, [](void*, const char* error) { ERROR_LOG("SPIRV-Cross reported an error: {}", error); }, nullptr);
 
   spvc_parsed_ir sir;
   if ((sres = spvc_context_parse_spirv(sctx, reinterpret_cast<const u32*>(dest_binary->data()), dest_binary->size() / 4, &sir)) != SPVC_SUCCESS)
   {
-    Log_ErrorFmt("spvc_context_parse_spirv() failed: {}", static_cast<int>(sres));
+    ERROR_LOG("spvc_context_parse_spirv() failed: {}", static_cast<int>(sres));
     DumpBadShader(source, std::string_view());
     return {};
   }
@@ -687,21 +683,21 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromSource(GPUShaderStage st
   if ((sres = spvc_context_create_compiler(sctx, SPVC_BACKEND_MSL, sir, SPVC_CAPTURE_MODE_TAKE_OWNERSHIP,
                                            &scompiler)) != SPVC_SUCCESS)
   {
-    Log_ErrorFmt("spvc_context_create_compiler() failed: {}", static_cast<int>(sres));
+    ERROR_LOG("spvc_context_create_compiler() failed: {}", static_cast<int>(sres));
     return {};
   }
 
   spvc_compiler_options soptions;
   if ((sres = spvc_compiler_create_compiler_options(scompiler, &soptions)) != SPVC_SUCCESS)
   {
-    Log_ErrorFmt("spvc_compiler_create_compiler_options() failed: {}", static_cast<int>(sres));
+    ERROR_LOG("spvc_compiler_create_compiler_options() failed: {}", static_cast<int>(sres));
     return {};
   }
 
   if ((sres = spvc_compiler_options_set_bool(soptions, SPVC_COMPILER_OPTION_MSL_PAD_FRAGMENT_OUTPUT_COMPONENTS,
                                              true)) != SPVC_SUCCESS)
   {
-    Log_ErrorFmt("spvc_compiler_options_set_bool(SPVC_COMPILER_OPTION_MSL_PAD_FRAGMENT_OUTPUT_COMPONENTS) failed: {}",
+    ERROR_LOG("spvc_compiler_options_set_bool(SPVC_COMPILER_OPTION_MSL_PAD_FRAGMENT_OUTPUT_COMPONENTS) failed: {}",
                  static_cast<int>(sres));
     return {};
   }
@@ -709,7 +705,7 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromSource(GPUShaderStage st
   if ((sres = spvc_compiler_options_set_bool(soptions, SPVC_COMPILER_OPTION_MSL_FRAMEBUFFER_FETCH_SUBPASS,
                                              m_features.framebuffer_fetch)) != SPVC_SUCCESS)
   {
-    Log_ErrorFmt("spvc_compiler_options_set_bool(SPVC_COMPILER_OPTION_MSL_FRAMEBUFFER_FETCH_SUBPASS) failed: {}",
+    ERROR_LOG("spvc_compiler_options_set_bool(SPVC_COMPILER_OPTION_MSL_FRAMEBUFFER_FETCH_SUBPASS) failed: {}",
                  static_cast<int>(sres));
     return {};
   }
@@ -718,7 +714,7 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromSource(GPUShaderStage st
       ((sres = spvc_compiler_options_set_uint(soptions, SPVC_COMPILER_OPTION_MSL_VERSION,
                                               SPVC_MAKE_MSL_VERSION(2, 3, 0))) != SPVC_SUCCESS))
   {
-    Log_ErrorFmt("spvc_compiler_options_set_uint(SPVC_COMPILER_OPTION_MSL_VERSION) failed: {}", static_cast<int>(sres));
+    ERROR_LOG("spvc_compiler_options_set_uint(SPVC_COMPILER_OPTION_MSL_VERSION) failed: {}", static_cast<int>(sres));
     return {};
   }
 
@@ -735,7 +731,7 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromSource(GPUShaderStage st
 
       if ((sres = spvc_compiler_msl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
       {
-        Log_ErrorFmt("spvc_compiler_msl_add_resource_binding() failed: {}", static_cast<int>(sres));
+        ERROR_LOG("spvc_compiler_msl_add_resource_binding() failed: {}", static_cast<int>(sres));
         return {};
       }
     }
@@ -747,7 +743,7 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromSource(GPUShaderStage st
 
       if ((sres = spvc_compiler_msl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
       {
-        Log_ErrorFmt("spvc_compiler_msl_add_resource_binding() for FB failed: {}", static_cast<int>(sres));
+        ERROR_LOG("spvc_compiler_msl_add_resource_binding() for FB failed: {}", static_cast<int>(sres));
         return {};
       }
     }
@@ -755,14 +751,14 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromSource(GPUShaderStage st
 
   if ((sres = spvc_compiler_install_compiler_options(scompiler, soptions)) != SPVC_SUCCESS)
   {
-    Log_ErrorFmt("spvc_compiler_install_compiler_options() failed: {}", static_cast<int>(sres));
+    ERROR_LOG("spvc_compiler_install_compiler_options() failed: {}", static_cast<int>(sres));
     return {};
   }
 
   const char* msl;
   if ((sres = spvc_compiler_compile(scompiler, &msl)) != SPVC_SUCCESS)
   {
-    Log_ErrorFmt("spvc_compiler_compile() failed: {}", static_cast<int>(sres));
+    ERROR_LOG("spvc_compiler_compile() failed: {}", static_cast<int>(sres));
     DumpBadShader(source, std::string_view());
     return {};
   }
@@ -770,7 +766,7 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromSource(GPUShaderStage st
   const size_t msl_length = msl ? std::strlen(msl) : 0;
   if (msl_length == 0)
   {
-    Log_ErrorPrint("Failed to compile SPIR-V to MSL.");
+    ERROR_LOG("Failed to compile SPIR-V to MSL.");
     DumpBadShader(source, std::string_view());
     return {};
   }
@@ -835,7 +831,7 @@ id<MTLDepthStencilState> MetalDevice::GetDepthState(const GPUPipeline::DepthStat
     id<MTLDepthStencilState> state = [m_device newDepthStencilStateWithDescriptor:desc];
     m_depth_states.emplace(ds.key, state);
     if (state == nil) [[unlikely]]
-      Log_ErrorPrint("Failed to create depth-stencil state.");
+      ERROR_LOG("Failed to create depth-stencil state.");
 
     return state;
   }
@@ -1216,7 +1212,7 @@ std::unique_ptr<GPUTexture> MetalDevice::CreateTexture(u32 width, u32 height, u3
     id<MTLTexture> tex = [m_device newTextureWithDescriptor:desc];
     if (tex == nil)
     {
-      Log_ErrorFmt("Failed to create {}x{} texture.", width, height);
+      ERROR_LOG("Failed to create {}x{} texture.", width, height);
       return {};
     }
 
@@ -1269,7 +1265,7 @@ std::unique_ptr<MetalDownloadTexture> MetalDownloadTexture::Create(u32 width, u3
       buffer = [[dev.m_device newBufferWithLength:buffer_size options:options] retain];
       if (buffer == nil)
       {
-        Log_ErrorFmt("Failed to create {} byte buffer", buffer_size);
+        ERROR_LOG("Failed to create {} byte buffer", buffer_size);
         return {};
       }
 
@@ -1286,7 +1282,7 @@ std::unique_ptr<MetalDownloadTexture> MetalDownloadTexture::Create(u32 width, u3
         reinterpret_cast<void*>(Common::AlignDownPow2(reinterpret_cast<uintptr_t>(memory), HOST_PAGE_SIZE));
       const size_t page_offset = static_cast<size_t>(static_cast<u8*>(memory) - static_cast<u8*>(page_aligned_memory));
       const size_t page_aligned_size = Common::AlignUpPow2(page_offset + memory_size, HOST_PAGE_SIZE);
-      Log_DevFmt("Trying to import {} bytes of memory at {} for download texture", page_aligned_memory,
+      DEV_LOG("Trying to import {} bytes of memory at {} for download texture", page_aligned_memory,
                  page_aligned_size);
 
       buffer = [[dev.m_device newBufferWithBytesNoCopy:page_aligned_memory
@@ -1295,7 +1291,7 @@ std::unique_ptr<MetalDownloadTexture> MetalDownloadTexture::Create(u32 width, u3
                                            deallocator:nil] retain];
       if (buffer == nil)
       {
-        Log_ErrorFmt("Failed to import {} byte buffer", page_aligned_size);
+        ERROR_LOG("Failed to import {} byte buffer", page_aligned_size);
         return {};
       }
 
@@ -1460,7 +1456,7 @@ std::unique_ptr<GPUSampler> MetalDevice::CreateSampler(const GPUSampler::Config&
       }
       if (i == std::size(border_color_mapping))
       {
-        Log_ErrorFmt("Unsupported border color: {:08X}", config.border_color.GetValue());
+        ERROR_LOG("Unsupported border color: {:08X}", config.border_color.GetValue());
         return {};
       }
 
@@ -1471,7 +1467,7 @@ std::unique_ptr<GPUSampler> MetalDevice::CreateSampler(const GPUSampler::Config&
     id<MTLSamplerState> ss = [m_device newSamplerStateWithDescriptor:desc];
     if (ss == nil)
     {
-      Log_ErrorPrint("Failed to create sampler state.");
+      ERROR_LOG("Failed to create sampler state.");
       return {};
     }
 
@@ -2029,7 +2025,7 @@ void MetalDevice::UnbindTexture(MetalTexture* tex)
     {
       if (m_current_render_targets[i] == tex)
       {
-        Log_WarningPrint("Unbinding current RT");
+        WARNING_LOG("Unbinding current RT");
         SetRenderTargets(nullptr, 0, m_current_depth_target, GPUPipeline::NoRenderPassFlags); // TODO: Wrong
         break;
       }
@@ -2039,7 +2035,7 @@ void MetalDevice::UnbindTexture(MetalTexture* tex)
   {
     if (m_current_depth_target == tex)
     {
-      Log_WarningPrint("Unbinding current DS");
+      WARNING_LOG("Unbinding current DS");
       SetRenderTargets(nullptr, 0, nullptr, GPUPipeline::NoRenderPassFlags);
     }
   }
@@ -2557,7 +2553,7 @@ void MetalDevice::SubmitCommandBuffer(bool wait_for_completion)
 
 void MetalDevice::SubmitCommandBufferAndRestartRenderPass(const char* reason)
 {
-  Log_DevFmt("Submitting command buffer and restarting render pass due to {}", reason);
+  DEV_LOG("Submitting command buffer and restarting render pass due to {}", reason);
 
   const bool in_render_pass = InRenderPass();
   SubmitCommandBuffer();

@@ -75,7 +75,7 @@ bool Vulkan::LoadVulkanLibrary(Error* error)
 #define VULKAN_MODULE_ENTRY_POINT(name, required)                                                                      \
   if (!s_vulkan_library.GetSymbol(#name, &name))                                                                       \
   {                                                                                                                    \
-    Log_ErrorFmt("Vulkan: Failed to load required module function {}", #name);                                         \
+    ERROR_LOG("Vulkan: Failed to load required module function {}", #name);                                            \
     required_functions_missing = true;                                                                                 \
   }
 #include "vulkan_entry_points.inl"

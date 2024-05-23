@@ -245,7 +245,7 @@ const rc_client_user_game_summary_t& Achievements::GetGameSummary()
 void Achievements::ReportError(std::string_view sv)
 {
   std::string error = fmt::format("Achievements error: {}", sv);
-  Log_ErrorPrint(error.c_str());
+  ERROR_LOG(error.c_str());
   Host::AddOSDMessage(std::move(error), Host::OSD_CRITICAL_ERROR_DURATION);
 }
 
@@ -278,7 +278,7 @@ std::string Achievements::GetGameHash(CDImage* image)
     std::memcpy(&header, executable_data.data(), sizeof(header));
   if (!BIOS::IsValidPSExeHeader(header, static_cast<u32>(executable_data.size())))
   {
-    Log_ErrorFmt("PS-EXE header is invalid in '{}' ({} bytes)", executable_name, executable_data.size());
+    ERROR_LOG("PS-EXE header is invalid in '{}' ({} bytes)", executable_name, executable_data.size());
     return {};
   }
 
@@ -300,8 +300,8 @@ std::string Achievements::GetGameHash(CDImage* image)
                 hash[0], hash[1], hash[2], hash[3], hash[4], hash[5], hash[6], hash[7], hash[8], hash[9], hash[10],
                 hash[11], hash[12], hash[13], hash[14], hash[15]);
 
-  Log_InfoFmt("Hash for '{}' ({} bytes, {} bytes hashed): {}", executable_name, executable_data.size(), hash_size,
-              hash_str);
+  INFO_LOG("Hash for '{}' ({} bytes, {} bytes hashed): {}", executable_name, executable_data.size(), hash_size,
+           hash_str);
   return hash_str;
 }
 
@@ -314,7 +314,7 @@ void Achievements::DownloadImage(std::string url, std::string cache_filename)
 
     if (!FileSystem::WriteBinaryFile(cache_filename.c_str(), data.data(), data.size()))
     {
-      Log_ErrorFmt("Failed to write badge image to '{}'", cache_filename);
+      ERROR_LOG("Failed to write badge image to '{}'", cache_filename);
       return;
     }
 
@@ -420,7 +420,7 @@ bool Achievements::Initialize()
   std::string api_token = Host::GetBaseStringSettingValue("Cheevos", "Token");
   if (!username.empty() && !api_token.empty())
   {
-    Log_InfoFmt("Attempting login with user '{}'...", username);
+    INFO_LOG("Attempting login with user '{}'...", username);
     s_login_request = rc_client_begin_login_with_token(s_client, username.c_str(), api_token.c_str(),
                                                        ClientLoginWithTokenCallback, nullptr);
   }
@@ -588,7 +588,7 @@ void Achievements::EnsureCacheDirectoriesExist()
 
 void Achievements::ClientMessageCallback(const char* message, const rc_client_t* client)
 {
-  Log_DevPrint(message);
+  DEV_LOG(message);
 }
 
 uint32_t Achievements::ClientReadMemory(uint32_t address, uint8_t* buffer, uint32_t num_bytes, rc_client_t* client)
@@ -769,7 +769,7 @@ void Achievements::ClientEventHandler(const rc_client_event_t* event, rc_client_
       break;
 
     default:
-      [[unlikely]] Log_ErrorFmt("Unhandled event: {}", event->type);
+      [[unlikely]] ERROR_LOG("Unhandled event: {}", event->type);
       break;
   }
 }
@@ -793,7 +793,7 @@ void Achievements::UpdateRichPresence(std::unique_lock<std::recursive_mutex>& lo
 
   s_rich_presence_string.assign(sv);
 
-  Log_InfoFmt("Rich presence updated: {}", s_rich_presence_string);
+  INFO_LOG("Rich presence updated: {}", s_rich_presence_string);
   Host::OnAchievementsRefreshed();
 
 #ifdef ENABLE_DISCORD_PRESENCE
@@ -817,7 +817,7 @@ void Achievements::IdentifyGame(const std::string& path, CDImage* image)
 {
   if (s_game_path == path)
   {
-    Log_WarningPrint("Game path is unchanged.");
+    WARNING_LOG("Game path is unchanged.");
     return;
   }
 
@@ -828,7 +828,7 @@ void Achievements::IdentifyGame(const std::string& path, CDImage* image)
     temp_image = CDImage::Open(path.c_str(), g_settings.cdrom_load_image_patches, nullptr);
     image = temp_image.get();
     if (!temp_image)
-      Log_ErrorFmt("Failed to open temporary CD image '{}'", path);
+      ERROR_LOG("Failed to open temporary CD image '{}'", path);
   }
 
   std::string game_hash;
@@ -838,7 +838,7 @@ void Achievements::IdentifyGame(const std::string& path, CDImage* image)
   if (s_game_hash == game_hash)
   {
     // only the path has changed - different format/save state/etc.
-    Log_InfoFmt("Detected path change from '{}' to '{}'", s_game_path, path);
+    INFO_LOG("Detected path change from '{}' to '{}'", s_game_path, path);
     s_game_path = path;
     return;
   }
@@ -861,7 +861,7 @@ void Achievements::IdentifyGame(const std::string& path, CDImage* image)
   // bail out if we're not logged in, just save the hash
   if (!IsLoggedInOrLoggingIn())
   {
-    Log_InfoPrint("Skipping load game because we're not logged in.");
+    INFO_LOG("Skipping load game because we're not logged in.");
     DisableHardcoreMode();
     return;
   }
@@ -903,7 +903,7 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   if (result == RC_NO_GAME_LOADED)
   {
     // Unknown game.
-    Log_InfoFmt("Unknown game '%s', disabling achievements.", s_game_hash);
+    INFO_LOG("Unknown game '%s', disabling achievements.", s_game_hash);
     DisableHardcoreMode();
     return;
   }
@@ -1053,7 +1053,7 @@ void Achievements::DisplayHardcoreDeferredMessage()
 void Achievements::HandleResetEvent(const rc_client_event_t* event)
 {
   // We handle system resets ourselves, but still need to reset the client's state.
-  Log_InfoPrint("Resetting runtime due to reset event");
+  INFO_LOG("Resetting runtime due to reset event");
   rc_client_reset(s_client);
 
   if (HasActiveGame())
@@ -1065,7 +1065,7 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
   const rc_client_achievement_t* cheevo = event->achievement;
   DebugAssert(cheevo);
 
-  Log_InfoFmt("Achievement {} ({}) for game {} unlocked", cheevo->title, cheevo->id, s_game_id);
+  INFO_LOG("Achievement {} ({}) for game {} unlocked", cheevo->title, cheevo->id, s_game_id);
   UpdateGameSummary();
 
   if (g_settings.achievements_notifications && FullscreenUI::Initialize())
@@ -1089,7 +1089,7 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
 
 void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
 {
-  Log_InfoFmt("Game {} complete", s_game_id);
+  INFO_LOG("Game {} complete", s_game_id);
   UpdateGameSummary();
 
   if (g_settings.achievements_notifications && FullscreenUI::Initialize())
@@ -1108,7 +1108,7 @@ void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
 
 void Achievements::HandleLeaderboardStartedEvent(const rc_client_event_t* event)
 {
-  Log_DevFmt("Leaderboard {} ({}) started", event->leaderboard->id, event->leaderboard->title);
+  DEV_LOG("Leaderboard {} ({}) started", event->leaderboard->id, event->leaderboard->title);
 
   if (g_settings.achievements_leaderboard_notifications && FullscreenUI::Initialize())
   {
@@ -1123,7 +1123,7 @@ void Achievements::HandleLeaderboardStartedEvent(const rc_client_event_t* event)
 
 void Achievements::HandleLeaderboardFailedEvent(const rc_client_event_t* event)
 {
-  Log_DevFmt("Leaderboard {} ({}) failed", event->leaderboard->id, event->leaderboard->title);
+  DEV_LOG("Leaderboard {} ({}) failed", event->leaderboard->id, event->leaderboard->title);
 
   if (g_settings.achievements_leaderboard_notifications && FullscreenUI::Initialize())
   {
@@ -1138,7 +1138,7 @@ void Achievements::HandleLeaderboardFailedEvent(const rc_client_event_t* event)
 
 void Achievements::HandleLeaderboardSubmittedEvent(const rc_client_event_t* event)
 {
-  Log_DevFmt("Leaderboard {} ({}) submitted", event->leaderboard->id, event->leaderboard->title);
+  DEV_LOG("Leaderboard {} ({}) submitted", event->leaderboard->id, event->leaderboard->title);
 
   if (g_settings.achievements_leaderboard_notifications && FullscreenUI::Initialize())
   {
@@ -1167,8 +1167,8 @@ void Achievements::HandleLeaderboardSubmittedEvent(const rc_client_event_t* even
 
 void Achievements::HandleLeaderboardScoreboardEvent(const rc_client_event_t* event)
 {
-  Log_DevFmt("Leaderboard {} scoreboard rank {} of {}", event->leaderboard_scoreboard->leaderboard_id,
-             event->leaderboard_scoreboard->new_rank, event->leaderboard_scoreboard->num_entries);
+  DEV_LOG("Leaderboard {} scoreboard rank {} of {}", event->leaderboard_scoreboard->leaderboard_id,
+          event->leaderboard_scoreboard->new_rank, event->leaderboard_scoreboard->num_entries);
 
   if (g_settings.achievements_leaderboard_notifications && FullscreenUI::Initialize())
   {
@@ -1195,8 +1195,7 @@ void Achievements::HandleLeaderboardScoreboardEvent(const rc_client_event_t* eve
 
 void Achievements::HandleLeaderboardTrackerShowEvent(const rc_client_event_t* event)
 {
-  Log_DevFmt("Showing leaderboard tracker: {}: {}", event->leaderboard_tracker->id,
-             event->leaderboard_tracker->display);
+  DEV_LOG("Showing leaderboard tracker: {}: {}", event->leaderboard_tracker->id, event->leaderboard_tracker->display);
 
   TinyString width_string;
   width_string.append(ICON_FA_STOPWATCH);
@@ -1219,7 +1218,7 @@ void Achievements::HandleLeaderboardTrackerHideEvent(const rc_client_event_t* ev
   if (it == s_active_leaderboard_trackers.end())
     return;
 
-  Log_DevFmt("Hiding leaderboard tracker: {}", id);
+  DEV_LOG("Hiding leaderboard tracker: {}", id);
   it->active = false;
   it->show_hide_time.Reset();
 }
@@ -1232,8 +1231,7 @@ void Achievements::HandleLeaderboardTrackerUpdateEvent(const rc_client_event_t* 
   if (it == s_active_leaderboard_trackers.end())
     return;
 
-  Log_DevFmt("Updating leaderboard tracker: {}: {}", event->leaderboard_tracker->id,
-             event->leaderboard_tracker->display);
+  DEV_LOG("Updating leaderboard tracker: {}: {}", event->leaderboard_tracker->id, event->leaderboard_tracker->display);
 
   it->text = event->leaderboard_tracker->display;
   it->active = true;
@@ -1257,7 +1255,7 @@ void Achievements::HandleAchievementChallengeIndicatorShowEvent(const rc_client_
   indicator.active = true;
   s_active_challenge_indicators.push_back(std::move(indicator));
 
-  Log_DevFmt("Show challenge indicator for {} ({})", event->achievement->id, event->achievement->title);
+  DEV_LOG("Show challenge indicator for {} ({})", event->achievement->id, event->achievement->title);
 }
 
 void Achievements::HandleAchievementChallengeIndicatorHideEvent(const rc_client_event_t* event)
@@ -1268,15 +1266,15 @@ void Achievements::HandleAchievementChallengeIndicatorHideEvent(const rc_client_
   if (it == s_active_challenge_indicators.end())
     return;
 
-  Log_DevFmt("Hide challenge indicator for {} ({})", event->achievement->id, event->achievement->title);
+  DEV_LOG("Hide challenge indicator for {} ({})", event->achievement->id, event->achievement->title);
   it->show_hide_time.Reset();
   it->active = false;
 }
 
 void Achievements::HandleAchievementProgressIndicatorShowEvent(const rc_client_event_t* event)
 {
-  Log_DevFmt("Showing progress indicator: {} ({}): {}", event->achievement->id, event->achievement->title,
-             event->achievement->measured_progress);
+  DEV_LOG("Showing progress indicator: {} ({}): {}", event->achievement->id, event->achievement->title,
+          event->achievement->measured_progress);
 
   if (!s_active_progress_indicator.has_value())
     s_active_progress_indicator.emplace();
@@ -1294,15 +1292,15 @@ void Achievements::HandleAchievementProgressIndicatorHideEvent(const rc_client_e
   if (!s_active_progress_indicator.has_value())
     return;
 
-  Log_DevPrint("Hiding progress indicator");
+  DEV_LOG("Hiding progress indicator");
   s_active_progress_indicator->show_hide_time.Reset();
   s_active_progress_indicator->active = false;
 }
 
 void Achievements::HandleAchievementProgressIndicatorUpdateEvent(const rc_client_event_t* event)
 {
-  Log_DevFmt("Updating progress indicator: {} ({}): {}", event->achievement->id, event->achievement->title,
-             event->achievement->measured_progress);
+  DEV_LOG("Updating progress indicator: {} ({}): {}", event->achievement->id, event->achievement->title,
+          event->achievement->measured_progress);
   s_active_progress_indicator->achievement = event->achievement;
   s_active_progress_indicator->active = true;
 }
@@ -1313,13 +1311,13 @@ void Achievements::HandleServerErrorEvent(const rc_client_event_t* event)
     fmt::format(TRANSLATE_FS("Achievements", "Server error in {}:\n{}"),
                 event->server_error->api ? event->server_error->api : "UNKNOWN",
                 event->server_error->error_message ? event->server_error->error_message : "UNKNOWN");
-  Log_ErrorPrint(message.c_str());
+  ERROR_LOG(message.c_str());
   Host::AddOSDMessage(std::move(message), Host::OSD_ERROR_DURATION);
 }
 
 void Achievements::HandleServerDisconnectedEvent(const rc_client_event_t* event)
 {
-  Log_WarningPrint("Server disconnected.");
+  WARNING_LOG("Server disconnected.");
 
   if (FullscreenUI::Initialize())
   {
@@ -1333,7 +1331,7 @@ void Achievements::HandleServerDisconnectedEvent(const rc_client_event_t* event)
 
 void Achievements::HandleServerReconnectedEvent(const rc_client_event_t* event)
 {
-  Log_WarningPrint("Server reconnected.");
+  WARNING_LOG("Server reconnected.");
 
   if (FullscreenUI::Initialize())
   {
@@ -1356,7 +1354,7 @@ void Achievements::ResetClient()
   if (!IsActive())
     return;
 
-  Log_DevPrint("Reset client");
+  DEV_LOG("Reset client");
   rc_client_reset(s_client);
 }
 
@@ -1474,7 +1472,7 @@ bool Achievements::DoState(StateWrapper& sw)
     if (data_size == 0)
     {
       // reset runtime, no data (state might've been created without cheevos)
-      Log_DevPrint("State is missing cheevos data, resetting runtime");
+      DEV_LOG("State is missing cheevos data, resetting runtime");
 #ifdef ENABLE_RAINTEGRATION
       if (IsUsingRAIntegration())
         RA_OnReset();
@@ -1502,7 +1500,7 @@ bool Achievements::DoState(StateWrapper& sw)
       const int result = rc_client_deserialize_progress(s_client, data.get());
       if (result != RC_OK)
       {
-        Log_WarningFmt("Failed to deserialize cheevos state ({}), resetting", result);
+        WARNING_LOG("Failed to deserialize cheevos state ({}), resetting", result);
         rc_client_reset(s_client);
       }
     }
@@ -1526,7 +1524,7 @@ bool Achievements::DoState(StateWrapper& sw)
       const int result = RA_CaptureState(reinterpret_cast<char*>(data.get()), static_cast<int>(data_size));
       if (result != static_cast<int>(data_size))
       {
-        Log_WarningPrint("Failed to serialize cheevos state from RAIntegration.");
+        WARNING_LOG("Failed to serialize cheevos state from RAIntegration.");
         data_size = 0;
       }
     }
@@ -1543,7 +1541,7 @@ bool Achievements::DoState(StateWrapper& sw)
       if (result != RC_OK)
       {
         // set data to zero, effectively serializing nothing
-        Log_WarningFmt("Failed to serialize cheevos state ({})", result);
+        WARNING_LOG("Failed to serialize cheevos state ({})", result);
         data_size = 0;
       }
     }
@@ -1679,7 +1677,7 @@ void Achievements::ClientLoginWithPasswordCallback(int result, const char* error
 
   if (result != RC_OK)
   {
-    Log_ErrorFmt("Login failed: {}: {}", rc_error_str(result), error_message ? error_message : "Unknown");
+    ERROR_LOG("Login failed: {}: {}", rc_error_str(result), error_message ? error_message : "Unknown");
     Error::SetString(params->error,
                      fmt::format("{}: {}", rc_error_str(result), error_message ? error_message : "Unknown"));
     params->result = false;
@@ -1690,7 +1688,7 @@ void Achievements::ClientLoginWithPasswordCallback(int result, const char* error
   const rc_client_user_t* user = rc_client_get_user_info(client);
   if (!user || !user->token)
   {
-    Log_ErrorPrint("rc_client_get_user_info() returned NULL");
+    ERROR_LOG("rc_client_get_user_info() returned NULL");
     Error::SetString(params->error, "rc_client_get_user_info() returned NULL");
     params->result = false;
     return;
@@ -1801,11 +1799,11 @@ void Achievements::Logout()
     if (HasActiveGame())
       ClearGameInfo();
 
-    Log_InfoPrint("Logging out...");
+    INFO_LOG("Logging out...");
     rc_client_logout(s_client);
   }
 
-  Log_InfoPrint("Clearing credentials...");
+  INFO_LOG("Clearing credentials...");
   Host::DeleteBaseSettingValue("Cheevos", "Username");
   Host::DeleteBaseSettingValue("Cheevos", "Token");
   Host::DeleteBaseSettingValue("Cheevos", "LoginTimestamp");
@@ -1959,7 +1957,7 @@ void Achievements::DrawGameOverlays()
 
       if (!indicator.active && opacity <= 0.01f)
       {
-        Log_DevPrint("Remove challenge indicator");
+        DEV_LOG("Remove challenge indicator");
         it = s_active_challenge_indicators.erase(it);
       }
       else
@@ -2003,7 +2001,7 @@ void Achievements::DrawGameOverlays()
 
     if (!indicator.active && opacity <= 0.01f)
     {
-      Log_DevPrint("Remove progress indicator");
+      DEV_LOG("Remove progress indicator");
       s_active_progress_indicator.reset();
     }
 
@@ -2046,7 +2044,7 @@ void Achievements::DrawGameOverlays()
 
       if (!indicator.active && opacity <= 0.01f)
       {
-        Log_DevPrint("Remove tracker indicator");
+        DEV_LOG("Remove tracker indicator");
         it = s_active_leaderboard_trackers.erase(it);
       }
       else
@@ -2158,7 +2156,7 @@ bool Achievements::PrepareAchievementsWindow()
     RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_PROGRESS /*RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_LOCK_STATE*/);
   if (!s_achievement_list)
   {
-    Log_ErrorPrint("rc_client_create_achievement_list() returned null");
+    ERROR_LOG("rc_client_create_achievement_list() returned null");
     return false;
   }
 
@@ -2499,7 +2497,7 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
   if (clicked)
   {
     const SmallString url = SmallString::from_format(fmt::runtime(ACHEIVEMENT_DETAILS_URL_TEMPLATE), cheevo->id);
-    Log_InfoFmt("Opening achievement details: {}", url);
+    INFO_LOG("Opening achievement details: {}", url);
     Host::OpenURL(url);
   }
 
@@ -2518,7 +2516,7 @@ bool Achievements::PrepareLeaderboardsWindow()
   s_leaderboard_list = rc_client_create_leaderboard_list(client, RC_CLIENT_LEADERBOARD_LIST_GROUPING_NONE);
   if (!s_leaderboard_list)
   {
-    Log_ErrorPrint("rc_client_create_leaderboard_list() returned null");
+    ERROR_LOG("rc_client_create_leaderboard_list() returned null");
     return false;
   }
 
@@ -2974,7 +2972,7 @@ void Achievements::DrawLeaderboardListEntry(const rc_client_leaderboard_t* lboar
 
 void Achievements::OpenLeaderboard(const rc_client_leaderboard_t* lboard)
 {
-  Log_DevFmt("Opening leaderboard '{}' ({})", lboard->title, lboard->id);
+  DEV_LOG("Opening leaderboard '{}' ({})", lboard->title, lboard->id);
 
   CloseLeaderboard();
 
@@ -3058,7 +3056,7 @@ void Achievements::FetchNextLeaderboardEntries()
   for (rc_client_leaderboard_entry_list_t* list : s_leaderboard_entry_lists)
     start += list->num_entries;
 
-  Log_DevFmt("Fetching entries {} to {}", start, start + LEADERBOARD_ALL_FETCH_SIZE);
+  DEV_LOG("Fetching entries {} to {}", start, start + LEADERBOARD_ALL_FETCH_SIZE);
 
   if (s_leaderboard_fetch_handle)
     rc_client_abort_async(s_client, s_leaderboard_fetch_handle);

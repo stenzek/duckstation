@@ -25,11 +25,11 @@ void GDBServer::start(quint16 port)
 
   if (!listen(QHostAddress::LocalHost, port))
   {
-    Log_ErrorFmt("Failed to listen on TCP port {} for GDB server: {}", port, errorString().toUtf8().constData());
+    ERROR_LOG("Failed to listen on TCP port {} for GDB server: {}", port, errorString().toUtf8().constData());
     return;
   }
 
-  Log_InfoFmt("GDB server listening on TCP port {}", port);
+  INFO_LOG("GDB server listening on TCP port {}", port);
 }
 
 void GDBServer::stop()
@@ -37,7 +37,7 @@ void GDBServer::stop()
   if (isListening())
   {
     close();
-    Log_InfoPrint("GDB server stopped");
+    INFO_LOG("GDB server stopped");
   }
 
   for (QObject* connection : children())

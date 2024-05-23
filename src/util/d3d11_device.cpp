@@ -126,10 +126,10 @@ bool D3D11Device::CreateDevice(std::string_view adapter, bool threaded_presentat
   ComPtr<IDXGIDevice> dxgi_device;
   if (SUCCEEDED(m_device.As(&dxgi_device)) &&
       SUCCEEDED(dxgi_device->GetParent(IID_PPV_ARGS(dxgi_adapter.GetAddressOf()))))
-    Log_InfoFmt("D3D Adapter: %s", D3DCommon::GetAdapterName(dxgi_adapter.Get()));
+    INFO_LOG("D3D Adapter: %s", D3DCommon::GetAdapterName(dxgi_adapter.Get()));
   else
-    Log_ErrorPrint("Failed to obtain D3D adapter name.");
-  Log_InfoFmt("Max device feature level: {}", D3DCommon::GetFeatureLevelString(m_max_feature_level));
+    ERROR_LOG("Failed to obtain D3D adapter name.");
+  INFO_LOG("Max device feature level: {}", D3DCommon::GetFeatureLevelString(m_max_feature_level));
 
   BOOL allow_tearing_supported = false;
   hr = m_dxgi_factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported,
@@ -263,12 +263,12 @@ bool D3D11Device::CreateSwapChain()
     fs_desc.Scaling = fullscreen_mode.Scaling;
     fs_desc.Windowed = FALSE;
 
-    Log_VerboseFmt("Creating a {}x{} exclusive fullscreen swap chain", fs_sd_desc.Width, fs_sd_desc.Height);
+    VERBOSE_LOG("Creating a {}x{} exclusive fullscreen swap chain", fs_sd_desc.Width, fs_sd_desc.Height);
     hr = m_dxgi_factory->CreateSwapChainForHwnd(m_device.Get(), window_hwnd, &fs_sd_desc, &fs_desc,
                                                 fullscreen_output.Get(), m_swap_chain.ReleaseAndGetAddressOf());
     if (FAILED(hr))
     {
-      Log_WarningPrint("Failed to create fullscreen swap chain, trying windowed.");
+      WARNING_LOG("Failed to create fullscreen swap chain, trying windowed.");
       m_is_exclusive_fullscreen = false;
       m_using_allow_tearing = m_allow_tearing_supported && m_using_flip_model_swap_chain;
     }
@@ -276,15 +276,15 @@ bool D3D11Device::CreateSwapChain()
 
   if (!m_is_exclusive_fullscreen)
   {
-    Log_VerboseFmt("Creating a {}x{} {} windowed swap chain", swap_chain_desc.Width, swap_chain_desc.Height,
-                   m_using_flip_model_swap_chain ? "flip-discard" : "discard");
+    VERBOSE_LOG("Creating a {}x{} {} windowed swap chain", swap_chain_desc.Width, swap_chain_desc.Height,
+                m_using_flip_model_swap_chain ? "flip-discard" : "discard");
     hr = m_dxgi_factory->CreateSwapChainForHwnd(m_device.Get(), window_hwnd, &swap_chain_desc, nullptr, nullptr,
                                                 m_swap_chain.ReleaseAndGetAddressOf());
   }
 
   if (FAILED(hr) && m_using_flip_model_swap_chain)
   {
-    Log_WarningPrint("Failed to create a flip-discard swap chain, trying discard.");
+    WARNING_LOG("Failed to create a flip-discard swap chain, trying discard.");
     swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
     swap_chain_desc.Flags = 0;
     m_using_flip_model_swap_chain = false;
@@ -294,7 +294,7 @@ bool D3D11Device::CreateSwapChain()
                                                 m_swap_chain.ReleaseAndGetAddressOf());
     if (FAILED(hr)) [[unlikely]]
     {
-      Log_ErrorFmt("CreateSwapChainForHwnd failed: 0x{:08X}", static_cast<unsigned>(hr));
+      ERROR_LOG("CreateSwapChainForHwnd failed: 0x{:08X}", static_cast<unsigned>(hr));
       return false;
     }
   }
@@ -304,7 +304,7 @@ bool D3D11Device::CreateSwapChain()
   if (FAILED(m_swap_chain->GetParent(IID_PPV_ARGS(parent_factory.GetAddressOf()))) ||
       FAILED(parent_factory->MakeWindowAssociation(window_hwnd, DXGI_MWA_NO_WINDOW_CHANGES)))
   {
-    Log_WarningPrint("MakeWindowAssociation() to disable ALT+ENTER failed");
+    WARNING_LOG("MakeWindowAssociation() to disable ALT+ENTER failed");
   }
 
   if (!CreateSwapChainRTV())
@@ -325,7 +325,7 @@ bool D3D11Device::CreateSwapChainRTV()
   HRESULT hr = m_swap_chain->GetBuffer(0, IID_PPV_ARGS(backbuffer.GetAddressOf()));
   if (FAILED(hr)) [[unlikely]]
   {
-    Log_ErrorFmt("GetBuffer for RTV failed: 0x{:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("GetBuffer for RTV failed: 0x{:08X}", static_cast<unsigned>(hr));
     return false;
   }
 
@@ -337,7 +337,7 @@ bool D3D11Device::CreateSwapChainRTV()
   hr = m_device->CreateRenderTargetView(backbuffer.Get(), &rtv_desc, m_swap_chain_rtv.ReleaseAndGetAddressOf());
   if (FAILED(hr)) [[unlikely]]
   {
-    Log_ErrorFmt("CreateRenderTargetView for swap chain failed: 0x{:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("CreateRenderTargetView for swap chain failed: 0x{:08X}", static_cast<unsigned>(hr));
     m_swap_chain_rtv.Reset();
     return false;
   }
@@ -345,7 +345,7 @@ bool D3D11Device::CreateSwapChainRTV()
   m_window_info.surface_width = backbuffer_desc.Width;
   m_window_info.surface_height = backbuffer_desc.Height;
   m_window_info.surface_format = s_swap_chain_format;
-  Log_VerboseFmt("Swap chain buffer size: {}x{}", m_window_info.surface_width, m_window_info.surface_height);
+  VERBOSE_LOG("Swap chain buffer size: {}x{}", m_window_info.surface_width, m_window_info.surface_height);
 
   if (m_window_info.type == WindowInfo::Type::Win32)
   {
@@ -391,7 +391,7 @@ bool D3D11Device::UpdateWindow()
 
   if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain())
   {
-    Log_ErrorPrint("Failed to create swap chain on updated window");
+    ERROR_LOG("Failed to create swap chain on updated window");
     return false;
   }
 
@@ -421,7 +421,7 @@ void D3D11Device::ResizeWindow(s32 new_window_width, s32 new_window_height, floa
   HRESULT hr = m_swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN,
                                            m_using_allow_tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
   if (FAILED(hr)) [[unlikely]]
-    Log_ErrorFmt("ResizeBuffers() failed: 0x{:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("ResizeBuffers() failed: 0x{:08X}", static_cast<unsigned>(hr));
 
   if (!CreateSwapChainRTV())
     Panic("Failed to recreate swap chain RTV after resize");
@@ -470,7 +470,7 @@ bool D3D11Device::CreateBuffers()
       !m_index_buffer.Create(D3D11_BIND_INDEX_BUFFER, INDEX_BUFFER_SIZE, INDEX_BUFFER_SIZE) ||
       !m_uniform_buffer.Create(D3D11_BIND_CONSTANT_BUFFER, MIN_UNIFORM_BUFFER_SIZE, MAX_UNIFORM_BUFFER_SIZE))
   {
-    Log_ErrorPrint("Failed to create vertex/index/uniform buffers.");
+    ERROR_LOG("Failed to create vertex/index/uniform buffers.");
     return false;
   }
 
@@ -600,7 +600,7 @@ std::optional<float> D3D11Device::GetHostRefreshRate()
     if (SUCCEEDED(m_swap_chain->GetDesc(&desc)) && desc.BufferDesc.RefreshRate.Numerator > 0 &&
         desc.BufferDesc.RefreshRate.Denominator > 0)
     {
-      Log_DevFmt("using fs rr: {} {}", desc.BufferDesc.RefreshRate.Numerator, desc.BufferDesc.RefreshRate.Denominator);
+      DEV_LOG("using fs rr: {} {}", desc.BufferDesc.RefreshRate.Numerator, desc.BufferDesc.RefreshRate.Denominator);
       return static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
              static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
     }
@@ -776,7 +776,7 @@ void D3D11Device::PopTimestampQuery()
 
     if (disjoint.Disjoint)
     {
-      Log_VerbosePrint("GPU timing disjoint, resetting.");
+      VERBOSE_LOG("GPU timing disjoint, resetting.");
       m_read_timestamp_query = 0;
       m_write_timestamp_query = 0;
       m_waiting_timestamp_queries = 0;
@@ -1078,7 +1078,7 @@ void D3D11Device::UnbindTexture(D3D11Texture* tex)
     {
       if (m_current_render_targets[i] == tex)
       {
-        Log_WarningPrint("Unbinding current RT");
+        WARNING_LOG("Unbinding current RT");
         SetRenderTargets(nullptr, 0, m_current_depth_target);
         break;
       }
@@ -1086,7 +1086,7 @@ void D3D11Device::UnbindTexture(D3D11Texture* tex)
   }
   else if (m_current_depth_target == tex)
   {
-    Log_WarningPrint("Unbinding current DS");
+    WARNING_LOG("Unbinding current DS");
     SetRenderTargets(nullptr, 0, nullptr);
   }
 }

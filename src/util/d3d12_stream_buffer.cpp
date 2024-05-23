@@ -38,7 +38,7 @@ bool D3D12StreamBuffer::Create(u32 size)
     IID_PPV_ARGS(buffer.GetAddressOf()));
   if (FAILED(hr)) [[unlikely]]
   {
-    Log_ErrorFmt("CreateResource() failed: {:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("CreateResource() failed: {:08X}", static_cast<unsigned>(hr));
     return false;
   }
 
@@ -47,7 +47,7 @@ bool D3D12StreamBuffer::Create(u32 size)
   hr = buffer->Map(0, &read_range, reinterpret_cast<void**>(&host_pointer));
   if (FAILED(hr)) [[unlikely]]
   {
-    Log_ErrorFmt("Map() failed: {:08X}", static_cast<unsigned>(hr));
+    ERROR_LOG("Map() failed: {:08X}", static_cast<unsigned>(hr));
     return false;
   }
 
@@ -68,8 +68,8 @@ bool D3D12StreamBuffer::ReserveMemory(u32 num_bytes, u32 alignment)
   // Check for sane allocations
   if (num_bytes > m_size) [[unlikely]]
   {
-    Log_ErrorFmt("Attempting to allocate {} bytes from a {} byte stream buffer", static_cast<u32>(num_bytes),
-                 static_cast<u32>(m_size));
+    ERROR_LOG("Attempting to allocate {} bytes from a {} byte stream buffer", static_cast<u32>(num_bytes),
+              static_cast<u32>(m_size));
     Panic("Stream buffer overflow");
   }
 

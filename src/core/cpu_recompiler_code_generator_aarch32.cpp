@@ -123,7 +123,8 @@ void CPU::Recompiler::armEmitCall(vixl::aarch32::Assembler* armAsm, const void* 
   }
 }
 
-void CPU::Recompiler::armEmitCondBranch(vixl::aarch32::Assembler* armAsm, vixl::aarch32::Condition cond, const void* ptr)
+void CPU::Recompiler::armEmitCondBranch(vixl::aarch32::Assembler* armAsm, vixl::aarch32::Condition cond,
+                                        const void* ptr)
 {
   const s32 displacement = armGetPCDisplacement(armAsm->GetCursorAddress<const void*>(), ptr);
   if (!armIsPCDisplacementInImmediateRange(displacement))
@@ -145,7 +146,7 @@ void CPU::CodeCache::DisassembleAndLogHostCode(const void* start, u32 size)
   dis.SetCodeAddress(reinterpret_cast<uintptr_t>(start));
   dis.DisassembleA32Buffer(static_cast<const u32*>(start), size);
 #else
-  Log_ErrorPrint("Not compiled with ENABLE_HOST_DISASSEMBLY.");
+  ERROR_LOG("Not compiled with ENABLE_HOST_DISASSEMBLY.");
 #endif
 }
 
@@ -1766,7 +1767,7 @@ void CodeGenerator::EmitStoreGuestMemorySlowmem(Instruction instruction, const C
 
 void CodeGenerator::BackpatchLoadStore(void* host_pc, const CodeCache::LoadstoreBackpatchInfo& lbi)
 {
-  Log_DevFmt("Backpatching {} (guest PC 0x{:08X}) to slowmem at {}", host_pc, lbi.guest_pc, lbi.thunk_address);
+  DEV_LOG("Backpatching {} (guest PC 0x{:08X}) to slowmem at {}", host_pc, lbi.guest_pc, lbi.thunk_address);
 
   // turn it into a jump to the slowmem handler
   vixl::aarch32::MacroAssembler emit(static_cast<vixl::byte*>(host_pc), lbi.code_size, a32::A32);

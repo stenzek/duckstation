@@ -219,7 +219,7 @@ bool ImGuiFullscreen::Initialize(const char* placeholder_image_path)
   s_placeholder_texture = LoadTexture(placeholder_image_path);
   if (!s_placeholder_texture)
   {
-    Log_ErrorFmt("Missing placeholder texture '{}', cannot continue", placeholder_image_path);
+    ERROR_LOG("Missing placeholder texture '{}', cannot continue", placeholder_image_path);
     return false;
   }
 
@@ -295,11 +295,11 @@ std::optional<RGBA8Image> ImGuiFullscreen::LoadTextureImage(std::string_view pat
     {
       image = RGBA8Image();
       if (!image->LoadFromFile(path_str.c_str(), fp.get()))
-        Log_ErrorFmt("Failed to read texture file '{}'", path);
+        ERROR_LOG("Failed to read texture file '{}'", path);
     }
     else
     {
-      Log_ErrorFmt("Failed to open texture file '{}': {}", path, error.GetDescription());
+      ERROR_LOG("Failed to open texture file '{}': {}", path, error.GetDescription());
     }
   }
   else
@@ -310,13 +310,13 @@ std::optional<RGBA8Image> ImGuiFullscreen::LoadTextureImage(std::string_view pat
       image = RGBA8Image();
       if (!image->LoadFromBuffer(path, data->data(), data->size()))
       {
-        Log_ErrorFmt("Failed to read texture resource '{}'", path);
+        ERROR_LOG("Failed to read texture resource '{}'", path);
         image.reset();
       }
     }
     else
     {
-      Log_ErrorFmt("Failed to open texture resource '{}'", path);
+      ERROR_LOG("Failed to open texture resource '{}'", path);
     }
   }
 
@@ -330,11 +330,11 @@ std::shared_ptr<GPUTexture> ImGuiFullscreen::UploadTexture(std::string_view path
                                GPUTexture::Format::RGBA8, image.GetPixels(), image.GetPitch());
   if (!texture)
   {
-    Log_ErrorFmt("failed to create {}x{} texture for resource", image.GetWidth(), image.GetHeight());
+    ERROR_LOG("failed to create {}x{} texture for resource", image.GetWidth(), image.GetHeight());
     return {};
   }
 
-  Log_DevFmt("Uploaded texture resource '{}' ({}x{})", path, image.GetWidth(), image.GetHeight());
+  DEV_LOG("Uploaded texture resource '{}' ({}x{})", path, image.GetWidth(), image.GetHeight());
   return std::shared_ptr<GPUTexture>(texture.release(), GPUDevice::PooledTextureDeleter());
 }
 

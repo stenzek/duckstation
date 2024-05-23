@@ -4,8 +4,8 @@
 #include "audio_stream.h"
 
 #include "common/assert.h"
-#include "common/log.h"
 #include "common/error.h"
+#include "common/log.h"
 
 #include <SDL.h>
 
@@ -62,7 +62,8 @@ SDLAudioStream::~SDLAudioStream()
     SDLAudioStream::CloseDevice();
 }
 
-std::unique_ptr<AudioStream> AudioStream::CreateSDLAudioStream(u32 sample_rate, const AudioStreamParameters& parameters, Error* error)
+std::unique_ptr<AudioStream> AudioStream::CreateSDLAudioStream(u32 sample_rate, const AudioStreamParameters& parameters,
+                                                               Error* error)
 {
   if (!InitializeSDLAudio(error))
     return {};
@@ -116,7 +117,7 @@ bool SDLAudioStream::OpenDevice(Error* error)
     return false;
   }
 
-  Log_DevFmt("Requested {} frame buffer, got {} frame buffer", spec.samples, obtained_spec.samples);
+  DEV_LOG("Requested {} frame buffer, got {} frame buffer", spec.samples, obtained_spec.samples);
 
   BaseInitialize(sample_readers[static_cast<size_t>(m_parameters.expansion_mode)]);
   SDL_PauseAudioDevice(m_device_id, 0);

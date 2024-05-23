@@ -622,7 +622,7 @@ void SettingsWindow::openGamePropertiesDialog(const std::string& path, const std
     if (image)
       dentry = GameDatabase::GetEntryForDisc(image.get());
     else
-      Log_ErrorFmt("Failed to open '{}' for game properties: {}", path, error.GetDescription());
+      ERROR_LOG("Failed to open '{}' for game properties: {}", path, error.GetDescription());
 
     if (!dentry)
     {

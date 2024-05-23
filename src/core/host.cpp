@@ -264,7 +264,7 @@ bool Host::CreateGPUDevice(RenderAPI api, Error* error)
 {
   DebugAssert(!g_gpu_device);
 
-  Log_InfoFmt("Trying to create a {} GPU device...", GPUDevice::RenderAPIToString(api));
+  INFO_LOG("Trying to create a {} GPU device...", GPUDevice::RenderAPIToString(api));
   g_gpu_device = GPUDevice::CreateDeviceForAPI(api);
 
   std::optional<bool> exclusive_fullscreen_control;
@@ -293,7 +293,7 @@ bool Host::CreateGPUDevice(RenderAPI api, Error* error)
                          g_settings.gpu_threaded_presentation, exclusive_fullscreen_control,
                          static_cast<GPUDevice::FeatureMask>(disabled_features), &create_error))
   {
-    Log_ErrorFmt("Failed to create GPU device: {}", create_error.GetDescription());
+    ERROR_LOG("Failed to create GPU device: {}", create_error.GetDescription());
     if (g_gpu_device)
       g_gpu_device->Destroy();
     g_gpu_device.reset();
@@ -309,7 +309,7 @@ bool Host::CreateGPUDevice(RenderAPI api, Error* error)
   if (!ImGuiManager::Initialize(g_settings.display_osd_scale / 100.0f, g_settings.display_show_osd_messages,
                                 &create_error))
   {
-    Log_ErrorFmt("Failed to initialize ImGuiManager: {}", create_error.GetDescription());
+    ERROR_LOG("Failed to initialize ImGuiManager: {}", create_error.GetDescription());
     Error::SetStringFmt(error, "Failed to initialize ImGuiManager: {}", create_error.GetDescription());
     g_gpu_device->Destroy();
     g_gpu_device.reset();
@@ -348,7 +348,7 @@ void Host::ResizeDisplayWindow(s32 width, s32 height, float scale)
   if (!g_gpu_device)
     return;
 
-  Log_DevFmt("Display window resized to {}x{}", width, height);
+  DEV_LOG("Display window resized to {}x{}", width, height);
 
   g_gpu_device->ResizeWindow(width, height, scale);
   ImGuiManager::WindowResized();
@@ -377,7 +377,7 @@ void Host::ReleaseGPUDevice()
   FullscreenUI::Shutdown();
   ImGuiManager::Shutdown();
 
-  Log_InfoFmt("Destroying {} GPU device...", GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()));
+  INFO_LOG("Destroying {} GPU device...", GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()));
   g_gpu_device->Destroy();
   g_gpu_device.reset();
 }

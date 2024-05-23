@@ -130,7 +130,7 @@ void Host::DisplayLoadingScreen(const char* message, int progress_min /*= -1*/, 
 {
   if (!g_gpu_device)
   {
-    Log_InfoFmt("{}: {}/{}", message, progress_value, progress_max);
+    INFO_LOG("{}: {}/{}", message, progress_value, progress_max);
     return;
   }
 
@@ -187,14 +187,14 @@ void Host::DisplayLoadingScreen(const char* message, int progress_min /*= -1*/, 
 
       ImGui::ProgressBar(static_cast<float>(progress_value) / static_cast<float>(progress_max - progress_min),
                          ImVec2(-1.0f, 0.0f), "");
-      Log_InfoFmt("{}: {}", message, buf);
+      INFO_LOG("{}: {}", message, buf);
     }
     else
     {
       const ImVec2 text_size(ImGui::CalcTextSize(message));
       ImGui::SetCursorPosX((width - text_size.x) / 2.0f);
       ImGui::TextUnformatted(message);
-      Log_InfoPrint(message);
+      INFO_LOG(message);
     }
   }
   ImGui::End();
@@ -927,7 +927,7 @@ void SaveStateSelectorUI::InitializeListEntry(ListEntry* li, ExtendedSaveStateIn
         ssi->screenshot_width, ssi->screenshot_height, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
         ssi->screenshot_data.data(), sizeof(u32) * ssi->screenshot_width);
       if (!li->preview_texture) [[unlikely]]
-        Log_ErrorPrint("Failed to upload save state image to GPU");
+        ERROR_LOG("Failed to upload save state image to GPU");
     }
   }
 }

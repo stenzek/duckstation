@@ -116,7 +116,7 @@ bool VulkanStreamBuffer::ReserveMemory(u32 num_bytes, u32 alignment)
   // Check for sane allocations
   if (required_bytes > m_size) [[unlikely]]
   {
-    Log_ErrorFmt("Attempting to allocate {} bytes from a {} byte stream buffer", num_bytes, m_size);
+    ERROR_LOG("Attempting to allocate {} bytes from a {} byte stream buffer", num_bytes, m_size);
     Panic("Stream buffer overflow");
   }
 

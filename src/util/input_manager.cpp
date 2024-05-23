@@ -222,7 +222,7 @@ bool InputManager::SplitBinding(std::string_view binding, std::string_view* sour
   const std::string_view::size_type slash_pos = binding.find('/');
   if (slash_pos == std::string_view::npos)
   {
-    Log_WarningFmt("Malformed binding: '{}'", binding);
+    WARNING_LOG("Malformed binding: '{}'", binding);
     return false;
   }
 
@@ -493,7 +493,7 @@ void InputManager::AddBinding(std::string_view binding, const InputEventHandler&
     std::optional<InputBindingKey> key = ParseInputBindingKey(chord_binding);
     if (!key.has_value())
     {
-      Log_ErrorFmt("Invalid binding: '{}'", binding);
+      ERROR_LOG("Invalid binding: '{}'", binding);
       ibinding.reset();
       break;
     }
@@ -506,7 +506,7 @@ void InputManager::AddBinding(std::string_view binding, const InputEventHandler&
 
     if (ibinding->num_keys == MAX_KEYS_PER_BINDING)
     {
-      Log_ErrorFmt("Too many chord parts, max is {} ({})", static_cast<unsigned>(MAX_KEYS_PER_BINDING), binding.size());
+      ERROR_LOG("Too many chord parts, max is {} ({})", static_cast<unsigned>(MAX_KEYS_PER_BINDING), binding.size());
       ibinding.reset();
       break;
     }
@@ -861,7 +861,7 @@ void InputManager::AddPadBindings(SettingsInterface& si, const std::string& sect
       break;
 
       default:
-        Log_ErrorFmt("Unhandled binding info type {}", static_cast<u32>(bi.type));
+        ERROR_LOG("Unhandled binding info type {}", static_cast<u32>(bi.type));
         break;
     }
   }
@@ -1378,7 +1378,7 @@ static u32 TryMapGenericMapping(SettingsInterface& si, const std::string& sectio
 
   if (found_mapping)
   {
-    Log_InfoFmt("Map {}/{} to '{}'", section, bind_name, *found_mapping);
+    INFO_LOG("Map {}/{} to '{}'", section, bind_name, *found_mapping);
     si.SetStringValue(section.c_str(), bind_name, found_mapping->c_str());
     return 1;
   }
@@ -1605,7 +1605,7 @@ void InputManager::LoadMacroButtonConfig(SettingsInterface& si, const std::strin
       }
       if (!binding)
       {
-        Log_DevFmt("Invalid bind '{}' in macro button {} for pad {}", button, pad, i);
+        DEV_LOG("Invalid bind '{}' in macro button {} for pad {}", button, pad, i);
         continue;
       }
 
@@ -1927,7 +1927,7 @@ void InputManager::UpdateInputSourceState(SettingsInterface& si, std::unique_loc
       std::unique_ptr<InputSource> source(factory_function());
       if (!source->Initialize(si, settings_lock))
       {
-        Log_ErrorFmt("Source '{}' failed to initialize.", InputManager::InputSourceToString(type));
+        ERROR_LOG("Source '{}' failed to initialize.", InputManager::InputSourceToString(type));
         return;
       }
 

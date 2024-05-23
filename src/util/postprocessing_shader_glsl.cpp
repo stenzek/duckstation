@@ -112,7 +112,8 @@ void PostProcessing::GLSLShader::FillUniformBuffer(void* buffer, u32 texture_wid
   }
 }
 
-bool PostProcessing::GLSLShader::CompilePipeline(GPUTexture::Format format, u32 width, u32 height, ProgressCallback* progress)
+bool PostProcessing::GLSLShader::CompilePipeline(GPUTexture::Format format, u32 width, u32 height,
+                                                 ProgressCallback* progress)
 {
   if (m_pipeline)
     m_pipeline.reset();
@@ -254,7 +255,7 @@ void PostProcessing::GLSLShader::LoadOptions()
           else if (sub == "OptionRangeInteger")
             current_option.type = ShaderOption::Type::Int;
           else
-            Log_ErrorFmt("Invalid option type: '{}'", line_str);
+            ERROR_LOG("Invalid option type: '{}'", line_str);
 
           continue;
         }
@@ -304,7 +305,7 @@ void PostProcessing::GLSLShader::LoadOptions()
         }
         else
         {
-          Log_ErrorFmt("Invalid option key: '{}'", line_str);
+          ERROR_LOG("Invalid option key: '{}'", line_str);
         }
       }
     }

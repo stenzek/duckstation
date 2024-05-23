@@ -200,7 +200,7 @@ bool Bus::AllocateMemory(Error* error)
     return false;
   }
 
-  Log_VerboseFmt("RAM is mapped at {}.", static_cast<void*>(g_ram));
+  VERBOSE_LOG("RAM is mapped at {}.", static_cast<void*>(g_ram));
 
   g_bios = static_cast<u8*>(MemMap::MapSharedMemory(s_shmem_handle, MemoryMap::BIOS_OFFSET, nullptr,
                                                     MemoryMap::BIOS_SIZE, PageProtect::ReadWrite));
@@ -211,7 +211,7 @@ bool Bus::AllocateMemory(Error* error)
     return false;
   }
 
-  Log_VerboseFmt("BIOS is mapped at {}.", static_cast<void*>(g_bios));
+  VERBOSE_LOG("BIOS is mapped at {}.", static_cast<void*>(g_bios));
 
   g_memory_handlers = static_cast<void**>(MemMap::MapSharedMemory(s_shmem_handle, MemoryMap::LUT_OFFSET, nullptr,
                                                                   MemoryMap::LUT_SIZE, PageProtect::ReadWrite));
@@ -222,7 +222,7 @@ bool Bus::AllocateMemory(Error* error)
     return false;
   }
 
-  Log_VerboseFmt("LUTs are mapped at {}.", static_cast<void*>(g_memory_handlers));
+  VERBOSE_LOG("LUTs are mapped at {}.", static_cast<void*>(g_memory_handlers));
   g_memory_handlers_isc = g_memory_handlers + MEMORY_LUT_SLOTS;
   SetHandlers();
 
@@ -234,7 +234,7 @@ bool Bus::AllocateMemory(Error* error)
     return false;
   }
 
-  Log_InfoFmt("Fastmem base: {}", static_cast<void*>(s_fastmem_arena.BasePointer()));
+  INFO_LOG("Fastmem base: {}", static_cast<void*>(s_fastmem_arena.BasePointer()));
 #endif
 
 #ifndef __ANDROID__
@@ -351,7 +351,7 @@ void Bus::AddTTYCharacter(char ch)
   {
     if (!s_tty_line_buffer.empty())
     {
-      Log::WriteFmt("TTY", "", LOGLEVEL_INFO, "\033[1;34m{}\033[0m", s_tty_line_buffer);
+      Log::FastWrite("TTY", "", LOGLEVEL_INFO, "\033[1;34m{}\033[0m", s_tty_line_buffer);
 #ifdef _DEBUG
       if (CPU::IsTraceEnabled())
         CPU::WriteToExecutionLog("TTY: %s\n", s_tty_line_buffer.c_str());
@@ -392,7 +392,7 @@ bool Bus::DoState(StateWrapper& sw)
 
   if (sw.GetVersion() < 58)
   {
-    Log_WarningPrint("Overwriting loaded BIOS with old save state.");
+    WARNING_LOG("Overwriting loaded BIOS with old save state.");
     sw.DoBytes(g_bios, BIOS_SIZE);
   }
 
@@ -452,15 +452,15 @@ void Bus::RecalculateMemoryTimings()
   std::tie(g_spu_access_time[0], g_spu_access_time[1], g_spu_access_time[2]) =
     CalculateMemoryTiming(s_MEMCTRL.spu_delay_size, s_MEMCTRL.common_delay);
 
-  Log_TraceFmt("BIOS Memory Timing: {} bit bus, byte={}, halfword={}, word={}",
-               s_MEMCTRL.bios_delay_size.data_bus_16bit ? 16 : 8, g_bios_access_time[0] + 1, g_bios_access_time[1] + 1,
-               g_bios_access_time[2] + 1);
-  Log_TraceFmt("CDROM Memory Timing: {} bit bus, byte={}, halfword={}, word={}",
-               s_MEMCTRL.cdrom_delay_size.data_bus_16bit ? 16 : 8, g_cdrom_access_time[0] + 1,
-               g_cdrom_access_time[1] + 1, g_cdrom_access_time[2] + 1);
-  Log_TraceFmt("SPU Memory Timing: {} bit bus, byte={}, halfword={}, word={}",
-               s_MEMCTRL.spu_delay_size.data_bus_16bit ? 16 : 8, g_spu_access_time[0] + 1, g_spu_access_time[1] + 1,
-               g_spu_access_time[2] + 1);
+  TRACE_LOG("BIOS Memory Timing: {} bit bus, byte={}, halfword={}, word={}",
+            s_MEMCTRL.bios_delay_size.data_bus_16bit ? 16 : 8, g_bios_access_time[0] + 1, g_bios_access_time[1] + 1,
+            g_bios_access_time[2] + 1);
+  TRACE_LOG("CDROM Memory Timing: {} bit bus, byte={}, halfword={}, word={}",
+            s_MEMCTRL.cdrom_delay_size.data_bus_16bit ? 16 : 8, g_cdrom_access_time[0] + 1, g_cdrom_access_time[1] + 1,
+            g_cdrom_access_time[2] + 1);
+  TRACE_LOG("SPU Memory Timing: {} bit bus, byte={}, halfword={}, word={}",
+            s_MEMCTRL.spu_delay_size.data_bus_16bit ? 16 : 8, g_spu_access_time[0] + 1, g_spu_access_time[1] + 1,
+            g_spu_access_time[2] + 1);
 }
 
 CPUFastmemMode Bus::GetFastmemMode()
@@ -506,8 +506,8 @@ void Bus::UpdateFastmemViews(CPUFastmemMode mode)
       u8* map_address = s_fastmem_arena.BasePointer() + base_address;
       if (!s_fastmem_arena.Map(s_shmem_handle, 0, map_address, g_ram_size, PageProtect::ReadWrite)) [[unlikely]]
       {
-        Log_ErrorFmt("Failed to map RAM at fastmem area {} (offset 0x{:08X})", static_cast<void*>(map_address),
-                     g_ram_size);
+        ERROR_LOG("Failed to map RAM at fastmem area {} (offset 0x{:08X})", static_cast<void*>(map_address),
+                  g_ram_size);
         return;
       }
 
@@ -519,7 +519,7 @@ void Bus::UpdateFastmemViews(CPUFastmemMode mode)
           u8* page_address = map_address + (i * HOST_PAGE_SIZE);
           if (!MemMap::MemProtect(page_address, HOST_PAGE_SIZE, PageProtect::ReadOnly)) [[unlikely]]
           {
-            Log_ErrorFmt("Failed to write-protect code page at {}", static_cast<void*>(page_address));
+            ERROR_LOG("Failed to write-protect code page at {}", static_cast<void*>(page_address));
             s_fastmem_arena.Unmap(map_address, g_ram_size);
             return;
           }
@@ -547,7 +547,7 @@ void Bus::UpdateFastmemViews(CPUFastmemMode mode)
     s_fastmem_lut = static_cast<u8**>(std::malloc(sizeof(u8*) * FASTMEM_LUT_SLOTS));
     Assert(s_fastmem_lut);
 
-    Log_InfoFmt("Fastmem base (software): {}", static_cast<void*>(s_fastmem_lut));
+    INFO_LOG("Fastmem base (software): {}", static_cast<void*>(s_fastmem_lut));
   }
 
   // This assumes the top 4KB of address space is not mapped. It shouldn't be on any sane OSes.
@@ -637,9 +637,9 @@ void Bus::SetRAMPageWritable(u32 page_index, bool writable)
   if (!MemMap::MemProtect(&g_ram[page_index * HOST_PAGE_SIZE], HOST_PAGE_SIZE,
                           writable ? PageProtect::ReadWrite : PageProtect::ReadOnly)) [[unlikely]]
   {
-    Log_ErrorFmt("Failed to set RAM host page {} ({}) to {}", page_index,
-                 reinterpret_cast<const void*>(&g_ram[page_index * HOST_PAGE_SIZE]),
-                 writable ? "read-write" : "read-only");
+    ERROR_LOG("Failed to set RAM host page {} ({}) to {}", page_index,
+              reinterpret_cast<const void*>(&g_ram[page_index * HOST_PAGE_SIZE]),
+              writable ? "read-write" : "read-only");
   }
 
 #ifdef ENABLE_MMAP_FASTMEM
@@ -653,8 +653,8 @@ void Bus::SetRAMPageWritable(u32 page_index, bool writable)
       u8* page_address = it.first + (page_index * HOST_PAGE_SIZE);
       if (!MemMap::MemProtect(page_address, HOST_PAGE_SIZE, protect)) [[unlikely]]
       {
-        Log_ErrorFmt("Failed to {} code page {} (0x{:08X}) @ {}", writable ? "unprotect" : "protect", page_index,
-                     page_index * static_cast<u32>(HOST_PAGE_SIZE), static_cast<void*>(page_address));
+        ERROR_LOG("Failed to {} code page {} (0x{:08X}) @ {}", writable ? "unprotect" : "protect", page_index,
+                  page_index * static_cast<u32>(HOST_PAGE_SIZE), static_cast<void*>(page_address));
       }
     }
 
@@ -668,7 +668,7 @@ void Bus::ClearRAMCodePageFlags()
   g_ram_code_bits.reset();
 
   if (!MemMap::MemProtect(g_ram, RAM_8MB_SIZE, PageProtect::ReadWrite))
-    Log_ErrorPrint("Failed to restore RAM protection to read-write.");
+    ERROR_LOG("Failed to restore RAM protection to read-write.");
 
 #ifdef ENABLE_MMAP_FASTMEM
   if (s_fastmem_mode == CPUFastmemMode::MMap)
@@ -677,7 +677,7 @@ void Bus::ClearRAMCodePageFlags()
     for (const auto& it : s_fastmem_ram_views)
     {
       if (!MemMap::MemProtect(it.first, it.second, PageProtect::ReadWrite))
-        Log_ErrorFmt("Failed to unprotect code pages for fastmem view @ %p", static_cast<void*>(it.first));
+        ERROR_LOG("Failed to unprotect code pages for fastmem view @ %p", static_cast<void*>(it.first));
     }
   }
 #endif
@@ -881,8 +881,8 @@ template<MemoryAccessSize size>
 u32 Bus::UnknownReadHandler(VirtualMemoryAddress address)
 {
   static constexpr const char* sizes[3] = {"byte", "halfword", "word"};
-  Log_ErrorFmt("Invalid {} read at address 0x{:08X}, pc 0x{:08X}", sizes[static_cast<u32>(size)], address,
-               CPU::g_state.pc);
+  ERROR_LOG("Invalid {} read at address 0x{:08X}, pc 0x{:08X}", sizes[static_cast<u32>(size)], address,
+            CPU::g_state.pc);
   return 0xFFFFFFFFu;
 }
 
@@ -890,8 +890,8 @@ template<MemoryAccessSize size>
 void Bus::UnknownWriteHandler(VirtualMemoryAddress address, u32 value)
 {
   static constexpr const char* sizes[3] = {"byte", "halfword", "word"};
-  Log_ErrorFmt("Invalid {} write at address 0x{:08X}, value 0x{:08X}, pc 0x{:08X}", sizes[static_cast<u32>(size)],
-               address, value, CPU::g_state.pc);
+  ERROR_LOG("Invalid {} write at address 0x{:08X}, value 0x{:08X}, pc 0x{:08X}", sizes[static_cast<u32>(size)], address,
+            value, CPU::g_state.pc);
   CPU::g_state.bus_error = true;
 }
 
@@ -1042,7 +1042,7 @@ void Bus::CacheControlWriteHandler(VirtualMemoryAddress address, u32 value)
   if (address != 0xFFFE0130)
     return UnknownWriteHandler<size>(address, value);
 
-  Log_DevFmt("Cache control <- 0x{:08X}", value);
+  DEV_LOG("Cache control <- 0x{:08X}", value);
   CPU::g_state.cache_control.bits = value;
 }
 
@@ -1122,7 +1122,7 @@ u32 Bus::EXP1ReadHandler(VirtualMemoryAddress address)
 template<MemoryAccessSize size>
 void Bus::EXP1WriteHandler(VirtualMemoryAddress address, u32 value)
 {
-  Log_WarningFmt("EXP1 write: 0x{:08X} <- 0x{:08X}", address, value);
+  WARNING_LOG("EXP1 write: 0x{:08X} <- 0x{:08X}", address, value);
 }
 
 template<MemoryAccessSize size>
@@ -1145,7 +1145,7 @@ u32 Bus::EXP2ReadHandler(VirtualMemoryAddress address)
   }
   else
   {
-    Log_WarningFmt("EXP2 read: 0x{:08X}", address);
+    WARNING_LOG("EXP2 read: 0x{:08X}", address);
     value = UINT32_C(0xFFFFFFFF);
   }
 
@@ -1162,11 +1162,11 @@ void Bus::EXP2WriteHandler(VirtualMemoryAddress address, u32 value)
   }
   else if (offset == 0x41 || offset == 0x42)
   {
-    Log_DevFmt("BIOS POST status: {:02X}", value & UINT32_C(0x0F));
+    DEV_LOG("BIOS POST status: {:02X}", value & UINT32_C(0x0F));
   }
   else if (offset == 0x70)
   {
-    Log_DevFmt("BIOS POST2 status: {:02X}", value & UINT32_C(0x0F));
+    DEV_LOG("BIOS POST2 status: {:02X}", value & UINT32_C(0x0F));
   }
 #if 0
   // TODO: Put behind configuration variable
@@ -1187,14 +1187,14 @@ void Bus::EXP2WriteHandler(VirtualMemoryAddress address, u32 value)
 #endif
   else
   {
-    Log_WarningFmt("EXP2 write: 0x{:08X} <- 0x{:08X}", address, value);
+    WARNING_LOG("EXP2 write: 0x{:08X} <- 0x{:08X}", address, value);
   }
 }
 
 template<MemoryAccessSize size>
 u32 Bus::EXP3ReadHandler(VirtualMemoryAddress address)
 {
-  Log_WarningFmt("EXP3 read: 0x{:08X}", address);
+  WARNING_LOG("EXP3 read: 0x{:08X}", address);
   return UINT32_C(0xFFFFFFFF);
 }
 
@@ -1203,7 +1203,7 @@ void Bus::EXP3WriteHandler(VirtualMemoryAddress address, u32 value)
 {
   const u32 offset = address & EXP3_MASK;
   if (offset == 0)
-    Log_WarningFmt("BIOS POST3 status: {:02X}", value & UINT32_C(0x0F));
+    WARNING_LOG("BIOS POST3 status: {:02X}", value & UINT32_C(0x0F));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1762,7 +1762,7 @@ void** Bus::GetMemoryHandlers(bool isolate_cache, bool swap_caches)
 
 #ifdef _DEBUG
   if (swap_caches)
-    Log_WarningPrint("Cache isolated and swapped, icache will be written instead of scratchpad?");
+    WARNING_LOG("Cache isolated and swapped, icache will be written instead of scratchpad?");
 #endif
 
   return g_memory_handlers_isc;

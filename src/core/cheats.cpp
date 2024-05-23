@@ -311,7 +311,7 @@ bool CheatList::LoadFromPCSXRString(const std::string& str)
     m_codes.push_back(std::move(current_code));
   }
 
-  Log_InfoFmt("Loaded {} cheats (PCSXR format)", m_codes.size());
+  INFO_LOG("Loaded {} cheats (PCSXR format)", m_codes.size());
   return !m_codes.empty();
 }
 
@@ -402,7 +402,7 @@ bool CheatList::LoadFromLibretroString(const std::string& str)
     const std::string* enable = FindKey(kvp, TinyString::from_format("cheat{}_enable", i));
     if (!desc || !code || !enable)
     {
-      Log_WarningFmt("Missing desc/code/enable for cheat {}", i);
+      WARNING_LOG("Missing desc/code/enable for cheat {}", i);
       continue;
     }
 
@@ -414,7 +414,7 @@ bool CheatList::LoadFromLibretroString(const std::string& str)
       m_codes.push_back(std::move(cc));
   }
 
-  Log_InfoFmt("Loaded {} cheats (libretro format)", m_codes.size());
+  INFO_LOG("Loaded {} cheats (libretro format)", m_codes.size());
   return !m_codes.empty();
 }
 
@@ -501,7 +501,7 @@ bool CheatList::LoadFromEPSXeString(const std::string& str)
   if (current_code.Valid())
     m_codes.push_back(std::move(current_code));
 
-  Log_InfoFmt("Loaded {} cheats (EPSXe format)", m_codes.size());
+  INFO_LOG("Loaded {} cheats (EPSXe format)", m_codes.size());
   return !m_codes.empty();
 }
 
@@ -523,7 +523,7 @@ bool CheatList::ParseLibretroCheat(CheatCode* cc, const char* line)
     {
       if (!IsLibretroSeparator(*end_ptr))
       {
-        Log_WarningFmt("Malformed code '{}'", line);
+        WARNING_LOG("Malformed code '{}'", line);
         break;
       }
 
@@ -536,7 +536,7 @@ bool CheatList::ParseLibretroCheat(CheatCode* cc, const char* line)
       {
         if (!IsLibretroSeparator(*end_ptr))
         {
-          Log_WarningFmt("Malformed code '{}'", line);
+          WARNING_LOG("Malformed code '{}'", line);
           break;
         }
 
@@ -791,11 +791,11 @@ bool CheatList::LoadFromPackage(const std::string& serial)
     if (current_code.Valid())
       m_codes.push_back(std::move(current_code));
 
-    Log_InfoFmt("Loaded {} codes from package for {}", m_codes.size(), serial);
+    INFO_LOG("Loaded {} codes from package for {}", m_codes.size(), serial);
     return !m_codes.empty();
   }
 
-  Log_WarningFmt("No codes found in package for {}", serial);
+  WARNING_LOG("No codes found in package for {}", serial);
   return false;
 }
 
@@ -1266,7 +1266,7 @@ void CheatCode::Apply() const
 
         if ((index + 4) >= instructions.size())
         {
-          Log_ErrorPrint("Incomplete find/replace instruction");
+          ERROR_LOG("Incomplete find/replace instruction");
           return;
         }
         const Instruction& inst2 = instructions[index + 1];
@@ -1754,7 +1754,7 @@ void CheatCode::Apply() const
                       break;
                     }
                     default:
-                      Log_ErrorPrint("Incorrect conditional instruction (see chtdb.txt for supported instructions)");
+                      ERROR_LOG("Incorrect conditional instruction (see chtdb.txt for supported instructions)");
                       return;
                   }
                 }
@@ -1866,14 +1866,14 @@ void CheatCode::Apply() const
                       break;
                     }
                     default:
-                      Log_ErrorPrint("Incorrect conditional instruction (see chtdb.txt for supported instructions)");
+                      ERROR_LOG("Incorrect conditional instruction (see chtdb.txt for supported instructions)");
                       return;
                   }
                 }
               }
               else
               {
-                Log_ErrorPrint("Incomplete multi conditional instruction");
+                ERROR_LOG("Incomplete multi conditional instruction");
                 return;
               }
               if (conditions_check == true)
@@ -2518,7 +2518,7 @@ void CheatCode::Apply() const
       {
         if ((index + 1) >= instructions.size())
         {
-          Log_ErrorPrint("Incomplete slide instruction");
+          ERROR_LOG("Incomplete slide instruction");
           return;
         }
 
@@ -2550,7 +2550,7 @@ void CheatCode::Apply() const
         }
         else
         {
-          Log_ErrorFmt("Invalid command in second slide parameter 0x{:02X}", static_cast<unsigned>(write_type));
+          ERROR_LOG("Invalid command in second slide parameter 0x{:02X}", static_cast<unsigned>(write_type));
         }
 
         index += 2;
@@ -2561,7 +2561,7 @@ void CheatCode::Apply() const
       {
         if ((index + 1) >= instructions.size())
         {
-          Log_ErrorPrint("Incomplete slide instruction");
+          ERROR_LOG("Incomplete slide instruction");
           return;
         }
 
@@ -2622,7 +2622,7 @@ void CheatCode::Apply() const
         }
         else
         {
-          Log_ErrorFmt("Invalid command in second slide parameter 0x{:02X}", static_cast<unsigned>(write_type));
+          ERROR_LOG("Invalid command in second slide parameter 0x{:02X}", static_cast<unsigned>(write_type));
         }
 
         index += 2;
@@ -2633,7 +2633,7 @@ void CheatCode::Apply() const
       {
         if ((index + 1) >= instructions.size())
         {
-          Log_ErrorPrint("Incomplete memory copy instruction");
+          ERROR_LOG("Incomplete memory copy instruction");
           return;
         }
 
@@ -2656,8 +2656,8 @@ void CheatCode::Apply() const
 
       default:
       {
-        Log_ErrorFmt("Unhandled instruction code 0x{:02X} ({:08X} {:08X})", static_cast<u8>(inst.code.GetValue()),
-                     inst.first, inst.second);
+        ERROR_LOG("Unhandled instruction code 0x{:02X} ({:08X} {:08X})", static_cast<u8>(inst.code.GetValue()),
+                  inst.first, inst.second);
         index++;
       }
       break;
@@ -2757,8 +2757,8 @@ void CheatCode::ApplyOnDisable() const
 
         [[unlikely]] default:
         {
-          Log_ErrorFmt("Unhandled instruction code 0x{:02X} ({:08X} {:08X})", static_cast<u8>(inst.code.GetValue()),
-                       inst.first, inst.second);
+          ERROR_LOG("Unhandled instruction code 0x{:02X} ({:08X} {:08X})", static_cast<u8>(inst.code.GetValue()),
+                    inst.first, inst.second);
           index++;
         }
         break;

@@ -30,7 +30,7 @@ DynamicLibrary::DynamicLibrary(const char* filename)
 {
   Error error;
   if (!Open(filename, &error))
-    Log_ErrorPrint(error.GetDescription());
+    ERROR_LOG(error.GetDescription());
 }
 
 DynamicLibrary::DynamicLibrary(DynamicLibrary&& move) : m_handle(move.m_handle)

@@ -15,7 +15,7 @@ OpenGLContextAGL::OpenGLContextAGL(const WindowInfo& wi) : OpenGLContext(wi)
 {
   m_opengl_module_handle = dlopen("/System/Library/Frameworks/OpenGL.framework/Versions/Current/OpenGL", RTLD_NOW);
   if (!m_opengl_module_handle)
-    Log_ErrorPrint("Could not open OpenGL.framework, function lookups will probably fail");
+    ERROR_LOG("Could not open OpenGL.framework, function lookups will probably fail");
 }
 
 OpenGLContextAGL::~OpenGLContextAGL()

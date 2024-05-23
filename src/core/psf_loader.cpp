@@ -66,7 +66,7 @@ bool File::Load(const char* path)
   std::optional<std::vector<u8>> file_data(FileSystem::ReadBinaryFile(path));
   if (!file_data.has_value() || file_data->empty())
   {
-    Log_ErrorFmt("Failed to open/read PSF file '{}'", path);
+    ERROR_LOG("Failed to open/read PSF file '{}'", path);
     return false;
   }
 
@@ -81,7 +81,7 @@ bool File::Load(const char* path)
       header.compressed_program_size == 0 ||
       (sizeof(header) + header.reserved_area_size + header.compressed_program_size) > file_size)
   {
-    Log_ErrorFmt("Invalid or incompatible header in PSF '{}'", path);
+    ERROR_LOG("Invalid or incompatible header in PSF '{}'", path);
     return false;
   }
 
@@ -98,7 +98,7 @@ bool File::Load(const char* path)
   int err = inflateInit(&strm);
   if (err != Z_OK)
   {
-    Log_ErrorFmt("inflateInit() failed: {}", err);
+    ERROR_LOG("inflateInit() failed: {}", err);
     return false;
   }
 
@@ -106,14 +106,14 @@ bool File::Load(const char* path)
   err = inflate(&strm, Z_NO_FLUSH);
   if (err != Z_STREAM_END)
   {
-    Log_ErrorFmt("inflate() failed: {}", err);
+    ERROR_LOG("inflate() failed: {}", err);
     inflateEnd(&strm);
     return false;
   }
   else if (strm.total_in != header.compressed_program_size)
   {
-    Log_WarningFmt("Mismatch between compressed size in header and stream {}/{}", header.compressed_program_size,
-                      static_cast<u32>(strm.total_in));
+    WARNING_LOG("Mismatch between compressed size in header and stream {}/{}", header.compressed_program_size,
+                static_cast<u32>(strm.total_in));
   }
 
   m_program_data.resize(strm.total_out);
@@ -147,7 +147,7 @@ bool File::Load(const char* path)
 
       if (!tag_key.empty())
       {
-        Log_DevFmt("PSF Tag: '{}' = '{}'", tag_key, tag_value);
+        DEV_LOG("PSF Tag: '{}' = '{}'", tag_key, tag_value);
         m_tags.emplace(std::move(tag_key), std::move(tag_value));
       }
     }
@@ -171,14 +171,14 @@ static bool LoadLibraryPSF(const char* path, bool use_pc_sp, u32 depth = 0)
   // don't recurse past 10 levels just in case of broken files
   if (depth >= 10)
   {
-    Log_ErrorFmt("Recursion depth exceeded when loading PSF '{}'", path);
+    ERROR_LOG("Recursion depth exceeded when loading PSF '{}'", path);
     return false;
   }
 
   File file;
   if (!file.Load(path))
   {
-    Log_ErrorFmt("Failed to load main PSF '{}'", path);
+    ERROR_LOG("Failed to load main PSF '{}'", path);
     return false;
   }
 
@@ -187,13 +187,13 @@ static bool LoadLibraryPSF(const char* path, bool use_pc_sp, u32 depth = 0)
   if (lib_name.has_value())
   {
     const std::string lib_path(Path::BuildRelativePath(path, lib_name.value()));
-    Log_InfoFmt("Loading main parent PSF '{}'", lib_path);
+    INFO_LOG("Loading main parent PSF '{}'", lib_path);
 
     // We should use the initial SP/PC from the **first** parent lib.
     const bool lib_use_pc_sp = (depth == 0);
     if (!LoadLibraryPSF(lib_path.c_str(), lib_use_pc_sp, depth + 1))
     {
-      Log_ErrorFmt("Failed to load main parent PSF '{}'", lib_path);
+      ERROR_LOG("Failed to load main parent PSF '{}'", lib_path);
       return false;
     }
 
@@ -206,7 +206,7 @@ static bool LoadLibraryPSF(const char* path, bool use_pc_sp, u32 depth = 0)
   if (!System::InjectEXEFromBuffer(file.GetProgramData().data(), static_cast<u32>(file.GetProgramData().size()),
                                    use_pc_sp))
   {
-    Log_ErrorFmt("Failed to parse EXE from PSF '{}'", path);
+    ERROR_LOG("Failed to parse EXE from PSF '{}'", path);
     return false;
   }
 
@@ -219,10 +219,10 @@ static bool LoadLibraryPSF(const char* path, bool use_pc_sp, u32 depth = 0)
       break;
 
     const std::string lib_path(Path::BuildRelativePath(path, lib_name.value()));
-    Log_InfoFmt("Loading parent PSF '{}'", lib_path);
+    INFO_LOG("Loading parent PSF '{}'", lib_path);
     if (!LoadLibraryPSF(lib_path.c_str(), false, depth + 1))
     {
-      Log_ErrorFmt("Failed to load parent PSF '{}'", lib_path);
+      ERROR_LOG("Failed to load parent PSF '{}'", lib_path);
       return false;
     }
   }
@@ -232,7 +232,7 @@ static bool LoadLibraryPSF(const char* path, bool use_pc_sp, u32 depth = 0)
 
 bool Load(const char* path)
 {
-  Log_InfoFmt("Loading PSF file from '{}'", path);
+  INFO_LOG("Loading PSF file from '{}'", path);
   return LoadLibraryPSF(path, true);
 }
 
