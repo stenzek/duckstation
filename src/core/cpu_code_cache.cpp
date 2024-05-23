@@ -20,6 +20,12 @@
 
 Log_SetChannel(CPU::CodeCache);
 
+// Enable dumping of recompiled block code size statistics.
+// #define DUMP_CODE_SIZE_STATS 1
+
+// Enable profiling of JIT blocks.
+// #define ENABLE_RECOMPILER_PROFILING 1
+
 #ifdef ENABLE_RECOMPILER
 #include "cpu_recompiler_code_generator.h"
 #endif
@@ -1479,7 +1485,7 @@ bool CPU::CodeCache::CompileBlock(Block* block)
     return false;
   }
 
-#ifdef _DEBUG
+#ifdef DUMP_CODE_SIZE_STATS
   const u32 host_instructions = GetHostInstructionCount(host_code, host_code_size);
   s_total_instructions_compiled += block->size;
   s_total_host_instructions_emitted += host_instructions;
@@ -1490,11 +1496,6 @@ bool CPU::CodeCache::CompileBlock(Block* block)
                  s_code_buffer.GetFarUsedPct(), static_cast<float>(host_instructions) / static_cast<float>(block->size),
                  static_cast<float>(s_total_host_instructions_emitted) /
                    static_cast<float>(s_total_instructions_compiled));
-#else
-  Log_ProfileFmt("0x{:08X}: {}/{}b for {}b ({} inst), blowup: {:.2f}x, cache: {:.2f}%/{:.2f}%", block->pc,
-                 host_code_size, host_far_code_size, block->size * 4, block->size,
-                 static_cast<float>(host_code_size) / static_cast<float>(block->size * 4), s_code_buffer.GetUsedPct(),
-                 s_code_buffer.GetFarUsedPct());
 #endif
 
 #if 0

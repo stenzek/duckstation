@@ -234,11 +234,6 @@ void LogCurrentState();
 #define ENABLE_HOST_DISASSEMBLY 1
 #endif
 
-#if false
-// Enable profiling of JIT blocks.
-#define ENABLE_RECOMPILER_PROFILING 1
-#endif
-
 JitCodeBuffer& GetCodeBuffer();
 const void* GetInterpretUncachedBlockFunction();
 
