@@ -351,7 +351,7 @@ void Bus::AddTTYCharacter(char ch)
   {
     if (!s_tty_line_buffer.empty())
     {
-      Log::Writef("TTY", "", LOGLEVEL_INFO, "\033[1;34m%s\033[0m", s_tty_line_buffer.c_str());
+      Log::WriteFmt("TTY", "", LOGLEVEL_INFO, "\033[1;34m{}\033[0m", s_tty_line_buffer);
 #ifdef _DEBUG
       if (CPU::IsTraceEnabled())
         CPU::WriteToExecutionLog("TTY: %s\n", s_tty_line_buffer.c_str());

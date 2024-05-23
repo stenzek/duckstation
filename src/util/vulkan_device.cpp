@@ -1199,7 +1199,7 @@ void VulkanDevice::WaitForCommandBufferCompletion(u32 index)
     }
     else if (res != VK_SUCCESS)
     {
-      LOG_VULKAN_ERROR(res, "vkWaitForFences() for cmdbuffer %u failed: ", index);
+      LOG_VULKAN_ERROR(res, TinyString::from_format("vkWaitForFences() for cmdbuffer {} failed: ", index));
       m_last_submit_failed.store(true, std::memory_order_release);
       return;
     }

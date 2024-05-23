@@ -16,14 +16,14 @@
 #define ENABLE_VULKAN_DEBUG_OBJECTS 1
 #endif
 
-#define LOG_VULKAN_ERROR(res, ...) ::Vulkan::LogVulkanResult(__func__, res, __VA_ARGS__)
+#define LOG_VULKAN_ERROR(res, msg) ::Vulkan::LogVulkanResult(__func__, res, msg)
 
 namespace Vulkan {
 // Adds a structure to a chain.
 void AddPointerToChain(void* head, const void* ptr);
 
 const char* VkResultToString(VkResult res);
-void LogVulkanResult(const char* func_name, VkResult res, const char* msg, ...);
+void LogVulkanResult(const char* func_name, VkResult res, std::string_view msg);
 
 class DescriptorSetLayoutBuilder
 {

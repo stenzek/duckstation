@@ -103,15 +103,10 @@ const char* Vulkan::VkResultToString(VkResult res)
   }
 }
 
-void Vulkan::LogVulkanResult(const char* func_name, VkResult res, const char* msg, ...)
+void Vulkan::LogVulkanResult(const char* func_name, VkResult res, std::string_view msg)
 {
-  std::va_list ap;
-  va_start(ap, msg);
-  std::string real_msg = StringUtil::StdStringFromFormatV(msg, ap);
-  va_end(ap);
-
-  Log::Writef("VulkanDevice", func_name, LOGLEVEL_ERROR, "%s (%d: %s)", real_msg.c_str(), static_cast<int>(res),
-              VkResultToString(res));
+  Log::WriteFmt("VulkanDevice", func_name, LOGLEVEL_ERROR, "{} (0x{:08X}: {})", msg, static_cast<unsigned>(res),
+                VkResultToString(res));
 }
 
 Vulkan::DescriptorSetLayoutBuilder::DescriptorSetLayoutBuilder()
