@@ -2599,11 +2599,14 @@ void GPU_HW::UpdateSoftwareRenderer(bool copy_vram_from_hw)
     clip_cmd->new_area = m_drawing_area;
     sw_renderer->PushCommand(clip_cmd);
 
-    GPUBackendUpdateCLUTCommand* clut_cmd = sw_renderer->NewUpdateCLUTCommand();
-    FillBackendCommandParameters(clut_cmd);
-    clut_cmd->reg.bits = m_current_clut_reg_bits;
-    clut_cmd->clut_is_8bit = m_current_clut_is_8bit;
-    sw_renderer->PushCommand(clut_cmd);
+    if (IsCLUTValid())
+    {
+      GPUBackendUpdateCLUTCommand* clut_cmd = sw_renderer->NewUpdateCLUTCommand();
+      FillBackendCommandParameters(clut_cmd);
+      clut_cmd->reg.bits = static_cast<u16>(m_current_clut_reg_bits);
+      clut_cmd->clut_is_8bit = m_current_clut_is_8bit;
+      sw_renderer->PushCommand(clut_cmd);
+    }
   }
 
   m_sw_renderer = std::move(sw_renderer);
