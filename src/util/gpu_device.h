@@ -573,8 +573,8 @@ public:
   virtual RenderAPI GetRenderAPI() const = 0;
 
   bool Create(std::string_view adapter, std::string_view shader_cache_path, u32 shader_cache_version, bool debug_device,
-              bool vsync, bool threaded_presentation, std::optional<bool> exclusive_fullscreen_control,
-              FeatureMask disabled_features, Error* error);
+              bool vsync, bool vsync_prefer_triple_buffer, bool threaded_presentation,
+              std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features, Error* error);
   void Destroy();
 
   virtual bool HasSurface() const = 0;
@@ -673,7 +673,7 @@ public:
   void RenderImGui();
 
   ALWAYS_INLINE bool IsVSyncEnabled() const { return m_vsync_enabled; }
-  virtual void SetVSyncEnabled(bool enabled);
+  virtual void SetVSyncEnabled(bool enabled, bool prefer_triple_buffer);
 
   ALWAYS_INLINE bool IsDebugDevice() const { return m_debug_device; }
   ALWAYS_INLINE size_t GetVRAMUsage() const { return s_total_vram_usage; }
@@ -794,6 +794,7 @@ protected:
   static Statistics s_stats;
 
   bool m_vsync_enabled = false;
+  bool m_vsync_prefer_triple_buffer = false;
   bool m_gpu_timing_enabled = false;
   bool m_debug_device = false;
 };

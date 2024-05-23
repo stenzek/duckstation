@@ -197,6 +197,13 @@ void D3D11Device::SetFeatures(FeatureMask disabled_features)
   m_features.prefer_unused_textures = false;
 }
 
+u32 D3D11Device::GetSwapChainBufferCount() const
+{
+  // With vsync off, we only need two buffers. Same for blocking vsync.
+  // With triple buffering, we need three.
+  return (m_vsync_enabled && m_vsync_prefer_triple_buffer) ? 3 : 2;
+}
+
 bool D3D11Device::CreateSwapChain()
 {
   if (m_window_info.type != WindowInfo::Type::Win32)
@@ -233,7 +240,7 @@ bool D3D11Device::CreateSwapChain()
   swap_chain_desc.Height = static_cast<u32>(client_rc.bottom - client_rc.top);
   swap_chain_desc.Format = dxgi_format;
   swap_chain_desc.SampleDesc.Count = 1;
-  swap_chain_desc.BufferCount = 3;
+  swap_chain_desc.BufferCount = GetSwapChainBufferCount();
   swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
   swap_chain_desc.SwapEffect = m_using_flip_model_swap_chain ? DXGI_SWAP_EFFECT_FLIP_DISCARD : DXGI_SWAP_EFFECT_DISCARD;
 
@@ -593,14 +600,32 @@ std::optional<float> D3D11Device::GetHostRefreshRate()
     if (SUCCEEDED(m_swap_chain->GetDesc(&desc)) && desc.BufferDesc.RefreshRate.Numerator > 0 &&
         desc.BufferDesc.RefreshRate.Denominator > 0)
     {
-      Log_InfoPrintf("using fs rr: %u %u", desc.BufferDesc.RefreshRate.Numerator,
-                     desc.BufferDesc.RefreshRate.Denominator);
+      Log_DevFmt("using fs rr: {} {}", desc.BufferDesc.RefreshRate.Numerator, desc.BufferDesc.RefreshRate.Denominator);
       return static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
              static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
     }
   }
 
   return GPUDevice::GetHostRefreshRate();
+}
+
+void D3D11Device::SetVSyncEnabled(bool enabled, bool prefer_triple_buffer)
+{
+  if (m_vsync_enabled == enabled && m_vsync_prefer_triple_buffer == prefer_triple_buffer)
+    return;
+
+  const u32 old_buffer_count = GetSwapChainBufferCount();
+  m_vsync_enabled = enabled;
+  m_vsync_prefer_triple_buffer = prefer_triple_buffer;
+  if (!m_swap_chain)
+    return;
+
+  if (GetSwapChainBufferCount() != old_buffer_count)
+  {
+    DestroySwapChain();
+    if (!CreateSwapChain())
+      Panic("Failed to recreate swap chain after vsync change.");
+  }
 }
 
 bool D3D11Device::BeginPresent(bool skip_present)

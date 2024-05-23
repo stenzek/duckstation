@@ -288,7 +288,8 @@ bool Host::CreateGPUDevice(RenderAPI api, Error* error)
   if (!g_gpu_device || !g_gpu_device->Create(
                          g_settings.gpu_adapter,
                          g_settings.gpu_disable_shader_cache ? std::string_view() : std::string_view(EmuFolders::Cache),
-                         SHADER_CACHE_VERSION, g_settings.gpu_use_debug_device, System::IsVSyncEffectivelyEnabled(),
+                         SHADER_CACHE_VERSION, g_settings.gpu_use_debug_device, System::IsHostVSyncEffectivelyEnabled(),
+                         System::IsHostVSyncEffectivelyEnabled() && !System::IsHostVSyncUsedForTiming(),
                          g_settings.gpu_threaded_presentation, exclusive_fullscreen_control,
                          static_cast<GPUDevice::FeatureMask>(disabled_features), &create_error))
   {
@@ -331,9 +332,15 @@ void Host::UpdateDisplayWindow()
 
   ImGuiManager::WindowResized();
 
-  // If we're paused, re-present the current frame at the new window size.
-  if (System::IsValid() && System::IsPaused())
-    System::InvalidateDisplay();
+  if (System::IsValid())
+  {
+    // Fix up vsync etc.
+    System::UpdateSpeedLimiterState();
+
+    // If we're paused, re-present the current frame at the new window size.
+    if (System::IsPaused())
+      System::InvalidateDisplay();
+  }
 }
 
 void Host::ResizeDisplayWindow(s32 width, s32 height, float scale)

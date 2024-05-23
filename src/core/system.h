@@ -466,7 +466,10 @@ void ToggleWidescreen();
 bool IsRunningAtNonStandardSpeed();
 
 /// Returns true if vsync should be used.
-bool IsVSyncEffectivelyEnabled();
+bool IsHostVSyncEffectivelyEnabled();
+
+/// Returns true if vsync is being used for frame pacing.
+bool IsHostVSyncUsedForTiming();
 
 /// Quick switch between software and hardware rendering.
 void ToggleSoftwareRendering();

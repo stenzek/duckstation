@@ -25,7 +25,8 @@ public:
   static void DestroyVulkanSurface(VkInstance instance, WindowInfo* wi, VkSurfaceKHR surface);
 
   // Create a new swap chain from a pre-existing surface.
-  static std::unique_ptr<VulkanSwapChain> Create(const WindowInfo& wi, VkSurfaceKHR surface, bool vsync,
+  static std::unique_ptr<VulkanSwapChain> Create(const WindowInfo& wi, VkSurfaceKHR surface,
+                                                 VkPresentModeKHR present_mode,
                                                  std::optional<bool> exclusive_fullscreen_control);
 
   ALWAYS_INLINE VkSurfaceKHR GetSurface() const { return m_surface; }
@@ -73,10 +74,10 @@ public:
   bool ResizeSwapChain(u32 new_width = 0, u32 new_height = 0, float new_scale = 1.0f);
 
   // Change vsync enabled state. This may fail as it causes a swapchain recreation.
-  bool SetVSyncEnabled(bool enabled);
+  bool SetRequestedPresentMode(VkPresentModeKHR mode);
 
 private:
-  VulkanSwapChain(const WindowInfo& wi, VkSurfaceKHR surface, bool vsync,
+  VulkanSwapChain(const WindowInfo& wi, VkSurfaceKHR surface, VkPresentModeKHR present_mode,
                   std::optional<bool> exclusive_fullscreen_control);
 
   static std::optional<VkSurfaceFormatKHR> SelectSurfaceFormat(VkSurfaceKHR surface);
@@ -107,15 +108,16 @@ private:
   VkSurfaceKHR m_surface = VK_NULL_HANDLE;
   VkSwapchainKHR m_swap_chain = VK_NULL_HANDLE;
 
+  u32 m_current_image = 0;
+  u32 m_current_semaphore = 0;
+
   std::vector<Image> m_images;
   std::vector<ImageSemaphores> m_semaphores;
 
   VkFormat m_format = VK_FORMAT_UNDEFINED;
+  VkPresentModeKHR m_requested_present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
   VkPresentModeKHR m_actual_present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
-  u32 m_current_image = 0;
-  u32 m_current_semaphore = 0;
 
   std::optional<VkResult> m_image_acquire_result;
   std::optional<bool> m_exclusive_fullscreen_control;
-  bool m_vsync_enabled = false;
 };

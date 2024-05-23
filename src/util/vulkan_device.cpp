@@ -436,6 +436,14 @@ bool VulkanDevice::SelectDeviceFeatures()
   return true;
 }
 
+VkPresentModeKHR VulkanDevice::SelectPresentMode() const
+{
+  // Use mailbox/triple buffering for "normal" vsync, due to PAL refresh rate mismatch.
+  // Otherwise, use FIFO when syncing to host, because we don't want to return early.
+  return m_vsync_enabled ? (m_vsync_prefer_triple_buffer ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_FIFO_KHR) :
+                           VK_PRESENT_MODE_IMMEDIATE_KHR;
+}
+
 bool VulkanDevice::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer)
 {
   u32 queue_family_count;
@@ -2041,7 +2049,7 @@ bool VulkanDevice::CreateDevice(std::string_view adapter, bool threaded_presenta
 
   if (surface != VK_NULL_HANDLE)
   {
-    m_swap_chain = VulkanSwapChain::Create(m_window_info, surface, m_vsync_enabled, m_exclusive_fullscreen_control);
+    m_swap_chain = VulkanSwapChain::Create(m_window_info, surface, SelectPresentMode(), m_exclusive_fullscreen_control);
     if (!m_swap_chain)
     {
       Error::SetStringView(error, "Failed to create swap chain");
@@ -2262,7 +2270,7 @@ bool VulkanDevice::UpdateWindow()
     return false;
   }
 
-  m_swap_chain = VulkanSwapChain::Create(m_window_info, surface, m_vsync_enabled, m_exclusive_fullscreen_control);
+  m_swap_chain = VulkanSwapChain::Create(m_window_info, surface, SelectPresentMode(), m_exclusive_fullscreen_control);
   if (!m_swap_chain)
   {
     Log_ErrorPrintf("Failed to create swap chain");
@@ -2338,25 +2346,22 @@ std::string VulkanDevice::GetDriverInfo() const
   return ret;
 }
 
-void VulkanDevice::SetVSyncEnabled(bool enabled)
+void VulkanDevice::SetVSyncEnabled(bool enabled, bool prefer_triple_buffer)
 {
-  if (m_vsync_enabled == enabled)
+  if (m_vsync_enabled == enabled && m_vsync_prefer_triple_buffer == prefer_triple_buffer)
     return;
 
   m_vsync_enabled = enabled;
+  m_vsync_prefer_triple_buffer = prefer_triple_buffer;
   if (!m_swap_chain)
     return;
 
   // This swap chain should not be used by the current buffer, thus safe to destroy.
   WaitForGPUIdle();
-  if (!m_swap_chain->SetVSyncEnabled(enabled))
+  if (!m_swap_chain->SetRequestedPresentMode(SelectPresentMode()))
   {
-    // Try switching back to the old mode..
-    if (!m_swap_chain->SetVSyncEnabled(!enabled))
-    {
-      Panic("Failed to reset old vsync mode after failure");
-      m_swap_chain.reset();
-    }
+    Panic("Failed to update swap chain present mode.");
+    m_swap_chain.reset();
   }
 }
 
@@ -2390,6 +2395,7 @@ bool VulkanDevice::BeginPresent(bool frame_skip)
   VkResult res = m_swap_chain->AcquireNextImage();
   if (res != VK_SUCCESS)
   {
+    LOG_VULKAN_ERROR(res, "vkAcquireNextImageKHR() failed: ");
     m_swap_chain->ReleaseCurrentImage();
 
     if (res == VK_SUBOPTIMAL_KHR || res == VK_ERROR_OUT_OF_DATE_KHR)
@@ -2416,7 +2422,6 @@ bool VulkanDevice::BeginPresent(bool frame_skip)
     if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR)
     {
       // Still submit the command buffer, otherwise we'll end up with several frames waiting.
-      LOG_VULKAN_ERROR(res, "vkAcquireNextImageKHR() failed: ");
       SubmitCommandBuffer(false);
       TrimTexturePool();
       return false;

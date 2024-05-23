@@ -2835,7 +2835,6 @@ void System::UpdateSpeedLimiterState()
 {
   DebugAssert(IsValid());
 
-  const float old_target_speed = s_target_speed;
   s_target_speed = s_turbo_enabled ?
                      g_settings.turbo_speed :
                      (s_fast_forward_enabled ? g_settings.fast_forward_speed : g_settings.emulation_speed);
@@ -2862,7 +2861,7 @@ void System::UpdateSpeedLimiterState()
   }
 
   // When syncing to host and using vsync, we don't need to sleep.
-  s_syncing_to_host_with_vsync = (s_syncing_to_host && IsVSyncEffectivelyEnabled());
+  s_syncing_to_host_with_vsync = (s_syncing_to_host && IsHostVSyncEffectivelyEnabled());
   if (s_syncing_to_host_with_vsync)
   {
     Log_InfoPrintf("Using host vsync for throttling.");
@@ -2886,22 +2885,27 @@ void System::UpdateSpeedLimiterState()
 
 void System::UpdateDisplaySync()
 {
-  const bool vsync_enabled = IsVSyncEffectivelyEnabled();
-  const bool syncing_to_host_vsync = (s_syncing_to_host && vsync_enabled);
+  const bool vsync_enabled = IsHostVSyncEffectivelyEnabled();
   const float max_display_fps = (s_throttler_enabled || s_syncing_to_host) ? 0.0f : g_settings.display_max_fps;
   Log_VerboseFmt("VSync: {}{}", vsync_enabled ? "Enabled" : "Disabled",
-                 syncing_to_host_vsync ? " (for throttling)" : "");
+                 s_syncing_to_host_with_vsync ? " (for throttling)" : "");
   Log_VerboseFmt("Max display fps: {}", max_display_fps);
   Log_VerboseFmt("Preset timing: {}", s_optimal_frame_pacing ? "consistent" : "immediate");
 
   g_gpu_device->SetDisplayMaxFPS(max_display_fps);
-  g_gpu_device->SetVSyncEnabled(vsync_enabled);
+  g_gpu_device->SetVSyncEnabled(vsync_enabled, vsync_enabled && !IsHostVSyncUsedForTiming());
 }
 
-bool System::IsVSyncEffectivelyEnabled()
+bool System::IsHostVSyncEffectivelyEnabled()
 {
   // Disable vsync if running outside 100%.
-  return (g_settings.display_vsync && IsValid() && !IsRunningAtNonStandardSpeed());
+  return (g_settings.display_vsync && (s_state != State::Shutdown && s_state != State::Stopping) &&
+          !IsRunningAtNonStandardSpeed());
+}
+
+bool System::IsHostVSyncUsedForTiming()
+{
+  return (IsHostVSyncEffectivelyEnabled() && s_syncing_to_host_with_vsync);
 }
 
 bool System::IsFastForwardEnabled()
@@ -4505,7 +4509,7 @@ bool System::IsRunningAtNonStandardSpeed()
   if (!IsValid())
     return false;
 
-  const float target_speed = System::GetTargetSpeed();
+  const float target_speed = GetTargetSpeed();
   return (target_speed <= 0.95f || target_speed >= 1.05f);
 }
 

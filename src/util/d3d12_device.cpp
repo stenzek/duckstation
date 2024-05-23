@@ -797,6 +797,13 @@ bool D3D12Device::HasSurface() const
   return static_cast<bool>(m_swap_chain);
 }
 
+u32 D3D12Device::GetSwapChainBufferCount() const
+{
+  // With vsync off, we only need two buffers. Same for blocking vsync.
+  // With triple buffering, we need three.
+  return (m_vsync_enabled && m_vsync_prefer_triple_buffer) ? 3 : 2;
+}
+
 bool D3D12Device::CreateSwapChain()
 {
   if (m_window_info.type != WindowInfo::Type::Win32)
@@ -830,7 +837,7 @@ bool D3D12Device::CreateSwapChain()
   swap_chain_desc.Height = static_cast<u32>(client_rc.bottom - client_rc.top);
   swap_chain_desc.Format = fm.resource_format;
   swap_chain_desc.SampleDesc.Count = 1;
-  swap_chain_desc.BufferCount = 3;
+  swap_chain_desc.BufferCount = GetSwapChainBufferCount();
   swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
   swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
@@ -1079,6 +1086,42 @@ std::string D3D12Device::GetDriverInfo() const
   }
 
   return ret;
+}
+
+std::optional<float> D3D12Device::GetHostRefreshRate()
+{
+  if (m_swap_chain && m_is_exclusive_fullscreen)
+  {
+    DXGI_SWAP_CHAIN_DESC desc;
+    if (SUCCEEDED(m_swap_chain->GetDesc(&desc)) && desc.BufferDesc.RefreshRate.Numerator > 0 &&
+        desc.BufferDesc.RefreshRate.Denominator > 0)
+    {
+      Log_DevFmt("using fs rr: {} {}", desc.BufferDesc.RefreshRate.Numerator, desc.BufferDesc.RefreshRate.Denominator);
+      return static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
+             static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
+    }
+  }
+
+  return GPUDevice::GetHostRefreshRate();
+}
+
+void D3D12Device::SetVSyncEnabled(bool enabled, bool prefer_triple_buffer)
+{
+  if (m_vsync_enabled == enabled && m_vsync_prefer_triple_buffer == prefer_triple_buffer)
+    return;
+
+  const u32 old_buffer_count = GetSwapChainBufferCount();
+  m_vsync_enabled = enabled;
+  m_vsync_prefer_triple_buffer = prefer_triple_buffer;
+  if (!m_swap_chain)
+    return;
+
+  if (GetSwapChainBufferCount() != old_buffer_count)
+  {
+    DestroySwapChain();
+    if (!CreateSwapChain())
+      Panic("Failed to recreate swap chain after vsync change.");
+  }
 }
 
 bool D3D12Device::BeginPresent(bool frame_skip)

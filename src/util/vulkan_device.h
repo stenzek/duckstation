@@ -129,7 +129,7 @@ public:
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;
 
-  void SetVSyncEnabled(bool enabled) override;
+  void SetVSyncEnabled(bool enabled, bool prefer_triple_buffer) override;
 
   bool BeginPresent(bool skip_present) override;
   void EndPresent(bool explicit_present) override;
@@ -324,6 +324,7 @@ private:
                                        bool enable_debug_utils);
   bool SelectDeviceExtensions(ExtensionList* extension_list, bool enable_surface);
   bool SelectDeviceFeatures();
+  VkPresentModeKHR SelectPresentMode() const;
   bool CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer);
   void ProcessDeviceExtensions();
 

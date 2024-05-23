@@ -97,6 +97,7 @@ public:
   void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) override;
 
   std::optional<float> GetHostRefreshRate() override;
+  void SetVSyncEnabled(bool enabled, bool prefer_triple_buffer) override;
 
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;
@@ -135,6 +136,7 @@ private:
 
   void SetFeatures(FeatureMask disabled_features);
 
+  u32 GetSwapChainBufferCount() const;
   bool CreateSwapChain();
   bool CreateSwapChainRTV();
   void DestroySwapChain();

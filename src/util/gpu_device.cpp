@@ -276,10 +276,11 @@ bool GPUDevice::IsSameRenderAPI(RenderAPI lhs, RenderAPI rhs)
 }
 
 bool GPUDevice::Create(std::string_view adapter, std::string_view shader_cache_path, u32 shader_cache_version,
-                       bool debug_device, bool vsync, bool threaded_presentation,
+                       bool debug_device, bool vsync, bool vsync_prefer_triple_buffer, bool threaded_presentation,
                        std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features, Error* error)
 {
   m_vsync_enabled = vsync;
+  m_vsync_prefer_triple_buffer = vsync_prefer_triple_buffer;
   m_debug_device = debug_device;
 
   if (!AcquireWindow(true))
@@ -590,7 +591,7 @@ void GPUDevice::RenderImGui()
   }
 }
 
-void GPUDevice::SetVSyncEnabled(bool enabled)
+void GPUDevice::SetVSyncEnabled(bool enabled, bool prefer_triple_buffer)
 {
   m_vsync_enabled = enabled;
 }

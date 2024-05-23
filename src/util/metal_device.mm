@@ -124,12 +124,13 @@ std::optional<float> MetalDevice::GetHostRefreshRate()
   return GPUDevice::GetHostRefreshRate();
 }
 
-void MetalDevice::SetVSyncEnabled(bool enabled)
+void MetalDevice::SetVSyncEnabled(bool enabled, bool prefer_triple_buffer)
 {
-  if (m_vsync_enabled == enabled)
+  if (m_vsync_enabled == enabled && m_vsync_prefer_triple_buffer == prefer_triple_buffer)
     return;
 
   m_vsync_enabled = enabled;
+  m_vsync_prefer_triple_buffer = prefer_triple_buffer;
   if (m_layer != nil)
     [m_layer setDisplaySyncEnabled:enabled];
 }
