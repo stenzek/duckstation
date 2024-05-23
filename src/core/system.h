@@ -19,6 +19,8 @@ class Error;
 class SmallStringBase;
 class StateWrapper;
 
+enum class GPUVSyncMode : u8;
+
 class Controller;
 
 struct CheatCode;
@@ -295,9 +297,6 @@ void UpdateThrottlePeriod();
 void ResetThrottler();
 void ResetPerformanceCounters();
 
-/// Resets vsync/max present fps state.
-void UpdateDisplaySync();
-
 // Access controllers for simulating input.
 Controller* GetController(u32 slot);
 void UpdateControllers();
@@ -466,10 +465,7 @@ void ToggleWidescreen();
 bool IsRunningAtNonStandardSpeed();
 
 /// Returns true if vsync should be used.
-bool IsHostVSyncEffectivelyEnabled();
-
-/// Returns true if vsync is being used for frame pacing.
-bool IsHostVSyncUsedForTiming();
+GPUVSyncMode GetEffectiveVSyncMode();
 
 /// Quick switch between software and hardware rendering.
 void ToggleSoftwareRendering();

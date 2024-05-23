@@ -118,8 +118,7 @@ public:
   void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) override;
   void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) override;
 
-  std::optional<float> GetHostRefreshRate() override;
-  void SetVSyncEnabled(bool enabled, bool prefer_triple_buffer) override;
+  void SetVSyncMode(GPUVSyncMode mode) override;
 
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;

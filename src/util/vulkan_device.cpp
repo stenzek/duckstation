@@ -440,8 +440,13 @@ VkPresentModeKHR VulkanDevice::SelectPresentMode() const
 {
   // Use mailbox/triple buffering for "normal" vsync, due to PAL refresh rate mismatch.
   // Otherwise, use FIFO when syncing to host, because we don't want to return early.
-  return m_vsync_enabled ? (m_vsync_prefer_triple_buffer ? VK_PRESENT_MODE_MAILBOX_KHR : VK_PRESENT_MODE_FIFO_KHR) :
-                           VK_PRESENT_MODE_IMMEDIATE_KHR;
+  static constexpr std::array<VkPresentModeKHR, static_cast<size_t>(GPUVSyncMode::Count)> modes = {{
+    VK_PRESENT_MODE_IMMEDIATE_KHR, // Disabled
+    VK_PRESENT_MODE_FIFO_KHR,      // DoubleBuffered
+    VK_PRESENT_MODE_MAILBOX_KHR,   // TripleBuffered
+  }};
+
+  return modes[static_cast<size_t>(m_vsync_mode)];
 }
 
 bool VulkanDevice::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer)
@@ -2344,13 +2349,12 @@ std::string VulkanDevice::GetDriverInfo() const
   return ret;
 }
 
-void VulkanDevice::SetVSyncEnabled(bool enabled, bool prefer_triple_buffer)
+void VulkanDevice::SetVSyncMode(GPUVSyncMode mode)
 {
-  if (m_vsync_enabled == enabled && m_vsync_prefer_triple_buffer == prefer_triple_buffer)
+  if (m_vsync_mode == mode)
     return;
 
-  m_vsync_enabled = enabled;
-  m_vsync_prefer_triple_buffer = prefer_triple_buffer;
+  m_vsync_mode = mode;
   if (!m_swap_chain)
     return;
 

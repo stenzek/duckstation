@@ -115,20 +115,14 @@ bool MetalDevice::HasSurface() const
   return (m_layer != nil);
 }
 
-std::optional<float> MetalDevice::GetHostRefreshRate()
+void MetalDevice::SetVSyncMode(GPUVSyncMode mode)
 {
-  return GPUDevice::GetHostRefreshRate();
-}
-
-void MetalDevice::SetVSyncEnabled(bool enabled, bool prefer_triple_buffer)
-{
-  if (m_vsync_enabled == enabled && m_vsync_prefer_triple_buffer == prefer_triple_buffer)
+  if (m_vsync_mode == mode)
     return;
 
-  m_vsync_enabled = enabled;
-  m_vsync_prefer_triple_buffer = prefer_triple_buffer;
+  m_vsync_mode = mode;
   if (m_layer != nil)
-    [m_layer setDisplaySyncEnabled:enabled];
+    [m_layer setDisplaySyncEnabled:m_vsync_mode >= GPUVSyncMode::DoubleBuffered];
 }
 
 bool MetalDevice::CreateDevice(std::string_view adapter, bool threaded_presentation,
@@ -402,7 +396,7 @@ bool MetalDevice::CreateLayer()
       }
     });
 
-    [m_layer setDisplaySyncEnabled:m_vsync_enabled];
+    [m_layer setDisplaySyncEnabled:m_vsync_mode >= GPUVSyncMode::DoubleBuffered];
 
     DebugAssert(m_layer_pass_desc == nil);
     m_layer_pass_desc = [[MTLRenderPassDescriptor renderPassDescriptor] retain];

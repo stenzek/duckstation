@@ -276,11 +276,10 @@ bool GPUDevice::IsSameRenderAPI(RenderAPI lhs, RenderAPI rhs)
 }
 
 bool GPUDevice::Create(std::string_view adapter, std::string_view shader_cache_path, u32 shader_cache_version,
-                       bool debug_device, bool vsync, bool vsync_prefer_triple_buffer, bool threaded_presentation,
+                       bool debug_device, GPUVSyncMode vsync, bool threaded_presentation,
                        std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features, Error* error)
 {
-  m_vsync_enabled = vsync;
-  m_vsync_prefer_triple_buffer = vsync_prefer_triple_buffer;
+  m_vsync_mode = vsync;
   m_debug_device = debug_device;
 
   if (!AcquireWindow(true))
@@ -589,11 +588,6 @@ void GPUDevice::RenderImGui()
       DrawIndexed(pcmd->ElemCount, base_index + pcmd->IdxOffset, base_vertex + pcmd->VtxOffset);
     }
   }
-}
-
-void GPUDevice::SetVSyncEnabled(bool enabled, bool prefer_triple_buffer)
-{
-  m_vsync_enabled = enabled;
 }
 
 void GPUDevice::UploadVertexBuffer(const void* vertices, u32 vertex_size, u32 vertex_count, u32* base_vertex)
@@ -1051,14 +1045,6 @@ void GPUDevice::ThrottlePresentation()
     m_last_frame_displayed_time += sleep_period;
 
   Common::Timer::SleepUntil(m_last_frame_displayed_time, false);
-}
-
-std::optional<float> GPUDevice::GetHostRefreshRate()
-{
-  if (m_window_info.surface_refresh_rate > 0.0f)
-    return m_window_info.surface_refresh_rate;
-
-  return WindowInfo::QueryRefreshRateForWindow(m_window_info);
 }
 
 bool GPUDevice::SetGPUTimingEnabled(bool enabled)

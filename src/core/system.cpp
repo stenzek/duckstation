@@ -122,6 +122,8 @@ static void Throttle(Common::Timer::Value current_time);
 static void UpdatePerformanceCounters();
 static void AccumulatePreFrameSleepTime();
 static void UpdatePreFrameSleepTime();
+static void UpdateDisplayVSync();
+static void UpdateDisplayMaxFPS();
 
 static void SetRewinding(bool enabled);
 static bool SaveRewindState();
@@ -184,7 +186,6 @@ static bool s_turbo_enabled = false;
 static bool s_throttler_enabled = false;
 static bool s_optimal_frame_pacing = false;
 static bool s_pre_frame_sleep = false;
-static bool s_syncing_to_host = false;
 static bool s_syncing_to_host_with_vsync = false;
 static bool s_skip_presenting_duplicate_frames = false;
 static u32 s_skipped_frame_count = 0;
@@ -1263,6 +1264,7 @@ void System::PauseSystem(bool paused)
 
     Host::OnSystemPaused();
     Host::OnIdleStateChanged();
+    UpdateDisplayMaxFPS();
     InvalidateDisplay();
   }
   else
@@ -1277,6 +1279,7 @@ void System::PauseSystem(bool paused)
     Host::OnSystemResumed();
     Host::OnIdleStateChanged();
 
+    UpdateDisplayMaxFPS();
     ResetPerformanceCounters();
     ResetThrottler();
   }
@@ -1819,7 +1822,8 @@ void System::DestroySystem()
   // Restore present-all-frames behavior.
   if (s_keep_gpu_device_on_shutdown && g_gpu_device)
   {
-    g_gpu_device->SetDisplayMaxFPS(0.0f);
+    UpdateDisplayVSync();
+    UpdateDisplayMaxFPS();
   }
   else
   {
@@ -2685,7 +2689,7 @@ float System::GetTargetSpeed()
 
 float System::GetAudioNominalRate()
 {
-  return s_throttler_enabled ? s_target_speed : 1.0f;
+  return (s_throttler_enabled || s_syncing_to_host_with_vsync) ? s_target_speed : 1.0f;
 }
 
 void System::UpdatePerformanceCounters()
@@ -2845,32 +2849,31 @@ void System::UpdateSpeedLimiterState()
                            g_gpu_device->GetWindowInfo().IsSurfaceless(); // surfaceless check for regtest
   s_skip_presenting_duplicate_frames = s_throttler_enabled && g_settings.display_skip_presenting_duplicate_frames;
   s_pre_frame_sleep = s_optimal_frame_pacing && g_settings.display_pre_frame_sleep;
-
-  s_syncing_to_host = false;
   s_syncing_to_host_with_vsync = false;
-  if (g_settings.sync_to_host_refresh_rate &&
-      (g_settings.audio_stream_parameters.stretch_mode != AudioStretchMode::Off) && s_target_speed == 1.0f && IsValid())
+
+  if (const float host_refresh_rate = g_gpu_device->GetWindowInfo().surface_refresh_rate; host_refresh_rate > 0.0f)
   {
-    if (std::optional<float> host_refresh_rate = g_gpu_device->GetHostRefreshRate(); host_refresh_rate.has_value())
+    const float ratio = host_refresh_rate / System::GetThrottleFrequency();
+    const bool can_sync_to_host = (ratio >= 0.95f && ratio <= 1.05f);
+    INFO_LOG("Refresh rate: Host={}hz Guest={}hz Ratio={} - {}", host_refresh_rate, System::GetThrottleFrequency(),
+             ratio, can_sync_to_host ? "can sync" : "can't sync");
+
+    if (can_sync_to_host && g_settings.sync_to_host_refresh_rate && s_target_speed == 1.0f)
     {
-      const float ratio = host_refresh_rate.value() / System::GetThrottleFrequency();
-      s_syncing_to_host = (ratio >= 0.95f && ratio <= 1.05f);
-      INFO_LOG("Refresh rate: Host={}hz Guest={}hz Ratio={} - {}", host_refresh_rate.value(),
-               System::GetThrottleFrequency(), ratio, s_syncing_to_host ? "can sync" : "can't sync");
-      if (s_syncing_to_host)
-        s_target_speed *= ratio;
+      s_target_speed = ratio;
+
+      // When syncing to host and using vsync, we don't need to sleep.
+      s_syncing_to_host_with_vsync = g_settings.display_vsync;
+      if (s_syncing_to_host_with_vsync)
+      {
+        INFO_LOG("Using host vsync for throttling.");
+        s_throttler_enabled = false;
+      }
     }
   }
 
-  // When syncing to host and using vsync, we don't need to sleep.
-  s_syncing_to_host_with_vsync = (s_syncing_to_host && IsHostVSyncEffectivelyEnabled());
-  if (s_syncing_to_host_with_vsync)
-  {
-    INFO_LOG("Using host vsync for throttling.");
-    s_throttler_enabled = false;
-  }
-
   VERBOSE_LOG("Target speed: {}%", s_target_speed * 100.0f);
+  VERBOSE_LOG("Preset timing: {}", s_optimal_frame_pacing ? "consistent" : "immediate");
 
   // Update audio output.
   AudioStream* stream = SPU::GetOutputStream();
@@ -2879,35 +2882,60 @@ void System::UpdateSpeedLimiterState()
 
   UpdateThrottlePeriod();
   ResetThrottler();
-  UpdateDisplaySync();
+  UpdateDisplayVSync();
+  UpdateDisplayMaxFPS();
 
   if (g_settings.increase_timer_resolution)
     SetTimerResolutionIncreased(s_throttler_enabled);
 }
 
-void System::UpdateDisplaySync()
+void System::UpdateDisplayVSync()
 {
-  const bool vsync_enabled = IsHostVSyncEffectivelyEnabled();
-  const float max_display_fps = (s_throttler_enabled || s_syncing_to_host) ? 0.0f : g_settings.display_max_fps;
-  VERBOSE_LOG("VSync: {}{}", vsync_enabled ? "Enabled" : "Disabled",
+  static constexpr std::array<const char*, static_cast<size_t>(GPUVSyncMode::Count)> vsync_modes = {{
+    "Disabled",
+    "DoubleBuffered",
+    "TripleBuffered",
+  }};
+
+  // Avoid flipping vsync on and off by manually throttling when vsync is on.
+  const GPUVSyncMode vsync_mode = GetEffectiveVSyncMode();
+  VERBOSE_LOG("VSync: {}{}", vsync_modes[static_cast<size_t>(vsync_mode)],
               s_syncing_to_host_with_vsync ? " (for throttling)" : "");
+
+  g_gpu_device->SetVSyncMode(vsync_mode);
+}
+
+void System::UpdateDisplayMaxFPS()
+{
+  const GPUVSyncMode vsync_mode = GetEffectiveVSyncMode();
+  const float max_display_fps =
+    (!IsPaused() && IsValid() &&
+     (s_target_speed == 0.0f ||
+      (vsync_mode != GPUVSyncMode::Disabled && s_target_speed != 1.0f && !s_syncing_to_host_with_vsync))) ?
+      g_gpu_device->GetWindowInfo().surface_refresh_rate :
+      0.0f;
+
   VERBOSE_LOG("Max display fps: {}", max_display_fps);
-  VERBOSE_LOG("Preset timing: {}", s_optimal_frame_pacing ? "consistent" : "immediate");
-
   g_gpu_device->SetDisplayMaxFPS(max_display_fps);
-  g_gpu_device->SetVSyncEnabled(vsync_enabled, vsync_enabled && !IsHostVSyncUsedForTiming());
 }
 
-bool System::IsHostVSyncEffectivelyEnabled()
+GPUVSyncMode System::GetEffectiveVSyncMode()
 {
-  // Disable vsync if running outside 100%.
-  return (g_settings.display_vsync && (s_state != State::Shutdown && s_state != State::Stopping) &&
-          !IsRunningAtNonStandardSpeed());
-}
+  // Vsync off => always disabled.
+  if (!g_settings.display_vsync)
+    return GPUVSyncMode::Disabled;
 
-bool System::IsHostVSyncUsedForTiming()
-{
-  return (IsHostVSyncEffectivelyEnabled() && s_syncing_to_host_with_vsync);
+  // If there's no VM, or we're using vsync for timing, then we always use double-buffered (blocking).
+  if (s_state == State::Shutdown || s_state == State::Stopping || s_syncing_to_host_with_vsync)
+    return GPUVSyncMode::DoubleBuffered;
+
+  // For PAL games, we always want to triple buffer, because otherwise we'll be tearing.
+  // Or for when we aren't using sync-to-host-refresh, to avoid dropping frames.
+  // Force vsync off when not running at 100% speed.
+  // We can avoid this by manually throttling when vsync is on (see above).
+  return (s_throttler_enabled && g_gpu_device->GetWindowInfo().surface_refresh_rate == 0.0f) ?
+           GPUVSyncMode::Disabled :
+           GPUVSyncMode::TripleBuffered;
 }
 
 bool System::IsFastForwardEnabled()
@@ -3978,7 +4006,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.increase_timer_resolution != old_settings.increase_timer_resolution ||
         g_settings.emulation_speed != old_settings.emulation_speed ||
         g_settings.fast_forward_speed != old_settings.fast_forward_speed ||
-        g_settings.display_max_fps != old_settings.display_max_fps ||
         g_settings.display_optimal_frame_pacing != old_settings.display_optimal_frame_pacing ||
         g_settings.display_skip_presenting_duplicate_frames != old_settings.display_skip_presenting_duplicate_frames ||
         g_settings.display_pre_frame_sleep != old_settings.display_pre_frame_sleep ||
@@ -3998,6 +4025,17 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     }
 
     PostProcessing::UpdateSettings();
+  }
+  else
+  {
+    if (g_gpu_device)
+    {
+      if (g_settings.display_vsync != old_settings.display_vsync)
+      {
+        UpdateDisplayVSync();
+        UpdateDisplayMaxFPS();
+      }
+    }
   }
 
   if (g_gpu_device)

@@ -129,7 +129,7 @@ public:
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;
 
-  void SetVSyncEnabled(bool enabled, bool prefer_triple_buffer) override;
+  void SetVSyncMode(GPUVSyncMode mode) override;
 
   bool BeginPresent(bool skip_present) override;
   void EndPresent(bool explicit_present) override;

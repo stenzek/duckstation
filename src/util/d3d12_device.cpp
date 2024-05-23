@@ -801,7 +801,7 @@ u32 D3D12Device::GetSwapChainBufferCount() const
 {
   // With vsync off, we only need two buffers. Same for blocking vsync.
   // With triple buffering, we need three.
-  return (m_vsync_enabled && m_vsync_prefer_triple_buffer) ? 3 : 2;
+  return (m_vsync_mode == GPUVSyncMode::TripleBuffered) ? 3 : 2;
 }
 
 bool D3D12Device::CreateSwapChain()
@@ -941,10 +941,6 @@ bool D3D12Device::CreateSwapChainRTV()
     {
       m_window_info.surface_refresh_rate = static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
                                            static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
-    }
-    else
-    {
-      m_window_info.surface_refresh_rate = 0.0f;
     }
   }
 
@@ -1088,31 +1084,13 @@ std::string D3D12Device::GetDriverInfo() const
   return ret;
 }
 
-std::optional<float> D3D12Device::GetHostRefreshRate()
+void D3D12Device::SetVSyncMode(GPUVSyncMode mode)
 {
-  if (m_swap_chain && m_is_exclusive_fullscreen)
-  {
-    DXGI_SWAP_CHAIN_DESC desc;
-    if (SUCCEEDED(m_swap_chain->GetDesc(&desc)) && desc.BufferDesc.RefreshRate.Numerator > 0 &&
-        desc.BufferDesc.RefreshRate.Denominator > 0)
-    {
-      DEV_LOG("using fs rr: {} {}", desc.BufferDesc.RefreshRate.Numerator, desc.BufferDesc.RefreshRate.Denominator);
-      return static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
-             static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
-    }
-  }
-
-  return GPUDevice::GetHostRefreshRate();
-}
-
-void D3D12Device::SetVSyncEnabled(bool enabled, bool prefer_triple_buffer)
-{
-  if (m_vsync_enabled == enabled && m_vsync_prefer_triple_buffer == prefer_triple_buffer)
+  if (m_vsync_mode == mode)
     return;
 
   const u32 old_buffer_count = GetSwapChainBufferCount();
-  m_vsync_enabled = enabled;
-  m_vsync_prefer_triple_buffer = prefer_triple_buffer;
+  m_vsync_mode = mode;
   if (!m_swap_chain)
     return;
 
@@ -1181,8 +1159,8 @@ void D3D12Device::SubmitPresent()
   DebugAssert(m_swap_chain);
 
   // DirectX has no concept of tear-or-sync. I guess if we measured times ourselves, we could implement it.
-  if (m_vsync_enabled)
-    m_swap_chain->Present(BoolToUInt32(1), 0);
+  if (IsVSyncModeBlocking())
+    m_swap_chain->Present(1, 0);
   else if (m_using_allow_tearing) // Disabled or VRR, VRR requires the allow tearing flag :/
     m_swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
   else

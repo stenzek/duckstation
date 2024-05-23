@@ -238,13 +238,12 @@ void OpenGLDevice::InsertDebugMessage(const char* msg)
 #endif
 }
 
-void OpenGLDevice::SetVSyncEnabled(bool enabled, bool prefer_triple_buffer)
+void OpenGLDevice::SetVSyncMode(GPUVSyncMode mode)
 {
-  if (m_vsync_enabled == enabled && m_vsync_prefer_triple_buffer == prefer_triple_buffer)
+  if (m_vsync_mode == mode)
     return;
 
-  m_vsync_enabled = enabled;
-  m_vsync_prefer_triple_buffer = prefer_triple_buffer;
+  m_vsync_mode = mode;
   SetSwapInterval();
 }
 
@@ -584,7 +583,7 @@ void OpenGLDevice::SetSwapInterval()
     return;
 
   // Window framebuffer has to be bound to call SetSwapInterval.
-  const s32 interval = m_vsync_enabled ? 1 : 0;
+  const s32 interval = (m_vsync_mode >= GPUVSyncMode::DoubleBuffered) ? 1 : 0;
   GLint current_fbo = 0;
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);

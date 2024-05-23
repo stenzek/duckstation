@@ -7,6 +7,7 @@
 #include "core/system.h"
 
 #include "common/byte_stream.h"
+#include "common/log.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QMetaObject>
@@ -37,6 +38,8 @@
 #ifdef _WIN32
 #include "common/windows_headers.h"
 #endif
+
+Log_SetChannel(QtUtils);
 
 namespace QtUtils {
 
@@ -365,6 +368,11 @@ std::optional<WindowInfo> GetWindowInfoForWidget(QWidget* widget)
   wi.surface_width = static_cast<u32>(static_cast<qreal>(widget->width()) * dpr);
   wi.surface_height = static_cast<u32>(static_cast<qreal>(widget->height()) * dpr);
   wi.surface_scale = static_cast<float>(dpr);
+
+  // Query refresh rate, we need it for sync.
+  wi.surface_refresh_rate = WindowInfo::QueryRefreshRateForWindow(wi).value_or(0.0f);
+  INFO_LOG("Surface refresh rate: {} hz", wi.surface_refresh_rate);
+
   return wi;
 }
 

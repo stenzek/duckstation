@@ -36,6 +36,14 @@ enum class RenderAPI : u32
   Metal
 };
 
+enum class GPUVSyncMode : u8
+{
+  Disabled,
+  DoubleBuffered,
+  TripleBuffered,
+  Count
+};
+
 class GPUSampler
 {
 public:
@@ -573,8 +581,8 @@ public:
   virtual RenderAPI GetRenderAPI() const = 0;
 
   bool Create(std::string_view adapter, std::string_view shader_cache_path, u32 shader_cache_version, bool debug_device,
-              bool vsync, bool vsync_prefer_triple_buffer, bool threaded_presentation,
-              std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features, Error* error);
+              GPUVSyncMode vsync, bool threaded_presentation, std::optional<bool> exclusive_fullscreen_control,
+              FeatureMask disabled_features, Error* error);
   void Destroy();
 
   virtual bool HasSurface() const = 0;
@@ -672,8 +680,9 @@ public:
   /// Renders ImGui screen elements. Call before EndPresent().
   void RenderImGui();
 
-  ALWAYS_INLINE bool IsVSyncEnabled() const { return m_vsync_enabled; }
-  virtual void SetVSyncEnabled(bool enabled, bool prefer_triple_buffer);
+  ALWAYS_INLINE GPUVSyncMode GetVSyncMode() const { return m_vsync_mode; }
+  ALWAYS_INLINE bool IsVSyncModeBlocking() const { return (m_vsync_mode >= GPUVSyncMode::DoubleBuffered); }
+  virtual void SetVSyncMode(GPUVSyncMode mode) = 0;
 
   ALWAYS_INLINE bool IsDebugDevice() const { return m_debug_device; }
   ALWAYS_INLINE size_t GetVRAMUsage() const { return s_total_vram_usage; }
@@ -688,8 +697,6 @@ public:
   void ThrottlePresentation();
 
   virtual bool SupportsTextureFormat(GPUTexture::Format format) const = 0;
-
-  virtual std::optional<float> GetHostRefreshRate();
 
   /// Enables/disables GPU frame timing.
   virtual bool SetGPUTimingEnabled(bool enabled);
@@ -793,8 +800,7 @@ private:
 protected:
   static Statistics s_stats;
 
-  bool m_vsync_enabled = false;
-  bool m_vsync_prefer_triple_buffer = false;
+  GPUVSyncMode m_vsync_mode = GPUVSyncMode::Disabled;
   bool m_gpu_timing_enabled = false;
   bool m_debug_device = false;
 };

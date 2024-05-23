@@ -288,8 +288,7 @@ bool Host::CreateGPUDevice(RenderAPI api, Error* error)
   if (!g_gpu_device || !g_gpu_device->Create(
                          g_settings.gpu_adapter,
                          g_settings.gpu_disable_shader_cache ? std::string_view() : std::string_view(EmuFolders::Cache),
-                         SHADER_CACHE_VERSION, g_settings.gpu_use_debug_device, System::IsHostVSyncEffectivelyEnabled(),
-                         System::IsHostVSyncEffectivelyEnabled() && !System::IsHostVSyncUsedForTiming(),
+                         SHADER_CACHE_VERSION, g_settings.gpu_use_debug_device, System::GetEffectiveVSyncMode(),
                          g_settings.gpu_threaded_presentation, exclusive_fullscreen_control,
                          static_cast<GPUDevice::FeatureMask>(disabled_features), &create_error))
   {

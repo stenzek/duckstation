@@ -160,6 +160,18 @@ std::optional<float> WindowInfo::QueryRefreshRateForWindow(const WindowInfo& wi)
   return ret;
 }
 
+#elif defined(__APPLE__)
+
+#include "util/platform_misc.h"
+
+std::optional<float> WindowInfo::QueryRefreshRateForWindow(const WindowInfo& wi)
+{
+  if (wi.type == WindowInfo::Type::MacOS)
+    return CocoaTools::GetViewRefreshRate(wi);
+
+  return std::nullopt;
+}
+
 #else
 
 #ifdef ENABLE_X11
