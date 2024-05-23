@@ -123,8 +123,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayAlignment, "Display", "Alignment",
                                                &Settings::ParseDisplayAlignment, &Settings::GetDisplayAlignmentName,
                                                Settings::DEFAULT_DISPLAY_ALIGNMENT);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayFPSLimit, "Display", "MaxFPS",
-                                              Settings::DEFAULT_DISPLAY_MAX_FPS);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuThread, "GPU", "UseThread", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.threadedPresentation, "GPU", "ThreadedPresentation", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.stretchDisplayVertically, "Display", "StretchVertically",
@@ -330,10 +328,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     m_ui.displayAlignment, tr("Position"),
     QString::fromUtf8(Settings::GetDisplayAlignmentDisplayName(Settings::DEFAULT_DISPLAY_ALIGNMENT)),
     tr("Determines the position on the screen when black borders must be added."));
-  dialog->registerWidgetHelp(
-    m_ui.displayFPSLimit, tr("Display FPS Limit"), tr("0"),
-    tr("Limits the number of frames that are <strong>displayed</strong> every second. Discard frames are <strong>still "
-       "rendered.</strong> This option can increase frame rates when fast forwarding on some systems."));
   dialog->registerWidgetHelp(m_ui.gpuThread, tr("Threaded Rendering"), tr("Checked"),
                              tr("Uses a second thread for drawing graphics. Currently only available for the software "
                                 "renderer, but can provide a significant speed improvement, and is safe to use."));

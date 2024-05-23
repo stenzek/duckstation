@@ -291,7 +291,6 @@ void Settings::Load(SettingsInterface& si)
   display_show_inputs = si.GetBoolValue("Display", "ShowInputs", false);
   display_show_enhancements = si.GetBoolValue("Display", "ShowEnhancements", false);
   display_stretch_vertically = si.GetBoolValue("Display", "StretchVertically", false);
-  display_max_fps = si.GetFloatValue("Display", "MaxFPS", DEFAULT_DISPLAY_MAX_FPS);
   display_osd_scale = si.GetFloatValue("Display", "OSDScale", DEFAULT_OSD_SCALE);
 
   cdrom_readahead_sectors =
@@ -548,7 +547,6 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   }
 
   si.SetBoolValue("Display", "StretchVertically", display_stretch_vertically);
-  si.SetFloatValue("Display", "MaxFPS", display_max_fps);
 
   si.SetIntValue("CDROM", "ReadaheadSectors", cdrom_readahead_sectors);
   si.SetStringValue("CDROM", "MechaconVersion", GetCDROMMechVersionName(cdrom_mechacon_version));

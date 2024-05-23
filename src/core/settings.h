@@ -166,7 +166,6 @@ struct Settings
   bool display_show_enhancements : 1 = false;
   bool display_stretch_vertically : 1 = false;
   float display_pre_frame_sleep_buffer = DEFAULT_DISPLAY_PRE_FRAME_SLEEP_BUFFER;
-  float display_max_fps = DEFAULT_DISPLAY_MAX_FPS;
   float display_osd_scale = 100.0f;
   float gpu_pgxp_tolerance = -1.0f;
   float gpu_pgxp_depth_clear_threshold = DEFAULT_GPU_PGXP_DEPTH_THRESHOLD / GPU_PGXP_DEPTH_THRESHOLD_SCALE;
@@ -507,11 +506,9 @@ struct Settings
 #ifndef __ANDROID__
   static constexpr bool DEFAULT_SAVE_STATE_BACKUPS = true;
   static constexpr bool DEFAULT_FAST_BOOT_VALUE = false;
-  static constexpr float DEFAULT_DISPLAY_MAX_FPS = 0.0f;
 #else
   static constexpr bool DEFAULT_SAVE_STATE_BACKUPS = false;
   static constexpr bool DEFAULT_FAST_BOOT_VALUE = true;
-  static constexpr float DEFAULT_DISPLAY_MAX_FPS = 60.0f;
 #endif
 };
 

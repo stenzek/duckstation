@@ -5086,10 +5086,6 @@ void FullscreenUI::DrawAdvancedSettingsPage()
   DrawToggleSetting(bsi, FSUI_CSTR("Show Enhancement Settings"),
                     FSUI_CSTR("Shows enhancement settings in the bottom-right corner of the screen."), "Display",
                     "ShowEnhancements", false);
-  DrawFloatRangeSetting(
-    bsi, FSUI_CSTR("Display FPS Limit"),
-    FSUI_CSTR("Limits how many frames are displayed to the screen. These frames are still rendered."), "Display",
-    "MaxFPS", Settings::DEFAULT_DISPLAY_MAX_FPS, 0.0f, 500.0f, "%.2f FPS");
   DrawToggleSetting(
     bsi, FSUI_CSTR("Stretch Display Vertically"),
     FSUI_CSTR("Stretches the display to match the aspect ratio by multiplying vertically instead of horizontally."),
