@@ -21,7 +21,7 @@ static bool SetScreensaverInhibitWin32(bool inhibit)
 {
   if (SetThreadExecutionState(ES_CONTINUOUS | (inhibit ? (ES_DISPLAY_REQUIRED | ES_SYSTEM_REQUIRED) : 0)) == NULL)
   {
-    Log_ErrorPrintf("SetThreadExecutionState() failed: %d", GetLastError());
+    Log_ErrorFmt("SetThreadExecutionState() failed: {}", GetLastError());
     return false;
   }
 
@@ -37,7 +37,7 @@ void PlatformMisc::SuspendScreensaver()
 
   if (!SetScreensaverInhibitWin32(true))
   {
-    Log_ErrorPrintf("Failed to suspend screensaver.");
+    Log_ErrorPrint("Failed to suspend screensaver.");
     return;
   }
 

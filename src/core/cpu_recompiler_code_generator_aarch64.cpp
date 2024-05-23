@@ -279,8 +279,8 @@ void CPU::CodeCache::DisassembleAndLogHostCode(const void* start, u32 size)
   protected:
     void ProcessOutput(const a64::Instruction* instr) override
     {
-      Log_DebugPrintf("0x%016" PRIx64 "  %08" PRIx32 "\t\t%s", reinterpret_cast<uint64_t>(instr),
-                      instr->GetInstructionBits(), GetOutput());
+      Log_DebugFmt("0x{:016X}  {:08X}\t\t{}", reinterpret_cast<uint64_t>(instr), instr->GetInstructionBits(),
+                   GetOutput());
     }
   };
 

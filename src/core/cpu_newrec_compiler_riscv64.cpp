@@ -173,7 +173,7 @@ void CPU::CodeCache::DisassembleAndLogHostCode(const void* start, u32 size)
     size_t instlen;
     inst_fetch(cur, &inst, &instlen);
     disasm_inst(buf, std::size(buf), rv64, static_cast<u64>(reinterpret_cast<uintptr_t>(cur)), inst);
-    Log_DebugPrintf("\t0x%016" PRIx64 "\t%s", static_cast<u64>(reinterpret_cast<uintptr_t>(cur)), buf);
+    Log_DebugFmt("\t0x{:016X}\t{}", static_cast<u64>(reinterpret_cast<uintptr_t>(cur)), buf);
     cur += instlen;
   }
 #else
@@ -665,7 +665,7 @@ void CPU::NewRec::RISCV64Compiler::EndAndLinkBlock(const std::optional<u32>& new
     if (newpc.value() == m_block->pc)
     {
       // Special case: ourselves! No need to backlink then.
-      Log_DebugPrintf("Linking block at %08X to self", m_block->pc);
+      Log_DebugFmt("Linking block at {:08X} to self", m_block->pc);
       rvEmitJmp(rvAsm, rvAsm->GetBufferPointer(0));
     }
     else
@@ -754,7 +754,7 @@ biscuit::GPR CPU::NewRec::RISCV64Compiler::CFGetSafeRegS(CompileFlags cf, const 
   }
   else
   {
-    Log_WarningPrintf("Hit memory path in CFGetSafeRegS() for %s", GetRegName(cf.MipsS()));
+    Log_WarningFmt("Hit memory path in CFGetSafeRegS() for {}", GetRegName(cf.MipsS()));
     rvAsm->LW(temp_reg, PTR(&g_state.regs.r[cf.mips_s]));
     return temp_reg;
   }
@@ -776,7 +776,7 @@ biscuit::GPR CPU::NewRec::RISCV64Compiler::CFGetSafeRegT(CompileFlags cf, const 
   }
   else
   {
-    Log_WarningPrintf("Hit memory path in CFGetSafeRegT() for %s", GetRegName(cf.MipsT()));
+    Log_WarningFmt("Hit memory path in CFGetSafeRegT() for {}", GetRegName(cf.MipsT()));
     rvAsm->LW(temp_reg, PTR(&g_state.regs.r[cf.mips_t]));
     return temp_reg;
   }
@@ -825,7 +825,7 @@ void CPU::NewRec::RISCV64Compiler::MoveSToReg(const biscuit::GPR& dst, CompileFl
   }
   else
   {
-    Log_WarningPrintf("Hit memory path in MoveSToReg() for %s", GetRegName(cf.MipsS()));
+    Log_WarningFmt("Hit memory path in MoveSToReg() for {}", GetRegName(cf.MipsS()));
     rvAsm->LW(dst, PTR(&g_state.regs.r[cf.mips_s]));
   }
 }
@@ -843,7 +843,7 @@ void CPU::NewRec::RISCV64Compiler::MoveTToReg(const biscuit::GPR& dst, CompileFl
   }
   else
   {
-    Log_WarningPrintf("Hit memory path in MoveTToReg() for %s", GetRegName(cf.MipsT()));
+    Log_WarningFmt("Hit memory path in MoveTToReg() for {}", GetRegName(cf.MipsT()));
     rvAsm->LW(dst, PTR(&g_state.regs.r[cf.mips_t]));
   }
 }
@@ -2214,7 +2214,7 @@ void CPU::NewRec::RISCV64Compiler::Compile_mtc0(CompileFlags cf)
   if (mask == 0)
   {
     // if it's a read-only register, ignore
-    Log_DebugPrintf("Ignoring write to read-only cop0 reg %u", static_cast<u32>(reg));
+    Log_DebugFmt("Ignoring write to read-only cop0 reg {}", static_cast<u32>(reg));
     return;
   }
 
@@ -2273,7 +2273,7 @@ void CPU::NewRec::RISCV64Compiler::Compile_mtc0(CompileFlags cf)
   if (reg == Cop0Reg::DCIC && g_settings.cpu_recompiler_memory_exceptions)
   {
     // TODO: DCIC handling for debug breakpoints
-    Log_WarningPrintf("TODO: DCIC handling for debug breakpoints");
+    Log_WarningPrint("TODO: DCIC handling for debug breakpoints");
   }
 }
 

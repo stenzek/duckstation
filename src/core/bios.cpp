@@ -223,7 +223,7 @@ const BIOS::ImageInfo* BIOS::GetInfoForImage(const Image& image, const Hash& has
       return &ii;
   }
 
-  Log_WarningPrintf("Unknown BIOS hash: %s", hash.ToString().c_str());
+  Log_WarningFmt("Unknown BIOS hash: {}", hash.ToString());
   return nullptr;
 }
 
@@ -246,14 +246,14 @@ void BIOS::PatchBIOS(u8* image, u32 image_size, u32 address, u32 value, u32 mask
   SmallString old_disasm, new_disasm;
   CPU::DisassembleInstruction(&old_disasm, address, existing_value);
   CPU::DisassembleInstruction(&new_disasm, address, new_value);
-  Log_DevPrintf("BIOS-Patch 0x%08X (+0x%X): 0x%08X %s -> %08X %s", address, offset, existing_value, old_disasm.c_str(),
-                new_value, new_disasm.c_str());
+  Log_DevFmt("BIOS-Patch 0x{:08X} (+0x{:X}): 0x{:08X} {} -> {:08X} {}", address, offset, existing_value, old_disasm,
+             new_value, new_disasm);
 }
 
 bool BIOS::PatchBIOSFastBoot(u8* image, u32 image_size)
 {
   // Replace the shell entry point with a return back to the bootstrap.
-  Log_InfoPrintf("Patching BIOS to skip intro");
+  Log_InfoPrint("Patching BIOS to skip intro");
   PatchBIOS(image, image_size, 0x1FC18000, 0x3C011F80); // lui at, 1f80
   PatchBIOS(image, image_size, 0x1FC18004, 0x3C0A0300); // lui t2, 0300h
   PatchBIOS(image, image_size, 0x1FC18008, 0xAC2A1814); // sw zero, 1814h(at)        ; turn the display on
@@ -308,8 +308,8 @@ bool BIOS::IsValidPSExeHeader(const PSEXEHeader& header, u32 file_size)
 
   if ((header.file_size + sizeof(PSEXEHeader)) > file_size)
   {
-    Log_WarningPrintf("Incorrect file size in PS-EXE header: %u bytes should not be greater than %u bytes",
-                      header.file_size, static_cast<unsigned>(file_size - sizeof(PSEXEHeader)));
+    Log_WarningFmt("Incorrect file size in PS-EXE header: {} bytes should not be greater than {} bytes",
+                   header.file_size, static_cast<unsigned>(file_size - sizeof(PSEXEHeader)));
   }
 
   return true;

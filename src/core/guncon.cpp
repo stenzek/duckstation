@@ -217,7 +217,7 @@ void GunCon::UpdatePosition()
       !g_gpu->ConvertDisplayCoordinatesToBeamTicksAndLines(display_x, display_y, m_x_scale, &tick, &line) ||
       m_shoot_offscreen)
   {
-    Log_DebugPrintf("Lightgun out of range for window coordinates %.0f,%.0f", window_x, window_y);
+    Log_DebugFmt("Lightgun out of range for window coordinates {:.0f},{:.0f}", window_x, window_y);
     m_position_x = 0x01;
     m_position_y = 0x0A;
     return;
@@ -227,8 +227,8 @@ void GunCon::UpdatePosition()
   const double divider = static_cast<double>(g_gpu->GetCRTCFrequency()) / 8000000.0;
   m_position_x = static_cast<u16>(static_cast<float>(tick) / static_cast<float>(divider));
   m_position_y = static_cast<u16>(line);
-  Log_DebugPrintf("Lightgun window coordinates %.0f,%.0f -> tick %u line %u 8mhz ticks %u", display_x, display_y, tick,
-                  line, m_position_x);
+  Log_DebugFmt("Lightgun window coordinates {:.0f},{:.0f} -> tick {} line {} 8mhz ticks {}", display_x, display_y, tick,
+               line, m_position_x);
 }
 
 std::pair<float, float> GunCon::GetAbsolutePositionFromRelativeAxes() const

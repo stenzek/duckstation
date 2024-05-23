@@ -30,19 +30,19 @@ bool Win32RawInputSource::Initialize(SettingsInterface& si, std::unique_lock<std
 {
   if (!RegisterDummyClass())
   {
-    Log_ErrorPrintf("(Win32RawInputSource) Failed to register dummy window class");
+    Log_ErrorPrint("Failed to register dummy window class");
     return false;
   }
 
   if (!CreateDummyWindow())
   {
-    Log_ErrorPrintf("(Win32RawInputSource) Failed to create dummy window");
+    Log_ErrorPrint("Failed to create dummy window");
     return false;
   }
 
   if (!OpenDevices())
   {
-    Log_ErrorPrintf("(Win32RawInputSource) Failed to open devices");
+    Log_ErrorPrint("Failed to open devices");
     return false;
   }
 
@@ -182,7 +182,7 @@ bool Win32RawInputSource::OpenDevices()
       m_mice.push_back({rid.hDevice, 0u, 0, 0});
   }
 
-  Log_DevPrintf("(Win32RawInputSource) Found %u keyboards and %zu mice", m_num_keyboards, m_mice.size());
+  Log_DevFmt("Found {} keyboards and {} mice", m_num_keyboards, m_mice.size());
 
   // Grab all keyboard/mouse input.
   if (m_num_keyboards > 0)

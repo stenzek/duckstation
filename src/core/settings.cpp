@@ -735,7 +735,7 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
 #ifndef ENABLE_MMAP_FASTMEM
   if (g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
   {
-    Log_WarningPrintf("mmap fastmem is not available on this platform, using LUT instead.");
+    Log_WarningPrint("mmap fastmem is not available on this platform, using LUT instead.");
     g_settings.cpu_fastmem_mode = CPUFastmemMode::LUT;
   }
 #endif
@@ -770,7 +770,7 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     // be unlinked. Which would be thousands of blocks.
     if (g_settings.cpu_recompiler_block_linking)
     {
-      Log_WarningPrintf("Disabling block linking due to runahead.");
+      Log_WarningPrint("Disabling block linking due to runahead.");
       g_settings.cpu_recompiler_block_linking = false;
     }
   }

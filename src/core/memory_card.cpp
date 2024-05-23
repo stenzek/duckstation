@@ -143,7 +143,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
       const u8 bits = m_data[ZeroExtend32(m_address) * MemoryCardImage::FRAME_SIZE + m_sector_offset];
       if (m_sector_offset == 0)
       {
-        Log_DevPrintf("Reading memory card sector %u", ZeroExtend32(m_address));
+        Log_DevFmt("Reading memory card sector {}", m_address);
         m_checksum = Truncate8(m_address >> 8) ^ Truncate8(m_address) ^ bits;
       }
       else
@@ -177,7 +177,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
     {
       if (m_sector_offset == 0)
       {
-        Log_InfoPrintf("Writing memory card sector %u", ZeroExtend32(m_address));
+        Log_InfoFmt("Writing memory card sector {}", m_address);
         m_checksum = Truncate8(m_address >> 8) ^ Truncate8(m_address) ^ data_in;
         m_FLAG.no_write_yet = false;
       }
@@ -249,12 +249,13 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
         break;
 
         default:
-        {
-          Log_ErrorPrintf("Invalid command 0x%02X", ZeroExtend32(data_in));
-          *data_out = m_FLAG.bits;
-          ack = false;
-          m_state = State::Idle;
-        }
+          [[unlikely]]
+          {
+            Log_ErrorFmt("Invalid command 0x{:02X}", data_in);
+            *data_out = m_FLAG.bits;
+            ack = false;
+            m_state = State::Idle;
+          }
       }
     }
     break;
@@ -264,8 +265,8 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
       break;
   }
 
-  Log_DebugPrintf("Transfer, old_state=%u, new_state=%u, data_in=0x%02X, data_out=0x%02X, ack=%s",
-                  static_cast<u32>(old_state), static_cast<u32>(m_state), data_in, *data_out, ack ? "true" : "false");
+  Log_DebugFmt("Transfer, old_state={}, new_state={}, data_in=0x{:02X}, data_out=0x{:02X}, ack={}",
+               static_cast<u32>(old_state), static_cast<u32>(m_state), data_in, *data_out, ack ? "true" : "false");
   m_last_byte = data_in;
   return ack;
 }

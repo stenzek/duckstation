@@ -14,6 +14,7 @@
 
 #include "common/assert.h"
 #include "common/byte_stream.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/heterogeneous_containers.h"
 #include "common/log.h"
@@ -150,7 +151,7 @@ bool GameList::GetExeListEntry(const std::string& path, GameList::Entry* entry)
 
   if (!BIOS::IsValidPSExeHeader(header, file_size))
   {
-    Log_DebugPrintf("%s is not a valid PS-EXE", path.c_str());
+    Log_WarningFmt("{} is not a valid PS-EXE", path);
     return false;
   }
 
@@ -285,7 +286,7 @@ bool GameList::GetDiscListEntry(const std::string& path, Entry* entry)
     {
       if (!cdi->SwitchSubImage(i, nullptr))
       {
-        Log_ErrorPrintf("Failed to switch to subimage %u in '%s'", i, entry->path.c_str());
+        Log_ErrorFmt("Failed to switch to subimage {} in '{}'", i, entry->path);
         continue;
       }
 
@@ -322,7 +323,7 @@ bool GameList::LoadEntriesFromCache(ByteStream* stream)
   if (!stream->ReadU32(&file_signature) || !stream->ReadU32(&file_version) ||
       file_signature != GAME_LIST_CACHE_SIGNATURE || file_version != GAME_LIST_CACHE_VERSION)
   {
-    Log_WarningPrintf("Game list cache is corrupted");
+    Log_WarningPrint("Game list cache is corrupted");
     return false;
   }
 
@@ -347,7 +348,7 @@ bool GameList::LoadEntriesFromCache(ByteStream* stream)
         region >= static_cast<u8>(DiscRegion::Count) || type >= static_cast<u8>(EntryType::Count) ||
         compatibility_rating >= static_cast<u8>(GameDatabase::CompatibilityRating::Count))
     {
-      Log_WarningPrintf("Game list cache entry is corrupted");
+      Log_WarningPrint("Game list cache entry is corrupted");
       return false;
     }
 
@@ -408,7 +409,7 @@ void GameList::LoadCache()
 
   if (!LoadEntriesFromCache(stream.get()))
   {
-    Log_WarningPrintf("Deleting corrupted cache file '%s'", filename.c_str());
+    Log_WarningFmt("Deleting corrupted cache file '{}'", Path::GetFileName(filename));
     stream.reset();
     s_cache_map.clear();
     DeleteCacheFile();
@@ -437,7 +438,7 @@ bool GameList::OpenCacheForWriting()
     s_cache_write_stream.reset();
   }
 
-  Log_InfoPrintf("Creating new game list cache file: '%s'", cache_filename.c_str());
+  Log_InfoFmt("Creating new game list cache file: '{}'", Path::GetFileName(cache_filename));
 
   s_cache_write_stream = ByteStream::OpenFile(
     cache_filename.c_str(), BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_TRUNCATE | BYTESTREAM_OPEN_WRITE);
@@ -448,7 +449,7 @@ bool GameList::OpenCacheForWriting()
   if (!s_cache_write_stream->WriteU32(GAME_LIST_CACHE_SIGNATURE) ||
       !s_cache_write_stream->WriteU32(GAME_LIST_CACHE_VERSION))
   {
-    Log_ErrorPrintf("Failed to write game list cache header");
+    Log_ErrorPrint("Failed to write game list cache header");
     s_cache_write_stream.reset();
     FileSystem::DeleteFile(cache_filename.c_str());
     return false;
@@ -474,10 +475,11 @@ void GameList::DeleteCacheFile()
   if (!FileSystem::FileExists(filename.c_str()))
     return;
 
-  if (FileSystem::DeleteFile(filename.c_str()))
-    Log_InfoPrintf("Deleted game list cache '%s'", filename.c_str());
+  Error error;
+  if (FileSystem::DeleteFile(filename.c_str(), &error))
+    Log_InfoFmt("Deleted game list cache '{}'", Path::GetFileName(filename));
   else
-    Log_WarningPrintf("Failed to delete game list cache '%s'", filename.c_str());
+    Log_WarningFmt("Failed to delete game list cache '{}': {}", Path::GetFileName(filename), error.GetDescription());
 }
 
 static bool IsPathExcluded(const std::vector<std::string>& excluded_paths, const std::string& path)
@@ -490,9 +492,9 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache,
                              const std::vector<std::string>& excluded_paths, const PlayedTimeMap& played_time_map,
                              ProgressCallback* progress)
 {
-  Log_InfoPrintf("Scanning %s%s", path, recursive ? " (recursively)" : "");
+  Log_InfoFmt("Scanning {}{}", path, recursive ? " (recursively)" : "");
 
-  progress->SetFormattedStatusText("Scanning directory '%s'%s...", path, recursive ? " (recursively)" : "");
+  progress->SetStatusText(SmallString::from_format(TRANSLATE_FS("GameList", "Scanning directory '{}'..."), path));
 
   FileSystem::FindResultsArray files;
   FileSystem::FindFiles(path, "*",
@@ -524,7 +526,8 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache,
       continue;
     }
 
-    progress->SetFormattedStatusText("Scanning '%s'...", FileSystem::GetDisplayNameFromPath(ffd.FileName).c_str());
+    progress->SetStatusText(SmallString::from_format(TRANSLATE_FS("GameList", "Scanning '{}'..."),
+                                                     FileSystem::GetDisplayNameFromPath(ffd.FileName)));
     ScanFile(std::move(ffd.FileName), ffd.ModificationTime, lock, played_time_map);
     progress->SetProgressValue(files_scanned);
   }
@@ -556,7 +559,7 @@ bool GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_loc
   // don't block UI while scanning
   lock.unlock();
 
-  Log_DevPrintf("Scanning '%s'...", path.c_str());
+  Log_DevFmt("Scanning '{}'...", path);
 
   Entry entry;
   if (!PopulateEntryFromPath(path, &entry))
@@ -567,8 +570,8 @@ bool GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_loc
 
   if (s_cache_write_stream || OpenCacheForWriting())
   {
-    if (!WriteEntryToCache(&entry))
-      Log_WarningPrintf("Failed to write entry '%s' to cache", entry.path.c_str());
+    if (!WriteEntryToCache(&entry)) [[unlikely]]
+      Log_WarningFmt("Failed to write entry '{}' to cache", entry.path);
   }
 
   auto iter = played_time_map.find(entry.serial);
@@ -944,7 +947,7 @@ bool GameList::ParsePlayedTimeLine(char* line, std::string& serial, PlayedTimeEn
   size_t len = std::strlen(line);
   if (len != (PLAYED_TIME_LINE_LENGTH + 1)) // \n
   {
-    Log_WarningPrintf("Malformed line: '%s'", line);
+    Log_WarningFmt("Malformed line: '{}'", line);
     return false;
   }
 
@@ -958,7 +961,7 @@ bool GameList::ParsePlayedTimeLine(char* line, std::string& serial, PlayedTimeEn
   const std::optional<u64> last_played_time(StringUtil::FromChars<u64>(last_played_time_tok));
   if (serial_tok.empty() || !last_played_time.has_value() || !total_played_time.has_value())
   {
-    Log_WarningPrintf("Malformed line: '%s'", line);
+    Log_WarningFmt("Malformed line: '{}'", line);
     return false;
   }
 
@@ -1007,7 +1010,7 @@ GameList::PlayedTimeMap GameList::LoadPlayedTimeMap(const std::string& path)
 
       if (ret.find(serial) != ret.end())
       {
-        Log_WarningPrintf("Duplicate entry: '%s'", serial.c_str());
+        Log_WarningFmt("Duplicate entry: '%s'", serial);
         continue;
       }
 
@@ -1040,7 +1043,7 @@ GameList::PlayedTimeEntry GameList::UpdatePlayedTimeFile(const std::string& path
 
   if (!fp)
   {
-    Log_ErrorPrintf("Failed to open '%s' for update.", path.c_str());
+    Log_ErrorFmt("Failed to open '{}' for update.", path);
     return new_entry;
   }
 
@@ -1071,7 +1074,7 @@ GameList::PlayedTimeEntry GameList::UpdatePlayedTimeFile(const std::string& path
     if (FileSystem::FSeek64(fp.get(), line_pos, SEEK_SET) != 0 ||
         std::fwrite(new_line.data(), new_line.length(), 1, fp.get()) != 1)
     {
-      Log_ErrorPrintf("Failed to update '%s'.", path.c_str());
+      Log_ErrorFmt("Failed to update '%s'.", path);
     }
 
     return line_entry;
@@ -1084,7 +1087,7 @@ GameList::PlayedTimeEntry GameList::UpdatePlayedTimeFile(const std::string& path
     if (FileSystem::FSeek64(fp.get(), 0, SEEK_END) != 0 ||
         std::fwrite(new_line.data(), new_line.length(), 1, fp.get()) != 1)
     {
-      Log_ErrorPrintf("Failed to write '%s'.", path.c_str());
+      Log_ErrorFmt("Failed to write '%s'.", path);
     }
   }
 
@@ -1097,8 +1100,8 @@ void GameList::AddPlayedTimeForSerial(const std::string& serial, std::time_t las
     return;
 
   const PlayedTimeEntry pt(UpdatePlayedTimeFile(GetPlayedTimeFile(), serial, last_time, add_time));
-  Log_VerbosePrintf("Add %u seconds play time to %s -> now %u", static_cast<unsigned>(add_time), serial.c_str(),
-                    static_cast<unsigned>(pt.total_played_time));
+  Log_VerboseFmt("Add {} seconds play time to {} -> now {}", static_cast<unsigned>(add_time), serial.c_str(),
+                 static_cast<unsigned>(pt.total_played_time));
 
   std::unique_lock<std::recursive_mutex> lock(s_mutex);
   for (GameList::Entry& entry : s_entries)

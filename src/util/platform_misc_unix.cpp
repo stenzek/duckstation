@@ -30,7 +30,7 @@ static bool SetScreensaverInhibitDBus(const bool inhibit_requested, const char* 
   ScopedGuard cleanup = [&]() {
     if (dbus_error_is_set(&error))
     {
-      Log_ErrorPrintf("SetScreensaverInhibitDBus error: %s", error.message);
+      Log_ErrorFmt("SetScreensaverInhibitDBus error: {}", error.message);
       dbus_error_free(&error);
     }
     if (message)

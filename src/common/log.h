@@ -17,11 +17,11 @@ enum LOGLEVEL
   LOGLEVEL_NONE = 0,    // Silences all log traffic
   LOGLEVEL_ERROR = 1,   // "ErrorPrint"
   LOGLEVEL_WARNING = 2, // "WarningPrint"
-  LOGLEVEL_PERF = 3,    // "PerfPrint"
+  LOGLEVEL_PERF = 3,    // "PerfPrint" // TODO: Purge
   LOGLEVEL_INFO = 4,    // "InfoPrint"
   LOGLEVEL_VERBOSE = 5, // "VerbosePrint"
   LOGLEVEL_DEV = 6,     // "DevPrint"
-  LOGLEVEL_PROFILE = 7, // "ProfilePrint"
+  LOGLEVEL_PROFILE = 7, // "ProfilePrint" // TODO: Purge
   LOGLEVEL_DEBUG = 8,   // "DebugPrint"
   LOGLEVEL_TRACE = 9,   // "TracePrint"
   LOGLEVEL_COUNT = 10

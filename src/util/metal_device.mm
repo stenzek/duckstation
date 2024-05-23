@@ -178,7 +178,7 @@ bool MetalDevice::CreateDevice(std::string_view adapter, bool threaded_presentat
 
     m_device = [device retain];
     m_queue = [queue retain];
-    Log_InfoPrintf("Metal Device: %s", [[m_device name] UTF8String]);
+    Log_InfoFmt("Metal Device: {}", [[m_device name] UTF8String]);
 
     SetFeatures(disabled_features);
 
@@ -469,7 +469,7 @@ bool MetalDevice::UpdateWindow()
 
   if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateLayer())
   {
-    Log_ErrorPrintf("Failed to create layer on updated window");
+    Log_ErrorPrint("Failed to create layer on updated window");
     return false;
   }
 
@@ -515,7 +515,7 @@ bool MetalDevice::CreateBuffers()
       !m_uniform_buffer.Create(m_device, UNIFORM_BUFFER_SIZE) ||
       !m_texture_upload_buffer.Create(m_device, TEXTURE_STREAM_BUFFER_SIZE))
   {
-    Log_ErrorPrintf("Failed to create vertex/index/uniform buffers.");
+    Log_ErrorPrint("Failed to create vertex/index/uniform buffers.");
     return false;
   }
 
@@ -635,7 +635,7 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromMSL(GPUShaderStage stage
     id<MTLFunction> function = [library newFunctionWithName:StringViewToNSString(entry_point)];
     if (!function)
     {
-      Log_ErrorPrintf("Failed to get main function in compiled library");
+      Log_ErrorPrint("Failed to get main function in compiled library");
       return {};
     }
 
@@ -834,8 +834,8 @@ id<MTLDepthStencilState> MetalDevice::GetDepthState(const GPUPipeline::DepthStat
 
     id<MTLDepthStencilState> state = [m_device newDepthStencilStateWithDescriptor:desc];
     m_depth_states.emplace(ds.key, state);
-    if (state == nil)
-      Log_ErrorPrintf("Failed to create depth-stencil state.");
+    if (state == nil) [[unlikely]]
+      Log_ErrorPrint("Failed to create depth-stencil state.");
 
     return state;
   }
@@ -1216,7 +1216,7 @@ std::unique_ptr<GPUTexture> MetalDevice::CreateTexture(u32 width, u32 height, u3
     id<MTLTexture> tex = [m_device newTextureWithDescriptor:desc];
     if (tex == nil)
     {
-      Log_ErrorPrintf("Failed to create %ux%u texture.", width, height);
+      Log_ErrorFmt("Failed to create {}x{} texture.", width, height);
       return {};
     }
 
@@ -1460,7 +1460,7 @@ std::unique_ptr<GPUSampler> MetalDevice::CreateSampler(const GPUSampler::Config&
       }
       if (i == std::size(border_color_mapping))
       {
-        Log_ErrorPrintf("Unsupported border color: %08X", config.border_color.GetValue());
+        Log_ErrorFmt("Unsupported border color: {:08X}", config.border_color.GetValue());
         return {};
       }
 
@@ -1471,7 +1471,7 @@ std::unique_ptr<GPUSampler> MetalDevice::CreateSampler(const GPUSampler::Config&
     id<MTLSamplerState> ss = [m_device newSamplerStateWithDescriptor:desc];
     if (ss == nil)
     {
-      Log_ErrorPrintf("Failed to create sampler state.");
+      Log_ErrorPrint("Failed to create sampler state.");
       return {};
     }
 
@@ -2557,7 +2557,7 @@ void MetalDevice::SubmitCommandBuffer(bool wait_for_completion)
 
 void MetalDevice::SubmitCommandBufferAndRestartRenderPass(const char* reason)
 {
-  Log_DevPrintf("Submitting command buffer and restarting render pass due to %s", reason);
+  Log_DevFmt("Submitting command buffer and restarting render pass due to {}", reason);
 
   const bool in_render_pass = InRenderPass();
   SubmitCommandBuffer();

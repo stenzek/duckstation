@@ -87,11 +87,11 @@ D3D12Device::ComPtr<ID3DBlob> D3D12Device::SerializeRootSignature(const D3D12_RO
   ComPtr<ID3DBlob> error_blob;
   const HRESULT hr =
     D3D12SerializeRootSignature(desc, D3D_ROOT_SIGNATURE_VERSION_1, blob.GetAddressOf(), error_blob.GetAddressOf());
-  if (FAILED(hr))
+  if (FAILED(hr)) [[unlikely]]
   {
-    Log_ErrorPrintf("D3D12SerializeRootSignature() failed: %08X", hr);
+    Log_ErrorFmt("D3D12SerializeRootSignature() failed: {:08X}", static_cast<unsigned>(hr));
     if (error_blob)
-      Log_ErrorPrintf("%s", error_blob->GetBufferPointer());
+      Log_ErrorPrint(static_cast<const char*>(error_blob->GetBufferPointer()));
 
     return {};
   }
@@ -108,9 +108,9 @@ D3D12Device::ComPtr<ID3D12RootSignature> D3D12Device::CreateRootSignature(const 
   ComPtr<ID3D12RootSignature> rs;
   const HRESULT hr =
     m_device->CreateRootSignature(0, blob->GetBufferPointer(), blob->GetBufferSize(), IID_PPV_ARGS(rs.GetAddressOf()));
-  if (FAILED(hr))
+  if (FAILED(hr)) [[unlikely]]
   {
-    Log_ErrorPrintf("CreateRootSignature() failed: %08X", hr);
+    Log_ErrorFmt("CreateRootSignature() failed: {:08X}", static_cast<unsigned>(hr));
     return {};
   }
 
@@ -142,7 +142,7 @@ bool D3D12Device::CreateDevice(std::string_view adapter, bool threaded_presentat
     }
     else
     {
-      Log_ErrorPrintf("Debug layer requested but not available.");
+      Log_ErrorPrint("Debug layer requested but not available.");
       m_debug_device = false;
     }
   }
@@ -160,7 +160,7 @@ bool D3D12Device::CreateDevice(std::string_view adapter, bool threaded_presentat
   {
     const LUID luid(m_device->GetAdapterLuid());
     if (FAILED(m_dxgi_factory->EnumAdapterByLuid(luid, IID_PPV_ARGS(m_adapter.GetAddressOf()))))
-      Log_ErrorPrintf("Failed to get lookup adapter by device LUID");
+      Log_ErrorPrint("Failed to get lookup adapter by device LUID");
   }
 
   if (m_debug_device)
@@ -333,7 +333,7 @@ bool D3D12Device::GetPipelineCacheData(DynamicHeapArray<u8>* data)
   const size_t size = m_pipeline_library->GetSerializedSize();
   if (size == 0)
   {
-    Log_WarningPrintf("Empty serialized pipeline state returned.");
+    Log_WarningPrint("Empty serialized pipeline state returned.");
     return false;
   }
 
@@ -341,7 +341,7 @@ bool D3D12Device::GetPipelineCacheData(DynamicHeapArray<u8>* data)
   const HRESULT hr = m_pipeline_library->Serialize(data->data(), data->size());
   if (FAILED(hr))
   {
-    Log_ErrorPrintf("Serialize() failed with HRESULT %08X", hr);
+    Log_ErrorFmt("Serialize() failed with HRESULT {:08X}", static_cast<unsigned>(hr));
     data->deallocate();
     return false;
   }
@@ -362,7 +362,7 @@ bool D3D12Device::CreateCommandLists()
                                             IID_PPV_ARGS(res.command_allocators[j].GetAddressOf()));
       if (FAILED(hr))
       {
-        Log_ErrorPrintf("CreateCommandAllocator() failed: %08X", hr);
+        Log_ErrorFmt("CreateCommandAllocator() failed: {:08X}", static_cast<unsigned>(hr));
         return false;
       }
 
@@ -370,7 +370,7 @@ bool D3D12Device::CreateCommandLists()
                                        IID_PPV_ARGS(res.command_lists[j].GetAddressOf()));
       if (FAILED(hr))
       {
-        Log_ErrorPrintf("CreateCommandList() failed: %08X", hr);
+        Log_ErrorFmt("CreateCommandList() failed: {:08X}", static_cast<unsigned>(hr));
         return false;
       }
 
@@ -378,7 +378,7 @@ bool D3D12Device::CreateCommandLists()
       hr = res.command_lists[j]->Close();
       if (FAILED(hr))
       {
-        Log_ErrorPrintf("Close() failed: %08X", hr);
+        Log_ErrorFmt("Close() failed: {:08X}", static_cast<unsigned>(hr));
         return false;
       }
     }
@@ -386,13 +386,13 @@ bool D3D12Device::CreateCommandLists()
     if (!res.descriptor_allocator.Create(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
                                          MAX_DESCRIPTORS_PER_FRAME))
     {
-      Log_ErrorPrintf("Failed to create per frame descriptor allocator");
+      Log_ErrorPrint("Failed to create per frame descriptor allocator");
       return false;
     }
 
     if (!res.sampler_allocator.Create(m_device.Get(), MAX_SAMPLERS_PER_FRAME))
     {
-      Log_ErrorPrintf("Failed to create per frame sampler allocator");
+      Log_ErrorPrint("Failed to create per frame sampler allocator");
       return false;
     }
   }
@@ -439,7 +439,7 @@ void D3D12Device::MoveToNextCommandList()
     }
     else
     {
-      Log_WarningPrintf("Map() for timestamp query failed: %08X", hr);
+      Log_WarningFmt("Map() for timestamp query failed: {:08X}", static_cast<unsigned>(hr));
     }
   }
 
@@ -549,18 +549,18 @@ void D3D12Device::SubmitCommandList(bool wait_for_completion)
   if (res.init_list_used)
   {
     hr = res.command_lists[0]->Close();
-    if (FAILED(hr))
+    if (FAILED(hr)) [[unlikely]]
     {
-      Log_ErrorPrintf("Closing init command list failed with HRESULT %08X", hr);
+      Log_ErrorFmt("Closing init command list failed with HRESULT {:08X}", static_cast<unsigned>(hr));
       Panic("TODO cannot continue");
     }
   }
 
   // Close and queue command list.
   hr = res.command_lists[1]->Close();
-  if (FAILED(hr))
+  if (FAILED(hr)) [[unlikely]]
   {
-    Log_ErrorPrintf("Closing main command list failed with HRESULT %08X", hr);
+    Log_ErrorFmt("Closing main command list failed with HRESULT {:08X}", static_cast<unsigned>(hr));
     Panic("TODO cannot continue");
   }
 
@@ -592,7 +592,7 @@ void D3D12Device::SubmitCommandList(bool wait_for_completion, const char* reason
   const std::string reason_str(StringUtil::StdStringFromFormatV(reason, ap));
   va_end(ap);
 
-  Log_WarningPrintf("Executing command buffer due to '%s'", reason_str.c_str());
+  Log_WarningFmt("Executing command buffer due to '{}'", reason_str);
   SubmitCommandList(wait_for_completion);
 }
 
@@ -647,7 +647,7 @@ bool D3D12Device::CreateTimestampQuery()
   HRESULT hr = m_device->CreateQueryHeap(&desc, IID_PPV_ARGS(m_timestamp_query_heap.GetAddressOf()));
   if (FAILED(hr))
   {
-    Log_ErrorPrintf("CreateQueryHeap() for timestamp failed with %08X", hr);
+    Log_ErrorFmt("CreateQueryHeap() for timestamp failed with {:08X}", static_cast<unsigned>(hr));
     m_features.gpu_timing = false;
     return false;
   }
@@ -669,7 +669,7 @@ bool D3D12Device::CreateTimestampQuery()
                                    IID_PPV_ARGS(m_timestamp_query_buffer.GetAddressOf()));
   if (FAILED(hr))
   {
-    Log_ErrorPrintf("CreateResource() for timestamp failed with %08X", hr);
+    Log_ErrorFmt("CreateResource() for timestamp failed with {:08X}", static_cast<unsigned>(hr));
     m_features.gpu_timing = false;
     return false;
   }
@@ -678,7 +678,7 @@ bool D3D12Device::CreateTimestampQuery()
   hr = m_command_queue->GetTimestampFrequency(&frequency);
   if (FAILED(hr))
   {
-    Log_ErrorPrintf("GetTimestampFrequency() failed: %08X", hr);
+    Log_ErrorFmt("GetTimestampFrequency() failed: {:08X}", static_cast<unsigned>(hr));
     m_features.gpu_timing = false;
     return false;
   }
@@ -860,7 +860,7 @@ bool D3D12Device::CreateSwapChain()
     fs_desc.Scaling = fullscreen_mode.Scaling;
     fs_desc.Windowed = FALSE;
 
-    Log_VerbosePrintf("Creating a %dx%d exclusive fullscreen swap chain", fs_sd_desc.Width, fs_sd_desc.Height);
+    Log_VerboseFmt("Creating a {}x{} exclusive fullscreen swap chain", fs_sd_desc.Width, fs_sd_desc.Height);
     hr = m_dxgi_factory->CreateSwapChainForHwnd(m_command_queue.Get(), window_hwnd, &fs_sd_desc, &fs_desc,
                                                 fullscreen_output.Get(), m_swap_chain.ReleaseAndGetAddressOf());
     if (FAILED(hr))
@@ -873,7 +873,7 @@ bool D3D12Device::CreateSwapChain()
 
   if (!m_is_exclusive_fullscreen)
   {
-    Log_VerbosePrintf("Creating a %dx%d windowed swap chain", swap_chain_desc.Width, swap_chain_desc.Height);
+    Log_VerboseFmt("Creating a {}x{} windowed swap chain", swap_chain_desc.Width, swap_chain_desc.Height);
     hr = m_dxgi_factory->CreateSwapChainForHwnd(m_command_queue.Get(), window_hwnd, &swap_chain_desc, nullptr, nullptr,
                                                 m_swap_chain.ReleaseAndGetAddressOf());
   }
@@ -908,7 +908,7 @@ bool D3D12Device::CreateSwapChainRTV()
     hr = m_swap_chain->GetBuffer(i, IID_PPV_ARGS(backbuffer.GetAddressOf()));
     if (FAILED(hr))
     {
-      Log_ErrorPrintf("GetBuffer for RTV failed: 0x%08X", hr);
+      Log_ErrorFmt("GetBuffer for RTV failed: 0x{:08X}", static_cast<unsigned>(hr));
       DestroySwapChainRTVs();
       return false;
     }
@@ -918,7 +918,7 @@ bool D3D12Device::CreateSwapChainRTV()
     D3D12DescriptorHandle rtv;
     if (!m_rtv_heap_manager.Allocate(&rtv))
     {
-      Log_ErrorPrintf("Failed to allocate RTV handle");
+      Log_ErrorPrint("Failed to allocate RTV handle");
       DestroySwapChainRTVs();
       return false;
     }
@@ -930,7 +930,7 @@ bool D3D12Device::CreateSwapChainRTV()
   m_window_info.surface_width = swap_chain_desc.BufferDesc.Width;
   m_window_info.surface_height = swap_chain_desc.BufferDesc.Height;
   m_window_info.surface_format = s_swap_chain_format;
-  Log_VerbosePrintf("Swap chain buffer size: %ux%u", m_window_info.surface_width, m_window_info.surface_height);
+  Log_VerboseFmt("Swap chain buffer size: {}x{}", m_window_info.surface_width, m_window_info.surface_height);
 
   if (m_window_info.type == WindowInfo::Type::Win32)
   {
@@ -1014,7 +1014,7 @@ bool D3D12Device::UpdateWindow()
 
   if (!CreateSwapChain())
   {
-    Log_ErrorPrintf("Failed to create swap chain on updated window");
+    Log_ErrorPrint("Failed to create swap chain on updated window");
     return false;
   }
 
@@ -1040,7 +1040,7 @@ void D3D12Device::ResizeWindow(s32 new_window_width, s32 new_window_height, floa
   HRESULT hr = m_swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN,
                                            m_using_allow_tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
   if (FAILED(hr))
-    Log_ErrorPrintf("ResizeBuffers() failed: 0x%08X", hr);
+    Log_ErrorFmt("ResizeBuffers() failed: 0x{:08X}", static_cast<unsigned>(hr));
 
   if (!CreateSwapChainRTV())
     Panic("Failed to recreate swap chain RTV after resize");

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2023-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "gpu_shader_cache.h"
@@ -8,6 +8,7 @@
 #include "common/heap_array.h"
 #include "common/log.h"
 #include "common/md5_digest.h"
+#include "common/path.h"
 
 #include "fmt/format.h"
 
@@ -97,7 +98,7 @@ void GPUShaderCache::Clear()
 
   Close();
 
-  Log_WarningPrintf("Clearing shader cache at %s.", m_base_filename.c_str());
+  Log_WarningFmt("Clearing shader cache at {}.", Path::GetFileName(m_base_filename));
 
   const std::string index_filename = fmt::format("{}.idx", m_base_filename);
   const std::string blob_filename = fmt::format("{}.bin", m_base_filename);
@@ -108,25 +109,25 @@ bool GPUShaderCache::CreateNew(const std::string& index_filename, const std::str
 {
   if (FileSystem::FileExists(index_filename.c_str()))
   {
-    Log_WarningPrintf("Removing existing index file '%s'", index_filename.c_str());
+    Log_WarningFmt("Removing existing index file '{}'", Path::GetFileName(index_filename));
     FileSystem::DeleteFile(index_filename.c_str());
   }
   if (FileSystem::FileExists(blob_filename.c_str()))
   {
-    Log_WarningPrintf("Removing existing blob file '%s'", blob_filename.c_str());
+    Log_WarningFmt("Removing existing blob file '{}'", Path::GetFileName(blob_filename));
     FileSystem::DeleteFile(blob_filename.c_str());
   }
 
   m_index_file = FileSystem::OpenCFile(index_filename.c_str(), "wb");
-  if (!m_index_file)
+  if (!m_index_file) [[unlikely]]
   {
-    Log_ErrorPrintf("Failed to open index file '%s' for writing", index_filename.c_str());
+    Log_ErrorFmt("Failed to open index file '{}' for writing", Path::GetFileName(index_filename));
     return false;
   }
 
-  if (std::fwrite(&m_version, sizeof(m_version), 1, m_index_file) != 1)
+  if (std::fwrite(&m_version, sizeof(m_version), 1, m_index_file) != 1) [[unlikely]]
   {
-    Log_ErrorPrintf("Failed to write version to index file '%s'", index_filename.c_str());
+    Log_ErrorFmt("Failed to write version to index file '{}'", Path::GetFileName(index_filename));
     std::fclose(m_index_file);
     m_index_file = nullptr;
     FileSystem::DeleteFile(index_filename.c_str());
@@ -134,9 +135,9 @@ bool GPUShaderCache::CreateNew(const std::string& index_filename, const std::str
   }
 
   m_blob_file = FileSystem::OpenCFile(blob_filename.c_str(), "w+b");
-  if (!m_blob_file)
+  if (!m_blob_file) [[unlikely]]
   {
-    Log_ErrorPrintf("Failed to open blob file '%s' for writing", blob_filename.c_str());
+    Log_ErrorFmt("Failed to open blob file '{}' for writing", Path::GetFileName(blob_filename));
     std::fclose(m_index_file);
     m_index_file = nullptr;
     FileSystem::DeleteFile(index_filename.c_str());
@@ -155,7 +156,7 @@ bool GPUShaderCache::ReadExisting(const std::string& index_filename, const std::
     // we don't want to blow away the cache. so just continue without a cache.
     if (errno == EACCES)
     {
-      Log_WarningPrintf("Failed to open shader cache index with EACCES, are you running two instances?");
+      Log_WarningPrint("Failed to open shader cache index with EACCES, are you running two instances?");
       return true;
     }
 
@@ -163,18 +164,18 @@ bool GPUShaderCache::ReadExisting(const std::string& index_filename, const std::
   }
 
   u32 file_version = 0;
-  if (std::fread(&file_version, sizeof(file_version), 1, m_index_file) != 1 || file_version != m_version)
+  if (std::fread(&file_version, sizeof(file_version), 1, m_index_file) != 1 || file_version != m_version) [[unlikely]]
   {
-    Log_ErrorPrintf("Bad file/data version in '%s'", index_filename.c_str());
+    Log_ErrorFmt("Bad file/data version in '{}'", Path::GetFileName(index_filename));
     std::fclose(m_index_file);
     m_index_file = nullptr;
     return false;
   }
 
   m_blob_file = FileSystem::OpenCFile(blob_filename.c_str(), "a+b");
-  if (!m_blob_file)
+  if (!m_blob_file) [[unlikely]]
   {
-    Log_ErrorPrintf("Blob file '%s' is missing", blob_filename.c_str());
+    Log_ErrorFmt("Blob file '{}' is missing", Path::GetFileName(blob_filename));
     std::fclose(m_index_file);
     m_index_file = nullptr;
     return false;
@@ -187,12 +188,12 @@ bool GPUShaderCache::ReadExisting(const std::string& index_filename, const std::
   {
     CacheIndexEntry entry;
     if (std::fread(&entry, sizeof(entry), 1, m_index_file) != 1 ||
-        (entry.file_offset + entry.compressed_size) > blob_file_size)
+        (entry.file_offset + entry.compressed_size) > blob_file_size) [[unlikely]]
     {
       if (std::feof(m_index_file))
         break;
 
-      Log_ErrorPrintf("Failed to read entry from '%s', corrupt file?", index_filename.c_str());
+      Log_ErrorFmt("Failed to read entry from '{}', corrupt file?", Path::GetFileName(index_filename));
       m_index.clear();
       std::fclose(m_blob_file);
       m_blob_file = nullptr;
@@ -210,7 +211,7 @@ bool GPUShaderCache::ReadExisting(const std::string& index_filename, const std::
   // ensure we don't write before seeking
   std::fseek(m_index_file, 0, SEEK_END);
 
-  Log_DevPrintf("Read %zu entries from '%s'", m_index.size(), index_filename.c_str());
+  Log_DevFmt("Read {} entries from '{}'", m_index.size(), Path::GetFileName(index_filename));
   return true;
 }
 
@@ -257,18 +258,18 @@ bool GPUShaderCache::Lookup(const CacheIndexKey& key, ShaderBinary* binary)
   DynamicHeapArray<u8> compressed_data(iter->second.compressed_size);
 
   if (std::fseek(m_blob_file, iter->second.file_offset, SEEK_SET) != 0 ||
-      std::fread(compressed_data.data(), iter->second.compressed_size, 1, m_blob_file) != 1)
+      std::fread(compressed_data.data(), iter->second.compressed_size, 1, m_blob_file) != 1) [[unlikely]]
   {
-    Log_ErrorPrintf("Read %u byte %s shader from file failed", iter->second.compressed_size,
-                    GPUShader::GetStageName(static_cast<GPUShaderStage>(key.shader_type)));
+    Log_ErrorFmt("Read {} byte {} shader from file failed", iter->second.compressed_size,
+                 GPUShader::GetStageName(static_cast<GPUShaderStage>(key.shader_type)));
     return false;
   }
 
   const size_t decompress_result =
     ZSTD_decompress(binary->data(), binary->size(), compressed_data.data(), compressed_data.size());
-  if (ZSTD_isError(decompress_result))
+  if (ZSTD_isError(decompress_result)) [[unlikely]]
   {
-    Log_ErrorPrintf("Failed to decompress shader: %s", ZSTD_getErrorName(decompress_result));
+    Log_ErrorFmt("Failed to decompress shader: {}", ZSTD_getErrorName(decompress_result));
     return false;
   }
 
@@ -279,9 +280,9 @@ bool GPUShaderCache::Insert(const CacheIndexKey& key, const void* data, u32 data
 {
   DynamicHeapArray<u8> compress_buffer(ZSTD_compressBound(data_size));
   const size_t compress_result = ZSTD_compress(compress_buffer.data(), compress_buffer.size(), data, data_size, 0);
-  if (ZSTD_isError(compress_result))
+  if (ZSTD_isError(compress_result)) [[unlikely]]
   {
-    Log_ErrorPrintf("Failed to compress shader: %s", ZSTD_getErrorName(compress_result));
+    Log_ErrorFmt("Failed to compress shader: {}", ZSTD_getErrorName(compress_result));
     return false;
   }
 
@@ -305,16 +306,15 @@ bool GPUShaderCache::Insert(const CacheIndexKey& key, const void* data, u32 data
   entry.uncompressed_size = idata.uncompressed_size;
 
   if (std::fwrite(compress_buffer.data(), compress_result, 1, m_blob_file) != 1 || std::fflush(m_blob_file) != 0 ||
-      std::fwrite(&entry, sizeof(entry), 1, m_index_file) != 1 || std::fflush(m_index_file) != 0)
+      std::fwrite(&entry, sizeof(entry), 1, m_index_file) != 1 || std::fflush(m_index_file) != 0) [[unlikely]]
   {
-    Log_ErrorPrintf("Failed to write %u byte %s shader blob to file", data_size,
-                    GPUShader::GetStageName(static_cast<GPUShaderStage>(key.shader_type)));
+    Log_ErrorFmt("Failed to write {} byte {} shader blob to file", data_size,
+                 GPUShader::GetStageName(static_cast<GPUShaderStage>(key.shader_type)));
     return false;
   }
 
-  Log_DevPrintf("Cached compressed %s shader: %u -> %u bytes",
-                GPUShader::GetStageName(static_cast<GPUShaderStage>(key.shader_type)), data_size,
-                static_cast<u32>(compress_result));
+  Log_DevFmt("Cached compressed {} shader: {} -> {} bytes",
+             GPUShader::GetStageName(static_cast<GPUShaderStage>(key.shader_type)), data_size, compress_result);
   m_index.emplace(key, idata);
   return true;
 }

@@ -32,7 +32,7 @@ static bool SetScreensaverInhibitMacOS(bool inhibit)
     if (IOPMAssertionCreateWithName(kIOPMAssertionTypePreventUserIdleDisplaySleep, kIOPMAssertionLevelOn, reason,
                                     &s_prevent_idle_assertion) != kIOReturnSuccess)
     {
-      Log_ErrorPrintf("IOPMAssertionCreateWithName() failed");
+      Log_ErrorPrint("IOPMAssertionCreateWithName() failed");
       return false;
     }
 
@@ -54,7 +54,7 @@ void PlatformMisc::SuspendScreensaver()
 
     if (!SetScreensaverInhibitMacOS(true))
     {
-      Log_ErrorPrintf("Failed to suspend screensaver.");
+      Log_ErrorPrint("Failed to suspend screensaver.");
       return;
     }
 

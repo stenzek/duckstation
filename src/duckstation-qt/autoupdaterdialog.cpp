@@ -86,7 +86,7 @@ bool AutoUpdaterDialog::isSupported()
   // For Linux, we need to check whether we're running from the appimage.
   if (!std::getenv("APPIMAGE"))
   {
-    Log_InfoPrintf("We're a CI release, but not running from an AppImage. Disabling automatic updater.");
+    Log_InfoPrint("We're a CI release, but not running from an AppImage. Disabling automatic updater.");
     return false;
   }
 
@@ -465,16 +465,16 @@ bool AutoUpdaterDialog::updateNeeded() const
 {
   QString last_checked_sha = QString::fromStdString(Host::GetBaseStringSettingValue("AutoUpdater", "LastVersion"));
 
-  Log_InfoPrintf("Current SHA: %s", g_scm_hash_str);
-  Log_InfoPrintf("Latest SHA: %s", m_latest_sha.toUtf8().constData());
-  Log_InfoPrintf("Last Checked SHA: %s", last_checked_sha.toUtf8().constData());
+  Log_InfoFmt("Current SHA: {}", g_scm_hash_str);
+  Log_InfoFmt("Latest SHA: {}", m_latest_sha.toUtf8().constData());
+  Log_InfoFmt("Last Checked SHA: {}", last_checked_sha.toUtf8().constData());
   if (m_latest_sha == g_scm_hash_str || m_latest_sha == last_checked_sha)
   {
-    Log_InfoPrintf("No update needed.");
+    Log_InfoPrint("No update needed.");
     return false;
   }
 
-  Log_InfoPrintf("Update needed.");
+  Log_InfoPrint("Update needed.");
   return true;
 }
 
@@ -735,9 +735,9 @@ bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
 
   const QString new_appimage_path(qappimage_path + QStringLiteral(".new"));
   const QString backup_appimage_path(qappimage_path + QStringLiteral(".backup"));
-  Log_InfoPrintf("APPIMAGE = %s", appimage_path);
-  Log_InfoPrintf("Backup AppImage path = %s", backup_appimage_path.toUtf8().constData());
-  Log_InfoPrintf("New AppImage path = %s", new_appimage_path.toUtf8().constData());
+  Log_InfoFmt("APPIMAGE = {}", appimage_path);
+  Log_InfoFmt("Backup AppImage path = {}", backup_appimage_path.toUtf8().constData());
+  Log_InfoFmt("New AppImage path = {}", new_appimage_path.toUtf8().constData());
 
   // Remove old "new" appimage and existing backup appimage.
   if (QFile::exists(new_appimage_path) && !QFile::remove(new_appimage_path))

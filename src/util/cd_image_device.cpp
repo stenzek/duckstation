@@ -290,7 +290,7 @@ bool CDImageDeviceWin32::Open(const char* filename, Error* error)
                        &bytes_returned, nullptr) ||
       toc.LastTrack < toc.FirstTrack)
   {
-    Log_ErrorPrintf("DeviceIoCtl(IOCTL_CDROM_READ_TOC_EX) failed: %08X", GetLastError());
+    Log_ErrorFmt("DeviceIoCtl(IOCTL_CDROM_READ_TOC_EX) failed: {:08X}", GetLastError());
     if (error)
       error->SetWin32(GetLastError());
 
@@ -299,7 +299,7 @@ bool CDImageDeviceWin32::Open(const char* filename, Error* error)
 
   DWORD last_track_address = 0;
   LBA disc_lba = 0;
-  Log_DevPrintf("FirstTrack=%u, LastTrack=%u", toc.FirstTrack, toc.LastTrack);
+  Log_DevFmt("FirstTrack={}, LastTrack={}", toc.FirstTrack, toc.LastTrack);
 
   const u32 num_tracks_to_check = (toc.LastTrack - toc.FirstTrack) + 1 + 1;
   for (u32 track_index = 0; track_index < num_tracks_to_check; track_index++)
@@ -307,14 +307,14 @@ bool CDImageDeviceWin32::Open(const char* filename, Error* error)
     const TRACK_DATA& td = toc.TrackData[track_index];
     const u8 track_num = td.TrackNumber;
     const DWORD track_address = BEToU32(td.Address);
-    Log_DevPrintf("  [%u]: Num=%02X, Address=%u", track_index, track_num, track_address);
+    Log_DevFmt("  [{}]: Num={:02X}, Address={}", track_index, track_num, track_address);
 
     // fill in the previous track's length
     if (!m_tracks.empty())
     {
       if (track_num < m_tracks.back().track_number)
       {
-        Log_ErrorPrintf("Invalid TOC, track %u less than %u", track_num, m_tracks.back().track_number);
+        Log_ErrorFmt("Invalid TOC, track {} less than {}", track_num, m_tracks.back().track_number);
         return false;
       }
 
@@ -382,32 +382,29 @@ bool CDImageDeviceWin32::Open(const char* filename, Error* error)
 
   if (m_tracks.empty())
   {
-    Log_ErrorPrintf("File '%s' contains no tracks", filename);
+    Log_ErrorFmt("File '{}' contains no tracks", filename);
     Error::SetString(error, fmt::format("File '{}' contains no tracks", filename));
     return false;
   }
 
   m_lba_count = disc_lba;
 
-  Log_DevPrintf("%u tracks, %u indices, %u lbas", static_cast<u32>(m_tracks.size()), static_cast<u32>(m_indices.size()),
-                static_cast<u32>(m_lba_count));
+  Log_DevFmt("{} tracks, {} indices, {} lbas", m_tracks.size(), m_indices.size(), m_lba_count);
   for (u32 i = 0; i < m_tracks.size(); i++)
   {
-    Log_DevPrintf(" Track %u: Start %u, length %u, mode %u, control 0x%02X", static_cast<u32>(m_tracks[i].track_number),
-                  static_cast<u32>(m_tracks[i].start_lba), static_cast<u32>(m_tracks[i].length),
-                  static_cast<u32>(m_tracks[i].mode), static_cast<u32>(m_tracks[i].control.bits));
+    Log_DevFmt(" Track {}: Start {}, length {}, mode {}, control 0x{:02X}", m_tracks[i].track_number,
+               m_tracks[i].start_lba, m_tracks[i].length, static_cast<u8>(m_tracks[i].mode), m_tracks[i].control.bits);
   }
   for (u32 i = 0; i < m_indices.size(); i++)
   {
-    Log_DevPrintf(" Index %u: Track %u, Index %u, Start %u, length %u, file sector size %u, file offset %" PRIu64, i,
-                  static_cast<u32>(m_indices[i].track_number), static_cast<u32>(m_indices[i].index_number),
-                  static_cast<u32>(m_indices[i].start_lba_on_disc), static_cast<u32>(m_indices[i].length),
-                  static_cast<u32>(m_indices[i].file_sector_size), m_indices[i].file_offset);
+    Log_DevFmt(" Index {}: Track {}, Index [], Start {}, length {}, file sector size {}, file offset {}", i,
+               m_indices[i].track_number, m_indices[i].index_number, m_indices[i].start_lba_on_disc,
+               m_indices[i].length, m_indices[i].file_sector_size, m_indices[i].file_offset);
   }
 
   if (!DetermineReadMode(try_sptd))
   {
-    Log_ErrorPrintf("Could not determine read mode");
+    Log_ErrorPrint("Could not determine read mode");
     Error::SetString(error, "Could not determine read mode");
     return false;
   }
@@ -795,7 +792,7 @@ bool CDImageDeviceLinux::Open(const char* filename, Error* error)
     {
       if (track_num < m_tracks.back().track_number)
       {
-        Log_ErrorPrintf("Invalid TOC, track %u less than %u", track_num, m_tracks.back().track_number);
+        Log_ErrorFmt("Invalid TOC, track {} less than {}", track_num, m_tracks.back().track_number);
         return false;
       }
 
@@ -858,7 +855,7 @@ bool CDImageDeviceLinux::Open(const char* filename, Error* error)
 
   if (m_tracks.empty())
   {
-    Log_ErrorPrintf("File '%s' contains no tracks", filename);
+    Log_ErrorFmt("File '{}' contains no tracks", filename);
     Error::SetString(error, fmt::format("File '{}' contains no tracks", filename));
     return false;
   }
@@ -887,20 +884,17 @@ bool CDImageDeviceLinux::Open(const char* filename, Error* error)
 
   m_lba_count = disc_lba;
 
-  Log_DevPrintf("%u tracks, %u indices, %u lbas", static_cast<u32>(m_tracks.size()), static_cast<u32>(m_indices.size()),
-                static_cast<u32>(m_lba_count));
+  Log_DevFmt("{} tracks, {} indices, {} lbas", m_tracks.size(), m_indices.size(), m_lba_count);
   for (u32 i = 0; i < m_tracks.size(); i++)
   {
-    Log_DevPrintf(" Track %u: Start %u, length %u, mode %u, control 0x%02X", static_cast<u32>(m_tracks[i].track_number),
-                  static_cast<u32>(m_tracks[i].start_lba), static_cast<u32>(m_tracks[i].length),
-                  static_cast<u32>(m_tracks[i].mode), static_cast<u32>(m_tracks[i].control.bits));
+    Log_DevFmt(" Track {}: Start {}, length {}, mode {}, control 0x{:02X}", m_tracks[i].track_number,
+               m_tracks[i].start_lba, m_tracks[i].length, static_cast<u8>(m_tracks[i].mode), m_tracks[i].control.bits);
   }
   for (u32 i = 0; i < m_indices.size(); i++)
   {
-    Log_DevPrintf(" Index %u: Track %u, Index %u, Start %u, length %u, file sector size %u, file offset %" PRIu64, i,
-                  static_cast<u32>(m_indices[i].track_number), static_cast<u32>(m_indices[i].index_number),
-                  static_cast<u32>(m_indices[i].start_lba_on_disc), static_cast<u32>(m_indices[i].length),
-                  static_cast<u32>(m_indices[i].file_sector_size), m_indices[i].file_offset);
+    Log_DevFmt(" Index {}: Track {}, Index [], Start {}, length {}, file sector size {}, file offset {}", i,
+               m_indices[i].track_number, m_indices[i].index_number, m_indices[i].start_lba_on_disc,
+               m_indices[i].length, m_indices[i].file_sector_size, m_indices[i].file_offset);
   }
 
   if (!DetermineReadMode(error))
@@ -1380,7 +1374,7 @@ bool CDImageDeviceMacOS::Open(const char* filename, Error* error)
 
   if (m_tracks.empty())
   {
-    Log_ErrorPrintf("File '%s' contains no tracks", filename);
+    Log_ErrorFmt("File '{}' contains no tracks", filename);
     Error::SetString(error, fmt::format("File '{}' contains no tracks", filename));
     return false;
   }
@@ -1398,20 +1392,17 @@ bool CDImageDeviceMacOS::Open(const char* filename, Error* error)
 
   m_lba_count = disc_lba;
 
-  Log_DevPrintf("%u tracks, %u indices, %u lbas", static_cast<u32>(m_tracks.size()), static_cast<u32>(m_indices.size()),
-                static_cast<u32>(m_lba_count));
+  Log_DevFmt("{} tracks, {} indices, {} lbas", m_tracks.size(), m_indices.size(), m_lba_count);
   for (u32 i = 0; i < m_tracks.size(); i++)
   {
-    Log_DevPrintf(" Track %u: Start %u, length %u, mode %u, control 0x%02X", static_cast<u32>(m_tracks[i].track_number),
-                  static_cast<u32>(m_tracks[i].start_lba), static_cast<u32>(m_tracks[i].length),
-                  static_cast<u32>(m_tracks[i].mode), static_cast<u32>(m_tracks[i].control.bits));
+    Log_DevFmt(" Track {}: Start {}, length {}, mode {}, control 0x{:02X}", m_tracks[i].track_number,
+               m_tracks[i].start_lba, m_tracks[i].length, static_cast<u8>(m_tracks[i].mode), m_tracks[i].control.bits);
   }
   for (u32 i = 0; i < m_indices.size(); i++)
   {
-    Log_DevPrintf(" Index %u: Track %u, Index %u, Start %u, length %u, file sector size %u, file offset %" PRIu64, i,
-                  static_cast<u32>(m_indices[i].track_number), static_cast<u32>(m_indices[i].index_number),
-                  static_cast<u32>(m_indices[i].start_lba_on_disc), static_cast<u32>(m_indices[i].length),
-                  static_cast<u32>(m_indices[i].file_sector_size), m_indices[i].file_offset);
+    Log_DevFmt(" Index {}: Track {}, Index [], Start {}, length {}, file sector size {}, file offset {}", i,
+               m_indices[i].track_number, m_indices[i].index_number, m_indices[i].start_lba_on_disc,
+               m_indices[i].length, m_indices[i].file_sector_size, m_indices[i].file_offset);
   }
 
   if (!DetermineReadMode(error))

@@ -525,7 +525,7 @@ bool CPU::CodeCache::RevalidateBlock(Block* block)
   if (!IsBlockCodeCurrent(block))
   {
     // changed, needs recompiling
-    Log_DebugPrintf("Block at PC %08X has changed and needs recompiling", block->pc);
+    Log_DebugFmt("Block at PC {:08X} has changed and needs recompiling", block->pc);
     return false;
   }
 
@@ -948,18 +948,18 @@ bool CPU::CodeCache::ReadBlockInstructions(u32 start_pc, BlockInstructionList* i
       const BlockInstructionInfoPair& prev = instructions->back();
       if (!prev.second.is_unconditional_branch_instruction || !prev.second.is_direct_branch_instruction)
       {
-        Log_WarningPrintf("Conditional or indirect branch delay slot at %08X, skipping block", info.pc);
+        Log_WarningFmt("Conditional or indirect branch delay slot at {:08X}, skipping block", info.pc);
         return false;
       }
       if (!IsDirectBranchInstruction(instruction))
       {
-        Log_WarningPrintf("Indirect branch in delay slot at %08X, skipping block", info.pc);
+        Log_WarningFmt("Indirect branch in delay slot at {:08X}, skipping block", info.pc);
         return false;
       }
 
       // we _could_ fetch the delay slot from the first branch's target, but it's probably in a different
       // page, and that's an invalidation nightmare. so just fallback to the int, this is very rare anyway.
-      Log_WarningPrintf("Direct branch in delay slot at %08X, skipping block", info.pc);
+      Log_WarningFmt("Direct branch in delay slot at {:08X}, skipping block", info.pc);
       return false;
     }
 
@@ -992,12 +992,12 @@ bool CPU::CodeCache::ReadBlockInstructions(u32 start_pc, BlockInstructionList* i
 
 #ifdef _DEBUG
   SmallString disasm;
-  Log_DebugPrintf("Block at 0x%08X", start_pc);
+  Log_DebugFmt("Block at 0x{:08X}", start_pc);
   for (const auto& cbi : *instructions)
   {
     CPU::DisassembleInstruction(&disasm, cbi.second.pc, cbi.first.bits);
-    Log_DebugPrintf("[%s %s 0x%08X] %08X %s", cbi.second.is_branch_delay_slot ? "BD" : "  ",
-                    cbi.second.is_load_delay_slot ? "LD" : "  ", cbi.second.pc, cbi.first.bits, disasm.c_str());
+    Log_DebugFmt("[{} {} 0x{:08X}] {:08X} {}", cbi.second.is_branch_delay_slot ? "BD" : "  ",
+                 cbi.second.is_load_delay_slot ? "LD" : "  ", cbi.second.pc, cbi.first.bits, disasm);
   }
 #endif
 
@@ -1158,7 +1158,7 @@ void CPU::CodeCache::FillBlockRegInfo(Block* block)
             break;
 
           default:
-            Log_ErrorPrintf("Unknown funct %u", static_cast<u32>(iinst->r.funct.GetValue()));
+            Log_ErrorFmt("Unknown funct {}", static_cast<u32>(iinst->r.funct.GetValue()));
             break;
         }
       }
@@ -1257,7 +1257,7 @@ void CPU::CodeCache::FillBlockRegInfo(Block* block)
           break;
 
         default:
-          Log_ErrorPrintf("Unknown op %u", static_cast<u32>(iinst->r.funct.GetValue()));
+          Log_ErrorFmt("Unknown op {}", static_cast<u32>(iinst->r.funct.GetValue()));
           break;
       }
     } // end switch
@@ -1338,7 +1338,7 @@ void CPU::CodeCache::DiscardAndRecompileBlock(u32 start_pc)
 {
   MemMap::BeginCodeWrite();
 
-  Log_DevPrintf("Discard block %08X with manual protection", start_pc);
+  Log_DevFmt("Discard block {:08X} with manual protection", start_pc);
   Block* block = LookupBlock(start_pc);
   DebugAssert(block && block->state == BlockState::Valid);
   InvalidateBlock(block, BlockState::NeedsRecompile);
@@ -1374,8 +1374,8 @@ const void* CPU::CodeCache::CreateBlockLink(Block* block, void* code, u32 newpc)
     block->exit_links[block->num_exit_links++] = iter;
   }
 
-  Log_DebugPrintf("Linking %p with dst pc %08X to %p%s", code, newpc, dst,
-                  (dst == g_compile_or_revalidate_block) ? "[compiler]" : "");
+  Log_DebugFmt("Linking {} with dst pc {:08X} to {}{}", code, newpc, dst,
+               (dst == g_compile_or_revalidate_block) ? "[compiler]" : "");
   return dst;
 }
 
@@ -1387,8 +1387,8 @@ void CPU::CodeCache::BacklinkBlocks(u32 pc, const void* dst)
   const auto link_range = s_block_links.equal_range(pc);
   for (auto it = link_range.first; it != link_range.second; ++it)
   {
-    Log_DebugPrintf("Backlinking %p with dst pc %08X to %p%s", it->second, pc, dst,
-                    (dst == g_compile_or_revalidate_block) ? "[compiler]" : "");
+    Log_DebugFmt("Backlinking {} with dst pc {:08X} to {}{}", it->second, pc, dst,
+                 (dst == g_compile_or_revalidate_block) ? "[compiler]" : "");
     EmitJump(it->second, dst, true);
   }
 }

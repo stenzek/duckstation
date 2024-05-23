@@ -686,9 +686,9 @@ void Host::AddOSDMessage(std::string message, float duration /*= 2.0f*/)
 void Host::AddKeyedOSDMessage(std::string key, std::string message, float duration /* = 2.0f */)
 {
   if (!key.empty())
-    Log_InfoPrintf("OSD [%s]: %s", key.c_str(), message.c_str());
+    Log_InfoFmt("OSD [{}]: {}", key, message);
   else
-    Log_InfoPrintf("OSD: %s", message.c_str());
+    Log_InfoFmt("OSD: {}", message);
 
   if (!ImGuiManager::s_show_osd_messages)
     return;
@@ -1045,7 +1045,7 @@ void ImGuiManager::UpdateSoftwareCursorTexture(u32 index)
   RGBA8Image image;
   if (!image.LoadFromFile(sc.image_path.c_str()))
   {
-    Log_ErrorPrintf("Failed to load software cursor %u image '%s'", index, sc.image_path.c_str());
+    Log_ErrorFmt("Failed to load software cursor {} image '{}'", index, sc.image_path);
     return;
   }
   g_gpu_device->RecycleTexture(std::move(sc.texture));
@@ -1053,8 +1053,8 @@ void ImGuiManager::UpdateSoftwareCursorTexture(u32 index)
                                           GPUTexture::Format::RGBA8, image.GetPixels(), image.GetPitch());
   if (!sc.texture)
   {
-    Log_ErrorPrintf("Failed to upload %ux%u software cursor %u image '%s'", image.GetWidth(), image.GetHeight(), index,
-                    sc.image_path.c_str());
+    Log_ErrorFmt("Failed to upload {}x{} software cursor {} image '{}'", image.GetWidth(), image.GetHeight(), index,
+                 sc.image_path);
     return;
   }
 

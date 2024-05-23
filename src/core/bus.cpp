@@ -234,7 +234,7 @@ bool Bus::AllocateMemory(Error* error)
     return false;
   }
 
-  Log_InfoPrintf("Fastmem base: %p", s_fastmem_arena.BasePointer());
+  Log_InfoFmt("Fastmem base: {}", static_cast<void*>(s_fastmem_arena.BasePointer()));
 #endif
 
 #ifndef __ANDROID__
@@ -452,15 +452,15 @@ void Bus::RecalculateMemoryTimings()
   std::tie(g_spu_access_time[0], g_spu_access_time[1], g_spu_access_time[2]) =
     CalculateMemoryTiming(s_MEMCTRL.spu_delay_size, s_MEMCTRL.common_delay);
 
-  Log_TracePrintf("BIOS Memory Timing: %u bit bus, byte=%d, halfword=%d, word=%d",
-                  s_MEMCTRL.bios_delay_size.data_bus_16bit ? 16 : 8, g_bios_access_time[0] + 1,
-                  g_bios_access_time[1] + 1, g_bios_access_time[2] + 1);
-  Log_TracePrintf("CDROM Memory Timing: %u bit bus, byte=%d, halfword=%d, word=%d",
-                  s_MEMCTRL.cdrom_delay_size.data_bus_16bit ? 16 : 8, g_cdrom_access_time[0] + 1,
-                  g_cdrom_access_time[1] + 1, g_cdrom_access_time[2] + 1);
-  Log_TracePrintf("SPU Memory Timing: %u bit bus, byte=%d, halfword=%d, word=%d",
-                  s_MEMCTRL.spu_delay_size.data_bus_16bit ? 16 : 8, g_spu_access_time[0] + 1, g_spu_access_time[1] + 1,
-                  g_spu_access_time[2] + 1);
+  Log_TraceFmt("BIOS Memory Timing: {} bit bus, byte={}, halfword={}, word={}",
+               s_MEMCTRL.bios_delay_size.data_bus_16bit ? 16 : 8, g_bios_access_time[0] + 1, g_bios_access_time[1] + 1,
+               g_bios_access_time[2] + 1);
+  Log_TraceFmt("CDROM Memory Timing: {} bit bus, byte={}, halfword={}, word={}",
+               s_MEMCTRL.cdrom_delay_size.data_bus_16bit ? 16 : 8, g_cdrom_access_time[0] + 1,
+               g_cdrom_access_time[1] + 1, g_cdrom_access_time[2] + 1);
+  Log_TraceFmt("SPU Memory Timing: {} bit bus, byte={}, halfword={}, word={}",
+               s_MEMCTRL.spu_delay_size.data_bus_16bit ? 16 : 8, g_spu_access_time[0] + 1, g_spu_access_time[1] + 1,
+               g_spu_access_time[2] + 1);
 }
 
 CPUFastmemMode Bus::GetFastmemMode()
@@ -504,9 +504,10 @@ void Bus::UpdateFastmemViews(CPUFastmemMode mode)
   {
     auto MapRAM = [](u32 base_address) {
       u8* map_address = s_fastmem_arena.BasePointer() + base_address;
-      if (!s_fastmem_arena.Map(s_shmem_handle, 0, map_address, g_ram_size, PageProtect::ReadWrite))
+      if (!s_fastmem_arena.Map(s_shmem_handle, 0, map_address, g_ram_size, PageProtect::ReadWrite)) [[unlikely]]
       {
-        Log_ErrorPrintf("Failed to map RAM at fastmem area %p (offset 0x%08X)", map_address, g_ram_size);
+        Log_ErrorFmt("Failed to map RAM at fastmem area {} (offset 0x{:08X})", static_cast<void*>(map_address),
+                     g_ram_size);
         return;
       }
 
@@ -516,9 +517,9 @@ void Bus::UpdateFastmemViews(CPUFastmemMode mode)
         if (g_ram_code_bits[i])
         {
           u8* page_address = map_address + (i * HOST_PAGE_SIZE);
-          if (!MemMap::MemProtect(page_address, HOST_PAGE_SIZE, PageProtect::ReadOnly))
+          if (!MemMap::MemProtect(page_address, HOST_PAGE_SIZE, PageProtect::ReadOnly)) [[unlikely]]
           {
-            Log_ErrorPrintf("Failed to write-protect code page at %p", page_address);
+            Log_ErrorFmt("Failed to write-protect code page at {}", static_cast<void*>(page_address));
             s_fastmem_arena.Unmap(map_address, g_ram_size);
             return;
           }
@@ -546,7 +547,7 @@ void Bus::UpdateFastmemViews(CPUFastmemMode mode)
     s_fastmem_lut = static_cast<u8**>(std::malloc(sizeof(u8*) * FASTMEM_LUT_SLOTS));
     Assert(s_fastmem_lut);
 
-    Log_InfoPrintf("Fastmem base (software): %p", s_fastmem_lut);
+    Log_InfoFmt("Fastmem base (software): {}", static_cast<void*>(s_fastmem_lut));
   }
 
   // This assumes the top 4KB of address space is not mapped. It shouldn't be on any sane OSes.
@@ -652,8 +653,8 @@ void Bus::SetRAMPageWritable(u32 page_index, bool writable)
       u8* page_address = it.first + (page_index * HOST_PAGE_SIZE);
       if (!MemMap::MemProtect(page_address, HOST_PAGE_SIZE, protect)) [[unlikely]]
       {
-        Log_ErrorPrintf("Failed to %s code page %u (0x%08X) @ %p", writable ? "unprotect" : "protect", page_index,
-                        page_index * static_cast<u32>(HOST_PAGE_SIZE), page_address);
+        Log_ErrorFmt("Failed to {} code page {} (0x{:08X}) @ {}", writable ? "unprotect" : "protect", page_index,
+                     page_index * static_cast<u32>(HOST_PAGE_SIZE), static_cast<void*>(page_address));
       }
     }
 
@@ -676,9 +677,7 @@ void Bus::ClearRAMCodePageFlags()
     for (const auto& it : s_fastmem_ram_views)
     {
       if (!MemMap::MemProtect(it.first, it.second, PageProtect::ReadWrite))
-      {
-        Log_ErrorPrintf("Failed to unprotect code pages for fastmem view @ %p", it.first);
-      }
+        Log_ErrorFmt("Failed to unprotect code pages for fastmem view @ %p", static_cast<void*>(it.first));
     }
   }
 #endif

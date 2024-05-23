@@ -254,7 +254,7 @@ void PostProcessing::GLSLShader::LoadOptions()
           else if (sub == "OptionRangeInteger")
             current_option.type = ShaderOption::Type::Int;
           else
-            Log_ErrorPrintf("Invalid option type: '%s'", line_str.c_str());
+            Log_ErrorFmt("Invalid option type: '{}'", line_str);
 
           continue;
         }
@@ -304,7 +304,7 @@ void PostProcessing::GLSLShader::LoadOptions()
         }
         else
         {
-          Log_ErrorPrintf("Invalid option key: '%s'", line_str.c_str());
+          Log_ErrorFmt("Invalid option key: '{}'", line_str);
         }
       }
     }

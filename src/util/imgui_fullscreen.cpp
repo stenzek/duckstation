@@ -219,7 +219,7 @@ bool ImGuiFullscreen::Initialize(const char* placeholder_image_path)
   s_placeholder_texture = LoadTexture(placeholder_image_path);
   if (!s_placeholder_texture)
   {
-    Log_ErrorPrintf("Missing placeholder texture '%s', cannot continue", placeholder_image_path);
+    Log_ErrorFmt("Missing placeholder texture '{}', cannot continue", placeholder_image_path);
     return false;
   }
 

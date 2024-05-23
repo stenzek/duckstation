@@ -239,16 +239,15 @@ void NeGconRumble::SetAnalogMode(bool enabled, bool show_message)
   if (m_analog_mode == enabled)
     return;
 
-  Log_InfoPrintf("Controller %u switched to %s mode.", m_index + 1u, enabled ? "analog" : "digital");
+  Log_InfoFmt("Controller {} switched to {} mode.", m_index + 1u, m_analog_mode ? "analog" : "digital");
   if (show_message)
   {
-    Host::AddIconOSDMessage(fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
-                            fmt::format(enabled ?
-                                          TRANSLATE_FS("AnalogController", "Controller {} switched to analog mode.") :
-                                          TRANSLATE_FS("AnalogController", "Controller {} switched to digital mode."),
-                                        m_index + 1u),
-                            5.0f);
+    Host::AddIconOSDMessage(
+      fmt::format("analog_mode_toggle_{}", m_index), ICON_FA_GAMEPAD,
+      enabled ? fmt::format(TRANSLATE_FS("Controller", "Controller {} switched to analog mode."), m_index + 1u) :
+                fmt::format(TRANSLATE_FS("Controller", "Controller {} switched to digital mode."), m_index + 1u));
   }
+
   m_analog_mode = enabled;
 }
 
@@ -362,12 +361,12 @@ bool NeGconRumble::Transfer(const u8 data_in, u8* data_out)
 
       if (data_in == 0x01)
       {
-        Log_DebugPrintf("ACK controller access");
+        Log_DebugPrint("ACK controller access");
         m_command = Command::Ready;
         return true;
       }
 
-      Log_DevPrintf("Unknown data_in = 0x%02X", data_in);
+      Log_DevFmt("Unknown data_in = 0x{:02X}", data_in);
       return false;
     }
     break;
@@ -438,7 +437,7 @@ bool NeGconRumble::Transfer(const u8 data_in, u8* data_out)
       else
       {
         if (m_configuration_mode)
-          Log_ErrorPrintf("Unimplemented config mode command 0x%02X", data_in);
+          Log_ErrorFmt("Unimplemented config mode command 0x{:02X}", data_in);
 
         *data_out = 0xFF;
         return false;
@@ -588,7 +587,7 @@ bool NeGconRumble::Transfer(const u8 data_in, u8* data_out)
           m_status_byte = 0x5A;
         }
 
-        Log_DevPrintf("0x%02x(%s) config mode", m_rx_buffer[2], m_configuration_mode ? "enter" : "leave");
+        Log_DevFmt("0x{:02x}({}) config mode", m_rx_buffer[2], m_configuration_mode ? "enter" : "leave");
       }
     }
     break;
@@ -597,14 +596,14 @@ bool NeGconRumble::Transfer(const u8 data_in, u8* data_out)
     {
       if (m_command_step == 2)
       {
-        Log_DevPrintf("analog mode val 0x%02x", data_in);
+        Log_DevFmt("analog mode val 0x{:02x}", data_in);
 
         if (data_in == 0x00 || data_in == 0x01)
           SetAnalogMode((data_in == 0x01), true);
       }
       else if (m_command_step == 3)
       {
-        Log_DevPrintf("analog mode lock 0x%02x", data_in);
+        Log_DevFmt("analog mode lock 0x{:02x}", data_in);
 
         if (data_in == 0x02 || data_in == 0x03)
           m_analog_locked = (data_in == 0x03);
@@ -701,10 +700,10 @@ bool NeGconRumble::Transfer(const u8 data_in, u8* data_out)
   {
     m_command = Command::Idle;
 
-    Log_DebugPrintf("Rx: %02x %02x %02x %02x %02x %02x %02x %02x", m_rx_buffer[0], m_rx_buffer[1], m_rx_buffer[2],
-                    m_rx_buffer[3], m_rx_buffer[4], m_rx_buffer[5], m_rx_buffer[6], m_rx_buffer[7]);
-    Log_DebugPrintf("Tx: %02x %02x %02x %02x %02x %02x %02x %02x", m_tx_buffer[0], m_tx_buffer[1], m_tx_buffer[2],
-                    m_tx_buffer[3], m_tx_buffer[4], m_tx_buffer[5], m_tx_buffer[6], m_tx_buffer[7]);
+    Log_DebugFmt("Rx: {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x}", m_rx_buffer[0], m_rx_buffer[1],
+                 m_rx_buffer[2], m_rx_buffer[3], m_rx_buffer[4], m_rx_buffer[5], m_rx_buffer[6], m_rx_buffer[7]);
+    Log_DebugFmt("Tx: {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x}", m_tx_buffer[0], m_tx_buffer[1],
+                 m_tx_buffer[2], m_tx_buffer[3], m_tx_buffer[4], m_tx_buffer[5], m_tx_buffer[6], m_tx_buffer[7]);
 
     m_rx_buffer.fill(0x00);
     m_tx_buffer.fill(0x00);

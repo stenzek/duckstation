@@ -322,10 +322,10 @@ ALWAYS_INLINE_RELEASE void CPU::RaiseException(u32 CAUSE_bits, u32 EPC, u32 vect
   if (g_state.cop0_regs.cause.Excode != Exception::INT && g_state.cop0_regs.cause.Excode != Exception::Syscall &&
       g_state.cop0_regs.cause.Excode != Exception::BP)
   {
-    Log_DevPrintf("Exception %u at 0x%08X (epc=0x%08X, BD=%s, CE=%u)",
-                  static_cast<u8>(g_state.cop0_regs.cause.Excode.GetValue()), g_state.current_instruction_pc,
-                  g_state.cop0_regs.EPC, g_state.cop0_regs.cause.BD ? "true" : "false",
-                  g_state.cop0_regs.cause.CE.GetValue());
+    Log_DevFmt("Exception {} at 0x{:08X} (epc=0x{:08X}, BD={}, CE={})",
+               static_cast<u8>(g_state.cop0_regs.cause.Excode.GetValue()), g_state.current_instruction_pc,
+               g_state.cop0_regs.EPC, g_state.cop0_regs.cause.BD ? "true" : "false",
+               g_state.cop0_regs.cause.CE.GetValue());
     DisassembleAndPrint(g_state.current_instruction_pc, 4u, 0u);
     if (s_trace_to_log)
     {
@@ -523,14 +523,14 @@ ALWAYS_INLINE_RELEASE void CPU::WriteCop0Reg(Cop0Reg reg, u32 value)
     case Cop0Reg::BPC:
     {
       g_state.cop0_regs.BPC = value;
-      Log_DevPrintf("COP0 BPC <- %08X", value);
+      Log_DevFmt("COP0 BPC <- {:08X}", value);
     }
     break;
 
     case Cop0Reg::BPCM:
     {
       g_state.cop0_regs.BPCM = value;
-      Log_DevPrintf("COP0 BPCM <- %08X", value);
+      Log_DevFmt("COP0 BPCM <- {:08X}", value);
       if (UpdateDebugDispatcherFlag())
         ExitExecution();
     }
@@ -539,20 +539,20 @@ ALWAYS_INLINE_RELEASE void CPU::WriteCop0Reg(Cop0Reg reg, u32 value)
     case Cop0Reg::BDA:
     {
       g_state.cop0_regs.BDA = value;
-      Log_DevPrintf("COP0 BDA <- %08X", value);
+      Log_DevFmt("COP0 BDA <- {:08X}", value);
     }
     break;
 
     case Cop0Reg::BDAM:
     {
       g_state.cop0_regs.BDAM = value;
-      Log_DevPrintf("COP0 BDAM <- %08X", value);
+      Log_DevFmt("COP0 BDAM <- {:08X}", value);
     }
     break;
 
     case Cop0Reg::JUMPDEST:
     {
-      Log_WarningPrintf("Ignoring write to Cop0 JUMPDEST");
+      Log_WarningPrint("Ignoring write to Cop0 JUMPDEST");
     }
     break;
 
@@ -560,7 +560,7 @@ ALWAYS_INLINE_RELEASE void CPU::WriteCop0Reg(Cop0Reg reg, u32 value)
     {
       g_state.cop0_regs.dcic.bits =
         (g_state.cop0_regs.dcic.bits & ~Cop0Registers::DCIC::WRITE_MASK) | (value & Cop0Registers::DCIC::WRITE_MASK);
-      Log_DevPrintf("COP0 DCIC <- %08X (now %08X)", value, g_state.cop0_regs.dcic.bits);
+      Log_DevFmt("COP0 DCIC <- {:08X} (now {:08X})", value, g_state.cop0_regs.dcic.bits);
       if (UpdateDebugDispatcherFlag())
         ExitExecution();
     }
@@ -570,7 +570,7 @@ ALWAYS_INLINE_RELEASE void CPU::WriteCop0Reg(Cop0Reg reg, u32 value)
     {
       g_state.cop0_regs.sr.bits =
         (g_state.cop0_regs.sr.bits & ~Cop0Registers::SR::WRITE_MASK) | (value & Cop0Registers::SR::WRITE_MASK);
-      Log_DebugPrintf("COP0 SR <- %08X (now %08X)", value, g_state.cop0_regs.sr.bits);
+      Log_DebugFmt("COP0 SR <- {:08X} (now {:08X})", value, g_state.cop0_regs.sr.bits);
       UpdateMemoryPointers();
       CheckForPendingInterrupt();
     }
@@ -580,13 +580,12 @@ ALWAYS_INLINE_RELEASE void CPU::WriteCop0Reg(Cop0Reg reg, u32 value)
     {
       g_state.cop0_regs.cause.bits =
         (g_state.cop0_regs.cause.bits & ~Cop0Registers::CAUSE::WRITE_MASK) | (value & Cop0Registers::CAUSE::WRITE_MASK);
-      Log_DebugPrintf("COP0 CAUSE <- %08X (now %08X)", value, g_state.cop0_regs.cause.bits);
+      Log_DebugFmt("COP0 CAUSE <- {:08X} (now {:08X})", value, g_state.cop0_regs.cause.bits);
       CheckForPendingInterrupt();
     }
     break;
 
-    default:
-      Log_DevPrintf("Unknown COP0 reg write %u (%08X)", ZeroExtend32(static_cast<u8>(reg)), value);
+      [[unlikely]] default : Log_DevFmt("Unknown COP0 reg write {} ({:08X})", static_cast<u8>(reg), value);
       break;
   }
 }
@@ -632,7 +631,7 @@ ALWAYS_INLINE_RELEASE void CPU::Cop0ExecutionBreakpointCheck()
   if (bpcm == 0 || ((pc ^ bpc) & bpcm) != 0u)
     return;
 
-  Log_DevPrintf("Cop0 execution breakpoint at %08X", pc);
+  Log_DevFmt("Cop0 execution breakpoint at {:08X}", pc);
   g_state.cop0_regs.dcic.status_any_break = true;
   g_state.cop0_regs.dcic.status_bpc_code_break = true;
   DispatchCop0Breakpoint();
@@ -658,7 +657,7 @@ ALWAYS_INLINE_RELEASE void CPU::Cop0DataBreakpointCheck(VirtualMemoryAddress add
   if (bdam == 0 || ((address ^ bda) & bdam) != 0u)
     return;
 
-  Log_DevPrintf("Cop0 data breakpoint for %08X at %08X", address, g_state.current_instruction_pc);
+  Log_DevFmt("Cop0 data breakpoint for {:08X} at {:08X}", address, g_state.current_instruction_pc);
 
   g_state.cop0_regs.dcic.status_any_break = true;
   g_state.cop0_regs.dcic.status_bda_data_break = true;
@@ -711,7 +710,7 @@ void CPU::PrintInstruction(u32 bits, u32 pc, bool regs, const char* prefix)
     }
   }
 
-  Log_DevPrintf("%s%08x: %08x %s", prefix, pc, bits, instr.c_str());
+  Log_DevFmt("{}{:08x}: {:08x} %s", prefix, pc, bits, instr);
 }
 
 void CPU::LogInstruction(u32 bits, u32 pc, bool regs)
@@ -1745,7 +1744,7 @@ restart_instruction:
     {
       if (InUserMode() && !g_state.cop0_regs.sr.CU0)
       {
-        Log_WarningPrintf("Coprocessor 0 not present in user mode");
+        Log_WarningPrint("Coprocessor 0 not present in user mode");
         RaiseException(Exception::CpU);
         return;
       }
@@ -1775,7 +1774,8 @@ restart_instruction:
           break;
 
           default:
-            Log_ErrorPrintf("Unhandled instruction at %08X: %08X", g_state.current_instruction_pc, inst.bits);
+            [[unlikely]] Log_ErrorFmt("Unhandled instruction at {:08X}: {:08X}", g_state.current_instruction_pc,
+                                      inst.bits);
             break;
         }
       }
@@ -1800,7 +1800,8 @@ restart_instruction:
             break;
 
           default:
-            Log_ErrorPrintf("Unhandled instruction at %08X: %08X", g_state.current_instruction_pc, inst.bits);
+            [[unlikely]] Log_ErrorFmt("Unhandled instruction at {:08X}: {:08X}", g_state.current_instruction_pc,
+                                      inst.bits);
             break;
         }
       }
@@ -1811,7 +1812,7 @@ restart_instruction:
     {
       if (!g_state.cop0_regs.sr.CE2)
       {
-        Log_WarningPrintf("Coprocessor 2 not enabled");
+        Log_WarningPrint("Coprocessor 2 not enabled");
         RaiseException(Exception::CpU);
         return;
       }
@@ -1864,7 +1865,8 @@ restart_instruction:
           break;
 
           default:
-            Log_ErrorPrintf("Unhandled instruction at %08X: %08X", g_state.current_instruction_pc, inst.bits);
+            [[unlikely]] Log_ErrorFmt("Unhandled instruction at {:08X}: {:08X}", g_state.current_instruction_pc,
+                                      inst.bits);
             break;
         }
       }
@@ -1879,7 +1881,7 @@ restart_instruction:
     {
       if (!g_state.cop0_regs.sr.CE2)
       {
-        Log_WarningPrintf("Coprocessor 2 not enabled");
+        Log_WarningPrint("Coprocessor 2 not enabled");
         RaiseException(Exception::CpU);
         return;
       }
@@ -1901,7 +1903,7 @@ restart_instruction:
     {
       if (!g_state.cop0_regs.sr.CE2)
       {
-        Log_WarningPrintf("Coprocessor 2 not enabled");
+        Log_WarningPrint("Coprocessor 2 not enabled");
         RaiseException(Exception::CpU);
         return;
       }
@@ -1935,10 +1937,10 @@ restart_instruction:
     {
       u32 ram_value;
       if (SafeReadInstruction(g_state.current_instruction_pc, &ram_value) &&
-          ram_value != g_state.current_instruction.bits)
+          ram_value != g_state.current_instruction.bits) [[unlikely]]
       {
-        Log_ErrorPrintf("Stale icache at 0x%08X - ICache: %08X RAM: %08X", g_state.current_instruction_pc,
-                        g_state.current_instruction.bits, ram_value);
+        Log_ErrorFmt("Stale icache at 0x{:08X} - ICache: {:08X} RAM: {:08X}", g_state.current_instruction_pc,
+                     g_state.current_instruction.bits, ram_value);
         g_state.current_instruction.bits = ram_value;
         goto restart_instruction;
       }
@@ -1984,7 +1986,7 @@ bool CPU::UpdateDebugDispatcherFlag()
   if (use_debug_dispatcher == g_state.use_debug_dispatcher)
     return false;
 
-  Log_DevPrintf("%s debug dispatcher", use_debug_dispatcher ? "Now using" : "No longer using");
+  Log_DevFmt("{} debug dispatcher", use_debug_dispatcher ? "Now using" : "No longer using");
   g_state.use_debug_dispatcher = use_debug_dispatcher;
   return true;
 }

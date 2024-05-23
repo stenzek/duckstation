@@ -1766,11 +1766,9 @@ bool FileSystem::RenamePath(const char* old_path, const char* new_path, Error* e
   const std::wstring old_wpath = GetWin32Path(old_path);
   const std::wstring new_wpath = GetWin32Path(new_path);
 
-  if (!MoveFileExW(old_wpath.c_str(), new_wpath.c_str(), MOVEFILE_REPLACE_EXISTING))
+  if (!MoveFileExW(old_wpath.c_str(), new_wpath.c_str(), MOVEFILE_REPLACE_EXISTING)) [[unlikely]]
   {
-    const DWORD err = GetLastError();
-    Error::SetWin32(error, "MoveFileExW() failed: ", err);
-    Log_ErrorPrintf("MoveFileEx('%s', '%s') failed: %08X", old_path, new_path, err);
+    Error::SetWin32(error, "MoveFileExW() failed: ", GetLastError());
     return false;
   }
 
@@ -2289,7 +2287,6 @@ bool FileSystem::RenamePath(const char* old_path, const char* new_path, Error* e
   {
     const int err = errno;
     Error::SetErrno(error, "rename() failed: ", err);
-    Log_ErrorPrintf("rename('%s', '%s') failed: %d", old_path, new_path, err);
     return false;
   }
 
@@ -2410,13 +2407,13 @@ static bool SetLock(int fd, bool lock)
   const off_t offs = lseek(fd, 0, SEEK_CUR);
   if (offs < 0)
   {
-    Log_ErrorPrintf("lseek(%d) failed: %d", fd, errno);
+    Log_ErrorFmt("lseek({}) failed: {}", fd, errno);
     return false;
   }
 
   if (offs != 0 && lseek(fd, 0, SEEK_SET) < 0)
   {
-    Log_ErrorPrintf("lseek(%d, 0) failed: %d", fd, errno);
+    Log_ErrorFmt("lseek({}, 0) failed: {}", fd, errno);
     return false;
   }
 
@@ -2425,7 +2422,7 @@ static bool SetLock(int fd, bool lock)
     Panic("Repositioning file descriptor after lock failed.");
 
   if (!res)
-    Log_ErrorPrintf("lockf() for %s failed: %d", lock ? "lock" : "unlock", errno);
+    Log_ErrorFmt("lockf() for {} failed: {}", lock ? "lock" : "unlock", errno);
 
   return res;
 }

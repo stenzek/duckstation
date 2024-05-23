@@ -282,7 +282,7 @@ void CubebAudioStream::SetPaused(bool paused)
   const int rv = paused ? cubeb_stream_stop(stream) : cubeb_stream_start(stream);
   if (rv != CUBEB_OK)
   {
-    Log_ErrorPrintf("Could not %s stream: %d", paused ? "pause" : "resume", rv);
+    Log_ErrorFmt("Could not {} stream: {}", paused ? "pause" : "resume", rv);
     return;
   }
 

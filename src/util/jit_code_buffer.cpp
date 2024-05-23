@@ -104,7 +104,7 @@ bool JitCodeBuffer::TryAllocateAt(const void* addr)
   if (!m_code_ptr)
   {
     if (!addr)
-      Log_ErrorPrintf("VirtualAlloc(RWX, %u) for internal buffer failed: %u", m_total_size, GetLastError());
+      Log_ErrorFmt("VirtualAlloc(RWX, %u) for internal buffer failed: {}", m_total_size, GetLastError());
     return false;
   }
 
@@ -134,14 +134,14 @@ bool JitCodeBuffer::TryAllocateAt(const void* addr)
   if (!m_code_ptr)
   {
     if (!addr)
-      Log_ErrorPrintf("mmap(RWX, %u) for internal buffer failed: %d", m_total_size, errno);
+      Log_ErrorFmt("mmap(RWX, %u) for internal buffer failed: {}", m_total_size, errno);
 
     return false;
   }
   else if (addr && m_code_ptr != addr)
   {
     if (munmap(m_code_ptr, m_total_size) != 0)
-      Log_ErrorPrintf("Failed to munmap() incorrectly hinted allocation: %d", errno);
+      Log_ErrorFmt("Failed to munmap() incorrectly hinted allocation: {}", errno);
     m_code_ptr = nullptr;
     return false;
   }
@@ -163,7 +163,7 @@ bool JitCodeBuffer::Initialize(void* buffer, u32 size, u32 far_code_size /* = 0 
   DWORD old_protect = 0;
   if (!VirtualProtect(buffer, size, PAGE_EXECUTE_READWRITE, &old_protect))
   {
-    Log_ErrorPrintf("VirtualProtect(RWX) for external buffer failed: %u", GetLastError());
+    Log_ErrorFmt("VirtualProtect(RWX) for external buffer failed: {}", GetLastError());
     return false;
   }
 
@@ -174,7 +174,7 @@ bool JitCodeBuffer::Initialize(void* buffer, u32 size, u32 far_code_size /* = 0 
     if (!VirtualProtect(buffer, guard_size, PAGE_NOACCESS, &old_guard_protect) ||
         !VirtualProtect(guard_at_end, guard_size, PAGE_NOACCESS, &old_guard_protect))
     {
-      Log_ErrorPrintf("VirtualProtect(NOACCESS) for guard page failed: %u", GetLastError());
+      Log_ErrorFmt("VirtualProtect(NOACCESS) for guard page failed: {}", GetLastError());
       return false;
     }
   }
@@ -184,7 +184,7 @@ bool JitCodeBuffer::Initialize(void* buffer, u32 size, u32 far_code_size /* = 0 
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__) || defined(__FreeBSD__)
   if (mprotect(buffer, size, PROT_READ | PROT_WRITE | PROT_EXEC) != 0)
   {
-    Log_ErrorPrintf("mprotect(RWX) for external buffer failed: %d", errno);
+    Log_ErrorFmt("mprotect(RWX) for external buffer failed: {}", errno);
     return false;
   }
 
@@ -193,7 +193,7 @@ bool JitCodeBuffer::Initialize(void* buffer, u32 size, u32 far_code_size /* = 0 
     u8* guard_at_end = (static_cast<u8*>(buffer) + size) - guard_size;
     if (mprotect(buffer, guard_size, PROT_NONE) != 0 || mprotect(guard_at_end, guard_size, PROT_NONE) != 0)
     {
-      Log_ErrorPrintf("mprotect(NONE) for guard page failed: %d", errno);
+      Log_ErrorFmt("mprotect(NONE) for guard page failed: {}", errno);
       return false;
     }
   }
@@ -229,10 +229,10 @@ void JitCodeBuffer::Destroy()
   {
 #if defined(_WIN32)
     if (!VirtualFree(m_code_ptr, 0, MEM_RELEASE))
-      Log_ErrorPrintf("Failed to free code pointer %p", m_code_ptr);
+      Log_ErrorFmt("Failed to free code pointer %p", static_cast<void*>(m_code_ptr));
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__) || defined(__FreeBSD__)
     if (munmap(m_code_ptr, m_total_size) != 0)
-      Log_ErrorPrintf("Failed to free code pointer %p", m_code_ptr);
+      Log_ErrorFmt("Failed to free code pointer %p", static_cast<void*>(m_code_ptr));
 #endif
   }
   else if (m_code_ptr)
@@ -240,10 +240,10 @@ void JitCodeBuffer::Destroy()
 #if defined(_WIN32)
     DWORD old_protect = 0;
     if (!VirtualProtect(m_code_ptr, m_total_size, m_old_protection, &old_protect))
-      Log_ErrorPrintf("Failed to restore protection on %p", m_code_ptr);
+      Log_ErrorFmt("Failed to restore protection on %p", static_cast<void*>(m_code_ptr));
 #else
     if (mprotect(m_code_ptr, m_total_size, m_old_protection) != 0)
-      Log_ErrorPrintf("Failed to restore protection on %p", m_code_ptr);
+      Log_ErrorFmt("Failed to restore protection on %p", static_cast<void*>(m_code_ptr));
 #endif
   }
 

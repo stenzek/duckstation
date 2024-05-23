@@ -571,8 +571,8 @@ void CDROM::SoftReset(TickCount ticks_late)
     const TickCount speed_change_ticks = was_double_speed ? GetTicksForSpeedChange() : 0;
     const TickCount seek_ticks = (s_current_lba != 0) ? GetTicksForSeek(0) : 0;
     const TickCount total_ticks = std::max<TickCount>(speed_change_ticks + seek_ticks, INIT_TICKS) - ticks_late;
-    Log_DevPrintf("CDROM init total disc ticks = %d (speed change = %d, seek = %d)", total_ticks, speed_change_ticks,
-                  seek_ticks);
+    Log_DevFmt("CDROM init total disc ticks = {} (speed change = {}, seek = {})", total_ticks, speed_change_ticks,
+               seek_ticks);
 
     if (s_current_lba != 0)
     {
@@ -746,8 +746,8 @@ void CDROM::InsertMedia(std::unique_ptr<CDImage> media, DiscRegion region)
   if (CanReadMedia())
     RemoveMedia(true);
 
-  Log_InfoPrintf("Inserting new media, disc region: %s, console region: %s", Settings::GetDiscRegionName(region),
-                 Settings::GetConsoleRegionName(System::GetRegion()));
+  Log_InfoFmt("Inserting new media, disc region: {}, console region: {}", Settings::GetDiscRegionName(region),
+              Settings::GetConsoleRegionName(System::GetRegion()));
 
   s_disc_region = region;
   s_reader.SetMedia(std::move(media));
@@ -771,7 +771,7 @@ std::unique_ptr<CDImage> CDROM::RemoveMedia(bool for_disc_swap)
   if (for_disc_swap)
     stop_ticks += System::ScaleTicksToOverclock(System::MASTER_CLOCK * 2);
 
-  Log_InfoPrintf("Removing CD...");
+  Log_InfoPrint("Removing CD...");
   std::unique_ptr<CDImage> image = s_reader.RemoveMedia();
 
   if (s_show_current_file)
@@ -812,16 +812,18 @@ bool CDROM::PrecacheMedia()
 
   if (s_reader.GetMedia()->HasSubImages() && s_reader.GetMedia()->GetSubImageCount() > 1)
   {
-    Host::AddFormattedOSDMessage(15.0f,
-                                 TRANSLATE("OSDMessage", "CD image preloading not available for multi-disc image '%s'"),
-                                 FileSystem::GetDisplayNameFromPath(s_reader.GetMedia()->GetFileName()).c_str());
+    Host::AddOSDMessage(
+      fmt::format(TRANSLATE_FS("OSDMessage", "CD image preloading not available for multi-disc image '{}'"),
+                  FileSystem::GetDisplayNameFromPath(s_reader.GetMedia()->GetFileName())),
+      Host::OSD_ERROR_DURATION);
     return false;
   }
 
   HostInterfaceProgressCallback callback;
   if (!s_reader.Precache(&callback))
   {
-    Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Precaching CD image failed, it may be unreliable."), 15.0f);
+    Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Precaching CD image failed, it may be unreliable."),
+                        Host::OSD_ERROR_DURATION);
     return false;
   }
 
@@ -861,7 +863,7 @@ u8 CDROM::ReadRegister(u32 offset)
   switch (offset)
   {
     case 0: // status register
-      Log_TracePrintf("CDROM read status register -> 0x%08X", s_status.bits);
+      Log_TraceFmt("CDROM read status register -> 0x{:08X}", s_status.bits);
       return s_status.bits;
 
     case 1: // always response FIFO
@@ -874,7 +876,7 @@ u8 CDROM::ReadRegister(u32 offset)
 
       const u8 value = s_response_fifo.Pop();
       UpdateStatusRegister();
-      Log_DebugPrintf("CDROM read response FIFO -> 0x%08X", ZeroExtend32(value));
+      Log_DebugFmt("CDROM read response FIFO -> 0x{:08X}", ZeroExtend32(value));
       return value;
     }
 
@@ -882,7 +884,7 @@ u8 CDROM::ReadRegister(u32 offset)
     {
       const u8 value = s_data_fifo.Pop();
       UpdateStatusRegister();
-      Log_DebugPrintf("CDROM read data FIFO -> 0x%08X", ZeroExtend32(value));
+      Log_DebugFmt("CDROM read data FIFO -> 0x{:08X}", ZeroExtend32(value));
       return value;
     }
 
@@ -891,29 +893,33 @@ u8 CDROM::ReadRegister(u32 offset)
       if (s_status.index & 1)
       {
         const u8 value = s_interrupt_flag_register | ~INTERRUPT_REGISTER_MASK;
-        Log_DebugPrintf("CDROM read interrupt flag register -> 0x%02X", ZeroExtend32(value));
+        Log_DebugFmt("CDROM read interrupt flag register -> 0x{:02X}", value);
         return value;
       }
       else
       {
         const u8 value = s_interrupt_enable_register | ~INTERRUPT_REGISTER_MASK;
-        Log_DebugPrintf("CDROM read interrupt enable register -> 0x%02X", ZeroExtend32(value));
+        Log_DebugFmt("CDROM read interrupt enable register -> 0x{:02X}", value);
         return value;
       }
     }
     break;
-  }
 
-  Log_ErrorPrintf("Unknown CDROM register read: offset=0x%02X, index=%d", offset,
-                  ZeroExtend32(s_status.index.GetValue()));
-  Panic("Unknown CDROM register");
+    default:
+      [[unlikely]]
+      {
+        Log_ErrorFmt("Unknown CDROM register read: offset=0x{:02X}, index={}", offset,
+                     ZeroExtend32(s_status.index.GetValue()));
+        Panic("Unknown CDROM register");
+      }
+  }
 }
 
 void CDROM::WriteRegister(u32 offset, u8 value)
 {
   if (offset == 0)
   {
-    Log_TracePrintf("CDROM status register <- 0x%02X", value);
+    Log_TraceFmt("CDROM status register <- 0x{:02X}", value);
     s_status.bits = (s_status.bits & static_cast<u8>(~3)) | (value & u8(3));
     return;
   }
@@ -923,7 +929,7 @@ void CDROM::WriteRegister(u32 offset, u8 value)
   {
     case 0:
     {
-      Log_DebugPrintf("CDROM command register <- 0x%02X (%s)", value, s_command_info[value].name);
+      Log_DebugFmt("CDROM command register <- 0x{:02X} ({})", value, s_command_info[value].name);
       BeginCommand(static_cast<Command>(value));
       return;
     }
@@ -932,7 +938,7 @@ void CDROM::WriteRegister(u32 offset, u8 value)
     {
       if (s_param_fifo.IsFull())
       {
-        Log_WarningPrintf("Parameter FIFO overflow");
+        Log_WarningPrint("Parameter FIFO overflow");
         s_param_fifo.RemoveOne();
       }
 
@@ -943,14 +949,14 @@ void CDROM::WriteRegister(u32 offset, u8 value)
 
     case 2:
     {
-      Log_DebugPrintf("Request register <- 0x%02X", value);
+      Log_DebugFmt("Request register <- 0x{:02X}", value);
       const RequestRegister rr{value};
 
       // Sound map is not currently implemented, haven't found anything which uses it.
       if (rr.SMEN)
-        Log_ErrorPrintf("Sound map enable set");
+        Log_ErrorPrint("Sound map enable set");
       if (rr.BFWR)
-        Log_ErrorPrintf("Buffer write enable set");
+        Log_ErrorPrint("Buffer write enable set");
 
       if (rr.BFRD)
       {
@@ -958,7 +964,7 @@ void CDROM::WriteRegister(u32 offset, u8 value)
       }
       else
       {
-        Log_DebugPrintf("Clearing data FIFO");
+        Log_DebugPrint("Clearing data FIFO");
         s_data_fifo.Clear();
       }
 
@@ -968,13 +974,13 @@ void CDROM::WriteRegister(u32 offset, u8 value)
 
     case 3:
     {
-      Log_ErrorPrintf("Sound map data out <- 0x%02X", value);
+      Log_ErrorFmt("Sound map data out <- 0x{:02X}", value);
       return;
     }
 
     case 4:
     {
-      Log_DebugPrintf("Interrupt enable register <- 0x%02X", value);
+      Log_DebugFmt("Interrupt enable register <- 0x{:02X}", value);
       s_interrupt_enable_register = value & INTERRUPT_REGISTER_MASK;
       UpdateInterruptRequest();
       return;
@@ -982,7 +988,7 @@ void CDROM::WriteRegister(u32 offset, u8 value)
 
     case 5:
     {
-      Log_DebugPrintf("Interrupt flag register <- 0x%02X", value);
+      Log_DebugFmt("Interrupt flag register <- 0x{:02X}", value);
       s_interrupt_flag_register &= ~(value & INTERRUPT_REGISTER_MASK);
       if (s_interrupt_flag_register == 0)
       {
@@ -1005,41 +1011,41 @@ void CDROM::WriteRegister(u32 offset, u8 value)
 
     case 6:
     {
-      Log_ErrorPrintf("Sound map coding info <- 0x%02X", value);
+      Log_ErrorFmt("Sound map coding info <- 0x{:02X}", value);
       return;
     }
 
     case 7:
     {
-      Log_DebugPrintf("Audio volume for left-to-left output <- 0x%02X", value);
+      Log_DebugFmt("Audio volume for left-to-left output <- 0x{:02X}", value);
       s_next_cd_audio_volume_matrix[0][0] = value;
       return;
     }
 
     case 8:
     {
-      Log_DebugPrintf("Audio volume for left-to-right output <- 0x%02X", value);
+      Log_DebugFmt("Audio volume for left-to-right output <- 0x{:02X}", value);
       s_next_cd_audio_volume_matrix[0][1] = value;
       return;
     }
 
     case 9:
     {
-      Log_DebugPrintf("Audio volume for right-to-right output <- 0x%02X", value);
+      Log_DebugFmt("Audio volume for right-to-right output <- 0x{:02X}", value);
       s_next_cd_audio_volume_matrix[1][1] = value;
       return;
     }
 
     case 10:
     {
-      Log_DebugPrintf("Audio volume for right-to-left output <- 0x%02X", value);
+      Log_DebugFmt("Audio volume for right-to-left output <- 0x{:02X}", value);
       s_next_cd_audio_volume_matrix[1][0] = value;
       return;
     }
 
     case 11:
     {
-      Log_DebugPrintf("Audio volume apply changes <- 0x%02X", value);
+      Log_DebugFmt("Audio volume apply changes <- 0x{:02X}", value);
 
       const bool adpcm_muted = ConvertToBoolUnchecked(value & u8(0x01));
       if (adpcm_muted != s_adpcm_muted ||
@@ -1058,11 +1064,12 @@ void CDROM::WriteRegister(u32 offset, u8 value)
     }
 
     default:
-    {
-      Log_ErrorPrintf("Unknown CDROM register write: offset=0x%02X, index=%d, reg=%u, value=0x%02X", offset,
-                      s_status.index.GetValue(), reg, value);
-      return;
-    }
+      [[unlikely]]
+      {
+        Log_ErrorFmt("Unknown CDROM register write: offset=0x{:02X}, index={}, reg={}, value=0x{:02X}", offset,
+                     s_status.index.GetValue(), reg, value);
+        return;
+      }
   }
 }
 
@@ -1071,7 +1078,7 @@ void CDROM::DMARead(u32* words, u32 word_count)
   const u32 words_in_fifo = s_data_fifo.GetSize() / 4;
   if (words_in_fifo < word_count)
   {
-    Log_ErrorPrintf("DMA read on empty/near-empty data FIFO");
+    Log_ErrorPrint("DMA read on empty/near-empty data FIFO");
     std::memset(words + words_in_fifo, 0, sizeof(u32) * (word_count - words_in_fifo));
   }
 
@@ -1105,8 +1112,8 @@ void CDROM::SetAsyncInterrupt(Interrupt interrupt)
 {
   if (s_interrupt_flag_register == static_cast<u8>(interrupt))
   {
-    Log_DevPrintf("Not setting async interrupt %u because there is already one unacknowledged",
-                  static_cast<u8>(interrupt));
+    Log_DevFmt("Not setting async interrupt {} because there is already one unacknowledged",
+               static_cast<u8>(interrupt));
     s_async_response_fifo.Clear();
     return;
   }
@@ -1145,8 +1152,8 @@ void CDROM::QueueDeliverAsyncInterrupt()
   }
   else
   {
-    Log_DevPrintf("Delaying async interrupt %u because it's been %u cycles since last interrupt",
-                  s_pending_async_interrupt, diff);
+    Log_DevFmt("Delaying async interrupt {} because it's been {} cycles since last interrupt",
+               s_pending_async_interrupt, diff);
     s_async_interrupt_event->Schedule(INTERRUPT_DELAY_CYCLES);
   }
 }
@@ -1164,7 +1171,7 @@ void CDROM::DeliverAsyncInterrupt(void*, TickCount ticks, TickCount ticks_late)
     s_async_interrupt_event->Deactivate();
 
     Assert(s_pending_async_interrupt != 0 && !HasPendingInterrupt());
-    Log_DebugPrintf("Delivering async interrupt %u", s_pending_async_interrupt);
+    Log_DebugFmt("Delivering async interrupt {}", s_pending_async_interrupt);
 
     if (s_pending_async_interrupt == static_cast<u8>(Interrupt::DataReady))
       s_current_read_sector_buffer = s_current_write_sector_buffer;
@@ -1328,13 +1335,13 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
     const TickCount remaining_change_ticks = s_drive_event->GetTicksUntilNextExecution();
     ticks += remaining_change_ticks;
 
-    Log_DevPrintf("Seek time for %u LBAs: %d (%.3f ms) (%d for speed change/implicit TOC read)", lba_diff, ticks,
-                  (static_cast<float>(ticks) / static_cast<float>(ticks_per_second)) * 1000.0f, remaining_change_ticks);
+    Log_DevFmt("Seek time for {} LBAs: {} ({:.3f} ms) ({} for speed change/implicit TOC read)", lba_diff, ticks,
+               (static_cast<float>(ticks) / static_cast<float>(ticks_per_second)) * 1000.0f, remaining_change_ticks);
   }
   else
   {
-    Log_DevPrintf("Seek time for %u LBAs: %d (%.3f ms)", lba_diff, ticks,
-                  (static_cast<float>(ticks) / static_cast<float>(ticks_per_second)) * 1000.0f);
+    Log_DevFmt("Seek time for {} LBAs: {} ({:.3f} ms)", lba_diff, ticks,
+               (static_cast<float>(ticks) / static_cast<float>(ticks_per_second)) * 1000.0f);
   }
 
   if (g_settings.cdrom_seek_speedup > 1)
@@ -1389,16 +1396,16 @@ void CDROM::BeginCommand(Command command)
     if (s_command_info[static_cast<u8>(s_command)].min_parameters >
         s_command_info[static_cast<u8>(command)].min_parameters)
     {
-      Log_WarningPrintf("Ignoring command 0x%02X (%s) and emptying FIFO as 0x%02x (%s) is still pending",
-                        static_cast<u8>(command), s_command_info[static_cast<u8>(command)].name,
-                        static_cast<u8>(s_command), s_command_info[static_cast<u8>(s_command)].name);
+      Log_WarningFmt("Ignoring command 0x{:02X} ({}) and emptying FIFO as 0x{:02X} ({}) is still pending",
+                     static_cast<u8>(command), s_command_info[static_cast<u8>(command)].name,
+                     static_cast<u8>(s_command), s_command_info[static_cast<u8>(s_command)].name);
       s_param_fifo.Clear();
       return;
     }
 
-    Log_WarningPrintf("Cancelling pending command 0x%02X (%s) for new command 0x%02X (%s)", static_cast<u8>(s_command),
-                      s_command_info[static_cast<u8>(s_command)].name, static_cast<u8>(command),
-                      s_command_info[static_cast<u8>(command)].name);
+    Log_WarningFmt("Cancelling pending command 0x{:02X} ({}) for new command 0x{:02X} ({})", static_cast<u8>(s_command),
+                   s_command_info[static_cast<u8>(s_command)].name, static_cast<u8>(command),
+                   s_command_info[static_cast<u8>(command)].name);
 
     // subtract the currently-elapsed ack ticks from the new command
     if (s_command_event->IsActive())
@@ -1447,7 +1454,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
   if (!s_response_fifo.IsEmpty())
   {
-    Log_DebugPrintf("Response FIFO not empty on command begin");
+    Log_DebugPrint("Response FIFO not empty on command begin");
     s_response_fifo.Clear();
   }
 
@@ -1455,7 +1462,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
   {
     case Command::Getstat:
     {
-      Log_DebugPrintf("CDROM Getstat command");
+      Log_DebugPrint("CDROM Getstat command");
 
       // if bit 0 or 2 is set, send an additional byte
       SendACKAndStat();
@@ -1477,7 +1484,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::GetID:
     {
-      Log_DebugPrintf("CDROM GetID command");
+      Log_DebugPrint("CDROM GetID command");
       ClearCommandSecondResponse();
 
       if (!CanReadMedia())
@@ -1496,7 +1503,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::ReadTOC:
     {
-      Log_DebugPrintf("CDROM ReadTOC command");
+      Log_DebugPrint("CDROM ReadTOC command");
       ClearCommandSecondResponse();
 
       if (!CanReadMedia())
@@ -1518,7 +1525,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     {
       const u8 file = s_param_fifo.Peek(0);
       const u8 channel = s_param_fifo.Peek(1);
-      Log_DebugPrintf("CDROM setfilter command 0x%02X 0x%02X", ZeroExtend32(file), ZeroExtend32(channel));
+      Log_DebugFmt("CDROM setfilter command 0x{:02X} 0x{:02X}", ZeroExtend32(file), ZeroExtend32(channel));
       s_xa_filter_file_number = file;
       s_xa_filter_channel_number = channel;
       s_xa_current_set = false;
@@ -1531,7 +1538,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     {
       const u8 mode = s_param_fifo.Peek(0);
       const bool speed_change = (mode & 0x80) != (s_mode.bits & 0x80);
-      Log_DevPrintf("CDROM setmode command 0x%02X", ZeroExtend32(mode));
+      Log_DevFmt("CDROM setmode command 0x{:02X}", ZeroExtend32(mode));
 
       s_mode.bits = mode;
       SendACKAndStat();
@@ -1544,7 +1551,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
           // cancel the speed change if it's less than a quarter complete
           if (s_drive_event->GetTicksUntilNextExecution() >= (GetTicksForSpeedChange() / 4))
           {
-            Log_DevPrintf("Cancelling speed change event");
+            Log_DevPrint("Cancelling speed change event");
             ClearDriveState();
           }
         }
@@ -1554,14 +1561,14 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
           const TickCount change_ticks = GetTicksForSpeedChange();
           if (s_drive_state != DriveState::Idle)
           {
-            Log_DevPrintf("Drive is %s, delaying event by %d ticks for speed change to %s-speed",
-                          s_drive_state_names[static_cast<u8>(s_drive_state)], change_ticks,
-                          s_mode.double_speed ? "double" : "single");
+            Log_DevFmt("Drive is {}, delaying event by {} ticks for speed change to {}-speed",
+                       s_drive_state_names[static_cast<u8>(s_drive_state)], change_ticks,
+                       s_mode.double_speed ? "double" : "single");
             s_drive_event->Delay(change_ticks);
           }
           else
           {
-            Log_DevPrintf("Drive is idle, speed change takes %d ticks", change_ticks);
+            Log_DevFmt("Drive is idle, speed change takes {} ticks", change_ticks);
             s_drive_state = DriveState::ChangingSpeedOrTOCRead;
             s_drive_event->Schedule(change_ticks);
           }
@@ -1576,13 +1583,13 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       const u8 mm = s_param_fifo.Peek(0);
       const u8 ss = s_param_fifo.Peek(1);
       const u8 ff = s_param_fifo.Peek(2);
-      Log_DevPrintf("CDROM setloc command (%02X, %02X, %02X)", mm, ss, ff);
+      Log_DevFmt("CDROM setloc command ({:02X}, {:02X}, {:02X})", mm, ss, ff);
 
       // MM must be BCD, SS must be BCD and <0x60, FF must be BCD and <0x75
       if (((mm & 0x0F) > 0x09) || (mm > 0x99) || ((ss & 0x0F) > 0x09) || (ss >= 0x60) || ((ff & 0x0F) > 0x09) ||
           (ff >= 0x75))
       {
-        Log_ErrorPrintf("Invalid/out of range seek to %02X:%02X:%02X", mm, ss, ff);
+        Log_ErrorFmt("Invalid/out of range seek to {:02X}:{:02X}:{:02X}", mm, ss, ff);
         SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_ARGUMENT);
       }
       else
@@ -1603,7 +1610,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     case Command::SeekP:
     {
       const bool logical = (s_command == Command::SeekL);
-      Log_DebugPrintf("CDROM %s command", logical ? "SeekL" : "SeekP");
+      Log_DebugFmt("CDROM {} command", logical ? "SeekL" : "SeekP");
 
       if (IsSeeking())
         UpdatePositionWhileSeeking();
@@ -1625,7 +1632,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     case Command::ReadT:
     {
       const u8 session = s_param_fifo.Peek(0);
-      Log_DebugPrintf("CDROM ReadT command, session=%u", session);
+      Log_DebugFmt("CDROM ReadT command, session={}", session);
 
       if (!CanReadMedia() || s_drive_state == DriveState::Reading || s_drive_state == DriveState::Playing)
       {
@@ -1652,7 +1659,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     case Command::ReadN:
     case Command::ReadS:
     {
-      Log_DebugPrintf("CDROM read command");
+      Log_DebugPrint("CDROM read command");
       if (!CanReadMedia())
       {
         SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
@@ -1668,8 +1675,8 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
         if ((!s_setloc_pending || s_setloc_position.ToLBA() == GetNextSectorToBeRead()) &&
             (s_drive_state == DriveState::Reading || (IsSeeking() && s_read_after_seek)))
         {
-          Log_DevPrintf("Ignoring read command with %s setloc, already reading/reading after seek",
-                        s_setloc_pending ? "pending" : "same");
+          Log_DevFmt("Ignoring read command with {} setloc, already reading/reading after seek",
+                     s_setloc_pending ? "pending" : "same");
           s_setloc_pending = false;
         }
         else
@@ -1688,7 +1695,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     case Command::Play:
     {
       const u8 track = s_param_fifo.IsEmpty() ? 0 : PackedBCDToBinary(s_param_fifo.Peek(0));
-      Log_DebugPrintf("CDROM play command, track=%u", track);
+      Log_DebugFmt("CDROM play command, track={}", track);
 
       if (!CanReadMedia())
       {
@@ -1701,7 +1708,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
         if (track == 0 && (!s_setloc_pending || s_setloc_position.ToLBA() == GetNextSectorToBeRead()) &&
             (s_drive_state == DriveState::Playing || (IsSeeking() && s_play_after_seek)))
         {
-          Log_DevPrintf("Ignoring play command with no/same setloc, already playing/playing after seek");
+          Log_DevPrint("Ignoring play command with no/same setloc, already playing/playing after seek");
           s_fast_forward_rate = 0;
         }
         else
@@ -1771,8 +1778,8 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       {
         // TODO: On console, this returns an error. But perhaps only during the coarse/fine seek part? Needs more
         // hardware tests.
-        Log_WarningPrintf("CDROM Pause command while seeking from %u to %u - jumping to seek target", s_seek_start_lba,
-                          s_seek_end_lba);
+        Log_WarningFmt("CDROM Pause command while seeking from {} to {} - jumping to seek target", s_seek_start_lba,
+                       s_seek_end_lba);
         s_read_after_seek = false;
         s_play_after_seek = false;
         CompleteSeek();
@@ -1809,7 +1816,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::Init:
     {
-      Log_DebugPrintf("CDROM init command");
+      Log_DebugPrint("CDROM init command");
 
       if (s_command_second_response == Command::Init)
       {
@@ -1832,7 +1839,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::MotorOn:
     {
-      Log_DebugPrintf("CDROM motor on command");
+      Log_DebugPrint("CDROM motor on command");
       if (IsMotorOn())
       {
         SendErrorResponse(STAT_ERROR, ERROR_REASON_INCORRECT_NUMBER_OF_PARAMETERS);
@@ -1861,7 +1868,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::Mute:
     {
-      Log_DebugPrintf("CDROM mute command");
+      Log_DebugPrint("CDROM mute command");
       s_muted = true;
       SendACKAndStat();
       EndCommand();
@@ -1870,7 +1877,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::Demute:
     {
-      Log_DebugPrintf("CDROM demute command");
+      Log_DebugPrint("CDROM demute command");
       s_muted = false;
       SendACKAndStat();
       EndCommand();
@@ -1881,15 +1888,15 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     {
       if (!s_last_sector_header_valid)
       {
-        Log_DevPrintf("CDROM GetlocL command - header invalid, status 0x%02X", s_secondary_status.bits);
+        Log_DevFmt("CDROM GetlocL command - header invalid, status 0x{:02X}", s_secondary_status.bits);
         SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
       }
       else
       {
         UpdatePhysicalPosition(true);
 
-        Log_DebugPrintf("CDROM GetlocL command - [%02X:%02X:%02X]", s_last_sector_header.minute,
-                        s_last_sector_header.second, s_last_sector_header.frame);
+        Log_DebugFmt("CDROM GetlocL command - [{:02X}:{:02X}:{:02X}]", s_last_sector_header.minute,
+                     s_last_sector_header.second, s_last_sector_header.frame);
 
         s_response_fifo.PushRange(reinterpret_cast<const u8*>(&s_last_sector_header), sizeof(s_last_sector_header));
         s_response_fifo.PushRange(reinterpret_cast<const u8*>(&s_last_sector_subheader),
@@ -1905,7 +1912,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     {
       if (!CanReadMedia())
       {
-        Log_DebugPrintf("CDROM GetlocP command - not ready");
+        Log_DebugPrint("CDROM GetlocP command - not ready");
         SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
       }
       else
@@ -1915,10 +1922,10 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
         else
           UpdatePhysicalPosition(false);
 
-        Log_DevPrintf("CDROM GetlocP command - T%02x I%02x R[%02x:%02x:%02x] A[%02x:%02x:%02x]",
-                      s_last_subq.track_number_bcd, s_last_subq.index_number_bcd, s_last_subq.relative_minute_bcd,
-                      s_last_subq.relative_second_bcd, s_last_subq.relative_frame_bcd, s_last_subq.absolute_minute_bcd,
-                      s_last_subq.absolute_second_bcd, s_last_subq.absolute_frame_bcd);
+        Log_DevFmt("CDROM GetlocP command - T{:02x} I{:02x} R[{:02x}:{:02x}:{:02x}] A[{:02x}:{:02x}:{:02x}]",
+                   s_last_subq.track_number_bcd, s_last_subq.index_number_bcd, s_last_subq.relative_minute_bcd,
+                   s_last_subq.relative_second_bcd, s_last_subq.relative_frame_bcd, s_last_subq.absolute_minute_bcd,
+                   s_last_subq.absolute_second_bcd, s_last_subq.absolute_frame_bcd);
 
         s_response_fifo.Push(s_last_subq.track_number_bcd);
         s_response_fifo.Push(s_last_subq.index_number_bcd);
@@ -1937,11 +1944,11 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::GetTN:
     {
-      Log_DebugPrintf("CDROM GetTN command");
+      Log_DebugPrint("CDROM GetTN command");
       if (CanReadMedia())
       {
-        Log_DevPrintf("GetTN -> %u %u", s_reader.GetMedia()->GetFirstTrackNumber(),
-                      s_reader.GetMedia()->GetLastTrackNumber());
+        Log_DevFmt("GetTN -> {} {}", s_reader.GetMedia()->GetFirstTrackNumber(),
+                   s_reader.GetMedia()->GetLastTrackNumber());
 
         s_response_fifo.Push(s_secondary_status.bits);
         s_response_fifo.Push(BinaryToBCD(Truncate8(s_reader.GetMedia()->GetFirstTrackNumber())));
@@ -1959,7 +1966,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::GetTD:
     {
-      Log_DebugPrintf("CDROM GetTD command");
+      Log_DebugPrint("CDROM GetTD command");
       Assert(s_param_fifo.GetSize() >= 1);
 
       if (!CanReadMedia())
@@ -1994,7 +2001,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
         s_response_fifo.Push(s_secondary_status.bits);
         s_response_fifo.Push(BinaryToBCD(Truncate8(pos.minute)));
         s_response_fifo.Push(BinaryToBCD(Truncate8(pos.second)));
-        Log_DevPrintf("GetTD %u -> %u %u", track, pos.minute, pos.second);
+        Log_DevFmt("GetTD {} -> {} {}", track, pos.minute, pos.second);
 
         SetInterrupt(Interrupt::ACK);
       }
@@ -2005,7 +2012,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::Getmode:
     {
-      Log_DebugPrintf("CDROM Getmode command");
+      Log_DebugPrint("CDROM Getmode command");
 
       s_response_fifo.Push(s_secondary_status.bits);
       s_response_fifo.Push(s_mode.bits);
@@ -2019,7 +2026,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::Sync:
     {
-      Log_DebugPrintf("CDROM sync command");
+      Log_DebugPrint("CDROM sync command");
 
       SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
       EndCommand();
@@ -2028,7 +2035,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::VideoCD:
     {
-      Log_DebugPrintf("CDROM VideoCD command");
+      Log_DebugPrint("CDROM VideoCD command");
       SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
 
       // According to nocash this doesn't clear the parameter FIFO.
@@ -2039,13 +2046,14 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     break;
 
     default:
-    {
-      Log_ErrorPrintf("Unknown CDROM command 0x%04X with %u parameters, please report", static_cast<u16>(s_command),
-                      s_param_fifo.GetSize());
-      SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
-      EndCommand();
-    }
-    break;
+      [[unlikely]]
+      {
+        Log_ErrorFmt("Unknown CDROM command 0x{:04X} with {} parameters, please report", static_cast<u16>(s_command),
+                     s_param_fifo.GetSize());
+        SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
+        EndCommand();
+      }
+      break;
   }
 }
 
@@ -2055,7 +2063,7 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
   {
     case 0x04: // Reset SCEx counters
     {
-      Log_DebugPrintf("Reset SCEx counters");
+      Log_DebugPrint("Reset SCEx counters");
       s_secondary_status.motor_on = true;
       s_response_fifo.Push(s_secondary_status.bits);
       SetInterrupt(Interrupt::ACK);
@@ -2065,7 +2073,7 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
 
     case 0x05: // Read SCEx counters
     {
-      Log_DebugPrintf("Read SCEx counters");
+      Log_DebugPrint("Read SCEx counters");
       s_response_fifo.Push(s_secondary_status.bits);
       s_response_fifo.Push(0); // # of TOC reads?
       s_response_fifo.Push(0); // # of SCEx strings received
@@ -2076,7 +2084,7 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
 
     case 0x20: // Get CDROM BIOS Date/Version
     {
-      Log_DebugPrintf("Get CDROM BIOS Date/Version");
+      Log_DebugPrint("Get CDROM BIOS Date/Version");
 
       static constexpr const u8 version_table[][4] = {
         {0x94, 0x09, 0x19, 0xC0}, // PSX (PU-7)               19 Sep 1994, version vC0 (a)
@@ -2103,7 +2111,7 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
 
     case 0x22:
     {
-      Log_DebugPrintf("Get CDROM region ID string");
+      Log_DebugPrint("Get CDROM region ID string");
 
       switch (System::GetRegion())
       {
@@ -2136,12 +2144,13 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
     }
 
     default:
-    {
-      Log_ErrorPrintf("Unknown test command 0x%02X, %u parameters", subcommand, s_param_fifo.GetSize());
-      SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
-      EndCommand();
-      return;
-    }
+      [[unlikely]]
+      {
+        Log_ErrorFmt("Unknown test command 0x{:02X}, %u parameters", subcommand, s_param_fifo.GetSize());
+        SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
+        EndCommand();
+        return;
+      }
   }
 }
 
@@ -2180,8 +2189,8 @@ void CDROM::ClearCommandSecondResponse()
 {
   if (s_command_second_response != Command::None)
   {
-    Log_DevPrintf("Cancelling pending command 0x%02X (%s) second response", static_cast<u16>(s_command_second_response),
-                  s_command_info[static_cast<u16>(s_command_second_response)].name);
+    Log_DevFmt("Cancelling pending command 0x{:02X} ({}) second response", static_cast<u16>(s_command_second_response),
+               s_command_info[static_cast<u16>(s_command_second_response)].name);
   }
 
   s_command_second_response_event->Deactivate();
@@ -2295,8 +2304,8 @@ void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = fa
   // Fixes crash in Disney's The Lion King - Simba's Mighty Adventure.
   if (IsSeeking())
   {
-    Log_DevPrintf("Read command while seeking, scheduling read after seek %u -> %u finishes in %d ticks",
-                  s_seek_start_lba, s_seek_end_lba, s_drive_event->GetTicksUntilNextExecution());
+    Log_DevFmt("Read command while seeking, scheduling read after seek {} -> {} finishes in {} ticks", s_seek_start_lba,
+               s_seek_end_lba, s_drive_event->GetTicksUntilNextExecution());
 
     // Implicit seeks won't trigger the read, so swap it for a logical.
     if (s_drive_state == DriveState::SeekingImplicit)
@@ -2307,7 +2316,7 @@ void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = fa
     return;
   }
 
-  Log_DebugPrintf("Starting reading @ LBA %u", s_current_lba);
+  Log_DebugFmt("Starting reading @ LBA {}", s_current_lba);
 
   const TickCount ticks = GetTicksForRead();
   const TickCount first_sector_ticks = ticks + (after_seek ? 0 : GetTicksForSeek(s_current_lba)) - ticks_late;
@@ -2327,7 +2336,7 @@ void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = fa
 
 void CDROM::BeginPlaying(u8 track, TickCount ticks_late /* = 0 */, bool after_seek /* = false */)
 {
-  Log_DebugPrintf("Starting playing CDDA track %x", track);
+  Log_DebugFmt("Starting playing CDDA track {}", track);
   s_last_cdda_report_frame_nibble = 0xFF;
   s_play_track_number_bcd = track;
   s_fast_forward_rate = 0;
@@ -2372,7 +2381,7 @@ void CDROM::BeginPlaying(u8 track, TickCount ticks_late /* = 0 */, bool after_se
 void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_seek)
 {
   if (!s_setloc_pending)
-    Log_WarningPrintf("Seeking without setloc set");
+    Log_WarningPrint("Seeking without setloc set");
 
   s_read_after_seek = read_after_seek;
   s_play_after_seek = play_after_seek;
@@ -2380,8 +2389,8 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
   // TODO: Pending should stay set on seek command.
   s_setloc_pending = false;
 
-  Log_DebugPrintf("Seeking to [%02u:%02u:%02u] (LBA %u) (%s)", s_setloc_position.minute, s_setloc_position.second,
-                  s_setloc_position.frame, s_setloc_position.ToLBA(), logical ? "logical" : "physical");
+  Log_DebugFmt("Seeking to [{:02d}:{:02d}:{:02d}] (LBA {}) ({})", s_setloc_position.minute, s_setloc_position.second,
+               s_setloc_position.frame, s_setloc_position.ToLBA(), logical ? "logical" : "physical");
 
   const CDImage::LBA seek_lba = s_setloc_position.ToLBA();
   const TickCount seek_time = GetTicksForSeek(seek_lba, play_after_seek);
@@ -2430,13 +2439,13 @@ void CDROM::UpdatePositionWhileSeeking()
     return;
   }
 
-  Log_DevPrintf("Update position while seeking from %u to %u - %u (%.2f)", s_seek_start_lba, s_seek_end_lba,
-                current_lba, completed_frac);
+  Log_DevFmt("Update position while seeking from {} to {} - {} ({:.2f})", s_seek_start_lba, s_seek_end_lba, current_lba,
+             completed_frac);
 
   // access the image directly since we want to preserve the cached data for the seek complete
   CDImage::SubChannelQ subq;
   if (!s_reader.ReadSectorUncached(current_lba, &subq, nullptr))
-    Log_ErrorPrintf("Failed to read subq for sector %u for physical position", current_lba);
+    Log_ErrorFmt("Failed to read subq for sector {} for physical position", current_lba);
   else if (subq.IsCRCValid())
     s_last_subq = subq;
 
@@ -2457,8 +2466,8 @@ void CDROM::UpdatePhysicalPosition(bool update_logical)
     if ((s_secondary_status.bits & (STAT_READING | STAT_PLAYING_CDDA | STAT_MOTOR_ON)) == STAT_MOTOR_ON &&
         s_current_lba != s_physical_lba)
     {
-      Log_WarningPrintf("Jumping to hold position [%u->%u] while %s first sector", s_physical_lba, s_current_lba,
-                        (s_drive_state == DriveState::Reading) ? "reading" : "playing");
+      Log_WarningFmt("Jumping to hold position [{}->{}] while {} first sector", s_physical_lba, s_current_lba,
+                     (s_drive_state == DriveState::Reading) ? "reading" : "playing");
       SetHoldPosition(s_current_lba, true);
     }
 
@@ -2498,8 +2507,8 @@ void CDROM::UpdatePhysicalPosition(bool update_logical)
     const CDImage::LBA new_offset = (old_offset + sector_diff) % sectors_per_track;
     const CDImage::LBA new_physical_lba = base + new_offset;
 #ifdef _DEBUG
-    Log_DevPrintf("Tick diff %u, sector diff %u, old pos %s, new pos %s", diff, sector_diff,
-                  LBAToMSFString(s_physical_lba).c_str(), LBAToMSFString(new_physical_lba).c_str());
+    Log_DevFmt("Tick diff {}, sector diff {}, old pos {}, new pos {}", diff, sector_diff,
+               LBAToMSFString(s_physical_lba), LBAToMSFString(new_physical_lba));
 #endif
     if (s_physical_lba != new_physical_lba)
     {
@@ -2509,7 +2518,7 @@ void CDROM::UpdatePhysicalPosition(bool update_logical)
       CDROMAsyncReader::SectorBuffer raw_sector;
       if (!s_reader.ReadSectorUncached(new_physical_lba, &subq, update_logical ? &raw_sector : nullptr))
       {
-        Log_ErrorPrintf("Failed to read subq for sector %u for physical position", new_physical_lba);
+        Log_ErrorFmt("Failed to read subq for sector {} for physical position", new_physical_lba);
       }
       else
       {
@@ -2532,7 +2541,7 @@ void CDROM::SetHoldPosition(CDImage::LBA lba, bool update_subq)
   {
     CDImage::SubChannelQ subq;
     if (!s_reader.ReadSectorUncached(lba, &subq, nullptr))
-      Log_ErrorPrintf("Failed to read subq for sector %u for physical position", lba);
+      Log_ErrorFmt("Failed to read subq for sector {} for physical position", lba);
     else if (subq.IsCRCValid())
       s_last_subq = subq;
   }
@@ -2583,8 +2592,8 @@ bool CDROM::CompleteSeek()
         {
           if (logical)
           {
-            Log_WarningPrintf("Logical seek to non-data sector [%02x:%02x:%02x]%s", seek_mm, seek_ss, seek_ff,
-                              s_read_after_seek ? ", reading after seek" : "");
+            Log_WarningFmt("Logical seek to non-data sector [{:02x}:{:02x}:{:02x}]{}", seek_mm, seek_ss, seek_ff,
+                           s_read_after_seek ? ", reading after seek" : "");
 
             // If CDDA mode isn't enabled and we're reading an audio sector, we need to fail the seek.
             // Test cases:
@@ -2597,7 +2606,7 @@ bool CDROM::CompleteSeek()
 
         if (subq.track_number_bcd == CDImage::LEAD_OUT_TRACK_NUMBER)
         {
-          Log_WarningPrintf("Invalid seek to lead-out area (LBA %u)", s_reader.GetLastReadSector());
+          Log_WarningFmt("Invalid seek to lead-out area (LBA {})", s_reader.GetLastReadSector());
           seek_okay = false;
         }
       }
@@ -2637,8 +2646,8 @@ void CDROM::DoSeekComplete(TickCount ticks_late)
   }
   else
   {
-    Log_WarningPrintf("%s seek to [%s] failed", logical ? "Logical" : "Physical",
-                      LBAToMSFString(s_reader.GetLastReadSector()).c_str());
+    Log_WarningFmt("{} seek to [{}] failed", logical ? "Logical" : "Physical",
+                   LBAToMSFString(s_reader.GetLastReadSector()));
     s_secondary_status.ClearActiveBits();
     SendAsyncErrorResponse(STAT_SEEK_ERROR, 0x04);
     s_last_sector_header_valid = false;
@@ -2666,7 +2675,7 @@ void CDROM::DoStatSecondResponse()
 
 void CDROM::DoChangeSessionComplete()
 {
-  Log_DebugPrintf("Changing session complete");
+  Log_DebugPrint("Changing session complete");
   ClearDriveState();
   s_secondary_status.ClearActiveBits();
   s_secondary_status.motor_on = true;
@@ -2686,7 +2695,7 @@ void CDROM::DoChangeSessionComplete()
 
 void CDROM::DoSpinUpComplete()
 {
-  Log_DebugPrintf("Spinup complete");
+  Log_DebugPrint("Spinup complete");
   s_drive_state = DriveState::Idle;
   s_drive_event->Deactivate();
   s_secondary_status.ClearActiveBits();
@@ -2695,14 +2704,14 @@ void CDROM::DoSpinUpComplete()
 
 void CDROM::DoSpeedChangeOrImplicitTOCReadComplete()
 {
-  Log_DebugPrintf("Speed change/implicit TOC read complete");
+  Log_DebugPrint("Speed change/implicit TOC read complete");
   s_drive_state = DriveState::Idle;
   s_drive_event->Deactivate();
 }
 
 void CDROM::DoIDRead()
 {
-  Log_DebugPrintf("ID read complete");
+  Log_DebugPrint("ID read complete");
   s_secondary_status.ClearActiveBits();
   s_secondary_status.motor_on = CanReadMedia();
 
@@ -2756,11 +2765,11 @@ void CDROM::StartMotor()
 {
   if (s_drive_state == DriveState::SpinningUp)
   {
-    Log_DevPrintf("Starting motor - already spinning up");
+    Log_DevPrint("Starting motor - already spinning up");
     return;
   }
 
-  Log_DevPrintf("Starting motor");
+  Log_DevPrint("Starting motor");
   s_drive_state = DriveState::SpinningUp;
   s_drive_event->Schedule(GetTicksForSpinUp());
 }
@@ -2796,12 +2805,12 @@ void CDROM::DoSectorRead()
   }
   else
   {
-    Log_DevPrintf("Sector %u [%s] has invalid subchannel Q", s_current_lba, LBAToMSFString(s_current_lba).c_str());
+    Log_DevFmt("Sector {} [{}] has invalid subchannel Q", s_current_lba, LBAToMSFString(s_current_lba));
   }
 
   if (subq.track_number_bcd == CDImage::LEAD_OUT_TRACK_NUMBER)
   {
-    Log_DevPrintf("Read reached lead-out area of disc at LBA %u, stopping", s_reader.GetLastReadSector());
+    Log_DevFmt("Read reached lead-out area of disc at LBA {}, stopping", s_reader.GetLastReadSector());
     StopReadingWithDataEnd();
     StopMotor();
     return;
@@ -2814,12 +2823,12 @@ void CDROM::DoSectorRead()
     {
       // track number was not specified, but we've found the track now
       s_play_track_number_bcd = subq.track_number_bcd;
-      Log_DebugPrintf("Setting playing track number to %u", s_play_track_number_bcd);
+      Log_DebugFmt("Setting playing track number to {}", s_play_track_number_bcd);
     }
     else if (s_mode.auto_pause && subq.track_number_bcd != s_play_track_number_bcd)
     {
       // we don't want to update the position if the track changes, so we check it before reading the actual sector.
-      Log_DevPrintf("Auto pause at the start of track %02x (LBA %u)", s_last_subq.track_number_bcd, s_current_lba);
+      Log_DevFmt("Auto pause at the start of track {:02x} (LBA {})", s_last_subq.track_number_bcd, s_current_lba);
       StopReadingWithDataEnd();
       return;
     }
@@ -2848,8 +2857,8 @@ void CDROM::DoSectorRead()
   }
   else
   {
-    Log_WarningPrintf("Skipping sector %u as it is a %s sector and we're not %s", s_current_lba,
-                      is_data_sector ? "data" : "audio", is_data_sector ? "reading" : "playing");
+    Log_WarningFmt("Skipping sector {} as it is a {} sector and we're not {}", s_current_lba,
+                   is_data_sector ? "data" : "audio", is_data_sector ? "reading" : "playing");
   }
 
   s_requested_lba = next_sector;
@@ -2867,9 +2876,9 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessDataSectorHeader(const u8* raw_sector)
 ALWAYS_INLINE_RELEASE void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& subq)
 {
   const u32 sb_num = (s_current_write_sector_buffer + 1) % NUM_SECTOR_BUFFERS;
-  Log_DevPrintf("Read sector %u [%s]: mode %u submode 0x%02X into buffer %u", s_current_lba,
-                LBAToMSFString(s_current_lba).c_str(), ZeroExtend32(s_last_sector_header.sector_mode),
-                ZeroExtend32(s_last_sector_subheader.submode.bits), sb_num);
+  Log_DevFmt("Read sector {} [{}]: mode {} submode 0x{:02X} into buffer {}", s_current_lba,
+             LBAToMSFString(s_current_lba), s_last_sector_header.sector_mode,
+             ZeroExtend32(s_last_sector_subheader.submode.bits), sb_num);
 
   if (s_mode.xa_enable && s_last_sector_header.sector_mode == 2)
   {
@@ -2886,12 +2895,12 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessDataSector(const u8* raw_sector, const 
   SectorBuffer* sb = &s_sector_buffers[sb_num];
   if (sb->size > 0)
   {
-    Log_DevPrintf("Sector buffer %u was not read, previous sector dropped",
-                  (s_current_write_sector_buffer - 1) % NUM_SECTOR_BUFFERS);
+    Log_DevFmt("Sector buffer {} was not read, previous sector dropped",
+               (s_current_write_sector_buffer - 1) % NUM_SECTOR_BUFFERS);
   }
 
   if (s_mode.ignore_bit)
-    Log_WarningPrintf("SetMode.4 bit set on read of sector %u", s_current_lba);
+    Log_WarningFmt("SetMode.4 bit set on read of sector {}", s_current_lba);
 
   if (s_mode.read_raw_sector)
   {
@@ -2903,7 +2912,7 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessDataSector(const u8* raw_sector, const 
     // TODO: This should actually depend on the mode...
     if (s_last_sector_header.sector_mode != 2)
     {
-      Log_WarningPrintf("Ignoring non-mode2 sector at %u", s_current_lba);
+      Log_WarningFmt("Ignoring non-mode2 sector at {}", s_current_lba);
       return;
     }
 
@@ -2916,7 +2925,7 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessDataSector(const u8* raw_sector, const 
   // Deliver to CPU
   if (HasPendingAsyncInterrupt())
   {
-    Log_WarningPrintf("Data interrupt was not delivered");
+    Log_WarningPrint("Data interrupt was not delivered");
     ClearAsyncInterrupt();
   }
 
@@ -2924,7 +2933,7 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessDataSector(const u8* raw_sector, const 
   {
     const u32 sectors_missed = (s_current_write_sector_buffer - s_current_read_sector_buffer) % NUM_SECTOR_BUFFERS;
     if (sectors_missed > 1)
-      Log_WarningPrintf("Interrupt not processed in time, missed %u sectors", sectors_missed - 1);
+      Log_WarningFmt("Interrupt not processed in time, missed {} sectors", sectors_missed - 1);
   }
 
   s_async_response_fifo.Push(s_secondary_status.bits);
@@ -2997,8 +3006,7 @@ void CDROM::ResampleXAADPCM(const s16* frames_in, u32 num_frames_in)
   // the SPU will over-read in the next batch to catch up.
   if (s_audio_fifo.GetSize() > AUDIO_FIFO_LOW_WATERMARK)
   {
-    Log_DevPrintf("Dropping %u XA frames because audio FIFO still has %u frames", num_frames_in,
-                  s_audio_fifo.GetSize());
+    Log_DevFmt("Dropping {} XA frames because audio FIFO still has {} frames", num_frames_in, s_audio_fifo.GetSize());
     return;
   }
 
@@ -3068,9 +3076,9 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessXAADPCMSector(const u8* raw_sector, con
   if (s_mode.xa_filter && (s_last_sector_subheader.file_number != s_xa_filter_file_number ||
                            s_last_sector_subheader.channel_number != s_xa_filter_channel_number))
   {
-    Log_DebugPrintf("Skipping sector due to filter mismatch (expected %u/%u got %u/%u)", s_xa_filter_file_number,
-                    s_xa_filter_channel_number, s_last_sector_subheader.file_number,
-                    s_last_sector_subheader.channel_number);
+    Log_DebugFmt("Skipping sector due to filter mismatch (expected {}/{} got {}/{})", s_xa_filter_file_number,
+                 s_xa_filter_channel_number, s_last_sector_subheader.file_number,
+                 s_last_sector_subheader.channel_number);
     return;
   }
 
@@ -3083,9 +3091,9 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessXAADPCMSector(const u8* raw_sector, con
     // TODO: Verify with a hardware test.
     if (s_last_sector_subheader.channel_number == 255 && (!s_mode.xa_filter || s_xa_filter_channel_number != 255))
     {
-      Log_WarningPrintf("Skipping XA file with file number %u and channel number %u (submode 0x%02X coding 0x%02X)",
-                        s_last_sector_subheader.file_number, s_last_sector_subheader.channel_number,
-                        s_last_sector_subheader.submode.bits, s_last_sector_subheader.codinginfo.bits);
+      Log_WarningFmt("Skipping XA file with file number {} and channel number {} (submode 0x{:02X} coding 0x{:02X})",
+                     s_last_sector_subheader.file_number, s_last_sector_subheader.channel_number,
+                     s_last_sector_subheader.submode.bits, s_last_sector_subheader.codinginfo.bits);
       return;
     }
 
@@ -3096,9 +3104,9 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessXAADPCMSector(const u8* raw_sector, con
   else if (s_last_sector_subheader.file_number != s_xa_current_file_number ||
            s_last_sector_subheader.channel_number != s_xa_current_channel_number)
   {
-    Log_DebugPrintf("Skipping sector due to current file mismatch (expected %u/%u got %u/%u)", s_xa_current_file_number,
-                    s_xa_current_channel_number, s_last_sector_subheader.file_number,
-                    s_last_sector_subheader.channel_number);
+    Log_DebugFmt("Skipping sector due to current file mismatch (expected {}/{} got {}/{})", s_xa_current_file_number,
+                 s_xa_current_channel_number, s_last_sector_subheader.file_number,
+                 s_last_sector_subheader.channel_number);
     return;
   }
 
@@ -3187,7 +3195,7 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessCDDASector(const u8* raw_sector, const 
                                                     bool subq_valid)
 {
   // For CDDA sectors, the whole sector contains the audio data.
-  Log_DevPrintf("Read sector %u as CDDA", s_current_lba);
+  Log_DevFmt("Read sector {} as CDDA", s_current_lba);
 
   // The reporting doesn't happen if we're reading with the CDDA mode bit set.
   if (s_drive_state == DriveState::Playing && s_mode.report_audio && subq_valid)
@@ -3223,10 +3231,11 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessCDDASector(const u8* raw_sector, const 
       s_async_response_fifo.Push(Truncate8(peak_value >> 8)); // peak high
       SetAsyncInterrupt(Interrupt::DataReady);
 
-      Log_DevPrintf("CDDA report at track[%02x] index[%02x] rel[%02x:%02x:%02x] abs[%02x:%02x:%02x] peak[%u:%d]",
-                    subq.track_number_bcd, subq.index_number_bcd, subq.relative_minute_bcd, subq.relative_second_bcd,
-                    subq.relative_frame_bcd, subq.absolute_minute_bcd, subq.absolute_second_bcd,
-                    subq.absolute_frame_bcd, channel, peak_volume);
+      Log_DevFmt(
+        "CDDA report at track[{:02x}] index[{:02x}] rel[{:02x}:{:02x}:{:02x}] abs[{:02x}:{:02x}:{:02x}] peak[{}:{}]",
+        subq.track_number_bcd, subq.index_number_bcd, subq.relative_minute_bcd, subq.relative_second_bcd,
+        subq.relative_frame_bcd, subq.absolute_minute_bcd, subq.absolute_second_bcd, subq.absolute_frame_bcd, channel,
+        peak_volume);
     }
   }
 
@@ -3241,7 +3250,7 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessCDDASector(const u8* raw_sector, const 
   const u32 remaining_space = s_audio_fifo.GetSpace();
   if (remaining_space < num_samples)
   {
-    Log_WarningPrintf("Dropping %u frames from audio FIFO", num_samples - remaining_space);
+    Log_WarningFmt("Dropping {} frames from audio FIFO", num_samples - remaining_space);
     s_audio_fifo.Remove(num_samples - remaining_space);
   }
 
@@ -3260,7 +3269,7 @@ void CDROM::LoadDataFIFO()
 {
   if (!s_data_fifo.IsEmpty())
   {
-    Log_DevPrintf("Load data fifo when not empty");
+    Log_DevPrint("Load data fifo when not empty");
     return;
   }
 
@@ -3268,7 +3277,7 @@ void CDROM::LoadDataFIFO()
   SectorBuffer& sb = s_sector_buffers[s_current_read_sector_buffer];
   if (sb.size == 0)
   {
-    Log_WarningPrintf("Attempting to load empty sector buffer");
+    Log_WarningPrint("Attempting to load empty sector buffer");
     s_data_fifo.PushRange(sb.data.data(), RAW_SECTOR_OUTPUT_SIZE);
   }
   else
@@ -3277,12 +3286,12 @@ void CDROM::LoadDataFIFO()
     sb.size = 0;
   }
 
-  Log_DebugPrintf("Loaded %u bytes to data FIFO from buffer %u", s_data_fifo.GetSize(), s_current_read_sector_buffer);
+  Log_DebugFmt("Loaded %u bytes to data FIFO from buffer {}", s_data_fifo.GetSize(), s_current_read_sector_buffer);
 
   SectorBuffer& next_sb = s_sector_buffers[s_current_write_sector_buffer];
   if (next_sb.size > 0)
   {
-    Log_DevPrintf("Sending additional INT1 for missed sector in buffer %u", s_current_write_sector_buffer);
+    Log_DevFmt("Sending additional INT1 for missed sector in buffer {}", s_current_write_sector_buffer);
     s_async_response_fifo.Push(s_secondary_status.bits);
     SetAsyncInterrupt(Interrupt::DataReady);
   }

@@ -1150,7 +1150,7 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
   reshadefx::module mod;
   if (!CreateModule(width, height, &mod, std::move(fxcode), &error))
   {
-    Log_ErrorPrintf("Failed to create module for '%s': %s", m_name.c_str(), error.GetDescription().c_str());
+    Log_ErrorFmt("Failed to create module for '{}': {}", m_name, error.GetDescription());
     return false;
   }
 
@@ -1158,7 +1158,7 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
 
   if (!CreatePasses(format, mod, &error))
   {
-    Log_ErrorPrintf("Failed to create passes for '%s': %s", m_name.c_str(), error.GetDescription().c_str());
+    Log_ErrorFmt("Failed to create passes for '{}': {}", m_name, error.GetDescription());
     return false;
   }
 
@@ -1213,7 +1213,7 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
     std::unique_ptr<GPUShader> sshader =
       g_gpu_device->CreateShader(stage, real_code, needs_main_defn ? "main" : name.c_str());
     if (!sshader)
-      Log_ErrorPrintf("Failed to compile function '%s'", name.c_str());
+      Log_ErrorFmt("Failed to compile function '{}'", name);
 
     return sshader;
   };
@@ -1276,7 +1276,7 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
       pass.pipeline = g_gpu_device->CreatePipeline(plconfig);
       if (!pass.pipeline)
       {
-        Log_ErrorPrintf("Failed to create pipeline for pass '%s'", info.name.c_str());
+        Log_ErrorFmt("Failed to create pipeline for pass '{}'", info.name);
         progress->PopState();
         return false;
       }
@@ -1307,7 +1307,7 @@ bool PostProcessing::ReShadeFXShader::ResizeOutput(GPUTexture::Format format, u3
     tex.texture = g_gpu_device->FetchTexture(t_width, t_height, 1, 1, 1, GPUTexture::Type::RenderTarget, tex.format);
     if (!tex.texture)
     {
-      Log_ErrorPrintf("Failed to create %ux%u texture", t_width, t_height);
+      Log_ErrorFmt("Failed to create {}x{} texture", t_width, t_height);
       return {};
     }
   }

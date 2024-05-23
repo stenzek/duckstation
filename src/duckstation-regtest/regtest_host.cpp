@@ -52,7 +52,7 @@ static std::string s_dump_game_directory;
 bool RegTestHost::SetFolders()
 {
   std::string program_path(FileSystem::GetProgramPath());
-  Log_InfoPrintf("Program Path: %s", program_path.c_str());
+  Log_InfoFmt("Program Path: {}", program_path);
 
   EmuFolders::AppRoot = Path::Canonicalize(Path::GetDirectory(program_path));
   EmuFolders::DataRoot = EmuFolders::AppRoot;
@@ -67,9 +67,9 @@ bool RegTestHost::SetFolders()
   // On Windows/Linux, these are in the binary directory.
   EmuFolders::Resources = Path::Combine(EmuFolders::AppRoot, "resources");
 
-  Log_DevPrintf("AppRoot Directory: %s", EmuFolders::AppRoot.c_str());
-  Log_DevPrintf("DataRoot Directory: %s", EmuFolders::DataRoot.c_str());
-  Log_DevPrintf("Resources Directory: %s", EmuFolders::Resources.c_str());
+  Log_DevFmt("AppRoot Directory: {}", EmuFolders::AppRoot);
+  Log_DevFmt("DataRoot Directory: {}", EmuFolders::DataRoot);
+  Log_DevFmt("Resources Directory: {}", EmuFolders::Resources);
 
   // Write crash dumps to the data directory, since that'll be accessible for certain.
   CrashHandler::SetWriteDirectory(EmuFolders::DataRoot);
@@ -119,41 +119,31 @@ bool RegTestHost::InitializeConfig()
 
 void Host::ReportFatalError(std::string_view title, std::string_view message)
 {
-  Log_ErrorPrintf("ReportFatalError: %.*s", static_cast<int>(message.size()), message.data());
+  Log_ErrorFmt("ReportFatalError: {}", message);
   abort();
 }
 
 void Host::ReportErrorAsync(std::string_view title, std::string_view message)
 {
   if (!title.empty() && !message.empty())
-  {
-    Log_ErrorPrintf("ReportErrorAsync: %.*s: %.*s", static_cast<int>(title.size()), title.data(),
-                    static_cast<int>(message.size()), message.data());
-  }
+    Log_ErrorFmt("ReportErrorAsync: {}: {}", title, message);
   else if (!message.empty())
-  {
-    Log_ErrorPrintf("ReportErrorAsync: %.*s", static_cast<int>(message.size()), message.data());
-  }
+    Log_ErrorFmt("ReportErrorAsync: {}", message);
 }
 
 bool Host::ConfirmMessage(std::string_view title, std::string_view message)
 {
   if (!title.empty() && !message.empty())
-  {
-    Log_ErrorPrintf("ConfirmMessage: %.*s: %.*s", static_cast<int>(title.size()), title.data(),
-                    static_cast<int>(message.size()), message.data());
-  }
+    Log_ErrorFmt("ConfirmMessage: {}: {}", title, message);
   else if (!message.empty())
-  {
-    Log_ErrorPrintf("ConfirmMessage: %.*s", static_cast<int>(message.size()), message.data());
-  }
+    Log_ErrorFmt("ConfirmMessage: {}", message);
 
   return true;
 }
 
 void Host::ReportDebuggerMessage(std::string_view message)
 {
-  Log_ErrorPrintf("ReportDebuggerMessage: %.*s", static_cast<int>(message.size()), message.data());
+  Log_ErrorFmt("ReportDebuggerMessage: {}", message);
 }
 
 std::span<const std::pair<const char*, const char*>> Host::GetAvailableLanguageList()
@@ -219,7 +209,7 @@ std::optional<std::vector<u8>> Host::ReadResourceFile(std::string_view filename,
   const std::string path(Path::Combine(EmuFolders::Resources, filename));
   std::optional<std::vector<u8>> ret(FileSystem::ReadBinaryFile(path.c_str()));
   if (!ret.has_value())
-    Log_ErrorPrintf("Failed to read resource file '%s'", filename);
+    Log_ErrorFmt("Failed to read resource file '{}'", filename);
   return ret;
 }
 
@@ -228,7 +218,7 @@ std::optional<std::string> Host::ReadResourceFileToString(std::string_view filen
   const std::string path(Path::Combine(EmuFolders::Resources, filename));
   std::optional<std::string> ret(FileSystem::ReadFileToString(path.c_str()));
   if (!ret.has_value())
-    Log_ErrorPrintf("Failed to read resource file to string '%s'", filename);
+    Log_ErrorFmt("Failed to read resource file to string '{}'", filename);
   return ret;
 }
 
@@ -238,7 +228,7 @@ std::optional<std::time_t> Host::GetResourceFileTimestamp(std::string_view filen
   FILESYSTEM_STAT_DATA sd;
   if (!FileSystem::StatFile(path.c_str(), &sd))
   {
-    Log_ErrorPrintf("Failed to stat resource file '%s'", filename);
+    Log_ErrorFmt("Failed to stat resource file '{}'", filename);
     return std::nullopt;
   }
 
@@ -282,21 +272,21 @@ void Host::OnPerformanceCountersUpdated()
 
 void Host::OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name)
 {
-  Log_InfoPrintf("Disc Path: %s", disc_path.c_str());
-  Log_InfoPrintf("Game Serial: %s", game_serial.c_str());
-  Log_InfoPrintf("Game Name: %s", game_name.c_str());
+  Log_InfoFmt("Disc Path: {}", disc_path);
+  Log_InfoFmt("Game Serial: {}", game_serial);
+  Log_InfoFmt("Game Name: {}", game_name);
 
   if (!s_dump_base_directory.empty())
   {
     s_dump_game_directory = Path::Combine(s_dump_base_directory, game_name);
     if (!FileSystem::DirectoryExists(s_dump_game_directory.c_str()))
     {
-      Log_InfoPrintf("Creating directory '%s'...", s_dump_game_directory.c_str());
+      Log_InfoFmt("Creating directory '{}'...", s_dump_game_directory);
       if (!FileSystem::CreateDirectory(s_dump_game_directory.c_str(), false))
         Panic("Failed to create dump directory.");
     }
 
-    Log_InfoPrintf("Dumping frames to '%s'...", s_dump_game_directory.c_str());
+    Log_InfoFmt("Dumping frames to '{}'...", s_dump_game_directory);
   }
 }
 
@@ -550,7 +540,7 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
         s_dump_base_directory = argv[++i];
         if (s_dump_base_directory.empty())
         {
-          Log_ErrorPrintf("Invalid dump directory specified.");
+          Log_ErrorPrint("Invalid dump directory specified.");
           return false;
         }
 
@@ -561,7 +551,7 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
         s_frame_dump_interval = StringUtil::FromChars<u32>(argv[++i]).value_or(0);
         if (s_frames_to_run <= 0)
         {
-          Log_ErrorPrintf("Invalid dump interval specified: %s", argv[i]);
+          Log_ErrorFmt("Invalid dump interval specified: {}", argv[i]);
           return false;
         }
 
@@ -572,7 +562,7 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
         s_frames_to_run = StringUtil::FromChars<u32>(argv[++i]).value_or(0);
         if (s_frames_to_run == 0)
         {
-          Log_ErrorPrintf("Invalid frame count specified: %s", argv[i]);
+          Log_ErrorFmt("Invalid frame count specified: {}", argv[i]);
           return false;
         }
 
@@ -583,7 +573,7 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
         std::optional<LOGLEVEL> level = Settings::ParseLogLevelName(argv[++i]);
         if (!level.has_value())
         {
-          Log_ErrorPrintf("Invalid log level specified.");
+          Log_ErrorPrint("Invalid log level specified.");
           return false;
         }
 
@@ -596,7 +586,7 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
         std::optional<GPURenderer> renderer = Settings::ParseRendererName(argv[++i]);
         if (!renderer.has_value())
         {
-          Log_ErrorPrintf("Invalid renderer specified.");
+          Log_ErrorPrint("Invalid renderer specified.");
           return false;
         }
 
@@ -650,7 +640,7 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
       }
       else if (argv[i][0] == '-')
       {
-        Log_ErrorPrintf("Unknown parameter: '%s'", argv[i]);
+        Log_ErrorFmt("Unknown parameter: '{}'", argv[i]);
         return false;
       }
 
@@ -702,7 +692,7 @@ int main(int argc, char* argv[])
 
   Error error;
   int result = -1;
-  Log_InfoPrintf("Trying to boot '%s'...", autoboot->filename.c_str());
+  Log_InfoFmt("Trying to boot '{}'...", autoboot->filename);
   if (!System::BootSystem(std::move(autoboot.value()), &error))
   {
     Log_ErrorFmt("Failed to boot system: {}", error.GetDescription());
@@ -717,13 +707,13 @@ int main(int argc, char* argv[])
       goto cleanup;
     }
 
-    Log_InfoPrintf("Dumping every %dth frame to '%s'.", s_frame_dump_interval, s_dump_base_directory.c_str());
+    Log_InfoFmt("Dumping every {}th frame to '{}'.", s_frame_dump_interval, s_dump_base_directory);
   }
 
-  Log_InfoPrintf("Running for %d frames...", s_frames_to_run);
+  Log_InfoFmt("Running for %d frames...", s_frames_to_run);
   System::Execute();
 
-  Log_InfoPrintf("Exiting with success.");
+  Log_InfoPrint("Exiting with success.");
   result = 0;
 
 cleanup:

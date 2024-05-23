@@ -465,9 +465,9 @@ bool QtHost::SetCriticalFolders()
     return false;
 
   // logging of directories in case something goes wrong super early
-  Log_DevPrintf("AppRoot Directory: %s", EmuFolders::AppRoot.c_str());
-  Log_DevPrintf("DataRoot Directory: %s", EmuFolders::DataRoot.c_str());
-  Log_DevPrintf("Resources Directory: %s", EmuFolders::Resources.c_str());
+  Log_DevFmt("AppRoot Directory: {}", EmuFolders::AppRoot);
+  Log_DevFmt("DataRoot Directory: {}", EmuFolders::DataRoot);
+  Log_DevFmt("Resources Directory: {}", EmuFolders::Resources);
 
   // Write crash dumps to the data directory, since that'll be accessible for certain.
   CrashHandler::SetWriteDirectory(EmuFolders::DataRoot);
@@ -493,7 +493,7 @@ bool QtHost::ShouldUsePortableMode()
 void QtHost::SetAppRoot()
 {
   const std::string program_path = FileSystem::GetProgramPath();
-  Log_InfoPrintf("Program Path: %s", program_path.c_str());
+  Log_InfoFmt("Program Path: {}", program_path.c_str());
 
   EmuFolders::AppRoot = Path::Canonicalize(Path::GetDirectory(program_path));
 }
@@ -1813,14 +1813,9 @@ void Host::ReportFatalError(std::string_view title, std::string_view message)
 void Host::ReportErrorAsync(std::string_view title, std::string_view message)
 {
   if (!title.empty() && !message.empty())
-  {
-    Log_ErrorPrintf("ReportErrorAsync: %.*s: %.*s", static_cast<int>(title.size()), title.data(),
-                    static_cast<int>(message.size()), message.data());
-  }
+    Log_ErrorFmt("ReportErrorAsync: {}: {}", title, message);
   else if (!message.empty())
-  {
-    Log_ErrorPrintf("ReportErrorAsync: %.*s", static_cast<int>(message.size()), message.data());
-  }
+    Log_ErrorFmt("ReportErrorAsync: {}", message);
 
   QMetaObject::invokeMethod(
     g_main_window, "reportError", Qt::QueuedConnection,
@@ -2292,88 +2287,88 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
       }
       else if (CHECK_ARG("-batch"))
       {
-        Log_InfoPrintf("Command Line: Using batch mode.");
+        Log_InfoPrint("Command Line: Using batch mode.");
         s_batch_mode = true;
         continue;
       }
       else if (CHECK_ARG("-nogui"))
       {
-        Log_InfoPrintf("Command Line: Using NoGUI mode.");
+        Log_InfoPrint("Command Line: Using NoGUI mode.");
         s_nogui_mode = true;
         s_batch_mode = true;
         continue;
       }
       else if (CHECK_ARG("-bios"))
       {
-        Log_InfoPrintf("Command Line: Starting BIOS.");
+        Log_InfoPrint("Command Line: Starting BIOS.");
         AutoBoot(autoboot);
         starting_bios = true;
         continue;
       }
       else if (CHECK_ARG("-fastboot"))
       {
-        Log_InfoPrintf("Command Line: Forcing fast boot.");
+        Log_InfoPrint("Command Line: Forcing fast boot.");
         AutoBoot(autoboot)->override_fast_boot = true;
         continue;
       }
       else if (CHECK_ARG("-slowboot"))
       {
-        Log_InfoPrintf("Command Line: Forcing slow boot.");
+        Log_InfoPrint("Command Line: Forcing slow boot.");
         AutoBoot(autoboot)->override_fast_boot = false;
         continue;
       }
       else if (CHECK_ARG("-resume"))
       {
         state_index = -1;
-        Log_InfoPrintf("Command Line: Loading resume state.");
+        Log_InfoPrint("Command Line: Loading resume state.");
         continue;
       }
       else if (CHECK_ARG_PARAM("-state"))
       {
         state_index = args[++i].toInt();
-        Log_InfoPrintf("Command Line: Loading state index: %d", state_index.value());
+        Log_InfoFmt("Command Line: Loading state index: {}", state_index.value());
         continue;
       }
       else if (CHECK_ARG_PARAM("-statefile"))
       {
         AutoBoot(autoboot)->save_state = args[++i].toStdString();
-        Log_InfoPrintf("Command Line: Loading state file: '%s'", autoboot->save_state.c_str());
+        Log_InfoFmt("Command Line: Loading state file: '{}'", autoboot->save_state);
         continue;
       }
       else if (CHECK_ARG_PARAM("-exe"))
       {
         AutoBoot(autoboot)->override_exe = args[++i].toStdString();
-        Log_InfoPrintf("Command Line: Overriding EXE file: '%s'", autoboot->override_exe.c_str());
+        Log_InfoFmt("Command Line: Overriding EXE file: '{}'", autoboot->override_exe);
         continue;
       }
       else if (CHECK_ARG("-fullscreen"))
       {
-        Log_InfoPrintf("Command Line: Using fullscreen.");
+        Log_InfoPrint("Command Line: Using fullscreen.");
         AutoBoot(autoboot)->override_fullscreen = true;
         s_start_fullscreen_ui_fullscreen = true;
         continue;
       }
       else if (CHECK_ARG("-nofullscreen"))
       {
-        Log_InfoPrintf("Command Line: Not using fullscreen.");
+        Log_InfoPrint("Command Line: Not using fullscreen.");
         AutoBoot(autoboot)->override_fullscreen = false;
         continue;
       }
       else if (CHECK_ARG("-portable"))
       {
-        Log_InfoPrintf("Command Line: Using portable mode.");
+        Log_InfoPrint("Command Line: Using portable mode.");
         EmuFolders::DataRoot = EmuFolders::AppRoot;
         continue;
       }
       else if (CHECK_ARG_PARAM("-settings"))
       {
         settings_filename = args[++i].toStdString();
-        Log_InfoPrintf("Command Line: Overriding settings filename: %s", settings_filename.c_str());
+        Log_InfoFmt("Command Line: Overriding settings filename: {}", settings_filename);
         continue;
       }
       else if (CHECK_ARG("-bigpicture"))
       {
-        Log_InfoPrintf("Command Line: Starting big picture mode.");
+        Log_InfoPrint("Command Line: Starting big picture mode.");
         s_start_fullscreen_ui = true;
         continue;
       }

@@ -179,7 +179,7 @@ bool HTTPDownloaderCurl::StartRequest(HTTPDownloader::Request* request)
     curl_easy_setopt(req->handle, CURLOPT_POSTFIELDS, request->post_data.c_str());
   }
 
-  Log_DevPrintf("Started HTTP request for '%s'", req->url.c_str());
+  Log_DevFmt("Started HTTP request for '{}'", req->url);
   req->state.store(Request::State::Started, std::memory_order_release);
   req->start_time = Common::Timer::GetCurrentValue();
 

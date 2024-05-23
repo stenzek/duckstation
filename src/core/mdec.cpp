@@ -202,15 +202,15 @@ u32 MDEC::ReadRegister(u32 offset)
 
     case 4:
     {
-      Log_TracePrintf("MDEC status register -> 0x%08X", s_status.bits);
+      Log_TraceFmt("MDEC status register -> 0x{:08X}", s_status.bits);
       return s_status.bits;
     }
 
-    default:
-    {
-      Log_ErrorPrintf("Unknown MDEC register read: 0x%08X", offset);
-      return UINT32_C(0xFFFFFFFF);
-    }
+      [[unlikely]] default:
+      {
+        Log_ErrorFmt("Unknown MDEC register read: 0x{:08X}", offset);
+        return UINT32_C(0xFFFFFFFF);
+      }
   }
 }
 
@@ -226,7 +226,7 @@ void MDEC::WriteRegister(u32 offset, u32 value)
 
     case 4:
     {
-      Log_DebugPrintf("MDEC control register <- 0x%08X", value);
+      Log_DebugFmt("MDEC control register <- 0x{:08X}", value);
 
       const ControlRegister cr{value};
       if (cr.reset)
@@ -238,11 +238,11 @@ void MDEC::WriteRegister(u32 offset, u32 value)
       return;
     }
 
-    default:
-    {
-      Log_ErrorPrintf("Unknown MDEC register write: 0x%08X <- 0x%08X", offset, value);
-      return;
-    }
+      [[unlikely]] default:
+      {
+        Log_ErrorFmt("Unknown MDEC register write: 0x{:08X} <- 0x{:08X}", offset, value);
+        return;
+      }
   }
 }
 
@@ -250,8 +250,7 @@ void MDEC::DMARead(u32* words, u32 word_count)
 {
   if (s_data_out_fifo.GetSize() < word_count) [[unlikely]]
   {
-    Log_WarningPrintf("Insufficient data in output FIFO (requested %u, have %u)", word_count,
-                      s_data_out_fifo.GetSize());
+    Log_WarningFmt("Insufficient data in output FIFO (requested {}, have {})", word_count, s_data_out_fifo.GetSize());
   }
 
   const u32 words_to_read = std::min(word_count, s_data_out_fifo.GetSize());
@@ -262,7 +261,7 @@ void MDEC::DMARead(u32* words, u32 word_count)
     word_count -= words_to_read;
   }
 
-  Log_DebugPrintf("DMA read complete, %u bytes left", static_cast<u32>(s_data_out_fifo.GetSize() * sizeof(u32)));
+  Log_DebugFmt("DMA read complete, {} bytes left", s_data_out_fifo.GetSize() * sizeof(u32));
   if (s_data_out_fifo.IsEmpty())
     Execute();
 }
@@ -271,7 +270,7 @@ void MDEC::DMAWrite(const u32* words, u32 word_count)
 {
   if (s_data_in_fifo.GetSpace() < (word_count * 2)) [[unlikely]]
   {
-    Log_WarningPrintf("Input FIFO overflow (writing %u, space %u)", word_count * 2, s_data_in_fifo.GetSpace());
+    Log_WarningFmt("Input FIFO overflow (writing {}, space {})", word_count * 2, s_data_in_fifo.GetSpace());
   }
 
   const u32 halfwords_to_write = std::min(word_count * 2, s_data_in_fifo.GetSpace() & ~u32(2));
@@ -339,7 +338,7 @@ u32 MDEC::ReadDataRegister()
     }
     else
     {
-      Log_WarningPrintf("MDEC data out FIFO empty on read and no data processing");
+      Log_WarningPrint("MDEC data out FIFO empty on read and no data processing");
       return UINT32_C(0xFFFFFFFF);
     }
   }
@@ -355,7 +354,7 @@ u32 MDEC::ReadDataRegister()
 
 void MDEC::WriteCommandRegister(u32 value)
 {
-  Log_TracePrintf("MDEC command/data register <- 0x%08X", value);
+  Log_TraceFmt("MDEC command/data register <- 0x{:08X}", value);
 
   s_data_in_fifo.Push(Truncate16(value));
   s_data_in_fifo.Push(Truncate16(value >> 16));
@@ -402,15 +401,14 @@ void MDEC::Execute()
             break;
 
           default:
-            Log_DevPrintf("Invalid MDEC command 0x%08X", cw.bits);
+            [[unlikely]] Log_DevFmt("Invalid MDEC command 0x{:08X}", cw.bits);
             num_words = cw.parameter_word_count.GetValue();
             new_state = State::NoCommand;
             break;
         }
 
-        Log_DebugPrintf("MDEC command: 0x%08X (%u, %u words in parameter, %u expected)", cw.bits,
-                        ZeroExtend32(static_cast<u8>(cw.command.GetValue())),
-                        ZeroExtend32(cw.parameter_word_count.GetValue()), num_words);
+        Log_DebugFmt("MDEC command: 0x{:08X} ({}, {} words in parameter, {} expected)", cw.bits,
+                     static_cast<u8>(cw.command.GetValue()), cw.parameter_word_count.GetValue(), num_words);
 
         s_remaining_halfwords = num_words * 2;
         s_state = new_state;
@@ -510,7 +508,7 @@ bool MDEC::DecodeMonoMacroblock()
 
   IDCT(s_blocks[0].data());
 
-  Log_DebugPrintf("Decoded mono macroblock, %u words remaining", s_remaining_halfwords / 2);
+  Log_DebugFmt("Decoded mono macroblock, {} words remaining", s_remaining_halfwords / 2);
   ResetDecoder();
   s_state = State::WritingMacroblock;
 
@@ -536,7 +534,7 @@ bool MDEC::DecodeColoredMacroblock()
     return false;
 
   // done decoding
-  Log_DebugPrintf("Decoded colored macroblock, %u words remaining", s_remaining_halfwords / 2);
+  Log_DebugFmt("Decoded colored macroblock, {} words remaining", s_remaining_halfwords / 2);
   ResetDecoder();
   s_state = State::WritingMacroblock;
 
@@ -553,7 +551,7 @@ bool MDEC::DecodeColoredMacroblock()
 void MDEC::ScheduleBlockCopyOut(TickCount ticks)
 {
   DebugAssert(!HasPendingBlockCopyOut());
-  Log_DebugPrintf("Scheduling block copy out in %d ticks", ticks);
+  Log_DebugFmt("Scheduling block copy out in {} ticks", ticks);
 
   s_block_copy_out_event->SetIntervalAndSchedule(ticks);
 }
@@ -687,8 +685,8 @@ void MDEC::CopyOutBlock(void* param, TickCount ticks, TickCount ticks_late)
       break;
   }
 
-  Log_DebugPrintf("Block copied out, fifo size = %u (%u bytes)", s_data_out_fifo.GetSize(),
-                  static_cast<u32>(s_data_out_fifo.GetSize() * sizeof(u32)));
+  Log_DebugFmt("Block copied out, fifo size = {} ({} bytes)", s_data_out_fifo.GetSize(),
+               s_data_out_fifo.GetSize() * sizeof(u32));
 
   // if we've copied out all blocks, command is complete
   s_state = (s_remaining_halfwords == 0) ? State::Idle : State::DecodingMacroblock;

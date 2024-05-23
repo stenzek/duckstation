@@ -296,7 +296,7 @@ bool GPUDevice::Create(std::string_view adapter, std::string_view shader_cache_p
     return false;
   }
 
-  Log_InfoPrintf("Graphics Driver Info:\n%s", GetDriverInfo().c_str());
+  Log_InfoFmt("Graphics Driver Info:\n{}", GetDriverInfo());
 
   OpenShaderCache(shader_cache_path, shader_cache_version);
 
@@ -332,9 +332,9 @@ void GPUDevice::OpenShaderCache(std::string_view base_path, u32 version)
     const std::string filename = Path::Combine(base_path, basename);
     if (!m_shader_cache.Open(filename.c_str(), version))
     {
-      Log_WarningPrintf("Failed to open shader cache. Creating new cache.");
+      Log_WarningPrint("Failed to open shader cache. Creating new cache.");
       if (!m_shader_cache.Create())
-        Log_ErrorPrintf("Failed to create new shader cache.");
+        Log_ErrorPrint("Failed to create new shader cache.");
 
       // Squish the pipeline cache too, it's going to be stale.
       if (m_features.pipeline_cache)
@@ -343,7 +343,7 @@ void GPUDevice::OpenShaderCache(std::string_view base_path, u32 version)
           Path::Combine(base_path, TinyString::from_format("{}.bin", GetShaderCacheBaseName("pipelines")));
         if (FileSystem::FileExists(pc_filename.c_str()))
         {
-          Log_InfoPrintf("Removing old pipeline cache '%s'", pc_filename.c_str());
+          Log_InfoFmt("Removing old pipeline cache '{}'", Path::GetFileName(pc_filename));
           FileSystem::DeleteFile(pc_filename.c_str());
         }
       }
@@ -363,7 +363,7 @@ void GPUDevice::OpenShaderCache(std::string_view base_path, u32 version)
     if (ReadPipelineCache(filename))
       s_pipeline_cache_path = std::move(filename);
     else
-      Log_WarningPrintf("Failed to read pipeline cache.");
+      Log_WarningPrint("Failed to read pipeline cache.");
   }
 }
 
@@ -380,13 +380,14 @@ void GPUDevice::CloseShaderCache()
       FILESYSTEM_STAT_DATA sd;
       if (!FileSystem::StatFile(s_pipeline_cache_path.c_str(), &sd) || sd.Size != static_cast<s64>(data.size()))
       {
-        Log_InfoPrintf("Writing %zu bytes to '%s'", data.size(), s_pipeline_cache_path.c_str());
+        Log_InfoFmt("Writing {} bytes to '{}'", data.size(), Path::GetFileName(s_pipeline_cache_path));
         if (!FileSystem::WriteBinaryFile(s_pipeline_cache_path.c_str(), data.data(), data.size()))
-          Log_ErrorPrintf("Failed to write pipeline cache to '%s'", s_pipeline_cache_path.c_str());
+          Log_ErrorFmt("Failed to write pipeline cache to '{}'", Path::GetFileName(s_pipeline_cache_path));
       }
       else
       {
-        Log_InfoPrintf("Skipping updating pipeline cache '%s' due to no changes.", s_pipeline_cache_path.c_str());
+        Log_InfoFmt("Skipping updating pipeline cache '{}' due to no changes.",
+                    Path::GetFileName(s_pipeline_cache_path));
       }
     }
 
@@ -454,7 +455,7 @@ bool GPUDevice::AcquireWindow(bool recreate_window)
   if (!wi.has_value())
     return false;
 
-  Log_InfoPrintf("Render window is %ux%u.", wi->surface_width, wi->surface_height);
+  Log_InfoFmt("Render window is {}x{}.", wi->surface_width, wi->surface_height);
   m_window_info = wi.value();
   return true;
 }
@@ -505,7 +506,7 @@ bool GPUDevice::CreateResources()
   m_imgui_pipeline = CreatePipeline(plconfig);
   if (!m_imgui_pipeline)
   {
-    Log_ErrorPrintf("Failed to compile ImGui pipeline.");
+    Log_ErrorPrint("Failed to compile ImGui pipeline.");
     return false;
   }
   GL_OBJECT_NAME(m_imgui_pipeline, "ImGui Pipeline");
@@ -665,7 +666,7 @@ std::unique_ptr<GPUShader> GPUDevice::CreateShader(GPUShaderStage stage, std::st
     if (shader)
       return shader;
 
-    Log_ErrorPrintf("Failed to create shader from binary (driver changed?). Clearing cache.");
+    Log_ErrorPrint("Failed to create shader from binary (driver changed?). Clearing cache.");
     m_shader_cache.Clear();
   }
 

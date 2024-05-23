@@ -504,7 +504,7 @@ void DMA::UpdateIRQ()
   [[maybe_unused]] const auto old_dicr = s_DICR;
   s_DICR.UpdateMasterFlag();
   if (!old_dicr.master_flag && s_DICR.master_flag)
-    Log_TracePrintf("Firing DMA master interrupt");
+    Log_TracePrint("Firing DMA master interrupt");
   InterruptController::SetLineState(InterruptController::IRQ::DMA, s_DICR.master_flag);
 }
 
@@ -744,7 +744,7 @@ bool DMA::TransferChannel()
 void DMA::HaltTransfer(TickCount duration)
 {
   s_halt_ticks_remaining += duration;
-  Log_DebugPrintf("Halting DMA for %d ticks", s_halt_ticks_remaining);
+  Log_DebugFmt("Halting DMA for {} ticks", s_halt_ticks_remaining);
   if (s_unhalt_event->IsActive())
     return;
 
@@ -754,7 +754,7 @@ void DMA::HaltTransfer(TickCount duration)
 
 void DMA::UnhaltTransfer(void*, TickCount ticks, TickCount ticks_late)
 {
-  Log_DebugPrintf("Resuming DMA after %d ticks, %d ticks late", ticks, -(s_halt_ticks_remaining - ticks));
+  Log_DebugFmt("Resuming DMA after {} ticks, {} ticks late", ticks, -(s_halt_ticks_remaining - ticks));
   s_halt_ticks_remaining -= ticks;
   s_unhalt_event->Deactivate();
 
@@ -834,7 +834,7 @@ TickCount DMA::TransferMemoryToDevice(u32 address, u32 increment, u32 word_count
     case Channel::MDECout:
     case Channel::PIO:
     default:
-      Log_ErrorPrintf("Unhandled DMA channel %u for device write", static_cast<u32>(channel));
+      Log_ErrorFmt("Unhandled DMA channel {} for device write", static_cast<u32>(channel));
       break;
   }
 
@@ -899,7 +899,7 @@ TickCount DMA::TransferDeviceToMemory(u32 address, u32 increment, u32 word_count
       break;
 
     default:
-      Log_ErrorPrintf("Unhandled DMA channel %u for device read", static_cast<u32>(channel));
+      Log_ErrorFmt("Unhandled DMA channel {} for device read", static_cast<u32>(channel));
       std::fill_n(dest_pointer, word_count, UINT32_C(0xFFFFFFFF));
       break;
   }

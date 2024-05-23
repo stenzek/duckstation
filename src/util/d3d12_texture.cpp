@@ -115,11 +115,11 @@ std::unique_ptr<GPUTexture> D3D12Device::CreateTexture(u32 width, u32 height, u3
     (type == GPUTexture::Type::RenderTarget || type == GPUTexture::Type::DepthStencil) ? &optimized_clear_value :
                                                                                          nullptr,
     allocation.GetAddressOf(), IID_PPV_ARGS(resource.GetAddressOf()));
-  if (FAILED(hr))
+  if (FAILED(hr)) [[unlikely]]
   {
     // OOM isn't fatal.
     if (hr != E_OUTOFMEMORY)
-      Log_ErrorPrintf("Create texture failed: 0x%08X", hr);
+      Log_ErrorFmt("Create texture failed: 0x{:08X}", static_cast<unsigned>(hr));
 
     return {};
   }
@@ -358,17 +358,17 @@ ID3D12Resource* D3D12Texture::AllocateUploadStagingBuffer(const void* data, u32 
   HRESULT hr = D3D12Device::GetInstance().GetAllocator()->CreateResource(
     &allocation_desc, &resource_desc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, allocation.GetAddressOf(),
     IID_PPV_ARGS(resource.GetAddressOf()));
-  if (FAILED(hr))
+  if (FAILED(hr))[[unlikely]]
   {
-    Log_ErrorPrintf("CreateResource() failed with %08X", hr);
+    Log_ErrorFmt("CreateResource() failed with {:08X}", static_cast<unsigned>(hr));
     return nullptr;
   }
 
   void* map_ptr;
   hr = resource->Map(0, nullptr, &map_ptr);
-  if (FAILED(hr))
+  if (FAILED(hr)) [[unlikely]]
   {
-    Log_ErrorPrintf("Map() failed with %08X", hr);
+    Log_ErrorFmt("Map() failed with {:08X}", static_cast<unsigned>(hr));
     return nullptr;
   }
 
@@ -419,9 +419,9 @@ bool D3D12Texture::Update(u32 x, u32 y, u32 width, u32 height, const void* data,
     {
       D3D12Device::GetInstance().SubmitCommandList(false, "While waiting for %u bytes in texture upload buffer",
                                                    required_size);
-      if (!sbuffer.ReserveMemory(required_size, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT))
+      if (!sbuffer.ReserveMemory(required_size, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT)) [[unlikely]]
       {
-        Log_ErrorPrintf("Failed to reserve texture upload memory (%u bytes).", required_size);
+        Log_ErrorFmt("Failed to reserve texture upload memory ({} bytes).", required_size);
         return false;
       }
     }

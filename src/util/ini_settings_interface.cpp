@@ -114,7 +114,7 @@ bool INISettingsInterface::Save(Error* error /* = nullptr */)
     }
     else if (!FileSystem::RenamePath(temp_filename.c_str(), m_filename.c_str(), error))
     {
-      Log_ErrorPrintf("Failed to rename '%s' to '%s'", temp_filename.c_str(), m_filename.c_str());
+      Error::AddPrefixFmt(error, "Failed to rename '{}' to '{}': ", temp_filename, m_filename);
       FileSystem::DeleteFile(temp_filename.c_str());
       return false;
     }
@@ -122,7 +122,7 @@ bool INISettingsInterface::Save(Error* error /* = nullptr */)
 
   if (err != SI_OK)
   {
-    Log_WarningPrintf("Failed to save settings to '%s'.", m_filename.c_str());
+    Log_WarningFmt("Failed to save settings to '{}'.", m_filename);
     return false;
   }
 
@@ -363,7 +363,7 @@ std::vector<std::pair<std::string, std::string>> INISettingsInterface::GetKeyVal
     {
       if (!m_ini.GetAllValues(section, key.pItem, values)) // [[unlikely]]
       {
-        Log_ErrorPrintf("Got no values for a key returned from GetAllKeys!");
+        Log_ErrorPrint("Got no values for a key returned from GetAllKeys!");
         continue;
       }
       for (const Entry& value : values)

@@ -264,7 +264,7 @@ bool Host::CreateGPUDevice(RenderAPI api, Error* error)
 {
   DebugAssert(!g_gpu_device);
 
-  Log_InfoPrintf("Trying to create a %s GPU device...", GPUDevice::RenderAPIToString(api));
+  Log_InfoFmt("Trying to create a {} GPU device...", GPUDevice::RenderAPIToString(api));
   g_gpu_device = GPUDevice::CreateDeviceForAPI(api);
 
   std::optional<bool> exclusive_fullscreen_control;
@@ -348,7 +348,7 @@ void Host::ResizeDisplayWindow(s32 width, s32 height, float scale)
   if (!g_gpu_device)
     return;
 
-  Log_DevPrintf("Display window resized to %dx%d", width, height);
+  Log_DevFmt("Display window resized to {}x{}", width, height);
 
   g_gpu_device->ResizeWindow(width, height, scale);
   ImGuiManager::WindowResized();
@@ -377,7 +377,7 @@ void Host::ReleaseGPUDevice()
   FullscreenUI::Shutdown();
   ImGuiManager::Shutdown();
 
-  Log_InfoPrintf("Destroying %s GPU device...", GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()));
+  Log_InfoFmt("Destroying {} GPU device...", GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()));
   g_gpu_device->Destroy();
   g_gpu_device.reset();
 }

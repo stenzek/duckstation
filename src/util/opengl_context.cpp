@@ -64,16 +64,16 @@ static void DisableBrokenExtensions(const char* gl_vendor, const char* gl_render
          gl_major_version >= 3 && gl_minor_version >= 2 && major_version > 0))
     {
       // r32p0 and beyond seem okay.
-      // Log_VerbosePrintf("Keeping copy_image for driver version '%s'", gl_version);
+      // Log_VerbosePrint("Keeping copy_image for driver version '%s'", gl_version);
 
       // Framebuffer blits still end up faster.
-      Log_VerbosePrintf("Newer Mali driver detected, disabling GL_{EXT,OES}_copy_image.");
+      Log_VerbosePrint("Newer Mali driver detected, disabling GL_{EXT,OES}_copy_image.");
       GLAD_GL_EXT_copy_image = 0;
       GLAD_GL_OES_copy_image = 0;
     }
     else
     {
-      Log_VerbosePrintf("Older Mali driver detected, disabling GL_{EXT,OES}_copy_image, disjoint_timer_query.");
+      Log_VerbosePrint("Older Mali driver detected, disabling GL_{EXT,OES}_copy_image, disjoint_timer_query.");
       GLAD_GL_EXT_copy_image = 0;
       GLAD_GL_OES_copy_image = 0;
       GLAD_GL_EXT_disjoint_timer_query = 0;
@@ -203,10 +203,10 @@ std::unique_ptr<OpenGLContext> OpenGLContext::Create(const WindowInfo& wi, Error
   const char* gl_renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
   const char* gl_version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
   const char* gl_shading_language_version = reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION));
-  Log_InfoPrintf("GL_VENDOR: %s", gl_vendor);
-  Log_InfoPrintf("GL_RENDERER: %s", gl_renderer);
-  Log_InfoPrintf("GL_VERSION: %s", gl_version);
-  Log_InfoPrintf("GL_SHADING_LANGUAGE_VERSION: %s", gl_shading_language_version);
+  Log_InfoFmt("GL_VENDOR: {}", gl_vendor);
+  Log_InfoFmt("GL_RENDERER: {}", gl_renderer);
+  Log_InfoFmt("GL_VERSION: {}", gl_version);
+  Log_InfoFmt("GL_SHADING_LANGUAGE_VERSION: {}", gl_shading_language_version);
 
   DisableBrokenExtensions(gl_vendor, gl_renderer, gl_version);
 

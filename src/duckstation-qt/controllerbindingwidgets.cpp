@@ -481,7 +481,7 @@ void ControllerBindingWidget::bindBindingWidgets(QWidget* parent)
       InputBindingWidget* widget = parent->findChild<InputBindingWidget*>(QString::fromUtf8(bi.name));
       if (!widget)
       {
-        Log_ErrorPrintf("No widget found for '%s' (%s)", bi.name, m_controller_info->name);
+        Log_ErrorFmt("No widget found for '{}' ({})", bi.name, m_controller_info->name);
         continue;
       }
 

@@ -42,7 +42,7 @@ bool HTTPDownloaderWinHttp::Initialize(std::string user_agent)
                            WINHTTP_FLAG_ASYNC);
   if (m_hSession == NULL)
   {
-    Log_ErrorPrintf("WinHttpOpen() failed: %u", GetLastError());
+    Log_ErrorFmt("WinHttpOpen() failed: {}", GetLastError());
     return false;
   }
 
@@ -51,7 +51,7 @@ bool HTTPDownloaderWinHttp::Initialize(std::string user_agent)
   if (WinHttpSetStatusCallback(m_hSession, HTTPStatusCallback, notification_flags, NULL) ==
       WINHTTP_INVALID_STATUS_CALLBACK)
   {
-    Log_ErrorPrintf("WinHttpSetStatusCallback() failed: %u", GetLastError());
+    Log_ErrorFmt("WinHttpSetStatusCallback() failed: {}", GetLastError());
     return false;
   }
 
@@ -89,17 +89,17 @@ void CALLBACK HTTPDownloaderWinHttp::HTTPStatusCallback(HINTERNET hRequest, DWOR
     case WINHTTP_CALLBACK_STATUS_REQUEST_ERROR:
     {
       const WINHTTP_ASYNC_RESULT* res = reinterpret_cast<const WINHTTP_ASYNC_RESULT*>(lpvStatusInformation);
-      Log_ErrorPrintf("WinHttp async function %p returned error %u", res->dwResult, res->dwError);
+      Log_ErrorFmt("WinHttp async function {} returned error {}", res->dwResult, res->dwError);
       req->status_code = HTTP_STATUS_ERROR;
       req->state.store(Request::State::Complete);
       return;
     }
     case WINHTTP_CALLBACK_STATUS_SENDREQUEST_COMPLETE:
     {
-      Log_DevPrintf("SendRequest complete");
+      Log_DevPrint("SendRequest complete");
       if (!WinHttpReceiveResponse(hRequest, nullptr))
       {
-        Log_ErrorPrintf("WinHttpReceiveResponse() failed: %u", GetLastError());
+        Log_ErrorFmt("WinHttpReceiveResponse() failed: {}", GetLastError());
         req->status_code = HTTP_STATUS_ERROR;
         req->state.store(Request::State::Complete);
       }
@@ -108,13 +108,13 @@ void CALLBACK HTTPDownloaderWinHttp::HTTPStatusCallback(HINTERNET hRequest, DWOR
     }
     case WINHTTP_CALLBACK_STATUS_HEADERS_AVAILABLE:
     {
-      Log_DevPrintf("Headers available");
+      Log_DevPrint("Headers available");
 
       DWORD buffer_size = sizeof(req->status_code);
       if (!WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
                                WINHTTP_HEADER_NAME_BY_INDEX, &req->status_code, &buffer_size, WINHTTP_NO_HEADER_INDEX))
       {
-        Log_ErrorPrintf("WinHttpQueryHeaders() for status code failed: %u", GetLastError());
+        Log_ErrorFmt("WinHttpQueryHeaders() for status code failed: {}", GetLastError());
         req->status_code = HTTP_STATUS_ERROR;
         req->state.store(Request::State::Complete);
         return;
@@ -126,7 +126,7 @@ void CALLBACK HTTPDownloaderWinHttp::HTTPStatusCallback(HINTERNET hRequest, DWOR
                                WINHTTP_NO_HEADER_INDEX))
       {
         if (GetLastError() != ERROR_WINHTTP_HEADER_NOT_FOUND)
-          Log_WarningPrintf("WinHttpQueryHeaders() for content length failed: %u", GetLastError());
+          Log_WarningFmt("WinHttpQueryHeaders() for content length failed: {}", GetLastError());
 
         req->content_length = 0;
       }
@@ -145,14 +145,14 @@ void CALLBACK HTTPDownloaderWinHttp::HTTPStatusCallback(HINTERNET hRequest, DWOR
         }
       }
 
-      Log_DevPrintf("Status code %d, content-length is %u", req->status_code, req->content_length);
+      Log_DevFmt("Status code {}, content-length is {}", req->status_code, req->content_length);
       req->data.reserve(req->content_length);
       req->state = Request::State::Receiving;
 
       // start reading
       if (!WinHttpQueryDataAvailable(hRequest, nullptr) && GetLastError() != ERROR_IO_PENDING)
       {
-        Log_ErrorPrintf("WinHttpQueryDataAvailable() failed: %u", GetLastError());
+        Log_ErrorFmt("WinHttpQueryDataAvailable() failed: {}", GetLastError());
         req->status_code = HTTP_STATUS_ERROR;
         req->state.store(Request::State::Complete);
       }
@@ -166,19 +166,19 @@ void CALLBACK HTTPDownloaderWinHttp::HTTPStatusCallback(HINTERNET hRequest, DWOR
       if (bytes_available == 0)
       {
         // end of request
-        Log_DevPrintf("End of request '%s', %zu bytes received", req->url.c_str(), req->data.size());
+        Log_DevFmt("End of request '{}', {} bytes received", req->url, req->data.size());
         req->state.store(Request::State::Complete);
         return;
       }
 
       // start the transfer
-      Log_DevPrintf("%u bytes available", bytes_available);
+      Log_DevFmt("{} bytes available", bytes_available);
       req->io_position = static_cast<u32>(req->data.size());
       req->data.resize(req->io_position + bytes_available);
       if (!WinHttpReadData(hRequest, req->data.data() + req->io_position, bytes_available, nullptr) &&
           GetLastError() != ERROR_IO_PENDING)
       {
-        Log_ErrorPrintf("WinHttpReadData() failed: %u", GetLastError());
+        Log_ErrorFmt("WinHttpReadData() failed: {}", GetLastError());
         req->status_code = HTTP_STATUS_ERROR;
         req->state.store(Request::State::Complete);
       }
@@ -187,7 +187,7 @@ void CALLBACK HTTPDownloaderWinHttp::HTTPStatusCallback(HINTERNET hRequest, DWOR
     }
     case WINHTTP_CALLBACK_STATUS_READ_COMPLETE:
     {
-      Log_DevPrintf("Read of %u complete", dwStatusInformationLength);
+      Log_DevFmt("Read of {} complete", dwStatusInformationLength);
 
       const u32 new_size = req->io_position + dwStatusInformationLength;
       Assert(new_size <= req->data.size());
@@ -196,7 +196,7 @@ void CALLBACK HTTPDownloaderWinHttp::HTTPStatusCallback(HINTERNET hRequest, DWOR
 
       if (!WinHttpQueryDataAvailable(hRequest, nullptr) && GetLastError() != ERROR_IO_PENDING)
       {
-        Log_ErrorPrintf("WinHttpQueryDataAvailable() failed: %u", GetLastError());
+        Log_ErrorFmt("WinHttpQueryDataAvailable() failed: {}", GetLastError());
         req->status_code = HTTP_STATUS_ERROR;
         req->state.store(Request::State::Complete);
       }
@@ -238,7 +238,7 @@ bool HTTPDownloaderWinHttp::StartRequest(HTTPDownloader::Request* request)
   const std::wstring url_wide(StringUtil::UTF8StringToWideString(req->url));
   if (!WinHttpCrackUrl(url_wide.c_str(), static_cast<DWORD>(url_wide.size()), 0, &uc))
   {
-    Log_ErrorPrintf("WinHttpCrackUrl() failed: %u", GetLastError());
+    Log_ErrorFmt("WinHttpCrackUrl() failed: {}", GetLastError());
     req->callback(HTTP_STATUS_ERROR, std::string(), req->data);
     delete req;
     return false;
@@ -250,7 +250,7 @@ bool HTTPDownloaderWinHttp::StartRequest(HTTPDownloader::Request* request)
   req->hConnection = WinHttpConnect(m_hSession, host_name.c_str(), uc.nPort, 0);
   if (!req->hConnection)
   {
-    Log_ErrorPrintf("Failed to start HTTP request for '%s': %u", req->url.c_str(), GetLastError());
+    Log_ErrorFmt("Failed to start HTTP request for '{}': {}", req->url, GetLastError());
     req->callback(HTTP_STATUS_ERROR, std::string(), req->data);
     delete req;
     return false;
@@ -262,7 +262,7 @@ bool HTTPDownloaderWinHttp::StartRequest(HTTPDownloader::Request* request)
                        req->object_name.c_str(), NULL, NULL, NULL, request_flags);
   if (!req->hRequest)
   {
-    Log_ErrorPrintf("WinHttpOpenRequest() failed: %u", GetLastError());
+    Log_ErrorFmt("WinHttpOpenRequest() failed: {}", GetLastError());
     WinHttpCloseHandle(req->hConnection);
     return false;
   }
@@ -283,12 +283,12 @@ bool HTTPDownloaderWinHttp::StartRequest(HTTPDownloader::Request* request)
 
   if (!result && GetLastError() != ERROR_IO_PENDING)
   {
-    Log_ErrorPrintf("WinHttpSendRequest() failed: %u", GetLastError());
+    Log_ErrorFmt("WinHttpSendRequest() failed: {}", GetLastError());
     req->status_code = HTTP_STATUS_ERROR;
     req->state.store(Request::State::Complete);
   }
 
-  Log_DevPrintf("Started HTTP request for '%s'", req->url.c_str());
+  Log_DevFmt("Started HTTP request for '{}'", req->url);
   req->state = Request::State::Started;
   req->start_time = Common::Timer::GetCurrentValue();
   return true;

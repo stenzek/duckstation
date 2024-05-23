@@ -147,7 +147,7 @@ std::unique_ptr<VulkanTexture> VulkanTexture::Create(u32 width, u32 height, u32 
   }
   if (res == VK_ERROR_OUT_OF_DEVICE_MEMORY)
   {
-    Log_ErrorPrintf("Failed to allocate device memory for %ux%u texture", width, height);
+    Log_ErrorFmt("Failed to allocate device memory for {}x{} texture", width, height);
     return {};
   }
   else if (res != VK_SUCCESS)
@@ -334,7 +334,7 @@ bool VulkanTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data
       dev.SubmitCommandBuffer(false, "While waiting for %u bytes in texture upload buffer", required_size);
       if (!sbuffer.ReserveMemory(required_size, dev.GetBufferCopyOffsetAlignment()))
       {
-        Log_ErrorPrintf("Failed to reserve texture upload memory (%u bytes).", required_size);
+        Log_ErrorFmt("Failed to reserve texture upload memory ({} bytes).", required_size);
         return false;
       }
     }
@@ -822,7 +822,7 @@ VkSampler VulkanDevice::GetSampler(const GPUSampler::Config& config)
     }
     if (i == std::size(border_color_mapping))
     {
-      Log_ErrorPrintf("Unsupported border color: %08X", config.border_color.GetValue());
+      Log_ErrorFmt("Unsupported border color: {:08X}", config.border_color.GetValue());
       return {};
     }
 
@@ -938,7 +938,7 @@ std::unique_ptr<GPUTextureBuffer> VulkanDevice::CreateTextureBuffer(GPUTextureBu
   tb->m_descriptor_set = AllocatePersistentDescriptorSet(m_single_texture_buffer_ds_layout);
   if (tb->m_descriptor_set == VK_NULL_HANDLE)
   {
-    Log_ErrorPrintf("Failed to allocate persistent descriptor set for texture buffer.");
+    Log_ErrorPrint("Failed to allocate persistent descriptor set for texture buffer.");
     tb->Destroy(false);
     return {};
   }
@@ -955,7 +955,7 @@ std::unique_ptr<GPUTextureBuffer> VulkanDevice::CreateTextureBuffer(GPUTextureBu
     bvb.Set(tb->GetBuffer(), format_mapping[static_cast<u8>(format)], 0, tb->GetSizeInBytes());
     if ((tb->m_buffer_view = bvb.Create(m_device, false)) == VK_NULL_HANDLE)
     {
-      Log_ErrorPrintf("Failed to create buffer view for texture buffer.");
+      Log_ErrorPrint("Failed to create buffer view for texture buffer.");
       tb->Destroy(false);
       return {};
     }

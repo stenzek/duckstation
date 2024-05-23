@@ -290,7 +290,7 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames)
     else
     {
       m_filling = false;
-      Log_VerbosePrintf("Underrun compensation done (%d frames buffered)", toFill);
+      Log_VerboseFmt("Underrun compensation done ({} frames buffered)", toFill);
     }
   }
 
@@ -441,7 +441,7 @@ void AudioStream::InternalWriteFrames(s16* data, u32 num_frames)
     }
     else
     {
-      Log_DebugPrintf("Buffer overrun, chunk dropped");
+      Log_DebugPrint("Buffer overrun, chunk dropped");
       return;
     }
   }
@@ -891,7 +891,7 @@ void AudioStream::UpdateStretchTempo()
   // state vars
   if (m_stretch_reset >= STRETCH_RESET_THRESHOLD)
   {
-    Log_VerbosePrintf("___ Stretcher is being reset.");
+    Log_VerbosePrint("___ Stretcher is being reset.");
     m_stretch_inactive = false;
     m_stretch_ok_count = 0;
     m_dynamic_target_usage = base_target_usage;
@@ -928,13 +928,13 @@ void AudioStream::UpdateStretchTempo()
 
     if (m_stretch_ok_count >= INACTIVE_MIN_OK_COUNT)
     {
-      Log_VerbosePrintf("=== Stretcher is now inactive.");
+      Log_VerbosePrint("=== Stretcher is now inactive.");
       m_stretch_inactive = true;
     }
   }
   else if (!IsInRange(tempo, 1.0f / INACTIVE_BAD_FACTOR, INACTIVE_BAD_FACTOR))
   {
-    Log_VerbosePrintf("~~~ Stretcher is now active @ tempo %f.", tempo);
+    Log_VerboseFmt("~~~ Stretcher is now active @ tempo {}.", tempo);
     m_stretch_inactive = false;
     m_stretch_ok_count = 0;
   }
@@ -951,9 +951,9 @@ void AudioStream::UpdateStretchTempo()
 
     if (Common::Timer::ConvertValueToSeconds(now - last_log_time) > 1.0f)
     {
-      Log_VerbosePrintf("buffers: %4u ms (%3.0f%%), tempo: %f, comp: %2.3f, iters: %d, reset:%d",
-                        (ibuffer_usage * 1000u) / m_sample_rate, 100.0f * buffer_usage / base_target_usage, tempo,
-                        m_dynamic_target_usage / base_target_usage, iterations, m_stretch_reset);
+      Log_VerboseFmt("buffers: {:4d} ms ({:3.0f}%), tempo: {}, comp: {:2.3f}, iters: {}, reset:{}",
+                     (ibuffer_usage * 1000u) / m_sample_rate, 100.0f * buffer_usage / base_target_usage, tempo,
+                     m_dynamic_target_usage / base_target_usage, iterations, m_stretch_reset);
 
       last_log_time = now;
       iterations = 0;

@@ -167,7 +167,7 @@ static std::optional<std::string> Cmd$G(std::string_view data)
   }
   else
   {
-    Log_ErrorPrintf("Wrong payload size for 'G' command, expected %d got %zu", NUM_GDB_REGISTERS * 8, data.size());
+    Log_ErrorFmt("Wrong payload size for 'G' command, expected {} got {}", NUM_GDB_REGISTERS * 8, data.size());
   }
 
   return {""};
@@ -317,7 +317,7 @@ std::string ProcessPacket(std::string_view data)
   auto packet = DeserializePacket(trimmedData);
   if (!packet)
   {
-    Log_ErrorPrintf("Malformed packet '%*s'", static_cast<int>(trimmedData.size()), trimmedData.data());
+    Log_ErrorFmt("Malformed packet '{}'", trimmedData);
     return "-";
   }
 
@@ -329,7 +329,7 @@ std::string ProcessPacket(std::string_view data)
   {
     if (packet->starts_with(command.first))
     {
-      Log_DebugPrintf("Processing command '%s'", command.first);
+      Log_DebugFmt("Processing command '{}'", command.first);
 
       // Invoke command, remove command name from payload.
       reply = command.second(packet->substr(strlen(command.first)));
@@ -339,9 +339,8 @@ std::string ProcessPacket(std::string_view data)
   }
 
   if (!processed)
-  {
-    Log_WarningPrintf("Failed to process packet '%*s'", static_cast<int>(trimmedData.size()), trimmedData.data());
-  }
+    Log_WarningFmt("Failed to process packet '{}'", trimmedData);
+
   return reply ? "+" + SerializePacket(*reply) : "+";
 }
 

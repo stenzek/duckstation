@@ -980,7 +980,7 @@ void CodeGenerator::BlockPrologue()
 
   if (m_block->protection == CodeCache::PageProtectionMode::ManualCheck)
   {
-    Log_DebugPrintf("Generate manual protection for PC %08X", m_block->pc);
+    Log_DebugFmt("Generate manual protection for PC {:08X}", m_block->pc);
     const u8* ram_ptr = Bus::g_ram + VirtualAddressToPhysical(m_block->pc);
     const u8* shadow_ptr = reinterpret_cast<const u8*>(m_block->Instructions());
     EmitBlockProtectCheck(ram_ptr, shadow_ptr, m_block->size * sizeof(Instruction));
@@ -1097,7 +1097,7 @@ void CodeGenerator::InstructionEpilogue(Instruction instruction, const CodeCache
 
 void CodeGenerator::TruncateBlockAtCurrentInstruction()
 {
-  Log_DevPrintf("Truncating block %08X at %08X", m_block->pc, m_current_instruction.info->pc);
+  Log_DevFmt("Truncating block {:08X} at {:08X}", m_block->pc, m_current_instruction.info->pc);
   m_block_end.instruction = m_current_instruction.instruction + 1;
   m_block_end.info = m_current_instruction.info + 1;
   WriteNewPC(CalculatePC(), true);
@@ -1141,7 +1141,7 @@ void CodeGenerator::AddPendingCycles(bool commit)
 void CodeGenerator::AddGTETicks(TickCount ticks)
 {
   m_gte_done_cycle = m_delayed_cycles_add + ticks;
-  Log_DebugPrintf("Adding %d GTE ticks", ticks);
+  Log_DebugFmt("Adding {} GTE ticks", ticks);
 }
 
 void CodeGenerator::StallUntilGTEComplete()
@@ -1151,7 +1151,7 @@ void CodeGenerator::StallUntilGTEComplete()
     // simple case - in block scheduling
     if (m_gte_done_cycle > m_delayed_cycles_add)
     {
-      Log_DebugPrintf("Stalling for %d ticks from GTE", m_gte_done_cycle - m_delayed_cycles_add);
+      Log_DebugFmt("Stalling for {} ticks from GTE", m_gte_done_cycle - m_delayed_cycles_add);
       m_delayed_cycles_add += (m_gte_done_cycle - m_delayed_cycles_add);
     }
 
@@ -1325,11 +1325,10 @@ bool CodeGenerator::Compile_Bitwise(Instruction instruction, const CodeCache::In
               ((lhs.HasConstantValue(0) && instruction.r.rt != Reg::zero && dest != instruction.r.rs) ||
                (rhs.HasConstantValue(0) && instruction.r.rs != Reg::zero && dest != instruction.r.rt)))
           {
-            const auto rs = lhs.HasConstantValue(0) ? static_cast<CPU::Reg>(instruction.r.rt) : static_cast<CPU::Reg>(instruction.r.rs);
+            const auto rs = lhs.HasConstantValue(0) ? static_cast<CPU::Reg>(instruction.r.rt) :
+                                                      static_cast<CPU::Reg>(instruction.r.rs);
 
-            EmitFunctionCall(nullptr, &PGXP::CPU_MOVE_Packed,
-                             Value::FromConstantU32(
-                               PGXP::PackMoveArgs(dest, rs)),
+            EmitFunctionCall(nullptr, &PGXP::CPU_MOVE_Packed, Value::FromConstantU32(PGXP::PackMoveArgs(dest, rs)),
                              lhs.HasConstantValue(0) ? rhs : lhs);
           }
         }
@@ -1359,11 +1358,10 @@ bool CodeGenerator::Compile_Bitwise(Instruction instruction, const CodeCache::In
               ((lhs.HasConstantValue(0) && instruction.r.rt != Reg::zero && dest != instruction.r.rs) ||
                (rhs.HasConstantValue(0) && instruction.r.rs != Reg::zero && dest != instruction.r.rt)))
           {
-            const auto rs = lhs.HasConstantValue(0) ? static_cast<CPU::Reg>(instruction.r.rt) : static_cast<CPU::Reg>(instruction.r.rs);
+            const auto rs = lhs.HasConstantValue(0) ? static_cast<CPU::Reg>(instruction.r.rt) :
+                                                      static_cast<CPU::Reg>(instruction.r.rs);
 
-            EmitFunctionCall(nullptr, &PGXP::CPU_MOVE_Packed,
-                             Value::FromConstantU32(
-                               PGXP::PackMoveArgs(dest, rs)),
+            EmitFunctionCall(nullptr, &PGXP::CPU_MOVE_Packed, Value::FromConstantU32(PGXP::PackMoveArgs(dest, rs)),
                              lhs.HasConstantValue(0) ? rhs : lhs);
           }
         }
@@ -1669,8 +1667,9 @@ bool CodeGenerator::Compile_Store(Instruction instruction, const CodeCache::Inst
         VirtualAddressToPhysical(m_block->pc + (m_block->size * sizeof(Instruction)));
       if (phys_addr >= block_start && phys_addr < block_end)
       {
-        Log_WarningPrintf("Instruction %08X speculatively writes to %08X inside block %08X-%08X. Truncating block.",
-                          info.pc, phys_addr, block_start, block_end);
+        Log_WarningFmt(
+          "Instruction {:08X} speculatively writes to {:08X} inside block {:08X}-{:08X}. Truncating block.", info.pc,
+          phys_addr, block_start, block_end);
         TruncateBlockAtCurrentInstruction();
       }
     }
@@ -1711,7 +1710,7 @@ bool CodeGenerator::Compile_LoadLeftRight(Instruction instruction, const CodeCac
     // we don't actually care if it's our target reg or not, if it's not, it won't affect anything
     if (m_load_delay_dirty)
     {
-      Log_DevPrintf("Flushing interpreter load delay for lwl/lwr instruction at 0x%08X", info.pc);
+      Log_DevFmt("Flushing interpreter load delay for lwl/lwr instruction at 0x{:08X}", info.pc);
       EmitFlushInterpreterLoadDelay();
       m_register_cache.InvalidateGuestRegister(instruction.r.rt);
       m_load_delay_dirty = false;
@@ -2388,8 +2387,8 @@ bool CodeGenerator::Compile_Branch(Instruction instruction, const CodeCache::Ins
 
       if (branch_target.IsConstant())
       {
-        Log_WarningPrintf("Misaligned constant target branch 0x%08X, this is strange",
-                          Truncate32(branch_target.constant_value));
+        Log_WarningFmt("Misaligned constant target branch 0x{:08X}, this is strange",
+                       Truncate32(branch_target.constant_value));
       }
       else
       {

@@ -19,9 +19,9 @@ bool D3D12DescriptorHeapManager::Create(ID3D12Device* device, D3D12_DESCRIPTOR_H
                                                       D3D12_DESCRIPTOR_HEAP_FLAG_NONE, 0u};
 
   HRESULT hr = device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(m_descriptor_heap.ReleaseAndGetAddressOf()));
-  if (FAILED(hr))
+  if (FAILED(hr)) [[unlikely]]
   {
-    Log_ErrorPrintf("CreateDescriptorHeap() failed: %08X", hr);
+    Log_ErrorFmt("CreateDescriptorHeap() failed: {:08X}", static_cast<unsigned>(hr));
     return false;
   }
 
@@ -117,7 +117,7 @@ bool D3D12DescriptorAllocator::Create(ID3D12Device* device, D3D12_DESCRIPTOR_HEA
   const HRESULT hr = device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(m_descriptor_heap.ReleaseAndGetAddressOf()));
   if (FAILED(hr))
   {
-    Log_ErrorPrintf("CreateDescriptorHeap() failed: %08X", hr);
+    Log_ErrorFmt("CreateDescriptorHeap() failed: {:08X}", static_cast<unsigned>(hr));
     return false;
   }
 

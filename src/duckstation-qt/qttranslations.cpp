@@ -136,7 +136,7 @@ void QtHost::InstallTranslator(QWidget* dialog_parent)
     return;
   }
 
-  Log_InfoPrintf("Loaded translation file for language %s", language.toUtf8().constData());
+  Log_InfoFmt("Loaded translation file for language {}", language.toUtf8().constData());
   qApp->installTranslator(translator);
   s_translators.push_back(translator);
 

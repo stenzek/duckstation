@@ -34,7 +34,7 @@ Microsoft::WRL::ComPtr<ID3D12PipelineState> D3D12::GraphicsPipelineBuilder::Crea
   HRESULT hr = device->CreateGraphicsPipelineState(&m_desc, IID_PPV_ARGS(ps.GetAddressOf()));
   if (FAILED(hr))
   {
-    Log_ErrorPrintf("CreateGraphicsPipelineState() failed: %08X", hr);
+    Log_ErrorFmt("CreateGraphicsPipelineState() failed: {:08X}", static_cast<unsigned>(hr));
     return {};
   }
 
@@ -223,9 +223,9 @@ Microsoft::WRL::ComPtr<ID3D12PipelineState> D3D12::ComputePipelineBuilder::Creat
 {
   Microsoft::WRL::ComPtr<ID3D12PipelineState> ps;
   HRESULT hr = device->CreateComputePipelineState(&m_desc, IID_PPV_ARGS(ps.GetAddressOf()));
-  if (FAILED(hr))
+  if (FAILED(hr)) [[unlikely]]
   {
-    Log_ErrorPrintf("CreateComputePipelineState() failed: %08X", hr);
+    Log_ErrorFmt("CreateComputePipelineState() failed: {:08X}", static_cast<unsigned>(hr));
     return {};
   }
 

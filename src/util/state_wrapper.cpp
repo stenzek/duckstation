@@ -87,8 +87,6 @@ bool StateWrapper::DoMarker(const char* marker)
   if (m_mode == Mode::Write || file_value.equals(marker))
     return true;
 
-  Log_ErrorPrintf("Marker mismatch at offset %" PRIu64 ": found '%s' expected '%s'", m_stream->GetPosition(),
-                  file_value.c_str(), marker);
-
+  Log_ErrorFmt("Marker mismatch at offset {}: found '{}' expected '{}'", m_stream->GetPosition(), file_value, marker);
   return false;
 }

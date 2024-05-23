@@ -280,7 +280,7 @@ bool OpenGLDevice::CreateDevice(std::string_view adapter, bool threaded_presenta
   m_gl_context = OpenGLContext::Create(m_window_info, error);
   if (!m_gl_context)
   {
-    Log_ErrorPrintf("Failed to create any GL context");
+    Log_ErrorPrint("Failed to create any GL context");
     m_gl_context.reset();
     return false;
   }
@@ -496,8 +496,8 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
 
   if (!m_features.pipeline_cache)
   {
-    Log_WarningPrintf("Your GL driver does not support program binaries. Hopefully it has a built-in cache, otherwise "
-                      "startup will be slow due to compiling shaders.");
+    Log_WarningPrint("Your GL driver does not support program binaries. Hopefully it has a built-in cache, otherwise "
+                     "startup will be slow due to compiling shaders.");
   }
 
   // Mobile drivers prefer textures to not be updated mid-frame.
@@ -536,7 +536,7 @@ bool OpenGLDevice::UpdateWindow()
 
   if (!m_gl_context->ChangeSurface(m_window_info))
   {
-    Log_ErrorPrintf("Failed to change surface");
+    Log_ErrorPrint("Failed to change surface");
     return false;
   }
 
@@ -681,16 +681,16 @@ void OpenGLDevice::DestroySurface()
 
   m_window_info.SetSurfaceless();
   if (!m_gl_context->ChangeSurface(m_window_info))
-    Log_ErrorPrintf("Failed to switch to surfaceless");
+    Log_ErrorPrint("Failed to switch to surfaceless");
 }
 
 bool OpenGLDevice::CreateBuffers()
 {
   if (!(m_vertex_buffer = OpenGLStreamBuffer::Create(GL_ARRAY_BUFFER, VERTEX_BUFFER_SIZE)) ||
       !(m_index_buffer = OpenGLStreamBuffer::Create(GL_ELEMENT_ARRAY_BUFFER, INDEX_BUFFER_SIZE)) ||
-      !(m_uniform_buffer = OpenGLStreamBuffer::Create(GL_UNIFORM_BUFFER, UNIFORM_BUFFER_SIZE)))
+      !(m_uniform_buffer = OpenGLStreamBuffer::Create(GL_UNIFORM_BUFFER, UNIFORM_BUFFER_SIZE))) [[unlikely]]
   {
-    Log_ErrorPrintf("Failed to create one or more device buffers.");
+    Log_ErrorPrint("Failed to create one or more device buffers.");
     return false;
   }
 
@@ -703,8 +703,9 @@ bool OpenGLDevice::CreateBuffers()
   if (!m_disable_pbo)
   {
     if (!(m_texture_stream_buffer = OpenGLStreamBuffer::Create(GL_PIXEL_UNPACK_BUFFER, TEXTURE_STREAM_BUFFER_SIZE)))
+      [[unlikely]]
     {
-      Log_ErrorPrintf("Failed to create texture stream buffer");
+      Log_ErrorPrint("Failed to create texture stream buffer");
       return false;
     }
 
@@ -717,9 +718,9 @@ bool OpenGLDevice::CreateBuffers()
   GLuint fbos[2];
   glGetError();
   glGenFramebuffers(static_cast<GLsizei>(std::size(fbos)), fbos);
-  if (const GLenum err = glGetError(); err != GL_NO_ERROR)
+  if (const GLenum err = glGetError(); err != GL_NO_ERROR) [[unlikely]]
   {
-    Log_ErrorPrintf("Failed to create framebuffers: %u", err);
+    Log_ErrorFmt("Failed to create framebuffers: {}", err);
     return false;
   }
   m_read_fbo = fbos[0];
@@ -838,7 +839,7 @@ void OpenGLDevice::PopTimestampQuery()
     glGetIntegerv(GL_GPU_DISJOINT_EXT, &disjoint);
     if (disjoint)
     {
-      Log_VerbosePrintf("GPU timing disjoint, resetting.");
+      Log_VerbosePrint("GPU timing disjoint, resetting.");
       if (m_timestamp_query_started)
         glEndQueryEXT(GL_TIME_ELAPSED);
 

@@ -99,8 +99,8 @@ GPUTexture* GPU_SW::GetDisplayTexture(u32 width, u32 height, GPUTexture::Format 
     g_gpu_device->RecycleTexture(std::move(m_upload_texture));
     m_upload_texture =
       g_gpu_device->FetchTexture(width, height, 1, 1, 1, GPUTexture::Type::DynamicTexture, format, nullptr, 0);
-    if (!m_upload_texture)
-      Log_ErrorPrintf("Failed to create %ux%u %u texture", width, height, static_cast<u32>(format));
+    if (!m_upload_texture) [[unlikely]]
+      Log_ErrorFmt("Failed to create {}x{} {} texture", width, height, static_cast<u32>(format));
   }
 
   return m_upload_texture.get();
@@ -586,8 +586,8 @@ void GPU_SW::DispatchRenderCommand()
 
       if ((max_x - min_x) >= MAX_PRIMITIVE_WIDTH || (max_y - min_y) >= MAX_PRIMITIVE_HEIGHT)
       {
-        Log_DebugPrintf("Culling too-large polygon: %d,%d %d,%d %d,%d", cmd->vertices[0].x, cmd->vertices[0].y,
-                        cmd->vertices[1].x, cmd->vertices[1].y, cmd->vertices[2].x, cmd->vertices[2].y);
+        Log_DebugFmt("Culling too-large polygon: {},{} {},{} {},{}", cmd->vertices[0].x, cmd->vertices[0].y,
+                     cmd->vertices[1].x, cmd->vertices[1].y, cmd->vertices[2].x, cmd->vertices[2].y);
       }
       else
       {
@@ -607,9 +607,9 @@ void GPU_SW::DispatchRenderCommand()
         // Cull polygons which are too large.
         if ((max_x_123 - min_x_123) >= MAX_PRIMITIVE_WIDTH || (max_y_123 - min_y_123) >= MAX_PRIMITIVE_HEIGHT)
         {
-          Log_DebugPrintf("Culling too-large polygon (quad second half): %d,%d %d,%d %d,%d", cmd->vertices[2].x,
-                          cmd->vertices[2].y, cmd->vertices[1].x, cmd->vertices[1].y, cmd->vertices[0].x,
-                          cmd->vertices[0].y);
+          Log_DebugFmt("Culling too-large polygon (quad second half): {},{} {},{} {},{}", cmd->vertices[2].x,
+                       cmd->vertices[2].y, cmd->vertices[1].x, cmd->vertices[1].y, cmd->vertices[0].x,
+                       cmd->vertices[0].y);
         }
         else
         {
@@ -667,7 +667,7 @@ void GPU_SW::DispatchRenderCommand()
 
           if (cmd->width >= MAX_PRIMITIVE_WIDTH || cmd->height >= MAX_PRIMITIVE_HEIGHT)
           {
-            Log_DebugPrintf("Culling too-large rectangle: %d,%d %dx%d", cmd->x, cmd->y, cmd->width, cmd->height);
+            Log_DebugFmt("Culling too-large rectangle: {},{} {}x{}", cmd->x, cmd->y, cmd->width, cmd->height);
             return;
           }
         }
@@ -724,8 +724,8 @@ void GPU_SW::DispatchRenderCommand()
         const auto [min_y, max_y] = MinMax(cmd->vertices[0].y, cmd->vertices[1].y);
         if ((max_x - min_x) >= MAX_PRIMITIVE_WIDTH || (max_y - min_y) >= MAX_PRIMITIVE_HEIGHT)
         {
-          Log_DebugPrintf("Culling too-large line: %d,%d - %d,%d", cmd->vertices[0].y, cmd->vertices[0].y,
-                          cmd->vertices[1].x, cmd->vertices[1].y);
+          Log_DebugFmt("Culling too-large line: {},{} - {},{}", cmd->vertices[0].y, cmd->vertices[0].y,
+                       cmd->vertices[1].x, cmd->vertices[1].y);
           return;
         }
 
@@ -759,8 +759,8 @@ void GPU_SW::DispatchRenderCommand()
           const auto [min_y, max_y] = MinMax(cmd->vertices[i - 1].y, cmd->vertices[i].y);
           if ((max_x - min_x) >= MAX_PRIMITIVE_WIDTH || (max_y - min_y) >= MAX_PRIMITIVE_HEIGHT)
           {
-            Log_DebugPrintf("Culling too-large line: %d,%d - %d,%d", cmd->vertices[i - 1].x, cmd->vertices[i - 1].y,
-                            cmd->vertices[i].x, cmd->vertices[i].y);
+            Log_DebugFmt("Culling too-large line: {},{} - {},{}", cmd->vertices[i - 1].x, cmd->vertices[i - 1].y,
+                         cmd->vertices[i].x, cmd->vertices[i].y);
           }
           else
           {

@@ -198,8 +198,8 @@ private:
   {
     char error_string[256] = {};
     XGetErrorText(display, ee->error_code, error_string, sizeof(error_string));
-    Log_WarningPrintf("X11 Error: %s (Error %u Minor %u Request %u)", error_string, ee->error_code, ee->minor_code,
-                      ee->request_code);
+    Log_WarningFmt("X11 Error: {} (Error {} Minor {} Request {})", error_string, ee->error_code, ee->minor_code,
+                   ee->request_code);
 
     s_current_error_inhibiter->m_had_error = true;
     return 0;
@@ -237,7 +237,7 @@ static std::optional<float> GetRefreshRateFromXRandR(const WindowInfo& wi)
   }
   else if (num_monitors > 1)
   {
-    Log_WarningPrintf("XRRGetMonitors() returned %d monitors, using first", num_monitors);
+    Log_WarningFmt("XRRGetMonitors() returned {} monitors, using first", num_monitors);
   }
 
   ScopedGuard mi_guard([mi]() { XRRFreeMonitors(mi); });
@@ -248,7 +248,7 @@ static std::optional<float> GetRefreshRateFromXRandR(const WindowInfo& wi)
   }
   else if (mi->noutput > 1)
   {
-    Log_WarningPrintf("Monitor has %d outputs, using first", mi->noutput);
+    Log_WarningFmt("Monitor has {} outputs, using first", mi->noutput);
   }
 
   XRROutputInfo* oi = XRRGetOutputInfo(display, res, mi->outputs[0]);
@@ -280,13 +280,13 @@ static std::optional<float> GetRefreshRateFromXRandR(const WindowInfo& wi)
   }
   if (!mode)
   {
-    Log_ErrorPrintf("Failed to look up mode %d (of %d)", static_cast<int>(ci->mode), res->nmode);
+    Log_ErrorFmt("Failed to look up mode {} (of {})", static_cast<int>(ci->mode), res->nmode);
     return std::nullopt;
   }
 
   if (mode->dotClock == 0 || mode->hTotal == 0 || mode->vTotal == 0)
   {
-    Log_ErrorPrintf("Modeline is invalid: %ld/%d/%d", mode->dotClock, mode->hTotal, mode->vTotal);
+    Log_ErrorFmt("Modeline is invalid: {}/{}/{}", mode->dotClock, mode->hTotal, mode->vTotal);
     return std::nullopt;
   }
 

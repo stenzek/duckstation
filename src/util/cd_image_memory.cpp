@@ -92,7 +92,7 @@ bool CDImageMemory::CopyImage(CDImage* image, ProgressCallback* progress)
     {
       if (!image->ReadSectorFromIndex(memory_ptr, index, lba))
       {
-        Log_ErrorPrintf("Failed to read LBA %u in index %u", lba, i);
+        Log_ErrorFmt("Failed to read LBA {} in index {}", lba, i);
         return false;
       }
 

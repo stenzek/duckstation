@@ -374,7 +374,7 @@ bool DoState(StateWrapper& sw)
       TimingEvent* event = FindActiveEvent(event_name.c_str());
       if (!event)
       {
-        Log_WarningPrintf("Save state has event '%s', but couldn't find this event when loading.", event_name.c_str());
+        Log_WarningFmt("Save state has event '{}', but couldn't find this event when loading.", event_name);
         continue;
       }
 
@@ -391,7 +391,7 @@ bool DoState(StateWrapper& sw)
       sw.Do(&last_event_run_time);
     }
 
-    Log_DebugPrintf("Loaded %u events from save state.", event_count);
+    Log_DebugFmt("Loaded {} events from save state.", event_count);
     SortEvents();
   }
   else
@@ -408,7 +408,7 @@ bool DoState(StateWrapper& sw)
       sw.Do(&event->m_interval);
     }
 
-    Log_DebugPrintf("Wrote %u events to save state.", s_active_event_count);
+    Log_DebugFmt("Wrote {} events to save state.", s_active_event_count);
   }
 
   return !sw.HasError();

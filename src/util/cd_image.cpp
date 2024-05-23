@@ -302,7 +302,7 @@ bool CDImage::ReadRawSector(void* buffer, SubChannelQ* subq)
       // TODO: This is where we'd reconstruct the header for other mode tracks.
       if (!ReadSectorFromIndex(buffer, *m_current_index, m_position_in_index))
       {
-        Log_ErrorPrintf("Read of LBA %u failed", m_position_on_disc);
+        Log_ErrorFmt("Read of LBA {} failed", m_position_on_disc);
         Seek(m_position_on_disc);
         return false;
       }
@@ -324,7 +324,7 @@ bool CDImage::ReadRawSector(void* buffer, SubChannelQ* subq)
 
   if (subq && !ReadSubChannelQ(subq, *m_current_index, m_position_in_index))
   {
-    Log_ErrorPrintf("Subchannel read of LBA %u failed", m_position_on_disc);
+    Log_ErrorFmt("Subchannel read of LBA {} failed", m_position_on_disc);
     Seek(m_position_on_disc);
     return false;
   }

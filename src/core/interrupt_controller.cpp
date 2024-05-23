@@ -72,8 +72,8 @@ u32 InterruptController::ReadRegister(u32 offset)
     case 0x04: // I_MASK
       return s_interrupt_mask_register;
 
-    default:
-      Log_ErrorPrintf("Invalid read at offset 0x%08X", offset);
+    default: [[unlikely]]
+      Log_ErrorFmt("Invalid read at offset 0x{:08X}", offset);
       return UINT32_C(0xFFFFFFFF);
   }
 }
@@ -100,14 +100,14 @@ void InterruptController::WriteRegister(u32 offset, u32 value)
 
     case 0x04: // I_MASK
     {
-      Log_DebugPrintf("Interrupt mask <- 0x%08X", value);
+      Log_DebugFmt("Interrupt mask <- 0x{:08X}", value);
       s_interrupt_mask_register = value & REGISTER_WRITE_MASK;
       UpdateCPUInterruptRequest();
     }
     break;
 
-    default:
-      Log_ErrorPrintf("Invalid write at offset 0x%08X", offset);
+    default: [[unlikely]]
+      Log_ErrorFmt("Invalid write at offset 0x{:08X}", offset);
       break;
   }
 }

@@ -212,7 +212,7 @@ bool VulkanDevice::SelectInstanceExtensions(ExtensionList* extension_list, const
 
   if (extension_count == 0)
   {
-    Log_ErrorPrintf("Vulkan: No extensions supported by instance.");
+    Log_ErrorPrint("Vulkan: No extensions supported by instance.");
     return false;
   }
 
@@ -226,13 +226,13 @@ bool VulkanDevice::SelectInstanceExtensions(ExtensionList* extension_list, const
                        return !strcmp(name, properties.extensionName);
                      }) != available_extension_list.end())
     {
-      Log_DevPrintf("Enabling extension: %s", name);
+      Log_DevFmt("Enabling extension: {}", name);
       extension_list->push_back(name);
       return true;
     }
 
     if (required)
-      Log_ErrorPrintf("Vulkan: Missing required extension %s.", name);
+      Log_ErrorFmt("Vulkan: Missing required extension {}.", name);
 
     return false;
   };
@@ -264,7 +264,7 @@ bool VulkanDevice::SelectInstanceExtensions(ExtensionList* extension_list, const
 
   // VK_EXT_debug_utils
   if (enable_debug_utils && !SupportsExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, false))
-    Log_WarningPrintf("Vulkan: Debug report requested, but extension is not available.");
+    Log_WarningPrint("Vulkan: Debug report requested, but extension is not available.");
 
   // Needed for exclusive fullscreen control.
   SupportsExtension(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME, false);
@@ -344,7 +344,7 @@ bool VulkanDevice::SelectDeviceExtensions(ExtensionList* extension_list, bool en
 
   if (extension_count == 0)
   {
-    Log_ErrorPrintf("Vulkan: No extensions supported by device.");
+    Log_ErrorPrint("Vulkan: No extensions supported by device.");
     return false;
   }
 
@@ -362,7 +362,7 @@ bool VulkanDevice::SelectDeviceExtensions(ExtensionList* extension_list, bool en
       if (std::none_of(extension_list->begin(), extension_list->end(),
                        [&](const char* existing_name) { return (std::strcmp(existing_name, name) == 0); }))
       {
-        Log_DevPrintf("Enabling extension: %s", name);
+        Log_DevFmt("Enabling extension: {}", name);
         extension_list->push_back(name);
       }
 
@@ -370,7 +370,7 @@ bool VulkanDevice::SelectDeviceExtensions(ExtensionList* extension_list, bool en
     }
 
     if (required)
-      Log_ErrorPrintf("Vulkan: Missing required extension %s.", name);
+      Log_ErrorFmt("Vulkan: Missing required extension {}.", name);
 
     return false;
   };
@@ -413,8 +413,8 @@ bool VulkanDevice::SelectDeviceExtensions(ExtensionList* extension_list, bool en
 #ifdef _WIN32
   m_optional_extensions.vk_ext_full_screen_exclusive =
     enable_surface && SupportsExtension(VK_EXT_FULL_SCREEN_EXCLUSIVE_EXTENSION_NAME, false);
-  Log_InfoPrintf("VK_EXT_full_screen_exclusive is %s",
-                 m_optional_extensions.vk_ext_full_screen_exclusive ? "supported" : "NOT supported");
+  Log_InfoFmt("VK_EXT_full_screen_exclusive is {}",
+              m_optional_extensions.vk_ext_full_screen_exclusive ? "supported" : "NOT supported");
 #endif
 
   return true;
@@ -450,13 +450,13 @@ bool VulkanDevice::CreateDevice(VkSurfaceKHR surface, bool enable_validation_lay
   vkGetPhysicalDeviceQueueFamilyProperties(m_physical_device, &queue_family_count, nullptr);
   if (queue_family_count == 0)
   {
-    Log_ErrorPrintf("No queue families found on specified vulkan physical device.");
+    Log_ErrorPrint("No queue families found on specified vulkan physical device.");
     return false;
   }
 
   std::vector<VkQueueFamilyProperties> queue_family_properties(queue_family_count);
   vkGetPhysicalDeviceQueueFamilyProperties(m_physical_device, &queue_family_count, queue_family_properties.data());
-  Log_DevPrintf("%u vulkan queue families", queue_family_count);
+  Log_DevFmt("{} vulkan queue families", queue_family_count);
 
   // Find graphics and present queues.
   m_graphics_queue_family_index = queue_family_count;
@@ -498,12 +498,12 @@ bool VulkanDevice::CreateDevice(VkSurfaceKHR surface, bool enable_validation_lay
   }
   if (m_graphics_queue_family_index == queue_family_count)
   {
-    Log_ErrorPrintf("Vulkan: Failed to find an acceptable graphics queue.");
+    Log_ErrorPrint("Vulkan: Failed to find an acceptable graphics queue.");
     return false;
   }
   if (surface != VK_NULL_HANDLE && m_present_queue_family_index == queue_family_count)
   {
-    Log_ErrorPrintf("Vulkan: Failed to find an acceptable present queue.");
+    Log_ErrorPrint("Vulkan: Failed to find an acceptable present queue.");
     return false;
   }
 
@@ -593,11 +593,11 @@ bool VulkanDevice::CreateDevice(VkSurfaceKHR surface, bool enable_validation_lay
   m_features.gpu_timing = (m_device_properties.limits.timestampComputeAndGraphics != 0 &&
                            queue_family_properties[m_graphics_queue_family_index].timestampValidBits > 0 &&
                            m_device_properties.limits.timestampPeriod > 0);
-  Log_DevPrintf("GPU timing is %s (TS=%u TS valid bits=%u, TS period=%f)",
-                m_features.gpu_timing ? "supported" : "not supported",
-                static_cast<u32>(m_device_properties.limits.timestampComputeAndGraphics),
-                queue_family_properties[m_graphics_queue_family_index].timestampValidBits,
-                m_device_properties.limits.timestampPeriod);
+  Log_DevFmt("GPU timing is {} (TS={} TS valid bits={}, TS period={})",
+             m_features.gpu_timing ? "supported" : "not supported",
+             static_cast<u32>(m_device_properties.limits.timestampComputeAndGraphics),
+             queue_family_properties[m_graphics_queue_family_index].timestampValidBits,
+             m_device_properties.limits.timestampPeriod);
 
   ProcessDeviceExtensions();
   return true;
@@ -783,8 +783,8 @@ bool VulkanDevice::CreateAllocator()
 
       if (heap_size_limits[type.heapIndex] == VK_WHOLE_SIZE)
       {
-        Log_WarningPrintf("Disabling allocation from upload heap #%u (%.2f MB) due to debug device.", type.heapIndex,
-                          static_cast<float>(heap.size) / 1048576.0f);
+        Log_WarningFmt("Disabling allocation from upload heap #{} ({:.2f} MB) due to debug device.", type.heapIndex,
+                       static_cast<float>(heap.size) / 1048576.0f);
         heap_size_limits[type.heapIndex] = 0;
         has_upload_heap = true;
       }
@@ -1506,7 +1506,7 @@ void VulkanDevice::SubmitCommandBuffer(bool wait_for_completion, const char* rea
   const std::string reason_str(StringUtil::StdStringFromFormatV(reason, ap));
   va_end(ap);
 
-  Log_WarningPrintf("Executing command buffer due to '%s'", reason_str.c_str());
+  Log_WarningFmt("Executing command buffer due to '{}'", reason_str);
   SubmitCommandBuffer(wait_for_completion);
 }
 
@@ -1588,23 +1588,23 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugMessengerCallback(VkDebugUtilsMessageSeverit
 {
   if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
   {
-    Log_ErrorPrintf("Vulkan debug report: (%s) %s", pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "",
-                    pCallbackData->pMessage);
+    Log_ErrorFmt("Vulkan debug report: ({}) {}", pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "",
+                 pCallbackData->pMessage);
   }
   else if (severity & (VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT))
   {
-    Log_WarningPrintf("Vulkan debug report: (%s) %s",
-                      pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "", pCallbackData->pMessage);
+    Log_WarningFmt("Vulkan debug report: ({}) {}", pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "",
+                   pCallbackData->pMessage);
   }
   else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
   {
-    Log_InfoPrintf("Vulkan debug report: (%s) %s", pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "",
-                   pCallbackData->pMessage);
+    Log_InfoFmt("Vulkan debug report: ({}) {}", pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "",
+                pCallbackData->pMessage);
   }
   else
   {
-    Log_DevPrintf("Vulkan debug report: (%s) %s", pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "",
-                  pCallbackData->pMessage);
+    Log_DevFmt("Vulkan debug report: ({}) {}", pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "",
+               pCallbackData->pMessage);
   }
 
   return VK_FALSE;
@@ -1957,13 +1957,13 @@ bool VulkanDevice::CreateDevice(std::string_view adapter, bool threaded_presenta
         return false;
       }
 
-      Log_ErrorPrintf("Vulkan validation/debug layers requested but are unavailable. Creating non-debug device.");
+      Log_ErrorPrint("Vulkan validation/debug layers requested but are unavailable. Creating non-debug device.");
     }
   }
 
   if (!Vulkan::LoadVulkanInstanceFunctions(m_instance))
   {
-    Log_ErrorPrintf("Failed to load Vulkan instance functions");
+    Log_ErrorPrint("Failed to load Vulkan instance functions");
     Error::SetStringView(error, "Failed to load Vulkan instance functions");
     return false;
   }
@@ -2144,33 +2144,33 @@ bool VulkanDevice::ValidatePipelineCacheHeader(const VK_PIPELINE_CACHE_HEADER& h
 {
   if (header.header_length < sizeof(VK_PIPELINE_CACHE_HEADER))
   {
-    Log_ErrorPrintf("Pipeline cache failed validation: Invalid header length");
+    Log_ErrorPrint("Pipeline cache failed validation: Invalid header length");
     return false;
   }
 
   if (header.header_version != VK_PIPELINE_CACHE_HEADER_VERSION_ONE)
   {
-    Log_ErrorPrintf("Pipeline cache failed validation: Invalid header version");
+    Log_ErrorPrint("Pipeline cache failed validation: Invalid header version");
     return false;
   }
 
   if (header.vendor_id != m_device_properties.vendorID)
   {
-    Log_ErrorPrintf("Pipeline cache failed validation: Incorrect vendor ID (file: 0x%X, device: 0x%X)",
-                    header.vendor_id, m_device_properties.vendorID);
+    Log_ErrorFmt("Pipeline cache failed validation: Incorrect vendor ID (file: 0x{:X}, device: 0x{:X})",
+                 header.vendor_id, m_device_properties.vendorID);
     return false;
   }
 
   if (header.device_id != m_device_properties.deviceID)
   {
-    Log_ErrorPrintf("Pipeline cache failed validation: Incorrect device ID (file: 0x%X, device: 0x%X)",
-                    header.device_id, m_device_properties.deviceID);
+    Log_ErrorFmt("Pipeline cache failed validation: Incorrect device ID (file: 0x{:X}, device: 0x{:X})",
+                 header.device_id, m_device_properties.deviceID);
     return false;
   }
 
   if (std::memcmp(header.uuid, m_device_properties.pipelineCacheUUID, VK_UUID_SIZE) != 0)
   {
-    Log_ErrorPrintf("Pipeline cache failed validation: Incorrect UUID");
+    Log_ErrorPrint("Pipeline cache failed validation: Incorrect UUID");
     return false;
   }
 
@@ -2199,7 +2199,7 @@ bool VulkanDevice::ReadPipelineCache(const std::string& filename)
     {
       if (data->size() < sizeof(VK_PIPELINE_CACHE_HEADER))
       {
-        Log_ErrorPrintf("Pipeline cache at '%s' is too small", filename.c_str());
+        Log_ErrorFmt("Pipeline cache at '{}' is too small", Path::GetFileName(filename));
         return false;
       }
 
@@ -2266,14 +2266,14 @@ bool VulkanDevice::UpdateWindow()
   VkSurfaceKHR surface = VulkanSwapChain::CreateVulkanSurface(m_instance, m_physical_device, &m_window_info);
   if (surface == VK_NULL_HANDLE)
   {
-    Log_ErrorPrintf("Failed to create new surface for swap chain");
+    Log_ErrorPrint("Failed to create new surface for swap chain");
     return false;
   }
 
   m_swap_chain = VulkanSwapChain::Create(m_window_info, surface, SelectPresentMode(), m_exclusive_fullscreen_control);
   if (!m_swap_chain)
   {
-    Log_ErrorPrintf("Failed to create swap chain");
+    Log_ErrorPrint("Failed to create swap chain");
     VulkanSwapChain::DestroyVulkanSurface(m_instance, &m_window_info, surface);
     return false;
   }
@@ -2302,7 +2302,7 @@ void VulkanDevice::ResizeWindow(s32 new_window_width, s32 new_window_height, flo
   if (!m_swap_chain->ResizeSwapChain(new_window_width, new_window_height, new_window_scale))
   {
     // AcquireNextImage() will fail, and we'll recreate the surface.
-    Log_ErrorPrintf("Failed to resize swap chain. Next present will fail.");
+    Log_ErrorPrint("Failed to resize swap chain. Next present will fail.");
     return;
   }
 
@@ -2405,10 +2405,10 @@ bool VulkanDevice::BeginPresent(bool frame_skip)
     }
     else if (res == VK_ERROR_SURFACE_LOST_KHR)
     {
-      Log_WarningPrintf("Surface lost, attempting to recreate");
+      Log_WarningPrint("Surface lost, attempting to recreate");
       if (!m_swap_chain->RecreateSurface(m_window_info))
       {
-        Log_ErrorPrintf("Failed to recreate surface after loss");
+        Log_ErrorPrint("Failed to recreate surface after loss");
         SubmitCommandBuffer(false);
         TrimTexturePool();
         return false;
@@ -2544,7 +2544,7 @@ bool VulkanDevice::CheckFeatures(FeatureMask disabled_features)
     m_optional_extensions.vk_ext_rasterization_order_attachment_access;
 
   if (!m_features.dual_source_blend)
-    Log_WarningPrintf("Vulkan driver is missing dual-source blending. This will have an impact on performance.");
+    Log_WarningPrint("Vulkan driver is missing dual-source blending. This will have an impact on performance.");
 
   m_features.noperspective_interpolation = true;
   m_features.texture_copy_to_self = !(disabled_features & FEATURE_MASK_TEXTURE_COPY_TO_SELF);
@@ -2557,7 +2557,7 @@ bool VulkanDevice::CheckFeatures(FeatureMask disabled_features)
   m_features.texture_buffers_emulated_with_ssbo = true;
 #else
   const u32 max_texel_buffer_elements = m_device_properties.limits.maxTexelBufferElements;
-  Log_InfoPrintf("Max texel buffer elements: %u", max_texel_buffer_elements);
+  Log_InfoFmt("Max texel buffer elements: {}", max_texel_buffer_elements);
   if (max_texel_buffer_elements < MIN_TEXEL_BUFFER_ELEMENTS)
   {
     m_features.texture_buffers_emulated_with_ssbo = true;
@@ -2565,7 +2565,7 @@ bool VulkanDevice::CheckFeatures(FeatureMask disabled_features)
 #endif
 
   if (m_features.texture_buffers_emulated_with_ssbo)
-    Log_WarningPrintf("Emulating texture buffers with SSBOs.");
+    Log_WarningPrint("Emulating texture buffers with SSBOs.");
 
   m_features.geometry_shaders =
     !(disabled_features & FEATURE_MASK_GEOMETRY_SHADERS) && m_device_features.geometryShader;
@@ -3069,7 +3069,7 @@ void VulkanDevice::RenderBlankFrame()
   VkResult res = m_swap_chain->AcquireNextImage();
   if (res != VK_SUCCESS)
   {
-    Log_ErrorPrintf("Failed to acquire image for blank frame present");
+    Log_ErrorPrint("Failed to acquire image for blank frame present");
     return;
   }
 

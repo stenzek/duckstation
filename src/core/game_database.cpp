@@ -307,7 +307,7 @@ const GameDatabase::Entry* GameDatabase::GetEntryForDisc(CDImage* image)
   if (entry)
     return entry;
 
-  Log_WarningPrintf("No entry found for disc '%s'", id.c_str());
+  Log_WarningFmt("No entry found for disc '{}'", id);
   return nullptr;
 }
 
@@ -861,7 +861,7 @@ bool GameDatabase::LoadFromCache()
     ByteStream::OpenFile(GetCacheFile().c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED));
   if (!stream)
   {
-    Log_DevPrintf("Cache does not exist, loading full database.");
+    Log_DevPrint("Cache does not exist, loading full database.");
     return false;
   }
 
@@ -873,13 +873,13 @@ bool GameDatabase::LoadFromCache()
       !stream->ReadU32(&num_entries) || !stream->ReadU32(&num_codes) || signature != GAME_DATABASE_CACHE_SIGNATURE ||
       version != GAME_DATABASE_CACHE_VERSION)
   {
-    Log_DevPrintf("Cache header is corrupted or version mismatch.");
+    Log_DevPrint("Cache header is corrupted or version mismatch.");
     return false;
   }
 
   if (gamedb_ts != file_gamedb_ts)
   {
-    Log_DevPrintf("Cache is out of date, recreating.");
+    Log_DevPrint("Cache is out of date, recreating.");
     return false;
   }
 
@@ -917,7 +917,7 @@ bool GameDatabase::LoadFromCache()
         !ReadOptionalFromStream(stream.get(), &entry.gpu_line_detect_mode) ||
         !stream->ReadSizePrefixedString(&entry.disc_set_name) || !stream->ReadU32(&num_disc_set_serials))
     {
-      Log_DevPrintf("Cache entry is corrupted.");
+      Log_DevPrint("Cache entry is corrupted.");
       return false;
     }
 
@@ -928,7 +928,7 @@ bool GameDatabase::LoadFromCache()
       {
         if (!stream->ReadSizePrefixedString(&entry.disc_set_serials.emplace_back()))
         {
-          Log_DevPrintf("Cache entry is corrupted.");
+          Log_DevPrint("Cache entry is corrupted.");
           return false;
         }
       }
@@ -950,7 +950,7 @@ bool GameDatabase::LoadFromCache()
     if (!stream->ReadSizePrefixedString(&code) || !stream->ReadU32(&index) ||
         index >= static_cast<u32>(s_entries.size()))
     {
-      Log_DevPrintf("Cache code entry is corrupted.");
+      Log_DevPrint("Cache code entry is corrupted.");
       return false;
     }
 

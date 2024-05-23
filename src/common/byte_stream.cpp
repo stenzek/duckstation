@@ -283,17 +283,11 @@ public:
 #if defined(_WIN32)
       // delete the temporary file
       if (!DeleteFileW(FileSystem::GetWin32Path(m_temporaryFileName).c_str()))
-      {
-        Log_WarningPrintf(
-          "AtomicUpdatedFileByteStream::~AtomicUpdatedFileByteStream(): Failed to delete temporary file '%s'",
-          m_temporaryFileName.c_str());
-      }
+        Log_WarningFmt("Failed to delete temporary file '{}'", m_temporaryFileName);
 #else
       // delete the temporary file
       if (remove(m_temporaryFileName.c_str()) < 0)
-        Log_WarningPrintf(
-          "AtomicUpdatedFileByteStream::~AtomicUpdatedFileByteStream(): Failed to delete temporary file '%s'",
-          m_temporaryFileName.c_str());
+        Log_WarningFmt("Failed to delete temporary file '{}'", m_temporaryFileName);
 #endif
     }
     else if (!m_committed)
@@ -317,8 +311,7 @@ public:
     if (!MoveFileExW(FileSystem::GetWin32Path(m_temporaryFileName).c_str(),
                      FileSystem::GetWin32Path(m_originalFileName).c_str(), MOVEFILE_REPLACE_EXISTING))
     {
-      Log_WarningPrintf("AtomicUpdatedFileByteStream::Commit(): Failed to rename temporary file '%s' to '%s'",
-                        m_temporaryFileName.c_str(), m_originalFileName.c_str());
+      Log_WarningFmt("Failed to rename temporary file '{}' to '{}'", m_temporaryFileName, m_originalFileName);
       m_discarded = true;
     }
     else
@@ -329,8 +322,7 @@ public:
     // move the atomic file name to the original file name
     if (rename(m_temporaryFileName.c_str(), m_originalFileName.c_str()) < 0)
     {
-      Log_WarningPrintf("AtomicUpdatedFileByteStream::Commit(): Failed to rename temporary file '%s' to '%s'",
-                        m_temporaryFileName.c_str(), m_originalFileName.c_str());
+      Log_WarningFmt("Failed to rename temporary file '{}' to '{}'", m_temporaryFileName, m_originalFileName);
       m_discarded = true;
     }
     else

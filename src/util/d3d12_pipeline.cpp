@@ -231,7 +231,7 @@ std::unique_ptr<GPUPipeline> D3D12Device::CreatePipeline(const GPUPipeline::Grap
     {
       // E_INVALIDARG = not found.
       if (hr != E_INVALIDARG)
-        Log_ErrorPrintf("LoadGraphicsPipeline() failed with HRESULT %08X", hr);
+        Log_ErrorFmt("LoadGraphicsPipeline() failed with HRESULT {:08X}", static_cast<unsigned>(hr));
 
       // Need to create it normally.
       pipeline = gpb.Create(m_device.Get(), false);
@@ -241,7 +241,7 @@ std::unique_ptr<GPUPipeline> D3D12Device::CreatePipeline(const GPUPipeline::Grap
       {
         hr = m_pipeline_library->StorePipeline(name.c_str(), pipeline.Get());
         if (FAILED(hr))
-          Log_ErrorPrintf("StorePipeline() failed with HRESULT %08X", hr);
+          Log_ErrorFmt("StorePipeline() failed with HRESULT {:08X}", static_cast<unsigned>(hr));
       }
     }
   }

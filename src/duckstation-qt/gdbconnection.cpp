@@ -11,8 +11,7 @@ GDBConnection::GDBConnection(GDBServer* parent, intptr_t descriptor) : QTcpSocke
 {
   if (!setSocketDescriptor(descriptor))
   {
-    Log_ErrorPrintf("(%" PRIdPTR ") Failed to set socket descriptor: %s", descriptor,
-                    errorString().toUtf8().constData());
+    Log_ErrorFmt("{} failed to set socket descriptor: {}", descriptor, errorString().toStdString());
     deleteLater();
     return;
   }
@@ -22,7 +21,7 @@ GDBConnection::GDBConnection(GDBServer* parent, intptr_t descriptor) : QTcpSocke
   connect(this, &QTcpSocket::readyRead, this, &GDBConnection::receivedData);
   connect(this, &QTcpSocket::disconnected, this, &GDBConnection::gotDisconnected);
 
-  Log_InfoPrintf("(%" PRIdPTR ") Client connected", m_descriptor);
+  Log_InfoFmt("{} client connected", m_descriptor);
 
   m_seen_resume = System::IsPaused();
   g_emu_thread->setSystemPaused(true);
@@ -30,7 +29,7 @@ GDBConnection::GDBConnection(GDBServer* parent, intptr_t descriptor) : QTcpSocke
 
 void GDBConnection::gotDisconnected()
 {
-  Log_InfoPrintf("(%" PRIdPTR ") Client disconnected", m_descriptor);
+  Log_InfoFmt("{} client disconnected", m_descriptor);
   deleteLater();
 }
 
@@ -47,19 +46,19 @@ void GDBConnection::receivedData()
 
       if (GDBProtocol::IsPacketInterrupt(m_readBuffer))
       {
-        Log_DebugPrintf("(%" PRIdPTR ") > Interrupt request", m_descriptor);
+        Log_DebugFmt("{} > Interrupt request", m_descriptor);
         g_emu_thread->setSystemPaused(true);
         m_readBuffer.erase();
       }
       else if (GDBProtocol::IsPacketContinue(m_readBuffer))
       {
-        Log_DebugPrintf("(%" PRIdPTR ") > Continue request", m_descriptor);
+        Log_DebugFmt("{} > Continue request", m_descriptor);
         g_emu_thread->setSystemPaused(false);
         m_readBuffer.erase();
       }
       else if (GDBProtocol::IsPacketComplete(m_readBuffer))
       {
-        Log_DebugPrintf("(%" PRIdPTR ") > %s", m_descriptor, m_readBuffer.c_str());
+        Log_DebugFmt("{} > %s", m_descriptor, m_readBuffer.c_str());
         writePacket(GDBProtocol::ProcessPacket(m_readBuffer));
         m_readBuffer.erase();
       }
@@ -67,8 +66,7 @@ void GDBConnection::receivedData()
   }
   if (bytesRead == -1)
   {
-    Log_ErrorPrintf("(%" PRIdPTR ") Failed to read from socket: %s", m_descriptor,
-                    errorString().toUtf8().constData());
+    Log_ErrorFmt("{} failed to read from socket: %s", m_descriptor, errorString().toStdString());
   }
 }
 
@@ -91,10 +89,7 @@ void GDBConnection::onEmulationResumed()
 
 void GDBConnection::writePacket(std::string_view packet)
 {
-  Log_DebugPrintf("(%" PRIdPTR ") < %.*s", m_descriptor, static_cast<int>(packet.length()), packet.data());
+  Log_DebugFmt("{} < {}", m_descriptor, packet);
   if (write(packet.data(), packet.length()) == -1)
-  {
-    Log_ErrorPrintf("(%" PRIdPTR ") Failed to write to socket: %s", m_descriptor,
-                    errorString().toUtf8().constData());
-  }
+    Log_ErrorFmt("{} failed to write to socket: {}", m_descriptor, errorString().toStdString());
 }

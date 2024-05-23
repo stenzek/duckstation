@@ -84,7 +84,7 @@ void DisplayWidget::updateRelativeMode(bool enabled)
   if (m_relative_mouse_enabled == enabled && m_clip_mouse_enabled == clip_cursor)
     return;
 
-  Log_InfoPrintf("updateRelativeMode(): relative=%s, clip=%s", enabled ? "yes" : "no", clip_cursor ? "yes" : "no");
+  Log_InfoFmt("updateRelativeMode(): relative={}, clip={}", enabled ? "yes" : "no", clip_cursor ? "yes" : "no");
 
   if (!clip_cursor && m_clip_mouse_enabled)
   {
@@ -95,7 +95,7 @@ void DisplayWidget::updateRelativeMode(bool enabled)
   if (m_relative_mouse_enabled == enabled)
     return;
 
-  Log_InfoPrintf("updateRelativeMode(): relative=%s", enabled ? "yes" : "no");
+  Log_InfoFmt("updateRelativeMode(): relative={}", enabled ? "yes" : "no");
 #endif
 
   if (enabled)
@@ -126,12 +126,12 @@ void DisplayWidget::updateCursor(bool hidden)
   m_cursor_hidden = hidden;
   if (hidden)
   {
-    Log_DevPrintf("updateCursor(): Cursor is now hidden");
+    Log_DevPrint("updateCursor(): Cursor is now hidden");
     setCursor(Qt::BlankCursor);
   }
   else
   {
-    Log_DevPrintf("updateCursor(): Cursor is now shown");
+    Log_DevPrint("updateCursor(): Cursor is now shown");
     unsetCursor();
   }
 }

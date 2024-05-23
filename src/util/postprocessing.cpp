@@ -499,7 +499,7 @@ void PostProcessing::LoadStages()
   if (stage_count > 0)
   {
     s_timer.Reset();
-    Log_DevPrintf("Loaded %u post-processing stages.", stage_count);
+    Log_DevFmt("Loaded {} post-processing stages.", stage_count);
   }
 
   // precompile shaders
@@ -577,7 +577,7 @@ void PostProcessing::UpdateSettings()
   if (stage_count > 0)
   {
     s_timer.Reset();
-    Log_DevPrintf("Loaded %u post-processing stages.", stage_count);
+    Log_DevFmt("Loaded {} post-processing stages.", stage_count);
   }
 }
 
@@ -700,7 +700,7 @@ bool PostProcessing::CheckTargets(GPUTexture::Format target_format, u32 target_w
     if (!shader->CompilePipeline(target_format, target_width, target_height, progress) ||
         !shader->ResizeOutput(target_format, target_width, target_height))
     {
-      Log_ErrorPrintf("Failed to compile one or more post-processing shaders, disabling.");
+      Log_ErrorPrint("Failed to compile one or more post-processing shaders, disabling.");
       Host::AddIconOSDMessage(
         "PostProcessLoadFail", ICON_FA_EXCLAMATION_TRIANGLE,
         fmt::format("Failed to compile post-processing shader '{}'. Disabling post-processing.", shader->GetName()));

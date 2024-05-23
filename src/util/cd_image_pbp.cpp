@@ -298,7 +298,7 @@ bool CDImagePBP::LoadSFOTable()
 
     if (FileSystem::FSeek64(m_file, abs_key_offset, SEEK_SET) != 0)
     {
-      Log_ErrorPrintf("Failed seek to key for SFO table entry %zu", i);
+      Log_ErrorFmt("Failed seek to key for SFO table entry {}", i);
       return false;
     }
 
@@ -306,19 +306,19 @@ bool CDImagePBP::LoadSFOTable()
     char key_cstr[20] = {};
     if (std::fgets(key_cstr, sizeof(key_cstr), m_file) == nullptr)
     {
-      Log_ErrorPrintf("Failed to read key string for SFO table entry %zu", i);
+      Log_ErrorFmt("Failed to read key string for SFO table entry {}", i);
       return false;
     }
 
     if (FileSystem::FSeek64(m_file, abs_data_offset, SEEK_SET) != 0)
     {
-      Log_ErrorPrintf("Failed seek to data for SFO table entry %zu", i);
+      Log_ErrorFmt("Failed seek to data for SFO table entry {}", i);
       return false;
     }
 
     if (m_sfo_index_table[i].data_type == 0x0004) // "special mode" UTF-8 (not null terminated)
     {
-      Log_ErrorPrintf("Unhandled special mode UTF-8 type found in SFO table for entry %zu", i);
+      Log_ErrorFmt("Unhandled special mode UTF-8 type found in SFO table for entry {}", i);
       return false;
     }
     else if (m_sfo_index_table[i].data_type == 0x0204) // null-terminated UTF-8 character string
@@ -326,7 +326,7 @@ bool CDImagePBP::LoadSFOTable()
       std::vector<char> data_cstr(m_sfo_index_table[i].data_size);
       if (fgets(data_cstr.data(), static_cast<int>(data_cstr.size() * sizeof(char)), m_file) == nullptr)
       {
-        Log_ErrorPrintf("Failed to read data string for SFO table entry %zu", i);
+        Log_ErrorFmt("Failed to read data string for SFO table entry {}", i);
         return false;
       }
 
@@ -335,9 +335,9 @@ bool CDImagePBP::LoadSFOTable()
     else if (m_sfo_index_table[i].data_type == 0x0404) // uint32_t
     {
       u32 val;
-      if (fread(&val, sizeof(u32), 1, m_file) != 1)
+      if (std::fread(&val, sizeof(u32), 1, m_file) != 1)
       {
-        Log_ErrorPrintf("Failed to read unsigned data value for SFO table entry %zu", i);
+        Log_ErrorFmt("Failed to read unsigned data value for SFO table entry {}", i);
         return false;
       }
 
@@ -345,7 +345,7 @@ bool CDImagePBP::LoadSFOTable()
     }
     else
     {
-      Log_ErrorPrintf("Unhandled SFO data type 0x%04X found in SFO table for entry %zu", m_sfo_index_table[i].data_type,
+      Log_ErrorFmt("Unhandled SFO data type 0x{:04X} found in SFO table for entry {}", m_sfo_index_table[i].data_type,
                       i);
       return false;
     }
@@ -476,7 +476,7 @@ bool CDImagePBP::Open(const char* filename, Error* error)
     // Ignore encrypted files
     if (disc_table[0] == 0x44475000) // "\0PGD"
     {
-      Log_ErrorPrintf("Encrypted PBP images are not supported, skipping %s", m_filename.c_str());
+      Log_ErrorFmt("Encrypted PBP images are not supported, skipping %s", m_filename);
       Error::SetString(error, "Encrypted PBP images are not supported");
       return false;
     }
@@ -492,7 +492,7 @@ bool CDImagePBP::Open(const char* filename, Error* error)
 
     if (m_disc_offsets.size() < 1)
     {
-      Log_ErrorPrintf("Invalid number of discs (%u) in multi-disc PBP file", static_cast<u32>(m_disc_offsets.size()));
+      Log_ErrorFmt("Invalid number of discs ({}) in multi-disc PBP file", m_disc_offsets.size());
       return false;
     }
   }
@@ -509,7 +509,7 @@ bool CDImagePBP::OpenDisc(u32 index, Error* error)
 {
   if (index >= m_disc_offsets.size())
   {
-    Log_ErrorPrintf("File does not contain disc %u", index + 1);
+    Log_ErrorFmt("File does not contain disc {}", index + 1);
     Error::SetString(error, fmt::format("File does not contain disc {}", index + 1));
     return false;
   }
@@ -545,7 +545,7 @@ bool CDImagePBP::OpenDisc(u32 index, Error* error)
 
   if (pgd_magic == 0x44475000) // "\0PGD"
   {
-    Log_ErrorPrintf("Encrypted PBP images are not supported, skipping %s", m_filename.c_str());
+    Log_ErrorFmt("Encrypted PBP images are not supported, skipping {}", m_filename);
     Error::SetString(error, "Encrypted PBP images are not supported");
     return false;
   }
@@ -623,7 +623,7 @@ bool CDImagePBP::OpenDisc(u32 index, Error* error)
     const TOCEntry& t = m_toc[static_cast<size_t>(curr_track) + 2];
     const u8 track_num = PackedBCDToBinary(t.point);
     if (track_num != curr_track)
-      Log_WarningPrintf("Mismatched TOC track number, expected %u but got %u", static_cast<u32>(curr_track), track_num);
+      Log_WarningFmt("Mismatched TOC track number, expected {} but got {}", curr_track, track_num);
 
     const bool is_audio_track = t.type == 0x01;
     const bool is_first_track = curr_track == 1;
@@ -643,14 +643,14 @@ bool CDImagePBP::OpenDisc(u32 index, Error* error)
     {
       if (!is_first_track || is_audio_track)
       {
-        Log_ErrorPrintf("Invalid TOC entry at index %u, user data (%u) should not start before pregap (%u)",
-                        static_cast<u32>(curr_track), userdata_start, pregap_start);
+        Log_ErrorFmt("Invalid TOC entry at index {}, user data ({}) should not start before pregap ({})", curr_track,
+                     userdata_start, pregap_start);
         return false;
       }
 
-      Log_WarningPrintf(
-        "Invalid TOC entry at index %u, user data (%u) should not start before pregap (%u), assuming not in file.",
-        static_cast<u32>(curr_track), userdata_start, pregap_start);
+      Log_WarningFmt(
+        "Invalid TOC entry at index {}, user data ({}) should not start before pregap ({}), assuming not in file.",
+        curr_track, userdata_start, pregap_start);
       pregap_start = 0;
       pregap_frames = userdata_start;
       pregap_sector_size = 0;
@@ -701,8 +701,7 @@ bool CDImagePBP::OpenDisc(u32 index, Error* error)
     {
       if (userdata_start >= m_lba_count)
       {
-        Log_ErrorPrintf("Last user data index on disc for TOC entry %u should not be 0 or less in length",
-                        static_cast<u32>(curr_track));
+        Log_ErrorFmt("Last user data index on disc for TOC entry {} should not be 0 or less in length", curr_track);
         return false;
       }
       userdata_index.length = m_lba_count - userdata_start;
@@ -716,7 +715,7 @@ bool CDImagePBP::OpenDisc(u32 index, Error* error)
 
       if (next_track_num != curr_track + 1 || next_track_start < userdata_start)
       {
-        Log_ErrorPrintf("Unable to calculate user data index length for TOC entry %u", static_cast<u32>(curr_track));
+        Log_ErrorFmt("Unable to calculate user data index length for TOC entry {}", curr_track);
         return false;
       }
 
@@ -809,9 +808,9 @@ bool CDImagePBP::DecompressBlock(const BlockInfo& block_info)
     return false;
 
   int err = inflate(&m_inflate_stream, Z_FINISH);
-  if (err != Z_STREAM_END)
+  if (err != Z_STREAM_END) [[unlikely]]
   {
-    Log_ErrorPrintf("Inflate error %d", err);
+    Log_ErrorFmt("Inflate error {}", err);
     return false;
   }
 
@@ -839,15 +838,15 @@ bool CDImagePBP::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_i
 
   BlockInfo& bi = m_blockinfo_table[requested_block];
 
-  if (bi.size == 0)
+  if (bi.size == 0) [[unlikely]]
   {
-    Log_ErrorPrintf("Invalid block %u requested", requested_block);
+    Log_ErrorFmt("Invalid block {} requested", requested_block);
     return false;
   }
 
-  if (m_current_block != requested_block && !DecompressBlock(bi))
+  if (m_current_block != requested_block && !DecompressBlock(bi)) [[unlikely]]
   {
-    Log_ErrorPrintf("Failed to decompress block %u", requested_block);
+    Log_ErrorFmt("Failed to decompress block {}", requested_block);
     return false;
   }
 
