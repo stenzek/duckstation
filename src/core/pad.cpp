@@ -203,15 +203,18 @@ bool Pad::DoStateController(StateWrapper& sw, u32 i)
     // UI notification portion is separated from emulation portion (intentional condition check redundancy)
     if (g_settings.load_devices_from_save_states)
     {
-      Host::AddFormattedOSDMessage(
-        10.0f, TRANSLATE("OSDMessage", "Save state contains controller type %s in port %u, but %s is used. Switching."),
-        state_cinfo ? state_cinfo->GetDisplayName() : "", i + 1u,
-        Controller::GetControllerInfo(controller_type)->GetDisplayName());
+      Host::AddOSDMessage(
+        fmt::format(TRANSLATE_FS("OSDMessage",
+                                 "Save state contains controller type {0} in port {1}, but {2} is used. Switching."),
+                    state_cinfo ? state_cinfo->GetDisplayName() : "", i + 1u,
+                    Controller::GetControllerInfo(controller_type)->GetDisplayName()),
+        Host::OSD_WARNING_DURATION);
     }
     else
     {
-      Host::AddFormattedOSDMessage(10.0f, TRANSLATE("OSDMessage", "Ignoring mismatched controller type %s in port %u."),
-                                   state_cinfo ? state_cinfo->GetDisplayName() : "", i + 1u);
+      Host::AddOSDMessage(
+        fmt::format(TRANSLATE_FS("OSDMessage", "Ignoring mismatched controller type {0} in port {1}."),
+                    state_cinfo ? state_cinfo->GetDisplayName() : "", i + 1u, Host::OSD_WARNING_DURATION));
     }
 
     DEV_LOG("Controller type mismatch in slot {}: state={}({}) ui={}({}) load_from_state={}", i + 1u,
