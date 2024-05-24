@@ -161341,6 +161341,8 @@ SCES-03697:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPVertexCache
   metadata:
     publisher: "Sony / 989 Studios"
     developer: "Eidetic, Inc"
@@ -161360,6 +161362,8 @@ SCES-03698:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPVertexCache
   metadata:
     publisher: "Sony / 989 Studios"
     developer: "Eidetic, Inc"
@@ -161379,6 +161383,8 @@ SCES-03699:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPVertexCache
   metadata:
     publisher: "Sony / 989 Studios"
     developer: "Eidetic, Inc"
@@ -161398,6 +161404,8 @@ SCES-03700:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPVertexCache
   metadata:
     publisher: "Sony / 989 Studios"
     developer: "Eidetic, Inc"
@@ -161420,6 +161428,8 @@ SCUS-94640:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPVertexCache
   metadata:
     publisher: "989 Studios"
     developer: "Eidetic, Inc"
@@ -161436,6 +161446,8 @@ SCUS-94640:
     linkCable: false
 SCUS-94661:
   name: "Syphon Filter 3 (USA) (Demo)"
+  traits:
+    - ForcePGXPVertexCache
 SCES-03701:
   name: "Syphon Filter 3 - Sentencia Final (Spain)"
   compatibility:
@@ -161444,6 +161456,8 @@ SCES-03701:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPVertexCache
   metadata:
     publisher: "Sony / 989 Studios"
     developer: "Eidetic, Inc"
@@ -161460,6 +161474,8 @@ SCES-03701:
     linkCable: false
 SCED-03780:
   name: "Syphon Filter 3 - Sentencia Final (Spain) (Demo)"
+  traits:
+    - ForcePGXPVertexCache
 SLPM-87041:
   name: "Söldnerschild Special [Koei Teiban Series]"
   controllers:
