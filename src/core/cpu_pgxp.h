@@ -12,7 +12,7 @@ void Shutdown();
 
 // -- GTE functions
 // Transforms
-void GTE_PushSXYZ2f(float x, float y, float z, u32 v);
+void GTE_RTPS(float x, float y, float z, u32 value);
 int GTE_NCLIP_valid(u32 sxy0, u32 sxy1, u32 sxy2);
 float GTE_NCLIP();
 

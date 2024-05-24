@@ -27,8 +27,8 @@ namespace {
 
 enum : u32
 {
-  VERTEX_CACHE_WIDTH = 0x800 * 2,
-  VERTEX_CACHE_HEIGHT = 0x800 * 2,
+  VERTEX_CACHE_WIDTH = 2048,
+  VERTEX_CACHE_HEIGHT = 2048,
   VERTEX_CACHE_SIZE = VERTEX_CACHE_WIDTH * VERTEX_CACHE_HEIGHT,
   PGXP_MEM_SIZE = (static_cast<u32>(Bus::RAM_8MB_SIZE) + static_cast<u32>(CPU::SCRATCHPAD_SIZE)) / 4,
   PGXP_MEM_SCRATCH_OFFSET = Bus::RAM_8MB_SIZE / 4,
@@ -70,8 +70,8 @@ union psx_value
 };
 } // namespace
 
-static void CacheVertex(s16 sx, s16 sy, const PGXP_value& vertex);
-static PGXP_value* GetCachedVertex(short sx, short sy);
+static void CacheVertex(u32 value, const PGXP_value& vertex);
+static PGXP_value* GetCachedVertex(u32 value);
 
 static float TruncateVertexPosition(float p);
 static bool IsWithinTolerance(float precise_x, float precise_y, int int_x, int int_y);
@@ -168,7 +168,7 @@ void CPU::PGXP::Reset()
   if (s_mem)
     std::memset(s_mem, 0, sizeof(PGXP_value) * PGXP_MEM_SIZE);
 
-  if (s_vertex_cache)
+  if (g_settings.gpu_pgxp_vertex_cache && s_vertex_cache)
     std::memset(s_vertex_cache, 0, sizeof(PGXP_value) * VERTEX_CACHE_SIZE);
 }
 
@@ -461,7 +461,7 @@ void CPU::PGXP::LogValueStr(SmallStringBase& str, const char* name, u32 rval, co
 
 #endif
 
-void CPU::PGXP::GTE_PushSXYZ2f(float x, float y, float z, u32 v)
+void CPU::PGXP::GTE_RTPS(float x, float y, float z, u32 value)
 {
   // push values down FIFO
   SXY0 = SXY1;
@@ -470,11 +470,11 @@ void CPU::PGXP::GTE_PushSXYZ2f(float x, float y, float z, u32 v)
   SXY2.x = x;
   SXY2.y = y;
   SXY2.z = z;
-  SXY2.value = v;
+  SXY2.value = value;
   SXY2.flags = VALID_ALL;
 
   if (g_settings.gpu_pgxp_vertex_cache)
-    CacheVertex(static_cast<s16>(Truncate16(v)), static_cast<s16>(Truncate16(v >> 16)), SXY2);
+    CacheVertex(value, SXY2);
 }
 
 #define VX(n) (psxRegs.CP2D.p[n << 1].sw.l)
@@ -583,24 +583,21 @@ void CPU::PGXP::CPU_SWC2(u32 instr, u32 addr, u32 rtVal)
   WriteMem(&g_state.pgxp_gte[idx], addr);
 }
 
-ALWAYS_INLINE_RELEASE void CPU::PGXP::CacheVertex(s16 sx, s16 sy, const PGXP_value& vertex)
+ALWAYS_INLINE_RELEASE void CPU::PGXP::CacheVertex(u32 value, const PGXP_value& vertex)
 {
-  if (sx >= -0x800 && sx <= 0x7ff && sy >= -0x800 && sy <= 0x7ff)
-  {
-    // Write vertex into cache
-    s_vertex_cache[(sy + 0x800) * VERTEX_CACHE_WIDTH + (sx + 0x800)] = vertex;
-  }
+  const s16 sx = static_cast<s16>(value & 0xFFFFu);
+  const s16 sy = static_cast<s16>(value >> 16);
+  DebugAssert(sx >= -1024 && sx <= 1023 && sy >= -1024 && sy <= 1023);
+  s_vertex_cache[(sy + 1024) * VERTEX_CACHE_WIDTH + (sx + 1024)] = vertex;
 }
 
-ALWAYS_INLINE_RELEASE CPU::PGXP_value* CPU::PGXP::GetCachedVertex(short sx, short sy)
+ALWAYS_INLINE_RELEASE CPU::PGXP_value* CPU::PGXP::GetCachedVertex(u32 value)
 {
-  if (sx >= -0x800 && sx <= 0x7ff && sy >= -0x800 && sy <= 0x7ff)
-  {
-    // Return pointer to cache entry
-    return &s_vertex_cache[(sy + 0x800) * VERTEX_CACHE_WIDTH + (sx + 0x800)];
-  }
-
-  return nullptr;
+  const s16 sx = static_cast<s16>(value & 0xFFFFu);
+  const s16 sy = static_cast<s16>(value >> 16);
+  return (sx >= -1024 && sx <= 1023 && sy >= -1024 && sy <= 1013) ?
+           &s_vertex_cache[(sy + 1024) * VERTEX_CACHE_WIDTH + (sx + 1024)] :
+           nullptr;
 }
 
 ALWAYS_INLINE_RELEASE float CPU::PGXP::TruncateVertexPosition(float p)
@@ -646,11 +643,7 @@ bool CPU::PGXP::GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, i
 
   if (g_settings.gpu_pgxp_vertex_cache)
   {
-    const short psx_x = (short)(value & 0xFFFFu);
-    const short psx_y = (short)(value >> 16);
-
-    // Look in cache for valid vertex
-    vert = GetCachedVertex(psx_x, psx_y);
+    vert = GetCachedVertex(value);
     if (vert && (vert->flags & VALID_XY) == VALID_XY)
     {
       *out_x = TruncateVertexPosition(vert->x) + static_cast<float>(xOffs);
