@@ -276,10 +276,11 @@ bool GPUDevice::IsSameRenderAPI(RenderAPI lhs, RenderAPI rhs)
 }
 
 bool GPUDevice::Create(std::string_view adapter, std::string_view shader_cache_path, u32 shader_cache_version,
-                       bool debug_device, GPUVSyncMode vsync, bool threaded_presentation,
+                       bool debug_device, GPUVSyncMode vsync, bool allow_present_throttle, bool threaded_presentation,
                        std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features, Error* error)
 {
   m_vsync_mode = vsync;
+  m_allow_present_throttle = allow_present_throttle;
   m_debug_device = debug_device;
 
   if (!AcquireWindow(true))
@@ -970,11 +971,6 @@ void GPUDevice::TrimTexturePool()
   }
 }
 
-void GPUDevice::SetDisplayMaxFPS(float max_fps)
-{
-  m_display_frame_interval = (max_fps > 0.0f) ? (1.0f / max_fps) : 0.0f;
-}
-
 bool GPUDevice::ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u32 new_height, GPUTexture::Type type,
                               GPUTexture::Format format, bool preserve /* = true */)
 {
@@ -1015,14 +1011,18 @@ bool GPUDevice::ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u
   return true;
 }
 
-bool GPUDevice::ShouldSkipDisplayingFrame()
+bool GPUDevice::ShouldSkipPresentingFrame()
 {
-  if (m_display_frame_interval == 0.0f)
+  // Only needed with FIFO. But since we're so fast, we allow it always.
+  if (!m_allow_present_throttle)
     return false;
+
+  const float throttle_rate = (m_window_info.surface_refresh_rate > 0.0f) ? m_window_info.surface_refresh_rate : 60.0f;
+  const float throttle_period = 1.0f / throttle_rate;
 
   const u64 now = Common::Timer::GetCurrentValue();
   const double diff = Common::Timer::ConvertValueToSeconds(now - m_last_frame_displayed_time);
-  if (diff < m_display_frame_interval)
+  if (diff < throttle_period)
     return true;
 
   m_last_frame_displayed_time = now;

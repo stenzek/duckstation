@@ -801,7 +801,7 @@ u32 D3D12Device::GetSwapChainBufferCount() const
 {
   // With vsync off, we only need two buffers. Same for blocking vsync.
   // With triple buffering, we need three.
-  return (m_vsync_mode == GPUVSyncMode::TripleBuffered) ? 3 : 2;
+  return (m_vsync_mode == GPUVSyncMode::Mailbox) ? 3 : 2;
 }
 
 bool D3D12Device::CreateSwapChain()
@@ -1084,8 +1084,9 @@ std::string D3D12Device::GetDriverInfo() const
   return ret;
 }
 
-void D3D12Device::SetVSyncMode(GPUVSyncMode mode)
+void D3D12Device::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle)
 {
+  m_allow_present_throttle = allow_present_throttle;
   if (m_vsync_mode == mode)
     return;
 
@@ -1158,13 +1159,9 @@ void D3D12Device::SubmitPresent()
 {
   DebugAssert(m_swap_chain);
 
-  // DirectX has no concept of tear-or-sync. I guess if we measured times ourselves, we could implement it.
-  if (IsVSyncModeBlocking())
-    m_swap_chain->Present(1, 0);
-  else if (m_using_allow_tearing) // Disabled or VRR, VRR requires the allow tearing flag :/
-    m_swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
-  else
-    m_swap_chain->Present(0, 0);
+  const UINT sync_interval = static_cast<UINT>(m_vsync_mode == GPUVSyncMode::FIFO);
+  const UINT flags = (m_vsync_mode == GPUVSyncMode::Disabled && m_using_allow_tearing) ? DXGI_PRESENT_ALLOW_TEARING : 0;
+  m_swap_chain->Present(sync_interval, flags);
 }
 
 #ifdef _DEBUG

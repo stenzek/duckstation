@@ -238,8 +238,12 @@ void OpenGLDevice::InsertDebugMessage(const char* msg)
 #endif
 }
 
-void OpenGLDevice::SetVSyncMode(GPUVSyncMode mode)
+void OpenGLDevice::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle)
 {
+  // OpenGL does not support Mailbox.
+  mode = (mode == GPUVSyncMode::Mailbox) ? GPUVSyncMode::FIFO : mode;
+  m_allow_present_throttle = allow_present_throttle;
+
   if (m_vsync_mode == mode)
     return;
 
@@ -286,6 +290,7 @@ bool OpenGLDevice::CreateDevice(std::string_view adapter, bool threaded_presenta
 
   // Is this needed?
   m_window_info = m_gl_context->GetWindowInfo();
+  m_vsync_mode = (m_vsync_mode == GPUVSyncMode::Mailbox) ? GPUVSyncMode::FIFO : m_vsync_mode;
 
   const bool opengl_is_available =
     ((!m_gl_context->IsGLES() && (GLAD_GL_VERSION_3_0 || GLAD_GL_ARB_uniform_buffer_object)) ||
@@ -583,7 +588,7 @@ void OpenGLDevice::SetSwapInterval()
     return;
 
   // Window framebuffer has to be bound to call SetSwapInterval.
-  const s32 interval = (m_vsync_mode >= GPUVSyncMode::DoubleBuffered) ? 1 : 0;
+  const s32 interval = static_cast<s32>(m_vsync_mode == GPUVSyncMode::FIFO);
   GLint current_fbo = 0;
   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);

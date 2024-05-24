@@ -12,6 +12,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <utility>
 
 class ByteStream;
 class CDImage;
@@ -463,6 +464,7 @@ bool IsRunningAtNonStandardSpeed();
 
 /// Returns true if vsync should be used.
 GPUVSyncMode GetEffectiveVSyncMode();
+bool ShouldAllowPresentThrottle();
 
 /// Quick switch between software and hardware rendering.
 void ToggleSoftwareRendering();

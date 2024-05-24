@@ -29,6 +29,9 @@ public:
                                                  VkPresentModeKHR present_mode,
                                                  std::optional<bool> exclusive_fullscreen_control);
 
+  // Determines present mode to use.
+  static bool SelectPresentMode(VkSurfaceKHR surface, GPUVSyncMode* vsync_mode, VkPresentModeKHR* present_mode);
+
   ALWAYS_INLINE VkSurfaceKHR GetSurface() const { return m_surface; }
   ALWAYS_INLINE VkSwapchainKHR GetSwapChain() const { return m_swap_chain; }
   ALWAYS_INLINE const VkSwapchainKHR* GetSwapChainPtr() const { return &m_swap_chain; }
@@ -61,11 +64,8 @@ public:
   }
 
   // Returns true if the current present mode is synchronizing (adaptive or hard).
-  ALWAYS_INLINE bool IsPresentModeSynchronizing() const
-  {
-    return (m_actual_present_mode == VK_PRESENT_MODE_FIFO_KHR ||
-            m_actual_present_mode == VK_PRESENT_MODE_FIFO_RELAXED_KHR);
-  }
+  ALWAYS_INLINE bool IsPresentModeSynchronizing() const { return (m_present_mode == VK_PRESENT_MODE_FIFO_KHR); }
+  ALWAYS_INLINE VkPresentModeKHR GetPresentMode() const { return m_present_mode; }
 
   VkResult AcquireNextImage();
   void ReleaseCurrentImage();
@@ -74,14 +74,13 @@ public:
   bool ResizeSwapChain(u32 new_width = 0, u32 new_height = 0, float new_scale = 1.0f);
 
   // Change vsync enabled state. This may fail as it causes a swapchain recreation.
-  bool SetRequestedPresentMode(VkPresentModeKHR mode);
+  bool SetPresentMode(VkPresentModeKHR present_mode);
 
 private:
   VulkanSwapChain(const WindowInfo& wi, VkSurfaceKHR surface, VkPresentModeKHR present_mode,
                   std::optional<bool> exclusive_fullscreen_control);
 
   static std::optional<VkSurfaceFormatKHR> SelectSurfaceFormat(VkSurfaceKHR surface);
-  static std::optional<VkPresentModeKHR> SelectPresentMode(VkSurfaceKHR surface, VkPresentModeKHR requested_mode);
 
   bool CreateSwapChain();
   void DestroySwapChain();
@@ -108,15 +107,14 @@ private:
   VkSurfaceKHR m_surface = VK_NULL_HANDLE;
   VkSwapchainKHR m_swap_chain = VK_NULL_HANDLE;
 
-  u32 m_current_image = 0;
-  u32 m_current_semaphore = 0;
-
   std::vector<Image> m_images;
   std::vector<ImageSemaphores> m_semaphores;
 
+  u32 m_current_image = 0;
+  u32 m_current_semaphore = 0;
+
   VkFormat m_format = VK_FORMAT_UNDEFINED;
-  VkPresentModeKHR m_requested_present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
-  VkPresentModeKHR m_actual_present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+  VkPresentModeKHR m_present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
 
   std::optional<VkResult> m_image_acquire_result;
   std::optional<bool> m_exclusive_fullscreen_control;

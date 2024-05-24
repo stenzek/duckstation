@@ -263,7 +263,7 @@ public:
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;
 
-  void SetVSyncMode(GPUVSyncMode mode) override;
+  void SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle) override;
 
   bool BeginPresent(bool skip_present) override;
   void EndPresent(bool explicit_submit) override;

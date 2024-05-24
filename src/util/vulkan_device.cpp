@@ -436,19 +436,6 @@ bool VulkanDevice::SelectDeviceFeatures()
   return true;
 }
 
-VkPresentModeKHR VulkanDevice::SelectPresentMode() const
-{
-  // Use mailbox/triple buffering for "normal" vsync, due to PAL refresh rate mismatch.
-  // Otherwise, use FIFO when syncing to host, because we don't want to return early.
-  static constexpr std::array<VkPresentModeKHR, static_cast<size_t>(GPUVSyncMode::Count)> modes = {{
-    VK_PRESENT_MODE_IMMEDIATE_KHR, // Disabled
-    VK_PRESENT_MODE_FIFO_KHR,      // DoubleBuffered
-    VK_PRESENT_MODE_MAILBOX_KHR,   // TripleBuffered
-  }};
-
-  return modes[static_cast<size_t>(m_vsync_mode)];
-}
-
 bool VulkanDevice::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer)
 {
   u32 queue_family_count;
@@ -2052,8 +2039,9 @@ bool VulkanDevice::CreateDevice(std::string_view adapter, bool threaded_presenta
 
   if (surface != VK_NULL_HANDLE)
   {
-    m_swap_chain = VulkanSwapChain::Create(m_window_info, surface, SelectPresentMode(), m_exclusive_fullscreen_control);
-    if (!m_swap_chain)
+    VkPresentModeKHR present_mode;
+    if (!VulkanSwapChain::SelectPresentMode(surface, &m_vsync_mode, &present_mode) ||
+        !(m_swap_chain = VulkanSwapChain::Create(m_window_info, surface, present_mode, m_exclusive_fullscreen_control)))
     {
       Error::SetStringView(error, "Failed to create swap chain");
       return false;
@@ -2273,8 +2261,9 @@ bool VulkanDevice::UpdateWindow()
     return false;
   }
 
-  m_swap_chain = VulkanSwapChain::Create(m_window_info, surface, SelectPresentMode(), m_exclusive_fullscreen_control);
-  if (!m_swap_chain)
+  VkPresentModeKHR present_mode;
+  if (!VulkanSwapChain::SelectPresentMode(surface, &m_vsync_mode, &present_mode) ||
+      !(m_swap_chain = VulkanSwapChain::Create(m_window_info, surface, present_mode, m_exclusive_fullscreen_control)))
   {
     ERROR_LOG("Failed to create swap chain");
     VulkanSwapChain::DestroyVulkanSurface(m_instance, &m_window_info, surface);
@@ -2349,18 +2338,32 @@ std::string VulkanDevice::GetDriverInfo() const
   return ret;
 }
 
-void VulkanDevice::SetVSyncMode(GPUVSyncMode mode)
+void VulkanDevice::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle)
 {
+  m_allow_present_throttle = allow_present_throttle;
+  if (!m_swap_chain)
+  {
+    // For when it is re-created.
+    m_vsync_mode = mode;
+    return;
+  }
+
+  VkPresentModeKHR present_mode;
+  if (!VulkanSwapChain::SelectPresentMode(m_swap_chain->GetSurface(), &mode, &present_mode))
+  {
+    ERROR_LOG("Ignoring vsync mode change.");
+    return;
+  }
+
+  // Actually changed? If using a fallback, it might not have.
   if (m_vsync_mode == mode)
     return;
 
   m_vsync_mode = mode;
-  if (!m_swap_chain)
-    return;
 
   // This swap chain should not be used by the current buffer, thus safe to destroy.
   WaitForGPUIdle();
-  if (!m_swap_chain->SetRequestedPresentMode(SelectPresentMode()))
+  if (!m_swap_chain->SetPresentMode(present_mode))
   {
     Panic("Failed to update swap chain present mode.");
     m_swap_chain.reset();

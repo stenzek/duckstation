@@ -201,7 +201,7 @@ u32 D3D11Device::GetSwapChainBufferCount() const
 {
   // With vsync off, we only need two buffers. Same for blocking vsync.
   // With triple buffering, we need three.
-  return (m_vsync_mode == GPUVSyncMode::TripleBuffered) ? 3 : 2;
+  return (m_vsync_mode == GPUVSyncMode::Mailbox) ? 3 : 2;
 }
 
 bool D3D11Device::CreateSwapChain()
@@ -588,8 +588,10 @@ void D3D11Device::InvalidateRenderTarget(GPUTexture* t)
     static_cast<D3D11Texture*>(t)->CommitClear(m_context.Get());
 }
 
-void D3D11Device::SetVSyncMode(GPUVSyncMode mode)
+void D3D11Device::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle)
 {
+  m_allow_present_throttle = allow_present_throttle;
+
   if (m_vsync_mode == mode)
     return;
 
@@ -634,7 +636,7 @@ bool D3D11Device::BeginPresent(bool skip_present)
   // This blows our our GPU usage number considerably, so read the timestamp before the final blit
   // in this configuration. It does reduce accuracy a little, but better than seeing 100% all of
   // the time, when it's more like a couple of percent.
-  if (IsVSyncModeBlocking() && m_gpu_timing_enabled)
+  if (m_vsync_mode == GPUVSyncMode::FIFO && m_gpu_timing_enabled)
     PopTimestampQuery();
 
   static constexpr float clear_color[4] = {0.0f, 0.0f, 0.0f, 1.0f};
@@ -652,16 +654,12 @@ void D3D11Device::EndPresent(bool explicit_present)
   DebugAssert(!explicit_present);
   DebugAssert(m_num_current_render_targets == 0 && !m_current_depth_target);
 
-  if (!IsVSyncModeBlocking() && m_gpu_timing_enabled)
+  if (m_vsync_mode != GPUVSyncMode::FIFO && m_gpu_timing_enabled)
     PopTimestampQuery();
 
-  // DirectX has no concept of tear-or-sync. I guess if we measured times ourselves, we could implement it.
-  if (IsVSyncModeBlocking())
-    m_swap_chain->Present(1, 0);
-  else if (m_using_allow_tearing) // Disabled or VRR, VRR requires the allow tearing flag :/
-    m_swap_chain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
-  else
-    m_swap_chain->Present(0, 0);
+  const UINT sync_interval = static_cast<UINT>(m_vsync_mode == GPUVSyncMode::FIFO);
+  const UINT flags = (m_vsync_mode == GPUVSyncMode::Disabled && m_using_allow_tearing) ? DXGI_PRESENT_ALLOW_TEARING : 0;
+  m_swap_chain->Present(sync_interval, flags);
 
   if (m_gpu_timing_enabled)
     KickTimestampQuery();

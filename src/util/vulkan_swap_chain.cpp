@@ -72,7 +72,7 @@ static const char* PresentModeToString(VkPresentModeKHR mode)
 
 VulkanSwapChain::VulkanSwapChain(const WindowInfo& wi, VkSurfaceKHR surface, VkPresentModeKHR present_mode,
                                  std::optional<bool> exclusive_fullscreen_control)
-  : m_window_info(wi), m_surface(surface), m_requested_present_mode(present_mode),
+  : m_window_info(wi), m_surface(surface), m_present_mode(present_mode),
     m_exclusive_fullscreen_control(exclusive_fullscreen_control)
 {
 }
@@ -260,8 +260,7 @@ std::optional<VkSurfaceFormatKHR> VulkanSwapChain::SelectSurfaceFormat(VkSurface
   return std::nullopt;
 }
 
-std::optional<VkPresentModeKHR> VulkanSwapChain::SelectPresentMode(VkSurfaceKHR surface,
-                                                                   VkPresentModeKHR requested_mode)
+bool VulkanSwapChain::SelectPresentMode(VkSurfaceKHR surface, GPUVSyncMode* vsync_mode, VkPresentModeKHR* present_mode)
 {
   VulkanDevice& dev = VulkanDevice::GetInstance();
   VkResult res;
@@ -270,7 +269,7 @@ std::optional<VkPresentModeKHR> VulkanSwapChain::SelectPresentMode(VkSurfaceKHR 
   if (res != VK_SUCCESS || mode_count == 0)
   {
     LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceSurfaceFormatsKHR failed: ");
-    return std::nullopt;
+    return false;
   }
 
   std::vector<VkPresentModeKHR> present_modes(mode_count);
@@ -279,43 +278,71 @@ std::optional<VkPresentModeKHR> VulkanSwapChain::SelectPresentMode(VkSurfaceKHR 
   Assert(res == VK_SUCCESS);
 
   // Checks if a particular mode is supported, if it is, returns that mode.
-  auto CheckForMode = [&present_modes](VkPresentModeKHR check_mode) {
+  const auto CheckForMode = [&present_modes](VkPresentModeKHR check_mode) {
     auto it = std::find_if(present_modes.begin(), present_modes.end(),
                            [check_mode](VkPresentModeKHR mode) { return check_mode == mode; });
     return it != present_modes.end();
   };
 
-  // Use preferred mode if available.
-  VkPresentModeKHR selected_mode;
-  if (CheckForMode(requested_mode))
+  switch (*vsync_mode)
   {
-    selected_mode = requested_mode;
-  }
-  else if (requested_mode == VK_PRESENT_MODE_IMMEDIATE_KHR && CheckForMode(VK_PRESENT_MODE_MAILBOX_KHR))
-  {
-    // Prefer mailbox over FIFO for vsync-off, since we don't want to block.
-    selected_mode = VK_PRESENT_MODE_MAILBOX_KHR;
-  }
-  else
-  {
-    // Fallback to FIFO if we we can't use mailbox. This should never fail, FIFO is mandated.
-    selected_mode = VK_PRESENT_MODE_FIFO_KHR;
+    case GPUVSyncMode::Disabled:
+    {
+      // Prefer immediate > mailbox > fifo.
+      if (CheckForMode(VK_PRESENT_MODE_IMMEDIATE_KHR))
+      {
+        *present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+      }
+      else if (CheckForMode(VK_PRESENT_MODE_MAILBOX_KHR))
+      {
+        WARNING_LOG("Immediate not supported for vsync-disabled, using mailbox.");
+        *present_mode = VK_PRESENT_MODE_MAILBOX_KHR;
+      }
+      else
+      {
+        WARNING_LOG("Mailbox not supported for vsync-disabled, using FIFO.");
+        *present_mode = VK_PRESENT_MODE_FIFO_KHR;
+        *vsync_mode = GPUVSyncMode::FIFO;
+      }
+    }
+    break;
+
+    case GPUVSyncMode::FIFO:
+    {
+      // FIFO is always available.
+      *present_mode = VK_PRESENT_MODE_FIFO_KHR;
+    }
+    break;
+
+    case GPUVSyncMode::Mailbox:
+    {
+      // Mailbox > fifo.
+      if (CheckForMode(VK_PRESENT_MODE_MAILBOX_KHR))
+      {
+        *present_mode = VK_PRESENT_MODE_MAILBOX_KHR;
+      }
+      else
+      {
+        WARNING_LOG("Mailbox not supported for vsync-mailbox, using FIFO.");
+        *present_mode = VK_PRESENT_MODE_FIFO_KHR;
+        *vsync_mode = GPUVSyncMode::FIFO;
+      }
+    }
+    break;
+
+      DefaultCaseIsUnreachable()
   }
 
-  DEV_LOG("Preferred present mode: {}, selected: {}", PresentModeToString(requested_mode),
-          PresentModeToString(selected_mode));
-
-  return selected_mode;
+  return true;
 }
 
 bool VulkanSwapChain::CreateSwapChain()
 {
   VulkanDevice& dev = VulkanDevice::GetInstance();
 
-  // Select swap chain format and present mode
+  // Select swap chain format
   std::optional<VkSurfaceFormatKHR> surface_format = SelectSurfaceFormat(m_surface);
-  std::optional<VkPresentModeKHR> present_mode = SelectPresentMode(m_surface, m_requested_present_mode);
-  if (!surface_format.has_value() || !present_mode.has_value())
+  if (!surface_format.has_value())
     return false;
 
   // Look up surface properties to determine image count and dimensions
@@ -331,9 +358,9 @@ bool VulkanSwapChain::CreateSwapChain()
   // Select number of images in swap chain, we prefer one buffer in the background to work on in triple-buffered mode.
   // maxImageCount can be zero, in which case there isn't an upper limit on the number of buffers.
   u32 image_count = std::clamp<u32>(
-    (m_requested_present_mode == VK_PRESENT_MODE_MAILBOX_KHR) ? 3 : 2, surface_capabilities.minImageCount,
+    (m_present_mode == VK_PRESENT_MODE_MAILBOX_KHR) ? 3 : 2, surface_capabilities.minImageCount,
     (surface_capabilities.maxImageCount == 0) ? std::numeric_limits<u32>::max() : surface_capabilities.maxImageCount);
-  DEV_LOG("Creating a swap chain with {} images", image_count);
+  DEV_LOG("Creating a swap chain with {} images in present mode {}", image_count, PresentModeToString(m_present_mode));
 
   // Determine the dimensions of the swap chain. Values of -1 indicate the size we specify here
   // determines window size? Android sometimes lags updating currentExtent, so don't use it.
@@ -392,7 +419,7 @@ bool VulkanSwapChain::CreateSwapChain()
                                               nullptr,
                                               transform,
                                               alpha,
-                                              present_mode.value(),
+                                              m_present_mode,
                                               VK_TRUE,
                                               old_swap_chain};
   std::array<uint32_t, 2> indices = {{
@@ -453,7 +480,6 @@ bool VulkanSwapChain::CreateSwapChain()
   m_window_info.surface_width = std::max(1u, size.width);
   m_window_info.surface_height = std::max(1u, size.height);
   m_window_info.surface_format = VulkanDevice::GetFormatForVkFormat(surface_format->format);
-  m_actual_present_mode = present_mode.value();
   if (m_window_info.surface_format == GPUTexture::Format::Unknown)
   {
     ERROR_LOG("Unknown Vulkan surface format {}", static_cast<u32>(surface_format->format));
@@ -624,12 +650,12 @@ bool VulkanSwapChain::ResizeSwapChain(u32 new_width, u32 new_height, float new_s
   return true;
 }
 
-bool VulkanSwapChain::SetRequestedPresentMode(VkPresentModeKHR mode)
+bool VulkanSwapChain::SetPresentMode(VkPresentModeKHR present_mode)
 {
-  if (m_requested_present_mode == mode)
+  if (m_present_mode == present_mode)
     return true;
 
-  m_requested_present_mode = mode;
+  m_present_mode = present_mode;
 
   // Recreate the swap chain with the new present mode.
   VERBOSE_LOG("Recreating swap chain to change present mode.");

@@ -115,14 +115,18 @@ bool MetalDevice::HasSurface() const
   return (m_layer != nil);
 }
 
-void MetalDevice::SetVSyncMode(GPUVSyncMode mode)
+void MetalDevice::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle)
 {
+  // Metal does not support mailbox mode.
+  mode = (mode == GPUVSyncMode::Mailbox) ? GPUVSyncMode::FIFO : mode;
+  m_allow_present_throttle = allow_present_throttle;
+
   if (m_vsync_mode == mode)
     return;
 
   m_vsync_mode = mode;
   if (m_layer != nil)
-    [m_layer setDisplaySyncEnabled:m_vsync_mode >= GPUVSyncMode::DoubleBuffered];
+    [m_layer setDisplaySyncEnabled:m_vsync_mode == GPUVSyncMode::FIFO];
 }
 
 bool MetalDevice::CreateDevice(std::string_view adapter, bool threaded_presentation,
@@ -396,7 +400,9 @@ bool MetalDevice::CreateLayer()
       }
     });
 
-    [m_layer setDisplaySyncEnabled:m_vsync_mode >= GPUVSyncMode::DoubleBuffered];
+    // Metal does not support mailbox mode.
+    m_vsync_mode = (m_vsync_mode == GPUVSyncMode::Mailbox) ? GPUVSyncMode::FIFO : m_vsync_mode;
+    [m_layer setDisplaySyncEnabled:m_vsync_mode == GPUVSyncMode::FIFO];
 
     DebugAssert(m_layer_pass_desc == nil);
     m_layer_pass_desc = [[MTLRenderPassDescriptor renderPassDescriptor] retain];

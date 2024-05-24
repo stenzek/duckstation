@@ -39,8 +39,8 @@ enum class RenderAPI : u32
 enum class GPUVSyncMode : u8
 {
   Disabled,
-  DoubleBuffered,
-  TripleBuffered,
+  FIFO,
+  Mailbox,
   Count
 };
 
@@ -581,8 +581,8 @@ public:
   virtual RenderAPI GetRenderAPI() const = 0;
 
   bool Create(std::string_view adapter, std::string_view shader_cache_path, u32 shader_cache_version, bool debug_device,
-              GPUVSyncMode vsync, bool threaded_presentation, std::optional<bool> exclusive_fullscreen_control,
-              FeatureMask disabled_features, Error* error);
+              GPUVSyncMode vsync, bool allow_present_throttle, bool threaded_presentation,
+              std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features, Error* error);
   void Destroy();
 
   virtual bool HasSurface() const = 0;
@@ -681,8 +681,8 @@ public:
   void RenderImGui();
 
   ALWAYS_INLINE GPUVSyncMode GetVSyncMode() const { return m_vsync_mode; }
-  ALWAYS_INLINE bool IsVSyncModeBlocking() const { return (m_vsync_mode >= GPUVSyncMode::DoubleBuffered); }
-  virtual void SetVSyncMode(GPUVSyncMode mode) = 0;
+  ALWAYS_INLINE bool IsVSyncModeBlocking() const { return (m_vsync_mode == GPUVSyncMode::FIFO); }
+  virtual void SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle) = 0;
 
   ALWAYS_INLINE bool IsDebugDevice() const { return m_debug_device; }
   ALWAYS_INLINE size_t GetVRAMUsage() const { return s_total_vram_usage; }
@@ -690,10 +690,9 @@ public:
   bool UpdateImGuiFontTexture();
   bool UsesLowerLeftOrigin() const;
   static Common::Rectangle<s32> FlipToLowerLeft(const Common::Rectangle<s32>& rc, s32 target_height);
-  void SetDisplayMaxFPS(float max_fps);
   bool ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u32 new_height, GPUTexture::Type type,
                      GPUTexture::Format format, bool preserve = true);
-  bool ShouldSkipDisplayingFrame();
+  bool ShouldSkipPresentingFrame();
   void ThrottlePresentation();
 
   virtual bool SupportsTextureFormat(GPUTexture::Format format) const = 0;
@@ -736,6 +735,7 @@ protected:
   u32 m_max_multisamples = 0;
 
   WindowInfo m_window_info;
+  u64 m_last_frame_displayed_time = 0;
 
   GPUShaderCache m_shader_cache;
 
@@ -793,14 +793,11 @@ private:
   size_t m_pool_vram_usage = 0;
   u32 m_texture_pool_counter = 0;
 
-  // TODO: Move out.
-  u64 m_last_frame_displayed_time = 0;
-  float m_display_frame_interval = 0.0f;
-
 protected:
   static Statistics s_stats;
 
   GPUVSyncMode m_vsync_mode = GPUVSyncMode::Disabled;
+  bool m_allow_present_throttle = false;
   bool m_gpu_timing_enabled = false;
   bool m_debug_device = false;
 };
