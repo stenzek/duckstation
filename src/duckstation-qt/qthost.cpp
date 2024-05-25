@@ -1770,7 +1770,7 @@ void EmuThread::run()
   moveToThread(m_ui_thread);
 }
 
-void Host::BeginPresentFrame()
+void Host::FrameDone()
 {
 }
 

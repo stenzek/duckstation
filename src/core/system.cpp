@@ -1918,6 +1918,8 @@ void System::FrameDone()
   PollDiscordPresence();
 #endif
 
+  Host::FrameDone();
+
   if (s_frame_step_request)
   {
     s_frame_step_request = false;
@@ -2847,8 +2849,7 @@ void System::UpdateSpeedLimiterState()
                      g_settings.turbo_speed :
                      (s_fast_forward_enabled ? g_settings.fast_forward_speed : g_settings.emulation_speed);
   s_throttler_enabled = (s_target_speed != 0.0f);
-  s_optimal_frame_pacing = (s_throttler_enabled && g_settings.display_optimal_frame_pacing) ||
-                           g_gpu_device->GetWindowInfo().IsSurfaceless(); // surfaceless check for regtest
+  s_optimal_frame_pacing = (s_throttler_enabled && g_settings.display_optimal_frame_pacing);
   s_skip_presenting_duplicate_frames = s_throttler_enabled && g_settings.display_skip_presenting_duplicate_frames;
   s_pre_frame_sleep = s_optimal_frame_pacing && g_settings.display_pre_frame_sleep;
   s_can_sync_to_host = false;
@@ -5153,8 +5154,6 @@ void System::HostDisplayResized()
 
 bool System::PresentDisplay(bool skip_present, bool explicit_present)
 {
-  Host::BeginPresentFrame();
-
   // acquire for IO.MousePos.
   std::atomic_thread_fence(std::memory_order_acquire);
 

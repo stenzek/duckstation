@@ -345,7 +345,7 @@ void Host::ReleaseRenderWindow()
   //
 }
 
-void Host::BeginPresentFrame()
+void Host::FrameDone()
 {
   const u32 frame = System::GetFrameNumber();
   if (s_frame_dump_interval > 0 && (s_frame_dump_interval == 1 || (frame % s_frame_dump_interval) == 0))

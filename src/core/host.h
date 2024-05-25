@@ -99,8 +99,8 @@ void ResizeDisplayWindow(s32 width, s32 height, float scale);
 /// Destroys any active rendering device.
 void ReleaseGPUDevice();
 
-/// Called before drawing the OSD and other display elements.
-void BeginPresentFrame();
+/// Called at the end of the frame, before presentation.
+void FrameDone();
 
 namespace Internal {
 /// Retrieves the base settings layer. Must call with lock held.
