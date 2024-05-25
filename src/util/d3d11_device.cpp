@@ -787,6 +787,11 @@ void D3D11Device::PopTimestampQuery()
         m_read_timestamp_query = (m_read_timestamp_query + 1) % NUM_TIMESTAMP_QUERIES;
         m_waiting_timestamp_queries--;
       }
+      else
+      {
+        // Data not ready yet.
+        break;
+      }
     }
   }
 
