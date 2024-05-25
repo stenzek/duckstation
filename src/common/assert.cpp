@@ -1,7 +1,8 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "assert.h"
+#include "crash_handler.h"
 #include <cstdio>
 #include <cstdlib>
 #include <mutex>
@@ -84,7 +85,7 @@ void Y_OnAssertFailed(const char* szMessage, const char* szFunction, const char*
   FreezeThreads(&pHandle);
 
   char szMsg[512];
-  std::snprintf(szMsg, sizeof(szMsg), "%s in function %s (%s:%u)", szMessage, szFunction, szFile, uLine);
+  std::snprintf(szMsg, sizeof(szMsg), "%s in function %s (%s:%u)\n", szMessage, szFunction, szFile, uLine);
 
 #if defined(_WIN32)
   SetConsoleTextAttribute(GetStdHandle(STD_ERROR_HANDLE), FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
@@ -93,19 +94,25 @@ void Y_OnAssertFailed(const char* szMessage, const char* szFunction, const char*
 
   std::snprintf(
     szMsg, sizeof(szMsg),
-    "%s in function %s (%s:%u)\n\nPress Abort to exit, Retry to break to debugger, or Ignore to attempt to continue.",
+    "%s in function %s (%s:%u)\nPress Abort to exit, Retry to break to debugger, or Ignore to attempt to continue.",
     szMessage, szFunction, szFile, uLine);
 
   int result = MessageBoxA(NULL, szMsg, NULL, MB_ABORTRETRYIGNORE | MB_ICONERROR);
   if (result == IDRETRY)
+  {
     __debugbreak();
+  }
   else if (result != IDIGNORE)
+  {
+    CrashHandler::WriteDumpForCaller();
     TerminateProcess(GetCurrentProcess(), 0xBAADC0DE);
+  }
 #else
-  fputs(szMsg, stderr);
-  fputs("\nAborting application.\n", stderr);
-  fflush(stderr);
-  abort();
+  std::fputs(szMsg, stderr);
+  CrashHandler::WriteDumpForCaller();
+  std::fputs("Aborting application.\n", stderr);
+  std::fflush(stderr);
+  std::abort();
 #endif
 
   ResumeThreads(pHandle);
@@ -119,7 +126,7 @@ void Y_OnAssertFailed(const char* szMessage, const char* szFunction, const char*
   FreezeThreads(&pHandle);
 
   char szMsg[512];
-  std::snprintf(szMsg, sizeof(szMsg), "%s in function %s (%s:%u)", szMessage, szFunction, szFile, uLine);
+  std::snprintf(szMsg, sizeof(szMsg), "%s in function %s (%s:%u)\n", szMessage, szFunction, szFile, uLine);
 
 #if defined(_WIN32)
   SetConsoleTextAttribute(GetStdHandle(STD_ERROR_HANDLE), FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
@@ -127,20 +134,23 @@ void Y_OnAssertFailed(const char* szMessage, const char* szFunction, const char*
   OutputDebugStringA(szMsg);
 
   std::snprintf(szMsg, sizeof(szMsg),
-                "%s in function %s (%s:%u)\n\nDo you want to attempt to break into a debugger? Pressing Cancel will "
+                "%s in function %s (%s:%u)\nDo you want to attempt to break into a debugger? Pressing Cancel will "
                 "abort the application.",
                 szMessage, szFunction, szFile, uLine);
 
   int result = MessageBoxA(NULL, szMsg, NULL, MB_OKCANCEL | MB_ICONERROR);
   if (result == IDOK)
     __debugbreak();
+  else
+    CrashHandler::WriteDumpForCaller();
 
   TerminateProcess(GetCurrentProcess(), 0xBAADC0DE);
 #else
-  fputs(szMsg, stderr);
-  fputs("\nAborting application.\n", stderr);
-  fflush(stderr);
-  abort();
+  std::fputs(szMsg, stderr);
+  CrashHandler::WriteDumpForCaller();
+  std::fputs("Aborting application.\n", stderr);
+  std::fflush(stderr);
+  std::abort();
 #endif
 
   ResumeThreads(pHandle);
