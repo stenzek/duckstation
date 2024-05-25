@@ -72,6 +72,7 @@
     <ClInclude Include="opengl_context_egl_x11.h" />
     <ClInclude Include="opengl_context_wgl.h" />
     <ClInclude Include="image.h" />
+    <ClInclude Include="sockets.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jit_code_buffer.cpp" />
@@ -153,6 +154,7 @@
     <ClCompile Include="opengl_context_wgl.cpp" />
     <ClCompile Include="image.cpp" />
     <ClCompile Include="sdl_audio_stream.cpp" />
+    <ClCompile Include="sockets.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="metal_shaders.metal" />

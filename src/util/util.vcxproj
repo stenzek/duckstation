@@ -87,6 +87,7 @@
     <ClInclude Include="sdl_input_source.h" />
     <ClInclude Include="shadergen.h" />
     <ClInclude Include="shiftjis.h" />
+    <ClInclude Include="sockets.h" />
     <ClInclude Include="state_wrapper.h" />
     <ClInclude Include="cd_xa.h" />
     <ClInclude Include="vulkan_builders.h">
@@ -204,6 +205,7 @@
     <ClCompile Include="shadergen.cpp" />
     <ClCompile Include="shiftjis.cpp" />
     <ClCompile Include="page_fault_handler.cpp" />
+    <ClCompile Include="sockets.cpp" />
     <ClCompile Include="state_wrapper.cpp" />
     <ClCompile Include="cd_xa.cpp" />
     <ClCompile Include="vulkan_builders.cpp">

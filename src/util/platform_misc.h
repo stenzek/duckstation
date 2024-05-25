@@ -5,7 +5,10 @@
 
 #include <optional>
 
+class Error;
+
 namespace PlatformMisc {
+bool InitializeSocketSupport(Error* error);
 void SuspendScreensaver();
 void ResumeScreensaver();
 

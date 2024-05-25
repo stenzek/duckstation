@@ -34,6 +34,7 @@
     <ClInclude Include="sha1_digest.h" />
     <ClInclude Include="small_string.h" />
     <ClInclude Include="heterogeneous_containers.h" />
+    <ClInclude Include="binary_span_reader_writer.h" />
     <ClInclude Include="string_util.h" />
     <ClInclude Include="thirdparty\SmallVector.h" />
     <ClInclude Include="thirdparty\StackWalker.h" />
@@ -60,6 +61,7 @@
     <ClCompile Include="progress_callback.cpp" />
     <ClCompile Include="sha1_digest.cpp" />
     <ClCompile Include="small_string.cpp" />
+    <ClCompile Include="binary_span_reader_writer.cpp" />
     <ClCompile Include="string_util.cpp" />
     <ClCompile Include="thirdparty\SmallVector.cpp" />
     <ClCompile Include="thirdparty\StackWalker.cpp" />

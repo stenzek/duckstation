@@ -45,6 +45,7 @@
       <Filter>thirdparty</Filter>
     </ClInclude>
     <ClInclude Include="dynamic_library.h" />
+    <ClInclude Include="binary_span_reader_writer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="small_string.cpp" />
@@ -72,6 +73,7 @@
       <Filter>thirdparty</Filter>
     </ClCompile>
     <ClCompile Include="dynamic_library.cpp" />
+    <ClCompile Include="binary_span_reader_writer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

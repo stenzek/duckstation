@@ -2,6 +2,8 @@ add_library(common
   align.h
   assert.cpp
   assert.h
+  binary_span_reader_writer.cpp
+  binary_span_reader_writer.h
   bitfield.h
   bitutils.h
   build_timestamp.h

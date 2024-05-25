@@ -24,6 +24,11 @@ Log_SetChannel(PlatformMisc);
 
 static IOPMAssertionID s_prevent_idle_assertion = kIOPMNullAssertionID;
 
+bool PlatformMisc::InitializeSocketSupport(Error* error)
+{
+  return true;
+}
+
 static bool SetScreensaverInhibitMacOS(bool inhibit)
 {
   if (inhibit)

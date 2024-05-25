@@ -3,6 +3,7 @@
 
 #include "platform_misc.h"
 
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/small_string.h"
@@ -13,9 +14,32 @@
 #include <memory>
 
 #include "common/windows_headers.h"
+#include <WinSock2.h>
 #include <mmsystem.h>
 
 Log_SetChannel(PlatformMisc);
+
+static bool s_screensaver_suspended = false;
+static bool s_winsock_initialized = false;
+static std::once_flag s_winsock_initializer;
+
+bool PlatformMisc::InitializeSocketSupport(Error* error)
+{
+  std::call_once(s_winsock_initializer, [](Error* error) {
+    WSADATA wsa = {};
+    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+    {
+      Error::SetSocket(error, "WSAStartup() failed: ", WSAGetLastError());
+      return false;
+    }
+
+    s_winsock_initialized = true;
+    std::atexit([]() { WSACleanup(); });
+    return true;
+  }, error);
+
+  return s_winsock_initialized;
+}
 
 static bool SetScreensaverInhibitWin32(bool inhibit)
 {
@@ -27,8 +51,6 @@ static bool SetScreensaverInhibitWin32(bool inhibit)
 
   return true;
 }
-
-static bool s_screensaver_suspended;
 
 void PlatformMisc::SuspendScreensaver()
 {

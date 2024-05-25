@@ -63,6 +63,8 @@ add_library(util
   shadergen.h
   shiftjis.cpp
   shiftjis.h
+  sockets.cpp
+  sockets.h
   state_wrapper.cpp
   state_wrapper.h
   wav_writer.cpp
