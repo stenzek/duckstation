@@ -61,17 +61,26 @@ static bool WriteMinidump(HMODULE hDbgHelp, HANDLE hFile, HANDLE hProcess, DWORD
   if (!minidump_write_dump)
     return false;
 
-  MINIDUMP_EXCEPTION_INFORMATION mei;
-  PMINIDUMP_EXCEPTION_INFORMATION mei_ptr = nullptr;
+  MINIDUMP_EXCEPTION_INFORMATION mei = {};
   if (exception)
   {
     mei.ThreadId = thread_id;
     mei.ExceptionPointers = exception;
     mei.ClientPointers = FALSE;
-    mei_ptr = &mei;
+    return minidump_write_dump(hProcess, process_id, hFile, type, &mei, nullptr, nullptr);
   }
 
-  return minidump_write_dump(hProcess, process_id, hFile, type, mei_ptr, nullptr, nullptr);
+  __try
+  {
+    RaiseException(EXCEPTION_INVALID_HANDLE, 0, 0, nullptr);
+  }
+  __except (WriteMinidump(hDbgHelp, hFile, GetCurrentProcess(), GetCurrentProcessId(), GetCurrentThreadId(),
+                          GetExceptionInformation(), type),
+            EXCEPTION_EXECUTE_HANDLER)
+  {
+  }
+
+  return true;
 }
 
 static std::wstring s_write_directory;
