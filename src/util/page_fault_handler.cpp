@@ -4,6 +4,7 @@
 #include "page_fault_handler.h"
 
 #include "common/assert.h"
+#include "common/crash_handler.h"
 #include "common/error.h"
 #include "common/log.h"
 
@@ -14,7 +15,7 @@
 
 #if defined(_WIN32)
 #include "common/windows_headers.h"
-#elif defined(__linux__) || defined(__ANDROID__)
+#elif defined(__linux__)
 #include <signal.h>
 #include <ucontext.h>
 #include <unistd.h>
@@ -139,54 +140,11 @@ bool PageFaultHandler::Install(Error* error)
 
 namespace PageFaultHandler {
 static void SignalHandler(int sig, siginfo_t* info, void* ctx);
-static void CallExistingSignalHandler(int signal, siginfo_t* siginfo, void* ctx);
-
-static struct sigaction s_old_sigsegv_action;
-#if defined(__APPLE__) || defined(__aarch64__)
-static struct sigaction s_old_sigbus_action;
-#endif
 } // namespace PageFaultHandler
-
-void PageFaultHandler::CallExistingSignalHandler(int signal, siginfo_t* siginfo, void* ctx)
-{
-#if defined(__aarch64__)
-  const struct sigaction& sa = (signal == SIGBUS) ? s_old_sigbus_action : s_old_sigsegv_action;
-#elif defined(__APPLE__)
-  const struct sigaction& sa = s_old_sigbus_action;
-#else
-  const struct sigaction& sa = s_old_sigsegv_action;
-#endif
-
-  if (sa.sa_flags & SA_SIGINFO)
-  {
-    sa.sa_sigaction(signal, siginfo, ctx);
-  }
-  else if (sa.sa_handler == SIG_DFL)
-  {
-    // Re-raising the signal would just queue it, and since we'd restore the handler back to us,
-    // we'd end up right back here again. So just abort, because that's probably what it'd do anyway.
-    abort();
-  }
-  else if (sa.sa_handler != SIG_IGN)
-  {
-    sa.sa_handler(signal);
-  }
-}
 
 void PageFaultHandler::SignalHandler(int sig, siginfo_t* info, void* ctx)
 {
-  // Executing the handler concurrently from multiple threads wouldn't go down well.
-  std::unique_lock lock(s_exception_handler_mutex);
-
-  // Prevent recursive exception filtering.
-  if (s_in_exception_handler)
-  {
-    lock.unlock();
-    CallExistingSignalHandler(sig, info, ctx);
-    return;
-  }
-
-#if defined(__linux__) || defined(__ANDROID__)
+#if defined(__linux__)
   void* const exception_address = reinterpret_cast<void*>(info->si_addr);
 
 #if defined(CPU_ARCH_X64)
@@ -241,19 +199,26 @@ void PageFaultHandler::SignalHandler(int sig, siginfo_t* info, void* ctx)
 
 #endif
 
-  s_in_exception_handler = true;
+  // Executing the handler concurrently from multiple threads wouldn't go down well.
+  s_exception_handler_mutex.lock();
 
-  const HandlerResult result = HandlePageFault(exception_pc, exception_address, is_write);
-
-  s_in_exception_handler = false;
+  // Prevent recursive exception filtering.
+  HandlerResult result = HandlerResult::ExecuteNextHandler;
+  if (!s_in_exception_handler)
+  {
+    s_in_exception_handler = true;
+    result = HandlePageFault(exception_pc, exception_address, is_write);
+    s_in_exception_handler = false;
+  }
+  
+  s_exception_handler_mutex.unlock();
 
   // Resumes execution right where we left off (re-executes instruction that caused the SIGSEGV).
   if (result == HandlerResult::ContinueExecution)
     return;
 
-  // Call old signal handler, which will likely dump core.
-  lock.unlock();
-  CallExistingSignalHandler(sig, info, ctx);
+  // We couldn't handle it. Pass it off to the crash dumper.
+  CrashHandler::CrashSignalHandler(sig, info, ctx);
 }
 
 bool PageFaultHandler::Install(Error* error)
@@ -270,14 +235,14 @@ bool PageFaultHandler::Install(Error* error)
   // Don't block the signal from executing recursively, we want to fire the original handler.
   sa.sa_flags |= SA_NODEFER;
 #endif
-  if (sigaction(SIGSEGV, &sa, &s_old_sigsegv_action) != 0)
+  if (sigaction(SIGSEGV, &sa, nullptr) != 0)
   {
     Error::SetErrno(error, "sigaction() for SIGSEGV failed: ", errno);
     return false;
   }
 #if defined(__APPLE__) || defined(__aarch64__)
   // MacOS uses SIGBUS for memory permission violations
-  if (sigaction(SIGBUS, &sa, &s_old_sigbus_action) != 0)
+  if (sigaction(SIGBUS, &sa, nullptr) != 0)
   {
     Error::SetErrno(error, "sigaction() for SIGBUS failed: ", errno);
     return false;

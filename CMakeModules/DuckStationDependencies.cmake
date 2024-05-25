@@ -54,10 +54,7 @@ if(LINUX)
 endif()
 
 if(NOT WIN32 AND NOT APPLE)
-  find_package(Libbacktrace)
-  if(NOT LIBBACKTRACE_FOUND)
-    message(WARNING "libbacktrace not found, crashes will not produce backtraces.")
-  endif()
+  find_package(Libbacktrace REQUIRED)
 endif()
 
 if(APPLE)
