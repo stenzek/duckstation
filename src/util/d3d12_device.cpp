@@ -826,6 +826,13 @@ bool D3D12Device::CreateSwapChain()
       D3DCommon::GetRequestedExclusiveFullscreenModeDesc(m_dxgi_factory.Get(), client_rc, fullscreen_width,
                                                          fullscreen_height, fullscreen_refresh_rate, fm.resource_format,
                                                          &fullscreen_mode, fullscreen_output.GetAddressOf());
+
+    // Using mailbox-style no-allow-tearing causes tearing in exclusive fullscreen.
+    if (m_vsync_mode == GPUVSyncMode::Mailbox && m_is_exclusive_fullscreen)
+    {
+      WARNING_LOG("Using FIFO instead of Mailbox vsync due to exclusive fullscreen.");
+      m_vsync_mode = GPUVSyncMode::FIFO;
+    }
   }
   else
   {
@@ -1087,6 +1094,14 @@ std::string D3D12Device::GetDriverInfo() const
 void D3D12Device::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle)
 {
   m_allow_present_throttle = allow_present_throttle;
+
+  // Using mailbox-style no-allow-tearing causes tearing in exclusive fullscreen.
+  if (mode == GPUVSyncMode::Mailbox && m_is_exclusive_fullscreen)
+  {
+    WARNING_LOG("Using FIFO instead of Mailbox vsync due to exclusive fullscreen.");
+    mode = GPUVSyncMode::FIFO;
+  }
+
   if (m_vsync_mode == mode)
     return;
 
