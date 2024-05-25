@@ -1345,6 +1345,12 @@ bool System::LoadState(const char* filename, Error* error)
 
 bool System::SaveState(const char* filename, Error* error, bool backup_existing_save)
 {
+  if (IsSavingMemoryCards())
+  {
+    Error::SetStringView(error, TRANSLATE_SV("System", "Cannot save state while memory card is being saved."));
+    return false;
+  }
+
   if (backup_existing_save && FileSystem::FileExists(filename))
   {
     Error backup_error;
@@ -1365,7 +1371,7 @@ bool System::SaveState(const char* filename, Error* error, bool backup_existing_
                          error);
   if (!stream)
   {
-    Error::AddPrefixFmt(error, "Failed to save state to '{}': ", Path::GetFileName(filename));
+    Error::AddPrefixFmt(error, "Cannot open '{}': ", Path::GetFileName(filename));
     return false;
   }
 

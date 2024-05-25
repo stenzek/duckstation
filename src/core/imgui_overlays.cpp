@@ -1143,7 +1143,7 @@ void SaveStateSelectorUI::SaveCurrentSlot()
     Error error;
     if (!System::SaveState(path.c_str(), &error, g_settings.create_save_state_backups))
     {
-      Host::AddKeyedOSDMessage("SaveState",
+      Host::AddIconOSDMessage("SaveState", ICON_FA_EXCLAMATION_TRIANGLE,
                                fmt::format(TRANSLATE_FS("OSDMessage", "Failed to save state to slot {0}:\n{1}"),
                                            GetCurrentSlot(), error.GetDescription()),
                                Host::OSD_ERROR_DURATION);
