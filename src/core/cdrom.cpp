@@ -993,7 +993,7 @@ void CDROM::WriteRegister(u32 offset, u8 value)
       if (s_interrupt_flag_register == 0)
       {
         InterruptController::SetLineState(InterruptController::IRQ::CDROM, false);
-        if (HasPendingAsyncInterrupt())
+        if (HasPendingAsyncInterrupt() && !HasPendingCommand())
           QueueDeliverAsyncInterrupt();
         else
           UpdateCommandEvent();
@@ -1120,7 +1120,19 @@ void CDROM::SetAsyncInterrupt(Interrupt interrupt)
   Assert(s_pending_async_interrupt == 0);
   s_pending_async_interrupt = static_cast<u8>(interrupt);
   if (!HasPendingInterrupt())
-    QueueDeliverAsyncInterrupt();
+  {
+    // Pending interrupt should block INT1 from going through. But pending command needs to as well, for games like
+    // Gokujou Parodius Da! Deluxe Pack that spam GetlocL while data is being played back, if they get an INT1 instead
+    // of an INT3 during the small window of time that the INT3 is delayed, causes a lock-up.
+    if (!HasPendingCommand())
+      QueueDeliverAsyncInterrupt();
+    else
+      DEBUG_LOG("Delaying async interrupt {} because of pending command", s_pending_async_interrupt);
+  }
+  else
+  {
+    DEBUG_LOG("Delaying async interrupt {} because of pending interrupt", s_interrupt_flag_register);
+  }
 }
 
 void CDROM::ClearAsyncInterrupt()
@@ -1139,9 +1151,7 @@ void CDROM::QueueDeliverAsyncInterrupt()
   // instead of the INT3 response, and the game gets confused. So, we just delay INT1s a bit, if there
   // has been any recent INT3s - give it enough time to read the response out. The real console does
   // something similar anyway, the INT1 task won't run immediately after the INT3 is cleared.
-
-  if (!HasPendingAsyncInterrupt())
-    return;
+  DebugAssert(HasPendingAsyncInterrupt());
 
   // underflows here are okay
   const u32 diff = System::GetGlobalTickCounter() - s_last_interrupt_time;
