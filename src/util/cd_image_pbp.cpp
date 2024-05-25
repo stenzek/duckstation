@@ -475,7 +475,7 @@ bool CDImagePBP::Open(const char* filename, Error* error)
     // Ignore encrypted files
     if (disc_table[0] == 0x44475000) // "\0PGD"
     {
-      ERROR_LOG("Encrypted PBP images are not supported, skipping %s", m_filename);
+      ERROR_LOG("Encrypted PBP images are not supported, skipping {}", m_filename);
       Error::SetString(error, "Encrypted PBP images are not supported");
       return false;
     }

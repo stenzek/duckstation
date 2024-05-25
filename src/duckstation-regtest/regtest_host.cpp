@@ -710,7 +710,7 @@ int main(int argc, char* argv[])
     INFO_LOG("Dumping every {}th frame to '{}'.", s_frame_dump_interval, s_dump_base_directory);
   }
 
-  INFO_LOG("Running for %d frames...", s_frames_to_run);
+  INFO_LOG("Running for {} frames...", s_frames_to_run);
   System::Execute();
 
   INFO_LOG("Exiting with success.");

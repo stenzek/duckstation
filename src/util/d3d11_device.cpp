@@ -126,7 +126,7 @@ bool D3D11Device::CreateDevice(std::string_view adapter, bool threaded_presentat
   ComPtr<IDXGIDevice> dxgi_device;
   if (SUCCEEDED(m_device.As(&dxgi_device)) &&
       SUCCEEDED(dxgi_device->GetParent(IID_PPV_ARGS(dxgi_adapter.GetAddressOf()))))
-    INFO_LOG("D3D Adapter: %s", D3DCommon::GetAdapterName(dxgi_adapter.Get()));
+    INFO_LOG("D3D Adapter: {}", D3DCommon::GetAdapterName(dxgi_adapter.Get()));
   else
     ERROR_LOG("Failed to obtain D3D adapter name.");
   INFO_LOG("Max device feature level: {}", D3DCommon::GetFeatureLevelString(m_max_feature_level));

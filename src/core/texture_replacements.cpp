@@ -277,7 +277,7 @@ const TextureReplacementTexture* TextureReplacements::LoadTexture(const std::str
   RGBA8Image image;
   if (!image.LoadFromFile(filename.c_str()))
   {
-    ERROR_LOG("Failed to load '%s'", Path::GetFileName(filename));
+    ERROR_LOG("Failed to load '{}'", Path::GetFileName(filename));
     return nullptr;
   }
 

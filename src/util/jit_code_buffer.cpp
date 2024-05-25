@@ -104,7 +104,7 @@ bool JitCodeBuffer::TryAllocateAt(const void* addr)
   if (!m_code_ptr)
   {
     if (!addr)
-      ERROR_LOG("VirtualAlloc(RWX, %u) for internal buffer failed: {}", m_total_size, GetLastError());
+      ERROR_LOG("VirtualAlloc(RWX, {}) for internal buffer failed: {}", m_total_size, GetLastError());
     return false;
   }
 
@@ -134,7 +134,7 @@ bool JitCodeBuffer::TryAllocateAt(const void* addr)
   if (!m_code_ptr)
   {
     if (!addr)
-      ERROR_LOG("mmap(RWX, %u) for internal buffer failed: {}", m_total_size, errno);
+      ERROR_LOG("mmap(RWX, {}) for internal buffer failed: {}", m_total_size, errno);
 
     return false;
   }
@@ -229,10 +229,10 @@ void JitCodeBuffer::Destroy()
   {
 #if defined(_WIN32)
     if (!VirtualFree(m_code_ptr, 0, MEM_RELEASE))
-      ERROR_LOG("Failed to free code pointer %p", static_cast<void*>(m_code_ptr));
+      ERROR_LOG("Failed to free code pointer {}", static_cast<void*>(m_code_ptr));
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__) || defined(__FreeBSD__)
     if (munmap(m_code_ptr, m_total_size) != 0)
-      ERROR_LOG("Failed to free code pointer %p", static_cast<void*>(m_code_ptr));
+      ERROR_LOG("Failed to free code pointer {}", static_cast<void*>(m_code_ptr));
 #endif
   }
   else if (m_code_ptr)
@@ -240,10 +240,10 @@ void JitCodeBuffer::Destroy()
 #if defined(_WIN32)
     DWORD old_protect = 0;
     if (!VirtualProtect(m_code_ptr, m_total_size, m_old_protection, &old_protect))
-      ERROR_LOG("Failed to restore protection on %p", static_cast<void*>(m_code_ptr));
+      ERROR_LOG("Failed to restore protection on {}", static_cast<void*>(m_code_ptr));
 #else
     if (mprotect(m_code_ptr, m_total_size, m_old_protection) != 0)
-      ERROR_LOG("Failed to restore protection on %p", static_cast<void*>(m_code_ptr));
+      ERROR_LOG("Failed to restore protection on {}", static_cast<void*>(m_code_ptr));
 #endif
   }
 

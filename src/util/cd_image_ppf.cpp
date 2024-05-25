@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "cd_image.h"
@@ -7,6 +7,7 @@
 #include "common/assert.h"
 #include "common/file_system.h"
 #include "common/log.h"
+#include "common/path.h"
 
 #include <algorithm>
 #include <cerrno>
@@ -69,7 +70,7 @@ bool CDImagePPF::Open(const char* filename, std::unique_ptr<CDImage> parent_imag
   auto fp = FileSystem::OpenManagedSharedCFile(filename, "rb", FileSystem::FileShareMode::DenyWrite);
   if (!fp)
   {
-    ERROR_LOG("Failed to open '%s'", filename);
+    ERROR_LOG("Failed to open '{}'", Path::GetFileName(filename));
     return false;
   }
 
@@ -78,7 +79,7 @@ bool CDImagePPF::Open(const char* filename, std::unique_ptr<CDImage> parent_imag
   u32 magic;
   if (std::fread(&magic, sizeof(magic), 1, fp.get()) != 1)
   {
-    ERROR_LOG("Failed to read magic from '%s'", filename);
+    ERROR_LOG("Failed to read magic from '{}'", Path::GetFileName(filename));
     return false;
   }
 
@@ -140,7 +141,7 @@ u32 CDImagePPF::ReadFileIDDiz(std::FILE* fp, u32 version)
     return 0;
   }
 
-  INFO_LOG("File_Id.diz: %s", fdiz);
+  INFO_LOG("File_Id.diz: {}", fdiz);
   return dlen;
 }
 
@@ -206,7 +207,7 @@ bool CDImagePPF::ReadV2Patch(std::FILE* fp)
     return false;
   }
 
-  INFO_LOG("Patch description: %s", desc);
+  INFO_LOG("Patch description: {}", desc);
 
   const u32 idlen = ReadFileIDDiz(fp, 2);
 

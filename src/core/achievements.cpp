@@ -903,7 +903,7 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   if (result == RC_NO_GAME_LOADED)
   {
     // Unknown game.
-    INFO_LOG("Unknown game '%s', disabling achievements.", s_game_hash);
+    INFO_LOG("Unknown game '{}', disabling achievements.", s_game_hash);
     DisableHardcoreMode();
     return;
   }

@@ -710,7 +710,7 @@ void CPU::PrintInstruction(u32 bits, u32 pc, bool regs, const char* prefix)
     }
   }
 
-  DEV_LOG("{}{:08x}: {:08x} %s", prefix, pc, bits, instr);
+  DEV_LOG("{}{:08x}: {:08x} {}", prefix, pc, bits, instr);
 }
 
 void CPU::LogInstruction(u32 bits, u32 pc, bool regs)
@@ -2061,7 +2061,7 @@ bool CPU::AddBreakpoint(BreakpointType type, VirtualMemoryAddress address, bool 
   if (HasBreakpointAtAddress(type, address))
     return false;
 
-  INFO_LOG("Adding {} breakpoint at {:08X}, auto clear = %u", GetBreakpointTypeName(type), address,
+  INFO_LOG("Adding {} breakpoint at {:08X}, auto clear = {}", GetBreakpointTypeName(type), address,
            static_cast<unsigned>(auto_clear));
 
   Breakpoint bp{address, nullptr, auto_clear ? 0 : s_breakpoint_counter++, 0, type, auto_clear, enabled};

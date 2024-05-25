@@ -400,7 +400,7 @@ void Timers::WriteRegister(u32 offset, u32 value)
 
     case 0x08:
     {
-      DEBUG_LOG("Timer %u write target 0x{:04X}", timer_index, ZeroExtend32(Truncate16(value)));
+      DEBUG_LOG("Timer {} write target 0x{:04X}", timer_index, ZeroExtend32(Truncate16(value)));
       cs.target = value & u32(0xFFFF);
       CheckForIRQ(timer_index, cs.counter);
       if (timer_index == 2 || !cs.external_counting_enabled)

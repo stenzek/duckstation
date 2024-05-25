@@ -2145,7 +2145,7 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
     default:
       [[unlikely]]
       {
-        ERROR_LOG("Unknown test command 0x{:02X}, %u parameters", subcommand, s_param_fifo.GetSize());
+        ERROR_LOG("Unknown test command 0x{:02X}, {} parameters", subcommand, s_param_fifo.GetSize());
         SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
         EndCommand();
         return;
@@ -3282,7 +3282,7 @@ void CDROM::LoadDataFIFO()
     sb.size = 0;
   }
 
-  DEBUG_LOG("Loaded %u bytes to data FIFO from buffer {}", s_data_fifo.GetSize(), s_current_read_sector_buffer);
+  DEBUG_LOG("Loaded {} bytes to data FIFO from buffer {}", s_data_fifo.GetSize(), s_current_read_sector_buffer);
 
   SectorBuffer& next_sb = s_sector_buffers[s_current_write_sector_buffer];
   if (next_sb.size > 0)

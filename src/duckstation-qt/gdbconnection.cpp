@@ -58,7 +58,7 @@ void GDBConnection::receivedData()
       }
       else if (GDBProtocol::IsPacketComplete(m_readBuffer))
       {
-        DEBUG_LOG("{} > %s", m_descriptor, m_readBuffer.c_str());
+        DEBUG_LOG("{} > {}", m_descriptor, m_readBuffer);
         writePacket(GDBProtocol::ProcessPacket(m_readBuffer));
         m_readBuffer.erase();
       }
@@ -66,7 +66,7 @@ void GDBConnection::receivedData()
   }
   if (bytesRead == -1)
   {
-    ERROR_LOG("{} failed to read from socket: %s", m_descriptor, errorString().toStdString());
+    ERROR_LOG("{} failed to read from socket: {}", m_descriptor, errorString().toStdString());
   }
 }
 

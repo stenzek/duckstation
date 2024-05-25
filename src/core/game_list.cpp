@@ -1010,7 +1010,7 @@ GameList::PlayedTimeMap GameList::LoadPlayedTimeMap(const std::string& path)
 
       if (ret.find(serial) != ret.end())
       {
-        WARNING_LOG("Duplicate entry: '%s'", serial);
+        WARNING_LOG("Duplicate entry: '{}'", serial);
         continue;
       }
 
@@ -1074,7 +1074,7 @@ GameList::PlayedTimeEntry GameList::UpdatePlayedTimeFile(const std::string& path
     if (FileSystem::FSeek64(fp.get(), line_pos, SEEK_SET) != 0 ||
         std::fwrite(new_line.data(), new_line.length(), 1, fp.get()) != 1)
     {
-      ERROR_LOG("Failed to update '%s'.", path);
+      ERROR_LOG("Failed to update '{}'.", path);
     }
 
     return line_entry;
@@ -1087,7 +1087,7 @@ GameList::PlayedTimeEntry GameList::UpdatePlayedTimeFile(const std::string& path
     if (FileSystem::FSeek64(fp.get(), 0, SEEK_END) != 0 ||
         std::fwrite(new_line.data(), new_line.length(), 1, fp.get()) != 1)
     {
-      ERROR_LOG("Failed to write '%s'.", path);
+      ERROR_LOG("Failed to write '{}'.", path);
     }
   }
 

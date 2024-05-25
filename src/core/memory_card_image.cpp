@@ -451,7 +451,7 @@ bool MemoryCardImage::UndeleteFile(DataArray* data, const FileInfo& fi)
     {
       if (df->block_allocation_state != 0xA3)
       {
-        ERROR_LOG("Incorrect block state for %u, expected 0xA3 got 0x{:02X}", this_block_number,
+        ERROR_LOG("Incorrect block state for {}, expected 0xA3 got 0x{:02X}", this_block_number,
                   df->block_allocation_state);
         return false;
       }

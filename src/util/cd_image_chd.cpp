@@ -561,7 +561,7 @@ ALWAYS_INLINE_RELEASE bool CDImageCHD::UpdateHunkBuffer(const Index& index, LBA 
   const chd_error err = chd_read(m_chd, hunk_index, m_hunk_buffer.data());
   if (err != CHDERR_NONE)
   {
-    ERROR_LOG("chd_read({}) failed: %s", hunk_index, chd_error_string(err));
+    ERROR_LOG("chd_read({}) failed: {}", hunk_index, chd_error_string(err));
 
     // data might have been partially written
     m_current_hunk_index = static_cast<u32>(-1);

@@ -677,7 +677,7 @@ void Bus::ClearRAMCodePageFlags()
     for (const auto& it : s_fastmem_ram_views)
     {
       if (!MemMap::MemProtect(it.first, it.second, PageProtect::ReadWrite))
-        ERROR_LOG("Failed to unprotect code pages for fastmem view @ %p", static_cast<void*>(it.first));
+        ERROR_LOG("Failed to unprotect code pages for fastmem view @ {}", static_cast<void*>(it.first));
     }
   }
 #endif

@@ -104,7 +104,7 @@ bool Vulkan::LoadVulkanInstanceFunctions(VkInstance instance)
     *func_ptr = vkGetInstanceProcAddr(instance, name);
     if (!(*func_ptr) && is_required)
     {
-      std::fprintf(stderr, "Vulkan: Failed to load required instance function %s\n", name);
+      ERROR_LOG("Vulkan: Failed to load required instance function {}", name);
       required_functions_missing = true;
     }
   };
@@ -124,7 +124,7 @@ bool Vulkan::LoadVulkanDeviceFunctions(VkDevice device)
     *func_ptr = vkGetDeviceProcAddr(device, name);
     if (!(*func_ptr) && is_required)
     {
-      std::fprintf(stderr, "Vulkan: Failed to load required device function %s\n", name);
+      ERROR_LOG("Vulkan: Failed to load required device function {}", name);
       required_functions_missing = true;
     }
   };

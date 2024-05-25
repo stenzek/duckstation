@@ -91,7 +91,7 @@ void PostProcessing::Shader::LoadOptions(const SettingsInterface& si, const char
                                         ShaderOption::ParseFloatVector(config_value, &value);
         if (value_vector_size != option.vector_size)
         {
-          WARNING_LOG("Only got {} of {} elements for '{}' in config section %s.", value_vector_size,
+          WARNING_LOG("Only got {} of {} elements for '{}' in config section {}.", value_vector_size,
                       option.vector_size, option.name, section);
         }
       }
