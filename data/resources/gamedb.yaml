@@ -60090,6 +60090,8 @@ SLES-02820:
     - AnalogController
     - DigitalController
     - NeGcon
+  traits:
+    - ForceRecompilerICache
   metadata:
     publisher: "Acclaim"
     developer: "Z-Axis, Ltd"
@@ -60112,6 +60114,8 @@ SLES-03363:
     - AnalogController
     - DigitalController
     - NeGcon
+  traits:
+    - ForceRecompilerICache
   metadata:
     publisher: "Ubi Soft / Crave Entertaiment"
     developer: "Shaba Studios"
