@@ -92,11 +92,13 @@ struct Settings
   bool enable_cheats : 1 = false;
   bool disable_all_enhancements : 1 = false;
   bool enable_discord_presence : 1 = false;
+  bool pine_enable : 1 = false;
 
   bool rewind_enable : 1 = false;
   float rewind_save_frequency = 10.0f;
   u32 rewind_save_slots = 10;
   u32 runahead_frames = 0;
+  u16 pine_slot = DEFAULT_PINE_SLOT;
 
   GPURenderer gpu_renderer = DEFAULT_GPU_RENDERER;
   std::string gpu_adapter;
@@ -510,6 +512,12 @@ struct Settings
   static constexpr bool DEFAULT_SAVE_STATE_BACKUPS = false;
   static constexpr bool DEFAULT_FAST_BOOT_VALUE = true;
 #endif
+
+  // PINE uses a concept of "slot" to be able to communicate with multiple
+  // emulators at the same time, each slot should be unique to each emulator to
+  // allow PnP and configurable by the end user so that several runs don't
+  // conflict with each others
+  static constexpr u16 DEFAULT_PINE_SLOT = 28011;
 };
 
 extern Settings g_settings;

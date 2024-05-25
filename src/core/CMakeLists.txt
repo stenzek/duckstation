@@ -91,6 +91,8 @@ add_library(core
   pad.h
   pcdrv.cpp
   pcdrv.h
+  pine_server.cpp
+  pine_server.h
   playstation_mouse.cpp
   playstation_mouse.h
   psf_loader.cpp

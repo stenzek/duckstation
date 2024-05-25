@@ -263,6 +263,10 @@ void AdvancedSettingsWidget::addTweakOptions()
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Allow Booting Without SBI File"), "CDROM",
                         "AllowBootingWithoutSBIFile", false);
 
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable PINE"), "PINE", "Enabled", false);
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("PINE Slot"), "PINE", "Slot", 0, 65535,
+                         Settings::DEFAULT_PINE_SLOT);
+
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable PCDrv"), "PCDrv", "Enabled", false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable PCDrv Writes"), "PCDrv", "EnableWrites", false);
   addDirectoryOption(m_dialog, m_ui.tweakOptionTable, tr("PCDrv Root Directory"), "PCDrv", "Root");
@@ -292,12 +296,14 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
     setChoiceTweakOption(m_ui.tweakOptionTable, i++,
                          Settings::DEFAULT_CPU_FASTMEM_MODE); // Recompiler fastmem mode
     setChoiceTweakOption(m_ui.tweakOptionTable, i++,
-                         Settings::DEFAULT_CDROM_MECHACON_VERSION); // CDROM Mechacon Version
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // CDROM Region Check
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // Allow booting without SBI file
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // Enable PCDRV
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // Enable PCDRV Writes
-    setDirectoryOption(m_ui.tweakOptionTable, i++, "");             // PCDrv Root Directory
+                         Settings::DEFAULT_CDROM_MECHACON_VERSION);                  // CDROM Mechacon Version
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                        // CDROM Region Check
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                        // Allow booting without SBI file
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                        // Enable PINE
+    setIntRangeTweakOption(m_ui.tweakOptionTable, i++, Settings::DEFAULT_PINE_SLOT); // PINE Slot
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                        // Enable PCDRV
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                        // Enable PCDRV Writes
+    setDirectoryOption(m_ui.tweakOptionTable, i++, "");                              // PCDrv Root Directory
 
     return;
   }
@@ -322,6 +328,8 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue("CDROM", "MechaconVersion");
   sif->DeleteValue("CDROM", "RegionCheck");
   sif->DeleteValue("CDROM", "AllowBootingWithoutSBIFile");
+  sif->DeleteValue("PINE", "Enabled");
+  sif->DeleteValue("PINE", "Slot");
   sif->DeleteValue("PCDrv", "Enabled");
   sif->DeleteValue("PCDrv", "EnableWrites");
   sif->DeleteValue("PCDrv", "Root");

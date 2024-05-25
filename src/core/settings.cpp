@@ -160,6 +160,10 @@ void Settings::Load(SettingsInterface& si)
   rewind_save_slots = static_cast<u32>(si.GetIntValue("Main", "RewindSaveSlots", 10));
   runahead_frames = static_cast<u32>(si.GetIntValue("Main", "RunaheadFrameCount", 0));
 
+  pine_enable = si.GetBoolValue("PINE", "Enabled", false);
+  pine_slot = static_cast<u16>(
+    std::min<u32>(si.GetUIntValue("PINE", "Slot", DEFAULT_PINE_SLOT), std::numeric_limits<u16>::max()));
+
   cpu_execution_mode =
     ParseCPUExecutionMode(
       si.GetStringValue("CPU", "ExecutionMode", GetCPUExecutionModeName(DEFAULT_CPU_EXECUTION_MODE)).c_str())
@@ -455,6 +459,9 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetFloatValue("Main", "RewindFrequency", rewind_save_frequency);
   si.SetIntValue("Main", "RewindSaveSlots", rewind_save_slots);
   si.SetIntValue("Main", "RunaheadFrameCount", runahead_frames);
+
+  si.SetBoolValue("PINE", "Enabled", pine_enable);
+  si.SetUIntValue("PINE", "Slot", pine_slot);
 
   si.SetStringValue("CPU", "ExecutionMode", GetCPUExecutionModeName(cpu_execution_mode));
   si.SetBoolValue("CPU", "OverclockEnable", cpu_overclock_enable);

@@ -43,6 +43,7 @@
 #include "util/iso_reader.h"
 #include "util/platform_misc.h"
 #include "util/postprocessing.h"
+#include "util/sockets.h"
 #include "util/state_wrapper.h"
 
 #include "common/align.h"
@@ -77,6 +78,13 @@ Log_SetChannel(System);
 
 #ifdef ENABLE_DISCORD_PRESENCE
 #include "discord_rpc.h"
+#endif
+
+#ifndef __ANDROID__
+#define ENABLE_PINE_SERVER 1
+// #define ENABLE_GDB_SERVER 1
+#define ENABLE_SOCKET_MULTIPLEXER 1
+#include "pine_server.h"
 #endif
 
 // #define PROFILE_MEMORY_SAVE_STATES 1
@@ -254,6 +262,10 @@ static u32 s_runahead_replay_frames = 0;
 // Used to track play time. We use a monotonic timer here, in case of clock changes.
 static u64 s_session_start_time = 0;
 
+#ifdef ENABLE_SOCKET_MULTIPLEXER
+static std::unique_ptr<SocketMultiplexer> s_socket_multiplexer;
+#endif
+
 #ifdef ENABLE_DISCORD_PRESENCE
 static bool s_discord_presence_active = false;
 static time_t s_discord_presence_time_epoch;
@@ -339,11 +351,20 @@ bool System::Internal::CPUThreadInitialize(Error* error)
     InitializeDiscordPresence();
 #endif
 
+#ifdef ENABLE_PINE_SERVER
+  if (g_settings.pine_enable)
+    PINEServer::Initialize(g_settings.pine_slot);
+#endif
+
   return true;
 }
 
 void System::Internal::CPUThreadShutdown()
 {
+#ifdef ENABLE_PINE_SERVER
+  PINEServer::Shutdown();
+#endif
+
 #ifdef ENABLE_DISCORD_PRESENCE
   ShutdownDiscordPresence();
 #endif
@@ -369,6 +390,11 @@ void System::Internal::IdlePollUpdate()
 #endif
 
   Achievements::IdleUpdate();
+
+#ifdef ENABLE_SOCKET_MULTIPLEXER
+  if (s_socket_multiplexer)
+    s_socket_multiplexer->PollEventsWithTimeout(0);
+#endif
 }
 
 System::State System::GetState()
@@ -1922,6 +1948,11 @@ void System::FrameDone()
 
 #ifdef ENABLE_DISCORD_PRESENCE
   PollDiscordPresence();
+#endif
+
+#ifdef ENABLE_SOCKET_MULTIPLEXER
+  if (s_socket_multiplexer)
+    s_socket_multiplexer->PollEventsWithTimeout(0);
 #endif
 
   Host::FrameDone();
@@ -4089,6 +4120,17 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
   }
 #endif
 
+#ifdef ENABLE_PINE_SERVER
+  if (g_settings.pine_enable != old_settings.pine_enable || g_settings.pine_slot != old_settings.pine_slot)
+  {
+    PINEServer::Shutdown();
+    if (g_settings.pine_enable)
+      PINEServer::Initialize(g_settings.pine_slot);
+    else
+      ReleaseSocketMultiplexer();
+  }
+#endif
+
   if (g_settings.log_level != old_settings.log_level || g_settings.log_filter != old_settings.log_filter ||
       g_settings.log_timestamps != old_settings.log_timestamps ||
       g_settings.log_to_console != old_settings.log_to_console ||
@@ -5248,6 +5290,37 @@ u64 System::GetSessionPlayedTime()
 {
   const u64 ctime = Common::Timer::GetCurrentValue();
   return static_cast<u64>(std::round(Common::Timer::ConvertValueToSeconds(ctime - s_session_start_time)));
+}
+
+SocketMultiplexer* System::GetSocketMultiplexer()
+{
+#ifdef ENABLE_SOCKET_MULTIPLEXER
+  if (s_socket_multiplexer)
+    return s_socket_multiplexer.get();
+
+  Error error;
+  s_socket_multiplexer = SocketMultiplexer::Create(&error);
+  if (s_socket_multiplexer)
+    INFO_LOG("Created socket multiplexer.");
+  else
+    ERROR_LOG("Failed to create socket multiplexer: {}", error.GetDescription());
+
+  return s_socket_multiplexer.get();
+#else
+  ERROR_LOG("This build does not support sockets.");
+  return nullptr;
+#endif
+}
+
+void System::ReleaseSocketMultiplexer()
+{
+#ifdef ENABLE_SOCKET_MULTIPLEXER
+  if (!s_socket_multiplexer || s_socket_multiplexer->HasAnyOpenSockets())
+    return;
+
+  INFO_LOG("Destroying socket multiplexer.");
+  s_socket_multiplexer.reset();
+#endif
 }
 
 #ifdef ENABLE_DISCORD_PRESENCE

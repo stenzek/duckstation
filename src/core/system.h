@@ -19,6 +19,7 @@ class CDImage;
 class Error;
 class SmallStringBase;
 class StateWrapper;
+class SocketMultiplexer;
 
 enum class GPUVSyncMode : u8;
 
@@ -488,6 +489,10 @@ void ClearMemorySaveStates();
 void UpdateMemorySaveStateSettings();
 bool LoadRewindState(u32 skip_saves = 0, bool consume_state = true);
 void SetRunaheadReplayFlag();
+
+/// Shared socket multiplexer, used by PINE/GDB/etc.
+SocketMultiplexer* GetSocketMultiplexer();
+void ReleaseSocketMultiplexer();
 
 #ifdef ENABLE_DISCORD_PRESENCE
 /// Called when rich presence changes.
