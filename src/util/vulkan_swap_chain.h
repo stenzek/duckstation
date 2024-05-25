@@ -9,6 +9,7 @@
 
 #include "common/types.h"
 
+#include <array>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -16,6 +17,11 @@
 class VulkanSwapChain
 {
 public:
+  // We don't actually need +1 semaphores, or, more than one really.
+  // But, the validation layer gets cranky if we don't fence wait before the next image acquire.
+  // So, add an additional semaphore to ensure that we're never acquiring before fence waiting.
+  static constexpr u32 NUM_SEMAPHORES = 4; // Should be command buffers + 1
+
   ~VulkanSwapChain();
 
   // Creates a vulkan-renderable surface for the specified window handle.
@@ -108,7 +114,7 @@ private:
   VkSwapchainKHR m_swap_chain = VK_NULL_HANDLE;
 
   std::vector<Image> m_images;
-  std::vector<ImageSemaphores> m_semaphores;
+  std::array<ImageSemaphores, NUM_SEMAPHORES> m_semaphores = {};
 
   u32 m_current_image = 0;
   u32 m_current_semaphore = 0;

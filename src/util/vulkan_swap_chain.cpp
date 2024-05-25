@@ -22,6 +22,8 @@
 
 Log_SetChannel(VulkanDevice);
 
+static_assert(VulkanSwapChain::NUM_SEMAPHORES == (VulkanDevice::NUM_COMMAND_BUFFERS + 1));
+
 static VkFormat GetLinearFormat(VkFormat format)
 {
   switch (format)
@@ -541,15 +543,10 @@ bool VulkanSwapChain::CreateSwapChain()
     m_images.push_back(image);
   }
 
-  // We don't actually need +1 semaphores, or, more than one really.
-  // But, the validation layer gets cranky if we don't fence wait before the next image acquire.
-  // So, add an additional semaphore to ensure that we're never acquiring before fence waiting.
-  const u32 semaphore_count = image_count + 1;
-  m_semaphores.reserve(semaphore_count);
   m_current_semaphore = 0;
-  for (u32 i = 0; i < semaphore_count; i++)
+  for (u32 i = 0; i < NUM_SEMAPHORES; i++)
   {
-    ImageSemaphores sema;
+    ImageSemaphores& sema = m_semaphores[i];
 
     const VkSemaphoreCreateInfo semaphore_info = {VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO, nullptr, 0};
     res = vkCreateSemaphore(dev.GetVulkanDevice(), &semaphore_info, nullptr, &sema.available_semaphore);
@@ -564,10 +561,9 @@ bool VulkanSwapChain::CreateSwapChain()
     {
       LOG_VULKAN_ERROR(res, "vkCreateSemaphore failed: ");
       vkDestroySemaphore(dev.GetVulkanDevice(), sema.available_semaphore, nullptr);
+      sema.available_semaphore = VK_NULL_HANDLE;
       return false;
     }
-
-    m_semaphores.push_back(sema);
   }
 
   return true;
@@ -585,10 +581,12 @@ void VulkanSwapChain::DestroySwapChainImages()
   m_images.clear();
   for (auto& it : m_semaphores)
   {
-    vkDestroySemaphore(dev.GetVulkanDevice(), it.rendering_finished_semaphore, nullptr);
-    vkDestroySemaphore(dev.GetVulkanDevice(), it.available_semaphore, nullptr);
+    if (it.rendering_finished_semaphore != VK_NULL_HANDLE)
+      vkDestroySemaphore(dev.GetVulkanDevice(), it.rendering_finished_semaphore, nullptr);
+    if (it.available_semaphore != VK_NULL_HANDLE)
+      vkDestroySemaphore(dev.GetVulkanDevice(), it.available_semaphore, nullptr);
   }
-  m_semaphores.clear();
+  m_semaphores = {};
 
   m_image_acquire_result.reset();
 }
