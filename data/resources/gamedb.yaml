@@ -56310,6 +56310,7 @@ SCES-00867:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56338,6 +56339,7 @@ SCES-10867:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56366,6 +56368,7 @@ SCES-20867:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56394,6 +56397,7 @@ SCES-00868:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56422,6 +56426,7 @@ SCES-10868:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56450,6 +56455,7 @@ SCES-20868:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56478,6 +56484,7 @@ SCES-00869:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56506,6 +56513,7 @@ SCES-10869:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56534,6 +56542,7 @@ SCES-20869:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56565,6 +56574,7 @@ SLPS-00700:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony / Squaresoft"
     developer: "Squaresoft"
@@ -56591,6 +56601,7 @@ SLPS-00701:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony / Squaresoft"
     developer: "Squaresoft"
@@ -56617,6 +56628,7 @@ SLPS-00702:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony / Squaresoft"
     developer: "Squaresoft"
@@ -56646,6 +56658,7 @@ SCES-00900:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56677,6 +56690,7 @@ SCES-10900:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56708,6 +56722,7 @@ SCES-20900:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56739,6 +56754,7 @@ SCUS-94163:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony / Squaresoft"
     developer: "Squaresoft"
@@ -56768,6 +56784,7 @@ SCUS-94164:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony / Squaresoft"
     developer: "Squaresoft"
@@ -56797,6 +56814,7 @@ SCUS-94165:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony / Squaresoft"
     developer: "Squaresoft"
@@ -56815,16 +56833,19 @@ SCUS-94961:
   name: "Final Fantasy VII (USA) (Interactive Sampler CD)"
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
 SCUS-94179:
   name: "Final Fantasy VII (USA) (Square Soft on PlayStation Previews)"
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
 SCPS-45007:
   name: "Final Fantasy VII (aka Final Fantasy 7 or FF7)"
   controllers:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   codes:
     - SCPS-45007
     - SCPS-45008
@@ -56856,6 +56877,7 @@ SLPM-84020:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   codes:
     - SLPM-84020
     - SLPM-87380
@@ -56888,6 +56910,7 @@ SLPM-84021:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   codes:
     - SLPM-84021
     - SLPM-87381
@@ -56920,6 +56943,7 @@ SLPM-84022:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   codes:
     - SLPM-84022
     - SLPM-87382
@@ -56952,6 +56976,7 @@ SLPM-87383:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   codes:
     - SLPM-87383
     - SLPS-01060
