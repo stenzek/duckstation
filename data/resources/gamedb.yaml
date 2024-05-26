@@ -25562,8 +25562,8 @@ SLPM-87395:
     - ForceRecompilerICache
     - DisableWidescreen
   settings:
-    dmaMaxSliceTicks: 100
-    dmaHaltTicks: 150
+    dmaMaxSliceTicks: 10 # Very sensitive to DMA timing, otherwise polygon flicker.
+    dmaHaltTicks: 100 # CPU needs to run significantly faster than DMA.
   codes:
     - SLPM-87395
     - HASH-753EB8647043CE02
@@ -25597,8 +25597,8 @@ SLPM-87396:
     - ForceRecompilerICache
     - DisableWidescreen
   settings:
-    dmaMaxSliceTicks: 100
-    dmaHaltTicks: 150
+    dmaMaxSliceTicks: 10 # Very sensitive to DMA timing, otherwise polygon flicker.
+    dmaHaltTicks: 100 # CPU needs to run significantly faster than DMA.
   codes:
     - SLPM-87396
     - HASH-BCEC05C9F299F1F9
@@ -25635,8 +25635,8 @@ SLUS-01041:
     - ForceRecompilerICache
     - DisableWidescreen
   settings:
-    dmaMaxSliceTicks: 100
-    dmaHaltTicks: 150
+    dmaMaxSliceTicks: 10 # Very sensitive to DMA timing, otherwise polygon flicker.
+    dmaHaltTicks: 100 # CPU needs to run significantly faster than DMA.
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -25667,8 +25667,8 @@ SLUS-01080:
     - ForceRecompilerICache
     - DisableWidescreen
   settings:
-    dmaMaxSliceTicks: 100
-    dmaHaltTicks: 150
+    dmaMaxSliceTicks: 10 # Very sensitive to DMA timing, otherwise polygon flicker.
+    dmaHaltTicks: 100 # CPU needs to run significantly faster than DMA.
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
