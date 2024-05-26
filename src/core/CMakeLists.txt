@@ -40,8 +40,8 @@ add_library(core
   game_database.h
   game_list.cpp
   game_list.h
-  gdb_protocol.cpp
-  gdb_protocol.h
+  gdb_server.cpp
+  gdb_server.h
   gpu.cpp
   gpu.h
   gpu_backend.cpp

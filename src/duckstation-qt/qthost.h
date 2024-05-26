@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "gdbserver.h"
 #include "qtutils.h"
 
 #include "core/game_list.h"
@@ -246,7 +245,6 @@ private:
 };
 
 extern EmuThread* g_emu_thread;
-extern GDBServer* g_gdb_server;
 
 namespace QtHost {
 /// Sets batch mode (exit after game shutdown).

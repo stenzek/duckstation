@@ -16,6 +16,7 @@
 #include "core/fullscreen_ui.h"
 #include "core/game_database.h"
 #include "core/game_list.h"
+#include "core/gdb_server.h"
 #include "core/gpu.h"
 #include "core/host.h"
 #include "core/imgui_overlays.h"
@@ -81,6 +82,9 @@ static constexpr u32 BACKGROUND_CONTROLLER_POLLING_INTERVAL = 100;
 /// Poll at half the vsync rate for FSUI to reduce the chance of getting a press+release in the same frame.
 static constexpr u32 FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL = 8;
 
+/// Poll at 1ms when running GDB server. We can get rid of this once we move networking to its own thread.
+static constexpr u32 GDB_SERVER_POLLING_INTERVAL = 1;
+
 //////////////////////////////////////////////////////////////////////////
 // Local function declarations
 //////////////////////////////////////////////////////////////////////////
@@ -116,8 +120,7 @@ static bool s_start_fullscreen_ui_fullscreen = false;
 static bool s_run_setup_wizard = false;
 static bool s_cleanup_after_update = false;
 
-EmuThread* g_emu_thread;
-GDBServer* g_gdb_server;
+EmuThread* g_emu_thread = nullptr;
 
 EmuThread::EmuThread(QThread* ui_thread) : QThread(), m_ui_thread(ui_thread)
 {
@@ -1670,8 +1673,13 @@ void EmuThread::startBackgroundControllerPollTimer()
   if (m_background_controller_polling_timer->isActive())
     return;
 
-  m_background_controller_polling_timer->start(
-    FullscreenUI::IsInitialized() ? FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL : BACKGROUND_CONTROLLER_POLLING_INTERVAL);
+  u32 poll_interval = BACKGROUND_CONTROLLER_POLLING_INTERVAL;
+  if (FullscreenUI::IsInitialized())
+    poll_interval = FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL;
+  if (GDBServer::HasAnyClients())
+    poll_interval = GDB_SERVER_POLLING_INTERVAL;
+
+  m_background_controller_polling_timer->start(poll_interval);
 }
 
 void EmuThread::stopBackgroundControllerPollTimer()
@@ -1687,8 +1695,6 @@ void EmuThread::start()
   AssertMsg(!g_emu_thread, "Emu thread does not exist");
 
   g_emu_thread = new EmuThread(QThread::currentThread());
-  g_gdb_server = new GDBServer();
-  g_gdb_server->moveToThread(g_emu_thread);
   g_emu_thread->QThread::start();
   g_emu_thread->m_started_semaphore.acquire();
   g_emu_thread->moveToThread(g_emu_thread);

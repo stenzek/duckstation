@@ -82,8 +82,9 @@ Log_SetChannel(System);
 
 #ifndef __ANDROID__
 #define ENABLE_PINE_SERVER 1
-// #define ENABLE_GDB_SERVER 1
+#define ENABLE_GDB_SERVER 1
 #define ENABLE_SOCKET_MULTIPLEXER 1
+#include "gdb_server.h"
 #include "pine_server.h"
 #endif
 
@@ -1289,6 +1290,10 @@ void System::PauseSystem(bool paused)
     if (g_settings.inhibit_screensaver)
       PlatformMisc::ResumeScreensaver();
 
+#ifdef ENABLE_GDB_SERVER
+    GDBServer::OnSystemPaused();
+#endif
+
     Host::OnSystemPaused();
     Host::OnIdleStateChanged();
     UpdateDisplayVSync();
@@ -1302,6 +1307,10 @@ void System::PauseSystem(bool paused)
 
     if (g_settings.inhibit_screensaver)
       PlatformMisc::SuspendScreensaver();
+
+#ifdef ENABLE_GDB_SERVER
+    GDBServer::OnSystemResumed();
+#endif
 
     Host::OnSystemResumed();
     Host::OnIdleStateChanged();
@@ -1670,6 +1679,11 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   if (g_settings.inhibit_screensaver)
     PlatformMisc::SuspendScreensaver();
 
+#ifdef ENABLE_GDB_SERVER
+  if (g_settings.debugging.enable_gdb_server)
+    GDBServer::Initialize(g_settings.debugging.gdb_server_port);
+#endif
+
   Host::OnSystemStarted();
   Host::OnIdleStateChanged();
 
@@ -1815,6 +1829,10 @@ void System::DestroySystem()
   DebugAssert(!s_system_executing);
   if (s_state == State::Shutdown)
     return;
+
+#ifdef ENABLE_GDB_SERVER
+  GDBServer::Shutdown();
+#endif
 
   Host::ClearOSDMessages();
 
@@ -4072,6 +4090,16 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     }
 
     PostProcessing::UpdateSettings();
+
+#ifdef ENABLE_GDB_SERVER
+    if (g_settings.debugging.enable_gdb_server != old_settings.debugging.enable_gdb_server ||
+        g_settings.debugging.gdb_server_port != old_settings.debugging.gdb_server_port)
+    {
+      GDBServer::Shutdown();
+      if (g_settings.debugging.enable_gdb_server)
+        GDBServer::Initialize(g_settings.debugging.gdb_server_port);
+    }
+#endif
   }
   else
   {

@@ -197,7 +197,7 @@ public:
 
   static u32 GetSocketProtocolForAddress(const SocketAddress& sa);
 
-  virtual void Close() override final;
+  virtual void Close() override;
 
   // Accessors
   const SocketAddress& GetLocalAddress() const { return m_local_address; }
@@ -251,6 +251,7 @@ public:
   size_t Read(void* buffer, size_t buffer_size);
   size_t Write(const void* buffer, size_t buffer_size);
   size_t WriteVector(const void** buffers, const size_t* buffer_lengths, size_t num_buffers);
+  virtual void Close() override;
 
 protected:
   void OnReadEvent() override final;

@@ -1,7 +1,7 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
-#include "gdb_protocol.h"
+#include "gdb_server.h"
 #include "bus.h"
 #include "cpu_core.h"
 #include "cpu_core_private.h"
@@ -11,6 +11,8 @@
 #include "common/small_string.h"
 #include "common/string_util.h"
 
+#include "util/sockets.h"
+
 #include <functional>
 #include <iomanip>
 #include <map>
@@ -19,6 +21,14 @@
 #include <string>
 
 Log_SetChannel(GDBProtocol);
+
+namespace GDBProtocol {
+static bool IsPacketInterrupt(std::string_view data);
+static bool IsPacketContinue(std::string_view data);
+
+static bool IsPacketComplete(std::string_view data);
+static std::string ProcessPacket(std::string_view data);
+} // namespace GDBProtocol
 
 namespace GDBProtocol {
 
@@ -345,3 +355,210 @@ std::string ProcessPacket(std::string_view data)
 }
 
 } // namespace GDBProtocol
+
+namespace GDBServer {
+
+namespace {
+class ClientSocket final : public BufferedStreamSocket
+{
+public:
+  ClientSocket(SocketMultiplexer& multiplexer, SocketDescriptor descriptor);
+  ~ClientSocket() override;
+
+  void OnSystemPaused();
+  void OnSystemResumed();
+
+protected:
+  void OnConnected() override;
+  void OnDisconnected(const Error& error) override;
+  void OnRead() override;
+
+private:
+  void SendPacket(std::string_view sv);
+
+  bool m_seen_resume = false;
+};
+} // namespace
+
+static std::shared_ptr<ListenSocket> s_gdb_listen_socket;
+static std::vector<std::shared_ptr<ClientSocket>> s_gdb_clients;
+} // namespace GDBServer
+
+GDBServer::ClientSocket::ClientSocket(SocketMultiplexer& multiplexer, SocketDescriptor descriptor)
+  : BufferedStreamSocket(multiplexer, descriptor, 65536, 65536)
+{
+}
+
+GDBServer::ClientSocket::~ClientSocket() = default;
+
+void GDBServer::ClientSocket::OnConnected()
+{
+  INFO_LOG("Client {} connected.", GetRemoteAddress().ToString());
+
+  m_seen_resume = System::IsPaused();
+  System::PauseSystem(true);
+
+  s_gdb_clients.push_back(std::static_pointer_cast<ClientSocket>(shared_from_this()));
+}
+
+void GDBServer::ClientSocket::OnDisconnected(const Error& error)
+{
+  INFO_LOG("Client {} disconnected: {}", GetRemoteAddress().ToString(), error.GetDescription());
+
+  const auto iter = std::find_if(s_gdb_clients.begin(), s_gdb_clients.end(),
+                                 [this](const std::shared_ptr<ClientSocket>& rhs) { return (rhs.get() == this); });
+  if (iter == s_gdb_clients.end())
+  {
+    ERROR_LOG("Unknown GDB client disconnected? This should never happen.");
+    return;
+  }
+
+  s_gdb_clients.erase(iter);
+}
+
+void GDBServer::ClientSocket::OnRead()
+{
+  const std::span<const u8> buffer = AcquireReadBuffer();
+  if (buffer.empty())
+    return;
+
+  size_t buffer_offset = 0;
+  while (buffer_offset < buffer.size())
+  {
+    size_t current_packet_size = 1;
+    bool packet_complete = false;
+    for (; (buffer_offset + current_packet_size) <= buffer.size(); current_packet_size++)
+    {
+      const std::string_view current_packet(reinterpret_cast<const char*>(buffer.data() + buffer_offset),
+                                            current_packet_size);
+
+      if (GDBProtocol::IsPacketInterrupt(current_packet))
+      {
+        DEV_LOG("{} > Interrupt request", GetRemoteAddress().ToString());
+        System::PauseSystem(true);
+        packet_complete = true;
+        break;
+      }
+      else if (GDBProtocol::IsPacketContinue(current_packet))
+      {
+        DEV_LOG("{} > Continue request", GetRemoteAddress().ToString());
+        System::PauseSystem(false);
+        packet_complete = true;
+        break;
+      }
+      else if (GDBProtocol::IsPacketComplete(current_packet))
+      {
+        // TODO: Make this not copy.
+        DEV_LOG("{} > {}", GetRemoteAddress().ToString(), current_packet);
+        SendPacket(GDBProtocol::ProcessPacket(current_packet));
+        packet_complete = true;
+        break;
+      }
+    }
+
+    if (!packet_complete)
+    {
+      WARNING_LOG("Incomplete packet, got {} bytes.", buffer.size() - buffer_offset);
+      break;
+    }
+    else
+    {
+      buffer_offset += current_packet_size;
+    }
+  }
+
+  ReleaseReadBuffer(buffer_offset);
+}
+
+void GDBServer::ClientSocket::SendPacket(std::string_view sv)
+{
+  if (sv.empty())
+    return;
+
+  WARNING_LOG("Write: {}", sv);
+  if (size_t written = Write(sv.data(), sv.length()); written != sv.length())
+    ERROR_LOG("Only wrote {} of {} bytes.", written, sv.length());
+}
+
+void GDBServer::ClientSocket::OnSystemPaused()
+{
+  if (!m_seen_resume)
+    return;
+
+  m_seen_resume = false;
+
+  // Generate a stop reply packet, insert '?' command to generate it.
+  SendPacket(GDBProtocol::ProcessPacket("$?#3f"));
+}
+
+void GDBServer::ClientSocket::OnSystemResumed()
+{
+  m_seen_resume = true;
+
+  // Send ack, in case GDB sent a continue request.
+  SendPacket("+");
+}
+
+bool GDBServer::Initialize(u16 port)
+{
+  Error error;
+  Assert(!s_gdb_listen_socket);
+
+  const std::optional<SocketAddress> address =
+    SocketAddress::Parse(SocketAddress::Type::IPv4, "127.0.0.1", port, &error);
+  if (!address.has_value())
+  {
+    ERROR_LOG("Failed to parse address: {}", error.GetDescription());
+    return false;
+  }
+
+  SocketMultiplexer* multiplexer = System::GetSocketMultiplexer();
+  if (!multiplexer)
+    return false;
+
+  s_gdb_listen_socket = multiplexer->CreateListenSocket<ClientSocket>(address.value(), &error);
+  if (!s_gdb_listen_socket)
+  {
+    ERROR_LOG("Failed to create listen socket: {}", error.GetDescription());
+    System::ReleaseSocketMultiplexer();
+    return false;
+  }
+
+  INFO_LOG("GDB server is now listening on {}.", address->ToString());
+  return true;
+}
+
+bool GDBServer::HasAnyClients()
+{
+  return !s_gdb_clients.empty();
+}
+
+void GDBServer::Shutdown()
+{
+  if (!s_gdb_listen_socket)
+    return;
+
+  INFO_LOG("Disconnecting {} GDB clients...", s_gdb_clients.size());
+  while (!s_gdb_clients.empty())
+  {
+    // maintain a reference so we don't delete while in scope
+    std::shared_ptr<ClientSocket> client = s_gdb_clients.back();
+    client->Close();
+  }
+
+  INFO_LOG("Stopping GDB server.");
+  s_gdb_listen_socket.reset();
+  System::ReleaseSocketMultiplexer();
+}
+
+void GDBServer::OnSystemPaused()
+{
+  for (auto& it : s_gdb_clients)
+    it->OnSystemPaused();
+}
+
+void GDBServer::OnSystemResumed()
+{
+  for (auto& it : s_gdb_clients)
+    it->OnSystemResumed();
+}

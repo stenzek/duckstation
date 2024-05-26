@@ -1,4 +1,4 @@
-find_package(Qt6 6.6.0 COMPONENTS Core Gui Widgets Network LinguistTools REQUIRED)
+find_package(Qt6 6.7.0 COMPONENTS Core Gui Widgets LinguistTools REQUIRED)
 
 include(CopyBaseTranslations)
 
@@ -96,10 +96,6 @@ set(SRCS
   gamesummarywidget.cpp
   gamesummarywidget.h
   gamesummarywidget.ui
-  gdbconnection.cpp
-  gdbconnection.h
-  gdbserver.cpp
-  gdbserver.h
   graphicssettingswidget.cpp
   graphicssettingswidget.h
   graphicssettingswidget.ui
@@ -175,7 +171,7 @@ set(TS_FILES
 add_executable(duckstation-qt ${SRCS} ${QM_FILES})
 target_precompile_headers(duckstation-qt PRIVATE "pch.h")
 target_include_directories(duckstation-qt PRIVATE "${Qt6Gui_PRIVATE_INCLUDE_DIRS}" "${CMAKE_CURRENT_SOURCE_DIR}")
-target_link_libraries(duckstation-qt PRIVATE core common imgui minizip scmversion Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network)
+target_link_libraries(duckstation-qt PRIVATE core common imgui minizip scmversion Qt6::Core Qt6::Gui Qt6::Widgets)
 
 # Our Qt builds may have exceptions on, so force them off.
 target_compile_definitions(duckstation-qt PRIVATE QT_NO_EXCEPTIONS)

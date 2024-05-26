@@ -15,8 +15,6 @@
     <ClCompile Include="qtprogresscallback.cpp" />
     <ClCompile Include="interfacesettingswidget.cpp" />
     <ClCompile Include="advancedsettingswidget.cpp" />
-    <ClCompile Include="gdbconnection.cpp" />
-    <ClCompile Include="gdbserver.cpp" />
     <ClCompile Include="aboutdialog.cpp" />
     <ClCompile Include="memorycardsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)qrc_resources.cpp" />
@@ -126,12 +124,6 @@
     <ClCompile Include="$(IntDir)moc_gamesummarywidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)moc_gdbconnection.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)moc_gdbserver.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
     <ClCompile Include="$(IntDir)moc_hotkeysettingswidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
@@ -219,8 +211,6 @@
     <QtMoc Include="interfacesettingswidget.h" />
     <QtMoc Include="qtprogresscallback.h" />
     <QtMoc Include="advancedsettingswidget.h" />
-    <QtMoc Include="gdbconnection.h" />
-    <QtMoc Include="gdbserver.h" />
     <QtMoc Include="aboutdialog.h" />
     <QtMoc Include="memorycardsettingswidget.h" />
     <QtMoc Include="inputbindingdialog.h" />

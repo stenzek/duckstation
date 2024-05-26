@@ -1826,16 +1826,6 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevo
   if ((!starting && !running) || running)
     m_open_debugger_on_start = false;
 
-  if (!g_gdb_server->isListening() && g_settings.debugging.enable_gdb_server && starting)
-  {
-    QMetaObject::invokeMethod(g_gdb_server, "start", Qt::QueuedConnection,
-                              Q_ARG(quint16, g_settings.debugging.gdb_server_port));
-  }
-  else if (g_gdb_server->isListening() && !running)
-  {
-    QMetaObject::invokeMethod(g_gdb_server, "stop", Qt::QueuedConnection);
-  }
-
   m_ui.statusBar->clearMessage();
 }
 

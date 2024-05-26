@@ -755,6 +755,9 @@ void BufferedStreamSocket::ReleaseReadBuffer(size_t bytes_consumed)
 
 std::span<u8> BufferedStreamSocket::AcquireWriteBuffer(size_t wanted_bytes, bool allow_smaller /* = false */)
 {
+  if (!m_connected)
+    return {};
+
   // If to get the desired space, we need to move backwards, do so.
   if ((m_send_buffer_offset + m_send_buffer_size + wanted_bytes) > m_send_buffer.size())
   {
@@ -776,6 +779,9 @@ std::span<u8> BufferedStreamSocket::AcquireWriteBuffer(size_t wanted_bytes, bool
 
 void BufferedStreamSocket::ReleaseWriteBuffer(size_t bytes_written, bool commit /* = true */)
 {
+  if (!m_connected)
+    return;
+
   DebugAssert((m_send_buffer_offset + m_send_buffer_size + bytes_written) <= m_send_buffer.size());
   m_send_buffer_size += static_cast<u32>(bytes_written);
 
@@ -819,6 +825,9 @@ size_t BufferedStreamSocket::Read(void* buffer, size_t buffer_size)
 
 size_t BufferedStreamSocket::Write(const void* buffer, size_t buffer_size)
 {
+  if (!m_connected)
+    return 0;
+
   // Read from receive buffer.
   const std::span<u8> wrbuf = AcquireWriteBuffer(buffer_size, true);
   if (wrbuf.empty())
@@ -855,6 +864,16 @@ size_t BufferedStreamSocket::WriteVector(const void** buffers, const size_t* buf
   }
 
   return written_bytes;
+}
+
+void BufferedStreamSocket::Close()
+{
+  StreamSocket::Close();
+
+  m_receive_buffer_offset = 0;
+  m_receive_buffer_size = 0;
+  m_send_buffer_offset = 0;
+  m_send_buffer_size = 0;
 }
 
 void BufferedStreamSocket::OnReadEvent()

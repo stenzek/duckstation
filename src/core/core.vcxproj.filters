@@ -6,7 +6,6 @@
     <ClCompile Include="cpu_disasm.cpp" />
     <ClCompile Include="bus.cpp" />
     <ClCompile Include="dma.cpp" />
-    <ClCompile Include="gdb_protocol.cpp" />
     <ClCompile Include="gpu.cpp" />
     <ClCompile Include="gpu_hw.cpp" />
     <ClCompile Include="interrupt_controller.cpp" />
@@ -68,6 +67,7 @@
     <ClCompile Include="cpu_newrec_compiler_aarch32.cpp" />
     <ClCompile Include="justifier.cpp" />
     <ClCompile Include="pine_server.cpp" />
+    <ClCompile Include="gdb_server.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -120,7 +120,6 @@
     <ClInclude Include="gpu_sw_backend.h" />
     <ClInclude Include="texture_replacements.h" />
     <ClInclude Include="multitap.h" />
-    <ClInclude Include="gdb_protocol.h" />
     <ClInclude Include="host.h" />
     <ClInclude Include="achievements.h" />
     <ClInclude Include="game_database.h" />
@@ -142,5 +141,6 @@
     <ClInclude Include="achievements_private.h" />
     <ClInclude Include="justifier.h" />
     <ClInclude Include="pine_server.h" />
+    <ClInclude Include="gdb_server.h" />
   </ItemGroup>
 </Project>

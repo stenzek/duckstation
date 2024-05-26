@@ -36,8 +36,6 @@
     <ClCompile Include="gamelistrefreshthread.cpp" />
     <ClCompile Include="gamelistwidget.cpp" />
     <ClCompile Include="gamesummarywidget.cpp" />
-    <ClCompile Include="gdbconnection.cpp" />
-    <ClCompile Include="gdbserver.cpp" />
     <ClCompile Include="mainwindow.cpp" />
     <ClCompile Include="memorycardsettingswidget.cpp" />
     <ClCompile Include="memorycardeditorwindow.cpp" />
@@ -97,8 +95,6 @@
     <QtMoc Include="gamelistrefreshthread.h" />
     <QtMoc Include="gamelistwidget.h" />
     <QtMoc Include="gamesummarywidget.h" />
-    <QtMoc Include="gdbconnection.h" />
-    <QtMoc Include="gdbserver.h" />
     <QtMoc Include="postprocessingsettingswidget.h" />
     <QtMoc Include="mainwindow.h" />
     <QtMoc Include="qthost.h" />
@@ -243,8 +239,6 @@
     <ClCompile Include="$(IntDir)moc_gamelistsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistwidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamesummarywidget.cpp" />
-    <ClCompile Include="$(IntDir)moc_gdbconnection.cpp" />
-    <ClCompile Include="$(IntDir)moc_gdbserver.cpp" />
     <ClCompile Include="$(IntDir)moc_graphicssettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_debuggermodels.cpp" />
     <ClCompile Include="$(IntDir)moc_debuggerwindow.cpp" />
