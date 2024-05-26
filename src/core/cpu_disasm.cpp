@@ -434,8 +434,46 @@ void CPU::FormatComment(SmallStringBase* dest, const Instruction inst, u32 pc, c
     else if (std::strncmp(str, "offsetrs", 8) == 0)
     {
       const s32 offset = static_cast<s32>(inst.i.imm_sext32());
-      dest->append_format("{}addr={:08X}", dest->empty() ? "" : ", ",
-                          regs->r[static_cast<u8>(inst.i.rs.GetValue())] + offset);
+      u32 tempValueWord;
+      u16 tempValueHalfWord;
+      u8 tempValueByte;
+      bool returnValue=false;
+      u32 tempAddress = (regs->r[static_cast<u8>(inst.i.rs.GetValue())] + offset);
+
+      SmallString instructionStr;
+      CPU::DisassembleInstruction(&instructionStr, pc, inst.bits);
+
+      if (instructionStr[1] == 'b')
+      {
+        dest->empty() ? 0 : returnValue = CPU::SafeReadMemoryByte(tempAddress, &tempValueByte);
+      }
+      else if (instructionStr[1] == 'h')
+      {
+        dest->empty() ? 0 : returnValue = CPU::SafeReadMemoryHalfWord(tempAddress, &tempValueHalfWord);
+      }
+      else
+      {
+        dest->empty() ? 0 : returnValue = CPU::SafeReadMemoryWord(tempAddress, &tempValueWord);
+      }      
+      if (returnValue == true)
+      {
+        if (instructionStr[1] == 'b')
+        {
+          dest->append_format("{}addr={:08X}[{:02X}]", dest->empty() ? "" : ", ", tempAddress, tempValueByte);
+        }
+        else if (instructionStr[1] == 'h')
+        {
+          dest->append_format("{}addr={:08X}[{:04X}]", dest->empty() ? "" : ", ", tempAddress, tempValueHalfWord);
+        }
+        else
+        {
+          dest->append_format("{}addr={:08X}[{:08X}]", dest->empty() ? "" : ", ", tempAddress, tempValueWord);
+        }
+      }
+      else
+      {
+        dest->append_format("{}addr={:08X}", dest->empty() ? "" : ", ", tempAddress);  
+      }
       str += 8;
     }
     else if (std::strncmp(str, "jt", 2) == 0)
