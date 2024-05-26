@@ -237,9 +237,9 @@ void AdvancedSettingsWidget::addTweakOptions()
                            -128, 127, 0);
   }
 
-  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("DMA Max Slice Ticks"), "Hacks", "DMAMaxSliceTicks", 100,
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("DMA Max Slice Ticks"), "Hacks", "DMAMaxSliceTicks", 1,
                          10000, Settings::DEFAULT_DMA_MAX_SLICE_TICKS);
-  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("DMA Halt Ticks"), "Hacks", "DMAHaltTicks", 100, 10000,
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("DMA Halt Ticks"), "Hacks", "DMAHaltTicks", 1, 10000,
                          Settings::DEFAULT_DMA_HALT_TICKS);
   addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("GPU FIFO Size"), "Hacks", "GPUFIFOSize", 16, 4096,
                          Settings::DEFAULT_GPU_FIFO_SIZE);
