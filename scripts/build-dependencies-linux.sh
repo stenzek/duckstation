@@ -7,9 +7,12 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
-INSTALLDIR="$1"
 SCRIPTDIR=$(realpath $(dirname "${BASH_SOURCE[0]}"))
 NPROCS="$(getconf _NPROCESSORS_ONLN)"
+INSTALLDIR="$1"
+if [ "${INSTALLDIR:0:1}" != "/" ]; then
+	INSTALLDIR="$PWD/$INSTALLDIR"
+fi
 
 LIBBACKTRACE=ad106d5fdd5d960bd33fae1c48a351af567fd075
 LIBJPEG=9f
