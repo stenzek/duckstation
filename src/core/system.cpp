@@ -2962,8 +2962,11 @@ GPUVSyncMode System::GetEffectiveVSyncMode()
   // If there's no VM, or we're using vsync for timing, then we always use double-buffered (blocking).
   // Try to keep the same present mode whether we're running or not, since it'll avoid flicker.
   const bool valid_vm = (s_state != State::Shutdown && s_state != State::Stopping);
-  if (s_can_sync_to_host || (!valid_vm && g_settings.sync_to_host_refresh_rate))
+  if (s_can_sync_to_host || (!valid_vm && g_settings.sync_to_host_refresh_rate) ||
+      g_settings.display_disable_mailbox_presentation)
+  {
     return GPUVSyncMode::FIFO;
+  }
 
   // For PAL games, we always want to triple buffer, because otherwise we'll be tearing.
   // Or for when we aren't using sync-to-host-refresh, to avoid dropping frames.
@@ -4054,6 +4057,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.display_pre_frame_sleep != old_settings.display_pre_frame_sleep ||
         g_settings.display_pre_frame_sleep_buffer != old_settings.display_pre_frame_sleep_buffer ||
         g_settings.display_vsync != old_settings.display_vsync ||
+        g_settings.display_disable_mailbox_presentation != old_settings.display_disable_mailbox_presentation ||
         g_settings.sync_to_host_refresh_rate != old_settings.sync_to_host_refresh_rate)
     {
       UpdateSpeedLimiterState();
@@ -4073,8 +4077,11 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
   {
     if (g_gpu_device)
     {
-      if (g_settings.display_vsync != old_settings.display_vsync)
+      if (g_settings.display_vsync != old_settings.display_vsync ||
+          g_settings.display_disable_mailbox_presentation != old_settings.display_disable_mailbox_presentation)
+      {
         UpdateDisplayVSync();
+      }
     }
   }
 

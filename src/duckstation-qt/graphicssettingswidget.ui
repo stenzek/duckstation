@@ -417,20 +417,6 @@
           </item>
           <item row="2" column="0" colspan="2">
            <layout class="QGridLayout" name="advancedDisplayOptionsLayout">
-            <item row="1" column="1">
-             <widget class="QCheckBox" name="blitSwapChain">
-              <property name="text">
-               <string>Use Blit Swap Chain</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="stretchDisplayVertically">
-              <property name="text">
-               <string>Stretch Vertically</string>
-              </property>
-             </widget>
-            </item>
             <item row="0" column="1">
              <widget class="QCheckBox" name="threadedPresentation">
               <property name="text">
@@ -439,9 +425,23 @@
              </widget>
             </item>
             <item row="0" column="0">
-             <widget class="QCheckBox" name="gpuThread">
+             <widget class="QCheckBox" name="blitSwapChain">
               <property name="text">
-               <string>Threaded Rendering</string>
+               <string>Use Blit Swap Chain</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QCheckBox" name="stretchDisplayVertically">
+              <property name="text">
+               <string>Stretch Vertically</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="disableMailboxPresentation">
+              <property name="text">
+               <string>Disable Mailbox Presentation</string>
               </property>
              </widget>
             </item>
@@ -482,10 +482,17 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
+            <item row="1" column="1">
              <widget class="QCheckBox" name="useSoftwareRendererForReadbacks">
               <property name="text">
                <string>Software Renderer Readbacks</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="gpuThread">
+              <property name="text">
+               <string>Threaded Rendering</string>
               </property>
              </widget>
             </item>

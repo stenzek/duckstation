@@ -152,6 +152,7 @@ struct Settings
   bool display_pre_frame_sleep : 1 = false;
   bool display_skip_presenting_duplicate_frames : 1 = false;
   bool display_vsync : 1 = false;
+  bool display_disable_mailbox_presentation : 1 = true;
   bool display_force_4_3_for_24bit : 1 = false;
   bool gpu_24bit_chroma_smoothing : 1 = false;
   bool display_show_osd_messages : 1 = true;

@@ -124,7 +124,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                                &Settings::ParseDisplayAlignment, &Settings::GetDisplayAlignmentName,
                                                Settings::DEFAULT_DISPLAY_ALIGNMENT);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuThread, "GPU", "UseThread", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.threadedPresentation, "GPU", "ThreadedPresentation", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.threadedPresentation, "GPU", "ThreadedPresentation",
+                                               Settings::DEFAULT_THREADED_PRESENTATION);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableMailboxPresentation, "Display",
+                                               "DisableMailboxPresentation", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.stretchDisplayVertically, "Display", "StretchVertically",
                                                false);
 #ifdef _WIN32
@@ -334,6 +337,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   dialog->registerWidgetHelp(m_ui.threadedPresentation, tr("Threaded Presentation"), tr("Checked"),
                              tr("Presents frames on a background thread when fast forwarding or vsync is disabled. "
                                 "This can measurably improve performance in the Vulkan renderer."));
+  dialog->registerWidgetHelp(
+    m_ui.disableMailboxPresentation, tr("Disable Mailbox Presentation"), tr("Unchecked"),
+    tr("Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. "
+       "Usually results in worse frame pacing."));
   dialog->registerWidgetHelp(
     m_ui.stretchDisplayVertically, tr("Stretch Vertically"), tr("Unchecked"),
     tr("Prefers stretching the display vertically instead of horizontally, when applying the display aspect ratio."));
