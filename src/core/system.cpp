@@ -2995,7 +2995,7 @@ GPUVSyncMode System::GetEffectiveVSyncMode()
 bool System::ShouldAllowPresentThrottle()
 {
   const bool valid_vm = (s_state != State::Shutdown && s_state != State::Stopping);
-  return !valid_vm || !IsRunningAtNonStandardSpeed();
+  return !valid_vm || IsRunningAtNonStandardSpeed();
 }
 
 bool System::IsFastForwardEnabled()
@@ -4633,7 +4633,7 @@ bool System::IsRunningAtNonStandardSpeed()
   if (!IsValid())
     return false;
 
-  return (s_target_speed == 1.0f || s_syncing_to_host);
+  return (s_target_speed != 1.0f && !s_syncing_to_host);
 }
 
 s32 System::GetAudioOutputVolume()
