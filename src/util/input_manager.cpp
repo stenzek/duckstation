@@ -109,6 +109,7 @@ static void PrettifyInputBindingPart(std::string_view binding, SmallString& ret,
 static void AddBindings(const std::vector<std::string>& bindings, const InputEventHandler& handler);
 
 static bool IsAxisHandler(const InputEventHandler& handler);
+static float ApplySingleBindingScale(float sensitivity, float deadzone, float value);
 
 static void AddHotkeyBindings(SettingsInterface& si);
 static void AddPadBindings(SettingsInterface& si, const std::string& section, u32 pad,
@@ -777,6 +778,12 @@ std::optional<InputBindingKey> InputManager::ParseSensorKey(std::string_view sou
 // Binding Enumeration
 // ------------------------------------------------------------------------
 
+float InputManager::ApplySingleBindingScale(float scale, float deadzone, float value)
+{
+  const float svalue = std::clamp(value * scale, 0.0f, 1.0f);
+  return (deadzone > 0.0f && svalue < deadzone) ? 0.0f : svalue;
+}
+
 std::vector<const HotkeyInfo*> InputManager::GetHotkeyList()
 {
   std::vector<const HotkeyInfo*> ret;
@@ -818,13 +825,18 @@ void InputManager::AddPadBindings(SettingsInterface& si, const std::string& sect
       {
         if (!bindings.empty())
         {
-          AddBindings(bindings, InputAxisEventHandler{[pad_index, bind_index = bi.bind_index](float value) {
+          const float sensitivity =
+            si.GetFloatValue(section.c_str(), TinyString::from_format("{}Scale", bi.name), 1.0f);
+          const float deadzone =
+            si.GetFloatValue(section.c_str(), TinyString::from_format("{}Deadzone", bi.name), 0.0f);
+          AddBindings(bindings, InputAxisEventHandler{[pad_index, bind_index = bi.bind_index, sensitivity,
+                                                       deadzone](float value) {
                         if (!System::IsValid())
                           return;
 
                         Controller* c = System::GetController(pad_index);
                         if (c)
-                          c->SetBindState(bind_index, value);
+                          c->SetBindState(bind_index, ApplySingleBindingScale(sensitivity, deadzone, value));
                       }});
         }
       }

@@ -1,10 +1,10 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
 #include "common/types.h"
-#include "util/input_manager.h"
 #include "ui_inputbindingdialog.h"
+#include "util/input_manager.h"
 #include <QtWidgets/QDialog>
 #include <optional>
 #include <string>
@@ -47,6 +47,11 @@ protected:
 
   void hookInputManager();
   void unhookInputManager();
+
+  void onSensitivityChanged(int value);
+  void onResetDeadzoneClicked();
+  void onDeadzoneChanged(int value);
+  void onResetSensitivityClicked();
 
   Ui::InputBindingDialog m_ui;
 

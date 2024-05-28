@@ -388,7 +388,7 @@ void ControllerBindingWidget::createBindingWidgets(QWidget* parent)
   scrollarea->setWidget(scrollarea_widget);
   scrollarea->setWidgetResizable(true);
   scrollarea->setFrameShape(QFrame::StyledPanel);
-  scrollarea->setFrameShadow(QFrame::Plain);
+  scrollarea->setFrameShadow(QFrame::Sunken);
 
   // We do axes and buttons separately, so we can figure out how many columns to use.
   constexpr int NUM_AXIS_COLUMNS = 2;

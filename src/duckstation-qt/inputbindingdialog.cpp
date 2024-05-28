@@ -1,11 +1,14 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "inputbindingdialog.h"
-#include "common/bitutils.h"
+#include "controllersettingwidgetbinder.h"
 #include "inputbindingwidgets.h"
 #include "qthost.h"
 #include "qtutils.h"
+
+#include "common/bitutils.h"
+
 #include <QtCore/QTimer>
 #include <QtGui/QKeyEvent>
 #include <QtGui/QMouseEvent>
@@ -27,6 +30,28 @@ InputBindingDialog::InputBindingDialog(SettingsInterface* sif, InputBindingInfo:
   connect(m_ui.clearBindings, &QPushButton::clicked, this, &InputBindingDialog::onClearBindingsButtonClicked);
   connect(m_ui.buttonBox, &QDialogButtonBox::rejected, [this]() { done(0); });
   updateList();
+
+  // Only show the sensitivity controls for binds where it's applicable.
+  if (bind_type == InputBindingInfo::Type::Button || bind_type == InputBindingInfo::Type::Axis ||
+      bind_type == InputBindingInfo::Type::HalfAxis)
+  {
+    ControllerSettingWidgetBinder::BindWidgetToInputProfileNormalized(sif, m_ui.sensitivity, m_section_name,
+                                                                      fmt::format("{}Scale", m_key_name), 100.0f, 1.0f);
+    ControllerSettingWidgetBinder::BindWidgetToInputProfileNormalized(
+      sif, m_ui.deadzone, m_section_name, fmt::format("{}Deadzone", m_key_name), 100.0f, 0.0f);
+
+    connect(m_ui.sensitivity, &QSlider::valueChanged, this, &InputBindingDialog::onSensitivityChanged);
+    connect(m_ui.resetSensitivity, &QToolButton::clicked, this, &InputBindingDialog::onResetSensitivityClicked);
+    connect(m_ui.deadzone, &QSlider::valueChanged, this, &InputBindingDialog::onDeadzoneChanged);
+    connect(m_ui.resetDeadzone, &QToolButton::clicked, this, &InputBindingDialog::onResetDeadzoneClicked);
+
+    onSensitivityChanged(m_ui.sensitivity->value());
+    onDeadzoneChanged(m_ui.deadzone->value());
+  }
+  else
+  {
+    m_ui.verticalLayout->removeWidget(m_ui.sensitivityWidget);
+  }
 }
 
 InputBindingDialog::~InputBindingDialog()
@@ -299,6 +324,56 @@ void InputBindingDialog::inputManagerHookCallback(InputBindingKey key, float val
     key_to_add.modifier = (value < 0.0f && !reverse_threshold) ? InputModifier::Negate : InputModifier::None;
     key_to_add.invert = reverse_threshold;
     m_new_bindings.push_back(key_to_add);
+  }
+}
+
+void InputBindingDialog::onSensitivityChanged(int value)
+{
+  m_ui.sensitivityValue->setText(tr("%1%").arg(value));
+}
+
+void InputBindingDialog::onResetDeadzoneClicked()
+{
+  m_ui.deadzone->setValue(0);
+
+  // May as well remove from the config completely, since it's the default.
+  const TinyString key = TinyString::from_format("{}Deadzone", m_key_name);
+  if (m_sif)
+  {
+    m_sif->DeleteValue(m_section_name.c_str(), key);
+    QtHost::SaveGameSettings(m_sif, false);
+    g_emu_thread->reloadGameSettings(false);
+  }
+  else
+  {
+    Host::DeleteBaseSettingValue(m_section_name.c_str(), key);
+    Host::CommitBaseSettingChanges();
+    g_emu_thread->applySettings(false);
+  }
+}
+
+void InputBindingDialog::onDeadzoneChanged(int value)
+{
+  m_ui.deadzoneValue->setText(tr("%1%").arg(value));
+}
+
+void InputBindingDialog::onResetSensitivityClicked()
+{
+  m_ui.sensitivity->setValue(100);
+
+  // May as well remove from the config completely, since it's the default.
+  const TinyString key = TinyString::from_format("{}Scale", m_key_name);
+  if (m_sif)
+  {
+    m_sif->DeleteValue(m_section_name.c_str(), key);
+    QtHost::SaveGameSettings(m_sif, false);
+    g_emu_thread->reloadGameSettings(false);
+  }
+  else
+  {
+    Host::DeleteBaseSettingValue(m_section_name.c_str(), key);
+    Host::CommitBaseSettingChanges();
+    g_emu_thread->applySettings(false);
   }
 }
 
