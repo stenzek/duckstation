@@ -2387,10 +2387,10 @@ bool GPU_HW::BlitVRAMReplacementTexture(const TextureReplacementTexture* tex, u3
     0.0f, 0.0f, static_cast<float>(tex->GetWidth()) / static_cast<float>(m_vram_replacement_texture->GetWidth()),
     static_cast<float>(tex->GetHeight()) / static_cast<float>(m_vram_replacement_texture->GetHeight())};
 
-  g_gpu_device->PushUniformBuffer(src_rect, sizeof(src_rect));
   g_gpu_device->SetTextureSampler(0, m_vram_replacement_texture.get(), g_gpu_device->GetLinearSampler());
   g_gpu_device->SetPipeline(m_vram_write_replacement_pipeline.get());
   g_gpu_device->SetViewportAndScissor(dst_x, dst_y, width, height);
+  g_gpu_device->PushUniformBuffer(src_rect, sizeof(src_rect));
   g_gpu_device->Draw(3, 0);
 
   RestoreDeviceContext();
@@ -3460,13 +3460,13 @@ void GPU_HW::DownsampleFramebufferBoxFilter(GPUTexture* source, u32 left, u32 to
   source->MakeReadyForSampling();
 
   const u32 uniforms[4] = {left, top, 0u, 0u};
-  g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
 
   g_gpu_device->InvalidateRenderTarget(m_downsample_texture.get());
   g_gpu_device->SetRenderTarget(m_downsample_texture.get());
   g_gpu_device->SetPipeline(m_downsample_first_pass_pipeline.get());
   g_gpu_device->SetTextureSampler(0, source, g_gpu_device->GetNearestSampler());
   g_gpu_device->SetViewportAndScissor(0, 0, ds_width, ds_height);
+  g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
   g_gpu_device->Draw(3, 0);
 
   RestoreDeviceContext();
