@@ -105,6 +105,7 @@ union MEMCTRL
 } // namespace
 
 static void* s_shmem_handle = nullptr;
+static std::string s_shmem_name = MemMap::GetFileMappingName("duckstation");
 
 std::bitset<RAM_8MB_CODE_PAGE_COUNT> g_ram_code_bits{};
 u8* g_ram = nullptr;
@@ -177,7 +178,7 @@ static constexpr size_t TOTAL_SIZE = LUT_OFFSET + LUT_SIZE;
 bool Bus::AllocateMemory(Error* error)
 {
   s_shmem_handle =
-    MemMap::CreateSharedMemory(MemMap::GetFileMappingName("duckstation").c_str(), MemoryMap::TOTAL_SIZE, error);
+    MemMap::CreateSharedMemory(s_shmem_name.c_str(), MemoryMap::TOTAL_SIZE, error);
   if (!s_shmem_handle)
   {
 #ifndef __linux__
@@ -287,7 +288,7 @@ void Bus::ReleaseMemory()
 
   if (s_shmem_handle)
   {
-    MemMap::DestroySharedMemory(s_shmem_handle);
+    MemMap::DestroySharedMemory(s_shmem_handle, s_shmem_name.c_str());
     s_shmem_handle = nullptr;
   }
 }

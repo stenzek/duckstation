@@ -63,8 +63,11 @@ void* MemMap::CreateSharedMemory(const char* name, size_t size, Error* error)
   return mapping;
 }
 
-void MemMap::DestroySharedMemory(void* ptr)
+void MemMap::DestroySharedMemory(void* ptr, const char* name)
 {
+  // Unused
+  (void)name;
+
   CloseHandle(static_cast<HANDLE>(ptr));
 }
 
@@ -319,8 +322,11 @@ void* MemMap::CreateSharedMemory(const char* name, size_t size, Error* error)
   return reinterpret_cast<void*>(static_cast<uintptr_t>(port));
 }
 
-void MemMap::DestroySharedMemory(void* ptr)
+void MemMap::DestroySharedMemory(void* ptr, const char* name)
 {
+  // Unused
+  (void)name;
+
   mach_port_deallocate(mach_task_self(), static_cast<mach_port_t>(reinterpret_cast<uintptr_t>(ptr)));
 }
 
@@ -487,9 +493,6 @@ void* MemMap::CreateSharedMemory(const char* name, size_t size, Error* error)
     return nullptr;
   }
 
-  // we're not going to be opening this mapping in other processes, so remove the file
-  shm_unlink(name);
-
   // use fallocate() to ensure we don't SIGBUS later on.
 #ifdef __linux__
   if (fallocate(fd, 0, 0, static_cast<off_t>(size)) < 0)
@@ -509,8 +512,9 @@ void* MemMap::CreateSharedMemory(const char* name, size_t size, Error* error)
   return reinterpret_cast<void*>(static_cast<intptr_t>(fd));
 }
 
-void MemMap::DestroySharedMemory(void* ptr)
+void MemMap::DestroySharedMemory(void* ptr, const char* name)
 {
+  shm_unlink(name);
   close(static_cast<int>(reinterpret_cast<intptr_t>(ptr)));
 }
 
