@@ -1589,25 +1589,25 @@ Mensagens não lidas: {}</translation>
         <translation>Volume de saída:</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="327"/>
+        <location filename="../audiosettingswidget.ui" line="278"/>
         <source>Fast Forward Volume:</source>
         <translation>Volume do avanço rápido:</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="334"/>
+        <location filename="../audiosettingswidget.ui" line="336"/>
         <location filename="../audiosettingswidget.cpp" line="107"/>
         <source>Mute All Sound</source>
         <translation>Silenciar tudo</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="341"/>
+        <location filename="../audiosettingswidget.ui" line="343"/>
         <location filename="../audiosettingswidget.cpp" line="109"/>
         <source>Mute CD Audio</source>
         <translation>Silenciar áudio CDs</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="256"/>
-        <location filename="../audiosettingswidget.ui" line="305"/>
+        <location filename="../audiosettingswidget.ui" line="312"/>
         <source>100%</source>
         <translation>100%</translation>
     </message>
@@ -1715,7 +1715,7 @@ Mensagens não lidas: {}</translation>
         <translation>Redefine o volume de volta para o padrão, ex .completo.</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.ui" line="315"/>
+        <location filename="../audiosettingswidget.ui" line="322"/>
         <location filename="../audiosettingswidget.cpp" line="127"/>
         <source>Reset Fast Forward Volume</source>
         <translation>Redefine o volume do avanço rápido</translation>
@@ -11508,35 +11508,67 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <translation>Atribuições para o primeiro controle/botão círculo</translation>
     </message>
     <message>
-        <location filename="../inputbindingdialog.ui" line="45"/>
+        <location filename="../inputbindingdialog.ui" line="92"/>
+        <source>Sensitivity:</source>
+        <translation>Sensibilidade:</translation>
+    </message>
+    <message>
+        <location filename="../inputbindingdialog.ui" line="99"/>
+        <location filename="../inputbindingdialog.ui" line="113"/>
+        <source>100%</source>
+        <translation>100%</translation>
+    </message>
+    <message>
+        <location filename="../inputbindingdialog.ui" line="106"/>
+        <source>Deadzone:</source>
+        <translation>Zona morta:</translation>
+    </message>
+    <message>
+        <location filename="../inputbindingdialog.ui" line="120"/>
+        <source>Reset Volume</source>
+        <translation>Redefinir volume</translation>
+    </message>
+    <message>
+        <location filename="../inputbindingdialog.ui" line="130"/>
+        <source>Reset Fast Forward Volume</source>
+        <translation>Redefinir o volume do avanço rápido</translation>
+    </message>
+    <message>
+        <location filename="../inputbindingdialog.ui" line="152"/>
         <source>Add Binding</source>
         <translation>Adicionar atribuição</translation>
     </message>
     <message>
-        <location filename="../inputbindingdialog.ui" line="52"/>
+        <location filename="../inputbindingdialog.ui" line="159"/>
         <source>Remove Binding</source>
         <translation>Remover atribuição</translation>
     </message>
     <message>
-        <location filename="../inputbindingdialog.ui" line="59"/>
+        <location filename="../inputbindingdialog.ui" line="166"/>
         <source>Clear Bindings</source>
         <translation>Limpar atribuições</translation>
     </message>
     <message>
-        <location filename="../inputbindingdialog.cpp" line="22"/>
+        <location filename="../inputbindingdialog.cpp" line="25"/>
         <source>Bindings for %1 %2</source>
         <translation>Atribuições para %1 %2</translation>
     </message>
     <message>
-        <location filename="../inputbindingdialog.cpp" line="23"/>
+        <location filename="../inputbindingdialog.cpp" line="26"/>
         <source>Close</source>
         <translation>Fechar</translation>
     </message>
     <message>
-        <location filename="../inputbindingdialog.cpp" line="131"/>
-        <location filename="../inputbindingdialog.cpp" line="147"/>
+        <location filename="../inputbindingdialog.cpp" line="156"/>
+        <location filename="../inputbindingdialog.cpp" line="172"/>
         <source>Push Button/Axis... [%1]</source>
         <translation>Aperte botão/analógicos... [%1]</translation>
+    </message>
+    <message>
+        <location filename="../inputbindingdialog.cpp" line="332"/>
+        <location filename="../inputbindingdialog.cpp" line="357"/>
+        <source>%1%</source>
+        <translation>%1%</translation>
     </message>
 </context>
 <context>
