@@ -17,6 +17,10 @@ Log_SetChannel(JitCodeBuffer);
 #else
 #include <errno.h>
 #include <sys/mman.h>
+#ifdef __APPLE__
+#include <mach/mach_init.h>
+#include <mach/mach_vm.h>
+#endif
 #endif
 
 JitCodeBuffer::JitCodeBuffer() = default;
@@ -109,6 +113,26 @@ bool JitCodeBuffer::TryAllocateAt(const void* addr)
   }
 
   return true;
+#elif defined(__APPLE__) && !defined(__aarch64__)
+  kern_return_t ret = mach_vm_allocate(mach_task_self(), reinterpret_cast<mach_vm_address_t*>(&addr), m_total_size,
+                                       addr ? VM_FLAGS_FIXED : VM_FLAGS_ANYWHERE);
+  if (ret != KERN_SUCCESS)
+  {
+    ERROR_LOG("mach_vm_allocate() returned {}", ret);
+    return false;
+  }
+
+  ret = mach_vm_protect(mach_task_self(), reinterpret_cast<mach_vm_address_t>(addr), m_total_size, false,
+                        VM_PROT_READ | VM_PROT_WRITE | VM_PROT_EXECUTE);
+  if (ret != KERN_SUCCESS)
+  {
+    ERROR_LOG("mach_vm_protect() returned {}", ret);
+    mach_vm_deallocate(mach_task_self(), reinterpret_cast<mach_vm_address_t>(addr), m_total_size);
+    return false;
+  }
+
+  m_code_ptr = static_cast<u8*>(const_cast<void*>(addr));
+  return true;
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__) || defined(__FreeBSD__)
   int flags = MAP_PRIVATE | MAP_ANONYMOUS;
 #if defined(__linux__)
@@ -119,14 +143,11 @@ bool JitCodeBuffer::TryAllocateAt(const void* addr)
   // FreeBSD achieves the same with MAP_FIXED and MAP_EXCL.
   if (addr)
     flags |= MAP_FIXED | MAP_EXCL;
-#elif defined(__APPLE__) && defined(__aarch64__)
-  // MAP_JIT and toggleable write protection is required on Apple Silicon.
-  flags |= MAP_JIT;
 #elif defined(__APPLE__)
-  // MAP_FIXED is needed on x86 apparently.. hopefully there's nothing mapped at this address, otherwise we'll end up
-  // clobbering it..
+  // On ARM64, we need to use MAP_JIT, which means we can't use MAP_FIXED.
   if (addr)
-    flags |= MAP_FIXED;
+    return false;
+  flags |= MAP_JIT;
 #endif
 
   m_code_ptr =
@@ -230,6 +251,11 @@ void JitCodeBuffer::Destroy()
 #if defined(_WIN32)
     if (!VirtualFree(m_code_ptr, 0, MEM_RELEASE))
       ERROR_LOG("Failed to free code pointer {}", static_cast<void*>(m_code_ptr));
+#elif defined(__APPLE__) && !defined(__aarch64__)
+    const kern_return_t res =
+      mach_vm_deallocate(mach_task_self(), reinterpret_cast<mach_vm_address_t>(m_code_ptr), m_total_size);
+    if (res != KERN_SUCCESS)
+      ERROR_LOG("mach_vm_deallocate() failed: {}", res);
 #elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__HAIKU__) || defined(__FreeBSD__)
     if (munmap(m_code_ptr, m_total_size) != 0)
       ERROR_LOG("Failed to free code pointer {}", static_cast<void*>(m_code_ptr));

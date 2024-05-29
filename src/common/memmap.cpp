@@ -13,16 +13,19 @@
 
 #if defined(_WIN32)
 #include "windows_headers.h"
+#elif defined(__APPLE__)
+#ifdef __aarch64__
+#include <pthread.h> // pthread_jit_write_protect_np()
+#endif
+#include <mach/mach_init.h>
+#include <mach/mach_port.h>
+#include <mach/mach_vm.h>
+#include <mach/vm_map.h>
 #elif !defined(__ANDROID__)
 #include <cerrno>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
-#endif
-
-#if defined(__APPLE__) && defined(__aarch64__)
-// pthread_jit_write_protect_np()
-#include <pthread.h>
 #endif
 
 Log_SetChannel(MemoryArena);
@@ -278,6 +281,176 @@ bool SharedMemoryMappingArea::Unmap(void* map_base, size_t map_size)
   return true;
 }
 
+#elif defined(__APPLE__)
+
+bool MemMap::MemProtect(void* baseaddr, size_t size, PageProtect mode)
+{
+  DebugAssertMsg((size & (HOST_PAGE_SIZE - 1)) == 0, "Size is page aligned");
+
+  kern_return_t res = mach_vm_protect(mach_task_self(), reinterpret_cast<mach_vm_address_t>(baseaddr), size, false,
+                                      static_cast<vm_prot_t>(mode));
+  if (res != KERN_SUCCESS) [[unlikely]]
+  {
+    ERROR_LOG("mach_vm_protect() failed: {}", res);
+    return false;
+  }
+
+  return true;
+}
+
+std::string MemMap::GetFileMappingName(const char* prefix)
+{
+  // name actually is not used.
+  return {};
+}
+
+void* MemMap::CreateSharedMemory(const char* name, size_t size, Error* error)
+{
+  mach_vm_size_t vm_size = size;
+  mach_port_t port;
+  const kern_return_t res = mach_make_memory_entry_64(
+    mach_task_self(), &vm_size, 0, MAP_MEM_NAMED_CREATE | VM_PROT_READ | VM_PROT_WRITE, &port, MACH_PORT_NULL);
+  if (res != KERN_SUCCESS)
+  {
+    Error::SetStringFmt(error, "mach_make_memory_entry_64() failed: {}", res);
+    return nullptr;
+  }
+
+  return reinterpret_cast<void*>(static_cast<uintptr_t>(port));
+}
+
+void MemMap::DestroySharedMemory(void* ptr)
+{
+  mach_port_deallocate(mach_task_self(), static_cast<mach_port_t>(reinterpret_cast<uintptr_t>(ptr)));
+}
+
+void* MemMap::MapSharedMemory(void* handle, size_t offset, void* baseaddr, size_t size, PageProtect mode)
+{
+  mach_vm_address_t ptr = reinterpret_cast<mach_vm_address_t>(baseaddr);
+  const kern_return_t res = mach_vm_map(mach_task_self(), &ptr, size, 0, baseaddr ? VM_FLAGS_FIXED : VM_FLAGS_ANYWHERE,
+                                        static_cast<mach_port_t>(reinterpret_cast<uintptr_t>(handle)), offset, FALSE,
+                                        static_cast<vm_prot_t>(mode), VM_PROT_READ | VM_PROT_WRITE, VM_INHERIT_NONE);
+  if (res != KERN_SUCCESS)
+  {
+    ERROR_LOG("mach_vm_map() failed: {}", res);
+    return nullptr;
+  }
+
+  return reinterpret_cast<void*>(ptr);
+}
+
+void MemMap::UnmapSharedMemory(void* baseaddr, size_t size)
+{
+  const kern_return_t res = mach_vm_deallocate(mach_task_self(), reinterpret_cast<mach_vm_address_t>(baseaddr), size);
+  if (res != KERN_SUCCESS)
+    Panic("Failed to unmap shared memory");
+}
+
+SharedMemoryMappingArea::SharedMemoryMappingArea() = default;
+
+SharedMemoryMappingArea::~SharedMemoryMappingArea()
+{
+  Destroy();
+}
+
+bool SharedMemoryMappingArea::Create(size_t size)
+{
+  AssertMsg(Common::IsAlignedPow2(size, HOST_PAGE_SIZE), "Size is page aligned");
+  Destroy();
+
+  const kern_return_t res =
+    mach_vm_map(mach_task_self(), reinterpret_cast<mach_vm_address_t*>(&m_base_ptr), size, 0, VM_FLAGS_ANYWHERE,
+                MEMORY_OBJECT_NULL, 0, false, VM_PROT_NONE, VM_PROT_NONE, VM_INHERIT_NONE);
+  if (res != KERN_SUCCESS)
+  {
+    ERROR_LOG("mach_vm_map() failed: {}", res);
+    return false;
+  }
+
+  m_size = size;
+  m_num_pages = size / HOST_PAGE_SIZE;
+  return true;
+}
+
+void SharedMemoryMappingArea::Destroy()
+{
+  AssertMsg(m_num_mappings == 0, "No mappings left");
+
+  if (m_base_ptr &&
+      mach_vm_deallocate(mach_task_self(), reinterpret_cast<mach_vm_address_t>(m_base_ptr), m_size) != KERN_SUCCESS)
+  {
+    Panic("Failed to release shared memory area");
+  }
+
+  m_base_ptr = nullptr;
+  m_size = 0;
+  m_num_pages = 0;
+}
+
+u8* SharedMemoryMappingArea::Map(void* file_handle, size_t file_offset, void* map_base, size_t map_size,
+                                 PageProtect mode)
+{
+  DebugAssert(static_cast<u8*>(map_base) >= m_base_ptr && static_cast<u8*>(map_base) < (m_base_ptr + m_size));
+
+  const kern_return_t res =
+    mach_vm_map(mach_task_self(), reinterpret_cast<mach_vm_address_t*>(&map_base), map_size, 0, VM_FLAGS_OVERWRITE,
+                static_cast<mach_port_t>(reinterpret_cast<uintptr_t>(file_handle)), file_offset, false,
+                static_cast<vm_prot_t>(mode), VM_PROT_READ | VM_PROT_WRITE, VM_INHERIT_NONE);
+  if (res != KERN_SUCCESS) [[unlikely]]
+  {
+    ERROR_LOG("mach_vm_map() failed: {}", res);
+    return nullptr;
+  }
+
+  m_num_mappings++;
+  return static_cast<u8*>(map_base);
+}
+
+bool SharedMemoryMappingArea::Unmap(void* map_base, size_t map_size)
+{
+  DebugAssert(static_cast<u8*>(map_base) >= m_base_ptr && static_cast<u8*>(map_base) < (m_base_ptr + m_size));
+
+  const kern_return_t res =
+    mach_vm_map(mach_task_self(), reinterpret_cast<mach_vm_address_t*>(&map_base), map_size, 0, VM_FLAGS_OVERWRITE,
+                MEMORY_OBJECT_NULL, 0, false, VM_PROT_NONE, VM_PROT_NONE, VM_INHERIT_NONE);
+  if (res != KERN_SUCCESS) [[unlikely]]
+  {
+    ERROR_LOG("mach_vm_map() failed: {}", res);
+    return false;
+  }
+
+  m_num_mappings--;
+  return true;
+}
+
+#ifdef __aarch64__
+
+static thread_local int s_code_write_depth = 0;
+
+void MemMap::BeginCodeWrite()
+{
+  // DEBUG_LOG("BeginCodeWrite(): {}", s_code_write_depth);
+  if ((s_code_write_depth++) == 0)
+  {
+    // DEBUG_LOG("  pthread_jit_write_protect_np(0)");
+    pthread_jit_write_protect_np(0);
+  }
+}
+
+void MemMap::EndCodeWrite()
+{
+  // DEBUG_LOG("EndCodeWrite(): {}", s_code_write_depth);
+
+  DebugAssert(s_code_write_depth > 0);
+  if ((--s_code_write_depth) == 0)
+  {
+    // DEBUG_LOG("  pthread_jit_write_protect_np(1)");
+    pthread_jit_write_protect_np(1);
+  }
+}
+
+#endif
+
 #elif !defined(__ANDROID__)
 
 bool MemMap::MemProtect(void* baseaddr, size_t size, PageProtect mode)
@@ -354,7 +527,7 @@ void* MemMap::MapSharedMemory(void* handle, size_t offset, void* baseaddr, size_
 
 void MemMap::UnmapSharedMemory(void* baseaddr, size_t size)
 {
-  if (mmap(baseaddr, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0) == MAP_FAILED)
+  if (munmap(baseaddr, size) != 0)
     Panic("Failed to unmap shared memory");
 }
 
@@ -415,34 +588,6 @@ bool SharedMemoryMappingArea::Unmap(void* map_base, size_t map_size)
 
   m_num_mappings--;
   return true;
-}
-
-#endif
-
-#if defined(__APPLE__) && defined(__aarch64__)
-
-static thread_local int s_code_write_depth = 0;
-
-void MemMap::BeginCodeWrite()
-{
-  // Log_DebugFmt("BeginCodeWrite(): {}", s_code_write_depth);
-  if ((s_code_write_depth++) == 0)
-  {
-    // Log_DebugPrint("  pthread_jit_write_protect_np(0)");
-    pthread_jit_write_protect_np(0);
-  }
-}
-
-void MemMap::EndCodeWrite()
-{
-  // Log_DebugFmt("EndCodeWrite(): {}", s_code_write_depth);
-
-  DebugAssert(s_code_write_depth > 0);
-  if ((--s_code_write_depth) == 0)
-  {
-    // Log_DebugPrint("  pthread_jit_write_protect_np(1)");
-    pthread_jit_write_protect_np(1);
-  }
 }
 
 #endif

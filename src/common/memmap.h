@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#ifdef _WIN32
+#if defined(_WIN32)
 
 // eww :/ but better than including windows.h
 enum class PageProtect : u32
@@ -19,6 +19,20 @@ enum class PageProtect : u32
   ReadExecute = 0x20,      // PAGE_EXECUTE_READ
   ReadWriteExecute = 0x40, // PAGE_EXECUTE_READWRITE
 };
+
+#elif defined(__APPLE__)
+
+#include <mach/mach_vm.h>
+
+enum class PageProtect : u32
+{
+  NoAccess = VM_PROT_NONE,
+  ReadOnly = VM_PROT_READ,
+  ReadWrite = VM_PROT_READ | VM_PROT_WRITE,
+  ReadExecute = VM_PROT_READ | VM_PROT_EXECUTE,
+  ReadWriteExecute = VM_PROT_READ | VM_PROT_WRITE | VM_PROT_EXECUTE,
+};
+
 #else
 
 #include <sys/mman.h>
