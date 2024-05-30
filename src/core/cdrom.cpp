@@ -2151,6 +2151,23 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
       return;
     }
 
+    case 0x60:
+    {
+      if (s_param_fifo.GetSize() < 2) [[unlikely]]
+      {
+        SendErrorResponse(STAT_ERROR, ERROR_REASON_INCORRECT_NUMBER_OF_PARAMETERS);
+        EndCommand();
+        return;
+      }
+
+      const u16 addr = ZeroExtend16(s_param_fifo.Peek(0)) | ZeroExtend16(s_param_fifo.Peek(1));
+      WARNING_LOG("Read memory from 0x{:04X}, returning zero", addr);
+      s_response_fifo.Push(0x00); // NOTE: No STAT here.
+      SetInterrupt(Interrupt::ACK);
+      EndCommand();
+      return;
+    }
+
     default:
       [[unlikely]]
       {
