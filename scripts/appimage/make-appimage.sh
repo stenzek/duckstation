@@ -129,7 +129,7 @@ for i in $(find "$DEPSDIR" -iname '*.so'); do
 done
 
 echo "Running linuxdeploy to create AppDir..."
-EXTRA_QT_PLUGINS="core;gui;network;svg;waylandclient;widgets;xcbqpa" \
+EXTRA_QT_PLUGINS="core;gui;svg;waylandclient;widgets;xcbqpa" \
 EXTRA_PLATFORM_PLUGINS="libqwayland-egl.so;libqwayland-generic.so" \
 DEPLOY_PLATFORM_THEMES="1" \
 QMAKE="$DEPSDIR/bin/qmake" \
