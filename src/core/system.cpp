@@ -114,6 +114,8 @@ static bool LoadEXE(const char* filename);
 static std::string GetExecutableNameForImage(IsoReader& iso, bool strip_subdirectories);
 static bool ReadExecutableFromImage(IsoReader& iso, std::string* out_executable_name,
                                     std::vector<u8>* out_executable_data);
+static GameHash GetGameHashFromBuffer(std::string_view exe_name, std::span<const u8> exe_buffer,
+                                      const IsoReader::ISOPrimaryVolumeDescriptor& iso_pvd, u32 track_1_length);
 
 static bool LoadBIOS(Error* error);
 static void InternalReset();
@@ -700,15 +702,7 @@ bool System::GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash
   }
 
   // Always compute the hash.
-  const u32 track_1_length = cdi->GetTrackLength(1);
-  XXH64_state_t* state = XXH64_createState();
-  XXH64_reset(state, 0x4242D00C);
-  XXH64_update(state, exe_name.c_str(), exe_name.size());
-  XXH64_update(state, exe_buffer.data(), exe_buffer.size());
-  XXH64_update(state, &iso.GetPVD(), sizeof(IsoReader::ISOPrimaryVolumeDescriptor));
-  XXH64_update(state, &track_1_length, sizeof(track_1_length));
-  const GameHash hash = XXH64_digest(state);
-  XXH64_freeState(state);
+  const GameHash hash = GetGameHashFromBuffer(exe_name, exe_buffer, iso.GetPVD(), cdi->GetTrackLength(1));
   DEV_LOG("Hash for '{}' - {:016X}", exe_name, hash);
 
   if (exe_name != FALLBACK_EXE_NAME)
@@ -750,6 +744,16 @@ bool System::GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash
     *out_hash = hash;
 
   return true;
+}
+
+System::GameHash System::GetGameHashFromFile(const char* path)
+{
+  const std::optional<std::vector<u8>> data = FileSystem::ReadBinaryFile(path);
+  if (!data)
+    return 0;
+
+  const std::string display_name = FileSystem::GetDisplayNameFromPath(path);
+  return GetGameHashFromBuffer(display_name, data.value(), IsoReader::ISOPrimaryVolumeDescriptor{}, 0);
 }
 
 std::string System::GetExecutableNameForImage(IsoReader& iso, bool strip_subdirectories)
@@ -879,6 +883,20 @@ bool System::ReadExecutableFromImage(IsoReader& iso, std::string* out_executable
     *out_executable_name = std::move(executable_path);
 
   return true;
+}
+
+System::GameHash System::GetGameHashFromBuffer(std::string_view exe_name, std::span<const u8> exe_buffer,
+                                               const IsoReader::ISOPrimaryVolumeDescriptor& iso_pvd, u32 track_1_length)
+{
+  XXH64_state_t* state = XXH64_createState();
+  XXH64_reset(state, 0x4242D00C);
+  XXH64_update(state, exe_name.data(), exe_name.size());
+  XXH64_update(state, exe_buffer.data(), exe_buffer.size());
+  XXH64_update(state, &iso_pvd, sizeof(IsoReader::ISOPrimaryVolumeDescriptor));
+  XXH64_update(state, &track_1_length, sizeof(track_1_length));
+  const GameHash hash = XXH64_digest(state);
+  XXH64_freeState(state);
+  return hash;
 }
 
 DiscRegion System::GetRegionForSerial(std::string_view serial)
@@ -1470,12 +1488,12 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   // Load CD image up and detect region.
   std::unique_ptr<CDImage> disc;
   DiscRegion disc_region = DiscRegion::NonPS1;
-  std::string exe_boot;
-  std::string psf_boot;
+  bool do_exe_boot = false;
+  bool do_psf_boot = false;
   if (!parameters.filename.empty())
   {
-    const bool do_exe_boot = IsExeFileName(parameters.filename);
-    const bool do_psf_boot = (!do_exe_boot && IsPsfFileName(parameters.filename));
+    do_exe_boot = IsExeFileName(parameters.filename);
+    do_psf_boot = (!do_exe_boot && IsPsfFileName(parameters.filename));
     if (do_exe_boot || do_psf_boot)
     {
       if (s_region == ConsoleRegion::Auto)
@@ -1485,10 +1503,6 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
         INFO_LOG("EXE/PSF Region: {}", Settings::GetDiscRegionDisplayName(file_region));
         s_region = GetConsoleRegionForDiscRegion(file_region);
       }
-      if (do_psf_boot)
-        psf_boot = std::move(parameters.filename);
-      else
-        exe_boot = std::move(parameters.filename);
     }
     else
     {
@@ -1544,6 +1558,8 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   // Update running game, this will apply settings as well.
   UpdateRunningGame(disc ? disc->GetFileName().c_str() : parameters.filename.c_str(), disc.get(), true);
 
+  // Get boot EXE override.
+  std::string exe_boot;
   if (!parameters.override_exe.empty())
   {
     if (!FileSystem::FileExists(parameters.override_exe.c_str()) || !IsExeFileName(parameters.override_exe))
@@ -1558,6 +1574,10 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
 
     INFO_LOG("Overriding boot executable: '{}'", parameters.override_exe);
     exe_boot = std::move(parameters.override_exe);
+  }
+  else if (do_exe_boot)
+  {
+    exe_boot = std::move(parameters.filename);
   }
 
   // Check for SBI.
@@ -1639,9 +1659,9 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     DestroySystem();
     return false;
   }
-  else if (!psf_boot.empty() && !PSFLoader::Load(psf_boot.c_str()))
+  else if (do_psf_boot && !PSFLoader::Load(parameters.filename.c_str()))
   {
-    Error::SetStringFmt(error, "Failed to load PSF file '{}'", Path::GetFileName(psf_boot));
+    Error::SetStringFmt(error, "Failed to load PSF file '{}'", Path::GetFileName(parameters.filename));
     DestroySystem();
     return false;
   }
@@ -3658,7 +3678,14 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
   {
     s_running_game_path = path;
 
-    if (IsExeFileName(path) || IsPsfFileName(path))
+    if (IsExeFileName(path))
+    {
+      s_running_game_title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path));
+      s_running_game_hash = GetGameHashFromFile(path);
+      if (s_running_game_hash != 0)
+        s_running_game_serial = GetGameHashId(s_running_game_hash);
+    }
+    else if (IsPsfFileName(path))
     {
       // TODO: We could pull the title from the PSF.
       s_running_game_title = Path::GetFileTitle(path);

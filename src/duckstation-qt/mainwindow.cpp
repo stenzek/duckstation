@@ -1347,12 +1347,16 @@ void MainWindow::onViewGamePropertiesActionTriggered()
   if (!s_system_valid)
     return;
 
-  const std::string& path = System::GetDiscPath();
-  const std::string& serial = System::GetGameSerial();
-  if (path.empty() || serial.empty())
-    return;
+  Host::RunOnCPUThread([]() {
+    const std::string& path = System::GetDiscPath();
+    const std::string& serial = System::GetGameSerial();
+    if (path.empty() || serial.empty())
+      return;
 
-  SettingsWindow::openGamePropertiesDialog(path, serial, System::GetDiscRegion());
+    QtHost::RunOnUIThread([path = path, serial = serial]() {
+      SettingsWindow::openGamePropertiesDialog(path, System::GetGameTitle(), serial, System::GetDiscRegion());
+    });
+  });
 }
 
 void MainWindow::onGitHubRepositoryActionTriggered()
@@ -1448,8 +1452,9 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
   {
     if (!entry->IsDiscSet())
     {
-      connect(menu.addAction(tr("Properties...")), &QAction::triggered,
-              [entry]() { SettingsWindow::openGamePropertiesDialog(entry->path, entry->serial, entry->region); });
+      connect(menu.addAction(tr("Properties...")), &QAction::triggered, [entry]() {
+        SettingsWindow::openGamePropertiesDialog(entry->path, entry->title, entry->serial, entry->region);
+      });
 
       connect(menu.addAction(tr("Open Containing Directory...")), &QAction::triggered, [this, entry]() {
         const QFileInfo fi(QString::fromStdString(entry->path));
@@ -1516,7 +1521,10 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
         auto lock = GameList::GetLock();
         const GameList::Entry* first_disc = GameList::GetFirstDiscSetMember(disc_set_name);
         if (first_disc)
-          SettingsWindow::openGamePropertiesDialog(first_disc->path, first_disc->serial, first_disc->region);
+        {
+          SettingsWindow::openGamePropertiesDialog(first_disc->path, first_disc->title, first_disc->serial,
+                                                   first_disc->region);
+        }
       });
 
       connect(menu.addAction(tr("Set Cover Image...")), &QAction::triggered,

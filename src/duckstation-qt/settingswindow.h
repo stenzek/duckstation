@@ -44,7 +44,8 @@ public:
                  const GameDatabase::Entry* entry, std::unique_ptr<INISettingsInterface> sif);
   ~SettingsWindow();
 
-  static void openGamePropertiesDialog(const std::string& path, const std::string& serial, DiscRegion region);
+  static void openGamePropertiesDialog(const std::string& path, const std::string& title, const std::string& serial,
+                                       DiscRegion region);
   static void closeGamePropertiesDialogs();
 
   // Helper for externally setting fields in game settings ini.

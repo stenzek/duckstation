@@ -155,9 +155,10 @@ bool GameList::GetExeListEntry(const std::string& path, GameList::Entry* entry)
     return false;
   }
 
-  const std::string display_name(FileSystem::GetDisplayNameFromPath(path));
-  entry->serial.clear();
-  entry->title = Path::GetFileTitle(display_name);
+  const System::GameHash hash = System::GetGameHashFromFile(path.c_str());
+
+  entry->serial = hash ? System::GetGameHashId(hash) : std::string();
+  entry->title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path));
   entry->region = BIOS::GetPSExeDiscRegion(header);
   entry->file_size = ZeroExtend64(file_size);
   entry->uncompressed_size = entry->file_size;
