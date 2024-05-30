@@ -791,8 +791,7 @@ std::unique_ptr<CDImage> CDROM::RemoveMedia(bool for_disc_swap)
   s_command_event->Deactivate();
 
   // The console sends an interrupt when the shell is opened regardless of whether a command was executing.
-  if (HasPendingAsyncInterrupt())
-    ClearAsyncInterrupt();
+  ClearAsyncInterrupt();
   SendAsyncErrorResponse(STAT_ERROR, 0x08);
 
   // Begin spin-down timer, we can't swap the new disc in immediately for some games (e.g. Metal Gear Solid).
@@ -2301,8 +2300,6 @@ void CDROM::ClearDriveState()
 
 void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = false */)
 {
-  ClearSectorBuffers();
-
   if (!after_seek && s_setloc_pending)
   {
     BeginSeeking(true, true, false);
@@ -2331,6 +2328,8 @@ void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = fa
   const TickCount first_sector_ticks = ticks + (after_seek ? 0 : GetTicksForSeek(s_current_lba)) - ticks_late;
 
   ClearCommandSecondResponse();
+  ClearAsyncInterrupt();
+  ClearSectorBuffers();
   ResetAudioDecoder();
 
   s_drive_state = DriveState::Reading;
@@ -2374,6 +2373,7 @@ void CDROM::BeginPlaying(u8 track, TickCount ticks_late /* = 0 */, bool after_se
   const TickCount first_sector_ticks = ticks + (after_seek ? 0 : GetTicksForSeek(s_current_lba, true)) - ticks_late;
 
   ClearCommandSecondResponse();
+  ClearAsyncInterrupt();
   ClearSectorBuffers();
   ResetAudioDecoder();
 
@@ -2405,6 +2405,8 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
   const TickCount seek_time = GetTicksForSeek(seek_lba, play_after_seek);
 
   ClearCommandSecondResponse();
+  ClearAsyncInterrupt();
+  ClearSectorBuffers();
   ResetAudioDecoder();
 
   s_secondary_status.SetSeeking();
