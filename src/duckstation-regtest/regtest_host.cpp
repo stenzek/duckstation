@@ -11,6 +11,7 @@
 
 #include "scmversion/scmversion.h"
 
+#include "util/cd_image.h"
 #include "util/gpu_device.h"
 #include "util/imgui_fullscreen.h"
 #include "util/imgui_manager.h"
@@ -39,6 +40,7 @@ static bool InitializeConfig();
 static void InitializeEarlyConsole();
 static void HookSignals();
 static bool SetFolders();
+static bool SetNewDataRoot(const std::string& filename);
 static std::string GetFrameDumpFilename(u32 frame);
 } // namespace RegTestHost
 
@@ -47,7 +49,6 @@ static std::unique_ptr<MemorySettingsInterface> s_base_settings_interface;
 static u32 s_frames_to_run = 60 * 60;
 static u32 s_frame_dump_interval = 0;
 static std::string s_dump_base_directory;
-static std::string s_dump_game_directory;
 
 bool RegTestHost::SetFolders()
 {
@@ -102,7 +103,9 @@ bool RegTestHost::InitializeConfig()
   si.SetStringValue("MemoryCards", "Card2Type", Settings::GetMemoryCardTypeName(MemoryCardType::None));
   si.SetStringValue("ControllerPorts", "MultitapMode", Settings::GetMultitapModeName(MultitapMode::Disabled));
   si.SetStringValue("Audio", "Backend", AudioStream::GetBackendName(AudioBackend::Null));
-  si.SetBoolValue("Logging", "LogToConsole", true);
+  si.SetBoolValue("Logging", "LogToConsole", false);
+  si.SetBoolValue("Logging", "LogToFile", false);
+  si.SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(LOGLEVEL_WARNING));
   si.SetBoolValue("Main", "ApplyGameSettings", false); // don't want game settings interfering
   si.SetBoolValue("BIOS", "PatchFastBoot", true);      // no point validating the bios intro..
   si.SetFloatValue("Main", "EmulationSpeed", 0.0f);
@@ -275,19 +278,6 @@ void Host::OnGameChanged(const std::string& disc_path, const std::string& game_s
   INFO_LOG("Disc Path: {}", disc_path);
   INFO_LOG("Game Serial: {}", game_serial);
   INFO_LOG("Game Name: {}", game_name);
-
-  if (!s_dump_base_directory.empty())
-  {
-    s_dump_game_directory = Path::Combine(s_dump_base_directory, game_name);
-    if (!FileSystem::DirectoryExists(s_dump_game_directory.c_str()))
-    {
-      INFO_LOG("Creating directory '{}'...", s_dump_game_directory);
-      if (!FileSystem::CreateDirectory(s_dump_game_directory.c_str(), false))
-        Panic("Failed to create dump directory.");
-    }
-
-    INFO_LOG("Dumping frames to '{}'...", s_dump_game_directory);
-  }
 }
 
 void Host::PumpMessagesOnCPUThread()
@@ -656,9 +646,54 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
   return true;
 }
 
+bool RegTestHost::SetNewDataRoot(const std::string& filename)
+{
+  Error error;
+  std::unique_ptr<CDImage> image = CDImage::Open(filename.c_str(), false, &error);
+  if (!image)
+  {
+    ERROR_LOG("Failed to open CD image '{}' to set data root: {}", Path::GetFileName(filename), error.GetDescription());
+    return false;
+  }
+
+  const GameDatabase::Entry* dbentry = GameDatabase::GetEntryForDisc(image.get());
+  std::string_view game_name;
+  if (dbentry)
+  {
+    game_name = dbentry->title;
+    INFO_LOG("Game name from database: {}", game_name);
+  }
+  else
+  {
+    game_name = Path::GetFileTitle(filename);
+    WARNING_LOG("Game not found in database, using filename: {}", game_name);
+  }
+
+  if (!s_dump_base_directory.empty())
+  {
+    std::string dump_directory = Path::Combine(s_dump_base_directory, game_name);
+    if (!FileSystem::DirectoryExists(dump_directory.c_str()))
+    {
+      INFO_LOG("Creating directory '{}'...", dump_directory);
+      if (!FileSystem::CreateDirectory(dump_directory.c_str(), false))
+        Panic("Failed to create dump directory.");
+    }
+
+    // Switch to file logging.
+    INFO_LOG("Dumping frames to '{}'...", dump_directory);
+    EmuFolders::DataRoot = std::move(dump_directory);
+    s_base_settings_interface->SetBoolValue("Logging", "LogToConsole", false);
+    s_base_settings_interface->SetBoolValue("Logging", "LogToFile", true);
+    s_base_settings_interface->SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(LOGLEVEL_DEV));
+    System::ApplySettings(false);
+  }
+
+  return true;
+}
+
 std::string RegTestHost::GetFrameDumpFilename(u32 frame)
 {
-  return Path::Combine(s_dump_game_directory, fmt::format("frame_{:05d}.png", frame));
+  return Path::Combine(EmuFolders::DataRoot, fmt::format("frame_{:05d}.png", frame));
 }
 
 int main(int argc, char* argv[])
@@ -677,6 +712,9 @@ int main(int argc, char* argv[])
     ERROR_LOG("No boot path specified.");
     return EXIT_FAILURE;
   }
+
+  if (!RegTestHost::SetNewDataRoot(autoboot->filename))
+    return EXIT_FAILURE;
 
   {
     Error startup_error;
