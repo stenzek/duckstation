@@ -88822,6 +88822,7 @@ SCES-03043:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -88850,6 +88851,7 @@ SCES-13043:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -88878,6 +88880,7 @@ SCES-23043:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -88906,6 +88909,7 @@ SCES-33043:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -88934,6 +88938,7 @@ SCES-03044:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -88962,6 +88967,7 @@ SCES-13044:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -88990,6 +88996,7 @@ SCES-23044:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89018,6 +89025,7 @@ SCES-33044:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89046,6 +89054,7 @@ SCES-03045:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89074,6 +89083,7 @@ SCES-13045:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89102,6 +89112,7 @@ SCES-23045:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89130,6 +89141,7 @@ SCES-33045:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89158,6 +89170,7 @@ SCES-03046:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89186,6 +89199,7 @@ SCES-13046:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89214,6 +89228,7 @@ SCES-23046:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89242,6 +89257,7 @@ SCES-33046:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89260,10 +89276,12 @@ PAPX-90091:
   name: "Legend of Dragoon, The (Japan) (Demo 1)"
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
 PAPX-90103:
   name: "Legend of Dragoon, The (Japan) (Demo 2)"
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
 SCPS-10119:
   name: "Legend of Dragoon, The (Japan) (Disc 1)"
   discSet:
@@ -89278,6 +89296,7 @@ SCPS-10119:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89303,6 +89322,7 @@ SCPS-10120:
       - SCPS-10122
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
 SCPS-10121:
   name: "Legend of Dragoon, The (Japan) (Disc 3)"
   discSet:
@@ -89314,6 +89334,7 @@ SCPS-10121:
       - SCPS-10122
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
 SCPS-10122:
   name: "Legend of Dragoon, The (Japan) (Disc 4)"
   discSet:
@@ -89325,6 +89346,7 @@ SCPS-10122:
       - SCPS-10122
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
 SCES-03047:
   name: "Legend of Dragoon, The (Spain) (Disc 1)"
   discSet:
@@ -89342,6 +89364,7 @@ SCES-03047:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89373,6 +89396,7 @@ SCES-13047:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89404,6 +89428,7 @@ SCES-23047:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89435,6 +89460,7 @@ SCES-33047:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89466,6 +89492,7 @@ SCUS-94491:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89494,6 +89521,7 @@ SCUS-94584:
     versionTested: "0.1-2663-gfd39f09a"
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
 SCUS-94585:
   name: "Legend of Dragoon, The (USA) (Disc 3)"
   discSet:
@@ -89508,6 +89536,7 @@ SCUS-94585:
     versionTested: "0.1-2663-gfd39f09a"
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
 SCUS-94586:
   name: "Legend of Dragoon, The (USA) (Disc 4)"
   discSet:
@@ -89522,6 +89551,7 @@ SCUS-94586:
     versionTested: "0.1-2663-gfd39f09a"
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
 SLES-01273:
   name: "Legend of Foresia - La Contree Interdite (France)"
   controllers:
@@ -165628,6 +165658,7 @@ SCPS-45461:
     - DigitalController
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -189269,6 +189300,7 @@ PCPX-96184:
   name: "Legend of Dragoon, The (Japan) (Demo 2)"
   traits:
     - DisableWidescreen
+    - DisableTextureFiltering
 SLPM-80441:
   name: "Maria 2 - Jutai Kokuchi no Nazo (Japan) (Demo)"
 PAPX-90098:
