@@ -1505,7 +1505,6 @@ void Bus::HWHandlers::SPUWrite(PhysicalMemoryAddress address, u32 value)
   const u32 offset = address & SPU_MASK;
 
   // 32-bit writes are written as two 16-bit writes.
-  // TODO: Ignore if address is not aligned.
   switch (size)
   {
     case MemoryAccessSize::Word:
@@ -1525,8 +1524,11 @@ void Bus::HWHandlers::SPUWrite(PhysicalMemoryAddress address, u32 value)
 
     case MemoryAccessSize::Byte:
     {
-      SPU::WriteRegister(FIXUP_HALFWORD_OFFSET(size, offset),
-                         Truncate16(FIXUP_HALFWORD_READ_VALUE(size, offset, value)));
+      // Byte writes to unaligned addresses are apparently ignored.
+      if (address & 1)
+        return;
+
+      SPU::WriteRegister(offset, Truncate16(FIXUP_HALFWORD_READ_VALUE(size, offset, value)));
       break;
     }
   }
