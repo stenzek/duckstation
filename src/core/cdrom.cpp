@@ -287,8 +287,8 @@ static void UpdatePhysicalPosition(bool update_logical);
 static void SetHoldPosition(CDImage::LBA lba, bool update_subq);
 static void ResetCurrentXAFile();
 static void ResetAudioDecoder();
-static void LoadDataFIFO();
 static void ClearSectorBuffers();
+static void CheckForSectorBufferReadComplete();
 
 template<bool STEREO, bool SAMPLE_RATE>
 static void ResampleXAADPCM(const s16* frames_in, u32 num_frames_in);
@@ -312,6 +312,7 @@ static DiscRegion s_disc_region = DiscRegion::Other;
 static StatusRegister s_status = {};
 static SecondaryStatusRegister s_secondary_status = {};
 static ModeRegister s_mode = {};
+static RequestRegister s_request_register = {};
 
 static u8 s_interrupt_enable_register = INTERRUPT_REGISTER_MASK;
 static u8 s_interrupt_flag_register = 0;
@@ -359,11 +360,11 @@ static u8 s_xa_resample_sixstep = 6;
 static InlineFIFOQueue<u8, PARAM_FIFO_SIZE> s_param_fifo;
 static InlineFIFOQueue<u8, RESPONSE_FIFO_SIZE> s_response_fifo;
 static InlineFIFOQueue<u8, RESPONSE_FIFO_SIZE> s_async_response_fifo;
-static HeapFIFOQueue<u8, DATA_FIFO_SIZE> s_data_fifo;
 
 struct SectorBuffer
 {
   FixedHeapArray<u8, RAW_SECTOR_OUTPUT_SIZE> data;
+  u32 position;
   u32 size;
 };
 
@@ -510,20 +511,13 @@ void CDROM::Reset()
   s_next_cd_audio_volume_matrix[1][0] = 0x00;
   s_next_cd_audio_volume_matrix[1][1] = 0x80;
   s_cd_audio_volume_matrix = s_next_cd_audio_volume_matrix;
+
+  ClearSectorBuffers();
   ResetAudioDecoder();
 
   s_param_fifo.Clear();
   s_response_fifo.Clear();
   s_async_response_fifo.Clear();
-  s_data_fifo.Clear();
-
-  s_current_read_sector_buffer = 0;
-  s_current_write_sector_buffer = 0;
-  for (u32 i = 0; i < NUM_SECTOR_BUFFERS; i++)
-  {
-    s_sector_buffers[i].data.fill(0);
-    s_sector_buffers[i].size = 0;
-  }
 
   UpdateStatusRegister();
 
@@ -541,6 +535,7 @@ void CDROM::SoftReset(TickCount ticks_late)
   s_secondary_status.shell_open = !CanReadMedia();
   s_mode.bits = 0;
   s_mode.read_raw_sector = true;
+  s_request_register.bits = 0;
   ClearAsyncInterrupt();
   s_setloc_position = {};
   s_setloc_pending = false;
@@ -550,19 +545,11 @@ void CDROM::SoftReset(TickCount ticks_late)
   s_adpcm_muted = false;
   s_last_cdda_report_frame_nibble = 0xFF;
 
+  ClearSectorBuffers();
   ResetAudioDecoder();
 
   s_param_fifo.Clear();
   s_async_response_fifo.Clear();
-  s_data_fifo.Clear();
-
-  s_current_read_sector_buffer = 0;
-  s_current_write_sector_buffer = 0;
-  for (u32 i = 0; i < NUM_SECTOR_BUFFERS; i++)
-  {
-    s_sector_buffers[i].data.fill(0);
-    s_sector_buffers[i].size = 0;
-  }
 
   UpdateStatusRegister();
 
@@ -599,6 +586,7 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&s_status.bits);
   sw.Do(&s_secondary_status.bits);
   sw.Do(&s_mode.bits);
+  sw.DoEx(&s_request_register.bits, 65, static_cast<u8>(0));
 
   bool current_double_speed = s_mode.double_speed;
   sw.Do(&current_double_speed);
@@ -643,14 +631,57 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&s_param_fifo);
   sw.Do(&s_response_fifo);
   sw.Do(&s_async_response_fifo);
-  sw.Do(&s_data_fifo);
 
-  sw.Do(&s_current_read_sector_buffer);
-  sw.Do(&s_current_write_sector_buffer);
-  for (u32 i = 0; i < NUM_SECTOR_BUFFERS; i++)
+  if (sw.GetVersion() < 65)
   {
-    sw.Do(&s_sector_buffers[i].data);
-    sw.Do(&s_sector_buffers[i].size);
+    // Skip over the "copied out data", we don't care about it.
+    u32 old_fifo_size = 0;
+    sw.Do(&old_fifo_size);
+    sw.SkipBytes(old_fifo_size);
+
+    sw.Do(&s_current_read_sector_buffer);
+    sw.Do(&s_current_write_sector_buffer);
+    for (SectorBuffer& sb : s_sector_buffers)
+    {
+      sw.Do(&sb.data);
+      sw.Do(&sb.size);
+      sb.position = 0;
+    }
+
+    // Try to transplant the old "data fifo" into the current sector buffer's read position.
+    // I doubt this is going to work well.... don't save state in the middle of loading, ya goon.
+    if (old_fifo_size > 0)
+    {
+      SectorBuffer& sb = s_sector_buffers[s_current_read_sector_buffer];
+      sb.size = s_mode.read_raw_sector ? RAW_SECTOR_OUTPUT_SIZE : DATA_SECTOR_OUTPUT_SIZE;
+      sb.position = (sb.size > old_fifo_size) ? (sb.size - old_fifo_size) : 0;
+      s_request_register.BFRD = (sb.position > 0);
+    }
+
+    UpdateStatusRegister();
+  }
+  else
+  {
+    sw.Do(&s_current_read_sector_buffer);
+    sw.Do(&s_current_write_sector_buffer);
+
+    for (SectorBuffer& sb : s_sector_buffers)
+    {
+      sw.Do(&sb.size);
+      sw.Do(&sb.position);
+
+      // We're never going to access data that has already been read out, so skip saving it.
+      if (sb.position < sb.size)
+      {
+        sw.DoBytes(&sb.data[sb.position], sb.size - sb.position);
+
+#ifdef _DEBUG
+        // Sanity test in debug builds.
+        if (sb.position > 0)
+          std::memset(sb.data.data(), 0, sb.position);
+#endif
+      }
+    }
   }
 
   sw.Do(&s_audio_fifo);
@@ -881,9 +912,20 @@ u8 CDROM::ReadRegister(u32 offset)
 
     case 2: // always data FIFO
     {
-      const u8 value = s_data_fifo.Pop();
-      UpdateStatusRegister();
-      DEBUG_LOG("CDROM read data FIFO -> 0x{:08X}", ZeroExtend32(value));
+      SectorBuffer& sb = s_sector_buffers[s_current_read_sector_buffer];
+      u8 value = 0;
+      if (s_request_register.BFRD && sb.position < sb.size)
+      {
+        value = (sb.position < sb.size) ? sb.data[sb.position++] : 0;
+        CheckForSectorBufferReadComplete();
+      }
+      else
+      {
+        WARNING_LOG("Sector buffer overread (BDRD={}, buffer={}, pos={}, size={})", s_request_register.BFRD.GetValue(),
+                    s_current_read_sector_buffer, sb.position, sb.size);
+      }
+
+      DEBUG_LOG("CDROM read data FIFO -> 0x{:02X}", value);
       return value;
     }
 
@@ -957,14 +999,12 @@ void CDROM::WriteRegister(u32 offset, u8 value)
       if (rr.BFWR)
         ERROR_LOG("Buffer write enable set");
 
-      if (rr.BFRD)
+      s_request_register.bits = rr.bits;
+
+      if (s_request_register.BFRD)
       {
-        LoadDataFIFO();
-      }
-      else
-      {
-        DEBUG_LOG("Clearing data FIFO");
-        s_data_fifo.Clear();
+        const SectorBuffer& sb = s_sector_buffers[s_current_read_sector_buffer];
+        DEV_LOG("BFRD buffer={} pos={} size={}", s_current_read_sector_buffer, sb.position, sb.size);
       }
 
       UpdateStatusRegister();
@@ -1074,15 +1114,26 @@ void CDROM::WriteRegister(u32 offset, u8 value)
 
 void CDROM::DMARead(u32* words, u32 word_count)
 {
-  const u32 words_in_fifo = s_data_fifo.GetSize() / 4;
-  if (words_in_fifo < word_count)
+  SectorBuffer& sb = s_sector_buffers[s_current_read_sector_buffer];
+  const u32 bytes_available = (s_request_register.BFRD && sb.position < sb.size) ? (sb.size - sb.position) : 0;
+  u8* dst_ptr = reinterpret_cast<u8*>(words);
+  u32 bytes_remaining = word_count * sizeof(u32);
+  if (bytes_available > 0)
   {
-    ERROR_LOG("DMA read on empty/near-empty data FIFO");
-    std::memset(words + words_in_fifo, 0, sizeof(u32) * (word_count - words_in_fifo));
+    const u32 transfer_size = std::min(bytes_available, bytes_remaining);
+    std::memcpy(dst_ptr, &sb.data[sb.position], transfer_size);
+    sb.position += transfer_size;
+    dst_ptr += transfer_size;
+    bytes_remaining -= transfer_size;
   }
 
-  const u32 bytes_to_read = std::min<u32>(word_count * sizeof(u32), s_data_fifo.GetSize());
-  s_data_fifo.PopRange(reinterpret_cast<u8*>(words), bytes_to_read);
+  if (bytes_remaining > 0)
+  {
+    ERROR_LOG("Sector buffer overread by {} bytes", bytes_remaining);
+    std::memset(dst_ptr, 0, bytes_remaining);
+  }
+
+  CheckForSectorBufferReadComplete();
 }
 
 bool CDROM::HasPendingCommand()
@@ -1181,6 +1232,7 @@ void CDROM::DeliverAsyncInterrupt(void*, TickCount ticks, TickCount ticks_late)
     Assert(s_pending_async_interrupt != 0 && !HasPendingInterrupt());
     DEBUG_LOG("Delivering async interrupt {}", s_pending_async_interrupt);
 
+    // This is the HC05 setting the read position from the decoder.
     if (s_pending_async_interrupt == static_cast<u8>(Interrupt::DataReady))
       s_current_read_sector_buffer = s_current_write_sector_buffer;
 
@@ -1220,7 +1272,7 @@ void CDROM::UpdateStatusRegister()
   s_status.PRMEMPTY = s_param_fifo.IsEmpty();
   s_status.PRMWRDY = !s_param_fifo.IsFull();
   s_status.RSLRRDY = !s_response_fifo.IsEmpty();
-  s_status.DRQSTS = !s_data_fifo.IsEmpty();
+  s_status.DRQSTS = s_request_register.BFRD;
   s_status.BUSYSTS = HasPendingCommand();
 
   DMA::SetRequest(DMA::Channel::CDROM, s_status.DRQSTS);
@@ -2352,8 +2404,6 @@ void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = fa
   s_drive_state = DriveState::Reading;
   s_drive_event->SetInterval(ticks);
   s_drive_event->Schedule(first_sector_ticks);
-  s_current_read_sector_buffer = 0;
-  s_current_write_sector_buffer = 0;
 
   s_requested_lba = s_current_lba;
   s_reader.QueueReadSector(s_requested_lba);
@@ -2397,8 +2447,6 @@ void CDROM::BeginPlaying(u8 track, TickCount ticks_late /* = 0 */, bool after_se
   s_drive_state = DriveState::Playing;
   s_drive_event->SetInterval(ticks);
   s_drive_event->Schedule(first_sector_ticks);
-  s_current_read_sector_buffer = 0;
-  s_current_write_sector_buffer = 0;
 
   s_requested_lba = s_current_lba;
   s_reader.QueueReadSector(s_requested_lba);
@@ -2920,7 +2968,7 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessDataSector(const u8* raw_sector, const 
 
   // TODO: How does XA relate to this buffering?
   SectorBuffer* sb = &s_sector_buffers[sb_num];
-  if (sb->size > 0)
+  if (sb->position == 0)
   {
     DEV_LOG("Sector buffer {} was not read, previous sector dropped",
             (s_current_write_sector_buffer - 1) % NUM_SECTOR_BUFFERS);
@@ -2947,6 +2995,7 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessDataSector(const u8* raw_sector, const 
     sb->size = DATA_SECTOR_OUTPUT_SIZE;
   }
 
+  sb->position = 0;
   s_current_write_sector_buffer = sb_num;
 
   // Deliver to CPU
@@ -3290,42 +3339,46 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessCDDASector(const u8* raw_sector, const 
   }
 }
 
-void CDROM::LoadDataFIFO()
+void CDROM::ClearSectorBuffers()
 {
-  if (!s_data_fifo.IsEmpty())
-  {
-    DEV_LOG("Load data fifo when not empty");
-    return;
-  }
+  s_current_read_sector_buffer = 0;
+  s_current_write_sector_buffer = 0;
 
-  // any data to load?
-  SectorBuffer& sb = s_sector_buffers[s_current_read_sector_buffer];
-  if (sb.size == 0)
+  for (SectorBuffer& sb : s_sector_buffers)
   {
-    WARNING_LOG("Attempting to load empty sector buffer");
-    s_data_fifo.PushRange(sb.data.data(), RAW_SECTOR_OUTPUT_SIZE);
-  }
-  else
-  {
-    s_data_fifo.PushRange(sb.data.data(), sb.size);
+    sb.position = 0;
     sb.size = 0;
   }
 
-  DEBUG_LOG("Loaded {} bytes to data FIFO from buffer {}", s_data_fifo.GetSize(), s_current_read_sector_buffer);
-
-  SectorBuffer& next_sb = s_sector_buffers[s_current_write_sector_buffer];
-  if (next_sb.size > 0)
-  {
-    DEV_LOG("Sending additional INT1 for missed sector in buffer {}", s_current_write_sector_buffer);
-    s_async_response_fifo.Push(s_secondary_status.bits);
-    SetAsyncInterrupt(Interrupt::DataReady);
-  }
+  s_request_register.BFRD = false;
+  s_status.DRQSTS = false;
 }
 
-void CDROM::ClearSectorBuffers()
+void CDROM::CheckForSectorBufferReadComplete()
 {
-  for (u32 i = 0; i < NUM_SECTOR_BUFFERS; i++)
-    s_sector_buffers[i].size = 0;
+  SectorBuffer& sb = s_sector_buffers[s_current_read_sector_buffer];
+
+  // BFRD gets cleared on DMA completion.
+  s_request_register.BFRD = (s_request_register.BFRD && sb.position < sb.size);
+  s_status.DRQSTS = s_request_register.BFRD;
+
+  // Buffer complete?
+  if (sb.position >= sb.size)
+  {
+    sb.position = 0;
+    sb.size = 0;
+
+    // Redeliver missed sector on DMA/read complete.
+    // I'm still not sure if this is correct behavior.
+    SectorBuffer& next_sb = s_sector_buffers[s_current_write_sector_buffer];
+    if (next_sb.position == 0 && next_sb.size > 0)
+    {
+      DEV_LOG("Sending additional INT1 for missed sector in buffer {}", s_current_write_sector_buffer);
+      s_current_read_sector_buffer = s_current_write_sector_buffer;
+      s_async_response_fifo.Push(s_secondary_status.bits);
+      SetAsyncInterrupt(Interrupt::DataReady);
+    }
+  }
 }
 
 void CDROM::CreateFileMap()
