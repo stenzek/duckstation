@@ -2564,8 +2564,14 @@ bool System::LoadStateFromStream(ByteStream* state, Error* error, bool update_di
         }
       }
     }
+    else
+    {
+      // Skip updating media if there is none, and none in the state. That way we don't wipe out EXE boot.
+      ignore_media = !CDROM::HasMedia();
+    }
 
-    UpdateRunningGame(media_filename.c_str(), media.get(), false);
+    if (!ignore_media)
+      UpdateRunningGame(media_filename.c_str(), media.get(), false);
 
     if (media && header.version >= 51)
     {
