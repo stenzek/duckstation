@@ -1261,6 +1261,7 @@ void GPU::WriteGP1(u32 value)
     {
       DEBUG_LOG("Acknowledge interrupt");
       m_GPUSTAT.interrupt_request = false;
+      InterruptController::SetLineState(InterruptController::IRQ::GPU, false);
     }
     break;
 
