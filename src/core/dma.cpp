@@ -574,7 +574,7 @@ bool DMA::TransferChannel()
                 current_address);
 
       const PhysicalMemoryAddress transfer_addr = current_address & TRANSFER_ADDRESS_MASK;
-      if (CheckForBusError(channel, cs, transfer_addr, word_count * sizeof(u32))) [[unlikely]]
+      if (CheckForBusError(channel, cs, transfer_addr, (word_count - 1) * increment)) [[unlikely]]
         return true;
 
       TickCount used_ticks;
@@ -608,7 +608,7 @@ bool DMA::TransferChannel()
       {
         u32 header;
         PhysicalMemoryAddress transfer_addr = current_address & TRANSFER_ADDRESS_MASK;
-        if (CheckForBusError(channel, cs, current_address, sizeof(header))) [[unlikely]]
+        if (CheckForBusError(channel, cs, transfer_addr, sizeof(header))) [[unlikely]]
         {
           cs.base_address = current_address;
           return true;
@@ -628,6 +628,12 @@ bool DMA::TransferChannel()
 
         if (word_count > 0)
         {
+          if (CheckForBusError(channel, cs, transfer_addr, (word_count - 1) * increment)) [[unlikely]]
+          {
+            cs.base_address = current_address;
+            return true;
+          }
+
           const TickCount block_ticks = TransferMemoryToDevice<channel>(transfer_addr + sizeof(header), 4, word_count);
           CPU::AddPendingTicks(block_ticks);
           remaining_ticks -= block_ticks;
@@ -673,7 +679,7 @@ bool DMA::TransferChannel()
         do
         {
           const PhysicalMemoryAddress transfer_addr = current_address & TRANSFER_ADDRESS_MASK;
-          if (CheckForBusError(channel, cs, transfer_addr, block_size * increment)) [[unlikely]]
+          if (CheckForBusError(channel, cs, transfer_addr, (block_size - 1) * increment)) [[unlikely]]
           {
             cs.base_address = current_address;
             cs.block_control.request.block_count = blocks_remaining;
@@ -694,7 +700,7 @@ bool DMA::TransferChannel()
         do
         {
           const PhysicalMemoryAddress transfer_addr = current_address & TRANSFER_ADDRESS_MASK;
-          if (CheckForBusError(channel, cs, transfer_addr, block_size * increment)) [[unlikely]]
+          if (CheckForBusError(channel, cs, transfer_addr, (block_size - 1) * increment)) [[unlikely]]
           {
             cs.base_address = current_address;
             cs.block_control.request.block_count = blocks_remaining;
