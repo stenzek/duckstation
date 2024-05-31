@@ -2400,7 +2400,7 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
 
   if (!is_memory_state)
   {
-    if (sw.GetVersion() >= 56)
+    if (sw.GetVersion() >= 56) [[unlikely]]
     {
       if (!sw.DoMarker("Cheevos"))
         return false;

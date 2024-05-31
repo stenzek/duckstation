@@ -45,7 +45,7 @@ bool PlayStationMouse::DoState(StateWrapper& sw, bool apply_input_state)
   float delta_x = m_delta_x;
   float delta_y = m_delta_y;
   sw.Do(&button_state);
-  if (sw.GetVersion() >= 60)
+  if (sw.GetVersion() >= 60) [[unlikely]]
   {
     sw.Do(&delta_x);
     sw.Do(&delta_y);

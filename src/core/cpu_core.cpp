@@ -240,7 +240,7 @@ bool CPU::DoState(StateWrapper& sw)
   sw.Do(&g_state.branch_was_taken);
   sw.Do(&g_state.exception_raised);
   sw.DoEx(&g_state.bus_error, 61, false);
-  if (sw.GetVersion() < 59)
+  if (sw.GetVersion() < 59) [[unlikely]]
   {
     bool interrupt_delay;
     sw.Do(&interrupt_delay);
@@ -251,7 +251,7 @@ bool CPU::DoState(StateWrapper& sw)
   sw.Do(&g_state.next_load_delay_value);
 
   // Compatibility with old states.
-  if (sw.GetVersion() < 59)
+  if (sw.GetVersion() < 59) [[unlikely]]
   {
     g_state.load_delay_reg =
       static_cast<Reg>(std::min(static_cast<u8>(g_state.load_delay_reg), static_cast<u8>(Reg::count)));
@@ -262,10 +262,10 @@ bool CPU::DoState(StateWrapper& sw)
   sw.Do(&g_state.cache_control.bits);
   sw.DoBytes(g_state.scratchpad.data(), g_state.scratchpad.size());
 
-  if (!GTE::DoState(sw))
+  if (!GTE::DoState(sw)) [[unlikely]]
     return false;
 
-  if (sw.GetVersion() < 48)
+  if (sw.GetVersion() < 48) [[unlikely]]
   {
     DebugAssert(sw.IsReading());
     ClearICache();

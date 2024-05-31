@@ -252,7 +252,7 @@ bool GPU::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_displ
   sw.Do(&m_draw_mode.palette_reg.bits);
   sw.Do(&m_draw_mode.texture_window_value);
 
-  if (sw.GetVersion() < 62)
+  if (sw.GetVersion() < 62) [[unlikely]]
   {
     // texture_page_x, texture_page_y, texture_palette_x, texture_palette_y
     DebugAssert(sw.IsReading());

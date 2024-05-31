@@ -385,7 +385,7 @@ bool DoState(StateWrapper& sw)
       event->m_interval = interval;
     }
 
-    if (sw.GetVersion() < 43)
+    if (sw.GetVersion() < 43) [[unlikely]]
     {
       u32 last_event_run_time = 0;
       sw.Do(&last_event_run_time);

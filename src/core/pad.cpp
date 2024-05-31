@@ -487,7 +487,7 @@ bool Pad::DoState(StateWrapper& sw, bool is_memory_state)
   {
     for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
     {
-      if ((sw.GetVersion() < 50) && (i >= 2))
+      if ((sw.GetVersion() < 50) && (i >= 2)) [[unlikely]]
       {
         // loading from old savestate which only had max 2 controllers.
         // honoring load_devices_from_save_states in this case seems debatable, but might as well...
@@ -519,7 +519,7 @@ bool Pad::DoState(StateWrapper& sw, bool is_memory_state)
     }
   }
 
-  if (sw.GetVersion() >= 50)
+  if (sw.GetVersion() >= 50) [[unlikely]]
   {
     for (u32 i = 0; i < NUM_MULTITAPS; i++)
     {

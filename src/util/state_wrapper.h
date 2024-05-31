@@ -183,7 +183,7 @@ public:
   template<typename T>
   void DoEx(T* data, u32 version_introduced, T default_value)
   {
-    if (m_mode == Mode::Read && m_version < version_introduced)
+    if (m_mode == Mode::Read && m_version < version_introduced) [[unlikely]]
     {
       *data = std::move(default_value);
       return;

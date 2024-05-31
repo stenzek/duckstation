@@ -390,7 +390,7 @@ bool Bus::DoState(StateWrapper& sw)
   sw.Do(&g_spu_access_time);
   sw.DoBytes(g_ram, g_ram_size);
 
-  if (sw.GetVersion() < 58)
+  if (sw.GetVersion() < 58) [[unlikely]]
   {
     WARNING_LOG("Overwriting loaded BIOS with old save state.");
     sw.DoBytes(g_bios, BIOS_SIZE);
