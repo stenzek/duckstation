@@ -1116,7 +1116,7 @@ bool GPU_HW::CompilePipelines()
     plconfig.fragment_shader = fs.get();
     for (u8 depth_test = 0; depth_test < 2; depth_test++)
     {
-      if (depth_test && write_mask_as_depth)
+      if (depth_test && !write_mask_as_depth)
         continue;
 
       plconfig.depth.depth_write = needs_depth_buffer;
@@ -1146,7 +1146,7 @@ bool GPU_HW::CompilePipelines()
     plconfig.fragment_shader = fs.get();
     for (u8 depth_test = 0; depth_test < 2; depth_test++)
     {
-      if (depth_test && write_mask_as_depth)
+      if (depth_test && !write_mask_as_depth)
         continue;
 
       plconfig.depth.depth_write = needs_depth_buffer;
