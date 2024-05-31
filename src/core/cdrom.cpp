@@ -60,7 +60,7 @@ enum : u32
   MAX_FAST_FORWARD_RATE = 12,
   FAST_FORWARD_RATE_STEP = 4,
 
-  MINIMUM_INTERRUPT_DELAY = 5000,
+  MINIMUM_INTERRUPT_DELAY = 6000,
   INTERRUPT_DELAY_CYCLES = 2000,
 };
 
@@ -1200,12 +1200,14 @@ void CDROM::QueueDeliverAsyncInterrupt()
   // interrupt, then read the FIFO. If an INT1 comes in during that time, it'll read the INT1 response
   // instead of the INT3 response, and the game gets confused. So, we just delay INT1s a bit, if there
   // has been any recent INT3s - give it enough time to read the response out. The real console does
-  // something similar anyway, the INT1 task won't run immediately after the INT3 is cleared.
+  // something similar anyway, the INT1 task won't run immediately after the INT3 is cleared. We use
+  // the response FIFO being empty as a second heuristic, to avoid very late INT1s that cause early
+  // buffer loads and sector retries in other games, like Lego Racers PAL.
   DebugAssert(HasPendingAsyncInterrupt());
 
   // underflows here are okay
   const u32 diff = System::GetGlobalTickCounter() - s_last_interrupt_time;
-  if (diff >= MINIMUM_INTERRUPT_DELAY)
+  if (diff >= MINIMUM_INTERRUPT_DELAY || s_response_fifo.IsEmpty())
   {
     DeliverAsyncInterrupt(nullptr, 0, 0);
   }
