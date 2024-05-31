@@ -87680,6 +87680,8 @@ SLES-01207:
     - AnalogController
     - DigitalController
     - NeGcon
+  traits:
+    - ForcePGXPCPUMode # Fixes holes in geometry.
   metadata:
     publisher: "LEGO Media International Inc"
     developer: "High Voltage Software"
@@ -87712,6 +87714,8 @@ SLUS-00581:
     - AnalogController
     - DigitalController
     - NeGcon
+  traits:
+    - ForcePGXPCPUMode # Fixes holes in geometry.
   metadata:
     publisher: "LEGO Media International Inc"
     developer: "High Voltage Software"
