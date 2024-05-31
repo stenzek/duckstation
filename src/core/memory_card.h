@@ -80,6 +80,15 @@ private:
     WriteACK1,
     WriteACK2,
     WriteEnd,
+
+    GetIDCardID1,
+    GetIDCardID2,
+    GetIDACK1,
+    GetIDACK2,
+    GetID1,
+    GetID2,
+    GetID3,
+    GetID4,
   };
 
   static TickCount GetSaveDelayInTicks();

@@ -209,6 +209,16 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
       FIXED_REPLY_STATE(State::WriteACK2, 0x5D, true, State::WriteEnd);
       FIXED_REPLY_STATE(State::WriteEnd, 0x47, false, State::Idle);
 
+      // TODO: This really needs a proper buffer system...
+      FIXED_REPLY_STATE(State::GetIDCardID1, 0x5A, true, State::GetIDCardID2);
+      FIXED_REPLY_STATE(State::GetIDCardID2, 0x5D, true, State::GetIDACK1);
+      FIXED_REPLY_STATE(State::GetIDACK1, 0x5C, true, State::GetIDACK2);
+      FIXED_REPLY_STATE(State::GetIDACK2, 0x5D, true, State::GetID1);
+      FIXED_REPLY_STATE(State::GetID1, 0x04, true, State::GetID2);
+      FIXED_REPLY_STATE(State::GetID2, 0x00, true, State::GetID3);
+      FIXED_REPLY_STATE(State::GetID3, 0x00, true, State::GetID4);
+      FIXED_REPLY_STATE(State::GetID4, 0x80, true, State::Command);
+
       // new command
     case State::Idle:
     {
@@ -244,7 +254,9 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
 
         case 0x53: // get id
         {
-          Panic("implement me");
+          *data_out = m_FLAG.bits;
+          ack = true;
+          m_state = State::GetIDCardID1;
         }
         break;
 
