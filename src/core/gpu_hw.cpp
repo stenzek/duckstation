@@ -232,10 +232,10 @@ bool GPU_HW::Initialize()
 
 void GPU_HW::Reset(bool clear_vram)
 {
-  GPU::Reset(clear_vram);
-
   if (m_batch_vertex_ptr)
     UnmapGPUBuffer(0, 0);
+
+  GPU::Reset(clear_vram);
 
   if (m_sw_renderer)
     m_sw_renderer->Reset();

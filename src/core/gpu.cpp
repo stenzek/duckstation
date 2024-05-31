@@ -180,6 +180,9 @@ void GPU::Reset(bool clear_vram)
     std::memset(g_gpu_clut, 0, sizeof(g_gpu_clut));
   }
 
+  // Cancel VRAM writes.
+  m_blitter_state = BlitterState::Idle;
+
   // Force event to reschedule itself.
   m_crtc_tick_event->Deactivate();
   m_command_tick_event->Deactivate();
