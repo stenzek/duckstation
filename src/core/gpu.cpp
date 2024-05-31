@@ -448,19 +448,13 @@ void GPU::UpdateGPUIdle()
   switch (m_blitter_state)
   {
     case BlitterState::Idle:
+    case BlitterState::DrawingPolyLine:
       m_GPUSTAT.gpu_idle = (m_pending_command_ticks <= 0 && m_fifo.IsEmpty());
       break;
 
     case BlitterState::WritingVRAM:
-      m_GPUSTAT.gpu_idle = false;
-      break;
-
     case BlitterState::ReadingVRAM:
-      m_GPUSTAT.gpu_idle = false;
-      break;
-
-    case BlitterState::DrawingPolyLine:
-      m_GPUSTAT.gpu_idle = false;
+      m_GPUSTAT.gpu_idle = m_fifo.IsEmpty();
       break;
 
     default:
