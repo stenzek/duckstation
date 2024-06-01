@@ -4,7 +4,7 @@
 #pragma once
 #include "common/bitfield.h"
 #include "common/bitutils.h"
-#include "common/rectangle.h"
+#include "common/gsvector.h"
 #include "types.h"
 #include <array>
 
@@ -189,18 +189,19 @@ union GPUDrawModeReg
   BitField<u16, bool, 12, 1> texture_x_flip;
   BitField<u16, bool, 13, 1> texture_y_flip;
 
-  ALWAYS_INLINE u16 GetTexturePageBaseX() const { return ZeroExtend16(texture_page_x_base.GetValue()) * 64; }
-  ALWAYS_INLINE u16 GetTexturePageBaseY() const { return ZeroExtend16(texture_page_y_base.GetValue()) * 256; }
+  ALWAYS_INLINE u32 GetTexturePageBaseX() const { return ZeroExtend32(texture_page_x_base.GetValue()) * 64; }
+  ALWAYS_INLINE u32 GetTexturePageBaseY() const { return ZeroExtend32(texture_page_y_base.GetValue()) * 256; }
 
   /// Returns true if the texture mode requires a palette.
   ALWAYS_INLINE bool IsUsingPalette() const { return (bits & (2 << 7)) == 0; }
 
   /// Returns a rectangle comprising the texture page area.
-  ALWAYS_INLINE_RELEASE Common::Rectangle<u32> GetTexturePageRectangle() const
+  ALWAYS_INLINE_RELEASE GSVector4i GetTexturePageRectangle() const
   {
-    return Common::Rectangle<u32>::FromExtents(GetTexturePageBaseX(), GetTexturePageBaseY(),
-                                               texture_page_widths[static_cast<u8>(texture_mode.GetValue())],
-                                               TEXTURE_PAGE_HEIGHT);
+    const u32 base_x = GetTexturePageBaseX();
+    const u32 base_y = GetTexturePageBaseY();
+    return GSVector4i(base_x, base_y, base_x + texture_page_widths[static_cast<u8>(texture_mode.GetValue())],
+                      base_y + TEXTURE_PAGE_HEIGHT);
   }
 };
 
@@ -217,10 +218,12 @@ union GPUTexturePaletteReg
   ALWAYS_INLINE u32 GetYBase() const { return static_cast<u32>(y); }
 
   /// Returns a rectangle comprising the texture palette area.
-  ALWAYS_INLINE_RELEASE Common::Rectangle<u32> GetRectangle(GPUTextureMode mode) const
+  ALWAYS_INLINE_RELEASE GSVector4i GetRectangle(GPUTextureMode mode) const
   {
     static constexpr std::array<u32, 4> palette_widths = {{16, 256, 0, 0}};
-    return Common::Rectangle<u32>::FromExtents(GetXBase(), GetYBase(), palette_widths[static_cast<u8>(mode)], 1);
+    const u32 base_x = GetXBase();
+    const u32 base_y = GetYBase();
+    return GSVector4i(base_x, base_y, base_x + palette_widths[static_cast<u8>(mode)], base_y + 1);
   }
 };
 

@@ -114,8 +114,8 @@ public:
   void SetPipeline(GPUPipeline* pipeline) override;
   void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) override;
   void SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer) override;
-  void SetViewport(s32 x, s32 y, s32 width, s32 height) override;
-  void SetScissor(s32 x, s32 y, s32 width, s32 height) override;
+  void SetViewport(const GSVector4i rc) override;
+  void SetScissor(const GSVector4i rc) override;
   void Draw(u32 vertex_count, u32 base_vertex) override;
   void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) override;
   void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) override;
@@ -344,6 +344,6 @@ private:
   std::array<D3D12Texture*, MAX_TEXTURE_SAMPLERS> m_current_textures = {};
   std::array<D3D12DescriptorHandle, MAX_TEXTURE_SAMPLERS> m_current_samplers = {};
   D3D12TextureBuffer* m_current_texture_buffer = nullptr;
-  Common::Rectangle<s32> m_current_viewport{0, 0, 1, 1};
-  Common::Rectangle<s32> m_current_scissor{0, 0, 1, 1};
+  GSVector4i m_current_viewport = GSVector4i::cxpr(0, 0, 1, 1);
+  GSVector4i m_current_scissor = {};
 };

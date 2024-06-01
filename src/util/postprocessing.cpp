@@ -620,8 +620,8 @@ void PostProcessing::Chain::DestroyTextures()
 }
 
 bool PostProcessing::Chain::Apply(GPUTexture* input_color, GPUTexture* input_depth, GPUTexture* final_target,
-                                  s32 final_left, s32 final_top, s32 final_width, s32 final_height, s32 orig_width,
-                                  s32 orig_height, s32 native_width, s32 native_height)
+                                  GSVector4i final_rect, s32 orig_width, s32 orig_height, s32 native_width,
+                                  s32 native_height)
 {
   GL_SCOPE_FMT("{} Apply", m_section);
 
@@ -634,9 +634,8 @@ bool PostProcessing::Chain::Apply(GPUTexture* input_color, GPUTexture* input_dep
   {
     const bool is_final = (stage.get() == m_stages.back().get());
 
-    if (!stage->Apply(input_color, input_depth, is_final ? final_target : output, final_left, final_top, final_width,
-                      final_height, orig_width, orig_height, native_width, native_height, m_target_width,
-                      m_target_height))
+    if (!stage->Apply(input_color, input_depth, is_final ? final_target : output, final_rect, orig_width, orig_height,
+                      native_width, native_height, m_target_width, m_target_height))
     {
       return false;
     }

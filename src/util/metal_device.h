@@ -20,7 +20,6 @@
 #include "metal_stream_buffer.h"
 #include "window_info.h"
 
-#include "common/rectangle.h"
 #include "common/timer.h"
 
 #include <atomic>
@@ -255,8 +254,8 @@ public:
   void SetPipeline(GPUPipeline* pipeline) override;
   void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) override;
   void SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer) override;
-  void SetViewport(s32 x, s32 y, s32 width, s32 height) override;
-  void SetScissor(s32 x, s32 y, s32 width, s32 height) override;
+  void SetViewport(const GSVector4i rc) override;
+  void SetScissor(const GSVector4i rc) override;
   void Draw(u32 vertex_count, u32 base_vertex) override;
   void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) override;
   void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) override;
@@ -404,8 +403,8 @@ private:
   std::array<id<MTLTexture>, MAX_TEXTURE_SAMPLERS> m_current_textures = {};
   std::array<id<MTLSamplerState>, MAX_TEXTURE_SAMPLERS> m_current_samplers = {};
   id<MTLBuffer> m_current_ssbo = nil;
-  Common::Rectangle<s32> m_current_viewport = {};
-  Common::Rectangle<s32> m_current_scissor = {};
+  GSVector4i m_current_viewport = {};
+  GSVector4i m_current_scissor = {};
 
   bool m_vsync_enabled = false;
 

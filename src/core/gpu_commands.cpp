@@ -250,6 +250,7 @@ bool GPU::HandleSetDrawingAreaTopLeftCommand()
     m_drawing_area.left = left;
     m_drawing_area.top = top;
     m_drawing_area_changed = true;
+    SetClampedDrawingArea();
   }
 
   AddCommandTicks(1);
@@ -271,6 +272,7 @@ bool GPU::HandleSetDrawingAreaBottomRightCommand()
     m_drawing_area.right = right;
     m_drawing_area.bottom = bottom;
     m_drawing_area_changed = true;
+    SetClampedDrawingArea();
   }
 
   AddCommandTicks(1);

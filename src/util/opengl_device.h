@@ -11,8 +11,6 @@
 #include "opengl_pipeline.h"
 #include "opengl_texture.h"
 
-#include "common/rectangle.h"
-
 #include <cstdio>
 #include <memory>
 #include <tuple>
@@ -96,8 +94,8 @@ public:
   void SetPipeline(GPUPipeline* pipeline) override;
   void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) override;
   void SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer) override;
-  void SetViewport(s32 x, s32 y, s32 width, s32 height) override;
-  void SetScissor(s32 x, s32 y, s32 width, s32 height) override;
+  void SetViewport(const GSVector4i rc) override;
+  void SetScissor(const GSVector4i rc) override;
   void Draw(u32 vertex_count, u32 base_vertex) override;
   void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) override;
   void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) override;
@@ -203,8 +201,8 @@ private:
   u32 m_last_texture_unit = 0;
   std::array<std::pair<GLuint, GLuint>, MAX_TEXTURE_SAMPLERS> m_last_samplers = {};
   GLuint m_last_ssbo = 0;
-  Common::Rectangle<s32> m_last_viewport{0, 0, 1, 1};
-  Common::Rectangle<s32> m_last_scissor{0, 0, 1, 1};
+  GSVector4i m_last_viewport = {};
+  GSVector4i m_last_scissor = GSVector4i::cxpr(0, 0, 1, 1);
 
   // Misc framebuffers
   GLuint m_read_fbo = 0;

@@ -643,10 +643,25 @@ void GPUDevice::SetRenderTarget(GPUTexture* rt, GPUTexture* ds, GPUPipeline::Ren
   SetRenderTargets(rt ? &rt : nullptr, rt ? 1 : 0, ds, render_pass_flags);
 }
 
+void GPUDevice::SetViewport(s32 x, s32 y, s32 width, s32 height)
+{
+  SetViewport(GSVector4i(x, y, x + width, y + height));
+}
+
+void GPUDevice::SetScissor(s32 x, s32 y, s32 width, s32 height)
+{
+  SetScissor(GSVector4i(x, y, x + width, y + height));
+}
+
 void GPUDevice::SetViewportAndScissor(s32 x, s32 y, s32 width, s32 height)
 {
-  SetViewport(x, y, width, height);
-  SetScissor(x, y, width, height);
+  SetViewportAndScissor(GSVector4i(x, y, x + width, y + height));
+}
+
+void GPUDevice::SetViewportAndScissor(const GSVector4i rc)
+{
+  SetViewport(rc);
+  SetScissor(rc);
 }
 
 void GPUDevice::ClearRenderTarget(GPUTexture* t, u32 c)
@@ -818,11 +833,13 @@ bool GPUDevice::UsesLowerLeftOrigin() const
   return (api == RenderAPI::OpenGL || api == RenderAPI::OpenGLES);
 }
 
-Common::Rectangle<s32> GPUDevice::FlipToLowerLeft(const Common::Rectangle<s32>& rc, s32 target_height)
+GSVector4i GPUDevice::FlipToLowerLeft(GSVector4i rc, s32 target_height)
 {
-  const s32 height = rc.GetHeight();
+  const s32 height = rc.height();
   const s32 flipped_y = target_height - rc.top - height;
-  return Common::Rectangle<s32>(rc.left, flipped_y, rc.right, flipped_y + height);
+  rc.top = flipped_y;
+  rc.bottom = flipped_y + height;
+  return rc;
 }
 
 bool GPUDevice::IsTexturePoolType(GPUTexture::Type type)

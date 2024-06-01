@@ -24,6 +24,7 @@
 #include "imgui.h"
 
 #include <cmath>
+#include <limits>
 #include <sstream>
 #include <tuple>
 
@@ -47,6 +48,19 @@ ALWAYS_INLINE static constexpr std::tuple<T, T> MinMax(T v1, T v2)
     return std::tie(v2, v1);
   else
     return std::tie(v1, v2);
+}
+
+/// Returns the distance between two rectangles.
+ALWAYS_INLINE static float RectDistance(const GSVector4i lhs, const GSVector4i rhs)
+{
+  const s32 lcx = (lhs.left + ((lhs.right - lhs.left) / 2));
+  const s32 lcy = (lhs.top + ((lhs.bottom - lhs.top) / 2));
+  const s32 rcx = (rhs.left + ((rhs.right - rhs.left) / 2));
+  const s32 rcy = (rhs.top + ((rhs.bottom - rhs.top) / 2));
+  const s32 dx = (lcx - rcx);
+  const s32 dy = (lcy - rcy);
+  const s32 distsq = (dx * dx) + (dy * dy);
+  return std::sqrt(static_cast<float>(distsq));
 }
 
 ALWAYS_INLINE static u32 GetMaxResolutionScale()
@@ -96,20 +110,24 @@ ALWAYS_INLINE static bool IsBlendedTextureFiltering(GPUTextureFilter filter)
 }
 
 /// Computes the area affected by a VRAM transfer, including wrap-around of X.
-ALWAYS_INLINE_RELEASE static Common::Rectangle<u32> GetVRAMTransferBounds(u32 x, u32 y, u32 width, u32 height)
+ALWAYS_INLINE_RELEASE static GSVector4i GetVRAMTransferBounds(u32 x, u32 y, u32 width, u32 height)
 {
-  Common::Rectangle<u32> out_rc = Common::Rectangle<u32>::FromExtents(x % VRAM_WIDTH, y % VRAM_HEIGHT, width, height);
-  if (out_rc.right > VRAM_WIDTH)
+  GSVector4i ret;
+  ret.left = x % VRAM_WIDTH;
+  ret.top = y % VRAM_HEIGHT;
+  ret.right = ret.left + width;
+  ret.bottom = ret.top + height;
+  if (ret.right > static_cast<s32>(VRAM_WIDTH))
   {
-    out_rc.left = 0;
-    out_rc.right = VRAM_WIDTH;
+    ret.left = 0;
+    ret.right = static_cast<s32>(VRAM_WIDTH);
   }
-  if (out_rc.bottom > VRAM_HEIGHT)
+  if (ret.bottom > static_cast<s32>(VRAM_HEIGHT))
   {
-    out_rc.top = 0;
-    out_rc.bottom = VRAM_HEIGHT;
+    ret.top = 0;
+    ret.bottom = static_cast<s32>(VRAM_HEIGHT);
   }
-  return out_rc;
+  return ret;
 }
 
 namespace {
@@ -317,8 +335,7 @@ bool GPU_HW::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
   else if (sw.IsReading())
   {
     // Need to update the VRAM copy on the GPU with the state data.
-    UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT, g_vram, VRAM_WIDTH * sizeof(u16), false, false,
-                    Common::Rectangle<u32>(0, 0, VRAM_WIDTH, VRAM_HEIGHT));
+    UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT, g_vram, VRAM_WIDTH * sizeof(u16), false, false, VRAM_SIZE_RECT);
   }
 
   // invalidate the whole VRAM read texture when loading state
@@ -337,7 +354,7 @@ void GPU_HW::RestoreDeviceContext()
 {
   g_gpu_device->SetTextureSampler(0, m_vram_read_texture.get(), g_gpu_device->GetNearestSampler());
   SetVRAMRenderTarget();
-  g_gpu_device->SetViewport(0, 0, m_vram_texture->GetWidth(), m_vram_texture->GetHeight());
+  g_gpu_device->SetViewport(m_vram_texture->GetRect());
   SetScissor();
   m_batch_ubo_dirty = true;
 }
@@ -542,20 +559,6 @@ void GPU_HW::CheckSettings()
   }
 }
 
-void GPU_HW::SetClampedDrawingArea()
-{
-  if (!IsDrawingAreaIsValid()) [[unlikely]]
-  {
-    m_clamped_drawing_area = {};
-    return;
-  }
-
-  m_clamped_drawing_area.right = std::min(m_drawing_area.right + 1, static_cast<u32>(VRAM_WIDTH));
-  m_clamped_drawing_area.left = std::min(m_drawing_area.left, std::min(m_clamped_drawing_area.right, VRAM_WIDTH - 1));
-  m_clamped_drawing_area.bottom = std::min(m_drawing_area.bottom + 1, static_cast<u32>(VRAM_HEIGHT));
-  m_clamped_drawing_area.top = std::min(m_drawing_area.top, std::min(m_drawing_area.bottom, VRAM_HEIGHT - 1));
-}
-
 u32 GPU_HW::CalculateResolutionScale() const
 {
   const u32 max_resolution_scale = GetMaxResolutionScale();
@@ -638,34 +641,19 @@ bool GPU_HW::IsUsingDownsampling() const
 
 void GPU_HW::SetFullVRAMDirtyRectangle()
 {
-  m_vram_dirty_draw_rect.Set(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+  m_vram_dirty_draw_rect = VRAM_SIZE_RECT;
   m_draw_mode.SetTexturePageChanged();
 }
 
 void GPU_HW::ClearVRAMDirtyRectangle()
 {
-  m_vram_dirty_draw_rect.SetInvalid();
-  m_vram_dirty_write_rect.SetInvalid();
+  m_vram_dirty_draw_rect = INVALID_RECT;
+  m_vram_dirty_write_rect = INVALID_RECT;
 }
 
-void GPU_HW::IncludeDrawnDirtyRectangle(s32 min_x, s32 min_y, s32 max_x, s32 max_y)
+void GPU_HW::IncludeDrawnDirtyRectangle(const GSVector4i rect)
 {
-  const u32 clamped_min_x = std::clamp(min_x, static_cast<s32>(m_clamped_drawing_area.left),
-                                       static_cast<s32>(m_clamped_drawing_area.right - 1));
-  const u32 clamped_max_x =
-    std::clamp(max_x, static_cast<s32>(m_clamped_drawing_area.left), static_cast<s32>(m_clamped_drawing_area.right));
-  m_vram_dirty_draw_rect.left = std::min(m_vram_dirty_draw_rect.left, clamped_min_x);
-  m_vram_dirty_draw_rect.right = std::max(m_vram_dirty_draw_rect.right, clamped_max_x);
-
-  const u32 clamped_min_y = std::clamp(min_y, static_cast<s32>(m_clamped_drawing_area.top),
-                                       static_cast<s32>(m_clamped_drawing_area.bottom - 1));
-  const u32 clamped_max_y =
-    std::clamp(max_y, static_cast<s32>(m_clamped_drawing_area.top), static_cast<s32>(m_clamped_drawing_area.bottom));
-  m_vram_dirty_draw_rect.top = std::min(m_vram_dirty_draw_rect.top, clamped_min_y);
-  m_vram_dirty_draw_rect.bottom = std::max(m_vram_dirty_draw_rect.bottom, clamped_max_y);
-
-  DebugAssert(m_vram_dirty_draw_rect.left < VRAM_WIDTH && m_vram_dirty_draw_rect.right <= VRAM_WIDTH);
-  DebugAssert(m_vram_dirty_draw_rect.top < VRAM_HEIGHT && m_vram_dirty_draw_rect.bottom <= VRAM_HEIGHT);
+  m_vram_dirty_draw_rect = m_vram_dirty_draw_rect.runion(rect.rintersect(m_clamped_drawing_area));
 }
 
 std::tuple<u32, u32> GPU_HW::GetEffectiveDisplayResolution(bool scaled /* = true */)
@@ -1490,7 +1478,7 @@ void GPU_HW::UpdateVRAMReadTexture(bool drawn, bool written)
 {
   GL_SCOPE("UpdateVRAMReadTexture()");
 
-  const auto update = [this](Common::Rectangle<u32>& rect, u8 dbit) {
+  const auto update = [this](GSVector4i& rect, u8 dbit) {
     if (m_texpage_dirty & dbit)
     {
       m_texpage_dirty &= ~dbit;
@@ -1498,14 +1486,14 @@ void GPU_HW::UpdateVRAMReadTexture(bool drawn, bool written)
         GL_INS_FMT("{} texpage is no longer dirty", (dbit & TEXPAGE_DIRTY_DRAWN_RECT) ? "DRAW" : "WRITE");
     }
 
-    const auto scaled_rect = rect * m_resolution_scale;
+    const GSVector4i scaled_rect = rect.mul32l(GSVector4i(m_resolution_scale));
     if (m_vram_texture->IsMultisampled())
     {
       if (g_gpu_device->GetFeatures().partial_msaa_resolve)
       {
         g_gpu_device->ResolveTextureRegion(m_vram_read_texture.get(), scaled_rect.left, scaled_rect.top, 0, 0,
-                                           m_vram_texture.get(), scaled_rect.left, scaled_rect.top,
-                                           scaled_rect.GetWidth(), scaled_rect.GetHeight());
+                                           m_vram_texture.get(), scaled_rect.left, scaled_rect.top, scaled_rect.width(),
+                                           scaled_rect.height());
       }
       else
       {
@@ -1517,29 +1505,29 @@ void GPU_HW::UpdateVRAMReadTexture(bool drawn, bool written)
     {
       g_gpu_device->CopyTextureRegion(m_vram_read_texture.get(), scaled_rect.left, scaled_rect.top, 0, 0,
                                       m_vram_texture.get(), scaled_rect.left, scaled_rect.top, 0, 0,
-                                      scaled_rect.GetWidth(), scaled_rect.GetHeight());
+                                      scaled_rect.width(), scaled_rect.height());
     }
 
     // m_counters.num_read_texture_updates++;
-    rect.SetInvalid();
+    rect = INVALID_RECT;
   };
 
   if (drawn)
   {
-    DebugAssert(m_vram_dirty_draw_rect.Valid());
+    DebugAssert(!m_vram_dirty_draw_rect.eq(INVALID_RECT));
     GL_INS_FMT("Updating draw rect {},{} => {},{} ({}x{})", m_vram_dirty_draw_rect.left, m_vram_dirty_draw_rect.right,
-               m_vram_dirty_draw_rect.top, m_vram_dirty_draw_rect.bottom, m_vram_dirty_draw_rect.GetWidth(),
-               m_vram_dirty_draw_rect.GetHeight());
+               m_vram_dirty_draw_rect.top, m_vram_dirty_draw_rect.bottom, m_vram_dirty_draw_rect.width(),
+               m_vram_dirty_draw_rect.height());
 
     u8 dbits = TEXPAGE_DIRTY_DRAWN_RECT;
-    if (written && m_vram_dirty_draw_rect.Intersects(m_vram_dirty_write_rect))
+    if (written && m_vram_dirty_draw_rect.rintersects(m_vram_dirty_write_rect))
     {
-      DebugAssert(m_vram_dirty_write_rect.Valid());
+      DebugAssert(!m_vram_dirty_write_rect.eq(INVALID_RECT));
       GL_INS_FMT("Including write rect {},{} => {},{} ({}x{})", m_vram_dirty_write_rect.left,
                  m_vram_dirty_write_rect.right, m_vram_dirty_write_rect.top, m_vram_dirty_write_rect.bottom,
-                 m_vram_dirty_write_rect.GetWidth(), m_vram_dirty_write_rect.GetHeight());
-      m_vram_dirty_draw_rect.Include(m_vram_dirty_write_rect);
-      m_vram_dirty_write_rect.SetInvalid();
+                 m_vram_dirty_write_rect.width(), m_vram_dirty_write_rect.height());
+      m_vram_dirty_draw_rect = m_vram_dirty_draw_rect.runion(m_vram_dirty_write_rect);
+      m_vram_dirty_write_rect = INVALID_RECT;
       dbits = TEXPAGE_DIRTY_DRAWN_RECT | TEXPAGE_DIRTY_WRITTEN_RECT;
       written = false;
     }
@@ -1550,7 +1538,7 @@ void GPU_HW::UpdateVRAMReadTexture(bool drawn, bool written)
   {
     GL_INS_FMT("Updating write rect {},{} => {},{} ({}x{})", m_vram_dirty_write_rect.left,
                m_vram_dirty_write_rect.right, m_vram_dirty_write_rect.top, m_vram_dirty_write_rect.bottom,
-               m_vram_dirty_write_rect.GetWidth(), m_vram_dirty_write_rect.GetHeight());
+               m_vram_dirty_write_rect.width(), m_vram_dirty_write_rect.height());
     update(m_vram_dirty_write_rect, TEXPAGE_DIRTY_WRITTEN_RECT);
   }
 }
@@ -1561,7 +1549,7 @@ void GPU_HW::UpdateDepthBufferFromMaskBit()
     return;
 
   // Viewport should already be set full, only need to fudge the scissor.
-  g_gpu_device->SetScissor(0, 0, m_vram_texture->GetWidth(), m_vram_texture->GetHeight());
+  g_gpu_device->SetScissor(m_vram_texture->GetRect());
   g_gpu_device->InvalidateRenderTarget(m_vram_depth_texture.get());
   g_gpu_device->SetRenderTargets(nullptr, 0, m_vram_depth_texture.get());
   g_gpu_device->SetPipeline(m_vram_update_depth_pipeline.get());
@@ -1614,12 +1602,7 @@ void GPU_HW::ClearDepthBuffer()
 
 void GPU_HW::SetScissor()
 {
-  const s32 left = m_drawing_area.left * m_resolution_scale;
-  const s32 right = std::max<u32>((m_drawing_area.right + 1) * m_resolution_scale, left + 1);
-  const s32 top = m_drawing_area.top * m_resolution_scale;
-  const s32 bottom = std::max<u32>((m_drawing_area.bottom + 1) * m_resolution_scale, top + 1);
-
-  g_gpu_device->SetScissor(left, top, right - left, bottom - top);
+  g_gpu_device->SetScissor(m_clamped_drawing_area.mul32l(GSVector4i(m_resolution_scale)));
 }
 
 void GPU_HW::MapGPUBuffer(u32 required_vertices, u32 required_indices)
@@ -1805,7 +1788,7 @@ bool GPU_HW::IsPossibleSpritePolygon(const BatchVertex* vertices) const
   return (zero_dudy && zero_dvdx);
 }
 
-ALWAYS_INLINE_RELEASE void GPU_HW::ExpandLineTriangles(BatchVertex* vertices, u32 base_vertex)
+ALWAYS_INLINE_RELEASE bool GPU_HW::ExpandLineTriangles(BatchVertex* vertices)
 {
   // Line expansion inspired by beetle-psx.
   BatchVertex *vshort, *vlong;
@@ -1838,7 +1821,7 @@ ALWAYS_INLINE_RELEASE void GPU_HW::ExpandLineTriangles(BatchVertex* vertices, u3
     }
     else
     {
-      return;
+      return false;
     }
 
     // Determine line direction. Vertical lines will have a width of 1, horizontal lines a height of 1.
@@ -1850,7 +1833,7 @@ ALWAYS_INLINE_RELEASE void GPU_HW::ExpandLineTriangles(BatchVertex* vertices, u3
       if (vshort->x == vlong->x)
         std::swap(vshort, vcorner);
       else if (vcorner->x != vlong->x)
-        return;
+        return false;
 
       GL_INS_FMT("Vertical line from Y={} to {}", vcorner->y, vlong->y);
     }
@@ -1860,14 +1843,14 @@ ALWAYS_INLINE_RELEASE void GPU_HW::ExpandLineTriangles(BatchVertex* vertices, u3
       if (vshort->y == vlong->y)
         std::swap(vshort, vcorner);
       else if (vcorner->y != vlong->y)
-        return;
+        return false;
 
       GL_INS_FMT("Horizontal line from X={} to {}", vcorner->x, vlong->x);
     }
     else
     {
       // Not a line-like triangle.
-      return;
+      return false;
     }
 
     // We could adjust the short texture coordinate to +1 from its original position, rather than leaving it the same.
@@ -1900,14 +1883,14 @@ ALWAYS_INLINE_RELEASE void GPU_HW::ExpandLineTriangles(BatchVertex* vertices, u3
     }
     else
     {
-      return;
+      return false;
     }
 
     // Determine line direction. Vertical lines will have a width of 1, horizontal lines a height of 1.
     vertical = (std::abs(va->x - vc->x) == 1.0f);
     horizontal = (std::abs(va->y - vb->y) == 1.0f);
     if (!vertical && !horizontal)
-      return;
+      return false;
 
     // Determine which vertex is the right angle, based on the vertical position.
     const BatchVertex* vcorner;
@@ -1916,7 +1899,7 @@ ALWAYS_INLINE_RELEASE void GPU_HW::ExpandLineTriangles(BatchVertex* vertices, u3
     else if (vb->y == vc->y)
       vcorner = vb;
     else
-      return;
+      return false;
 
     // Find short/long edge of the triangle.
     BatchVertex* vother = ((vcorner == va) ? vb : va);
@@ -1927,52 +1910,64 @@ ALWAYS_INLINE_RELEASE void GPU_HW::ExpandLineTriangles(BatchVertex* vertices, u3
     // Therefore the difference in V should be ignored.
     vshort->u = vcorner->u;
     vshort->v = vcorner->v;
-
-    // We need to re-compute the UV limits, since we adjusted them above.
-    if (m_compute_uv_range)
-      ComputePolygonUVLimits(vertices[0].texpage, vertices, 3);
-
-    // This is super jank, but because we rewrote the UVs on one of the vertices above, we need to rewrite it to GPU
-    // memory again. Has to be all of them as well, not just vshort, because the UV limits may have changed.
-    DebugAssert(m_batch_vertex_count >= 3);
-    std::memcpy(m_batch_vertex_ptr - 3, vertices, sizeof(BatchVertex) * 3);
   }
 
-  // Need to write the 4th vertex to the GPU.
+  // Need to write the 4th vertex.
   DebugAssert(m_batch_vertex_space >= 1);
-  BatchVertex* last = &(*(m_batch_vertex_ptr++) = *vlong);
+  BatchVertex* last = &(vertices[3] = *vlong);
   last->x = vertical ? vshort->x : vlong->x;
   last->y = horizontal ? vshort->y : vlong->y;
-  m_batch_vertex_count++;
-  m_batch_vertex_space--;
 
-  // Generate indices for second triangle.
-  DebugAssert(m_batch_index_space >= 3);
+  // Generate indices.
+  const u32 base_vertex = m_batch_vertex_count;
+  DebugAssert(m_batch_index_space >= 6);
+  *(m_batch_index_ptr++) = Truncate16(base_vertex);
+  *(m_batch_index_ptr++) = Truncate16(base_vertex + 1);
+  *(m_batch_index_ptr++) = Truncate16(base_vertex + 2);
   *(m_batch_index_ptr++) = Truncate16(base_vertex + (vshort - vertices));
   *(m_batch_index_ptr++) = Truncate16(base_vertex + (vlong - vertices));
   *(m_batch_index_ptr++) = Truncate16(base_vertex + 3);
-  m_batch_index_count += 3;
-  m_batch_index_space -= 3;
+  m_batch_index_count += 6;
+  m_batch_index_space -= 6;
+
+  // Upload vertices.
+  DebugAssert(m_batch_vertex_space >= 4);
+  std::memcpy(m_batch_vertex_ptr, vertices, sizeof(BatchVertex) * 4);
+  m_batch_vertex_ptr += 4;
+  m_batch_vertex_count += 4;
+  m_batch_vertex_space -= 4;
+  return true;
 }
 
-void GPU_HW::ComputePolygonUVLimits(u32 texpage, BatchVertex* vertices, u32 num_vertices)
+void GPU_HW::ComputePolygonUVLimits(BatchVertex* vertices, u32 num_vertices)
 {
-  u32 min_u = vertices[0].u, max_u = vertices[0].u, min_v = vertices[0].v, max_v = vertices[0].v;
-  for (u32 i = 1; i < num_vertices; i++)
+  DebugAssert(num_vertices == 3 || num_vertices == 4);
+
+  GSVector4i v0 = GSVector4i::load32(&vertices[0].u);
+  GSVector4i v1 = GSVector4i::load32(&vertices[1].u);
+  GSVector4i v2 = GSVector4i::load32(&vertices[2].u);
+  GSVector4i v3;
+  GSVector4i min = v0.min_u16(v1).min_u16(v2);
+  GSVector4i max = v0.max_u16(v1).max_u16(v2);
+  if (num_vertices == 4)
   {
-    min_u = std::min<u32>(min_u, vertices[i].u);
-    max_u = std::max<u32>(max_u, vertices[i].u);
-    min_v = std::min<u32>(min_v, vertices[i].v);
-    max_v = std::max<u32>(max_v, vertices[i].v);
+    v3 = GSVector4i::load32(&vertices[3].u);
+    min = min.min_u16(v3);
+    max = max.max_u16(v3);
   }
 
+  u32 min_u = min.extract16<0>();
+  u32 min_v = min.extract16<1>();
+  u32 max_u = max.extract16<0>();
+  u32 max_v = max.extract16<1>();
   max_u = (min_u != max_u) ? (max_u - 1) : max_u;
   max_v = (min_v != max_v) ? (max_v - 1) : max_v;
 
-  CheckForTexPageOverlap(texpage, min_u, min_v, max_u, max_v);
-
   for (u32 i = 0; i < num_vertices; i++)
     vertices[i].SetUVLimits(min_u, max_u, min_v, max_v);
+
+  if (m_texpage_dirty != 0)
+    CheckForTexPageOverlap(min.upl32(max).u16to32());
 }
 
 void GPU_HW::SetBatchDepthBuffer(bool enabled)
@@ -2137,10 +2132,13 @@ void GPU_HW::LoadVertices()
       const bool raw_texture = textured && rc.raw_texture_enable;
       const bool shaded = rc.shading_enable;
       const bool pgxp = g_settings.gpu_pgxp_enable;
+
+      // TODO: Using 64-bit vectors instead of 32-bit could be advantageous here, particularly for small ARM cores and
+      // RISC-V.
       const u32 first_color = rc.color_for_first_vertex;
-      const u32 num_vertices = rc.quad_polygon ? 4 : 3;
+      u32 num_vertices = rc.quad_polygon ? 4 : 3;
       std::array<BatchVertex, 4> vertices;
-      std::array<std::array<s32, 2>, 4> native_vertex_positions;
+      std::array<GSVector2i, 4> native_vertex_positions;
       std::array<u16, 4> native_texcoords;
       bool valid_w = g_settings.gpu_pgxp_texture_correction;
       for (u32 i = 0; i < num_vertices; i++)
@@ -2150,10 +2148,8 @@ void GPU_HW::LoadVertices()
         const u64 maddr_and_pos = m_fifo.Pop();
         const GPUVertexPosition vp{Truncate32(maddr_and_pos)};
         const u16 texcoord = textured ? Truncate16(FifoPop()) : 0;
-        const s32 native_x = m_drawing_offset.x + vp.x;
-        const s32 native_y = m_drawing_offset.y + vp.y;
-        native_vertex_positions[i][0] = native_x;
-        native_vertex_positions[i][1] = native_y;
+        const s32 native_x = native_vertex_positions[i].x = m_drawing_offset.x + vp.x;
+        const s32 native_y = native_vertex_positions[i].y = m_drawing_offset.y + vp.y;
         native_texcoords[i] = texcoord;
         vertices[i].Set(static_cast<float>(native_x), static_cast<float>(native_y), depth, 1.0f, color, texpage,
                         texcoord, 0xFFFF0000u);
@@ -2187,14 +2183,114 @@ void GPU_HW::LoadVertices()
       else if (m_allow_sprite_mode)
         SetBatchSpriteMode((pgxp && !is_3d) || IsPossibleSpritePolygon(vertices.data()));
 
-      if (m_compute_uv_range && textured)
-        ComputePolygonUVLimits(texpage, vertices.data(), num_vertices);
-
       if (!IsDrawingAreaIsValid()) [[unlikely]]
         return;
 
-      const u32 start_index = m_batch_vertex_count;
+      if (m_sw_renderer)
+      {
+        GPUBackendDrawPolygonCommand* cmd = m_sw_renderer->NewDrawPolygonCommand(num_vertices);
+        FillDrawCommand(cmd, rc);
+
+        const u32 sw_num_vertices = rc.quad_polygon ? 4 : 3;
+        for (u32 i = 0; i < sw_num_vertices; i++)
+        {
+          GPUBackendDrawPolygonCommand::Vertex* vert = &cmd->vertices[i];
+          vert->x = native_vertex_positions[i].x;
+          vert->y = native_vertex_positions[i].y;
+          vert->texcoord = native_texcoords[i];
+          vert->color = vertices[i].color;
+        }
+
+        m_sw_renderer->PushCommand(cmd);
+      }
+
+      // Cull polygons which are too large.
+      const GSVector4 v0f = GSVector4::loadl(&vertices[0].x);
+      const GSVector4 v1f = GSVector4::loadl(&vertices[1].x);
+      const GSVector4 v2f = GSVector4::loadl(&vertices[2].x);
+      const GSVector4 min_pos_12 = v1f.min(v2f);
+      const GSVector4 max_pos_12 = v1f.max(v2f);
+      const GSVector4i draw_rect_012 =
+        GSVector4i(min_pos_12.min(v0f).upld(max_pos_12.max(v0f))).add32(GSVector4i::cxpr(0, 0, 1, 1));
+      const bool first_tri_culled =
+        (draw_rect_012.width() > MAX_PRIMITIVE_WIDTH || draw_rect_012.height() > MAX_PRIMITIVE_HEIGHT ||
+         !m_clamped_drawing_area.rintersects(draw_rect_012));
+      if (first_tri_culled)
+      {
+        GL_INS_FMT("Culling off-screen/too-large polygon: {},{} {},{} {},{}", native_vertex_positions[0].x,
+                   native_vertex_positions[0].y, native_vertex_positions[1].x, native_vertex_positions[1].y,
+                   native_vertex_positions[2].x, native_vertex_positions[2].y);
+
+        if (!rc.quad_polygon)
+          return;
+      }
+      else
+      {
+        if (textured && m_compute_uv_range)
+          ComputePolygonUVLimits(vertices.data(), num_vertices);
+
+        IncludeDrawnDirtyRectangle(draw_rect_012);
+        AddDrawTriangleTicks(GSVector4i(native_vertex_positions[0]), GSVector4i(native_vertex_positions[1]),
+                             GSVector4i(native_vertex_positions[2]), rc.shading_enable, rc.texture_enable,
+                             rc.transparency_enable);
+
+        // Expand lines to triangles (Doom, Soul Blade, etc.)
+        if (!rc.quad_polygon && m_line_detect_mode >= GPULineDetectMode::BasicTriangles && !is_3d &&
+            ExpandLineTriangles(vertices.data()))
+        {
+          return;
+        }
+
+        const u32 start_index = m_batch_vertex_count;
+        DebugAssert(m_batch_index_space >= 3);
+        *(m_batch_index_ptr++) = Truncate16(start_index);
+        *(m_batch_index_ptr++) = Truncate16(start_index + 1);
+        *(m_batch_index_ptr++) = Truncate16(start_index + 2);
+        m_batch_index_count += 3;
+        m_batch_index_space -= 3;
+      }
+
+      // quads
       if (rc.quad_polygon)
+      {
+        const GSVector4 v3f = GSVector4::loadl(&vertices[3].x);
+        const GSVector4i draw_rect_123 =
+          GSVector4i(min_pos_12.min(v3f).upld(max_pos_12.max(v3f))).add32(GSVector4i::cxpr(0, 0, 1, 1));
+
+        // Cull polygons which are too large.
+        const bool second_tri_culled =
+          (draw_rect_123.width() > MAX_PRIMITIVE_WIDTH || draw_rect_123.height() > MAX_PRIMITIVE_HEIGHT ||
+           !m_clamped_drawing_area.rintersects(draw_rect_123));
+        if (second_tri_culled)
+        {
+          GL_INS_FMT("Culling off-screen/too-large polygon (quad second half): {},{} {},{} {},{}",
+                     native_vertex_positions[2].x, native_vertex_positions[2].y, native_vertex_positions[1].x,
+                     native_vertex_positions[1].y, native_vertex_positions[0].x, native_vertex_positions[0].y);
+
+          if (first_tri_culled)
+            return;
+        }
+        else
+        {
+          if (first_tri_culled && textured && m_compute_uv_range)
+            ComputePolygonUVLimits(vertices.data(), num_vertices);
+
+          IncludeDrawnDirtyRectangle(draw_rect_123);
+          AddDrawTriangleTicks(GSVector4i(native_vertex_positions[2]), GSVector4i(native_vertex_positions[1]),
+                               GSVector4i(native_vertex_positions[3]), rc.shading_enable, rc.texture_enable,
+                               rc.transparency_enable);
+
+          const u32 start_index = m_batch_vertex_count;
+          DebugAssert(m_batch_index_space >= 3);
+          *(m_batch_index_ptr++) = Truncate16(start_index + 2);
+          *(m_batch_index_ptr++) = Truncate16(start_index + 1);
+          *(m_batch_index_ptr++) = Truncate16(start_index + 3);
+          m_batch_index_count += 3;
+          m_batch_index_space -= 3;
+        }
+      }
+
+      if (num_vertices == 4)
       {
         DebugAssert(m_batch_vertex_space >= 4);
         std::memcpy(m_batch_vertex_ptr, vertices.data(), sizeof(BatchVertex) * 4);
@@ -2210,96 +2306,6 @@ void GPU_HW::LoadVertices()
         m_batch_vertex_count += 3;
         m_batch_vertex_space -= 3;
       }
-
-      // Cull polygons which are too large.
-      const auto [min_x_12, max_x_12] = MinMax(native_vertex_positions[1][0], native_vertex_positions[2][0]);
-      const auto [min_y_12, max_y_12] = MinMax(native_vertex_positions[1][1], native_vertex_positions[2][1]);
-      const s32 min_x = std::min(min_x_12, native_vertex_positions[0][0]);
-      const s32 max_x = std::max(max_x_12, native_vertex_positions[0][0]);
-      const s32 min_y = std::min(min_y_12, native_vertex_positions[0][1]);
-      const s32 max_y = std::max(max_y_12, native_vertex_positions[0][1]);
-      const bool first_tri_culled = ((max_x - min_x) >= MAX_PRIMITIVE_WIDTH || (max_y - min_y) >= MAX_PRIMITIVE_HEIGHT);
-
-      if (first_tri_culled)
-      {
-        DEBUG_LOG("Culling too-large polygon: {},{} {},{} {},{}", native_vertex_positions[0][0],
-                  native_vertex_positions[0][1], native_vertex_positions[1][0], native_vertex_positions[1][1],
-                  native_vertex_positions[2][0], native_vertex_positions[2][1]);
-      }
-      else
-      {
-        // TODO: Cull triangles that fall entirely off-screen.
-        IncludeDrawnDirtyRectangle(min_x, min_y, max_x, max_y);
-
-        AddDrawTriangleTicks(native_vertex_positions[0][0], native_vertex_positions[0][1],
-                             native_vertex_positions[1][0], native_vertex_positions[1][1],
-                             native_vertex_positions[2][0], native_vertex_positions[2][1], rc.shading_enable,
-                             rc.texture_enable, rc.transparency_enable);
-
-        DebugAssert(m_batch_index_space >= 3);
-        *(m_batch_index_ptr++) = Truncate16(start_index);
-        *(m_batch_index_ptr++) = Truncate16(start_index + 1);
-        *(m_batch_index_ptr++) = Truncate16(start_index + 2);
-        m_batch_index_count += 3;
-        m_batch_index_space -= 3;
-      }
-
-      // quads
-      if (rc.quad_polygon)
-      {
-        const s32 min_x_123 = std::min(min_x_12, native_vertex_positions[3][0]);
-        const s32 max_x_123 = std::max(max_x_12, native_vertex_positions[3][0]);
-        const s32 min_y_123 = std::min(min_y_12, native_vertex_positions[3][1]);
-        const s32 max_y_123 = std::max(max_y_12, native_vertex_positions[3][1]);
-
-        // Cull polygons which are too large.
-        if ((max_x_123 - min_x_123) >= MAX_PRIMITIVE_WIDTH || (max_y_123 - min_y_123) >= MAX_PRIMITIVE_HEIGHT)
-        {
-          DEBUG_LOG("Culling too-large polygon (quad second half): {},{} {},{} {},{}", native_vertex_positions[2][0],
-                    native_vertex_positions[2][1], native_vertex_positions[1][0], native_vertex_positions[1][1],
-                    native_vertex_positions[0][0], native_vertex_positions[0][1]);
-        }
-        else
-        {
-          IncludeDrawnDirtyRectangle(min_x_123, min_y_123, max_x_123, max_y_123);
-
-          AddDrawTriangleTicks(native_vertex_positions[2][0], native_vertex_positions[2][1],
-                               native_vertex_positions[1][0], native_vertex_positions[1][1],
-                               native_vertex_positions[3][0], native_vertex_positions[3][1], rc.shading_enable,
-                               rc.texture_enable, rc.transparency_enable);
-
-          DebugAssert(m_batch_index_space >= 3);
-          *(m_batch_index_ptr++) = Truncate16(start_index + 2);
-          *(m_batch_index_ptr++) = Truncate16(start_index + 1);
-          *(m_batch_index_ptr++) = Truncate16(start_index + 3);
-          m_batch_index_count += 3;
-          m_batch_index_space -= 3;
-        }
-      }
-      else
-      {
-        // Expand lines to triangles (Doom, Soul Blade, etc.)
-        if (m_line_detect_mode >= GPULineDetectMode::BasicTriangles && !is_3d && !first_tri_culled)
-          ExpandLineTriangles(vertices.data(), start_index);
-      }
-
-      if (m_sw_renderer)
-      {
-        GPUBackendDrawPolygonCommand* cmd = m_sw_renderer->NewDrawPolygonCommand(num_vertices);
-        FillDrawCommand(cmd, rc);
-
-        const u32 sw_num_vertices = rc.quad_polygon ? 4 : 3;
-        for (u32 i = 0; i < sw_num_vertices; i++)
-        {
-          GPUBackendDrawPolygonCommand::Vertex* vert = &cmd->vertices[i];
-          vert->x = native_vertex_positions[i][0];
-          vert->y = native_vertex_positions[i][1];
-          vert->texcoord = native_texcoords[i];
-          vert->color = vertices[i].color;
-        }
-
-        m_sw_renderer->PushCommand(cmd);
-      }
     }
     break;
 
@@ -2311,10 +2317,10 @@ void GPU_HW::LoadVertices()
       const s32 pos_y = TruncateGPUVertexPosition(m_drawing_offset.y + vp.y);
 
       const auto [texcoord_x, texcoord_y] = UnpackTexcoord(rc.texture_enable ? Truncate16(FifoPop()) : 0);
-      u16 orig_tex_left = ZeroExtend16(texcoord_x);
-      u16 orig_tex_top = ZeroExtend16(texcoord_y);
-      s32 rectangle_width;
-      s32 rectangle_height;
+      u32 orig_tex_left = ZeroExtend16(texcoord_x);
+      u32 orig_tex_top = ZeroExtend16(texcoord_y);
+      u32 rectangle_width;
+      u32 rectangle_height;
       switch (rc.rectangle_size)
       {
         case GPUDrawRectangleSize::R1x1:
@@ -2332,14 +2338,8 @@ void GPU_HW::LoadVertices()
         default:
         {
           const u32 width_and_height = FifoPop();
-          rectangle_width = static_cast<s32>(width_and_height & VRAM_WIDTH_MASK);
-          rectangle_height = static_cast<s32>((width_and_height >> 16) & VRAM_HEIGHT_MASK);
-
-          if (rectangle_width >= MAX_PRIMITIVE_WIDTH || rectangle_height >= MAX_PRIMITIVE_HEIGHT)
-          {
-            DEBUG_LOG("Culling too-large rectangle: {},{} {}x{}", pos_x, pos_y, rectangle_width, rectangle_height);
-            return;
-          }
+          rectangle_width = (width_and_height & VRAM_WIDTH_MASK);
+          rectangle_height = ((width_and_height >> 16) & VRAM_HEIGHT_MASK);
         }
         break;
       }
@@ -2354,34 +2354,42 @@ void GPU_HW::LoadVertices()
                   m_batch_index_space >= MAX_VERTICES_FOR_RECTANGLE);
 
       // Split the rectangle into multiple quads if it's greater than 256x256, as the texture page should repeat.
-      u16 tex_top = orig_tex_top;
-      for (s32 y_offset = 0; y_offset < rectangle_height;)
+      u32 tex_top = orig_tex_top;
+      for (u32 y_offset = 0; y_offset < rectangle_height;)
       {
-        const s32 quad_height = std::min<s32>(rectangle_height - y_offset, TEXTURE_PAGE_WIDTH - tex_top);
-        const float quad_start_y = static_cast<float>(pos_y + y_offset);
+        const s32 quad_height = std::min(rectangle_height - y_offset, TEXTURE_PAGE_WIDTH - tex_top);
+        const float quad_start_y = static_cast<float>(pos_y + static_cast<s32>(y_offset));
         const float quad_end_y = quad_start_y + static_cast<float>(quad_height);
-        const u16 tex_bottom = tex_top + static_cast<u16>(quad_height);
+        const u32 tex_bottom = tex_top + quad_height;
 
-        u16 tex_left = orig_tex_left;
-        for (s32 x_offset = 0; x_offset < rectangle_width;)
+        u32 tex_left = orig_tex_left;
+        for (u32 x_offset = 0; x_offset < rectangle_width;)
         {
-          const s32 quad_width = std::min<s32>(rectangle_width - x_offset, TEXTURE_PAGE_HEIGHT - tex_left);
-          const float quad_start_x = static_cast<float>(pos_x + x_offset);
+          const s32 quad_width = std::min(rectangle_width - x_offset, TEXTURE_PAGE_HEIGHT - tex_left);
+          const float quad_start_x = static_cast<float>(pos_x + static_cast<s32>(x_offset));
           const float quad_end_x = quad_start_x + static_cast<float>(quad_width);
-          const u16 tex_right = tex_left + static_cast<u16>(quad_width);
+          const u32 tex_right = tex_left + quad_width;
           const u32 uv_limits = BatchVertex::PackUVLimits(tex_left, tex_right - 1, tex_top, tex_bottom - 1);
 
-          CheckForTexPageOverlap(texpage, tex_left, tex_top, tex_right - 1, tex_bottom - 1);
+          if (rc.texture_enable && m_texpage_dirty != 0)
+          {
+            CheckForTexPageOverlap(GSVector4i(static_cast<s32>(tex_left), static_cast<s32>(tex_top),
+                                              static_cast<s32>(tex_right), static_cast<s32>(tex_bottom)));
+          }
 
           const u32 base_vertex = m_batch_vertex_count;
           (m_batch_vertex_ptr++)
-            ->Set(quad_start_x, quad_start_y, depth, 1.0f, color, texpage, tex_left, tex_top, uv_limits);
+            ->Set(quad_start_x, quad_start_y, depth, 1.0f, color, texpage, Truncate16(tex_left), Truncate16(tex_top),
+                  uv_limits);
           (m_batch_vertex_ptr++)
-            ->Set(quad_end_x, quad_start_y, depth, 1.0f, color, texpage, tex_right, tex_top, uv_limits);
+            ->Set(quad_end_x, quad_start_y, depth, 1.0f, color, texpage, Truncate16(tex_right), Truncate16(tex_top),
+                  uv_limits);
           (m_batch_vertex_ptr++)
-            ->Set(quad_start_x, quad_end_y, depth, 1.0f, color, texpage, tex_left, tex_bottom, uv_limits);
+            ->Set(quad_start_x, quad_end_y, depth, 1.0f, color, texpage, Truncate16(tex_left), Truncate16(tex_bottom),
+                  uv_limits);
           (m_batch_vertex_ptr++)
-            ->Set(quad_end_x, quad_end_y, depth, 1.0f, color, texpage, tex_right, tex_bottom, uv_limits);
+            ->Set(quad_end_x, quad_end_y, depth, 1.0f, color, texpage, Truncate16(tex_right), Truncate16(tex_bottom),
+                  uv_limits);
           m_batch_vertex_count += 4;
           m_batch_vertex_space -= 4;
 
@@ -2402,7 +2410,7 @@ void GPU_HW::LoadVertices()
         tex_top = 0;
       }
 
-      IncludeDrawnDirtyRectangle(pos_x, pos_y, pos_x + rectangle_width, pos_y + rectangle_height);
+      IncludeDrawnDirtyRectangle(GSVector4i(pos_x, pos_y, pos_x + rectangle_width, pos_y + rectangle_height));
       AddDrawRectangleTicks(pos_x, pos_y, rectangle_width, rectangle_height, rc.texture_enable, rc.transparency_enable);
 
       if (m_sw_renderer)
@@ -2459,7 +2467,7 @@ void GPU_HW::LoadVertices()
           return;
         }
 
-        IncludeDrawnDirtyRectangle(min_x, min_y, max_x + 1, max_y + 1);
+        IncludeDrawnDirtyRectangle(GSVector4i(min_x, min_y, max_x + 1, max_y + 1));
         AddDrawLineTicks(min_x, min_y, max_x, max_y, rc.shading_enable);
 
         // TODO: Should we do a PGXP lookup here? Most lines are 2D.
@@ -2519,7 +2527,7 @@ void GPU_HW::LoadVertices()
           }
           else
           {
-            IncludeDrawnDirtyRectangle(min_x, min_y, max_x + 1, max_y + 1);
+            IncludeDrawnDirtyRectangle(GSVector4i(min_x, min_y, max_x + 1, max_y + 1));
             AddDrawLineTicks(min_x, min_y, max_x, max_y, rc.shading_enable);
 
             // TODO: Should we do a PGXP lookup here? Most lines are 2D.
@@ -2588,52 +2596,57 @@ bool GPU_HW::BlitVRAMReplacementTexture(const TextureReplacementTexture* tex, u3
   return true;
 }
 
-void GPU_HW::IncludeVRAMDirtyRectangle(Common::Rectangle<u32>& rect, const Common::Rectangle<u32>& new_rect)
+void GPU_HW::IncludeVRAMDirtyRectangle(GSVector4i& rect, const GSVector4i new_rect)
 {
-  rect.Include(new_rect);
+  if (rect.rcontains(new_rect))
+    return;
+
+  rect = rect.runion(new_rect);
 
   // the vram area can include the texture page, but the game can leave it as-is. in this case, set it as dirty so the
   // shadow texture is updated
-  if (!m_draw_mode.IsTexturePageChanged() &&
-      (m_draw_mode.mode_reg.GetTexturePageRectangle().Intersects(new_rect) ||
+  if (!m_draw_mode.IsTexturePageChanged() && m_batch.texture_mode != BatchTextureMode::Disabled &&
+      (m_draw_mode.mode_reg.GetTexturePageRectangle().rintersects(new_rect) ||
        (m_draw_mode.mode_reg.IsUsingPalette() &&
-        m_draw_mode.palette_reg.GetRectangle(m_draw_mode.mode_reg.texture_mode).Intersects(new_rect))))
+        m_draw_mode.palette_reg.GetRectangle(m_draw_mode.mode_reg.texture_mode).rintersects(new_rect))))
   {
     m_draw_mode.SetTexturePageChanged();
   }
 }
 
-ALWAYS_INLINE_RELEASE void GPU_HW::CheckForTexPageOverlap(u32 texpage, u32 min_u, u32 min_v, u32 max_u, u32 max_v)
+ALWAYS_INLINE_RELEASE void GPU_HW::CheckForTexPageOverlap(GSVector4i uv_rect)
 {
-  if (!m_texpage_dirty)
-    return;
+  DebugAssert(m_texpage_dirty != 0 && m_batch.texture_mode != BatchTextureMode::Disabled);
 
-  static constexpr std::array<std::array<u8, 2>, 4> uv_shifts_adds = {{{2, 3}, {1, 1}, {0, 0}, {0, 0}}};
-
-  const u32 xoffs = (texpage & 0xFu) * 64u;
-  const u32 yoffs = ((texpage >> 4) & 1u) * 256u;
-  const u32 xshift = uv_shifts_adds[(texpage >> 7) & 3][0];
-  const u32 xadd = uv_shifts_adds[(texpage >> 7) & 3][1];
-
-  const u32 vram_min_u =
-    (((min_u & m_draw_mode.texture_window.and_x) | m_draw_mode.texture_window.or_x) >> xshift) + xoffs;
-  const u32 vram_max_u =
-    ((((max_u & m_draw_mode.texture_window.and_x) | m_draw_mode.texture_window.or_x) + xadd) >> xshift) + xoffs;
-  const u32 vram_min_v = ((min_v & m_draw_mode.texture_window.and_y) | m_draw_mode.texture_window.or_y) + yoffs;
-  const u32 vram_max_v = ((max_v & m_draw_mode.texture_window.and_y) | m_draw_mode.texture_window.or_y) + yoffs;
-
-  // Log_InfoFmt("{}: {},{} => {},{}", s_draw_number, vram_min_u, vram_min_v, vram_max_u, vram_max_v);
-
-  if (vram_min_u < m_current_uv_range.left || vram_min_v < m_current_uv_range.top ||
-      vram_max_u >= m_current_uv_range.right || vram_max_v >= m_current_uv_range.bottom)
+  if (m_texture_window_active)
   {
-    m_current_uv_range.Include(vram_min_u, vram_max_u + 1, vram_min_v, vram_max_v + 1);
+    const GSVector4i twin = GSVector4i::load<false>(m_batch_ubo_data.u_texture_window);
+    uv_rect = ((uv_rect & twin.xyxy()) | twin.zwzw());
+
+    // Min could be greater than max after applying window, correct for it.
+    uv_rect = uv_rect.min_i32(uv_rect.zwzw()).max_i32(uv_rect.xyxy());
+  }
+
+  const GPUTextureMode tmode = m_draw_mode.mode_reg.texture_mode;
+  const u32 xshift = (tmode >= GPUTextureMode::Direct16Bit) ? 0 : (2 - static_cast<u8>(tmode));
+  const GSVector4i page_offset = GSVector4i(m_current_texture_page_offset).xyxy();
+
+  uv_rect = uv_rect.blend32<5>(uv_rect.srl32(xshift));   // shift only goes on the x
+  uv_rect = uv_rect.add32(page_offset);                  // page offset
+  uv_rect = uv_rect.add32(GSVector4i::cxpr(0, 0, 1, 1)); // make exclusive
+  uv_rect = uv_rect.rintersect(VRAM_SIZE_RECT);          // clamp to vram bounds
+
+  const GSVector4i new_uv_rect = m_current_uv_range.runion(uv_rect);
+
+  if (!m_current_uv_range.eq(new_uv_rect))
+  {
+    m_current_uv_range = new_uv_rect;
 
     bool update_drawn = false, update_written = false;
     if (m_texpage_dirty & TEXPAGE_DIRTY_DRAWN_RECT)
     {
-      DebugAssert(m_vram_dirty_draw_rect.Valid());
-      update_drawn = m_current_uv_range.Intersects(m_vram_dirty_draw_rect);
+      DebugAssert(!m_vram_dirty_draw_rect.eq(INVALID_RECT));
+      update_drawn = m_current_uv_range.rintersects(m_vram_dirty_draw_rect);
       if (update_drawn)
       {
         GL_INS_FMT("Updating VRAM cache due to UV {{{},{} => {},{}}} intersection with dirty DRAW {{{},{} => {},{}}}",
@@ -2644,8 +2657,8 @@ ALWAYS_INLINE_RELEASE void GPU_HW::CheckForTexPageOverlap(u32 texpage, u32 min_u
     }
     if (m_texpage_dirty & TEXPAGE_DIRTY_WRITTEN_RECT)
     {
-      DebugAssert(m_vram_dirty_write_rect.Valid());
-      update_written = m_current_uv_range.Intersects(m_vram_dirty_write_rect);
+      DebugAssert(!m_vram_dirty_write_rect.eq(INVALID_RECT));
+      update_written = m_current_uv_range.rintersects(m_vram_dirty_write_rect);
       if (update_written)
       {
         GL_INS_FMT("Updating VRAM cache due to UV {{{},{} => {},{}}} intersection with dirty WRITE {{{},{} => {},{}}}",
@@ -2838,24 +2851,22 @@ void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   }
 
   GL_INS_FMT("Dirty draw area before: {},{} => {},{} ({}x{})", m_vram_dirty_draw_rect.left, m_vram_dirty_draw_rect.top,
-             m_vram_dirty_draw_rect.right, m_vram_dirty_draw_rect.bottom, m_vram_dirty_draw_rect.GetWidth(),
-             m_vram_dirty_draw_rect.GetHeight());
+             m_vram_dirty_draw_rect.right, m_vram_dirty_draw_rect.bottom, m_vram_dirty_draw_rect.width(),
+             m_vram_dirty_draw_rect.height());
 
-  IncludeVRAMDirtyRectangle(
-    m_vram_dirty_draw_rect,
-    Common::Rectangle<u32>::FromExtents(x, y, width, height).Clamped(0, 0, VRAM_WIDTH, VRAM_HEIGHT));
+  IncludeVRAMDirtyRectangle(m_vram_dirty_draw_rect, GSVector4i(x, y, x + width, y + height).rintersect(VRAM_SIZE_RECT));
 
   GL_INS_FMT("Dirty draw area after: {},{} => {},{} ({}x{})", m_vram_dirty_draw_rect.left, m_vram_dirty_draw_rect.top,
-             m_vram_dirty_draw_rect.right, m_vram_dirty_draw_rect.bottom, m_vram_dirty_draw_rect.GetWidth(),
-             m_vram_dirty_draw_rect.GetHeight());
+             m_vram_dirty_draw_rect.right, m_vram_dirty_draw_rect.bottom, m_vram_dirty_draw_rect.width(),
+             m_vram_dirty_draw_rect.height());
 
   const bool is_oversized = (((x + width) > VRAM_WIDTH || (y + height) > VRAM_HEIGHT));
   g_gpu_device->SetPipeline(
     m_vram_fill_pipelines[BoolToUInt8(is_oversized)][BoolToUInt8(IsInterlacedRenderingEnabled())].get());
 
-  const Common::Rectangle<u32> bounds(GetVRAMTransferBounds(x, y, width, height));
-  g_gpu_device->SetViewportAndScissor(bounds.left * m_resolution_scale, bounds.top * m_resolution_scale,
-                                      bounds.GetWidth() * m_resolution_scale, bounds.GetHeight() * m_resolution_scale);
+  const GSVector4i bounds = GetVRAMTransferBounds(x, y, width, height);
+  const GSVector4i scaled_bounds = bounds.mul32l(GSVector4i(m_resolution_scale));
+  g_gpu_device->SetViewportAndScissor(scaled_bounds);
 
   struct VRAMFillUBOData
   {
@@ -2893,7 +2904,7 @@ void GPU_HW::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
   }
 
   // Get bounds with wrap-around handled.
-  Common::Rectangle<u32> copy_rect = GetVRAMTransferBounds(x, y, width, height);
+  GSVector4i copy_rect = GetVRAMTransferBounds(x, y, width, height);
 
   // Has to be aligned to an even pixel for the download, due to 32-bit packing.
   if (copy_rect.left & 1)
@@ -2901,14 +2912,14 @@ void GPU_HW::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
   if (copy_rect.right & 1)
     copy_rect.right++;
 
-  DebugAssert((copy_rect.left % 2) == 0 && (copy_rect.GetWidth() % 2) == 0);
+  DebugAssert((copy_rect.left % 2) == 0 && (copy_rect.width() % 2) == 0);
   const u32 encoded_left = copy_rect.left / 2;
   const u32 encoded_top = copy_rect.top;
-  const u32 encoded_width = copy_rect.GetWidth() / 2;
-  const u32 encoded_height = copy_rect.GetHeight();
+  const u32 encoded_width = copy_rect.width() / 2;
+  const u32 encoded_height = copy_rect.height();
 
   // Encode the 24-bit texture as 16-bit.
-  const u32 uniforms[4] = {copy_rect.left, copy_rect.top, copy_rect.GetWidth(), copy_rect.GetHeight()};
+  const s32 uniforms[4] = {copy_rect.left, copy_rect.top, copy_rect.width(), copy_rect.height()};
   g_gpu_device->SetRenderTarget(m_vram_readback_texture.get());
   g_gpu_device->SetPipeline(m_vram_readback_pipeline.get());
   g_gpu_device->SetTextureSampler(0, m_vram_texture.get(), g_gpu_device->GetNearestSampler());
@@ -2958,8 +2969,8 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, b
     m_sw_renderer->PushCommand(cmd);
   }
 
-  const Common::Rectangle<u32> bounds = GetVRAMTransferBounds(x, y, width, height);
-  DebugAssert(bounds.right <= VRAM_WIDTH && bounds.bottom <= VRAM_HEIGHT);
+  const GSVector4i bounds = GetVRAMTransferBounds(x, y, width, height);
+  DebugAssert(bounds.right <= static_cast<s32>(VRAM_WIDTH) && bounds.bottom <= static_cast<s32>(VRAM_HEIGHT));
   IncludeVRAMDirtyRectangle(m_vram_dirty_write_rect, bounds);
 
   if (check_mask)
@@ -2981,7 +2992,7 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, b
 }
 
 void GPU_HW::UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* data, u32 data_pitch, bool set_mask,
-                             bool check_mask, const Common::Rectangle<u32>& bounds)
+                             bool check_mask, const GSVector4i bounds)
 {
   std::unique_ptr<GPUTexture> upload_texture;
   u32 map_index;
@@ -3024,8 +3035,8 @@ void GPU_HW::UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* da
     height,           map_index,         (set_mask) ? 0x8000u : 0x00, GetCurrentNormalizedVertexDepth()};
 
   // the viewport should already be set to the full vram, so just adjust the scissor
-  const Common::Rectangle<u32> scaled_bounds = bounds * m_resolution_scale;
-  g_gpu_device->SetScissor(scaled_bounds.left, scaled_bounds.top, scaled_bounds.GetWidth(), scaled_bounds.GetHeight());
+  const GSVector4i scaled_bounds = bounds.mul32l(GSVector4i(m_resolution_scale));
+  g_gpu_device->SetScissor(scaled_bounds.left, scaled_bounds.top, scaled_bounds.width(), scaled_bounds.height());
   g_gpu_device->SetPipeline(
     m_vram_write_pipelines[BoolToUInt8(check_mask && !m_pgxp_depth_buffer && NeedsDepthBuffer())].get());
   g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
@@ -3066,10 +3077,10 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
     (m_GPUSTAT.IsMaskingEnabled() || ((src_x % VRAM_WIDTH) + width) > VRAM_WIDTH ||
      ((src_y % VRAM_HEIGHT) + height) > VRAM_HEIGHT || ((dst_x % VRAM_WIDTH) + width) > VRAM_WIDTH ||
      ((dst_y % VRAM_HEIGHT) + height) > VRAM_HEIGHT);
-  const Common::Rectangle<u32> src_bounds = GetVRAMTransferBounds(src_x, src_y, width, height);
-  const Common::Rectangle<u32> dst_bounds = GetVRAMTransferBounds(dst_x, dst_y, width, height);
-  const bool intersect_with_draw = m_vram_dirty_draw_rect.Intersects(src_bounds);
-  const bool intersect_with_write = m_vram_dirty_write_rect.Intersects(src_bounds);
+  const GSVector4i src_bounds = GetVRAMTransferBounds(src_x, src_y, width, height);
+  const GSVector4i dst_bounds = GetVRAMTransferBounds(dst_x, dst_y, width, height);
+  const bool intersect_with_draw = m_vram_dirty_draw_rect.rintersects(src_bounds);
+  const bool intersect_with_write = m_vram_dirty_write_rect.rintersects(src_bounds);
 
   if (use_shader || IsUsingMultisampling())
   {
@@ -3102,9 +3113,8 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
                                       GetCurrentNormalizedVertexDepth()};
 
     // VRAM read texture should already be bound.
-    const Common::Rectangle<u32> dst_bounds_scaled(dst_bounds * m_resolution_scale);
-    g_gpu_device->SetViewportAndScissor(dst_bounds_scaled.left, dst_bounds_scaled.top, dst_bounds_scaled.GetWidth(),
-                                        dst_bounds_scaled.GetHeight());
+    const GSVector4i dst_bounds_scaled = dst_bounds.mul32l(GSVector4i(m_resolution_scale));
+    g_gpu_device->SetViewportAndScissor(dst_bounds_scaled);
     g_gpu_device->SetPipeline(
       m_vram_copy_pipelines[BoolToUInt8(m_GPUSTAT.check_mask_before_draw && !m_pgxp_depth_buffer && NeedsDepthBuffer())]
         .get());
@@ -3119,7 +3129,7 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
   }
 
   GPUTexture* src_tex = m_vram_texture.get();
-  const bool overlaps_with_self = src_bounds.Intersects(dst_bounds);
+  const bool overlaps_with_self = src_bounds.rintersects(dst_bounds);
   if (!g_gpu_device->GetFeatures().texture_copy_to_self || overlaps_with_self)
   {
     src_tex = m_vram_read_texture.get();
@@ -3127,7 +3137,7 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
       UpdateVRAMReadTexture(intersect_with_draw, intersect_with_write);
   }
 
-  Common::Rectangle<u32>* update_rect;
+  GSVector4i* update_rect;
   if (intersect_with_draw || intersect_with_write)
   {
     update_rect = intersect_with_draw ? &m_vram_dirty_draw_rect : &m_vram_dirty_write_rect;
@@ -3135,8 +3145,8 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
   else
   {
     const bool use_write =
-      (m_vram_dirty_write_rect.Valid() && m_vram_dirty_draw_rect.Valid() &&
-       m_vram_dirty_write_rect.GetDistance(dst_bounds) < m_vram_dirty_draw_rect.GetDistance(dst_bounds));
+      (!m_vram_dirty_write_rect.eq(INVALID_RECT) && !m_vram_dirty_draw_rect.eq(INVALID_RECT) &&
+       RectDistance(m_vram_dirty_write_rect, dst_bounds) < RectDistance(m_vram_dirty_draw_rect, dst_bounds));
     update_rect = use_write ? &m_vram_dirty_write_rect : &m_vram_dirty_draw_rect;
   }
   IncludeVRAMDirtyRectangle(*update_rect, dst_bounds);
@@ -3184,10 +3194,9 @@ void GPU_HW::DispatchRenderCommand()
 
       if (m_draw_mode.mode_reg.IsUsingPalette())
       {
-        const Common::Rectangle<u32> palette_rect =
-          m_draw_mode.palette_reg.GetRectangle(m_draw_mode.mode_reg.texture_mode);
-        const bool update_drawn = palette_rect.Intersects(m_vram_dirty_draw_rect);
-        const bool update_written = palette_rect.Intersects(m_vram_dirty_write_rect);
+        const GSVector4i palette_rect = m_draw_mode.palette_reg.GetRectangle(m_draw_mode.mode_reg.texture_mode);
+        const bool update_drawn = palette_rect.rintersects(m_vram_dirty_draw_rect);
+        const bool update_written = palette_rect.rintersects(m_vram_dirty_write_rect);
         if (update_drawn || update_written)
         {
           GL_INS("Palette in VRAM dirty area, flushing cache");
@@ -3198,16 +3207,18 @@ void GPU_HW::DispatchRenderCommand()
         }
       }
 
-      const Common::Rectangle<u32> page_rect = m_draw_mode.mode_reg.GetTexturePageRectangle();
-      u8 new_texpage_dirty = m_vram_dirty_draw_rect.Intersects(page_rect) ? TEXPAGE_DIRTY_DRAWN_RECT : 0;
-      new_texpage_dirty |= m_vram_dirty_write_rect.Intersects(page_rect) ? TEXPAGE_DIRTY_WRITTEN_RECT : 0;
+      const GSVector4i page_rect = m_draw_mode.mode_reg.GetTexturePageRectangle();
+      m_current_texture_page_offset = page_rect.xy();
+
+      u8 new_texpage_dirty = m_vram_dirty_draw_rect.rintersects(page_rect) ? TEXPAGE_DIRTY_DRAWN_RECT : 0;
+      new_texpage_dirty |= m_vram_dirty_write_rect.rintersects(page_rect) ? TEXPAGE_DIRTY_WRITTEN_RECT : 0;
 
       if (new_texpage_dirty != 0)
       {
         GL_INS("Texpage is in dirty area, checking UV ranges");
         m_texpage_dirty = new_texpage_dirty;
         m_compute_uv_range = true;
-        m_current_uv_range.SetInvalid();
+        m_current_uv_range = INVALID_RECT;
       }
       else
       {
@@ -3282,10 +3293,13 @@ void GPU_HW::DispatchRenderCommand()
     {
       m_draw_mode.ClearTextureWindowChangedFlag();
 
-      m_batch_ubo_data.u_texture_window_and[0] = ZeroExtend32(m_draw_mode.texture_window.and_x);
-      m_batch_ubo_data.u_texture_window_and[1] = ZeroExtend32(m_draw_mode.texture_window.and_y);
-      m_batch_ubo_data.u_texture_window_or[0] = ZeroExtend32(m_draw_mode.texture_window.or_x);
-      m_batch_ubo_data.u_texture_window_or[1] = ZeroExtend32(m_draw_mode.texture_window.or_y);
+      m_batch_ubo_data.u_texture_window[0] = ZeroExtend32(m_draw_mode.texture_window.and_x);
+      m_batch_ubo_data.u_texture_window[1] = ZeroExtend32(m_draw_mode.texture_window.and_y);
+      m_batch_ubo_data.u_texture_window[2] = ZeroExtend32(m_draw_mode.texture_window.or_x);
+      m_batch_ubo_data.u_texture_window[3] = ZeroExtend32(m_draw_mode.texture_window.or_y);
+
+      m_texture_window_active = ((m_draw_mode.texture_window.and_x & m_draw_mode.texture_window.and_y) != 0xFF ||
+                                 ((m_draw_mode.texture_window.or_x | m_draw_mode.texture_window.or_y) != 0));
       m_batch_ubo_dirty = true;
     }
 
@@ -3343,8 +3357,8 @@ void GPU_HW::FlushRender()
 #endif
 
   GL_INS_FMT("Dirty draw area: {},{} => {},{} ({}x{})", m_vram_dirty_draw_rect.left, m_vram_dirty_draw_rect.top,
-             m_vram_dirty_draw_rect.right, m_vram_dirty_draw_rect.bottom, m_vram_dirty_draw_rect.GetWidth(),
-             m_vram_dirty_draw_rect.GetHeight());
+             m_vram_dirty_draw_rect.right, m_vram_dirty_draw_rect.bottom, m_vram_dirty_draw_rect.width(),
+             m_vram_dirty_draw_rect.height());
 
   if (m_batch_ubo_dirty)
   {
@@ -3631,7 +3645,7 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top
 
     g_gpu_device->InvalidateRenderTarget(m_downsample_texture.get());
     g_gpu_device->SetRenderTarget(m_downsample_texture.get());
-    g_gpu_device->SetViewportAndScissor(0, 0, level_width, level_height);
+    g_gpu_device->SetViewportAndScissor(GSVector4i(0, 0, level_width, level_height));
     g_gpu_device->SetPipeline((level == 1) ? m_downsample_first_pass_pipeline.get() :
                                              m_downsample_mid_pass_pipeline.get());
     g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
@@ -3661,7 +3675,7 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top
     g_gpu_device->InvalidateRenderTarget(weight_texture.get());
     g_gpu_device->SetRenderTarget(weight_texture.get());
     g_gpu_device->SetTextureSampler(0, m_downsample_texture.get(), g_gpu_device->GetNearestSampler());
-    g_gpu_device->SetViewportAndScissor(0, 0, last_width, last_height);
+    g_gpu_device->SetViewportAndScissor(GSVector4i(0, 0, last_width, last_height));
     g_gpu_device->SetPipeline(m_downsample_blur_pass_pipeline.get());
     g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
     g_gpu_device->Draw(3, 0);
@@ -3681,7 +3695,7 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top
     g_gpu_device->SetRenderTarget(m_downsample_texture.get());
     g_gpu_device->SetTextureSampler(0, level_texture.get(), m_downsample_composite_sampler.get());
     g_gpu_device->SetTextureSampler(1, weight_texture.get(), m_downsample_lod_sampler.get());
-    g_gpu_device->SetViewportAndScissor(0, 0, width, height);
+    g_gpu_device->SetViewportAndScissor(GSVector4i(0, 0, width, height));
     g_gpu_device->SetPipeline(m_downsample_composite_pass_pipeline.get());
     g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
     g_gpu_device->Draw(3, 0);

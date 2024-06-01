@@ -10,7 +10,6 @@
 
 #include "common/bitfield.h"
 #include "common/fifo_queue.h"
-#include "common/rectangle.h"
 #include "common/types.h"
 
 #include <algorithm>
@@ -208,13 +207,13 @@ public:
   virtual void FlushRender() = 0;
 
   /// Helper function for computing the draw rectangle in a larger window.
-  Common::Rectangle<s32> CalculateDrawRect(s32 window_width, s32 window_height, bool apply_aspect_ratio = true) const;
+  GSVector4i CalculateDrawRect(s32 window_width, s32 window_height, bool apply_aspect_ratio = true) const;
 
   /// Helper function to save current display texture to PNG.
   bool WriteDisplayTextureToFile(std::string filename, bool compress_on_thread = false);
 
   /// Renders the display, optionally with postprocessing to the specified image.
-  bool RenderScreenshotToBuffer(u32 width, u32 height, const Common::Rectangle<s32>& draw_rect, bool postfx,
+  bool RenderScreenshotToBuffer(u32 width, u32 height, const GSVector4i draw_rect, bool postfx,
                                 std::vector<u32>* out_pixels, u32* out_stride, GPUTexture::Format* out_format);
 
   /// Helper function to save screenshot to PNG.
@@ -276,6 +275,9 @@ protected:
   /// Returns 0 if the currently-displayed field is on an even line in VRAM, otherwise 1.
   ALWAYS_INLINE u32 GetActiveLineLSB() const { return ZeroExtend32(m_crtc_state.active_line_lsb); }
 
+  /// Updates drawing area that's suitablef or clamping.
+  void SetClampedDrawingArea();
+
   /// Sets/decodes GP0(E1h) (set draw mode).
   void SetDrawMode(u16 bits);
 
@@ -323,23 +325,21 @@ protected:
   virtual void DrawRendererStats();
   virtual void OnBufferSwapped();
 
-  ALWAYS_INLINE_RELEASE void AddDrawTriangleTicks(s32 x1, s32 y1, s32 x2, s32 y2, s32 x3, s32 y3, bool shaded,
+  ALWAYS_INLINE_RELEASE void AddDrawTriangleTicks(GSVector4i v1, GSVector4i v2, GSVector4i v3, bool shaded,
                                                   bool textured, bool semitransparent)
   {
     // This will not produce the correct results for triangles which are partially outside the clip area.
     // However, usually it'll undershoot not overshoot. If we wanted to make this more accurate, we'd need to intersect
     // the edges with the clip rectangle.
     // TODO: Coordinates are exclusive, so off by one here...
-    const s32 clip_right = static_cast<s32>(m_drawing_area.right) + 1;
-    const s32 clip_bottom = static_cast<s32>(m_drawing_area.bottom) + 1;
-    x1 = std::clamp(x1, static_cast<s32>(m_drawing_area.left), clip_right);
-    x2 = std::clamp(x2, static_cast<s32>(m_drawing_area.left), clip_right);
-    x3 = std::clamp(x3, static_cast<s32>(m_drawing_area.left), clip_right);
-    y1 = std::clamp(y1, static_cast<s32>(m_drawing_area.top), clip_bottom);
-    y2 = std::clamp(y2, static_cast<s32>(m_drawing_area.top), clip_bottom);
-    y3 = std::clamp(y3, static_cast<s32>(m_drawing_area.top), clip_bottom);
+    const GSVector4i clamp_min = m_clamped_drawing_area; // would be xyxy(), but zw isn't used.
+    const GSVector4i clamp_max = m_clamped_drawing_area.zwzw();
+    v1 = v1.sat_i32(clamp_min, clamp_max);
+    v2 = v2.sat_i32(clamp_min, clamp_max);
+    v3 = v3.sat_i32(clamp_min, clamp_max);
 
-    TickCount pixels = std::abs((x1 * y2 + x2 * y3 + x3 * y1 - x1 * y3 - x2 * y1 - x3 * y2) / 2);
+    TickCount pixels =
+      std::abs((v1.x * v2.y + v2.x * v3.y + v3.x * v1.y - v1.x * v3.y - v2.x * v1.y - v3.x * v2.y) / 2);
     if (textured)
       pixels += pixels;
     if (semitransparent || m_GPUSTAT.check_mask_before_draw)
@@ -479,6 +479,7 @@ protected:
 
   GPUDrawingArea m_drawing_area = {};
   GPUDrawingOffset m_drawing_offset = {};
+  GSVector4i m_clamped_drawing_area = {};
 
   bool m_console_is_pal = false;
   bool m_set_texture_disable_mask = false;
@@ -609,7 +610,7 @@ protected:
   void SetDisplayTexture(GPUTexture* texture, GPUTexture* depth_texture, s32 view_x, s32 view_y, s32 view_width,
                          s32 view_height);
 
-  bool RenderDisplay(GPUTexture* target, const Common::Rectangle<s32>& draw_rect, bool postfx);
+  bool RenderDisplay(GPUTexture* target, const GSVector4i draw_rect, bool postfx);
 
   bool Deinterlace(u32 field, u32 line_skip);
   bool DeinterlaceExtractField(u32 dst_bufidx, GPUTexture* src, u32 x, u32 y, u32 width, u32 height, u32 line_skip);
