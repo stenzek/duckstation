@@ -977,7 +977,7 @@ void D3D11Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTextu
     const ID3D11ShaderResourceView* srv = static_cast<D3D11Texture*>(ds)->GetD3DSRV();
     for (u32 i = 0; i < MAX_TEXTURE_SAMPLERS; i++)
     {
-      if (m_current_textures[i] == srv)
+      if (m_current_textures[i] && m_current_textures[i] == srv)
       {
         m_current_textures[i] = nullptr;
         m_context->PSSetShaderResources(i, 1, &m_current_textures[i]);
@@ -996,7 +996,7 @@ void D3D11Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTextu
     const ID3D11ShaderResourceView* srv = dt->GetD3DSRV();
     for (u32 j = 0; j < MAX_TEXTURE_SAMPLERS; j++)
     {
-      if (m_current_textures[j] == srv)
+      if (m_current_textures[j] && m_current_textures[j] == srv)
       {
         m_current_textures[j] = nullptr;
         m_context->PSSetShaderResources(j, 1, &m_current_textures[j]);
