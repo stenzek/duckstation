@@ -1,86 +1,79 @@
 // SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
-#include "common/rectangle.h"
+#include "common/gsvector.h"
 #include <gtest/gtest.h>
-
-using Common::Rectangle;
-using IntRectangle = Rectangle<int>;
-
-TEST(Rectangle, DefaultConstructorIsInvalid)
-{
-  IntRectangle r;
-  ASSERT_FALSE(r.Valid());
-}
 
 TEST(Rectangle, AdjacentRectanglesNotIntersecting)
 {
-  IntRectangle r1(0, 0, 10, 10);
-  IntRectangle r2(10, 10, 20, 20);
-  ASSERT_FALSE(r1.Intersects(r2));
+  GSVector4i r1(0, 0, 10, 10);
+  GSVector4i r2(10, 10, 20, 20);
+  ASSERT_FALSE(r1.rintersects(r2));
 }
 
 TEST(Rectangle, IntersectingRectanglesIntersecting)
 {
-  IntRectangle r1(0, 0, 10, 10);
-  IntRectangle r2(9, 9, 4, 4);
-  ASSERT_TRUE(r1.Intersects(r2));
-  ASSERT_TRUE(r2.Intersects(r1));
+  GSVector4i r1(0, 0, 10, 10);
+  GSVector4i r2(9, 9, 14, 14);
+  ASSERT_TRUE(r1.rintersects(r2));
+  ASSERT_TRUE(r2.rintersects(r1));
 }
 
 TEST(Rectangle, PointContainedInRectangle)
 {
-  IntRectangle r1(0, 0, 10, 10);
-  ASSERT_TRUE(r1.Contains(5, 5));
+  GSVector4i r1(0, 0, 10, 10);
+  GSVector4i r2(5, 5, 6, 6);
+  ASSERT_TRUE(r1.rcontains(r2));
 }
 
 TEST(Rectangle, PointOutsideRectangleNotContained)
 {
-  IntRectangle r1(0, 0, 10, 10);
-  ASSERT_FALSE(r1.Contains(10, 10));
+  GSVector4i r1(0, 0, 10, 10);
+  GSVector4i r2(10, 10, 11, 11);
+  ASSERT_FALSE(r1.rcontains(r2));
 }
 
 TEST(Rectangle, RectangleSize)
 {
-  IntRectangle r(0, 0, 10, 10);
-  ASSERT_EQ(r.GetWidth(), 10);
-  ASSERT_EQ(r.GetHeight(), 10);
+  GSVector4i r(0, 0, 10, 10);
+  ASSERT_EQ(r.width(), 10);
+  ASSERT_EQ(r.height(), 10);
 }
 
 TEST(Rectangle, IncludeAfterInvalid)
 {
-  IntRectangle r;
-  IntRectangle r2(0, 0, 10, 10);
-  ASSERT_FALSE(r.Valid());
-  ASSERT_TRUE(r2.Valid());
-  r.Include(r2);
-  ASSERT_EQ(r, r2);
+  GSVector4i r(0, 0, 1, 1);
+  GSVector4i r2(5, 5, 10, 10);
+  GSVector4i ru(0, 0, 10, 10);
+  ASSERT_TRUE(r.runion(r2).eq(ru));
 }
 
 TEST(Rectangle, EmptyRectangleHasNoExtents)
 {
-  IntRectangle r(0, 0, 0, 0);
-  ASSERT_FALSE(r.HasExtents());
+  GSVector4i r(0, 0, 0, 0);
+  ASSERT_EQ(r.width(), 0);
+  ASSERT_EQ(r.height(), 0);
+  ASSERT_TRUE(r.rempty());
 }
 
 TEST(Rectangle, NonEmptyRectangleHasExtents)
 {
-  IntRectangle r(0, 0, 1, 1);
-  ASSERT_TRUE(r.HasExtents());
+  GSVector4i r(0, 0, 1, 1);
+  ASSERT_EQ(r.width(), 1);
+  ASSERT_EQ(r.height(), 1);
+  ASSERT_FALSE(r.rempty());
 }
 
 TEST(Rectangle, RelationalOperators)
 {
-  IntRectangle r1(0, 0, 1, 1);
-  IntRectangle r2(1, 1, 2, 2);
+  GSVector4i r1(0, 0, 1, 1);
+  GSVector4i r2(1, 1, 2, 2);
 
-  ASSERT_EQ(r1, r1);
-  ASSERT_LE(r1, r1);
-  ASSERT_LE(r1, r2);
-  ASSERT_LT(r1, r2);
-  ASSERT_EQ(r2, r2);
-  ASSERT_GE(r2, r1);
-  ASSERT_GT(r2, r1);
-  ASSERT_NE(r1, r2);
+  ASSERT_TRUE(r1.eq(r1));
+  ASSERT_TRUE(r1.lt32(r2).alltrue());
+  ASSERT_TRUE(r2.eq(r2));
+  ASSERT_TRUE(r2.gt32(r1).alltrue());
+  ASSERT_FALSE(r2.lt32(r1).alltrue());
+  ASSERT_FALSE(r1.eq(r2));
 }
 
