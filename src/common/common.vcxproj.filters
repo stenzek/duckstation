@@ -5,7 +5,6 @@
     <ClInclude Include="types.h" />
     <ClInclude Include="fifo_queue.h" />
     <ClInclude Include="heap_array.h" />
-    <ClInclude Include="rectangle.h" />
     <ClInclude Include="log.h" />
     <ClInclude Include="small_string.h" />
     <ClInclude Include="byte_stream.h" />
