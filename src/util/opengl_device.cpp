@@ -766,14 +766,12 @@ bool OpenGLDevice::BeginPresent(bool skip_present)
               m_last_blend_state.write_a);
   glEnable(GL_SCISSOR_TEST);
 
-  const Common::Rectangle<s32> window_rc =
-    Common::Rectangle<s32>::FromExtents(0, 0, m_window_info.surface_width, m_window_info.surface_height);
-
   m_current_fbo = 0;
   m_num_current_render_targets = 0;
   std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
   m_current_depth_target = nullptr;
 
+  const GSVector4i window_rc = GSVector4i(0, 0, m_window_info.surface_width, m_window_info.surface_height);
   m_last_viewport = window_rc;
   m_last_scissor = window_rc;
   UpdateViewport();
@@ -1220,20 +1218,18 @@ void OpenGLDevice::SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer)
   }
 }
 
-void OpenGLDevice::SetViewport(s32 x, s32 y, s32 width, s32 height)
+void OpenGLDevice::SetViewport(const GSVector4i rc)
 {
-  const Common::Rectangle<s32> rc = Common::Rectangle<s32>::FromExtents(x, y, width, height);
-  if (m_last_viewport == rc)
+  if (m_last_viewport.eq(rc))
     return;
 
   m_last_viewport = rc;
   UpdateViewport();
 }
 
-void OpenGLDevice::SetScissor(s32 x, s32 y, s32 width, s32 height)
+void OpenGLDevice::SetScissor(const GSVector4i rc)
 {
-  const Common::Rectangle<s32> rc = Common::Rectangle<s32>::FromExtents(x, y, width, height);
-  if (m_last_scissor == rc)
+  if (m_last_scissor.eq(rc))
     return;
 
   m_last_scissor = rc;
@@ -1242,10 +1238,10 @@ void OpenGLDevice::SetScissor(s32 x, s32 y, s32 width, s32 height)
 
 void OpenGLDevice::UpdateViewport()
 {
-  glViewport(m_last_viewport.left, m_last_viewport.top, m_last_viewport.GetWidth(), m_last_viewport.GetHeight());
+  glViewport(m_last_viewport.left, m_last_viewport.top, m_last_viewport.width(), m_last_viewport.height());
 }
 
 void OpenGLDevice::UpdateScissor()
 {
-  glScissor(m_last_scissor.left, m_last_scissor.top, m_last_scissor.GetWidth(), m_last_scissor.GetHeight());
+  glScissor(m_last_scissor.left, m_last_scissor.top, m_last_scissor.width(), m_last_scissor.height());
 }

@@ -7,8 +7,8 @@
 #include "common/assert.h"
 #include "common/error.h"
 #include "common/file_system.h"
+#include "common/gsvector.h"
 #include "common/log.h"
-#include "common/rectangle.h"
 #include "common/string_util.h"
 
 #include "fmt/format.h"
@@ -179,7 +179,7 @@ bool D3DCommon::GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, 
                                                         DXGI_MODE_DESC* fullscreen_mode, IDXGIOutput** output)
 {
   // We need to find which monitor the window is located on.
-  const Common::Rectangle<s32> client_rc_vec(window_rect.left, window_rect.top, window_rect.right, window_rect.bottom);
+  const GSVector4i client_rc_vec(window_rect.left, window_rect.top, window_rect.right, window_rect.bottom);
 
   // The window might be on a different adapter to which we are rendering.. so we have to enumerate them all.
   HRESULT hr;
@@ -204,10 +204,9 @@ bool D3DCommon::GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, 
       else if (FAILED(hr) || FAILED(this_output->GetDesc(&output_desc)))
         continue;
 
-      const Common::Rectangle<s32> output_rc(output_desc.DesktopCoordinates.left, output_desc.DesktopCoordinates.top,
-                                             output_desc.DesktopCoordinates.right,
-                                             output_desc.DesktopCoordinates.bottom);
-      if (!client_rc_vec.Intersects(output_rc))
+      const GSVector4i output_rc(output_desc.DesktopCoordinates.left, output_desc.DesktopCoordinates.top,
+                                 output_desc.DesktopCoordinates.right, output_desc.DesktopCoordinates.bottom);
+      if (!client_rc_vec.rintersects(output_rc))
       {
         intersecting_output = std::move(this_output);
         break;

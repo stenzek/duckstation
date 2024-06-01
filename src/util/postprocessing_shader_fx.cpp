@@ -1490,16 +1490,15 @@ bool PostProcessing::ReShadeFXShader::ResizeOutput(GPUTexture::Format format, u3
 }
 
 bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input_color, GPUTexture* input_depth, GPUTexture* final_target,
-                                            s32 final_left, s32 final_top, s32 final_width, s32 final_height,
-                                            s32 orig_width, s32 orig_height, s32 native_width, s32 native_height,
-                                            u32 target_width, u32 target_height)
+                                            GSVector4i final_rect, s32 orig_width, s32 orig_height, s32 native_width,
+                                            s32 native_height, u32 target_width, u32 target_height)
 {
   GL_PUSH_FMT("PostProcessingShaderFX {}", m_name);
 
   m_frame_count++;
 
   // Reshade always draws at full size.
-  g_gpu_device->SetViewportAndScissor(0, 0, target_width, target_height);
+  g_gpu_device->SetViewportAndScissor(final_rect);
 
   if (m_uniforms_size > 0)
   {
@@ -1675,84 +1674,85 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input_color, GPUTexture*
 
         case SourceOptionType::ViewportX:
         {
-          const float value = static_cast<float>(final_left);
+          const float value = static_cast<float>(final_rect.left);
           std::memcpy(dst, &value, sizeof(value));
         }
         break;
 
         case SourceOptionType::ViewportY:
         {
-          const float value = static_cast<float>(final_top);
+          const float value = static_cast<float>(final_rect.top);
           std::memcpy(dst, &value, sizeof(value));
         }
         break;
 
         case SourceOptionType::ViewportWidth:
         {
-          const float value = static_cast<float>(final_width);
+          const float value = static_cast<float>(final_rect.width());
           std::memcpy(dst, &value, sizeof(value));
         }
         break;
 
         case SourceOptionType::ViewportHeight:
         {
-          const float value = static_cast<float>(final_height);
+          const float value = static_cast<float>(final_rect.height());
           std::memcpy(dst, &value, sizeof(value));
         }
         break;
 
         case SourceOptionType::ViewportOffset:
         {
-          const float value[2] = {static_cast<float>(final_left), static_cast<float>(final_top)};
-          std::memcpy(dst, &value, sizeof(value));
+          GSVector4::storel(dst, GSVector4(final_rect));
         }
         break;
 
         case SourceOptionType::ViewportSize:
         {
-          const float value[2] = {static_cast<float>(final_width), static_cast<float>(final_height)};
+          const float value[2] = {static_cast<float>(final_rect.width()), static_cast<float>(final_rect.height())};
           std::memcpy(dst, &value, sizeof(value));
         }
         break;
 
         case SourceOptionType::InternalPixelSize:
         {
-          const float value[2] = {static_cast<float>(final_width) / static_cast<float>(orig_width),
-                                  static_cast<float>(final_height) / static_cast<float>(orig_height)};
+          const float value[2] = {static_cast<float>(final_rect.width()) / static_cast<float>(orig_width),
+                                  static_cast<float>(final_rect.height()) / static_cast<float>(orig_height)};
           std::memcpy(dst, value, sizeof(value));
         }
         break;
 
         case SourceOptionType::InternalNormPixelSize:
         {
-          const float value[2] = {
-            (static_cast<float>(final_width) / static_cast<float>(orig_width)) / static_cast<float>(target_width),
-            (static_cast<float>(final_height) / static_cast<float>(orig_height)) / static_cast<float>(target_height)};
+          const float value[2] = {(static_cast<float>(final_rect.width()) / static_cast<float>(orig_width)) /
+                                    static_cast<float>(target_width),
+                                  (static_cast<float>(final_rect.height()) / static_cast<float>(orig_height)) /
+                                    static_cast<float>(target_height)};
           std::memcpy(dst, value, sizeof(value));
         }
         break;
 
         case SourceOptionType::NativePixelSize:
         {
-          const float value[2] = {static_cast<float>(final_width) / static_cast<float>(native_width),
-                                  static_cast<float>(final_height) / static_cast<float>(native_height)};
+          const float value[2] = {static_cast<float>(final_rect.width()) / static_cast<float>(native_width),
+                                  static_cast<float>(final_rect.height()) / static_cast<float>(native_height)};
           std::memcpy(dst, value, sizeof(value));
         }
         break;
 
         case SourceOptionType::NativeNormPixelSize:
         {
-          const float value[2] = {
-            (static_cast<float>(final_width) / static_cast<float>(native_width)) / static_cast<float>(target_width),
-            (static_cast<float>(final_height) / static_cast<float>(native_height)) / static_cast<float>(target_height)};
+          const float value[2] = {(static_cast<float>(final_rect.width()) / static_cast<float>(native_width)) /
+                                    static_cast<float>(target_width),
+                                  (static_cast<float>(final_rect.height()) / static_cast<float>(native_height)) /
+                                    static_cast<float>(target_height)};
           std::memcpy(dst, value, sizeof(value));
         }
         break;
 
         case SourceOptionType::BufferToViewportRatio:
         {
-          const float value[2] = {static_cast<float>(target_width) / static_cast<float>(final_width),
-                                  static_cast<float>(target_height) / static_cast<float>(final_height)};
+          const float value[2] = {static_cast<float>(target_width) / static_cast<float>(final_rect.width()),
+                                  static_cast<float>(target_height) / static_cast<float>(final_rect.height())};
           std::memcpy(dst, value, sizeof(value));
         }
         break;

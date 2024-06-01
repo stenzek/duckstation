@@ -2727,8 +2727,8 @@ bool System::SaveStateToStream(ByteStream* state, Error* error, u32 screenshot_s
     u32 screenshot_stride;
     GPUTexture::Format screenshot_format;
     if (g_gpu->RenderScreenshotToBuffer(screenshot_width, screenshot_height,
-                                        Common::Rectangle<s32>::FromExtents(0, 0, screenshot_width, screenshot_height),
-                                        false, &screenshot_buffer, &screenshot_stride, &screenshot_format) &&
+                                        GSVector4i(0, 0, screenshot_width, screenshot_height), false,
+                                        &screenshot_buffer, &screenshot_stride, &screenshot_format) &&
         GPUTexture::ConvertTextureDataToRGBA8(screenshot_width, screenshot_height, screenshot_buffer, screenshot_stride,
                                               screenshot_format))
     {

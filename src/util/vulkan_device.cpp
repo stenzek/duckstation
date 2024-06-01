@@ -3611,15 +3611,14 @@ void VulkanDevice::SetInitialPipelineState()
 
   const VkViewport vp = {static_cast<float>(m_current_viewport.left),
                          static_cast<float>(m_current_viewport.top),
-                         static_cast<float>(m_current_viewport.GetWidth()),
-                         static_cast<float>(m_current_viewport.GetHeight()),
+                         static_cast<float>(m_current_viewport.width()),
+                         static_cast<float>(m_current_viewport.height()),
                          0.0f,
                          1.0f};
   vkCmdSetViewport(GetCurrentCommandBuffer(), 0, 1, &vp);
 
-  const VkRect2D vrc = {
-    {m_current_scissor.left, m_current_scissor.top},
-    {static_cast<u32>(m_current_scissor.GetWidth()), static_cast<u32>(m_current_scissor.GetHeight())}};
+  const VkRect2D vrc = {{m_current_scissor.left, m_current_scissor.top},
+                        {static_cast<u32>(m_current_scissor.width()), static_cast<u32>(m_current_scissor.height())}};
   vkCmdSetScissor(GetCurrentCommandBuffer(), 0, 1, &vrc);
 }
 
@@ -3706,10 +3705,9 @@ void VulkanDevice::UnbindTextureBuffer(VulkanTextureBuffer* buf)
     m_dirty_flags |= DIRTY_FLAG_TEXTURES_OR_SAMPLERS;
 }
 
-void VulkanDevice::SetViewport(s32 x, s32 y, s32 width, s32 height)
+void VulkanDevice::SetViewport(const GSVector4i rc)
 {
-  const Common::Rectangle<s32> rc = Common::Rectangle<s32>::FromExtents(x, y, width, height);
-  if (m_current_viewport == rc)
+  if (m_current_viewport.eq(rc))
     return;
 
   m_current_viewport = rc;
@@ -3717,15 +3715,18 @@ void VulkanDevice::SetViewport(s32 x, s32 y, s32 width, s32 height)
   if (m_dirty_flags & DIRTY_FLAG_INITIAL)
     return;
 
-  const VkViewport vp = {
-    static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), static_cast<float>(height), 0.0f, 1.0f};
+  const VkViewport vp = {static_cast<float>(rc.x),
+                         static_cast<float>(rc.y),
+                         static_cast<float>(rc.width()),
+                         static_cast<float>(rc.height()),
+                         0.0f,
+                         1.0f};
   vkCmdSetViewport(GetCurrentCommandBuffer(), 0, 1, &vp);
 }
 
-void VulkanDevice::SetScissor(s32 x, s32 y, s32 width, s32 height)
+void VulkanDevice::SetScissor(const GSVector4i rc)
 {
-  const Common::Rectangle<s32> rc = Common::Rectangle<s32>::FromExtents(x, y, width, height);
-  if (m_current_scissor == rc)
+  if (m_current_scissor.eq(rc))
     return;
 
   m_current_scissor = rc;
@@ -3733,7 +3734,7 @@ void VulkanDevice::SetScissor(s32 x, s32 y, s32 width, s32 height)
   if (m_dirty_flags & DIRTY_FLAG_INITIAL)
     return;
 
-  const VkRect2D vrc = {{x, y}, {static_cast<u32>(width), static_cast<u32>(height)}};
+  const VkRect2D vrc = {{rc.x, rc.y}, {static_cast<u32>(rc.width()), static_cast<u32>(rc.height())}};
   vkCmdSetScissor(GetCurrentCommandBuffer(), 0, 1, &vrc);
 }
 

@@ -14,7 +14,6 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
-#include "common/rectangle.h"
 #include "common/string_util.h"
 
 #include "fmt/format.h"
@@ -1086,17 +1085,18 @@ void D3D11Device::UnbindTexture(D3D11Texture* tex)
   }
 }
 
-void D3D11Device::SetViewport(s32 x, s32 y, s32 width, s32 height)
+void D3D11Device::SetViewport(const GSVector4i rc)
 {
-  const CD3D11_VIEWPORT vp(static_cast<float>(x), static_cast<float>(y), static_cast<float>(width),
-                           static_cast<float>(height), 0.0f, 1.0f);
+  const CD3D11_VIEWPORT vp(static_cast<float>(rc.left), static_cast<float>(rc.top), static_cast<float>(rc.width()),
+                           static_cast<float>(rc.height()), 0.0f, 1.0f);
   m_context->RSSetViewports(1, &vp);
 }
 
-void D3D11Device::SetScissor(s32 x, s32 y, s32 width, s32 height)
+void D3D11Device::SetScissor(const GSVector4i rc)
 {
-  const CD3D11_RECT rc(x, y, x + width, y + height);
-  m_context->RSSetScissorRects(1, &rc);
+  alignas(16) D3D11_RECT drc;
+  GSVector4i::store<true>(&drc, rc);
+  m_context->RSSetScissorRects(1, &drc);
 }
 
 void D3D11Device::Draw(u32 vertex_count, u32 base_vertex)

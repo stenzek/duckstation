@@ -1927,8 +1927,8 @@ void D3D12Device::SetViewport(ID3D12GraphicsCommandList4* cmdlist)
 {
   const D3D12_VIEWPORT vp = {static_cast<float>(m_current_viewport.left),
                              static_cast<float>(m_current_viewport.top),
-                             static_cast<float>(m_current_viewport.GetWidth()),
-                             static_cast<float>(m_current_viewport.GetHeight()),
+                             static_cast<float>(m_current_viewport.width()),
+                             static_cast<float>(m_current_viewport.height()),
                              0.0f,
                              1.0f};
   cmdlist->RSSetViewports(1, &vp);
@@ -1936,9 +1936,8 @@ void D3D12Device::SetViewport(ID3D12GraphicsCommandList4* cmdlist)
 
 void D3D12Device::SetScissor(ID3D12GraphicsCommandList4* cmdlist)
 {
-  const D3D12_RECT rc = {static_cast<LONG>(m_current_scissor.left), static_cast<LONG>(m_current_scissor.top),
-                         static_cast<LONG>(m_current_scissor.right), static_cast<LONG>(m_current_scissor.bottom)};
-  cmdlist->RSSetScissorRects(1, &rc);
+  static_assert(sizeof(GSVector4i) == sizeof(D3D12_RECT));
+  cmdlist->RSSetScissorRects(1, reinterpret_cast<const D3D12_RECT*>(&m_current_scissor));
 }
 
 void D3D12Device::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler)
@@ -2027,10 +2026,9 @@ void D3D12Device::UnbindTextureBuffer(D3D12TextureBuffer* buf)
     m_dirty_flags |= DIRTY_FLAG_TEXTURES;
 }
 
-void D3D12Device::SetViewport(s32 x, s32 y, s32 width, s32 height)
+void D3D12Device::SetViewport(const GSVector4i rc)
 {
-  const Common::Rectangle<s32> rc = Common::Rectangle<s32>::FromExtents(x, y, width, height);
-  if (m_current_viewport == rc)
+  if (m_current_viewport.eq(rc))
     return;
 
   m_current_viewport = rc;
@@ -2041,10 +2039,9 @@ void D3D12Device::SetViewport(s32 x, s32 y, s32 width, s32 height)
   SetViewport(GetCommandList());
 }
 
-void D3D12Device::SetScissor(s32 x, s32 y, s32 width, s32 height)
+void D3D12Device::SetScissor(const GSVector4i rc)
 {
-  const Common::Rectangle<s32> rc = Common::Rectangle<s32>::FromExtents(x, y, width, height);
-  if (m_current_scissor == rc)
+  if (m_current_scissor.eq(rc))
     return;
 
   m_current_scissor = rc;

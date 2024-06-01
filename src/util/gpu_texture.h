@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
 
+#include "common/gsvector.h"
 #include "common/types.h"
 
 #include <algorithm>
@@ -103,6 +104,10 @@ public:
   ALWAYS_INLINE u32 GetSamples() const { return m_samples; }
   ALWAYS_INLINE Type GetType() const { return m_type; }
   ALWAYS_INLINE Format GetFormat() const { return m_format; }
+  ALWAYS_INLINE GSVector4i GetRect() const
+  {
+    return GSVector4i(0, 0, static_cast<s32>(m_width), static_cast<s32>(m_height));
+  }
 
   ALWAYS_INLINE bool IsTextureArray() const { return m_layers > 1; }
   ALWAYS_INLINE bool IsMultisampled() const { return m_samples > 1; }

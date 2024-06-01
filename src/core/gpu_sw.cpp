@@ -523,6 +523,7 @@ void GPU_SW::DispatchRenderCommand()
       GPUBackendDrawPolygonCommand* cmd = m_backend.NewDrawPolygonCommand(num_vertices);
       FillDrawCommand(cmd, rc);
 
+      std::array<GSVector4i, 4> positions;
       const u32 first_color = rc.color_for_first_vertex;
       const bool shaded = rc.shading_enable;
       const bool textured = rc.texture_enable;
@@ -535,49 +536,55 @@ void GPU_SW::DispatchRenderCommand()
         vert->x = m_drawing_offset.x + vp.x;
         vert->y = m_drawing_offset.y + vp.y;
         vert->texcoord = textured ? Truncate16(FifoPop()) : 0;
+        positions[i] = GSVector4i::loadl(&vert->x);
       }
 
       if (!IsDrawingAreaIsValid())
         return;
 
       // Cull polygons which are too large.
-      const auto [min_x_12, max_x_12] = MinMax(cmd->vertices[1].x, cmd->vertices[2].x);
-      const auto [min_y_12, max_y_12] = MinMax(cmd->vertices[1].y, cmd->vertices[2].y);
-      const s32 min_x = std::min(min_x_12, cmd->vertices[0].x);
-      const s32 max_x = std::max(max_x_12, cmd->vertices[0].x);
-      const s32 min_y = std::min(min_y_12, cmd->vertices[0].y);
-      const s32 max_y = std::max(max_y_12, cmd->vertices[0].y);
-
-      if ((max_x - min_x) >= MAX_PRIMITIVE_WIDTH || (max_y - min_y) >= MAX_PRIMITIVE_HEIGHT)
+      const GSVector4i min_pos_12 = positions[1].min_i32(positions[2]);
+      const GSVector4i max_pos_12 = positions[1].max_i32(positions[2]);
+      const GSVector4i draw_rect_012 =
+        min_pos_12.min_i32(positions[0]).upl64(max_pos_12.max_i32(positions[0])).add32(GSVector4i::cxpr(0, 0, 1, 1));
+      const bool first_tri_culled =
+        (draw_rect_012.width() > MAX_PRIMITIVE_WIDTH || draw_rect_012.height() > MAX_PRIMITIVE_HEIGHT ||
+         !m_clamped_drawing_area.rintersects(draw_rect_012));
+      if (first_tri_culled)
       {
-        DEBUG_LOG("Culling too-large polygon: {},{} {},{} {},{}", cmd->vertices[0].x, cmd->vertices[0].y,
+        DEBUG_LOG("Culling off-screen/too-large polygon: {},{} {},{} {},{}", cmd->vertices[0].x, cmd->vertices[0].y,
                   cmd->vertices[1].x, cmd->vertices[1].y, cmd->vertices[2].x, cmd->vertices[2].y);
+
+        if (!rc.quad_polygon)
+          return;
       }
       else
       {
-        AddDrawTriangleTicks(cmd->vertices[0].x, cmd->vertices[0].y, cmd->vertices[1].x, cmd->vertices[1].y,
-                             cmd->vertices[2].x, cmd->vertices[2].y, rc.shading_enable, rc.texture_enable,
+        AddDrawTriangleTicks(positions[0], positions[1], positions[2], rc.shading_enable, rc.texture_enable,
                              rc.transparency_enable);
       }
 
       // quads
       if (rc.quad_polygon)
       {
-        const s32 min_x_123 = std::min(min_x_12, cmd->vertices[3].x);
-        const s32 max_x_123 = std::max(max_x_12, cmd->vertices[3].x);
-        const s32 min_y_123 = std::min(min_y_12, cmd->vertices[3].y);
-        const s32 max_y_123 = std::max(max_y_12, cmd->vertices[3].y);
+        const GSVector4i draw_rect_123 =
+          min_pos_12.min_i32(positions[3]).upl64(max_pos_12.max_i32(positions[3])).add32(GSVector4i::cxpr(0, 0, 1, 1));
 
         // Cull polygons which are too large.
-        if ((max_x_123 - min_x_123) >= MAX_PRIMITIVE_WIDTH || (max_y_123 - min_y_123) >= MAX_PRIMITIVE_HEIGHT)
+        const bool second_tri_culled =
+          (draw_rect_123.width() > MAX_PRIMITIVE_WIDTH || draw_rect_123.height() > MAX_PRIMITIVE_HEIGHT ||
+           !m_clamped_drawing_area.rintersects(draw_rect_123));
+        if (second_tri_culled)
         {
           DEBUG_LOG("Culling too-large polygon (quad second half): {},{} {},{} {},{}", cmd->vertices[2].x,
                     cmd->vertices[2].y, cmd->vertices[1].x, cmd->vertices[1].y, cmd->vertices[0].x, cmd->vertices[0].y);
+
+          if (first_tri_culled)
+            return;
         }
         else
         {
-          AddDrawTriangleTicks(cmd->vertices[2].x, cmd->vertices[2].y, cmd->vertices[1].x, cmd->vertices[1].y,
-                               cmd->vertices[3].x, cmd->vertices[3].y, rc.shading_enable, rc.texture_enable,
+          AddDrawTriangleTicks(positions[2], positions[1], positions[3], rc.shading_enable, rc.texture_enable,
                                rc.transparency_enable);
         }
       }
@@ -627,12 +634,6 @@ void GPU_SW::DispatchRenderCommand()
           const u32 width_and_height = FifoPop();
           cmd->width = static_cast<u16>(width_and_height & VRAM_WIDTH_MASK);
           cmd->height = static_cast<u16>((width_and_height >> 16) & VRAM_HEIGHT_MASK);
-
-          if (cmd->width >= MAX_PRIMITIVE_WIDTH || cmd->height >= MAX_PRIMITIVE_HEIGHT)
-          {
-            DEBUG_LOG("Culling too-large rectangle: {},{} {}x{}", cmd->x, cmd->y, cmd->width, cmd->height);
-            return;
-          }
         }
         break;
       }

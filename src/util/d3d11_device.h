@@ -92,8 +92,8 @@ public:
   void SetPipeline(GPUPipeline* pipeline) override;
   void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) override;
   void SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer) override;
-  void SetViewport(s32 x, s32 y, s32 width, s32 height) override;
-  void SetScissor(s32 x, s32 y, s32 width, s32 height) override;
+  void SetViewport(const GSVector4i rc) override;
+  void SetScissor(const GSVector4i rc) override;
   void Draw(u32 vertex_count, u32 base_vertex) override;
   void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) override;
   void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) override;

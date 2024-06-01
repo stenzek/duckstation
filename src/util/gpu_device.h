@@ -8,8 +8,8 @@
 #include "window_info.h"
 
 #include "common/bitfield.h"
+#include "common/gsvector.h"
 #include "common/heap_array.h"
-#include "common/rectangle.h"
 #include "common/small_string.h"
 #include "common/types.h"
 
@@ -676,11 +676,14 @@ public:
   virtual void SetPipeline(GPUPipeline* pipeline) = 0;
   virtual void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) = 0;
   virtual void SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer) = 0;
-  virtual void SetViewport(s32 x, s32 y, s32 width, s32 height) = 0; // TODO: Rectangle
-  virtual void SetScissor(s32 x, s32 y, s32 width, s32 height) = 0;
+  virtual void SetViewport(const GSVector4i rc) = 0;
+  virtual void SetScissor(const GSVector4i rc) = 0;
   void SetRenderTarget(GPUTexture* rt, GPUTexture* ds = nullptr,
                        GPUPipeline::RenderPassFlag render_pass_flags = GPUPipeline::NoRenderPassFlags);
+  void SetViewport(s32 x, s32 y, s32 width, s32 height);
+  void SetScissor(s32 x, s32 y, s32 width, s32 height);
   void SetViewportAndScissor(s32 x, s32 y, s32 width, s32 height);
+  void SetViewportAndScissor(const GSVector4i rc);
 
   // Drawing abstraction.
   virtual void Draw(u32 vertex_count, u32 base_vertex) = 0;
@@ -704,7 +707,7 @@ public:
 
   bool UpdateImGuiFontTexture();
   bool UsesLowerLeftOrigin() const;
-  static Common::Rectangle<s32> FlipToLowerLeft(const Common::Rectangle<s32>& rc, s32 target_height);
+  static GSVector4i FlipToLowerLeft(GSVector4i rc, s32 target_height);
   bool ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u32 new_height, GPUTexture::Type type,
                      GPUTexture::Format format, bool preserve = true);
   bool ShouldSkipPresentingFrame();
