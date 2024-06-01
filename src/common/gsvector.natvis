@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="GSVector2T&lt;*&gt;">
+		<DisplayString>{{ {x}, {y} }}</DisplayString>
+	</Type>
+
+	<Type Name="GSVector4i">
+		<DisplayString>{{ {I32[0]}, {I32[1]}, {I32[2]}, {I32[3]} }}</DisplayString>
+	</Type>
+</AutoVisualizer>
