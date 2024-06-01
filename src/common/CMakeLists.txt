@@ -21,6 +21,11 @@ add_library(common
   fifo_queue.h
   file_system.cpp
   file_system.h
+  gsvector.h
+  gsvector_formatter.h
+  gsvector_neon.h
+  gsvector_nosimd.h
+  gsvector_sse.h
   intrin.h
   hash_combine.h
   heap_array.h

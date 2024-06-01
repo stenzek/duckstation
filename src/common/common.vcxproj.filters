@@ -46,6 +46,11 @@
     </ClInclude>
     <ClInclude Include="dynamic_library.h" />
     <ClInclude Include="binary_span_reader_writer.h" />
+    <ClInclude Include="gsvector_sse.h" />
+    <ClInclude Include="gsvector_neon.h" />
+    <ClInclude Include="gsvector.h" />
+    <ClInclude Include="gsvector_formatter.h" />
+    <ClInclude Include="gsvector_nosimd.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="small_string.cpp" />
@@ -80,6 +85,7 @@
     <Natvis Include="thirdparty\llvm.natvis">
       <Filter>thirdparty</Filter>
     </Natvis>
+    <Natvis Include="gsvector.natvis" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="thirdparty">
