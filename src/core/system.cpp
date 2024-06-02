@@ -1718,7 +1718,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
 
   // Texture replacement preloading.
   // TODO: Move this and everything else below OnSystemStarted().
-  g_texture_replacements.SetGameID(s_running_game_serial);
+  TextureReplacements::SetGameID(s_running_game_serial);
 
   // Good to go.
   s_state = State::Running;
@@ -1901,7 +1901,7 @@ void System::DestroySystem()
 
   ClearMemorySaveStates();
 
-  g_texture_replacements.Shutdown();
+  TextureReplacements::Shutdown();
 
   PCDrv::Shutdown();
   SIO::Shutdown();
@@ -3765,7 +3765,7 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
   }
 
   if (!booting)
-    g_texture_replacements.SetGameID(s_running_game_serial);
+    TextureReplacements::SetGameID(s_running_game_serial);
 
   if (booting)
     Achievements::ResetHardcoreMode(true);
@@ -4146,7 +4146,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
           old_settings.texture_replacements.enable_vram_write_replacements ||
         g_settings.texture_replacements.preload_textures != old_settings.texture_replacements.preload_textures)
     {
-      g_texture_replacements.Reload();
+      TextureReplacements::Reload();
     }
 
     DMA::SetMaxSliceTicks(g_settings.dma_max_slice_ticks);

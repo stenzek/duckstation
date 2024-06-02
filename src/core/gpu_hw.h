@@ -213,7 +213,8 @@ private:
 
   void UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* data, u32 data_pitch, bool set_mask,
                        bool check_mask, const GSVector4i bounds);
-  bool BlitVRAMReplacementTexture(const TextureReplacementTexture* tex, u32 dst_x, u32 dst_y, u32 width, u32 height);
+  bool BlitVRAMReplacementTexture(const TextureReplacements::ReplacementImage* tex, u32 dst_x, u32 dst_y, u32 width,
+                                  u32 height);
 
   /// Expands a line into two triangles.
   void DrawLine(float x0, float y0, u32 col0, float x1, float y1, u32 col1, float depth);
