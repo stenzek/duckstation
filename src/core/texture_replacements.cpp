@@ -1,12 +1,14 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "texture_replacements.h"
+#include "gpu_types.h"
 #include "host.h"
 #include "settings.h"
 
 #include "common/bitutils.h"
 #include "common/file_system.h"
+#include "common/hash_combine.h"
 #include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
@@ -19,33 +21,72 @@
 #endif
 
 #include <cinttypes>
+#include <tuple>
+#include <unordered_map>
+#include <vector>
 
 Log_SetChannel(TextureReplacements);
 
-TextureReplacements g_texture_replacements;
-
-static constexpr u32 VRAMRGBA5551ToRGBA8888(u16 color)
+namespace TextureReplacements {
+namespace {
+struct VRAMReplacementHash
 {
-  u8 r = Truncate8(color & 31);
-  u8 g = Truncate8((color >> 5) & 31);
-  u8 b = Truncate8((color >> 10) & 31);
-  u8 a = Truncate8((color >> 15) & 1);
+  u64 low;
+  u64 high;
 
-  // 00012345 -> 1234545
-  b = (b << 3) | (b & 0b111);
-  g = (g << 3) | (g & 0b111);
-  r = (r << 3) | (r & 0b111);
-  a = a ? 255 : 0;
+  TinyString ToString() const;
+  bool ParseString(std::string_view sv);
 
-  return ZeroExtend32(r) | (ZeroExtend32(g) << 8) | (ZeroExtend32(b) << 16) | (ZeroExtend32(a) << 24);
+  bool operator<(const VRAMReplacementHash& rhs) const { return std::tie(low, high) < std::tie(rhs.low, rhs.high); }
+  bool operator==(const VRAMReplacementHash& rhs) const { return low == rhs.low && high == rhs.high; }
+  bool operator!=(const VRAMReplacementHash& rhs) const { return low != rhs.low || high != rhs.high; }
+};
+
+struct VRAMReplacementHashMapHash
+{
+  size_t operator()(const VRAMReplacementHash& hash) const;
+};
+} // namespace
+
+using VRAMWriteReplacementMap = std::unordered_map<VRAMReplacementHash, std::string, VRAMReplacementHashMapHash>;
+using TextureCache = std::unordered_map<std::string, ReplacementImage>;
+
+static bool ParseReplacementFilename(const std::string& filename, VRAMReplacementHash* replacement_hash,
+                                     ReplacmentType* replacement_type);
+
+static std::string GetSourceDirectory();
+static std::string GetDumpDirectory();
+
+static VRAMReplacementHash GetVRAMWriteHash(u32 width, u32 height, const void* pixels);
+static std::string GetVRAMWriteDumpFilename(u32 width, u32 height, const void* pixels);
+
+static void FindTextures(const std::string& dir);
+
+static const ReplacementImage* LoadTexture(const std::string& filename);
+static void PreloadTextures();
+static void PurgeUnreferencedTexturesFromCache();
+
+static std::string s_game_id;
+
+// TODO: Check the size, purge some when it gets too large.
+static TextureCache s_texture_cache;
+
+static VRAMWriteReplacementMap s_vram_write_replacements;
+} // namespace TextureReplacements
+
+size_t TextureReplacements::VRAMReplacementHashMapHash::operator()(const VRAMReplacementHash& hash) const
+{
+  size_t hash_hash = std::hash<u64>{}(hash.low);
+  hash_combine(hash_hash, hash.high);
+  return hash_hash;
 }
 
-std::string TextureReplacementHash::ToString() const
+TinyString TextureReplacements::VRAMReplacementHash::ToString() const
 {
-  return StringUtil::StdStringFromFormat("%" PRIx64 "%" PRIx64, high, low);
+  return TinyString::from_format("{:08X}{:08X}", high, low);
 }
 
-bool TextureReplacementHash::ParseString(std::string_view sv)
+bool TextureReplacements::VRAMReplacementHash::ParseString(std::string_view sv)
 {
   if (sv.length() != 32)
     return false;
@@ -60,25 +101,22 @@ bool TextureReplacementHash::ParseString(std::string_view sv)
   return true;
 }
 
-TextureReplacements::TextureReplacements() = default;
-
-TextureReplacements::~TextureReplacements() = default;
-
 void TextureReplacements::SetGameID(std::string game_id)
 {
-  if (m_game_id == game_id)
+  if (s_game_id == game_id)
     return;
 
-  m_game_id = game_id;
+  s_game_id = game_id;
   Reload();
 }
 
-const TextureReplacementTexture* TextureReplacements::GetVRAMWriteReplacement(u32 width, u32 height, const void* pixels)
+const TextureReplacements::ReplacementImage* TextureReplacements::GetVRAMReplacement(u32 width, u32 height,
+                                                                                     const void* pixels)
 {
-  const TextureReplacementHash hash = GetVRAMWriteHash(width, height, pixels);
+  const VRAMReplacementHash hash = GetVRAMWriteHash(width, height, pixels);
 
-  const auto it = m_vram_write_replacements.find(hash);
-  if (it == m_vram_write_replacements.end())
+  const auto it = s_vram_write_replacements.find(hash);
+  if (it == s_vram_write_replacements.end())
     return nullptr;
 
   return LoadTexture(it->second);
@@ -86,7 +124,7 @@ const TextureReplacementTexture* TextureReplacements::GetVRAMWriteReplacement(u3
 
 void TextureReplacements::DumpVRAMWrite(u32 width, u32 height, const void* pixels)
 {
-  std::string filename = GetVRAMWriteDumpFilename(width, height, pixels);
+  const std::string filename = GetVRAMWriteDumpFilename(width, height, pixels);
   if (filename.empty())
     return;
 
@@ -120,33 +158,35 @@ void TextureReplacements::DumpVRAMWrite(u32 width, u32 height, const void* pixel
 
 void TextureReplacements::Shutdown()
 {
-  m_texture_cache.clear();
-  m_vram_write_replacements.clear();
-  m_game_id.clear();
+  s_texture_cache.clear();
+  s_vram_write_replacements.clear();
+  s_game_id.clear();
 }
 
-std::string TextureReplacements::GetSourceDirectory() const
+// TODO: Organize into PCSX2-style.
+std::string TextureReplacements::GetSourceDirectory()
 {
-  return Path::Combine(EmuFolders::Textures, m_game_id);
+  return Path::Combine(EmuFolders::Textures, s_game_id);
 }
 
-std::string TextureReplacements::GetDumpDirectory() const
+std::string TextureReplacements::GetDumpDirectory()
 {
-  return Path::Combine(EmuFolders::Dumps, Path::Combine("textures", m_game_id));
+  return Path::Combine(EmuFolders::Dumps, Path::Combine("textures", s_game_id));
 }
 
-TextureReplacementHash TextureReplacements::GetVRAMWriteHash(u32 width, u32 height, const void* pixels) const
+TextureReplacements::VRAMReplacementHash TextureReplacements::GetVRAMWriteHash(u32 width, u32 height,
+                                                                               const void* pixels)
 {
   XXH128_hash_t hash = XXH3_128bits(pixels, width * height * sizeof(u16));
   return {hash.low64, hash.high64};
 }
 
-std::string TextureReplacements::GetVRAMWriteDumpFilename(u32 width, u32 height, const void* pixels) const
+std::string TextureReplacements::GetVRAMWriteDumpFilename(u32 width, u32 height, const void* pixels)
 {
-  if (m_game_id.empty())
+  if (s_game_id.empty())
     return {};
 
-  const TextureReplacementHash hash = GetVRAMWriteHash(width, height, pixels);
+  const VRAMReplacementHash hash = GetVRAMWriteHash(width, height, pixels);
   const std::string dump_directory(GetDumpDirectory());
   std::string filename(Path::Combine(dump_directory, fmt::format("vram-write-{}.png", hash.ToString())));
 
@@ -161,7 +201,7 @@ std::string TextureReplacements::GetVRAMWriteDumpFilename(u32 width, u32 height,
 
 void TextureReplacements::Reload()
 {
-  m_vram_write_replacements.clear();
+  s_vram_write_replacements.clear();
 
   if (g_settings.texture_replacements.AnyReplacementsEnabled())
     FindTextures(GetSourceDirectory());
@@ -174,62 +214,41 @@ void TextureReplacements::Reload()
 
 void TextureReplacements::PurgeUnreferencedTexturesFromCache()
 {
-  TextureCache old_map = std::move(m_texture_cache);
-  for (const auto& it : m_vram_write_replacements)
+  TextureCache old_map = std::move(s_texture_cache);
+  for (const auto& it : s_vram_write_replacements)
   {
     auto it2 = old_map.find(it.second);
     if (it2 != old_map.end())
     {
-      m_texture_cache[it.second] = std::move(it2->second);
+      s_texture_cache[it.second] = std::move(it2->second);
       old_map.erase(it2);
     }
   }
 }
 
-bool TextureReplacements::ParseReplacementFilename(const std::string& filename,
-                                                   TextureReplacementHash* replacement_hash,
+bool TextureReplacements::ParseReplacementFilename(const std::string& filename, VRAMReplacementHash* replacement_hash,
                                                    ReplacmentType* replacement_type)
 {
-  const char* extension = std::strrchr(filename.c_str(), '.');
-  const char* title = std::strrchr(filename.c_str(), '/');
-#ifdef _WIN32
-  const char* title2 = std::strrchr(filename.c_str(), '\\');
-  if (title2 && (!title || title2 > title))
-    title = title2;
-#endif
-
-  if (!title || !extension)
+  const std::string_view file_title = Path::GetFileTitle(filename);
+  if (!file_title.starts_with("vram-write-"))
     return false;
 
-  title++;
-
-  const char* hashpart;
-
-  if (StringUtil::Strncasecmp(title, "vram-write-", 11) == 0)
-  {
-    hashpart = title + 11;
-    *replacement_type = ReplacmentType::VRAMWrite;
-  }
-  else
-  {
-    return false;
-  }
-
-  if (!replacement_hash->ParseString(std::string_view(hashpart, static_cast<size_t>(extension - hashpart))))
+  const std::string_view hashpart = file_title.substr(11);
+  if (!replacement_hash->ParseString(hashpart))
     return false;
 
-  extension++;
-
+  const std::string_view file_extension = Path::GetExtension(filename);
   bool valid_extension = false;
-  for (const char* test_extension : {"png", "jpg", "tga", "bmp"})
+  for (const char* test_extension : {"png", "jpg", "webp"})
   {
-    if (StringUtil::Strcasecmp(extension, test_extension) == 0)
+    if (StringUtil::EqualNoCase(file_extension, test_extension))
     {
       valid_extension = true;
       break;
     }
   }
 
+  *replacement_type = ReplacmentType::VRAMWrite;
   return valid_extension;
 }
 
@@ -243,7 +262,7 @@ void TextureReplacements::FindTextures(const std::string& dir)
     if (fd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY)
       continue;
 
-    TextureReplacementHash hash;
+    VRAMReplacementHash hash;
     ReplacmentType type;
     if (!ParseReplacementFilename(fd.FileName, &hash, &type))
       continue;
@@ -252,26 +271,26 @@ void TextureReplacements::FindTextures(const std::string& dir)
     {
       case ReplacmentType::VRAMWrite:
       {
-        auto it = m_vram_write_replacements.find(hash);
-        if (it != m_vram_write_replacements.end())
+        auto it = s_vram_write_replacements.find(hash);
+        if (it != s_vram_write_replacements.end())
         {
           WARNING_LOG("Duplicate VRAM write replacement: '{}' and '{}'", it->second, fd.FileName);
           continue;
         }
 
-        m_vram_write_replacements.emplace(hash, std::move(fd.FileName));
+        s_vram_write_replacements.emplace(hash, std::move(fd.FileName));
       }
       break;
     }
   }
 
-  INFO_LOG("Found {} replacement VRAM writes for '{}'", m_vram_write_replacements.size(), m_game_id);
+  INFO_LOG("Found {} replacement VRAM writes for '{}'", s_vram_write_replacements.size(), s_game_id);
 }
 
-const TextureReplacementTexture* TextureReplacements::LoadTexture(const std::string& filename)
+const TextureReplacements::ReplacementImage* TextureReplacements::LoadTexture(const std::string& filename)
 {
-  auto it = m_texture_cache.find(filename);
-  if (it != m_texture_cache.end())
+  auto it = s_texture_cache.find(filename);
+  if (it != s_texture_cache.end())
     return &it->second;
 
   RGBA8Image image;
@@ -282,7 +301,7 @@ const TextureReplacementTexture* TextureReplacements::LoadTexture(const std::str
   }
 
   INFO_LOG("Loaded '{}': {}x{}", Path::GetFileName(filename), image.GetWidth(), image.GetHeight());
-  it = m_texture_cache.emplace(filename, std::move(image)).first;
+  it = s_texture_cache.emplace(filename, std::move(image)).first;
   return &it->second;
 }
 
@@ -292,7 +311,7 @@ void TextureReplacements::PreloadTextures()
 
   Common::Timer last_update_time;
   u32 num_textures_loaded = 0;
-  const u32 total_textures = static_cast<u32>(m_vram_write_replacements.size());
+  const u32 total_textures = static_cast<u32>(s_vram_write_replacements.size());
 
 #define UPDATE_PROGRESS()                                                                                              \
   if (last_update_time.GetTimeSeconds() >= UPDATE_INTERVAL)                                                            \
@@ -302,7 +321,7 @@ void TextureReplacements::PreloadTextures()
     last_update_time.Reset();                                                                                          \
   }
 
-  for (const auto& it : m_vram_write_replacements)
+  for (const auto& it : s_vram_write_replacements)
   {
     UPDATE_PROGRESS();
 
