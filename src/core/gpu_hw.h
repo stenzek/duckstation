@@ -175,8 +175,12 @@ private:
 
   void SetFullVRAMDirtyRectangle();
   void ClearVRAMDirtyRectangle();
-  void IncludeVRAMDirtyRectangle(GSVector4i& rect, const GSVector4i new_rect);
-  void IncludeDrawnDirtyRectangle(const GSVector4i rect);
+
+  void AddWrittenRectangle(const GSVector4i rect);
+  void AddDrawnRectangle(const GSVector4i rect);
+  void AddUnclampedDrawnRectangle(const GSVector4i rect);
+  void SetTexPageChangedOnOverlap(const GSVector4i update_rect);
+
   void CheckForTexPageOverlap(GSVector4i uv_rect);
 
   bool IsFlushed() const;
@@ -288,7 +292,7 @@ private:
   // Bounding box of VRAM area that the GPU has drawn into.
   GSVector4i m_vram_dirty_draw_rect = INVALID_RECT;
   GSVector4i m_vram_dirty_write_rect = INVALID_RECT;
-  GSVector4i m_current_uv_range = INVALID_RECT;
+  GSVector4i m_current_uv_rect = INVALID_RECT;
   GSVector2i m_current_texture_page_offset = {};
 
   std::unique_ptr<GPUPipeline> m_wireframe_pipeline;

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "gpu_hw.h"
@@ -16,6 +16,7 @@
 
 #include "common/align.h"
 #include "common/assert.h"
+#include "common/gsvector_formatter.h"
 #include "common/log.h"
 #include "common/scoped_guard.h"
 #include "common/string_util.h"
@@ -651,9 +652,37 @@ void GPU_HW::ClearVRAMDirtyRectangle()
   m_vram_dirty_write_rect = INVALID_RECT;
 }
 
-void GPU_HW::IncludeDrawnDirtyRectangle(const GSVector4i rect)
+void GPU_HW::AddWrittenRectangle(const GSVector4i rect)
 {
+  m_vram_dirty_write_rect = m_vram_dirty_write_rect.runion(rect);
+  SetTexPageChangedOnOverlap(m_vram_dirty_write_rect);
+}
+
+void GPU_HW::AddDrawnRectangle(const GSVector4i rect)
+{
+  // Normally, we would check for overlap here. But the GPU's texture cache won't actually reload until the page
+  // changes, or it samples a larger region, so we can get away without doing so. This reduces copies considerably in
+  // games like Mega Man Legends 2.
   m_vram_dirty_draw_rect = m_vram_dirty_draw_rect.runion(rect.rintersect(m_clamped_drawing_area));
+}
+
+void GPU_HW::AddUnclampedDrawnRectangle(const GSVector4i rect)
+{
+  m_vram_dirty_draw_rect = m_vram_dirty_draw_rect.runion(rect);
+  SetTexPageChangedOnOverlap(m_vram_dirty_draw_rect);
+}
+
+void GPU_HW::SetTexPageChangedOnOverlap(const GSVector4i update_rect)
+{
+  // the vram area can include the texture page, but the game can leave it as-is. in this case, set it as dirty so the
+  // shadow texture is updated
+  if (!m_draw_mode.IsTexturePageChanged() && m_batch.texture_mode != BatchTextureMode::Disabled &&
+      (m_draw_mode.mode_reg.GetTexturePageRectangle().rintersects(update_rect) ||
+       (m_draw_mode.mode_reg.IsUsingPalette() &&
+        m_draw_mode.palette_reg.GetRectangle(m_draw_mode.mode_reg.texture_mode).rintersects(update_rect))))
+  {
+    m_draw_mode.SetTexturePageChanged();
+  }
 }
 
 std::tuple<u32, u32> GPU_HW::GetEffectiveDisplayResolution(bool scaled /* = true */)
@@ -1515,17 +1544,13 @@ void GPU_HW::UpdateVRAMReadTexture(bool drawn, bool written)
   if (drawn)
   {
     DebugAssert(!m_vram_dirty_draw_rect.eq(INVALID_RECT));
-    GL_INS_FMT("Updating draw rect {},{} => {},{} ({}x{})", m_vram_dirty_draw_rect.left, m_vram_dirty_draw_rect.right,
-               m_vram_dirty_draw_rect.top, m_vram_dirty_draw_rect.bottom, m_vram_dirty_draw_rect.width(),
-               m_vram_dirty_draw_rect.height());
+    GL_INS_FMT("Updating draw rect {}", m_vram_dirty_draw_rect);
 
     u8 dbits = TEXPAGE_DIRTY_DRAWN_RECT;
     if (written && m_vram_dirty_draw_rect.rintersects(m_vram_dirty_write_rect))
     {
       DebugAssert(!m_vram_dirty_write_rect.eq(INVALID_RECT));
-      GL_INS_FMT("Including write rect {},{} => {},{} ({}x{})", m_vram_dirty_write_rect.left,
-                 m_vram_dirty_write_rect.right, m_vram_dirty_write_rect.top, m_vram_dirty_write_rect.bottom,
-                 m_vram_dirty_write_rect.width(), m_vram_dirty_write_rect.height());
+      GL_INS_FMT("Including write rect {}", m_vram_dirty_write_rect);
       m_vram_dirty_draw_rect = m_vram_dirty_draw_rect.runion(m_vram_dirty_write_rect);
       m_vram_dirty_write_rect = INVALID_RECT;
       dbits = TEXPAGE_DIRTY_DRAWN_RECT | TEXPAGE_DIRTY_WRITTEN_RECT;
@@ -1536,9 +1561,7 @@ void GPU_HW::UpdateVRAMReadTexture(bool drawn, bool written)
   }
   if (written)
   {
-    GL_INS_FMT("Updating write rect {},{} => {},{} ({}x{})", m_vram_dirty_write_rect.left,
-               m_vram_dirty_write_rect.right, m_vram_dirty_write_rect.top, m_vram_dirty_write_rect.bottom,
-               m_vram_dirty_write_rect.width(), m_vram_dirty_write_rect.height());
+    GL_INS_FMT("Updating write rect {}", m_vram_dirty_write_rect);
     update(m_vram_dirty_write_rect, TEXPAGE_DIRTY_WRITTEN_RECT);
   }
 }
@@ -2229,7 +2252,7 @@ void GPU_HW::LoadVertices()
         if (textured && m_compute_uv_range)
           ComputePolygonUVLimits(vertices.data(), num_vertices);
 
-        IncludeDrawnDirtyRectangle(draw_rect_012);
+        AddDrawnRectangle(draw_rect_012);
         AddDrawTriangleTicks(GSVector4i(native_vertex_positions[0]), GSVector4i(native_vertex_positions[1]),
                              GSVector4i(native_vertex_positions[2]), rc.shading_enable, rc.texture_enable,
                              rc.transparency_enable);
@@ -2275,7 +2298,7 @@ void GPU_HW::LoadVertices()
           if (first_tri_culled && textured && m_compute_uv_range)
             ComputePolygonUVLimits(vertices.data(), num_vertices);
 
-          IncludeDrawnDirtyRectangle(draw_rect_123);
+          AddDrawnRectangle(draw_rect_123);
           AddDrawTriangleTicks(GSVector4i(native_vertex_positions[2]), GSVector4i(native_vertex_positions[1]),
                                GSVector4i(native_vertex_positions[3]), rc.shading_enable, rc.texture_enable,
                                rc.transparency_enable);
@@ -2410,7 +2433,7 @@ void GPU_HW::LoadVertices()
         tex_top = 0;
       }
 
-      IncludeDrawnDirtyRectangle(GSVector4i(pos_x, pos_y, pos_x + rectangle_width, pos_y + rectangle_height));
+      AddDrawnRectangle(GSVector4i(pos_x, pos_y, pos_x + rectangle_width, pos_y + rectangle_height));
       AddDrawRectangleTicks(pos_x, pos_y, rectangle_width, rectangle_height, rc.texture_enable, rc.transparency_enable);
 
       if (m_sw_renderer)
@@ -2467,7 +2490,7 @@ void GPU_HW::LoadVertices()
           return;
         }
 
-        IncludeDrawnDirtyRectangle(GSVector4i(min_x, min_y, max_x + 1, max_y + 1));
+        AddDrawnRectangle(GSVector4i(min_x, min_y, max_x + 1, max_y + 1));
         AddDrawLineTicks(min_x, min_y, max_x, max_y, rc.shading_enable);
 
         // TODO: Should we do a PGXP lookup here? Most lines are 2D.
@@ -2527,7 +2550,7 @@ void GPU_HW::LoadVertices()
           }
           else
           {
-            IncludeDrawnDirtyRectangle(GSVector4i(min_x, min_y, max_x + 1, max_y + 1));
+            AddDrawnRectangle(GSVector4i(min_x, min_y, max_x + 1, max_y + 1));
             AddDrawLineTicks(min_x, min_y, max_x, max_y, rc.shading_enable);
 
             // TODO: Should we do a PGXP lookup here? Most lines are 2D.
@@ -2596,24 +2619,6 @@ bool GPU_HW::BlitVRAMReplacementTexture(const TextureReplacementTexture* tex, u3
   return true;
 }
 
-void GPU_HW::IncludeVRAMDirtyRectangle(GSVector4i& rect, const GSVector4i new_rect)
-{
-  if (rect.rcontains(new_rect))
-    return;
-
-  rect = rect.runion(new_rect);
-
-  // the vram area can include the texture page, but the game can leave it as-is. in this case, set it as dirty so the
-  // shadow texture is updated
-  if (!m_draw_mode.IsTexturePageChanged() && m_batch.texture_mode != BatchTextureMode::Disabled &&
-      (m_draw_mode.mode_reg.GetTexturePageRectangle().rintersects(new_rect) ||
-       (m_draw_mode.mode_reg.IsUsingPalette() &&
-        m_draw_mode.palette_reg.GetRectangle(m_draw_mode.mode_reg.texture_mode).rintersects(new_rect))))
-  {
-    m_draw_mode.SetTexturePageChanged();
-  }
-}
-
 ALWAYS_INLINE_RELEASE void GPU_HW::CheckForTexPageOverlap(GSVector4i uv_rect)
 {
   DebugAssert(m_texpage_dirty != 0 && m_batch.texture_mode != BatchTextureMode::Disabled);
@@ -2636,35 +2641,31 @@ ALWAYS_INLINE_RELEASE void GPU_HW::CheckForTexPageOverlap(GSVector4i uv_rect)
   uv_rect = uv_rect.add32(GSVector4i::cxpr(0, 0, 1, 1)); // make exclusive
   uv_rect = uv_rect.rintersect(VRAM_SIZE_RECT);          // clamp to vram bounds
 
-  const GSVector4i new_uv_rect = m_current_uv_range.runion(uv_rect);
+  const GSVector4i new_uv_rect = m_current_uv_rect.runion(uv_rect);
 
-  if (!m_current_uv_range.eq(new_uv_rect))
+  if (!m_current_uv_rect.eq(new_uv_rect))
   {
-    m_current_uv_range = new_uv_rect;
+    m_current_uv_rect = new_uv_rect;
 
     bool update_drawn = false, update_written = false;
     if (m_texpage_dirty & TEXPAGE_DIRTY_DRAWN_RECT)
     {
       DebugAssert(!m_vram_dirty_draw_rect.eq(INVALID_RECT));
-      update_drawn = m_current_uv_range.rintersects(m_vram_dirty_draw_rect);
+      update_drawn = m_current_uv_rect.rintersects(m_vram_dirty_draw_rect);
       if (update_drawn)
       {
-        GL_INS_FMT("Updating VRAM cache due to UV {{{},{} => {},{}}} intersection with dirty DRAW {{{},{} => {},{}}}",
-                   m_current_uv_range.left, m_current_uv_range.top, m_current_uv_range.right, m_current_uv_range.bottom,
-                   m_vram_dirty_draw_rect.left, m_vram_dirty_draw_rect.top, m_vram_dirty_draw_rect.right,
-                   m_vram_dirty_draw_rect.bottom);
+        GL_INS_FMT("Updating VRAM cache due to UV {} intersection with dirty DRAW {}", m_current_uv_rect,
+                   m_vram_dirty_draw_rect);
       }
     }
     if (m_texpage_dirty & TEXPAGE_DIRTY_WRITTEN_RECT)
     {
       DebugAssert(!m_vram_dirty_write_rect.eq(INVALID_RECT));
-      update_written = m_current_uv_range.rintersects(m_vram_dirty_write_rect);
+      update_written = m_current_uv_rect.rintersects(m_vram_dirty_write_rect);
       if (update_written)
       {
-        GL_INS_FMT("Updating VRAM cache due to UV {{{},{} => {},{}}} intersection with dirty WRITE {{{},{} => {},{}}}",
-                   m_current_uv_range.left, m_current_uv_range.top, m_current_uv_range.right, m_current_uv_range.bottom,
-                   m_vram_dirty_write_rect.left, m_vram_dirty_write_rect.top, m_vram_dirty_write_rect.right,
-                   m_vram_dirty_write_rect.bottom);
+        GL_INS_FMT("Updating VRAM cache due to UV {} intersection with dirty WRITE {}", m_current_uv_rect,
+                   m_vram_dirty_write_rect);
       }
     }
 
@@ -2850,21 +2851,17 @@ void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
     m_sw_renderer->PushCommand(cmd);
   }
 
-  GL_INS_FMT("Dirty draw area before: {},{} => {},{} ({}x{})", m_vram_dirty_draw_rect.left, m_vram_dirty_draw_rect.top,
-             m_vram_dirty_draw_rect.right, m_vram_dirty_draw_rect.bottom, m_vram_dirty_draw_rect.width(),
-             m_vram_dirty_draw_rect.height());
+  GL_INS_FMT("Dirty draw area before: {}", m_vram_dirty_draw_rect);
 
-  IncludeVRAMDirtyRectangle(m_vram_dirty_draw_rect, GSVector4i(x, y, x + width, y + height).rintersect(VRAM_SIZE_RECT));
+  const GSVector4i bounds = GetVRAMTransferBounds(x, y, width, height);
+  AddUnclampedDrawnRectangle(bounds);
 
-  GL_INS_FMT("Dirty draw area after: {},{} => {},{} ({}x{})", m_vram_dirty_draw_rect.left, m_vram_dirty_draw_rect.top,
-             m_vram_dirty_draw_rect.right, m_vram_dirty_draw_rect.bottom, m_vram_dirty_draw_rect.width(),
-             m_vram_dirty_draw_rect.height());
+  GL_INS_FMT("Dirty draw area after: {}", m_vram_dirty_draw_rect);
 
   const bool is_oversized = (((x + width) > VRAM_WIDTH || (y + height) > VRAM_HEIGHT));
   g_gpu_device->SetPipeline(
     m_vram_fill_pipelines[BoolToUInt8(is_oversized)][BoolToUInt8(IsInterlacedRenderingEnabled())].get());
 
-  const GSVector4i bounds = GetVRAMTransferBounds(x, y, width, height);
   const GSVector4i scaled_bounds = bounds.mul32l(GSVector4i(m_resolution_scale));
   g_gpu_device->SetViewportAndScissor(scaled_bounds);
 
@@ -2971,7 +2968,7 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, b
 
   const GSVector4i bounds = GetVRAMTransferBounds(x, y, width, height);
   DebugAssert(bounds.right <= static_cast<s32>(VRAM_WIDTH) && bounds.bottom <= static_cast<s32>(VRAM_HEIGHT));
-  IncludeVRAMDirtyRectangle(m_vram_dirty_write_rect, bounds);
+  AddWrittenRectangle(bounds);
 
   if (check_mask)
   {
@@ -3086,7 +3083,7 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
   {
     if (intersect_with_draw || intersect_with_write)
       UpdateVRAMReadTexture(intersect_with_draw, intersect_with_write);
-    IncludeVRAMDirtyRectangle(m_vram_dirty_draw_rect, dst_bounds);
+    AddUnclampedDrawnRectangle(dst_bounds);
 
     struct VRAMCopyUBOData
     {
@@ -3137,19 +3134,24 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
       UpdateVRAMReadTexture(intersect_with_draw, intersect_with_write);
   }
 
-  GSVector4i* update_rect;
-  if (intersect_with_draw || intersect_with_write)
+  if (intersect_with_draw)
   {
-    update_rect = intersect_with_draw ? &m_vram_dirty_draw_rect : &m_vram_dirty_write_rect;
+    AddUnclampedDrawnRectangle(dst_bounds);
+  }
+  else if (intersect_with_write)
+  {
+    AddWrittenRectangle(dst_bounds);
   }
   else
   {
     const bool use_write =
       (!m_vram_dirty_write_rect.eq(INVALID_RECT) && !m_vram_dirty_draw_rect.eq(INVALID_RECT) &&
        RectDistance(m_vram_dirty_write_rect, dst_bounds) < RectDistance(m_vram_dirty_draw_rect, dst_bounds));
-    update_rect = use_write ? &m_vram_dirty_write_rect : &m_vram_dirty_draw_rect;
+    if (use_write)
+      AddWrittenRectangle(dst_bounds);
+    else
+      AddUnclampedDrawnRectangle(dst_bounds);
   }
-  IncludeVRAMDirtyRectangle(*update_rect, dst_bounds);
 
   if (m_GPUSTAT.check_mask_before_draw)
   {
@@ -3176,19 +3178,13 @@ void GPU_HW::DispatchRenderCommand()
     {
       m_draw_mode.ClearTexturePageChangedFlag();
 
-#if 0
-      if (m_vram_dirty_rect.Valid())
+#if 1
+      if (!m_vram_dirty_draw_rect.eq(INVALID_RECT) || !m_vram_dirty_write_rect.eq(INVALID_RECT))
       {
-        GL_INS_FMT("VRAM DIRTY: {},{} => {},{}", m_vram_dirty_rect.left, m_vram_dirty_rect.top, m_vram_dirty_rect.right,
-                   m_vram_dirty_rect.bottom);
-
-        auto tpr = m_draw_mode.mode_reg.GetTexturePageRectangle();
-        GL_INS_FMT("PAGE RECT: {},{} => {},{}", tpr.left, tpr.top, tpr.right, tpr.bottom);
+        GL_INS_FMT("VRAM DIRTY: {} {}", m_vram_dirty_draw_rect, m_vram_dirty_write_rect);
+        GL_INS_FMT("PAGE RECT: {}", m_draw_mode.mode_reg.GetTexturePageRectangle());
         if (m_draw_mode.mode_reg.IsUsingPalette())
-        {
-          tpr = m_draw_mode.GetTexturePaletteRectangle();
-          GL_INS_FMT("PALETTE RECT: {},{} => {},{}", tpr.left, tpr.top, tpr.right, tpr.bottom);
-        }
+          GL_INS_FMT("PALETTE RECT: {}", m_draw_mode.palette_reg.GetRectangle(m_draw_mode.mode_reg.texture_mode));
       }
 #endif
 
@@ -3218,7 +3214,7 @@ void GPU_HW::DispatchRenderCommand()
         GL_INS("Texpage is in dirty area, checking UV ranges");
         m_texpage_dirty = new_texpage_dirty;
         m_compute_uv_range = true;
-        m_current_uv_range = INVALID_RECT;
+        m_current_uv_rect = INVALID_RECT;
       }
       else
       {
@@ -3356,9 +3352,7 @@ void GPU_HW::FlushRender()
   GL_SCOPE_FMT("Hardware Draw {}", ++s_draw_number);
 #endif
 
-  GL_INS_FMT("Dirty draw area: {},{} => {},{} ({}x{})", m_vram_dirty_draw_rect.left, m_vram_dirty_draw_rect.top,
-             m_vram_dirty_draw_rect.right, m_vram_dirty_draw_rect.bottom, m_vram_dirty_draw_rect.width(),
-             m_vram_dirty_draw_rect.height());
+  GL_INS_FMT("Dirty draw area: {}", m_vram_dirty_draw_rect);
 
   if (m_batch_ubo_dirty)
   {
