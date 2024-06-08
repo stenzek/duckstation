@@ -2241,9 +2241,21 @@ void CDROM::ExecuteCommandSecondResponse(void*, TickCount ticks, TickCount ticks
       DoIDRead();
       break;
 
+    case Command::Init:
+    {
+      // OpenBIOS spams Init, so we need to ensure the completion actually gets through.
+      // If we have a pending command (which is probably init), cancel it.
+      if (HasPendingCommand())
+      {
+        WARNING_LOG("Cancelling pending command 0x{:02X} ({}) due to init completion.", static_cast<u8>(s_command),
+                    s_command_info[static_cast<u8>(s_command)].name);
+        EndCommand();
+      }
+    }
+      [[fallthrough]];
+
     case Command::ReadTOC:
     case Command::Pause:
-    case Command::Init:
     case Command::MotorOn:
     case Command::Stop:
       DoStatSecondResponse();
