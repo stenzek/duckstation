@@ -3381,17 +3381,20 @@ void CDROM::CheckForSectorBufferReadComplete()
   {
     sb.position = 0;
     sb.size = 0;
+  }
 
-    // Redeliver missed sector on DMA/read complete.
-    // I'm still not sure if this is correct behavior.
-    SectorBuffer& next_sb = s_sector_buffers[s_current_write_sector_buffer];
-    if (next_sb.position == 0 && next_sb.size > 0)
-    {
-      DEV_LOG("Sending additional INT1 for missed sector in buffer {}", s_current_write_sector_buffer);
-      s_current_read_sector_buffer = s_current_write_sector_buffer;
-      s_async_response_fifo.Push(s_secondary_status.bits);
-      SetAsyncInterrupt(Interrupt::DataReady);
-    }
+  // Redeliver missed sector on DMA/read complete.
+  // This would be the main loop checking when the DMA is complete, if there's another sector pending.
+  // Normally, this would happen some time after the DMA actually completes, so we need to put it on a delay.
+  // Otherwise, if games read the header then data out as two separate transfers (which is typical), they'll
+  // get the header for one sector, and the header for the next in the second transfer.
+  SectorBuffer& next_sb = s_sector_buffers[s_current_write_sector_buffer];
+  if (next_sb.position == 0 && next_sb.size > 0 && !HasPendingAsyncInterrupt())
+  {
+    DEV_LOG("Sending additional INT1 for missed sector in buffer {}", s_current_write_sector_buffer);
+    s_async_response_fifo.Push(s_secondary_status.bits);
+    s_pending_async_interrupt = static_cast<u8>(Interrupt::DataReady);
+    s_async_interrupt_event->Schedule(INTERRUPT_DELAY_CYCLES);
   }
 }
 
