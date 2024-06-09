@@ -178,6 +178,7 @@
     <ClCompile Include="$(IntDir)moc_selectdiscdialog.cpp">
       <Filter>moc</Filter>
     </ClCompile>
+    <ClCompile Include="vcruntimecheck.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />

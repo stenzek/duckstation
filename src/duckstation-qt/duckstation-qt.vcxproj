@@ -51,6 +51,7 @@
     <ClCompile Include="selectdiscdialog.cpp" />
     <ClCompile Include="settingswindow.cpp" />
     <ClCompile Include="setupwizarddialog.cpp" />
+    <ClCompile Include="vcruntimecheck.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="setupwizarddialog.h" />
