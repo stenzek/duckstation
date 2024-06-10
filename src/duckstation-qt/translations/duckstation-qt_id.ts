@@ -4825,17 +4825,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/settings.cpp" line="1393"/>
         <source>Left / Top</source>
-        <translation type="unfinished"></translation>
+        <translation>Kiri / Atas</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1393"/>
         <source>Center</source>
-        <translation type="unfinished"></translation>
+        <translation>Tengah</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1394"/>
         <source>Right / Bottom</source>
-        <translation type="unfinished"></translation>
+        <translation>Kanan / Bawah</translation>
     </message>
 </context>
 <context>
@@ -4843,17 +4843,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/settings.cpp" line="1326"/>
         <source>Auto (Game Native)</source>
-        <translation type="unfinished"></translation>
+        <translation>Otomatis (Game Native)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1327"/>
         <source>Stretch To Fill</source>
-        <translation type="unfinished"></translation>
+        <translation>Regangkan untuk Mengisi</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1328"/>
         <source>Custom</source>
-        <translation type="unfinished">Kustom</translation>
+        <translation>Kustom</translation>
     </message>
 </context>
 <context>
@@ -4861,17 +4861,17 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/settings.cpp" line="1297"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Tidak Ada</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1297"/>
         <source>Only Overscan Area</source>
-        <translation type="unfinished"></translation>
+        <translation>Hanya Area Overscan</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1298"/>
         <source>All Borders</source>
-        <translation type="unfinished"></translation>
+        <translation>Semua Batas</translation>
     </message>
 </context>
 <context>
@@ -4879,22 +4879,22 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/settings.cpp" line="1264"/>
         <source>Disabled (Flickering)</source>
-        <translation type="unfinished"></translation>
+        <translation>Dinonaktifkan (Berkedip)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1265"/>
         <source>Weave (Combing)</source>
-        <translation type="unfinished"></translation>
+        <translation>Weave (Combing)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1266"/>
         <source>Blend (Blur)</source>
-        <translation type="unfinished"></translation>
+        <translation>Campuran (Blur)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1267"/>
         <source>Adaptive (FastMAD)</source>
-        <translation type="unfinished"></translation>
+        <translation>Adaptif (FastMAD)</translation>
     </message>
 </context>
 <context>
@@ -4902,27 +4902,27 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../../core/settings.cpp" line="1428"/>
         <source>Nearest-Neighbor</source>
-        <translation type="unfinished"></translation>
+        <translation>Nearest-Neighbor</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1429"/>
         <source>Nearest-Neighbor (Integer)</source>
-        <translation type="unfinished"></translation>
+        <translation>Nearest-Neighbor (Integer)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1430"/>
         <source>Bilinear (Smooth)</source>
-        <translation type="unfinished">Bilinear (Halus)</translation>
+        <translation>Bilinear (Halus)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1431"/>
         <source>Bilinear (Sharp)</source>
-        <translation type="unfinished">Bilinear (Tajam)</translation>
+        <translation>Bilinear (Tajam)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1432"/>
         <source>Bilinear (Integer)</source>
-        <translation type="unfinished"></translation>
+        <translation>Bilinear (Integer)</translation>
     </message>
 </context>
 <context>
@@ -8784,17 +8784,17 @@ Error was:</source>
     <message>
         <location filename="../../core/gpu.cpp" line="2433"/>
         <source>Saving screenshot to &apos;{}&apos;.</source>
-        <translation type="unfinished">Menyimpan tangkapan layar ke &apos;{}&apos;.</translation>
+        <translation>Menyimpan tangkapan layar ke &apos;{}&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/gpu.cpp" line="2484"/>
         <source>Saved screenshot to &apos;{}&apos;.</source>
-        <translation type="unfinished">Tangkapan layar tersimpan sebagai &apos;{}&apos;.</translation>
+        <translation>Tangkapan layar tersimpan sebagai &apos;{}&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/gpu.cpp" line="2485"/>
         <source>Failed to save screenshot to &apos;{}&apos;.</source>
-        <translation type="unfinished">Gagal menyimpan tangkapan layar ke &apos;{}&apos;.</translation>
+        <translation>Gagal menyimpan tangkapan layar ke &apos;{}&apos;.</translation>
     </message>
 </context>
 <context>
@@ -8802,12 +8802,12 @@ Error was:</source>
     <message>
         <location filename="../../util/opengl_device.cpp" line="296"/>
         <source>Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Eror</translation>
     </message>
     <message>
         <location filename="../../util/opengl_device.cpp" line="297"/>
         <source>OpenGL renderer unavailable, your driver or hardware is not recent enough. OpenGL 3.1 or OpenGL ES 3.1 is required.</source>
-        <translation type="unfinished"></translation>
+        <translation>Perender OpenGL tidak tersedia, driver atau perangkat keras Anda tidak cukup baru. Diperlukan OpenGL 3.1 atau OpenGL ES 3.1.</translation>
     </message>
 </context>
 <context>
@@ -8815,17 +8815,17 @@ Error was:</source>
     <message>
         <location filename="../../core/settings.cpp" line="1200"/>
         <source>Disabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Dinonaktifkan</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1201"/>
         <source>Box (Downsample 3D/Smooth All)</source>
-        <translation type="unfinished"></translation>
+        <translation>Kotak (Turunkan Sampel 3D/Haluskan Semua)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1202"/>
         <source>Adaptive (Preserve 3D/Smooth 2D)</source>
-        <translation type="unfinished"></translation>
+        <translation>Adaptif (Pertahankan 3D/Haluskan 2D)</translation>
     </message>
 </context>
 <context>
@@ -8833,22 +8833,22 @@ Error was:</source>
     <message>
         <location filename="../../core/settings.cpp" line="1168"/>
         <source>Disabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Dinonaktifkan</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1169"/>
         <source>Quads</source>
-        <translation type="unfinished"></translation>
+        <translation>Segi Empat</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1170"/>
         <source>Triangles (Basic)</source>
-        <translation type="unfinished"></translation>
+        <translation>Segitiga (Dasar)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1171"/>
         <source>Triangles (Aggressive)</source>
-        <translation type="unfinished"></translation>
+        <translation>Segitiga (Agresif)</translation>
     </message>
 </context>
 <context>
@@ -8857,37 +8857,37 @@ Error was:</source>
         <location filename="../qthost.cpp" line="1979"/>
         <location filename="../../core/settings.cpp" line="1031"/>
         <source>Software</source>
-        <translation type="unfinished">Software</translation>
+        <translation>Perangkat Lunak</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1018"/>
         <source>Automatic</source>
-        <translation type="unfinished">Otomatis</translation>
+        <translation>Otomatis</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1020"/>
         <source>Direct3D 11</source>
-        <translation type="unfinished">Direct3D 11</translation>
+        <translation>Direct3D 11</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1020"/>
         <source>Direct3D 12</source>
-        <translation type="unfinished">Direct3D 12</translation>
+        <translation>Direct3D 12</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1023"/>
         <source>Metal</source>
-        <translation type="unfinished">Metal</translation>
+        <translation>Metal</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1026"/>
         <source>Vulkan</source>
-        <translation type="unfinished">Vulkan</translation>
+        <translation>Vulkan</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1029"/>
         <source>OpenGL</source>
-        <translation type="unfinished">OpenGL</translation>
+        <translation>OpenGL</translation>
     </message>
 </context>
 <context>
@@ -8895,37 +8895,37 @@ Error was:</source>
     <message>
         <location filename="../../core/settings.cpp" line="1128"/>
         <source>Nearest-Neighbor</source>
-        <translation type="unfinished"></translation>
+        <translation>Nearest-Neighbor</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1129"/>
         <source>Bilinear</source>
-        <translation type="unfinished"></translation>
+        <translation>Bilinear</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1130"/>
         <source>Bilinear (No Edge Blending)</source>
-        <translation type="unfinished"></translation>
+        <translation>Bilinear (Tanpa Pencampuran Tepi)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1131"/>
         <source>JINC2 (Slow)</source>
-        <translation type="unfinished"></translation>
+        <translation>JINC2 (Lambat)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1132"/>
         <source>JINC2 (Slow, No Edge Blending)</source>
-        <translation type="unfinished"></translation>
+        <translation>JINC2 (Lambat, Tanpa Pencampuran Tepi)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1133"/>
         <source>xBR (Very Slow)</source>
-        <translation type="unfinished"></translation>
+        <translation>xBR (Sangat Lambat)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1134"/>
         <source>xBR (Very Slow, No Edge Blending)</source>
-        <translation type="unfinished"></translation>
+        <translation>xBR (Sangat Lambat, Tanpa Pencampuran Tepi)</translation>
     </message>
 </context>
 <context>
@@ -8933,17 +8933,17 @@ Error was:</source>
     <message>
         <location filename="../../core/settings.cpp" line="1230"/>
         <source>Disabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Dinonaktifkan</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1230"/>
         <source>Overlay Wireframe</source>
-        <translation type="unfinished"></translation>
+        <translation>Overlay Wireframe</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1231"/>
         <source>Only Wireframe</source>
-        <translation type="unfinished"></translation>
+        <translation>Hanya Wireframe</translation>
     </message>
 </context>
 <context>
@@ -8951,47 +8951,47 @@ Error was:</source>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="351"/>
         <source>Resolution scale set to {0}x (display {1}x{2}, VRAM {3}x{4})</source>
-        <translation type="unfinished"></translation>
+        <translation>Skala resolusi diatur ke {0}x (tampilan {1}x{2}, VRAM {3}x{4})</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="364"/>
         <source>Multisample anti-aliasing set to {}x (SSAA).</source>
-        <translation type="unfinished"></translation>
+        <translation>Anti-aliasing multisampel diatur ke {}x (SSAA).</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="371"/>
         <source>Multisample anti-aliasing set to {}x.</source>
-        <translation type="unfinished"></translation>
+        <translation>Anti-aliasing multisampel diatur ke {}x.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="445"/>
         <source>{}x MSAA is not supported, using {}x instead.</source>
-        <translation type="unfinished"></translation>
+        <translation>{}x MSAA tidak didukung, pakai {}x sebagai gantinya.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="457"/>
         <source>SSAA is not supported, using MSAA instead.</source>
-        <translation type="unfinished"></translation>
+        <translation>SSAA tidak didukung, menggunakan MSAA sebagai gantinya.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="464"/>
         <source>Texture filter &apos;{}&apos; is not supported with the current renderer.</source>
-        <translation type="unfinished"></translation>
+        <translation>Filter tekstur &apos;{}&apos; tidak didukung dengan perender saat ini.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="476"/>
         <source>Geometry shaders are not supported by your GPU, and are required for wireframe rendering.</source>
-        <translation type="unfinished"></translation>
+        <translation>Shader geometri tidak didukung oleh GPU Anda, dan diperlukan untuk merender wireframe.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="489"/>
         <source>Resolution scale {0}x is not divisible by downsample scale {1}x, using {2}x instead.</source>
-        <translation type="unfinished"></translation>
+        <translation>Skala resolusi {0}x tidak dapat dibagi dengan skala penurunan sampling {1}x, pakai {2}x sebagai gantinya.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="564"/>
         <source>Resolution scale {0}x not supported for adaptive downsampling, using {1}x.</source>
-        <translation type="unfinished"></translation>
+        <translation>Skala resolusi {0}x tidak didukung untuk penurunan sampling adaptif, pakai {1}x.</translation>
     </message>
 </context>
 <context>
@@ -9802,312 +9802,313 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     <message>
         <location filename="../graphicssettingswidget.cpp" line="240"/>
         <source>Renderer</source>
-        <translation type="unfinished">Perender</translation>
+        <translation>Perender</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="241"/>
         <source>Chooses the backend to use for rendering the console/game visuals. &lt;br&gt;Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. &lt;br&gt;The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
-        <translation type="unfinished"></translation>
+        <translation>Memilih backend yang akan digunakan untuk merender visual konsol/permainan. &lt;br&gt;Tergantung pada sistem dan perangkat keras Anda, backend perangkat keras Direct3D 11 dan OpenGL mungkin tersedia. &lt;br&gt;Perender perangkat lunak menawarkan kompatibilitas terbaik, tetapi paling lambat dan tidak menawarkan peningkatan apa pun.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="245"/>
         <source>Adapter</source>
-        <translation type="unfinished"></translation>
+        <translation>Adapter</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="246"/>
         <source>If your system contains multiple GPUs or adapters, you can select which GPU you wish to use for the hardware renderers. &lt;br&gt;This option is only supported in Direct3D and Vulkan. OpenGL will always use the default device.</source>
-        <translation type="unfinished"></translation>
+        <translation>Jika sistem Anda berisi beberapa GPU atau adaptor, Anda dapat memilih GPU mana yang ingin Anda gunakan untuk perender perangkat keras. &lt;br&gt;Opsi ini hanya didukung di Direct3D dan Vulkan. OpenGL akan selalu menggunakan perangkat default.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="251"/>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
-        <translation type="unfinished"></translation>
+        <translation>Mengatur ini di atas 1x akan meningkatkan resolusi poligon dan garis 3D yang dirender. Hanya berlaku untuk backend perangkat keras. &lt;br&gt;Pengaturan ini biasanya aman, dengan sebagian besar game terlihat bagus pada resolusi yang lebih tinggi. Resolusi yang lebih tinggi membutuhkan GPU yang lebih kuat.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="255"/>
         <source>Down-Sampling</source>
-        <translation type="unfinished"></translation>
+        <translation>Penurunan Sampling</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="256"/>
         <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, but should be disabled for pure 3D games.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menurunkan sampel gambar yang dirender sebelum menampilkannya. Dapat meningkatkan kualitas gambar secara keseluruhan dalam game campuran 2D/3D, tetapi harus dinonaktifkan untuk game 3D murni.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="258"/>
         <source>Down-Sampling Display Scale</source>
-        <translation type="unfinished"></translation>
+        <translation>Skala Tampilan Penurunan Sampling</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="258"/>
         <source>1x</source>
-        <translation type="unfinished">100% {1x?}</translation>
+        <translation>1x</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="259"/>
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
-        <translation type="unfinished"></translation>
+        <translation>Memilih skala resolusi yang akan diterapkan pada gambar akhir. 1x akan menurunkan sampel ke resolusi konsol asli.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="264"/>
         <source>Smooths out the blockiness of magnified textures on 3D object by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales. &lt;br&gt;The JINC2 and especially xBR filtering modes are very demanding, and may not be worth the speed penalty.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menghaluskan blockiness dari tekstur yang diperbesar pada objek 3D dengan menggunakan filtering. &lt;br&gt;Akan memiliki efek yang lebih besar pada skala resolusi yang lebih tinggi. &lt;br&gt;Mode filtering JINC2 dan terutama xBR sangat menuntut, dan mungkin tidak sebanding dengan penalti kecepatan.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="270"/>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto (Game Native) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
-        <translation type="unfinished"></translation>
+        <translation>Mengubah rasio aspek yang digunakan untuk menampilkan output konsol ke layar. Bawaan adalah Otomatis (Game Native) yang secara otomatis menyesuaikan rasio aspek agar sesuai dengan bagaimana game akan ditampilkan pada TV biasa pada zamannya.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="275"/>
         <source>Determines which algorithm is used to convert interlaced frames to progressive for display on your system. Generally, the &quot;Disable Interlacing&quot; enhancement provides better quality output, but some games require interlaced rendering.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menentukan algoritma mana yang digunakan untuk mengonversi frame interlaced menjadi progresif untuk ditampilkan pada sistem Anda. Umumnya, peningkatan &quot;Nonaktifkan Interlace&quot; memberikan kualitas output yang lebih baik, tetapi beberapa game memerlukan rendering interlaced.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="279"/>
         <source>Crop</source>
-        <translation type="unfinished">Potong</translation>
+        <translation>Potong</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="281"/>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. Some games display content in the overscan area, or use it for screen effects. May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menentukan seberapa banyak area yang biasanya tidak terlihat pada TV konsumen untuk dipotong/disembunyikan. Beberapa game menampilkan konten di area overscan, atau menggunakannya untuk efek layar. Mungkin tidak ditampilkan dengan benar dengan pengaturan &quot;Semua Batas&quot;. &quot;Hanya Overscan&quot; menawarkan kompromi yang baik antara stabilitas dan menyembunyikan batas hitam.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="285"/>
         <source>Scaling</source>
-        <translation type="unfinished"></translation>
+        <translation>Penskalaan</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="286"/>
         <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menentukan bagaimana output konsol yang diemulasi ditingkatkan atau diturunkan ke resolusi monitor Anda.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="289"/>
         <source>Forces the precision of colours output to the console&apos;s framebuffer to use the full 8 bits of precision per channel. This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering, which makes the transition between colours less sharp by applying a pattern around those pixels. Most games are compatible with this option, but there is a number which aren&apos;t and will have broken effects with it enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Memaksa presisi warna yang dikeluarkan ke framebuffer konsol untuk menggunakan presisi 8 bit penuh per saluran. Ini menghasilkan gradien yang terlihat lebih bagus dengan konsekuensi membuat beberapa warna terlihat sedikit berbeda. Menonaktifkan pengaturan ini juga mengaktifkan dithering, yang membuat transisi antar warna kurang tajam dengan menerapkan pola di sekitar piksel tersebut. Sebagian besar game kompatibel dengan pengaturan ini, tetapi ada beberapa yang tidak dan akan memiliki efek yang rusak saat diaktifkan.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="296"/>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Menskala posisi vertex dalam ruang layar ke rasio aspek layar lebar, pada dasarnya meningkatkan bidang pandang dari 4:3 ke rasio aspek tampilan yang dipilih dalam game 3D.  &lt;b&gt;&lt;u&gt;Mungkin tidak kompatibel dengan semua game.&lt;/u&gt; &lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="300"/>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;strong&gt;May not be compatible with all games.&lt;/strong&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Mengurangi poligon &quot;goyah&quot; dan tekstur &quot;bengkok&quot; yang umum dalam game PS1. &lt;strong&gt;Mungkin tidak kompatibel dengan semua game.&lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="303"/>
         <source>PGXP Depth Buffer</source>
-        <translation type="unfinished"></translation>
+        <translation>Kedalaman Buffer PGXP</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="304"/>
         <source>Attempts to reduce polygon Z-fighting by testing pixels against the depth values from PGXP. Low compatibility, but can work well in some games. Other games may need a threshold adjustment.</source>
-        <translation type="unfinished"></translation>
+        <translation>Mencoba mengurangi polygon Z-fighting dengan menguji piksel terhadap nilai kedalaman dari PGXP. Kompatibilitas rendah, tetapi dapat bekerja dengan baik di beberapa game. Game lain mungkin memerlukan penyesuaian ambang batas.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="308"/>
         <source>Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.</source>
-        <translation type="unfinished"></translation>
+        <translation>Beralih kembali ke rasio aspek tampilan 4:3 saat menampilkan konten 24-bit, biasanya FMV.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="310"/>
         <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs.</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>Menghaluskan blockyness antara transisi warna dalam konten 24-bit, biasanya FMV.</translatorcomment>
+        <translation></translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="313"/>
         <source>Forces the rendering and display of frames to progressive mode. &lt;br&gt;This removes the &quot;combing&quot; effect seen in 480i games by rendering them in 480p. Usually safe to enable.&lt;br&gt;&lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Memaksa perender dan tampilan frame ke mode progresif. &lt;br&gt;Ini menghilangkan efek &quot;combing&quot; yang terlihat pada game 480i dengan merendernya dalam 480p. Biasanya aman untuk diaktifkan.&lt;br&gt;&lt;b&gt;&lt;u&gt;Mungkin tidak kompatibel dengan semua game.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="319"/>
         <source>Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. &lt;br&gt;For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster. &lt;br&gt;For variable frame rate games, it may not affect the speed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menggunakan timing frame NTSC ketika konsol dalam mode PAL, memaksa game PAL berjalan pada 60hz. &lt;br&gt;Untuk sebagian besar game yang memiliki kecepatan terkait dengan framerate, ini akan menghasilkan game berjalan sekitar 17% lebih cepat. &lt;br&gt;Untuk game dengan frame rate variabel, mungkin tidak mempengaruhi kecepatan.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="327"/>
         <source>Exclusive Fullscreen Control</source>
-        <translation type="unfinished"></translation>
+        <translation>Kontrol Layar Penuh Eksklusif</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="327"/>
         <source>Automatic</source>
-        <translation type="unfinished">Otomatis</translation>
+        <translation>Otomatis</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="328"/>
         <source>Controls whether exclusive fullscreen can be utilized by Vulkan drivers.</source>
-        <translation type="unfinished"></translation>
+        <translation>Mengontrol apakah fullscreen eksklusif dapat digunakan oleh driver Vulkan.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="330"/>
         <source>Position</source>
-        <translation type="unfinished"></translation>
+        <translation>Posisi</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="332"/>
         <source>Determines the position on the screen when black borders must be added.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menentukan posisi pada layar ketika batas hitam harus ditambahkan.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="334"/>
         <source>Display FPS Limit</source>
-        <translation type="unfinished"></translation>
+        <translation>Batas Tampilan FPS</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="335"/>
         <source>Limits the number of frames that are &lt;strong&gt;displayed&lt;/strong&gt; every second. Discard frames are &lt;strong&gt;still rendered.&lt;/strong&gt; This option can increase frame rates when fast forwarding on some systems.</source>
-        <translation type="unfinished"></translation>
+        <translation>Membatasi jumlah frame yang  &lt;strong&gt;ditampilkan &lt;/strong&gt; setiap detik. Frame yang dibuang  &lt;strong&gt;tetap dirender &lt;/strong&gt;. Pengaturan ini dapat meningkatkan frame rate saat maju cepat pada beberapa sistem.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="338"/>
         <source>Uses a second thread for drawing graphics. Currently only available for the software renderer, but can provide a significant speed improvement, and is safe to use.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menggunakan thread kedua untuk menggambar grafis. Saat ini hanya tersedia untuk perender perangkat lunak, tetapi dapat memberikan peningkatan kecepatan yang signifikan, dan aman untuk digunakan.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="341"/>
         <source>Presents frames on a background thread when fast forwarding or vsync is disabled. This can measurably improve performance in the Vulkan renderer.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menampilkan frame pada thread latar belakang saat maju cepat atau vsync dinonaktifkan. Ini dapat meningkatkan kinerja dalam renderer Vulkan secara terukur.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="345"/>
         <source>Prefers stretching the display vertically instead of horizontally, when applying the display aspect ratio.</source>
-        <translation type="unfinished"></translation>
+        <translation>Lebih memilih meregangkan tampilan secara vertikal daripada horizontal, saat menerapkan rasio aspek tampilan.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="353"/>
         <source>Line Detection</source>
-        <translation type="unfinished"></translation>
+        <translation>Deteksi Garis</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="355"/>
         <source>Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization behavior, filling in gaps introduced by upscaling.</source>
-        <translation type="unfinished"></translation>
+        <translation>Mencoba mendeteksi garis satu piksel tinggi/lebar yang bergantung pada perilaku rasterisasi yang tidak ditingkatkan, mengisi celah yang diperkenalkan oleh peningkatan skala.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="358"/>
         <source>Multi-Sampling</source>
-        <translation type="unfinished"></translation>
+        <translation>Multi-Sampling</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="359"/>
         <source>Uses multi-sampled anti-aliasing when rendering 3D polygons. Can improve visuals with a lower performance requirement compared to upscaling, &lt;strong&gt;but often introduces rendering errors.&lt;/strong&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Menggunakan anti-aliasing multi-sampel saat merender poligon 3D. Dapat meningkatkan visual dengan persyaratan kinerja yang lebih rendah dibandingkan dengan peningkatan skala,  &lt;strong&gt;tetapi seringkali menimbulkan kesalahan rendering. &lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="363"/>
         <source>Applies modern dithering techniques to further smooth out gradients when true color is enabled. This debanding is performed during rendering (as opposed to a post-processing step), which allows it to be fast while preserving detail. Debanding increases the file size of screenshots due to the subtle dithering pattern present in screenshots.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menerapkan teknik dithering modern untuk lebih menghaluskan gradien saat warna sebenarnya diaktifkan. Debanding ini dilakukan selama rendering (sebagai lawan dari langkah pasca-pemrosesan), yang memungkinkannya menjadi cepat sambil tetap mempertahankan detail. Debanding meningkatkan ukuran file screenshot karena pola dithering halus yang ada dalam screenshot.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="369"/>
         <source>Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. Usually safe to enable.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menskala pola dithering ke skala resolusi GPU yang diemulasi. Ini membuat pola dithering jauh lebih jelas pada resolusi yang lebih tinggi. Biasanya aman untuk diaktifkan.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="373"/>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menjalankan perender perangkat lunak secara paralel untuk pembacaan VRAM. Pada beberapa sistem, ini dapat menghasilkan kinerja yang lebih besar saat menggunakan peningkatan grafis dengan perender perangkat keras.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="379"/>
         <source>Geometry Tolerance</source>
-        <translation type="unfinished"></translation>
+        <translation>Toleransi Geometri</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="379"/>
         <source>-1.00px (Disabled)</source>
-        <translation type="unfinished"></translation>
+        <translation>-1.00px (Dinonaktifkan)</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="380"/>
         <source>Discards precise geometry when it is found to be offset past the specified threshold. This can help with games that have vertices significantly moved by PGXP, but is still a hack/workaround.</source>
-        <translation type="unfinished"></translation>
+        <translation>Membuang geometri presisi ketika ditemukan offset melewati ambang batas yang ditentukan. Ini dapat membantu game yang memiliki simpul yang dipindahkan secara signifikan oleh PGXP, tetapi masih merupakan peretasan/solusi sementara.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="382"/>
         <source>Depth Clear Threshold</source>
-        <translation type="unfinished"></translation>
+        <translation>Ambang Batas Penghapusan Kedalaman</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="384"/>
         <source>Determines the increase in depth that will result in the depth buffer being cleared. Can help with depth issues in some games, but is still a hack/workaround.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menentukan peningkatan kedalaman yang akan menyebabkan buffer kedalaman dihapus. Dapat membantu masalah kedalaman di beberapa game, tetapi masih merupakan peretasan/solusi sementara.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="387"/>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures. Requires geometry correction enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menggunakan interpolasi koreksi perspektif untuk koordinat tekstur, meluruskan tekstur bengkok. Memerlukan koreksi geometri diaktifkan.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="391"/>
         <source>Uses perspective-correct interpolation for vertex colors, which can improve visuals in some games, but cause rendering errors in others. Requires geometry correction enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menggunakan interpolasi koreksi perspektif untuk warna vertex, yang dapat meningkatkan visual dalam beberapa game, tetapi menyebabkan kesalahan rendering pada game lain. Memerlukan koreksi geometri diaktifkan.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="394"/>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Meningkatkan presisi pemusnahan poligon, mengurangi jumlah lubang dalam geometri. Membutuhkan koreksi geometri diaktifkan.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="398"/>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menambahkan presisi tambahan pada data PGXP pasca-proyeksi. Dapat meningkatkan visual dalam beberapa game.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="400"/>
         <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menggunakan PGXP untuk semua instruksi, tidak hanya operasi memori. Diperlukan agar PGXP mengoreksi goyangan di beberapa game, tetapi memiliki biaya kinerja yang tinggi.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="404"/>
         <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Menggunakan posisi vertex ruang layar untuk mendapatkan posisi yang tepat, alih-alih melacak akses memori. Dapat memberikan kompatibilitas PGXP untuk beberapa game, &lt;strong&gt;tetapi umumnya tidak memberikan manfaat.&lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="411"/>
         <source>Changes the size at which on-screen elements, including status and messages are displayed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Mengubah ukuran elemen di layar, termasuk status dan pesan yang ditampilkan.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="424"/>
         <source>Shows the host&apos;s CPU usage based on threads in the top-right corner of the display. This does not display the emulated system CPU&apos;s usage. If a value close to 100% is being displayed, this means your host&apos;s CPU is likely the bottleneck. In this case, you should reduce enhancement-related settings such as overclocking.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menampilkan penggunaan CPU host berdasarkan thread di pojok kanan atas layar. Ini tidak menampilkan penggunaan CPU sistem yang diemulasi. Jika nilai mendekati 100% ditampilkan, ini berarti CPU host Anda kemungkinan menjadi hambatan. Dalam hal ini, Anda harus mengurangi pengaturan terkait peningkatan seperti overclocking.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="428"/>
         <source>Shows the host&apos;s GPU usage in the top-right corner of the display.</source>
-        <translation type="unfinished">Menunjukkan host dan &apos;s pemakaian GPU di ujung atas kanan display.</translation>
+        <translation>Menampilkan penggunaan GPU host di pojok kanan atas layar.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="430"/>
         <source>Shows information about the emulated GPU in the top-right corner of the display.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menampilkan informasi tentang GPU yang diemulasi di pojok kanan atas layar.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="433"/>
         <source>Shows information about input and audio latency in the top-right corner of the display.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menampilkan informasi tentang input dan latensi audio di pojok kanan atas layar.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="436"/>
         <source>Shows the history of frame rendering times as a graph in the top-right corner of the display.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menampilkan riwayat waktu rendering frame sebagai grafik di pojok kanan atas layar.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="441"/>
         <source>Shows a summary of current settings in the bottom-right corner of the display.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menampilkan ringkasan pengaturan saat ini di pojok kanan bawah layar.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="443"/>
         <source>Shows indicators on screen when the system is not running in its &quot;normal&quot; state. For example, fast forwarding, or being paused.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menampilkan indikator di layar saat sistem tidak berjalan dalam keadaan &quot;normal&quot;. Misalnya,saat  maju cepat, atau saat dijeda.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="452"/>
@@ -10117,105 +10118,105 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     <message>
         <location filename="../graphicssettingswidget.cpp" line="462"/>
         <source>Enables the replacement of background textures in supported games. &lt;strong&gt;This is not general texture replacement.&lt;/strong&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Mengaktifkan penggantian tekstur latar belakang dalam game yang didukung. &lt;strong&gt;Ini bukan penggantian tekstur umum.&lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="465"/>
         <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
-        <translation type="unfinished"></translation>
+        <translation>Memuat semua tekstur pengganti ke RAM, mengurangi stuttering saat runtime.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="467"/>
         <source>Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.</source>
-        <translation type="unfinished"></translation>
+        <translation>Mengaktifkan rutinitas decoding MDEC yang lebih lama dan kurang akurat. Mungkin diperlukan agar latar belakang pengganti lama cocok/memuat.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="470"/>
         <source>Clears the mask/transparency bit in VRAM write dumps.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menghapus bit mask/transparansi dalam pembuangan penulisan VRAM.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="472"/>
         <source>Writes backgrounds that can be replaced to the dump directory.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menulis latar belakang yang dapat diganti ke direktori dump.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="473"/>
         <location filename="../graphicssettingswidget.cpp" line="475"/>
         <source>Dump Size Threshold</source>
-        <translation type="unfinished"></translation>
+        <translation>Ambang Batas Ukuran Dump</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="473"/>
         <location filename="../graphicssettingswidget.cpp" line="475"/>
         <source>128px</source>
-        <translation type="unfinished">0px {128p?}</translation>
+        <translation>128px</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="474"/>
         <location filename="../graphicssettingswidget.cpp" line="476"/>
         <source>Determines the threshold that triggers a VRAM write to be dumped.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menentukan ambang batas yang memicu penulisan VRAM untuk dibuang.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="480"/>
         <source>Wireframe Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Mode Wireframe</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="481"/>
         <source>Draws a wireframe outline of the triangles rendered by the console&apos;s GPU, either as a replacement or an overlay.</source>
-        <translation type="unfinished"></translation>
+        <translation>Menggambar garis besar wireframe dari segitiga yang dirender oleh GPU konsol, baik sebagai pengganti atau overlay.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="486"/>
         <source>Enable debugging when supported by the host&apos;s renderer API. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktifkan debugging saat didukung oleh API perender host. &lt;strong&gt;Hanya untuk penggunaan pengembang.&lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="489"/>
         <source>Forces shaders to be compiled for every run of the program. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Memaksa shader untuk dikompilasi untuk setiap menjalankan program. &lt;strong&gt;Hanya untuk penggunaan pengembang.&lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="491"/>
         <source>Prevents dual-source blending from being used. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Mencegah pencampuran dua sumber digunakan. Berguna untuk menguji driver grafis yang rusak.&lt;strong&gt; Hanya untuk penggunaan pengembang.&lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="494"/>
         <source>Prevents the framebuffer fetch extensions from being used. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Mencegah ekstensi pengambilan framebuffer digunakan. Berguna untuk menguji driver grafis yang rusak. &lt;strong&gt;Hanya untuk penggunaan pengembang.&lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="498"/>
         <source>Forces VRAM updates through texture updates, instead of texture buffers and draws. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Memaksa pembaruan VRAM melalui pembaruan tekstur, alih-alih buffer tekstur dan penggambaran. Berguna untuk menguji driver grafis yang rusak. &lt;strong&gt;Hanya untuk penggunaan pengembang.&lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="500"/>
         <source>Disable Texture Copies To Self</source>
-        <translation type="unfinished"></translation>
+        <translation>Nonaktifkan Salinan Tekstur ke Diri Sendiri</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="501"/>
         <source>Disables the use of self-copy updates for the VRAM texture. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Menonaktifkan penggunaan pembaruan salin-sendiri untuk tekstur VRAM. Berguna untuk menguji driver grafis yang rusak. &lt;strong&gt; Hanya untuk penggunaan pengembang. &lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="568"/>
         <source>Use Global Setting</source>
-        <translation type="unfinished">Gunakan Pengaturan Global</translation>
+        <translation>Gunakan Pengaturan Global</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="571"/>
         <source>%1x MSAA</source>
-        <translation type="unfinished"></translation>
+        <translation>%1x MSAA</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="573"/>
         <source>%1x SSAA</source>
-        <translation type="unfinished"></translation>
+        <translation>%1x SSAA</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="849"/>
@@ -10225,12 +10226,12 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     <message>
         <location filename="../graphicssettingswidget.ui" line="68"/>
         <source>Rendering</source>
-        <translation>Render</translation>
+        <translation>Merender</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>Form</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="92"/>
@@ -10284,388 +10285,388 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     <message>
         <location filename="../graphicssettingswidget.ui" line="100"/>
         <source>Automatic (Based on Window Size)</source>
-        <translation type="unfinished"></translation>
+        <translation>Otomatis (Berdasarkan Ukuran Jendela)</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="105"/>
         <source>1x Native (Default)</source>
-        <translation type="unfinished"></translation>
+        <translation>1x Native (Bawaan)</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="110"/>
         <source>2x Native</source>
-        <translation type="unfinished">3.5x Native {2x?}</translation>
+        <translation>2x Native</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="115"/>
         <source>3x Native (for 720p)</source>
-        <translation type="unfinished"></translation>
+        <translation>3x Native (untuk 720p)</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="120"/>
         <source>4x Native</source>
-        <translation type="unfinished">3.5x Native {4x?}</translation>
+        <translation>4x Native</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="125"/>
         <source>5x Native (for 1080p)</source>
-        <translation type="unfinished"></translation>
+        <translation>5x Native (untuk 1080p)</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="130"/>
         <source>6x Native (for 1440p)</source>
-        <translation type="unfinished"></translation>
+        <translation>6x Native (untuk 1440p)</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="135"/>
         <source>7x Native</source>
-        <translation type="unfinished">3.5x Native {7x?}</translation>
+        <translation>7x Native</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="140"/>
         <source>8x Native</source>
-        <translation type="unfinished">3.5x Native {8x?}</translation>
+        <translation>8x Native</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="145"/>
         <source>9x Native (for 4K)</source>
-        <translation type="unfinished"></translation>
+        <translation>9x Native (untuk 4K)</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="150"/>
         <source>10x Native</source>
-        <translation type="unfinished">3.5x Native {10x?}</translation>
+        <translation>10x Native</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="155"/>
         <source>11x Native</source>
-        <translation type="unfinished">3.5x Native {11x?}</translation>
+        <translation>11x Native</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="160"/>
         <source>12x Native</source>
-        <translation type="unfinished">3.5x Native {12x?}</translation>
+        <translation>12x Native</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="165"/>
         <source>13x Native</source>
-        <translation type="unfinished">3.5x Native {13x?}</translation>
+        <translation>13x Native</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="170"/>
         <source>14x Native</source>
-        <translation type="unfinished">3.5x Native {14x?}</translation>
+        <translation>14x Native</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="175"/>
         <source>15x Native</source>
-        <translation type="unfinished">3.5x Native {15x?}</translation>
+        <translation>15x Native</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="180"/>
         <source>16x Native</source>
-        <translation type="unfinished">3.5x Native {16x?}</translation>
+        <translation>16x Native</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="188"/>
         <source>Down-Sampling:</source>
-        <translation type="unfinished"></translation>
+        <translation>Penurunan Sampling:</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="247"/>
         <source>:</source>
-        <translation type="unfinished"></translation>
+        <translation>:</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="286"/>
         <source>Scaling:</source>
-        <translation type="unfinished"></translation>
+        <translation>Penskalaan:</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="298"/>
         <source>PGXP Depth Buffer (Low Compatibility)</source>
-        <translation type="unfinished"></translation>
+        <translation>Kedalaman Buffer PGXP (Kompatibilitas Rendah)</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="305"/>
         <location filename="../graphicssettingswidget.cpp" line="312"/>
         <source>Disable Interlacing</source>
-        <translation type="unfinished"></translation>
+        <translation>Nonaktifkan Interlace</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="312"/>
         <location filename="../graphicssettingswidget.cpp" line="318"/>
         <source>Force NTSC Timings</source>
-        <translation type="unfinished"></translation>
+        <translation>Paksa Pengaturan Waktu NTSC</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="319"/>
         <location filename="../graphicssettingswidget.cpp" line="307"/>
         <source>Force 4:3 For FMVs</source>
-        <translation type="unfinished"></translation>
+        <translation>Paksa 4:3 Untuk FMV</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="326"/>
         <location filename="../graphicssettingswidget.cpp" line="288"/>
         <source>True Color Rendering</source>
-        <translation type="unfinished"></translation>
+        <translation>Perender True Color</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="333"/>
         <location filename="../graphicssettingswidget.cpp" line="309"/>
         <source>FMV Chroma Smoothing</source>
-        <translation type="unfinished"></translation>
+        <translation>Penghalusan Chroma FMV</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="340"/>
         <location filename="../graphicssettingswidget.cpp" line="295"/>
         <source>Widescreen Rendering</source>
-        <translation type="unfinished"></translation>
+        <translation>Prender Layar Lebar</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="347"/>
         <location filename="../graphicssettingswidget.cpp" line="299"/>
         <source>PGXP Geometry Correction</source>
-        <translation type="unfinished"></translation>
+        <translation>Koreksi Geometri PGXP</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="388"/>
         <source>Display Options</source>
-        <translation type="unfinished"></translation>
+        <translation>Pengaturan Tampilan</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="394"/>
         <source>Exclusive Fullscreen:</source>
-        <translation type="unfinished"></translation>
+        <translation>Layar Penuh Eksklusif:</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="411"/>
         <source>Screen Position:</source>
-        <translation type="unfinished"></translation>
+        <translation>Posisi Layar:</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="421"/>
         <source>Display FPS Limit:</source>
-        <translation type="unfinished"></translation>
+        <translation>Batas Tampilan FPS:</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="440"/>
         <location filename="../graphicssettingswidget.cpp" line="344"/>
         <source>Stretch Vertically</source>
-        <translation type="unfinished"></translation>
+        <translation>Regangkan Secara Vertikal</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="447"/>
         <location filename="../graphicssettingswidget.cpp" line="340"/>
         <source>Threaded Presentation</source>
-        <translation type="unfinished"></translation>
+        <translation>Presentasi Threaded</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="454"/>
         <location filename="../graphicssettingswidget.cpp" line="337"/>
         <source>Threaded Rendering</source>
-        <translation type="unfinished"></translation>
+        <translation>Perender Threaded</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="466"/>
         <location filename="../graphicssettingswidget.ui" line="1037"/>
         <source>Rendering Options</source>
-        <translation type="unfinished"></translation>
+        <translation>Pengaturan Render</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="472"/>
         <source>Line Detection:</source>
-        <translation type="unfinished"></translation>
+        <translation>Deteksi Garis:</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="484"/>
         <location filename="../graphicssettingswidget.cpp" line="362"/>
         <source>True Color Debanding</source>
-        <translation type="unfinished"></translation>
+        <translation>True Color Debanding</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="491"/>
         <location filename="../graphicssettingswidget.cpp" line="368"/>
         <source>Scaled Dithering</source>
-        <translation type="unfinished"></translation>
+        <translation>Dithering Berskala</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="498"/>
         <location filename="../graphicssettingswidget.cpp" line="372"/>
         <source>Software Renderer Readbacks</source>
-        <translation type="unfinished"></translation>
+        <translation>Pembacaan Ulang Perender Perangkat Lunak</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="507"/>
         <source>Multi-Sampling:</source>
-        <translation type="unfinished"></translation>
+        <translation>Multi-Sampling:</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="534"/>
         <source>PGXP</source>
-        <translation type="unfinished"></translation>
+        <translation>PGXP</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="558"/>
         <source>Geometry Tolerance:</source>
-        <translation type="unfinished"></translation>
+        <translation>Toleransi Geometri:</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="587"/>
         <source>Depth Clear Threshold:</source>
-        <translation type="unfinished"></translation>
+        <translation>Ambang Batas Penghapusan Kedalaman:</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="603"/>
         <location filename="../graphicssettingswidget.cpp" line="386"/>
         <source>Perspective Correct Textures</source>
-        <translation type="unfinished"></translation>
+        <translation>Tekstur Perspektif yang Benar</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="610"/>
         <location filename="../graphicssettingswidget.cpp" line="390"/>
         <source>Perspective Correct Colors</source>
-        <translation type="unfinished"></translation>
+        <translation>Warna Perspektif yang Benar</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="617"/>
         <location filename="../graphicssettingswidget.cpp" line="393"/>
         <source>Culling Correction</source>
-        <translation type="unfinished"></translation>
+        <translation>Koreksi Culling</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="624"/>
         <location filename="../graphicssettingswidget.cpp" line="397"/>
         <source>Preserve Projection Precision</source>
-        <translation type="unfinished"></translation>
+        <translation>Pertahankan Presisi Proyeksi</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="631"/>
         <location filename="../graphicssettingswidget.cpp" line="399"/>
         <source>CPU Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Mode CPU</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="638"/>
         <location filename="../graphicssettingswidget.cpp" line="403"/>
         <source>Vertex Cache</source>
-        <translation type="unfinished"></translation>
+        <translation>Cache Vertex</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="731"/>
         <location filename="../graphicssettingswidget.cpp" line="429"/>
         <source>Show GPU Statistics</source>
-        <translation type="unfinished"></translation>
+        <translation>Tampilkan Statistik GPU</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="738"/>
         <location filename="../graphicssettingswidget.cpp" line="418"/>
         <source>Show Emulation Speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Tampilkan Kecepatan Emulasi</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="759"/>
         <location filename="../graphicssettingswidget.cpp" line="442"/>
         <source>Show Status Indicators</source>
-        <translation type="unfinished">Tampilkan Indikator Status</translation>
+        <translation>Tampilkan Indikator Status</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="766"/>
         <location filename="../graphicssettingswidget.cpp" line="438"/>
         <source>Show Controller Input</source>
-        <translation type="unfinished"></translation>
+        <translation>Tampilkan Input Pengontrol</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="787"/>
         <location filename="../graphicssettingswidget.cpp" line="432"/>
         <source>Show Latency Statistics</source>
-        <translation type="unfinished"></translation>
+        <translation>Tampilkan Statistik Latensi</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="813"/>
         <source>Capture</source>
-        <translation type="unfinished"></translation>
+        <translation>Jepret</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="828"/>
         <source>Screenshots</source>
-        <translation type="unfinished"></translation>
+        <translation>Tangkapan Layar</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="888"/>
         <source>Texture Replacements</source>
-        <translation type="unfinished"></translation>
+        <translation>Penggantian Tekstur</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="903"/>
         <source>General Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Pengaturan Umum</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="911"/>
         <location filename="../graphicssettingswidget.cpp" line="461"/>
         <source>Enable VRAM Write Replacement</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktifkan Penggantian Penulisan VRAM</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="918"/>
         <location filename="../graphicssettingswidget.cpp" line="464"/>
         <source>Preload Texture Replacements</source>
-        <translation type="unfinished"></translation>
+        <translation>Pramuat Tekstur Pengganti</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="925"/>
         <location filename="../graphicssettingswidget.cpp" line="466"/>
         <source>Use Old MDEC Routines</source>
-        <translation type="unfinished"></translation>
+        <translation>Gunakan Rutinitas MDEC Lama</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="937"/>
         <source>VRAM Write Dumping</source>
-        <translation type="unfinished"></translation>
+        <translation>Pembuangan Penulisan VRAM</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="945"/>
         <location filename="../graphicssettingswidget.cpp" line="471"/>
         <source>Enable VRAM Write Dumping</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktifkan Pembuangan Penulisan VRAM</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="952"/>
         <location filename="../graphicssettingswidget.cpp" line="469"/>
         <source>Set Alpha Channel</source>
-        <translation type="unfinished"></translation>
+        <translation>Atur Saluran Alfa</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="961"/>
         <source>Dump Size Threshold:</source>
-        <translation type="unfinished"></translation>
+        <translation>Ambang Batas Ukuran Dump:</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1022"/>
         <source>Debugging</source>
-        <translation type="unfinished"></translation>
+        <translation>Debugging</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1043"/>
         <source>Wireframe Mode:</source>
-        <translation type="unfinished"></translation>
+        <translation>Mode Wireframe:</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1056"/>
         <source>Device Options</source>
-        <translation type="unfinished"></translation>
+        <translation>Pengaturan Perangkat</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1071"/>
         <source>Disable Texture Copy To Self</source>
-        <translation type="unfinished"></translation>
+        <translation>Nonaktifkan Salinan Tekstur ke Diri Sendiri</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1078"/>
         <location filename="../graphicssettingswidget.cpp" line="490"/>
         <source>Disable Dual-Source Blending</source>
-        <translation type="unfinished"></translation>
+        <translation>Nonaktifkan Dual-Source Blending</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1092"/>
@@ -10677,7 +10678,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
         <location filename="../graphicssettingswidget.ui" line="1099"/>
         <location filename="../graphicssettingswidget.cpp" line="497"/>
         <source>Disable Texture Buffers</source>
-        <translation type="unfinished"></translation>
+        <translation>Nonaktifkan Buffer Tekstur</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="724"/>
@@ -12268,7 +12269,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     <message>
         <location filename="../mainwindow.ui" line="767"/>
         <source>&amp;Memory Cards</source>
-        <translation>&amp;Memory Card</translation>
+        <translation>Kartu &amp;Memori</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="789"/>
@@ -15354,7 +15355,7 @@ Apakah Anda ingin membuat direktori ini?</translation>
     <message>
         <location filename="../settingswindow.cpp" line="118"/>
         <source>&lt;strong&gt;Graphics Settings&lt;/strong&gt;&lt;hr&gt;These options control how the graphics of the emulated console are rendered. Not all options are available for the software renderer. Mouse over each option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;Pengaturan Grafis&lt;/strong&gt;&lt;hr&gt;Pengaturan ini mengontrol bagaimana grafis konsol yang diemulasi ditampilkan. Tidak semua pengaturan tersedia untuk perender perangkat lunak. Arahkan mouse ke setiap pengaturan untuk informasi tambahan, dan Shift+Roda Mouse untuk scroll panel ini.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="122"/>
