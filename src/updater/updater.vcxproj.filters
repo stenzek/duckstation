@@ -4,6 +4,7 @@
     <ClCompile Include="updater.cpp" />
     <ClCompile Include="win32_main.cpp" />
     <ClCompile Include="win32_progress_callback.cpp" />
+    <ClCompile Include="..\duckstation-qt\vcruntimecheck.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="updater.manifest" />
