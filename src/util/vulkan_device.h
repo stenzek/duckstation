@@ -305,6 +305,9 @@ private:
   /// Returns true if running on an NVIDIA GPU.
   bool IsDeviceNVIDIA() const;
 
+  /// Returns true if running on an AMD GPU.
+  bool IsDeviceAMD() const;
+
   // Vendor queries.
   bool IsDeviceAdreno() const;
   bool IsDeviceMali() const;

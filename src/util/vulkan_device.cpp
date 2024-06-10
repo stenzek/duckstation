@@ -417,6 +417,31 @@ bool VulkanDevice::SelectDeviceExtensions(ExtensionList* extension_list, bool en
            m_optional_extensions.vk_ext_full_screen_exclusive ? "supported" : "NOT supported");
 #endif
 
+  if (IsBrokenMobileDriver())
+  {
+    // Push descriptor is broken on Adreno v502.. don't want to think about dynamic rendending.
+    if (m_optional_extensions.vk_khr_dynamic_rendering)
+    {
+      m_optional_extensions.vk_khr_dynamic_rendering = false;
+      m_optional_extensions.vk_khr_dynamic_rendering_local_read = false;
+      WARNING_LOG("Disabling VK_KHR_dynamic_rendering on broken mobile driver.");
+    }
+    if (m_optional_extensions.vk_khr_push_descriptor)
+    {
+      m_optional_extensions.vk_khr_push_descriptor = false;
+      WARNING_LOG("Disabling VK_KHR_push_descriptor on broken mobile driver.");
+    }
+  }
+  else if (IsDeviceAMD())
+  {
+    // VK_KHR_dynamic_rendering_local_read appears to be broken on RDNA3, like everything else...
+    // Just causes GPU resets when you actually use a feedback loop. Assume Mesa is fine.
+#if defined(_WIN32) || defined(__ANDROID__)
+    m_optional_extensions.vk_khr_dynamic_rendering_local_read = false;
+    WARNING_LOG("Disabling VK_KHR_dynamic_rendering_local_read on broken AMD driver.");
+#endif
+  }
+
   return true;
 }
 
@@ -674,22 +699,6 @@ void VulkanDevice::ProcessDeviceExtensions()
   // vk_ext_external_memory_host is only used if the import alignment is the same as the system's page size
   m_optional_extensions.vk_ext_external_memory_host &=
     (external_memory_host_properties.minImportedHostPointerAlignment == HOST_PAGE_SIZE);
-
-  if (IsBrokenMobileDriver())
-  {
-    // Push descriptor is broken on Adreno v502.. don't want to think about dynamic rendending.
-    if (m_optional_extensions.vk_khr_dynamic_rendering)
-    {
-      m_optional_extensions.vk_khr_dynamic_rendering = false;
-      m_optional_extensions.vk_khr_dynamic_rendering_local_read = false;
-      WARNING_LOG("Disabling VK_KHR_dynamic_rendering on broken mobile driver.");
-    }
-    if (m_optional_extensions.vk_khr_push_descriptor)
-    {
-      m_optional_extensions.vk_khr_push_descriptor = false;
-      WARNING_LOG("Disabling VK_KHR_push_descriptor on broken mobile driver.");
-    }
-  }
 
   INFO_LOG("VK_EXT_memory_budget is {}", m_optional_extensions.vk_ext_memory_budget ? "supported" : "NOT supported");
   INFO_LOG("VK_EXT_rasterization_order_attachment_access is {}",
@@ -1646,6 +1655,11 @@ void VulkanDevice::DisableDebugUtils()
 bool VulkanDevice::IsDeviceNVIDIA() const
 {
   return (m_device_properties.vendorID == 0x10DE);
+}
+
+bool VulkanDevice::IsDeviceAMD() const
+{
+  return (m_device_properties.vendorID == 0x1002);
 }
 
 bool VulkanDevice::IsDeviceAdreno() const
