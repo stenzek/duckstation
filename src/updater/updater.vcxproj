@@ -22,6 +22,9 @@
       <Project>{ee054e08-3799-4a59-a422-18259c105ffd}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="updater.rc" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{32EEAF44-57F8-4C6C-A6F0-DE5667123DD5}</ProjectGuid>
   </PropertyGroup>

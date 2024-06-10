@@ -7,6 +7,7 @@ target_link_libraries(updater PRIVATE common minizip ZLIB::ZLIB)
 
 if(WIN32)
   target_sources(updater PRIVATE
+    updater.rc
     win32_main.cpp
     win32_progress_callback.cpp
     win32_progress_callback.h

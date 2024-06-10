@@ -51,8 +51,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION 1,0,0,0
+ PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -68,13 +68,13 @@ BEGIN
         BLOCK "0c0904b0"
         BEGIN
             VALUE "CompanyName", "https://github.com/stenzek/duckstation"
-            VALUE "FileDescription", "DuckStation PS1 Emulator"
-            VALUE "FileVersion", "1.0.0.1"
-            VALUE "InternalName", "duckstation-qt.exe"
+            VALUE "FileDescription", "DuckStation Update Installer"
+            VALUE "FileVersion", "1.0.0.0"
+            VALUE "InternalName", "updater.exe"
             VALUE "LegalCopyright", "Copyright (C) 2020-2024 Stenzek and collaborators"
-            VALUE "OriginalFilename", "duckstation-qt.exe"
+            VALUE "OriginalFilename", "updater.exe"
             VALUE "ProductName", "DuckStation"
-            VALUE "ProductVersion", "1.0.0.1"
+            VALUE "ProductVersion", "1.0.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -91,7 +91,7 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ICON1               ICON                    "duckstation-qt.ico"
+IDI_ICON1               ICON                    "..\\duckstation-qt\\duckstation-qt.ico"
 
 #endif    // English (Australia) resources
 /////////////////////////////////////////////////////////////////////////////
