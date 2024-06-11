@@ -66,6 +66,16 @@ private:
     NativeWidthF,
     NativeHeightF,
     UpscaleMultiplier,
+    ViewportX,
+    ViewportY,
+    ViewportWidth,
+    ViewportHeight,
+    ViewportSize,
+    InternalPixelSize,
+    InternalNormPixelSize,
+    NativePixelSize,
+    NativeNormPixelSize,
+    BufferToViewportRatio,
 
     MaxCount
   };

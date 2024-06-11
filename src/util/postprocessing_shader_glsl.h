@@ -32,12 +32,16 @@ private:
   {
     float src_rect[4];
     float src_size[2];
-    float resolution[2];
-    float rcp_resolution[2];
-    float window_resolution[2];
-    float rcp_window_resolution[2];
-    float original_size[2];
+    float window_size[2];
+    float rcp_window_size[2];
+    float viewport_size[2];
+    float window_to_viewport_ratio[2];
+    float internal_size[2];
+    float internal_pixel_size[2];
+    float norm_internal_pixel_size[2];
     float native_size[2];
+    float native_pixel_size[2];
+    float norm_native_pixel_size[2];
     float upscale_multiplier;
     float time;
   };
@@ -45,10 +49,9 @@ private:
   void LoadOptions();
 
   u32 GetUniformsSize() const;
-  void FillUniformBuffer(void* buffer, u32 texture_width, s32 texture_height, s32 texture_view_x, s32 texture_view_y,
-                         s32 texture_view_width, s32 texture_view_height, u32 window_width, u32 window_height,
-                         s32 original_width, s32 original_height, s32 native_width, s32 native_height,
-                         float time) const;
+  void FillUniformBuffer(void* buffer, s32 viewport_x, s32 viewport_y, s32 viewport_width, s32 viewport_height,
+                         u32 window_width, u32 window_height, s32 original_width, s32 original_height, s32 native_width,
+                         s32 native_height, float time) const;
 
   std::string m_code;
 

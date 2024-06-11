@@ -754,6 +754,7 @@ bool PostProcessing::ReShadeFXShader::CreateOptions(const reshadefx::module& mod
 bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_info& ui, SourceOptionType* si,
                                                       Error* error)
 {
+  // TODO: Rewrite these to a lookup table instead, this if chain is terrible.
   const std::string_view source = GetStringAnnotationValue(ui.annotations, "source", {});
   if (!source.empty())
   {
@@ -879,12 +880,132 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
     {
       if (!ui.type.is_floating_point() || ui.type.components() != 1)
       {
-        Error::SetString(error, fmt::format("Unexpected type '{}' for upscale_multiplier source in uniform '{}'",
-                                            ui.type.description(), ui.name));
+        Error::SetString(error, fmt::format("Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(),
+                                            source, ui.name));
         return false;
       }
 
       *si = SourceOptionType::UpscaleMultiplier;
+      return true;
+    }
+    else if (source == "viewportx")
+    {
+      if (!ui.type.is_floating_point() || ui.type.components() != 1)
+      {
+        Error::SetString(error, fmt::format("Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(),
+                                            source, ui.name));
+        return false;
+      }
+
+      *si = SourceOptionType::ViewportX;
+      return true;
+    }
+    else if (source == "viewporty")
+    {
+      if (!ui.type.is_floating_point() || ui.type.components() != 1)
+      {
+        Error::SetString(error, fmt::format("Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(),
+                                            source, ui.name));
+        return false;
+      }
+
+      *si = SourceOptionType::ViewportY;
+      return true;
+    }
+    else if (source == "viewportwidth")
+    {
+      if (!ui.type.is_floating_point() || ui.type.components() != 1)
+      {
+        Error::SetString(error, fmt::format("Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(),
+                                            source, ui.name));
+        return false;
+      }
+
+      *si = SourceOptionType::ViewportWidth;
+      return true;
+    }
+    else if (source == "viewportheight")
+    {
+      if (!ui.type.is_floating_point() || ui.type.components() != 1)
+      {
+        Error::SetString(error, fmt::format("Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(),
+                                            source, ui.name));
+        return false;
+      }
+
+      *si = SourceOptionType::ViewportHeight;
+      return true;
+    }
+    else if (source == "viewportsize")
+    {
+      if (!ui.type.is_floating_point() || ui.type.components() != 2)
+      {
+        Error::SetString(error, fmt::format("Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(),
+                                            source, ui.name));
+        return false;
+      }
+
+      *si = SourceOptionType::ViewportSize;
+      return true;
+    }
+    else if (source == "internal_pixel_size")
+    {
+      if (!ui.type.is_floating_point() || ui.type.components() != 2)
+      {
+        Error::SetString(error, fmt::format("Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(),
+                                            source, ui.name));
+        return false;
+      }
+
+      *si = SourceOptionType::InternalPixelSize;
+      return true;
+    }
+    else if (source == "normalized_internal_pixel_size")
+    {
+      if (!ui.type.is_floating_point() || ui.type.components() != 2)
+      {
+        Error::SetString(error, fmt::format("Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(),
+                                            source, ui.name));
+        return false;
+      }
+
+      *si = SourceOptionType::InternalNormPixelSize;
+      return true;
+    }
+    else if (source == "native_pixel_size")
+    {
+      if (!ui.type.is_floating_point() || ui.type.components() != 2)
+      {
+        Error::SetString(error, fmt::format("Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(),
+                                            source, ui.name));
+        return false;
+      }
+
+      *si = SourceOptionType::NativePixelSize;
+      return true;
+    }
+    else if (source == "normalized_native_pixel_size")
+    {
+      if (!ui.type.is_floating_point() || ui.type.components() != 2)
+      {
+        Error::SetString(error, fmt::format("Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(),
+                                            source, ui.name));
+        return false;
+      }
+
+      *si = SourceOptionType::NativeNormPixelSize;
+      return true;
+    }
+    else if (source == "buffer_to_viewport_ratio")
+    {
+      if (!ui.type.is_floating_point() || ui.type.components() != 2)
+      {
+        Error::SetString(error, fmt::format("Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(),
+                                            source, ui.name));
+        return false;
+      }
+
+      *si = SourceOptionType::BufferToViewportRatio;
       return true;
     }
     else
@@ -1513,6 +1634,83 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUTexture* final
         {
           const float value = static_cast<float>(orig_width) / static_cast<float>(native_width);
           std::memcpy(dst, &value, sizeof(value));
+        }
+        break;
+
+        case SourceOptionType::ViewportX:
+        {
+          const float value = static_cast<float>(final_left);
+          std::memcpy(dst, &value, sizeof(value));
+        }
+        break;
+
+        case SourceOptionType::ViewportY:
+        {
+          const float value = static_cast<float>(final_top);
+          std::memcpy(dst, &value, sizeof(value));
+        }
+        break;
+
+        case SourceOptionType::ViewportWidth:
+        {
+          const float value = static_cast<float>(final_width);
+          std::memcpy(dst, &value, sizeof(value));
+        }
+        break;
+
+        case SourceOptionType::ViewportHeight:
+        {
+          const float value = static_cast<float>(final_height);
+          std::memcpy(dst, &value, sizeof(value));
+        }
+        break;
+
+        case SourceOptionType::ViewportSize:
+        {
+          const float value[2] = {static_cast<float>(final_width), static_cast<float>(final_height)};
+          std::memcpy(dst, &value, sizeof(value));
+        }
+        break;
+
+        case SourceOptionType::InternalPixelSize:
+        {
+          const float value[2] = {static_cast<float>(final_width) / static_cast<float>(orig_width),
+                                  static_cast<float>(final_height) / static_cast<float>(orig_height)};
+          std::memcpy(dst, value, sizeof(value));
+        }
+        break;
+
+        case SourceOptionType::InternalNormPixelSize:
+        {
+          const float value[2] = {
+            (static_cast<float>(final_width) / static_cast<float>(orig_width)) / static_cast<float>(target_height),
+            (static_cast<float>(final_height) / static_cast<float>(orig_height)) / static_cast<float>(target_height)};
+          std::memcpy(dst, value, sizeof(value));
+        }
+        break;
+
+        case SourceOptionType::NativePixelSize:
+        {
+          const float value[2] = {static_cast<float>(final_width) / static_cast<float>(native_width),
+                                  static_cast<float>(final_height) / static_cast<float>(native_height)};
+          std::memcpy(dst, value, sizeof(value));
+        }
+        break;
+
+        case SourceOptionType::NativeNormPixelSize:
+        {
+          const float value[2] = {
+            (static_cast<float>(final_width) / static_cast<float>(native_width)) / static_cast<float>(target_height),
+            (static_cast<float>(final_height) / static_cast<float>(native_height)) / static_cast<float>(target_height)};
+          std::memcpy(dst, value, sizeof(value));
+        }
+        break;
+
+        case SourceOptionType::BufferToViewportRatio:
+        {
+          const float value[2] = {static_cast<float>(target_width) / static_cast<float>(final_width),
+                                  static_cast<float>(target_height) / static_cast<float>(final_height)};
+          std::memcpy(dst, value, sizeof(value));
         }
         break;
 
