@@ -71,7 +71,8 @@ u32 PostProcessing::GLSLShader::GetUniformsSize() const
 void PostProcessing::GLSLShader::FillUniformBuffer(void* buffer, u32 texture_width, s32 texture_height,
                                                    s32 texture_view_x, s32 texture_view_y, s32 texture_view_width,
                                                    s32 texture_view_height, u32 window_width, u32 window_height,
-                                                   s32 original_width, s32 original_height, float time) const
+                                                   s32 original_width, s32 original_height, s32 native_width,
+                                                   s32 native_height, float time) const
 {
   CommonUniforms* common = static_cast<CommonUniforms*>(buffer);
 
@@ -91,17 +92,11 @@ void PostProcessing::GLSLShader::FillUniformBuffer(void* buffer, u32 texture_wid
   common->window_resolution[1] = static_cast<float>(window_height);
   common->rcp_window_resolution[0] = 1.0f / static_cast<float>(window_width);
   common->rcp_window_resolution[1] = 1.0f / static_cast<float>(window_height);
-
-  // pad the "original size" relative to the positioning on the screen
-  const float view_scale_x = static_cast<float>(original_width) / static_cast<float>(texture_view_width);
-  const float view_scale_y = static_cast<float>(original_height) / static_cast<float>(texture_view_height);
-  const s32 view_pad_x = texture_view_x + (texture_width - texture_view_width - texture_view_x);
-  const s32 view_pad_y = texture_view_y + (texture_height - texture_view_height - texture_view_y);
   common->original_size[0] = static_cast<float>(original_width);
   common->original_size[1] = static_cast<float>(original_height);
-  common->padded_original_size[0] = common->original_size[0] + static_cast<float>(view_pad_x) * view_scale_x;
-  common->padded_original_size[1] = common->original_size[1] + static_cast<float>(view_pad_y) * view_scale_y;
-
+  common->native_size[0] = static_cast<float>(native_width);
+  common->native_size[1] = static_cast<float>(native_height);
+  common->upscale_multiplier = static_cast<float>(original_width) / static_cast<float>(native_width);
   common->time = time;
 
   u8* option_values = reinterpret_cast<u8*>(common + 1);
@@ -160,7 +155,7 @@ bool PostProcessing::GLSLShader::CompilePipeline(GPUTexture::Format format, u32 
 
 bool PostProcessing::GLSLShader::Apply(GPUTexture* input, GPUTexture* final_target, s32 final_left, s32 final_top,
                                        s32 final_width, s32 final_height, s32 orig_width, s32 orig_height,
-                                       u32 target_width, u32 target_height)
+                                       s32 native_width, s32 native_height, u32 target_width, u32 target_height)
 {
   GL_SCOPE_FMT("GLSL Shader {}", m_name);
 
@@ -183,7 +178,7 @@ bool PostProcessing::GLSLShader::Apply(GPUTexture* input, GPUTexture* final_targ
   const u32 uniforms_size = GetUniformsSize();
   void* uniforms = g_gpu_device->MapUniformBuffer(uniforms_size);
   FillUniformBuffer(uniforms, input->GetWidth(), input->GetHeight(), final_left, final_top, final_width, final_height,
-                    target_width, target_height, orig_width, orig_height,
+                    target_width, target_height, orig_width, orig_height, native_width, native_height,
                     static_cast<float>(PostProcessing::GetTimer().GetTimeSeconds()));
   g_gpu_device->UnmapUniformBuffer(uniforms_size);
   g_gpu_device->Draw(3, 0);
@@ -407,42 +402,20 @@ static float4 o_col0;
 float4 Sample() { return texture(samp0, v_tex0); }
 float4 SampleLocation(float2 location) { return texture(samp0, location); }
 #define SampleOffset(offset) textureOffset(samp0, v_tex0, offset)
-float2 GetFragCoord()
-{
-  return gl_FragCoord.xy;
-}
-float2 GetWindowResolution()
-{
-  return window_resolution;
-}
-float2 GetResolution()
-{
-  return resolution;
-}
-float2 GetInvResolution()
-{
-  return rcp_resolution;
-}
-float2 GetCoordinates()
-{
-  return v_tex0;
-}
-float2 GetOriginalSize()
-{
-  return original_size;
-}
-float2 GetPaddedOriginalSize()
-{
-  return padded_original_size;
-}
-float GetTime()
-{
-  return time;
-}
-void SetOutput(float4 color)
-{
-  o_col0 = color;
-}
+float2 GetFragCoord() { return gl_FragCoord.xy; }
+float2 GetWindowResolution() { return window_resolution; }
+float2 GetResolution() { return resolution; }
+float2 GetInvResolution() { return rcp_resolution; }
+float2 GetCoordinates() { return v_tex0; }
+float2 GetOriginalSize() { return original_size; }
+float2 GetNativeSize() { return native_size; }
+float GetUpscaleMultiplier() { return upscale_multiplier; }
+float GetTime() { return time; }
+void SetOutput(float4 color) { o_col0 = color; }
+
+// Deprecated, only present for backwards compatibility.
+float2 GetPaddedOriginalSize() { return original_size; }
+
 #define GetOption(x) (x)
 #define OptionEnabled(x) ((x) != 0)
 )";
@@ -480,9 +453,9 @@ void PostProcessingGLSLShaderGen::WriteUniformBuffer(std::stringstream& ss, cons
   ss << "  float2 window_resolution;\n";
   ss << "  float2 rcp_window_resolution;\n";
   ss << "  float2 original_size;\n";
-  ss << "  float2 padded_original_size;\n";
+  ss << "  float2 native_size;\n";
   ss << "  float time;\n";
-  ss << "  float ubo_pad" << (pad_counter++) << ";\n";
+  ss << "  float upscale_multiplier;\n";
   ss << "\n";
 
   static constexpr std::array<const char*, PostProcessing::ShaderOption::MAX_VECTOR_COMPONENTS + 1> vector_size_suffix =

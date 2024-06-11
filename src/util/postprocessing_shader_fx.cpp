@@ -1,4 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "postprocessing_shader_fx.h"
@@ -863,6 +864,29 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
                                                          SourceOptionType::InternalHeight;
       return true;
     }
+    else if (source == "nativewidth")
+    {
+      *si = (ui.type.base == reshadefx::type::t_float) ? SourceOptionType::NativeWidthF : SourceOptionType::NativeWidth;
+      return true;
+    }
+    else if (source == "nativeheight")
+    {
+      *si =
+        (ui.type.base == reshadefx::type::t_float) ? SourceOptionType::NativeHeightF : SourceOptionType::NativeHeight;
+      return true;
+    }
+    else if (source == "upscale_multiplier")
+    {
+      if (!ui.type.is_floating_point() || ui.type.components() != 1)
+      {
+        Error::SetString(error, fmt::format("Unexpected type '{}' for upscale_multiplier source in uniform '{}'",
+                                            ui.type.description(), ui.name));
+        return false;
+      }
+
+      *si = SourceOptionType::UpscaleMultiplier;
+      return true;
+    }
     else
     {
       Error::SetString(error, fmt::format("Unknown source '{}' in uniform '{}'", source, ui.name));
@@ -1318,7 +1342,7 @@ bool PostProcessing::ReShadeFXShader::ResizeOutput(GPUTexture::Format format, u3
 
 bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUTexture* final_target, s32 final_left, s32 final_top,
                                             s32 final_width, s32 final_height, s32 orig_width, s32 orig_height,
-                                            u32 target_width, u32 target_height)
+                                            s32 native_width, s32 native_height, u32 target_width, u32 target_height)
 {
   GL_PUSH_FMT("PostProcessingShaderFX {}", m_name);
 
@@ -1452,8 +1476,8 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUTexture* final
         case SourceOptionType::InternalWidth:
         case SourceOptionType::InternalHeight:
         {
-          const s32 value =
-            (so.source == SourceOptionType::BufferWidth) ? static_cast<s32>(orig_width) : static_cast<s32>(orig_height);
+          const s32 value = (so.source == SourceOptionType::InternalWidth) ? static_cast<s32>(orig_width) :
+                                                                             static_cast<s32>(orig_height);
           std::memcpy(dst, &value, sizeof(value));
         }
         break;
@@ -1461,8 +1485,33 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUTexture* final
         case SourceOptionType::InternalWidthF:
         case SourceOptionType::InternalHeightF:
         {
-          const float value = (so.source == SourceOptionType::BufferWidthF) ? static_cast<float>(orig_width) :
-                                                                              static_cast<float>(orig_height);
+          const float value = (so.source == SourceOptionType::InternalWidthF) ? static_cast<float>(orig_width) :
+                                                                                static_cast<float>(orig_height);
+          std::memcpy(dst, &value, sizeof(value));
+        }
+        break;
+
+        case SourceOptionType::NativeWidth:
+        case SourceOptionType::NativeHeight:
+        {
+          const s32 value = (so.source == SourceOptionType::NativeWidth) ? static_cast<s32>(native_width) :
+                                                                           static_cast<s32>(native_height);
+          std::memcpy(dst, &value, sizeof(value));
+        }
+        break;
+
+        case SourceOptionType::NativeWidthF:
+        case SourceOptionType::NativeHeightF:
+        {
+          const float value = (so.source == SourceOptionType::NativeWidthF) ? static_cast<float>(native_width) :
+                                                                              static_cast<float>(native_height);
+          std::memcpy(dst, &value, sizeof(value));
+        }
+        break;
+
+        case SourceOptionType::UpscaleMultiplier:
+        {
+          const float value = static_cast<float>(orig_width) / static_cast<float>(native_width);
           std::memcpy(dst, &value, sizeof(value));
         }
         break;

@@ -2066,9 +2066,17 @@ bool GPU::RenderDisplay(GPUTexture* target, const Common::Rectangle<s32>& draw_r
 
   if (really_postfx)
   {
+    // "original size" in postfx includes padding.
+    const float upscale_x =
+      static_cast<float>(m_display_texture_view_width) / static_cast<float>(m_display_active_width);
+    const float upscale_y =
+      static_cast<float>(m_display_texture_view_height) / static_cast<float>(m_display_active_height);
+    const s32 orig_width = static_cast<s32>(std::ceil(m_display_width * upscale_x));
+    const s32 orig_height = static_cast<s32>(std::ceil(m_display_height * upscale_y));
+
     return PostProcessing::Apply(target, real_draw_rect.left, real_draw_rect.top, real_draw_rect.GetWidth(),
-                                 real_draw_rect.GetHeight(), m_display_texture_view_width,
-                                 m_display_texture_view_height);
+                                 real_draw_rect.GetHeight(), orig_width, orig_height, m_display_width,
+                                 m_display_height);
   }
   else
   {

@@ -728,7 +728,7 @@ void PostProcessing::DestroyTextures()
 }
 
 bool PostProcessing::Apply(GPUTexture* final_target, s32 final_left, s32 final_top, s32 final_width, s32 final_height,
-                           s32 orig_width, s32 orig_height)
+                           s32 orig_width, s32 orig_height, s32 native_width, s32 native_height)
 {
   GL_SCOPE("PostProcessing Apply");
 
@@ -741,7 +741,7 @@ bool PostProcessing::Apply(GPUTexture* final_target, s32 final_left, s32 final_t
     const bool is_final = (stage.get() == s_stages.back().get());
 
     if (!stage->Apply(input, is_final ? final_target : output, final_left, final_top, final_width, final_height,
-                      orig_width, orig_height, s_target_width, s_target_height))
+                      orig_width, orig_height, native_width, native_height, s_target_width, s_target_height))
     {
       return false;
     }
