@@ -5724,8 +5724,8 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
             closed = true;
           }
 
-          if (ActiveButton(FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Delete Save"), false, true,
-                           LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+          if (!entry.path.empty() && ActiveButton(FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Delete Save"), false, true,
+                                                  LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
           {
             if (!FileSystem::FileExists(entry.path.c_str()))
             {
@@ -6023,11 +6023,20 @@ void FullscreenUI::DoLoadState(std::string path)
 
     if (System::IsValid())
     {
-      Error error;
-      if (!System::LoadState(path.c_str(), &error))
+      if (path.empty())
       {
-        Host::ReportErrorAsync(TRANSLATE_SV("System", "Error"),
-                               fmt::format(TRANSLATE_FS("System", "Failed to load state: {}"), error.GetDescription()));
+        // Loading undo state.
+        if (!System::UndoLoadState())
+          ShowToast(std::string(), TRANSLATE_STR("System", "Failed to undo load state."));
+      }
+      else
+      {
+        Error error;
+        if (!System::LoadState(path.c_str(), &error))
+        {
+          ShowToast(std::string(),
+                    fmt::format(TRANSLATE_FS("System", "Failed to load state: {}"), error.GetDescription()));
+        }
       }
     }
     else
@@ -6049,8 +6058,7 @@ void FullscreenUI::DoSaveState(s32 slot, bool global)
     Error error;
     if (!System::SaveState(filename.c_str(), &error, g_settings.create_save_state_backups))
     {
-      Host::ReportErrorAsync(TRANSLATE_SV("System", "Error"),
-                             fmt::format(TRANSLATE_FS("System", "Failed to save state: {}"), error.GetDescription()));
+      ShowToast(std::string(), fmt::format(TRANSLATE_FS("System", "Failed to save state: {}"), error.GetDescription()));
     }
   });
 }
