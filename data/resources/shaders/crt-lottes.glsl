@@ -173,7 +173,7 @@ float3 Fetch(float2 pos,float2 off){
 // Distance in emulated pixels to nearest texel.
 float2 Dist(float2 pos)
 {
-    pos = pos*GetOriginalSize().xy;
+    pos = pos * (GetNativeSize() * GetWindowToViewportRatio());
     
     return -((pos - floor(pos)) - float2(0.5, 0.5));
 }
