@@ -58,8 +58,8 @@ DefaultValue = 1.0
 [OptionRangeFloat]
 GUIName = COLOR BOOST
 OptionName = COLOR_BOOST
-MinValue = 0.0
-MaxValue = 1.0
+MinValue = 1.0
+MaxValue = 3.0
 StepAmount = 0.05
 DefaultValue = 1.40
 
@@ -110,6 +110,14 @@ MinValue = 0.0
 MaxValue = 1.0
 StepAmount = 0.01
 DefaultValue = 0.58
+
+[OptionRangeFloat]
+GUIName = SCANLINES CUTOFF
+OptionName = SCANLINES_CUTOFF
+MinValue = 0.0
+MaxValue = 1000.0
+StepAmount = 1.0
+DefaultValue = 390.0
 
 [OptionRangeFloat]
 GUIName = MONITOR SUBPIXELS LAYOUT
@@ -490,9 +498,9 @@ void main()
     d0 = exp(-d0*d0);
     d1 = exp(-d1*d1);
 
-    vec3 color = (color0*d0+color1*d1);            
+    vec3 color = (TextureSize.y <= SCANLINES_CUTOFF) ? (color0*d0+color1*d1) : GAMMA_IN(SampleLocation(vTexCoord).xyz);            
 
-    color  = GAMMA_OUT(color);
+    color  = color_boost*GAMMA_OUT(color);
 
     vec2 mask_coords =vTexCoord.xy * GetResolution().xy;
 
@@ -500,5 +508,5 @@ void main()
 
     color.rgb*=GAMMA_OUT(mask_weights(mask_coords,  GetOption(MASK_INTENSITY), int(GetOption(PHOSPHOR_LAYOUT)), GetOption(MONITOR_SUBPIXELS)));
 
-    SetOutput(vec4(color_boost*color, 1.0));
+    SetOutput(vec4(color, 1.0));
 }
