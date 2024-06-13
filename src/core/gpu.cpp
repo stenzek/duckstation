@@ -445,22 +445,7 @@ void GPU::UpdateDMARequest()
 
 void GPU::UpdateGPUIdle()
 {
-  switch (m_blitter_state)
-  {
-    case BlitterState::Idle:
-    case BlitterState::DrawingPolyLine:
-      m_GPUSTAT.gpu_idle = (m_pending_command_ticks <= 0 && m_fifo.IsEmpty());
-      break;
-
-    case BlitterState::WritingVRAM:
-    case BlitterState::ReadingVRAM:
-      m_GPUSTAT.gpu_idle = m_fifo.IsEmpty();
-      break;
-
-    default:
-      UnreachableCode();
-      break;
-  }
+  m_GPUSTAT.gpu_idle = (m_blitter_state == BlitterState::Idle && m_pending_command_ticks <= 0 && m_fifo.IsEmpty());
 }
 
 u32 GPU::ReadRegister(u32 offset)
