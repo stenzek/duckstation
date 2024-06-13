@@ -1683,7 +1683,7 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUTexture* final
         case SourceOptionType::InternalNormPixelSize:
         {
           const float value[2] = {
-            (static_cast<float>(final_width) / static_cast<float>(orig_width)) / static_cast<float>(target_height),
+            (static_cast<float>(final_width) / static_cast<float>(orig_width)) / static_cast<float>(target_width),
             (static_cast<float>(final_height) / static_cast<float>(orig_height)) / static_cast<float>(target_height)};
           std::memcpy(dst, value, sizeof(value));
         }
@@ -1700,7 +1700,7 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUTexture* final
         case SourceOptionType::NativeNormPixelSize:
         {
           const float value[2] = {
-            (static_cast<float>(final_width) / static_cast<float>(native_width)) / static_cast<float>(target_height),
+            (static_cast<float>(final_width) / static_cast<float>(native_width)) / static_cast<float>(target_width),
             (static_cast<float>(final_height) / static_cast<float>(native_height)) / static_cast<float>(target_height)};
           std::memcpy(dst, value, sizeof(value));
         }
