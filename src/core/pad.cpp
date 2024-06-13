@@ -307,15 +307,9 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
           fmt::format("card_load_warning_{}", i), ICON_FA_SD_CARD,
           fmt::format(
             TRANSLATE_FS("OSDMessage",
-                         "Memory card {} from save state does match current card data. Simulating replugging."),
+                         "Memory card {} from save state does not match current card data. Simulating replugging."),
             i + 1u),
           Host::OSD_WARNING_DURATION);
-
-        // this is a potentially serious issue - some games cache info from memcards and jumping around
-        // with savestates can lead to card corruption on the next save attempts (and may not be obvious
-        // until much later). One workaround is to forcibly eject the card for 30+ frames, long enough
-        // for the game to decide it was removed and purge its cache. Once implemented, this could be
-        // described as deferred re-plugging in the log.
 
         WARNING_LOG("Memory card {} data mismatch. Using current data via instant-replugging.", i + 1u);
         s_memory_cards[i]->Reset();
