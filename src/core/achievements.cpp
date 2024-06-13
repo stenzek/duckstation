@@ -1095,11 +1095,11 @@ void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
   if (g_settings.achievements_notifications && FullscreenUI::Initialize())
   {
     std::string title = fmt::format(TRANSLATE_FS("Achievements", "Mastered {}"), s_game_title);
-    std::string message = fmt::format(
-      TRANSLATE_FS("Achievements", "{0}, {1}"),
-      TRANSLATE_PLURAL_STR("Achievements", "%n achievements", "Mastery popup",
-                           s_game_summary.num_unlocked_achievements),
-      TRANSLATE_PLURAL_STR("Achievements", "%n points", "Mastery popup", s_game_summary.num_unlocked_achievements));
+    std::string message =
+      fmt::format(TRANSLATE_FS("Achievements", "{0}, {1}"),
+                  TRANSLATE_PLURAL_STR("Achievements", "%n achievements", "Mastery popup",
+                                       s_game_summary.num_unlocked_achievements),
+                  TRANSLATE_PLURAL_STR("Achievements", "%n points", "Mastery popup", s_game_summary.points_unlocked));
 
     ImGuiFullscreen::AddNotification("achievement_mastery", GAME_COMPLETE_NOTIFICATION_TIME, std::move(title),
                                      std::move(message), s_game_icon);
