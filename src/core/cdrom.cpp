@@ -2982,7 +2982,7 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessDataSector(const u8* raw_sector, const 
 
   // TODO: How does XA relate to this buffering?
   SectorBuffer* sb = &s_sector_buffers[sb_num];
-  if (sb->position == 0)
+  if (sb->position == 0 && sb->size == 0)
   {
     DEV_LOG("Sector buffer {} was not read, previous sector dropped",
             (s_current_write_sector_buffer - 1) % NUM_SECTOR_BUFFERS);
