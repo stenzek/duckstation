@@ -50,7 +50,8 @@ public:
 
   bool isShowingGameList() const;
   bool isShowingGameGrid() const;
-  bool getShowGridCoverTitles() const;
+  bool isShowingGridCoverTitles() const;
+  bool isMergingDiscSets() const;
 
   const GameList::Entry* getSelectedEntry() const;
 

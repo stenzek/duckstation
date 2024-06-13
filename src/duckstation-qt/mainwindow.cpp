@@ -1626,7 +1626,8 @@ void MainWindow::setupAdditionalUi()
 
   m_game_list_widget = new GameListWidget(getContentParent());
   m_game_list_widget->initialize();
-  m_ui.actionGridViewShowTitles->setChecked(m_game_list_widget->getShowGridCoverTitles());
+  m_ui.actionGridViewShowTitles->setChecked(m_game_list_widget->isShowingGridCoverTitles());
+  m_ui.actionMergeDiscSets->setChecked(m_game_list_widget->isMergingDiscSets());
   if (s_use_central_widget)
   {
     m_ui.mainContainer = nullptr; // setCentralWidget() will delete this
@@ -1666,7 +1667,7 @@ void MainWindow::setupAdditionalUi()
   m_settings_toolbar_menu->addAction(m_ui.actionSettings);
   m_settings_toolbar_menu->addAction(m_ui.actionViewGameProperties);
 
-  m_ui.actionGridViewShowTitles->setChecked(m_game_list_widget->getShowGridCoverTitles());
+  m_ui.actionGridViewShowTitles->setChecked(m_game_list_widget->isShowingGridCoverTitles());
 
   updateDebugMenuVisibility();
   updateCheatActionsVisibility();

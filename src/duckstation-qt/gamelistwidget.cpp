@@ -38,7 +38,7 @@ class GameListSortModel final : public QSortFilterProxyModel
 public:
   explicit GameListSortModel(GameListModel* parent) : QSortFilterProxyModel(parent), m_model(parent) {}
 
-  bool getMergeDiscSets() const { return m_merge_disc_sets; }
+  bool isMergingDiscSets() const { return m_merge_disc_sets; }
 
   void setMergeDiscSets(bool enabled)
   {
@@ -232,9 +232,14 @@ bool GameListWidget::isShowingGameGrid() const
   return m_ui.stack->currentIndex() == 1;
 }
 
-bool GameListWidget::getShowGridCoverTitles() const
+bool GameListWidget::isShowingGridCoverTitles() const
 {
   return m_model->getShowCoverTitles();
+}
+
+bool GameListWidget::isMergingDiscSets() const
+{
+  return m_sort_model->isMergingDiscSets();
 }
 
 void GameListWidget::refresh(bool invalidate_cache)
@@ -453,7 +458,7 @@ void GameListWidget::setShowCoverTitles(bool enabled)
 
 void GameListWidget::setMergeDiscSets(bool enabled)
 {
-  if (m_sort_model->getMergeDiscSets() == enabled)
+  if (m_sort_model->isMergingDiscSets() == enabled)
   {
     updateToolbar();
     return;
@@ -483,7 +488,7 @@ void GameListWidget::updateToolbar()
   }
   {
     QSignalBlocker sb(m_ui.viewMergeDiscSets);
-    m_ui.viewMergeDiscSets->setChecked(m_sort_model->getMergeDiscSets());
+    m_ui.viewMergeDiscSets->setChecked(m_sort_model->isMergingDiscSets());
   }
   {
     QSignalBlocker sb(m_ui.gridScale);
