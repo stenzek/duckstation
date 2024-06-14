@@ -56,6 +56,8 @@ enum DebugHltOpcode {
   kDisableCPUFeaturesOpcode,
   kSaveCPUFeaturesOpcode,
   kRestoreCPUFeaturesOpcode,
+  kMTEActive,
+  kMTEInactive,
   // Aliases.
   kDebugHltFirstOpcode = kUnreachableOpcode,
   kDebugHltLastOpcode = kLogOpcode
@@ -88,7 +90,7 @@ VIXL_DEPRECATED("DebugHltOpcode", typedef DebugHltOpcode DebugHltOpcodes);
 // call):
 //    x0: The format string
 // x1-x7: Optional arguments, if type == CPURegister::kRegister
-// d0-d7: Optional arguments, if type == CPURegister::kFPRegister
+// d0-d7: Optional arguments, if type == CPURegister::kVRegister
 const unsigned kPrintfArgCountOffset = 1 * kInstructionSize;
 const unsigned kPrintfArgPatternListOffset = 2 * kInstructionSize;
 const unsigned kPrintfLength = 3 * kInstructionSize;
@@ -121,7 +123,7 @@ const unsigned kTraceLength = 3 * kInstructionSize;
 enum TraceParameters {
   LOG_DISASM = 1 << 0,   // Log disassembly.
   LOG_REGS = 1 << 1,     // Log general purpose registers.
-  LOG_VREGS = 1 << 2,    // Log NEON and floating-point registers.
+  LOG_VREGS = 1 << 2,    // Log SVE, NEON and floating-point registers.
   LOG_SYSREGS = 1 << 3,  // Log the flags and system registers.
   LOG_WRITE = 1 << 4,    // Log writes to memory.
   LOG_BRANCH = 1 << 5,   // Log taken branches.

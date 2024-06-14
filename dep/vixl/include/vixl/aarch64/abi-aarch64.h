@@ -105,7 +105,7 @@ class ABI {
 
     // Stage C.1
     if (is_floating_point_type && (NSRN_ < 8)) {
-      return GenericOperand(FPRegister(NSRN_++, size * kBitsPerByte));
+      return GenericOperand(VRegister(NSRN_++, size * kBitsPerByte));
     }
     // Stages C.2, C.3, and C.4: Unsupported. Caught by the assertions above.
     // Stages C.5 and C.6
@@ -159,8 +159,8 @@ template <>
 inline GenericOperand ABI::GetReturnGenericOperand<void>() const {
   return GenericOperand();
 }
-}
-}  // namespace vixl::aarch64
+}  // namespace aarch64
+}  // namespace vixl
 
 #endif  // VIXL_AARCH64_ABI_AARCH64_H_
 

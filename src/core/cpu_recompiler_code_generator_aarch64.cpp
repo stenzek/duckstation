@@ -145,8 +145,10 @@ s64 CPU::Recompiler::armGetPCDisplacement(const void* current, const void* targe
   return static_cast<s64>((reinterpret_cast<ptrdiff_t>(target) - reinterpret_cast<ptrdiff_t>(current)) >> 2);
 }
 
-void CPU::Recompiler::armMoveAddressToReg(a64::Assembler* armAsm, const a64::XRegister& reg, const void* addr)
+void CPU::Recompiler::armMoveAddressToReg(a64::Assembler* armAsm, const a64::Register& reg, const void* addr)
 {
+  DebugAssert(reg.IsX());
+
   const void* cur = armAsm->GetCursorAddress<const void*>();
   const void* current_code_ptr_page =
     reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(cur) & ~static_cast<uintptr_t>(0xFFF));
@@ -259,8 +261,13 @@ u8* CPU::Recompiler::armGetJumpTrampoline(const void* target)
 
   u8* start = s_trampoline_start_ptr + offset;
   a64::Assembler armAsm(start, TRAMPOLINE_AREA_SIZE - offset);
+#ifdef VIXL_DEBUG
+  vixl::CodeBufferCheckScope armAsmCheck(&armAsm, TRAMPOLINE_AREA_SIZE - offset,
+                                         vixl::CodeBufferCheckScope::kDontReserveBufferSpace);
+#endif
   armMoveAddressToReg(&armAsm, RXSCRATCH, target);
   armAsm.br(RXSCRATCH);
+  armAsm.FinalizeCode();
 
   const u32 size = static_cast<u32>(armAsm.GetSizeOfCodeGenerated());
   DebugAssert(size < 20);

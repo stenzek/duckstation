@@ -266,8 +266,8 @@ MemOperand MacroAssembler::MemOperandComputationHelper(
 
   uint32_t load_store_offset = offset & extra_offset_mask;
   uint32_t add_offset = offset & ~extra_offset_mask;
-  if ((add_offset != 0) &&
-      (IsModifiedImmediate(offset) || IsModifiedImmediate(-offset))) {
+  if ((add_offset != 0) && (IsModifiedImmediate(offset) ||
+                            IsModifiedImmediate(UnsignedNegate(offset)))) {
     load_store_offset = 0;
     add_offset = offset;
   }
@@ -288,7 +288,7 @@ MemOperand MacroAssembler::MemOperandComputationHelper(
       // of ADR -- to get behaviour like loads and stores. This ADR can handle
       // at least as much offset as the load_store_offset so it can replace it.
 
-      uint32_t sub_pc_offset = (-offset) & 0xfff;
+      uint32_t sub_pc_offset = UnsignedNegate(offset) & 0xfff;
       load_store_offset = (offset + sub_pc_offset) & extra_offset_mask;
       add_offset = (offset + sub_pc_offset) & ~extra_offset_mask;
 
@@ -599,7 +599,7 @@ void MacroAssembler::Printf(const char* format,
     Vmsr(FPSCR, tmp);
     Pop(tmp);
     Msr(APSR_nzcvqg, tmp);
-    // Restore the regsisters.
+    // Restore the registers.
     if (Has32DRegs()) Vpop(Untyped64, DRegisterList(d16, 16));
     Vpop(Untyped64, DRegisterList(d0, 8));
     Pop(RegisterList(saved_registers_mask));

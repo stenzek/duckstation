@@ -28,6 +28,8 @@
 #ifndef VIXL_COMPILER_INTRINSICS_H
 #define VIXL_COMPILER_INTRINSICS_H
 
+#include <limits.h>
+
 #include "globals-vixl.h"
 
 namespace vixl {
@@ -104,16 +106,23 @@ int CountTrailingZerosFallBack(uint64_t value, int width);
 // TODO: The implementations could be improved for sizes different from 32bit
 // and 64bit: we could mask the values and call the appropriate builtin.
 
+// Return the number of leading bits that match the topmost (sign) bit,
+// excluding the topmost bit itself.
 template <typename V>
 inline int CountLeadingSignBits(V value, int width = (sizeof(V) * 8)) {
+  VIXL_ASSERT(IsPowerOf2(width) && (width <= 64));
 #if COMPILER_HAS_BUILTIN_CLRSB
-  if (width == 32) {
-    return __builtin_clrsb(value);
-  } else if (width == 64) {
-    return __builtin_clrsbll(value);
-  }
-#endif
+  VIXL_ASSERT((LLONG_MIN <= value) && (value <= LLONG_MAX));
+  int ll_width =
+      sizeof(long long) * kBitsPerByte;  // NOLINT(google-runtime-int)
+  int result = __builtin_clrsbll(value) - (ll_width - width);
+  // Check that the value fits in the specified width.
+  VIXL_ASSERT(result >= 0);
+  return result;
+#else
+  VIXL_ASSERT((INT64_MIN <= value) && (value <= INT64_MAX));
   return CountLeadingSignBitsFallBack(value, width);
+#endif
 }
 
 

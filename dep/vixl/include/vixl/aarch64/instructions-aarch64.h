@@ -32,6 +32,11 @@
 
 #include "constants-aarch64.h"
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-enum-enum-conversion"
+#endif
+
 namespace vixl {
 namespace aarch64 {
 // ISA constants. --------------------------------------------------------------
@@ -81,6 +86,7 @@ const uint64_t kXRegMask = UINT64_C(0xffffffffffffffff);
 const uint64_t kHRegMask = UINT64_C(0xffff);
 const uint64_t kSRegMask = UINT64_C(0xffffffff);
 const uint64_t kDRegMask = UINT64_C(0xffffffffffffffff);
+const uint64_t kHSignMask = UINT64_C(0x8000);
 const uint64_t kSSignMask = UINT64_C(0x80000000);
 const uint64_t kDSignMask = UINT64_C(0x8000000000000000);
 const uint64_t kWSignMask = UINT64_C(0x80000000);
@@ -106,6 +112,8 @@ const unsigned kZeroRegCode = 31;
 const unsigned kSPRegInternalCode = 63;
 const unsigned kRegCodeMask = 0x1f;
 
+const unsigned kAtomicAccessGranule = 16;
+
 const unsigned kAddressTagOffset = 56;
 const unsigned kAddressTagWidth = 8;
 const uint64_t kAddressTagMask = ((UINT64_C(1) << kAddressTagWidth) - 1)
@@ -114,21 +122,49 @@ VIXL_STATIC_ASSERT(kAddressTagMask == UINT64_C(0xff00000000000000));
 
 const uint64_t kTTBRMask = UINT64_C(1) << 55;
 
+// We can't define a static kZRegSize because the size depends on the
+// implementation. However, it is sometimes useful to know the minimum and
+// maximum possible sizes.
+const unsigned kZRegMinSize = 128;
+const unsigned kZRegMinSizeLog2 = 7;
+const unsigned kZRegMinSizeInBytes = kZRegMinSize / 8;
+const unsigned kZRegMinSizeInBytesLog2 = kZRegMinSizeLog2 - 3;
+const unsigned kZRegMaxSize = 2048;
+const unsigned kZRegMaxSizeLog2 = 11;
+const unsigned kZRegMaxSizeInBytes = kZRegMaxSize / 8;
+const unsigned kZRegMaxSizeInBytesLog2 = kZRegMaxSizeLog2 - 3;
+
+// The P register size depends on the Z register size.
+const unsigned kZRegBitsPerPRegBit = kBitsPerByte;
+const unsigned kZRegBitsPerPRegBitLog2 = 3;
+const unsigned kPRegMinSize = kZRegMinSize / kZRegBitsPerPRegBit;
+const unsigned kPRegMinSizeLog2 = kZRegMinSizeLog2 - 3;
+const unsigned kPRegMinSizeInBytes = kPRegMinSize / 8;
+const unsigned kPRegMinSizeInBytesLog2 = kPRegMinSizeLog2 - 3;
+const unsigned kPRegMaxSize = kZRegMaxSize / kZRegBitsPerPRegBit;
+const unsigned kPRegMaxSizeLog2 = kZRegMaxSizeLog2 - 3;
+const unsigned kPRegMaxSizeInBytes = kPRegMaxSize / 8;
+const unsigned kPRegMaxSizeInBytesLog2 = kPRegMaxSizeLog2 - 3;
+
+const unsigned kMTETagGranuleInBytes = 16;
+const unsigned kMTETagGranuleInBytesLog2 = 4;
+const unsigned kMTETagWidth = 4;
+
 // Make these moved float constants backwards compatible
 // with explicit vixl::aarch64:: namespace references.
-using vixl::kDoubleMantissaBits;
 using vixl::kDoubleExponentBits;
-using vixl::kFloatMantissaBits;
-using vixl::kFloatExponentBits;
-using vixl::kFloat16MantissaBits;
+using vixl::kDoubleMantissaBits;
 using vixl::kFloat16ExponentBits;
+using vixl::kFloat16MantissaBits;
+using vixl::kFloatExponentBits;
+using vixl::kFloatMantissaBits;
 
-using vixl::kFP16PositiveInfinity;
 using vixl::kFP16NegativeInfinity;
-using vixl::kFP32PositiveInfinity;
+using vixl::kFP16PositiveInfinity;
 using vixl::kFP32NegativeInfinity;
-using vixl::kFP64PositiveInfinity;
+using vixl::kFP32PositiveInfinity;
 using vixl::kFP64NegativeInfinity;
+using vixl::kFP64PositiveInfinity;
 
 using vixl::kFP16DefaultNaN;
 using vixl::kFP32DefaultNaN;
@@ -148,6 +184,49 @@ enum ImmBranchType {
 enum AddrMode { Offset, PreIndex, PostIndex };
 
 enum Reg31Mode { Reg31IsStackPointer, Reg31IsZeroRegister };
+
+enum VectorFormat {
+  kFormatUndefined = 0xffffffff,
+  kFormat8B = NEON_8B,
+  kFormat16B = NEON_16B,
+  kFormat4H = NEON_4H,
+  kFormat8H = NEON_8H,
+  kFormat2S = NEON_2S,
+  kFormat4S = NEON_4S,
+  kFormat1D = NEON_1D,
+  kFormat2D = NEON_2D,
+
+  // Scalar formats. We add the scalar bit to distinguish between scalar and
+  // vector enumerations; the bit is always set in the encoding of scalar ops
+  // and always clear for vector ops. Although kFormatD and kFormat1D appear
+  // to be the same, their meaning is subtly different. The first is a scalar
+  // operation, the second a vector operation that only affects one lane.
+  kFormatB = NEON_B | NEONScalar,
+  kFormatH = NEON_H | NEONScalar,
+  kFormatS = NEON_S | NEONScalar,
+  kFormatD = NEON_D | NEONScalar,
+
+  // An artificial value, used to distinguish from NEON format category.
+  kFormatSVE = 0x0000fffd,
+  // Artificial values. Q and O lane sizes aren't encoded in the usual size
+  // field.
+  kFormatSVEQ = 0x00080000,
+  kFormatSVEO = 0x00040000,
+
+  // Vector element width of SVE register with the unknown lane count since
+  // the vector length is implementation dependent.
+  kFormatVnB = SVE_B | kFormatSVE,
+  kFormatVnH = SVE_H | kFormatSVE,
+  kFormatVnS = SVE_S | kFormatSVE,
+  kFormatVnD = SVE_D | kFormatSVE,
+  kFormatVnQ = kFormatSVEQ | kFormatSVE,
+  kFormatVnO = kFormatSVEO | kFormatSVE,
+
+  // Artificial values, used by simulator trace tests and a few oddball
+  // instructions (such as FMLAL).
+  kFormat2H = 0xfffffffe,
+  kFormat1Q = 0xfffffffd
+};
 
 // Instructions. ---------------------------------------------------------------
 
@@ -176,6 +255,47 @@ class Instruction {
     return ExtractBits(msb, lsb);
   }
 
+  // Compress bit extraction operation from Hacker's Delight.
+  // https://github.com/hcs0/Hackers-Delight/blob/master/compress.c.txt
+  uint32_t Compress(uint32_t mask) const {
+    uint32_t mk, mp, mv, t;
+    uint32_t x = GetInstructionBits() & mask;  // Clear irrelevant bits.
+    mk = ~mask << 1;                           // We will count 0's to right.
+    for (int i = 0; i < 5; i++) {
+      mp = mk ^ (mk << 1);  // Parallel suffix.
+      mp = mp ^ (mp << 2);
+      mp = mp ^ (mp << 4);
+      mp = mp ^ (mp << 8);
+      mp = mp ^ (mp << 16);
+      mv = mp & mask;                         // Bits to move.
+      mask = (mask ^ mv) | (mv >> (1 << i));  // Compress mask.
+      t = x & mv;
+      x = (x ^ t) | (t >> (1 << i));  // Compress x.
+      mk = mk & ~mp;
+    }
+    return x;
+  }
+
+  template <uint32_t M>
+  uint32_t ExtractBits() const {
+    return Compress(M);
+  }
+
+  uint32_t ExtractBitsAbsent() const {
+    VIXL_UNREACHABLE();
+    return 0;
+  }
+
+  template <uint32_t M, uint32_t V>
+  uint32_t IsMaskedValue() const {
+    return (Mask(M) == V) ? 1 : 0;
+  }
+
+  uint32_t IsMaskedValueAbsent() const {
+    VIXL_UNREACHABLE();
+    return 0;
+  }
+
   int32_t ExtractSignedBits(int msb, int lsb) const {
     int32_t bits = *(reinterpret_cast<const int32_t*>(this));
     return ExtractSignedBitfield32(msb, lsb, bits);
@@ -196,6 +316,34 @@ class Instruction {
   INSTRUCTION_FIELDS_LIST(DEFINE_GETTER)
 #undef DEFINE_GETTER
 
+  template <int msb, int lsb>
+  int32_t GetRx() const {
+    // We don't have any register fields wider than five bits, so the result
+    // will always fit into an int32_t.
+    VIXL_ASSERT((msb - lsb + 1) <= 5);
+    return this->ExtractBits(msb, lsb);
+  }
+
+  VectorFormat GetSVEVectorFormat(int field_lsb = 22) const {
+    VIXL_ASSERT((field_lsb >= 0) && (field_lsb <= 30));
+    uint32_t instr = ExtractUnsignedBitfield32(field_lsb + 1,
+                                               field_lsb,
+                                               GetInstructionBits())
+                     << 22;
+    switch (instr & SVESizeFieldMask) {
+      case SVE_B:
+        return kFormatVnB;
+      case SVE_H:
+        return kFormatVnH;
+      case SVE_S:
+        return kFormatVnS;
+      case SVE_D:
+        return kFormatVnD;
+    }
+    VIXL_UNREACHABLE();
+    return kFormatUndefined;
+  }
+
   // ImmPCRel is a compound field (not present in INSTRUCTION_FIELDS_LIST),
   // formed from ImmPCRelLo and ImmPCRelHi.
   int GetImmPCRel() const {
@@ -207,10 +355,40 @@ class Instruction {
   }
   VIXL_DEPRECATED("GetImmPCRel", int ImmPCRel() const) { return GetImmPCRel(); }
 
+  // ImmLSPAC is a compound field (not present in INSTRUCTION_FIELDS_LIST),
+  // formed from ImmLSPACLo and ImmLSPACHi.
+  int GetImmLSPAC() const {
+    uint32_t hi = static_cast<uint32_t>(GetImmLSPACHi());
+    uint32_t lo = GetImmLSPACLo();
+    uint32_t offset = (hi << ImmLSPACLo_width) | lo;
+    int width = ImmLSPACLo_width + ImmLSPACHi_width;
+    return ExtractSignedBitfield32(width - 1, 0, offset) << 3;
+  }
+
   uint64_t GetImmLogical() const;
   VIXL_DEPRECATED("GetImmLogical", uint64_t ImmLogical() const) {
     return GetImmLogical();
   }
+  uint64_t GetSVEImmLogical() const;
+  int GetSVEBitwiseImmLaneSizeInBytesLog2() const;
+  uint64_t DecodeImmBitMask(int32_t n,
+                            int32_t imm_s,
+                            int32_t imm_r,
+                            int32_t size) const;
+
+  std::pair<int, int> GetSVEPermuteIndexAndLaneSizeLog2() const;
+
+  std::pair<int, int> GetSVEMulZmAndIndex() const;
+  std::pair<int, int> GetSVEMulLongZmAndIndex() const;
+
+  std::pair<int, int> GetSVEImmShiftAndLaneSizeLog2(bool is_predicated) const;
+
+  int GetSVEExtractImmediate() const;
+
+  int GetSVEMsizeFromDtype(bool is_signed, int dtype_h_lsb = 23) const;
+
+  int GetSVEEsizeFromDtype(bool is_signed, int dtype_l_lsb = 21) const;
+
 
   unsigned GetImmNEONabcdefgh() const;
   VIXL_DEPRECATED("GetImmNEONabcdefgh", unsigned ImmNEONabcdefgh() const) {
@@ -236,6 +414,16 @@ class Instruction {
   VIXL_DEPRECATED("GetImmNEONFP64", double ImmNEONFP64() const) {
     return GetImmNEONFP64();
   }
+
+  Float16 GetSVEImmFP16() const { return Imm8ToFloat16(ExtractBits(12, 5)); }
+
+  float GetSVEImmFP32() const { return Imm8ToFP32(ExtractBits(12, 5)); }
+
+  double GetSVEImmFP64() const { return Imm8ToFP64(ExtractBits(12, 5)); }
+
+  static Float16 Imm8ToFloat16(uint32_t imm8);
+  static float Imm8ToFP32(uint32_t imm8);
+  static double Imm8ToFP64(uint32_t imm8);
 
   unsigned GetSizeLS() const {
     return CalcLSDataSize(static_cast<LoadStoreOp>(Mask(LoadStoreMask)));
@@ -299,6 +487,10 @@ class Instruction {
     return Mask(LoadStoreAnyFMask) == LoadStoreAnyFixed;
   }
 
+  // True if `this` is valid immediately after the provided movprfx instruction.
+  bool CanTakeSVEMovprfx(uint32_t form_hash, Instruction const* movprfx) const;
+  bool CanTakeSVEMovprfx(const char* form, Instruction const* movprfx) const;
+
   bool IsLoad() const;
   bool IsStore() const;
 
@@ -310,6 +502,83 @@ class Instruction {
   bool IsMovn() const {
     return (Mask(MoveWideImmediateMask) == MOVN_x) ||
            (Mask(MoveWideImmediateMask) == MOVN_w);
+  }
+
+  bool IsException() const { return Mask(ExceptionFMask) == ExceptionFixed; }
+
+  bool IsPAuth() const { return Mask(SystemPAuthFMask) == SystemPAuthFixed; }
+
+  bool IsBti() const {
+    if (Mask(SystemHintFMask) == SystemHintFixed) {
+      int imm_hint = GetImmHint();
+      switch (imm_hint) {
+        case BTI:
+        case BTI_c:
+        case BTI_j:
+        case BTI_jc:
+          return true;
+      }
+    }
+    return false;
+  }
+
+  bool IsMOPSPrologueOf(const Instruction* instr, uint32_t mops_type) const {
+    VIXL_ASSERT((mops_type == "set"_h) || (mops_type == "setg"_h) ||
+                (mops_type == "cpy"_h));
+    const int op_lsb = (mops_type == "cpy"_h) ? 22 : 14;
+    return GetInstructionBits() == instr->Mask(~(0x3U << op_lsb));
+  }
+
+  bool IsMOPSMainOf(const Instruction* instr, uint32_t mops_type) const {
+    VIXL_ASSERT((mops_type == "set"_h) || (mops_type == "setg"_h) ||
+                (mops_type == "cpy"_h));
+    const int op_lsb = (mops_type == "cpy"_h) ? 22 : 14;
+    return GetInstructionBits() ==
+           (instr->Mask(~(0x3U << op_lsb)) | (0x1 << op_lsb));
+  }
+
+  bool IsMOPSEpilogueOf(const Instruction* instr, uint32_t mops_type) const {
+    VIXL_ASSERT((mops_type == "set"_h) || (mops_type == "setg"_h) ||
+                (mops_type == "cpy"_h));
+    const int op_lsb = (mops_type == "cpy"_h) ? 22 : 14;
+    return GetInstructionBits() ==
+           (instr->Mask(~(0x3U << op_lsb)) | (0x2 << op_lsb));
+  }
+
+  template <uint32_t mops_type>
+  bool IsConsistentMOPSTriplet() const {
+    VIXL_STATIC_ASSERT((mops_type == "set"_h) || (mops_type == "setg"_h) ||
+                       (mops_type == "cpy"_h));
+
+    int64_t isize = static_cast<int64_t>(kInstructionSize);
+    const Instruction* prev2 = GetInstructionAtOffset(-2 * isize);
+    const Instruction* prev1 = GetInstructionAtOffset(-1 * isize);
+    const Instruction* next1 = GetInstructionAtOffset(1 * isize);
+    const Instruction* next2 = GetInstructionAtOffset(2 * isize);
+
+    // Use the encoding of the current instruction to determine the expected
+    // adjacent instructions. NB. this doesn't check if the nearby instructions
+    // are MOPS-type, but checks that they form a consistent triplet if they
+    // are. For example, 'mov x0, #0; mov x0, #512; mov x0, #1024' is a
+    // consistent triplet, but they are not MOPS instructions.
+    const int op_lsb = (mops_type == "cpy"_h) ? 22 : 14;
+    const uint32_t kMOPSOpfield = 0x3 << op_lsb;
+    const uint32_t kMOPSPrologue = 0;
+    const uint32_t kMOPSMain = 0x1 << op_lsb;
+    const uint32_t kMOPSEpilogue = 0x2 << op_lsb;
+    switch (Mask(kMOPSOpfield)) {
+      case kMOPSPrologue:
+        return next1->IsMOPSMainOf(this, mops_type) &&
+               next2->IsMOPSEpilogueOf(this, mops_type);
+      case kMOPSMain:
+        return prev1->IsMOPSPrologueOf(this, mops_type) &&
+               next1->IsMOPSEpilogueOf(this, mops_type);
+      case kMOPSEpilogue:
+        return prev2->IsMOPSPrologueOf(this, mops_type) &&
+               prev1->IsMOPSMainOf(this, mops_type);
+      default:
+        VIXL_ABORT_WITH_MSG("Undefined MOPS operation\n");
+    }
   }
 
   static int GetImmBranchRangeBitwidth(ImmBranchType branch_type);
@@ -496,40 +765,12 @@ class Instruction {
  private:
   int GetImmBranch() const;
 
-  static Float16 Imm8ToFloat16(uint32_t imm8);
-  static float Imm8ToFP32(uint32_t imm8);
-  static double Imm8ToFP64(uint32_t imm8);
-
   void SetPCRelImmTarget(const Instruction* target);
   void SetBranchImmTarget(const Instruction* target);
 };
 
 
-// Functions for handling NEON vector format information.
-enum VectorFormat {
-  kFormatUndefined = 0xffffffff,
-  kFormat8B = NEON_8B,
-  kFormat16B = NEON_16B,
-  kFormat4H = NEON_4H,
-  kFormat8H = NEON_8H,
-  kFormat2S = NEON_2S,
-  kFormat4S = NEON_4S,
-  kFormat1D = NEON_1D,
-  kFormat2D = NEON_2D,
-
-  // Scalar formats. We add the scalar bit to distinguish between scalar and
-  // vector enumerations; the bit is always set in the encoding of scalar ops
-  // and always clear for vector ops. Although kFormatD and kFormat1D appear
-  // to be the same, their meaning is subtly different. The first is a scalar
-  // operation, the second a vector operation that only affects one lane.
-  kFormatB = NEON_B | NEONScalar,
-  kFormatH = NEON_H | NEONScalar,
-  kFormatS = NEON_S | NEONScalar,
-  kFormatD = NEON_D | NEONScalar,
-
-  // A value invented solely for FP16 scalar pairwise simulator trace tests.
-  kFormat2H = 0xfffffffe
-};
+// Functions for handling NEON and SVE vector format information.
 
 const int kMaxLanesPerVector = 16;
 
@@ -537,12 +778,16 @@ VectorFormat VectorFormatHalfWidth(VectorFormat vform);
 VectorFormat VectorFormatDoubleWidth(VectorFormat vform);
 VectorFormat VectorFormatDoubleLanes(VectorFormat vform);
 VectorFormat VectorFormatHalfLanes(VectorFormat vform);
-VectorFormat ScalarFormatFromLaneSize(int lanesize);
+VectorFormat ScalarFormatFromLaneSize(int lane_size_in_bits);
 VectorFormat VectorFormatHalfWidthDoubleLanes(VectorFormat vform);
 VectorFormat VectorFormatFillQ(VectorFormat vform);
 VectorFormat ScalarFormatFromFormat(VectorFormat vform);
+VectorFormat SVEFormatFromLaneSizeInBits(int lane_size_in_bits);
+VectorFormat SVEFormatFromLaneSizeInBytes(int lane_size_in_bytes);
+VectorFormat SVEFormatFromLaneSizeInBytesLog2(int lane_size_in_bytes_log_2);
 unsigned RegisterSizeInBitsFromFormat(VectorFormat vform);
 unsigned RegisterSizeInBytesFromFormat(VectorFormat vform);
+bool IsSVEFormat(VectorFormat vform);
 // TODO: Make the return types of these functions consistent.
 unsigned LaneSizeInBitsFromFormat(VectorFormat vform);
 int LaneSizeInBytesFromFormat(VectorFormat vform);
@@ -588,7 +833,7 @@ class NEONFormatDecoder {
   enum SubstitutionMode { kPlaceholder, kFormat };
 
   // Construct a format decoder with increasingly specific format maps for each
-  // subsitution. If no format map is specified, the default is the integer
+  // substitution. If no format map is specified, the default is the integer
   // format map.
   explicit NEONFormatDecoder(const Instruction* instr) {
     instrbits_ = instr->GetInstructionBits();
@@ -639,18 +884,26 @@ class NEONFormatDecoder {
                          SubstitutionMode mode0 = kFormat,
                          SubstitutionMode mode1 = kFormat,
                          SubstitutionMode mode2 = kFormat) {
+    const char* subst0 = GetSubstitute(0, mode0);
+    const char* subst1 = GetSubstitute(1, mode1);
+    const char* subst2 = GetSubstitute(2, mode2);
+
+    if ((subst0 == NULL) || (subst1 == NULL) || (subst2 == NULL)) {
+      return NULL;
+    }
+
     snprintf(form_buffer_,
              sizeof(form_buffer_),
              string,
-             GetSubstitute(0, mode0),
-             GetSubstitute(1, mode1),
-             GetSubstitute(2, mode2));
+             subst0,
+             subst1,
+             subst2);
     return form_buffer_;
   }
 
-  // Append a "2" to a mnemonic string based of the state of the Q bit.
+  // Append a "2" to a mnemonic string based on the state of the Q bit.
   const char* Mnemonic(const char* mnemonic) {
-    if ((instrbits_ & NEON_Q) != 0) {
+    if ((mnemonic != NULL) && (instrbits_ & NEON_Q) != 0) {
       snprintf(mne_buffer_, sizeof(mne_buffer_), "%s2", mnemonic);
       return mne_buffer_;
     }
@@ -745,6 +998,33 @@ class NEONFormatDecoder {
     return &map;
   }
 
+  // The shift immediate map uses between two and five bits to encode the NEON
+  // vector format:
+  // 00010->8B, 00011->16B, 001x0->4H, 001x1->8H,
+  // 01xx0->2S, 01xx1->4S, 1xxx1->2D, all others undefined.
+  static const NEONFormatMap* ShiftImmFormatMap() {
+    static const NEONFormatMap map = {{22, 21, 20, 19, 30},
+                                      {NF_UNDEF, NF_UNDEF, NF_8B,    NF_16B,
+                                       NF_4H,    NF_8H,    NF_4H,    NF_8H,
+                                       NF_2S,    NF_4S,    NF_2S,    NF_4S,
+                                       NF_2S,    NF_4S,    NF_2S,    NF_4S,
+                                       NF_UNDEF, NF_2D,    NF_UNDEF, NF_2D,
+                                       NF_UNDEF, NF_2D,    NF_UNDEF, NF_2D,
+                                       NF_UNDEF, NF_2D,    NF_UNDEF, NF_2D,
+                                       NF_UNDEF, NF_2D,    NF_UNDEF, NF_2D}};
+    return &map;
+  }
+
+  // The shift long/narrow immediate map uses between two and four bits to
+  // encode the NEON vector format:
+  // 0001->8H, 001x->4S, 01xx->2D, all others undefined.
+  static const NEONFormatMap* ShiftLongNarrowImmFormatMap() {
+    static const NEONFormatMap map =
+        {{22, 21, 20, 19},
+         {NF_UNDEF, NF_8H, NF_4S, NF_4S, NF_2D, NF_2D, NF_2D, NF_2D}};
+    return &map;
+  }
+
   // The scalar format map uses two bits (size<1:0>) to encode the NEON scalar
   // formats: NF_B, NF_H, NF_S, NF_D.
   static const NEONFormatMap* ScalarFormatMap() {
@@ -818,7 +1098,7 @@ class NEONFormatDecoder {
   static const char* NEONFormatAsString(NEONFormat format) {
     // clang-format off
     static const char* formats[] = {
-      "undefined",
+      NULL,
       "8b", "16b", "4h", "8h", "2s", "4s", "1d", "2d",
       "b", "h", "s", "d"
     };
@@ -833,9 +1113,9 @@ class NEONFormatDecoder {
                 (format == NF_D) || (format == NF_UNDEF));
     // clang-format off
     static const char* formats[] = {
-      "undefined",
-      "undefined", "undefined", "undefined", "undefined",
-      "undefined", "undefined", "undefined", "undefined",
+      NULL,
+      NULL, NULL, NULL, NULL,
+      NULL, NULL, NULL, NULL,
       "'B", "'H", "'S", "'D"
     };
     // clang-format on
@@ -861,5 +1141,9 @@ class NEONFormatDecoder {
 };
 }  // namespace aarch64
 }  // namespace vixl
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 #endif  // VIXL_AARCH64_INSTRUCTIONS_AARCH64_H_

@@ -36,9 +36,9 @@ extern "C" {
 #include <iomanip>
 #include <list>
 
-#include "../invalset-vixl.h"
-#include "../pool-manager.h"
-#include "../utils-vixl.h"
+#include "invalset-vixl.h"
+#include "pool-manager.h"
+#include "utils-vixl.h"
 
 #include "constants-aarch32.h"
 #include "instructions-aarch32.h"
@@ -58,12 +58,12 @@ class Location : public LocationBase<int32_t> {
   // with the assembler methods for generating instructions, but will never
   // be handled by the pool manager.
   Location()
-      : LocationBase<int32_t>(kRawLocation, 1 /* dummy size*/),
+      : LocationBase<int32_t>(kRawLocation, 1 /* placeholder size*/),
         referenced_(false) {}
 
   typedef int32_t Offset;
 
-  ~Location() {
+  ~Location() VIXL_NEGATIVE_TESTING_ALLOW_EXCEPTION {
 #ifdef VIXL_DEBUG
     if (IsReferenced() && !IsBound()) {
       VIXL_ABORT_WITH_MSG("Location, label or literal used but not bound.\n");
@@ -217,7 +217,7 @@ class Location : public LocationBase<int32_t> {
 
  protected:
   // Types passed to LocationBase. Must be distinct for unbound Locations (not
-  // relevant for bound locations, as they don't have a correspoding
+  // relevant for bound locations, as they don't have a corresponding
   // PoolObject).
   static const int kRawLocation = 0;  // Will not be used by the pool manager.
   static const int kVeneerType = 1;

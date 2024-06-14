@@ -35,7 +35,7 @@ class MacroAssemblerInterface {
  public:
   virtual internal::AssemblerBase* AsAssemblerBase() = 0;
 
-  virtual ~MacroAssemblerInterface() {}
+  virtual ~MacroAssemblerInterface() VIXL_NEGATIVE_TESTING_ALLOW_EXCEPTION {}
 
   virtual bool AllowMacroInstructions() const = 0;
   virtual bool ArePoolsBlocked() const = 0;

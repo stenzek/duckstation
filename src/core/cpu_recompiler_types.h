@@ -123,7 +123,7 @@ constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
 
 bool armIsCallerSavedRegister(u32 id);
 s64 armGetPCDisplacement(const void* current, const void* target);
-void armMoveAddressToReg(vixl::aarch64::Assembler* armAsm, const vixl::aarch64::XRegister& reg, const void* addr);
+void armMoveAddressToReg(vixl::aarch64::Assembler* armAsm, const vixl::aarch64::Register& reg, const void* addr);
 void armEmitMov(vixl::aarch64::Assembler* armAsm, const vixl::aarch64::Register& rd, u64 imm);
 void armEmitJmp(vixl::aarch64::Assembler* armAsm, const void* ptr, bool force_inline);
 void armEmitCall(vixl::aarch64::Assembler* armAsm, const void* ptr, bool force_inline);

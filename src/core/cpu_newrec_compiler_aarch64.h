@@ -43,7 +43,7 @@ protected:
 
   void Compile_Fallback() override;
 
-  void CheckBranchTarget(const vixl::aarch64::WRegister& pcreg);
+  void CheckBranchTarget(const vixl::aarch64::Register& pcreg);
   void Compile_jr(CompileFlags cf) override;
   void Compile_jalr(CompileFlags cf) override;
   void Compile_bxx(CompileFlags cf, BranchCondition cond) override;
@@ -77,7 +77,7 @@ protected:
   void Compile_multu(CompileFlags cf) override;
   void Compile_div(CompileFlags cf) override;
   void Compile_divu(CompileFlags cf) override;
-  void TestOverflow(const vixl::aarch64::WRegister& result);
+  void TestOverflow(const vixl::aarch64::Register& result);
   void Compile_dst_op(CompileFlags cf,
                       void (vixl::aarch64::Assembler::*op)(const vixl::aarch64::Register&,
                                                            const vixl::aarch64::Register&,
@@ -95,13 +95,13 @@ protected:
   void Compile_slt(CompileFlags cf) override;
   void Compile_sltu(CompileFlags cf) override;
 
-  vixl::aarch64::WRegister
+  vixl::aarch64::Register
   ComputeLoadStoreAddressArg(CompileFlags cf, const std::optional<VirtualMemoryAddress>& address,
-                             const std::optional<const vixl::aarch64::WRegister>& reg = std::nullopt);
+                             const std::optional<const vixl::aarch64::Register>& reg = std::nullopt);
   template<typename RegAllocFn>
-  vixl::aarch64::WRegister GenerateLoad(const vixl::aarch64::WRegister& addr_reg, MemoryAccessSize size, bool sign,
-                                        bool use_fastmem, const RegAllocFn& dst_reg_alloc);
-  void GenerateStore(const vixl::aarch64::WRegister& addr_reg, const vixl::aarch64::WRegister& value_reg,
+  vixl::aarch64::Register GenerateLoad(const vixl::aarch64::Register& addr_reg, MemoryAccessSize size, bool sign,
+                                       bool use_fastmem, const RegAllocFn& dst_reg_alloc);
+  void GenerateStore(const vixl::aarch64::Register& addr_reg, const vixl::aarch64::Register& value_reg,
                      MemoryAccessSize size, bool use_fastmem);
   void Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                    const std::optional<VirtualMemoryAddress>& address) override;
@@ -116,7 +116,7 @@ protected:
   void Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                     const std::optional<VirtualMemoryAddress>& address) override;
 
-  void TestInterrupts(const vixl::aarch64::WRegister& sr);
+  void TestInterrupts(const vixl::aarch64::Register& sr);
   void Compile_mtc0(CompileFlags cf) override;
   void Compile_rfe(CompileFlags cf) override;
 
@@ -128,7 +128,7 @@ protected:
                                     Reg arg3reg = Reg::count) override;
 
 private:
-  void EmitMov(const vixl::aarch64::WRegister& dst, u32 val);
+  void EmitMov(const vixl::aarch64::Register& dst, u32 val);
   void EmitCall(const void* ptr, bool force_inline = false);
 
   vixl::aarch64::Operand armCheckAddSubConstant(s32 val);
@@ -144,15 +144,15 @@ private:
   void AssertRegOrConstS(CompileFlags cf) const;
   void AssertRegOrConstT(CompileFlags cf) const;
   vixl::aarch64::MemOperand MipsPtr(Reg r) const;
-  vixl::aarch64::WRegister CFGetRegD(CompileFlags cf) const;
-  vixl::aarch64::WRegister CFGetRegS(CompileFlags cf) const;
-  vixl::aarch64::WRegister CFGetRegT(CompileFlags cf) const;
-  vixl::aarch64::WRegister CFGetRegLO(CompileFlags cf) const;
-  vixl::aarch64::WRegister CFGetRegHI(CompileFlags cf) const;
+  vixl::aarch64::Register CFGetRegD(CompileFlags cf) const;
+  vixl::aarch64::Register CFGetRegS(CompileFlags cf) const;
+  vixl::aarch64::Register CFGetRegT(CompileFlags cf) const;
+  vixl::aarch64::Register CFGetRegLO(CompileFlags cf) const;
+  vixl::aarch64::Register CFGetRegHI(CompileFlags cf) const;
 
-  void MoveSToReg(const vixl::aarch64::WRegister& dst, CompileFlags cf);
-  void MoveTToReg(const vixl::aarch64::WRegister& dst, CompileFlags cf);
-  void MoveMIPSRegToReg(const vixl::aarch64::WRegister& dst, Reg reg);
+  void MoveSToReg(const vixl::aarch64::Register& dst, CompileFlags cf);
+  void MoveTToReg(const vixl::aarch64::Register& dst, CompileFlags cf);
+  void MoveMIPSRegToReg(const vixl::aarch64::Register& dst, Reg reg);
 
   vixl::aarch64::Assembler m_emitter;
   vixl::aarch64::Assembler m_far_emitter;

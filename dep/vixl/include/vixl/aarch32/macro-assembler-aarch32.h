@@ -28,15 +28,15 @@
 #ifndef VIXL_AARCH32_MACRO_ASSEMBLER_AARCH32_H_
 #define VIXL_AARCH32_MACRO_ASSEMBLER_AARCH32_H_
 
-#include "../code-generation-scopes-vixl.h"
-#include "../macro-assembler-interface.h"
-#include "../pool-manager-impl.h"
-#include "../pool-manager.h"
-#include "../utils-vixl.h"
+#include "code-generation-scopes-vixl.h"
+#include "macro-assembler-interface.h"
+#include "pool-manager-impl.h"
+#include "pool-manager.h"
+#include "utils-vixl.h"
 
-#include "assembler-aarch32.h"
-#include "instructions-aarch32.h"
-#include "operands-aarch32.h"
+#include "aarch32/assembler-aarch32.h"
+#include "aarch32/instructions-aarch32.h"
+#include "aarch32/operands-aarch32.h"
 
 namespace vixl {
 
@@ -268,7 +268,8 @@ class MacroAssembler : public Assembler, public MacroAssemblerInterface {
         generate_simulator_code_(VIXL_AARCH32_GENERATE_SIMULATOR_CODE),
         pool_end_(NULL) {
 #ifdef VIXL_DEBUG
-    SetAllowMacroInstructions(true);
+    SetAllowMacroInstructions(  // NOLINT(clang-analyzer-optin.cplusplus.VirtualCall)
+        true);
 #else
     USE(allow_macro_instructions_);
 #endif
@@ -283,7 +284,8 @@ class MacroAssembler : public Assembler, public MacroAssemblerInterface {
         generate_simulator_code_(VIXL_AARCH32_GENERATE_SIMULATOR_CODE),
         pool_end_(NULL) {
 #ifdef VIXL_DEBUG
-    SetAllowMacroInstructions(true);
+    SetAllowMacroInstructions(  // NOLINT(clang-analyzer-optin.cplusplus.VirtualCall)
+        true);
 #endif
   }
   MacroAssembler(byte* buffer, size_t size, InstructionSet isa = kDefaultISA)
@@ -296,7 +298,8 @@ class MacroAssembler : public Assembler, public MacroAssemblerInterface {
         generate_simulator_code_(VIXL_AARCH32_GENERATE_SIMULATOR_CODE),
         pool_end_(NULL) {
 #ifdef VIXL_DEBUG
-    SetAllowMacroInstructions(true);
+    SetAllowMacroInstructions(  // NOLINT(clang-analyzer-optin.cplusplus.VirtualCall)
+        true);
 #endif
   }
 
@@ -399,13 +402,13 @@ class MacroAssembler : public Assembler, public MacroAssemblerInterface {
       VIXL_ASSERT(GetBuffer()->Is32bitAligned());
     }
     // If we need to add padding, check if we have to emit the pool.
-    const int32_t pc = GetCursorOffset();
-    if (label->Needs16BitPadding(pc)) {
+    const int32_t cursor = GetCursorOffset();
+    if (label->Needs16BitPadding(cursor)) {
       const int kPaddingBytes = 2;
-      if (pool_manager_.MustEmit(pc, kPaddingBytes)) {
-        int32_t new_pc = pool_manager_.Emit(this, pc, kPaddingBytes);
-        USE(new_pc);
-        VIXL_ASSERT(new_pc == GetCursorOffset());
+      if (pool_manager_.MustEmit(cursor, kPaddingBytes)) {
+        int32_t new_cursor = pool_manager_.Emit(this, cursor, kPaddingBytes);
+        USE(new_cursor);
+        VIXL_ASSERT(new_cursor == GetCursorOffset());
       }
     }
     pool_manager_.Bind(this, label, GetCursorOffset());
@@ -427,30 +430,30 @@ class MacroAssembler : public Assembler, public MacroAssemblerInterface {
                                    Location* location,
                                    Condition* cond = NULL) {
     int size = info->size;
-    int32_t pc = GetCursorOffset();
+    int32_t cursor = GetCursorOffset();
     // If we need to emit a branch over the instruction, take this into account.
     if ((cond != NULL) && NeedBranch(cond)) {
       size += kBranchSize;
-      pc += kBranchSize;
+      cursor += kBranchSize;
     }
-    int32_t from = pc;
+    int32_t from = cursor;
     from += IsUsingT32() ? kT32PcDelta : kA32PcDelta;
     if (info->pc_needs_aligning) from = AlignDown(from, 4);
     int32_t min = from + info->min_offset;
     int32_t max = from + info->max_offset;
-    ForwardReference<int32_t> temp_ref(pc,
+    ForwardReference<int32_t> temp_ref(cursor,
                                        info->size,
                                        min,
                                        max,
                                        info->alignment);
     if (pool_manager_.MustEmit(GetCursorOffset(), size, &temp_ref, location)) {
-      int32_t new_pc = pool_manager_.Emit(this,
-                                          GetCursorOffset(),
-                                          info->size,
-                                          &temp_ref,
-                                          location);
-      USE(new_pc);
-      VIXL_ASSERT(new_pc == GetCursorOffset());
+      int32_t new_cursor = pool_manager_.Emit(this,
+                                              GetCursorOffset(),
+                                              info->size,
+                                              &temp_ref,
+                                              location);
+      USE(new_cursor);
+      VIXL_ASSERT(new_cursor == GetCursorOffset());
     }
   }
 
@@ -461,13 +464,13 @@ class MacroAssembler : public Assembler, public MacroAssemblerInterface {
     // into account, as well as potential 16-bit padding needed to reach the
     // minimum accessible location.
     int alignment = literal->GetMaxAlignment();
-    int32_t pc = GetCursorOffset();
-    int total_size = AlignUp(pc, alignment) - pc + literal->GetSize();
-    if (literal->Needs16BitPadding(pc)) total_size += 2;
-    if (pool_manager_.MustEmit(pc, total_size)) {
-      int32_t new_pc = pool_manager_.Emit(this, pc, total_size);
-      USE(new_pc);
-      VIXL_ASSERT(new_pc == GetCursorOffset());
+    int32_t cursor = GetCursorOffset();
+    int total_size = AlignUp(cursor, alignment) - cursor + literal->GetSize();
+    if (literal->Needs16BitPadding(cursor)) total_size += 2;
+    if (pool_manager_.MustEmit(cursor, total_size)) {
+      int32_t new_cursor = pool_manager_.Emit(this, cursor, total_size);
+      USE(new_cursor);
+      VIXL_ASSERT(new_cursor == GetCursorOffset());
     }
     pool_manager_.Bind(this, literal, GetCursorOffset());
     literal->EmitPoolObject(this);
@@ -2894,7 +2897,12 @@ class MacroAssembler : public Assembler, public MacroAssemblerInterface {
     VIXL_ASSERT(OutsideITBlock());
     MacroEmissionCheckScope guard(this);
     ITScope it_scope(this, &cond, guard);
-    pop(cond, registers);
+    if (registers.IsSingleRegister() &&
+        (!IsUsingT32() || !registers.IsR0toR7orPC())) {
+      pop(cond, registers.GetFirstAvailableRegister());
+    } else if (!registers.IsEmpty()) {
+      pop(cond, registers);
+    }
   }
   void Pop(RegisterList registers) { Pop(al, registers); }
 
@@ -2914,7 +2922,12 @@ class MacroAssembler : public Assembler, public MacroAssemblerInterface {
     VIXL_ASSERT(OutsideITBlock());
     MacroEmissionCheckScope guard(this);
     ITScope it_scope(this, &cond, guard);
-    push(cond, registers);
+    if (registers.IsSingleRegister() && !registers.Includes(sp) &&
+        (!IsUsingT32() || !registers.IsR0toR7orLR())) {
+      push(cond, registers.GetFirstAvailableRegister());
+    } else if (!registers.IsEmpty()) {
+      push(cond, registers);
+    }
   }
   void Push(RegisterList registers) { Push(al, registers); }
 
@@ -2924,7 +2937,12 @@ class MacroAssembler : public Assembler, public MacroAssemblerInterface {
     VIXL_ASSERT(OutsideITBlock());
     MacroEmissionCheckScope guard(this);
     ITScope it_scope(this, &cond, guard);
-    push(cond, rt);
+    if (IsUsingA32() && rt.IsSP()) {
+      // Only the A32 multiple-register form can push sp.
+      push(cond, RegisterList(rt));
+    } else {
+      push(cond, rt);
+    }
   }
   void Push(Register rt) { Push(al, rt); }
 
@@ -11170,10 +11188,11 @@ class UseScratchRegisterScope {
   uint32_t old_available_;      // kRRegister
   uint64_t old_available_vfp_;  // kVRegister
 
-  VIXL_DEBUG_NO_RETURN UseScratchRegisterScope(const UseScratchRegisterScope&) {
+  VIXL_NO_RETURN_IN_DEBUG_MODE UseScratchRegisterScope(
+      const UseScratchRegisterScope&) {
     VIXL_UNREACHABLE();
   }
-  VIXL_DEBUG_NO_RETURN void operator=(const UseScratchRegisterScope&) {
+  VIXL_NO_RETURN_IN_DEBUG_MODE void operator=(const UseScratchRegisterScope&) {
     VIXL_UNREACHABLE();
   }
 };

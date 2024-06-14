@@ -30,32 +30,32 @@ namespace vixl {
 namespace aarch64 {
 
 // CPURegList utilities.
-CPURegister CPURegList::PopLowestIndex() {
-  if (IsEmpty()) {
-    return NoCPUReg;
-  }
-  int index = CountTrailingZeros(list_);
-  VIXL_ASSERT((1 << index) & list_);
+CPURegister CPURegList::PopLowestIndex(RegList mask) {
+  RegList list = list_ & mask;
+  if (list == 0) return NoCPUReg;
+  int index = CountTrailingZeros(list);
+  VIXL_ASSERT(((static_cast<RegList>(1) << index) & list) != 0);
   Remove(index);
   return CPURegister(index, size_, type_);
 }
 
 
-CPURegister CPURegList::PopHighestIndex() {
-  VIXL_ASSERT(IsValid());
-  if (IsEmpty()) {
-    return NoCPUReg;
-  }
-  int index = CountLeadingZeros(list_);
+CPURegister CPURegList::PopHighestIndex(RegList mask) {
+  RegList list = list_ & mask;
+  if (list == 0) return NoCPUReg;
+  int index = CountLeadingZeros(list);
   index = kRegListSizeInBits - 1 - index;
-  VIXL_ASSERT((1 << index) & list_);
+  VIXL_ASSERT(((static_cast<RegList>(1) << index) & list) != 0);
   Remove(index);
   return CPURegister(index, size_, type_);
 }
 
 
 bool CPURegList::IsValid() const {
-  if ((type_ == CPURegister::kRegister) || (type_ == CPURegister::kVRegister)) {
+  if (type_ == CPURegister::kNoRegister) {
+    // We can't use IsEmpty here because that asserts IsValid().
+    return list_ == 0;
+  } else {
     bool is_valid = true;
     // Try to create a CPURegister for each element in the list.
     for (int i = 0; i < kRegListSizeInBits; i++) {
@@ -64,11 +64,6 @@ bool CPURegList::IsValid() const {
       }
     }
     return is_valid;
-  } else if (type_ == CPURegister::kNoRegister) {
-    // We can't use IsEmpty here because that asserts IsValid().
-    return list_ == 0;
-  } else {
-    return false;
   }
 }
 
@@ -149,145 +144,6 @@ const CPURegList kCalleeSavedV = CPURegList::GetCalleeSavedV();
 const CPURegList kCallerSaved = CPURegList::GetCallerSaved();
 const CPURegList kCallerSavedV = CPURegList::GetCallerSavedV();
 
-
-// Registers.
-#define WREG(n) w##n,
-const Register Register::wregisters[] = {AARCH64_REGISTER_CODE_LIST(WREG)};
-#undef WREG
-
-#define XREG(n) x##n,
-const Register Register::xregisters[] = {AARCH64_REGISTER_CODE_LIST(XREG)};
-#undef XREG
-
-#define BREG(n) b##n,
-const VRegister VRegister::bregisters[] = {AARCH64_REGISTER_CODE_LIST(BREG)};
-#undef BREG
-
-#define HREG(n) h##n,
-const VRegister VRegister::hregisters[] = {AARCH64_REGISTER_CODE_LIST(HREG)};
-#undef HREG
-
-#define SREG(n) s##n,
-const VRegister VRegister::sregisters[] = {AARCH64_REGISTER_CODE_LIST(SREG)};
-#undef SREG
-
-#define DREG(n) d##n,
-const VRegister VRegister::dregisters[] = {AARCH64_REGISTER_CODE_LIST(DREG)};
-#undef DREG
-
-#define QREG(n) q##n,
-const VRegister VRegister::qregisters[] = {AARCH64_REGISTER_CODE_LIST(QREG)};
-#undef QREG
-
-#define VREG(n) v##n,
-const VRegister VRegister::vregisters[] = {AARCH64_REGISTER_CODE_LIST(VREG)};
-#undef VREG
-
-
-const Register& Register::GetWRegFromCode(unsigned code) {
-  if (code == kSPRegInternalCode) {
-    return wsp;
-  } else {
-    VIXL_ASSERT(code < kNumberOfRegisters);
-    return wregisters[code];
-  }
-}
-
-
-const Register& Register::GetXRegFromCode(unsigned code) {
-  if (code == kSPRegInternalCode) {
-    return sp;
-  } else {
-    VIXL_ASSERT(code < kNumberOfRegisters);
-    return xregisters[code];
-  }
-}
-
-
-const VRegister& VRegister::GetBRegFromCode(unsigned code) {
-  VIXL_ASSERT(code < kNumberOfVRegisters);
-  return bregisters[code];
-}
-
-
-const VRegister& VRegister::GetHRegFromCode(unsigned code) {
-  VIXL_ASSERT(code < kNumberOfVRegisters);
-  return hregisters[code];
-}
-
-
-const VRegister& VRegister::GetSRegFromCode(unsigned code) {
-  VIXL_ASSERT(code < kNumberOfVRegisters);
-  return sregisters[code];
-}
-
-
-const VRegister& VRegister::GetDRegFromCode(unsigned code) {
-  VIXL_ASSERT(code < kNumberOfVRegisters);
-  return dregisters[code];
-}
-
-
-const VRegister& VRegister::GetQRegFromCode(unsigned code) {
-  VIXL_ASSERT(code < kNumberOfVRegisters);
-  return qregisters[code];
-}
-
-
-const VRegister& VRegister::GetVRegFromCode(unsigned code) {
-  VIXL_ASSERT(code < kNumberOfVRegisters);
-  return vregisters[code];
-}
-
-
-const Register& CPURegister::W() const {
-  VIXL_ASSERT(IsValidRegister());
-  return Register::GetWRegFromCode(code_);
-}
-
-
-const Register& CPURegister::X() const {
-  VIXL_ASSERT(IsValidRegister());
-  return Register::GetXRegFromCode(code_);
-}
-
-
-const VRegister& CPURegister::B() const {
-  VIXL_ASSERT(IsValidVRegister());
-  return VRegister::GetBRegFromCode(code_);
-}
-
-
-const VRegister& CPURegister::H() const {
-  VIXL_ASSERT(IsValidVRegister());
-  return VRegister::GetHRegFromCode(code_);
-}
-
-
-const VRegister& CPURegister::S() const {
-  VIXL_ASSERT(IsValidVRegister());
-  return VRegister::GetSRegFromCode(code_);
-}
-
-
-const VRegister& CPURegister::D() const {
-  VIXL_ASSERT(IsValidVRegister());
-  return VRegister::GetDRegFromCode(code_);
-}
-
-
-const VRegister& CPURegister::Q() const {
-  VIXL_ASSERT(IsValidVRegister());
-  return VRegister::GetQRegFromCode(code_);
-}
-
-
-const VRegister& CPURegister::V() const {
-  VIXL_ASSERT(IsValidVRegister());
-  return VRegister::GetVRegFromCode(code_);
-}
-
-
 // Operand.
 Operand::Operand(int64_t immediate)
     : immediate_(immediate),
@@ -296,6 +152,12 @@ Operand::Operand(int64_t immediate)
       extend_(NO_EXTEND),
       shift_amount_(0) {}
 
+Operand::Operand(IntegerOperand immediate)
+    : immediate_(immediate.AsIntN(64)),
+      reg_(NoReg),
+      shift_(NO_SHIFT),
+      extend_(NO_EXTEND),
+      shift_amount_(0) {}
 
 Operand::Operand(Register reg, Shift shift, unsigned shift_amount)
     : reg_(reg),
@@ -471,6 +333,24 @@ MemOperand::MemOperand(Register base, const Operand& offset, AddrMode addrmode)
 }
 
 
+bool MemOperand::IsPlainRegister() const {
+  return IsImmediateOffset() && (GetOffset() == 0);
+}
+
+
+bool MemOperand::IsEquivalentToPlainRegister() const {
+  if (regoffset_.Is(NoReg)) {
+    // Immediate offset, pre-index or post-index.
+    return GetOffset() == 0;
+  } else if (GetRegisterOffset().IsZero()) {
+    // Zero register offset, pre-index or post-index.
+    // We can ignore shift and extend options because they all result in zero.
+    return true;
+  }
+  return false;
+}
+
+
 bool MemOperand::IsImmediateOffset() const {
   return (addrmode_ == Offset) && regoffset_.Is(NoReg);
 }
@@ -480,18 +360,79 @@ bool MemOperand::IsRegisterOffset() const {
   return (addrmode_ == Offset) && !regoffset_.Is(NoReg);
 }
 
-
 bool MemOperand::IsPreIndex() const { return addrmode_ == PreIndex; }
-
-
 bool MemOperand::IsPostIndex() const { return addrmode_ == PostIndex; }
 
+bool MemOperand::IsImmediatePreIndex() const {
+  return IsPreIndex() && regoffset_.Is(NoReg);
+}
+
+bool MemOperand::IsImmediatePostIndex() const {
+  return IsPostIndex() && regoffset_.Is(NoReg);
+}
 
 void MemOperand::AddOffset(int64_t offset) {
   VIXL_ASSERT(IsImmediateOffset());
   offset_ += offset;
 }
 
+
+bool SVEMemOperand::IsValid() const {
+#ifdef VIXL_DEBUG
+  {
+    // It should not be possible for an SVEMemOperand to match multiple types.
+    int count = 0;
+    if (IsScalarPlusImmediate()) count++;
+    if (IsScalarPlusScalar()) count++;
+    if (IsScalarPlusVector()) count++;
+    if (IsVectorPlusImmediate()) count++;
+    if (IsVectorPlusScalar()) count++;
+    if (IsVectorPlusVector()) count++;
+    VIXL_ASSERT(count <= 1);
+  }
+#endif
+
+  // We can't have a register _and_ an immediate offset.
+  if ((offset_ != 0) && (!regoffset_.IsNone())) return false;
+
+  if (shift_amount_ != 0) {
+    // Only shift and extend modifiers can take a shift amount.
+    switch (mod_) {
+      case NO_SVE_OFFSET_MODIFIER:
+      case SVE_MUL_VL:
+        return false;
+      case SVE_LSL:
+      case SVE_UXTW:
+      case SVE_SXTW:
+        // Fall through.
+        break;
+    }
+  }
+
+  return IsScalarPlusImmediate() || IsScalarPlusScalar() ||
+         IsScalarPlusVector() || IsVectorPlusImmediate() ||
+         IsVectorPlusScalar() || IsVectorPlusVector();
+}
+
+
+bool SVEMemOperand::IsEquivalentToScalar() const {
+  if (IsScalarPlusImmediate()) {
+    return GetImmediateOffset() == 0;
+  }
+  if (IsScalarPlusScalar()) {
+    // We can ignore the shift because it will still result in zero.
+    return GetScalarOffset().IsZero();
+  }
+  // Forms involving vectors are never equivalent to a single scalar.
+  return false;
+}
+
+bool SVEMemOperand::IsPlainRegister() const {
+  if (IsScalarPlusImmediate()) {
+    return GetImmediateOffset() == 0;
+  }
+  return false;
+}
 
 GenericOperand::GenericOperand(const CPURegister& reg)
     : cpu_register_(reg), mem_op_size_(0) {
@@ -524,5 +465,5 @@ bool GenericOperand::Equals(const GenericOperand& other) const {
   }
   return false;
 }
-}
-}  // namespace vixl::aarch64
+}  // namespace aarch64
+}  // namespace vixl

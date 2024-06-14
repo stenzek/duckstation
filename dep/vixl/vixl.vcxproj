@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\msvc\vsprops\Configurations.props" />
-
   <ItemGroup>
     <ClInclude Include="include\vixl\aarch32\assembler-aarch32.h">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM'">true</ExcludedFromBuild>
@@ -42,19 +41,25 @@
     <ClInclude Include="include\vixl\aarch64\decoder-aarch64.h">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="include\vixl\aarch64\decoder-constants-aarch64.h">
+      <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="include\vixl\aarch64\decoder-visitor-map-aarch64.h">
+      <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="include\vixl\aarch64\disasm-aarch64.h">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="include\vixl\aarch64\instructions-aarch64.h">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="include\vixl\aarch64\instrument-aarch64.h">
-      <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="include\vixl\aarch64\macro-assembler-aarch64.h">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="include\vixl\aarch64\operands-aarch64.h">
+      <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="include\vixl\aarch64\registers-aarch64.h">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="include\vixl\aarch64\simulator-aarch64.h">
@@ -101,6 +106,9 @@
     <ClCompile Include="src\aarch64\assembler-aarch64.cc">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\aarch64\assembler-sve-aarch64.cc">
+      <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\aarch64\cpu-aarch64.cc">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -116,13 +124,13 @@
     <ClCompile Include="src\aarch64\instructions-aarch64.cc">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="src\aarch64\instrument-aarch64.cc">
-      <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="src\aarch64\logic-aarch64.cc">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\aarch64\macro-assembler-aarch64.cc">
+      <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\aarch64\macro-assembler-sve-aarch64.cc">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\aarch64\operands-aarch64.cc">
@@ -131,7 +139,7 @@
     <ClCompile Include="src\aarch64\pointer-auth-aarch64.cc">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="src\aarch64\simulator-aarch64.cc">
+    <ClCompile Include="src\aarch64\registers-aarch64.cc">
       <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\code-buffer-vixl.cc" />
@@ -139,18 +147,14 @@
     <ClCompile Include="src\cpu-features.cc" />
     <ClCompile Include="src\utils-vixl.cc" />
   </ItemGroup>
-
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8906836E-F06E-46E8-B11A-74E5E8C7B8FB}</ProjectGuid>
   </PropertyGroup>
-
   <Import Project="..\msvc\vsprops\StaticLibrary.props" />
-
   <PropertyGroup Condition="'$(Platform)'=='ARM64'">
     <VixlPreprocessorDefinitions>VIXL_INCLUDE_TARGET_AARCH64;VIXL_CODE_BUFFER_MALLOC</VixlPreprocessorDefinitions>
     <VixlIncludeDirectories>$(ProjectDir)include\vixl\aarch64</VixlIncludeDirectories>
   </PropertyGroup>
-
   <ItemDefinitionGroup>
     <ClCompile>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
@@ -159,6 +163,5 @@
       <AdditionalOptions Condition="$(Configuration.Contains(Clang))"> -Wno-deprecated-enum-enum-conversion %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
-  
   <Import Project="..\msvc\vsprops\Targets.props" />
 </Project>

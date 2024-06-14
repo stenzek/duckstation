@@ -27,11 +27,16 @@
 #ifndef VIXL_AARCH64_DISASM_AARCH64_H
 #define VIXL_AARCH64_DISASM_AARCH64_H
 
+#include <functional>
+#include <unordered_map>
+#include <utility>
+
 #include "../globals-vixl.h"
 #include "../utils-vixl.h"
 
 #include "cpu-features-auditor-aarch64.h"
 #include "decoder-aarch64.h"
+#include "decoder-visitor-map-aarch64.h"
 #include "instructions-aarch64.h"
 #include "operands-aarch64.h"
 
@@ -45,11 +50,9 @@ class Disassembler : public DecoderVisitor {
   virtual ~Disassembler();
   char* GetOutput();
 
-// Declare all Visitor functions.
-#define DECLARE(A) \
-  virtual void Visit##A(const Instruction* instr) VIXL_OVERRIDE;
-  VISITOR_LIST(DECLARE)
-#undef DECLARE
+  // Declare all Visitor functions.
+  virtual void Visit(Metadata* metadata,
+                     const Instruction* instr) VIXL_OVERRIDE;
 
  protected:
   virtual void ProcessOutput(const Instruction* instr);
@@ -110,12 +113,145 @@ class Disassembler : public DecoderVisitor {
   int64_t CodeRelativeAddress(const void* instr);
 
  private:
+#define DECLARE(A) virtual void Visit##A(const Instruction* instr);
+  VISITOR_LIST(DECLARE)
+#undef DECLARE
+
+  using FormToVisitorFnMap = std::unordered_map<
+      uint32_t,
+      std::function<void(Disassembler*, const Instruction*)>>;
+  static const FormToVisitorFnMap* GetFormToVisitorFnMap();
+
+  std::string mnemonic_;
+  uint32_t form_hash_;
+
+  void SetMnemonicFromForm(const std::string& form) {
+    if (form != "unallocated") {
+      VIXL_ASSERT(form.find_first_of('_') != std::string::npos);
+      mnemonic_ = form.substr(0, form.find_first_of('_'));
+    }
+  }
+
+  void Disassemble_PdT_PgZ_ZnT_ZmT(const Instruction* instr);
+  void Disassemble_ZdB_Zn1B_Zn2B_imm(const Instruction* instr);
+  void Disassemble_ZdB_ZnB_ZmB(const Instruction* instr);
+  void Disassemble_ZdD_PgM_ZnS(const Instruction* instr);
+  void Disassemble_ZdD_ZnD_ZmD(const Instruction* instr);
+  void Disassemble_ZdD_ZnD_ZmD_imm(const Instruction* instr);
+  void Disassemble_ZdD_ZnS_ZmS_imm(const Instruction* instr);
+  void Disassemble_ZdH_PgM_ZnS(const Instruction* instr);
+  void Disassemble_ZdH_ZnH_ZmH_imm(const Instruction* instr);
+  void Disassemble_ZdS_PgM_ZnD(const Instruction* instr);
+  void Disassemble_ZdS_PgM_ZnH(const Instruction* instr);
+  void Disassemble_ZdS_PgM_ZnS(const Instruction* instr);
+  void Disassemble_ZdS_ZnH_ZmH_imm(const Instruction* instr);
+  void Disassemble_ZdS_ZnS_ZmS(const Instruction* instr);
+  void Disassemble_ZdS_ZnS_ZmS_imm(const Instruction* instr);
+  void Disassemble_ZdT_PgM_ZnT(const Instruction* instr);
+  void Disassemble_ZdT_PgZ_ZnT_ZmT(const Instruction* instr);
+  void Disassemble_ZdT_Pg_Zn1T_Zn2T(const Instruction* instr);
+  void Disassemble_ZdT_Zn1T_Zn2T_ZmT(const Instruction* instr);
+  void Disassemble_ZdT_ZnT_ZmT(const Instruction* instr);
+  void Disassemble_ZdT_ZnT_ZmTb(const Instruction* instr);
+  void Disassemble_ZdT_ZnTb(const Instruction* instr);
+  void Disassemble_ZdT_ZnTb_ZmTb(const Instruction* instr);
+  void Disassemble_ZdaD_ZnD_ZmD_imm(const Instruction* instr);
+  void Disassemble_ZdaD_ZnH_ZmH_imm_const(const Instruction* instr);
+  void Disassemble_ZdaD_ZnS_ZmS_imm(const Instruction* instr);
+  void Disassemble_ZdaH_ZnH_ZmH_imm(const Instruction* instr);
+  void Disassemble_ZdaH_ZnH_ZmH_imm_const(const Instruction* instr);
+  void Disassemble_ZdaS_ZnB_ZmB_imm_const(const Instruction* instr);
+  void Disassemble_ZdaS_ZnH_ZmH(const Instruction* instr);
+  void Disassemble_ZdaS_ZnH_ZmH_imm(const Instruction* instr);
+  void Disassemble_ZdaS_ZnS_ZmS_imm(const Instruction* instr);
+  void Disassemble_ZdaS_ZnS_ZmS_imm_const(const Instruction* instr);
+  void Disassemble_ZdaT_PgM_ZnTb(const Instruction* instr);
+  void Disassemble_ZdaT_ZnT_ZmT(const Instruction* instr);
+  void Disassemble_ZdaT_ZnT_ZmT_const(const Instruction* instr);
+  void Disassemble_ZdaT_ZnT_const(const Instruction* instr);
+  void Disassemble_ZdaT_ZnTb_ZmTb(const Instruction* instr);
+  void Disassemble_ZdaT_ZnTb_ZmTb_const(const Instruction* instr);
+  void Disassemble_ZdnB_ZdnB(const Instruction* instr);
+  void Disassemble_ZdnB_ZdnB_ZmB(const Instruction* instr);
+  void Disassemble_ZdnS_ZdnS_ZmS(const Instruction* instr);
+  void Disassemble_ZdnT_PgM_ZdnT_ZmT(const Instruction* instr);
+  void Disassemble_ZdnT_PgM_ZdnT_const(const Instruction* instr);
+  void Disassemble_ZdnT_ZdnT_ZmT_const(const Instruction* instr);
+  void Disassemble_ZtD_PgZ_ZnD_Xm(const Instruction* instr);
+  void Disassemble_ZtD_Pg_ZnD_Xm(const Instruction* instr);
+  void Disassemble_ZtS_PgZ_ZnS_Xm(const Instruction* instr);
+  void Disassemble_ZtS_Pg_ZnS_Xm(const Instruction* instr);
+  void Disassemble_ZdaS_ZnB_ZmB(const Instruction* instr);
+  void Disassemble_Vd4S_Vn16B_Vm16B(const Instruction* instr);
+
+  void DisassembleCpy(const Instruction* instr);
+  void DisassembleSet(const Instruction* instr);
+  void DisassembleMinMaxImm(const Instruction* instr);
+
+  void DisassembleSVEShiftLeftImm(const Instruction* instr);
+  void DisassembleSVEShiftRightImm(const Instruction* instr);
+  void DisassembleSVEAddSubCarry(const Instruction* instr);
+  void DisassembleSVEAddSubHigh(const Instruction* instr);
+  void DisassembleSVEComplexIntAddition(const Instruction* instr);
+  void DisassembleSVEBitwiseTernary(const Instruction* instr);
+  void DisassembleSVEFlogb(const Instruction* instr);
+  void DisassembleSVEFPPair(const Instruction* instr);
+
+  void DisassembleNoArgs(const Instruction* instr);
+
+  void DisassembleNEONMulByElementLong(const Instruction* instr);
+  void DisassembleNEONDotProdByElement(const Instruction* instr);
+  void DisassembleNEONFPMulByElement(const Instruction* instr);
+  void DisassembleNEONHalfFPMulByElement(const Instruction* instr);
+  void DisassembleNEONFPMulByElementLong(const Instruction* instr);
+  void DisassembleNEONComplexMulByElement(const Instruction* instr);
+  void DisassembleNEON2RegLogical(const Instruction* instr);
+  void DisassembleNEON2RegExtract(const Instruction* instr);
+  void DisassembleNEON2RegAddlp(const Instruction* instr);
+  void DisassembleNEON2RegCompare(const Instruction* instr);
+  void DisassembleNEON2RegFPCompare(const Instruction* instr);
+  void DisassembleNEON2RegFPConvert(const Instruction* instr);
+  void DisassembleNEON2RegFP(const Instruction* instr);
+  void DisassembleNEON3SameLogical(const Instruction* instr);
+  void DisassembleNEON3SameFHM(const Instruction* instr);
+  void DisassembleNEON3SameNoD(const Instruction* instr);
+  void DisassembleNEONShiftLeftLongImm(const Instruction* instr);
+  void DisassembleNEONShiftRightImm(const Instruction* instr);
+  void DisassembleNEONShiftRightNarrowImm(const Instruction* instr);
+  void DisassembleNEONScalarSatMulLongIndex(const Instruction* instr);
+  void DisassembleNEONFPScalarMulIndex(const Instruction* instr);
+  void DisassembleNEONFPScalar3Same(const Instruction* instr);
+  void DisassembleNEONScalar3SameOnlyD(const Instruction* instr);
+  void DisassembleNEONFPAcrossLanes(const Instruction* instr);
+  void DisassembleNEONFP16AcrossLanes(const Instruction* instr);
+  void DisassembleNEONScalarShiftImmOnlyD(const Instruction* instr);
+  void DisassembleNEONScalarShiftRightNarrowImm(const Instruction* instr);
+  void DisassembleNEONScalar2RegMiscOnlyD(const Instruction* instr);
+  void DisassembleNEONFPScalar2RegMisc(const Instruction* instr);
+  void DisassembleNEONPolynomialMul(const Instruction* instr);
+
+  void DisassembleMTELoadTag(const Instruction* instr);
+  void DisassembleMTEStoreTag(const Instruction* instr);
+  void DisassembleMTEStoreTagPair(const Instruction* instr);
+
+  void Disassemble_XdSP_XnSP_Xm(const Instruction* instr);
+  void Disassemble_XdSP_XnSP_uimm6_uimm4(const Instruction* instr);
+  void Disassemble_Xd_XnSP_Xm(const Instruction* instr);
+  void Disassemble_Xd_XnSP_XmSP(const Instruction* instr);
+
   void Format(const Instruction* instr,
               const char* mnemonic,
-              const char* format);
+              const char* format0,
+              const char* format1 = NULL);
+  void FormatWithDecodedMnemonic(const Instruction* instr,
+                                 const char* format0,
+                                 const char* format1 = NULL);
+
   void Substitute(const Instruction* instr, const char* string);
   int SubstituteField(const Instruction* instr, const char* format);
   int SubstituteRegisterField(const Instruction* instr, const char* format);
+  int SubstitutePredicateRegisterField(const Instruction* instr,
+                                       const char* format);
   int SubstituteImmediateField(const Instruction* instr, const char* format);
   int SubstituteLiteralField(const Instruction* instr, const char* format);
   int SubstituteBitfieldImmediateField(const Instruction* instr,
@@ -130,6 +266,14 @@ class Disassembler : public DecoderVisitor {
   int SubstituteBarrierField(const Instruction* instr, const char* format);
   int SubstituteSysOpField(const Instruction* instr, const char* format);
   int SubstituteCrField(const Instruction* instr, const char* format);
+  int SubstituteIntField(const Instruction* instr, const char* format);
+  int SubstituteSVESize(const Instruction* instr, const char* format);
+  int SubstituteTernary(const Instruction* instr, const char* format);
+
+  std::pair<unsigned, unsigned> GetRegNumForField(const Instruction* instr,
+                                                  char reg_prefix,
+                                                  const char* field);
+
   bool RdIsZROrSP(const Instruction* instr) const {
     return (instr->GetRd() == kZeroRegCode);
   }
@@ -173,6 +317,7 @@ class PrintDisassembler : public Disassembler {
       : cpu_features_auditor_(NULL),
         cpu_features_prefix_("// Needs: "),
         cpu_features_suffix_(""),
+        signed_addresses_(false),
         stream_(stream) {}
 
   // Convenience helpers for quick disassembly, without having to manually
@@ -201,12 +346,23 @@ class PrintDisassembler : public Disassembler {
     cpu_features_suffix_ = suffix;
   }
 
+  // By default, addresses are printed as simple, unsigned 64-bit hex values.
+  //
+  // With `PrintSignedAddresses(true)`:
+  //  - negative addresses are printed as "-0x1234...",
+  //  - positive addresses have a leading space, like " 0x1234...", to maintain
+  //    alignment.
+  //
+  // This is most useful in combination with Disassembler::MapCodeAddress(...).
+  void PrintSignedAddresses(bool s) { signed_addresses_ = s; }
+
  protected:
   virtual void ProcessOutput(const Instruction* instr) VIXL_OVERRIDE;
 
   CPUFeaturesAuditor* cpu_features_auditor_;
   const char* cpu_features_prefix_;
   const char* cpu_features_suffix_;
+  bool signed_addresses_;
 
  private:
   FILE* stream_;

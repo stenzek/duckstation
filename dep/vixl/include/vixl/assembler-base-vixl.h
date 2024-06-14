@@ -29,6 +29,12 @@
 
 #include "code-buffer-vixl.h"
 
+// Microsoft Visual C++ defines a `mvn` macro that conflicts with our own
+// definition.
+#if defined(_MSC_VER) && defined(mvn)
+#undef mvn
+#endif
+
 namespace vixl {
 
 class CodeBufferCheckScope;
@@ -37,9 +43,8 @@ namespace internal {
 
 class AssemblerBase {
  public:
-  AssemblerBase() : allow_assembler_(false) {}
-  explicit AssemblerBase(size_t capacity)
-      : buffer_(capacity), allow_assembler_(false) {}
+  AssemblerBase()
+      : allow_assembler_(false) {}
   AssemblerBase(byte* buffer, size_t capacity)
       : buffer_(buffer, capacity), allow_assembler_(false) {}
 

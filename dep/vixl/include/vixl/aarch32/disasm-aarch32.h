@@ -33,8 +33,14 @@ extern "C" {
 
 #include <iomanip>
 
-#include "constants-aarch32.h"
-#include "operands-aarch32.h"
+#include "aarch32/constants-aarch32.h"
+#include "aarch32/operands-aarch32.h"
+
+// Microsoft Visual C++ defines a `mvn` macro that conflicts with our own
+// definition.
+#if defined(_MSC_VER) && defined(mvn)
+#undef mvn
+#endif
 
 namespace vixl {
 namespace aarch32 {

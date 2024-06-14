@@ -27,11 +27,10 @@
 #ifndef VIXL_POOL_MANAGER_H_
 #define VIXL_POOL_MANAGER_H_
 
-#include <stdint.h>
-
 #include <cstddef>
 #include <limits>
 #include <map>
+#include <stdint.h>
 #include <vector>
 
 #include "globals-vixl.h"
@@ -142,7 +141,7 @@ class LocationBase {
         is_bound_(true),
         location_(location) {}
 
-  virtual ~LocationBase() {}
+  virtual ~LocationBase() VIXL_NEGATIVE_TESTING_ALLOW_EXCEPTION {}
 
   // The PoolManager should assume ownership of some objects, and delete them
   // after they have been placed. This can happen for example for literals that
@@ -369,8 +368,8 @@ class ForwardReference {
 
   // Specify the possible locations where the object could be stored. AArch32's
   // PC offset, and T32's PC alignment calculations should be applied by the
-  // Assembler, not here. The PoolManager deals only with simple locationes.
-  // Including min_object_adddress_ is necessary to handle AArch32 some
+  // Assembler, not here. The PoolManager deals only with simple locations.
+  // Including min_object_address_ is necessary to handle AArch32 some
   // instructions which have a minimum offset of 0, but also have the implicit
   // PC offset.
   // Note that this structure cannot handle sparse ranges, such as A32's ADR,
@@ -397,7 +396,7 @@ class PoolManager {
         max_pool_size_(0),
         monitor_(0) {}
 
-  ~PoolManager();
+  ~PoolManager() VIXL_NEGATIVE_TESTING_ALLOW_EXCEPTION;
 
   // Check if we will need to emit the pool at location 'pc', when planning to
   // generate a certain number of bytes. This optionally takes a

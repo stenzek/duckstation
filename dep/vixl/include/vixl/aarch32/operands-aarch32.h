@@ -28,7 +28,7 @@
 #ifndef VIXL_AARCH32_OPERANDS_AARCH32_H_
 #define VIXL_AARCH32_OPERANDS_AARCH32_H_
 
-#include "instructions-aarch32.h"
+#include "aarch32/instructions-aarch32.h"
 
 namespace vixl {
 namespace aarch32 {
@@ -54,28 +54,16 @@ class Operand {
   // This is allowed to be an implicit constructor because Operand is
   // a wrapper class that doesn't normally perform any type conversion.
   Operand(uint32_t immediate)  // NOLINT(runtime/explicit)
-      : imm_(immediate),
-        rm_(NoReg),
-        shift_(LSL),
-        amount_(0),
-        rs_(NoReg) {}
+      : imm_(immediate), rm_(NoReg), shift_(LSL), amount_(0), rs_(NoReg) {}
   Operand(int32_t immediate)  // NOLINT(runtime/explicit)
-      : imm_(immediate),
-        rm_(NoReg),
-        shift_(LSL),
-        amount_(0),
-        rs_(NoReg) {}
+      : imm_(immediate), rm_(NoReg), shift_(LSL), amount_(0), rs_(NoReg) {}
 
   // rm
   // where rm is the base register
   // This is allowed to be an implicit constructor because Operand is
   // a wrapper class that doesn't normally perform any type conversion.
   Operand(Register rm)  // NOLINT(runtime/explicit)
-      : imm_(0),
-        rm_(rm),
-        shift_(LSL),
-        amount_(0),
-        rs_(NoReg) {
+      : imm_(0), rm_(rm), shift_(LSL), amount_(0), rs_(NoReg) {
     VIXL_ASSERT(rm_.IsValid());
   }
 
@@ -202,7 +190,7 @@ class Operand {
   }
 
  private:
-// Forbid implicitely creating operands around types that cannot be encoded
+// Forbid implicitly creating operands around types that cannot be encoded
 // into a uint32_t without loss.
 #if __cplusplus >= 201103L
   Operand(int64_t) = delete;   // NOLINT(runtime/explicit)
@@ -245,22 +233,18 @@ class NeonImmediate {
   // This is allowed to be an implicit constructor because NeonImmediate is
   // a wrapper class that doesn't normally perform any type conversion.
   NeonImmediate(uint32_t immediate)  // NOLINT(runtime/explicit)
-      : imm_(immediate),
-        immediate_type_(I32) {}
+      : imm_(immediate), immediate_type_(I32) {}
   NeonImmediate(int immediate)  // NOLINT(runtime/explicit)
-      : imm_(immediate),
-        immediate_type_(I32) {}
+      : imm_(immediate), immediate_type_(I32) {}
 
   // { #<immediate> }
   // where <immediate> is a 64 bit number
   // This is allowed to be an implicit constructor because NeonImmediate is
   // a wrapper class that doesn't normally perform any type conversion.
   NeonImmediate(int64_t immediate)  // NOLINT(runtime/explicit)
-      : imm_(immediate),
-        immediate_type_(I64) {}
+      : imm_(immediate), immediate_type_(I64) {}
   NeonImmediate(uint64_t immediate)  // NOLINT(runtime/explicit)
-      : imm_(immediate),
-        immediate_type_(I64) {}
+      : imm_(immediate), immediate_type_(I64) {}
 
   // { #<immediate> }
   // where <immediate> is a non zero floating point number which can be encoded
@@ -268,11 +252,9 @@ class NeonImmediate {
   // This is allowed to be an implicit constructor because NeonImmediate is
   // a wrapper class that doesn't normally perform any type conversion.
   NeonImmediate(float immediate)  // NOLINT(runtime/explicit)
-      : imm_(immediate),
-        immediate_type_(F32) {}
+      : imm_(immediate), immediate_type_(F32) {}
   NeonImmediate(double immediate)  // NOLINT(runtime/explicit)
-      : imm_(immediate),
-        immediate_type_(F64) {}
+      : imm_(immediate), immediate_type_(F64) {}
 
   NeonImmediate(const NeonImmediate& src)
       : imm_(src.imm_), immediate_type_(src.immediate_type_) {}
@@ -311,7 +293,7 @@ class NeonImmediate {
 
   bool IsInteger32() const { return immediate_type_.Is(I32); }
   bool IsInteger64() const { return immediate_type_.Is(I64); }
-  bool IsInteger() const { return IsInteger32() | IsInteger64(); }
+  bool IsInteger() const { return IsInteger32() || IsInteger64(); }
   bool IsFloat() const { return immediate_type_.Is(F32); }
   bool IsDouble() const { return immediate_type_.Is(F64); }
   bool IsFloatZero() const {
@@ -374,29 +356,21 @@ std::ostream& operator<<(std::ostream& os, const NeonImmediate& operand);
 class NeonOperand {
  public:
   NeonOperand(int32_t immediate)  // NOLINT(runtime/explicit)
-      : imm_(immediate),
-        rm_(NoDReg) {}
+      : imm_(immediate), rm_(NoDReg) {}
   NeonOperand(uint32_t immediate)  // NOLINT(runtime/explicit)
-      : imm_(immediate),
-        rm_(NoDReg) {}
+      : imm_(immediate), rm_(NoDReg) {}
   NeonOperand(int64_t immediate)  // NOLINT(runtime/explicit)
-      : imm_(immediate),
-        rm_(NoDReg) {}
+      : imm_(immediate), rm_(NoDReg) {}
   NeonOperand(uint64_t immediate)  // NOLINT(runtime/explicit)
-      : imm_(immediate),
-        rm_(NoDReg) {}
+      : imm_(immediate), rm_(NoDReg) {}
   NeonOperand(float immediate)  // NOLINT(runtime/explicit)
-      : imm_(immediate),
-        rm_(NoDReg) {}
+      : imm_(immediate), rm_(NoDReg) {}
   NeonOperand(double immediate)  // NOLINT(runtime/explicit)
-      : imm_(immediate),
-        rm_(NoDReg) {}
+      : imm_(immediate), rm_(NoDReg) {}
   NeonOperand(const NeonImmediate& imm)  // NOLINT(runtime/explicit)
-      : imm_(imm),
-        rm_(NoDReg) {}
+      : imm_(imm), rm_(NoDReg) {}
   NeonOperand(const VRegister& rm)  // NOLINT(runtime/explicit)
-      : imm_(0),
-        rm_(rm) {
+      : imm_(0), rm_(rm) {
     VIXL_ASSERT(rm_.IsValid());
   }
 
@@ -641,7 +615,7 @@ class ImmediateVorn : public ImmediateVorr {
 //     - a shifted index register <Rm>, <shift> #<amount>
 //
 //   The index register may have an associated {+/-} sign,
-//   which if ommitted, defaults to + .
+//   which if omitted, defaults to + .
 //
 //   We have two constructors for the offset:
 //

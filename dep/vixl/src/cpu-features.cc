@@ -24,119 +24,71 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "cpu-features.h"
+
 #include <ostream>
 
-#include "cpu-features.h"
 #include "globals-vixl.h"
 #include "utils-vixl.h"
 
+#if defined(__aarch64__) && defined(VIXL_INCLUDE_TARGET_AARCH64)
+#include "aarch64/cpu-aarch64.h"
+#define VIXL_USE_AARCH64_CPU_HELPERS
+#endif
+
 namespace vixl {
-
-static uint64_t MakeFeatureMask(CPUFeatures::Feature feature) {
-  if (feature == CPUFeatures::kNone) {
-    return 0;
-  } else {
-    // Check that the shift is well-defined, and that the feature is valid.
-    VIXL_STATIC_ASSERT(CPUFeatures::kNumberOfFeatures <=
-                       (sizeof(uint64_t) * 8));
-    VIXL_ASSERT(feature < CPUFeatures::kNumberOfFeatures);
-    return UINT64_C(1) << feature;
-  }
-}
-
-CPUFeatures::CPUFeatures(Feature feature0,
-                         Feature feature1,
-                         Feature feature2,
-                         Feature feature3)
-    : features_(0) {
-  Combine(feature0, feature1, feature2, feature3);
-}
 
 CPUFeatures CPUFeatures::All() {
   CPUFeatures all;
-  // Check that the shift is well-defined.
-  VIXL_STATIC_ASSERT(CPUFeatures::kNumberOfFeatures < (sizeof(uint64_t) * 8));
-  all.features_ = (UINT64_C(1) << kNumberOfFeatures) - 1;
+  all.features_.set();
   return all;
 }
 
-CPUFeatures CPUFeatures::InferFromOS() {
-  // TODO: Actually infer features from the OS.
+CPUFeatures CPUFeatures::InferFromIDRegisters() {
+  // This function assumes that kIDRegisterEmulation is available.
+  CPUFeatures features(CPUFeatures::kIDRegisterEmulation);
+#ifdef VIXL_USE_AARCH64_CPU_HELPERS
+  // Note that the Linux kernel filters these values during emulation, so the
+  // results may not exactly match the expected hardware support.
+  features.Combine(aarch64::CPU::InferCPUFeaturesFromIDRegisters());
+#endif
+  return features;
+}
+
+CPUFeatures CPUFeatures::InferFromOS(QueryIDRegistersOption option) {
+#ifdef VIXL_USE_AARCH64_CPU_HELPERS
+  return aarch64::CPU::InferCPUFeaturesFromOS(option);
+#else
+  USE(option);
   return CPUFeatures();
+#endif
 }
 
 void CPUFeatures::Combine(const CPUFeatures& other) {
   features_ |= other.features_;
 }
 
-void CPUFeatures::Combine(Feature feature0,
-                          Feature feature1,
-                          Feature feature2,
-                          Feature feature3) {
-  features_ |= MakeFeatureMask(feature0);
-  features_ |= MakeFeatureMask(feature1);
-  features_ |= MakeFeatureMask(feature2);
-  features_ |= MakeFeatureMask(feature3);
+void CPUFeatures::Combine(Feature feature) {
+  if (feature != CPUFeatures::kNone) features_.set(feature);
 }
 
 void CPUFeatures::Remove(const CPUFeatures& other) {
   features_ &= ~other.features_;
 }
 
-void CPUFeatures::Remove(Feature feature0,
-                         Feature feature1,
-                         Feature feature2,
-                         Feature feature3) {
-  features_ &= ~MakeFeatureMask(feature0);
-  features_ &= ~MakeFeatureMask(feature1);
-  features_ &= ~MakeFeatureMask(feature2);
-  features_ &= ~MakeFeatureMask(feature3);
-}
-
-CPUFeatures CPUFeatures::With(const CPUFeatures& other) const {
-  CPUFeatures f(*this);
-  f.Combine(other);
-  return f;
-}
-
-CPUFeatures CPUFeatures::With(Feature feature0,
-                              Feature feature1,
-                              Feature feature2,
-                              Feature feature3) const {
-  CPUFeatures f(*this);
-  f.Combine(feature0, feature1, feature2, feature3);
-  return f;
-}
-
-CPUFeatures CPUFeatures::Without(const CPUFeatures& other) const {
-  CPUFeatures f(*this);
-  f.Remove(other);
-  return f;
-}
-
-CPUFeatures CPUFeatures::Without(Feature feature0,
-                                 Feature feature1,
-                                 Feature feature2,
-                                 Feature feature3) const {
-  CPUFeatures f(*this);
-  f.Remove(feature0, feature1, feature2, feature3);
-  return f;
+void CPUFeatures::Remove(Feature feature) {
+  if (feature != CPUFeatures::kNone) features_.reset(feature);
 }
 
 bool CPUFeatures::Has(const CPUFeatures& other) const {
   return (features_ & other.features_) == other.features_;
 }
 
-bool CPUFeatures::Has(Feature feature0,
-                      Feature feature1,
-                      Feature feature2,
-                      Feature feature3) const {
-  uint64_t mask = MakeFeatureMask(feature0) | MakeFeatureMask(feature1) |
-                  MakeFeatureMask(feature2) | MakeFeatureMask(feature3);
-  return (features_ & mask) == mask;
+bool CPUFeatures::Has(Feature feature) const {
+  return (feature == CPUFeatures::kNone) || features_[feature];
 }
 
-size_t CPUFeatures::Count() const { return CountSetBits(features_); }
+size_t CPUFeatures::Count() const { return features_.count(); }
 
 std::ostream& operator<<(std::ostream& os, CPUFeatures::Feature feature) {
   // clang-format off
@@ -157,12 +109,9 @@ VIXL_CPU_FEATURE_LIST(VIXL_FORMAT_FEATURE)
 }
 
 CPUFeatures::const_iterator CPUFeatures::begin() const {
-  if (features_ == 0) return const_iterator(this, kNone);
-
-  int feature_number = CountTrailingZeros(features_);
-  vixl::CPUFeatures::Feature feature =
-      static_cast<CPUFeatures::Feature>(feature_number);
-  return const_iterator(this, feature);
+  // For iterators in general, it's undefined to increment `end()`, but here we
+  // control the implementation and it is safe to do this.
+  return ++end();
 }
 
 CPUFeatures::const_iterator CPUFeatures::end() const {
@@ -170,11 +119,11 @@ CPUFeatures::const_iterator CPUFeatures::end() const {
 }
 
 std::ostream& operator<<(std::ostream& os, const CPUFeatures& features) {
-  CPUFeatures::const_iterator it = features.begin();
-  while (it != features.end()) {
-    os << *it;
-    ++it;
-    if (it != features.end()) os << ", ";
+  bool need_separator = false;
+  for (CPUFeatures::Feature feature : features) {
+    if (need_separator) os << ", ";
+    need_separator = true;
+    os << feature;
   }
   return os;
 }
@@ -185,7 +134,7 @@ bool CPUFeaturesConstIterator::operator==(
   return (cpu_features_ == other.cpu_features_) && (feature_ == other.feature_);
 }
 
-CPUFeatures::Feature CPUFeaturesConstIterator::operator++() {  // Prefix
+CPUFeaturesConstIterator& CPUFeaturesConstIterator::operator++() {  // Prefix
   VIXL_ASSERT(IsValid());
   do {
     // Find the next feature. The order is unspecified.
@@ -199,11 +148,11 @@ CPUFeatures::Feature CPUFeaturesConstIterator::operator++() {  // Prefix
     // cpu_features_->Has(kNone) is always true, so this will terminate even if
     // the features list is empty.
   } while (!cpu_features_->Has(feature_));
-  return feature_;
+  return *this;
 }
 
-CPUFeatures::Feature CPUFeaturesConstIterator::operator++(int) {  // Postfix
-  CPUFeatures::Feature result = feature_;
+CPUFeaturesConstIterator CPUFeaturesConstIterator::operator++(int) {  // Postfix
+  CPUFeaturesConstIterator result = *this;
   ++(*this);
   return result;
 }
