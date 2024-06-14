@@ -6,6 +6,7 @@
 #include "vulkan_device.h"
 
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/log.h"
 
 Log_SetChannel(VulkanDevice);
@@ -24,7 +25,8 @@ void VulkanShader::SetDebugName(std::string_view name)
   Vulkan::SetObjectName(VulkanDevice::GetInstance().GetVulkanDevice(), m_module, name);
 }
 
-std::unique_ptr<GPUShader> VulkanDevice::CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data)
+std::unique_ptr<GPUShader> VulkanDevice::CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data,
+                                                                Error* error)
 {
   VkShaderModule mod;
 
@@ -34,27 +36,37 @@ std::unique_ptr<GPUShader> VulkanDevice::CreateShaderFromBinary(GPUShaderStage s
   if (res != VK_SUCCESS)
   {
     LOG_VULKAN_ERROR(res, "vkCreateShaderModule() failed: ");
+    Error::SetStringFmt(error, "vkCreateShaderModule() failed: {}", Vulkan::VkResultToString(res));
     return {};
   }
 
   return std::unique_ptr<GPUShader>(new VulkanShader(stage, mod));
 }
 
-std::unique_ptr<GPUShader> VulkanDevice::CreateShaderFromSource(GPUShaderStage stage, std::string_view source,
-                                                                const char* entry_point,
-                                                                DynamicHeapArray<u8>* out_binary)
+std::unique_ptr<GPUShader> VulkanDevice::CreateShaderFromSource(GPUShaderStage stage, GPUShaderLanguage language,
+                                                                std::string_view source, const char* entry_point,
+                                                                DynamicHeapArray<u8>* out_binary, Error* error)
 {
+  if (language == GPUShaderLanguage::SPV)
+  {
+    if (out_binary)
+      out_binary->assign(reinterpret_cast<const u8*>(source.data()), source.length());
+
+    return CreateShaderFromBinary(
+      stage, std::span<const u8>(reinterpret_cast<const u8*>(source.data()), source.length()), error);
+  }
+
   DynamicHeapArray<u8> local_binary;
   DynamicHeapArray<u8>* dest_binary = out_binary ? out_binary : &local_binary;
-  if (!CompileGLSLShaderToVulkanSpv(stage, source, entry_point, m_optional_extensions.vk_khr_shader_non_semantic_info,
-                                    dest_binary))
+  if (!CompileGLSLShaderToVulkanSpv(stage, language, source, entry_point,
+                                    m_optional_extensions.vk_khr_shader_non_semantic_info, dest_binary, error))
   {
     return {};
   }
 
   AssertMsg((dest_binary->size() % 4) == 0, "Compile result should be 4 byte aligned.");
 
-  return CreateShaderFromBinary(stage, dest_binary->cspan());
+  return CreateShaderFromBinary(stage, dest_binary->cspan(), error);
 }
 
 //////////////////////////////////////////////////////////////////////////

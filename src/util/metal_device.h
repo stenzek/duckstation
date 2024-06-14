@@ -231,10 +231,11 @@ public:
   void ClearDepth(GPUTexture* t, float d) override;
   void InvalidateRenderTarget(GPUTexture* t) override;
 
-  std::unique_ptr<GPUShader> CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data) override;
-  std::unique_ptr<GPUShader> CreateShaderFromSource(GPUShaderStage stage, std::string_view source,
-                                                    const char* entry_point,
-                                                    DynamicHeapArray<u8>* out_binary = nullptr) override;
+  std::unique_ptr<GPUShader> CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data,
+                                                    Error* error) override;
+  std::unique_ptr<GPUShader> CreateShaderFromSource(GPUShaderStage stage, GPUShaderLanguage language,
+                                                    std::string_view source, const char* entry_point,
+                                                    DynamicHeapArray<u8>* out_binary, Error* error) override;
   std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config) override;
 
   void PushDebugGroup(const char* name) override;
@@ -328,7 +329,7 @@ private:
   id<MTLRenderPipelineState> GetClearDepthPipeline(const ClearPipelineConfig& config);
 
   std::unique_ptr<GPUShader> CreateShaderFromMSL(GPUShaderStage stage, std::string_view source,
-                                                 std::string_view entry_point);
+                                                 std::string_view entry_point, Error* error);
 
   id<MTLDepthStencilState> GetDepthState(const GPUPipeline::DepthState& ds);
 

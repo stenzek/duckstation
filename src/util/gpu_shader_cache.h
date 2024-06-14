@@ -13,6 +13,7 @@
 #include <vector>
 
 enum class GPUShaderStage : u8;
+enum class GPUShaderLanguage : u8;
 
 class GPUShaderCache
 {
@@ -21,7 +22,9 @@ public:
 
   struct alignas(8) CacheIndexKey
   {
-    u32 shader_type;
+    u8 shader_type;
+    u8 shader_language;
+    u8 unused[2];
     u32 source_length;
     u64 source_hash_low;
     u64 source_hash_high;
@@ -50,7 +53,8 @@ public:
   bool Create();
   void Close();
 
-  static CacheIndexKey GetCacheKey(GPUShaderStage stage, std::string_view shader_code, std::string_view entry_point);
+  static CacheIndexKey GetCacheKey(GPUShaderStage stage, GPUShaderLanguage language, std::string_view shader_code,
+                                   std::string_view entry_point);
 
   bool Lookup(const CacheIndexKey& key, ShaderBinary* binary);
   bool Insert(const CacheIndexKey& key, const void* data, u32 data_size);

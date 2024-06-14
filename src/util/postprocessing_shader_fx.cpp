@@ -1324,7 +1324,7 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
       TinyString version_string = "#version 460 core\n";
 #ifdef ENABLE_OPENGL
       if (api == RenderAPI::OpenGL || api == RenderAPI::OpenGLES)
-        version_string = ShaderGen::GetGLSLVersionString(api);
+        version_string = ShaderGen::GetGLSLVersionString(api, ShaderGen::GetGLSLVersion(api));
 #endif
       real_code = fmt::format("{}\n#define ENTRY_POINT_{}\n{}\n{}\n{}", version_string, name, defns, precision, code);
 
@@ -1355,10 +1355,11 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
 
     // FileSystem::WriteStringToFile("D:\\foo.txt", real_code);
 
-    std::unique_ptr<GPUShader> sshader =
-      g_gpu_device->CreateShader(stage, real_code, needs_main_defn ? "main" : name.c_str());
+    Error error;
+    std::unique_ptr<GPUShader> sshader = g_gpu_device->CreateShader(
+      stage, ShaderGen::GetShaderLanguageForAPI(api), real_code, &error, needs_main_defn ? "main" : name.c_str());
     if (!sshader)
-      ERROR_LOG("Failed to compile function '{}'", name);
+      ERROR_LOG("Failed to compile function '{}': {}", name, error.GetDescription());
 
     return sshader;
   };

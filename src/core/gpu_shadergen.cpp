@@ -4,7 +4,7 @@
 #include "gpu_shadergen.h"
 
 GPUShaderGen::GPUShaderGen(RenderAPI render_api, bool supports_dual_source_blend, bool supports_framebuffer_fetch)
-  : ShaderGen(render_api, supports_dual_source_blend, supports_framebuffer_fetch)
+  : ShaderGen(render_api, GetShaderLanguageForAPI(render_api), supports_dual_source_blend, supports_framebuffer_fetch)
 {
 }
 

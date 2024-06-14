@@ -112,6 +112,18 @@ enum class GPUShaderStage : u8
   MaxCount
 };
 
+enum class GPUShaderLanguage : u8
+{
+  None,
+  HLSL,
+  GLSL,
+  GLSLES,
+  GLSLVK,
+  MSL,
+  SPV,
+  Count
+};
+
 class GPUShader
 {
 public:
@@ -522,6 +534,9 @@ public:
   /// Returns a string representing the specified API.
   static const char* RenderAPIToString(RenderAPI api);
 
+  /// Returns a string representing the specified language.
+  static const char* ShaderLanguageToString(GPUShaderLanguage language);
+
   /// Returns a new device for the specified API.
   static std::unique_ptr<GPUDevice> CreateDeviceForAPI(RenderAPI api);
 
@@ -630,8 +645,8 @@ public:
   virtual void InvalidateRenderTarget(GPUTexture* t);
 
   /// Shader abstraction.
-  std::unique_ptr<GPUShader> CreateShader(GPUShaderStage stage, std::string_view source,
-                                          const char* entry_point = "main");
+  std::unique_ptr<GPUShader> CreateShader(GPUShaderStage stage, GPUShaderLanguage language, std::string_view source,
+                                          Error* error = nullptr, const char* entry_point = "main");
   virtual std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config) = 0;
 
   /// Debug messaging.
@@ -716,19 +731,26 @@ protected:
   virtual bool ReadPipelineCache(const std::string& filename);
   virtual bool GetPipelineCacheData(DynamicHeapArray<u8>* data);
 
-  virtual std::unique_ptr<GPUShader> CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data) = 0;
-  virtual std::unique_ptr<GPUShader> CreateShaderFromSource(GPUShaderStage stage, std::string_view source,
-                                                            const char* entry_point,
-                                                            DynamicHeapArray<u8>* out_binary) = 0;
+  virtual std::unique_ptr<GPUShader> CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data,
+                                                            Error* error) = 0;
+  virtual std::unique_ptr<GPUShader> CreateShaderFromSource(GPUShaderStage stage, GPUShaderLanguage language,
+                                                            std::string_view source, const char* entry_point,
+                                                            DynamicHeapArray<u8>* out_binary, Error* error) = 0;
 
   bool AcquireWindow(bool recreate_window);
 
   void TrimTexturePool();
 
-#if defined(ENABLE_VULKAN) || defined(__APPLE__)
-  bool CompileGLSLShaderToVulkanSpv(GPUShaderStage stage, std::string_view source, const char* entry_point,
-                                    bool nonsemantic_debug_info, DynamicHeapArray<u8>* out_binary);
-#endif
+  bool CompileGLSLShaderToVulkanSpv(GPUShaderStage stage, GPUShaderLanguage source_language, std::string_view source,
+                                    const char* entry_point, bool nonsemantic_debug_info,
+                                    DynamicHeapArray<u8>* out_binary, Error* error);
+  bool TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GPUShaderStage stage,
+                                    GPUShaderLanguage target_language, u32 target_version, std::string* output,
+                                    Error* error);
+  std::unique_ptr<GPUShader> TranspileAndCreateShaderFromSource(GPUShaderStage stage, GPUShaderLanguage source_language,
+                                                                std::string_view source, const char* entry_point,
+                                                                GPUShaderLanguage target_language, u32 target_version,
+                                                                DynamicHeapArray<u8>* out_binary, Error* error);
 
   Features m_features = {};
   u32 m_max_texture_size = 0;
@@ -778,7 +800,7 @@ private:
 
   void OpenShaderCache(std::string_view base_path, u32 version);
   void CloseShaderCache();
-  bool CreateResources();
+  bool CreateResources(Error* error);
   void DestroyResources();
 
   static bool IsTexturePoolType(GPUTexture::Type type);

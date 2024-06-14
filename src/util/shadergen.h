@@ -13,14 +13,19 @@
 class ShaderGen
 {
 public:
-  ShaderGen(RenderAPI render_api, bool supports_dual_source_blend, bool supports_framebuffer_fetch);
+  ShaderGen(RenderAPI render_api, GPUShaderLanguage language, bool supports_dual_source_blend,
+            bool supports_framebuffer_fetch);
   ~ShaderGen();
 
+  static GPUShaderLanguage GetShaderLanguageForAPI(RenderAPI api);
   static bool UseGLSLBindingLayout();
 
 #ifdef ENABLE_OPENGL
-  static TinyString GetGLSLVersionString(RenderAPI render_api);
+  static u32 GetGLSLVersion(RenderAPI render_api);
+  static TinyString GetGLSLVersionString(RenderAPI render_api, u32 version);
 #endif
+
+  ALWAYS_INLINE GPUShaderLanguage GetLanguage() const { return m_shader_language; }
 
   std::string GenerateScreenQuadVertexShader(float z = 0.0f);
   std::string GenerateUVQuadVertexShader();
@@ -58,6 +63,7 @@ protected:
                                  bool noperspective_color = false, bool feedback_loop = false);
 
   RenderAPI m_render_api;
+  GPUShaderLanguage m_shader_language;
   bool m_glsl;
   bool m_spirv;
   bool m_supports_dual_source_blend;

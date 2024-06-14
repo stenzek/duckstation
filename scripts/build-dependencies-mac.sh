@@ -92,7 +92,7 @@ eb11e1b3715b2211442b7e5933a1135885b664cc10530a1a022355fe9e1bb4ac  SPIRV-Cross-$S
 EOF
 
 curl -L \
-	-O "https://download.savannah.gnu.org/releases/freetype/freetype-$FREETYPE.tar.xz" \
+	-o "freetype-$FREETYPE.tar.xz" "https://sourceforge.net/projects/freetype/files/freetype2/$FREETYPE/freetype-$FREETYPE.tar.xz/download" \
 	-o "harfbuzz-$HARFBUZZ.tar.gz" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$HARFBUZZ.tar.gz" \
 	-O "https://libsdl.org/release/$SDL.tar.gz" \
 	-O "http://zlib.net/zlib-$ZLIB.tar.gz" \
@@ -122,16 +122,6 @@ cmake -B build "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DSDL_X11=OFF -DBUIL
 make -C build "-j$NPROCS"
 make -C build install
 cd ..
-
-# Temporarily disabled, because the updater doesn't get fixup'd, so the dylib doesn't get added to its bundle.
-#echo "Installing Zlib..."
-#rm -fr "zlib-$ZLIB"
-#tar xf "zlib-$ZLIB.tar.gz"
-#cd "zlib-$ZLIB"
-#cmake -B build "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -DZLIB_BUILD_EXAMPLES=OFF
-#make -C build "-j$NPROCS"
-#make -C build install
-#cd ..
 
 echo "Installing Zstd..."
 rm -fr "zstd-$ZSTD"

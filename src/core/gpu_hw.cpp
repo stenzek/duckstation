@@ -813,8 +813,11 @@ bool GPU_HW::CompilePipelines()
   for (u8 textured = 0; textured < 2; textured++)
   {
     const std::string vs = shadergen.GenerateBatchVertexShader(ConvertToBoolUnchecked(textured), m_pgxp_depth_buffer);
-    if (!(batch_vertex_shaders[textured] = g_gpu_device->CreateShader(GPUShaderStage::Vertex, vs)))
+    if (!(batch_vertex_shaders[textured] =
+            g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(), vs)))
+    {
       return false;
+    }
 
     progress.Increment();
   }
@@ -857,7 +860,8 @@ bool GPU_HW::CompilePipelines()
                 ConvertToBoolUnchecked(interlacing), ConvertToBoolUnchecked(check_mask));
 
               if (!(batch_fragment_shaders[render_mode][transparency_mode][texture_mode][check_mask][dithering]
-                                          [interlacing] = g_gpu_device->CreateShader(GPUShaderStage::Fragment, fs)))
+                                          [interlacing] = g_gpu_device->CreateShader(GPUShaderStage::Fragment,
+                                                                                     shadergen.GetLanguage(), fs)))
               {
                 return false;
               }
@@ -1033,10 +1037,10 @@ bool GPU_HW::CompilePipelines()
 
   if (m_wireframe_mode != GPUWireframeMode::Disabled)
   {
-    std::unique_ptr<GPUShader> gs =
-      g_gpu_device->CreateShader(GPUShaderStage::Geometry, shadergen.GenerateWireframeGeometryShader());
-    std::unique_ptr<GPUShader> fs =
-      g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GenerateWireframeFragmentShader());
+    std::unique_ptr<GPUShader> gs = g_gpu_device->CreateShader(GPUShaderStage::Geometry, shadergen.GetLanguage(),
+                                                               shadergen.GenerateWireframeGeometryShader());
+    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                                               shadergen.GenerateWireframeFragmentShader());
     if (!gs || !fs)
       return false;
 
@@ -1069,8 +1073,8 @@ bool GPU_HW::CompilePipelines()
   batch_shader_guard.Run();
 
   // use a depth of 1, that way writes will reset the depth
-  std::unique_ptr<GPUShader> fullscreen_quad_vertex_shader =
-    g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GenerateScreenQuadVertexShader(1.0f));
+  std::unique_ptr<GPUShader> fullscreen_quad_vertex_shader = g_gpu_device->CreateShader(
+    GPUShaderStage::Vertex, shadergen.GetLanguage(), shadergen.GenerateScreenQuadVertexShader(1.0f));
   if (!fullscreen_quad_vertex_shader)
     return false;
 
@@ -1090,7 +1094,7 @@ bool GPU_HW::CompilePipelines()
     for (u8 interlaced = 0; interlaced < 2; interlaced++)
     {
       std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
-        GPUShaderStage::Fragment,
+        GPUShaderStage::Fragment, shadergen.GetLanguage(),
         shadergen.GenerateVRAMFillFragmentShader(ConvertToBoolUnchecked(wrapped), ConvertToBoolUnchecked(interlaced)));
       if (!fs)
         return false;
@@ -1108,8 +1112,8 @@ bool GPU_HW::CompilePipelines()
 
   // VRAM copy
   {
-    std::unique_ptr<GPUShader> fs =
-      g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GenerateVRAMCopyFragmentShader());
+    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                                               shadergen.GenerateVRAMCopyFragmentShader());
     if (!fs)
       return false;
 
@@ -1136,8 +1140,9 @@ bool GPU_HW::CompilePipelines()
   {
     const bool use_buffer = features.supports_texture_buffers;
     const bool use_ssbo = features.texture_buffers_emulated_with_ssbo;
-    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
-      GPUShaderStage::Fragment, shadergen.GenerateVRAMWriteFragmentShader(use_buffer, use_ssbo));
+    std::unique_ptr<GPUShader> fs =
+      g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                 shadergen.GenerateVRAMWriteFragmentShader(use_buffer, use_ssbo));
     if (!fs)
       return false;
 
@@ -1166,8 +1171,8 @@ bool GPU_HW::CompilePipelines()
 
   // VRAM write replacement
   {
-    std::unique_ptr<GPUShader> fs =
-      g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GenerateCopyFragmentShader());
+    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                                               shadergen.GenerateCopyFragmentShader());
     if (!fs)
       return false;
 
@@ -1184,8 +1189,8 @@ bool GPU_HW::CompilePipelines()
   // VRAM update depth
   if (needs_depth_buffer)
   {
-    std::unique_ptr<GPUShader> fs =
-      g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GenerateVRAMUpdateDepthFragmentShader());
+    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                                               shadergen.GenerateVRAMUpdateDepthFragmentShader());
     if (!fs)
       return false;
 
@@ -1210,8 +1215,8 @@ bool GPU_HW::CompilePipelines()
 
   // VRAM read
   {
-    std::unique_ptr<GPUShader> fs =
-      g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GenerateVRAMReadFragmentShader());
+    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                                               shadergen.GenerateVRAMReadFragmentShader());
     if (!fs)
       return false;
 
@@ -1228,8 +1233,9 @@ bool GPU_HW::CompilePipelines()
   {
     for (u8 depth_24 = 0; depth_24 < 2; depth_24++)
     {
-      std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
-        GPUShaderStage::Fragment, shadergen.GenerateVRAMExtractFragmentShader(ConvertToBoolUnchecked(depth_24)));
+      std::unique_ptr<GPUShader> fs =
+        g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                   shadergen.GenerateVRAMExtractFragmentShader(ConvertToBoolUnchecked(depth_24)));
       if (!fs)
         return false;
 
@@ -1244,10 +1250,10 @@ bool GPU_HW::CompilePipelines()
 
   if (m_downsample_mode == GPUDownsampleMode::Adaptive)
   {
-    std::unique_ptr<GPUShader> vs =
-      g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GenerateAdaptiveDownsampleVertexShader());
-    std::unique_ptr<GPUShader> fs =
-      g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GenerateAdaptiveDownsampleMipFragmentShader(true));
+    std::unique_ptr<GPUShader> vs = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(),
+                                                               shadergen.GenerateAdaptiveDownsampleVertexShader());
+    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
+      GPUShaderStage::Fragment, shadergen.GetLanguage(), shadergen.GenerateAdaptiveDownsampleMipFragmentShader(true));
     if (!vs || !fs)
       return false;
     GL_OBJECT_NAME(fs, "Downsample Vertex Shader");
@@ -1258,7 +1264,7 @@ bool GPU_HW::CompilePipelines()
       return false;
     GL_OBJECT_NAME(m_downsample_first_pass_pipeline, "Downsample First Pass Pipeline");
 
-    fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment,
+    fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
                                     shadergen.GenerateAdaptiveDownsampleMipFragmentShader(false));
     if (!fs)
       return false;
@@ -1268,7 +1274,8 @@ bool GPU_HW::CompilePipelines()
       return false;
     GL_OBJECT_NAME(m_downsample_mid_pass_pipeline, "Downsample Mid Pass Pipeline");
 
-    fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GenerateAdaptiveDownsampleBlurFragmentShader());
+    fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                    shadergen.GenerateAdaptiveDownsampleBlurFragmentShader());
     if (!fs)
       return false;
     GL_OBJECT_NAME(fs, "Downsample Blur Pass Fragment Shader");
@@ -1278,7 +1285,7 @@ bool GPU_HW::CompilePipelines()
       return false;
     GL_OBJECT_NAME(m_downsample_blur_pass_pipeline, "Downsample Blur Pass Pipeline");
 
-    fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment,
+    fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
                                     shadergen.GenerateAdaptiveDownsampleCompositeFragmentShader());
     if (!fs)
       return false;
@@ -1304,9 +1311,10 @@ bool GPU_HW::CompilePipelines()
   }
   else if (m_downsample_mode == GPUDownsampleMode::Box)
   {
-    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
-      GPUShaderStage::Fragment, shadergen.GenerateBoxSampleDownsampleFragmentShader(
-                                  m_resolution_scale / GetBoxDownsampleScale(m_resolution_scale)));
+    std::unique_ptr<GPUShader> fs =
+      g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                 shadergen.GenerateBoxSampleDownsampleFragmentShader(
+                                   m_resolution_scale / GetBoxDownsampleScale(m_resolution_scale)));
     if (!fs)
       return false;
 

@@ -10,11 +10,11 @@ GPU_HW_ShaderGen::GPU_HW_ShaderGen(RenderAPI render_api, u32 resolution_scale, u
                                    GPUTextureFilter texture_filtering, bool uv_limits, bool write_mask_as_depth,
                                    bool disable_color_perspective, bool supports_dual_source_blend,
                                    bool supports_framebuffer_fetch, bool debanding)
-  : ShaderGen(render_api, supports_dual_source_blend, supports_framebuffer_fetch), m_resolution_scale(resolution_scale),
-    m_multisamples(multisamples), m_per_sample_shading(per_sample_shading), m_true_color(true_color),
-    m_scaled_dithering(scaled_dithering), m_texture_filter(texture_filtering), m_uv_limits(uv_limits),
-    m_write_mask_as_depth(write_mask_as_depth), m_disable_color_perspective(disable_color_perspective),
-    m_debanding(debanding)
+  : ShaderGen(render_api, GetShaderLanguageForAPI(render_api), supports_dual_source_blend, supports_framebuffer_fetch),
+    m_resolution_scale(resolution_scale), m_multisamples(multisamples), m_per_sample_shading(per_sample_shading),
+    m_true_color(true_color), m_scaled_dithering(scaled_dithering), m_texture_filter(texture_filtering),
+    m_uv_limits(uv_limits), m_write_mask_as_depth(write_mask_as_depth),
+    m_disable_color_perspective(disable_color_perspective), m_debanding(debanding)
 {
 }
 

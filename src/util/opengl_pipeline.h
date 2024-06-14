@@ -22,6 +22,7 @@ public:
 
   ALWAYS_INLINE GLuint GetGLId() const { return m_id.value(); }
   ALWAYS_INLINE const GPUShaderCache::CacheIndexKey& GetKey() const { return m_key; }
+  ALWAYS_INLINE const std::string& GetSource() const { return m_source; }
 
 private:
   OpenGLShader(GPUShaderStage stage, const GPUShaderCache::CacheIndexKey& key, std::string source);

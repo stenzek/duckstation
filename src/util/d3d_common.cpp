@@ -372,14 +372,33 @@ std::string D3DCommon::GetDriverVersionFromLUID(const LUID& luid)
   return ret;
 }
 
-std::optional<DynamicHeapArray<u8>> D3DCommon::CompileShader(D3D_FEATURE_LEVEL feature_level, bool debug_device,
-                                                             GPUShaderStage stage, std::string_view source,
-                                                             const char* entry_point)
+u32 D3DCommon::GetShaderModelForFeatureLevel(D3D_FEATURE_LEVEL feature_level)
 {
-  const char* target;
   switch (feature_level)
   {
     case D3D_FEATURE_LEVEL_10_0:
+      return 40;
+
+    case D3D_FEATURE_LEVEL_10_1:
+      return 41;
+
+    case D3D_FEATURE_LEVEL_11_0:
+      return 50;
+
+    case D3D_FEATURE_LEVEL_11_1:
+    default:
+      return 51;
+  }
+}
+
+std::optional<DynamicHeapArray<u8>> D3DCommon::CompileShader(u32 shader_model, bool debug_device, GPUShaderStage stage,
+                                                             std::string_view source, const char* entry_point,
+                                                             Error* error)
+{
+  const char* target;
+  switch (shader_model)
+  {
+    case 40:
     {
       static constexpr std::array<const char*, static_cast<u32>(GPUShaderStage::MaxCount)> targets = {
         {"vs_4_0", "ps_4_0", "gs_4_0", "cs_4_0"}};
@@ -387,7 +406,7 @@ std::optional<DynamicHeapArray<u8>> D3DCommon::CompileShader(D3D_FEATURE_LEVEL f
     }
     break;
 
-    case D3D_FEATURE_LEVEL_10_1:
+    case 41:
     {
       static constexpr std::array<const char*, static_cast<u32>(GPUShaderStage::MaxCount)> targets = {
         {"vs_4_1", "ps_4_1", "gs_4_0", "cs_4_1"}};
@@ -395,7 +414,7 @@ std::optional<DynamicHeapArray<u8>> D3DCommon::CompileShader(D3D_FEATURE_LEVEL f
     }
     break;
 
-    case D3D_FEATURE_LEVEL_11_0:
+    case 50:
     {
       static constexpr std::array<const char*, static_cast<u32>(GPUShaderStage::MaxCount)> targets = {
         {"vs_5_0", "ps_5_0", "gs_5_0", "cs_5_0"}};
@@ -403,14 +422,17 @@ std::optional<DynamicHeapArray<u8>> D3DCommon::CompileShader(D3D_FEATURE_LEVEL f
     }
     break;
 
-    case D3D_FEATURE_LEVEL_11_1:
-    default:
+    case 51:
     {
       static constexpr std::array<const char*, static_cast<u32>(GPUShaderStage::MaxCount)> targets = {
         {"vs_5_1", "ps_5_1", "gs_5_1", "cs_5_1"}};
       target = targets[static_cast<int>(stage)];
     }
     break;
+
+    default:
+      Error::SetStringFmt(error, "Unknown shader model: {}", shader_model);
+      return {};
   }
 
   static constexpr UINT flags_non_debug = D3DCOMPILE_OPTIMIZATION_LEVEL3;
@@ -424,13 +446,16 @@ std::optional<DynamicHeapArray<u8>> D3DCommon::CompileShader(D3D_FEATURE_LEVEL f
 
   std::string_view error_string;
   if (error_blob)
+  {
     error_string =
       std::string_view(static_cast<const char*>(error_blob->GetBufferPointer()), error_blob->GetBufferSize());
+  }
 
   if (FAILED(hr))
   {
     ERROR_LOG("Failed to compile '{}':\n{}", target, error_string);
     GPUDevice::DumpBadShader(source, error_string);
+    Error::SetHResult(error, "D3DCompile() failed: ", hr);
     return {};
   }
 

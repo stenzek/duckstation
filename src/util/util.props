@@ -39,6 +39,7 @@
     <DepsDLLs Include="$(DepsBinDir)libwebp.dll" />
     <DepsDLLs Include="$(DepsBinDir)SDL2.dll" />
     <DepsDLLs Include="$(DepsBinDir)shaderc_shared.dll" />
+    <DepsDLLs Include="$(DepsBinDir)spirv-cross-c-shared.dll" />
     <DepsDLLs Include="$(DepsBinDir)zlib1.dll" />
     <DepsDLLs Include="$(DepsBinDir)zstd.dll" />
   </ItemGroup>

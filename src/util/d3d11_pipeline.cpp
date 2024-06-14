@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "d3d11_pipeline.h"
 #include "d3d11_device.h"
 #include "d3d_common.h"
 
+#include "common/error.h"
 #include "common/log.h"
 
 #include "fmt/format.h"
@@ -51,7 +52,8 @@ void D3D11Shader::SetDebugName(std::string_view name)
   SetD3DDebugObjectName(m_shader.Get(), name);
 }
 
-std::unique_ptr<GPUShader> D3D11Device::CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data)
+std::unique_ptr<GPUShader> D3D11Device::CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data,
+                                                               Error* error)
 {
   ComPtr<ID3D11DeviceChild> shader;
   std::vector<u8> bytecode;
@@ -87,21 +89,31 @@ std::unique_ptr<GPUShader> D3D11Device::CreateShaderFromBinary(GPUShaderStage st
   }
 
   if (FAILED(hr) || !shader)
+  {
+    Error::SetHResult(error, "Create[Typed]Shader() failed: ", hr);
     return {};
+  }
 
   return std::unique_ptr<GPUShader>(new D3D11Shader(stage, std::move(shader), std::move(bytecode)));
 }
 
-std::unique_ptr<GPUShader> D3D11Device::CreateShaderFromSource(GPUShaderStage stage, std::string_view source,
-                                                               const char* entry_point,
-                                                               DynamicHeapArray<u8>* out_binary)
+std::unique_ptr<GPUShader> D3D11Device::CreateShaderFromSource(GPUShaderStage stage, GPUShaderLanguage language,
+                                                               std::string_view source, const char* entry_point,
+                                                               DynamicHeapArray<u8>* out_binary, Error* error)
 {
+  const u32 shader_model = D3DCommon::GetShaderModelForFeatureLevel(m_device->GetFeatureLevel());
+  if (language != GPUShaderLanguage::HLSL)
+  {
+    return TranspileAndCreateShaderFromSource(stage, language, source, entry_point, GPUShaderLanguage::HLSL,
+                                              shader_model, out_binary, error);
+  }
+
   std::optional<DynamicHeapArray<u8>> bytecode =
-    D3DCommon::CompileShader(m_device->GetFeatureLevel(), m_debug_device, stage, source, entry_point);
+    D3DCommon::CompileShader(shader_model, m_debug_device, stage, source, entry_point, error);
   if (!bytecode.has_value())
     return {};
 
-  std::unique_ptr<GPUShader> ret = CreateShaderFromBinary(stage, bytecode.value());
+  std::unique_ptr<GPUShader> ret = CreateShaderFromBinary(stage, bytecode.value(), error);
   if (ret && out_binary)
     *out_binary = std::move(bytecode.value());
 

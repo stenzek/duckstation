@@ -125,10 +125,10 @@ bool PostProcessing::GLSLShader::CompilePipeline(GPUTexture::Format format, u32 
   PostProcessingGLSLShaderGen shadergen(g_gpu_device->GetRenderAPI(), g_gpu_device->GetFeatures().dual_source_blend,
                                         g_gpu_device->GetFeatures().framebuffer_fetch);
 
-  std::unique_ptr<GPUShader> vs =
-    g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GeneratePostProcessingVertexShader(*this));
-  std::unique_ptr<GPUShader> fs =
-    g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GeneratePostProcessingFragmentShader(*this));
+  std::unique_ptr<GPUShader> vs = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(),
+                                                             shadergen.GeneratePostProcessingVertexShader(*this));
+  std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                                             shadergen.GeneratePostProcessingFragmentShader(*this));
   if (!vs || !fs)
     return false;
 
@@ -328,7 +328,7 @@ void PostProcessing::GLSLShader::LoadOptions()
 
 PostProcessingGLSLShaderGen::PostProcessingGLSLShaderGen(RenderAPI render_api, bool supports_dual_source_blend,
                                                          bool supports_framebuffer_fetch)
-  : ShaderGen(render_api, supports_dual_source_blend, supports_framebuffer_fetch)
+  : ShaderGen(render_api, GPUShaderLanguage::GLSLVK, supports_dual_source_blend, supports_framebuffer_fetch)
 {
 }
 
@@ -365,49 +365,13 @@ std::string PostProcessingGLSLShaderGen::GeneratePostProcessingFragmentShader(co
   WriteUniformBuffer(ss, shader, false);
   DeclareTexture(ss, "samp0", 0);
 
-  // Rename main, since we need to set up globals
-  if (!m_glsl)
-  {
-    // TODO: vecn -> floatn
-
-    ss << R"(
-#define main real_main
-static float2 v_tex0;
-static float4 v_pos;
-static float4 o_col0;
-// Wrappers for sampling functions.
-#define texture(sampler, coords) sampler.Sample(sampler##_ss, coords)
-#define textureOffset(sampler, coords, offset) sampler.Sample(sampler##_ss, coords, offset)
-#define gl_FragCoord v_pos
-)";
-  }
-  else
-  {
-    if (m_use_glsl_interface_blocks)
-    {
-      if (IsVulkan() || IsMetal())
-        ss << "layout(location = 0) ";
-
-      ss << "in VertexData {\n";
-      ss << "  float2 v_tex0;\n";
-      ss << "};\n";
-    }
-    else
-    {
-      ss << "in float2 v_tex0;\n";
-    }
-
-    if (m_use_glsl_binding_layout)
-    {
-      ss << "layout(location = 0) out float4 o_col0;\n";
-    }
-    else
-    {
-      ss << "out float4 o_col0;\n";
-    }
-  }
-
   ss << R"(
+layout(location = 0) in VertexData {
+  vec2 v_tex0;
+};
+
+layout(location = 0) out float4 o_col0;
+
 float4 Sample() { return texture(samp0, v_tex0); }
 float4 SampleLocation(float2 location) { return texture(samp0, location); }
 #define SampleOffset(offset) textureOffset(samp0, v_tex0, offset)
@@ -439,21 +403,6 @@ float2 GetWindowResolution() { return u_window_size; }
 )";
 
   ss << shader.GetCode();
-
-  if (!m_glsl)
-  {
-    ss << R"(
-#undef main
-void main(in float2 v_tex0_ : TEXCOORD0, in float4 v_pos_ : SV_Position, out float4 o_col0_ : SV_Target)
-{
-  v_pos = v_pos_;
-  v_tex0 = v_tex0_;
-  real_main();
-  o_col0_ = o_col0;
-}
-)";
-  }
-
   return ss.str();
 }
 

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "metal_device.h"
@@ -15,8 +15,6 @@
 // TODO FIXME...
 #define FMT_EXCEPTIONS 0
 #include "fmt/format.h"
-
-#include "spirv_cross_c.h"
 
 #include <array>
 #include <pthread.h>
@@ -612,19 +610,21 @@ static void DumpShader(u32 n, std::string_view suffix, std::string_view data)
 }
 
 std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromMSL(GPUShaderStage stage, std::string_view source,
-                                                            std::string_view entry_point)
+                                                            std::string_view entry_point, Error* error)
 {
   @autoreleasepool
   {
     NSString* const ns_source = StringViewToNSString(source);
-    NSError* error = nullptr;
-    id<MTLLibrary> library = [m_device newLibraryWithSource:ns_source options:nil error:&error];
+    NSError* nserror = nullptr;
+    id<MTLLibrary> library = [m_device newLibraryWithSource:ns_source options:nil error:&nserror];
     if (!library)
     {
-      LogNSError(error, TinyString::from_format("Failed to compile {} shader", GPUShader::GetStageName(stage)));
+      LogNSError(nserror, TinyString::from_format("Failed to compile {} shader", GPUShader::GetStageName(stage)));
 
-      const char* utf_error = [error.description UTF8String];
-      DumpBadShader(source, fmt::format("Error {}: {}", static_cast<u32>(error.code), utf_error ? utf_error : ""));
+      const char* utf_error = [nserror.description UTF8String];
+      DumpBadShader(source, fmt::format("Error {}: {}", static_cast<u32>(nserror.code), utf_error ? utf_error : ""));
+      Error::SetStringFmt(error, "Failed to compile {} shader: Error {}: {}", GPUShader::GetStageName(stage),
+                          static_cast<u32>(nserror.code), utf_error ? utf_error : "");
       return {};
     }
 
@@ -632,6 +632,7 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromMSL(GPUShaderStage stage
     if (!function)
     {
       ERROR_LOG("Failed to get main function in compiled library");
+      Error::SetStringView(error, "Failed to get main function in compiled library");
       return {};
     }
 
@@ -639,154 +640,42 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromMSL(GPUShaderStage stage
   }
 }
 
-std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data)
+std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data,
+                                                               Error* error)
 {
   const std::string_view str_data(reinterpret_cast<const char*>(data.data()), data.size());
-  return CreateShaderFromMSL(stage, str_data, "main0");
+  return CreateShaderFromMSL(stage, str_data, "main0", error);
 }
 
-std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromSource(GPUShaderStage stage, std::string_view source,
-                                                               const char* entry_point,
-                                                               DynamicHeapArray<u8>* out_binary /* = nullptr */)
+std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromSource(GPUShaderStage stage, GPUShaderLanguage language,
+                                                               std::string_view source, const char* entry_point,
+                                                               DynamicHeapArray<u8>* out_binary, Error* error)
 {
   static constexpr bool dump_shaders = false;
 
-  DynamicHeapArray<u8> local_binary;
-  DynamicHeapArray<u8>* dest_binary = out_binary ? out_binary : &local_binary;
-  if (!CompileGLSLShaderToVulkanSpv(stage, source, entry_point, false, dest_binary))
+  DynamicHeapArray<u8> spv;
+  if (!CompileGLSLShaderToVulkanSpv(stage, language, source, entry_point, false, &spv, error))
     return {};
 
-  AssertMsg((dest_binary->size() % 4) == 0, "Compile result should be 4 byte aligned.");
-
-  spvc_context sctx;
-  spvc_result sres;
-  if ((sres = spvc_context_create(&sctx)) != SPVC_SUCCESS)
-  {
-    ERROR_LOG("spvc_context_create() failed: {}", static_cast<int>(sres));
+  std::string msl;
+  if (!TranslateVulkanSpvToLanguage(spv.cspan(), stage, GPUShaderLanguage::MSL, 230, &msl, error))
     return {};
-  }
 
-  const ScopedGuard sctx_guard = [&sctx]() { spvc_context_destroy(sctx); };
-
-  spvc_context_set_error_callback(
-    sctx, [](void*, const char* error) { ERROR_LOG("SPIRV-Cross reported an error: {}", error); }, nullptr);
-
-  spvc_parsed_ir sir;
-  if ((sres = spvc_context_parse_spirv(sctx, reinterpret_cast<const u32*>(dest_binary->data()), dest_binary->size() / 4, &sir)) != SPVC_SUCCESS)
-  {
-    ERROR_LOG("spvc_context_parse_spirv() failed: {}", static_cast<int>(sres));
-    DumpBadShader(source, std::string_view());
-    return {};
-  }
-
-  spvc_compiler scompiler;
-  if ((sres = spvc_context_create_compiler(sctx, SPVC_BACKEND_MSL, sir, SPVC_CAPTURE_MODE_TAKE_OWNERSHIP,
-                                           &scompiler)) != SPVC_SUCCESS)
-  {
-    ERROR_LOG("spvc_context_create_compiler() failed: {}", static_cast<int>(sres));
-    return {};
-  }
-
-  spvc_compiler_options soptions;
-  if ((sres = spvc_compiler_create_compiler_options(scompiler, &soptions)) != SPVC_SUCCESS)
-  {
-    ERROR_LOG("spvc_compiler_create_compiler_options() failed: {}", static_cast<int>(sres));
-    return {};
-  }
-
-  if ((sres = spvc_compiler_options_set_bool(soptions, SPVC_COMPILER_OPTION_MSL_PAD_FRAGMENT_OUTPUT_COMPONENTS,
-                                             true)) != SPVC_SUCCESS)
-  {
-    ERROR_LOG("spvc_compiler_options_set_bool(SPVC_COMPILER_OPTION_MSL_PAD_FRAGMENT_OUTPUT_COMPONENTS) failed: {}",
-                 static_cast<int>(sres));
-    return {};
-  }
-
-  if ((sres = spvc_compiler_options_set_bool(soptions, SPVC_COMPILER_OPTION_MSL_FRAMEBUFFER_FETCH_SUBPASS,
-                                             m_features.framebuffer_fetch)) != SPVC_SUCCESS)
-  {
-    ERROR_LOG("spvc_compiler_options_set_bool(SPVC_COMPILER_OPTION_MSL_FRAMEBUFFER_FETCH_SUBPASS) failed: {}",
-                 static_cast<int>(sres));
-    return {};
-  }
-
-  if (m_features.framebuffer_fetch &&
-      ((sres = spvc_compiler_options_set_uint(soptions, SPVC_COMPILER_OPTION_MSL_VERSION,
-                                              SPVC_MAKE_MSL_VERSION(2, 3, 0))) != SPVC_SUCCESS))
-  {
-    ERROR_LOG("spvc_compiler_options_set_uint(SPVC_COMPILER_OPTION_MSL_VERSION) failed: {}", static_cast<int>(sres));
-    return {};
-  }
-
-  if (stage == GPUShaderStage::Fragment)
-  {
-    for (u32 i = 0; i < MAX_TEXTURE_SAMPLERS; i++)
-    {
-      const spvc_msl_resource_binding rb = {.stage = SpvExecutionModelFragment,
-                                            .desc_set = 1,
-                                            .binding = i,
-                                            .msl_buffer = i,
-                                            .msl_texture = i,
-                                            .msl_sampler = i};
-
-      if ((sres = spvc_compiler_msl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
-      {
-        ERROR_LOG("spvc_compiler_msl_add_resource_binding() failed: {}", static_cast<int>(sres));
-        return {};
-      }
-    }
-
-    if (!m_features.framebuffer_fetch)
-    {
-      const spvc_msl_resource_binding rb = {
-        .stage = SpvExecutionModelFragment, .desc_set = 2, .binding = 0, .msl_texture = MAX_TEXTURE_SAMPLERS};
-
-      if ((sres = spvc_compiler_msl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
-      {
-        ERROR_LOG("spvc_compiler_msl_add_resource_binding() for FB failed: {}", static_cast<int>(sres));
-        return {};
-      }
-    }
-  }
-
-  if ((sres = spvc_compiler_install_compiler_options(scompiler, soptions)) != SPVC_SUCCESS)
-  {
-    ERROR_LOG("spvc_compiler_install_compiler_options() failed: {}", static_cast<int>(sres));
-    return {};
-  }
-
-  const char* msl;
-  if ((sres = spvc_compiler_compile(scompiler, &msl)) != SPVC_SUCCESS)
-  {
-    ERROR_LOG("spvc_compiler_compile() failed: {}", static_cast<int>(sres));
-    DumpBadShader(source, std::string_view());
-    return {};
-  }
-
-  const size_t msl_length = msl ? std::strlen(msl) : 0;
-  if (msl_length == 0)
-  {
-    ERROR_LOG("Failed to compile SPIR-V to MSL.");
-    DumpBadShader(source, std::string_view());
-    return {};
-  }
-
-  const std::string_view mslv(msl, msl_length);
   if constexpr (dump_shaders)
   {
     static unsigned s_next_id = 0;
     ++s_next_id;
     DumpShader(s_next_id, "_input", source);
-    DumpShader(s_next_id, "_msl", mslv);
+    DumpShader(s_next_id, "_msl", msl);
   }
 
   if (out_binary)
   {
-    out_binary->resize(mslv.size());
-    std::memcpy(out_binary->data(), mslv.data(), mslv.size());
+    out_binary->resize(msl.size());
+    std::memcpy(out_binary->data(), msl.data(), msl.size());
   }
 
-  return CreateShaderFromMSL(stage, mslv, "main0");
+  return CreateShaderFromMSL(stage, msl, "main0", error);
 }
 
 MetalPipeline::MetalPipeline(id<MTLRenderPipelineState> pipeline, id<MTLDepthStencilState> depth, MTLCullMode cull_mode,
@@ -1282,8 +1171,7 @@ std::unique_ptr<MetalDownloadTexture> MetalDownloadTexture::Create(u32 width, u3
         reinterpret_cast<void*>(Common::AlignDownPow2(reinterpret_cast<uintptr_t>(memory), HOST_PAGE_SIZE));
       const size_t page_offset = static_cast<size_t>(static_cast<u8*>(memory) - static_cast<u8*>(page_aligned_memory));
       const size_t page_aligned_size = Common::AlignUpPow2(page_offset + memory_size, HOST_PAGE_SIZE);
-      DEV_LOG("Trying to import {} bytes of memory at {} for download texture", page_aligned_memory,
-                 page_aligned_size);
+      DEV_LOG("Trying to import {} bytes of memory at {} for download texture", page_aligned_memory, page_aligned_size);
 
       buffer = [[dev.m_device newBufferWithBytesNoCopy:page_aligned_memory
                                                 length:page_aligned_size

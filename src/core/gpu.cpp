@@ -1756,8 +1756,8 @@ bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_sm
         break;
     }
 
-    std::unique_ptr<GPUShader> vso = g_gpu_device->CreateShader(GPUShaderStage::Vertex, vs);
-    std::unique_ptr<GPUShader> fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment, fs);
+    std::unique_ptr<GPUShader> vso = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(), vs);
+    std::unique_ptr<GPUShader> fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(), fs);
     if (!vso || !fso)
       return false;
     GL_OBJECT_NAME(vso, "Display Vertex Shader");
@@ -1776,14 +1776,14 @@ bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_sm
   {
     plconfig.SetTargetFormats(GPUTexture::Format::RGBA8);
 
-    std::unique_ptr<GPUShader> vso =
-      g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GenerateScreenQuadVertexShader());
+    std::unique_ptr<GPUShader> vso = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(),
+                                                                shadergen.GenerateScreenQuadVertexShader());
     if (!vso)
       return false;
     GL_OBJECT_NAME(vso, "Deinterlace Vertex Shader");
 
     std::unique_ptr<GPUShader> fso;
-    if (!(fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment,
+    if (!(fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
                                            shadergen.GenerateInterleavedFieldExtractFragmentShader())))
     {
       return false;
@@ -1806,7 +1806,7 @@ bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_sm
 
       case DisplayDeinterlacingMode::Weave:
       {
-        if (!(fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment,
+        if (!(fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
                                                shadergen.GenerateDeinterlaceWeaveFragmentShader())))
         {
           return false;
@@ -1826,7 +1826,7 @@ bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_sm
 
       case DisplayDeinterlacingMode::Blend:
       {
-        if (!(fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment,
+        if (!(fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
                                                shadergen.GenerateDeinterlaceBlendFragmentShader())))
         {
           return false;
@@ -1846,8 +1846,8 @@ bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_sm
 
       case DisplayDeinterlacingMode::Adaptive:
       {
-        fso =
-          g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GenerateFastMADReconstructFragmentShader());
+        fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                         shadergen.GenerateFastMADReconstructFragmentShader());
         if (!fso)
           return false;
 
@@ -1877,10 +1877,10 @@ bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_sm
       plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
       plconfig.SetTargetFormats(GPUTexture::Format::RGBA8);
 
-      std::unique_ptr<GPUShader> vso =
-        g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GenerateScreenQuadVertexShader());
-      std::unique_ptr<GPUShader> fso =
-        g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GenerateChromaSmoothingFragmentShader());
+      std::unique_ptr<GPUShader> vso = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(),
+                                                                  shadergen.GenerateScreenQuadVertexShader());
+      std::unique_ptr<GPUShader> fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                                                  shadergen.GenerateChromaSmoothingFragmentShader());
       if (!vso || !fso)
         return false;
       GL_OBJECT_NAME(vso, "Chroma Smoothing Vertex Shader");

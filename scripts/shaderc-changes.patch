@@ -43,7 +43,7 @@ diff --git a/libshaderc/CMakeLists.txt b/libshaderc/CMakeLists.txt
 index df9a88d..b15e5d7 100644
 --- a/libshaderc/CMakeLists.txt
 +++ b/libshaderc/CMakeLists.txt
-@@ -24,13 +24,6 @@ set(SHADERC_SOURCES
+@@ -24,13 +24,6 @@
    src/shaderc_private.h
  )
  
@@ -57,7 +57,15 @@ index df9a88d..b15e5d7 100644
  add_library(shaderc_shared SHARED ${SHADERC_SOURCES})
  shaderc_default_compile_options(shaderc_shared)
  target_include_directories(shaderc_shared
-@@ -54,7 +47,7 @@ if(SHADERC_ENABLE_INSTALL)
+@@ -41,7 +34,6 @@
+     PRIVATE SHADERC_IMPLEMENTATION
+     PUBLIC SHADERC_SHAREDLIB
+ )
+-set_target_properties(shaderc_shared PROPERTIES SOVERSION 1)
+ 
+ if(SHADERC_ENABLE_INSTALL)
+   install(
+@@ -54,7 +46,7 @@
      DESTINATION
        ${CMAKE_INSTALL_INCLUDEDIR}/shaderc)
  
@@ -66,14 +74,14 @@ index df9a88d..b15e5d7 100644
      LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
      RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
      BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR}
-@@ -69,20 +62,8 @@ set(SHADERC_LIBS
+@@ -69,21 +61,9 @@
    SPIRV-Tools
  )
  
 -target_link_libraries(shaderc PRIVATE ${SHADERC_LIBS})
  target_link_libraries(shaderc_shared PRIVATE ${SHADERC_LIBS})
  
--shaderc_add_tests(
+ shaderc_add_tests(
 -  TEST_PREFIX shaderc
 -  LINK_LIBS shaderc
 -  INCLUDE_DIRS include ${shaderc_SOURCE_DIR}/libshaderc_util/include ${glslang_SOURCE_DIR}
@@ -84,10 +92,11 @@ index df9a88d..b15e5d7 100644
 -    shaderc_cpp
 -    shaderc_private)
 -
- shaderc_add_tests(
+-shaderc_add_tests(
    TEST_PREFIX shaderc_shared
    LINK_LIBS shaderc_shared SPIRV-Tools
-@@ -94,22 +75,6 @@ shaderc_add_tests(
+   INCLUDE_DIRS include ${shaderc_SOURCE_DIR}/libshaderc_util/include ${glslang_SOURCE_DIR}
+@@ -94,22 +74,6 @@
      shaderc_cpp
      shaderc_private)
  

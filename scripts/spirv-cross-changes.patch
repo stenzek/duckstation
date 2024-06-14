@@ -12,3 +12,16 @@
  	execute_process(
  		COMMAND ${GIT_EXECUTABLE} describe --always --tags --dirty=+
  		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+@@ -409,9 +409,9 @@
+ 
+ 	target_compile_definitions(spirv-cross-c-shared PRIVATE SPVC_EXPORT_SYMBOLS)
+ 
+-	set_target_properties(spirv-cross-c-shared PROPERTIES
+-			VERSION ${SPIRV_CROSS_VERSION}
+-			SOVERSION ${spirv-cross-abi-major})
++	#set_target_properties(spirv-cross-c-shared PROPERTIES
++	#		VERSION ${SPIRV_CROSS_VERSION}
++	#		SOVERSION ${spirv-cross-abi-major})
+ endif()
+ 
+ if (SPIRV_CROSS_CLI)

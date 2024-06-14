@@ -17,38 +17,65 @@
 
 Log_SetChannel(ShaderGen);
 
-ShaderGen::ShaderGen(RenderAPI render_api, bool supports_dual_source_blend, bool supports_framebuffer_fetch)
-  : m_render_api(render_api), m_glsl(render_api != RenderAPI::D3D11 && render_api != RenderAPI::D3D12),
-    m_spirv(render_api == RenderAPI::Vulkan || render_api == RenderAPI::Metal),
-    m_supports_dual_source_blend(supports_dual_source_blend), m_supports_framebuffer_fetch(supports_framebuffer_fetch),
-    m_use_glsl_interface_blocks(false)
+ShaderGen::ShaderGen(RenderAPI render_api, GPUShaderLanguage shader_language, bool supports_dual_source_blend,
+                     bool supports_framebuffer_fetch)
+  : m_render_api(render_api), m_shader_language(shader_language),
+    m_glsl(shader_language == GPUShaderLanguage::GLSL || shader_language == GPUShaderLanguage::GLSLES ||
+           shader_language == GPUShaderLanguage::GLSLVK),
+    m_spirv(shader_language == GPUShaderLanguage::GLSLVK), m_supports_dual_source_blend(supports_dual_source_blend),
+    m_supports_framebuffer_fetch(supports_framebuffer_fetch), m_use_glsl_interface_blocks(false)
 {
-#if defined(ENABLE_OPENGL) || defined(ENABLE_VULKAN) || defined(__APPLE__)
   if (m_glsl)
   {
 #ifdef ENABLE_OPENGL
     if (m_render_api == RenderAPI::OpenGL || m_render_api == RenderAPI::OpenGLES)
-      m_glsl_version_string = GetGLSLVersionString(m_render_api);
+      m_glsl_version_string = GetGLSLVersionString(m_render_api, GetGLSLVersion(render_api));
 
-    m_use_glsl_interface_blocks = (IsVulkan() || IsMetal() || GLAD_GL_ES_VERSION_3_2 || GLAD_GL_VERSION_3_2);
-    m_use_glsl_binding_layout = (IsVulkan() || IsMetal() || UseGLSLBindingLayout());
+    m_use_glsl_interface_blocks =
+      (shader_language == GPUShaderLanguage::GLSLVK || GLAD_GL_ES_VERSION_3_2 || GLAD_GL_VERSION_3_2);
+    m_use_glsl_binding_layout = (shader_language == GPUShaderLanguage::GLSLVK || UseGLSLBindingLayout());
 
-    if (m_render_api == RenderAPI::OpenGL)
+#ifdef _WIN32
+    if (m_shader_language == GPUShaderLanguage::GLSL)
     {
       // SSAA with interface blocks is broken on AMD's OpenGL driver.
       const char* gl_vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
       if (std::strcmp(gl_vendor, "ATI Technologies Inc.") == 0)
         m_use_glsl_interface_blocks = false;
     }
+#endif
 #else
     m_use_glsl_interface_blocks = true;
     m_use_glsl_binding_layout = true;
 #endif
   }
-#endif
 }
 
 ShaderGen::~ShaderGen() = default;
+
+GPUShaderLanguage ShaderGen::GetShaderLanguageForAPI(RenderAPI api)
+{
+  switch (api)
+  {
+    case RenderAPI::D3D11:
+    case RenderAPI::D3D12:
+      return GPUShaderLanguage::HLSL;
+
+    case RenderAPI::Vulkan:
+    case RenderAPI::Metal:
+      return GPUShaderLanguage::GLSLVK;
+
+    case RenderAPI::OpenGL:
+      return GPUShaderLanguage::GLSL;
+
+    case RenderAPI::OpenGLES:
+      return GPUShaderLanguage::GLSLES;
+
+    case RenderAPI::None:
+    default:
+      return GPUShaderLanguage::None;
+  }
+}
 
 bool ShaderGen::UseGLSLBindingLayout()
 {
@@ -72,7 +99,7 @@ void ShaderGen::DefineMacro(std::stringstream& ss, const char* name, s32 value)
 }
 
 #ifdef ENABLE_OPENGL
-TinyString ShaderGen::GetGLSLVersionString(RenderAPI render_api)
+u32 ShaderGen::GetGLSLVersion(RenderAPI render_api)
 {
   const char* glsl_version = reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION));
   const bool glsl_es = (render_api == RenderAPI::OpenGLES);
@@ -108,6 +135,15 @@ TinyString ShaderGen::GetGLSLVersionString(RenderAPI render_api)
     }
   }
 
+  return (static_cast<u32>(major_version) * 100) + static_cast<u32>(minor_version);
+}
+
+TinyString ShaderGen::GetGLSLVersionString(RenderAPI render_api, u32 version)
+{
+  const bool glsl_es = (render_api == RenderAPI::OpenGLES);
+  const u32 major_version = (version / 100);
+  const u32 minor_version = (version % 100);
+
   return TinyString::from_format("#version {}{:02d}{}", major_version, minor_version,
                                  (glsl_es && major_version >= 3) ? " es" : "");
 }
@@ -115,7 +151,7 @@ TinyString ShaderGen::GetGLSLVersionString(RenderAPI render_api)
 
 void ShaderGen::WriteHeader(std::stringstream& ss)
 {
-  if (m_render_api == RenderAPI::OpenGL || m_render_api == RenderAPI::OpenGLES)
+  if (m_shader_language == GPUShaderLanguage::GLSL || m_shader_language == GPUShaderLanguage::GLSLES)
     ss << m_glsl_version_string << "\n\n";
   else if (m_spirv)
     ss << "#version 450 core\n\n";
@@ -131,7 +167,7 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
 
 #ifdef ENABLE_OPENGL
   // Extension enabling for OpenGL.
-  if (m_render_api == RenderAPI::OpenGL || m_render_api == RenderAPI::OpenGLES)
+  if (m_shader_language == GPUShaderLanguage::GLSL || m_shader_language == GPUShaderLanguage::GLSLES)
   {
     if (GLAD_GL_EXT_shader_framebuffer_fetch)
       ss << "#extension GL_EXT_shader_framebuffer_fetch : require\n";
@@ -139,7 +175,7 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
       ss << "#extension GL_ARM_shader_framebuffer_fetch : require\n";
   }
 
-  if (m_render_api == RenderAPI::OpenGLES)
+  if (m_shader_language == GPUShaderLanguage::GLSLES)
   {
     // Enable EXT_blend_func_extended for dual-source blend on OpenGL ES.
     if (GLAD_GL_EXT_blend_func_extended)
@@ -158,7 +194,7 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
       ss << "#define DRIVER_POWERVR 1\n";
     }
   }
-  else if (m_render_api == RenderAPI::OpenGL)
+  else if (m_shader_language == GPUShaderLanguage::GLSL)
   {
     // Need extensions for binding layout if GL<4.3.
     if (m_use_glsl_binding_layout && !GLAD_GL_VERSION_4_3)
@@ -185,7 +221,7 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
   DefineMacro(ss, "API_METAL", m_render_api == RenderAPI::Metal);
 
 #ifdef ENABLE_OPENGL
-  if (m_render_api == RenderAPI::OpenGLES)
+  if (m_shader_language == GPUShaderLanguage::GLSLES)
   {
     ss << "precision highp float;\n";
     ss << "precision highp int;\n";
@@ -299,9 +335,9 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
 
 void ShaderGen::WriteUniformBufferDeclaration(std::stringstream& ss, bool push_constant_on_vulkan)
 {
-  if (IsVulkan())
+  if (m_shader_language == GPUShaderLanguage::GLSLVK)
   {
-    if (push_constant_on_vulkan)
+    if (m_render_api == RenderAPI::Vulkan && push_constant_on_vulkan)
     {
       ss << "layout(push_constant) uniform PushConstants\n";
     }
@@ -311,15 +347,10 @@ void ShaderGen::WriteUniformBufferDeclaration(std::stringstream& ss, bool push_c
       m_has_uniform_buffer = true;
     }
   }
-  else if (IsMetal())
-  {
-    ss << "layout(std140, set = 0, binding = 0) uniform UBOBlock\n";
-    m_has_uniform_buffer = true;
-  }
   else if (m_glsl)
   {
     if (m_use_glsl_binding_layout)
-      ss << "layout(std140, binding = 1) uniform UBOBlock\n";
+      ss << "layout(std140, binding = 0) uniform UBOBlock\n";
     else
       ss << "layout(std140) uniform UBOBlock\n";
 

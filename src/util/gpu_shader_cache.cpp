@@ -20,7 +20,9 @@ Log_SetChannel(GPUShaderCache);
 #pragma pack(push, 1)
 struct CacheIndexEntry
 {
-  u32 shader_type;
+  u8 shader_type;
+  u8 shader_language;
+  u8 unused[2];
   u32 source_length;
   u64 source_hash_low;
   u64 source_hash_high;
@@ -202,8 +204,9 @@ bool GPUShaderCache::ReadExisting(const std::string& index_filename, const std::
       return false;
     }
 
-    const CacheIndexKey key{entry.shader_type,      entry.source_length,   entry.source_hash_low,
-                            entry.source_hash_high, entry.entry_point_low, entry.entry_point_high};
+    const CacheIndexKey key{entry.shader_type,     entry.shader_language, {},
+                            entry.source_length,   entry.source_hash_low, entry.source_hash_high,
+                            entry.entry_point_low, entry.entry_point_high};
     const CacheIndexData data{entry.file_offset, entry.compressed_size, entry.uncompressed_size};
     m_index.emplace(key, data);
   }
@@ -215,8 +218,8 @@ bool GPUShaderCache::ReadExisting(const std::string& index_filename, const std::
   return true;
 }
 
-GPUShaderCache::CacheIndexKey GPUShaderCache::GetCacheKey(GPUShaderStage stage, std::string_view shader_code,
-                                                          std::string_view entry_point)
+GPUShaderCache::CacheIndexKey GPUShaderCache::GetCacheKey(GPUShaderStage stage, GPUShaderLanguage language,
+                                                          std::string_view shader_code, std::string_view entry_point)
 {
   union
   {
@@ -229,7 +232,8 @@ GPUShaderCache::CacheIndexKey GPUShaderCache::GetCacheKey(GPUShaderStage stage, 
   } h;
 
   CacheIndexKey key = {};
-  key.shader_type = static_cast<u32>(stage);
+  key.shader_type = static_cast<u8>(stage);
+  key.shader_language = static_cast<u8>(language);
 
   MD5Digest digest;
   digest.Update(shader_code.data(), static_cast<u32>(shader_code.length()));
@@ -295,7 +299,8 @@ bool GPUShaderCache::Insert(const CacheIndexKey& key, const void* data, u32 data
   idata.uncompressed_size = data_size;
 
   CacheIndexEntry entry = {};
-  entry.shader_type = static_cast<u32>(key.shader_type);
+  entry.shader_type = static_cast<u8>(key.shader_type);
+  entry.shader_language = static_cast<u8>(key.shader_language);
   entry.source_length = key.source_length;
   entry.source_hash_low = key.source_hash_low;
   entry.source_hash_high = key.source_hash_high;

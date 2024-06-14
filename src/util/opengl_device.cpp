@@ -1092,7 +1092,7 @@ void OpenGLDevice::PushUniformBuffer(const void* data, u32 data_size)
   std::memcpy(res.pointer, data, data_size);
   m_uniform_buffer->Unmap(data_size);
   s_stats.buffer_streamed += data_size;
-  glBindBufferRange(GL_UNIFORM_BUFFER, 1, m_uniform_buffer->GetGLBufferId(), res.buffer_offset, data_size);
+  glBindBufferRange(GL_UNIFORM_BUFFER, 0, m_uniform_buffer->GetGLBufferId(), res.buffer_offset, data_size);
 }
 
 void* OpenGLDevice::MapUniformBuffer(u32 size)
@@ -1105,7 +1105,7 @@ void OpenGLDevice::UnmapUniformBuffer(u32 size)
 {
   const u32 pos = m_uniform_buffer->Unmap(size);
   s_stats.buffer_streamed += size;
-  glBindBufferRange(GL_UNIFORM_BUFFER, 1, m_uniform_buffer->GetGLBufferId(), pos, size);
+  glBindBufferRange(GL_UNIFORM_BUFFER, 0, m_uniform_buffer->GetGLBufferId(), pos, size);
 }
 
 void OpenGLDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds,

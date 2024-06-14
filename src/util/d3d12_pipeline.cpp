@@ -25,23 +25,31 @@ void D3D12Shader::SetDebugName(std::string_view name)
 {
 }
 
-std::unique_ptr<GPUShader> D3D12Device::CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data)
+std::unique_ptr<GPUShader> D3D12Device::CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data,
+                                                               Error* error)
 {
   // Can't do much at this point.
   std::vector bytecode(data.begin(), data.end());
   return std::unique_ptr<GPUShader>(new D3D12Shader(stage, std::move(bytecode)));
 }
 
-std::unique_ptr<GPUShader> D3D12Device::CreateShaderFromSource(GPUShaderStage stage, std::string_view source,
-                                                               const char* entry_point,
-                                                               DynamicHeapArray<u8>* out_binary)
+std::unique_ptr<GPUShader> D3D12Device::CreateShaderFromSource(GPUShaderStage stage, GPUShaderLanguage language,
+                                                               std::string_view source, const char* entry_point,
+                                                               DynamicHeapArray<u8>* out_binary, Error* error)
 {
+  const u32 shader_model = D3DCommon::GetShaderModelForFeatureLevel(m_feature_level);
+  if (language != GPUShaderLanguage::HLSL)
+  {
+    return TranspileAndCreateShaderFromSource(stage, language, source, entry_point, GPUShaderLanguage::HLSL,
+                                              shader_model, out_binary, error);
+  }
+
   std::optional<DynamicHeapArray<u8>> bytecode =
-    D3DCommon::CompileShader(m_feature_level, m_debug_device, stage, source, entry_point);
+    D3DCommon::CompileShader(shader_model, m_debug_device, stage, source, entry_point, error);
   if (!bytecode.has_value())
     return {};
 
-  std::unique_ptr<GPUShader> ret = CreateShaderFromBinary(stage, bytecode.value());
+  std::unique_ptr<GPUShader> ret = CreateShaderFromBinary(stage, bytecode.value(), error);
   if (ret && out_binary)
     *out_binary = std::move(bytecode.value());
 

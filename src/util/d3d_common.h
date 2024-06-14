@@ -60,9 +60,10 @@ std::string GetAdapterName(IDXGIAdapter1* adapter);
 // returns the driver version from the registry as a string
 std::string GetDriverVersionFromLUID(const LUID& luid);
 
-std::optional<DynamicHeapArray<u8>> CompileShader(D3D_FEATURE_LEVEL feature_level, bool debug_device,
-                                                  GPUShaderStage stage, std::string_view source,
-                                                  const char* entry_point);
+u32 GetShaderModelForFeatureLevel(D3D_FEATURE_LEVEL feature_level);
+
+std::optional<DynamicHeapArray<u8>> CompileShader(u32 shader_model, bool debug_device, GPUShaderStage stage,
+                                                  std::string_view source, const char* entry_point, Error* error);
 
 struct DXGIFormatMapping
 {

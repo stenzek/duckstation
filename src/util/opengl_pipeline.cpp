@@ -158,24 +158,35 @@ bool OpenGLShader::Compile()
   return true;
 }
 
-std::unique_ptr<GPUShader> OpenGLDevice::CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data)
+std::unique_ptr<GPUShader> OpenGLDevice::CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data,
+                                                                Error* error)
 {
   // Not supported.. except spir-v maybe? but no point really...
+  Error::SetStringView(error, "Not supported.");
   return {};
 }
 
-std::unique_ptr<GPUShader> OpenGLDevice::CreateShaderFromSource(GPUShaderStage stage, std::string_view source,
-                                                                const char* entry_point,
-                                                                DynamicHeapArray<u8>* out_binary)
+std::unique_ptr<GPUShader> OpenGLDevice::CreateShaderFromSource(GPUShaderStage stage, GPUShaderLanguage language,
+                                                                std::string_view source, const char* entry_point,
+                                                                DynamicHeapArray<u8>* out_binary, Error* error)
 {
+  const GPUShaderLanguage expected_language = IsGLES() ? GPUShaderLanguage::GLSLES : GPUShaderLanguage::GLSL;
+  if (language != expected_language)
+  {
+    return TranspileAndCreateShaderFromSource(
+      stage, language, source, entry_point, expected_language,
+      ShaderGen::GetGLSLVersion(IsGLES() ? RenderAPI::OpenGLES : RenderAPI::OpenGL), out_binary, error);
+  }
+
   if (std::strcmp(entry_point, "main") != 0)
   {
     ERROR_LOG("Entry point must be 'main', but got '{}' instead.", entry_point);
+    Error::SetStringFmt(error, "Entry point must be 'main', but got '{}' instead.", entry_point);
     return {};
   }
 
   return std::unique_ptr<GPUShader>(
-    new OpenGLShader(stage, GPUShaderCache::GetCacheKey(stage, source, entry_point), std::string(source)));
+    new OpenGLShader(stage, GPUShaderCache::GetCacheKey(stage, language, source, entry_point), std::string(source)));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -381,11 +392,26 @@ GLuint OpenGLDevice::CompileProgram(const GPUPipeline::GraphicsConfig& plconfig)
 
     if (status == GL_TRUE)
     {
-      ERROR_LOG("Program linked with warnings:\n{}", info_log.c_str());
+      ERROR_LOG("Program linked with warnings:\n{}", info_log);
     }
     else
     {
-      ERROR_LOG("Program failed to link:\n{}", info_log.c_str());
+      {
+        std::stringstream ss;
+        ss << "########## VERTEX SHADER ##########\n";
+        ss << vertex_shader->GetSource();
+        if (geometry_shader)
+        {
+          ss << "\n########## GEOMETRY SHADER ##########\n";
+          ss << geometry_shader->GetSource();
+        }
+        ss << "\n########## FRAGMENT SHADER ##########\n";
+        ss << fragment_shader->GetSource();
+        ss << "\n#####################################\n";
+        DumpBadShader(ss.str(), info_log);
+      }
+
+      ERROR_LOG("Program failed to link:\n{}", info_log);
       glDeleteProgram(program_id);
       return 0;
     }
@@ -402,7 +428,7 @@ void OpenGLDevice::PostLinkProgram(const GPUPipeline::GraphicsConfig& plconfig, 
   {
     GLint location = glGetUniformBlockIndex(program_id, "UBOBlock");
     if (location >= 0)
-      glUniformBlockBinding(program_id, location, 1);
+      glUniformBlockBinding(program_id, location, 0);
 
     glUseProgram(program_id);
 

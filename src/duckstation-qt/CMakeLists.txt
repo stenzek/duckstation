@@ -209,7 +209,7 @@ if(WIN32)
   )
   #set_source_files_properties(${TS_FILES} PROPERTIES OUTPUT_LOCATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/translations")
 
-  set(DEPS_TO_COPY freetype.dll harfbuzz.dll libjpeg.dll libpng16.dll libsharpyuv.dll libwebp.dll SDL2.dll shaderc_shared.dll zlib1.dll zstd.dll)
+  set(DEPS_TO_COPY freetype.dll harfbuzz.dll libjpeg.dll libpng16.dll libsharpyuv.dll libwebp.dll SDL2.dll shaderc_shared.dll spirv-cross-c-shared.dll zlib1.dll zstd.dll)
   foreach(DEP ${DEPS_TO_COPY})
     list(APPEND DEP_BINS "${CMAKE_PREFIX_PATH}/bin/${DEP}")
   endforeach()
@@ -244,8 +244,9 @@ elseif(APPLE)
   endif()
 
   # Copy shaderc into the bundle
-  target_sources(duckstation-qt PRIVATE "${SHADERC_LIBRARY}")
-  set_source_files_properties("${SHADERC_LIBRARY}" PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks)
+  get_target_property(SPIRV_CROSS_LIBRARY spirv-cross-c-shared IMPORTED_LOCATION_RELEASE)
+  target_sources(duckstation-qt PRIVATE "${SHADERC_LIBRARY}" "${SPIRV_CROSS_LIBRARY}")
+  set_source_files_properties("${SHADERC_LIBRARY}" "${SPIRV_CROSS_LIBRARY}" PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks)
 
   # Copy icon into the bundle
   target_sources(duckstation-qt PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/DuckStation.icns")
