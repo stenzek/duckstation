@@ -57,12 +57,13 @@ void GPU_HW_ShaderGen::WriteBatchUniformBuffer(std::stringstream& ss)
                        false);
 }
 
-std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured, bool uv_limits, bool force_round_texcoords,
-                                                        bool pgxp_depth)
+std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured, bool palette, bool uv_limits,
+                                                        bool force_round_texcoords, bool pgxp_depth)
 {
   std::stringstream ss;
   WriteHeader(ss);
   DefineMacro(ss, "TEXTURED", textured);
+  DefineMacro(ss, "PALETTE", palette);
   DefineMacro(ss, "UV_LIMITS", uv_limits);
   DefineMacro(ss, "FORCE_ROUND_TEXCOORDS", force_round_texcoords);
   DefineMacro(ss, "PGXP_DEPTH", pgxp_depth);
@@ -76,14 +77,14 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured, bool uv_l
     {
       DeclareVertexEntryPoint(
         ss, {"float4 a_pos", "float4 a_col0", "uint a_texcoord", "uint a_texpage", "float4 a_uv_limits"}, 1, 1,
-        {{"nointerpolation", "uint4 v_texpage"}, {"nointerpolation", "float4 v_uv_limits"}}, false, "", UsingMSAA(),
-        UsingPerSampleShading(), m_disable_color_perspective);
+        {{"nointerpolation", palette ? "uint4 v_texpage" : "uint2 v_texpage"}, {"nointerpolation", "float4 v_uv_limits"}},
+        false, "", UsingMSAA(), UsingPerSampleShading(), m_disable_color_perspective);
     }
     else
     {
       DeclareVertexEntryPoint(ss, {"float4 a_pos", "float4 a_col0", "uint a_texcoord", "uint a_texpage"}, 1, 1,
-                              {{"nointerpolation", "uint4 v_texpage"}}, false, "", UsingMSAA(), UsingPerSampleShading(),
-                              m_disable_color_perspective);
+                              {{"nointerpolation", palette ? "uint4 v_texpage" : "uint2 v_texpage"}}, false, "",
+                              UsingMSAA(), UsingPerSampleShading(), m_disable_color_perspective);
     }
   }
   else
@@ -126,22 +127,32 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured, bool uv_l
 
   v_col0 = a_col0;
   #if TEXTURED
-    v_tex0 = float2(float((a_texcoord & 0xFFFFu) * RESOLUTION_SCALE),
-                    float((a_texcoord >> 16) * RESOLUTION_SCALE));
+    v_tex0 = float2(uint2(a_texcoord & 0xFFFFu, a_texcoord >> 16));
+    #if !PALETTE
+      v_tex0 *= float(RESOLUTION_SCALE);
+    #endif
 
     // base_x,base_y,palette_x,palette_y
-    // Palette X is scaled in fragment shader, since it can wrap.
-    v_texpage.x = (a_texpage & 15u) * 64u * RESOLUTION_SCALE;
-    v_texpage.y = ((a_texpage >> 4) & 1u) * 256u * RESOLUTION_SCALE;
-    v_texpage.z = ((a_texpage >> 16) & 63u) * 16u;
-    v_texpage.w = ((a_texpage >> 22) & 511u) * RESOLUTION_SCALE;
+    v_texpage.x = (a_texpage & 15u) * 64u;
+    v_texpage.y = ((a_texpage >> 4) & 1u) * 256u;
+    #if PALETTE
+      v_texpage.z = ((a_texpage >> 16) & 63u) * 16u;
+      v_texpage.w = ((a_texpage >> 22) & 511u);
+    #endif
 
     #if UV_LIMITS
-      v_uv_limits = a_uv_limits * float4(255.0, 255.0, 255.0, 255.0);
-      #if FORCE_ROUND_TEXCOORDS
+      v_uv_limits = a_uv_limits * 255.0;
+
+      #if FORCE_ROUND_TEXCOORDS && PALETTE
         // Add 0.5 to the upper bounds when upscaling, to work around interpolation differences.
         // Limited to force-round-texcoord hack, to avoid breaking other games.
         v_uv_limits.zw += 0.5;
+      #elif !PALETTE
+        // Treat coordinates as being in upscaled space, and extend the UV range to all "upscaled"
+        // pixels. This means 1-pixel-high polygon-based framebuffer effects won't be downsampled.
+        // (e.g. Mega Man Legends 2 haze effect)
+        v_uv_limits *= float(RESOLUTION_SCALE);
+        v_uv_limits.zw += float(RESOLUTION_SCALE - 1u);
       #endif
     #endif
   #endif
@@ -158,7 +169,7 @@ void GPU_HW_ShaderGen::WriteBatchTextureFilter(std::stringstream& ss, GPUTexture
   {
     DefineMacro(ss, "BINALPHA", texture_filter == GPUTextureFilter::BilinearBinAlpha);
     ss << R"(
-void FilteredSampleFromVRAM(uint4 texpage, float2 coords, float4 uv_limits,
+void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limits,
                             out float4 texcol, out float ialpha)
 {
   // Compute the coordinates of the four texels we will be interpolating between.
@@ -246,7 +257,7 @@ float4 resampler(float4 x)
    return res;
 }
 
-void FilteredSampleFromVRAM(uint4 texpage, float2 coords, float4 uv_limits,
+void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limits,
                             out float4 texcol, out float ialpha)
 {
     float4 weights[4];
@@ -392,7 +403,7 @@ float get_left_ratio(float2 center, float2 origin, float2 direction, float2 scal
 
 #define P(coord, xoffs, yoffs) SampleFromVRAM(texpage, clamp(coords + float2((xoffs), (yoffs)), uv_limits.xy, uv_limits.zw))
 
-void FilteredSampleFromVRAM(uint4 texpage, float2 coords, float4 uv_limits,
+void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limits,
                             out float4 texcol, out float ialpha)
 {
   //---------------------------------------
@@ -647,6 +658,8 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   DebugAssert(transparency == GPUTransparencyMode::Disabled || render_mode == GPU_HW::BatchRenderMode::ShaderBlend);
 
   const bool textured = (texture_mode != GPU_HW::BatchTextureMode::Disabled);
+  const bool palette =
+    (texture_mode == GPU_HW::BatchTextureMode::Palette4Bit || texture_mode == GPU_HW::BatchTextureMode::Palette8Bit);
   const bool shader_blending = (render_mode == GPU_HW::BatchRenderMode::ShaderBlend &&
                                 (transparency != GPUTransparencyMode::Disabled || check_mask));
   const bool use_dual_source = (!shader_blending && m_supports_dual_source_blend &&
@@ -663,9 +676,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   DefineMacro(ss, "SHADER_BLENDING", shader_blending);
   DefineMacro(ss, "CHECK_MASK_BIT", check_mask);
   DefineMacro(ss, "TEXTURED", textured);
-  DefineMacro(ss, "PALETTE",
-              texture_mode == GPU_HW::BatchTextureMode::Palette4Bit ||
-                texture_mode == GPU_HW::BatchTextureMode::Palette8Bit);
+  DefineMacro(ss, "PALETTE", palette);
   DefineMacro(ss, "PALETTE_4_BIT", texture_mode == GPU_HW::BatchTextureMode::Palette4Bit);
   DefineMacro(ss, "PALETTE_8_BIT", texture_mode == GPU_HW::BatchTextureMode::Palette8Bit);
   DefineMacro(ss, "DITHERING", dithering);
@@ -679,6 +690,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   DefineMacro(ss, "USE_DUAL_SOURCE", use_dual_source);
   DefineMacro(ss, "WRITE_MASK_AS_DEPTH", m_write_mask_as_depth);
   DefineMacro(ss, "FORCE_ROUND_TEXCOORDS", force_round_texcoords);
+  DefineMacro(ss, "UPSCALED", m_resolution_scale > 1);
 
   WriteCommonFunctions(ss);
   WriteBatchUniformBuffer(ss);
@@ -719,18 +731,17 @@ uint3 ApplyDithering(uint2 coord, uint3 icol)
 #if TEXTURED
 CONSTANT float4 TRANSPARENT_PIXEL_COLOR = float4(0.0, 0.0, 0.0, 0.0);
 
+#if PALETTE
+  #define TEXPAGE_VALUE uint4
+#else
+  #define TEXPAGE_VALUE uint2
+#endif
+
 uint2 ApplyTextureWindow(uint2 coords)
 {
   uint x = (uint(coords.x) & u_texture_window_and.x) | u_texture_window_or.x;
   uint y = (uint(coords.y) & u_texture_window_and.y) | u_texture_window_or.y;
   return uint2(x, y);
-}
-
-uint2 ApplyUpscaledTextureWindow(uint2 coords)
-{
-  uint2 native_coords = coords / uint2(RESOLUTION_SCALE, RESOLUTION_SCALE);
-  uint2 coords_offset = coords % uint2(RESOLUTION_SCALE, RESOLUTION_SCALE);
-  return (ApplyTextureWindow(native_coords) * uint2(RESOLUTION_SCALE, RESOLUTION_SCALE)) + coords_offset;
 }
 
 uint2 FloatToIntegerCoords(float2 coords)
@@ -740,42 +751,56 @@ uint2 FloatToIntegerCoords(float2 coords)
   return uint2((RESOLUTION_SCALE == 1u || FORCE_ROUND_TEXCOORDS != 0) ? roundEven(coords) : floor(coords));
 }
 
-float4 SampleFromVRAM(uint4 texpage, float2 coords)
+float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
 {
   #if PALETTE
     uint2 icoord = ApplyTextureWindow(FloatToIntegerCoords(coords));
-    uint2 index_coord = icoord;
+
+    uint2 vicoord;
     #if PALETTE_4_BIT
-      index_coord.x /= 4u;
+      // 4bit will never wrap, since it's in the last texpage row.
+      vicoord = uint2(texpage.x + (icoord.x / 4u), texpage.y + icoord.y);
     #elif PALETTE_8_BIT
-      index_coord.x /= 2u;
+      // 8bit can wrap in the X direction.
+      vicoord = uint2((texpage.x + (icoord.x / 2u)) & 0x3FFu, texpage.y + icoord.y);
     #endif
 
-    // fixup coords
-    uint2 vicoord = texpage.xy + (index_coord * uint2(RESOLUTION_SCALE, RESOLUTION_SCALE));
-
     // load colour/palette
-    float4 texel = LOAD_TEXTURE(samp0, int2(vicoord), 0);
+    float4 texel = LOAD_TEXTURE(samp0, int2(vicoord * RESOLUTION_SCALE), 0);
     uint vram_value = RGBA8ToRGBA5551(texel);
 
     // apply palette
     #if PALETTE_4_BIT
       uint subpixel = icoord.x & 3u;
       uint palette_index = (vram_value >> (subpixel * 4u)) & 0x0Fu;
-      uint2 palette_icoord = uint2((texpage.z + palette_index) * RESOLUTION_SCALE, texpage.w);
+      uint2 palette_icoord = uint2((texpage.z + palette_index), texpage.w);
     #elif PALETTE_8_BIT
       // can only wrap in X direction for 8-bit, 4-bit will fit in texpage size.
       uint subpixel = icoord.x & 1u;
       uint palette_index = (vram_value >> (subpixel * 8u)) & 0xFFu;
-      uint2 palette_icoord = uint2(((texpage.z + palette_index) & 0x3FFu) * RESOLUTION_SCALE, texpage.w);
+      uint2 palette_icoord = uint2(((texpage.z + palette_index) & 0x3FFu), texpage.w);
     #endif
 
-    return LOAD_TEXTURE(samp0, int2(palette_icoord), 0);
+    return LOAD_TEXTURE(samp0, int2(palette_icoord * RESOLUTION_SCALE), 0);
   #else
-    // Direct texturing. Render-to-texture effects. Use upscaled coordinates.
-    uint2 icoord = ApplyUpscaledTextureWindow(FloatToIntegerCoords(coords));
-    uint2 direct_icoord = texpage.xy + icoord;
-    return LOAD_TEXTURE(samp0, int2(direct_icoord), 0);
+    // Direct texturing - usually render-to-texture effects.
+    uint2 vicoord;
+    #if !UPSCALED
+      uint2 icoord = ApplyTextureWindow(FloatToIntegerCoords(coords));
+      vicoord = (texpage.xy + icoord) & uint2(1023, 511);
+    #else
+      // Coordinates are already upscaled, we need to downscale them to apply the texture
+      // window, then re-upscale/offset. We can't round here, because it could result in
+      // going outside of the texture window.
+      float2 ncoords = coords / float(RESOLUTION_SCALE);
+      float2 nfpart = frac(ncoords);
+      uint2 nicoord = ApplyTextureWindow(uint2(floor(ncoords)));
+      uint2 nvicoord = (texpage.xy + nicoord) & uint2(1023, 511);
+      coords = (float2(nvicoord) + nfpart) * float(RESOLUTION_SCALE);
+      vicoord = uint2(floor(coords));
+    #endif
+
+    return LOAD_TEXTURE(samp0, int2(vicoord), 0);
   #endif
 }
 
@@ -808,15 +833,16 @@ float3 ApplyDebanding(float2 frag_coord)
     if (uv_limits)
     {
       DeclareFragmentEntryPoint(ss, 1, 1,
-                                {{"nointerpolation", "uint4 v_texpage"}, {"nointerpolation", "float4 v_uv_limits"}},
+                                {{"nointerpolation", palette ? "uint4 v_texpage" : "uint2 v_texpage"},
+                                 {"nointerpolation", "float4 v_uv_limits"}},
                                 true, use_dual_source ? 2 : 1, use_dual_source, m_write_mask_as_depth, UsingMSAA(),
                                 UsingPerSampleShading(), false, m_disable_color_perspective, shader_blending);
     }
     else
     {
-      DeclareFragmentEntryPoint(ss, 1, 1, {{"nointerpolation", "uint4 v_texpage"}}, true, use_dual_source ? 2 : 1,
-                                use_dual_source, m_write_mask_as_depth, UsingMSAA(), UsingPerSampleShading(), false,
-                                m_disable_color_perspective, shader_blending);
+      DeclareFragmentEntryPoint(ss, 1, 1, {{"nointerpolation", palette ? "uint4 v_texpage" : "uint2 v_texpage"}}, true,
+                                use_dual_source ? 2 : 1, use_dual_source, m_write_mask_as_depth, UsingMSAA(),
+                                UsingPerSampleShading(), false, m_disable_color_perspective, shader_blending);
     }
   }
   else
@@ -841,34 +867,16 @@ float3 ApplyDebanding(float2 frag_coord)
   #endif
 
   #if TEXTURED
-
-    // We can't currently use upscaled coordinate for palettes because of how they're packed.
-    // Not that it would be any benefit anyway, render-to-texture effects don't use palettes.
-    float2 coords = v_tex0;
-    #if PALETTE
-      coords /= float2(RESOLUTION_SCALE, RESOLUTION_SCALE);
-    #endif
-
-    #if UV_LIMITS
-      float4 uv_limits = v_uv_limits;
-      #if !PALETTE
-        // Extend the UV range to all "upscaled" pixels. This means 1-pixel-high polygon-based
-        // framebuffer effects won't be downsampled. (e.g. Mega Man Legends 2 haze effect)
-        uv_limits *= float(RESOLUTION_SCALE);
-        uv_limits.zw += float(RESOLUTION_SCALE - 1u);
-      #endif
-    #endif
-
     float4 texcol;
     #if TEXTURE_FILTERING
-      FilteredSampleFromVRAM(v_texpage, coords, uv_limits, texcol, ialpha);
+      FilteredSampleFromVRAM(v_texpage, v_tex0, v_uv_limits, texcol, ialpha);
       if (ialpha < 0.5)
         discard;
     #else
       #if UV_LIMITS
-        texcol = SampleFromVRAM(v_texpage, clamp(coords, uv_limits.xy, uv_limits.zw));
+        texcol = SampleFromVRAM(v_texpage, clamp(v_tex0, v_uv_limits.xy, v_uv_limits.zw));
       #else
-        texcol = SampleFromVRAM(v_texpage, coords);
+        texcol = SampleFromVRAM(v_texpage, v_tex0);
       #endif
       if (VECTOR_EQ(texcol, TRANSPARENT_PIXEL_COLOR))
         discard;

@@ -849,9 +849,8 @@ bool GPU_HW::CompilePipelines()
   const u32 active_texture_modes =
     m_allow_sprite_mode ? NUM_TEXTURE_MODES :
                           (NUM_TEXTURE_MODES - (NUM_TEXTURE_MODES - static_cast<u32>(BatchTextureMode::SpriteStart)));
-  const u32 active_vertex_shaders = m_allow_sprite_mode ? 3 : 2;
   const u32 total_pipelines =
-    active_vertex_shaders +                                                      // vertex shaders
+    (m_allow_sprite_mode ? 5 : 3) +                                              // vertex shaders
     (active_texture_modes * 5 * 9 * 2 * 2 * 2) +                                 // fragment shaders
     ((m_pgxp_depth_buffer ? 2 : 1) * 5 * 5 * active_texture_modes * 2 * 2 * 2) + // batch pipelines
     ((m_wireframe_mode != GPUWireframeMode::Disabled) ? 1 : 0) +                 // wireframe
@@ -867,29 +866,34 @@ bool GPU_HW::CompilePipelines()
 
   ShaderCompileProgressTracker progress("Compiling Pipelines", total_pipelines);
 
-  // vertex shaders - [non-textured/textured/sprite]
+  // vertex shaders - [textured/palette/sprite]
   // fragment shaders - [render_mode][transparency_mode][texture_mode][check_mask][dithering][interlacing]
   static constexpr auto destroy_shader = [](std::unique_ptr<GPUShader>& s) { s.reset(); };
-  DimensionalArray<std::unique_ptr<GPUShader>, 3> batch_vertex_shaders{};
+  DimensionalArray<std::unique_ptr<GPUShader>, 2, 2, 2> batch_vertex_shaders{};
   DimensionalArray<std::unique_ptr<GPUShader>, 2, 2, 2, NUM_TEXTURE_MODES, 5, 5> batch_fragment_shaders{};
   ScopedGuard batch_shader_guard([&batch_vertex_shaders, &batch_fragment_shaders]() {
     batch_vertex_shaders.enumerate(destroy_shader);
     batch_fragment_shaders.enumerate(destroy_shader);
   });
 
-  for (u8 textured = 0; textured < active_vertex_shaders; textured++)
+  for (u8 textured = 0; textured < 2; textured++)
   {
-    const bool sprite = (textured > 1);
-    const bool uv_limits = ShouldClampUVs(sprite ? m_sprite_texture_filtering : m_texture_filtering);
-    const std::string vs = shadergen.GenerateBatchVertexShader(textured != 0, uv_limits,
-                                                               !sprite && force_round_texcoords, m_pgxp_depth_buffer);
-    if (!(batch_vertex_shaders[textured] =
-            g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(), vs)))
+    for (u8 palette = 0; palette < (textured ? 2 : 1); palette++)
     {
-      return false;
-    }
+      for (u8 sprite = 0; sprite < (textured ? 2 : 1); sprite++)
+      {
+        const bool uv_limits = ShouldClampUVs(sprite ? m_sprite_texture_filtering : m_texture_filtering);
+        const std::string vs = shadergen.GenerateBatchVertexShader(
+          textured != 0, palette != 0, uv_limits, !sprite && force_round_texcoords, m_pgxp_depth_buffer);
+        if (!(batch_vertex_shaders[textured][palette][sprite] =
+                g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(), vs)))
+        {
+          return false;
+        }
 
-    progress.Increment();
+        progress.Increment();
+      }
+    }
   }
 
   for (u8 render_mode = 0; render_mode < 5; render_mode++)
@@ -1010,6 +1014,11 @@ bool GPU_HW::CompilePipelines()
               for (u8 check_mask = 0; check_mask < 2; check_mask++)
               {
                 const bool textured = (static_cast<BatchTextureMode>(texture_mode) != BatchTextureMode::Disabled);
+                const bool palette =
+                  (static_cast<BatchTextureMode>(texture_mode) == BatchTextureMode::Palette4Bit ||
+                   static_cast<BatchTextureMode>(texture_mode) == BatchTextureMode::Palette8Bit ||
+                   static_cast<BatchTextureMode>(texture_mode) == BatchTextureMode::SpritePalette4Bit ||
+                   static_cast<BatchTextureMode>(texture_mode) == BatchTextureMode::SpritePalette8Bit);
                 const bool sprite = (static_cast<BatchTextureMode>(texture_mode) >= BatchTextureMode::SpriteStart);
                 const bool uv_limits = ShouldClampUVs(sprite ? m_sprite_texture_filtering : m_texture_filtering);
                 const bool use_shader_blending =
@@ -1026,7 +1035,8 @@ bool GPU_HW::CompilePipelines()
                                                                                NUM_BATCH_TEXTURED_VERTEX_ATTRIBUTES)) :
                     std::span<const GPUPipeline::VertexAttribute>(vertex_attributes, NUM_BATCH_VERTEX_ATTRIBUTES);
 
-                plconfig.vertex_shader = batch_vertex_shaders[BoolToUInt8(textured) + BoolToUInt8(sprite)].get();
+                plconfig.vertex_shader =
+                  batch_vertex_shaders[BoolToUInt8(textured)][BoolToUInt8(palette)][BoolToUInt8(sprite)].get();
                 plconfig.fragment_shader =
                   batch_fragment_shaders[render_mode]
                                         [use_shader_blending ? transparency_mode :
@@ -1132,7 +1142,7 @@ bool GPU_HW::CompilePipelines()
                        GPUPipeline::BlendState::GetNoBlendingState();
     plconfig.blend.write_mask = 0x7;
     plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
-    plconfig.vertex_shader = batch_vertex_shaders[0].get();
+    plconfig.vertex_shader = batch_vertex_shaders[0][0][0].get();
     plconfig.geometry_shader = gs.get();
     plconfig.fragment_shader = fs.get();
 
