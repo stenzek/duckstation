@@ -1765,6 +1765,15 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUTexture* final
     std::bitset<GPUDevice::MAX_TEXTURE_SAMPLERS> bound_textures = {};
     for (const Sampler& sampler : pass.samplers)
     {
+      // Can't bind the RT as a sampler.
+      if (std::any_of(pass.render_targets.begin(), pass.render_targets.end(),
+                      [&sampler](TextureID rt) { return rt == sampler.texture_id; }))
+      {
+        GL_INS_FMT("Not binding RT sampler {}: ID {} [{}]", sampler.slot, sampler.texture_id,
+                   GetTextureNameForID(sampler.texture_id));
+        continue;
+      }
+
       GL_INS_FMT("Texture Sampler {}: ID {} [{}]", sampler.slot, sampler.texture_id,
                  GetTextureNameForID(sampler.texture_id));
       g_gpu_device->SetTextureSampler(sampler.slot, GetTextureByID(sampler.texture_id, input, final_target),
