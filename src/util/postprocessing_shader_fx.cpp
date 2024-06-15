@@ -936,6 +936,18 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
       *si = SourceOptionType::ViewportHeight;
       return true;
     }
+    else if (source == "viewportoffset")
+    {
+      if (!ui.type.is_floating_point() || ui.type.components() != 2)
+      {
+        Error::SetString(error, fmt::format("Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(),
+                                            source, ui.name));
+        return false;
+      }
+
+      *si = SourceOptionType::ViewportOffset;
+      return true;
+    }
     else if (source == "viewportsize")
     {
       if (!ui.type.is_floating_point() || ui.type.components() != 2)
@@ -1662,6 +1674,13 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input, GPUTexture* final
         case SourceOptionType::ViewportHeight:
         {
           const float value = static_cast<float>(final_height);
+          std::memcpy(dst, &value, sizeof(value));
+        }
+        break;
+
+        case SourceOptionType::ViewportOffset:
+        {
+          const float value[2] = {static_cast<float>(final_left), static_cast<float>(final_top)};
           std::memcpy(dst, &value, sizeof(value));
         }
         break;

@@ -70,6 +70,7 @@ private:
     ViewportY,
     ViewportWidth,
     ViewportHeight,
+    ViewportOffset,
     ViewportSize,
     InternalPixelSize,
     InternalNormPixelSize,
