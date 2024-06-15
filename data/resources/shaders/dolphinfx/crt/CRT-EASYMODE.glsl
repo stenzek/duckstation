@@ -256,7 +256,7 @@ void main()
     float scan_weight = 1.0 - pow(cos(vTexCoord.y * 2.0 * PI * SourceSize.y) * 0.5 + 0.5, scan_beam) * GetOption(SCANLINE_STRENGTH);
 
     float mask   = 1.0 - GetOption(MASK_STRENGTH);    
-    vec2 mod_fac = floor(vTexCoord * GetResolution().xy * SourceSize.xy / (SourceSize.xy * vec2(GetOption(MASK_SIZE), GetOption(MASK_DOT_HEIGHT) * GetOption(MASK_SIZE))));
+    vec2 mod_fac = floor(vTexCoord * GetWindowSize().xy * SourceSize.xy / (SourceSize.xy * vec2(GetOption(MASK_SIZE), GetOption(MASK_DOT_HEIGHT) * GetOption(MASK_SIZE))));
     int dot_no   = int(mod((mod_fac.x + mod(mod_fac.y, 2.0) * GetOption(MASK_STAGGER)) / GetOption(MASK_DOT_WIDTH), 3.0));
     vec3 mask_weight;
 

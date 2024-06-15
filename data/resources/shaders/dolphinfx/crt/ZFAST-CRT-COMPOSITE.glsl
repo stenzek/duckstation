@@ -168,7 +168,7 @@ else {
     }
 
      float steps; if (GetOption(TYPE) == 0.0) steps = 0.5; else steps = 0.3333;
-     float whichmask = fract(vTexCoord.x*GetResolution().x*steps);
+     float whichmask = fract(vTexCoord.x*GetWindowSize().x*steps);
      float mask = 1.0 + float(whichmask < steps) * (-GetOption(MASK_DARK));
 
     colour.rgb = mix(mask*colour, colour, dot(colour.rgb,vec3(maskFade)));
