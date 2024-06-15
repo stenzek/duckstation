@@ -56153,6 +56153,8 @@ SCPS-45087:
   name: "Final Fantasy Tactics"
   controllers:
     - DigitalController
+  traits:
+    - DisableWidescreen
   codes:
     - SCPS-45087
     - SCPS-45088
@@ -56174,6 +56176,8 @@ SLPS-00770:
   name: "Final Fantasy Tactics (Japan)"
   controllers:
     - DigitalController
+  traits:
+    - DisableWidescreen
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -56192,6 +56196,8 @@ SLPM-87392:
   name: "Final Fantasy Tactics (Japan) (Rev 1)"
   controllers:
     - DigitalController
+  traits:
+    - DisableWidescreen
   codes:
     - SLPM-87392
     - SLPS-02768
@@ -56217,6 +56223,8 @@ SCUS-94221:
     versionTested: "0.1-1031-g47138aa"
   controllers:
     - DigitalController
+  traits:
+    - DisableWidescreen
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
