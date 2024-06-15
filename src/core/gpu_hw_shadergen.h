@@ -13,7 +13,8 @@ public:
                    bool supports_dual_source_blend, bool supports_framebuffer_fetch, bool debanding);
   ~GPU_HW_ShaderGen();
 
-  std::string GenerateBatchVertexShader(bool textured, bool uv_limits, bool force_round_texcoords, bool pgxp_depth);
+  std::string GenerateBatchVertexShader(bool textured, bool palette, bool uv_limits, bool force_round_texcoords,
+                                        bool pgxp_depth);
   std::string GenerateBatchFragmentShader(GPU_HW::BatchRenderMode render_mode, GPUTransparencyMode transparency,
                                           GPU_HW::BatchTextureMode texture_mode, GPUTextureFilter texture_filtering,
                                           bool uv_limits, bool force_round_texcoords, bool dithering, bool interlacing,
