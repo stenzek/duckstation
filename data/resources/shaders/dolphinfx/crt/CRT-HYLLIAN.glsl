@@ -502,7 +502,7 @@ void main()
 
     color  = color_boost*GAMMA_OUT(color);
 
-    vec2 mask_coords =vTexCoord.xy * GetResolution().xy;
+    vec2 mask_coords =vTexCoord.xy * GetWindowSize().xy;
 
     mask_coords = mix(mask_coords.xy, mask_coords.yx, GetOption(VSCANLINES));
 

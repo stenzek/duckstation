@@ -34,7 +34,7 @@ void main()
    vec2 vTexCoord  = GetCoordinates();
    vec2 SourceSize = 1.0 / GetInvNativePixelSize();
    vec2 texelSize  = 1.0 / SourceSize.xy;
-   vec2 OutputSize = GetResolution().xy;
+   vec2 OutputSize = GetWindowSize().xy;
 
    vec2 range = vec2(abs(SourceSize.x / (OutputSize.x * SourceSize.x)), abs(SourceSize.y / (OutputSize.y * SourceSize.y)));
    range = range / 2.0 * 0.999;

@@ -132,7 +132,7 @@ void main()
 {
     vec2 texCoord = GetCoordinates();
     vec2 SourceSize = 1.0 / GetInvNativePixelSize();
-    float aa_factor = 2.0* (1.0/GetResolution().x) * SourceSize.x;
+    float aa_factor = 2.0* (1.0/GetWindowSize().x) * SourceSize.x;
 
     vec4 edri, edr, edr_l, edr_u, px; // px = pixel, edr = edge detection rule
     vec4 irlv0, irlv1, irlv2l, irlv2u;
