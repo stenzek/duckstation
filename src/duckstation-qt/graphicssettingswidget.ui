@@ -952,17 +952,24 @@
          <layout class="QFormLayout" name="formLayout_8">
           <item row="0" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_6">
-            <item row="0" column="1">
-             <widget class="QCheckBox" name="preloadTextureReplacements">
-              <property name="text">
-               <string>Preload Texture Replacements</string>
-              </property>
-             </widget>
-            </item>
             <item row="0" column="0">
              <widget class="QCheckBox" name="enableTextureReplacements">
               <property name="text">
                <string>Enable Texture Replacements</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QCheckBox" name="dumpTexturePages">
+              <property name="text">
+               <string>Dump Texture Pages</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="preloadTextureReplacements">
+              <property name="text">
+               <string>Preload Texture Replacements</string>
               </property>
              </widget>
             </item>
@@ -973,10 +980,31 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="1">
-             <widget class="QCheckBox" name="dumpTexturePages">
+            <item row="2" column="1">
+             <layout class="QHBoxLayout" name="horizontalLayout">
+              <item>
+               <widget class="QLabel" name="label_4">
+                <property name="text">
+                 <string>Max Write Splits:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="maxVRAMWriteSplits">
+                <property name="minimum">
+                 <number>0</number>
+                </property>
+                <property name="maximum">
+                 <number>32</number>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="2" column="0">
+             <widget class="QCheckBox" name="convertCopiesToWrites">
               <property name="text">
-               <string>Dump Texture Pages</string>
+               <string>Convert Copies To Writes</string>
               </property>
              </widget>
             </item>

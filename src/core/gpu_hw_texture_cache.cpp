@@ -25,11 +25,9 @@ Log_SetChannel(GPUTextureCache);
 namespace GPUTextureCache {
 struct VRAMWrite
 {
-  GSVector4i rect;
+  GSVector4i active_rect;
+  GSVector4i write_rect;
   HashType hash;
-
-  u32 num_page_refs;
-  std::array<TListNode<VRAMWrite>, MAX_PAGE_REFS_PER_WRITE> page_refs;
 
   struct PaletteRecord
   {
@@ -43,6 +41,10 @@ struct VRAMWrite
   // TODO: Keep these in texel-local space, not global space, that way texture sizes aren't aligned to 4 pixels.
   // But realistically, that probably isn't super common, and also requires modifying the renderer side of things.
   std::vector<PaletteRecord> palette_records;
+
+  u32 num_splits;
+  u32 num_page_refs;
+  std::array<TListNode<VRAMWrite>, MAX_PAGE_REFS_PER_WRITE> page_refs;
 };
 
 struct PageEntry
@@ -161,6 +163,16 @@ ALWAYS_INLINE_RELEASE static void ListIterate(const TList<T>& list, const F& f)
     f(n->ref);
 }
 
+template<typename T, typename F>
+ALWAYS_INLINE_RELEASE static void ListIterateWithEarlyExit(const TList<T>& list, const F& f)
+{
+  for (const GPUTextureCache::TListNode<T>* n = list.head; n; n = n->next)
+  {
+    if (!f(n->ref))
+      break;
+  }
+}
+
 template<typename F>
 ALWAYS_INLINE_RELEASE static void LoopRectPages(u32 left, u32 top, u32 right, u32 bottom, const F& f)
 {
@@ -203,10 +215,10 @@ ALWAYS_INLINE_RELEASE static void LoopRectPagesWithEarlyExit(u32 left, u32 top, 
     for (u32 page_x = start_x; page_x <= end_x; page_x++)
     {
       if (!f(y_page_number++))
-        break;
-
-      page_number += VRAM_PAGES_WIDE;
+        return;
     }
+
+    page_number += VRAM_PAGES_WIDE;
   }
 }
 
@@ -244,7 +256,9 @@ static HashType HashPage(u8 page, GPUTextureMode mode);
 static HashType HashPalette(GPUTexturePaletteReg palette, GPUTextureMode mode);
 static HashType HashRect(const GSVector4i& rc);
 
+static void SyncVRAMWritePaletteRecords(VRAMWrite* entry);
 static void UpdateVRAMWriteSources(VRAMWrite* entry, SourceKey source_key, const GSVector4i global_uv_rect);
+static void SplitVRAMWrite(VRAMWrite* entry, const GSVector4i written_rect);
 static void RemoveVRAMWrite(VRAMWrite* entry);
 static void DumpTexturesFromVRAMWrite(VRAMWrite* entry);
 
@@ -263,6 +277,7 @@ static std::array<PageEntry, NUM_VRAM_PAGES> s_pages = {};
 static std::vector<std::pair<HashCache::iterator, s32>> s_hash_cache_purge_list;
 
 static bool s_track_vram_writes = false;
+static u32 s_max_vram_write_splits = 1;
 
 } // namespace GPUTextureCache
 
@@ -330,7 +345,7 @@ void GPUTextureCache::AddDrawnRectangle(const GSVector4i rect)
     {
       VRAMWrite* it = n->ref;
       n = n->next;
-      if (it->rect.rintersects(rect))
+      if (it->active_rect.rintersects(rect))
         RemoveVRAMWrite(it);
     }
   });
@@ -355,8 +370,15 @@ void GPUTextureCache::AddWrittenRectangle(const GSVector4i rect)
     {
       VRAMWrite* it = n->ref;
       n = n->next;
-      if (it->rect.rintersects(rect))
-        RemoveVRAMWrite(it);
+
+      const GSVector4i intersection = it->active_rect.rintersect(rect);
+      if (!intersection.rempty())
+      {
+        if (it->num_splits < s_max_vram_write_splits && !it->active_rect.eq(intersection))
+          SplitVRAMWrite(it, intersection);
+        else
+          RemoveVRAMWrite(it);
+      }
     }
   });
 }
@@ -380,7 +402,7 @@ void GPUTextureCache::AddCopiedRectanglePart1(const GSVector4i rect)
     {
       VRAMWrite* it = n->ref;
       n = n->next;
-      if (it->rect.rintersects(rect))
+      if (it->active_rect.rintersects(rect))
         DumpTexturesFromVRAMWrite(it);
     }
   });
@@ -394,9 +416,9 @@ void GPUTextureCache::AddCopiedRectanglePart2(const GSVector4i rect)
     {
       VRAMWrite* it = n->ref;
       n = n->next;
-      if (it->rect.rintersects(rect))
+      if (it->write_rect.rintersects(rect))
       {
-        const HashType new_hash = HashRect(it->rect);
+        const HashType new_hash = HashRect(it->write_rect);
         DEV_LOG("VRAM Copy {:016X} => {:016X}", it->hash, new_hash);
         it->hash = new_hash;
       }
@@ -627,7 +649,7 @@ const GPUTextureCache::Source* GPUTextureCache::ReturnSource(Source* source, con
     LoopXWrappedPages(source->key.page, TexturePageCountForMode(source->key.mode), [&uv_rect](u32 pn) {
       const PageEntry& pe = s_pages[pn];
       ListIterate(pe.writes, [&uv_rect](const VRAMWrite* vrw) {
-        if (const GSVector4i intersection = uv_rect.rintersect(vrw->rect); !intersection.rempty())
+        if (const GSVector4i intersection = uv_rect.rintersect(vrw->write_rect); !intersection.rempty())
           GL_INS_FMT("TC: VRAM write was {:016X} ({})", vrw->hash, intersection);
       });
     });
@@ -893,7 +915,8 @@ void GPUTextureCache::TrackVRAMWrite(const GSVector4i rect)
     return;
 
   VRAMWrite* it = new VRAMWrite();
-  it->rect = rect;
+  it->active_rect = rect;
+  it->write_rect = rect;
   it->hash = HashRect(rect);
   it->num_page_refs = 0;
   LoopRectPages(rect, [it](u32 pn) {
@@ -902,7 +925,7 @@ void GPUTextureCache::TrackVRAMWrite(const GSVector4i rect)
     return true;
   });
 
-  DEV_LOG("New VRAM write {:016X} at {} touching {} pages", it->hash, it->rect, it->num_page_refs);
+  DEV_LOG("New VRAM write {:016X} at {} touching {} pages", it->hash, rect, it->num_page_refs);
 }
 
 void GPUTextureCache::UpdateVRAMTrackingState()
@@ -910,10 +933,28 @@ void GPUTextureCache::UpdateVRAMTrackingState()
   s_track_vram_writes = ShouldTrackVRAMWrites();
 }
 
+void GPUTextureCache::SyncVRAMWritePaletteRecords(VRAMWrite* entry)
+{
+  // Have to go through any sources that intersect this write, because they may not have been invalidated yet, in which
+  // case the active rect also will not have been updated.
+  if (IsDumpingVRAMWrites())
+  {
+    LoopRectPages(entry->active_rect, [entry](const u32 pn) {
+      const PageEntry& page = s_pages[pn];
+      ListIterate(page.sources, [entry](const Source* src) {
+        if (!src->active_uv_rect.eq(INVALID_RECT))
+          UpdateVRAMWriteSources(entry, src->key, src->active_uv_rect);
+      });
+
+      return true;
+    });
+  }
+}
+
 void GPUTextureCache::UpdateVRAMWriteSources(VRAMWrite* entry, SourceKey source_key, const GSVector4i global_uv_rect)
 {
   // convert to VRAM write space
-  const GSVector4i write_intersection = entry->rect.rintersect(global_uv_rect);
+  const GSVector4i write_intersection = entry->active_rect.rintersect(global_uv_rect);
   if (write_intersection.rempty())
     return;
 
@@ -926,23 +967,118 @@ void GPUTextureCache::UpdateVRAMWriteSources(VRAMWrite* entry, SourceKey source_
     entry->palette_records.emplace_back(source_key, write_intersection);
 }
 
-void GPUTextureCache::RemoveVRAMWrite(VRAMWrite* entry)
+void GPUTextureCache::SplitVRAMWrite(VRAMWrite* entry, const GSVector4i written_rect)
 {
-  DEV_LOG("Remove VRAM write {:016X} at {}", entry->hash, entry->rect);
+  SyncVRAMWritePaletteRecords(entry);
 
-  // Have to go through any sources that intersect this write, because they may not have been invalidated yet, in which
-  // case the active rect also will not have been updated.
-  if (IsDumpingVRAMWrites())
+  const s32 to_left = (written_rect.left - entry->active_rect.left);
+  const s32 to_right = (entry->active_rect.right - written_rect.right);
+  const s32 to_top = (written_rect.top - entry->active_rect.top);
+  const s32 to_bottom = (entry->active_rect.bottom - written_rect.bottom);
+  DebugAssert(to_left > 0 || to_right > 0 || to_top > 0 || to_bottom > 0);
+
+  entry->num_splits++;
+
+  GSVector4i rects[4];
+
+  // TODO: more efficient vector swizzle
+  if (std::max(to_top, to_bottom) > std::max(to_left, to_right))
   {
-    LoopRectPages(entry->rect, [entry](const u32 pn) {
-      const PageEntry& page = s_pages[pn];
-      ListIterate(page.sources, [entry](const Source* src) {
-        if (!src->active_uv_rect.eq(INVALID_RECT))
-          UpdateVRAMWriteSources(entry, src->key, src->active_uv_rect);
-      });
+    // split top/bottom, then left/right
+    rects[0] = GSVector4i(entry->active_rect.left, entry->active_rect.top, entry->active_rect.right, written_rect.top);
+    rects[1] =
+      GSVector4i(entry->active_rect.left, written_rect.bottom, entry->active_rect.right, entry->active_rect.bottom);
+    rects[2] = GSVector4i(entry->active_rect.left, entry->active_rect.top + to_top, entry->active_rect.left + to_left,
+                          entry->active_rect.bottom - to_bottom);
+    rects[3] = GSVector4i(entry->active_rect.right - to_right, entry->active_rect.top + to_top,
+                          entry->active_rect.right, entry->active_rect.bottom - to_bottom);
+  }
+  else
+  {
+    // split left/right, then top/bottom
+    rects[0] =
+      GSVector4i(entry->active_rect.left, entry->active_rect.top, written_rect.left, entry->active_rect.bottom);
+    rects[1] =
+      GSVector4i(written_rect.right, entry->active_rect.top, entry->active_rect.right, entry->active_rect.bottom);
+    rects[2] = GSVector4i(entry->active_rect.left + to_left, entry->active_rect.top + to_top,
+                          written_rect.right - to_right, entry->active_rect.top - to_top);
+    rects[3] = GSVector4i(entry->active_rect.left + to_left, entry->active_rect.bottom - to_bottom,
+                          written_rect.right - to_right, entry->active_rect.bottom);
+  }
 
+  for (size_t i = 0; i < std::size(rects); i++)
+  {
+    const GSVector4i splitr = rects[i];
+    if (splitr.rempty())
+      continue;
+
+    VRAMWrite* it = new VRAMWrite();
+    it->write_rect = entry->write_rect;
+    it->active_rect = splitr;
+    it->hash = entry->hash;
+    it->num_splits = entry->num_splits;
+    it->num_page_refs = 0;
+
+    // TODO: We probably want to share this...
+    it->palette_records.reserve(entry->palette_records.size());
+    for (const auto& [source_key, source_rect] : it->palette_records)
+    {
+      if (source_rect.rintersects(splitr))
+        it->palette_records.emplace_back(source_key, source_rect);
+    }
+
+    LoopRectPages(splitr, [it](u32 pn) {
+      DebugAssert(it->num_page_refs < MAX_PAGE_REFS_PER_WRITE);
+      ListAppend(&s_pages[pn].writes, it, &it->page_refs[it->num_page_refs++]);
       return true;
     });
+
+    DEV_LOG("Split VRAM write {:016X} at {} in direction {} => {}", it->hash, entry->active_rect, i, splitr);
+  }
+
+  for (u32 i = 0; i < entry->num_page_refs; i++)
+    ListUnlink(entry->page_refs[i]);
+
+  delete entry;
+}
+
+void GPUTextureCache::RemoveVRAMWrite(VRAMWrite* entry)
+{
+  DEV_LOG("Remove VRAM write {:016X} at {}", entry->hash, entry->write_rect);
+
+  SyncVRAMWritePaletteRecords(entry);
+
+  if (entry->num_splits > 0 && !entry->palette_records.empty())
+  {
+    // Combine palette records with another write.
+    VRAMWrite* other_write = nullptr;
+    LoopRectPagesWithEarlyExit(entry->write_rect, [&entry, &other_write](u32 pn) {
+      PageEntry& pg = s_pages[pn];
+      ListIterateWithEarlyExit(pg.writes, [&entry, &other_write](VRAMWrite* cur) {
+        if (cur->hash != entry->hash)
+          return true;
+
+        other_write = cur;
+        return false;
+      });
+      return (other_write == nullptr);
+    });
+    if (other_write)
+    {
+      for (const auto& [source_key, local_rect] : entry->palette_records)
+      {
+        const auto iter =
+          std::find_if(other_write->palette_records.begin(), other_write->palette_records.end(),
+                       [&source_key](const VRAMWrite::PaletteRecord& it) { return it.key == source_key; });
+        if (iter != other_write->palette_records.end())
+          iter->rect = iter->rect.runion(local_rect);
+        else
+          other_write->palette_records.emplace_back(source_key, local_rect);
+      }
+
+      // No dumping from here!
+      entry->palette_records.clear();
+    }
   }
 
   for (u32 i = 0; i < entry->num_page_refs; i++)
@@ -961,11 +1097,16 @@ void GPUTextureCache::DumpTexturesFromVRAMWrite(VRAMWrite* entry)
     {
       const HashType pal_hash =
         (source_key.mode < GPUTextureMode::Direct16Bit) ? HashPalette(source_key.palette, source_key.mode) : 0;
-      TextureReplacements::DumpTexture(TextureReplacements::ReplacementType::TextureFromVRAMWrite, entry->rect,
+
+      // TODO: Option to disable C16
+      if (source_key.mode == GPUTextureMode::Direct16Bit)
+        continue;
+
+      TextureReplacements::DumpTexture(TextureReplacements::ReplacementType::TextureFromVRAMWrite, entry->write_rect,
                                        entry->hash, pal_hash, source_key.mode, source_key.palette, local_rect);
 #if 0
       if (TextureModeHasPalette(source_key.mode))
-        TextureReplacements::DumpTexture(TextureReplacements::ReplacementType::TextureFromVRAMWrite, entry->rect,
+        TextureReplacements::DumpTexture(TextureReplacements::ReplacementType::TextureFromVRAMWrite, entry->write_rect,
           entry->hash, 0, GPUTextureMode::Direct16Bit, {}, entry->rect);
 #endif
     }
@@ -1167,11 +1308,11 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
       const PageEntry& page = s_pages[pn];
       ListIterate(page.writes, [&key, &pal_hash, &subimages, &page_rect](const VRAMWrite* vrw) {
         // TODO: Is this needed?
-        if (!vrw->rect.rintersects(page_rect))
+        if (!vrw->write_rect.rintersects(page_rect))
           return;
 
         // Map VRAM write to the start of the page.
-        GSVector2i offset_to_page = page_rect.sub32(vrw->rect).xy();
+        GSVector2i offset_to_page = page_rect.sub32(vrw->write_rect).xy();
 
         // Need to apply the texture shift on the X dimension, not Y. No SLLV on SSE4.. :(
         offset_to_page.x = ApplyTextureModeShift(key.mode, offset_to_page.x);
