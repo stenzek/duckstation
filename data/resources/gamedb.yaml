@@ -30023,6 +30023,8 @@ SCES-00344:
     rating: NoIssues
   controllers:
     - DigitalController
+  traits:
+    - ForceRoundTextureCoordinates
   metadata:
     publisher: "Sony"
     developer: "Naughty Dog, Inc"
@@ -30045,6 +30047,8 @@ SCPS-10031:
     rating: NoIssues
   controllers:
     - DigitalController
+  traits:
+    - ForceRoundTextureCoordinates
   codes:
     - SCPS-10031
     - SCPS-45026
@@ -30069,6 +30073,8 @@ SCUS-94900:
     rating: NoIssues
   controllers:
     - DigitalController
+  traits:
+    - ForceRoundTextureCoordinates
   metadata:
     publisher: "Sony"
     developer: "Naughty Dog, Inc"
@@ -30088,12 +30094,11 @@ SCUS-94244:
   compatibility:
     rating: NoIssues
     versionTested: "0.1-2499-g770dd5a6"
-    comments: "Last sound of the bios sound keeps looping until the first loading screen in the game starts. It's related with CD-ROM speeds and can be avoided with \"Fast Boot\"\
-      \ option on (Issue #407)."
   controllers:
     - AnalogController
     - DigitalController
   traits:
+    - ForceRoundTextureCoordinates
     - DisablePGXPColorCorrection
   metadata:
     publisher: "Sony"
@@ -30118,6 +30123,8 @@ SCES-00967:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForceRoundTextureCoordinates
   metadata:
     publisher: "Sony"
     developer: "Naughty Dog, Inc"
@@ -30143,6 +30150,8 @@ SCUS-94154:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForceRoundTextureCoordinates
   metadata:
     publisher: "Sony"
     developer: "Naughty Dog, Inc"
@@ -30164,6 +30173,8 @@ SCPS-10047:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForceRoundTextureCoordinates
   codes:
     - SCPS-10047
     - SCPS-91092
@@ -30192,6 +30203,7 @@ SCPS-10073:
     - AnalogController
     - DigitalController
   traits:
+    - ForceRoundTextureCoordinates
     - DisablePGXPColorCorrection
   codes:
     - SCPS-10073
@@ -30218,6 +30230,8 @@ SCPS-45350:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForceRoundTextureCoordinates
   metadata:
     publisher: "Sony"
     developer: "Naughty Dog, Inc"
@@ -30240,6 +30254,7 @@ SCES-01420:
     - AnalogController
     - DigitalController
   traits:
+    - ForceRoundTextureCoordinates
     - DisablePGXPColorCorrection
   metadata:
     publisher: "Sony"
@@ -30379,6 +30394,8 @@ SCPS-91304:
   name: "Crash Bandicoot [PSOne Books]"
   controllers:
     - DigitalController
+  traits:
+    - ForceRoundTextureCoordinates
   metadata:
     publisher: "Sony"
     developer: "Naughty Dog, Inc"
