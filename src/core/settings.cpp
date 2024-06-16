@@ -697,6 +697,7 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.cpu_overclock_enable = false;
     g_settings.cpu_overclock_active = false;
     g_settings.enable_8mb_ram = false;
+    g_settings.enable_cheats = false;
     g_settings.gpu_resolution_scale = 1;
     g_settings.gpu_multisamples = 1;
     g_settings.gpu_per_sample_shading = false;
