@@ -116824,6 +116824,21 @@ SLPS-00327:
     linkCable: true
 SLPM-80032:
   name: "Over Drivin' DX - Rally Edition (Japan)"
+  controllers:
+    - DigitalController
+    - NeGcon
+  metadata:
+    publisher: "Electronic Arts"
+    developer: "Pioneer Productions"
+    releaseDate: "1996-03-13"
+    genre: "Driving / Racing"
+    languages:
+      - Japanese
+    minPlayers: 1
+    maxPlayers: 1
+    vibration: false
+    multitap: false
+    linkCable: false
 SLPS-00895:
   name: "Over Drivin' II (Japan)"
   controllers:
