@@ -287,5 +287,5 @@ private:
   u32 m_downsample_scale_or_levels = 0;
 
   // [depth_test][transparency_mode][render_mode][texture_mode][dithering][interlacing][check_mask]
-  DimensionalArray<std::unique_ptr<GPUPipeline>, 2, 2, 2, 9, 5, 5, 2> m_batch_pipelines{};
+  DimensionalArray<std::unique_ptr<GPUPipeline>, 2, 2, 2, NUM_TEXTURE_MODES, 5, 5, 2> m_batch_pipelines{};
 };

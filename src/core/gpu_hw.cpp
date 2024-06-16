@@ -780,7 +780,7 @@ bool GPU_HW::CompilePipelines()
   m_allow_shader_blend = (features.feedback_loops && (m_pgxp_depth_buffer || !needs_depth_buffer));
 
   GPU_HW_ShaderGen shadergen(g_gpu_device->GetRenderAPI(), m_resolution_scale, m_multisamples, m_per_sample_shading,
-                             m_true_color, m_scaled_dithering, m_texture_filtering, m_clamp_uvs, write_mask_as_depth,
+                             m_true_color, m_scaled_dithering, m_clamp_uvs, write_mask_as_depth,
                              m_disable_color_perspective, m_supports_dual_source_blend, m_supports_framebuffer_fetch,
                              m_debanding);
 
@@ -837,7 +837,7 @@ bool GPU_HW::CompilePipelines()
         (m_supports_framebuffer_fetch && (render_mode == static_cast<u8>(BatchRenderMode::OnlyOpaque) ||
                                           render_mode == static_cast<u8>(BatchRenderMode::OnlyTransparent))))
       {
-        progress.Increment(4 * 2 * 2 * 2);
+        progress.Increment(active_texture_modes * 2 * 2 * 2);
         continue;
       }
 
@@ -858,7 +858,7 @@ bool GPU_HW::CompilePipelines()
             {
               const std::string fs = shadergen.GenerateBatchFragmentShader(
                 static_cast<BatchRenderMode>(render_mode), static_cast<GPUTransparencyMode>(transparency_mode),
-                static_cast<GPUTextureMode>(texture_mode), ConvertToBoolUnchecked(dithering),
+                static_cast<GPUTextureMode>(texture_mode), m_texture_filtering, ConvertToBoolUnchecked(dithering),
                 ConvertToBoolUnchecked(interlacing), ConvertToBoolUnchecked(check_mask));
 
               if (!(batch_fragment_shaders[render_mode][transparency_mode][texture_mode][check_mask][dithering]

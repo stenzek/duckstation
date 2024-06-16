@@ -6,15 +6,14 @@
 #include <cstdio>
 
 GPU_HW_ShaderGen::GPU_HW_ShaderGen(RenderAPI render_api, u32 resolution_scale, u32 multisamples,
-                                   bool per_sample_shading, bool true_color, bool scaled_dithering,
-                                   GPUTextureFilter texture_filtering, bool uv_limits, bool write_mask_as_depth,
-                                   bool disable_color_perspective, bool supports_dual_source_blend,
-                                   bool supports_framebuffer_fetch, bool debanding)
+                                   bool per_sample_shading, bool true_color, bool scaled_dithering, bool uv_limits,
+                                   bool write_mask_as_depth, bool disable_color_perspective,
+                                   bool supports_dual_source_blend, bool supports_framebuffer_fetch, bool debanding)
   : ShaderGen(render_api, GetShaderLanguageForAPI(render_api), supports_dual_source_blend, supports_framebuffer_fetch),
     m_resolution_scale(resolution_scale), m_multisamples(multisamples), m_per_sample_shading(per_sample_shading),
-    m_true_color(true_color), m_scaled_dithering(scaled_dithering), m_texture_filter(texture_filtering),
-    m_uv_limits(uv_limits), m_write_mask_as_depth(write_mask_as_depth),
-    m_disable_color_perspective(disable_color_perspective), m_debanding(debanding)
+    m_true_color(true_color), m_scaled_dithering(scaled_dithering), m_uv_limits(uv_limits),
+    m_write_mask_as_depth(write_mask_as_depth), m_disable_color_perspective(disable_color_perspective),
+    m_debanding(debanding)
 {
 }
 
@@ -633,7 +632,8 @@ void FilteredSampleFromVRAM(uint4 texpage, float2 coords, float4 uv_limits,
 
 std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMode render_mode,
                                                           GPUTransparencyMode transparency, GPUTextureMode texture_mode,
-                                                          bool dithering, bool interlacing, bool check_mask)
+                                                          GPUTextureFilter texture_filtering, bool dithering,
+                                                          bool interlacing, bool check_mask)
 {
   // TODO: don't write depth for shader blend
   DebugAssert(transparency == GPUTransparencyMode::Disabled || render_mode == GPU_HW::BatchRenderMode::ShaderBlend);
@@ -644,7 +644,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   const bool use_dual_source = (!shader_blending && m_supports_dual_source_blend &&
                                 ((render_mode != GPU_HW::BatchRenderMode::TransparencyDisabled &&
                                   render_mode != GPU_HW::BatchRenderMode::OnlyOpaque) ||
-                                 m_texture_filter != GPUTextureFilter::Nearest));
+                                 texture_filtering != GPUTextureFilter::Nearest));
 
   std::stringstream ss;
   WriteHeader(ss);
@@ -665,7 +665,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   DefineMacro(ss, "DEBANDING", m_true_color && m_debanding);
   DefineMacro(ss, "INTERLACING", interlacing);
   DefineMacro(ss, "TRUE_COLOR", m_true_color);
-  DefineMacro(ss, "TEXTURE_FILTERING", m_texture_filter != GPUTextureFilter::Nearest);
+  DefineMacro(ss, "TEXTURE_FILTERING", texture_filtering != GPUTextureFilter::Nearest);
   DefineMacro(ss, "UV_LIMITS", m_uv_limits);
   DefineMacro(ss, "USE_DUAL_SOURCE", use_dual_source);
   DefineMacro(ss, "WRITE_MASK_AS_DEPTH", m_write_mask_as_depth);
@@ -792,8 +792,8 @@ float3 ApplyDebanding(float2 frag_coord)
 
   if (textured)
   {
-    if (m_texture_filter != GPUTextureFilter::Nearest)
-      WriteBatchTextureFilter(ss, m_texture_filter);
+    if (texture_filtering != GPUTextureFilter::Nearest)
+      WriteBatchTextureFilter(ss, texture_filtering);
 
     if (m_uv_limits)
     {
