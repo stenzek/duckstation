@@ -784,19 +784,21 @@ bool GPU_HW::CompilePipelines()
                              m_disable_color_perspective, m_supports_dual_source_blend, m_supports_framebuffer_fetch,
                              m_debanding);
 
-  const u32 total_pipelines = 2 +                                                           // vertex shaders
-                              (5 * 5 * 9 * 2 * 2 * 2) +                                     // fragment shaders
-                              ((m_pgxp_depth_buffer ? 2 : 1) * 5 * 5 * 9 * 2 * 2 * 2) +     // batch pipelines
-                              ((m_wireframe_mode != GPUWireframeMode::Disabled) ? 1 : 0) +  // wireframe
-                              1 +                                                           // fullscreen quad VS
-                              (2 * 2) +                                                     // vram fill
-                              (1 + BoolToUInt32(write_mask_as_depth)) +                     // vram copy
-                              (1 + BoolToUInt32(write_mask_as_depth)) +                     // vram write
-                              1 +                                                           // vram write replacement
-                              (needs_depth_buffer ? 1 : 0) +                                // mask -> depth
-                              1 +                                                           // vram read
-                              2 +                                                           // extract/display
-                              ((m_downsample_mode != GPUDownsampleMode::Disabled) ? 1 : 0); // downsample
+  constexpr u32 active_texture_modes = 4;
+  const u32 total_pipelines =
+    2 +                                                                          // vertex shaders
+    (active_texture_modes * 5 * 9 * 2 * 2 * 2) +                                 // fragment shaders
+    ((m_pgxp_depth_buffer ? 2 : 1) * 5 * 5 * active_texture_modes * 2 * 2 * 2) + // batch pipelines
+    ((m_wireframe_mode != GPUWireframeMode::Disabled) ? 1 : 0) +                 // wireframe
+    1 +                                                                          // fullscreen quad VS
+    (2 * 2) +                                                                    // vram fill
+    (1 + BoolToUInt32(write_mask_as_depth)) +                                    // vram copy
+    (1 + BoolToUInt32(write_mask_as_depth)) +                                    // vram write
+    1 +                                                                          // vram write replacement
+    (needs_depth_buffer ? 1 : 0) +                                               // mask -> depth
+    1 +                                                                          // vram read
+    2 +                                                                          // extract/display
+    ((m_downsample_mode != GPUDownsampleMode::Disabled) ? 1 : 0);                // downsample
 
   ShaderCompileProgressTracker progress("Compiling Pipelines", total_pipelines);
 
@@ -804,7 +806,7 @@ bool GPU_HW::CompilePipelines()
   // fragment shaders - [render_mode][transparency_mode][texture_mode][check_mask][dithering][interlacing]
   static constexpr auto destroy_shader = [](std::unique_ptr<GPUShader>& s) { s.reset(); };
   DimensionalArray<std::unique_ptr<GPUShader>, 2> batch_vertex_shaders{};
-  DimensionalArray<std::unique_ptr<GPUShader>, 2, 2, 2, 9, 5, 5> batch_fragment_shaders{};
+  DimensionalArray<std::unique_ptr<GPUShader>, 2, 2, 2, NUM_TEXTURE_MODES, 5, 5> batch_fragment_shaders{};
   ScopedGuard batch_shader_guard([&batch_vertex_shaders, &batch_fragment_shaders]() {
     batch_vertex_shaders.enumerate(destroy_shader);
     batch_fragment_shaders.enumerate(destroy_shader);
@@ -835,11 +837,11 @@ bool GPU_HW::CompilePipelines()
         (m_supports_framebuffer_fetch && (render_mode == static_cast<u8>(BatchRenderMode::OnlyOpaque) ||
                                           render_mode == static_cast<u8>(BatchRenderMode::OnlyTransparent))))
       {
-        progress.Increment(9 * 2 * 2 * 2);
+        progress.Increment(4 * 2 * 2 * 2);
         continue;
       }
 
-      for (u8 texture_mode = 0; texture_mode < 9; texture_mode++)
+      for (u8 texture_mode = 0; texture_mode < active_texture_modes; texture_mode++)
       {
         for (u8 check_mask = 0; check_mask < 2; check_mask++)
         {
@@ -926,7 +928,7 @@ bool GPU_HW::CompilePipelines()
           continue;
         }
 
-        for (u8 texture_mode = 0; texture_mode < 9; texture_mode++)
+        for (u8 texture_mode = 0; texture_mode < active_texture_modes; texture_mode++)
         {
           for (u8 dithering = 0; dithering < 2; dithering++)
           {
@@ -1954,11 +1956,11 @@ void GPU_HW::LoadVertices()
   {
     case GPUPrimitive::Polygon:
     {
-      const u32 first_color = rc.color_for_first_vertex;
-      const bool shaded = rc.shading_enable;
       const bool textured = rc.texture_enable;
+      const bool raw_texture = textured && rc.raw_texture_enable;
+      const bool shaded = rc.shading_enable;
       const bool pgxp = g_settings.gpu_pgxp_enable;
-
+      const u32 first_color = rc.color_for_first_vertex;
       const u32 num_vertices = rc.quad_polygon ? 4 : 3;
       std::array<BatchVertex, 4> vertices;
       std::array<std::array<s32, 2>, 4> native_vertex_positions;
@@ -1966,7 +1968,8 @@ void GPU_HW::LoadVertices()
       bool valid_w = g_settings.gpu_pgxp_texture_correction;
       for (u32 i = 0; i < num_vertices; i++)
       {
-        const u32 color = (shaded && i > 0) ? (FifoPop() & UINT32_C(0x00FFFFFF)) : first_color;
+        const u32 vert_color = (shaded && i > 0) ? (FifoPop() & UINT32_C(0x00FFFFFF)) : first_color;
+        const u32 color = raw_texture ? UINT32_C(0x00808080) : vert_color;
         const u64 maddr_and_pos = m_fifo.Pop();
         const GPUVertexPosition vp{Truncate32(maddr_and_pos)};
         const u16 texcoord = textured ? Truncate16(FifoPop()) : 0;
@@ -2123,7 +2126,7 @@ void GPU_HW::LoadVertices()
 
     case GPUPrimitive::Rectangle:
     {
-      const u32 color = rc.color_for_first_vertex;
+      const u32 color = (rc.texture_enable && rc.raw_texture_enable) ? UINT32_C(0x00808080) : rc.color_for_first_vertex;
       const GPUVertexPosition vp{FifoPop()};
       const s32 pos_x = TruncateGPUVertexPosition(m_drawing_offset.x + vp.x);
       const s32 pos_y = TruncateGPUVertexPosition(m_drawing_offset.y + vp.y);
@@ -2967,7 +2970,7 @@ void GPU_HW::DispatchRenderCommand()
 {
   const GPURenderCommand rc{m_render_command.bits};
 
-  GPUTextureMode texture_mode;
+  GPUTextureMode texture_mode = GPUTextureMode::Disabled;
   if (rc.IsTexturingEnabled())
   {
     // texture page changed - check that the new page doesn't intersect the drawing area
@@ -3027,16 +3030,9 @@ void GPU_HW::DispatchRenderCommand()
       }
     }
 
-    texture_mode = m_draw_mode.mode_reg.texture_mode;
-    if (rc.raw_texture_enable)
-    {
-      texture_mode =
-        static_cast<GPUTextureMode>(static_cast<u8>(texture_mode) | static_cast<u8>(GPUTextureMode::RawTextureBit));
-    }
-  }
-  else
-  {
-    texture_mode = GPUTextureMode::Disabled;
+    texture_mode = (m_draw_mode.mode_reg.texture_mode == GPUTextureMode::Reserved_Direct16Bit2) ?
+                     GPUTextureMode::Direct16Bit :
+                     m_draw_mode.mode_reg.texture_mode;
   }
 
   // has any state changed which requires a new batch?

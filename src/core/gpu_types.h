@@ -53,16 +53,8 @@ enum class GPUTextureMode : u8
   Palette4Bit = 0,
   Palette8Bit = 1,
   Direct16Bit = 2,
-  Reserved_Direct16Bit = 3,
-
-  // Not register values.
-  RawTextureBit = 4,
-  RawPalette4Bit = RawTextureBit | Palette4Bit,
-  RawPalette8Bit = RawTextureBit | Palette8Bit,
-  RawDirect16Bit = RawTextureBit | Direct16Bit,
-  Reserved_RawDirect16Bit = RawTextureBit | Reserved_Direct16Bit,
-
-  Disabled = 8 // Not a register value
+  Reserved_Direct16Bit2 = 3, // Not used.
+  Disabled = 3               // Not a register value
 };
 
 IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(GPUTextureMode);
@@ -110,7 +102,7 @@ union GPURenderCommand
   BitField<u32, GPUDrawRectangleSize, 27, 2> rectangle_size; // only for rectangles
   BitField<u32, bool, 27, 1> quad_polygon;                   // only for polygons
   BitField<u32, bool, 27, 1> polyline;                       // only for lines
-  BitField<u32, bool, 28, 1> shading_enable;                 // 0 - flat, 1 = gouroud
+  BitField<u32, bool, 28, 1> shading_enable;                 // 0 - flat, 1 = gouraud
   BitField<u32, GPUPrimitive, 29, 21> primitive;
 
   /// Returns true if texturing should be enabled. Depends on the primitive type.

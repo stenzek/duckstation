@@ -638,8 +638,6 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   // TODO: don't write depth for shader blend
   DebugAssert(transparency == GPUTransparencyMode::Disabled || render_mode == GPU_HW::BatchRenderMode::ShaderBlend);
 
-  const GPUTextureMode actual_texture_mode = texture_mode & ~GPUTextureMode::RawTextureBit;
-  const bool raw_texture = (texture_mode & GPUTextureMode::RawTextureBit) == GPUTextureMode::RawTextureBit;
   const bool textured = (texture_mode != GPUTextureMode::Disabled);
   const bool shader_blending = (render_mode == GPU_HW::BatchRenderMode::ShaderBlend &&
                                 (transparency != GPUTransparencyMode::Disabled || check_mask));
@@ -658,10 +656,9 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   DefineMacro(ss, "CHECK_MASK_BIT", check_mask);
   DefineMacro(ss, "TEXTURED", textured);
   DefineMacro(ss, "PALETTE",
-              actual_texture_mode == GPUTextureMode::Palette4Bit || actual_texture_mode == GPUTextureMode::Palette8Bit);
-  DefineMacro(ss, "PALETTE_4_BIT", actual_texture_mode == GPUTextureMode::Palette4Bit);
-  DefineMacro(ss, "PALETTE_8_BIT", actual_texture_mode == GPUTextureMode::Palette8Bit);
-  DefineMacro(ss, "RAW_TEXTURE", raw_texture);
+              texture_mode == GPUTextureMode::Palette4Bit || texture_mode == GPUTextureMode::Palette8Bit);
+  DefineMacro(ss, "PALETTE_4_BIT", texture_mode == GPUTextureMode::Palette4Bit);
+  DefineMacro(ss, "PALETTE_8_BIT", texture_mode == GPUTextureMode::Palette8Bit);
   DefineMacro(ss, "DITHERING", dithering);
   DefineMacro(ss, "DITHERING_SCALED", m_scaled_dithering);
   // Debanding requires true color to work correctly.
@@ -873,23 +870,19 @@ float3 ApplyDebanding(float2 frag_coord)
     // If not using true color, truncate the framebuffer colors to 5-bit.
     #if !TRUE_COLOR
       icolor = uint3(texcol.rgb * float3(255.0, 255.0, 255.0)) >> 3;
-      #if !RAW_TEXTURE
-        icolor = (icolor * vertcol) >> 4;
-        #if DITHERING
-          icolor = ApplyDithering(uint2(v_pos.xy), icolor);
-        #else
-          icolor = min(icolor >> 3, uint3(31u, 31u, 31u));
-        #endif
+      icolor = (icolor * vertcol) >> 4;
+      #if DITHERING
+        icolor = ApplyDithering(uint2(v_pos.xy), icolor);
+      #else
+        icolor = min(icolor >> 3, uint3(31u, 31u, 31u));
       #endif
     #else
       icolor = uint3(texcol.rgb * float3(255.0, 255.0, 255.0) + ApplyDebanding(v_pos.xy));
-      #if !RAW_TEXTURE
-        icolor = (icolor * vertcol) >> 7;
-        #if DITHERING
-          icolor = ApplyDithering(uint2(v_pos.xy), icolor);
-        #else
-          icolor = min(icolor, uint3(255u, 255u, 255u));
-        #endif
+      icolor = (icolor * vertcol) >> 7;
+      #if DITHERING
+        icolor = ApplyDithering(uint2(v_pos.xy), icolor);
+      #else
+        icolor = min(icolor, uint3(255u, 255u, 255u));
       #endif
     #endif
 
