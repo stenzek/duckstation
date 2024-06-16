@@ -179,6 +179,10 @@
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="vcruntimecheck.cpp" />
+    <ClCompile Include="scriptconsole.cpp" />
+    <ClCompile Include="$(IntDir)moc_scriptconsole.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
@@ -242,6 +246,7 @@
     <QtMoc Include="graphicssettingswidget.h" />
     <QtMoc Include="memoryscannerwindow.h" />
     <QtMoc Include="selectdiscdialog.h" />
+    <QtMoc Include="scriptconsole.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />

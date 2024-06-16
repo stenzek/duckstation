@@ -21,6 +21,7 @@
 #include "core/host.h"
 #include "core/imgui_overlays.h"
 #include "core/memory_card.h"
+#include "core/scriptengine.h"
 #include "core/spu.h"
 #include "core/system.h"
 
@@ -1734,6 +1735,8 @@ void EmuThread::run()
   // bind buttons/axises
   createBackgroundControllerPollTimer();
   startBackgroundControllerPollTimer();
+
+  ScriptEngine::Initialize(nullptr);
 
   // main loop
   while (!m_shutdown_flag)

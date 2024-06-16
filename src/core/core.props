@@ -21,6 +21,11 @@
       <PreprocessorDefinitions Condition="'$(Platform)'=='x64'">XBYAK_NO_EXCEPTION=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
       <AdditionalIncludeDirectories Condition="'$(Platform)'=='ARM' Or '$(Platform)'=='ARM64'">%(AdditionalIncludeDirectories);$(SolutionDir)dep\vixl\include</AdditionalIncludeDirectories>
+
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(LOCALAPPDATA)\Programs\Python\Python311\include</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(LOCALAPPDATA)\Programs\Python\Python311\libs</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
 </Project>

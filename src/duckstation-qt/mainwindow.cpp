@@ -20,6 +20,7 @@
 #include "selectdiscdialog.h"
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
+#include "scriptconsole.h"
 
 #include "core/achievements.h"
 #include "core/game_list.h"
@@ -181,6 +182,8 @@ void MainWindow::initialize()
   CocoaTools::AddThemeChangeHandler(this,
                                     [](void* ctx) { QtHost::RunOnUIThread([] { g_main_window->updateTheme(); }); });
 #endif
+
+  ScriptConsole::updateSettings();
 }
 
 void MainWindow::reportError(const QString& title, const QString& message)
@@ -770,6 +773,7 @@ void MainWindow::destroySubWindows()
 
   SettingsWindow::closeGamePropertiesDialogs();
 
+  ScriptConsole::destroy();
   LogWindow::destroy();
 }
 

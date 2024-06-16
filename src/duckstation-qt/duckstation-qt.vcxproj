@@ -48,6 +48,7 @@
     <ClCompile Include="qtkeycodes.cpp" />
     <ClCompile Include="qtprogresscallback.cpp" />
     <ClCompile Include="qtutils.cpp" />
+    <ClCompile Include="scriptconsole.cpp" />
     <ClCompile Include="selectdiscdialog.cpp" />
     <ClCompile Include="settingswindow.cpp" />
     <ClCompile Include="setupwizarddialog.cpp" />
@@ -89,6 +90,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <QtMoc Include="selectdiscdialog.h" />
+    <QtMoc Include="scriptconsole.h" />
     <ClInclude Include="settingwidgetbinder.h" />
     <QtMoc Include="consolesettingswidget.h" />
     <QtMoc Include="emulationsettingswidget.h" />
@@ -257,6 +259,7 @@
     <ClCompile Include="$(IntDir)moc_selectdiscdialog.cpp" />
     <ClCompile Include="$(IntDir)moc_qthost.cpp" />
     <ClCompile Include="$(IntDir)moc_qtprogresscallback.cpp" />
+    <ClCompile Include="$(IntDir)moc_scriptconsole.cpp" />
     <ClCompile Include="$(IntDir)moc_settingswindow.cpp" />
     <ClCompile Include="$(IntDir)moc_setupwizarddialog.cpp" />
     <ClCompile Include="$(IntDir)qrc_resources.cpp" />
