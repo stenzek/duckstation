@@ -1433,9 +1433,9 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
 
   switch (target_language)
   {
+#ifdef _WIN32
     case GPUShaderLanguage::HLSL:
     {
-#ifdef _WIN32
       if ((sres = dyn_libs::spvc_compiler_options_set_uint(soptions, SPVC_COMPILER_OPTION_HLSL_SHADER_MODEL,
                                                            target_version)) != SPVC_SUCCESS)
       {
@@ -1484,17 +1484,14 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
           }
         }
       }
-#else
-      Error::SetStringView(error, "Unsupported platform.");
-      return {};
-#endif
     }
     break;
+#endif
 
+#ifdef ENABLE_OPENGL
     case GPUShaderLanguage::GLSL:
     case GPUShaderLanguage::GLSLES:
     {
-#ifdef ENABLE_OPENGL
       if ((sres = dyn_libs::spvc_compiler_options_set_uint(soptions, SPVC_COMPILER_OPTION_GLSL_VERSION,
                                                            target_version)) != SPVC_SUCCESS)
       {
@@ -1511,17 +1508,13 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
                             static_cast<int>(sres));
         return {};
       }
-
-#else
-      Error::SetStringView(error, "Unsupported platform.");
-      return {};
-#endif
     }
     break;
+#endif
 
+#ifdef __APPLE__
     case GPUShaderLanguage::MSL:
     {
-#ifdef __APPLE__
       if ((sres = dyn_libs::spvc_compiler_options_set_bool(
              soptions, SPVC_COMPILER_OPTION_MSL_PAD_FRAGMENT_OUTPUT_COMPONENTS, true)) != SPVC_SUCCESS)
       {
@@ -1580,12 +1573,13 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
           }
         }
       }
-#else
-      Error::SetStringView(error, "Unsupported platform.");
-      return {};
-#endif
     }
     break;
+#endif
+
+    default:
+      Error::SetStringFmt(error, "Unsupported target language {}.", ShaderLanguageToString(target_language));
+      break;
   }
 
   if ((sres = dyn_libs::spvc_compiler_install_compiler_options(scompiler, soptions)) != SPVC_SUCCESS)
