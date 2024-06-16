@@ -4142,6 +4142,7 @@ void FullscreenUI::DrawDisplaySettingsPage()
 
   SettingsInterface* bsi = GetEditingSettingsInterface();
   const bool game_settings = IsEditingGameSettings(bsi);
+  const u32 resolution_scale = GetEffectiveUIntSetting(bsi, "GPU", "ResolutionScale", 1);
 
   BeginMenuButtons();
 
@@ -4298,43 +4299,46 @@ void FullscreenUI::DrawDisplaySettingsPage()
       "GPU", "UseSoftwareRendererForReadbacks", false);
   }
 
-  MenuHeading(FSUI_CSTR("Rendering"));
+  if (is_hardware)
+  {
+    MenuHeading(FSUI_CSTR("Rendering"));
 
-  DrawIntListSetting(
-    bsi, FSUI_CSTR("Internal Resolution"),
-    FSUI_CSTR("Scales internal VRAM resolution by the specified multiplier. Some games require 1x VRAM resolution."),
-    "GPU", "ResolutionScale", 1, resolution_scales.data(), resolution_scales.size(), true, 0, is_hardware);
+    DrawIntListSetting(
+      bsi, FSUI_CSTR("Internal Resolution"),
+      FSUI_CSTR("Scales internal VRAM resolution by the specified multiplier. Some games require 1x VRAM resolution."),
+      "GPU", "ResolutionScale", 1, resolution_scales.data(), resolution_scales.size(), true, 0);
 
-  DrawEnumSetting(
-    bsi, FSUI_CSTR("Texture Filtering"), FSUI_CSTR("Smooths out the blockiness of magnified textures on 3D objects."),
-    "GPU", "TextureFilter", Settings::DEFAULT_GPU_TEXTURE_FILTER, &Settings::ParseTextureFilterName,
-    &Settings::GetTextureFilterName, &Settings::GetTextureFilterDisplayName, GPUTextureFilter::Count, is_hardware);
+    DrawEnumSetting(bsi, FSUI_CSTR("Texture Filtering"),
+                    FSUI_CSTR("Smooths out the blockiness of magnified textures on 3D objects."), "GPU",
+                    "TextureFilter", Settings::DEFAULT_GPU_TEXTURE_FILTER, &Settings::ParseTextureFilterName,
+                    &Settings::GetTextureFilterName, &Settings::GetTextureFilterDisplayName, GPUTextureFilter::Count);
 
-  DrawEnumSetting(bsi, FSUI_CSTR("Line Detection"),
-                  FSUI_CSTR("Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization "
-                            "behavior, filling in gaps introduced by upscaling."),
-                  "GPU", "LineDetectMode", Settings::DEFAULT_GPU_LINE_DETECT_MODE, &Settings::ParseLineDetectModeName,
-                  &Settings::GetLineDetectModeName, &Settings::GetLineDetectModeDisplayName, GPULineDetectMode::Count,
-                  is_hardware);
+    DrawEnumSetting(bsi, FSUI_CSTR("Line Detection"),
+                    FSUI_CSTR("Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization "
+                              "behavior, filling in gaps introduced by upscaling."),
+                    "GPU", "LineDetectMode", Settings::DEFAULT_GPU_LINE_DETECT_MODE, &Settings::ParseLineDetectModeName,
+                    &Settings::GetLineDetectModeName, &Settings::GetLineDetectModeDisplayName, GPULineDetectMode::Count,
+                    resolution_scale > 1);
 
-  DrawToggleSetting(bsi, FSUI_CSTR("True Color Rendering"),
-                    FSUI_CSTR("Disables dithering and uses the full 8 bits per channel of color information."), "GPU",
-                    "TrueColor", true, is_hardware);
+    DrawToggleSetting(bsi, FSUI_CSTR("True Color Rendering"),
+                      FSUI_CSTR("Disables dithering and uses the full 8 bits per channel of color information."), "GPU",
+                      "TrueColor", true);
 
-  DrawToggleSetting(
-    bsi, FSUI_CSTR("True Color Debanding"),
-    FSUI_CSTR("Applies modern dithering techniques to further smooth out gradients when true color is enabled."), "GPU",
-    "Debanding", false, is_hardware && bsi->GetBoolValue("GPU", "TrueColor", false));
+    DrawToggleSetting(
+      bsi, FSUI_CSTR("True Color Debanding"),
+      FSUI_CSTR("Applies modern dithering techniques to further smooth out gradients when true color is enabled."),
+      "GPU", "Debanding", false, bsi->GetBoolValue("GPU", "TrueColor", false));
 
-  DrawToggleSetting(bsi, FSUI_CSTR("Widescreen Hack"),
-                    FSUI_CSTR("Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games."),
-                    "GPU", "WidescreenHack", false, is_hardware);
+    DrawToggleSetting(bsi, FSUI_CSTR("Widescreen Hack"),
+                      FSUI_CSTR("Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games."),
+                      "GPU", "WidescreenHack", false);
 
-  DrawToggleSetting(
-    bsi, FSUI_CSTR("PGXP Geometry Correction"),
-    FSUI_CSTR("Reduces \"wobbly\" polygons by attempting to preserve the fractional component through memory "
-              "transfers."),
-    "GPU", "PGXPEnable", false);
+    DrawToggleSetting(
+      bsi, FSUI_CSTR("PGXP Geometry Correction"),
+      FSUI_CSTR("Reduces \"wobbly\" polygons by attempting to preserve the fractional component through memory "
+                "transfers."),
+      "GPU", "PGXPEnable", false);
+  }
 
   MenuHeading(FSUI_CSTR("Screen Display"));
 
@@ -4402,12 +4406,6 @@ void FullscreenUI::DrawDisplaySettingsPage()
 
   MenuHeading(FSUI_CSTR("Enhancements"));
   DrawToggleSetting(
-    bsi, FSUI_CSTR("Scaled Dithering"),
-    FSUI_CSTR("Scales the dithering pattern with the internal rendering resolution, making it less noticeable. "
-              "Usually safe to enable."),
-    "GPU", "ScaledDithering", true, is_hardware);
-
-  DrawToggleSetting(
     bsi, FSUI_CSTR("Disable Interlacing"),
     FSUI_CSTR("Disables interlaced rendering and display in the GPU. Some games can render in 480p this way, "
               "but others will break."),
@@ -4421,46 +4419,67 @@ void FullscreenUI::DrawDisplaySettingsPage()
     bsi, FSUI_CSTR("Force 4:3 For 24-Bit Display"),
     FSUI_CSTR("Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs."), "Display",
     "Force4_3For24Bit", false);
-  DrawToggleSetting(bsi, FSUI_CSTR("Chroma Smoothing For 24-Bit Display"),
-                    FSUI_CSTR("Smooths out blockyness between colour transitions in 24-bit content, usually FMVs. Only "
-                              "applies to the hardware renderers."),
-                    "GPU", "ChromaSmoothing24Bit", false);
 
-  MenuHeading(FSUI_CSTR("PGXP (Precision Geometry Transform Pipeline)"));
+  if (is_hardware)
+  {
+    const GPUTextureFilter texture_filtering =
+      Settings::ParseTextureFilterName(
+        GetEffectiveTinyStringSetting(bsi, "GPU", "TextureFilter",
+                                      Settings::GetTextureFilterName(Settings::DEFAULT_GPU_TEXTURE_FILTER)))
+        .value_or(Settings::DEFAULT_GPU_TEXTURE_FILTER);
 
-  const bool pgxp_enabled = GetEffectiveBoolSetting(bsi, "GPU", "PGXPEnable", false);
-  const bool texture_correction_enabled = GetEffectiveBoolSetting(bsi, "GPU", "PGXPTextureCorrection", true);
+    DrawToggleSetting(
+      bsi, FSUI_CSTR("Scaled Dithering"),
+      FSUI_CSTR("Scales the dithering pattern with the internal rendering resolution, making it less noticeable. "
+                "Usually safe to enable."),
+      "GPU", "ScaledDithering", true, resolution_scale > 1);
+    DrawToggleSetting(bsi, FSUI_CSTR("Chroma Smoothing For 24-Bit Display"),
+                      FSUI_CSTR("Smooths out blockyness between colour transitions in 24-bit content, usually FMVs."),
+                      "GPU", "ChromaSmoothing24Bit", false);
+    DrawToggleSetting(
+      bsi, FSUI_CSTR("Round Upscaled Texture Coordinates"),
+      FSUI_CSTR("Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned "
+                "textures in some games, but break others, and is incompatible with texture filtering."),
+      "GPU", "ForceRoundTextureCoordinates", false,
+      resolution_scale > 1 && texture_filtering == GPUTextureFilter::Nearest);
 
-  DrawToggleSetting(
-    bsi, FSUI_CSTR("Perspective Correct Textures"),
-    FSUI_CSTR("Uses perspective-correct interpolation for texture coordinates, straightening out warped textures."),
-    "GPU", "PGXPTextureCorrection", true, pgxp_enabled);
-  DrawToggleSetting(
-    bsi, FSUI_CSTR("Perspective Correct Colors"),
-    FSUI_CSTR("Uses perspective-correct interpolation for colors, which can improve visuals in some games."), "GPU",
-    "PGXPColorCorrection", false, pgxp_enabled);
-  DrawToggleSetting(bsi, FSUI_CSTR("Culling Correction"),
-                    FSUI_CSTR("Increases the precision of polygon culling, reducing the number of holes in geometry."),
-                    "GPU", "PGXPCulling", true, pgxp_enabled);
-  DrawToggleSetting(
-    bsi, FSUI_CSTR("Preserve Projection Precision"),
-    FSUI_CSTR("Adds additional precision to PGXP data post-projection. May improve visuals in some games."), "GPU",
-    "PGXPPreserveProjFP", false, pgxp_enabled);
-  DrawToggleSetting(bsi, FSUI_CSTR("Depth Buffer"),
-                    FSUI_CSTR("Reduces polygon Z-fighting through depth testing. Low compatibility with games."), "GPU",
-                    "PGXPDepthBuffer", false, pgxp_enabled && texture_correction_enabled);
-  DrawToggleSetting(bsi, FSUI_CSTR("CPU Mode"),
-                    FSUI_CSTR("Uses PGXP for all instructions, not just memory operations."), "GPU", "PGXPCPU", false,
-                    pgxp_enabled);
+    MenuHeading(FSUI_CSTR("PGXP (Precision Geometry Transform Pipeline)"));
 
-  MenuHeading(FSUI_CSTR("Texture Replacements"));
+    const bool pgxp_enabled = GetEffectiveBoolSetting(bsi, "GPU", "PGXPEnable", false);
+    const bool texture_correction_enabled = GetEffectiveBoolSetting(bsi, "GPU", "PGXPTextureCorrection", true);
 
-  DrawToggleSetting(bsi, FSUI_CSTR("Enable VRAM Write Texture Replacement"),
-                    FSUI_CSTR("Enables the replacement of background textures in supported games."),
-                    "TextureReplacements", "EnableVRAMWriteReplacements", false);
-  DrawToggleSetting(bsi, FSUI_CSTR("Preload Replacement Textures"),
-                    FSUI_CSTR("Loads all replacement texture to RAM, reducing stuttering at runtime."),
-                    "TextureReplacements", "PreloadTextures", false);
+    DrawToggleSetting(
+      bsi, FSUI_CSTR("Perspective Correct Textures"),
+      FSUI_CSTR("Uses perspective-correct interpolation for texture coordinates, straightening out warped textures."),
+      "GPU", "PGXPTextureCorrection", true, pgxp_enabled);
+    DrawToggleSetting(
+      bsi, FSUI_CSTR("Perspective Correct Colors"),
+      FSUI_CSTR("Uses perspective-correct interpolation for colors, which can improve visuals in some games."), "GPU",
+      "PGXPColorCorrection", false, pgxp_enabled);
+    DrawToggleSetting(
+      bsi, FSUI_CSTR("Culling Correction"),
+      FSUI_CSTR("Increases the precision of polygon culling, reducing the number of holes in geometry."), "GPU",
+      "PGXPCulling", true, pgxp_enabled);
+    DrawToggleSetting(
+      bsi, FSUI_CSTR("Preserve Projection Precision"),
+      FSUI_CSTR("Adds additional precision to PGXP data post-projection. May improve visuals in some games."), "GPU",
+      "PGXPPreserveProjFP", false, pgxp_enabled);
+    DrawToggleSetting(bsi, FSUI_CSTR("Depth Buffer"),
+                      FSUI_CSTR("Reduces polygon Z-fighting through depth testing. Low compatibility with games."),
+                      "GPU", "PGXPDepthBuffer", false, pgxp_enabled && texture_correction_enabled);
+    DrawToggleSetting(bsi, FSUI_CSTR("CPU Mode"),
+                      FSUI_CSTR("Uses PGXP for all instructions, not just memory operations."), "GPU", "PGXPCPU", false,
+                      pgxp_enabled);
+
+    MenuHeading(FSUI_CSTR("Texture Replacements"));
+
+    DrawToggleSetting(bsi, FSUI_CSTR("Enable VRAM Write Texture Replacement"),
+                      FSUI_CSTR("Enables the replacement of background textures in supported games."),
+                      "TextureReplacements", "EnableVRAMWriteReplacements", false);
+    DrawToggleSetting(bsi, FSUI_CSTR("Preload Replacement Textures"),
+                      FSUI_CSTR("Loads all replacement texture to RAM, reducing stuttering at runtime."),
+                      "TextureReplacements", "PreloadTextures", false);
+  }
 
   EndMenuButtons();
 }
@@ -7591,6 +7610,8 @@ TRANSLATE_NOOP("FullscreenUI", "Rewind for {0} frames, lasting {1:.2f} seconds w
 TRANSLATE_NOOP("FullscreenUI", "Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.");
 TRANSLATE_NOOP("FullscreenUI", "Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.");
 TRANSLATE_NOOP("FullscreenUI", "Rich presence inactive or unsupported.");
+TRANSLATE_NOOP("FullscreenUI", "Round Upscaled Texture Coordinates");
+TRANSLATE_NOOP("FullscreenUI", "Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but break others.");
 TRANSLATE_NOOP("FullscreenUI", "Runahead");
 TRANSLATE_NOOP("FullscreenUI", "Runahead/Rewind");
 TRANSLATE_NOOP("FullscreenUI", "Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance.");
@@ -7675,7 +7696,7 @@ TRANSLATE_NOOP("FullscreenUI", "Simulates the system ahead of time and rolls bac
 TRANSLATE_NOOP("FullscreenUI", "Skip Duplicate Frame Display");
 TRANSLATE_NOOP("FullscreenUI", "Skips the presentation/display of frames that are not unique. Can result in worse frame pacing.");
 TRANSLATE_NOOP("FullscreenUI", "Slow Boot");
-TRANSLATE_NOOP("FullscreenUI", "Smooths out blockyness between colour transitions in 24-bit content, usually FMVs. Only applies to the hardware renderers.");
+TRANSLATE_NOOP("FullscreenUI", "Smooths out blockyness between colour transitions in 24-bit content, usually FMVs.");
 TRANSLATE_NOOP("FullscreenUI", "Smooths out the blockiness of magnified textures on 3D objects.");
 TRANSLATE_NOOP("FullscreenUI", "Sort By");
 TRANSLATE_NOOP("FullscreenUI", "Sort Reversed");

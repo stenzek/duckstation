@@ -117,6 +117,7 @@ struct Settings
   bool gpu_true_color : 1 = true;
   bool gpu_debanding : 1 = false;
   bool gpu_scaled_dithering : 1 = true;
+  bool gpu_force_round_texcoords : 1 = false;
   GPUTextureFilter gpu_texture_filter = DEFAULT_GPU_TEXTURE_FILTER;
   GPULineDetectMode gpu_line_detect_mode = DEFAULT_GPU_LINE_DETECT_MODE;
   GPUDownsampleMode gpu_downsample_mode = DEFAULT_GPU_DOWNSAMPLE_MODE;

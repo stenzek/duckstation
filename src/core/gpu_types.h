@@ -53,8 +53,7 @@ enum class GPUTextureMode : u8
   Palette4Bit = 0,
   Palette8Bit = 1,
   Direct16Bit = 2,
-  Reserved_Direct16Bit2 = 3, // Not used.
-  Disabled = 3               // Not a register value
+  Reserved_Direct16Bit = 3, // Not used.
 };
 
 IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(GPUTextureMode);

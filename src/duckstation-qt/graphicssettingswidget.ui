@@ -468,10 +468,10 @@
           </item>
           <item row="2" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_5">
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="debanding">
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="gpuThread">
               <property name="text">
-               <string>True Color Debanding</string>
+               <string>Threaded Rendering</string>
               </property>
              </widget>
             </item>
@@ -489,10 +489,17 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="gpuThread">
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="debanding">
               <property name="text">
-               <string>Threaded Rendering</string>
+               <string>True Color Debanding</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QCheckBox" name="forceRoundedTexcoords">
+              <property name="text">
+               <string>Round Upscaled Texture Coordinates</string>
               </property>
              </widget>
             </item>

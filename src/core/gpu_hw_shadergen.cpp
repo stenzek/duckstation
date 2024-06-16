@@ -630,15 +630,14 @@ void FilteredSampleFromVRAM(uint4 texpage, float2 coords, float4 uv_limits,
   }
 }
 
-std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMode render_mode,
-                                                          GPUTransparencyMode transparency, GPUTextureMode texture_mode,
-                                                          GPUTextureFilter texture_filtering, bool dithering,
-                                                          bool interlacing, bool check_mask)
+std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(
+  GPU_HW::BatchRenderMode render_mode, GPUTransparencyMode transparency, GPU_HW::BatchTextureMode texture_mode,
+  GPUTextureFilter texture_filtering, bool force_round_texcoords, bool dithering, bool interlacing, bool check_mask)
 {
   // TODO: don't write depth for shader blend
   DebugAssert(transparency == GPUTransparencyMode::Disabled || render_mode == GPU_HW::BatchRenderMode::ShaderBlend);
 
-  const bool textured = (texture_mode != GPUTextureMode::Disabled);
+  const bool textured = (texture_mode != GPU_HW::BatchTextureMode::Disabled);
   const bool shader_blending = (render_mode == GPU_HW::BatchRenderMode::ShaderBlend &&
                                 (transparency != GPUTransparencyMode::Disabled || check_mask));
   const bool use_dual_source = (!shader_blending && m_supports_dual_source_blend &&
@@ -656,9 +655,10 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   DefineMacro(ss, "CHECK_MASK_BIT", check_mask);
   DefineMacro(ss, "TEXTURED", textured);
   DefineMacro(ss, "PALETTE",
-              texture_mode == GPUTextureMode::Palette4Bit || texture_mode == GPUTextureMode::Palette8Bit);
-  DefineMacro(ss, "PALETTE_4_BIT", texture_mode == GPUTextureMode::Palette4Bit);
-  DefineMacro(ss, "PALETTE_8_BIT", texture_mode == GPUTextureMode::Palette8Bit);
+              texture_mode == GPU_HW::BatchTextureMode::Palette4Bit ||
+                texture_mode == GPU_HW::BatchTextureMode::Palette8Bit);
+  DefineMacro(ss, "PALETTE_4_BIT", texture_mode == GPU_HW::BatchTextureMode::Palette4Bit);
+  DefineMacro(ss, "PALETTE_8_BIT", texture_mode == GPU_HW::BatchTextureMode::Palette8Bit);
   DefineMacro(ss, "DITHERING", dithering);
   DefineMacro(ss, "DITHERING_SCALED", m_scaled_dithering);
   // Debanding requires true color to work correctly.
@@ -669,6 +669,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   DefineMacro(ss, "UV_LIMITS", m_uv_limits);
   DefineMacro(ss, "USE_DUAL_SOURCE", use_dual_source);
   DefineMacro(ss, "WRITE_MASK_AS_DEPTH", m_write_mask_as_depth);
+  DefineMacro(ss, "FORCE_ROUND_TEXCOORDS", force_round_texcoords);
 
   WriteCommonFunctions(ss);
   WriteBatchUniformBuffer(ss);
@@ -727,7 +728,7 @@ uint2 FloatToIntegerCoords(float2 coords)
 {
   // With the vertex offset applied at 1x resolution scale, we want to round the texture coordinates.
   // Floor them otherwise, as it currently breaks when upscaling as the vertex offset is not applied.
-  return uint2((RESOLUTION_SCALE == 1u) ? roundEven(coords) : floor(coords));
+  return uint2((RESOLUTION_SCALE == 1u || FORCE_ROUND_TEXCOORDS != 0) ? roundEven(coords) : floor(coords));
 }
 
 float4 SampleFromVRAM(uint4 texpage, float2 coords)

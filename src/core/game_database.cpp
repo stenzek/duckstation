@@ -34,7 +34,7 @@ namespace GameDatabase {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 8,
+  GAME_DATABASE_CACHE_VERSION = 9,
 };
 
 static Entry* GetMutableEntry(std::string_view serial);
@@ -63,6 +63,7 @@ static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Tr
   "ForceInterpreter",
   "ForceSoftwareRenderer",
   "ForceSoftwareRendererForReadbacks",
+  "ForceRoundTextureCoordinates",
   "ForceInterlacing",
   "DisableTrueColor",
   "DisableUpscaling",
@@ -88,6 +89,7 @@ static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Tr
   TRANSLATE_NOOP("GameDatabase", "Force Interpreter"),
   TRANSLATE_NOOP("GameDatabase", "Force Software Renderer"),
   TRANSLATE_NOOP("GameDatabase", "Force Software Renderer For Readbacks"),
+  TRANSLATE_NOOP("GameDatabase", "Force Round Texture Coordinates"),
   TRANSLATE_NOOP("GameDatabase", "Force Interlacing"),
   TRANSLATE_NOOP("GameDatabase", "Disable True Color"),
   TRANSLATE_NOOP("GameDatabase", "Disable Upscaling"),
@@ -432,6 +434,11 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     }
 
     settings.gpu_use_software_renderer_for_readbacks = true;
+  }
+
+  if (HasTrait(Trait::ForceRoundUpscaledTextureCoordinates))
+  {
+    settings.gpu_force_round_texcoords = true;
   }
 
   if (HasTrait(Trait::ForceInterlacing))

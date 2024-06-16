@@ -197,6 +197,7 @@ void Settings::Load(SettingsInterface& si)
   gpu_true_color = si.GetBoolValue("GPU", "TrueColor", true);
   gpu_debanding = si.GetBoolValue("GPU", "Debanding", false);
   gpu_scaled_dithering = si.GetBoolValue("GPU", "ScaledDithering", true);
+  gpu_force_round_texcoords = si.GetBoolValue("GPU", "ForceRoundTextureCoordinates", false);
   gpu_texture_filter =
     ParseTextureFilterName(
       si.GetStringValue("GPU", "TextureFilter", GetTextureFilterName(DEFAULT_GPU_TEXTURE_FILTER)).c_str())
@@ -495,6 +496,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("GPU", "TrueColor", gpu_true_color);
   si.SetBoolValue("GPU", "Debanding", gpu_debanding);
   si.SetBoolValue("GPU", "ScaledDithering", gpu_scaled_dithering);
+  si.SetBoolValue("GPU", "ForceRoundTextureCoordinates", gpu_force_round_texcoords);
   si.SetStringValue("GPU", "TextureFilter", GetTextureFilterName(gpu_texture_filter));
   si.SetStringValue("GPU", "LineDetectMode", GetLineDetectModeName(gpu_line_detect_mode));
   si.SetStringValue("GPU", "DownsampleMode", GetDownsampleModeName(gpu_downsample_mode));
@@ -701,6 +703,7 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.gpu_true_color = false;
     g_settings.gpu_debanding = false;
     g_settings.gpu_scaled_dithering = false;
+    g_settings.gpu_force_round_texcoords = false;
     g_settings.gpu_texture_filter = GPUTextureFilter::Nearest;
     g_settings.gpu_line_detect_mode = GPULineDetectMode::Disabled;
     g_settings.gpu_disable_interlacing = false;

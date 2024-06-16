@@ -33,6 +33,19 @@ public:
     ShaderBlend
   };
 
+  enum class BatchTextureMode : u8
+  {
+    Palette4Bit,
+    Palette8Bit,
+    Direct16Bit,
+    Disabled,
+
+    MaxCount,
+  };
+  static_assert(static_cast<u8>(BatchTextureMode::Palette4Bit) == static_cast<u8>(GPUTextureMode::Palette4Bit) &&
+                static_cast<u8>(BatchTextureMode::Palette8Bit) == static_cast<u8>(GPUTextureMode::Palette8Bit) &&
+                static_cast<u8>(BatchTextureMode::Direct16Bit) == static_cast<u8>(GPUTextureMode::Direct16Bit));
+
   GPU_HW();
   ~GPU_HW() override;
 
@@ -58,7 +71,7 @@ private:
     MAX_BATCH_VERTEX_COUNTER_IDS = 65536 - 2,
     MAX_VERTICES_FOR_RECTANGLE = 6 * (((MAX_PRIMITIVE_WIDTH + (TEXTURE_PAGE_WIDTH - 1)) / TEXTURE_PAGE_WIDTH) + 1u) *
                                  (((MAX_PRIMITIVE_HEIGHT + (TEXTURE_PAGE_HEIGHT - 1)) / TEXTURE_PAGE_HEIGHT) + 1u),
-    NUM_TEXTURE_MODES = 4,
+    NUM_TEXTURE_MODES = static_cast<u32>(BatchTextureMode::MaxCount),
   };
   enum : u8
   {
@@ -88,7 +101,7 @@ private:
 
   struct BatchConfig
   {
-    GPUTextureMode texture_mode = GPUTextureMode::Disabled;
+    BatchTextureMode texture_mode = BatchTextureMode::Disabled;
     GPUTransparencyMode transparency_mode = GPUTransparencyMode::Disabled;
     bool dithering = false;
     bool interlacing = false;
@@ -235,6 +248,7 @@ private:
   bool m_per_sample_shading : 1 = false;
   bool m_scaled_dithering : 1 = false;
   bool m_disable_color_perspective : 1 = false;
+  bool m_force_round_texcoords = false;
 
   GPUTextureFilter m_texture_filtering = GPUTextureFilter::Nearest;
   GPULineDetectMode m_line_detect_mode = GPULineDetectMode::Disabled;

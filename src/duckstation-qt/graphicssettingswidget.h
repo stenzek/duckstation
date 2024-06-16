@@ -29,6 +29,7 @@ private Q_SLOTS:
 
   void onAdapterChanged();
   void onAspectRatioChanged();
+  void updateResolutionDependentOptions();
   void onMSAAModeChanged();
   void onTrueColorChanged();
   void onDownsampleModeChanged();

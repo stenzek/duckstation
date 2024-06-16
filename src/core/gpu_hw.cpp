@@ -198,7 +198,9 @@ bool GPU_HW::Initialize()
   m_per_sample_shading = g_settings.gpu_per_sample_shading && features.per_sample_shading;
   m_true_color = g_settings.gpu_true_color;
   m_debanding = g_settings.gpu_debanding;
-  m_scaled_dithering = g_settings.gpu_scaled_dithering;
+  m_scaled_dithering = (m_resolution_scale > 1 && g_settings.gpu_scaled_dithering);
+  m_force_round_texcoords = (m_resolution_scale > 1 && g_settings.gpu_force_round_texcoords &&
+                             g_settings.gpu_texture_filter == GPUTextureFilter::Nearest);
   m_texture_filtering = g_settings.gpu_texture_filter;
   m_line_detect_mode = (m_resolution_scale > 1) ? g_settings.gpu_line_detect_mode : GPULineDetectMode::Disabled;
   m_clamp_uvs = ShouldClampUVs();
@@ -336,7 +338,10 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
   const bool shaders_changed =
     (m_resolution_scale != resolution_scale || m_multisamples != multisamples ||
      m_true_color != g_settings.gpu_true_color || m_debanding != g_settings.gpu_debanding ||
-     m_per_sample_shading != per_sample_shading || m_scaled_dithering != g_settings.gpu_scaled_dithering ||
+     m_per_sample_shading != per_sample_shading ||
+     m_scaled_dithering != (resolution_scale > 1 && g_settings.gpu_scaled_dithering) ||
+     m_force_round_texcoords != (resolution_scale > 1 && g_settings.gpu_force_round_texcoords &&
+                                 g_settings.gpu_texture_filter == GPUTextureFilter::Nearest) ||
      m_texture_filtering != g_settings.gpu_texture_filter || m_clamp_uvs != clamp_uvs ||
      m_downsample_mode != downsample_mode ||
      (m_downsample_mode == GPUDownsampleMode::Box &&
@@ -386,7 +391,9 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
   m_per_sample_shading = per_sample_shading;
   m_true_color = g_settings.gpu_true_color;
   m_debanding = g_settings.gpu_debanding;
-  m_scaled_dithering = g_settings.gpu_scaled_dithering;
+  m_scaled_dithering = (m_resolution_scale > 1 && g_settings.gpu_scaled_dithering);
+  m_force_round_texcoords = (m_resolution_scale > 1 && g_settings.gpu_force_round_texcoords &&
+                             g_settings.gpu_texture_filter == GPUTextureFilter::Nearest);
   m_texture_filtering = g_settings.gpu_texture_filter;
   m_line_detect_mode = (m_resolution_scale > 1) ? g_settings.gpu_line_detect_mode : GPULineDetectMode::Disabled;
   m_clamp_uvs = clamp_uvs;
@@ -646,12 +653,14 @@ void GPU_HW::PrintSettingsToLog()
   INFO_LOG("Multisampling: {}x{}", m_multisamples, m_per_sample_shading ? " (per sample shading)" : "");
   INFO_LOG("Dithering: {}{}", m_true_color ? "Disabled" : "Enabled",
            (!m_true_color && m_scaled_dithering) ? " (Scaled)" : ((m_true_color && m_debanding) ? " (Debanding)" : ""));
+  INFO_LOG("Force round texture coordinates: {}", m_force_round_texcoords ? "Enabled" : "Disabled");
   INFO_LOG("Texture Filtering: {}", Settings::GetTextureFilterDisplayName(m_texture_filtering));
   INFO_LOG("Dual-source blending: {}", m_supports_dual_source_blend ? "Supported" : "Not supported");
   INFO_LOG("Clamping UVs: {}", m_clamp_uvs ? "YES" : "NO");
   INFO_LOG("Depth buffer: {}", m_pgxp_depth_buffer ? "YES" : "NO");
   INFO_LOG("Downsampling: {}", Settings::GetDownsampleModeDisplayName(m_downsample_mode));
   INFO_LOG("Wireframe rendering: {}", Settings::GetGPUWireframeModeDisplayName(m_wireframe_mode));
+  INFO_LOG("Line detection: {}", Settings::GetLineDetectModeDisplayName(m_line_detect_mode));
   INFO_LOG("Using software renderer for readbacks: {}", m_sw_renderer ? "YES" : "NO");
 }
 
@@ -858,8 +867,9 @@ bool GPU_HW::CompilePipelines()
             {
               const std::string fs = shadergen.GenerateBatchFragmentShader(
                 static_cast<BatchRenderMode>(render_mode), static_cast<GPUTransparencyMode>(transparency_mode),
-                static_cast<GPUTextureMode>(texture_mode), m_texture_filtering, ConvertToBoolUnchecked(dithering),
-                ConvertToBoolUnchecked(interlacing), ConvertToBoolUnchecked(check_mask));
+                static_cast<BatchTextureMode>(texture_mode), m_texture_filtering, m_force_round_texcoords,
+                ConvertToBoolUnchecked(dithering), ConvertToBoolUnchecked(interlacing),
+                ConvertToBoolUnchecked(check_mask));
 
               if (!(batch_fragment_shaders[render_mode][transparency_mode][texture_mode][check_mask][dithering]
                                           [interlacing] = g_gpu_device->CreateShader(GPUShaderStage::Fragment,
@@ -936,7 +946,7 @@ bool GPU_HW::CompilePipelines()
             {
               for (u8 check_mask = 0; check_mask < 2; check_mask++)
               {
-                const bool textured = (static_cast<GPUTextureMode>(texture_mode) != GPUTextureMode::Disabled);
+                const bool textured = (static_cast<BatchTextureMode>(texture_mode) != BatchTextureMode::Disabled);
                 const bool use_shader_blending =
                   (render_mode == static_cast<u8>(BatchRenderMode::ShaderBlend) &&
                    ((textured &&
@@ -2498,7 +2508,7 @@ ALWAYS_INLINE_RELEASE bool GPU_HW::NeedsTwoPassRendering() const
   // We need two-pass rendering when using BG-FG blending and texturing, as the transparency can be enabled
   // on a per-pixel basis, and the opaque pixels shouldn't be blended at all.
 
-  return (m_batch.texture_mode != GPUTextureMode::Disabled &&
+  return (m_batch.texture_mode != BatchTextureMode::Disabled &&
           (m_batch.transparency_mode == GPUTransparencyMode::BackgroundMinusForeground ||
            (!m_supports_dual_source_blend && m_batch.transparency_mode != GPUTransparencyMode::Disabled)));
 }
@@ -2970,7 +2980,7 @@ void GPU_HW::DispatchRenderCommand()
 {
   const GPURenderCommand rc{m_render_command.bits};
 
-  GPUTextureMode texture_mode = GPUTextureMode::Disabled;
+  BatchTextureMode texture_mode = BatchTextureMode::Disabled;
   if (rc.IsTexturingEnabled())
   {
     // texture page changed - check that the new page doesn't intersect the drawing area
@@ -3030,9 +3040,9 @@ void GPU_HW::DispatchRenderCommand()
       }
     }
 
-    texture_mode = (m_draw_mode.mode_reg.texture_mode == GPUTextureMode::Reserved_Direct16Bit2) ?
-                     GPUTextureMode::Direct16Bit :
-                     m_draw_mode.mode_reg.texture_mode;
+    texture_mode = (m_draw_mode.mode_reg.texture_mode == GPUTextureMode::Reserved_Direct16Bit) ?
+                     BatchTextureMode::Direct16Bit :
+                     static_cast<BatchTextureMode>(m_draw_mode.mode_reg.texture_mode.GetValue());
   }
 
   // has any state changed which requires a new batch?
@@ -3055,7 +3065,7 @@ void GPU_HW::DispatchRenderCommand()
     // transparency mode change
     const bool check_mask_before_draw = m_GPUSTAT.check_mask_before_draw;
     if (transparency_mode != GPUTransparencyMode::Disabled &&
-        (texture_mode == GPUTextureMode::Disabled || !NeedsShaderBlending(transparency_mode, check_mask_before_draw)))
+        (texture_mode == BatchTextureMode::Disabled || !NeedsShaderBlending(transparency_mode, check_mask_before_draw)))
     {
       static constexpr float transparent_alpha[4][2] = {{0.5f, 0.5f}, {1.0f, 1.0f}, {1.0f, 1.0f}, {0.25f, 1.0f}};
 

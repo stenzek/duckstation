@@ -89,7 +89,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   connect(m_ui.adapter, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &GraphicsSettingsWidget::onAdapterChanged);
   connect(m_ui.resolutionScale, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-          &GraphicsSettingsWidget::onTrueColorChanged);
+          &GraphicsSettingsWidget::updateResolutionDependentOptions);
+  connect(m_ui.textureFiltering, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+          &GraphicsSettingsWidget::updateResolutionDependentOptions);
   connect(m_ui.displayAspectRatio, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &GraphicsSettingsWidget::onAspectRatioChanged);
   connect(m_ui.gpuDownsampleMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
@@ -143,6 +145,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.scaledDithering, "GPU", "ScaledDithering", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useSoftwareRendererForReadbacks, "GPU",
                                                "UseSoftwareRendererForReadbacks", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.forceRoundedTexcoords, "GPU", "ForceRoundTextureCoordinates",
+                                               false);
 
   connect(m_ui.fullscreenMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &GraphicsSettingsWidget::onFullscreenModeChanged);
@@ -230,7 +234,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   updateRendererDependentOptions();
   onAspectRatioChanged();
   onDownsampleModeChanged();
-  onTrueColorChanged();
+  updateResolutionDependentOptions();
   onEnableAnyTextureReplacementsChanged();
   onEnableVRAMWriteDumpingChanged();
   onShowDebugSettingsChanged(QtHost::ShouldShowDebugOptions());
@@ -373,6 +377,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     m_ui.useSoftwareRendererForReadbacks, tr("Software Renderer Readbacks"), tr("Unchecked"),
     tr("Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater "
        "performance when using graphical enhancements with the hardware renderer."));
+  dialog->registerWidgetHelp(
+    m_ui.forceRoundedTexcoords, tr("Round Upscaled Texture Coordinates"), tr("Unchecked"),
+    tr("Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but "
+       "break others, and is incompatible with texture filtering."));
 
   // PGXP Tab
 
@@ -796,6 +804,20 @@ void GraphicsSettingsWidget::onAspectRatioChanged()
   m_ui.customAspectRatioSeparator->setVisible(is_custom);
 }
 
+void GraphicsSettingsWidget::updateResolutionDependentOptions()
+{
+  const int scale = m_dialog->getEffectiveIntValue("GPU", "ResolutionScale", 1);
+  const GPUTextureFilter texture_filtering =
+    Settings::ParseTextureFilterName(
+      m_dialog
+        ->getEffectiveStringValue("GPU", "TextureFilter",
+                                  Settings::GetTextureFilterName(Settings::DEFAULT_GPU_TEXTURE_FILTER))
+        .c_str())
+      .value_or(Settings::DEFAULT_GPU_TEXTURE_FILTER);
+  m_ui.forceRoundedTexcoords->setEnabled(scale > 1 && texture_filtering == GPUTextureFilter::Nearest);
+  onTrueColorChanged();
+}
+
 void GraphicsSettingsWidget::onMSAAModeChanged()
 {
   const int index = m_ui.msaaMode->currentIndex();
@@ -816,8 +838,8 @@ void GraphicsSettingsWidget::onMSAAModeChanged()
 
 void GraphicsSettingsWidget::onTrueColorChanged()
 {
-  const int resolution_scale = m_ui.resolutionScale->currentIndex();
-  const bool true_color = m_ui.trueColor->isChecked();
+  const int resolution_scale = m_dialog->getEffectiveIntValue("GPU", "ResolutionScale", 1);
+  const bool true_color = m_dialog->getEffectiveBoolValue("GPU", "TrueColor", false);
   const bool allow_scaled_dithering = (resolution_scale != 1 && !true_color);
   const bool allow_debanding = true_color;
   m_ui.scaledDithering->setEnabled(allow_scaled_dithering);
