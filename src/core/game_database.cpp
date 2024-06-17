@@ -479,7 +479,8 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 
   if (HasTrait(Trait::DisableTextureFiltering))
   {
-    if (display_osd_messages && settings.gpu_texture_filter != GPUTextureFilter::Nearest)
+    if (display_osd_messages && (settings.gpu_texture_filter != GPUTextureFilter::Nearest ||
+                                 g_settings.gpu_sprite_texture_filter != GPUTextureFilter::Nearest))
     {
       Host::AddIconOSDMessage("gamedb_disable_upscaling", ICON_FA_MAGIC,
                               TRANSLATE_STR("OSDMessage", "Texture filtering disabled by compatibility settings."),
@@ -487,6 +488,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     }
 
     settings.gpu_texture_filter = GPUTextureFilter::Nearest;
+    settings.gpu_sprite_texture_filter = GPUTextureFilter::Nearest;
   }
 
   if (HasTrait(Trait::DisableScaledDithering))

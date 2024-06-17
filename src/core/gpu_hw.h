@@ -40,7 +40,13 @@ public:
     Direct16Bit,
     Disabled,
 
+    SpritePalette4Bit,
+    SpritePalette8Bit,
+    SpriteDirect16Bit,
+
     MaxCount,
+
+    SpriteStart = SpritePalette4Bit,
   };
   static_assert(static_cast<u8>(BatchTextureMode::Palette4Bit) == static_cast<u8>(GPUTextureMode::Palette4Bit) &&
                 static_cast<u8>(BatchTextureMode::Palette8Bit) == static_cast<u8>(GPUTextureMode::Palette8Bit) &&
@@ -108,6 +114,7 @@ private:
     bool set_mask_while_drawing = false;
     bool check_mask_before_draw = false;
     bool use_depth_buffer = false;
+    bool sprite_mode = false;
 
     // Returns the render mode for this batch.
     BatchRenderMode GetRenderMode() const;
@@ -201,6 +208,7 @@ private:
 
   /// Handles quads with flipped texture coordinate directions.
   void HandleFlippedQuadTextureCoordinates(BatchVertex* vertices);
+  bool IsPossibleSpritePolygon(const BatchVertex* vertices) const;
   void ExpandLineTriangles(BatchVertex* vertices, u32 base_vertex);
 
   /// Computes polygon U/V boundaries.
@@ -209,6 +217,7 @@ private:
   /// Sets the depth test flag for PGXP depth buffering.
   void SetBatchDepthBuffer(bool enabled);
   void CheckForDepthClear(const BatchVertex* vertices, u32 num_vertices);
+  void SetBatchSpriteMode(bool enabled);
 
   void UpdateDownsamplingLevels();
   void DownsampleFramebuffer(GPUTexture* source, u32 left, u32 top, u32 width, u32 height);
@@ -242,6 +251,7 @@ private:
   u8 m_multisamples = 1;
 
   GPUTextureFilter m_texture_filtering = GPUTextureFilter::Nearest;
+  GPUTextureFilter m_sprite_texture_filtering = GPUTextureFilter::Nearest;
   GPULineDetectMode m_line_detect_mode = GPULineDetectMode::Disabled;
   GPUDownsampleMode m_downsample_mode = GPUDownsampleMode::Disabled;
   GPUWireframeMode m_wireframe_mode = GPUWireframeMode::Disabled;
@@ -252,6 +262,7 @@ private:
   bool m_pgxp_depth_buffer : 1 = false;
   bool m_clamp_uvs : 1 = false;
   bool m_compute_uv_range : 1 = false;
+  bool m_allow_sprite_mode : 1 = false;
   bool m_allow_shader_blend : 1 = false;
 
   u8 m_texpage_dirty = 0;

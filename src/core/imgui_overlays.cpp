@@ -548,7 +548,17 @@ void ImGuiManager::DrawEnhancementsOverlay()
   if (g_settings.gpu_force_ntsc_timings && System::GetRegion() == ConsoleRegion::PAL)
     text.append(" PAL60");
   if (g_settings.gpu_texture_filter != GPUTextureFilter::Nearest)
-    text.append_format(" {}", Settings::GetTextureFilterName(g_settings.gpu_texture_filter));
+  {
+    if (g_settings.gpu_sprite_texture_filter != g_settings.gpu_texture_filter)
+    {
+      text.append_format(" {}/{}", Settings::GetTextureFilterName(g_settings.gpu_texture_filter),
+                         Settings::GetTextureFilterName(g_settings.gpu_sprite_texture_filter));
+    }
+    else
+    {
+      text.append_format(" {}", Settings::GetTextureFilterName(g_settings.gpu_texture_filter));
+    }
+  }
   if (g_settings.gpu_widescreen_hack && g_settings.display_aspect_ratio != DisplayAspectRatio::Auto &&
       g_settings.display_aspect_ratio != DisplayAspectRatio::R4_3)
   {
@@ -1144,9 +1154,9 @@ void SaveStateSelectorUI::SaveCurrentSlot()
     if (!System::SaveState(path.c_str(), &error, g_settings.create_save_state_backups))
     {
       Host::AddIconOSDMessage("SaveState", ICON_FA_EXCLAMATION_TRIANGLE,
-                               fmt::format(TRANSLATE_FS("OSDMessage", "Failed to save state to slot {0}:\n{1}"),
-                                           GetCurrentSlot(), error.GetDescription()),
-                               Host::OSD_ERROR_DURATION);
+                              fmt::format(TRANSLATE_FS("OSDMessage", "Failed to save state to slot {0}:\n{1}"),
+                                          GetCurrentSlot(), error.GetDescription()),
+                              Host::OSD_ERROR_DURATION);
     }
   }
 

@@ -202,6 +202,9 @@ void Settings::Load(SettingsInterface& si)
     ParseTextureFilterName(
       si.GetStringValue("GPU", "TextureFilter", GetTextureFilterName(DEFAULT_GPU_TEXTURE_FILTER)).c_str())
       .value_or(DEFAULT_GPU_TEXTURE_FILTER);
+  gpu_sprite_texture_filter =
+    ParseTextureFilterName(si.GetStringValue("GPU", "SpriteTextureFilter", GetTextureFilterName(gpu_texture_filter)).c_str())
+      .value_or(gpu_texture_filter);
   gpu_line_detect_mode =
     ParseLineDetectModeName(
       si.GetStringValue("GPU", "LineDetectMode", GetLineDetectModeName(DEFAULT_GPU_LINE_DETECT_MODE)).c_str())
@@ -498,6 +501,9 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("GPU", "ScaledDithering", gpu_scaled_dithering);
   si.SetBoolValue("GPU", "ForceRoundTextureCoordinates", gpu_force_round_texcoords);
   si.SetStringValue("GPU", "TextureFilter", GetTextureFilterName(gpu_texture_filter));
+  si.SetStringValue(
+    "GPU", "SpriteTextureFilter",
+    (gpu_sprite_texture_filter != gpu_texture_filter) ? GetTextureFilterName(gpu_sprite_texture_filter) : "");
   si.SetStringValue("GPU", "LineDetectMode", GetLineDetectModeName(gpu_line_detect_mode));
   si.SetStringValue("GPU", "DownsampleMode", GetDownsampleModeName(gpu_downsample_mode));
   si.SetUIntValue("GPU", "DownsampleScale", gpu_downsample_scale);
@@ -706,6 +712,7 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.gpu_scaled_dithering = false;
     g_settings.gpu_force_round_texcoords = false;
     g_settings.gpu_texture_filter = GPUTextureFilter::Nearest;
+    g_settings.gpu_sprite_texture_filter = GPUTextureFilter::Nearest;
     g_settings.gpu_line_detect_mode = GPULineDetectMode::Disabled;
     g_settings.gpu_disable_interlacing = false;
     g_settings.gpu_force_ntsc_timings = false;

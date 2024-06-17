@@ -59,10 +59,17 @@ ALWAYS_INLINE_RELEASE static u32 GetBoxDownsampleScale(u32 resolution_scale)
   return scale;
 }
 
-ALWAYS_INLINE static bool ShouldClampUVs()
+ALWAYS_INLINE static bool ShouldClampUVs(GPUTextureFilter texture_filter)
 {
   // We only need UV limits if PGXP is enabled, or texture filtering is enabled.
-  return g_settings.gpu_pgxp_enable || g_settings.gpu_texture_filter != GPUTextureFilter::Nearest;
+  return g_settings.gpu_pgxp_enable || texture_filter != GPUTextureFilter::Nearest;
+}
+
+ALWAYS_INLINE static bool ShouldAllowSpriteMode(u8 resolution_scale, GPUTextureFilter texture_filter,
+                                                GPUTextureFilter sprite_texture_filter)
+{
+  // Use sprite shaders/mode when texcoord rounding is forced, or if the filters are different.
+  return (sprite_texture_filter != texture_filter || (resolution_scale > 1 && g_settings.gpu_force_round_texcoords));
 }
 
 ALWAYS_INLINE static bool ShouldDisableColorPerspective()
@@ -73,7 +80,16 @@ ALWAYS_INLINE static bool ShouldDisableColorPerspective()
 /// Returns true if the specified texture filtering mode requires dual-source blending.
 ALWAYS_INLINE static bool IsBlendedTextureFiltering(GPUTextureFilter filter)
 {
-  return (filter == GPUTextureFilter::Bilinear || filter == GPUTextureFilter::JINC2 || filter == GPUTextureFilter::xBR);
+  // return (filter == GPUTextureFilter::Bilinear || filter == GPUTextureFilter::JINC2 || filter ==
+  // GPUTextureFilter::xBR);
+  static_assert(((static_cast<u8>(GPUTextureFilter::Nearest) & 1u) == 0u) &&
+                ((static_cast<u8>(GPUTextureFilter::Bilinear) & 1u) == 1u) &&
+                ((static_cast<u8>(GPUTextureFilter::BilinearBinAlpha) & 1u) == 0u) &&
+                ((static_cast<u8>(GPUTextureFilter::JINC2) & 1u) == 1u) &&
+                ((static_cast<u8>(GPUTextureFilter::JINC2BinAlpha) & 1u) == 0u) &&
+                ((static_cast<u8>(GPUTextureFilter::xBR) & 1u) == 1u) &&
+                ((static_cast<u8>(GPUTextureFilter::xBRBinAlpha) & 1u) == 0u));
+  return ((static_cast<u8>(filter) & 1u) == 1u);
 }
 
 /// Computes the area affected by a VRAM transfer, including wrap-around of X.
@@ -193,17 +209,18 @@ bool GPU_HW::Initialize()
 
   m_resolution_scale = Truncate8(CalculateResolutionScale());
   m_multisamples = Truncate8(std::min<u32>(g_settings.gpu_multisamples, g_gpu_device->GetMaxMultisamples()));
+  m_texture_filtering = g_settings.gpu_texture_filter;
+  m_sprite_texture_filtering = g_settings.gpu_sprite_texture_filter;
+  m_line_detect_mode = (m_resolution_scale > 1) ? g_settings.gpu_line_detect_mode : GPULineDetectMode::Disabled;
+  m_downsample_mode = GetDownsampleMode(m_resolution_scale);
+  m_wireframe_mode = g_settings.gpu_wireframe_mode;
   m_supports_dual_source_blend = features.dual_source_blend;
   m_supports_framebuffer_fetch = features.framebuffer_fetch;
   m_true_color = g_settings.gpu_true_color;
-
-  m_texture_filtering = g_settings.gpu_texture_filter;
-  m_line_detect_mode = (m_resolution_scale > 1) ? g_settings.gpu_line_detect_mode : GPULineDetectMode::Disabled;
-  m_clamp_uvs = ShouldClampUVs();
-  m_compute_uv_range = m_clamp_uvs;
-  m_downsample_mode = GetDownsampleMode(m_resolution_scale);
-  m_wireframe_mode = g_settings.gpu_wireframe_mode;
   m_pgxp_depth_buffer = g_settings.UsingPGXPDepthBuffer();
+  m_clamp_uvs = ShouldClampUVs(m_texture_filtering) || ShouldClampUVs(m_sprite_texture_filtering);
+  m_compute_uv_range = m_clamp_uvs;
+  m_allow_sprite_mode = ShouldAllowSpriteMode(m_resolution_scale, m_texture_filtering, m_sprite_texture_filtering);
 
   CheckSettings();
 
@@ -317,7 +334,7 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
 
   const u8 resolution_scale = Truncate8(CalculateResolutionScale());
   const u8 multisamples = Truncate8(std::min<u32>(g_settings.gpu_multisamples, g_gpu_device->GetMaxMultisamples()));
-  const bool clamp_uvs = ShouldClampUVs();
+  const bool clamp_uvs = ShouldClampUVs(m_texture_filtering) || ShouldClampUVs(m_sprite_texture_filtering);
   const bool framebuffer_changed =
     (m_resolution_scale != resolution_scale || m_multisamples != multisamples ||
      (static_cast<bool>(m_vram_depth_texture) != (g_settings.UsingPGXPDepthBuffer() || !m_supports_framebuffer_fetch)));
@@ -328,14 +345,17 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
      (resolution_scale > 1 && g_settings.gpu_scaled_dithering != old_settings.gpu_scaled_dithering) ||
      (resolution_scale > 1 && g_settings.gpu_texture_filter == GPUTextureFilter::Nearest &&
       g_settings.gpu_force_round_texcoords != old_settings.gpu_force_round_texcoords) ||
-     m_texture_filtering != g_settings.gpu_texture_filter || m_clamp_uvs != clamp_uvs ||
+     m_texture_filtering != g_settings.gpu_texture_filter ||
+     m_sprite_texture_filtering != g_settings.gpu_sprite_texture_filter || m_clamp_uvs != clamp_uvs ||
      (resolution_scale > 1 && (g_settings.gpu_downsample_mode != old_settings.gpu_downsample_mode ||
                                (m_downsample_mode == GPUDownsampleMode::Box &&
                                 g_settings.gpu_downsample_scale != old_settings.gpu_downsample_scale))) ||
      (features.geometry_shaders && g_settings.gpu_wireframe_mode != old_settings.gpu_wireframe_mode) ||
      m_pgxp_depth_buffer != g_settings.UsingPGXPDepthBuffer() ||
      (features.noperspective_interpolation &&
-      ShouldDisableColorPerspective() != old_settings.gpu_pgxp_color_correction));
+      ShouldDisableColorPerspective() != old_settings.gpu_pgxp_color_correction) ||
+     m_allow_sprite_mode !=
+       ShouldAllowSpriteMode(m_resolution_scale, g_settings.gpu_texture_filter, g_settings.gpu_sprite_texture_filter));
 
   if (m_resolution_scale != resolution_scale)
   {
@@ -376,13 +396,15 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
 
   m_resolution_scale = resolution_scale;
   m_multisamples = multisamples;
-  m_true_color = g_settings.gpu_true_color;
   m_texture_filtering = g_settings.gpu_texture_filter;
+  m_sprite_texture_filtering = g_settings.gpu_sprite_texture_filter;
   m_line_detect_mode = (m_resolution_scale > 1) ? g_settings.gpu_line_detect_mode : GPULineDetectMode::Disabled;
-  m_clamp_uvs = clamp_uvs;
-  m_compute_uv_range = m_clamp_uvs;
   m_downsample_mode = GetDownsampleMode(resolution_scale);
   m_wireframe_mode = g_settings.gpu_wireframe_mode;
+  m_true_color = g_settings.gpu_true_color;
+  m_clamp_uvs = clamp_uvs;
+  m_compute_uv_range = m_clamp_uvs;
+  m_allow_sprite_mode = ShouldAllowSpriteMode(resolution_scale, m_texture_filtering, m_sprite_texture_filtering);
 
   CheckSettings();
 
@@ -454,13 +476,17 @@ void GPU_HW::CheckSettings()
                             TRANSLATE_STR("GPU_HW", "SSAA is not supported, using MSAA instead."),
                             Host::OSD_ERROR_DURATION);
   }
-  if (!features.dual_source_blend && !features.framebuffer_fetch && IsBlendedTextureFiltering(m_texture_filtering))
+  if (!features.dual_source_blend && !features.framebuffer_fetch &&
+      (IsBlendedTextureFiltering(m_texture_filtering) || IsBlendedTextureFiltering(m_sprite_texture_filtering)))
   {
     Host::AddIconOSDMessage(
       "TextureFilterUnsupported", ICON_FA_EXCLAMATION_TRIANGLE,
-      fmt::format(TRANSLATE_FS("GPU_HW", "Texture filter '{}' is not supported with the current renderer."),
-                  Settings::GetTextureFilterDisplayName(m_texture_filtering), Host::OSD_ERROR_DURATION));
+      fmt::format(TRANSLATE_FS("GPU_HW", "Texture filter '{}/{}' is not supported with the current renderer."),
+                  Settings::GetTextureFilterDisplayName(m_texture_filtering),
+                  Settings::GetTextureFilterName(m_sprite_texture_filtering), Host::OSD_ERROR_DURATION));
     m_texture_filtering = GPUTextureFilter::Nearest;
+    m_sprite_texture_filtering = GPUTextureFilter::Nearest;
+    m_allow_sprite_mode = ShouldAllowSpriteMode(m_resolution_scale, m_texture_filtering, m_sprite_texture_filtering);
   }
 
   if (!features.noperspective_interpolation && !ShouldDisableColorPerspective())
@@ -650,7 +676,8 @@ void GPU_HW::PrintSettingsToLog()
              ((m_true_color && g_settings.gpu_debanding) ? " (Debanding)" : ""));
   INFO_LOG("Force round texture coordinates: {}",
            (m_resolution_scale > 1 && g_settings.gpu_force_round_texcoords) ? "Enabled" : "Disabled");
-  INFO_LOG("Texture Filtering: {}", Settings::GetTextureFilterDisplayName(m_texture_filtering));
+  INFO_LOG("Texture Filtering: {}/{}", Settings::GetTextureFilterDisplayName(m_texture_filtering),
+           Settings::GetTextureFilterDisplayName(m_sprite_texture_filtering));
   INFO_LOG("Dual-source blending: {}", m_supports_dual_source_blend ? "Supported" : "Not supported");
   INFO_LOG("Clamping UVs: {}", m_clamp_uvs ? "YES" : "NO");
   INFO_LOG("Depth buffer: {}", m_pgxp_depth_buffer ? "YES" : "NO");
@@ -658,6 +685,7 @@ void GPU_HW::PrintSettingsToLog()
   INFO_LOG("Wireframe rendering: {}", Settings::GetGPUWireframeModeDisplayName(m_wireframe_mode));
   INFO_LOG("Line detection: {}", Settings::GetLineDetectModeDisplayName(m_line_detect_mode));
   INFO_LOG("Using software renderer for readbacks: {}", m_sw_renderer ? "YES" : "NO");
+  INFO_LOG("Separate sprite shaders: {}", m_allow_sprite_mode ? "YES" : "NO");
 }
 
 bool GPU_HW::NeedsDepthBuffer() const
@@ -776,19 +804,23 @@ bool GPU_HW::CompilePipelines()
 {
   const GPUDevice::Features features = g_gpu_device->GetFeatures();
   const bool per_sample_shading = g_settings.gpu_per_sample_shading && features.per_sample_shading;
-  const bool force_round_texcoords = (m_resolution_scale > 1 && g_settings.gpu_force_round_texcoords);
+  const bool force_round_texcoords = (m_resolution_scale > 1 && m_texture_filtering == GPUTextureFilter::Nearest &&
+                                      g_settings.gpu_force_round_texcoords);
   const bool needs_depth_buffer = NeedsDepthBuffer();
   const bool write_mask_as_depth = (!m_pgxp_depth_buffer && needs_depth_buffer);
   m_allow_shader_blend = (features.feedback_loops && (m_pgxp_depth_buffer || !needs_depth_buffer));
 
   GPU_HW_ShaderGen shadergen(g_gpu_device->GetRenderAPI(), m_resolution_scale, m_multisamples, per_sample_shading,
-                             m_true_color, (m_resolution_scale > 1 && g_settings.gpu_scaled_dithering), m_clamp_uvs,
+                             m_true_color, (m_resolution_scale > 1 && g_settings.gpu_scaled_dithering),
                              write_mask_as_depth, ShouldDisableColorPerspective(), m_supports_dual_source_blend,
                              m_supports_framebuffer_fetch, g_settings.gpu_true_color && g_settings.gpu_debanding);
 
-  constexpr u32 active_texture_modes = 4;
+  const u32 active_texture_modes =
+    m_allow_sprite_mode ? NUM_TEXTURE_MODES :
+                          (NUM_TEXTURE_MODES - (NUM_TEXTURE_MODES - static_cast<u32>(BatchTextureMode::SpriteStart)));
+  const u32 active_vertex_shaders = m_allow_sprite_mode ? 3 : 2;
   const u32 total_pipelines =
-    2 +                                                                          // vertex shaders
+    active_vertex_shaders +                                                      // vertex shaders
     (active_texture_modes * 5 * 9 * 2 * 2 * 2) +                                 // fragment shaders
     ((m_pgxp_depth_buffer ? 2 : 1) * 5 * 5 * active_texture_modes * 2 * 2 * 2) + // batch pipelines
     ((m_wireframe_mode != GPUWireframeMode::Disabled) ? 1 : 0) +                 // wireframe
@@ -804,19 +836,22 @@ bool GPU_HW::CompilePipelines()
 
   ShaderCompileProgressTracker progress("Compiling Pipelines", total_pipelines);
 
-  // vertex shaders - [textured]
+  // vertex shaders - [non-textured/textured/sprite]
   // fragment shaders - [render_mode][transparency_mode][texture_mode][check_mask][dithering][interlacing]
   static constexpr auto destroy_shader = [](std::unique_ptr<GPUShader>& s) { s.reset(); };
-  DimensionalArray<std::unique_ptr<GPUShader>, 2> batch_vertex_shaders{};
+  DimensionalArray<std::unique_ptr<GPUShader>, 3> batch_vertex_shaders{};
   DimensionalArray<std::unique_ptr<GPUShader>, 2, 2, 2, NUM_TEXTURE_MODES, 5, 5> batch_fragment_shaders{};
   ScopedGuard batch_shader_guard([&batch_vertex_shaders, &batch_fragment_shaders]() {
     batch_vertex_shaders.enumerate(destroy_shader);
     batch_fragment_shaders.enumerate(destroy_shader);
   });
 
-  for (u8 textured = 0; textured < 2; textured++)
+  for (u8 textured = 0; textured < active_vertex_shaders; textured++)
   {
-    const std::string vs = shadergen.GenerateBatchVertexShader(ConvertToBoolUnchecked(textured), m_pgxp_depth_buffer);
+    const bool sprite = (textured > 1);
+    const bool uv_limits = ShouldClampUVs(sprite ? m_sprite_texture_filtering : m_texture_filtering);
+    const std::string vs = shadergen.GenerateBatchVertexShader(textured != 0, uv_limits,
+                                                               !sprite && force_round_texcoords, m_pgxp_depth_buffer);
     if (!(batch_vertex_shaders[textured] =
             g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(), vs)))
     {
@@ -858,11 +893,15 @@ bool GPU_HW::CompilePipelines()
           {
             for (u8 interlacing = 0; interlacing < 2; interlacing++)
             {
+              const bool sprite = (static_cast<BatchTextureMode>(texture_mode) >= BatchTextureMode::SpriteStart);
+              const bool uv_limits = ShouldClampUVs(sprite ? m_sprite_texture_filtering : m_texture_filtering);
+              const BatchTextureMode shader_texmode = static_cast<BatchTextureMode>(
+                texture_mode - (sprite ? static_cast<u8>(BatchTextureMode::SpriteStart) : 0));
               const std::string fs = shadergen.GenerateBatchFragmentShader(
                 static_cast<BatchRenderMode>(render_mode), static_cast<GPUTransparencyMode>(transparency_mode),
-                static_cast<BatchTextureMode>(texture_mode), m_texture_filtering, force_round_texcoords,
-                ConvertToBoolUnchecked(dithering), ConvertToBoolUnchecked(interlacing),
-                ConvertToBoolUnchecked(check_mask));
+                shader_texmode, sprite ? m_sprite_texture_filtering : m_texture_filtering, uv_limits,
+                !sprite && force_round_texcoords, ConvertToBoolUnchecked(dithering),
+                ConvertToBoolUnchecked(interlacing), ConvertToBoolUnchecked(check_mask));
 
               if (!(batch_fragment_shaders[render_mode][transparency_mode][texture_mode][check_mask][dithering]
                                           [interlacing] = g_gpu_device->CreateShader(GPUShaderStage::Fragment,
@@ -940,6 +979,8 @@ bool GPU_HW::CompilePipelines()
               for (u8 check_mask = 0; check_mask < 2; check_mask++)
               {
                 const bool textured = (static_cast<BatchTextureMode>(texture_mode) != BatchTextureMode::Disabled);
+                const bool sprite = (static_cast<BatchTextureMode>(texture_mode) >= BatchTextureMode::SpriteStart);
+                const bool uv_limits = ShouldClampUVs(sprite ? m_sprite_texture_filtering : m_texture_filtering);
                 const bool use_shader_blending =
                   (render_mode == static_cast<u8>(BatchRenderMode::ShaderBlend) &&
                    ((textured &&
@@ -948,13 +989,13 @@ bool GPU_HW::CompilePipelines()
 
                 plconfig.input_layout.vertex_attributes =
                   textured ?
-                    (m_clamp_uvs ? std::span<const GPUPipeline::VertexAttribute>(
-                                     vertex_attributes, NUM_BATCH_TEXTURED_LIMITS_VERTEX_ATTRIBUTES) :
-                                   std::span<const GPUPipeline::VertexAttribute>(
-                                     vertex_attributes, NUM_BATCH_TEXTURED_VERTEX_ATTRIBUTES)) :
+                    (uv_limits ? std::span<const GPUPipeline::VertexAttribute>(
+                                   vertex_attributes, NUM_BATCH_TEXTURED_LIMITS_VERTEX_ATTRIBUTES) :
+                                 std::span<const GPUPipeline::VertexAttribute>(vertex_attributes,
+                                                                               NUM_BATCH_TEXTURED_VERTEX_ATTRIBUTES)) :
                     std::span<const GPUPipeline::VertexAttribute>(vertex_attributes, NUM_BATCH_VERTEX_ATTRIBUTES);
 
-                plconfig.vertex_shader = batch_vertex_shaders[BoolToUInt8(textured)].get();
+                plconfig.vertex_shader = batch_vertex_shaders[BoolToUInt8(textured) + BoolToUInt8(sprite)].get();
                 plconfig.fragment_shader =
                   batch_fragment_shaders[render_mode]
                                         [use_shader_blending ? transparency_mode :
@@ -982,7 +1023,8 @@ bool GPU_HW::CompilePipelines()
                     ((static_cast<GPUTransparencyMode>(transparency_mode) != GPUTransparencyMode::Disabled &&
                       (static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::TransparencyDisabled &&
                        static_cast<BatchRenderMode>(render_mode) != BatchRenderMode::OnlyOpaque)) ||
-                     (textured && IsBlendedTextureFiltering(m_texture_filtering))))
+                     (textured &&
+                      IsBlendedTextureFiltering(sprite ? m_sprite_texture_filtering : m_texture_filtering))))
                 {
                   plconfig.blend.enable = true;
                   plconfig.blend.src_alpha_blend = GPUPipeline::BlendFunc::One;
@@ -1512,12 +1554,15 @@ ALWAYS_INLINE_RELEASE void GPU_HW::DrawBatchVertices(BatchRenderMode render_mode
                                                      u32 base_vertex)
 {
   // [depth_test][transparency_mode][render_mode][texture_mode][dithering][interlacing][check_mask]
+  const u8 texture_mode = static_cast<u8>(m_batch.texture_mode) +
+                          ((m_batch.texture_mode != BatchTextureMode::Disabled && m_batch.sprite_mode) ?
+                             static_cast<u8>(BatchTextureMode::SpriteStart) :
+                             0);
   const u8 depth_test = BoolToUInt8(m_batch.use_depth_buffer);
   const u8 check_mask = BoolToUInt8(m_batch.check_mask_before_draw);
   g_gpu_device->SetPipeline(m_batch_pipelines[depth_test][static_cast<u8>(m_batch.transparency_mode)][static_cast<u8>(
-    render_mode)][static_cast<u8>(m_batch.texture_mode)][BoolToUInt8(m_batch.dithering)]
-                                             [BoolToUInt8(m_batch.interlacing)][check_mask]
-                                               .get());
+    render_mode)][texture_mode][BoolToUInt8(m_batch.dithering)][BoolToUInt8(m_batch.interlacing)][check_mask]
+                              .get());
 
   if (render_mode != BatchRenderMode::ShaderBlend || m_supports_framebuffer_fetch)
     g_gpu_device->DrawIndexed(num_indices, base_index, base_vertex);
@@ -1628,6 +1673,36 @@ ALWAYS_INLINE_RELEASE void GPU_HW::HandleFlippedQuadTextureCoordinates(BatchVert
     vertices[2].v++;
     vertices[3].v++;
   }
+
+  // 2D polygons should have zero change in V on the X axis, and vice versa.
+  if (m_allow_sprite_mode)
+    SetBatchSpriteMode(zero_dudy && zero_dvdx);
+}
+
+bool GPU_HW::IsPossibleSpritePolygon(const BatchVertex* vertices) const
+{
+  const float abx = vertices[1].x - vertices[0].x;
+  const float aby = vertices[1].y - vertices[0].y;
+  const float bcx = vertices[2].x - vertices[1].x;
+  const float bcy = vertices[2].y - vertices[1].y;
+  const float cax = vertices[0].x - vertices[2].x;
+  const float cay = vertices[0].y - vertices[2].y;
+  const float dvdx = -aby * static_cast<float>(vertices[2].v) - bcy * static_cast<float>(vertices[0].v) -
+                     cay * static_cast<float>(vertices[1].v);
+  const float dudy = +abx * static_cast<float>(vertices[2].u) + bcx * static_cast<float>(vertices[0].u) +
+                     cax * static_cast<float>(vertices[1].u);
+  const float area = bcx * cay - bcy * cax;
+  const s32 texArea = (vertices[1].u - vertices[0].u) * (vertices[2].v - vertices[0].v) -
+                      (vertices[2].u - vertices[0].u) * (vertices[1].v - vertices[0].v);
+
+  // Doesn't matter.
+  if (area == 0.0f || texArea == 0)
+    return m_batch.sprite_mode;
+
+  const float rcp_area = 1.0f / area;
+  const bool zero_dudy = ((dudy * rcp_area) == 0.0f);
+  const bool zero_dvdx = ((dvdx * rcp_area) == 0.0f);
+  return (zero_dudy && zero_dvdx);
 }
 
 ALWAYS_INLINE_RELEASE void GPU_HW::ExpandLineTriangles(BatchVertex* vertices, u32 base_vertex)
@@ -1837,6 +1912,22 @@ void GPU_HW::CheckForDepthClear(const BatchVertex* vertices, u32 num_vertices)
   m_last_depth_z = average_z;
 }
 
+void GPU_HW::SetBatchSpriteMode(bool enabled)
+{
+  if (m_batch.sprite_mode == enabled)
+    return;
+
+  if (m_batch_index_count > 0)
+  {
+    FlushRender();
+    EnsureVertexBufferSpaceForCurrentCommand();
+  }
+
+  GL_INS_FMT("Sprite mode is now {}", enabled ? "ON" : "OFF");
+
+  m_batch.sprite_mode = enabled;
+}
+
 void GPU_HW::DrawLine(float x0, float y0, u32 col0, float x1, float y1, u32 col1, float depth)
 {
   DebugAssert(m_batch_vertex_space >= 4 && m_batch_index_space >= 6);
@@ -1997,6 +2088,8 @@ void GPU_HW::LoadVertices()
       const bool is_3d = (vertices[0].w != vertices[1].w || vertices[0].w != vertices[2].w);
       if (m_resolution_scale > 1 && !is_3d && rc.quad_polygon)
         HandleFlippedQuadTextureCoordinates(vertices.data());
+      else if (m_allow_sprite_mode)
+        SetBatchSpriteMode((pgxp && !is_3d) || IsPossibleSpritePolygon(vertices.data()));
 
       if (m_compute_uv_range && textured)
         ComputePolygonUVLimits(texpage, vertices.data(), num_vertices);
@@ -2160,6 +2253,7 @@ void GPU_HW::LoadVertices()
 
       // we can split the rectangle up into potentially 8 quads
       SetBatchDepthBuffer(false);
+      SetBatchSpriteMode(m_allow_sprite_mode);
       DebugAssert(m_batch_vertex_space >= MAX_VERTICES_FOR_RECTANGLE &&
                   m_batch_index_space >= MAX_VERTICES_FOR_RECTANGLE);
 
@@ -2499,7 +2593,8 @@ ALWAYS_INLINE_RELEASE bool GPU_HW::NeedsShaderBlending(GPUTransparencyMode trans
           ((check_mask && (m_pgxp_depth_buffer || !m_vram_depth_texture)) ||
            transparency == GPUTransparencyMode::BackgroundMinusForeground ||
            (!m_supports_dual_source_blend &&
-            (transparency != GPUTransparencyMode::Disabled || IsBlendedTextureFiltering(m_texture_filtering)))));
+            (transparency != GPUTransparencyMode::Disabled || IsBlendedTextureFiltering(m_texture_filtering) ||
+             IsBlendedTextureFiltering(m_sprite_texture_filtering)))));
 }
 
 void GPU_HW::EnsureVertexBufferSpace(u32 required_vertices, u32 required_indices)

@@ -6,14 +6,13 @@
 #include <cstdio>
 
 GPU_HW_ShaderGen::GPU_HW_ShaderGen(RenderAPI render_api, u32 resolution_scale, u32 multisamples,
-                                   bool per_sample_shading, bool true_color, bool scaled_dithering, bool uv_limits,
+                                   bool per_sample_shading, bool true_color, bool scaled_dithering,
                                    bool write_mask_as_depth, bool disable_color_perspective,
                                    bool supports_dual_source_blend, bool supports_framebuffer_fetch, bool debanding)
   : ShaderGen(render_api, GetShaderLanguageForAPI(render_api), supports_dual_source_blend, supports_framebuffer_fetch),
     m_resolution_scale(resolution_scale), m_multisamples(multisamples), m_per_sample_shading(per_sample_shading),
-    m_true_color(true_color), m_scaled_dithering(scaled_dithering), m_uv_limits(uv_limits),
-    m_write_mask_as_depth(write_mask_as_depth), m_disable_color_perspective(disable_color_perspective),
-    m_debanding(debanding)
+    m_true_color(true_color), m_scaled_dithering(scaled_dithering), m_write_mask_as_depth(write_mask_as_depth),
+    m_disable_color_perspective(disable_color_perspective), m_debanding(debanding)
 {
 }
 
@@ -58,12 +57,14 @@ void GPU_HW_ShaderGen::WriteBatchUniformBuffer(std::stringstream& ss)
                        false);
 }
 
-std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured, bool pgxp_depth)
+std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured, bool uv_limits, bool force_round_texcoords,
+                                                        bool pgxp_depth)
 {
   std::stringstream ss;
   WriteHeader(ss);
   DefineMacro(ss, "TEXTURED", textured);
-  DefineMacro(ss, "UV_LIMITS", m_uv_limits);
+  DefineMacro(ss, "UV_LIMITS", uv_limits);
+  DefineMacro(ss, "FORCE_ROUND_TEXCOORDS", force_round_texcoords);
   DefineMacro(ss, "PGXP_DEPTH", pgxp_depth);
 
   WriteCommonFunctions(ss);
@@ -71,7 +72,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured, bool pgxp
 
   if (textured)
   {
-    if (m_uv_limits)
+    if (uv_limits)
     {
       DeclareVertexEntryPoint(
         ss, {"float4 a_pos", "float4 a_col0", "uint a_texcoord", "uint a_texpage", "float4 a_uv_limits"}, 1, 1,
@@ -137,6 +138,11 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured, bool pgxp
 
     #if UV_LIMITS
       v_uv_limits = a_uv_limits * float4(255.0, 255.0, 255.0, 255.0);
+      #if FORCE_ROUND_TEXCOORDS
+        // Add 0.5 to the upper bounds when upscaling, to work around interpolation differences.
+        // Limited to force-round-texcoord hack, to avoid breaking other games.
+        v_uv_limits.zw += 0.5;
+      #endif
     #endif
   #endif
 }
@@ -630,9 +636,12 @@ void FilteredSampleFromVRAM(uint4 texpage, float2 coords, float4 uv_limits,
   }
 }
 
-std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(
-  GPU_HW::BatchRenderMode render_mode, GPUTransparencyMode transparency, GPU_HW::BatchTextureMode texture_mode,
-  GPUTextureFilter texture_filtering, bool force_round_texcoords, bool dithering, bool interlacing, bool check_mask)
+std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMode render_mode,
+                                                          GPUTransparencyMode transparency,
+                                                          GPU_HW::BatchTextureMode texture_mode,
+                                                          GPUTextureFilter texture_filtering, bool uv_limits,
+                                                          bool force_round_texcoords, bool dithering, bool interlacing,
+                                                          bool check_mask)
 {
   // TODO: don't write depth for shader blend
   DebugAssert(transparency == GPUTransparencyMode::Disabled || render_mode == GPU_HW::BatchRenderMode::ShaderBlend);
@@ -666,7 +675,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(
   DefineMacro(ss, "INTERLACING", interlacing);
   DefineMacro(ss, "TRUE_COLOR", m_true_color);
   DefineMacro(ss, "TEXTURE_FILTERING", texture_filtering != GPUTextureFilter::Nearest);
-  DefineMacro(ss, "UV_LIMITS", m_uv_limits);
+  DefineMacro(ss, "UV_LIMITS", uv_limits);
   DefineMacro(ss, "USE_DUAL_SOURCE", use_dual_source);
   DefineMacro(ss, "WRITE_MASK_AS_DEPTH", m_write_mask_as_depth);
   DefineMacro(ss, "FORCE_ROUND_TEXCOORDS", force_round_texcoords);
@@ -796,7 +805,7 @@ float3 ApplyDebanding(float2 frag_coord)
     if (texture_filtering != GPUTextureFilter::Nearest)
       WriteBatchTextureFilter(ss, texture_filtering);
 
-    if (m_uv_limits)
+    if (uv_limits)
     {
       DeclareFragmentEntryPoint(ss, 1, 1,
                                 {{"nointerpolation", "uint4 v_texpage"}, {"nointerpolation", "float4 v_uv_limits"}},

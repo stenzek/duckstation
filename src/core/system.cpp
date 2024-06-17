@@ -4017,6 +4017,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.gpu_scaled_dithering != old_settings.gpu_scaled_dithering ||
         g_settings.gpu_force_round_texcoords != old_settings.gpu_force_round_texcoords ||
         g_settings.gpu_texture_filter != old_settings.gpu_texture_filter ||
+        g_settings.gpu_sprite_texture_filter != old_settings.gpu_sprite_texture_filter ||
         g_settings.gpu_line_detect_mode != old_settings.gpu_line_detect_mode ||
         g_settings.gpu_disable_interlacing != old_settings.gpu_disable_interlacing ||
         g_settings.gpu_force_ntsc_timings != old_settings.gpu_force_ntsc_timings ||
