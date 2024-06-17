@@ -694,6 +694,9 @@ void CodeGenerator::EmitSignExtend(HostReg to_reg, RegSize to_size, HostReg from
           m_emit->sxtb(GetHostReg16(to_reg), GetHostReg8(from_reg));
           m_emit->and_(GetHostReg16(to_reg), GetHostReg16(to_reg), 0xFFFF);
           return;
+
+        default:
+          break;
       }
     }
     break;
@@ -708,9 +711,15 @@ void CodeGenerator::EmitSignExtend(HostReg to_reg, RegSize to_size, HostReg from
         case RegSize_16:
           m_emit->sxth(GetHostReg32(to_reg), GetHostReg16(from_reg));
           return;
+
+        default:
+          break;
       }
     }
     break;
+
+    default:
+      break;
   }
 
   Panic("Unknown sign-extend combination");
@@ -727,6 +736,9 @@ void CodeGenerator::EmitZeroExtend(HostReg to_reg, RegSize to_size, HostReg from
         case RegSize_8:
           m_emit->and_(GetHostReg16(to_reg), GetHostReg8(from_reg), 0xFF);
           return;
+
+        default:
+          break;
       }
     }
     break;
@@ -741,9 +753,15 @@ void CodeGenerator::EmitZeroExtend(HostReg to_reg, RegSize to_size, HostReg from
         case RegSize_16:
           m_emit->and_(GetHostReg32(to_reg), GetHostReg16(from_reg), 0xFFFF);
           return;
+
+        default:
+          break;
       }
     }
     break;
+
+    default:
+      break;
   }
 
   Panic("Unknown sign-extend combination");
