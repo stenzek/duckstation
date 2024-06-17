@@ -140,7 +140,6 @@ DiscRegion GetRegionFromSystemArea(CDImage* cdi);
 DiscRegion GetRegionForImage(CDImage* cdi);
 DiscRegion GetRegionForExe(const char* path);
 DiscRegion GetRegionForPsf(const char* path);
-std::optional<DiscRegion> GetRegionForPath(const char* image_path);
 
 /// Returns the path for the game settings ini file for the specified serial.
 std::string GetGameSettingsPath(std::string_view game_serial);

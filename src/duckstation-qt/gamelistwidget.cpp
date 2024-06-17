@@ -254,6 +254,11 @@ void GameListWidget::refresh(bool invalidate_cache)
   m_refresh_thread->start();
 }
 
+void GameListWidget::refreshModel()
+{
+  m_model->refresh();
+}
+
 void GameListWidget::cancelRefresh()
 {
   if (!m_refresh_thread)

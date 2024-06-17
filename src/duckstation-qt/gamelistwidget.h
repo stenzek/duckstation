@@ -45,6 +45,7 @@ public:
   void resizeTableViewColumnsToFit();
 
   void refresh(bool invalidate_cache);
+  void refreshModel();
   void cancelRefresh();
   void reloadThemeSpecificImages();
 

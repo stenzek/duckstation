@@ -186,7 +186,8 @@ static std::string s_running_game_serial;
 static std::string s_running_game_title;
 static const GameDatabase::Entry* s_running_game_entry = nullptr;
 static System::GameHash s_running_game_hash;
-static bool s_was_fast_booted;
+static bool s_running_game_custom_title = false;
+static bool s_was_fast_booted = false;
 
 static bool s_system_executing = false;
 static bool s_system_interrupted = false;
@@ -988,20 +989,6 @@ DiscRegion System::GetRegionForPsf(const char* path)
   return psf.GetRegion();
 }
 
-std::optional<DiscRegion> System::GetRegionForPath(const char* image_path)
-{
-  if (IsExeFileName(image_path))
-    return GetRegionForExe(image_path);
-  else if (IsPsfFileName(image_path))
-    return GetRegionForPsf(image_path);
-
-  std::unique_ptr<CDImage> cdi = CDImage::Open(image_path, false, nullptr);
-  if (!cdi)
-    return {};
-
-  return GetRegionForImage(cdi.get());
-}
-
 std::string System::GetGameSettingsPath(std::string_view game_serial)
 {
   // multi-disc games => always use the first disc
@@ -1507,7 +1494,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
         return false;
       }
 
-      disc_region = GetRegionForImage(disc.get());
+      disc_region = GameList::GetCustomRegionForPath(parameters.filename).value_or(GetRegionForImage(disc.get()));
       if (s_region == ConsoleRegion::Auto)
       {
         if (disc_region != DiscRegion::Other)
@@ -2583,7 +2570,8 @@ bool System::LoadStateFromStream(ByteStream* state, Error* error, bool update_di
     CDROM::Reset();
     if (media)
     {
-      const DiscRegion region = GetRegionForImage(media.get());
+      const DiscRegion region =
+        GameList::GetCustomRegionForPath(media_filename).value_or(GetRegionForImage(media.get()));
       CDROM::InsertMedia(std::move(media), region);
       if (g_settings.cdrom_load_image_to_ram)
         CDROM::PrecacheMedia();
@@ -3385,7 +3373,9 @@ std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardTyp
 
         // But prefer a disc-specific card if one already exists.
         std::string disc_card_path = g_settings.GetGameMemoryCardPath(
-          Path::SanitizeFileName(s_running_game_entry ? s_running_game_entry->title : s_running_game_title), slot);
+          Path::SanitizeFileName((s_running_game_entry && !s_running_game_custom_title) ? s_running_game_entry->title :
+                                                                                          s_running_game_title),
+          slot);
         if (disc_card_path != card_path)
         {
           if (card_path.empty() || !g_settings.memory_card_use_playlist_title ||
@@ -3627,7 +3617,7 @@ bool System::InsertMedia(const char* path)
     return false;
   }
 
-  const DiscRegion region = GetRegionForImage(image.get());
+  const DiscRegion region = GameList::GetCustomRegionForPath(path).value_or(GetRegionForImage(image.get()));
   UpdateRunningGame(path, image.get(), false);
   CDROM::InsertMedia(std::move(image), region);
   INFO_LOG("Inserted media from {} ({}, {})", s_running_game_path, s_running_game_serial, s_running_game_title);
@@ -3668,14 +3658,19 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
   s_running_game_title.clear();
   s_running_game_entry = nullptr;
   s_running_game_hash = 0;
+  s_running_game_custom_title = false;
 
   if (path && std::strlen(path) > 0)
   {
     s_running_game_path = path;
+    s_running_game_title = GameList::GetCustomTitleForPath(s_running_game_path);
+    s_running_game_custom_title = !s_running_game_title.empty();
 
     if (IsExeFileName(path))
     {
-      s_running_game_title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path));
+      if (s_running_game_title.empty())
+        s_running_game_title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path));
+
       s_running_game_hash = GetGameHashFromFile(path);
       if (s_running_game_hash != 0)
         s_running_game_serial = GetGameHashId(s_running_game_hash);
@@ -3683,7 +3678,8 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
     else if (IsPsfFileName(path))
     {
       // TODO: We could pull the title from the PSF.
-      s_running_game_title = Path::GetFileTitle(path);
+      if (s_running_game_title.empty())
+        s_running_game_title = Path::GetFileTitle(path);
     }
     // Check for an audio CD. Those shouldn't set any title.
     else if (image && image->GetTrack(1).mode != CDImage::TrackMode::Audio)
@@ -3695,19 +3691,24 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
       if (s_running_game_entry)
       {
         s_running_game_serial = s_running_game_entry->serial;
-        s_running_game_title = s_running_game_entry->title;
+        if (s_running_game_title.empty())
+          s_running_game_title = s_running_game_entry->title;
       }
       else
       {
         s_running_game_serial = std::move(id);
-        s_running_game_title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path));
+        if (s_running_game_title.empty())
+          s_running_game_title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path));
       }
 
       if (image->HasSubImages())
       {
         std::string image_title = image->GetMetadata("title");
         if (!image_title.empty())
+        {
           s_running_game_title = std::move(image_title);
+          s_running_game_custom_title = false;
+        }
       }
     }
   }

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "gamesummarywidget.h"
+#include "mainwindow.h"
 #include "qthost.h"
 #include "qtprogresscallback.h"
 #include "settingswindow.h"
@@ -54,6 +55,17 @@ GameSummaryWidget::GameSummaryWidget(const std::string& path, const std::string&
   connect(m_ui.compatibilityComments, &QToolButton::clicked, this, &GameSummaryWidget::onCompatibilityCommentsClicked);
   connect(m_ui.inputProfile, &QComboBox::currentIndexChanged, this, &GameSummaryWidget::onInputProfileChanged);
   connect(m_ui.computeHashes, &QAbstractButton::clicked, this, &GameSummaryWidget::onComputeHashClicked);
+
+  connect(m_ui.title, &QLineEdit::editingFinished, this, [this]() {
+    if (m_ui.title->isModified())
+    {
+      setCustomTitle(m_ui.title->text().toStdString());
+      m_ui.title->setModified(false);
+    }
+  });
+  connect(m_ui.restoreTitle, &QAbstractButton::clicked, this, [this]() { setCustomTitle(std::string()); });
+  connect(m_ui.region, &QComboBox::currentIndexChanged, this, [this](int index) { setCustomRegion(index); });
+  connect(m_ui.restoreRegion, &QAbstractButton::clicked, this, [this]() { setCustomRegion(-1); });
 }
 
 GameSummaryWidget::~GameSummaryWidget() = default;
@@ -157,7 +169,56 @@ void GameSummaryWidget::populateUi(const std::string& path, const std::string& s
   else
     m_ui.inputProfile->setCurrentIndex(0);
 
+  populateCustomAttributes();
   populateTracksInfo();
+  updateWindowTitle();
+}
+
+void GameSummaryWidget::populateCustomAttributes()
+{
+  auto lock = GameList::GetLock();
+  const GameList::Entry* entry = GameList::GetEntryForPath(m_path);
+  if (!entry || entry->IsDiscSet())
+    return;
+
+  {
+    QSignalBlocker sb(m_ui.title);
+    m_ui.title->setText(QString::fromStdString(entry->title));
+    m_ui.restoreTitle->setEnabled(entry->has_custom_title);
+  }
+
+  {
+    QSignalBlocker sb(m_ui.region);
+    m_ui.region->setCurrentIndex(static_cast<int>(entry->region));
+    m_ui.restoreRegion->setEnabled(entry->has_custom_region);
+  }
+}
+
+void GameSummaryWidget::updateWindowTitle()
+{
+  const QString window_title = tr("%1 [%2]").arg(m_ui.title->text()).arg(m_ui.serial->text());
+  m_dialog->setWindowTitle(window_title);
+}
+
+void GameSummaryWidget::setCustomTitle(const std::string& text)
+{
+  m_ui.restoreTitle->setEnabled(!text.empty());
+
+  GameList::SaveCustomTitleForPath(m_path, text);
+  populateCustomAttributes();
+  updateWindowTitle();
+  g_main_window->refreshGameListModel();
+}
+
+void GameSummaryWidget::setCustomRegion(int region)
+{
+  m_ui.restoreRegion->setEnabled(region >= 0);
+
+  GameList::SaveCustomRegionForPath(m_path, (region >= 0) ? std::optional<DiscRegion>(static_cast<DiscRegion>(region)) :
+                                                            std::optional<DiscRegion>());
+  populateCustomAttributes();
+  updateWindowTitle();
+  g_main_window->refreshGameListModel();
 }
 
 static QString MSFTotString(const CDImage::Position& position)

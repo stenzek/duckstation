@@ -59,6 +59,8 @@ struct Entry
   u8 max_blocks = 0;
   s8 disc_set_index = -1;
   bool disc_set_member = false;
+  bool has_custom_title = false;
+  bool has_custom_region = false;
 
   GameDatabase::CompatibilityRating compatibility = GameDatabase::CompatibilityRating::Unknown;
 
@@ -122,6 +124,12 @@ GetMatchingEntriesForSerial(const std::span<const std::string> serials);
 bool DownloadCovers(const std::vector<std::string>& url_templates, bool use_serial = false,
                     ProgressCallback* progress = nullptr,
                     std::function<void(const Entry*, std::string)> save_callback = {});
+
+// Custom properties support
+void SaveCustomTitleForPath(const std::string& path, const std::string& custom_title);
+void SaveCustomRegionForPath(const std::string& path, const std::optional<DiscRegion> custom_region);
+std::string GetCustomTitleForPath(const std::string_view path);
+std::optional<DiscRegion> GetCustomRegionForPath(const std::string_view path);
 }; // namespace GameList
 
 namespace Host {

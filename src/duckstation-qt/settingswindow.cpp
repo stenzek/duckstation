@@ -653,11 +653,7 @@ void SettingsWindow::openGamePropertiesDialog(const std::string& path, const std
   if (FileSystem::FileExists(sif->GetFileName().c_str()))
     sif->Load();
 
-  const QString window_title(
-    tr("%1 [%2]").arg(QString::fromStdString(dentry ? dentry->title : title)).arg(QString::fromStdString(real_serial)));
-
   SettingsWindow* dialog = new SettingsWindow(path, real_serial, region, dentry, std::move(sif));
-  dialog->setWindowTitle(window_title);
   dialog->show();
 }
 

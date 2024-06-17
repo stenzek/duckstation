@@ -2821,6 +2821,11 @@ void MainWindow::refreshGameList(bool invalidate_cache)
   m_game_list_widget->refresh(invalidate_cache);
 }
 
+void MainWindow::refreshGameListModel()
+{
+  m_game_list_widget->refreshModel();
+}
+
 void MainWindow::cancelGameListRefresh()
 {
   m_game_list_widget->cancelRefresh();

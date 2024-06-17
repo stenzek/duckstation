@@ -107,6 +107,7 @@ public Q_SLOTS:
   void updateDebugMenuVisibility();
 
   void refreshGameList(bool invalidate_cache);
+  void refreshGameListModel();
   void cancelGameListRefresh();
 
   void runOnUIThread(const std::function<void()>& func);

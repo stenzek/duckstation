@@ -32,6 +32,11 @@ private Q_SLOTS:
 private:
   void populateUi(const std::string& path, const std::string& serial, DiscRegion region,
                   const GameDatabase::Entry* entry);
+  void populateCustomAttributes();
+  void updateWindowTitle();
+  void setCustomTitle(const std::string& text);
+  void setCustomRegion(int region);
+
   void populateTracksInfo();
 
   Ui::GameSummaryWidget m_ui;
