@@ -37519,6 +37519,8 @@ SLES-03936:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForceRoundTextureCoordinates
   metadata:
     publisher: "Bandai"
     developer: "Bandai"
@@ -37545,6 +37547,8 @@ SLUS-01436:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForceRoundTextureCoordinates
   metadata:
     publisher: "Bandai"
     developer: "Bandai"
