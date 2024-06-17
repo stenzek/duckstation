@@ -1070,23 +1070,14 @@ void System::LoadSettings(bool display_osd_messages)
   Host::LoadSettings(si, lock);
   InputManager::ReloadSources(si, lock);
   LoadInputBindings(si, lock);
+  WarnAboutUnsafeSettings();
 
   // apply compatibility settings
-  if (g_settings.apply_compatibility_settings)
+  if (g_settings.apply_compatibility_settings && !s_running_game_serial.empty())
   {
-    if (!s_running_game_serial.empty())
-    {
-      const GameDatabase::Entry* entry = GameDatabase::GetEntryForSerial(s_running_game_serial);
-      if (entry)
-        entry->ApplySettings(g_settings, display_osd_messages);
-    }
-  }
-  else
-  {
-    Host::AddIconOSDMessage(
-      "compatibility_settings_disabled", ICON_FA_GAMEPAD,
-      TRANSLATE_STR("System", "Compatibility settings are not enabled. Some games may not function correctly."),
-      Host::OSD_WARNING_DURATION);
+    const GameDatabase::Entry* entry = GameDatabase::GetEntryForSerial(s_running_game_serial);
+    if (entry)
+      entry->ApplySettings(g_settings, display_osd_messages);
   }
 
   g_settings.FixIncompatibleSettings(display_osd_messages);
@@ -1184,7 +1175,6 @@ void System::ApplySettings(bool display_osd_messages)
 
   if (IsValid())
   {
-    WarnAboutUnsafeSettings();
     ResetPerformanceCounters();
     InterruptExecution();
   }
@@ -1840,7 +1830,6 @@ bool System::Initialize(bool force_software_renderer, Error* error)
 
   UpdateThrottlePeriod();
   UpdateMemorySaveStateSettings();
-  WarnAboutUnsafeSettings();
   return true;
 }
 
@@ -3887,6 +3876,18 @@ void System::SetCheatList(std::unique_ptr<CheatList> cheats)
 {
   Assert(!IsShutdown());
   s_cheat_list = std::move(cheats);
+
+  if (s_cheat_list && s_cheat_list->GetEnabledCodeCount() > 0)
+  {
+    Host::AddIconOSDMessage("CheatsLoadWarning", ICON_FA_EXCLAMATION_TRIANGLE,
+                            TRANSLATE_PLURAL_STR("System", "%n cheat(s) are enabled. This may crash games.", "",
+                                                 s_cheat_list->GetEnabledCodeCount()),
+                            Host::OSD_WARNING_DURATION);
+  }
+  else
+  {
+    Host::RemoveKeyedOSDMessage("CheatsLoadWarning");
+  }
 }
 
 void System::CheckForSettingsChanges(const Settings& old_settings)
@@ -4000,7 +4001,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       if (g_settings.enable_cheats)
         LoadCheatList();
       else
-        s_cheat_list.reset();
+        SetCheatList(nullptr);
     }
 
     SPU::GetOutputStream()->SetOutputVolume(GetAudioOutputVolume());
@@ -4216,48 +4217,62 @@ void System::WarnAboutUnsafeSettings()
   LargeString messages;
   auto append = [&messages](const char* icon, std::string_view msg) { messages.append_format("{} {}\n", icon, msg); };
 
-  if (g_settings.cpu_overclock_active)
+  if (!g_settings.disable_all_enhancements)
   {
-    append(
-      ICON_FA_MICROCHIP,
-      SmallString::from_format(TRANSLATE_FS("System", "CPU clock speed is set to {}% ({} / {}). This may crash games."),
-                               g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator,
-                               g_settings.cpu_overclock_denominator));
+    if (g_settings.cpu_overclock_active)
+    {
+      append(ICON_FA_MICROCHIP,
+             SmallString::from_format(
+               TRANSLATE_FS("System", "CPU clock speed is set to {}% ({} / {}). This may crash games."),
+               g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator,
+               g_settings.cpu_overclock_denominator));
+    }
+    if (g_settings.cdrom_read_speedup > 1)
+    {
+      append(ICON_FA_COMPACT_DISC,
+             SmallString::from_format(
+               TRANSLATE_FS("System", "CD-ROM read speedup set to {}x (effective speed {}x). This may crash games."),
+               g_settings.cdrom_read_speedup, g_settings.cdrom_read_speedup * 2));
+    }
+    if (g_settings.cdrom_seek_speedup != 1)
+    {
+      append(ICON_FA_COMPACT_DISC,
+             SmallString::from_format(TRANSLATE_FS("System", "CD-ROM seek speedup set to {}. This may crash games."),
+                                      (g_settings.cdrom_seek_speedup == 0) ?
+                                        TinyString(TRANSLATE_SV("System", "Instant")) :
+                                        TinyString::from_format("{}x", g_settings.cdrom_seek_speedup)));
+    }
+    if (g_settings.gpu_force_ntsc_timings)
+    {
+      append(ICON_FA_TV, TRANSLATE_SV("System", "Force NTSC timings is enabled. Games may run at incorrect speeds."));
+    }
+    if (!g_settings.IsUsingSoftwareRenderer())
+    {
+      if (g_settings.gpu_multisamples != 1)
+      {
+        append(ICON_FA_MAGIC,
+               TRANSLATE_SV("System", "Multisample anti-aliasing is enabled, some games may not render correctly."));
+      }
+      if (g_settings.gpu_resolution_scale > 1 && g_settings.gpu_force_round_texcoords)
+      {
+        append(
+          ICON_FA_MAGIC,
+          TRANSLATE_SV("System", "Round upscaled texture coordinates is enabled. This may cause rendering errors."));
+      }
+    }
+    if (g_settings.enable_8mb_ram)
+      append(ICON_FA_MICROCHIP,
+             TRANSLATE_SV("System", "8MB RAM is enabled, this may be incompatible with some games."));
   }
-  if (g_settings.cdrom_read_speedup > 1)
+  else
   {
-    append(ICON_FA_COMPACT_DISC,
-           SmallString::from_format(
-             TRANSLATE_FS("System", "CD-ROM read speedup set to {}x (effective speed {}x). This may crash games."),
-             g_settings.cdrom_read_speedup, g_settings.cdrom_read_speedup * 2));
-  }
-  if (g_settings.cdrom_seek_speedup != 1)
-  {
-    append(ICON_FA_COMPACT_DISC,
-           SmallString::from_format(TRANSLATE_FS("System", "CD-ROM seek speedup set to {}. This may crash games."),
-                                    (g_settings.cdrom_seek_speedup == 0) ?
-                                      TinyString(TRANSLATE_SV("System", "Instant")) :
-                                      TinyString::from_format("{}x", g_settings.cdrom_seek_speedup)));
-  }
-  if (g_settings.gpu_force_ntsc_timings)
-  {
-    append(ICON_FA_TV, TRANSLATE_SV("System", "Force NTSC timings is enabled. Games may run at incorrect speeds."));
-  }
-  if (g_settings.gpu_multisamples != 1)
-  {
-    append(ICON_FA_MAGIC,
-           TRANSLATE_SV("System", "Multisample anti-aliasing is enabled, some games may not render correctly."));
-  }
-  if (g_settings.enable_8mb_ram)
-    append(ICON_FA_MICROCHIP, TRANSLATE_SV("System", "8MB RAM is enabled, this may be incompatible with some games."));
-  if (g_settings.disable_all_enhancements)
     append(ICON_FA_COGS, TRANSLATE_SV("System", "All enhancements are currently disabled."));
+  }
 
-  if (s_cheat_list && s_cheat_list->GetEnabledCodeCount() > 0)
+  if (!g_settings.apply_compatibility_settings)
   {
-    append(ICON_FA_EXCLAMATION_TRIANGLE,
-           TRANSLATE_PLURAL_STR("System", "%n cheat(s) are enabled. This may crash games.", "",
-                                s_cheat_list->GetEnabledCodeCount()));
+    append(ICON_FA_GAMEPAD,
+           TRANSLATE_STR("System", "Compatibility settings are not enabled. Some games may not function correctly."));
   }
 
   if (!messages.empty())
