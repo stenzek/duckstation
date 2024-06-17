@@ -210,9 +210,7 @@ private:
   void SetBatchDepthBuffer(bool enabled);
   void CheckForDepthClear(const BatchVertex* vertices, u32 num_vertices);
 
-  /// Returns the number of mipmap levels used for adaptive smoothing.
-  u32 GetAdaptiveDownsamplingMipLevels() const;
-
+  void UpdateDownsamplingLevels();
   void DownsampleFramebuffer(GPUTexture* source, u32 left, u32 top, u32 width, u32 height);
   void DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top, u32 width, u32 height);
   void DownsampleFramebufferBoxFilter(GPUTexture* source, u32 left, u32 top, u32 width, u32 height);
@@ -243,24 +241,19 @@ private:
   u8 m_resolution_scale = 1;
   u8 m_multisamples = 1;
 
-  bool m_supports_dual_source_blend : 1 = false;
-  bool m_supports_framebuffer_fetch : 1 = false;
-  bool m_per_sample_shading : 1 = false;
-  bool m_scaled_dithering : 1 = false;
-  bool m_disable_color_perspective : 1 = false;
-  bool m_force_round_texcoords = false;
-
   GPUTextureFilter m_texture_filtering = GPUTextureFilter::Nearest;
   GPULineDetectMode m_line_detect_mode = GPULineDetectMode::Disabled;
   GPUDownsampleMode m_downsample_mode = GPUDownsampleMode::Disabled;
   GPUWireframeMode m_wireframe_mode = GPUWireframeMode::Disabled;
+
+  bool m_supports_dual_source_blend : 1 = false;
+  bool m_supports_framebuffer_fetch : 1 = false;
   bool m_true_color : 1 = true;
-  bool m_debanding : 1 = false;
+  bool m_pgxp_depth_buffer : 1 = false;
   bool m_clamp_uvs : 1 = false;
   bool m_compute_uv_range : 1 = false;
-  bool m_pgxp_depth_buffer : 1 = false;
   bool m_allow_shader_blend : 1 = false;
-  bool m_prefer_shader_blend : 1 = false;
+
   u8 m_texpage_dirty = 0;
 
   BatchConfig m_batch;

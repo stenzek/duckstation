@@ -195,19 +195,14 @@ bool GPU_HW::Initialize()
   m_multisamples = Truncate8(std::min<u32>(g_settings.gpu_multisamples, g_gpu_device->GetMaxMultisamples()));
   m_supports_dual_source_blend = features.dual_source_blend;
   m_supports_framebuffer_fetch = features.framebuffer_fetch;
-  m_per_sample_shading = g_settings.gpu_per_sample_shading && features.per_sample_shading;
   m_true_color = g_settings.gpu_true_color;
-  m_debanding = g_settings.gpu_debanding;
-  m_scaled_dithering = (m_resolution_scale > 1 && g_settings.gpu_scaled_dithering);
-  m_force_round_texcoords = (m_resolution_scale > 1 && g_settings.gpu_force_round_texcoords &&
-                             g_settings.gpu_texture_filter == GPUTextureFilter::Nearest);
+
   m_texture_filtering = g_settings.gpu_texture_filter;
   m_line_detect_mode = (m_resolution_scale > 1) ? g_settings.gpu_line_detect_mode : GPULineDetectMode::Disabled;
   m_clamp_uvs = ShouldClampUVs();
   m_compute_uv_range = m_clamp_uvs;
   m_downsample_mode = GetDownsampleMode(m_resolution_scale);
   m_wireframe_mode = g_settings.gpu_wireframe_mode;
-  m_disable_color_perspective = features.noperspective_interpolation && ShouldDisableColorPerspective();
   m_pgxp_depth_buffer = g_settings.UsingPGXPDepthBuffer();
 
   CheckSettings();
@@ -228,6 +223,7 @@ bool GPU_HW::Initialize()
     return false;
   }
 
+  UpdateDownsamplingLevels();
   RestoreDeviceContext();
   return true;
 }
@@ -321,33 +317,25 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
 
   const u8 resolution_scale = Truncate8(CalculateResolutionScale());
   const u8 multisamples = Truncate8(std::min<u32>(g_settings.gpu_multisamples, g_gpu_device->GetMaxMultisamples()));
-  const bool per_sample_shading = g_settings.gpu_per_sample_shading && features.noperspective_interpolation;
-  const GPUDownsampleMode downsample_mode = GetDownsampleMode(resolution_scale);
-  const GPUWireframeMode wireframe_mode =
-    features.geometry_shaders ? g_settings.gpu_wireframe_mode : GPUWireframeMode::Disabled;
   const bool clamp_uvs = ShouldClampUVs();
-  const bool disable_color_perspective = features.noperspective_interpolation && ShouldDisableColorPerspective();
-
-  // TODO: Use old_settings
   const bool framebuffer_changed =
-    (m_resolution_scale != resolution_scale || m_multisamples != multisamples || m_downsample_mode != downsample_mode ||
-     (static_cast<bool>(m_vram_depth_texture) !=
-      (g_settings.UsingPGXPDepthBuffer() || !m_supports_framebuffer_fetch)) ||
-     (m_downsample_mode == GPUDownsampleMode::Box &&
-      g_settings.gpu_downsample_scale != old_settings.gpu_downsample_scale));
+    (m_resolution_scale != resolution_scale || m_multisamples != multisamples ||
+     (static_cast<bool>(m_vram_depth_texture) != (g_settings.UsingPGXPDepthBuffer() || !m_supports_framebuffer_fetch)));
   const bool shaders_changed =
     (m_resolution_scale != resolution_scale || m_multisamples != multisamples ||
-     m_true_color != g_settings.gpu_true_color || m_debanding != g_settings.gpu_debanding ||
-     m_per_sample_shading != per_sample_shading ||
-     m_scaled_dithering != (resolution_scale > 1 && g_settings.gpu_scaled_dithering) ||
-     m_force_round_texcoords != (resolution_scale > 1 && g_settings.gpu_force_round_texcoords &&
-                                 g_settings.gpu_texture_filter == GPUTextureFilter::Nearest) ||
+     m_true_color != g_settings.gpu_true_color || g_settings.gpu_debanding != old_settings.gpu_debanding ||
+     (multisamples > 0 && g_settings.gpu_per_sample_shading != old_settings.gpu_per_sample_shading) ||
+     (resolution_scale > 1 && g_settings.gpu_scaled_dithering != old_settings.gpu_scaled_dithering) ||
+     (resolution_scale > 1 && g_settings.gpu_texture_filter == GPUTextureFilter::Nearest &&
+      g_settings.gpu_force_round_texcoords != old_settings.gpu_force_round_texcoords) ||
      m_texture_filtering != g_settings.gpu_texture_filter || m_clamp_uvs != clamp_uvs ||
-     m_downsample_mode != downsample_mode ||
-     (m_downsample_mode == GPUDownsampleMode::Box &&
-      g_settings.gpu_downsample_scale != old_settings.gpu_downsample_scale) ||
-     m_wireframe_mode != wireframe_mode || m_pgxp_depth_buffer != g_settings.UsingPGXPDepthBuffer() ||
-     m_disable_color_perspective != disable_color_perspective);
+     (resolution_scale > 1 && (g_settings.gpu_downsample_mode != old_settings.gpu_downsample_mode ||
+                               (m_downsample_mode == GPUDownsampleMode::Box &&
+                                g_settings.gpu_downsample_scale != old_settings.gpu_downsample_scale))) ||
+     (features.geometry_shaders && g_settings.gpu_wireframe_mode != old_settings.gpu_wireframe_mode) ||
+     m_pgxp_depth_buffer != g_settings.UsingPGXPDepthBuffer() ||
+     (features.noperspective_interpolation &&
+      ShouldDisableColorPerspective() != old_settings.gpu_pgxp_color_correction));
 
   if (m_resolution_scale != resolution_scale)
   {
@@ -360,9 +348,9 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
       Host::OSD_INFO_DURATION);
   }
 
-  if (m_multisamples != multisamples || m_per_sample_shading != per_sample_shading)
+  if (m_multisamples != multisamples || g_settings.gpu_per_sample_shading != old_settings.gpu_per_sample_shading)
   {
-    if (per_sample_shading)
+    if (g_settings.gpu_per_sample_shading && features.per_sample_shading)
     {
       Host::AddIconOSDMessage(
         "MultisamplingChanged", ICON_FA_PAINT_BRUSH,
@@ -388,19 +376,13 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
 
   m_resolution_scale = resolution_scale;
   m_multisamples = multisamples;
-  m_per_sample_shading = per_sample_shading;
   m_true_color = g_settings.gpu_true_color;
-  m_debanding = g_settings.gpu_debanding;
-  m_scaled_dithering = (m_resolution_scale > 1 && g_settings.gpu_scaled_dithering);
-  m_force_round_texcoords = (m_resolution_scale > 1 && g_settings.gpu_force_round_texcoords &&
-                             g_settings.gpu_texture_filter == GPUTextureFilter::Nearest);
   m_texture_filtering = g_settings.gpu_texture_filter;
   m_line_detect_mode = (m_resolution_scale > 1) ? g_settings.gpu_line_detect_mode : GPULineDetectMode::Disabled;
   m_clamp_uvs = clamp_uvs;
   m_compute_uv_range = m_clamp_uvs;
-  m_downsample_mode = downsample_mode;
-  m_wireframe_mode = wireframe_mode;
-  m_disable_color_perspective = disable_color_perspective;
+  m_downsample_mode = GetDownsampleMode(resolution_scale);
+  m_wireframe_mode = g_settings.gpu_wireframe_mode;
 
   CheckSettings();
 
@@ -435,10 +417,18 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
     if (!CreateBuffers())
       Panic("Failed to recreate buffers.");
 
+    UpdateDownsamplingLevels();
     RestoreDeviceContext();
     UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, g_vram, false, false);
     UpdateDepthBufferFromMaskBit();
     UpdateDisplay();
+  }
+
+  if (g_settings.gpu_downsample_mode != old_settings.gpu_downsample_mode ||
+      (g_settings.gpu_downsample_mode == GPUDownsampleMode::Box &&
+       g_settings.gpu_downsample_scale != old_settings.gpu_downsample_scale))
+  {
+    UpdateDownsamplingLevels();
   }
 }
 
@@ -458,7 +448,7 @@ void GPU_HW::CheckSettings()
     Host::RemoveKeyedOSDMessage("MSAAUnsupported");
   }
 
-  if (!m_per_sample_shading && g_settings.gpu_per_sample_shading)
+  if (g_settings.gpu_per_sample_shading && !features.per_sample_shading)
   {
     Host::AddIconOSDMessage("SSAAUnsupported", ICON_FA_EXCLAMATION_TRIANGLE,
                             TRANSLATE_STR("GPU_HW", "SSAA is not supported, using MSAA instead."),
@@ -650,10 +640,16 @@ void GPU_HW::PrintSettingsToLog()
 {
   INFO_LOG("Resolution Scale: {} ({}x{}), maximum {}", m_resolution_scale, VRAM_WIDTH * m_resolution_scale,
            VRAM_HEIGHT * m_resolution_scale, GetMaxResolutionScale());
-  INFO_LOG("Multisampling: {}x{}", m_multisamples, m_per_sample_shading ? " (per sample shading)" : "");
+  INFO_LOG("Multisampling: {}x{}", m_multisamples,
+           (g_settings.gpu_per_sample_shading && g_gpu_device->GetFeatures().per_sample_shading) ?
+             " (per sample shading)" :
+             "");
   INFO_LOG("Dithering: {}{}", m_true_color ? "Disabled" : "Enabled",
-           (!m_true_color && m_scaled_dithering) ? " (Scaled)" : ((m_true_color && m_debanding) ? " (Debanding)" : ""));
-  INFO_LOG("Force round texture coordinates: {}", m_force_round_texcoords ? "Enabled" : "Disabled");
+           (!m_true_color && g_settings.gpu_scaled_dithering) ?
+             " (Scaled)" :
+             ((m_true_color && g_settings.gpu_debanding) ? " (Debanding)" : ""));
+  INFO_LOG("Force round texture coordinates: {}",
+           (m_resolution_scale > 1 && g_settings.gpu_force_round_texcoords) ? "Enabled" : "Disabled");
   INFO_LOG("Texture Filtering: {}", Settings::GetTextureFilterDisplayName(m_texture_filtering));
   INFO_LOG("Dual-source blending: {}", m_supports_dual_source_blend ? "Supported" : "Not supported");
   INFO_LOG("Clamping UVs: {}", m_clamp_uvs ? "YES" : "NO");
@@ -738,11 +734,6 @@ bool GPU_HW::CreateBuffers()
 
   INFO_LOG("Created HW framebuffer of {}x{}", texture_width, texture_height);
 
-  if (m_downsample_mode == GPUDownsampleMode::Adaptive)
-    m_downsample_scale_or_levels = GetAdaptiveDownsamplingMipLevels();
-  else if (m_downsample_mode == GPUDownsampleMode::Box)
-    m_downsample_scale_or_levels = m_resolution_scale / GetBoxDownsampleScale(m_resolution_scale);
-
   SetVRAMRenderTarget();
   SetFullVRAMDirtyRectangle();
   return true;
@@ -784,14 +775,16 @@ void GPU_HW::DestroyBuffers()
 bool GPU_HW::CompilePipelines()
 {
   const GPUDevice::Features features = g_gpu_device->GetFeatures();
+  const bool per_sample_shading = g_settings.gpu_per_sample_shading && features.per_sample_shading;
+  const bool force_round_texcoords = (m_resolution_scale > 1 && g_settings.gpu_force_round_texcoords);
   const bool needs_depth_buffer = NeedsDepthBuffer();
   const bool write_mask_as_depth = (!m_pgxp_depth_buffer && needs_depth_buffer);
   m_allow_shader_blend = (features.feedback_loops && (m_pgxp_depth_buffer || !needs_depth_buffer));
 
-  GPU_HW_ShaderGen shadergen(g_gpu_device->GetRenderAPI(), m_resolution_scale, m_multisamples, m_per_sample_shading,
-                             m_true_color, m_scaled_dithering, m_clamp_uvs, write_mask_as_depth,
-                             m_disable_color_perspective, m_supports_dual_source_blend, m_supports_framebuffer_fetch,
-                             m_debanding);
+  GPU_HW_ShaderGen shadergen(g_gpu_device->GetRenderAPI(), m_resolution_scale, m_multisamples, per_sample_shading,
+                             m_true_color, (m_resolution_scale > 1 && g_settings.gpu_scaled_dithering), m_clamp_uvs,
+                             write_mask_as_depth, ShouldDisableColorPerspective(), m_supports_dual_source_blend,
+                             m_supports_framebuffer_fetch, g_settings.gpu_true_color && g_settings.gpu_debanding);
 
   constexpr u32 active_texture_modes = 4;
   const u32 total_pipelines =
@@ -867,7 +860,7 @@ bool GPU_HW::CompilePipelines()
             {
               const std::string fs = shadergen.GenerateBatchFragmentShader(
                 static_cast<BatchRenderMode>(render_mode), static_cast<GPUTransparencyMode>(transparency_mode),
-                static_cast<BatchTextureMode>(texture_mode), m_texture_filtering, m_force_round_texcoords,
+                static_cast<BatchTextureMode>(texture_mode), m_texture_filtering, force_round_texcoords,
                 ConvertToBoolUnchecked(dithering), ConvertToBoolUnchecked(interlacing),
                 ConvertToBoolUnchecked(check_mask));
 
@@ -910,7 +903,7 @@ bool GPU_HW::CompilePipelines()
   plconfig.geometry_shader = nullptr;
   plconfig.SetTargetFormats(VRAM_RT_FORMAT, needs_depth_buffer ? VRAM_DS_FORMAT : GPUTexture::Format::Unknown);
   plconfig.samples = m_multisamples;
-  plconfig.per_sample_shading = m_per_sample_shading;
+  plconfig.per_sample_shading = per_sample_shading;
   plconfig.render_pass_flags = m_allow_shader_blend ? GPUPipeline::ColorFeedbackLoop : GPUPipeline::NoRenderPassFlags;
   plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
 
@@ -1842,19 +1835,6 @@ void GPU_HW::CheckForDepthClear(const BatchVertex* vertices, u32 num_vertices)
   }
 
   m_last_depth_z = average_z;
-}
-
-u32 GPU_HW::GetAdaptiveDownsamplingMipLevels() const
-{
-  u32 levels = 0;
-  u32 current_width = VRAM_WIDTH * m_resolution_scale;
-  while (current_width >= VRAM_WIDTH)
-  {
-    levels++;
-    current_width /= 2;
-  }
-
-  return levels;
 }
 
 void GPU_HW::DrawLine(float x0, float y0, u32 col0, float x1, float y1, u32 col1, float depth)
@@ -3318,6 +3298,31 @@ void GPU_HW::UpdateDisplay()
     RestoreDeviceContext();
 }
 
+void GPU_HW::UpdateDownsamplingLevels()
+{
+  if (m_downsample_mode == GPUDownsampleMode::Adaptive)
+  {
+    m_downsample_scale_or_levels = 0;
+    u32 current_width = VRAM_WIDTH * m_resolution_scale;
+    while (current_width >= VRAM_WIDTH)
+    {
+      m_downsample_scale_or_levels++;
+      current_width /= 2;
+    }
+  }
+  else if (m_downsample_mode == GPUDownsampleMode::Box)
+  {
+    m_downsample_scale_or_levels = m_resolution_scale / GetBoxDownsampleScale(m_resolution_scale);
+  }
+  else
+  {
+    m_downsample_scale_or_levels = 0;
+  }
+
+  // Toss downsampling buffer, it's likely going to change resolution.
+  g_gpu_device->RecycleTexture(std::move(m_downsample_texture));
+}
+
 void GPU_HW::DownsampleFramebuffer(GPUTexture* source, u32 left, u32 top, u32 width, u32 height)
 {
   if (m_downsample_mode == GPUDownsampleMode::Adaptive)
@@ -3511,14 +3516,16 @@ void GPU_HW::DrawRendererStats()
     ImGui::TextColored(m_true_color ? active_color : inactive_color, m_true_color ? "Enabled" : "Disabled");
     ImGui::NextColumn();
 
+    const bool debanding = (g_settings.gpu_true_color && g_settings.gpu_debanding);
     ImGui::TextUnformatted("Debanding:");
     ImGui::NextColumn();
-    ImGui::TextColored(m_debanding ? active_color : inactive_color, m_debanding ? "Enabled" : "Disabled");
+    ImGui::TextColored(debanding ? active_color : inactive_color, debanding ? "Enabled" : "Disabled");
     ImGui::NextColumn();
 
+    const bool scaled_dithering = (m_resolution_scale > 1 && g_settings.gpu_scaled_dithering);
     ImGui::TextUnformatted("Scaled Dithering:");
     ImGui::NextColumn();
-    ImGui::TextColored(m_scaled_dithering ? active_color : inactive_color, m_scaled_dithering ? "Enabled" : "Disabled");
+    ImGui::TextColored(scaled_dithering ? active_color : inactive_color, scaled_dithering ? "Enabled" : "Disabled");
     ImGui::NextColumn();
 
     ImGui::TextUnformatted("Texture Filtering:");
