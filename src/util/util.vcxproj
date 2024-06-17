@@ -90,30 +90,14 @@
     <ClInclude Include="sockets.h" />
     <ClInclude Include="state_wrapper.h" />
     <ClInclude Include="cd_xa.h" />
-    <ClInclude Include="vulkan_builders.h">
-      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="vulkan_device.h">
-      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="vulkan_entry_points.h">
-      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="vulkan_loader.h">
-      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="vulkan_pipeline.h">
-      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="vulkan_stream_buffer.h">
-      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="vulkan_swap_chain.h">
-      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="vulkan_texture.h">
-      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
-    </ClInclude>
+    <ClInclude Include="vulkan_builders.h" />
+    <ClInclude Include="vulkan_device.h" />
+    <ClInclude Include="vulkan_entry_points.h" />
+    <ClInclude Include="vulkan_loader.h" />
+    <ClInclude Include="vulkan_pipeline.h" />
+    <ClInclude Include="vulkan_stream_buffer.h" />
+    <ClInclude Include="vulkan_swap_chain.h" />
+    <ClInclude Include="vulkan_texture.h" />
     <ClInclude Include="wav_writer.h" />
     <ClInclude Include="win32_raw_input_source.h" />
     <ClInclude Include="window_info.h" />
@@ -208,27 +192,13 @@
     <ClCompile Include="sockets.cpp" />
     <ClCompile Include="state_wrapper.cpp" />
     <ClCompile Include="cd_xa.cpp" />
-    <ClCompile Include="vulkan_builders.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="vulkan_device.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="vulkan_loader.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="vulkan_pipeline.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="vulkan_stream_buffer.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="vulkan_swap_chain.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="vulkan_texture.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="vulkan_builders.cpp" />
+    <ClCompile Include="vulkan_device.cpp" />
+    <ClCompile Include="vulkan_loader.cpp" />
+    <ClCompile Include="vulkan_pipeline.cpp" />
+    <ClCompile Include="vulkan_stream_buffer.cpp" />
+    <ClCompile Include="vulkan_swap_chain.cpp" />
+    <ClCompile Include="vulkan_texture.cpp" />
     <ClCompile Include="wav_writer.cpp" />
     <ClCompile Include="win32_raw_input_source.cpp" />
     <ClCompile Include="window_info.cpp" />
