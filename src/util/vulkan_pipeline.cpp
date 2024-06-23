@@ -58,7 +58,7 @@ std::unique_ptr<GPUShader> VulkanDevice::CreateShaderFromSource(GPUShaderStage s
 
   DynamicHeapArray<u8> local_binary;
   DynamicHeapArray<u8>* dest_binary = out_binary ? out_binary : &local_binary;
-  if (!CompileGLSLShaderToVulkanSpv(stage, language, source, entry_point,
+  if (!CompileGLSLShaderToVulkanSpv(stage, language, source, entry_point, !m_debug_device,
                                     m_optional_extensions.vk_khr_shader_non_semantic_info, dest_binary, error))
   {
     return {};

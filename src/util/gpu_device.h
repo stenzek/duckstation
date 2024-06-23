@@ -742,7 +742,7 @@ protected:
   void TrimTexturePool();
 
   bool CompileGLSLShaderToVulkanSpv(GPUShaderStage stage, GPUShaderLanguage source_language, std::string_view source,
-                                    const char* entry_point, bool nonsemantic_debug_info,
+                                    const char* entry_point, bool optimization, bool nonsemantic_debug_info,
                                     DynamicHeapArray<u8>* out_binary, Error* error);
   bool TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GPUShaderStage stage,
                                     GPUShaderLanguage target_language, u32 target_version, std::string* output,

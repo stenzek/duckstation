@@ -1147,6 +1147,7 @@ std::unique_ptr<GPUDevice> GPUDevice::CreateDeviceForAPI(RenderAPI api)
   X(spvc_compiler_options_set_bool)                                                                                    \
   X(spvc_compiler_options_set_uint)                                                                                    \
   X(spvc_compiler_install_compiler_options)                                                                            \
+  X(spvc_compiler_require_extension)                                                                                   \
   X(spvc_compiler_compile)                                                                                             \
   X(spvc_resources_get_resource_list_for_type)
 
@@ -1297,7 +1298,7 @@ void dyn_libs::CloseAll()
 #undef SHADERC_FUNCTIONS
 
 bool GPUDevice::CompileGLSLShaderToVulkanSpv(GPUShaderStage stage, GPUShaderLanguage source_language,
-                                             std::string_view source, const char* entry_point,
+                                             std::string_view source, const char* entry_point, bool optimization,
                                              bool nonsemantic_debug_info, DynamicHeapArray<u8>* out_binary,
                                              Error* error)
 {
@@ -1326,7 +1327,7 @@ bool GPUDevice::CompileGLSLShaderToVulkanSpv(GPUShaderStage stage, GPUShaderLang
   dyn_libs::shaderc_compile_options_set_generate_debug_info(options, m_debug_device,
                                                             m_debug_device && nonsemantic_debug_info);
   dyn_libs::shaderc_compile_options_set_optimization_level(
-    options, m_debug_device ? shaderc_optimization_level_zero : shaderc_optimization_level_performance);
+    options, optimization ? shaderc_optimization_level_performance : shaderc_optimization_level_zero);
 
   shaderc_compilation_result_t result;
   const shaderc_compilation_status status = dyn_libs::shaderc_compile_into_spv(
@@ -1508,6 +1509,33 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
                             static_cast<int>(sres));
         return {};
       }
+
+      const bool enable_420pack = (is_gles ? (target_version >= 310) : (target_version >= 420));
+      if ((sres = dyn_libs::spvc_compiler_options_set_bool(soptions, SPVC_COMPILER_OPTION_GLSL_ENABLE_420PACK_EXTENSION,
+                                                           enable_420pack)) != SPVC_SUCCESS)
+      {
+        Error::SetStringFmt(
+          error, "spvc_compiler_options_set_bool(SPVC_COMPILER_OPTION_GLSL_ENABLE_420PACK_EXTENSION) failed: {}",
+          static_cast<int>(sres));
+        return {};
+      }
+
+      const bool enable_sso = (is_gles ? (target_version >= 310) : (target_version >= 410));
+      if ((sres = dyn_libs::spvc_compiler_options_set_bool(soptions, SPVC_COMPILER_OPTION_GLSL_SEPARATE_SHADER_OBJECTS,
+                                                           enable_sso)) != SPVC_SUCCESS)
+      {
+        Error::SetStringFmt(
+          error, "spvc_compiler_options_set_bool(SPVC_COMPILER_OPTION_GLSL_SEPARATE_SHADER_OBJECTS) failed: {}",
+          static_cast<int>(sres));
+        return {};
+      }
+      if (enable_sso && ((sres = dyn_libs::spvc_compiler_require_extension(
+                            scompiler, "GL_ARB_separate_shader_objects")) != SPVC_SUCCESS))
+      {
+        Error::SetStringFmt(error, "spvc_compiler_require_extension(GL_ARB_separate_shader_objects) failed: {}",
+                            static_cast<int>(sres));
+        return {};
+      }
     }
     break;
 #endif
@@ -1610,8 +1638,14 @@ std::unique_ptr<GPUShader> GPUDevice::TranspileAndCreateShaderFromSource(
   GPUShaderStage stage, GPUShaderLanguage source_language, std::string_view source, const char* entry_point,
   GPUShaderLanguage target_language, u32 target_version, DynamicHeapArray<u8>* out_binary, Error* error)
 {
+  // Disable optimization when targeting OpenGL GLSL, and separate shader objects are missing.
+  // Otherwise, the name-based linking will fail.
+  const bool optimization =
+    (target_language != GPUShaderLanguage::GLSL && target_language != GPUShaderLanguage::GLSLES) ||
+    (target_language == GPUShaderLanguage::GLSL && target_version >= 410) ||
+    (target_language == GPUShaderLanguage::GLSLES && target_version >= 310);
   DynamicHeapArray<u8> spv;
-  if (!CompileGLSLShaderToVulkanSpv(stage, source_language, source, entry_point, false, &spv, error))
+  if (!CompileGLSLShaderToVulkanSpv(stage, source_language, source, entry_point, optimization, false, &spv, error))
     return {};
 
   std::string dest_source;

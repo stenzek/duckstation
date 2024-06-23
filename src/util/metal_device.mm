@@ -654,7 +654,7 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromSource(GPUShaderStage st
   static constexpr bool dump_shaders = false;
 
   DynamicHeapArray<u8> spv;
-  if (!CompileGLSLShaderToVulkanSpv(stage, language, source, entry_point, false, &spv, error))
+  if (!CompileGLSLShaderToVulkanSpv(stage, language, source, entry_point, !m_debug_device, false, &spv, error))
     return {};
 
   std::string msl;
