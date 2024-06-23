@@ -205,6 +205,11 @@ std::vector<std::pair<std::string, std::string>> PostProcessing::GetAvailableSha
     }
   }
 
+  std::sort(names.begin(), names.end(),
+            [](const std::pair<std::string, std::string>& lhs, const std::pair<std::string, std::string>& rhs) {
+              return (lhs.first < lhs.second);
+            });
+
   return names;
 }
 
