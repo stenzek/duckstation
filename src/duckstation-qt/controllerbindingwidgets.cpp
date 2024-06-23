@@ -269,11 +269,13 @@ void ControllerBindingWidget::onAutomaticBindingClicked()
   QMenu menu(this);
   bool added = false;
 
-  for (const QPair<QString, QString>& dev : m_dialog->getDeviceList())
+  for (const auto& [identifier, device_name] : m_dialog->getDeviceList())
   {
     // we set it as data, because the device list could get invalidated while the menu is up
-    QAction* action = menu.addAction(QStringLiteral("%1 (%2)").arg(dev.first).arg(dev.second));
-    action->setData(dev.first);
+    const QString qidentifier = QString::fromStdString(identifier);
+    QAction* action =
+      menu.addAction(QStringLiteral("%1 (%2)").arg(qidentifier).arg(QString::fromStdString(device_name)));
+    action->setData(qidentifier);
     connect(action, &QAction::triggered, this,
             [this, action]() { doDeviceAutomaticBinding(action->data().toString()); });
     added = true;

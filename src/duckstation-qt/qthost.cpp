@@ -159,6 +159,9 @@ void QtHost::RegisterTypes()
   qRegisterMetaType<const GameList::Entry*>();
   qRegisterMetaType<GPURenderer>("GPURenderer");
   qRegisterMetaType<InputBindingKey>("InputBindingKey");
+  qRegisterMetaType<std::string>("std::string");
+  qRegisterMetaType<std::vector<std::pair<std::string, std::string>>>(
+    "std::vector<std::pair<std::string, std::string>>");
 }
 
 bool QtHost::InBatchMode()
@@ -1099,13 +1102,7 @@ void EmuThread::enumerateInputDevices()
     return;
   }
 
-  const std::vector<std::pair<std::string, std::string>> devs(InputManager::EnumerateDevices());
-  QList<QPair<QString, QString>> qdevs;
-  qdevs.reserve(devs.size());
-  for (const std::pair<std::string, std::string>& dev : devs)
-    qdevs.emplace_back(QString::fromStdString(dev.first), QString::fromStdString(dev.second));
-
-  onInputDevicesEnumerated(qdevs);
+  onInputDevicesEnumerated(InputManager::EnumerateDevices());
 }
 
 void EmuThread::enumerateVibrationMotors()
@@ -1863,9 +1860,7 @@ void Host::AddFixedInputBindings(SettingsInterface& si)
 
 void Host::OnInputDeviceConnected(std::string_view identifier, std::string_view device_name)
 {
-  emit g_emu_thread->onInputDeviceConnected(
-    identifier.empty() ? QString() : QString::fromUtf8(identifier.data(), identifier.size()),
-    device_name.empty() ? QString() : QString::fromUtf8(device_name.data(), device_name.size()));
+  emit g_emu_thread->onInputDeviceConnected(std::string(identifier), std::string(device_name));
 
   if (System::IsValid() || g_emu_thread->isRunningFullscreenUI())
   {
@@ -1877,8 +1872,7 @@ void Host::OnInputDeviceConnected(std::string_view identifier, std::string_view 
 
 void Host::OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier)
 {
-  emit g_emu_thread->onInputDeviceDisconnected(
-    identifier.empty() ? QString() : QString::fromUtf8(identifier.data(), identifier.size()));
+  emit g_emu_thread->onInputDeviceDisconnected(std::string(identifier));
 
   if (g_settings.pause_on_controller_disconnection && System::GetState() == System::State::Running &&
       InputManager::HasAnyBindingsForSource(key))

@@ -27,6 +27,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -124,9 +125,9 @@ Q_SIGNALS:
   void statusMessage(const QString& message);
   void debuggerMessageReported(const QString& message);
   void settingsResetToDefault(bool system, bool controller);
-  void onInputDevicesEnumerated(const QList<QPair<QString, QString>>& devices);
-  void onInputDeviceConnected(const QString& identifier, const QString& device_name);
-  void onInputDeviceDisconnected(const QString& identifier);
+  void onInputDevicesEnumerated(const std::vector<std::pair<std::string, std::string>>& devices);
+  void onInputDeviceConnected(const std::string& identifier, const std::string& device_name);
+  void onInputDeviceDisconnected(const std::string& identifier);
   void onVibrationMotorsEnumerated(const QList<InputBindingKey>& motors);
   void systemStarting();
   void systemStarted();

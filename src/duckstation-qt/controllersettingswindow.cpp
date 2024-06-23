@@ -220,21 +220,21 @@ void ControllerSettingsWindow::onRestoreDefaultsClicked()
   switchProfile({});
 }
 
-void ControllerSettingsWindow::onInputDevicesEnumerated(const QList<QPair<QString, QString>>& devices)
+void ControllerSettingsWindow::onInputDevicesEnumerated(const std::vector<std::pair<std::string, std::string>>& devices)
 {
   m_device_list = devices;
-  for (const QPair<QString, QString>& device : devices)
-    m_global_settings->addDeviceToList(device.first, device.second);
+  for (const auto& [device_name, display_name] : m_device_list)
+    m_global_settings->addDeviceToList(QString::fromStdString(device_name), QString::fromStdString(display_name));
 }
 
-void ControllerSettingsWindow::onInputDeviceConnected(const QString& identifier, const QString& device_name)
+void ControllerSettingsWindow::onInputDeviceConnected(const std::string& identifier, const std::string& device_name)
 {
   m_device_list.emplace_back(identifier, device_name);
-  m_global_settings->addDeviceToList(identifier, device_name);
+  m_global_settings->addDeviceToList(QString::fromStdString(identifier), QString::fromStdString(device_name));
   g_emu_thread->enumerateVibrationMotors();
 }
 
-void ControllerSettingsWindow::onInputDeviceDisconnected(const QString& identifier)
+void ControllerSettingsWindow::onInputDeviceDisconnected(const std::string& identifier)
 {
   for (auto iter = m_device_list.begin(); iter != m_device_list.end(); ++iter)
   {
@@ -245,7 +245,7 @@ void ControllerSettingsWindow::onInputDeviceDisconnected(const QString& identifi
     }
   }
 
-  m_global_settings->removeDeviceFromList(identifier);
+  m_global_settings->removeDeviceFromList(QString::fromStdString(identifier));
   g_emu_thread->enumerateVibrationMotors();
 }
 
@@ -385,8 +385,8 @@ void ControllerSettingsWindow::createWidgets()
     m_ui.settingsContainer->addWidget(m_global_settings);
     connect(m_global_settings, &ControllerGlobalSettingsWidget::bindingSetupChanged, this,
             &ControllerSettingsWindow::createWidgets);
-    for (const QPair<QString, QString>& dev : m_device_list)
-      m_global_settings->addDeviceToList(dev.first, dev.second);
+    for (const auto& [identifier, device_name] : m_device_list)
+      m_global_settings->addDeviceToList(QString::fromStdString(identifier), QString::fromStdString(device_name));
   }
 
   // load mtap settings

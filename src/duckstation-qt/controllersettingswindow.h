@@ -17,6 +17,8 @@
 
 #include <array>
 #include <string>
+#include <utility>
+#include <vector>
 
 class ControllerGlobalSettingsWidget;
 class ControllerBindingWidget;
@@ -47,7 +49,7 @@ public:
 
   ALWAYS_INLINE HotkeySettingsWidget* getHotkeySettingsWidget() const { return m_hotkey_settings; }
 
-  ALWAYS_INLINE const QList<QPair<QString, QString>>& getDeviceList() const { return m_device_list; }
+  ALWAYS_INLINE const std::vector<std::pair<std::string, std::string>>& getDeviceList() const { return m_device_list; }
   ALWAYS_INLINE const QStringList& getVibrationMotors() const { return m_vibration_motors; }
 
   ALWAYS_INLINE bool isEditingGlobalSettings() const { return m_profile_name.isEmpty(); }
@@ -80,9 +82,9 @@ private Q_SLOTS:
   void onDeleteProfileClicked();
   void onRestoreDefaultsClicked();
 
-  void onInputDevicesEnumerated(const QList<QPair<QString, QString>>& devices);
-  void onInputDeviceConnected(const QString& identifier, const QString& device_name);
-  void onInputDeviceDisconnected(const QString& identifier);
+  void onInputDevicesEnumerated(const std::vector<std::pair<std::string, std::string>>& devices);
+  void onInputDeviceConnected(const std::string& identifier, const std::string& device_name);
+  void onInputDeviceDisconnected(const std::string& identifier);
   void onVibrationMotorsEnumerated(const QList<InputBindingKey>& motors);
 
   void createWidgets();
@@ -99,7 +101,7 @@ private:
   std::array<ControllerBindingWidget*, MAX_PORTS> m_port_bindings{};
   HotkeySettingsWidget* m_hotkey_settings = nullptr;
 
-  QList<QPair<QString, QString>> m_device_list;
+  std::vector<std::pair<std::string, std::string>> m_device_list;
   QStringList m_vibration_motors;
 
   QString m_profile_name;

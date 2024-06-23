@@ -445,11 +445,13 @@ void SetupWizardDialog::openAutomaticMappingMenu(u32 port, QLabel* update_label)
   QMenu menu(this);
   bool added = false;
 
-  for (const QPair<QString, QString>& dev : m_device_list)
+  for (const auto& [identifier, device_name] : m_device_list)
   {
     // we set it as data, because the device list could get invalidated while the menu is up
-    QAction* action = menu.addAction(QStringLiteral("%1 (%2)").arg(dev.first).arg(dev.second));
-    action->setData(dev.first);
+    const QString qidentifier = QString::fromStdString(identifier);
+    QAction* action =
+      menu.addAction(QStringLiteral("%1 (%2)").arg(qidentifier).arg(QString::fromStdString(device_name)));
+    action->setData(qidentifier);
     connect(action, &QAction::triggered, this, [this, port, update_label, action]() {
       doDeviceAutomaticBinding(port, update_label, action->data().toString());
     });
@@ -492,17 +494,17 @@ void SetupWizardDialog::doDeviceAutomaticBinding(u32 port, QLabel* update_label,
   update_label->setText(device);
 }
 
-void SetupWizardDialog::onInputDevicesEnumerated(const QList<QPair<QString, QString>>& devices)
+void SetupWizardDialog::onInputDevicesEnumerated(const std::vector<std::pair<std::string, std::string>>& devices)
 {
   m_device_list = devices;
 }
 
-void SetupWizardDialog::onInputDeviceConnected(const QString& identifier, const QString& device_name)
+void SetupWizardDialog::onInputDeviceConnected(const std::string& identifier, const std::string& device_name)
 {
   m_device_list.emplace_back(identifier, device_name);
 }
 
-void SetupWizardDialog::onInputDeviceDisconnected(const QString& identifier)
+void SetupWizardDialog::onInputDeviceDisconnected(const std::string& identifier)
 {
   for (auto iter = m_device_list.begin(); iter != m_device_list.end(); ++iter)
   {
