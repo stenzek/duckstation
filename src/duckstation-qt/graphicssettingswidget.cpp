@@ -269,9 +269,14 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   dialog->registerWidgetHelp(
     m_ui.textureFiltering, tr("Texture Filtering"),
     QString::fromUtf8(Settings::GetTextureFilterDisplayName(Settings::DEFAULT_GPU_TEXTURE_FILTER)),
-    tr("Smooths out the blockiness of magnified textures on 3D object by using filtering. <br>Will have a "
+    tr("Smooths out the blockiness of magnified textures on 3D objects by using filtering. <br>Will have a "
        "greater effect on higher resolution scales. <br>The JINC2 and especially xBR filtering modes are very "
        "demanding, and may not be worth the speed penalty."));
+  dialog->registerWidgetHelp(
+    m_ui.spriteTextureFiltering, tr("Sprite Texture Filtering"),
+    QString::fromUtf8(Settings::GetTextureFilterDisplayName(Settings::DEFAULT_GPU_TEXTURE_FILTER)),
+    tr("Smooths out the blockiness of magnified textures on 2D objects by using filtering. This filter only applies to "
+       "sprites and other 2D elements, such as the HUD."));
   dialog->registerWidgetHelp(
     m_ui.displayAspectRatio, tr("Aspect Ratio"),
     QString::fromUtf8(Settings::GetDisplayAspectRatioDisplayName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO)),
