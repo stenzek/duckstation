@@ -62,7 +62,7 @@ public:
 private:
   ALWAYS_INLINE bool Read(void* buf, size_t size)
   {
-    if ((m_pos + size) < m_buf.size()) [[likely]]
+    if ((m_pos + size) <= m_buf.size()) [[likely]]
     {
       std::memcpy(buf, &m_buf[m_pos], size);
       m_pos += size;
@@ -74,7 +74,7 @@ private:
 
   ALWAYS_INLINE bool Peek(void* buf, size_t size)
   {
-    if ((m_pos + size) < m_buf.size()) [[likely]]
+    if ((m_pos + size) <= m_buf.size()) [[likely]]
     {
       std::memcpy(buf, &m_buf[m_pos], size);
       return true;
@@ -119,7 +119,7 @@ public:
 private:
   ALWAYS_INLINE bool Write(void* buf, size_t size)
   {
-    if ((m_pos + size) < m_buf.size()) [[likely]]
+    if ((m_pos + size) <= m_buf.size()) [[likely]]
     {
       std::memcpy(&m_buf[m_pos], buf, size);
       m_pos += size;
