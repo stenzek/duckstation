@@ -39,6 +39,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 #include <QtCore/QMimeData>
+#include <QtCore/QOperatingSystemVersion>
 #include <QtCore/QUrl>
 #include <QtGui/QActionGroup>
 #include <QtGui/QCursor>
@@ -53,6 +54,7 @@
 #ifdef _WIN32
 #include "common/windows_headers.h"
 #include <Dbt.h>
+#include <VersionHelpers.h>
 #endif
 
 #ifdef __APPLE__
@@ -718,6 +720,9 @@ void MainWindow::quit()
 
 void MainWindow::recreate()
 {
+  // Remove subwindows before switching to surfaceless, because otherwise e.g. the debugger can cause funkyness.
+  destroySubWindows();
+
   const bool was_display_created = m_display_created;
   if (was_display_created)
   {
@@ -2199,9 +2204,22 @@ void MainWindow::connectSignals()
 
 void MainWindow::setTheme(const QString& theme)
 {
+  [[maybe_unused]] const QString old_theme =
+    QString::fromStdString(Host::GetStringSettingValue("UI", "Theme", InterfaceSettingsWidget::DEFAULT_THEME_NAME));
+
   Host::SetBaseStringSettingValue("UI", "Theme", theme.toUtf8().constData());
   Host::CommitBaseSettingChanges();
   updateTheme();
+
+#ifdef _WIN32
+  if (((old_theme.isEmpty() && QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows11) ||
+       old_theme == QStringLiteral("windowsvista")) !=
+      ((old_theme.isEmpty() && QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows11) ||
+       theme == QStringLiteral("windowsvista")))
+  {
+    recreate();
+  }
+#endif
 }
 
 void MainWindow::updateTheme()

@@ -411,9 +411,7 @@ void DebuggerWindow::onMemorySearchStringChanged(const QString&)
 void DebuggerWindow::closeEvent(QCloseEvent* event)
 {
   g_emu_thread->disconnect(this);
-  g_emu_thread->setSystemPaused(true, true);
   Host::RunOnCPUThread(&CPU::ClearBreakpoints);
-  g_emu_thread->setSystemPaused(false);
   QMainWindow::closeEvent(event);
   emit closed();
 }
