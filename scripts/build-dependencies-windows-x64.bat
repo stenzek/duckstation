@@ -46,7 +46,7 @@ set LIBJPEG=9f
 set LIBPNG=1643
 set QT=6.7.0
 set QTMINOR=6.7
-set SDL=SDL2-2.30.3
+set SDL=SDL2-2.30.4
 set WEBP=1.3.2
 set ZLIB=1.3.1
 set ZLIBSHORT=131
@@ -62,7 +62,7 @@ call :downloadfile "freetype-%FREETYPE%.tar.gz" https://download.savannah.gnu.or
 call :downloadfile "harfbuzz-%HARFBUZZ%.zip" https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip b2bc56184ae37324bc4829fde7d3f9e6916866ad711ee85792e457547c9fd127 || goto error
 call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lpng1643.zip fc466a1e638e635d6c66363bdf3f38555b81b0141d0b06ba45b49ccca327436d || goto error
 call :downloadfile "jpegsr%LIBJPEG%.zip" https://ijg.org/files/jpegsr%LIBJPEG%.zip 6255da8c89e09d694e6800688c76145eb6870a76ac0d36c74fccd61b3940aafa || goto error
-call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" c5d78a9e0346c6695f03df8ba25e5e111a1e23c8aefa8372a1c5a0dd79acaf10 || goto error
+call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" 292d5e2f897aa3acb6b365b605c3249c92916fbe7eba4a2e57573ada3855d7cb || goto error
 call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" 31a1e0c69bb37e6631de02f8cf0b75afdc2ce44890c32dac38d362c251c12483 || goto error
 call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" 450c0b1c3cd51e2e110fceaf60e157641c2698d18b12a3552d43fa1539bfdbbc || goto error
 call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtsvg-everywhere-src-%QT%.zip" b869be09ccb72949a3311dc87ac702b6e854edfd5bff2bc2cc4d7fd549b1869a || goto error
