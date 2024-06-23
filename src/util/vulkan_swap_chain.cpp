@@ -624,11 +624,34 @@ VkResult VulkanSwapChain::AcquireNextImage()
 
 void VulkanSwapChain::ReleaseCurrentImage()
 {
+  if (!m_image_acquire_result.has_value())
+    return;
+
+  if ((m_image_acquire_result.value() == VK_SUCCESS || m_image_acquire_result.value() == VK_SUBOPTIMAL_KHR) &&
+      VulkanDevice::GetInstance().GetOptionalExtensions().vk_ext_swapchain_maintenance1)
+  {
+    VulkanDevice::GetInstance().WaitForGPUIdle();
+
+    const VkReleaseSwapchainImagesInfoEXT info = {.sType = VK_STRUCTURE_TYPE_RELEASE_SWAPCHAIN_IMAGES_INFO_EXT,
+                                                  .swapchain = m_swap_chain,
+                                                  .imageIndexCount = 1,
+                                                  .pImageIndices = &m_current_image};
+    VkResult res = vkReleaseSwapchainImagesEXT(VulkanDevice::GetInstance().GetVulkanDevice(), &info);
+    if (res != VK_SUCCESS)
+      LOG_VULKAN_ERROR(res, "vkReleaseSwapchainImagesEXT() failed: ");
+  }
+
+  m_image_acquire_result.reset();
+}
+
+void VulkanSwapChain::ResetImageAcquireResult()
+{
   m_image_acquire_result.reset();
 }
 
 bool VulkanSwapChain::ResizeSwapChain(u32 new_width, u32 new_height, float new_scale)
 {
+  ReleaseCurrentImage();
   DestroySwapChainImages();
 
   if (new_width != 0 && new_height != 0)
@@ -657,6 +680,7 @@ bool VulkanSwapChain::SetPresentMode(VkPresentModeKHR present_mode)
 
   // Recreate the swap chain with the new present mode.
   VERBOSE_LOG("Recreating swap chain to change present mode.");
+  ReleaseCurrentImage();
   DestroySwapChainImages();
   if (!CreateSwapChain())
   {

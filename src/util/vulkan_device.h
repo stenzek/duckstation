@@ -42,9 +42,11 @@ public:
 
   struct OptionalExtensions
   {
+    bool vk_ext_external_memory_host : 1;
+    bool vk_ext_full_screen_exclusive : 1;
     bool vk_ext_memory_budget : 1;
     bool vk_ext_rasterization_order_attachment_access : 1;
-    bool vk_ext_full_screen_exclusive : 1;
+    bool vk_ext_swapchain_maintenance1 : 1;
     bool vk_khr_get_memory_requirements2 : 1;
     bool vk_khr_bind_memory2 : 1;
     bool vk_khr_get_physical_device_properties2 : 1;
@@ -54,7 +56,6 @@ public:
     bool vk_khr_dynamic_rendering_local_read : 1;
     bool vk_khr_push_descriptor : 1;
     bool vk_khr_shader_non_semantic_info : 1;
-    bool vk_ext_external_memory_host : 1;
   };
 
   static GPUTexture::Format GetFormatForVkFormat(VkFormat format);
@@ -318,9 +319,6 @@ private:
   void EndAndSubmitCommandBuffer(VulkanSwapChain* present_swap_chain, bool explicit_present, bool submit_on_thread);
   void MoveToNextCommandBuffer();
   void WaitForPresentComplete();
-
-  // Was the last present submitted to the queue a failure? If so, we must recreate our swapchain.
-  bool CheckLastPresentFail();
   bool CheckLastSubmitFail();
 
   using ExtensionList = std::vector<const char*>;
@@ -415,7 +413,6 @@ private:
   u32 m_current_frame = 0;
 
   std::atomic_bool m_last_submit_failed{false};
-  std::atomic_bool m_last_present_failed{false};
   std::atomic_bool m_present_done{true};
   std::mutex m_present_mutex;
   std::condition_variable m_present_queued_cv;

@@ -269,6 +269,8 @@ bool VulkanDevice::SelectInstanceExtensions(ExtensionList* extension_list, const
   // Needed for exclusive fullscreen control.
   SupportsExtension(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME, false);
 
+  oe->vk_ext_swapchain_maintenance1 =
+    (wi.type != WindowInfo::Type::Surfaceless && SupportsExtension(VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME, false));
   oe->vk_khr_get_physical_device_properties2 =
     SupportsExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, false);
 
@@ -409,6 +411,9 @@ bool VulkanDevice::SelectDeviceExtensions(ExtensionList* extension_list, bool en
 
   m_optional_extensions.vk_ext_external_memory_host =
     SupportsExtension(VK_EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME, false);
+  m_optional_extensions.vk_ext_swapchain_maintenance1 =
+    m_optional_extensions.vk_ext_swapchain_maintenance1 &&
+    SupportsExtension(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME, false);
 
 #ifdef _WIN32
   m_optional_extensions.vk_ext_full_screen_exclusive =
@@ -581,9 +586,13 @@ bool VulkanDevice::CreateDevice(VkSurfaceKHR surface, bool enable_validation_lay
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES, nullptr, VK_TRUE};
   VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR dynamic_rendering_local_read_feature = {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES_KHR, nullptr, VK_TRUE};
+  VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT swapchain_maintenance1_feature = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_EXT, nullptr, VK_TRUE};
 
   if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
     Vulkan::AddPointerToChain(&device_info, &rasterization_order_access_feature);
+  if (m_optional_extensions.vk_ext_swapchain_maintenance1)
+    Vulkan::AddPointerToChain(&device_info, &swapchain_maintenance1_feature);
   if (m_optional_extensions.vk_khr_dynamic_rendering)
   {
     Vulkan::AddPointerToChain(&device_info, &dynamic_rendering_feature);
@@ -631,10 +640,14 @@ void VulkanDevice::ProcessDeviceExtensions()
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES, nullptr, VK_FALSE};
   VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR dynamic_rendering_local_read_feature = {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES_KHR, nullptr, VK_FALSE};
+  VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT swapchain_maintenance1_feature = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_EXT, nullptr, VK_FALSE};
 
   // add in optional feature structs
   if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
     Vulkan::AddPointerToChain(&features2, &rasterization_order_access_feature);
+  if (m_optional_extensions.vk_ext_swapchain_maintenance1)
+    Vulkan::AddPointerToChain(&features2, &swapchain_maintenance1_feature);
   if (m_optional_extensions.vk_khr_dynamic_rendering)
   {
     Vulkan::AddPointerToChain(&features2, &dynamic_rendering_feature);
@@ -669,6 +682,8 @@ void VulkanDevice::ProcessDeviceExtensions()
   // confirm we actually support it
   m_optional_extensions.vk_ext_rasterization_order_attachment_access &=
     (rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess == VK_TRUE);
+  m_optional_extensions.vk_ext_swapchain_maintenance1 &=
+    (swapchain_maintenance1_feature.swapchainMaintenance1 == VK_TRUE);
   m_optional_extensions.vk_khr_dynamic_rendering &= (dynamic_rendering_feature.dynamicRendering == VK_TRUE);
   m_optional_extensions.vk_khr_dynamic_rendering_local_read &=
     (dynamic_rendering_local_read_feature.dynamicRenderingLocalRead == VK_TRUE);
@@ -700,9 +715,13 @@ void VulkanDevice::ProcessDeviceExtensions()
   m_optional_extensions.vk_ext_external_memory_host &=
     (external_memory_host_properties.minImportedHostPointerAlignment == HOST_PAGE_SIZE);
 
+  INFO_LOG("VK_EXT_external_memory_host is {}",
+           m_optional_extensions.vk_ext_external_memory_host ? "supported" : "NOT supported");
   INFO_LOG("VK_EXT_memory_budget is {}", m_optional_extensions.vk_ext_memory_budget ? "supported" : "NOT supported");
   INFO_LOG("VK_EXT_rasterization_order_attachment_access is {}",
            m_optional_extensions.vk_ext_rasterization_order_attachment_access ? "supported" : "NOT supported");
+  INFO_LOG("VK_EXT_swapchain_maintenance1 is {}",
+           m_optional_extensions.vk_ext_swapchain_maintenance1 ? "supported" : "NOT supported");
   INFO_LOG("VK_KHR_get_memory_requirements2 is {}",
            m_optional_extensions.vk_khr_get_memory_requirements2 ? "supported" : "NOT supported");
   INFO_LOG("VK_KHR_bind_memory2 is {}", m_optional_extensions.vk_khr_bind_memory2 ? "supported" : "NOT supported");
@@ -716,8 +735,6 @@ void VulkanDevice::ProcessDeviceExtensions()
            m_optional_extensions.vk_khr_dynamic_rendering_local_read ? "supported" : "NOT supported");
   INFO_LOG("VK_KHR_push_descriptor is {}",
            m_optional_extensions.vk_khr_push_descriptor ? "supported" : "NOT supported");
-  INFO_LOG("VK_EXT_external_memory_host is {}",
-           m_optional_extensions.vk_ext_external_memory_host ? "supported" : "NOT supported");
 }
 
 bool VulkanDevice::CreateAllocator()
@@ -1350,16 +1367,17 @@ void VulkanDevice::DoPresent(VulkanSwapChain* present_swap_chain)
                                          present_swap_chain->GetCurrentImageIndexPtr(),
                                          nullptr};
 
-  present_swap_chain->ReleaseCurrentImage();
+  present_swap_chain->ResetImageAcquireResult();
 
   const VkResult res = vkQueuePresentKHR(m_present_queue, &present_info);
-  if (res != VK_SUCCESS)
+  if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR)
   {
     // VK_ERROR_OUT_OF_DATE_KHR is not fatal, just means we need to recreate our swap chain.
-    if (res != VK_ERROR_OUT_OF_DATE_KHR && res != VK_SUBOPTIMAL_KHR)
+    if (res == VK_ERROR_OUT_OF_DATE_KHR)
+      ResizeWindow(0, 0, m_window_info.surface_scale);
+    else
       LOG_VULKAN_ERROR(res, "vkQueuePresentKHR failed: ");
 
-    m_last_present_failed.store(true, std::memory_order_release);
     return;
   }
 
@@ -1519,11 +1537,6 @@ void VulkanDevice::SubmitCommandBufferAndRestartRenderPass(const char* reason)
 
   SetPipeline(pl);
   BeginRenderPass();
-}
-
-bool VulkanDevice::CheckLastPresentFail()
-{
-  return m_last_present_failed.exchange(false, std::memory_order_acq_rel);
 }
 
 bool VulkanDevice::CheckLastSubmitFail()
