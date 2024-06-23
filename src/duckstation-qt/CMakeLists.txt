@@ -1,4 +1,4 @@
-find_package(Qt6 6.7.0 COMPONENTS Core Gui Widgets LinguistTools REQUIRED)
+find_package(Qt6 6.7.2 COMPONENTS Core Gui Widgets LinguistTools REQUIRED)
 
 include(CopyBaseTranslations)
 

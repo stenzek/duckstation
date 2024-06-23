@@ -10,8 +10,8 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 find_package(SDL2 2.30.4 REQUIRED)
-find_package(Zstd 1.5.5 REQUIRED)
-find_package(WebP REQUIRED) # v1.3.2, spews an error on Linux because no pkg-config.
+find_package(Zstd 1.5.6 REQUIRED)
+find_package(WebP REQUIRED) # v1.4.0, spews an error on Linux because no pkg-config.
 find_package(ZLIB REQUIRED) # 1.3, but Mac currently doesn't use it.
 find_package(PNG 1.6.40 REQUIRED)
 find_package(JPEG REQUIRED) # No version because flatpak uses libjpeg-turbo.
