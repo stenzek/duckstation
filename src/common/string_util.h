@@ -223,8 +223,10 @@ std::string_view StripWhitespace(const std::string_view str);
 void StripWhitespace(std::string* str);
 
 /// Splits a string based on a single character delimiter.
-std::vector<std::string_view> SplitString(const std::string_view str, char delimiter, bool skip_empty = true);
-std::vector<std::string> SplitNewString(const std::string_view str, char delimiter, bool skip_empty = true);
+[[nodiscard]] std::vector<std::string_view> SplitString(const std::string_view str, char delimiter,
+                                                        bool skip_empty = true);
+[[nodiscard]] std::vector<std::string> SplitNewString(const std::string_view str, char delimiter,
+                                                      bool skip_empty = true);
 
 /// Joins a string together using the specified delimiter.
 template<typename T>
@@ -253,9 +255,11 @@ static inline std::string JoinString(const T& start, const T& end, const std::st
 }
 
 /// Replaces all instances of search in subject with replacement.
-std::string ReplaceAll(const std::string_view subject, const std::string_view search,
-                       const std::string_view replacement);
+[[nodiscard]] std::string ReplaceAll(const std::string_view subject, const std::string_view search,
+                                     const std::string_view replacement);
 void ReplaceAll(std::string* subject, const std::string_view search, const std::string_view replacement);
+[[nodiscard]] std::string ReplaceAll(const std::string_view subject, const char search, const char replacement);
+void ReplaceAll(std::string* subject, const char search, const char replacement);
 
 /// Parses an assignment string (Key = Value) into its two components.
 bool ParseAssignmentString(const std::string_view str, std::string_view* key, std::string_view* value);

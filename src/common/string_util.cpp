@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
-#include "assert.h"
 #include "string_util.h"
+#include "assert.h"
 
 #include <cctype>
 #include <codecvt>
@@ -303,6 +303,22 @@ void StringUtil::ReplaceAll(std::string* subject, const std::string_view search,
       subject->replace(start_pos, search.length(), replacement);
       start_pos += replacement.length();
     }
+  }
+}
+
+std::string StringUtil::ReplaceAll(const std::string_view subject, const char search, const char replacement)
+{
+  std::string ret(subject);
+  ReplaceAll(&ret, search, replacement);
+  return ret;
+}
+
+void StringUtil::ReplaceAll(std::string* subject, const char search, const char replacement)
+{
+  for (size_t i = 0; i < subject->length(); i++)
+  {
+    const char ch = (*subject)[i];
+    (*subject)[i] = (ch == search) ? replacement : ch;
   }
 }
 

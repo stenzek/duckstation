@@ -164,12 +164,10 @@ std::vector<std::pair<std::string, std::string>> PostProcessing::GetAvailableSha
     if (pos != std::string::npos && pos > 0)
       fd.FileName.erase(pos);
 
+#ifdef _WIN32
     // swap any backslashes for forward slashes so the config is cross-platform
-    for (size_t i = 0; i < fd.FileName.size(); i++)
-    {
-      if (fd.FileName[i] == '\\')
-        fd.FileName[i] = '/';
-    }
+    StringUtil::ReplaceAll(&fd.FileName, '\\', '/');
+#endif
 
     if (std::none_of(names.begin(), names.end(), [&fd](const auto& other) { return fd.FileName == other.second; }))
     {
@@ -179,11 +177,13 @@ std::vector<std::pair<std::string, std::string>> PostProcessing::GetAvailableSha
   }
 
   FileSystem::FindFiles(Path::Combine(EmuFolders::Shaders, "reshade" FS_OSPATH_SEPARATOR_STR "Shaders").c_str(), "*.fx",
-                        FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RELATIVE_PATHS, &results);
+                        FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RECURSIVE | FILESYSTEM_FIND_RELATIVE_PATHS, &results);
   FileSystem::FindFiles(
     Path::Combine(EmuFolders::Resources, "shaders" FS_OSPATH_SEPARATOR_STR "reshade" FS_OSPATH_SEPARATOR_STR "Shaders")
       .c_str(),
-    "*.fx", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_KEEP_ARRAY, &results);
+    "*.fx",
+    FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RECURSIVE | FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_KEEP_ARRAY,
+    &results);
   std::sort(results.begin(), results.end(),
             [](const auto& lhs, const auto& rhs) { return lhs.FileName < rhs.FileName; });
 
@@ -193,12 +193,10 @@ std::vector<std::pair<std::string, std::string>> PostProcessing::GetAvailableSha
     if (pos != std::string::npos && pos > 0)
       fd.FileName.erase(pos);
 
+#ifdef _WIN32
     // swap any backslashes for forward slashes so the config is cross-platform
-    for (size_t i = 0; i < fd.FileName.size(); i++)
-    {
-      if (fd.FileName[i] == '\\')
-        fd.FileName[i] = '/';
-    }
+    StringUtil::ReplaceAll(&fd.FileName, '\\', '/');
+#endif
 
     if (std::none_of(names.begin(), names.end(), [&fd](const auto& other) { return fd.FileName == other.second; }))
     {
