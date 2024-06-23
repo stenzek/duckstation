@@ -108,7 +108,7 @@ private:
 			}
 			else
 			{
-				preamble += "layout(std140, binding = 1) uniform _Globals {\n" + _ubo_block + "};\n";
+				preamble += "layout(std140, binding = 0) uniform _Globals {\n" + _ubo_block + "};\n";
 			}
 		}
 
