@@ -595,26 +595,29 @@ void Achievements::ClientMessageCallback(const char* message, const rc_client_t*
 
 uint32_t Achievements::ClientReadMemory(uint32_t address, uint8_t* buffer, uint32_t num_bytes, rc_client_t* client)
 {
+  if ((address + num_bytes) > 0x200400U) [[unlikely]]
+    return 0;
+
+  const u8* src = (address >= 0x200000U) ? CPU::g_state.scratchpad.data() : Bus::g_ram;
+  const u32 offset = (address & Bus::RAM_2MB_MASK); // size guarded by check above
+
   switch (num_bytes)
   {
     case 1:
-    {
-      return CPU::SafeReadMemoryByte(address, buffer) ? 1 : 0;
-    }
-
+      std::memcpy(buffer, &src[offset], 1);
+      break;
     case 2:
-    {
-      return CPU::SafeReadMemoryHalfWord(address, reinterpret_cast<u16*>(buffer)) ? 2 : 0;
-    }
-
+      std::memcpy(buffer, &src[offset], 2);
+      break;
     case 4:
-    {
-      return CPU::SafeReadMemoryWord(address, reinterpret_cast<u32*>(buffer)) ? 4 : 0;
-    }
-
+      std::memcpy(buffer, &src[offset], 4);
+      break;
     default:
-      return 0;
+      [[unlikely]] std::memcpy(buffer, &src[offset], num_bytes);
+      break;
   }
+
+  return num_bytes;
 }
 
 void Achievements::ClientServerCall(const rc_api_request_t* request, rc_client_server_callback_t callback,
@@ -3119,9 +3122,12 @@ static void RACallbackRebuildMenu();
 static void RACallbackEstimateTitle(char* buf);
 static void RACallbackResetEmulator();
 static void RACallbackLoadROM(const char* unused);
-static unsigned char RACallbackReadMemory(unsigned int address);
-static unsigned int RACallbackReadMemoryBlock(unsigned int nAddress, unsigned char* pBuffer, unsigned int nBytes);
-static void RACallbackWriteMemory(unsigned int address, unsigned char value);
+static unsigned char RACallbackReadRAM(unsigned int address);
+static unsigned int RACallbackReadRAMBlock(unsigned int nAddress, unsigned char* pBuffer, unsigned int nBytes);
+static void RACallbackWriteRAM(unsigned int address, unsigned char value);
+static unsigned char RACallbackReadScratchpad(unsigned int address);
+static unsigned int RACallbackReadScratchpadBlock(unsigned int nAddress, unsigned char* pBuffer, unsigned int nBytes);
+static void RACallbackWriteScratchpad(unsigned int address, unsigned char value);
 
 static bool s_raintegration_initialized = false;
 } // namespace Achievements::RAIntegration
@@ -3142,8 +3148,10 @@ void Achievements::RAIntegration::InitializeRAIntegration(void* main_window_hand
 
   // Apparently this has to be done early, or the memory inspector doesn't work.
   // That's a bit unfortunate, because the RAM size can vary between games, and depending on the option.
-  RA_InstallMemoryBank(0, RACallbackReadMemory, RACallbackWriteMemory, Bus::RAM_2MB_SIZE);
-  RA_InstallMemoryBankBlockReader(0, RACallbackReadMemoryBlock);
+  RA_InstallMemoryBank(0, RACallbackReadRAM, RACallbackWriteRAM, Bus::RAM_2MB_SIZE);
+  RA_InstallMemoryBankBlockReader(0, RACallbackReadRAMBlock);
+  RA_InstallMemoryBank(1, RACallbackReadScratchpad, RACallbackWriteScratchpad, CPU::SCRATCHPAD_SIZE);
+  RA_InstallMemoryBankBlockReader(1, RACallbackReadScratchpadBlock);
 
   // Fire off a login anyway. Saves going into the menu and doing it.
   RA_AttemptLogin(0);
@@ -3233,7 +3241,7 @@ void Achievements::RAIntegration::RACallbackLoadROM(const char* unused)
   UNREFERENCED_PARAMETER(unused);
 }
 
-unsigned char Achievements::RAIntegration::RACallbackReadMemory(unsigned int address)
+unsigned char Achievements::RAIntegration::RACallbackReadRAM(unsigned int address)
 {
   if (!System::IsValid())
     return 0;
@@ -3243,19 +3251,46 @@ unsigned char Achievements::RAIntegration::RACallbackReadMemory(unsigned int add
   return value;
 }
 
-void Achievements::RAIntegration::RACallbackWriteMemory(unsigned int address, unsigned char value)
+void Achievements::RAIntegration::RACallbackWriteRAM(unsigned int address, unsigned char value)
 {
   CPU::SafeWriteMemoryByte(address, value);
 }
 
-unsigned int Achievements::RAIntegration::RACallbackReadMemoryBlock(unsigned int nAddress, unsigned char* pBuffer,
-                                                                    unsigned int nBytes)
+unsigned int Achievements::RAIntegration::RACallbackReadRAMBlock(unsigned int nAddress, unsigned char* pBuffer,
+                                                                 unsigned int nBytes)
 {
   if (nAddress >= Bus::g_ram_size)
     return 0;
 
   const u32 copy_size = std::min<u32>(Bus::g_ram_size - nAddress, nBytes);
   std::memcpy(pBuffer, Bus::g_unprotected_ram + nAddress, copy_size);
+  return copy_size;
+}
+
+unsigned char Achievements::RAIntegration::RACallbackReadScratchpad(unsigned int address)
+{
+  if (!System::IsValid() || address >= CPU::SCRATCHPAD_SIZE)
+    return 0;
+
+  return CPU::g_state.scratchpad[address];
+}
+
+void Achievements::RAIntegration::RACallbackWriteScratchpad(unsigned int address, unsigned char value)
+{
+  if (address >= CPU::SCRATCHPAD_SIZE)
+    return;
+
+  CPU::g_state.scratchpad[address] = value;
+}
+
+unsigned int Achievements::RAIntegration::RACallbackReadScratchpadBlock(unsigned int nAddress, unsigned char* pBuffer,
+                                                                        unsigned int nBytes)
+{
+  if (nAddress >= CPU::SCRATCHPAD_SIZE)
+    return 0;
+
+  const u32 copy_size = std::min<u32>(CPU::SCRATCHPAD_SIZE - nAddress, nBytes);
+  std::memcpy(pBuffer, &CPU::g_state.scratchpad[nAddress], copy_size);
   return copy_size;
 }
 
