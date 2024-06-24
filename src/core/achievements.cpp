@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 // TODO: Don't poll when booting the game, e.g. Crash Warped freaks out.
-// TODO: rc_client_begin_change_media
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 
@@ -135,6 +134,7 @@ static void ShowLoginSuccess(const rc_client_t* client);
 static void ShowLoginNotification();
 static void IdentifyGame(const std::string& path, CDImage* image);
 static void BeginLoadGame();
+static void BeginChangeDisc();
 static void UpdateGameSummary();
 static void DownloadImage(std::string url, std::string cache_filename);
 
@@ -872,18 +872,14 @@ void Achievements::IdentifyGame(const std::string& path, CDImage* image)
     return;
   }
 
-  BeginLoadGame();
+  if (!rc_client_is_game_loaded(s_client))
+    BeginLoadGame();
+  else
+    BeginChangeDisc();
 }
 
 void Achievements::BeginLoadGame()
 {
-  // cancel previous requests
-  if (s_load_game_request)
-  {
-    rc_client_abort_async(s_client, s_load_game_request);
-    s_load_game_request = nullptr;
-  }
-
   ClearGameInfo();
 
   if (s_game_hash.empty())
@@ -891,8 +887,10 @@ void Achievements::BeginLoadGame()
     // when we're booting the bios, this will fail
     if (!s_game_path.empty())
     {
-      Host::AddKeyedOSDMessage("retroachievements_disc_read_failed",
-                               "Failed to read executable from disc. Achievements disabled.", Host::OSD_ERROR_DURATION);
+      Host::AddKeyedOSDMessage(
+        "retroachievements_disc_read_failed",
+        TRANSLATE_STR("Achievements", "Failed to read executable from disc. Achievements disabled."),
+        Host::OSD_ERROR_DURATION);
     }
 
     DisableHardcoreMode();
@@ -902,8 +900,39 @@ void Achievements::BeginLoadGame()
   s_load_game_request = rc_client_begin_load_game(s_client, s_game_hash.c_str(), ClientLoadGameCallback, nullptr);
 }
 
+void Achievements::BeginChangeDisc()
+{
+  // cancel previous requests
+  if (s_load_game_request)
+  {
+    rc_client_abort_async(s_client, s_load_game_request);
+    s_load_game_request = nullptr;
+  }
+
+  if (s_game_hash.empty())
+  {
+    // when we're booting the bios, this will fail
+    if (!s_game_path.empty())
+    {
+      Host::AddKeyedOSDMessage(
+        "retroachievements_disc_read_failed",
+        TRANSLATE_STR("Achievements", "Failed to read executable from disc. Achievements disabled."),
+        Host::OSD_ERROR_DURATION);
+    }
+
+    ClearGameInfo();
+    DisableHardcoreMode();
+    return;
+  }
+
+  s_load_game_request = rc_client_begin_change_media_from_hash(s_client, s_game_hash.c_str(), ClientLoadGameCallback,
+                                                               reinterpret_cast<void*>(static_cast<uintptr_t>(1)));
+}
+
 void Achievements::ClientLoadGameCallback(int result, const char* error_message, rc_client_t* client, void* userdata)
 {
+  const bool was_disc_change = (userdata != nullptr);
+
   s_load_game_request = nullptr;
   s_state_buffer.deallocate();
 
@@ -911,6 +940,9 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   {
     // Unknown game.
     INFO_LOG("Unknown game '{}', disabling achievements.", s_game_hash);
+    if (was_disc_change)
+      ClearGameInfo();
+
     DisableHardcoreMode();
     return;
   }
@@ -923,20 +955,36 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   else if (result != RC_OK)
   {
     ReportFmtError("Loading game failed: {}", error_message);
+    if (was_disc_change)
+      ClearGameInfo();
+
     DisableHardcoreMode();
     return;
+  }
+  else if (result == RC_HARDCORE_DISABLED)
+  {
+    if (error_message)
+      ReportError(error_message);
+
+    DisableHardcoreMode();
   }
 
   const rc_client_game_t* info = rc_client_get_game_info(s_client);
   if (!info)
   {
     ReportError("rc_client_get_game_info() returned NULL");
+    if (was_disc_change)
+      ClearGameInfo();
+
     DisableHardcoreMode();
     return;
   }
 
   const bool has_achievements = rc_client_has_achievements(client);
   const bool has_leaderboards = rc_client_has_leaderboards(client);
+
+  // Only display summary if the game title has changed across discs.
+  const bool display_summary = (s_game_id != info->id || s_game_title != info->title);
 
   // If the game has a RetroAchievements entry but no achievements or leaderboards,
   // enforcing hardcore mode is pointless.
@@ -954,7 +1002,8 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   s_game_icon = {};
 
   // ensure fullscreen UI is ready for notifications
-  FullscreenUI::Initialize();
+  if (display_summary)
+    FullscreenUI::Initialize();
 
   if (const std::string_view badge_name = info->badge_name; !badge_name.empty())
   {
@@ -974,7 +1023,8 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   }
 
   UpdateGameSummary();
-  DisplayAchievementSummary();
+  if (display_summary)
+    DisplayAchievementSummary();
 
   Host::OnAchievementsRefreshed();
 }
