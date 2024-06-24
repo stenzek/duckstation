@@ -27,10 +27,7 @@ LogWindow::LogWindow(bool attach_to_main)
   Log::RegisterCallback(&LogWindow::logCallback, this);
 }
 
-LogWindow::~LogWindow()
-{
-  Log::UnregisterCallback(&LogWindow::logCallback, this);
-}
+LogWindow::~LogWindow() = default;
 
 void LogWindow::updateSettings()
 {

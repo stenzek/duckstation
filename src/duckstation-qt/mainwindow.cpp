@@ -39,7 +39,6 @@
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 #include <QtCore/QMimeData>
-#include <QtCore/QOperatingSystemVersion>
 #include <QtCore/QUrl>
 #include <QtGui/QActionGroup>
 #include <QtGui/QCursor>
@@ -134,7 +133,6 @@ MainWindow::~MainWindow()
   Assert(!m_display_widget);
   Assert(!m_debugger_window);
   cancelGameListRefresh();
-  destroySubWindows();
 
   // we compare here, since recreate destroys the window later
   if (g_main_window == this)
@@ -596,6 +594,7 @@ void MainWindow::onSystemDestroyed()
   // If we're closing or in batch mode, quit the whole application now.
   if (m_is_closing || QtHost::InBatchMode())
   {
+    destroySubWindows();
     quit();
     return;
   }
@@ -743,6 +742,11 @@ void MainWindow::recreate()
   DebugAssert(g_main_window == new_main_window);
   new_main_window->show();
   deleteLater();
+
+  // Recreate log window as well. Then make sure we're still on top.
+  LogWindow::updateSettings();
+  new_main_window->raise();
+  new_main_window->activateWindow();
 
   // Reload the sources we just closed.
   g_emu_thread->reloadInputSources();
@@ -2204,21 +2208,17 @@ void MainWindow::connectSignals()
 
 void MainWindow::setTheme(const QString& theme)
 {
-  [[maybe_unused]] const QString old_theme =
-    QString::fromStdString(Host::GetStringSettingValue("UI", "Theme", InterfaceSettingsWidget::DEFAULT_THEME_NAME));
+  [[maybe_unused]] const QString old_style_name = qApp->style()->name();
 
   Host::SetBaseStringSettingValue("UI", "Theme", theme.toUtf8().constData());
   Host::CommitBaseSettingChanges();
   updateTheme();
 
 #ifdef _WIN32
-  if (((old_theme.isEmpty() && QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows11) ||
-       old_theme == QStringLiteral("windowsvista")) !=
-      ((old_theme.isEmpty() && QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows11) ||
-       theme == QStringLiteral("windowsvista")))
-  {
+  // Work around a bug where the background colour of menus is broken when changing to/from the windowsvista theme.
+  const QString new_style_name = qApp->style()->name();
+  if ((old_style_name == QStringLiteral("windowsvista")) != (new_style_name == QStringLiteral("windowsvista")))
     recreate();
-  }
 #endif
 }
 
