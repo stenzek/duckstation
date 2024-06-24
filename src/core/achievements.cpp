@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 // TODO: Don't poll when booting the game, e.g. Crash Warped freaks out.
@@ -20,6 +20,7 @@
 #include "common/assert.h"
 #include "common/error.h"
 #include "common/file_system.h"
+#include "common/heap_array.h"
 #include "common/log.h"
 #include "common/md5_digest.h"
 #include "common/path.h"
@@ -202,6 +203,7 @@ static std::string s_game_title;
 static std::string s_game_icon;
 static rc_client_user_game_summary_t s_game_summary;
 static u32 s_game_id = 0;
+static DynamicHeapArray<u8> s_state_buffer;
 
 static bool s_has_achievements = false;
 static bool s_has_leaderboards = false;
@@ -846,6 +848,7 @@ void Achievements::IdentifyGame(const std::string& path, CDImage* image)
   ClearGameHash();
   s_game_path = path;
   s_game_hash = std::move(game_hash);
+  s_state_buffer.deallocate();
 
 #ifdef ENABLE_RAINTEGRATION
   if (IsUsingRAIntegration())
@@ -899,6 +902,7 @@ void Achievements::BeginLoadGame()
 void Achievements::ClientLoadGameCallback(int result, const char* error_message, rc_client_t* client, void* userdata)
 {
   s_load_game_request = nullptr;
+  s_state_buffer.deallocate();
 
   if (result == RC_NO_GAME_LOADED)
   {
@@ -989,6 +993,7 @@ void Achievements::ClearGameInfo()
   s_game_id = 0;
   s_game_title = {};
   s_game_icon = {};
+  s_state_buffer.deallocate();
   s_has_achievements = false;
   s_has_leaderboards = false;
   s_has_rich_presence = false;
@@ -1485,19 +1490,20 @@ bool Achievements::DoState(StateWrapper& sw)
       return !sw.HasError();
     }
 
-    const std::unique_ptr<u8[]> data(new u8[data_size]);
-    sw.DoBytes(data.get(), data_size);
+    s_state_buffer.resize(data_size);
+    if (data_size > 0)
+      sw.DoBytes(s_state_buffer.data(), data_size);
     if (sw.HasError())
       return false;
 
 #ifdef ENABLE_RAINTEGRATION
     if (IsUsingRAIntegration())
     {
-      RA_RestoreState(reinterpret_cast<const char*>(data.get()));
+      RA_RestoreState(reinterpret_cast<const char*>(s_state_buffer.data()));
     }
     else
     {
-      const int result = rc_client_deserialize_progress(s_client, data.get());
+      const int result = rc_client_deserialize_progress_sized(s_client, s_state_buffer.data(), data_size);
       if (result != RC_OK)
       {
         WARNING_LOG("Failed to deserialize cheevos state ({}), resetting", result);
@@ -1511,7 +1517,6 @@ bool Achievements::DoState(StateWrapper& sw)
   else
   {
     u32 data_size;
-    std::unique_ptr<u8[]> data;
 
 #ifdef ENABLE_RAINTEGRATION
     if (IsUsingRAIntegration())
@@ -1519,25 +1524,33 @@ bool Achievements::DoState(StateWrapper& sw)
       const int size = RA_CaptureState(nullptr, 0);
 
       data_size = (size >= 0) ? static_cast<u32>(size) : 0;
-      data = std::unique_ptr<u8[]>(new u8[data_size]);
+      s_state_buffer.resize(data_size);
 
-      const int result = RA_CaptureState(reinterpret_cast<char*>(data.get()), static_cast<int>(data_size));
-      if (result != static_cast<int>(data_size))
+      if (data_size > 0)
       {
-        WARNING_LOG("Failed to serialize cheevos state from RAIntegration.");
-        data_size = 0;
+        const int result = RA_CaptureState(reinterpret_cast<char*>(s_state_buffer.data()), static_cast<int>(data_size));
+        if (result != static_cast<int>(data_size))
+        {
+          WARNING_LOG("Failed to serialize cheevos state from RAIntegration.");
+          data_size = 0;
+        }
       }
     }
     else
 #endif
     {
-      // internally this happens twice.. not great.
-      const u32 size = static_cast<u32>(rc_client_progress_size(s_client));
+      int result = RC_INSUFFICIENT_BUFFER;
+      if (!s_state_buffer.empty())
+        result = rc_client_serialize_progress_sized(s_client, s_state_buffer.data(), s_state_buffer.size());
 
-      data_size = (size >= 0) ? static_cast<u32>(size) : 0;
-      data = std::unique_ptr<u8[]>(new u8[data_size]);
+      if (result == RC_INSUFFICIENT_BUFFER)
+      {
+        const size_t size = rc_client_progress_size(s_client);
+        s_state_buffer.resize(size);
+        result = rc_client_serialize_progress_sized(s_client, s_state_buffer.data(), s_state_buffer.size());
+      }
 
-      const int result = rc_client_serialize_progress(s_client, data.get());
+      data_size = static_cast<u32>(s_state_buffer.size());
       if (result != RC_OK)
       {
         // set data to zero, effectively serializing nothing
@@ -1548,7 +1561,7 @@ bool Achievements::DoState(StateWrapper& sw)
 
     sw.Do(&data_size);
     if (data_size > 0)
-      sw.DoBytes(data.get(), data_size);
+      sw.DoBytes(s_state_buffer.data(), data_size);
 
     return !sw.HasError();
   }
