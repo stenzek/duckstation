@@ -368,8 +368,10 @@ int rc_value_contains_memref(const rc_value_t* value, const rc_memref_t* memref)
 /* end runtime.c internals */
 
 /* helper functions for unit tests */
+#ifdef RC_CLIENT_SUPPORTS_HASH
 struct rc_hash_iterator;
 struct rc_hash_iterator* rc_client_get_load_state_hash_iterator(rc_client_t* client);
+#endif
 /* end helper functions for unit tests */
 
 enum {

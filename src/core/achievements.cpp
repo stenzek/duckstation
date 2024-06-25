@@ -1,8 +1,7 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 // TODO: Don't poll when booting the game, e.g. Crash Warped freaks out.
-// TODO: rc_client_begin_change_media
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 
@@ -20,6 +19,7 @@
 #include "common/assert.h"
 #include "common/error.h"
 #include "common/file_system.h"
+#include "common/heap_array.h"
 #include "common/log.h"
 #include "common/md5_digest.h"
 #include "common/path.h"
@@ -134,6 +134,7 @@ static void ShowLoginSuccess(const rc_client_t* client);
 static void ShowLoginNotification();
 static void IdentifyGame(const std::string& path, CDImage* image);
 static void BeginLoadGame();
+static void BeginChangeDisc();
 static void UpdateGameSummary();
 static void DownloadImage(std::string url, std::string cache_filename);
 
@@ -202,6 +203,7 @@ static std::string s_game_title;
 static std::string s_game_icon;
 static rc_client_user_game_summary_t s_game_summary;
 static u32 s_game_id = 0;
+static DynamicHeapArray<u8> s_state_buffer;
 
 static bool s_has_achievements = false;
 static bool s_has_leaderboards = false;
@@ -593,26 +595,29 @@ void Achievements::ClientMessageCallback(const char* message, const rc_client_t*
 
 uint32_t Achievements::ClientReadMemory(uint32_t address, uint8_t* buffer, uint32_t num_bytes, rc_client_t* client)
 {
+  if ((address + num_bytes) > 0x200400U) [[unlikely]]
+    return 0;
+
+  const u8* src = (address >= 0x200000U) ? CPU::g_state.scratchpad.data() : Bus::g_ram;
+  const u32 offset = (address & Bus::RAM_2MB_MASK); // size guarded by check above
+
   switch (num_bytes)
   {
     case 1:
-    {
-      return CPU::SafeReadMemoryByte(address, buffer) ? 1 : 0;
-    }
-
+      std::memcpy(buffer, &src[offset], 1);
+      break;
     case 2:
-    {
-      return CPU::SafeReadMemoryHalfWord(address, reinterpret_cast<u16*>(buffer)) ? 2 : 0;
-    }
-
+      std::memcpy(buffer, &src[offset], 2);
+      break;
     case 4:
-    {
-      return CPU::SafeReadMemoryWord(address, reinterpret_cast<u32*>(buffer)) ? 4 : 0;
-    }
-
+      std::memcpy(buffer, &src[offset], 4);
+      break;
     default:
-      return 0;
+      [[unlikely]] std::memcpy(buffer, &src[offset], num_bytes);
+      break;
   }
+
+  return num_bytes;
 }
 
 void Achievements::ClientServerCall(const rc_api_request_t* request, rc_client_server_callback_t callback,
@@ -846,6 +851,7 @@ void Achievements::IdentifyGame(const std::string& path, CDImage* image)
   ClearGameHash();
   s_game_path = path;
   s_game_hash = std::move(game_hash);
+  s_state_buffer.deallocate();
 
 #ifdef ENABLE_RAINTEGRATION
   if (IsUsingRAIntegration())
@@ -866,18 +872,14 @@ void Achievements::IdentifyGame(const std::string& path, CDImage* image)
     return;
   }
 
-  BeginLoadGame();
+  if (!rc_client_is_game_loaded(s_client))
+    BeginLoadGame();
+  else
+    BeginChangeDisc();
 }
 
 void Achievements::BeginLoadGame()
 {
-  // cancel previous requests
-  if (s_load_game_request)
-  {
-    rc_client_abort_async(s_client, s_load_game_request);
-    s_load_game_request = nullptr;
-  }
-
   ClearGameInfo();
 
   if (s_game_hash.empty())
@@ -885,8 +887,10 @@ void Achievements::BeginLoadGame()
     // when we're booting the bios, this will fail
     if (!s_game_path.empty())
     {
-      Host::AddKeyedOSDMessage("retroachievements_disc_read_failed",
-                               "Failed to read executable from disc. Achievements disabled.", Host::OSD_ERROR_DURATION);
+      Host::AddKeyedOSDMessage(
+        "retroachievements_disc_read_failed",
+        TRANSLATE_STR("Achievements", "Failed to read executable from disc. Achievements disabled."),
+        Host::OSD_ERROR_DURATION);
     }
 
     DisableHardcoreMode();
@@ -896,14 +900,49 @@ void Achievements::BeginLoadGame()
   s_load_game_request = rc_client_begin_load_game(s_client, s_game_hash.c_str(), ClientLoadGameCallback, nullptr);
 }
 
+void Achievements::BeginChangeDisc()
+{
+  // cancel previous requests
+  if (s_load_game_request)
+  {
+    rc_client_abort_async(s_client, s_load_game_request);
+    s_load_game_request = nullptr;
+  }
+
+  if (s_game_hash.empty())
+  {
+    // when we're booting the bios, this will fail
+    if (!s_game_path.empty())
+    {
+      Host::AddKeyedOSDMessage(
+        "retroachievements_disc_read_failed",
+        TRANSLATE_STR("Achievements", "Failed to read executable from disc. Achievements disabled."),
+        Host::OSD_ERROR_DURATION);
+    }
+
+    ClearGameInfo();
+    DisableHardcoreMode();
+    return;
+  }
+
+  s_load_game_request = rc_client_begin_change_media_from_hash(s_client, s_game_hash.c_str(), ClientLoadGameCallback,
+                                                               reinterpret_cast<void*>(static_cast<uintptr_t>(1)));
+}
+
 void Achievements::ClientLoadGameCallback(int result, const char* error_message, rc_client_t* client, void* userdata)
 {
+  const bool was_disc_change = (userdata != nullptr);
+
   s_load_game_request = nullptr;
+  s_state_buffer.deallocate();
 
   if (result == RC_NO_GAME_LOADED)
   {
     // Unknown game.
     INFO_LOG("Unknown game '{}', disabling achievements.", s_game_hash);
+    if (was_disc_change)
+      ClearGameInfo();
+
     DisableHardcoreMode();
     return;
   }
@@ -916,20 +955,36 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   else if (result != RC_OK)
   {
     ReportFmtError("Loading game failed: {}", error_message);
+    if (was_disc_change)
+      ClearGameInfo();
+
     DisableHardcoreMode();
     return;
+  }
+  else if (result == RC_HARDCORE_DISABLED)
+  {
+    if (error_message)
+      ReportError(error_message);
+
+    DisableHardcoreMode();
   }
 
   const rc_client_game_t* info = rc_client_get_game_info(s_client);
   if (!info)
   {
     ReportError("rc_client_get_game_info() returned NULL");
+    if (was_disc_change)
+      ClearGameInfo();
+
     DisableHardcoreMode();
     return;
   }
 
   const bool has_achievements = rc_client_has_achievements(client);
   const bool has_leaderboards = rc_client_has_leaderboards(client);
+
+  // Only display summary if the game title has changed across discs.
+  const bool display_summary = (s_game_id != info->id || s_game_title != info->title);
 
   // If the game has a RetroAchievements entry but no achievements or leaderboards,
   // enforcing hardcore mode is pointless.
@@ -947,7 +1002,8 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   s_game_icon = {};
 
   // ensure fullscreen UI is ready for notifications
-  FullscreenUI::Initialize();
+  if (display_summary)
+    FullscreenUI::Initialize();
 
   if (const std::string_view badge_name = info->badge_name; !badge_name.empty())
   {
@@ -967,7 +1023,8 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   }
 
   UpdateGameSummary();
-  DisplayAchievementSummary();
+  if (display_summary)
+    DisplayAchievementSummary();
 
   Host::OnAchievementsRefreshed();
 }
@@ -989,6 +1046,7 @@ void Achievements::ClearGameInfo()
   s_game_id = 0;
   s_game_title = {};
   s_game_icon = {};
+  s_state_buffer.deallocate();
   s_has_achievements = false;
   s_has_leaderboards = false;
   s_has_rich_presence = false;
@@ -1485,19 +1543,20 @@ bool Achievements::DoState(StateWrapper& sw)
       return !sw.HasError();
     }
 
-    const std::unique_ptr<u8[]> data(new u8[data_size]);
-    sw.DoBytes(data.get(), data_size);
+    s_state_buffer.resize(data_size);
+    if (data_size > 0)
+      sw.DoBytes(s_state_buffer.data(), data_size);
     if (sw.HasError())
       return false;
 
 #ifdef ENABLE_RAINTEGRATION
     if (IsUsingRAIntegration())
     {
-      RA_RestoreState(reinterpret_cast<const char*>(data.get()));
+      RA_RestoreState(reinterpret_cast<const char*>(s_state_buffer.data()));
     }
     else
     {
-      const int result = rc_client_deserialize_progress(s_client, data.get());
+      const int result = rc_client_deserialize_progress_sized(s_client, s_state_buffer.data(), data_size);
       if (result != RC_OK)
       {
         WARNING_LOG("Failed to deserialize cheevos state ({}), resetting", result);
@@ -1511,7 +1570,6 @@ bool Achievements::DoState(StateWrapper& sw)
   else
   {
     u32 data_size;
-    std::unique_ptr<u8[]> data;
 
 #ifdef ENABLE_RAINTEGRATION
     if (IsUsingRAIntegration())
@@ -1519,25 +1577,33 @@ bool Achievements::DoState(StateWrapper& sw)
       const int size = RA_CaptureState(nullptr, 0);
 
       data_size = (size >= 0) ? static_cast<u32>(size) : 0;
-      data = std::unique_ptr<u8[]>(new u8[data_size]);
+      s_state_buffer.resize(data_size);
 
-      const int result = RA_CaptureState(reinterpret_cast<char*>(data.get()), static_cast<int>(data_size));
-      if (result != static_cast<int>(data_size))
+      if (data_size > 0)
       {
-        WARNING_LOG("Failed to serialize cheevos state from RAIntegration.");
-        data_size = 0;
+        const int result = RA_CaptureState(reinterpret_cast<char*>(s_state_buffer.data()), static_cast<int>(data_size));
+        if (result != static_cast<int>(data_size))
+        {
+          WARNING_LOG("Failed to serialize cheevos state from RAIntegration.");
+          data_size = 0;
+        }
       }
     }
     else
 #endif
     {
-      // internally this happens twice.. not great.
-      const u32 size = static_cast<u32>(rc_client_progress_size(s_client));
+      int result = RC_INSUFFICIENT_BUFFER;
+      if (!s_state_buffer.empty())
+        result = rc_client_serialize_progress_sized(s_client, s_state_buffer.data(), s_state_buffer.size());
 
-      data_size = (size >= 0) ? static_cast<u32>(size) : 0;
-      data = std::unique_ptr<u8[]>(new u8[data_size]);
+      if (result == RC_INSUFFICIENT_BUFFER)
+      {
+        const size_t size = rc_client_progress_size(s_client);
+        s_state_buffer.resize(size);
+        result = rc_client_serialize_progress_sized(s_client, s_state_buffer.data(), s_state_buffer.size());
+      }
 
-      const int result = rc_client_serialize_progress(s_client, data.get());
+      data_size = static_cast<u32>(s_state_buffer.size());
       if (result != RC_OK)
       {
         // set data to zero, effectively serializing nothing
@@ -1548,7 +1614,7 @@ bool Achievements::DoState(StateWrapper& sw)
 
     sw.Do(&data_size);
     if (data_size > 0)
-      sw.DoBytes(data.get(), data_size);
+      sw.DoBytes(s_state_buffer.data(), data_size);
 
     return !sw.HasError();
   }
@@ -3106,9 +3172,12 @@ static void RACallbackRebuildMenu();
 static void RACallbackEstimateTitle(char* buf);
 static void RACallbackResetEmulator();
 static void RACallbackLoadROM(const char* unused);
-static unsigned char RACallbackReadMemory(unsigned int address);
-static unsigned int RACallbackReadMemoryBlock(unsigned int nAddress, unsigned char* pBuffer, unsigned int nBytes);
-static void RACallbackWriteMemory(unsigned int address, unsigned char value);
+static unsigned char RACallbackReadRAM(unsigned int address);
+static unsigned int RACallbackReadRAMBlock(unsigned int nAddress, unsigned char* pBuffer, unsigned int nBytes);
+static void RACallbackWriteRAM(unsigned int address, unsigned char value);
+static unsigned char RACallbackReadScratchpad(unsigned int address);
+static unsigned int RACallbackReadScratchpadBlock(unsigned int nAddress, unsigned char* pBuffer, unsigned int nBytes);
+static void RACallbackWriteScratchpad(unsigned int address, unsigned char value);
 
 static bool s_raintegration_initialized = false;
 } // namespace Achievements::RAIntegration
@@ -3129,8 +3198,10 @@ void Achievements::RAIntegration::InitializeRAIntegration(void* main_window_hand
 
   // Apparently this has to be done early, or the memory inspector doesn't work.
   // That's a bit unfortunate, because the RAM size can vary between games, and depending on the option.
-  RA_InstallMemoryBank(0, RACallbackReadMemory, RACallbackWriteMemory, Bus::RAM_2MB_SIZE);
-  RA_InstallMemoryBankBlockReader(0, RACallbackReadMemoryBlock);
+  RA_InstallMemoryBank(0, RACallbackReadRAM, RACallbackWriteRAM, Bus::RAM_2MB_SIZE);
+  RA_InstallMemoryBankBlockReader(0, RACallbackReadRAMBlock);
+  RA_InstallMemoryBank(1, RACallbackReadScratchpad, RACallbackWriteScratchpad, CPU::SCRATCHPAD_SIZE);
+  RA_InstallMemoryBankBlockReader(1, RACallbackReadScratchpadBlock);
 
   // Fire off a login anyway. Saves going into the menu and doing it.
   RA_AttemptLogin(0);
@@ -3220,7 +3291,7 @@ void Achievements::RAIntegration::RACallbackLoadROM(const char* unused)
   UNREFERENCED_PARAMETER(unused);
 }
 
-unsigned char Achievements::RAIntegration::RACallbackReadMemory(unsigned int address)
+unsigned char Achievements::RAIntegration::RACallbackReadRAM(unsigned int address)
 {
   if (!System::IsValid())
     return 0;
@@ -3230,19 +3301,46 @@ unsigned char Achievements::RAIntegration::RACallbackReadMemory(unsigned int add
   return value;
 }
 
-void Achievements::RAIntegration::RACallbackWriteMemory(unsigned int address, unsigned char value)
+void Achievements::RAIntegration::RACallbackWriteRAM(unsigned int address, unsigned char value)
 {
   CPU::SafeWriteMemoryByte(address, value);
 }
 
-unsigned int Achievements::RAIntegration::RACallbackReadMemoryBlock(unsigned int nAddress, unsigned char* pBuffer,
-                                                                    unsigned int nBytes)
+unsigned int Achievements::RAIntegration::RACallbackReadRAMBlock(unsigned int nAddress, unsigned char* pBuffer,
+                                                                 unsigned int nBytes)
 {
   if (nAddress >= Bus::g_ram_size)
     return 0;
 
   const u32 copy_size = std::min<u32>(Bus::g_ram_size - nAddress, nBytes);
   std::memcpy(pBuffer, Bus::g_unprotected_ram + nAddress, copy_size);
+  return copy_size;
+}
+
+unsigned char Achievements::RAIntegration::RACallbackReadScratchpad(unsigned int address)
+{
+  if (!System::IsValid() || address >= CPU::SCRATCHPAD_SIZE)
+    return 0;
+
+  return CPU::g_state.scratchpad[address];
+}
+
+void Achievements::RAIntegration::RACallbackWriteScratchpad(unsigned int address, unsigned char value)
+{
+  if (address >= CPU::SCRATCHPAD_SIZE)
+    return;
+
+  CPU::g_state.scratchpad[address] = value;
+}
+
+unsigned int Achievements::RAIntegration::RACallbackReadScratchpadBlock(unsigned int nAddress, unsigned char* pBuffer,
+                                                                        unsigned int nBytes)
+{
+  if (nAddress >= CPU::SCRATCHPAD_SIZE)
+    return 0;
+
+  const u32 copy_size = std::min<u32>(CPU::SCRATCHPAD_SIZE - nAddress, nBytes);
+  std::memcpy(pBuffer, &CPU::g_state.scratchpad[nAddress], copy_size);
   return copy_size;
 }
 
