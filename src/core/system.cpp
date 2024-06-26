@@ -332,7 +332,7 @@ bool System::Internal::CPUThreadInitialize(Error* error)
   }
 #endif
 
-  if (!Bus::AllocateMemory(error) || !CPU::CodeCache::ProcessStartup(error))
+  if (!CPU::CodeCache::ProcessStartup(error) || !Bus::AllocateMemory(error))
   {
     CPUThreadShutdown();
     return false;
