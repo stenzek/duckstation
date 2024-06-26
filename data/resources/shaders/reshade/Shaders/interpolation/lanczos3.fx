@@ -79,7 +79,7 @@ float3 lanczos3ar(float fp, float3 C0, float3 C1, float3 C2, float3 C3, float3 C
 }
 
 
-float4 Lanczos3_X(float4 pos: SV_Position, float2 uv_tx : TEXCOORD) : SV_Target
+float4 PS_Lanczos3_X(float4 pos: SV_Position, float2 uv_tx : TEXCOORD) : SV_Target
 {
     // Both dimensions are unfiltered, so it looks for lores pixels.
     float2 ps = NormalizedNativePixelSize;
@@ -103,7 +103,7 @@ float4 Lanczos3_X(float4 pos: SV_Position, float2 uv_tx : TEXCOORD) : SV_Target
 }
 
 
-float4 Lanczos3_Y(float4 pos: SV_Position, float2 uv_tx : TEXCOORD) : SV_Target
+float4 PS_Lanczos3_Y(float4 pos: SV_Position, float2 uv_tx : TEXCOORD) : SV_Target
 {
     // One must be careful here. Horizontal dimension is already filtered, so it looks for x in hires.
     float2 ps = float2(1.0/(ViewportSize.x*BufferToViewportRatio.x), NormalizedNativePixelSize.y);
@@ -129,16 +129,16 @@ float4 Lanczos3_Y(float4 pos: SV_Position, float2 uv_tx : TEXCOORD) : SV_Target
 technique Lanczos3
 {
 
-	pass PS_Lanczos3_X
+	pass
 	{
 		VertexShader = PostProcessVS;
-		PixelShader  = Lanczos3_X;
+		PixelShader  = PS_Lanczos3_X;
 		RenderTarget = tLanczos3_P0;
 	}
-	pass PS_Lanczos3_Y
+	pass
 	{
 		VertexShader = PostProcessVS;
-		PixelShader  = Lanczos3_Y;
+		PixelShader  = PS_Lanczos3_Y;
 	}
 
 }
