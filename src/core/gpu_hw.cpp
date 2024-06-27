@@ -270,6 +270,12 @@ void GPU_HW::Reset(bool clear_vram)
 
 bool GPU_HW::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display)
 {
+  // Need to download local VRAM copy before calling the base class, because it serializes this.
+  if (m_sw_renderer)
+    m_sw_renderer->Sync(true);
+  else if (sw.IsWriting() && !host_texture)
+    ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+
   if (!GPU::DoState(sw, host_texture, update_display))
     return false;
 
@@ -308,11 +314,18 @@ bool GPU_HW::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
                                       tex->GetHeight());
     }
   }
+  else if (sw.IsReading())
+  {
+    // Need to update the VRAM copy on the GPU with the state data.
+    UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT, g_vram, VRAM_WIDTH * sizeof(u16), false, false,
+                    Common::Rectangle<u32>(0, 0, VRAM_WIDTH, VRAM_HEIGHT));
+  }
 
   // invalidate the whole VRAM read texture when loading state
   if (sw.IsReading())
   {
     DebugAssert(!m_batch_vertex_ptr && !m_batch_index_ptr);
+    ClearVRAMDirtyRectangle();
     SetFullVRAMDirtyRectangle();
     ResetBatchVertexDepth();
   }
@@ -2954,6 +2967,12 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, b
     }
   }
 
+  UpdateVRAMOnGPU(x, y, width, height, data, sizeof(u16) * width, set_mask, check_mask, bounds);
+}
+
+void GPU_HW::UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* data, u32 data_pitch, bool set_mask,
+                             bool check_mask, const Common::Rectangle<u32>& bounds)
+{
   std::unique_ptr<GPUTexture> upload_texture;
   u32 map_index;
 
@@ -2961,7 +2980,7 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, b
   {
     map_index = 0;
     upload_texture = g_gpu_device->FetchTexture(width, height, 1, 1, 1, GPUTexture::Type::Texture,
-                                                GPUTexture::Format::R16U, data, width * sizeof(u16));
+                                                GPUTexture::Format::R16U, data, data_pitch);
     if (!upload_texture)
     {
       ERROR_LOG("Failed to get {}x{} upload texture. Things are gonna break.", width, height);
@@ -2971,9 +2990,10 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, b
   else
   {
     const u32 num_pixels = width * height;
+    const u32 dst_pitch = width * sizeof(u16);
     void* map = m_vram_upload_buffer->Map(num_pixels);
     map_index = m_vram_upload_buffer->GetCurrentPosition();
-    std::memcpy(map, data, num_pixels * sizeof(u16));
+    StringUtil::StrideMemCpy(map, dst_pitch, data, data_pitch, dst_pitch, height);
     m_vram_upload_buffer->Unmap(num_pixels);
   }
 

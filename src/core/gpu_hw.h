@@ -204,6 +204,8 @@ private:
   void DrawRendererStats() override;
   void OnBufferSwapped() override;
 
+  void UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* data, u32 data_pitch, bool set_mask,
+                       bool check_mask, const Common::Rectangle<u32>& bounds);
   bool BlitVRAMReplacementTexture(const TextureReplacementTexture* tex, u32 dst_x, u32 dst_y, u32 width, u32 height);
 
   /// Expands a line into two triangles.

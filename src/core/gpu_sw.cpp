@@ -73,6 +73,9 @@ bool GPU_SW::Initialize()
 
 bool GPU_SW::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display)
 {
+  // need to ensure the worker thread is done
+  m_backend.Sync(true);
+
   // ignore the host texture for software mode, since we want to save vram here
   return GPU::DoState(sw, nullptr, update_display);
 }

@@ -359,18 +359,7 @@ bool GPU::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_displ
     if (!sw.DoMarker("GPU-VRAM"))
       return false;
 
-    if (sw.IsReading())
-    {
-      // Still need a temporary here.
-      FixedHeapArray<u16, VRAM_WIDTH * VRAM_HEIGHT> temp;
-      sw.DoBytes(temp.data(), VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16));
-      UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, temp.data(), false, false);
-    }
-    else
-    {
-      ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
-      sw.DoBytes(g_vram, VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16));
-    }
+    sw.DoBytes(g_vram, VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16));
   }
 
   if (sw.IsReading())
