@@ -60,7 +60,7 @@ bool JitCodeBuffer::Allocate(u32 size /* = 64 * 1024 * 1024 */, u32 far_code_siz
                             reinterpret_cast<const u8*>(std::numeric_limits<uintptr_t>::max()) :
                             (base + max_displacement);
   const u8* min_address = ((base - max_displacement) > base) ? nullptr : (base - max_displacement);
-  const u32 step = 256 * 1024 * 1024;
+  const u32 step = 64 * 1024 * 1024;
   const u32 steps = static_cast<u32>(max_address - min_address) / step;
   for (u32 offset = 0; offset < steps; offset++)
   {

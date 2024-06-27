@@ -86,7 +86,7 @@ float3 bicubic_ar(float fp, float3 C0, float3 C1, float3 C2, float3 C3)
 }
 
 
-float4 Bicubic_X(float4 pos: SV_Position, float2 uv_tx : TEXCOORD) : SV_Target
+float4 PS_Bicubic_X(float4 pos: SV_Position, float2 uv_tx : TEXCOORD) : SV_Target
 {
     // Both dimensions are unfiltered, so it looks for lores pixels.
     float2 ps   = NormalizedNativePixelSize;
@@ -106,7 +106,7 @@ float4 Bicubic_X(float4 pos: SV_Position, float2 uv_tx : TEXCOORD) : SV_Target
 }
 
 
-float4 Bicubic_Y(float4 pos: SV_Position, float2 uv_tx : TEXCOORD) : SV_Target
+float4 PS_Bicubic_Y(float4 pos: SV_Position, float2 uv_tx : TEXCOORD) : SV_Target
 {
     // One must be careful here. Horizontal dimension is already filtered, so it looks for x in hires.
     float2 ps   = float2(1.0/(ViewportSize.x*BufferToViewportRatio.x), NormalizedNativePixelSize.y);
@@ -128,16 +128,16 @@ float4 Bicubic_Y(float4 pos: SV_Position, float2 uv_tx : TEXCOORD) : SV_Target
 technique Bicubic
 {
 
-	pass PS_Bicubic_X
+	pass
 	{
 		VertexShader = PostProcessVS;
-		PixelShader  = Bicubic_X;
+		PixelShader  = PS_Bicubic_X;
 		RenderTarget = tBicubic_P0;
 	}
-	pass PS_Bicubic_Y
+	pass
 	{
 		VertexShader = PostProcessVS;
-		PixelShader  = Bicubic_Y;
+		PixelShader  = PS_Bicubic_Y;
 	}
 
 }

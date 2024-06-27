@@ -183,6 +183,7 @@ uniform float2 NormalizedNativePixelSize < source = "normalized_native_pixel_siz
 uniform float  UpscaleMultiplier < source = "upscale_multiplier"; >;
 uniform float2 ViewportSize < source = "viewportsize"; >;
 
+sampler2D sBackBuffer{Texture=ReShade::BackBufferTex;AddressU=BORDER;AddressV=BORDER;AddressW=BORDER;MagFilter=POINT;MinFilter=POINT;};
 
 // Comment the next line to disable interpolation in linear gamma (and
 // gain speed).
@@ -199,9 +200,9 @@ uniform float2 ViewportSize < source = "viewportsize"; >;
 #define PI 3.141592653589
 
 #ifdef LINEAR_PROCESSING
-#       define TEX2D(c) pow(tex2D(ReShade::BackBuffer, (c)), float4(CRTgamma,CRTgamma,CRTgamma,CRTgamma))
+#       define TEX2D(c) pow(tex2D(sBackBuffer, (c)), float4(CRTgamma,CRTgamma,CRTgamma,CRTgamma))
 #else
-#       define TEX2D(c) tex2D(ReShade::BackBuffer, (c))
+#       define TEX2D(c) tex2D(sBackBuffer, (c))
 #endif
 
 // aspect ratio
