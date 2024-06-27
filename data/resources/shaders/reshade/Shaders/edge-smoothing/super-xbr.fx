@@ -32,7 +32,7 @@ uniform float XBR_EDGE_STR_P0 <
     ui_min = 0.0;
     ui_max = 5.0;
     ui_step = 0.5;
-    ui_label = "Xbr - Edge Strength p0";
+    ui_label = "Xbr - Edge Strength";
 > = 5.0;
 
 uniform float XBR_WEIGHT <
@@ -76,7 +76,7 @@ uniform float2 BufferToViewportRatio < source = "buffer_to_viewport_ratio"; >;
 uniform float2 NormalizedNativePixelSize < source = "normalized_native_pixel_size"; >;
 
 texture2D tBackBufferY{Width=BUFFER_WIDTH;Height=BUFFER_HEIGHT;Format=RGBA8;};
-sampler2D sBackBufferY{Texture=tBackBufferY;AddressU=BORDER;AddressV=BORDER;AddressW=BORDER;MagFilter=POINT;MinFilter=POINT;};
+sampler2D sBackBufferY{Texture=tBackBufferY;AddressU=CLAMP;AddressV=CLAMP;AddressW=CLAMP;MagFilter=POINT;MinFilter=POINT;};
 
 texture2D tSuper_xBR_P0 < pooled = true; > {Width=BUFFER_WIDTH;Height=BUFFER_HEIGHT;Format=RGBA8;};
 sampler2D sSuper_xBR_P0{Texture=tSuper_xBR_P0;AddressU=CLAMP;AddressV=CLAMP;AddressW=CLAMP;MagFilter=POINT;MinFilter=POINT;};
@@ -87,8 +87,11 @@ sampler2D sSuper_xBR_P1{Texture=tSuper_xBR_P1;AddressU=CLAMP;AddressV=CLAMP;Addr
 texture2D tSuper_xBR_P2 < pooled = true; > {Width=BUFFER_WIDTH;Height=BUFFER_HEIGHT;Format=RGBA8;};
 sampler2D sSuper_xBR_P2{Texture=tSuper_xBR_P2;AddressU=CLAMP;AddressV=CLAMP;AddressW=CLAMP;MagFilter=POINT;MinFilter=POINT;};
 
-#define Y float3(.2126,.7152,.0722)
+#define weight1 (XBR_WEIGHT*1.29633/10.0)
+#define weight2 (XBR_WEIGHT*1.75068/10.0/2.0)
+#define limits  (XBR_EDGE_STR_P0+0.000001)
 
+static const float3 Y = float3(.2126,.7152,.0722);
 static const float wp0[6] = {2.0, 1.0, -1.0, 4.0, -1.0, 1.0};
 static const float wp1[6] = {1.0, 0.0,  0.0, 0.0,  0.0, 0.0};
 static const float wp2[6] = {0.0, 0.0,  0.0, 1.0,  0.0, 0.0};
@@ -153,14 +156,10 @@ float3 super_xbr(float wp[6], float4 P0, float4  B, float4  C, float4 P1, float4
     /* Calc edgeness in horizontal/vertical directions. */
     float hv_edge = (hv_wd(wp, f, i, e, h, c, i5, b, h5) - hv_wd(wp, e, f, h, i, d, f4, g, i4));
 
-    float limits = XBR_EDGE_STR_P0 + 0.000001;
     float edge_strength = smoothstep(0.0, limits, abs(d_edge));
     
     float4 w1, w2;
     float3 c3, c4;
-
-    float weight1 = (XBR_WEIGHT*1.29633/10.0);
-    float weight2 = (XBR_WEIGHT*1.75068/10.0/2.0);
 
     /* Filter weights. Two taps only. */
     w1 = float4(-weight1, weight1+0.50, weight1+0.50, -weight1);
@@ -183,7 +182,7 @@ float3 super_xbr(float wp[6], float4 P0, float4  B, float4  C, float4 P1, float4
     return color;
 }
 
-float4 BackBufferY(float4 pos: SV_Position, float2 vTexCoord : TEXCOORD) : SV_Target
+float4 PS_BackBufferY(float4 pos: SV_Position, float2 vTexCoord : TEXCOORD) : SV_Target
 {
     float3 color = tex2D(ReShade::BackBuffer, vTexCoord.xy).rgb;
 
@@ -191,7 +190,7 @@ float4 BackBufferY(float4 pos: SV_Position, float2 vTexCoord : TEXCOORD) : SV_Ta
 }
 
 
-float4 Super_xBR_P0(float4 pos: SV_Position, float2 vTexCoord : TEXCOORD) : SV_Target
+float4 PS_Super_xBR_P0(float4 pos: SV_Position, float2 vTexCoord : TEXCOORD) : SV_Target
 {
     float2 ps = NormalizedNativePixelSize;
 
@@ -223,7 +222,7 @@ float4 Super_xBR_P0(float4 pos: SV_Position, float2 vTexCoord : TEXCOORD) : SV_T
 
 
 
-float4 Super_xBR_P1(float4 pos: SV_Position, float2 vTexCoord : TEXCOORD) : SV_Target
+float4 PS_Super_xBR_P1(float4 pos: SV_Position, float2 vTexCoord : TEXCOORD) : SV_Target
 {
     float2 ps = NormalizedNativePixelSize;
 
@@ -266,7 +265,7 @@ float4 Super_xBR_P1(float4 pos: SV_Position, float2 vTexCoord : TEXCOORD) : SV_T
 }
 
 
-float4 Super_xBR_P2(float4 pos: SV_Position, float2 vTexCoord : TEXCOORD) : SV_Target
+float4 PS_Super_xBR_P2(float4 pos: SV_Position, float2 vTexCoord : TEXCOORD) : SV_Target
 {
     float2 ps = 0.5*NormalizedNativePixelSize;
 
@@ -325,7 +324,7 @@ float4 resampler(float4 x)
 }
 
 
-float4 Jinc2(float4 pos: SV_Position, float2 vTexCoord : TEXCOORD) : SV_Target
+float4 PS_Jinc2(float4 pos: SV_Position, float2 vTexCoord : TEXCOORD) : SV_Target
 {
     float2 ps = 0.5*NormalizedNativePixelSize;
 
@@ -391,33 +390,33 @@ float4 Jinc2(float4 pos: SV_Position, float2 vTexCoord : TEXCOORD) : SV_Target
 
 technique Super_xBR
 {
-    pass PS_BackBufferY
+    pass
     {
         VertexShader = PostProcessVS;
-        PixelShader  = BackBufferY;
+        PixelShader  = PS_BackBufferY;
         RenderTarget = tBackBufferY;
     }
-    pass PS_Super_xBR_P0
+    pass
     {
         VertexShader = PostProcessVS;
-        PixelShader  = Super_xBR_P0;
+        PixelShader  = PS_Super_xBR_P0;
         RenderTarget = tSuper_xBR_P0;
     }
-    pass PS_Super_xBR_P1
+    pass
     {
         VertexShader = PostProcessVS;
-        PixelShader  = Super_xBR_P1;
+        PixelShader  = PS_Super_xBR_P1;
         RenderTarget = tSuper_xBR_P1;
     }
-    pass PS_Super_xBR_P2
+    pass
     {
         VertexShader = PostProcessVS;
-        PixelShader  = Super_xBR_P2;
+        PixelShader  = PS_Super_xBR_P2;
         RenderTarget = tSuper_xBR_P2;
     }
-    pass PS_Jinc2
+    pass
     {
         VertexShader = PostProcessVS;
-        PixelShader  = Jinc2;
+        PixelShader  = PS_Jinc2;
     }
 }
