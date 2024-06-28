@@ -1519,23 +1519,6 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
           static_cast<int>(sres));
         return {};
       }
-
-      const bool enable_sso = (is_gles ? (target_version >= 310) : (target_version >= 410));
-      if ((sres = dyn_libs::spvc_compiler_options_set_bool(soptions, SPVC_COMPILER_OPTION_GLSL_SEPARATE_SHADER_OBJECTS,
-                                                           enable_sso)) != SPVC_SUCCESS)
-      {
-        Error::SetStringFmt(
-          error, "spvc_compiler_options_set_bool(SPVC_COMPILER_OPTION_GLSL_SEPARATE_SHADER_OBJECTS) failed: {}",
-          static_cast<int>(sres));
-        return {};
-      }
-      if (enable_sso && ((sres = dyn_libs::spvc_compiler_require_extension(
-                            scompiler, "GL_ARB_separate_shader_objects")) != SPVC_SUCCESS))
-      {
-        Error::SetStringFmt(error, "spvc_compiler_require_extension(GL_ARB_separate_shader_objects) failed: {}",
-                            static_cast<int>(sres));
-        return {};
-      }
     }
     break;
 #endif
@@ -1638,12 +1621,9 @@ std::unique_ptr<GPUShader> GPUDevice::TranspileAndCreateShaderFromSource(
   GPUShaderStage stage, GPUShaderLanguage source_language, std::string_view source, const char* entry_point,
   GPUShaderLanguage target_language, u32 target_version, DynamicHeapArray<u8>* out_binary, Error* error)
 {
-  // Disable optimization when targeting OpenGL GLSL, and separate shader objects are missing.
-  // Otherwise, the name-based linking will fail.
+  // Disable optimization when targeting OpenGL GLSL, otherwise, the name-based linking will fail.
   const bool optimization =
-    (target_language != GPUShaderLanguage::GLSL && target_language != GPUShaderLanguage::GLSLES) ||
-    (target_language == GPUShaderLanguage::GLSL && target_version >= 410) ||
-    (target_language == GPUShaderLanguage::GLSLES && target_version >= 310);
+    (target_language != GPUShaderLanguage::GLSL && target_language != GPUShaderLanguage::GLSLES);
   DynamicHeapArray<u8> spv;
   if (!CompileGLSLShaderToVulkanSpv(stage, source_language, source, entry_point, optimization, false, &spv, error))
     return {};
