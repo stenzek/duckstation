@@ -9,8 +9,8 @@
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
-#include <type_traits>
 #include <span>
+#include <type_traits>
 
 template<typename T, std::size_t SIZE, std::size_t ALIGNMENT = 0>
 class FixedHeapArray
@@ -361,10 +361,10 @@ private:
     {
 #ifdef _MSC_VER
       m_data = static_cast<T*>(_aligned_realloc(prev_ptr, size * sizeof(T), alignment));
-      if (!m_data)
+      if (!m_data) [[unlikely]]
         Panic("Memory allocation failed.");
 #else
-      if (posix_memalign(reinterpret_cast<void**>(&m_data), alignment, size * sizeof(T)) != 0)
+      if (posix_memalign(reinterpret_cast<void**>(&m_data), alignment, size * sizeof(T)) != 0) [[unlikely]]
         Panic("Memory allocation failed.");
 
       if (prev_ptr)
@@ -377,7 +377,7 @@ private:
     else
     {
       m_data = static_cast<T*>(std::realloc(prev_ptr, size * sizeof(T)));
-      if (!m_data)
+      if (!m_data) [[unlikely]]
         Panic("Memory allocation failed.");
     }
 
