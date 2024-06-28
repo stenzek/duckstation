@@ -2661,7 +2661,7 @@ bool System::SaveStateToStream(ByteStream* state, Error* error, u32 screenshot_s
   if (screenshot_size > 0)
   {
     // assume this size is the width
-    const float display_aspect_ratio = g_gpu->GetDisplayAspectRatio();
+    const float display_aspect_ratio = g_gpu->ComputeDisplayAspectRatio();
     const u32 screenshot_width = screenshot_size;
     const u32 screenshot_height =
       std::max(1u, static_cast<u32>(static_cast<float>(screenshot_width) /
@@ -5264,13 +5264,14 @@ void System::RequestDisplaySize(float scale /*= 0.0f*/)
   if (scale == 0.0f)
     scale = g_gpu->IsHardwareRenderer() ? static_cast<float>(g_settings.gpu_resolution_scale) : 1.0f;
 
-  const float y_scale = (static_cast<float>(g_gpu->GetDisplayWidth()) / static_cast<float>(g_gpu->GetDisplayHeight())) /
-                        g_gpu->GetDisplayAspectRatio();
+  const float y_scale =
+    (static_cast<float>(g_gpu->GetCRTCDisplayWidth()) / static_cast<float>(g_gpu->GetCRTCDisplayHeight())) /
+    g_gpu->ComputeDisplayAspectRatio();
 
   const u32 requested_width =
-    std::max<u32>(static_cast<u32>(std::ceil(static_cast<float>(g_gpu->GetDisplayWidth()) * scale)), 1);
+    std::max<u32>(static_cast<u32>(std::ceil(static_cast<float>(g_gpu->GetCRTCDisplayWidth()) * scale)), 1);
   const u32 requested_height =
-    std::max<u32>(static_cast<u32>(std::ceil(static_cast<float>(g_gpu->GetDisplayHeight()) * y_scale * scale)), 1);
+    std::max<u32>(static_cast<u32>(std::ceil(static_cast<float>(g_gpu->GetCRTCDisplayHeight()) * y_scale * scale)), 1);
 
   Host::RequestResizeHostDisplay(static_cast<s32>(requested_width), static_cast<s32>(requested_height));
 }

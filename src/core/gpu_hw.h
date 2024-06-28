@@ -220,7 +220,8 @@ private:
   void SetBatchSpriteMode(bool enabled);
 
   void UpdateDownsamplingLevels();
-  void DownsampleFramebuffer(GPUTexture* source, u32 left, u32 top, u32 width, u32 height);
+
+  void DownsampleFramebuffer();
   void DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top, u32 width, u32 height);
   void DownsampleFramebufferBoxFilter(GPUTexture* source, u32 left, u32 top, u32 width, u32 height);
 

@@ -465,10 +465,6 @@ void GPU_SW::UpdateDisplay()
 
   if (!g_settings.debugging.show_vram)
   {
-    SetDisplayParameters(m_crtc_state.display_width, m_crtc_state.display_height, m_crtc_state.display_origin_left,
-                         m_crtc_state.display_origin_top, m_crtc_state.display_vram_width,
-                         m_crtc_state.display_vram_height, ComputeDisplayAspectRatio());
-
     if (IsDisplayDisabled())
     {
       ClearDisplayTexture();
@@ -490,14 +486,15 @@ void GPU_SW::UpdateDisplay()
       const u32 line_skip = m_GPUSTAT.vertical_resolution;
       if (CopyOut(vram_offset_x, vram_offset_y, skip_x, read_width, read_height, line_skip, is_24bit))
       {
+        SetDisplayTexture(m_upload_texture.get(), 0, 0, read_width, read_height);
         if (is_24bit && g_settings.gpu_24bit_chroma_smoothing)
         {
-          if (ApplyChromaSmoothing(m_upload_texture.get(), 0, 0, read_width, read_height))
-            Deinterlace(m_display_texture, 0, 0, read_width, read_height, field, 0);
+          if (ApplyChromaSmoothing())
+            Deinterlace(field, 0);
         }
         else
         {
-          Deinterlace(m_upload_texture.get(), 0, 0, read_width, read_height, field, 0);
+          Deinterlace(field, 0);
         }
       }
     }
@@ -505,17 +502,14 @@ void GPU_SW::UpdateDisplay()
     {
       if (CopyOut(vram_offset_x, vram_offset_y, skip_x, read_width, read_height, 0, is_24bit))
       {
+        SetDisplayTexture(m_upload_texture.get(), 0, 0, read_width, read_height);
         if (is_24bit && g_settings.gpu_24bit_chroma_smoothing)
-          ApplyChromaSmoothing(m_upload_texture.get(), 0, 0, read_width, read_height);
-        else
-          SetDisplayTexture(m_upload_texture.get(), 0, 0, read_width, read_height);
+          ApplyChromaSmoothing();
       }
     }
   }
   else
   {
-    SetDisplayParameters(VRAM_WIDTH, VRAM_HEIGHT, 0, 0, VRAM_WIDTH, VRAM_HEIGHT,
-                         static_cast<float>(VRAM_WIDTH) / static_cast<float>(VRAM_HEIGHT));
     if (CopyOut(0, 0, 0, VRAM_WIDTH, VRAM_HEIGHT, 0, false))
       SetDisplayTexture(m_upload_texture.get(), 0, 0, VRAM_WIDTH, VRAM_HEIGHT);
   }

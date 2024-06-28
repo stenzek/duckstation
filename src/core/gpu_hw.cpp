@@ -3289,14 +3289,8 @@ void GPU_HW::UpdateDisplay()
       SetDisplayTexture(m_vram_texture.get(), 0, 0, m_vram_texture->GetWidth(), m_vram_texture->GetHeight());
     }
 
-    SetDisplayParameters(VRAM_WIDTH, VRAM_HEIGHT, 0, 0, VRAM_WIDTH, VRAM_HEIGHT,
-                         static_cast<float>(VRAM_WIDTH) / static_cast<float>(VRAM_HEIGHT));
     return;
   }
-
-  SetDisplayParameters(m_crtc_state.display_width, m_crtc_state.display_height, m_crtc_state.display_origin_left,
-                       m_crtc_state.display_origin_top, m_crtc_state.display_vram_width,
-                       m_crtc_state.display_vram_height, ComputeDisplayAspectRatio());
 
   const bool interlaced = IsInterlacedDisplayEnabled();
   const u32 interlaced_field = GetInterlacedDisplayField();
@@ -3319,19 +3313,19 @@ void GPU_HW::UpdateDisplay()
            (scaled_vram_offset_x + scaled_display_width) <= m_vram_texture->GetWidth() &&
            (scaled_vram_offset_y + scaled_display_height) <= m_vram_texture->GetHeight())
   {
+    SetDisplayTexture(m_vram_texture.get(), scaled_vram_offset_x, scaled_vram_offset_y, scaled_display_width,
+                      read_height);
+
     // Fast path if no copies are needed.
     if (interlaced)
     {
       GL_INS("Deinterlace fast path");
       drew_anything = true;
-      Deinterlace(m_vram_texture.get(), scaled_vram_offset_x, scaled_vram_offset_y, scaled_display_width, read_height,
-                  interlaced_field, line_skip);
+      Deinterlace(interlaced_field, line_skip);
     }
     else
     {
       GL_INS("Direct display");
-      SetDisplayTexture(m_vram_texture.get(), scaled_vram_offset_x, scaled_vram_offset_y, scaled_display_width,
-                        scaled_display_height);
     }
   }
   else
@@ -3365,28 +3359,26 @@ void GPU_HW::UpdateDisplay()
     m_vram_extract_texture->MakeReadyForSampling();
     drew_anything = true;
 
+    SetDisplayTexture(m_vram_extract_texture.get(), 0, 0, scaled_display_width, read_height);
     if (g_settings.gpu_24bit_chroma_smoothing)
     {
-      if (ApplyChromaSmoothing(m_vram_extract_texture.get(), 0, 0, scaled_display_width, read_height))
+      if (ApplyChromaSmoothing())
       {
         if (interlaced)
-          Deinterlace(m_display_texture, 0, 0, scaled_display_width, read_height, interlaced_field, 0);
+          Deinterlace(interlaced_field, 0);
       }
     }
     else
     {
       if (interlaced)
-        Deinterlace(m_vram_extract_texture.get(), 0, 0, scaled_display_width, read_height, interlaced_field, 0);
-      else
-        SetDisplayTexture(m_vram_extract_texture.get(), 0, 0, scaled_display_width, read_height);
+        Deinterlace(interlaced_field, 0);
     }
   }
 
   if (m_downsample_mode != GPUDownsampleMode::Disabled && !m_GPUSTAT.display_area_color_depth_24)
   {
     DebugAssert(m_display_texture);
-    DownsampleFramebuffer(m_display_texture, m_display_texture_view_x, m_display_texture_view_y,
-                          m_display_texture_view_width, m_display_texture_view_height);
+    DownsampleFramebuffer();
   }
 
   if (drew_anything)
@@ -3418,8 +3410,14 @@ void GPU_HW::UpdateDownsamplingLevels()
   g_gpu_device->RecycleTexture(std::move(m_downsample_texture));
 }
 
-void GPU_HW::DownsampleFramebuffer(GPUTexture* source, u32 left, u32 top, u32 width, u32 height)
+void GPU_HW::DownsampleFramebuffer()
 {
+  GPUTexture* source = m_display_texture;
+  const u32 left = m_display_texture_view_x;
+  const u32 top = m_display_texture_view_y;
+  const u32 width = m_display_texture_view_width;
+  const u32 height = m_display_texture_view_height;
+
   if (m_downsample_mode == GPUDownsampleMode::Adaptive)
     DownsampleFramebufferAdaptive(source, left, top, width, height);
   else
@@ -3453,7 +3451,6 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top
   if (!m_downsample_texture || !level_texture || !weight_texture)
   {
     ERROR_LOG("Failed to create {}x{} RTs for adaptive downsampling", width, height);
-    SetDisplayTexture(source, left, top, width, height);
     return;
   }
 
@@ -3563,7 +3560,6 @@ void GPU_HW::DownsampleFramebufferBoxFilter(GPUTexture* source, u32 left, u32 to
   if (!m_downsample_texture)
   {
     ERROR_LOG("Failed to create {}x{} RT for box downsampling", width, height);
-    SetDisplayTexture(source, left, top, width, height);
     return;
   }
 

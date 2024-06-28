@@ -194,19 +194,15 @@ public:
 
   // Returns the video clock frequency.
   TickCount GetCRTCFrequency() const;
-  u16 GetCRTCDotClockDivider() const { return m_crtc_state.dot_clock_divider; }
+  ALWAYS_INLINE u16 GetCRTCDotClockDivider() const { return m_crtc_state.dot_clock_divider; }
+  ALWAYS_INLINE s32 GetCRTCDisplayWidth() const { return m_crtc_state.display_width; }
+  ALWAYS_INLINE s32 GetCRTCDisplayHeight() const { return m_crtc_state.display_height; }
 
   // Dumps raw VRAM to a file.
   bool DumpVRAMToFile(const char* filename);
 
   // Ensures all buffered vertices are drawn.
   virtual void FlushRender() = 0;
-
-  ALWAYS_INLINE const void* GetDisplayTextureHandle() const { return m_display_texture; }
-  ALWAYS_INLINE s32 GetDisplayWidth() const { return m_display_width; }
-  ALWAYS_INLINE s32 GetDisplayHeight() const { return m_display_height; }
-  ALWAYS_INLINE float GetDisplayAspectRatio() const { return m_display_aspect_ratio; }
-  ALWAYS_INLINE bool HasDisplayTexture() const { return static_cast<bool>(m_display_texture); }
 
   /// Helper function for computing the draw rectangle in a larger window.
   Common::Rectangle<s32> CalculateDrawRect(s32 window_width, s32 window_height, bool apply_aspect_ratio = true) const;
@@ -607,29 +603,14 @@ protected:
 
   void ClearDisplayTexture();
   void SetDisplayTexture(GPUTexture* texture, s32 view_x, s32 view_y, s32 view_width, s32 view_height);
-  void SetDisplayTextureRect(s32 view_x, s32 view_y, s32 view_width, s32 view_height);
-  void SetDisplayParameters(s32 display_width, s32 display_height, s32 active_left, s32 active_top, s32 active_width,
-                            s32 active_height, float display_aspect_ratio);
-
-  Common::Rectangle<float> CalculateDrawRect(s32 window_width, s32 window_height, float* out_left_padding,
-                                             float* out_top_padding, float* out_scale, float* out_x_scale,
-                                             bool apply_aspect_ratio = true) const;
 
   bool RenderDisplay(GPUTexture* target, const Common::Rectangle<s32>& draw_rect, bool postfx);
 
-  bool Deinterlace(GPUTexture* src, u32 x, u32 y, u32 width, u32 height, u32 field, u32 line_skip);
+  bool Deinterlace(u32 field, u32 line_skip);
   bool DeinterlaceExtractField(u32 dst_bufidx, GPUTexture* src, u32 x, u32 y, u32 width, u32 height, u32 line_skip);
   bool DeinterlaceSetTargetSize(u32 width, u32 height, bool preserve);
   void DestroyDeinterlaceTextures();
-  bool ApplyChromaSmoothing(GPUTexture* src, u32 x, u32 y, u32 width, u32 height);
-
-  s32 m_display_width = 0;
-  s32 m_display_height = 0;
-  s32 m_display_active_left = 0;
-  s32 m_display_active_top = 0;
-  s32 m_display_active_width = 0;
-  s32 m_display_active_height = 0;
-  float m_display_aspect_ratio = 1.0f;
+  bool ApplyChromaSmoothing();
 
   u32 m_current_deinterlace_buffer = 0;
   std::unique_ptr<GPUPipeline> m_deinterlace_pipeline;
