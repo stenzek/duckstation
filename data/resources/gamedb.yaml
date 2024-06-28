@@ -18976,6 +18976,8 @@ SLES-01304:
   name: "Breath of Fire III (Europe)"
   controllers:
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Fixes jittery sprites.
   metadata:
     publisher: "Infogrames"
     developer: "Capcom"
@@ -18994,6 +18996,8 @@ SLES-01319:
   name: "Breath of Fire III (France)"
   controllers:
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Fixes jittery sprites.
   metadata:
     publisher: "Infogrames"
     developer: "Capcom"
@@ -19012,6 +19016,8 @@ SLES-01320:
   name: "Breath of Fire III (Germany)"
   controllers:
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Fixes jittery sprites.
   metadata:
     publisher: "Infogrames"
     developer: "Capcom"
@@ -19030,6 +19036,8 @@ SLPS-00990:
   name: "Breath of Fire III (Japan)"
   controllers:
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Fixes jittery sprites.
   metadata:
     publisher: "Capcom"
     developer: "Capcom"
@@ -19046,6 +19054,8 @@ SLPS-00990:
     linkCable: false
 SLPM-80115:
   name: "Breath of Fire III (Japan) (Demo)"
+  traits:
+    - ForcePGXPCPUMode # Fixes jittery sprites.
 SLUS-00422:
   name: "Breath of Fire III (USA)"
   compatibility:
@@ -19053,6 +19063,8 @@ SLUS-00422:
     versionTested: "0.1-1072-g840a806"
   controllers:
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Fixes jittery sprites.
   metadata:
     publisher: "Capcom"
     developer: "Capcom"
@@ -19071,6 +19083,8 @@ SLPM-86720:
   name: "Breath of Fire III [PlayStation the Best] (aka Breath of Fire 3 [PlayStation the Best])"
   controllers:
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Fixes jittery sprites.
   metadata:
     publisher: "Capcom"
     developer: "Capcom"
