@@ -56,6 +56,8 @@ static u64 s_active_gpu_cycles = 0;
 static u32 s_active_gpu_cycles_frames = 0;
 #endif
 
+static constexpr GPUTexture::Format DISPLAY_INTERNAL_POSTFX_FORMAT = GPUTexture::Format::RGBA8;
+
 GPU::GPU()
 {
   ResetStatistics();
@@ -1932,24 +1934,53 @@ bool GPU::PresentDisplay()
 
 bool GPU::RenderDisplay(GPUTexture* target, const Common::Rectangle<s32>& draw_rect, bool postfx)
 {
-  GL_SCOPE_FMT("RenderDisplay: {}x{} at {},{}", draw_rect.left, draw_rect.top, draw_rect.GetWidth(),
-               draw_rect.GetHeight());
+  GL_SCOPE_FMT("RenderDisplay: {}x{} at {},{}", draw_rect.GetWidth(), draw_rect.GetHeight(), draw_rect.left,
+               draw_rect.top);
 
   if (m_display_texture)
     m_display_texture->MakeReadyForSampling();
 
+  // Internal post-processing.
+  GPUTexture* display_texture = m_display_texture;
+  s32 display_texture_view_x = m_display_texture_view_x;
+  s32 display_texture_view_y = m_display_texture_view_y;
+  s32 display_texture_view_width = m_display_texture_view_width;
+  s32 display_texture_view_height = m_display_texture_view_height;
+  if (postfx && display_texture && PostProcessing::InternalChain.IsActive() &&
+      PostProcessing::InternalChain.CheckTargets(DISPLAY_INTERNAL_POSTFX_FORMAT, display_texture_view_width,
+                                                 display_texture_view_height))
+  {
+    DebugAssert(display_texture_view_x == 0 && display_texture_view_y == 0 &&
+                static_cast<s32>(display_texture->GetWidth()) == display_texture_view_width &&
+                static_cast<s32>(display_texture->GetHeight()) == display_texture_view_height);
+
+    // Now we can apply the post chain.
+    GPUTexture* post_output_texture = PostProcessing::InternalChain.GetOutputTexture();
+    if (PostProcessing::InternalChain.Apply(display_texture, post_output_texture, 0, 0, display_texture_view_width,
+                                            display_texture_view_height, display_texture_view_width,
+                                            display_texture_view_height, m_crtc_state.display_width,
+                                            m_crtc_state.display_height))
+    {
+      display_texture_view_x = 0;
+      display_texture_view_y = 0;
+      display_texture = post_output_texture;
+      display_texture->MakeReadyForSampling();
+    }
+  }
+
   const GPUTexture::Format hdformat = target ? target->GetFormat() : g_gpu_device->GetWindowFormat();
   const u32 target_width = target ? target->GetWidth() : g_gpu_device->GetWindowWidth();
   const u32 target_height = target ? target->GetHeight() : g_gpu_device->GetWindowHeight();
-  const bool really_postfx = (postfx && PostProcessing::IsActive() && !g_gpu_device->GetWindowInfo().IsSurfaceless() &&
-                              hdformat != GPUTexture::Format::Unknown && target_width > 0 && target_height > 0 &&
-                              PostProcessing::CheckTargets(hdformat, target_width, target_height));
+  const bool really_postfx =
+    (postfx && PostProcessing::DisplayChain.IsActive() && !g_gpu_device->GetWindowInfo().IsSurfaceless() &&
+     hdformat != GPUTexture::Format::Unknown && target_width > 0 && target_height > 0 &&
+     PostProcessing::DisplayChain.CheckTargets(hdformat, target_width, target_height));
   const Common::Rectangle<s32> real_draw_rect =
     g_gpu_device->UsesLowerLeftOrigin() ? GPUDevice::FlipToLowerLeft(draw_rect, target_height) : draw_rect;
   if (really_postfx)
   {
-    g_gpu_device->ClearRenderTarget(PostProcessing::GetInputTexture(), 0);
-    g_gpu_device->SetRenderTarget(PostProcessing::GetInputTexture());
+    g_gpu_device->ClearRenderTarget(PostProcessing::DisplayChain.GetInputTexture(), 0);
+    g_gpu_device->SetRenderTarget(PostProcessing::DisplayChain.GetInputTexture());
   }
   else
   {
@@ -1959,7 +1990,7 @@ bool GPU::RenderDisplay(GPUTexture* target, const Common::Rectangle<s32>& draw_r
       return false;
   }
 
-  if (m_display_texture)
+  if (display_texture)
   {
     bool texture_filter_linear = false;
 
@@ -2003,26 +2034,25 @@ bool GPU::RenderDisplay(GPUTexture* target, const Common::Rectangle<s32>& draw_r
     }
 
     g_gpu_device->SetPipeline(m_display_pipeline.get());
-    g_gpu_device->SetTextureSampler(0, m_display_texture,
-                                    texture_filter_linear ? g_gpu_device->GetLinearSampler() :
-                                                            g_gpu_device->GetNearestSampler());
+    g_gpu_device->SetTextureSampler(
+      0, display_texture, texture_filter_linear ? g_gpu_device->GetLinearSampler() : g_gpu_device->GetNearestSampler());
 
     // For bilinear, clamp to 0.5/SIZE-0.5 to avoid bleeding from the adjacent texels in VRAM. This is because
     // 1.0 in UV space is not the bottom-right texel, but a mix of the bottom-right and wrapped/next texel.
-    const float rcp_width = 1.0f / static_cast<float>(m_display_texture->GetWidth());
-    const float rcp_height = 1.0f / static_cast<float>(m_display_texture->GetHeight());
-    uniforms.src_rect[0] = static_cast<float>(m_display_texture_view_x) * rcp_width;
-    uniforms.src_rect[1] = static_cast<float>(m_display_texture_view_y) * rcp_height;
-    uniforms.src_rect[2] = static_cast<float>(m_display_texture_view_width) * rcp_width;
-    uniforms.src_rect[3] = static_cast<float>(m_display_texture_view_height) * rcp_height;
-    uniforms.clamp_rect[0] = (static_cast<float>(m_display_texture_view_x) + 0.5f) * rcp_width;
-    uniforms.clamp_rect[1] = (static_cast<float>(m_display_texture_view_y) + 0.5f) * rcp_height;
+    const float rcp_width = 1.0f / static_cast<float>(display_texture->GetWidth());
+    const float rcp_height = 1.0f / static_cast<float>(display_texture->GetHeight());
+    uniforms.src_rect[0] = static_cast<float>(display_texture_view_x) * rcp_width;
+    uniforms.src_rect[1] = static_cast<float>(display_texture_view_y) * rcp_height;
+    uniforms.src_rect[2] = static_cast<float>(display_texture_view_width) * rcp_width;
+    uniforms.src_rect[3] = static_cast<float>(display_texture_view_height) * rcp_height;
+    uniforms.clamp_rect[0] = (static_cast<float>(display_texture_view_x) + 0.5f) * rcp_width;
+    uniforms.clamp_rect[1] = (static_cast<float>(display_texture_view_y) + 0.5f) * rcp_height;
     uniforms.clamp_rect[2] =
-      (static_cast<float>(m_display_texture_view_x + m_display_texture_view_width) - 0.5f) * rcp_width;
+      (static_cast<float>(display_texture_view_x + display_texture_view_width) - 0.5f) * rcp_width;
     uniforms.clamp_rect[3] =
-      (static_cast<float>(m_display_texture_view_y + m_display_texture_view_height) - 0.5f) * rcp_height;
-    uniforms.src_size[0] = static_cast<float>(m_display_texture->GetWidth());
-    uniforms.src_size[1] = static_cast<float>(m_display_texture->GetHeight());
+      (static_cast<float>(display_texture_view_y + display_texture_view_height) - 0.5f) * rcp_height;
+    uniforms.src_size[0] = static_cast<float>(display_texture->GetWidth());
+    uniforms.src_size[1] = static_cast<float>(display_texture->GetHeight());
     uniforms.src_size[2] = rcp_width;
     uniforms.src_size[3] = rcp_height;
     g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
@@ -2044,9 +2074,10 @@ bool GPU::RenderDisplay(GPUTexture* target, const Common::Rectangle<s32>& draw_r
     const s32 orig_width = static_cast<s32>(std::ceil(static_cast<float>(m_crtc_state.display_width) * upscale_x));
     const s32 orig_height = static_cast<s32>(std::ceil(static_cast<float>(m_crtc_state.display_height) * upscale_y));
 
-    return PostProcessing::Apply(target, real_draw_rect.left, real_draw_rect.top, real_draw_rect.GetWidth(),
-                                 real_draw_rect.GetHeight(), orig_width, orig_height, m_crtc_state.display_width,
-                                 m_crtc_state.display_height);
+    return PostProcessing::DisplayChain.Apply(PostProcessing::DisplayChain.GetInputTexture(), target,
+                                              real_draw_rect.left, real_draw_rect.top, real_draw_rect.GetWidth(),
+                                              real_draw_rect.GetHeight(), orig_width, orig_height,
+                                              m_crtc_state.display_width, m_crtc_state.display_height);
   }
   else
   {

@@ -16,28 +16,40 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QSlider>
 
-PostProcessingSettingsWidget::PostProcessingSettingsWidget(SettingsWindow* dialog, QWidget* parent)
-  : QWidget(parent), m_dialog(dialog)
+PostProcessingSettingsWidget::PostProcessingSettingsWidget(SettingsWindow* dialog, QWidget* parent) : QTabWidget(parent)
+{
+  addTab(new PostProcessingChainConfigWidget(dialog, this, PostProcessing::Config::DISPLAY_CHAIN_SECTION),
+         tr("Display"));
+  addTab(new PostProcessingChainConfigWidget(dialog, this, PostProcessing::Config::INTERNAL_CHAIN_SECTION),
+         tr("Internal"));
+  setDocumentMode(true);
+}
+
+PostProcessingSettingsWidget::~PostProcessingSettingsWidget() = default;
+
+PostProcessingChainConfigWidget::PostProcessingChainConfigWidget(SettingsWindow* dialog, QWidget* parent,
+                                                                 const char* section)
+  : QWidget(parent), m_dialog(dialog), m_section(section)
 {
   SettingsInterface* sif = dialog->getSettingsInterface();
 
   m_ui.setupUi(this);
 
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enablePostProcessing, "PostProcessing", "Enabled", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enablePostProcessing, section, "Enabled", false);
 
   updateList();
   updateButtonsAndConfigPane(std::nullopt);
   connectUi();
 }
 
-PostProcessingSettingsWidget::~PostProcessingSettingsWidget() = default;
+PostProcessingChainConfigWidget::~PostProcessingChainConfigWidget() = default;
 
-SettingsInterface& PostProcessingSettingsWidget::getSettingsInterfaceToUpdate()
+SettingsInterface& PostProcessingChainConfigWidget::getSettingsInterfaceToUpdate()
 {
   return m_dialog->isPerGameSettings() ? *m_dialog->getSettingsInterface() : *Host::Internal::GetBaseSettingsLayer();
 }
 
-void PostProcessingSettingsWidget::commitSettingsUpdate()
+void PostProcessingChainConfigWidget::commitSettingsUpdate()
 {
   if (m_dialog->isPerGameSettings())
   {
@@ -50,26 +62,26 @@ void PostProcessingSettingsWidget::commitSettingsUpdate()
   }
 }
 
-void PostProcessingSettingsWidget::connectUi()
+void PostProcessingChainConfigWidget::connectUi()
 {
-  connect(m_ui.reload, &QPushButton::clicked, this, &PostProcessingSettingsWidget::onReloadButtonClicked);
-  connect(m_ui.add, &QToolButton::clicked, this, &PostProcessingSettingsWidget::onAddButtonClicked);
-  connect(m_ui.remove, &QToolButton::clicked, this, &PostProcessingSettingsWidget::onRemoveButtonClicked);
-  connect(m_ui.clear, &QToolButton::clicked, this, &PostProcessingSettingsWidget::onClearButtonClicked);
-  connect(m_ui.moveUp, &QToolButton::clicked, this, &PostProcessingSettingsWidget::onMoveUpButtonClicked);
-  connect(m_ui.moveDown, &QToolButton::clicked, this, &PostProcessingSettingsWidget::onMoveDownButtonClicked);
+  connect(m_ui.reload, &QPushButton::clicked, this, &PostProcessingChainConfigWidget::onReloadButtonClicked);
+  connect(m_ui.add, &QToolButton::clicked, this, &PostProcessingChainConfigWidget::onAddButtonClicked);
+  connect(m_ui.remove, &QToolButton::clicked, this, &PostProcessingChainConfigWidget::onRemoveButtonClicked);
+  connect(m_ui.clear, &QToolButton::clicked, this, &PostProcessingChainConfigWidget::onClearButtonClicked);
+  connect(m_ui.moveUp, &QToolButton::clicked, this, &PostProcessingChainConfigWidget::onMoveUpButtonClicked);
+  connect(m_ui.moveDown, &QToolButton::clicked, this, &PostProcessingChainConfigWidget::onMoveDownButtonClicked);
   connect(m_ui.stages, &QListWidget::itemSelectionChanged, this,
-          &PostProcessingSettingsWidget::onSelectedShaderChanged);
+          &PostProcessingChainConfigWidget::onSelectedShaderChanged);
 }
 
-std::optional<u32> PostProcessingSettingsWidget::getSelectedIndex() const
+std::optional<u32> PostProcessingChainConfigWidget::getSelectedIndex() const
 {
   QList<QListWidgetItem*> selected_items = m_ui.stages->selectedItems();
   return selected_items.empty() ? std::nullopt :
                                   std::optional<u32>(selected_items.first()->data(Qt::UserRole).toUInt());
 }
 
-void PostProcessingSettingsWidget::selectIndex(s32 index)
+void PostProcessingChainConfigWidget::selectIndex(s32 index)
 {
   if (index < 0 || index >= m_ui.stages->count())
     return;
@@ -79,7 +91,7 @@ void PostProcessingSettingsWidget::selectIndex(s32 index)
   updateButtonsAndConfigPane(index);
 }
 
-void PostProcessingSettingsWidget::updateList()
+void PostProcessingChainConfigWidget::updateList()
 {
   const auto lock = Host::GetSettingsLock();
   const SettingsInterface& si = getSettingsInterfaceToUpdate();
@@ -87,15 +99,15 @@ void PostProcessingSettingsWidget::updateList()
   updateList(si);
 }
 
-void PostProcessingSettingsWidget::updateList(const SettingsInterface& si)
+void PostProcessingChainConfigWidget::updateList(const SettingsInterface& si)
 {
   m_ui.stages->clear();
 
-  const u32 stage_count = PostProcessing::Config::GetStageCount(si);
+  const u32 stage_count = PostProcessing::Config::GetStageCount(si, m_section);
 
   for (u32 i = 0; i < stage_count; i++)
   {
-    const std::string stage_name = PostProcessing::Config::GetStageShaderName(si, i);
+    const std::string stage_name = PostProcessing::Config::GetStageShaderName(si, m_section, i);
     QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(stage_name), m_ui.stages);
     item->setData(Qt::UserRole, QVariant(i));
   }
@@ -105,7 +117,7 @@ void PostProcessingSettingsWidget::updateList(const SettingsInterface& si)
   updateButtonsAndConfigPane(std::nullopt);
 }
 
-void PostProcessingSettingsWidget::updateButtonsAndConfigPane(std::optional<u32> index)
+void PostProcessingChainConfigWidget::updateButtonsAndConfigPane(std::optional<u32> index)
 {
   m_ui.remove->setEnabled(index.has_value());
 
@@ -134,16 +146,18 @@ void PostProcessingSettingsWidget::updateButtonsAndConfigPane(std::optional<u32>
 
   const auto lock = Host::GetSettingsLock();
   const SettingsInterface& si = getSettingsInterfaceToUpdate();
-  std::vector<PostProcessing::ShaderOption> options = PostProcessing::Config::GetStageOptions(si, index.value());
+  std::vector<PostProcessing::ShaderOption> options =
+    PostProcessing::Config::GetStageOptions(si, m_section, index.value());
   if (options.empty())
     return;
 
-  m_shader_config = new PostProcessingShaderConfigWidget(m_ui.scrollArea, this, index.value(), std::move(options));
+  m_shader_config =
+    new PostProcessingShaderConfigWidget(m_ui.scrollArea, this, m_section, index.value(), std::move(options));
   m_ui.scrollArea->setWidget(m_shader_config);
   m_ui.scrollArea->setVisible(true);
 }
 
-void PostProcessingSettingsWidget::onAddButtonClicked()
+void PostProcessingChainConfigWidget::onAddButtonClicked()
 {
   QMenu menu;
 
@@ -162,7 +176,7 @@ void PostProcessingSettingsWidget::onAddButtonClicked()
         SettingsInterface& si = getSettingsInterfaceToUpdate();
 
         Error error;
-        if (!PostProcessing::Config::AddStage(si, shader, &error))
+        if (!PostProcessing::Config::AddStage(si, m_section, shader, &error))
         {
           lock.unlock();
           QMessageBox::critical(this, tr("Error"),
@@ -180,7 +194,7 @@ void PostProcessingSettingsWidget::onAddButtonClicked()
   menu.exec(QCursor::pos());
 }
 
-void PostProcessingSettingsWidget::onRemoveButtonClicked()
+void PostProcessingChainConfigWidget::onRemoveButtonClicked()
 {
   QList<QListWidgetItem*> selected_items = m_ui.stages->selectedItems();
   if (selected_items.empty())
@@ -191,37 +205,37 @@ void PostProcessingSettingsWidget::onRemoveButtonClicked()
 
   QListWidgetItem* item = selected_items.first();
   u32 index = item->data(Qt::UserRole).toUInt();
-  if (index < PostProcessing::Config::GetStageCount(si))
+  if (index < PostProcessing::Config::GetStageCount(si, m_section))
   {
-    PostProcessing::Config::RemoveStage(si, index);
+    PostProcessing::Config::RemoveStage(si, m_section, index);
     updateList(si);
     lock.unlock();
     commitSettingsUpdate();
   }
 }
 
-void PostProcessingSettingsWidget::onClearButtonClicked()
+void PostProcessingChainConfigWidget::onClearButtonClicked()
 {
   if (QMessageBox::question(this, tr("Question"), tr("Are you sure you want to clear all shader stages?"),
                             QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
   {
     auto lock = Host::GetSettingsLock();
     SettingsInterface& si = getSettingsInterfaceToUpdate();
-    PostProcessing::Config::ClearStages(si);
+    PostProcessing::Config::ClearStages(si, m_section);
     updateList(si);
     lock.unlock();
     commitSettingsUpdate();
   }
 }
 
-void PostProcessingSettingsWidget::onMoveUpButtonClicked()
+void PostProcessingChainConfigWidget::onMoveUpButtonClicked()
 {
   std::optional<u32> index = getSelectedIndex();
   if (index.has_value() && index.value() > 0)
   {
     auto lock = Host::GetSettingsLock();
     SettingsInterface& si = getSettingsInterfaceToUpdate();
-    PostProcessing::Config::MoveStageUp(si, index.value());
+    PostProcessing::Config::MoveStageUp(si, m_section, index.value());
     updateList(si);
     lock.unlock();
     selectIndex(index.value() - 1);
@@ -229,14 +243,14 @@ void PostProcessingSettingsWidget::onMoveUpButtonClicked()
   }
 }
 
-void PostProcessingSettingsWidget::onMoveDownButtonClicked()
+void PostProcessingChainConfigWidget::onMoveDownButtonClicked()
 {
   std::optional<u32> index = getSelectedIndex();
   if (index.has_value() || index.value() < (static_cast<u32>(m_ui.stages->count() - 1)))
   {
     auto lock = Host::GetSettingsLock();
     SettingsInterface& si = getSettingsInterfaceToUpdate();
-    PostProcessing::Config::MoveStageDown(si, index.value());
+    PostProcessing::Config::MoveStageDown(si, m_section, index.value());
     updateList(si);
     lock.unlock();
     selectIndex(index.value() + 1);
@@ -244,22 +258,22 @@ void PostProcessingSettingsWidget::onMoveDownButtonClicked()
   }
 }
 
-void PostProcessingSettingsWidget::onReloadButtonClicked()
+void PostProcessingChainConfigWidget::onReloadButtonClicked()
 {
   g_emu_thread->reloadPostProcessingShaders();
 }
 
-void PostProcessingSettingsWidget::onSelectedShaderChanged()
+void PostProcessingChainConfigWidget::onSelectedShaderChanged()
 {
   std::optional<u32> index = getSelectedIndex();
   updateButtonsAndConfigPane(index);
 }
 
 PostProcessingShaderConfigWidget::PostProcessingShaderConfigWidget(QWidget* parent,
-                                                                   PostProcessingSettingsWidget* widget,
-                                                                   u32 stage_index,
+                                                                   PostProcessingChainConfigWidget* widget,
+                                                                   const char* section, u32 stage_index,
                                                                    std::vector<PostProcessing::ShaderOption> options)
-  : QWidget(parent), m_widget(widget), m_stage_index(stage_index), m_options(std::move(options))
+  : QWidget(parent), m_widget(widget), m_section(section), m_stage_index(stage_index), m_options(std::move(options))
 {
   m_layout = new QGridLayout(this);
 
@@ -272,7 +286,7 @@ void PostProcessingShaderConfigWidget::updateConfigForOption(const PostProcessin
 {
   const auto lock = Host::GetSettingsLock();
   SettingsInterface& si = m_widget->getSettingsInterfaceToUpdate();
-  PostProcessing::Config::SetStageOption(si, m_stage_index, option);
+  PostProcessing::Config::SetStageOption(si, m_section, m_stage_index, option);
   m_widget->commitSettingsUpdate();
 }
 
@@ -287,7 +301,7 @@ void PostProcessingShaderConfigWidget::onResetDefaultsClicked()
         continue;
 
       option.value = option.default_value;
-      PostProcessing::Config::UnsetStageOption(si, m_stage_index, option);
+      PostProcessing::Config::UnsetStageOption(si, m_section, m_stage_index, option);
     }
     m_widget->commitSettingsUpdate();
   }

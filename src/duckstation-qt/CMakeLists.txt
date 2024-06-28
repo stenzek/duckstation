@@ -126,7 +126,7 @@ set(SRCS
   memoryviewwidget.h
   postprocessingsettingswidget.cpp
   postprocessingsettingswidget.h
-  postprocessingsettingswidget.ui
+  postprocessingchainconfigwidget.ui
   qthost.cpp
   qthost.h
   qtkeycodes.cpp

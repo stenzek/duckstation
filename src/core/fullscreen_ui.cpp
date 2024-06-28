@@ -390,7 +390,7 @@ static void DrawFolderSetting(SettingsInterface* bsi, const char* title, const c
 
 static void PopulateGraphicsAdapterList();
 static void PopulateGameListDirectoryCache(SettingsInterface* si);
-static void PopulatePostProcessingChain(SettingsInterface* si);
+static void PopulatePostProcessingChain(SettingsInterface* si, const char* section);
 static void BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::Type type, std::string_view section,
                               std::string_view key, std::string_view display_name);
 static void DrawInputBindingWindow();
@@ -2733,7 +2733,7 @@ void FullscreenUI::SwitchToSettings()
   s_game_settings_interface.reset();
 
   PopulateGraphicsAdapterList();
-  PopulatePostProcessingChain(GetEditingSettingsInterface());
+  PopulatePostProcessingChain(GetEditingSettingsInterface(), PostProcessing::Config::DISPLAY_CHAIN_SECTION);
 
   s_current_main_window = MainWindowType::Settings;
   s_settings_page = SettingsPage::Interface;
@@ -4489,16 +4489,16 @@ void FullscreenUI::DrawDisplaySettingsPage()
   EndMenuButtons();
 }
 
-void FullscreenUI::PopulatePostProcessingChain(SettingsInterface* si)
+void FullscreenUI::PopulatePostProcessingChain(SettingsInterface* si, const char* section)
 {
-  const u32 stages = PostProcessing::Config::GetStageCount(*si);
+  const u32 stages = PostProcessing::Config::GetStageCount(*si, section);
   s_postprocessing_stages.clear();
   s_postprocessing_stages.reserve(stages);
   for (u32 i = 0; i < stages; i++)
   {
     PostProcessingStageInfo psi;
-    psi.name = PostProcessing::Config::GetStageShaderName(*si, i);
-    psi.options = PostProcessing::Config::GetStageOptions(*si, i);
+    psi.name = PostProcessing::Config::GetStageShaderName(*si, section, i);
+    psi.options = PostProcessing::Config::GetStageOptions(*si, section, i);
     s_postprocessing_stages.push_back(std::move(psi));
   }
 }
@@ -4514,6 +4514,7 @@ enum
 void FullscreenUI::DrawPostProcessingSettingsPage()
 {
   SettingsInterface* bsi = GetEditingSettingsInterface();
+  static constexpr const char* section = PostProcessing::Config::DISPLAY_CHAIN_SECTION;
 
   BeginMenuButtons();
 
@@ -4549,11 +4550,11 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
                        const std::string& shader_name = shaders[index].second;
                        SettingsInterface* bsi = GetEditingSettingsInterface();
                        Error error;
-                       if (PostProcessing::Config::AddStage(*bsi, shader_name, &error))
+                       if (PostProcessing::Config::AddStage(*bsi, section, shader_name, &error))
                        {
                          ShowToast(std::string(), fmt::format(FSUI_FSTR("Shader {} added as stage {}."), title,
-                                                              PostProcessing::Config::GetStageCount(*bsi)));
-                         PopulatePostProcessingChain(bsi);
+                                                              PostProcessing::Config::GetStageCount(*bsi, section)));
+                         PopulatePostProcessingChain(bsi, section);
                          SetSettingsChanged(bsi);
                        }
                        else
@@ -4577,8 +4578,8 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
           return;
 
         SettingsInterface* bsi = GetEditingSettingsInterface();
-        PostProcessing::Config::ClearStages(*bsi);
-        PopulatePostProcessingChain(bsi);
+        PostProcessing::Config::ClearStages(*bsi, section);
+        PopulatePostProcessingChain(bsi, section);
         SetSettingsChanged(bsi);
         ShowToast(std::string(), FSUI_STR("Post-processing chain cleared."));
       });
@@ -4635,7 +4636,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
                            &value))
           {
             opt.value[0].int_value = (value != 0);
-            PostProcessing::Config::SetStageOption(*bsi, stage_index, opt);
+            PostProcessing::Config::SetStageOption(*bsi, section, stage_index, opt);
             SetSettingsChanged(bsi);
           }
         }
@@ -4719,7 +4720,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
 
             if (changed)
             {
-              PostProcessing::Config::SetStageOption(*bsi, stage_index, opt);
+              PostProcessing::Config::SetStageOption(*bsi, section, stage_index, opt);
               SetSettingsChanged(bsi);
             }
 #endif
@@ -4817,7 +4818,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
 
             if (changed)
             {
-              PostProcessing::Config::SetStageOption(*bsi, stage_index, opt);
+              PostProcessing::Config::SetStageOption(*bsi, section, stage_index, opt);
               SetSettingsChanged(bsi);
             }
 #endif
@@ -4853,22 +4854,22 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
       const PostProcessingStageInfo& si = s_postprocessing_stages[postprocessing_action_index];
       ShowToast(std::string(),
                 fmt::format(FSUI_FSTR("Removed stage {} ({})."), postprocessing_action_index + 1, si.name));
-      PostProcessing::Config::RemoveStage(*bsi, postprocessing_action_index);
-      PopulatePostProcessingChain(bsi);
+      PostProcessing::Config::RemoveStage(*bsi, section, postprocessing_action_index);
+      PopulatePostProcessingChain(bsi, section);
       SetSettingsChanged(bsi);
     }
     break;
     case POSTPROCESSING_ACTION_MOVE_UP:
     {
-      PostProcessing::Config::MoveStageUp(*bsi, postprocessing_action_index);
-      PopulatePostProcessingChain(bsi);
+      PostProcessing::Config::MoveStageUp(*bsi, section, postprocessing_action_index);
+      PopulatePostProcessingChain(bsi, section);
       SetSettingsChanged(bsi);
     }
     break;
     case POSTPROCESSING_ACTION_MOVE_DOWN:
     {
-      PostProcessing::Config::MoveStageDown(*bsi, postprocessing_action_index);
-      PopulatePostProcessingChain(bsi);
+      PostProcessing::Config::MoveStageDown(*bsi, section, postprocessing_action_index);
+      PopulatePostProcessingChain(bsi, section);
       SetSettingsChanged(bsi);
     }
     break;

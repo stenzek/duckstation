@@ -406,7 +406,13 @@ DEFINE_HOTKEY("DecreaseResolutionScale", TRANSLATE_NOOP("Hotkeys", "Graphics"),
 DEFINE_HOTKEY("TogglePostProcessing", TRANSLATE_NOOP("Hotkeys", "Graphics"),
               TRANSLATE_NOOP("Hotkeys", "Toggle Post-Processing"), [](s32 pressed) {
                 if (!pressed && System::IsValid())
-                  PostProcessing::Toggle();
+                  PostProcessing::DisplayChain.Toggle();
+              })
+
+              DEFINE_HOTKEY("ToggleInternalPostProcessing", TRANSLATE_NOOP("Hotkeys", "Graphics"),
+              TRANSLATE_NOOP("Hotkeys", "Toggle Internal Post-Processing"), [](s32 pressed) {
+                if (!pressed && System::IsValid())
+                  PostProcessing::InternalChain.Toggle();
               })
 
 DEFINE_HOTKEY("ReloadPostProcessingShaders", TRANSLATE_NOOP("Hotkeys", "Graphics"),

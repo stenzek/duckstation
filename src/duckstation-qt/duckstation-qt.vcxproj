@@ -134,7 +134,7 @@
     <QtUi Include="advancedsettingswidget.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <QtUi Include="postprocessingsettingswidget.ui">
+    <QtUi Include="postprocessingchainconfigwidget.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="memorycardeditorwindow.ui">

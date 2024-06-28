@@ -255,7 +255,7 @@
     <QtUi Include="inputbindingdialog.ui" />
     <QtUi Include="autoupdaterdialog.ui" />
     <QtUi Include="biossettingswidget.ui" />
-    <QtUi Include="postprocessingsettingswidget.ui" />
+    <QtUi Include="postprocessingchainconfigwidget.ui" />
     <QtUi Include="memorycardeditorwindow.ui" />
     <QtUi Include="cheatmanagerwindow.ui" />
     <QtUi Include="cheatcodeeditordialog.ui" />

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -7,6 +7,7 @@
 
 #include <array>
 #include <memory>
+#include <mutex>
 #include <string_view>
 #include <vector>
 
@@ -22,6 +23,8 @@ class SettingsInterface;
 class ProgressCallback;
 
 namespace PostProcessing {
+class Shader;
+
 struct ShaderOption
 {
   enum : u32
@@ -87,51 +90,86 @@ struct ShaderOption
   }
 };
 
-// [display_name, filename]
-std::vector<std::pair<std::string, std::string>> GetAvailableShaderNames();
-
 namespace Config {
-u32 GetStageCount(const SettingsInterface& si);
-std::string GetStageShaderName(const SettingsInterface& si, u32 index);
-std::vector<ShaderOption> GetStageOptions(const SettingsInterface& si, u32 index);
+static constexpr const char* DISPLAY_CHAIN_SECTION = "PostProcessing";
+static constexpr const char* INTERNAL_CHAIN_SECTION = "InternalPostProcessing";
+
+u32 GetStageCount(const SettingsInterface& si, const char* section);
+std::string GetStageShaderName(const SettingsInterface& si, const char* section, u32 index);
+std::vector<ShaderOption> GetStageOptions(const SettingsInterface& si, const char* section, u32 index);
 std::vector<ShaderOption> GetShaderOptions(const std::string& shader_name, Error* error);
 
-bool AddStage(SettingsInterface& si, const std::string& shader_name, Error* error);
-void RemoveStage(SettingsInterface& si, u32 index);
-void MoveStageUp(SettingsInterface& si, u32 index);
-void MoveStageDown(SettingsInterface& si, u32 index);
-void SetStageOption(SettingsInterface& si, u32 index, const ShaderOption& option);
-void UnsetStageOption(SettingsInterface& si, u32 index, const ShaderOption& option);
-void ClearStages(SettingsInterface& si);
+bool AddStage(SettingsInterface& si, const char* section, const std::string& shader_name, Error* error);
+void RemoveStage(SettingsInterface& si, const char* section, u32 index);
+void MoveStageUp(SettingsInterface& si, const char* section, u32 index);
+void MoveStageDown(SettingsInterface& si, const char* section, u32 index);
+void SetStageOption(SettingsInterface& si, const char* section, u32 index, const ShaderOption& option);
+void UnsetStageOption(SettingsInterface& si, const char* section, u32 index, const ShaderOption& option);
+void ClearStages(SettingsInterface& si, const char* section);
 } // namespace Config
 
-bool IsActive();
-bool IsEnabled();
-void SetEnabled(bool enabled);
+class Chain
+{
+public:
+  Chain(const char* section);
+  ~Chain();
+
+  ALWAYS_INLINE bool HasStages() const { return m_stages.empty(); }
+  ALWAYS_INLINE GPUTexture* GetInputTexture() const { return m_input_texture.get(); }
+  ALWAYS_INLINE GPUTexture* GetOutputTexture() const { return m_output_texture.get(); }
+
+  bool IsActive() const;
+  bool IsInternalChain() const;
+
+  void UpdateSettings(std::unique_lock<std::mutex>& settings_lock);
+
+  void LoadStages();
+  void ClearStages();
+  void DestroyTextures();
+
+  /// Temporarily toggles post-processing on/off.
+  void Toggle();
+
+  bool CheckTargets(GPUTexture::Format target_format, u32 target_width, u32 target_height,
+                    ProgressCallback* progress = nullptr);
+
+  bool Apply(GPUTexture* input_color, GPUTexture* final_target, s32 final_left, s32 final_top, s32 final_width,
+             s32 final_height, s32 orig_width, s32 orig_height, s32 native_width, s32 native_height);
+
+private:
+  void ClearStagesWithError(const Error& error);
+
+  const char* m_section;
+
+  GPUTexture::Format m_target_format = GPUTexture::Format::Unknown;
+  u32 m_target_width = 0;
+  u32 m_target_height = 0;
+  bool m_enabled = false;
+
+  std::vector<std::unique_ptr<PostProcessing::Shader>> m_stages;
+  std::unique_ptr<GPUTexture> m_input_texture;
+  std::unique_ptr<GPUTexture> m_output_texture;
+};
+
+// [display_name, filename]
+std::vector<std::pair<std::string, std::string>> GetAvailableShaderNames();
 
 void Initialize();
 
 /// Reloads configuration.
 void UpdateSettings();
 
-/// Temporarily toggles post-processing on/off.
-void Toggle();
-
 /// Reloads post processing shaders with the current configuration.
 bool ReloadShaders();
 
 void Shutdown();
 
-GPUTexture* GetInputTexture();
-const Common::Timer& GetTimer();
-
-bool CheckTargets(GPUTexture::Format target_format, u32 target_width, u32 target_height,
-                  ProgressCallback* progress = nullptr);
-
-bool Apply(GPUTexture* final_target, s32 final_left, s32 final_top, s32 final_width, s32 final_height, s32 orig_width,
-           s32 orig_height, s32 native_width, s32 native_height);
-
 GPUSampler* GetSampler(const GPUSampler::Config& config);
 GPUTexture* GetDummyTexture();
+
+const Common::Timer& GetTimer();
+
+extern Chain DisplayChain;
+extern Chain InternalChain;
 
 }; // namespace PostProcessing

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>PostProcessingSettingsWidget</class>
- <widget class="QWidget" name="PostProcessingSettingsWidget">
+ <class>PostProcessingChainConfigWidget</class>
+ <widget class="QWidget" name="PostProcessingChainConfigWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,18 +11,6 @@
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0">
-   <property name="leftMargin">
-    <number>0</number>
-   </property>
-   <property name="topMargin">
-    <number>0</number>
-   </property>
-   <property name="rightMargin">
-    <number>0</number>
-   </property>
-   <property name="bottomMargin">
-    <number>0</number>
-   </property>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
@@ -35,7 +23,7 @@
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -51,8 +39,7 @@
         <string>&amp;Reload Shaders</string>
        </property>
        <property name="icon">
-          <iconset theme="refresh-line">
-          <normaloff>.</normaloff>.</iconset>
+        <iconset theme="refresh-line"/>
        </property>
       </widget>
      </item>
@@ -94,11 +81,10 @@
            <string>Add</string>
           </property>
           <property name="icon">
-           <iconset theme="add-line">
-            <normaloff>.</normaloff>.</iconset>
+           <iconset theme="add-line"/>
           </property>
           <property name="toolButtonStyle">
-           <enum>Qt::ToolButtonTextBesideIcon</enum>
+           <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
           </property>
          </widget>
         </item>
@@ -114,11 +100,10 @@
            <string>Remove</string>
           </property>
           <property name="icon">
-           <iconset theme="minus-line">
-            <normaloff>.</normaloff>.</iconset>
+           <iconset theme="minus-line"/>
           </property>
           <property name="toolButtonStyle">
-           <enum>Qt::ToolButtonTextBesideIcon</enum>
+           <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
           </property>
          </widget>
         </item>
@@ -134,11 +119,10 @@
            <string>Clear</string>
           </property>
           <property name="icon">
-           <iconset theme="trash-fill">
-            <normaloff>.</normaloff>.</iconset>
+           <iconset theme="trash-fill"/>
           </property>
           <property name="toolButtonStyle">
-           <enum>Qt::ToolButtonTextBesideIcon</enum>
+           <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
           </property>
          </widget>
         </item>
@@ -154,11 +138,10 @@
            <string>Move Up</string>
           </property>
           <property name="icon">
-           <iconset theme="arrow-up-line">
-            <normaloff>.</normaloff>.</iconset>
+           <iconset theme="arrow-up-line"/>
           </property>
           <property name="toolButtonStyle">
-           <enum>Qt::ToolButtonTextBesideIcon</enum>
+           <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
           </property>
          </widget>
         </item>
@@ -174,11 +157,10 @@
            <string>Move Down</string>
           </property>
           <property name="icon">
-           <iconset theme="arrow-down-line">
-            <normaloff>.</normaloff>.</iconset>
+           <iconset theme="arrow-down-line"/>
           </property>
           <property name="toolButtonStyle">
-           <enum>Qt::ToolButtonTextBesideIcon</enum>
+           <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
           </property>
          </widget>
         </item>
@@ -196,10 +178,10 @@
       </sizepolicy>
      </property>
      <property name="frameShape">
-      <enum>QFrame::WinPanel</enum>
+      <enum>QFrame::Shape::WinPanel</enum>
      </property>
      <property name="frameShadow">
-      <enum>QFrame::Sunken</enum>
+      <enum>QFrame::Shadow::Sunken</enum>
      </property>
      <property name="widgetResizable">
       <bool>true</bool>
@@ -209,8 +191,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>679</width>
-        <height>238</height>
+        <width>661</width>
+        <height>220</height>
        </rect>
       </property>
      </widget>
@@ -219,7 +201,7 @@
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>

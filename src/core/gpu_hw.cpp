@@ -11,6 +11,7 @@
 #include "system.h"
 
 #include "util/imgui_manager.h"
+#include "util/postprocessing.h"
 #include "util/state_wrapper.h"
 
 #include "common/align.h"
@@ -3311,7 +3312,8 @@ void GPU_HW::UpdateDisplay()
   }
   else if (!m_GPUSTAT.display_area_color_depth_24 && !IsUsingMultisampling() &&
            (scaled_vram_offset_x + scaled_display_width) <= m_vram_texture->GetWidth() &&
-           (scaled_vram_offset_y + scaled_display_height) <= m_vram_texture->GetHeight())
+           (scaled_vram_offset_y + scaled_display_height) <= m_vram_texture->GetHeight() &&
+           !PostProcessing::InternalChain.IsActive())
   {
     SetDisplayTexture(m_vram_texture.get(), scaled_vram_offset_x, scaled_vram_offset_y, scaled_display_width,
                       read_height);
