@@ -4764,13 +4764,13 @@ bool System::SaveScreenshot(const char* filename, DisplayScreenshotMode mode, Di
   std::string auto_filename;
   if (!filename)
   {
-    const std::string& name = System::GetGameTitle();
+    const std::string sanitized_name = Path::SanitizeFileName(System::GetGameTitle());
     const char* extension = Settings::GetDisplayScreenshotFormatExtension(format);
     std::string basename;
-    if (name.empty())
+    if (sanitized_name.empty())
       basename = fmt::format("{}", GetTimestampStringForFileName());
     else
-      basename = fmt::format("{} {}", name, GetTimestampStringForFileName());
+      basename = fmt::format("{} {}", sanitized_name, GetTimestampStringForFileName());
 
     auto_filename = fmt::format("{}" FS_OSPATH_SEPARATOR_STR "{}.{}", EmuFolders::Screenshots, basename, extension);
 
