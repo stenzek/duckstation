@@ -1543,7 +1543,8 @@ bool Achievements::DoState(StateWrapper& sw)
       return !sw.HasError();
     }
 
-    s_state_buffer.resize(data_size);
+    if (data_size > s_state_buffer.size())
+      s_state_buffer.resize(data_size);
     if (data_size > 0)
       sw.DoBytes(s_state_buffer.data(), data_size);
     if (sw.HasError())
@@ -1569,7 +1570,7 @@ bool Achievements::DoState(StateWrapper& sw)
   }
   else
   {
-    u32 data_size;
+    size_t data_size;
 
 #ifdef ENABLE_RAINTEGRATION
     if (IsUsingRAIntegration())
@@ -1592,23 +1593,19 @@ bool Achievements::DoState(StateWrapper& sw)
     else
 #endif
     {
-      int result = RC_INSUFFICIENT_BUFFER;
-      if (!s_state_buffer.empty())
-        result = rc_client_serialize_progress_sized(s_client, s_state_buffer.data(), s_state_buffer.size());
-
-      if (result == RC_INSUFFICIENT_BUFFER)
+      data_size = rc_client_progress_size(s_client);
+      if (data_size > 0)
       {
-        const size_t size = rc_client_progress_size(s_client);
-        s_state_buffer.resize(size);
-        result = rc_client_serialize_progress_sized(s_client, s_state_buffer.data(), s_state_buffer.size());
-      }
+        if (s_state_buffer.size() < data_size)
+          s_state_buffer.resize(data_size);
 
-      data_size = static_cast<u32>(s_state_buffer.size());
-      if (result != RC_OK)
-      {
-        // set data to zero, effectively serializing nothing
-        WARNING_LOG("Failed to serialize cheevos state ({})", result);
-        data_size = 0;
+        const int result = rc_client_serialize_progress_sized(s_client, s_state_buffer.data(), data_size);
+        if (result != RC_OK)
+        {
+          // set data to zero, effectively serializing nothing
+          WARNING_LOG("Failed to serialize cheevos state ({})", result);
+          data_size = 0;
+        }
       }
     }
 
