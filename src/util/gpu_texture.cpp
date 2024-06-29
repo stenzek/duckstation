@@ -33,6 +33,9 @@ const char* GPUTexture::GetFormatName(Format format)
     "RGB5551", // RGBA5551
     "R8",      // R8
     "D16",     // D16
+    "D24S8",   // D24S8
+    "D32F",    // D32F
+    "D32FS8S", // D32FS8
     "R16",     // R16
     "R16I",    // R16I
     "R16U",    // R16U
@@ -149,6 +152,9 @@ u32 GPUTexture::GetPixelSize(GPUTexture::Format format)
     2,  // RGBA5551
     1,  // R8
     2,  // D16
+    4,  // D24S8
+    4,  // D32F
+    8,  // D32FS8
     2,  // R16
     2,  // R16I
     2,  // R16U
@@ -171,13 +177,12 @@ u32 GPUTexture::GetPixelSize(GPUTexture::Format format)
 
 bool GPUTexture::IsDepthFormat(Format format)
 {
-  return (format == Format::D16);
+  return (format >= Format::D16 && format <= Format::D32FS8);
 }
 
 bool GPUTexture::IsDepthStencilFormat(Format format)
 {
-  // None needed yet.
-  return false;
+  return (format == Format::D24S8 || format == Format::D32FS8);
 }
 
 bool GPUTexture::IsCompressedFormat(Format format)

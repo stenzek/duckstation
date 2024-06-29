@@ -29,55 +29,61 @@ const std::tuple<GLenum, GLenum, GLenum>& OpenGLTexture::GetPixelFormatMapping(G
 {
   static constexpr std::array<std::tuple<GLenum, GLenum, GLenum>, static_cast<u32>(GPUTexture::Format::MaxCount)>
     mapping = {{
-      {},                                                     // Unknown
-      {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE},                  // RGBA8
-      {GL_RGBA8, GL_BGRA, GL_UNSIGNED_BYTE},                  // BGRA8
-      {GL_RGB565, GL_RGB, GL_UNSIGNED_SHORT_5_6_5},           // RGB565
-      {GL_RGB5_A1, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV},   // RGBA5551
-      {GL_R8, GL_RED, GL_UNSIGNED_BYTE},                      // R8
-      {GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_SHORT},   // D16
-      {GL_R16, GL_RED, GL_UNSIGNED_SHORT},                    // R16
-      {GL_R16I, GL_RED_INTEGER, GL_SHORT},                    // R16I
-      {GL_R16UI, GL_RED_INTEGER, GL_UNSIGNED_SHORT},          // R16U
-      {GL_R16F, GL_RED, GL_HALF_FLOAT},                       // R16F
-      {GL_R32I, GL_RED_INTEGER, GL_INT},                      // R32I
-      {GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT},            // R32U
-      {GL_R32F, GL_RED, GL_FLOAT},                            // R32F
-      {GL_RG8, GL_RG_INTEGER, GL_UNSIGNED_BYTE},              // RG8
-      {GL_RG16F, GL_RG, GL_UNSIGNED_SHORT},                   // RG16
-      {GL_RG16F, GL_RG, GL_HALF_FLOAT},                       // RG16F
-      {GL_RG32F, GL_RG, GL_FLOAT},                            // RG32F
-      {GL_RGBA16, GL_RGBA, GL_UNSIGNED_BYTE},                 // RGBA16
-      {GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT},                   // RGBA16F
-      {GL_RGBA32F, GL_RGBA, GL_FLOAT},                        // RGBA32F
-      {GL_RGB10_A2, GL_BGRA, GL_UNSIGNED_INT_2_10_10_10_REV}, // RGB10A2
+      {},                                                       // Unknown
+      {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE},                    // RGBA8
+      {GL_RGBA8, GL_BGRA, GL_UNSIGNED_BYTE},                    // BGRA8
+      {GL_RGB565, GL_RGB, GL_UNSIGNED_SHORT_5_6_5},             // RGB565
+      {GL_RGB5_A1, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV},     // RGBA5551
+      {GL_R8, GL_RED, GL_UNSIGNED_BYTE},                        // R8
+      {GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_SHORT},     // D16
+      {GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT}, // D24S8
+      {GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT},    // D32F
+      {GL_DEPTH32F_STENCIL8, GL_DEPTH_STENCIL, GL_FLOAT},       // D32FS8
+      {GL_R16, GL_RED, GL_UNSIGNED_SHORT},                      // R16
+      {GL_R16I, GL_RED_INTEGER, GL_SHORT},                      // R16I
+      {GL_R16UI, GL_RED_INTEGER, GL_UNSIGNED_SHORT},            // R16U
+      {GL_R16F, GL_RED, GL_HALF_FLOAT},                         // R16F
+      {GL_R32I, GL_RED_INTEGER, GL_INT},                        // R32I
+      {GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT},              // R32U
+      {GL_R32F, GL_RED, GL_FLOAT},                              // R32F
+      {GL_RG8, GL_RG_INTEGER, GL_UNSIGNED_BYTE},                // RG8
+      {GL_RG16F, GL_RG, GL_UNSIGNED_SHORT},                     // RG16
+      {GL_RG16F, GL_RG, GL_HALF_FLOAT},                         // RG16F
+      {GL_RG32F, GL_RG, GL_FLOAT},                              // RG32F
+      {GL_RGBA16, GL_RGBA, GL_UNSIGNED_BYTE},                   // RGBA16
+      {GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT},                     // RGBA16F
+      {GL_RGBA32F, GL_RGBA, GL_FLOAT},                          // RGBA32F
+      {GL_RGB10_A2, GL_BGRA, GL_UNSIGNED_INT_2_10_10_10_REV},   // RGB10A2
     }};
 
   // GLES doesn't have the non-normalized 16-bit formats.. use float and hope for the best, lol.
   static constexpr std::array<std::tuple<GLenum, GLenum, GLenum>, static_cast<u32>(GPUTexture::Format::MaxCount)>
     mapping_gles = {{
-      {},                                                     // Unknown
-      {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE},                  // RGBA8
-      {GL_RGBA8, GL_BGRA, GL_UNSIGNED_BYTE},                  // BGRA8
-      {GL_RGB565, GL_RGB, GL_UNSIGNED_SHORT_5_6_5},           // RGB565
-      {GL_RGB5_A1, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV},   // RGBA5551
-      {GL_R8, GL_RED, GL_UNSIGNED_BYTE},                      // R8
-      {GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_SHORT},   // D16
-      {GL_R16F, GL_RED, GL_HALF_FLOAT},                       // R16
-      {GL_R16I, GL_RED_INTEGER, GL_SHORT},                    // R16I
-      {GL_R16UI, GL_RED_INTEGER, GL_UNSIGNED_SHORT},          // R16U
-      {GL_R16F, GL_RED, GL_HALF_FLOAT},                       // R16F
-      {GL_R32I, GL_RED_INTEGER, GL_INT},                      // R32I
-      {GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT},            // R32U
-      {GL_R32F, GL_RED, GL_FLOAT},                            // R32F
-      {GL_RG8, GL_RG, GL_UNSIGNED_BYTE},                      // RG8
-      {GL_RG16F, GL_RG, GL_HALF_FLOAT},                       // RG16
-      {GL_RG16F, GL_RG, GL_HALF_FLOAT},                       // RG16F
-      {GL_RG32F, GL_RG, GL_FLOAT},                            // RG32F
-      {GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT},                   // RGBA16
-      {GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT},                   // RGBA16F
-      {GL_RGBA32F, GL_RGBA, GL_FLOAT},                        // RGBA32F
-      {GL_RGB10_A2, GL_BGRA, GL_UNSIGNED_INT_2_10_10_10_REV}, // RGB10A2
+      {},                                                       // Unknown
+      {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE},                    // RGBA8
+      {GL_RGBA8, GL_BGRA, GL_UNSIGNED_BYTE},                    // BGRA8
+      {GL_RGB565, GL_RGB, GL_UNSIGNED_SHORT_5_6_5},             // RGB565
+      {GL_RGB5_A1, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV},     // RGBA5551
+      {GL_R8, GL_RED, GL_UNSIGNED_BYTE},                        // R8
+      {GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_SHORT},     // D16
+      {GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT}, // D24S8
+      {GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT},    // D32F
+      {GL_DEPTH32F_STENCIL8, GL_DEPTH_STENCIL, GL_FLOAT},       // D32FS8
+      {GL_R16F, GL_RED, GL_HALF_FLOAT},                         // R16
+      {GL_R16I, GL_RED_INTEGER, GL_SHORT},                      // R16I
+      {GL_R16UI, GL_RED_INTEGER, GL_UNSIGNED_SHORT},            // R16U
+      {GL_R16F, GL_RED, GL_HALF_FLOAT},                         // R16F
+      {GL_R32I, GL_RED_INTEGER, GL_INT},                        // R32I
+      {GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT},              // R32U
+      {GL_R32F, GL_RED, GL_FLOAT},                              // R32F
+      {GL_RG8, GL_RG, GL_UNSIGNED_BYTE},                        // RG8
+      {GL_RG16F, GL_RG, GL_HALF_FLOAT},                         // RG16
+      {GL_RG16F, GL_RG, GL_HALF_FLOAT},                         // RG16F
+      {GL_RG32F, GL_RG, GL_FLOAT},                              // RG32F
+      {GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT},                     // RGBA16
+      {GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT},                     // RGBA16F
+      {GL_RGBA32F, GL_RGBA, GL_FLOAT},                          // RGBA32F
+      {GL_RGB10_A2, GL_BGRA, GL_UNSIGNED_INT_2_10_10_10_REV},   // RGB10A2
     }};
 
   return gles ? mapping_gles[static_cast<u32>(format)] : mapping[static_cast<u32>(format)];
