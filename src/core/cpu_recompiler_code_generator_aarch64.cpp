@@ -147,6 +147,20 @@ s64 CPU::Recompiler::armGetPCDisplacement(const void* current, const void* targe
   return static_cast<s64>((reinterpret_cast<ptrdiff_t>(target) - reinterpret_cast<ptrdiff_t>(current)) >> 2);
 }
 
+bool CPU::Recompiler::armIsInAdrpRange(vixl::aarch64::Assembler* armAsm, const void* addr)
+{
+  const void* cur = armAsm->GetCursorAddress<const void*>();
+  const void* current_code_ptr_page =
+    reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(cur) & ~static_cast<uintptr_t>(0xFFF));
+  const void* ptr_page =
+    reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(addr) & ~static_cast<uintptr_t>(0xFFF));
+  const s64 page_displacement = armGetPCDisplacement(current_code_ptr_page, ptr_page) >> 10;
+  const u32 page_offset = static_cast<u32>(reinterpret_cast<uintptr_t>(addr) & 0xFFFu);
+
+  return (vixl::IsInt21(page_displacement) &&
+          (a64::Assembler::IsImmAddSub(page_offset) || a64::Assembler::IsImmLogical(page_offset, 64)));
+}
+
 void CPU::Recompiler::armMoveAddressToReg(a64::Assembler* armAsm, const a64::Register& reg, const void* addr)
 {
   DebugAssert(reg.IsX());
@@ -178,7 +192,8 @@ void CPU::Recompiler::armEmitJmp(a64::Assembler* armAsm, const void* ptr, bool f
   const void* cur = armAsm->GetCursorAddress<const void*>();
   s64 displacement = armGetPCDisplacement(cur, ptr);
   bool use_blr = !vixl::IsInt26(displacement);
-  if (use_blr && !force_inline)
+  bool use_trampoline = use_blr && !armIsInAdrpRange(armAsm, ptr);
+  if (use_blr && use_trampoline && !force_inline)
   {
     if (u8* trampoline = armGetJumpTrampoline(ptr); trampoline)
     {
@@ -203,7 +218,8 @@ void CPU::Recompiler::armEmitCall(a64::Assembler* armAsm, const void* ptr, bool 
   const void* cur = armAsm->GetCursorAddress<const void*>();
   s64 displacement = armGetPCDisplacement(cur, ptr);
   bool use_blr = !vixl::IsInt26(displacement);
-  if (use_blr && !force_inline)
+  bool use_trampoline = use_blr && !armIsInAdrpRange(armAsm, ptr);
+  if (use_blr && use_trampoline && !force_inline)
   {
     if (u8* trampoline = armGetJumpTrampoline(ptr); trampoline)
     {
