@@ -135,7 +135,7 @@ void Label::EmitPoolObject(MacroAssemblerInterface* masm) {
   MacroAssembler* macro_assembler = static_cast<MacroAssembler*>(masm);
 
   // Add a new branch to this label.
-  macro_assembler->GetBuffer()->EnsureSpaceFor(kMaxInstructionSizeInBytes);
+  VIXL_ASSERT(macro_assembler->GetBuffer()->HasSpaceFor(kMaxInstructionSizeInBytes));
   ExactAssemblyScopeWithoutPoolsCheck guard(macro_assembler,
                                             kMaxInstructionSizeInBytes,
                                             ExactAssemblyScope::kMaximumSize);
@@ -145,7 +145,7 @@ void Label::EmitPoolObject(MacroAssemblerInterface* masm) {
 void RawLiteral::EmitPoolObject(MacroAssemblerInterface* masm) {
   Assembler* assembler = static_cast<Assembler*>(masm->AsAssemblerBase());
 
-  assembler->GetBuffer()->EnsureSpaceFor(GetSize());
+  VIXL_ASSERT(assembler->GetBuffer()->HasSpaceFor(GetSize()));
   assembler->GetBuffer()->EmitData(GetDataAddress(), GetSize());
 }
 }

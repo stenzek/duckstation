@@ -32,7 +32,7 @@ extern "C" {
 #include <stdint.h>
 }
 
-#include "globals-vixl.h"
+#include "../globals-vixl.h"
 
 
 namespace vixl {

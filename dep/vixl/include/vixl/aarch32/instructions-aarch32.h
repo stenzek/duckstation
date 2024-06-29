@@ -34,9 +34,9 @@ extern "C" {
 #include <algorithm>
 #include <ostream>
 
-#include "code-buffer-vixl.h"
-#include "utils-vixl.h"
-#include "aarch32/constants-aarch32.h"
+#include "../code-buffer-vixl.h"
+#include "../utils-vixl.h"
+#include "constants-aarch32.h"
 
 #if defined(__arm__) && !defined(__SOFTFP__)
 #define HARDFLOAT __attribute__((noinline, pcs("aapcs-vfp")))

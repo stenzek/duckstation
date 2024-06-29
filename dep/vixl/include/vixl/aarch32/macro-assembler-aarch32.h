@@ -28,15 +28,15 @@
 #ifndef VIXL_AARCH32_MACRO_ASSEMBLER_AARCH32_H_
 #define VIXL_AARCH32_MACRO_ASSEMBLER_AARCH32_H_
 
-#include "code-generation-scopes-vixl.h"
-#include "macro-assembler-interface.h"
-#include "pool-manager-impl.h"
-#include "pool-manager.h"
-#include "utils-vixl.h"
+#include "../code-generation-scopes-vixl.h"
+#include "../macro-assembler-interface.h"
+#include "../pool-manager-impl.h"
+#include "../pool-manager.h"
+#include "../utils-vixl.h"
 
-#include "aarch32/assembler-aarch32.h"
-#include "aarch32/instructions-aarch32.h"
-#include "aarch32/operands-aarch32.h"
+#include "assembler-aarch32.h"
+#include "instructions-aarch32.h"
+#include "operands-aarch32.h"
 
 namespace vixl {
 
@@ -274,20 +274,6 @@ class MacroAssembler : public Assembler, public MacroAssemblerInterface {
     USE(allow_macro_instructions_);
 #endif
   }
-  explicit MacroAssembler(size_t size, InstructionSet isa = kDefaultISA)
-      : Assembler(size, isa),
-        available_(r12),
-        current_scratch_scope_(NULL),
-        pool_manager_(4 /*header_size*/,
-                      4 /*alignment*/,
-                      4 /*buffer_alignment*/),
-        generate_simulator_code_(VIXL_AARCH32_GENERATE_SIMULATOR_CODE),
-        pool_end_(NULL) {
-#ifdef VIXL_DEBUG
-    SetAllowMacroInstructions(  // NOLINT(clang-analyzer-optin.cplusplus.VirtualCall)
-        true);
-#endif
-  }
   MacroAssembler(byte* buffer, size_t size, InstructionSet isa = kDefaultISA)
       : Assembler(buffer, size, isa),
         available_(r12),
@@ -490,8 +476,7 @@ class MacroAssembler : public Assembler, public MacroAssemblerInterface {
 
   void EnsureEmitFor(uint32_t size) {
     EnsureEmitPoolsFor(size);
-    VIXL_ASSERT(GetBuffer()->HasSpaceFor(size) || GetBuffer()->IsManaged());
-    GetBuffer()->EnsureSpaceFor(size);
+    VIXL_ASSERT(GetBuffer()->HasSpaceFor(size));
   }
 
   bool AliasesAvailableScratchRegister(Register reg) {

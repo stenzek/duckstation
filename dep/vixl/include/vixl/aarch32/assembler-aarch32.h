@@ -27,10 +27,10 @@
 #ifndef VIXL_AARCH32_ASSEMBLER_AARCH32_H_
 #define VIXL_AARCH32_ASSEMBLER_AARCH32_H_
 
-#include "assembler-base-vixl.h"
+#include "../assembler-base-vixl.h"
 
-#include "aarch32/instructions-aarch32.h"
-#include "aarch32/location-aarch32.h"
+#include "instructions-aarch32.h"
+#include "location-aarch32.h"
 
 namespace vixl {
 namespace aarch32 {
@@ -112,20 +112,6 @@ class Assembler : public internal::AssemblerBase {
     VIXL_ASSERT(isa == A32);
 #elif defined(VIXL_INCLUDE_TARGET_T32_ONLY)
     USE(isa_);
-    VIXL_ASSERT(isa == T32);
-#endif
-  }
-  explicit Assembler(size_t capacity, InstructionSet isa = kDefaultISA)
-      : AssemblerBase(capacity),
-        isa_(isa),
-        first_condition_(al),
-        it_mask_(0),
-        has_32_dregs_(true),
-        allow_unpredictable_(false),
-        allow_strongly_discouraged_(false) {
-#if defined(VIXL_INCLUDE_TARGET_A32_ONLY)
-    VIXL_ASSERT(isa == A32);
-#elif defined(VIXL_INCLUDE_TARGET_T32_ONLY)
     VIXL_ASSERT(isa == T32);
 #endif
   }
@@ -214,7 +200,7 @@ class Assembler : public internal::AssemblerBase {
     VIXL_ASSERT(literal->IsManuallyPlaced());
     literal->SetLocation(this, GetCursorOffset());
     literal->MarkBound();
-    GetBuffer()->EnsureSpaceFor(literal->GetSize());
+    VIXL_ASSERT(GetBuffer()->HasSpaceFor(literal->GetSize()));
     GetBuffer()->EmitData(literal->GetDataAddress(), literal->GetSize());
   }
 
