@@ -123,22 +123,27 @@ PerfScope MIPSPerfScope("MIPS");
 
 #endif
 
-// Currently remapping the code buffer doesn't work in macOS. TODO: Make dynamic instead...
-#ifndef __APPLE__
-#define USE_STATIC_CODE_BUFFER 1
-#endif
-
 #if defined(CPU_ARCH_ARM32)
 // Use a smaller code buffer size on AArch32 to have a better chance of being in range.
-static constexpr u32 RECOMPILER_CODE_CACHE_SIZE = 16 * 1024 * 1024;
-static constexpr u32 RECOMPILER_FAR_CODE_CACHE_SIZE = 8 * 1024 * 1024;
+static constexpr u32 RECOMPILER_CODE_CACHE_SIZE = 20 * 1024 * 1024;
+static constexpr u32 RECOMPILER_FAR_CODE_CACHE_SIZE = 4 * 1024 * 1024;
 #else
-static constexpr u32 RECOMPILER_CODE_CACHE_SIZE = 32 * 1024 * 1024;
+static constexpr u32 RECOMPILER_CODE_CACHE_SIZE = 48 * 1024 * 1024;
 static constexpr u32 RECOMPILER_FAR_CODE_CACHE_SIZE = 16 * 1024 * 1024;
 #endif
 
-#ifdef USE_STATIC_CODE_BUFFER
-alignas(HOST_PAGE_SIZE) static u8 s_code_storage[RECOMPILER_CODE_CACHE_SIZE + RECOMPILER_FAR_CODE_CACHE_SIZE];
+// On Linux ARM32/ARM64, we use a dedicated section in the ELF for storing code.
+// This is because without ASLR, or on certain ASLR offsets, the sbrk() heap ends up immediately following the text/data
+// sections, which means there isn't a large enough gap to fit within range on ARM32.
+#if defined(__linux__) && (defined(CPU_ARCH_ARM32) || defined(CPU_ARCH_ARM64))
+#define USE_CODE_BUFFER_SECTION 1
+#ifdef __clang__
+#pragma clang section bss = ".jitstorage"
+__attribute__((aligned(HOST_PAGE_SIZE))) static u8 s_code_buffer_ptr[RECOMPILER_CODE_CACHE_SIZE];
+#pragma clang section bss = ""
+#endif
+#else
+static u8* s_code_buffer_ptr = nullptr;
 #endif
 
 static JitCodeBuffer s_code_buffer;
@@ -162,19 +167,25 @@ bool CPU::CodeCache::IsUsingFastmem()
 
 bool CPU::CodeCache::ProcessStartup(Error* error)
 {
-  AllocateLUTs();
-
-#ifdef USE_STATIC_CODE_BUFFER
-  const bool has_buffer =
-    s_code_buffer.Initialize(s_code_storage, sizeof(s_code_storage), RECOMPILER_FAR_CODE_CACHE_SIZE, HOST_PAGE_SIZE);
+#ifdef USE_CODE_BUFFER_SECTION
+  const u8* module_base = static_cast<const u8*>(MemMap::GetBaseAddress());
+  INFO_LOG("Using JIT buffer section of size {} at {} (0x{:X} bytes / {} MB away)", sizeof(s_code_buffer_ptr),
+           static_cast<void*>(s_code_buffer_ptr), std::abs(static_cast<ptrdiff_t>(s_code_buffer_ptr - module_base)),
+           (std::abs(static_cast<ptrdiff_t>(s_code_buffer_ptr - module_base)) + (1024 * 1024 - 1)) / (1024 * 1024));
+  const bool code_buffer_allocated =
+    MemMap::MemProtect(s_code_buffer_ptr, RECOMPILER_CODE_CACHE_SIZE, PageProtect::ReadWriteExecute);
 #else
-  const bool has_buffer = false;
+  s_code_buffer_ptr = static_cast<u8*>(MemMap::AllocateJITMemory(RECOMPILER_CODE_CACHE_SIZE));
+  const bool code_buffer_allocated = (s_code_buffer_ptr != nullptr);
 #endif
-  if (!has_buffer && !s_code_buffer.Allocate(RECOMPILER_CODE_CACHE_SIZE, RECOMPILER_FAR_CODE_CACHE_SIZE))
+  if (!code_buffer_allocated) [[unlikely]]
   {
-    Error::SetStringView(error, "Failed to initialize code space");
+    Error::SetStringView(error, "Failed to allocate code storage. The log may contain more information, you will need "
+                                "to run DuckStation with -earlyconsole in the command line.");
     return false;
   }
+
+  AllocateLUTs();
 
   if (!PageFaultHandler::Install(error))
     return false;
@@ -184,17 +195,21 @@ bool CPU::CodeCache::ProcessStartup(Error* error)
 
 void CPU::CodeCache::ProcessShutdown()
 {
-  s_code_buffer.Destroy();
   DeallocateLUTs();
+
+#ifndef USE_CODE_BUFFER_SECTION
+  MemMap::ReleaseJITMemory(s_code_buffer_ptr, RECOMPILER_CODE_CACHE_SIZE);
+#endif
 }
 
 void CPU::CodeCache::Initialize()
 {
   Assert(s_blocks.empty());
 
+  // TODO: Reduce far code size when not using memory exceptions.
   if (IsUsingAnyRecompiler())
   {
-    s_code_buffer.Reset();
+    s_code_buffer.Reset(s_code_buffer_ptr, RECOMPILER_CODE_CACHE_SIZE, RECOMPILER_FAR_CODE_CACHE_SIZE);
     CompileASMFunctions();
     ResetCodeLUT();
   }
@@ -219,7 +234,7 @@ void CPU::CodeCache::Reset()
   if (IsUsingAnyRecompiler())
   {
     ClearASMFunctions();
-    s_code_buffer.Reset();
+    s_code_buffer.Reset(s_code_buffer_ptr, RECOMPILER_CODE_CACHE_SIZE, RECOMPILER_FAR_CODE_CACHE_SIZE);
     CompileASMFunctions();
     ResetCodeLUT();
   }

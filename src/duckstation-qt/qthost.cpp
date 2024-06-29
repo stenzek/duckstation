@@ -90,6 +90,7 @@ static constexpr u32 GDB_SERVER_POLLING_INTERVAL = 1;
 //////////////////////////////////////////////////////////////////////////
 namespace QtHost {
 static bool PerformEarlyHardwareChecks();
+static bool EarlyProcessStartup();
 static void RegisterTypes();
 static bool InitializeConfig(std::string settings_filename);
 static bool ShouldUsePortableMode();
@@ -128,11 +129,26 @@ EmuThread::EmuThread(QThread* ui_thread) : QThread(), m_ui_thread(ui_thread)
 
 EmuThread::~EmuThread() = default;
 
+void QtHost::RegisterTypes()
+{
+  // Register any standard types we need elsewhere
+  qRegisterMetaType<std::optional<WindowInfo>>("std::optional<WindowInfo>()");
+  qRegisterMetaType<std::optional<bool>>();
+  qRegisterMetaType<std::function<void()>>("std::function<void()>");
+  qRegisterMetaType<std::shared_ptr<SystemBootParameters>>();
+  qRegisterMetaType<const GameList::Entry*>();
+  qRegisterMetaType<GPURenderer>("GPURenderer");
+  qRegisterMetaType<InputBindingKey>("InputBindingKey");
+  qRegisterMetaType<std::string>("std::string");
+  qRegisterMetaType<std::vector<std::pair<std::string, std::string>>>(
+    "std::vector<std::pair<std::string, std::string>>");
+}
+
 bool QtHost::PerformEarlyHardwareChecks()
 {
   Error error;
   const bool okay = System::Internal::PerformEarlyHardwareChecks(&error);
-  if (okay && !error.IsValid())
+  if (okay && !error.IsValid()) [[likely]]
     return true;
 
   if (okay)
@@ -149,19 +165,15 @@ bool QtHost::PerformEarlyHardwareChecks()
   return okay;
 }
 
-void QtHost::RegisterTypes()
+bool QtHost::EarlyProcessStartup()
 {
-  // Register any standard types we need elsewhere
-  qRegisterMetaType<std::optional<WindowInfo>>("std::optional<WindowInfo>()");
-  qRegisterMetaType<std::optional<bool>>();
-  qRegisterMetaType<std::function<void()>>("std::function<void()>");
-  qRegisterMetaType<std::shared_ptr<SystemBootParameters>>();
-  qRegisterMetaType<const GameList::Entry*>();
-  qRegisterMetaType<GPURenderer>("GPURenderer");
-  qRegisterMetaType<InputBindingKey>("InputBindingKey");
-  qRegisterMetaType<std::string>("std::string");
-  qRegisterMetaType<std::vector<std::pair<std::string, std::string>>>(
-    "std::vector<std::pair<std::string, std::string>>");
+  Error error;
+  if (System::Internal::ProcessStartup(&error)) [[likely]]
+    return true;
+
+  QMessageBox::critical(nullptr, QStringLiteral("Process Startup Failed"),
+                        QString::fromStdString(error.GetDescription()));
+  return false;
 }
 
 bool QtHost::InBatchMode()
@@ -452,7 +464,7 @@ bool QtHost::InitializeConfig(std::string settings_filename)
   EmuFolders::EnsureFoldersExist();
   MigrateSettings();
 
-  // We need to create the console window early, otherwise it appears behind the main window.
+  // We need to create the console window early, otherwise it appears in front of the main window.
   if (!Log::IsConsoleOutputEnabled() &&
       s_base_settings_interface->GetBoolValue("Logging", "LogToConsole", Settings::DEFAULT_LOG_TO_CONSOLE))
   {
@@ -2508,6 +2520,9 @@ int main(int argc, char* argv[])
   if (!QtHost::ParseCommandLineParametersAndInitializeConfig(app, autoboot))
     return EXIT_FAILURE;
 
+  if (!QtHost::EarlyProcessStartup())
+    return EXIT_FAILURE;
+
   // Remove any previous-version remanants.
   if (s_cleanup_after_update)
     AutoUpdaterDialog::cleanupAfterUpdate();
@@ -2580,6 +2595,8 @@ shutdown_and_exit:
 
   // Ensure log is flushed.
   Log::SetFileOutputParams(false, nullptr);
+
+  System::Internal::ProcessShutdown();
 
   return result;
 }

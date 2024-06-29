@@ -11,24 +11,36 @@
 
 #include "fmt/format.h"
 
+#include <memory>
+
 #if defined(_WIN32)
 #include "windows_headers.h"
+#include <Psapi.h>
 #elif defined(__APPLE__)
 #ifdef __aarch64__
 #include <pthread.h> // pthread_jit_write_protect_np()
 #endif
+#include <mach-o/dyld.h>
+#include <mach-o/getsect.h>
 #include <mach/mach_init.h>
 #include <mach/mach_port.h>
 #include <mach/mach_vm.h>
 #include <mach/vm_map.h>
+#include <sys/mman.h>
 #elif !defined(__ANDROID__)
 #include <cerrno>
+#include <dlfcn.h>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
 #endif
 
-Log_SetChannel(MemoryArena);
+Log_SetChannel(MemMap);
+
+namespace MemMap {
+/// Allocates RWX memory at the specified address.
+static void* AllocateJITMemoryAt(const void* addr, size_t size);
+} // namespace MemMap
 
 #ifdef _WIN32
 
@@ -89,6 +101,44 @@ void MemMap::UnmapSharedMemory(void* baseaddr, size_t size)
   if (!UnmapViewOfFile(baseaddr))
     Panic("Failed to unmap shared memory");
 }
+
+const void* MemMap::GetBaseAddress()
+{
+  const HMODULE mod = GetModuleHandleW(nullptr);
+  if (!mod)
+    return nullptr;
+
+  MODULEINFO mi;
+  if (!GetModuleInformation(GetCurrentProcess(), mod, &mi, sizeof(mi)))
+    return mod;
+
+  return mi.lpBaseOfDll;
+}
+
+void* MemMap::AllocateJITMemoryAt(const void* addr, size_t size)
+{
+  void* ptr = static_cast<u8*>(VirtualAlloc(const_cast<void*>(addr), size,
+                                            addr ? (MEM_RESERVE | MEM_COMMIT) : MEM_COMMIT, PAGE_EXECUTE_READWRITE));
+  if (!ptr && !addr) [[unlikely]]
+    ERROR_LOG("VirtualAlloc(RWX, {}) for internal buffer failed: {}", size, GetLastError());
+
+  return ptr;
+}
+
+void MemMap::ReleaseJITMemory(void* ptr, size_t size)
+{
+  if (!VirtualFree(ptr, 0, MEM_RELEASE))
+    ERROR_LOG("Failed to free code pointer {}", static_cast<void*>(ptr));
+}
+
+#if defined(CPU_ARCH_ARM32) || defined(CPU_ARCH_ARM64) || defined(CPU_ARCH_RISCV64)
+
+void MemMap::FlushInstructionCache(void* address, size_t size)
+{
+  ::FlushInstructionCache(GetCurrentProcess(), address, size);
+}
+
+#endif
 
 SharedMemoryMappingArea::SharedMemoryMappingArea() = default;
 
@@ -346,6 +396,93 @@ void MemMap::UnmapSharedMemory(void* baseaddr, size_t size)
     Panic("Failed to unmap shared memory");
 }
 
+const void* MemMap::GetBaseAddress()
+{
+  u32 name_buffer_size = 0;
+  _NSGetExecutablePath(nullptr, &name_buffer_size);
+  if (name_buffer_size > 0) [[likely]]
+  {
+    std::unique_ptr<char[]> name_buffer = std::make_unique_for_overwrite<char[]>(name_buffer_size + 1);
+    if (_NSGetExecutablePath(name_buffer.get(), &name_buffer_size) == 0) [[likely]]
+    {
+      name_buffer[name_buffer_size] = 0;
+
+      const struct segment_command_64* command = getsegbyname("__TEXT");
+      if (command) [[likely]]
+      {
+        const u8* base = reinterpret_cast<const u8*>(command->vmaddr);
+        const u32 image_count = _dyld_image_count();
+        for (u32 i = 0; i < image_count; i++)
+        {
+          if (std::strcmp(_dyld_get_image_name(i), name_buffer.get()) == 0)
+            return base + _dyld_get_image_vmaddr_slide(i);
+        }
+      }
+    }
+  }
+
+  return reinterpret_cast<const void*>(&GetBaseAddress);
+}
+
+void* MemMap::AllocateJITMemoryAt(const void* addr, size_t size)
+{
+#if !defined(__aarch64__)
+  kern_return_t ret = mach_vm_allocate(mach_task_self(), reinterpret_cast<mach_vm_address_t*>(&addr), size,
+                                       addr ? VM_FLAGS_FIXED : VM_FLAGS_ANYWHERE);
+  if (ret != KERN_SUCCESS)
+  {
+    ERROR_LOG("mach_vm_allocate() returned {}", ret);
+    return nullptr;
+  }
+
+  ret = mach_vm_protect(mach_task_self(), reinterpret_cast<mach_vm_address_t>(addr), size, false,
+                        VM_PROT_READ | VM_PROT_WRITE | VM_PROT_EXECUTE);
+  if (ret != KERN_SUCCESS)
+  {
+    ERROR_LOG("mach_vm_protect() returned {}", ret);
+    mach_vm_deallocate(mach_task_self(), reinterpret_cast<mach_vm_address_t>(addr), size);
+    return nullptr;
+  }
+
+  return const_cast<void*>(addr);
+#else
+  // On ARM64, we need to use MAP_JIT, which means we can't use MAP_FIXED.
+  if (addr)
+    return nullptr;
+
+  constexpr int flags = MAP_PRIVATE | MAP_ANONYMOUS | MAP_JIT;
+  void* ptr = mmap(const_cast<void*>(addr), size, PROT_READ | PROT_WRITE | PROT_EXEC, flags, -1, 0);
+  if (ptr == MAP_FAILED)
+  {
+    ERROR_LOG("mmap(RWX, {}) for internal buffer failed: {}", size, errno);
+    return nullptr;
+  }
+
+  return ptr;
+#endif
+}
+
+void MemMap::ReleaseJITMemory(void* ptr, size_t size)
+{
+#if !defined(__aarch64__)
+  const kern_return_t res = mach_vm_deallocate(mach_task_self(), reinterpret_cast<mach_vm_address_t>(ptr), size);
+  if (res != KERN_SUCCESS)
+    ERROR_LOG("mach_vm_deallocate() failed: {}", res);
+#else
+  if (munmap(ptr, size) != 0)
+    ERROR_LOG("Failed to free code pointer {}", static_cast<void*>(ptr));
+#endif
+}
+
+#if defined(CPU_ARCH_ARM32) || defined(CPU_ARCH_ARM64) || defined(CPU_ARCH_RISCV64)
+
+void MemMap::FlushInstructionCache(void* address, size_t size)
+{
+  __builtin___clear_cache(reinterpret_cast<char*>(address), reinterpret_cast<char*>(address) + size);
+}
+
+#endif
+
 SharedMemoryMappingArea::SharedMemoryMappingArea() = default;
 
 SharedMemoryMappingArea::~SharedMemoryMappingArea()
@@ -531,6 +668,72 @@ void MemMap::UnmapSharedMemory(void* baseaddr, size_t size)
     Panic("Failed to unmap shared memory");
 }
 
+const void* MemMap::GetBaseAddress()
+{
+#ifndef __APPLE__
+  Dl_info info;
+  if (dladdr(reinterpret_cast<const void*>(&GetBaseAddress), &info) == 0)
+  {
+    ERROR_LOG("dladdr() failed");
+    return nullptr;
+  }
+
+  return info.dli_fbase;
+#else
+#error Fixme
+#endif
+}
+
+void* MemMap::AllocateJITMemoryAt(const void* addr, size_t size)
+{
+  int flags = MAP_PRIVATE | MAP_ANONYMOUS;
+#if defined(__linux__)
+  // Linux does the right thing, allows us to not disturb an existing mapping.
+  if (addr)
+    flags |= MAP_FIXED_NOREPLACE;
+#elif defined(__FreeBSD__)
+  // FreeBSD achieves the same with MAP_FIXED and MAP_EXCL.
+  if (addr)
+    flags |= MAP_FIXED | MAP_EXCL;
+#else
+  // Targeted mapping not available?
+  if (addr)
+    return nullptr;
+#endif
+
+  void* ptr = mmap(const_cast<void*>(addr), size, PROT_READ | PROT_WRITE | PROT_EXEC, flags, -1, 0);
+  if (ptr == MAP_FAILED)
+  {
+    if (!addr)
+      ERROR_LOG("mmap(RWX, {}) for internal buffer failed: {}", size, errno);
+
+    return nullptr;
+  }
+  else if (addr && ptr != addr) [[unlikely]]
+  {
+    if (munmap(ptr, size) != 0)
+      ERROR_LOG("Failed to munmap() incorrectly hinted allocation: {}", errno);
+    return nullptr;
+  }
+
+  return ptr;
+}
+
+void MemMap::ReleaseJITMemory(void* ptr, size_t size)
+{
+  if (munmap(ptr, size) != 0)
+    ERROR_LOG("Failed to free code pointer {}", static_cast<void*>(ptr));
+}
+
+#if defined(CPU_ARCH_ARM32) || defined(CPU_ARCH_ARM64) || defined(CPU_ARCH_RISCV64)
+
+void MemMap::FlushInstructionCache(void* address, size_t size)
+{
+  __builtin___clear_cache(reinterpret_cast<char*>(address), reinterpret_cast<char*>(address) + size);
+}
+
+#endif
+
 SharedMemoryMappingArea::SharedMemoryMappingArea() = default;
 
 SharedMemoryMappingArea::~SharedMemoryMappingArea()
@@ -591,3 +794,95 @@ bool SharedMemoryMappingArea::Unmap(void* map_base, size_t map_size)
 }
 
 #endif
+
+void* MemMap::AllocateJITMemory(size_t size)
+{
+  const u8* base =
+    reinterpret_cast<const u8*>(Common::AlignDownPow2(reinterpret_cast<uintptr_t>(GetBaseAddress()), HOST_PAGE_SIZE));
+  u8* ptr = nullptr;
+#if !defined(CPU_ARCH_ARM64) || !defined(__APPLE__)
+
+#if defined(CPU_ARCH_X64)
+  static constexpr size_t assume_binary_size = 64 * 1024 * 1024;
+  static constexpr size_t step = 64 * 1024 * 1024;
+  static constexpr size_t max_displacement = 0x80000000u;
+#elif defined(CPU_ARCH_ARM64) || defined(CPU_ARCH_RISCV64)
+  static constexpr size_t assume_binary_size = 16 * 1024 * 1024;
+  static constexpr size_t step = 8 * 1024 * 1024;
+  static constexpr size_t max_displacement =
+    1024 * 1024 * 1024; // technically 4GB, but we don't want to spend that much time trying
+#elif defined(CPU_ARCH_ARM32)
+  static constexpr size_t assume_binary_size = 8 * 1024 * 1024; // Wishful thinking...
+  static constexpr size_t step = 2 * 1024 * 1024;
+  static constexpr size_t max_displacement = 32 * 1024 * 1024;
+#else
+#error Unhandled architecture.
+#endif
+
+  const size_t max_displacement_from_start = max_displacement - size;
+  Assert(size <= max_displacement);
+
+  // Try to find a region in the max displacement range of the process base address.
+  // Assume that the DuckStation binary will at max be some size, release is currently around 12MB on Windows.
+  // Therefore the max offset is +/- 12MB + code_size. Try allocating in steps by incrementing the pointer, then if no
+  // address range is found, go backwards from the base address (which will probably fail).
+  const u8* min_address =
+    base - std::min(reinterpret_cast<ptrdiff_t>(base), static_cast<ptrdiff_t>(max_displacement_from_start));
+  const u8* max_address = base + max_displacement_from_start;
+  VERBOSE_LOG("Base address: {}", static_cast<const void*>(base));
+  VERBOSE_LOG("Acceptable address range: {} - {}", static_cast<const void*>(min_address),
+              static_cast<const void*>(max_address));
+
+  // Start offset by the expected binary size.
+  for (const u8* current_address = base + assume_binary_size;; current_address += step)
+  {
+    VERBOSE_LOG("Trying {} (displacement 0x{:X})", static_cast<const void*>(current_address),
+                static_cast<ptrdiff_t>(current_address - base));
+    if ((ptr = static_cast<u8*>(AllocateJITMemoryAt(current_address, size))))
+      break;
+
+    if ((reinterpret_cast<uintptr_t>(current_address) + step) > reinterpret_cast<uintptr_t>(max_address) ||
+        (reinterpret_cast<uintptr_t>(current_address) + step) < reinterpret_cast<uintptr_t>(current_address))
+    {
+      break;
+    }
+  }
+
+  // Try before (will likely fail).
+  if (!ptr && reinterpret_cast<uintptr_t>(base) >= step)
+  {
+    for (const u8* current_address = base - step;; current_address -= step)
+    {
+      VERBOSE_LOG("Trying {} (displacement 0x{:X})", static_cast<const void*>(current_address),
+                  static_cast<ptrdiff_t>(base - current_address));
+      if ((ptr = static_cast<u8*>(AllocateJITMemoryAt(current_address, size))))
+        break;
+
+      if ((reinterpret_cast<uintptr_t>(current_address) - step) < reinterpret_cast<uintptr_t>(min_address) ||
+          (reinterpret_cast<uintptr_t>(current_address) - step) > reinterpret_cast<uintptr_t>(current_address))
+      {
+        break;
+      }
+    }
+  }
+
+  if (!ptr)
+  {
+#ifdef CPU_ARCH_X64
+    ERROR_LOG("Failed to allocate JIT buffer in range, expect crashes.");
+#endif
+    if (!(ptr = static_cast<u8*>(AllocateJITMemoryAt(nullptr, size))))
+      return ptr;
+  }
+#else
+  // We cannot control where the buffer gets allocated on Apple Silicon. Hope for the best.
+  if (!(ptr = static_cast<u8*>(AllocateJITMemoryAt(nullptr, size))))
+    return ptr;
+#endif
+
+  INFO_LOG("Allocated JIT buffer of size {} at {} (0x{:X} bytes / {} MB away)", size, static_cast<void*>(ptr),
+           std::abs(static_cast<ptrdiff_t>(ptr - base)),
+           (std::abs(static_cast<ptrdiff_t>(ptr - base)) + (1024 * 1024 - 1)) / (1024 * 1024));
+
+  return ptr;
+}

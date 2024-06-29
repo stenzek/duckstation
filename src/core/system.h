@@ -504,10 +504,16 @@ namespace Internal {
 /// Performs mandatory hardware checks.
 bool PerformEarlyHardwareChecks(Error* error);
 
-/// Called on process startup.
-bool CPUThreadInitialize(Error* error);
+/// Called on process startup, as early as possible.
+bool ProcessStartup(Error* error);
 
 /// Called on process shutdown.
+void ProcessShutdown();
+
+/// Called on CPU thread initialization.
+bool CPUThreadInitialize(Error* error);
+
+/// Called on CPU thread shutdown.
 void CPUThreadShutdown();
 
 /// Polls input, updates subsystems which are present while paused/inactive.

@@ -12,6 +12,7 @@
 #include "common/align.h"
 #include "common/assert.h"
 #include "common/log.h"
+#include "common/memmap.h"
 
 #ifdef CPU_ARCH_X64
 
@@ -1768,15 +1769,8 @@ void CodeGenerator::RestoreStackAfterCall(u32 adjust_size)
 
 void CodeGenerator::EmitCall(const void* ptr)
 {
-  if (Xbyak::inner::IsInInt32(reinterpret_cast<size_t>(ptr) - reinterpret_cast<size_t>(m_emit->getCurr())))
-  {
-    m_emit->call(ptr);
-  }
-  else
-  {
-    m_emit->mov(GetHostReg64(RRETURN), reinterpret_cast<size_t>(ptr));
-    m_emit->call(GetHostReg64(RRETURN));
-  }
+  DebugAssert(Xbyak::inner::IsInInt32(reinterpret_cast<size_t>(ptr) - reinterpret_cast<size_t>(m_emit->getCurr())));
+  m_emit->call(ptr);
 }
 
 void CodeGenerator::EmitFunctionCallPtr(Value* return_value, const void* ptr)
@@ -2530,7 +2524,7 @@ void CodeGenerator::BackpatchLoadStore(void* host_pc, const CodeCache::Loadstore
   for (s32 i = 0; i < nops; i++)
     cg.nop();
 
-  JitCodeBuffer::FlushInstructionCache(host_pc, lbi.code_size);
+  MemMap::FlushInstructionCache(host_pc, lbi.code_size);
 }
 
 void CodeGenerator::EmitLoadGlobal(HostReg host_reg, RegSize size, const void* ptr)

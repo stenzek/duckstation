@@ -318,6 +318,34 @@ void System::CheckCacheLineSize()
   }
 }
 
+bool System::Internal::ProcessStartup(Error* error)
+{
+  Common::Timer timer;
+
+  // Allocate JIT memory as soon as possible.
+  if (!CPU::CodeCache::ProcessStartup(error))
+    return false;
+
+  // Fastmem alloc *must* come after JIT alloc, otherwise it tends to eat the 4GB region after the executable on MacOS.
+  if (!Bus::AllocateMemory(error))
+  {
+    CPU::CodeCache::ProcessShutdown();
+    return false;
+  }
+
+  VERBOSE_LOG("Memory allocation took {} ms.", timer.GetTimeMilliseconds());
+
+  CheckCacheLineSize();
+
+  return true;
+}
+
+void System::Internal::ProcessShutdown()
+{
+  Bus::ReleaseMemory();
+  CPU::CodeCache::ProcessShutdown();
+}
+
 bool System::Internal::CPUThreadInitialize(Error* error)
 {
 #ifdef _WIN32
@@ -332,16 +360,8 @@ bool System::Internal::CPUThreadInitialize(Error* error)
   }
 #endif
 
-  if (!CPU::CodeCache::ProcessStartup(error) || !Bus::AllocateMemory(error))
-  {
-    CPUThreadShutdown();
-    return false;
-  }
-
   // This will call back to Host::LoadSettings() -> ReloadSources().
   LoadSettings(false);
-
-  CheckCacheLineSize();
 
 #ifdef ENABLE_RAINTEGRATION
   if (Host::GetBaseBoolSettingValue("Cheevos", "UseRAIntegration", false))
@@ -376,9 +396,6 @@ void System::Internal::CPUThreadShutdown()
   Achievements::Shutdown(false);
 
   InputManager::CloseSources();
-
-  CPU::CodeCache::ProcessShutdown();
-  Bus::ReleaseMemory();
 
 #ifdef _WIN32
   CoUninitialize();

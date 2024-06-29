@@ -14,6 +14,7 @@
 #include <memory>
 
 #include "common/windows_headers.h"
+#include <Psapi.h>
 #include <WinSock2.h>
 #include <mmsystem.h>
 

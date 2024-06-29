@@ -1,9 +1,11 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "common/align.h"
 #include "common/assert.h"
 #include "common/log.h"
+#include "common/memmap.h"
+
 #include "cpu_code_cache_private.h"
 #include "cpu_core.h"
 #include "cpu_core_private.h"
@@ -274,7 +276,7 @@ u8* CPU::Recompiler::armGetJumpTrampoline(const void* target)
   s_trampoline_targets.emplace(target, offset);
   s_trampoline_used = offset + static_cast<u32>(size);
 
-  JitCodeBuffer::FlushInstructionCache(start, size);
+  MemMap::FlushInstructionCache(start, size);
   return start;
 }
 
@@ -316,7 +318,7 @@ u32 CPU::CodeCache::EmitJump(void* code, const void* dst, bool flush_icache)
   const u32 new_code = B | Assembler::ImmUncondBranch(disp);
   std::memcpy(code, &new_code, sizeof(new_code));
   if (flush_icache)
-    JitCodeBuffer::FlushInstructionCache(code, kInstructionSize);
+    MemMap::FlushInstructionCache(code, kInstructionSize);
 
   return kInstructionSize;
 }
@@ -2100,7 +2102,7 @@ void CodeGenerator::BackpatchLoadStore(void* host_pc, const CodeCache::Loadstore
   for (s32 i = 0; i < nops; i++)
     emit.nop();
 
-  JitCodeBuffer::FlushInstructionCache(host_pc, lbi.code_size);
+  MemMap::FlushInstructionCache(host_pc, lbi.code_size);
 }
 
 void CodeGenerator::EmitLoadGlobal(HostReg host_reg, RegSize size, const void* ptr)
