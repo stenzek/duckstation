@@ -33,6 +33,7 @@ Log_SetChannel(GPU_HW);
 
 static constexpr GPUTexture::Format VRAM_RT_FORMAT = GPUTexture::Format::RGBA8;
 static constexpr GPUTexture::Format VRAM_DS_FORMAT = GPUTexture::Format::D16;
+static constexpr GPUTexture::Format VRAM_DS_DEPTH_FORMAT = GPUTexture::Format::D32F;
 
 #ifdef _DEBUG
 static u32 s_draw_number = 0;
@@ -695,6 +696,12 @@ bool GPU_HW::NeedsDepthBuffer() const
   return (m_pgxp_depth_buffer || !m_supports_framebuffer_fetch);
 }
 
+GPUTexture::Format GPU_HW::GetDepthBufferFormat() const
+{
+  // Use 32-bit depth for PGXP depth buffer, otherwise 16-bit for mask bit.
+  return m_pgxp_depth_buffer ? VRAM_DS_DEPTH_FORMAT : VRAM_DS_FORMAT;
+}
+
 bool GPU_HW::CreateBuffers()
 {
   DestroyBuffers();
@@ -704,7 +711,8 @@ bool GPU_HW::CreateBuffers()
   const u32 texture_height = VRAM_HEIGHT * m_resolution_scale;
   const u8 samples = static_cast<u8>(m_multisamples);
   const bool needs_depth_buffer = NeedsDepthBuffer();
-  DEV_LOG("Depth buffer is {}needed", needs_depth_buffer ? "" : "NOT ");
+  DEV_LOG("Depth buffer is {}needed in {}", needs_depth_buffer ? "" : "NOT ",
+          GPUTexture::GetFormatName(GetDepthBufferFormat()));
 
   // Needed for Metal resolve.
   const GPUTexture::Type read_texture_type = (g_gpu_device->GetRenderAPI() == RenderAPI::Metal && m_multisamples > 1) ?
@@ -715,7 +723,7 @@ bool GPU_HW::CreateBuffers()
                                                     GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT)) ||
       (needs_depth_buffer &&
        !(m_vram_depth_texture = g_gpu_device->FetchTexture(texture_width, texture_height, 1, 1, samples,
-                                                           GPUTexture::Type::DepthStencil, VRAM_DS_FORMAT))) ||
+                                                           GPUTexture::Type::DepthStencil, GetDepthBufferFormat()))) ||
       !(m_vram_read_texture =
           g_gpu_device->FetchTexture(texture_width, texture_height, 1, 1, 1, read_texture_type, VRAM_RT_FORMAT)) ||
       !(m_vram_readback_texture = g_gpu_device->FetchTexture(VRAM_WIDTH / 2, VRAM_HEIGHT, 1, 1, 1,
@@ -809,6 +817,8 @@ bool GPU_HW::CompilePipelines()
                                       g_settings.gpu_force_round_texcoords);
   const bool needs_depth_buffer = NeedsDepthBuffer();
   const bool write_mask_as_depth = (!m_pgxp_depth_buffer && needs_depth_buffer);
+  const GPUTexture::Format depth_buffer_format =
+    needs_depth_buffer ? GetDepthBufferFormat() : GPUTexture::Format::Unknown;
   m_allow_shader_blend = (features.feedback_loops && (m_pgxp_depth_buffer || !needs_depth_buffer));
 
   GPU_HW_ShaderGen shadergen(g_gpu_device->GetRenderAPI(), m_resolution_scale, m_multisamples, per_sample_shading,
@@ -941,7 +951,7 @@ bool GPU_HW::CompilePipelines()
   plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
   plconfig.primitive = GPUPipeline::Primitive::Triangles;
   plconfig.geometry_shader = nullptr;
-  plconfig.SetTargetFormats(VRAM_RT_FORMAT, needs_depth_buffer ? VRAM_DS_FORMAT : GPUTexture::Format::Unknown);
+  plconfig.SetTargetFormats(VRAM_RT_FORMAT, depth_buffer_format);
   plconfig.samples = m_multisamples;
   plconfig.per_sample_shading = per_sample_shading;
   plconfig.render_pass_flags = m_allow_shader_blend ? GPUPipeline::ColorFeedbackLoop : GPUPipeline::NoRenderPassFlags;
@@ -1243,7 +1253,7 @@ bool GPU_HW::CompilePipelines()
       return false;
 
     plconfig.fragment_shader = fs.get();
-    plconfig.SetTargetFormats(GPUTexture::Format::Unknown, VRAM_DS_FORMAT);
+    plconfig.SetTargetFormats(GPUTexture::Format::Unknown, depth_buffer_format);
     plconfig.depth = GPUPipeline::DepthState::GetAlwaysWriteState();
     plconfig.blend.write_mask = 0;
 

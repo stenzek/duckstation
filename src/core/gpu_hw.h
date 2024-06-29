@@ -139,6 +139,7 @@ private:
 
   /// Returns true if a depth buffer should be created.
   bool NeedsDepthBuffer() const;
+  GPUTexture::Format GetDepthBufferFormat() const;
 
   bool CreateBuffers();
   void ClearFramebuffer();
