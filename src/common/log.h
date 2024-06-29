@@ -72,26 +72,26 @@ void WriteFmtArgs(const char* channelName, const char* functionName, LOGLEVEL le
 
 ALWAYS_INLINE static void FastWrite(const char* channelName, LOGLEVEL level, std::string_view message)
 {
-  if (level <= GetLogLevel())
+  if (level <= GetLogLevel()) [[unlikely]]
     Write(channelName, level, message);
 }
 ALWAYS_INLINE static void FastWrite(const char* channelName, const char* functionName, LOGLEVEL level,
                                     std::string_view message)
 {
-  if (level <= GetLogLevel())
+  if (level <= GetLogLevel()) [[unlikely]]
     Write(channelName, functionName, level, message);
 }
 template<typename... T>
 ALWAYS_INLINE static void FastWrite(const char* channelName, LOGLEVEL level, fmt::format_string<T...> fmt, T&&... args)
 {
-  if (level <= GetLogLevel())
+  if (level <= GetLogLevel()) [[unlikely]]
     WriteFmtArgs(channelName, level, fmt, fmt::make_format_args(args...));
 }
 template<typename... T>
 ALWAYS_INLINE static void FastWrite(const char* channelName, const char* functionName, LOGLEVEL level,
                                     fmt::format_string<T...> fmt, T&&... args)
 {
-  if (level <= GetLogLevel())
+  if (level <= GetLogLevel()) [[unlikely]]
     WriteFmtArgs(channelName, functionName, level, fmt, fmt::make_format_args(args...));
 }
 } // namespace Log

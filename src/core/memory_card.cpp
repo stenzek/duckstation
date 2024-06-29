@@ -299,7 +299,7 @@ std::unique_ptr<MemoryCard> MemoryCard::Open(std::string_view filename)
 {
   std::unique_ptr<MemoryCard> mc = std::make_unique<MemoryCard>();
   mc->m_filename = filename;
-  if (!mc->LoadFromFile())
+  if (!mc->LoadFromFile()) [[unlikely]]
   {
     INFO_LOG("Memory card at '{}' could not be read, formatting.", mc->m_filename);
     Host::AddIconOSDMessage(fmt::format("memory_card_{}", filename), ICON_FA_SD_CARD,
