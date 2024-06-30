@@ -408,6 +408,7 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
   m_clamp_uvs = clamp_uvs;
   m_compute_uv_range = m_clamp_uvs;
   m_allow_sprite_mode = ShouldAllowSpriteMode(resolution_scale, m_texture_filtering, m_sprite_texture_filtering);
+  m_batch.sprite_mode = (m_allow_sprite_mode && m_batch.sprite_mode);
 
   CheckSettings();
 
