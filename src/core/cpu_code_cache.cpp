@@ -126,7 +126,7 @@ PerfScope MIPSPerfScope("MIPS");
 
 #if defined(CPU_ARCH_ARM32)
 // Use a smaller code buffer size on AArch32 to have a better chance of being in range.
-static constexpr u32 RECOMPILER_CODE_CACHE_SIZE = 20 * 1024 * 1024;
+static constexpr u32 RECOMPILER_CODE_CACHE_SIZE = 16 * 1024 * 1024;
 static constexpr u32 RECOMPILER_FAR_CODE_CACHE_SIZE = 4 * 1024 * 1024;
 #else
 static constexpr u32 RECOMPILER_CODE_CACHE_SIZE = 48 * 1024 * 1024;
@@ -1435,8 +1435,13 @@ void CPU::CodeCache::ResetCodeBuffer()
   s_code_size = RECOMPILER_CODE_CACHE_SIZE - RECOMPILER_FAR_CODE_CACHE_SIZE;
   s_code_used = 0;
 
-  s_far_code_size = RECOMPILER_FAR_CODE_CACHE_SIZE;
-  s_far_code_ptr = (s_far_code_size > 0) ? (static_cast<u8*>(s_code_ptr) + s_code_size) : nullptr;
+  // Use half the far code size when using newrec and memory exceptions aren't enabled. It's only used for backpatching.
+  const u32 far_code_size =
+    (g_settings.cpu_execution_mode == CPUExecutionMode::NewRec && !g_settings.cpu_recompiler_memory_exceptions) ?
+      (RECOMPILER_FAR_CODE_CACHE_SIZE / 2) :
+      RECOMPILER_FAR_CODE_CACHE_SIZE;
+  s_far_code_size = far_code_size;
+  s_far_code_ptr = (far_code_size > 0) ? (static_cast<u8*>(s_code_ptr) + s_code_size) : nullptr;
   s_free_far_code_ptr = s_far_code_ptr;
   s_far_code_used = 0;
 
