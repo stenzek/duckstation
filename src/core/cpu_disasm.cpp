@@ -434,8 +434,39 @@ void CPU::FormatComment(SmallStringBase* dest, const Instruction inst, u32 pc, c
     else if (std::strncmp(str, "offsetrs", 8) == 0)
     {
       const s32 offset = static_cast<s32>(inst.i.imm_sext32());
-      dest->append_format("{}addr={:08X}", dest->empty() ? "" : ", ",
-                          regs->r[static_cast<u8>(inst.i.rs.GetValue())] + offset);
+      u32 tempAddress = (regs->r[static_cast<u8>(inst.i.rs.GetValue())] + offset);
+
+      if (dest->empty())
+      {
+        dest->append_format("{}addr={:08X}","", tempAddress);
+      }
+      else
+      {
+        if (inst.op == InstructionOp::lb || inst.op == InstructionOp::lbu)
+        {
+          u8 tempData;
+          CPU::SafeReadMemoryByte(tempAddress, &tempData);
+          dest->append_format("{}addr={:08X}[{:02X}]",", ", tempAddress, tempData);
+        }
+        else if (inst.op == InstructionOp::lh || inst.op == InstructionOp::lhu)
+        {
+          u16 tempData;
+          CPU::SafeReadMemoryHalfWord(tempAddress, &tempData);
+          dest->append_format("{}addr={:08X}[{:04X}]", ", ", tempAddress, tempData);
+        }
+        else if (inst.op == InstructionOp::lw || inst.op == InstructionOp::lwc0 || inst.op == InstructionOp::lwc1 ||
+                 inst.op == InstructionOp::lwc2 || inst.op == InstructionOp::lwc3 || inst.op == InstructionOp::lwl ||
+                 inst.op == InstructionOp::lwr)
+        {
+          u32 tempData;
+          CPU::SafeReadMemoryWord(tempAddress, &tempData);
+          dest->append_format("{}addr={:08X}[{:08X}]", ", ", tempAddress, tempData);
+        }
+        else
+        {
+          dest->append_format("{}addr={:08X}", ", ", tempAddress);
+        }
+      }
       str += 8;
     }
     else if (std::strncmp(str, "jt", 2) == 0)
