@@ -10,7 +10,6 @@
 #include "cpu_core_private.h"
 #include "cpu_types.h"
 
-#include "util/jit_code_buffer.h"
 #include "util/page_fault_handler.h"
 
 #include <array>
@@ -234,7 +233,20 @@ void LogCurrentState();
 #define ENABLE_HOST_DISASSEMBLY 1
 #endif
 
-JitCodeBuffer& GetCodeBuffer();
+/// Access to normal code allocator.
+u8* GetFreeCodePointer();
+u32 GetFreeCodeSpace();
+void CommitCode(u32 length);
+
+/// Access to far code allocator.
+u8* GetFreeFarCodePointer();
+u32 GetFreeFarCodeSpace();
+void CommitFarCode(u32 length);
+
+/// Adjusts the free code pointer to the specified alignment, padding with bytes.
+/// Assumes alignment is a power-of-two.
+void AlignCode(u32 alignment);
+
 const void* GetInterpretUncachedBlockFunction();
 
 void CompileOrRevalidateBlock(u32 start_pc);

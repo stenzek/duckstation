@@ -36,7 +36,6 @@
     <ClInclude Include="input_manager.h" />
     <ClInclude Include="input_source.h" />
     <ClInclude Include="iso_reader.h" />
-    <ClInclude Include="jit_code_buffer.h" />
     <ClInclude Include="metal_device.h">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClInclude>
@@ -147,7 +146,6 @@
     <ClCompile Include="input_manager.cpp" />
     <ClCompile Include="input_source.cpp" />
     <ClCompile Include="iso_reader.cpp" />
-    <ClCompile Include="jit_code_buffer.cpp" />
     <ClCompile Include="cd_subchannel_replacement.cpp" />
     <ClCompile Include="opengl_context.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>

@@ -482,12 +482,11 @@ static const a64::XRegister GetFastmemBasePtrReg()
   return GetHostReg64(RMEMBASEPTR);
 }
 
-CodeGenerator::CodeGenerator(JitCodeBuffer* code_buffer)
-  : m_code_buffer(code_buffer), m_register_cache(*this),
-    m_near_emitter(static_cast<vixl::byte*>(code_buffer->GetFreeCodePointer()), code_buffer->GetFreeCodeSpace(),
-                   a64::PositionDependentCode),
-    m_far_emitter(static_cast<vixl::byte*>(code_buffer->GetFreeFarCodePointer()), code_buffer->GetFreeFarCodeSpace(),
-                  a64::PositionDependentCode),
+CodeGenerator::CodeGenerator()
+  : m_register_cache(*this), m_near_emitter(static_cast<vixl::byte*>(CPU::CodeCache::GetFreeCodePointer()),
+                                            CPU::CodeCache::GetFreeCodeSpace(), a64::PositionDependentCode),
+    m_far_emitter(static_cast<vixl::byte*>(CPU::CodeCache::GetFreeFarCodePointer()),
+                  CPU::CodeCache::GetFreeFarCodeSpace(), a64::PositionDependentCode),
     m_emit(&m_near_emitter)
 {
   // remove the temporaries from vixl's list to prevent it from using them.
@@ -523,11 +522,6 @@ const char* CodeGenerator::GetHostRegName(HostReg reg, RegSize size /*= HostPoin
   }
 }
 
-void CodeGenerator::AlignCodeBuffer(JitCodeBuffer* code_buffer)
-{
-  code_buffer->Align(16, 0x90);
-}
-
 void CodeGenerator::InitHostRegs()
 {
   // TODO: function calls mess up the parameter registers if we use them.. fix it
@@ -551,17 +545,17 @@ void CodeGenerator::SwitchToNearCode()
 
 void* CodeGenerator::GetStartNearCodePointer() const
 {
-  return static_cast<u8*>(m_code_buffer->GetFreeCodePointer());
+  return static_cast<u8*>(CPU::CodeCache::GetFreeCodePointer());
 }
 
 void* CodeGenerator::GetCurrentNearCodePointer() const
 {
-  return static_cast<u8*>(m_code_buffer->GetFreeCodePointer()) + m_near_emitter.GetCursorOffset();
+  return static_cast<u8*>(CPU::CodeCache::GetFreeCodePointer()) + m_near_emitter.GetCursorOffset();
 }
 
 void* CodeGenerator::GetCurrentFarCodePointer() const
 {
-  return static_cast<u8*>(m_code_buffer->GetFreeFarCodePointer()) + m_far_emitter.GetCursorOffset();
+  return static_cast<u8*>(CPU::CodeCache::GetFreeFarCodePointer()) + m_far_emitter.GetCursorOffset();
 }
 
 Value CodeGenerator::GetValueInHostRegister(const Value& value, bool allow_zero_register /* = true */)
@@ -671,12 +665,12 @@ const void* CodeGenerator::FinalizeBlock(u32* out_host_code_size, u32* out_host_
   m_near_emitter.FinalizeCode();
   m_far_emitter.FinalizeCode();
 
-  const void* code = m_code_buffer->GetFreeCodePointer();
+  const void* code = CPU::CodeCache::GetFreeCodePointer();
   *out_host_code_size = static_cast<u32>(m_near_emitter.GetSizeOfCodeGenerated());
   *out_host_far_code_size = static_cast<u32>(m_far_emitter.GetSizeOfCodeGenerated());
 
-  m_code_buffer->CommitCode(static_cast<u32>(m_near_emitter.GetSizeOfCodeGenerated()));
-  m_code_buffer->CommitFarCode(static_cast<u32>(m_far_emitter.GetSizeOfCodeGenerated()));
+  CPU::CodeCache::CommitCode(static_cast<u32>(m_near_emitter.GetSizeOfCodeGenerated()));
+  CPU::CodeCache::CommitFarCode(static_cast<u32>(m_far_emitter.GetSizeOfCodeGenerated()));
 
   m_near_emitter.Reset();
   m_far_emitter.Reset();

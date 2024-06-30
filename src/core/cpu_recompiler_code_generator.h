@@ -7,8 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "util/jit_code_buffer.h"
-
 #include "cpu_code_cache_private.h"
 #include "cpu_recompiler_register_cache.h"
 #include "cpu_recompiler_thunks.h"
@@ -49,11 +47,10 @@ public:
     const CodeCache::InstructionInfo* info;
   };
 
-  CodeGenerator(JitCodeBuffer* code_buffer);
+  CodeGenerator();
   ~CodeGenerator();
 
   static const char* GetHostRegName(HostReg reg, RegSize size = HostPointerSize);
-  static void AlignCodeBuffer(JitCodeBuffer* code_buffer);
 
   static void BackpatchLoadStore(void* host_pc, const CodeCache::LoadstoreBackpatchInfo& lbi);
 
@@ -266,8 +263,6 @@ private:
   bool Compile_lui(Instruction instruction, const CodeCache::InstructionInfo& info);
   bool Compile_cop0(Instruction instruction, const CodeCache::InstructionInfo& info);
   bool Compile_cop2(Instruction instruction, const CodeCache::InstructionInfo& info);
-
-  JitCodeBuffer* m_code_buffer;
 
   CodeCache::Block* m_block = nullptr;
   CodeBlockInstruction m_block_start = {};

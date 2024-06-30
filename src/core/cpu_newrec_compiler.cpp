@@ -99,9 +99,8 @@ void CPU::NewRec::Compiler::BeginBlock()
 
 const void* CPU::NewRec::Compiler::CompileBlock(CodeCache::Block* block, u32* host_code_size, u32* host_far_code_size)
 {
-  JitCodeBuffer& buffer = CodeCache::GetCodeBuffer();
-  Reset(block, buffer.GetFreeCodePointer(), buffer.GetFreeCodeSpace(), buffer.GetFreeFarCodePointer(),
-        buffer.GetFreeFarCodeSpace());
+  Reset(block, CPU::CodeCache::GetFreeCodePointer(), CPU::CodeCache::GetFreeCodeSpace(),
+        CPU::CodeCache::GetFreeFarCodePointer(), CPU::CodeCache::GetFreeFarCodeSpace());
 
   DEBUG_LOG("Block range: {:08X} -> {:08X}", block->pc, block->pc + block->size * 4);
 
@@ -141,8 +140,8 @@ const void* CPU::NewRec::Compiler::CompileBlock(CodeCache::Block* block, u32* ho
   const void* code = EndCompile(&code_size, &far_code_size);
   *host_code_size = code_size;
   *host_far_code_size = far_code_size;
-  buffer.CommitCode(code_size);
-  buffer.CommitFarCode(far_code_size);
+  CPU::CodeCache::CommitCode(code_size);
+  CPU::CodeCache::CommitFarCode(far_code_size);
 
   return code;
 }
@@ -2341,21 +2340,20 @@ void CPU::NewRec::BackpatchLoadStore(void* exception_pc, const CodeCache::Loadst
     static_cast<TickCount>(static_cast<u32>(info.cycles)) - (info.is_load ? Bus::RAM_READ_TICKS : 0);
   const TickCount cycles_to_remove = static_cast<TickCount>(static_cast<u32>(info.cycles));
 
-  JitCodeBuffer& buffer = CodeCache::GetCodeBuffer();
-  void* thunk_address = buffer.GetFreeFarCodePointer();
+  void* thunk_address = CPU::CodeCache::GetFreeFarCodePointer();
   const u32 thunk_size = CompileLoadStoreThunk(
-    thunk_address, buffer.GetFreeFarCodeSpace(), exception_pc, info.code_size, cycles_to_add, cycles_to_remove,
+    thunk_address, CPU::CodeCache::GetFreeFarCodeSpace(), exception_pc, info.code_size, cycles_to_add, cycles_to_remove,
     info.gpr_bitmask, info.address_register, info.data_register, info.AccessSize(), info.is_signed, info.is_load);
 
 #if 0
   Log_DebugPrint("**Backpatch Thunk**");
-  CodeCache::DisassembleAndLogHostCode(thunk_address, thunk_size);
+  CPU::CodeCache::DisassembleAndLogHostCode(thunk_address, thunk_size);
 #endif
 
   // backpatch to a jump to the slowmem handler
-  CodeCache::EmitJump(exception_pc, thunk_address, true);
+  CPU::CodeCache::EmitJump(exception_pc, thunk_address, true);
 
-  buffer.CommitFarCode(thunk_size);
+  CPU::CodeCache::CommitFarCode(thunk_size);
 }
 
 void CPU::NewRec::Compiler::InitSpeculativeRegs()

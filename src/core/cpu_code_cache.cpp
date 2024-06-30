@@ -97,6 +97,7 @@ static BlockInstructionList s_block_instructions;
 
 static void BacklinkBlocks(u32 pc, const void* dst);
 static void UnlinkBlockExits(Block* block);
+static void ResetCodeBuffer();
 
 static void ClearASMFunctions();
 static void CompileASMFunctions();
@@ -146,7 +147,15 @@ __attribute__((aligned(HOST_PAGE_SIZE))) static u8 s_code_buffer_ptr[RECOMPILER_
 static u8* s_code_buffer_ptr = nullptr;
 #endif
 
-static JitCodeBuffer s_code_buffer;
+static u8* s_code_ptr = nullptr;
+static u8* s_free_code_ptr = nullptr;
+static u32 s_code_size = 0;
+static u32 s_code_used = 0;
+
+static u8* s_far_code_ptr = nullptr;
+static u8* s_free_far_code_ptr = nullptr;
+static u32 s_far_code_size = 0;
+static u32 s_far_code_used = 0;
 
 #ifdef _DEBUG
 static u32 s_total_instructions_compiled = 0;
@@ -206,10 +215,9 @@ void CPU::CodeCache::Initialize()
 {
   Assert(s_blocks.empty());
 
-  // TODO: Reduce far code size when not using memory exceptions.
   if (IsUsingAnyRecompiler())
   {
-    s_code_buffer.Reset(s_code_buffer_ptr, RECOMPILER_CODE_CACHE_SIZE, RECOMPILER_FAR_CODE_CACHE_SIZE);
+    ResetCodeBuffer();
     CompileASMFunctions();
     ResetCodeLUT();
   }
@@ -234,7 +242,7 @@ void CPU::CodeCache::Reset()
   if (IsUsingAnyRecompiler())
   {
     ClearASMFunctions();
-    s_code_buffer.Reset(s_code_buffer_ptr, RECOMPILER_CODE_CACHE_SIZE, RECOMPILER_FAR_CODE_CACHE_SIZE);
+    ResetCodeBuffer();
     CompileASMFunctions();
     ResetCodeLUT();
   }
@@ -1331,8 +1339,8 @@ void CPU::CodeCache::CompileOrRevalidateBlock(u32 start_pc)
   // Ensure we're not going to run out of space while compiling this block.
   // We could definitely do better here... TODO: far code is no longer needed for newrec
   const u32 block_size = static_cast<u32>(s_block_instructions.size());
-  if (s_code_buffer.GetFreeCodeSpace() < (block_size * Recompiler::MAX_NEAR_HOST_BYTES_PER_INSTRUCTION) ||
-      s_code_buffer.GetFreeFarCodeSpace() < (block_size * Recompiler::MAX_FAR_HOST_BYTES_PER_INSTRUCTION))
+  if (GetFreeCodeSpace() < (block_size * Recompiler::MAX_NEAR_HOST_BYTES_PER_INSTRUCTION) ||
+      GetFreeFarCodeSpace() < (block_size * Recompiler::MAX_FAR_HOST_BYTES_PER_INSTRUCTION))
   {
     ERROR_LOG("Out of code space while compiling {:08X}. Resetting code cache.", start_pc);
     CodeCache::Reset();
@@ -1420,9 +1428,86 @@ void CPU::CodeCache::UnlinkBlockExits(Block* block)
   block->num_exit_links = 0;
 }
 
-JitCodeBuffer& CPU::CodeCache::GetCodeBuffer()
+void CPU::CodeCache::ResetCodeBuffer()
 {
-  return s_code_buffer;
+  s_code_ptr = static_cast<u8*>(s_code_buffer_ptr);
+  s_free_code_ptr = s_code_ptr;
+  s_code_size = RECOMPILER_CODE_CACHE_SIZE - RECOMPILER_FAR_CODE_CACHE_SIZE;
+  s_code_used = 0;
+
+  s_far_code_size = RECOMPILER_FAR_CODE_CACHE_SIZE;
+  s_far_code_ptr = (s_far_code_size > 0) ? (static_cast<u8*>(s_code_ptr) + s_code_size) : nullptr;
+  s_free_far_code_ptr = s_far_code_ptr;
+  s_far_code_used = 0;
+
+  MemMap::BeginCodeWrite();
+
+  std::memset(s_code_ptr, 0, RECOMPILER_CODE_CACHE_SIZE);
+  MemMap::FlushInstructionCache(s_code_ptr, RECOMPILER_CODE_CACHE_SIZE);
+
+  MemMap::EndCodeWrite();
+}
+
+u8* CPU::CodeCache::GetFreeCodePointer()
+{
+  return s_free_code_ptr;
+}
+
+u32 CPU::CodeCache::GetFreeCodeSpace()
+{
+  return s_code_size - s_code_used;
+}
+
+void CPU::CodeCache::CommitCode(u32 length)
+{
+  if (length == 0) [[unlikely]]
+    return;
+
+  MemMap::FlushInstructionCache(s_free_code_ptr, length);
+
+  Assert(length <= (s_code_size - s_code_used));
+  s_free_code_ptr += length;
+  s_code_used += length;
+}
+
+u8* CPU::CodeCache::GetFreeFarCodePointer()
+{
+  return s_free_far_code_ptr;
+}
+
+u32 CPU::CodeCache::GetFreeFarCodeSpace()
+{
+  return s_far_code_size - s_far_code_used;
+}
+
+void CPU::CodeCache::CommitFarCode(u32 length)
+{
+  if (length == 0) [[unlikely]]
+    return;
+
+  MemMap::FlushInstructionCache(s_free_far_code_ptr, length);
+
+  Assert(length <= (s_far_code_size - s_far_code_used));
+  s_free_far_code_ptr += length;
+  s_far_code_used += length;
+}
+
+void CPU::CodeCache::AlignCode(u32 alignment)
+{
+#if defined(CPU_ARCH_X64)
+  constexpr u8 padding_value = 0xcc; // int3
+#else
+  constexpr u8 padding_value = 0x00;
+#endif
+
+  DebugAssert(Common::IsPow2(alignment));
+  const u32 num_padding_bytes =
+    std::min(static_cast<u32>(Common::AlignUpPow2(reinterpret_cast<uintptr_t>(s_free_code_ptr), alignment) -
+                              reinterpret_cast<uintptr_t>(s_free_code_ptr)),
+             GetFreeCodeSpace());
+  std::memset(s_free_code_ptr, padding_value, num_padding_bytes);
+  s_free_code_ptr += num_padding_bytes;
+  s_code_used += num_padding_bytes;
 }
 
 const void* CPU::CodeCache::GetInterpretUncachedBlockFunction()
@@ -1460,13 +1545,13 @@ void CPU::CodeCache::CompileASMFunctions()
 {
   MemMap::BeginCodeWrite();
 
-  const u32 asm_size = EmitASMFunctions(s_code_buffer.GetFreeCodePointer(), s_code_buffer.GetFreeCodeSpace());
+  const u32 asm_size = EmitASMFunctions(GetFreeCodePointer(), GetFreeCodeSpace());
 
 #ifdef ENABLE_RECOMPILER_PROFILING
-  MIPSPerfScope.Register(s_code_buffer.GetFreeCodePointer(), asm_size, "ASMFunctions");
+  MIPSPerfScope.Register(GetFreeCodePointer(), asm_size, "ASMFunctions");
 #endif
 
-  s_code_buffer.CommitCode(asm_size);
+  CommitCode(asm_size);
   MemMap::EndCodeWrite();
 }
 
@@ -1479,7 +1564,7 @@ bool CPU::CodeCache::CompileBlock(Block* block)
 #ifdef ENABLE_RECOMPILER
   if (g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler)
   {
-    Recompiler::CodeGenerator codegen(&s_code_buffer);
+    Recompiler::CodeGenerator codegen;
     host_code = codegen.CompileBlock(block, &host_code_size, &host_far_code_size);
   }
 #endif
@@ -1503,12 +1588,13 @@ bool CPU::CodeCache::CompileBlock(Block* block)
   s_total_instructions_compiled += block->size;
   s_total_host_instructions_emitted += host_instructions;
 
-  Log_ProfileFmt("0x{:08X}: {}/{}b for {}b ({}i), blowup: {:.2f}x, cache: {:.2f}%/{:.2f}%, ipi: {:.2f}/{:.2f}",
-                 block->pc, host_code_size, host_far_code_size, block->size * 4, block->size,
-                 static_cast<float>(host_code_size) / static_cast<float>(block->size * 4), s_code_buffer.GetUsedPct(),
-                 s_code_buffer.GetFarUsedPct(), static_cast<float>(host_instructions) / static_cast<float>(block->size),
-                 static_cast<float>(s_total_host_instructions_emitted) /
-                   static_cast<float>(s_total_instructions_compiled));
+  DEV_LOG("0x{:08X}: {}/{}b for {}b ({}i), blowup: {:.2f}x, cache: {:.2f}%/{:.2f}%, ipi: {:.2f}/{:.2f}", block->pc,
+          host_code_size, host_far_code_size, block->size * 4, block->size,
+          static_cast<float>(host_code_size) / static_cast<float>(block->size * 4),
+          (static_cast<float>(s_code_used) / static_cast<float>(s_code_size)) * 100.0f,
+          (static_cast<float>(s_far_code_used) / static_cast<float>(s_far_code_size)) * 100.0f,
+          static_cast<float>(host_instructions) / static_cast<float>(block->size),
+          static_cast<float>(s_total_host_instructions_emitted) / static_cast<float>(s_total_instructions_compiled));
 #endif
 
 #if 0

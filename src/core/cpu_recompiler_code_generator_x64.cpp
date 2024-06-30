@@ -369,10 +369,10 @@ static const Xbyak::Reg64 GetFastmemBasePtrReg()
   return GetHostReg64(RMEMBASEPTR);
 }
 
-CodeGenerator::CodeGenerator(JitCodeBuffer* code_buffer)
-  : m_code_buffer(code_buffer), m_register_cache(*this),
-    m_near_emitter(code_buffer->GetFreeCodeSpace(), code_buffer->GetFreeCodePointer()),
-    m_far_emitter(code_buffer->GetFreeFarCodeSpace(), code_buffer->GetFreeFarCodePointer()), m_emit(&m_near_emitter)
+CodeGenerator::CodeGenerator()
+  : m_register_cache(*this), m_near_emitter(CPU::CodeCache::GetFreeCodeSpace(), CPU::CodeCache::GetFreeCodePointer()),
+    m_far_emitter(CPU::CodeCache::GetFreeFarCodeSpace(), CPU::CodeCache::GetFreeFarCodePointer()),
+    m_emit(&m_near_emitter)
 {
   InitHostRegs();
 }
@@ -406,11 +406,6 @@ const char* CodeGenerator::GetHostRegName(HostReg reg, RegSize size /*= HostPoin
     default:
       return "";
   }
-}
-
-void CodeGenerator::AlignCodeBuffer(JitCodeBuffer* code_buffer)
-{
-  code_buffer->Align(16, 0x90);
 }
 
 void CodeGenerator::InitHostRegs()
@@ -571,8 +566,8 @@ const void* CodeGenerator::FinalizeBlock(u32* out_host_code_size, u32* out_host_
   const void* code = m_near_emitter.getCode<const void*>();
   *out_host_code_size = near_size;
   *out_host_far_code_size = far_size;
-  m_code_buffer->CommitCode(near_size);
-  m_code_buffer->CommitFarCode(far_size);
+  CPU::CodeCache::CommitCode(near_size);
+  CPU::CodeCache::CommitFarCode(far_size);
 
   m_near_emitter.reset();
   m_far_emitter.reset();
