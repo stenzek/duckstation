@@ -719,7 +719,7 @@ int main(int argc, char* argv[])
   {
     Error startup_error;
     if (!System::Internal::PerformEarlyHardwareChecks(&startup_error) ||
-        !System::Internal::CPUThreadInitialize(&startup_error))
+        !System::Internal::ProcessStartup(&startup_error) || !System::Internal::CPUThreadInitialize(&startup_error))
     {
       ERROR_LOG("CPUThreadInitialize() failed: {}", startup_error.GetDescription());
       return EXIT_FAILURE;
@@ -756,5 +756,6 @@ int main(int argc, char* argv[])
 
 cleanup:
   System::Internal::CPUThreadShutdown();
+  System::Internal::ProcessShutdown();
   return result;
 }
