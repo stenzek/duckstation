@@ -479,10 +479,12 @@ bool QtHost::SetCriticalFolders()
   CrashHandler::SetWriteDirectory(EmuFolders::DataRoot);
 
   // the resources directory should exist, bail out if not
-  if (!FileSystem::DirectoryExists(EmuFolders::Resources.c_str()))
+  const std::string rcc_path = Path::Combine(EmuFolders::Resources, "duckstation-qt.rcc");
+  if (!FileSystem::DirectoryExists(EmuFolders::Resources.c_str()) || !FileSystem::FileExists(rcc_path.c_str()) ||
+      !QResource::registerResource(QString::fromStdString(rcc_path)))
   {
     QMessageBox::critical(nullptr, QStringLiteral("Error"),
-                          QStringLiteral("Resources directory is missing, your installation is incomplete."));
+                          QStringLiteral("Resources are missing, your installation is incomplete."));
     return false;
   }
 
@@ -2415,7 +2417,7 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
   }
 
   // To do anything useful, we need the config initialized.
-  if (!QtHost::InitializeConfig(std::move(settings_filename)))
+  if (!InitializeConfig(std::move(settings_filename)))
   {
     // NOTE: No point translating this, because no config means the language won't be loaded anyway.
     QMessageBox::critical(nullptr, QStringLiteral("Error"), QStringLiteral("Failed to initialize config."));

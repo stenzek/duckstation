@@ -211,7 +211,7 @@
     </QtUi>
   </ItemGroup>
   <ItemGroup>
-    <QtResource Include="resources\resources.qrc">
+    <QtResource Include="resources\duckstation-qt.qrc">
       <FileType>Document</FileType>
     </QtResource>
   </ItemGroup>
@@ -259,7 +259,6 @@
     <ClCompile Include="$(IntDir)moc_qtprogresscallback.cpp" />
     <ClCompile Include="$(IntDir)moc_settingswindow.cpp" />
     <ClCompile Include="$(IntDir)moc_setupwizarddialog.cpp" />
-    <ClCompile Include="$(IntDir)qrc_resources.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="qt5.natvis" />

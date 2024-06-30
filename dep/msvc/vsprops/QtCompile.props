@@ -18,6 +18,7 @@
     <QtToolOutDir>$(IntDir)</QtToolOutDir>
     <QtMocOutPrefix>$(QtToolOutDir)moc_</QtMocOutPrefix>
     <QtTsOutDir>$(BinaryOutputDir)translations\</QtTsOutDir>
+    <QtRccOutDir>$(BinaryOutputDir)resources\</QtRccOutDir>
     <QtDebugSuffix>d</QtDebugSuffix>
     <QtLibSuffix Condition="$(Configuration.Contains(Debug))">$(QtDebugSuffix)</QtLibSuffix>
     <QtPluginFolder>QtPlugins</QtPluginFolder>
@@ -41,18 +42,18 @@
     <ResFiles Include="$(MSBuildProjectDirectory)\**\*.qrc" />
   </ItemGroup>
   <Target Name="QtResource"
-    BeforeTargets="ClCompile"
+    AfterTargets="Build"
     Inputs="@(ResFiles)"
     Condition="'@(QtResource)'!=''"
-    Outputs="@(ResFiles->'$(QtToolOutDir)qrc_%(Filename).cpp')">
+    Outputs="@(ResFiles->'$(QtRccOutDir)%(Filename).rcc')">
     <Message Text="rcc %(ResFiles.Filename)" Importance="High" />
     <Error Condition="!$(DSQTDIRValid)" Text="Qt directory non-existent (download/extract the zip)" />
-    <MakeDir Directories="$(QtToolOutDir)" />
-    <Exec Command="&quot;$(QtHostBinDir)rcc.exe&quot; &quot;%(ResFiles.FullPath)&quot; -o &quot;$(QtToolOutDir)qrc_%(ResFiles.Filename).cpp&quot;" />
+    <MakeDir Directories="$(QtRccOutDir)" />
+    <Exec Command="&quot;$(QtHostBinDir)rcc.exe&quot; -binary -no-compress &quot;%(ResFiles.FullPath)&quot; -o &quot;$(QtRccOutDir)%(ResFiles.Filename).rcc&quot;" />
   </Target>
 
   <Target Name="QtResourceClean">
-    <Delete Files="@(ResFiles->'$(QtToolOutDir)qrc_%(Filename).cpp')" />
+    <Delete Files="@(ResFiles->'$(QtRccOutDir)%(Filename).rcc')" />
   </Target>
 
   <!--Passes all .ui files to uic and puts output in the build directory-->

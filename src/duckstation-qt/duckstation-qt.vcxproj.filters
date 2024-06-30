@@ -17,7 +17,6 @@
     <ClCompile Include="advancedsettingswidget.cpp" />
     <ClCompile Include="aboutdialog.cpp" />
     <ClCompile Include="memorycardsettingswidget.cpp" />
-    <ClCompile Include="$(IntDir)qrc_resources.cpp" />
     <ClCompile Include="inputbindingdialog.cpp" />
     <ClCompile Include="gamelistmodel.cpp" />
     <ClCompile Include="autoupdaterdialog.cpp" />
@@ -300,7 +299,7 @@
     <Image Include="duckstation-qt.ico" />
   </ItemGroup>
   <ItemGroup>
-    <QtResource Include="resources\resources.qrc">
+    <QtResource Include="resources\duckstation-qt.qrc">
       <Filter>resources</Filter>
     </QtResource>
   </ItemGroup>
