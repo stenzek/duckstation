@@ -433,11 +433,11 @@ GPUTexture::Format OpenGLContextEGL::GetSurfaceTextureFormat() const
   eglGetConfigAttrib(m_display, m_config, EGL_BLUE_SIZE, &blue_size);
   eglGetConfigAttrib(m_display, m_config, EGL_ALPHA_SIZE, &alpha_size);
 
-  if (red_size == 5 && green_size == 6 && red_size == 5)
+  if (red_size == 5 && green_size == 6 && blue_size == 5)
   {
     return GPUTexture::Format::RGB565;
   }
-  else if (red_size == 5 && green_size == 5 && red_size == 5 && alpha_size == 1)
+  else if (red_size == 5 && green_size == 5 && blue_size == 5 && alpha_size == 1)
   {
     return GPUTexture::Format::RGBA5551;
   }
