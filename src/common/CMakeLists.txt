@@ -95,8 +95,7 @@ if(APPLE)
   target_link_libraries(common PRIVATE ${COCOA_LIBRARY})
 endif()
 
-if(NOT WIN32 AND NOT ANDROID AND LIBBACKTRACE_FOUND)
-  target_compile_definitions(common PRIVATE "-DENABLE_LIBBACKTRACE=1")
+if(NOT WIN32 AND NOT ANDROID AND NOT APPLE)
   target_link_libraries(common PRIVATE libbacktrace::libbacktrace)
 endif()
 
