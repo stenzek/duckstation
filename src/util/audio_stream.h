@@ -182,7 +182,6 @@ public:
   void SetOutputVolume(u32 volume);
 
   void BeginWrite(SampleType** buffer_ptr, u32* num_frames);
-  void WriteFrames(const SampleType* frames, u32 num_frames);
   void EndWrite(u32 num_frames);
 
   void EmptyBuffer();
