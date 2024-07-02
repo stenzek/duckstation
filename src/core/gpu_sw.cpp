@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "gpu_sw.h"
@@ -8,7 +8,7 @@
 
 #include "common/align.h"
 #include "common/assert.h"
-#include "common/intrin.h"
+#include "common/gsvector.h"
 #include "common/log.h"
 
 #include <algorithm>
@@ -150,35 +150,19 @@ ALWAYS_INLINE void CopyOutRow16<GPUTexture::Format::RGBA5551, u16>(const u16* sr
 {
   u32 col = 0;
 
-#if defined(CPU_ARCH_SSE)
   const u32 aligned_width = Common::AlignDownPow2(width, 8);
   for (; col < aligned_width; col += 8)
   {
-    const __m128i single_mask = _mm_set1_epi16(0x1F);
-    __m128i value = _mm_loadu_si128(reinterpret_cast<const __m128i*>(src_ptr));
+    constexpr GSVector4i single_mask = GSVector4i::cxpr16(0x1F);
+    GSVector4i value = GSVector4i::load<false>(src_ptr);
     src_ptr += 8;
-    __m128i a = _mm_and_si128(value, _mm_set1_epi16(static_cast<s16>(static_cast<u16>(0x3E0))));
-    __m128i b = _mm_and_si128(_mm_srli_epi16(value, 10), single_mask);
-    __m128i c = _mm_slli_epi16(_mm_and_si128(value, single_mask), 10);
-    value = _mm_or_si128(_mm_or_si128(a, b), c);
-    _mm_storeu_si128(reinterpret_cast<__m128i*>(dst_ptr), value);
+    GSVector4i a = value & GSVector4i::cxpr16(0x3E0);
+    GSVector4i b = value.srl16<10>() & single_mask;
+    GSVector4i c = (value & single_mask).sll16<10>();
+    value = (a | b) | c;
+    GSVector4i::store<false>(dst_ptr, value);
     dst_ptr += 8;
   }
-#elif defined(CPU_ARCH_NEON)
-  const u32 aligned_width = Common::AlignDownPow2(width, 8);
-  for (; col < aligned_width; col += 8)
-  {
-    const uint16x8_t single_mask = vdupq_n_u16(0x1F);
-    uint16x8_t value = vld1q_u16(src_ptr);
-    src_ptr += 8;
-    uint16x8_t a = vandq_u16(value, vdupq_n_u16(0x3E0));
-    uint16x8_t b = vandq_u16(vshrq_n_u16(value, 10), single_mask);
-    uint16x8_t c = vshlq_n_u16(vandq_u16(value, single_mask), 10);
-    value = vorrq_u16(vorrq_u16(a, b), c);
-    vst1q_u16(dst_ptr, value);
-    dst_ptr += 8;
-  }
-#endif
 
   for (; col < width; col++)
     *(dst_ptr++) = VRAM16ToOutput<GPUTexture::Format::RGBA5551, u16>(*(src_ptr++));
@@ -189,37 +173,20 @@ ALWAYS_INLINE void CopyOutRow16<GPUTexture::Format::RGB565, u16>(const u16* src_
 {
   u32 col = 0;
 
-#if defined(CPU_ARCH_SSE)
   const u32 aligned_width = Common::AlignDownPow2(width, 8);
   for (; col < aligned_width; col += 8)
   {
-    const __m128i single_mask = _mm_set1_epi16(0x1F);
-    __m128i value = _mm_loadu_si128(reinterpret_cast<const __m128i*>(src_ptr));
+    constexpr GSVector4i single_mask = GSVector4i::cxpr16(0x1F);
+    GSVector4i value = GSVector4i::load<false>(src_ptr);
     src_ptr += 8;
-    __m128i a = _mm_slli_epi16(_mm_and_si128(value, _mm_set1_epi16(static_cast<s16>(static_cast<u16>(0x3E0)))), 1);
-    __m128i b = _mm_slli_epi16(_mm_and_si128(value, _mm_set1_epi16(static_cast<s16>(static_cast<u16>(0x20)))), 1);
-    __m128i c = _mm_and_si128(_mm_srli_epi16(value, 10), single_mask);
-    __m128i d = _mm_slli_epi16(_mm_and_si128(value, single_mask), 11);
-    value = _mm_or_si128(_mm_or_si128(_mm_or_si128(a, b), c), d);
-    _mm_storeu_si128(reinterpret_cast<__m128i*>(dst_ptr), value);
+    GSVector4i a = (value & GSVector4i::cxpr16(0x3E0)).sll16<1>(); // (value & 0x3E0) << 1
+    GSVector4i b = (value & GSVector4i::cxpr16(0x20)).sll16<1>();  // (value & 0x20) << 1
+    GSVector4i c = (value.srl16<10>() & single_mask);              // ((value >> 10) & 0x1F)
+    GSVector4i d = (value & single_mask).sll16<11>();              // ((value & 0x1F) << 11)
+    value = (((a | b) | c) | d);
+    GSVector4i::store<false>(dst_ptr, value);
     dst_ptr += 8;
   }
-#elif defined(CPU_ARCH_NEON)
-  const u32 aligned_width = Common::AlignDownPow2(width, 8);
-  const uint16x8_t single_mask = vdupq_n_u16(0x1F);
-  for (; col < aligned_width; col += 8)
-  {
-    uint16x8_t value = vld1q_u16(src_ptr);
-    src_ptr += 8;
-    uint16x8_t a = vshlq_n_u16(vandq_u16(value, vdupq_n_u16(0x3E0)), 1); // (value & 0x3E0) << 1
-    uint16x8_t b = vshlq_n_u16(vandq_u16(value, vdupq_n_u16(0x20)), 1);  // (value & 0x20) << 1
-    uint16x8_t c = vandq_u16(vshrq_n_u16(value, 10), single_mask);       // ((value >> 10) & 0x1F)
-    uint16x8_t d = vshlq_n_u16(vandq_u16(value, single_mask), 11);       // ((value & 0x1F) << 11)
-    value = vorrq_u16(vorrq_u16(vorrq_u16(a, b), c), d);
-    vst1q_u16(dst_ptr, value);
-    dst_ptr += 8;
-  }
-#endif
 
   for (; col < width; col++)
     *(dst_ptr++) = VRAM16ToOutput<GPUTexture::Format::RGB565, u16>(*(src_ptr++));
