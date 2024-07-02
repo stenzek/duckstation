@@ -93,11 +93,6 @@ size_t PlatformMisc::GetRuntimePageSize()
   return sysctlbyname<u32>("hw.pagesize").value_or(0);
 }
 
-size_t PlatformMisc::GetRuntimeCacheLineSize()
-{
-  return static_cast<size_t>(std::max<s64>(sysctlbyname<s64>("hw.cachelinesize").value_or(0), 0));
-}
-
 bool PlatformMisc::PlaySoundAsync(const char* path)
 {
   NSString* nspath = [[NSString alloc] initWithUTF8String:path];

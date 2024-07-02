@@ -85,28 +85,6 @@ size_t PlatformMisc::GetRuntimePageSize()
   return si.dwPageSize;
 }
 
-size_t PlatformMisc::GetRuntimeCacheLineSize()
-{
-  DWORD size = 0;
-  if (!GetLogicalProcessorInformation(nullptr, &size) && GetLastError() != ERROR_INSUFFICIENT_BUFFER)
-    return 0;
-
-  std::unique_ptr<SYSTEM_LOGICAL_PROCESSOR_INFORMATION[]> lpi =
-    std::make_unique<SYSTEM_LOGICAL_PROCESSOR_INFORMATION[]>(
-      (size + (sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION) - 1)) / sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION));
-  if (!GetLogicalProcessorInformation(lpi.get(), &size))
-    return 0;
-
-  u32 max_line_size = 0;
-  for (u32 i = 0; i < size / sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION); i++)
-  {
-    if (lpi[i].Relationship == RelationCache)
-      max_line_size = std::max<u32>(max_line_size, lpi[i].Cache.LineSize);
-  }
-
-  return max_line_size;
-}
-
 bool PlatformMisc::PlaySoundAsync(const char* path)
 {
   const std::wstring wpath(FileSystem::GetWin32Path(path));

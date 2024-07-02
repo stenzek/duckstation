@@ -16,6 +16,7 @@ find_package(ZLIB REQUIRED) # 1.3, but Mac currently doesn't use it.
 find_package(PNG 1.6.40 REQUIRED)
 find_package(JPEG REQUIRED) # No version because flatpak uses libjpeg-turbo.
 find_package(Freetype 2.11.1 REQUIRED)
+find_package(cpuinfo REQUIRED)
 
 if(NOT WIN32)
   find_package(CURL REQUIRED)
