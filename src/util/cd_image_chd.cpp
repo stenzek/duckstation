@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "cd_image.h"
@@ -8,9 +8,9 @@
 #include "common/assert.h"
 #include "common/error.h"
 #include "common/file_system.h"
+#include "common/gsvector.h"
 #include "common/hash_combine.h"
 #include "common/heap_array.h"
-#include "common/intrin.h"
 #include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
@@ -482,55 +482,18 @@ ALWAYS_INLINE_RELEASE void CDImageCHD::CopyAndSwap(void* dst_ptr, const u8* src_
   constexpr u32 data_size = RAW_SECTOR_SIZE;
 
   u8* dst_ptr_byte = static_cast<u8*>(dst_ptr);
-#if defined(CPU_ARCH_SSE) || defined(CPU_ARCH_NEON)
   static_assert((data_size % 16) == 0);
   constexpr u32 num_values = data_size / 16;
 
-#if defined(CPU_ARCH_SSE)
-  // Requires SSSE3.
-  // const __m128i mask = _mm_set_epi8(14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1);
+  constexpr GSVector4i mask = GSVector4i::cxpr8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
   for (u32 i = 0; i < num_values; i++)
   {
-    __m128i value = _mm_load_si128(reinterpret_cast<const __m128i*>(src_ptr));
-    // value = _mm_shuffle_epi8(value, mask);
-    value = _mm_or_si128(_mm_slli_epi16(value, 8), _mm_srli_epi16(value, 8));
-    _mm_storeu_si128(reinterpret_cast<__m128i*>(dst_ptr_byte), value);
+    GSVector4i value = GSVector4i::load<false>(src_ptr);
+    value = value.shuffle8(mask);
+    GSVector4i::store<false>(dst_ptr_byte, value);
     src_ptr += sizeof(value);
     dst_ptr_byte += sizeof(value);
   }
-#elif defined(CPU_ARCH_NEON)
-  for (u32 i = 0; i < num_values; i++)
-  {
-    uint16x8_t value = vld1q_u16(reinterpret_cast<const u16*>(src_ptr));
-    value = vorrq_u16(vshlq_n_u16(value, 8), vshrq_n_u16(value, 8));
-    vst1q_u16(reinterpret_cast<u16*>(dst_ptr_byte), value);
-    src_ptr += sizeof(value);
-    dst_ptr_byte += sizeof(value);
-  }
-#endif
-#elif defined(CPU_ARCH_RISCV64)
-  constexpr u32 num_values = data_size / 8;
-  for (u32 i = 0; i < num_values; i++)
-  {
-    u64 value;
-    std::memcpy(&value, src_ptr, sizeof(value));
-    value = ((value >> 8) & UINT64_C(0x00FF00FF00FF00FF)) | ((value << 8) & UINT64_C(0xFF00FF00FF00FF00));
-    std::memcpy(dst_ptr_byte, &value, sizeof(value));
-    src_ptr += sizeof(value);
-    dst_ptr_byte += sizeof(value);
-  }
-#else
-  constexpr u32 num_values = data_size / 4;
-  for (u32 i = 0; i < num_values; i++)
-  {
-    u32 value;
-    std::memcpy(&value, src_ptr, sizeof(value));
-    value = ((value >> 8) & UINT32_C(0x00FF00FF)) | ((value << 8) & UINT32_C(0xFF00FF00));
-    std::memcpy(dst_ptr_byte, &value, sizeof(value));
-    src_ptr += sizeof(value);
-    dst_ptr_byte += sizeof(value);
-  }
-#endif
 }
 
 bool CDImageCHD::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index)
