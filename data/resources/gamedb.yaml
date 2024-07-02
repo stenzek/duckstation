@@ -46261,9 +46261,9 @@ SLES-00703:
     - AnalogController
     - DigitalController
   traits:
-    - DisablePGXP # 2.5D, not beneficial.
+    - DisablePGXP # 2.5D, not beneficial, breaks rendering.
   settings:
-    gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
+    gpuLineDetectMode: AggressiveTriangles # Fixes upscaled rendering.
   metadata:
     publisher: "GT Interactive"
     developer: "3D Realms Entertainment"
@@ -46284,9 +46284,9 @@ SLES-00987:
     - AnalogController
     - DigitalController
   traits:
-    - DisablePGXP # 2.5D, not beneficial.
+    - DisablePGXP # 2.5D, not beneficial, breaks rendering.
   settings:
-    gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
+    gpuLineDetectMode: AggressiveTriangles # Fixes upscaled rendering.
   metadata:
     publisher: "GT Interactive"
     developer: "3D Realms Entertainment"
@@ -46304,14 +46304,16 @@ SLES-00987:
 SLED-01027:
   name: "Duke Nukem (France) (Demo)"
   traits:
-    - DisablePGXP # 2.5D, not beneficial.
+    - DisablePGXP # 2.5D, not beneficial, breaks rendering.
   settings:
-    gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
+    gpuLineDetectMode: AggressiveTriangles # Fixes upscaled rendering.
 SLES-03405:
   name: "Duke Nukem - Land of the Babes (Europe) (En,Fr,De,Es,It)"
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Improves wall texture wobble.
   metadata:
     publisher: "GT Interactive Software Corp"
     developer: "N-Space"
@@ -46335,6 +46337,8 @@ SLES-03440:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Improves wall texture wobble.
   metadata:
     publisher: "GT Interactive Software Corp"
     developer: "N-Space"
@@ -46357,6 +46361,8 @@ SLUS-01002:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Improves wall texture wobble.
   metadata:
     publisher: "GT Interactive Software Corp"
     developer: "N-Space"
@@ -46376,6 +46382,8 @@ SLES-01515:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Improves wall texture wobble.
   metadata:
     publisher: "GT Interactive Software Corp"
     developer: "N-Space"
@@ -46395,6 +46403,8 @@ SLES-03517:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Improves wall texture wobble.
   metadata:
     publisher: "GT Interactive Software Corp"
     developer: "N-Space"
@@ -46414,6 +46424,8 @@ SLES-01619:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Improves wall texture wobble.
   metadata:
     publisher: "GT Interactive Software Corp"
     developer: "N-Space"
@@ -46433,6 +46445,8 @@ SLES-03518:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Improves wall texture wobble.
   metadata:
     publisher: "GT Interactive Software Corp"
     developer: "N-Space"
@@ -46455,6 +46469,8 @@ SLUS-00583:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Improves wall texture wobble.
   metadata:
     publisher: "GT Interactive Software Corp"
     developer: "N-Space"
@@ -46471,17 +46487,21 @@ SLUS-00583:
     linkCable: false
 SLUS-80583:
   name: "Duke Nukem - Time to Kill (USA) (Demo 1)"
+  traits:
+    - ForcePGXPCPUMode # Improves wall texture wobble.
 SLUS-90036:
   name: "Duke Nukem - Time to Kill (USA) (Demo 2)"
+  traits:
+    - ForcePGXPCPUMode # Improves wall texture wobble.
 SLPS-01557:
   name: "Duke Nukem - Total Meltdown (Japan)"
   controllers:
     - AnalogController
     - DigitalController
   traits:
-    - DisablePGXP # 2.5D, not beneficial.
+    - DisablePGXP # 2.5D, not beneficial, breaks rendering.
   settings:
-    gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
+    gpuLineDetectMode: AggressiveTriangles # Fixes upscaled rendering.
   metadata:
     publisher: "King Record Co. Ltd"
     developer: "3D Realms Entertainment"
@@ -46505,9 +46525,9 @@ SLUS-00355:
     - AnalogController
     - DigitalController
   traits:
-    - DisablePGXP # 2.5D, not beneficial.
+    - DisablePGXP # 2.5D, not beneficial, breaks rendering.
   settings:
-    gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
+    gpuLineDetectMode: AggressiveTriangles # Fixes upscaled rendering.
   metadata:
     publisher: "GT Interactive"
     developer: "3D Realms Entertainment"
