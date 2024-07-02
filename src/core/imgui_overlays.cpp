@@ -28,7 +28,7 @@
 #include "common/easing.h"
 #include "common/error.h"
 #include "common/file_system.h"
-#include "common/intrin.h"
+#include "common/gsvector.h"
 #include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
@@ -60,27 +60,21 @@ static void DrawInputsOverlay();
 
 static std::tuple<float, float> GetMinMax(std::span<const float> values)
 {
-#if defined(CPU_ARCH_SSE)
-  __m128 vmin(_mm_loadu_ps(values.data()));
-  __m128 vmax(vmin);
+  GSVector4 vmin(GSVector4::load<false>(values.data()));
+  GSVector4 vmax(vmin);
 
   const u32 count = static_cast<u32>(values.size());
   const u32 aligned_count = Common::AlignDownPow2(count, 4);
   u32 i = 4;
   for (; i < aligned_count; i += 4)
   {
-    const __m128 v(_mm_loadu_ps(&values[i]));
-    vmin = _mm_min_ps(vmin, v);
-    vmax = _mm_max_ps(vmax, v);
+    const GSVector4 v(GSVector4::load<false>(&values[i]));
+    vmin = vmin.min(v);
+    vmax = vmax.max(v);
   }
 
-#if defined(_MSC_VER) && !defined(__clang__)
-  float min = std::min(vmin.m128_f32[0], std::min(vmin.m128_f32[1], std::min(vmin.m128_f32[2], vmin.m128_f32[3])));
-  float max = std::max(vmax.m128_f32[0], std::max(vmax.m128_f32[1], std::max(vmax.m128_f32[2], vmax.m128_f32[3])));
-#else
-  float min = std::min(vmin[0], std::min(vmin[1], std::min(vmin[2], vmin[3])));
-  float max = std::max(vmax[0], std::max(vmax[1], std::max(vmax[2], vmax[3])));
-#endif
+  float min = std::min(vmin.x, std::min(vmin.y, std::min(vmin.z, vmin.w)));
+  float max = std::max(vmax.x, std::max(vmax.y, std::max(vmax.z, vmax.w)));
   for (; i < count; i++)
   {
     min = std::min(min, values[i]);
@@ -88,41 +82,6 @@ static std::tuple<float, float> GetMinMax(std::span<const float> values)
   }
 
   return std::tie(min, max);
-#elif defined(CPU_ARCH_NEON)
-  float32x4_t vmin(vld1q_f32(values.data()));
-  float32x4_t vmax(vmin);
-
-  const u32 count = static_cast<u32>(values.size());
-  const u32 aligned_count = Common::AlignDownPow2(count, 4);
-  u32 i = 4;
-  for (; i < aligned_count; i += 4)
-  {
-    const float32x4_t v(vld1q_f32(&values[i]));
-    vmin = vminq_f32(vmin, v);
-    vmax = vmaxq_f32(vmax, v);
-  }
-
-  float min = vminvq_f32(vmin);
-  float max = vmaxvq_f32(vmax);
-  for (; i < count; i++)
-  {
-    min = std::min(min, values[i]);
-    max = std::max(max, values[i]);
-  }
-
-  return std::tie(min, max);
-#else
-  float min = values[0];
-  float max = values[0];
-  const u32 count = static_cast<u32>(values.size());
-  for (u32 i = 1; i < count; i++)
-  {
-    min = std::min(min, values[i]);
-    max = std::max(max, values[i]);
-  }
-
-  return std::tie(min, max);
-#endif
 }
 
 void Host::DisplayLoadingScreen(const char* message, int progress_min /*= -1*/, int progress_max /*= -1*/,
