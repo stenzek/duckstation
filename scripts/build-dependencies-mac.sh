@@ -49,6 +49,7 @@ SHADERC_GLSLANG=142052fa30f9eca191aa9dcf65359fcaed09eeec
 SHADERC_SPIRVHEADERS=5e3ad389ee56fca27c9705d093ae5387ce404df4
 SHADERC_SPIRVTOOLS=dd4b663e13c07fea4fbb3f70c1c91c86731099f7
 SPIRV_CROSS=vulkan-sdk-1.3.283.0
+CPUINFO=05332fd802d9109a2a151ec32154b107c1e5caf9
 
 mkdir -p deps-build
 cd deps-build
@@ -87,6 +88,7 @@ aa27e4454ce631c5a17924ce0624eac736da19fc6f5a2ab15a6c58da7b36950f  shaderc-glslan
 5d866ce34a4b6908e262e5ebfffc0a5e11dd411640b5f24c85a80ad44c0d4697  shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz
 03ee1a2c06f3b61008478f4abe9423454e53e580b9488b47c8071547c6a9db47  shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz
 3376a58abe186a695a50ff12697d210ce27673cea5de1a5090cb2b092b261414  SPIRV-Cross-$SPIRV_CROSS.tar.gz
+74a8d9ae0b8b45b39d35708c873320de227bbfe01a46e4d2a91818b8877f4137  cpuinfo-$CPUINFO.tar.gz
 EOF
 
 curl -L \
@@ -108,6 +110,7 @@ curl -L \
 	-o "shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz" "https://github.com/KhronosGroup/SPIRV-Headers/archive/$SHADERC_SPIRVHEADERS.tar.gz" \
 	-o "shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz" "https://github.com/KhronosGroup/SPIRV-Tools/archive/$SHADERC_SPIRVTOOLS.tar.gz"\
 	-o "SPIRV-Cross-$SPIRV_CROSS.tar.gz" "https://github.com/KhronosGroup/SPIRV-Cross/archive/refs/tags/$SPIRV_CROSS.tar.gz"
+	-o "cpuinfo-$CPUINFO.tar.gz" "https://github.com/pytorch/cpuinfo/archive/%CPUINFO%.tar.gz"
 
 shasum -a 256 --check SHASUMS
 
@@ -318,6 +321,16 @@ patch -p1 < "$SCRIPTDIR/spirv-cross-changes.patch"
 cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DSPIRV_CROSS_SHARED=ON -DSPIRV_CROSS_STATIC=OFF -DSPIRV_CROSS_CLI=OFF -DSPIRV_CROSS_ENABLE_TESTS=OFF -DSPIRV_CROSS_ENABLE_GLSL=ON -DSPIRV_CROSS_ENABLE_HLSL=OFF -DSPIRV_CROSS_ENABLE_MSL=ON -DSPIRV_CROSS_ENABLE_CPP=OFF -DSPIRV_CROSS_ENABLE_REFLECT=OFF -DSPIRV_CROSS_ENABLE_C_API=ON -DSPIRV_CROSS_ENABLE_UTIL=ON -B build
 cmake --build build --parallel
 cmake --install build
+cd ..
+
+echo "Building cpuinfo"
+rm -fr "cpuinfo-$CPUINFO"
+tar xf "cpuinfo-$CPUINFO.tar.gz"
+cd "cpuinfo-$CPUINFO"
+patch -p1 < "$SCRIPTDIR/cpuinfo-changes.patch"
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DCPUINFO_LIBRARY_TYPE=shared -DCPUINFO_RUNTIME_TYPE=shared -DCPUINFO_LOG_LEVEL=error -DCPUINFO_LOG_TO_STDIO=ON -DCPUINFO_BUILD_TOOLS=OFF -DCPUINFO_BUILD_UNIT_TESTS=OFF -DCPUINFO_BUILD_MOCK_TESTS=OFF -DCPUINFO_BUILD_BENCHMARKS=OFF -DUSE_SYSTEM_LIBS=ON -B build -G Ninja
+cmake --build build --parallel
+ninja -C build install
 cd ..
 
 echo "Cleaning up..."
