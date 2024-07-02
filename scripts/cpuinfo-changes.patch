@@ -1,0 +1,223 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -253,6 +253,8 @@
+ IF(CPUINFO_LIBRARY_TYPE STREQUAL "default")
+   ADD_LIBRARY(cpuinfo ${CPUINFO_SRCS})
+ ELSEIF(CPUINFO_LIBRARY_TYPE STREQUAL "shared")
++  SET(CMAKE_C_VISIBILITY_PRESET hidden)
++  SET(CMAKE_CXX_VISIBILITY_PRESET hidden)
+   ADD_LIBRARY(cpuinfo SHARED ${CPUINFO_SRCS})
+ ELSEIF(CPUINFO_LIBRARY_TYPE STREQUAL "static")
+   ADD_LIBRARY(cpuinfo STATIC ${CPUINFO_SRCS})
+@@ -301,8 +303,14 @@
+ TARGET_COMPILE_DEFINITIONS(cpuinfo_internals PRIVATE "CPUINFO_LOG_LEVEL=0")
+ TARGET_COMPILE_DEFINITIONS(cpuinfo_internals PRIVATE "CPUINFO_LOG_TO_STDIO=1")
+ 
++IF(CPUINFO_LIBRARY_TYPE STREQUAL "shared")
++  TARGET_COMPILE_DEFINITIONS(cpuinfo PUBLIC CPUINFO_SHARED)
++  TARGET_COMPILE_DEFINITIONS(cpuinfo PRIVATE CPUINFO_BUILD)
++  TARGET_COMPILE_DEFINITIONS(cpuinfo_internals PRIVATE CPUINFO_SHARED CPUINFO_BUILD)
++ENDIF()
++
+ IF(CPUINFO_SUPPORTED_PLATFORM)
+-  TARGET_COMPILE_DEFINITIONS(cpuinfo INTERFACE CPUINFO_SUPPORTED_PLATFORM=1)
++  TARGET_COMPILE_DEFINITIONS(cpuinfo PRIVATE CPUINFO_SUPPORTED_PLATFORM=1)
+   IF(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Android")
+     TARGET_LINK_LIBRARIES(cpuinfo PUBLIC ${CMAKE_THREAD_LIBS_INIT})
+     TARGET_LINK_LIBRARIES(cpuinfo_internals PUBLIC ${CMAKE_THREAD_LIBS_INIT})
+@@ -313,7 +321,7 @@
+     TARGET_LINK_LIBRARIES(cpuinfo_internals PUBLIC ${CMAKE_THREAD_LIBS_INIT})
+   ENDIF()
+ ELSE()
+-  TARGET_COMPILE_DEFINITIONS(cpuinfo INTERFACE CPUINFO_SUPPORTED_PLATFORM=0)
++  TARGET_COMPILE_DEFINITIONS(cpuinfo PRIVATE CPUINFO_SUPPORTED_PLATFORM=0)
+ ENDIF()
+ 
+ ADD_LIBRARY(${PROJECT_NAME}::cpuinfo ALIAS cpuinfo)
+@@ -329,6 +337,7 @@
+ 
+ INSTALL(TARGETS cpuinfo
+   EXPORT cpuinfo-targets
++  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+--- a/include/cpuinfo.h
++++ b/include/cpuinfo.h
+@@ -96,6 +96,24 @@
+ #define CPUINFO_ARCH_RISCV64 0
+ #endif
+ 
++#ifdef CPUINFO_SHARED
++#ifdef _WIN32
++#ifdef CPUINFO_BUILD
++#define CPUINFO_EXPORT __declspec(dllexport)
++#else
++#define CPUINFO_EXPORT __declspec(dllimport)
++#endif
++#else
++#ifdef CPUINFO_BUILD
++#define CPUINFO_EXPORT __attribute__((visibility("default")))
++#else
++#define CPUINFO_EXPORT
++#endif
++#endif
++#else
++#define CPUINFO_EXPORT
++#endif
++
+ #if CPUINFO_ARCH_X86 && defined(_MSC_VER)
+ #define CPUINFO_ABI __cdecl
+ #elif CPUINFO_ARCH_X86 && defined(__GNUC__)
+@@ -735,9 +753,9 @@
+ extern "C" {
+ #endif
+ 
+-bool CPUINFO_ABI cpuinfo_initialize(void);
++CPUINFO_EXPORT bool CPUINFO_ABI cpuinfo_initialize(void);
+ 
+-void CPUINFO_ABI cpuinfo_deinitialize(void);
++CPUINFO_EXPORT void CPUINFO_ABI cpuinfo_deinitialize(void);
+ 
+ #if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+ /* This structure is not a part of stable API. Use cpuinfo_has_x86_* functions
+@@ -856,7 +874,7 @@
+ 	bool lwp;
+ };
+ 
+-extern struct cpuinfo_x86_isa cpuinfo_isa;
++extern CPUINFO_EXPORT struct cpuinfo_x86_isa cpuinfo_isa;
+ #endif
+ 
+ static inline bool cpuinfo_has_x86_rdtsc(void) {
+@@ -1679,7 +1697,7 @@
+ 	bool crc32;
+ };
+ 
+-extern struct cpuinfo_arm_isa cpuinfo_isa;
++extern CPUINFO_EXPORT struct cpuinfo_arm_isa cpuinfo_isa;
+ #endif
+ 
+ static inline bool cpuinfo_has_arm_thumb(void) {
+@@ -2064,7 +2082,7 @@
+ 	bool v;
+ };
+ 
+-extern struct cpuinfo_riscv_isa cpuinfo_isa;
++extern CPUINFO_EXPORT struct cpuinfo_riscv_isa cpuinfo_isa;
+ #endif
+ 
+ static inline bool cpuinfo_has_riscv_i(void) {
+@@ -2137,43 +2155,43 @@
+ #endif
+ }
+ 
+-const struct cpuinfo_processor* CPUINFO_ABI cpuinfo_get_processors(void);
+-const struct cpuinfo_core* CPUINFO_ABI cpuinfo_get_cores(void);
+-const struct cpuinfo_cluster* CPUINFO_ABI cpuinfo_get_clusters(void);
+-const struct cpuinfo_package* CPUINFO_ABI cpuinfo_get_packages(void);
+-const struct cpuinfo_uarch_info* CPUINFO_ABI cpuinfo_get_uarchs(void);
+-const struct cpuinfo_cache* CPUINFO_ABI cpuinfo_get_l1i_caches(void);
+-const struct cpuinfo_cache* CPUINFO_ABI cpuinfo_get_l1d_caches(void);
+-const struct cpuinfo_cache* CPUINFO_ABI cpuinfo_get_l2_caches(void);
+-const struct cpuinfo_cache* CPUINFO_ABI cpuinfo_get_l3_caches(void);
+-const struct cpuinfo_cache* CPUINFO_ABI cpuinfo_get_l4_caches(void);
+-
+-const struct cpuinfo_processor* CPUINFO_ABI cpuinfo_get_processor(uint32_t index);
+-const struct cpuinfo_core* CPUINFO_ABI cpuinfo_get_core(uint32_t index);
+-const struct cpuinfo_cluster* CPUINFO_ABI cpuinfo_get_cluster(uint32_t index);
+-const struct cpuinfo_package* CPUINFO_ABI cpuinfo_get_package(uint32_t index);
+-const struct cpuinfo_uarch_info* CPUINFO_ABI cpuinfo_get_uarch(uint32_t index);
+-const struct cpuinfo_cache* CPUINFO_ABI cpuinfo_get_l1i_cache(uint32_t index);
+-const struct cpuinfo_cache* CPUINFO_ABI cpuinfo_get_l1d_cache(uint32_t index);
+-const struct cpuinfo_cache* CPUINFO_ABI cpuinfo_get_l2_cache(uint32_t index);
+-const struct cpuinfo_cache* CPUINFO_ABI cpuinfo_get_l3_cache(uint32_t index);
+-const struct cpuinfo_cache* CPUINFO_ABI cpuinfo_get_l4_cache(uint32_t index);
+-
+-uint32_t CPUINFO_ABI cpuinfo_get_processors_count(void);
+-uint32_t CPUINFO_ABI cpuinfo_get_cores_count(void);
+-uint32_t CPUINFO_ABI cpuinfo_get_clusters_count(void);
+-uint32_t CPUINFO_ABI cpuinfo_get_packages_count(void);
+-uint32_t CPUINFO_ABI cpuinfo_get_uarchs_count(void);
+-uint32_t CPUINFO_ABI cpuinfo_get_l1i_caches_count(void);
+-uint32_t CPUINFO_ABI cpuinfo_get_l1d_caches_count(void);
+-uint32_t CPUINFO_ABI cpuinfo_get_l2_caches_count(void);
+-uint32_t CPUINFO_ABI cpuinfo_get_l3_caches_count(void);
+-uint32_t CPUINFO_ABI cpuinfo_get_l4_caches_count(void);
++CPUINFO_EXPORT const struct cpuinfo_processor* CPUINFO_ABI cpuinfo_get_processors(void);
++CPUINFO_EXPORT const struct cpuinfo_core* CPUINFO_ABI cpuinfo_get_cores(void);
++CPUINFO_EXPORT const struct cpuinfo_cluster* CPUINFO_ABI cpuinfo_get_clusters(void);
++CPUINFO_EXPORT const struct cpuinfo_package* CPUINFO_ABI cpuinfo_get_packages(void);
++CPUINFO_EXPORT const struct cpuinfo_uarch_info* CPUINFO_ABI cpuinfo_get_uarchs(void);
++CPUINFO_EXPORT const struct cpuinfo_cache* CPUINFO_ABI cpuinfo_get_l1i_caches(void);
++CPUINFO_EXPORT const struct cpuinfo_cache* CPUINFO_ABI cpuinfo_get_l1d_caches(void);
++CPUINFO_EXPORT const struct cpuinfo_cache* CPUINFO_ABI cpuinfo_get_l2_caches(void);
++CPUINFO_EXPORT const struct cpuinfo_cache* CPUINFO_ABI cpuinfo_get_l3_caches(void);
++CPUINFO_EXPORT const struct cpuinfo_cache* CPUINFO_ABI cpuinfo_get_l4_caches(void);
++
++CPUINFO_EXPORT const struct cpuinfo_processor* CPUINFO_ABI cpuinfo_get_processor(uint32_t index);
++CPUINFO_EXPORT const struct cpuinfo_core* CPUINFO_ABI cpuinfo_get_core(uint32_t index);
++CPUINFO_EXPORT const struct cpuinfo_cluster* CPUINFO_ABI cpuinfo_get_cluster(uint32_t index);
++CPUINFO_EXPORT const struct cpuinfo_package* CPUINFO_ABI cpuinfo_get_package(uint32_t index);
++CPUINFO_EXPORT const struct cpuinfo_uarch_info* CPUINFO_ABI cpuinfo_get_uarch(uint32_t index);
++CPUINFO_EXPORT const struct cpuinfo_cache* CPUINFO_ABI cpuinfo_get_l1i_cache(uint32_t index);
++CPUINFO_EXPORT const struct cpuinfo_cache* CPUINFO_ABI cpuinfo_get_l1d_cache(uint32_t index);
++CPUINFO_EXPORT const struct cpuinfo_cache* CPUINFO_ABI cpuinfo_get_l2_cache(uint32_t index);
++CPUINFO_EXPORT const struct cpuinfo_cache* CPUINFO_ABI cpuinfo_get_l3_cache(uint32_t index);
++CPUINFO_EXPORT const struct cpuinfo_cache* CPUINFO_ABI cpuinfo_get_l4_cache(uint32_t index);
++
++CPUINFO_EXPORT uint32_t CPUINFO_ABI cpuinfo_get_processors_count(void);
++CPUINFO_EXPORT uint32_t CPUINFO_ABI cpuinfo_get_cores_count(void);
++CPUINFO_EXPORT uint32_t CPUINFO_ABI cpuinfo_get_clusters_count(void);
++CPUINFO_EXPORT uint32_t CPUINFO_ABI cpuinfo_get_packages_count(void);
++CPUINFO_EXPORT uint32_t CPUINFO_ABI cpuinfo_get_uarchs_count(void);
++CPUINFO_EXPORT uint32_t CPUINFO_ABI cpuinfo_get_l1i_caches_count(void);
++CPUINFO_EXPORT uint32_t CPUINFO_ABI cpuinfo_get_l1d_caches_count(void);
++CPUINFO_EXPORT uint32_t CPUINFO_ABI cpuinfo_get_l2_caches_count(void);
++CPUINFO_EXPORT uint32_t CPUINFO_ABI cpuinfo_get_l3_caches_count(void);
++CPUINFO_EXPORT uint32_t CPUINFO_ABI cpuinfo_get_l4_caches_count(void);
+ 
+ /**
+  * Returns upper bound on cache size.
+  */
+-uint32_t CPUINFO_ABI cpuinfo_get_max_cache_size(void);
++CPUINFO_EXPORT uint32_t CPUINFO_ABI cpuinfo_get_max_cache_size(void);
+ 
+ /**
+  * Identify the logical processor that executes the current thread.
+@@ -2182,7 +2200,7 @@
+  * for any time. Callers should treat the result as only a hint, and be prepared
+  * to handle NULL return value.
+  */
+-const struct cpuinfo_processor* CPUINFO_ABI cpuinfo_get_current_processor(void);
++CPUINFO_EXPORT const struct cpuinfo_processor* CPUINFO_ABI cpuinfo_get_current_processor(void);
+ 
+ /**
+  * Identify the core that executes the current thread.
+@@ -2191,7 +2209,7 @@
+  * time. Callers should treat the result as only a hint, and be prepared to
+  * handle NULL return value.
+  */
+-const struct cpuinfo_core* CPUINFO_ABI cpuinfo_get_current_core(void);
++CPUINFO_EXPORT const struct cpuinfo_core* CPUINFO_ABI cpuinfo_get_current_core(void);
+ 
+ /**
+  * Identify the microarchitecture index of the core that executes the current
+@@ -2201,7 +2219,7 @@
+  * There is no guarantee that the thread will stay on the same type of core for
+  * any time. Callers should treat the result as only a hint.
+  */
+-uint32_t CPUINFO_ABI cpuinfo_get_current_uarch_index(void);
++CPUINFO_EXPORT uint32_t CPUINFO_ABI cpuinfo_get_current_uarch_index(void);
+ 
+ /**
+  * Identify the microarchitecture index of the core that executes the current
+@@ -2211,7 +2229,7 @@
+  * There is no guarantee that the thread will stay on the same type of core for
+  * any time. Callers should treat the result as only a hint.
+  */
+-uint32_t CPUINFO_ABI cpuinfo_get_current_uarch_index_with_default(uint32_t default_uarch_index);
++CPUINFO_EXPORT uint32_t CPUINFO_ABI cpuinfo_get_current_uarch_index_with_default(uint32_t default_uarch_index);
+ 
+ #ifdef __cplusplus
+ } /* extern "C" */

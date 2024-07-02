@@ -1,0 +1,40 @@
+{
+  "name": "cpuinfo",
+  "buildsystem": "cmake-ninja",
+  "builddir": true,
+  "config-opts": [
+    "-DCMAKE_BUILD_TYPE=Release",
+    "-DCPUINFO_LIBRARY_TYPE=shared",
+    "-DCPUINFO_RUNTIME_TYPE=shared",
+    "-DCPUINFO_LOG_LEVEL=error",
+    "-DCPUINFO_LOG_TO_STDIO=ON",
+    "-DCPUINFO_BUILD_TOOLS=OFF",
+    "-DCPUINFO_BUILD_UNIT_TESTS=OFF",
+    "-DCPUINFO_BUILD_MOCK_TESTS=OFF",
+    "-DCPUINFO_BUILD_BENCHMARKS=OFF",
+    "-DUSE_SYSTEM_LIBS=ON"
+  ],
+  "build-options": {
+    "strip": true
+  },
+  "sources": [
+    {
+      "type": "git",
+      "url": "https://github.com/pytorch/cpuinfo.git",
+      "commit": "05332fd802d9109a2a151ec32154b107c1e5caf9"
+    },
+    {
+      "type": "patch",
+      "path": "../../cpuinfo-changes.patch"
+    }
+  ],
+  "cleanup": [
+    "/bin",
+    "/include",
+    "/lib/*.a",
+    "/lib/*.la",
+    "/lib/cmake",
+    "/lib/pkgconfig",
+    "/share"
+  ]
+}

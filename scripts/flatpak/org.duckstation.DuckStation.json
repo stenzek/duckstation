@@ -22,6 +22,7 @@
     "modules/21-libbacktrace.json",
     "modules/22-shaderc.json",
     "modules/23-spirv-cross.json",
+    "modules/24-cpuinfo.json",
     {
       "name": "duckstation",
       "buildsystem": "cmake-ninja",
