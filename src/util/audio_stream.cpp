@@ -7,7 +7,7 @@
 #include "common/align.h"
 #include "common/assert.h"
 #include "common/error.h"
-#include "common/intrin.h"
+#include "common/gsvector.h"
 #include "common/log.h"
 #include "common/settings_interface.h"
 #include "common/small_string.h"
@@ -369,53 +369,30 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames)
   if (m_volume != 100)
   {
     u32 num_samples = num_frames * m_output_channels;
-#if defined(CPU_ARCH_SSE)
+
     const u32 aligned_samples = Common::AlignDownPow2(num_samples, 8);
     num_samples -= aligned_samples;
-
-    const __m128 volume_multv = _mm_set1_ps(m_volume / 100.0f);
-    const SampleType* const aligned_samples_end = samples + aligned_samples;
-    for (; samples != aligned_samples_end; samples += 8)
-    {
-      __m128i iv = _mm_loadu_si128(reinterpret_cast<const __m128i*>(samples));
-      __m128i iv1 = _mm_unpacklo_epi16(iv, iv); // [0, 0, 1, 1, 2, 2, 3, 3]
-      __m128i iv2 = _mm_unpackhi_epi16(iv, iv); // [4, 4, 5, 5, 6, 6, 7, 7]
-      iv1 = _mm_srai_epi32(iv1, 16);            // [0, 1, 2, 3]
-      iv2 = _mm_srai_epi32(iv2, 16);            // [4, 5, 6, 7]
-      __m128 fv1 = _mm_cvtepi32_ps(iv1);        // [f0, f1, f2, f3]
-      __m128 fv2 = _mm_cvtepi32_ps(iv2);        // [f4, f5, f6, f7]
-      fv1 = _mm_mul_ps(fv1, volume_multv);      // [f0, f1, f2, f3]
-      fv2 = _mm_mul_ps(fv2, volume_multv);      // [f4, f5, f6, f7]
-      iv1 = _mm_cvtps_epi32(fv1);               // [0, 1, 2, 3]
-      iv2 = _mm_cvtps_epi32(fv2);               // [4, 5, 6, 7]
-      iv = _mm_packs_epi32(iv1, iv2);           // [0, 1, 2, 3, 4, 5, 6, 7]
-      _mm_storeu_si128(reinterpret_cast<__m128i*>(samples), iv);
-    }
-#elif defined(CPU_ARCH_NEON)
-    const u32 aligned_samples = Common::AlignDownPow2(num_samples, 8);
-    num_samples -= aligned_samples;
-
-    const float32x4_t volume_multv = vdupq_n_f32(m_volume / 100.0f);
-    const SampleType* const aligned_samples_end = samples + aligned_samples;
-    for (; samples != aligned_samples_end; samples += 8)
-    {
-      int16x8_t iv = vld1q_s16(samples);
-      int32x4_t iv1 = vreinterpretq_s32_s16(vzip1q_s16(iv, iv)); // [0, 0, 1, 1, 2, 2, 3, 3]
-      int32x4_t iv2 = vreinterpretq_s32_s16(vzip2q_s16(iv, iv)); // [4, 4, 5, 5, 6, 6, 7, 7]
-      iv1 = vshrq_n_s32(iv1, 16);                                // [0, 1, 2, 3]
-      iv2 = vshrq_n_s32(iv2, 16);                                // [4, 5, 6, 7]
-      float32x4_t fv1 = vcvtq_f32_s32(iv1);                      // [f0, f1, f2, f3]
-      float32x4_t fv2 = vcvtq_f32_s32(iv2);                      // [f4, f5, f6, f7]
-      fv1 = vmulq_f32(fv1, volume_multv);                        // [f0, f1, f2, f3]
-      fv2 = vmulq_f32(fv2, volume_multv);                        // [f4, f5, f6, f7]
-      iv1 = vcvtq_s32_f32(fv1);                                  // [0, 1, 2, 3]
-      iv2 = vcvtq_s32_f32(fv2);                                  // [4, 5, 6, 7]
-      iv = vcombine_s16(vqmovn_s32(iv1), vqmovn_s32(iv2));       // [0, 1, 2, 3, 4, 5, 6, 7]
-      vst1q_s16(samples, iv);
-    }
-#endif
 
     const float volume_mult = static_cast<float>(m_volume) / 100.0f;
+    const GSVector4 volume_multv = GSVector4(volume_mult);
+    const SampleType* const aligned_samples_end = samples + aligned_samples;
+    for (; samples != aligned_samples_end; samples += 8)
+    {
+      GSVector4i iv = GSVector4i::load<false>(samples); // [0, 1, 2, 3, 4, 5, 6, 7]
+      GSVector4i iv1 = iv.upl16(iv);                    // [0, 0, 1, 1, 2, 2, 3, 3]
+      GSVector4i iv2 = iv.uph16(iv);                    // [4, 4, 5, 5, 6, 6, 7, 7]
+      iv1 = iv1.sra32<16>();                            // [0, 1, 2, 3]
+      iv2 = iv2.sra32<16>();                            // [4, 5, 6, 7]
+      GSVector4 fv1 = GSVector4(iv1);                   // [f0, f1, f2, f3]
+      GSVector4 fv2 = GSVector4(iv2);                   // [f4, f5, f6, f7]
+      fv1 = fv1 * volume_multv;                         // [f0, f1, f2, f3]
+      fv2 = fv2 * volume_multv;                         // [f4, f5, f6, f7]
+      iv1 = GSVector4i(fv1);                            // [0, 1, 2, 3]
+      iv2 = GSVector4i(fv2);                            // [4, 5, 6, 7]
+      iv = iv1.ps32(iv2);                               // [0, 1, 2, 3, 4, 5, 6, 7]
+      GSVector4i::store<false>(samples, iv);
+    }
+
     while (num_samples > 0)
     {
       *samples = static_cast<s16>(std::clamp(static_cast<float>(*samples) * volume_mult, -32768.0f, 32767.0f));
@@ -584,126 +561,52 @@ void AudioStream::BeginWrite(SampleType** buffer_ptr, u32* num_frames)
   *num_frames = CHUNK_SIZE - (m_staging_buffer_pos / NUM_INPUT_CHANNELS);
 }
 
-void AudioStream::WriteFrames(const SampleType* frames, u32 num_frames)
-{
-  Panic("not implemented");
-}
-
-static constexpr float S16_TO_FLOAT = 1.0f / 32767.0f;
-static constexpr float FLOAT_TO_S16 = 32767.0f;
-
-#if defined(CPU_ARCH_NEON)
-
 static void S16ChunkToFloat(const s16* src, float* dst, u32 num_samples)
 {
-  const float32x4_t S16_TO_FLOAT_V = vdupq_n_f32(S16_TO_FLOAT);
+  constexpr GSVector4 S16_TO_FLOAT_V = GSVector4::cxpr(1.0f / 32767.0f);
 
   const u32 iterations = (num_samples + 7) / 8;
   for (u32 i = 0; i < iterations; i++)
   {
-    const int16x8_t sv = vld1q_s16(src);
+    const GSVector4i sv = GSVector4i::load<false>(src);
     src += 8;
 
-    int32x4_t iv1 = vreinterpretq_s32_s16(vzip1q_s16(sv, sv)); // [0, 0, 1, 1, 2, 2, 3, 3]
-    int32x4_t iv2 = vreinterpretq_s32_s16(vzip2q_s16(sv, sv)); // [4, 4, 5, 5, 6, 6, 7, 7]
-    iv1 = vshrq_n_s32(iv1, 16);                                // [0, 1, 2, 3]
-    iv2 = vshrq_n_s32(iv2, 16);                                // [4, 5, 6, 7]
-    float32x4_t fv1 = vcvtq_f32_s32(iv1);                      // [f0, f1, f2, f3]
-    float32x4_t fv2 = vcvtq_f32_s32(iv2);                      // [f4, f5, f6, f7]
-    fv1 = vmulq_f32(fv1, S16_TO_FLOAT_V);
-    fv2 = vmulq_f32(fv2, S16_TO_FLOAT_V);
+    GSVector4i iv1 = sv.upl16(sv);  // [0, 0, 1, 1, 2, 2, 3, 3]
+    GSVector4i iv2 = sv.uph16(sv);  // [4, 4, 5, 5, 6, 6, 7, 7]
+    iv1 = iv1.sra32<16>();          // [0, 1, 2, 3]
+    iv2 = iv2.sra32<16>();          // [4, 5, 6, 7]
+    GSVector4 fv1 = GSVector4(iv1); // [f0, f1, f2, f3]
+    GSVector4 fv2 = GSVector4(iv2); // [f4, f5, f6, f7]
+    fv1 = fv1 * S16_TO_FLOAT_V;
+    fv2 = fv2 * S16_TO_FLOAT_V;
 
-    vst1q_f32(dst + 0, fv1);
-    vst1q_f32(dst + 4, fv2);
+    GSVector4::store<false>(dst + 0, fv1);
+    GSVector4::store<false>(dst + 4, fv2);
     dst += 8;
   }
 }
 
 static void FloatChunkToS16(s16* dst, const float* src, u32 num_samples)
 {
-  const float32x4_t FLOAT_TO_S16_V = vdupq_n_f32(FLOAT_TO_S16);
+  const GSVector4 FLOAT_TO_S16_V = GSVector4::cxpr(32767.0f);
 
   const u32 iterations = (num_samples + 7) / 8;
   for (u32 i = 0; i < iterations; i++)
   {
-    float32x4_t fv1 = vld1q_f32(src + 0);
-    float32x4_t fv2 = vld1q_f32(src + 4);
+    GSVector4 fv1 = GSVector4::load<false>(src + 0);
+    GSVector4 fv2 = GSVector4::load<false>(src + 4);
     src += 8;
 
-    fv1 = vmulq_f32(fv1, FLOAT_TO_S16_V);
-    fv2 = vmulq_f32(fv2, FLOAT_TO_S16_V);
-    int32x4_t iv1 = vcvtq_s32_f32(fv1);
-    int32x4_t iv2 = vcvtq_s32_f32(fv2);
+    fv1 = fv1 * FLOAT_TO_S16_V;
+    fv2 = fv2 * FLOAT_TO_S16_V;
+    GSVector4i iv1 = GSVector4i(fv1);
+    GSVector4i iv2 = GSVector4i(fv2);
 
-    int16x8_t iv = vcombine_s16(vqmovn_s32(iv1), vqmovn_s32(iv2));
-    vst1q_s16(dst, iv);
+    const GSVector4i iv = iv1.ps32(iv2);
+    GSVector4i::store<false>(dst, iv);
     dst += 8;
   }
 }
-
-#elif defined(CPU_ARCH_SSE)
-
-static void S16ChunkToFloat(const s16* src, float* dst, u32 num_samples)
-{
-  const __m128 S16_TO_FLOAT_V = _mm_set1_ps(S16_TO_FLOAT);
-
-  const u32 iterations = (num_samples + 7) / 8;
-  for (u32 i = 0; i < iterations; i++)
-  {
-    const __m128i sv = _mm_load_si128(reinterpret_cast<const __m128i*>(src));
-    src += 8;
-
-    __m128i iv1 = _mm_unpacklo_epi16(sv, sv); // [0, 0, 1, 1, 2, 2, 3, 3]
-    __m128i iv2 = _mm_unpackhi_epi16(sv, sv); // [4, 4, 5, 5, 6, 6, 7, 7]
-    iv1 = _mm_srai_epi32(iv1, 16);            // [0, 1, 2, 3]
-    iv2 = _mm_srai_epi32(iv2, 16);            // [4, 5, 6, 7]
-    __m128 fv1 = _mm_cvtepi32_ps(iv1);        // [f0, f1, f2, f3]
-    __m128 fv2 = _mm_cvtepi32_ps(iv2);        // [f4, f5, f6, f7]
-    fv1 = _mm_mul_ps(fv1, S16_TO_FLOAT_V);
-    fv2 = _mm_mul_ps(fv2, S16_TO_FLOAT_V);
-
-    _mm_store_ps(dst + 0, fv1);
-    _mm_store_ps(dst + 4, fv2);
-    dst += 8;
-  }
-}
-
-static void FloatChunkToS16(s16* dst, const float* src, u32 num_samples)
-{
-  const __m128 FLOAT_TO_S16_V = _mm_set1_ps(FLOAT_TO_S16);
-
-  const u32 iterations = (num_samples + 7) / 8;
-  for (u32 i = 0; i < iterations; i++)
-  {
-    __m128 fv1 = _mm_load_ps(src + 0);
-    __m128 fv2 = _mm_load_ps(src + 4);
-    src += 8;
-
-    fv1 = _mm_mul_ps(fv1, FLOAT_TO_S16_V);
-    fv2 = _mm_mul_ps(fv2, FLOAT_TO_S16_V);
-    __m128i iv1 = _mm_cvtps_epi32(fv1);
-    __m128i iv2 = _mm_cvtps_epi32(fv2);
-
-    __m128i iv = _mm_packs_epi32(iv1, iv2);
-    _mm_store_si128(reinterpret_cast<__m128i*>(dst), iv);
-    dst += 8;
-  }
-}
-
-#else
-
-static void S16ChunkToFloat(const s16* src, float* dst, u32 num_samples)
-{
-  for (u32 i = 0; i < num_samples; ++i)
-    *(dst++) = static_cast<float>(*(src++)) / 32767.0f;
-}
-
-static void FloatChunkToS16(s16* dst, const float* src, u32 num_samples)
-{
-  for (u32 i = 0; i < num_samples; ++i)
-    *(dst++) = static_cast<s16>((*(src++) * 32767.0f));
-}
-#endif
 
 void AudioStream::ExpandAllocate()
 {
