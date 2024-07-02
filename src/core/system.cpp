@@ -283,6 +283,18 @@ static TinyString GetTimestampStringForFileName()
 
 bool System::Internal::PerformEarlyHardwareChecks(Error* error)
 {
+  // This shouldn't fail... if it does, just hope for the best.
+  cpuinfo_initialize();
+
+#ifdef CPU_ARCH_X64
+  if (!cpuinfo_has_x86_sse4_1())
+  {
+    Error::SetStringFmt(error, "Your CPU does not support the SSE4.1 instruction set.\n"
+                               "A CPU from 2008 or newer is required to run DuckStation.");
+    return false;
+  }
+#endif
+
   // Check page size. If it doesn't match, it is a fatal error.
   const size_t runtime_host_page_size = PlatformMisc::GetRuntimePageSize();
   if (runtime_host_page_size == 0)
