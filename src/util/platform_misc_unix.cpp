@@ -132,28 +132,6 @@ size_t PlatformMisc::GetRuntimePageSize()
   return (res > 0) ? static_cast<size_t>(res) : 0;
 }
 
-size_t PlatformMisc::GetRuntimeCacheLineSize()
-{
-  int l1i = sysconf(_SC_LEVEL1_DCACHE_LINESIZE);
-  int l1d = sysconf(_SC_LEVEL1_ICACHE_LINESIZE);
-  int res = (l1i > l1d) ? l1i : l1d;
-  for (int index = 0; index < 16; index++)
-  {
-    char buf[128];
-    snprintf(buf, sizeof(buf), "/sys/devices/system/cpu/cpu0/cache/index%d/coherency_line_size", index);
-    std::FILE* fp = std::fopen(buf, "rb");
-    if (!fp)
-      break;
-
-    std::fread(buf, sizeof(buf), 1, fp);
-    std::fclose(fp);
-    int val = std::atoi(buf);
-    res = (val > res) ? val : res;
-  }
-
-  return (res > 0) ? static_cast<size_t>(res) : 0;
-}
-
 bool PlatformMisc::PlaySoundAsync(const char* path)
 {
 #ifdef __linux__
