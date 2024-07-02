@@ -107,6 +107,7 @@ static bool HandleDecodeMacroblockCommand();
 static void HandleSetQuantTableCommand();
 static void HandleSetScaleCommand();
 
+static void SetScaleMatrix(const u16* values);
 static bool DecodeMonoMacroblock();
 static bool DecodeColoredMacroblock();
 static void ScheduleBlockCopyOut(TickCount ticks);
@@ -181,7 +182,18 @@ bool MDEC::DoState(StateWrapper& sw)
   sw.Do(&s_remaining_halfwords);
   sw.Do(&s_iq_uv);
   sw.Do(&s_iq_y);
-  sw.Do(&s_scale_table);
+
+  if (sw.GetVersion() < 66) [[unlikely]]
+  {
+    std::array<u16, 64> old_scale_matrix;
+    sw.Do(&old_scale_matrix);
+    SetScaleMatrix(old_scale_matrix.data());
+  }
+  else
+  {
+    sw.Do(&s_scale_table);
+  }
+
   sw.Do(&s_blocks);
   sw.Do(&s_current_block);
   sw.Do(&s_current_coefficient);
@@ -817,7 +829,7 @@ void MDEC::IDCT_Old(s16* blk)
     {
       s64 sum = 0;
       for (u32 u = 0; u < 8; u++)
-        sum += s32(blk[u * 8 + x]) * s32(s_scale_table[u * 8 + y]);
+        sum += s32(blk[u * 8 + x]) * s32(s_scale_table[y * 8 + u]);
       temp_buffer[x + y * 8] = sum;
     }
   }
@@ -827,7 +839,7 @@ void MDEC::IDCT_Old(s16* blk)
     {
       s64 sum = 0;
       for (u32 u = 0; u < 8; u++)
-        sum += s64(temp_buffer[u + y * 8]) * s32(s_scale_table[u * 8 + x]);
+        sum += s64(temp_buffer[u + y * 8]) * s32(s_scale_table[x * 8 + u]);
 
       blk[x + y * 8] =
         static_cast<s16>(std::clamp<s32>(SignExtendN<9, s32>((sum >> 32) + ((sum >> 31) & 1)), -128, 127));
@@ -923,29 +935,35 @@ bool MDEC::DecodeRLE_New(s16* blk, const u8* qt)
   return false;
 }
 
+template<typename BlkType>
+static s32 IDCTRow(const BlkType* blk, const s16* idct_matrix)
+{
+  // IDCT matrix is -32768..32767, block is -16384..16383. 4 adds can happen without overflow.
+  const s32 sum1 = static_cast<s32>(blk[0]) * static_cast<s32>(idct_matrix[0]) +
+                   static_cast<s32>(blk[1]) * static_cast<s32>(idct_matrix[1]) +
+                   static_cast<s32>(blk[2]) * static_cast<s32>(idct_matrix[2]) +
+                   static_cast<s32>(blk[3]) * static_cast<s32>(idct_matrix[3]);
+  const s32 sum2 = static_cast<s32>(blk[4]) * static_cast<s32>(idct_matrix[4]) +
+                   static_cast<s32>(blk[5]) * static_cast<s32>(idct_matrix[5]) +
+                   static_cast<s32>(blk[6]) * static_cast<s32>(idct_matrix[6]) +
+                   static_cast<s32>(blk[7]) * static_cast<s32>(idct_matrix[7]);
+  return static_cast<s32>(((static_cast<s64>(sum1) + static_cast<s64>(sum2)) + 0x20000) >> 18);
+}
+
 void MDEC::IDCT_New(s16* blk)
 {
   std::array<s32, 64> temp;
   for (u32 x = 0; x < 8; x++)
   {
     for (u32 y = 0; y < 8; y++)
-    {
-      // TODO: We could invert scale_table to get these in row-major order,
-      // in which case we could do optimize this to a vector multiply.
-      s32 sum = 0;
-      for (u32 z = 0; z < 8; z++)
-        sum += (s32(blk[x * 8 + z]) * s32(s_scale_table[z * 8 + y])) / 8;
-      temp[y * 8 + x] = static_cast<s32>((sum + 0x4000) >> 15);
-    }
+      temp[y * 8 + x] = IDCTRow(&blk[x * 8], &s_scale_table[y * 8]);
   }
   for (u32 x = 0; x < 8; x++)
   {
     for (u32 y = 0; y < 8; y++)
     {
-      s32 sum = 0;
-      for (u32 z = 0; z < 8; z++)
-        sum += (temp[x * 8 + z] * s32(s_scale_table[z * 8 + y])) / 8;
-      blk[x * 8 + y] = static_cast<s16>(std::clamp(SignExtendN<9, s32>((sum + 0x4000) >> 15), -128, 127));
+      const s32 sum = IDCTRow(&temp[x * 8], &s_scale_table[y * 8]);
+      blk[x * 8 + y] = static_cast<s16>(std::clamp(SignExtendN<9, s32>(sum), -128, 127));
     }
   }
 }
@@ -1005,11 +1023,19 @@ void MDEC::HandleSetScaleCommand()
 {
   DebugAssert(s_remaining_halfwords == 64);
 
-  // TODO: Remove extra copies..
   std::array<u16, 64> packed_data;
   s_data_in_fifo.PopRange(packed_data.data(), static_cast<u32>(packed_data.size()));
   s_remaining_halfwords -= 32;
-  std::memcpy(s_scale_table.data(), packed_data.data(), s_scale_table.size() * sizeof(s16));
+  SetScaleMatrix(packed_data.data());
+}
+
+void MDEC::SetScaleMatrix(const u16* values)
+{
+  for (u32 y = 0; y < 8; y++)
+  {
+    for (u32 x = 0; x < 8; x++)
+      s_scale_table[y * 8 + x] = values[x * 8 + y];
+  }
 }
 
 void MDEC::DrawDebugStateWindow()
