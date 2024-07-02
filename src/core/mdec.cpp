@@ -13,6 +13,7 @@
 
 #include "common/bitfield.h"
 #include "common/fifo_queue.h"
+#include "common/gsvector.h"
 #include "common/log.h"
 
 #include "imgui.h"
@@ -141,7 +142,7 @@ static std::array<u8, 64> s_iq_y{};
 static std::array<s16, 64> s_scale_table{};
 
 // blocks, for colour: 0 - Crblk, 1 - Cbblk, 2-5 - Y 1-4
-static std::array<std::array<s16, 64>, NUM_BLOCKS> s_blocks;
+alignas(VECTOR_ALIGNMENT) static std::array<std::array<s16, 64>, NUM_BLOCKS> s_blocks;
 static u32 s_current_block = 0;        // block (0-5)
 static u32 s_current_coefficient = 64; // k (in block)
 static u16 s_current_q_scale = 0;
@@ -935,24 +936,17 @@ bool MDEC::DecodeRLE_New(s16* blk, const u8* qt)
   return false;
 }
 
-template<typename BlkType>
-static s32 IDCTRow(const BlkType* blk, const s16* idct_matrix)
+static s16 IDCTRow(const s16* blk, const s16* idct_matrix)
 {
   // IDCT matrix is -32768..32767, block is -16384..16383. 4 adds can happen without overflow.
-  const s32 sum1 = static_cast<s32>(blk[0]) * static_cast<s32>(idct_matrix[0]) +
-                   static_cast<s32>(blk[1]) * static_cast<s32>(idct_matrix[1]) +
-                   static_cast<s32>(blk[2]) * static_cast<s32>(idct_matrix[2]) +
-                   static_cast<s32>(blk[3]) * static_cast<s32>(idct_matrix[3]);
-  const s32 sum2 = static_cast<s32>(blk[4]) * static_cast<s32>(idct_matrix[4]) +
-                   static_cast<s32>(blk[5]) * static_cast<s32>(idct_matrix[5]) +
-                   static_cast<s32>(blk[6]) * static_cast<s32>(idct_matrix[6]) +
-                   static_cast<s32>(blk[7]) * static_cast<s32>(idct_matrix[7]);
-  return static_cast<s32>(((static_cast<s64>(sum1) + static_cast<s64>(sum2)) + 0x20000) >> 18);
+  GSVector4i sum = GSVector4i::load<false>(blk).madd_s16(GSVector4i::load<false>(idct_matrix)).addp_s32();
+  return static_cast<s16>(((static_cast<s64>(sum.extract32<0>()) + static_cast<s64>(sum.extract32<1>())) + 0x20000) >>
+                          18);
 }
 
 void MDEC::IDCT_New(s16* blk)
 {
-  std::array<s32, 64> temp;
+  alignas(VECTOR_ALIGNMENT) std::array<s16, 64> temp;
   for (u32 x = 0; x < 8; x++)
   {
     for (u32 y = 0; y < 8; y++)
