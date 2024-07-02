@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "cdrom.h"
@@ -21,8 +21,8 @@
 #include "common/bitfield.h"
 #include "common/fifo_queue.h"
 #include "common/file_system.h"
+#include "common/gsvector.h"
 #include "common/heap_array.h"
-#include "common/intrin.h"
 #include "common/log.h"
 
 #include "imgui.h"
@@ -3233,50 +3233,20 @@ static s16 GetPeakVolume(const u8* raw_sector, u8 channel)
 {
   static constexpr u32 NUM_SAMPLES = CDImage::RAW_SECTOR_SIZE / sizeof(s16);
 
-#if defined(CPU_ARCH_SSE) || defined(CPU_ARCH_NEON)
-
   static_assert(Common::IsAlignedPow2(NUM_SAMPLES, 8));
   const u8* current_ptr = raw_sector;
-  s16 v_peaks[8];
-
-#if defined(CPU_ARCH_SSE)
-  __m128i v_peak = _mm_set1_epi16(0);
+  GSVector4i v_peak = GSVector4i::zero();
   for (u32 i = 0; i < NUM_SAMPLES; i += 8)
   {
-    __m128i val = _mm_loadu_si128(reinterpret_cast<const __m128i*>(current_ptr));
-    v_peak = _mm_max_epi16(val, v_peak);
-    current_ptr += 16;
+    v_peak = v_peak.max_i16(GSVector4i::load<false>(current_ptr));
+    current_ptr += sizeof(v_peak);
   }
-  _mm_store_si128(reinterpret_cast<__m128i*>(v_peaks), v_peak);
-#elif defined(CPU_ARCH_NEON)
-  int16x8_t v_peak = vdupq_n_s16(0);
-  for (u32 i = 0; i < NUM_SAMPLES; i += 8)
-  {
-    int16x8_t val = vld1q_s16(reinterpret_cast<const s16*>(current_ptr));
-    v_peak = vmaxq_s16(val, v_peak);
-    current_ptr += 16;
-  }
-  vst1q_s16(v_peaks, v_peak);
-#endif
 
+  // Convert 16->32bit, removing the unneeded channel.
   if (channel == 0)
-    return std::max(v_peaks[0], std::max(v_peaks[2], std::max(v_peaks[4], v_peaks[6])));
-  else
-    return std::max(v_peaks[1], std::max(v_peaks[3], std::max(v_peaks[5], v_peaks[7])));
-#else
-  const u8* current_ptr = raw_sector + (channel * sizeof(s16));
-  s16 peak = 0;
-
-  for (u32 i = 0; i < NUM_SAMPLES; i += 2)
-  {
-    s16 sample;
-    std::memcpy(&sample, current_ptr, sizeof(sample));
-    peak = std::max(peak, sample);
-    current_ptr += sizeof(s16) * 2;
-  }
-
-  return peak;
-#endif
+    v_peak = v_peak.sll32<16>();
+  v_peak = v_peak.sra32<16>();
+  return static_cast<s16>(v_peak.maxv_s32());
 }
 
 ALWAYS_INLINE_RELEASE void CDROM::ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& subq,
