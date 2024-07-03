@@ -1,13 +1,7 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
-#include "metal_layer.h"
-#include "platform_misc.h"
-#include "window_info.h"
-
-#include "common/log.h"
-#include "common/small_string.h"
-
+// Normally, system includes come last. But apparently some of our macro names are redefined...
 #include <Cocoa/Cocoa.h>
 #include <IOKit/pwr_mgt/IOPMLib.h>
 #include <QuartzCore/QuartzCore.h>
@@ -15,6 +9,13 @@
 #include <optional>
 #include <sys/sysctl.h>
 #include <vector>
+
+#include "metal_layer.h"
+#include "platform_misc.h"
+#include "window_info.h"
+
+#include "common/log.h"
+#include "common/small_string.h"
 
 Log_SetChannel(PlatformMisc);
 
