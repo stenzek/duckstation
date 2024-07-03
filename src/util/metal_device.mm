@@ -1519,9 +1519,9 @@ void MetalDevice::ClearDepth(GPUTexture* t, float d)
     id<MTLRenderPipelineState> pipeline = GetClearDepthPipeline(config);
     id<MTLDepthStencilState> depth = GetDepthState(GPUPipeline::DepthState::GetAlwaysWriteState());
 
-    const Common::Rectangle<s32> rect(0, 0, t->GetWidth(), t->GetHeight());
-    const bool set_vp = (m_current_viewport != rect);
-    const bool set_scissor = (m_current_scissor != rect);
+    const GSVector4i rect = t->GetRect();
+    const bool set_vp = !m_current_viewport.eq(rect);
+    const bool set_scissor = !m_current_scissor.eq(rect);
     if (set_vp)
     {
       [m_render_encoder setViewport:(MTLViewport){0.0, 0.0, static_cast<double>(t->GetWidth()),
@@ -1942,24 +1942,24 @@ void MetalDevice::UnbindTextureBuffer(MetalTextureBuffer* buf)
     [m_render_encoder setFragmentBuffer:nil offset:0 atIndex:1];
 }
 
-void MetalDevice::SetViewport(s32 x, s32 y, s32 width, s32 height)
+void MetalDevice::SetViewport(const GSVector4i rc)
 {
-  const Common::Rectangle<s32> new_vp = Common::Rectangle<s32>::FromExtents(x, y, width, height);
-  if (new_vp == m_current_viewport)
+  if (m_current_viewport.eq(rc))
     return;
 
-  m_current_viewport = new_vp;
+  m_current_viewport = rc;
+
   if (InRenderPass())
     SetViewportInRenderEncoder();
 }
 
-void MetalDevice::SetScissor(s32 x, s32 y, s32 width, s32 height)
+void MetalDevice::SetScissor(const GSVector4i rc)
 {
-  const Common::Rectangle<s32> new_sr = Common::Rectangle<s32>::FromExtents(x, y, width, height);
-  if (new_sr == m_current_scissor)
+  if (m_current_scissor.eq(rc))
     return;
 
-  m_current_scissor = new_sr;
+  m_current_scissor = rc;
+
   if (InRenderPass())
     SetScissorInRenderEncoder();
 }
@@ -2122,27 +2122,27 @@ void MetalDevice::SetInitialEncoderState()
 
 void MetalDevice::SetViewportInRenderEncoder()
 {
-  const Common::Rectangle<s32> rc = ClampToFramebufferSize(m_current_viewport);
+  const GSVector4i rc = ClampToFramebufferSize(m_current_viewport);
   [m_render_encoder
     setViewport:(MTLViewport){static_cast<double>(rc.left), static_cast<double>(rc.top),
-                              static_cast<double>(rc.GetWidth()), static_cast<double>(rc.GetHeight()), 0.0, 1.0}];
+                              static_cast<double>(rc.width()), static_cast<double>(rc.height()), 0.0, 1.0}];
 }
 
 void MetalDevice::SetScissorInRenderEncoder()
 {
-  const Common::Rectangle<s32> rc = ClampToFramebufferSize(m_current_scissor);
+  const GSVector4i rc = ClampToFramebufferSize(m_current_scissor);
   [m_render_encoder
     setScissorRect:(MTLScissorRect){static_cast<NSUInteger>(rc.left), static_cast<NSUInteger>(rc.top),
-                                    static_cast<NSUInteger>(rc.GetWidth()), static_cast<NSUInteger>(rc.GetHeight())}];
+                                    static_cast<NSUInteger>(rc.width()), static_cast<NSUInteger>(rc.height())}];
 }
 
-Common::Rectangle<s32> MetalDevice::ClampToFramebufferSize(const Common::Rectangle<s32>& rc) const
+GSVector4i MetalDevice::ClampToFramebufferSize(const GSVector4i rc) const
 {
   const MetalTexture* rt_or_ds =
     (m_num_current_render_targets > 0) ? m_current_render_targets[0] : m_current_depth_target;
   const s32 clamp_width = rt_or_ds ? rt_or_ds->GetWidth() : m_window_info.surface_width;
   const s32 clamp_height = rt_or_ds ? rt_or_ds->GetHeight() : m_window_info.surface_height;
-  return rc.ClampedSize(clamp_width, clamp_height);
+  return rc.rintersect(GSVector4i(0, 0, clamp_width, clamp_height));
 }
 
 void MetalDevice::PreDrawCheck()

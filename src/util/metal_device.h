@@ -344,7 +344,7 @@ private:
   void EndInlineUploading();
   void EndAnyEncoding();
 
-  Common::Rectangle<s32> ClampToFramebufferSize(const Common::Rectangle<s32>& rc) const;
+  GSVector4i ClampToFramebufferSize(const GSVector4i rc) const;
   void PreDrawCheck();
   void SetInitialEncoderState();
   void SetViewportInRenderEncoder();
