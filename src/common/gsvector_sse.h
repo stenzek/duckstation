@@ -162,7 +162,6 @@ public:
         break;
 
       default:
-        UnreachableCode();
         break;
     }
 
