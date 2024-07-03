@@ -1498,7 +1498,7 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input_color, GPUTexture*
   m_frame_count++;
 
   // Reshade always draws at full size.
-  g_gpu_device->SetViewportAndScissor(final_rect);
+  g_gpu_device->SetViewportAndScissor(GSVector4i(0, 0, target_width, target_height));
 
   if (m_uniforms_size > 0)
   {
