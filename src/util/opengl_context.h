@@ -9,7 +9,6 @@
 
 #include <memory>
 #include <span>
-#include <vector>
 
 class Error;
 
@@ -33,13 +32,6 @@ public:
     int minor_version;
   };
 
-  struct FullscreenModeInfo
-  {
-    u32 width;
-    u32 height;
-    float refresh_rate;
-  };
-
   ALWAYS_INLINE const WindowInfo& GetWindowInfo() const { return m_wi; }
   ALWAYS_INLINE bool IsGLES() const { return (m_version.profile == Profile::ES); }
   ALWAYS_INLINE u32 GetSurfaceWidth() const { return m_wi.surface_width; }
@@ -56,8 +48,6 @@ public:
   virtual bool SupportsNegativeSwapInterval() const = 0;
   virtual bool SetSwapInterval(s32 interval) = 0;
   virtual std::unique_ptr<OpenGLContext> CreateSharedContext(const WindowInfo& wi, Error* error) = 0;
-
-  virtual std::vector<FullscreenModeInfo> EnumerateFullscreenModes();
 
   static std::unique_ptr<OpenGLContext> Create(const WindowInfo& wi, Error* error);
 

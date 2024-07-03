@@ -66,15 +66,18 @@ public:
   VulkanDevice();
   ~VulkanDevice() override;
 
+  // Returns a list of Vulkan-compatible GPUs.
+  using GPUList = std::vector<std::pair<VkPhysicalDevice, AdapterInfo>>;
+  static GPUList EnumerateGPUs(VkInstance instance);
+  static GPUList EnumerateGPUs();
+  static AdapterInfoList GetAdapterList();
+
   RenderAPI GetRenderAPI() const override;
 
   bool HasSurface() const override;
 
   bool UpdateWindow() override;
   void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) override;
-
-  static AdapterAndModeList StaticGetAdapterAndModeList();
-  AdapterAndModeList GetAdapterAndModeList() override;
   void DestroySurface() override;
 
   std::string GetDriverInfo() const override;
@@ -287,15 +290,9 @@ private:
   using CleanupObjectFunction = void (*)(VulkanDevice& dev, void* obj);
   using SamplerMap = std::unordered_map<u64, VkSampler>;
 
-  static void GetAdapterAndModeList(AdapterAndModeList* ret, VkInstance instance);
-
   // Helper method to create a Vulkan instance.
   static VkInstance CreateVulkanInstance(const WindowInfo& wi, OptionalExtensions* oe, bool enable_debug_utils,
                                          bool enable_validation_layer);
-
-  // Returns a list of Vulkan-compatible GPUs.
-  using GPUList = std::vector<std::pair<VkPhysicalDevice, std::string>>;
-  static GPUList EnumerateGPUs(VkInstance instance);
 
   bool ValidatePipelineCacheHeader(const VK_PIPELINE_CACHE_HEADER& header);
   void FillPipelineCacheHeader(VK_PIPELINE_CACHE_HEADER* header);
@@ -330,6 +327,8 @@ private:
   void ProcessDeviceExtensions();
 
   bool CheckFeatures(FeatureMask disabled_features);
+
+  static u32 GetMaxMultisamples(VkPhysicalDevice physical_device, const VkPhysicalDeviceProperties& properties);
 
   bool CreateAllocator();
   void DestroyAllocator();

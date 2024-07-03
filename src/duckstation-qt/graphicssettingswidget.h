@@ -7,7 +7,8 @@
 
 #include "ui_graphicssettingswidget.h"
 
-enum class RenderAPI : u32;
+#include "util/gpu_device.h"
+
 enum class GPURenderer : u8;
 
 class SettingsWindow;
@@ -27,13 +28,10 @@ private Q_SLOTS:
   void updateRendererDependentOptions();
   void updatePGXPSettingsEnabled();
 
-  void onAdapterChanged();
   void onAspectRatioChanged();
   void updateResolutionDependentOptions();
-  void onMSAAModeChanged();
   void onTrueColorChanged();
   void onDownsampleModeChanged();
-  void onFullscreenModeChanged();
   void onEnableAnyTextureReplacementsChanged();
   void onEnableVRAMWriteDumpingChanged();
 
@@ -57,4 +55,7 @@ private:
   Ui::GraphicsSettingsWidget m_ui;
 
   SettingsWindow* m_dialog;
+
+  GPUDevice::AdapterInfoList m_adapters;
+  RenderAPI m_adapters_render_api = RenderAPI::None;
 };

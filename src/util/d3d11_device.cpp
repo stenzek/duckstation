@@ -685,39 +685,6 @@ void D3D11Device::SubmitPresent()
   Panic("Not supported by this API.");
 }
 
-GPUDevice::AdapterAndModeList D3D11Device::StaticGetAdapterAndModeList()
-{
-  AdapterAndModeList ret;
-  std::unique_lock lock(s_instance_mutex);
-
-  // Device shouldn't be torn down since we have the lock.
-  if (g_gpu_device && g_gpu_device->GetRenderAPI() == RenderAPI::D3D11)
-  {
-    GetAdapterAndModeList(&ret, D3D11Device::GetInstance().m_dxgi_factory.Get());
-  }
-  else
-  {
-    ComPtr<IDXGIFactory5> factory = D3DCommon::CreateFactory(false, nullptr);
-    if (factory)
-      GetAdapterAndModeList(&ret, factory.Get());
-  }
-
-  return ret;
-}
-
-void D3D11Device::GetAdapterAndModeList(AdapterAndModeList* ret, IDXGIFactory5* factory)
-{
-  ret->adapter_names = D3DCommon::GetAdapterNames(factory);
-  ret->fullscreen_modes = D3DCommon::GetFullscreenModes(factory, {});
-}
-
-GPUDevice::AdapterAndModeList D3D11Device::GetAdapterAndModeList()
-{
-  AdapterAndModeList ret;
-  GetAdapterAndModeList(&ret, m_dxgi_factory.Get());
-  return ret;
-}
-
 bool D3D11Device::CreateTimestampQueries()
 {
   for (u32 i = 0; i < NUM_TIMESTAMP_QUERIES; i++)

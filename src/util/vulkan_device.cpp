@@ -315,26 +315,74 @@ VulkanDevice::GPUList VulkanDevice::EnumerateGPUs(VkInstance instance)
     VkPhysicalDeviceProperties props = {};
     vkGetPhysicalDeviceProperties(device, &props);
 
-    std::string gpu_name = props.deviceName;
+    VkPhysicalDeviceFeatures available_features = {};
+    vkGetPhysicalDeviceFeatures(device, &available_features);
+
+    AdapterInfo ai;
+    ai.name = props.deviceName;
+    ai.max_texture_size = std::min(props.limits.maxFramebufferWidth, props.limits.maxImageDimension2D);
+    ai.max_multisamples = GetMaxMultisamples(device, props);
+    ai.supports_sample_shading = available_features.sampleRateShading;
 
     // handle duplicate adapter names
-    if (std::any_of(gpus.begin(), gpus.end(), [&gpu_name](const auto& other) { return (gpu_name == other.second); }))
+    if (std::any_of(gpus.begin(), gpus.end(), [&ai](const auto& other) { return (ai.name == other.second.name); }))
     {
-      std::string original_adapter_name = std::move(gpu_name);
+      std::string original_adapter_name = std::move(ai.name);
 
       u32 current_extra = 2;
       do
       {
-        gpu_name = fmt::format("{} ({})", original_adapter_name, current_extra);
+        ai.name = fmt::format("{} ({})", original_adapter_name, current_extra);
         current_extra++;
       } while (
-        std::any_of(gpus.begin(), gpus.end(), [&gpu_name](const auto& other) { return (gpu_name == other.second); }));
+        std::any_of(gpus.begin(), gpus.end(), [&ai](const auto& other) { return (ai.name == other.second.name); }));
     }
 
-    gpus.emplace_back(device, std::move(gpu_name));
+    gpus.emplace_back(device, std::move(ai));
   }
 
   return gpus;
+}
+
+VulkanDevice::GPUList VulkanDevice::EnumerateGPUs()
+{
+  GPUList ret;
+  std::unique_lock lock(s_instance_mutex);
+
+  // Device shouldn't be torn down since we have the lock.
+  if (g_gpu_device && g_gpu_device->GetRenderAPI() == RenderAPI::Vulkan && Vulkan::IsVulkanLibraryLoaded())
+  {
+    ret = EnumerateGPUs(VulkanDevice::GetInstance().m_instance);
+  }
+  else
+  {
+    if (Vulkan::LoadVulkanLibrary(nullptr))
+    {
+      OptionalExtensions oe = {};
+      const VkInstance instance = CreateVulkanInstance(WindowInfo(), &oe, false, false);
+      if (instance != VK_NULL_HANDLE)
+      {
+        if (Vulkan::LoadVulkanInstanceFunctions(instance))
+          ret = EnumerateGPUs(instance);
+
+        vkDestroyInstance(instance, nullptr);
+      }
+
+      Vulkan::UnloadVulkanLibrary();
+    }
+  }
+
+  return ret;
+}
+
+GPUDevice::AdapterInfoList VulkanDevice::GetAdapterList()
+{
+  AdapterInfoList ret;
+  GPUList gpus = EnumerateGPUs();
+  ret.reserve(gpus.size());
+  for (auto& [physical_device, adapter_info] : gpus)
+    ret.push_back(std::move(adapter_info));
+  return ret;
 }
 
 bool VulkanDevice::SelectDeviceExtensions(ExtensionList* extension_list, bool enable_surface)
@@ -1853,67 +1901,21 @@ void VulkanDevice::DestroyFramebuffer(VkFramebuffer fbo)
   VulkanDevice::GetInstance().DeferFramebufferDestruction(fbo);
 }
 
-void VulkanDevice::GetAdapterAndModeList(AdapterAndModeList* ret, VkInstance instance)
-{
-  GPUList gpus = EnumerateGPUs(instance);
-  ret->adapter_names.clear();
-  for (auto& [gpu, name] : gpus)
-    ret->adapter_names.push_back(std::move(name));
-}
-
-GPUDevice::AdapterAndModeList VulkanDevice::StaticGetAdapterAndModeList()
-{
-  AdapterAndModeList ret;
-  std::unique_lock lock(s_instance_mutex);
-
-  // Device shouldn't be torn down since we have the lock.
-  if (g_gpu_device && g_gpu_device->GetRenderAPI() == RenderAPI::Vulkan && Vulkan::IsVulkanLibraryLoaded())
-  {
-    GetAdapterAndModeList(&ret, VulkanDevice::GetInstance().m_instance);
-  }
-  else
-  {
-    if (Vulkan::LoadVulkanLibrary(nullptr))
-    {
-      OptionalExtensions oe = {};
-      const VkInstance instance = CreateVulkanInstance(WindowInfo(), &oe, false, false);
-      if (instance != VK_NULL_HANDLE)
-      {
-        if (Vulkan::LoadVulkanInstanceFunctions(instance))
-          GetAdapterAndModeList(&ret, instance);
-
-        vkDestroyInstance(instance, nullptr);
-      }
-
-      Vulkan::UnloadVulkanLibrary();
-    }
-  }
-
-  return ret;
-}
-
-GPUDevice::AdapterAndModeList VulkanDevice::GetAdapterAndModeList()
-{
-  AdapterAndModeList ret;
-  GetAdapterAndModeList(&ret, m_instance);
-  return ret;
-}
-
 bool VulkanDevice::IsSuitableDefaultRenderer()
 {
 #ifdef __ANDROID__
   // No way in hell.
   return false;
 #else
-  AdapterAndModeList aml = StaticGetAdapterAndModeList();
-  if (aml.adapter_names.empty())
+  GPUList gpus = EnumerateGPUs();
+  if (gpus.empty())
   {
     // No adapters, not gonna be able to use VK.
     return false;
   }
 
   // Check the first GPU, should be enough.
-  const std::string& name = aml.adapter_names.front();
+  const std::string& name = gpus.front().second.name;
   INFO_LOG("Using Vulkan GPU '{}' for automatic renderer check.", name);
 
   // Any software rendering (LLVMpipe, SwiftShader).
@@ -2000,8 +2002,8 @@ bool VulkanDevice::CreateDevice(std::string_view adapter, bool threaded_presenta
     u32 gpu_index = 0;
     for (; gpu_index < static_cast<u32>(gpus.size()); gpu_index++)
     {
-      INFO_LOG("GPU {}: {}", gpu_index, gpus[gpu_index].second);
-      if (gpus[gpu_index].second == adapter)
+      INFO_LOG("GPU {}: {}", gpu_index, gpus[gpu_index].second.name);
+      if (gpus[gpu_index].second.name == adapter)
       {
         m_physical_device = gpus[gpu_index].first;
         break;
@@ -2010,13 +2012,13 @@ bool VulkanDevice::CreateDevice(std::string_view adapter, bool threaded_presenta
 
     if (gpu_index == static_cast<u32>(gpus.size()))
     {
-      WARNING_LOG("Requested GPU '{}' not found, using first ({})", adapter, gpus[0].second);
+      WARNING_LOG("Requested GPU '{}' not found, using first ({})", adapter, gpus[0].second.name);
       m_physical_device = gpus[0].first;
     }
   }
   else
   {
-    INFO_LOG("No GPU requested, using first ({})", gpus[0].second);
+    INFO_LOG("No GPU requested, using first ({})", gpus[0].second.name);
     m_physical_device = gpus[0].first;
   }
 
@@ -2542,35 +2544,40 @@ void VulkanDevice::InsertDebugMessage(const char* msg)
 #endif
 }
 
-bool VulkanDevice::CheckFeatures(FeatureMask disabled_features)
+u32 VulkanDevice::GetMaxMultisamples(VkPhysicalDevice physical_device, const VkPhysicalDeviceProperties& properties)
 {
-  m_max_texture_size = m_device_properties.limits.maxImageDimension2D;
-
   VkImageFormatProperties color_properties = {};
-  vkGetPhysicalDeviceImageFormatProperties(m_physical_device, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TYPE_2D,
+  vkGetPhysicalDeviceImageFormatProperties(physical_device, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TYPE_2D,
                                            VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, 0,
                                            &color_properties);
   VkImageFormatProperties depth_properties = {};
-  vkGetPhysicalDeviceImageFormatProperties(m_physical_device, VK_FORMAT_D32_SFLOAT, VK_IMAGE_TYPE_2D,
+  vkGetPhysicalDeviceImageFormatProperties(physical_device, VK_FORMAT_D32_SFLOAT, VK_IMAGE_TYPE_2D,
                                            VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 0,
                                            &depth_properties);
-  const VkSampleCountFlags combined_properties = m_device_properties.limits.framebufferColorSampleCounts &
-                                                 m_device_properties.limits.framebufferDepthSampleCounts &
+  const VkSampleCountFlags combined_properties = properties.limits.framebufferColorSampleCounts &
+                                                 properties.limits.framebufferDepthSampleCounts &
                                                  color_properties.sampleCounts & depth_properties.sampleCounts;
   if (combined_properties & VK_SAMPLE_COUNT_64_BIT)
-    m_max_multisamples = 64;
+    return 64;
   else if (combined_properties & VK_SAMPLE_COUNT_32_BIT)
-    m_max_multisamples = 32;
+    return 32;
   else if (combined_properties & VK_SAMPLE_COUNT_16_BIT)
-    m_max_multisamples = 16;
+    return 16;
   else if (combined_properties & VK_SAMPLE_COUNT_8_BIT)
-    m_max_multisamples = 8;
+    return 8;
   else if (combined_properties & VK_SAMPLE_COUNT_4_BIT)
-    m_max_multisamples = 4;
+    return 4;
   else if (combined_properties & VK_SAMPLE_COUNT_2_BIT)
-    m_max_multisamples = 2;
+    return 2;
   else
-    m_max_multisamples = 1;
+    return 1;
+}
+
+bool VulkanDevice::CheckFeatures(FeatureMask disabled_features)
+{
+  m_max_texture_size =
+    std::min(m_device_properties.limits.maxImageDimension2D, m_device_properties.limits.maxFramebufferWidth);
+  m_max_multisamples = GetMaxMultisamples(m_physical_device, m_device_properties);
 
   m_features.dual_source_blend =
     !(disabled_features & FEATURE_MASK_DUAL_SOURCE_BLEND) && m_device_features.dualSrcBlend;

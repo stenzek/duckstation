@@ -8,14 +8,7 @@
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
 
-// For enumerating adapters.
-#ifdef _WIN32
-#include "util/d3d11_device.h"
-#include "util/d3d12_device.h"
-#endif
-#ifdef ENABLE_VULKAN
-#include "util/vulkan_device.h"
-#endif
+#include <algorithm>
 
 static QVariant GetMSAAModeValue(uint multisamples, bool ssaa)
 {
@@ -51,7 +44,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.renderer, "GPU", "Renderer", &Settings::ParseRendererName,
                                                &Settings::GetRendererName, Settings::DEFAULT_GPU_RENDERER);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.resolutionScale, "GPU", "ResolutionScale", 1);
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.textureFiltering, "GPU", "TextureFilter",
                                                &Settings::ParseTextureFilterName, &Settings::GetTextureFilterName,
                                                Settings::DEFAULT_GPU_TEXTURE_FILTER);
@@ -89,10 +81,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
   connect(m_ui.renderer, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &GraphicsSettingsWidget::updateRendererDependentOptions);
-  connect(m_ui.adapter, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-          &GraphicsSettingsWidget::onAdapterChanged);
-  connect(m_ui.resolutionScale, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-          &GraphicsSettingsWidget::updateResolutionDependentOptions);
   connect(m_ui.textureFiltering, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &GraphicsSettingsWidget::updateResolutionDependentOptions);
   connect(m_ui.displayAspectRatio, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
@@ -101,23 +89,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
           &GraphicsSettingsWidget::onDownsampleModeChanged);
   connect(m_ui.trueColor, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onTrueColorChanged);
   connect(m_ui.pgxpEnable, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::updatePGXPSettingsEnabled);
-
-  if (!dialog->isPerGameSettings() ||
-      (dialog->containsSettingValue("GPU", "Multisamples") || dialog->containsSettingValue("GPU", "PerSampleShading")))
-  {
-    const QVariant current_msaa_mode(
-      GetMSAAModeValue(static_cast<uint>(dialog->getEffectiveIntValue("GPU", "Multisamples", 1)),
-                       dialog->getEffectiveBoolValue("GPU", "PerSampleShading", false)));
-    const int current_msaa_index = m_ui.msaaMode->findData(current_msaa_mode);
-    if (current_msaa_index >= 0)
-      m_ui.msaaMode->setCurrentIndex(current_msaa_index);
-  }
-  else
-  {
-    m_ui.msaaMode->setCurrentIndex(0);
-  }
-  connect(m_ui.msaaMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-          &GraphicsSettingsWidget::onMSAAModeChanged);
 
   // Advanced Tab
 
@@ -150,9 +121,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                                "UseSoftwareRendererForReadbacks", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.forceRoundedTexcoords, "GPU", "ForceRoundTextureCoordinates",
                                                false);
-
-  connect(m_ui.fullscreenMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-          &GraphicsSettingsWidget::onFullscreenModeChanged);
 
   // PGXP Tab
 
@@ -582,16 +550,6 @@ void GraphicsSettingsWidget::setupAdditionalUi()
       QString::fromUtf8(Settings::GetDisplayAlignmentDisplayName(static_cast<DisplayAlignment>(i))));
   }
 
-  {
-    if (m_dialog->isPerGameSettings())
-      m_ui.msaaMode->addItem(tr("Use Global Setting"));
-    m_ui.msaaMode->addItem(tr("Disabled"), GetMSAAModeValue(1, false));
-    for (uint i = 2; i <= 32; i *= 2)
-      m_ui.msaaMode->addItem(tr("%1x MSAA").arg(i), GetMSAAModeValue(i, false));
-    for (uint i = 2; i <= 32; i *= 2)
-      m_ui.msaaMode->addItem(tr("%1x SSAA").arg(i), GetMSAAModeValue(i, true));
-  }
-
   for (u32 i = 0; i < static_cast<u32>(GPULineDetectMode::Count); i++)
   {
     m_ui.gpuLineDetectMode->addItem(
@@ -694,75 +652,134 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 
 void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_api)
 {
-  GPUDevice::AdapterAndModeList aml;
-  switch (render_api)
+  // Don't re-query, it's expensive.
+  if (m_adapters_render_api != render_api)
   {
-#ifdef _WIN32
-    case RenderAPI::D3D11:
-      aml = D3D11Device::StaticGetAdapterAndModeList();
-      break;
-
-    case RenderAPI::D3D12:
-      aml = D3D12Device::StaticGetAdapterAndModeList();
-      break;
-#endif
-#ifdef __APPLE__
-    case RenderAPI::Metal:
-      aml = GPUDevice::WrapGetMetalAdapterAndModeList();
-      break;
-#endif
-#ifdef ENABLE_VULKAN
-    case RenderAPI::Vulkan:
-      aml = VulkanDevice::StaticGetAdapterAndModeList();
-      break;
-#endif
-
-    default:
-      break;
+    m_adapters_render_api = render_api;
+    m_adapters = GPUDevice::GetAdapterListForAPI(render_api);
   }
 
-  {
-    const std::string current_adapter(m_dialog->getEffectiveStringValue("GPU", "Adapter", ""));
-    QSignalBlocker blocker(m_ui.adapter);
+  const GPUDevice::AdapterInfo* current_adapter = nullptr;
+  SettingsInterface* const sif = m_dialog->getSettingsInterface();
 
-    // add the default entry - we'll fall back to this if the GPU no longer exists, or there's no options
+  {
+    m_ui.adapter->disconnect();
     m_ui.adapter->clear();
-    m_ui.adapter->addItem(tr("(Default)"));
+    m_ui.adapter->addItem(tr("(Default)"), QVariant(QString()));
 
-    // add the other adapters
-    for (const std::string& adapter_name : aml.adapter_names)
+    const std::string current_adapter_name = m_dialog->getEffectiveStringValue("GPU", "Adapter", "");
+    for (const GPUDevice::AdapterInfo& adapter : m_adapters)
     {
-      m_ui.adapter->addItem(QString::fromStdString(adapter_name));
-
-      if (adapter_name == current_adapter)
-        m_ui.adapter->setCurrentIndex(m_ui.adapter->count() - 1);
+      const QString qadaptername = QString::fromStdString(adapter.name);
+      m_ui.adapter->addItem(qadaptername, QVariant(qadaptername));
+      if (adapter.name == current_adapter_name)
+        current_adapter = &adapter;
     }
 
+    // default adapter
+    if (!m_adapters.empty() && current_adapter_name.empty())
+      current_adapter = &m_adapters.front();
+
     // disable it if we don't have a choice
-    m_ui.adapter->setEnabled(!aml.adapter_names.empty());
+    m_ui.adapter->setEnabled(!m_adapters.empty());
+    SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.adapter, "GPU", "Adapter");
+    connect(m_ui.adapter, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+            &GraphicsSettingsWidget::updateRendererDependentOptions);
   }
 
   {
-    const std::string current_mode(m_dialog->getEffectiveStringValue("GPU", "FullscreenMode", ""));
-    QSignalBlocker blocker(m_ui.fullscreenMode);
-
+    m_ui.fullscreenMode->disconnect();
     m_ui.fullscreenMode->clear();
-    m_ui.fullscreenMode->addItem(tr("Borderless Fullscreen"));
-    m_ui.fullscreenMode->setCurrentIndex(0);
 
-    for (const std::string& mode_name : aml.fullscreen_modes)
+    m_ui.fullscreenMode->addItem(tr("Borderless Fullscreen"), QVariant(QString()));
+    if (current_adapter)
     {
-      m_ui.fullscreenMode->addItem(QString::fromStdString(mode_name));
-
-      if (mode_name == current_mode)
-        m_ui.fullscreenMode->setCurrentIndex(m_ui.fullscreenMode->count() - 1);
+      for (const std::string& mode_name : current_adapter->fullscreen_modes)
+      {
+        const QString qmodename = QString::fromStdString(mode_name);
+        m_ui.fullscreenMode->addItem(qmodename, QVariant(qmodename));
+      }
     }
 
     // disable it if we don't have a choice
-    m_ui.fullscreenMode->setEnabled(!aml.fullscreen_modes.empty());
+    m_ui.fullscreenMode->setEnabled(current_adapter && !current_adapter->fullscreen_modes.empty());
+    SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.fullscreenMode, "GPU", "FullscreenMode");
   }
 
-  // TODO: MSAA modes
+  {
+    m_ui.resolutionScale->disconnect();
+    m_ui.resolutionScale->clear();
+
+    static constexpr const std::pair<int, const char*> templates[] = {
+      {0, QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Automatic (Based on Window Size)")},
+      {1, QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "1x Native (Default)")},
+      {3, QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "3x Native (for 720p)")},
+      {5, QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "5x Native (for 1080p)")},
+      {6, QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "6x Native (for 1440p)")},
+      {9, QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "9x Native (for 4K)")},
+    };
+
+    const int max_scale =
+      static_cast<int>(current_adapter ? std::max<u32>(current_adapter->max_texture_size / 1024, 1) : 16);
+    for (int scale = 0; scale <= max_scale; scale++)
+    {
+      const auto it = std::find_if(std::begin(templates), std::end(templates),
+                                   [&scale](const std::pair<int, const char*>& it) { return scale == it.first; });
+      m_ui.resolutionScale->addItem((it != std::end(templates)) ?
+                                      qApp->translate("GraphicsSettingsWidget", it->second) :
+                                      qApp->translate("GraphicsSettingsWidget", "%1x Native").arg(scale));
+    }
+
+    SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.resolutionScale, "GPU", "ResolutionScale", 1);
+    connect(m_ui.resolutionScale, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+            &GraphicsSettingsWidget::updateResolutionDependentOptions);
+  }
+
+  {
+    m_ui.msaaMode->disconnect();
+    m_ui.msaaMode->clear();
+
+    if (m_dialog->isPerGameSettings())
+      m_ui.msaaMode->addItem(tr("Use Global Setting"));
+
+    const u32 max_multisamples = current_adapter ? current_adapter->max_multisamples : 8;
+    m_ui.msaaMode->addItem(tr("Disabled"), GetMSAAModeValue(1, false));
+    for (uint i = 2; i <= max_multisamples; i *= 2)
+      m_ui.msaaMode->addItem(tr("%1x MSAA").arg(i), GetMSAAModeValue(i, false));
+    for (uint i = 2; i <= max_multisamples; i *= 2)
+      m_ui.msaaMode->addItem(tr("%1x SSAA").arg(i), GetMSAAModeValue(i, true));
+
+    if (!m_dialog->isPerGameSettings() || (m_dialog->containsSettingValue("GPU", "Multisamples") ||
+                                           m_dialog->containsSettingValue("GPU", "PerSampleShading")))
+    {
+      const QVariant current_msaa_mode(
+        GetMSAAModeValue(static_cast<uint>(m_dialog->getEffectiveIntValue("GPU", "Multisamples", 1)),
+                         m_dialog->getEffectiveBoolValue("GPU", "PerSampleShading", false)));
+      const int current_msaa_index = m_ui.msaaMode->findData(current_msaa_mode);
+      if (current_msaa_index >= 0)
+        m_ui.msaaMode->setCurrentIndex(current_msaa_index);
+    }
+    else
+    {
+      m_ui.msaaMode->setCurrentIndex(0);
+    }
+    connect(m_ui.msaaMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this]() {
+      const int index = m_ui.msaaMode->currentIndex();
+      if (m_dialog->isPerGameSettings() && index == 0)
+      {
+        m_dialog->removeSettingValue("GPU", "Multisamples");
+        m_dialog->removeSettingValue("GPU", "PerSampleShading");
+      }
+      else
+      {
+        uint multisamples;
+        bool ssaa;
+        DecodeMSAAModeValue(m_ui.msaaMode->itemData(index), &multisamples, &ssaa);
+        m_dialog->setIntSettingValue("GPU", "Multisamples", static_cast<int>(multisamples));
+        m_dialog->setBoolSettingValue("GPU", "PerSampleShading", ssaa);
+      }
+    });
+  }
 }
 
 void GraphicsSettingsWidget::updatePGXPSettingsEnabled()
@@ -783,18 +800,6 @@ void GraphicsSettingsWidget::updatePGXPSettingsEnabled()
   m_ui.pgxpGeometryToleranceLabel->setEnabled(enabled);
   m_ui.pgxpDepthClearThreshold->setEnabled(depth_enabled);
   m_ui.pgxpDepthClearThresholdLabel->setEnabled(depth_enabled);
-}
-
-void GraphicsSettingsWidget::onAdapterChanged()
-{
-  if (m_ui.adapter->currentIndex() == 0)
-  {
-    // default
-    m_dialog->removeSettingValue("GPU", "Adapter");
-    return;
-  }
-
-  m_dialog->setStringSettingValue("GPU", "Adapter", m_ui.adapter->currentText().toUtf8().constData());
 }
 
 void GraphicsSettingsWidget::onAspectRatioChanged()
@@ -828,24 +833,6 @@ void GraphicsSettingsWidget::updateResolutionDependentOptions()
   onTrueColorChanged();
 }
 
-void GraphicsSettingsWidget::onMSAAModeChanged()
-{
-  const int index = m_ui.msaaMode->currentIndex();
-  if (m_dialog->isPerGameSettings() && index == 0)
-  {
-    m_dialog->removeSettingValue("GPU", "Multisamples");
-    m_dialog->removeSettingValue("GPU", "PerSampleShading");
-  }
-  else
-  {
-    uint multisamples;
-    bool ssaa;
-    DecodeMSAAModeValue(m_ui.msaaMode->itemData(index), &multisamples, &ssaa);
-    m_dialog->setIntSettingValue("GPU", "Multisamples", static_cast<int>(multisamples));
-    m_dialog->setBoolSettingValue("GPU", "PerSampleShading", ssaa);
-  }
-}
-
 void GraphicsSettingsWidget::onTrueColorChanged()
 {
   const int resolution_scale = m_dialog->getEffectiveIntValue("GPU", "ResolutionScale", 1);
@@ -877,18 +864,6 @@ void GraphicsSettingsWidget::onDownsampleModeChanged()
     m_ui.gpuDownsampleScale->setVisible(false);
     m_ui.gpuDownsampleLayout->removeWidget(m_ui.gpuDownsampleScale);
   }
-}
-
-void GraphicsSettingsWidget::onFullscreenModeChanged()
-{
-  if (m_ui.fullscreenMode->currentIndex() == 0)
-  {
-    // default
-    m_dialog->removeSettingValue("GPU", "FullscreenMode");
-    return;
-  }
-
-  m_dialog->setStringSettingValue("GPU", "FullscreenMode", m_ui.fullscreenMode->currentText().toUtf8().constData());
 }
 
 void GraphicsSettingsWidget::onEnableAnyTextureReplacementsChanged()

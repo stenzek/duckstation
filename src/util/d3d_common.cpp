@@ -92,10 +92,10 @@ Microsoft::WRL::ComPtr<IDXGIFactory5> D3DCommon::CreateFactory(bool debug, Error
   return factory;
 }
 
-static std::string FixupDuplicateAdapterNames(const std::vector<std::string>& adapter_names, std::string adapter_name)
+static std::string FixupDuplicateAdapterNames(const GPUDevice::AdapterInfoList& adapter_names, std::string adapter_name)
 {
   if (std::any_of(adapter_names.begin(), adapter_names.end(),
-                  [&adapter_name](const std::string& other) { return (adapter_name == other); }))
+                  [&adapter_name](const GPUDevice::AdapterInfo& other) { return (adapter_name == other.name); }))
   {
     std::string original_adapter_name = std::move(adapter_name);
 
@@ -104,21 +104,26 @@ static std::string FixupDuplicateAdapterNames(const std::vector<std::string>& ad
     {
       adapter_name = fmt::format("{} ({})", original_adapter_name.c_str(), current_extra);
       current_extra++;
-    } while (std::any_of(adapter_names.begin(), adapter_names.end(),
-                         [&adapter_name](const std::string& other) { return (adapter_name == other); }));
+    } while (
+      std::any_of(adapter_names.begin(), adapter_names.end(),
+                  [&adapter_name](const GPUDevice::AdapterInfo& other) { return (adapter_name == other.name); }));
   }
 
   return adapter_name;
 }
 
-std::vector<std::string> D3DCommon::GetAdapterNames(IDXGIFactory5* factory)
+GPUDevice::AdapterInfoList D3DCommon::GetAdapterInfoList()
 {
-  std::vector<std::string> adapter_names;
+  GPUDevice::AdapterInfoList adapters;
+
+  Microsoft::WRL::ComPtr<IDXGIFactory5> factory = CreateFactory(false, nullptr);
+  if (!factory)
+    return adapters;
 
   Microsoft::WRL::ComPtr<IDXGIAdapter1> adapter;
   for (u32 index = 0;; index++)
   {
-    const HRESULT hr = factory->EnumAdapters1(index, adapter.ReleaseAndGetAddressOf());
+    HRESULT hr = factory->EnumAdapters1(index, adapter.ReleaseAndGetAddressOf());
     if (hr == DXGI_ERROR_NOT_FOUND)
       break;
 
@@ -128,50 +133,51 @@ std::vector<std::string> D3DCommon::GetAdapterNames(IDXGIFactory5* factory)
       continue;
     }
 
-    adapter_names.push_back(FixupDuplicateAdapterNames(adapter_names, GetAdapterName(adapter.Get())));
+    // Unfortunately we can't get any properties such as feature level without creating the device.
+    // So just assume a max of the D3D11 max across the board.
+    GPUDevice::AdapterInfo ai;
+    ai.name = FixupDuplicateAdapterNames(adapters, GetAdapterName(adapter.Get()));
+    ai.max_texture_size = D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+    ai.max_multisamples = 8;
+    ai.supports_sample_shading = true;
+
+    Microsoft::WRL::ComPtr<IDXGIOutput> output;
+    if (SUCCEEDED(hr = adapter->EnumOutputs(0, output.ReleaseAndGetAddressOf())))
+    {
+      UINT num_modes = 0;
+      if (SUCCEEDED(hr = output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0, &num_modes, nullptr)))
+      {
+        std::vector<DXGI_MODE_DESC> dmodes(num_modes);
+        if (SUCCEEDED(hr = output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0, &num_modes, dmodes.data())))
+        {
+          for (const DXGI_MODE_DESC& mode : dmodes)
+          {
+            ai.fullscreen_modes.push_back(GPUDevice::GetFullscreenModeString(
+              mode.Width, mode.Height,
+              static_cast<float>(mode.RefreshRate.Numerator) / static_cast<float>(mode.RefreshRate.Denominator)));
+          }
+        }
+        else
+        {
+          ERROR_LOG("GetDisplayModeList() (2) failed: {:08X}", static_cast<unsigned>(hr));
+        }
+      }
+      else
+      {
+        ERROR_LOG("GetDisplayModeList() failed: {:08X}", static_cast<unsigned>(hr));
+      }
+    }
+    else
+    {
+      // Adapter may not have any outputs, don't spam the error log in this case.
+      if (hr != DXGI_ERROR_NOT_FOUND)
+        ERROR_LOG("EnumOutputs() failed: {:08X}", static_cast<unsigned>(hr));
+    }
+
+    adapters.push_back(std::move(ai));
   }
 
-  return adapter_names;
-}
-
-std::vector<std::string> D3DCommon::GetFullscreenModes(IDXGIFactory5* factory, std::string_view adapter_name)
-{
-  std::vector<std::string> modes;
-  HRESULT hr;
-
-  Microsoft::WRL::ComPtr<IDXGIAdapter1> adapter = GetChosenOrFirstAdapter(factory, adapter_name);
-  if (!adapter)
-    return modes;
-
-  Microsoft::WRL::ComPtr<IDXGIOutput> output;
-  if (FAILED(hr = adapter->EnumOutputs(0, &output)))
-  {
-    ERROR_LOG("EnumOutputs() failed: {:08X}", static_cast<unsigned>(hr));
-    return modes;
-  }
-
-  UINT num_modes = 0;
-  if (FAILED(hr = output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0, &num_modes, nullptr)))
-  {
-    ERROR_LOG("GetDisplayModeList() failed: {:08X}", static_cast<unsigned>(hr));
-    return modes;
-  }
-
-  std::vector<DXGI_MODE_DESC> dmodes(num_modes);
-  if (FAILED(hr = output->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, 0, &num_modes, dmodes.data())))
-  {
-    ERROR_LOG("GetDisplayModeList() (2) failed: {:08X}", static_cast<unsigned>(hr));
-    return modes;
-  }
-
-  for (const DXGI_MODE_DESC& mode : dmodes)
-  {
-    modes.push_back(GPUDevice::GetFullscreenModeString(mode.Width, mode.Height,
-                                                       static_cast<float>(mode.RefreshRate.Numerator) /
-                                                         static_cast<float>(mode.RefreshRate.Denominator)));
-  }
-
-  return modes;
+  return adapters;
 }
 
 bool D3DCommon::GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, const RECT& window_rect, u32 width,
@@ -256,7 +262,7 @@ Microsoft::WRL::ComPtr<IDXGIAdapter1> D3DCommon::GetAdapterByName(IDXGIFactory5*
 
   // This might seem a bit odd to cache the names.. but there's a method to the madness.
   // We might have two GPUs with the same name... :)
-  std::vector<std::string> adapter_names;
+  GPUDevice::AdapterInfoList adapters;
 
   Microsoft::WRL::ComPtr<IDXGIAdapter1> adapter;
   for (u32 index = 0;; index++)
@@ -271,14 +277,16 @@ Microsoft::WRL::ComPtr<IDXGIAdapter1> D3DCommon::GetAdapterByName(IDXGIFactory5*
       continue;
     }
 
-    std::string adapter_name = FixupDuplicateAdapterNames(adapter_names, GetAdapterName(adapter.Get()));
+    std::string adapter_name = FixupDuplicateAdapterNames(adapters, GetAdapterName(adapter.Get()));
     if (adapter_name == name)
     {
       VERBOSE_LOG("Found adapter '{}'", adapter_name);
       return adapter;
     }
 
-    adapter_names.push_back(std::move(adapter_name));
+    GPUDevice::AdapterInfo ai;
+    ai.name = std::move(adapter_name);
+    adapters.push_back(std::move(ai));
   }
 
   ERROR_LOG("Adapter '{}' not found.", name);

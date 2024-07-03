@@ -509,11 +509,15 @@ public:
     u32 num_uploads;
   };
 
-  struct AdapterAndModeList
+  struct AdapterInfo
   {
-    std::vector<std::string> adapter_names;
+    std::string name;
     std::vector<std::string> fullscreen_modes;
+    u32 max_texture_size;
+    u32 max_multisamples;
+    bool supports_sample_shading;
   };
+  using AdapterInfoList = std::vector<AdapterInfo>;
 
   struct PooledTextureDeleter
   {
@@ -542,6 +546,9 @@ public:
 
   /// Returns true if the render API is the same (e.g. GLES and GL).
   static bool IsSameRenderAPI(RenderAPI lhs, RenderAPI rhs);
+
+  /// Returns a list of adapters for the given API.
+  static AdapterInfoList GetAdapterListForAPI(RenderAPI api);
 
   /// Parses a fullscreen mode into its components (width * height @ refresh hz)
   static bool GetRequestedExclusiveFullscreenMode(u32* width, u32* height, float* refresh_rate);
@@ -572,12 +579,6 @@ public:
     return counts[static_cast<u8>(layout)];
   }
 
-#ifdef __APPLE__
-  // We have to define these in the base class, because they're in Objective C++.
-  static std::unique_ptr<GPUDevice> WrapNewMetalDevice();
-  static AdapterAndModeList WrapGetMetalAdapterAndModeList();
-#endif
-
   ALWAYS_INLINE const Features& GetFeatures() const { return m_features; }
   ALWAYS_INLINE u32 GetMaxTextureSize() const { return m_max_texture_size; }
   ALWAYS_INLINE u32 GetMaxMultisamples() const { return m_max_multisamples; }
@@ -605,7 +606,6 @@ public:
   virtual bool UpdateWindow() = 0;
 
   virtual bool SupportsExclusiveFullscreen() const;
-  virtual AdapterAndModeList GetAdapterAndModeList() = 0;
 
   /// Call when the window size changes externally to recreate any resources.
   virtual void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) = 0;
@@ -800,6 +800,12 @@ private:
   };
 
   using TexturePool = std::deque<TexturePoolEntry>;
+
+#ifdef __APPLE__
+  // We have to define these in the base class, because they're in Objective C++.
+  static std::unique_ptr<GPUDevice> WrapNewMetalDevice();
+  static AdapterInfoList WrapGetMetalAdapterList();
+#endif
 
   void OpenShaderCache(std::string_view base_path, u32 version);
   void CloseShaderCache();

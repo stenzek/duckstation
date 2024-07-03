@@ -43,7 +43,6 @@ public:
   bool UpdateWindow() override;
   void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) override;
   bool SupportsExclusiveFullscreen() const override;
-  AdapterAndModeList GetAdapterAndModeList() override;
   void DestroySurface() override;
 
   std::string GetDriverInfo() const override;
@@ -110,8 +109,6 @@ public:
   void UnbindPipeline(D3D11Pipeline* pl);
   void UnbindTexture(D3D11Texture* tex);
 
-  static AdapterAndModeList StaticGetAdapterAndModeList();
-
 protected:
   bool CreateDevice(std::string_view adapter, bool threaded_presentation,
                     std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features,
@@ -132,8 +129,6 @@ private:
   static constexpr u32 UNIFORM_BUFFER_ALIGNMENT = 256;
   static constexpr u32 UNIFORM_BUFFER_ALIGNMENT_DISCARD = 16;
   static constexpr u8 NUM_TIMESTAMP_QUERIES = 3;
-
-  static void GetAdapterAndModeList(AdapterAndModeList* ret, IDXGIFactory5* factory);
 
   void SetFeatures(FeatureMask disabled_features);
 

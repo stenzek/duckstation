@@ -663,21 +663,6 @@ void OpenGLDevice::DestroyFramebuffer(GLuint fbo)
     glDeleteFramebuffers(1, &fbo);
 }
 
-GPUDevice::AdapterAndModeList OpenGLDevice::GetAdapterAndModeList()
-{
-  AdapterAndModeList aml;
-
-  if (m_gl_context)
-  {
-    for (const OpenGLContext::FullscreenModeInfo& fmi : m_gl_context->EnumerateFullscreenModes())
-    {
-      aml.fullscreen_modes.push_back(GetFullscreenModeString(fmi.width, fmi.height, fmi.refresh_rate));
-    }
-  }
-
-  return aml;
-}
-
 void OpenGLDevice::DestroySurface()
 {
   if (!m_gl_context)

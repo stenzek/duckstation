@@ -64,8 +64,6 @@ public:
   bool UpdateWindow() override;
   void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) override;
 
-  static AdapterAndModeList StaticGetAdapterAndModeList();
-  AdapterAndModeList GetAdapterAndModeList() override;
   void DestroySurface() override;
 
   std::string GetDriverInfo() const override;
@@ -219,8 +217,6 @@ private:
   };
 
   using SamplerMap = std::unordered_map<u64, D3D12DescriptorHandle>;
-
-  static void GetAdapterAndModeList(AdapterAndModeList* ret, IDXGIFactory5* factory);
 
   void SetFeatures(FeatureMask disabled_features);
 

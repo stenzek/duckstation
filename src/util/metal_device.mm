@@ -87,6 +87,32 @@ static GPUTexture::Format GetTextureFormatForMTLFormat(MTLPixelFormat fmt)
   return GPUTexture::Format::Unknown;
 }
 
+static u32 GetMetalMaxTextureSize(id<MTLDevice> device)
+{
+  // https://gist.github.com/kylehowells/63d0723abc9588eb734cade4b7df660d
+  if ([device supportsFamily:MTLGPUFamilyMacCatalyst1] || [device supportsFamily:MTLGPUFamilyMac1] ||
+      [device supportsFamily:MTLGPUFamilyApple3])
+  {
+    return 16384;
+  }
+  else
+  {
+    return 8192;
+  }
+}
+
+static u32 GetMetalMaxMultisamples(id<MTLDevice> device)
+{
+  u32 max_multisamples = 0;
+  for (u32 multisamples = 1; multisamples < 16; multisamples *= 2)
+  {
+    if (![device supportsTextureSampleCount:multisamples])
+      break;
+    max_multisamples = multisamples;
+  }
+  return max_multisamples;
+}
+
 template<typename F>
 static void RunOnMainThread(F&& f)
 {
@@ -204,16 +230,8 @@ bool MetalDevice::CreateDevice(std::string_view adapter, bool threaded_presentat
 
 void MetalDevice::SetFeatures(FeatureMask disabled_features)
 {
-  // https://gist.github.com/kylehowells/63d0723abc9588eb734cade4b7df660d
-  if ([m_device supportsFamily:MTLGPUFamilyMacCatalyst1] || [m_device supportsFamily:MTLGPUFamilyMac1] ||
-      [m_device supportsFamily:MTLGPUFamilyApple3])
-  {
-    m_max_texture_size = 16384;
-  }
-  else
-  {
-    m_max_texture_size = 8192;
-  }
+  m_max_texture_size = GetMetalMaxTextureSize(m_device);
+  m_max_multisamples = GetMetalMaxMultisamples(m_device);
 
   // Framebuffer fetch requires MSL 2.3 and an Apple GPU family.
   const bool supports_fbfetch = [m_device supportsFamily:MTLGPUFamilyApple1];
@@ -221,14 +239,6 @@ void MetalDevice::SetFeatures(FeatureMask disabled_features)
   // If fbfetch is disabled, barriers aren't supported on Apple GPUs.
   const bool supports_barriers =
     ([m_device supportsFamily:MTLGPUFamilyMac1] && ![m_device supportsFamily:MTLGPUFamilyApple3]);
-
-  m_max_multisamples = 0;
-  for (u32 multisamples = 1; multisamples < 16; multisamples *= 2)
-  {
-    if (![m_device supportsTextureSampleCount:multisamples])
-      break;
-    m_max_multisamples = multisamples;
-  }
 
   m_features.dual_source_blend = !(disabled_features & FEATURE_MASK_DUAL_SOURCE_BLEND);
   m_features.framebuffer_fetch = !(disabled_features & FEATURE_MASK_FRAMEBUFFER_FETCH) && supports_fbfetch;
@@ -536,26 +546,6 @@ bool MetalDevice::IsRenderTargetBound(const GPUTexture* tex) const
   }
 
   return false;
-}
-
-GPUDevice::AdapterAndModeList MetalDevice::StaticGetAdapterAndModeList()
-{
-  AdapterAndModeList ret;
-  @autoreleasepool
-  {
-    NSArray<id<MTLDevice>>* devices = [MTLCopyAllDevices() autorelease];
-    const u32 count = static_cast<u32>([devices count]);
-    ret.adapter_names.reserve(count);
-    for (u32 i = 0; i < count; i++)
-      ret.adapter_names.emplace_back([devices[i].name UTF8String]);
-  }
-
-  return ret;
-}
-
-GPUDevice::AdapterAndModeList MetalDevice::GetAdapterAndModeList()
-{
-  return StaticGetAdapterAndModeList();
 }
 
 bool MetalDevice::SetGPUTimingEnabled(bool enabled)
@@ -2505,7 +2495,24 @@ std::unique_ptr<GPUDevice> GPUDevice::WrapNewMetalDevice()
   return std::unique_ptr<GPUDevice>(new MetalDevice());
 }
 
-GPUDevice::AdapterAndModeList GPUDevice::WrapGetMetalAdapterAndModeList()
+GPUDevice::AdapterInfoList GPUDevice::WrapGetMetalAdapterList()
 {
-  return MetalDevice::StaticGetAdapterAndModeList();
+  AdapterInfoList ret;
+  @autoreleasepool
+  {
+    NSArray<id<MTLDevice>>* devices = [MTLCopyAllDevices() autorelease];
+    const u32 count = static_cast<u32>([devices count]);
+    ret.reserve(count);
+    for (u32 i = 0; i < count; i++)
+    {
+      AdapterInfo ai;
+      ai.name = [devices[i].name UTF8String];
+      ai.max_texture_size = GetMetalMaxTextureSize(devices[i]);
+      ai.max_multisamples = GetMetalMaxMultisamples(devices[i]);
+      ai.supports_sample_shading = true;
+      ret.push_back(std::move(ai));
+    }
+  }
+
+  return ret;
 }

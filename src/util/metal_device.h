@@ -204,8 +204,6 @@ public:
 
   bool UpdateWindow() override;
   void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) override;
-
-  AdapterAndModeList GetAdapterAndModeList() override;
   void DestroySurface() override;
 
   std::string GetDriverInfo() const override;
@@ -285,8 +283,6 @@ public:
 
   static void DeferRelease(id obj);
   static void DeferRelease(u64 fence_counter, id obj);
-
-  static AdapterAndModeList StaticGetAdapterAndModeList();
 
 protected:
   bool CreateDevice(std::string_view adapter, bool threaded_presentation,

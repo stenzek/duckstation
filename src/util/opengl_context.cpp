@@ -111,11 +111,6 @@ OpenGLContext::OpenGLContext(const WindowInfo& wi) : m_wi(wi)
 
 OpenGLContext::~OpenGLContext() = default;
 
-std::vector<OpenGLContext::FullscreenModeInfo> OpenGLContext::EnumerateFullscreenModes()
-{
-  return {};
-}
-
 std::unique_ptr<OpenGLContext> OpenGLContext::Create(const WindowInfo& wi, Error* error)
 {
   static constexpr std::array<Version, 14> vlist = {{{Profile::Core, 4, 6},

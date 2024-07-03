@@ -35,10 +35,7 @@ D3D_FEATURE_LEVEL GetDeviceMaxFeatureLevel(IDXGIAdapter1* adapter);
 Microsoft::WRL::ComPtr<IDXGIFactory5> CreateFactory(bool debug, Error* error);
 
 // returns a list of all adapter names
-std::vector<std::string> GetAdapterNames(IDXGIFactory5* factory);
-
-// returns a list of fullscreen modes for the specified adapter
-std::vector<std::string> GetFullscreenModes(IDXGIFactory5* factory, std::string_view adapter_name);
+GPUDevice::AdapterInfoList GetAdapterInfoList();
 
 // returns the fullscreen mode to use for the specified dimensions
 bool GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, const RECT& window_rect, u32 width, u32 height,

@@ -292,6 +292,45 @@ bool GPUDevice::IsSameRenderAPI(RenderAPI lhs, RenderAPI rhs)
                          (rhs == RenderAPI::OpenGL || rhs == RenderAPI::OpenGLES)));
 }
 
+GPUDevice::AdapterInfoList GPUDevice::GetAdapterListForAPI(RenderAPI api)
+{
+  AdapterInfoList ret;
+
+  switch (api)
+  {
+#ifdef ENABLE_VULKAN
+    case RenderAPI::Vulkan:
+      ret = VulkanDevice::GetAdapterList();
+      break;
+#endif
+
+#ifdef ENABLE_OPENGL
+    case RenderAPI::OpenGL:
+    case RenderAPI::OpenGLES:
+      // No way of querying.
+      break;
+#endif
+
+#ifdef _WIN32
+    case RenderAPI::D3D11:
+    case RenderAPI::D3D12:
+      ret = D3DCommon::GetAdapterInfoList();
+      break;
+#endif
+
+#ifdef __APPLE__
+    case RenderAPI::Metal:
+      ret = WrapGetMetalAdapterList();
+      break;
+#endif
+
+    default:
+      break;
+  }
+
+  return ret;
+}
+
 bool GPUDevice::Create(std::string_view adapter, std::string_view shader_cache_path, u32 shader_cache_version,
                        bool debug_device, GPUVSyncMode vsync, bool allow_present_throttle, bool threaded_presentation,
                        std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features, Error* error)
