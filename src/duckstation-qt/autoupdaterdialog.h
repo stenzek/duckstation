@@ -32,6 +32,7 @@ public:
   static QStringList getTagList();
   static std::string getDefaultTag();
   static void cleanupAfterUpdate();
+  static bool warnAboutUnofficialBuild();
 
 Q_SIGNALS:
   void updateCheckCompleted();

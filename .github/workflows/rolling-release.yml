@@ -48,21 +48,23 @@ jobs:
         DEBUG: 0
       run: scripts/build-dependencies-windows-arm64.bat
 
+    - name: Initialize build tag
+      shell: cmd
+      run: |
+        echo #pragma once > src/scmversion/tag.h
+
     - name: Tag as preview build
       if: github.ref == 'refs/heads/master'
       shell: cmd
       run: |
-        echo #pragma once > src/scmversion/tag.h
         echo #define SCM_RELEASE_ASSET "duckstation-windows-x64-release.zip" >> src/scmversion/tag.h
         echo #define SCM_RELEASE_TAGS {"latest", "preview"} >> src/scmversion/tag.h
         echo #define SCM_RELEASE_TAG "preview" >> src/scmversion/tag.h
-
 
     - name: Tag as dev build
       if: github.ref == 'refs/heads/dev'
       shell: cmd
       run: |
-        echo #pragma once > src/scmversion/tag.h
         echo #define SCM_RELEASE_ASSET "duckstation-windows-x64-release.zip" >> src/scmversion/tag.h
         echo #define SCM_RELEASE_TAGS {"latest", "preview"} >> src/scmversion/tag.h
         echo #define SCM_RELEASE_TAG "latest" >> src/scmversion/tag.h
@@ -134,11 +136,15 @@ jobs:
         DEBUG: 0
       run: scripts/build-dependencies-windows-arm64.bat
 
+    - name: Initialize build tag
+      shell: cmd
+      run: |
+        echo #pragma once > src/scmversion/tag.h
+
     - name: Tag as preview build
       if: github.ref == 'refs/heads/master'
       shell: cmd
       run: |
-        echo #pragma once > src/scmversion/tag.h
         echo #define SCM_RELEASE_ASSET "duckstation-windows-arm64-release.zip" >> src/scmversion/tag.h
         echo #define SCM_RELEASE_TAGS {"latest", "preview"} >> src/scmversion/tag.h
         echo #define SCM_RELEASE_TAG "preview" >> src/scmversion/tag.h
@@ -147,7 +153,6 @@ jobs:
       if: github.ref == 'refs/heads/dev'
       shell: cmd
       run: |
-        echo #pragma once > src/scmversion/tag.h
         echo #define SCM_RELEASE_ASSET "duckstation-windows-arm64-release.zip" >> src/scmversion/tag.h
         echo #define SCM_RELEASE_TAGS {"latest", "preview"} >> src/scmversion/tag.h
         echo #define SCM_RELEASE_TAG "latest" >> src/scmversion/tag.h
@@ -232,10 +237,13 @@ jobs:
       if: steps.cache-deps.outputs.cache-hit != 'true'
       run: scripts/build-dependencies-linux.sh "$HOME/deps"
 
+    - name: Initialize build tag
+      run: |
+        echo '#pragma once' > src/scmversion/tag.h
+
     - name: Tag as preview build
       if: github.ref == 'refs/heads/master'
       run: |
-        echo '#pragma once' > src/scmversion/tag.h
         echo '#define SCM_RELEASE_ASSET "DuckStation-x64.AppImage"' >> src/scmversion/tag.h
         echo '#define SCM_RELEASE_TAGS {"latest", "preview"}' >> src/scmversion/tag.h
         echo '#define SCM_RELEASE_TAG "preview"' >> src/scmversion/tag.h
@@ -243,7 +251,6 @@ jobs:
     - name: Tag as dev build
       if: github.ref == 'refs/heads/dev'
       run: |
-        echo '#pragma once' > src/scmversion/tag.h
         echo '#define SCM_RELEASE_ASSET "DuckStation-x64.AppImage"' >> src/scmversion/tag.h
         echo '#define SCM_RELEASE_TAGS {"latest", "preview"}' >> src/scmversion/tag.h
         echo '#define SCM_RELEASE_TAG "latest"' >> src/scmversion/tag.h
@@ -282,6 +289,10 @@ jobs:
     - name: Set Safe Directory
       shell: bash
       run: git config --global --add safe.directory "*"
+
+    - name: Initialize build tag
+      run: |
+        echo '#pragma once' > src/scmversion/tag.h
 
     - name: Generate AppStream XML
       run: |
@@ -356,10 +367,13 @@ jobs:
       if: steps.cache-deps-mac.outputs.cache-hit != 'true'
       run: scripts/build-dependencies-mac.sh "$HOME/deps"
 
+    - name: Initialize build tag
+      run: |
+        echo '#pragma once' > src/scmversion/tag.h
+
     - name: Tag as preview build
       if: github.ref == 'refs/heads/master'
       run: |
-        echo '#pragma once' > src/scmversion/tag.h
         echo '#define SCM_RELEASE_ASSET "duckstation-mac-release.zip"' >> src/scmversion/tag.h
         echo '#define SCM_RELEASE_TAGS {"latest", "preview"}' >> src/scmversion/tag.h
         echo '#define SCM_RELEASE_TAG "preview"' >> src/scmversion/tag.h
@@ -367,7 +381,6 @@ jobs:
     - name: Tag as dev build
       if: github.ref == 'refs/heads/dev'
       run: |
-        echo '#pragma once' > src/scmversion/tag.h
         echo '#define SCM_RELEASE_ASSET "duckstation-mac-release.zip"' >> src/scmversion/tag.h
         echo '#define SCM_RELEASE_TAGS {"latest", "preview"}' >> src/scmversion/tag.h
         echo '#define SCM_RELEASE_TAG "latest"' >> src/scmversion/tag.h

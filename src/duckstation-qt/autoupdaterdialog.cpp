@@ -26,9 +26,12 @@
 #include <QtCore/QJsonValue>
 #include <QtCore/QProcess>
 #include <QtCore/QString>
+#include <QtCore/QTimer>
+#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QProgressDialog>
+#include <QtWidgets/QPushButton>
 
 // Interval at which HTTP requests are polled.
 static constexpr u32 HTTP_POLL_INTERVAL = 10;
@@ -42,7 +45,7 @@ static constexpr u32 HTTP_POLL_INTERVAL = 10;
 
 // Logic to detect whether we can use the auto updater.
 // Requires that the channel be defined by the buildbot.
-#if defined(__has_include) && __has_include("scmversion/tag.h")
+#if __has_include("scmversion/tag.h")
 #include "scmversion/tag.h"
 #ifdef SCM_RELEASE_TAGS
 #define AUTO_UPDATER_SUPPORTED
@@ -97,6 +100,91 @@ bool AutoUpdaterDialog::isSupported()
 #endif
 #else
   return false;
+#endif
+}
+
+bool AutoUpdaterDialog::warnAboutUnofficialBuild()
+{
+  //
+  // To those distributing their own builds or packages of DuckStation, and seeing this message:
+  //
+  // This message is here for a reason. Under the terms of the license, you are within your rights to distribute your
+  // own builds of my application. However, it is a headache for me, as users run into broken functionality, or end up
+  // on untested/preview commits that have not been adequately tested, and I cannot resolve their issues. I provide
+  // builds for a range of platforms that covers almost all use cases, and can guarantee quality of these builds.
+  //
+  // If you must distribute builds/packages, per the GPL, modified builds should be clearly marked as such.
+  // This message is thus one way of meeting the requirement. See Section 5 of the GPLv3:
+  // https://www.gnu.org/licenses/gpl-3.0.en.html#section5
+  //
+  // This includes building the binary with any method that does not match the official release, including dependencies,
+  // as it is not uncommon for differing dependency versions to create issues I cannot reproduce.
+  //
+  // You should also provide user support for your package, and not direct them to upstream, as any users that ask for
+  // community help will be instructed to download a supported release instead.
+  //
+#if !__has_include("scmversion/tag.h") && !defined(_DEBUG)
+  constexpr const char* CONFIG_SECTION = "UI";
+  constexpr const char* CONFIG_KEY = "UnofficialBuildWarningConfirmed";
+  if (Host::GetBaseBoolSettingValue(CONFIG_SECTION, CONFIG_KEY, false))
+    return true;
+
+  constexpr int DELAY_SECONDS = 5;
+
+  const QString message = QStringLiteral(
+    "<h1>You are not using an official release!</h1><h3>If you continue to use this build, expect to run into "
+    "issues.</h3><p><strong>No assistance will be provided by the developers or community</strong>, as we cannot fix "
+    "broken functionality in builds we do not control.</p><p>We <strong>strongly recommend</strong> downloading an "
+    "official release from <a href=\"https://www.duckstation.org/\">duckstation.org</a>.</p><p>Do you want to exit and "
+    "open this page now?</p>");
+
+  QMessageBox mbox;
+  mbox.setIcon(QMessageBox::Warning);
+  mbox.setWindowTitle(QStringLiteral("Unofficial Build Warning"));
+  mbox.setWindowIcon(QtHost::GetAppIcon());
+  mbox.setTextFormat(Qt::RichText);
+  mbox.setText(message);
+
+  mbox.addButton(QMessageBox::Yes);
+  QPushButton* no = mbox.addButton(QMessageBox::No);
+  const QString orig_no_text = no->text();
+  no->setEnabled(false);
+
+  QCheckBox* cb = new QCheckBox(&mbox);
+  cb->setText(tr("Do not show again"));
+  mbox.setCheckBox(cb);
+
+  int remaining_time = DELAY_SECONDS;
+  no->setText(QStringLiteral("%1 [%2]").arg(orig_no_text).arg(remaining_time));
+
+  QTimer* timer = new QTimer(&mbox);
+  connect(timer, &QTimer::timeout, &mbox, [no, timer, &remaining_time, &orig_no_text]() {
+    remaining_time--;
+    if (remaining_time == 0)
+    {
+      no->setText(orig_no_text);
+      no->setEnabled(true);
+      timer->stop();
+    }
+    else
+    {
+      no->setText(QStringLiteral("%1 [%2]").arg(orig_no_text).arg(remaining_time));
+    }
+  });
+  timer->start(1000);
+
+  if (mbox.exec() == QMessageBox::Yes)
+  {
+    QtUtils::OpenURL(nullptr, "https://duckstation.org/");
+    return false;
+  }
+
+  if (cb->isChecked())
+    Host::SetBaseBoolSettingValue(CONFIG_SECTION, CONFIG_KEY, true);
+
+  return true;
+#else
+  return true;
 #endif
 }
 
