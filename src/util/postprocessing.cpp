@@ -204,7 +204,7 @@ std::vector<std::pair<std::string, std::string>> PostProcessing::GetAvailableSha
 
   std::sort(names.begin(), names.end(),
             [](const std::pair<std::string, std::string>& lhs, const std::pair<std::string, std::string>& rhs) {
-              return (lhs.first < lhs.second);
+              return (StringUtil::Strcasecmp(lhs.first.c_str(), rhs.first.c_str()) < 0);
             });
 
   return names;

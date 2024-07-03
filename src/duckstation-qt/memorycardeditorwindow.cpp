@@ -162,7 +162,8 @@ void MemoryCardEditorWindow::populateComboBox(QComboBox* cb)
 
   FileSystem::FindResultsArray results;
   FileSystem::FindFiles(EmuFolders::MemoryCards.c_str(), "*.mcd",
-                        FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RELATIVE_PATHS, &results);
+                        FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_SORT_BY_NAME,
+                        &results);
   for (FILESYSTEM_FIND_DATA& fd : results)
   {
     std::string real_filename(Path::Combine(EmuFolders::MemoryCards, fd.FileName));

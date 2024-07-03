@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "input_manager.h"
@@ -18,6 +18,7 @@
 
 #include "fmt/core.h"
 
+#include <algorithm>
 #include <array>
 #include <atomic>
 #include <memory>
@@ -1438,13 +1439,15 @@ std::vector<std::string> InputManager::GetInputProfileNames()
 {
   FileSystem::FindResultsArray results;
   FileSystem::FindFiles(EmuFolders::InputProfiles.c_str(), "*.ini",
-                        FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RELATIVE_PATHS,
+                        FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RELATIVE_PATHS |
+                          FILESYSTEM_FIND_SORT_BY_NAME,
                         &results);
 
   std::vector<std::string> ret;
   ret.reserve(results.size());
   for (FILESYSTEM_FIND_DATA& fd : results)
     ret.emplace_back(Path::GetFileTitle(fd.FileName));
+
   return ret;
 }
 

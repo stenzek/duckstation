@@ -1458,7 +1458,24 @@ bool FileSystem::FindFiles(const char* path, const char* pattern, u32 flags, Fin
   }
 
   // enter the recursive function
-  return (RecursiveFindFiles(path, nullptr, nullptr, pattern, flags, results, visited) > 0);
+  if (RecursiveFindFiles(path, nullptr, nullptr, pattern, flags, results, visited) == 0)
+    return false;
+
+  if (flags & FILESYSTEM_FIND_SORT_BY_NAME)
+  {
+    std::sort(results->begin(), results->end(), [](const FILESYSTEM_FIND_DATA& lhs, const FILESYSTEM_FIND_DATA& rhs) {
+      // directories first
+      if ((lhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) !=
+          (rhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY))
+      {
+        return ((lhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) != 0);
+      }
+
+      return (StringUtil::Strcasecmp(lhs.FileName.c_str(), rhs.FileName.c_str()) < 0);
+    });
+  }
+
+  return true;
 }
 
 static void TranslateStat64(struct stat* st, const struct _stat64& st64)
@@ -2022,7 +2039,24 @@ bool FileSystem::FindFiles(const char* path, const char* pattern, u32 flags, Fin
   }
 
   // enter the recursive function
-  return (RecursiveFindFiles(path, nullptr, nullptr, pattern, flags, results, visited) > 0);
+  if (RecursiveFindFiles(path, nullptr, nullptr, pattern, flags, results, visited) == 0)
+    return false;
+
+  if (flags & FILESYSTEM_FIND_SORT_BY_NAME)
+  {
+    std::sort(results->begin(), results->end(), [](const FILESYSTEM_FIND_DATA& lhs, const FILESYSTEM_FIND_DATA& rhs) {
+      // directories first
+      if ((lhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) !=
+          (rhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY))
+      {
+        return ((lhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) != 0);
+      }
+
+      return (StringUtil::Strcasecmp(lhs.FileName.c_str(), rhs.FileName.c_str()) < 0);
+    });
+  }
+
+  return true;
 }
 
 bool FileSystem::StatFile(const char* path, struct stat* st)

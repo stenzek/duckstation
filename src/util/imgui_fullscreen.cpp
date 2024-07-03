@@ -2039,7 +2039,7 @@ void ImGuiFullscreen::PopulateFileSelectorItems()
     FileSystem::FindResultsArray results;
     FileSystem::FindFiles(s_file_selector_current_directory.c_str(), "*",
                           FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_FOLDERS | FILESYSTEM_FIND_HIDDEN_FILES |
-                            FILESYSTEM_FIND_RELATIVE_PATHS,
+                            FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_SORT_BY_NAME,
                           &results);
 
     std::string parent_path;
@@ -2048,15 +2048,6 @@ void ImGuiFullscreen::PopulateFileSelectorItems()
       parent_path = Path::Canonicalize(s_file_selector_current_directory.substr(0, sep_pos));
 
     s_file_selector_items.emplace_back(ICON_FA_FOLDER_OPEN "  <Parent Directory>", std::move(parent_path), false);
-    std::sort(results.begin(), results.end(), [](const FILESYSTEM_FIND_DATA& lhs, const FILESYSTEM_FIND_DATA& rhs) {
-      if ((lhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) !=
-          (rhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY))
-        return (lhs.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) != 0;
-
-      // return std::lexicographical_compare(lhs.FileName.begin(), lhs.FileName.end(), rhs.FileName.begin(),
-      // rhs.FileName.end());
-      return (StringUtil::Strcasecmp(lhs.FileName.c_str(), rhs.FileName.c_str()) < 0);
-    });
 
     for (const FILESYSTEM_FIND_DATA& fd : results)
     {
