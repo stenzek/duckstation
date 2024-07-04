@@ -466,6 +466,11 @@ std::string D3D11Device::GetDriverInfo() const
   return ret;
 }
 
+void D3D11Device::ExecuteAndWaitForGPUIdle()
+{
+  m_context->Flush();
+}
+
 bool D3D11Device::CreateBuffers()
 {
   if (!m_vertex_buffer.Create(D3D11_BIND_VERTEX_BUFFER, VERTEX_BUFFER_SIZE, VERTEX_BUFFER_SIZE) ||

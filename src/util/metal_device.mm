@@ -2468,6 +2468,12 @@ void MetalDevice::WaitForPreviousCommandBuffers()
   WaitForFenceCounter(m_current_fence_counter - 1);
 }
 
+void MetalDevice::ExecuteAndWaitForGPUIdle()
+{
+  SubmitCommandBuffer(true);
+  CleanupObjects();
+}
+
 void MetalDevice::CleanupObjects()
 {
   const u64 counter = m_completed_fence_counter.load(std::memory_order_acquire);

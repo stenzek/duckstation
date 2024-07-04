@@ -2370,6 +2370,14 @@ std::string VulkanDevice::GetDriverInfo() const
   return ret;
 }
 
+void VulkanDevice::ExecuteAndWaitForGPUIdle()
+{
+  if (InRenderPass())
+    EndRenderPass();
+
+  SubmitCommandBuffer(true);
+}
+
 void VulkanDevice::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle)
 {
   m_allow_present_throttle = allow_present_throttle;

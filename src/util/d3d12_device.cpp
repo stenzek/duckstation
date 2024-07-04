@@ -638,6 +638,14 @@ void D3D12Device::WaitForGPUIdle()
   }
 }
 
+void D3D12Device::ExecuteAndWaitForGPUIdle()
+{
+  if (InRenderPass())
+    EndRenderPass();
+
+  SubmitCommandList(true);
+}
+
 bool D3D12Device::CreateTimestampQuery()
 {
   constexpr u32 QUERY_COUNT = NUM_TIMESTAMP_QUERIES_PER_CMDLIST * NUM_COMMAND_LISTS;

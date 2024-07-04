@@ -582,6 +582,12 @@ std::string OpenGLDevice::GetDriverInfo() const
                      gl_shading_language_version);
 }
 
+void OpenGLDevice::ExecuteAndWaitForGPUIdle()
+{
+  // Could be glFinish(), but I'm afraid for mobile drivers...
+  glFlush();
+}
+
 void OpenGLDevice::SetSwapInterval()
 {
   if (m_window_info.type == WindowInfo::Type::Surfaceless)

@@ -82,6 +82,8 @@ public:
 
   std::string GetDriverInfo() const override;
 
+  void ExecuteAndWaitForGPUIdle() override;
+
   std::unique_ptr<GPUTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                             GPUTexture::Type type, GPUTexture::Format format,
                                             const void* data = nullptr, u32 data_stride = 0) override;

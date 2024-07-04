@@ -612,6 +612,9 @@ public:
 
   virtual std::string GetDriverInfo() const = 0;
 
+  // Executes current command buffer, waits for its completion, and destroys all pending resources.
+  virtual void ExecuteAndWaitForGPUIdle() = 0;
+
   virtual std::unique_ptr<GPUTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                     GPUTexture::Type type, GPUTexture::Format format,
                                                     const void* data = nullptr, u32 data_stride = 0) = 0;
