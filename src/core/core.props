@@ -12,7 +12,7 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\rcheevos\include</AdditionalIncludeDirectories>
 
       <PreprocessorDefinitions>%(PreprocessorDefinitions);C4_NO_DEBUG_BREAK=1</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\rapidyaml\include;$(SolutionDir)dep\rapidjson\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\rapidyaml\include</AdditionalIncludeDirectories>
 
       <AdditionalIncludeDirectories Condition="'$(Platform)'!='ARM64'">%(AdditionalIncludeDirectories);$(SolutionDir)dep\rainterface</AdditionalIncludeDirectories>
       
