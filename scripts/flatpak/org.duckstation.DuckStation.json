@@ -23,6 +23,7 @@
     "modules/22-shaderc.json",
     "modules/23-spirv-cross.json",
     "modules/24-cpuinfo.json",
+    "modules/25-discord-rpc.json",
     {
       "name": "duckstation",
       "buildsystem": "cmake-ninja",

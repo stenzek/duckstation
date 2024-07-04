@@ -50,6 +50,7 @@ SHADERC_SPIRVHEADERS=5e3ad389ee56fca27c9705d093ae5387ce404df4
 SHADERC_SPIRVTOOLS=dd4b663e13c07fea4fbb3f70c1c91c86731099f7
 SPIRV_CROSS=vulkan-sdk-1.3.283.0
 CPUINFO=05332fd802d9109a2a151ec32154b107c1e5caf9
+DISCORD_RPC=842c15192041f8e71c512851834f4dadb1a554fb
 
 mkdir -p deps-build
 cd deps-build
@@ -89,6 +90,8 @@ aa27e4454ce631c5a17924ce0624eac736da19fc6f5a2ab15a6c58da7b36950f  shaderc-glslan
 03ee1a2c06f3b61008478f4abe9423454e53e580b9488b47c8071547c6a9db47  shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz
 3376a58abe186a695a50ff12697d210ce27673cea5de1a5090cb2b092b261414  SPIRV-Cross-$SPIRV_CROSS.tar.gz
 74a8d9ae0b8b45b39d35708c873320de227bbfe01a46e4d2a91818b8877f4137  cpuinfo-$CPUINFO.tar.gz
+acb111ebdb4f1459899b9c594be81ed284de23ac0f5376e5963aad16df98584f  discord-rpc-$DISCORD_RPC.tar.gz
+
 EOF
 
 curl -L \
@@ -110,7 +113,8 @@ curl -L \
 	-o "shaderc-spirv-headers-$SHADERC_SPIRVHEADERS.tar.gz" "https://github.com/KhronosGroup/SPIRV-Headers/archive/$SHADERC_SPIRVHEADERS.tar.gz" \
 	-o "shaderc-spirv-tools-$SHADERC_SPIRVTOOLS.tar.gz" "https://github.com/KhronosGroup/SPIRV-Tools/archive/$SHADERC_SPIRVTOOLS.tar.gz" \
 	-o "SPIRV-Cross-$SPIRV_CROSS.tar.gz" "https://github.com/KhronosGroup/SPIRV-Cross/archive/refs/tags/$SPIRV_CROSS.tar.gz" \
-	-o "cpuinfo-$CPUINFO.tar.gz" "https://github.com/pytorch/cpuinfo/archive/$CPUINFO.tar.gz"
+	-o "cpuinfo-$CPUINFO.tar.gz" "https://github.com/pytorch/cpuinfo/archive/$CPUINFO.tar.gz" \
+	-o "discord-rpc-$DISCORD_RPC.tar.gz" "https://github.com/stenzek/discord-rpc/archive/$DISCORD_RPC.tar.gz"
 
 shasum -a 256 --check SHASUMS
 
@@ -313,7 +317,7 @@ make -C build "-j$NPROCS"
 make -C build install
 cd ..
 
-echo "Building SPIRV-Cross"
+echo "Building SPIRV-Cross..."
 rm -fr "SPIRV-Cross-$SPIRV_CROSS"
 tar xf "SPIRV-Cross-$SPIRV_CROSS.tar.gz"
 cd "SPIRV-Cross-$SPIRV_CROSS"
@@ -323,7 +327,7 @@ cmake --build build --parallel
 cmake --install build
 cd ..
 
-echo "Building cpuinfo"
+echo "Building cpuinfo..."
 rm -fr "cpuinfo-$CPUINFO"
 tar xf "cpuinfo-$CPUINFO.tar.gz"
 cd "cpuinfo-$CPUINFO"
@@ -334,6 +338,15 @@ cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_ARM64" -DCPUINFO_LIBRARY_TYPE=shared -DC
 make -C build-arm64 "-j$NPROCS"
 merge_binaries $(realpath build) $(realpath build-arm64)
 make -C build install
+cd ..
+
+echo "Building discord-rpc..."
+rm -fr "discord-rpc-$DISCORD_RPC"
+tar xf "discord-rpc-$DISCORD_RPC.tar.gz"
+cd "discord-rpc-$DISCORD_RPC"
+cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -B build
+cmake --build build --parallel
+cmake --install build
 cd ..
 
 echo "Cleaning up..."
