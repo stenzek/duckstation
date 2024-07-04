@@ -994,7 +994,6 @@ public:
     u16 U16[8];
     u32 U32[4];
     u64 U64[2];
-    __m128 m;
   };
 
   GSVector4() = default;
