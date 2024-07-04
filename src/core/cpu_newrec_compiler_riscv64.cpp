@@ -2,10 +2,6 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "cpu_newrec_compiler_riscv64.h"
-#include "common/align.h"
-#include "common/assert.h"
-#include "common/log.h"
-#include "common/string_util.h"
 #include "cpu_code_cache_private.h"
 #include "cpu_core_private.h"
 #include "cpu_pgxp.h"
@@ -13,6 +9,13 @@
 #include "gte.h"
 #include "settings.h"
 #include "timing_event.h"
+
+#include "common/align.h"
+#include "common/assert.h"
+#include "common/log.h"
+#include "common/memmap.h"
+#include "common/string_util.h"
+
 #include <limits>
 
 #ifdef CPU_ARCH_RISCV64
@@ -304,7 +307,7 @@ u32 CPU::CodeCache::EmitJump(void* code, const void* dst, bool flush_icache)
   }
 
   if (flush_icache)
-    JitCodeBuffer::FlushInstructionCache(code, BLOCK_LINK_SIZE);
+    MemMap::FlushInstructionCache(code, BLOCK_LINK_SIZE);
 
   return BLOCK_LINK_SIZE;
 }
