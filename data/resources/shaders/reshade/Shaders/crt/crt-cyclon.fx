@@ -32,11 +32,8 @@ uniform float SCANLINE <
 	ui_label = "Scanline Weight";
 > = 0.3;
 
-uniform float INTERLACE <
-	ui_type = "drag";
-	ui_min = 0.0;
-	ui_max = 1.0;
-	ui_step = 1.0;
+uniform bool INTERLACE <
+	ui_type = "radio";
 	ui_label = "Interlacing On/Off";
 > = 1.0;
 
@@ -64,11 +61,8 @@ uniform float MSIZE <
 	ui_label = "Mask Size";
 > = 1.0;
 
-uniform float SLOT <
-	ui_type = "drag";
-	ui_min = 0.0;
-	ui_max = 1.0;
-	ui_step = 1.0;
+uniform bool SLOT <
+	ui_type = "radio";
 	ui_label = "Slot Mask On/Off";
 > = 1.0;
 
@@ -112,11 +106,8 @@ uniform float bogus_geom <
 	ui_label = " [ GEOMETRY SETTINGS ] ";
 > = 0.0;
 
-uniform float bzl <
-	ui_type = "drag";
-	ui_min = 0.0;
-	ui_max = 1.0;
-	ui_step = 1.0;
+uniform bool bzl <
+	ui_type = "radio";
 	ui_label = "Bezel On/Off";
 > = 1.0;
 
@@ -148,7 +139,7 @@ uniform float centerx <
 	ui_type = "drag";
 	ui_min = -5.0;
 	ui_max = 5.0;
-	ui_step = 0.0;
+	ui_step = 0.05;
 	ui_label = "Image Center X";
 > = 0.0;
 
@@ -176,11 +167,8 @@ uniform float WARPY <
 	ui_label = "Curvature Vertical";
 > = 0.01;
 
-uniform float vig <
-	ui_type = "drag";
-	ui_min = 0.0;
-	ui_max = 1.0;
-	ui_step = 1.0;
+uniform bool vig <
+	ui_type = "radio";
 	ui_label = "Vignette On/Off";
 > = 1.0;
 
@@ -236,7 +224,7 @@ uniform float BLACK  <
 	ui_type = "drag";
 	ui_min = -0.20;
 	ui_max = 0.20;
-	ui_step = 0.0;
+	ui_step = 0.01;
 	ui_label = "Black Level";
 > = 0.0;
 
@@ -250,9 +238,9 @@ uniform float RG <
 
 uniform float RB <
 	ui_type = "drag";
-	ui_min = 0.0;
-	ui_max = -0.25;
-	ui_step = 0.2;
+	ui_min = -0.25;
+	ui_max = 0.25;
+	ui_step = 0.01;
 	ui_label = "Blue <-to-> Red Hue";
 > = 0.0;
 
@@ -323,9 +311,10 @@ uniform float2 NormalizedInternalPixelSize < source = "normalized_internal_pixel
 uniform float2 NormalizedNativePixelSize < source = "normalized_native_pixel_size"; >;
 uniform float  UpscaleMultiplier < source = "upscale_multiplier"; >;
 uniform float2 ViewportSize < source = "viewportsize"; >;
-
-
 uniform int FrameCount < source = "framecount"; >;
+
+sampler2D sBackBuffer{Texture=ReShade::BackBufferTex;AddressU=BORDER;AddressV=BORDER;AddressW=BORDER;MagFilter=LINEAR;MinFilter=LINEAR;MipFilter=LINEAR;};
+
 texture tBezel < source = "crt-cyclon/bezel.png"; >
 {
 	Width = BUFFER_WIDTH;
@@ -442,8 +431,9 @@ uniform float2 BufferHeight < source = "bufferheight"; >;
 
 float4 CRT_CYCLON_PS(float4 vpos: SV_Position, float2 vTexCoord : TEXCOORD0) : SV_Target
 {
-    float4 SourceSize = float4(1.0 / (NormalizedInternalPixelSize * UpscaleMultiplier), NormalizedInternalPixelSize * UpscaleMultiplier);
+    float4 SourceSize = float4(1.0 / NormalizedNativePixelSize, NormalizedNativePixelSize);
     float2 OutputSize = ViewportSize;
+
     float2 scale = BufferViewportRatio.xy;
     float2 warpcoords = (vTexCoord-float2(0.5,0.5)) * BufferViewportRatio + float2(0.5,0.5);
 
@@ -458,7 +448,7 @@ float3x3 hue = float3x3(
     float4 bez = float4(0.0,0.0,0.0,0.0);
 //    if (bzl == 1.0) bez = tex2D(sBezel,vTexCoord*SourceSize.xy/OriginalSize.xy*0.97+float2(0.015,0.015));   
 //    if (bzl == 1.0) bez = tex2D(sBezel,vTexCoord*scale*0.97+float2(0.015,0.015));   
-    if (bzl == 1.0) bez = tex2D(sBezel,warpcoords*0.97+float2(0.015,0.015));  // This fix Bezel to adjust to Game's aspect ratio. 
+    if (bzl == true) bez = tex2D(sBezel,warpcoords*0.97+float2(0.015,0.015));  // This fix Bezel to adjust to Game's aspect ratio. 
 
     bez.rgb = lerp(bez.rgb, float3(ambient,ambient,ambient),0.5);
 
@@ -473,10 +463,10 @@ float3x3 hue = float3x3(
     pos.x = lerp(pos.x, i.x*ps.x, 0.2);
 
 // Convergence
-    float3  res0 = tex2D(ReShade::BackBuffer,pos).rgb;
-    float resr = tex2D(ReShade::BackBuffer,pos + dx*CONV_R).r;
-    float resb = tex2D(ReShade::BackBuffer,pos + dx*CONV_B).b;
-    float resg = tex2D(ReShade::BackBuffer,pos + dx*CONV_G).g;
+    float3  res0 = tex2D(sBackBuffer,pos).rgb;
+    float resr = tex2D(sBackBuffer,pos + dx*CONV_R).r;
+    float resb = tex2D(sBackBuffer,pos + dx*CONV_B).b;
+    float resg = tex2D(sBackBuffer,pos + dx*CONV_G).g;
 
     float3 res = float3(  res0.r*(1.0-C_STR) +  resr*C_STR,
                       res0.g*(1.0-C_STR) +  resg*C_STR,
@@ -484,7 +474,7 @@ float3x3 hue = float3x3(
                    );
 // Vignette
     float x = 0.0;
-    if (vig == 1.0){
+    if (vig == true){
     x = vTexCoord.x*scale.x-0.5;
 //    x = vTexCoord.x-0.5;
     x = x*x;}
@@ -508,7 +498,7 @@ float3x3 hue = float3x3(
     {
         s = frac(bpos.y*SourceSize.y/2.0-0.5);
 //        if (INTERLACE == 1.0) s = mod(float(FrameCount),2.0) < 1.0 ? s: s+0.5;
-        if (INTERLACE == 1.0) s = (float(FrameCount) % 2.0) < 1.0 ? s: s+0.5;
+        if (INTERLACE == true) s = (float(FrameCount) % 2.0) < 1.0 ? s: s+0.5;
     }
 // Calculate CRT-Geom scanlines weight and apply
     float weight  = scanlineWeights(s, res, x);
@@ -521,7 +511,7 @@ float3x3 hue = float3x3(
     float CGWG = lerp(Maskl, Maskh, l);
     res *= Mask(xy, CGWG);
 // Apply slot mask on top of Trinitron-like mask
-    if (SLOT == 1.0) res *= lerp(slot(xy/2.0),float3(1.0,1.0,1.0),CGWG);
+    if (SLOT == true) res *= lerp(slot(xy/2.0),float3(1.0,1.0,1.0),CGWG);
     
     if (POTATO == 0.0) res = inv_gamma(res,pwr);
     else {res = sqrt(res); res *= lerp(1.3,1.1,l);}
@@ -536,7 +526,7 @@ float3x3 hue = float3x3(
     res -= float3(BLACK,BLACK,BLACK);
     res *= blck;
 // Apply bezel code, adapted from New-Pixie
-    if (bzl >0.0)
+    if (bzl == true)
     res.rgb = lerp(res.rgb, lerp(max(res.rgb, 0.0), pow( abs(bez.rgb), float3( 1.4,1.4,1.4 ) ), bez.w * bez.w), float3( 1.0,1.0,1.0 ) );
 
 

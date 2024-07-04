@@ -1,4 +1,4 @@
-#include "../ReShade.fxh"
+#include "ReShade.fxh"
 
 /*
    Bicubic multipass Shader
@@ -86,19 +86,18 @@ float3 bicubic_ar(float fp, float3 C0, float3 C1, float3 C2, float3 C3)
 }
 
 
-float4 PS_Bicubic_X(float4 pos: SV_Position, float2 uv_tx : TEXCOORD) : SV_Target
+float4 PS_Bicubic_X(float4 vpos: SV_Position, float2 uv_tx : TEXCOORD) : SV_Target
 {
     // Both dimensions are unfiltered, so it looks for lores pixels.
-    float2 ps   = NormalizedNativePixelSize;
-    float2 posi = uv_tx.xy + ps * float2(0.5, 0.0);
-    float2 fp   = frac(posi / ps);
+    float2 ps  = NormalizedNativePixelSize;
+    float2 pos = uv_tx.xy/ps - float2(0.5, 0.0);
+    float2 tc  = (floor(pos) + float2(0.5, 0.5)) * ps;
+    float2 fp  = frac(pos);
 
-    float2 tc  = posi - (fp + 0.5) * ps;
-
-    float3 C0 = tex2D(ReShade::BackBuffer, tc + ps*float2(-1.0, 1.0)).rgb;
-    float3 C1 = tex2D(ReShade::BackBuffer, tc + ps*float2( 0.0, 1.0)).rgb;
-    float3 C2 = tex2D(ReShade::BackBuffer, tc + ps*float2( 1.0, 1.0)).rgb;
-    float3 C3 = tex2D(ReShade::BackBuffer, tc + ps*float2( 2.0, 1.0)).rgb;
+    float3 C0 = tex2D(ReShade::BackBuffer, tc + ps*float2(-1.0, 0.0)).rgb;
+    float3 C1 = tex2D(ReShade::BackBuffer, tc + ps*float2( 0.0, 0.0)).rgb;
+    float3 C2 = tex2D(ReShade::BackBuffer, tc + ps*float2( 1.0, 0.0)).rgb;
+    float3 C3 = tex2D(ReShade::BackBuffer, tc + ps*float2( 2.0, 0.0)).rgb;
 
     float3 color = bicubic_ar(fp.x, C0, C1, C2, C3);
 
@@ -106,28 +105,27 @@ float4 PS_Bicubic_X(float4 pos: SV_Position, float2 uv_tx : TEXCOORD) : SV_Targe
 }
 
 
-float4 PS_Bicubic_Y(float4 pos: SV_Position, float2 uv_tx : TEXCOORD) : SV_Target
+float4 PS_Bicubic_Y(float4 vpos: SV_Position, float2 uv_tx : TEXCOORD) : SV_Target
 {
     // One must be careful here. Horizontal dimension is already filtered, so it looks for x in hires.
-    float2 ps   = float2(1.0/(ViewportSize.x*BufferToViewportRatio.x), NormalizedNativePixelSize.y);
-    float2 posi = uv_tx.xy + ps * float2(0.5, 0.5);
-    float2 fp   = frac(posi / ps);
+    float2 ps  = float2(1.0/(ViewportSize.x*BufferToViewportRatio.x), NormalizedNativePixelSize.y);
+    float2 pos = uv_tx.xy/ps - float2(0.0, 0.5);
+    float2 tc  = (floor(pos) + float2(0.5, 0.5)) * ps;
+    float2 fp  = frac(pos);
 
-    float2 tc  = posi - (fp + 0.5) * ps;
-
-    float3 C0 = tex2D(sBicubic_P0, tc + ps*float2(1.0, -1.0)).rgb;
-    float3 C1 = tex2D(sBicubic_P0, tc + ps*float2(1.0,  0.0)).rgb;
-    float3 C2 = tex2D(sBicubic_P0, tc + ps*float2(1.0,  1.0)).rgb;
-    float3 C3 = tex2D(sBicubic_P0, tc + ps*float2(1.0,  2.0)).rgb;
+    float3 C0 = tex2D(sBicubic_P0, tc + ps*float2(0.0, -1.0)).rgb;
+    float3 C1 = tex2D(sBicubic_P0, tc + ps*float2(0.0,  0.0)).rgb;
+    float3 C2 = tex2D(sBicubic_P0, tc + ps*float2(0.0,  1.0)).rgb;
+    float3 C3 = tex2D(sBicubic_P0, tc + ps*float2(0.0,  2.0)).rgb;
 
     float3 color = bicubic_ar(fp.y, C0, C1, C2, C3);
 
     return float4(color, 1.0);
 }
 
+
 technique Bicubic
 {
-
 	pass
 	{
 		VertexShader = PostProcessVS;
@@ -139,5 +137,4 @@ technique Bicubic
 		VertexShader = PostProcessVS;
 		PixelShader  = PS_Bicubic_Y;
 	}
-
 }
