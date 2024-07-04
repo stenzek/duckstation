@@ -28,7 +28,7 @@
     },
     {
       "type": "patch",
-      "path": "../../spirv-cross-changes.patch"
+      "path": "../../deps/spirv-cross-changes.patch"
     }
   ],
   "cleanup": [

@@ -166,7 +166,7 @@ alsa-lib-devel brotli-devel clang cmake dbus-devel egl-wayland-devel extra-cmake
 #### Building
 
 1. Clone the repository: `git clone https://github.com/stenzek/duckstation.git`, `cd duckstation`.
-2. Build dependencies. You can save these outside of the tree if you like. This will take a while. `scripts/build-dependencies-linux.sh deps`.
+2. Build dependencies. You can save these outside of the tree if you like. This will take a while. `scripts/deps/build-dependencies-linux.sh deps`.
 3. Run CMake to configure the build system. Assuming a build subdirectory of `build-release`, run `cmake -B build-release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_EXE_LINKER_FLAGS_INIT="-fuse-ld=lld" -DCMAKE_MODULE_LINKER_FLAGS_INIT="-fuse-ld=lld" -DCMAKE_SHARED_LINKER_FLAGS_INIT="-fuse-ld=lld" -DCMAKE_PREFIX_PATH="$PWD/deps" -G Ninja`. If you want a release (optimized) build, include `-DCMAKE_BUILD_TYPE=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON`.
 4. Compile the source code. For the example above, run `ninja -C build-release`
 5. Run the binary, located in the build directory under `./build-release/bin/duckstation-qt`.
@@ -179,7 +179,7 @@ Requirements:
 
 
 1. Clone the repository: `git clone https://github.com/stenzek/duckstation.git`.
-2. Build the dependencies. This will take a while. `scripts/build-dependencies-mac.sh deps`.
+2. Build the dependencies. This will take a while. `scripts/deps/build-dependencies-mac.sh deps`.
 2. Run CMake to configure the build system: `cmake -Bbuild-release -DCMAKE_BUILD_TYPE=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCMAKE_PREFIX_PATH="$PWD/deps"`. 
 4. Compile the source code: `cmake --build build-release --parallel`.
 5. Run the binary, located in the build directory under `bin/DuckStation.app`.
