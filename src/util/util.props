@@ -27,11 +27,12 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(DepsIncludeDir)SDL2</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>%(AdditionalDependencies);cpuinfo.lib;freetype.lib;libjpeg.lib;libpng16.lib;libwebp.lib;SDL2.lib;zlib.lib;zstd.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);cpuinfo.lib;discord-rpc.lib;freetype.lib;libjpeg.lib;libpng16.lib;libwebp.lib;SDL2.lib;zlib.lib;zstd.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <DepsDLLs Include="$(DepsBinDir)cpuinfo.dll" />
+    <DepsDLLs Include="$(DepsBinDir)discord-rpc.dll" />
     <DepsDLLs Include="$(DepsBinDir)freetype.dll" />
     <DepsDLLs Include="$(DepsBinDir)harfbuzz.dll" />
     <DepsDLLs Include="$(DepsBinDir)libjpeg.dll" />

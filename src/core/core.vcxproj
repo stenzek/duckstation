@@ -169,9 +169,6 @@
     <ClInclude Include="types.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\dep\discord-rpc\discord-rpc.vcxproj">
-      <Project>{4266505b-dbaf-484b-ab31-b53b9c8235b3}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\dep\imgui\imgui.vcxproj">
       <Project>{bb08260f-6fbc-46af-8924-090ee71360c6}</Project>
     </ProjectReference>

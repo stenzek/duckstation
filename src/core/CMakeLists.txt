@@ -184,7 +184,7 @@ endif()
 
 if(NOT ANDROID)
   target_compile_definitions(core PUBLIC -DENABLE_DISCORD_PRESENCE=1)
-  target_link_libraries(core PRIVATE discord-rpc)
+  target_link_libraries(core PRIVATE DiscordRPC::discord-rpc)
 endif()
 
 # Copy the provided data directory to the output directory. Borrowed from PCSX2.
