@@ -130339,6 +130339,8 @@ SLES-01103:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Fixes affine texture mapping on floor.
   metadata:
     publisher: "Mindscape"
     developer: "Pure Entertainment"
@@ -130368,6 +130370,7 @@ SLUS-00656:
     - DigitalController
   traits:
     - ForceInterlacing
+    - ForcePGXPCPUMode # Fixes affine texture mapping on floor.
   metadata:
     publisher: "Mindscape"
     developer: "Pure Entertainment"
