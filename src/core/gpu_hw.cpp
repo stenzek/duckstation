@@ -472,6 +472,11 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
 
   if (framebuffer_changed)
   {
+    // When using very high upscaling, it's possible that we don't have enough VRAM for two sets of buffers.
+    // Purge the pool, and idle the GPU so that all video memory is freed prior to creating the new buffers.
+    g_gpu_device->PurgeTexturePool();
+    g_gpu_device->ExecuteAndWaitForGPUIdle();
+
     if (!CreateBuffers())
       Panic("Failed to recreate buffers.");
 
