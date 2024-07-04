@@ -801,11 +801,9 @@ void Achievements::UpdateRichPresence(std::unique_lock<std::recursive_mutex>& lo
   INFO_LOG("Rich presence updated: {}", s_rich_presence_string);
   Host::OnAchievementsRefreshed();
 
-#ifdef ENABLE_DISCORD_PRESENCE
   lock.unlock();
-  System::UpdateDiscordPresence(false);
+  System::UpdateRichPresence(false);
   lock.lock();
-#endif
 }
 
 void Achievements::GameChanged(const std::string& path, CDImage* image)

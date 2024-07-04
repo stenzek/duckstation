@@ -47,6 +47,7 @@
 #include "util/state_wrapper.h"
 
 #include "common/align.h"
+#include "common/dynamic_library.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
@@ -77,11 +78,8 @@ Log_SetChannel(System);
 #include <objbase.h>
 #endif
 
-#ifdef ENABLE_DISCORD_PRESENCE
-#include "discord_rpc.h"
-#endif
-
 #ifndef __ANDROID__
+#define ENABLE_DISCORD_PRESENCE 1
 #define ENABLE_PINE_SERVER 1
 #define ENABLE_GDB_SERVER 1
 #define ENABLE_SOCKET_MULTIPLEXER 1
@@ -1957,9 +1955,7 @@ void System::ClearRunningGame()
 
   Achievements::GameChanged(s_running_game_path, nullptr);
 
-#ifdef ENABLE_DISCORD_PRESENCE
-  UpdateDiscordPresence(true);
-#endif
+  UpdateRichPresence(true);
 }
 
 void System::Execute()
@@ -3791,9 +3787,7 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
   else
     SaveStateSelectorUI::ClearList();
 
-#ifdef ENABLE_DISCORD_PRESENCE
-  UpdateDiscordPresence(booting);
-#endif
+  UpdateRichPresence(booting);
 
   Host::OnGameChanged(s_running_game_path, s_running_game_serial, s_running_game_title);
 }
@@ -5467,16 +5461,80 @@ void System::ReleaseSocketMultiplexer()
 
 #ifdef ENABLE_DISCORD_PRESENCE
 
+#include "discord_rpc.h"
+
+#define DISCORD_RPC_FUNCTIONS(X)                                                                                       \
+  X(Discord_Initialize)                                                                                                \
+  X(Discord_Shutdown)                                                                                                  \
+  X(Discord_RunCallbacks)                                                                                              \
+  X(Discord_UpdatePresence)                                                                                            \
+  X(Discord_ClearPresence)
+
+namespace dyn_libs {
+static bool OpenDiscordRPC(Error* error);
+static void CloseDiscordRPC();
+
+static DynamicLibrary s_discord_rpc_library;
+
+#define ADD_FUNC(F) static decltype(&::F) F;
+DISCORD_RPC_FUNCTIONS(ADD_FUNC)
+#undef ADD_FUNC
+} // namespace dyn_libs
+
+bool dyn_libs::OpenDiscordRPC(Error* error)
+{
+  if (s_discord_rpc_library.IsOpen())
+    return true;
+
+  const std::string libname = DynamicLibrary::GetVersionedFilename("discord-rpc");
+  if (!s_discord_rpc_library.Open(libname.c_str(), error))
+  {
+    Error::AddPrefix(error, "Failed to load discord-rpc: ");
+    return false;
+  }
+
+#define LOAD_FUNC(F)                                                                                                   \
+  if (!s_discord_rpc_library.GetSymbol(#F, &F))                                                                        \
+  {                                                                                                                    \
+    Error::SetStringFmt(error, "Failed to find function {}", #F);                                                      \
+    CloseDiscordRPC();                                                                                                 \
+    return false;                                                                                                      \
+  }
+  DISCORD_RPC_FUNCTIONS(LOAD_FUNC)
+#undef LOAD_FUNC
+
+  return true;
+}
+
+void dyn_libs::CloseDiscordRPC()
+{
+  if (!s_discord_rpc_library.IsOpen())
+    return;
+
+#define UNLOAD_FUNC(F) F = nullptr;
+  DISCORD_RPC_FUNCTIONS(UNLOAD_FUNC)
+#undef UNLOAD_FUNC
+
+  s_discord_rpc_library.Close();
+}
+
 void System::InitializeDiscordPresence()
 {
   if (s_discord_presence_active)
     return;
 
+  Error error;
+  if (!dyn_libs::OpenDiscordRPC(&error))
+  {
+    ERROR_LOG("Failed to open discord-rpc: {}", error.GetDescription());
+    return;
+  }
+
   DiscordEventHandlers handlers = {};
-  Discord_Initialize("705325712680288296", &handlers, 0, nullptr);
+  dyn_libs::Discord_Initialize("705325712680288296", &handlers, 0, nullptr);
   s_discord_presence_active = true;
 
-  UpdateDiscordPresence(true);
+  UpdateRichPresence(true);
 }
 
 void System::ShutdownDiscordPresence()
@@ -5484,12 +5542,14 @@ void System::ShutdownDiscordPresence()
   if (!s_discord_presence_active)
     return;
 
-  Discord_ClearPresence();
-  Discord_Shutdown();
+  dyn_libs::Discord_ClearPresence();
+  dyn_libs::Discord_Shutdown();
+  dyn_libs::CloseDiscordRPC();
+
   s_discord_presence_active = false;
 }
 
-void System::UpdateDiscordPresence(bool update_session_time)
+void System::UpdateRichPresence(bool update_session_time)
 {
   if (!s_discord_presence_active)
     return;
@@ -5525,7 +5585,7 @@ void System::UpdateDiscordPresence(bool update_session_time)
     rp.state = state_string.c_str();
   }
 
-  Discord_UpdatePresence(&rp);
+  dyn_libs::Discord_UpdatePresence(&rp);
 }
 
 void System::PollDiscordPresence()
@@ -5533,7 +5593,13 @@ void System::PollDiscordPresence()
   if (!s_discord_presence_active)
     return;
 
-  Discord_RunCallbacks();
+  dyn_libs::Discord_RunCallbacks();
+}
+
+#else
+
+void System::UpdateRichPresence(bool update_session_time)
+{
 }
 
 #endif

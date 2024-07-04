@@ -182,11 +182,6 @@ if(CPU_ARCH_RISCV64)
   message(STATUS "Building RISC-V 64-bit recompiler.")
 endif()
 
-if(NOT ANDROID)
-  target_compile_definitions(core PUBLIC -DENABLE_DISCORD_PRESENCE=1)
-  target_link_libraries(core PRIVATE DiscordRPC::discord-rpc)
-endif()
-
 # Copy the provided data directory to the output directory. Borrowed from PCSX2.
 function(add_resources target path basedir)
 	get_filename_component(dir ${path} DIRECTORY)

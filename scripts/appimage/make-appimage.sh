@@ -56,6 +56,7 @@ APPDIRNAME=DuckStation.AppDir
 STRIP=strip
 
 declare -a MANUAL_LIBS=(
+	"libdiscord-rpc.so"
 	"libshaderc_shared.so"
 	"libspirv-cross-c-shared.so"
 )

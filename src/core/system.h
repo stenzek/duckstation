@@ -495,10 +495,8 @@ void SetRunaheadReplayFlag();
 SocketMultiplexer* GetSocketMultiplexer();
 void ReleaseSocketMultiplexer();
 
-#ifdef ENABLE_DISCORD_PRESENCE
 /// Called when rich presence changes.
-void UpdateDiscordPresence(bool update_session_time);
-#endif
+void UpdateRichPresence(bool update_session_time);
 
 namespace Internal {
 /// Performs mandatory hardware checks.
