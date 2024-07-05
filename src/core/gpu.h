@@ -297,12 +297,6 @@ protected:
            BoolToUInt8(m_render_command.shading_enable);
   }
 
-  /// Returns true if the drawing area is valid (i.e. left <= right, top <= bottom).
-  ALWAYS_INLINE bool IsDrawingAreaIsValid() const
-  {
-    return (m_drawing_area.left <= m_drawing_area.right && m_drawing_area.top <= m_drawing_area.bottom);
-  }
-
   void AddCommandTicks(TickCount ticks);
 
   void WriteGP1(u32 value);
@@ -349,18 +343,11 @@ protected:
 
     AddCommandTicks(pixels);
   }
-  ALWAYS_INLINE_RELEASE void AddDrawRectangleTicks(s32 x, s32 y, u32 width, u32 height, bool textured,
+  ALWAYS_INLINE_RELEASE void AddDrawRectangleTicks(const GSVector4i clamped_rect, bool textured,
                                                    bool semitransparent)
   {
-    // We do -1 on the inside of the clamp, in case the rectangle is entirely clipped.
-    u32 drawn_width = static_cast<u32>(
-      std::clamp<s32>(x + static_cast<s32>(width), static_cast<s32>(m_drawing_area.left),
-                      static_cast<s32>(m_drawing_area.right) + 1) -
-      std::clamp<s32>(x, static_cast<s32>(m_drawing_area.left), static_cast<s32>(m_drawing_area.right) + 1));
-    u32 drawn_height = static_cast<u32>(
-      std::clamp<s32>(y + static_cast<s32>(height), static_cast<s32>(m_drawing_area.top),
-                      static_cast<s32>(m_drawing_area.bottom) + 1) -
-      std::clamp<s32>(y, static_cast<s32>(m_drawing_area.top), static_cast<s32>(m_drawing_area.bottom) + 1));
+    u32 drawn_width = clamped_rect.width();
+    u32 drawn_height = clamped_rect.height();
 
     u32 ticks_per_row = drawn_width;
     if (textured)
@@ -372,16 +359,10 @@ protected:
 
     AddCommandTicks(ticks_per_row * drawn_height);
   }
-  ALWAYS_INLINE_RELEASE void AddDrawLineTicks(s32 min_x, s32 min_y, s32 max_x, s32 max_y, bool shaded)
+  ALWAYS_INLINE_RELEASE void AddDrawLineTicks(const GSVector4i clamped_rect, bool shaded)
   {
-    // We do -1 on the inside of the clamp, in case the rectangle is entirely clipped.
-    // Lines are inclusive?
-    u32 drawn_width = static_cast<u32>(
-      std::clamp<s32>(max_x + 1, static_cast<s32>(m_drawing_area.left), static_cast<s32>(m_drawing_area.right) + 1) -
-      std::clamp<s32>(min_x, static_cast<s32>(m_drawing_area.left), static_cast<s32>(m_drawing_area.right) + 1));
-    u32 drawn_height = static_cast<u32>(
-      std::clamp<s32>(max_y + 1, static_cast<s32>(m_drawing_area.top), static_cast<s32>(m_drawing_area.bottom) + 1) -
-      std::clamp<s32>(min_y, static_cast<s32>(m_drawing_area.top), static_cast<s32>(m_drawing_area.bottom) + 1));
+    u32 drawn_width = clamped_rect.width();
+    u32 drawn_height = clamped_rect.height();
 
     if (m_GPUSTAT.SkipDrawingToActiveField())
       drawn_height = std::max<u32>(drawn_height / 2, 1u);

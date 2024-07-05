@@ -217,7 +217,7 @@ private:
                                   u32 height);
 
   /// Expands a line into two triangles.
-  void DrawLine(float x0, float y0, u32 col0, float x1, float y1, u32 col1, float depth);
+  void DrawLine(const GSVector4 bounds, u32 col0, u32 col1, float depth);
 
   /// Handles quads with flipped texture coordinate directions.
   void HandleFlippedQuadTextureCoordinates(BatchVertex* vertices);

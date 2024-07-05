@@ -1635,7 +1635,7 @@ void GPU::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 he
 
 void GPU::SetClampedDrawingArea()
 {
-  if (!IsDrawingAreaIsValid()) [[unlikely]]
+  if (m_drawing_area.left > m_drawing_area.right || m_drawing_area.top > m_drawing_area.bottom) [[unlikely]]
   {
     m_clamped_drawing_area = GSVector4i::zero();
     return;
