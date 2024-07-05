@@ -11391,7 +11391,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../core/hotkeys.cpp" line="238"/>
         <source>Reset System</source>
-        <translation>Сброс системы</translation>
+        <translation>Сбросить: Систему</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="218"/>
