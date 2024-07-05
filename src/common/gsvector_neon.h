@@ -309,6 +309,14 @@ public:
 
   ALWAYS_INLINE GSVector4i addp_s32() const { return GSVector4i(vpaddq_s32(v4s, v4s)); }
 
+  ALWAYS_INLINE u8 minv_u8() const { return vminvq_u8(vreinterpretq_u8_s32(v4s)); }
+
+  ALWAYS_INLINE u16 maxv_u8() const { return vmaxvq_u8(vreinterpretq_u8_s32(v4s)); }
+
+  ALWAYS_INLINE u16 minv_u16() const { return vminvq_u16(vreinterpretq_u16_s32(v4s)); }
+
+  ALWAYS_INLINE u16 maxv_u16() const { return vmaxvq_u16(vreinterpretq_u16_s32(v4s)); }
+
   ALWAYS_INLINE s32 minv_s32() const { return vminvq_s32(v4s); }
 
   ALWAYS_INLINE u32 minv_u32() const { return vminvq_u32(v4s); }

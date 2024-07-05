@@ -263,6 +263,42 @@ public:
 
   ALWAYS_INLINE GSVector4i addp_s32() const { return GSVector4i(_mm_hadd_epi32(m, m)); }
 
+  ALWAYS_INLINE u8 minv_u8() const
+  {
+    __m128i vmin = _mm_min_epu8(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
+    vmin = _mm_min_epu8(vmin, _mm_shuffle_epi32(vmin, _MM_SHUFFLE(1, 1, 1, 1)));
+    return static_cast<u8>(std::min(
+      static_cast<u32>(_mm_extract_epi8(vmin, 0)),
+      std::min(static_cast<u32>(_mm_extract_epi8(vmin, 1)),
+               std::min(static_cast<u32>(_mm_extract_epi8(vmin, 2)), static_cast<u32>(_mm_extract_epi8(vmin, 3))))));
+  }
+
+  ALWAYS_INLINE u16 maxv_u8() const
+  {
+    __m128i vmax = _mm_max_epu8(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
+    vmax = _mm_max_epu8(vmax, _mm_shuffle_epi32(vmax, _MM_SHUFFLE(1, 1, 1, 1)));
+    return static_cast<u8>(std::max(
+      static_cast<u32>(_mm_extract_epi8(vmax, 0)),
+      std::max(static_cast<u32>(_mm_extract_epi8(vmax, 1)),
+               std::max(static_cast<u32>(_mm_extract_epi8(vmax, 2)), static_cast<u32>(_mm_extract_epi8(vmax, 3))))));
+  }
+
+  ALWAYS_INLINE u16 minv_u16() const
+  {
+    __m128i vmin = _mm_min_epu16(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
+    vmin = _mm_min_epu16(vmin, _mm_shuffle_epi32(vmin, _MM_SHUFFLE(1, 1, 1, 1)));
+    return static_cast<u16>(
+      std::min(static_cast<u32>(_mm_extract_epi16(vmin, 0)), static_cast<u32>(_mm_extract_epi16(vmin, 1))));
+  }
+
+  ALWAYS_INLINE u16 maxv_u16() const
+  {
+    __m128i vmax = _mm_max_epu16(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
+    vmax = _mm_max_epu16(vmax, _mm_shuffle_epi32(vmax, _MM_SHUFFLE(1, 1, 1, 1)));
+    return static_cast<u16>(
+      std::max<u32>(static_cast<u32>(_mm_extract_epi16(vmax, 0)), static_cast<u32>(_mm_extract_epi16(vmax, 1))));
+  }
+
   ALWAYS_INLINE s32 minv_s32() const
   {
     const __m128i vmin = _mm_min_epi32(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
