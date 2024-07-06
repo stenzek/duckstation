@@ -145,8 +145,8 @@ std::optional<std::vector<u8>> ReadBinaryFile(const char* filename, Error* error
 std::optional<std::vector<u8>> ReadBinaryFile(std::FILE* fp);
 std::optional<std::string> ReadFileToString(const char* filename, Error* error = nullptr);
 std::optional<std::string> ReadFileToString(std::FILE* fp);
-bool WriteBinaryFile(const char* filename, const void* data, size_t data_length);
-bool WriteStringToFile(const char* filename, std::string_view sv);
+bool WriteBinaryFile(const char* filename, const void* data, size_t data_length, Error* error = nullptr);
+bool WriteStringToFile(const char* filename, std::string_view sv, Error* error = nullptr);
 
 /// creates a directory in the local filesystem
 /// if the directory already exists, the return value will be true.
