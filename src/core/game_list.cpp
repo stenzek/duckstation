@@ -594,7 +594,7 @@ bool GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_loc
     entry.total_played_time = iter->second.total_played_time;
   }
 
-  ApplyCustomAttributes(path, &entry, custom_attributes_ini);
+  ApplyCustomAttributes(entry.path, &entry, custom_attributes_ini);
 
   lock.lock();
 
@@ -626,7 +626,7 @@ bool GameList::RescanCustomAttributesForPath(const std::string& path, const INIS
   if (!PopulateEntryFromPath(path, &entry))
     return false;
 
-  entry.path = std::move(path);
+  entry.path = path;
   entry.last_modified_time = sd.ModificationTime;
 
   const PlayedTimeMap played_time_map(LoadPlayedTimeMap(GetPlayedTimeFile()));
@@ -637,7 +637,7 @@ bool GameList::RescanCustomAttributesForPath(const std::string& path, const INIS
     entry.total_played_time = iter->second.total_played_time;
   }
 
-  ApplyCustomAttributes(path, &entry, custom_attributes_ini);
+  ApplyCustomAttributes(entry.path, &entry, custom_attributes_ini);
 
   std::unique_lock lock(s_mutex);
 
