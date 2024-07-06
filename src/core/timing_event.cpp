@@ -12,41 +12,57 @@ Log_SetChannel(TimingEvents);
 
 namespace TimingEvents {
 
-static TimingEvent* s_active_events_head;
-static TimingEvent* s_active_events_tail;
-static TimingEvent* s_current_event = nullptr;
-static u32 s_active_event_count = 0;
-static u32 s_global_tick_counter = 0;
-static u32 s_event_run_tick_counter = 0;
-static bool s_frame_done = false;
+static void SortEvent(TimingEvent* event);
+static void AddActiveEvent(TimingEvent* event);
+static void RemoveActiveEvent(TimingEvent* event);
+static void SortEvents();
+static TimingEvent* FindActiveEvent(const char* name);
 
-u32 GetGlobalTickCounter()
+namespace {
+struct TimingEventsState
 {
-  return s_global_tick_counter;
+  TimingEvent* active_events_head = nullptr;
+  TimingEvent* active_events_tail = nullptr;
+  TimingEvent* current_event = nullptr;
+  u32 active_event_count = 0;
+  u32 global_tick_counter = 0;
+  u32 event_run_tick_counter = 0;
+  bool frame_done = false;
+};
+} // namespace
+
+ALIGN_TO_CACHE_LINE static TimingEventsState s_state;
+
+} // namespace TimingEvents
+
+u32 TimingEvents::GetGlobalTickCounter()
+{
+  return s_state.global_tick_counter;
 }
 
-u32 GetEventRunTickCounter()
+u32 TimingEvents::GetEventRunTickCounter()
 {
-  return s_event_run_tick_counter;
+  return s_state.event_run_tick_counter;
 }
 
-void Initialize()
+void TimingEvents::Initialize()
 {
   Reset();
 }
 
-void Reset()
+void TimingEvents::Reset()
 {
-  s_global_tick_counter = 0;
+  s_state.global_tick_counter = 0;
 }
 
-void Shutdown()
+void TimingEvents::Shutdown()
 {
-  Assert(s_active_event_count == 0);
+  Assert(s_state.active_event_count == 0);
 }
 
-std::unique_ptr<TimingEvent> CreateTimingEvent(std::string name, TickCount period, TickCount interval,
-                                               TimingEventCallback callback, void* callback_param, bool activate)
+std::unique_ptr<TimingEvent> TimingEvents::CreateTimingEvent(std::string name, TickCount period, TickCount interval,
+                                                             TimingEventCallback callback, void* callback_param,
+                                                             bool activate)
 {
   std::unique_ptr<TimingEvent> event =
     std::make_unique<TimingEvent>(std::move(name), period, interval, callback, callback_param);
@@ -56,18 +72,18 @@ std::unique_ptr<TimingEvent> CreateTimingEvent(std::string name, TickCount perio
   return event;
 }
 
-void UpdateCPUDowncount()
+void TimingEvents::UpdateCPUDowncount()
 {
-  const u32 event_downcount = s_active_events_head->GetDowncount();
+  const u32 event_downcount = s_state.active_events_head->GetDowncount();
   CPU::g_state.downcount = CPU::HasPendingInterrupt() ? 0 : event_downcount;
 }
 
-TimingEvent** GetHeadEventPtr()
+TimingEvent** TimingEvents::GetHeadEventPtr()
 {
-  return &s_active_events_head;
+  return &s_state.active_events_head;
 }
 
-static void SortEvent(TimingEvent* event)
+void TimingEvents::SortEvent(TimingEvent* event)
 {
   const TickCount event_downcount = event->m_downcount;
 
@@ -82,11 +98,11 @@ static void SortEvent(TimingEvent* event)
     if (event->prev)
       event->prev->next = event->next;
     else
-      s_active_events_head = event->next;
+      s_state.active_events_head = event->next;
     if (event->next)
       event->next->prev = event->prev;
     else
-      s_active_events_tail = event->prev;
+      s_state.active_events_tail = event->prev;
 
     // insert after current
     if (current)
@@ -95,7 +111,7 @@ static void SortEvent(TimingEvent* event)
       if (current->next)
         current->next->prev = event;
       else
-        s_active_events_tail = event;
+        s_state.active_events_tail = event;
 
       event->prev = current;
       current->next = event;
@@ -103,11 +119,11 @@ static void SortEvent(TimingEvent* event)
     else
     {
       // insert at front
-      DebugAssert(s_active_events_head);
-      s_active_events_head->prev = event;
+      DebugAssert(s_state.active_events_head);
+      s_state.active_events_head->prev = event;
       event->prev = nullptr;
-      event->next = s_active_events_head;
-      s_active_events_head = event;
+      event->next = s_state.active_events_head;
+      s_state.active_events_head = event;
       UpdateCPUDowncount();
     }
   }
@@ -125,13 +141,13 @@ static void SortEvent(TimingEvent* event)
     }
     else
     {
-      s_active_events_head = event->next;
+      s_state.active_events_head = event->next;
       UpdateCPUDowncount();
     }
     if (event->next)
       event->next->prev = event->prev;
     else
-      s_active_events_tail = event->prev;
+      s_state.active_events_tail = event->prev;
 
     // insert before current
     if (current)
@@ -145,7 +161,7 @@ static void SortEvent(TimingEvent* event)
       }
       else
       {
-        s_active_events_head = event;
+        s_state.active_events_head = event;
         UpdateCPUDowncount();
       }
 
@@ -154,22 +170,22 @@ static void SortEvent(TimingEvent* event)
     else
     {
       // insert at back
-      DebugAssert(s_active_events_tail);
-      s_active_events_tail->next = event;
+      DebugAssert(s_state.active_events_tail);
+      s_state.active_events_tail->next = event;
       event->next = nullptr;
-      event->prev = s_active_events_tail;
-      s_active_events_tail = event;
+      event->prev = s_state.active_events_tail;
+      s_state.active_events_tail = event;
     }
   }
 }
 
-static void AddActiveEvent(TimingEvent* event)
+void TimingEvents::AddActiveEvent(TimingEvent* event)
 {
   DebugAssert(!event->prev && !event->next);
-  s_active_event_count++;
+  s_state.active_event_count++;
 
   TimingEvent* current = nullptr;
-  TimingEvent* next = s_active_events_head;
+  TimingEvent* next = s_state.active_events_head;
   while (next && event->m_downcount > next->m_downcount)
   {
     current = next;
@@ -179,26 +195,26 @@ static void AddActiveEvent(TimingEvent* event)
   if (!next)
   {
     // new tail
-    event->prev = s_active_events_tail;
-    if (s_active_events_tail)
+    event->prev = s_state.active_events_tail;
+    if (s_state.active_events_tail)
     {
-      s_active_events_tail->next = event;
-      s_active_events_tail = event;
+      s_state.active_events_tail->next = event;
+      s_state.active_events_tail = event;
     }
     else
     {
       // first event
-      s_active_events_tail = event;
-      s_active_events_head = event;
+      s_state.active_events_tail = event;
+      s_state.active_events_head = event;
       UpdateCPUDowncount();
     }
   }
   else if (!current)
   {
     // new head
-    event->next = s_active_events_head;
-    s_active_events_head->prev = event;
-    s_active_events_head = event;
+    event->next = s_state.active_events_head;
+    s_state.active_events_head->prev = event;
+    s_state.active_events_head = event;
     UpdateCPUDowncount();
   }
   else
@@ -211,9 +227,9 @@ static void AddActiveEvent(TimingEvent* event)
   }
 }
 
-static void RemoveActiveEvent(TimingEvent* event)
+void TimingEvents::RemoveActiveEvent(TimingEvent* event)
 {
-  DebugAssert(s_active_event_count > 0);
+  DebugAssert(s_state.active_event_count > 0);
 
   if (event->next)
   {
@@ -221,7 +237,7 @@ static void RemoveActiveEvent(TimingEvent* event)
   }
   else
   {
-    s_active_events_tail = event->prev;
+    s_state.active_events_tail = event->prev;
   }
 
   if (event->prev)
@@ -230,23 +246,23 @@ static void RemoveActiveEvent(TimingEvent* event)
   }
   else
   {
-    s_active_events_head = event->next;
-    if (s_active_events_head)
+    s_state.active_events_head = event->next;
+    if (s_state.active_events_head)
       UpdateCPUDowncount();
   }
 
   event->prev = nullptr;
   event->next = nullptr;
 
-  s_active_event_count--;
+  s_state.active_event_count--;
 }
 
-static void SortEvents()
+void TimingEvents::SortEvents()
 {
   std::vector<TimingEvent*> events;
-  events.reserve(s_active_event_count);
+  events.reserve(s_state.active_event_count);
 
-  TimingEvent* next = s_active_events_head;
+  TimingEvent* next = s_state.active_events_head;
   while (next)
   {
     TimingEvent* current = next;
@@ -256,17 +272,17 @@ static void SortEvents()
     current->next = nullptr;
   }
 
-  s_active_events_head = nullptr;
-  s_active_events_tail = nullptr;
-  s_active_event_count = 0;
+  s_state.active_events_head = nullptr;
+  s_state.active_events_tail = nullptr;
+  s_state.active_event_count = 0;
 
   for (TimingEvent* event : events)
     AddActiveEvent(event);
 }
 
-static TimingEvent* FindActiveEvent(const char* name)
+static TimingEvent* TimingEvents::FindActiveEvent(const char* name)
 {
-  for (TimingEvent* event = s_active_events_head; event; event = event->next)
+  for (TimingEvent* event = s_state.active_events_head; event; event = event->next)
   {
     if (event->GetName().compare(name) == 0)
       return event;
@@ -275,20 +291,20 @@ static TimingEvent* FindActiveEvent(const char* name)
   return nullptr;
 }
 
-bool IsRunningEvents()
+bool TimingEvents::IsRunningEvents()
 {
-  return (s_current_event != nullptr);
+  return (s_state.current_event != nullptr);
 }
 
-void SetFrameDone()
+void TimingEvents::SetFrameDone()
 {
-  s_frame_done = true;
+  s_state.frame_done = true;
   CPU::g_state.downcount = 0;
 }
 
-void RunEvents()
+void TimingEvents::RunEvents()
 {
-  DebugAssert(!s_current_event);
+  DebugAssert(!s_state.current_event);
 
   do
   {
@@ -296,31 +312,31 @@ void RunEvents()
       CPU::DispatchInterrupt();
 
     TickCount pending_ticks = CPU::GetPendingTicks();
-    if (pending_ticks >= s_active_events_head->GetDowncount())
+    if (pending_ticks >= s_state.active_events_head->GetDowncount())
     {
       CPU::ResetPendingTicks();
-      s_event_run_tick_counter = s_global_tick_counter + static_cast<u32>(pending_ticks);
+      s_state.event_run_tick_counter = s_state.global_tick_counter + static_cast<u32>(pending_ticks);
 
       do
       {
-        const TickCount time = std::min(pending_ticks, s_active_events_head->GetDowncount());
-        s_global_tick_counter += static_cast<u32>(time);
+        const TickCount time = std::min(pending_ticks, s_state.active_events_head->GetDowncount());
+        s_state.global_tick_counter += static_cast<u32>(time);
         pending_ticks -= time;
 
         // Apply downcount to all events.
         // This will result in a negative downcount for those events which are late.
-        for (TimingEvent* event = s_active_events_head; event; event = event->next)
+        for (TimingEvent* event = s_state.active_events_head; event; event = event->next)
         {
           event->m_downcount -= time;
           event->m_time_since_last_run += time;
         }
 
         // Now we can actually run the callbacks.
-        while (s_active_events_head->m_downcount <= 0)
+        while (s_state.active_events_head->m_downcount <= 0)
         {
           // move it to the end, since that'll likely be its new position
-          TimingEvent* event = s_active_events_head;
-          s_current_event = event;
+          TimingEvent* event = s_state.active_events_head;
+          s_state.current_event = event;
 
           // Factor late time into the time for the next invocation.
           const TickCount ticks_late = -event->m_downcount;
@@ -335,12 +351,12 @@ void RunEvents()
         }
       } while (pending_ticks > 0);
 
-      s_current_event = nullptr;
+      s_state.current_event = nullptr;
     }
 
-    if (s_frame_done)
+    if (s_state.frame_done)
     {
-      s_frame_done = false;
+      s_state.frame_done = false;
       System::FrameDone();
     }
 
@@ -348,9 +364,9 @@ void RunEvents()
   } while (CPU::GetPendingTicks() >= CPU::g_state.downcount);
 }
 
-bool DoState(StateWrapper& sw)
+bool TimingEvents::DoState(StateWrapper& sw)
 {
-  sw.Do(&s_global_tick_counter);
+  sw.Do(&s_state.global_tick_counter);
 
   if (sw.IsReading())
   {
@@ -397,9 +413,9 @@ bool DoState(StateWrapper& sw)
   else
   {
 
-    sw.Do(&s_active_event_count);
+    sw.Do(&s_state.active_event_count);
 
-    for (TimingEvent* event = s_active_events_head; event; event = event->next)
+    for (TimingEvent* event = s_state.active_events_head; event; event = event->next)
     {
       sw.Do(&event->m_name);
       sw.Do(&event->m_downcount);
@@ -408,13 +424,11 @@ bool DoState(StateWrapper& sw)
       sw.Do(&event->m_interval);
     }
 
-    DEBUG_LOG("Wrote {} events to save state.", s_active_event_count);
+    DEBUG_LOG("Wrote {} events to save state.", s_state.active_event_count);
   }
 
   return !sw.HasError();
 }
-
-} // namespace TimingEvents
 
 TimingEvent::TimingEvent(std::string name, TickCount period, TickCount interval, TimingEventCallback callback,
                          void* callback_param)
@@ -449,9 +463,9 @@ void TimingEvent::Delay(TickCount ticks)
 
   m_downcount += ticks;
 
-  DebugAssert(TimingEvents::s_current_event != this);
+  DebugAssert(TimingEvents::s_state.current_event != this);
   TimingEvents::SortEvent(this);
-  if (TimingEvents::s_active_events_head == this)
+  if (TimingEvents::s_state.active_events_head == this)
     TimingEvents::UpdateCPUDowncount();
 }
 
@@ -471,10 +485,10 @@ void TimingEvent::Schedule(TickCount ticks)
   {
     // Event is already active, so we leave the time since last run alone, and just modify the downcount.
     // If this is a call from an IO handler for example, re-sort the event queue.
-    if (TimingEvents::s_current_event != this)
+    if (TimingEvents::s_state.current_event != this)
     {
       TimingEvents::SortEvent(this);
-      if (TimingEvents::s_active_events_head == this)
+      if (TimingEvents::s_state.active_events_head == this)
         TimingEvents::UpdateCPUDowncount();
     }
   }
@@ -500,10 +514,10 @@ void TimingEvent::Reset()
 
   m_downcount = m_interval;
   m_time_since_last_run = 0;
-  if (TimingEvents::s_current_event != this)
+  if (TimingEvents::s_state.current_event != this)
   {
     TimingEvents::SortEvent(this);
-    if (TimingEvents::s_active_events_head == this)
+    if (TimingEvents::s_state.active_events_head == this)
       TimingEvents::UpdateCPUDowncount();
   }
 }
@@ -523,9 +537,9 @@ void TimingEvent::InvokeEarly(bool force /* = false */)
   m_callback(m_callback_param, ticks_to_execute, 0);
 
   // Since we've changed the downcount, we need to re-sort the events.
-  DebugAssert(TimingEvents::s_current_event != this);
+  DebugAssert(TimingEvents::s_state.current_event != this);
   TimingEvents::SortEvent(this);
-  if (TimingEvents::s_active_events_head == this)
+  if (TimingEvents::s_state.active_events_head == this)
     TimingEvents::UpdateCPUDowncount();
 }
 
