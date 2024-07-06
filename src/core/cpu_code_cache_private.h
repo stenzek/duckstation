@@ -112,11 +112,6 @@ struct BlockMetadata
   BlockFlags flags;
 };
 
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4324) // C4324: 'CPU::CodeCache::Block': structure was padded due to alignment specifier)
-#endif
-
 struct alignas(16) Block
 {
   u32 pc;
@@ -166,10 +161,6 @@ struct alignas(16) Block
   // returns true if the block spans multiple pages
   ALWAYS_INLINE bool SpansPages() const { return StartPageIndex() != EndPageIndex(); }
 };
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 
 using BlockLUTArray = std::array<Block**, LUT_TABLE_COUNT>;
 

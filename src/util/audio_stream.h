@@ -12,11 +12,6 @@
 #include <string>
 #include <vector>
 
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4324) // warning C4324: structure was padded due to alignment specifier
-#endif
-
 class Error;
 class SettingsInterface;
 
@@ -380,6 +375,3 @@ void AudioStream::SampleReaderImpl(SampleType* dest, const SampleType* src, u32 
   }
 }
 
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
