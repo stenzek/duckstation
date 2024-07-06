@@ -181,14 +181,14 @@ inline std::optional<bool> FromChars(const std::string_view str, int base)
 {
   if (Strncasecmp("true", str.data(), str.length()) == 0 || Strncasecmp("yes", str.data(), str.length()) == 0 ||
       Strncasecmp("on", str.data(), str.length()) == 0 || Strncasecmp("1", str.data(), str.length()) == 0 ||
-      Strncasecmp("enabled", str.data(), str.length()) == 0 || Strncasecmp("1", str.data(), str.length()) == 0)
+      Strncasecmp("enabled", str.data(), str.length()) == 0)
   {
     return true;
   }
 
   if (Strncasecmp("false", str.data(), str.length()) == 0 || Strncasecmp("no", str.data(), str.length()) == 0 ||
       Strncasecmp("off", str.data(), str.length()) == 0 || Strncasecmp("0", str.data(), str.length()) == 0 ||
-      Strncasecmp("disabled", str.data(), str.length()) == 0 || Strncasecmp("0", str.data(), str.length()) == 0)
+      Strncasecmp("disabled", str.data(), str.length()) == 0)
   {
     return false;
   }
