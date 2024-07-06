@@ -121,7 +121,7 @@ struct State
   static constexpr u32 GTERegisterOffset(u32 index) { return OFFSETOF(State, gte_regs.r32) + (sizeof(u32) * index); }
 };
 
-extern State g_state;
+ALIGN_TO_CACHE_LINE extern State g_state;
 
 void Initialize();
 void Shutdown();

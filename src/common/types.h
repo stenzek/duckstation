@@ -199,6 +199,7 @@ static constexpr u32 HOST_CACHE_LINE_SIZE = 128; // Apple Silicon uses 128b cach
 #else
 static constexpr u32 HOST_CACHE_LINE_SIZE = 64; // Everything else is 64b.
 #endif
+#define ALIGN_TO_CACHE_LINE alignas(HOST_CACHE_LINE_SIZE)
 
 // Enum class bitwise operators
 #define IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(type_)                                                                  \

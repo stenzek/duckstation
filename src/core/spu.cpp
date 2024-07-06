@@ -401,7 +401,7 @@ static std::array<std::array<s16, 128>, 2> s_reverb_downsample_buffer;
 static std::array<std::array<s16, 64>, 2> s_reverb_upsample_buffer;
 static s32 s_reverb_resample_buffer_position = 0;
 
-static std::array<Voice, NUM_VOICES> s_voices{};
+ALIGN_TO_CACHE_LINE static std::array<Voice, NUM_VOICES> s_voices{};
 
 static InlineFIFOQueue<u16, FIFO_SIZE_IN_HALFWORDS> s_transfer_fifo;
 
