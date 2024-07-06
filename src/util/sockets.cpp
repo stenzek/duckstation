@@ -321,7 +321,13 @@ void SocketMultiplexer::AddOpenSocket(std::shared_ptr<BaseSocket> socket)
   std::unique_lock lock(m_open_sockets_lock);
 
   DebugAssert(m_open_sockets.find(socket->GetDescriptor()) == m_open_sockets.end());
-  m_open_sockets.emplace(socket->GetDescriptor(), socket);
+  m_open_sockets.emplace(socket->GetDescriptor(), std::move(socket));
+}
+
+void SocketMultiplexer::AddClientSocket(std::shared_ptr<BaseSocket> socket)
+{
+  AddOpenSocket(std::move(socket));
+  m_client_socket_count.fetch_add(1, std::memory_order_acq_rel);
 }
 
 void SocketMultiplexer::RemoveOpenSocket(BaseSocket* socket)
@@ -349,10 +355,27 @@ void SocketMultiplexer::RemoveOpenSocket(BaseSocket* socket)
   m_poll_array_active_size = new_active_size;
 }
 
+void SocketMultiplexer::RemoveClientSocket(BaseSocket* socket)
+{
+  DebugAssert(m_client_socket_count.load(std::memory_order_acquire) > 0);
+  m_client_socket_count.fetch_sub(1, std::memory_order_acq_rel);
+  RemoveOpenSocket(socket);
+}
+
 bool SocketMultiplexer::HasAnyOpenSockets()
 {
   std::unique_lock lock(m_open_sockets_lock);
   return !m_open_sockets.empty();
+}
+
+bool SocketMultiplexer::HasAnyClientSockets()
+{
+  return (GetClientSocketCount() > 0);
+}
+
+size_t SocketMultiplexer::GetClientSocketCount()
+{
+  return m_client_socket_count.load(std::memory_order_acquire);
 }
 
 void SocketMultiplexer::CloseAll()
@@ -559,7 +582,7 @@ u32 StreamSocket::GetSocketProtocolForAddress(const SocketAddress& sa)
 void StreamSocket::InitialSetup()
 {
   // register for notifications
-  m_multiplexer.AddOpenSocket(shared_from_this());
+  m_multiplexer.AddClientSocket(shared_from_this());
   m_multiplexer.SetNotificationMask(this, m_descriptor, POLLIN);
 
   // trigger connected notification
@@ -679,7 +702,7 @@ void StreamSocket::Close()
     return;
 
   m_multiplexer.SetNotificationMask(this, m_descriptor, 0);
-  m_multiplexer.RemoveOpenSocket(this);
+  m_multiplexer.RemoveClientSocket(this);
   shutdown(m_descriptor, SD_BOTH);
   closesocket(m_descriptor);
   m_descriptor = INVALID_SOCKET;
@@ -701,7 +724,7 @@ void StreamSocket::CloseWithError()
     error.SetSocket(error_code);
 
   m_multiplexer.SetNotificationMask(this, m_descriptor, 0);
-  m_multiplexer.RemoveOpenSocket(this);
+  m_multiplexer.RemoveClientSocket(this);
   closesocket(m_descriptor);
   m_descriptor = INVALID_SOCKET;
   m_connected = false;

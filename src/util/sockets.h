@@ -13,8 +13,8 @@
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <unordered_map>
 #include <span>
+#include <unordered_map>
 
 #ifdef _WIN32
 using SocketDescriptor = uintptr_t;
@@ -108,6 +108,12 @@ public:
   // Returns true if any sockets are currently registered.
   bool HasAnyOpenSockets();
 
+  // Returns true if any client sockets are currently connected.
+  bool HasAnyClientSockets();
+
+  // Returns the number of current client sockets.
+  size_t GetClientSocketCount();
+
   // Close all sockets on this multiplexer.
   void CloseAll();
 
@@ -127,7 +133,9 @@ private:
 
   // Tracking of open sockets.
   void AddOpenSocket(std::shared_ptr<BaseSocket> socket);
+  void AddClientSocket(std::shared_ptr<BaseSocket> socket);
   void RemoveOpenSocket(BaseSocket* socket);
+  void RemoveClientSocket(BaseSocket* socket);
 
   // Register for notifications
   void SetNotificationMask(BaseSocket* socket, SocketDescriptor descriptor, u32 events);
@@ -143,6 +151,7 @@ private:
 
   std::mutex m_open_sockets_lock;
   SocketMap m_open_sockets;
+  std::atomic_size_t m_client_socket_count{0};
 };
 
 template<class T>
