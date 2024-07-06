@@ -32,11 +32,8 @@
 
 
 
-uniform float geom_curvature <
-	ui_type = "drag";
-	ui_min = 0.0;
-	ui_max = 1.0;
-	ui_step = 1.0;
+uniform bool geom_curvature <
+	ui_type = "radio";
 	ui_label = "Geom Curvature Toggle";
 > = 1.0;
 
@@ -56,11 +53,8 @@ uniform float geom_d <
 	ui_label = "Geom Distance";
 > = 1.5;
 
-uniform float geom_invert_aspect <
-	ui_type = "drag";
-	ui_min = 0.0;
-	ui_max = 1.0;
-	ui_step = 1.0;
+uniform bool geom_invert_aspect <
+	ui_type = "radio";
 	ui_label = "Geom Curvature Aspect Inversion";
 > = 0.0;
 
@@ -111,6 +105,22 @@ uniform float geom_overscan_y <
 	ui_step = 0.5;
 	ui_label = "Geom Vert. Overscan %";
 > = 100.0;
+
+uniform float centerx <
+	ui_type = "drag";
+	ui_min = -9.99;
+	ui_max = 9.99;
+	ui_step = 0.01;
+	ui_label = "Image Center X";
+> = 0.00;
+
+uniform float centery <
+	ui_type = "drag";
+	ui_min = -9.99;
+	ui_max = 9.99;
+	ui_step = 0.01;
+	ui_label = "Image Center Y";
+> = 0.00;
 
 uniform float geom_lum <
 	ui_type = "drag";
@@ -164,7 +174,7 @@ sampler2D sBackBuffer{Texture=ReShade::BackBufferTex;AddressU=BORDER;AddressV=BO
 #endif
 
 // aspect ratio
-#define aspect     (geom_invert_aspect>0.5?float2(0.75,1.0):float2(1.0,0.75))
+#define aspect     (geom_invert_aspect==true?float2(0.75,1.0):float2(1.0,0.75))
 #define overscan   (float2(1.01,1.01));
 
 
@@ -228,6 +238,15 @@ float3 vs_maxscale(float2 sinangle, float2 cosangle)
     return float3((hi+lo)*aspect*0.5,max(hi.x-lo.x,hi.y-lo.y));
 }
 
+// Code snippet borrowed from crt-cyclon. (credits to DariusG)
+float2 Warp(float2 pos)
+{
+    pos = pos*2.0 - 1.0;
+    pos *= float2(1.0 + pos.y*pos.y*0, 1.0 + pos.x*pos.x*0);
+    pos = pos*0.5 + 0.5;
+
+    return pos;
+}
 
 
 // Vertex shader generating a triangle covering the entire screen
@@ -237,7 +256,10 @@ void VS_CRT_Geom(in uint id : SV_VertexID, out float4 position : SV_Position, ou
     texcoord.y = (id == 1) ? 2.0 : 0.0;
     position = float4(texcoord * float2(2.0, -2.0) + float2(-1.0, 1.0), 0.0, 1.0);
 
- //   float2 SourceSize = 1.0/NormalizedNativePixelSize;
+    // center screen
+    texcoord = Warp(texcoord - float2(centerx,centery)/100.0);
+
+//   float2 SourceSize = 1.0/NormalizedNativePixelSize;
     float2 SourceSize = ViewportSize*BufferViewportRatio;
 
     // Precalculate a bunch of useful values we'll need in the fragment
@@ -333,7 +355,7 @@ float4 PS_CRT_Geom(float4 vpos: SV_Position, float2 vTexCoord : TEXCOORD, in ST_
     // Texture coordinates of the texel containing the active pixel.
     float2 xy;
 
-    if (geom_curvature > 0.5)
+    if (geom_curvature == true)
       xy = transform(vTexCoord, vVARS.sinangle, vVARS.cosangle, vVARS.stretch);
     else
       xy = vTexCoord;

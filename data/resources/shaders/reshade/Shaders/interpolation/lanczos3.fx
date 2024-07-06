@@ -28,7 +28,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 http://www.gnu.org/copyleft/gpl.html
 */
 
-
 uniform bool LANCZOS3_ANTI_RINGING <
 	ui_type = "radio";
 	ui_label = "Lanczos3 Anti-Ringing";
@@ -41,6 +40,7 @@ uniform float2 ViewportSize < source = "viewportsize"; >;
 texture2D tLanczos3_P0{Width=BUFFER_WIDTH;Height=BUFFER_HEIGHT;Format=RGBA8;};
 sampler2D sLanczos3_P0{Texture=tLanczos3_P0;AddressU=CLAMP;AddressV=CLAMP;AddressW=CLAMP;MagFilter=POINT;MinFilter=POINT;};
 
+
 #define AR_STRENGTH 1.0
 #define FIX(c) (max(abs(c),1e-5))
 #define PI     3.1415926535897932384626433832795
@@ -48,10 +48,10 @@ sampler2D sLanczos3_P0{Texture=tLanczos3_P0;AddressU=CLAMP;AddressV=CLAMP;Addres
 
 float3 weight3(float x)
 {
-   float3 Sample = FIX(2.0 * PI * float3(x - 1.5, x - 0.5, x + 0.5));
+   float3 Sampling = FIX(2.0 * PI * float3(x - 1.5, x - 0.5, x + 0.5));
 
    // Lanczos3. Note: we normalize outside this function, so no point in multiplying by radius.
-   return sin(Sample) * sin(Sample / radius) / (Sample * Sample);
+   return sin(Sampling) * sin(Sampling / radius) / (Sampling * Sampling);
 }
 
 float3 lanczos3ar(float fp, float3 C0, float3 C1, float3 C2, float3 C3, float3 C4, float3 C5)
@@ -79,23 +79,21 @@ float3 lanczos3ar(float fp, float3 C0, float3 C1, float3 C2, float3 C3, float3 C
 }
 
 
-float4 PS_Lanczos3_X(float4 pos: SV_Position, float2 uv_tx : TEXCOORD) : SV_Target
+
+float4 PS_Lanczos3_X(float4 vpos: SV_Position, float2 uv_tx : TEXCOORD) : SV_Target
 {
     // Both dimensions are unfiltered, so it looks for lores pixels.
-    float2 ps = NormalizedNativePixelSize;
-    float2 posi = uv_tx.xy + ps * float2(0.5, 0.0);
-    float2 fp = frac(posi / ps);
+    float2 ps  = NormalizedNativePixelSize;
+    float2 pos = uv_tx.xy/ps - float2(0.5, 0.0);
+    float2 tc  = (floor(pos) + float2(0.5, 0.5)) * ps;
+    float2 fp  = frac(pos);
 
-    float2 xystart = posi - (fp + 0.5) * ps;
-
-    float ypos = xystart.y + ps.y;
-
-    float3 C0 = tex2D(ReShade::BackBuffer, float2(xystart.x - ps.x * 2.0, ypos)).rgb;
-    float3 C1 = tex2D(ReShade::BackBuffer, float2(xystart.x - ps.x * 1.0, ypos)).rgb;
-    float3 C2 = tex2D(ReShade::BackBuffer, float2(xystart.x             , ypos)).rgb;
-    float3 C3 = tex2D(ReShade::BackBuffer, float2(xystart.x + ps.x * 1.0, ypos)).rgb;
-    float3 C4 = tex2D(ReShade::BackBuffer, float2(xystart.x + ps.x * 2.0, ypos)).rgb;
-    float3 C5 = tex2D(ReShade::BackBuffer, float2(xystart.x + ps.x * 3.0, ypos)).rgb; 
+    float3 C0 = tex2D(ReShade::BackBuffer, tc + ps*float2(-2.0, 0.0)).rgb;
+    float3 C1 = tex2D(ReShade::BackBuffer, tc + ps*float2(-1.0, 0.0)).rgb;
+    float3 C2 = tex2D(ReShade::BackBuffer, tc + ps*float2( 0.0, 0.0)).rgb;
+    float3 C3 = tex2D(ReShade::BackBuffer, tc + ps*float2( 1.0, 0.0)).rgb;
+    float3 C4 = tex2D(ReShade::BackBuffer, tc + ps*float2( 2.0, 0.0)).rgb;
+    float3 C5 = tex2D(ReShade::BackBuffer, tc + ps*float2( 3.0, 0.0)).rgb;
 
     float3 color = lanczos3ar(fp.x, C0, C1, C2, C3, C4, C5);
 
@@ -103,32 +101,29 @@ float4 PS_Lanczos3_X(float4 pos: SV_Position, float2 uv_tx : TEXCOORD) : SV_Targ
 }
 
 
-float4 PS_Lanczos3_Y(float4 pos: SV_Position, float2 uv_tx : TEXCOORD) : SV_Target
+float4 PS_Lanczos3_Y(float4 vpos: SV_Position, float2 uv_tx : TEXCOORD) : SV_Target
 {
     // One must be careful here. Horizontal dimension is already filtered, so it looks for x in hires.
-    float2 ps = float2(1.0/(ViewportSize.x*BufferToViewportRatio.x), NormalizedNativePixelSize.y);
-    float2 posi = uv_tx.xy + ps * float2(0.5, 0.5);
-    float2 fp = frac(posi / ps);
+    float2 ps  = float2(1.0/(ViewportSize.x*BufferToViewportRatio.x), NormalizedNativePixelSize.y);
+    float2 pos = uv_tx.xy/ps - float2(0.0, 0.5);
+    float2 tc  = (floor(pos) + float2(0.5, 0.5)) * ps;
+    float2 fp  = frac(pos);
 
-    float2 xystart = posi - (fp + 0.5) * ps;
-
-    float xpos = xystart.x  + ps.x;
-
-    float3 C0 = tex2D(sLanczos3_P0, float2(xpos, xystart.y - ps.y * 2.0)).rgb;
-    float3 C1 = tex2D(sLanczos3_P0, float2(xpos, xystart.y - ps.y * 1.0)).rgb;
-    float3 C2 = tex2D(sLanczos3_P0, float2(xpos, xystart.y             )).rgb;
-    float3 C3 = tex2D(sLanczos3_P0, float2(xpos, xystart.y + ps.y * 1.0)).rgb;
-    float3 C4 = tex2D(sLanczos3_P0, float2(xpos, xystart.y + ps.y * 2.0)).rgb;
-    float3 C5 = tex2D(sLanczos3_P0, float2(xpos, xystart.y + ps.y * 3.0)).rgb; 
+    float3 C0 = tex2D(sLanczos3_P0, tc + ps*float2(0.0, -2.0)).rgb;
+    float3 C1 = tex2D(sLanczos3_P0, tc + ps*float2(0.0, -1.0)).rgb;
+    float3 C2 = tex2D(sLanczos3_P0, tc + ps*float2(0.0,  0.0)).rgb;
+    float3 C3 = tex2D(sLanczos3_P0, tc + ps*float2(0.0,  1.0)).rgb;
+    float3 C4 = tex2D(sLanczos3_P0, tc + ps*float2(0.0,  2.0)).rgb;
+    float3 C5 = tex2D(sLanczos3_P0, tc + ps*float2(0.0,  3.0)).rgb;
 
     float3 color = lanczos3ar(fp.y, C0, C1, C2, C3, C4, C5);
 
     return float4(color, 1.0);
 }
 
+
 technique Lanczos3
 {
-
 	pass
 	{
 		VertexShader = PostProcessVS;
@@ -140,5 +135,4 @@ technique Lanczos3
 		VertexShader = PostProcessVS;
 		PixelShader  = PS_Lanczos3_Y;
 	}
-
 }

@@ -124,6 +124,22 @@ uniform float overscan_y <
     ui_label = "CRTGeom Vert. Overscan %";
 > = 100.0;
 
+uniform float centerx <
+	ui_type = "drag";
+	ui_min = -9.99;
+	ui_max = 9.99;
+	ui_step = 0.01;
+	ui_label = "Image Center X";
+> = 0.00;
+
+uniform float centery <
+	ui_type = "drag";
+	ui_min = -9.99;
+	ui_max = 9.99;
+	ui_step = 0.01;
+	ui_label = "Image Center Y";
+> = 0.00;
+
 uniform float DOTMASK <
     ui_type = "drag";
     ui_min = 0.0;
@@ -273,6 +289,15 @@ float3 vs_maxscale(float2 sinangle, float2 cosangle)
     return float3((hi+lo)*aspect*0.5,max(hi.x-lo.x,hi.y-lo.y));
 }
 
+// Code snippet borrowed from crt-cyclon. (credits to DariusG)
+float2 Warp(float2 pos)
+{
+    pos = pos*2.0 - 1.0;
+    pos *= float2(1.0 + pos.y*pos.y*0, 1.0 + pos.x*pos.x*0);
+    pos = pos*0.5 + 0.5;
+
+    return pos;
+}
 
 
 // Vertex shader generating a triangle covering the entire screen
@@ -281,6 +306,9 @@ void VS_CRT_Geom(in uint id : SV_VertexID, out float4 position : SV_Position, ou
     texcoord.x = (id == 2) ? 2.0 : 0.0;
     texcoord.y = (id == 1) ? 2.0 : 0.0;
     position = float4(texcoord * float2(2.0, -2.0) + float2(-1.0, 1.0), 0.0, 1.0);
+
+    // center screen
+    texcoord = Warp(texcoord - float2(centerx,centery)/100.0);
 
     float2 SourceSize = 1.0/NormalizedNativePixelSize;
     float2 OutputSize = ViewportSize*BufferViewportRatio;
@@ -453,6 +481,7 @@ float fwidth(float value){
 }
 
 
+
 float4 PS_CRT_Geom(float4 vpos: SV_Position, float2 vTexCoord : TEXCOORD, in ST_VertexOut vVARS) : SV_Target
 {
     // Here's a helpful diagram to keep in mind while trying to
@@ -478,6 +507,7 @@ float4 PS_CRT_Geom(float4 vpos: SV_Position, float2 vTexCoord : TEXCOORD, in ST_
 
     // Texture coordinates of the texel containing the active pixel.
     float2 xy;
+
     if (CURVATURE > 0.5)
       xy = transform(vTexCoord, vVARS.sinangle, vVARS.cosangle, vVARS.stretch);
     else
