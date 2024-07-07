@@ -443,8 +443,6 @@ bool PostProcessing::ReShadeFXShader::CreateModule(s32 buffer_width, s32 buffer_
   }
 
   cg->write_result(*mod);
-
-  FileSystem::WriteBinaryFile("D:\\out.txt", mod->code.data(), mod->code.size());
   return true;
 }
 
