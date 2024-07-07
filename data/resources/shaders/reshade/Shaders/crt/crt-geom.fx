@@ -52,16 +52,13 @@ uniform bool CURVATURE <
     ui_category = "Curvature";
     ui_type = "radio";
     ui_label = "CRTGeom Curvature Toggle";
-> = 1.0;
+> = true;
 
-uniform float invert_aspect <
-    ui_type = "drag";
+uniform bool invert_aspect <
+    ui_type = "radio";
     ui_category = "Curvature";
-    ui_min = 0.0;
-    ui_max = 1.0;
-    ui_step = 1.0;
     ui_label = "CRTGeom Curvature Aspect Inversion";
-> = 0.0;
+> = false;
 
 uniform float R <
     ui_type = "drag";
@@ -93,8 +90,8 @@ uniform float cornersmooth <
 uniform float x_tilt <
     ui_type = "drag";
     ui_category = "Curvature";
-    ui_min = -0.5;
-    ui_max = 0.5;
+    ui_min = -1.0;
+    ui_max = 1.0;
     ui_step = 0.05;
     ui_label = "CRTGeom Horizontal Tilt";
 > = 0.0;
@@ -102,8 +99,8 @@ uniform float x_tilt <
 uniform float y_tilt <
     ui_type = "drag";
     ui_category = "Curvature";
-    ui_min = -0.5;
-    ui_max = 0.5;
+    ui_min = -1.0;
+    ui_max = 1.0;
     ui_step = 0.05;
     ui_label = "CRTGeom Vertical Tilt";
 > = 0.0;
@@ -125,19 +122,19 @@ uniform float overscan_y <
 > = 100.0;
 
 uniform float centerx <
-	ui_type = "drag";
-	ui_min = -9.99;
-	ui_max = 9.99;
-	ui_step = 0.01;
-	ui_label = "Image Center X";
+    ui_type = "drag";
+    ui_min = -100.0;
+    ui_max = 100.0;
+    ui_step = 0.1;
+    ui_label = "Image Center X";
 > = 0.00;
 
 uniform float centery <
-	ui_type = "drag";
-	ui_min = -9.99;
-	ui_max = 9.99;
-	ui_step = 0.01;
-	ui_label = "Image Center Y";
+    ui_type = "drag";
+    ui_min = -100.0;
+    ui_max = 100.0;
+    ui_step = 0.1;
+    ui_label = "Image Center Y";
 > = 0.00;
 
 uniform float DOTMASK <
@@ -164,13 +161,10 @@ uniform float scanline_weight <
     ui_label = "CRTGeom Scanline Weight";
 > = 0.3;
 
-uniform float vertical_scanlines <
-    ui_type = "drag";
-    ui_min = 0.0;
-    ui_max = 1.0;
-    ui_step = 1.0;
+uniform bool vertical_scanlines <
+    ui_type = "radio";
     ui_label = "CRTGeom Vertical Scanlines";
-> = 0.0;
+> = false;
 
 uniform float lum <
     ui_type = "drag";
@@ -191,13 +185,15 @@ uniform float interlace_detect <
 
 
 uniform float  FrameCount < source = "framecount"; >;
-uniform float2 BufferViewportRatio < source = "buffer_to_viewport_ratio"; >;
+uniform float2 BufferToViewportRatio < source = "buffer_to_viewport_ratio"; >;
 uniform float2 InternalPixelSize < source = "internal_pixel_size"; >;
 uniform float2 NativePixelSize < source = "native_pixel_size"; >;
 uniform float2 NormalizedInternalPixelSize < source = "normalized_internal_pixel_size"; >;
 uniform float2 NormalizedNativePixelSize < source = "normalized_native_pixel_size"; >;
 uniform float  UpscaleMultiplier < source = "upscale_multiplier"; >;
 uniform float2 ViewportSize < source = "viewportsize"; >;
+uniform float  ViewportWidth < source = "viewportwidth"; >;
+uniform float  ViewportHeight < source = "viewportheight"; >;
 
 sampler2D sBackBuffer{Texture=ReShade::BackBufferTex;AddressU=BORDER;AddressV=BORDER;AddressW=BORDER;MagFilter=POINT;MinFilter=POINT;};
 
@@ -222,7 +218,7 @@ sampler2D sBackBuffer{Texture=ReShade::BackBufferTex;AddressU=BORDER;AddressV=BO
 #endif
 
 // aspect ratio
-#define aspect     (invert_aspect>0.5?float2(0.75,1.0):float2(1.0,0.75))
+#define aspect     (invert_aspect==true?float2(ViewportHeight/ViewportWidth,1.0):float2(1.0,ViewportHeight/ViewportWidth))
 #define overscan   (float2(1.01,1.01));
 
 
@@ -311,7 +307,7 @@ void VS_CRT_Geom(in uint id : SV_VertexID, out float4 position : SV_Position, ou
     texcoord = Warp(texcoord - float2(centerx,centery)/100.0);
 
     float2 SourceSize = 1.0/NormalizedNativePixelSize;
-    float2 OutputSize = ViewportSize*BufferViewportRatio;
+    float2 OutputSize = ViewportSize*BufferToViewportRatio;
 
     // Precalculate a bunch of useful values we'll need in the fragment
     // shader.
@@ -319,7 +315,7 @@ void VS_CRT_Geom(in uint id : SV_VertexID, out float4 position : SV_Position, ou
     vVARS.cosangle    = cos(float2(x_tilt, y_tilt));
     vVARS.stretch     = vs_maxscale(vVARS.sinangle, vVARS.cosangle);
     
-    if(vertical_scanlines < 0.5)
+    if(vertical_scanlines == false)
     {
        vVARS.TextureSize = float2(SHARPER * SourceSize.x, SourceSize.y);
        
@@ -350,7 +346,7 @@ float intersect(float2 xy, float2 sinangle, float2 cosangle)
     float A = dot(xy,xy) + d*d;
     float B, C;
 
-    if(vertical_scanlines < 0.5)
+    if(vertical_scanlines == false)
     {
        B = 2.0*(R*(dot(xy,sinangle) - d*cosangle.x*cosangle.y) - d*d);
        C = d*d + 2.0*R*d*cosangle.x*cosangle.y;
@@ -387,7 +383,7 @@ float2 fwtrans(float2 uv, float2 sinangle, float2 cosangle)
     float x = 1.0 - cos(r/R);
     float D;
     
-    if(vertical_scanlines < 0.5)
+    if(vertical_scanlines == false)
       D = d/R + x*cosangle.x*cosangle.y + dot(uv,sinangle);
     else
       D = d/R + x*cosangle.y*cosangle.x + dot(uv,sinangle);
@@ -397,7 +393,7 @@ float2 fwtrans(float2 uv, float2 sinangle, float2 cosangle)
 
 float3 maxscale(float2 sinangle, float2 cosangle)
 {
-   if(vertical_scanlines < 0.5)
+   if(vertical_scanlines == false)
    {
        float2 c = bkwtrans(-R * sinangle / (1.0 + R/d*cosangle.x*cosangle.y), sinangle, cosangle);
        float2 a = float2(0.5, 0.5)*aspect;
@@ -464,13 +460,12 @@ float2 transform(float2 coord, float2 sinangle, float2 cosangle, float3 stretch)
 
 float corner(float2 coord)
 {
-    coord = (coord - float2(0.5, 0.5)) * float2(overscan_x / 100.0, overscan_y / 100.0) + float2(0.5, 0.5);
     coord = min(coord, float2(1.0, 1.0) - coord) * aspect;
     float2 cdist = float2(cornersize, cornersize);
     coord = (cdist - min(coord, cdist));
     float dist = sqrt(dot(coord, coord));
     
-    if(vertical_scanlines < 0.5)
+    if(vertical_scanlines == false)
       return clamp((cdist.x - dist)*cornersmooth, 0.0, 1.0);
     else
       return clamp((cdist.y - dist)*cornersmooth, 0.0, 1.0);
@@ -508,17 +503,17 @@ float4 PS_CRT_Geom(float4 vpos: SV_Position, float2 vTexCoord : TEXCOORD, in ST_
     // Texture coordinates of the texel containing the active pixel.
     float2 xy;
 
-    if (CURVATURE > 0.5)
+    if (CURVATURE == true)
       xy = transform(vTexCoord, vVARS.sinangle, vVARS.cosangle, vVARS.stretch);
     else
       xy = vTexCoord;
 
-    float cval = corner(xy);
+    float cval = corner((xy-float2(0.5,0.5)) * BufferToViewportRatio + float2(0.5,0.5));
 
     // Of all the pixels that are mapped onto the texel we are
     // currently rendering, which pixel are we currently rendering?
    float2 ilvec;
-   if(vertical_scanlines < 0.5)
+   if(vertical_scanlines == false)
       ilvec = float2(0.0, vVARS.ilfac.y * interlace_detect > 1.5 ? (float(FrameCount) % 2.0) : 0.0);
    else
       ilvec = float2(vVARS.ilfac.x * interlace_detect > 1.5 ? (float(FrameCount) % 2.0) : 0.0, 0.0);
@@ -533,7 +528,7 @@ float4 PS_CRT_Geom(float4 vpos: SV_Position, float2 vTexCoord : TEXCOORD, in ST_
     // of various neighbour texels in a scanline on the current
     // pixel.
     float4 coeffs;
-    if(vertical_scanlines < 0.5)
+    if(vertical_scanlines == false)
       coeffs = PI * float4(1.0 + uv_ratio.x, uv_ratio.x, 1.0 - uv_ratio.x, 2.0 - uv_ratio.x);
     else
       coeffs = PI * float4(1.0 + uv_ratio.y, uv_ratio.y, 1.0 - uv_ratio.y, 2.0 - uv_ratio.y);
@@ -551,7 +546,7 @@ float4 PS_CRT_Geom(float4 vpos: SV_Position, float2 vTexCoord : TEXCOORD, in ST_
     // scanlines at the horizontal location of the current pixel,
     // using the Lanczos coefficients above.
     float4 col, col2;
-    if(vertical_scanlines < 0.5)
+    if(vertical_scanlines == false)
     {
        col = clamp(
            mul(coeffs, float4x4(
@@ -600,7 +595,7 @@ float4 PS_CRT_Geom(float4 vpos: SV_Position, float2 vTexCoord : TEXCOORD, in ST_
     // Calculate the influence of the current and next scanlines on
     // the current pixel.
     float4 weights, weights2;
-    if(vertical_scanlines < 0.5)
+    if(vertical_scanlines == false)
     {
        weights  = scanlineWeights(uv_ratio.y, col);
        weights2 = scanlineWeights(1.0 - uv_ratio.y, col2);
