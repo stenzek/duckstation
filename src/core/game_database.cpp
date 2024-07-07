@@ -602,6 +602,15 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 
     settings.gpu_pgxp_vertex_cache = true;
   }
+  else if (settings.gpu_pgxp_enable && settings.gpu_pgxp_vertex_cache)
+  {
+    Host::AddIconOSDMessage(
+      "gamedb_force_pgxp_vertex_cache", ICON_FA_MICROCHIP,
+      TRANSLATE_STR(
+        "OSDMessage",
+        "PGXP Vertex Cache is enabled, but it is not required for this game. This may cause rendering errors."),
+      osd_duration);
+  }
 
   if (HasTrait(Trait::ForcePGXPCPUMode))
   {
