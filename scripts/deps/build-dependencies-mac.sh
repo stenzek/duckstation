@@ -36,7 +36,7 @@ fi
 
 FREETYPE=2.13.2
 HARFBUZZ=8.3.1
-SDL=SDL2-2.30.4
+SDL2=2.30.5
 ZSTD=1.5.6
 LIBPNG=1.6.43
 LIBJPEG=9f
@@ -73,7 +73,7 @@ CMAKE_ARCH_UNIVERSAL=-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
 cat > SHASUMS <<EOF
 12991c4e55c506dd7f9b765933e62fd2be2e06d421505d7950a132e4f1bb484d  freetype-$FREETYPE.tar.xz
 19a54fe9596f7a47c502549fce8e8a10978c697203774008cc173f8360b19a9a  harfbuzz-$HARFBUZZ.tar.gz
-59c89d0ed40d4efb23b7318aa29fe7039dbbc098334b14f17f1e7e561da31a26  $SDL.tar.gz
+f374f3fa29c37dfcc20822d4a7d7dc57e58924d1a5f2ad511bfab4c8193de63b  SDL2-$SDL2.tar.gz
 8c29e06cf42aacc1eafc4077ae2ec6c6fcb96a626157e0593d5e82a34fd403c1  zstd-$ZSTD.tar.gz
 6a5ca0652392a2d7c9db2ae5b40210843c0bbc081cbd410825ab00cc59f14a6c  libpng-$LIBPNG.tar.xz
 61f873ec69e3be1b99535634340d5bde750b2e4447caa1db9f61be3fd49ab1e5  libwebp-$LIBWEBP.tar.gz
@@ -97,7 +97,7 @@ EOF
 curl -L \
 	-o "freetype-$FREETYPE.tar.xz" "https://sourceforge.net/projects/freetype/files/freetype2/$FREETYPE/freetype-$FREETYPE.tar.xz/download" \
 	-o "harfbuzz-$HARFBUZZ.tar.gz" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$HARFBUZZ.tar.gz" \
-	-O "https://libsdl.org/release/$SDL.tar.gz" \
+	-O "https://github.com/libsdl-org/SDL/releases/download/release-$SDL2/SDL2-$SDL2.tar.gz" \
 	-O "https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz" \
 	-O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.xz" \
 	-O "https://ijg.org/files/jpegsrc.v$LIBJPEG.tar.gz" \
@@ -118,10 +118,10 @@ curl -L \
 
 shasum -a 256 --check SHASUMS
 
-echo "Installing SDL..."
-rm -fr "$SDL"
-tar xf "$SDL.tar.gz"
-cd "$SDL"
+echo "Installing SDL2..."
+rm -fr "SDL2-$SDL2"
+tar xf "SDL2-$SDL2.tar.gz"
+cd "SDL2-$SDL2"
 cmake -B build "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DSDL_X11=OFF -DBUILD_SHARED_LIBS=ON
 make -C build "-j$NPROCS"
 make -C build install
