@@ -15410,6 +15410,8 @@ SLPS-01222:
       - SLPS-01223
   controllers:
     - DigitalController
+  traits:
+    - DisableWidescreen
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -15433,6 +15435,8 @@ SLPS-01223:
       - SLPS-01223
   controllers:
     - DigitalController
+  traits:
+    - DisableWidescreen
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -15449,6 +15453,8 @@ SLPS-01223:
     linkCable: false
 SLPS-00999:
   name: "Biohazard 2 (Japan) (Trial Edition)"
+  traits:
+    - DisableWidescreen
 SLPS-01510:
   name: "Biohazard 2 - Dual Shock Ver. (Japan) (Disc 1) (Leon-hen)"
   discSet:
@@ -15459,6 +15465,8 @@ SLPS-01510:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableWidescreen
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -15483,6 +15491,8 @@ SLPS-01511:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableWidescreen
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -15502,6 +15512,9 @@ SLPS-02300:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableWidescreen
+    - ForcePGXPCPUMode # Fixes jitter in character models.
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -15518,11 +15531,17 @@ SLPS-02300:
     linkCable: false
 SLPM-80485:
   name: "Biohazard 3 - Last Escape (Japan) (Demo)"
+  traits:
+    - DisableWidescreen
+    - ForcePGXPCPUMode # Fixes jitter in character models.
 SLPM-87224:
   name: "Biohazard 3 - Last Escape (Japan) (Rev 1)"
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableWidescreen
+    - ForcePGXPCPUMode # Fixes jitter in character models.
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -132898,6 +132917,7 @@ SLES-02529:
     - DigitalController
   traits:
     - DisableWidescreen
+    - ForcePGXPCPUMode # Fixes jitter in character models.
   libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
@@ -132917,6 +132937,7 @@ SLED-02541:
   name: "Resident Evil 3 - Nemesis (Europe) (Demo)"
   traits:
     - DisableWidescreen
+    - ForcePGXPCPUMode # Fixes jitter in character models.
 SLES-02530:
   name: "Resident Evil 3 - Nemesis (France)"
   controllers:
@@ -132924,6 +132945,7 @@ SLES-02530:
     - DigitalController
   traits:
     - DisableWidescreen
+    - ForcePGXPCPUMode # Fixes jitter in character models.
   libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
@@ -132946,6 +132968,7 @@ SLES-02531:
     - DigitalController
   traits:
     - DisableWidescreen
+    - ForcePGXPCPUMode # Fixes jitter in character models.
   libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
@@ -132968,6 +132991,7 @@ SLES-02698:
     - DigitalController
   traits:
     - DisableWidescreen
+    - ForcePGXPCPUMode # Fixes jitter in character models.
   libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
@@ -132990,6 +133014,7 @@ SLES-02533:
     - DigitalController
   traits:
     - DisableWidescreen
+    - ForcePGXPCPUMode # Fixes jitter in character models.
   libcrypt: true
   metadata:
     publisher: "Eidos Interactive"
@@ -133015,6 +133040,7 @@ SLES-02532:
     - DigitalController
   traits:
     - DisableWidescreen
+    - ForcePGXPCPUMode # Fixes jitter in character models.
   libcrypt: true
   metadata:
     publisher: "Proein / Eidos Interactive"
@@ -133040,6 +133066,7 @@ SLUS-00923:
     - DigitalController
   traits:
     - DisableWidescreen
+    - ForcePGXPCPUMode # Fixes jitter in character models.
   metadata:
     publisher: "Capcom"
     developer: "Capcom Production Studio 4"
@@ -133058,6 +133085,7 @@ SLUS-90064:
   name: "Resident Evil 3 - Nemesis (USA) (Demo)"
   traits:
     - DisableWidescreen
+    - ForcePGXPCPUMode # Fixes jitter in character models.
 SLPS-01974:
   name: "Restaurant Dream (Japan)"
   controllers:
