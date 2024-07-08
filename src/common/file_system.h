@@ -109,6 +109,7 @@ std::FILE* OpenCFile(const char* filename, const char* mode, Error* error = null
 int FSeek64(std::FILE* fp, s64 offset, int whence);
 s64 FTell64(std::FILE* fp);
 s64 FSize64(std::FILE* fp);
+bool FTruncate64(std::FILE* fp, s64 size, Error* error = nullptr);
 
 int OpenFDFile(const char* filename, int flags, int mode, Error* error = nullptr);
 

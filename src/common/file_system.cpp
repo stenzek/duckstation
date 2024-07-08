@@ -26,6 +26,7 @@
 
 #if defined(_WIN32)
 #include "windows_headers.h"
+#include <io.h>
 #include <malloc.h>
 #include <pathcch.h>
 #include <share.h>
@@ -1120,6 +1121,45 @@ s64 FileSystem::FSize64(std::FILE* fp)
   }
 
   return -1;
+}
+
+bool FileSystem::FTruncate64(std::FILE* fp, s64 size, Error* error)
+{
+  const int fd = fileno(fp);
+  if (fd < 0)
+  {
+    Error::SetErrno(error, "fileno() failed: ", errno);
+    return false;
+  }
+
+#ifdef _WIN32
+  const errno_t err = _chsize_s(fd, size);
+  if (err != 0)
+  {
+    Error::SetErrno(error, "_chsize_s() failed: ", err);
+    return false;
+  }
+
+  return true;
+#else
+  // Prevent truncation on platforms which don't have a 64-bit off_t.
+  if constexpr (sizeof(off_t) != sizeof(s64))
+  {
+    if (size < std::numeric_limits<off_t>::min() || size > std::numeric_limits<off_t>::max())
+    {
+      Error::SetStringView(error, "File size is too large.");
+      return false;
+    }
+  }
+
+  if (ftruncate(fd, static_cast<off_t>(size)) < 0)
+  {
+    Error::SetErrno(error, "ftruncate() failed: ", errno);
+    return false;
+  }
+
+  return true;
+#endif
 }
 
 s64 FileSystem::GetPathFileSize(const char* Path)
