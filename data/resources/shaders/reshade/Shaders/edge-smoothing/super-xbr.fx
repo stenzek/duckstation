@@ -184,7 +184,9 @@ float3 super_xbr(float wp[6], float4 P0, float4  B, float4  C, float4 P1, float4
 
 float4 PS_BackBufferY(float4 pos: SV_Position, float2 vTexCoord : TEXCOORD) : SV_Target
 {
-    float3 color = tex2D(ReShade::BackBuffer, vTexCoord.xy).rgb;
+    float2 tc = (floor(vTexCoord / NormalizedNativePixelSize)+float2(0.5,0.5)) * NormalizedNativePixelSize;
+
+    float3 color = tex2D(ReShade::BackBuffer, tc).rgb;
 
     return float4(color, luma(color));
 }

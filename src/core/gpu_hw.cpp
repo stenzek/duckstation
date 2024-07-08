@@ -42,15 +42,6 @@ static constexpr GPUTexture::Format VRAM_DS_EXTRACT_FORMAT = GPUTexture::Format:
 static u32 s_draw_number = 0;
 #endif
 
-template<typename T>
-ALWAYS_INLINE static constexpr std::tuple<T, T> MinMax(T v1, T v2)
-{
-  if (v1 > v2)
-    return std::tie(v2, v1);
-  else
-    return std::tie(v1, v2);
-}
-
 /// Returns the distance between two rectangles.
 ALWAYS_INLINE static float RectDistance(const GSVector4i lhs, const GSVector4i rhs)
 {
@@ -668,7 +659,7 @@ void GPU_HW::AddDrawnRectangle(const GSVector4i rect)
   // Normally, we would check for overlap here. But the GPU's texture cache won't actually reload until the page
   // changes, or it samples a larger region, so we can get away without doing so. This reduces copies considerably in
   // games like Mega Man Legends 2.
-  m_vram_dirty_draw_rect = m_vram_dirty_draw_rect.runion(rect.rintersect(m_clamped_drawing_area));
+  m_vram_dirty_draw_rect = m_vram_dirty_draw_rect.runion(m_clamped_drawing_area);
 }
 
 void GPU_HW::AddUnclampedDrawnRectangle(const GSVector4i rect)
@@ -2047,9 +2038,14 @@ void GPU_HW::SetBatchSpriteMode(bool enabled)
   m_batch.sprite_mode = enabled;
 }
 
-void GPU_HW::DrawLine(float x0, float y0, u32 col0, float x1, float y1, u32 col1, float depth)
+void GPU_HW::DrawLine(const GSVector4 bounds, u32 col0, u32 col1, float depth)
 {
   DebugAssert(m_batch_vertex_space >= 4 && m_batch_index_space >= 6);
+
+  const float x0 = bounds.x;
+  const float y0 = bounds.y;
+  const float x1 = bounds.z;
+  const float y1 = bounds.w;
 
   const float dx = x1 - x0;
   const float dy = y1 - y0;
@@ -2211,9 +2207,6 @@ void GPU_HW::LoadVertices()
       else if (m_allow_sprite_mode)
         SetBatchSpriteMode((pgxp && !is_3d) || IsPossibleSpritePolygon(vertices.data()));
 
-      if (!IsDrawingAreaIsValid()) [[unlikely]]
-        return;
-
       if (m_sw_renderer)
       {
         GPUBackendDrawPolygonCommand* cmd = m_sw_renderer->NewDrawPolygonCommand(num_vertices);
@@ -2240,9 +2233,9 @@ void GPU_HW::LoadVertices()
       const GSVector4 max_pos_12 = v1f.max(v2f);
       const GSVector4i draw_rect_012 =
         GSVector4i(min_pos_12.min(v0f).upld(max_pos_12.max(v0f))).add32(GSVector4i::cxpr(0, 0, 1, 1));
-      const bool first_tri_culled =
-        (draw_rect_012.width() > MAX_PRIMITIVE_WIDTH || draw_rect_012.height() > MAX_PRIMITIVE_HEIGHT ||
-         !m_clamped_drawing_area.rintersects(draw_rect_012));
+      const GSVector4i clamped_draw_rect_012 = draw_rect_012.rintersect(m_clamped_drawing_area);
+      const bool first_tri_culled = (draw_rect_012.width() > MAX_PRIMITIVE_WIDTH ||
+                                     draw_rect_012.height() > MAX_PRIMITIVE_HEIGHT || clamped_draw_rect_012.rempty());
       if (first_tri_culled)
       {
         GL_INS_FMT("Culling off-screen/too-large polygon: {},{} {},{} {},{}", native_vertex_positions[0].x,
@@ -2257,7 +2250,7 @@ void GPU_HW::LoadVertices()
         if (textured && m_compute_uv_range)
           ComputePolygonUVLimits(vertices.data(), num_vertices);
 
-        AddDrawnRectangle(draw_rect_012);
+        AddDrawnRectangle(clamped_draw_rect_012);
         AddDrawTriangleTicks(GSVector4i(native_vertex_positions[0]), GSVector4i(native_vertex_positions[1]),
                              GSVector4i(native_vertex_positions[2]), rc.shading_enable, rc.texture_enable,
                              rc.transparency_enable);
@@ -2284,11 +2277,12 @@ void GPU_HW::LoadVertices()
         const GSVector4 v3f = GSVector4::loadl(&vertices[3].x);
         const GSVector4i draw_rect_123 =
           GSVector4i(min_pos_12.min(v3f).upld(max_pos_12.max(v3f))).add32(GSVector4i::cxpr(0, 0, 1, 1));
+        const GSVector4i clamped_draw_rect_123 = draw_rect_123.rintersect(m_clamped_drawing_area);
 
         // Cull polygons which are too large.
         const bool second_tri_culled =
           (draw_rect_123.width() > MAX_PRIMITIVE_WIDTH || draw_rect_123.height() > MAX_PRIMITIVE_HEIGHT ||
-           !m_clamped_drawing_area.rintersects(draw_rect_123));
+           clamped_draw_rect_123.rempty());
         if (second_tri_culled)
         {
           GL_INS_FMT("Culling off-screen/too-large polygon (quad second half): {},{} {},{} {},{}",
@@ -2303,7 +2297,7 @@ void GPU_HW::LoadVertices()
           if (first_tri_culled && textured && m_compute_uv_range)
             ComputePolygonUVLimits(vertices.data(), num_vertices);
 
-          AddDrawnRectangle(draw_rect_123);
+          AddDrawnRectangle(clamped_draw_rect_123);
           AddDrawTriangleTicks(GSVector4i(native_vertex_positions[2]), GSVector4i(native_vertex_positions[1]),
                                GSVector4i(native_vertex_positions[3]), rc.shading_enable, rc.texture_enable,
                                rc.transparency_enable);
@@ -2372,8 +2366,14 @@ void GPU_HW::LoadVertices()
         break;
       }
 
-      if (!IsDrawingAreaIsValid()) [[unlikely]]
+      const GSVector4i rect =
+        GSVector4i(pos_x, pos_y, pos_x + static_cast<s32>(rectangle_width), pos_y + static_cast<s32>(rectangle_height));
+      const GSVector4i clamped_rect = m_clamped_drawing_area.rintersect(rect);
+      if (clamped_rect.rempty()) [[unlikely]]
+      {
+        GL_INS_FMT("Culling off-screen rectangle {}", rect);
         return;
+      }
 
       // we can split the rectangle up into potentially 8 quads
       SetBatchDepthBuffer(false);
@@ -2438,8 +2438,8 @@ void GPU_HW::LoadVertices()
         tex_top = 0;
       }
 
-      AddDrawnRectangle(GSVector4i(pos_x, pos_y, pos_x + rectangle_width, pos_y + rectangle_height));
-      AddDrawRectangleTicks(pos_x, pos_y, rectangle_width, rectangle_height, rc.texture_enable, rc.transparency_enable);
+      AddDrawnRectangle(clamped_rect);
+      AddDrawRectangleTicks(clamped_rect, rc.texture_enable, rc.transparency_enable);
 
       if (m_sw_renderer)
       {
@@ -2480,34 +2480,33 @@ void GPU_HW::LoadVertices()
           end_pos.bits = FifoPop();
         }
 
-        if (!IsDrawingAreaIsValid()) [[unlikely]]
-          return;
+        const GSVector4i vstart_pos = GSVector4i(start_pos.x + m_drawing_offset.x, start_pos.y + m_drawing_offset.y);
+        const GSVector4i vend_pos = GSVector4i(end_pos.x + m_drawing_offset.x, end_pos.y + m_drawing_offset.y);
+        const GSVector4i bounds = vstart_pos.xyxy(vend_pos);
+        const GSVector4i rect =
+          vstart_pos.min_i32(vend_pos).xyxy(vstart_pos.max_i32(vend_pos)).add32(GSVector4i::cxpr(0, 0, 1, 1));
+        const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
 
-        s32 start_x = start_pos.x + m_drawing_offset.x;
-        s32 start_y = start_pos.y + m_drawing_offset.y;
-        s32 end_x = end_pos.x + m_drawing_offset.x;
-        s32 end_y = end_pos.y + m_drawing_offset.y;
-        const auto [min_x, max_x] = MinMax(start_x, end_x);
-        const auto [min_y, max_y] = MinMax(start_y, end_y);
-        if ((max_x - min_x) >= MAX_PRIMITIVE_WIDTH || (max_y - min_y) >= MAX_PRIMITIVE_HEIGHT)
+        if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT || clamped_rect.rempty())
         {
-          DEBUG_LOG("Culling too-large line: {},{} - {},{}", start_x, start_y, end_x, end_y);
+          GL_INS_FMT("Culling too-large/off-screen line: {},{} - {},{}", bounds.x, bounds.y, bounds.z, bounds.w);
           return;
         }
 
-        AddDrawnRectangle(GSVector4i(min_x, min_y, max_x + 1, max_y + 1));
-        AddDrawLineTicks(min_x, min_y, max_x, max_y, rc.shading_enable);
+        AddDrawnRectangle(clamped_rect);
+        AddDrawLineTicks(clamped_rect, rc.shading_enable);
 
         // TODO: Should we do a PGXP lookup here? Most lines are 2D.
-        DrawLine(static_cast<float>(start_x), static_cast<float>(start_y), start_color, static_cast<float>(end_x),
-                 static_cast<float>(end_y), end_color, depth);
+        DrawLine(GSVector4(bounds), start_color, end_color, depth);
 
         if (m_sw_renderer)
         {
           GPUBackendDrawLineCommand* cmd = m_sw_renderer->NewDrawLineCommand(2);
           FillDrawCommand(cmd, rc);
-          cmd->vertices[0].Set(start_x, start_y, start_color);
-          cmd->vertices[1].Set(end_x, end_y, end_color);
+          GSVector4i::storel(&cmd->vertices[0], bounds);
+          cmd->vertices[0].color = start_color;
+          GSVector4i::storeh(&cmd->vertices[1], bounds);
+          cmd->vertices[1].color = end_color;
           m_sw_renderer->PushCommand(cmd);
         }
       }
@@ -2517,15 +2516,11 @@ void GPU_HW::LoadVertices()
         const u32 num_vertices = GetPolyLineVertexCount();
         DebugAssert(m_batch_vertex_space >= (num_vertices * 4) && m_batch_index_space >= (num_vertices * 6));
 
-        if (!IsDrawingAreaIsValid()) [[unlikely]]
-          return;
-
         const bool shaded = rc.shading_enable;
 
         u32 buffer_pos = 0;
         const GPUVertexPosition start_vp{m_blit_buffer[buffer_pos++]};
-        s32 start_x = start_vp.x + m_drawing_offset.x;
-        s32 start_y = start_vp.y + m_drawing_offset.y;
+        GSVector4i start_pos = GSVector4i(start_vp.x + m_drawing_offset.x, start_vp.y + m_drawing_offset.y);
         u32 start_color = rc.color_for_first_vertex;
 
         GPUBackendDrawLineCommand* cmd;
@@ -2533,7 +2528,8 @@ void GPU_HW::LoadVertices()
         {
           cmd = m_sw_renderer->NewDrawLineCommand(num_vertices);
           FillDrawCommand(cmd, rc);
-          cmd->vertices[0].Set(start_x, start_y, start_color);
+          GSVector4i::storel(&cmd->vertices[0].x, start_pos);
+          cmd->vertices[0].color = start_color;
         }
         else
         {
@@ -2544,31 +2540,32 @@ void GPU_HW::LoadVertices()
         {
           const u32 end_color = shaded ? (m_blit_buffer[buffer_pos++] & UINT32_C(0x00FFFFFF)) : start_color;
           const GPUVertexPosition vp{m_blit_buffer[buffer_pos++]};
-          const s32 end_x = m_drawing_offset.x + vp.x;
-          const s32 end_y = m_drawing_offset.y + vp.y;
-
-          const auto [min_x, max_x] = MinMax(start_x, end_x);
-          const auto [min_y, max_y] = MinMax(start_y, end_y);
-          if ((max_x - min_x) >= MAX_PRIMITIVE_WIDTH || (max_y - min_y) >= MAX_PRIMITIVE_HEIGHT)
+          const GSVector4i end_pos = GSVector4i(m_drawing_offset.x + vp.x, m_drawing_offset.y + vp.y);
+          const GSVector4i bounds = start_pos.xyxy(end_pos);
+          const GSVector4i rect =
+            start_pos.min_i32(end_pos).xyxy(start_pos.max_i32(end_pos)).add32(GSVector4i::cxpr(0, 0, 1, 1));
+          const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
+          if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT || clamped_rect.rempty())
           {
-            DEBUG_LOG("Culling too-large line: {},{} - {},{}", start_x, start_y, end_x, end_y);
+            GL_INS_FMT("Culling too-large line: {},{} - {},{}", start_pos.x, start_pos.y, end_pos.x, end_pos.y);
           }
           else
           {
-            AddDrawnRectangle(GSVector4i(min_x, min_y, max_x + 1, max_y + 1));
-            AddDrawLineTicks(min_x, min_y, max_x, max_y, rc.shading_enable);
+            AddDrawnRectangle(clamped_rect);
+            AddDrawLineTicks(clamped_rect, rc.shading_enable);
 
             // TODO: Should we do a PGXP lookup here? Most lines are 2D.
-            DrawLine(static_cast<float>(start_x), static_cast<float>(start_y), start_color, static_cast<float>(end_x),
-                     static_cast<float>(end_y), end_color, depth);
+            DrawLine(GSVector4(bounds), start_color, end_color, depth);
           }
 
-          start_x = end_x;
-          start_y = end_y;
+          start_pos = end_pos;
           start_color = end_color;
 
           if (cmd)
-            cmd->vertices[i].Set(end_x, end_y, end_color);
+          {
+            GSVector4i::storel(&cmd->vertices[i], end_pos);
+            cmd->vertices[i].color = end_color;
+          }
         }
 
         if (cmd)
@@ -3183,7 +3180,7 @@ void GPU_HW::DispatchRenderCommand()
     {
       m_draw_mode.ClearTexturePageChangedFlag();
 
-#if 1
+#if 0
       if (!m_vram_dirty_draw_rect.eq(INVALID_RECT) || !m_vram_dirty_write_rect.eq(INVALID_RECT))
       {
         GL_INS_FMT("VRAM DIRTY: {} {}", m_vram_dirty_draw_rect, m_vram_dirty_write_rect);

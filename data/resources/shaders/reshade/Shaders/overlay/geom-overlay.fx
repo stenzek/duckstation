@@ -35,7 +35,9 @@
 uniform bool geom_curvature <
 	ui_type = "radio";
 	ui_label = "Geom Curvature Toggle";
-> = 1.0;
+	ui_category = "Curvature";
+	ui_tooltip = "This shader only works with Aspect Ratio: Stretch to Fill.";
+> = true;
 
 uniform float geom_R <
 	ui_type = "drag";
@@ -43,15 +45,15 @@ uniform float geom_R <
 	ui_max = 10.0;
 	ui_step = 0.1;
 	ui_label = "Geom Curvature Radius";
-> = 2.0;
+> = 10.0;
 
 uniform float geom_d <
 	ui_type = "drag";
 	ui_min = 0.1;
-	ui_max = 3.0;
+	ui_max = 10.0;
 	ui_step = 0.1;
 	ui_label = "Geom Distance";
-> = 1.5;
+> = 10.0;
 
 uniform bool geom_invert_aspect <
 	ui_type = "radio";
@@ -64,7 +66,7 @@ uniform float geom_cornersize <
 	ui_max = 1.0;
 	ui_step = 0.005;
 	ui_label = "Geom Corner Size";
-> = 0.03;
+> = 0.006;
 
 uniform float geom_cornersmooth <
 	ui_type = "drag";
@@ -72,7 +74,7 @@ uniform float geom_cornersmooth <
 	ui_max = 2000.0;
 	ui_step = 100.0;
 	ui_label = "Geom Corner Smoothness";
-> = 1000.0;
+> = 200.0;
 
 uniform float geom_x_tilt <
 	ui_type = "drag";
@@ -96,7 +98,7 @@ uniform float geom_overscan_x <
 	ui_max = 125.0;
 	ui_step = 0.5;
 	ui_label = "Geom Horiz. Overscan %";
-> = 100.0;
+> = 48.5;
 
 uniform float geom_overscan_y <
 	ui_type = "drag";
@@ -104,7 +106,7 @@ uniform float geom_overscan_y <
 	ui_max = 125.0;
 	ui_step = 0.5;
 	ui_label = "Geom Vert. Overscan %";
-> = 100.0;
+> = 64.5;
 
 uniform float centerx <
 	ui_type = "drag";
@@ -112,7 +114,7 @@ uniform float centerx <
 	ui_max = 100.0;
 	ui_step = 0.1;
 	ui_label = "Image Center X";
-> = 0.00;
+> = 0.0;
 
 uniform float centery <
 	ui_type = "drag";
@@ -120,7 +122,7 @@ uniform float centery <
 	ui_max = 100.0;
 	ui_step = 0.1;
 	ui_label = "Image Center Y";
-> = 0.00;
+> = -8.8;
 
 uniform float geom_lum <
 	ui_type = "drag";
@@ -150,10 +152,22 @@ uniform float geom_monitor_gamma <
 uniform float2 BufferToViewportRatio < source = "buffer_to_viewport_ratio"; >;
 uniform float2 NormalizedNativePixelSize < source = "normalized_native_pixel_size"; >;
 uniform float2 ViewportSize < source = "viewportsize"; >;
+uniform float  ViewportX < source = "viewportx"; >;
+uniform float  ViewportY < source = "viewporty"; >;
 uniform float  ViewportWidth < source = "viewportwidth"; >;
 uniform float  ViewportHeight < source = "viewportheight"; >;
+uniform float2 ViewportOffset < source = "viewportoffset"; >;
 
 sampler2D sBackBuffer{Texture=ReShade::BackBufferTex;AddressU=BORDER;AddressV=BORDER;AddressW=BORDER;MagFilter=LINEAR;MinFilter=LINEAR;};
+
+texture tOverlay < source = "overlay/psx.jpg"; >
+{
+	Width = BUFFER_WIDTH;
+	Height = BUFFER_HEIGHT;
+	MipLevels = 1;
+};
+
+sampler sOverlay { Texture = tOverlay; AddressU = BORDER; AddressV = BORDER; MinFilter = LINEAR; MagFilter = LINEAR;};
 
 // Comment the next line to disable interpolation in linear gamma (and
 // gain speed).
@@ -240,15 +254,7 @@ float3 vs_maxscale(float2 sinangle, float2 cosangle)
     return float3((hi+lo)*aspect*0.5,max(hi.x-lo.x,hi.y-lo.y));
 }
 
-// Code snippet borrowed from crt-cyclon. (credits to DariusG)
-float2 Warp(float2 pos)
-{
-    pos = pos*2.0 - 1.0;
-    pos *= float2(1.0 + pos.y*pos.y*0, 1.0 + pos.x*pos.x*0);
-    pos = pos*0.5 + 0.5;
 
-    return pos;
-}
 
 
 // Vertex shader generating a triangle covering the entire screen
@@ -258,10 +264,7 @@ void VS_CRT_Geom(in uint id : SV_VertexID, out float4 position : SV_Position, ou
     texcoord.y = (id == 1) ? 2.0 : 0.0;
     position = float4(texcoord * float2(2.0, -2.0) + float2(-1.0, 1.0), 0.0, 1.0);
 
-    // center screen
-    texcoord = Warp(texcoord - float2(centerx,centery)/100.0);
-
-   float2 SourceSize = 1.0/NormalizedNativePixelSize;
+    float2 SourceSize = 1.0/NormalizedNativePixelSize;
 
     // Precalculate a bunch of useful values we'll need in the fragment
     // shader.
@@ -350,6 +353,16 @@ float fwidth(float value){
 }
 
 
+// Code snippet borrowed from crt-cyclon. (credits to DariusG)
+float2 Warp(float2 pos)
+{
+    pos = pos*2.0 - 1.0;
+    pos *= float2(1.0 + pos.y*pos.y*0, 1.0 + pos.x*pos.x*0);
+    pos = pos*0.5 + 0.5;
+
+    return pos;
+}
+
 float4 PS_CRT_Geom(float4 vpos: SV_Position, float2 vTexCoord : TEXCOORD, in ST_VertexOut vVARS) : SV_Target
 {
     // Texture coordinates of the texel containing the active pixel.
@@ -359,6 +372,9 @@ float4 PS_CRT_Geom(float4 vpos: SV_Position, float2 vTexCoord : TEXCOORD, in ST_
       xy = transform(vTexCoord, vVARS.sinangle, vVARS.cosangle, vVARS.stretch);
     else
       xy = vTexCoord;
+
+    // center screen
+    xy = Warp(xy - float2(centerx,centery)/100.0);
 
     float cval = corner((xy-float2(0.5,0.5)) * BufferToViewportRatio + float2(0.5,0.5));
 
@@ -377,6 +393,14 @@ float4 PS_CRT_Geom(float4 vpos: SV_Position, float2 vTexCoord : TEXCOORD, in ST_
     // Convert the image gamma for display on our output device.
     mul_res = pow(mul_res, float3(1.0 / geom_monitor_gamma, 1.0 / geom_monitor_gamma, 1.0 / geom_monitor_gamma));
 
+    float4 overlay = tex2D(sOverlay, vTexCoord);
+
+    float2 top_left     = (float2(ViewportX, ViewportY) - ViewportOffset)/ViewportSize;
+    float2 bottom_right = (float2(ViewportX + ViewportWidth, ViewportY + ViewportHeight) - ViewportOffset)/ViewportSize;
+
+    if (xy.x < top_left.x || xy.x > bottom_right.x || xy.y < top_left.y || xy.y > bottom_right.y)
+        mul_res = overlay.rgb;
+  
     return float4(mul_res, 1.0);
 }
 

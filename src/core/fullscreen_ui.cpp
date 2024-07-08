@@ -5593,7 +5593,7 @@ bool FullscreenUI::OpenLoadStateSelectorForGame(const std::string& game_path)
   if (entry)
   {
     s_save_state_selector_loading = true;
-    if (PopulateSaveStateListEntries(entry->title.c_str(), entry->serial.c_str()) > 0)
+    if (PopulateSaveStateListEntries(entry->title, entry->serial) > 0)
     {
       s_save_state_selector_open = true;
       s_save_state_selector_resuming = false;
@@ -5611,7 +5611,7 @@ bool FullscreenUI::OpenSaveStateSelector(bool is_loading)
   s_save_state_selector_game_path = {};
   s_save_state_selector_loading = is_loading;
   s_save_state_selector_resuming = false;
-  if (PopulateSaveStateListEntries(System::GetGameTitle().c_str(), System::GetGameSerial().c_str()) > 0)
+  if (PopulateSaveStateListEntries(System::GetGameTitle(), System::GetGameSerial()) > 0)
   {
     s_save_state_selector_open = true;
     return true;

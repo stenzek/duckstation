@@ -19,7 +19,6 @@
 // clang-format off
 #ifdef _MSC_VER
 #pragma warning(disable : 4611) // warning C4611: interaction between '_setjmp' and C++ object destruction is non-portable
-#pragma warning(disable : 4324) // warning C4324: '`anonymous-namespace'::JPEGErrorHandler': structure was padded due to alignment specifier
 #endif
 // clang-format on
 

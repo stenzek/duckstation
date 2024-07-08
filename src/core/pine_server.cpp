@@ -178,6 +178,7 @@ void PINEServer::Shutdown()
   // also closes the listener
   if (s_listen_socket)
   {
+    s_listen_socket->Close();
     s_listen_socket.reset();
     System::ReleaseSocketMultiplexer();
   }

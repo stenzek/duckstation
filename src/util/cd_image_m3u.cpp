@@ -161,7 +161,7 @@ bool CDImageM3u::SwitchSubImage(u32 index, Error* error)
 
 std::string CDImageM3u::GetSubImageMetadata(u32 index, std::string_view type) const
 {
-  if (index > m_entries.size())
+  if (index >= m_entries.size())
     return {};
 
   if (type == "title")

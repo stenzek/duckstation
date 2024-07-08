@@ -46,7 +46,7 @@ set LIBJPEG=9f
 set LIBPNG=1643
 set QT=6.7.2
 set QTMINOR=6.7
-set SDL=SDL2-2.30.4
+set SDL2=2.30.5
 set WEBP=1.4.0
 set ZLIB=1.3.1
 set ZLIBSHORT=131
@@ -64,7 +64,7 @@ call :downloadfile "freetype-%FREETYPE%.tar.gz" https://download.savannah.gnu.or
 call :downloadfile "harfbuzz-%HARFBUZZ%.zip" https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip b2bc56184ae37324bc4829fde7d3f9e6916866ad711ee85792e457547c9fd127 || goto error
 call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lpng1643.zip fc466a1e638e635d6c66363bdf3f38555b81b0141d0b06ba45b49ccca327436d || goto error
 call :downloadfile "jpegsr%LIBJPEG%.zip" https://ijg.org/files/jpegsr%LIBJPEG%.zip 6255da8c89e09d694e6800688c76145eb6870a76ac0d36c74fccd61b3940aafa || goto error
-call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" 292d5e2f897aa3acb6b365b605c3249c92916fbe7eba4a2e57573ada3855d7cb || goto error
+call :downloadfile "SDL2-%SDL2%.zip" "https://github.com/libsdl-org/SDL/releases/download/release-%SDL2%/SDL2-%SDL2%.zip" 688d3da2bf7e887d0ba8e0f81c926119f85029544f4f6da8dea96db70f9d28e3 || goto error
 call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" 488119aad60719a085a1e45c31641ac2406ef86fc088a3c99885c18e9d6b4bb9 || goto error
 call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" 8e736b02db7dd67dbe834d56503b242344ce85d3532da692f1812b30ccf80997 || goto error
 call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtsvg-everywhere-src-%QT%.zip" 85a22142270a92be0dd0ab5d27cc53617b2a2f1a45fc0a3890024164032f8475 || goto error
@@ -166,9 +166,9 @@ ninja -C build install || goto error
 cd .. || goto error
 
 echo Building SDL...
-rmdir /S /Q "%SDL%"
-%SEVENZIP% x "%SDL%.zip" || goto error
-cd "%SDL%" || goto error
+rmdir /S /Q "SDL2-%SDL2%"
+%SEVENZIP% x "SDL2-%SDL2%.zip" || goto error
+cd "SDL2-%SDL2%" || goto error
 cmake -B build -DCMAKE_BUILD_TYPE=Release %FORCEPDB% -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DSDL_SHARED=ON -DSDL_STATIC=OFF -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error

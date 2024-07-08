@@ -1635,7 +1635,7 @@ void GPU::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 he
 
 void GPU::SetClampedDrawingArea()
 {
-  if (!IsDrawingAreaIsValid()) [[unlikely]]
+  if (m_drawing_area.left > m_drawing_area.right || m_drawing_area.top > m_drawing_area.bottom) [[unlikely]]
   {
     m_clamped_drawing_area = GSVector4i::zero();
     return;
@@ -1933,9 +1933,7 @@ bool GPU::PresentDisplay()
 {
   FlushRender();
 
-  const GSVector4i draw_rect = m_display_texture ?
-                                 CalculateDrawRect(g_gpu_device->GetWindowWidth(), g_gpu_device->GetWindowHeight()) :
-                                 GSVector4i::zero();
+  const GSVector4i draw_rect = CalculateDrawRect(g_gpu_device->GetWindowWidth(), g_gpu_device->GetWindowHeight());
   return RenderDisplay(nullptr, draw_rect, !g_settings.debugging.show_vram);
 }
 
@@ -2070,10 +2068,12 @@ bool GPU::RenderDisplay(GPUTexture* target, const GSVector4i draw_rect, bool pos
     DebugAssert(!g_settings.debugging.show_vram);
 
     // "original size" in postfx includes padding.
-    const float upscale_x =
-      static_cast<float>(m_display_texture_view_width) / static_cast<float>(m_crtc_state.display_vram_width);
-    const float upscale_y =
-      static_cast<float>(m_display_texture_view_height) / static_cast<float>(m_crtc_state.display_vram_height);
+    const float upscale_x = m_display_texture ? static_cast<float>(m_display_texture_view_width) /
+                                                  static_cast<float>(m_crtc_state.display_vram_width) :
+                                                1.0f;
+    const float upscale_y = m_display_texture ? static_cast<float>(m_display_texture_view_height) /
+                                                  static_cast<float>(m_crtc_state.display_vram_height) :
+                                                1.0f;
     const s32 orig_width = static_cast<s32>(std::ceil(static_cast<float>(m_crtc_state.display_width) * upscale_x));
     const s32 orig_height = static_cast<s32>(std::ceil(static_cast<float>(m_crtc_state.display_height) * upscale_y));
 

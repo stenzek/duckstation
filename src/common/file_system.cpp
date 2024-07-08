@@ -1181,26 +1181,32 @@ std::optional<std::string> FileSystem::ReadFileToString(std::FILE* fp)
   return res;
 }
 
-bool FileSystem::WriteBinaryFile(const char* filename, const void* data, size_t data_length)
+bool FileSystem::WriteBinaryFile(const char* filename, const void* data, size_t data_length, Error* error)
 {
-  ManagedCFilePtr fp = OpenManagedCFile(filename, "wb");
+  ManagedCFilePtr fp = OpenManagedCFile(filename, "wb", error);
   if (!fp)
     return false;
 
   if (data_length > 0 && std::fwrite(data, 1u, data_length, fp.get()) != data_length)
+  {
+    Error::SetErrno(error, "fwrite() failed: ", errno);
     return false;
+  }
 
   return true;
 }
 
-bool FileSystem::WriteStringToFile(const char* filename, std::string_view sv)
+bool FileSystem::WriteStringToFile(const char* filename, std::string_view sv, Error* error)
 {
-  ManagedCFilePtr fp = OpenManagedCFile(filename, "wb");
+  ManagedCFilePtr fp = OpenManagedCFile(filename, "wb", error);
   if (!fp)
     return false;
 
   if (sv.length() > 0 && std::fwrite(sv.data(), 1u, sv.length(), fp.get()) != sv.length())
+  {
+    Error::SetErrno(error, "fwrite() failed: ", errno);
     return false;
+  }
 
   return true;
 }

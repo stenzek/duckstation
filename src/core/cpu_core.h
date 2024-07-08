@@ -65,6 +65,14 @@ struct PGXP_value
   }
 
   ALWAYS_INLINE bool HasValid(u32 comp) const { return ConvertToBoolUnchecked((flags >> comp) & 1); }
+  ALWAYS_INLINE float GetValidX(u32 psxval) const
+  {
+    return (flags & 1) ? x : static_cast<float>(static_cast<s16>(psxval));
+  }
+  ALWAYS_INLINE float GetValidY(u32 psxval) const
+  {
+    return (flags & 2) ? y : static_cast<float>(static_cast<s16>(psxval >> 16));
+  }
 };
 
 struct State
@@ -121,7 +129,7 @@ struct State
   static constexpr u32 GTERegisterOffset(u32 index) { return OFFSETOF(State, gte_regs.r32) + (sizeof(u32) * index); }
 };
 
-extern State g_state;
+ALIGN_TO_CACHE_LINE extern State g_state;
 
 void Initialize();
 void Shutdown();

@@ -312,6 +312,70 @@ public:
 
   GSVector4i addp_s32() const { return GSVector4i(x + y, z + w, 0, 0); }
 
+  u8 minv_u8() const
+  {
+    return std::min(
+      U8[0],
+      std::min(
+        U8[1],
+        std::min(
+          U8[2],
+          std::min(
+            U8[3],
+            std::min(
+              U8[4],
+              std::min(
+                U8[5],
+                std::min(
+                  U8[6],
+                  std::min(
+                    U8[7],
+                    std::min(
+                      U8[9],
+                      std::min(U8[10],
+                               std::min(U8[11], std::min(U8[12], std::min(U8[13], std::min(U8[14], U8[15]))))))))))))));
+  }
+
+  u16 maxv_u8() const
+  {
+    return std::max(
+      U8[0],
+      std::max(
+        U8[1],
+        std::max(
+          U8[2],
+          std::max(
+            U8[3],
+            std::max(
+              U8[4],
+              std::max(
+                U8[5],
+                std::max(
+                  U8[6],
+                  std::max(
+                    U8[7],
+                    std::max(
+                      U8[9],
+                      std::max(U8[10],
+                               std::max(U8[11], std::max(U8[12], std::max(U8[13], std::max(U8[14], U8[15]))))))))))))));
+  }
+
+  u16 minv_u16() const
+  {
+    return std::min(
+      U16[0],
+      std::min(U16[1],
+               std::min(U16[2], std::min(U16[3], std::min(U16[4], std::min(U16[5], std::min(U16[6], U16[7])))))));
+  }
+
+  u16 maxv_u16() const
+  {
+    return std::max(
+      U16[0],
+      std::max(U16[1],
+               std::max(U16[2], std::max(U16[3], std::max(U16[4], std::max(U16[5], std::max(U16[6], U16[7])))))));
+  }
+
   s32 minv_s32() const { return std::min(x, std::min(y, std::min(z, w))); }
 
   u32 minv_u32() const { return std::min(U32[0], std::min(U32[1], std::min(U32[2], U32[3]))); }

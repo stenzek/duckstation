@@ -547,6 +547,7 @@ void GDBServer::Shutdown()
   }
 
   INFO_LOG("Stopping GDB server.");
+  s_gdb_listen_socket->Close();
   s_gdb_listen_socket.reset();
   System::ReleaseSocketMultiplexer();
 }

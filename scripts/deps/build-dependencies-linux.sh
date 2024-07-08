@@ -18,7 +18,7 @@ LIBBACKTRACE=ad106d5fdd5d960bd33fae1c48a351af567fd075
 LIBJPEG=9f
 LIBPNG=1.6.43
 LIBWEBP=1.4.0
-SDL=SDL2-2.30.4
+SDL2=2.30.5
 QT=6.7.2
 ZSTD=1.5.6
 
@@ -38,7 +38,7 @@ fd6f417fe9e3a071cf1424a5152d926a34c4a3c5070745470be6cf12a404ed79  $LIBBACKTRACE.
 04705c110cb2469caa79fb71fba3d7bf834914706e9641a4589485c1f832565b  jpegsrc.v$LIBJPEG.tar.gz
 6a5ca0652392a2d7c9db2ae5b40210843c0bbc081cbd410825ab00cc59f14a6c  libpng-$LIBPNG.tar.xz
 61f873ec69e3be1b99535634340d5bde750b2e4447caa1db9f61be3fd49ab1e5  libwebp-$LIBWEBP.tar.gz
-59c89d0ed40d4efb23b7318aa29fe7039dbbc098334b14f17f1e7e561da31a26  $SDL.tar.gz
+f374f3fa29c37dfcc20822d4a7d7dc57e58924d1a5f2ad511bfab4c8193de63b  SDL2-$SDL2.tar.gz
 8c29e06cf42aacc1eafc4077ae2ec6c6fcb96a626157e0593d5e82a34fd403c1  zstd-$ZSTD.tar.gz
 c5f22a5e10fb162895ded7de0963328e7307611c688487b5d152c9ee64767599  qtbase-everywhere-src-$QT.tar.xz
 e1a1d8785fae67d16ad0a443b01d5f32663a6b68d275f1806ebab257485ce5d6  qtimageformats-everywhere-src-$QT.tar.xz
@@ -60,7 +60,7 @@ curl -C - -L \
 	-O "https://ijg.org/files/jpegsrc.v$LIBJPEG.tar.gz" \
 	-O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.xz" \
 	-O "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$LIBWEBP.tar.gz" \
-	-O "https://libsdl.org/release/$SDL.tar.gz" \
+	-O "https://github.com/libsdl-org/SDL/releases/download/release-$SDL2/SDL2-$SDL2.tar.gz" \
 	-O "https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtbase-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtimageformats-everywhere-src-$QT.tar.xz" \
@@ -127,10 +127,10 @@ cmake --build build --parallel
 ninja -C build install
 cd ..
 
-echo "Building SDL..."
-rm -fr "$SDL"
-tar xf "$SDL.tar.gz"
-cd "$SDL"
+echo "Building SDL2..."
+rm -fr "SDL2-$SDL2"
+tar xf "SDL2-$SDL2.tar.gz"
+cd "SDL2-$SDL2"
 cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DSDL_SHARED=ON -DSDL_STATIC=OFF -G Ninja
 cmake --build build --parallel
 ninja -C build install
@@ -145,6 +145,7 @@ echo "Building Qt Base..."
 rm -fr "qtbase-everywhere-src-$QT"
 tar xf "qtbase-everywhere-src-$QT.tar.xz"
 cd "qtbase-everywhere-src-$QT"
+patch -p1 < "$SCRIPTDIR/qtbase-disable-pcre2-jit.patch"
 mkdir build
 cd build
 ../configure -prefix "$INSTALLDIR" -release -dbus-linked -gui -widgets -fontconfig -qt-doubleconversion -ssl -openssl-runtime -opengl desktop -qpa xcb,wayland -xkbcommon -xcb -gtk -- -DFEATURE_cups=OFF -DFEATURE_dbus=ON -DFEATURE_icu=OFF -DFEATURE_sql=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON

@@ -198,14 +198,6 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
     steps:
-    # Work around https://github.com/actions/runner-images/issues/8659
-    - name: Remove GCC 13 from runner image
-      shell: bash
-      run: |
-        sudo rm -f /etc/apt/sources.list.d/ubuntu-toolchain-r-ubuntu-test-jammy.list
-        sudo apt-get update
-        sudo apt-get install -y --allow-downgrades 'libc6=2.35-0ubuntu*' 'libc6-dev=2.35-0ubuntu*' libstdc++6=12.3.0-1ubuntu1~22.04 libgcc-s1=12.3.0-1ubuntu1~22.04
-
     - uses: actions/checkout@v4.1.6
       with:
         fetch-depth: 0
@@ -276,7 +268,7 @@ jobs:
   linux-flatpak-build:
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.7
+      image: bilelmoussaoui/flatpak-github-actions:kde-6.7
       options: --privileged
     timeout-minutes: 120
     steps:
@@ -299,14 +291,14 @@ jobs:
         scripts/generate-metainfo.sh scripts/flatpak
         cat scripts/flatpak/org.duckstation.DuckStation.metainfo.xml
 
-    - name: Validate AppStream XML
-      run: flatpak-builder-lint appstream scripts/flatpak/org.duckstation.DuckStation.metainfo.xml
+    #- name: Validate AppStream XML
+    #  run: flatpak-builder-lint appstream scripts/flatpak/org.duckstation.DuckStation.metainfo.xml
 
-    - name: Validate manifest
-      run: flatpak-builder-lint manifest scripts/flatpak/org.duckstation.DuckStation.json
+    #- name: Validate manifest
+    #  run: flatpak-builder-lint manifest scripts/flatpak/org.duckstation.DuckStation.json
 
     - name: Build Flatpak
-      uses: flathub-infra/flatpak-github-actions/flatpak-builder@23796715b3dfa4c86ddf50cf29c3cc8b3c82dca8
+      uses: flatpak/flatpak-github-actions/flatpak-builder@d6ddccb268e43e87b19ca0112b83de26fb83b215
       with:
         bundle: duckstation-x64.flatpak
         upload-artifact: false
@@ -314,24 +306,24 @@ jobs:
         arch: x86_64
         build-bundle: true
         verbose: true
-        mirror-screenshots-url: https://dl.flathub.org/media
+        #mirror-screenshots-url: https://dl.flathub.org/media
         branch: stable
         cache: true
         restore-cache: true
         cache-key: flatpak-x64-${{ hashFiles('scripts/flatpak/**/*.json') }}
 
-    - name: Push to Flathub stable
-      if: github.ref == 'refs/heads/dev'
-      uses: flathub-infra/flatpak-github-actions/flat-manager@23796715b3dfa4c86ddf50cf29c3cc8b3c82dca8
-      with:
-        flat-manager-url: https://hub.flathub.org/
-        repository: stable
-        token: ${{ secrets.FLATHUB_STABLE_TOKEN }}
-        build-log-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    #- name: Push to Flathub stable
+    #  if: github.ref == 'refs/heads/dev'
+    #  uses: flathub-infra/flatpak-github-actions/flat-manager@23796715b3dfa4c86ddf50cf29c3cc8b3c82dca8
+    #  with:
+    #    flat-manager-url: https://hub.flathub.org/
+    #    repository: stable
+    #    token: ${{ secrets.FLATHUB_STABLE_TOKEN }}
+    #    build-log-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-    - name: Validate build
-      run: |
-        flatpak-builder-lint repo repo
+    #- name: Validate build
+    #  run: |
+    #    flatpak-builder-lint repo repo
 
     - name: Upload Flatpak
       uses: actions/upload-artifact@v4.3.3

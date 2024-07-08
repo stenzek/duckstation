@@ -9,20 +9,12 @@
 #include "common/align.h"
 #include "common/assert.h"
 #include "common/gsvector.h"
+#include "common/gsvector_formatter.h"
 #include "common/log.h"
 
 #include <algorithm>
 
 Log_SetChannel(GPU_SW);
-
-template<typename T>
-ALWAYS_INLINE static constexpr std::tuple<T, T> MinMax(T v1, T v2)
-{
-  if (v1 > v2)
-    return std::tie(v2, v1);
-  else
-    return std::tie(v1, v2);
-}
 
 GPU_SW::GPU_SW() = default;
 
@@ -539,9 +531,6 @@ void GPU_SW::DispatchRenderCommand()
         positions[i] = GSVector4i::loadl(&vert->x);
       }
 
-      if (!IsDrawingAreaIsValid())
-        return;
-
       // Cull polygons which are too large.
       const GSVector4i min_pos_12 = positions[1].min_i32(positions[2]);
       const GSVector4i max_pos_12 = positions[1].max_i32(positions[2]);
@@ -638,10 +627,15 @@ void GPU_SW::DispatchRenderCommand()
         break;
       }
 
-      if (!IsDrawingAreaIsValid())
+      const GSVector4i rect = GSVector4i(cmd->x, cmd->y, cmd->x + cmd->width, cmd->y + cmd->height);
+      const GSVector4i clamped_rect = m_clamped_drawing_area.rintersect(rect);
+      if (clamped_rect.rempty()) [[unlikely]]
+      {
+        DEBUG_LOG("Culling off-screen rectangle {}", rect);
         return;
+      }
 
-      AddDrawRectangleTicks(cmd->x, cmd->y, cmd->width, cmd->height, rc.texture_enable, rc.transparency_enable);
+      AddDrawRectangleTicks(clamped_rect, rc.texture_enable, rc.transparency_enable);
 
       m_backend.PushCommand(cmd);
     }
@@ -681,19 +675,19 @@ void GPU_SW::DispatchRenderCommand()
           cmd->vertices[1].y = m_drawing_offset.y + end_pos.y;
         }
 
-        if (!IsDrawingAreaIsValid())
-          return;
+        const GSVector4i v0 = GSVector4i::loadl(&cmd->vertices[0].x);
+        const GSVector4i v1 = GSVector4i::loadl(&cmd->vertices[1].x);
+        const GSVector4i rect = v0.min_i32(v1).xyxy(v0.max_i32(v1)).add32(GSVector4i::cxpr(0, 0, 1, 1));
+        const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
 
-        const auto [min_x, max_x] = MinMax(cmd->vertices[0].x, cmd->vertices[1].x);
-        const auto [min_y, max_y] = MinMax(cmd->vertices[0].y, cmd->vertices[1].y);
-        if ((max_x - min_x) >= MAX_PRIMITIVE_WIDTH || (max_y - min_y) >= MAX_PRIMITIVE_HEIGHT)
+        if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT || clamped_rect.rempty())
         {
-          DEBUG_LOG("Culling too-large line: {},{} - {},{}", cmd->vertices[0].y, cmd->vertices[0].y, cmd->vertices[1].x,
-                    cmd->vertices[1].y);
+          DEBUG_LOG("Culling too-large/off-screen line: {},{} - {},{}", cmd->vertices[0].y, cmd->vertices[0].y,
+                    cmd->vertices[1].x, cmd->vertices[1].y);
           return;
         }
 
-        AddDrawLineTicks(min_x, min_y, max_x, max_y, rc.shading_enable);
+        AddDrawLineTicks(clamped_rect, rc.shading_enable);
 
         m_backend.PushCommand(cmd);
       }
@@ -719,16 +713,20 @@ void GPU_SW::DispatchRenderCommand()
           cmd->vertices[i].x = m_drawing_offset.x + vp.x;
           cmd->vertices[i].y = m_drawing_offset.y + vp.y;
 
-          const auto [min_x, max_x] = MinMax(cmd->vertices[i - 1].x, cmd->vertices[i].x);
-          const auto [min_y, max_y] = MinMax(cmd->vertices[i - 1].y, cmd->vertices[i].y);
-          if ((max_x - min_x) >= MAX_PRIMITIVE_WIDTH || (max_y - min_y) >= MAX_PRIMITIVE_HEIGHT)
+          const GSVector4i v0 = GSVector4i::loadl(&cmd->vertices[0].x);
+          const GSVector4i v1 = GSVector4i::loadl(&cmd->vertices[1].x);
+          const GSVector4i rect = v0.min_i32(v1).xyxy(v0.max_i32(v1)).add32(GSVector4i::cxpr(0, 0, 1, 1));
+          const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
+
+          if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT || clamped_rect.rempty())
           {
-            DEBUG_LOG("Culling too-large line: {},{} - {},{}", cmd->vertices[i - 1].x, cmd->vertices[i - 1].y,
-                      cmd->vertices[i].x, cmd->vertices[i].y);
+            DEBUG_LOG("Culling too-large/off-screen line: {},{} - {},{}", cmd->vertices[i - 1].x,
+                      cmd->vertices[i - 1].y, cmd->vertices[i].x, cmd->vertices[i].y);
+            return;
           }
           else
           {
-            AddDrawLineTicks(min_x, min_y, max_x, max_y, rc.shading_enable);
+            AddDrawLineTicks(clamped_rect, rc.shading_enable);
           }
         }
 

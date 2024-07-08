@@ -2200,19 +2200,42 @@ void System::Throttle(Common::Timer::Value current_time)
     return;
   }
 
-  // Use a spinwait if we undersleep for all platforms except android.. don't want to burn battery.
-  // Linux also seems to do a much better job of waking up at the requested time.
-#if !defined(__linux__) && !defined(__ANDROID__)
-  Common::Timer::SleepUntil(s_next_frame_time, g_settings.display_optimal_frame_pacing);
+#ifdef ENABLE_SOCKET_MULTIPLEXER
+  // If we are using the socket multiplier, and have clients, then use it to sleep instead.
+  // That way in a query->response->query->response chain, we don't process only one message per frame.
+  if (s_socket_multiplexer && s_socket_multiplexer->HasAnyClientSockets())
+  {
+    Common::Timer::Value poll_start_time = current_time;
+    for (;;)
+    {
+      const u32 sleep_ms =
+        static_cast<u32>(Common::Timer::ConvertValueToMilliseconds(s_next_frame_time - poll_start_time));
+      s_socket_multiplexer->PollEventsWithTimeout(sleep_ms);
+      poll_start_time = Common::Timer::GetCurrentValue();
+      if (poll_start_time >= s_next_frame_time || (!g_settings.display_optimal_frame_pacing && sleep_ms == 0))
+        break;
+    }
+  }
+  else
+  {
+    // Use a spinwait if we undersleep for all platforms except android.. don't want to burn battery.
+    // Linux also seems to do a much better job of waking up at the requested time.
+#if !defined(__linux__)
+    Common::Timer::SleepUntil(s_next_frame_time, g_settings.display_optimal_frame_pacing);
 #else
+    Common::Timer::SleepUntil(s_next_frame_time, false);
+#endif
+  }
+#else
+  // No spinwait on Android, see above.
   Common::Timer::SleepUntil(s_next_frame_time, false);
 #endif
 
 #if 0
-  Log_DevPrintf("Asked for %.2f ms, slept for %.2f ms, %.2f ms late",
-                Common::Timer::ConvertValueToMilliseconds(s_next_frame_time - current_time),
-                Common::Timer::ConvertValueToMilliseconds(Common::Timer::GetCurrentValue() - current_time),
-                Common::Timer::ConvertValueToMilliseconds(Common::Timer::GetCurrentValue() - s_next_frame_time));
+  DEV_LOG("Asked for {:.2f} ms, slept for {:.2f} ms, {:.2f} ms late",
+          Common::Timer::ConvertValueToMilliseconds(s_next_frame_time - current_time),
+          Common::Timer::ConvertValueToMilliseconds(Common::Timer::GetCurrentValue() - current_time),
+          Common::Timer::ConvertValueToMilliseconds(Common::Timer::GetCurrentValue() - s_next_frame_time));
 #endif
 
   s_next_frame_time += s_frame_period;
