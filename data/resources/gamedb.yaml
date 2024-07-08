@@ -186320,6 +186320,8 @@ SCPS-45170:
   codes:
     - SCPS-45170
     - SCPS-45171
+  traits:
+    - ForcePGXPCPUMode # Fixes battle shadows, radar jitter.
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -186341,6 +186343,8 @@ SLPS-02773:
   codes:
     - SLPS-02773
     - SLPS-02774
+  traits:
+    - ForcePGXPCPUMode # Fixes battle shadows, radar jitter.
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -186369,6 +186373,8 @@ SLPS-01160:
     - SLPS-02775
     - SLPS-91436
     - SLPS-91437
+  traits:
+    - ForcePGXPCPUMode # Fixes battle shadows, radar jitter.
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -186395,6 +186401,8 @@ SLPS-01161:
   codes:
     - SLPS-01161
     - SLPS-02776
+  traits:
+    - ForcePGXPCPUMode # Fixes battle shadows, radar jitter.
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -186421,6 +186429,8 @@ SLUS-00664:
     versionTested: "0.1-1308-g622e50fa"
   controllers:
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Fixes battle shadows, radar jitter.
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -186447,6 +186457,8 @@ SLUS-00669:
     versionTested: "0.1-1308-g622e50fa"
   controllers:
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Fixes battle shadows, radar jitter.
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
