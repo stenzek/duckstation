@@ -525,13 +525,6 @@
           </item>
           <item row="2" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout">
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="pgxpTextureCorrection">
-              <property name="text">
-               <string>Perspective Correct Textures</string>
-              </property>
-             </widget>
-            </item>
             <item row="0" column="1">
              <widget class="QCheckBox" name="pgxpColorCorrection">
               <property name="text">
@@ -539,17 +532,17 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="pgxpCulling">
+            <item row="2" column="1">
+             <widget class="QCheckBox" name="pgxpVertexCache">
               <property name="text">
-               <string>Culling Correction</string>
+               <string>Vertex Cache</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="1">
-             <widget class="QCheckBox" name="pgxpPreserveProjPrecision">
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="pgxpTextureCorrection">
               <property name="text">
-               <string>Preserve Projection Precision</string>
+               <string>Perspective Correct Textures</string>
               </property>
              </widget>
             </item>
@@ -560,10 +553,24 @@
               </property>
              </widget>
             </item>
-            <item row="2" column="1">
-             <widget class="QCheckBox" name="pgxpVertexCache">
+            <item row="1" column="1">
+             <widget class="QCheckBox" name="pgxpPreserveProjPrecision">
               <property name="text">
-               <string>Vertex Cache</string>
+               <string>Preserve Projection Precision</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="pgxpCulling">
+              <property name="text">
+               <string>Culling Correction</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QCheckBox" name="pgxpDisableOn2DPolygons">
+              <property name="text">
+               <string>Disable on 2D Polygons</string>
               </property>
              </widget>
             </item>

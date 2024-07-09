@@ -45,6 +45,7 @@ enum class Trait : u32
   DisablePGXPColorCorrection,
   DisablePGXPDepthBuffer,
   DisablePGXPPreserveProjFP,
+  DisablePGXPOn2DPolygons,
   ForcePGXPVertexCache,
   ForcePGXPCPUMode,
   ForceRecompilerMemoryExceptions,

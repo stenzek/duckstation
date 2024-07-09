@@ -4165,8 +4165,9 @@ void FullscreenUI::DrawDisplaySettingsPage()
     bsi->GetOptionalSmallStringValue("GPU", "Adapter", game_settings ? std::nullopt : std::optional<const char*>(""));
 
   if (MenuButtonWithValue(FSUI_CSTR("GPU Adapter"), FSUI_CSTR("Selects the GPU to use for rendering."),
-    current_adapter.has_value() ? (current_adapter->empty() ? FSUI_CSTR("Default") : current_adapter->c_str()) :
-                                                 FSUI_CSTR("Use Global Setting")))
+                          current_adapter.has_value() ?
+                            (current_adapter->empty() ? FSUI_CSTR("Default") : current_adapter->c_str()) :
+                            FSUI_CSTR("Use Global Setting")))
   {
     ImGuiFullscreen::ChoiceDialogOptions options;
     options.reserve(s_graphics_adapter_list_cache.size() + 2);
@@ -4203,8 +4204,8 @@ void FullscreenUI::DrawDisplaySettingsPage()
     OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_TV, "GPU Adapter"), false, std::move(options), std::move(callback));
   }
 
-  std::optional<SmallString> strvalue = bsi->GetOptionalSmallStringValue("GPU", "FullscreenMode",
-                                              game_settings ? std::nullopt : std::optional<const char*>(""));
+  std::optional<SmallString> strvalue = bsi->GetOptionalSmallStringValue(
+    "GPU", "FullscreenMode", game_settings ? std::nullopt : std::optional<const char*>(""));
 
   if (MenuButtonWithValue(
         FSUI_CSTR("Fullscreen Resolution"), FSUI_CSTR("Selects the resolution to use in fullscreen modes."),
@@ -5152,6 +5153,10 @@ void FullscreenUI::DrawAdvancedSettingsPage()
   DrawToggleSetting(bsi, FSUI_CSTR("Enable PGXP Vertex Cache"),
                     FSUI_CSTR("Uses screen positions to resolve PGXP data. May improve visuals in some games."), "GPU",
                     "PGXPVertexCache", pgxp_enabled);
+  DrawToggleSetting(bsi, FSUI_CSTR("Disable PGXP on 2D Polygons"),
+                    FSUI_CSTR("Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can "
+                              "fix misaligned UI in some games, but otherwise should be left disabled."),
+                    "GPU", "PGXPDisableOn2DPolygons", false, pgxp_enabled);
   DrawFloatRangeSetting(
     bsi, FSUI_CSTR("PGXP Geometry Tolerance"),
     FSUI_CSTR("Sets a threshold for discarding precise values when exceeded. May help with glitches in some games."),
@@ -7354,6 +7359,7 @@ TRANSLATE_NOOP("FullscreenUI", "Device Settings");
 TRANSLATE_NOOP("FullscreenUI", "Disable All Enhancements");
 TRANSLATE_NOOP("FullscreenUI", "Disable Interlacing");
 TRANSLATE_NOOP("FullscreenUI", "Disable Mailbox Presentation");
+TRANSLATE_NOOP("FullscreenUI", "Disable PGXP on 2D Polygons");
 TRANSLATE_NOOP("FullscreenUI", "Disable Subdirectory Scanning");
 TRANSLATE_NOOP("FullscreenUI", "Disabled");
 TRANSLATE_NOOP("FullscreenUI", "Disables dithering and uses the full 8 bits per channel of color information.");
@@ -7793,6 +7799,7 @@ TRANSLATE_NOOP("FullscreenUI", "Uses a blit presentation model instead of flippi
 TRANSLATE_NOOP("FullscreenUI", "Uses a light coloured theme instead of the default dark theme.");
 TRANSLATE_NOOP("FullscreenUI", "Uses a second thread for drawing graphics. Speed boost, and safe to use.");
 TRANSLATE_NOOP("FullscreenUI", "Uses game-specific settings for controllers for this game.");
+TRANSLATE_NOOP("FullscreenUI", "Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled.");
 TRANSLATE_NOOP("FullscreenUI", "Uses perspective-correct interpolation for colors, which can improve visuals in some games.");
 TRANSLATE_NOOP("FullscreenUI", "Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.");
 TRANSLATE_NOOP("FullscreenUI", "Uses screen positions to resolve PGXP data. May improve visuals in some games.");

@@ -133,6 +133,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpPreserveProjPrecision, "GPU", "PGXPPreserveProjFP", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpCPU, "GPU", "PGXPCPU", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpVertexCache, "GPU", "PGXPVertexCache", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpDisableOn2DPolygons, "GPU", "PGXPDisableOn2DPolygons",
+                                               false);
 
   connect(m_ui.pgxpTextureCorrection, &QCheckBox::checkStateChanged, this,
           &GraphicsSettingsWidget::updatePGXPSettingsEnabled);
@@ -388,6 +390,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     m_ui.pgxpVertexCache, tr("Vertex Cache"), tr("Unchecked"),
     tr("Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can "
        "provide PGXP compatibility for some games, but <strong>generally provides no benefit.</strong>"));
+  dialog->registerWidgetHelp(m_ui.pgxpDisableOn2DPolygons, tr("Disable on 2D Polygons"), tr("Unchecked"),
+                             tr("Uses native resolution coordinates for 2D polygons, instead of precise coordinates. "
+                                "Can fix misaligned UI in some games, but otherwise should be left disabled. The game "
+                                "database will enable this automatically when needed."));
 
   // OSD Tab
 

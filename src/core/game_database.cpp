@@ -34,7 +34,7 @@ namespace GameDatabase {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 9,
+  GAME_DATABASE_CACHE_VERSION = 10,
 };
 
 static Entry* GetMutableEntry(std::string_view serial);
@@ -77,6 +77,7 @@ static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Tr
   "DisablePGXPColorCorrection",
   "DisablePGXPDepthBuffer",
   "DisablePGXPPreserveProjFP",
+  "DisablePGXPOn2DPolygons",
   "ForcePGXPVertexCache",
   "ForcePGXPCPUMode",
   "ForceRecompilerMemoryExceptions",
@@ -103,6 +104,7 @@ static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Tr
   TRANSLATE_NOOP("GameDatabase", "Disable PGXP Color Correction"),
   TRANSLATE_NOOP("GameDatabase", "Disable PGXP Depth Buffer"),
   TRANSLATE_NOOP("GameDatabase", "Disable PGXP Preserve Projection Floating Point"),
+  TRANSLATE_NOOP("GameDatabase", "Disable PGXP on 2D Polygons"),
   TRANSLATE_NOOP("GameDatabase", "Force PGXP Vertex Cache"),
   TRANSLATE_NOOP("GameDatabase", "Force PGXP CPU Mode"),
   TRANSLATE_NOOP("GameDatabase", "Force Recompiler Memory Exceptions"),
@@ -600,7 +602,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
                               osd_duration);
     }
 
-    settings.gpu_pgxp_vertex_cache = true;
+    settings.gpu_pgxp_vertex_cache = settings.gpu_pgxp_enable;
   }
   else if (settings.gpu_pgxp_enable && settings.gpu_pgxp_vertex_cache)
   {
@@ -629,7 +631,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 #endif
     }
 
-    settings.gpu_pgxp_cpu = true;
+    settings.gpu_pgxp_cpu = settings.gpu_pgxp_enable;
   }
   else if (settings.UsingPGXPCPUMode())
   {
@@ -650,6 +652,17 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     }
 
     settings.gpu_pgxp_depth_buffer = false;
+  }
+
+  if (HasTrait(Trait::DisablePGXPOn2DPolygons))
+  {
+    if (display_osd_messages && settings.gpu_pgxp_enable && !settings.gpu_pgxp_disable_2d)
+    {
+      Host::AddIconOSDMessage("gamedb_disable_pgxp_2d", ICON_FA_MICROCHIP,
+                              TRANSLATE_STR("OSDMessage", "PGXP disabled on 2D polygons by compatibility settings."),
+                              osd_duration);
+    }
+    g_settings.gpu_pgxp_disable_2d = true;
   }
 
   if (HasTrait(Trait::ForceRecompilerMemoryExceptions))

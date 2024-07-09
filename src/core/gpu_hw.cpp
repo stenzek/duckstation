@@ -2190,8 +2190,22 @@ void GPU_HW::LoadVertices()
         if (!valid_w)
         {
           SetBatchDepthBuffer(false);
-          for (BatchVertex& v : vertices)
-            v.w = 1.0f;
+          if (g_settings.gpu_pgxp_disable_2d)
+          {
+            // NOTE: This reads uninitialized data, but it's okay, it doesn't get used.
+            for (size_t i = 0; i < vertices.size(); i++)
+            {
+              BatchVertex& v = vertices[i];
+              v.x = static_cast<float>(native_vertex_positions[i].x);
+              v.y = static_cast<float>(native_vertex_positions[i].y);
+              v.w = 1.0f;
+            }
+          }
+          else
+          {
+            for (BatchVertex& v : vertices)
+              v.w = 1.0f;
+          }
         }
         else if (m_pgxp_depth_buffer)
         {

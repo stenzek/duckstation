@@ -203,7 +203,8 @@ void Settings::Load(SettingsInterface& si)
       si.GetStringValue("GPU", "TextureFilter", GetTextureFilterName(DEFAULT_GPU_TEXTURE_FILTER)).c_str())
       .value_or(DEFAULT_GPU_TEXTURE_FILTER);
   gpu_sprite_texture_filter =
-    ParseTextureFilterName(si.GetStringValue("GPU", "SpriteTextureFilter", GetTextureFilterName(gpu_texture_filter)).c_str())
+    ParseTextureFilterName(
+      si.GetStringValue("GPU", "SpriteTextureFilter", GetTextureFilterName(gpu_texture_filter)).c_str())
       .value_or(gpu_texture_filter);
   gpu_line_detect_mode =
     ParseLineDetectModeName(
@@ -231,6 +232,7 @@ void Settings::Load(SettingsInterface& si)
   gpu_pgxp_preserve_proj_fp = si.GetBoolValue("GPU", "PGXPPreserveProjFP", false);
   gpu_pgxp_tolerance = si.GetFloatValue("GPU", "PGXPTolerance", -1.0f);
   gpu_pgxp_depth_buffer = si.GetBoolValue("GPU", "PGXPDepthBuffer", false);
+  gpu_pgxp_disable_2d = si.GetBoolValue("GPU", "PGXPDisableOn2DPolygons", false);
   SetPGXPDepthClearThreshold(si.GetFloatValue("GPU", "PGXPDepthClearThreshold", DEFAULT_GPU_PGXP_DEPTH_THRESHOLD));
 
   display_deinterlacing_mode =
@@ -521,6 +523,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("GPU", "PGXPPreserveProjFP", gpu_pgxp_preserve_proj_fp);
   si.SetFloatValue("GPU", "PGXPTolerance", gpu_pgxp_tolerance);
   si.SetBoolValue("GPU", "PGXPDepthBuffer", gpu_pgxp_depth_buffer);
+  si.SetBoolValue("GPU", "PGXPDisableOn2DPolygons", gpu_pgxp_disable_2d);
   si.SetFloatValue("GPU", "PGXPDepthClearThreshold", GetPGXPDepthClearThreshold());
 
   si.SetStringValue("Display", "DeinterlacingMode", GetDisplayDeinterlacingModeName(display_deinterlacing_mode));
@@ -748,6 +751,17 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
       }
       g_settings.gpu_pgxp_enable = false;
     }
+  }
+  else
+  {
+    g_settings.gpu_pgxp_culling = false;
+    g_settings.gpu_pgxp_texture_correction = false;
+    g_settings.gpu_pgxp_color_correction = false;
+    g_settings.gpu_pgxp_vertex_cache = false;
+    g_settings.gpu_pgxp_cpu = false;
+    g_settings.gpu_pgxp_preserve_proj_fp = false;
+    g_settings.gpu_pgxp_depth_buffer = false;
+    g_settings.gpu_pgxp_disable_2d = false;
   }
 
 #ifndef ENABLE_MMAP_FASTMEM
