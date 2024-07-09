@@ -186322,6 +186322,7 @@ SCPS-45170:
     - SCPS-45171
   traits:
     - ForcePGXPCPUMode # Fixes battle shadows, radar jitter.
+    - DisablePGXPOn2DPolygons # Fixes misaligned text.
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -186345,6 +186346,7 @@ SLPS-02773:
     - SLPS-02774
   traits:
     - ForcePGXPCPUMode # Fixes battle shadows, radar jitter.
+    - DisablePGXPOn2DPolygons # Fixes misaligned text.
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -186375,6 +186377,7 @@ SLPS-01160:
     - SLPS-91437
   traits:
     - ForcePGXPCPUMode # Fixes battle shadows, radar jitter.
+    - DisablePGXPOn2DPolygons # Fixes misaligned text.
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -186403,6 +186406,7 @@ SLPS-01161:
     - SLPS-02776
   traits:
     - ForcePGXPCPUMode # Fixes battle shadows, radar jitter.
+    - DisablePGXPOn2DPolygons # Fixes misaligned text.
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -186431,6 +186435,7 @@ SLUS-00664:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Fixes battle shadows, radar jitter.
+    - DisablePGXPOn2DPolygons # Fixes misaligned text.
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -186459,6 +186464,7 @@ SLUS-00669:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Fixes battle shadows, radar jitter.
+    - DisablePGXPOn2DPolygons # Fixes misaligned text.
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
