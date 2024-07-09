@@ -888,18 +888,18 @@ void CPU::PGXP::CPU_SLTI(u32 instr, u32 rsVal)
   LOG_VALUES_C1(rs(instr), rsVal);
 
   // Rt = Rs < Imm (signed)
-  Validate(&g_state.pgxp_gpr[rs(instr)], rsVal);
-  PGXP_value ret = g_state.pgxp_gpr[rs(instr)];
+  PGXP_value& prsVal = g_state.pgxp_gpr[rs(instr)];
+  Validate(&prsVal, rsVal);
 
-  psx_value tempImm;
-  tempImm.w.h = imm(instr);
-  ret.y = 0.f;
-  ret.x = (g_state.pgxp_gpr[rs(instr)].x < tempImm.sw.h) ? 1.f : 0.f;
-  ret.SetValid(COMP_Y);
-  ret.flags |= VALID_TAINTED_Z;
-  ret.value = BoolToUInt32(static_cast<s32>(rsVal) < imm_sext(instr));
+  const float fimmx = static_cast<float>(static_cast<s16>(imm(instr)));
+  const float fimmy = fimmx < 0.0f ? -1.0f : 0.0f;
 
-  g_state.pgxp_gpr[rt(instr)] = ret;
+  PGXP_value& prtVal = g_state.pgxp_gpr[rt(instr)];
+  prtVal.x = (prsVal.GetValidY(rsVal) < fimmy || prsVal.GetValidX(rsVal) < fimmx) ? 1.f : 0.f;
+  prtVal.y = 0.0f;
+  prtVal.z = prsVal.z;
+  prtVal.flags = prsVal.flags | VALID_X | VALID_Y | VALID_TAINTED_Z;
+  prtVal.value = BoolToUInt32(static_cast<s32>(rsVal) < imm_sext(instr));
 }
 
 void CPU::PGXP::CPU_SLTIU(u32 instr, u32 rsVal)
@@ -907,18 +907,19 @@ void CPU::PGXP::CPU_SLTIU(u32 instr, u32 rsVal)
   LOG_VALUES_C1(rs(instr), rsVal);
 
   // Rt = Rs < Imm (Unsigned)
+  PGXP_value& prsVal = g_state.pgxp_gpr[rs(instr)];
   Validate(&g_state.pgxp_gpr[rs(instr)], rsVal);
-  PGXP_value ret = g_state.pgxp_gpr[rs(instr)];
 
-  psx_value tempImm;
-  tempImm.w.h = imm(instr);
-  ret.y = 0.f;
-  ret.x = (f16Unsign(g_state.pgxp_gpr[rs(instr)].x) < tempImm.w.h) ? 1.f : 0.f;
-  ret.SetValid(COMP_Y);
-  ret.flags |= VALID_TAINTED_Z;
-  ret.value = BoolToUInt32(rsVal < imm(instr));
+  const float fimmx = static_cast<float>(static_cast<s16>(imm(instr)));
+  const float fimmy = fimmx < 0.0f ? -1.0f : 0.0f;
 
-  g_state.pgxp_gpr[rt(instr)] = ret;
+  PGXP_value& prtVal = g_state.pgxp_gpr[rt(instr)];
+  prtVal.x =
+    (f16Unsign(prsVal.GetValidY(rsVal)) < f16Unsign(fimmy) || f16Unsign(prsVal.GetValidX(rsVal)) < fimmx) ? 1.0f : 0.0f;
+  prtVal.y = 0.f;
+  prtVal.z = prsVal.z;
+  prtVal.flags = prsVal.flags | VALID_X | VALID_Y | VALID_TAINTED_Z;
+  prtVal.value = BoolToUInt32(rsVal < imm(instr));
 }
 
 ////////////////////////////////////
