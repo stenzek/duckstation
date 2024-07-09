@@ -1,13 +1,16 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "gamelistmodel.h"
+#include "qthost.h"
+#include "qtutils.h"
+
+#include "core/system.h"
+
 #include "common/file_system.h"
 #include "common/path.h"
 #include "common/string_util.h"
-#include "core/system.h"
-#include "qthost.h"
-#include "qtutils.h"
+
 #include <QtConcurrent/QtConcurrent>
 #include <QtCore/QDate>
 #include <QtCore/QDateTime>
@@ -25,6 +28,11 @@ static constexpr int COVER_ART_WIDTH = 512;
 static constexpr int COVER_ART_HEIGHT = 512;
 static constexpr int COVER_ART_SPACING = 32;
 static constexpr int MIN_COVER_CACHE_SIZE = 256;
+
+static std::string getMemoryCardIconCachePath()
+{
+  return Path::Combine(EmuFolders::Cache, "memcard_icons.cache");
+}
 
 static int DPRScale(int size, float dpr)
 {
@@ -114,14 +122,31 @@ const char* GameListModel::getColumnName(Column col)
   return s_column_names[static_cast<int>(col)];
 }
 
-GameListModel::GameListModel(float cover_scale, bool show_cover_titles, QObject* parent /* = nullptr */)
-  : QAbstractTableModel(parent), m_show_titles_for_covers(show_cover_titles)
+GameListModel::GameListModel(float cover_scale, bool show_cover_titles, bool show_game_icons,
+                             QObject* parent /* = nullptr */)
+  : QAbstractTableModel(parent), m_show_titles_for_covers(show_cover_titles), m_show_game_icons(show_game_icons),
+    m_memcard_icon_cache(getMemoryCardIconCachePath()), m_memcard_pixmap_cache(128)
 {
   loadCommonImages();
   setCoverScale(cover_scale);
   setColumnDisplayNames();
+
+  if (m_show_game_icons)
+    m_memcard_icon_cache.Reload();
 }
+
 GameListModel::~GameListModel() = default;
+
+void GameListModel::setShowGameIcons(bool enabled)
+{
+  m_show_game_icons = enabled;
+
+  beginResetModel();
+  m_memcard_pixmap_cache.Clear();
+  if (enabled)
+    m_memcard_icon_cache.Reload();
+  endResetModel();
+}
 
 void GameListModel::setCoverScale(float scale)
 {
@@ -222,6 +247,31 @@ QString GameListModel::formatTimespan(time_t timespan)
     return qApp->translate("GameList", "%n hours", "", hours);
   else
     return qApp->translate("GameList", "%n minutes", "", minutes);
+}
+
+const QPixmap& GameListModel::getIconForEntry(const GameList::Entry* ge) const
+{
+  // We only do this for discs/disc sets for now.
+  if (m_show_game_icons && (!ge->serial.empty() && (ge->IsDisc() || ge->IsDiscSet())))
+  {
+    QPixmap* item = m_memcard_pixmap_cache.Lookup(ge->serial);
+    if (item)
+      return *item;
+
+    const MemoryCardImage::IconFrame* icon = m_memcard_icon_cache.Lookup(ge->serial, ge->path);
+    if (icon)
+    {
+      const QImage image(reinterpret_cast<const uchar*>(icon->pixels), MemoryCardImage::ICON_WIDTH,
+                         MemoryCardImage::ICON_HEIGHT, QImage::Format_RGBA8888);
+      return *m_memcard_pixmap_cache.Insert(ge->serial, QPixmap::fromImage(image));
+    }
+    else
+    {
+      return *m_memcard_pixmap_cache.Insert(ge->serial, m_type_pixmaps[static_cast<u32>(ge->type)]);
+    }
+  }
+
+  return m_type_pixmaps[static_cast<u32>(ge->type)];
 }
 
 int GameListModel::getCoverArtWidth() const
@@ -407,8 +457,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
       {
         case Column_Type:
         {
-          // TODO: Test for settings
-          return m_type_pixmaps[static_cast<u32>(ge->type)];
+          return getIconForEntry(ge);
         }
 
         case Column_Region:
@@ -455,6 +504,10 @@ QVariant GameListModel::headerData(int section, Qt::Orientation orientation, int
 void GameListModel::refresh()
 {
   beginResetModel();
+
+  // Invalidate memcard LRU cache, forcing a re-query of the memcard timestamps.
+  m_memcard_pixmap_cache.Clear();
+
   endResetModel();
 }
 

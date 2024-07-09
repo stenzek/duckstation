@@ -17,7 +17,7 @@
    <string>DuckStation</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="resources/resources.qrc">
+   <iconset resource="resources/duckstation-qt.qrc">
     <normaloff>:/icons/duck.png</normaloff>:/icons/duck.png</iconset>
   </property>
   <property name="unifiedTitleAndToolBarOnMac">
@@ -220,7 +220,8 @@
     <addaction name="actionFullscreen"/>
     <addaction name="menuWindowSize"/>
     <addaction name="separator"/>
-    <addaction name="actionMergeDiscSets" />
+    <addaction name="actionMergeDiscSets"/>
+    <addaction name="actionShowGameIcons"/>
     <addaction name="actionGridViewShowTitles"/>
     <addaction name="actionGridViewZoomIn"/>
     <addaction name="actionGridViewZoomOut"/>
@@ -444,7 +445,7 @@
   </action>
   <action name="actionGitHubRepository">
    <property name="icon">
-    <iconset resource="resources/resources.qrc">
+    <iconset resource="resources/duckstation-qt.qrc">
      <normaloff>:/icons/github.png</normaloff>:/icons/github.png</iconset>
    </property>
    <property name="text">
@@ -453,7 +454,7 @@
   </action>
   <action name="actionIssueTracker">
    <property name="icon">
-    <iconset resource="resources/resources.qrc">
+    <iconset resource="resources/duckstation-qt.qrc">
      <normaloff>:/icons/IssueTracker.png</normaloff>:/icons/IssueTracker.png</iconset>
    </property>
    <property name="text">
@@ -462,7 +463,7 @@
   </action>
   <action name="actionDiscordServer">
    <property name="icon">
-    <iconset resource="resources/resources.qrc">
+    <iconset resource="resources/duckstation-qt.qrc">
      <normaloff>:/icons/discord.png</normaloff>:/icons/discord.png</iconset>
    </property>
    <property name="text">
@@ -484,7 +485,7 @@
   </action>
   <action name="actionAboutQt">
    <property name="icon">
-    <iconset resource="resources/resources.qrc">
+    <iconset resource="resources/duckstation-qt.qrc">
      <normaloff>:/icons/QT.png</normaloff>:/icons/QT.png</iconset>
    </property>
    <property name="text">
@@ -493,7 +494,7 @@
   </action>
   <action name="actionAbout">
    <property name="icon">
-    <iconset resource="resources/resources.qrc">
+    <iconset resource="resources/duckstation-qt.qrc">
      <normaloff>:/icons/duck_64.png</normaloff>:/icons/duck_64.png</iconset>
    </property>
    <property name="text">
@@ -951,9 +952,20 @@
     <string>Memory &amp;Scanner</string>
    </property>
   </action>
+  <action name="actionShowGameIcons">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Game Icons (List View)</string>
+   </property>
+  </action>
  </widget>
  <resources>
-  <include location="resources/resources.qrc"/>
+  <include location="resources/duckstation-qt.qrc"/>
  </resources>
  <connections/>
 </ui>

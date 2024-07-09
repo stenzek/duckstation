@@ -248,9 +248,10 @@ bool QtHost::SaveGameSettings(SettingsInterface* sif, bool delete_if_empty)
   return true;
 }
 
-QIcon QtHost::GetAppIcon()
+const QIcon& QtHost::GetAppIcon()
 {
-  return QIcon(QStringLiteral(":/icons/duck.png"));
+  static QIcon icon = QIcon(QStringLiteral(":/icons/duck.png"));
+  return icon;
 }
 
 std::optional<bool> QtHost::DownloadFile(QWidget* parent, const QString& title, std::string url, std::vector<u8>* data)

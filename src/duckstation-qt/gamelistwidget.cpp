@@ -114,7 +114,8 @@ void GameListWidget::initialize()
   const float cover_scale = Host::GetBaseFloatSettingValue("UI", "GameListCoverArtScale", 0.45f);
   const bool show_cover_titles = Host::GetBaseBoolSettingValue("UI", "GameListShowCoverTitles", true);
   const bool merge_disc_sets = Host::GetBaseBoolSettingValue("UI", "GameListMergeDiscSets", true);
-  m_model = new GameListModel(cover_scale, show_cover_titles, this);
+  const bool show_game_icons = Host::GetBaseBoolSettingValue("UI", "GameListShowGameIcons", true);
+  m_model = new GameListModel(cover_scale, show_cover_titles, show_game_icons, this);
   m_model->updateCacheSize(width(), height());
 
   m_sort_model = new GameListSortModel(m_model);
@@ -240,6 +241,11 @@ bool GameListWidget::isShowingGridCoverTitles() const
 bool GameListWidget::isMergingDiscSets() const
 {
   return m_sort_model->isMergingDiscSets();
+}
+
+bool GameListWidget::isShowingGameIcons() const
+{
+  return m_model->getShowGameIcons();
 }
 
 void GameListWidget::refresh(bool invalidate_cache)
@@ -474,6 +480,16 @@ void GameListWidget::setMergeDiscSets(bool enabled)
   m_sort_model->setMergeDiscSets(enabled);
   updateToolbar();
   emit layoutChange();
+}
+
+void GameListWidget::setShowGameIcons(bool enabled)
+{
+  if (m_model->getShowGameIcons() == enabled)
+    return;
+
+  Host::SetBaseBoolSettingValue("UI", "GameListShowGameIcons", enabled);
+  Host::CommitBaseSettingChanges();
+  m_model->setShowGameIcons(enabled);
 }
 
 void GameListWidget::updateToolbar()

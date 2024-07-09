@@ -53,6 +53,7 @@ public:
   bool isShowingGameGrid() const;
   bool isShowingGridCoverTitles() const;
   bool isMergingDiscSets() const;
+  bool isShowingGameIcons() const;
 
   const GameList::Entry* getSelectedEntry() const;
 
@@ -85,6 +86,7 @@ public Q_SLOTS:
   void showGameGrid();
   void setShowCoverTitles(bool enabled);
   void setMergeDiscSets(bool enabled);
+  void setShowGameIcons(bool enabled);
   void gridZoomIn();
   void gridZoomOut();
   void gridIntScale(int int_scale);

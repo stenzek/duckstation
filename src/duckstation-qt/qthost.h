@@ -270,7 +270,7 @@ QString GetAppNameAndVersion();
 QString GetAppConfigSuffix();
 
 /// Returns the main application icon.
-QIcon GetAppIcon();
+const QIcon& GetAppIcon();
 
 /// Returns the base path for resources. This may be : prefixed, if we're using embedded resources.
 QString GetResourcesBasePath();

@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
 
 #include "core/game_database.h"
 #include "core/game_list.h"
+#include "core/memory_card_icon_cache.h"
 #include "core/types.h"
 
 #include "common/heterogeneous_containers.h"
@@ -46,7 +47,7 @@ public:
   static std::optional<Column> getColumnIdForName(std::string_view name);
   static const char* getColumnName(Column col);
 
-  GameListModel(float cover_scale, bool show_cover_titles, QObject* parent = nullptr);
+  GameListModel(float cover_scale, bool show_cover_titles, bool show_game_icons, QObject* parent = nullptr);
   ~GameListModel();
 
   int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -66,6 +67,9 @@ public:
   bool getShowCoverTitles() const { return m_show_titles_for_covers; }
   void setShowCoverTitles(bool enabled) { m_show_titles_for_covers = enabled; }
 
+  bool getShowGameIcons() const { return m_show_game_icons; }
+  void setShowGameIcons(bool enabled);
+
   float getCoverScale() const { return m_cover_scale; }
   void setCoverScale(float scale);
   int getCoverArtWidth() const;
@@ -84,10 +88,13 @@ private:
   void loadOrGenerateCover(const GameList::Entry* ge);
   void invalidateCoverForPath(const std::string& path);
 
+  const QPixmap& getIconForEntry(const GameList::Entry* ge) const;
+
   static QString formatTimespan(time_t timespan);
 
   float m_cover_scale = 0.0f;
   bool m_show_titles_for_covers = false;
+  bool m_show_game_icons = false;
 
   std::array<QString, Column_Count> m_column_display_names;
   std::array<QPixmap, static_cast<int>(GameList::EntryType::Count)> m_type_pixmaps;
@@ -98,4 +105,7 @@ private:
   QPixmap m_loading_pixmap;
 
   mutable LRUCache<std::string, QPixmap> m_cover_pixmap_cache;
+
+  mutable MemoryCardIconCache m_memcard_icon_cache;
+  mutable LRUCache<std::string, QPixmap> m_memcard_pixmap_cache;
 };
