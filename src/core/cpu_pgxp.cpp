@@ -1217,13 +1217,6 @@ void CPU::PGXP::CPU_MULT(u32 instr, u32 rsVal, u32 rtVal)
   Validate(&prsVal, rsVal);
   Validate(&prtVal, rtVal);
 
-  // iCB: Only require one valid input
-  if (((prtVal.flags & VALID_XY) != VALID_XY) != ((prsVal.flags & VALID_XY) != VALID_XY))
-  {
-    MakeValid(&prsVal, rsVal);
-    MakeValid(&prtVal, rtVal);
-  }
-
   PGXP_value& ploVal = g_state.pgxp_gpr[static_cast<u8>(Reg::lo)];
   PGXP_value& phiVal = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)];
   ploVal = prsVal;
@@ -1235,11 +1228,16 @@ void CPU::PGXP::CPU_MULT(u32 instr, u32 rsVal, u32 rtVal)
   double xx, xy, yx, yy;
   double lx = 0, ly = 0, hx = 0, hy = 0;
 
+  const float rsx = prsVal.GetValidX(rsVal);
+  const float rsy = prsVal.GetValidY(rsVal);
+  const float rtx = prtVal.GetValidX(rtVal);
+  const float rty = prtVal.GetValidY(rtVal);
+
   // Multiply out components
-  xx = f16Unsign(prsVal.x) * f16Unsign(prtVal.x);
-  xy = f16Unsign(prsVal.x) * (prtVal.y);
-  yx = (prsVal.y) * f16Unsign(prtVal.x);
-  yy = (prsVal.y) * (prtVal.y);
+  xx = f16Unsign(rsx) * f16Unsign(rtx);
+  xy = f16Unsign(rsx) * (rty);
+  yx = (rsy)*f16Unsign(rtx);
+  yy = (rsy) * (rty);
 
   // Split values into outputs
   lx = xx;
@@ -1254,10 +1252,10 @@ void CPU::PGXP::CPU_MULT(u32 instr, u32 rsVal, u32 rtVal)
 
   ploVal.x = (float)f16Sign(lx);
   ploVal.y = (float)f16Sign(ly);
-  ploVal.flags |= VALID_TAINTED_Z;
+  ploVal.flags |= VALID_TAINTED_Z | (prtVal.flags & VALID_XY);
   phiVal.x = (float)f16Sign(hx);
   phiVal.y = (float)f16Sign(hy);
-  phiVal.flags |= VALID_TAINTED_Z;
+  phiVal.flags |= VALID_TAINTED_Z | (prtVal.flags & VALID_XY);
 
   // compute PSX value
   const u64 result = static_cast<u64>(static_cast<s64>(SignExtend64(rsVal)) * static_cast<s64>(SignExtend64(rtVal)));
@@ -1275,13 +1273,6 @@ void CPU::PGXP::CPU_MULTU(u32 instr, u32 rsVal, u32 rtVal)
   Validate(&prsVal, rsVal);
   Validate(&prtVal, rtVal);
 
-  // iCB: Only require one valid input
-  if (((prtVal.flags & VALID_XY) != VALID_XY) != ((prsVal.flags & VALID_XY) != VALID_XY))
-  {
-    MakeValid(&prsVal, rsVal);
-    MakeValid(&prtVal, rtVal);
-  }
-
   PGXP_value& ploVal = g_state.pgxp_gpr[static_cast<u8>(Reg::lo)];
   PGXP_value& phiVal = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)];
   ploVal = prsVal;
@@ -1293,11 +1284,16 @@ void CPU::PGXP::CPU_MULTU(u32 instr, u32 rsVal, u32 rtVal)
   double xx, xy, yx, yy;
   double lx = 0, ly = 0, hx = 0, hy = 0;
 
+  const float rsx = prsVal.GetValidX(rsVal);
+  const float rsy = prsVal.GetValidY(rsVal);
+  const float rtx = prtVal.GetValidX(rtVal);
+  const float rty = prtVal.GetValidY(rtVal);
+
   // Multiply out components
-  xx = f16Unsign(prsVal.x) * f16Unsign(prtVal.x);
-  xy = f16Unsign(prsVal.x) * f16Unsign(prtVal.y);
-  yx = f16Unsign(prsVal.y) * f16Unsign(prtVal.x);
-  yy = f16Unsign(prsVal.y) * f16Unsign(prtVal.y);
+  xx = f16Unsign(rsx) * f16Unsign(rtx);
+  xy = f16Unsign(rsx) * f16Unsign(rty);
+  yx = f16Unsign(rsy) * f16Unsign(rtx);
+  yy = f16Unsign(rsy) * f16Unsign(rty);
 
   // Split values into outputs
   lx = xx;
@@ -1312,10 +1308,10 @@ void CPU::PGXP::CPU_MULTU(u32 instr, u32 rsVal, u32 rtVal)
 
   ploVal.x = (float)f16Sign(lx);
   ploVal.y = (float)f16Sign(ly);
-  ploVal.flags |= VALID_TAINTED_Z;
+  ploVal.flags |= VALID_TAINTED_Z | (prtVal.flags & VALID_XY);
   phiVal.x = (float)f16Sign(hx);
   phiVal.y = (float)f16Sign(hy);
-  phiVal.flags |= VALID_TAINTED_Z;
+  phiVal.flags |= VALID_TAINTED_Z | (prtVal.flags & VALID_XY);
 
   // compute PSX value
   const u64 result = ZeroExtend64(rsVal) * ZeroExtend64(rtVal);
@@ -1334,13 +1330,6 @@ void CPU::PGXP::CPU_DIV(u32 instr, u32 rsVal, u32 rtVal)
   Validate(&prsVal, rsVal);
   Validate(&prtVal, rtVal);
 
-  //// iCB: Only require one valid input
-  if (((prtVal.flags & VALID_XY) != VALID_XY) != ((prsVal.flags & VALID_XY) != VALID_XY))
-  {
-    MakeValid(&prsVal, rsVal);
-    MakeValid(&prtVal, rtVal);
-  }
-
   PGXP_value& ploVal = g_state.pgxp_gpr[static_cast<u8>(Reg::lo)];
   PGXP_value& phiVal = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)];
   ploVal = prsVal;
@@ -1349,18 +1338,18 @@ void CPU::PGXP::CPU_DIV(u32 instr, u32 rsVal, u32 rtVal)
   // Z/valid is the same
   phiVal = ploVal;
 
-  double vs = f16Unsign(prsVal.x) + (prsVal.y) * (double)(1 << 16);
-  double vt = f16Unsign(prtVal.x) + (prtVal.y) * (double)(1 << 16);
+  double vs = f16Unsign(prsVal.GetValidX(rsVal)) + prsVal.GetValidY(rsVal) * (double)(1 << 16);
+  double vt = f16Unsign(prtVal.GetValidX(rtVal)) + prtVal.GetValidY(rtVal) * (double)(1 << 16);
 
   double lo = vs / vt;
   ploVal.y = (float)f16Sign(f16Overflow(lo));
   ploVal.x = (float)f16Sign(lo);
-  ploVal.flags |= VALID_TAINTED_Z;
+  ploVal.flags |= VALID_TAINTED_Z | (prtVal.flags & VALID_XY);
 
   double hi = fmod(vs, vt);
   phiVal.y = (float)f16Sign(f16Overflow(hi));
   phiVal.x = (float)f16Sign(hi);
-  phiVal.flags |= VALID_TAINTED_Z;
+  phiVal.flags |= VALID_TAINTED_Z | (prtVal.flags & VALID_XY);
 
   // compute PSX value
   if (static_cast<s32>(rtVal) == 0)
@@ -1393,13 +1382,6 @@ void CPU::PGXP::CPU_DIVU(u32 instr, u32 rsVal, u32 rtVal)
   Validate(&prsVal, rsVal);
   Validate(&prtVal, rtVal);
 
-  //// iCB: Only require one valid input
-  if (((prtVal.flags & VALID_XY) != VALID_XY) != ((prsVal.flags & VALID_XY) != VALID_XY))
-  {
-    MakeValid(&prsVal, rsVal);
-    MakeValid(&prtVal, rtVal);
-  }
-
   PGXP_value& ploVal = g_state.pgxp_gpr[static_cast<u8>(Reg::lo)];
   PGXP_value& phiVal = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)];
   ploVal = prsVal;
@@ -1408,18 +1390,18 @@ void CPU::PGXP::CPU_DIVU(u32 instr, u32 rsVal, u32 rtVal)
   // Z/valid is the same
   phiVal = ploVal;
 
-  double vs = f16Unsign(prsVal.x) + f16Unsign(prsVal.y) * (double)(1 << 16);
-  double vt = f16Unsign(prtVal.x) + f16Unsign(prtVal.y) * (double)(1 << 16);
+  double vs = f16Unsign(prsVal.GetValidX(rsVal)) + f16Unsign(prsVal.GetValidY(rsVal)) * (double)(1 << 16);
+  double vt = f16Unsign(prtVal.GetValidX(rtVal)) + f16Unsign(prtVal.GetValidY(rtVal)) * (double)(1 << 16);
 
   double lo = vs / vt;
   ploVal.y = (float)f16Sign(f16Overflow(lo));
   ploVal.x = (float)f16Sign(lo);
-  ploVal.flags |= VALID_TAINTED_Z;
+  ploVal.flags |= VALID_TAINTED_Z | (prtVal.flags & VALID_XY);
 
   double hi = fmod(vs, vt);
   phiVal.y = (float)f16Sign(f16Overflow(hi));
   phiVal.x = (float)f16Sign(hi);
-  phiVal.flags |= VALID_TAINTED_Z;
+  phiVal.flags |= VALID_TAINTED_Z | (prtVal.flags & VALID_XY);
 
   if (rtVal == 0)
   {
