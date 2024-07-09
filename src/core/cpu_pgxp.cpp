@@ -1157,20 +1157,13 @@ void CPU::PGXP::CPU_SLT(u32 instr, u32 rsVal, u32 rtVal)
   Validate(&prsVal, rsVal);
   Validate(&prtVal, rtVal);
 
-  // iCB: Only require one valid input
-  if (((prtVal.flags & VALID_XY) != VALID_XY) != ((prsVal.flags & VALID_XY) != VALID_XY))
-  {
-    MakeValid(&prsVal, rsVal);
-    MakeValid(&prtVal, rtVal);
-  }
-
   PGXP_value ret = prsVal;
+  ret.x = (prsVal.GetValidY(rsVal) < prtVal.GetValidY(rtVal) ||
+           f16Unsign(prsVal.GetValidX(rsVal)) < f16Unsign(prtVal.GetValidX(rtVal))) ?
+            1.f :
+            0.f;
   ret.y = 0.f;
-  ret.SetValid(COMP_Y);
-  ret.flags |= VALID_TAINTED_Z;
-
-  ret.x = (prsVal.y < prtVal.y) ? 1.f : (f16Unsign(prsVal.x) < f16Unsign(prtVal.x)) ? 1.f : 0.f;
-
+  ret.flags |= VALID_TAINTED_Z | VALID_X | VALID_Y;
   ret.value = BoolToUInt32(static_cast<s32>(rsVal) < static_cast<s32>(rtVal));
   g_state.pgxp_gpr[rd(instr)] = ret;
 }
@@ -1185,20 +1178,13 @@ void CPU::PGXP::CPU_SLTU(u32 instr, u32 rsVal, u32 rtVal)
   Validate(&prsVal, rsVal);
   Validate(&prtVal, rtVal);
 
-  // iCB: Only require one valid input
-  if (((prtVal.flags & VALID_XY) != VALID_XY) != ((prsVal.flags & VALID_XY) != VALID_XY))
-  {
-    MakeValid(&prsVal, rsVal);
-    MakeValid(&prtVal, rtVal);
-  }
-
   PGXP_value ret = prsVal;
+  ret.x = (f16Unsign(prsVal.GetValidY(rsVal)) < f16Unsign(prtVal.GetValidY(rtVal)) ||
+           f16Unsign(prsVal.GetValidX(rsVal)) < f16Unsign(prtVal.GetValidX(rtVal))) ?
+            1.f :
+            0.f;
   ret.y = 0.f;
-  ret.SetValid(COMP_Y);
-  ret.flags |= VALID_TAINTED_Z;
-
-  ret.x = (f16Unsign(prsVal.y) < f16Unsign(prtVal.y)) ? 1.f : (f16Unsign(prsVal.x) < f16Unsign(prtVal.x)) ? 1.f : 0.f;
-
+  ret.flags |= VALID_TAINTED_Z | VALID_X | VALID_Y;
   ret.value = BoolToUInt32(rsVal < rtVal);
   g_state.pgxp_gpr[rd(instr)] = ret;
 }
