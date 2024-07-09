@@ -16,11 +16,13 @@
 
 #include <QtCore/QSortFilterProxyModel>
 #include <QtGui/QGuiApplication>
+#include <QtGui/QPainter>
 #include <QtGui/QPixmap>
 #include <QtGui/QWheelEvent>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QScrollBar>
+#include <QtWidgets/QStyledItemDelegate>
 
 static constexpr float MIN_SCALE = 0.1f;
 static constexpr float MAX_SCALE = 2.0f;
@@ -103,6 +105,36 @@ private:
   bool m_merge_disc_sets = true;
 };
 
+namespace {
+class GameListIconStyleDelegate final : public QStyledItemDelegate
+{
+public:
+  GameListIconStyleDelegate(QWidget* parent) : QStyledItemDelegate(parent) {}
+  ~GameListIconStyleDelegate() = default;
+
+  void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+  {
+    // https://stackoverflow.com/questions/32216568/how-to-set-icon-center-in-qtableview
+    Q_ASSERT(index.isValid());
+
+    // draw default item
+    QStyleOptionViewItem opt = option;
+    initStyleOption(&opt, index);
+    opt.icon = QIcon();
+    QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &opt, painter, 0);
+
+    const QRect r = option.rect;
+    const QPixmap pix = qvariant_cast<QPixmap>(index.data(Qt::DecorationRole));
+    const int pix_width = static_cast<int>(pix.width() / pix.devicePixelRatio());
+    const int pix_height = static_cast<int>(pix.width() / pix.devicePixelRatio());
+
+    // draw pixmap at center of item
+    const QPoint p = QPoint((r.width() - pix_width) / 2, (r.height() - pix_height) / 2);
+    painter->drawPixmap(r.topLeft() + p, pix);
+  }
+};
+} // namespace
+
 GameListWidget::GameListWidget(QWidget* parent /* = nullptr */) : QWidget(parent)
 {
 }
@@ -167,6 +199,7 @@ void GameListWidget::initialize()
   m_table_view->verticalHeader()->hide();
   m_table_view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   m_table_view->setVerticalScrollMode(QAbstractItemView::ScrollMode::ScrollPerPixel);
+  m_table_view->setItemDelegateForColumn(0, new GameListIconStyleDelegate(this));
 
   loadTableViewColumnVisibilitySettings();
   loadTableViewColumnSortSettings();
