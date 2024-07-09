@@ -9,6 +9,7 @@
 #include "coverdownloaddialog.h"
 #include "debuggerwindow.h"
 #include "displaywidget.h"
+#include "gamelistmodel.h"
 #include "gamelistsettingswidget.h"
 #include "gamelistwidget.h"
 #include "interfacesettingswidget.h"
@@ -90,6 +91,7 @@ static bool s_system_paused = false;
 static QString s_current_game_title;
 static QString s_current_game_serial;
 static QString s_current_game_path;
+static QIcon s_current_game_icon;
 
 bool QtHost::IsSystemPaused()
 {
@@ -615,6 +617,7 @@ void MainWindow::onRunningGameChanged(const QString& filename, const QString& ga
   s_current_game_path = filename;
   s_current_game_title = game_title;
   s_current_game_serial = game_serial;
+  s_current_game_icon = m_game_list_widget->getModel()->getIconForGame(filename);
 
   updateWindowTitle();
 }
@@ -1883,6 +1886,7 @@ void MainWindow::updateWindowTitle()
 
   if (windowTitle() != main_title)
     setWindowTitle(main_title);
+  setWindowIcon(s_current_game_icon.isNull() ? QtHost::GetAppIcon() : s_current_game_icon);
 
   if (m_display_widget && !isRenderingToMain())
   {
@@ -1890,6 +1894,7 @@ void MainWindow::updateWindowTitle()
       m_display_container ? static_cast<QWidget*>(m_display_container) : static_cast<QWidget*>(m_display_widget);
     if (container->windowTitle() != display_title)
       container->setWindowTitle(display_title);
+    container->setWindowIcon(s_current_game_icon.isNull() ? QtHost::GetAppIcon() : s_current_game_icon);
   }
 
   if (g_log_window)

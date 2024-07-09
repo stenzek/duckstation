@@ -69,6 +69,7 @@ public:
 
   bool getShowGameIcons() const { return m_show_game_icons; }
   void setShowGameIcons(bool enabled);
+  QIcon getIconForGame(const QString& path);
 
   float getCoverScale() const { return m_cover_scale; }
   void setCoverScale(float scale);
@@ -88,7 +89,7 @@ private:
   void loadOrGenerateCover(const GameList::Entry* ge);
   void invalidateCoverForPath(const std::string& path);
 
-  const QPixmap& getIconForEntry(const GameList::Entry* ge) const;
+  const QPixmap& getPixmapForEntry(const GameList::Entry* ge) const;
 
   static QString formatTimespan(time_t timespan);
 

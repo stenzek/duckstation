@@ -249,7 +249,7 @@ QString GameListModel::formatTimespan(time_t timespan)
     return qApp->translate("GameList", "%n minutes", "", minutes);
 }
 
-const QPixmap& GameListModel::getIconForEntry(const GameList::Entry* ge) const
+const QPixmap& GameListModel::getPixmapForEntry(const GameList::Entry* ge) const
 {
   // We only do this for discs/disc sets for now.
   if (m_show_game_icons && (!ge->serial.empty() && (ge->IsDisc() || ge->IsDiscSet())))
@@ -272,6 +272,30 @@ const QPixmap& GameListModel::getIconForEntry(const GameList::Entry* ge) const
   }
 
   return m_type_pixmaps[static_cast<u32>(ge->type)];
+}
+
+QIcon GameListModel::getIconForGame(const QString& path)
+{
+  QIcon ret;
+
+  if (m_show_game_icons)
+  {
+    const auto lock = GameList::GetLock();
+    const GameList::Entry* entry = GameList::GetEntryForPath(path.toStdString());
+
+    // See above.
+    if (entry && !entry->serial.empty() && (entry->IsDisc() || entry->IsDiscSet()))
+    {
+      const MemoryCardImage::IconFrame* icon = m_memcard_icon_cache.Lookup(entry->serial, entry->path);
+      if (icon)
+      {
+        ret = QIcon(QPixmap::fromImage(QImage(reinterpret_cast<const uchar*>(icon->pixels), MemoryCardImage::ICON_WIDTH,
+                                              MemoryCardImage::ICON_HEIGHT, QImage::Format_RGBA8888)));
+      }
+    }
+  }
+
+  return ret;
 }
 
 int GameListModel::getCoverArtWidth() const
@@ -457,7 +481,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
       {
         case Column_Type:
         {
-          return getIconForEntry(ge);
+          return getPixmapForEntry(ge);
         }
 
         case Column_Region:
