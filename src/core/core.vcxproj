@@ -62,6 +62,7 @@
     <ClCompile Include="justifier.cpp" />
     <ClCompile Include="mdec.cpp" />
     <ClCompile Include="memory_card.cpp" />
+    <ClCompile Include="memory_card_icon_cache.cpp" />
     <ClCompile Include="memory_card_image.cpp" />
     <ClCompile Include="multitap.cpp" />
     <ClCompile Include="guncon.cpp" />
@@ -143,6 +144,7 @@
     <ClInclude Include="justifier.h" />
     <ClInclude Include="mdec.h" />
     <ClInclude Include="memory_card.h" />
+    <ClInclude Include="memory_card_icon_cache.h" />
     <ClInclude Include="memory_card_image.h" />
     <ClInclude Include="multitap.h" />
     <ClInclude Include="guncon.h" />

@@ -79,6 +79,8 @@ add_library(core
   mdec.h
   memory_card.cpp
   memory_card.h
+  memory_card_icon_cache.cpp
+  memory_card_icon_cache.h
   memory_card_image.cpp
   memory_card_image.h
   multitap.cpp
