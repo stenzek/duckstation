@@ -758,6 +758,16 @@ void CPU::PGXP::CPU_ADDI(u32 instr, u32 rsVal)
   if (tempImm.d == 0)
     return;
 
+  if (rsVal == 0)
+  {
+    // x is low precision value
+    prtVal.x = static_cast<float>(tempImm.sw.l);
+    prtVal.y = static_cast<float>(tempImm.sw.h);
+    prtVal.flags |= VALID_X | VALID_Y | VALID_TAINTED_Z;
+    prtVal.value = tempImm.d;
+    return;
+  }
+
   prtVal.x = (float)f16Unsign(prtVal.x);
   prtVal.x += (float)tempImm.w.l;
 
