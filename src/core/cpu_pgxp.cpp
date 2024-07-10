@@ -946,47 +946,42 @@ void CPU::PGXP::CPU_ADD(u32 instr, u32 rsVal, u32 rtVal)
 
   PGXP_value& prsVal = g_state.pgxp_gpr[rs(instr)];
   PGXP_value& prtVal = g_state.pgxp_gpr[rt(instr)];
+  PGXP_value& prdVal = g_state.pgxp_gpr[rd(instr)];
 
   // Rd = Rs + Rt (signed)
   Validate(&prsVal, rsVal);
   Validate(&prtVal, rtVal);
 
-  PGXP_value ret;
   if (rtVal == 0)
   {
-    ret = prsVal;
-    CopyZIfMissing(ret, prtVal);
+    prdVal = prsVal;
+    CopyZIfMissing(prdVal, prtVal);
   }
   else if (rsVal == 0)
   {
-    ret = prtVal;
-    CopyZIfMissing(ret, prsVal);
+    prdVal = prtVal;
+    CopyZIfMissing(prdVal, prsVal);
   }
   else
   {
-    ret = prsVal;
-    ret.x = (float)f16Unsign(prsVal.GetValidX(rsVal));
-    ret.x += (float)f16Unsign(prtVal.GetValidX(rtVal));
+    const double x = f16Unsign(prsVal.GetValidX(rsVal)) + f16Unsign(prtVal.GetValidX(rtVal));
 
     // carry on over/underflow
-    float of = (ret.x > USHRT_MAX) ? 1.f : (ret.x < 0) ? -1.f : 0.f;
-    ret.x = (float)f16Sign(ret.x);
-    // ret.x -= of * (USHRT_MAX + 1);
-    ret.y = prsVal.GetValidY(rsVal) + prtVal.GetValidY(rtVal) + of;
+    const float of = (x > USHRT_MAX) ? 1.f : (x < 0) ? -1.f : 0.f;
+    prdVal.x = static_cast<float>(f16Sign(x));
+    // prdVal.x -= of * (USHRT_MAX + 1);
+    prdVal.y = prsVal.GetValidY(rsVal) + prtVal.GetValidY(rtVal) + of;
 
     // truncate on overflow/underflow
-    ret.y += (ret.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (ret.y < SHRT_MIN) ? USHRT_MAX + 1 : 0.f;
+    prdVal.y += (prdVal.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (prdVal.y < SHRT_MIN) ? USHRT_MAX + 1 : 0.f;
+
+    prdVal.value = rsVal + rtVal;
 
     // valid x/y only if one side had a valid x/y
-    ret.flags |= (prtVal.flags & VALID_XY);
+    prdVal.flags = prsVal.flags | (prtVal.flags & VALID_XY) | VALID_TAINTED_Z;
 
-    SelectZ(ret, ret, prtVal);
-    ret.flags |= VALID_TAINTED_Z;
+    SelectZ(prdVal, prsVal, prtVal);
   }
-
-  ret.value = rsVal + rtVal;
-
-  g_state.pgxp_gpr[rd(instr)] = ret;
 }
 
 void CPU::PGXP::CPU_SUB(u32 instr, u32 rsVal, u32 rtVal)
@@ -995,42 +990,37 @@ void CPU::PGXP::CPU_SUB(u32 instr, u32 rsVal, u32 rtVal)
 
   PGXP_value& prsVal = g_state.pgxp_gpr[rs(instr)];
   PGXP_value& prtVal = g_state.pgxp_gpr[rt(instr)];
+  PGXP_value& prdVal = g_state.pgxp_gpr[rd(instr)];
 
   // Rd = Rs - Rt (signed)
   Validate(&prsVal, rsVal);
   Validate(&prtVal, rtVal);
 
-  PGXP_value ret;
   if (rtVal == 0)
   {
-    ret = prsVal;
-    CopyZIfMissing(ret, prtVal);
+    prdVal = prsVal;
+    CopyZIfMissing(prdVal, prtVal);
   }
   else
   {
-    ret = prsVal;
-    ret.x = (float)f16Unsign(prsVal.GetValidX(rsVal));
-    ret.x -= (float)f16Unsign(prtVal.GetValidX(rtVal));
+    const double x = f16Unsign(prsVal.GetValidX(rsVal)) - f16Unsign(prtVal.GetValidX(rtVal));
 
     // carry on over/underflow
-    float of = (ret.x > USHRT_MAX) ? 1.f : (ret.x < 0) ? -1.f : 0.f;
-    ret.x = (float)f16Sign(ret.x);
-    // ret.x -= of * (USHRT_MAX + 1);
-    ret.y = prsVal.GetValidY(rsVal) - (prtVal.GetValidY(rtVal) - of);
+    const float of = (x > USHRT_MAX) ? 1.f : (x < 0) ? -1.f : 0.f;
+    prdVal.x = static_cast<float>(f16Sign(x));
+    // prdVal.x -= of * (USHRT_MAX + 1);
+    prdVal.y = prsVal.GetValidY(rsVal) - (prtVal.GetValidY(rtVal) - of);
 
     // truncate on overflow/underflow
-    ret.y += (ret.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (ret.y < SHRT_MIN) ? USHRT_MAX + 1 : 0.f;
+    prdVal.y += (prdVal.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (prdVal.y < SHRT_MIN) ? USHRT_MAX + 1 : 0.f;
+
+    prdVal.value = rsVal - rtVal;
 
     // valid x/y only if one side had a valid x/y
-    ret.flags |= (prtVal.flags & VALID_XY);
+    prdVal.flags = prsVal.flags | (prtVal.flags & VALID_XY) | VALID_TAINTED_Z;
 
-    SelectZ(ret, ret, prtVal);
-    ret.flags |= VALID_TAINTED_Z;
+    SelectZ(prdVal, prsVal, prtVal);
   }
-
-  ret.value = rsVal - rtVal;
-
-  g_state.pgxp_gpr[rd(instr)] = ret;
 }
 
 ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_BITWISE(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
