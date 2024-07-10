@@ -972,7 +972,7 @@ void CPU::PGXP::CPU_ADD(u32 instr, u32 rsVal, u32 rtVal)
     float of = (ret.x > USHRT_MAX) ? 1.f : (ret.x < 0) ? -1.f : 0.f;
     ret.x = (float)f16Sign(ret.x);
     // ret.x -= of * (USHRT_MAX + 1);
-    ret.y += prtVal.GetValidY(rtVal) + of;
+    ret.y = prsVal.GetValidY(rsVal) + prtVal.GetValidY(rtVal) + of;
 
     // truncate on overflow/underflow
     ret.y += (ret.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (ret.y < SHRT_MIN) ? USHRT_MAX + 1 : 0.f;
@@ -1016,7 +1016,7 @@ void CPU::PGXP::CPU_SUB(u32 instr, u32 rsVal, u32 rtVal)
     float of = (ret.x > USHRT_MAX) ? 1.f : (ret.x < 0) ? -1.f : 0.f;
     ret.x = (float)f16Sign(ret.x);
     // ret.x -= of * (USHRT_MAX + 1);
-    ret.y -= prtVal.GetValidY(rtVal) - of;
+    ret.y = prsVal.GetValidY(rsVal) - (prtVal.GetValidY(rtVal) - of);
 
     // truncate on overflow/underflow
     ret.y += (ret.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (ret.y < SHRT_MIN) ? USHRT_MAX + 1 : 0.f;
