@@ -8,6 +8,7 @@
     <ClCompile Include="path_tests.cpp" />
     <ClCompile Include="rectangle_tests.cpp" />
     <ClCompile Include="string_tests.cpp" />
+    <ClCompile Include="gsvector_yuvtorgb_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\dep\googletest\googletest.vcxproj">
