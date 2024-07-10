@@ -105,8 +105,9 @@ bool MemoryCardIconCache::Reload()
 
 const MemoryCardImage::IconFrame* MemoryCardIconCache::Lookup(std::string_view serial, std::string_view path)
 {
-  std::string memcard_path = System::GetGameMemoryCardPath(serial, path, 0);
-  if (memcard_path.empty())
+  MemoryCardType type;
+  std::string memcard_path = System::GetGameMemoryCardPath(serial, path, 0, &type);
+  if (memcard_path.empty() || type == MemoryCardType::Shared)
     return nullptr;
 
   FILESYSTEM_STAT_DATA sd;

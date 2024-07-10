@@ -4997,7 +4997,8 @@ void System::DeleteSaveStates(const char* serial, bool resume)
   }
 }
 
-std::string System::GetGameMemoryCardPath(std::string_view serial, std::string_view path, u32 slot)
+std::string System::GetGameMemoryCardPath(std::string_view serial, std::string_view path, u32 slot,
+                                          MemoryCardType* out_type)
 {
   const char* section = "MemoryCards";
   const TinyString type_key = TinyString::from_format("Card{}Type", slot + 1);
@@ -5033,6 +5034,9 @@ std::string System::GetGameMemoryCardPath(std::string_view serial, std::string_v
     // always shared without serial
     type = MemoryCardType::Shared;
   }
+
+  if (out_type)
+    *out_type = type;
 
   std::string ret;
   switch (type)
