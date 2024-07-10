@@ -1035,8 +1035,6 @@ void CPU::PGXP::CPU_SUB(u32 instr, u32 rsVal, u32 rtVal)
 
 ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_BITWISE(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal)
 {
-  LOG_VALUES_C2(rs(instr), rsVal, rt(instr), rtVal);
-
   // Rd = Rs & Rt
   PGXP_value& prsVal = g_state.pgxp_gpr[rs(instr)];
   PGXP_value& prtVal = g_state.pgxp_gpr[rt(instr)];
@@ -1049,64 +1047,27 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_BITWISE(u32 instr, u32 rdVal, u32 rsVa
   valt.d = rtVal;
 
   PGXP_value ret;
-  ret.flags = VALID_XY | VALID_TAINTED_Z;
+  ret.flags = ((prsVal.flags | prtVal.flags) & VALID_XY) ? (VALID_XY | VALID_TAINTED_Z) : 0;
 
   if (vald.w.l == 0)
-  {
     ret.x = 0.f;
-  }
   else if (vald.w.l == vals.w.l)
-  {
-    ret.x = prsVal.x;
-    ret.SetValid(COMP_X, prsVal.HasValid(COMP_X));
-  }
+    ret.x = prsVal.GetValidX(rsVal);
   else if (vald.w.l == valt.w.l)
-  {
-    ret.x = prtVal.x;
-    ret.SetValid(COMP_X, prtVal.HasValid(COMP_X));
-  }
+    ret.x = prtVal.GetValidX(rtVal);
   else
-  {
-    ret.x = (float)vald.sw.l;
-    ret.SetValid(COMP_X);
-  }
+    ret.x = static_cast<float>(vald.sw.l);
 
   if (vald.w.h == 0)
-  {
     ret.y = 0.f;
-  }
   else if (vald.w.h == vals.w.h)
-  {
-    ret.y = prsVal.y;
-    ret.SetValid(COMP_Y, prsVal.HasValid(COMP_Y));
-  }
+    ret.y = prsVal.GetValidY(rsVal);
   else if (vald.w.h == valt.w.h)
-  {
-    ret.y = prtVal.y;
-    ret.SetValid(COMP_Y, prtVal.HasValid(COMP_Y));
-  }
+    ret.y = prtVal.GetValidY(rtVal);
   else
-  {
-    ret.y = (float)vald.sw.h;
-    ret.SetValid(COMP_Y);
-  }
+    ret.y = static_cast<float>(vald.sw.h);
 
-  // Get a valid W
-  if (prsVal.HasValid(COMP_Z))
-  {
-    ret.z = prsVal.z;
-    ret.SetValid(COMP_Z);
-  }
-  else if (prtVal.HasValid(COMP_Z))
-  {
-    ret.z = prtVal.z;
-    ret.SetValid(COMP_Z);
-  }
-  else
-  {
-    ret.z = 0.0f;
-    ret.SetValid(COMP_Z, false);
-  }
+  SelectZ(ret, prsVal, prtVal);
 
   ret.value = rdVal;
   g_state.pgxp_gpr[rd(instr)] = ret;
