@@ -187,50 +187,6 @@ public:
   ALWAYS_INLINE bool rintersects(const GSVector4i& v) const { return !rintersect(v).rempty(); }
   ALWAYS_INLINE bool rcontains(const GSVector4i& v) const { return rintersect(v).eq(v); }
 
-  template<Align_Mode mode>
-  GSVector4i _ralign_helper(const GSVector4i& mask) const
-  {
-    GSVector4i v;
-
-    switch (mode)
-    {
-      case Align_Inside:
-        v = add32(mask);
-        break;
-      case Align_Outside:
-        v = add32(mask.zwxy());
-        break;
-      case Align_NegInf:
-        v = *this;
-        break;
-      case Align_PosInf:
-        v = add32(mask.xyxy());
-        break;
-
-      default:
-        break;
-    }
-
-    return v.andnot(mask.xyxy());
-  }
-
-  /// Align the rect using mask values that already have one subtracted (1 << n - 1 aligns to 1 << n)
-  template<Align_Mode mode>
-  GSVector4i ralign_presub(const GSVector2i& v) const
-  {
-    return _ralign_helper<mode>(GSVector4i(v));
-  }
-
-  template<Align_Mode mode>
-  GSVector4i ralign(const GSVector2i& v) const
-  {
-    // a must be 1 << n
-
-    return _ralign_helper<mode>(GSVector4i(v).sub32(GSVector4i(1, 1)));
-  }
-
-  //
-
   ALWAYS_INLINE u32 rgba32() const
   {
     GSVector4i v = *this;

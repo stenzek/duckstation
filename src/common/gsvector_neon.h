@@ -141,50 +141,6 @@ public:
   ALWAYS_INLINE bool rintersects(const GSVector4i& v) const { return !rintersect(v).rempty(); }
   ALWAYS_INLINE bool rcontains(const GSVector4i& v) const { return rintersect(v).eq(v); }
 
-  template<Align_Mode mode>
-  GSVector4i _ralign_helper(const GSVector4i& mask) const
-  {
-    GSVector4i v;
-
-    switch (mode)
-    {
-      case Align_Inside:
-        v = add32(mask);
-        break;
-      case Align_Outside:
-        v = add32(mask.zwxy());
-        break;
-      case Align_NegInf:
-        v = *this;
-        break;
-      case Align_PosInf:
-        v = add32(mask.xyxy());
-        break;
-
-      default:
-        break;
-    }
-
-    return v.andnot(mask.xyxy());
-  }
-
-  /// Align the rect using mask values that already have one subtracted (1 << n - 1 aligns to 1 << n)
-  template<Align_Mode mode>
-  GSVector4i ralign_presub(const GSVector2i& a) const
-  {
-    return _ralign_helper<mode>(GSVector4i(a));
-  }
-
-  template<Align_Mode mode>
-  GSVector4i ralign(const GSVector2i& a) const
-  {
-    // a must be 1 << n
-
-    return _ralign_helper<mode>(GSVector4i(a) - GSVector4i(1, 1));
-  }
-
-  //
-
   ALWAYS_INLINE u32 rgba32() const
   {
     GSVector4i v = *this;
@@ -1345,19 +1301,6 @@ public:
     float32x4_t recip = vrecpeq_f32(v4s);
     recip = vmulq_f32(recip, vrecpsq_f32(recip, v4s));
     return GSVector4(recip);
-  }
-
-  template<int mode>
-  ALWAYS_INLINE GSVector4 round() const
-  {
-    if constexpr (mode == Round_NegInf)
-      return floor();
-    else if constexpr (mode == Round_PosInf)
-      return ceil();
-    else if constexpr (mode == Round_NearestInt)
-      return GSVector4(vrndnq_f32(v4s));
-    else
-      return GSVector4(vrndq_f32(v4s));
   }
 
   ALWAYS_INLINE GSVector4 floor() const { return GSVector4(vrndmq_f32(v4s)); }

@@ -7,22 +7,6 @@
 
 #include <cstring>
 
-enum Align_Mode
-{
-  Align_Outside,
-  Align_Inside,
-  Align_NegInf,
-  Align_PosInf
-};
-
-enum Round_Mode
-{
-  Round_NearestInt = 8,
-  Round_NegInf = 9,
-  Round_PosInf = 10,
-  Round_Truncate = 11
-};
-
 template<class T>
 class GSVector2T
 {
