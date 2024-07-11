@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -220,19 +220,19 @@ union Instruction
 };
 
 // Instruction helpers.
-bool IsNopInstruction(const Instruction& instruction);
-bool IsBranchInstruction(const Instruction& instruction);
-bool IsUnconditionalBranchInstruction(const Instruction& instruction);
-bool IsDirectBranchInstruction(const Instruction& instruction);
-VirtualMemoryAddress GetDirectBranchTarget(const Instruction& instruction, VirtualMemoryAddress instruction_pc);
-bool IsCallInstruction(const Instruction& instruction);
-bool IsReturnInstruction(const Instruction& instruction);
-bool IsMemoryLoadInstruction(const Instruction& instruction);
-bool IsMemoryStoreInstruction(const Instruction& instruction);
-bool InstructionHasLoadDelay(const Instruction& instruction);
-bool IsExitBlockInstruction(const Instruction& instruction);
-bool CanInstructionTrap(const Instruction& instruction, bool in_user_mode);
-bool IsInvalidInstruction(const Instruction& instruction);
+bool IsNopInstruction(const Instruction instruction);
+bool IsBranchInstruction(const Instruction instruction);
+bool IsUnconditionalBranchInstruction(const Instruction instruction);
+bool IsDirectBranchInstruction(const Instruction instruction);
+VirtualMemoryAddress GetDirectBranchTarget(const Instruction instruction, VirtualMemoryAddress instruction_pc);
+bool IsCallInstruction(const Instruction instruction);
+bool IsReturnInstruction(const Instruction instruction);
+bool IsMemoryLoadInstruction(const Instruction instruction);
+bool IsMemoryStoreInstruction(const Instruction instruction);
+bool InstructionHasLoadDelay(const Instruction instruction);
+bool IsExitBlockInstruction(const Instruction instruction);
+bool CanInstructionTrap(const Instruction instruction, bool in_user_mode);
+bool IsInvalidInstruction(const Instruction instruction);
 
 struct Registers
 {
@@ -280,7 +280,7 @@ struct Registers
   };
 };
 
-std::optional<VirtualMemoryAddress> GetLoadStoreEffectiveAddress(const Instruction& instruction, const Registers* regs);
+std::optional<VirtualMemoryAddress> GetLoadStoreEffectiveAddress(const Instruction instruction, const Registers* regs);
 
 enum class Cop0Reg : u8
 {

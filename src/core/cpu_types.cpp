@@ -1,28 +1,27 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "cpu_types.h"
 #include "common/assert.h"
 #include <array>
 
-namespace CPU {
 static const std::array<const char*, 36> s_reg_names = {
   {"zero", "at", "v0", "v1", "a0", "a1", "a2", "a3", "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "s0", "s1",
    "s2",   "s3", "s4", "s5", "s6", "s7", "t8", "t9", "k0", "k1", "gp", "sp", "fp", "ra", "hi", "lo", "pc", "npc"}};
 
-const char* GetRegName(Reg reg)
+const char* CPU::GetRegName(Reg reg)
 {
   DebugAssert(reg < Reg::count);
   return s_reg_names[static_cast<u8>(reg)];
 }
 
-bool IsNopInstruction(const Instruction& instruction)
+bool CPU::IsNopInstruction(const Instruction instruction)
 {
   // TODO: Handle other types of nop.
   return (instruction.bits == 0);
 }
 
-bool IsBranchInstruction(const Instruction& instruction)
+bool CPU::IsBranchInstruction(const Instruction instruction)
 {
   switch (instruction.op)
   {
@@ -53,7 +52,7 @@ bool IsBranchInstruction(const Instruction& instruction)
   }
 }
 
-bool IsUnconditionalBranchInstruction(const Instruction& instruction)
+bool CPU::IsUnconditionalBranchInstruction(const Instruction instruction)
 {
   switch (instruction.op)
   {
@@ -89,7 +88,7 @@ bool IsUnconditionalBranchInstruction(const Instruction& instruction)
   }
 }
 
-bool IsDirectBranchInstruction(const Instruction& instruction)
+bool CPU::IsDirectBranchInstruction(const Instruction instruction)
 {
   switch (instruction.op)
   {
@@ -107,7 +106,7 @@ bool IsDirectBranchInstruction(const Instruction& instruction)
   }
 }
 
-VirtualMemoryAddress GetDirectBranchTarget(const Instruction& instruction, VirtualMemoryAddress instruction_pc)
+VirtualMemoryAddress CPU::GetDirectBranchTarget(const Instruction instruction, VirtualMemoryAddress instruction_pc)
 {
   const VirtualMemoryAddress pc = instruction_pc + 4;
 
@@ -129,13 +128,13 @@ VirtualMemoryAddress GetDirectBranchTarget(const Instruction& instruction, Virtu
   }
 }
 
-bool IsCallInstruction(const Instruction& instruction)
+bool CPU::IsCallInstruction(const Instruction instruction)
 {
   return (instruction.op == InstructionOp::funct && instruction.r.funct == InstructionFunct::jalr) ||
          (instruction.op == InstructionOp::jal);
 }
 
-bool IsReturnInstruction(const Instruction& instruction)
+bool CPU::IsReturnInstruction(const Instruction instruction)
 {
   if (instruction.op != InstructionOp::funct)
     return false;
@@ -147,7 +146,7 @@ bool IsReturnInstruction(const Instruction& instruction)
   return false;
 }
 
-bool IsMemoryLoadInstruction(const Instruction& instruction)
+bool CPU::IsMemoryLoadInstruction(const Instruction instruction)
 {
   switch (instruction.op)
   {
@@ -168,7 +167,7 @@ bool IsMemoryLoadInstruction(const Instruction& instruction)
   }
 }
 
-bool IsMemoryStoreInstruction(const Instruction& instruction)
+bool CPU::IsMemoryStoreInstruction(const Instruction instruction)
 {
   switch (instruction.op)
   {
@@ -187,7 +186,7 @@ bool IsMemoryStoreInstruction(const Instruction& instruction)
   }
 }
 
-std::optional<VirtualMemoryAddress> GetLoadStoreEffectiveAddress(const Instruction& instruction, const Registers* regs)
+std::optional<VirtualMemoryAddress> CPU::GetLoadStoreEffectiveAddress(const Instruction instruction, const Registers* regs)
 {
   switch (instruction.op)
   {
@@ -214,7 +213,7 @@ std::optional<VirtualMemoryAddress> GetLoadStoreEffectiveAddress(const Instructi
   }
 }
 
-bool InstructionHasLoadDelay(const Instruction& instruction)
+bool CPU::InstructionHasLoadDelay(const Instruction instruction)
 {
   switch (instruction.op)
   {
@@ -244,7 +243,7 @@ bool InstructionHasLoadDelay(const Instruction& instruction)
   }
 }
 
-bool IsExitBlockInstruction(const Instruction& instruction)
+bool CPU::IsExitBlockInstruction(const Instruction instruction)
 {
   switch (instruction.op)
   {
@@ -266,7 +265,7 @@ bool IsExitBlockInstruction(const Instruction& instruction)
   }
 }
 
-bool CanInstructionTrap(const Instruction& instruction, bool in_user_mode)
+bool CPU::CanInstructionTrap(const Instruction instruction, bool in_user_mode)
 {
   switch (instruction.op)
   {
@@ -367,10 +366,8 @@ bool CanInstructionTrap(const Instruction& instruction, bool in_user_mode)
   }
 }
 
-bool IsInvalidInstruction(const Instruction& instruction)
+bool CPU::IsInvalidInstruction(const Instruction instruction)
 {
   // TODO
   return true;
 }
-
-} // namespace CPU

@@ -1284,7 +1284,7 @@ void CPU::CodeCache::FillBlockRegInfo(Block* block)
           break;
 
         default:
-          ERROR_LOG("Unknown op {}", static_cast<u32>(iinst->r.funct.GetValue()));
+          ERROR_LOG("Unknown op {}", static_cast<u32>(iinst->op.GetValue()));
           break;
       }
     } // end switch
