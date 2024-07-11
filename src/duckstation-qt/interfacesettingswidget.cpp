@@ -21,6 +21,7 @@ const char* InterfaceSettingsWidget::THEME_NAMES[] = {
   QT_TRANSLATE_NOOP("MainWindow", "Grey Matter"),
   QT_TRANSLATE_NOOP("MainWindow", "Dark Ruby"),
   QT_TRANSLATE_NOOP("MainWindow", "Purple Rain"),
+  QT_TRANSLATE_NOOP("MainWindow", "QDarkStyle"),
   nullptr,
 };
 
@@ -36,6 +37,7 @@ const char* InterfaceSettingsWidget::THEME_VALUES[] = {
   "greymatter",
   "darkruby",
   "purplerain",
+  "qdarkstyle",
   nullptr,
 };
 
