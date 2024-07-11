@@ -68,7 +68,6 @@
     <ClCompile Include="justifier.cpp" />
     <ClCompile Include="pine_server.cpp" />
     <ClCompile Include="gdb_server.cpp" />
-    <ClCompile Include="memory_card_icon_cache.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -143,6 +142,5 @@
     <ClInclude Include="justifier.h" />
     <ClInclude Include="pine_server.h" />
     <ClInclude Include="gdb_server.h" />
-    <ClInclude Include="memory_card_icon_cache.h" />
   </ItemGroup>
 </Project>

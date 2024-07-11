@@ -5,12 +5,14 @@
 #include "bios.h"
 #include "fullscreen_ui.h"
 #include "host.h"
+#include "memory_card_image.h"
 #include "psf_loader.h"
 #include "settings.h"
 #include "system.h"
 
 #include "util/cd_image.h"
 #include "util/http_downloader.h"
+#include "util/image.h"
 #include "util/ini_settings_interface.h"
 
 #include "common/assert.h"
@@ -59,6 +61,19 @@ struct PlayedTimeEntry
   std::time_t total_played_time;
 };
 
+#pragma pack(push, 1)
+struct MemcardTimestampCacheEntry
+{
+  enum : u32
+  {
+    MAX_SERIAL_LENGTH = 32,
+  };
+
+  char serial[MAX_SERIAL_LENGTH];
+  s64 memcard_timestamp;
+};
+#pragma pack(pop)
+
 } // namespace
 
 using CacheMap = PreferUnorderedStringMap<Entry>;
@@ -101,12 +116,17 @@ static PlayedTimeEntry UpdatePlayedTimeFile(const std::string& path, const std::
                                             std::time_t add_time);
 
 static std::string GetCustomPropertiesFile();
+
+static FileSystem::ManagedCFilePtr OpenMemoryCardTimestampCache(bool for_write);
+static bool UpdateMemcardTimestampCache(const MemcardTimestampCacheEntry& entry);
+
 } // namespace GameList
 
 static std::vector<GameList::Entry> s_entries;
 static std::recursive_mutex s_mutex;
 static GameList::CacheMap s_cache_map;
 static std::unique_ptr<ByteStream> s_cache_write_stream;
+static std::vector<GameList::MemcardTimestampCacheEntry> s_memcard_timestamp_cache_entries;
 
 static bool s_game_list_loaded = false;
 
@@ -1628,4 +1648,223 @@ std::optional<DiscRegion> GameList::GetCustomRegionForPath(const std::string_vie
     return entry->region;
   else
     return std::nullopt;
+}
+
+static constexpr const char MEMCARD_TIMESTAMP_CACHE_SIGNATURE[] = {'M', 'C', 'D', 'I', 'C', 'N', '0', '2'};
+
+FileSystem::ManagedCFilePtr GameList::OpenMemoryCardTimestampCache(bool for_write)
+{
+  const std::string filename = Path::Combine(EmuFolders::Cache, "memcard_icons.cache");
+  const char* mode = for_write ? "r+b" : "rb";
+  const FileSystem::FileShareMode share_mode =
+    for_write ? FileSystem::FileShareMode::DenyReadWrite : FileSystem::FileShareMode::DenyWrite;
+  FileSystem::ManagedCFilePtr fp = FileSystem::OpenManagedSharedCFile(filename.c_str(), mode, share_mode, nullptr);
+  if (fp)
+    return fp;
+
+  // Doesn't exist? Create it.
+  if (errno == ENOENT)
+  {
+    if (!for_write)
+      return nullptr;
+
+    mode = "w+b";
+    fp = FileSystem::OpenManagedSharedCFile(filename.c_str(), mode, share_mode, nullptr);
+    if (fp)
+      return fp;
+  }
+
+  // If there's a sharing violation, try again for 100ms.
+  if (errno != EACCES)
+    return nullptr;
+
+  Common::Timer timer;
+  while (timer.GetTimeMilliseconds() <= 100.0f)
+  {
+    fp = FileSystem::OpenManagedSharedCFile(filename.c_str(), mode, share_mode, nullptr);
+    if (fp)
+      return fp;
+
+    if (errno != EACCES)
+      return nullptr;
+  }
+
+  ERROR_LOG("Timed out while trying to open memory card cache file.");
+  return nullptr;
+}
+
+void GameList::ReloadMemcardTimestampCache()
+{
+  s_memcard_timestamp_cache_entries.clear();
+
+  FileSystem::ManagedCFilePtr fp = OpenMemoryCardTimestampCache(false);
+  if (!fp)
+    return;
+
+#ifndef _WIN32
+  FileSystem::POSIXLock lock(fp.get());
+#endif
+
+  const s64 file_size = FileSystem::FSize64(fp.get());
+  if (file_size < static_cast<s64>(sizeof(MEMCARD_TIMESTAMP_CACHE_SIGNATURE)))
+    return;
+
+  const size_t count =
+    (static_cast<size_t>(file_size) - sizeof(MEMCARD_TIMESTAMP_CACHE_SIGNATURE)) / sizeof(MemcardTimestampCacheEntry);
+  if (count <= 0)
+    return;
+
+  char signature[sizeof(MEMCARD_TIMESTAMP_CACHE_SIGNATURE)];
+  if (std::fread(signature, sizeof(signature), 1, fp.get()) != 1 ||
+      std::memcmp(signature, MEMCARD_TIMESTAMP_CACHE_SIGNATURE, sizeof(signature)) != 0)
+  {
+    return;
+  }
+
+  s_memcard_timestamp_cache_entries.resize(static_cast<size_t>(count));
+  if (std::fread(s_memcard_timestamp_cache_entries.data(), sizeof(MemcardTimestampCacheEntry),
+                 s_memcard_timestamp_cache_entries.size(), fp.get()) != s_memcard_timestamp_cache_entries.size())
+  {
+    s_memcard_timestamp_cache_entries = {};
+    return;
+  }
+
+  // Just in case.
+  for (MemcardTimestampCacheEntry& entry : s_memcard_timestamp_cache_entries)
+    entry.serial[sizeof(entry.serial) - 1] = 0;
+}
+
+std::string GameList::GetGameIconPath(std::string_view serial, std::string_view path)
+{
+  std::string ret;
+
+  if (serial.empty())
+    return ret;
+
+  // might exist already, or the user used a custom icon
+  ret = Path::Combine(EmuFolders::GameIcons, TinyString::from_format("{}.png", serial));
+  if (FileSystem::FileExists(ret.c_str()))
+    return ret;
+
+  MemoryCardType type;
+  std::string memcard_path = System::GetGameMemoryCardPath(serial, path, 0, &type);
+  FILESYSTEM_STAT_DATA memcard_sd;
+  if (memcard_path.empty() || type == MemoryCardType::Shared ||
+      !FileSystem::StatFile(memcard_path.c_str(), &memcard_sd))
+  {
+    ret = {};
+    return ret;
+  }
+
+  const s64 timestamp = memcard_sd.ModificationTime;
+  TinyString index_serial;
+  index_serial.assign(
+    serial.substr(0, std::min<size_t>(serial.length(), MemcardTimestampCacheEntry::MAX_SERIAL_LENGTH - 1)));
+
+  MemcardTimestampCacheEntry* serial_entry = nullptr;
+  for (MemcardTimestampCacheEntry& entry : s_memcard_timestamp_cache_entries)
+  {
+    if (StringUtil::EqualNoCase(index_serial, entry.serial))
+    {
+      if (entry.memcard_timestamp == timestamp)
+      {
+        // card hasn't changed, still no icon
+        ret = {};
+        return ret;
+      }
+
+      serial_entry = &entry;
+      break;
+    }
+  }
+
+  if (!serial_entry)
+  {
+    serial_entry = &s_memcard_timestamp_cache_entries.emplace_back();
+    std::memset(serial_entry, 0, sizeof(MemcardTimestampCacheEntry));
+  }
+
+  serial_entry->memcard_timestamp = timestamp;
+  StringUtil::Strlcpy(serial_entry->serial, index_serial.view(), sizeof(serial_entry->serial));
+
+  // Try extracting an icon.
+  MemoryCardImage::DataArray data;
+  if (MemoryCardImage::LoadFromFile(&data, memcard_path.c_str()))
+  {
+    std::vector<MemoryCardImage::FileInfo> files = MemoryCardImage::EnumerateFiles(data, false);
+    if (!files.empty())
+    {
+      const MemoryCardImage::FileInfo& fi = files.front();
+      if (!fi.icon_frames.empty())
+      {
+        INFO_LOG("Extracting memory card icon from {} ({}) to {}", fi.filename, Path::GetFileTitle(memcard_path),
+                 Path::GetFileTitle(ret));
+
+        RGBA8Image image(MemoryCardImage::ICON_WIDTH, MemoryCardImage::ICON_HEIGHT);
+        std::memcpy(image.GetPixels(), &fi.icon_frames.front().pixels,
+                    MemoryCardImage::ICON_WIDTH * MemoryCardImage::ICON_HEIGHT * sizeof(u32));
+        if (!image.SaveToFile(ret.c_str()))
+        {
+          ERROR_LOG("Failed to save memory card icon to {}.", ret);
+          ret = {};
+          return ret;
+        }
+      }
+    }
+  }
+
+  UpdateMemcardTimestampCache(*serial_entry);
+  return ret;
+}
+
+bool GameList::UpdateMemcardTimestampCache(const MemcardTimestampCacheEntry& entry)
+{
+  FileSystem::ManagedCFilePtr fp = OpenMemoryCardTimestampCache(true);
+  if (!fp)
+    return false;
+
+#ifndef _WIN32
+  FileSystem::POSIXLock lock(fp.get());
+#endif
+
+  // check signature, write it if it's non-existent or invalid
+  char signature[sizeof(MEMCARD_TIMESTAMP_CACHE_SIGNATURE)];
+  if (std::fread(signature, sizeof(signature), 1, fp.get()) != 1 ||
+      std::memcmp(signature, MEMCARD_TIMESTAMP_CACHE_SIGNATURE, sizeof(signature)) != 0)
+  {
+    if (!FileSystem::FTruncate64(fp.get(), 0) || FileSystem::FSeek64(fp.get(), 0, SEEK_SET) != 0 ||
+        std::fwrite(MEMCARD_TIMESTAMP_CACHE_SIGNATURE, sizeof(MEMCARD_TIMESTAMP_CACHE_SIGNATURE), 1, fp.get()) != 1)
+    {
+      return false;
+    }
+  }
+
+  // need to seek to switch from read->write?
+  s64 current_pos = sizeof(MEMCARD_TIMESTAMP_CACHE_SIGNATURE);
+  if (FileSystem::FSeek64(fp.get(), current_pos, SEEK_SET) != 0)
+    return false;
+
+  for (;;)
+  {
+    MemcardTimestampCacheEntry existing_entry;
+    if (std::fread(&existing_entry, sizeof(existing_entry), 1, fp.get()) != 1)
+      break;
+
+    existing_entry.serial[sizeof(existing_entry.serial) - 1] = 0;
+    if (!StringUtil::EqualNoCase(existing_entry.serial, entry.serial))
+    {
+      current_pos += sizeof(existing_entry);
+      continue;
+    }
+
+    // found it here, so overwrite
+    return (FileSystem::FSeek64(fp.get(), current_pos, SEEK_SET) == 0 &&
+            std::fwrite(&entry, sizeof(entry), 1, fp.get()) == 1);
+  }
+
+  if (FileSystem::FSeek64(fp.get(), current_pos, SEEK_SET) != 0)
+    return false;
+
+  // append it.
+  return (std::fwrite(&entry, sizeof(entry), 1, fp.get()) == 1);
 }

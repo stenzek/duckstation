@@ -536,6 +536,7 @@ extern std::string Cache;
 extern std::string Cheats;
 extern std::string Covers;
 extern std::string Dumps;
+extern std::string GameIcons;
 extern std::string GameSettings;
 extern std::string InputProfiles;
 extern std::string MemoryCards;

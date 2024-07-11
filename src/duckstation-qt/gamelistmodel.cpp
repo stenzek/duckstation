@@ -8,6 +8,7 @@
 #include "core/system.h"
 
 #include "common/file_system.h"
+#include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
 
@@ -20,19 +21,16 @@
 #include <QtGui/QIcon>
 #include <QtGui/QPainter>
 
+Log_SetChannel(GameList);
+
 static constexpr std::array<const char*, GameListModel::Column_Count> s_column_names = {
-  {"Type", "Serial", "Title", "File Title", "Developer", "Publisher", "Genre", "Year", "Players", "Time Played",
+  {"Icon", "Serial", "Title", "File Title", "Developer", "Publisher", "Genre", "Year", "Players", "Time Played",
    "Last Played", "Size", "File Size", "Region", "Compatibility", "Cover"}};
 
 static constexpr int COVER_ART_WIDTH = 512;
 static constexpr int COVER_ART_HEIGHT = 512;
 static constexpr int COVER_ART_SPACING = 32;
 static constexpr int MIN_COVER_CACHE_SIZE = 256;
-
-static std::string getMemoryCardIconCachePath()
-{
-  return Path::Combine(EmuFolders::Cache, "memcard_icons.cache");
-}
 
 static int DPRScale(int size, float dpr)
 {
@@ -125,14 +123,14 @@ const char* GameListModel::getColumnName(Column col)
 GameListModel::GameListModel(float cover_scale, bool show_cover_titles, bool show_game_icons,
                              QObject* parent /* = nullptr */)
   : QAbstractTableModel(parent), m_show_titles_for_covers(show_cover_titles), m_show_game_icons(show_game_icons),
-    m_memcard_icon_cache(getMemoryCardIconCachePath()), m_memcard_pixmap_cache(128)
+    m_memcard_pixmap_cache(128)
 {
   loadCommonImages();
   setCoverScale(cover_scale);
   setColumnDisplayNames();
 
   if (m_show_game_icons)
-    m_memcard_icon_cache.Reload();
+    GameList::ReloadMemcardTimestampCache();
 }
 
 GameListModel::~GameListModel() = default;
@@ -144,7 +142,7 @@ void GameListModel::setShowGameIcons(bool enabled)
   beginResetModel();
   m_memcard_pixmap_cache.Clear();
   if (enabled)
-    m_memcard_icon_cache.Reload();
+    GameList::ReloadMemcardTimestampCache();
   endResetModel();
 }
 
@@ -249,7 +247,7 @@ QString GameListModel::formatTimespan(time_t timespan)
     return qApp->translate("GameList", "%n minutes", "", minutes);
 }
 
-const QPixmap& GameListModel::getPixmapForEntry(const GameList::Entry* ge) const
+const QPixmap& GameListModel::getIconPixmapForEntry(const GameList::Entry* ge) const
 {
   // We only do this for discs/disc sets for now.
   if (m_show_game_icons && (!ge->serial.empty() && (ge->IsDisc() || ge->IsDiscSet())))
@@ -258,17 +256,13 @@ const QPixmap& GameListModel::getPixmapForEntry(const GameList::Entry* ge) const
     if (item)
       return *item;
 
-    const MemoryCardImage::IconFrame* icon = m_memcard_icon_cache.Lookup(ge->serial, ge->path);
-    if (icon)
-    {
-      const QImage image(reinterpret_cast<const uchar*>(icon->pixels), MemoryCardImage::ICON_WIDTH,
-                         MemoryCardImage::ICON_HEIGHT, QImage::Format_RGBA8888);
-      return *m_memcard_pixmap_cache.Insert(ge->serial, QPixmap::fromImage(image));
-    }
+    // Assumes game list lock is held.
+    const std::string path = GameList::GetGameIconPath(ge->serial, ge->path);
+    QPixmap pm;
+    if (!path.empty() && pm.load(QString::fromStdString(path)))
+      return *m_memcard_pixmap_cache.Insert(ge->serial, std::move(pm));
     else
-    {
       return *m_memcard_pixmap_cache.Insert(ge->serial, m_type_pixmaps[static_cast<u32>(ge->type)]);
-    }
   }
 
   return m_type_pixmaps[static_cast<u32>(ge->type)];
@@ -286,11 +280,12 @@ QIcon GameListModel::getIconForGame(const QString& path)
     // See above.
     if (entry && !entry->serial.empty() && (entry->IsDisc() || entry->IsDiscSet()))
     {
-      const MemoryCardImage::IconFrame* icon = m_memcard_icon_cache.Lookup(entry->serial, entry->path);
-      if (icon)
+      const std::string icon_path = GameList::GetGameIconPath(entry->serial, entry->path);
+      if (!icon_path.empty())
       {
-        ret = QIcon(QPixmap::fromImage(QImage(reinterpret_cast<const uchar*>(icon->pixels), MemoryCardImage::ICON_WIDTH,
-                                              MemoryCardImage::ICON_HEIGHT, QImage::Format_RGBA8888)));
+        QPixmap newpm;
+        if (!icon_path.empty() && newpm.load(QString::fromStdString(icon_path)))
+          ret = QIcon(*m_memcard_pixmap_cache.Insert(entry->serial, std::move(newpm)));
       }
     }
   }
@@ -424,7 +419,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
     {
       switch (index.column())
       {
-        case Column_Type:
+        case Column_Icon:
           return static_cast<int>(ge->GetSortType());
 
         case Column_Serial:
@@ -479,9 +474,9 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
     {
       switch (index.column())
       {
-        case Column_Type:
+        case Column_Icon:
         {
-          return getPixmapForEntry(ge);
+          return getIconPixmapForEntry(ge);
         }
 
         case Column_Region:
@@ -569,7 +564,7 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
 
   switch (column)
   {
-    case Column_Type:
+    case Column_Icon:
     {
       const GameList::EntryType lst = left->GetSortType();
       const GameList::EntryType rst = right->GetSortType();
@@ -717,7 +712,7 @@ void GameListModel::loadCommonImages()
 
 void GameListModel::setColumnDisplayNames()
 {
-  m_column_display_names[Column_Type] = tr("Type");
+  m_column_display_names[Column_Icon] = tr("Icon");
   m_column_display_names[Column_Serial] = tr("Serial");
   m_column_display_names[Column_Title] = tr("Title");
   m_column_display_names[Column_FileTitle] = tr("File Title");

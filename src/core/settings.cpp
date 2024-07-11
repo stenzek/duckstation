@@ -1726,6 +1726,7 @@ std::string EmuFolders::Cache;
 std::string EmuFolders::Cheats;
 std::string EmuFolders::Covers;
 std::string EmuFolders::Dumps;
+std::string EmuFolders::GameIcons;
 std::string EmuFolders::GameSettings;
 std::string EmuFolders::InputProfiles;
 std::string EmuFolders::MemoryCards;
@@ -1743,6 +1744,7 @@ void EmuFolders::SetDefaults()
   Cheats = Path::Combine(DataRoot, "cheats");
   Covers = Path::Combine(DataRoot, "covers");
   Dumps = Path::Combine(DataRoot, "dump");
+  GameIcons = Path::Combine(DataRoot, "gameicons");
   GameSettings = Path::Combine(DataRoot, "gamesettings");
   InputProfiles = Path::Combine(DataRoot, "inputprofiles");
   MemoryCards = Path::Combine(DataRoot, "memcards");
@@ -1772,6 +1774,7 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
   Cheats = LoadPathFromSettings(si, DataRoot, "Folders", "Cheats", "cheats");
   Covers = LoadPathFromSettings(si, DataRoot, "Folders", "Covers", "covers");
   Dumps = LoadPathFromSettings(si, DataRoot, "Folders", "Dumps", "dump");
+  GameIcons = LoadPathFromSettings(si, DataRoot, "Folders", "GameIcons", "gameicons");
   GameSettings = LoadPathFromSettings(si, DataRoot, "Folders", "GameSettings", "gamesettings");
   InputProfiles = LoadPathFromSettings(si, DataRoot, "Folders", "InputProfiles", "inputprofiles");
   MemoryCards = LoadPathFromSettings(si, DataRoot, "MemoryCards", "Directory", "memcards");
@@ -1786,6 +1789,7 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
   DEV_LOG("Cheats Directory: {}", Cheats);
   DEV_LOG("Covers Directory: {}", Covers);
   DEV_LOG("Dumps Directory: {}", Dumps);
+  DEV_LOG("Game Icons Directory: {}", GameIcons);
   DEV_LOG("Game Settings Directory: {}", GameSettings);
   DEV_LOG("Input Profile Directory: {}", InputProfiles);
   DEV_LOG("MemoryCards Directory: {}", MemoryCards);
@@ -1805,6 +1809,7 @@ void EmuFolders::Save(SettingsInterface& si)
   si.SetStringValue("Folders", "Cheats", Path::MakeRelative(Cheats, DataRoot).c_str());
   si.SetStringValue("Folders", "Covers", Path::MakeRelative(Covers, DataRoot).c_str());
   si.SetStringValue("Folders", "Dumps", Path::MakeRelative(Dumps, DataRoot).c_str());
+  si.SetStringValue("Folders", "GameIcons", Path::MakeRelative(GameIcons, DataRoot).c_str());
   si.SetStringValue("Folders", "GameSettings", Path::MakeRelative(GameSettings, DataRoot).c_str());
   si.SetStringValue("Folders", "InputProfiles", Path::MakeRelative(InputProfiles, DataRoot).c_str());
   si.SetStringValue("MemoryCards", "Directory", Path::MakeRelative(MemoryCards, DataRoot).c_str());
@@ -1846,6 +1851,7 @@ bool EmuFolders::EnsureFoldersExist()
   result = FileSystem::EnsureDirectoryExists(Dumps.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(Path::Combine(Dumps, "audio").c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(Path::Combine(Dumps, "textures").c_str(), false) && result;
+  result = FileSystem::EnsureDirectoryExists(GameIcons.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(GameSettings.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(InputProfiles.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(MemoryCards.c_str(), false) && result;

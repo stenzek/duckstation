@@ -632,7 +632,7 @@ void GameListWidget::saveTableViewColumnVisibilitySettings(int column)
 
 void GameListWidget::loadTableViewColumnSortSettings()
 {
-  const GameListModel::Column DEFAULT_SORT_COLUMN = GameListModel::Column_Type;
+  const GameListModel::Column DEFAULT_SORT_COLUMN = GameListModel::Column_Icon;
   const bool DEFAULT_SORT_DESCENDING = false;
 
   const GameListModel::Column sort_column =

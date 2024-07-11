@@ -5,7 +5,6 @@
 
 #include "core/game_database.h"
 #include "core/game_list.h"
-#include "core/memory_card_icon_cache.h"
 #include "core/types.h"
 
 #include "common/heterogeneous_containers.h"
@@ -24,7 +23,7 @@ class GameListModel final : public QAbstractTableModel
 public:
   enum Column : int
   {
-    Column_Type,
+    Column_Icon,
     Column_Serial,
     Column_Title,
     Column_FileTitle,
@@ -83,13 +82,29 @@ Q_SIGNALS:
   void coverScaleChanged();
 
 private:
+  /// The purpose of this cache is to stop us trying to constantly extract memory card icons, when we know a game
+  /// doesn't have any saves yet. It caches the serial:memcard_timestamp pair, and only tries extraction when the
+  /// timestamp of the memory card has changed.
+#pragma pack(push, 1)
+  struct MemcardTimestampCacheEntry
+  {
+    enum : u32
+    {
+      MAX_SERIAL_LENGTH = 32,
+    };
+
+    char serial[MAX_SERIAL_LENGTH];
+    s64 memcard_timestamp;
+  };
+#pragma pack(pop)
+
   void loadCommonImages();
   void loadThemeSpecificImages();
   void setColumnDisplayNames();
   void loadOrGenerateCover(const GameList::Entry* ge);
   void invalidateCoverForPath(const std::string& path);
 
-  const QPixmap& getPixmapForEntry(const GameList::Entry* ge) const;
+  const QPixmap& getIconPixmapForEntry(const GameList::Entry* ge) const;
 
   static QString formatTimespan(time_t timespan);
 
@@ -107,6 +122,5 @@ private:
 
   mutable LRUCache<std::string, QPixmap> m_cover_pixmap_cache;
 
-  mutable MemoryCardIconCache m_memcard_icon_cache;
   mutable LRUCache<std::string, QPixmap> m_memcard_pixmap_cache;
 };
