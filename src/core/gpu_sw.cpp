@@ -515,7 +515,7 @@ void GPU_SW::DispatchRenderCommand()
       GPUBackendDrawPolygonCommand* cmd = m_backend.NewDrawPolygonCommand(num_vertices);
       FillDrawCommand(cmd, rc);
 
-      std::array<GSVector4i, 4> positions;
+      std::array<GSVector2i, 4> positions;
       const u32 first_color = rc.color_for_first_vertex;
       const bool shaded = rc.shading_enable;
       const bool textured = rc.texture_enable;
@@ -528,14 +528,15 @@ void GPU_SW::DispatchRenderCommand()
         vert->x = m_drawing_offset.x + vp.x;
         vert->y = m_drawing_offset.y + vp.y;
         vert->texcoord = textured ? Truncate16(FifoPop()) : 0;
-        positions[i] = GSVector4i::loadl(&vert->x);
+        positions[i] = GSVector2i::load(&vert->x);
       }
 
       // Cull polygons which are too large.
-      const GSVector4i min_pos_12 = positions[1].min_i32(positions[2]);
-      const GSVector4i max_pos_12 = positions[1].max_i32(positions[2]);
-      const GSVector4i draw_rect_012 =
-        min_pos_12.min_i32(positions[0]).upl64(max_pos_12.max_i32(positions[0])).add32(GSVector4i::cxpr(0, 0, 1, 1));
+      const GSVector2i min_pos_12 = positions[1].min_i32(positions[2]);
+      const GSVector2i max_pos_12 = positions[1].max_i32(positions[2]);
+      const GSVector4i draw_rect_012 = GSVector4i(min_pos_12.min_i32(positions[0]))
+                                         .upl64(GSVector4i(max_pos_12.max_i32(positions[0])))
+                                         .add32(GSVector4i::cxpr(0, 0, 1, 1));
       const bool first_tri_culled =
         (draw_rect_012.width() > MAX_PRIMITIVE_WIDTH || draw_rect_012.height() > MAX_PRIMITIVE_HEIGHT ||
          !m_clamped_drawing_area.rintersects(draw_rect_012));
@@ -556,8 +557,9 @@ void GPU_SW::DispatchRenderCommand()
       // quads
       if (rc.quad_polygon)
       {
-        const GSVector4i draw_rect_123 =
-          min_pos_12.min_i32(positions[3]).upl64(max_pos_12.max_i32(positions[3])).add32(GSVector4i::cxpr(0, 0, 1, 1));
+        const GSVector4i draw_rect_123 = GSVector4i(min_pos_12.min_i32(positions[3]))
+                                           .upl64(GSVector4i(max_pos_12.max_i32(positions[3])))
+                                           .add32(GSVector4i::cxpr(0, 0, 1, 1));
 
         // Cull polygons which are too large.
         const bool second_tri_culled =

@@ -319,15 +319,15 @@ protected:
   virtual void DrawRendererStats();
   virtual void OnBufferSwapped();
 
-  ALWAYS_INLINE_RELEASE void AddDrawTriangleTicks(GSVector4i v1, GSVector4i v2, GSVector4i v3, bool shaded,
+  ALWAYS_INLINE_RELEASE void AddDrawTriangleTicks(GSVector2i v1, GSVector2i v2, GSVector2i v3, bool shaded,
                                                   bool textured, bool semitransparent)
   {
     // This will not produce the correct results for triangles which are partially outside the clip area.
     // However, usually it'll undershoot not overshoot. If we wanted to make this more accurate, we'd need to intersect
     // the edges with the clip rectangle.
     // TODO: Coordinates are exclusive, so off by one here...
-    const GSVector4i clamp_min = m_clamped_drawing_area; // would be xyxy(), but zw isn't used.
-    const GSVector4i clamp_max = m_clamped_drawing_area.zwzw();
+    const GSVector2i clamp_min = GSVector2i::load(&m_clamped_drawing_area.x);
+    const GSVector2i clamp_max = GSVector2i::load(&m_clamped_drawing_area.z);
     v1 = v1.sat_i32(clamp_min, clamp_max);
     v2 = v2.sat_i32(clamp_min, clamp_max);
     v3 = v3.sat_i32(clamp_min, clamp_max);

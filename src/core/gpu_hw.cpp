@@ -1962,15 +1962,15 @@ void GPU_HW::ComputePolygonUVLimits(BatchVertex* vertices, u32 num_vertices)
 {
   DebugAssert(num_vertices == 3 || num_vertices == 4);
 
-  GSVector4i v0 = GSVector4i::load32(&vertices[0].u);
-  GSVector4i v1 = GSVector4i::load32(&vertices[1].u);
-  GSVector4i v2 = GSVector4i::load32(&vertices[2].u);
-  GSVector4i v3;
-  GSVector4i min = v0.min_u16(v1).min_u16(v2);
-  GSVector4i max = v0.max_u16(v1).max_u16(v2);
+  GSVector2i v0 = GSVector2i::load32(&vertices[0].u);
+  GSVector2i v1 = GSVector2i::load32(&vertices[1].u);
+  GSVector2i v2 = GSVector2i::load32(&vertices[2].u);
+  GSVector2i v3;
+  GSVector2i min = v0.min_u16(v1).min_u16(v2);
+  GSVector2i max = v0.max_u16(v1).max_u16(v2);
   if (num_vertices == 4)
   {
-    v3 = GSVector4i::load32(&vertices[3].u);
+    v3 = GSVector2i::load32(&vertices[3].u);
     min = min.min_u16(v3);
     max = max.max_u16(v3);
   }
@@ -1986,7 +1986,7 @@ void GPU_HW::ComputePolygonUVLimits(BatchVertex* vertices, u32 num_vertices)
     vertices[i].SetUVLimits(min_u, max_u, min_v, max_v);
 
   if (m_texpage_dirty != 0)
-    CheckForTexPageOverlap(min.upl32(max).u16to32());
+    CheckForTexPageOverlap(GSVector4i(min).upl32(GSVector4i(max)).u16to32());
 }
 
 void GPU_HW::SetBatchDepthBuffer(bool enabled)
@@ -2157,8 +2157,6 @@ void GPU_HW::LoadVertices()
       const bool shaded = rc.shading_enable;
       const bool pgxp = g_settings.gpu_pgxp_enable;
 
-      // TODO: Using 64-bit vectors instead of 32-bit could be advantageous here, particularly for small ARM cores and
-      // RISC-V.
       const u32 first_color = rc.color_for_first_vertex;
       u32 num_vertices = rc.quad_polygon ? 4 : 3;
       std::array<BatchVertex, 4> vertices;
@@ -2240,13 +2238,13 @@ void GPU_HW::LoadVertices()
       }
 
       // Cull polygons which are too large.
-      const GSVector4 v0f = GSVector4::loadl(&vertices[0].x);
-      const GSVector4 v1f = GSVector4::loadl(&vertices[1].x);
-      const GSVector4 v2f = GSVector4::loadl(&vertices[2].x);
-      const GSVector4 min_pos_12 = v1f.min(v2f);
-      const GSVector4 max_pos_12 = v1f.max(v2f);
-      const GSVector4i draw_rect_012 =
-        GSVector4i(min_pos_12.min(v0f).upld(max_pos_12.max(v0f))).add32(GSVector4i::cxpr(0, 0, 1, 1));
+      const GSVector2 v0f = GSVector2::load(&vertices[0].x);
+      const GSVector2 v1f = GSVector2::load(&vertices[1].x);
+      const GSVector2 v2f = GSVector2::load(&vertices[2].x);
+      const GSVector2 min_pos_12 = v1f.min(v2f);
+      const GSVector2 max_pos_12 = v1f.max(v2f);
+      const GSVector4i draw_rect_012 = GSVector4i(GSVector4(min_pos_12.min(v0f)).upld(GSVector4(max_pos_12.max(v0f))))
+                                         .add32(GSVector4i::cxpr(0, 0, 1, 1));
       const GSVector4i clamped_draw_rect_012 = draw_rect_012.rintersect(m_clamped_drawing_area);
       const bool first_tri_culled = (draw_rect_012.width() > MAX_PRIMITIVE_WIDTH ||
                                      draw_rect_012.height() > MAX_PRIMITIVE_HEIGHT || clamped_draw_rect_012.rempty());
@@ -2265,9 +2263,8 @@ void GPU_HW::LoadVertices()
           ComputePolygonUVLimits(vertices.data(), num_vertices);
 
         AddDrawnRectangle(clamped_draw_rect_012);
-        AddDrawTriangleTicks(GSVector4i(native_vertex_positions[0]), GSVector4i(native_vertex_positions[1]),
-                             GSVector4i(native_vertex_positions[2]), rc.shading_enable, rc.texture_enable,
-                             rc.transparency_enable);
+        AddDrawTriangleTicks(native_vertex_positions[0], native_vertex_positions[1], native_vertex_positions[2],
+                             rc.shading_enable, rc.texture_enable, rc.transparency_enable);
 
         // Expand lines to triangles (Doom, Soul Blade, etc.)
         if (!rc.quad_polygon && m_line_detect_mode >= GPULineDetectMode::BasicTriangles && !is_3d &&
@@ -2288,9 +2285,9 @@ void GPU_HW::LoadVertices()
       // quads
       if (rc.quad_polygon)
       {
-        const GSVector4 v3f = GSVector4::loadl(&vertices[3].x);
-        const GSVector4i draw_rect_123 =
-          GSVector4i(min_pos_12.min(v3f).upld(max_pos_12.max(v3f))).add32(GSVector4i::cxpr(0, 0, 1, 1));
+        const GSVector2 v3f = GSVector2::load(&vertices[3].x);
+        const GSVector4i draw_rect_123 = GSVector4i(GSVector4(min_pos_12.min(v3f)).upld(GSVector4(max_pos_12.max(v3f))))
+                                           .add32(GSVector4i::cxpr(0, 0, 1, 1));
         const GSVector4i clamped_draw_rect_123 = draw_rect_123.rintersect(m_clamped_drawing_area);
 
         // Cull polygons which are too large.
@@ -2312,9 +2309,8 @@ void GPU_HW::LoadVertices()
             ComputePolygonUVLimits(vertices.data(), num_vertices);
 
           AddDrawnRectangle(clamped_draw_rect_123);
-          AddDrawTriangleTicks(GSVector4i(native_vertex_positions[2]), GSVector4i(native_vertex_positions[1]),
-                               GSVector4i(native_vertex_positions[3]), rc.shading_enable, rc.texture_enable,
-                               rc.transparency_enable);
+          AddDrawTriangleTicks(native_vertex_positions[2], native_vertex_positions[1], native_vertex_positions[3],
+                               rc.shading_enable, rc.texture_enable, rc.transparency_enable);
 
           const u32 start_index = m_batch_vertex_count;
           DebugAssert(m_batch_index_space >= 3);
@@ -2650,7 +2646,7 @@ ALWAYS_INLINE_RELEASE void GPU_HW::CheckForTexPageOverlap(GSVector4i uv_rect)
 
   const GPUTextureMode tmode = m_draw_mode.mode_reg.texture_mode;
   const u32 xshift = (tmode >= GPUTextureMode::Direct16Bit) ? 0 : (2 - static_cast<u8>(tmode));
-  const GSVector4i page_offset = GSVector4i(m_current_texture_page_offset).xyxy();
+  const GSVector4i page_offset = GSVector4i::loadl(m_current_texture_page_offset).xyxy();
 
   uv_rect = uv_rect.blend32<5>(uv_rect.srl32(xshift));   // shift only goes on the x
   uv_rect = uv_rect.add32(page_offset);                  // page offset
@@ -3220,7 +3216,7 @@ void GPU_HW::DispatchRenderCommand()
       }
 
       const GSVector4i page_rect = m_draw_mode.mode_reg.GetTexturePageRectangle();
-      m_current_texture_page_offset = page_rect.xy();
+      GSVector4i::storel(m_current_texture_page_offset, page_rect);
 
       u8 new_texpage_dirty = m_vram_dirty_draw_rect.rintersects(page_rect) ? TEXPAGE_DIRTY_DRAWN_RECT : 0;
       new_texpage_dirty |= m_vram_dirty_write_rect.rintersects(page_rect) ? TEXPAGE_DIRTY_WRITTEN_RECT : 0;
