@@ -693,6 +693,8 @@ void CPU::NewRec::AArch64Compiler::Flush(u32 flags)
 
 void CPU::NewRec::AArch64Compiler::Compile_Fallback()
 {
+  WARNING_LOG("Compiling instruction fallback at PC=0x{:08X}, instruction=0x{:08X}", iinfo->pc, inst->bits);
+
   Flush(FLUSH_FOR_INTERPRETER);
 
   EmitCall(reinterpret_cast<const void*>(&CPU::Recompiler::Thunks::InterpretInstruction));

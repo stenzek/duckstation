@@ -936,8 +936,12 @@ bool CPU::CodeCache::ReadBlockInstructions(u32 start_pc, BlockInstructionList* i
     }
 
     Instruction instruction;
-    if (!SafeReadInstruction(pc, &instruction.bits) || !IsInvalidInstruction(instruction))
+    if (!SafeReadInstruction(pc, &instruction.bits) || !IsValidInstruction(instruction))
+    {
+      // Away to the int you go!
+      ERROR_LOG("Instruction read failed at PC=0x{:08X}, truncating block.", pc);
       break;
+    }
 
     InstructionInfo info;
     std::memset(&info, 0, sizeof(info));
@@ -951,8 +955,6 @@ bool CPU::CodeCache::ReadBlockInstructions(u32 start_pc, BlockInstructionList* i
     info.is_load_instruction = IsMemoryLoadInstruction(instruction);
     info.is_store_instruction = IsMemoryStoreInstruction(instruction);
     info.has_load_delay = InstructionHasLoadDelay(instruction);
-    info.can_trap = CanInstructionTrap(instruction, false /*InUserMode()*/);
-    info.is_direct_branch_instruction = IsDirectBranchInstruction(instruction);
 
     if (g_settings.cpu_recompiler_icache)
     {

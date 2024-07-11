@@ -1191,6 +1191,8 @@ void CodeGenerator::WriteNewPC(const Value& value, bool commit)
 
 bool CodeGenerator::Compile_Fallback(Instruction instruction, const CodeCache::InstructionInfo& info)
 {
+  WARNING_LOG("Compiling instruction fallback at PC=0x{:08X}, instruction=0x{:08X}", info.pc, instruction.bits);
+
   InstructionPrologue(instruction, info, 1, true);
 
   // flush and invalidate all guest registers, since the fallback could change any of them
@@ -1204,20 +1206,11 @@ bool CodeGenerator::Compile_Fallback(Instruction instruction, const CodeCache::I
   EmitStoreCPUStructField(OFFSETOF(State, current_instruction_pc), Value::FromConstantU32(info.pc));
   EmitStoreCPUStructField(OFFSETOF(State, current_instruction.bits), Value::FromConstantU32(instruction.bits));
 
-  // emit the function call
-  if (CanInstructionTrap(instruction, false /*m_block->key.user_mode*/))
-  {
-    // TODO: Use carry flag or something here too
-    Value return_value = m_register_cache.AllocateScratch(RegSize_8);
-    EmitFunctionCall(&return_value,
-                     g_settings.gpu_pgxp_enable ? &Thunks::InterpretInstructionPGXP : &Thunks::InterpretInstruction);
-    EmitExceptionExitOnBool(return_value);
-  }
-  else
-  {
-    EmitFunctionCall(nullptr,
-                     g_settings.gpu_pgxp_enable ? &Thunks::InterpretInstructionPGXP : &Thunks::InterpretInstruction);
-  }
+  // TODO: Use carry flag or something here too
+  Value return_value = m_register_cache.AllocateScratch(RegSize_8);
+  EmitFunctionCall(&return_value,
+                   g_settings.gpu_pgxp_enable ? &Thunks::InterpretInstructionPGXP : &Thunks::InterpretInstruction);
+  EmitExceptionExitOnBool(return_value);
 
   m_current_instruction_in_branch_delay_slot_dirty = info.is_branch_instruction;
   m_branch_was_taken_dirty = info.is_branch_instruction;

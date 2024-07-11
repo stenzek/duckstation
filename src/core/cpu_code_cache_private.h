@@ -53,7 +53,6 @@ struct InstructionInfo
   bool is_load_delay_slot : 1;
   bool is_last_instruction : 1;
   bool has_load_delay : 1;
-  bool can_trap : 1;
 
   u8 reg_flags[static_cast<u8>(Reg::count)];
   // Reg write_reg[3];

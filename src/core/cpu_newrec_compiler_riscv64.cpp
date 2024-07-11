@@ -970,6 +970,8 @@ void CPU::NewRec::RISCV64Compiler::Flush(u32 flags)
 
 void CPU::NewRec::RISCV64Compiler::Compile_Fallback()
 {
+  WARNING_LOG("Compiling instruction fallback at PC=0x{:08X}, instruction=0x{:08X}", iinfo->pc, inst->bits);
+
   Flush(FLUSH_FOR_INTERPRETER);
 
 #if 0
