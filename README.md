@@ -57,7 +57,7 @@ Other features include:
 ## Downloading and running
 Binaries of DuckStation for Windows x64/ARM64, Linux x86_64 (in AppImage/Flatpak formats), and macOS Universal Binaries are available via GitHub Releases and are automatically built with every commit/push. Binaries or packages distributed through other sources may be out of date and are not supported by the developer, please speak to them for support, not us.
 
-For x86 machines (most systems), you will need a CPU that supports the SSE4.1 instruction set. This includes all CPUs manufactured after 2007. If you want to use DuckStation with a CPU that is older, [v0.1-6995](https://github.com/stenzek/duckstation/releases/tag/latest) is the last version that does not require SSE4.1.
+For x86 machines (most systems), you will need a CPU that supports the SSE4.1 instruction set. This includes all CPUs manufactured after 2007. If you want to use DuckStation with a CPU that is older, [v0.1-6995](https://github.com/stenzek/duckstation/releases/tag/v0.1-6995) is the last version that does not require SSE4.1.
 
 ### Windows
 
