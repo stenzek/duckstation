@@ -295,7 +295,10 @@ std::optional<RGBA8Image> ImGuiFullscreen::LoadTextureImage(std::string_view pat
     {
       image = RGBA8Image();
       if (!image->LoadFromFile(path_str.c_str(), fp.get()))
+      {
         ERROR_LOG("Failed to read texture file '{}'", path);
+        image.reset();
+      }
     }
     else
     {
