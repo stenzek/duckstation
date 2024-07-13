@@ -816,6 +816,10 @@ void EmuThread::bootSystem(std::shared_ptr<SystemBootParameters> params)
     return;
   }
 
+  // Just in case of rapid clicking games before it gets the chance to start.
+  if (System::IsValidOrInitializing())
+    return;
+
   setInitialState(params->override_fullscreen);
 
   Error error;
