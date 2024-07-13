@@ -1655,9 +1655,15 @@ static constexpr const char MEMCARD_TIMESTAMP_CACHE_SIGNATURE[] = {'M', 'C', 'D'
 FileSystem::ManagedCFilePtr GameList::OpenMemoryCardTimestampCache(bool for_write)
 {
   const std::string filename = Path::Combine(EmuFolders::Cache, "memcard_icons.cache");
-  const char* mode = for_write ? "r+b" : "rb";
   const FileSystem::FileShareMode share_mode =
     for_write ? FileSystem::FileShareMode::DenyReadWrite : FileSystem::FileShareMode::DenyWrite;
+#ifdef _WIN32
+  const char* mode = for_write ? "r+b" : "rb";
+#else
+  // Always open read/write on Linux, since we need it for flock().
+  const char* mode = "r+b";
+#endif
+
   FileSystem::ManagedCFilePtr fp = FileSystem::OpenManagedSharedCFile(filename.c_str(), mode, share_mode, nullptr);
   if (fp)
     return fp;
