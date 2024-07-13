@@ -5,6 +5,7 @@
 
 #include "common/bitutils.h"
 #include "common/byte_stream.h"
+#include "common/fastjmp.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
@@ -425,39 +426,41 @@ namespace {
 struct JPEGErrorHandler
 {
   jpeg_error_mgr err;
-  jmp_buf jbuf;
-};
-} // namespace
+  fastjmp_buf jbuf;
 
-static bool HandleJPEGError(JPEGErrorHandler* eh)
-{
-  jpeg_std_error(&eh->err);
+  JPEGErrorHandler()
+  {
+    jpeg_std_error(&err);
+    err.error_exit = &ErrorExit;
+  }
 
-  eh->err.error_exit = [](j_common_ptr cinfo) {
+  static void ErrorExit(j_common_ptr cinfo)
+  {
     JPEGErrorHandler* eh = (JPEGErrorHandler*)cinfo->err;
     char msg[JMSG_LENGTH_MAX];
     eh->err.format_message(cinfo, msg);
     ERROR_LOG("libjpeg fatal error: {}", msg);
-    longjmp(eh->jbuf, 1);
-  };
-
-  if (setjmp(eh->jbuf) == 0)
-    return true;
-
-  return false;
-}
+    fastjmp_jmp(&eh->jbuf, 1);
+  }
+};
+} // namespace
 
 template<typename T>
 static bool WrapJPEGDecompress(RGBA8Image* image, T setup_func)
 {
   std::vector<u8> scanline;
+  jpeg_decompress_struct info = {};
 
-  JPEGErrorHandler err;
-  if (!HandleJPEGError(&err))
+  // NOTE: Be **very** careful not to allocate memory after calling this function.
+  // It won't get freed, because fastjmp does not unwind the stack.
+  JPEGErrorHandler errhandler;
+  if (fastjmp_set(&errhandler.jbuf) != 0)
+  {
+    jpeg_destroy_decompress(&info);
     return false;
+  }
 
-  jpeg_decompress_struct info;
-  info.err = &err.err;
+  info.err = &errhandler.err;
   jpeg_create_decompress(&info);
   setup_func(info);
 
@@ -584,13 +587,18 @@ template<typename T>
 static bool WrapJPEGCompress(const RGBA8Image& image, u8 quality, T setup_func)
 {
   std::vector<u8> scanline;
+  jpeg_compress_struct info = {};
 
-  JPEGErrorHandler err;
-  if (!HandleJPEGError(&err))
+  // NOTE: Be **very** careful not to allocate memory after calling this function.
+  // It won't get freed, because fastjmp does not unwind the stack.
+  JPEGErrorHandler errhandler;
+  if (fastjmp_set(&errhandler.jbuf) != 0)
+  {
+    jpeg_destroy_compress(&info);
     return false;
+  }
 
-  jpeg_compress_struct info;
-  info.err = &err.err;
+  info.err = &errhandler.err;
   jpeg_create_compress(&info);
   setup_func(info);
 
