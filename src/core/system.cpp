@@ -4117,7 +4117,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.runahead_frames != old_settings.runahead_frames)
     {
       g_gpu->UpdateSettings(old_settings);
-      if (!IsPaused())
+      if (IsPaused())
         InvalidateDisplay();
     }
 
