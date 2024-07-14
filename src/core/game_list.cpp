@@ -66,10 +66,11 @@ struct MemcardTimestampCacheEntry
 {
   enum : u32
   {
-    MAX_SERIAL_LENGTH = 32,
+    MAX_SERIAL_LENGTH = 31,
   };
 
   char serial[MAX_SERIAL_LENGTH];
+  bool icon_was_extracted;
   s64 memcard_timestamp;
 };
 #pragma pack(pop)
@@ -1650,7 +1651,7 @@ std::optional<DiscRegion> GameList::GetCustomRegionForPath(const std::string_vie
     return std::nullopt;
 }
 
-static constexpr const char MEMCARD_TIMESTAMP_CACHE_SIGNATURE[] = {'M', 'C', 'D', 'I', 'C', 'N', '0', '2'};
+static constexpr const char MEMCARD_TIMESTAMP_CACHE_SIGNATURE[] = {'M', 'C', 'D', 'I', 'C', 'N', '0', '3'};
 
 FileSystem::ManagedCFilePtr GameList::OpenMemoryCardTimestampCache(bool for_write)
 {
@@ -1772,9 +1773,10 @@ std::string GameList::GetGameIconPath(std::string_view serial, std::string_view 
   {
     if (StringUtil::EqualNoCase(index_serial, entry.serial))
     {
-      if (entry.memcard_timestamp == timestamp)
+      // user might've deleted the file, so re-extract it if so
+      // otherwise, card hasn't changed, still no icon
+      if (entry.memcard_timestamp == timestamp && !entry.icon_was_extracted)
       {
-        // card hasn't changed, still no icon
         ret = {};
         return ret;
       }
@@ -1791,6 +1793,7 @@ std::string GameList::GetGameIconPath(std::string_view serial, std::string_view 
   }
 
   serial_entry->memcard_timestamp = timestamp;
+  serial_entry->icon_was_extracted = false;
   StringUtil::Strlcpy(serial_entry->serial, index_serial.view(), sizeof(serial_entry->serial));
 
   // Try extracting an icon.
@@ -1809,7 +1812,8 @@ std::string GameList::GetGameIconPath(std::string_view serial, std::string_view 
         RGBA8Image image(MemoryCardImage::ICON_WIDTH, MemoryCardImage::ICON_HEIGHT);
         std::memcpy(image.GetPixels(), &fi.icon_frames.front().pixels,
                     MemoryCardImage::ICON_WIDTH * MemoryCardImage::ICON_HEIGHT * sizeof(u32));
-        if (!image.SaveToFile(ret.c_str()))
+        serial_entry->icon_was_extracted = image.SaveToFile(ret.c_str());
+        if (!serial_entry->icon_was_extracted)
         {
           ERROR_LOG("Failed to save memory card icon to {}.", ret);
           ret = {};
