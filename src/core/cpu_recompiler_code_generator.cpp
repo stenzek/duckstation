@@ -3049,8 +3049,7 @@ bool CodeGenerator::Compile_cop2(Instruction instruction, const CodeCache::Instr
       if (g_settings.gpu_pgxp_enable)
         EmitFunctionCall(nullptr, PGXP::CPU_SWC2, Value::FromConstantU32(instruction.bits), address, value);
 
-      SpeculativeValue spec_base = SpeculativeReadReg(instruction.i.rs);
-      if (spec_base)
+      if (spec_address)
         SpeculativeWriteMemory(*spec_address, std::nullopt);
     }
 
