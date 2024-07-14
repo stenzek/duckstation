@@ -214,9 +214,9 @@ void CPU::NewRec::X64Compiler::GenerateCall(const void* func, s32 arg1reg /*= -1
 {
   if (arg1reg >= 0 && arg1reg != static_cast<s32>(RXARG1.getIdx()))
     cg->mov(RXARG1, Reg64(arg1reg));
-  if (arg1reg >= 0 && arg2reg != static_cast<s32>(RXARG2.getIdx()))
+  if (arg2reg >= 0 && arg2reg != static_cast<s32>(RXARG2.getIdx()))
     cg->mov(RXARG2, Reg64(arg2reg));
-  if (arg1reg >= 0 && arg3reg != static_cast<s32>(RXARG3.getIdx()))
+  if (arg3reg >= 0 && arg3reg != static_cast<s32>(RXARG3.getIdx()))
     cg->mov(RXARG3, Reg64(arg3reg));
   cg->call(func);
 }

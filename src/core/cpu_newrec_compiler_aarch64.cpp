@@ -321,9 +321,9 @@ void CPU::NewRec::AArch64Compiler::GenerateCall(const void* func, s32 arg1reg /*
 {
   if (arg1reg >= 0 && arg1reg != static_cast<s32>(RXARG1.GetCode()))
     armAsm->mov(RXARG1, XRegister(arg1reg));
-  if (arg1reg >= 0 && arg2reg != static_cast<s32>(RXARG2.GetCode()))
+  if (arg2reg >= 0 && arg2reg != static_cast<s32>(RXARG2.GetCode()))
     armAsm->mov(RXARG2, XRegister(arg2reg));
-  if (arg1reg >= 0 && arg3reg != static_cast<s32>(RXARG3.GetCode()))
+  if (arg3reg >= 0 && arg3reg != static_cast<s32>(RXARG3.GetCode()))
     armAsm->mov(RXARG3, XRegister(arg3reg));
   EmitCall(func);
 }

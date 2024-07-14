@@ -4822,7 +4822,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
 
               case 3:
               {
-                changed = ImGui::SliderInt2("##value", &opt.value[0].int_value, opt.min_value[0].int_value,
+                changed = ImGui::SliderInt3("##value", &opt.value[0].int_value, opt.min_value[0].int_value,
                                             opt.max_value[0].int_value);
               }
               break;

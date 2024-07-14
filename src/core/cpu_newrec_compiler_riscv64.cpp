@@ -572,9 +572,9 @@ void CPU::NewRec::RISCV64Compiler::GenerateCall(const void* func, s32 arg1reg /*
 {
   if (arg1reg >= 0 && arg1reg != static_cast<s32>(RARG1.Index()))
     rvAsm->MV(RARG1, GPR(arg1reg));
-  if (arg1reg >= 0 && arg2reg != static_cast<s32>(RARG2.Index()))
+  if (arg2reg >= 0 && arg2reg != static_cast<s32>(RARG2.Index()))
     rvAsm->MV(RARG2, GPR(arg2reg));
-  if (arg1reg >= 0 && arg3reg != static_cast<s32>(RARG3.Index()))
+  if (arg3reg >= 0 && arg3reg != static_cast<s32>(RARG3.Index()))
     rvAsm->MV(RARG3, GPR(arg3reg));
   EmitCall(func);
 }
