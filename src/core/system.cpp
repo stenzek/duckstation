@@ -1649,7 +1649,9 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
       ClearRunningGame();
       Host::OnSystemDestroyed();
       Host::OnIdleStateChanged();
-      return false;
+
+      // Technically a failure, but user-initiated. Returning false here would try to display a non-existent error.
+      return true;
     }
   }
 
