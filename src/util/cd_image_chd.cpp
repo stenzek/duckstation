@@ -31,23 +31,23 @@ Log_SetChannel(CDImageCHD);
 
 namespace {
 
-static std::optional<CDImage::TrackMode> ParseTrackModeString(const char* str)
+static std::optional<CDImage::TrackMode> ParseTrackModeString(const std::string_view str)
 {
-  if (std::strncmp(str, "MODE2_FORM_MIX", 14) == 0)
+  if (str == "MODE2_FORM_MIX")
     return CDImage::TrackMode::Mode2FormMix;
-  else if (std::strncmp(str, "MODE2_FORM1", 10) == 0)
+  else if (str == "MODE2_FORM1")
     return CDImage::TrackMode::Mode2Form1;
-  else if (std::strncmp(str, "MODE2_FORM2", 10) == 0)
+  else if (str == "MODE2_FORM2")
     return CDImage::TrackMode::Mode2Form2;
-  else if (std::strncmp(str, "MODE2_RAW", 9) == 0)
+  else if (str == "MODE2_RAW")
     return CDImage::TrackMode::Mode2Raw;
-  else if (std::strncmp(str, "MODE1_RAW", 9) == 0)
+  else if (str == "MODE1_RAW")
     return CDImage::TrackMode::Mode1Raw;
-  else if (std::strncmp(str, "MODE1", 5) == 0)
+  else if (str == "MODE1")
     return CDImage::TrackMode::Mode1;
-  else if (std::strncmp(str, "MODE2", 5) == 0)
+  else if (str == "MODE2")
     return CDImage::TrackMode::Mode2;
-  else if (std::strncmp(str, "AUDIO", 5) == 0)
+  else if (str == "AUDIO")
     return CDImage::TrackMode::Audio;
   else
     return std::nullopt;
