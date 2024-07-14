@@ -275,7 +275,7 @@ std::string Achievements::GetGameHash(CDImage* image)
   if (!System::ReadExecutableFromImage(image, &executable_name, &executable_data))
     return {};
 
-  BIOS::PSEXEHeader header;
+  BIOS::PSEXEHeader header = {};
   if (executable_data.size() >= sizeof(header))
     std::memcpy(&header, executable_data.data(), sizeof(header));
   if (!BIOS::IsValidPSExeHeader(header, static_cast<u32>(executable_data.size())))
@@ -286,8 +286,8 @@ std::string Achievements::GetGameHash(CDImage* image)
 
   // See rcheevos hash.c - rc_hash_psx().
   const u32 MAX_HASH_SIZE = 64 * 1024 * 1024;
-  const u32 hash_size = std::min<u32>(sizeof(header) + header.file_size, MAX_HASH_SIZE);
-  Assert(hash_size <= executable_data.size());
+  const u32 hash_size =
+    std::min(std::min<u32>(sizeof(header) + header.file_size, MAX_HASH_SIZE), static_cast<u32>(executable_data.size()));
 
   MD5Digest digest;
   digest.Update(executable_name.c_str(), static_cast<u32>(executable_name.size()));
