@@ -1,4 +1,5 @@
-#include "ReShade.fxh"
+#ifndef GEOM_PARAMS_H
+#define GEOM_PARAMS_H
 
 /*
     Geom Shader - a modified CRT-Geom without CRT features made to be appended/integrated
@@ -34,6 +35,7 @@
 
 uniform bool geom_curvature <
 	ui_type = "radio";
+	ui_category = "Geom Curvature";
 	ui_label = "Geom Curvature Toggle";
 > = 1.0;
 
@@ -42,6 +44,7 @@ uniform float geom_R <
 	ui_min = 0.1;
 	ui_max = 10.0;
 	ui_step = 0.1;
+	ui_category = "Geom Curvature";
 	ui_label = "Geom Curvature Radius";
 > = 2.0;
 
@@ -50,11 +53,13 @@ uniform float geom_d <
 	ui_min = 0.1;
 	ui_max = 3.0;
 	ui_step = 0.1;
+	ui_category = "Geom Curvature";
 	ui_label = "Geom Distance";
 > = 1.5;
 
 uniform bool geom_invert_aspect <
 	ui_type = "radio";
+	ui_category = "Geom Curvature";
 	ui_label = "Geom Curvature Aspect Inversion";
 > = 0.0;
 
@@ -63,6 +68,7 @@ uniform float geom_cornersize <
 	ui_min = 0.001;
 	ui_max = 1.0;
 	ui_step = 0.005;
+	ui_category = "Geom Curvature";
 	ui_label = "Geom Corner Size";
 > = 0.03;
 
@@ -71,6 +77,7 @@ uniform float geom_cornersmooth <
 	ui_min = 80.0;
 	ui_max = 2000.0;
 	ui_step = 100.0;
+	ui_category = "Geom Curvature";
 	ui_label = "Geom Corner Smoothness";
 > = 1000.0;
 
@@ -79,6 +86,7 @@ uniform float geom_x_tilt <
 	ui_min = -1.0;
 	ui_max = 1.0;
 	ui_step = 0.05;
+	ui_category = "Geom Curvature";
 	ui_label = "Geom Horizontal Tilt";
 > = 0.0;
 
@@ -87,6 +95,7 @@ uniform float geom_y_tilt <
 	ui_min = -1.0;
 	ui_max = 1.0;
 	ui_step = 0.05;
+	ui_category = "Geom Curvature";
 	ui_label = "Geom Vertical Tilt";
 > = 0.0;
 
@@ -95,6 +104,7 @@ uniform float geom_overscan_x <
 	ui_min = -125.0;
 	ui_max = 125.0;
 	ui_step = 0.5;
+	ui_category = "Geom Curvature";
 	ui_label = "Geom Horiz. Overscan %";
 > = 100.0;
 
@@ -103,6 +113,7 @@ uniform float geom_overscan_y <
 	ui_min = -125.0;
 	ui_max = 125.0;
 	ui_step = 0.5;
+	ui_category = "Geom Curvature";
 	ui_label = "Geom Vert. Overscan %";
 > = 100.0;
 
@@ -111,6 +122,7 @@ uniform float centerx <
 	ui_min = -100.0;
 	ui_max = 100.0;
 	ui_step = 0.1;
+	ui_category = "Geom Curvature";
 	ui_label = "Image Center X";
 > = 0.00;
 
@@ -119,74 +131,17 @@ uniform float centery <
 	ui_min = -100.0;
 	ui_max = 100.0;
 	ui_step = 0.1;
+	ui_category = "Geom Curvature";
 	ui_label = "Image Center Y";
 > = 0.00;
 
-uniform float geom_lum <
-	ui_type = "drag";
-	ui_min = 0.5;
-	ui_max = 2.0;
-	ui_step = 0.01;
-	ui_label = "Geom Luminance";
-> = 1.0;
 
-uniform float geom_target_gamma <
-	ui_type = "drag";
-	ui_min = 0.1;
-	ui_max = 5.0;
-	ui_step = 0.1;
-	ui_label = "Geom Target Gamma";
-> = 2.4;
-
-uniform float geom_monitor_gamma <
-	ui_type = "drag";
-	ui_min = 0.1;
-	ui_max = 5.0;
-	ui_step = 0.1;
-	ui_label = "Geom Monitor Gamma";
-> = 2.2;
-
-
-uniform float2 BufferToViewportRatio < source = "buffer_to_viewport_ratio"; >;
-uniform float2 NormalizedNativePixelSize < source = "normalized_native_pixel_size"; >;
-uniform float2 ViewportSize < source = "viewportsize"; >;
-uniform float  ViewportWidth < source = "viewportwidth"; >;
-uniform float  ViewportHeight < source = "viewportheight"; >;
-
-sampler2D sBackBuffer{Texture=ReShade::BackBufferTex;AddressU=BORDER;AddressV=BORDER;AddressW=BORDER;MagFilter=LINEAR;MinFilter=LINEAR;};
-
-// Comment the next line to disable interpolation in linear gamma (and
-// gain speed).
-#define LINEAR_PROCESSING
-
-// Enable 3x oversampling of the beam profile; improves moire effect caused by scanlines+curvature
-#define OVERSAMPLE
-
-// Use the older, purely gaussian beam profile; uncomment for speed
-//#define USEGAUSSIAN
 
 // Macros.
 #define FIX(c) max(abs(c), 1e-5);
-#define PI 3.141592653589
-
-#ifdef LINEAR_PROCESSING
-#       define TEX2D(c) pow(tex2D(sBackBuffer, (c)), geom_target_gamma.xxxx)
-#else
-#       define TEX2D(c) tex2D(sBackBuffer, (c))
-#endif
 
 // aspect ratio
 #define aspect     (geom_invert_aspect==true?float2(ViewportHeight/ViewportWidth,1.0):float2(1.0,ViewportHeight/ViewportWidth))
-#define overscan   (1.01.xx);
-
-
-struct ST_VertexOut
-{
-    float2 sinangle    : TEXCOORD1;
-    float2 cosangle    : TEXCOORD2;
-    float3 stretch     : TEXCOORD3;
-    float2 TextureSize : TEXCOORD4;
-};
 
 
 float intersect(float2 xy, float2 sinangle, float2 cosangle)
@@ -252,27 +207,6 @@ float2 transform(float2 coord, float2 sinangle, float2 cosangle, float3 stretch)
 }
 
 
-// Vertex shader generating a triangle covering the entire screen
-void VS_CRT_Geom(in uint id : SV_VertexID, out float4 position : SV_Position, out float2 texcoord : TEXCOORD, out ST_VertexOut vVARS)
-{
-    texcoord.x = (id == 2) ? 2.0 : 0.0;
-    texcoord.y = (id == 1) ? 2.0 : 0.0;
-    position = float4(texcoord * float2(2.0, -2.0) + float2(-1.0, 1.0), 0.0, 1.0);
-
-    // Screen centering
-    texcoord = texcoord - float2(centerx,centery)/100.0;
-
-    float2 SourceSize = 1.0/NormalizedNativePixelSize;
-
-    // Precalculate a bunch of useful values we'll need in the fragment
-    // shader.
-    vVARS.sinangle    = sin(float2(geom_x_tilt, geom_y_tilt));
-    vVARS.cosangle    = cos(float2(geom_x_tilt, geom_y_tilt));
-    vVARS.stretch     = maxscale(vVARS.sinangle, vVARS.cosangle);
-    vVARS.TextureSize = float2(SourceSize.x, SourceSize.y);
-}
-
-
 float corner(float2 coord)
 {
            coord = min(coord, 1.0.xx - coord) * aspect;
@@ -288,38 +222,4 @@ float fwidth(float value)
     return abs(ddx(value)) + abs(ddy(value));
 }
 
-
-float4 PS_CRT_Geom(float4 vpos: SV_Position, float2 vTexCoord : TEXCOORD, in ST_VertexOut vVARS) : SV_Target
-{
-    // Texture coordinates of the texel containing the active pixel.
-    float2 xy = (geom_curvature == true) ? transform(vTexCoord, vVARS.sinangle, vVARS.cosangle, vVARS.stretch) : vTexCoord;
-
-    float cval = corner((xy-0.5.xx) * BufferToViewportRatio + 0.5.xx);
-
-    float2 uv_ratio = frac((xy * vVARS.TextureSize - 0.5.xx) / vVARS.TextureSize);
-
-    float4 col = TEX2D(xy);
-
-#ifndef LINEAR_PROCESSING
-    col  = pow(col, geom_target_gamma.xxxx);
-#endif
-
-    col.rgb *= (geom_lum * step(0.0, uv_ratio.y));
-
-    float3 mul_res = col.rgb * cval.xxx;
-
-    // Convert the image gamma for display on our output device.
-    mul_res = pow(mul_res, 1.0 / geom_monitor_gamma.xxx);
-
-    return float4(mul_res, 1.0);
-}
-
-
-technique CRT_Geom
-{
-    pass
-    {
-        VertexShader = VS_CRT_Geom;
-        PixelShader  = PS_CRT_Geom;
-    }
-}
+#endif  //  GEOM_PARAMS_H
