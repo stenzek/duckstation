@@ -301,13 +301,17 @@ QIcon GameListModel::getIconForGame(const QString& path)
 
 void GameListModel::fixIconPixmapSize(QPixmap& pm)
 {
-  const int width = pm.width();
-  const int height = pm.height();
+  const qreal dpr = pm.devicePixelRatio();
+  const int width = static_cast<int>(static_cast<float>(pm.width()) * dpr);
+  const int height = static_cast<int>(static_cast<float>(pm.height()) * dpr);
   const int max_dim = std::max(width, height);
   if (max_dim == 16)
     return;
 
-  const float scale = static_cast<float>(max_dim) / 16.0f;
+  const float wanted_dpr = qApp->devicePixelRatio();
+  pm.setDevicePixelRatio(wanted_dpr);
+
+  const float scale = static_cast<float>(max_dim) / 16.0f / wanted_dpr;
   const int new_width = static_cast<int>(static_cast<float>(width) / scale);
   const int new_height = static_cast<int>(static_cast<float>(height) / scale);
   pm = pm.scaled(new_width, new_height);
