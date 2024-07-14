@@ -659,7 +659,7 @@ void GPU_HW::AddDrawnRectangle(const GSVector4i rect)
   // Normally, we would check for overlap here. But the GPU's texture cache won't actually reload until the page
   // changes, or it samples a larger region, so we can get away without doing so. This reduces copies considerably in
   // games like Mega Man Legends 2.
-  m_vram_dirty_draw_rect = m_vram_dirty_draw_rect.runion(m_clamped_drawing_area);
+  m_vram_dirty_draw_rect = m_vram_dirty_draw_rect.runion(rect);
 }
 
 void GPU_HW::AddUnclampedDrawnRectangle(const GSVector4i rect)
