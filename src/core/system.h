@@ -280,9 +280,6 @@ bool SaveStateToStream(ByteStream* state, Error* error, u32 screenshot_size = 25
 /// Runs the VM until the CPU execution is canceled.
 void Execute();
 
-/// Switches the GPU renderer by saving state, recreating the display window, and restoring state (if needed).
-void RecreateSystem();
-
 /// Recreates the GPU component, saving/loading the state so it is preserved. Call when the GPU renderer changes.
 bool RecreateGPU(GPURenderer renderer, bool force_recreate_device = false, bool update_display = true);
 

@@ -2255,44 +2255,6 @@ void System::IncrementInternalFrameNumber()
   s_internal_frame_number++;
 }
 
-void System::RecreateSystem()
-{
-  Error error;
-  Assert(!IsShutdown());
-
-  const bool was_paused = System::IsPaused();
-  std::unique_ptr<ByteStream> stream = ByteStream::CreateGrowableMemoryStream(nullptr, 8 * 1024);
-  if (!System::SaveStateToStream(stream.get(), &error, 0, SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE) ||
-      !stream->SeekAbsolute(0))
-  {
-    Host::ReportErrorAsync(
-      "Error", fmt::format("Failed to save state before system recreation. Shutting down:\n", error.GetDescription()));
-    DestroySystem();
-    return;
-  }
-
-  DestroySystem();
-
-  SystemBootParameters boot_params;
-  if (!BootSystem(std::move(boot_params), &error))
-  {
-    Host::ReportErrorAsync("Error", fmt::format("Failed to boot system after recreation:\n{}", error.GetDescription()));
-    return;
-  }
-
-  if (!LoadStateFromStream(stream.get(), &error, false))
-  {
-    DestroySystem();
-    return;
-  }
-
-  ResetPerformanceCounters();
-  ResetThrottler();
-
-  if (was_paused)
-    PauseSystem(true);
-}
-
 bool System::CreateGPU(GPURenderer renderer, bool is_switching, Error* error)
 {
   const RenderAPI api = Settings::GetRenderAPIForRenderer(renderer);
