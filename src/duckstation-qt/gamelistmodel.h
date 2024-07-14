@@ -105,6 +105,7 @@ private:
   void invalidateCoverForPath(const std::string& path);
 
   const QPixmap& getIconPixmapForEntry(const GameList::Entry* ge) const;
+  static void fixIconPixmapSize(QPixmap& pm);
 
   static QString formatTimespan(time_t timespan);
 

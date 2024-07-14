@@ -260,9 +260,12 @@ const QPixmap& GameListModel::getIconPixmapForEntry(const GameList::Entry* ge) c
     const std::string path = GameList::GetGameIconPath(ge->serial, ge->path);
     QPixmap pm;
     if (!path.empty() && pm.load(QString::fromStdString(path)))
+    {
+      fixIconPixmapSize(pm);
       return *m_memcard_pixmap_cache.Insert(ge->serial, std::move(pm));
-    else
-      return *m_memcard_pixmap_cache.Insert(ge->serial, m_type_pixmaps[static_cast<u32>(ge->type)]);
+    }
+
+    return *m_memcard_pixmap_cache.Insert(ge->serial, m_type_pixmaps[static_cast<u32>(ge->type)]);
   }
 
   return m_type_pixmaps[static_cast<u32>(ge->type)];
@@ -285,12 +288,29 @@ QIcon GameListModel::getIconForGame(const QString& path)
       {
         QPixmap newpm;
         if (!icon_path.empty() && newpm.load(QString::fromStdString(icon_path)))
+        {
+          fixIconPixmapSize(newpm);
           ret = QIcon(*m_memcard_pixmap_cache.Insert(entry->serial, std::move(newpm)));
+        }
       }
     }
   }
 
   return ret;
+}
+
+void GameListModel::fixIconPixmapSize(QPixmap& pm)
+{
+  const int width = pm.width();
+  const int height = pm.height();
+  const int max_dim = std::max(width, height);
+  if (max_dim == 16)
+    return;
+
+  const float scale = static_cast<float>(max_dim) / 16.0f;
+  const int new_width = static_cast<int>(static_cast<float>(width) / scale);
+  const int new_height = static_cast<int>(static_cast<float>(height) / scale);
+  pm = pm.scaled(new_width, new_height);
 }
 
 int GameListModel::getCoverArtWidth() const
