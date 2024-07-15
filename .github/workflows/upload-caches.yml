@@ -1,0 +1,36 @@
+name: Upload Caches
+
+on:
+  workflow_dispatch:
+
+jobs:
+  upload-windows-cache:
+    runs-on: windows-2022
+    timeout-minutes: 120
+    steps:
+    - uses: actions/checkout@v4.1.6
+      with:
+        fetch-depth: 0
+
+    - name: Cache Dependencies
+      id: cache-deps
+      uses: actions/cache@v4.0.2
+      with:
+        path: |
+          dep/msvc/deps-arm64
+          dep/msvc/deps-x64
+        key: deps ${{ hashFiles('scripts/deps/build-dependencies-windows-arm64.bat', 'scripts/deps/build-dependencies-windows-x64.bat') }}
+
+    - name: Zip Cache Files
+      if: steps.cache-deps.outputs.cache-hit == 'true'
+      shell: cmd
+      run: |
+        "C:\Program Files\7-Zip\7z.exe" a -r deps-x64.zip ./dep/msvc/deps-x64
+        "C:\Program Files\7-Zip\7z.exe" a -r deps-arm64.zip ./dep/msvc/deps-arm64
+
+    - name: Upload Cache Files
+      if: steps.cache-deps.outputs.cache-hit == 'true'
+      uses: actions/upload-artifact@v4.3.3
+      with:
+        name: "windows"
+        path: "deps-*.zip"
