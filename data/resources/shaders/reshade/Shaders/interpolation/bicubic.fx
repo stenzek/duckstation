@@ -32,15 +32,21 @@ uniform int BICUBIC_FILTER <
 	ui_tooltip = "Bicubic: balanced. Catmull-Rom: sharp. B-Spline: blurred. Hermite: soft pixelized.";
 > = 0;
 
+uniform float B_PRESCALE <
+	ui_type = "drag";
+	ui_min = 1.0;
+	ui_max = 8.0;
+	ui_step = 1.0;
+	ui_label = "Prescale factor";
+> = 1.0;
 
 uniform bool B_ANTI_RINGING <
 	ui_type = "radio";
-	ui_label = "Bicubic Anti-Ringing";
+	ui_label = "Anti-Ringing";
 > = false;
 
 uniform float2 NormalizedNativePixelSize < source = "normalized_native_pixel_size"; >;
-uniform float2 BufferToViewportRatio < source = "buffer_to_viewport_ratio"; >;
-uniform float2 ViewportSize < source = "viewportsize"; >;
+uniform float  BufferWidth < source = "bufferwidth"; >;
 
 texture2D tBicubic_P0{Width=BUFFER_WIDTH;Height=BUFFER_HEIGHT;Format=RGBA8;};
 sampler2D sBicubic_P0{Texture=tBicubic_P0;AddressU=CLAMP;AddressV=CLAMP;AddressW=CLAMP;MagFilter=POINT;MinFilter=POINT;};
@@ -89,9 +95,9 @@ float3 bicubic_ar(float fp, float3 C0, float3 C1, float3 C2, float3 C3)
 float4 PS_Bicubic_X(float4 vpos: SV_Position, float2 uv_tx : TEXCOORD) : SV_Target
 {
     // Both dimensions are unfiltered, so it looks for lores pixels.
-    float2 ps  = NormalizedNativePixelSize;
+    float2 ps  = NormalizedNativePixelSize/B_PRESCALE;
     float2 pos = uv_tx.xy/ps - float2(0.5, 0.0);
-    float2 tc  = (floor(pos) + float2(0.5, 0.5)) * ps;
+    float2 tc  = (floor(pos) + 0.5.xx) * ps;
     float2 fp  = frac(pos);
 
     float3 C0 = tex2D(ReShade::BackBuffer, tc + ps*float2(-1.0, 0.0)).rgb;
@@ -108,9 +114,9 @@ float4 PS_Bicubic_X(float4 vpos: SV_Position, float2 uv_tx : TEXCOORD) : SV_Targ
 float4 PS_Bicubic_Y(float4 vpos: SV_Position, float2 uv_tx : TEXCOORD) : SV_Target
 {
     // One must be careful here. Horizontal dimension is already filtered, so it looks for x in hires.
-    float2 ps  = float2(1.0/(ViewportSize.x*BufferToViewportRatio.x), NormalizedNativePixelSize.y);
+    float2 ps  = float2(1.0/BufferWidth, NormalizedNativePixelSize.y/B_PRESCALE);
     float2 pos = uv_tx.xy/ps - float2(0.0, 0.5);
-    float2 tc  = (floor(pos) + float2(0.5, 0.5)) * ps;
+    float2 tc  = (floor(pos) + 0.5.xx) * ps;
     float2 fp  = frac(pos);
 
     float3 C0 = tex2D(sBicubic_P0, tc + ps*float2(0.0, -1.0)).rgb;
