@@ -11,10 +11,10 @@
 	.st5{fill:none;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}
 	.st6{fill:#455E7D;stroke:#000000;stroke-width:3;stroke-miterlimit:10;}
 	.st7{fill:#FFFFFF;}
-	.st8{fill:none;stroke:#6FB5E3;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;}
-	.st9{fill:none;stroke:#FF5B61;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;}
-	.st10{fill:none;stroke:#7ACCC2;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;}
-	.st11{fill:none;stroke:#F388AA;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;}
+	.st8{fill:none;stroke:#FFFFFF;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;}
+	.st9{fill:none;stroke:#FFFFFF;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;}
+	.st10{fill:none;stroke:#FFFFFF;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;}
+	.st11{fill:none;stroke:#FFFFFF;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;}
 	.st12{fill:none;stroke:#666666;stroke-miterlimit:10;}
 	.st13{fill:none;stroke:#B3B3B3;stroke-width:5;stroke-miterlimit:10;}
 	.st14{fill:#808080;stroke:#000000;stroke-width:2;stroke-miterlimit:10;}
