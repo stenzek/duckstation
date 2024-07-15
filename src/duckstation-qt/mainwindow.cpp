@@ -1980,7 +1980,7 @@ bool MainWindow::shouldHideMouseCursor() const
 
 bool MainWindow::shouldHideMainWindow() const
 {
-  return Host::GetBaseBoolSettingValue("Main", "HideMainWindowWhenRunning", false) ||
+  return Host::GetBoolSettingValue("Main", "HideMainWindowWhenRunning", false) ||
          (g_emu_thread->shouldRenderToMain() && !isRenderingToMain()) || QtHost::InNoGUIMode();
 }
 
@@ -2872,7 +2872,7 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
   save_state &= allow_save_to_state;
 
   // Only confirm on UI thread because we need to display a msgbox.
-  if (!m_is_closing && allow_confirm && Host::GetBaseBoolSettingValue("Main", "ConfirmPowerOff", true))
+  if (!m_is_closing && allow_confirm && Host::GetBoolSettingValue("Main", "ConfirmPowerOff", true))
   {
     SystemLock lock(pauseAndLockSystem());
 

@@ -31,8 +31,8 @@ LogWindow::~LogWindow() = default;
 
 void LogWindow::updateSettings()
 {
-  const bool new_enabled = Host::GetBaseBoolSettingValue("Logging", "LogToWindow", false);
-  const bool attach_to_main = Host::GetBaseBoolSettingValue("Logging", "AttachLogWindowToMainWindow", true);
+  const bool new_enabled = Host::GetBoolSettingValue("Logging", "LogToWindow", false);
+  const bool attach_to_main = Host::GetBoolSettingValue("Logging", "AttachLogWindowToMainWindow", true);
   const bool curr_enabled = (g_log_window != nullptr);
   if (new_enabled == curr_enabled)
   {

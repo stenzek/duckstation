@@ -632,14 +632,12 @@ void EmuThread::checkForSettingsChanges(const Settings& old_settings)
       updatePerformanceCounters();
   }
 
-  if (g_gpu_device)
+  const bool render_to_main = shouldRenderToMain();
+  if (m_is_rendering_to_main != render_to_main)
   {
-    const bool render_to_main = shouldRenderToMain();
-    if (m_is_rendering_to_main != render_to_main)
-    {
-      m_is_rendering_to_main = render_to_main;
+    m_is_rendering_to_main = render_to_main;
+    if (g_gpu_device)
       g_gpu_device->UpdateWindow();
-    }
   }
 }
 
