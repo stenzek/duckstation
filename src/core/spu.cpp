@@ -2357,6 +2357,8 @@ void SPU::Execute(void* param, TickCount ticks, TickCount ticks_late)
       {
         left_sum = 0;
         right_sum = 0;
+        reverb_in_left = 0;
+        reverb_in_right = 0;
       }
 
       // Update noise once per frame.
