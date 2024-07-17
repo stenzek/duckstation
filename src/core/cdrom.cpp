@@ -1638,6 +1638,12 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
                     s_drive_state_names[static_cast<u8>(s_drive_state)], change_ticks,
                     s_mode.double_speed ? "double" : "single");
             s_drive_event->Delay(change_ticks);
+
+            if (IsReadingOrPlaying())
+            {
+              WARNING_LOG("Speed change while reading/playing, reads will be temporarily delayed.");
+              s_drive_event->SetInterval(GetTicksForRead());
+            }
           }
           else
           {
