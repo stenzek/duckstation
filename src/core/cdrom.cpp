@@ -3302,8 +3302,10 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessCDDASector(const u8* raw_sector, const 
 
   SPU::GeneratePendingSamples();
 
-  constexpr bool is_stereo = true;
-  constexpr u32 num_samples = CDImage::RAW_SECTOR_SIZE / sizeof(s16) / (is_stereo ? 2 : 1);
+  // 2 samples per channel, always stereo.
+  // Apparently in 2X mode, only half the samples in a sector get processed.
+  // Test cast: Menu background sound in 360 Three Sixty.
+  const u32 num_samples = (CDImage::RAW_SECTOR_SIZE / sizeof(s16)) / (s_mode.double_speed ? 4 : 2);
   const u32 remaining_space = s_audio_fifo.GetSpace();
   if (remaining_space < num_samples)
   {
@@ -3312,12 +3314,13 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessCDDASector(const u8* raw_sector, const 
   }
 
   const u8* sector_ptr = raw_sector;
+  const size_t step = s_mode.double_speed ? (sizeof(s16) * 4) : (sizeof(s16) * 2);
   for (u32 i = 0; i < num_samples; i++)
   {
     s16 samp_left, samp_right;
     std::memcpy(&samp_left, sector_ptr, sizeof(samp_left));
     std::memcpy(&samp_right, sector_ptr + sizeof(s16), sizeof(samp_right));
-    sector_ptr += sizeof(s16) * 2;
+    sector_ptr += step;
     AddCDAudioFrame(samp_left, samp_right);
   }
 }
