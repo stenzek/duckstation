@@ -956,6 +956,8 @@ SLES-02089:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForceSoftwareRendererForReadbacks # 250+ readbacks per frame when loading...
   settings:
     displayLineStartOffset: 2 # Game doesn't fill the whole framebuffer, stops flicker.
   metadata:
