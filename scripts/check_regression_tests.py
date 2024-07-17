@@ -161,11 +161,14 @@ function formatLines(str) {
 }
 
 function extractItem(elem) {
+    var beforeSel = elem.querySelector(".before");
+    var afterSel = elem.querySelector(".after");
+    var preSel = elem.querySelector("pre");
     return {
         name: elem.querySelector("h1").innerText,
-        beforeImg: elem.querySelector(".before").getAttribute("src"),
-        afterImg: elem.querySelector(".after").getAttribute("src"),
-        details: formatLines(elem.querySelector("pre").innerText)
+        beforeImg: beforeSel ? beforeSel.getAttribute("src") : null,
+        afterImg: afterSel ? afterSel.getAttribute("src") : null,
+        details: formatLines(preSel ? preSel.innerText : "")
     };
 }
 
@@ -276,6 +279,7 @@ def check_regression_test(baselinedir, testdir, name):
     images = glob.glob(os.path.join(dir1, "frame_*.png"))
     diff_frames = []
     first_fail = True
+    has_any = False
     
     for imagepath in images:
         imagename = Path(imagepath).name
@@ -290,11 +294,14 @@ def check_regression_test(baselinedir, testdir, name):
         if not os.path.isfile(path2):
             print("--- Frame %u for %s is missing in test set" % (framenum, name))
             if first_fail:
+                write("<div class=\"item\">")
                 write("<h1>{}</h1>".format(name))
+                write("<table width=\"100%\">")
                 first_fail = False
             write("<p>--- Frame %u for %s is missing in test set</p>" % (framenum, name))
             continue
 
+        has_any = True
         if not compare_frames(path1, path2):
             diff_frames.append(framenum)
 
@@ -312,11 +319,12 @@ def check_regression_test(baselinedir, testdir, name):
             if len(diff_frames) == MAX_DIFF_FRAMES:
                 break
 
-    if len(diff_frames) > 0:
+    if not first_fail:
         write("</table>")
         write("<pre>Difference in frames [%s] for %s</pre>" % (",".join(map(str, diff_frames)), name))
         write("</div>")
         print("*** Difference in frames [%s] for %s" % (",".join(map(str, diff_frames)), name))
+        #assert has_any
 
     return len(diff_frames) == 0
 
