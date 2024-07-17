@@ -555,6 +555,11 @@ void CDROM::SoftReset(TickCount ticks_late)
 
   if (HasMedia())
   {
+    if (IsSeeking())
+      UpdatePositionWhileSeeking();
+    else
+      UpdatePhysicalPosition(false);
+
     const TickCount speed_change_ticks = was_double_speed ? GetTicksForSpeedChange() : 0;
     const TickCount seek_ticks = (s_current_lba != 0) ? GetTicksForSeek(0) : 0;
     const TickCount total_ticks = std::max<TickCount>(speed_change_ticks + seek_ticks, INIT_TICKS) - ticks_late;
@@ -1339,8 +1344,10 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
     return MIN_TICKS;
 
   u32 ticks = static_cast<u32>(MIN_TICKS);
+
+  // Update start position for seek.
   if (IsSeeking())
-    ticks += s_drive_event->GetTicksUntilNextExecution();
+    UpdatePositionWhileSeeking();
   else
     UpdatePhysicalPosition(false);
 
@@ -1674,9 +1681,6 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       const bool logical = (s_command == Command::SeekL);
       DEBUG_LOG("CDROM {} command", logical ? "SeekL" : "SeekP");
 
-      if (IsSeeking())
-        UpdatePositionWhileSeeking();
-
       if (!CanReadMedia())
       {
         SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
@@ -1743,9 +1747,6 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
         }
         else
         {
-          if (IsSeeking())
-            UpdatePositionWhileSeeking();
-
           BeginReading();
         }
       }
@@ -1772,12 +1773,10 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
         {
           DEV_LOG("Ignoring play command with no/same setloc, already playing/playing after seek");
           s_fast_forward_rate = 0;
+          s_setloc_pending = false;
         }
         else
         {
-          if (IsSeeking())
-            UpdatePositionWhileSeeking();
-
           BeginPlaying(track);
         }
       }
@@ -1888,9 +1887,6 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       }
 
       SendACKAndStat();
-
-      if (IsSeeking())
-        UpdatePositionWhileSeeking();
 
       SoftReset(ticks_late);
 
