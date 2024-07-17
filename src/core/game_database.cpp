@@ -34,7 +34,7 @@ namespace GameDatabase {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 10,
+  GAME_DATABASE_CACHE_VERSION = 11,
 };
 
 static Entry* GetMutableEntry(std::string_view serial);
@@ -379,27 +379,83 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   constexpr float osd_duration = Host::OSD_INFO_DURATION;
 
   if (display_active_start_offset.has_value())
+  {
     settings.display_active_start_offset = display_active_start_offset.value();
+    if (display_osd_messages)
+      INFO_LOG("GameDB: Display active start offset set to {}.", settings.display_active_start_offset);
+  }
   if (display_active_end_offset.has_value())
+  {
     settings.display_active_end_offset = display_active_end_offset.value();
+    if (display_osd_messages)
+      INFO_LOG("GameDB: Display active end offset set to {}.", settings.display_active_end_offset);
+  }
   if (display_line_start_offset.has_value())
+  {
     settings.display_line_start_offset = display_line_start_offset.value();
+    if (display_osd_messages)
+      INFO_LOG("GameDB: Display line start offset set to {}.", settings.display_line_start_offset);
+  }
   if (display_line_end_offset.has_value())
+  {
     settings.display_line_end_offset = display_line_end_offset.value();
+    if (display_osd_messages)
+      INFO_LOG("GameDB: Display line end offset set to {}.", settings.display_line_start_offset);
+  }
+  if (display_deinterlacing_mode.has_value())
+  {
+    settings.display_deinterlacing_mode = display_deinterlacing_mode.value();
+    if (display_osd_messages)
+    {
+      INFO_LOG("GameDB: Display deinterlacing mode set to {}.",
+               Settings::GetDisplayDeinterlacingModeName(settings.display_deinterlacing_mode));
+    }
+  }
   if (dma_max_slice_ticks.has_value())
+  {
     settings.dma_max_slice_ticks = dma_max_slice_ticks.value();
+    if (display_osd_messages)
+      INFO_LOG("GameDB: DMA max slice ticks set to {}.", settings.dma_max_slice_ticks);
+  }
   if (dma_halt_ticks.has_value())
+  {
     settings.dma_halt_ticks = dma_halt_ticks.value();
+    if (display_osd_messages)
+      INFO_LOG("GameDB: DMA halt ticks set to {}.", settings.dma_halt_ticks);
+  }
   if (gpu_fifo_size.has_value())
+  {
     settings.gpu_fifo_size = gpu_fifo_size.value();
+    if (display_osd_messages)
+      INFO_LOG("GameDB: GPU FIFO size set to {}.", settings.gpu_fifo_size);
+  }
   if (gpu_max_run_ahead.has_value())
+  {
     settings.gpu_max_run_ahead = gpu_max_run_ahead.value();
+    if (display_osd_messages)
+      INFO_LOG("GameDB: GPU max runahead set to {}.", settings.gpu_max_run_ahead);
+  }
   if (gpu_pgxp_tolerance.has_value())
+  {
     settings.gpu_pgxp_tolerance = gpu_pgxp_tolerance.value();
+    if (display_osd_messages)
+      INFO_LOG("GameDB: GPU PGXP tolerance set to {}.", settings.gpu_pgxp_tolerance);
+  }
   if (gpu_pgxp_depth_threshold.has_value())
+  {
     settings.SetPGXPDepthClearThreshold(gpu_pgxp_depth_threshold.value());
+    if (display_osd_messages)
+      INFO_LOG("GameDB: GPU depth clear threshold set to {}.", settings.GetPGXPDepthClearThreshold());
+  }
   if (gpu_line_detect_mode.has_value())
+  {
     settings.gpu_line_detect_mode = gpu_line_detect_mode.value();
+    if (display_osd_messages)
+    {
+      INFO_LOG("GameDB: GPU line detect mode set to {}.",
+               Settings::GetLineDetectModeName(settings.gpu_line_detect_mode));
+    }
+  }
 
   if (HasTrait(Trait::ForceInterpreter))
   {
@@ -830,6 +886,8 @@ std::string GameDatabase::Entry::GenerateCompatibilityReport() const
                        display_line_start_offset);
   AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "Display Line End Offset"),
                        display_line_end_offset);
+  AppendEnumSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "Display Deinterlacing Mode"),
+                    &Settings::GetDisplayDeinterlacingModeDisplayName, display_deinterlacing_mode);
   AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "DMA Max Slice Ticks"), dma_max_slice_ticks);
   AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "DMA Halt Ticks"), dma_halt_ticks);
   AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU FIFO Size"), gpu_fifo_size);
@@ -939,6 +997,7 @@ bool GameDatabase::LoadFromCache()
         !ReadOptionalFromStream(stream.get(), &entry.display_active_end_offset) ||
         !ReadOptionalFromStream(stream.get(), &entry.display_line_start_offset) ||
         !ReadOptionalFromStream(stream.get(), &entry.display_line_end_offset) ||
+        !ReadOptionalFromStream(stream.get(), &entry.display_deinterlacing_mode) ||
         !ReadOptionalFromStream(stream.get(), &entry.dma_max_slice_ticks) ||
         !ReadOptionalFromStream(stream.get(), &entry.dma_halt_ticks) ||
         !ReadOptionalFromStream(stream.get(), &entry.gpu_fifo_size) ||
@@ -1040,6 +1099,7 @@ bool GameDatabase::SaveToCache()
     result = result && WriteOptionalToStream(stream.get(), entry.display_active_end_offset);
     result = result && WriteOptionalToStream(stream.get(), entry.display_line_start_offset);
     result = result && WriteOptionalToStream(stream.get(), entry.display_line_end_offset);
+    result = result && WriteOptionalToStream(stream.get(), entry.display_deinterlacing_mode);
     result = result && WriteOptionalToStream(stream.get(), entry.dma_max_slice_ticks);
     result = result && WriteOptionalToStream(stream.get(), entry.dma_halt_ticks);
     result = result && WriteOptionalToStream(stream.get(), entry.gpu_fifo_size);
@@ -1252,6 +1312,8 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
     entry->display_active_end_offset = GetOptionalTFromObject<s16>(settings, "displayActiveEndOffset");
     entry->display_line_start_offset = GetOptionalTFromObject<s8>(settings, "displayLineStartOffset");
     entry->display_line_end_offset = GetOptionalTFromObject<s8>(settings, "displayLineEndOffset");
+    entry->display_deinterlacing_mode = ParseOptionalTFromObject<DisplayDeinterlacingMode>(
+      settings, "displayDeinterlacingMode", &Settings::ParseDisplayDeinterlacingMode);
     entry->dma_max_slice_ticks = GetOptionalTFromObject<u32>(settings, "dmaMaxSliceTicks");
     entry->dma_halt_ticks = GetOptionalTFromObject<u32>(settings, "dmaHaltTicks");
     entry->gpu_fifo_size = GetOptionalTFromObject<u32>(settings, "gpuFIFOSize");

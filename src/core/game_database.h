@@ -79,13 +79,14 @@ struct Entry
   std::optional<s16> display_active_end_offset;
   std::optional<s8> display_line_start_offset;
   std::optional<s8> display_line_end_offset;
+  std::optional<DisplayDeinterlacingMode> display_deinterlacing_mode;
+  std::optional<GPULineDetectMode> gpu_line_detect_mode;
   std::optional<u32> dma_max_slice_ticks;
   std::optional<u32> dma_halt_ticks;
   std::optional<u32> gpu_fifo_size;
   std::optional<u32> gpu_max_run_ahead;
   std::optional<float> gpu_pgxp_tolerance;
   std::optional<float> gpu_pgxp_depth_threshold;
-  std::optional<GPULineDetectMode> gpu_line_detect_mode;
 
   std::string disc_set_name;
   std::vector<std::string> disc_set_serials;
