@@ -956,6 +956,8 @@ SLES-02089:
   controllers:
     - AnalogController
     - DigitalController
+  settings:
+    displayLineStartOffset: 2 # Game doesn't fill the whole framebuffer, stops flicker.
   metadata:
     publisher: "Cryo Interactive"
     developer: "Smart Dog"
@@ -3177,7 +3179,7 @@ SCPS-10126:
     - AnalogController
     - DigitalController
   traits:
-    - ForceSoftwareRenderer
+    - ForceSoftwareRenderer # Fixes screen flicker, blending precision.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -3199,6 +3201,8 @@ SLES-04108:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForceSoftwareRenderer # Fixes screen flicker, blending precision.
   metadata:
     publisher: "Vivendi Universal Games, Inc"
     developer: "Coktel Vision / Neko Entertaiment"
@@ -3848,6 +3852,8 @@ SLPS-00269:
   name: "Air Management '96 (Japan)"
   controllers:
     - DigitalController
+  traits:
+    - ForceRecompilerICache # Prevents crashes.
   metadata:
     publisher: "Koei"
     developer: "Koei"
@@ -51022,6 +51028,9 @@ SLES-00501:
   name: "Extreme Snow Break (Europe)"
   controllers:
     - DigitalController
+  settings:
+    dmaMaxSliceTicks: 10 # Very sensitive to DMA timing, otherwise polygon flicker.
+    dmaHaltTicks: 100 # CPU needs to run significantly faster than DMA.
   metadata:
     publisher: "Microids"
     developer: "Virtual Studio"
@@ -51038,6 +51047,9 @@ SLES-00501:
     linkCable: false
 SLED-01193:
   name: "Extreme Snow Break (Europe) (Demo)"
+  settings:
+    dmaMaxSliceTicks: 10 # Very sensitive to DMA timing, otherwise polygon flicker.
+    dmaHaltTicks: 100 # CPU needs to run significantly faster than DMA.
 PCPX-96178:
   name: "e-Jump (Japan) (Disc 1)"
   discSet:
@@ -94042,6 +94054,8 @@ SLES-00211:
   name: "Magic Carpet (Europe) (En,Fr,De,Es,Sv)"
   controllers:
     - DigitalController
+  settings:
+    displayDeinterlacingMode: Disabled # Isn't actually interlaced, uses 240p buffers, they just left 480i enabled...
   metadata:
     publisher: "Electronic Arts"
     developer: "Bullfrog Productions / Krisalis"
@@ -94064,6 +94078,8 @@ SLPS-00587:
   name: "Magic Carpet (Japan)"
   controllers:
     - DigitalController
+  settings:
+    displayDeinterlacingMode: Disabled # Isn't actually interlaced, uses 240p buffers, they just left 480i enabled...
   metadata:
     publisher: "Electronic Arts"
     developer: "Bullfrog Productions / Krisalis"
@@ -94082,6 +94098,8 @@ SLUS-00029:
   name: "Magic Carpet (USA) (En,Fr,De,Es,Sv)"
   controllers:
     - DigitalController
+  settings:
+    displayDeinterlacingMode: Disabled # Isn't actually interlaced, uses 240p buffers, they just left 480i enabled...
   metadata:
     publisher: "Electronic Arts"
     developer: "Bullfrog Productions / Krisalis"
@@ -115817,7 +115835,6 @@ SCUS-94449:
 SLPM-86439:
   name: "Omiai Commando - Ba-Couple ni Tsukkomi o (Japan)"
   controllers:
-    - AnalogController
     - DigitalController
   metadata:
     publisher: "Enix"
@@ -116306,6 +116323,8 @@ SLPS-02951:
     - AnalogController
     - DigitalController
     - NeGcon
+  settings:
+    displayDeinterlacingMode: Blend # Only used in menus, MAD flickers with fading.
   metadata:
     publisher: "MTO"
     developer: "MTO"
@@ -149825,6 +149844,8 @@ SCES-00577:
     - DigitalController
   settings:
     gpuLineDetectMode: BasicTriangles # Fixes upscaled water rendering.
+    dmaMaxSliceTicks: 100 # Tight timing required for DMA modified after start.
+    dmaHaltTicks: 150 # Fixes sprites in menus.
   metadata:
     publisher: "Sony Computer Entertaiment Europe"
     developer: "Namco"
@@ -149848,6 +149869,8 @@ SLUS-00240:
     - DigitalController
   settings:
     gpuLineDetectMode: BasicTriangles # Fixes upscaled water rendering.
+    dmaMaxSliceTicks: 100 # Tight timing required for DMA modified after start.
+    dmaHaltTicks: 150 # Fixes sprites in menus.
   metadata:
     publisher: "Namco"
     developer: "Namco"
@@ -149869,6 +149892,10 @@ SLPS-00555:
     versionTested: "0.1-2202-ga17e15f1"
   controllers:
     - DigitalController
+  settings:
+    gpuLineDetectMode: BasicTriangles # Fixes upscaled water rendering.
+    dmaMaxSliceTicks: 100 # Tight timing required for DMA modified after start.
+    dmaHaltTicks: 150 # Fixes sprites in menus.
   metadata:
     publisher: "Namco"
     developer: "Namco"
@@ -149890,6 +149917,10 @@ SLPS-00545:
     versionTested: "0.1-2202-ga17e15f1"
   controllers:
     - DigitalController
+  settings:
+    gpuLineDetectMode: BasicTriangles # Fixes upscaled water rendering.
+    dmaMaxSliceTicks: 100 # Tight timing required for DMA modified after start.
+    dmaHaltTicks: 150 # Fixes sprites in menus.
   metadata:
     publisher: "Namco"
     developer: "Namco"
@@ -149911,6 +149942,10 @@ SLPS-91168:
   codes:
     - SLPS-91168
     - SLPS-91454
+  settings:
+    gpuLineDetectMode: BasicTriangles # Fixes upscaled water rendering.
+    dmaMaxSliceTicks: 100 # Tight timing required for DMA modified after start.
+    dmaHaltTicks: 150 # Fixes sprites in menus.
   metadata:
     publisher: "Namco"
     developer: "Namco"
@@ -155442,7 +155477,6 @@ SLES-02598:
 SLPS-02508:
   name: "Street Fighter EX2 Plus (Japan)"
   controllers:
-    - AnalogController
     - DigitalController
   metadata:
     publisher: "Capcom"
