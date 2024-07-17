@@ -60,8 +60,8 @@ enum : u32
   MAX_FAST_FORWARD_RATE = 12,
   FAST_FORWARD_RATE_STEP = 4,
 
-  MINIMUM_INTERRUPT_DELAY = 6000,
-  INTERRUPT_DELAY_CYCLES = 2000,
+  MINIMUM_INTERRUPT_DELAY = 1000,
+  INTERRUPT_DELAY_CYCLES = 500,
 };
 
 static constexpr u8 INTERRUPT_REGISTER_MASK = 0x1F;
@@ -1033,9 +1033,16 @@ void CDROM::WriteRegister(u32 offset, u8 value)
     case 5:
     {
       DEBUG_LOG("Interrupt flag register <- 0x{:02X}", value);
+
+      const u8 prev_interrupt_flag_register = s_interrupt_flag_register;
       s_interrupt_flag_register &= ~(value & INTERRUPT_REGISTER_MASK);
       if (s_interrupt_flag_register == 0)
       {
+        // Start the countdown from when the interrupt was cleared, not it being triggered.
+        // Otherwise Ogre Battle, Crime Crackers, Lego Racers, etc have issues.
+        if (prev_interrupt_flag_register != 0)
+          s_last_interrupt_time = System::GetGlobalTickCounter();
+
         InterruptController::SetLineState(InterruptController::IRQ::CDROM, false);
         if (HasPendingAsyncInterrupt() && !HasPendingCommand())
           QueueDeliverAsyncInterrupt();
@@ -1159,7 +1166,6 @@ bool CDROM::HasPendingAsyncInterrupt()
 void CDROM::SetInterrupt(Interrupt interrupt)
 {
   s_interrupt_flag_register = static_cast<u8>(interrupt);
-  s_last_interrupt_time = System::GetGlobalTickCounter();
   UpdateInterruptRequest();
 }
 
@@ -1205,14 +1211,12 @@ void CDROM::QueueDeliverAsyncInterrupt()
   // interrupt, then read the FIFO. If an INT1 comes in during that time, it'll read the INT1 response
   // instead of the INT3 response, and the game gets confused. So, we just delay INT1s a bit, if there
   // has been any recent INT3s - give it enough time to read the response out. The real console does
-  // something similar anyway, the INT1 task won't run immediately after the INT3 is cleared. We use
-  // the response FIFO being empty as a second heuristic, to avoid very late INT1s that cause early
-  // buffer loads and sector retries in other games, like Lego Racers PAL.
+  // something similar anyway, the INT1 task won't run immediately after the INT3 is cleared.
   DebugAssert(HasPendingAsyncInterrupt());
 
   // underflows here are okay
   const u32 diff = System::GetGlobalTickCounter() - s_last_interrupt_time;
-  if (diff >= MINIMUM_INTERRUPT_DELAY || s_response_fifo.IsEmpty())
+  if (diff >= MINIMUM_INTERRUPT_DELAY)
   {
     DeliverAsyncInterrupt(nullptr, 0, 0);
   }

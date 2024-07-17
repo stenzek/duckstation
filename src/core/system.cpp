@@ -555,7 +555,10 @@ void System::UpdateOverclock()
 
 u32 System::GetGlobalTickCounter()
 {
-  return TimingEvents::GetGlobalTickCounter() + CPU::GetPendingTicks();
+  // When running events, the counter actually goes backwards, because the pending ticks are added in chunks.
+  // So, we need to return the counter with all pending ticks added in such cases.
+  return TimingEvents::IsRunningEvents() ? TimingEvents::GetEventRunTickCounter() :
+                                           (TimingEvents::GetGlobalTickCounter() + CPU::GetPendingTicks());
 }
 
 u32 System::GetFrameNumber()
