@@ -2903,25 +2903,28 @@ void CDROM::DoSectorRead()
   }
 
   const bool is_data_sector = subq.IsData();
-  if (!is_data_sector)
+  if (is_data_sector)
   {
+    ProcessDataSectorHeader(s_reader.GetSectorBuffer().data());
+  }
+  else if (s_mode.auto_pause)
+  {
+    // Only update the tracked track-to-pause-after once auto pause is enabled. Pitball's menu music starts mid-second,
+    // and there's no pregap, so the first couple of reports are for the previous track. It doesn't enable autopause
+    // until receiving a couple, and it's actually playing the track it wants.
     if (s_play_track_number_bcd == 0)
     {
       // track number was not specified, but we've found the track now
       s_play_track_number_bcd = subq.track_number_bcd;
       DEBUG_LOG("Setting playing track number to {}", s_play_track_number_bcd);
     }
-    else if (s_mode.auto_pause && subq.track_number_bcd != s_play_track_number_bcd)
+    else if (subq.track_number_bcd != s_play_track_number_bcd)
     {
       // we don't want to update the position if the track changes, so we check it before reading the actual sector.
       DEV_LOG("Auto pause at the start of track {:02x} (LBA {})", s_last_subq.track_number_bcd, s_current_lba);
       StopReadingWithDataEnd();
       return;
     }
-  }
-  else
-  {
-    ProcessDataSectorHeader(s_reader.GetSectorBuffer().data());
   }
 
   u32 next_sector = s_current_lba + 1u;
