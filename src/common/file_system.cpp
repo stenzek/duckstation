@@ -1107,20 +1107,35 @@ s64 FileSystem::FTell64(std::FILE* fp)
 #endif
 }
 
-s64 FileSystem::FSize64(std::FILE* fp)
+s64 FileSystem::FSize64(std::FILE* fp, Error* error)
 {
   const s64 pos = FTell64(fp);
-  if (pos >= 0)
+  if (pos < 0) [[unlikely]]
   {
-    if (FSeek64(fp, 0, SEEK_END) == 0)
-    {
-      const s64 size = FTell64(fp);
-      if (FSeek64(fp, pos, SEEK_SET) == 0)
-        return size;
-    }
+    Error::SetErrno(error, "FTell64() failed: ", errno);
+    return -1;
   }
 
-  return -1;
+  if (FSeek64(fp, 0, SEEK_END) != 0) [[unlikely]]
+  {
+    Error::SetErrno(error, "FSeek64() to end failed: ", errno);
+    return -1;
+  }
+
+  const s64 size = FTell64(fp);
+  if (size < 0) [[unlikely]]
+  {
+    Error::SetErrno(error, "FTell64() failed: ", errno);
+    return -1;
+  }
+
+  if (FSeek64(fp, pos, SEEK_SET) != 0)
+  {
+    Error::SetErrno(error, "FSeek64() to original position failed: ", errno);
+    return -1;
+  }
+
+  return size;
 }
 
 bool FileSystem::FTruncate64(std::FILE* fp, s64 size, Error* error)
@@ -1173,52 +1188,112 @@ s64 FileSystem::GetPathFileSize(const char* Path)
 
 std::optional<std::vector<u8>> FileSystem::ReadBinaryFile(const char* filename, Error* error)
 {
+  std::optional<std::vector<u8>> ret;
+
   ManagedCFilePtr fp = OpenManagedCFile(filename, "rb", error);
   if (!fp)
-    return std::nullopt;
+    return ret;
 
-  return ReadBinaryFile(fp.get());
+  ret = ReadBinaryFile(fp.get(), error);
+  return ret;
 }
 
-std::optional<std::vector<u8>> FileSystem::ReadBinaryFile(std::FILE* fp)
+std::optional<std::vector<u8>> FileSystem::ReadBinaryFile(std::FILE* fp, Error* error)
 {
-  std::fseek(fp, 0, SEEK_END);
-  const long size = std::ftell(fp);
-  std::fseek(fp, 0, SEEK_SET);
-  if (size < 0)
-    return std::nullopt;
+  std::optional<std::vector<u8>> ret;
 
-  std::vector<u8> res(static_cast<size_t>(size));
-  if (size > 0 && std::fread(res.data(), 1u, static_cast<size_t>(size), fp) != static_cast<size_t>(size))
-    return std::nullopt;
+  if (FSeek64(fp, 0, SEEK_END) != 0) [[unlikely]]
+  {
+    Error::SetErrno(error, "FSeek64() to end failed: ", errno);
+    return ret;
+  }
 
-  return res;
+  const s64 size = FTell64(fp);
+  if (size < 0) [[unlikely]]
+  {
+    Error::SetErrno(error, "FTell64() for length failed: ", errno);
+    return ret;
+  }
+
+  if constexpr (sizeof(s64) != sizeof(size_t))
+  {
+    if (size > static_cast<s64>(std::numeric_limits<long>::max())) [[unlikely]]
+    {
+      Error::SetStringFmt(error, "File size of {} is too large to read on this platform.", size);
+      return ret;
+    }
+  }
+
+  if (FSeek64(fp, 0, SEEK_SET) != 0) [[unlikely]]
+  {
+    Error::SetErrno(error, "FSeek64() to start failed: ", errno);
+    return ret;
+  }
+
+  ret = std::vector<u8>(static_cast<size_t>(size));
+  if (size > 0 && std::fread(ret->data(), 1u, static_cast<size_t>(size), fp) != static_cast<size_t>(size)) [[unlikely]]
+  {
+    Error::SetErrno(error, "fread() failed: ", errno);
+    ret.reset();
+  }
+
+  return ret;
 }
 
 std::optional<std::string> FileSystem::ReadFileToString(const char* filename, Error* error)
 {
+  std::optional<std::string> ret;
+
   ManagedCFilePtr fp = OpenManagedCFile(filename, "rb", error);
   if (!fp)
-    return std::nullopt;
+    return ret;
 
-  return ReadFileToString(fp.get());
+  ret = ReadFileToString(fp.get());
+  return ret;
 }
 
-std::optional<std::string> FileSystem::ReadFileToString(std::FILE* fp)
+std::optional<std::string> FileSystem::ReadFileToString(std::FILE* fp, Error* error)
 {
-  std::fseek(fp, 0, SEEK_END);
-  const long size = std::ftell(fp);
-  std::fseek(fp, 0, SEEK_SET);
-  if (size < 0)
-    return std::nullopt;
+  std::optional<std::string> ret;
 
-  std::string res;
-  res.resize(static_cast<size_t>(size));
+  if (FSeek64(fp, 0, SEEK_END) != 0) [[unlikely]]
+  {
+    Error::SetErrno(error, "FSeek64() to end failed: ", errno);
+    return ret;
+  }
+
+  const s64 size = FTell64(fp);
+  if (size < 0) [[unlikely]]
+  {
+    Error::SetErrno(error, "FTell64() for length failed: ", errno);
+    return ret;
+  }
+
+  if constexpr (sizeof(s64) != sizeof(size_t))
+  {
+    if (size > static_cast<s64>(std::numeric_limits<long>::max())) [[unlikely]]
+    {
+      Error::SetStringFmt(error, "File size of {} is too large to read on this platform.", size);
+      return ret;
+    }
+  }
+
+  if (FSeek64(fp, 0, SEEK_SET) != 0) [[unlikely]]
+  {
+    Error::SetErrno(error, "FSeek64() to start failed: ", errno);
+    return ret;
+  }
+
+  ret = std::string();
+  ret->resize(static_cast<size_t>(size));
   // NOTE - assumes mode 'rb', for example, this will fail over missing Windows carriage return bytes
-  if (size > 0 && std::fread(res.data(), 1u, static_cast<size_t>(size), fp) != static_cast<size_t>(size))
-    return std::nullopt;
+  if (size > 0 && std::fread(ret->data(), 1u, static_cast<size_t>(size), fp) != static_cast<size_t>(size))
+  {
+    Error::SetErrno(error, "fread() failed: ", errno);
+    ret.reset();
+  }
 
-  return res;
+  return ret;
 }
 
 bool FileSystem::WriteBinaryFile(const char* filename, const void* data, size_t data_length, Error* error)

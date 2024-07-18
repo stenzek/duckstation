@@ -108,7 +108,7 @@ ManagedCFilePtr OpenManagedCFile(const char* filename, const char* mode, Error* 
 std::FILE* OpenCFile(const char* filename, const char* mode, Error* error = nullptr);
 int FSeek64(std::FILE* fp, s64 offset, int whence);
 s64 FTell64(std::FILE* fp);
-s64 FSize64(std::FILE* fp);
+s64 FSize64(std::FILE* fp, Error* error = nullptr);
 bool FTruncate64(std::FILE* fp, s64 size, Error* error = nullptr);
 
 int OpenFDFile(const char* filename, int flags, int mode, Error* error = nullptr);
@@ -143,9 +143,9 @@ private:
 #endif
 
 std::optional<std::vector<u8>> ReadBinaryFile(const char* filename, Error* error = nullptr);
-std::optional<std::vector<u8>> ReadBinaryFile(std::FILE* fp);
+std::optional<std::vector<u8>> ReadBinaryFile(std::FILE* fp, Error* error = nullptr);
 std::optional<std::string> ReadFileToString(const char* filename, Error* error = nullptr);
-std::optional<std::string> ReadFileToString(std::FILE* fp);
+std::optional<std::string> ReadFileToString(std::FILE* fp, Error* error = nullptr);
 bool WriteBinaryFile(const char* filename, const void* data, size_t data_length, Error* error = nullptr);
 bool WriteStringToFile(const char* filename, std::string_view sv, Error* error = nullptr);
 
