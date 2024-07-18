@@ -163,7 +163,7 @@ BIOS::Hash BIOS::GetImageHash(const BIOS::Image& image)
 {
   BIOS::Hash hash;
   MD5Digest digest;
-  digest.Update(image.data(), static_cast<u32>(image.size()));
+  digest.Update(image);
   digest.Final(hash.bytes);
   return hash;
 }

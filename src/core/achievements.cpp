@@ -292,7 +292,7 @@ std::string Achievements::GetGameHash(CDImage* image)
   MD5Digest digest;
   digest.Update(executable_name.c_str(), static_cast<u32>(executable_name.size()));
   if (hash_size > 0)
-    digest.Update(executable_data.data(), hash_size);
+    digest.Update(executable_data);
 
   u8 hash[16];
   digest.Final(hash);

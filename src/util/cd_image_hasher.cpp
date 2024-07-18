@@ -45,7 +45,7 @@ bool CDImageHasher::ReadIndex(CDImage* image, u8 track, u8 index, MD5Digest* dig
       return false;
     }
 
-    digest->Update(sector.data(), static_cast<u32>(sector.size()));
+    digest->Update(sector);
   }
 
   progress_callback->SetProgressValue(index_length);
@@ -126,7 +126,7 @@ bool CDImageHasher::GetImageHash(CDImage* image, Hash* out_hash,
   }
 
   progress_callback->SetProgressValue(image->GetTrackCount());
-  digest.Final(out_hash->data());
+  digest.Final(*out_hash);
   return true;
 }
 
@@ -137,6 +137,6 @@ bool CDImageHasher::GetTrackHash(CDImage* image, u8 track, Hash* out_hash,
   if (!ReadTrack(image, track, &digest, progress_callback))
     return false;
 
-  digest.Final(out_hash->data());
+  digest.Final(*out_hash);
   return true;
 }

@@ -137,6 +137,16 @@ void MD5Digest::Reset()
   this->bits[1] = 0;
 }
 
+std::array<u8, MD5Digest::DIGEST_SIZE> MD5Digest::HashData(std::span<const u8> data)
+{
+  std::array<u8, DIGEST_SIZE> ret;
+
+  MD5Digest digest;
+  digest.Update(data);
+  digest.Final(ret);
+  return ret;
+}
+
 void MD5Digest::Update(const void* pData, u32 cbData)
 {
   u32 t;
@@ -185,7 +195,13 @@ void MD5Digest::Update(const void* pData, u32 cbData)
   std::memcpy(this->in, pByteData, cbData);
 }
 
-void MD5Digest::Final(u8 Digest[16])
+void MD5Digest::Update(std::span<const u8> data)
+{
+  if (!data.empty())
+    Update(data.data(), static_cast<u32>(data.size_bytes()));
+}
+
+void MD5Digest::Final(std::span<u8, DIGEST_SIZE> digest)
 {
   u32 count;
   u8* p;
@@ -225,5 +241,5 @@ void MD5Digest::Final(u8 Digest[16])
 
   MD5Transform(this->buf, (u32*)this->in);
   byteReverse((unsigned char*)this->buf, 4);
-  std::memcpy(Digest, this->buf, 16);
+  std::memcpy(digest.data(), this->buf, 16);
 }

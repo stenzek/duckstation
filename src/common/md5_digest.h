@@ -1,17 +1,25 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
 #include "types.h"
 
+#include <array>
+#include <span>
+
 class MD5Digest
 {
 public:
+  static constexpr u32 DIGEST_SIZE = 16;
+
   MD5Digest();
 
   void Update(const void* pData, u32 cbData);
-  void Final(u8 Digest[16]);
+  void Update(std::span<const u8> data);
+  void Final(std::span<u8, DIGEST_SIZE> digest);
   void Reset();
+
+  static std::array<u8, DIGEST_SIZE> HashData(std::span<const u8> data);
 
 private:
   u32 buf[4];
