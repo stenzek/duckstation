@@ -17,9 +17,12 @@
 
 Log_SetChannel(BIOS);
 
-static constexpr BIOS::Hash MakeHashFromString(const char str[])
+namespace BIOS {
+static const ImageInfo* GetInfoForHash(const std::span<u8> image, const ImageInfo::Hash& hash);
+
+static constexpr ImageInfo::Hash MakeHashFromString(const char str[])
 {
-  BIOS::Hash h{};
+  ImageInfo::Hash h{};
   for (int i = 0; str[i] != '\0'; i++)
   {
     u8 nibble = 0;
@@ -31,22 +34,13 @@ static constexpr BIOS::Hash MakeHashFromString(const char str[])
     else if (ch >= 'A' && ch <= 'Z')
       nibble = 0xA + (str[i] - 'A');
 
-    h.bytes[i / 2] |= nibble << (((i & 1) ^ 1) * 4);
+    h[i / 2] |= nibble << (((i & 1) ^ 1) * 4);
   }
   return h;
 }
 
-std::string BIOS::Hash::ToString() const
-{
-  char str[33];
-  std::snprintf(str, sizeof(str), "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x", bytes[0],
-                bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7], bytes[8], bytes[9], bytes[10],
-                bytes[11], bytes[12], bytes[13], bytes[14], bytes[15]);
-  return str;
-}
-
 // clang-format off
-static constexpr const BIOS::ImageInfo s_image_info_by_hash[] = {
+static constexpr const ImageInfo s_image_info_by_hash[] = {
   {"SCPH-1000, DTL-H1000 (v1.0)", ConsoleRegion::NTSC_J, MakeHashFromString("239665b1a3dade1b5a52c06338011044"), true},
   {"SCPH-1001, 5003, DTL-H1201, H3001 (v2.2 12-04-95 A)", ConsoleRegion::NTSC_U, MakeHashFromString("924e392ed05558ffdb115408c263dccf"), true},
   {"SCPH-1002, DTL-H1002 (v2.0 05-10-95 E)", ConsoleRegion::PAL, MakeHashFromString("54847e693405ffeb0359c6287434cbef"), true},
@@ -126,6 +120,7 @@ static constexpr const BIOS::ImageInfo s_image_info_by_hash[] = {
   {"PS2, SCPH-70000 (v5.0 06/14/04 J)", ConsoleRegion::NTSC_J, MakeHashFromString("0eee5d1c779aa50e94edd168b4ebf42e"), true},
   {"PS2, SCPH-70001/SCPH-70011/SCPH-70012 (v5.0 06/14/04 A)", ConsoleRegion::NTSC_U, MakeHashFromString("d333558cc14561c1fdc334c75d5f37b7"), true},
   {"PS2, SCPH-70002/SCPH-70003/SCPH-70004/SCPH-70008 (v5.0 06/14/04 E)", ConsoleRegion::PAL, MakeHashFromString("dc752f160044f2ed5fc1f4964db2a095"), true},
+  {"PS2, SCPH-70002 (v5.0 06/14/04 E)", ConsoleRegion::PAL, MakeHashFromString("7ebb4fc5eab6f79a27d76ac9aad392b2"), true},
   {"PS2, DTL-H70002 (v5.0 06/14/04 E)", ConsoleRegion::PAL, MakeHashFromString("63ead1d74893bf7f36880af81f68a82d"), true},
   {"PS2, SCPH-70005/SCPH-70006/SCPH-70007 (v5.0 06/14/04 J)", ConsoleRegion::NTSC_J, MakeHashFromString("3e3e030c0f600442fa05b94f87a1e238"), true},
   {"PS2, DESR-5500/DESR-5700/DESR-7500/DESR-7700 (v5.0 09/17/04 J)", ConsoleRegion::NTSC_J, MakeHashFromString("1ad977bb539fc9448a08ab276a836bbc"), true},
@@ -159,56 +154,54 @@ static constexpr const BIOS::ImageInfo s_openbios_info = {"OpenBIOS", ConsoleReg
 static constexpr const char s_openbios_signature[] = {'O', 'p', 'e', 'n', 'B', 'I', 'O', 'S'};
 static constexpr u32 s_openbios_signature_offset = 0x78;
 
-BIOS::Hash BIOS::GetImageHash(const BIOS::Image& image)
+} // namespace BIOS
+
+TinyString BIOS::ImageInfo::GetHashString(const BIOS::ImageInfo::Hash& hash)
 {
-  BIOS::Hash hash;
-  MD5Digest digest;
-  digest.Update(image);
-  digest.Final(hash.bytes);
-  return hash;
+  return TinyString::from_format(
+    "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}", hash[0],
+    hash[1], hash[2], hash[3], hash[4], hash[5], hash[6], hash[7], hash[8], hash[9], hash[10], hash[11], hash[12],
+    hash[13], hash[14], hash[15]);
 }
 
 std::optional<BIOS::Image> BIOS::LoadImageFromFile(const char* filename, Error* error)
 {
-  Image ret(BIOS_SIZE);
+  std::optional<BIOS::Image> ret;
+
   auto fp = FileSystem::OpenManagedCFile(filename, "rb", error);
   if (!fp)
   {
     Error::AddPrefixFmt(error, "Failed to open BIOS '{}': ", Path::GetFileName(filename));
-    return std::nullopt;
+    return ret;
   }
 
-  std::fseek(fp.get(), 0, SEEK_END);
-  const u32 size = static_cast<u32>(std::ftell(fp.get()));
-  std::fseek(fp.get(), 0, SEEK_SET);
-
+  const u64 size = static_cast<u64>(FileSystem::FSize64(fp.get()));
   if (size != BIOS_SIZE && size != BIOS_SIZE_PS2 && size != BIOS_SIZE_PS3)
   {
     Error::SetStringFmt(error, "BIOS image '{}' size mismatch, expecting either {} or {} bytes but got {} bytes",
                         Path::GetFileName(filename), static_cast<unsigned>(BIOS_SIZE),
                         static_cast<unsigned>(BIOS_SIZE_PS2), size);
-    return std::nullopt;
+    return ret;
   }
 
-  if (std::fread(ret.data(), 1, ret.size(), fp.get()) != ret.size())
-  {
-    Error::SetErrno(error, TinyString::from_format("Failed to read BIOS '{}': ", Path::GetFileName(filename)), errno);
-    return std::nullopt;
-  }
+  // We want to hash the whole file. That means reading the whole thing in, if it's a larger BIOS (PS2).
+  std::optional<std::vector<u8>> data = FileSystem::ReadBinaryFile(fp.get(), error);
+  if (!data.has_value() || data->size() < BIOS_SIZE)
+    return ret;
 
-  DEV_LOG(
-    fmt::format("Hash for BIOS '{}': {}", FileSystem::GetDisplayNameFromPath(filename), GetImageHash(ret).ToString())
-      .c_str());
+  ret = BIOS::Image();
+  ret->hash = MD5Digest::HashData(data.value());
+
+  // But only copy the first 512KB, since that's all that's mapped.
+  ret->data = std::move(data.value());
+  ret->data.resize(BIOS_SIZE);
+  ret->info = GetInfoForHash(ret->data, ret->hash);
+
+  DEV_LOG("Hash for BIOS '{}': {}", FileSystem::GetDisplayNameFromPath(filename), ImageInfo::GetHashString(ret->hash));
   return ret;
 }
 
-const BIOS::ImageInfo* BIOS::GetInfoForImage(const Image& image)
-{
-  const Hash hash(GetImageHash(image));
-  return GetInfoForImage(image, hash);
-}
-
-const BIOS::ImageInfo* BIOS::GetInfoForImage(const Image& image, const Hash& hash)
+const BIOS::ImageInfo* BIOS::GetInfoForHash(const std::span<u8> image, const ImageInfo::Hash& hash)
 {
   // check for openbios
   if (image.size() >= (s_openbios_signature_offset + std::size(s_openbios_signature)) &&
@@ -223,7 +216,7 @@ const BIOS::ImageInfo* BIOS::GetInfoForImage(const Image& image, const Hash& has
       return &ii;
   }
 
-  WARNING_LOG("Unknown BIOS hash: {}", hash.ToString());
+  WARNING_LOG("Unknown BIOS hash: {}", ImageInfo::GetHashString(hash));
   return nullptr;
 }
 
@@ -331,7 +324,7 @@ DiscRegion BIOS::GetPSExeDiscRegion(const PSEXEHeader& header)
     return DiscRegion::Other;
 }
 
-std::optional<std::vector<u8>> BIOS::GetBIOSImage(ConsoleRegion region, Error* error)
+std::optional<BIOS::Image> BIOS::GetBIOSImage(ConsoleRegion region, Error* error)
 {
   std::string bios_name;
   switch (region)
@@ -364,20 +357,17 @@ std::optional<std::vector<u8>> BIOS::GetBIOSImage(ConsoleRegion region, Error* e
   }
 
   // verify region
-  if (image.has_value())
+  if (image.has_value() && (!image->info || !IsValidBIOSForRegion(region, image->info->region)))
   {
-    const ImageInfo* ii = GetInfoForImage(image.value());
-    if (!ii || !IsValidBIOSForRegion(region, ii->region))
-    {
-      WARNING_LOG("BIOS region {} does not match requested region {}. This may cause issues.",
-                  ii ? Settings::GetConsoleRegionName(ii->region) : "UNKNOWN", Settings::GetConsoleRegionName(region));
-    }
+    WARNING_LOG("BIOS region {} does not match requested region {}. This may cause issues.",
+                image->info ? Settings::GetConsoleRegionName(image->info->region) : "UNKNOWN",
+                Settings::GetConsoleRegionName(region));
   }
 
   return image;
 }
 
-std::optional<std::vector<u8>> BIOS::FindBIOSImageInDirectory(ConsoleRegion region, const char* directory, Error* error)
+std::optional<BIOS::Image> BIOS::FindBIOSImageInDirectory(ConsoleRegion region, const char* directory, Error* error)
 {
   INFO_LOG("Searching for a {} BIOS in '{}'...", Settings::GetConsoleRegionName(region), directory);
 
@@ -387,7 +377,6 @@ std::optional<std::vector<u8>> BIOS::FindBIOSImageInDirectory(ConsoleRegion regi
 
   std::string fallback_path;
   std::optional<Image> fallback_image;
-  const ImageInfo* fallback_info = nullptr;
 
   for (const FILESYSTEM_FIND_DATA& fd : results)
   {
@@ -402,21 +391,19 @@ std::optional<std::vector<u8>> BIOS::FindBIOSImageInDirectory(ConsoleRegion regi
     if (!found_image)
       continue;
 
-    const ImageInfo* ii = GetInfoForImage(found_image.value());
-    if (ii && IsValidBIOSForRegion(region, ii->region))
+    if (found_image->info && IsValidBIOSForRegion(region, found_image->info->region))
     {
-      INFO_LOG("Using BIOS '{}': {}", fd.FileName.c_str(), ii->description);
+      INFO_LOG("Using BIOS '{}': {}", fd.FileName.c_str(), found_image->info->description);
       fallback_image = std::move(found_image);
       return fallback_image;
     }
 
     // don't let an unknown bios take precedence over a known one
-    if (!fallback_path.empty() && (fallback_info || !ii))
+    if (fallback_image.has_value() && (fallback_image->info || !found_image->info))
       continue;
 
     fallback_path = std::move(full_path);
     fallback_image = std::move(found_image);
-    fallback_info = ii;
   }
 
   if (!fallback_image.has_value())
@@ -436,14 +423,14 @@ std::optional<std::vector<u8>> BIOS::FindBIOSImageInDirectory(ConsoleRegion regi
     return fallback_image;
   }
 
-  if (!fallback_info)
+  if (!fallback_image->info)
   {
     WARNING_LOG("Using unknown BIOS '{}'. This may crash.", Path::GetFileName(fallback_path));
   }
   else
   {
     WARNING_LOG("Falling back to possibly-incompatible image '{}': {}", Path::GetFileName(fallback_path),
-                fallback_info->description);
+                fallback_image->info->description);
   }
 
   return fallback_image;
@@ -467,8 +454,7 @@ std::vector<std::pair<std::string, const BIOS::ImageInfo*>> BIOS::FindBIOSImages
     if (!found_image)
       continue;
 
-    const ImageInfo* ii = GetInfoForImage(found_image.value());
-    results.emplace_back(std::move(fd.FileName), ii);
+    results.emplace_back(std::move(fd.FileName), found_image->info);
   }
 
   return results;

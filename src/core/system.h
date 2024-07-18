@@ -34,7 +34,6 @@ class GrowableMemoryByteStream;
 
 namespace BIOS {
 struct ImageInfo;
-struct Hash;
 } // namespace BIOS
 
 namespace GameDatabase {
@@ -217,7 +216,6 @@ bool WasFastBooted();
 u64 GetSessionPlayedTime();
 
 const BIOS::ImageInfo* GetBIOSImageInfo();
-const BIOS::Hash& GetBIOSHash();
 
 // TODO: Move to PerformanceMetrics
 static constexpr u32 NUM_FRAME_TIME_SAMPLES = 150;

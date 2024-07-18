@@ -1,11 +1,15 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>.
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>.
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
 
 #include "types.h"
 
+#include "common/small_string.h"
+
+#include <array>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -21,24 +25,24 @@ enum : u32
   BIOS_SIZE_PS3 = 0x3E66F0
 };
 
-using Image = std::vector<u8>;
-
-struct Hash
-{
-  u8 bytes[16];
-
-  ALWAYS_INLINE bool operator==(const Hash& bh) const { return (std::memcmp(bytes, bh.bytes, sizeof(bytes)) == 0); }
-  ALWAYS_INLINE bool operator!=(const Hash& bh) const { return (std::memcmp(bytes, bh.bytes, sizeof(bytes)) != 0); }
-
-  std::string ToString() const;
-};
-
 struct ImageInfo
 {
+  static constexpr u32 HASH_SIZE = 16;
+  using Hash = std::array<u8, HASH_SIZE>;
+
   const char* description;
   ConsoleRegion region;
   Hash hash;
   bool patch_compatible;
+
+  static TinyString GetHashString(const Hash& hash);
+};
+
+struct Image
+{
+  const ImageInfo* info;
+  ImageInfo::Hash hash;
+  std::vector<u8> data;
 };
 
 #pragma pack(push, 1)
@@ -63,10 +67,7 @@ static_assert(sizeof(PSEXEHeader) == 0x800);
 #pragma pack(pop)
 
 std::optional<Image> LoadImageFromFile(const char* filename, Error* error);
-Hash GetImageHash(const Image& image);
 
-const ImageInfo* GetInfoForImage(const Image& image);
-const ImageInfo* GetInfoForImage(const Image& image, const Hash& hash);
 bool IsValidBIOSForRegion(ConsoleRegion console_region, ConsoleRegion bios_region);
 
 void PatchBIOS(u8* image, u32 image_size, u32 address, u32 value, u32 mask = UINT32_C(0xFFFFFFFF));
@@ -78,11 +79,11 @@ bool IsValidPSExeHeader(const PSEXEHeader& header, u32 file_size);
 DiscRegion GetPSExeDiscRegion(const PSEXEHeader& header);
 
 /// Loads the BIOS image for the specified region.
-std::optional<std::vector<u8>> GetBIOSImage(ConsoleRegion region, Error* error);
+std::optional<Image> GetBIOSImage(ConsoleRegion region, Error* error);
 
 /// Searches for a BIOS image for the specified region in the specified directory. If no match is found, the first
 /// BIOS image within 512KB and 4MB will be used.
-std::optional<std::vector<u8>> FindBIOSImageInDirectory(ConsoleRegion region, const char* directory, Error* error);
+std::optional<Image> FindBIOSImageInDirectory(ConsoleRegion region, const char* directory, Error* error);
 
 /// Returns a list of filenames and descriptions for BIOS images in a directory.
 std::vector<std::pair<std::string, const BIOS::ImageInfo*>> FindBIOSImagesInDirectory(const char* directory);

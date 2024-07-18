@@ -178,7 +178,7 @@ static TickCount s_max_slice_ticks = System::MASTER_CLOCK / 10;
 static u32 s_frame_number = 1;
 static u32 s_internal_frame_number = 1;
 static const BIOS::ImageInfo* s_bios_image_info = nullptr;
-static BIOS::Hash s_bios_hash = {};
+static BIOS::ImageInfo::Hash s_bios_hash = {};
 
 static std::string s_running_game_path;
 static std::string s_running_game_serial;
@@ -608,11 +608,6 @@ bool System::WasFastBooted()
 const BIOS::ImageInfo* System::GetBIOSImageInfo()
 {
   return s_bios_image_info;
-}
-
-const BIOS::Hash& System::GetBIOSHash()
-{
-  return s_bios_hash;
 }
 
 float System::GetFPS()
@@ -2328,11 +2323,12 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
   // Don't bother checking this at all for memory states, since they won't have a different BIOS...
   if (!is_memory_state)
   {
-    BIOS::Hash bios_hash = s_bios_hash;
-    sw.DoBytesEx(bios_hash.bytes, sizeof(bios_hash.bytes), 58, s_bios_hash.bytes);
+    BIOS::ImageInfo::Hash bios_hash = s_bios_hash;
+    sw.DoBytesEx(bios_hash.data(), BIOS::ImageInfo::HASH_SIZE, 58, s_bios_hash.data());
     if (bios_hash != s_bios_hash)
     {
-      WARNING_LOG("BIOS hash mismatch: System: {} | State: {}", s_bios_hash.ToString(), bios_hash.ToString());
+      WARNING_LOG("BIOS hash mismatch: System: {} | State: {}", BIOS::ImageInfo::GetHashString(s_bios_hash),
+                  BIOS::ImageInfo::GetHashString(bios_hash));
       Host::AddIconOSDMessage(
         "StateBIOSMismatch", ICON_FA_EXCLAMATION_TRIANGLE,
         TRANSLATE_STR("System", "This save state was created with a different BIOS. This may cause stability issues."),
@@ -2441,14 +2437,14 @@ bool System::LoadBIOS(Error* error)
   if (!bios_image.has_value())
     return false;
 
-  s_bios_hash = BIOS::GetImageHash(bios_image.value());
-  s_bios_image_info = BIOS::GetInfoForImage(bios_image.value(), s_bios_hash);
+  s_bios_image_info = bios_image->info;
+  s_bios_hash = bios_image->hash;
   if (s_bios_image_info)
     INFO_LOG("Using BIOS: {}", s_bios_image_info->description);
   else
-    WARNING_LOG("Using an unknown BIOS: {}", s_bios_hash.ToString());
+    WARNING_LOG("Using an unknown BIOS: {}", BIOS::ImageInfo::GetHashString(s_bios_hash));
 
-  std::memcpy(Bus::g_bios, bios_image->data(), Bus::BIOS_SIZE);
+  std::memcpy(Bus::g_bios, bios_image->data.data(), Bus::BIOS_SIZE);
   return true;
 }
 
