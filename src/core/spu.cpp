@@ -73,7 +73,7 @@ enum class RAMTransferMode : u8
   DMARead = 3
 };
 
-union SPUCNT
+union SPUCNTRegister
 {
   u16 bits;
 
@@ -91,7 +91,7 @@ union SPUCNT
   BitField<u16, u8, 0, 6> mode;
 };
 
-union SPUSTAT
+union SPUSTATRegister
 {
   u16 bits;
 
@@ -362,8 +362,8 @@ struct SPUState
   TickCount cpu_ticks_per_spu_tick = 0;
   TickCount cpu_tick_divider = 0;
 
-  SPUCNT SPUCNT = {};
-  SPUSTAT SPUSTAT = {};
+  SPUCNTRegister SPUCNT = {};
+  SPUSTATRegister SPUSTAT = {};
 
   TransferControl transfer_control = {};
   u16 transfer_address_reg = 0;
@@ -911,7 +911,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
       DEBUG_LOG("SPU control register <- 0x{:04X}", value);
       GeneratePendingSamples();
 
-      const SPUCNT new_value{value};
+      const SPUCNTRegister new_value{value};
       if (new_value.ram_transfer_mode != s_state.SPUCNT.ram_transfer_mode &&
           new_value.ram_transfer_mode == RAMTransferMode::Stopped)
       {

@@ -115,7 +115,7 @@ public:
   {
   }
 
-  ALWAYS_INLINE explicit GSVector2i(const GSVector2i& v) { std::memcpy(I32, v.I32, sizeof(I32)); }
+  ALWAYS_INLINE GSVector2i(const GSVector2i& v) { std::memcpy(I32, v.I32, sizeof(I32)); }
 
   // MSVC has bad codegen for the constexpr version when applied to non-constexpr things (https://godbolt.org/z/h8qbn7),
   // so leave the non-constexpr version default
