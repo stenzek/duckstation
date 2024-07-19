@@ -28,16 +28,21 @@ static u32 s_irq_current_line;
 #endif
 
 static constexpr std::array<u8, static_cast<size_t>(Justifier::Binding::ButtonCount)> s_button_indices = {{15, 3, 14}};
+static constexpr std::array<const char*, NUM_CONTROLLER_AND_CARD_PORTS> s_event_names = {
+  {"Justifier IRQ P0", "Justifier IRQ P1", "Justifier IRQ P2", "Justifier IRQ P3", "Justifier IRQ P4",
+   "Justifier IRQ P5", "Justifier IRQ P6", "Justifier IRQ P7"}};
 
-Justifier::Justifier(u32 index) : Controller(index)
+Justifier::Justifier(u32 index)
+  : Controller(index), m_irq_event(
+                         s_event_names[index], 1, 1,
+                         [](void* param, TickCount, TickCount) { static_cast<Justifier*>(param)->IRQEvent(); }, this)
 {
-  m_irq_event = TimingEvents::CreateTimingEvent(
-    "Justifier IRQ", 1, 1, [](void* param, TickCount, TickCount) { static_cast<Justifier*>(param)->IRQEvent(); }, this,
-    false);
 }
 
 Justifier::~Justifier()
 {
+  m_irq_event.Deactivate();
+
   if (!m_cursor_path.empty())
   {
     const u32 cursor_index = GetSoftwarePointerIndex();
@@ -245,7 +250,7 @@ void Justifier::UpdatePosition()
 void Justifier::UpdateIRQEvent()
 {
   // TODO: Avoid deactivate and event sort.
-  m_irq_event->Deactivate();
+  m_irq_event.Deactivate();
 
   if (!m_position_valid)
     return;
@@ -261,7 +266,7 @@ void Justifier::UpdateIRQEvent()
 
   const TickCount ticks_until_pos = g_gpu->GetSystemTicksUntilTicksAndLine(m_irq_tick, target_line);
   DEBUG_LOG("Triggering IRQ in {} ticks @ tick {} line {}", ticks_until_pos, m_irq_tick, target_line);
-  m_irq_event->Schedule(ticks_until_pos);
+  m_irq_event.Schedule(ticks_until_pos);
 }
 
 void Justifier::IRQEvent()

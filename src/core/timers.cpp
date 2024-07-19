@@ -75,7 +75,7 @@ static void UpdateSysClkEvent();
 namespace {
 struct TimersState
 {
-  std::unique_ptr<TimingEvent> sysclk_event;
+  TimingEvent sysclk_event{ "Timer SysClk Interrupt", 1, 1, &Timers::AddSysClkTicks, nullptr };
 
   std::array<CounterState, NUM_TIMERS> counters{};
   TickCount sysclk_ticks_carry = 0; // 0 unless overclocking is enabled
@@ -88,14 +88,12 @@ ALIGN_TO_CACHE_LINE static TimersState s_state;
 
 void Timers::Initialize()
 {
-  s_state.sysclk_event =
-    TimingEvents::CreateTimingEvent("Timer SysClk Interrupt", 1, 1, &Timers::AddSysClkTicks, nullptr, false);
   Reset();
 }
 
 void Timers::Shutdown()
 {
-  s_state.sysclk_event.reset();
+  s_state.sysclk_event.Deactivate();
 }
 
 void Timers::Reset()
@@ -112,7 +110,7 @@ void Timers::Reset()
     cs.irq_done = false;
   }
 
-  s_state.sysclk_event->Deactivate();
+  s_state.sysclk_event.Deactivate();
   s_state.sysclk_ticks_carry = 0;
   s_state.sysclk_div_8_carry = 0;
   UpdateSysClkEvent();
@@ -176,7 +174,7 @@ void Timers::SetGate(u32 timer, bool state)
   // Because the gate prevents counting in or outside of the gate, we need a correct counter.
   // For reset, we _can_ skip it, until the gate clears.
   if (!cs.use_external_clock && (cs.mode.sync_mode != SyncMode::ResetOnGateEnd || !state))
-    s_state.sysclk_event->InvokeEarly();
+    s_state.sysclk_event.InvokeEarly();
 
   switch (cs.mode.sync_mode)
   {
@@ -321,7 +319,7 @@ u32 Timers::ReadRegister(u32 offset)
           g_gpu->SynchronizeCRTC();
       }
 
-      s_state.sysclk_event->InvokeEarly();
+      s_state.sysclk_event.InvokeEarly();
 
       return cs.counter;
     }
@@ -335,7 +333,7 @@ u32 Timers::ReadRegister(u32 offset)
           g_gpu->SynchronizeCRTC();
       }
 
-      s_state.sysclk_event->InvokeEarly();
+      s_state.sysclk_event.InvokeEarly();
 
       const u32 bits = cs.mode.bits;
       cs.mode.reached_overflow = false;
@@ -371,7 +369,7 @@ void Timers::WriteRegister(u32 offset, u32 value)
       g_gpu->SynchronizeCRTC();
   }
 
-  s_state.sysclk_event->InvokeEarly();
+  s_state.sysclk_event.InvokeEarly();
 
   // Strictly speaking these IRQ checks should probably happen on the next tick.
   switch (port_offset)
@@ -488,7 +486,7 @@ TickCount Timers::GetTicksUntilNextInterrupt()
 
 void Timers::UpdateSysClkEvent()
 {
-  s_state.sysclk_event->Schedule(GetTicksUntilNextInterrupt());
+  s_state.sysclk_event.Schedule(GetTicksUntilNextInterrupt());
 }
 
 void Timers::DrawDebugStateWindow()

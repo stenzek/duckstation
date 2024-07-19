@@ -108,6 +108,7 @@ public:
 
   void Do(bool* value_ptr);
   void Do(std::string* value_ptr);
+  void Do(std::string_view* value_ptr);
   void Do(SmallStringBase* value_ptr);
 
   template<typename T, size_t N>

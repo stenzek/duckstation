@@ -60,18 +60,6 @@ void TimingEvents::Shutdown()
   Assert(s_state.active_event_count == 0);
 }
 
-std::unique_ptr<TimingEvent> TimingEvents::CreateTimingEvent(std::string name, TickCount period, TickCount interval,
-                                                             TimingEventCallback callback, void* callback_param,
-                                                             bool activate)
-{
-  std::unique_ptr<TimingEvent> event =
-    std::make_unique<TimingEvent>(std::move(name), period, interval, callback, callback_param);
-  if (activate)
-    event->Activate();
-
-  return event;
-}
-
 void TimingEvents::UpdateCPUDowncount()
 {
   const u32 event_downcount = s_state.active_events_head->GetDowncount();
@@ -377,7 +365,7 @@ bool TimingEvents::DoState(StateWrapper& sw)
 
     for (u32 i = 0; i < event_count; i++)
     {
-      std::string event_name;
+      TinyString event_name;
       TickCount downcount, time_since_last_run, period, interval;
       sw.Do(&event_name);
       sw.Do(&downcount);
@@ -430,17 +418,16 @@ bool TimingEvents::DoState(StateWrapper& sw)
   return !sw.HasError();
 }
 
-TimingEvent::TimingEvent(std::string name, TickCount period, TickCount interval, TimingEventCallback callback,
-                         void* callback_param)
+TimingEvent::TimingEvent(const std::string_view name, TickCount period, TickCount interval,
+                         TimingEventCallback callback, void* callback_param)
   : m_callback(callback), m_callback_param(callback_param), m_downcount(interval), m_time_since_last_run(0),
-    m_period(period), m_interval(interval), m_name(std::move(name))
+    m_period(period), m_interval(interval), m_name(name)
 {
 }
 
 TimingEvent::~TimingEvent()
 {
-  if (m_active)
-    TimingEvents::RemoveActiveEvent(this);
+  DebugAssert(!m_active);
 }
 
 TickCount TimingEvent::GetTicksSinceLastExecution() const

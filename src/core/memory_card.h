@@ -1,16 +1,18 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
-#include "common/bitfield.h"
+
 #include "controller.h"
 #include "memory_card_image.h"
+#include "timing_event.h"
+
+#include "common/bitfield.h"
+
 #include <array>
 #include <memory>
 #include <string>
 #include <string_view>
-
-class TimingEvent;
 
 class MemoryCard final
 {
@@ -97,8 +99,6 @@ private:
   bool SaveIfChanged(bool display_osd_message);
   void QueueFileSave();
 
-  std::unique_ptr<TimingEvent> m_save_event;
-
   State m_state = State::Idle;
   FLAG m_FLAG = {};
   u16 m_address = 0;
@@ -107,7 +107,8 @@ private:
   u8 m_last_byte = 0;
   bool m_changed = false;
 
-  MemoryCardImage::DataArray m_data{};
-
+  TimingEvent m_save_event;
   std::string m_filename;
+
+  MemoryCardImage::DataArray m_data{};
 };

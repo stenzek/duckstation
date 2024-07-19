@@ -1,13 +1,11 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
-#include <functional>
-#include <memory>
-#include <string>
-#include <vector>
 
 #include "types.h"
+
+#include <string_view>
 
 class StateWrapper;
 
@@ -17,11 +15,11 @@ using TimingEventCallback = void (*)(void* param, TickCount ticks, TickCount tic
 class TimingEvent
 {
 public:
-  TimingEvent(std::string name, TickCount period, TickCount interval, TimingEventCallback callback,
+  TimingEvent(const std::string_view name, TickCount period, TickCount interval, TimingEventCallback callback,
               void* callback_param);
   ~TimingEvent();
 
-  ALWAYS_INLINE const std::string& GetName() const { return m_name; }
+  ALWAYS_INLINE const std::string_view GetName() const { return m_name; }
   ALWAYS_INLINE bool IsActive() const { return m_active; }
 
   // Returns the number of ticks between each event.
@@ -75,7 +73,7 @@ public:
   TickCount m_interval;
   bool m_active = false;
 
-  std::string m_name;
+  std::string_view m_name;
 };
 
 namespace TimingEvents {
@@ -87,11 +85,6 @@ void Initialize();
 void Reset();
 void Shutdown();
 
-/// Creates a new event.
-std::unique_ptr<TimingEvent> CreateTimingEvent(std::string name, TickCount period, TickCount interval,
-                                               TimingEventCallback callback, void* callback_param, bool activate);
-
-/// Serialization.
 bool DoState(StateWrapper& sw);
 
 bool IsRunningEvents();

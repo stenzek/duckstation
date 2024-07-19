@@ -117,7 +117,7 @@ static std::array<std::unique_ptr<MemoryCard>, NUM_CONTROLLER_AND_CARD_PORTS> s_
 
 static std::array<Multitap, NUM_MULTITAPS> s_multitaps;
 
-static std::unique_ptr<TimingEvent> s_transfer_event;
+static TimingEvent s_transfer_event{"Pad Serial Transfer", 1, 1, &Pad::TransferEvent, nullptr};
 static State s_state = State::Idle;
 
 static JOY_CTRL s_JOY_CTRL = {};
@@ -140,7 +140,6 @@ static std::unique_ptr<MemoryCard> s_dummy_card;
 
 void Pad::Initialize()
 {
-  s_transfer_event = TimingEvents::CreateTimingEvent("Pad Serial Transfer", 1, 1, &Pad::TransferEvent, nullptr, false);
   Reset();
 }
 
@@ -148,7 +147,7 @@ void Pad::Shutdown()
 {
   s_memory_card_backup.reset();
 
-  s_transfer_event.reset();
+  s_transfer_event.Deactivate();
 
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
@@ -533,7 +532,7 @@ bool Pad::DoState(StateWrapper& sw, bool is_memory_state)
   sw.Do(&s_transmit_buffer_full);
 
   if (sw.IsReading() && IsTransmitting())
-    s_transfer_event->Activate();
+    s_transfer_event.Activate();
 
   return !sw.HasError();
 }
@@ -581,7 +580,7 @@ u32 Pad::ReadRegister(u32 offset)
     case 0x00: // JOY_DATA
     {
       if (IsTransmitting())
-        s_transfer_event->InvokeEarly();
+        s_transfer_event.InvokeEarly();
 
       const u8 value = s_receive_buffer_full ? s_receive_buffer : 0xFF;
       DEBUG_LOG("JOY_DATA (R) -> 0x{:02X}{}", value, s_receive_buffer_full ? "" : "(EMPTY)");
@@ -595,7 +594,7 @@ u32 Pad::ReadRegister(u32 offset)
     case 0x04: // JOY_STAT
     {
       if (IsTransmitting())
-        s_transfer_event->InvokeEarly();
+        s_transfer_event.InvokeEarly();
 
       const u32 bits = s_JOY_STAT.bits;
       s_JOY_STAT.ACKINPUT = false;
@@ -763,7 +762,7 @@ void Pad::BeginTransfer()
   // until after (4) and (5) have been completed.
 
   s_state = State::Transmitting;
-  s_transfer_event->SetPeriodAndSchedule(GetTransferTicks());
+  s_transfer_event.SetPeriodAndSchedule(GetTransferTicks());
 }
 
 void Pad::DoTransfer(TickCount ticks_late)
@@ -882,7 +881,7 @@ void Pad::DoTransfer(TickCount ticks_late)
     const TickCount ack_timer = GetACKTicks(memcard_transfer);
     DEBUG_LOG("Delaying ACK for {} ticks", ack_timer);
     s_state = State::WaitingForACK;
-    s_transfer_event->SetPeriodAndSchedule(ack_timer);
+    s_transfer_event.SetPeriodAndSchedule(ack_timer);
   }
 
   UpdateJoyStat();
@@ -912,7 +911,7 @@ void Pad::EndTransfer()
   DEBUG_LOG("Ending transfer");
 
   s_state = State::Idle;
-  s_transfer_event->Deactivate();
+  s_transfer_event.Deactivate();
 }
 
 void Pad::ResetDeviceTransferState()

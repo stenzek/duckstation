@@ -22,13 +22,12 @@
 Log_SetChannel(MemoryCard);
 
 MemoryCard::MemoryCard()
+  : m_save_event(
+      "Memory Card Host Flush", GetSaveDelayInTicks(), GetSaveDelayInTicks(),
+      [](void* param, TickCount ticks, TickCount ticks_late) { static_cast<MemoryCard*>(param)->SaveIfChanged(true); },
+      this)
 {
   m_FLAG.no_write_yet = true;
-
-  m_save_event = TimingEvents::CreateTimingEvent(
-    "Memory Card Host Flush", GetSaveDelayInTicks(), GetSaveDelayInTicks(),
-    [](void* param, TickCount ticks, TickCount ticks_late) { static_cast<MemoryCard*>(param)->SaveIfChanged(true); },
-    this, false);
 }
 
 MemoryCard::~MemoryCard()
@@ -285,7 +284,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
 
 bool MemoryCard::IsOrWasRecentlyWriting() const
 {
-  return (m_state == State::WriteData || m_save_event->IsActive());
+  return (m_state == State::WriteData || m_save_event.IsActive());
 }
 
 std::unique_ptr<MemoryCard> MemoryCard::Create()
@@ -324,7 +323,7 @@ bool MemoryCard::LoadFromFile()
 
 bool MemoryCard::SaveIfChanged(bool display_osd_message)
 {
-  m_save_event->Deactivate();
+  m_save_event.Deactivate();
 
   if (!m_changed)
     return true;
@@ -369,9 +368,9 @@ bool MemoryCard::SaveIfChanged(bool display_osd_message)
 void MemoryCard::QueueFileSave()
 {
   // skip if the event is already pending, or we don't have a backing file
-  if (m_save_event->IsActive() || m_filename.empty())
+  if (m_save_event.IsActive() || m_filename.empty())
     return;
 
   // save in one second, that should be long enough for everything to finish writing
-  m_save_event->Schedule(GetSaveDelayInTicks());
+  m_save_event.Schedule(GetSaveDelayInTicks());
 }

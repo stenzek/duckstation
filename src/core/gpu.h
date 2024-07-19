@@ -5,6 +5,7 @@
 #include "gpu_types.h"
 #include "timers.h"
 #include "types.h"
+#include "timing_event.h"
 
 #include "util/gpu_texture.h"
 
@@ -29,7 +30,6 @@ class GPUTexture;
 class GPUPipeline;
 
 struct Settings;
-class TimingEvent;
 
 namespace Threading {
 class Thread;
@@ -370,8 +370,8 @@ protected:
     AddCommandTicks(std::max(drawn_width, drawn_height));
   }
 
-  std::unique_ptr<TimingEvent> m_crtc_tick_event;
-  std::unique_ptr<TimingEvent> m_command_tick_event;
+  TimingEvent m_crtc_tick_event;
+  TimingEvent m_command_tick_event;
 
   union GPUSTAT
   {

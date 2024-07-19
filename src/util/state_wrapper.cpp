@@ -77,6 +77,14 @@ void StateWrapper::Do(SmallStringBase* value_ptr)
   value_ptr->update_size();
 }
 
+void StateWrapper::Do(std::string_view* value_ptr)
+{
+  Assert(m_mode == Mode::Write);
+  u32 length = static_cast<u32>(value_ptr->length());
+  Do(&length);
+  DoBytes(const_cast<char*>(value_ptr->data()), length);
+}
+
 bool StateWrapper::DoMarker(const char* marker)
 {
   SmallString file_value(marker);

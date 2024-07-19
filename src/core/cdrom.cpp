@@ -299,10 +299,12 @@ static void CreateFileMap();
 static void CreateFileMap(IsoReader& iso, std::string_view dir);
 static const std::string* LookupFileMap(u32 lba, u32* start_lba, u32* end_lba);
 
-static std::unique_ptr<TimingEvent> s_command_event;
-static std::unique_ptr<TimingEvent> s_command_second_response_event;
-static std::unique_ptr<TimingEvent> s_async_interrupt_event;
-static std::unique_ptr<TimingEvent> s_drive_event;
+static TimingEvent s_command_event{"CDROM Command Event", 1, 1, &CDROM::ExecuteCommand, nullptr};
+static TimingEvent s_command_second_response_event{"CDROM Command Second Response Event", 1, 1,
+                                                   &CDROM::ExecuteCommandSecondResponse, nullptr};
+static TimingEvent s_async_interrupt_event{"CDROM Async Interrupt Event", INTERRUPT_DELAY_CYCLES, 1,
+                                           &CDROM::DeliverAsyncInterrupt, nullptr};
+static TimingEvent s_drive_event{"CDROM Drive Event", 1, 1, &CDROM::ExecuteDrive, nullptr};
 
 static Command s_command = Command::None;
 static Command s_command_second_response = Command::None;
@@ -443,14 +445,6 @@ static std::array<CommandInfo, 255> s_command_info = {{
 
 void CDROM::Initialize()
 {
-  s_command_event =
-    TimingEvents::CreateTimingEvent("CDROM Command Event", 1, 1, &CDROM::ExecuteCommand, nullptr, false);
-  s_command_second_response_event = TimingEvents::CreateTimingEvent(
-    "CDROM Command Second Response Event", 1, 1, &CDROM::ExecuteCommandSecondResponse, nullptr, false);
-  s_async_interrupt_event = TimingEvents::CreateTimingEvent("CDROM Async Interrupt Event", INTERRUPT_DELAY_CYCLES, 1,
-                                                            &CDROM::DeliverAsyncInterrupt, nullptr, false);
-  s_drive_event = TimingEvents::CreateTimingEvent("CDROM Drive Event", 1, 1, &CDROM::ExecuteDrive, nullptr, false);
-
   if (g_settings.cdrom_readahead_sectors > 0)
     s_reader.StartThread(g_settings.cdrom_readahead_sectors);
 
@@ -463,10 +457,10 @@ void CDROM::Shutdown()
   s_file_map_created = false;
   s_show_current_file = false;
 
-  s_drive_event.reset();
-  s_async_interrupt_event.reset();
-  s_command_second_response_event.reset();
-  s_command_event.reset();
+  s_drive_event.Deactivate();
+  s_async_interrupt_event.Deactivate();
+  s_command_second_response_event.Deactivate();
+  s_command_event.Deactivate();
   s_reader.StopThread();
   s_reader.RemoveMedia();
 }
@@ -474,7 +468,7 @@ void CDROM::Shutdown()
 void CDROM::Reset()
 {
   s_command = Command::None;
-  s_command_event->Deactivate();
+  s_command_event.Deactivate();
   ClearCommandSecondResponse();
   ClearDriveState();
   s_status.bits = 0;
@@ -569,7 +563,7 @@ void CDROM::SoftReset(TickCount ticks_late)
     if (s_current_lba != 0)
     {
       s_drive_state = DriveState::SeekingImplicit;
-      s_drive_event->SetIntervalAndSchedule(total_ticks);
+      s_drive_event.SetIntervalAndSchedule(total_ticks);
       s_requested_lba = 0;
       s_reader.QueueReadSector(s_requested_lba);
       s_seek_start_lba = s_current_lba;
@@ -578,7 +572,7 @@ void CDROM::SoftReset(TickCount ticks_late)
     else
     {
       s_drive_state = DriveState::ChangingSpeedOrTOCRead;
-      s_drive_event->Schedule(total_ticks);
+      s_drive_event.Schedule(total_ticks);
     }
   }
 }
@@ -697,10 +691,10 @@ bool CDROM::DoState(StateWrapper& sw)
     if (s_reader.HasMedia())
       s_reader.QueueReadSector(s_requested_lba);
     UpdateCommandEvent();
-    s_drive_event->SetState(!IsDriveIdle());
+    s_drive_event.SetState(!IsDriveIdle());
 
     // Time will get fixed up later.
-    s_command_second_response_event->SetState(s_command_second_response != Command::None);
+    s_command_second_response_event.SetState(s_command_second_response != Command::None);
   }
 
   return !sw.HasError();
@@ -824,7 +818,7 @@ std::unique_ptr<CDImage> CDROM::RemoveMedia(bool for_disc_swap)
   ClearDriveState();
   ClearCommandSecondResponse();
   s_command = Command::None;
-  s_command_event->Deactivate();
+  s_command_event.Deactivate();
 
   // The console sends an interrupt when the shell is opened regardless of whether a command was executing.
   ClearAsyncInterrupt();
@@ -834,7 +828,7 @@ std::unique_ptr<CDImage> CDROM::RemoveMedia(bool for_disc_swap)
   if (for_disc_swap)
   {
     s_drive_state = DriveState::ShellOpening;
-    s_drive_event->SetIntervalAndSchedule(stop_ticks);
+    s_drive_event.SetIntervalAndSchedule(stop_ticks);
   }
 
   return image;
@@ -890,7 +884,7 @@ void CDROM::CPUClockChanged()
 {
   // reschedule the disc read event
   if (IsReadingOrPlaying())
-    s_drive_event->SetInterval(GetTicksForRead());
+    s_drive_event.SetInterval(GetTicksForRead());
 }
 
 u8 CDROM::ReadRegister(u32 offset)
@@ -1115,7 +1109,7 @@ void CDROM::WriteRegister(u32 offset, u8 value)
                                        sizeof(s_cd_audio_volume_matrix)) != 0))
       {
         if (HasPendingDiscEvent())
-          s_drive_event->InvokeEarly();
+          s_drive_event.InvokeEarly();
         SPU::GeneratePendingSamples();
       }
 
@@ -1210,7 +1204,7 @@ void CDROM::SetAsyncInterrupt(Interrupt interrupt)
 void CDROM::ClearAsyncInterrupt()
 {
   s_pending_async_interrupt = 0;
-  s_async_interrupt_event->Deactivate();
+  s_async_interrupt_event.Deactivate();
   s_async_response_fifo.Clear();
 }
 
@@ -1235,7 +1229,7 @@ void CDROM::QueueDeliverAsyncInterrupt()
   {
     DEV_LOG("Delaying async interrupt {} because it's been {} cycles since last interrupt", s_pending_async_interrupt,
             diff);
-    s_async_interrupt_event->Schedule(INTERRUPT_DELAY_CYCLES);
+    s_async_interrupt_event.Schedule(INTERRUPT_DELAY_CYCLES);
   }
 }
 
@@ -1244,12 +1238,12 @@ void CDROM::DeliverAsyncInterrupt(void*, TickCount ticks, TickCount ticks_late)
   if (HasPendingInterrupt())
   {
     // This shouldn't really happen, because we should block command execution.. but just in case.
-    if (!s_async_interrupt_event->IsActive())
-      s_async_interrupt_event->Schedule(INTERRUPT_DELAY_CYCLES);
+    if (!s_async_interrupt_event.IsActive())
+      s_async_interrupt_event.Schedule(INTERRUPT_DELAY_CYCLES);
   }
   else
   {
-    s_async_interrupt_event->Deactivate();
+    s_async_interrupt_event.Deactivate();
 
     Assert(s_pending_async_interrupt != 0 && !HasPendingInterrupt());
     DEBUG_LOG("Delivering async interrupt {}", s_pending_async_interrupt);
@@ -1308,7 +1302,7 @@ void CDROM::UpdateInterruptRequest()
 
 bool CDROM::HasPendingDiscEvent()
 {
-  return (s_drive_event->IsActive() && s_drive_event->GetTicksUntilNextExecution() <= 0);
+  return (s_drive_event.IsActive() && s_drive_event.GetTicksUntilNextExecution() <= 0);
 }
 
 TickCount CDROM::GetAckDelayForCommand(Command command)
@@ -1336,7 +1330,7 @@ TickCount CDROM::GetTicksForIDRead()
 {
   TickCount ticks = ID_READ_TICKS;
   if (s_drive_state == DriveState::SpinningUp)
-    ticks += s_drive_event->GetTicksUntilNextExecution();
+    ticks += s_drive_event.GetTicksUntilNextExecution();
 
   return ticks;
 }
@@ -1376,7 +1370,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
   if (!IsMotorOn())
   {
     ticks +=
-      (s_drive_state == DriveState::SpinningUp) ? s_drive_event->GetTicksUntilNextExecution() : GetTicksForSpinUp();
+      (s_drive_state == DriveState::SpinningUp) ? s_drive_event.GetTicksUntilNextExecution() : GetTicksForSpinUp();
     if (s_drive_state == DriveState::ShellOpening || s_drive_state == DriveState::SpinningUp)
       ClearDriveState();
   }
@@ -1416,7 +1410,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
   if (s_drive_state == DriveState::ChangingSpeedOrTOCRead && !ignore_speed_change)
   {
     // we're still reading the TOC, so add that time in
-    const TickCount remaining_change_ticks = s_drive_event->GetTicksUntilNextExecution();
+    const TickCount remaining_change_ticks = s_drive_event.GetTicksUntilNextExecution();
     ticks += remaining_change_ticks;
 
     DEV_LOG("Seek time for {} LBAs: {} ({:.3f} ms) ({} for speed change/implicit TOC read)", lba_diff, ticks,
@@ -1492,16 +1486,16 @@ void CDROM::BeginCommand(Command command)
                 s_command_info[static_cast<u8>(command)].name);
 
     // subtract the currently-elapsed ack ticks from the new command
-    if (s_command_event->IsActive())
+    if (s_command_event.IsActive())
     {
-      const TickCount elapsed_ticks = s_command_event->GetInterval() - s_command_event->GetTicksUntilNextExecution();
+      const TickCount elapsed_ticks = s_command_event.GetInterval() - s_command_event.GetTicksUntilNextExecution();
       ack_delay = std::max(ack_delay - elapsed_ticks, 1);
-      s_command_event->Deactivate();
+      s_command_event.Deactivate();
     }
   }
 
   s_command = command;
-  s_command_event->SetIntervalAndSchedule(ack_delay);
+  s_command_event.SetIntervalAndSchedule(ack_delay);
   UpdateCommandEvent();
   UpdateStatusRegister();
 }
@@ -1511,7 +1505,7 @@ void CDROM::EndCommand()
   s_param_fifo.Clear();
 
   s_command = Command::None;
-  s_command_event->Deactivate();
+  s_command_event.Deactivate();
   UpdateStatusRegister();
 }
 
@@ -1633,7 +1627,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
         if (s_drive_state == DriveState::ChangingSpeedOrTOCRead)
         {
           // cancel the speed change if it's less than a quarter complete
-          if (s_drive_event->GetTicksUntilNextExecution() >= (GetTicksForSpeedChange() / 4))
+          if (s_drive_event.GetTicksUntilNextExecution() >= (GetTicksForSpeedChange() / 4))
           {
             DEV_LOG("Cancelling speed change event");
             ClearDriveState();
@@ -1648,19 +1642,19 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
             DEV_LOG("Drive is {}, delaying event by {} ticks for speed change to {}-speed",
                     s_drive_state_names[static_cast<u8>(s_drive_state)], change_ticks,
                     s_mode.double_speed ? "double" : "single");
-            s_drive_event->Delay(change_ticks);
+            s_drive_event.Delay(change_ticks);
 
             if (IsReadingOrPlaying())
             {
               WARNING_LOG("Speed change while reading/playing, reads will be temporarily delayed.");
-              s_drive_event->SetInterval(GetTicksForRead());
+              s_drive_event.SetInterval(GetTicksForRead());
             }
           }
           else
           {
             DEV_LOG("Drive is idle, speed change takes {} ticks", change_ticks);
             s_drive_state = DriveState::ChangingSpeedOrTOCRead;
-            s_drive_event->Schedule(change_ticks);
+            s_drive_event.Schedule(change_ticks);
           }
         }
       }
@@ -1736,7 +1730,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
         s_async_command_parameter = session;
         s_drive_state = DriveState::ChangingSession;
-        s_drive_event->Schedule(GetTicksForTOCRead());
+        s_drive_event.Schedule(GetTicksForTOCRead());
       }
 
       EndCommand();
@@ -1870,7 +1864,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       {
         // Stop reading.
         s_drive_state = DriveState::Idle;
-        s_drive_event->Deactivate();
+        s_drive_event.Deactivate();
         s_secondary_status.ClearActiveBits();
       }
 
@@ -2119,7 +2113,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
       // According to nocash this doesn't clear the parameter FIFO.
       s_command = Command::None;
-      s_command_event->Deactivate();
+      s_command_event.Deactivate();
       UpdateStatusRegister();
     }
     break;
@@ -2283,14 +2277,14 @@ void CDROM::ExecuteCommandSecondResponse(void*, TickCount ticks, TickCount ticks
   }
 
   s_command_second_response = Command::None;
-  s_command_second_response_event->Deactivate();
+  s_command_second_response_event.Deactivate();
 }
 
 void CDROM::QueueCommandSecondResponse(Command command, TickCount ticks)
 {
   ClearCommandSecondResponse();
   s_command_second_response = command;
-  s_command_second_response_event->Schedule(ticks);
+  s_command_second_response_event.Schedule(ticks);
 }
 
 void CDROM::ClearCommandSecondResponse()
@@ -2301,7 +2295,7 @@ void CDROM::ClearCommandSecondResponse()
             s_command_info[static_cast<u16>(s_command_second_response)].name);
   }
 
-  s_command_second_response_event->Deactivate();
+  s_command_second_response_event.Deactivate();
   s_command_second_response = Command::None;
 }
 
@@ -2311,12 +2305,12 @@ void CDROM::UpdateCommandEvent()
   // so deactivate it until the interrupt is acknowledged
   if (!HasPendingCommand() || HasPendingInterrupt() || HasPendingAsyncInterrupt())
   {
-    s_command_event->Deactivate();
+    s_command_event.Deactivate();
     return;
   }
   else if (HasPendingCommand())
   {
-    s_command_event->Activate();
+    s_command_event.Activate();
   }
 }
 
@@ -2395,7 +2389,7 @@ void CDROM::ExecuteDrive(void*, TickCount ticks, TickCount ticks_late)
 void CDROM::ClearDriveState()
 {
   s_drive_state = DriveState::Idle;
-  s_drive_event->Deactivate();
+  s_drive_event.Deactivate();
 }
 
 void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = false */)
@@ -2411,7 +2405,7 @@ void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = fa
   if (IsSeeking())
   {
     DEV_LOG("Read command while seeking, scheduling read after seek {} -> {} finishes in {} ticks", s_seek_start_lba,
-            s_seek_end_lba, s_drive_event->GetTicksUntilNextExecution());
+            s_seek_end_lba, s_drive_event.GetTicksUntilNextExecution());
 
     // Implicit seeks won't trigger the read, so swap it for a logical.
     if (s_drive_state == DriveState::SeekingImplicit)
@@ -2433,8 +2427,8 @@ void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = fa
   ResetAudioDecoder();
 
   s_drive_state = DriveState::Reading;
-  s_drive_event->SetInterval(ticks);
-  s_drive_event->Schedule(first_sector_ticks);
+  s_drive_event.SetInterval(ticks);
+  s_drive_event.Schedule(first_sector_ticks);
 
   s_requested_lba = s_current_lba;
   s_reader.QueueReadSector(s_requested_lba);
@@ -2476,8 +2470,8 @@ void CDROM::BeginPlaying(u8 track, TickCount ticks_late /* = 0 */, bool after_se
   ResetAudioDecoder();
 
   s_drive_state = DriveState::Playing;
-  s_drive_event->SetInterval(ticks);
-  s_drive_event->Schedule(first_sector_ticks);
+  s_drive_event.SetInterval(ticks);
+  s_drive_event.Schedule(first_sector_ticks);
 
   s_requested_lba = s_current_lba;
   s_reader.QueueReadSector(s_requested_lba);
@@ -2509,7 +2503,7 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
   s_last_sector_header_valid = false;
 
   s_drive_state = logical ? DriveState::SeekingLogical : DriveState::SeekingPhysical;
-  s_drive_event->SetIntervalAndSchedule(seek_time);
+  s_drive_event.SetIntervalAndSchedule(seek_time);
 
   s_seek_start_lba = s_current_lba;
   s_seek_end_lba = seek_lba;
@@ -2521,8 +2515,8 @@ void CDROM::UpdatePositionWhileSeeking()
 {
   DebugAssert(IsSeeking());
 
-  const float completed_frac = 1.0f - std::min(static_cast<float>(s_drive_event->GetTicksUntilNextExecution()) /
-                                                 static_cast<float>(s_drive_event->GetInterval()),
+  const float completed_frac = 1.0f - std::min(static_cast<float>(s_drive_event.GetTicksUntilNextExecution()) /
+                                                 static_cast<float>(s_drive_event.GetInterval()),
                                                1.0f);
 
   CDImage::LBA current_lba;
@@ -2804,7 +2798,7 @@ void CDROM::DoSpinUpComplete()
 {
   DEBUG_LOG("Spinup complete");
   s_drive_state = DriveState::Idle;
-  s_drive_event->Deactivate();
+  s_drive_event.Deactivate();
   s_secondary_status.ClearActiveBits();
   s_secondary_status.motor_on = true;
 }
@@ -2813,7 +2807,7 @@ void CDROM::DoSpeedChangeOrImplicitTOCReadComplete()
 {
   DEBUG_LOG("Speed change/implicit TOC read complete");
   s_drive_state = DriveState::Idle;
-  s_drive_event->Deactivate();
+  s_drive_event.Deactivate();
 }
 
 void CDROM::DoIDRead()
@@ -2878,7 +2872,7 @@ void CDROM::StartMotor()
 
   DEV_LOG("Starting motor");
   s_drive_state = DriveState::SpinningUp;
-  s_drive_event->Schedule(GetTicksForSpinUp());
+  s_drive_event.Schedule(GetTicksForSpinUp());
 }
 
 void CDROM::StopMotor()
@@ -3387,7 +3381,7 @@ void CDROM::CheckForSectorBufferReadComplete()
     DEV_LOG("Sending additional INT1 for missed sector in buffer {}", s_current_write_sector_buffer);
     s_async_response_fifo.Push(s_secondary_status.bits);
     s_pending_async_interrupt = static_cast<u8>(Interrupt::DataReady);
-    s_async_interrupt_event->Schedule(INTERRUPT_DELAY_CYCLES);
+    s_async_interrupt_event.Schedule(INTERRUPT_DELAY_CYCLES);
   }
 }
 
@@ -3669,7 +3663,7 @@ void CDROM::DrawDebugWindow()
     {
       ImGui::TextColored(active_color, "Command: %s (0x%02X) (%d ticks remaining)",
                          s_command_info[static_cast<u8>(s_command)].name, static_cast<u8>(s_command),
-                         s_command_event->IsActive() ? s_command_event->GetTicksUntilNextExecution() : 0);
+                         s_command_event.IsActive() ? s_command_event.GetTicksUntilNextExecution() : 0);
     }
     else
     {
@@ -3684,7 +3678,7 @@ void CDROM::DrawDebugWindow()
     {
       ImGui::TextColored(active_color, "Drive: %s (%d ticks remaining)",
                          s_drive_state_names[static_cast<u8>(s_drive_state)],
-                         s_drive_event->IsActive() ? s_drive_event->GetTicksUntilNextExecution() : 0);
+                         s_drive_event.IsActive() ? s_drive_event.GetTicksUntilNextExecution() : 0);
     }
 
     ImGui::Text("Interrupt Enable Register: 0x%02X", s_interrupt_enable_register);

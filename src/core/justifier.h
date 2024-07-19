@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
+
 #include "controller.h"
+#include "timing_event.h"
+
 #include <memory>
 #include <optional>
 #include <string_view>
@@ -77,8 +80,6 @@ private:
   static constexpr u8 DEFAULT_OFFSCREEN_TRIGGER_FRAMES = 5;
   static constexpr u8 DEFAULT_OFFSCREEN_RELEASE_FRAMES = 5;
 
-  std::unique_ptr<TimingEvent> m_irq_event;
-
   s8 m_first_line_offset = 0;
   s8 m_last_line_offset = 0;
   s16 m_tick_offset = 0;
@@ -97,6 +98,8 @@ private:
   bool m_position_valid = false;
 
   TransferState m_transfer_state = TransferState::Idle;
+
+  TimingEvent m_irq_event;
 
   bool m_has_relative_binds = false;
   float m_relative_pos[4] = {};

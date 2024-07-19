@@ -204,7 +204,7 @@ struct DMAState
   TickCount halt_ticks = 100;
 
   std::vector<u32> transfer_buffer;
-  std::unique_ptr<TimingEvent> unhalt_event;
+  TimingEvent unhalt_event{"DMA Transfer Unhalt", 1, 1, &DMA::UnhaltTransfer, nullptr};
   TickCount halt_ticks_remaining = 0;
 
   std::array<ChannelState, NUM_CHANNELS> channels;
@@ -243,22 +243,20 @@ void DMA::Initialize()
 {
   s_state.max_slice_ticks = g_settings.dma_max_slice_ticks;
   s_state.halt_ticks = g_settings.dma_halt_ticks;
-
-  s_state.unhalt_event = TimingEvents::CreateTimingEvent("DMA Transfer Unhalt", 1, s_state.max_slice_ticks,
-                                                         &DMA::UnhaltTransfer, nullptr, false);
+  s_state.unhalt_event.SetInterval(s_state.max_slice_ticks);
   Reset();
 }
 
 void DMA::Shutdown()
 {
   ClearState();
-  s_state.unhalt_event.reset();
+  s_state.unhalt_event.Deactivate();
 }
 
 void DMA::Reset()
 {
   ClearState();
-  s_state.unhalt_event->Deactivate();
+  s_state.unhalt_event.Deactivate();
 }
 
 void DMA::ClearState()
@@ -297,9 +295,9 @@ bool DMA::DoState(StateWrapper& sw)
   if (sw.IsReading())
   {
     if (s_state.halt_ticks_remaining > 0)
-      s_state.unhalt_event->SetIntervalAndSchedule(s_state.halt_ticks_remaining);
+      s_state.unhalt_event.SetIntervalAndSchedule(s_state.halt_ticks_remaining);
     else
-      s_state.unhalt_event->Deactivate();
+      s_state.unhalt_event.Deactivate();
   }
 
   return !sw.HasError();
@@ -502,7 +500,7 @@ ALWAYS_INLINE_RELEASE bool DMA::CanTransferChannel(Channel channel, bool ignore_
 
 bool DMA::IsTransferHalted()
 {
-  return s_state.unhalt_event->IsActive();
+  return s_state.unhalt_event.IsActive();
 }
 
 void DMA::UpdateIRQ()
@@ -733,7 +731,7 @@ bool DMA::TransferChannel()
         if (cs.request)
         {
           // we got halted
-          if (!s_state.unhalt_event->IsActive())
+          if (!s_state.unhalt_event.IsActive())
             HaltTransfer(s_state.halt_ticks);
 
           return false;
@@ -757,18 +755,18 @@ void DMA::HaltTransfer(TickCount duration)
 {
   s_state.halt_ticks_remaining += duration;
   DEBUG_LOG("Halting DMA for {} ticks", s_state.halt_ticks_remaining);
-  if (s_state.unhalt_event->IsActive())
+  if (s_state.unhalt_event.IsActive())
     return;
 
-  DebugAssert(!s_state.unhalt_event->IsActive());
-  s_state.unhalt_event->SetIntervalAndSchedule(s_state.halt_ticks_remaining);
+  DebugAssert(!s_state.unhalt_event.IsActive());
+  s_state.unhalt_event.SetIntervalAndSchedule(s_state.halt_ticks_remaining);
 }
 
 void DMA::UnhaltTransfer(void*, TickCount ticks, TickCount ticks_late)
 {
   DEBUG_LOG("Resuming DMA after {} ticks, {} ticks late", ticks, -(s_state.halt_ticks_remaining - ticks));
   s_state.halt_ticks_remaining -= ticks;
-  s_state.unhalt_event->Deactivate();
+  s_state.unhalt_event.Deactivate();
 
   // TODO: Use channel priority. But doing it in ascending order is probably good enough.
   // Main thing is that OTC happens after GPU, because otherwise it'll wipe out the LL.

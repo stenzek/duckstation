@@ -151,7 +151,7 @@ struct MDECState
   u16 current_q_scale = 0;
 
   alignas(16) std::array<u32, 256> block_rgb{};
-  std::unique_ptr<TimingEvent> block_copy_out_event;
+  TimingEvent block_copy_out_event{"MDEC Block Copy Out", 1, 1, &MDEC::CopyOutBlock, nullptr};
 
   u32 total_blocks_decoded = 0;
 };
@@ -162,20 +162,18 @@ ALIGN_TO_CACHE_LINE static MDECState s_state;
 
 void MDEC::Initialize()
 {
-  s_state.block_copy_out_event =
-    TimingEvents::CreateTimingEvent("MDEC Block Copy Out", 1, 1, &MDEC::CopyOutBlock, nullptr, false);
   s_state.total_blocks_decoded = 0;
   Reset();
 }
 
 void MDEC::Shutdown()
 {
-  s_state.block_copy_out_event.reset();
+  s_state.block_copy_out_event.Deactivate();
 }
 
 void MDEC::Reset()
 {
-  s_state.block_copy_out_event->Deactivate();
+  s_state.block_copy_out_event.Deactivate();
   SoftReset();
 }
 
@@ -211,7 +209,7 @@ bool MDEC::DoState(StateWrapper& sw)
   bool block_copy_out_pending = HasPendingBlockCopyOut();
   sw.Do(&block_copy_out_pending);
   if (sw.IsReading())
-    s_state.block_copy_out_event->SetState(block_copy_out_pending);
+    s_state.block_copy_out_event.SetState(block_copy_out_pending);
 
   return !sw.HasError();
 }
@@ -304,7 +302,7 @@ void MDEC::DMAWrite(const u32* words, u32 word_count)
 
 bool MDEC::HasPendingBlockCopyOut()
 {
-  return s_state.block_copy_out_event->IsActive();
+  return s_state.block_copy_out_event.IsActive();
 }
 
 void MDEC::SoftReset()
@@ -319,7 +317,7 @@ void MDEC::SoftReset()
   s_state.current_block = 0;
   s_state.current_coefficient = 64;
   s_state.current_q_scale = 0;
-  s_state.block_copy_out_event->Deactivate();
+  s_state.block_copy_out_event.Deactivate();
   UpdateStatus();
 }
 
@@ -358,7 +356,7 @@ u32 MDEC::ReadDataRegister()
     if (HasPendingBlockCopyOut())
     {
       DEV_LOG("MDEC data out FIFO empty on read - stalling CPU");
-      CPU::AddPendingTicks(s_state.block_copy_out_event->GetTicksUntilNextExecution());
+      CPU::AddPendingTicks(s_state.block_copy_out_event.GetTicksUntilNextExecution());
     }
     else
     {
@@ -617,13 +615,13 @@ void MDEC::ScheduleBlockCopyOut(TickCount ticks)
   DebugAssert(!HasPendingBlockCopyOut());
   DEBUG_LOG("Scheduling block copy out in {} ticks", ticks);
 
-  s_state.block_copy_out_event->SetIntervalAndSchedule(ticks);
+  s_state.block_copy_out_event.SetIntervalAndSchedule(ticks);
 }
 
 void MDEC::CopyOutBlock(void* param, TickCount ticks, TickCount ticks_late)
 {
   Assert(s_state.state == State::WritingMacroblock);
-  s_state.block_copy_out_event->Deactivate();
+  s_state.block_copy_out_event.Deactivate();
 
   switch (s_state.status.data_output_depth)
   {

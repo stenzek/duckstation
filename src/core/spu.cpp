@@ -355,8 +355,9 @@ static void CreateOutputStream();
 namespace {
 struct SPUState
 {
-  std::unique_ptr<TimingEvent> s_tick_event;
-  std::unique_ptr<TimingEvent> transfer_event;
+  TimingEvent transfer_event{"SPU Transfer", TRANSFER_TICKS_PER_HALFWORD, TRANSFER_TICKS_PER_HALFWORD,
+                             &SPU::ExecuteTransfer, nullptr};
+  TimingEvent tick_event{"SPU Sample", SYSCLK_TICKS_PER_SPU_TICK, SYSCLK_TICKS_PER_SPU_TICK, &SPU::Execute, nullptr};
 
   TickCount ticks_carry = 0;
   TickCount cpu_ticks_per_spu_tick = 0;
@@ -426,10 +427,8 @@ void SPU::Initialize()
   // (X * D) / N / 768 -> (X * D) / (N * 768)
   s_state.cpu_ticks_per_spu_tick = System::ScaleTicksToOverclock(SYSCLK_TICKS_PER_SPU_TICK);
   s_state.cpu_tick_divider = static_cast<TickCount>(g_settings.cpu_overclock_numerator * SYSCLK_TICKS_PER_SPU_TICK);
-  s_state.s_tick_event = TimingEvents::CreateTimingEvent("SPU Sample", s_state.cpu_ticks_per_spu_tick,
-                                                         s_state.cpu_ticks_per_spu_tick, &SPU::Execute, nullptr, false);
-  s_state.transfer_event = TimingEvents::CreateTimingEvent(
-    "SPU Transfer", TRANSFER_TICKS_PER_HALFWORD, TRANSFER_TICKS_PER_HALFWORD, &SPU::ExecuteTransfer, nullptr, false);
+  s_state.tick_event.SetInterval(s_state.cpu_ticks_per_spu_tick);
+  s_state.tick_event.SetPeriod(s_state.cpu_ticks_per_spu_tick);
   s_state.null_audio_stream = AudioStream::CreateNullStream(SAMPLE_RATE, g_settings.audio_stream_parameters.buffer_ms);
 
   CreateOutputStream();
@@ -482,8 +481,8 @@ void SPU::CPUClockChanged()
 void SPU::Shutdown()
 {
   StopDumpingAudio();
-  s_state.s_tick_event.reset();
-  s_state.transfer_event.reset();
+  s_state.tick_event.Deactivate();
+  s_state.transfer_event.Deactivate();
   s_state.audio_stream.reset();
 }
 
@@ -539,8 +538,8 @@ void SPU::Reset()
     v.ignore_loop_address = false;
   }
 
-  s_state.s_tick_event->Deactivate();
-  s_state.transfer_event->Deactivate();
+  s_state.tick_event.Deactivate();
+  s_state.transfer_event.Deactivate();
   s_state.transfer_fifo.Clear();
   s_ram.fill(0);
   UpdateEventInterval();
@@ -885,7 +884,7 @@ void SPU::WriteRegister(u32 offset, u16 value)
     case 0x1F801DA6 - SPU_BASE:
     {
       DEBUG_LOG("SPU transfer address register <- 0x{:04X}", value);
-      s_state.transfer_event->InvokeEarly();
+      s_state.transfer_event.InvokeEarly();
       s_state.transfer_address_reg = value;
       s_state.transfer_address = ZeroExtend32(value) * 8;
       if (IsRAMIRQTriggerable() && CheckRAMIRQ(s_state.transfer_address))
@@ -1283,14 +1282,14 @@ void SPU::ExecuteTransfer(void* param, TickCount ticks, TickCount ticks_late)
     if (s_state.transfer_fifo.IsFull())
     {
       s_state.SPUSTAT.transfer_busy = false;
-      s_state.transfer_event->Deactivate();
+      s_state.transfer_event.Deactivate();
       return;
     }
 
     s_state.SPUSTAT.transfer_busy = true;
     const TickCount ticks_until_complete =
       TickCount(s_state.transfer_fifo.GetSpace() * u32(TRANSFER_TICKS_PER_HALFWORD)) + ((ticks < 0) ? -ticks : 0);
-    s_state.transfer_event->Schedule(ticks_until_complete);
+    s_state.transfer_event.Schedule(ticks_until_complete);
   }
   else
   {
@@ -1307,14 +1306,14 @@ void SPU::ExecuteTransfer(void* param, TickCount ticks, TickCount ticks_late)
     if (s_state.transfer_fifo.IsEmpty())
     {
       s_state.SPUSTAT.transfer_busy = false;
-      s_state.transfer_event->Deactivate();
+      s_state.transfer_event.Deactivate();
       return;
     }
 
     s_state.SPUSTAT.transfer_busy = true;
     const TickCount ticks_until_complete =
       TickCount(s_state.transfer_fifo.GetSize() * u32(TRANSFER_TICKS_PER_HALFWORD)) + ((ticks < 0) ? -ticks : 0);
-    s_state.transfer_event->Schedule(ticks_until_complete);
+    s_state.transfer_event.Schedule(ticks_until_complete);
   }
 }
 
@@ -1343,26 +1342,26 @@ void SPU::UpdateTransferEvent()
   const RAMTransferMode mode = s_state.SPUCNT.ram_transfer_mode;
   if (mode == RAMTransferMode::Stopped)
   {
-    s_state.transfer_event->Deactivate();
+    s_state.transfer_event.Deactivate();
   }
   else if (mode == RAMTransferMode::DMARead)
   {
     // transfer event fills the fifo
     if (s_state.transfer_fifo.IsFull())
-      s_state.transfer_event->Deactivate();
-    else if (!s_state.transfer_event->IsActive())
-      s_state.transfer_event->Schedule(TickCount(s_state.transfer_fifo.GetSpace() * u32(TRANSFER_TICKS_PER_HALFWORD)));
+      s_state.transfer_event.Deactivate();
+    else if (!s_state.transfer_event.IsActive())
+      s_state.transfer_event.Schedule(TickCount(s_state.transfer_fifo.GetSpace() * u32(TRANSFER_TICKS_PER_HALFWORD)));
   }
   else
   {
     // transfer event copies from fifo to ram
     if (s_state.transfer_fifo.IsEmpty())
-      s_state.transfer_event->Deactivate();
-    else if (!s_state.transfer_event->IsActive())
-      s_state.transfer_event->Schedule(TickCount(s_state.transfer_fifo.GetSize() * u32(TRANSFER_TICKS_PER_HALFWORD)));
+      s_state.transfer_event.Deactivate();
+    else if (!s_state.transfer_event.IsActive())
+      s_state.transfer_event.Schedule(TickCount(s_state.transfer_fifo.GetSize() * u32(TRANSFER_TICKS_PER_HALFWORD)));
   }
 
-  s_state.SPUSTAT.transfer_busy = s_state.transfer_event->IsActive();
+  s_state.SPUSTAT.transfer_busy = s_state.transfer_event.IsActive();
 }
 
 void SPU::UpdateDMARequest()
@@ -1480,10 +1479,10 @@ void SPU::DMAWrite(const u32* words, u32 word_count)
 
 void SPU::GeneratePendingSamples()
 {
-  if (s_state.transfer_event->IsActive())
-    s_state.transfer_event->InvokeEarly();
+  if (s_state.transfer_event.IsActive())
+    s_state.transfer_event.InvokeEarly();
 
-  const TickCount ticks_pending = s_state.s_tick_event->GetTicksSinceLastExecution();
+  const TickCount ticks_pending = s_state.tick_event.GetTicksSinceLastExecution();
   TickCount frames_to_execute;
   if (g_settings.cpu_overclock_active)
   {
@@ -1494,11 +1493,11 @@ void SPU::GeneratePendingSamples()
   else
   {
     frames_to_execute =
-      (s_state.s_tick_event->GetTicksSinceLastExecution() + s_state.ticks_carry) / SYSCLK_TICKS_PER_SPU_TICK;
+      (s_state.tick_event.GetTicksSinceLastExecution() + s_state.ticks_carry) / SYSCLK_TICKS_PER_SPU_TICK;
   }
 
   const bool force_exec = (frames_to_execute > 0);
-  s_state.s_tick_event->InvokeEarly(force_exec);
+  s_state.tick_event.InvokeEarly(force_exec);
 }
 
 bool SPU::IsDumpingAudio()
@@ -2446,18 +2445,18 @@ void SPU::UpdateEventInterval()
   // TODO: Make this predict how long until the interrupt will be hit instead...
   const u32 interval = (s_state.SPUCNT.enable && s_state.SPUCNT.irq9_enable) ? 1 : max_slice_frames;
   const TickCount interval_ticks = static_cast<TickCount>(interval) * s_state.cpu_ticks_per_spu_tick;
-  if (s_state.s_tick_event->IsActive() && s_state.s_tick_event->GetInterval() == interval_ticks)
+  if (s_state.tick_event.IsActive() && s_state.tick_event.GetInterval() == interval_ticks)
     return;
 
   // Ensure all pending ticks have been executed, since we won't get them back after rescheduling.
-  s_state.s_tick_event->InvokeEarly(true);
-  s_state.s_tick_event->SetInterval(interval_ticks);
+  s_state.tick_event.InvokeEarly(true);
+  s_state.tick_event.SetInterval(interval_ticks);
 
   TickCount downcount = interval_ticks;
   if (!g_settings.cpu_overclock_active)
     downcount -= s_state.ticks_carry;
 
-  s_state.s_tick_event->Schedule(downcount);
+  s_state.tick_event.Schedule(downcount);
 }
 
 void SPU::DrawDebugStateWindow()
@@ -2534,7 +2533,7 @@ void SPU::DrawDebugStateWindow()
 
     ImGui::Text("Transfer FIFO: ");
     ImGui::SameLine(offsets[0]);
-    ImGui::TextColored(s_state.transfer_event->IsActive() ? active_color : inactive_color, "%u halfwords (%u bytes)",
+    ImGui::TextColored(s_state.transfer_event.IsActive() ? active_color : inactive_color, "%u halfwords (%u bytes)",
                        s_state.transfer_fifo.GetSize(), s_state.transfer_fifo.GetSize() * 2);
   }
 
