@@ -22,6 +22,23 @@ void AsyncRefreshProgressCallback::Cancel()
   m_cancelled = true;
 }
 
+void AsyncRefreshProgressCallback::PushState()
+{
+  ProgressCallback::PushState();
+}
+
+void AsyncRefreshProgressCallback::PopState()
+{
+  ProgressCallback::PopState();
+
+  if (static_cast<int>(m_progress_range) == m_last_range && static_cast<int>(m_progress_value) == m_last_value)
+    return;
+
+  m_last_range = static_cast<int>(m_progress_range);
+  m_last_value = static_cast<int>(m_progress_value);
+  fireUpdate();
+}
+
 void AsyncRefreshProgressCallback::SetStatusText(const std::string_view text)
 {
   const QString new_text = QtUtils::StringViewToQString(text);

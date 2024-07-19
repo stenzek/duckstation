@@ -18,6 +18,9 @@ public:
 
   void Cancel();
 
+  void PushState() override;
+  void PopState() override;
+
   void SetStatusText(const std::string_view text) override;
   void SetProgressRange(u32 range) override;
   void SetProgressValue(u32 value) override;
