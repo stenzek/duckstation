@@ -65,7 +65,7 @@ ALWAYS_INLINE static bool CompareICacheTag(VirtualMemoryAddress address)
 TickCount GetInstructionReadTicks(VirtualMemoryAddress address);
 TickCount GetICacheFillTicks(VirtualMemoryAddress address);
 u32 FillICache(VirtualMemoryAddress address);
-void CheckAndUpdateICacheTags(u32 line_count, TickCount uncached_ticks);
+void CheckAndUpdateICacheTags(u32 line_count);
 
 ALWAYS_INLINE static Segment GetSegmentForAddress(VirtualMemoryAddress address)
 {

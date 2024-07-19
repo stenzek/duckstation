@@ -94,6 +94,8 @@ enum class BlockFlags : u8
   ContainsLoadStoreInstructions = (1 << 0),
   SpansPages = (1 << 1),
   BranchDelaySpansPages = (1 << 2),
+  IsUsingICache = (1 << 3),
+  NeedsDynamicFetchTicks = (1 << 4),
 };
 IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(BlockFlags);
 

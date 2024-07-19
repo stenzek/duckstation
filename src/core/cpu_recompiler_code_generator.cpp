@@ -926,6 +926,14 @@ Value CodeGenerator::NotValue(const Value& val)
   return res;
 }
 
+const TickCount* CodeGenerator::GetFetchMemoryAccessTimePtr() const
+{
+  const TickCount* ptr =
+    Bus::GetMemoryAccessTimePtr(m_block->pc & PHYSICAL_MEMORY_ADDRESS_MASK, MemoryAccessSize::Word);
+  AssertMsg(ptr, "Address has dynamic fetch ticks");
+  return ptr;
+}
+
 void CodeGenerator::GenerateExceptionExit(Instruction instruction, const CodeCache::InstructionInfo& info,
                                           Exception excode, Condition condition /* = Condition::Always */)
 {
@@ -996,8 +1004,7 @@ void CodeGenerator::BlockPrologue()
       EmitFunctionCall(nullptr, &CPU::HandleB0Syscall);
   }
 
-  if (m_block->uncached_fetch_ticks > 0 || m_block->icache_line_count > 0)
-    EmitICacheCheckAndUpdate();
+  EmitICacheCheckAndUpdate();
 
   // we don't know the state of the last block, so assume load delays might be in progress
   // TODO: Pull load delay into register cache

@@ -140,6 +140,20 @@ void CPU::Recompiler::armEmitCondBranch(vixl::aarch32::Assembler* armAsm, vixl::
   }
 }
 
+void CPU::Recompiler::armEmitFarLoad(vixl::aarch32::Assembler* armAsm, const vixl::aarch32::Register& reg,
+                                     const void* addr)
+{
+  armMoveAddressToReg(armAsm, reg, addr);
+  armAsm->ldr(reg, vixl::aarch32::MemOperand(reg));
+}
+
+void CPU::Recompiler::armEmitFarStore(vixl::aarch32::Assembler* armAsm, const vixl::aarch32::Register& reg,
+                                      const void* addr, const vixl::aarch64::Register& tempreg)
+{
+  armMoveAddressToReg(armAsm, tempreg, addr);
+  armAsm->str(reg, vixl::aarch32::MemOperand(tempreg));
+}
+
 void CPU::CodeCache::DisassembleAndLogHostCode(const void* start, u32 size)
 {
 #ifdef ENABLE_HOST_DISASSEMBLY
@@ -1913,12 +1927,24 @@ void CodeGenerator::EmitCancelInterpreterLoadDelayForReg(Reg reg)
 
 void CodeGenerator::EmitICacheCheckAndUpdate()
 {
-  if (GetSegmentForAddress(m_pc) >= Segment::KSEG1)
+  if (!m_block->HasFlag(CodeCache::BlockFlags::IsUsingICache))
   {
-    EmitAddCPUStructField(OFFSETOF(State, pending_ticks),
-                          Value::FromConstantU32(static_cast<u32>(m_block->uncached_fetch_ticks)));
+    if (m_block->HasFlag(CodeCache::BlockFlags::NeedsDynamicFetchTicks))
+    {
+      armEmitFarLoad(m_emit, RARG2, GetFetchMemoryAccessTimePtr());
+      m_emit->ldr(RARG1, a32::MemOperand(GetCPUPtrReg(), OFFSETOF(State, pending_ticks)));
+      m_emit->Mov(RARG3, m_block->size);
+      m_emit->mul(RARG2, RARG2, RARG3);
+      m_emit->add(RARG1, RARG1, RARG2);
+      m_emit->str(RARG1, a32::MemOperand(GetCPUPtrReg(), OFFSETOF(State, pending_ticks)));
+    }
+    else
+    {
+      EmitAddCPUStructField(OFFSETOF(State, pending_ticks),
+                            Value::FromConstantU32(static_cast<u32>(m_block->uncached_fetch_ticks)));
+    }
   }
-  else
+  else if (m_block->icache_line_count > 0)
   {
     const auto& ticks_reg = a32::r0;
     const auto& current_tag_reg = a32::r1;

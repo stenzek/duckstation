@@ -27,6 +27,7 @@ using namespace vixl::aarch64;
 
 using CPU::Recompiler::armEmitCall;
 using CPU::Recompiler::armEmitCondBranch;
+using CPU::Recompiler::armEmitFarLoad;
 using CPU::Recompiler::armEmitJmp;
 using CPU::Recompiler::armEmitMov;
 using CPU::Recompiler::armGetJumpTrampoline;
@@ -274,13 +275,25 @@ void CPU::NewRec::AArch64Compiler::GenerateBlockProtectCheck(const u8* ram_ptr, 
 
 void CPU::NewRec::AArch64Compiler::GenerateICacheCheckAndUpdate()
 {
-  if (GetSegmentForAddress(m_block->pc) >= Segment::KSEG1)
+  if (!m_block->HasFlag(CodeCache::BlockFlags::IsUsingICache))
   {
-    armAsm->ldr(RWARG1, PTR(&g_state.pending_ticks));
-    armAsm->add(RWARG1, RWARG1, armCheckAddSubConstant(static_cast<u32>(m_block->uncached_fetch_ticks)));
-    armAsm->str(RWARG1, PTR(&g_state.pending_ticks));
+    if (m_block->HasFlag(CodeCache::BlockFlags::NeedsDynamicFetchTicks))
+    {
+      armEmitFarLoad(armAsm, RWARG2, GetFetchMemoryAccessTimePtr());
+      armAsm->ldr(RWARG1, PTR(&g_state.pending_ticks));
+      armEmitMov(armAsm, RWARG3, m_block->size);
+      armAsm->mul(RWARG2, RWARG2, RWARG3);
+      armAsm->add(RWARG1, RWARG1, RWARG2);
+      armAsm->str(RWARG1, PTR(&g_state.pending_ticks));
+    }
+    else
+    {
+      armAsm->ldr(RWARG1, PTR(&g_state.pending_ticks));
+      armAsm->add(RWARG1, RWARG1, armCheckAddSubConstant(static_cast<u32>(m_block->uncached_fetch_ticks)));
+      armAsm->str(RWARG1, PTR(&g_state.pending_ticks));
+    }
   }
-  else
+  else if (m_block->icache_line_count > 0)
   {
     const auto& ticks_reg = RWARG1;
     const auto& current_tag_reg = RWARG2;

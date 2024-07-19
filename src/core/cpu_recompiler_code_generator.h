@@ -198,6 +198,8 @@ public:
   Value XorValues(const Value& lhs, const Value& rhs);
   Value NotValue(const Value& val);
 
+  const TickCount* GetFetchMemoryAccessTimePtr() const;
+
   // Raising exception if condition is true.
   void GenerateExceptionExit(Instruction instruction, const CodeCache::InstructionInfo& info, Exception excode,
                              Condition condition = Condition::Always);

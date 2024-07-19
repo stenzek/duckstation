@@ -28,6 +28,7 @@ using namespace vixl::aarch32;
 
 using CPU::Recompiler::armEmitCall;
 using CPU::Recompiler::armEmitCondBranch;
+using CPU::Recompiler::armEmitFarLoad;
 using CPU::Recompiler::armEmitJmp;
 using CPU::Recompiler::armEmitMov;
 using CPU::Recompiler::armGetJumpTrampoline;
@@ -302,13 +303,25 @@ bool foo(const void* a, const void* b)
 
 void CPU::NewRec::AArch32Compiler::GenerateICacheCheckAndUpdate()
 {
-  if (GetSegmentForAddress(m_block->pc) >= Segment::KSEG1)
+  if (!m_block->HasFlag(CodeCache::BlockFlags::IsUsingICache))
   {
-    armAsm->ldr(RARG1, PTR(&g_state.pending_ticks));
-    armAsm->add(RARG1, RARG1, armCheckAddSubConstant(static_cast<u32>(m_block->uncached_fetch_ticks)));
-    armAsm->str(RARG1, PTR(&g_state.pending_ticks));
+    if (m_block->HasFlag(CodeCache::BlockFlags::NeedsDynamicFetchTicks))
+    {
+      armEmitFarLoad(armAsm, RARG2, GetFetchMemoryAccessTimePtr());
+      armAsm->ldr(RARG1, PTR(&g_state.pending_ticks));
+      armEmitMov(armAsm, RARG3, m_block->size);
+      armAsm->mul(RARG2, RARG2, RARG3);
+      armAsm->add(RARG1, RARG1, RARG2);
+      armAsm->str(RARG1, PTR(&g_state.pending_ticks));
+    }
+    else
+    {
+      armAsm->ldr(RARG1, PTR(&g_state.pending_ticks));
+      armAsm->add(RARG1, RARG1, armCheckAddSubConstant(static_cast<u32>(m_block->uncached_fetch_ticks)));
+      armAsm->str(RARG1, PTR(&g_state.pending_ticks));
+    }
   }
-  else
+  else if (m_block->icache_line_count > 0)
   {
     const auto& ticks_reg = RARG1;
     const auto& current_tag_reg = RARG2;

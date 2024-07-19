@@ -2782,12 +2782,21 @@ void CodeGenerator::EmitCancelInterpreterLoadDelayForReg(Reg reg)
 
 void CodeGenerator::EmitICacheCheckAndUpdate()
 {
-  if (GetSegmentForAddress(m_pc) >= Segment::KSEG1)
+  if (!m_block->HasFlag(CodeCache::BlockFlags::IsUsingICache))
   {
-    m_emit->add(m_emit->dword[GetCPUPtrReg() + OFFSETOF(State, pending_ticks)],
-                static_cast<u32>(m_block->uncached_fetch_ticks));
+    if (m_block->HasFlag(CodeCache::BlockFlags::NeedsDynamicFetchTicks))
+    {
+      m_emit->mov(m_emit->eax, m_block->size);
+      m_emit->mul(m_emit->dword[m_emit->rip + GetFetchMemoryAccessTimePtr()]);
+      m_emit->add(m_emit->dword[GetCPUPtrReg() + OFFSETOF(State, pending_ticks)], m_emit->eax);
+    }
+    else
+    {
+      m_emit->add(m_emit->dword[GetCPUPtrReg() + OFFSETOF(State, pending_ticks)],
+                  static_cast<u32>(m_block->uncached_fetch_ticks));
+    }
   }
-  else
+  else if (m_block->icache_line_count > 0)
   {
     VirtualMemoryAddress current_pc = m_pc & ICACHE_TAG_ADDRESS_MASK;
     for (u32 i = 0; i < m_block->icache_line_count; i++, current_pc += ICACHE_LINE_SIZE)

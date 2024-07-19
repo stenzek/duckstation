@@ -179,9 +179,18 @@ void CPU::NewRec::X64Compiler::GenerateBlockProtectCheck(const u8* ram_ptr, cons
 
 void CPU::NewRec::X64Compiler::GenerateICacheCheckAndUpdate()
 {
-  if (GetSegmentForAddress(m_block->pc) >= Segment::KSEG1)
+  if (!m_block->HasFlag(CodeCache::BlockFlags::IsUsingICache))
   {
-    cg->add(cg->dword[PTR(&g_state.pending_ticks)], static_cast<u32>(m_block->uncached_fetch_ticks));
+    if (m_block->HasFlag(CodeCache::BlockFlags::NeedsDynamicFetchTicks))
+    {
+      cg->mov(cg->eax, m_block->size);
+      cg->mul(cg->dword[cg->rip + GetFetchMemoryAccessTimePtr()]);
+      cg->add(cg->dword[PTR(&g_state.pending_ticks)], cg->eax);
+    }
+    else
+    {
+      cg->add(cg->dword[PTR(&g_state.pending_ticks)], static_cast<u32>(m_block->uncached_fetch_ticks));
+    }
   }
   else if (m_block->icache_line_count > 0)
   {

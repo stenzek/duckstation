@@ -201,6 +201,8 @@ protected:
   void SetCompilerPC(u32 newpc);
   void TruncateBlock();
 
+  const TickCount* GetFetchMemoryAccessTimePtr() const;
+
   virtual const void* GetCurrentCodePointer() = 0;
 
   virtual void Reset(CodeCache::Block* block, u8* code_buffer, u32 code_buffer_space, u8* far_code_buffer,

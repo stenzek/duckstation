@@ -708,6 +708,15 @@ bool Bus::HasCodePagesInRange(PhysicalMemoryAddress start_address, u32 size)
   return false;
 }
 
+const TickCount* Bus::GetMemoryAccessTimePtr(PhysicalMemoryAddress address, MemoryAccessSize size)
+{
+  // Currently only BIOS, but could be EXP1 as well.
+  if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_MIRROR_SIZE))
+    return &g_bios_access_time[static_cast<size_t>(size)];
+
+  return nullptr;
+}
+
 std::optional<Bus::MemoryRegion> Bus::GetMemoryRegionForAddress(PhysicalMemoryAddress address)
 {
   if (address < RAM_2MB_SIZE)

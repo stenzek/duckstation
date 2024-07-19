@@ -40,6 +40,7 @@ using namespace biscuit;
 using CPU::Recompiler::rvEmitCall;
 using CPU::Recompiler::rvEmitDSExtW;
 using CPU::Recompiler::rvEmitDUExtW;
+using CPU::Recompiler::rvEmitFarLoad;
 using CPU::Recompiler::rvEmitJmp;
 using CPU::Recompiler::rvEmitMov;
 using CPU::Recompiler::rvEmitMov64;
@@ -128,6 +129,25 @@ u32 CPU::Recompiler::rvEmitJmp(biscuit::Assembler* rvAsm, const void* ptr, const
 u32 CPU::Recompiler::rvEmitCall(biscuit::Assembler* rvAsm, const void* ptr)
 {
   return rvEmitJmp(rvAsm, ptr, biscuit::ra);
+}
+
+void CPU::Recompiler::rvEmitFarLoad(biscuit::Assembler* rvAsm, const biscuit::GPR& reg, const void* addr,
+                                    bool sign_extend_word)
+{
+  const auto [hi, lo] = rvGetAddressImmediates(rvAsm->GetCursorPointer(), addr);
+  rvAsm->AUIPC(reg, hi);
+  if (sign_extend_word)
+    rvAsm->LW(reg, lo, reg);
+  else
+    rvAsm->LWU(reg, lo, reg);
+}
+
+void CPU::Recompiler::rvEmitFarStore(biscuit::Assembler* rvAsm, const biscuit::GPR& reg, const void* addr,
+                                     const biscuit::GPR& tempreg)
+{
+  const auto [hi, lo] = rvGetAddressImmediates(rvAsm->GetCursorPointer(), addr);
+  rvAsm->AUIPC(tempreg, hi);
+  rvAsm->SW(reg, lo, tempreg);
 }
 
 void CPU::Recompiler::rvEmitSExtB(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs)
@@ -525,13 +545,25 @@ void CPU::NewRec::RISCV64Compiler::GenerateBlockProtectCheck(const u8* ram_ptr, 
 
 void CPU::NewRec::RISCV64Compiler::GenerateICacheCheckAndUpdate()
 {
-  if (GetSegmentForAddress(m_block->pc) >= Segment::KSEG1)
+  if (!m_block->HasFlag(CodeCache::BlockFlags::IsUsingICache))
   {
-    rvAsm->LW(RARG1, PTR(&g_state.pending_ticks));
-    SafeADDIW(RARG1, RARG1, static_cast<u32>(m_block->uncached_fetch_ticks));
-    rvAsm->SW(RARG1, PTR(&g_state.pending_ticks));
+    if (m_block->HasFlag(CodeCache::BlockFlags::NeedsDynamicFetchTicks))
+    {
+      rvEmitFarLoad(rvAsm, RARG2, GetFetchMemoryAccessTimePtr());
+      rvAsm->LW(RARG1, PTR(&g_state.pending_ticks));
+      rvEmitMov(rvAsm, RARG3, m_block->size);
+      rvAsm->MULW(RARG2, RARG2, RARG3);
+      rvAsm->ADD(RARG1, RARG1, RARG2);
+      rvAsm->SW(RARG1, PTR(&g_state.pending_ticks));
+    }
+    else
+    {
+      rvAsm->LW(RARG1, PTR(&g_state.pending_ticks));
+      SafeADDIW(RARG1, RARG1, static_cast<u32>(m_block->uncached_fetch_ticks));
+      rvAsm->SW(RARG1, PTR(&g_state.pending_ticks));
+    }
   }
-  else
+  else if (m_block->icache_line_count > 0)
   {
     const auto& ticks_reg = RARG1;
     const auto& current_tag_reg = RARG2;

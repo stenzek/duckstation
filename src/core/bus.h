@@ -191,6 +191,9 @@ ALWAYS_INLINE TickCount GetDMARAMTickCount(u32 word_count)
   return static_cast<TickCount>(word_count + ((word_count + 15) / 16));
 }
 
+/// Returns a pointer to the cycle count for a non-RAM memory access.
+const TickCount* GetMemoryAccessTimePtr(PhysicalMemoryAddress address, MemoryAccessSize size);
+
 enum class MemoryRegion
 {
   RAM,

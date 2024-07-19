@@ -77,8 +77,7 @@ void CPU::NewRec::Compiler::BeginBlock()
     GenerateBlockProtectCheck(ram_ptr, shadow_ptr, m_block->size * sizeof(Instruction));
   }
 
-  if (m_block->uncached_fetch_ticks > 0 || m_block->icache_line_count > 0)
-    GenerateICacheCheckAndUpdate();
+  GenerateICacheCheckAndUpdate();
 
   if (g_settings.bios_tty_logging)
   {
@@ -1717,6 +1716,14 @@ void CPU::NewRec::Compiler::TruncateBlock()
 {
   m_block->size = ((m_current_instruction_pc - m_block->pc) / sizeof(Instruction)) + 1;
   iinfo->is_last_instruction = true;
+}
+
+const TickCount* CPU::NewRec::Compiler::GetFetchMemoryAccessTimePtr() const
+{
+  const TickCount* ptr =
+    Bus::GetMemoryAccessTimePtr(m_block->pc & PHYSICAL_MEMORY_ADDRESS_MASK, MemoryAccessSize::Word);
+  AssertMsg(ptr, "Address has dynamic fetch ticks");
+  return ptr;
 }
 
 void CPU::NewRec::Compiler::FlushForLoadStore(const std::optional<VirtualMemoryAddress>& address, bool store,

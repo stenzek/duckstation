@@ -93,6 +93,9 @@ void armEmitMov(vixl::aarch32::Assembler* armAsm, const vixl::aarch32::Register&
 void armEmitJmp(vixl::aarch32::Assembler* armAsm, const void* ptr, bool force_inline);
 void armEmitCall(vixl::aarch32::Assembler* armAsm, const void* ptr, bool force_inline);
 void armEmitCondBranch(vixl::aarch32::Assembler* armAsm, vixl::aarch32::Condition cond, const void* ptr);
+void armEmitFarLoad(vixl::aarch32::Assembler* armAsm, const vixl::aarch32::Register& reg, const void* addr);
+void armEmitFarStore(vixl::aarch32::Assembler* armAsm, const vixl::aarch32::Register& reg, const void* addr,
+                     const vixl::aarch32::Register& tempreg = RSCRATCH);
 u8* armGetJumpTrampoline(const void* target);
 
 } // namespace CPU::Recompiler
@@ -129,6 +132,10 @@ void armEmitMov(vixl::aarch64::Assembler* armAsm, const vixl::aarch64::Register&
 void armEmitJmp(vixl::aarch64::Assembler* armAsm, const void* ptr, bool force_inline);
 void armEmitCall(vixl::aarch64::Assembler* armAsm, const void* ptr, bool force_inline);
 void armEmitCondBranch(vixl::aarch64::Assembler* armAsm, vixl::aarch64::Condition cond, const void* ptr);
+void armEmitFarLoad(vixl::aarch64::Assembler* armAsm, const vixl::aarch64::Register& reg, const void* addr,
+                    bool sign_extend_word = false);
+void armEmitFarStore(vixl::aarch64::Assembler* armAsm, const vixl::aarch64::Register& reg, const void* addr,
+                     const vixl::aarch64::Register& tempreg = RXSCRATCH);
 u8* armGetJumpTrampoline(const void* target);
 
 } // namespace CPU::Recompiler
@@ -157,8 +164,11 @@ std::pair<s32, s32> rvGetAddressImmediates(const void* cur, const void* target);
 void rvMoveAddressToReg(biscuit::Assembler* armAsm, const biscuit::GPR& reg, const void* addr);
 void rvEmitMov(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, u32 imm);
 void rvEmitMov64(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& scratch, u64 imm);
-u32 rvEmitJmp(biscuit::Assembler* armAsm, const void* ptr, const biscuit::GPR& link_reg = biscuit::zero);
-u32 rvEmitCall(biscuit::Assembler* armAsm, const void* ptr);
+u32 rvEmitJmp(biscuit::Assembler* rvAsm, const void* ptr, const biscuit::GPR& link_reg = biscuit::zero);
+u32 rvEmitCall(biscuit::Assembler* rvAsm, const void* ptr);
+void rvEmitFarLoad(biscuit::Assembler* rvAsm, const biscuit::GPR& reg, const void* addr, bool sign_extend_word = false);
+void rvEmitFarStore(biscuit::Assembler* rvAsm, const biscuit::GPR& reg, const void* addr,
+                    const biscuit::GPR& tempreg = RSCRATCH);
 void rvEmitSExtB(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs);  // -> word
 void rvEmitUExtB(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs);  // -> word
 void rvEmitSExtH(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs);  // -> word

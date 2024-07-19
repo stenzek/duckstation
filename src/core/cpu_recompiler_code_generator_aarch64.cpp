@@ -261,6 +261,61 @@ void CPU::Recompiler::armEmitCondBranch(a64::Assembler* armAsm, a64::Condition c
   }
 }
 
+void CPU::Recompiler::armEmitFarLoad(vixl::aarch64::Assembler* armAsm, const vixl::aarch64::Register& reg,
+                                     const void* addr, bool sign_extend_word)
+{
+  const void* cur = armAsm->GetCursorAddress<const void*>();
+  const void* current_code_ptr_page =
+    reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(cur) & ~static_cast<uintptr_t>(0xFFF));
+  const void* ptr_page =
+    reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(addr) & ~static_cast<uintptr_t>(0xFFF));
+  const s64 page_displacement = armGetPCDisplacement(current_code_ptr_page, ptr_page) >> 10;
+  const u32 page_offset = static_cast<u32>(reinterpret_cast<uintptr_t>(addr) & 0xFFFu);
+  a64::MemOperand memop;
+
+  const vixl::aarch64::Register xreg = reg.X();
+  if (vixl::IsInt21(page_displacement))
+  {
+    armAsm->adrp(xreg, page_displacement);
+    memop = vixl::aarch64::MemOperand(xreg, static_cast<int64_t>(page_offset));
+  }
+  else
+  {
+    armMoveAddressToReg(armAsm, xreg, addr);
+    memop = vixl::aarch64::MemOperand(xreg);
+  }
+
+  if (sign_extend_word)
+    armAsm->ldrsw(reg, memop);
+  else
+    armAsm->ldr(reg, memop);
+}
+
+void CPU::Recompiler::armEmitFarStore(vixl::aarch64::Assembler* armAsm, const vixl::aarch64::Register& reg,
+                                      const void* addr, const vixl::aarch64::Register& tempreg)
+{
+  DebugAssert(tempreg.IsX());
+
+  const void* cur = armAsm->GetCursorAddress<const void*>();
+  const void* current_code_ptr_page =
+    reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(cur) & ~static_cast<uintptr_t>(0xFFF));
+  const void* ptr_page =
+    reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(addr) & ~static_cast<uintptr_t>(0xFFF));
+  const s64 page_displacement = armGetPCDisplacement(current_code_ptr_page, ptr_page) >> 10;
+  const u32 page_offset = static_cast<u32>(reinterpret_cast<uintptr_t>(addr) & 0xFFFu);
+
+  if (vixl::IsInt21(page_displacement))
+  {
+    armAsm->adrp(tempreg, page_displacement);
+    armAsm->str(reg, vixl::aarch64::MemOperand(tempreg, static_cast<int64_t>(page_offset)));
+  }
+  else
+  {
+    armMoveAddressToReg(armAsm, tempreg, addr);
+    armAsm->str(reg, vixl::aarch64::MemOperand(tempreg));
+  }
+}
+
 u8* CPU::Recompiler::armGetJumpTrampoline(const void* target)
 {
   auto it = s_trampoline_targets.find(target);
@@ -2240,12 +2295,24 @@ void CodeGenerator::EmitCancelInterpreterLoadDelayForReg(Reg reg)
 
 void CodeGenerator::EmitICacheCheckAndUpdate()
 {
-  if (GetSegmentForAddress(m_pc) >= Segment::KSEG1)
+  if (!m_block->HasFlag(CodeCache::BlockFlags::IsUsingICache))
   {
-    EmitAddCPUStructField(OFFSETOF(State, pending_ticks),
-                          Value::FromConstantU32(static_cast<u32>(m_block->uncached_fetch_ticks)));
+    if (m_block->HasFlag(CodeCache::BlockFlags::NeedsDynamicFetchTicks))
+    {
+      armEmitFarLoad(m_emit, RWARG2, GetFetchMemoryAccessTimePtr());
+      m_emit->Ldr(RWARG1, a64::MemOperand(GetCPUPtrReg(), OFFSETOF(State, pending_ticks)));
+      m_emit->Mov(RWARG3, m_block->size);
+      m_emit->Mul(RWARG2, RWARG2, RWARG3);
+      m_emit->Add(RWARG1, RWARG1, RWARG2);
+      m_emit->Str(RWARG1, a64::MemOperand(GetCPUPtrReg(), OFFSETOF(State, pending_ticks)));
+    }
+    else
+    {
+      EmitAddCPUStructField(OFFSETOF(State, pending_ticks),
+                            Value::FromConstantU32(static_cast<u32>(m_block->uncached_fetch_ticks)));
+    }
   }
-  else
+  else if (m_block->icache_line_count > 0)
   {
     const auto& ticks_reg = a64::w0;
     const auto& current_tag_reg = a64::w1;

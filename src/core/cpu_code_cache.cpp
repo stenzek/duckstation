@@ -823,8 +823,20 @@ template<PGXPMode pgxp_mode>
       }
 
       DebugAssert(!(HasPendingInterrupt()));
-      if (g_settings.cpu_recompiler_icache)
-        CheckAndUpdateICacheTags(block->icache_line_count, block->uncached_fetch_ticks);
+      if (block->HasFlag(BlockFlags::IsUsingICache))
+      {
+        CheckAndUpdateICacheTags(block->icache_line_count);
+      }
+      else if (block->HasFlag(BlockFlags::NeedsDynamicFetchTicks))
+      {
+        AddPendingTicks(
+          static_cast<TickCount>(block->size * static_cast<u32>(*Bus::GetMemoryAccessTimePtr(
+                                                 block->pc & PHYSICAL_MEMORY_ADDRESS_MASK, MemoryAccessSize::Word))));
+      }
+      else
+      {
+        AddPendingTicks(block->uncached_fetch_ticks);
+      }
 
       InterpretCachedBlock<pgxp_mode>(block);
 
@@ -893,6 +905,9 @@ bool CPU::CodeCache::ReadBlockInstructions(u32 start_pc, BlockInstructionList* i
   // TODO: Jump to other block if it exists at this pc?
 
   const PageProtectionMode protection = GetProtectionModeForPC(start_pc);
+  const bool use_icache = CPU::IsCachedAddress(start_pc);
+  const bool dynamic_fetch_ticks = (!use_icache && Bus::GetMemoryAccessTimePtr(start_pc & PHYSICAL_MEMORY_ADDRESS_MASK,
+                                                                               MemoryAccessSize::Word) != nullptr);
   u32 pc = start_pc;
   bool is_branch_delay_slot = false;
   bool is_load_delay_slot = false;
@@ -905,7 +920,8 @@ bool CPU::CodeCache::ReadBlockInstructions(u32 start_pc, BlockInstructionList* i
   instructions->clear();
   metadata->icache_line_count = 0;
   metadata->uncached_fetch_ticks = 0;
-  metadata->flags = BlockFlags::None;
+  metadata->flags = use_icache ? BlockFlags::IsUsingICache :
+                                 (dynamic_fetch_ticks ? BlockFlags::NeedsDynamicFetchTicks : BlockFlags::None);
 
   u32 last_cache_line = ICACHE_LINES;
   u32 last_page = (protection == PageProtectionMode::WriteProtected) ? Bus::GetRAMCodePageIndex(start_pc) : 0;
@@ -956,17 +972,23 @@ bool CPU::CodeCache::ReadBlockInstructions(u32 start_pc, BlockInstructionList* i
     info.is_store_instruction = IsMemoryStoreInstruction(instruction);
     info.has_load_delay = InstructionHasLoadDelay(instruction);
 
-    if (g_settings.cpu_recompiler_icache)
+    if (use_icache)
     {
-      const u32 icache_line = GetICacheLine(pc);
-      if (icache_line != last_cache_line)
+      if (g_settings.cpu_recompiler_icache)
       {
-        metadata->icache_line_count++;
-        last_cache_line = icache_line;
+        const u32 icache_line = GetICacheLine(pc);
+        if (icache_line != last_cache_line)
+        {
+          metadata->icache_line_count++;
+          last_cache_line = icache_line;
+        }
       }
     }
+    else if (!dynamic_fetch_ticks)
+    {
+      metadata->uncached_fetch_ticks += GetInstructionReadTicks(pc);
+    }
 
-    metadata->uncached_fetch_ticks += GetInstructionReadTicks(pc);
     if (info.is_load_instruction || info.is_store_instruction)
       metadata->flags |= BlockFlags::ContainsLoadStoreInstructions;
 
@@ -1022,6 +1044,8 @@ bool CPU::CodeCache::ReadBlockInstructions(u32 start_pc, BlockInstructionList* i
 #ifdef _DEBUG
   SmallString disasm;
   DEBUG_LOG("Block at 0x{:08X}", start_pc);
+  DEBUG_LOG(" Uncached fetch ticks: {}", metadata->uncached_fetch_ticks);
+  DEBUG_LOG(" ICache line count: {}", metadata->icache_line_count);
   for (const auto& cbi : *instructions)
   {
     CPU::DisassembleInstruction(&disasm, cbi.second.pc, cbi.first.bits);

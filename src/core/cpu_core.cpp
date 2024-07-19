@@ -2620,7 +2620,7 @@ TickCount CPU::GetInstructionReadTicks(VirtualMemoryAddress address)
   {
     return RAM_READ_TICKS;
   }
-  else if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_SIZE))
+  else if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_MIRROR_SIZE))
   {
     return g_bios_access_time[static_cast<u32>(MemoryAccessSize::Word)];
   }
@@ -2640,7 +2640,7 @@ TickCount CPU::GetICacheFillTicks(VirtualMemoryAddress address)
   {
     return 1 * ((ICACHE_LINE_SIZE - (address & (ICACHE_LINE_SIZE - 1))) / sizeof(u32));
   }
-  else if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_SIZE))
+  else if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_MIRROR_SIZE))
   {
     return g_bios_access_time[static_cast<u32>(MemoryAccessSize::Word)] *
            ((ICACHE_LINE_SIZE - (address & (ICACHE_LINE_SIZE - 1))) / sizeof(u32));
@@ -2651,29 +2651,23 @@ TickCount CPU::GetICacheFillTicks(VirtualMemoryAddress address)
   }
 }
 
-void CPU::CheckAndUpdateICacheTags(u32 line_count, TickCount uncached_ticks)
+void CPU::CheckAndUpdateICacheTags(u32 line_count)
 {
   VirtualMemoryAddress current_pc = g_state.pc & ICACHE_TAG_ADDRESS_MASK;
-  if (IsCachedAddress(current_pc))
-  {
-    TickCount ticks = 0;
-    TickCount cached_ticks_per_line = GetICacheFillTicks(current_pc);
-    for (u32 i = 0; i < line_count; i++, current_pc += ICACHE_LINE_SIZE)
-    {
-      const u32 line = GetICacheLine(current_pc);
-      if (g_state.icache_tags[line] != current_pc)
-      {
-        g_state.icache_tags[line] = current_pc;
-        ticks += cached_ticks_per_line;
-      }
-    }
 
-    g_state.pending_ticks += ticks;
-  }
-  else
+  TickCount ticks = 0;
+  TickCount cached_ticks_per_line = GetICacheFillTicks(current_pc);
+  for (u32 i = 0; i < line_count; i++, current_pc += ICACHE_LINE_SIZE)
   {
-    g_state.pending_ticks += uncached_ticks;
+    const u32 line = GetICacheLine(current_pc);
+    if (g_state.icache_tags[line] != current_pc)
+    {
+      g_state.icache_tags[line] = current_pc;
+      ticks += cached_ticks_per_line;
+    }
   }
+
+  g_state.pending_ticks += ticks;
 }
 
 u32 CPU::FillICache(VirtualMemoryAddress address)
