@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "d3d12_builders.h"
@@ -339,14 +339,6 @@ u32 D3D12::RootSignatureBuilder::AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE 
 void D3D12::SetObjectName(ID3D12Object* object, std::string_view name)
 {
   object->SetName(StringUtil::UTF8StringToWideString(name).c_str());
-}
-
-void D3D12::SetObjectNameFormatted(ID3D12Object* object, const char* format, ...)
-{
-  std::va_list ap;
-  va_start(ap, format);
-  SetObjectName(object, StringUtil::StdStringFromFormatV(format, ap).c_str());
-  va_end(ap);
 }
 
 #endif

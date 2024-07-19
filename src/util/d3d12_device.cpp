@@ -585,24 +585,19 @@ void D3D12Device::SubmitCommandList(bool wait_for_completion)
     WaitForFence(res.fence_counter);
 }
 
-void D3D12Device::SubmitCommandList(bool wait_for_completion, const char* reason, ...)
+void D3D12Device::SubmitCommandList(bool wait_for_completion, const std::string_view reason)
 {
-  std::va_list ap;
-  va_start(ap, reason);
-  const std::string reason_str(StringUtil::StdStringFromFormatV(reason, ap));
-  va_end(ap);
-
-  WARNING_LOG("Executing command buffer due to '{}'", reason_str);
+  WARNING_LOG("Executing command buffer due to '{}'", reason);
   SubmitCommandList(wait_for_completion);
 }
 
-void D3D12Device::SubmitCommandListAndRestartRenderPass(const char* reason)
+void D3D12Device::SubmitCommandListAndRestartRenderPass(const std::string_view reason)
 {
   if (InRenderPass())
     EndRenderPass();
 
   D3D12Pipeline* pl = m_current_pipeline;
-  SubmitCommandList(false, "%s", reason);
+  SubmitCommandList(false, reason);
 
   SetPipeline(pl);
   BeginRenderPass();
@@ -895,7 +890,7 @@ bool D3D12Device::CreateSwapChainRTV()
       return false;
     }
 
-    D3D12::SetObjectNameFormatted(backbuffer.Get(), "Swap Chain Buffer #%u", i);
+    D3D12::SetObjectName(backbuffer.Get(), TinyString::from_format("Swap Chain Buffer #{}", i));
 
     D3D12DescriptorHandle rtv;
     if (!m_rtv_heap_manager.Allocate(&rtv))

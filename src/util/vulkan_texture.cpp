@@ -329,10 +329,10 @@ bool VulkanTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data
   }
   else
   {
-    if (!sbuffer.ReserveMemory(required_size, dev.GetBufferCopyOffsetAlignment()))
+    if (!sbuffer.ReserveMemory(required_size, dev.GetBufferCopyOffsetAlignment())) [[unlikely]]
     {
-      dev.SubmitCommandBuffer(false, "While waiting for %u bytes in texture upload buffer", required_size);
-      if (!sbuffer.ReserveMemory(required_size, dev.GetBufferCopyOffsetAlignment()))
+      dev.SubmitCommandBuffer(false, TinyString::from_format("Needs {} bytes in texture upload buffer", required_size));
+      if (!sbuffer.ReserveMemory(required_size, dev.GetBufferCopyOffsetAlignment())) [[unlikely]]
       {
         ERROR_LOG("Failed to reserve texture upload memory ({} bytes).", required_size);
         return false;
@@ -387,10 +387,10 @@ bool VulkanTexture::Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u3
   if (req_size >= (buffer.GetCurrentSize() / 2))
     return false;
 
-  if (!buffer.ReserveMemory(req_size, dev.GetBufferCopyOffsetAlignment()))
+  if (!buffer.ReserveMemory(req_size, dev.GetBufferCopyOffsetAlignment())) [[unlikely]]
   {
-    dev.SubmitCommandBuffer(false, "While waiting for %u bytes in texture upload buffer", req_size);
-    if (!buffer.ReserveMemory(req_size, dev.GetBufferCopyOffsetAlignment()))
+    dev.SubmitCommandBuffer(false, TinyString::from_format("Needs {} bytes in texture upload buffer", req_size));
+    if (!buffer.ReserveMemory(req_size, dev.GetBufferCopyOffsetAlignment())) [[unlikely]]
       Panic("Failed to reserve texture upload memory");
   }
 

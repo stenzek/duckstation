@@ -415,10 +415,10 @@ bool D3D12Texture::Update(u32 x, u32 y, u32 width, u32 height, const void* data,
   }
   else
   {
-    if (!sbuffer.ReserveMemory(required_size, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT))
+    if (!sbuffer.ReserveMemory(required_size, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT)) [[unlikely]]
     {
-      D3D12Device::GetInstance().SubmitCommandList(false, "While waiting for %u bytes in texture upload buffer",
-                                                   required_size);
+      D3D12Device::GetInstance().SubmitCommandList(
+        false, TinyString::from_format("Needs {} bytes in texture upload buffer", required_size));
       if (!sbuffer.ReserveMemory(required_size, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT)) [[unlikely]]
       {
         ERROR_LOG("Failed to reserve texture upload memory ({} bytes).", required_size);
@@ -485,10 +485,10 @@ bool D3D12Texture::Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32
   if (req_size >= (buffer.GetSize() / 2))
     return false;
 
-  if (!buffer.ReserveMemory(req_size, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT))
+  if (!buffer.ReserveMemory(req_size, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT)) [[unlikely]]
   {
-    dev.SubmitCommandList(false, "While waiting for %u bytes in texture upload buffer", req_size);
-    if (!buffer.ReserveMemory(req_size, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT))
+    dev.SubmitCommandList(false, TinyString::from_format("Needs {} bytes in texture upload buffer", req_size));
+    if (!buffer.ReserveMemory(req_size, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT)) [[unlikely]]
       Panic("Failed to reserve texture upload memory");
   }
 

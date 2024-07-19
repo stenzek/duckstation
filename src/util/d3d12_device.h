@@ -176,8 +176,8 @@ public:
 
   /// Ends any render pass, executes the command buffer, and invalidates cached state.
   void SubmitCommandList(bool wait_for_completion);
-  void SubmitCommandList(bool wait_for_completion, const char* reason, ...);
-  void SubmitCommandListAndRestartRenderPass(const char* reason);
+  void SubmitCommandList(bool wait_for_completion, const std::string_view reason);
+  void SubmitCommandListAndRestartRenderPass(const std::string_view reason);
 
   void UnbindPipeline(D3D12Pipeline* pl);
   void UnbindTexture(D3D12Texture* tex);

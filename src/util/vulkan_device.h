@@ -219,8 +219,8 @@ public:
 
   /// Ends any render pass, executes the command buffer, and invalidates cached state.
   void SubmitCommandBuffer(bool wait_for_completion);
-  void SubmitCommandBuffer(bool wait_for_completion, const char* reason, ...);
-  void SubmitCommandBufferAndRestartRenderPass(const char* reason);
+  void SubmitCommandBuffer(bool wait_for_completion, const std::string_view reason);
+  void SubmitCommandBufferAndRestartRenderPass(const std::string_view reason);
 
   void UnbindFramebuffer(VulkanTexture* tex);
   void UnbindPipeline(VulkanPipeline* pl);

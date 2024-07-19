@@ -1567,24 +1567,19 @@ void VulkanDevice::SubmitCommandBuffer(bool wait_for_completion)
   InvalidateCachedState();
 }
 
-void VulkanDevice::SubmitCommandBuffer(bool wait_for_completion, const char* reason, ...)
+void VulkanDevice::SubmitCommandBuffer(bool wait_for_completion, const std::string_view reason)
 {
-  std::va_list ap;
-  va_start(ap, reason);
-  const std::string reason_str(StringUtil::StdStringFromFormatV(reason, ap));
-  va_end(ap);
-
-  WARNING_LOG("Executing command buffer due to '{}'", reason_str);
+  WARNING_LOG("Executing command buffer due to '{}'", reason);
   SubmitCommandBuffer(wait_for_completion);
 }
 
-void VulkanDevice::SubmitCommandBufferAndRestartRenderPass(const char* reason)
+void VulkanDevice::SubmitCommandBufferAndRestartRenderPass(const std::string_view reason)
 {
   if (InRenderPass())
     EndRenderPass();
 
   VulkanPipeline* pl = m_current_pipeline;
-  SubmitCommandBuffer(false, "%s", reason);
+  SubmitCommandBuffer(false, reason);
 
   SetPipeline(pl);
   BeginRenderPass();
