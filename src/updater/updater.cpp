@@ -284,8 +284,7 @@ bool Updater::PrepareStagingDirectory()
   {
     m_progress->DisplayFormattedInformation("Creating subdirectory in staging: %s", subdir.c_str());
 
-    const std::string staging_subdir =
-      StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s", m_staging_directory.c_str(), subdir.c_str());
+    const std::string staging_subdir = Path::Combine(m_staging_directory, subdir);
     if (!FileSystem::CreateDirectory(staging_subdir.c_str(), false))
     {
       m_progress->DisplayFormattedModalError("Failed to create staging subdirectory %s", staging_subdir.c_str());
@@ -319,8 +318,7 @@ bool Updater::StageUpdate()
 
     m_progress->DisplayFormattedInformation("Extracting '%s'...", ftu.destination_filename.c_str());
 
-    const std::string destination_file = StringUtil::StdStringFromFormat(
-      "%s" FS_OSPATH_SEPARATOR_STR "%s", m_staging_directory.c_str(), ftu.destination_filename.c_str());
+    const std::string destination_file = Path::Combine(m_staging_directory, ftu.destination_filename);
     std::FILE* fp = FileSystem::OpenCFile(destination_file.c_str(), "wb");
     if (!fp)
     {
@@ -390,9 +388,7 @@ bool Updater::CommitUpdate()
   // create directories in target
   for (const std::string& subdir : m_update_directories)
   {
-    const std::string dest_subdir = StringUtil::StdStringFromFormat("%s" FS_OSPATH_SEPARATOR_STR "%s",
-                                                                    m_destination_directory.c_str(), subdir.c_str());
-
+    const std::string dest_subdir = Path::Combine(m_destination_directory, subdir);
     if (!FileSystem::DirectoryExists(dest_subdir.c_str()) && !FileSystem::CreateDirectory(dest_subdir.c_str(), false))
     {
       m_progress->DisplayFormattedModalError("Failed to create target directory '%s'", dest_subdir.c_str());
@@ -403,10 +399,8 @@ bool Updater::CommitUpdate()
   // move files to target
   for (const FileToUpdate& ftu : m_update_paths)
   {
-    const std::string staging_file_name = StringUtil::StdStringFromFormat(
-      "%s" FS_OSPATH_SEPARATOR_STR "%s", m_staging_directory.c_str(), ftu.destination_filename.c_str());
-    const std::string dest_file_name = StringUtil::StdStringFromFormat(
-      "%s" FS_OSPATH_SEPARATOR_STR "%s", m_destination_directory.c_str(), ftu.destination_filename.c_str());
+    const std::string staging_file_name = Path::Combine(m_staging_directory, ftu.destination_filename);
+    const std::string dest_file_name = Path::Combine(m_destination_directory, ftu.destination_filename);
     m_progress->DisplayFormattedInformation("Moving '%s' to '%s'", staging_file_name.c_str(), dest_file_name.c_str());
 
     Error error;
