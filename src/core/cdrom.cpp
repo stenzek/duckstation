@@ -1006,10 +1006,21 @@ void CDROM::WriteRegister(u32 offset, u8 value)
 
       s_request_register.bits = rr.bits;
 
-      if (s_request_register.BFRD)
+      SectorBuffer& sb = s_sector_buffers[s_current_read_sector_buffer];
+      DEBUG_LOG("{} BFRD buffer={} pos={} size={}", s_request_register.BFRD ? "Set" : "Clear",
+                s_current_read_sector_buffer, sb.position, sb.size);
+
+      if (!s_request_register.BFRD)
       {
-        const SectorBuffer& sb = s_sector_buffers[s_current_read_sector_buffer];
-        DEV_LOG("BFRD buffer={} pos={} size={}", s_current_read_sector_buffer, sb.position, sb.size);
+        // Clearing BFRD needs to reset the position of the current buffer.
+        // Metal Gear Solid: Special Missions (PAL) clears BFRD inbetween two DMAs during its disc detection, and needs
+        // the buffer to reset. But during the actual game, it doesn't clear, and needs the pointer to increment.
+        sb.position = 0;
+      }
+      else
+      {
+        if (sb.size == 0)
+          WARNING_LOG("Setting BFRD without a buffer ready.");
       }
 
       UpdateStatusRegister();
@@ -2991,7 +3002,7 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessDataSector(const u8* raw_sector, const 
 
   // TODO: How does XA relate to this buffering?
   SectorBuffer* sb = &s_sector_buffers[sb_num];
-  if (sb->position == 0 && sb->size == 0)
+  if (sb->position == 0 && sb->size > 0)
   {
     DEV_LOG("Sector buffer {} was not read, previous sector dropped",
             (s_current_write_sector_buffer - 1) % NUM_SECTOR_BUFFERS);
