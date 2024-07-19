@@ -175,7 +175,8 @@ void CocoaProgressCallback::AppendMessage(const std::string_view message)
 {
   @autoreleasepool
   {
-    dispatch_async(dispatch_get_main_queue(), [this, nsmessage = [CocoaTools::StringViewToNSString(message) retain]]() {
+    NSString* nsmessage = [[CocoaTools::StringViewToNSString(message) stringByAppendingString:@"\n"] retain];
+    dispatch_async(dispatch_get_main_queue(), [this, nsmessage]() {
       @autoreleasepool
       {
         NSAttributedString* attr = [[[NSAttributedString alloc] initWithString:nsmessage] autorelease];
