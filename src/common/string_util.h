@@ -4,7 +4,6 @@
 #pragma once
 #include "types.h"
 #include <charconv>
-#include <cstdarg>
 #include <cstddef>
 #include <cstring>
 #include <iomanip>
@@ -26,10 +25,6 @@
 #endif
 
 namespace StringUtil {
-
-/// Constructs a std::string from a format string.
-std::string StdStringFromFormat(const char* format, ...) printflike(1, 2);
-std::string StdStringFromFormatV(const char* format, std::va_list ap);
 
 /// Checks if a wildcard matches a search string.
 bool WildcardMatch(const char* subject, const char* mask, bool case_sensitive = true);
