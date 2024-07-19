@@ -250,16 +250,6 @@ std::string Host::GetHTTPUserAgent()
   return fmt::format("DuckStation for {} ({}) {}", TARGET_OS_STR, CPU_ARCH_STR, g_scm_tag_str);
 }
 
-void Host::ReportFormattedDebuggerMessage(const char* format, ...)
-{
-  std::va_list ap;
-  va_start(ap, format);
-  std::string message = StringUtil::StdStringFromFormatV(format, ap);
-  va_end(ap);
-
-  ReportDebuggerMessage(message);
-}
-
 bool Host::CreateGPUDevice(RenderAPI api, Error* error)
 {
   DebugAssert(!g_gpu_device);

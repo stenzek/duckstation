@@ -72,7 +72,6 @@ SettingsInterface* GetSettingsInterface();
 
 /// Debugger feedback.
 void ReportDebuggerMessage(std::string_view message);
-void ReportFormattedDebuggerMessage(const char* format, ...);
 
 /// Returns a list of supported languages and codes (suffixes for translation files).
 std::span<const std::pair<const char*, const char*>> GetAvailableLanguageList();
