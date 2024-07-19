@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 
 #include <QtCore/QDateTime>
 #include <QtCore/QStringList>
@@ -49,7 +50,7 @@ private Q_SLOTS:
   void remindMeLaterClicked();
 
 private:
-  void reportError(const char* msg, ...);
+  void reportError(const std::string_view msg);
 
   bool ensureHttpReady();
 

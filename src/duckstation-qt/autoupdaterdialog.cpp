@@ -215,14 +215,9 @@ std::string AutoUpdaterDialog::getCurrentUpdateTag() const
 #endif
 }
 
-void AutoUpdaterDialog::reportError(const char* msg, ...)
+void AutoUpdaterDialog::reportError(const std::string_view msg)
 {
-  std::va_list ap;
-  va_start(ap, msg);
-  std::string full_msg = StringUtil::StdStringFromFormatV(msg, ap);
-  va_end(ap);
-
-  QMessageBox::critical(this, tr("Updater Error"), QString::fromStdString(full_msg));
+  QMessageBox::critical(this, tr("Updater Error"), QtUtils::StringViewToQString(msg));
 }
 
 bool AutoUpdaterDialog::ensureHttpReady()
@@ -333,7 +328,7 @@ void AutoUpdaterDialog::getLatestTagComplete(s32 status_code, std::vector<u8> re
       }
 
       if (m_display_messages)
-        reportError("%s release not found in JSON", selected_tag.c_str());
+        reportError(fmt::format("{} release not found in JSON", selected_tag));
     }
     else
     {
@@ -344,7 +339,7 @@ void AutoUpdaterDialog::getLatestTagComplete(s32 status_code, std::vector<u8> re
   else
   {
     if (m_display_messages)
-      reportError("Failed to download latest tag info: HTTP %d", status_code);
+      reportError(fmt::format("Failed to download latest tag info: HTTP {}", status_code));
   }
 
   emit updateCheckCompleted();
@@ -402,7 +397,7 @@ void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, std::vector<u8
   }
   else
   {
-    reportError("Failed to download latest release info: HTTP %d", status_code);
+    reportError(fmt::format("Failed to download latest release info: HTTP {}", status_code));
   }
 
   emit updateCheckCompleted();
@@ -490,7 +485,7 @@ void AutoUpdaterDialog::getChangesComplete(s32 status_code, std::vector<u8> resp
   }
   else
   {
-    reportError("Failed to download change list: HTTP %d", status_code);
+    reportError(fmt::format("Failed to download change list: HTTP {}", status_code));
   }
 #endif
 }
@@ -514,7 +509,7 @@ void AutoUpdaterDialog::downloadUpdateClicked()
 
       if (status_code != HTTPDownloader::HTTP_STATUS_OK)
       {
-        reportError("Download failed: %d", status_code);
+        reportError(fmt::format("Download failed: HTTP status code {}", status_code));
         download_result = false;
         return;
       }
@@ -611,14 +606,14 @@ bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
 
   if (!FileSystem::WriteBinaryFile(update_zip_path.c_str(), update_data.data(), update_data.size()))
   {
-    reportError("Writing update zip to '%s' failed", update_zip_path.c_str());
+    reportError(fmt::format("Writing update zip to '{}' failed", update_zip_path));
     return false;
   }
 
   Error updater_extract_error;
   if (!extractUpdater(update_zip_path.c_str(), updater_path.c_str(), &updater_extract_error))
   {
-    reportError("Extracting updater failed: %s", updater_extract_error.GetDescription().c_str());
+    reportError(fmt::format("Extracting updater failed: {}", updater_extract_error.GetDescription()));
     return false;
   }
 
@@ -707,8 +702,8 @@ bool AutoUpdaterDialog::doUpdate(const std::string& application_dir, const std::
   sei.nShow = SW_SHOWNORMAL;
   if (!ShellExecuteExW(&sei))
   {
-    reportError("Failed to start %s: %s", needs_elevation ? "elevated updater" : "updater",
-                Error::CreateWin32(GetLastError()).GetDescription().c_str());
+    reportError(fmt::format("Failed to start {}: {}", needs_elevation ? "elevated updater" : "updater",
+                            Error::CreateWin32(GetLastError()).GetDescription()));
     return false;
   }
 
@@ -746,12 +741,12 @@ bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
   QFileInfo info(QString::fromStdString(bundle_path.value()));
   if (!info.isBundle())
   {
-    reportError("Application %s isn't a bundle.", bundle_path->c_str());
+    reportError(fmt::format("Application {} isn't a bundle.", bundle_path.value()));
     return false;
   }
   if (info.suffix() != QStringLiteral("app"))
   {
-    reportError("Unexpected application suffix %s on %s.", info.suffix().toUtf8().constData(), bundle_path->c_str());
+    reportError(fmt::format("Unexpected application suffix {} on {}.", info.suffix().toStdString(), bundle_path.value()));
     return false;
   }
 
@@ -759,7 +754,7 @@ bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
   const std::string updater_app = Path::Combine(bundle_path.value(), "Contents/Resources/Updater.app");
   if (!FileSystem::DirectoryExists(updater_app.c_str()))
   {
-    reportError("Failed to find updater at %s.", updater_app.c_str());
+    reportError(fmt::format("Failed to find updater at {}.", updater_app));
     return false;
   }
 
@@ -779,7 +774,7 @@ bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
         zip_file.write(reinterpret_cast<const char*>(update_data.data()), static_cast<qint64>(update_data.size())) !=
           static_cast<qint64>(update_data.size()))
     {
-      reportError("Writing update zip to '%s' failed", zip_path.c_str());
+      reportError(fmt::format("Writing update zip to '{}' failed", zip_path));
       return false;
     }
     zip_file.close();
@@ -817,25 +812,25 @@ bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
   const QString qappimage_path(QString::fromUtf8(appimage_path));
   if (!QFile::exists(qappimage_path))
   {
-    reportError("Current AppImage does not exist: %s", appimage_path);
+    reportError(fmt::format("Current AppImage does not exist: {}", appimage_path));
     return false;
   }
 
   const QString new_appimage_path(qappimage_path + QStringLiteral(".new"));
   const QString backup_appimage_path(qappimage_path + QStringLiteral(".backup"));
   INFO_LOG("APPIMAGE = {}", appimage_path);
-  INFO_LOG("Backup AppImage path = {}", backup_appimage_path.toUtf8().constData());
-  INFO_LOG("New AppImage path = {}", new_appimage_path.toUtf8().constData());
+  INFO_LOG("Backup AppImage path = {}", backup_appimage_path.toStdString());
+  INFO_LOG("New AppImage path = {}", new_appimage_path.toStdString());
 
   // Remove old "new" appimage and existing backup appimage.
   if (QFile::exists(new_appimage_path) && !QFile::remove(new_appimage_path))
   {
-    reportError("Failed to remove old destination AppImage: %s", new_appimage_path.toUtf8().constData());
+    reportError(fmt::format("Failed to remove old destination AppImage: {}", new_appimage_path.toStdString()));
     return false;
   }
   if (QFile::exists(backup_appimage_path) && !QFile::remove(backup_appimage_path))
   {
-    reportError("Failed to remove old backup AppImage: %s", new_appimage_path.toUtf8().constData());
+    reportError(fmt::format("Failed to remove old backup AppImage: {}", new_appimage_path.toStdString()));
     return false;
   }
 
@@ -851,7 +846,7 @@ bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
         !new_file.setPermissions(old_permissions))
     {
       QFile::remove(new_appimage_path);
-      reportError("Failed to write new destination AppImage: %s", new_appimage_path.toUtf8().constData());
+      reportError(fmt::format("Failed to write new destination AppImage: {}", new_appimage_path.toStdString()));
       return false;
     }
   }
@@ -859,7 +854,7 @@ bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
   // Rename "old" appimage.
   if (!QFile::rename(qappimage_path, backup_appimage_path))
   {
-    reportError("Failed to rename old AppImage to %s", backup_appimage_path.toUtf8().constData());
+    reportError(fmt::format("Failed to rename old AppImage to {}", backup_appimage_path.toStdString()));
     QFile::remove(new_appimage_path);
     return false;
   }
@@ -867,7 +862,7 @@ bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
   // Rename "new" appimage.
   if (!QFile::rename(new_appimage_path, qappimage_path))
   {
-    reportError("Failed to rename new AppImage to %s", qappimage_path.toUtf8().constData());
+    reportError(fmt::format("Failed to rename new AppImage to {}", qappimage_path.toStdString()));
     return false;
   }
 
