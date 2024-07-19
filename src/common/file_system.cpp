@@ -1402,18 +1402,12 @@ bool FileSystem::CopyFilePath(const char* source, const char* destination, bool 
 
 #ifdef _WIN32
 
-static u32 TranslateWin32Attributes(u32 Win32Attributes)
+static u32 TranslateWin32Attributes(u32 w32attrs)
 {
-  u32 r = 0;
-
-  if (Win32Attributes & FILE_ATTRIBUTE_DIRECTORY)
-    r |= FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY;
-  if (Win32Attributes & FILE_ATTRIBUTE_READONLY)
-    r |= FILESYSTEM_FILE_ATTRIBUTE_READ_ONLY;
-  if (Win32Attributes & FILE_ATTRIBUTE_COMPRESSED)
-    r |= FILESYSTEM_FILE_ATTRIBUTE_COMPRESSED;
-
-  return r;
+  return ((w32attrs & FILE_ATTRIBUTE_DIRECTORY) ? FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY : 0) |
+         ((w32attrs & FILE_ATTRIBUTE_READONLY) ? FILESYSTEM_FILE_ATTRIBUTE_READ_ONLY : 0) |
+         ((w32attrs & FILE_ATTRIBUTE_COMPRESSED) ? FILESYSTEM_FILE_ATTRIBUTE_COMPRESSED : 0) |
+         ((w32attrs & FILE_ATTRIBUTE_REPARSE_POINT) ? FILESYSTEM_FILE_ATTRIBUTE_LINK : 0);
 }
 
 static u32 RecursiveFindFiles(const char* origin_path, const char* parent_path, const char* path, const char* pattern,
@@ -1467,7 +1461,7 @@ static u32 RecursiveFindFiles(const char* origin_path, const char* parent_path, 
       continue;
 
     FILESYSTEM_FIND_DATA outData;
-    outData.Attributes = 0;
+    outData.Attributes = TranslateWin32Attributes(wfd.dwFileAttributes);
 
     if (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
     {
@@ -1503,17 +1497,12 @@ static u32 RecursiveFindFiles(const char* origin_path, const char* parent_path, 
 
       if (!(flags & FILESYSTEM_FIND_FOLDERS))
         continue;
-
-      outData.Attributes |= FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY;
     }
     else
     {
       if (!(flags & FILESYSTEM_FIND_FILES))
         continue;
     }
-
-    if (wfd.dwFileAttributes & FILE_ATTRIBUTE_READONLY)
-      outData.Attributes |= FILESYSTEM_FILE_ATTRIBUTE_READ_ONLY;
 
     // match the filename
     if (hasWildCards)
@@ -2000,6 +1989,12 @@ bool FileSystem::SetPathCompression(const char* path, bool enable)
 
 #elif !defined(__ANDROID__)
 
+static u32 TranslateStatAttributes(struct stat& st)
+{
+  return (S_ISDIR(st.st_mode) ? FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY : 0) |
+         (S_ISLNK(st.st_mode) ? FILESYSTEM_FILE_ATTRIBUTE_LINK : 0);
+}
+
 static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, const char* Path, const char* Pattern,
                               u32 Flags, FileSystem::FindResultsArray* pResults, std::vector<std::string>& visited)
 {
@@ -2051,19 +2046,12 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
     else
       full_path = fmt::format("{}/{}", OriginPath, pDirEnt->d_name);
 
-    FILESYSTEM_FIND_DATA outData;
-    outData.Attributes = 0;
-
-#if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
     struct stat sDir;
     if (stat(full_path.c_str(), &sDir) < 0)
       continue;
 
-#else
-    struct stat64 sDir;
-    if (stat64(full_path.c_str(), &sDir) < 0)
-      continue;
-#endif
+    FILESYSTEM_FIND_DATA outData;
+    outData.Attributes = TranslateStatAttributes(sDir);
 
     if (S_ISDIR(sDir.st_mode))
     {
@@ -2092,8 +2080,6 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
 
       if (!(Flags & FILESYSTEM_FIND_FOLDERS))
         continue;
-
-      outData.Attributes |= FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY;
     }
     else
     {
@@ -2200,28 +2186,16 @@ bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* sd)
   if (path[0] == '\0')
     return false;
 
-    // stat file
-#if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
+  // stat file
   struct stat sysStatData;
   if (stat(path, &sysStatData) < 0)
-#else
-  struct stat64 sysStatData;
-  if (stat64(path, &sysStatData) < 0)
-#endif
     return false;
 
   // parse attributes
   sd->CreationTime = sysStatData.st_ctime;
   sd->ModificationTime = sysStatData.st_mtime;
-  sd->Attributes = 0;
-  if (S_ISDIR(sysStatData.st_mode))
-    sd->Attributes |= FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY;
-
-  // parse size
-  if (S_ISREG(sysStatData.st_mode))
-    sd->Size = sysStatData.st_size;
-  else
-    sd->Size = 0;
+  sd->Attributes = TranslateStatAttributes(sysStatData);
+  sd->Size = S_ISREG(sysStatData.st_mode) ? sysStatData.st_size : 0;
 
   // ok
   return true;
@@ -2233,30 +2207,17 @@ bool FileSystem::StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* sd)
   if (fd < 0)
     return false;
 
-    // stat file
-#if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
+  // stat file
   struct stat sysStatData;
   if (fstat(fd, &sysStatData) < 0)
-#else
-  struct stat64 sysStatData;
-  if (fstat64(fd, &sysStatData) < 0)
-#endif
     return false;
 
   // parse attributes
   sd->CreationTime = sysStatData.st_ctime;
   sd->ModificationTime = sysStatData.st_mtime;
-  sd->Attributes = 0;
-  if (S_ISDIR(sysStatData.st_mode))
-    sd->Attributes |= FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY;
+  sd->Attributes = TranslateStatAttributes(sysStatData);
+  sd->Size = S_ISREG(sysStatData.st_mode) ? sysStatData.st_size : 0;
 
-  // parse size
-  if (S_ISREG(sysStatData.st_mode))
-    sd->Size = sysStatData.st_size;
-  else
-    sd->Size = 0;
-
-  // ok
   return true;
 }
 
@@ -2266,14 +2227,8 @@ bool FileSystem::FileExists(const char* path)
   if (path[0] == '\0')
     return false;
 
-    // stat file
-#if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
   struct stat sysStatData;
   if (stat(path, &sysStatData) < 0)
-#else
-  struct stat64 sysStatData;
-  if (stat64(path, &sysStatData) < 0)
-#endif
     return false;
 
   if (S_ISDIR(sysStatData.st_mode))
@@ -2288,14 +2243,9 @@ bool FileSystem::DirectoryExists(const char* path)
   if (path[0] == '\0')
     return false;
 
-    // stat file
-#if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
+  // stat file
   struct stat sysStatData;
   if (stat(path, &sysStatData) < 0)
-#else
-  struct stat64 sysStatData;
-  if (stat64(path, &sysStatData) < 0)
-#endif
     return false;
 
   if (S_ISDIR(sysStatData.st_mode))
