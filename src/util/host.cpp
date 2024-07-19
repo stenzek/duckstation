@@ -125,22 +125,3 @@ void Host::ClearTranslationCache()
   s_translation_string_cache_pos = 0;
   s_translation_string_mutex.unlock();
 }
-
-void Host::ReportFormattedErrorAsync(std::string_view title, const char* format, ...)
-{
-  std::va_list ap;
-  va_start(ap, format);
-  std::string message(StringUtil::StdStringFromFormatV(format, ap));
-  va_end(ap);
-  ReportErrorAsync(title, message);
-}
-
-bool Host::ConfirmFormattedMessage(std::string_view title, const char* format, ...)
-{
-  std::va_list ap;
-  va_start(ap, format);
-  std::string message = StringUtil::StdStringFromFormatV(format, ap);
-  va_end(ap);
-
-  return ConfirmMessage(title, message);
-}

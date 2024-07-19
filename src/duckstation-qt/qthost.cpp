@@ -1266,7 +1266,7 @@ void EmuThread::changeDiscFromPlaylist(quint32 index)
     return;
 
   if (!System::SwitchMediaSubImage(index))
-    Host::ReportFormattedErrorAsync("Error", "Failed to switch to subimage %u", index);
+    errorReported(tr("Error"), tr("Failed to switch to subimage %1").arg(index));
 }
 
 void EmuThread::setCheatEnabled(quint32 index, bool enabled)

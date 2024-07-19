@@ -31,11 +31,9 @@ void ReportFatalError(std::string_view title, std::string_view message);
 
 /// Displays an asynchronous error on the UI thread, i.e. doesn't block the caller.
 void ReportErrorAsync(std::string_view title, std::string_view message);
-void ReportFormattedErrorAsync(std::string_view title, const char* format, ...);
 
 /// Displays a synchronous confirmation on the UI thread, i.e. blocks the caller.
 bool ConfirmMessage(std::string_view title, std::string_view message);
-bool ConfirmFormattedMessage(std::string_view title, const char* format, ...);
 
 /// Returns the user agent to use for HTTP requests.
 std::string GetHTTPUserAgent();
