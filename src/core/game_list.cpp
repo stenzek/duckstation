@@ -1388,7 +1388,7 @@ GameList::GetMatchingEntriesForSerial(const std::span<const std::string> serials
 
     for (const Entry& entry : s_entries)
     {
-      if (entry.serial != serial)
+      if (entry.IsDiscSet() || entry.serial != serial)
         continue;
 
       if (!matching_entry)
@@ -1409,7 +1409,7 @@ GameList::GetMatchingEntriesForSerial(const std::span<const std::string> serials
     // Have to add all matching files.
     for (const Entry& entry : s_entries)
     {
-      if (entry.serial != serial)
+      if (entry.IsDiscSet() || entry.serial != serial)
         continue;
 
       ret.emplace_back(Path::GetFileName(entry.path), &entry);
