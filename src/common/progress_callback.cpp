@@ -1,229 +1,88 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "progress_callback.h"
 #include "assert.h"
 #include "byte_stream.h"
 #include "log.h"
+
 #include <cmath>
 #include <cstdio>
 #include <limits>
+
 Log_SetChannel(ProgressCallback);
+
+static ProgressCallback s_nullProgressCallbacks;
+ProgressCallback* ProgressCallback::NullProgressCallback = &s_nullProgressCallbacks;
 
 ProgressCallback::~ProgressCallback()
 {
+  std::unique_ptr<State> pNextState = std::move(m_saved_state);
+  while (pNextState)
+    pNextState = std::move(pNextState->next_saved_state);
 }
 
-void ProgressCallback::SetFormattedStatusText(const char* Format, ...)
+void ProgressCallback::PushState()
 {
-  SmallString str;
-  va_list ap;
-
-  va_start(ap, Format);
-  str.vsprintf(Format, ap);
-  va_end(ap);
-
-  SetStatusText(str);
-}
-
-void ProgressCallback::DisplayFormattedError(const char* format, ...)
-{
-  SmallString str;
-  va_list ap;
-
-  va_start(ap, format);
-  str.vsprintf(format, ap);
-  va_end(ap);
-
-  DisplayError(str);
-}
-
-void ProgressCallback::DisplayFormattedWarning(const char* format, ...)
-{
-  SmallString str;
-  va_list ap;
-
-  va_start(ap, format);
-  str.vsprintf(format, ap);
-  va_end(ap);
-
-  DisplayWarning(str);
-}
-
-void ProgressCallback::DisplayFormattedInformation(const char* format, ...)
-{
-  SmallString str;
-  va_list ap;
-
-  va_start(ap, format);
-  str.vsprintf(format, ap);
-  va_end(ap);
-
-  DisplayInformation(str);
-}
-
-void ProgressCallback::DisplayFormattedDebugMessage(const char* format, ...)
-{
-  SmallString str;
-  va_list ap;
-
-  va_start(ap, format);
-  str.vsprintf(format, ap);
-  va_end(ap);
-
-  DisplayDebugMessage(str);
-}
-
-void ProgressCallback::DisplayFormattedModalError(const char* format, ...)
-{
-  SmallString str;
-  va_list ap;
-
-  va_start(ap, format);
-  str.vsprintf(format, ap);
-  va_end(ap);
-
-  ModalError(str);
-}
-
-bool ProgressCallback::DisplayFormattedModalConfirmation(const char* format, ...)
-{
-  SmallString str;
-  va_list ap;
-
-  va_start(ap, format);
-  str.vsprintf(format, ap);
-  va_end(ap);
-
-  return ModalConfirmation(str);
-}
-
-void ProgressCallback::DisplayFormattedModalInformation(const char* format, ...)
-{
-  SmallString str;
-  va_list ap;
-
-  va_start(ap, format);
-  str.vsprintf(format, ap);
-  va_end(ap);
-
-  ModalInformation(str);
-}
-
-void ProgressCallback::UpdateProgressFromStream(ByteStream* pStream)
-{
-  u32 streamSize = (u32)pStream->GetSize();
-  u32 streamPosition = (u32)pStream->GetPosition();
-
-  SetProgressRange(streamSize);
-  SetProgressValue(streamPosition);
-}
-
-class NullProgressCallbacks final : public ProgressCallback
-{
-public:
-  void PushState() override {}
-  void PopState() override {}
-
-  bool IsCancelled() const override { return false; }
-  bool IsCancellable() const override { return false; }
-
-  void SetCancellable(bool cancellable) override {}
-  void SetTitle(const char* title) override {}
-  void SetStatusText(const char* statusText) override {}
-  void SetProgressRange(u32 range) override {}
-  void SetProgressValue(u32 value) override {}
-  void IncrementProgressValue() override {}
-
-  void DisplayError(const char* message) override { ERROR_LOG(message); }
-  void DisplayWarning(const char* message) override { WARNING_LOG(message); }
-  void DisplayInformation(const char* message) override { INFO_LOG(message); }
-  void DisplayDebugMessage(const char* message) override { DEV_LOG(message); }
-
-  void ModalError(const char* message) override { ERROR_LOG(message); }
-  bool ModalConfirmation(const char* message) override
-  {
-    INFO_LOG(message);
-    return false;
-  }
-  void ModalInformation(const char* message) override { INFO_LOG(message); }
-};
-
-static NullProgressCallbacks s_nullProgressCallbacks;
-ProgressCallback* ProgressCallback::NullProgressCallback = &s_nullProgressCallbacks;
-
-BaseProgressCallback::BaseProgressCallback()
-  : m_cancellable(false), m_cancelled(false), m_progress_range(1), m_progress_value(0), m_base_progress_value(0),
-    m_saved_state(NULL)
-{
-}
-
-BaseProgressCallback::~BaseProgressCallback()
-{
-  State* pNextState = m_saved_state;
-  while (pNextState != NULL)
-  {
-    State* pCurrentState = pNextState;
-    pNextState = pCurrentState->next_saved_state;
-    delete pCurrentState;
-  }
-}
-
-void BaseProgressCallback::PushState()
-{
-  State* pNewState = new State;
+  std::unique_ptr<State> pNewState = std::make_unique<State>();
   pNewState->cancellable = m_cancellable;
   pNewState->status_text = m_status_text;
   pNewState->progress_range = m_progress_range;
   pNewState->progress_value = m_progress_value;
   pNewState->base_progress_value = m_base_progress_value;
-  pNewState->next_saved_state = m_saved_state;
-  m_saved_state = pNewState;
+  pNewState->next_saved_state = std::move(m_saved_state);
+  m_saved_state = std::move(pNewState);
 }
 
-void BaseProgressCallback::PopState()
+void ProgressCallback::PopState()
 {
   DebugAssert(m_saved_state);
-  State* state = m_saved_state;
-  m_saved_state = nullptr;
 
   // impose the current position into the previous range
   const u32 new_progress_value =
     (m_progress_range != 0) ?
-      static_cast<u32>(((float)m_progress_value / (float)m_progress_range) * (float)state->progress_range) :
-      state->progress_value;
+      static_cast<u32>(((float)m_progress_value / (float)m_progress_range) * (float)m_saved_state->progress_range) :
+      m_saved_state->progress_value;
 
-  m_cancellable = state->cancellable;
-  m_status_text = std::move(state->status_text);
-  m_progress_range = state->progress_range;
+  m_cancellable = m_saved_state->cancellable;
+  m_status_text = std::move(m_saved_state->status_text);
+  m_progress_range = m_saved_state->progress_range;
   m_progress_value = new_progress_value;
 
-  m_base_progress_value = state->base_progress_value;
-  m_saved_state = state->next_saved_state;
-  delete state;
+  m_base_progress_value = m_saved_state->base_progress_value;
+  m_saved_state = std::move(m_saved_state->next_saved_state);
 }
 
-bool BaseProgressCallback::IsCancelled() const
-{
-  return m_cancelled;
-}
-
-bool BaseProgressCallback::IsCancellable() const
+bool ProgressCallback::IsCancellable() const
 {
   return m_cancellable;
 }
 
-void BaseProgressCallback::SetCancellable(bool cancellable)
+bool ProgressCallback::IsCancelled() const
+{
+  return m_cancelled;
+}
+
+void ProgressCallback::SetTitle(const std::string_view title)
+{
+}
+
+void ProgressCallback::SetStatusText(const std::string_view text)
+{
+  m_status_text.assign(text);
+}
+
+void ProgressCallback::SetCancellable(bool cancellable)
 {
   m_cancellable = cancellable;
 }
 
-void BaseProgressCallback::SetStatusText(const char* text)
+void ProgressCallback::SetProgressValue(u32 value)
 {
-  m_status_text = text;
+  m_progress_value = m_base_progress_value + value;
 }
 
-void BaseProgressCallback::SetProgressRange(u32 range)
+void ProgressCallback::SetProgressRange(u32 range)
 {
   if (m_saved_state)
   {
@@ -239,177 +98,43 @@ void BaseProgressCallback::SetProgressRange(u32 range)
   }
 }
 
-void BaseProgressCallback::SetProgressValue(u32 value)
-{
-  m_progress_value = m_base_progress_value + value;
-}
-
-void BaseProgressCallback::IncrementProgressValue()
+void ProgressCallback::IncrementProgressValue()
 {
   SetProgressValue((m_progress_value - m_base_progress_value) + 1);
 }
 
-ConsoleProgressCallback::ConsoleProgressCallback()
-  : BaseProgressCallback(), m_last_percent_complete(std::numeric_limits<float>::infinity()),
-    m_last_bar_length(0xFFFFFFFF)
+void ProgressCallback::DisplayError(const std::string_view message)
 {
-}
-
-ConsoleProgressCallback::~ConsoleProgressCallback()
-{
-  Clear();
-}
-
-void ConsoleProgressCallback::PushState()
-{
-  BaseProgressCallback::PushState();
-}
-
-void ConsoleProgressCallback::PopState()
-{
-  BaseProgressCallback::PopState();
-  Redraw(false);
-}
-
-void ConsoleProgressCallback::SetCancellable(bool cancellable)
-{
-  BaseProgressCallback::SetCancellable(cancellable);
-  Redraw(false);
-}
-
-void ConsoleProgressCallback::SetTitle(const char* title)
-{
-  Clear();
-  std::fprintf(stdout, "== %s ==\n", title);
-  Redraw(false);
-}
-
-void ConsoleProgressCallback::SetStatusText(const char* text)
-{
-  BaseProgressCallback::SetStatusText(text);
-  Redraw(false);
-}
-
-void ConsoleProgressCallback::SetProgressRange(u32 range)
-{
-  u32 last_range = m_progress_range;
-
-  BaseProgressCallback::SetProgressRange(range);
-
-  if (m_progress_range != last_range)
-    Redraw(false);
-}
-
-void ConsoleProgressCallback::SetProgressValue(u32 value)
-{
-  u32 lastValue = m_progress_value;
-
-  BaseProgressCallback::SetProgressValue(value);
-
-  if (m_progress_value != lastValue)
-    Redraw(true);
-}
-
-void ConsoleProgressCallback::Clear()
-{
-  SmallString message;
-  for (u32 i = 0; i < COLUMNS; i++)
-    message.append(' ');
-  message.append('\r');
-
-  std::fwrite(message.c_str(), message.length(), 1, stderr);
-  std::fflush(stderr);
-}
-
-void ConsoleProgressCallback::Redraw(bool update_value_only)
-{
-  float percent_complete = (m_progress_range > 0) ? ((float)m_progress_value / (float)m_progress_range) * 100.0f : 0.0f;
-  if (percent_complete > 100.0f)
-    percent_complete = 100.0f;
-
-  const u32 current_length = static_cast<u32>(m_status_text.length()) + 14;
-  const u32 max_bar_length = (current_length < COLUMNS) ? COLUMNS - current_length : 0;
-  const u32 current_bar_length =
-    (max_bar_length > 0) ? (static_cast<u32>(percent_complete / 100.0f * (float)max_bar_length)) : 0;
-
-  if (update_value_only && (current_bar_length == m_last_bar_length) &&
-      std::abs(percent_complete - m_last_percent_complete) < 0.01f)
-  {
-    return;
-  }
-
-  m_last_bar_length = current_bar_length;
-  m_last_percent_complete = percent_complete;
-
-  SmallString message;
-  message.append(m_status_text);
-  message.append_format(" [{:.2f}%]", percent_complete);
-
-  if (max_bar_length > 0)
-  {
-    message.append(" |");
-
-    u32 i;
-    for (i = 0; i < current_bar_length; i++)
-      message.append('=');
-    for (; i < max_bar_length; i++)
-      message.append(' ');
-
-    message.append('|');
-  }
-
-  message.append('\r');
-
-  std::fwrite(message.c_str(), message.length(), 1, stderr);
-  std::fflush(stderr);
-}
-
-void ConsoleProgressCallback::DisplayError(const char* message)
-{
-  Clear();
   ERROR_LOG(message);
-  Redraw(false);
 }
 
-void ConsoleProgressCallback::DisplayWarning(const char* message)
+void ProgressCallback::DisplayWarning(const std::string_view message)
 {
-  Clear();
   WARNING_LOG(message);
-  Redraw(false);
 }
 
-void ConsoleProgressCallback::DisplayInformation(const char* message)
+void ProgressCallback::DisplayInformation(const std::string_view message)
 {
-  Clear();
   INFO_LOG(message);
-  Redraw(false);
 }
 
-void ConsoleProgressCallback::DisplayDebugMessage(const char* message)
+void ProgressCallback::DisplayDebugMessage(const std::string_view message)
 {
-  Clear();
   DEV_LOG(message);
-  Redraw(false);
 }
 
-void ConsoleProgressCallback::ModalError(const char* message)
+void ProgressCallback::ModalError(const std::string_view message)
 {
-  Clear();
   ERROR_LOG(message);
-  Redraw(false);
 }
 
-bool ConsoleProgressCallback::ModalConfirmation(const char* message)
+bool ProgressCallback::ModalConfirmation(const std::string_view message)
 {
-  Clear();
   INFO_LOG(message);
-  Redraw(false);
   return false;
 }
 
-void ConsoleProgressCallback::ModalInformation(const char* message)
+void ProgressCallback::ModalInformation(const std::string_view message)
 {
-  Clear();
   INFO_LOG(message);
-  Redraw(false);
 }

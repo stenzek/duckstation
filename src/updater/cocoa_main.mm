@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
 
     if (!updater.OpenUpdateZip(zip_path.c_str()))
     {
-      progress.DisplayFormattedModalError("Could not open update zip '%s'. Update not installed.", zip_path.c_str());
+      progress.FormatModalError("Could not open update zip '{}'. Update not installed.", zip_path);
       result = EXIT_FAILURE;
       return;
     }
@@ -124,7 +124,7 @@ int main(int argc, char* argv[])
 
   if (result == EXIT_SUCCESS)
   {
-    progress.DisplayFormattedInformation("Launching '%s'...", program_to_launch.c_str());
+    progress.FormatInformation("Launching '{}'...", program_to_launch);
     LaunchApplication(program_to_launch.c_str());
   }
 

@@ -29,8 +29,7 @@ bool CDImageHasher::ReadIndex(CDImage* image, u8 track, u8 index, MD5Digest* dig
 
   if (!image->Seek(index_start))
   {
-    progress_callback->DisplayFormattedModalError("Failed to seek to sector %u for track %u index %u", index_start,
-                                                  track, index);
+    progress_callback->FormatModalError("Failed to seek to sector {} for track {} index {}", index_start, track, index);
     return false;
   }
 
@@ -42,7 +41,7 @@ bool CDImageHasher::ReadIndex(CDImage* image, u8 track, u8 index, MD5Digest* dig
 
     if (!image->ReadRawSector(sector.data(), nullptr))
     {
-      progress_callback->DisplayFormattedModalError("Failed to read sector %u from image", image->GetPositionOnDisc());
+      progress_callback->FormatModalError("Failed to read sector {} from image", image->GetPositionOnDisc());
       return false;
     }
 

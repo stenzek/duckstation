@@ -65,7 +65,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
   Log::SetFileOutputParams(true, Path::Combine(destination_directory, "updater.log").c_str());
 
-  progress.SetFormattedStatusText("Waiting for parent process %d to exit...", parent_process_id);
+  progress.FormatStatusText("Waiting for parent process {} to exit...", parent_process_id);
   WaitForProcessToExit(parent_process_id);
 
   Updater updater(&progress);
@@ -77,7 +77,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
   if (!updater.OpenUpdateZip(zip_path.c_str()))
   {
-    progress.DisplayFormattedModalError("Could not open update zip '%s'. Update not installed.", zip_path.c_str());
+    progress.FormatModalError("Could not open update zip '{}'. Update not installed.", zip_path);
     return 1;
   }
 
@@ -103,8 +103,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
   updater.CleanupStagingDirectory();
   updater.RemoveUpdateZip();
 
-  progress.DisplayFormattedInformation("Launching '%s'...",
-                                       StringUtil::WideStringToUTF8String(program_to_launch).c_str());
+  progress.FormatInformation("Launching '{}'...", StringUtil::WideStringToUTF8String(program_to_launch));
   ShellExecuteW(nullptr, L"open", program_to_launch.c_str(), L"-updatecleanup", nullptr, SW_SHOWNORMAL);
   return 0;
 }

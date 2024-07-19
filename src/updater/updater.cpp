@@ -46,8 +46,8 @@ bool Updater::Initialize(std::string staging_directory, std::string destination_
 {
   m_staging_directory = std::move(staging_directory);
   m_destination_directory = std::move(destination_directory);
-  m_progress->DisplayFormattedInformation("Destination directory: '%s'", m_destination_directory.c_str());
-  m_progress->DisplayFormattedInformation("Staging directory: '%s'", m_staging_directory.c_str());
+  m_progress->FormatInformation("Destination directory: '{}'", m_destination_directory);
+  m_progress->FormatInformation("Staging directory: '{}'", m_staging_directory);
   return true;
 }
 
@@ -80,7 +80,7 @@ void Updater::RemoveUpdateZip()
   CloseUpdateZip();
 
   if (!FileSystem::DeleteFile(m_zip_path.c_str()))
-    m_progress->DisplayFormattedError("Failed to remove update zip '%s'", m_zip_path.c_str());
+    m_progress->FormatError("Failed to remove update zip '{}'", m_zip_path);
 }
 
 bool Updater::RecursiveDeleteDirectory(const char* path, bool remove_dir)
@@ -93,7 +93,8 @@ bool Updater::RecursiveDeleteDirectory(const char* path, bool remove_dir)
   HRESULT hr = CoCreateInstance(CLSID_FileOperation, NULL, CLSCTX_ALL, IID_PPV_ARGS(fo.ReleaseAndGetAddressOf()));
   if (FAILED(hr))
   {
-    m_progress->DisplayFormattedError("CoCreateInstance() for IFileOperation failed: %08X", hr);
+    m_progress->FormatError("CoCreateInstance() for IFileOperation failed: {}",
+                            Error::CreateHResult(hr).GetDescription());
     return false;
   }
 
@@ -102,18 +103,22 @@ bool Updater::RecursiveDeleteDirectory(const char* path, bool remove_dir)
                                    IID_PPV_ARGS(item.ReleaseAndGetAddressOf()));
   if (FAILED(hr))
   {
-    m_progress->DisplayFormattedError("SHCreateItemFromParsingName() for delete failed: %08X", hr);
+    m_progress->FormatError("SHCreateItemFromParsingName() for delete failed: {}",
+                            Error::CreateHResult(hr).GetDescription());
     return false;
   }
 
   hr = fo->SetOperationFlags(FOF_NOCONFIRMATION | FOF_SILENT);
   if (FAILED(hr))
-    m_progress->DisplayFormattedWarning("IFileOperation::SetOperationFlags() failed: %08X", hr);
+  {
+    m_progress->FormatWarning("IFileOperation::SetOperationFlags() failed: {}",
+                              Error::CreateHResult(hr).GetDescription());
+  }
 
   hr = fo->DeleteItem(item.Get(), nullptr);
   if (FAILED(hr))
   {
-    m_progress->DisplayFormattedError("IFileOperation::DeleteItem() failed: %08X", hr);
+    m_progress->FormatError("IFileOperation::DeleteItem() failed: {}", Error::CreateHResult(hr).GetDescription());
     return false;
   }
 
@@ -121,7 +126,8 @@ bool Updater::RecursiveDeleteDirectory(const char* path, bool remove_dir)
   hr = fo->PerformOperations();
   if (FAILED(hr))
   {
-    m_progress->DisplayFormattedError("IFileOperation::PerformOperations() failed: %08X", hr);
+    m_progress->FormatError("IFileOperation::PerformOperations() failed: {}",
+                            Error::CreateHResult(hr).GetDescription());
     return false;
   }
 
@@ -140,7 +146,7 @@ bool Updater::RecursiveDeleteDirectory(const char* path, bool remove_dir)
       }
       else
       {
-        m_progress->DisplayFormattedInformation("Removing directory '%s'.", fd.FileName.c_str());
+        m_progress->FormatInformation("Removing directory '{}'.", fd.FileName);
         if (!FileSystem::DeleteFile(fd.FileName.c_str()))
           return false;
       }
@@ -150,7 +156,7 @@ bool Updater::RecursiveDeleteDirectory(const char* path, bool remove_dir)
   if (!remove_dir)
     return true;
 
-  m_progress->DisplayFormattedInformation("Removing directory '%s'.", path);
+  m_progress->FormatInformation("Removing directory '{}'.", path);
   return FileSystem::DeleteDirectory(path);
 #endif
 }
@@ -216,7 +222,7 @@ bool Updater::ParseZip()
       if (process_file)
       {
         entry.destination_filename = filename_to_add;
-        m_progress->DisplayFormattedInformation("Found file in zip: '%s'", entry.destination_filename.c_str());
+        m_progress->FormatInformation("Found file in zip: '{}'", entry.destination_filename);
         m_update_paths.push_back(std::move(entry));
       }
     }
@@ -256,7 +262,7 @@ bool Updater::ParseZip()
 
   std::sort(m_update_directories.begin(), m_update_directories.end());
   for (const std::string& dir : m_update_directories)
-    m_progress->DisplayFormattedDebugMessage("Directory: %s", dir.c_str());
+    m_progress->FormatDebugMessage("Directory: {}", dir);
 
   return true;
 }
@@ -265,7 +271,7 @@ bool Updater::PrepareStagingDirectory()
 {
   if (FileSystem::DirectoryExists(m_staging_directory.c_str()))
   {
-    m_progress->DisplayFormattedWarning("Update staging directory already exists, removing");
+    m_progress->DisplayWarning("Update staging directory already exists, removing");
     if (!RecursiveDeleteDirectory(m_staging_directory.c_str(), true) ||
         FileSystem::DirectoryExists(m_staging_directory.c_str()))
     {
@@ -275,19 +281,19 @@ bool Updater::PrepareStagingDirectory()
   }
   if (!FileSystem::CreateDirectory(m_staging_directory.c_str(), false))
   {
-    m_progress->DisplayFormattedModalError("Failed to create staging directory %s", m_staging_directory.c_str());
+    m_progress->FormatModalError("Failed to create staging directory {}", m_staging_directory);
     return false;
   }
 
   // create subdirectories in staging directory
   for (const std::string& subdir : m_update_directories)
   {
-    m_progress->DisplayFormattedInformation("Creating subdirectory in staging: %s", subdir.c_str());
+    m_progress->FormatInformation("Creating subdirectory in staging: {}", subdir);
 
     const std::string staging_subdir = Path::Combine(m_staging_directory, subdir);
     if (!FileSystem::CreateDirectory(staging_subdir.c_str(), false))
     {
-      m_progress->DisplayFormattedModalError("Failed to create staging subdirectory %s", staging_subdir.c_str());
+      m_progress->FormatModalError("Failed to create staging subdirectory {}", staging_subdir);
       return false;
     }
   }
@@ -302,27 +308,26 @@ bool Updater::StageUpdate()
 
   for (const FileToUpdate& ftu : m_update_paths)
   {
-    m_progress->SetFormattedStatusText("Extracting '%s' (mode %o)...", ftu.original_zip_filename.c_str(),
-                                       ftu.file_mode);
+    m_progress->FormatStatusText("Extracting '{}' (mode {:o})...", ftu.original_zip_filename, ftu.file_mode);
 
     if (unzLocateFile(m_zf, ftu.original_zip_filename.c_str(), 0) != UNZ_OK)
     {
-      m_progress->DisplayFormattedModalError("Unable to locate file '%s' in zip", ftu.original_zip_filename.c_str());
+      m_progress->FormatModalError("Unable to locate file '{}' in zip", ftu.original_zip_filename);
       return false;
     }
     else if (unzOpenCurrentFile(m_zf) != UNZ_OK)
     {
-      m_progress->DisplayFormattedModalError("Failed to open file '%s' in zip", ftu.original_zip_filename.c_str());
+      m_progress->FormatModalError("Failed to open file '{}' in zip", ftu.original_zip_filename);
       return false;
     }
 
-    m_progress->DisplayFormattedInformation("Extracting '%s'...", ftu.destination_filename.c_str());
+    m_progress->FormatInformation("Extracting '{}'...", ftu.destination_filename);
 
     const std::string destination_file = Path::Combine(m_staging_directory, ftu.destination_filename);
     std::FILE* fp = FileSystem::OpenCFile(destination_file.c_str(), "wb");
     if (!fp)
     {
-      m_progress->DisplayFormattedModalError("Failed to open staging output file '%s'", destination_file.c_str());
+      m_progress->FormatModalError("Failed to open staging output file '{}'", destination_file);
       unzCloseCurrentFile(m_zf);
       return false;
     }
@@ -334,7 +339,7 @@ bool Updater::StageUpdate()
       int byte_count = unzReadCurrentFile(m_zf, buffer, CHUNK_SIZE);
       if (byte_count < 0)
       {
-        m_progress->DisplayFormattedModalError("Failed to read file '%s' from zip", ftu.original_zip_filename.c_str());
+        m_progress->FormatModalError("Failed to read file '{}' from zip", ftu.original_zip_filename);
         std::fclose(fp);
         FileSystem::DeleteFile(destination_file.c_str());
         unzCloseCurrentFile(m_zf);
@@ -348,7 +353,7 @@ bool Updater::StageUpdate()
 
       if (std::fwrite(buffer, static_cast<size_t>(byte_count), 1, fp) != 1)
       {
-        m_progress->DisplayFormattedModalError("Failed to write to file '%s'", destination_file.c_str());
+        m_progress->FormatModalError("Failed to write to file '{}'", destination_file);
         std::fclose(fp);
         FileSystem::DeleteFile(destination_file.c_str());
         unzCloseCurrentFile(m_zf);
@@ -363,8 +368,8 @@ bool Updater::StageUpdate()
       const int res = (fd >= 0) ? fchmod(fd, ftu.file_mode) : -1;
       if (res < 0)
       {
-        m_progress->DisplayFormattedModalError("Failed to set mode for file '%s' (fd %d) to %u: errno %d",
-                                               destination_file.c_str(), fd, res, errno);
+        m_progress->FormatModalError("Failed to set mode for file '{}' (fd {}) to {:o}: errno {}", destination_file, fd,
+                                     res, errno);
         std::fclose(fp);
         FileSystem::DeleteFile(destination_file.c_str());
         unzCloseCurrentFile(m_zf);
@@ -391,7 +396,7 @@ bool Updater::CommitUpdate()
     const std::string dest_subdir = Path::Combine(m_destination_directory, subdir);
     if (!FileSystem::DirectoryExists(dest_subdir.c_str()) && !FileSystem::CreateDirectory(dest_subdir.c_str(), false))
     {
-      m_progress->DisplayFormattedModalError("Failed to create target directory '%s'", dest_subdir.c_str());
+      m_progress->FormatModalError("Failed to create target directory '{}'", dest_subdir);
       return false;
     }
   }
@@ -401,7 +406,7 @@ bool Updater::CommitUpdate()
   {
     const std::string staging_file_name = Path::Combine(m_staging_directory, ftu.destination_filename);
     const std::string dest_file_name = Path::Combine(m_destination_directory, ftu.destination_filename);
-    m_progress->DisplayFormattedInformation("Moving '%s' to '%s'", staging_file_name.c_str(), dest_file_name.c_str());
+    m_progress->FormatInformation("Moving '{}' to '{}'", staging_file_name, dest_file_name);
 
     Error error;
 #ifdef _WIN32
@@ -413,11 +418,13 @@ bool Updater::CommitUpdate()
     const bool result = CocoaTools::MoveFile(staging_file_name.c_str(), dest_file_name.c_str(), &error);
 #else
     const bool result = (rename(staging_file_name.c_str(), dest_file_name.c_str()) == 0);
+    if (!result)
+      error.SetErrno(errno);
 #endif
     if (!result)
     {
-      m_progress->DisplayFormattedModalError("Failed to rename '%s' to '%s': %s", staging_file_name.c_str(),
-                                             dest_file_name.c_str(), error.GetDescription().c_str());
+      m_progress->FormatModalError("Failed to rename '{}' to '{}': {}", staging_file_name, dest_file_name,
+                                   error.GetDescription());
       return false;
     }
   }
@@ -429,7 +436,7 @@ void Updater::CleanupStagingDirectory()
 {
   // remove staging directory itself
   if (!RecursiveDeleteDirectory(m_staging_directory.c_str(), true))
-    m_progress->DisplayFormattedError("Failed to remove staging directory '%s'", m_staging_directory.c_str());
+    m_progress->FormatError("Failed to remove staging directory '{}'", m_staging_directory);
 }
 
 bool Updater::ClearDestinationDirectory()

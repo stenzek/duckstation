@@ -1,7 +1,8 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "gamelistrefreshthread.h"
+#include "qtutils.h"
 
 #include "core/game_list.h"
 
@@ -11,7 +12,9 @@
 
 #include <QtWidgets/QMessageBox>
 
-AsyncRefreshProgressCallback::AsyncRefreshProgressCallback(GameListRefreshThread* parent) : m_parent(parent) {}
+AsyncRefreshProgressCallback::AsyncRefreshProgressCallback(GameListRefreshThread* parent) : m_parent(parent)
+{
+}
 
 void AsyncRefreshProgressCallback::Cancel()
 {
@@ -19,9 +22,9 @@ void AsyncRefreshProgressCallback::Cancel()
   m_cancelled = true;
 }
 
-void AsyncRefreshProgressCallback::SetStatusText(const char* text)
+void AsyncRefreshProgressCallback::SetStatusText(const std::string_view text)
 {
-  QString new_text(QString::fromUtf8(text));
+  const QString new_text = QtUtils::StringViewToQString(text);
   if (new_text == m_status_text)
     return;
 
@@ -31,7 +34,7 @@ void AsyncRefreshProgressCallback::SetStatusText(const char* text)
 
 void AsyncRefreshProgressCallback::SetProgressRange(u32 range)
 {
-  BaseProgressCallback::SetProgressRange(range);
+  ProgressCallback::SetProgressRange(range);
   if (static_cast<int>(m_progress_range) == m_last_range)
     return;
 
@@ -41,7 +44,7 @@ void AsyncRefreshProgressCallback::SetProgressRange(u32 range)
 
 void AsyncRefreshProgressCallback::SetProgressValue(u32 value)
 {
-  BaseProgressCallback::SetProgressValue(value);
+  ProgressCallback::SetProgressValue(value);
   if (static_cast<int>(m_progress_value) == m_last_value)
     return;
 
@@ -49,41 +52,20 @@ void AsyncRefreshProgressCallback::SetProgressValue(u32 value)
   fireUpdate();
 }
 
-void AsyncRefreshProgressCallback::SetTitle(const char* title) {}
-
-void AsyncRefreshProgressCallback::DisplayError(const char* message)
+void AsyncRefreshProgressCallback::ModalError(const std::string_view message)
 {
-  QMessageBox::critical(nullptr, QStringLiteral("Error"), QString::fromUtf8(message));
+  QMessageBox::critical(nullptr, QStringLiteral("Error"), QtUtils::StringViewToQString(message));
 }
 
-void AsyncRefreshProgressCallback::DisplayWarning(const char* message)
+bool AsyncRefreshProgressCallback::ModalConfirmation(const std::string_view message)
 {
-  QMessageBox::warning(nullptr, QStringLiteral("Warning"), QString::fromUtf8(message));
+  return QMessageBox::question(nullptr, QStringLiteral("Question"), QtUtils::StringViewToQString(message)) ==
+         QMessageBox::Yes;
 }
 
-void AsyncRefreshProgressCallback::DisplayInformation(const char* message)
+void AsyncRefreshProgressCallback::ModalInformation(const std::string_view message)
 {
-  QMessageBox::information(nullptr, QStringLiteral("Information"), QString::fromUtf8(message));
-}
-
-void AsyncRefreshProgressCallback::DisplayDebugMessage(const char* message)
-{
-  Log::Write("AsyncRefreshProgressCallback", "", LOGLEVEL_DEV, message);
-}
-
-void AsyncRefreshProgressCallback::ModalError(const char* message)
-{
-  QMessageBox::critical(nullptr, QStringLiteral("Error"), QString::fromUtf8(message));
-}
-
-bool AsyncRefreshProgressCallback::ModalConfirmation(const char* message)
-{
-  return QMessageBox::question(nullptr, QStringLiteral("Question"), QString::fromUtf8(message)) == QMessageBox::Yes;
-}
-
-void AsyncRefreshProgressCallback::ModalInformation(const char* message)
-{
-  QMessageBox::information(nullptr, QStringLiteral("Information"), QString::fromUtf8(message));
+  QMessageBox::information(nullptr, QStringLiteral("Information"), QtUtils::StringViewToQString(message));
 }
 
 void AsyncRefreshProgressCallback::fireUpdate()

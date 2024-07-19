@@ -1500,7 +1500,7 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
         continue;
       }
 
-      progress->SetFormattedStatusText("Downloading cover for %s...", entry->title.c_str());
+      progress->FormatStatusText("Downloading cover for {}...", entry->title);
     }
 
     // we could actually do a few in parallel here...

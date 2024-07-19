@@ -417,7 +417,7 @@ void PostProcessing::Chain::LoadStages()
     }
 
     lock.unlock();
-    progress.SetFormattedStatusText("Loading shader %s...", stage_name.c_str());
+    progress.FormatStatusText("Loading shader {}...", stage_name);
 
     std::unique_ptr<Shader> shader = TryLoadingShader(stage_name, false, &error);
     if (!shader)
@@ -585,7 +585,7 @@ bool PostProcessing::Chain::CheckTargets(GPUTexture::Format target_format, u32 t
   {
     Shader* const shader = m_stages[i].get();
 
-    progress->SetFormattedStatusText("Compiling %s...", shader->GetName().c_str());
+    progress->FormatStatusText("Compiling {}...", shader->GetName());
 
     if (!shader->CompilePipeline(target_format, target_width, target_height, progress) ||
         !shader->ResizeOutput(target_format, target_width, target_height))

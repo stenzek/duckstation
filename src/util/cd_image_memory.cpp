@@ -62,17 +62,17 @@ bool CDImageMemory::CopyImage(CDImage* image, ProgressCallback* progress)
   if ((static_cast<u64>(RAW_SECTOR_SIZE) * static_cast<u64>(m_memory_sectors)) >=
       static_cast<u64>(std::numeric_limits<size_t>::max()))
   {
-    progress->DisplayFormattedModalError("Insufficient address space");
+    progress->ModalError("Insufficient address space");
     return false;
   }
 
-  progress->SetFormattedStatusText("Allocating memory for %u sectors...", m_memory_sectors);
+  progress->FormatStatusText("Allocating memory for {} sectors...", m_memory_sectors);
 
   m_memory =
     static_cast<u8*>(std::malloc(static_cast<size_t>(RAW_SECTOR_SIZE) * static_cast<size_t>(m_memory_sectors)));
   if (!m_memory)
   {
-    progress->DisplayFormattedModalError("Failed to allocate memory for %u sectors", m_memory_sectors);
+    progress->FormatModalError("Failed to allocate memory for {} sectors", m_memory_sectors);
     return false;
   }
 

@@ -1,53 +1,57 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "win32_progress_callback.h"
+
 #include "common/log.h"
+#include "common/string_util.h"
+
 #include <CommCtrl.h>
+
 Log_SetChannel(Win32ProgressCallback);
 
-Win32ProgressCallback::Win32ProgressCallback() : BaseProgressCallback()
+Win32ProgressCallback::Win32ProgressCallback() : ProgressCallback()
 {
   Create();
 }
 
 void Win32ProgressCallback::PushState()
 {
-  BaseProgressCallback::PushState();
+  ProgressCallback::PushState();
 }
 
 void Win32ProgressCallback::PopState()
 {
-  BaseProgressCallback::PopState();
+  ProgressCallback::PopState();
   Redraw(true);
 }
 
 void Win32ProgressCallback::SetCancellable(bool cancellable)
 {
-  BaseProgressCallback::SetCancellable(cancellable);
+  ProgressCallback::SetCancellable(cancellable);
   Redraw(true);
 }
 
-void Win32ProgressCallback::SetTitle(const char* title)
+void Win32ProgressCallback::SetTitle(const std::string_view title)
 {
-  SetWindowTextA(m_window_hwnd, title);
+  SetWindowTextW(m_window_hwnd, StringUtil::UTF8StringToWideString(title).c_str());
 }
 
-void Win32ProgressCallback::SetStatusText(const char* text)
+void Win32ProgressCallback::SetStatusText(const std::string_view text)
 {
-  BaseProgressCallback::SetStatusText(text);
+  ProgressCallback::SetStatusText(text);
   Redraw(true);
 }
 
 void Win32ProgressCallback::SetProgressRange(u32 range)
 {
-  BaseProgressCallback::SetProgressRange(range);
+  ProgressCallback::SetProgressRange(range);
   Redraw(false);
 }
 
 void Win32ProgressCallback::SetProgressValue(u32 value)
 {
-  BaseProgressCallback::SetProgressValue(value);
+  ProgressCallback::SetProgressValue(value);
   Redraw(false);
 }
 
@@ -185,51 +189,56 @@ LRESULT CALLBACK Win32ProgressCallback::WndProc(HWND hwnd, UINT msg, WPARAM wpar
   return 0;
 }
 
-void Win32ProgressCallback::DisplayError(const char* message)
+void Win32ProgressCallback::DisplayError(const std::string_view message)
 {
   ERROR_LOG(message);
-  SendMessageA(m_list_box_hwnd, LB_ADDSTRING, 0, reinterpret_cast<LPARAM>(message));
-  SendMessageA(m_list_box_hwnd, WM_VSCROLL, SB_BOTTOM, 0);
+  SendMessageW(m_list_box_hwnd, LB_ADDSTRING, 0,
+               reinterpret_cast<LPARAM>(StringUtil::UTF8StringToWideString(message).c_str()));
+  SendMessageW(m_list_box_hwnd, WM_VSCROLL, SB_BOTTOM, 0);
   PumpMessages();
 }
 
-void Win32ProgressCallback::DisplayWarning(const char* message)
+void Win32ProgressCallback::DisplayWarning(const std::string_view message)
 {
   WARNING_LOG(message);
-  SendMessageA(m_list_box_hwnd, LB_ADDSTRING, 0, reinterpret_cast<LPARAM>(message));
-  SendMessageA(m_list_box_hwnd, WM_VSCROLL, SB_BOTTOM, 0);
+  SendMessageW(m_list_box_hwnd, LB_ADDSTRING, 0,
+               reinterpret_cast<LPARAM>(StringUtil::UTF8StringToWideString(message).c_str()));
+  SendMessageW(m_list_box_hwnd, WM_VSCROLL, SB_BOTTOM, 0);
   PumpMessages();
 }
 
-void Win32ProgressCallback::DisplayInformation(const char* message)
+void Win32ProgressCallback::DisplayInformation(const std::string_view message)
 {
   INFO_LOG(message);
-  SendMessageA(m_list_box_hwnd, LB_ADDSTRING, 0, reinterpret_cast<LPARAM>(message));
-  SendMessageA(m_list_box_hwnd, WM_VSCROLL, SB_BOTTOM, 0);
+  SendMessageW(m_list_box_hwnd, LB_ADDSTRING, 0,
+               reinterpret_cast<LPARAM>(StringUtil::UTF8StringToWideString(message).c_str()));
+  SendMessageW(m_list_box_hwnd, WM_VSCROLL, SB_BOTTOM, 0);
   PumpMessages();
 }
 
-void Win32ProgressCallback::DisplayDebugMessage(const char* message)
+void Win32ProgressCallback::DisplayDebugMessage(const std::string_view message)
 {
   DEV_LOG(message);
 }
 
-void Win32ProgressCallback::ModalError(const char* message)
+void Win32ProgressCallback::ModalError(const std::string_view message)
 {
   PumpMessages();
-  MessageBoxA(m_window_hwnd, message, "Error", MB_ICONERROR | MB_OK);
+  MessageBoxW(m_window_hwnd, StringUtil::UTF8StringToWideString(message).c_str(), L"Error", MB_ICONERROR | MB_OK);
   PumpMessages();
 }
 
-bool Win32ProgressCallback::ModalConfirmation(const char* message)
+bool Win32ProgressCallback::ModalConfirmation(const std::string_view message)
 {
   PumpMessages();
-  bool result = MessageBoxA(m_window_hwnd, message, "Confirmation", MB_ICONQUESTION | MB_YESNO) == IDYES;
+  bool result = MessageBoxW(m_window_hwnd, StringUtil::UTF8StringToWideString(message).c_str(), L"Confirmation",
+                            MB_ICONQUESTION | MB_YESNO) == IDYES;
   PumpMessages();
   return result;
 }
 
-void Win32ProgressCallback::ModalInformation(const char* message)
+void Win32ProgressCallback::ModalInformation(const std::string_view message)
 {
-  MessageBoxA(m_window_hwnd, message, "Information", MB_ICONINFORMATION | MB_OK);
+  MessageBoxW(m_window_hwnd, StringUtil::UTF8StringToWideString(message).c_str(), L"Information",
+              MB_ICONINFORMATION | MB_OK);
 }

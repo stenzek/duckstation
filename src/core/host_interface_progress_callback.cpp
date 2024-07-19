@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "host_interface_progress_callback.h"
@@ -6,35 +6,35 @@
 #include "host.h"
 Log_SetChannel(HostInterfaceProgressCallback);
 
-HostInterfaceProgressCallback::HostInterfaceProgressCallback() : BaseProgressCallback()
+HostInterfaceProgressCallback::HostInterfaceProgressCallback() : ProgressCallback()
 {
 }
 
 void HostInterfaceProgressCallback::PushState()
 {
-  BaseProgressCallback::PushState();
+  ProgressCallback::PushState();
 }
 
 void HostInterfaceProgressCallback::PopState()
 {
-  BaseProgressCallback::PopState();
+  ProgressCallback::PopState();
   Redraw(true);
 }
 
 void HostInterfaceProgressCallback::SetCancellable(bool cancellable)
 {
-  BaseProgressCallback::SetCancellable(cancellable);
+  ProgressCallback::SetCancellable(cancellable);
   Redraw(true);
 }
 
-void HostInterfaceProgressCallback::SetTitle(const char* title)
+void HostInterfaceProgressCallback::SetTitle(const std::string_view title)
 {
   // todo?
 }
 
-void HostInterfaceProgressCallback::SetStatusText(const char* text)
+void HostInterfaceProgressCallback::SetStatusText(const std::string_view text)
 {
-  BaseProgressCallback::SetStatusText(text);
+  ProgressCallback::SetStatusText(text);
   Redraw(true);
 }
 
@@ -42,7 +42,7 @@ void HostInterfaceProgressCallback::SetProgressRange(u32 range)
 {
   u32 last_range = m_progress_range;
 
-  BaseProgressCallback::SetProgressRange(range);
+  ProgressCallback::SetProgressRange(range);
 
   if (m_progress_range != last_range)
     Redraw(false);
@@ -52,7 +52,7 @@ void HostInterfaceProgressCallback::SetProgressValue(u32 value)
 {
   u32 lastValue = m_progress_value;
 
-  BaseProgressCallback::SetProgressValue(value);
+  ProgressCallback::SetProgressValue(value);
 
   if (m_progress_value != lastValue)
     Redraw(false);
@@ -73,39 +73,14 @@ void HostInterfaceProgressCallback::Redraw(bool force)
                              static_cast<int>(m_progress_value));
 }
 
-void HostInterfaceProgressCallback::DisplayError(const char* message)
-{
-  ERROR_LOG(message);
-}
-
-void HostInterfaceProgressCallback::DisplayWarning(const char* message)
-{
-  WARNING_LOG(message);
-}
-
-void HostInterfaceProgressCallback::DisplayInformation(const char* message)
-{
-  INFO_LOG(message);
-}
-
-void HostInterfaceProgressCallback::DisplayDebugMessage(const char* message)
-{
-  DEV_LOG(message);
-}
-
-void HostInterfaceProgressCallback::ModalError(const char* message)
+void HostInterfaceProgressCallback::ModalError(const std::string_view message)
 {
   ERROR_LOG(message);
   Host::ReportErrorAsync("Error", message);
 }
 
-bool HostInterfaceProgressCallback::ModalConfirmation(const char* message)
+bool HostInterfaceProgressCallback::ModalConfirmation(const std::string_view message)
 {
   INFO_LOG(message);
   return Host::ConfirmMessage("Confirm", message);
-}
-
-void HostInterfaceProgressCallback::ModalInformation(const char* message)
-{
-  INFO_LOG(message);
 }
