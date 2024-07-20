@@ -38,8 +38,6 @@ public:
   void SetIntervalAndSchedule(TickCount ticks);
   void SetPeriodAndSchedule(TickCount ticks);
 
-  void Reset();
-
   // Services the event with the current accmulated time. If force is set, when not enough time is pending to
   // simulate a single cycle, the callback will still be invoked, otherwise it won't be.
   void InvokeEarly(bool force = false);

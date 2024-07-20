@@ -34,10 +34,6 @@ void WriteRegister(u32 offset, u32 value);
 
 void SetRequest(Channel channel, bool request);
 
-// changing interfaces
-void SetMaxSliceTicks(TickCount ticks);
-void SetHaltTicks(TickCount ticks);
-
 void DrawDebugStateWindow();
 
 } // namespace DMA

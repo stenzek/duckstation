@@ -22795,7 +22795,8 @@ SLES-01182:
     - DigitalController
     - NeGcon
   settings:
-    dmaMaxSliceTicks: 100
+    dmaMaxSliceTicks: 500 # Needs smaller sizes to avoid menu corruption.
+    dmaHaltTicks: 250
   metadata:
     publisher: "THQ"
     developer: "Interactive Entertainment"
@@ -22819,7 +22820,8 @@ SLUS-00882:
     rating: NoIssues
     comments: "Intro logos require the software renderer to display correctly."
   settings:
-    dmaMaxSliceTicks: 100
+    dmaMaxSliceTicks: 500 # Needs smaller sizes to avoid menu corruption.
+    dmaHaltTicks: 250
   controllers:
     - AnalogController
     - DigitalController
@@ -172114,6 +172116,9 @@ SLPS-00025:
     - DigitalController
   traits:
     - ForceRecompilerICache
+  settings:
+    dmaMaxSliceTicks: 500 # Stops a large GPU transfer breaking CD.
+    dmaHaltTicks: 300
   codes:
     - HASH-A8647D688C39B63F
     - HASH-21D86F0985C11667

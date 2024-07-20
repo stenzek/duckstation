@@ -4135,9 +4135,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       TextureReplacements::Reload();
     }
 
-    DMA::SetMaxSliceTicks(g_settings.dma_max_slice_ticks);
-    DMA::SetHaltTicks(g_settings.dma_halt_ticks);
-
     if (g_settings.audio_backend != old_settings.audio_backend ||
         g_settings.increase_timer_resolution != old_settings.increase_timer_resolution ||
         g_settings.emulation_speed != old_settings.emulation_speed ||

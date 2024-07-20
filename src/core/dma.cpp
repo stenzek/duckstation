@@ -194,15 +194,12 @@ static TickCount TransferDeviceToMemory(u32 address, u32 increment, u32 word_cou
 template<Channel channel>
 static TickCount TransferMemoryToDevice(u32 address, u32 increment, u32 word_count);
 
-static TickCount GetMaxSliceTicks();
+static TickCount GetMaxSliceTicks(TickCount max_slice_size);
 
 // configuration
 namespace {
 struct DMAState
 {
-  TickCount max_slice_ticks = 1000;
-  TickCount halt_ticks = 100;
-
   std::vector<u32> transfer_buffer;
   TimingEvent unhalt_event{"DMA Transfer Unhalt", 1, 1, &DMA::UnhaltTransfer, nullptr};
   TickCount halt_ticks_remaining = 0;
@@ -241,9 +238,7 @@ struct fmt::formatter<DMA::Channel> : fmt::formatter<fmt::string_view>
 
 void DMA::Initialize()
 {
-  s_state.max_slice_ticks = g_settings.dma_max_slice_ticks;
-  s_state.halt_ticks = g_settings.dma_halt_ticks;
-  s_state.unhalt_event.SetInterval(s_state.max_slice_ticks);
+  s_state.unhalt_event.SetInterval(g_settings.dma_halt_ticks);
   Reset();
 }
 
@@ -473,16 +468,6 @@ void DMA::SetRequest(Channel channel, bool request)
     s_channel_transfer_functions[static_cast<u32>(channel)]();
 }
 
-void DMA::SetMaxSliceTicks(TickCount ticks)
-{
-  s_state.max_slice_ticks = ticks;
-}
-
-void DMA::SetHaltTicks(TickCount ticks)
-{
-  s_state.halt_ticks = ticks;
-}
-
 ALWAYS_INLINE_RELEASE bool DMA::CanTransferChannel(Channel channel, bool ignore_halt)
 {
   if (!s_state.DPCR.GetMasterEnable(channel))
@@ -547,15 +532,15 @@ ALWAYS_INLINE_RELEASE void DMA::CompleteTransfer(Channel channel, ChannelState& 
   }
 }
 
-TickCount DMA::GetMaxSliceTicks()
+TickCount DMA::GetMaxSliceTicks(TickCount max_slice_size)
 {
-  const TickCount max = Pad::IsTransmitting() ? SLICE_SIZE_WHEN_TRANSMITTING_PAD : s_state.max_slice_ticks;
+  const TickCount max = Pad::IsTransmitting() ? SLICE_SIZE_WHEN_TRANSMITTING_PAD : max_slice_size;
   if (!TimingEvents::IsRunningEvents())
     return max;
 
-  const u32 current_ticks = TimingEvents::GetGlobalTickCounter();
-  const u32 max_ticks = TimingEvents::GetEventRunTickCounter() + static_cast<u32>(max);
-  return std::clamp(static_cast<TickCount>(max_ticks - current_ticks), 0, max);
+  const TickCount remaining_in_event_loop =
+    static_cast<TickCount>(TimingEvents::GetEventRunTickCounter() - TimingEvents::GetGlobalTickCounter());
+  return std::max<TickCount>(max - remaining_in_event_loop, 1);
 }
 
 template<DMA::Channel channel>
@@ -607,7 +592,7 @@ bool DMA::TransferChannel()
       const u8* const ram_ptr = Bus::g_ram;
       const u32 mask = Bus::g_ram_mask;
 
-      const TickCount slice_ticks = GetMaxSliceTicks();
+      const TickCount slice_ticks = GetMaxSliceTicks(g_settings.dma_max_slice_ticks);
       TickCount remaining_ticks = slice_ticks;
       while (cs.request && remaining_ticks > 0)
       {
@@ -658,7 +643,7 @@ bool DMA::TransferChannel()
       if (cs.request)
       {
         // stall the transfer for a bit if we ran for too long
-        HaltTransfer(s_state.halt_ticks);
+        HaltTransfer(g_settings.dma_halt_ticks);
         return false;
       }
       else
@@ -677,7 +662,7 @@ bool DMA::TransferChannel()
 
       const u32 block_size = cs.block_control.request.GetBlockSize();
       u32 blocks_remaining = cs.block_control.request.GetBlockCount();
-      TickCount ticks_remaining = GetMaxSliceTicks();
+      TickCount ticks_remaining = GetMaxSliceTicks(g_settings.dma_max_slice_ticks);
 
       if (copy_to_device)
       {
@@ -732,7 +717,7 @@ bool DMA::TransferChannel()
         {
           // we got halted
           if (!s_state.unhalt_event.IsActive())
-            HaltTransfer(s_state.halt_ticks);
+            HaltTransfer(g_settings.dma_halt_ticks);
 
           return false;
         }

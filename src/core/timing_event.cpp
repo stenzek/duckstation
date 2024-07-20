@@ -24,6 +24,7 @@ struct TimingEventsState
   TimingEvent* active_events_head = nullptr;
   TimingEvent* active_events_tail = nullptr;
   TimingEvent* current_event = nullptr;
+  TickCount current_event_new_downcount = 0;
   u32 active_event_count = 0;
   u32 global_tick_counter = 0;
   u32 event_run_tick_counter = 0;
@@ -326,13 +327,20 @@ void TimingEvents::RunEvents()
           // Factor late time into the time for the next invocation.
           const TickCount ticks_late = -event->m_downcount;
           const TickCount ticks_to_execute = event->m_time_since_last_run;
-          event->m_downcount += event->m_interval;
+
+          // Why don't we modify event->m_downcount directly? Because otherwise the event list won't be sorted.
+          // Adding the interval may cause this event to have a greater downcount than the next, and a new event
+          // may be inserted at the front, despite having a higher downcount than the next.
+          s_state.current_event_new_downcount = event->m_downcount + event->m_interval;
           event->m_time_since_last_run = 0;
 
           // The cycles_late is only an indicator, it doesn't modify the cycles to execute.
           event->m_callback(event->m_callback_param, ticks_to_execute, ticks_late);
           if (event->m_active)
+          {
+            event->m_downcount = s_state.current_event_new_downcount;
             SortEvent(event);
+          }
         }
       } while (pending_ticks > 0);
 
@@ -458,25 +466,33 @@ void TimingEvent::Delay(TickCount ticks)
 
 void TimingEvent::Schedule(TickCount ticks)
 {
+  using namespace TimingEvents;
+
   const TickCount pending_ticks = CPU::GetPendingTicks();
-  m_downcount = pending_ticks + ticks;
+  const TickCount new_downcount = pending_ticks + ticks;
+
+  // See note in RunEvents().
+  s_state.current_event_new_downcount =
+    (s_state.current_event == this) ? new_downcount : s_state.current_event_new_downcount;
 
   if (!m_active)
   {
     // Event is going active, so we want it to only execute ticks from the current timestamp.
+    m_downcount = new_downcount;
     m_time_since_last_run = -pending_ticks;
     m_active = true;
-    TimingEvents::AddActiveEvent(this);
+    AddActiveEvent(this);
   }
   else
   {
     // Event is already active, so we leave the time since last run alone, and just modify the downcount.
     // If this is a call from an IO handler for example, re-sort the event queue.
-    if (TimingEvents::s_state.current_event != this)
+    if (s_state.current_event != this)
     {
-      TimingEvents::SortEvent(this);
-      if (TimingEvents::s_state.active_events_head == this)
-        TimingEvents::UpdateCPUDowncount();
+      m_downcount = new_downcount;
+      SortEvent(this);
+      if (s_state.active_events_head == this)
+        UpdateCPUDowncount();
     }
   }
 }
@@ -494,21 +510,6 @@ void TimingEvent::SetPeriodAndSchedule(TickCount ticks)
   Schedule(ticks);
 }
 
-void TimingEvent::Reset()
-{
-  if (!m_active)
-    return;
-
-  m_downcount = m_interval;
-  m_time_since_last_run = 0;
-  if (TimingEvents::s_state.current_event != this)
-  {
-    TimingEvents::SortEvent(this);
-    if (TimingEvents::s_state.active_events_head == this)
-      TimingEvents::UpdateCPUDowncount();
-  }
-}
-
 void TimingEvent::InvokeEarly(bool force /* = false */)
 {
   if (!m_active)
@@ -519,12 +520,14 @@ void TimingEvent::InvokeEarly(bool force /* = false */)
   if ((!force && ticks_to_execute < m_period) || ticks_to_execute <= 0)
     return;
 
+  // Shouldn't be invoking early when we're the current event running.
+  DebugAssert(TimingEvents::s_state.current_event != this);
+
   m_downcount = pending_ticks + m_interval;
   m_time_since_last_run -= ticks_to_execute;
   m_callback(m_callback_param, ticks_to_execute, 0);
 
   // Since we've changed the downcount, we need to re-sort the events.
-  DebugAssert(TimingEvents::s_state.current_event != this);
   TimingEvents::SortEvent(this);
   if (TimingEvents::s_state.active_events_head == this)
     TimingEvents::UpdateCPUDowncount();
@@ -536,6 +539,7 @@ void TimingEvent::Activate()
     return;
 
   // leave the downcount intact
+  // if we're running events, this is going to be zero, so no effect
   const TickCount pending_ticks = CPU::GetPendingTicks();
   m_downcount += pending_ticks;
   m_time_since_last_run -= pending_ticks;
