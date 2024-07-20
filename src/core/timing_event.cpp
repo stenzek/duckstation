@@ -16,7 +16,7 @@ static void SortEvent(TimingEvent* event);
 static void AddActiveEvent(TimingEvent* event);
 static void RemoveActiveEvent(TimingEvent* event);
 static void SortEvents();
-static TimingEvent* FindActiveEvent(const char* name);
+static TimingEvent* FindActiveEvent(const std::string_view name);
 
 namespace {
 struct TimingEventsState
@@ -268,11 +268,11 @@ void TimingEvents::SortEvents()
     AddActiveEvent(event);
 }
 
-static TimingEvent* TimingEvents::FindActiveEvent(const char* name)
+static TimingEvent* TimingEvents::FindActiveEvent(const std::string_view name)
 {
   for (TimingEvent* event = s_state.active_events_head; event; event = event->next)
   {
-    if (event->GetName().compare(name) == 0)
+    if (event->GetName() == name)
       return event;
   }
 
@@ -296,9 +296,6 @@ void TimingEvents::RunEvents()
 
   do
   {
-    if (CPU::HasPendingInterrupt())
-      CPU::DispatchInterrupt();
-
     TickCount pending_ticks = CPU::GetPendingTicks();
     if (pending_ticks >= s_state.active_events_head->GetDowncount())
     {
@@ -348,6 +345,9 @@ void TimingEvents::RunEvents()
       System::FrameDone();
     }
 
+    if (CPU::HasPendingInterrupt())
+      CPU::DispatchInterrupt();
+
     UpdateCPUDowncount();
   } while (CPU::GetPendingTicks() >= CPU::g_state.downcount);
 }
@@ -375,7 +375,7 @@ bool TimingEvents::DoState(StateWrapper& sw)
       if (sw.HasError())
         return false;
 
-      TimingEvent* event = FindActiveEvent(event_name.c_str());
+      TimingEvent* event = FindActiveEvent(event_name);
       if (!event)
       {
         WARNING_LOG("Save state has event '{}', but couldn't find this event when loading.", event_name);
