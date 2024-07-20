@@ -60532,9 +60532,12 @@ SLPM-87331:
   name: "Front Mission 2 (Japan) (Front Mission History)"
   controllers:
     - DigitalController
+  traits:
+    # Pick your poison here. Disabling true colour fixes the sprite backgrounds,
+    # but if you're upscaling, leaves junk around the edges.
+    - ForceSoftwareRendererForReadbacks
   codes:
     - SLPM-87331
-    - SLPM-87397
   metadata:
     publisher: "Squaresoft"
     developer: "Squaresoft"
@@ -60549,10 +60552,14 @@ SLPM-87331:
     vibration: false
     multitap: false
     linkCable: false
-SCPS-45116:
+SLPS-01000:
   name: "Front Mission 2 (Japan, Asia)"
   controllers:
     - DigitalController
+  traits:
+    # Pick your poison here. Disabling true colour fixes the sprite backgrounds,
+    # but if you're upscaling, leaves junk around the edges.
+    - ForceSoftwareRendererForReadbacks
   codes:
     - SCPS-45116
     - SLPS-01000
