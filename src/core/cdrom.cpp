@@ -1197,7 +1197,8 @@ void CDROM::SetAsyncInterrupt(Interrupt interrupt)
   }
   else
   {
-    DEBUG_LOG("Delaying async interrupt {} because of pending interrupt", s_interrupt_flag_register);
+    DEBUG_LOG("Delaying async interrupt {} because of pending interrupt {}", s_pending_async_interrupt,
+              s_interrupt_flag_register);
   }
 }
 
@@ -1535,6 +1536,9 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     DEBUG_LOG("Response FIFO not empty on command begin");
     s_response_fifo.Clear();
   }
+
+  // Stop command event first, reduces our chances of ending up with out-of-order events.
+  s_command_event.Deactivate();
 
   switch (s_command)
   {
@@ -1907,8 +1911,8 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
       QueueCommandSecondResponse(Command::Init, INIT_TICKS);
       EndCommand();
+      return;
     }
-    break;
 
     case Command::MotorOn:
     {
@@ -1937,7 +1941,6 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       EndCommand();
       return;
     }
-    break;
 
     case Command::Mute:
     {
@@ -1945,8 +1948,8 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       s_muted = true;
       SendACKAndStat();
       EndCommand();
+      return;
     }
-    break;
 
     case Command::Demute:
     {
@@ -1954,8 +1957,8 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       s_muted = false;
       SendACKAndStat();
       EndCommand();
+      return;
     }
-    break;
 
     case Command::GetlocL:
     {
@@ -2034,8 +2037,8 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       }
 
       EndCommand();
+      return;
     }
-    break;
 
     case Command::GetTD:
     {
@@ -2080,8 +2083,8 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       }
 
       EndCommand();
+      return;
     }
-    break;
 
     case Command::Getmode:
     {
@@ -2094,8 +2097,8 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       s_response_fifo.Push(s_xa_filter_channel_number);
       SetInterrupt(Interrupt::ACK);
       EndCommand();
+      return;
     }
-    break;
 
     case Command::Sync:
     {
@@ -2103,8 +2106,8 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
       SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
       EndCommand();
+      return;
     }
-    break;
 
     case Command::VideoCD:
     {
@@ -2115,8 +2118,8 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       s_command = Command::None;
       s_command_event.Deactivate();
       UpdateStatusRegister();
+      return;
     }
-    break;
 
     default:
       [[unlikely]]
@@ -2125,8 +2128,8 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
                   s_param_fifo.GetSize());
         SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
         EndCommand();
+        return;
       }
-      break;
   }
 }
 
