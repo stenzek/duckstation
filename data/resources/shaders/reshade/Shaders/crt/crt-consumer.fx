@@ -111,7 +111,7 @@ uniform float beamlow <
 	ui_type = "drag";
 	ui_min = 0.5;
 	ui_max = 2.5;
-	ui_step = 0.0;
+	ui_step = 0.05;
 	ui_label = "Scanlines dark";
 > = 1.45;
 
@@ -119,7 +119,7 @@ uniform float beamhigh <
 	ui_type = "drag";
 	ui_min = 0.5;
 	ui_max = 2.5;
-	ui_step = 0.0;
+	ui_step = 0.05;
 	ui_label = "Scanlines bright";
 > = 1.05;
 
