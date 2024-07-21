@@ -207,7 +207,8 @@ std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::Gra
   gpb.AddDynamicState(VK_DYNAMIC_STATE_VIEWPORT);
   gpb.AddDynamicState(VK_DYNAMIC_STATE_SCISSOR);
 
-  gpb.SetPipelineLayout(m_pipeline_layouts[static_cast<u8>(config.layout)]);
+  gpb.SetPipelineLayout(m_pipeline_layouts[static_cast<size_t>(GetPipelineLayoutType(config.render_pass_flags))]
+                                          [static_cast<size_t>(config.layout)]);
 
   if (m_optional_extensions.vk_khr_dynamic_rendering && (m_optional_extensions.vk_khr_dynamic_rendering_local_read ||
                                                          !(config.render_pass_flags & GPUPipeline::ColorFeedbackLoop)))

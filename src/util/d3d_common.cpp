@@ -50,7 +50,7 @@ const char* D3DCommon::GetFeatureLevelShaderModelString(D3D_FEATURE_LEVEL featur
     {D3D_FEATURE_LEVEL_10_0, "sm40"},
     {D3D_FEATURE_LEVEL_10_1, "sm41"},
     {D3D_FEATURE_LEVEL_11_0, "sm50"},
-    {D3D_FEATURE_LEVEL_11_1, "sm51"},
+    {D3D_FEATURE_LEVEL_11_1, "sm50"},
   }};
 
   for (const auto& [fl, name] : feature_level_names)
@@ -390,11 +390,9 @@ u32 D3DCommon::GetShaderModelForFeatureLevel(D3D_FEATURE_LEVEL feature_level)
       return 41;
 
     case D3D_FEATURE_LEVEL_11_0:
-      return 50;
-
     case D3D_FEATURE_LEVEL_11_1:
     default:
-      return 51;
+      return 50;
   }
 }
 
@@ -425,14 +423,6 @@ std::optional<DynamicHeapArray<u8>> D3DCommon::CompileShader(u32 shader_model, b
     {
       static constexpr std::array<const char*, static_cast<u32>(GPUShaderStage::MaxCount)> targets = {
         {"vs_5_0", "ps_5_0", "gs_5_0", "cs_5_0"}};
-      target = targets[static_cast<int>(stage)];
-    }
-    break;
-
-    case 51:
-    {
-      static constexpr std::array<const char*, static_cast<u32>(GPUShaderStage::MaxCount)> targets = {
-        {"vs_5_1", "ps_5_1", "gs_5_1", "cs_5_1"}};
       target = targets[static_cast<int>(stage)];
     }
     break;

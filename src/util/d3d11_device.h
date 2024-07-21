@@ -89,7 +89,7 @@ public:
   void* MapUniformBuffer(u32 size) override;
   void UnmapUniformBuffer(u32 size) override;
   void SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds,
-                        GPUPipeline::RenderPassFlag feedback_loop = GPUPipeline::NoRenderPassFlags) override;
+                        GPUPipeline::RenderPassFlag flags = GPUPipeline::NoRenderPassFlags) override;
   void SetPipeline(GPUPipeline* pipeline) override;
   void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) override;
   void SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer) override;
@@ -142,7 +142,7 @@ private:
   bool CreateBuffers();
   void DestroyBuffers();
 
-  bool IsRenderTargetBound(const GPUTexture* tex) const;
+  bool IsRenderTargetBound(const D3D11Texture* tex) const;
 
   ComPtr<ID3D11RasterizerState> GetRasterizationState(const GPUPipeline::RasterizationState& rs, Error* error);
   ComPtr<ID3D11DepthStencilState> GetDepthState(const GPUPipeline::DepthState& ds, Error* error);
@@ -180,6 +180,7 @@ private:
   D3D11Pipeline* m_current_pipeline = nullptr;
   std::array<D3D11Texture*, MAX_RENDER_TARGETS> m_current_render_targets = {};
   u32 m_num_current_render_targets = 0;
+  GPUPipeline::RenderPassFlag m_current_render_pass_flags = GPUPipeline::NoRenderPassFlags;
   D3D11Texture* m_current_depth_target = nullptr;
 
   ID3D11InputLayout* m_current_input_layout = nullptr;

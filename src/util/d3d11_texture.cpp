@@ -95,19 +95,16 @@ std::unique_ptr<GPUSampler> D3D11Device::CreateSampler(const GPUSampler::Config&
 
 D3D11Texture::D3D11Texture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format,
                            ComPtr<ID3D11Texture2D> texture, ComPtr<ID3D11ShaderResourceView> srv,
-                           ComPtr<ID3D11View> rtv_dsv)
+                           ComPtr<ID3D11View> rtv_dsv, ComPtr<ID3D11UnorderedAccessView> uav)
   : GPUTexture(static_cast<u16>(width), static_cast<u16>(height), static_cast<u8>(layers), static_cast<u8>(levels),
                static_cast<u8>(samples), type, format),
-    m_texture(std::move(texture)), m_srv(std::move(srv)), m_rtv_dsv(std::move(rtv_dsv))
+    m_texture(std::move(texture)), m_srv(std::move(srv)), m_rtv_dsv(std::move(rtv_dsv)), m_uav(std::move(uav))
 {
 }
 
 D3D11Texture::~D3D11Texture()
 {
   D3D11Device::GetInstance().UnbindTexture(this);
-  m_rtv_dsv.Reset();
-  m_srv.Reset();
-  m_texture.Reset();
 }
 
 D3D11_TEXTURE2D_DESC D3D11Texture::GetDesc() const
@@ -247,7 +244,7 @@ std::unique_ptr<D3D11Texture> D3D11Texture::Create(ID3D11Device* device, u32 wid
       cpu_access = D3D11_CPU_ACCESS_WRITE;
       break;
     case Type::RWTexture:
-      bind_flags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
+      bind_flags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
       break;
     default:
       break;
@@ -327,8 +324,23 @@ std::unique_ptr<D3D11Texture> D3D11Texture::Create(ID3D11Device* device, u32 wid
     rtv_dsv = std::move(dsv);
   }
 
+  ComPtr<ID3D11UnorderedAccessView> uav;
+  if (bind_flags & D3D11_BIND_UNORDERED_ACCESS)
+  {
+    const D3D11_UAV_DIMENSION uav_dimension =
+      (desc.ArraySize > 1 ? D3D11_UAV_DIMENSION_TEXTURE2DARRAY : D3D11_UAV_DIMENSION_TEXTURE2D);
+    const CD3D11_UNORDERED_ACCESS_VIEW_DESC uav_desc(uav_dimension, fm.srv_format, 0, 0, desc.ArraySize);
+    const HRESULT hr = device->CreateUnorderedAccessView(texture.Get(), &uav_desc, uav.GetAddressOf());
+    if (FAILED(hr)) [[unlikely]]
+    {
+      ERROR_LOG("Create UAV for texture failed: 0x{:08X}", static_cast<unsigned>(hr));
+      return nullptr;
+    }
+  }
+
   return std::unique_ptr<D3D11Texture>(new D3D11Texture(width, height, layers, levels, samples, type, format,
-                                                        std::move(texture), std::move(srv), std::move(rtv_dsv)));
+                                                        std::move(texture), std::move(srv), std::move(rtv_dsv),
+                                                        std::move(uav)));
 }
 
 D3D11TextureBuffer::D3D11TextureBuffer(Format format, u32 size_in_elements) : GPUTextureBuffer(format, size_in_elements)

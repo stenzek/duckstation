@@ -129,6 +129,7 @@ public:
   ALWAYS_INLINE bool IsDepthStencil() const { return (m_type == Type::DepthStencil); }
   ALWAYS_INLINE bool IsTexture() const { return (m_type == Type::Texture || m_type == Type::DynamicTexture); }
   ALWAYS_INLINE bool IsDynamicTexture() const { return (m_type == Type::DynamicTexture); }
+  ALWAYS_INLINE bool IsRWTexture() const { return (m_type == Type::RWTexture); }
 
   ALWAYS_INLINE const ClearValue& GetClearValue() const { return m_clear_value; }
   ALWAYS_INLINE u32 GetClearColor() const { return m_clear_value.color; }

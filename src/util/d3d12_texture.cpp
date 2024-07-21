@@ -44,8 +44,6 @@ std::unique_ptr<GPUTexture> D3D12Device::CreateTexture(u32 width, u32 height, u3
 
   const D3DCommon::DXGIFormatMapping& fm = D3DCommon::GetFormatMapping(format);
 
-  const DXGI_FORMAT uav_format = (type == GPUTexture::Type::RWTexture) ? fm.resource_format : DXGI_FORMAT_UNKNOWN;
-
   D3D12_RESOURCE_DESC desc = {};
   desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
   desc.Width = width;
@@ -98,16 +96,15 @@ std::unique_ptr<GPUTexture> D3D12Device::CreateTexture(u32 width, u32 height, u3
     {
       DebugAssert(levels == 1);
       allocationDesc.Flags |= D3D12MA::ALLOCATION_FLAG_COMMITTED;
-      state = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+      desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+      optimized_clear_value.Format = fm.rtv_format;
+      state = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
     }
     break;
 
     default:
       return {};
   }
-
-  if (uav_format != DXGI_FORMAT_UNKNOWN)
-    desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
   ComPtr<ID3D12Resource> resource;
   ComPtr<D3D12MA::Allocation> allocation;
@@ -157,16 +154,26 @@ std::unique_ptr<GPUTexture> D3D12Device::CreateTexture(u32 width, u32 height, u3
     }
     break;
 
+    case GPUTexture::Type::RWTexture:
+    {
+      write_descriptor_type = D3D12Texture::WriteDescriptorType::RTV;
+      if (!CreateRTVDescriptor(resource.Get(), samples, fm.rtv_format, &write_descriptor))
+      {
+        m_descriptor_heap_manager.Free(&srv_descriptor);
+        return {};
+      }
+
+      if (!CreateUAVDescriptor(resource.Get(), samples, fm.srv_format, &uav_descriptor))
+      {
+        m_descriptor_heap_manager.Free(&write_descriptor);
+        m_descriptor_heap_manager.Free(&srv_descriptor);
+        return {};
+      }
+    }
+    break;
+
     default:
       break;
-  }
-
-  if (uav_format != DXGI_FORMAT_UNKNOWN &&
-      !CreateUAVDescriptor(resource.Get(), samples, fm.dsv_format, &uav_descriptor))
-  {
-    m_descriptor_heap_manager.Free(&write_descriptor);
-    m_descriptor_heap_manager.Free(&srv_descriptor);
-    return {};
   }
 
   std::unique_ptr<D3D12Texture> tex(new D3D12Texture(

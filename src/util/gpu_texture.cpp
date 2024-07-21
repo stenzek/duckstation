@@ -213,10 +213,18 @@ bool GPUTexture::ValidateConfig(u32 width, u32 height, u32 layers, u32 levels, u
     return false;
   }
 
-  if (samples > 1 && levels > 1)
+  if (samples > 1)
   {
-    ERROR_LOG("Multisampled textures can't have mip levels.");
-    return false;
+    if (levels > 1)
+    {
+      ERROR_LOG("Multisampled textures can't have mip levels.");
+      return false;
+    }
+    else if (type != Type::RenderTarget && type != Type::DepthStencil)
+    {
+      ERROR_LOG("Multisampled textures must be render targets or depth stencil targets.");
+      return false;
+    }
   }
 
   if (layers > 1 && type != Type::Texture && type != Type::DynamicTexture)
