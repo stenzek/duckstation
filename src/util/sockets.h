@@ -135,6 +135,9 @@ private:
   // Hide the constructor.
   SocketMultiplexer();
 
+  // Initialization.
+  bool Initialize(Error* error);
+
   // Tracking of open sockets.
   void AddOpenSocket(std::shared_ptr<BaseSocket> socket);
   void AddClientSocket(std::shared_ptr<BaseSocket> socket);
@@ -148,10 +151,14 @@ private:
   // We store the fd in the struct to avoid the cache miss reading the object.
   using SocketMap = std::unordered_map<SocketDescriptor, std::shared_ptr<BaseSocket>>;
 
+#ifdef __linux__
+  int m_epoll_fd = -1;
+#else
   std::mutex m_poll_array_lock;
   pollfd* m_poll_array = nullptr;
   size_t m_poll_array_active_size = 0;
   size_t m_poll_array_max_size = 0;
+#endif
 
   std::mutex m_open_sockets_lock;
   SocketMap m_open_sockets;
