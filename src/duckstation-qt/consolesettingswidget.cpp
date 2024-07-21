@@ -1,12 +1,16 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "consolesettingswidget.h"
-#include "core/system.h"
 #include "qtutils.h"
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
+
+#include "core/game_database.h"
+#include "core/system.h"
+
 #include "util/cd_image.h"
+
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QPushButton>
 
@@ -121,6 +125,11 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
   connect(m_ui.enableCPUClockSpeedControl, &QCheckBox::checkStateChanged, this,
           &ConsoleSettingsWidget::onEnableCPUClockSpeedControlChecked);
   connect(m_ui.cpuClockSpeed, &QSlider::valueChanged, this, &ConsoleSettingsWidget::onCPUClockSpeedValueChanged);
+
+  SettingWidgetBinder::SetAvailability(m_ui.cpuExecutionModeLabel,
+                                       !m_dialog->hasGameTrait(GameDatabase::Trait::ForceInterpreter));
+  SettingWidgetBinder::SetAvailability(m_ui.cpuExecutionMode,
+                                       !m_dialog->hasGameTrait(GameDatabase::Trait::ForceInterpreter));
 
   calculateCPUClockValue();
 }

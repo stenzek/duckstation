@@ -18,6 +18,7 @@ class QWheelEvent;
 enum class DiscRegion : u8;
 
 namespace GameDatabase {
+enum class Trait : u32;
 struct Entry;
 }
 
@@ -91,6 +92,8 @@ public:
   void removeSettingValue(const char* section, const char* key);
   void saveAndReloadGameSettings();
 
+  bool hasGameTrait(GameDatabase::Trait trait);
+
 Q_SIGNALS:
   void settingsResetToDefaults();
 
@@ -123,6 +126,7 @@ private:
   Ui::SettingsWindow m_ui;
 
   std::unique_ptr<INISettingsInterface> m_sif;
+  const GameDatabase::Entry* m_database_entry = nullptr;
 
   InterfaceSettingsWidget* m_general_settings = nullptr;
   BIOSSettingsWidget* m_bios_settings = nullptr;

@@ -48,7 +48,7 @@ SettingsWindow::SettingsWindow() : QWidget()
 
 SettingsWindow::SettingsWindow(const std::string& path, const std::string& serial, DiscRegion region,
                                const GameDatabase::Entry* entry, std::unique_ptr<INISettingsInterface> sif)
-  : QWidget(), m_sif(std::move(sif))
+  : QWidget(), m_sif(std::move(sif)), m_database_entry(entry)
 {
   m_ui.setupUi(this);
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -609,6 +609,12 @@ void SettingsWindow::saveAndReloadGameSettings()
   DebugAssert(m_sif);
   QtHost::SaveGameSettings(m_sif.get(), true);
   g_emu_thread->reloadGameSettings(false);
+}
+
+bool SettingsWindow::hasGameTrait(GameDatabase::Trait trait)
+{
+  return (m_database_entry && m_database_entry->HasTrait(trait) &&
+          m_sif->GetBoolValue("Main", "ApplyCompatibilitySettings", true));
 }
 
 void SettingsWindow::openGamePropertiesDialog(const std::string& path, const std::string& title,

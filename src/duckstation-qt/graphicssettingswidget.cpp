@@ -2,11 +2,13 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "graphicssettingswidget.h"
-#include "core/gpu.h"
-#include "core/settings.h"
 #include "qtutils.h"
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
+
+#include "core/game_database.h"
+#include "core/gpu.h"
+#include "core/settings.h"
 
 #include <algorithm>
 
@@ -90,6 +92,21 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   connect(m_ui.trueColor, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onTrueColorChanged);
   connect(m_ui.pgxpEnable, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::updatePGXPSettingsEnabled);
 
+  SettingWidgetBinder::SetAvailability(m_ui.renderer,
+                                       !m_dialog->hasGameTrait(GameDatabase::Trait::ForceSoftwareRenderer));
+  SettingWidgetBinder::SetAvailability(m_ui.resolutionScale,
+                                       !m_dialog->hasGameTrait(GameDatabase::Trait::DisableUpscaling));
+  SettingWidgetBinder::SetAvailability(m_ui.textureFiltering,
+                                       !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering));
+  SettingWidgetBinder::SetAvailability(m_ui.trueColor, !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTrueColor));
+  SettingWidgetBinder::SetAvailability(m_ui.pgxpEnable, !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXP));
+  SettingWidgetBinder::SetAvailability(m_ui.disableInterlacing,
+                                       !m_dialog->hasGameTrait(GameDatabase::Trait::ForceInterlacing));
+  SettingWidgetBinder::SetAvailability(m_ui.widescreenHack,
+                                       !m_dialog->hasGameTrait(GameDatabase::Trait::DisableWidescreen));
+  SettingWidgetBinder::SetAvailability(m_ui.forceNTSCTimings,
+                                       !m_dialog->hasGameTrait(GameDatabase::Trait::DisableForceNTSCTimings));
+
   // Advanced Tab
 
   SettingWidgetBinder::BindWidgetToEnumSetting(
@@ -122,6 +139,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.forceRoundedTexcoords, "GPU", "ForceRoundTextureCoordinates",
                                                false);
 
+  SettingWidgetBinder::SetAvailability(m_ui.scaledDithering,
+                                       !m_dialog->hasGameTrait(GameDatabase::Trait::DisableScaledDithering));
+
   // PGXP Tab
 
   SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.pgxpGeometryTolerance, "GPU", "PGXPTolerance", -1.0f);
@@ -140,6 +160,15 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
           &GraphicsSettingsWidget::updatePGXPSettingsEnabled);
   connect(m_ui.pgxpDepthBuffer, &QCheckBox::checkStateChanged, this,
           &GraphicsSettingsWidget::updatePGXPSettingsEnabled);
+
+  SettingWidgetBinder::SetAvailability(m_ui.pgxpTextureCorrection,
+                                       !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPTextureCorrection));
+  SettingWidgetBinder::SetAvailability(m_ui.pgxpColorCorrection,
+                                       !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPColorCorrection));
+  SettingWidgetBinder::SetAvailability(m_ui.pgxpCulling,
+                                       !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPCulling));
+  SettingWidgetBinder::SetAvailability(m_ui.pgxpPreserveProjPrecision,
+                                       !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPPreserveProjFP));
 
   // OSD Tab
 
@@ -619,24 +648,26 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
   const RenderAPI render_api = Settings::GetRenderAPIForRenderer(renderer);
   const bool is_hardware = (renderer != GPURenderer::Software);
 
-  m_ui.resolutionScale->setEnabled(is_hardware);
-  m_ui.resolutionScaleLabel->setEnabled(is_hardware);
+  m_ui.resolutionScale->setEnabled(is_hardware && !m_dialog->hasGameTrait(GameDatabase::Trait::DisableUpscaling));
+  m_ui.resolutionScaleLabel->setEnabled(is_hardware && !m_dialog->hasGameTrait(GameDatabase::Trait::DisableUpscaling));
   m_ui.msaaMode->setEnabled(is_hardware);
   m_ui.msaaModeLabel->setEnabled(is_hardware);
-  m_ui.textureFiltering->setEnabled(is_hardware);
-  m_ui.textureFilteringLabel->setEnabled(is_hardware);
+  m_ui.textureFiltering->setEnabled(is_hardware &&
+                                    !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering));
+  m_ui.textureFilteringLabel->setEnabled(is_hardware &&
+                                         !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering));
   m_ui.gpuDownsampleLabel->setEnabled(is_hardware);
   m_ui.gpuDownsampleMode->setEnabled(is_hardware);
   m_ui.gpuDownsampleScale->setEnabled(is_hardware);
-  m_ui.trueColor->setEnabled(is_hardware);
-  m_ui.pgxpEnable->setEnabled(is_hardware);
+  m_ui.trueColor->setEnabled(is_hardware && !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTrueColor));
+  m_ui.pgxpEnable->setEnabled(is_hardware && !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXP));
 
   m_ui.gpuLineDetectMode->setEnabled(is_hardware);
   m_ui.gpuLineDetectModeLabel->setEnabled(is_hardware);
   m_ui.gpuWireframeMode->setEnabled(is_hardware);
   m_ui.gpuWireframeModeLabel->setEnabled(is_hardware);
   m_ui.debanding->setEnabled(is_hardware);
-  m_ui.scaledDithering->setEnabled(is_hardware);
+  m_ui.scaledDithering->setEnabled(is_hardware && !m_dialog->hasGameTrait(GameDatabase::Trait::DisableScaledDithering));
   m_ui.useSoftwareRendererForReadbacks->setEnabled(is_hardware);
 
   m_ui.tabs->setTabEnabled(TAB_INDEX_TEXTURE_REPLACEMENTS, is_hardware);
@@ -712,6 +743,7 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
     SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.fullscreenMode, "GPU", "FullscreenMode");
   }
 
+  if (!m_dialog->hasGameTrait(GameDatabase::Trait::DisableUpscaling))
   {
     m_ui.resolutionScale->disconnect();
     m_ui.resolutionScale->clear();
@@ -790,16 +822,20 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
 
 void GraphicsSettingsWidget::updatePGXPSettingsEnabled()
 {
-  const bool enabled = (effectiveRendererIsHardware() && m_dialog->getEffectiveBoolValue("GPU", "PGXPEnable", false));
+  const bool enabled = (effectiveRendererIsHardware() && m_dialog->getEffectiveBoolValue("GPU", "PGXPEnable", false) &&
+                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXP));
   const bool tc_enabled = (enabled && m_dialog->getEffectiveBoolValue("GPU", "PGXPTextureCorrection", true));
   const bool depth_enabled = (enabled && m_dialog->getEffectiveBoolValue("GPU", "PGXPDepthBuffer", false));
   m_ui.tabs->setTabEnabled(TAB_INDEX_PGXP, enabled);
   m_ui.pgxpTab->setEnabled(enabled);
-  m_ui.pgxpCulling->setEnabled(enabled);
-  m_ui.pgxpTextureCorrection->setEnabled(enabled);
-  m_ui.pgxpColorCorrection->setEnabled(tc_enabled);
-  m_ui.pgxpDepthBuffer->setEnabled(enabled);
-  m_ui.pgxpPreserveProjPrecision->setEnabled(enabled);
+  m_ui.pgxpCulling->setEnabled(enabled && !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPCulling));
+  m_ui.pgxpTextureCorrection->setEnabled(enabled &&
+                                         !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPTextureCorrection));
+  m_ui.pgxpColorCorrection->setEnabled(tc_enabled &&
+                                       !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPColorCorrection));
+  m_ui.pgxpDepthBuffer->setEnabled(enabled && !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPDepthBuffer));
+  m_ui.pgxpPreserveProjPrecision->setEnabled(enabled &&
+                                             !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPPreserveProjFP));
   m_ui.pgxpCPU->setEnabled(enabled);
   m_ui.pgxpVertexCache->setEnabled(enabled);
   m_ui.pgxpGeometryTolerance->setEnabled(enabled);
@@ -843,7 +879,8 @@ void GraphicsSettingsWidget::onTrueColorChanged()
 {
   const int resolution_scale = m_dialog->getEffectiveIntValue("GPU", "ResolutionScale", 1);
   const bool true_color = m_dialog->getEffectiveBoolValue("GPU", "TrueColor", false);
-  const bool allow_scaled_dithering = (resolution_scale != 1 && !true_color);
+  const bool allow_scaled_dithering =
+    (resolution_scale != 1 && !true_color && !m_dialog->hasGameTrait(GameDatabase::Trait::DisableScaledDithering));
   const bool allow_debanding = true_color;
   m_ui.scaledDithering->setEnabled(allow_scaled_dithering);
   m_ui.debanding->setEnabled(allow_debanding);

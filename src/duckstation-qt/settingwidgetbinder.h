@@ -1283,4 +1283,39 @@ static inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* 
 
   widget->connect(widget, &QLineEdit::editingFinished, widget, std::move(value_changed));
 }
+
+template<typename WidgetType>
+static inline void SetAvailability(WidgetType* widget, bool available)
+{
+  if (available)
+    return;
+
+  widget->disconnect();
+
+  if constexpr (std::is_same_v<WidgetType, QComboBox>)
+  {
+    widget->clear();
+    widget->addItem(qApp->translate("SettingWidgetBinder", "Incompatible with this game."));
+  }
+  else if constexpr (std::is_same_v<WidgetType, QLineEdit>)
+  {
+    widget->setText(qApp->translate("SettingWidgetBinder", "Incompatible with this game."));
+  }
+  else if constexpr (std::is_same_v<WidgetType, QCheckBox>)
+  {
+    widget->setText(widget->text() + qApp->translate("SettingWidgetBinder", " [incompatible]"));
+    widget->setCheckState(Qt::Unchecked);
+  }
+  else if constexpr (std::is_same_v<WidgetType, QSlider>)
+  {
+    widget->setTickPosition(0);
+  }
+  else if constexpr (std::is_same_v<WidgetType, QSpinBox> || std::is_same_v<WidgetType, QDoubleSpinBox>)
+  {
+    widget->setValue(0);
+  }
+
+  widget->setEnabled(false);
+}
+
 } // namespace SettingWidgetBinder
