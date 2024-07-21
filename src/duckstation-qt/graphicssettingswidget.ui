@@ -392,24 +392,10 @@
           </item>
           <item row="2" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_5">
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="gpuThread">
-              <property name="text">
-               <string>Threaded Rendering</string>
-              </property>
-             </widget>
-            </item>
             <item row="0" column="1">
              <widget class="QCheckBox" name="scaledDithering">
               <property name="text">
                <string>Scaled Dithering</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QCheckBox" name="useSoftwareRendererForReadbacks">
-              <property name="text">
-               <string>Software Renderer Readbacks</string>
               </property>
              </widget>
             </item>
@@ -420,10 +406,31 @@
               </property>
              </widget>
             </item>
-            <item row="2" column="0">
+            <item row="2" column="1">
+             <widget class="QCheckBox" name="useSoftwareRendererForReadbacks">
+              <property name="text">
+               <string>Software Renderer Readbacks</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
              <widget class="QCheckBox" name="forceRoundedTexcoords">
               <property name="text">
                <string>Round Upscaled Texture Coordinates</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QCheckBox" name="gpuThread">
+              <property name="text">
+               <string>Threaded Rendering</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="accurateBlending">
+              <property name="text">
+               <string>Accurate Blending</string>
               </property>
              </widget>
             </item>
@@ -993,24 +1000,10 @@
          <layout class="QFormLayout" name="formLayout_10">
           <item row="0" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_8">
-            <item row="1" column="1">
-             <widget class="QCheckBox" name="disableFramebufferFetch">
-              <property name="text">
-               <string>Disable Framebuffer Fetch</string>
-              </property>
-             </widget>
-            </item>
             <item row="2" column="1">
              <widget class="QCheckBox" name="disableTextureCopyToSelf">
               <property name="text">
                <string>Disable Texture Copy To Self</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="disableDualSource">
-              <property name="text">
-               <string>Disable Dual-Source Blending</string>
               </property>
              </widget>
             </item>
@@ -1021,10 +1014,17 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="1">
-             <widget class="QCheckBox" name="disableShaderCache">
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="disableDualSource">
               <property name="text">
-               <string>Disable Shader Cache</string>
+               <string>Disable Dual-Source Blending</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QCheckBox" name="disableFramebufferFetch">
+              <property name="text">
+               <string>Disable Framebuffer Fetch</string>
               </property>
              </widget>
             </item>
@@ -1032,6 +1032,27 @@
              <widget class="QCheckBox" name="disableTextureBuffers">
               <property name="text">
                <string>Disable Texture Buffers</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="disableShaderCache">
+              <property name="text">
+               <string>Disable Shader Cache</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QCheckBox" name="disableMemoryImport">
+              <property name="text">
+               <string>Disable Memory Import</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QCheckBox" name="disableRasterOrderViews">
+              <property name="text">
+               <string>Disable Rasterizer Order Views</string>
               </property>
              </widget>
             </item>

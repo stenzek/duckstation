@@ -191,6 +191,7 @@ void Settings::Load(SettingsInterface& si)
   gpu_disable_texture_buffers = si.GetBoolValue("GPU", "DisableTextureBuffers", false);
   gpu_disable_texture_copy_to_self = si.GetBoolValue("GPU", "DisableTextureCopyToSelf", false);
   gpu_disable_memory_import = si.GetBoolValue("GPU", "DisableMemoryImport", false);
+  gpu_disable_raster_order_views = si.GetBoolValue("GPU", "DisableRasterOrderViews", false);
   gpu_per_sample_shading = si.GetBoolValue("GPU", "PerSampleShading", false);
   gpu_use_thread = si.GetBoolValue("GPU", "UseThread", true);
   gpu_use_software_renderer_for_readbacks = si.GetBoolValue("GPU", "UseSoftwareRendererForReadbacks", false);
@@ -199,6 +200,7 @@ void Settings::Load(SettingsInterface& si)
   gpu_debanding = si.GetBoolValue("GPU", "Debanding", false);
   gpu_scaled_dithering = si.GetBoolValue("GPU", "ScaledDithering", true);
   gpu_force_round_texcoords = si.GetBoolValue("GPU", "ForceRoundTextureCoordinates", false);
+  gpu_accurate_blending = si.GetBoolValue("GPU", "AccurateBlending", false);
   gpu_texture_filter =
     ParseTextureFilterName(
       si.GetStringValue("GPU", "TextureFilter", GetTextureFilterName(DEFAULT_GPU_TEXTURE_FILTER)).c_str())
@@ -494,6 +496,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
     si.SetBoolValue("GPU", "DisableTextureBuffers", gpu_disable_texture_buffers);
     si.SetBoolValue("GPU", "DisableTextureCopyToSelf", gpu_disable_texture_copy_to_self);
     si.SetBoolValue("GPU", "DisableMemoryImport", gpu_disable_memory_import);
+    si.SetBoolValue("GPU", "DisableRasterOrderViews", gpu_disable_raster_order_views);
   }
 
   si.SetBoolValue("GPU", "PerSampleShading", gpu_per_sample_shading);
@@ -504,6 +507,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("GPU", "Debanding", gpu_debanding);
   si.SetBoolValue("GPU", "ScaledDithering", gpu_scaled_dithering);
   si.SetBoolValue("GPU", "ForceRoundTextureCoordinates", gpu_force_round_texcoords);
+  si.SetBoolValue("GPU", "AccurateBlending", gpu_accurate_blending);
   si.SetStringValue("GPU", "TextureFilter", GetTextureFilterName(gpu_texture_filter));
   si.SetStringValue(
     "GPU", "SpriteTextureFilter",

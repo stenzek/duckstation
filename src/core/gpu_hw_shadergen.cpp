@@ -77,7 +77,8 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured, bool pale
     {
       DeclareVertexEntryPoint(
         ss, {"float4 a_pos", "float4 a_col0", "uint a_texcoord", "uint a_texpage", "float4 a_uv_limits"}, 1, 1,
-        {{"nointerpolation", palette ? "uint4 v_texpage" : "uint2 v_texpage"}, {"nointerpolation", "float4 v_uv_limits"}},
+        {{"nointerpolation", palette ? "uint4 v_texpage" : "uint2 v_texpage"},
+         {"nointerpolation", "float4 v_uv_limits"}},
         false, "", UsingMSAA(), UsingPerSampleShading(), m_disable_color_perspective);
     }
     else
@@ -647,28 +648,26 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
   }
 }
 
-std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMode render_mode,
-                                                          GPUTransparencyMode transparency,
-                                                          GPU_HW::BatchTextureMode texture_mode,
-                                                          GPUTextureFilter texture_filtering, bool uv_limits,
-                                                          bool force_round_texcoords, bool dithering, bool interlacing,
-                                                          bool check_mask)
+std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(
+  GPU_HW::BatchRenderMode render_mode, GPUTransparencyMode transparency, GPU_HW::BatchTextureMode texture_mode,
+  GPUTextureFilter texture_filtering, bool uv_limits, bool force_round_texcoords, bool dithering, bool interlacing,
+  bool check_mask, bool use_rov, bool use_rov_depth, bool rov_depth_test)
 {
   // TODO: don't write depth for shader blend
   DebugAssert(transparency == GPUTransparencyMode::Disabled || render_mode == GPU_HW::BatchRenderMode::ShaderBlend);
+  DebugAssert(!rov_depth_test || (use_rov && use_rov_depth));
 
   const bool textured = (texture_mode != GPU_HW::BatchTextureMode::Disabled);
   const bool palette =
     (texture_mode == GPU_HW::BatchTextureMode::Palette4Bit || texture_mode == GPU_HW::BatchTextureMode::Palette8Bit);
-  const bool shader_blending = (render_mode == GPU_HW::BatchRenderMode::ShaderBlend &&
-                                (transparency != GPUTransparencyMode::Disabled || check_mask));
-  const bool use_dual_source = (!shader_blending && m_supports_dual_source_blend &&
+  const bool shader_blending = (render_mode == GPU_HW::BatchRenderMode::ShaderBlend);
+  const bool use_dual_source = (!shader_blending && !use_rov && m_supports_dual_source_blend &&
                                 ((render_mode != GPU_HW::BatchRenderMode::TransparencyDisabled &&
                                   render_mode != GPU_HW::BatchRenderMode::OnlyOpaque) ||
                                  texture_filtering != GPUTextureFilter::Nearest));
 
   std::stringstream ss;
-  WriteHeader(ss);
+  WriteHeader(ss, use_rov);
   DefineMacro(ss, "TRANSPARENCY", render_mode != GPU_HW::BatchRenderMode::TransparencyDisabled);
   DefineMacro(ss, "TRANSPARENCY_ONLY_OPAQUE", render_mode == GPU_HW::BatchRenderMode::OnlyOpaque);
   DefineMacro(ss, "TRANSPARENCY_ONLY_TRANSPARENT", render_mode == GPU_HW::BatchRenderMode::OnlyTransparent);
@@ -687,6 +686,9 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   DefineMacro(ss, "TRUE_COLOR", m_true_color);
   DefineMacro(ss, "TEXTURE_FILTERING", texture_filtering != GPUTextureFilter::Nearest);
   DefineMacro(ss, "UV_LIMITS", uv_limits);
+  DefineMacro(ss, "USE_ROV", use_rov);
+  DefineMacro(ss, "USE_ROV_DEPTH", use_rov_depth);
+  DefineMacro(ss, "ROV_DEPTH_TEST", rov_depth_test);
   DefineMacro(ss, "USE_DUAL_SOURCE", use_dual_source);
   DefineMacro(ss, "WRITE_MASK_AS_DEPTH", m_write_mask_as_depth);
   DefineMacro(ss, "FORCE_ROUND_TEXCOORDS", force_round_texcoords);
@@ -695,6 +697,13 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(GPU_HW::BatchRenderMod
   WriteCommonFunctions(ss);
   WriteBatchUniformBuffer(ss);
   DeclareTexture(ss, "samp0", 0);
+
+  if (use_rov)
+  {
+    DeclareImage(ss, "rov_color", 0);
+    if (use_rov_depth)
+      DeclareImage(ss, "rov_depth", 1, true);
+  }
 
   if (m_glsl)
     ss << "CONSTANT int[16] s_dither_values = int[16]( ";
@@ -825,6 +834,7 @@ float3 ApplyDebanding(float2 frag_coord)
 }
 )";
 
+  const u32 num_fragment_outputs = use_rov ? 0 : (use_dual_source ? 2 : 1);
   if (textured)
   {
     if (texture_filtering != GPUTextureFilter::Nearest)
@@ -835,26 +845,29 @@ float3 ApplyDebanding(float2 frag_coord)
       DeclareFragmentEntryPoint(ss, 1, 1,
                                 {{"nointerpolation", palette ? "uint4 v_texpage" : "uint2 v_texpage"},
                                  {"nointerpolation", "float4 v_uv_limits"}},
-                                true, use_dual_source ? 2 : 1, use_dual_source, m_write_mask_as_depth, UsingMSAA(),
-                                UsingPerSampleShading(), false, m_disable_color_perspective, shader_blending);
+                                true, num_fragment_outputs, use_dual_source, m_write_mask_as_depth, UsingMSAA(),
+                                UsingPerSampleShading(), false, m_disable_color_perspective,
+                                shader_blending && !use_rov, use_rov);
     }
     else
     {
       DeclareFragmentEntryPoint(ss, 1, 1, {{"nointerpolation", palette ? "uint4 v_texpage" : "uint2 v_texpage"}}, true,
-                                use_dual_source ? 2 : 1, use_dual_source, m_write_mask_as_depth, UsingMSAA(),
-                                UsingPerSampleShading(), false, m_disable_color_perspective, shader_blending);
+                                num_fragment_outputs, use_dual_source, m_write_mask_as_depth, UsingMSAA(),
+                                UsingPerSampleShading(), false, m_disable_color_perspective,
+                                shader_blending && !use_rov, use_rov);
     }
   }
   else
   {
-    DeclareFragmentEntryPoint(ss, 1, 0, {}, true, use_dual_source ? 2 : 1, use_dual_source, m_write_mask_as_depth,
+    DeclareFragmentEntryPoint(ss, 1, 0, {}, true, num_fragment_outputs, use_dual_source, m_write_mask_as_depth,
                               UsingMSAA(), UsingPerSampleShading(), false, m_disable_color_perspective,
-                              shader_blending);
+                              shader_blending && !use_rov, use_rov);
   }
 
   ss << R"(
 {
   uint3 vertcol = uint3(v_col0.rgb * float3(255.0, 255.0, 255.0) + ApplyDebanding(v_pos.xy));
+  uint2 fragpos = uint2(v_pos.xy);
 
   bool semitransparent;
   uint3 icolor;
@@ -862,7 +875,7 @@ float3 ApplyDebanding(float2 frag_coord)
   float oalpha;
 
   #if INTERLACING
-    if ((uint(v_pos.y) & 1u) == u_interlaced_displayed_field)
+    if ((fragpos.y & 1u) == u_interlaced_displayed_field)
       discard;
   #endif
 
@@ -891,7 +904,7 @@ float3 ApplyDebanding(float2 frag_coord)
       icolor = uint3(texcol.rgb * float3(255.0, 255.0, 255.0)) >> 3;
       icolor = (icolor * vertcol) >> 4;
       #if DITHERING
-        icolor = ApplyDithering(uint2(v_pos.xy), icolor);
+        icolor = ApplyDithering(fragpos, icolor);
       #else
         icolor = min(icolor >> 3, uint3(31u, 31u, 31u));
       #endif
@@ -899,7 +912,7 @@ float3 ApplyDebanding(float2 frag_coord)
       icolor = uint3(texcol.rgb * float3(255.0, 255.0, 255.0) + ApplyDebanding(v_pos.xy));
       icolor = (icolor * vertcol) >> 7;
       #if DITHERING
-        icolor = ApplyDithering(uint2(v_pos.xy), icolor);
+        icolor = ApplyDithering(fragpos, icolor);
       #else
         icolor = min(icolor, uint3(255u, 255u, 255u));
       #endif
@@ -914,7 +927,7 @@ float3 ApplyDebanding(float2 frag_coord)
     ialpha = 1.0;
 
     #if DITHERING
-      icolor = ApplyDithering(uint2(v_pos.xy), icolor);
+      icolor = ApplyDithering(fragpos, icolor);
     #else
       #if !TRUE_COLOR
         icolor >>= 3;
@@ -925,29 +938,34 @@ float3 ApplyDebanding(float2 frag_coord)
     oalpha = float(u_set_mask_while_drawing);
   #endif
 
-  // Premultiply alpha so we don't need to use a colour output for it.
-  float premultiply_alpha = ialpha;
-  #if TRANSPARENCY && !SHADER_BLENDING
-    premultiply_alpha = ialpha * (semitransparent ? u_src_alpha_factor : 1.0);
-  #endif
-
-  float3 color;
-  #if !TRUE_COLOR
-    // We want to apply the alpha before the truncation to 16-bit, otherwise we'll be passing a 32-bit precision color
-    // into the blend unit, which can cause a small amount of error to accumulate.
-    color = floor(float3(icolor) * premultiply_alpha) / float3(31.0, 31.0, 31.0);
-  #else
-    // True color is actually simpler here since we want to preserve the precision.
-    color = (float3(icolor) * premultiply_alpha) / float3(255.0, 255.0, 255.0);
-  #endif
-
   #if SHADER_BLENDING
-    float4 bg_col = LAST_FRAG_COLOR;
-    float4 fg_col = float4(color, oalpha);
+    #if USE_ROV
+      BEGIN_ROV_REGION;
+      float4 bg_col = ROV_LOAD(rov_color, fragpos);
+      float4 o_col0;
+      bool discarded = false;
 
-    #if CHECK_MASK_BIT
-      if (bg_col.a != 0.0)
-        discard;
+      #if ROV_DEPTH_TEST
+        float bg_depth = ROV_LOAD(rov_depth, fragpos).r;
+        discarded = (v_pos.z > bg_depth);
+      #endif
+      #if CHECK_MASK_BIT
+        discarded = discarded || (bg_col.a != 0.0);
+      #endif        
+    #else
+      float4 bg_col = LAST_FRAG_COLOR;
+      #if CHECK_MASK_BIT
+        if (bg_col.a != 0.0)
+          discard;
+      #endif
+    #endif
+
+    // Work in normalized space for true colour, matches HW blend.
+    float4 fg_col = float4(float3(icolor), oalpha);
+    #if TRUE_COLOR
+      fg_col.rgb /= 255.0;
+    #elif TRANSPARENCY // rgb not used in check-mask only
+      bg_col.rgb = roundEven(bg_col.rgb * 31.0);
     #endif
 
     #if TEXTURE_FILTERING
@@ -969,14 +987,87 @@ float3 ApplyDebanding(float2 frag_coord)
     #else
       o_col0.rgb = fg_col.rgb;
     #endif
+
+    // 16-bit truncation.
+    #if !TRUE_COLOR && TRANSPARENCY
+      o_col0.rgb = floor(o_col0.rgb);
+    #endif
+
     #if TRANSPARENCY
       // If pixel isn't marked as semitransparent, replace with previous colour.
       o_col0 = semitransparent ? o_col0 : fg_col;
     #endif
-  #elif TRANSPARENCY && TEXTURED
-    // Apply semitransparency. If not a semitransparent texel, destination alpha is ignored.
-    if (semitransparent)
-    {
+
+    // Normalize for non-true-color.
+    #if !TRUE_COLOR
+      o_col0.rgb /= 31.0;
+    #endif
+
+    #if USE_ROV
+      if (!discarded)
+      {
+        ROV_STORE(rov_color, fragpos, o_col0);
+        #if USE_ROV_DEPTH
+          ROV_STORE(rov_depth, fragpos, float4(v_pos.z, 0.0, 0.0, 0.0));
+        #endif
+      }
+      END_ROV_REGION;
+    #endif
+  #else
+    // Premultiply alpha so we don't need to use a colour output for it.
+    float premultiply_alpha = ialpha;
+    #if TRANSPARENCY
+      premultiply_alpha = ialpha * (semitransparent ? u_src_alpha_factor : 1.0);
+    #endif
+
+    float3 color;
+    #if !TRUE_COLOR
+      // We want to apply the alpha before the truncation to 16-bit, otherwise we'll be passing a 32-bit precision color
+      // into the blend unit, which can cause a small amount of error to accumulate.
+      color = floor(float3(icolor) * premultiply_alpha) / 31.0;
+    #else
+      // True color is actually simpler here since we want to preserve the precision.
+      color = (float3(icolor) * premultiply_alpha) / 255.0;
+    #endif
+
+    #if TRANSPARENCY && TEXTURED
+      // Apply semitransparency. If not a semitransparent texel, destination alpha is ignored.
+      if (semitransparent)
+      {
+        #if USE_DUAL_SOURCE
+          o_col0 = float4(color, oalpha);
+          o_col1 = float4(0.0, 0.0, 0.0, u_dst_alpha_factor / ialpha);
+        #else
+          o_col0 = float4(color, oalpha);
+        #endif
+
+        #if WRITE_MASK_AS_DEPTH
+          o_depth = oalpha * v_pos.z;
+        #endif
+
+        #if TRANSPARENCY_ONLY_OPAQUE
+          discard;
+        #endif
+      }
+      else
+      {
+        #if USE_DUAL_SOURCE
+          o_col0 = float4(color, oalpha);
+          o_col1 = float4(0.0, 0.0, 0.0, 1.0 - ialpha);
+        #else
+          o_col0 = float4(color, oalpha);
+        #endif
+
+        #if WRITE_MASK_AS_DEPTH
+          o_depth = oalpha * v_pos.z;
+        #endif
+
+        #if TRANSPARENCY_ONLY_TRANSPARENT
+          discard;
+        #endif
+      }
+    #elif TRANSPARENCY
+      // We shouldn't be rendering opaque geometry only when untextured, so no need to test/discard here.
       #if USE_DUAL_SOURCE
         o_col0 = float4(color, oalpha);
         o_col1 = float4(0.0, 0.0, 0.0, u_dst_alpha_factor / ialpha);
@@ -987,50 +1078,17 @@ float3 ApplyDebanding(float2 frag_coord)
       #if WRITE_MASK_AS_DEPTH
         o_depth = oalpha * v_pos.z;
       #endif
+    #else
+      // Non-transparency won't enable blending so we can write the mask here regardless.
+      o_col0 = float4(color, oalpha);
 
-      #if TRANSPARENCY_ONLY_OPAQUE
-        discard;
-      #endif
-    }
-    else
-    {
       #if USE_DUAL_SOURCE
-        o_col0 = float4(color, oalpha);
         o_col1 = float4(0.0, 0.0, 0.0, 1.0 - ialpha);
-      #else
-        o_col0 = float4(color, oalpha);
       #endif
 
       #if WRITE_MASK_AS_DEPTH
         o_depth = oalpha * v_pos.z;
       #endif
-
-      #if TRANSPARENCY_ONLY_TRANSPARENT
-        discard;
-      #endif
-    }
-  #elif TRANSPARENCY
-    // We shouldn't be rendering opaque geometry only when untextured, so no need to test/discard here.
-    #if USE_DUAL_SOURCE
-      o_col0 = float4(color, oalpha);
-      o_col1 = float4(0.0, 0.0, 0.0, u_dst_alpha_factor / ialpha);
-    #else
-      o_col0 = float4(color, oalpha);
-    #endif
-
-    #if WRITE_MASK_AS_DEPTH
-      o_depth = oalpha * v_pos.z;
-    #endif
-  #else
-    // Non-transparency won't enable blending so we can write the mask here regardless.
-    o_col0 = float4(color, oalpha);
-
-    #if USE_DUAL_SOURCE
-      o_col1 = float4(0.0, 0.0, 0.0, 1.0 - ialpha);
-    #endif
-
-    #if WRITE_MASK_AS_DEPTH
-      o_depth = oalpha * v_pos.z;
     #endif
   #endif
 }

@@ -271,8 +271,10 @@ bool Host::CreateGPUDevice(RenderAPI api, Error* error)
     disabled_features |= GPUDevice::FEATURE_MASK_FRAMEBUFFER_FETCH;
   if (g_settings.gpu_disable_texture_buffers)
     disabled_features |= GPUDevice::FEATURE_MASK_TEXTURE_BUFFERS;
-  if (g_settings.gpu_disable_texture_copy_to_self)
-    disabled_features |= GPUDevice::FEATURE_MASK_TEXTURE_COPY_TO_SELF;
+  if (g_settings.gpu_disable_memory_import)
+    disabled_features |= GPUDevice::FEATURE_MASK_MEMORY_IMPORT;
+  if (g_settings.gpu_disable_raster_order_views)
+    disabled_features |= GPUDevice::FEATURE_MASK_RASTER_ORDER_VIEWS;
 
   Error create_error;
   if (!g_gpu_device || !g_gpu_device->Create(g_settings.gpu_adapter,

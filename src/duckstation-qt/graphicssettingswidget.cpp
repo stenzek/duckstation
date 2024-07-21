@@ -138,6 +138,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                                "UseSoftwareRendererForReadbacks", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.forceRoundedTexcoords, "GPU", "ForceRoundTextureCoordinates",
                                                false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.accurateBlending, "GPU", "AccurateBlending", false);
 
   SettingWidgetBinder::SetAvailability(m_ui.scaledDithering,
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisableScaledDithering));
@@ -388,6 +389,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     m_ui.forceRoundedTexcoords, tr("Round Upscaled Texture Coordinates"), tr("Unchecked"),
     tr("Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but "
        "break others, and is incompatible with texture filtering."));
+  dialog->registerWidgetHelp(
+    m_ui.accurateBlending, tr("Accurate Blending"), tr("Unchecked"),
+    tr("Forces blending to be done in the shader at 16-bit precision, when not using true color. Very few games "
+       "actually require this, and there is a <strong>non-trivial</strong> performance cost."));
 
   // PGXP Tab
 
@@ -520,6 +525,12 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   dialog->registerWidgetHelp(m_ui.disableTextureCopyToSelf, tr("Disable Texture Copies To Self"), tr("Unchecked"),
                              tr("Disables the use of self-copy updates for the VRAM texture. Useful for testing broken "
                                 "graphics drivers. <strong>Only for developer use.</strong>"));
+  dialog->registerWidgetHelp(m_ui.disableMemoryImport, tr("Disable Memory Import"), tr("Unchecked"),
+                             tr("Disables the use of host memory importing. Useful for testing broken graphics "
+                                "drivers. <strong>Only for developer use.</strong>"));
+  dialog->registerWidgetHelp(m_ui.disableRasterOrderViews, tr("Disable Rasterizer Order Views"), tr("Unchecked"),
+                             tr("Disables the use of rasterizer order views. Useful for testing broken graphics "
+                                "drivers. <strong>Only for developer use.</strong>"));
 }
 
 GraphicsSettingsWidget::~GraphicsSettingsWidget() = default;
@@ -669,6 +680,8 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
   m_ui.debanding->setEnabled(is_hardware);
   m_ui.scaledDithering->setEnabled(is_hardware && !m_dialog->hasGameTrait(GameDatabase::Trait::DisableScaledDithering));
   m_ui.useSoftwareRendererForReadbacks->setEnabled(is_hardware);
+  m_ui.forceRoundedTexcoords->setEnabled(is_hardware);
+  m_ui.accurateBlending->setEnabled(is_hardware);
 
   m_ui.tabs->setTabEnabled(TAB_INDEX_TEXTURE_REPLACEMENTS, is_hardware);
 
@@ -881,9 +894,9 @@ void GraphicsSettingsWidget::onTrueColorChanged()
   const bool true_color = m_dialog->getEffectiveBoolValue("GPU", "TrueColor", false);
   const bool allow_scaled_dithering =
     (resolution_scale != 1 && !true_color && !m_dialog->hasGameTrait(GameDatabase::Trait::DisableScaledDithering));
-  const bool allow_debanding = true_color;
   m_ui.scaledDithering->setEnabled(allow_scaled_dithering);
-  m_ui.debanding->setEnabled(allow_debanding);
+  m_ui.debanding->setEnabled(true_color);
+  m_ui.accurateBlending->setEnabled(!true_color);
 }
 
 void GraphicsSettingsWidget::onDownsampleModeChanged()

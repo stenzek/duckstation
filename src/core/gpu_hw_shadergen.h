@@ -18,7 +18,7 @@ public:
   std::string GenerateBatchFragmentShader(GPU_HW::BatchRenderMode render_mode, GPUTransparencyMode transparency,
                                           GPU_HW::BatchTextureMode texture_mode, GPUTextureFilter texture_filtering,
                                           bool uv_limits, bool force_round_texcoords, bool dithering, bool interlacing,
-                                          bool check_mask);
+                                          bool check_mask, bool use_rov, bool use_rov_depth, bool rov_depth_test);
   std::string GenerateWireframeGeometryShader();
   std::string GenerateWireframeFragmentShader();
   std::string GenerateVRAMReadFragmentShader();

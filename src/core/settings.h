@@ -114,11 +114,13 @@ struct Settings
   bool gpu_disable_texture_buffers : 1 = false;
   bool gpu_disable_texture_copy_to_self : 1 = false;
   bool gpu_disable_memory_import : 1 = false;
+  bool gpu_disable_raster_order_views : 1 = false;
   bool gpu_per_sample_shading : 1 = false;
   bool gpu_true_color : 1 = true;
   bool gpu_debanding : 1 = false;
   bool gpu_scaled_dithering : 1 = true;
   bool gpu_force_round_texcoords : 1 = false;
+  bool gpu_accurate_blending : 1 = false;
   bool gpu_disable_interlacing : 1 = true;
   bool gpu_force_ntsc_timings : 1 = false;
   bool gpu_widescreen_hack : 1 = false;
@@ -280,6 +282,7 @@ struct Settings
   bool log_to_file : 1 = false;
 
   ALWAYS_INLINE bool IsUsingSoftwareRenderer() const { return (gpu_renderer == GPURenderer::Software); }
+  ALWAYS_INLINE bool IsUsingAccurateBlending() const { return (gpu_accurate_blending && !gpu_true_color); }
   ALWAYS_INLINE bool IsRunaheadEnabled() const { return (runahead_frames > 0); }
 
   ALWAYS_INLINE PGXPMode GetPGXPMode()
