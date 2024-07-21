@@ -64,24 +64,33 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent) 
 
   connect(m_ui.refresh, &QPushButton::clicked, this, &BIOSSettingsWidget::refreshList);
 
-  m_ui.searchDirectory->setText(QString::fromStdString(EmuFolders::Bios));
-  SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.searchDirectory, m_ui.browseSearchDirectory,
-                                                 m_ui.openSearchDirectory, nullptr, "BIOS", "SearchDirectory",
-                                                 Path::Combine(EmuFolders::DataRoot, "bios"));
-  connect(m_ui.searchDirectory, &QLineEdit::textChanged, this, &BIOSSettingsWidget::refreshList);
+  if (!m_dialog->isPerGameSettings())
+  {
+    SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.searchDirectory, m_ui.browseSearchDirectory,
+                                                   m_ui.openSearchDirectory, nullptr, "BIOS", "SearchDirectory",
+                                                   Path::Combine(EmuFolders::DataRoot, "bios"));
+    connect(m_ui.searchDirectory, &QLineEdit::textChanged, this, &BIOSSettingsWidget::refreshList);
+  }
+  else
+  {
+    m_ui.mainLayout->removeWidget(m_ui.directoryGroupBox);
+    delete m_ui.directoryGroupBox;
+    m_ui.directoryGroupBox = nullptr;
+    m_ui.directoryGroupBoxLabel = nullptr;
+    m_ui.directoryGroupBoxLayout = nullptr;
+    m_ui.directoryGroupBoxHorizontalLayout = nullptr;
+    m_ui.searchDirectory = nullptr;
+    m_ui.browseSearchDirectory = nullptr;
+  }
+
   refreshList();
 }
 
 BIOSSettingsWidget::~BIOSSettingsWidget() = default;
 
-std::vector<std::pair<std::string, const BIOS::ImageInfo*>> BIOSSettingsWidget::getList(const char* directory)
-{
-  return BIOS::FindBIOSImagesInDirectory(directory);
-}
-
 void BIOSSettingsWidget::refreshList()
 {
-  auto images = getList(m_ui.searchDirectory->text().toUtf8().constData());
+  auto images = BIOS::FindBIOSImagesInDirectory(EmuFolders::Bios.c_str());
   populateDropDownForRegion(ConsoleRegion::NTSC_J, m_ui.imageNTSCJ, images, m_dialog->isPerGameSettings());
   populateDropDownForRegion(ConsoleRegion::NTSC_U, m_ui.imageNTSCU, images, m_dialog->isPerGameSettings());
   populateDropDownForRegion(ConsoleRegion::PAL, m_ui.imagePAL, images, m_dialog->isPerGameSettings());

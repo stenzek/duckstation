@@ -61,7 +61,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
   if (!m_dialog->isPerGameSettings())
     SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.startFullscreen, "Main", "StartFullscreen", false);
   else
-    m_ui.startFullscreen->setEnabled(false);
+    SettingWidgetBinder::SetAvailability(m_ui.startFullscreen, false);
 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.doubleClickTogglesFullscreen, "Main",
                                                "DoubleClickTogglesFullscreen", true);

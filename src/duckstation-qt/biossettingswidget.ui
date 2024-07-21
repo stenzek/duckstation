@@ -10,7 +10,7 @@
     <height>330</height>
    </rect>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2">
+  <layout class="QVBoxLayout" name="mainLayout">
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -115,13 +115,13 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox_3">
+    <widget class="QGroupBox" name="directoryGroupBox">
      <property name="title">
       <string>BIOS Directory</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_2">
+     <layout class="QGridLayout" name="directoryGroupBoxLayout">
       <item row="0" column="0" colspan="2">
-       <widget class="QLabel" name="label_3">
+       <widget class="QLabel" name="directoryGroupBoxLabel">
         <property name="text">
          <string>DuckStation will search for BIOS images in this directory.</string>
         </property>
@@ -131,7 +131,7 @@
        </widget>
       </item>
       <item row="1" column="0" colspan="2">
-       <layout class="QHBoxLayout" name="horizontalLayout">
+       <layout class="QHBoxLayout" name="directoryGroupBoxHorizontalLayout">
         <item>
          <widget class="QLineEdit" name="searchDirectory"/>
         </item>
