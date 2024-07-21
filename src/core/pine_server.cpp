@@ -50,14 +50,14 @@ static constexpr u32 MAX_IPC_RETURN_SIZE = 450000;
  */
 enum IPCCommand : u8
 {
-  MsgRead8 = 0,           /**< Read 8 bit value to memory. */
-  MsgRead16 = 1,          /**< Read 16 bit value to memory. */
-  MsgRead32 = 2,          /**< Read 32 bit value to memory. */
-  MsgRead64 = 3,          /**< Read 64 bit value to memory. */
-  MsgWrite8 = 4,          /**< Write 8 bit value to memory. */
-  MsgWrite16 = 5,         /**< Write 16 bit value to memory. */
-  MsgWrite32 = 6,         /**< Write 32 bit value to memory. */
-  MsgWrite64 = 7,         /**< Write 64 bit value to memory. */
+  MsgRead8 = 0,           /**< Read 8 bit value from memory. */
+  MsgRead16 = 1,          /**< Read 16 bit value from memory. */
+  MsgRead32 = 2,          /**< Read 32 bit value from memory. */
+  MsgRead64 = 3,          /**< Read 64 bit value from memory. */
+  MsgWrite8 = 4,          /**< Write 8 bit value from memory. */
+  MsgWrite16 = 5,         /**< Write 16 bit value from memory. */
+  MsgWrite32 = 6,         /**< Write 32 bit value from memory. */
+  MsgWrite64 = 7,         /**< Write 64 bit value from memory. */
   MsgVersion = 8,         /**< Returns PCSX2 version. */
   MsgSaveState = 9,       /**< Saves a savestate. */
   MsgLoadState = 0xA,     /**< Loads a savestate. */
@@ -66,6 +66,8 @@ enum IPCCommand : u8
   MsgUUID = 0xD,          /**< Returns the game UUID. */
   MsgGameVersion = 0xE,   /**< Returns the game verion. */
   MsgStatus = 0xF,        /**< Returns the emulator status. */
+  MsgReadBytes = 0x20,    /**< Reads range of bytes from memory. */
+  MsgWriteBytes = 0x21,   /**< Writes range of bytes to memory. */
   MsgUnimplemented = 0xFF /**< Unimplemented IPC message. */
 };
 
@@ -334,6 +336,33 @@ bool PINEServer::PINESocket::HandleCommand(IPCCommand command, BinarySpanReader 
       return EndReply(reply);
     }
 
+    case MsgReadBytes:
+    {
+      if (!rdbuf.CheckRemaining(sizeof(PhysicalMemoryAddress) + sizeof(u32)) || !System::IsValid())
+        return SendErrorReply();
+
+      const PhysicalMemoryAddress addr = rdbuf.ReadU32();
+      const u32 num_bytes = rdbuf.ReadU32();
+      if (num_bytes == 0) [[unlikely]]
+        return SendErrorReply();
+
+      if (!BeginReply(reply, num_bytes)) [[unlikely]]
+        return false;
+
+      const auto data = reply.GetRemainingSpan(sizeof(IPCStatus) + num_bytes);
+      if (!CPU::SafeReadMemoryBytes(addr, data.data() + sizeof(IPCStatus), num_bytes)) [[unlikely]]
+      {
+        reply << IPC_FAIL;
+      }
+      else
+      {
+        reply << IPC_OK;
+        reply.IncrementPosition(num_bytes);
+      }
+
+      return EndReply(reply);
+    }
+
     case MsgWrite8:
     {
       // Don't do the actual write until we have space for the response, otherwise we might do it twice when we come
@@ -377,7 +406,7 @@ bool PINEServer::PINESocket::HandleCommand(IPCCommand command, BinarySpanReader 
 
     case MsgWrite64:
     {
-      if (!rdbuf.CheckRemaining(sizeof(PhysicalMemoryAddress) + sizeof(u32)) || !System::IsValid())
+      if (!rdbuf.CheckRemaining(sizeof(PhysicalMemoryAddress) + sizeof(u64)) || !System::IsValid())
         return SendErrorReply();
       else if (!BeginReply(reply, 0)) [[unlikely]]
         return false;
@@ -388,6 +417,24 @@ bool PINEServer::PINESocket::HandleCommand(IPCCommand command, BinarySpanReader 
                  !CPU::SafeWriteMemoryWord(addr + sizeof(u32), Truncate32(value >> 32))) ?
                   IPC_FAIL :
                   IPC_OK);
+      return EndReply(reply);
+    }
+
+    case MsgWriteBytes:
+    {
+      if (!rdbuf.CheckRemaining(sizeof(PhysicalMemoryAddress) + sizeof(u32)) || !System::IsValid())
+        return SendErrorReply();
+
+      const PhysicalMemoryAddress addr = rdbuf.ReadU32();
+      const u32 num_bytes = rdbuf.ReadU32();
+      if (num_bytes == 0 || !rdbuf.CheckRemaining(num_bytes)) [[unlikely]]
+        return SendErrorReply();
+
+      if (!BeginReply(reply, 0)) [[unlikely]]
+        return false;
+
+      const auto data = rdbuf.GetRemainingSpan(num_bytes);
+      reply << (CPU::SafeWriteMemoryBytes(addr, data.data(), num_bytes) ? IPC_OK : IPC_FAIL);
       return EndReply(reply);
     }
 
