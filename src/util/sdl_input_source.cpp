@@ -173,6 +173,7 @@ bool SDLInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mut
 void SDLInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
   const bool old_controller_enhanced_mode = m_controller_enhanced_mode;
+  const bool old_controller_ps5_player_led = m_controller_ps5_player_led;
 
 #ifdef __APPLE__
   const bool old_enable_iokit_driver = m_enable_iokit_driver;
@@ -188,7 +189,9 @@ void SDLInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std:
   constexpr bool drivers_changed = false;
 #endif
 
-  if (m_controller_enhanced_mode != old_controller_enhanced_mode || drivers_changed)
+  if (m_controller_enhanced_mode != old_controller_enhanced_mode ||
+      m_controller_ps5_player_led != old_controller_ps5_player_led ||
+      drivers_changed)
   {
     settings_lock.unlock();
     ShutdownSubsystem();
@@ -228,6 +231,7 @@ void SDLInputSource::LoadSettings(SettingsInterface& si)
   }
 
   m_controller_enhanced_mode = si.GetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
+  m_controller_ps5_player_led = si.GetBoolValue("InputSources", "SDLPS5PlayerLED", false);
   m_sdl_hints = si.GetKeyValueList("SDLHints");
 
 #ifdef __APPLE__
@@ -275,6 +279,7 @@ void SDLInputSource::SetHints()
 
   SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, m_controller_enhanced_mode ? "1" : "0");
   SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, m_controller_enhanced_mode ? "1" : "0");
+  SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED, m_controller_ps5_player_led ? "1" : "0");
   SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_WII, "1");
   SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS3, "1");
 
