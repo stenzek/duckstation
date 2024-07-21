@@ -3076,6 +3076,54 @@ bool CPU::SafeWriteMemoryWord(VirtualMemoryAddress addr, u32 value)
   return SafeWriteMemoryHalfWord(addr, Truncate16(value)) && SafeWriteMemoryHalfWord(addr + 2, Truncate16(value >> 16));
 }
 
+bool CPU::SafeReadMemoryBytes(VirtualMemoryAddress addr, void* data, u32 length)
+{
+  using namespace Bus;
+
+  const u32 seg = (addr >> 29);
+  if ((seg != 0 && seg != 4 && seg != 5) || (((addr + length) & PHYSICAL_MEMORY_ADDRESS_MASK) >= RAM_MIRROR_END) ||
+      (((addr & g_ram_mask) + length) > g_ram_size))
+  {
+    u8* ptr = static_cast<u8*>(data);
+    u8* const ptr_end = ptr + length;
+    while (ptr != ptr_end)
+    {
+      if (!SafeReadMemoryByte(addr++, ptr++))
+        return false;
+    }
+
+    return true;
+  }
+
+  // Fast path: all in RAM, no wraparound.
+  std::memcpy(data, &g_ram[addr & g_ram_mask], length);
+  return true;
+}
+
+bool CPU::SafeWriteMemoryBytes(VirtualMemoryAddress addr, const void* data, u32 length)
+{
+  using namespace Bus;
+
+  const u32 seg = (addr >> 29);
+  if ((seg != 0 && seg != 4 && seg != 5) || (((addr + length) & PHYSICAL_MEMORY_ADDRESS_MASK) >= RAM_MIRROR_END) ||
+      (((addr & g_ram_mask) + length) > g_ram_size))
+  {
+    const u8* ptr = static_cast<const u8*>(data);
+    const u8* const ptr_end = ptr + length;
+    while (ptr != ptr_end)
+    {
+      if (!SafeWriteMemoryByte(addr++, *(ptr++)))
+        return false;
+    }
+
+    return true;
+  }
+
+  // Fast path: all in RAM, no wraparound.
+  std::memcpy(&g_ram[addr & g_ram_mask], data, length);
+  return true;
+}
+
 void* CPU::GetDirectReadMemoryPointer(VirtualMemoryAddress address, MemoryAccessSize size, TickCount* read_ticks)
 {
   using namespace Bus;

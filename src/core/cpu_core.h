@@ -183,9 +183,11 @@ bool SafeReadMemoryByte(VirtualMemoryAddress addr, u8* value);
 bool SafeReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value);
 bool SafeReadMemoryWord(VirtualMemoryAddress addr, u32* value);
 bool SafeReadMemoryCString(VirtualMemoryAddress addr, std::string* value, u32 max_length = 1024);
+bool SafeReadMemoryBytes(VirtualMemoryAddress addr, void* data, u32 length);
 bool SafeWriteMemoryByte(VirtualMemoryAddress addr, u8 value);
 bool SafeWriteMemoryHalfWord(VirtualMemoryAddress addr, u16 value);
 bool SafeWriteMemoryWord(VirtualMemoryAddress addr, u32 value);
+bool SafeWriteMemoryBytes(VirtualMemoryAddress addr, const void* data, u32 length);
 
 // External IRQs
 void SetIRQRequest(bool state);
