@@ -149,7 +149,7 @@ TinyString ShaderGen::GetGLSLVersionString(RenderAPI render_api, u32 version)
 }
 #endif
 
-void ShaderGen::WriteHeader(std::stringstream& ss)
+void ShaderGen::WriteHeader(std::stringstream& ss, bool enable_rov /* = false */)
 {
   if (m_shader_language == GPUShaderLanguage::GLSL || m_shader_language == GPUShaderLanguage::GLSLES)
     ss << m_glsl_version_string << "\n\n";
@@ -210,6 +210,11 @@ void ShaderGen::WriteHeader(std::stringstream& ss)
     // Enable SSBOs if it's not required by the version.
     if (!GLAD_GL_VERSION_4_3 && !GLAD_GL_ES_VERSION_3_1 && GLAD_GL_ARB_shader_storage_buffer_object)
       ss << "#extension GL_ARB_shader_storage_buffer_object : require\n";
+  }
+  else if (m_shader_language == GPUShaderLanguage::GLSLVK)
+  {
+    if (enable_rov)
+      ss << "#extension GL_ARB_fragment_shader_interlock : require\n";
   }
 #endif
 
@@ -413,6 +418,27 @@ void ShaderGen::DeclareTextureBuffer(std::stringstream& ss, const char* name, u3
   }
 }
 
+void ShaderGen::DeclareImage(std::stringstream& ss, const char* name, u32 index, bool is_float /* = false */,
+                             bool is_int /* = false */, bool is_unsigned /* = false */)
+{
+  if (m_glsl)
+  {
+    if (m_spirv)
+      ss << "layout(set = " << (m_has_uniform_buffer ? 2 : 1) << ", binding = " << index;
+    else
+      ss << "layout(binding = " << index;
+
+    ss << ", " << (is_int ? (is_unsigned ? "rgba8ui" : "rgba8i") : "rgba8") << ") "
+       << "uniform restrict coherent image2D " << name << ";\n";
+  }
+  else
+  {
+    ss << "RasterizerOrderedTexture2D<"
+       << (is_int ? (is_unsigned ? "uint4" : "int4") : (is_float ? "float4" : "unorm float4")) << "> " << name
+       << " : register(u" << index << ");\n";
+  }
+}
+
 const char* ShaderGen::GetInterpolationQualifier(bool interface_block, bool centroid_interpolation,
                                                  bool sample_interpolation, bool is_out) const
 {
@@ -545,7 +571,8 @@ void ShaderGen::DeclareFragmentEntryPoint(
   const std::initializer_list<std::pair<const char*, const char*>>& additional_inputs /* =  */,
   bool declare_fragcoord /* = false */, u32 num_color_outputs /* = 1 */, bool dual_source_output /* = false */,
   bool depth_output /* = false */, bool msaa /* = false */, bool ssaa /* = false */,
-  bool declare_sample_id /* = false */, bool noperspective_color /* = false */, bool feedback_loop /* = false */)
+  bool declare_sample_id /* = false */, bool noperspective_color /* = false */, bool feedback_loop /* = false */,
+  bool rov /* = false */)
 {
   if (m_glsl)
   {
@@ -603,6 +630,8 @@ void ShaderGen::DeclareFragmentEntryPoint(
 
     if (feedback_loop)
     {
+      Assert(!rov);
+
 #ifdef ENABLE_OPENGL
       if (m_render_api == RenderAPI::OpenGL || m_render_api == RenderAPI::OpenGLES)
       {
@@ -647,6 +676,14 @@ void ShaderGen::DeclareFragmentEntryPoint(
       }
 #endif
     }
+    else if (rov)
+    {
+      ss << "layout(pixel_interlock_ordered) in;\n";
+      ss << "#define ROV_LOAD(name, coords) imageLoad(name, ivec2(coords))\n";
+      ss << "#define ROV_STORE(name, coords, value) imageStore(name, ivec2(coords), value)\n";
+      ss << "#define BEGIN_ROV_REGION beginInvocationInterlockARB()\n";
+      ss << "#define END_ROV_REGION endInvocationInterlockARB()\n";
+    }
 
     if (m_use_glsl_binding_layout)
     {
@@ -679,48 +716,64 @@ void ShaderGen::DeclareFragmentEntryPoint(
   }
   else
   {
+    if (rov)
+    {
+      ss << "#define ROV_LOAD(name, coords) name[uint2(coords)]\n";
+      ss << "#define ROV_STORE(name, coords, value) name[uint2(coords)] = value\n";
+      ss << "#define BEGIN_ROV_REGION\n";
+      ss << "#define END_ROV_REGION\n";
+    }
+
     const char* qualifier = GetInterpolationQualifier(false, msaa, ssaa, false);
 
     ss << "void main(\n";
 
+    bool first = true;
     for (u32 i = 0; i < num_color_inputs; i++)
-      ss << "  " << qualifier << (noperspective_color ? "noperspective " : "") << "in float4 v_col" << i << " : COLOR"
-         << i << ",\n";
+    {
+      ss << (first ? "" : ",\n") << "  " << qualifier << (noperspective_color ? "noperspective " : "")
+         << "in float4 v_col" << i << " : COLOR" << i;
+      first = false;
+    }
 
     for (u32 i = 0; i < num_texcoord_inputs; i++)
-      ss << "  " << qualifier << "in float2 v_tex" << i << " : TEXCOORD" << i << ",\n";
+    {
+      ss << (first ? "" : ",\n") << "  " << qualifier << "in float2 v_tex" << i << " : TEXCOORD" << i;
+      first = false;
+    }
 
     u32 additional_counter = num_texcoord_inputs;
     for (const auto& [qualifiers, name] : additional_inputs)
     {
       const char* qualifier_to_use = (std::strlen(qualifiers) > 0) ? qualifiers : qualifier;
-      ss << "  " << qualifier_to_use << " in " << name << " : TEXCOORD" << additional_counter << ",\n";
+      ss << (first ? "" : ",\n") << "  " << qualifier_to_use << " in " << name << " : TEXCOORD" << additional_counter;
       additional_counter++;
+      first = false;
     }
 
     if (declare_fragcoord)
-      ss << "  in float4 v_pos : SV_Position,\n";
+    {
+      ss << (first ? "" : ",\n") << "  in float4 v_pos : SV_Position";
+      first = false;
+    }
     if (declare_sample_id)
-      ss << "  in uint f_sample_index : SV_SampleIndex,\n";
+    {
+      ss << (first ? "" : ",\n") << "  in uint f_sample_index : SV_SampleIndex";
+      first = false;
+    }
 
     if (depth_output)
     {
-      ss << "  out float o_depth : SV_Depth";
-      if (num_color_outputs > 0)
-        ss << ",\n";
-      else
-        ss << ")\n";
+      ss << (first ? "" : ",\n") << "  out float o_depth : SV_Depth";
+      first = false;
     }
-
     for (u32 i = 0; i < num_color_outputs; i++)
     {
-      ss << "  out float4 o_col" << i << " : SV_Target" << i;
-
-      if (i == (num_color_outputs - 1))
-        ss << ")\n";
-      else
-        ss << ",\n";
+      ss << (first ? "" : ",\n") << "  out float4 o_col" << i << " : SV_Target" << i;
+      first = false;
     }
+
+    ss << ")";
   }
 }
 

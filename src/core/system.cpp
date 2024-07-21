@@ -3938,6 +3938,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
        g_settings.gpu_disable_texture_buffers != old_settings.gpu_disable_texture_buffers ||
        g_settings.gpu_disable_texture_copy_to_self != old_settings.gpu_disable_texture_copy_to_self ||
        g_settings.gpu_disable_memory_import != old_settings.gpu_disable_memory_import ||
+       g_settings.gpu_disable_raster_order_views != old_settings.gpu_disable_raster_order_views ||
        g_settings.display_exclusive_fullscreen_control != old_settings.display_exclusive_fullscreen_control))
   {
     // if debug device/threaded presentation change, we need to recreate the whole display
@@ -3950,6 +3951,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
        g_settings.gpu_disable_texture_buffers != old_settings.gpu_disable_texture_buffers ||
        g_settings.gpu_disable_texture_copy_to_self != old_settings.gpu_disable_texture_copy_to_self ||
        g_settings.gpu_disable_memory_import != old_settings.gpu_disable_memory_import ||
+       g_settings.gpu_disable_raster_order_views != old_settings.gpu_disable_raster_order_views ||
        g_settings.display_exclusive_fullscreen_control != old_settings.display_exclusive_fullscreen_control);
 
     Host::AddIconOSDMessage("RendererSwitch", ICON_FA_PAINT_ROLLER,
@@ -4055,6 +4057,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.gpu_debanding != old_settings.gpu_debanding ||
         g_settings.gpu_scaled_dithering != old_settings.gpu_scaled_dithering ||
         g_settings.gpu_force_round_texcoords != old_settings.gpu_force_round_texcoords ||
+        g_settings.gpu_accurate_blending != old_settings.gpu_accurate_blending ||
         g_settings.gpu_texture_filter != old_settings.gpu_texture_filter ||
         g_settings.gpu_sprite_texture_filter != old_settings.gpu_sprite_texture_filter ||
         g_settings.gpu_line_detect_mode != old_settings.gpu_line_detect_mode ||

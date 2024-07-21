@@ -32,6 +32,7 @@ enum class Trait : u32
   ForceSoftwareRenderer,
   ForceSoftwareRendererForReadbacks,
   ForceRoundUpscaledTextureCoordinates,
+  ForceAccurateBlending,
   ForceInterlacing,
   DisableTrueColor,
   DisableUpscaling,

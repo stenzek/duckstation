@@ -44,13 +44,15 @@ protected:
 
   void DefineMacro(std::stringstream& ss, const char* name, bool enabled);
   void DefineMacro(std::stringstream& ss, const char* name, s32 value);
-  void WriteHeader(std::stringstream& ss);
+  void WriteHeader(std::stringstream& ss, bool enable_rov = false);
   void WriteUniformBufferDeclaration(std::stringstream& ss, bool push_constant_on_vulkan);
   void DeclareUniformBuffer(std::stringstream& ss, const std::initializer_list<const char*>& members,
                             bool push_constant_on_vulkan);
   void DeclareTexture(std::stringstream& ss, const char* name, u32 index, bool multisampled = false,
                       bool is_int = false, bool is_unsigned = false);
   void DeclareTextureBuffer(std::stringstream& ss, const char* name, u32 index, bool is_int, bool is_unsigned);
+  void DeclareImage(std::stringstream& ss, const char* name, u32 index, bool is_float = false, bool is_int = false,
+                    bool is_unsigned = false);
   void DeclareVertexEntryPoint(std::stringstream& ss, const std::initializer_list<const char*>& attributes,
                                u32 num_color_outputs, u32 num_texcoord_outputs,
                                const std::initializer_list<std::pair<const char*, const char*>>& additional_outputs,
@@ -62,7 +64,7 @@ protected:
                             bool declare_fragcoord = false, u32 num_color_outputs = 1, bool dual_source_output = false,
                             bool depth_output = false, bool msaa = false, bool ssaa = false,
                             bool declare_sample_id = false, bool noperspective_color = false,
-                            bool feedback_loop = false);
+                            bool feedback_loop = false, bool rov = false);
 
   RenderAPI m_render_api;
   GPUShaderLanguage m_shader_language;
