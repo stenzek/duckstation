@@ -22,6 +22,10 @@ public:
   ALWAYS_INLINE size_t GetBufferRemaining() const { return (m_buf.size() - m_pos); }
   ALWAYS_INLINE size_t GetBufferConsumed() const { return m_pos; }
 
+  std::span<const u8> GetRemainingSpan() const;
+  std::span<const u8> GetRemainingSpan(size_t size) const;
+  void IncrementPosition(size_t size);
+
   // clang-format off
   template<typename T> ALWAYS_INLINE bool ReadT(T* dst) { return Read(dst, sizeof(T)); }
   ALWAYS_INLINE bool ReadU8(u8* dst) { return ReadT(dst); }
@@ -98,6 +102,10 @@ public:
   ALWAYS_INLINE bool IsValid() const { return !m_buf.empty(); }
   ALWAYS_INLINE size_t GetBufferRemaining() const { return (m_buf.size() - m_pos); }
   ALWAYS_INLINE size_t GetBufferWritten() const { return m_pos; }
+
+  std::span<u8> GetRemainingSpan() const;
+  std::span<u8> GetRemainingSpan(size_t size) const;
+  void IncrementPosition(size_t size);
 
   // clang-format off
   template<typename T> ALWAYS_INLINE bool WriteT(T dst) { return Write(&dst, sizeof(T)); }

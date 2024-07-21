@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "binary_span_reader_writer.h"
+#include "assert.h"
 #include "small_string.h"
 
 BinarySpanReader::BinarySpanReader() = default;
@@ -28,6 +29,23 @@ bool BinarySpanReader::PeekCString(std::string_view* dst)
 
   *dst = std::string_view(reinterpret_cast<const char*>(&m_buf[m_pos]), size);
   return true;
+}
+
+std::span<const u8> BinarySpanReader::GetRemainingSpan(size_t size) const
+{
+  DebugAssert(size <= GetBufferRemaining());
+  return m_buf.subspan(m_pos, size);
+}
+
+std::span<const u8> BinarySpanReader::GetRemainingSpan() const
+{
+  return m_buf.subspan(m_pos, m_buf.size() - m_pos);
+}
+
+void BinarySpanReader::IncrementPosition(size_t size)
+{
+  DebugAssert(size < GetBufferRemaining());
+  m_pos += size;
 }
 
 bool BinarySpanReader::ReadCString(std::string* dst)
@@ -94,6 +112,23 @@ BinarySpanWriter::BinarySpanWriter() = default;
 
 BinarySpanWriter::BinarySpanWriter(std::span<u8> buf) : m_buf(buf)
 {
+}
+
+std::span<u8> BinarySpanWriter::GetRemainingSpan(size_t size) const
+{
+  DebugAssert(size <= GetBufferRemaining());
+  return m_buf.subspan(m_pos, size);
+}
+
+std::span<u8> BinarySpanWriter::GetRemainingSpan() const
+{
+  return m_buf.subspan(m_pos, m_buf.size() - m_pos);
+}
+
+void BinarySpanWriter::IncrementPosition(size_t size)
+{
+  DebugAssert(size < GetBufferRemaining());
+  m_pos += size;
 }
 
 bool BinarySpanWriter::WriteCString(std::string_view val)
