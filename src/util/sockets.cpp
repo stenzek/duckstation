@@ -486,10 +486,17 @@ bool SocketMultiplexer::PollEventsWithTimeout(u32 milliseconds)
     PendingSocketPair& psp = triggered_sockets[i];
 
     // fire events
-    if (psp.second & (POLLIN | POLLHUP | POLLERR))
-      psp.first->OnReadEvent();
-    if (psp.second & POLLOUT)
-      psp.first->OnWriteEvent();
+    if (psp.second & (POLLHUP | POLLERR))
+    {
+      psp.first->OnHangupEvent();
+    }
+    else
+    {
+      if (psp.second & POLLIN)
+        psp.first->OnReadEvent();
+      if (psp.second & POLLOUT)
+        psp.first->OnWriteEvent();
+    }
 
     psp.first.~shared_ptr();
   }
@@ -558,6 +565,12 @@ void ListenSocket::OnReadEvent()
 
 void ListenSocket::OnWriteEvent()
 {
+  ERROR_LOG("Unexpected OnWriteEvent() in ListenSocket {}", m_local_address.ToString());
+}
+
+void ListenSocket::OnHangupEvent()
+{
+  ERROR_LOG("Unexpected OnHangupEvent() in ListenSocket {}", m_local_address.ToString());
 }
 
 StreamSocket::StreamSocket(SocketMultiplexer& multiplexer, SocketDescriptor descriptor)
@@ -768,6 +781,21 @@ void StreamSocket::OnReadEvent()
 void StreamSocket::OnWriteEvent()
 {
   // shouldn't be called
+}
+
+void StreamSocket::OnHangupEvent()
+{
+  std::unique_lock lock(m_lock);
+  if (!m_connected)
+    return;
+
+  m_multiplexer.SetNotificationMask(this, m_descriptor, 0);
+  m_multiplexer.RemoveClientSocket(this);
+  closesocket(m_descriptor);
+  m_descriptor = INVALID_SOCKET;
+  m_connected = false;
+
+  OnDisconnected(Error::CreateString("Connection closed by peer."));
 }
 
 BufferedStreamSocket::BufferedStreamSocket(SocketMultiplexer& multiplexer, SocketDescriptor descriptor,

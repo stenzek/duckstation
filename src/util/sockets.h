@@ -79,6 +79,7 @@ public:
 protected:
   virtual void OnReadEvent() = 0;
   virtual void OnWriteEvent() = 0;
+  virtual void OnHangupEvent() = 0;
 
   SocketMultiplexer& m_multiplexer;
   SocketDescriptor m_descriptor;
@@ -194,6 +195,7 @@ public:
 protected:
   void OnReadEvent() override final;
   void OnWriteEvent() override final;
+  void OnHangupEvent() override final;
 
 private:
   SocketMultiplexer::CreateStreamSocketCallback m_accept_callback;
@@ -231,6 +233,7 @@ protected:
 
   virtual void OnReadEvent() override;
   virtual void OnWriteEvent() override;
+  virtual void OnHangupEvent() override;
 
   void CloseWithError();
 
