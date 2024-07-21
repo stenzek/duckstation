@@ -4,6 +4,7 @@
 #include "input_manager.h"
 #include "platform_misc.h"
 
+#include "common/error.h"
 #include "common/log.h"
 #include "common/path.h"
 #include "common/scoped_guard.h"
@@ -11,6 +12,7 @@
 
 #include <cinttypes>
 #include <dbus/dbus.h>
+#include <signal.h>
 #include <spawn.h>
 #include <unistd.h>
 
@@ -18,6 +20,13 @@ Log_SetChannel(PlatformMisc);
 
 bool PlatformMisc::InitializeSocketSupport(Error* error)
 {
+  // Ignore SIGPIPE, we handle errors ourselves.
+  if (signal(SIGPIPE, SIG_IGN) == SIG_ERR)
+  {
+    Error::SetErrno(error, "signal(SIGPIPE, SIG_IGN) failed: ", errno);
+    return false;
+  }
+
   return true;
 }
 
