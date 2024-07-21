@@ -204,12 +204,16 @@ PINEServer::PINESocket::~PINESocket() = default;
 
 void PINEServer::PINESocket::OnConnected()
 {
-  INFO_LOG("PINE: New client at {} connected.", GetRemoteAddress().ToString());
+  INFO_LOG("New client at {} connected.", GetRemoteAddress().ToString());
+
+  Error error;
+  if (GetLocalAddress().IsIPAddress() && !SetNagleBuffering(false, &error))
+    ERROR_LOG("Failed to disable nagle buffering: {}", error.GetDescription());
 }
 
 void PINEServer::PINESocket::OnDisconnected(const Error& error)
 {
-  INFO_LOG("PINE: Client {} disconnected: {}", GetRemoteAddress().ToString(), error.GetDescription());
+  INFO_LOG("Client {} disconnected: {}", GetRemoteAddress().ToString(), error.GetDescription());
 }
 
 void PINEServer::PINESocket::OnRead()
