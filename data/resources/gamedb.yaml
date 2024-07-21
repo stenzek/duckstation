@@ -3181,7 +3181,8 @@ SCPS-10126:
     - AnalogController
     - DigitalController
   traits:
-    - ForceSoftwareRenderer # Fixes screen flicker, blending precision.
+    - ForceAccurateBlending # Requires 16-bit blend precision
+    - DisableTrueColor # to fix screen flicker.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -3204,7 +3205,8 @@ SLES-04108:
     - AnalogController
     - DigitalController
   traits:
-    - ForceSoftwareRenderer # Fixes screen flicker, blending precision.
+    - ForceAccurateBlending # Requires 16-bit blend precision
+    - DisableTrueColor # to fix screen flicker.
   metadata:
     publisher: "Vivendi Universal Games, Inc"
     developer: "Coktel Vision / Neko Entertaiment"
