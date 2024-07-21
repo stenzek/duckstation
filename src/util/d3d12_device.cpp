@@ -130,7 +130,7 @@ bool D3D12Device::CreateDevice(std::string_view adapter, bool threaded_presentat
 
   m_adapter = D3DCommon::GetAdapterByName(m_dxgi_factory.Get(), adapter);
 
-  HRESULT hr;
+  HRESULT hr = S_OK;
 
   // Enabling the debug layer will fail if the Graphics Tools feature is not installed.
   if (m_debug_device)
@@ -149,8 +149,15 @@ bool D3D12Device::CreateDevice(std::string_view adapter, bool threaded_presentat
   }
 
   // Create the actual device.
-  m_feature_level = D3D_FEATURE_LEVEL_11_0;
-  hr = D3D12CreateDevice(m_adapter.Get(), m_feature_level, IID_PPV_ARGS(&m_device));
+  for (D3D_FEATURE_LEVEL try_feature_level : {D3D_FEATURE_LEVEL_11_0})
+  {
+    hr = D3D12CreateDevice(m_adapter.Get(), try_feature_level, IID_PPV_ARGS(&m_device));
+    if (SUCCEEDED(hr))
+    {
+      m_feature_level = try_feature_level;
+      break;
+    }
+  }
   if (FAILED(hr))
   {
     Error::SetHResult(error, "Failed to create D3D12 device: ", hr);
@@ -479,14 +486,22 @@ bool D3D12Device::CreateDescriptorHeaps(Error* error)
   // Allocate null SRV descriptor for unbound textures.
   static constexpr D3D12_SHADER_RESOURCE_VIEW_DESC null_srv_desc = {
     DXGI_FORMAT_R8G8B8A8_UNORM, D3D12_SRV_DIMENSION_TEXTURE2D, D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING, {}};
-
   if (!m_descriptor_heap_manager.Allocate(&m_null_srv_descriptor))
   {
     Error::SetStringView(error, "Failed to allocate null SRV descriptor");
     return false;
   }
-
   m_device->CreateShaderResourceView(nullptr, &null_srv_desc, m_null_srv_descriptor.cpu_handle);
+
+  // Same for UAVs.
+  static constexpr D3D12_UNORDERED_ACCESS_VIEW_DESC null_uav_desc = {
+    DXGI_FORMAT_R8G8B8A8_UNORM, D3D12_UAV_DIMENSION_TEXTURE2D, {}};
+  if (!m_descriptor_heap_manager.Allocate(&m_null_uav_descriptor))
+  {
+    Error::SetStringView(error, "Failed to allocate null UAV descriptor");
+    return false;
+  }
+  m_device->CreateUnorderedAccessView(nullptr, nullptr, &null_uav_desc, m_null_uav_descriptor.cpu_handle);
 
   // Same for samplers.
   m_point_sampler = GetSampler(GPUSampler::GetNearestConfig());
@@ -497,6 +512,8 @@ bool D3D12Device::CreateDescriptorHeaps(Error* error)
 
 void D3D12Device::DestroyDescriptorHeaps()
 {
+  if (m_null_uav_descriptor)
+    m_descriptor_heap_manager.Free(&m_null_uav_descriptor);
   if (m_null_srv_descriptor)
     m_descriptor_heap_manager.Free(&m_null_srv_descriptor);
   m_sampler_heap_manager.Destroy();
@@ -1248,6 +1265,15 @@ void D3D12Device::SetFeatures(FeatureMask disabled_features)
   HRESULT hr = m_dxgi_factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported,
                                                    sizeof(allow_tearing_supported));
   m_allow_tearing_supported = (SUCCEEDED(hr) && allow_tearing_supported == TRUE);
+
+  m_features.raster_order_views = false;
+  if (!(disabled_features & FEATURE_MASK_RASTER_ORDER_VIEWS))
+  {
+    D3D12_FEATURE_DATA_D3D12_OPTIONS options = {};
+    m_features.raster_order_views =
+      SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &options, sizeof(options))) &&
+      options.ROVsSupported;
+  }
 }
 
 void D3D12Device::CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level,
@@ -1479,7 +1505,7 @@ void D3D12Device::UnmapIndexBuffer(u32 used_index_count)
 
 void D3D12Device::PushUniformBuffer(const void* data, u32 data_size)
 {
-  static constexpr std::array<u8, static_cast<u8>(GPUPipeline::Layout::MaxCount)> push_parameter = {
+  static constexpr std::array<u8, static_cast<u8>(GPUPipeline::Layout::MaxCount)> push_parameters = {
     0, // SingleTextureAndUBO
     2, // SingleTextureAndPushConstants
     1, // SingleTextureBufferAndPushConstants
@@ -1495,8 +1521,10 @@ void D3D12Device::PushUniformBuffer(const void* data, u32 data_size)
   }
 
   s_stats.buffer_streamed += data_size;
-  GetCommandList()->SetGraphicsRoot32BitConstants(push_parameter[static_cast<u8>(m_current_pipeline_layout)],
-                                                  data_size / 4u, data, 0);
+
+  const u32 push_param =
+    push_parameters[static_cast<u8>(m_current_pipeline_layout)] + BoolToUInt8(IsUsingROVRootSignature());
+  GetCommandList()->SetGraphicsRoot32BitConstants(push_param, data_size / 4u, data, 0);
 }
 
 void* D3D12Device::MapUniformBuffer(u32 size)
@@ -1526,63 +1554,96 @@ bool D3D12Device::CreateRootSignatures(Error* error)
 {
   D3D12::RootSignatureBuilder rsb;
 
+  for (u32 rov = 0; rov < 2; rov++)
   {
-    auto& rs = m_root_signatures[static_cast<u8>(GPUPipeline::Layout::SingleTextureAndUBO)];
+    if (rov && !m_features.raster_order_views)
+      break;
 
-    rsb.SetInputAssemblerFlag();
-    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
-    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
-    rsb.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
-    if (!(rs = rsb.Create(error, true)))
-      return false;
-    D3D12::SetObjectName(rs.Get(), "Single Texture + UBO Pipeline Layout");
-  }
+    {
+      auto& rs = m_root_signatures[rov][static_cast<u8>(GPUPipeline::Layout::SingleTextureAndUBO)];
 
-  {
-    auto& rs = m_root_signatures[static_cast<u8>(GPUPipeline::Layout::SingleTextureAndPushConstants)];
+      rsb.SetInputAssemblerFlag();
+      rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
+      rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
+      rsb.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
+      if (rov)
+      {
+        rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, MAX_IMAGE_RENDER_TARGETS,
+                               D3D12_SHADER_VISIBILITY_PIXEL);
+      }
+      if (!(rs = rsb.Create(error, true)))
+        return false;
+      D3D12::SetObjectName(rs.Get(), "Single Texture + UBO Pipeline Layout");
+    }
 
-    rsb.SetInputAssemblerFlag();
-    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
-    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
-    rsb.Add32BitConstants(0, UNIFORM_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
-    if (!(rs = rsb.Create(error, true)))
-      return false;
-    D3D12::SetObjectName(rs.Get(), "Single Texture Pipeline Layout");
-  }
+    {
+      auto& rs = m_root_signatures[rov][static_cast<u8>(GPUPipeline::Layout::SingleTextureAndPushConstants)];
 
-  {
-    auto& rs = m_root_signatures[static_cast<u8>(GPUPipeline::Layout::SingleTextureBufferAndPushConstants)];
+      rsb.SetInputAssemblerFlag();
+      rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
+      rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
+      if (rov)
+      {
+        rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, MAX_IMAGE_RENDER_TARGETS,
+                               D3D12_SHADER_VISIBILITY_PIXEL);
+      }
+      rsb.Add32BitConstants(0, UNIFORM_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
+      if (!(rs = rsb.Create(error, true)))
+        return false;
+      D3D12::SetObjectName(rs.Get(), "Single Texture Pipeline Layout");
+    }
 
-    rsb.SetInputAssemblerFlag();
-    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
-    rsb.Add32BitConstants(0, UNIFORM_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
-    if (!(rs = rsb.Create(error, true)))
-      return false;
-    D3D12::SetObjectName(rs.Get(), "Single Texture Buffer + UBO Pipeline Layout");
-  }
+    {
+      auto& rs = m_root_signatures[rov][static_cast<u8>(GPUPipeline::Layout::SingleTextureBufferAndPushConstants)];
 
-  {
-    auto& rs = m_root_signatures[static_cast<u8>(GPUPipeline::Layout::MultiTextureAndUBO)];
+      rsb.SetInputAssemblerFlag();
+      rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
+      if (rov)
+      {
+        rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, MAX_IMAGE_RENDER_TARGETS,
+                               D3D12_SHADER_VISIBILITY_PIXEL);
+      }
+      rsb.Add32BitConstants(0, UNIFORM_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
+      if (!(rs = rsb.Create(error, true)))
+        return false;
+      D3D12::SetObjectName(rs.Get(), "Single Texture Buffer + UBO Pipeline Layout");
+    }
 
-    rsb.SetInputAssemblerFlag();
-    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAX_TEXTURE_SAMPLERS, D3D12_SHADER_VISIBILITY_PIXEL);
-    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, MAX_TEXTURE_SAMPLERS, D3D12_SHADER_VISIBILITY_PIXEL);
-    rsb.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
-    if (!(rs = rsb.Create(error, true)))
-      return false;
-    D3D12::SetObjectName(rs.Get(), "Multi Texture + UBO Pipeline Layout");
-  }
+    {
+      auto& rs = m_root_signatures[rov][static_cast<u8>(GPUPipeline::Layout::MultiTextureAndUBO)];
 
-  {
-    auto& rs = m_root_signatures[static_cast<u8>(GPUPipeline::Layout::MultiTextureAndPushConstants)];
+      rsb.SetInputAssemblerFlag();
+      rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAX_TEXTURE_SAMPLERS, D3D12_SHADER_VISIBILITY_PIXEL);
+      rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, MAX_TEXTURE_SAMPLERS,
+                             D3D12_SHADER_VISIBILITY_PIXEL);
+      rsb.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
+      if (rov)
+      {
+        rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, MAX_IMAGE_RENDER_TARGETS,
+                               D3D12_SHADER_VISIBILITY_PIXEL);
+      }
+      if (!(rs = rsb.Create(error, true)))
+        return false;
+      D3D12::SetObjectName(rs.Get(), "Multi Texture + UBO Pipeline Layout");
+    }
 
-    rsb.SetInputAssemblerFlag();
-    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAX_TEXTURE_SAMPLERS, D3D12_SHADER_VISIBILITY_PIXEL);
-    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, MAX_TEXTURE_SAMPLERS, D3D12_SHADER_VISIBILITY_PIXEL);
-    rsb.Add32BitConstants(0, UNIFORM_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
-    if (!(rs = rsb.Create(error, true)))
-      return false;
-    D3D12::SetObjectName(rs.Get(), "Multi Texture Pipeline Layout");
+    {
+      auto& rs = m_root_signatures[rov][static_cast<u8>(GPUPipeline::Layout::MultiTextureAndPushConstants)];
+
+      rsb.SetInputAssemblerFlag();
+      rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAX_TEXTURE_SAMPLERS, D3D12_SHADER_VISIBILITY_PIXEL);
+      rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, MAX_TEXTURE_SAMPLERS,
+                             D3D12_SHADER_VISIBILITY_PIXEL);
+      if (rov)
+      {
+        rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, MAX_IMAGE_RENDER_TARGETS,
+                               D3D12_SHADER_VISIBILITY_PIXEL);
+      }
+      rsb.Add32BitConstants(0, UNIFORM_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
+      if (!(rs = rsb.Create(error, true)))
+        return false;
+      D3D12::SetObjectName(rs.Get(), "Multi Texture Pipeline Layout");
+    }
   }
 
   return true;
@@ -1590,29 +1651,30 @@ bool D3D12Device::CreateRootSignatures(Error* error)
 
 void D3D12Device::DestroyRootSignatures()
 {
-  for (auto it = m_root_signatures.rbegin(); it != m_root_signatures.rend(); ++it)
-    it->Reset();
+  m_root_signatures.enumerate([](auto& it) { it.Reset(); });
 }
 
 void D3D12Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds,
-                                   GPUPipeline::RenderPassFlag feedback_loop)
+                                   GPUPipeline::RenderPassFlag flags)
 {
-  DebugAssert(!feedback_loop);
+  DebugAssert(
+    !(flags & (GPUPipeline::RenderPassFlag::ColorFeedbackLoop | GPUPipeline::RenderPassFlag::SampleDepthBuffer)));
   if (InRenderPass())
     EndRenderPass();
 
-  ID3D12GraphicsCommandList4* cmdlist = GetCommandList();
-
   m_current_depth_target = static_cast<D3D12Texture*>(ds);
-  for (u32 i = 0; i < num_rts; i++)
-  {
-    D3D12Texture* const dt = static_cast<D3D12Texture*>(rts[i]);
-    m_current_render_targets[i] = dt;
-    dt->CommitClear(cmdlist);
-  }
+  if (num_rts > 0)
+    std::memcpy(m_current_render_targets.data(), rts, sizeof(D3D12Texture*) * num_rts);
   for (u32 i = num_rts; i < m_num_current_render_targets; i++)
     m_current_render_targets[i] = nullptr;
   m_num_current_render_targets = num_rts;
+
+  // Need a root signature change if switching to UAVs.
+  m_dirty_flags |=
+    ((m_current_render_pass_flags ^ flags) & GPUPipeline::BindRenderTargetsAsImages) ? LAYOUT_DEPENDENT_DIRTY_STATE : 0;
+  m_dirty_flags = (flags & GPUPipeline::BindRenderTargetsAsImages) ? (m_dirty_flags | DIRTY_FLAG_RT_UAVS) :
+                                                                     (m_dirty_flags & ~DIRTY_FLAG_RT_UAVS);
+  m_current_render_pass_flags = flags;
 }
 
 void D3D12Device::BeginRenderPass()
@@ -1630,48 +1692,62 @@ void D3D12Device::BeginRenderPass()
 
   if (m_num_current_render_targets > 0 || m_current_depth_target) [[likely]]
   {
-    for (u32 i = 0; i < m_num_current_render_targets; i++)
+    if (!IsUsingROVRootSignature()) [[likely]]
     {
-      D3D12Texture* const rt = m_current_render_targets[i];
-      rt->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_RENDER_TARGET);
-      rt->SetUseFenceValue(GetCurrentFenceValue());
-
-      D3D12_RENDER_PASS_RENDER_TARGET_DESC& desc = rt_desc[i];
-      desc.cpuDescriptor = rt->GetWriteDescriptor();
-      desc.EndingAccess.Type = D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE;
-
-      switch (rt->GetState())
+      for (u32 i = 0; i < m_num_current_render_targets; i++)
       {
-        case GPUTexture::State::Cleared:
-        {
-          desc.BeginningAccess.Type = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR;
-          std::memcpy(desc.BeginningAccess.Clear.ClearValue.Color, rt->GetUNormClearColor().data(),
-                      sizeof(desc.BeginningAccess.Clear.ClearValue.Color));
-          rt->SetState(GPUTexture::State::Dirty);
-        }
-        break;
+        D3D12Texture* const rt = m_current_render_targets[i];
+        rt->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_RENDER_TARGET);
+        rt->SetUseFenceValue(GetCurrentFenceValue());
 
-        case GPUTexture::State::Invalidated:
-        {
-          desc.BeginningAccess.Type = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD;
-          rt->SetState(GPUTexture::State::Dirty);
-        }
-        break;
+        D3D12_RENDER_PASS_RENDER_TARGET_DESC& desc = rt_desc[i];
+        desc.cpuDescriptor = rt->GetWriteDescriptor();
+        desc.EndingAccess.Type = D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE;
 
-        case GPUTexture::State::Dirty:
+        switch (rt->GetState())
         {
-          desc.BeginningAccess.Type = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE;
-        }
-        break;
-
-        default:
-          UnreachableCode();
+          case GPUTexture::State::Cleared:
+          {
+            desc.BeginningAccess.Type = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR;
+            std::memcpy(desc.BeginningAccess.Clear.ClearValue.Color, rt->GetUNormClearColor().data(),
+                        sizeof(desc.BeginningAccess.Clear.ClearValue.Color));
+            rt->SetState(GPUTexture::State::Dirty);
+          }
           break;
+
+          case GPUTexture::State::Invalidated:
+          {
+            desc.BeginningAccess.Type = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD;
+            rt->SetState(GPUTexture::State::Dirty);
+          }
+          break;
+
+          case GPUTexture::State::Dirty:
+          {
+            desc.BeginningAccess.Type = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE;
+          }
+          break;
+
+          default:
+            UnreachableCode();
+            break;
+        }
+      }
+
+      rt_desc_p = (m_num_current_render_targets > 0) ? rt_desc.data() : nullptr;
+      num_rt_descs = m_num_current_render_targets;
+    }
+    else
+    {
+      // Still need to clear the RTs.
+      for (u32 i = 0; i < m_num_current_render_targets; i++)
+      {
+        D3D12Texture* const rt = m_current_render_targets[i];
+        rt->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+        rt->SetUseFenceValue(GetCurrentFenceValue());
+        rt->CommitClear(cmdlist);
       }
     }
-
-    rt_desc_p = (m_num_current_render_targets > 0) ? rt_desc.data() : nullptr;
-    num_rt_descs = m_num_current_render_targets;
     if (m_current_depth_target)
     {
       D3D12Texture* const ds = m_current_depth_target;
@@ -1733,7 +1809,7 @@ void D3D12Device::BeginRenderPass()
       m_current_textures[i]->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
   }
 
-  DebugAssert(rt_desc_p || ds_desc_p);
+  DebugAssert(rt_desc_p || ds_desc_p || IsUsingROVRootSignature());
   cmdlist->BeginRenderPass(num_rt_descs, rt_desc_p, ds_desc_p, D3D12_RENDER_PASS_FLAG_NONE);
 
   // TODO: Stats
@@ -1771,6 +1847,9 @@ void D3D12Device::BeginSwapChainRenderPass()
 
   std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
   m_num_current_render_targets = 0;
+  m_dirty_flags =
+    (m_dirty_flags & ~DIRTY_FLAG_RT_UAVS) | ((IsUsingROVRootSignature()) ? DIRTY_FLAG_PIPELINE_LAYOUT : 0);
+  m_current_render_pass_flags = GPUPipeline::NoRenderPassFlags;
   m_current_depth_target = nullptr;
   m_in_render_pass = true;
   s_stats.num_render_passes++;
@@ -1839,8 +1918,7 @@ void D3D12Device::SetPipeline(GPUPipeline* pipeline)
   if (GPUPipeline::Layout layout = m_current_pipeline->GetLayout(); m_current_pipeline_layout != layout)
   {
     m_current_pipeline_layout = layout;
-    m_dirty_flags |=
-      DIRTY_FLAG_PIPELINE_LAYOUT | DIRTY_FLAG_CONSTANT_BUFFER | DIRTY_FLAG_TEXTURES | DIRTY_FLAG_SAMPLERS;
+    m_dirty_flags |= LAYOUT_DEPENDENT_DIRTY_STATE & (IsUsingROVRootSignature() ? ~0u : ~DIRTY_FLAG_RT_UAVS);
   }
 }
 
@@ -1865,7 +1943,8 @@ bool D3D12Device::IsRenderTargetBound(const GPUTexture* tex) const
 
 void D3D12Device::InvalidateCachedState()
 {
-  m_dirty_flags = ALL_DIRTY_STATE;
+  m_dirty_flags = ALL_DIRTY_STATE &
+                  ((m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages) ? ~0u : ~DIRTY_FLAG_RT_UAVS);
   m_in_render_pass = false;
   m_current_pipeline = nullptr;
   m_current_vertex_stride = 0;
@@ -2053,7 +2132,7 @@ void D3D12Device::PreDrawCheck()
         return;
       }
     }
-    else if (dirty & (DIRTY_FLAG_CONSTANT_BUFFER | DIRTY_FLAG_TEXTURES | DIRTY_FLAG_SAMPLERS))
+    else if (dirty & (DIRTY_FLAG_CONSTANT_BUFFER | DIRTY_FLAG_TEXTURES | DIRTY_FLAG_SAMPLERS | DIRTY_FLAG_RT_UAVS))
     {
       if (!UpdateRootParameters(dirty))
       {
@@ -2068,9 +2147,15 @@ void D3D12Device::PreDrawCheck()
     BeginRenderPass();
 }
 
+bool D3D12Device::IsUsingROVRootSignature() const
+{
+  return ((m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages) != 0);
+}
+
 void D3D12Device::UpdateRootSignature()
 {
-  GetCommandList()->SetGraphicsRootSignature(m_root_signatures[static_cast<u8>(m_current_pipeline_layout)].Get());
+  GetCommandList()->SetGraphicsRootSignature(
+    m_root_signatures[BoolToUInt8(IsUsingROVRootSignature())][static_cast<u8>(m_current_pipeline_layout)].Get());
 }
 
 template<GPUPipeline::Layout layout>
@@ -2143,6 +2228,35 @@ bool D3D12Device::UpdateParametersForLayout(u32 dirty)
       1, gpu_handle, m_current_texture_buffer ? m_current_texture_buffer->GetDescriptor() : m_null_srv_descriptor,
       D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     cmdlist->SetGraphicsRootDescriptorTable(0, gpu_handle);
+  }
+
+  if (dirty & DIRTY_FLAG_RT_UAVS)
+  {
+    DebugAssert(m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages);
+
+    D3D12DescriptorAllocator& allocator = m_command_lists[m_current_command_list].descriptor_allocator;
+    D3D12DescriptorHandle gpu_handle;
+    if (!allocator.Allocate(MAX_IMAGE_RENDER_TARGETS, &gpu_handle))
+      return false;
+
+    D3D12_CPU_DESCRIPTOR_HANDLE src_handles[MAX_IMAGE_RENDER_TARGETS];
+    UINT src_sizes[MAX_IMAGE_RENDER_TARGETS];
+    const UINT dst_size = MAX_IMAGE_RENDER_TARGETS;
+    for (u32 i = 0; i < MAX_IMAGE_RENDER_TARGETS; i++)
+    {
+      src_handles[i] =
+        m_current_render_targets[i] ? m_current_render_targets[i]->GetSRVDescriptor() : m_null_srv_descriptor;
+      src_sizes[i] = 1;
+    }
+    m_device->CopyDescriptors(1, &gpu_handle.cpu_handle, &dst_size, MAX_IMAGE_RENDER_TARGETS, src_handles, src_sizes,
+                              D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+    constexpr u32 rov_param =
+      (layout == GPUPipeline::Layout::SingleTextureBufferAndPushConstants) ?
+        1 :
+        ((layout == GPUPipeline::Layout::SingleTextureAndUBO || layout == GPUPipeline::Layout::MultiTextureAndUBO) ? 3 :
+                                                                                                                     2);
+    cmdlist->SetGraphicsRootDescriptorTable(rov_param, gpu_handle);
   }
 
   return true;

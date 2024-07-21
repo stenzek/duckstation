@@ -8,6 +8,7 @@
 #include "gpu_device.h"
 #include "gpu_texture.h"
 
+#include "common/dimensional_array.h"
 #include "common/windows_headers.h"
 
 #include <array>
@@ -110,7 +111,7 @@ public:
   void* MapUniformBuffer(u32 size) override;
   void UnmapUniformBuffer(u32 size) override;
   void SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds,
-                        GPUPipeline::RenderPassFlag feedback_loop = GPUPipeline::NoRenderPassFlags) override;
+                        GPUPipeline::RenderPassFlag flags = GPUPipeline::NoRenderPassFlags) override;
   void SetPipeline(GPUPipeline* pipeline) override;
   void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) override;
   void SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer) override;
@@ -200,9 +201,11 @@ private:
     DIRTY_FLAG_CONSTANT_BUFFER = (1 << 2),
     DIRTY_FLAG_TEXTURES = (1 << 3),
     DIRTY_FLAG_SAMPLERS = (1 << 3),
+    DIRTY_FLAG_RT_UAVS = (1 << 4),
 
-    ALL_DIRTY_STATE = DIRTY_FLAG_INITIAL | DIRTY_FLAG_PIPELINE_LAYOUT | DIRTY_FLAG_CONSTANT_BUFFER |
-                      DIRTY_FLAG_TEXTURES | DIRTY_FLAG_SAMPLERS,
+    LAYOUT_DEPENDENT_DIRTY_STATE = DIRTY_FLAG_PIPELINE_LAYOUT | DIRTY_FLAG_CONSTANT_BUFFER | DIRTY_FLAG_TEXTURES |
+                                   DIRTY_FLAG_SAMPLERS | DIRTY_FLAG_RT_UAVS,
+    ALL_DIRTY_STATE = DIRTY_FLAG_INITIAL | (LAYOUT_DEPENDENT_DIRTY_STATE & ~DIRTY_FLAG_RT_UAVS),
   };
 
   struct CommandList
@@ -264,6 +267,7 @@ private:
   void SetInitialPipelineState();
   void PreDrawCheck();
 
+  bool IsUsingROVRootSignature() const;
   void UpdateRootSignature();
   template<GPUPipeline::Layout layout>
   bool UpdateParametersForLayout(u32 dirty);
@@ -303,6 +307,7 @@ private:
   D3D12DescriptorHeapManager m_dsv_heap_manager;
   D3D12DescriptorHeapManager m_sampler_heap_manager;
   D3D12DescriptorHandle m_null_srv_descriptor;
+  D3D12DescriptorHandle m_null_uav_descriptor;
   D3D12DescriptorHandle m_point_sampler;
 
   ComPtr<ID3D12QueryHeap> m_timestamp_query_heap;
@@ -314,7 +319,8 @@ private:
   std::deque<std::pair<u64, std::pair<D3D12MA::Allocation*, ID3D12Object*>>> m_cleanup_resources;
   std::deque<std::pair<u64, std::pair<D3D12DescriptorHeapManager*, D3D12DescriptorHandle>>> m_cleanup_descriptors;
 
-  std::array<ComPtr<ID3D12RootSignature>, static_cast<u8>(GPUPipeline::Layout::MaxCount)> m_root_signatures = {};
+  DimensionalArray<ComPtr<ID3D12RootSignature>, static_cast<u8>(GPUPipeline::Layout::MaxCount), 2> m_root_signatures =
+    {};
 
   D3D12StreamBuffer m_vertex_buffer;
   D3D12StreamBuffer m_index_buffer;
@@ -333,6 +339,7 @@ private:
   D3D12Pipeline* m_current_pipeline = nullptr;
   D3D12_PRIMITIVE_TOPOLOGY m_current_topology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
   u32 m_num_current_render_targets = 0;
+  GPUPipeline::RenderPassFlag m_current_render_pass_flags = GPUPipeline::NoRenderPassFlags;
   std::array<D3D12Texture*, MAX_RENDER_TARGETS> m_current_render_targets = {};
   D3D12Texture* m_current_depth_target = nullptr;
   u32 m_current_vertex_stride = 0;

@@ -168,6 +168,7 @@ public:
     NoRenderPassFlags = 0,
     ColorFeedbackLoop = (1 << 0),
     SampleDepthBuffer = (1 << 1),
+    BindRenderTargetsAsImages = (1 << 2),
   };
 
   enum class Primitive : u8
@@ -469,6 +470,7 @@ public:
     FEATURE_MASK_GEOMETRY_SHADERS = (1 << 4),
     FEATURE_MASK_TEXTURE_COPY_TO_SELF = (1 << 5),
     FEATURE_MASK_MEMORY_IMPORT = (1 << 6),
+    FEATURE_MASK_RASTER_ORDER_VIEWS = (1 << 7),
   };
 
   enum class DrawBarrier : u32
@@ -496,6 +498,7 @@ public:
     bool shader_cache : 1;
     bool pipeline_cache : 1;
     bool prefer_unused_textures : 1;
+    bool raster_order_views : 1;
   };
 
   struct Statistics
@@ -527,6 +530,7 @@ public:
   static constexpr u32 MAX_TEXTURE_SAMPLERS = 8;
   static constexpr u32 MIN_TEXEL_BUFFER_ELEMENTS = 4 * 1024 * 512;
   static constexpr u32 MAX_RENDER_TARGETS = 4;
+  static constexpr u32 MAX_IMAGE_RENDER_TARGETS = 2;
   static_assert(sizeof(GPUPipeline::GraphicsConfig::color_formats) == sizeof(GPUTexture::Format) * MAX_RENDER_TARGETS);
 
   GPUDevice();
@@ -676,14 +680,14 @@ public:
 
   /// Drawing setup abstraction.
   virtual void SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds,
-                                GPUPipeline::RenderPassFlag render_pass_flags = GPUPipeline::NoRenderPassFlags) = 0;
+                                GPUPipeline::RenderPassFlag flags = GPUPipeline::NoRenderPassFlags) = 0;
   virtual void SetPipeline(GPUPipeline* pipeline) = 0;
   virtual void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) = 0;
   virtual void SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer) = 0;
   virtual void SetViewport(const GSVector4i rc) = 0;
   virtual void SetScissor(const GSVector4i rc) = 0;
   void SetRenderTarget(GPUTexture* rt, GPUTexture* ds = nullptr,
-                       GPUPipeline::RenderPassFlag render_pass_flags = GPUPipeline::NoRenderPassFlags);
+                       GPUPipeline::RenderPassFlag flags = GPUPipeline::NoRenderPassFlags);
   void SetViewport(s32 x, s32 y, s32 width, s32 height);
   void SetScissor(s32 x, s32 y, s32 width, s32 height);
   void SetViewportAndScissor(s32 x, s32 y, s32 width, s32 height);

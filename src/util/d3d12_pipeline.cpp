@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "d3d12_pipeline.h"
@@ -7,6 +7,7 @@
 #include "d3d_common.h"
 
 #include "common/assert.h"
+#include "common/bitutils.h"
 #include "common/log.h"
 #include "common/sha1_digest.h"
 #include "common/string_util.h"
@@ -180,8 +181,16 @@ std::unique_ptr<GPUPipeline> D3D12Device::CreatePipeline(const GPUPipeline::Grap
     D3D12_BLEND_OP_MAX,          // Max
   }};
 
+  if (config.render_pass_flags & GPUPipeline::BindRenderTargetsAsImages && !m_features.raster_order_views)
+  {
+    ERROR_LOG("Attempting to create ROV pipeline without ROV feature.");
+    return {};
+  }
+
   D3D12::GraphicsPipelineBuilder gpb;
-  gpb.SetRootSignature(m_root_signatures[static_cast<u8>(config.layout)].Get());
+  gpb.SetRootSignature(m_root_signatures[BoolToUInt8(
+    (config.render_pass_flags & GPUPipeline::BindRenderTargetsAsImages))][static_cast<u8>(config.layout)]
+                         .Get());
   gpb.SetVertexShader(static_cast<const D3D12Shader*>(config.vertex_shader)->GetBytecodeData(),
                       static_cast<const D3D12Shader*>(config.vertex_shader)->GetBytecodeSize());
   gpb.SetPixelShader(static_cast<const D3D12Shader*>(config.fragment_shader)->GetBytecodeData(),

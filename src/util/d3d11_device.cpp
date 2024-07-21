@@ -80,8 +80,8 @@ bool D3D11Device::CreateDevice(std::string_view adapter, bool threaded_presentat
   ComPtr<IDXGIAdapter1> dxgi_adapter = D3DCommon::GetAdapterByName(m_dxgi_factory.Get(), adapter);
   m_max_feature_level = D3DCommon::GetDeviceMaxFeatureLevel(dxgi_adapter.Get());
 
-  static constexpr std::array<D3D_FEATURE_LEVEL, 3> requested_feature_levels = {
-    {D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0}};
+  static constexpr std::array<D3D_FEATURE_LEVEL, 4> requested_feature_levels = {
+    {D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0}};
 
   ComPtr<ID3D11Device> temp_device;
   ComPtr<ID3D11DeviceContext> temp_context;
@@ -194,6 +194,14 @@ void D3D11Device::SetFeatures(FeatureMask disabled_features)
   m_features.shader_cache = true;
   m_features.pipeline_cache = false;
   m_features.prefer_unused_textures = false;
+  m_features.raster_order_views = false;
+  if (!(disabled_features & FEATURE_MASK_RASTER_ORDER_VIEWS))
+  {
+    D3D11_FEATURE_DATA_D3D11_OPTIONS2 data = {};
+    m_features.raster_order_views =
+      (SUCCEEDED(m_device->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS2, &data, sizeof(data))) &&
+       data.ROVsSupported);
+  }
 }
 
 u32 D3D11Device::GetSwapChainBufferCount() const
@@ -567,12 +575,15 @@ void D3D11Device::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u3
                                 src11->GetD3DTexture(), 0, dst11->GetDXGIFormat());
 }
 
-bool D3D11Device::IsRenderTargetBound(const GPUTexture* tex) const
+bool D3D11Device::IsRenderTargetBound(const D3D11Texture* tex) const
 {
-  for (u32 i = 0; i < m_num_current_render_targets; i++)
+  if (tex->IsRenderTarget() || tex->IsRWTexture())
   {
-    if (m_current_render_targets[i] == tex)
-      return true;
+    for (u32 i = 0; i < m_num_current_render_targets; i++)
+    {
+      if (m_current_render_targets[i] == tex)
+        return true;
+    }
   }
 
   return false;
@@ -580,23 +591,26 @@ bool D3D11Device::IsRenderTargetBound(const GPUTexture* tex) const
 
 void D3D11Device::ClearRenderTarget(GPUTexture* t, u32 c)
 {
-  GPUDevice::ClearRenderTarget(t, c);
-  if (IsRenderTargetBound(t))
-    static_cast<D3D11Texture*>(t)->CommitClear(m_context.Get());
+  D3D11Texture* const T = static_cast<D3D11Texture*>(t);
+  GPUDevice::ClearRenderTarget(T, c);
+  if (IsRenderTargetBound(T))
+    T->CommitClear(m_context.Get());
 }
 
 void D3D11Device::ClearDepth(GPUTexture* t, float d)
 {
-  GPUDevice::ClearDepth(t, d);
-  if (m_current_depth_target == t)
-    static_cast<D3D11Texture*>(t)->CommitClear(m_context.Get());
+  D3D11Texture* const T = static_cast<D3D11Texture*>(t);
+  GPUDevice::ClearDepth(T, d);
+  if (T == m_current_depth_target)
+    T->CommitClear(m_context.Get());
 }
 
 void D3D11Device::InvalidateRenderTarget(GPUTexture* t)
 {
-  GPUDevice::InvalidateRenderTarget(t);
-  if (t->IsRenderTarget() ? IsRenderTargetBound(t) : (m_current_depth_target == t))
-    static_cast<D3D11Texture*>(t)->CommitClear(m_context.Get());
+  D3D11Texture* const T = static_cast<D3D11Texture*>(t);
+  GPUDevice::InvalidateRenderTarget(T);
+  if (T->IsDepthStencil() ? (m_current_depth_target == T) : IsRenderTargetBound(T))
+    T->CommitClear(m_context.Get());
 }
 
 void D3D11Device::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle)
@@ -662,6 +676,7 @@ bool D3D11Device::BeginPresent(bool skip_present)
   m_context->OMSetRenderTargets(1, m_swap_chain_rtv.GetAddressOf(), nullptr);
   s_stats.num_render_passes++;
   m_num_current_render_targets = 0;
+  m_current_render_pass_flags = GPUPipeline::NoRenderPassFlags;
   std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
   m_current_depth_target = nullptr;
   return true;
@@ -934,15 +949,20 @@ void D3D11Device::UnmapUniformBuffer(u32 size)
 }
 
 void D3D11Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds,
-                                   GPUPipeline::RenderPassFlag feedback_loop)
+                                   GPUPipeline::RenderPassFlag flags)
 {
-  ID3D11RenderTargetView* rtvs[MAX_RENDER_TARGETS];
-  DebugAssert(!feedback_loop);
+  DebugAssert(
+    !(flags & (GPUPipeline::RenderPassFlag::ColorFeedbackLoop | GPUPipeline::RenderPassFlag::SampleDepthBuffer)));
 
-  bool changed = (m_num_current_render_targets != num_rts || m_current_depth_target != ds);
-  m_current_depth_target = static_cast<D3D11Texture*>(ds);
+  // Make sure DSV isn't bound.
+  D3D11Texture* DS = static_cast<D3D11Texture*>(ds);
+  if (DS)
+    DS->CommitClear(m_context.Get());
 
-  // Make sure textures aren't bound.
+  bool changed =
+    (m_num_current_render_targets != num_rts || m_current_depth_target != DS || m_current_render_pass_flags != flags);
+  m_current_render_pass_flags = flags;
+  m_current_depth_target = DS;
   if (ds)
   {
     const ID3D11ShaderResourceView* srv = static_cast<D3D11Texture*>(ds)->GetD3DSRV();
@@ -958,13 +978,12 @@ void D3D11Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTextu
 
   for (u32 i = 0; i < num_rts; i++)
   {
-    D3D11Texture* const dt = static_cast<D3D11Texture*>(rts[i]);
-    changed |= m_current_render_targets[i] != dt;
-    m_current_render_targets[i] = dt;
-    rtvs[i] = dt->GetD3DRTV();
-    dt->CommitClear(m_context.Get());
+    D3D11Texture* const RT = static_cast<D3D11Texture*>(rts[i]);
+    changed |= m_current_render_targets[i] != RT;
+    m_current_render_targets[i] = RT;
+    RT->CommitClear(m_context.Get());
 
-    const ID3D11ShaderResourceView* srv = dt->GetD3DSRV();
+    const ID3D11ShaderResourceView* srv = RT->GetD3DSRV();
     for (u32 j = 0; j < MAX_TEXTURE_SAMPLERS; j++)
     {
       if (m_current_textures[j] && m_current_textures[j] == srv)
@@ -981,7 +1000,27 @@ void D3D11Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTextu
     return;
 
   s_stats.num_render_passes++;
-  m_context->OMSetRenderTargets(num_rts, rtvs, ds ? static_cast<D3D11Texture*>(ds)->GetD3DDSV() : nullptr);
+
+  if (m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages)
+  {
+    std::array<ID3D11UnorderedAccessView*, MAX_RENDER_TARGETS> uavs;
+    for (u32 i = 0; i < m_num_current_render_targets; i++)
+      uavs[i] = m_current_render_targets[i]->GetD3DUAV();
+
+    m_context->OMSetRenderTargetsAndUnorderedAccessViews(
+      0, nullptr, m_current_depth_target ? m_current_depth_target->GetD3DDSV() : nullptr, 0,
+      m_num_current_render_targets, uavs.data(), nullptr);
+  }
+  else
+  {
+    std::array<ID3D11RenderTargetView*, MAX_RENDER_TARGETS> rtvs;
+    for (u32 i = 0; i < m_num_current_render_targets; i++)
+      rtvs[i] = m_current_render_targets[i]->GetD3DRTV();
+
+    m_context->OMSetRenderTargets(m_num_current_render_targets,
+                                  (m_num_current_render_targets > 0) ? rtvs.data() : nullptr,
+                                  m_current_depth_target ? m_current_depth_target->GetD3DDSV() : nullptr);
+  }
 }
 
 void D3D11Device::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler)
@@ -1000,7 +1039,11 @@ void D3D11Device::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* s
   ID3D11SamplerState* S = sampler ? static_cast<D3D11Sampler*>(sampler)->GetSamplerState() : nullptr;
 
   // Runtime will null these if we don't...
-  DebugAssert(!texture || !IsRenderTargetBound(texture) || m_current_depth_target != texture);
+  DebugAssert(!texture ||
+              !((texture->IsRenderTarget() || texture->IsRWTexture()) &&
+                IsRenderTargetBound(static_cast<D3D11Texture*>(texture))) ||
+              !(texture->IsDepthStencil() &&
+                (!m_current_depth_target || m_current_depth_target != static_cast<D3D11Texture*>(texture))));
 
   if (m_current_textures[slot] != T)
   {
@@ -1038,7 +1081,7 @@ void D3D11Device::UnbindTexture(D3D11Texture* tex)
     }
   }
 
-  if (tex->IsRenderTarget())
+  if (tex->IsRenderTarget() || tex->IsRWTexture())
   {
     for (u32 i = 0; i < m_num_current_render_targets; i++)
     {
@@ -1050,7 +1093,7 @@ void D3D11Device::UnbindTexture(D3D11Texture* tex)
       }
     }
   }
-  else if (m_current_depth_target == tex)
+  else if (tex->IsDepthStencil() && m_current_depth_target == tex)
   {
     WARNING_LOG("Unbinding current DS");
     SetRenderTargets(nullptr, 0, nullptr);

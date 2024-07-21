@@ -60,6 +60,7 @@ public:
   {
     return reinterpret_cast<ID3D11RenderTargetView* const*>(m_rtv_dsv.GetAddressOf());
   }
+  ALWAYS_INLINE ID3D11UnorderedAccessView* GetD3DUAV() const { return m_uav.Get(); }
   DXGI_FORMAT GetDXGIFormat() const;
 
   ALWAYS_INLINE operator ID3D11Texture2D*() const { return m_texture.Get(); }
@@ -72,6 +73,7 @@ public:
   {
     return static_cast<ID3D11DepthStencilView*>(m_rtv_dsv.Get());
   }
+  ALWAYS_INLINE operator ID3D11UnorderedAccessView*() const { return m_uav.Get(); }
   ALWAYS_INLINE operator bool() const { return static_cast<bool>(m_texture); }
 
   static std::unique_ptr<D3D11Texture> Create(ID3D11Device* device, u32 width, u32 height, u32 layers, u32 levels,
@@ -89,11 +91,13 @@ public:
 
 private:
   D3D11Texture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format,
-               ComPtr<ID3D11Texture2D> texture, ComPtr<ID3D11ShaderResourceView> srv, ComPtr<ID3D11View> rtv_dsv);
+               ComPtr<ID3D11Texture2D> texture, ComPtr<ID3D11ShaderResourceView> srv, ComPtr<ID3D11View> rtv_dsv,
+               ComPtr<ID3D11UnorderedAccessView> uav);
 
   ComPtr<ID3D11Texture2D> m_texture;
   ComPtr<ID3D11ShaderResourceView> m_srv;
   ComPtr<ID3D11View> m_rtv_dsv;
+  ComPtr<ID3D11UnorderedAccessView> m_uav;
   u32 m_mapped_subresource = 0;
 };
 

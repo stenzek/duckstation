@@ -9,6 +9,8 @@
 #include "vulkan_loader.h"
 #include "vulkan_stream_buffer.h"
 
+#include "common/dimensional_array.h"
+
 #include <array>
 #include <atomic>
 #include <condition_variable>
@@ -43,6 +45,7 @@ public:
   struct OptionalExtensions
   {
     bool vk_ext_external_memory_host : 1;
+    bool vk_ext_fragment_shader_interlock : 1;
     bool vk_ext_full_screen_exclusive : 1;
     bool vk_ext_memory_budget : 1;
     bool vk_ext_rasterization_order_attachment_access : 1;
@@ -124,7 +127,7 @@ public:
   void* MapUniformBuffer(u32 size) override;
   void UnmapUniformBuffer(u32 size) override;
   void SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds,
-                        GPUPipeline::RenderPassFlag feedback_loop = GPUPipeline::NoRenderPassFlags) override;
+                        GPUPipeline::RenderPassFlag flags = GPUPipeline::NoRenderPassFlags) override;
   void SetPipeline(GPUPipeline* pipeline) override;
   void SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler) override;
   void SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer) override;
@@ -250,6 +253,14 @@ private:
                       DIRTY_FLAG_TEXTURES_OR_SAMPLERS | DIRTY_FLAG_INPUT_ATTACHMENT,
   };
 
+  enum class PipelineLayoutType : u8
+  {
+    Normal,
+    ColorFeedbackLoop,
+    BindRenderTargetsAsImages,
+    MaxCount,
+  };
+
   struct RenderPassCacheKey
   {
     struct RenderTarget
@@ -324,12 +335,10 @@ private:
   using ExtensionList = std::vector<const char*>;
   static bool SelectInstanceExtensions(ExtensionList* extension_list, const WindowInfo& wi, OptionalExtensions* oe,
                                        bool enable_debug_utils);
-  bool SelectDeviceExtensions(ExtensionList* extension_list, bool enable_surface);
-  bool SelectDeviceFeatures();
-  bool CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer);
+  bool SelectDeviceExtensions(ExtensionList* extension_list, bool enable_surface, Error* error);
+  bool CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer, FeatureMask disabled_features, Error* error);
   void ProcessDeviceExtensions();
-
-  bool CheckFeatures(FeatureMask disabled_features);
+  void SetFeatures(FeatureMask disabled_features, const VkPhysicalDeviceFeatures& vk_features);
 
   static u32 GetMaxMultisamples(VkPhysicalDevice physical_device, const VkPhysicalDeviceProperties& properties);
 
@@ -360,6 +369,7 @@ private:
   s32 IsRenderTargetBoundIndex(const GPUTexture* tex) const;
 
   /// Applies any changed state.
+  static PipelineLayoutType GetPipelineLayoutType(GPUPipeline::RenderPassFlag flags);
   VkPipelineLayout GetCurrentVkPipelineLayout() const;
   void SetInitialPipelineState();
   void PreDrawCheck();
@@ -437,7 +447,6 @@ private:
   // TODO: Move to static?
   VkDebugUtilsMessengerEXT m_debug_messenger_callback = VK_NULL_HANDLE;
 
-  VkPhysicalDeviceFeatures m_device_features = {};
   VkPhysicalDeviceProperties m_device_properties = {};
   VkPhysicalDeviceDriverPropertiesKHR m_device_driver_properties = {};
   OptionalExtensions m_optional_extensions = {};
@@ -451,7 +460,10 @@ private:
   VkDescriptorSetLayout m_single_texture_buffer_ds_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout m_multi_texture_ds_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout m_feedback_loop_ds_layout = VK_NULL_HANDLE;
-  std::array<VkPipelineLayout, static_cast<u8>(GPUPipeline::Layout::MaxCount)> m_pipeline_layouts = {};
+  VkDescriptorSetLayout m_rov_ds_layout = VK_NULL_HANDLE;
+  DimensionalArray<VkPipelineLayout, static_cast<size_t>(GPUPipeline::Layout::MaxCount),
+                   static_cast<size_t>(PipelineLayoutType::MaxCount)>
+    m_pipeline_layouts = {};
 
   VulkanStreamBuffer m_vertex_buffer;
   VulkanStreamBuffer m_index_buffer;
@@ -466,8 +478,8 @@ private:
   // Which bindings/state has to be updated before the next draw.
   u32 m_dirty_flags = ALL_DIRTY_STATE;
 
-  u8 m_num_current_render_targets = 0;
-  GPUPipeline::RenderPassFlag m_current_feedback_loop = GPUPipeline::NoRenderPassFlags;
+  u32 m_num_current_render_targets = 0;
+  GPUPipeline::RenderPassFlag m_current_render_pass_flags = GPUPipeline::NoRenderPassFlags;
   std::array<VulkanTexture*, MAX_RENDER_TARGETS> m_current_render_targets = {};
   VulkanTexture* m_current_depth_target = nullptr;
   VkFramebuffer m_current_framebuffer = VK_NULL_HANDLE;
@@ -479,6 +491,6 @@ private:
   std::array<VulkanTexture*, MAX_TEXTURE_SAMPLERS> m_current_textures = {};
   std::array<VkSampler, MAX_TEXTURE_SAMPLERS> m_current_samplers = {};
   VulkanTextureBuffer* m_current_texture_buffer = nullptr;
-  GSVector4i m_current_viewport = {};
+  GSVector4i m_current_viewport = GSVector4i::cxpr(0, 0, 1, 1);
   GSVector4i m_current_scissor = GSVector4i::cxpr(0, 0, 1, 1);
 };
