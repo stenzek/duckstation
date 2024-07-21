@@ -56,6 +56,9 @@ struct SocketAddress final
   // initializers
   void SetFromSockaddr(const void* sa, size_t length);
 
+  /// Returns true if the address is IP.
+  bool IsIPAddress() const;
+
 private:
   u8 m_data[128] = {};
   u32 m_length = 0;
@@ -217,6 +220,9 @@ public:
   size_t Read(void* buffer, size_t buffer_size);
   size_t Write(const void* buffer, size_t buffer_size);
   size_t WriteVector(const void** buffers, const size_t* buffer_lengths, size_t num_buffers);
+
+  /// Disables Nagle's buffering algorithm, i.e. TCP_NODELAY.
+  bool SetNagleBuffering(bool enabled, Error* error = nullptr);
 
 protected:
   virtual void OnConnected() = 0;

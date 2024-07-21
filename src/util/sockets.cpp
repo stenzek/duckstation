@@ -33,6 +33,7 @@ using nfds_t = ULONG;
 #include <arpa/inet.h>
 #include <errno.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <poll.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
@@ -74,6 +75,12 @@ void SocketAddress::SetFromSockaddr(const void* sa, size_t length)
   std::memcpy(m_data, sa, m_length);
   if (m_length < sizeof(m_data))
     std::memset(m_data + m_length, 0, sizeof(m_data) - m_length);
+}
+
+bool SocketAddress::IsIPAddress() const
+{
+  const sockaddr* addr = reinterpret_cast<const sockaddr*>(m_data);
+  return (addr->sa_family == AF_INET || addr->sa_family == AF_INET6);
 }
 
 std::optional<SocketAddress> SocketAddress::Parse(Type type, const char* address, u32 port, Error* error)
@@ -693,6 +700,24 @@ size_t StreamSocket::WriteVector(const void** buffers, const size_t* buffer_leng
   return static_cast<size_t>(res);
 
 #endif
+}
+
+bool StreamSocket::SetNagleBuffering(bool enabled, Error* error /* = nullptr */)
+{
+  if (!m_local_address.IsIPAddress())
+  {
+    Error::SetStringView(error, "Attempting to disable nagle on a non-IP socket.");
+    return false;
+  }
+
+  int disable = enabled ? 0 : 1;
+  if (setsockopt(m_descriptor, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&disable), sizeof(disable)) != 0)
+  {
+    Error::SetSocket(error, "setsockopt(TCP_NODELAY) failed: ", WSAGetLastError());
+    return false;
+  }
+
+  return true;
 }
 
 void StreamSocket::Close()
