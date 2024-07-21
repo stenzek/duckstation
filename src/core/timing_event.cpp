@@ -1,13 +1,17 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "timing_event.h"
-#include "common/assert.h"
-#include "common/log.h"
 #include "cpu_core.h"
 #include "cpu_core_private.h"
 #include "system.h"
+
 #include "util/state_wrapper.h"
+
+#include "common/assert.h"
+#include "common/log.h"
+#include "common/thirdparty/SmallVector.h"
+
 Log_SetChannel(TimingEvents);
 
 namespace TimingEvents {
@@ -248,7 +252,7 @@ void TimingEvents::RemoveActiveEvent(TimingEvent* event)
 
 void TimingEvents::SortEvents()
 {
-  std::vector<TimingEvent*> events;
+  llvm::SmallVector<TimingEvent*, 16> events;
   events.reserve(s_state.active_event_count);
 
   TimingEvent* next = s_state.active_events_head;
