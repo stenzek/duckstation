@@ -16,6 +16,7 @@
 
 #include "common/align.h"
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/gsvector_formatter.h"
 #include "common/log.h"
 #include "common/scoped_guard.h"
@@ -241,9 +242,10 @@ bool GPU_HW::Initialize()
 
   PrintSettingsToLog();
 
-  if (!CompilePipelines())
+  Error error;
+  if (!CompilePipelines(&error))
   {
-    ERROR_LOG("Failed to compile pipelines");
+    ERROR_LOG("Failed to compile pipelines: {}", error.GetDescription());
     return false;
   }
 
@@ -457,8 +459,13 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
   if (shaders_changed)
   {
     DestroyPipelines();
-    if (!CompilePipelines())
-      Panic("Failed to recompile pipelnes.");
+
+    Error error;
+    if (!CompilePipelines(&error))
+    {
+      ERROR_LOG("Failed to recompile pipelines: {}", error.GetDescription());
+      Panic("Failed to recompile pipelines.");
+    }
   }
 
   if (framebuffer_changed)
@@ -842,7 +849,7 @@ void GPU_HW::DestroyBuffers()
   g_gpu_device->RecycleTexture(std::move(m_vram_readback_texture));
 }
 
-bool GPU_HW::CompilePipelines()
+bool GPU_HW::CompilePipelines(Error* error)
 {
   const GPUDevice::Features features = g_gpu_device->GetFeatures();
   const bool per_sample_shading = g_settings.gpu_per_sample_shading && features.per_sample_shading;
@@ -899,7 +906,7 @@ bool GPU_HW::CompilePipelines()
         const std::string vs = shadergen.GenerateBatchVertexShader(
           textured != 0, palette != 0, uv_limits, !sprite && force_round_texcoords, m_pgxp_depth_buffer);
         if (!(batch_vertex_shaders[textured][palette][sprite] =
-                g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(), vs)))
+                g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(), vs, error)))
         {
           return false;
         }
@@ -952,8 +959,8 @@ bool GPU_HW::CompilePipelines()
                 ConvertToBoolUnchecked(interlacing), ConvertToBoolUnchecked(check_mask));
 
               if (!(batch_fragment_shaders[render_mode][transparency_mode][texture_mode][check_mask][dithering]
-                                          [interlacing] = g_gpu_device->CreateShader(GPUShaderStage::Fragment,
-                                                                                     shadergen.GetLanguage(), fs)))
+                                          [interlacing] = g_gpu_device->CreateShader(
+                                            GPUShaderStage::Fragment, shadergen.GetLanguage(), fs, error)))
               {
                 return false;
               }
@@ -1122,7 +1129,7 @@ bool GPU_HW::CompilePipelines()
                 }
 
                 if (!(m_batch_pipelines[depth_test][transparency_mode][render_mode][texture_mode][dithering]
-                                       [interlacing][check_mask] = g_gpu_device->CreatePipeline(plconfig)))
+                                       [interlacing][check_mask] = g_gpu_device->CreatePipeline(plconfig, error)))
                 {
                   return false;
                 }
@@ -1139,9 +1146,9 @@ bool GPU_HW::CompilePipelines()
   if (m_wireframe_mode != GPUWireframeMode::Disabled)
   {
     std::unique_ptr<GPUShader> gs = g_gpu_device->CreateShader(GPUShaderStage::Geometry, shadergen.GetLanguage(),
-                                                               shadergen.GenerateWireframeGeometryShader());
+                                                               shadergen.GenerateWireframeGeometryShader(), error);
     std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                                               shadergen.GenerateWireframeFragmentShader());
+                                                               shadergen.GenerateWireframeFragmentShader(), error);
     if (!gs || !fs)
       return false;
 
@@ -1159,7 +1166,7 @@ bool GPU_HW::CompilePipelines()
     plconfig.geometry_shader = gs.get();
     plconfig.fragment_shader = fs.get();
 
-    if (!(m_wireframe_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+    if (!(m_wireframe_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
       return false;
 
     GL_OBJECT_NAME(m_wireframe_pipeline, "Batch Wireframe Pipeline");
@@ -1175,7 +1182,7 @@ bool GPU_HW::CompilePipelines()
 
   // use a depth of 1, that way writes will reset the depth
   std::unique_ptr<GPUShader> fullscreen_quad_vertex_shader = g_gpu_device->CreateShader(
-    GPUShaderStage::Vertex, shadergen.GetLanguage(), shadergen.GenerateScreenQuadVertexShader(1.0f));
+    GPUShaderStage::Vertex, shadergen.GetLanguage(), shadergen.GenerateScreenQuadVertexShader(1.0f), error);
   if (!fullscreen_quad_vertex_shader)
     return false;
 
@@ -1196,7 +1203,8 @@ bool GPU_HW::CompilePipelines()
     {
       std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
         GPUShaderStage::Fragment, shadergen.GetLanguage(),
-        shadergen.GenerateVRAMFillFragmentShader(ConvertToBoolUnchecked(wrapped), ConvertToBoolUnchecked(interlaced)));
+        shadergen.GenerateVRAMFillFragmentShader(ConvertToBoolUnchecked(wrapped), ConvertToBoolUnchecked(interlaced)),
+        error);
       if (!fs)
         return false;
 
@@ -1204,7 +1212,7 @@ bool GPU_HW::CompilePipelines()
       plconfig.depth = needs_depth_buffer ? GPUPipeline::DepthState::GetAlwaysWriteState() :
                                             GPUPipeline::DepthState::GetNoTestsState();
 
-      if (!(m_vram_fill_pipelines[wrapped][interlaced] = g_gpu_device->CreatePipeline(plconfig)))
+      if (!(m_vram_fill_pipelines[wrapped][interlaced] = g_gpu_device->CreatePipeline(plconfig, error)))
         return false;
 
       progress.Increment();
@@ -1214,7 +1222,7 @@ bool GPU_HW::CompilePipelines()
   // VRAM copy
   {
     std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                                               shadergen.GenerateVRAMCopyFragmentShader());
+                                                               shadergen.GenerateVRAMCopyFragmentShader(), error);
     if (!fs)
       return false;
 
@@ -1228,7 +1236,7 @@ bool GPU_HW::CompilePipelines()
       plconfig.depth.depth_test =
         (depth_test != 0) ? GPUPipeline::DepthFunc::GreaterEqual : GPUPipeline::DepthFunc::Always;
 
-      if (!(m_vram_copy_pipelines[depth_test] = g_gpu_device->CreatePipeline(plconfig)))
+      if (!(m_vram_copy_pipelines[depth_test] = g_gpu_device->CreatePipeline(plconfig), error))
         return false;
 
       GL_OBJECT_NAME_FMT(m_vram_copy_pipelines[depth_test], "VRAM Write Pipeline, depth={}", depth_test);
@@ -1243,7 +1251,7 @@ bool GPU_HW::CompilePipelines()
     const bool use_ssbo = features.texture_buffers_emulated_with_ssbo;
     std::unique_ptr<GPUShader> fs =
       g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                 shadergen.GenerateVRAMWriteFragmentShader(use_buffer, use_ssbo));
+                                 shadergen.GenerateVRAMWriteFragmentShader(use_buffer, use_ssbo), error);
     if (!fs)
       return false;
 
@@ -1259,7 +1267,7 @@ bool GPU_HW::CompilePipelines()
       plconfig.depth.depth_test =
         (depth_test != 0) ? GPUPipeline::DepthFunc::GreaterEqual : GPUPipeline::DepthFunc::Always;
 
-      if (!(m_vram_write_pipelines[depth_test] = g_gpu_device->CreatePipeline(plconfig)))
+      if (!(m_vram_write_pipelines[depth_test] = g_gpu_device->CreatePipeline(plconfig, error)))
         return false;
 
       GL_OBJECT_NAME_FMT(m_vram_write_pipelines[depth_test], "VRAM Write Pipeline, depth={}", depth_test);
@@ -1273,13 +1281,13 @@ bool GPU_HW::CompilePipelines()
   // VRAM write replacement
   {
     std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                                               shadergen.GenerateCopyFragmentShader());
+                                                               shadergen.GenerateCopyFragmentShader(), error);
     if (!fs)
       return false;
 
     plconfig.fragment_shader = fs.get();
     plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
-    if (!(m_vram_write_replacement_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+    if (!(m_vram_write_replacement_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
       return false;
 
     progress.Increment();
@@ -1290,8 +1298,8 @@ bool GPU_HW::CompilePipelines()
   // VRAM update depth
   if (needs_depth_buffer)
   {
-    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                                               shadergen.GenerateVRAMUpdateDepthFragmentShader());
+    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
+      GPUShaderStage::Fragment, shadergen.GetLanguage(), shadergen.GenerateVRAMUpdateDepthFragmentShader(), error);
     if (!fs)
       return false;
 
@@ -1300,7 +1308,7 @@ bool GPU_HW::CompilePipelines()
     plconfig.depth = GPUPipeline::DepthState::GetAlwaysWriteState();
     plconfig.blend.write_mask = 0;
 
-    if (!(m_vram_update_depth_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+    if (!(m_vram_update_depth_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
       return false;
 
     GL_OBJECT_NAME(m_vram_update_depth_pipeline, "VRAM Update Depth Pipeline");
@@ -1317,13 +1325,13 @@ bool GPU_HW::CompilePipelines()
   // VRAM read
   {
     std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                                               shadergen.GenerateVRAMReadFragmentShader());
+                                                               shadergen.GenerateVRAMReadFragmentShader(), error);
     if (!fs)
       return false;
 
     plconfig.fragment_shader = fs.get();
 
-    if (!(m_vram_readback_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+    if (!(m_vram_readback_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
       return false;
 
     GL_OBJECT_NAME(m_vram_readback_pipeline, "VRAM Read Pipeline");
@@ -1342,7 +1350,7 @@ bool GPU_HW::CompilePipelines()
 
       std::unique_ptr<GPUShader> fs =
         g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                   shadergen.GenerateVRAMExtractFragmentShader(color_24bit, depth_extract));
+                                   shadergen.GenerateVRAMExtractFragmentShader(color_24bit, depth_extract), error);
       if (!fs)
         return false;
 
@@ -1352,7 +1360,7 @@ bool GPU_HW::CompilePipelines()
                                         GPUPipeline::Layout::SingleTextureAndPushConstants;
       plconfig.color_formats[1] = depth_extract ? VRAM_DS_EXTRACT_FORMAT : GPUTexture::Format::Unknown;
 
-      if (!(m_vram_extract_pipeline[shader] = g_gpu_device->CreatePipeline(plconfig)))
+      if (!(m_vram_extract_pipeline[shader] = g_gpu_device->CreatePipeline(plconfig, error)))
         return false;
 
       progress.Increment();
@@ -1364,13 +1372,13 @@ bool GPU_HW::CompilePipelines()
   if (m_pgxp_depth_buffer)
   {
     std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                                               shadergen.GenerateCopyFragmentShader());
+                                                               shadergen.GenerateCopyFragmentShader(), error);
     if (!fs)
       return false;
 
     plconfig.fragment_shader = fs.get();
     plconfig.SetTargetFormats(VRAM_DS_EXTRACT_FORMAT);
-    if (!(m_copy_depth_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+    if (!(m_copy_depth_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
       return false;
   }
 
@@ -1378,50 +1386,51 @@ bool GPU_HW::CompilePipelines()
 
   if (m_downsample_mode == GPUDownsampleMode::Adaptive)
   {
-    std::unique_ptr<GPUShader> vs = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(),
-                                                               shadergen.GenerateAdaptiveDownsampleVertexShader());
-    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
-      GPUShaderStage::Fragment, shadergen.GetLanguage(), shadergen.GenerateAdaptiveDownsampleMipFragmentShader(true));
+    std::unique_ptr<GPUShader> vs = g_gpu_device->CreateShader(
+      GPUShaderStage::Vertex, shadergen.GetLanguage(), shadergen.GenerateAdaptiveDownsampleVertexShader(), error);
+    std::unique_ptr<GPUShader> fs =
+      g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                 shadergen.GenerateAdaptiveDownsampleMipFragmentShader(true), error);
     if (!vs || !fs)
       return false;
     GL_OBJECT_NAME(fs, "Downsample Vertex Shader");
     GL_OBJECT_NAME(fs, "Downsample First Pass Fragment Shader");
     plconfig.vertex_shader = vs.get();
     plconfig.fragment_shader = fs.get();
-    if (!(m_downsample_first_pass_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+    if (!(m_downsample_first_pass_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
       return false;
     GL_OBJECT_NAME(m_downsample_first_pass_pipeline, "Downsample First Pass Pipeline");
 
     fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                    shadergen.GenerateAdaptiveDownsampleMipFragmentShader(false));
+                                    shadergen.GenerateAdaptiveDownsampleMipFragmentShader(false), error);
     if (!fs)
       return false;
     GL_OBJECT_NAME(fs, "Downsample Mid Pass Fragment Shader");
     plconfig.fragment_shader = fs.get();
-    if (!(m_downsample_mid_pass_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+    if (!(m_downsample_mid_pass_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
       return false;
     GL_OBJECT_NAME(m_downsample_mid_pass_pipeline, "Downsample Mid Pass Pipeline");
 
     fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                    shadergen.GenerateAdaptiveDownsampleBlurFragmentShader());
+                                    shadergen.GenerateAdaptiveDownsampleBlurFragmentShader(), error);
     if (!fs)
       return false;
     GL_OBJECT_NAME(fs, "Downsample Blur Pass Fragment Shader");
     plconfig.fragment_shader = fs.get();
     plconfig.SetTargetFormats(GPUTexture::Format::R8);
-    if (!(m_downsample_blur_pass_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+    if (!(m_downsample_blur_pass_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
       return false;
     GL_OBJECT_NAME(m_downsample_blur_pass_pipeline, "Downsample Blur Pass Pipeline");
 
     fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                    shadergen.GenerateAdaptiveDownsampleCompositeFragmentShader());
+                                    shadergen.GenerateAdaptiveDownsampleCompositeFragmentShader(), error);
     if (!fs)
       return false;
     GL_OBJECT_NAME(fs, "Downsample Composite Pass Fragment Shader");
     plconfig.layout = GPUPipeline::Layout::MultiTextureAndPushConstants;
     plconfig.fragment_shader = fs.get();
     plconfig.SetTargetFormats(VRAM_RT_FORMAT);
-    if (!(m_downsample_composite_pass_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+    if (!(m_downsample_composite_pass_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
       return false;
     GL_OBJECT_NAME(m_downsample_composite_pass_pipeline, "Downsample Blur Pass Pipeline");
 
@@ -1429,11 +1438,17 @@ bool GPU_HW::CompilePipelines()
     config.min_lod = 0;
     config.max_lod = GPUSampler::Config::LOD_MAX;
     if (!(m_downsample_lod_sampler = g_gpu_device->CreateSampler(config)))
+    {
+      Error::SetStringView(error, "Failed to create downsample LOD sampler.");
       return false;
+    }
     GL_OBJECT_NAME(m_downsample_lod_sampler, "Downsample LOD Sampler");
     config.mip_filter = GPUSampler::Filter::Linear;
     if (!(m_downsample_composite_sampler = g_gpu_device->CreateSampler(config)))
+    {
+      Error::SetStringView(error, "Failed to create downsample composite sampler.");
       return false;
+    }
     GL_OBJECT_NAME(m_downsample_composite_sampler, "Downsample Trilinear Sampler");
     progress.Increment();
   }
@@ -1442,14 +1457,15 @@ bool GPU_HW::CompilePipelines()
     std::unique_ptr<GPUShader> fs =
       g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
                                  shadergen.GenerateBoxSampleDownsampleFragmentShader(
-                                   m_resolution_scale / GetBoxDownsampleScale(m_resolution_scale)));
+                                   m_resolution_scale / GetBoxDownsampleScale(m_resolution_scale)),
+                                 error);
     if (!fs)
       return false;
 
     GL_OBJECT_NAME(fs, "Downsample First Pass Fragment Shader");
     plconfig.fragment_shader = fs.get();
 
-    if (!(m_downsample_first_pass_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+    if (!(m_downsample_first_pass_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
       return false;
 
     GL_OBJECT_NAME(m_downsample_first_pass_pipeline, "Downsample First Pass Pipeline");

@@ -17,6 +17,8 @@
 #include <utility>
 #include <vector>
 
+class Error;
+
 class GPU_SW_Backend;
 struct GPUBackendCommand;
 struct GPUBackendDrawCommand;
@@ -149,7 +151,7 @@ private:
   void ClearFramebuffer();
   void DestroyBuffers();
 
-  bool CompilePipelines();
+  bool CompilePipelines(Error* error);
   void DestroyPipelines();
 
   void LoadVertices();
