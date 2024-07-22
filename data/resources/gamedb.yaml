@@ -71198,10 +71198,12 @@ SLUS-01244:
   compatibility:
     rating: GraphicalAudioIssues
     versionTested: "0.1-4693-gbbcf1c67"
-    upscalingIssues: "Menus transparency is wrong (Issue #592)"
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForceAccurateBlending # Requires 16-bit blend precision
+    - DisableTrueColor # to fix transparency in menu backgrounds.
   metadata:
     publisher: "The 3DO Company"
     developer: "Team .366"
