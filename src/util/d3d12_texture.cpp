@@ -9,6 +9,7 @@
 #include "common/align.h"
 #include "common/assert.h"
 #include "common/bitutils.h"
+#include "common/error.h"
 #include "common/log.h"
 #include "common/string_util.h"
 
@@ -763,10 +764,14 @@ bool D3D12TextureBuffer::Create(D3D12Device& dev)
     DXGI_FORMAT_R16_UINT, // R16UI
   }};
 
-  if (!m_buffer.Create(GetSizeInBytes()))
+  Error error;
+  if (!m_buffer.Create(GetSizeInBytes(), &error)) [[unlikely]]
+  {
+    ERROR_LOG("Failed to create stream buffer: {}", error.GetDescription());
     return false;
+  }
 
-  if (!dev.GetDescriptorHeapManager().Allocate(&m_descriptor))
+  if (!dev.GetDescriptorHeapManager().Allocate(&m_descriptor)) [[unlikely]]
     return {};
 
   D3D12_SHADER_RESOURCE_VIEW_DESC desc = {format_mapping[static_cast<u8>(m_format)],

@@ -98,10 +98,18 @@ void OpenGLShader::SetDebugName(std::string_view name)
 #endif
 }
 
-bool OpenGLShader::Compile()
+bool OpenGLShader::Compile(Error* error)
 {
   if (m_compile_tried)
-    return m_id.has_value();
+  {
+    if (!m_id.has_value()) [[unlikely]]
+    {
+      Error::SetStringView(error, "Shader previously failed to compile.");
+      return false;
+    }
+
+    return true;
+  }
 
   m_compile_tried = true;
 
@@ -111,6 +119,7 @@ bool OpenGLShader::Compile()
   if (GLenum err = glGetError(); err != GL_NO_ERROR)
   {
     ERROR_LOG("glCreateShader() failed: {}", err);
+    OpenGLDevice::SetErrorObject(error, "glCreateShader() failed: ", err);
     return false;
   }
 
@@ -138,6 +147,7 @@ bool OpenGLShader::Compile()
     else
     {
       ERROR_LOG("Shader failed to compile:\n{}", info_log);
+      Error::SetStringFmt(error, "Shader failed to compile:\n{}", info_log);
       GPUDevice::DumpBadShader(m_source, info_log);
       glDeleteShader(shader);
       return false;
@@ -268,7 +278,7 @@ OpenGLPipeline::ProgramCacheKey OpenGLPipeline::GetProgramCacheKey(const Graphic
 }
 
 GLuint OpenGLDevice::LookupProgramCache(const OpenGLPipeline::ProgramCacheKey& key,
-                                        const GPUPipeline::GraphicsConfig& plconfig)
+                                        const GPUPipeline::GraphicsConfig& plconfig, Error* error)
 {
   auto it = m_program_cache.find(key);
   if (it != m_program_cache.end() && it->second.program_id == 0 && it->second.file_uncompressed_size > 0)
@@ -291,7 +301,7 @@ GLuint OpenGLDevice::LookupProgramCache(const OpenGLPipeline::ProgramCacheKey& k
     return it->second.program_id;
   }
 
-  const GLuint program_id = CompileProgram(plconfig);
+  const GLuint program_id = CompileProgram(plconfig, error);
   if (program_id == 0)
   {
     // Compile failed, don't add to map, it just gets confusing.
@@ -312,23 +322,22 @@ GLuint OpenGLDevice::LookupProgramCache(const OpenGLPipeline::ProgramCacheKey& k
   return item.program_id;
 }
 
-GLuint OpenGLDevice::CompileProgram(const GPUPipeline::GraphicsConfig& plconfig)
+GLuint OpenGLDevice::CompileProgram(const GPUPipeline::GraphicsConfig& plconfig, Error* error)
 {
   OpenGLShader* vertex_shader = static_cast<OpenGLShader*>(plconfig.vertex_shader);
   OpenGLShader* fragment_shader = static_cast<OpenGLShader*>(plconfig.fragment_shader);
   OpenGLShader* geometry_shader = static_cast<OpenGLShader*>(plconfig.geometry_shader);
-  if (!vertex_shader || !fragment_shader || !vertex_shader->Compile() || !fragment_shader->Compile() ||
-      (geometry_shader && !geometry_shader->Compile())) [[unlikely]]
+  if (!vertex_shader || !fragment_shader || !vertex_shader->Compile(error) || !fragment_shader->Compile(error) ||
+      (geometry_shader && !geometry_shader->Compile(error))) [[unlikely]]
   {
-    ERROR_LOG("Failed to compile shaders.");
     return 0;
   }
 
   glGetError();
   const GLuint program_id = glCreateProgram();
-  if (glGetError() != GL_NO_ERROR) [[unlikely]]
+  if (const GLenum err = glGetError(); err != GL_NO_ERROR) [[unlikely]]
   {
-    ERROR_LOG("Failed to create program object.");
+    SetErrorObject(error, "glCreateProgram() failed: ", err);
     return 0;
   }
 
@@ -412,6 +421,7 @@ GLuint OpenGLDevice::CompileProgram(const GPUPipeline::GraphicsConfig& plconfig)
       }
 
       ERROR_LOG("Program failed to link:\n{}", info_log);
+      Error::SetStringFmt(error, "Program failed to link:\n{}", info_log);
       glDeleteProgram(program_id);
       return 0;
     }
@@ -468,7 +478,7 @@ void OpenGLDevice::UnrefProgram(const OpenGLPipeline::ProgramCacheKey& key)
 }
 
 OpenGLPipeline::VertexArrayCache::const_iterator
-OpenGLDevice::LookupVAOCache(const OpenGLPipeline::VertexArrayCacheKey& key)
+OpenGLDevice::LookupVAOCache(const OpenGLPipeline::VertexArrayCacheKey& key, Error* error)
 {
   OpenGLPipeline::VertexArrayCache::iterator it = m_vao_cache.find(key);
   if (it != m_vao_cache.end())
@@ -480,7 +490,7 @@ OpenGLDevice::LookupVAOCache(const OpenGLPipeline::VertexArrayCacheKey& key)
   OpenGLPipeline::VertexArrayCacheItem item;
   item.vao_id =
     CreateVAO(std::span<const GPUPipeline::VertexAttribute>(key.vertex_attributes, key.num_vertex_attributes),
-              key.vertex_attribute_stride);
+              key.vertex_attribute_stride, error);
   if (item.vao_id == 0)
     return m_vao_cache.cend();
 
@@ -488,7 +498,7 @@ OpenGLDevice::LookupVAOCache(const OpenGLPipeline::VertexArrayCacheKey& key)
   return m_vao_cache.emplace(key, item).first;
 }
 
-GLuint OpenGLDevice::CreateVAO(std::span<const GPUPipeline::VertexAttribute> attributes, u32 stride)
+GLuint OpenGLDevice::CreateVAO(std::span<const GPUPipeline::VertexAttribute> attributes, u32 stride, Error* error)
 {
   glGetError();
   GLuint vao;
@@ -496,6 +506,7 @@ GLuint OpenGLDevice::CreateVAO(std::span<const GPUPipeline::VertexAttribute> att
   if (const GLenum err = glGetError(); err != GL_NO_ERROR)
   {
     ERROR_LOG("Failed to create vertex array object: {}", err);
+    SetErrorObject(error, "glGenVertexArrays() failed: ", err);
     return 0;
   }
 
@@ -582,15 +593,15 @@ void OpenGLPipeline::SetDebugName(std::string_view name)
 #endif
 }
 
-std::unique_ptr<GPUPipeline> OpenGLDevice::CreatePipeline(const GPUPipeline::GraphicsConfig& config)
+std::unique_ptr<GPUPipeline> OpenGLDevice::CreatePipeline(const GPUPipeline::GraphicsConfig& config, Error* error)
 {
   const OpenGLPipeline::ProgramCacheKey pkey = OpenGLPipeline::GetProgramCacheKey(config);
 
-  const GLuint program_id = LookupProgramCache(pkey, config);
+  const GLuint program_id = LookupProgramCache(pkey, config, error);
   if (program_id == 0)
     return {};
 
-  const OpenGLPipeline::VertexArrayCache::const_iterator vao = LookupVAOCache(pkey.va_key);
+  const OpenGLPipeline::VertexArrayCache::const_iterator vao = LookupVAOCache(pkey.va_key, error);
   if (vao == m_vao_cache.cend())
   {
     UnrefProgram(pkey);

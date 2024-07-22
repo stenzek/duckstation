@@ -18,7 +18,7 @@ public:
 
   void SetDebugName(std::string_view name) override;
 
-  bool Compile();
+  bool Compile(Error* error);
 
   ALWAYS_INLINE GLuint GetGLId() const { return m_id.value(); }
   ALWAYS_INLINE const GPUShaderCache::CacheIndexKey& GetKey() const { return m_key; }

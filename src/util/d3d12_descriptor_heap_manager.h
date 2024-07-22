@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -13,6 +13,8 @@
 #include <unordered_map>
 #include <vector>
 #include <wrl/client.h>
+
+class Error;
 
 // This class provides an abstraction for D3D12 descriptor heaps.
 struct D3D12DescriptorHandle final
@@ -55,7 +57,8 @@ public:
   ID3D12DescriptorHeap* GetDescriptorHeap() const { return m_descriptor_heap.Get(); }
   u32 GetDescriptorIncrementSize() const { return m_descriptor_increment_size; }
 
-  bool Create(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE type, u32 num_descriptors, bool shader_visible);
+  bool Create(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE type, u32 num_descriptors, bool shader_visible,
+              Error* error);
   void Destroy();
 
   bool Allocate(D3D12DescriptorHandle* handle);
@@ -85,7 +88,7 @@ public:
   ALWAYS_INLINE ID3D12DescriptorHeap* GetDescriptorHeap() const { return m_descriptor_heap.Get(); }
   ALWAYS_INLINE u32 GetDescriptorIncrementSize() const { return m_descriptor_increment_size; }
 
-  bool Create(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE type, u32 num_descriptors);
+  bool Create(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE type, u32 num_descriptors, Error* error);
   void Destroy();
 
   bool Allocate(u32 num_handles, D3D12DescriptorHandle* out_base_handle);
@@ -130,7 +133,7 @@ public:
   using D3D12DescriptorAllocator::GetDescriptorHeap;
   using D3D12DescriptorAllocator::GetDescriptorIncrementSize;
 
-  bool Create(ID3D12Device* device, u32 num_descriptors);
+  bool Create(ID3D12Device* device, u32 num_descriptors, Error* error);
   void Destroy();
 
   bool LookupSingle(ID3D12Device* device, D3D12DescriptorHandle* gpu_handle, const D3D12DescriptorHandle& cpu_handle);
@@ -153,9 +156,9 @@ template<u32 NumSamplers>
 D3D12GroupedSamplerAllocator<NumSamplers>::~D3D12GroupedSamplerAllocator() = default;
 
 template<u32 NumSamplers>
-bool D3D12GroupedSamplerAllocator<NumSamplers>::Create(ID3D12Device* device, u32 num_descriptors)
+bool D3D12GroupedSamplerAllocator<NumSamplers>::Create(ID3D12Device* device, u32 num_descriptors, Error* error)
 {
-  return D3D12DescriptorAllocator::Create(device, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, num_descriptors);
+  return D3D12DescriptorAllocator::Create(device, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, num_descriptors, error);
 }
 
 template<u32 NumSamplers>

@@ -81,7 +81,7 @@ D3D12Device::~D3D12Device()
   Assert(s_pipeline_cache_data.empty());
 }
 
-D3D12Device::ComPtr<ID3DBlob> D3D12Device::SerializeRootSignature(const D3D12_ROOT_SIGNATURE_DESC* desc)
+D3D12Device::ComPtr<ID3DBlob> D3D12Device::SerializeRootSignature(const D3D12_ROOT_SIGNATURE_DESC* desc, Error* error)
 {
   ComPtr<ID3DBlob> blob;
   ComPtr<ID3DBlob> error_blob;
@@ -89,7 +89,7 @@ D3D12Device::ComPtr<ID3DBlob> D3D12Device::SerializeRootSignature(const D3D12_RO
     D3D12SerializeRootSignature(desc, D3D_ROOT_SIGNATURE_VERSION_1, blob.GetAddressOf(), error_blob.GetAddressOf());
   if (FAILED(hr)) [[unlikely]]
   {
-    ERROR_LOG("D3D12SerializeRootSignature() failed: {:08X}", static_cast<unsigned>(hr));
+    Error::SetHResult(error, "D3D12SerializeRootSignature() failed: ", hr);
     if (error_blob)
       ERROR_LOG(static_cast<const char*>(error_blob->GetBufferPointer()));
 
@@ -99,9 +99,10 @@ D3D12Device::ComPtr<ID3DBlob> D3D12Device::SerializeRootSignature(const D3D12_RO
   return blob;
 }
 
-D3D12Device::ComPtr<ID3D12RootSignature> D3D12Device::CreateRootSignature(const D3D12_ROOT_SIGNATURE_DESC* desc)
+D3D12Device::ComPtr<ID3D12RootSignature> D3D12Device::CreateRootSignature(const D3D12_ROOT_SIGNATURE_DESC* desc,
+                                                                          Error* error)
 {
-  ComPtr<ID3DBlob> blob = SerializeRootSignature(desc);
+  ComPtr<ID3DBlob> blob = SerializeRootSignature(desc, error);
   if (!blob)
     return {};
 
@@ -110,7 +111,7 @@ D3D12Device::ComPtr<ID3D12RootSignature> D3D12Device::CreateRootSignature(const 
     m_device->CreateRootSignature(0, blob->GetBufferPointer(), blob->GetBufferSize(), IID_PPV_ARGS(rs.GetAddressOf()));
   if (FAILED(hr)) [[unlikely]]
   {
-    ERROR_LOG("CreateRootSignature() failed: {:08X}", static_cast<unsigned>(hr));
+    Error::SetHResult(error, "CreateRootSignature() failed: ", hr);
     return {};
   }
 
@@ -228,23 +229,14 @@ bool D3D12Device::CreateDevice(std::string_view adapter, bool threaded_presentat
 
   SetFeatures(disabled_features);
 
-  if (!CreateCommandLists() || !CreateDescriptorHeaps())
-  {
-    Error::SetStringView(error, "Failed to create command lists/descriptor heaps.");
+  if (!CreateCommandLists(error) || !CreateDescriptorHeaps(error))
     return false;
-  }
 
-  if (!m_window_info.IsSurfaceless() && !CreateSwapChain())
-  {
-    Error::SetStringView(error, "Failed to create swap chain.");
+  if (!m_window_info.IsSurfaceless() && !CreateSwapChain(error))
     return false;
-  }
 
-  if (!CreateRootSignatures() || !CreateBuffers())
-  {
-    Error::SetStringView(error, "Failed to create root signature/buffers.");
+  if (!CreateRootSignatures(error) || !CreateBuffers(error))
     return false;
-  }
 
   CreateTimestampQuery();
   return true;
@@ -349,7 +341,7 @@ bool D3D12Device::GetPipelineCacheData(DynamicHeapArray<u8>* data)
   return true;
 }
 
-bool D3D12Device::CreateCommandLists()
+bool D3D12Device::CreateCommandLists(Error* error)
 {
   for (u32 i = 0; i < NUM_COMMAND_LISTS; i++)
   {
@@ -362,7 +354,7 @@ bool D3D12Device::CreateCommandLists()
                                             IID_PPV_ARGS(res.command_allocators[j].GetAddressOf()));
       if (FAILED(hr))
       {
-        ERROR_LOG("CreateCommandAllocator() failed: {:08X}", static_cast<unsigned>(hr));
+        Error::SetHResult(error, "CreateCommandAllocator() failed: ", hr);
         return false;
       }
 
@@ -370,7 +362,7 @@ bool D3D12Device::CreateCommandLists()
                                        IID_PPV_ARGS(res.command_lists[j].GetAddressOf()));
       if (FAILED(hr))
       {
-        ERROR_LOG("CreateCommandList() failed: {:08X}", static_cast<unsigned>(hr));
+        Error::SetHResult(error, "CreateCommandList() failed: ", hr);
         return false;
       }
 
@@ -378,21 +370,21 @@ bool D3D12Device::CreateCommandLists()
       hr = res.command_lists[j]->Close();
       if (FAILED(hr))
       {
-        ERROR_LOG("Close() failed: {:08X}", static_cast<unsigned>(hr));
+        Error::SetHResult(error, "Close() for new command list failed: ", hr);
         return false;
       }
     }
 
     if (!res.descriptor_allocator.Create(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
-                                         MAX_DESCRIPTORS_PER_FRAME))
+                                         MAX_DESCRIPTORS_PER_FRAME, error))
     {
-      ERROR_LOG("Failed to create per frame descriptor allocator");
+      Error::AddPrefix(error, "Failed to create per frame descriptor allocator: ");
       return false;
     }
 
-    if (!res.sampler_allocator.Create(m_device.Get(), MAX_SAMPLERS_PER_FRAME))
+    if (!res.sampler_allocator.Create(m_device.Get(), MAX_SAMPLERS_PER_FRAME, error))
     {
-      ERROR_LOG("Failed to create per frame sampler allocator");
+      Error::AddPrefix(error, "Failed to create per frame sampler allocator: ");
       return false;
     }
   }
@@ -472,14 +464,14 @@ void D3D12Device::DestroyCommandLists()
   }
 }
 
-bool D3D12Device::CreateDescriptorHeaps()
+bool D3D12Device::CreateDescriptorHeaps(Error* error)
 {
   if (!m_descriptor_heap_manager.Create(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
-                                        MAX_PERSISTENT_DESCRIPTORS, false) ||
-      !m_rtv_heap_manager.Create(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, MAX_PERSISTENT_RTVS, false) ||
-      !m_dsv_heap_manager.Create(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, MAX_PERSISTENT_DSVS, false) ||
-      !m_sampler_heap_manager.Create(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, MAX_PERSISTENT_SAMPLERS,
-                                     false))
+                                        MAX_PERSISTENT_DESCRIPTORS, false, error) ||
+      !m_rtv_heap_manager.Create(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, MAX_PERSISTENT_RTVS, false, error) ||
+      !m_dsv_heap_manager.Create(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, MAX_PERSISTENT_DSVS, false, error) ||
+      !m_sampler_heap_manager.Create(m_device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, MAX_PERSISTENT_SAMPLERS, false,
+                                     error))
   {
     return false;
   }
@@ -490,7 +482,7 @@ bool D3D12Device::CreateDescriptorHeaps()
 
   if (!m_descriptor_heap_manager.Allocate(&m_null_srv_descriptor))
   {
-    ERROR_LOG("Failed to allocate null descriptor");
+    Error::SetStringView(error, "Failed to allocate null SRV descriptor");
     return false;
   }
 
@@ -774,10 +766,13 @@ u32 D3D12Device::GetSwapChainBufferCount() const
   return (m_vsync_mode == GPUVSyncMode::Mailbox) ? 3 : 2;
 }
 
-bool D3D12Device::CreateSwapChain()
+bool D3D12Device::CreateSwapChain(Error* error)
 {
   if (m_window_info.type != WindowInfo::Type::Win32)
+  {
+    Error::SetStringView(error, "D3D12 expects a Win32 window.");
     return false;
+  }
 
   const D3DCommon::DXGIFormatMapping& fm = D3DCommon::GetFormatMapping(s_swap_chain_format);
 
@@ -853,13 +848,18 @@ bool D3D12Device::CreateSwapChain()
     VERBOSE_LOG("Creating a {}x{} windowed swap chain", swap_chain_desc.Width, swap_chain_desc.Height);
     hr = m_dxgi_factory->CreateSwapChainForHwnd(m_command_queue.Get(), window_hwnd, &swap_chain_desc, nullptr, nullptr,
                                                 m_swap_chain.ReleaseAndGetAddressOf());
+    if (FAILED(hr))
+    {
+      Error::SetHResult(error, "CreateSwapChainForHwnd() failed: ", hr);
+      return false;
+    }
   }
 
   hr = m_dxgi_factory->MakeWindowAssociation(window_hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
   if (FAILED(hr))
     WARNING_LOG("MakeWindowAssociation() to disable ALT+ENTER failed");
 
-  if (!CreateSwapChainRTV())
+  if (!CreateSwapChainRTV(error))
   {
     DestroySwapChain();
     return false;
@@ -870,12 +870,15 @@ bool D3D12Device::CreateSwapChain()
   return true;
 }
 
-bool D3D12Device::CreateSwapChainRTV()
+bool D3D12Device::CreateSwapChainRTV(Error* error)
 {
   DXGI_SWAP_CHAIN_DESC swap_chain_desc;
   HRESULT hr = m_swap_chain->GetDesc(&swap_chain_desc);
   if (FAILED(hr))
+  {
+    Error::SetHResult(error, "GetDesc() for swap chain failed: ", hr);
     return false;
+  }
 
   const D3D12_RENDER_TARGET_VIEW_DESC rtv_desc = {swap_chain_desc.BufferDesc.Format, D3D12_RTV_DIMENSION_TEXTURE2D, {}};
 
@@ -885,7 +888,7 @@ bool D3D12Device::CreateSwapChainRTV()
     hr = m_swap_chain->GetBuffer(i, IID_PPV_ARGS(backbuffer.GetAddressOf()));
     if (FAILED(hr))
     {
-      ERROR_LOG("GetBuffer for RTV failed: 0x{:08X}", static_cast<unsigned>(hr));
+      Error::SetHResult(error, "GetBuffer for RTV failed: ", hr);
       DestroySwapChainRTVs();
       return false;
     }
@@ -895,7 +898,7 @@ bool D3D12Device::CreateSwapChainRTV()
     D3D12DescriptorHandle rtv;
     if (!m_rtv_heap_manager.Allocate(&rtv))
     {
-      ERROR_LOG("Failed to allocate RTV handle");
+      Error::SetStringView(error, "Failed to allocate RTV handle.");
       DestroySwapChainRTVs();
       return false;
     }
@@ -985,9 +988,10 @@ bool D3D12Device::UpdateWindow()
   if (m_window_info.IsSurfaceless())
     return true;
 
-  if (!CreateSwapChain())
+  Error error;
+  if (!CreateSwapChain(&error))
   {
-    ERROR_LOG("Failed to create swap chain on updated window");
+    ERROR_LOG("Failed to create swap chain on updated window: {}", error.GetDescription());
     return false;
   }
 
@@ -1015,8 +1019,12 @@ void D3D12Device::ResizeWindow(s32 new_window_width, s32 new_window_height, floa
   if (FAILED(hr))
     ERROR_LOG("ResizeBuffers() failed: 0x{:08X}", static_cast<unsigned>(hr));
 
-  if (!CreateSwapChainRTV())
+  Error error;
+  if (!CreateSwapChainRTV(&error))
+  {
+    ERROR_LOG("Failed to recreate swap chain RTV after resize", error.GetDescription());
     Panic("Failed to recreate swap chain RTV after resize");
+  }
 }
 
 void D3D12Device::DestroySurface()
@@ -1083,8 +1091,13 @@ void D3D12Device::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle)
   if (GetSwapChainBufferCount() != old_buffer_count)
   {
     DestroySwapChain();
-    if (!CreateSwapChain())
+
+    Error error;
+    if (!CreateSwapChain(&error))
+    {
+      ERROR_LOG("Failed to recreate swap chain after vsync change: {}", error.GetDescription());
       Panic("Failed to recreate swap chain after vsync change.");
+    }
   }
 }
 
@@ -1382,27 +1395,27 @@ void D3D12Device::InvalidateRenderTarget(GPUTexture* t)
     EndRenderPass();
 }
 
-bool D3D12Device::CreateBuffers()
+bool D3D12Device::CreateBuffers(Error* error)
 {
-  if (!m_vertex_buffer.Create(VERTEX_BUFFER_SIZE))
+  if (!m_vertex_buffer.Create(VERTEX_BUFFER_SIZE, error))
   {
     ERROR_LOG("Failed to allocate vertex buffer");
     return false;
   }
 
-  if (!m_index_buffer.Create(INDEX_BUFFER_SIZE))
+  if (!m_index_buffer.Create(INDEX_BUFFER_SIZE, error))
   {
     ERROR_LOG("Failed to allocate index buffer");
     return false;
   }
 
-  if (!m_uniform_buffer.Create(VERTEX_UNIFORM_BUFFER_SIZE))
+  if (!m_uniform_buffer.Create(VERTEX_UNIFORM_BUFFER_SIZE, error))
   {
     ERROR_LOG("Failed to allocate uniform buffer");
     return false;
   }
 
-  if (!m_texture_upload_buffer.Create(TEXTURE_BUFFER_SIZE))
+  if (!m_texture_upload_buffer.Create(TEXTURE_BUFFER_SIZE, error))
   {
     ERROR_LOG("Failed to allocate texture upload buffer");
     return false;
@@ -1509,7 +1522,7 @@ void D3D12Device::UnmapUniformBuffer(u32 size)
   m_dirty_flags |= DIRTY_FLAG_CONSTANT_BUFFER;
 }
 
-bool D3D12Device::CreateRootSignatures()
+bool D3D12Device::CreateRootSignatures(Error* error)
 {
   D3D12::RootSignatureBuilder rsb;
 
@@ -1520,7 +1533,7 @@ bool D3D12Device::CreateRootSignatures()
     rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
     rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
     rsb.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
-    if (!(rs = rsb.Create()))
+    if (!(rs = rsb.Create(error, true)))
       return false;
     D3D12::SetObjectName(rs.Get(), "Single Texture + UBO Pipeline Layout");
   }
@@ -1532,7 +1545,7 @@ bool D3D12Device::CreateRootSignatures()
     rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
     rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
     rsb.Add32BitConstants(0, UNIFORM_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
-    if (!(rs = rsb.Create()))
+    if (!(rs = rsb.Create(error, true)))
       return false;
     D3D12::SetObjectName(rs.Get(), "Single Texture Pipeline Layout");
   }
@@ -1543,7 +1556,7 @@ bool D3D12Device::CreateRootSignatures()
     rsb.SetInputAssemblerFlag();
     rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
     rsb.Add32BitConstants(0, UNIFORM_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
-    if (!(rs = rsb.Create()))
+    if (!(rs = rsb.Create(error, true)))
       return false;
     D3D12::SetObjectName(rs.Get(), "Single Texture Buffer + UBO Pipeline Layout");
   }
@@ -1555,7 +1568,7 @@ bool D3D12Device::CreateRootSignatures()
     rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAX_TEXTURE_SAMPLERS, D3D12_SHADER_VISIBILITY_PIXEL);
     rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, MAX_TEXTURE_SAMPLERS, D3D12_SHADER_VISIBILITY_PIXEL);
     rsb.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
-    if (!(rs = rsb.Create()))
+    if (!(rs = rsb.Create(error, true)))
       return false;
     D3D12::SetObjectName(rs.Get(), "Multi Texture + UBO Pipeline Layout");
   }
@@ -1567,7 +1580,7 @@ bool D3D12Device::CreateRootSignatures()
     rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAX_TEXTURE_SAMPLERS, D3D12_SHADER_VISIBILITY_PIXEL);
     rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, MAX_TEXTURE_SAMPLERS, D3D12_SHADER_VISIBILITY_PIXEL);
     rsb.Add32BitConstants(0, UNIFORM_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
-    if (!(rs = rsb.Create()))
+    if (!(rs = rsb.Create(error, true)))
       return false;
     D3D12::SetObjectName(rs.Get(), "Multi Texture Pipeline Layout");
   }

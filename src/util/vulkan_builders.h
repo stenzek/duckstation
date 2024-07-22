@@ -12,6 +12,8 @@
 #include <array>
 #include <string_view>
 
+class Error;
+
 #if defined(_DEBUG) && !defined(CPU_ARCH_ARM32) && !defined(CPU_ARCH_X86)
 #define ENABLE_VULKAN_DEBUG_OBJECTS 1
 #endif
@@ -24,6 +26,7 @@ void AddPointerToChain(void* head, const void* ptr);
 
 const char* VkResultToString(VkResult res);
 void LogVulkanResult(const char* func_name, VkResult res, std::string_view msg);
+void SetErrorObject(Error* errptr, std::string_view prefix, VkResult res);
 
 class DescriptorSetLayoutBuilder
 {
@@ -89,7 +92,7 @@ public:
 
   void Clear();
 
-  VkPipeline Create(VkDevice device, VkPipelineCache pipeline_cache = VK_NULL_HANDLE, bool clear = true);
+  VkPipeline Create(VkDevice device, VkPipelineCache pipeline_cache, bool clear, Error* error);
 
   void SetShaderStage(VkShaderStageFlagBits stage, VkShaderModule module, const char* entry_point);
   void SetVertexShader(VkShaderModule module) { SetShaderStage(VK_SHADER_STAGE_VERTEX_BIT, module, "main"); }

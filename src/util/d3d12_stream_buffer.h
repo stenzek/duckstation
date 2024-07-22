@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -11,6 +11,8 @@
 #include <utility>
 #include <wrl/client.h>
 
+class Error;
+
 namespace D3D12MA {
 class Allocation;
 }
@@ -21,7 +23,7 @@ public:
   D3D12StreamBuffer();
   ~D3D12StreamBuffer();
 
-  bool Create(u32 size);
+  bool Create(u32 size, Error* error);
 
   ALWAYS_INLINE bool IsValid() const { return static_cast<bool>(m_buffer); }
   ALWAYS_INLINE ID3D12Resource* GetBuffer() const { return m_buffer.Get(); }

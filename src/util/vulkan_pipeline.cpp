@@ -88,7 +88,7 @@ void VulkanPipeline::SetDebugName(std::string_view name)
   Vulkan::SetObjectName(VulkanDevice::GetInstance().GetVulkanDevice(), m_pipeline, name);
 }
 
-std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::GraphicsConfig& config)
+std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::GraphicsConfig& config, Error* error)
 {
   static constexpr std::array<std::pair<VkPrimitiveTopology, u32>, static_cast<u32>(GPUPipeline::Primitive::MaxCount)>
     primitives = {{
@@ -243,7 +243,7 @@ std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::Gra
     gpb.SetRenderPass(render_pass, 0);
   }
 
-  const VkPipeline pipeline = gpb.Create(m_device, m_pipeline_cache, false);
+  const VkPipeline pipeline = gpb.Create(m_device, m_pipeline_cache, false, error);
   if (!pipeline)
     return {};
 

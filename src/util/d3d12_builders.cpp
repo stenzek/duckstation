@@ -5,13 +5,11 @@
 #include "d3d12_device.h"
 
 #include "common/assert.h"
-#include "common/log.h"
+#include "common/error.h"
 #include "common/string_util.h"
 
 #include <cstdarg>
 #include <limits>
-
-Log_SetChannel(D3D12Device);
 
 D3D12::GraphicsPipelineBuilder::GraphicsPipelineBuilder()
 {
@@ -27,14 +25,14 @@ void D3D12::GraphicsPipelineBuilder::Clear()
   m_desc.SampleDesc.Count = 1;
 }
 
-Microsoft::WRL::ComPtr<ID3D12PipelineState> D3D12::GraphicsPipelineBuilder::Create(ID3D12Device* device,
-                                                                                   bool clear /*= true*/)
+Microsoft::WRL::ComPtr<ID3D12PipelineState> D3D12::GraphicsPipelineBuilder::Create(ID3D12Device* device, Error* error,
+                                                                                   bool clear)
 {
   Microsoft::WRL::ComPtr<ID3D12PipelineState> ps;
   HRESULT hr = device->CreateGraphicsPipelineState(&m_desc, IID_PPV_ARGS(ps.GetAddressOf()));
   if (FAILED(hr))
   {
-    ERROR_LOG("CreateGraphicsPipelineState() failed: {:08X}", static_cast<unsigned>(hr));
+    Error::SetHResult(error, "CreateGraphicsPipelineState() failed: ", hr);
     return {};
   }
 
@@ -218,14 +216,14 @@ void D3D12::ComputePipelineBuilder::Clear()
   std::memset(&m_desc, 0, sizeof(m_desc));
 }
 
-Microsoft::WRL::ComPtr<ID3D12PipelineState> D3D12::ComputePipelineBuilder::Create(ID3D12Device* device,
-                                                                                  bool clear /*= true*/)
+Microsoft::WRL::ComPtr<ID3D12PipelineState> D3D12::ComputePipelineBuilder::Create(ID3D12Device* device, Error* error,
+                                                                                  bool clear)
 {
   Microsoft::WRL::ComPtr<ID3D12PipelineState> ps;
   HRESULT hr = device->CreateComputePipelineState(&m_desc, IID_PPV_ARGS(ps.GetAddressOf()));
   if (FAILED(hr)) [[unlikely]]
   {
-    ERROR_LOG("CreateComputePipelineState() failed: {:08X}", static_cast<unsigned>(hr));
+    Error::SetHResult(error, "CreateComputePipelineState() failed: ", hr);
     return {};
   }
 
@@ -260,9 +258,9 @@ void D3D12::RootSignatureBuilder::Clear()
   m_num_descriptor_ranges = 0;
 }
 
-Microsoft::WRL::ComPtr<ID3D12RootSignature> D3D12::RootSignatureBuilder::Create(bool clear /*= true*/)
+Microsoft::WRL::ComPtr<ID3D12RootSignature> D3D12::RootSignatureBuilder::Create(Error* error, bool clear)
 {
-  Microsoft::WRL::ComPtr<ID3D12RootSignature> rs = D3D12Device::GetInstance().CreateRootSignature(&m_desc);
+  Microsoft::WRL::ComPtr<ID3D12RootSignature> rs = D3D12Device::GetInstance().CreateRootSignature(&m_desc, error);
   if (!rs)
     return {};
 

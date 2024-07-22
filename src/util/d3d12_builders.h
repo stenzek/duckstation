@@ -11,6 +11,8 @@
 #include <string_view>
 #include <wrl/client.h>
 
+class Error;
+
 namespace D3D12 {
 class RootSignatureBuilder
 {
@@ -25,7 +27,7 @@ public:
 
   void Clear();
 
-  Microsoft::WRL::ComPtr<ID3D12RootSignature> Create(bool clear = true);
+  Microsoft::WRL::ComPtr<ID3D12RootSignature> Create(Error* error, bool clear);
 
   void SetInputAssemblerFlag();
 
@@ -58,7 +60,7 @@ public:
 
   void Clear();
 
-  Microsoft::WRL::ComPtr<ID3D12PipelineState> Create(ID3D12Device* device, bool clear = true);
+  Microsoft::WRL::ComPtr<ID3D12PipelineState> Create(ID3D12Device* device, Error* error, bool clear);
 
   void SetRootSignature(ID3D12RootSignature* rs);
 
@@ -115,7 +117,7 @@ public:
 
   void Clear();
 
-  Microsoft::WRL::ComPtr<ID3D12PipelineState> Create(ID3D12Device* device, bool clear = true);
+  Microsoft::WRL::ComPtr<ID3D12PipelineState> Create(ID3D12Device* device, Error* error, bool clear);
 
   void SetRootSignature(ID3D12RootSignature* rs);
 

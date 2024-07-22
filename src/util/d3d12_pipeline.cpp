@@ -106,7 +106,7 @@ std::string D3D12Pipeline::GetPipelineName(const GraphicsConfig& config)
   return SHA1Digest::DigestToString(digest);
 }
 
-std::unique_ptr<GPUPipeline> D3D12Device::CreatePipeline(const GPUPipeline::GraphicsConfig& config)
+std::unique_ptr<GPUPipeline> D3D12Device::CreatePipeline(const GPUPipeline::GraphicsConfig& config, Error* error)
 {
   static constexpr std::array<D3D12_PRIMITIVE_TOPOLOGY, static_cast<u32>(GPUPipeline::Primitive::MaxCount)> primitives =
     {{
@@ -242,7 +242,7 @@ std::unique_ptr<GPUPipeline> D3D12Device::CreatePipeline(const GPUPipeline::Grap
         ERROR_LOG("LoadGraphicsPipeline() failed with HRESULT {:08X}", static_cast<unsigned>(hr));
 
       // Need to create it normally.
-      pipeline = gpb.Create(m_device.Get(), false);
+      pipeline = gpb.Create(m_device.Get(), error, false);
 
       // Store if it wasn't an OOM or something else.
       if (pipeline && hr == E_INVALIDARG)
@@ -255,7 +255,7 @@ std::unique_ptr<GPUPipeline> D3D12Device::CreatePipeline(const GPUPipeline::Grap
   }
   else
   {
-    pipeline = gpb.Create(m_device.Get(), false);
+    pipeline = gpb.Create(m_device.Get(), error, false);
   }
 
   if (!pipeline)

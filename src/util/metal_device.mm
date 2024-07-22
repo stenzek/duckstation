@@ -76,6 +76,11 @@ static void LogNSError(NSError* error, std::string_view message)
   Log::FastWrite("MetalDevice", LOGLEVEL_ERROR, "  NSError Description: {}", [error.description UTF8String]);
 }
 
+static void NSErrorToErrorObject(Error* errptr, std::string_view message, NSError* error)
+{
+  Error::SetStringFmt(errptr, "{}NSError Code {}: {}", message, static_cast<u32>(error.code), [error.description UTF8String]);
+}
+
 static GPUTexture::Format GetTextureFormatForMTLFormat(MTLPixelFormat fmt)
 {
   for (u32 i = 0; i < static_cast<u32>(GPUTexture::Format::MaxCount); i++)
@@ -719,7 +724,7 @@ id<MTLDepthStencilState> MetalDevice::GetDepthState(const GPUPipeline::DepthStat
   }
 }
 
-std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::GraphicsConfig& config)
+std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::GraphicsConfig& config, Error* error)
 {
   @autoreleasepool
   {
@@ -857,11 +862,12 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Grap
     if (config.layout == GPUPipeline::Layout::SingleTextureBufferAndPushConstants)
       desc.fragmentBuffers[1].mutability = MTLMutabilityImmutable;
 
-    NSError* error = nullptr;
-    id<MTLRenderPipelineState> pipeline = [m_device newRenderPipelineStateWithDescriptor:desc error:&error];
+    NSError* nserror = nullptr;
+    id<MTLRenderPipelineState> pipeline = [m_device newRenderPipelineStateWithDescriptor:desc error:&nserror];
     if (pipeline == nil)
     {
-      LogNSError(error, "Failed to create render pipeline state");
+      LogNSError(nserror, "Failed to create render pipeline state");
+      NSErrorToErrorObject(error, "newRenderPipelineStateWithDescriptor failed: ", nserror);
       return {};
     }
 

@@ -533,7 +533,10 @@ bool GPUDevice::CreateResources(Error* error)
   std::unique_ptr<GPUShader> imgui_fs =
     CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(), shadergen.GenerateImGuiFragmentShader(), error);
   if (!imgui_vs || !imgui_fs)
+  {
+    Error::AddPrefix(error, "Failed to compile ImGui shaders: ");
     return false;
+  }
   GL_OBJECT_NAME(imgui_vs, "ImGui Vertex Shader");
   GL_OBJECT_NAME(imgui_fs, "ImGui Fragment Shader");
 
@@ -563,10 +566,10 @@ bool GPUDevice::CreateResources(Error* error)
   plconfig.geometry_shader = nullptr;
   plconfig.fragment_shader = imgui_fs.get();
 
-  m_imgui_pipeline = CreatePipeline(plconfig);
+  m_imgui_pipeline = CreatePipeline(plconfig, error);
   if (!m_imgui_pipeline)
   {
-    Error::SetStringView(error, "Failed to compile ImGui pipeline.");
+    Error::AddPrefix(error, "Failed to compile ImGui pipeline: ");
     return false;
   }
   GL_OBJECT_NAME(m_imgui_pipeline, "ImGui Pipeline");

@@ -6,14 +6,11 @@
 #include "d3d_common.h"
 
 #include "common/error.h"
-#include "common/log.h"
 
 #include "fmt/format.h"
 
 #include <array>
 #include <malloc.h>
-
-Log_SetChannel(D3D11Device);
 
 D3D11Shader::D3D11Shader(GPUShaderStage stage, Microsoft::WRL::ComPtr<ID3D11DeviceChild> shader,
                          std::vector<u8> bytecode)
@@ -140,7 +137,8 @@ void D3D11Pipeline::SetDebugName(std::string_view name)
   // can't label this directly
 }
 
-D3D11Device::ComPtr<ID3D11RasterizerState> D3D11Device::GetRasterizationState(const GPUPipeline::RasterizationState& rs)
+D3D11Device::ComPtr<ID3D11RasterizerState> D3D11Device::GetRasterizationState(const GPUPipeline::RasterizationState& rs,
+                                                                              Error* error)
 {
   ComPtr<ID3D11RasterizerState> drs;
 
@@ -165,13 +163,14 @@ D3D11Device::ComPtr<ID3D11RasterizerState> D3D11Device::GetRasterizationState(co
 
   HRESULT hr = m_device->CreateRasterizerState(&desc, drs.GetAddressOf());
   if (FAILED(hr)) [[unlikely]]
-    ERROR_LOG("Failed to create depth state with {:08X}", static_cast<unsigned>(hr));
+    Error::SetHResult(error, "CreateRasterizerState() failed: ", hr);
+  else
+    m_rasterization_states.emplace(rs.key, drs);
 
-  m_rasterization_states.emplace(rs.key, drs);
   return drs;
 }
 
-D3D11Device::ComPtr<ID3D11DepthStencilState> D3D11Device::GetDepthState(const GPUPipeline::DepthState& ds)
+D3D11Device::ComPtr<ID3D11DepthStencilState> D3D11Device::GetDepthState(const GPUPipeline::DepthState& ds, Error* error)
 {
   ComPtr<ID3D11DepthStencilState> dds;
 
@@ -200,13 +199,14 @@ D3D11Device::ComPtr<ID3D11DepthStencilState> D3D11Device::GetDepthState(const GP
 
   HRESULT hr = m_device->CreateDepthStencilState(&desc, dds.GetAddressOf());
   if (FAILED(hr)) [[unlikely]]
-    ERROR_LOG("Failed to create depth state with {:08X}", static_cast<unsigned>(hr));
+    Error::SetHResult(error, "CreateDepthStencilState() failed: ", hr);
+  else
+    m_depth_states.emplace(ds.key, dds);
 
-  m_depth_states.emplace(ds.key, dds);
   return dds;
 }
 
-D3D11Device::ComPtr<ID3D11BlendState> D3D11Device::GetBlendState(const GPUPipeline::BlendState& bs)
+D3D11Device::ComPtr<ID3D11BlendState> D3D11Device::GetBlendState(const GPUPipeline::BlendState& bs, Error* error)
 {
   ComPtr<ID3D11BlendState> dbs;
 
@@ -258,14 +258,15 @@ D3D11Device::ComPtr<ID3D11BlendState> D3D11Device::GetBlendState(const GPUPipeli
 
   HRESULT hr = m_device->CreateBlendState(&blend_desc, dbs.GetAddressOf());
   if (FAILED(hr)) [[unlikely]]
-    ERROR_LOG("Failed to create blend state with {:08X}", static_cast<unsigned>(hr));
+    Error::SetHResult(error, "CreateBlendState() failed: ", hr);
+  else
+    m_blend_states.emplace(bs.key, dbs);
 
-  m_blend_states.emplace(bs.key, dbs);
   return dbs;
 }
 
 D3D11Device::ComPtr<ID3D11InputLayout> D3D11Device::GetInputLayout(const GPUPipeline::InputLayout& il,
-                                                                   const D3D11Shader* vs)
+                                                                   const D3D11Shader* vs, Error* error)
 {
   ComPtr<ID3D11InputLayout> dil;
   const auto it = m_input_layouts.find(il);
@@ -310,17 +311,18 @@ D3D11Device::ComPtr<ID3D11InputLayout> D3D11Device::GetInputLayout(const GPUPipe
   HRESULT hr = m_device->CreateInputLayout(elems, static_cast<UINT>(il.vertex_attributes.size()),
                                            vs->GetBytecode().data(), vs->GetBytecode().size(), dil.GetAddressOf());
   if (FAILED(hr)) [[unlikely]]
-    ERROR_LOG("Failed to create input layout with {:08X}", static_cast<unsigned>(hr));
+    Error::SetHResult(error, "CreateInputLayout() failed: ", hr);
+  else
+    m_input_layouts.emplace(il, dil);
 
-  m_input_layouts.emplace(il, dil);
   return dil;
 }
 
-std::unique_ptr<GPUPipeline> D3D11Device::CreatePipeline(const GPUPipeline::GraphicsConfig& config)
+std::unique_ptr<GPUPipeline> D3D11Device::CreatePipeline(const GPUPipeline::GraphicsConfig& config, Error* error)
 {
-  ComPtr<ID3D11RasterizerState> rs = GetRasterizationState(config.rasterization);
-  ComPtr<ID3D11DepthStencilState> ds = GetDepthState(config.depth);
-  ComPtr<ID3D11BlendState> bs = GetBlendState(config.blend);
+  ComPtr<ID3D11RasterizerState> rs = GetRasterizationState(config.rasterization, error);
+  ComPtr<ID3D11DepthStencilState> ds = GetDepthState(config.depth, error);
+  ComPtr<ID3D11BlendState> bs = GetBlendState(config.blend, error);
   if (!rs || !ds || !bs)
     return {};
 
@@ -328,7 +330,7 @@ std::unique_ptr<GPUPipeline> D3D11Device::CreatePipeline(const GPUPipeline::Grap
   u32 vertex_stride = 0;
   if (!config.input_layout.vertex_attributes.empty())
   {
-    il = GetInputLayout(config.input_layout, static_cast<const D3D11Shader*>(config.vertex_shader));
+    il = GetInputLayout(config.input_layout, static_cast<const D3D11Shader*>(config.vertex_shader), error);
     vertex_stride = config.input_layout.vertex_stride;
     if (!il)
       return {};

@@ -95,7 +95,7 @@ public:
   std::unique_ptr<GPUShader> CreateShaderFromSource(GPUShaderStage stage, GPUShaderLanguage language,
                                                     std::string_view source, const char* entry_point,
                                                     DynamicHeapArray<u8>* out_binary, Error* error) override;
-  std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config) override;
+  std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config, Error* error) override;
 
   void PushDebugGroup(const char* name) override;
   void PopDebugGroup() override;
@@ -155,8 +155,8 @@ public:
   ID3D12GraphicsCommandList4* GetInitCommandList();
 
   // Root signature access.
-  ComPtr<ID3DBlob> SerializeRootSignature(const D3D12_ROOT_SIGNATURE_DESC* desc);
-  ComPtr<ID3D12RootSignature> CreateRootSignature(const D3D12_ROOT_SIGNATURE_DESC* desc);
+  ComPtr<ID3DBlob> SerializeRootSignature(const D3D12_ROOT_SIGNATURE_DESC* desc, Error* error);
+  ComPtr<ID3D12RootSignature> CreateRootSignature(const D3D12_ROOT_SIGNATURE_DESC* desc, Error* error);
 
   /// Fence value for current command list.
   u64 GetCurrentFenceValue() const { return m_current_fence_value; }
@@ -223,18 +223,18 @@ private:
   void SetFeatures(FeatureMask disabled_features);
 
   u32 GetSwapChainBufferCount() const;
-  bool CreateSwapChain();
-  bool CreateSwapChainRTV();
+  bool CreateSwapChain(Error* error);
+  bool CreateSwapChainRTV(Error* error);
   void DestroySwapChainRTVs();
   void DestroySwapChain();
 
-  bool CreateCommandLists();
+  bool CreateCommandLists(Error* error);
   void DestroyCommandLists();
-  bool CreateRootSignatures();
+  bool CreateRootSignatures(Error* error);
   void DestroyRootSignatures();
-  bool CreateBuffers();
+  bool CreateBuffers(Error* error);
   void DestroyBuffers();
-  bool CreateDescriptorHeaps();
+  bool CreateDescriptorHeaps(Error* error);
   void DestroyDescriptorHeaps();
   bool CreateTimestampQuery();
   void DestroyTimestampQuery();

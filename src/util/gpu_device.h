@@ -650,7 +650,8 @@ public:
   /// Shader abstraction.
   std::unique_ptr<GPUShader> CreateShader(GPUShaderStage stage, GPUShaderLanguage language, std::string_view source,
                                           Error* error = nullptr, const char* entry_point = "main");
-  virtual std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config) = 0;
+  virtual std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config,
+                                                      Error* error = nullptr) = 0;
 
   /// Debug messaging.
   virtual void PushDebugGroup(const char* name) = 0;

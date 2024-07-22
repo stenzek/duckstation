@@ -13,6 +13,7 @@
 
 #include <cstdio>
 #include <memory>
+#include <string_view>
 #include <tuple>
 
 class OpenGLPipeline;
@@ -37,6 +38,7 @@ public:
   ALWAYS_INLINE static bool IsGLES() { return GetInstance().m_gl_context->IsGLES(); }
   static void BindUpdateTextureUnit();
   static bool ShouldUsePBOsForDownloads();
+  static void SetErrorObject(Error* errptr, std::string_view prefix, GLenum glerr);
 
   RenderAPI GetRenderAPI() const override;
 
@@ -75,7 +77,7 @@ public:
   std::unique_ptr<GPUShader> CreateShaderFromSource(GPUShaderStage stage, GPUShaderLanguage language,
                                                     std::string_view source, const char* entry_point,
                                                     DynamicHeapArray<u8>* out_binary, Error* error) override;
-  std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config) override;
+  std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config, Error* error) override;
 
   void PushDebugGroup(const char* name) override;
   void PopDebugGroup() override;
@@ -113,13 +115,13 @@ public:
   void CommitRTClearInFB(OpenGLTexture* tex, u32 idx);
   void CommitDSClearInFB(OpenGLTexture* tex);
 
-  GLuint LookupProgramCache(const OpenGLPipeline::ProgramCacheKey& key, const GPUPipeline::GraphicsConfig& plconfig);
-  GLuint CompileProgram(const GPUPipeline::GraphicsConfig& plconfig);
+  GLuint LookupProgramCache(const OpenGLPipeline::ProgramCacheKey& key, const GPUPipeline::GraphicsConfig& plconfig, Error* error);
+  GLuint CompileProgram(const GPUPipeline::GraphicsConfig& plconfig, Error* error);
   void PostLinkProgram(const GPUPipeline::GraphicsConfig& plconfig, GLuint program_id);
   void UnrefProgram(const OpenGLPipeline::ProgramCacheKey& key);
 
-  OpenGLPipeline::VertexArrayCache::const_iterator LookupVAOCache(const OpenGLPipeline::VertexArrayCacheKey& key);
-  GLuint CreateVAO(std::span<const GPUPipeline::VertexAttribute> attributes, u32 stride);
+  OpenGLPipeline::VertexArrayCache::const_iterator LookupVAOCache(const OpenGLPipeline::VertexArrayCacheKey& key, Error* error);
+  GLuint CreateVAO(std::span<const GPUPipeline::VertexAttribute> attributes, u32 stride, Error* error);
   void UnrefVAO(const OpenGLPipeline::VertexArrayCacheKey& key);
 
   void SetActiveTexture(u32 slot);

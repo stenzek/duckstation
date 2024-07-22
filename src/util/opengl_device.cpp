@@ -10,6 +10,7 @@
 
 #include "common/align.h"
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/log.h"
 #include "common/string_util.h"
 
@@ -48,6 +49,11 @@ void OpenGLDevice::BindUpdateTextureUnit()
 bool OpenGLDevice::ShouldUsePBOsForDownloads()
 {
   return !GetInstance().m_disable_pbo && !GetInstance().m_disable_async_download;
+}
+
+void OpenGLDevice::SetErrorObject(Error* errptr, std::string_view prefix, GLenum glerr)
+{
+  Error::SetStringFmt(errptr, "{}GL Error 0x{:04X}", prefix, static_cast<unsigned>(glerr));
 }
 
 RenderAPI OpenGLDevice::GetRenderAPI() const
