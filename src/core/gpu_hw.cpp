@@ -284,9 +284,17 @@ bool GPU_HW::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
 {
   // Need to download local VRAM copy before calling the base class, because it serializes this.
   if (m_sw_renderer)
+  {
     m_sw_renderer->Sync(true);
+  }
   else if (sw.IsWriting() && !host_texture)
+  {
+    // If SW renderer readbacks aren't enabled, the CLUT won't be populated, which means it'll be invalid if the user
+    // loads this state with software instead of hardware renderers. So force-update the CLUT.
     ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+    if (IsCLUTValid())
+      GPU::ReadCLUT(g_gpu_clut, GPUTexturePaletteReg{Truncate16(m_current_clut_reg_bits)}, m_current_clut_is_8bit);
+  }
 
   if (!GPU::DoState(sw, host_texture, update_display))
     return false;
