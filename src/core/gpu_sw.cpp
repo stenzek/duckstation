@@ -449,7 +449,7 @@ void GPU_SW::UpdateDisplay()
       if (CopyOut(vram_offset_x, vram_offset_y, skip_x, read_width, read_height, line_skip, is_24bit))
       {
         SetDisplayTexture(m_upload_texture.get(), nullptr, 0, 0, read_width, read_height);
-        if (is_24bit && g_settings.gpu_24bit_chroma_smoothing)
+        if (is_24bit && g_settings.display_24bit_chroma_smoothing)
         {
           if (ApplyChromaSmoothing())
             Deinterlace(field, 0);
@@ -465,7 +465,7 @@ void GPU_SW::UpdateDisplay()
       if (CopyOut(vram_offset_x, vram_offset_y, skip_x, read_width, read_height, 0, is_24bit))
       {
         SetDisplayTexture(m_upload_texture.get(), nullptr, 0, 0, read_width, read_height);
-        if (is_24bit && g_settings.gpu_24bit_chroma_smoothing)
+        if (is_24bit && g_settings.display_24bit_chroma_smoothing)
           ApplyChromaSmoothing();
       }
     }

@@ -94,7 +94,7 @@ bool GPU::Initialize()
   m_console_is_pal = System::IsPALRegion();
   UpdateCRTCConfig();
 
-  if (!CompileDisplayPipelines(true, true, g_settings.gpu_24bit_chroma_smoothing))
+  if (!CompileDisplayPipelines(true, true, g_settings.display_24bit_chroma_smoothing))
   {
     Host::ReportErrorAsync("Error", "Failed to compile base GPU pipelines.");
     return false;
@@ -130,7 +130,7 @@ void GPU::UpdateSettings(const Settings& old_settings)
 
   if (g_settings.display_scaling != old_settings.display_scaling ||
       g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode ||
-      g_settings.gpu_24bit_chroma_smoothing != old_settings.gpu_24bit_chroma_smoothing)
+      g_settings.display_24bit_chroma_smoothing != old_settings.display_24bit_chroma_smoothing)
   {
     // Toss buffers on mode change.
     if (g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode)
@@ -138,7 +138,7 @@ void GPU::UpdateSettings(const Settings& old_settings)
 
     if (!CompileDisplayPipelines(g_settings.display_scaling != old_settings.display_scaling,
                                  g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode,
-                                 g_settings.gpu_24bit_chroma_smoothing != old_settings.gpu_24bit_chroma_smoothing))
+                                 g_settings.display_24bit_chroma_smoothing != old_settings.display_24bit_chroma_smoothing))
     {
       Panic("Failed to compile display pipeline on settings change.");
     }
@@ -1886,7 +1886,7 @@ bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_sm
     m_chroma_smoothing_pipeline.reset();
     g_gpu_device->RecycleTexture(std::move(m_chroma_smoothing_texture));
 
-    if (g_settings.gpu_24bit_chroma_smoothing)
+    if (g_settings.display_24bit_chroma_smoothing)
     {
       plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
       plconfig.SetTargetFormats(GPUTexture::Format::RGBA8);

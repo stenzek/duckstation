@@ -220,6 +220,7 @@ const char* QtHost::GetDefaultLanguage()
 
 static constexpr const ImWchar s_base_latin_range[] = {
   0x0020, 0x00FF, // Basic Latin + Latin Supplement
+  0x2022, 0x2022, // General punctuation
 };
 static constexpr const ImWchar s_central_european_ranges[] = {
   0x0100, 0x017F, // Central European diacritics

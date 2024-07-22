@@ -190,6 +190,7 @@ void Settings::Load(SettingsInterface& si)
   gpu_disable_framebuffer_fetch = si.GetBoolValue("GPU", "DisableFramebufferFetch", false);
   gpu_disable_texture_buffers = si.GetBoolValue("GPU", "DisableTextureBuffers", false);
   gpu_disable_texture_copy_to_self = si.GetBoolValue("GPU", "DisableTextureCopyToSelf", false);
+  gpu_disable_memory_import = si.GetBoolValue("GPU", "DisableMemoryImport", false);
   gpu_per_sample_shading = si.GetBoolValue("GPU", "PerSampleShading", false);
   gpu_use_thread = si.GetBoolValue("GPU", "UseThread", true);
   gpu_use_software_renderer_for_readbacks = si.GetBoolValue("GPU", "UseSoftwareRendererForReadbacks", false);
@@ -222,7 +223,7 @@ void Settings::Load(SettingsInterface& si)
   gpu_disable_interlacing = si.GetBoolValue("GPU", "DisableInterlacing", true);
   gpu_force_ntsc_timings = si.GetBoolValue("GPU", "ForceNTSCTimings", false);
   gpu_widescreen_hack = si.GetBoolValue("GPU", "WidescreenHack", false);
-  gpu_24bit_chroma_smoothing = si.GetBoolValue("GPU", "ChromaSmoothing24Bit", false);
+  display_24bit_chroma_smoothing = si.GetBoolValue("GPU", "ChromaSmoothing24Bit", false);
   gpu_pgxp_enable = si.GetBoolValue("GPU", "PGXPEnable", false);
   gpu_pgxp_culling = si.GetBoolValue("GPU", "PGXPCulling", true);
   gpu_pgxp_texture_correction = si.GetBoolValue("GPU", "PGXPTextureCorrection", true);
@@ -492,6 +493,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
     si.SetBoolValue("GPU", "DisableFramebufferFetch", gpu_disable_framebuffer_fetch);
     si.SetBoolValue("GPU", "DisableTextureBuffers", gpu_disable_texture_buffers);
     si.SetBoolValue("GPU", "DisableTextureCopyToSelf", gpu_disable_texture_copy_to_self);
+    si.SetBoolValue("GPU", "DisableMemoryImport", gpu_disable_memory_import);
   }
 
   si.SetBoolValue("GPU", "PerSampleShading", gpu_per_sample_shading);
@@ -513,7 +515,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("GPU", "DisableInterlacing", gpu_disable_interlacing);
   si.SetBoolValue("GPU", "ForceNTSCTimings", gpu_force_ntsc_timings);
   si.SetBoolValue("GPU", "WidescreenHack", gpu_widescreen_hack);
-  si.SetBoolValue("GPU", "ChromaSmoothing24Bit", gpu_24bit_chroma_smoothing);
+  si.SetBoolValue("GPU", "ChromaSmoothing24Bit", display_24bit_chroma_smoothing);
   si.SetBoolValue("GPU", "PGXPEnable", gpu_pgxp_enable);
   si.SetBoolValue("GPU", "PGXPCulling", gpu_pgxp_culling);
   si.SetBoolValue("GPU", "PGXPTextureCorrection", gpu_pgxp_texture_correction);
@@ -721,7 +723,7 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.gpu_force_ntsc_timings = false;
     g_settings.gpu_widescreen_hack = false;
     g_settings.gpu_pgxp_enable = false;
-    g_settings.gpu_24bit_chroma_smoothing = false;
+    g_settings.display_24bit_chroma_smoothing = false;
     g_settings.cdrom_read_speedup = 1;
     g_settings.cdrom_seek_speedup = 1;
     g_settings.cdrom_mute_cd_audio = false;

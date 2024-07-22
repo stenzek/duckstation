@@ -376,8 +376,6 @@ const char* GameDatabase::GetCompatibilityRatingDisplayName(CompatibilityRating 
 
 void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_messages) const
 {
-  constexpr float osd_duration = Host::OSD_INFO_DURATION;
-
   if (display_active_start_offset.has_value())
   {
     settings.display_active_start_offset = display_active_start_offset.value();
@@ -457,14 +455,18 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     }
   }
 
+  SmallStackString<512> messages;
+#define APPEND_MESSAGE(icon, msg)                                                                                      \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    messages.append("\n  \u2022    ");                                                                                 \
+    messages.append(msg);                                                                                              \
+  } while (0)
+
   if (HasTrait(Trait::ForceInterpreter))
   {
     if (display_osd_messages && settings.cpu_execution_mode != CPUExecutionMode::Interpreter)
-    {
-      Host::AddIconOSDMessage("gamedb_force_interpreter", ICON_FA_MICROCHIP,
-                              TRANSLATE_STR("OSDMessage", "CPU interpreter forced by compatibility settings."),
-                              osd_duration);
-    }
+      APPEND_MESSAGE(ICON_FA_MICROCHIP, TRANSLATE_SV("GameDatabase", "CPU recompiler disabled."));
 
     settings.cpu_execution_mode = CPUExecutionMode::Interpreter;
   }
@@ -472,11 +474,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   if (HasTrait(Trait::ForceSoftwareRenderer))
   {
     if (display_osd_messages && settings.gpu_renderer != GPURenderer::Software)
-    {
-      Host::AddIconOSDMessage("gamedb_force_software", ICON_FA_MAGIC,
-                              TRANSLATE_STR("OSDMessage", "Software renderer forced by compatibility settings."),
-                              osd_duration);
-    }
+      APPEND_MESSAGE(ICON_FA_PAINT_ROLLER, TRANSLATE_SV("GameDatabase", "Hardware rendering disabled."));
 
     settings.gpu_renderer = GPURenderer::Software;
   }
@@ -484,12 +482,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   if (HasTrait(Trait::ForceSoftwareRendererForReadbacks))
   {
     if (display_osd_messages && settings.gpu_renderer != GPURenderer::Software)
-    {
-      Host::AddIconOSDMessage(
-        "gamedb_force_software_rb", ICON_FA_MAGIC,
-        TRANSLATE_STR("OSDMessage", "Using software renderer for readbacks based on compatibility settings."),
-        osd_duration);
-    }
+      APPEND_MESSAGE(ICON_FA_MAGIC, TRANSLATE_SV("GameDatabase", "Software renderer readbacks enabled."));
 
     settings.gpu_use_software_renderer_for_readbacks = true;
   }
@@ -502,11 +495,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   if (HasTrait(Trait::ForceInterlacing))
   {
     if (display_osd_messages && settings.gpu_disable_interlacing)
-    {
-      Host::AddIconOSDMessage("gamedb_force_interlacing", ICON_FA_TV,
-                              TRANSLATE_STR("OSDMessage", "Interlacing forced by compatibility settings."),
-                              osd_duration);
-    }
+      APPEND_MESSAGE(ICON_FA_TV, TRANSLATE_SV("GameDatabase", "Interlaced rendering enabled."));
 
     settings.gpu_disable_interlacing = false;
   }
@@ -514,11 +503,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   if (HasTrait(Trait::DisableTrueColor))
   {
     if (display_osd_messages && settings.gpu_true_color)
-    {
-      Host::AddIconOSDMessage("gamedb_disable_true_color", ICON_FA_MAGIC,
-                              TRANSLATE_STR("OSDMessage", "True color disabled by compatibility settings."),
-                              osd_duration);
-    }
+      APPEND_MESSAGE(ICON_FA_MAGIC, TRANSLATE_SV("GameDatabase", "True color disabled."));
 
     settings.gpu_true_color = false;
   }
@@ -526,11 +511,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   if (HasTrait(Trait::DisableUpscaling))
   {
     if (display_osd_messages && settings.gpu_resolution_scale > 1)
-    {
-      Host::AddIconOSDMessage("gamedb_disable_upscaling", ICON_FA_MAGIC,
-                              TRANSLATE_STR("OSDMessage", "Upscaling disabled by compatibility settings."),
-                              osd_duration);
-    }
+      APPEND_MESSAGE(ICON_FA_MAGIC, TRANSLATE_SV("GameDatabase", "Upscaling disabled."));
 
     settings.gpu_resolution_scale = 1;
   }
@@ -540,9 +521,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     if (display_osd_messages && (settings.gpu_texture_filter != GPUTextureFilter::Nearest ||
                                  g_settings.gpu_sprite_texture_filter != GPUTextureFilter::Nearest))
     {
-      Host::AddIconOSDMessage("gamedb_disable_upscaling", ICON_FA_MAGIC,
-                              TRANSLATE_STR("OSDMessage", "Texture filtering disabled by compatibility settings."),
-                              osd_duration);
+      APPEND_MESSAGE(ICON_FA_MAGIC, TRANSLATE_SV("GameDatabase", "Texture filtering disabled."));
     }
 
     settings.gpu_texture_filter = GPUTextureFilter::Nearest;
@@ -552,11 +531,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   if (HasTrait(Trait::DisableScaledDithering))
   {
     if (display_osd_messages && settings.gpu_scaled_dithering)
-    {
-      Host::AddIconOSDMessage("gamedb_disable_scaled_dithering", ICON_FA_MAGIC,
-                              TRANSLATE_STR("OSDMessage", "Scaled dithering disabled by compatibility settings."),
-                              osd_duration);
-    }
+      APPEND_MESSAGE(ICON_FA_MAGIC, TRANSLATE_SV("GameDatabase", "Scaled dithering."));
 
     settings.gpu_scaled_dithering = false;
   }
@@ -564,11 +539,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   if (HasTrait(Trait::DisableWidescreen))
   {
     if (display_osd_messages && settings.gpu_widescreen_hack)
-    {
-      Host::AddIconOSDMessage("gamedb_disable_widescreen", ICON_FA_TV,
-                              TRANSLATE_STR("OSDMessage", "Widescreen rendering disabled by compatibility settings."),
-                              osd_duration);
-    }
+      APPEND_MESSAGE(ICON_FA_TV, TRANSLATE_SV("GameDatabase", "Widescreen rendering disabled."));
 
     settings.gpu_widescreen_hack = false;
   }
@@ -576,11 +547,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   if (HasTrait(Trait::DisableForceNTSCTimings))
   {
     if (display_osd_messages && settings.gpu_force_ntsc_timings)
-    {
-      Host::AddIconOSDMessage("gamedb_disable_force_ntsc_timings", ICON_FA_TV,
-                              TRANSLATE_STR("OSDMessage", "Forcing NTSC Timings disallowed by compatibility settings."),
-                              osd_duration);
-    }
+      APPEND_MESSAGE(ICON_FA_TV, TRANSLATE_SV("GameDatabase", "Force NTSC timings disabled."));
 
     settings.gpu_force_ntsc_timings = false;
   }
@@ -588,11 +555,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   if (HasTrait(Trait::DisablePGXP))
   {
     if (display_osd_messages && settings.gpu_pgxp_enable)
-    {
-      Host::AddIconOSDMessage(
-        "gamedb_disable_pgxp", ICON_FA_MAGIC,
-        TRANSLATE_STR("OSDMessage", "PGXP geometry correction disabled by compatibility settings."), osd_duration);
-    }
+      APPEND_MESSAGE(ICON_FA_MAGIC, TRANSLATE_SV("GameDatabase", "PGXP geometry correction disabled."));
 
     settings.gpu_pgxp_enable = false;
   }
@@ -600,11 +563,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   if (HasTrait(Trait::DisablePGXPCulling))
   {
     if (display_osd_messages && settings.gpu_pgxp_enable && settings.gpu_pgxp_culling)
-    {
-      Host::AddIconOSDMessage("gamedb_disable_pgxp_culling", ICON_FA_MAGIC,
-                              TRANSLATE_STR("OSDMessage", "PGXP culling disabled by compatibility settings."),
-                              osd_duration);
-    }
+      APPEND_MESSAGE(ICON_FA_MAGIC, TRANSLATE_SV("GameDatabase", "PGXP culling correction disabled."));
 
     settings.gpu_pgxp_culling = false;
   }
@@ -612,12 +571,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   if (HasTrait(Trait::DisablePGXPTextureCorrection))
   {
     if (display_osd_messages && settings.gpu_pgxp_enable && settings.gpu_pgxp_texture_correction)
-    {
-      Host::AddIconOSDMessage(
-        "gamedb_disable_pgxp_texture", ICON_FA_MAGIC,
-        TRANSLATE_STR("OSDMessage", "PGXP perspective corrected textures disabled by compatibility settings."),
-        osd_duration);
-    }
+      APPEND_MESSAGE(ICON_FA_MAGIC, TRANSLATE_SV("GameDatabase", "PGXP perspective correct textures disabled."));
 
     settings.gpu_pgxp_texture_correction = false;
   }
@@ -627,10 +581,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     if (display_osd_messages && settings.gpu_pgxp_enable && settings.gpu_pgxp_texture_correction &&
         settings.gpu_pgxp_color_correction)
     {
-      Host::AddIconOSDMessage(
-        "gamedb_disable_pgxp_texture", ICON_FA_MAGIC,
-        TRANSLATE_STR("OSDMessage", "PGXP perspective corrected colors disabled by compatibility settings."),
-        osd_duration);
+      APPEND_MESSAGE(ICON_FA_MAGIC, TRANSLATE_SV("GameDatabase", "PGXP perspective correct colors disabled."));
     }
 
     settings.gpu_pgxp_color_correction = false;
@@ -639,12 +590,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   if (HasTrait(Trait::DisablePGXPPreserveProjFP))
   {
     if (display_osd_messages && settings.gpu_pgxp_enable && settings.gpu_pgxp_preserve_proj_fp)
-    {
-      Host::AddIconOSDMessage(
-        "gamedb_disable_pgxp_texture", ICON_FA_MAGIC,
-        TRANSLATE_STR("OSDMessage", "PGXP projection precision preservation disabled by compatibility settings."),
-        osd_duration);
-    }
+      APPEND_MESSAGE(ICON_FA_MAGIC, TRANSLATE_SV("GameDatabase", "PGXP preserve projection precision disabled."));
 
     settings.gpu_pgxp_preserve_proj_fp = false;
   }
@@ -652,22 +598,18 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   if (HasTrait(Trait::ForcePGXPVertexCache))
   {
     if (display_osd_messages && settings.gpu_pgxp_enable && !settings.gpu_pgxp_vertex_cache)
-    {
-      Host::AddIconOSDMessage("gamedb_force_pgxp_vertex_cache", ICON_FA_MAGIC,
-                              TRANSLATE_STR("OSDMessage", "PGXP vertex cache forced by compatibility settings."),
-                              osd_duration);
-    }
+      APPEND_MESSAGE(ICON_FA_MAGIC, TRANSLATE_SV("GameDatabase", "PGXP vertex cache enabled."));
 
     settings.gpu_pgxp_vertex_cache = settings.gpu_pgxp_enable;
   }
   else if (settings.gpu_pgxp_enable && settings.gpu_pgxp_vertex_cache)
   {
     Host::AddIconOSDMessage(
-      "gamedb_force_pgxp_vertex_cache", ICON_FA_MICROCHIP,
+      "gamedb_force_pgxp_vertex_cache", ICON_FA_EXCLAMATION_TRIANGLE,
       TRANSLATE_STR(
-        "OSDMessage",
+        "GameDatabase",
         "PGXP Vertex Cache is enabled, but it is not required for this game. This may cause rendering errors."),
-      osd_duration);
+      Host::OSD_WARNING_DURATION);
   }
 
   if (HasTrait(Trait::ForcePGXPCPUMode))
@@ -675,9 +617,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     if (display_osd_messages && settings.gpu_pgxp_enable && !settings.gpu_pgxp_cpu)
     {
 #ifndef __ANDROID__
-      Host::AddIconOSDMessage("gamedb_force_pgxp_cpu", ICON_FA_MICROCHIP,
-                              TRANSLATE_STR("OSDMessage", "PGXP CPU mode forced by compatibility settings."),
-                              osd_duration);
+      APPEND_MESSAGE(ICON_FA_MICROCHIP, TRANSLATE_SV("GameDatabase", "PGXP CPU mode enabled."));
 #else
       Host::AddIconOSDMessage(
         "gamedb_force_pgxp_cpu", ICON_FA_MICROCHIP,
@@ -693,19 +633,15 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   {
     Host::AddIconOSDMessage(
       "gamedb_force_pgxp_cpu", ICON_FA_MICROCHIP,
-      TRANSLATE_STR("OSDMessage",
+      TRANSLATE_STR("GameDatabase",
                     "PGXP CPU mode is enabled, but it is not required for this game. This may cause rendering errors."),
-      osd_duration);
+      Host::OSD_WARNING_DURATION);
   }
 
   if (HasTrait(Trait::DisablePGXPDepthBuffer))
   {
     if (display_osd_messages && settings.gpu_pgxp_enable && settings.gpu_pgxp_depth_buffer)
-    {
-      Host::AddIconOSDMessage("gamedb_disable_pgxp_depth", ICON_FA_MAGIC,
-                              TRANSLATE_STR("OSDMessage", "PGXP Depth Buffer disabled by compatibility settings."),
-                              osd_duration);
-    }
+      APPEND_MESSAGE(ICON_FA_MAGIC, TRANSLATE_SV("GameDatabase", "PGXP depth buffer disabled."));
 
     settings.gpu_pgxp_depth_buffer = false;
   }
@@ -713,11 +649,8 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   if (HasTrait(Trait::DisablePGXPOn2DPolygons))
   {
     if (display_osd_messages && settings.gpu_pgxp_enable && !settings.gpu_pgxp_disable_2d)
-    {
-      Host::AddIconOSDMessage("gamedb_disable_pgxp_2d", ICON_FA_MICROCHIP,
-                              TRANSLATE_STR("OSDMessage", "PGXP disabled on 2D polygons by compatibility settings."),
-                              osd_duration);
-    }
+      APPEND_MESSAGE(ICON_FA_MICROCHIP, TRANSLATE_SV("GameDatabase", "PGXP disabled on 2D polygons."));
+
     g_settings.gpu_pgxp_disable_2d = true;
   }
 
@@ -738,6 +671,17 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     WARNING_LOG("LUT fastmem for recompiler forced by compatibility settings.");
     settings.cpu_fastmem_mode = CPUFastmemMode::LUT;
   }
+
+  if (!messages.empty())
+  {
+    Host::AddIconOSDMessage(
+      "GameDBCompatibility", ICON_FA_MICROCHIP,
+      fmt::format("{}{}", TRANSLATE_SV("GameDatabase", "Compatibility settings for this game have been applied:"),
+                  messages.view()),
+      Host::OSD_WARNING_DURATION);
+  }
+
+#undef APPEND_MESSAGE
 
 #define BIT_FOR(ctype) (static_cast<u16>(1) << static_cast<u32>(ctype))
 
@@ -777,7 +721,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 
         Host::AddKeyedOSDMessage(
           "gamedb_controller_unsupported",
-          fmt::format(TRANSLATE_FS("OSDMessage",
+          fmt::format(TRANSLATE_FS("GameDatabase",
                                    "Controller in port {0} ({1}) is not supported for {2}.\nSupported controllers: "
                                    "{3}\nPlease configure a supported controller from the list above."),
                       i + 1u, Controller::GetControllerInfo(ctype)->GetDisplayName(), System::GetGameTitle(),

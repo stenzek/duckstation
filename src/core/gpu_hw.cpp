@@ -3527,7 +3527,7 @@ void GPU_HW::UpdateDisplay()
 
     SetDisplayTexture(m_vram_extract_texture.get(), depth_source ? m_vram_extract_depth_texture.get() : nullptr, 0, 0,
                       scaled_display_width, read_height);
-    if (g_settings.gpu_24bit_chroma_smoothing)
+    if (g_settings.display_24bit_chroma_smoothing)
     {
       if (ApplyChromaSmoothing())
       {

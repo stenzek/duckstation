@@ -3937,6 +3937,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
        g_settings.gpu_disable_framebuffer_fetch != old_settings.gpu_disable_framebuffer_fetch ||
        g_settings.gpu_disable_texture_buffers != old_settings.gpu_disable_texture_buffers ||
        g_settings.gpu_disable_texture_copy_to_self != old_settings.gpu_disable_texture_copy_to_self ||
+       g_settings.gpu_disable_memory_import != old_settings.gpu_disable_memory_import ||
        g_settings.display_exclusive_fullscreen_control != old_settings.display_exclusive_fullscreen_control))
   {
     // if debug device/threaded presentation change, we need to recreate the whole display
@@ -3948,6 +3949,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
        g_settings.gpu_disable_framebuffer_fetch != old_settings.gpu_disable_framebuffer_fetch ||
        g_settings.gpu_disable_texture_buffers != old_settings.gpu_disable_texture_buffers ||
        g_settings.gpu_disable_texture_copy_to_self != old_settings.gpu_disable_texture_copy_to_self ||
+       g_settings.gpu_disable_memory_import != old_settings.gpu_disable_memory_import ||
        g_settings.display_exclusive_fullscreen_control != old_settings.display_exclusive_fullscreen_control);
 
     Host::AddIconOSDMessage("RendererSwitch", ICON_FA_PAINT_ROLLER,
@@ -4058,11 +4060,11 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.gpu_line_detect_mode != old_settings.gpu_line_detect_mode ||
         g_settings.gpu_disable_interlacing != old_settings.gpu_disable_interlacing ||
         g_settings.gpu_force_ntsc_timings != old_settings.gpu_force_ntsc_timings ||
-        g_settings.gpu_24bit_chroma_smoothing != old_settings.gpu_24bit_chroma_smoothing ||
         g_settings.gpu_downsample_mode != old_settings.gpu_downsample_mode ||
         g_settings.gpu_downsample_scale != old_settings.gpu_downsample_scale ||
         g_settings.gpu_wireframe_mode != old_settings.gpu_wireframe_mode ||
         g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode ||
+        g_settings.display_24bit_chroma_smoothing != old_settings.display_24bit_chroma_smoothing ||
         g_settings.display_crop_mode != old_settings.display_crop_mode ||
         g_settings.display_aspect_ratio != old_settings.display_aspect_ratio ||
         g_settings.display_alignment != old_settings.display_alignment ||

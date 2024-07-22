@@ -523,31 +523,10 @@ bool ImGuiManager::LoadFontData()
 
 ImFont* ImGuiManager::AddTextFont(float size)
 {
-  static const ImWchar default_ranges[] = {
-    // Basic Latin + Latin Supplement + Central European diacritics
-    0x0020,
-    0x017F,
-
-    // Cyrillic + Cyrillic Supplement
-    0x0400,
-    0x052F,
-
-    // Cyrillic Extended-A
-    0x2DE0,
-    0x2DFF,
-
-    // Cyrillic Extended-B
-    0xA640,
-    0xA69F,
-
-    0,
-  };
-
   ImFontConfig cfg;
   cfg.FontDataOwnedByAtlas = false;
-  return ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_standard_font_data.data(),
-                                                    static_cast<int>(s_standard_font_data.size()), size, &cfg,
-                                                    s_font_range.empty() ? default_ranges : s_font_range.data());
+  return ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
+    s_standard_font_data.data(), static_cast<int>(s_standard_font_data.size()), size, &cfg, s_font_range.data());
 }
 
 ImFont* ImGuiManager::AddFixedFont(float size)

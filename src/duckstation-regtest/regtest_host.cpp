@@ -117,6 +117,9 @@ bool RegTestHost::InitializeConfig()
   EmuFolders::LoadConfig(*s_base_settings_interface.get());
   EmuFolders::EnsureFoldersExist();
 
+  // imgui setup, make sure it doesn't bug out
+  ImGuiManager::SetFontPathAndRange(std::string(), {0x0020, 0x00FF});
+
   return true;
 }
 
