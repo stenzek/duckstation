@@ -353,6 +353,7 @@ template<bool IS_STEREO, bool IS_8BIT>
 static void DecodeXAADPCMChunks(const u8* chunk_ptr, s16* samples);
 template<bool STEREO, bool SAMPLE_RATE>
 static void ResampleXAADPCM(const s16* frames_in, u32 num_frames_in);
+static s16 ZigZagInterpolate(const s16* ringbuf, const s16* table, u8 p);
 
 static TinyString LBAToMSFString(CDImage::LBA lba);
 
@@ -3137,11 +3138,11 @@ static std::array<std::array<s16, 29>, 7> s_zigzag_table = {
     0x3C07,  0x53E0,  -0x16FA, 0x0AFA, -0x0548, 0x027B,  -0x00EB, 0x001A,  0x002B, -0x0023,
     0x0010,  -0x0008, 0x0002,  0x0,    0x0,     0x0,     0x0,     0x0,     0x0}}};
 
-static s16 ZigZagInterpolate(const s16* ringbuf, const s16* table, u8 p)
+ALWAYS_INLINE_RELEASE s16 CDROM::ZigZagInterpolate(const s16* ringbuf, const s16* table, u8 p)
 {
   s32 sum = 0;
   for (u8 i = 0; i < 29; i++)
-    sum += (s32(ringbuf[(p - i) & 0x1F]) * s32(table[i])) / 0x8000;
+    sum += (static_cast<s32>(ringbuf[(p - i) & 0x1F]) * static_cast<s32>(table[i])) >> 15;
 
   return static_cast<s16>(std::clamp<s32>(sum, -0x8000, 0x7FFF));
 }
