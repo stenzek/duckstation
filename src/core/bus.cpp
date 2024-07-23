@@ -1299,6 +1299,9 @@ void Bus::HWHandlers::MemCtrl2Write(PhysicalMemoryAddress address, u32 value)
 
   if (offset == 0x00)
   {
+    if (s_ram_size_reg != value)
+      DEV_LOG("RAM size register set to 0x{:08X}", value);
+
     s_ram_size_reg = value;
   }
   else
