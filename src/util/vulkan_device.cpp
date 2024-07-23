@@ -3318,10 +3318,9 @@ void VulkanDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUText
                        DIRTY_FLAG_INPUT_ATTACHMENT :
                        0);
   }
-
-  // TODO: This could use vkCmdClearAttachments() instead.
-  if (needs_rt_clear || needs_ds_clear)
+  else if (needs_rt_clear || needs_ds_clear)
   {
+    // TODO: This could use vkCmdClearAttachments() instead.
     if (InRenderPass())
       EndRenderPass();
   }

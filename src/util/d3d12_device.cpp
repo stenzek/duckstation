@@ -1659,22 +1659,45 @@ void D3D12Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTextu
 {
   DebugAssert(
     !(flags & (GPUPipeline::RenderPassFlag::ColorFeedbackLoop | GPUPipeline::RenderPassFlag::SampleDepthBuffer)));
+
+  const bool image_bind_changed = ((m_current_render_pass_flags ^ flags) & GPUPipeline::BindRenderTargetsAsImages);
+  bool changed =
+    (m_num_current_render_targets != num_rts || m_current_depth_target != ds || m_current_render_pass_flags != flags);
+  bool needs_ds_clear = (ds && ds->IsClearedOrInvalidated());
+  bool needs_rt_clear = false;
+
   if (InRenderPass())
     EndRenderPass();
 
   m_current_depth_target = static_cast<D3D12Texture*>(ds);
-  if (num_rts > 0)
-    std::memcpy(m_current_render_targets.data(), rts, sizeof(D3D12Texture*) * num_rts);
+  for (u32 i = 0; i < num_rts; i++)
+  {
+    D3D12Texture* const RT = static_cast<D3D12Texture*>(rts[i]);
+    changed |= m_current_render_targets[i] != RT;
+    m_current_render_targets[i] = RT;
+    needs_rt_clear |= RT->IsClearedOrInvalidated();
+  }
   for (u32 i = num_rts; i < m_num_current_render_targets; i++)
     m_current_render_targets[i] = nullptr;
-  m_num_current_render_targets = num_rts;
-
-  // Need a root signature change if switching to UAVs.
-  m_dirty_flags |=
-    ((m_current_render_pass_flags ^ flags) & GPUPipeline::BindRenderTargetsAsImages) ? LAYOUT_DEPENDENT_DIRTY_STATE : 0;
-  m_dirty_flags = (flags & GPUPipeline::BindRenderTargetsAsImages) ? (m_dirty_flags | DIRTY_FLAG_RT_UAVS) :
-                                                                     (m_dirty_flags & ~DIRTY_FLAG_RT_UAVS);
+  m_num_current_render_targets = Truncate8(num_rts);
   m_current_render_pass_flags = flags;
+
+  // Don't end render pass unless it's necessary.
+  if (changed)
+  {
+    if (InRenderPass())
+      EndRenderPass();
+
+    // Need a root signature change if switching to UAVs.
+    m_dirty_flags |= image_bind_changed ? LAYOUT_DEPENDENT_DIRTY_STATE : 0;
+    m_dirty_flags = (flags & GPUPipeline::BindRenderTargetsAsImages) ? (m_dirty_flags | DIRTY_FLAG_RT_UAVS) :
+                                                                       (m_dirty_flags & ~DIRTY_FLAG_RT_UAVS);
+  }
+  else if (needs_rt_clear || needs_ds_clear)
+  {
+    if (InRenderPass())
+      EndRenderPass();
+  }
 }
 
 void D3D12Device::BeginRenderPass()

@@ -338,7 +338,7 @@ private:
 
   D3D12Pipeline* m_current_pipeline = nullptr;
   D3D12_PRIMITIVE_TOPOLOGY m_current_topology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
-  u32 m_num_current_render_targets = 0;
+  u8 m_num_current_render_targets = 0;
   GPUPipeline::RenderPassFlag m_current_render_pass_flags = GPUPipeline::NoRenderPassFlags;
   std::array<D3D12Texture*, MAX_RENDER_TARGETS> m_current_render_targets = {};
   D3D12Texture* m_current_depth_target = nullptr;
