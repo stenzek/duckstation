@@ -110,7 +110,7 @@ if(ENABLE_OPENGL)
     target_link_libraries(util PRIVATE "opengl32.lib")
   endif()
 
-  if(LINUX OR FREEBSD OR ANDROID)
+  if(LINUX OR BSD OR ANDROID)
     target_sources(util PRIVATE
       opengl_context_egl.cpp
       opengl_context_egl.h
