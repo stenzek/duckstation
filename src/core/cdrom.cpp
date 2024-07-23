@@ -12,7 +12,6 @@
 #include "system.h"
 
 #include "util/cd_image.h"
-#include "util/cd_xa.h"
 #include "util/imgui_manager.h"
 #include "util/iso_reader.h"
 #include "util/state_wrapper.h"
@@ -42,6 +41,10 @@ enum : u32
   DATA_SECTOR_OUTPUT_SIZE = CDImage::DATA_SECTOR_SIZE,
   SECTOR_SYNC_SIZE = CDImage::SECTOR_SYNC_SIZE,
   SECTOR_HEADER_SIZE = CDImage::SECTOR_HEADER_SIZE,
+
+  XA_SUBHEADER_SIZE = 4,
+  XA_ADPCM_SAMPLES_PER_SECTOR_4BIT = 4032, // 28 words * 8 nibbles per word * 18 chunks
+  XA_ADPCM_SAMPLES_PER_SECTOR_8BIT = 2016, // 28 words * 4 bytes per word * 18 chunks
   XA_RESAMPLE_RING_BUFFER_SIZE = 32,
   XA_RESAMPLE_ZIGZAG_TABLE_SIZE = 29,
   XA_RESAMPLE_NUM_ZIGZAG_TABLES = 7,
@@ -214,6 +217,61 @@ union RequestRegister
   BitField<u8, bool, 7, 1> BFRD;
 };
 
+struct XASubHeader
+{
+  u8 file_number;
+  u8 channel_number;
+
+  union Submode
+  {
+    u8 bits;
+    BitField<u8, bool, 0, 1> eor;
+    BitField<u8, bool, 1, 1> video;
+    BitField<u8, bool, 2, 1> audio;
+    BitField<u8, bool, 3, 1> data;
+    BitField<u8, bool, 4, 1> trigger;
+    BitField<u8, bool, 5, 1> form2;
+    BitField<u8, bool, 6, 1> realtime;
+    BitField<u8, bool, 7, 1> eof;
+  } submode;
+
+  union Codinginfo
+  {
+    u8 bits;
+
+    BitField<u8, bool, 0, 1> mono_stereo;
+    BitField<u8, bool, 2, 1> sample_rate;
+    BitField<u8, bool, 4, 1> bits_per_sample;
+    BitField<u8, bool, 6, 1> emphasis;
+
+    ALWAYS_INLINE bool IsStereo() const { return mono_stereo; }
+    ALWAYS_INLINE bool IsHalfSampleRate() const { return sample_rate; }
+    ALWAYS_INLINE bool Is8BitADPCM() const { return bits_per_sample; }
+    u32 GetSamplesPerSector() const
+    {
+      return bits_per_sample ? XA_ADPCM_SAMPLES_PER_SECTOR_8BIT : XA_ADPCM_SAMPLES_PER_SECTOR_4BIT;
+    }
+  } codinginfo;
+};
+
+union XA_ADPCMBlockHeader
+{
+  u8 bits;
+
+  BitField<u8, u8, 0, 4> shift;
+  BitField<u8, u8, 4, 2> filter;
+
+  // For both 4bit and 8bit ADPCM, reserved shift values 13..15 will act same as shift=9).
+  u8 GetShift() const
+  {
+    const u8 shift_value = shift;
+    return (shift_value > 12) ? 9 : shift_value;
+  }
+
+  u8 GetFilter() const { return filter; }
+};
+static_assert(sizeof(XA_ADPCMBlockHeader) == 1, "XA-ADPCM block header is one byte");
+
 } // namespace
 
 static void SoftReset(TickCount ticks_late);
@@ -290,6 +348,9 @@ static void ResetAudioDecoder();
 static void ClearSectorBuffers();
 static void CheckForSectorBufferReadComplete();
 
+// Decodes XA-ADPCM samples in an audio sector. Stereo samples are interleaved with left first.
+template<bool IS_STEREO, bool IS_8BIT>
+static void DecodeXAADPCMChunks(const u8* chunk_ptr, s16* samples);
 template<bool STEREO, bool SAMPLE_RATE>
 static void ResampleXAADPCM(const s16* frames_in, u32 num_frames_in);
 
@@ -343,7 +404,7 @@ static u8 s_xa_current_channel_number = 0;
 static u8 s_xa_current_set = false;
 
 static CDImage::SectorHeader s_last_sector_header{};
-static CDXA::XASubHeader s_last_sector_subheader{};
+static XASubHeader s_last_sector_subheader{};
 static bool s_last_sector_header_valid = false; // TODO: Rename to "logical pause" or something.
 static CDImage::SubChannelQ s_last_subq{};
 static u8 s_last_cdda_report_frame_nibble = 0xFF;
@@ -3047,6 +3108,12 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessDataSector(const u8* raw_sector, const 
   SetAsyncInterrupt(Interrupt::DataReady);
 }
 
+static constexpr std::array<s8, 16> s_xa_adpcm_filter_table_pos = {
+  {0, 60, 115, 98, 122, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+
+static constexpr std::array<s8, 16> s_xa_adpcm_filter_table_neg = {
+  {0, 0, -52, -55, -60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+
 static std::array<std::array<s16, 29>, 7> s_zigzag_table = {
   {{0,      0x0,     0x0,     0x0,    0x0,     -0x0002, 0x000A,  -0x0022, 0x0041, -0x0054,
     0x0034, 0x0009,  -0x010A, 0x0400, -0x0A78, 0x234C,  0x6794,  -0x1780, 0x0BCD, -0x0623,
@@ -3106,17 +3173,67 @@ s16 CDROM::SaturateVolume(s32 volume)
   return static_cast<s16>((volume < -0x8000) ? -0x8000 : ((volume > 0x7FFF) ? 0x7FFF : volume));
 }
 
+template<bool IS_STEREO, bool IS_8BIT>
+void CDROM::DecodeXAADPCMChunks(const u8* chunk_ptr, s16* samples)
+{
+  // The data layout is annoying here. Each word of data is interleaved with the other blocks, requiring multiple
+  // passes to decode the whole chunk.
+  constexpr u32 NUM_CHUNKS = 18;
+  constexpr u32 CHUNK_SIZE_IN_BYTES = 128;
+  constexpr u32 WORDS_PER_CHUNK = 28;
+  constexpr u32 SAMPLES_PER_CHUNK = WORDS_PER_CHUNK * (IS_8BIT ? 4 : 8);
+  constexpr u32 NUM_BLOCKS = IS_8BIT ? 4 : 8;
+  constexpr u32 WORDS_PER_BLOCK = 28;
+
+  for (u32 i = 0; i < NUM_CHUNKS; i++)
+  {
+    const u8* headers_ptr = chunk_ptr + 4;
+    const u8* words_ptr = chunk_ptr + 16;
+
+    for (u32 block = 0; block < NUM_BLOCKS; block++)
+    {
+      const XA_ADPCMBlockHeader block_header{headers_ptr[block]};
+      const u8 shift = block_header.GetShift();
+      const u8 filter = block_header.GetFilter();
+      const s32 filter_pos = s_xa_adpcm_filter_table_pos[filter];
+      const s32 filter_neg = s_xa_adpcm_filter_table_neg[filter];
+
+      s16* out_samples_ptr =
+        IS_STEREO ? &samples[(block / 2) * (WORDS_PER_BLOCK * 2) + (block % 2)] : &samples[block * WORDS_PER_BLOCK];
+      constexpr u32 out_samples_increment = IS_STEREO ? 2 : 1;
+
+      for (u32 word = 0; word < 28; word++)
+      {
+        // NOTE: assumes LE
+        u32 word_data;
+        std::memcpy(&word_data, &words_ptr[word * sizeof(u32)], sizeof(word_data));
+
+        // extract nibble from block
+        const u32 nibble = IS_8BIT ? ((word_data >> (block * 8)) & 0xFF) : ((word_data >> (block * 4)) & 0x0F);
+        const s16 sample = static_cast<s16>(Truncate16(nibble << (IS_8BIT ? 8 : 12))) >> shift;
+
+        // mix in previous values
+        s32* prev = IS_STEREO ? &s_xa_last_samples[(block & 1) * 2] : &s_xa_last_samples[0];
+        const s32 interp_sample = std::clamp<s32>(
+          static_cast<s32>(sample) + ((prev[0] * filter_pos) >> 6) + ((prev[1] * filter_neg) >> 6), -32767, 32768);
+
+        // update previous values
+        prev[1] = prev[0];
+        prev[0] = interp_sample;
+
+        *out_samples_ptr = static_cast<s16>(interp_sample);
+        out_samples_ptr += out_samples_increment;
+      }
+    }
+
+    samples += SAMPLES_PER_CHUNK;
+    chunk_ptr += CHUNK_SIZE_IN_BYTES;
+  }
+}
+
 template<bool STEREO, bool SAMPLE_RATE>
 void CDROM::ResampleXAADPCM(const s16* frames_in, u32 num_frames_in)
 {
-  // Since the disc reads and SPU are running at different speeds, we might be _slightly_ behind, which is fine, since
-  // the SPU will over-read in the next batch to catch up.
-  if (s_audio_fifo.GetSize() > AUDIO_FIFO_LOW_WATERMARK)
-  {
-    DEV_LOG("Dropping {} XA frames because audio FIFO still has {} frames", num_frames_in, s_audio_fifo.GetSize());
-    return;
-  }
-
   s16* left_ringbuf = s_xa_resample_ring_buffer[0].data();
   s16* right_ringbuf = s_xa_resample_ring_buffer[1].data();
   u8 p = s_xa_resample_p;
@@ -3219,30 +3336,58 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessXAADPCMSector(const u8* raw_sector, con
   if (s_last_sector_subheader.submode.eof)
     ResetCurrentXAFile();
 
-  std::array<s16, CDXA::XA_ADPCM_SAMPLES_PER_SECTOR_4BIT> sample_buffer;
-  CDXA::DecodeADPCMSector(raw_sector, sample_buffer.data(), s_xa_last_samples.data());
+  // Ensure the SPU is caught up for the test below.
+  SPU::GeneratePendingSamples();
+
+  // Since the disc reads and SPU are running at different speeds, we might be _slightly_ behind, which is fine, since
+  // the SPU will over-read in the next batch to catch up. We also should not process the sector, because it'll affect
+  // the previous samples used for interpolation/ADPCM. Not doing so causes crackling audio in Simple 1500 Series Vol.
+  // 92 - The Tozan RPG - Ginrei no Hasha (Japan).
+  const u32 num_frames = s_last_sector_subheader.codinginfo.GetSamplesPerSector() >>
+                         BoolToUInt8(s_last_sector_subheader.codinginfo.IsStereo());
+  if (s_audio_fifo.GetSize() > AUDIO_FIFO_LOW_WATERMARK)
+  {
+    DEV_LOG("Dropping {} XA frames because audio FIFO still has {} frames", num_frames, s_audio_fifo.GetSize());
+    return;
+  }
+
+  // If muted, we still need to decode the data, to update the previous samples.
+  std::array<s16, XA_ADPCM_SAMPLES_PER_SECTOR_4BIT> sample_buffer;
+  const u8* xa_block_start =
+    raw_sector + CDImage::SECTOR_SYNC_SIZE + sizeof(CDImage::SectorHeader) + sizeof(XASubHeader) * 2;
+
+  if (s_last_sector_subheader.codinginfo.Is8BitADPCM())
+  {
+    if (s_last_sector_subheader.codinginfo.IsStereo())
+      DecodeXAADPCMChunks<true, true>(xa_block_start, sample_buffer.data());
+    else
+      DecodeXAADPCMChunks<false, true>(xa_block_start, sample_buffer.data());
+  }
+  else
+  {
+    if (s_last_sector_subheader.codinginfo.IsStereo())
+      DecodeXAADPCMChunks<true, false>(xa_block_start, sample_buffer.data());
+    else
+      DecodeXAADPCMChunks<false, false>(xa_block_start, sample_buffer.data());
+  }
 
   // Only send to SPU if we're not muted.
   if (s_muted || s_adpcm_muted || g_settings.cdrom_mute_cd_audio)
     return;
 
-  SPU::GeneratePendingSamples();
-
   if (s_last_sector_subheader.codinginfo.IsStereo())
   {
-    const u32 num_samples = s_last_sector_subheader.codinginfo.GetSamplesPerSector() / 2;
     if (s_last_sector_subheader.codinginfo.IsHalfSampleRate())
-      ResampleXAADPCM<true, true>(sample_buffer.data(), num_samples);
+      ResampleXAADPCM<true, true>(sample_buffer.data(), num_frames);
     else
-      ResampleXAADPCM<true, false>(sample_buffer.data(), num_samples);
+      ResampleXAADPCM<true, false>(sample_buffer.data(), num_frames);
   }
   else
   {
-    const u32 num_samples = s_last_sector_subheader.codinginfo.GetSamplesPerSector();
     if (s_last_sector_subheader.codinginfo.IsHalfSampleRate())
-      ResampleXAADPCM<false, true>(sample_buffer.data(), num_samples);
+      ResampleXAADPCM<false, true>(sample_buffer.data(), num_frames);
     else
-      ResampleXAADPCM<false, false>(sample_buffer.data(), num_samples);
+      ResampleXAADPCM<false, false>(sample_buffer.data(), num_frames);
   }
 }
 

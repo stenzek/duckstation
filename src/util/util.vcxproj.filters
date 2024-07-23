@@ -3,7 +3,6 @@
   <ItemGroup>
     <ClInclude Include="state_wrapper.h" />
     <ClInclude Include="audio_stream.h" />
-    <ClInclude Include="cd_xa.h" />
     <ClInclude Include="iso_reader.h" />
     <ClInclude Include="cd_image.h" />
     <ClInclude Include="cd_subchannel_replacement.h" />
@@ -77,7 +76,6 @@
     <ClCompile Include="state_wrapper.cpp" />
     <ClCompile Include="cd_image.cpp" />
     <ClCompile Include="audio_stream.cpp" />
-    <ClCompile Include="cd_xa.cpp" />
     <ClCompile Include="cd_image_cue.cpp" />
     <ClCompile Include="cd_image_bin.cpp" />
     <ClCompile Include="iso_reader.cpp" />
