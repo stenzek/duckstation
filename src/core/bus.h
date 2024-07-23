@@ -143,6 +143,7 @@ extern std::bitset<RAM_8MB_CODE_PAGE_COUNT> g_ram_code_bits;
 extern u8* g_ram;             // 2MB-8MB RAM
 extern u8* g_unprotected_ram; // RAM without page protection, use for debugger access.
 extern u32 g_ram_size;        // Active size of RAM.
+extern u32 g_ram_mapped_size; // Maximum mapped address for RAM, determined by RAM size register.
 extern u32 g_ram_mask;        // Active address bits for RAM.
 extern u8* g_bios;            // 512K BIOS ROM
 extern std::array<TickCount, 3> g_exp1_access_time;

@@ -506,7 +506,7 @@ ALWAYS_INLINE_RELEASE bool DMA::CheckForBusError(Channel channel, ChannelState& 
                                                  u32 size)
 {
   // Relying on a transfer partially happening at the end of RAM, then hitting a bus error would be pretty silly.
-  if ((address + size) > Bus::RAM_8MB_SIZE) [[unlikely]]
+  if ((address + size) >= Bus::g_ram_mapped_size) [[unlikely]]
   {
     DEBUG_LOG("DMA bus error on channel {} at address 0x{:08X} size {}", channel, address, size);
     cs.channel_control.enable_busy = false;

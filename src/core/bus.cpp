@@ -102,6 +102,14 @@ union MEMCTRL
     COMDELAY common_delay;
   };
 };
+
+union RAM_SIZE_REG
+{
+  u32 bits;
+
+  // All other bits unknown/unhandled.
+  BitField<u32, u8, 9, 3> memory_window;
+};
 } // namespace
 
 static void* s_shmem_handle = nullptr;
@@ -110,6 +118,7 @@ std::bitset<RAM_8MB_CODE_PAGE_COUNT> g_ram_code_bits{};
 u8* g_ram = nullptr;
 u8* g_unprotected_ram = nullptr;
 u32 g_ram_size = 0;
+u32 g_ram_mapped_size = 0;
 u32 g_ram_mask = 0;
 u8* g_bios = nullptr;
 void** g_memory_handlers = nullptr;
@@ -124,7 +133,7 @@ std::array<TickCount, 3> g_spu_access_time = {};
 static std::vector<u8> s_exp1_rom;
 
 static MEMCTRL s_MEMCTRL = {};
-static u32 s_ram_size_reg = 0;
+static RAM_SIZE_REG s_RAM_SIZE = {};
 
 static std::string s_tty_line_buffer;
 
@@ -147,6 +156,7 @@ static u8* GetLUTFastmemPointer(u32 address, u8* ram_ptr);
 static void SetRAMPageWritable(u32 page_index, bool writable);
 
 static void SetHandlers();
+static void UpdateMappedRAMSize();
 
 template<typename FP>
 static FP* OffsetHandlerArray(void** handlers, MemoryAccessSize size, MemoryAccessType type);
@@ -337,9 +347,15 @@ void Bus::Reset()
   s_MEMCTRL.cdrom_delay_size.bits = 0x00020843;
   s_MEMCTRL.exp2_delay_size.bits = 0x00070777;
   s_MEMCTRL.common_delay.bits = 0x00031125;
-  s_ram_size_reg = UINT32_C(0x00000B88);
   g_ram_code_bits = {};
   RecalculateMemoryTimings();
+
+  // Avoid remapping if unchanged.
+  if (s_RAM_SIZE.bits != 0x00000B88)
+  {
+    s_RAM_SIZE.bits = 0x00000B88;
+    UpdateMappedRAMSize();
+  }
 }
 
 void Bus::AddTTYCharacter(char ch)
@@ -397,7 +413,12 @@ bool Bus::DoState(StateWrapper& sw)
   }
 
   sw.DoArray(s_MEMCTRL.regs, countof(s_MEMCTRL.regs));
-  sw.Do(&s_ram_size_reg);
+
+  const RAM_SIZE_REG old_ram_size_reg = s_RAM_SIZE;
+  sw.Do(&s_RAM_SIZE.bits);
+  if (s_RAM_SIZE.memory_window != old_ram_size_reg.memory_window)
+    UpdateMappedRAMSize();
+
   sw.Do(&s_tty_line_buffer);
   return !sw.HasError();
 }
@@ -1281,7 +1302,7 @@ u32 Bus::HWHandlers::MemCtrl2Read(PhysicalMemoryAddress address)
   u32 value;
   if (offset == 0x00)
   {
-    value = s_ram_size_reg;
+    value = s_RAM_SIZE.bits;
   }
   else
   {
@@ -1299,10 +1320,16 @@ void Bus::HWHandlers::MemCtrl2Write(PhysicalMemoryAddress address, u32 value)
 
   if (offset == 0x00)
   {
-    if (s_ram_size_reg != value)
+    if (s_RAM_SIZE.bits != value)
+    {
       DEV_LOG("RAM size register set to 0x{:08X}", value);
 
-    s_ram_size_reg = value;
+      const RAM_SIZE_REG old_ram_size_reg = s_RAM_SIZE;
+      s_RAM_SIZE.bits = value;
+
+      if (s_RAM_SIZE.memory_window != old_ram_size_reg.memory_window)
+        UpdateMappedRAMSize();
+    }
   }
   else
   {
@@ -1641,6 +1668,11 @@ void Bus::HardwareWriteHandler(VirtualMemoryAddress address, u32 value)
 
 //////////////////////////////////////////////////////////////////////////
 
+static constexpr u32 KUSEG = 0;
+static constexpr u32 KSEG0 = 0x80000000U;
+static constexpr u32 KSEG1 = 0xA0000000U;
+static constexpr u32 KSEG2 = 0xC0000000U;
+
 void Bus::SetHandlers()
 {
   ClearHandlers(g_memory_handlers);
@@ -1654,11 +1686,6 @@ void Bus::SetHandlers()
 #define SETUC(start, size, read_handler, write_handler)                                                                \
   SET(g_memory_handlers, start, size, read_handler, write_handler);                                                    \
   SET(g_memory_handlers_isc, start, size, read_handler, write_handler)
-
-  static constexpr u32 KUSEG = 0;
-  static constexpr u32 KSEG0 = 0x80000000U;
-  static constexpr u32 KSEG1 = 0xA0000000U;
-  static constexpr u32 KSEG2 = 0xC0000000U;
 
   // KUSEG - Cached
   // Cache isolated appears to affect KUSEG+KSEG0.
@@ -1691,10 +1718,56 @@ void Bus::SetHandlers()
 
   // KSEG2 - Uncached - 0xFFFE0130
   SETUC(KSEG2 | 0xFFFE0000, 0x1000, CacheControlReadHandler, CacheControlWriteHandler);
+}
+
+void Bus::UpdateMappedRAMSize()
+{
+  switch (s_RAM_SIZE.memory_window)
+  {
+    case 4: // 2MB memory + 6MB unmapped
+    {
+      // Used by Rock-Climbing - Mitouhou e no Chousen - Alps Hen (Japan).
+      // By default, all 8MB is mapped, so we only need to remap the high 6MB.
+      constexpr u32 MAPPED_SIZE = RAM_2MB_SIZE;
+      constexpr u32 UNMAPPED_START = RAM_BASE + MAPPED_SIZE;
+      constexpr u32 UNMAPPED_SIZE = RAM_MIRROR_SIZE - MAPPED_SIZE;
+      SET(g_memory_handlers, KUSEG | UNMAPPED_START, UNMAPPED_SIZE, UnmappedReadHandler, UnmappedWriteHandler);
+      SET(g_memory_handlers, KSEG0 | UNMAPPED_START, UNMAPPED_SIZE, UnmappedReadHandler, UnmappedWriteHandler);
+      SET(g_memory_handlers, KSEG1 | UNMAPPED_START, UNMAPPED_SIZE, UnmappedReadHandler, UnmappedWriteHandler);
+      g_ram_mapped_size = MAPPED_SIZE;
+    }
+    break;
+
+    case 0: // 1MB memory + 7MB unmapped
+    case 1: // 4MB memory + 4MB unmapped
+    case 2: // 1MB memory + 1MB HighZ + 6MB unmapped
+    case 3: // 4MB memory + 4MB HighZ
+    case 6: // 2MB memory + 2MB HighZ + 4MB unmapped
+    case 7: // 8MB memory
+    {
+      // These aren't implemented because nothing is known to use them, so it can't be tested.
+      // If you find something that does, please let us know.
+      WARNING_LOG("Unhandled memory window 0x{} (register 0x{:08X}). Please report this game to developers.",
+                  s_RAM_SIZE.memory_window.GetValue(), s_RAM_SIZE.bits);
+    }
+      [[fallthrough]];
+
+    case 5: // 8MB memory
+    {
+      // We only unmap the upper 6MB above, so we only need to remap this as well.
+      constexpr u32 REMAP_START = RAM_BASE + RAM_2MB_SIZE;
+      constexpr u32 REMAP_SIZE = RAM_MIRROR_SIZE - RAM_2MB_SIZE;
+      SET(g_memory_handlers, KUSEG | REMAP_START, REMAP_SIZE, RAMReadHandler, RAMWriteHandler);
+      SET(g_memory_handlers, KSEG0 | REMAP_START, REMAP_SIZE, RAMReadHandler, RAMWriteHandler);
+      SET(g_memory_handlers, KSEG1 | REMAP_START, REMAP_SIZE, RAMReadHandler, RAMWriteHandler);
+      g_ram_mapped_size = RAM_8MB_SIZE;
+    }
+    break;
+  }
+}
 
 #undef SET
 #undef SETUC
-}
 
 void Bus::ClearHandlers(void** handlers)
 {
