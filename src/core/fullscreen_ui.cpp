@@ -4208,6 +4208,121 @@ void FullscreenUI::DrawDisplaySettingsPage()
     OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_TV, "GPU Adapter"), false, std::move(options), std::move(callback));
   }
 
+  const bool true_color_enabled = (is_hardware && GetEffectiveBoolSetting(bsi, "GPU", "TrueColor", false));
+  const bool pgxp_enabled = (is_hardware && GetEffectiveBoolSetting(bsi, "GPU", "PGXPEnable", false));
+  const bool texture_correction_enabled =
+    (pgxp_enabled && GetEffectiveBoolSetting(bsi, "GPU", "PGXPTextureCorrection", true));
+
+  MenuHeading(FSUI_CSTR("Rendering"));
+
+  if (is_hardware)
+  {
+    DrawIntListSetting(
+      bsi, FSUI_CSTR("Internal Resolution"),
+      FSUI_CSTR("Scales internal VRAM resolution by the specified multiplier. Some games require 1x VRAM resolution."),
+      "GPU", "ResolutionScale", 1, resolution_scales.data(), resolution_scales.size(), true, 0);
+
+    DrawEnumSetting(bsi, FSUI_CSTR("Downsampling"),
+                    FSUI_CSTR("Downsamples the rendered image prior to displaying it. Can improve "
+                              "overall image quality in mixed 2D/3D games."),
+                    "GPU", "DownsampleMode", Settings::DEFAULT_GPU_DOWNSAMPLE_MODE, &Settings::ParseDownsampleModeName,
+                    &Settings::GetDownsampleModeName, &Settings::GetDownsampleModeDisplayName, GPUDownsampleMode::Count,
+                    (renderer != GPURenderer::Software));
+    if (Settings::ParseDownsampleModeName(
+          GetEffectiveTinyStringSetting(bsi, "GPU", "DownsampleMode",
+                                        Settings::GetDownsampleModeName(Settings::DEFAULT_GPU_DOWNSAMPLE_MODE))
+            .c_str())
+          .value_or(Settings::DEFAULT_GPU_DOWNSAMPLE_MODE) == GPUDownsampleMode::Box)
+    {
+      DrawIntRangeSetting(bsi, FSUI_CSTR("Downsampling Display Scale"),
+                          FSUI_CSTR("Selects the resolution scale that will be applied to the final image. 1x will "
+                                    "downsample to the original console resolution."),
+                          "GPU", "DownsampleScale", 1, 1, GPU::MAX_RESOLUTION_SCALE, "%dx");
+    }
+
+    DrawEnumSetting(bsi, FSUI_CSTR("Texture Filtering"),
+                    FSUI_CSTR("Smooths out the blockiness of magnified textures on 3D objects."), "GPU",
+                    "TextureFilter", Settings::DEFAULT_GPU_TEXTURE_FILTER, &Settings::ParseTextureFilterName,
+                    &Settings::GetTextureFilterName, &Settings::GetTextureFilterDisplayName, GPUTextureFilter::Count);
+
+    DrawEnumSetting(bsi, FSUI_CSTR("Sprite Texture Filtering"),
+                    FSUI_CSTR("Smooths out the blockiness of magnified textures on 2D objects."), "GPU",
+                    "SpriteTextureFilter", Settings::DEFAULT_GPU_TEXTURE_FILTER, &Settings::ParseTextureFilterName,
+                    &Settings::GetTextureFilterName, &Settings::GetTextureFilterDisplayName, GPUTextureFilter::Count);
+  }
+
+  DrawEnumSetting(bsi, FSUI_CSTR("Aspect Ratio"),
+                  FSUI_CSTR("Changes the aspect ratio used to display the console's output to the screen."), "Display",
+                  "AspectRatio", Settings::DEFAULT_DISPLAY_ASPECT_RATIO, &Settings::ParseDisplayAspectRatio,
+                  &Settings::GetDisplayAspectRatioName, &Settings::GetDisplayAspectRatioDisplayName,
+                  DisplayAspectRatio::Count);
+
+  DrawEnumSetting(
+    bsi, FSUI_CSTR("Deinterlacing Mode"),
+    FSUI_CSTR(
+      "Determines which algorithm is used to convert interlaced frames to progressive for display on your system."),
+    "Display", "DeinterlacingMode", Settings::DEFAULT_DISPLAY_DEINTERLACING_MODE,
+    &Settings::ParseDisplayDeinterlacingMode, &Settings::GetDisplayDeinterlacingModeName,
+    &Settings::GetDisplayDeinterlacingModeDisplayName, DisplayDeinterlacingMode::Count);
+
+  DrawEnumSetting(bsi, FSUI_CSTR("Crop Mode"),
+                  FSUI_CSTR("Determines how much of the area typically not visible on a consumer TV set to crop/hide."),
+                  "Display", "CropMode", Settings::DEFAULT_DISPLAY_CROP_MODE, &Settings::ParseDisplayCropMode,
+                  &Settings::GetDisplayCropModeName, &Settings::GetDisplayCropModeDisplayName, DisplayCropMode::Count);
+
+  DrawEnumSetting(
+    bsi, FSUI_CSTR("Scaling"),
+    FSUI_CSTR("Determines how the emulated console's output is upscaled or downscaled to your monitor's resolution."),
+    "Display", "Scaling", Settings::DEFAULT_DISPLAY_SCALING, &Settings::ParseDisplayScaling,
+    &Settings::GetDisplayScalingName, &Settings::GetDisplayScalingDisplayName, DisplayScalingMode::Count);
+
+  if (is_hardware)
+  {
+    DrawToggleSetting(bsi, FSUI_CSTR("True Color Rendering"),
+                      FSUI_CSTR("Disables dithering and uses the full 8 bits per channel of color information."), "GPU",
+                      "TrueColor", true);
+  }
+
+  DrawToggleSetting(bsi, FSUI_CSTR("Widescreen Rendering"),
+                    FSUI_CSTR("Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games."),
+                    "GPU", "WidescreenHack", false);
+
+  if (is_hardware)
+  {
+    DrawToggleSetting(
+      bsi, FSUI_CSTR("PGXP Geometry Correction"),
+      FSUI_CSTR("Reduces \"wobbly\" polygons by attempting to preserve the fractional component through memory "
+                "transfers."),
+      "GPU", "PGXPEnable", false);
+
+    DrawToggleSetting(bsi, FSUI_CSTR("PGXP Depth Buffer"),
+                      FSUI_CSTR("Reduces polygon Z-fighting through depth testing. Low compatibility with games."),
+                      "GPU", "PGXPDepthBuffer", false, pgxp_enabled && texture_correction_enabled);
+  }
+
+  DrawToggleSetting(
+    bsi, FSUI_CSTR("Force 4:3 For FMVs"),
+    FSUI_CSTR("Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs."), "Display",
+    "Force4_3For24Bit", false);
+
+  DrawToggleSetting(bsi, FSUI_CSTR("FMV Chroma Smoothing"),
+                    FSUI_CSTR("Smooths out blockyness between colour transitions in 24-bit content, usually FMVs."),
+                    "GPU", "ChromaSmoothing24Bit", false);
+
+  DrawToggleSetting(
+    bsi, FSUI_CSTR("Disable Interlacing"),
+    FSUI_CSTR("Disables interlaced rendering and display in the GPU. Some games can render in 480p this way, "
+              "but others will break."),
+    "GPU", "DisableInterlacing", true);
+
+  DrawToggleSetting(
+    bsi, FSUI_CSTR("Force NTSC Timings"),
+    FSUI_CSTR("Forces PAL games to run at NTSC timings, i.e. 60hz. Some PAL games will run at their \"normal\" "
+              "speeds, while others will break."),
+    "GPU", "ForceNTSCTimings", false);
+
+  MenuHeading(FSUI_CSTR("Advanced"));
+
   std::optional<SmallString> strvalue = bsi->GetOptionalSmallStringValue(
     "GPU", "FullscreenMode", game_settings ? std::nullopt : std::optional<const char*>(""));
 
@@ -4272,6 +4387,68 @@ void FullscreenUI::DrawDisplaySettingsPage()
     OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_TV, "Fullscreen Resolution"), false, std::move(options), std::move(callback));
   }
 
+  DrawEnumSetting(bsi, FSUI_CSTR("Screen Position"),
+                  FSUI_CSTR("Determines the position on the screen when black borders must be added."), "Display",
+                  "Alignment", Settings::DEFAULT_DISPLAY_ALIGNMENT, &Settings::ParseDisplayAlignment,
+                  &Settings::GetDisplayAlignmentName, &Settings::GetDisplayAlignmentDisplayName,
+                  DisplayAlignment::Count);
+
+  if (is_hardware)
+  {
+    DrawEnumSetting(bsi, FSUI_CSTR("Line Detection"),
+                    FSUI_CSTR("Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization "
+                              "behavior, filling in gaps introduced by upscaling."),
+                    "GPU", "LineDetectMode", Settings::DEFAULT_GPU_LINE_DETECT_MODE, &Settings::ParseLineDetectModeName,
+                    &Settings::GetLineDetectModeName, &Settings::GetLineDetectModeDisplayName, GPULineDetectMode::Count,
+                    resolution_scale > 1);
+
+    DrawToggleSetting(
+      bsi, FSUI_CSTR("True Color Debanding"),
+      FSUI_CSTR("Applies modern dithering techniques to further smooth out gradients when true color is enabled."),
+      "GPU", "Debanding", false, true_color_enabled);
+
+    DrawToggleSetting(
+      bsi, FSUI_CSTR("Scaled Dithering"),
+      FSUI_CSTR("Scales the dithering pattern with the internal rendering resolution, making it less noticeable. "
+                "Usually safe to enable."),
+      "GPU", "ScaledDithering", true, !true_color_enabled);
+
+    DrawToggleSetting(bsi, FSUI_CSTR("Accurate Blending"),
+                      FSUI_CSTR("Forces blending to be done in the shader at 16-bit precision, when not using true "
+                                "color. Non-trivial performance impact, and unnecessary for most games."),
+                      "GPU", "AccurateBlending", false, !true_color_enabled);
+
+    const GPUTextureFilter texture_filtering =
+      Settings::ParseTextureFilterName(
+        GetEffectiveTinyStringSetting(bsi, "GPU", "TextureFilter",
+                                      Settings::GetTextureFilterName(Settings::DEFAULT_GPU_TEXTURE_FILTER)))
+        .value_or(Settings::DEFAULT_GPU_TEXTURE_FILTER);
+
+    DrawToggleSetting(
+      bsi, FSUI_CSTR("Round Upscaled Texture Coordinates"),
+      FSUI_CSTR("Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned "
+                "textures in some games, but break others, and is incompatible with texture filtering."),
+      "GPU", "ForceRoundTextureCoordinates", false,
+      resolution_scale > 1 && texture_filtering == GPUTextureFilter::Nearest);
+
+    DrawToggleSetting(
+      bsi, FSUI_CSTR("Use Software Renderer For Readbacks"),
+      FSUI_CSTR("Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result "
+                "in greater performance."),
+      "GPU", "UseSoftwareRendererForReadbacks", false);
+  }
+
+  DrawToggleSetting(
+    bsi, FSUI_CSTR("Stretch Display Vertically"),
+    FSUI_CSTR("Stretches the display to match the aspect ratio by multiplying vertically instead of horizontally."),
+    "Display", "StretchVertically", false);
+
+  DrawToggleSetting(
+    bsi, FSUI_CSTR("Disable Mailbox Presentation"),
+    FSUI_CSTR("Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. "
+              "Usually results in worse frame pacing."),
+    "Display", "DisableMailboxPresentation", false);
+
   switch (renderer)
   {
 #ifdef _WIN32
@@ -4307,174 +4484,9 @@ void FullscreenUI::DrawDisplaySettingsPage()
       break;
   }
 
-  DrawToggleSetting(
-    bsi, FSUI_CSTR("Disable Mailbox Presentation"),
-    FSUI_CSTR("Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. "
-              "Usually results in worse frame pacing."),
-    "Display", "DisableMailboxPresentation", false);
-
-  if (renderer != GPURenderer::Software)
+  if (is_hardware && pgxp_enabled)
   {
-    DrawToggleSetting(
-      bsi, FSUI_CSTR("Use Software Renderer For Readbacks"),
-      FSUI_CSTR("Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result "
-                "in greater performance."),
-      "GPU", "UseSoftwareRendererForReadbacks", false);
-  }
-
-  if (is_hardware)
-  {
-    MenuHeading(FSUI_CSTR("Rendering"));
-
-    DrawIntListSetting(
-      bsi, FSUI_CSTR("Internal Resolution"),
-      FSUI_CSTR("Scales internal VRAM resolution by the specified multiplier. Some games require 1x VRAM resolution."),
-      "GPU", "ResolutionScale", 1, resolution_scales.data(), resolution_scales.size(), true, 0);
-
-    DrawEnumSetting(bsi, FSUI_CSTR("Texture Filtering"),
-                    FSUI_CSTR("Smooths out the blockiness of magnified textures on 3D objects."), "GPU",
-                    "TextureFilter", Settings::DEFAULT_GPU_TEXTURE_FILTER, &Settings::ParseTextureFilterName,
-                    &Settings::GetTextureFilterName, &Settings::GetTextureFilterDisplayName, GPUTextureFilter::Count);
-
-    DrawEnumSetting(bsi, FSUI_CSTR("Sprite Texture Filtering"),
-                    FSUI_CSTR("Smooths out the blockiness of magnified textures on 2D objects."), "GPU",
-                    "SpriteTextureFilter", Settings::DEFAULT_GPU_TEXTURE_FILTER, &Settings::ParseTextureFilterName,
-                    &Settings::GetTextureFilterName, &Settings::GetTextureFilterDisplayName, GPUTextureFilter::Count);
-
-    DrawEnumSetting(bsi, FSUI_CSTR("Line Detection"),
-                    FSUI_CSTR("Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization "
-                              "behavior, filling in gaps introduced by upscaling."),
-                    "GPU", "LineDetectMode", Settings::DEFAULT_GPU_LINE_DETECT_MODE, &Settings::ParseLineDetectModeName,
-                    &Settings::GetLineDetectModeName, &Settings::GetLineDetectModeDisplayName, GPULineDetectMode::Count,
-                    resolution_scale > 1);
-
-    DrawToggleSetting(bsi, FSUI_CSTR("True Color Rendering"),
-                      FSUI_CSTR("Disables dithering and uses the full 8 bits per channel of color information."), "GPU",
-                      "TrueColor", true);
-
-    DrawToggleSetting(
-      bsi, FSUI_CSTR("True Color Debanding"),
-      FSUI_CSTR("Applies modern dithering techniques to further smooth out gradients when true color is enabled."),
-      "GPU", "Debanding", false, bsi->GetBoolValue("GPU", "TrueColor", false));
-
-    DrawToggleSetting(bsi, FSUI_CSTR("Widescreen Hack"),
-                      FSUI_CSTR("Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games."),
-                      "GPU", "WidescreenHack", false);
-
-    DrawToggleSetting(
-      bsi, FSUI_CSTR("PGXP Geometry Correction"),
-      FSUI_CSTR("Reduces \"wobbly\" polygons by attempting to preserve the fractional component through memory "
-                "transfers."),
-      "GPU", "PGXPEnable", false);
-  }
-
-  MenuHeading(FSUI_CSTR("Screen Display"));
-
-  DrawEnumSetting(bsi, FSUI_CSTR("Aspect Ratio"),
-                  FSUI_CSTR("Changes the aspect ratio used to display the console's output to the screen."), "Display",
-                  "AspectRatio", Settings::DEFAULT_DISPLAY_ASPECT_RATIO, &Settings::ParseDisplayAspectRatio,
-                  &Settings::GetDisplayAspectRatioName, &Settings::GetDisplayAspectRatioDisplayName,
-                  DisplayAspectRatio::Count);
-
-  DrawEnumSetting(
-    bsi, FSUI_CSTR("Deinterlacing Mode"),
-    FSUI_CSTR(
-      "Determines which algorithm is used to convert interlaced frames to progressive for display on your system."),
-    "Display", "DeinterlacingMode", Settings::DEFAULT_DISPLAY_DEINTERLACING_MODE,
-    &Settings::ParseDisplayDeinterlacingMode, &Settings::GetDisplayDeinterlacingModeName,
-    &Settings::GetDisplayDeinterlacingModeDisplayName, DisplayDeinterlacingMode::Count);
-
-  DrawEnumSetting(bsi, FSUI_CSTR("Crop Mode"),
-                  FSUI_CSTR("Determines how much of the area typically not visible on a consumer TV set to crop/hide."),
-                  "Display", "CropMode", Settings::DEFAULT_DISPLAY_CROP_MODE, &Settings::ParseDisplayCropMode,
-                  &Settings::GetDisplayCropModeName, &Settings::GetDisplayCropModeDisplayName, DisplayCropMode::Count);
-
-  DrawEnumSetting(
-    bsi, FSUI_CSTR("Position"), FSUI_CSTR("Determines the position on the screen when black borders must be added."),
-    "Display", "Alignment", Settings::DEFAULT_DISPLAY_ALIGNMENT, &Settings::ParseDisplayAlignment,
-    &Settings::GetDisplayAlignmentName, &Settings::GetDisplayAlignmentDisplayName, DisplayAlignment::Count);
-
-  DrawEnumSetting(bsi, FSUI_CSTR("Downsampling"),
-                  FSUI_CSTR("Downsamples the rendered image prior to displaying it. Can improve "
-                            "overall image quality in mixed 2D/3D games."),
-                  "GPU", "DownsampleMode", Settings::DEFAULT_GPU_DOWNSAMPLE_MODE, &Settings::ParseDownsampleModeName,
-                  &Settings::GetDownsampleModeName, &Settings::GetDownsampleModeDisplayName, GPUDownsampleMode::Count,
-                  (renderer != GPURenderer::Software));
-  if (Settings::ParseDownsampleModeName(
-        GetEffectiveTinyStringSetting(bsi, "GPU", "DownsampleMode",
-                                      Settings::GetDownsampleModeName(Settings::DEFAULT_GPU_DOWNSAMPLE_MODE))
-          .c_str())
-        .value_or(Settings::DEFAULT_GPU_DOWNSAMPLE_MODE) == GPUDownsampleMode::Box)
-  {
-    DrawIntRangeSetting(bsi, FSUI_CSTR("Downsampling Display Scale"),
-                        FSUI_CSTR("Selects the resolution scale that will be applied to the final image. 1x will "
-                                  "downsample to the original console resolution."),
-                        "GPU", "DownsampleScale", 1, 1, GPU::MAX_RESOLUTION_SCALE, "%dx");
-  }
-
-  DrawEnumSetting(
-    bsi, FSUI_CSTR("Scaling"),
-    FSUI_CSTR("Determines how the emulated console's output is upscaled or downscaled to your monitor's resolution."),
-    "Display", "Scaling", Settings::DEFAULT_DISPLAY_SCALING, &Settings::ParseDisplayScaling,
-    &Settings::GetDisplayScalingName, &Settings::GetDisplayScalingDisplayName, DisplayScalingMode::Count);
-
-  DrawEnumSetting(bsi, FSUI_CSTR("Screenshot Size"),
-                  FSUI_CSTR("Determines the size of screenshots created by DuckStation."), "Display", "ScreenshotMode",
-                  Settings::DEFAULT_DISPLAY_SCREENSHOT_MODE, &Settings::ParseDisplayScreenshotMode,
-                  &Settings::GetDisplayScreenshotModeName, &Settings::GetDisplayScreenshotModeDisplayName,
-                  DisplayScreenshotMode::Count);
-  DrawEnumSetting(bsi, FSUI_CSTR("Screenshot Format"),
-                  FSUI_CSTR("Determines the format that screenshots will be saved/compressed with."), "Display",
-                  "ScreenshotFormat", Settings::DEFAULT_DISPLAY_SCREENSHOT_FORMAT,
-                  &Settings::ParseDisplayScreenshotFormat, &Settings::GetDisplayScreenshotFormatName,
-                  &Settings::GetDisplayScreenshotFormatDisplayName, DisplayScreenshotFormat::Count);
-  DrawIntRangeSetting(bsi, FSUI_CSTR("Screenshot Quality"),
-                      FSUI_CSTR("Selects the quality at which screenshots will be compressed."), "Display",
-                      "ScreenshotQuality", Settings::DEFAULT_DISPLAY_SCREENSHOT_QUALITY, 1, 100, "%d%%");
-
-  MenuHeading(FSUI_CSTR("Enhancements"));
-  DrawToggleSetting(
-    bsi, FSUI_CSTR("Disable Interlacing"),
-    FSUI_CSTR("Disables interlaced rendering and display in the GPU. Some games can render in 480p this way, "
-              "but others will break."),
-    "GPU", "DisableInterlacing", true);
-  DrawToggleSetting(
-    bsi, FSUI_CSTR("Force NTSC Timings"),
-    FSUI_CSTR("Forces PAL games to run at NTSC timings, i.e. 60hz. Some PAL games will run at their \"normal\" "
-              "speeds, while others will break."),
-    "GPU", "ForceNTSCTimings", false);
-  DrawToggleSetting(
-    bsi, FSUI_CSTR("Force 4:3 For 24-Bit Display"),
-    FSUI_CSTR("Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs."), "Display",
-    "Force4_3For24Bit", false);
-
-  if (is_hardware)
-  {
-    const GPUTextureFilter texture_filtering =
-      Settings::ParseTextureFilterName(
-        GetEffectiveTinyStringSetting(bsi, "GPU", "TextureFilter",
-                                      Settings::GetTextureFilterName(Settings::DEFAULT_GPU_TEXTURE_FILTER)))
-        .value_or(Settings::DEFAULT_GPU_TEXTURE_FILTER);
-
-    DrawToggleSetting(
-      bsi, FSUI_CSTR("Scaled Dithering"),
-      FSUI_CSTR("Scales the dithering pattern with the internal rendering resolution, making it less noticeable. "
-                "Usually safe to enable."),
-      "GPU", "ScaledDithering", true, resolution_scale > 1);
-    DrawToggleSetting(bsi, FSUI_CSTR("Chroma Smoothing For 24-Bit Display"),
-                      FSUI_CSTR("Smooths out blockyness between colour transitions in 24-bit content, usually FMVs."),
-                      "GPU", "ChromaSmoothing24Bit", false);
-    DrawToggleSetting(
-      bsi, FSUI_CSTR("Round Upscaled Texture Coordinates"),
-      FSUI_CSTR("Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned "
-                "textures in some games, but break others, and is incompatible with texture filtering."),
-      "GPU", "ForceRoundTextureCoordinates", false,
-      resolution_scale > 1 && texture_filtering == GPUTextureFilter::Nearest);
-
     MenuHeading(FSUI_CSTR("PGXP (Precision Geometry Transform Pipeline)"));
-
-    const bool pgxp_enabled = GetEffectiveBoolSetting(bsi, "GPU", "PGXPEnable", false);
-    const bool texture_correction_enabled = GetEffectiveBoolSetting(bsi, "GPU", "PGXPTextureCorrection", true);
 
     DrawToggleSetting(
       bsi, FSUI_CSTR("Perspective Correct Textures"),
@@ -4492,22 +4504,67 @@ void FullscreenUI::DrawDisplaySettingsPage()
       bsi, FSUI_CSTR("Preserve Projection Precision"),
       FSUI_CSTR("Adds additional precision to PGXP data post-projection. May improve visuals in some games."), "GPU",
       "PGXPPreserveProjFP", false, pgxp_enabled);
-    DrawToggleSetting(bsi, FSUI_CSTR("Depth Buffer"),
-                      FSUI_CSTR("Reduces polygon Z-fighting through depth testing. Low compatibility with games."),
-                      "GPU", "PGXPDepthBuffer", false, pgxp_enabled && texture_correction_enabled);
+
     DrawToggleSetting(bsi, FSUI_CSTR("CPU Mode"),
                       FSUI_CSTR("Uses PGXP for all instructions, not just memory operations."), "GPU", "PGXPCPU", false,
                       pgxp_enabled);
 
-    MenuHeading(FSUI_CSTR("Texture Replacements"));
+    DrawToggleSetting(bsi, FSUI_CSTR("Vertex Cache"),
+                      FSUI_CSTR("Uses screen positions to resolve PGXP data. May improve visuals in some games."),
+                      "GPU", "PGXPVertexCache", pgxp_enabled);
 
-    DrawToggleSetting(bsi, FSUI_CSTR("Enable VRAM Write Texture Replacement"),
-                      FSUI_CSTR("Enables the replacement of background textures in supported games."),
-                      "TextureReplacements", "EnableVRAMWriteReplacements", false);
-    DrawToggleSetting(bsi, FSUI_CSTR("Preload Replacement Textures"),
-                      FSUI_CSTR("Loads all replacement texture to RAM, reducing stuttering at runtime."),
-                      "TextureReplacements", "PreloadTextures", false);
+    DrawToggleSetting(
+      bsi, FSUI_CSTR("Disable on 2D Polygons"),
+      FSUI_CSTR("Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can "
+                "fix misaligned UI in some games, but otherwise should be left disabled."),
+      "GPU", "PGXPDisableOn2DPolygons", false, pgxp_enabled);
+
+    DrawFloatRangeSetting(
+      bsi, FSUI_CSTR("Geometry Tolerance"),
+      FSUI_CSTR("Sets a threshold for discarding precise values when exceeded. May help with glitches in some games."),
+      "GPU", "PGXPTolerance", -1.0f, -1.0f, 10.0f, "%.1f", pgxp_enabled);
+
+    DrawFloatRangeSetting(
+      bsi, FSUI_CSTR("Depth Clear Threshold"),
+      FSUI_CSTR("Sets a threshold for discarding the emulated depth buffer. May help in some games."), "GPU",
+      "PGXPDepthBuffer", Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD, 0.0f, 4096.0f, "%.1f", pgxp_enabled);
   }
+
+  MenuHeading(FSUI_CSTR("Capture"));
+
+  DrawEnumSetting(bsi, FSUI_CSTR("Screenshot Size"),
+                  FSUI_CSTR("Determines the size of screenshots created by DuckStation."), "Display", "ScreenshotMode",
+                  Settings::DEFAULT_DISPLAY_SCREENSHOT_MODE, &Settings::ParseDisplayScreenshotMode,
+                  &Settings::GetDisplayScreenshotModeName, &Settings::GetDisplayScreenshotModeDisplayName,
+                  DisplayScreenshotMode::Count);
+  DrawEnumSetting(bsi, FSUI_CSTR("Screenshot Format"),
+                  FSUI_CSTR("Determines the format that screenshots will be saved/compressed with."), "Display",
+                  "ScreenshotFormat", Settings::DEFAULT_DISPLAY_SCREENSHOT_FORMAT,
+                  &Settings::ParseDisplayScreenshotFormat, &Settings::GetDisplayScreenshotFormatName,
+                  &Settings::GetDisplayScreenshotFormatDisplayName, DisplayScreenshotFormat::Count);
+  DrawIntRangeSetting(bsi, FSUI_CSTR("Screenshot Quality"),
+                      FSUI_CSTR("Selects the quality at which screenshots will be compressed."), "Display",
+                      "ScreenshotQuality", Settings::DEFAULT_DISPLAY_SCREENSHOT_QUALITY, 1, 100, "%d%%");
+
+  MenuHeading(FSUI_CSTR("Texture Replacements"));
+
+  DrawToggleSetting(bsi, FSUI_CSTR("Enable VRAM Write Texture Replacement"),
+                    FSUI_CSTR("Enables the replacement of background textures in supported games."),
+                    "TextureReplacements", "EnableVRAMWriteReplacements", false);
+  DrawToggleSetting(bsi, FSUI_CSTR("Preload Replacement Textures"),
+                    FSUI_CSTR("Loads all replacement texture to RAM, reducing stuttering at runtime."),
+                    "TextureReplacements", "PreloadTextures", false);
+  DrawToggleSetting(bsi, FSUI_CSTR("Use Old MDEC Routines"),
+                    FSUI_CSTR("Enables the older, less accurate MDEC decoding routines. May be required for old "
+                              "replacement backgrounds to match/load."),
+                    "Hacks", "UseOldMDECRoutines", false);
+
+  DrawToggleSetting(bsi, FSUI_CSTR("Dump Replaceable VRAM Writes"),
+                    FSUI_CSTR("Writes textures which can be replaced to the dump directory."), "TextureReplacements",
+                    "DumpVRAMWrites", false);
+  DrawToggleSetting(bsi, FSUI_CSTR("Set VRAM Write Dump Alpha Channel"),
+                    FSUI_CSTR("Clears the mask/transparency bit in VRAM write dumps."), "TextureReplacements",
+                    "DumpVRAMWriteForceAlphaChannel", true);
 
   EndMenuButtons();
 }
@@ -5140,44 +5197,11 @@ void FullscreenUI::DrawAdvancedSettingsPage()
   DrawToggleSetting(bsi, FSUI_CSTR("Show Enhancement Settings"),
                     FSUI_CSTR("Shows enhancement settings in the bottom-right corner of the screen."), "Display",
                     "ShowEnhancements", false);
-  DrawToggleSetting(
-    bsi, FSUI_CSTR("Stretch Display Vertically"),
-    FSUI_CSTR("Stretches the display to match the aspect ratio by multiplying vertically instead of horizontally."),
-    "Display", "StretchVertically", false);
   DrawEnumSetting(bsi, FSUI_CSTR("Wireframe Rendering"),
                   FSUI_CSTR("Overlays or replaces normal triangle drawing with a wireframe/line view."), "GPU",
                   "WireframeMode", GPUWireframeMode::Disabled, &Settings::ParseGPUWireframeMode,
                   &Settings::GetGPUWireframeModeName, &Settings::GetGPUWireframeModeDisplayName,
                   GPUWireframeMode::Count);
-
-  MenuHeading(FSUI_CSTR("PGXP Settings"));
-
-  const bool pgxp_enabled = GetEffectiveBoolSetting(bsi, "GPU", "PGXPEnable", false);
-
-  DrawToggleSetting(bsi, FSUI_CSTR("Enable PGXP Vertex Cache"),
-                    FSUI_CSTR("Uses screen positions to resolve PGXP data. May improve visuals in some games."), "GPU",
-                    "PGXPVertexCache", pgxp_enabled);
-  DrawToggleSetting(bsi, FSUI_CSTR("Disable PGXP on 2D Polygons"),
-                    FSUI_CSTR("Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can "
-                              "fix misaligned UI in some games, but otherwise should be left disabled."),
-                    "GPU", "PGXPDisableOn2DPolygons", false, pgxp_enabled);
-  DrawFloatRangeSetting(
-    bsi, FSUI_CSTR("PGXP Geometry Tolerance"),
-    FSUI_CSTR("Sets a threshold for discarding precise values when exceeded. May help with glitches in some games."),
-    "GPU", "PGXPTolerance", -1.0f, -1.0f, 10.0f, "%.1f", pgxp_enabled);
-  DrawFloatRangeSetting(bsi, FSUI_CSTR("PGXP Depth Clear Threshold"),
-                        FSUI_CSTR("Sets a threshold for discarding the emulated depth buffer. May help in some games."),
-                        "GPU", "PGXPDepthBuffer", Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD, 0.0f, 4096.0f, "%.1f",
-                        pgxp_enabled);
-
-  MenuHeading(FSUI_CSTR("Texture Dumping"));
-
-  DrawToggleSetting(bsi, FSUI_CSTR("Dump Replaceable VRAM Writes"),
-                    FSUI_CSTR("Writes textures which can be replaced to the dump directory."), "TextureReplacements",
-                    "DumpVRAMWrites", false);
-  DrawToggleSetting(bsi, FSUI_CSTR("Set VRAM Write Dump Alpha Channel"),
-                    FSUI_CSTR("Clears the mask/transparency bit in VRAM write dumps."), "TextureReplacements",
-                    "DumpVRAMWriteForceAlphaChannel", true);
 
   MenuHeading(FSUI_CSTR("CPU Emulation"));
 
@@ -7229,6 +7253,7 @@ TRANSLATE_NOOP("FullscreenUI", "A resume save state created at %s was found.\n\n
 TRANSLATE_NOOP("FullscreenUI", "About");
 TRANSLATE_NOOP("FullscreenUI", "About DuckStation");
 TRANSLATE_NOOP("FullscreenUI", "Account");
+TRANSLATE_NOOP("FullscreenUI", "Accurate Blending");
 TRANSLATE_NOOP("FullscreenUI", "Achievement Notifications");
 TRANSLATE_NOOP("FullscreenUI", "Achievements");
 TRANSLATE_NOOP("FullscreenUI", "Achievements Settings");
@@ -7239,6 +7264,7 @@ TRANSLATE_NOOP("FullscreenUI", "Adds a new directory to the game search list.");
 TRANSLATE_NOOP("FullscreenUI", "Adds a new shader to the chain.");
 TRANSLATE_NOOP("FullscreenUI", "Adds additional precision to PGXP data post-projection. May improve visuals in some games.");
 TRANSLATE_NOOP("FullscreenUI", "Adjusts the emulation speed so the console's refresh rate matches the host when VSync is enabled.");
+TRANSLATE_NOOP("FullscreenUI", "Advanced");
 TRANSLATE_NOOP("FullscreenUI", "Advanced Settings");
 TRANSLATE_NOOP("FullscreenUI", "All Time: {}");
 TRANSLATE_NOOP("FullscreenUI", "Allow Booting Without SBI File");
@@ -7280,6 +7306,7 @@ TRANSLATE_NOOP("FullscreenUI", "CD-ROM Emulation");
 TRANSLATE_NOOP("FullscreenUI", "CPU Emulation");
 TRANSLATE_NOOP("FullscreenUI", "CPU Mode");
 TRANSLATE_NOOP("FullscreenUI", "Cancel");
+TRANSLATE_NOOP("FullscreenUI", "Capture");
 TRANSLATE_NOOP("FullscreenUI", "Change Disc");
 TRANSLATE_NOOP("FullscreenUI", "Change Page");
 TRANSLATE_NOOP("FullscreenUI", "Change Selection");
@@ -7289,7 +7316,6 @@ TRANSLATE_NOOP("FullscreenUI", "Changes the aspect ratio used to display the con
 TRANSLATE_NOOP("FullscreenUI", "Cheat List");
 TRANSLATE_NOOP("FullscreenUI", "Chooses the backend to use for rendering the console/game visuals.");
 TRANSLATE_NOOP("FullscreenUI", "Chooses the language used for UI elements.");
-TRANSLATE_NOOP("FullscreenUI", "Chroma Smoothing For 24-Bit Display");
 TRANSLATE_NOOP("FullscreenUI", "Clean Boot");
 TRANSLATE_NOOP("FullscreenUI", "Clear Settings");
 TRANSLATE_NOOP("FullscreenUI", "Clear Shaders");
@@ -7340,7 +7366,7 @@ TRANSLATE_NOOP("FullscreenUI", "Default: Enabled");
 TRANSLATE_NOOP("FullscreenUI", "Deinterlacing Mode");
 TRANSLATE_NOOP("FullscreenUI", "Delete Save");
 TRANSLATE_NOOP("FullscreenUI", "Delete State");
-TRANSLATE_NOOP("FullscreenUI", "Depth Buffer");
+TRANSLATE_NOOP("FullscreenUI", "Depth Clear Threshold");
 TRANSLATE_NOOP("FullscreenUI", "Desktop Mode");
 TRANSLATE_NOOP("FullscreenUI", "Details");
 TRANSLATE_NOOP("FullscreenUI", "Details unavailable for game not scanned in game list.");
@@ -7363,8 +7389,8 @@ TRANSLATE_NOOP("FullscreenUI", "Device Settings");
 TRANSLATE_NOOP("FullscreenUI", "Disable All Enhancements");
 TRANSLATE_NOOP("FullscreenUI", "Disable Interlacing");
 TRANSLATE_NOOP("FullscreenUI", "Disable Mailbox Presentation");
-TRANSLATE_NOOP("FullscreenUI", "Disable PGXP on 2D Polygons");
 TRANSLATE_NOOP("FullscreenUI", "Disable Subdirectory Scanning");
+TRANSLATE_NOOP("FullscreenUI", "Disable on 2D Polygons");
 TRANSLATE_NOOP("FullscreenUI", "Disabled");
 TRANSLATE_NOOP("FullscreenUI", "Disables dithering and uses the full 8 bits per channel of color information.");
 TRANSLATE_NOOP("FullscreenUI", "Disables interlaced rendering and display in the GPU. Some games can render in 480p this way, but others will break.");
@@ -7391,7 +7417,6 @@ TRANSLATE_NOOP("FullscreenUI", "Enable Discord Presence");
 TRANSLATE_NOOP("FullscreenUI", "Enable Fast Boot");
 TRANSLATE_NOOP("FullscreenUI", "Enable In-Game Overlays");
 TRANSLATE_NOOP("FullscreenUI", "Enable Overclocking");
-TRANSLATE_NOOP("FullscreenUI", "Enable PGXP Vertex Cache");
 TRANSLATE_NOOP("FullscreenUI", "Enable Post Processing");
 TRANSLATE_NOOP("FullscreenUI", "Enable Recompiler Block Linking");
 TRANSLATE_NOOP("FullscreenUI", "Enable Recompiler ICache");
@@ -7404,13 +7429,14 @@ TRANSLATE_NOOP("FullscreenUI", "Enable TTY Logging");
 TRANSLATE_NOOP("FullscreenUI", "Enable VRAM Write Texture Replacement");
 TRANSLATE_NOOP("FullscreenUI", "Enable XInput Input Source");
 TRANSLATE_NOOP("FullscreenUI", "Enable debugging when supported by the host's renderer API. Only for developer use.");
+TRANSLATE_NOOP("FullscreenUI", "Enable/Disable the Player LED on DualSense controllers.");
 TRANSLATE_NOOP("FullscreenUI", "Enables alignment and bus exceptions. Not needed for any known games.");
 TRANSLATE_NOOP("FullscreenUI", "Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.");
 TRANSLATE_NOOP("FullscreenUI", "Enables an additional three controller slots on each port. Not supported in all games.");
 TRANSLATE_NOOP("FullscreenUI", "Enables more precise frame pacing at the cost of battery life.");
+TRANSLATE_NOOP("FullscreenUI", "Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.");
 TRANSLATE_NOOP("FullscreenUI", "Enables the replacement of background textures in supported games.");
 TRANSLATE_NOOP("FullscreenUI", "Encore Mode");
-TRANSLATE_NOOP("FullscreenUI", "Enhancements");
 TRANSLATE_NOOP("FullscreenUI", "Ensures every frame generated is displayed for optimal pacing. Enable for variable refresh displays, such as GSync/FreeSync. Disable if you are having speed or sound issues.");
 TRANSLATE_NOOP("FullscreenUI", "Enter Value");
 TRANSLATE_NOOP("FullscreenUI", "Enter the name of the input profile you wish to create.");
@@ -7422,6 +7448,7 @@ TRANSLATE_NOOP("FullscreenUI", "Exit DuckStation");
 TRANSLATE_NOOP("FullscreenUI", "Exit Without Saving");
 TRANSLATE_NOOP("FullscreenUI", "Exits Big Picture mode, returning to the desktop interface.");
 TRANSLATE_NOOP("FullscreenUI", "Expansion Mode");
+TRANSLATE_NOOP("FullscreenUI", "FMV Chroma Smoothing");
 TRANSLATE_NOOP("FullscreenUI", "Failed to copy text to clipboard.");
 TRANSLATE_NOOP("FullscreenUI", "Failed to delete save state.");
 TRANSLATE_NOOP("FullscreenUI", "Failed to delete {}.");
@@ -7434,10 +7461,11 @@ TRANSLATE_NOOP("FullscreenUI", "Fast Forward Volume");
 TRANSLATE_NOOP("FullscreenUI", "File Size");
 TRANSLATE_NOOP("FullscreenUI", "File Size: %.2f MB");
 TRANSLATE_NOOP("FullscreenUI", "File Title");
-TRANSLATE_NOOP("FullscreenUI", "Force 4:3 For 24-Bit Display");
+TRANSLATE_NOOP("FullscreenUI", "Force 4:3 For FMVs");
 TRANSLATE_NOOP("FullscreenUI", "Force NTSC Timings");
 TRANSLATE_NOOP("FullscreenUI", "Forces PAL games to run at NTSC timings, i.e. 60hz. Some PAL games will run at their \"normal\" speeds, while others will break.");
 TRANSLATE_NOOP("FullscreenUI", "Forces a full rescan of all games previously identified.");
+TRANSLATE_NOOP("FullscreenUI", "Forces blending to be done in the shader at 16-bit precision, when not using true color. Non-trivial performance impact, and unnecessary for most games.");
 TRANSLATE_NOOP("FullscreenUI", "Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.");
 TRANSLATE_NOOP("FullscreenUI", "Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.");
 TRANSLATE_NOOP("FullscreenUI", "Frame Time Buffer");
@@ -7463,6 +7491,7 @@ TRANSLATE_NOOP("FullscreenUI", "Game title copied to clipboard.");
 TRANSLATE_NOOP("FullscreenUI", "Game type copied to clipboard.");
 TRANSLATE_NOOP("FullscreenUI", "Game: {} ({})");
 TRANSLATE_NOOP("FullscreenUI", "Genre: %s");
+TRANSLATE_NOOP("FullscreenUI", "Geometry Tolerance");
 TRANSLATE_NOOP("FullscreenUI", "GitHub Repository");
 TRANSLATE_NOOP("FullscreenUI", "Global Slot {0} - {1}##global_slot_{0}");
 TRANSLATE_NOOP("FullscreenUI", "Global Slot {0}##global_slot_{0}");
@@ -7568,10 +7597,8 @@ TRANSLATE_NOOP("FullscreenUI", "Output Volume");
 TRANSLATE_NOOP("FullscreenUI", "Overclocking Percentage");
 TRANSLATE_NOOP("FullscreenUI", "Overlays or replaces normal triangle drawing with a wireframe/line view.");
 TRANSLATE_NOOP("FullscreenUI", "PGXP (Precision Geometry Transform Pipeline)");
-TRANSLATE_NOOP("FullscreenUI", "PGXP Depth Clear Threshold");
+TRANSLATE_NOOP("FullscreenUI", "PGXP Depth Buffer");
 TRANSLATE_NOOP("FullscreenUI", "PGXP Geometry Correction");
-TRANSLATE_NOOP("FullscreenUI", "PGXP Geometry Tolerance");
-TRANSLATE_NOOP("FullscreenUI", "PGXP Settings");
 TRANSLATE_NOOP("FullscreenUI", "Parent Directory");
 TRANSLATE_NOOP("FullscreenUI", "Patches");
 TRANSLATE_NOOP("FullscreenUI", "Patches the BIOS to skip the boot animation. Safe to enable.");
@@ -7589,7 +7616,6 @@ TRANSLATE_NOOP("FullscreenUI", "Perspective Correct Colors");
 TRANSLATE_NOOP("FullscreenUI", "Perspective Correct Textures");
 TRANSLATE_NOOP("FullscreenUI", "Plays sound effects for events such as achievement unlocks and leaderboard submissions.");
 TRANSLATE_NOOP("FullscreenUI", "Port {} Controller Type");
-TRANSLATE_NOOP("FullscreenUI", "Position");
 TRANSLATE_NOOP("FullscreenUI", "Post-Processing Settings");
 TRANSLATE_NOOP("FullscreenUI", "Post-processing chain cleared.");
 TRANSLATE_NOOP("FullscreenUI", "Post-processing shaders reloaded.");
@@ -7649,6 +7675,7 @@ TRANSLATE_NOOP("FullscreenUI", "Rounds texture coordinates instead of flooring w
 TRANSLATE_NOOP("FullscreenUI", "Runahead");
 TRANSLATE_NOOP("FullscreenUI", "Runahead/Rewind");
 TRANSLATE_NOOP("FullscreenUI", "Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance.");
+TRANSLATE_NOOP("FullscreenUI", "SDL DualSense Player LED");
 TRANSLATE_NOOP("FullscreenUI", "SDL DualShock 4 / DualSense Enhanced Mode");
 TRANSLATE_NOOP("FullscreenUI", "Save Profile");
 TRANSLATE_NOOP("FullscreenUI", "Save Screenshot");
@@ -7662,7 +7689,7 @@ TRANSLATE_NOOP("FullscreenUI", "Scales the dithering pattern with the internal r
 TRANSLATE_NOOP("FullscreenUI", "Scaling");
 TRANSLATE_NOOP("FullscreenUI", "Scan For New Games");
 TRANSLATE_NOOP("FullscreenUI", "Scanning Subdirectories");
-TRANSLATE_NOOP("FullscreenUI", "Screen Display");
+TRANSLATE_NOOP("FullscreenUI", "Screen Position");
 TRANSLATE_NOOP("FullscreenUI", "Screenshot Format");
 TRANSLATE_NOOP("FullscreenUI", "Screenshot Quality");
 TRANSLATE_NOOP("FullscreenUI", "Screenshot Size");
@@ -7761,7 +7788,6 @@ TRANSLATE_NOOP("FullscreenUI", "Sync To Host Refresh Rate");
 TRANSLATE_NOOP("FullscreenUI", "Synchronizes presentation of the console's frames to the host. GSync/FreeSync users should enable Optimal Frame Pacing instead.");
 TRANSLATE_NOOP("FullscreenUI", "Temporarily disables all enhancements, useful when testing.");
 TRANSLATE_NOOP("FullscreenUI", "Test Unofficial Achievements");
-TRANSLATE_NOOP("FullscreenUI", "Texture Dumping");
 TRANSLATE_NOOP("FullscreenUI", "Texture Filtering");
 TRANSLATE_NOOP("FullscreenUI", "Texture Replacements");
 TRANSLATE_NOOP("FullscreenUI", "The SDL input source supports most controllers.");
@@ -7795,6 +7821,7 @@ TRANSLATE_NOOP("FullscreenUI", "Use Blit Swap Chain");
 TRANSLATE_NOOP("FullscreenUI", "Use Debug GPU Device");
 TRANSLATE_NOOP("FullscreenUI", "Use Global Setting");
 TRANSLATE_NOOP("FullscreenUI", "Use Light Theme");
+TRANSLATE_NOOP("FullscreenUI", "Use Old MDEC Routines");
 TRANSLATE_NOOP("FullscreenUI", "Use Single Card For Multi-Disc Games");
 TRANSLATE_NOOP("FullscreenUI", "Use Software Renderer For Readbacks");
 TRANSLATE_NOOP("FullscreenUI", "Username: {}");
@@ -7808,6 +7835,7 @@ TRANSLATE_NOOP("FullscreenUI", "Uses perspective-correct interpolation for color
 TRANSLATE_NOOP("FullscreenUI", "Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.");
 TRANSLATE_NOOP("FullscreenUI", "Uses screen positions to resolve PGXP data. May improve visuals in some games.");
 TRANSLATE_NOOP("FullscreenUI", "Value: {} | Default: {} | Minimum: {} | Maximum: {}");
+TRANSLATE_NOOP("FullscreenUI", "Vertex Cache");
 TRANSLATE_NOOP("FullscreenUI", "Vertical Sync (VSync)");
 TRANSLATE_NOOP("FullscreenUI", "WARNING: Your game is still saving to the memory card. Continuing to {0} may IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to finish saving.\n\nDo you want to {0} anyway?");
 TRANSLATE_NOOP("FullscreenUI", "When enabled and logged in, DuckStation will scan for achievements on startup.");
@@ -7818,7 +7846,7 @@ TRANSLATE_NOOP("FullscreenUI", "When enabled, memory cards and controllers will 
 TRANSLATE_NOOP("FullscreenUI", "When enabled, the minimum supported output latency will be used for the host API.");
 TRANSLATE_NOOP("FullscreenUI", "When playing a multi-disc game and using per-game (title) memory cards, use a single memory card for all discs.");
 TRANSLATE_NOOP("FullscreenUI", "When this option is chosen, the clock speed set below will be used.");
-TRANSLATE_NOOP("FullscreenUI", "Widescreen Hack");
+TRANSLATE_NOOP("FullscreenUI", "Widescreen Rendering");
 TRANSLATE_NOOP("FullscreenUI", "Wireframe Rendering");
 TRANSLATE_NOOP("FullscreenUI", "Writes textures which can be replaced to the dump directory.");
 TRANSLATE_NOOP("FullscreenUI", "Yes, {} now and risk memory card corruption.");
