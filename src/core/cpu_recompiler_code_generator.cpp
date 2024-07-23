@@ -2843,7 +2843,7 @@ bool CodeGenerator::Compile_cop0(Instruction instruction, const CodeCache::Instr
 
             // update dispatcher flag, if enabled, exit block
             EmitFunctionCall(nullptr, &UpdateDebugDispatcherFlag);
-            EmitLoadCPUStructField(dcic_value.GetHostRegister(), RegSize_8, OFFSETOF(State, use_debug_dispatcher));
+            EmitLoadCPUStructField(dcic_value.GetHostRegister(), RegSize_8, OFFSETOF(State, using_debug_dispatcher));
             EmitBranchIfBitClear(dcic_value.GetHostRegister(), RegSize_8, 0, &not_enabled);
 
             m_register_cache.UninhibitAllocation();

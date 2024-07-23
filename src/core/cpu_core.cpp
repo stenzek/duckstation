@@ -27,6 +27,7 @@
 Log_SetChannel(CPU::Core);
 
 namespace CPU {
+static bool ShouldUseInterpreter();
 static void SetPC(u32 new_pc);
 static void UpdateLoadDelay();
 static void Branch(u32 target);
@@ -66,7 +67,7 @@ static void LogInstruction(u32 bits, u32 pc, bool regs);
 static void HandleWriteSyscall();
 static void HandlePutcSyscall();
 static void HandlePutsSyscall();
-static void ExecuteDebug();
+[[noreturn]] static void ExecuteInterpreter();
 
 template<PGXPMode pgxp_mode, bool debug>
 static void ExecuteInstruction();
@@ -161,7 +162,8 @@ void CPU::Initialize()
   // From nocash spec.
   g_state.cop0_regs.PRID = UINT32_C(0x00000002);
 
-  g_state.use_debug_dispatcher = false;
+  g_state.using_debug_dispatcher = false;
+  g_state.using_interpreter = ShouldUseInterpreter();
   for (BreakpointList& bps : s_breakpoints)
     bps.clear();
   s_breakpoint_counter = 1;
@@ -200,6 +202,7 @@ void CPU::Reset()
 
   ClearICache();
   UpdateMemoryPointers();
+  UpdateDebugDispatcherFlag();
 
   GTE::Reset();
 
@@ -276,13 +279,31 @@ bool CPU::DoState(StateWrapper& sw)
     sw.Do(&g_state.icache_data);
   }
 
+  bool using_interpreter = g_state.using_interpreter;
+  sw.DoEx(&using_interpreter, 67, g_state.using_interpreter);
+
   if (sw.IsReading())
   {
+    // Since the recompilers do not use npc/next_instruction, and the icache emulation doesn't actually fill the data,
+    // only the tags, if we save state with the recompiler, then load state with the interpreter, we're most likely
+    // going to crash. Clear both in the case that we are switching.
+    if (using_interpreter != g_state.using_interpreter)
+    {
+      WARNING_LOG("Current execution mode does not match save state. Resetting icache state.");
+      ExecutionModeChanged();
+    }
+
     UpdateMemoryPointers();
     g_state.gte_completion_tick = 0;
   }
 
   return !sw.HasError();
+}
+
+ALWAYS_INLINE_RELEASE bool CPU::ShouldUseInterpreter()
+{
+  // Currently, any breakpoints require the interpreter.
+  return (g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter || g_state.using_debug_dispatcher);
 }
 
 ALWAYS_INLINE_RELEASE void CPU::SetPC(u32 new_pc)
@@ -1983,11 +2004,16 @@ bool CPU::UpdateDebugDispatcherFlag()
   const bool use_debug_dispatcher =
     has_any_breakpoints || has_cop0_breakpoints || s_trace_to_log ||
     (g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter && g_settings.bios_tty_logging);
-  if (use_debug_dispatcher == g_state.use_debug_dispatcher)
+  if (use_debug_dispatcher == g_state.using_debug_dispatcher)
     return false;
 
   DEV_LOG("{} debug dispatcher", use_debug_dispatcher ? "Now using" : "No longer using");
-  g_state.use_debug_dispatcher = use_debug_dispatcher;
+  g_state.using_debug_dispatcher = use_debug_dispatcher;
+
+  // Switching to interpreter?
+  if (g_state.using_interpreter != ShouldUseInterpreter())
+    ExecutionModeChanged();
+
   return true;
 }
 
@@ -2350,74 +2376,47 @@ template<PGXPMode pgxp_mode, bool debug>
   }
 }
 
-void CPU::ExecuteDebug()
+void CPU::ExecuteInterpreter()
 {
-  if (g_settings.gpu_pgxp_enable)
+  if (g_state.using_debug_dispatcher)
   {
-    if (g_settings.gpu_pgxp_cpu)
-      ExecuteImpl<PGXPMode::CPU, true>();
+    if (g_settings.gpu_pgxp_enable)
+    {
+      if (g_settings.gpu_pgxp_cpu)
+        ExecuteImpl<PGXPMode::CPU, true>();
+      else
+        ExecuteImpl<PGXPMode::Memory, true>();
+    }
     else
-      ExecuteImpl<PGXPMode::Memory, true>();
+    {
+      ExecuteImpl<PGXPMode::Disabled, true>();
+    }
   }
   else
   {
-    ExecuteImpl<PGXPMode::Disabled, true>();
+    if (g_settings.gpu_pgxp_enable)
+    {
+      if (g_settings.gpu_pgxp_cpu)
+        ExecuteImpl<PGXPMode::CPU, false>();
+      else
+        ExecuteImpl<PGXPMode::Memory, false>();
+    }
+    else
+    {
+      ExecuteImpl<PGXPMode::Disabled, false>();
+    }
   }
 }
 
 void CPU::Execute()
 {
-  const CPUExecutionMode exec_mode = g_settings.cpu_execution_mode;
-  const bool use_debug_dispatcher = g_state.use_debug_dispatcher;
   if (fastjmp_set(&s_jmp_buf) != 0)
-  {
-    // Before we return, set npc to pc so that we can switch from recs to int.
-    // We'll also need to fetch the next instruction to execute.
-    if (exec_mode != CPUExecutionMode::Interpreter && !use_debug_dispatcher)
-    {
-      if (!SafeReadInstruction(g_state.pc, &g_state.next_instruction.bits)) [[unlikely]]
-      {
-        g_state.next_instruction.bits = 0;
-        ERROR_LOG("Failed to read current instruction from 0x{:08X}", g_state.pc);
-      }
-
-      g_state.npc = g_state.pc + sizeof(Instruction);
-    }
-
     return;
-  }
 
-  if (use_debug_dispatcher)
-  {
-    ExecuteDebug();
-    return;
-  }
-
-  switch (exec_mode)
-  {
-    case CPUExecutionMode::Recompiler:
-    case CPUExecutionMode::CachedInterpreter:
-    case CPUExecutionMode::NewRec:
-      CodeCache::Execute();
-      break;
-
-    case CPUExecutionMode::Interpreter:
-    default:
-    {
-      if (g_settings.gpu_pgxp_enable)
-      {
-        if (g_settings.gpu_pgxp_cpu)
-          ExecuteImpl<PGXPMode::CPU, false>();
-        else
-          ExecuteImpl<PGXPMode::Memory, false>();
-      }
-      else
-      {
-        ExecuteImpl<PGXPMode::Disabled, false>();
-      }
-    }
-    break;
-  }
+  if (g_state.using_interpreter)
+    ExecuteInterpreter();
+  else
+    CodeCache::Execute();
 }
 
 void CPU::SetSingleStepFlag()
@@ -2572,9 +2571,37 @@ void CPU::UpdateMemoryPointers()
 
 void CPU::ExecutionModeChanged()
 {
+  const bool prev_interpreter = g_state.using_interpreter;
+
+  UpdateDebugDispatcherFlag();
+
+  // Clear out bus errors in case only memory exceptions are toggled on.
   g_state.bus_error = false;
-  if (UpdateDebugDispatcherFlag())
-    System::InterruptExecution();
+
+  // Have to clear out the icache too, only the tags are valid in the recs.
+  ClearICache();
+
+  // Switching to interpreter?
+  g_state.using_interpreter = ShouldUseInterpreter();
+  if (g_state.using_interpreter != prev_interpreter && !prev_interpreter)
+  {
+    // Before we return, set npc to pc so that we can switch from recs to int.
+    // We'll also need to fetch the next instruction to execute.
+    if (!SafeReadInstruction(g_state.pc, &g_state.next_instruction.bits)) [[unlikely]]
+    {
+      g_state.next_instruction.bits = 0;
+      ERROR_LOG("Failed to read current instruction from 0x{:08X}", g_state.pc);
+    }
+
+    g_state.npc = g_state.pc + sizeof(Instruction);
+  }
+
+  // Wipe out code cache when switching back to recompiler.
+  if (!g_state.using_interpreter && prev_interpreter)
+    CPU::CodeCache::Reset();
+
+  UpdateDebugDispatcherFlag();
+  System::InterruptExecution();
 }
 
 template<bool add_ticks, bool icache_read, u32 word_count, bool raise_exceptions>

@@ -110,8 +110,9 @@ struct State
   // GTE registers are stored here so we can access them on ARM with a single instruction
   GTE::Regs gte_regs = {};
 
-  // 4 bytes of padding here on x64
-  bool use_debug_dispatcher = false;
+  // 2 bytes of padding here on x64
+  bool using_interpreter = false;
+  bool using_debug_dispatcher = false;
 
   void* fastmem_base = nullptr;
   void** memory_handlers = nullptr;

@@ -4012,7 +4012,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         CPU::CodeCache::Shutdown();
       if (g_settings.cpu_execution_mode != CPUExecutionMode::Interpreter)
         CPU::CodeCache::Initialize();
-      CPU::ClearICache();
     }
 
     if (CPU::CodeCache::IsUsingAnyRecompiler() &&
@@ -4025,10 +4024,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
                               TRANSLATE_STR("OSDMessage", "Recompiler options changed, flushing all blocks."),
                               Host::OSD_INFO_DURATION);
       CPU::ExecutionModeChanged();
-      CPU::CodeCache::Reset();
-
-      if (g_settings.cpu_recompiler_icache != old_settings.cpu_recompiler_icache)
-        CPU::ClearICache();
     }
     else if (g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter &&
              g_settings.bios_tty_logging != old_settings.bios_tty_logging)

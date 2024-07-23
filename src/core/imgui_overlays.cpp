@@ -6,6 +6,7 @@
 #include "imgui_overlays.h"
 #include "cdrom.h"
 #include "controller.h"
+#include "cpu_core_private.h"
 #include "dma.h"
 #include "fullscreen_ui.h"
 #include "gpu.h"
@@ -320,9 +321,9 @@ void ImGuiManager::DrawPerformanceOverlay()
                   System::GetMaximumFrameTime());
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
 
-      if (g_settings.cpu_overclock_active ||
-          (g_settings.cpu_execution_mode != CPUExecutionMode::Recompiler || g_settings.cpu_recompiler_icache ||
-           g_settings.cpu_recompiler_memory_exceptions))
+      if (g_settings.cpu_overclock_active || CPU::g_state.using_interpreter ||
+          g_settings.cpu_execution_mode != CPUExecutionMode::Recompiler || g_settings.cpu_recompiler_icache ||
+          g_settings.cpu_recompiler_memory_exceptions)
       {
         first = true;
         text.assign("CPU[");
@@ -331,7 +332,7 @@ void ImGuiManager::DrawPerformanceOverlay()
           text.append_format("{}", g_settings.GetCPUOverclockPercent());
           first = false;
         }
-        if (g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter)
+        if (CPU::g_state.using_interpreter)
         {
           text.append_format("{}{}", first ? "" : "/", "I");
           first = false;
