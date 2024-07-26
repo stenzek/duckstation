@@ -32,12 +32,11 @@
 */
 
 
-
 uniform bool geom_curvature <
 	ui_type = "radio";
 	ui_category = "Geom Curvature";
 	ui_label = "Geom Curvature Toggle";
-> = 1.0;
+> = 0.0;
 
 uniform float geom_R <
 	ui_type = "drag";
