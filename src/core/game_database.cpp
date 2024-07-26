@@ -92,6 +92,7 @@ static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Tr
   TRANSLATE_NOOP("GameDatabase", "Force Software Renderer"),
   TRANSLATE_NOOP("GameDatabase", "Force Software Renderer For Readbacks"),
   TRANSLATE_NOOP("GameDatabase", "Force Round Texture Coordinates"),
+  TRANSLATE_NOOP("GameDatabase", "Force Accurate Blending"),
   TRANSLATE_NOOP("GameDatabase", "Force Interlacing"),
   TRANSLATE_NOOP("GameDatabase", "Disable True Color"),
   TRANSLATE_NOOP("GameDatabase", "Disable Upscaling"),
