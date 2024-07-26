@@ -29,6 +29,7 @@ uniform float crt_gamma <
     ui_max = 5.0;
     ui_step = 0.025;
     ui_label = "Simulated CRT Gamma";
+    ui_category = "Display Settings";
 > = 2.5;
 
 uniform float lcd_gamma <
@@ -37,6 +38,7 @@ uniform float lcd_gamma <
     ui_max = 5.0;
     ui_step = 0.025;
     ui_label = "Your Display Gamma";
+    ui_category = "Display Settings";
 > = 2.2;
 
 uniform float levels_contrast <
@@ -45,6 +47,7 @@ uniform float levels_contrast <
     ui_max = 4.0;
     ui_step = 0.015625;
     ui_label = "Contrast";
+    ui_category = "Display Settings";
 > = 1.0;
 
 uniform float halation_weight <
@@ -53,6 +56,7 @@ uniform float halation_weight <
     ui_max = 1.0;
     ui_step = 0.005;
     ui_label = "Halation Weight";
+    ui_category = "Effects";
 > = 0.0;
 
 uniform float diffusion_weight <
@@ -61,6 +65,7 @@ uniform float diffusion_weight <
     ui_max = 1.0;
     ui_step = 0.005;
     ui_label = "Diffusion Weight";
+    ui_category = "Effects";
 > = 0.075;
 
 uniform float bloom_underestimate_levels <
@@ -69,6 +74,7 @@ uniform float bloom_underestimate_levels <
     ui_max = 5.0;
     ui_step = 0.01;
     ui_label = "Bloom - Underestimate Levels";
+    ui_category = "Effects";
 > = 0.8;
 
 uniform float bloom_excess <
@@ -77,6 +83,7 @@ uniform float bloom_excess <
     ui_max = 1.0;
     ui_step = 0.005;
     ui_label = "Bloom - Excess";
+    ui_category = "Effects";
 > = 0.0;
 
 uniform float beam_min_sigma <
@@ -84,7 +91,8 @@ uniform float beam_min_sigma <
     ui_min = 0.005;
     ui_max = 1.0;
     ui_step = 0.005;
-    ui_label = "Beam - Min Sigma";
+    ui_label = "Min Sigma";
+    ui_category = "Beam Dynamics";
 > = 0.02;
 
 uniform float beam_max_sigma <
@@ -92,7 +100,8 @@ uniform float beam_max_sigma <
     ui_min = 0.005;
     ui_max = 1.0;
     ui_step = 0.005;
-    ui_label = "Beam - Max Sigma";
+    ui_label = "Max Sigma";
+    ui_category = "Beam Dynamics";
 > = 0.3;
 
 uniform float beam_spot_power <
@@ -100,7 +109,8 @@ uniform float beam_spot_power <
     ui_min = 0.01;
     ui_max = 16.0;
     ui_step = 0.01;
-    ui_label = "Beam - Spot Power";
+    ui_label = "Spot Power";
+    ui_category = "Beam Dynamics";
 > = 0.33;
 
 uniform float beam_min_shape <
@@ -108,7 +118,8 @@ uniform float beam_min_shape <
     ui_min = 2.0;
     ui_max = 32.0;
     ui_step = 0.1;
-    ui_label = "Beam - Min Shape";
+    ui_label = "Min Shape";
+    ui_category = "Beam Dynamics";
 > = 2.0;
 
 uniform float beam_max_shape <
@@ -116,7 +127,8 @@ uniform float beam_max_shape <
     ui_min = 2.0;
     ui_max = 32.0;
     ui_step = 0.1;
-    ui_label = "Beam - Max Shape";
+    ui_label = "Max Shape";
+    ui_category = "Beam Dynamics";
 > = 4.0;
 
 uniform float beam_shape_power <
@@ -124,13 +136,15 @@ uniform float beam_shape_power <
     ui_min = 0.01;
     ui_max = 16.0;
     ui_step = 0.01;
-    ui_label = "Beam - Shape Power";
+    ui_label = "Shape Power";
+    ui_category = "Beam Dynamics";
 > = 0.25;
 
 uniform int beam_horiz_filter <
     ui_type = "combo";
-    ui_items = "Quilez (fast)\0Gaussian (slow)\0Lanczos (medium)\0";
-    ui_label = "Beam - Horiz Filter";
+    ui_items = "Quilez\0Gaussian\0Lanczos\0";
+    ui_label = "Horizontal Filter";
+    ui_category = "Beam Dynamics";
 > = 0;
 
 uniform float beam_horiz_sigma <
@@ -138,7 +152,8 @@ uniform float beam_horiz_sigma <
     ui_min = 0.0;
     ui_max = 0.67;
     ui_step = 0.005;
-    ui_label = "Beam - Horiz Sigma";
+    ui_label = "Horizontal Sigma";
+    ui_category = "Beam Dynamics";
 > = 0.35;
 
 uniform float beam_horiz_linear_rgb_weight <
@@ -146,7 +161,8 @@ uniform float beam_horiz_linear_rgb_weight <
     ui_min = 0.0;
     ui_max = 1.0;
     ui_step = 0.01;
-    ui_label = "Beam - Horiz Linear RGB Weight";
+    ui_label = "Horiz Linear RGB Weight";
+    ui_category = "Beam Dynamics";
 > = 1.0;
 
 uniform float convergence_offset_x_r <
@@ -154,7 +170,8 @@ uniform float convergence_offset_x_r <
     ui_min = -4.0;
     ui_max = 4.0;
     ui_step = 0.05;
-    ui_label = "Convergence - Offset X Red";
+    ui_label = "Offset X Red";
+    ui_category = "Convergence";
 > = 0.0;
 
 uniform float convergence_offset_x_g <
@@ -162,7 +179,8 @@ uniform float convergence_offset_x_g <
     ui_min = -4.0;
     ui_max = 4.0;
     ui_step = 0.05;
-    ui_label = "Convergence - Offset X Green";
+    ui_label = "Offset X Green";
+    ui_category = "Convergence";
 > = 0.0;
 
 uniform float convergence_offset_x_b <
@@ -170,7 +188,8 @@ uniform float convergence_offset_x_b <
     ui_min = -4.0;
     ui_max = 4.0;
     ui_step = 0.05;
-    ui_label = "Convergence - Offset X Blue";
+    ui_label = "Offset X Blue";
+    ui_category = "Convergence";
 > = 0.0;
 
 uniform float convergence_offset_y_r <
@@ -178,7 +197,8 @@ uniform float convergence_offset_y_r <
     ui_min = -2.0;
     ui_max = 2.0;
     ui_step = 0.05;
-    ui_label = "Convergence - Offset Y Red";
+    ui_label = "Offset Y Red";
+    ui_category = "Convergence";
 > = 0.0;
 
 uniform float convergence_offset_y_g <
@@ -186,7 +206,8 @@ uniform float convergence_offset_y_g <
     ui_min = -2.0;
     ui_max = 2.0;
     ui_step = 0.05;
-    ui_label = "Convergence - Offset Y Green";
+    ui_label = "Offset Y Green";
+    ui_category = "Convergence";
 > = 0.0;
 
 uniform float convergence_offset_y_b <
@@ -194,13 +215,15 @@ uniform float convergence_offset_y_b <
     ui_min = -2.0;
     ui_max = 2.0;
     ui_step = 0.05;
-    ui_label = "Convergence - Offset Y Blue";
+    ui_label = "Offset Y Blue";
+    ui_category = "Convergence";
 > = 0.0;
 
 uniform int mask_type <
     ui_type = "combo";
     ui_items = "Aperture Grille\0Slot Mask\0Shadow Mask\0";
-    ui_label = "Mask - Type";
+    ui_label = "Type";
+    ui_category = "Mask";
 > = 0;
 
 uniform float mask_sample_mode_desired <
@@ -208,7 +231,8 @@ uniform float mask_sample_mode_desired <
     ui_min = 0.0;
     ui_max = 2.0;
     ui_step = 1.;
-    ui_label = "Mask - Sample Mode";
+    ui_label = "Sample Mode";
+    ui_category = "Mask";
 > = 0.0;
 
 uniform float mask_specify_num_triads <
@@ -216,7 +240,8 @@ uniform float mask_specify_num_triads <
     ui_min = 0.0;
     ui_max = 1.0;
     ui_step = 1.0;
-    ui_label = "Mask - Specify Number of Triads";
+    ui_label = "Specify Number of Triads";
+    ui_category = "Mask";
 > = 0.0;
 
 uniform float mask_triad_size_desired <
@@ -224,7 +249,8 @@ uniform float mask_triad_size_desired <
     ui_min = 1.0;
     ui_max = 18.0;
     ui_step = 0.125;
-    ui_label = "Mask - Triad Size Desired";
+    ui_label = "Triad Size Desired";
+    ui_category = "Mask";
 > = 3.0;
 
 uniform float mask_num_triads_desired <
@@ -232,7 +258,8 @@ uniform float mask_num_triads_desired <
     ui_min = 342.0;
     ui_max = 1920.0;
     ui_step = 1.0;
-    ui_label = "Mask - Number of Triads Desired";
+    ui_label = "Number of Triads Desired";
+    ui_category = "Mask";
 > = 480.0;
 
 uniform bool interlace_detect <
