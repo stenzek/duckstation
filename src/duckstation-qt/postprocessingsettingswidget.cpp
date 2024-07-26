@@ -341,7 +341,7 @@ void PostProcessingShaderConfigWidget::createUi()
         m_layout->addWidget(label, row++, 0, 1, 3, Qt::AlignLeft);
       }
 
-      if (last_category)
+      if (last_category || !option.category.empty())
       {
         QLabel* line = new QLabel(this);
         line->setFrameShape(QFrame::HLine);
