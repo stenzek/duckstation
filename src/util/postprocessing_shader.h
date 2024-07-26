@@ -54,12 +54,14 @@ public:
                      u32 target_height) = 0;
 
 protected:
+  using OptionList = std::vector<ShaderOption>;
+
   static void ParseKeyValue(std::string_view line, std::string_view* key, std::string_view* value);
 
   virtual void OnOptionChanged(const ShaderOption& option);
 
   std::string m_name;
-  std::vector<ShaderOption> m_options;
+  OptionList m_options;
 };
 
 } // namespace PostProcessing

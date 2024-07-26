@@ -746,12 +746,16 @@ bool PostProcessing::ReShadeFXShader::CreateOptions(const reshadefx::module& mod
       }
     }
 
-    m_options.push_back(std::move(opt));
+    OptionList::iterator iter = std::find_if(m_options.begin(), m_options.end(),
+                                             [&opt](const ShaderOption& it) { return it.category == opt.category; });
+    if (iter != m_options.end())
+    {
+      // insert at the end of this category
+      while (iter != m_options.end() && iter->category == opt.category)
+        ++iter;
+    }
+    m_options.insert(iter, std::move(opt));
   }
-
-  // sort based on category
-  std::sort(m_options.begin(), m_options.end(),
-            [](const ShaderOption& lhs, const ShaderOption& rhs) { return lhs.category < rhs.category; });
 
   m_uniforms_size = mod.total_uniform_size;
   DEV_LOG("{}: {} options", m_filename, m_options.size());
