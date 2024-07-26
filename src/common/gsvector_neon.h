@@ -800,6 +800,8 @@ public:
     return vget_lane_s32(vreinterpret_s32_f32(v2s), i);
   }
 
+  ALWAYS_INLINE float dot(const GSVector2& v) const { return vaddv_f32(vmul_f32(v2s, v.v2s)); }
+
   ALWAYS_INLINE static GSVector2 zero() { return GSVector2(vdup_n_f32(0.0f)); }
 
   ALWAYS_INLINE static GSVector2 xffffffff() { return GSVector2(vreinterpret_f32_u32(vdup_n_u32(0xFFFFFFFFu))); }

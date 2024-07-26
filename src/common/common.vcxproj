@@ -56,6 +56,7 @@
     <ClCompile Include="error.cpp" />
     <ClCompile Include="fastjmp.cpp" />
     <ClCompile Include="file_system.cpp" />
+    <ClCompile Include="gsvector.cpp" />
     <ClCompile Include="layered_settings_interface.cpp" />
     <ClCompile Include="log.cpp" />
     <ClCompile Include="memmap.cpp" />

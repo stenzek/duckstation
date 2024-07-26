@@ -21,6 +21,7 @@ add_library(common
   fifo_queue.h
   file_system.cpp
   file_system.h
+  gsvector.cpp
   gsvector.h
   gsvector_formatter.h
   gsvector_neon.h

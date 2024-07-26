@@ -320,7 +320,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="1,0">
+           <layout class="QHBoxLayout" name="horizontalLayout_8">
             <item>
              <widget class="QComboBox" name="fullscreenMode"/>
             </item>
@@ -335,9 +335,6 @@
              <string>Screen Position:</string>
             </property>
            </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QComboBox" name="displayAlignment"/>
           </item>
           <item row="2" column="0" colspan="2">
            <layout class="QGridLayout" name="advancedDisplayOptionsLayout">
@@ -368,6 +365,16 @@
                <string>Stretch Vertically</string>
               </property>
              </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="1" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+             <widget class="QComboBox" name="displayAlignment"/>
+            </item>
+            <item>
+             <widget class="QComboBox" name="displayRotation"/>
             </item>
            </layout>
           </item>

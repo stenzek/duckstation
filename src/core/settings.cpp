@@ -259,6 +259,10 @@ void Settings::Load(SettingsInterface& si)
     ParseDisplayAlignment(
       si.GetStringValue("Display", "Alignment", GetDisplayAlignmentName(DEFAULT_DISPLAY_ALIGNMENT)).c_str())
       .value_or(DEFAULT_DISPLAY_ALIGNMENT);
+  display_rotation =
+    ParseDisplayRotation(
+      si.GetStringValue("Display", "Rotation", GetDisplayRotationName(DEFAULT_DISPLAY_ROTATION)).c_str())
+      .value_or(DEFAULT_DISPLAY_ROTATION);
   display_scaling =
     ParseDisplayScaling(si.GetStringValue("Display", "Scaling", GetDisplayScalingName(DEFAULT_DISPLAY_SCALING)).c_str())
       .value_or(DEFAULT_DISPLAY_SCALING);
@@ -541,6 +545,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("Display", "Force4_3For24Bit", display_force_4_3_for_24bit);
   si.SetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(display_aspect_ratio));
   si.SetStringValue("Display", "Alignment", GetDisplayAlignmentName(display_alignment));
+  si.SetStringValue("Display", "Rotation", GetDisplayRotationName(display_rotation));
   si.SetStringValue("Display", "Scaling", GetDisplayScalingName(display_scaling));
   si.SetBoolValue("Display", "OptimalFramePacing", display_optimal_frame_pacing);
   si.SetBoolValue("Display", "PreFrameSleep", display_pre_frame_sleep);
@@ -1454,6 +1459,38 @@ const char* Settings::GetDisplayAlignmentName(DisplayAlignment alignment)
 const char* Settings::GetDisplayAlignmentDisplayName(DisplayAlignment alignment)
 {
   return Host::TranslateToCString("DisplayAlignment", s_display_alignment_display_names[static_cast<int>(alignment)]);
+}
+
+static constexpr const std::array s_display_rotation_names = {"Normal", "Rotate90", "Rotate180", "Rotate270"};
+static constexpr const std::array s_display_rotation_display_names = {
+  TRANSLATE_NOOP("Settings", "No Rotation"),
+  TRANSLATE_NOOP("Settings", "Rotate 90° (Clockwise)"),
+  TRANSLATE_NOOP("Settings", "Rotate 180° (Vertical Flip)"),
+  TRANSLATE_NOOP("Settings", "Rotate 270° (Clockwise)"),
+};
+
+std::optional<DisplayRotation> Settings::ParseDisplayRotation(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_display_rotation_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<DisplayRotation>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetDisplayRotationName(DisplayRotation rotation)
+{
+  return s_display_rotation_names[static_cast<int>(rotation)];
+}
+
+const char* Settings::GetDisplayRotationDisplayName(DisplayRotation rotation)
+{
+  return Host::TranslateToCString("Settings", s_display_rotation_display_names[static_cast<size_t>(rotation)]);
 }
 
 static constexpr const std::array s_display_scaling_names = {

@@ -643,6 +643,8 @@ public:
     return _mm_extract_ps(m, i);
   }
 
+  ALWAYS_INLINE float dot(const GSVector2& v) const { return _mm_cvtss_f32(_mm_dp_ps(m, v.m, 0x31)); }
+
   ALWAYS_INLINE static GSVector2 zero() { return GSVector2(_mm_setzero_ps()); }
 
   ALWAYS_INLINE static GSVector2 xffffffff() { return zero() == zero(); }

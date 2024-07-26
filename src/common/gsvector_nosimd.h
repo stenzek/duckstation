@@ -666,6 +666,8 @@ public:
     return I32[i];
   }
 
+  ALWAYS_INLINE float dot(const GSVector2& v) const { return (x * v.x + y * v.y); }
+
   ALWAYS_INLINE static constexpr GSVector2 zero() { return GSVector2::cxpr(0.0f, 0.0f); }
 
   ALWAYS_INLINE static constexpr GSVector2 xffffffff()

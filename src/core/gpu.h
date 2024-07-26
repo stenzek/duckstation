@@ -207,7 +207,7 @@ public:
   virtual void FlushRender() = 0;
 
   /// Helper function for computing the draw rectangle in a larger window.
-  GSVector4i CalculateDrawRect(s32 window_width, s32 window_height, bool apply_aspect_ratio = true) const;
+  GSVector4i CalculateDrawRect(s32 window_width, s32 window_height, bool apply_rotation, bool apply_aspect_ratio) const;
 
   /// Helper function to save current display texture to PNG.
   bool WriteDisplayTextureToFile(std::string filename, bool compress_on_thread = false);

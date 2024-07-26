@@ -4393,6 +4393,10 @@ void FullscreenUI::DrawDisplaySettingsPage()
                   &Settings::GetDisplayAlignmentName, &Settings::GetDisplayAlignmentDisplayName,
                   DisplayAlignment::Count);
 
+  DrawEnumSetting(bsi, FSUI_CSTR("Screen Rotation"), FSUI_CSTR("Determines the rotation of the simulated TV screen."),
+                  "Display", "Rotation", Settings::DEFAULT_DISPLAY_ROTATION, &Settings::ParseDisplayRotation,
+                  &Settings::GetDisplayRotationName, &Settings::GetDisplayRotationDisplayName, DisplayRotation::Count);
+
   if (is_hardware)
   {
     DrawEnumSetting(bsi, FSUI_CSTR("Line Detection"),
@@ -7382,6 +7386,7 @@ TRANSLATE_NOOP("FullscreenUI", "Determines the amount of audio buffered before b
 TRANSLATE_NOOP("FullscreenUI", "Determines the emulated hardware type.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the format that screenshots will be saved/compressed with.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the position on the screen when black borders must be added.");
+TRANSLATE_NOOP("FullscreenUI", "Determines the rotation of the simulated TV screen.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the size of screenshots created by DuckStation.");
 TRANSLATE_NOOP("FullscreenUI", "Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.");
 TRANSLATE_NOOP("FullscreenUI", "Determines which algorithm is used to convert interlaced frames to progressive for display on your system.");
@@ -7690,6 +7695,7 @@ TRANSLATE_NOOP("FullscreenUI", "Scaling");
 TRANSLATE_NOOP("FullscreenUI", "Scan For New Games");
 TRANSLATE_NOOP("FullscreenUI", "Scanning Subdirectories");
 TRANSLATE_NOOP("FullscreenUI", "Screen Position");
+TRANSLATE_NOOP("FullscreenUI", "Screen Rotation");
 TRANSLATE_NOOP("FullscreenUI", "Screenshot Format");
 TRANSLATE_NOOP("FullscreenUI", "Screenshot Quality");
 TRANSLATE_NOOP("FullscreenUI", "Screenshot Size");

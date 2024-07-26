@@ -152,6 +152,15 @@ enum class DisplayAlignment : u8
   Count
 };
 
+enum class DisplayRotation : u8
+{
+  Normal,
+  Rotate90,
+  Rotate180,
+  Rotate270,
+  Count
+};
+
 enum class DisplayScalingMode : u8
 {
   Nearest,

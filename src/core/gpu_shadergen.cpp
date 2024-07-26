@@ -12,7 +12,11 @@ GPUShaderGen::~GPUShaderGen() = default;
 
 void GPUShaderGen::WriteDisplayUniformBuffer(std::stringstream& ss)
 {
-  DeclareUniformBuffer(ss, {"float4 u_src_rect", "float4 u_src_size", "float4 u_clamp_rect", "float4 u_params"}, true);
+  // Rotation matrix split into rows to avoid padding in HLSL.
+  DeclareUniformBuffer(ss,
+                       {"float4 u_src_rect", "float4 u_src_size", "float4 u_clamp_rect", "float4 u_params",
+                        "float2 u_rotation_matrix0", "float2 u_rotation_matrix1"},
+                       true);
 
   ss << R"(
 float2 ClampUV(float2 uv) {
@@ -31,6 +35,10 @@ std::string GPUShaderGen::GenerateDisplayVertexShader()
   float2 pos = float2(float((v_id << 1) & 2u), float(v_id & 2u));
   v_tex0 = u_src_rect.xy + pos * u_src_rect.zw;
   v_pos = float4(pos * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f), 0.0f, 1.0f);
+
+  // Avoid HLSL/GLSL constructor differences by explicitly multiplying the matrix.
+  v_pos.xy = float2(dot(u_rotation_matrix0, v_pos.xy), dot(u_rotation_matrix1, v_pos.xy));
+
   #if API_VULKAN
     v_pos.y = -v_pos.y;
   #endif

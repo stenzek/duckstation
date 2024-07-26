@@ -116,6 +116,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayAlignment, "Display", "Alignment",
                                                &Settings::ParseDisplayAlignment, &Settings::GetDisplayAlignmentName,
                                                Settings::DEFAULT_DISPLAY_ALIGNMENT);
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayRotation, "Display", "Rotation",
+                                               &Settings::ParseDisplayRotation, &Settings::GetDisplayRotationName,
+                                               Settings::DEFAULT_DISPLAY_ROTATION);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuThread, "GPU", "UseThread", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.threadedPresentation, "GPU", "ThreadedPresentation",
                                                Settings::DEFAULT_THREADED_PRESENTATION);
@@ -594,6 +597,12 @@ void GraphicsSettingsWidget::setupAdditionalUi()
   {
     m_ui.displayAlignment->addItem(
       QString::fromUtf8(Settings::GetDisplayAlignmentDisplayName(static_cast<DisplayAlignment>(i))));
+  }
+
+  for (u32 i = 0; i < static_cast<u32>(DisplayRotation::Count); i++)
+  {
+    m_ui.displayRotation->addItem(
+      QString::fromUtf8(Settings::GetDisplayRotationDisplayName(static_cast<DisplayRotation>(i))));
   }
 
   for (u32 i = 0; i < static_cast<u32>(GPULineDetectMode::Count); i++)

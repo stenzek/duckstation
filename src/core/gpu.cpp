@@ -32,6 +32,7 @@
 #include "fmt/format.h"
 
 #include <cmath>
+#include <numbers>
 #include <thread>
 
 Log_SetChannel(GPU);
@@ -138,7 +139,8 @@ void GPU::UpdateSettings(const Settings& old_settings)
 
     if (!CompileDisplayPipelines(g_settings.display_scaling != old_settings.display_scaling,
                                  g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode,
-                                 g_settings.display_24bit_chroma_smoothing != old_settings.display_24bit_chroma_smoothing))
+                                 g_settings.display_24bit_chroma_smoothing !=
+                                   old_settings.display_24bit_chroma_smoothing))
     {
       Panic("Failed to compile display pipeline on settings change.");
     }
@@ -1094,7 +1096,8 @@ void GPU::UpdateCommandTickEvent()
 void GPU::ConvertScreenCoordinatesToDisplayCoordinates(float window_x, float window_y, float* display_x,
                                                        float* display_y) const
 {
-  const GSVector4i draw_rc = CalculateDrawRect(g_gpu_device->GetWindowWidth(), g_gpu_device->GetWindowHeight(), true);
+  const GSVector4i draw_rc =
+    CalculateDrawRect(g_gpu_device->GetWindowWidth(), g_gpu_device->GetWindowHeight(), true, true);
 
   // convert coordinates to active display region, then to full display region
   const float scaled_display_x = (window_x - static_cast<float>(draw_rc.left)) / static_cast<float>(draw_rc.width());
@@ -1103,6 +1106,8 @@ void GPU::ConvertScreenCoordinatesToDisplayCoordinates(float window_x, float win
   // scale back to internal resolution
   *display_x = scaled_display_x * static_cast<float>(m_crtc_state.display_width);
   *display_y = scaled_display_y * static_cast<float>(m_crtc_state.display_height);
+
+  // TODO: apply rotation matrix
 
   DEV_LOG("win {:.0f},{:.0f} -> local {:.0f},{:.0f}, disp {:.2f},{:.2f} (size {},{} frac {},{})", window_x, window_y,
           window_x - draw_rc.left, window_y - draw_rc.top, *display_x, *display_y, m_crtc_state.display_width,
@@ -1936,7 +1941,8 @@ bool GPU::PresentDisplay()
 {
   FlushRender();
 
-  const GSVector4i draw_rect = CalculateDrawRect(g_gpu_device->GetWindowWidth(), g_gpu_device->GetWindowHeight());
+  const GSVector4i draw_rect = CalculateDrawRect(g_gpu_device->GetWindowWidth(), g_gpu_device->GetWindowHeight(),
+                                                 !g_settings.debugging.show_vram, true);
   return RenderDisplay(nullptr, draw_rect, !g_settings.debugging.show_vram);
 }
 
@@ -2007,6 +2013,7 @@ bool GPU::RenderDisplay(GPUTexture* target, const GSVector4i draw_rect, bool pos
       float src_size[4];
       float clamp_rect[4];
       float params[4];
+      float rotation_matrix[2][2];
     } uniforms;
     std::memset(uniforms.params, 0, sizeof(uniforms.params));
 
@@ -2060,6 +2067,23 @@ bool GPU::RenderDisplay(GPUTexture* target, const GSVector4i draw_rect, bool pos
     uniforms.src_size[1] = static_cast<float>(display_texture->GetHeight());
     uniforms.src_size[2] = rcp_width;
     uniforms.src_size[3] = rcp_height;
+
+    if (g_settings.display_rotation != DisplayRotation::Normal)
+    {
+      static constexpr const std::array<float, static_cast<size_t>(DisplayRotation::Count) - 1> rotation_radians = {{
+        static_cast<float>(std::numbers::pi * 1.5f), // Rotate90
+        static_cast<float>(std::numbers::pi),        // Rotate180
+        static_cast<float>(std::numbers::pi / 2.0),  // Rotate270
+      }};
+
+      GSMatrix2x2::Rotation(rotation_radians[static_cast<size_t>(g_settings.display_rotation) - 1])
+        .store(uniforms.rotation_matrix);
+    }
+    else
+    {
+      GSMatrix2x2::Identity().store(uniforms.rotation_matrix);
+    }
+
     g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
 
     g_gpu_device->SetViewportAndScissor(real_draw_rect);
@@ -2315,7 +2339,8 @@ bool GPU::ApplyChromaSmoothing()
   return true;
 }
 
-GSVector4i GPU::CalculateDrawRect(s32 window_width, s32 window_height, bool apply_aspect_ratio /* = true */) const
+GSVector4i GPU::CalculateDrawRect(s32 window_width, s32 window_height, bool apply_rotation,
+                                  bool apply_aspect_ratio) const
 {
   const bool integer_scale = (g_settings.display_scaling == DisplayScalingMode::NearestInteger ||
                               g_settings.display_scaling == DisplayScalingMode::BlinearInteger);
@@ -2345,6 +2370,15 @@ GSVector4i GPU::CalculateDrawRect(s32 window_width, s32 window_height, bool appl
     display_height /= x_scale;
     active_top /= x_scale;
     active_height /= x_scale;
+  }
+
+  // swap width/height when rotated, the flipping of padding is taken care of in the shader with the rotation matrix
+  if (g_settings.display_rotation == DisplayRotation::Rotate90 ||
+      g_settings.display_rotation == DisplayRotation::Rotate270)
+  {
+    std::swap(display_width, display_height);
+    std::swap(active_width, active_height);
+    std::swap(active_top, active_left);
   }
 
   // now fit it within the window
@@ -2640,7 +2674,7 @@ bool GPU::RenderScreenshotToFile(std::string filename, DisplayScreenshotMode mod
 {
   u32 width = g_gpu_device->GetWindowWidth();
   u32 height = g_gpu_device->GetWindowHeight();
-  GSVector4i draw_rect = CalculateDrawRect(width, height, true);
+  GSVector4i draw_rect = CalculateDrawRect(width, height, true, !g_settings.debugging.show_vram);
 
   const bool internal_resolution = (mode != DisplayScreenshotMode::ScreenResolution || g_settings.debugging.show_vram);
   if (internal_resolution && m_display_texture_view_width != 0 && m_display_texture_view_height != 0)

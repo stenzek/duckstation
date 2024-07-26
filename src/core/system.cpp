@@ -4065,7 +4065,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.display_24bit_chroma_smoothing != old_settings.display_24bit_chroma_smoothing ||
         g_settings.display_crop_mode != old_settings.display_crop_mode ||
         g_settings.display_aspect_ratio != old_settings.display_aspect_ratio ||
-        g_settings.display_alignment != old_settings.display_alignment ||
         g_settings.display_scaling != old_settings.display_scaling ||
         g_settings.display_show_gpu_usage != old_settings.display_show_gpu_usage ||
         g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable ||
@@ -5304,10 +5303,13 @@ void System::RequestDisplaySize(float scale /*= 0.0f*/)
     (static_cast<float>(g_gpu->GetCRTCDisplayWidth()) / static_cast<float>(g_gpu->GetCRTCDisplayHeight())) /
     g_gpu->ComputeDisplayAspectRatio();
 
-  const u32 requested_width =
+  u32 requested_width =
     std::max<u32>(static_cast<u32>(std::ceil(static_cast<float>(g_gpu->GetCRTCDisplayWidth()) * scale)), 1);
-  const u32 requested_height =
+  u32 requested_height =
     std::max<u32>(static_cast<u32>(std::ceil(static_cast<float>(g_gpu->GetCRTCDisplayHeight()) * y_scale * scale)), 1);
+
+  if (g_settings.display_rotation == DisplayRotation::Rotate90 || g_settings.display_rotation == DisplayRotation::Rotate180)
+    std::swap(requested_width, requested_height);
 
   Host::RequestResizeHostDisplay(static_cast<s32>(requested_width), static_cast<s32>(requested_height));
 }

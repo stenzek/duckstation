@@ -409,7 +409,7 @@ DEFINE_HOTKEY("TogglePostProcessing", TRANSLATE_NOOP("Hotkeys", "Graphics"),
                   PostProcessing::DisplayChain.Toggle();
               })
 
-              DEFINE_HOTKEY("ToggleInternalPostProcessing", TRANSLATE_NOOP("Hotkeys", "Graphics"),
+DEFINE_HOTKEY("ToggleInternalPostProcessing", TRANSLATE_NOOP("Hotkeys", "Graphics"),
               TRANSLATE_NOOP("Hotkeys", "Toggle Internal Post-Processing"), [](s32 pressed) {
                 if (!pressed && System::IsValid())
                   PostProcessing::InternalChain.Toggle();
@@ -492,6 +492,27 @@ DEFINE_HOTKEY("ToggleOSD", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP
               [](s32 pressed) {
                 if (!pressed)
                   HotkeyToggleOSD();
+              })
+
+DEFINE_HOTKEY("RotateClockwise", TRANSLATE_NOOP("Hotkeys", "Graphics"),
+              TRANSLATE_NOOP("Hotkeys", "Rotate Display Clockwise"), [](s32 pressed) {
+                if (!pressed)
+                {
+                  g_settings.display_rotation = static_cast<DisplayRotation>(
+                    (static_cast<u8>(g_settings.display_rotation) + 1) % static_cast<u8>(DisplayRotation::Count));
+                }
+              })
+
+DEFINE_HOTKEY("RotateCounterclockwise", TRANSLATE_NOOP("Hotkeys", "Graphics"),
+              TRANSLATE_NOOP("Hotkeys", "Rotate Display Counterclockwise"), [](s32 pressed) {
+                if (!pressed)
+                {
+                  g_settings.display_rotation =
+                    (g_settings.display_rotation > static_cast<DisplayRotation>(0)) ?
+                      static_cast<DisplayRotation>((static_cast<u8>(g_settings.display_rotation) - 1) %
+                                                   static_cast<u8>(DisplayRotation::Count)) :
+                      static_cast<DisplayRotation>(static_cast<u8>(DisplayRotation::Count) - 1);
+                }
               })
 
 DEFINE_HOTKEY("AudioMute", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOOP("Hotkeys", "Toggle Mute"),
