@@ -66098,6 +66098,11 @@ SLUS-00127:
     linkCable: false
 SLES-00032:
   name: "Grand Theft Auto (Europe) (En,Fr,De,It)"
+  discSet:
+    name: "Grand Theft Auto (Europe) (En,Fr,De,It)"
+    serials:
+      - SLES-00032
+      - SLES-03389
   controllers:
     - AnalogController
     - DigitalController
@@ -66121,6 +66126,11 @@ SLES-00032:
     linkCable: false
 SLUS-00106:
   name: "Grand Theft Auto (USA)"
+  discSet:
+    name: "Grand Theft Auto (USA)"
+    serials:
+      - SLUS-00106
+      - SLUS-00846
   compatibility:
     rating: NoIssues
     versionTested: "0.1-1308-g622e50fa"
@@ -66143,6 +66153,11 @@ SLUS-00106:
     linkCable: false
 SLES-03389:
   name: "Grand Theft Auto - London 1969 (Europe) (En,Fr,De,It)"
+  discSet:
+    name: "Grand Theft Auto (Europe) (En,Fr,De,It)"
+    serials:
+      - SLES-00032
+      - SLES-03389
   controllers:
     - AnalogController
     - DigitalController
@@ -66189,6 +66204,11 @@ SLES-01714:
     linkCable: false
 SLUS-00846:
   name: "Grand Theft Auto - Mission Pack 1 - London 1969 (USA)"
+  discSet:
+    name: "Grand Theft Auto (USA)"
+    serials:
+      - SLUS-00106
+      - SLUS-00846
   controllers:
     - AnalogController
     - DigitalController
