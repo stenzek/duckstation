@@ -946,10 +946,11 @@ bool GPU_HW::CompilePipelines(Error* error)
   // But, don't bother with accurate blending if true colour is on. The result will be the same.
   // Prefer ROV over barriers/feedback loops without FBFetch, it'll be faster.
   // Abuse the depth buffer for the mask bit when it's free (FBFetch), or PGXP depth buffering is enabled.
-  m_allow_shader_blend = (features.feedback_loops || features.raster_order_views || features.framebuffer_fetch) &&
-                         (m_pgxp_depth_buffer || g_settings.gpu_accurate_blending ||
-                          (!m_supports_dual_source_blend && (IsBlendedTextureFiltering(m_texture_filtering) ||
-                                                             IsBlendedTextureFiltering(m_sprite_texture_filtering))));
+  m_allow_shader_blend = features.framebuffer_fetch ||
+                         ((features.feedback_loops || features.raster_order_views) &&
+                          (m_pgxp_depth_buffer || g_settings.gpu_accurate_blending ||
+                           (!m_supports_dual_source_blend && (IsBlendedTextureFiltering(m_texture_filtering) ||
+                                                              IsBlendedTextureFiltering(m_sprite_texture_filtering)))));
   m_prefer_shader_blend = (m_allow_shader_blend && g_settings.gpu_accurate_blending && !g_settings.gpu_true_color);
   m_use_rov_for_shader_blend = (m_allow_shader_blend && !features.framebuffer_fetch && features.raster_order_views &&
                                 (m_prefer_shader_blend || !features.feedback_loops));
@@ -1173,12 +1174,8 @@ bool GPU_HW::CompilePipelines(Error* error)
                    static_cast<BatchTextureMode>(texture_mode) == BatchTextureMode::SpritePalette8Bit);
                 const bool sprite = (static_cast<BatchTextureMode>(texture_mode) >= BatchTextureMode::SpriteStart);
                 const bool uv_limits = ShouldClampUVs(sprite ? m_sprite_texture_filtering : m_texture_filtering);
-                const bool use_rov =
-                  (render_mode == static_cast<u8>(BatchRenderMode::ShaderBlend) && m_use_rov_for_shader_blend);
-                const bool use_shader_blending =
-                  (use_rov || ((render_mode == static_cast<u8>(BatchRenderMode::ShaderBlend) &&
-                                NeedsShaderBlending(static_cast<GPUTransparencyMode>(transparency_mode),
-                                                    static_cast<BatchTextureMode>(texture_mode), (check_mask != 0)))));
+                const bool use_shader_blending = (render_mode == static_cast<u8>(BatchRenderMode::ShaderBlend));
+                const bool use_rov = (use_shader_blending && m_use_rov_for_shader_blend);
                 plconfig.input_layout.vertex_attributes =
                   textured ?
                     (uv_limits ? std::span<const GPUPipeline::VertexAttribute>(
