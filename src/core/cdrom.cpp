@@ -1916,15 +1916,17 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       ClearCommandSecondResponse();
       SendACKAndStat();
 
-      if (s_drive_state == DriveState::SeekingLogical || s_drive_state == DriveState::SeekingPhysical)
+      // This behaviour has been verified with hardware tests! The mech will reject pause commands if the game
+      // just started a read/seek, and it hasn't processed the first sector yet. This makes some games go bananas
+      // and spam pause commands until eventually it succeeds, but it is correct behaviour.
+      if (s_drive_state == DriveState::SeekingLogical || s_drive_state == DriveState::SeekingPhysical ||
+          ((s_drive_state == DriveState::Reading || s_drive_state == DriveState::Playing) &&
+           s_secondary_status.seeking))
       {
-        // TODO: On console, this returns an error. But perhaps only during the coarse/fine seek part? Needs more
-        // hardware tests.
-        WARNING_LOG("CDROM Pause command while seeking from {} to {} - jumping to seek target", s_seek_start_lba,
-                    s_seek_end_lba);
-        s_read_after_seek = false;
-        s_play_after_seek = false;
-        CompleteSeek();
+        WARNING_LOG("CDROM Pause command while seeking - sending error response");
+        SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
+        EndCommand();
+        return;
       }
       else
       {
@@ -2490,6 +2492,11 @@ void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = fa
   ClearAsyncInterrupt();
   ClearSectorBuffers();
   ResetAudioDecoder();
+
+  // Even though this isn't "officially" a seek, we still need to jump back to the target sector unless we're
+  // immediately following a seek from Play/Read. The seeking bit will get cleared after the first sector is processed.
+  if (!after_seek)
+    s_secondary_status.SetSeeking();
 
   s_drive_state = DriveState::Reading;
   s_drive_event.SetInterval(ticks);
