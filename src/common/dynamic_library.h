@@ -33,10 +33,10 @@ public:
   /// Returns the specified library name in platform-specific format.
   /// Major/minor versions will not be included if set to -1.
   /// If libname already contains the "lib" prefix, it will not be added again.
-  /// Windows: LIBNAME-MAJOR-MINOR.dll
-  /// Linux: libLIBNAME.so.MAJOR.MINOR
-  /// Mac: libLIBNAME.MAJOR.MINOR.dylib
-  static std::string GetVersionedFilename(const char* libname, int major = -1, int minor = -1);
+  /// Windows: LIBNAME-MAJOR-MINOR-PATCH.dll
+  /// Linux: libLIBNAME.so.MAJOR.MINOR.PATCH
+  /// Mac: libLIBNAME.MAJOR.MINOR.PATCH.dylib
+  static std::string GetVersionedFilename(const char* libname, int major = -1, int minor = -1, int patch = -1);
 
   /// Returns true if a module is loaded, otherwise false.
   bool IsOpen() const { return m_handle != nullptr; }

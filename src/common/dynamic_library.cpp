@@ -54,10 +54,12 @@ std::string DynamicLibrary::GetUnprefixedFilename(const char* filename)
 #endif
 }
 
-std::string DynamicLibrary::GetVersionedFilename(const char* libname, int major, int minor)
+std::string DynamicLibrary::GetVersionedFilename(const char* libname, int major, int minor, int patch)
 {
 #if defined(_WIN32)
-  if (major >= 0 && minor >= 0)
+  if (major >= 0 && minor >= 0 && patch >= 0)
+    return fmt::format("{}-{}-{}-{}.dll", libname, major, minor, patch);
+  else if (major >= 0 && minor >= 0)
     return fmt::format("{}-{}-{}.dll", libname, major, minor);
   else if (major >= 0)
     return fmt::format("{}-{}.dll", libname, major);
@@ -65,7 +67,9 @@ std::string DynamicLibrary::GetVersionedFilename(const char* libname, int major,
     return fmt::format("{}.dll", libname);
 #elif defined(__APPLE__)
   const char* prefix = std::strncmp(libname, "lib", 3) ? "lib" : "";
-  if (major >= 0 && minor >= 0)
+  if (major >= 0 && minor >= 0 && patch >= 0)
+    return fmt::format("{}{}.{}.{}.{}.dylib", prefix, libname, major, minor, patch);
+  else if (major >= 0 && minor >= 0)
     return fmt::format("{}{}.{}.{}.dylib", prefix, libname, major, minor);
   else if (major >= 0)
     return fmt::format("{}{}.{}.dylib", prefix, libname, major);
@@ -73,7 +77,9 @@ std::string DynamicLibrary::GetVersionedFilename(const char* libname, int major,
     return fmt::format("{}{}.dylib", prefix, libname);
 #else
   const char* prefix = std::strncmp(libname, "lib", 3) ? "lib" : "";
-  if (major >= 0 && minor >= 0)
+  if (major >= 0 && minor >= 0 && patch >= 0)
+    return fmt::format("{}{}.so.{}.{}.{}", prefix, libname, major, minor, patch);
+  else if (major >= 0 && minor >= 0)
     return fmt::format("{}{}.so.{}.{}", prefix, libname, major, minor);
   else if (major >= 0)
     return fmt::format("{}{}.so.{}", prefix, libname, major);
