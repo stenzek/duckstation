@@ -83,9 +83,10 @@ bool FileExists(const char* path);
 
 /// Directory exists?
 bool DirectoryExists(const char* path);
+bool IsRealDirectory(const char* path);
 
 /// Directory does not contain any files?
-bool DirectoryIsEmpty(const char* path);
+bool IsDirectoryEmpty(const char* path);
 
 /// Delete file
 bool DeleteFile(const char* path, Error* error = nullptr);

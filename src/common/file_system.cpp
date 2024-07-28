@@ -1550,10 +1550,6 @@ static u32 RecursiveFindFiles(const char* origin_path, const char* parent_path, 
 
 bool FileSystem::FindFiles(const char* path, const char* pattern, u32 flags, FindResultsArray* results)
 {
-  // has a path
-  if (path[0] == '\0')
-    return false;
-
   // clear result array
   if (!(flags & FILESYSTEM_FIND_KEEP_ARRAY))
     results->clear();
@@ -1605,10 +1601,6 @@ static void TranslateStat64(struct stat* st, const struct _stat64& st64)
 
 bool FileSystem::StatFile(const char* path, struct stat* st)
 {
-  // has a path
-  if (path[0] == '\0')
-    return false;
-
   // convert to wide string
   const std::wstring wpath = GetWin32Path(path);
   if (wpath.empty())
@@ -1638,10 +1630,6 @@ bool FileSystem::StatFile(std::FILE* fp, struct stat* st)
 
 bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* sd)
 {
-  // has a path
-  if (path[0] == '\0')
-    return false;
-
   // convert to wide string
   const std::wstring wpath = GetWin32Path(path);
   if (wpath.empty())
@@ -1716,49 +1704,50 @@ bool FileSystem::StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* sd)
 
 bool FileSystem::FileExists(const char* path)
 {
-  // has a path
-  if (path[0] == '\0')
-    return false;
-
   // convert to wide string
   const std::wstring wpath = GetWin32Path(path);
   if (wpath.empty())
     return false;
 
   // determine attributes for the path. if it's a directory, things have to be handled differently..
-  DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
+  const DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
   if (fileAttributes == INVALID_FILE_ATTRIBUTES)
     return false;
 
-  if (fileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-    return false;
-  else
-    return true;
+  return ((fileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0);
 }
 
 bool FileSystem::DirectoryExists(const char* path)
 {
-  // has a path
-  if (path[0] == '\0')
-    return false;
-
   // convert to wide string
   const std::wstring wpath = GetWin32Path(path);
   if (wpath.empty())
     return false;
 
   // determine attributes for the path. if it's a directory, things have to be handled differently..
-  DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
+  const DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
   if (fileAttributes == INVALID_FILE_ATTRIBUTES)
     return false;
 
-  if (fileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-    return true;
-  else
-    return false;
+  return ((fileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0);
 }
 
-bool FileSystem::DirectoryIsEmpty(const char* path)
+bool FileSystem::IsRealDirectory(const char* path)
+{
+  // convert to wide string
+  const std::wstring wpath = GetWin32Path(path);
+  if (wpath.empty())
+    return false;
+
+  // determine attributes for the path. if it's a directory, things have to be handled differently..
+  const DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
+  if (fileAttributes == INVALID_FILE_ATTRIBUTES)
+    return false;
+
+  return ((fileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_REPARSE_POINT)) != FILE_ATTRIBUTE_DIRECTORY);
+}
+
+bool FileSystem::IsDirectoryEmpty(const char* path)
 {
   std::wstring wpath = GetWin32Path(path);
   wpath += L"\\*";
@@ -1865,12 +1854,6 @@ bool FileSystem::CreateDirectory(const char* Path, bool Recursive, Error* error)
 
 bool FileSystem::DeleteFile(const char* path, Error* error)
 {
-  if (path[0] == '\0')
-  {
-    Error::SetStringView(error, "Path is empty.");
-    return false;
-  }
-
   const std::wstring wpath = GetWin32Path(path);
   const DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
   if (fileAttributes == INVALID_FILE_ATTRIBUTES || fileAttributes & FILE_ATTRIBUTE_DIRECTORY)
@@ -2128,10 +2111,6 @@ static u32 RecursiveFindFiles(const char* OriginPath, const char* ParentPath, co
 
 bool FileSystem::FindFiles(const char* path, const char* pattern, u32 flags, FindResultsArray* results)
 {
-  // has a path
-  if (path[0] == '\0')
-    return false;
-
   // clear result array
   if (!(flags & FILESYSTEM_FIND_KEEP_ARRAY))
     results->clear();
@@ -2182,10 +2161,6 @@ bool FileSystem::StatFile(std::FILE* fp, struct stat* st)
 
 bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* sd)
 {
-  // has a path
-  if (path[0] == '\0')
-    return false;
-
   // stat file
   struct stat sysStatData;
   if (stat(path, &sysStatData) < 0)
@@ -2223,10 +2198,6 @@ bool FileSystem::StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* sd)
 
 bool FileSystem::FileExists(const char* path)
 {
-  // has a path
-  if (path[0] == '\0')
-    return false;
-
   struct stat sysStatData;
   if (stat(path, &sysStatData) < 0)
     return false;
@@ -2239,22 +2210,23 @@ bool FileSystem::FileExists(const char* path)
 
 bool FileSystem::DirectoryExists(const char* path)
 {
-  // has a path
-  if (path[0] == '\0')
-    return false;
-
-  // stat file
   struct stat sysStatData;
   if (stat(path, &sysStatData) < 0)
     return false;
 
-  if (S_ISDIR(sysStatData.st_mode))
-    return true;
-  else
-    return false;
+  return S_ISDIR(sysStatData.st_mode);
 }
 
-bool FileSystem::DirectoryIsEmpty(const char* path)
+bool FileSystem::IsRealDirectory(const char* path)
+{
+  struct stat sysStatData;
+  if (stat(path, &sysStatData) < 0)
+    return false;
+
+  return (S_ISDIR(sysStatData.st_mode) && !S_ISLNK(sysStatData.st_mode));
+}
+
+bool FileSystem::IsDirectoryEmpty(const char* path)
 {
   DIR* pDir = opendir(path);
   if (pDir == nullptr)
@@ -2358,12 +2330,6 @@ bool FileSystem::CreateDirectory(const char* path, bool recursive, Error* error)
 
 bool FileSystem::DeleteFile(const char* path, Error* error)
 {
-  if (path[0] == '\0')
-  {
-    Error::SetStringView(error, "Path is empty.");
-    return false;
-  }
-
   struct stat sysStatData;
   if (stat(path, &sysStatData) != 0 || S_ISDIR(sysStatData.st_mode))
   {
@@ -2382,12 +2348,6 @@ bool FileSystem::DeleteFile(const char* path, Error* error)
 
 bool FileSystem::RenamePath(const char* old_path, const char* new_path, Error* error)
 {
-  if (old_path[0] == '\0' || new_path[0] == '\0')
-  {
-    Error::SetStringView(error, "Path is empty.");
-    return false;
-  }
-
   if (rename(old_path, new_path) != 0)
   {
     const int err = errno;
@@ -2400,9 +2360,6 @@ bool FileSystem::RenamePath(const char* old_path, const char* new_path, Error* e
 
 bool FileSystem::DeleteDirectory(const char* path)
 {
-  if (path[0] == '\0')
-    return false;
-
   struct stat sysStatData;
   if (stat(path, &sysStatData) != 0 || !S_ISDIR(sysStatData.st_mode))
     return false;
