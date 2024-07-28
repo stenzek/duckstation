@@ -321,6 +321,22 @@ public:
   std::span<T> span() { return std::span<T>(m_data, m_size); }
   std::span<const T> cspan() const { return std::span<const T>(m_data, m_size); }
 
+  std::span<T> span(size_t offset, size_t size = static_cast<size_t>(-1))
+  {
+    std::span<T> ret;
+    if (offset < m_size) [[likely]]
+      ret = std::span<T>(m_data + offset, std::min(m_size - offset, size));
+    return ret;
+  }
+
+  std::span<const T> cspan(size_t offset, size_t size = static_cast<size_t>(-1)) const
+  {
+    std::span<const T> ret;
+    if (offset < m_size) [[likely]]
+      ret = std::span<const T>(m_data + offset, std::min(m_size - offset, size));
+    return ret;
+  }
+
   this_type& operator=(const this_type& rhs)
   {
     assign(rhs);

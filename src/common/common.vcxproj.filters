@@ -44,7 +44,7 @@
       <Filter>thirdparty</Filter>
     </ClInclude>
     <ClInclude Include="dynamic_library.h" />
-    <ClInclude Include="binary_span_reader_writer.h" />
+    <ClInclude Include="binary_reader_writer.h" />
     <ClInclude Include="gsvector_sse.h" />
     <ClInclude Include="gsvector_neon.h" />
     <ClInclude Include="gsvector.h" />
@@ -77,7 +77,7 @@
       <Filter>thirdparty</Filter>
     </ClCompile>
     <ClCompile Include="dynamic_library.cpp" />
-    <ClCompile Include="binary_span_reader_writer.cpp" />
+    <ClCompile Include="binary_reader_writer.cpp" />
     <ClCompile Include="gsvector.cpp" />
   </ItemGroup>
   <ItemGroup>

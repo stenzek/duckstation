@@ -12,7 +12,7 @@
 #include "util/platform_misc.h"
 #include "util/sockets.h"
 
-#include "common/binary_span_reader_writer.h"
+#include "common/binary_reader_writer.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
