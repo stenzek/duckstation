@@ -10,7 +10,10 @@
 #include "util/imgui_manager.h"
 
 #include "common/assert.h"
+#include "common/binary_reader_writer.h"
 #include "common/byte_stream.h"
+#include "common/error.h"
+#include "common/file_system.h"
 #include "common/heterogeneous_containers.h"
 #include "common/log.h"
 #include "common/path.h"
@@ -862,37 +865,6 @@ std::string GameDatabase::Entry::GenerateCompatibilityReport() const
   return std::string(ret.view());
 }
 
-template<typename T>
-bool ReadOptionalFromStream(ByteStream* stream, std::optional<T>* dest)
-{
-  bool has_value;
-  if (!stream->Read2(&has_value, sizeof(has_value)))
-    return false;
-
-  if (!has_value)
-    return true;
-
-  T value;
-  if (!stream->Read2(&value, sizeof(T)))
-    return false;
-
-  *dest = value;
-  return true;
-}
-
-template<typename T>
-bool WriteOptionalToStream(ByteStream* stream, const std::optional<T>& src)
-{
-  const bool has_value = src.has_value();
-  if (!stream->Write2(&has_value, sizeof(has_value)))
-    return false;
-
-  if (!has_value)
-    return true;
-
-  return stream->Write2(&src.value(), sizeof(T));
-}
-
 static std::string GetCacheFile()
 {
   return Path::Combine(EmuFolders::Cache, "gamedb.cache");
@@ -900,20 +872,20 @@ static std::string GetCacheFile()
 
 bool GameDatabase::LoadFromCache()
 {
-  std::unique_ptr<ByteStream> stream(
-    ByteStream::OpenFile(GetCacheFile().c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED));
-  if (!stream)
+  auto fp = FileSystem::OpenManagedCFile(GetCacheFile().c_str(), "rb");
+  if (!fp)
   {
     DEV_LOG("Cache does not exist, loading full database.");
     return false;
   }
 
+  BinaryFileReader reader(fp.get());
   const u64 gamedb_ts = Host::GetResourceFileTimestamp("gamedb.yaml", false).value_or(0);
 
   u32 signature, version, num_entries, num_codes;
   u64 file_gamedb_ts;
-  if (!stream->ReadU32(&signature) || !stream->ReadU32(&version) || !stream->ReadU64(&file_gamedb_ts) ||
-      !stream->ReadU32(&num_entries) || !stream->ReadU32(&num_codes) || signature != GAME_DATABASE_CACHE_SIGNATURE ||
+  if (!reader.ReadU32(&signature) || !reader.ReadU32(&version) || !reader.ReadU64(&file_gamedb_ts) ||
+      !reader.ReadU32(&num_entries) || !reader.ReadU32(&num_codes) || signature != GAME_DATABASE_CACHE_SIGNATURE ||
       version != GAME_DATABASE_CACHE_VERSION)
   {
     DEV_LOG("Cache header is corrupted or version mismatch.");
@@ -937,29 +909,23 @@ bool GameDatabase::LoadFromCache()
     u8 compatibility;
     u32 num_disc_set_serials;
 
-    if (!stream->ReadSizePrefixedString(&entry.serial) || !stream->ReadSizePrefixedString(&entry.title) ||
-        !stream->ReadSizePrefixedString(&entry.genre) || !stream->ReadSizePrefixedString(&entry.developer) ||
-        !stream->ReadSizePrefixedString(&entry.publisher) ||
-        !stream->ReadSizePrefixedString(&entry.compatibility_version_tested) ||
-        !stream->ReadSizePrefixedString(&entry.compatibility_comments) || !stream->ReadU64(&entry.release_date) ||
-        !stream->ReadU8(&entry.min_players) || !stream->ReadU8(&entry.max_players) ||
-        !stream->ReadU8(&entry.min_blocks) || !stream->ReadU8(&entry.max_blocks) ||
-        !stream->ReadU16(&entry.supported_controllers) || !stream->ReadU8(&compatibility) ||
-        compatibility >= static_cast<u8>(GameDatabase::CompatibilityRating::Count) ||
-        !stream->Read2(bits.data(), num_bytes) ||
-        !ReadOptionalFromStream(stream.get(), &entry.display_active_start_offset) ||
-        !ReadOptionalFromStream(stream.get(), &entry.display_active_end_offset) ||
-        !ReadOptionalFromStream(stream.get(), &entry.display_line_start_offset) ||
-        !ReadOptionalFromStream(stream.get(), &entry.display_line_end_offset) ||
-        !ReadOptionalFromStream(stream.get(), &entry.display_deinterlacing_mode) ||
-        !ReadOptionalFromStream(stream.get(), &entry.dma_max_slice_ticks) ||
-        !ReadOptionalFromStream(stream.get(), &entry.dma_halt_ticks) ||
-        !ReadOptionalFromStream(stream.get(), &entry.gpu_fifo_size) ||
-        !ReadOptionalFromStream(stream.get(), &entry.gpu_max_run_ahead) ||
-        !ReadOptionalFromStream(stream.get(), &entry.gpu_pgxp_tolerance) ||
-        !ReadOptionalFromStream(stream.get(), &entry.gpu_pgxp_depth_threshold) ||
-        !ReadOptionalFromStream(stream.get(), &entry.gpu_line_detect_mode) ||
-        !stream->ReadSizePrefixedString(&entry.disc_set_name) || !stream->ReadU32(&num_disc_set_serials))
+    if (!reader.ReadSizePrefixedString(&entry.serial) || !reader.ReadSizePrefixedString(&entry.title) ||
+        !reader.ReadSizePrefixedString(&entry.genre) || !reader.ReadSizePrefixedString(&entry.developer) ||
+        !reader.ReadSizePrefixedString(&entry.publisher) ||
+        !reader.ReadSizePrefixedString(&entry.compatibility_version_tested) ||
+        !reader.ReadSizePrefixedString(&entry.compatibility_comments) || !reader.ReadU64(&entry.release_date) ||
+        !reader.ReadU8(&entry.min_players) || !reader.ReadU8(&entry.max_players) || !reader.ReadU8(&entry.min_blocks) ||
+        !reader.ReadU8(&entry.max_blocks) || !reader.ReadU16(&entry.supported_controllers) ||
+        !reader.ReadU8(&compatibility) || compatibility >= static_cast<u8>(GameDatabase::CompatibilityRating::Count) ||
+        !reader.Read(bits.data(), num_bytes) || !reader.ReadOptionalT(&entry.display_active_start_offset) ||
+        !reader.ReadOptionalT(&entry.display_active_end_offset) ||
+        !reader.ReadOptionalT(&entry.display_line_start_offset) ||
+        !reader.ReadOptionalT(&entry.display_line_end_offset) ||
+        !reader.ReadOptionalT(&entry.display_deinterlacing_mode) || !reader.ReadOptionalT(&entry.dma_max_slice_ticks) ||
+        !reader.ReadOptionalT(&entry.dma_halt_ticks) || !reader.ReadOptionalT(&entry.gpu_fifo_size) ||
+        !reader.ReadOptionalT(&entry.gpu_max_run_ahead) || !reader.ReadOptionalT(&entry.gpu_pgxp_tolerance) ||
+        !reader.ReadOptionalT(&entry.gpu_pgxp_depth_threshold) || !reader.ReadOptionalT(&entry.gpu_line_detect_mode) ||
+        !reader.ReadSizePrefixedString(&entry.disc_set_name) || !reader.ReadU32(&num_disc_set_serials))
     {
       DEV_LOG("Cache entry is corrupted.");
       return false;
@@ -970,7 +936,7 @@ bool GameDatabase::LoadFromCache()
       entry.disc_set_serials.reserve(num_disc_set_serials);
       for (u32 j = 0; j < num_disc_set_serials; j++)
       {
-        if (!stream->ReadSizePrefixedString(&entry.disc_set_serials.emplace_back()))
+        if (!reader.ReadSizePrefixedString(&entry.disc_set_serials.emplace_back()))
         {
           DEV_LOG("Cache entry is corrupted.");
           return false;
@@ -991,8 +957,7 @@ bool GameDatabase::LoadFromCache()
   {
     std::string code;
     u32 index;
-    if (!stream->ReadSizePrefixedString(&code) || !stream->ReadU32(&index) ||
-        index >= static_cast<u32>(s_entries.size()))
+    if (!reader.ReadSizePrefixedString(&code) || !reader.ReadU32(&index) || index >= static_cast<u32>(s_entries.size()))
     {
       DEV_LOG("Cache code entry is corrupted.");
       return false;
@@ -1008,35 +973,38 @@ bool GameDatabase::SaveToCache()
 {
   const u64 gamedb_ts = Host::GetResourceFileTimestamp("gamedb.yaml", false).value_or(0);
 
-  std::unique_ptr<ByteStream> stream(
-    ByteStream::OpenFile(GetCacheFile().c_str(), BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE |
-                                                   BYTESTREAM_OPEN_TRUNCATE | BYTESTREAM_OPEN_STREAMED));
-  if (!stream)
+  Error error;
+  FileSystem::AtomicRenamedFile file = FileSystem::CreateAtomicRenamedFile(GetCacheFile(), "wb", &error);
+  if (!file)
+  {
+    ERROR_LOG("Failed to open cache file for writing: {}", error.GetDescription());
     return false;
+  }
 
-  bool result = stream->WriteU32(GAME_DATABASE_CACHE_SIGNATURE);
-  result = result && stream->WriteU32(GAME_DATABASE_CACHE_VERSION);
-  result = result && stream->WriteU64(static_cast<u64>(gamedb_ts));
+  BinaryFileWriter writer(file.get());
+  writer.WriteU32(GAME_DATABASE_CACHE_SIGNATURE);
+  writer.WriteU32(GAME_DATABASE_CACHE_VERSION);
+  writer.WriteU64(static_cast<u64>(gamedb_ts));
 
-  result = result && stream->WriteU32(static_cast<u32>(s_entries.size()));
-  result = result && stream->WriteU32(static_cast<u32>(s_code_lookup.size()));
+  writer.WriteU32(static_cast<u32>(s_entries.size()));
+  writer.WriteU32(static_cast<u32>(s_code_lookup.size()));
 
   for (const Entry& entry : s_entries)
   {
-    result = result && stream->WriteSizePrefixedString(entry.serial);
-    result = result && stream->WriteSizePrefixedString(entry.title);
-    result = result && stream->WriteSizePrefixedString(entry.genre);
-    result = result && stream->WriteSizePrefixedString(entry.developer);
-    result = result && stream->WriteSizePrefixedString(entry.publisher);
-    result = result && stream->WriteSizePrefixedString(entry.compatibility_version_tested);
-    result = result && stream->WriteSizePrefixedString(entry.compatibility_comments);
-    result = result && stream->WriteU64(entry.release_date);
-    result = result && stream->WriteU8(entry.min_players);
-    result = result && stream->WriteU8(entry.max_players);
-    result = result && stream->WriteU8(entry.min_blocks);
-    result = result && stream->WriteU8(entry.max_blocks);
-    result = result && stream->WriteU16(entry.supported_controllers);
-    result = result && stream->WriteU8(static_cast<u8>(entry.compatibility));
+    writer.WriteSizePrefixedString(entry.serial);
+    writer.WriteSizePrefixedString(entry.title);
+    writer.WriteSizePrefixedString(entry.genre);
+    writer.WriteSizePrefixedString(entry.developer);
+    writer.WriteSizePrefixedString(entry.publisher);
+    writer.WriteSizePrefixedString(entry.compatibility_version_tested);
+    writer.WriteSizePrefixedString(entry.compatibility_comments);
+    writer.WriteU64(entry.release_date);
+    writer.WriteU8(entry.min_players);
+    writer.WriteU8(entry.max_players);
+    writer.WriteU8(entry.min_blocks);
+    writer.WriteU8(entry.max_blocks);
+    writer.WriteU16(entry.supported_controllers);
+    writer.WriteU8(static_cast<u8>(entry.compatibility));
 
     constexpr u32 num_bytes = (static_cast<u32>(Trait::Count) + 7) / 8;
     std::array<u8, num_bytes> bits;
@@ -1047,34 +1015,33 @@ bool GameDatabase::SaveToCache()
         bits[j / 8] |= (1u << (j % 8));
     }
 
-    result = result && stream->Write2(bits.data(), num_bytes);
+    writer.Write(bits.data(), num_bytes);
 
-    result = result && WriteOptionalToStream(stream.get(), entry.display_active_start_offset);
-    result = result && WriteOptionalToStream(stream.get(), entry.display_active_end_offset);
-    result = result && WriteOptionalToStream(stream.get(), entry.display_line_start_offset);
-    result = result && WriteOptionalToStream(stream.get(), entry.display_line_end_offset);
-    result = result && WriteOptionalToStream(stream.get(), entry.display_deinterlacing_mode);
-    result = result && WriteOptionalToStream(stream.get(), entry.dma_max_slice_ticks);
-    result = result && WriteOptionalToStream(stream.get(), entry.dma_halt_ticks);
-    result = result && WriteOptionalToStream(stream.get(), entry.gpu_fifo_size);
-    result = result && WriteOptionalToStream(stream.get(), entry.gpu_max_run_ahead);
-    result = result && WriteOptionalToStream(stream.get(), entry.gpu_pgxp_tolerance);
-    result = result && WriteOptionalToStream(stream.get(), entry.gpu_pgxp_depth_threshold);
-    result = result && WriteOptionalToStream(stream.get(), entry.gpu_line_detect_mode);
+    writer.WriteOptionalT(entry.display_active_start_offset);
+    writer.WriteOptionalT(entry.display_active_end_offset);
+    writer.WriteOptionalT(entry.display_line_start_offset);
+    writer.WriteOptionalT(entry.display_line_end_offset);
+    writer.WriteOptionalT(entry.display_deinterlacing_mode);
+    writer.WriteOptionalT(entry.dma_max_slice_ticks);
+    writer.WriteOptionalT(entry.dma_halt_ticks);
+    writer.WriteOptionalT(entry.gpu_fifo_size);
+    writer.WriteOptionalT(entry.gpu_max_run_ahead);
+    writer.WriteOptionalT(entry.gpu_pgxp_tolerance);
+    writer.WriteOptionalT(entry.gpu_pgxp_depth_threshold);
+    writer.WriteOptionalT(entry.gpu_line_detect_mode);
 
-    result = result && stream->WriteSizePrefixedString(entry.disc_set_name);
-    result = result && stream->WriteU32(static_cast<u32>(entry.disc_set_serials.size()));
+    writer.WriteSizePrefixedString(entry.disc_set_name);
+    writer.WriteU32(static_cast<u32>(entry.disc_set_serials.size()));
     for (const std::string& serial : entry.disc_set_serials)
-      result = result && stream->WriteSizePrefixedString(serial);
+      writer.WriteSizePrefixedString(serial);
   }
 
   for (const auto& it : s_code_lookup)
   {
-    result = result && stream->WriteSizePrefixedString(it.first);
-    result = result && stream->WriteU32(it.second);
+    writer.WriteSizePrefixedString(it.first);
+    writer.WriteU32(it.second);
   }
 
-  result = result && stream->Flush();
   return true;
 }
 
