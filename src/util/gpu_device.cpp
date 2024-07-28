@@ -1192,6 +1192,7 @@ std::unique_ptr<GPUDevice> GPUDevice::CreateDeviceForAPI(RenderAPI api)
   X(shaderc_result_get_length)                                                                                         \
   X(shaderc_result_get_num_warnings)                                                                                   \
   X(shaderc_result_get_bytes)                                                                                          \
+  X(shaderc_result_get_compilation_status)                                                                             \
   X(shaderc_result_get_error_message)
 
 #define SPIRV_CROSS_FUNCTIONS(X)                                                                                       \
@@ -1305,7 +1306,13 @@ bool dyn_libs::OpenSpirvCross(Error* error)
   if (s_spirv_cross_library.IsOpen())
     return true;
 
+#ifdef _WIN32
+  // SPVC's build on Windows doesn't spit out a versioned DLL.
   const std::string libname = DynamicLibrary::GetVersionedFilename("spirv-cross-c-shared");
+#else
+  const std::string libname = DynamicLibrary::GetVersionedFilename("spirv-cross-c-shared", SPVC_C_API_VERSION_MAJOR,
+                                                                   SPVC_C_API_VERSION_MINOR, SPVC_C_API_VERSION_PATCH);
+#endif
   if (!s_spirv_cross_library.Open(libname.c_str(), error))
   {
     Error::AddPrefix(error, "Failed to load spirv-cross: ");
@@ -1378,7 +1385,7 @@ bool GPUDevice::CompileGLSLShaderToVulkanSpv(GPUShaderStage stage, GPUShaderLang
   if (!dyn_libs::OpenShaderc(error))
     return false;
 
-  shaderc_compile_options_t options = dyn_libs::shaderc_compile_options_initialize();
+  const shaderc_compile_options_t options = dyn_libs::shaderc_compile_options_initialize();
   AssertMsg(options, "shaderc_compile_options_initialize() failed");
 
   dyn_libs::shaderc_compile_options_set_source_language(options, shaderc_source_language_glsl);
@@ -1388,10 +1395,11 @@ bool GPUDevice::CompileGLSLShaderToVulkanSpv(GPUShaderStage stage, GPUShaderLang
   dyn_libs::shaderc_compile_options_set_optimization_level(
     options, optimization ? shaderc_optimization_level_performance : shaderc_optimization_level_zero);
 
-  shaderc_compilation_result_t result;
-  const shaderc_compilation_status status = dyn_libs::shaderc_compile_into_spv(
-    dyn_libs::s_shaderc_compiler, source.data(), source.length(), stage_kinds[static_cast<size_t>(stage)], "source",
-    entry_point, options, &result);
+  const shaderc_compilation_result_t result =
+    dyn_libs::shaderc_compile_into_spv(dyn_libs::s_shaderc_compiler, source.data(), source.length(),
+                                       stage_kinds[static_cast<size_t>(stage)], "source", entry_point, options);
+  const shaderc_compilation_status status =
+    result ? dyn_libs::shaderc_result_get_compilation_status(result) : shaderc_compilation_status_internal_error;
   if (status != shaderc_compilation_status_success)
   {
     const std::string_view errors(result ? dyn_libs::shaderc_result_get_error_message(result) : "null result object");

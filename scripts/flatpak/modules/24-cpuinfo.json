@@ -20,12 +20,8 @@
   "sources": [
     {
       "type": "git",
-      "url": "https://github.com/pytorch/cpuinfo.git",
-      "commit": "05332fd802d9109a2a151ec32154b107c1e5caf9"
-    },
-    {
-      "type": "patch",
-      "path": "../../deps/cpuinfo-changes.patch"
+      "url": "https://github.com/stenzek/cpuinfo.git",
+      "commit": "7524ad504fdcfcf75a18a133da6abd75c5d48053"
     }
   ],
   "cleanup": [
