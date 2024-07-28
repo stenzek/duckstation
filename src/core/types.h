@@ -167,7 +167,7 @@ enum class DisplayScalingMode : u8
   NearestInteger,
   BilinearSmooth,
   BilinearSharp,
-  BlinearInteger,
+  BilinearInteger,
   Count
 };
 

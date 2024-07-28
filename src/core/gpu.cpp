@@ -1766,6 +1766,7 @@ bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_sm
         break;
 
       case DisplayScalingMode::BilinearSmooth:
+      case DisplayScalingMode::BilinearInteger:
         fs = shadergen.GenerateDisplayFragmentShader(true);
         break;
 
@@ -2024,7 +2025,7 @@ bool GPU::RenderDisplay(GPUTexture* target, const GSVector4i draw_rect, bool pos
         break;
 
       case DisplayScalingMode::BilinearSmooth:
-      case DisplayScalingMode::BlinearInteger:
+      case DisplayScalingMode::BilinearInteger:
         texture_filter_linear = true;
         break;
 
@@ -2343,7 +2344,7 @@ GSVector4i GPU::CalculateDrawRect(s32 window_width, s32 window_height, bool appl
                                   bool apply_aspect_ratio) const
 {
   const bool integer_scale = (g_settings.display_scaling == DisplayScalingMode::NearestInteger ||
-                              g_settings.display_scaling == DisplayScalingMode::BlinearInteger);
+                              g_settings.display_scaling == DisplayScalingMode::BilinearInteger);
   const bool show_vram = g_settings.debugging.show_vram;
   const float display_aspect_ratio = ComputeDisplayAspectRatio();
   const float window_ratio = static_cast<float>(window_width) / static_cast<float>(window_height);
