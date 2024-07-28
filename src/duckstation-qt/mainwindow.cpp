@@ -33,6 +33,7 @@
 #include "util/gpu_device.h"
 
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 
@@ -2965,9 +2966,14 @@ void MainWindow::openMemoryCardEditor(const QString& card_a_path, const QString&
             tr("Memory card '%1' does not exist. Do you want to create an empty memory card?").arg(card_path),
             QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
       {
-        if (!MemoryCardEditorWindow::createMemoryCard(card_path))
+        Error error;
+        if (!MemoryCardEditorWindow::createMemoryCard(card_path, &error))
+        {
           QMessageBox::critical(this, tr("Memory Card Not Found"),
-                                tr("Failed to create memory card '%1'").arg(card_path));
+                                tr("Failed to create memory card '%1': %2")
+                                  .arg(card_path)
+                                  .arg(QString::fromStdString(error.GetDescription())));
+        }
       }
     }
   }

@@ -95,7 +95,6 @@ private:
 
   static TickCount GetSaveDelayInTicks();
 
-  bool LoadFromFile();
   bool SaveIfChanged(bool display_osd_message);
   void QueueFileSave();
 

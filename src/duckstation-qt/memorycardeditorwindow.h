@@ -14,6 +14,8 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QTableWidget>
 
+class Error;
+
 class MemoryCardEditorWindow : public QWidget
 {
   Q_OBJECT
@@ -25,7 +27,7 @@ public:
   bool setCardA(const QString& path);
   bool setCardB(const QString& path);
 
-  static bool createMemoryCard(const QString& path);
+  static bool createMemoryCard(const QString& path, Error* error);
 
 protected:
   void resizeEvent(QResizeEvent* ev);

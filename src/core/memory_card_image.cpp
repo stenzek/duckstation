@@ -9,7 +9,6 @@
 #include "util/state_wrapper.h"
 
 #include "common/bitutils.h"
-#include "common/byte_stream.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
@@ -97,17 +96,21 @@ static bool ImportSaveWithDirectoryFrame(DataArray* data, const char* filename, 
 static bool ImportRawSave(DataArray* data, const char* filename, const FILESYSTEM_STAT_DATA& sd, Error* error);
 } // namespace MemoryCardImage
 
-bool MemoryCardImage::LoadFromFile(DataArray* data, const char* filename)
+bool MemoryCardImage::LoadFromFile(DataArray* data, const char* filename, Error* error)
 {
-  FILESYSTEM_STAT_DATA sd;
-  if (!FileSystem::StatFile(filename, &sd) || sd.Size != DATA_SIZE)
+  FileSystem::ManagedCFilePtr fp = FileSystem::OpenManagedCFile(filename, "rb", error);
+  if (!fp)
     return false;
 
-  std::unique_ptr<ByteStream> stream = ByteStream::OpenFile(filename, BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
-  if (!stream || stream->GetSize() != DATA_SIZE)
+  const s64 size = FileSystem::FSize64(fp.get());
+  if (size != static_cast<s64>(DATA_SIZE))
+  {
+    ERROR_LOG("Memory card {} is incorrect size (expected {} got {})", Path::GetFileName(filename),
+              static_cast<u32>(DATA_SIZE), size);
     return false;
+  }
 
-  const size_t num_read = stream->Read(data->data(), DATA_SIZE);
+  const size_t num_read = std::fread(data->data(), 1, DATA_SIZE, fp.get());
   if (num_read != DATA_SIZE)
   {
     ERROR_LOG("Only read {} of {} sectors from '{}'", num_read / FRAME_SIZE, static_cast<u32>(NUM_FRAMES), filename);
@@ -118,25 +121,17 @@ bool MemoryCardImage::LoadFromFile(DataArray* data, const char* filename)
   return true;
 }
 
-bool MemoryCardImage::SaveToFile(const DataArray& data, const char* filename)
+bool MemoryCardImage::SaveToFile(const DataArray& data, const char* filename, Error* error)
 {
-  std::unique_ptr<ByteStream> stream =
-    ByteStream::OpenFile(filename, BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_TRUNCATE | BYTESTREAM_OPEN_WRITE |
-                                     BYTESTREAM_OPEN_ATOMIC_UPDATE | BYTESTREAM_OPEN_STREAMED);
-  if (!stream)
+  Error local_error;
+  if (!FileSystem::WriteAtomicRenamedFile(filename, data.data(), data.size(), error ? error : &local_error))
+    [[unlikely]]
   {
-    ERROR_LOG("Failed to open '{}' for writing.", filename);
+    ERROR_LOG("Failed to save memory card '{}': {}", Path::GetFileName(filename),
+              (error ? error : &local_error)->GetDescription());
     return false;
   }
 
-  if (!stream->Write2(data.data(), DATA_SIZE) || !stream->Commit())
-  {
-    ERROR_LOG("Failed to write sectors to '{}'", filename);
-    stream->Discard();
-    return false;
-  }
-
-  VERBOSE_LOG("Saved memory card to '{}'", filename);
   return true;
 }
 
@@ -634,27 +629,21 @@ bool MemoryCardImage::ImportCard(DataArray* data, const char* filename, Error* e
 
 bool MemoryCardImage::ExportSave(DataArray* data, const FileInfo& fi, const char* filename, Error* error)
 {
-  std::unique_ptr<ByteStream> stream =
-    ByteStream::OpenFile(filename,
-                         BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_TRUNCATE | BYTESTREAM_OPEN_WRITE |
-                           BYTESTREAM_OPEN_ATOMIC_UPDATE | BYTESTREAM_OPEN_STREAMED,
-                         error);
-  if (!stream)
+  // TODO: This could be span...
+  std::vector<u8> file_data;
+  if (!ReadFile(*data, fi, &file_data, error))
+    return false;
+
+  auto fp = FileSystem::CreateAtomicRenamedFile(filename, "wb", error);
+  if (!fp)
     return false;
 
   DirectoryFrame* df_ptr = GetFramePtr<DirectoryFrame>(data, 0, fi.first_block);
-  std::vector<u8> header = std::vector<u8>(static_cast<size_t>(FRAME_SIZE));
-  std::memcpy(header.data(), df_ptr, sizeof(*df_ptr));
-
-  std::vector<u8> blocks;
-  if (!ReadFile(*data, fi, &blocks, error))
-    return false;
-
-  if (!stream->Write(header.data(), static_cast<u32>(header.size())) ||
-      !stream->Write(blocks.data(), static_cast<u32>(blocks.size())) || !stream->Commit())
+  if (std::fwrite(df_ptr, sizeof(DirectoryFrame), 1, fp.get()) != 1 ||
+      std::fwrite(file_data.data(), file_data.size(), 1, fp.get()) != 1)
   {
-    Error::SetStringView(error, "Failed to write exported save.");
-    stream->Discard();
+    Error::SetErrno(error, "fwrite() failed: ", errno);
+    FileSystem::DiscardAtomicRenamedFile(fp);
     return false;
   }
 
@@ -671,15 +660,14 @@ bool MemoryCardImage::ImportSaveWithDirectoryFrame(DataArray* data, const char* 
     return false;
   }
 
-  std::unique_ptr<ByteStream> stream =
-    ByteStream::OpenFile(filename, BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED, error);
-  if (!stream)
+  auto fp = FileSystem::OpenManagedCFile(filename, "rb", error);
+  if (!fp)
     return false;
 
   DirectoryFrame df;
-  if (stream->Read(&df, FRAME_SIZE) != FRAME_SIZE)
+  if (std::fread(&df, sizeof(df), 1, fp.get()) != 1)
   {
-    Error::SetStringView(error, "Failed to read directory frame.");
+    Error::SetErrno(error, "Failed to read directory frame: ", errno);
     return false;
   }
 
@@ -691,9 +679,9 @@ bool MemoryCardImage::ImportSaveWithDirectoryFrame(DataArray* data, const char* 
   }
 
   std::vector<u8> blocks = std::vector<u8>(static_cast<size_t>(df.file_size));
-  if (stream->Read(blocks.data(), df.file_size) != df.file_size)
+  if (std::fread(blocks.data(), df.file_size, 1, fp.get()) != 1)
   {
-    Error::SetStringView(error, "Failed to read block bytes.");
+    Error::SetErrno(error, "Failed to read block bytes: ", errno);
     return false;
   }
 

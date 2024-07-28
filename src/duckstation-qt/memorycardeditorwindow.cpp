@@ -96,12 +96,12 @@ bool MemoryCardEditorWindow::setCardB(const QString& path)
   return true;
 }
 
-bool MemoryCardEditorWindow::createMemoryCard(const QString& path)
+bool MemoryCardEditorWindow::createMemoryCard(const QString& path, Error* error)
 {
   MemoryCardImage::DataArray data;
   MemoryCardImage::Format(&data);
 
-  return MemoryCardImage::SaveToFile(data, path.toUtf8().constData());
+  return MemoryCardImage::SaveToFile(data, path.toUtf8().constData(), error);
 }
 
 void MemoryCardEditorWindow::resizeEvent(QResizeEvent* ev)
@@ -232,10 +232,12 @@ bool MemoryCardEditorWindow::loadCard(const QString& filename, Card* card)
     return false;
   }
 
+  Error error;
   std::string filename_str = filename.toStdString();
-  if (!MemoryCardImage::LoadFromFile(&card->data, filename_str.c_str()))
+  if (!MemoryCardImage::LoadFromFile(&card->data, filename_str.c_str(), &error))
   {
-    QMessageBox::critical(this, tr("Error"), tr("Failed to load memory card image."));
+    QMessageBox::critical(this, tr("Error"),
+                          tr("Failed to load memory card: %1").arg(QString::fromStdString(error.GetDescription())));
     return false;
   }
 
@@ -343,9 +345,11 @@ void MemoryCardEditorWindow::openCard(Card* card)
   if (filename.isEmpty())
     return;
 
-  if (!MemoryCardImage::LoadFromFile(&card->data, filename.toUtf8().constData()))
+  Error error;
+  if (!MemoryCardImage::LoadFromFile(&card->data, filename.toUtf8().constData(), &error))
   {
-    QMessageBox::critical(this, tr("Error"), tr("Failed to load memory card image."));
+    QMessageBox::critical(this, tr("Error"),
+                          tr("Failed to load memory card: %1").arg(QString::fromStdString(error.GetDescription())));
     return;
   }
 
@@ -368,10 +372,11 @@ void MemoryCardEditorWindow::saveCard(Card* card)
   if (card->filename.empty())
     return;
 
-  if (!MemoryCardImage::SaveToFile(card->data, card->filename.c_str()))
+  Error error;
+  if (!MemoryCardImage::SaveToFile(card->data, card->filename.c_str(), &error))
   {
     QMessageBox::critical(this, tr("Error"),
-                          tr("Failed to write card to '%1'").arg(QString::fromStdString(card->filename)));
+                          tr("Failed to save memory card: %1").arg(QString::fromStdString(error.GetDescription())));
     return;
   }
 

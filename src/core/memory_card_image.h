@@ -25,8 +25,8 @@ enum : u32
 
 using DataArray = std::array<u8, DATA_SIZE>;
 
-bool LoadFromFile(DataArray* data, const char* filename);
-bool SaveToFile(const DataArray& data, const char* filename);
+bool LoadFromFile(DataArray* data, const char* filename, Error* error);
+bool SaveToFile(const DataArray& data, const char* filename, Error* error);
 
 void Format(DataArray* data);
 

@@ -1735,8 +1735,9 @@ std::string GameList::GetGameIconPath(std::string_view serial, std::string_view 
   StringUtil::Strlcpy(serial_entry->serial, index_serial.view(), sizeof(serial_entry->serial));
 
   // Try extracting an icon.
+  Error error;
   MemoryCardImage::DataArray data;
-  if (MemoryCardImage::LoadFromFile(&data, memcard_path.c_str()))
+  if (MemoryCardImage::LoadFromFile(&data, memcard_path.c_str(), &error))
   {
     std::vector<MemoryCardImage::FileInfo> files = MemoryCardImage::EnumerateFiles(data, false);
     if (!files.empty())
@@ -1759,6 +1760,10 @@ std::string GameList::GetGameIconPath(std::string_view serial, std::string_view 
         }
       }
     }
+  }
+  else
+  {
+    ERROR_LOG("Failed to load memory card '{}': {}", Path::GetFileName(memcard_path), error.GetDescription());
   }
 
   UpdateMemcardTimestampCache(*serial_entry);
