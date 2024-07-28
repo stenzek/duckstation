@@ -19,6 +19,7 @@ Log_SetChannel(BIOS);
 
 namespace BIOS {
 static const ImageInfo* GetInfoForHash(const std::span<u8> image, const ImageInfo::Hash& hash);
+static void PatchBIOS(u8* image, u32 image_size, u32 address, u32 value, u32 mask = UINT32_C(0xFFFFFFFF));
 
 static constexpr ImageInfo::Hash MakeHashFromString(const char str[])
 {
@@ -255,54 +256,16 @@ bool BIOS::PatchBIOSFastBoot(u8* image, u32 image_size)
   return true;
 }
 
-bool BIOS::PatchBIOSForEXE(u8* image, u32 image_size, u32 r_pc, u32 r_gp, u32 r_sp, u32 r_fp)
-{
-#define PATCH(offset, value) PatchBIOS(image, image_size, (offset), (value))
-
-  // pc has to be done first because we can't load it in the delay slot
-  PATCH(0xBFC06FF0, UINT32_C(0x3C080000) | r_pc >> 16);                // lui $t0, (r_pc >> 16)
-  PATCH(0xBFC06FF4, UINT32_C(0x35080000) | (r_pc & UINT32_C(0xFFFF))); // ori $t0, $t0, (r_pc & 0xFFFF)
-  PATCH(0xBFC06FF8, UINT32_C(0x3C1C0000) | r_gp >> 16);                // lui $gp, (r_gp >> 16)
-  PATCH(0xBFC06FFC, UINT32_C(0x379C0000) | (r_gp & UINT32_C(0xFFFF))); // ori $gp, $gp, (r_gp & 0xFFFF)
-
-  if (r_sp != 0)
-  {
-    PATCH(0xBFC07000, UINT32_C(0x3C1D0000) | r_sp >> 16);                // lui $sp, (r_sp >> 16)
-    PATCH(0xBFC07004, UINT32_C(0x37BD0000) | (r_sp & UINT32_C(0xFFFF))); // ori $sp, $sp, (r_sp & 0xFFFF)
-  }
-  else
-  {
-    PATCH(0xBFC07000, UINT32_C(0x00000000)); // nop
-    PATCH(0xBFC07004, UINT32_C(0x00000000)); // nop
-  }
-  if (r_fp != 0)
-  {
-    PATCH(0xBFC07008, UINT32_C(0x3C1E0000) | r_fp >> 16);                // lui $fp, (r_fp >> 16)
-    PATCH(0xBFC0700C, UINT32_C(0x01000008));                             // jr $t0
-    PATCH(0xBFC07010, UINT32_C(0x37DE0000) | (r_fp & UINT32_C(0xFFFF))); // ori $fp, $fp, (r_fp & 0xFFFF)
-  }
-  else
-  {
-    PATCH(0xBFC07008, UINT32_C(0x00000000)); // nop
-    PATCH(0xBFC0700C, UINT32_C(0x01000008)); // jr $t0
-    PATCH(0xBFC07010, UINT32_C(0x00000000)); // nop
-  }
-
-#undef PATCH
-
-  return true;
-}
-
-bool BIOS::IsValidPSExeHeader(const PSEXEHeader& header, u32 file_size)
+bool BIOS::IsValidPSExeHeader(const PSEXEHeader& header, size_t file_size)
 {
   static constexpr char expected_id[] = {'P', 'S', '-', 'X', ' ', 'E', 'X', 'E'};
-  if (std::memcmp(header.id, expected_id, sizeof(expected_id)) != 0)
+  if (file_size < sizeof(expected_id) || std::memcmp(header.id, expected_id, sizeof(expected_id)) != 0)
     return false;
 
   if ((header.file_size + sizeof(PSEXEHeader)) > file_size)
   {
     WARNING_LOG("Incorrect file size in PS-EXE header: {} bytes should not be greater than {} bytes", header.file_size,
-                static_cast<unsigned>(file_size - sizeof(PSEXEHeader)));
+                file_size - sizeof(PSEXEHeader));
   }
 
   return true;

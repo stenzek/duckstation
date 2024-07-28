@@ -202,7 +202,7 @@ bool GameList::GetPsfListEntry(const std::string& path, Entry* entry)
 {
   // we don't need to walk the library chain here - the top file is enough
   PSFLoader::File file;
-  if (!file.Load(path.c_str()))
+  if (!file.Load(path.c_str(), nullptr))
     return false;
 
   entry->serial.clear();

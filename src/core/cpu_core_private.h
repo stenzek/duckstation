@@ -7,6 +7,8 @@
 
 namespace CPU {
 
+void SetPC(u32 new_pc);
+
 // exceptions
 void RaiseException(Exception excode);
 void RaiseException(u32 CAUSE_bits, u32 EPC);

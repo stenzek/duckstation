@@ -278,7 +278,7 @@ std::string Achievements::GetGameHash(CDImage* image)
   BIOS::PSEXEHeader header = {};
   if (executable_data.size() >= sizeof(header))
     std::memcpy(&header, executable_data.data(), sizeof(header));
-  if (!BIOS::IsValidPSExeHeader(header, static_cast<u32>(executable_data.size())))
+  if (!BIOS::IsValidPSExeHeader(header, executable_data.size()))
   {
     ERROR_LOG("PS-EXE header is invalid in '{}' ({} bytes)", executable_name, executable_data.size());
     return {};

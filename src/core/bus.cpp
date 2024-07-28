@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "bus.h"
+#include "bios.h"
 #include "cdrom.h"
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
@@ -13,6 +14,7 @@
 #include "interrupt_controller.h"
 #include "mdec.h"
 #include "pad.h"
+#include "psf_loader.h"
 #include "settings.h"
 #include "sio.h"
 #include "spu.h"
@@ -20,14 +22,17 @@
 #include "timers.h"
 #include "timing_event.h"
 
+#include "util/cd_image.h"
 #include "util/state_wrapper.h"
 
 #include "common/align.h"
 #include "common/assert.h"
 #include "common/error.h"
+#include "common/file_system.h"
 #include "common/intrin.h"
 #include "common/log.h"
 #include "common/memmap.h"
+#include "common/path.h"
 
 #include <cstdio>
 #include <tuple>
@@ -146,6 +151,8 @@ static std::vector<std::pair<u8*, size_t>> s_fastmem_ram_views;
 
 static u8** s_fastmem_lut = nullptr;
 
+static bool s_kernel_initialize_hook_run = false;
+
 static void SetRAMSize(bool enable_8mb_ram);
 
 static std::tuple<TickCount, TickCount, TickCount> CalculateMemoryTiming(MEMDELAY mem_delay, COMDELAY common_delay);
@@ -154,6 +161,9 @@ static void RecalculateMemoryTimings();
 static u8* GetLUTFastmemPointer(u32 address, u8* ram_ptr);
 
 static void SetRAMPageWritable(u32 page_index, bool writable);
+
+static void KernelInitializedHook();
+static bool SideloadEXE(const std::string& path, Error* error);
 
 static void SetHandlers();
 static void UpdateMappedRAMSize();
@@ -348,6 +358,7 @@ void Bus::Reset()
   s_MEMCTRL.exp2_delay_size.bits = 0x00070777;
   s_MEMCTRL.common_delay.bits = 0x00031125;
   g_ram_code_bits = {};
+  s_kernel_initialize_hook_run = false;
   RecalculateMemoryTimings();
 
   // Avoid remapping if unchanged.
@@ -356,35 +367,6 @@ void Bus::Reset()
     s_RAM_SIZE.bits = 0x00000B88;
     UpdateMappedRAMSize();
   }
-}
-
-void Bus::AddTTYCharacter(char ch)
-{
-  if (ch == '\r')
-  {
-  }
-  else if (ch == '\n')
-  {
-    if (!s_tty_line_buffer.empty())
-    {
-      Log::FastWrite("TTY", "", LOGLEVEL_INFO, "\033[1;34m{}\033[0m", s_tty_line_buffer);
-#ifdef _DEBUG
-      if (CPU::IsTraceEnabled())
-        CPU::WriteToExecutionLog("TTY: %s\n", s_tty_line_buffer.c_str());
-#endif
-    }
-    s_tty_line_buffer.clear();
-  }
-  else
-  {
-    s_tty_line_buffer += ch;
-  }
-}
-
-void Bus::AddTTYString(std::string_view str)
-{
-  for (char ch : str)
-    AddTTYCharacter(ch);
 }
 
 bool Bus::DoState(StateWrapper& sw)
@@ -420,12 +402,10 @@ bool Bus::DoState(StateWrapper& sw)
     UpdateMappedRAMSize();
 
   sw.Do(&s_tty_line_buffer);
-  return !sw.HasError();
-}
 
-void Bus::SetExpansionROM(std::vector<u8> data)
-{
-  s_exp1_rom = std::move(data);
+  sw.DoEx(&s_kernel_initialize_hook_run, 68, true);
+
+  return !sw.HasError();
 }
 
 std::tuple<TickCount, TickCount, TickCount> Bus::CalculateMemoryTiming(MEMDELAY mem_delay, COMDELAY common_delay)
@@ -863,6 +843,146 @@ std::optional<PhysicalMemoryAddress> Bus::SearchMemory(PhysicalMemoryAddress sta
   return std::nullopt;
 }
 
+void Bus::SetExpansionROM(std::vector<u8> data)
+{
+  s_exp1_rom = std::move(data);
+}
+
+void Bus::AddTTYCharacter(char ch)
+{
+  if (ch == '\r')
+  {
+  }
+  else if (ch == '\n')
+  {
+    if (!s_tty_line_buffer.empty())
+    {
+      Log::FastWrite("TTY", "", LOGLEVEL_INFO, "\033[1;34m{}\033[0m", s_tty_line_buffer);
+#ifdef _DEBUG
+      if (CPU::IsTraceEnabled())
+        CPU::WriteToExecutionLog("TTY: %s\n", s_tty_line_buffer.c_str());
+#endif
+    }
+    s_tty_line_buffer.clear();
+  }
+  else
+  {
+    s_tty_line_buffer += ch;
+  }
+}
+
+void Bus::AddTTYString(std::string_view str)
+{
+  for (char ch : str)
+    AddTTYCharacter(ch);
+}
+
+bool Bus::InjectExecutable(std::span<const u8> buffer, bool set_pc, Error* error)
+{
+  BIOS::PSEXEHeader header;
+  if (buffer.size() < sizeof(header))
+  {
+    Error::SetStringView(error, "Executable does not contain a header.");
+    return false;
+  }
+
+  std::memcpy(&header, buffer.data(), sizeof(header));
+  if (!BIOS::IsValidPSExeHeader(header, buffer.size()))
+  {
+    Error::SetStringView(error, "Executable does not contain a valid header.");
+    return false;
+  }
+
+  if (header.memfill_size > 0)
+  {
+    const u32 words_to_write = header.memfill_size / 4;
+    u32 address = header.memfill_start & ~UINT32_C(3);
+    for (u32 i = 0; i < words_to_write; i++)
+    {
+      CPU::SafeWriteMemoryWord(address, 0);
+      address += sizeof(u32);
+    }
+  }
+
+  const u32 data_load_size =
+    std::min(static_cast<u32>(static_cast<u32>(buffer.size() - sizeof(BIOS::PSEXEHeader))), header.file_size);
+  if (data_load_size > 0)
+  {
+    if (!CPU::SafeWriteMemoryBytes(header.load_address, &buffer[sizeof(header)], data_load_size))
+    {
+      Error::SetStringFmt(error, "Failed to upload {} bytes to memory at address 0x{:08X}.", data_load_size,
+                          header.load_address);
+    }
+  }
+
+  // patch the BIOS to jump to the executable directly
+  if (set_pc)
+  {
+    const u32 r_pc = header.initial_pc;
+    CPU::g_state.regs.gp = header.initial_gp;
+    CPU::g_state.regs.sp = header.initial_sp_base + header.initial_sp_offset;
+    CPU::g_state.regs.fp = header.initial_sp_base + header.initial_sp_offset;
+    CPU::SetPC(r_pc);
+  }
+
+  return true;
+}
+
+void Bus::KernelInitializedHook()
+{
+  if (s_kernel_initialize_hook_run)
+    return;
+
+  INFO_LOG("Kernel initialized.");
+  s_kernel_initialize_hook_run = true;
+
+  const System::BootMode boot_mode = System::GetBootMode();
+  if (boot_mode == System::BootMode::BootEXE || boot_mode == System::BootMode::BootPSF)
+  {
+    Error error;
+    if (((boot_mode == System::BootMode::BootEXE) ? SideloadEXE(System::GetExeOverride(), &error) :
+                                                    PSFLoader::Load(System::GetExeOverride(), &error)))
+    {
+      // Clear all state, since we're blatently overwriting memory.
+      CPU::CodeCache::Reset();
+      CPU::ClearICache();
+
+      // Stop executing the current block and shell init, and jump straight to the new code.
+      DebugAssert(!TimingEvents::IsRunningEvents());
+      CPU::ExitExecution();
+    }
+    else
+    {
+      // Shut down system on load failure.
+      Host::ReportErrorAsync("EXE/PSF Load Failed", error.GetDescription());
+      System::ShutdownSystem(false);
+    }
+  }
+}
+
+bool Bus::SideloadEXE(const std::string& path, Error* error)
+{
+  // look for a libps.exe next to the exe, if it exists, load it
+  bool okay = true;
+  if (const std::string libps_path = Path::BuildRelativePath(path, "libps.exe");
+      FileSystem::FileExists(libps_path.c_str()))
+  {
+    const std::optional<std::vector<u8>> exe_data = FileSystem::ReadBinaryFile(libps_path.c_str(), error);
+    okay = (exe_data.has_value() && InjectExecutable(exe_data.value(), false, error));
+    if (!okay)
+      Error::AddPrefix(error, "Failed to load libps.exe: ");
+  }
+  if (okay)
+  {
+    const std::optional<std::vector<u8>> exe_data = FileSystem::ReadBinaryFile(System::GetExeOverride().c_str(), error);
+    okay = (exe_data.has_value() && InjectExecutable(exe_data.value(), true, error));
+    if (!okay)
+      Error::AddPrefixFmt(error, "Failed to load {}: ", Path::GetFileName(path));
+  }
+
+  return okay;
+}
+
 #define BUS_CYCLES(n) CPU::g_state.pending_ticks += n
 
 // TODO: Move handlers to own files for better inlining.
@@ -1192,7 +1312,10 @@ void Bus::EXP2WriteHandler(VirtualMemoryAddress address, u32 value)
   }
   else if (offset == 0x41 || offset == 0x42)
   {
-    DEV_LOG("BIOS POST status: {:02X}", value & UINT32_C(0x0F));
+    const u32 post_code = value & UINT32_C(0x0F);
+    DEV_LOG("BIOS POST status: {:02X}", post_code);
+    if (post_code == 0x07)
+      KernelInitializedHook();
   }
   else if (offset == 0x70)
   {
@@ -1233,7 +1356,12 @@ void Bus::EXP3WriteHandler(VirtualMemoryAddress address, u32 value)
 {
   const u32 offset = address & EXP3_MASK;
   if (offset == 0)
-    WARNING_LOG("BIOS POST3 status: {:02X}", value & UINT32_C(0x0F));
+  {
+    const u32 post_code = value & UINT32_C(0x0F);
+    WARNING_LOG("BIOS POST3 status: {:02X}", post_code);
+    if (post_code == 0x07)
+      KernelInitializedHook();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

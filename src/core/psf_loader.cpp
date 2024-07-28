@@ -1,21 +1,29 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "psf_loader.h"
 #include "bios.h"
+#include "bus.h"
+#include "system.h"
+
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
-#include "system.h"
+
 #include "zlib.h"
+
 #include <cctype>
 #include <cstring>
+
 Log_SetChannel(PSFLoader);
 
 namespace PSFLoader {
+static bool LoadLibraryPSF(const std::string& path, bool use_pc_sp, Error* error, u32 depth = 0);
+}
 
-std::optional<std::string> File::GetTagString(const char* tag_name) const
+std::optional<std::string> PSFLoader::File::GetTagString(const char* tag_name) const
 {
   auto it = m_tags.find(tag_name);
   if (it == m_tags.end())
@@ -24,7 +32,7 @@ std::optional<std::string> File::GetTagString(const char* tag_name) const
   return it->second;
 }
 
-std::optional<int> File::GetTagInt(const char* tag_name) const
+std::optional<int> PSFLoader::File::GetTagInt(const char* tag_name) const
 {
   auto it = m_tags.find(tag_name);
   if (it == m_tags.end())
@@ -33,7 +41,7 @@ std::optional<int> File::GetTagInt(const char* tag_name) const
   return std::atoi(it->second.c_str());
 }
 
-std::optional<float> File::GetTagFloat(const char* tag_name) const
+std::optional<float> PSFLoader::File::GetTagFloat(const char* tag_name) const
 {
   auto it = m_tags.find(tag_name);
   if (it == m_tags.end())
@@ -42,7 +50,7 @@ std::optional<float> File::GetTagFloat(const char* tag_name) const
   return static_cast<float>(std::atof(it->second.c_str()));
 }
 
-std::string File::GetTagString(const char* tag_name, const char* default_value) const
+std::string PSFLoader::File::GetTagString(const char* tag_name, const char* default_value) const
 {
   std::optional<std::string> value(GetTagString(tag_name));
   if (value.has_value())
@@ -51,24 +59,21 @@ std::string File::GetTagString(const char* tag_name, const char* default_value) 
   return default_value;
 }
 
-int File::GetTagInt(const char* tag_name, int default_value) const
+int PSFLoader::File::GetTagInt(const char* tag_name, int default_value) const
 {
   return GetTagInt(tag_name).value_or(default_value);
 }
 
-float File::GetTagFloat(const char* tag_name, float default_value) const
+float PSFLoader::File::GetTagFloat(const char* tag_name, float default_value) const
 {
   return GetTagFloat(tag_name).value_or(default_value);
 }
 
-bool File::Load(const char* path)
+bool PSFLoader::File::Load(const char* path, Error* error)
 {
-  std::optional<std::vector<u8>> file_data(FileSystem::ReadBinaryFile(path));
+  std::optional<std::vector<u8>> file_data(FileSystem::ReadBinaryFile(path, error));
   if (!file_data.has_value() || file_data->empty())
-  {
-    ERROR_LOG("Failed to open/read PSF file '{}'", path);
     return false;
-  }
 
   const u8* file_pointer = file_data->data();
   const u8* file_pointer_end = file_data->data() + file_data->size();
@@ -81,7 +86,7 @@ bool File::Load(const char* path)
       header.compressed_program_size == 0 ||
       (sizeof(header) + header.reserved_area_size + header.compressed_program_size) > file_size)
   {
-    ERROR_LOG("Invalid or incompatible header in PSF '{}'", path);
+    Error::SetStringView(error, "Invalid or incompatible PSF header.");
     return false;
   }
 
@@ -98,7 +103,7 @@ bool File::Load(const char* path)
   int err = inflateInit(&strm);
   if (err != Z_OK)
   {
-    ERROR_LOG("inflateInit() failed: {}", err);
+    Error::SetStringFmt(error, "inflateInit() failed: {}", err);
     return false;
   }
 
@@ -106,7 +111,7 @@ bool File::Load(const char* path)
   err = inflate(&strm, Z_NO_FLUSH);
   if (err != Z_STREAM_END)
   {
-    ERROR_LOG("inflate() failed: {}", err);
+    Error::SetStringFmt(error, "inflate() failed: {}", err);
     inflateEnd(&strm);
     return false;
   }
@@ -166,19 +171,20 @@ bool File::Load(const char* path)
   return true;
 }
 
-static bool LoadLibraryPSF(const char* path, bool use_pc_sp, u32 depth = 0)
+bool PSFLoader::LoadLibraryPSF(const std::string& path, bool use_pc_sp, Error* error, u32 depth)
 {
   // don't recurse past 10 levels just in case of broken files
   if (depth >= 10)
   {
-    ERROR_LOG("Recursion depth exceeded when loading PSF '{}'", path);
+    Error::SetStringFmt(error, "Recursion depth exceeded when loading PSF '{}'", Path::GetFileName(path));
     return false;
   }
 
   File file;
-  if (!file.Load(path))
+  if (!file.Load(path.c_str(), error))
   {
-    ERROR_LOG("Failed to load main PSF '{}'", path);
+    Error::AddPrefixFmt(error, "Failed to load {} PSF '{}': ", (depth == 0) ? "main" : "parent",
+                        Path::GetFileName(path));
     return false;
   }
 
@@ -186,16 +192,13 @@ static bool LoadLibraryPSF(const char* path, bool use_pc_sp, u32 depth = 0)
   std::optional<std::string> lib_name(file.GetTagString("_lib"));
   if (lib_name.has_value())
   {
-    const std::string lib_path(Path::BuildRelativePath(path, lib_name.value()));
-    INFO_LOG("Loading main parent PSF '{}'", lib_path);
+    const std::string lib_path = Path::BuildRelativePath(path, lib_name.value());
+    INFO_LOG("Loading parent PSF '{}'", Path::GetFileName(lib_path));
 
     // We should use the initial SP/PC from the **first** parent lib.
     const bool lib_use_pc_sp = (depth == 0);
-    if (!LoadLibraryPSF(lib_path.c_str(), lib_use_pc_sp, depth + 1))
-    {
-      ERROR_LOG("Failed to load main parent PSF '{}'", lib_path);
+    if (!LoadLibraryPSF(lib_path.c_str(), lib_use_pc_sp, error, depth + 1))
       return false;
-    }
 
     // Don't apply the PC/SP from the minipsf file.
     if (lib_use_pc_sp)
@@ -203,10 +206,10 @@ static bool LoadLibraryPSF(const char* path, bool use_pc_sp, u32 depth = 0)
   }
 
   // apply the main psf
-  if (!System::InjectEXEFromBuffer(file.GetProgramData().data(), static_cast<u32>(file.GetProgramData().size()),
-                                   use_pc_sp))
+  if (!Bus::InjectExecutable(file.GetProgramData(), use_pc_sp, error))
   {
-    ERROR_LOG("Failed to parse EXE from PSF '{}'", path);
+    Error::AddPrefixFmt(error, "Failed to inject {} PSF '{}': ", (depth == 0) ? "main" : "parent",
+                        Path::GetFileName(path));
     return false;
   }
 
@@ -218,22 +221,17 @@ static bool LoadLibraryPSF(const char* path, bool use_pc_sp, u32 depth = 0)
     if (!lib_name.has_value())
       break;
 
-    const std::string lib_path(Path::BuildRelativePath(path, lib_name.value()));
-    INFO_LOG("Loading parent PSF '{}'", lib_path);
-    if (!LoadLibraryPSF(lib_path.c_str(), false, depth + 1))
-    {
-      ERROR_LOG("Failed to load parent PSF '{}'", lib_path);
+    const std::string lib_path = Path::BuildRelativePath(path, lib_name.value());
+    INFO_LOG("Loading parent PSF '{}'", Path::GetFileName(lib_path));
+    if (!LoadLibraryPSF(lib_path.c_str(), false, error, depth + 1))
       return false;
-    }
   }
 
   return true;
 }
 
-bool Load(const char* path)
+bool PSFLoader::Load(const std::string& path, Error* error)
 {
   INFO_LOG("Loading PSF file from '{}'", path);
-  return LoadLibraryPSF(path, true);
+  return LoadLibraryPSF(path, true, error);
 }
-
-} // namespace PSFLoader

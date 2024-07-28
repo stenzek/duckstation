@@ -108,8 +108,6 @@ static std::optional<ExtendedSaveStateInfo> InternalGetExtendedSaveStateInfo(Byt
 
 static void LoadInputBindings(SettingsInterface& si, std::unique_lock<std::mutex>& lock);
 
-static bool LoadEXE(const char* filename);
-
 static std::string GetExecutableNameForImage(IsoReader& iso, bool strip_subdirectories);
 static bool ReadExecutableFromImage(IsoReader& iso, std::string* out_executable_name,
                                     std::vector<u8>* out_executable_data);
@@ -117,6 +115,7 @@ static GameHash GetGameHashFromBuffer(std::string_view exe_name, std::span<const
                                       const IsoReader::ISOPrimaryVolumeDescriptor& iso_pvd, u32 track_1_length);
 
 static bool LoadBIOS(Error* error);
+static void ResetBootMode();
 static void InternalReset();
 static void ClearRunningGame();
 static void DestroySystem();
@@ -183,10 +182,11 @@ static BIOS::ImageInfo::Hash s_bios_hash = {};
 static std::string s_running_game_path;
 static std::string s_running_game_serial;
 static std::string s_running_game_title;
+static std::string s_exe_override;
 static const GameDatabase::Entry* s_running_game_entry = nullptr;
 static System::GameHash s_running_game_hash;
+static System::BootMode s_boot_mode = System::BootMode::FullBoot;
 static bool s_running_game_custom_title = false;
-static bool s_was_fast_booted = false;
 
 static bool s_system_executing = false;
 static bool s_system_interrupted = false;
@@ -585,6 +585,11 @@ const std::string& System::GetGameTitle()
   return s_running_game_title;
 }
 
+const std::string& System::GetExeOverride()
+{
+  return s_exe_override;
+}
+
 const GameDatabase::Entry* System::GetGameDatabaseEntry()
 {
   return s_running_game_entry;
@@ -600,9 +605,9 @@ bool System::IsRunningUnknownGame()
   return !s_running_game_entry;
 }
 
-bool System::WasFastBooted()
+System::BootMode System::GetBootMode()
 {
-  return s_was_fast_booted;
+  return s_boot_mode;
 }
 
 const BIOS::ImageInfo* System::GetBIOSImageInfo()
@@ -1034,7 +1039,7 @@ DiscRegion System::GetRegionForExe(const char* path)
 DiscRegion System::GetRegionForPsf(const char* path)
 {
   PSFLoader::File psf;
-  if (!psf.Load(path))
+  if (!psf.Load(path, nullptr))
     return DiscRegion::Other;
 
   return psf.GetRegion();
@@ -1516,18 +1521,27 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   // Load CD image up and detect region.
   std::unique_ptr<CDImage> disc;
   DiscRegion disc_region = DiscRegion::NonPS1;
-  bool do_exe_boot = false;
-  bool do_psf_boot = false;
+  BootMode boot_mode = BootMode::FullBoot;
+  std::string exe_override;
   if (!parameters.filename.empty())
   {
-    do_exe_boot = IsExeFileName(parameters.filename);
-    do_psf_boot = (!do_exe_boot && IsPsfFileName(parameters.filename));
-    if (do_exe_boot || do_psf_boot)
+    if (IsExeFileName(parameters.filename))
+    {
+      boot_mode = BootMode::BootEXE;
+      exe_override = parameters.filename;
+    }
+    else if (IsPsfFileName(parameters.filename))
+    {
+      boot_mode = BootMode::BootPSF;
+      exe_override = parameters.filename;
+    }
+    if (boot_mode == BootMode::BootEXE || boot_mode == BootMode::BootPSF)
     {
       if (s_region == ConsoleRegion::Auto)
       {
         const DiscRegion file_region =
-          (do_exe_boot ? GetRegionForExe(parameters.filename.c_str()) : GetRegionForPsf(parameters.filename.c_str()));
+          ((boot_mode == BootMode::BootEXE) ? GetRegionForExe(parameters.filename.c_str()) :
+                                              GetRegionForPsf(parameters.filename.c_str()));
         INFO_LOG("EXE/PSF Region: {}", Settings::GetDiscRegionDisplayName(file_region));
         s_region = GetConsoleRegionForDiscRegion(file_region);
       }
@@ -1561,6 +1575,16 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
                       Settings::GetDiscRegionName(disc_region), Settings::GetConsoleRegionName(s_region));
         }
       }
+
+      const bool wants_fast_boot =
+        parameters.override_fast_boot.value_or(static_cast<bool>(g_settings.bios_patch_fast_boot));
+      if (wants_fast_boot)
+      {
+        if (disc_region == DiscRegion::NonPS1)
+          ERROR_LOG("Not fast booting non-PS1 disc.");
+        else
+          boot_mode = BootMode::FastBoot;
+      }
     }
   }
   else
@@ -1587,7 +1611,6 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   UpdateRunningGame(disc ? disc->GetFileName().c_str() : parameters.filename.c_str(), disc.get(), true);
 
   // Get boot EXE override.
-  std::string exe_boot;
   if (!parameters.override_exe.empty())
   {
     if (!FileSystem::FileExists(parameters.override_exe.c_str()) || !IsExeFileName(parameters.override_exe))
@@ -1601,11 +1624,8 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     }
 
     INFO_LOG("Overriding boot executable: '{}'", parameters.override_exe);
-    exe_boot = std::move(parameters.override_exe);
-  }
-  else if (do_exe_boot)
-  {
-    exe_boot = std::move(parameters.filename);
+    boot_mode = BootMode::BootEXE;
+    exe_override = std::move(parameters.override_exe);
   }
 
   // Check for SBI.
@@ -1621,12 +1641,15 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   // Check for resuming with hardcore mode.
   if (parameters.disable_achievements_hardcore_mode)
     Achievements::DisableHardcoreMode();
-  if (!parameters.save_state.empty() && Achievements::IsHardcoreModeActive())
+  if ((!parameters.save_state.empty() || !exe_override.empty()) && Achievements::IsHardcoreModeActive())
   {
+    const bool is_exe_override_boot = parameters.save_state.empty();
     bool cancelled;
     if (FullscreenUI::IsInitialized())
     {
-      Achievements::ConfirmHardcoreModeDisableAsync(TRANSLATE("Achievements", "Resuming state"),
+      Achievements::ConfirmHardcoreModeDisableAsync(is_exe_override_boot ?
+                                                      TRANSLATE("Achievements", "Overriding executable") :
+                                                      TRANSLATE("Achievements", "Resuming state"),
                                                     [parameters = std::move(parameters)](bool approved) mutable {
                                                       if (approved)
                                                       {
@@ -1638,7 +1661,9 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     }
     else
     {
-      cancelled = !Achievements::ConfirmHardcoreModeDisable(TRANSLATE("Achievements", "Resuming state"));
+      cancelled = !Achievements::ConfirmHardcoreModeDisable(is_exe_override_boot ?
+                                                              TRANSLATE("Achievements", "Overriding executable") :
+                                                              TRANSLATE("Achievements", "Resuming state"));
     }
 
     if (cancelled)
@@ -1677,44 +1702,13 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   if (disc)
     CDROM::InsertMedia(std::move(disc), disc_region);
 
+  s_boot_mode = boot_mode;
+  s_exe_override = std::move(exe_override);
+
   UpdateControllers();
   UpdateMemoryCardTypes();
   UpdateMultitaps();
   InternalReset();
-
-  // Load EXE late after BIOS.
-  if (!exe_boot.empty() && !LoadEXE(exe_boot.c_str()))
-  {
-    Error::SetStringFmt(error, "Failed to load EXE file '{}'", Path::GetFileName(exe_boot));
-    DestroySystem();
-    return false;
-  }
-  else if (do_psf_boot && !PSFLoader::Load(parameters.filename.c_str()))
-  {
-    Error::SetStringFmt(error, "Failed to load PSF file '{}'", Path::GetFileName(parameters.filename));
-    DestroySystem();
-    return false;
-  }
-
-  // Apply fastboot patch if enabled.
-  if (CDROM::HasMedia() && (parameters.override_fast_boot.has_value() ? parameters.override_fast_boot.value() :
-                                                                        g_settings.bios_patch_fast_boot))
-  {
-    if (!CDROM::IsMediaPS1Disc())
-    {
-      ERROR_LOG("Not fast booting non-PS1 disc.");
-    }
-    else if (!s_bios_image_info || !s_bios_image_info->patch_compatible)
-    {
-      ERROR_LOG("Not patching fast boot, as BIOS is not patch compatible.");
-    }
-    else
-    {
-      // TODO: Fast boot without patches...
-      BIOS::PatchBIOSFastBoot(Bus::g_bios, Bus::BIOS_SIZE);
-      s_was_fast_booted = true;
-    }
-  }
 
   // Texture replacement preloading.
   // TODO: Move this and everything else below OnSystemStarted().
@@ -1932,7 +1926,8 @@ void System::DestroySystem()
 
   s_bios_hash = {};
   s_bios_image_info = nullptr;
-  s_was_fast_booted = false;
+  s_exe_override = {};
+  s_boot_mode = BootMode::FullBoot;
   s_cheat_list.reset();
 
   s_state = State::Shutdown;
@@ -2474,8 +2469,49 @@ void System::InternalReset()
   s_internal_frame_number = 0;
   InterruptExecution();
   ResetPerformanceCounters();
+  ResetBootMode();
 
   Achievements::ResetClient();
+}
+
+void System::ResetBootMode()
+{
+  // Preserve exe/psf boot.
+  if (s_boot_mode == BootMode::BootEXE || s_boot_mode == BootMode::BootPSF)
+  {
+    DebugAssert(!s_exe_override.empty());
+    return;
+  }
+
+  // Reset fast boot flag from settings.
+  const bool wants_fast_boot = (g_settings.bios_patch_fast_boot && CDROM::IsMediaPS1Disc() && s_bios_image_info &&
+                                s_bios_image_info->patch_compatible);
+  const System::BootMode new_boot_mode = (s_state != System::State::Starting) ?
+                                           (wants_fast_boot ? System::BootMode::FastBoot : System::BootMode::FullBoot) :
+                                           s_boot_mode;
+  if (new_boot_mode != s_boot_mode)
+  {
+    // Need to reload the BIOS to wipe out the patching.
+    Error error;
+    if (!LoadBIOS(&error))
+      ERROR_LOG("Failed to reload BIOS on boot mode change, the system may be unstable: {}", error.GetDescription());
+  }
+
+  s_boot_mode = new_boot_mode;
+  if (s_boot_mode == BootMode::FastBoot)
+  {
+    if (s_bios_image_info && s_bios_image_info->patch_compatible)
+    {
+      // Patch BIOS, this sucks.
+      INFO_LOG("Patching BIOS for fast boot.");
+      BIOS::PatchBIOSFastBoot(Bus::g_bios, Bus::BIOS_SIZE);
+    }
+    else
+    {
+      ERROR_LOG("Cannot fast boot, BIOS is incompatible.");
+      s_boot_mode = BootMode::FullBoot;
+    }
+  }
 }
 
 std::string System::GetMediaPathFromSaveState(const char* path)
@@ -3135,138 +3171,6 @@ void System::DoToggleCheats()
       TRANSLATE_PLURAL_STR("System", "%n cheat(s) are now active.", "", cl->GetEnabledCodeCount()) :
       TRANSLATE_PLURAL_STR("System", "%n cheat(s) are now inactive.", "", cl->GetEnabledCodeCount()),
     Host::OSD_QUICK_DURATION);
-}
-
-static bool LoadEXEToRAM(const char* filename, bool patch_bios)
-{
-  std::FILE* fp = FileSystem::OpenCFile(filename, "rb");
-  if (!fp)
-  {
-    ERROR_LOG("Failed to open exe file '{}'", filename);
-    return false;
-  }
-
-  std::fseek(fp, 0, SEEK_END);
-  const u32 file_size = static_cast<u32>(std::ftell(fp));
-  std::fseek(fp, 0, SEEK_SET);
-
-  BIOS::PSEXEHeader header;
-  if (std::fread(&header, sizeof(header), 1, fp) != 1 || !BIOS::IsValidPSExeHeader(header, file_size))
-  {
-    ERROR_LOG("'{}' is not a valid PS-EXE", filename);
-    std::fclose(fp);
-    return false;
-  }
-
-  if (header.memfill_size > 0)
-  {
-    const u32 words_to_write = header.memfill_size / 4;
-    u32 address = header.memfill_start & ~UINT32_C(3);
-    for (u32 i = 0; i < words_to_write; i++)
-    {
-      CPU::SafeWriteMemoryWord(address, 0);
-      address += sizeof(u32);
-    }
-  }
-
-  const u32 file_data_size = std::min<u32>(file_size - sizeof(BIOS::PSEXEHeader), header.file_size);
-  if (file_data_size >= 4)
-  {
-    std::vector<u32> data_words((file_data_size + 3) / 4);
-    if (std::fread(data_words.data(), file_data_size, 1, fp) != 1)
-    {
-      std::fclose(fp);
-      return false;
-    }
-
-    const u32 num_words = file_data_size / 4;
-    u32 address = header.load_address;
-    for (u32 i = 0; i < num_words; i++)
-    {
-      CPU::SafeWriteMemoryWord(address, data_words[i]);
-      address += sizeof(u32);
-    }
-  }
-
-  std::fclose(fp);
-
-  // patch the BIOS to jump to the executable directly
-  const u32 r_pc = header.initial_pc;
-  const u32 r_gp = header.initial_gp;
-  const u32 r_sp = header.initial_sp_base + header.initial_sp_offset;
-  const u32 r_fp = header.initial_sp_base + header.initial_sp_offset;
-  return BIOS::PatchBIOSForEXE(Bus::g_bios, Bus::BIOS_SIZE, r_pc, r_gp, r_sp, r_fp);
-}
-
-bool System::LoadEXE(const char* filename)
-{
-  const std::string libps_path(Path::BuildRelativePath(filename, "libps.exe"));
-  if (!libps_path.empty() && FileSystem::FileExists(libps_path.c_str()) && !LoadEXEToRAM(libps_path.c_str(), false))
-  {
-    ERROR_LOG("Failed to load libps.exe from '{}'", libps_path.c_str());
-    return false;
-  }
-
-  return LoadEXEToRAM(filename, true);
-}
-
-bool System::InjectEXEFromBuffer(const void* buffer, u32 buffer_size, bool patch_bios)
-{
-  const u8* buffer_ptr = static_cast<const u8*>(buffer);
-  const u8* buffer_end = static_cast<const u8*>(buffer) + buffer_size;
-
-  BIOS::PSEXEHeader header;
-  if (buffer_size < sizeof(header))
-    return false;
-
-  std::memcpy(&header, buffer_ptr, sizeof(header));
-  buffer_ptr += sizeof(header);
-
-  const u32 file_size = static_cast<u32>(static_cast<u32>(buffer_end - buffer_ptr));
-  if (!BIOS::IsValidPSExeHeader(header, file_size))
-    return false;
-
-  if (header.memfill_size > 0)
-  {
-    const u32 words_to_write = header.memfill_size / 4;
-    u32 address = header.memfill_start & ~UINT32_C(3);
-    for (u32 i = 0; i < words_to_write; i++)
-    {
-      CPU::SafeWriteMemoryWord(address, 0);
-      address += sizeof(u32);
-    }
-  }
-
-  const u32 file_data_size = std::min<u32>(file_size - sizeof(BIOS::PSEXEHeader), header.file_size);
-  if (file_data_size >= 4)
-  {
-    std::vector<u32> data_words((file_data_size + 3) / 4);
-    if ((buffer_end - buffer_ptr) < file_data_size)
-      return false;
-
-    std::memcpy(data_words.data(), buffer_ptr, file_data_size);
-
-    const u32 num_words = file_data_size / 4;
-    u32 address = header.load_address;
-    for (u32 i = 0; i < num_words; i++)
-    {
-      CPU::SafeWriteMemoryWord(address, data_words[i]);
-      address += sizeof(u32);
-    }
-  }
-
-  // patch the BIOS to jump to the executable directly
-  if (patch_bios)
-  {
-    const u32 r_pc = header.initial_pc;
-    const u32 r_gp = header.initial_gp;
-    const u32 r_sp = header.initial_sp_base + header.initial_sp_offset;
-    const u32 r_fp = header.initial_sp_base + header.initial_sp_offset;
-    if (!BIOS::PatchBIOSForEXE(Bus::g_bios, Bus::BIOS_SIZE, r_pc, r_gp, r_sp, r_fp))
-      return false;
-  }
-
-  return true;
 }
 
 #if 0
@@ -5308,7 +5212,8 @@ void System::RequestDisplaySize(float scale /*= 0.0f*/)
   u32 requested_height =
     std::max<u32>(static_cast<u32>(std::ceil(static_cast<float>(g_gpu->GetCRTCDisplayHeight()) * y_scale * scale)), 1);
 
-  if (g_settings.display_rotation == DisplayRotation::Rotate90 || g_settings.display_rotation == DisplayRotation::Rotate180)
+  if (g_settings.display_rotation == DisplayRotation::Rotate90 ||
+      g_settings.display_rotation == DisplayRotation::Rotate180)
     std::swap(requested_width, requested_height);
 
   Host::RequestResizeHostDisplay(static_cast<s32>(requested_width), static_cast<s32>(requested_height));

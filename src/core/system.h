@@ -109,6 +109,14 @@ enum class State
   Stopping,
 };
 
+enum class BootMode
+{
+  FullBoot,
+  FastBoot,
+  BootEXE,
+  BootPSF,
+};
+
 using GameHash = u64;
 
 extern TickCount g_ticks_per_second;
@@ -194,10 +202,6 @@ ALWAYS_INLINE_RELEASE TickCount UnscaleTicksToOverclock(TickCount ticks, TickCou
 TickCount GetMaxSliceTicks();
 void UpdateOverclock();
 
-/// Injects a PS-EXE into memory at its specified load location. If patch_loader is set, the BIOS will be patched to
-/// direct execution to this executable.
-bool InjectEXEFromBuffer(const void* buffer, u32 buffer_size, bool patch_loader = true);
-
 u32 GetGlobalTickCounter();
 u32 GetFrameNumber();
 u32 GetInternalFrameNumber();
@@ -207,10 +211,11 @@ void FrameDone();
 const std::string& GetDiscPath();
 const std::string& GetGameSerial();
 const std::string& GetGameTitle();
+const std::string& GetExeOverride();
 const GameDatabase::Entry* GetGameDatabaseEntry();
 GameHash GetGameHash();
 bool IsRunningUnknownGame();
-bool WasFastBooted();
+BootMode GetBootMode();
 
 /// Returns the time elapsed in the current play session.
 u64 GetSessionPlayedTime();

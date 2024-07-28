@@ -70,12 +70,9 @@ std::optional<Image> LoadImageFromFile(const char* filename, Error* error);
 
 bool IsValidBIOSForRegion(ConsoleRegion console_region, ConsoleRegion bios_region);
 
-void PatchBIOS(u8* image, u32 image_size, u32 address, u32 value, u32 mask = UINT32_C(0xFFFFFFFF));
-
 bool PatchBIOSFastBoot(u8* image, u32 image_size);
-bool PatchBIOSForEXE(u8* image, u32 image_size, u32 r_pc, u32 r_gp, u32 r_sp, u32 r_fp);
 
-bool IsValidPSExeHeader(const PSEXEHeader& header, u32 file_size);
+bool IsValidPSExeHeader(const PSEXEHeader& header, size_t file_size);
 DiscRegion GetPSExeDiscRegion(const PSEXEHeader& header);
 
 /// Loads the BIOS image for the specified region.

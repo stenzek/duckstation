@@ -10,6 +10,7 @@
 #include <array>
 #include <bitset>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -217,5 +218,8 @@ std::optional<PhysicalMemoryAddress> SearchMemory(PhysicalMemoryAddress start_ad
 // TTY Logging.
 void AddTTYCharacter(char ch);
 void AddTTYString(std::string_view str);
+
+/// Injects a PS-EXE into memory at its specified load location. If set_pc is set, execution will be redirected.
+bool InjectExecutable(std::span<const u8> buffer, bool set_pc, Error* error);
 
 } // namespace Bus

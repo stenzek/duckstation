@@ -28,7 +28,6 @@ Log_SetChannel(CPU::Core);
 
 namespace CPU {
 static bool ShouldUseInterpreter();
-static void SetPC(u32 new_pc);
 static void UpdateLoadDelay();
 static void Branch(u32 target);
 static void FlushLoadDelay();
@@ -306,7 +305,7 @@ ALWAYS_INLINE_RELEASE bool CPU::ShouldUseInterpreter()
   return (g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter || g_state.using_debug_dispatcher);
 }
 
-ALWAYS_INLINE_RELEASE void CPU::SetPC(u32 new_pc)
+void CPU::SetPC(u32 new_pc)
 {
   DebugAssert(Common::IsAlignedPow2(new_pc, 4));
   g_state.npc = new_pc;
