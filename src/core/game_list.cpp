@@ -16,7 +16,7 @@
 #include "util/ini_settings_interface.h"
 
 #include "common/assert.h"
-#include "common/byte_stream.h"
+#include "common/binary_reader_writer.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/heterogeneous_containers.h"
@@ -94,19 +94,17 @@ static bool GetGameListEntryFromCache(const std::string& path, Entry* entry,
 static Entry* GetMutableEntryForPath(std::string_view path);
 static void ScanDirectory(const char* path, bool recursive, bool only_cache,
                           const std::vector<std::string>& excluded_paths, const PlayedTimeMap& played_time_map,
-                          const INISettingsInterface& custom_attributes_ini, ProgressCallback* progress);
+                          const INISettingsInterface& custom_attributes_ini, BinaryFileWriter& cache_writer,
+                          ProgressCallback* progress);
 static bool AddFileFromCache(const std::string& path, std::time_t timestamp, const PlayedTimeMap& played_time_map,
                              const INISettingsInterface& custom_attributes_ini);
 static bool ScanFile(std::string path, std::time_t timestamp, std::unique_lock<std::recursive_mutex>& lock,
-                     const PlayedTimeMap& played_time_map, const INISettingsInterface& custom_attributes_ini);
+                     const PlayedTimeMap& played_time_map, const INISettingsInterface& custom_attributes_ini,
+                     BinaryFileWriter& cache_writer);
 
-static std::string GetCacheFilename();
-static void LoadCache();
-static bool LoadEntriesFromCache(ByteStream* stream);
-static bool OpenCacheForWriting();
-static bool WriteEntryToCache(const Entry* entry);
-static void CloseCacheFileStream();
-static void DeleteCacheFile();
+static bool LoadOrInitializeCache(std::FILE* fp, bool invalidate_cache);
+static bool LoadEntriesFromCache(BinaryFileReader& reader);
+static bool WriteEntryToCache(const Entry* entry, BinaryFileWriter& writer);
 static void CreateDiscSetEntries(const PlayedTimeMap& played_time_map);
 
 static std::string GetPlayedTimeFile();
@@ -126,7 +124,6 @@ static bool UpdateMemcardTimestampCache(const MemcardTimestampCacheEntry& entry)
 static std::vector<GameList::Entry> s_entries;
 static std::recursive_mutex s_mutex;
 static GameList::CacheMap s_cache_map;
-static std::unique_ptr<ByteStream> s_cache_write_stream;
 static std::vector<GameList::MemcardTimestampCacheEntry> s_memcard_timestamp_cache_entries;
 
 static bool s_game_list_loaded = false;
@@ -350,17 +347,17 @@ bool GameList::GetGameListEntryFromCache(const std::string& path, Entry* entry,
   return true;
 }
 
-bool GameList::LoadEntriesFromCache(ByteStream* stream)
+bool GameList::LoadEntriesFromCache(BinaryFileReader& reader)
 {
   u32 file_signature, file_version;
-  if (!stream->ReadU32(&file_signature) || !stream->ReadU32(&file_version) ||
+  if (!reader.ReadU32(&file_signature) || !reader.ReadU32(&file_version) ||
       file_signature != GAME_LIST_CACHE_SIGNATURE || file_version != GAME_LIST_CACHE_VERSION)
   {
     WARNING_LOG("Game list cache is corrupted");
     return false;
   }
 
-  while (stream->GetPosition() != stream->GetSize())
+  while (!reader.IsAtEnd())
   {
     std::string path;
     Entry ge;
@@ -369,15 +366,15 @@ bool GameList::LoadEntriesFromCache(ByteStream* stream)
     u8 region;
     u8 compatibility_rating;
 
-    if (!stream->ReadU8(&type) || !stream->ReadU8(&region) || !stream->ReadSizePrefixedString(&path) ||
-        !stream->ReadSizePrefixedString(&ge.serial) || !stream->ReadSizePrefixedString(&ge.title) ||
-        !stream->ReadSizePrefixedString(&ge.disc_set_name) || !stream->ReadSizePrefixedString(&ge.genre) ||
-        !stream->ReadSizePrefixedString(&ge.publisher) || !stream->ReadSizePrefixedString(&ge.developer) ||
-        !stream->ReadU64(&ge.hash) || !stream->ReadS64(&ge.file_size) || !stream->ReadU64(&ge.uncompressed_size) ||
-        !stream->ReadU64(reinterpret_cast<u64*>(&ge.last_modified_time)) || !stream->ReadU64(&ge.release_date) ||
-        !stream->ReadU16(&ge.supported_controllers) || !stream->ReadU8(&ge.min_players) ||
-        !stream->ReadU8(&ge.max_players) || !stream->ReadU8(&ge.min_blocks) || !stream->ReadU8(&ge.max_blocks) ||
-        !stream->ReadS8(&ge.disc_set_index) || !stream->ReadU8(&compatibility_rating) ||
+    if (!reader.ReadU8(&type) || !reader.ReadU8(&region) || !reader.ReadSizePrefixedString(&path) ||
+        !reader.ReadSizePrefixedString(&ge.serial) || !reader.ReadSizePrefixedString(&ge.title) ||
+        !reader.ReadSizePrefixedString(&ge.disc_set_name) || !reader.ReadSizePrefixedString(&ge.genre) ||
+        !reader.ReadSizePrefixedString(&ge.publisher) || !reader.ReadSizePrefixedString(&ge.developer) ||
+        !reader.ReadU64(&ge.hash) || !reader.ReadS64(&ge.file_size) || !reader.ReadU64(&ge.uncompressed_size) ||
+        !reader.ReadU64(reinterpret_cast<u64*>(&ge.last_modified_time)) || !reader.ReadU64(&ge.release_date) ||
+        !reader.ReadU16(&ge.supported_controllers) || !reader.ReadU8(&ge.min_players) ||
+        !reader.ReadU8(&ge.max_players) || !reader.ReadU8(&ge.min_blocks) || !reader.ReadU8(&ge.max_blocks) ||
+        !reader.ReadS8(&ge.disc_set_index) || !reader.ReadU8(&compatibility_rating) ||
         region >= static_cast<u8>(DiscRegion::Count) || type >= static_cast<u8>(EntryType::Count) ||
         compatibility_rating >= static_cast<u8>(GameDatabase::CompatibilityRating::Count))
     {
@@ -400,119 +397,62 @@ bool GameList::LoadEntriesFromCache(ByteStream* stream)
   return true;
 }
 
-bool GameList::WriteEntryToCache(const Entry* entry)
+bool GameList::WriteEntryToCache(const Entry* entry, BinaryFileWriter& writer)
 {
-  bool result = true;
-  result &= s_cache_write_stream->WriteU8(static_cast<u8>(entry->type));
-  result &= s_cache_write_stream->WriteU8(static_cast<u8>(entry->region));
-  result &= s_cache_write_stream->WriteSizePrefixedString(entry->path);
-  result &= s_cache_write_stream->WriteSizePrefixedString(entry->serial);
-  result &= s_cache_write_stream->WriteSizePrefixedString(entry->title);
-  result &= s_cache_write_stream->WriteSizePrefixedString(entry->disc_set_name);
-  result &= s_cache_write_stream->WriteSizePrefixedString(entry->genre);
-  result &= s_cache_write_stream->WriteSizePrefixedString(entry->publisher);
-  result &= s_cache_write_stream->WriteSizePrefixedString(entry->developer);
-  result &= s_cache_write_stream->WriteU64(entry->hash);
-  result &= s_cache_write_stream->WriteS64(entry->file_size);
-  result &= s_cache_write_stream->WriteU64(entry->uncompressed_size);
-  result &= s_cache_write_stream->WriteU64(entry->last_modified_time);
-  result &= s_cache_write_stream->WriteU64(entry->release_date);
-  result &= s_cache_write_stream->WriteU16(entry->supported_controllers);
-  result &= s_cache_write_stream->WriteU8(entry->min_players);
-  result &= s_cache_write_stream->WriteU8(entry->max_players);
-  result &= s_cache_write_stream->WriteU8(entry->min_blocks);
-  result &= s_cache_write_stream->WriteU8(entry->max_blocks);
-  result &= s_cache_write_stream->WriteS8(entry->disc_set_index);
-  result &= s_cache_write_stream->WriteU8(static_cast<u8>(entry->compatibility));
-  return result;
+  writer.WriteU8(static_cast<u8>(entry->type));
+  writer.WriteU8(static_cast<u8>(entry->region));
+  writer.WriteSizePrefixedString(entry->path);
+  writer.WriteSizePrefixedString(entry->serial);
+  writer.WriteSizePrefixedString(entry->title);
+  writer.WriteSizePrefixedString(entry->disc_set_name);
+  writer.WriteSizePrefixedString(entry->genre);
+  writer.WriteSizePrefixedString(entry->publisher);
+  writer.WriteSizePrefixedString(entry->developer);
+  writer.WriteU64(entry->hash);
+  writer.WriteS64(entry->file_size);
+  writer.WriteU64(entry->uncompressed_size);
+  writer.WriteU64(entry->last_modified_time);
+  writer.WriteU64(entry->release_date);
+  writer.WriteU16(entry->supported_controllers);
+  writer.WriteU8(entry->min_players);
+  writer.WriteU8(entry->max_players);
+  writer.WriteU8(entry->min_blocks);
+  writer.WriteU8(entry->max_blocks);
+  writer.WriteS8(entry->disc_set_index);
+  writer.WriteU8(static_cast<u8>(entry->compatibility));
+  return writer.IsGood();
 }
 
-static std::string GameList::GetCacheFilename()
+bool GameList::LoadOrInitializeCache(std::FILE* fp, bool invalidate_cache)
 {
-  return Path::Combine(EmuFolders::Cache, "gamelist.cache");
-}
-
-void GameList::LoadCache()
-{
-  std::string filename(GetCacheFilename());
-  std::unique_ptr<ByteStream> stream =
-    ByteStream::OpenFile(filename.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED);
-  if (!stream)
-    return;
-
-  if (!LoadEntriesFromCache(stream.get()))
+  BinaryFileReader reader(fp);
+  if (!invalidate_cache && !reader.IsAtEnd() && LoadEntriesFromCache(reader))
   {
-    WARNING_LOG("Deleting corrupted cache file '{}'", Path::GetFileName(filename));
-    stream.reset();
-    s_cache_map.clear();
-    DeleteCacheFile();
-    return;
-  }
-}
-
-bool GameList::OpenCacheForWriting()
-{
-  const std::string cache_filename(GetCacheFilename());
-  Assert(!s_cache_write_stream);
-
-  s_cache_write_stream = ByteStream::OpenFile(cache_filename.c_str(),
-                                              BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_WRITE | BYTESTREAM_OPEN_SEEKABLE);
-  if (s_cache_write_stream)
-  {
-    // check the header
-    u32 signature, version;
-    if (s_cache_write_stream->ReadU32(&signature) && signature == GAME_LIST_CACHE_SIGNATURE &&
-        s_cache_write_stream->ReadU32(&version) && version == GAME_LIST_CACHE_VERSION &&
-        s_cache_write_stream->SeekToEnd())
-    {
-      return true;
-    }
-
-    s_cache_write_stream.reset();
+    // Prepare for writing.
+    return (FileSystem::FSeek64(fp, 0, SEEK_END) == 0);
   }
 
-  INFO_LOG("Creating new game list cache file: '{}'", Path::GetFileName(cache_filename));
+  WARNING_LOG("Initializing game list cache.");
+  s_cache_map.clear();
 
-  s_cache_write_stream = ByteStream::OpenFile(
-    cache_filename.c_str(), BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_TRUNCATE | BYTESTREAM_OPEN_WRITE);
-  if (!s_cache_write_stream)
+  // Truncate file, and re-write header.
+  Error error;
+  if (!FileSystem::FSeek64(fp, 0, SEEK_SET, &error) || !FileSystem::FTruncate64(fp, 0, &error))
+  {
+    ERROR_LOG("Failed to truncate game list cache: {}", error.GetDescription());
     return false;
+  }
 
-  // new cache file, write header
-  if (!s_cache_write_stream->WriteU32(GAME_LIST_CACHE_SIGNATURE) ||
-      !s_cache_write_stream->WriteU32(GAME_LIST_CACHE_VERSION))
+  BinaryFileWriter writer(fp);
+  writer.WriteU32(GAME_LIST_CACHE_SIGNATURE);
+  writer.WriteU32((GAME_LIST_CACHE_VERSION));
+  if (!writer.Flush(&error))
   {
-    ERROR_LOG("Failed to write game list cache header");
-    s_cache_write_stream.reset();
-    FileSystem::DeleteFile(cache_filename.c_str());
+    ERROR_LOG("Failed to write game list cache header: {}", error.GetDescription());
     return false;
   }
 
   return true;
-}
-
-void GameList::CloseCacheFileStream()
-{
-  if (!s_cache_write_stream)
-    return;
-
-  s_cache_write_stream->Commit();
-  s_cache_write_stream.reset();
-}
-
-void GameList::DeleteCacheFile()
-{
-  Assert(!s_cache_write_stream);
-
-  const std::string filename(GetCacheFilename());
-  if (!FileSystem::FileExists(filename.c_str()))
-    return;
-
-  Error error;
-  if (FileSystem::DeleteFile(filename.c_str(), &error))
-    INFO_LOG("Deleted game list cache '{}'", Path::GetFileName(filename));
-  else
-    WARNING_LOG("Failed to delete game list cache '{}': {}", Path::GetFileName(filename), error.GetDescription());
 }
 
 static bool IsPathExcluded(const std::vector<std::string>& excluded_paths, const std::string& path)
@@ -523,7 +463,8 @@ static bool IsPathExcluded(const std::vector<std::string>& excluded_paths, const
 
 void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache,
                              const std::vector<std::string>& excluded_paths, const PlayedTimeMap& played_time_map,
-                             const INISettingsInterface& custom_attributes_ini, ProgressCallback* progress)
+                             const INISettingsInterface& custom_attributes_ini, BinaryFileWriter& cache_writer,
+                             ProgressCallback* progress)
 {
   INFO_LOG("Scanning {}{}", path, recursive ? " (recursively)" : "");
 
@@ -561,7 +502,7 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache,
 
     progress->SetStatusText(SmallString::from_format(TRANSLATE_FS("GameList", "Scanning '{}'..."),
                                                      FileSystem::GetDisplayNameFromPath(ffd.FileName)));
-    ScanFile(std::move(ffd.FileName), ffd.ModificationTime, lock, played_time_map, custom_attributes_ini);
+    ScanFile(std::move(ffd.FileName), ffd.ModificationTime, lock, played_time_map, custom_attributes_ini, cache_writer);
     progress->SetProgressValue(files_scanned);
   }
 
@@ -588,7 +529,8 @@ bool GameList::AddFileFromCache(const std::string& path, std::time_t timestamp, 
 }
 
 bool GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_lock<std::recursive_mutex>& lock,
-                        const PlayedTimeMap& played_time_map, const INISettingsInterface& custom_attributes_ini)
+                        const PlayedTimeMap& played_time_map, const INISettingsInterface& custom_attributes_ini,
+                        BinaryFileWriter& cache_writer)
 {
   // don't block UI while scanning
   lock.unlock();
@@ -602,11 +544,8 @@ bool GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_loc
   entry.path = std::move(path);
   entry.last_modified_time = timestamp;
 
-  if (s_cache_write_stream || OpenCacheForWriting())
-  {
-    if (!WriteEntryToCache(&entry)) [[unlikely]]
-      WARNING_LOG("Failed to write entry '{}' to cache", entry.path);
-  }
+  if (cache_writer.IsOpen() && !WriteEntryToCache(&entry, cache_writer)) [[unlikely]]
+    WARNING_LOG("Failed to write entry '{}' to cache", entry.path);
 
   const auto iter = played_time_map.find(entry.serial);
   if (iter != played_time_map.end())
@@ -810,10 +749,27 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
   if (!progress)
     progress = ProgressCallback::NullProgressCallback;
 
-  if (invalidate_cache)
-    DeleteCacheFile();
-  else
-    LoadCache();
+  Error error;
+  FileSystem::ManagedCFilePtr cache_file =
+    FileSystem::OpenExistingOrCreateManagedCFile(Path::Combine(EmuFolders::Cache, "gamelist.cache").c_str(), 0, &error);
+  if (!cache_file)
+    ERROR_LOG("Failed to open game list cache: {}", error.GetDescription());
+
+#ifndef _WIN32
+  // Lock cache file for multi-instance on Linux. Implicitly done on Windows.
+  std::optional<FileSystem::POSIXLock> cache_file_lock;
+  if (cache_file)
+    cache_file_lock.emplace(cache_file.get());
+  if (!LoadOrInitializeCache(cache_file.get(), invalidate_cache))
+  {
+    cache_file_lock.reset();
+    cache_file.reset();
+  }
+#else
+  if (!LoadOrInitializeCache(cache_file.get(), invalidate_cache))
+    cache_file.reset();
+#endif
+  BinaryFileWriter cache_writer(cache_file.get());
 
   // don't delete the old entries, since the frontend might still access them
   std::vector<Entry> old_entries;
@@ -845,7 +801,8 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
       if (progress->IsCancelled())
         break;
 
-      ScanDirectory(dir.c_str(), false, only_cache, excluded_paths, played_time, custom_attributes_ini, progress);
+      ScanDirectory(dir.c_str(), false, only_cache, excluded_paths, played_time, custom_attributes_ini, cache_writer,
+                    progress);
       progress->SetProgressValue(++directory_counter);
     }
     for (const std::string& dir : recursive_dirs)
@@ -853,13 +810,13 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
       if (progress->IsCancelled())
         break;
 
-      ScanDirectory(dir.c_str(), true, only_cache, excluded_paths, played_time, custom_attributes_ini, progress);
+      ScanDirectory(dir.c_str(), true, only_cache, excluded_paths, played_time, custom_attributes_ini, cache_writer,
+                    progress);
       progress->SetProgressValue(++directory_counter);
     }
   }
 
   // don't need unused cache entries
-  CloseCacheFileStream();
   s_cache_map.clear();
 
   // merge multi-disc games
@@ -1103,39 +1060,33 @@ GameList::PlayedTimeMap GameList::LoadPlayedTimeMap(const std::string& path)
   PlayedTimeMap ret;
 
   // Use write mode here, even though we're not writing, so we can lock the file from other updates.
-  auto fp = FileSystem::OpenManagedCFile(path.c_str(), "r+b");
-
-#ifdef _WIN32
-  // On Windows, the file is implicitly locked.
-  while (!fp && GetLastError() == ERROR_SHARING_VIOLATION)
+  Error error;
+  auto fp = FileSystem::OpenExistingOrCreateManagedCFile(path.c_str(), 0, &error);
+  if (!fp)
   {
-    Sleep(10);
-    fp = FileSystem::OpenManagedCFile(path.c_str(), "r+b");
+    ERROR_LOG("Failed to open '{}' for load: {}", Path::GetFileName(path), error.GetDescription());
+    return ret;
   }
-#endif
 
-  if (fp)
-  {
 #ifndef _WIN32
-    FileSystem::POSIXLock flock(fp.get());
+  FileSystem::POSIXLock flock(fp.get());
 #endif
 
-    char line[256];
-    while (std::fgets(line, sizeof(line), fp.get()))
+  char line[256];
+  while (std::fgets(line, sizeof(line), fp.get()))
+  {
+    std::string serial;
+    PlayedTimeEntry entry;
+    if (!ParsePlayedTimeLine(line, serial, entry))
+      continue;
+
+    if (ret.find(serial) != ret.end())
     {
-      std::string serial;
-      PlayedTimeEntry entry;
-      if (!ParsePlayedTimeLine(line, serial, entry))
-        continue;
-
-      if (ret.find(serial) != ret.end())
-      {
-        WARNING_LOG("Duplicate entry: '{}'", serial);
-        continue;
-      }
-
-      ret.emplace(std::move(serial), entry);
+      WARNING_LOG("Duplicate entry: '{}'", serial);
+      continue;
     }
+
+    ret.emplace(std::move(serial), entry);
   }
 
   return ret;
@@ -1146,24 +1097,11 @@ GameList::PlayedTimeEntry GameList::UpdatePlayedTimeFile(const std::string& path
 {
   const PlayedTimeEntry new_entry{last_time, add_time};
 
-  auto fp = FileSystem::OpenManagedCFile(path.c_str(), "r+b");
-
-#ifdef _WIN32
-  // On Windows, the file is implicitly locked.
-  while (!fp && GetLastError() == ERROR_SHARING_VIOLATION)
-  {
-    Sleep(10);
-    fp = FileSystem::OpenManagedCFile(path.c_str(), "r+b");
-  }
-#endif
-
-  // Doesn't exist? Create it.
-  if (!fp && errno == ENOENT)
-    fp = FileSystem::OpenManagedCFile(path.c_str(), "w+b");
-
+  Error error;
+  auto fp = FileSystem::OpenExistingOrCreateManagedCFile(path.c_str(), 0, &error);
   if (!fp)
   {
-    ERROR_LOG("Failed to open '{}' for update.", path);
+    ERROR_LOG("Failed to open '{}' for update: {}", Path::GetFileName(path), error.GetDescription());
     return new_entry;
   }
 
