@@ -8,6 +8,7 @@
 
 # dependency build temp files
 deps-build/
+/deps/
 
 # vs stuff
 .vs
