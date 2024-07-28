@@ -7,6 +7,7 @@
 #include "log.h"
 #include "path.h"
 #include "string_util.h"
+#include "timer.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -1013,6 +1014,97 @@ std::FILE* FileSystem::OpenCFile(const char* filename, const char* mode, Error* 
 #endif
 }
 
+std::FILE* FileSystem::OpenExistingOrCreateCFile(const char* filename, s32 retry_ms, Error* error /*= nullptr*/)
+{
+#ifdef _WIN32
+  const std::wstring wfilename = GetWin32Path(filename);
+  if (wfilename.empty())
+  {
+    Error::SetStringView(error, "Invalid path.");
+    return nullptr;
+  }
+
+  HANDLE file = CreateFileW(wfilename.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, NULL);
+
+  // if there's a sharing violation, keep retrying
+  if (file == INVALID_HANDLE_VALUE && GetLastError() == ERROR_SHARING_VIOLATION && retry_ms >= 0)
+  {
+    Common::Timer timer;
+    while (retry_ms == 0 || timer.GetTimeMilliseconds() <= retry_ms)
+    {
+      Sleep(1);
+      file = CreateFileW(wfilename.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, NULL);
+      if (file != INVALID_HANDLE_VALUE || GetLastError() != ERROR_SHARING_VIOLATION)
+        break;
+    }
+  }
+
+  if (file == INVALID_HANDLE_VALUE && GetLastError() == ERROR_FILE_NOT_FOUND)
+  {
+    // try creating it
+    file = CreateFileW(wfilename.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, CREATE_NEW, 0, NULL);
+    if (file == INVALID_HANDLE_VALUE && GetLastError() == ERROR_FILE_EXISTS)
+    {
+      // someone else beat us in the race, try again with existing.
+      file = CreateFileW(wfilename.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, NULL);
+    }
+  }
+
+  // done?
+  if (file == INVALID_HANDLE_VALUE)
+  {
+    Error::SetWin32(error, "CreateFile() failed: ", GetLastError());
+    return nullptr;
+  }
+
+  // convert to C FILE
+  const int fd = _open_osfhandle(reinterpret_cast<intptr_t>(file), 0);
+  if (fd < 0)
+  {
+    Error::SetErrno(error, "_open_osfhandle() failed: ", errno);
+    CloseHandle(file);
+    return nullptr;
+  }
+
+  // convert to a stream
+  std::FILE* cfile = _fdopen(fd, "r+b");
+  if (!cfile)
+  {
+    Error::SetErrno(error, "_fdopen() failed: ", errno);
+    _close(fd);
+  }
+
+  return cfile;
+#else
+  std::FILE* fp = std::fopen(filename, "r+b");
+  if (fp)
+    return fp;
+
+  // don't try creating for any error other than "not exist"
+  if (errno != ENOENT)
+  {
+    Error::SetErrno(error, errno);
+    return nullptr;
+  }
+
+  // try again, but create the file. mode "x" exists on all platforms.
+  fp = std::fopen(filename, "w+bx");
+  if (fp)
+    return fp;
+
+  // if it already exists, someone else beat us in the race. try again with existing.
+  if (errno == EEXIST)
+    fp = std::fopen(filename, "r+b");
+  if (!fp)
+  {
+    Error::SetErrno(error, errno);
+    return nullptr;
+  }
+
+  return fp;
+#endif
+}
+
 int FileSystem::OpenFDFile(const char* filename, int flags, int mode, Error* error)
 {
 #ifdef _WIN32
@@ -1069,11 +1161,106 @@ std::FILE* FileSystem::OpenSharedCFile(const char* filename, const char* mode, F
 #endif
 }
 
+FileSystem::AtomicRenamedFileDeleter::AtomicRenamedFileDeleter(std::string temp_filename, std::string final_filename)
+  : m_temp_filename(std::move(temp_filename)), m_final_filename(std::move(final_filename))
+{
+}
+
+FileSystem::AtomicRenamedFileDeleter::~AtomicRenamedFileDeleter() = default;
+
+void FileSystem::AtomicRenamedFileDeleter::operator()(std::FILE* fp)
+{
+  if (!fp)
+    return;
+
+  Error error;
+  if (std::fclose(fp) != 0)
+  {
+    error.SetErrno(errno);
+    ERROR_LOG("Failed to close temporary file '{}', discarding.", Path::GetFileName(m_temp_filename));
+    m_final_filename.clear();
+  }
+
+  // final filename empty => discarded.
+  if (m_final_filename.empty())
+  {
+    if (!DeleteFile(m_temp_filename.c_str(), &error))
+      ERROR_LOG("Failed to delete temporary file '{}': {}", Path::GetFileName(m_temp_filename), error.GetDescription());
+  }
+  else
+  {
+    if (!RenamePath(m_temp_filename.c_str(), m_final_filename.c_str(), &error))
+      ERROR_LOG("Failed to rename temporary file '{}': {}", Path::GetFileName(m_temp_filename), error.GetDescription());
+  }
+}
+
+void FileSystem::AtomicRenamedFileDeleter::discard()
+{
+  m_final_filename = {};
+}
+
+FileSystem::AtomicRenamedFile FileSystem::CreateAtomicRenamedFile(std::string filename, const char* mode,
+                                                                  Error* error /*= nullptr*/)
+{
+  std::string temp_filename;
+  std::FILE* fp = nullptr;
+  if (!filename.empty())
+  {
+    // this is disgusting, but we need null termination, and std::string::data() does not guarantee it.
+    const size_t filename_length = filename.length();
+    const size_t name_buf_size = filename_length + 8;
+    std::unique_ptr<char[]> name_buf = std::make_unique<char[]>(name_buf_size);
+    std::memcpy(name_buf.get(), filename.c_str(), filename_length);
+    StringUtil::Strlcpy(name_buf.get() + filename_length, ".XXXXXX", name_buf_size);
+
+#ifdef _WIN32
+    _mktemp_s(name_buf.get(), name_buf_size);
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__)
+    mkstemp(name_buf.get());
+#else
+    mktemp(name_buf.get());
+#endif
+
+    fp = OpenCFile(name_buf.get(), mode, error);
+    if (fp)
+      temp_filename.assign(name_buf.get(), name_buf_size - 1);
+    else
+      filename.clear();
+  }
+
+  return AtomicRenamedFile(fp, AtomicRenamedFileDeleter(std::move(temp_filename), std::move(filename)));
+}
+
+bool FileSystem::WriteAtomicRenamedFile(std::string filename, const void* data, size_t data_length,
+                                        Error* error /*= nullptr*/)
+{
+  AtomicRenamedFile fp = CreateAtomicRenamedFile(std::move(filename), "wb", error);
+  if (data_length > 0 && std::fwrite(data, 1u, data_length, fp.get()) != data_length) [[unlikely]]
+  {
+    Error::SetErrno(error, "fwrite() failed: ", errno);
+    DiscardAtomicRenamedFile(fp);
+    return false;
+  }
+
+  return true;
+}
+
+void FileSystem::DiscardAtomicRenamedFile(AtomicRenamedFile& file)
+{
+  file.get_deleter().discard();
+}
+
 #endif
 
 FileSystem::ManagedCFilePtr FileSystem::OpenManagedCFile(const char* filename, const char* mode, Error* error)
 {
   return ManagedCFilePtr(OpenCFile(filename, mode, error));
+}
+
+FileSystem::ManagedCFilePtr FileSystem::OpenExistingOrCreateManagedCFile(const char* filename, s32 retry_ms,
+                                                                         Error* error)
+{
+  return ManagedCFilePtr(OpenExistingOrCreateCFile(filename, retry_ms, error));
 }
 
 FileSystem::ManagedCFilePtr FileSystem::OpenManagedSharedCFile(const char* filename, const char* mode,
@@ -1096,6 +1283,31 @@ int FileSystem::FSeek64(std::FILE* fp, s64 offset, int whence)
 
   return fseeko(fp, static_cast<off_t>(offset), whence);
 #endif
+}
+
+bool FileSystem::FSeek64(std::FILE* fp, s64 offset, int whence, Error* error)
+{
+#ifdef _WIN32
+  const int res = _fseeki64(fp, offset, whence);
+#else
+  // Prevent truncation on platforms which don't have a 64-bit off_t.
+  if constexpr (sizeof(off_t) != sizeof(s64))
+  {
+    if (offset < std::numeric_limits<off_t>::min() || offset > std::numeric_limits<off_t>::max())
+    {
+      Error::SetStringView(error, "Invalid offset.");
+      return false;
+    }
+  }
+
+  const int res = fseeko(fp, static_cast<off_t>(offset), whence);
+#endif
+
+  if (res == 0)
+    return true;
+
+  Error::SetErrno(error, errno);
+  return false;
 }
 
 s64 FileSystem::FTell64(std::FILE* fp)
@@ -2479,7 +2691,17 @@ static bool SetLock(int fd, bool lock)
     return false;
   }
 
-  const bool res = (lockf(fd, lock ? F_LOCK : F_ULOCK, 0) == 0);
+  // bloody signals...
+  bool res;
+  for (;;)
+  {
+    res = (lockf(fd, lock ? F_LOCK : F_ULOCK, 0) == 0);
+    if (!res && errno == EINTR)
+      continue;
+    else
+      break;
+  }
+
   if (lseek(fd, offs, SEEK_SET) < 0)
     Panic("Repositioning file descriptor after lock failed.");
 

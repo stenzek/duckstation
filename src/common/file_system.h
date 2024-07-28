@@ -108,7 +108,15 @@ struct FileDeleter
 using ManagedCFilePtr = std::unique_ptr<std::FILE, FileDeleter>;
 ManagedCFilePtr OpenManagedCFile(const char* filename, const char* mode, Error* error = nullptr);
 std::FILE* OpenCFile(const char* filename, const char* mode, Error* error = nullptr);
+
+/// Atomically opens a file in read/write mode, and if the file does not exist, creates it.
+/// On Windows, if retry_ms is positive, this function will retry opening the file for this
+/// number of milliseconds. NOTE: The file is opened in binary mode.
+std::FILE* OpenExistingOrCreateCFile(const char* filename, s32 retry_ms = -1, Error* error = nullptr);
+ManagedCFilePtr OpenExistingOrCreateManagedCFile(const char* filename, s32 retry_ms = -1, Error* error = nullptr);
+
 int FSeek64(std::FILE* fp, s64 offset, int whence);
+bool FSeek64(std::FILE* fp, s64 offset, int whence, Error* error);
 s64 FTell64(std::FILE* fp);
 s64 FSize64(std::FILE* fp, Error* error = nullptr);
 bool FTruncate64(std::FILE* fp, s64 size, Error* error = nullptr);
@@ -129,6 +137,25 @@ enum class FileShareMode
 ManagedCFilePtr OpenManagedSharedCFile(const char* filename, const char* mode, FileShareMode share_mode,
                                        Error* error = nullptr);
 std::FILE* OpenSharedCFile(const char* filename, const char* mode, FileShareMode share_mode, Error* error = nullptr);
+
+/// Atomically-updated file creation.
+class AtomicRenamedFileDeleter
+{
+public:
+  AtomicRenamedFileDeleter(std::string temp_filename, std::string final_filename);
+  ~AtomicRenamedFileDeleter();
+
+  void operator()(std::FILE* fp);
+  void discard();
+
+private:
+  std::string m_temp_filename;
+  std::string m_final_filename;
+};
+using AtomicRenamedFile = std::unique_ptr<std::FILE, AtomicRenamedFileDeleter>;
+AtomicRenamedFile CreateAtomicRenamedFile(std::string filename, const char* mode, Error* error = nullptr);
+bool WriteAtomicRenamedFile(std::string filename, const void* data, size_t data_length, Error* error = nullptr);
+void DiscardAtomicRenamedFile(AtomicRenamedFile& file);
 
 /// Abstracts a POSIX file lock.
 #ifndef _WIN32
