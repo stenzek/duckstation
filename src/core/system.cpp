@@ -2995,7 +2995,7 @@ u32 System::CompressAndWriteStateData(std::FILE* fp, std::span<const u8> src, Sa
 
     uLongf compressed_size = static_cast<uLongf>(buffer_size);
     const int err =
-      compress2(buffer.data(), &compressed_size, src.data(), static_cast<uLong>(src.size()), Z_BEST_COMPRESSION);
+      compress2(buffer.data(), &compressed_size, src.data(), static_cast<uLong>(src.size()), Z_DEFAULT_COMPRESSION);
     if (err != Z_OK) [[unlikely]]
     {
       Error::SetStringFmt(error, "compress2() failed: {}", err);
@@ -3009,7 +3009,7 @@ u32 System::CompressAndWriteStateData(std::FILE* fp, std::span<const u8> src, Sa
     const size_t buffer_size = ZSTD_compressBound(src.size());
     buffer.resize(buffer_size);
 
-    const size_t compressed_size = ZSTD_compress(buffer.data(), buffer_size, src.data(), src.size(), 19);
+    const size_t compressed_size = ZSTD_compress(buffer.data(), buffer_size, src.data(), src.size(), 0);
     if (ZSTD_isError(compressed_size)) [[unlikely]]
     {
       const char* errstr = ZSTD_getErrorString(ZSTD_getErrorCode(compressed_size));
