@@ -896,11 +896,10 @@ void GPU_HW::SetVRAMRenderTarget()
   }
   else
   {
-    g_gpu_device->SetRenderTarget(
-      m_vram_texture.get(), m_vram_depth_texture.get(),
-      ((m_allow_shader_blend && !m_supports_framebuffer_fetch && !m_use_rov_for_shader_blend) ?
-         GPUPipeline::ColorFeedbackLoop :
-         GPUPipeline::NoRenderPassFlags));
+    g_gpu_device->SetRenderTarget(m_vram_texture.get(), m_vram_depth_texture.get(),
+                                  ((m_allow_shader_blend && !m_use_rov_for_shader_blend) ?
+                                     GPUPipeline::ColorFeedbackLoop :
+                                     GPUPipeline::NoRenderPassFlags));
   }
 }
 
