@@ -9,7 +9,6 @@
 #include "util/state_wrapper.h"
 
 #include "common/bitutils.h"
-#include "common/byte_stream.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"

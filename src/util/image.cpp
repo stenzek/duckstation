@@ -4,7 +4,6 @@
 #include "image.h"
 
 #include "common/bitutils.h"
-#include "common/byte_stream.h"
 #include "common/fastjmp.h"
 #include "common/file_system.h"
 #include "common/log.h"

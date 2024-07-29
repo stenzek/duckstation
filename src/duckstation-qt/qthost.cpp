@@ -25,7 +25,6 @@
 #include "core/system.h"
 
 #include "common/assert.h"
-#include "common/byte_stream.h"
 #include "common/crash_handler.h"
 #include "common/error.h"
 #include "common/file_system.h"

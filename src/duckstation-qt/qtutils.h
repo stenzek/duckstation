@@ -77,12 +77,6 @@ void ResizeColumnsForTreeView(QTreeView* view, const std::initializer_list<int>&
 /// NOTE: Defined in QtKeyCodes.cpp, not QtUtils.cpp.
 u32 KeyEventToCode(const QKeyEvent* ev);
 
-/// Reads a whole stream to a Qt byte array.
-QByteArray ReadStreamToQByteArray(ByteStream* stream, bool rewind = false);
-
-/// Creates a stream from a Qt byte array.
-bool WriteQByteArrayToStream(QByteArray& arr, ByteStream* stream);
-
 /// Opens a URL with the default handler.
 void OpenURL(QWidget* parent, const QUrl& qurl);
 

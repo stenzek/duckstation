@@ -11,7 +11,6 @@
 
 #include "common/assert.h"
 #include "common/binary_reader_writer.h"
-#include "common/byte_stream.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/heterogeneous_containers.h"
