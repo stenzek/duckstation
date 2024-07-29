@@ -168,7 +168,7 @@ uniform float ntsc_shrp <
     ui_min      = -10.0;
     ui_max      = 10.0;
     ui_step     = 0.5;
-    ui_label    = "NTSC Sharpness (Negative:Adaptive)";
+    ui_label    = "NTSC Sharpness (Negative: Adaptive)";
     ui_category = "NTSC";
 > = 0.0;
 
@@ -1228,7 +1228,7 @@ uniform float warpx <
     ui_min      = 0.0;
     ui_max      = 0.25;
     ui_step     = 0.01;
-    ui_label    = "Curvature X (Default 0.03)";
+    ui_label    = "Curvature X";
     ui_category = "Curvature";
 > = 0.0;
 
@@ -1237,7 +1237,7 @@ uniform float warpy <
     ui_min      = 0.0;
     ui_max      = 0.25;
     ui_step     = 0.01;
-    ui_label    = "Curvature Y (Default 0.04)";
+    ui_label    = "Curvature Y";
     ui_category = "Curvature";
 > = 0.0;
 
@@ -1440,41 +1440,57 @@ uniform float2 BufferToViewportRatio < source = "buffer_to_viewport_ratio"; >;
 #define Resolution_Y BUFFER_HEIGHT
 #endif
 
-#define SIGNAL1 float2(4.0 * Resolution_X, Resolution_Y)
-#define SIGNAL2 float2(2.0 * Resolution_X, Resolution_Y)
-#define TexSize (1.0 / NormalizedNativePixelSize)
-#define IptSize float2(800.00000000, 600.00000000)
-#define OptSize float4(BUFFER_SCREEN_SIZE, 1.0 / BUFFER_SCREEN_SIZE)
-#define OrgSize float4(TexSize, 1.0 / TexSize)
-#define SrcSize float4(IptSize, 1.0 / IptSize)
+#define SIGNAL1      float2(4.0 * Resolution_X, Resolution_Y)
+#define SIGNAL2      float2(2.0 * Resolution_X, Resolution_Y)
 
-#define fuxcoord (texcoord * 1.00001)
-#define scans    1.5 * scans
-#define eps      1e-8
-#define pii      3.14159265
-#define fracoord (fuxcoord * OptSize.xy)
+#define OutputSize   float4(BUFFER_SCREEN_SIZE, 1.0 / BUFFER_SCREEN_SIZE)
 
-#define COMPAT_TEXTURE(c, d) tex2D(c, d)
+#define TextureSize  (1.0 / NormalizedNativePixelSize)
+#define OriginalSize float4(TextureSize, 1.0 / TextureSize)
 
-#define NTSC_01 float4(SIGNAL1, 1.0 / SIGNAL1)
-#define NTSC_02 float4(SIGNAL2, 1.0 / SIGNAL2)
+#define InputSize    float2(800.00000000, 600.00000000)
+#define SourceSize   float4(InputSize, 1.0 / InputSize)
 
-#define mix_m float3x3(BRIGHTNESS, ARTIFACT, ARTIFACT, FRINGING, 2.0*SATURATION, 0.0, FRINGING, 0.0, 2.0*SATURATION)
-#define rgb_m float3x3(0.299, 0.587, 0.114, 0.596, -0.274, -0.322, 0.211, -0.523, 0.312)
-#define yiq_m float3x3(1.000, 0.956, 0.621, 1.000, -0.272, -0.647, 1.000, -1.106, 1.703)
+#define fuxcoord     (texcoord * 1.00001)
+#define scans        1.5 * scans
+#define eps          1e-8
+#define pii          3.14159265
+#define fracoord     (fuxcoord * OutputSize.xy)
 
-#define tex_1 texcoord - float2(0.25 * OrgSize.z/4.0, 0.0)
-#define tex_2 texcoord - float2(0.25 * OrgSize.z/4.0, 0.0)
+#define COMPAT_TEXTURE(c, d)    tex2D(c, d)
 
-#define inv_sqr_h 1.0 / (2.0 * SIGMA_H * SIGMA_H)
-#define inv_sqr_v 1.0 / (2.0 * SIGMA_V * SIGMA_V)
-#define inv_sqr_x 1.0 / (2.0 * SIGMA_X * SIGMA_X)
-#define inv_sqr_y 1.0 / (2.0 * SIGMA_Y * SIGMA_Y)
+#define NTSC_01      float4(SIGNAL1, 1.0 / SIGNAL1)
+#define NTSC_02      float4(SIGNAL2, 1.0 / SIGNAL2)
 
-#define fetch_offset1(dx) tex2D(NTSC_S03, tex_1 + dx).xyz + tex2D(NTSC_S03, tex_1 - dx).xyz
-#define fetch_offset2(dx) float3(tex2D(NTSC_S03, tex_1 + dx.xz).x + tex2D(NTSC_S03, tex_1 - dx.xz).x, tex2D(NTSC_S03, tex_1 + dx.yz).yz + tex2D(NTSC_S03, tex_1 - dx.yz).yz)
+#define mix_m        float3x3(BRIGHTNESS, ARTIFACT,       ARTIFACT, \
+                              FRINGING,   2.0*SATURATION, 0.0,      \
+                              FRINGING,   0.0,            2.0*SATURATION)
 
-#define NTSC_S00 ReShade::BackBuffer
+#define rgb_m        float3x3(0.299 , 0.587,  0.114, \
+                              0.596, -0.274, -0.322, \
+                              0.211, -0.523,  0.312)
+
+#define yiq_m        float3x3(1.000,  0.956,  0.621, \
+                              1.000, -0.272, -0.647, \
+                              1.000, -1.106,  1.703)
+
+#define tex_1        texcoord - float2(0.25 * OriginalSize.z / 4.0, 0.0)
+#define tex_2        texcoord - float2(0.25 * OriginalSize.z / 4.0, 0.0)
+
+#define inv_sqr_h    1.0 / (2.0 * SIGMA_H * SIGMA_H)
+#define inv_sqr_v    1.0 / (2.0 * SIGMA_V * SIGMA_V)
+#define inv_sqr_x    1.0 / (2.0 * SIGMA_X * SIGMA_X)
+#define inv_sqr_y    1.0 / (2.0 * SIGMA_Y * SIGMA_Y)
+
+#define fetch_offset1(dx)   tex2D(NTSC_S03, tex_1 + dx).xyz + \
+                            tex2D(NTSC_S03, tex_1 - dx).xyz
+
+#define fetch_offset2(dx)   float3(tex2D(NTSC_S03, tex_1 + dx.xz).x +  \
+                                   tex2D(NTSC_S03, tex_1 - dx.xz).x,   \
+                                   tex2D(NTSC_S03, tex_1 + dx.yz).yz + \
+                                   tex2D(NTSC_S03, tex_1 - dx.yz).yz)
+
+#define NTSC_S00     ReShade::BackBuffer
 
 texture NTSC_T01
 {
@@ -2199,8 +2215,8 @@ float3 noise(float3 v)
 void bring_pixel(inout float3 c, inout float3 b, inout float3 g, float2 coord,
                  float2 boord)
 {
-    float stepx = OptSize.z;
-    float stepy = OptSize.w;
+    float stepx = OutputSize.z;
+    float stepy = OutputSize.w;
 
     float2 dx = float2(stepx, 0.0);
     float2 dy = float2(0.0, stepy);
@@ -2245,8 +2261,8 @@ void bring_pixel(inout float3 c, inout float3 b, inout float3 g, float2 coord,
 
 float4 AfterglowPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : SV_Target
 {
-    float2 dx = float2(OrgSize.z, 0.0);
-    float2 dy = float2(0.0, OrgSize.w);
+    float2 dx = float2(OriginalSize.z, 0.0);
+    float2 dy = float2(0.0, OriginalSize.w);
 
     float w = 1.0;
 
@@ -2511,20 +2527,20 @@ float4 Signal_1_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
         MERGE = 1.0;
     }
 
-    float2 pix_no = texcoord * OrgSize.xy * pix_res * float2(4.0, 1.0);
+    float2 pix_no = texcoord * OriginalSize.xy * pix_res * float2(4.0, 1.0);
     float3 col0   = tex2D(NTSC_S02, texcoord).rgb;
 
     float3 yiq1 = rgb2yiq(col0);
     float c0    = yiq1.x;
     yiq1.x      = pow(yiq1.x, ntsc_gamma);
     float lum   = yiq1.x;
-    float2 dx   = float2(OrgSize.z, 0.0);
+    float2 dx   = float2(OriginalSize.z, 0.0);
 
     float3 c1 = tex2D(NTSC_S02, texcoord - dx).rgb;
     float3 c2 = tex2D(NTSC_S02, texcoord + dx).rgb;
 
     if (abs(ntsc_rainbow) > 0.025) {
-        float2 dy = float2(0.0, OrgSize.w);
+        float2 dy = float2(0.0, OriginalSize.w);
 
         float3 c3 = tex2D(NTSC_S02, texcoord + dy).rgb;
         float3 c4 = tex2D(NTSC_S02, texcoord + dx + dy).rgb;
@@ -2542,12 +2558,11 @@ float4 Signal_1_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
                                    min(abs(c2.x - c5.x), abs(c5.x - c6.x))),
                          1.0);
 
-        float bar1 = 1.0 - min(7.0 * min(max(max(c0, c3.x)   - 0.15, 0.0),
+        float bar1 = 1.0 - min(7.0 * min(max(max(c0,   c3.x) - 0.15, 0.0),
                                          max(max(c2.x, c4.x) - 0.15, 0.0)),
                                1.0);
 
-        float bar2 = step(abs(c1.x - c2.x) + abs(c0 - c5.x) +
-                                  abs(c2.x - c6.x),
+        float bar2 = step(abs(c1.x - c2.x) + abs(c0 - c5.x) + abs(c2.x - c6.x),
                           0.325);
 
         mix1 = bar1 * bar2 * mix2 * (1.0 - min(10.0 * min(abs(c0 - c3.x), abs(c2.x - c4.x)), 1.0));
@@ -2561,7 +2576,9 @@ float4 Signal_1_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
         c2.x   = pow(c2.x, ntsc_gamma);
 
         yiq1.x = lerp(min(0.5 * (yiq1.x + max(c1.x, c2.x)),
-                              max(yiq1.x, min(c1.x, c2.x))), yiq1.x, mix3);
+                          max(yiq1.x, min(c1.x, c2.x))),
+                      yiq1.x,
+                      mix3);
     }
 
     float3 yiq2 = yiq1;
@@ -2677,7 +2694,7 @@ float4 Signal_2_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
 
     float res     = ntsc_scale;
     float3 signal = 0.0;
-    float2 one    = 0.25 * OrgSize.zz / res;
+    float2 one    = 0.25 * OriginalSize.zz / res;
     float phase   = (ntsc_phase < 1.5) ? ((NativeWidth > 300.0) ? 2.0 : 3.0)
                                        : ((ntsc_phase > 2.5)  ? 3.0 : 2.0);
 
@@ -2734,7 +2751,8 @@ float4 Signal_2_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
             xd.xy  = (offset - loop) * dx.xy;
             sums   = fetch_offset2(xd);
             tmps   = float3(luma_filter_3_phase[i],
-                                      chroma_filter_3_phase[i].xx);
+                            chroma_filter_3_phase[i].xx);
+
             wsum   = wsum + tmps;
             signal += sums * tmps;
         }
@@ -2748,7 +2766,7 @@ float4 Signal_2_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
     }
 
     if (ntsc_ring > 0.05) {
-        float2 dx = float2(OrgSize.z / min(res, 1.0), 0.0);
+        float2 dx = float2(OriginalSize.z / min(res, 1.0), 0.0);
 
         float a = tex2D(NTSC_S03, tex_1 - 1.5 * dx).a;
         float b = tex2D(NTSC_S03, tex_1 - 0.5 * dx).a;
@@ -2772,9 +2790,9 @@ float4 Signal_2_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
 
 float4 Signal_3_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : SV_Target
 {
-    float2 dx     = float2(0.25 * OrgSize.z, 0.0) / 4.0;
+    float2 dx     = float2(0.25 * OriginalSize.z, 0.0) / 4.0;
     float2 tcoord = tex_2 + dx;
-    float2 offset = float2(0.5 * OrgSize.z, 0.0);
+    float2 offset = float2(0.5 * OriginalSize.z, 0.0);
 
     float3 ll1 = tex2D(NTSC_S04, tcoord + offset).xyz;
     float3 ll2 = tex2D(NTSC_S04, tcoord - offset).xyz;
@@ -2784,6 +2802,7 @@ float4 Signal_3_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
 
     float lum1 = min(tex2D(NTSC_S04, tex_2 - dx).a,
                      tex2D(NTSC_S04, tex_2 + dx).a);
+
     float lum2 = max(ref.x, 0.0);
 
     float dif  = max(max(abs(ll1.x - ll2.x), abs(ll1.y - ll2.y)),
@@ -2828,21 +2847,22 @@ float4 Signal_3_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
 
 float4 SharpnessPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : SV_Target
 {
-    float2 g01 = float2(-0.5 * OrgSize.z, 0.0);
-    float2 g21 = float2(0.5 * OrgSize.z, 0.0);
+    float2 g01 = float2(-0.5 * OriginalSize.z, 0.0);
+    float2 g21 = float2(0.5 * OriginalSize.z, 0.0);
     float3 c01 = tex2D(NTSC_S05, texcoord + g01).rgb;
     float3 c21 = tex2D(NTSC_S05, texcoord + g21).rgb;
     float3 c11 = tex2D(NTSC_S05, texcoord).rgb;
     float3 b11 = 0.5 * (c01 + c21);
 
     float contrast = max(max(c11.r, c11.g), c11.b);
-
     contrast       = lerp(2.0 * CCONTR, CCONTR, contrast);
+
     float3 mn      = min(min(c01, c21), c11);
     float3 mn1     = min(mn, c11 * (1.0 - contrast));
     float3 mx      = max(max(c01, c21), c11);
     float3 mx1     = max(mx, c11 * (1.0 + contrast));
     float3 dif     = pow(mx1 - mn1 + 0.0001, 0.75);
+
     float3 sharpen = lerp(CSHARPEN * CDETAILS, CSHARPEN, dif);
     float3 res     = clamp(lerp(c11, b11, -sharpen), mn1, mx1);
 
@@ -2850,6 +2870,7 @@ float4 SharpnessPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
         c01 = tex2D(NTSC_S02, texcoord + 2.0 * g01).rgb;
         c21 = tex2D(NTSC_S02, texcoord + 2.0 * g21).rgb;
         c11 = tex2D(NTSC_S02, texcoord).rgb;
+
         mn1 = sqrt(min(min(c01, c21), c11) * mn);
         mx1 = sqrt(max(max(c01, c21), c11) * mx);
 
@@ -2888,6 +2909,7 @@ float4 LuminancePS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
     ltotal += length(tex2Dlod(NTSC_S06, float4(float2(0.3, 0.7), m, 0)).rgb);
     ltotal += length(tex2Dlod(NTSC_S06, float4(float2(0.7, 0.3), m, 0)).rgb);
     ltotal += length(tex2Dlod(NTSC_S06, float4(float2(0.7, 0.7), m, 0)).rgb);
+
     ltotal *= 0.25;
     ltotal = pow(0.577350269 * ltotal, 0.7);
 
@@ -2899,6 +2921,7 @@ float4 LuminancePS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
     float3 r1 = COMPAT_TEXTURE(NTSC_S06, fuxcoord.xy + dx).rgb;
     float3 l2 = COMPAT_TEXTURE(NTSC_S06, fuxcoord.xy - dx).rgb;
     float3 r2 = COMPAT_TEXTURE(NTSC_S06, fuxcoord.xy + x2).rgb;
+
     float c1  = dist(l2, l1);
     float c2  = dist(l1, r1);
     float c3  = dist(r2, r1);
@@ -2909,11 +2932,11 @@ float4 LuminancePS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
 float4 LinearizePS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : SV_Target
 {
     float3 c1 = COMPAT_TEXTURE(NTSC_S06, fuxcoord).rgb;
-    float3 c2 = COMPAT_TEXTURE(NTSC_S06, fuxcoord + float2(0.0, OrgSize.w)).rgb;
+    float3 c2 = COMPAT_TEXTURE(NTSC_S06, fuxcoord + float2(0.0, OriginalSize.w)).rgb;
 
     if ((downsample_levelx + downsample_levely) > 0.025) {
         c1 = fetch_pixel(fuxcoord);
-        c2 = fetch_pixel(fuxcoord + float2(0.0, OrgSize.w));
+        c2 = fetch_pixel(fuxcoord + float2(0.0, OriginalSize.w));
     }
 
     float3 c       = c1;
@@ -2942,7 +2965,7 @@ float4 LinearizePS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
             intres != 0.5 || hscans) {
         intera = 0.25;
 
-        float liine_no = clamp(floor(mod(OrgSize.y * fuxcoord.y, 2.0)), 0.0, 1.0);
+        float liine_no = clamp(floor(mod(OriginalSize.y * fuxcoord.y, 2.0)), 0.0, 1.0);
         float frame_no = clamp(floor(mod(FrameCount, 2.0)), 0.0, 1.0);
 
         float ii = abs(liine_no - frame_no);
@@ -2989,7 +3012,7 @@ float4 LinearizePS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
 
 float4 HGaussianPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : SV_Target
 {
-    float4 GaussSize = float4(OrgSize.x, OrgSize.y, OrgSize.z, OrgSize.w) *
+    float4 GaussSize = OriginalSize *
                        lerp(1.0.xxxx,
                             float4(FINE_GAUSS, FINE_GAUSS, 1.0 / FINE_GAUSS, 1.0 / FINE_GAUSS),
                             min(FINE_GAUSS - 1.0, 1.0));
@@ -3027,7 +3050,7 @@ float4 HGaussianPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
 
 float4 VGaussianPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : SV_Target
 {
-    float4 GaussSize = float4(SrcSize.x, OrgSize.y, SrcSize.z, OrgSize.w) *
+    float4 GaussSize = float4(SourceSize.x, OriginalSize.y, SourceSize.z, OriginalSize.w) *
                        lerp(1.0.xxxx,
                             float4(FINE_GAUSS, FINE_GAUSS, 1.0 / FINE_GAUSS, 1.0 / FINE_GAUSS),
                             min(FINE_GAUSS - 1.0, 1.0));
@@ -3060,7 +3083,7 @@ float4 VGaussianPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
 
 float4 BloomHorzPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : SV_Target
 {
-    float4 BloomSize = float4(OrgSize.x, OrgSize.y, OrgSize.z, OrgSize.w) *
+    float4 BloomSize = OriginalSize *
                        lerp(1.0.xxxx,
                             float4(FINE_BLOOM, FINE_BLOOM, 1.0 / FINE_BLOOM, 1.0 / FINE_BLOOM),
                             min(FINE_BLOOM - 1.0, 1.0));
@@ -3095,7 +3118,7 @@ float4 BloomHorzPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
 
 float4 BloomVertPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : SV_Target
 {
-    float4 BloomSize = float4(SrcSize.x, OrgSize.y, SrcSize.z, OrgSize.w) *
+    float4 BloomSize = float4(SourceSize.x, OriginalSize.y, SourceSize.z, OriginalSize.w) *
                        lerp(1.0.xxxx,
                             float4(FINE_BLOOM, FINE_BLOOM, 1.0 / FINE_BLOOM, 1.0 / FINE_BLOOM),
                             min(FINE_BLOOM - 1.0, 1.0));
@@ -3130,12 +3153,12 @@ float4 BloomVertPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
 
 float4 NTSC_TV1_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : SV_Target
 {
-    float2 prescalex = float2(tex2Dsize(NTSC_S08, 0)) / OrgSize.xy;
+    float2 prescalex = float2(tex2Dsize(NTSC_S08, 0)) / OriginalSize.xy;
 
-    float4 PALSize = OrgSize * float4(prescalex.x,
-                                      prescalex.y,
-                                      1.0 / prescalex.x,
-                                      1.0 / prescalex.y);
+    float4 PALSize = OriginalSize * float4(prescalex.x,
+                                           prescalex.y,
+                                           1.0 / prescalex.x,
+                                           1.0 / prescalex.y);
 
     float f = frac(PALSize.x * fuxcoord.x);
     f = 0.5 - f;
@@ -3151,6 +3174,7 @@ float4 NTSC_TV1_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
     float wsum       = 0.0;
     float xs         = prescalex.x * 0.5;
     float hsharpness = HSHARPNESS * xs;
+
     float3 cmax      = 0.0.xxx;
     float3 cmin      = 1.0.xxx;
     float sharp      = crthd_h(hsharpness, xs) * S_SHARPH;
@@ -3160,7 +3184,8 @@ float4 NTSC_TV1_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
     float sp         = 0.0;
     float sw         = 0.0;
     float ts         = 0.025;
-    float3 luma      = float3(0.2126, 0.7152, 0.0722);
+
+    float3 luma = float3(0.2126, 0.7152, 0.0722);
 
     float LOOPSIZE = ceil(2.0 * FPR);
     float CLPSIZE  = round(2.0 * LOOPSIZE / 3.0);
@@ -3189,10 +3214,10 @@ float4 NTSC_TV1_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
         n      = n + 1.0;
     } while (n <= LOOPSIZE);
 
-    color  = color / wsum;
+    color  = color  / wsum;
     scolor = scolor / swsum;
 
-    color = clamp(lerp(clamp(color, cmin, cmax), color, HARNG), 0.0, 1.0);
+    color  = clamp(lerp(clamp(color, cmin, cmax), color, HARNG), 0.0, 1.0);
     scolor = clamp(lerp(max(max(color.r, color.g), color.b), scolor, spike), 0.0, 1.0);
 
     return float4(color, scolor);
@@ -3200,9 +3225,9 @@ float4 NTSC_TV1_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
 
 float4 NTSC_TV2_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : SV_Target
 {
-    float prescalex = tex2Dsize(NTSC_S08, 0).x / (2.0 * OrgSize.x);
+    float prescalex = tex2Dsize(NTSC_S08, 0).x / (2.0 * OriginalSize.x);
 
-    float4 PALSize = OrgSize * float4(prescalex, 1.0, 1.0 / prescalex, 1.0);
+    float4 PALSize = OriginalSize * float4(prescalex, 1.0, 1.0 / prescalex, 1.0);
 
     float gamma_in = 1.0 / COMPAT_TEXTURE(NTSC_S08, 0.25).a;
     float lum      = COMPAT_TEXTURE(NTSC_S07, 0.5).a;
@@ -3227,7 +3252,7 @@ float4 NTSC_TV2_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
     float2 lexcoord = fuxcoord.xy;
 
     if (IOS > 0.0 && !interb) {
-        float2 ofactor   = OptSize.xy / OrgSize.xy;
+        float2 ofactor   = OutputSize.xy / OriginalSize.xy;
         float2 intfactor = (IOS < 2.5) ? floor(ofactor) : ceil(ofactor);
         float2 diff      = ofactor / intfactor;
         float scan       = diff.y;
@@ -3242,8 +3267,8 @@ float4 NTSC_TV2_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
     float factor = 1.0 + (1.0 - 0.5 * OS) * blm_2 / 100.0 - lum * blm_2 / 100.0;
 
     lexcoord = overscan(lexcoord, factor, factor);
-    lexcoord = overscan(lexcoord, (OrgSize.x - overscanx * BufferToViewportRatio.x) / OrgSize.x,
-                                  (OrgSize.y - overscany * BufferToViewportRatio.y) / OrgSize.y);
+    lexcoord = overscan(lexcoord, (OriginalSize.x - overscanx * BufferToViewportRatio.x) / OriginalSize.x,
+                                  (OriginalSize.y - overscany * BufferToViewportRatio.y) / OriginalSize.y);
 
     float2 pos     = warp(lexcoord);
     float2 coffset = 0.5;
@@ -3257,7 +3282,7 @@ float4 NTSC_TV2_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
     pC4.x          = pos.x;
 
     if (intres == 0.5 && prescalex < 1.5) {
-        pC4.y = floor(pC4.y * OrgSize.y) * OrgSize.w + 0.5 * OrgSize.w;
+        pC4.y = floor(pC4.y * OriginalSize.y) * OriginalSize.w + 0.5 * OriginalSize.w;
     }
     if (interb && no_scanlines < 0.025 || hscans) {
         pC4.y = pos.y;
@@ -3274,8 +3299,8 @@ float4 NTSC_TV2_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
 
     pC4 += dy;
     if (intres == 0.5 && prescalex < 1.5) {
-        pC4.y = floor((pos.y + 0.33 * dy.y) * OrgSize.y) * OrgSize.w +
-                0.5 * OrgSize.w;
+        pC4.y = floor((pos.y + 0.33 * dy.y) * OriginalSize.y) * OriginalSize.w +
+                0.5 * OriginalSize.w;
     }
 
     float3 color2  = COMPAT_TEXTURE(NTSC_S09, pC4).rgb;
@@ -3298,7 +3323,7 @@ float4 NTSC_TV2_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
     if (!interb || hscans) {
         float3 luma = float3(0.2126, 0.7152, 0.0722);
         float ssub  = ssharp * max(abs(scolor1.x - scolor2.x),
-                                  abs(dot(color1, luma) - dot(color2, luma)));
+                                   abs(dot(color1, luma) - dot(color2, luma)));
 
         float shape1 = lerp(scanline1, scanline2 + ssub * scolor1.x * 35.0, f);
         float shape2 = lerp(scanline1, scanline2 + ssub * scolor2.x * 35.0, 1.0 - f);
@@ -3389,12 +3414,13 @@ float4 ChromaticPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
     float gamma_in = 1.0 / COMPAT_TEXTURE(NTSC_S08, 0.25).a;
     float lum      = COMPAT_TEXTURE(NTSC_S07, 0.5).a;
     float intera   = COMPAT_TEXTURE(NTSC_S08, float2(0.75, 0.25)).a;
+
     bool interb = ((intera < 0.35 || no_scanlines > 0.025) && (hiscan < 0.5));
 
     float2 lexcoord = fuxcoord.xy;
 
     if (IOS > 0.0 && !interb) {
-        float2 ofactor   = OptSize.xy / OrgSize.xy;
+        float2 ofactor   = OutputSize.xy / OriginalSize.xy;
         float2 intfactor = (IOS < 2.5) ? floor(ofactor) : ceil(ofactor);
 
         float2 diff = ofactor / intfactor;
@@ -3410,8 +3436,8 @@ float4 ChromaticPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
     float factor = 1.0 + (1.0 - 0.5 * OS) * blm_2 / 100.0 - lum * blm_2 / 100.0;
 
     lexcoord = overscan(lexcoord, factor, factor);
-    lexcoord = overscan(lexcoord, (OrgSize.x - overscanx * BufferToViewportRatio.x) / OrgSize.x,
-                                  (OrgSize.y - overscany * BufferToViewportRatio.y) / OrgSize.y);
+    lexcoord = overscan(lexcoord, (OriginalSize.x - overscanx * BufferToViewportRatio.x) / OriginalSize.x,
+                                  (OriginalSize.y - overscany * BufferToViewportRatio.y) / OriginalSize.y);
 
     float2 pos0 = warp(fuxcoord.xy);
     float2 pos1 = fuxcoord.xy;
@@ -3442,7 +3468,7 @@ float4 ChromaticPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
     float mxg = max(max(mx0, mx1), max(mx2, cm));
     float mx  = pow(mxg, 1.40 / gamma_in);
 
-    dx = float2(OrgSize.z, 0.0) * 0.25;
+    dx = float2(OriginalSize.z, 0.0) * 0.25;
 
     mx0 = COMPAT_TEXTURE(NTSC_S14, pos1 - dx).a;
     mx2 = COMPAT_TEXTURE(NTSC_S14, pos1 + dx).a;
@@ -3555,6 +3581,7 @@ float4 ChromaticPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
         color = color * cmask;
         color = min(color, 1.0);
         color = pow(color, gamma_in / mask_gamma);
+
         cmask = min(cmask, 1.0);
         dmask = min(dmask, 1.0);
     }
@@ -3577,8 +3604,8 @@ float4 ChromaticPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
 
     float vig  = COMPAT_TEXTURE(NTSC_S02,
                                 clamp((pos - 0.5) * BufferToViewportRatio + 0.5,
-                                      0.0 + 0.5 * OrgSize.zw,
-                                      1.0 - 0.5 * OrgSize.zw)).a;
+                                      0.0 + 0.5 * OriginalSize.zw,
+                                      1.0 - 0.5 * OriginalSize.zw)).a;
 
     float3 bcmask = lerp(one, cmask, b_mask);
     float3 hcmask = lerp(one, cmask, h_mask);
@@ -3696,7 +3723,7 @@ float4 ChromaticPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
     float rc = 0.6 * sqrt(max(max(color.r, color.g), color.b)) + 0.4;
 
     if (abs(addnoised) > 0.01) {
-        float3 noise0 = noise(float3(floor(OptSize.xy * fuxcoord / noiseresd),
+        float3 noise0 = noise(float3(floor(OutputSize.xy * fuxcoord / noiseresd),
                                      FrameCount));
         if (noisetype < 0.5) {
             color = lerp(color, noise0, 0.25 * abs(addnoised) * rc);
