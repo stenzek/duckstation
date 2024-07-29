@@ -1000,6 +1000,7 @@ Unread messages: {}</source>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="223"/>
         <source>Load Devices From Save States</source>
+        <translatorcomment>*Загрузка устройств</translatorcomment>
         <translation type="unfinished">Загрузить устройства из сохранённого состояния</translation>
     </message>
     <message>
@@ -2772,7 +2773,7 @@ Unread messages: {}</source>
     <message>
         <location filename="../consolesettingswidget.cpp" line="83"/>
         <source>Simulates stalls in the recompilers when the emulated CPU would have to fetch instructions into its cache. Makes games run closer to their console framerate, at a small cost to performance. Interpreter mode always simulates the instruction cache.</source>
-        <translatorcomment>*кэш команд</translatorcomment>
+        <translatorcomment>*кэш команд *Перекомпилятор *Рекомпилятор</translatorcomment>
         <translation type="unfinished">Имитирует остановки в перекомпиляторах, когда эмулируемому процессору придется извлекать инструкции в свой кэш. Позволяет запускать игры с частотой кадров, близкой к частоте кадров на консоли, при небольших затратах на производительность. Режим интерпретатора всегда имитирует кэш инструкций.</translation>
     </message>
     <message>
@@ -3918,7 +3919,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerledsettingsdialog.ui" line="82"/>
         <source>Enable DualSense Player LED</source>
-        <translation type="unfinished"></translation>
+        <translation>Включить светодиодную подсветку на контроллерах DualSense</translation>
     </message>
     <message>
         <location filename="../controllerledsettingsdialog.ui" line="44"/>
@@ -4465,7 +4466,7 @@ You cannot undo this action.</source>
     <message>
         <location filename="../debuggerwindow.ui" line="289"/>
         <source>Stack</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Стек</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="314"/>
@@ -4919,12 +4920,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../../core/settings.cpp" line="1308"/>
         <source>Disabled (Flickering)</source>
         <translatorcomment>*Отключен</translatorcomment>
-        <translation type="unfinished">Отключено (мерцание)</translation>
+        <translation>Отключено (мерцание)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1309"/>
         <source>Weave (Combing)</source>
-        <translation type="unfinished">Волновой (расчесывание)</translation>
+        <translation>Волновой (расчесывание)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1310"/>
@@ -5807,7 +5808,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7259"/>
         <source>Accurate Blending</source>
-        <translation type="unfinished"></translation>
+        <translation>Точное смешивание</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7260"/>
@@ -6003,7 +6004,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7296"/>
         <source>Avoids calls to C++ code, significantly speeding up the recompiler.</source>
-        <translatorcomment>Расширенные настройки/Рекомпилятор быстрого доступа к памяти/Подсказка</translatorcomment>
+        <translatorcomment>Расширенные настройки/Рекомпилятор быстрого доступа к памяти/Подсказка *Рекомпилятор</translatorcomment>
         <translation>Избегает вызовов кода C++, что значительно ускоряет перекомпилятор.</translation>
     </message>
     <message>
@@ -6310,7 +6311,8 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7361"/>
         <source>Culling Correction</source>
-        <translation type="unfinished">Корректировка отбраковки</translation>
+        <translatorcomment>*Отсечения *Отбраковки *Отсеивания *Корректировка *Коррекция</translatorcomment>
+        <translation>Корректировка отсеивания</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7362"/>
@@ -6437,7 +6439,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7388"/>
         <source>Determines the rotation of the simulated TV screen.</source>
-        <translation type="unfinished"></translation>
+        <translation>Определить поворот имитируемого экрана телевизора.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7389"/>
@@ -6481,7 +6483,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7397"/>
         <source>Disable on 2D Polygons</source>
-        <translation type="unfinished"></translation>
+        <translation>Отключить для 2D-полигонов</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7398"/>
@@ -6629,17 +6631,19 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7425"/>
         <source>Enable Recompiler Block Linking</source>
+        <translatorcomment>*Рекомпилятор</translatorcomment>
         <translation type="unfinished">Включить связывание блоков перекомпилятора</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7426"/>
         <source>Enable Recompiler ICache</source>
+        <translatorcomment>*Рекомпилятор</translatorcomment>
         <translation type="unfinished">Включить ICache перекомпилятора</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7427"/>
         <source>Enable Recompiler Memory Exceptions</source>
-        <translatorcomment>(BigP/Настройки/Расширенные настройки/Эмуляция процессора) (wUI/Настройки/Дополнительные/Твики)</translatorcomment>
+        <translatorcomment>(BigP/Настройки/Расширенные настройки/Эмуляция процессора) (wUI/Настройки/Дополнительные/Твики) *Рекомпилятор</translatorcomment>
         <translation type="unfinished">Включить исключения памяти перекомпилятора</translation>
     </message>
     <message>
@@ -6665,7 +6669,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7436"/>
         <source>Enable/Disable the Player LED on DualSense controllers.</source>
-        <translation type="unfinished"></translation>
+        <translation>Включить/отключить светодиодную подсветку на контроллерах DualSense.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7441"/>
@@ -6821,17 +6825,17 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7682"/>
         <source>SDL DualSense Player LED</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Подсветка игрока SDL DualSense</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7696"/>
         <source>Screen Position</source>
-        <translation type="unfinished"></translation>
+        <translation>Положение экрана</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7697"/>
         <source>Screen Rotation</source>
-        <translation type="unfinished"></translation>
+        <translation>Поворот экрана</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7698"/>
@@ -7254,12 +7258,12 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7471"/>
         <source>Forces a full rescan of all games previously identified.</source>
-        <translation>Принудительно заставляет выполнить полное повторное сканирование всех ранее идентифицированных игр.</translation>
+        <translation>Принудительно выполняет полное повторное сканирование всех ранее идентифицированных игр.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7472"/>
         <source>Forces blending to be done in the shader at 16-bit precision, when not using true color. Non-trivial performance impact, and unnecessary for most games.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Принудительно выполняет смешивание в шейдере с точностью до 16 бит, если не используется true color. Нетривиальное влияние на производительность, ненужное для большинства игр.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7473"/>
@@ -7468,7 +7472,8 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7514"/>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry.</source>
-        <translation type="unfinished">Повышает точность отсеивания полигонов, уменьшая количество дыр в геометрии.</translation>
+        <translatorcomment>*Отсечения *Отбраковки *Отсеивания *Корректировка *Коррекция</translatorcomment>
+        <translation>Повышает точность отсеивания полигонов, уменьшая количество дыр в геометрии.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7515"/>
@@ -7901,7 +7906,8 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7605"/>
         <source>PGXP Geometry Correction</source>
-        <translation type="unfinished">Коррекция геометрии PGXP</translation>
+        <translatorcomment>*Корректировка *Коррекция</translatorcomment>
+        <translation>Корректировка геометрии PGXP</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7607"/>
@@ -7972,7 +7978,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7619"/>
         <source>Perspective Correct Colors</source>
-        <translatorcomment>(wUI/Настройки/Графика/PGXP) (BigP/Настройки/Настройки графики/PGXP )</translatorcomment>
+        <translatorcomment>(wUI/Настройки/Графика/PGXP) (BigP/Настройки/Настройки графики/PGXP ) *Коррекцией</translatorcomment>
         <translation>Цвета с корректировкой перспективы</translation>
     </message>
     <message>
@@ -8070,7 +8076,8 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7638"/>
         <source>Recompiler Fast Memory Access</source>
-        <translation type="unfinished">Рекомпилятор быстрого доступа к памяти</translation>
+        <translatorcomment>*Рекомпилятор</translatorcomment>
+        <translation type="unfinished">Перекомпилятор быстрого доступа к памяти</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7639"/>
@@ -8601,6 +8608,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7759"/>
         <source>Simulates the CPU&apos;s instruction cache in the recompiler. Can help with games running too fast.</source>
+        <translatorcomment>*Рекомпилятор *Перекомпилятор</translatorcomment>
         <translation type="unfinished">Имитирует кэш инструкций процессора в перекомпиляторе. Может помочь, если игры работают слишком быстро.</translation>
     </message>
     <message>
@@ -8921,7 +8929,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7838"/>
         <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Использует координаты нативного разрешения для 2D-полигонов вместо точных координат. Может исправить некорректный пользовательский интерфейс в некоторых играх, но в противном случае его следует оставить отключенным.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7839"/>
@@ -8946,7 +8954,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7843"/>
         <source>Vertex Cache</source>
-        <translation type="unfinished">Кэш вершин</translation>
+        <translation>Кэш вершин</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7844"/>
@@ -9254,64 +9262,67 @@ Do you want to {0} anyway?</source>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="419"/>
         <source>Resolution scale set to {0}x (display {1}x{2}, VRAM {3}x{4})</source>
-        <translation type="unfinished">Масштаб разрешения установлен на {0}x (дисплей {1}x{2}, видеопамять {3}x{4})</translation>
+        <translation>Масштаб разрешения установлен на {0}x (экран {1}x{2}, видеопамять {3}x{4})</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="432"/>
         <source>Multisample anti-aliasing set to {}x (SSAA).</source>
-        <translation type="unfinished">Мультисэмпловое сглаживание установлено на {}x (SSAA).</translation>
+        <translation>Мультисэмпловое сглаживание установлено на {}x (SSAA).</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="439"/>
         <source>Multisample anti-aliasing set to {}x.</source>
-        <translation type="unfinished">Мультисэмпловое сглаживание установлено на {}x.</translation>
+        <translation>Мультисэмпловое сглаживание установлено на {}x.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="531"/>
         <source>{}x MSAA is not supported, using {}x instead.</source>
-        <translation type="unfinished">{}x MSAA не поддерживается, вместо него используется {}x.</translation>
+        <translation>{}x MSAA не поддерживается, вместо него используется {}x.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="543"/>
         <source>SSAA is not supported, using MSAA instead.</source>
-        <translation type="unfinished">SSAA не поддерживается, вместо этого используется MSAA.</translation>
+        <translation>SSAA не поддерживается, вместо этого используется MSAA.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="551"/>
         <source>Texture filter &apos;{}/{}&apos; is not supported with the current renderer.</source>
-        <translation type="unfinished">Фильтр текстур &apos;{}/{}&apos; не поддерживается текущим средством визуализации.</translation>
+        <translatorcomment>*Отрисовки *Рендером</translatorcomment>
+        <translation>Фильтр текстур &apos;{}/{}&apos; не поддерживается текущим средством отрисовки.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="565"/>
         <source>Accurate blending is not supported by your current GPU.
 It requires framebuffer fetch, feedback loops, or rasterizer order views.</source>
-        <translation type="unfinished"></translation>
+        <translation>Точное смешивание не поддерживается вашим текущим графическим процессором.
+Для этого требуется выборка кадрового буфера, циклы обратной связи или порядок просмотра растеризатора.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="575"/>
         <source>Multisample anti-aliasing is not supported when using ROV blending.</source>
-        <translation type="unfinished"></translation>
+        <translation>Мультисэмпловое сглаживание не поддерживается при использовании смешивания ROV.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="584"/>
         <source>PGXP depth buffer is not supported by your current GPU or renderer.
 It requires framebuffer fetch, feedback loops, or rasterizer order views.</source>
-        <translation type="unfinished"></translation>
+        <translation>Буфер глубины PGXP не поддерживается вашим текущим графическим процессором или средством отрисовки.
+Для этого требуется выборка кадрового буфера, циклы обратной связи или порядок просмотра растеризатора.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="597"/>
         <source>Geometry shaders are not supported by your GPU, and are required for wireframe rendering.</source>
-        <translation type="unfinished">Шейдеры геометрии не поддерживаются вашим графическим процессором и необходимы для каркасной отрисовки.</translation>
+        <translation>Шейдеры геометрии не поддерживаются вашим графическим процессором и необходимы для каркасной отрисовки.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="610"/>
         <source>Resolution scale {0}x is not divisible by downsample scale {1}x, using {2}x instead.</source>
-        <translation type="unfinished">Масштаб разрешения {0}x не делится на масштаб понижения разрешения {1}x, вместо этого используется {2}x.</translation>
+        <translation>Масштаб разрешения {0}x не делится на масштаб понижения разрешения {1}x, вместо этого используется {2}x.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="671"/>
         <source>Resolution scale {0}x not supported for adaptive downsampling, using {1}x.</source>
-        <translation type="unfinished">Масштаб разрешения {0}x не поддерживается для адаптивного понижения разрешения с использованием {1}x.</translation>
+        <translation>Масштаб разрешения {0}x не поддерживается для адаптивного понижения разрешения с использованием {1}x.</translation>
     </message>
 </context>
 <context>
@@ -9370,7 +9381,7 @@ It requires framebuffer fetch, feedback loops, or rasterizer order views.</sourc
     <message>
         <location filename="../../core/game_database.cpp" line="97"/>
         <source>Force Accurate Blending</source>
-        <translation type="unfinished"></translation>
+        <translation>Принудительно: Точное смешивание</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="98"/>
@@ -9400,7 +9411,7 @@ It requires framebuffer fetch, feedback loops, or rasterizer order views.</sourc
     <message>
         <location filename="../../core/game_database.cpp" line="103"/>
         <source>Disable Force NTSC Timings</source>
-        <translation type="unfinished">Отключить: Принудительная синхронизация NTSC</translation>
+        <translation>Отключить: Принудительная синхронизация NTSC</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="104"/>
@@ -9415,18 +9426,20 @@ It requires framebuffer fetch, feedback loops, or rasterizer order views.</sourc
     <message>
         <location filename="../../core/game_database.cpp" line="106"/>
         <source>Disable PGXP Culling</source>
-        <translation>Отключить: Корректировка отбраковки PGXP</translation>
+        <translatorcomment>*Отсечения *Отбраковки *Отсеивания *Корректировка *Коррекция</translatorcomment>
+        <translation>Отключить: Корректировка отсеивания PGXP</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="107"/>
         <source>Disable PGXP Texture Correction</source>
-        <translatorcomment>**Perspective Correct Textures - Текстуры с корректировкой перспективы</translatorcomment>
-        <translation type="unfinished">Отключить: Коррекцию текстур PGXP</translation>
+        <translatorcomment>**Perspective Correct Textures - Текстуры с корректировкой перспективы PGXP</translatorcomment>
+        <translation>Отключить: Текстуры с корректировкой перспективы PGXP</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="108"/>
         <source>Disable PGXP Color Correction</source>
-        <translation>Отключить: Коррекцию цвета PGXP</translation>
+        <translatorcomment>*Корректировка *Коррекция</translatorcomment>
+        <translation>Отключить: Корректировка цвета PGXP</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="109"/>
@@ -9442,7 +9455,7 @@ It requires framebuffer fetch, feedback loops, or rasterizer order views.</sourc
     <message>
         <location filename="../../core/game_database.cpp" line="111"/>
         <source>Disable PGXP on 2D Polygons</source>
-        <translation type="unfinished"></translation>
+        <translation>Отключить PGXP для 2D-полигонов</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="112"/>
@@ -9457,6 +9470,7 @@ It requires framebuffer fetch, feedback loops, or rasterizer order views.</sourc
     <message>
         <location filename="../../core/game_database.cpp" line="114"/>
         <source>Force Recompiler Memory Exceptions</source>
+        <translatorcomment>*Перекомпилятор *Рекомпилятор</translatorcomment>
         <translation>Принудительно: Исключения памяти перекомпилятора</translation>
     </message>
     <message>
@@ -9467,7 +9481,8 @@ It requires framebuffer fetch, feedback loops, or rasterizer order views.</sourc
     <message>
         <location filename="../../core/game_database.cpp" line="116"/>
         <source>Force Recompiler LUT Fastmem</source>
-        <translation type="unfinished">Принудительно: перекомпилятор LUT Fastmem</translation>
+        <translatorcomment>*Рекомпилятор *Перекомпилятор</translatorcomment>
+        <translation type="unfinished">Принудительно: Перекомпилятор LUT Fastmem</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="117"/>
@@ -9478,117 +9493,121 @@ It requires framebuffer fetch, feedback loops, or rasterizer order views.</sourc
     <message>
         <location filename="../../core/game_database.cpp" line="473"/>
         <source>CPU recompiler disabled.</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>*Перекомпилятор *Рекомпилятор</translatorcomment>
+        <translation>Перекомпилятор процессора отключен.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="481"/>
         <source>Hardware rendering disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Аппаратная отрисовка отключена.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="489"/>
         <source>Software renderer readbacks enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Программная отрисовка обратных чтений включена.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="502"/>
         <source>Accurate blending enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Включено точное смешивание.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="510"/>
         <source>Interlaced rendering enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Чересстрочная отрисовка включена.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="518"/>
         <source>True color disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>True color отключен.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="526"/>
         <source>Upscaling disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Масштабирование отключено.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="536"/>
         <source>Texture filtering disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Фильтрация текстур отключена.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="546"/>
         <source>Scaled dithering.</source>
-        <translation type="unfinished"></translation>
+        <translation>Масштабированный дизеринг.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="554"/>
         <source>Widescreen rendering disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Широкоэкранная отрисовка отключена.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="562"/>
         <source>Force NTSC timings disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Принудительное использование таймингов NTSC отключено.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="570"/>
         <source>PGXP geometry correction disabled.</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>*Коррекция *Корректировка</translatorcomment>
+        <translation>Корректировка геометрии PGXP отключена.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="578"/>
         <source>PGXP culling correction disabled.</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>*Отсечения *Отбраковки *Отсеивания *Корректировка *Коррекция</translatorcomment>
+        <translation>Корректировка отсеивания PGXP отключена.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="586"/>
         <source>PGXP perspective correct textures disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Текстуры с корректировкой перспективы PGXP отключены.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="596"/>
         <source>PGXP perspective correct colors disabled.</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>*Коррекцией</translatorcomment>
+        <translation>Цвета с корректировкой перспективы PGXP отключены.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="605"/>
         <source>PGXP preserve projection precision disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранение точности проекции PGXP отключено.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="613"/>
         <source>PGXP vertex cache enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Кэш вершин PGXP включен.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="621"/>
         <source>PGXP Vertex Cache is enabled, but it is not required for this game. This may cause rendering errors.</source>
-        <translation type="unfinished"></translation>
+        <translation>Кэш вершин PGXP включен, но для этой игры он не требуется. Это может вызвать ошибки отрисовки.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="632"/>
         <source>PGXP CPU mode enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Режим процессора PGXP включен.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="648"/>
         <source>PGXP CPU mode is enabled, but it is not required for this game. This may cause rendering errors.</source>
-        <translation type="unfinished">Режим процессора PGXP включен, но для этой игры он не требуется. Это может вызвать ошибки отрисовки.</translation>
+        <translation>Режим процессора PGXP включен, но для этой игры он не требуется. Это может вызвать ошибки отрисовки.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="656"/>
         <source>PGXP depth buffer disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Буфер глубины PGXP отключен.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="664"/>
         <source>PGXP disabled on 2D polygons.</source>
-        <translation type="unfinished"></translation>
+        <translation>PGXP отключен для 2D-полигонов.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="691"/>
         <source>Compatibility settings for this game have been applied:</source>
-        <translation type="unfinished"></translation>
+        <translation>Применены настройки совместимости для этой игры:</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="736"/>
@@ -10350,7 +10369,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../graphicssettingswidget.ui" line="258"/>
         <location filename="../graphicssettingswidget.cpp" line="315"/>
         <source>PGXP Geometry Correction</source>
-        <translation>Коррекция геометрии PGXP</translation>
+        <translatorcomment>*Коррекция</translatorcomment>
+        <translation>Корректировка геометрии PGXP</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="237"/>
@@ -10510,13 +10530,15 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../graphicssettingswidget.ui" line="545"/>
         <location filename="../graphicssettingswidget.cpp" line="414"/>
         <source>Perspective Correct Colors</source>
+        <translatorcomment>*Коррекцией</translatorcomment>
         <translation>Цвета с корректировкой перспективы</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="580"/>
         <location filename="../graphicssettingswidget.cpp" line="417"/>
         <source>Culling Correction</source>
-        <translation>Корректировка отбраковки</translation>
+        <translatorcomment>*Отсечения *Отбраковки *Отсеивания *Корректировка *Коррекция</translatorcomment>
+        <translation>Корректировка отсеивания</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="573"/>
@@ -10641,13 +10663,13 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../graphicssettingswidget.ui" line="440"/>
         <location filename="../graphicssettingswidget.cpp" line="396"/>
         <source>Accurate Blending</source>
-        <translation type="unfinished"></translation>
+        <translation>Точное смешивание</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="587"/>
         <location filename="../graphicssettingswidget.cpp" line="430"/>
         <source>Disable on 2D Polygons</source>
-        <translation type="unfinished"></translation>
+        <translation>Отключить для 2D-полигонов</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="736"/>
@@ -10751,13 +10773,13 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../graphicssettingswidget.ui" line="1055"/>
         <location filename="../graphicssettingswidget.cpp" line="531"/>
         <source>Disable Memory Import</source>
-        <translation type="unfinished"></translation>
+        <translation>Отключить импорт памяти</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1062"/>
         <location filename="../graphicssettingswidget.cpp" line="534"/>
         <source>Disable Rasterizer Order Views</source>
-        <translation type="unfinished"></translation>
+        <translation>Отключить порядок просмотра растеризатора</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1013"/>
@@ -11137,7 +11159,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="397"/>
         <source>Forces blending to be done in the shader at 16-bit precision, when not using true color. Very few games actually require this, and there is a &lt;strong&gt;non-trivial&lt;/strong&gt; performance cost.</source>
-        <translation type="unfinished"></translation>
+        <translation>Принудительно выполняет смешивание в шейдере с точностью до 16 бит, если не используется true color. На самом деле это требуется очень немногим играм, и это приводит к &lt;strong&gt;нетривиальным&lt;/strong&gt; потерям производительности.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="403"/>
@@ -11167,17 +11189,20 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="411"/>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures. Requires geometry correction enabled.</source>
-        <translation>Использует интерполяцию с корректировкой перспективы для текстурных координат, выпрямляя деформированные текстуры. Требуется включенная коррекция геометрии.</translation>
+        <translatorcomment>*Корректировка *Коррекция</translatorcomment>
+        <translation>Использует интерполяцию с корректировкой перспективы для текстурных координат, выпрямляя деформированные текстуры. Требуется включенная корректировка геометрии.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="415"/>
         <source>Uses perspective-correct interpolation for vertex colors, which can improve visuals in some games, but cause rendering errors in others. Requires geometry correction enabled.</source>
-        <translation>Использует интерполяцию с корректировкой перспективы для цветов вершин, что может улучшить визуальные эффекты в некоторых играх, но вызвать ошибки отрисовки в других. Требуется включенная коррекция геометрии.</translation>
+        <translatorcomment>*Корректировка *Коррекция</translatorcomment>
+        <translation>Использует интерполяцию с корректировкой перспективы для цветов вершин, что может улучшить визуальные эффекты в некоторых играх, но вызвать ошибки отрисовки в других. Требуется включенная корректировка геометрии.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="418"/>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
-        <translation>Повышает точность отсечения полигонов, уменьшая количество дыр в геометрии. Требует включения корректировки геометрии.</translation>
+        <translatorcomment>*Отсечения *Отбраковки *Отсеивания *Корректировка *Коррекция</translatorcomment>
+        <translation>Повышает точность отсеивания полигонов, уменьшая количество дыр в геометрии. Требует включения корректировка геометрии.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="422"/>
@@ -11197,7 +11222,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="431"/>
         <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled. The game database will enable this automatically when needed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Использует координаты нативного разрешения для 2D-полигонов вместо точных координат. Может исправить некорректный пользовательский интерфейс в некоторых играх, но в противном случае его следует оставить отключенным. База данных игры автоматически включит это при необходимости.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="438"/>
@@ -11418,12 +11443,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="532"/>
         <source>Disables the use of host memory importing. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Отключает использование импорта памяти хоста. Полезно для тестирования сломанных графических драйверов. &lt;strong&gt;Только для разработчиков.&lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="535"/>
         <source>Disables the use of rasterizer order views. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Отключает использование порядка просмотра растеризатора. Полезно для тестирования сломанных графических драйверов. &lt;strong&gt;Только для разработчиков.&lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="790"/>
@@ -11585,7 +11610,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../core/hotkeys.cpp" line="211"/>
         <source>Power Off System</source>
-        <translation>Выключить питание системы</translation>
+        <translation>Выключить: Питание системы</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="281"/>
@@ -11600,7 +11625,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../core/hotkeys.cpp" line="218"/>
         <source>Save Screenshot</source>
-        <translation>Сохранить снимок экрана</translation>
+        <translation>Сохранить: Снимок экрана</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="261"/>
@@ -11654,17 +11679,17 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../core/hotkeys.cpp" line="166"/>
         <source>Open Pause Menu</source>
-        <translation>Открыть меню паузы</translation>
+        <translation>Открыть: Меню паузы</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="226"/>
         <source>Open Achievement List</source>
-        <translation>Открыть список достижений</translation>
+        <translation>Открыть: Cписок достижений</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="232"/>
         <source>Open Leaderboard List</source>
-        <translation>Открыть список лидеров</translation>
+        <translation>Открыть: Список лидеров</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="238"/>
@@ -11754,12 +11779,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../core/hotkeys.cpp" line="498"/>
         <source>Rotate Display Clockwise</source>
-        <translation type="unfinished"></translation>
+        <translation>Поворот дисплея по часовой стрелке</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="507"/>
         <source>Rotate Display Counterclockwise</source>
-        <translation type="unfinished"></translation>
+        <translation>Поворот дисплея против часовой стрелки</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="579"/>
@@ -12066,8 +12091,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../inputbindingdialog.ui" line="120"/>
         <source>Reset Volume</source>
-        <translatorcomment>*Сброс громкости</translatorcomment>
-        <translation type="unfinished">Сбросить громкость</translation>
+        <translation>Сбросить громкость</translation>
     </message>
     <message>
         <location filename="../inputbindingdialog.ui" line="130"/>
@@ -12741,7 +12765,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../mainwindow.ui" line="164"/>
         <source>Switch GPU Renderer</source>
         <translatorcomment>*визуализатор *отрисовка *отображение</translatorcomment>
-        <translation type="unfinished">Переключить: Отрисовщик ГП</translation>
+        <translation>Переключить: Отрисовщик ГП</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="169"/>
@@ -12901,7 +12925,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../mainwindow.ui" line="963"/>
         <source>Show Game Icons (List View)</source>
-        <translation type="unfinished"></translation>
+        <translation>Показать значки игр (просмотр в виде списка)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="438"/>
@@ -13710,7 +13734,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../mainwindow.cpp" line="2973"/>
         <source>Failed to create memory card &apos;%1&apos;: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось создать карту памяти &apos;%1&apos;: %2</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="3108"/>
@@ -13949,12 +13973,12 @@ Are you sure you want to continue?</source>
         <location filename="../memorycardeditorwindow.cpp" line="240"/>
         <location filename="../memorycardeditorwindow.cpp" line="352"/>
         <source>Failed to load memory card: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось загрузить карту памяти: %1</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="379"/>
         <source>Failed to save memory card: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось сохранить карту памяти: %1</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="490"/>
@@ -14805,17 +14829,17 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/memory_card.cpp" line="306"/>
         <source>Memory card &apos;{}&apos; does not exist, creating.</source>
-        <translation type="unfinished"></translation>
+        <translation>Карта памяти &apos;{}&apos; не существует, создается.</translation>
     </message>
     <message>
         <location filename="../../core/memory_card.cpp" line="314"/>
         <source>Memory card &apos;{}&apos; could not be read: {}</source>
-        <translation type="unfinished"></translation>
+        <translation>Карта памяти &apos;{}&apos; не может быть прочитана: {}</translation>
     </message>
     <message>
         <location filename="../../core/memory_card.cpp" line="356"/>
         <source>Failed to save memory card to &apos;{}&apos;: {}</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось сохранить карту памяти в &apos;{}&apos;: {}</translation>
     </message>
     <message>
         <location filename="../../core/memory_card.cpp" line="368"/>
@@ -15642,12 +15666,12 @@ Do you want to create this directory?</source>
         <location filename="../settingwidgetbinder.h" line="1298"/>
         <location filename="../settingwidgetbinder.h" line="1302"/>
         <source>Incompatible with this game.</source>
-        <translation type="unfinished"></translation>
+        <translation>Несовместимо с этой игрой.</translation>
     </message>
     <message>
         <location filename="../settingwidgetbinder.h" line="1306"/>
         <source> [incompatible]</source>
-        <translation type="unfinished"></translation>
+        <translation> [несовместимо]</translation>
     </message>
 </context>
 <context>
@@ -15655,22 +15679,22 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../../core/settings.cpp" line="1466"/>
         <source>No Rotation</source>
-        <translation type="unfinished"></translation>
+        <translation>Без поворота</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1467"/>
         <source>Rotate 90° (Clockwise)</source>
-        <translation type="unfinished"></translation>
+        <translation>Поворот на 90° (по часовой стрелке)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1468"/>
         <source>Rotate 180° (Vertical Flip)</source>
-        <translation type="unfinished"></translation>
+        <translation>Поворот на 180° (вертикальный переворот)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1469"/>
         <source>Rotate 270° (Clockwise)</source>
-        <translation type="unfinished"></translation>
+        <translation>Поворот на 270° (по часовой стрелке)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1537"/>
