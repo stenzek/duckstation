@@ -62,23 +62,26 @@ uniform float cust_fringing <
     ui_category = "NTSC";
 > = 1.0;
 
-uniform float ntsc_fields <
-    ui_type     = "drag";
-    ui_min      = 1.0;
-    ui_max      = 3.0;
-    ui_step     = 1.0;
-    ui_label    = "NTSC Merge Fields: Auto | No | Yes";
-    ui_category = "NTSC";
-> = 1.0;
+uniform int ntsc_fields <
+    ui_type     = "combo";
+    ui_items    = "Auto\0"
+                  "No\0"
+                  "Yes\0";
 
-uniform float ntsc_phase <
-    ui_type     = "drag";
-    ui_min      = 1.0;
-    ui_max      = 4.0;
-    ui_step     = 1.0;
-    ui_label    = "NTSC Phase: Auto | 2 Phase | 3 Phase | Mixed";
+    ui_label    = "NTSC Merge Fields";
     ui_category = "NTSC";
-> = 1.0;
+> = 0;
+
+uniform int ntsc_phase <
+    ui_type     = "combo";
+    ui_items    = "Auto\0"
+                  "2 Phase\0"
+                  "3 Phase\0"
+                  "Mixed\0";
+
+    ui_label    = "NTSC Phase";
+    ui_category = "NTSC";
+> = 0;
 
 uniform float ntsc_scale <
     ui_type     = "drag";
@@ -274,32 +277,43 @@ uniform float sat <
 // Color
 // ---------------------------------------------------------------------------
 
-uniform float CS <
-    ui_type     = "drag";
-    ui_min      = 0.0;
-    ui_max      = 4.0;
-    ui_step     = 1.0;
-    ui_label    = "Display Gamut: sRGB | Modern | DCI | Adobe | Rec. 2020";
-    ui_category = "Color";
-> = 0.0;
+uniform int CS <
+    ui_type     = "combo";
+    ui_items    = "sRGB\0"
+                  "Modern\0"
+                  "DCI\0"
+                  "Adobe\0"
+                  "Rec. 2020\0";
 
-uniform float CP <
-    ui_type     = "drag";
-    ui_min      = -1.0;
-    ui_max      = 5.0;
-    ui_step     = 1.0;
-    ui_label    = "CRT Profile: EBU | P22 | SMPTE-C | Philips | Trinitron";
+    ui_label    = "Display Gamut";
     ui_category = "Color";
-> = 0.0;
+> = 0;
 
-uniform float TNTC <
-    ui_type     = "drag";
-    ui_min      = 0.0;
-    ui_max      = 4.0;
-    ui_step     = 1.0;
-    ui_label    = "LUT Colors: Trinitron 1 | Trinitron 2 | Nec MultiSync | NTSC";
+uniform int CP <
+    ui_type     = "combo";
+    ui_items    = "Off\0"
+                  "EBU\0"
+                  "P22\0"
+                  "SMPTE-C\0"
+                  "Philips\0"
+                  "Trinitron 1\0"
+                  "Trinitron 2\0";
+
+    ui_label    = "CRT Profile";
     ui_category = "Color";
-> = 0.0;
+> = 0;
+
+uniform int TNTC <
+    ui_type     = "combo";
+    ui_items    = "Off\0"
+                  "Trinitron 1\0"
+                  "Trinitron 2\0"
+                  "Nec MultiSync\0"
+                  "NTSC\0";
+
+    ui_label    = "LUT Colors";
+    ui_category = "Color";
+> = 0;
 
 uniform float LUTLOW <
     ui_type     = "drag";
@@ -454,14 +468,18 @@ uniform float interr <
     ui_category = "Interlacing";
 > = 400.0;
 
-uniform float interm <
-    ui_type     = "drag";
-    ui_min      = 0.0;
-    ui_max      = 5.0;
-    ui_step     = 1.0;
-    ui_label    = "Interlace Mode: 0:OFF | 1-3:Normal | 4-5:Interpolation";
+uniform int interm <
+    ui_type     = "combo";
+    ui_items    = "Off\0"
+                  "Normal 1\0"
+                  "Normal 2\0"
+                  "Normal 3\0"
+                  "Interpolation 1\0"
+                  "Interpolation 2\0";
+
+    ui_label    = "Interlace Mode";
     ui_category = "Interlacing";
-> = 1.0;
+> = 1;
 
 uniform float iscanb <
     ui_type     = "drag";
@@ -592,14 +610,15 @@ uniform float MAXS <
 // Glow
 // ---------------------------------------------------------------------------
 
-uniform float m_glow <
-    ui_type     = "drag";
-    ui_min      = 0.0;
-    ui_max      = 2.0;
-    ui_step     = 1.0;
-    ui_label    = "Ordinary Glow | Magic Glow";
+uniform int m_glow <
+    ui_type     = "combo";
+    ui_items    = "Ordinary Glow\0"
+                  "Magic Glow 1\0"
+                  "Magic Glow 2\0";
+
+    ui_label    = "Glow Type";
     ui_category = "Glow";
-> = 0.0;
+> = 0;
 
 uniform float m_glow_cutoff <
     ui_type     = "drag";
@@ -811,14 +830,16 @@ uniform float h_mask <
 // Scanlines
 // ---------------------------------------------------------------------------
 
-uniform float gsl <
-    ui_type     = "drag";
-    ui_min      = -1.0;
-    ui_max      = 2.0;
-    ui_step     = 1.0;
+uniform int gsl <
+    ui_type     = "combo";
+    ui_items    = "Soft\0"
+                  "Normal\0"
+                  "Strong\0"
+                  "Stronger\0";
+
     ui_label    = "Scanlines Type";
     ui_category = "Scanlines";
-> = 0.0;
+> = 0;
 
 uniform float scanline1 <
     ui_type     = "drag";
@@ -856,14 +877,11 @@ uniform float beam_max <
     ui_category = "Scanlines";
 > = 1.0;
 
-uniform float tds <
-    ui_type     = "drag";
-    ui_min      = 0.0;
-    ui_max      = 1.0;
-    ui_step     = 1.0;
+uniform bool tds <
+    ui_type     = "radio";
     ui_label    = "Thinner Dark Scanlines";
     ui_category = "Scanlines";
-> = 0.0;
+> = false;
 
 uniform float beam_size <
     ui_type     = "drag";
@@ -977,14 +995,27 @@ uniform float blm_2 <
     ui_category = "Scaling";
 > = 0.0;
 
-uniform float shadow_msk <
-    ui_type     = "drag";
-    ui_min      = 0.0;
-    ui_max      = 14.0;
-    ui_step     = 1.0;
-    ui_label    = "CRT Mask: 1:CGWG | 2-5:Lottes | 6-14:Trinitron";
+uniform int shadow_mask <
+    ui_type     = "combo";
+    ui_items    = "Off\0"
+                  "CGWG\0"
+                  "Lottes TV\0"
+                  "Lottes Aperture\0"
+                  "Lottes Stretched VGA\0"
+                  "Lottes VGA\0"
+                  "Trinitron 1\0"
+                  "Trinitron 2\0"
+                  "Trinitron B/W 1\0"
+                  "Trinitron B/W 2\0"
+                  "Trinitron Magenta/Green/Black\0"
+                  "Trinitron RGBX\0"
+                  "Trinitron 4k 1\0"
+                  "Trinitron RRGGBBX\0"
+                  "Trinitron 4k 2\0";
+
+    ui_label    = "CRT Mask";
     ui_category = "Mask";
-> = 1.0;
+> = 1;
 
 uniform float maskstr <
     ui_type     = "drag";
@@ -1049,14 +1080,14 @@ uniform float mshift <
     ui_category = "Mask";
 > = 0.0;
 
-uniform float mask_layout <
-    ui_type     = "drag";
-    ui_min      = 0.0;
-    ui_max      = 1.0;
-    ui_step     = 1.0;
-    ui_label    = "Mask Layout: RGB or BGR (Check LCD Panel)";
+uniform int mask_layout <
+    ui_type     = "combo";
+    ui_items    = "RGB\0"
+                  "BGR\0";
+
+    ui_label    = "Mask Layout (Check LCD Panel)";
     ui_category = "Mask";
-> = 0.0;
+> = 0;
 
 uniform float mask_drk <
     ui_type     = "drag";
@@ -1133,15 +1164,12 @@ uniform float slotms <
     ui_category = "Mask";
 > = 1.0;
 
-uniform float smoothmask <
-    ui_type     = "drag";
-    ui_min      = 0.0;
-    ui_max      = 1.0;
-    ui_step     = 1.0;
+uniform bool smoothmask <
+    ui_type     = "radio";
     ui_label    = "Smooth Masks In Bright Scanlines";
     ui_category = "Mask";
     ui_spacing  = 2;
-> = 0.0;
+> = false;
 
 uniform float smask_mit <
     ui_type     = "drag";
@@ -1388,14 +1416,14 @@ uniform float noiseresd <
     ui_category = "Noise";
 > = 2.0;
 
-uniform float noisetype <
-    ui_type     = "drag";
-    ui_min      = 0.0;
-    ui_max      = 1.0;
-    ui_step     = 1.0;
-    ui_label    = "Noise Type: Colored | Luma";
+uniform int noisetype <
+    ui_type     = "combo";
+    ui_items    = "Colored\0"
+                  "Luma\0";
+
+    ui_label    = "Noise Type";
     ui_category = "Noise";
-> = 0.0;
+> = 0;
 
 
 uniform float  FrameCount     < source = "framecount"; >;
@@ -1874,7 +1902,7 @@ float3 sw0(float x, float color, float scanline, float3 c)
     float3 xe = lerp(1.0.xxx + scans, 1.0.xxx, c);
     float tmp = lerp(beam_min, beam_max, color);
     float ex  = x * tmp;
-    ex = (gsl > -0.5) ? ex * ex : lerp(ex * ex, ex * ex * ex, 0.4);
+    ex = (gsl > 0) ? ex * ex : lerp(ex * ex, ex * ex * ex, 0.4);
     return exp2(-scanline * ex * xe);
 }
 
@@ -1941,7 +1969,8 @@ float3 crt_mask(float2 pos, float mx, float mb)
     float3 mask = mask_drk;
     float3 one  = 1.0;
 
-    if (shadow_msk == 1.0) {
+    // CGWG
+    if (shadow_mask == 1) {
         float mc = 1.0 - max(maskstr, 0.0);
         pos.x    = frac(pos.x * 0.5);
 
@@ -1955,7 +1984,8 @@ float3 crt_mask(float2 pos, float mx, float mb)
             mask.b = mc;
         }
 
-    } else if (shadow_msk == 2.0) {
+    // Lottes - Very compressed TV style shadow mask
+    } else if (shadow_mask == 2) {
         float lane = mask_lgt;
         float odd  = 0.0;
 
@@ -1974,14 +2004,16 @@ float3 crt_mask(float2 pos, float mx, float mb)
 
         mask *= lane;
 
-    } else if (shadow_msk == 3.0) {
+    // Lottes - Aperture-grille
+    } else if (shadow_mask == 3) {
         pos.x = floor(mod(pos.x, 3.0));
 
         if      (pos.x < 0.5) mask.r = mask_lgt;
         else if (pos.x < 1.5) mask.g = mask_lgt;
         else                  mask.b = mask_lgt;
 
-    } else if (shadow_msk == 4.0) {
+    // Lottes - Stretched VGA style shadow mask (same as prior shaders)
+    } else if (shadow_mask == 4) {
         pos.x += pos.y * 3.0;
         pos.x = frac(pos.x / 6.0);
 
@@ -1989,7 +2021,8 @@ float3 crt_mask(float2 pos, float mx, float mb)
         else if (pos.x < 0.6) mask.g = mask_lgt;
         else                  mask.b = mask_lgt;
 
-    } else if (shadow_msk == 5.0) {
+    // Lottes - VGA style shadow mask
+    } else if (shadow_mask == 5) {
         pos.xy = floor(pos.xy * float2(1.0, 0.5));
         pos.x += pos.y * 3.0;
         pos.x = frac(pos.x / 6.0);
@@ -1998,7 +2031,8 @@ float3 crt_mask(float2 pos, float mx, float mb)
         else if (pos.x < 0.6) mask.g = mask_lgt;
         else                  mask.b = mask_lgt;
 
-    } else if (shadow_msk == 6.0) {
+    // Trinitron mask 1
+    } else if (shadow_mask == 6) {
         mask  = 0.0;
         pos.x = frac(pos.x / 2.0);
 
@@ -2012,7 +2046,8 @@ float3 crt_mask(float2 pos, float mx, float mb)
                           lerp(one, mask, maskstr), mx),
                      0.0, 1.0);
 
-    } else if (shadow_msk == 7.0) {
+    // Trinitron mask 2
+    } else if (shadow_mask == 7) {
         mask  = 0.0;
         pos.x = floor(mod(pos.x, 3.0));
 
@@ -2024,7 +2059,8 @@ float3 crt_mask(float2 pos, float mx, float mb)
                           lerp(one, mask, maskstr), mx),
                      0.0, 1.0);
 
-    } else if (shadow_msk == 8.0) {
+    // Trinitron B/W mask 1
+    } else if (shadow_mask == 8) {
         mask  = 0.0;
         pos.x = frac(pos.x / 2.0);
 
@@ -2035,7 +2071,8 @@ float3 crt_mask(float2 pos, float mx, float mb)
                           lerp(one, mask, maskstr), mx),
                      0.0, 1.0);
 
-    } else if (shadow_msk == 9.0) {
+    // Trinitron B/W mask 2
+    } else if (shadow_mask == 9) {
         mask  = 0.0;
         pos.x = frac(pos.x / 3.0);
 
@@ -2046,7 +2083,8 @@ float3 crt_mask(float2 pos, float mx, float mb)
         mask = clamp(lerp(lerp(one, mask, mcut), lerp(one, mask, maskstr), mx),
                      0.0, 1.0);
 
-    } else if (shadow_msk == 10.0) {
+    // Trinitron Magenta - Green - Black mask
+    } else if (shadow_mask == 10) {
         mask  = 0.0;
         pos.x = frac(pos.x / 3.0);
 
@@ -2058,7 +2096,8 @@ float3 crt_mask(float2 pos, float mx, float mb)
                           lerp(one, mask, maskstr), mx),
                      0.0, 1.0);
 
-    } else if (shadow_msk == 11.0) {
+    // Trinitron RGBX mask
+    } else if (shadow_mask == 11) {
         mask  = 0.0;
         pos.x = frac(pos.x * 0.25);
 
@@ -2071,7 +2110,8 @@ float3 crt_mask(float2 pos, float mx, float mb)
                           lerp(one, mask, maskstr), mx),
                      0.0, 1.0);
 
-    } else if (shadow_msk == 12.0) {
+    // Trinitron 4k mask 1
+    } else if (shadow_mask == 12) {
         mask  = 0.0;
         pos.x = frac(pos.x * 0.25);
 
@@ -2084,7 +2124,8 @@ float3 crt_mask(float2 pos, float mx, float mb)
                           lerp(one, mask, maskstr), mx),
                      0.0, 1.0);
 
-    } else if (shadow_msk == 13.0) {
+    // Trinitron RRGGBBX mask
+    } else if (shadow_mask == 13) {
         mask  = 0.0;
         pos.x = floor(mod(pos.x, 7.0));
 
@@ -2097,6 +2138,7 @@ float3 crt_mask(float2 pos, float mx, float mb)
                           lerp(one, mask, maskstr), mx),
                      0.0, 1.0);
 
+    // Trinitron 4k mask 2
     } else {
         mask  = 0.0;
         pos.x = floor(mod(pos.x, 6.0));
@@ -2292,49 +2334,51 @@ float4 AfterglowPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
 
 float4 PreShaderPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : SV_Target
 {
-    const float3x3 File0 = float3x3(0.412391, 0.212639, 0.019331,
-                                    0.357584, 0.715169, 0.119195,
-                                    0.180481, 0.072192, 0.950532);
+    const float3x3 Profile0 = float3x3(0.412391, 0.212639, 0.019331,
+                                       0.357584, 0.715169, 0.119195,
+                                       0.180481, 0.072192, 0.950532);
 
-    const float3x3 File1 = float3x3(0.430554, 0.222004, 0.020182,
-                                    0.341550, 0.706655, 0.129553,
-                                    0.178352, 0.071341, 0.939322);
+    const float3x3 Profile1 = float3x3(0.430554, 0.222004, 0.020182,
+                                       0.341550, 0.706655, 0.129553,
+                                       0.178352, 0.071341, 0.939322);
 
-    const float3x3 File2 = float3x3(0.396686, 0.210299, 0.006131,
-                                    0.372504, 0.713766, 0.115356,
-                                    0.181266, 0.075936, 0.967571);
+    const float3x3 Profile2 = float3x3(0.396686, 0.210299, 0.006131,
+                                       0.372504, 0.713766, 0.115356,
+                                       0.181266, 0.075936, 0.967571);
 
-    const float3x3 File3 = float3x3(0.393521, 0.212376, 0.018739,
-                                    0.365258, 0.701060, 0.111934,
-                                    0.191677, 0.086564, 0.958385);
+    const float3x3 Profile3 = float3x3(0.393521, 0.212376, 0.018739,
+                                       0.365258, 0.701060, 0.111934,
+                                       0.191677, 0.086564, 0.958385);
 
-    const float3x3 File4 = float3x3(0.392258, 0.209410, 0.016061,
-                                    0.351135, 0.725680, 0.093636,
-                                    0.166603, 0.064910, 0.850324);
+    const float3x3 Profile4 = float3x3(0.392258, 0.209410, 0.016061,
+                                       0.351135, 0.725680, 0.093636,
+                                       0.166603, 0.064910, 0.850324);
 
-    const float3x3 File5 = float3x3(0.377923, 0.195679, 0.010514,
-                                    0.317366, 0.722319, 0.097826,
-                                    0.207738, 0.082002, 1.076960);
+    const float3x3 Profile5 = float3x3( 0.377923, 0.195679, 0.010514,
+                                        0.317366, 0.722319, 0.097826,
+                                        0.207738, 0.082002, 1.076960);
 
-    const float3x3 ToRGB = float3x3( 3.240970, -0.969244,  0.055630,
-                                    -1.537383,  1.875968, -0.203977,
-                                    -0.498611,  0.041555,  1.056972);
 
-    const float3x3 ToMDN = float3x3( 2.791723, -0.894766,  0.041678,
-                                    -1.173165,  1.815586, -0.130886,
-                                    -0.440973,  0.032000,  1.002034);
+    const float3x3 ToRGB    = float3x3( 3.240970, -0.969244,  0.055630,
+                                       -1.537383,  1.875968, -0.203977,
+                                       -0.498611,  0.041555,  1.056972);
 
-    const float3x3 ToDCI = float3x3( 2.493497, -0.829489,  0.035846,
-                                    -0.931384,  1.762664, -0.076172,
-                                    -0.402711,  0.023625,  0.956885);
+    const float3x3 ToModern = float3x3( 2.791723, -0.894766,  0.041678,
+                                       -1.173165,  1.815586, -0.130886,
+                                       -0.440973,  0.032000,  1.002034);
 
-    const float3x3 ToADB = float3x3( 2.041588, -0.969244,  0.013444,
-                                    -0.565007,  1.875968, -0.118360,
-                                    -0.344731,  0.041555,  1.015175);
+    const float3x3 ToDCI    = float3x3( 2.493497, -0.829489,  0.035846,
+                                       -0.931384,  1.762664, -0.076172,
+                                       -0.402711,  0.023625,  0.956885);
 
-    const float3x3 ToREC = float3x3( 1.716651, -0.666684,  0.017640,
-                                    -0.355671,  1.616481, -0.042771,
-                                    -0.253366,  0.015769,  0.942103);
+    const float3x3 ToAdobe  = float3x3( 2.041588, -0.969244,  0.013444,
+                                       -0.565007,  1.875968, -0.118360,
+                                       -0.344731,  0.041555,  1.015175);
+
+    const float3x3 ToREC    = float3x3( 1.716651, -0.666684,  0.017640,
+                                       -0.355671,  1.616481, -0.042771,
+                                       -0.253366,  0.015769,  0.942103);
+
 
     const float3x3 D65_to_D55 = float3x3(0.4850339153, 0.2500956126, 0.0227359648,
                                          0.3488957224, 0.6977914447, 0.1162985741,
@@ -2364,7 +2408,7 @@ float4 PreShaderPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
     imgcolor.rgb = min(imgcolor.rgb, 1.0);
     float3 color = imgcolor.rgb;
 
-    if (int(TNTC) == 0) {
+    if (TNTC == 0) {
         color.rgb = imgcolor.rgb;
     } else {
         float lutlow = LUTLOW / 255.0;
@@ -2392,75 +2436,57 @@ float4 PreShaderPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
 
         float4 color1, color2, res;
 
-        if (int(TNTC) == 1) {
+        if (TNTC == 1) {
             color1 = COMPAT_TEXTURE(NTSC_L01, coord0);
             color2 = COMPAT_TEXTURE(NTSC_L01, coord1);
             res    = lerp(color1, color2, f);
 
-        } else if (int(TNTC) == 2) {
+        } else if (TNTC == 2) {
             color1 = COMPAT_TEXTURE(NTSC_L02, coord0);
             color2 = COMPAT_TEXTURE(NTSC_L02, coord1);
             res    = lerp(color1, color2, f);
 
-        } else if (int(TNTC) == 3) {
+        } else if (TNTC == 3) {
             color1 = COMPAT_TEXTURE(NTSC_L03, coord0);
             color2 = COMPAT_TEXTURE(NTSC_L03, coord1);
             res    = lerp(color1, color2, f);
 
-        } else if (int(TNTC) == 4) {
+        } else if (TNTC == 4) {
             color1 = COMPAT_TEXTURE(NTSC_L04, coord0);
             color2 = COMPAT_TEXTURE(NTSC_L04, coord1);
             res    = lerp(color1, color2, f);
         }
 
         res.rgb = fix_lut(res.rgb, imgcolor.rgb);
-        color = lerp(imgcolor.rgb, res.rgb, min(TNTC, 1.0));
+        color = lerp(imgcolor.rgb, res.rgb, min(float(TNTC), 1.0));
     }
 
     float3 c = clamp(color, 0.0, 1.0);
     float3x3 m_o;
 
     float p;
-    if (CS == 0.0) {
-        p   = 2.2;
-        m_o = ToRGB;
-    } else if (CS == 1.0) {
-        p   = 2.2;
-        m_o = ToMDN;
-    } else if (CS == 2.0) {
-        p   = 2.6;
-        m_o = ToDCI;
-    } else if (CS == 3.0) {
-        p   = 2.2;
-        m_o = ToADB;
-    } else if (CS == 4.0) {
-        p   = 2.4;
-        m_o = ToREC;
-    }
+    if      (CS == 0) { p = 2.2; m_o = ToRGB;    }
+    else if (CS == 1) { p = 2.2; m_o = ToModern; }
+    else if (CS == 2) { p = 2.6; m_o = ToDCI;    }
+    else if (CS == 3) { p = 2.2; m_o = ToAdobe;  }
+    else if (CS == 4) { p = 2.4; m_o = ToREC;    }
 
     color = pow(c, p);
     float3x3 m_i;
 
-    if (CP == 0.0) {
-        m_i = File0;
-    } else if (CP == 1.0) {
-        m_i = File1;
-    } else if (CP == 2.0) {
-        m_i = File2;
-    } else if (CP == 3.0) {
-        m_i = File3;
-    } else if (CP == 4.0) {
-        m_i = File4;
-    } else if (CP == 5.0) {
-        m_i = File5;
-    }
+    if      (CP == 1) m_i = Profile0;
+    else if (CP == 2) m_i = Profile1;
+    else if (CP == 3) m_i = Profile2;
+    else if (CP == 4) m_i = Profile3;
+    else if (CP == 5) m_i = Profile4;
+    else if (CP == 6) m_i = Profile5;
 
     color = mul(color, m_i);
     color = mul(color, m_o);
     color = clamp(color, 0.0, 1.0);
     color = pow(color, 1.0 / p);
 
-    if (CP == -1.0) {
+    if (CP == 0) {
         color = c;
     }
 
@@ -2507,9 +2533,9 @@ float4 Signal_1_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
 {
     float pix_res = min(ntsc_scale, 1.0);
 
-    float phase = (ntsc_phase < 1.5) ? ((NativeWidth > 300.0) ? 2.0 : 3.0)
-                                     : ((ntsc_phase > 2.5)  ? 3.0 : 2.0);
-    if (ntsc_phase == 4.0) {
+    float phase = (ntsc_phase == 0) ? ((NativeWidth > 300.0) ? 2.0 : 3.0)
+                                    : ((ntsc_phase > 1)      ? 3.0 : 2.0);
+    if (ntsc_phase == 3) {
         phase = 3.0;
     }
 
@@ -2525,13 +2551,9 @@ float4 Signal_1_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
     float MERGE      = 0.0;
     float mix1       = 0.0;
 
-    if (ntsc_fields == 1.0 && phase == 3.0) {
-        MERGE = 1.0;
-    } else if (ntsc_fields == 2.0) {
-        MERGE = 0.0;
-    } else if (ntsc_fields == 3.0) {
-        MERGE = 1.0;
-    }
+    if      (ntsc_fields == 0 && phase == 3.0) MERGE = 1.0;
+    else if (ntsc_fields == 1)                 MERGE = 0.0;
+    else if (ntsc_fields == 2)                 MERGE = 1.0;
 
     float2 pix_no = texcoord * OriginalSize.xy * pix_res * float2(4.0, 1.0);
     float3 col0   = tex2D(NTSC_S02, texcoord).rgb;
@@ -2575,7 +2597,7 @@ float4 Signal_1_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
         mix1 = mix1 * ntsc_rainbow;
     }
 
-    if (ntsc_phase == 4.0) {
+    if (ntsc_phase == 3) {
         float mix3 = min(5.0 * abs(c1.x - c2.x), 1.0);
 
         c1.x   = pow(c1.x, ntsc_gamma);
@@ -2636,7 +2658,7 @@ float4 Signal_1_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
         yiq1.x = dot(yiqz, mix_m[0]);
     }
 
-    if (ntsc_phase == 4.0) {
+    if (ntsc_phase == 3) {
         yiq1.x = lum;
         yiq2.x = lum;
     }
@@ -2701,10 +2723,10 @@ float4 Signal_2_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
     float res     = ntsc_scale;
     float3 signal = 0.0;
     float2 one    = 0.25 * OriginalSize.zz / res;
-    float phase   = (ntsc_phase < 1.5) ? ((NativeWidth > 300.0) ? 2.0 : 3.0)
-                                       : ((ntsc_phase > 2.5)  ? 3.0 : 2.0);
+    float phase   = (ntsc_phase == 0) ? ((NativeWidth > 300.0) ? 2.0 : 3.0)
+                                      : ((ntsc_phase > 1)      ? 3.0 : 2.0);
 
-    if (ntsc_phase == 4.0) {
+    if (ntsc_phase == 3) {
         phase = 3.0;
         luma_filter_3_phase = luma_filter_4_phase;
     }
@@ -2954,7 +2976,7 @@ float4 LinearizePS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
     float3 df = abs(c1 - c2);
     float d   = max(max(df.r, df.g), df.b);
 
-    if (interm == 2.0) {
+    if (interm == 2) {
         d = lerp(0.1 * d, 10.0 * d, step(m1 / (m2 + 0.0001), m2 / (m1 + 0.0001)));
     }
 
@@ -2967,7 +2989,7 @@ float4 LinearizePS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
 
     bool hscans = (hiscan > 0.5);
 
-    if (interr <= NativeHeight / yres_div && interm > 0.5 && intres != 1.0 &&
+    if (interr <= NativeHeight / yres_div && interm > 0 && intres != 1.0 &&
             intres != 0.5 || hscans) {
         intera = 0.25;
 
@@ -2976,7 +2998,7 @@ float4 LinearizePS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
 
         float ii = abs(liine_no - frame_no);
 
-        if (interm < 3.5) {
+        if (interm < 4) {
             c2 = plant(lerp(c2, c2 * c2, iscans), max(max(c2.r, c2.g), c2.b));
             r  = clamp(max(m1 * ii, (1.0 - iscanb) * min(m1, m2)), 0.0, 1.0);
             c  = plant(lerp(lerp(c1,
@@ -2987,15 +3009,15 @@ float4 LinearizePS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
                            ii),
                       r);
 
-            if (interm == 3.0) {
+            if (interm == 3) {
                 c = (1.0 - 0.5 * iscanb) * lerp(c2, c1, ii);
             }
         }
-        if (interm == 4.0) {
+        if (interm == 4) {
             c = plant(lerp(c, c * c, 0.5 * iscans),
                       max(max(c.r, c.g), c.b)) * (1.0 - 0.5 * iscanb);
         }
-        if (interm == 5.0) {
+        if (interm == 5) {
             c = lerp(c2, c1, 0.5);
             c = plant(lerp(c, c * c, 0.5 * iscans),
                       max(max(c.r, c.g), c.b)) * (1.0 - 0.5 * iscanb);
@@ -3037,7 +3059,7 @@ float4 HGaussianPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
 
     do {
         pixel = COMPAT_TEXTURE(NTSC_S08, tex + n * dx).rgb;
-        if (m_glow > 0.5) {
+        if (m_glow > 0) {
             pixel = max(pixel - m_glow_cutoff, 0.0);
             pixel = plant(pixel,
                           max(max(max(pixel.r, pixel.g), pixel.b) - m_glow_cutoff, 0.0));
@@ -3349,7 +3371,7 @@ float4 NTSC_TV2_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
         float3 cref2 = lerp(sctmp, scolor2, beam_size);
         float creff2 = pow(max(max(cref2.r, cref2.g), cref2.b), scan_falloff);
 
-        if (tds > 0.5) {
+        if (tds) {
             shape1 = lerp(scanline2, shape1, creff1);
             shape2 = lerp(scanline2, shape2, creff2);
         }
@@ -3362,10 +3384,10 @@ float4 NTSC_TV2_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
         cref1 = color1 / m1;
         cref2 = color2 / m2;
 
-        if (gsl < 0.5) {
+        if (gsl < 2) {
             w1 = sw0(f1, creff1, shape1, cref1);
             w2 = sw0(f2, creff2, shape2, cref2);
-        } else if (gsl == 1.0) {
+        } else if (gsl == 2) {
             w1 = sw1(f1, creff1, shape1, cref1);
             w2 = sw1(f2, creff2, shape2, cref2);
         } else {
@@ -3490,11 +3512,12 @@ float4 ChromaticPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
 
     float mwidths[15] = {0.0,  2.0, 3.0, 3.0,  6.0, 6.0, 2.4, 3.5, 2.4,
                          3.25, 3.5, 4.5, 4.25, 7.5, 6.25};
-    float mwidth = mwidths[int(shadow_msk)];
+
+    float mwidth = mwidths[shadow_mask];
 
     float mask_compensate = frac(mwidth);
 
-    if (shadow_msk > 0.5) {
+    if (shadow_mask > 0) {
         float2 maskcoord  = fracoord.xy * 1.00001;
         float2 scoord     = maskcoord;
         mwidth            = floor(mwidth) * masksize;
@@ -3529,7 +3552,7 @@ float4 ChromaticPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
             }
 
             float mcoord = floor(maskcoord.x / mscale);
-            if (shadow_msk == 13.0 && mask_zoom == -2.0) {
+            if (shadow_mask == 13 && mask_zoom == -2.0) {
                 mcoord = ceil(maskcoord.x / mscale);
             }
 
@@ -3544,9 +3567,9 @@ float4 ChromaticPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
 
         float smask     = 1.0;
         float sm_offset = 0.0;
-        bool bsm_offset = (shadow_msk == 1.0 || shadow_msk == 3.0 ||
-                           shadow_msk == 6.0 || shadow_msk == 7.0 ||
-                           shadow_msk == 9.0 || shadow_msk == 12.0);
+        bool bsm_offset = (shadow_mask == 1 || shadow_mask == 3 ||
+                           shadow_mask == 6 || shadow_mask == 7 ||
+                           shadow_mask == 9 || shadow_mask == 12);
 
         if (zoomed) {
             if (mask_layout < 0.5 && bsm_offset) {
@@ -3598,7 +3621,7 @@ float4 ChromaticPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
                                  1.0,
                                  mx);
 
-    if (shadow_msk < 0.5) {
+    if (shadow_mask == 0) {
         dark_compensate = 1.0;
     }
 
@@ -3674,12 +3697,12 @@ float4 ChromaticPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
 
     float w = 0.25 + 0.60 * lerp(w3, 1.0, sqrt(colmx));
 
-    if (smoothmask > 0.5) {
+    if (smoothmask) {
         color = min(color, 1.0);
         color = max(min(color / w3, 1.0) * w3, min(orig1 * bb, color * (1.0 - w3)));
     }
 
-    if (m_glow < 0.5) {
+    if (m_glow == 0) {
         Glow = lerp(Glow, 0.25 * color, colmx);
     } else {
         float3 orig2 = plant(orig1 + 0.001 * Ref, 1.0);
@@ -3702,7 +3725,7 @@ float4 ChromaticPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
                               max(mx0, mx2) * Ref),
                      min(sqrt((1.10 - mx0) * (0.10 + mx2)), 1.0));
 
-        if (m_glow > 1.5) {
+        if (m_glow == 2) {
             Glow = lerp(0.5 * Glow * Glow, Bloom, Bloom);
         }
 
@@ -3711,7 +3734,7 @@ float4 ChromaticPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
                     pow(colmx, m_glow_dist / gamma_in));
     }
 
-    if (m_glow < 0.5) {
+    if (m_glow == 0) {
         if (glow >= 0.0) {
             color = color + 0.5 * Glow * glow;
         } else {
@@ -3731,7 +3754,7 @@ float4 ChromaticPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
     if (abs(addnoised) > 0.01) {
         float3 noise0 = noise(float3(floor(OutputSize.xy * fuxcoord / noiseresd),
                                      FrameCount));
-        if (noisetype < 0.5) {
+        if (noisetype == 0) {
             color = lerp(color, noise0, 0.25 * abs(addnoised) * rc);
         } else {
             color = min(color * lerp(1.0, 1.5 * noise0.x, 0.5 * abs(addnoised)), 1.0);
