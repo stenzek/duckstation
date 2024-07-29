@@ -130023,6 +130023,8 @@ SLPM-80296:
   name: "Rally de Africa (Japan) (Taikenban)"
 SLPS-02679:
   name: "Rally de Europe (Japan)"
+  traits:
+    - DisableWidescreen # Speedometer breaks with WS rendering.
   controllers:
     - AnalogController
     - DigitalController
