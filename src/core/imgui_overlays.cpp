@@ -891,11 +891,11 @@ void SaveStateSelectorUI::InitializeListEntry(ListEntry* li, ExtendedSaveStateIn
   {
     g_gpu_device->RecycleTexture(std::move(li->preview_texture));
 
-    if (ssi && !ssi->screenshot_data.empty())
+    if (ssi->screenshot.IsValid())
     {
-      li->preview_texture = g_gpu_device->FetchTexture(
-        ssi->screenshot_width, ssi->screenshot_height, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
-        ssi->screenshot_data.data(), sizeof(u32) * ssi->screenshot_width);
+      li->preview_texture = g_gpu_device->FetchTexture(ssi->screenshot.GetWidth(), ssi->screenshot.GetHeight(), 1, 1, 1,
+                                                       GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
+                                                       ssi->screenshot.GetPixels(), ssi->screenshot.GetPitch());
       if (!li->preview_texture) [[unlikely]]
         ERROR_LOG("Failed to upload save state image to GPU");
     }
@@ -1084,7 +1084,7 @@ void SaveStateSelectorUI::LoadCurrentSlot()
     if (FileSystem::FileExists(path.c_str()))
     {
       Error error;
-      if (!System::LoadState(path.c_str(), &error))
+      if (!System::LoadState(path.c_str(), &error, true))
       {
         Host::AddKeyedOSDMessage("LoadState",
                                  fmt::format(TRANSLATE_FS("OSDMessage", "Failed to load state from slot {0}:\n{1}"),

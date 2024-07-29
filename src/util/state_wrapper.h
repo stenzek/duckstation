@@ -1,14 +1,16 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
-#include "common/byte_stream.h"
+
 #include "common/fifo_queue.h"
 #include "common/heap_array.h"
 #include "common/types.h"
+
 #include <cstring>
 #include <deque>
 #include <string>
+#include <span>
 #include <type_traits>
 #include <vector>
 
@@ -23,17 +25,16 @@ public:
     Write
   };
 
-  StateWrapper(ByteStream* stream, Mode mode, u32 version);
+  StateWrapper(std::span<u8> data, Mode mode, u32 version);
+  StateWrapper(std::span<const u8> data, Mode mode, u32 version);
   StateWrapper(const StateWrapper&) = delete;
   ~StateWrapper();
 
-  ByteStream* GetStream() const { return m_stream; }
-  bool HasError() const { return m_error; }
-  bool IsReading() const { return (m_mode == Mode::Read); }
-  bool IsWriting() const { return (m_mode == Mode::Write); }
-  Mode GetMode() const { return m_mode; }
-  void SetMode(Mode mode) { m_mode = mode; }
-  u32 GetVersion() const { return m_version; }
+  ALWAYS_INLINE bool HasError() const { return m_error; }
+  ALWAYS_INLINE bool IsReading() const { return (m_mode == Mode::Read); }
+  ALWAYS_INLINE bool IsWriting() const { return (m_mode == Mode::Write); }
+  ALWAYS_INLINE u32 GetVersion() const { return m_version; }
+  ALWAYS_INLINE size_t GetPosition() const { return m_pos; }
 
   /// Overload for integral or floating-point types. Writes bytes as-is.
   template<typename T, std::enable_if_t<std::is_integral_v<T> || std::is_floating_point_v<T>, int> = 0>
@@ -41,13 +42,12 @@ public:
   {
     if (m_mode == Mode::Read)
     {
-      if (m_error || (m_error |= !m_stream->Read2(value_ptr, sizeof(T))) == true)
+      if (!ReadData(value_ptr, sizeof(T))) [[unlikely]]
         *value_ptr = static_cast<T>(0);
     }
     else
     {
-      if (!m_error)
-        m_error |= !m_stream->Write2(value_ptr, sizeof(T));
+      WriteData(value_ptr, sizeof(T));
     }
   }
 
@@ -59,17 +59,15 @@ public:
     if (m_mode == Mode::Read)
     {
       TType temp;
-      if (m_error || (m_error |= !m_stream->Read2(&temp, sizeof(TType))) == true)
+      if (!ReadData(&temp, sizeof(temp))) [[unlikely]]
         temp = static_cast<TType>(0);
 
       *value_ptr = static_cast<T>(temp);
     }
     else
     {
-      TType temp;
-      std::memcpy(&temp, value_ptr, sizeof(TType));
-      if (!m_error)
-        m_error |= !m_stream->Write2(&temp, sizeof(TType));
+      const TType temp = static_cast<TType>(*value_ptr);
+      WriteData(&temp, sizeof(temp));
     }
   }
 
@@ -79,13 +77,12 @@ public:
   {
     if (m_mode == Mode::Read)
     {
-      if (m_error || (m_error |= !m_stream->Read2(value_ptr, sizeof(T))) == true)
+      if (!ReadData(value_ptr, sizeof(T))) [[unlikely]]
         std::memset(value_ptr, 0, sizeof(*value_ptr));
     }
     else
     {
-      if (!m_error)
-        m_error |= !m_stream->Write2(value_ptr, sizeof(T));
+      WriteData(value_ptr, sizeof(T));
     }
   }
 
@@ -201,12 +198,18 @@ public:
       return;
     }
 
-    if (!m_error)
-      m_error = !m_stream->SeekRelative(static_cast<s64>(count));
+    m_error = (m_error || (m_pos + count) > m_size);
+    if (!m_error) [[likely]]
+      m_pos += count;
   }
 
 private:
-  ByteStream* m_stream;
+  bool ReadData(void* buf, size_t size);
+  bool WriteData(const void* buf, size_t size);
+
+  u8* m_data;
+  size_t m_size;
+  size_t m_pos = 0;
   Mode m_mode;
   u32 m_version;
   bool m_error = false;

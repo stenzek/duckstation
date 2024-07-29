@@ -124,6 +124,12 @@ std::size_t StringUtil::Strlcpy(char* dst, const char* src, std::size_t size)
   return len;
 }
 
+std::size_t StringUtil::Strnlen(const char* str, std::size_t max_size)
+{
+  const char* loc = static_cast<const char*>(std::memchr(str, 0, max_size));
+  return loc ? static_cast<size_t>(loc - str) : max_size;
+}
+
 std::size_t StringUtil::Strlcpy(char* dst, const std::string_view src, std::size_t size)
 {
   std::size_t len = src.length();

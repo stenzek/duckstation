@@ -493,7 +493,7 @@ bool PINEServer::PINESocket::HandleCommand(IPCCommand command, BinarySpanReader 
 
       Host::RunOnCPUThread([state_filename = std::move(state_filename)] {
         Error error;
-        if (!System::LoadState(state_filename.c_str(), &error))
+        if (!System::LoadState(state_filename.c_str(), &error, true))
           ERROR_LOG("PINE: Load state failed: {}", error.GetDescription());
       });
 

@@ -47,6 +47,7 @@
 #include "util/state_wrapper.h"
 
 #include "common/align.h"
+#include "common/binary_reader_writer.h"
 #include "common/dynamic_library.h"
 #include "common/error.h"
 #include "common/file_system.h"
@@ -69,6 +70,9 @@
 #include <fstream>
 #include <limits>
 #include <thread>
+#include <zlib.h>
+#include <zstd.h>
+#include <zstd_errors.h>
 
 Log_SetChannel(System);
 
@@ -103,8 +107,6 @@ SystemBootParameters::~SystemBootParameters() = default;
 
 namespace System {
 static void CheckCacheLineSize();
-
-static std::optional<ExtendedSaveStateInfo> InternalGetExtendedSaveStateInfo(ByteStream* stream);
 
 static void LoadInputBindings(SettingsInterface& si, std::unique_lock<std::mutex>& lock);
 
@@ -143,9 +145,44 @@ static bool DoRunahead();
 static bool Initialize(bool force_software_renderer, Error* error);
 
 static bool UpdateGameSettingsLayer();
-static void UpdateRunningGame(const char* path, CDImage* image, bool booting);
+static void UpdateRunningGame(const std::string_view path, CDImage* image, bool booting);
 static bool CheckForSBIFile(CDImage* image, Error* error);
 static std::unique_ptr<MemoryCard> GetMemoryCardForSlot(u32 slot, MemoryCardType type);
+
+/// Memory save states - only for internal use.
+namespace {
+struct SaveStateBuffer
+{
+  std::string serial;
+  std::string title;
+  std::string media_path;
+  u32 media_subimage_index;
+  u32 version;
+  RGBA8Image screenshot;
+  DynamicHeapArray<u8> state_data;
+  size_t state_size;
+};
+struct MemorySaveState
+{
+  std::unique_ptr<GPUTexture> vram_texture;
+  DynamicHeapArray<u8> state_data;
+#ifdef PROFILE_MEMORY_SAVE_STATES
+  size_t state_size;
+#endif
+};
+} // namespace
+static bool SaveMemoryState(MemorySaveState* mss);
+static bool LoadMemoryState(const MemorySaveState& mss);
+static bool LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bool update_display);
+static bool LoadStateBufferFromFile(SaveStateBuffer* buffer, std::FILE* fp, Error* error, bool read_title,
+                                    bool read_media_path, bool read_screenshot, bool read_data);
+static bool ReadAndDecompressStateData(std::FILE* fp, std::span<u8> dst, u32 file_offset, u32 compressed_size,
+                                       SaveStateCompression method, Error* error);
+static bool SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screenshot_size = 256);
+static bool SaveStateBufferToFile(const SaveStateBuffer& buffer, std::FILE* fp, Error* error,
+                                  SaveStateCompression screenshot_compression = SaveStateCompression::ZLib,
+                                  SaveStateCompression data_compression = SaveStateCompression::ZStd);
+static u32 CompressAndWriteStateData(std::FILE* fp, std::span<const u8> src, SaveStateCompression method, Error* error);
 
 static void UpdateSessionTime(const std::string& prev_serial);
 
@@ -246,7 +283,7 @@ static Threading::ThreadHandle s_cpu_thread_handle;
 static std::unique_ptr<CheatList> s_cheat_list;
 
 // temporary save state, created when loading, used to undo load state
-static std::unique_ptr<ByteStream> m_undo_load_state;
+static std::optional<System::SaveStateBuffer> s_undo_load_state;
 
 static bool s_memory_saves_enabled = false;
 
@@ -1065,11 +1102,15 @@ bool System::RecreateGPU(GPURenderer renderer, bool force_recreate_device, bool 
   g_gpu->RestoreDeviceContext();
 
   // save current state
-  std::unique_ptr<ByteStream> state_stream = ByteStream::CreateGrowableMemoryStream();
-  StateWrapper sw(state_stream.get(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
-  const bool state_valid = g_gpu->DoState(sw, nullptr, false) && TimingEvents::DoState(sw);
-  if (!state_valid)
-    ERROR_LOG("Failed to save old GPU state when switching renderers");
+  DynamicHeapArray<u8> state_data(MAX_SAVE_STATE_SIZE);
+  {
+    StateWrapper sw(state_data.span(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
+    if (!g_gpu->DoState(sw, nullptr, false) || !TimingEvents::DoState(sw))
+    {
+      ERROR_LOG("Failed to save old GPU state when switching renderers");
+      state_data.deallocate();
+    }
+  }
 
   // create new renderer
   g_gpu.reset();
@@ -1089,10 +1130,9 @@ bool System::RecreateGPU(GPURenderer renderer, bool force_recreate_device, bool 
     return false;
   }
 
-  if (state_valid)
+  if (!state_data.empty())
   {
-    state_stream->SeekAbsolute(0);
-    sw.SetMode(StateWrapper::Mode::Read);
+    StateWrapper sw(state_data.span(), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
     g_gpu->RestoreDeviceContext();
     g_gpu->DoState(sw, nullptr, update_display);
     TimingEvents::DoState(sw);
@@ -1372,118 +1412,6 @@ void System::PauseSystem(bool paused)
   }
 }
 
-bool System::LoadState(const char* filename, Error* error)
-{
-  if (!IsValid())
-  {
-    Error::SetStringView(error, "System is not booted.");
-    return false;
-  }
-
-  if (Achievements::IsHardcoreModeActive())
-  {
-    Achievements::ConfirmHardcoreModeDisableAsync(TRANSLATE("Achievements", "Loading state"),
-                                                  [filename = std::string(filename)](bool approved) {
-                                                    if (approved)
-                                                      LoadState(filename.c_str(), nullptr);
-                                                  });
-    return true;
-  }
-
-  Common::Timer load_timer;
-
-  std::unique_ptr<ByteStream> stream =
-    ByteStream::OpenFile(filename, BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED, error);
-  if (!stream)
-  {
-    Error::AddPrefixFmt(error, "Failed to open '{}': ", Path::GetFileName(filename));
-    return false;
-  }
-
-  INFO_LOG("Loading state from '{}'...", filename);
-
-  {
-    const std::string display_name(FileSystem::GetDisplayNameFromPath(filename));
-    Host::AddIconOSDMessage(
-      "load_state", ICON_FA_FOLDER_OPEN,
-      fmt::format(TRANSLATE_FS("OSDMessage", "Loading state from '{}'..."), Path::GetFileName(display_name)), 5.0f);
-  }
-
-  SaveUndoLoadState();
-
-  if (!LoadStateFromStream(stream.get(), error, true))
-  {
-    if (m_undo_load_state)
-      UndoLoadState();
-
-    return false;
-  }
-
-  ResetPerformanceCounters();
-  ResetThrottler();
-
-  if (IsPaused())
-    InvalidateDisplay();
-
-  VERBOSE_LOG("Loading state took {:.2f} msec", load_timer.GetTimeMilliseconds());
-  return true;
-}
-
-bool System::SaveState(const char* filename, Error* error, bool backup_existing_save)
-{
-  if (IsSavingMemoryCards())
-  {
-    Error::SetStringView(error, TRANSLATE_SV("System", "Cannot save state while memory card is being saved."));
-    return false;
-  }
-
-  if (backup_existing_save && FileSystem::FileExists(filename))
-  {
-    Error backup_error;
-    const std::string backup_filename = Path::ReplaceExtension(filename, "bak");
-    if (!FileSystem::RenamePath(filename, backup_filename.c_str(), &backup_error))
-    {
-      ERROR_LOG("Failed to rename save state backup '{}': {}", Path::GetFileName(backup_filename),
-                backup_error.GetDescription());
-    }
-  }
-
-  Common::Timer save_timer;
-
-  std::unique_ptr<ByteStream> stream =
-    ByteStream::OpenFile(filename,
-                         BYTESTREAM_OPEN_CREATE | BYTESTREAM_OPEN_WRITE | BYTESTREAM_OPEN_TRUNCATE |
-                           BYTESTREAM_OPEN_ATOMIC_UPDATE | BYTESTREAM_OPEN_STREAMED,
-                         error);
-  if (!stream)
-  {
-    Error::AddPrefixFmt(error, "Cannot open '{}': ", Path::GetFileName(filename));
-    return false;
-  }
-
-  INFO_LOG("Saving state to '{}'...", filename);
-
-  const u32 screenshot_size = 256;
-  const bool result = SaveStateToStream(stream.get(), error, screenshot_size,
-                                        g_settings.compress_save_states ? SAVE_STATE_HEADER::COMPRESSION_TYPE_ZSTD :
-                                                                          SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE);
-  if (!result)
-  {
-    stream->Discard();
-  }
-  else
-  {
-    const std::string display_name(FileSystem::GetDisplayNameFromPath(filename));
-    Host::AddIconOSDMessage(
-      "save_state", ICON_FA_SAVE,
-      fmt::format(TRANSLATE_FS("OSDMessage", "State saved to '{}'."), Path::GetFileName(display_name)), 5.0f);
-    stream->Commit();
-  }
-
-  VERBOSE_LOG("Saving state took {:.2f} msec", save_timer.GetTimeMilliseconds());
-  return result;
-}
-
 bool System::SaveResumeState(Error* error)
 {
   if (s_running_game_serial.empty())
@@ -1732,23 +1660,12 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   Host::OnIdleStateChanged();
 
   // try to load the state, if it fails, bail out
-  if (!parameters.save_state.empty())
+  if (!parameters.save_state.empty() && !LoadState(parameters.save_state.c_str(), error, false))
   {
-    std::unique_ptr<ByteStream> stream =
-      ByteStream::OpenFile(parameters.save_state.c_str(), BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_STREAMED, error);
-    if (!stream)
-    {
-      Error::AddPrefixFmt(error, "Failed to load save state file '{}' for booting:\n",
-                          Path::GetFileName(parameters.save_state));
-      DestroySystem();
-      return false;
-    }
-
-    if (!LoadStateFromStream(stream.get(), error, true))
-    {
-      DestroySystem();
-      return false;
-    }
+    Error::AddPrefixFmt(error, "Failed to load save state file '{}' for booting:\n",
+                        Path::GetFileName(parameters.save_state));
+    DestroySystem();
+    return false;
   }
 
   if (parameters.load_image_to_ram || g_settings.cdrom_load_image_to_ram)
@@ -1872,6 +1789,8 @@ void System::DestroySystem()
   DebugAssert(!s_system_executing);
   if (s_state == State::Shutdown)
     return;
+
+  s_undo_load_state.reset();
 
 #ifdef ENABLE_GDB_SERVER
   GDBServer::Shutdown();
@@ -2516,38 +2435,180 @@ void System::ResetBootMode()
 
 std::string System::GetMediaPathFromSaveState(const char* path)
 {
-  std::string ret;
+  SaveStateBuffer buffer;
+  auto fp = FileSystem::OpenManagedCFile(path, "rb", nullptr);
+  if (fp)
+    LoadStateBufferFromFile(&buffer, fp.get(), nullptr, false, true, false, false);
 
-  std::unique_ptr<ByteStream> stream(ByteStream::OpenFile(path, BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_SEEKABLE));
-  if (stream)
+  return std::move(buffer.media_path);
+}
+
+bool System::LoadState(const char* path, Error* error, bool save_undo_state)
+{
+  if (!IsValid())
   {
-    SAVE_STATE_HEADER header;
-    if (stream->Read2(&header, sizeof(header)) && header.magic == SAVE_STATE_MAGIC &&
-        header.version >= SAVE_STATE_MINIMUM_VERSION && header.version <= SAVE_STATE_VERSION)
+    Error::SetStringView(error, "System is not booted.");
+    return false;
+  }
+
+  if (Achievements::IsHardcoreModeActive())
+  {
+    Achievements::ConfirmHardcoreModeDisableAsync(TRANSLATE("Achievements", "Loading state"),
+                                                  [path = std::string(path), save_undo_state](bool approved) {
+                                                    if (approved)
+                                                      LoadState(path.c_str(), nullptr, save_undo_state);
+                                                  });
+    return true;
+  }
+
+  Common::Timer load_timer;
+
+  auto fp = FileSystem::OpenManagedCFile(path, "rb", error);
+  if (!fp)
+  {
+    Error::AddPrefixFmt(error, "Failed to open '{}': ", Path::GetFileName(path));
+    return false;
+  }
+
+  INFO_LOG("Loading state from '{}'...", path);
+
+  Host::AddIconOSDMessage(
+    "load_state", ICON_FA_FOLDER_OPEN,
+    fmt::format(TRANSLATE_FS("OSDMessage", "Loading state from '{}'..."), Path::GetFileName(path)),
+    Host::OSD_INFO_DURATION);
+
+  if (save_undo_state)
+    SaveUndoLoadState();
+
+  SaveStateBuffer buffer;
+  if (!LoadStateBufferFromFile(&buffer, fp.get(), error, false, true, false, true) ||
+      !LoadStateFromBuffer(buffer, error, true))
+  {
+    if (save_undo_state)
+      UndoLoadState();
+
+    return false;
+  }
+
+  ResetPerformanceCounters();
+  ResetThrottler();
+
+  if (IsPaused())
+    InvalidateDisplay();
+
+  VERBOSE_LOG("Loading state took {:.2f} msec", load_timer.GetTimeMilliseconds());
+  return true;
+}
+
+bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bool update_display)
+{
+  Assert(IsValid());
+
+  std::unique_ptr<CDImage> media;
+  std::unique_ptr<CDImage> old_media = CDROM::RemoveMedia(false);
+  std::string_view media_path = buffer.media_path;
+  u32 media_subimage_index = buffer.media_subimage_index;
+  if (old_media && old_media->GetFileName() == buffer.media_path)
+  {
+    INFO_LOG("Re-using same media '{}'", buffer.media_path);
+    media = std::move(old_media);
+  }
+  else
+  {
+    Error local_error;
+    media = CDImage::Open(buffer.media_path.c_str(), g_settings.cdrom_load_image_patches, error ? error : &local_error);
+    if (!media)
     {
-      if (header.media_filename_length > 0)
+      if (old_media)
       {
-        ret.resize(header.media_filename_length);
-        if (!stream->SeekAbsolute(header.offset_to_media_filename) ||
-            !stream->Read2(ret.data(), header.media_filename_length))
-        {
-          ret = {};
-        }
+        Host::AddOSDMessage(
+          fmt::format(TRANSLATE_FS("OSDMessage", "Failed to open CD image from save state '{}': {}.\nUsing "
+                                                 "existing image '{}', this may result in instability."),
+                      buffer.media_path, error ? error->GetDescription() : local_error.GetDescription(),
+                      old_media->GetFileName()),
+          Host::OSD_CRITICAL_ERROR_DURATION);
+        media = std::move(old_media);
+        media_path = media->GetFileName();
+        media_subimage_index = media->GetCurrentSubImage();
+      }
+      else
+      {
+        Error::AddPrefixFmt(error, TRANSLATE_FS("System", "Failed to open CD image '{}' used by save state:\n"),
+                            Path::GetFileName(buffer.media_path));
+        return false;
       }
     }
   }
 
-  return ret;
+  if (media && buffer.version >= 51)
+  {
+    const u32 num_subimages = media->HasSubImages() ? media->GetSubImageCount() : 1;
+    if (media_subimage_index >= num_subimages ||
+        (media->HasSubImages() && media->GetCurrentSubImage() != media_subimage_index &&
+         !media->SwitchSubImage(media_subimage_index, error)))
+    {
+      Error::AddPrefixFmt(
+        error, TRANSLATE_FS("System", "Failed to switch to subimage {} in CD image '{}' used by save state:\n"),
+        media_subimage_index + 1u, Path::GetFileName(media_path));
+      return false;
+    }
+    else
+    {
+      INFO_LOG("Switched to subimage {} in '{}'", media_subimage_index, buffer.media_path.c_str());
+    }
+  }
+
+  // Skip updating media if there is none, and none in the state. That way we don't wipe out EXE boot.
+  if (media)
+    UpdateRunningGame(media_path, media.get(), false);
+
+  CDROM::Reset();
+  if (media)
+  {
+    const DiscRegion region = GameList::GetCustomRegionForPath(media_path).value_or(GetRegionForImage(media.get()));
+    CDROM::InsertMedia(std::move(media), region);
+    if (g_settings.cdrom_load_image_to_ram)
+      CDROM::PrecacheMedia();
+  }
+
+  // ensure the correct card is loaded
+  if (g_settings.HasAnyPerGameMemoryCards())
+    UpdatePerGameMemoryCards();
+
+  ClearMemorySaveStates();
+
+  // Updating game/loading settings can turn on hardcore mode. Catch this.
+  Achievements::DisableHardcoreMode();
+
+  StateWrapper sw(buffer.state_data.cspan(0, buffer.state_size), StateWrapper::Mode::Read, buffer.version);
+  if (!DoState(sw, nullptr, update_display, false))
+  {
+    Error::SetStringView(error, "Save state stream is corrupted.");
+    return false;
+  }
+
+  if (s_state == State::Starting)
+    s_state = State::Running;
+
+  InterruptExecution();
+  ResetPerformanceCounters();
+  ResetThrottler();
+  return true;
 }
 
-bool System::LoadStateFromStream(ByteStream* state, Error* error, bool update_display, bool ignore_media)
+bool System::LoadStateBufferFromFile(SaveStateBuffer* buffer, std::FILE* fp, Error* error, bool read_title,
+                                     bool read_media_path, bool read_screenshot, bool read_data)
 {
-  Assert(IsValid());
+  const s64 file_size = FileSystem::FSize64(fp, error);
+  if (file_size < 0)
+    return false;
+
+  DebugAssert(FileSystem::FTell64(fp) == 0);
 
   SAVE_STATE_HEADER header;
-  if (!state->Read2(&header, sizeof(header)) || header.magic != SAVE_STATE_MAGIC)
+  if (std::fread(&header, sizeof(header), 1, fp) != 1 || header.magic != SAVE_STATE_MAGIC) [[unlikely]]
   {
-    Error::SetStringView(error, "Incorrect file format.");
+    Error::SetErrno(error, "fread() for header failed: ", errno);
     return false;
   }
 
@@ -2567,167 +2628,215 @@ bool System::LoadStateFromStream(ByteStream* state, Error* error, bool update_di
     return false;
   }
 
-  if (!ignore_media)
+  // Validate offsets.
+  if ((static_cast<s64>(header.offset_to_media_path) + header.media_path_length) > file_size ||
+      (static_cast<s64>(header.offset_to_screenshot) + header.screenshot_compressed_size) > file_size ||
+      header.screenshot_width >= 32768 || header.screenshot_height >= 32768 ||
+      (static_cast<s64>(header.offset_to_data) + header.data_compressed_size) > file_size ||
+      header.data_uncompressed_size > MAX_SAVE_STATE_SIZE) [[unlikely]]
   {
-    std::string media_filename;
-    std::unique_ptr<CDImage> media;
-    if (header.media_filename_length > 0)
-    {
-      media_filename.resize(header.media_filename_length);
-      if (!state->SeekAbsolute(header.offset_to_media_filename) ||
-          !state->Read2(media_filename.data(), header.media_filename_length))
-      {
-        return false;
-      }
-
-      std::unique_ptr<CDImage> old_media = CDROM::RemoveMedia(false);
-      if (old_media && old_media->GetFileName() == media_filename)
-      {
-        INFO_LOG("Re-using same media '{}'", media_filename);
-        media = std::move(old_media);
-      }
-      else
-      {
-        Error local_error;
-        media =
-          CDImage::Open(media_filename.c_str(), g_settings.cdrom_load_image_patches, error ? error : &local_error);
-        if (!media)
-        {
-          if (old_media)
-          {
-            Host::AddOSDMessage(
-              fmt::format(TRANSLATE_FS("OSDMessage", "Failed to open CD image from save state '{}': {}.\nUsing "
-                                                     "existing image '{}', this may result in instability."),
-                          media_filename, error ? error->GetDescription() : local_error.GetDescription(),
-                          old_media->GetFileName()),
-              Host::OSD_CRITICAL_ERROR_DURATION);
-            media = std::move(old_media);
-            header.media_subimage_index = media->GetCurrentSubImage();
-          }
-          else
-          {
-            Error::AddPrefixFmt(error, TRANSLATE_FS("System", "Failed to open CD image '{}' used by save state:\n"),
-                                Path::GetFileName(media_filename));
-            return false;
-          }
-        }
-      }
-    }
-    else
-    {
-      // Skip updating media if there is none, and none in the state. That way we don't wipe out EXE boot.
-      ignore_media = !CDROM::HasMedia();
-    }
-
-    if (!ignore_media)
-      UpdateRunningGame(media_filename.c_str(), media.get(), false);
-
-    if (media && header.version >= 51)
-    {
-      const u32 num_subimages = media->HasSubImages() ? media->GetSubImageCount() : 1;
-      if (header.media_subimage_index >= num_subimages ||
-          (media->HasSubImages() && media->GetCurrentSubImage() != header.media_subimage_index &&
-           !media->SwitchSubImage(header.media_subimage_index, error)))
-      {
-        Error::AddPrefixFmt(
-          error, TRANSLATE_FS("System", "Failed to switch to subimage {} in CD image '{}' used by save state:\n"),
-          header.media_subimage_index + 1u, Path::GetFileName(media_filename));
-        return false;
-      }
-      else
-      {
-        INFO_LOG("Switched to subimage {} in '{}'", header.media_subimage_index, media_filename.c_str());
-      }
-    }
-
-    CDROM::Reset();
-    if (media)
-    {
-      const DiscRegion region =
-        GameList::GetCustomRegionForPath(media_filename).value_or(GetRegionForImage(media.get()));
-      CDROM::InsertMedia(std::move(media), region);
-      if (g_settings.cdrom_load_image_to_ram)
-        CDROM::PrecacheMedia();
-    }
-    else
-    {
-      CDROM::RemoveMedia(false);
-    }
-
-    // ensure the correct card is loaded
-    if (g_settings.HasAnyPerGameMemoryCards())
-      UpdatePerGameMemoryCards();
-  }
-
-  ClearMemorySaveStates();
-
-  // Updating game/loading settings can turn on hardcore mode. Catch this.
-  Achievements::DisableHardcoreMode();
-
-  if (!state->SeekAbsolute(header.offset_to_data))
-    return false;
-
-  if (header.data_compression_type == SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE)
-  {
-    StateWrapper sw(state, StateWrapper::Mode::Read, header.version);
-    if (!DoState(sw, nullptr, update_display, false))
-    {
-      Error::SetStringView(error, "Save state stream is corrupted.");
-      return false;
-    }
-  }
-  else if (header.data_compression_type == SAVE_STATE_HEADER::COMPRESSION_TYPE_ZSTD)
-  {
-    std::unique_ptr<ByteStream> dstream(ByteStream::CreateZstdDecompressStream(state, header.data_compressed_size));
-    StateWrapper sw(dstream.get(), StateWrapper::Mode::Read, header.version);
-    if (!DoState(sw, nullptr, update_display, false))
-    {
-      Error::SetStringView(error, "Save state stream is corrupted.");
-      return false;
-    }
-  }
-  else
-  {
-    Error::SetStringFmt(error, "Unknown save state compression type {}", header.data_compression_type);
+    Error::SetStringView(error, "Save state header is corrupted.");
     return false;
   }
 
-  if (s_state == State::Starting)
-    s_state = State::Running;
+  buffer->version = header.version;
 
-  InterruptExecution();
-  ResetPerformanceCounters();
-  ResetThrottler();
+  if (read_title)
+  {
+    buffer->title.assign(header.title, StringUtil::Strnlen(header.title, std::size(header.title)));
+    buffer->serial.assign(header.serial, StringUtil::Strnlen(header.serial, std::size(header.serial)));
+  }
+
+  // Read media path.
+  if (read_media_path)
+  {
+    buffer->media_path.resize(header.media_path_length);
+    buffer->media_subimage_index = header.media_subimage_index;
+    if (header.media_path_length > 0)
+    {
+      if (!FileSystem::FSeek64(fp, header.offset_to_media_path, SEEK_SET, error)) [[unlikely]]
+        return false;
+
+      if (std::fread(buffer->media_path.data(), buffer->media_path.length(), 1, fp) != 1) [[unlikely]]
+      {
+        Error::SetErrno(error, "fread() for media path failed: ", errno);
+        return false;
+      }
+    }
+  }
+
+  // Read screenshot if requested.
+  if (read_screenshot)
+  {
+    buffer->screenshot.SetSize(header.screenshot_width, header.screenshot_height);
+    const u32 uncompressed_size = buffer->screenshot.GetPitch() * buffer->screenshot.GetHeight();
+    const u32 compressed_size = (header.version >= 69) ? header.screenshot_compressed_size : uncompressed_size;
+    const SaveStateCompression compression_type =
+      (header.version >= 69) ? static_cast<SaveStateCompression>(header.screenshot_compression_type) :
+                               SaveStateCompression::None;
+    if (!ReadAndDecompressStateData(
+          fp, std::span<u8>(reinterpret_cast<u8*>(buffer->screenshot.GetPixels()), uncompressed_size),
+          header.offset_to_screenshot, compressed_size, compression_type, error)) [[unlikely]]
+    {
+      return false;
+    }
+  }
+
+  // Decompress state data.
+  if (read_data)
+  {
+    buffer->state_data.resize(header.data_uncompressed_size);
+    buffer->state_size = header.data_uncompressed_size;
+    if (!ReadAndDecompressStateData(fp, buffer->state_data.span(), header.offset_to_data, header.data_compressed_size,
+                                    static_cast<SaveStateCompression>(header.data_compression_type), error))
+      [[unlikely]]
+    {
+      return false;
+    }
+  }
+
   return true;
 }
 
-bool System::SaveStateToStream(ByteStream* state, Error* error, u32 screenshot_size /* = 256 */,
-                               u32 compression_method /* = SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE*/,
-                               bool ignore_media /* = false*/)
+bool System::ReadAndDecompressStateData(std::FILE* fp, std::span<u8> dst, u32 file_offset, u32 compressed_size,
+                                        SaveStateCompression method, Error* error)
 {
-  if (IsShutdown())
+  if (!FileSystem::FSeek64(fp, file_offset, SEEK_SET, error))
     return false;
 
-  SAVE_STATE_HEADER header = {};
-
-  const u64 header_position = state->GetPosition();
-  if (!state->Write2(&header, sizeof(header)))
-    return false;
-
-  // fill in header
-  header.magic = SAVE_STATE_MAGIC;
-  header.version = SAVE_STATE_VERSION;
-  StringUtil::Strlcpy(header.title, s_running_game_title.c_str(), sizeof(header.title));
-  StringUtil::Strlcpy(header.serial, s_running_game_serial.c_str(), sizeof(header.serial));
-
-  if (CDROM::HasMedia() && !ignore_media)
+  if (method == SaveStateCompression::None)
   {
-    const std::string& media_filename = CDROM::GetMediaFileName();
-    header.offset_to_media_filename = static_cast<u32>(state->GetPosition());
-    header.media_filename_length = static_cast<u32>(media_filename.length());
-    header.media_subimage_index = CDROM::GetMedia()->HasSubImages() ? CDROM::GetMedia()->GetCurrentSubImage() : 0;
-    if (!media_filename.empty() && !state->Write2(media_filename.data(), header.media_filename_length))
+    // Feed through.
+    if (std::fread(dst.data(), dst.size(), 1, fp) != 1) [[unlikely]]
+    {
+      Error::SetErrno(error, "fread() failed: ", errno);
       return false;
+    }
+
+    return true;
+  }
+
+  DynamicHeapArray<u8> compressed_data(compressed_size);
+  if (std::fread(compressed_data.data(), compressed_data.size(), 1, fp) != 1)
+  {
+    Error::SetErrno(error, "fread() failed: ", errno);
+    return false;
+  }
+
+  if (method == SaveStateCompression::ZLib)
+  {
+    uLong source_len = compressed_size;
+    uLong dest_len = static_cast<uLong>(dst.size());
+    const int err = uncompress2(dst.data(), &dest_len, compressed_data.data(), &source_len);
+    if (err != Z_OK) [[unlikely]]
+    {
+      Error::SetStringFmt(error, "uncompress2() failed: ", err);
+      return false;
+    }
+    else if (dest_len < dst.size()) [[unlikely]]
+    {
+      Error::SetStringFmt(error, "Only decompressed {} of {} bytes", dest_len, dst.size());
+      return false;
+    }
+
+    if (source_len < compressed_size) [[unlikely]]
+      WARNING_LOG("Only consumed {} of {} compressed bytes", source_len, compressed_size);
+
+    return true;
+  }
+  else if (method == SaveStateCompression::ZStd)
+  {
+    const size_t result = ZSTD_decompress(dst.data(), dst.size(), compressed_data.data(), compressed_size);
+    if (ZSTD_isError(result)) [[unlikely]]
+    {
+      const char* errstr = ZSTD_getErrorString(ZSTD_getErrorCode(result));
+      Error::SetStringFmt(error, "ZSTD_decompress() failed: {}", errstr ? errstr : "<unknown>");
+      return false;
+    }
+    else if (result < dst.size())
+    {
+      Error::SetStringFmt(error, "Only decompressed {} of {} bytes", result, dst.size());
+      return false;
+    }
+
+    return true;
+  }
+  else [[unlikely]]
+  {
+    Error::SetStringView(error, "Unknown method.");
+    return false;
+  }
+}
+
+bool System::SaveState(const char* path, Error* error, bool backup_existing_save)
+{
+  if (IsSavingMemoryCards())
+  {
+    Error::SetStringView(error, TRANSLATE_SV("System", "Cannot save state while memory card is being saved."));
+    return false;
+  }
+
+  Common::Timer save_timer;
+
+  SaveStateBuffer buffer;
+  if (!SaveStateToBuffer(&buffer, error, 256))
+    return false;
+
+  // TODO: Do this on a thread pool
+
+  if (backup_existing_save && FileSystem::FileExists(path))
+  {
+    Error backup_error;
+    const std::string backup_filename = Path::ReplaceExtension(path, "bak");
+    if (!FileSystem::RenamePath(path, backup_filename.c_str(), &backup_error))
+    {
+      ERROR_LOG("Failed to rename save state backup '{}': {}", Path::GetFileName(backup_filename),
+                backup_error.GetDescription());
+    }
+  }
+
+  auto fp = FileSystem::CreateAtomicRenamedFile(path, "wb", error);
+  if (!fp)
+  {
+    Error::AddPrefixFmt(error, "Cannot open '{}': ", Path::GetFileName(path));
+    return false;
+  }
+
+  INFO_LOG("Saving state to '{}'...", path);
+
+  const SaveStateCompression compression =
+    g_settings.compress_save_states ? SaveStateCompression::ZStd : SaveStateCompression::None;
+  if (!SaveStateBufferToFile(buffer, fp.get(), error, compression, compression))
+  {
+    FileSystem::DiscardAtomicRenamedFile(fp);
+    return false;
+  }
+
+  Host::AddIconOSDMessage("save_state", ICON_FA_SAVE,
+                          fmt::format(TRANSLATE_FS("OSDMessage", "State saved to '{}'."), Path::GetFileName(path)),
+                          5.0f);
+
+  VERBOSE_LOG("Saving state took {:.2f} msec", save_timer.GetTimeMilliseconds());
+  return true;
+}
+
+bool System::SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screenshot_size /* = 256 */)
+{
+  if (IsShutdown()) [[unlikely]]
+  {
+    Error::SetStringView(error, "System is invalid.");
+    return 0;
+  }
+
+  buffer->title = s_running_game_title;
+  buffer->serial = s_running_game_serial;
+  buffer->version = SAVE_STATE_VERSION;
+  buffer->media_subimage_index = 0;
+
+  if (CDROM::HasMedia())
+  {
+    buffer->media_path = CDROM::GetMediaFileName();
+    buffer->media_subimage_index = CDROM::GetMedia()->HasSubImages() ? CDROM::GetMedia()->GetCurrentSubImage() : 0;
   }
 
   // save screenshot
@@ -2763,12 +2872,7 @@ bool System::SaveStateToStream(ByteStream* state, Error* error, u32 screenshot_s
                                            reinterpret_cast<u8*>(screenshot_buffer.data()), screenshot_stride);
         }
 
-        header.offset_to_screenshot = static_cast<u32>(state->GetPosition());
-        header.screenshot_width = screenshot_width;
-        header.screenshot_height = screenshot_height;
-        header.screenshot_size = static_cast<u32>(screenshot_buffer.size() * sizeof(u32));
-        if (!state->Write2(screenshot_buffer.data(), header.screenshot_size))
-          return false;
+        buffer->screenshot.SetPixels(screenshot_width, screenshot_height, std::move(screenshot_buffer));
       }
     }
     else
@@ -2779,42 +2883,155 @@ bool System::SaveStateToStream(ByteStream* state, Error* error, u32 screenshot_s
   }
 
   // write data
+  if (buffer->state_data.empty())
+    buffer->state_data.resize(MAX_SAVE_STATE_SIZE);
+
+  g_gpu->RestoreDeviceContext();
+  StateWrapper sw(buffer->state_data.span(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
+  if (!DoState(sw, nullptr, false, false))
   {
-    header.offset_to_data = static_cast<u32>(state->GetPosition());
-
-    g_gpu->RestoreDeviceContext();
-
-    header.data_compression_type = compression_method;
-
-    bool result = false;
-    if (compression_method == SAVE_STATE_HEADER::COMPRESSION_TYPE_NONE)
-    {
-      StateWrapper sw(state, StateWrapper::Mode::Write, SAVE_STATE_VERSION);
-      result = DoState(sw, nullptr, false, false);
-      header.data_uncompressed_size = static_cast<u32>(state->GetPosition() - header.offset_to_data);
-    }
-    else if (compression_method == SAVE_STATE_HEADER::COMPRESSION_TYPE_ZSTD)
-    {
-      std::unique_ptr<ByteStream> cstream(ByteStream::CreateZstdCompressStream(state, 0));
-      StateWrapper sw(cstream.get(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
-      result = DoState(sw, nullptr, false, false) && cstream->Commit();
-      header.data_uncompressed_size = static_cast<u32>(cstream->GetPosition());
-      header.data_compressed_size = static_cast<u32>(state->GetPosition() - header.offset_to_data);
-    }
-
-    if (!result)
-      return false;
+    Error::SetStringView(error, "DoState() failed");
+    return false;
   }
 
-  // re-write header
-  const u64 end_position = state->GetPosition();
-  if (!state->SeekAbsolute(header_position) || !state->Write2(&header, sizeof(header)) ||
-      !state->SeekAbsolute(end_position))
+  buffer->state_size = sw.GetPosition();
+  return true;
+}
+
+bool System::SaveStateBufferToFile(const SaveStateBuffer& buffer, std::FILE* fp, Error* error,
+                                   SaveStateCompression screenshot_compression, SaveStateCompression data_compression)
+{
+  // Header gets rewritten below.
+  SAVE_STATE_HEADER header = {};
+  header.magic = SAVE_STATE_MAGIC;
+  header.version = SAVE_STATE_VERSION;
+  StringUtil::Strlcpy(header.title, s_running_game_title.c_str(), sizeof(header.title));
+  StringUtil::Strlcpy(header.serial, s_running_game_serial.c_str(), sizeof(header.serial));
+
+  u32 file_position = 0;
+  DebugAssert(FileSystem::FTell64(fp) == static_cast<s64>(file_position));
+  if (std::fwrite(&header, sizeof(header), 1, fp) != 1)
   {
+    Error::SetErrno(error, "fwrite() for header failed: ", errno);
+    return false;
+  }
+  file_position += sizeof(header);
+
+  if (!buffer.media_path.empty())
+  {
+    DebugAssert(FileSystem::FTell64(fp) == static_cast<s64>(file_position));
+    header.media_path_length = static_cast<u32>(buffer.media_path.length());
+    header.offset_to_media_path = file_position;
+    if (std::fwrite(buffer.media_path.data(), buffer.media_path.length(), 1, fp) != 1)
+    {
+      Error::SetErrno(error, "fwrite() for media path failed: ", errno);
+      return false;
+    }
+    file_position += static_cast<u32>(buffer.media_path.length());
+  }
+
+  if (buffer.screenshot.IsValid())
+  {
+    DebugAssert(FileSystem::FTell64(fp) == static_cast<s64>(file_position));
+    header.screenshot_compression_type = static_cast<u32>(screenshot_compression);
+    header.screenshot_width = buffer.screenshot.GetWidth();
+    header.screenshot_height = buffer.screenshot.GetHeight();
+    header.offset_to_screenshot = file_position;
+    header.screenshot_compressed_size =
+      CompressAndWriteStateData(fp,
+                                std::span<const u8>(reinterpret_cast<const u8*>(buffer.screenshot.GetPixels()),
+                                                    buffer.screenshot.GetPitch() * buffer.screenshot.GetHeight()),
+                                screenshot_compression, error);
+    if (header.screenshot_compressed_size == 0)
+      return false;
+    file_position += header.screenshot_compressed_size;
+  }
+
+  DebugAssert(buffer.state_size > 0);
+  header.offset_to_data = file_position;
+  header.data_compression_type = static_cast<u32>(data_compression);
+  header.data_uncompressed_size = static_cast<u32>(buffer.state_size);
+  header.data_compressed_size =
+    CompressAndWriteStateData(fp, buffer.state_data.cspan(0, buffer.state_size), data_compression, error);
+  if (header.data_compressed_size == 0)
+    return false;
+
+  INFO_LOG("Save state compression: screenshot {} => {} bytes, data {} => {} bytes",
+           buffer.screenshot.GetPitch() * buffer.screenshot.GetHeight(), header.screenshot_compressed_size,
+           buffer.state_size, header.data_compressed_size);
+
+  if (!FileSystem::FSeek64(fp, 0, SEEK_SET, error))
+    return false;
+
+  // re-write header
+  if (std::fwrite(&header, sizeof(header), 1, fp) != 1 || std::fflush(fp) != 0)
+  {
+    Error::SetErrno(error, "fwrite()/fflush() to rewrite header failed: {}", errno);
     return false;
   }
 
   return true;
+}
+
+u32 System::CompressAndWriteStateData(std::FILE* fp, std::span<const u8> src, SaveStateCompression method, Error* error)
+{
+  if (method == SaveStateCompression::None)
+  {
+    if (std::fwrite(src.data(), src.size(), 1, fp) != 1) [[unlikely]]
+    {
+      Error::SetStringFmt(error, "fwrite() failed: {}", errno);
+      return 0;
+    }
+
+    return static_cast<u32>(src.size());
+  }
+
+  DynamicHeapArray<u8> buffer;
+  u32 write_size;
+  if (method == SaveStateCompression::ZLib)
+  {
+    const size_t buffer_size = compressBound(static_cast<uLong>(src.size()));
+    buffer.resize(buffer_size);
+
+    uLongf compressed_size = static_cast<uLongf>(buffer_size);
+    const int err =
+      compress2(buffer.data(), &compressed_size, src.data(), static_cast<uLong>(src.size()), Z_BEST_COMPRESSION);
+    if (err != Z_OK) [[unlikely]]
+    {
+      Error::SetStringFmt(error, "compress2() failed: {}", err);
+      return 0;
+    }
+
+    write_size = static_cast<u32>(compressed_size);
+  }
+  else if (method == SaveStateCompression::ZStd)
+  {
+    const size_t buffer_size = ZSTD_compressBound(src.size());
+    buffer.resize(buffer_size);
+
+    const size_t compressed_size = ZSTD_compress(buffer.data(), buffer_size, src.data(), src.size(), 19);
+    if (ZSTD_isError(compressed_size)) [[unlikely]]
+    {
+      const char* errstr = ZSTD_getErrorString(ZSTD_getErrorCode(compressed_size));
+      Error::SetStringFmt(error, "ZSTD_compress() failed: {}", errstr ? errstr : "<unknown>");
+      return 0;
+    }
+
+    write_size = static_cast<u32>(compressed_size);
+  }
+  else [[unlikely]]
+  {
+    Error::SetStringView(error, "Unknown method.");
+    return 0;
+  }
+
+  if (std::fwrite(buffer.data(), write_size, 1, fp) != 1) [[unlikely]]
+  {
+    Error::SetStringFmt(error, "fwrite() failed: {}", errno);
+    return 0;
+  }
+
+  return write_size;
 }
 
 float System::GetTargetSpeed()
@@ -3587,7 +3804,7 @@ void System::RemoveMedia()
   ClearMemorySaveStates();
 }
 
-void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
+void System::UpdateRunningGame(const std::string_view path, CDImage* image, bool booting)
 {
   if (!booting && s_running_game_path == path)
     return;
@@ -3601,7 +3818,7 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
   s_running_game_hash = 0;
   s_running_game_custom_title = false;
 
-  if (path && std::strlen(path) > 0)
+  if (!path.empty())
   {
     s_running_game_path = path;
     s_running_game_title = GameList::GetCustomTitleForPath(s_running_game_path);
@@ -3612,7 +3829,7 @@ void System::UpdateRunningGame(const char* path, CDImage* image, bool booting)
       if (s_running_game_title.empty())
         s_running_game_title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path));
 
-      s_running_game_hash = GetGameHashFromFile(path);
+      s_running_game_hash = GetGameHashFromFile(s_running_game_path.c_str());
       if (s_running_game_hash != 0)
         s_running_game_serial = GetGameHashId(s_running_game_hash);
     }
@@ -4293,9 +4510,7 @@ void System::UpdateMemorySaveStateSettings()
 
 bool System::LoadMemoryState(const MemorySaveState& mss)
 {
-  mss.state_stream->SeekAbsolute(0);
-
-  StateWrapper sw(mss.state_stream.get(), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
+  StateWrapper sw(mss.state_data.cspan(), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
   GPUTexture* host_texture = mss.vram_texture.get();
   if (!DoState(sw, &host_texture, true, true))
   {
@@ -4309,19 +4524,21 @@ bool System::LoadMemoryState(const MemorySaveState& mss)
 
 bool System::SaveMemoryState(MemorySaveState* mss)
 {
-  if (!mss->state_stream)
-    mss->state_stream = std::make_unique<GrowableMemoryByteStream>(nullptr, MAX_SAVE_STATE_SIZE);
-  else
-    mss->state_stream->SeekAbsolute(0);
+  if (mss->state_data.empty())
+    mss->state_data.resize(MAX_SAVE_STATE_SIZE);
 
   GPUTexture* host_texture = mss->vram_texture.release();
-  StateWrapper sw(mss->state_stream.get(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
+  StateWrapper sw(mss->state_data.span(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
   if (!DoState(sw, &host_texture, false, true))
   {
     ERROR_LOG("Failed to create rewind state.");
     delete host_texture;
     return false;
   }
+
+#ifdef PROFILE_MEMORY_SAVE_STATES
+  mss->state_size = sw.GetPosition();
+#endif
 
   mss->vram_texture.reset(host_texture);
   return true;
@@ -4348,7 +4565,7 @@ bool System::SaveRewindState()
   s_rewind_states.push_back(std::move(mss));
 
 #ifdef PROFILE_MEMORY_SAVE_STATES
-  DEV_LOG("Saved rewind state ({} bytes, took {:.4f} ms)", s_rewind_states.back().state_stream->GetSize(),
+  DEV_LOG("Saved rewind state ({} bytes, took {:.4f} ms)", s_rewind_states.back().state_size,
           save_timer.GetTimeMilliseconds());
 #endif
 
@@ -4552,20 +4769,20 @@ void System::ShutdownSystem(bool save_resume_state)
 
 bool System::CanUndoLoadState()
 {
-  return static_cast<bool>(m_undo_load_state);
+  return s_undo_load_state.has_value();
 }
 
 std::optional<ExtendedSaveStateInfo> System::GetUndoSaveStateInfo()
 {
   std::optional<ExtendedSaveStateInfo> ssi;
-  if (m_undo_load_state)
+  if (s_undo_load_state.has_value())
   {
-    m_undo_load_state->SeekAbsolute(0);
-    ssi = InternalGetExtendedSaveStateInfo(m_undo_load_state.get());
-    m_undo_load_state->SeekAbsolute(0);
-
-    if (ssi)
-      ssi->timestamp = 0;
+    ssi.emplace();
+    ssi->title = s_undo_load_state->title;
+    ssi->serial = s_undo_load_state->serial;
+    ssi->media_path = s_undo_load_state->media_path;
+    ssi->screenshot = s_undo_load_state->screenshot;
+    ssi->timestamp = 0;
   }
 
   return ssi;
@@ -4573,44 +4790,42 @@ std::optional<ExtendedSaveStateInfo> System::GetUndoSaveStateInfo()
 
 bool System::UndoLoadState()
 {
-  if (!m_undo_load_state)
+  if (!s_undo_load_state.has_value())
     return false;
 
   Assert(IsValid());
 
   Error error;
-  m_undo_load_state->SeekAbsolute(0);
-  if (!LoadStateFromStream(m_undo_load_state.get(), &error, true))
+  if (!LoadStateFromBuffer(s_undo_load_state.value(), &error, true))
   {
     Host::ReportErrorAsync("Error",
                            fmt::format("Failed to load undo state, resetting system:\n", error.GetDescription()));
-    m_undo_load_state.reset();
+    s_undo_load_state.reset();
     ResetSystem();
     return false;
   }
 
   INFO_LOG("Loaded undo save state.");
-  m_undo_load_state.reset();
+  s_undo_load_state.reset();
   return true;
 }
 
 bool System::SaveUndoLoadState()
 {
-  if (m_undo_load_state)
-    m_undo_load_state.reset();
+  if (!s_undo_load_state.has_value())
+    s_undo_load_state.emplace();
 
   Error error;
-  m_undo_load_state = ByteStream::CreateGrowableMemoryStream(nullptr, System::MAX_SAVE_STATE_SIZE);
-  if (!SaveStateToStream(m_undo_load_state.get(), &error))
+  if (!SaveStateToBuffer(&s_undo_load_state.value(), &error))
   {
     Host::AddOSDMessage(
       fmt::format(TRANSLATE_FS("OSDMessage", "Failed to save undo load state:\n{}"), error.GetDescription()),
       Host::OSD_CRITICAL_ERROR_DURATION);
-    m_undo_load_state.reset();
+    s_undo_load_state.reset();
     return false;
   }
 
-  INFO_LOG("Saved undo load state: {} bytes", m_undo_load_state->GetSize());
+  INFO_LOG("Saved undo load state: {} bytes", s_undo_load_state->state_size);
   return true;
 }
 
@@ -4780,64 +4995,29 @@ std::optional<SaveStateInfo> System::GetSaveStateInfo(const char* serial, s32 sl
 
 std::optional<ExtendedSaveStateInfo> System::GetExtendedSaveStateInfo(const char* path)
 {
-  FILESYSTEM_STAT_DATA sd;
-  if (!FileSystem::StatFile(path, &sd))
-    return std::nullopt;
+  std::optional<ExtendedSaveStateInfo> ssi;
 
-  std::unique_ptr<ByteStream> stream = ByteStream::OpenFile(path, BYTESTREAM_OPEN_READ | BYTESTREAM_OPEN_SEEKABLE);
-  if (!stream)
-    return std::nullopt;
-
-  std::optional<ExtendedSaveStateInfo> ssi(InternalGetExtendedSaveStateInfo(stream.get()));
-  if (ssi)
-    ssi->timestamp = sd.ModificationTime;
-
-  return ssi;
-}
-
-std::optional<ExtendedSaveStateInfo> System::InternalGetExtendedSaveStateInfo(ByteStream* stream)
-{
-  SAVE_STATE_HEADER header;
-  if (!stream->Read(&header, sizeof(header)) || header.magic != SAVE_STATE_MAGIC)
-    return std::nullopt;
-
-  ExtendedSaveStateInfo ssi;
-  if (header.version < SAVE_STATE_MINIMUM_VERSION || header.version > SAVE_STATE_VERSION)
+  Error error;
+  auto fp = FileSystem::OpenManagedCFile(path, "rb", &error);
+  if (fp)
   {
-    ssi.title = fmt::format(TRANSLATE_FS("System", "Invalid version {} ({} version {})"), header.version,
-                            header.version > SAVE_STATE_VERSION ? "maximum" : "minimum",
-                            header.version > SAVE_STATE_VERSION ? SAVE_STATE_VERSION : SAVE_STATE_MINIMUM_VERSION);
-    return ssi;
-  }
+    ssi.emplace();
 
-  header.title[sizeof(header.title) - 1] = 0;
-  ssi.title = header.title;
-  header.serial[sizeof(header.serial) - 1] = 0;
-  ssi.serial = header.serial;
-
-  if (header.media_filename_length > 0 &&
-      (header.offset_to_media_filename + header.media_filename_length) <= stream->GetSize())
-  {
-    stream->SeekAbsolute(header.offset_to_media_filename);
-    ssi.media_path.resize(header.media_filename_length);
-    if (!stream->Read2(ssi.media_path.data(), header.media_filename_length))
-      std::string().swap(ssi.media_path);
-  }
-
-  if (header.screenshot_width > 0 && header.screenshot_height > 0 &&
-      header.screenshot_size >= (header.screenshot_width * header.screenshot_height * sizeof(u32)) &&
-      (static_cast<u64>(header.offset_to_screenshot) + static_cast<u64>(header.screenshot_size)) <= stream->GetSize())
-  {
-    stream->SeekAbsolute(header.offset_to_screenshot);
-    ssi.screenshot_data.resize((header.screenshot_size + 3u) / 4u);
-    if (stream->Read2(ssi.screenshot_data.data(), header.screenshot_size))
+    SaveStateBuffer buffer;
+    if (LoadStateBufferFromFile(&buffer, fp.get(), &error, true, true, true, false)) [[likely]]
     {
-      ssi.screenshot_width = header.screenshot_width;
-      ssi.screenshot_height = header.screenshot_height;
+      ssi->title = std::move(buffer.title);
+      ssi->serial = std::move(buffer.serial);
+      ssi->media_path = std::move(buffer.media_path);
+      ssi->screenshot = std::move(buffer.screenshot);
+
+      FILESYSTEM_STAT_DATA sd;
+      ssi->timestamp = FileSystem::StatFile(fp.get(), &sd) ? sd.ModificationTime : 0;
     }
     else
     {
-      decltype(ssi.screenshot_data)().swap(ssi.screenshot_data);
+      ssi->title = error.GetDescription();
+      ssi->timestamp = 0;
     }
   }
 

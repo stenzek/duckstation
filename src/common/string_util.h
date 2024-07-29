@@ -35,6 +35,9 @@ std::size_t Strlcpy(char* dst, const char* src, std::size_t size);
 /// Strlcpy from string_view.
 std::size_t Strlcpy(char* dst, const std::string_view src, std::size_t size);
 
+/// Bounds checked version of strlen.
+std::size_t Strnlen(const char* str, std::size_t max_size);
+
 /// Platform-independent strcasecmp
 static inline int Strcasecmp(const char* s1, const char* s2)
 {

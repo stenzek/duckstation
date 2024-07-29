@@ -5,10 +5,17 @@
 #include "types.h"
 
 static constexpr u32 SAVE_STATE_MAGIC = 0x43435544;
-static constexpr u32 SAVE_STATE_VERSION = 68;
+static constexpr u32 SAVE_STATE_VERSION = 69;
 static constexpr u32 SAVE_STATE_MINIMUM_VERSION = 42;
 
 static_assert(SAVE_STATE_VERSION >= SAVE_STATE_MINIMUM_VERSION);
+
+enum class SaveStateCompression : u32
+{
+  None = 0,
+  ZLib = 1,
+  ZStd = 2,
+};
 
 #pragma pack(push, 4)
 struct SAVE_STATE_HEADER
@@ -17,10 +24,6 @@ struct SAVE_STATE_HEADER
   {
     MAX_TITLE_LENGTH = 128,
     MAX_SERIAL_LENGTH = 32,
-
-    COMPRESSION_TYPE_NONE = 0,
-    COMPRESSION_TYPE_ZLIB = 1,
-    COMPRESSION_TYPE_ZSTD = 2,
   };
 
   u32 magic;
@@ -28,14 +31,16 @@ struct SAVE_STATE_HEADER
   char title[MAX_TITLE_LENGTH];
   char serial[MAX_SERIAL_LENGTH];
 
-  u32 media_filename_length;
-  u32 offset_to_media_filename;
+  u32 media_path_length;
+  u32 offset_to_media_path;
   u32 media_subimage_index;
-  u32 unused_offset_to_playlist_filename; // Unused as of version 51.
-
+  
+  // Screenshot compression added in version 69.
+  // Uncompressed size not stored, it can be inferred from width/height.
+  u32 screenshot_compression_type;
   u32 screenshot_width;
   u32 screenshot_height;
-  u32 screenshot_size;
+  u32 screenshot_compressed_size;
   u32 offset_to_screenshot;
 
   u32 data_compression_type;

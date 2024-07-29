@@ -133,7 +133,7 @@ static bool s_receive_buffer_full = false;
 static bool s_transmit_buffer_full = false;
 
 static u32 s_last_memory_card_transfer_frame = 0;
-static std::unique_ptr<GrowableMemoryByteStream> s_memory_card_backup;
+static DynamicHeapArray<u8> s_memory_card_backup;
 static std::unique_ptr<MemoryCard> s_dummy_card;
 
 } // namespace Pad
@@ -145,7 +145,7 @@ void Pad::Initialize()
 
 void Pad::Shutdown()
 {
-  s_memory_card_backup.reset();
+  s_memory_card_backup.deallocate();
 
   s_transfer_event.Deactivate();
 
@@ -197,7 +197,7 @@ bool Pad::DoStateController(StateWrapper& sw, u32 i)
   if (controller_type != state_controller_type)
   {
     const Controller::ControllerInfo* state_cinfo = Controller::GetControllerInfo(state_controller_type);
-    Assert(sw.GetMode() == StateWrapper::Mode::Read);
+    Assert(sw.IsReading());
 
     // UI notification portion is separated from emulation portion (intentional condition check redundancy)
     if (g_settings.load_devices_from_save_states)
@@ -363,16 +363,10 @@ void Pad::BackupMemoryCardState()
 {
   DEV_LOG("Backing up memory card state.");
 
-  if (!s_memory_card_backup)
-  {
-    s_memory_card_backup =
-      std::make_unique<GrowableMemoryByteStream>(nullptr, MemoryCard::STATE_SIZE * NUM_CONTROLLER_AND_CARD_PORTS);
-  }
+  if (s_memory_card_backup.empty())
+    s_memory_card_backup.resize(MemoryCard::STATE_SIZE * NUM_CONTROLLER_AND_CARD_PORTS);
 
-  s_memory_card_backup->SeekAbsolute(0);
-
-  StateWrapper sw(s_memory_card_backup.get(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
-
+  StateWrapper sw(s_memory_card_backup.span(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
     if (s_memory_cards[i])
@@ -382,13 +376,11 @@ void Pad::BackupMemoryCardState()
 
 void Pad::RestoreMemoryCardState()
 {
-  DebugAssert(s_memory_card_backup);
+  DebugAssert(!s_memory_card_backup.empty());
 
   VERBOSE_LOG("Restoring backed up memory card state.");
 
-  s_memory_card_backup->SeekAbsolute(0);
-  StateWrapper sw(s_memory_card_backup.get(), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
-
+  StateWrapper sw(s_memory_card_backup.cspan(), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
     if (s_memory_cards[i])

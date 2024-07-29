@@ -5559,11 +5559,11 @@ bool FullscreenUI::InitializeSaveStateListEntryFromPath(SaveStateListEntry* li, 
 void FullscreenUI::PopulateSaveStateScreenshot(SaveStateListEntry* li, const ExtendedSaveStateInfo* ssi)
 {
   li->preview_texture.reset();
-  if (ssi && !ssi->screenshot_data.empty())
+  if (ssi && ssi->screenshot.IsValid())
   {
-    li->preview_texture = g_gpu_device->FetchTexture(ssi->screenshot_width, ssi->screenshot_height, 1, 1, 1,
+    li->preview_texture = g_gpu_device->FetchTexture(ssi->screenshot.GetWidth(), ssi->screenshot.GetHeight(), 1, 1, 1,
                                                      GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
-                                                     ssi->screenshot_data.data(), sizeof(u32) * ssi->screenshot_width);
+                                                     ssi->screenshot.GetPixels(), ssi->screenshot.GetPitch());
   }
   else
   {
@@ -6112,7 +6112,7 @@ void FullscreenUI::DoLoadState(std::string path)
       else
       {
         Error error;
-        if (!System::LoadState(path.c_str(), &error))
+        if (!System::LoadState(path.c_str(), &error, true))
         {
           ShowToast(std::string(),
                     fmt::format(TRANSLATE_FS("System", "Failed to load state: {}"), error.GetDescription()));

@@ -7,6 +7,8 @@
 #include "timing_event.h"
 #include "types.h"
 
+#include "util/image.h"
+
 #include "common/timer.h"
 
 #include <memory>
@@ -76,9 +78,7 @@ struct ExtendedSaveStateInfo
   std::string media_path;
   std::time_t timestamp;
 
-  u32 screenshot_width;
-  u32 screenshot_height;
-  std::vector<u32> screenshot_data;
+  RGBA8Image screenshot;
 };
 
 namespace System {
@@ -263,22 +263,10 @@ bool BootSystem(SystemBootParameters parameters, Error* error);
 void PauseSystem(bool paused);
 void ResetSystem();
 
-/// Loads state from the specified filename.
-bool LoadState(const char* filename, Error* error);
-bool SaveState(const char* filename, Error* error, bool backup_existing_save);
+/// Loads state from the specified path.
+bool LoadState(const char* path, Error* error, bool save_undo_state);
+bool SaveState(const char* path, Error* error, bool backup_existing_save);
 bool SaveResumeState(Error* error);
-
-/// Memory save states - only for internal use.
-struct MemorySaveState
-{
-  std::unique_ptr<GPUTexture> vram_texture;
-  std::unique_ptr<GrowableMemoryByteStream> state_stream;
-};
-bool SaveMemoryState(MemorySaveState* mss);
-bool LoadMemoryState(const MemorySaveState& mss);
-bool LoadStateFromStream(ByteStream* stream, Error* error, bool update_display, bool ignore_media = false);
-bool SaveStateToStream(ByteStream* state, Error* error, u32 screenshot_size = 256, u32 compression_method = 0,
-                       bool ignore_media = false);
 
 /// Runs the VM until the CPU execution is canceled.
 void Execute();
