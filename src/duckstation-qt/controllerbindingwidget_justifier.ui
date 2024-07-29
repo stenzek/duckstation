@@ -442,7 +442,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="resources/resources.qrc">:/controllers/guncon.svg</pixmap>
+        <pixmap resource="resources/resources.qrc">:/controllers/justifier.svg</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>
