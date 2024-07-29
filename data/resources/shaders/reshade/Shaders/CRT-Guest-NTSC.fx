@@ -2266,11 +2266,14 @@ float4 AfterglowPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
 
     float w = 1.0;
 
-    float3 color0 = COMPAT_TEXTURE(NTSC_S00, texcoord.xy).rgb;
-    float3 color1 = COMPAT_TEXTURE(NTSC_S00, texcoord.xy - dx).rgb;
-    float3 color2 = COMPAT_TEXTURE(NTSC_S00, texcoord.xy + dx).rgb;
-    float3 color3 = COMPAT_TEXTURE(NTSC_S00, texcoord.xy - dy).rgb;
-    float3 color4 = COMPAT_TEXTURE(NTSC_S00, texcoord.xy + dy).rgb;
+    float2 tc = texcoord + float2(mod(ViewportX + 1.0, 2.0) * 1.0 / BufferWidth,
+                                  mod(ViewportY + 1.0, 2.0) * 1.0 / BufferHeight);
+
+    float3 color0 = COMPAT_TEXTURE(NTSC_S00, tc.xy).rgb;
+    float3 color1 = COMPAT_TEXTURE(NTSC_S00, tc.xy - dx).rgb;
+    float3 color2 = COMPAT_TEXTURE(NTSC_S00, tc.xy + dx).rgb;
+    float3 color3 = COMPAT_TEXTURE(NTSC_S00, tc.xy - dy).rgb;
+    float3 color4 = COMPAT_TEXTURE(NTSC_S00, tc.xy + dy).rgb;
 
     float3 clr = (2.5 * color0 + color1 + color2 + color3 + color4) / 6.5;
     float3 a = COMPAT_TEXTURE(NTSC_S01, texcoord.xy).rgb;
@@ -2341,8 +2344,11 @@ float4 PreShaderPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
                                          0.3646170520, 0.7292341040, 0.1215390173,
                                          0.2369894093, 0.0947957637, 1.2481442225);
 
-    float4 imgcolor  = COMPAT_TEXTURE(NTSC_S00, texcoord.xy);
-    float4 afterglow = COMPAT_TEXTURE(NTSC_S01, texcoord.xy);
+    float2 tc = texcoord + float2(mod(ViewportX + 1.0, 2.0) * 1.0 / BufferWidth,
+                                  mod(ViewportY + 1.0, 2.0) * 1.0 / BufferHeight);
+
+    float4 imgcolor  = COMPAT_TEXTURE(NTSC_S00, tc);
+    float4 afterglow = COMPAT_TEXTURE(NTSC_S01, tc);
 
     float w = 1.0 - afterglow.w;
     float l = length(afterglow.rgb);
@@ -2494,7 +2500,7 @@ float4 PreShaderPS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : 
 
     color = min(color * pre_bb, 1.0);
 
-    return float4(color, vignette(texcoord.xy));
+    return float4(color, vignette(tc));
 }
 
 float4 Signal_1_PS(float4 position : SV_Position, float2 texcoord : TEXCOORD) : SV_Target
