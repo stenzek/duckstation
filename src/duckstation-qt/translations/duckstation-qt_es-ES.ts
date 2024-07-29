@@ -147,7 +147,7 @@ However, hardcore mode also prevents the usage of save states, cheats and slowdo
 Do you want to enable hardcore mode?</source>
         <translation>El modo «hardcore» no está activado. Este modo te permite registrar tiempos o puntuaciones y participar en tablas de clasificación individuales para cada juego.
 
-No obstante, el modo «hardcore» también impide el uso de los estados de guardado, los trucos y las funciones de ralentización.
+No obstante, el modo «hardcore» también impide el uso de los guardados rápidos, los trucos y las funciones de ralentización.
 
 ¿Deseas activar el modo «hardcore»?</translation>
     </message>
@@ -316,7 +316,7 @@ Fecha de creación del token de acceso:</translation>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="49"/>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
-        <translation>El modo más desafiante, que incluye un seguimiento de las tablas de clasificación. Desactiva las características de estados guardados, trucos y ralentización.</translation>
+        <translation>El modo más desafiante, que incluye un seguimiento de las tablas de clasificación. Desactiva las características de guardados rápidos, trucos y ralentización.</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="51"/>
@@ -378,13 +378,13 @@ Fecha de creación del token de acceso: %2.</translation>
     <message>
         <location filename="../../core/system.cpp" line="1380"/>
         <source>Loading state</source>
-        <translation>Cargando estado</translation>
+        <translation>carga de guardados rápidos</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1629"/>
         <location filename="../../core/system.cpp" line="1641"/>
         <source>Resuming state</source>
-        <translation>Reanudando estado</translation>
+        <translation>guardados rápidos de continuación</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1104"/>
@@ -399,7 +399,7 @@ Fecha de creación del token de acceso: %2.</translation>
     <message>
         <location filename="../../core/achievements.cpp" line="1153"/>
         <source>Mastered {}</source>
-        <translation>Dominado: {}</translation>
+        <translation>Has dominado {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1172"/>
@@ -492,19 +492,19 @@ Mensajes sin leer: {}</translation>
         <location filename="../../core/achievements.cpp" line="1893"/>
         <location filename="../../core/achievements.cpp" line="1934"/>
         <source>Confirm Hardcore Mode</source>
-        <translation>Confirmar el modo «hardcore»</translation>
+        <translation>Confirmar modo «hardcore»</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1894"/>
         <location filename="../../core/achievements.cpp" line="1935"/>
         <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
-        <translation>No se puede utilizar la función de {0} mientras el modo «hardcore» esté activo. ¿Deseas desactivar el modo «hardcore»? Se cancelará la acción de {0} si seleccionas No.</translation>
+        <translation>No se puede ejecutar la característica de {0} mientras el modo «hardcore» esté activo. ¿Deseas desactivar el modo «hardcore»? Si seleccionas No, se cancelará la acción.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1918"/>
         <location filename="../../core/achievements.cpp" line="1941"/>
         <source>Cannot {} while hardcode mode is active.</source>
-        <translation>La característica «{}» no se puede usar con el modo «hardcore» activado.</translation>
+        <translation>No se puede ejecutar la característica de {0} mientras el modo «hardcore» esté activo.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1938"/>
@@ -529,37 +529,37 @@ Mensajes sin leer: {}</translation>
     <message>
         <location filename="../../core/achievements.cpp" line="2306"/>
         <source>You have unlocked all achievements and earned {} points!</source>
-        <translation>¡Has obtenido todos los logros y {} puntos!</translation>
+        <translation>¡Has desbloqueado todos los logros y has ganado {} puntos!</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2362"/>
         <source>Unknown</source>
-        <translation>Desconocido</translation>
+        <translation>Desconocidos</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2362"/>
         <source>Locked</source>
-        <translation>Bloqueado</translation>
+        <translation>Bloqueados</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2363"/>
         <source>Unlocked</source>
-        <translation>Desbloqueado</translation>
+        <translation>Desbloqueados</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2363"/>
         <source>Unsupported</source>
-        <translation>No admitido</translation>
+        <translation>No admitidoNo admitidos</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2364"/>
         <source>Unofficial</source>
-        <translation>No oficial</translation>
+        <translation>No oficiales</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2364"/>
         <source>Recently Unlocked</source>
-        <translation>Desbloqueado recientemente</translation>
+        <translation>Desbloqueados recientemente</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2365"/>
@@ -569,7 +569,7 @@ Mensajes sin leer: {}</translation>
     <message>
         <location filename="../../core/achievements.cpp" line="2365"/>
         <source>Almost There</source>
-        <translation>Próximamente</translation>
+        <translation>A punto de desbloquearse</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2472"/>
@@ -689,7 +689,7 @@ Mensajes sin leer: {}</translation>
     <message>
         <location filename="../../core/achievements.cpp" line="2727"/>
         <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
-        <translation>No se enviarán puntuaciones porque el modo «hardcore» está desactivado. Las tablas de puntuaciones permanecerán en modo de solo lectura.</translation>
+        <translation>No se enviarán puntuaciones porque el modo «hardcore» está desactivado. Las tablas de puntuaciones están en modo de solo lectura.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2748"/>
@@ -960,12 +960,12 @@ Mensajes sin leer: {}</translation>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="223"/>
         <source>Load Devices From Save States</source>
-        <translation>Cargar dispositivos de estados guardados</translation>
+        <translation>Cargar dispositivos de guardados rápidos</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="225"/>
         <source>Compress Save States</source>
-        <translation>Comprimir estados guardados</translation>
+        <translation>Comprimir guardados rápidos</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="266"/>
@@ -1998,7 +1998,7 @@ Mensajes sin leer: {}</translation>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="464"/>
         <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to memory card before installing this update or you will lose progress.&lt;/p&gt;</source>
-        <translation>&lt;h2&gt;Alerta sobre estados guardados&lt;/h2&gt;&lt;p&gt;Esta actualización hará que tus estados guardados &lt;b&gt;dejen de ser compatibles&lt;/b&gt;. Asegúrate de haber guardado tus partidas en una Memory Card antes de instalar la actualización o perderás tus progresos.&lt;/p&gt;</translation>
+        <translation>&lt;h2&gt;Advertencia sobre los guardados rápidos&lt;/h2&gt;&lt;p&gt;La instalación de esta actualización hará que tus guardados rápidos &lt;b&gt;dejen de ser compatibles&lt;/b&gt;. Asegúrate de haber guardado tus avances en una Memory Card antes de instalar esta actualización, o perderás dichos avances.&lt;/p&gt;</translation>
     </message>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="472"/>
@@ -4955,12 +4955,12 @@ Este archivo puede llegar a ocupar varios gigabytes, así que ten cuidado con el
     <message>
         <location filename="../qthost.cpp" line="841"/>
         <source>Failed to load state: %1</source>
-        <translation>Error al cargar el estado guardado: %1</translation>
+        <translation>Error al cargar el guardado rápido: %1</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="867"/>
         <source>No resume save state found.</source>
-        <translation>No se han encontrado estados guardados para continuar.</translation>
+        <translation>No se han encontrado guardados de continuación.</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="1157"/>
@@ -5000,7 +5000,7 @@ Do you want to %1 anyway?</source>
         <location filename="../qthost.cpp" line="1403"/>
         <location filename="../qthost.cpp" line="1424"/>
         <source>Failed to save state: %1</source>
-        <translation>Error al guardar el estado guardado: %1</translation>
+        <translation>Error al crear el guardado rápido: %1</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="1583"/>
@@ -5403,12 +5403,12 @@ Do you want to %1 anyway?</source>
     <message>
         <location filename="../foldersettingswidget.ui" line="149"/>
         <source>Save States Directory</source>
-        <translation>Directorio de estados guardados</translation>
+        <translation>Directorio de guardados rápidos</translation>
     </message>
     <message>
         <location filename="../foldersettingswidget.ui" line="179"/>
         <source>Used for storing save states.</source>
-        <translation>Se utilizará para almacenar estados guardados.</translation>
+        <translation>Se utilizará para almacenar los guardados rápidos.</translation>
     </message>
 </context>
 <context>
@@ -5733,9 +5733,9 @@ Do you want to %1 anyway?</source>
         <source>A resume save state created at %s was found.
 
 Do you want to load this save and continue?</source>
-        <translation>Se ha encontrado un estado guardado para continuar este juego en %1.
+        <translation>Se ha encontrado un guardado de continuación con fecha: %s.
 
-¿Deseas retomar este estado?</translation>
+¿Deseas cargar este guardado rápido?</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7257"/>
@@ -6244,7 +6244,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7360"/>
         <source>Create Save State Backups</source>
-        <translation>Crear copias de seguridad de los estados guardados</translation>
+        <translation>Crear copias de seguridad de los guardados rápidos</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7361"/>
@@ -6304,7 +6304,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7372"/>
         <source>Delete State</source>
-        <translation>Eliminar estado guardado</translation>
+        <translation>Eliminar guardado rápido</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7374"/>
@@ -6544,7 +6544,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7421"/>
         <source>Enable Discord Presence</source>
-        <translation>Mostrar estado en Discord</translation>
+        <translation>Habilitar presencia en Discord</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7422"/>
@@ -6696,7 +6696,7 @@ El error ha sido el siguiente:</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7537"/>
         <source>Load Global State</source>
-        <translation>Cargar estado global</translation>
+        <translation>Cargar guardado global</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7560"/>
@@ -6826,7 +6826,7 @@ El error ha sido el siguiente:</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7711"/>
         <source>Select State</source>
-        <translation>Seleccionar estado guardado</translation>
+        <translation>Seleccionar guardado rápido</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7714"/>
@@ -7080,7 +7080,7 @@ Do you want to {0} anyway?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7451"/>
         <source>Exit And Save State</source>
-        <translation>Salir guardando un estado</translation>
+        <translation>Salir y hacer un guardado rápido</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7453"/>
@@ -7095,7 +7095,7 @@ Do you want to {0} anyway?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7458"/>
         <source>Failed to delete save state.</source>
-        <translation>Error al eliminar el estado guardado.</translation>
+        <translation>Error al eliminar el guardado rápido.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7459"/>
@@ -7225,12 +7225,12 @@ Do you want to {0} anyway?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7486"/>
         <source>Game Quick Save</source>
-        <translation>Estado de juego</translation>
+        <translation>Guardado rápido de juego</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7487"/>
         <source>Game Slot {0}##game_slot_{0}</source>
-        <translation>Ranura de juego {0}##game_slot_{0}</translation>
+        <translation>Espacio de juego {0}##game_slot_{0}</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7488"/>
@@ -7300,12 +7300,12 @@ Do you want to {0} anyway?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7501"/>
         <source>Global Slot {0} - {1}##global_slot_{0}</source>
-        <translation>Ranura global {0} - {1}##global_slot_{0}</translation>
+        <translation>Espacio global {0} - {1}##global_slot_{0}</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7502"/>
         <source>Global Slot {0}##global_slot_{0}</source>
-        <translation>Ranura global {0}##global_slot_{0}</translation>
+        <translation>Espacio global {0}##global_slot_{0}</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7503"/>
@@ -7345,7 +7345,7 @@ Do you want to {0} anyway?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7510"/>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
-        <translation>Indica la cantidad de veces que se creará un estado para el rebobinado. Un valor alto aumentará los requisitos del sistema.</translation>
+        <translation>Indica la cantidad de guardados rápidos que se crearán para el rebobinado. Un valor alto aumentará los requisitos del sistema.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7511"/>
@@ -7445,7 +7445,7 @@ Do you want to {0} anyway?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7536"/>
         <source>Load Devices From Save States</source>
-        <translation>Cargar dispositivos de estados guardados</translation>
+        <translation>Cargar dispositivos de guardados rápidos</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7538"/>
@@ -7455,12 +7455,12 @@ Do you want to {0} anyway?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7539"/>
         <source>Load Resume State</source>
-        <translation>Cargar estado de continuación</translation>
+        <translation>Cargar guardado de continuación</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7540"/>
         <source>Load State</source>
-        <translation>Cargar estado</translation>
+        <translation>Cargar guardado rápido</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7541"/>
@@ -7655,17 +7655,17 @@ Do you want to {0} anyway?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7584"/>
         <source>No resume save state found.</source>
-        <translation>No se han encontrado estados guardados para continuar.</translation>
+        <translation>No se han encontrado guardados de continuación.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7585"/>
         <source>No save present in this slot.</source>
-        <translation>No hay un estado en esta ranura.</translation>
+        <translation>No hay un guardado en este espacio.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7586"/>
         <source>No save states found.</source>
-        <translation>No se han encontrado estados guardados.</translation>
+        <translation>No se han encontrado guardados rápidos.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7587"/>
@@ -7905,7 +7905,7 @@ Do you want to {0} anyway?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7635"/>
         <source>Quick Save</source>
-        <translation>Guardado rápido en estado</translation>
+        <translation>Guardado rápido</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7636"/>
@@ -8000,7 +8000,7 @@ Do you want to {0} anyway?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7654"/>
         <source>Renames existing save states when saving to a backup file.</source>
-        <translation>Renombra los estados guardados existentes cuando vayan a guardarse a un archivo de respaldo.</translation>
+        <translation>Renombra los guardados rápidos al hacer un archivo de respaldo.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7655"/>
@@ -8055,7 +8055,7 @@ Do you want to {0} anyway?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7665"/>
         <source>Restores the state of the system prior to the last state loaded.</source>
-        <translation>Restablece el estado del sistema a cuando se cargó el último estado.</translation>
+        <translation>Restablece el estado del sistema a cuando se cargó el último guardado rápido.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7666"/>
@@ -8115,12 +8115,12 @@ Do you want to {0} anyway?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7687"/>
         <source>Save State</source>
-        <translation>Guardar estado</translation>
+        <translation>Crear guardado rápido</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7688"/>
         <source>Save State On Exit</source>
-        <translation>Guardar estado al salir</translation>
+        <translation>Crear guardado rápido al salir</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7689"/>
@@ -8130,7 +8130,7 @@ Do you want to {0} anyway?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7690"/>
         <source>Saves state periodically so you can rewind any mistakes while playing.</source>
-        <translation>Guarda periódicamente estados guardados para que puedas deshacer cualquier error que cometas al jugar.</translation>
+        <translation>Crea periódicamente guardados rápidos para que puedas deshacer cualquier error que cometas al jugar.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7691"/>
@@ -8640,7 +8640,7 @@ Do you want to {0} anyway?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7822"/>
         <source>Undo Load State</source>
-        <translation>Deshacer carga de estado</translation>
+        <translation>Deshacer carga de guardado rápido</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7823"/>
@@ -8750,7 +8750,7 @@ Do you want to {0} anyway?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7851"/>
         <source>When enabled, memory cards and controllers will be overwritten when save states are loaded.</source>
-        <translation>Si esta opción está habilitada, se sobrescribirán las Memory Cards y los mandos al cargar estados guardados.</translation>
+        <translation>Si esta opción está habilitada, se sobrescribirán las Memory Cards y los mandos al cargar guardados rápidos.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7852"/>
@@ -8785,7 +8785,7 @@ Do you want to {0} anyway?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7859"/>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
-        <translation>Activa el modo «desafío» para los logros y el seguimiento de las tablas de puntuación. Desactiva los estados de guardado, los trucos y las funciones de ralentización.</translation>
+        <translation>Activa el modo «desafío» para los logros y el seguimiento de las tablas de puntuación. Desactiva los guardados rápidos, los trucos y las funciones de ralentización.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7860"/>
@@ -10954,7 +10954,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../graphicssettingswidget.cpp" line="441"/>
         <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
-        <translation>Muestra mensajes en pantalla cuando ocurran eventos, tales como la creación o carga de estados guardados, la toma de capturas de pantalla, etc.</translation>
+        <translation>Muestra mensajes en pantalla en ciertas situaciones, como la creación o carga de guardados rápidos, al capturar la pantalla, etc.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="444"/>
@@ -10964,7 +10964,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../graphicssettingswidget.cpp" line="447"/>
         <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
-        <translation>Muestra el porcentaje de velocidad de emulación actual del sistema en la esquina superior derecha de la imagen.</translation>
+        <translation>Muestra la velocidad de emulación actual del sistema en la esquina superior derecha de la imagen, en forma de porcentaje.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="449"/>
@@ -10979,7 +10979,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../graphicssettingswidget.cpp" line="456"/>
         <source>Shows the host&apos;s GPU usage in the top-right corner of the display.</source>
-        <translation>Muestra el uso de la CPU del equipo en la esquina superior derecha de la imagen.</translation>
+        <translation>Muestra el uso de la GPU del equipo en la esquina superior derecha de la imagen.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="458"/>
@@ -10989,12 +10989,12 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../graphicssettingswidget.cpp" line="461"/>
         <source>Shows information about input and audio latency in the top-right corner of the display.</source>
-        <translation>Muestra información sobre la latencia de entrada y audio en la esquina superior derecha de la imagen.</translation>
+        <translation>Muestra información sobre la latencia de entrada y de audio en la esquina superior derecha de la imagen.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="464"/>
         <source>Shows the history of frame rendering times as a graph in the top-right corner of the display.</source>
-        <translation>Muestra el histórico de la duración del renderizado de los fotogramas en la esquina superior derecha de la imagen.</translation>
+        <translation>Muestra una gráfica con las duraciones de los fotogramas en la esquina superior izquierda de la imagen.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="467"/>
@@ -11493,237 +11493,237 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
         <location filename="../../core/hotkeys.cpp" line="615"/>
         <location filename="../../core/hotkeys.cpp" line="621"/>
         <source>Save States</source>
-        <translation>Estados guardados</translation>
+        <translation>Guardados rápidos</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="580"/>
         <source>Load From Selected Slot</source>
-        <translation>Cargar ranura seleccionada</translation>
+        <translation>Cargar guardado del espacio seleccionado</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="585"/>
         <source>Save To Selected Slot</source>
-        <translation>Guardar en ranura seleccionada</translation>
+        <translation>Guardar en espacio seleccionado</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="590"/>
         <source>Select Previous Save Slot</source>
-        <translation>Seleccionar ranura de guardado anterior</translation>
+        <translation>Seleccionar espacio de guardado anterior</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="595"/>
         <source>Select Next Save Slot</source>
-        <translation>Seleccionar ranura de guardado siguiente</translation>
+        <translation>Seleccionar espacio de guardado siguiente</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="600"/>
         <source>Save State and Select Next Slot</source>
-        <translation>Guardar estado y seleccionar la siguiente ranura</translation>
+        <translation>Crear guardado rápido y seleccionar el espacio siguiente</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="608"/>
         <source>Undo Load State</source>
-        <translation>Deshacer carga de estado</translation>
+        <translation>Deshacer carga de guardado rápido</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="628"/>
         <source>Load Game State 1</source>
-        <translation>Cargar estado de juego 1</translation>
+        <translation>Cargar guardado rápido del espacio 1</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="630"/>
         <source>Load Game State 2</source>
-        <translation>Cargar estado de juego 2</translation>
+        <translation>Cargar guardado rápido del espacio 2</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="632"/>
         <source>Load Game State 3</source>
-        <translation>Cargar estado de juego 3</translation>
+        <translation>Cargar guardado rápido del espacio 3</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="634"/>
         <source>Load Game State 4</source>
-        <translation>Cargar estado de juego 4</translation>
+        <translation>Cargar guardado rápido del espacio 4</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="636"/>
         <source>Load Game State 5</source>
-        <translation>Cargar estado de juego 5</translation>
+        <translation>Cargar guardado rápido del espacio 5</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="638"/>
         <source>Load Game State 6</source>
-        <translation>Cargar estado de juego 6</translation>
+        <translation>Cargar guardado rápido del espacio 6</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="640"/>
         <source>Load Game State 7</source>
-        <translation>Cargar estado de juego 7</translation>
+        <translation>Cargar guardado rápido del espacio 7</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="642"/>
         <source>Load Game State 8</source>
-        <translation>Cargar estado de juego 8</translation>
+        <translation>Cargar guardado rápido del espacio 8</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="644"/>
         <source>Load Game State 9</source>
-        <translation>Cargar estado de juego 9</translation>
+        <translation>Cargar guardado rápido del espacio 9</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="646"/>
         <source>Load Game State 10</source>
-        <translation>Cargar estado de juego 10</translation>
+        <translation>Cargar guardado rápido del espacio 10</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="629"/>
         <source>Save Game State 1</source>
-        <translation>Guardar estado de juego 1</translation>
+        <translation>Crear guardado rápido en el espacio 1</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="631"/>
         <source>Save Game State 2</source>
-        <translation>Guardar estado de juego 2</translation>
+        <translation>Crear guardado rápido en el espacio 2</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="633"/>
         <source>Save Game State 3</source>
-        <translation>Guardar estado de juego 3</translation>
+        <translation>Crear guardado rápido en el espacio 3</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="635"/>
         <source>Save Game State 4</source>
-        <translation>Guardar estado de juego 4</translation>
+        <translation>Crear guardado rápido en el espacio 4</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="637"/>
         <source>Save Game State 5</source>
-        <translation>Guardar estado de juego 5</translation>
+        <translation>Crear guardado rápido en el espacio 5</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="639"/>
         <source>Save Game State 6</source>
-        <translation>Guardar estado de juego 6</translation>
+        <translation>Crear guardado rápido en el espacio 6</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="641"/>
         <source>Save Game State 7</source>
-        <translation>Guardar estado de juego 7</translation>
+        <translation>Crear guardado rápido en el espacio 7</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="643"/>
         <source>Save Game State 8</source>
-        <translation>Guardar estado de juego 8</translation>
+        <translation>Crear guardado rápido en el espacio 8</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="645"/>
         <source>Save Game State 9</source>
-        <translation>Guardar estado de juego 9</translation>
+        <translation>Crear guardado rápido en el espacio 9</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="647"/>
         <source>Save Game State 10</source>
-        <translation>Guardar estado de juego 10</translation>
+        <translation>Crear guardado rápido en el espacio 10</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="649"/>
         <source>Load Global State 1</source>
-        <translation>Cargar estado global 1</translation>
+        <translation>Cargar guardado global 1</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="651"/>
         <source>Load Global State 2</source>
-        <translation>Cargar estado global 2</translation>
+        <translation>Cargar guardado global 2</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="653"/>
         <source>Load Global State 3</source>
-        <translation>Cargar estado global 3</translation>
+        <translation>Cargar guardado global 3</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="655"/>
         <source>Load Global State 4</source>
-        <translation>Cargar estado global 4</translation>
+        <translation>Cargar guardado global 4</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="657"/>
         <source>Load Global State 5</source>
-        <translation>Cargar estado global 5</translation>
+        <translation>Cargar guardado global 5</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="659"/>
         <source>Load Global State 6</source>
-        <translation>Cargar estado global 6</translation>
+        <translation>Cargar guardado global 6</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="661"/>
         <source>Load Global State 7</source>
-        <translation>Cargar estado global 7</translation>
+        <translation>Cargar guardado global 7</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="663"/>
         <source>Load Global State 8</source>
-        <translation>Cargar estado global 8</translation>
+        <translation>Cargar guardado global 8</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="665"/>
         <source>Load Global State 9</source>
-        <translation>Cargar estado global 9</translation>
+        <translation>Cargar guardado global 9</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="667"/>
         <source>Load Global State 10</source>
-        <translation>Cargar estado global 10</translation>
+        <translation>Cargar guardado global 10</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="650"/>
         <source>Save Global State 1</source>
-        <translation>Guardar estado global 1</translation>
+        <translation>Guardar guardado global 1</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="652"/>
         <source>Save Global State 2</source>
-        <translation>Guardar estado global 2</translation>
+        <translation>Guardar guardado global 2</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="654"/>
         <source>Save Global State 3</source>
-        <translation>Guardar estado global 3</translation>
+        <translation>Guardar guardado global 3</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="656"/>
         <source>Save Global State 4</source>
-        <translation>Guardar estado global 4</translation>
+        <translation>Guardar guardado global 4</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="658"/>
         <source>Save Global State 5</source>
-        <translation>Guardar estado global 5</translation>
+        <translation>Guardar guardado global 5</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="660"/>
         <source>Save Global State 6</source>
-        <translation>Guardar estado global 6</translation>
+        <translation>Guardar guardado global 6</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="662"/>
         <source>Save Global State 7</source>
-        <translation>Guardar estado global 7</translation>
+        <translation>Guardar guardado global 7</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="664"/>
         <source>Save Global State 8</source>
-        <translation>Guardar estado global 8</translation>
+        <translation>Guardar guardado global 8</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="666"/>
         <source>Save Global State 9</source>
-        <translation>Guardar estado global 9</translation>
+        <translation>Guardar guardado global 9</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="668"/>
         <source>Save Global State 10</source>
-        <translation>Guardar estado global 10</translation>
+        <translation>Guardar guardado global 10</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="518"/>
@@ -11736,12 +11736,12 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../../core/hotkeys.cpp" line="518"/>
         <source>Toggle Mute</source>
-        <translation>Alternar silenciado de audio</translation>
+        <translation>Alternar silencio de audio</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="537"/>
         <source>Toggle CD Audio Mute</source>
-        <translation>Alternar silenciado de audio CD</translation>
+        <translation>Alternar silencio de audio CD</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="549"/>
@@ -11876,7 +11876,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
         <location filename="../interfacesettingswidget.ui" line="35"/>
         <location filename="../interfacesettingswidget.cpp" line="108"/>
         <source>Create Save State Backups</source>
-        <translation>Crear copias de seguridad de estados guardados</translation>
+        <translation>Crear copias de seguridad de guardados rápidos</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="42"/>
@@ -11905,7 +11905,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../interfacesettingswidget.ui" line="70"/>
         <source>Save State On Shutdown</source>
-        <translation>Guardar estado al apagar</translation>
+        <translation>Crear guardado rápido al apagar</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="77"/>
@@ -12002,7 +12002,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../interfacesettingswidget.cpp" line="85"/>
         <source>Save State On Exit</source>
-        <translation>Guardar estado al salir</translation>
+        <translation>Crear guardado rápido al salir</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.cpp" line="86"/>
@@ -12056,7 +12056,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../interfacesettingswidget.cpp" line="109"/>
         <source>Backs up any previous save state when creating a new save state, with a .bak extension.</source>
-        <translation>Guarda una copia del estado guardado antiguo al crear otro nuevo con la extensión .bak.</translation>
+        <translation>Guarda una copia del guardado rápido antiguo con la extensión .bak al crear otro nuevo.</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.cpp" line="111"/>
@@ -12407,12 +12407,12 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
         <location filename="../mainwindow.cpp" line="793"/>
         <location filename="../mainwindow.cpp" line="1142"/>
         <source>Load State</source>
-        <translation>Cargar estado</translation>
+        <translation>Cargar guardado rápido</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="72"/>
         <source>Save State</source>
-        <translation>Guardar estado</translation>
+        <translation>Crear guardado rápido</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="101"/>
@@ -12492,12 +12492,12 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../mainwindow.ui" line="358"/>
         <source>&amp;Load State</source>
-        <translation>&amp;Cargar estado</translation>
+        <translation>&amp;Carga rápida</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="366"/>
         <source>&amp;Save State</source>
-        <translation>&amp;Guardar estado</translation>
+        <translation>&amp;Guard. rápido</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="374"/>
@@ -12683,12 +12683,12 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../mainwindow.ui" line="628"/>
         <source>Resume State</source>
-        <translation>Estado de continuación</translation>
+        <translation>Guardado de continuación</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="633"/>
         <source>Global State</source>
-        <translation>Estado global</translation>
+        <translation>Guardado global</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="641"/>
@@ -12832,7 +12832,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../mainwindow.ui" line="779"/>
         <source>Resumes the last save state created.</source>
-        <translation>Continúa desde el último estado guardado.</translation>
+        <translation>Retoma el último guardado rápido que hayas creado.</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="790"/>
@@ -13083,19 +13083,19 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <message>
         <location filename="../mainwindow.cpp" line="842"/>
         <source>Delete Save States...</source>
-        <translation>Borrar estados guardados...</translation>
+        <translation>Borrar guardados rápidos...</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="848"/>
         <source>Confirm Save State Deletion</source>
-        <translation>Confirmar borrado de estados guardados</translation>
+        <translation>Confirmar borrado de guardados rápidos</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="849"/>
         <source>Are you sure you want to delete all save states for %1?
 
 The saves will not be recoverable.</source>
-        <translation>¿Seguro que quieres borrar todos los estados guardados de %1?
+        <translation>¿Seguro que quieres borrar todos los guardados rápidos de %1?
 
 Una vez sean borrados, no se podrán recuperar.</translation>
     </message>
@@ -13108,18 +13108,18 @@ Una vez sean borrados, no se podrán recuperar.</translation>
         <location filename="../mainwindow.cpp" line="889"/>
         <location filename="../mainwindow.cpp" line="931"/>
         <source>Select Save State File</source>
-        <translation>Seleccionar archivo de estado guardado</translation>
+        <translation>Seleccionar archivo de guardado rápido</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="889"/>
         <location filename="../mainwindow.cpp" line="931"/>
         <source>Save States (*.sav)</source>
-        <translation>Estados guardados (*.sav)</translation>
+        <translation>Guardados rápidos (*.sav)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="895"/>
         <source>Undo Load State</source>
-        <translation>Deshacer carga de estado</translation>
+        <translation>Deshacer carga de guardado rápido</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="903"/>
@@ -13177,7 +13177,7 @@ Una vez sean borrados, no se podrán recuperar.</translation>
     <message>
         <location filename="../mainwindow.cpp" line="1136"/>
         <source>Load Resume State</source>
-        <translation>Cargar estado de continuación</translation>
+        <translation>Cargar guardado de continuación</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1138"/>
@@ -13186,11 +13186,11 @@ Una vez sean borrados, no se podrán recuperar.</translation>
 %1.
 
 Do you want to load this state, or start from a fresh boot?</source>
-        <translation>Se ha encontrado un estado guardado de continuación para este juego en:
+        <translation>Se ha encontrado un guardado de continuación para este juego, con fecha:
 
 %1.
 
-¿Deseas cargar este estado o empezar desde el principio?</translation>
+¿Deseas cargar este guardado rápido o empezar desde el principio?</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1143"/>
@@ -13205,7 +13205,7 @@ Do you want to load this state, or start from a fresh boot?</source>
     <message>
         <location filename="../mainwindow.cpp" line="1163"/>
         <source>Failed to delete save state file &apos;%1&apos;.</source>
-        <translation>Error al eliminar el estado guardado «%1».</translation>
+        <translation>Error al eliminar el guardado rápido «%1».</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1219"/>
@@ -13373,7 +13373,7 @@ Esta acción no se puede deshacer.</translation>
     <message>
         <location filename="../mainwindow.cpp" line="2889"/>
         <source>Save State For Resume</source>
-        <translation>Estado para continuar</translation>
+        <translation>Guardado de continuación</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="2964"/>
@@ -13408,7 +13408,7 @@ Cheats persist through save states even after being disabled, please remember to
 Are you sure you want to continue?</source>
         <translation>El uso de trucos puede tener efectos impredecibles en los juegos, como bloqueos, defectos gráficos y guardados dañados. Al utilizar el administrador de trucos, aceptas que son una configuración sin soporte técnico y que no te proporcionaremos ayuda alguna cuando los juegos fallen.
 
-Los trucos persistirán a través de los estados de guardado incluso después de haber sido deshabilitados, así que recuerda reiniciar el juego después de desactivar cualquier código.
+Los trucos persistirán a través de los guardados rápidos, incluso después de haber sido deshabilitados, así que recuerda reiniciar el juego después de desactivar cualquier código.
 
 ¿Seguro que quieres continuar?</translation>
     </message>
@@ -14529,32 +14529,32 @@ Los trucos persistirán a través de los estados de guardado incluso después de
     <message>
         <location filename="../../core/hotkeys.cpp" line="71"/>
         <source>Cannot load state for game without serial.</source>
-        <translation>No se puede cargar el estado de un juego que no tenga número de serie.</translation>
+        <translation>No se puede cargar un guardado rápido para un juego que no tenga número de serie.</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="81"/>
         <source>No save state found in slot {}.</source>
-        <translation>No se ha encontrado un estado guardado en la ranura {}.</translation>
+        <translation>No se ha encontrado un guardado rápido en el espacio {}.</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="91"/>
         <location filename="../../core/imgui_overlays.cpp" line="1090"/>
         <source>Failed to load state from slot {0}:
 {1}</source>
-        <translation>Error al cargar el estado guardado de la ranura {0}:
+        <translation>Error al cargar el guardado rápido del espacio {0}:
 {1}</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="103"/>
         <source>Cannot save state for game without serial.</source>
-        <translation>No se puede guardar el estado de un juego que no tenga número de serie.</translation>
+        <translation>No se puede crear un guardado rápido para un juego que no tenga número de serie.</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="115"/>
         <location filename="../../core/imgui_overlays.cpp" line="1117"/>
         <source>Failed to save state to slot {0}:
 {1}</source>
-        <translation>Error al guardar el estado guardado en la ranura {0}:
+        <translation>Error al crear un guardado rápido en el espacio {0}:
 {1}</translation>
     </message>
     <message>
@@ -14666,7 +14666,7 @@ Los trucos persistirán a través de los estados de guardado incluso después de
         <location filename="../../core/system.cpp" line="4703"/>
         <source>Failed to save undo load state:
 {}</source>
-        <translation>Error al guardar el estado guardado para deshacer:
+        <translation>Error al crear el guardado rápido para deshacer:
 {1}</translation>
     </message>
     <message>
@@ -14682,18 +14682,18 @@ Los trucos persistirán a través de los estados de guardado incluso después de
     <message>
         <location filename="../../core/system.cpp" line="1404"/>
         <source>Loading state from &apos;{}&apos;...</source>
-        <translation>Cargando estado de «{}»...</translation>
+        <translation>Cargando guardado rápido de «{}»...</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1474"/>
         <source>State saved to &apos;{}&apos;.</source>
-        <translation>Estado guardado en «{}».</translation>
+        <translation>Guardado rápido creado en «{}».</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2563"/>
         <source>Failed to open CD image from save state &apos;{}&apos;: {}.
 Using existing image &apos;{}&apos;, this may result in instability.</source>
-        <translation>Error al abrir la imagen de CD del estado guardado «{}»: {}.
+        <translation>Error al abrir la imagen de CD del guardado rápido «{}»: {}.
 Usando la imagen existente «{}», podría haber inestabilidades.</translation>
     </message>
     <message>
@@ -14756,7 +14756,7 @@ Usando la imagen existente «{}», podría haber inestabilidades.</translation>
     <message>
         <location filename="../../core/pad.cpp" line="206"/>
         <source>Save state contains controller type {0} in port {1}, but {2} is used. Switching.</source>
-        <translation>El estado guardado contiene un tipo de mando {0} en el puerto {1}, pero se está utilizando un tipo {2}. Cambiando.</translation>
+        <translation>El guardado rápido contiene un tipo de mando {0} en el puerto {1}, pero se está utilizando un tipo {2}. Cambiando.</translation>
     </message>
     <message>
         <location filename="../../core/pad.cpp" line="215"/>
@@ -14766,27 +14766,27 @@ Usando la imagen existente «{}», podría haber inestabilidades.</translation>
     <message>
         <location filename="../../core/pad.cpp" line="270"/>
         <source>Memory card {} present in save state but not in system. Creating temporary card.</source>
-        <translation>Memory Card {} presente en el estado guardado, pero no en el equipo. Creando Memory Card temporal.</translation>
+        <translation>Memory Card {} presente en el guardado rápido, pero no en el equipo. Creando Memory Card temporal.</translation>
     </message>
     <message>
         <location filename="../../core/pad.cpp" line="308"/>
         <source>Memory card {} from save state does not match current card data. Simulating replugging.</source>
-        <translation>La Memory Card {} del estado guardado no contiene los mismos datos de la Memory Card actual. Simulando reconexión.</translation>
+        <translation>La Memory Card {} del guardado rápido no contiene los mismos datos de la Memory Card actual. Simulando reconexión.</translation>
     </message>
     <message>
         <location filename="../../core/pad.cpp" line="322"/>
         <source>Memory card {} present in save state but not in system. Ignoring card.</source>
-        <translation>Memory Card {} presente en el estado guardado, pero no en el equipo. Ignorando Memory Card.</translation>
+        <translation>Memory Card {} presente en el guardado rápido, pero no en el equipo. Ignorando Memory Card.</translation>
     </message>
     <message>
         <location filename="../../core/pad.cpp" line="336"/>
         <source>Memory card {} present in system but not in save state. Removing card.</source>
-        <translation>Memory Card {} presente en el equipo, pero no en el estado guardado. Extrayendo Memory Card.</translation>
+        <translation>Memory Card {} presente en el equipo, pero no en el guardado rápido. Extrayendo Memory Card.</translation>
     </message>
     <message>
         <location filename="../../core/pad.cpp" line="345"/>
         <source>Memory card {} present in system but not in save state. Replugging card.</source>
-        <translation>Memory Card {} presente en el equipo, pero no en el estado guardado. Reconectando Memory Card.</translation>
+        <translation>Memory Card {} presente en el equipo, pero no en el guardado rápido. Reconectando Memory Card.</translation>
     </message>
 </context>
 <context>
@@ -15100,7 +15100,7 @@ URL introducida: %1</translation>
     <message>
         <location filename="../qthost.cpp" line="2474"/>
         <source>The specified save state does not exist.</source>
-        <translation>El estado de guardado indicado no existe.</translation>
+        <translation>El guardado rápido indicado no existe.</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="2490"/>
@@ -15191,27 +15191,27 @@ URL introducida: %1</translation>
     <message>
         <location filename="../../core/imgui_overlays.cpp" line="907"/>
         <source>No save present in this slot.</source>
-        <translation>No hay un estado en esta ranura.</translation>
+        <translation>No hay un guardado en este espacio.</translation>
     </message>
     <message>
         <location filename="../../core/imgui_overlays.cpp" line="1004"/>
         <source>Global Slot {}</source>
-        <translation>Estado global {}</translation>
+        <translation>Espacio global {}</translation>
     </message>
     <message>
         <location filename="../../core/imgui_overlays.cpp" line="1005"/>
         <source>Game Slot {}</source>
-        <translation>Estado de juego {}</translation>
+        <translation>Espacio de juego {}</translation>
     </message>
     <message>
         <location filename="../../core/imgui_overlays.cpp" line="1100"/>
         <source>No save state found in Global Slot {}.</source>
-        <translation>No hay estados en la ranura global {}.</translation>
+        <translation>No hay guardados rápidos en el espacio global {}.</translation>
     </message>
     <message>
         <location filename="../../core/imgui_overlays.cpp" line="1101"/>
         <source>No save state found in Slot {}.</source>
-        <translation>No hay estados en la ranura {}.</translation>
+        <translation>No hay guardados rápidos en el espacio {}.</translation>
     </message>
     <message>
         <location filename="../../core/imgui_overlays.cpp" line="1134"/>
@@ -15221,12 +15221,12 @@ URL introducida: %1</translation>
     <message>
         <location filename="../../core/imgui_overlays.cpp" line="1139"/>
         <source>Global Save Slot {0} selected ({1}).</source>
-        <translation>Ranura global {0} seleccionada ({1}).</translation>
+        <translation>Espacio global {0} seleccionado ({1}).</translation>
     </message>
     <message>
         <location filename="../../core/imgui_overlays.cpp" line="1140"/>
         <source>Save Slot {0} selected ({1}).</source>
-        <translation>Ranura de guardado {0} seleccionada ({1}).</translation>
+        <translation>Espacio de guardado {0} seleccionado ({1}).</translation>
     </message>
 </context>
 <context>
@@ -15927,22 +15927,22 @@ La búsqueda recursiva lleva más tiempo, pero identificará los archivos que es
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6110"/>
         <source>Failed to undo load state.</source>
-        <translation>Error al deshacer la carga de estado.</translation>
+        <translation>Error al deshacer el guardado rápido.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6118"/>
         <source>Failed to load state: {}</source>
-        <translation>Error al cargar el estado guardado: {}</translation>
+        <translation>Error al cargar el guardado rápido: {}</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="6141"/>
         <source>Failed to save state: {}</source>
-        <translation>Error al guardar el estado guardado: {}</translation>
+        <translation>Error al crear el guardado rápido: {}</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1431"/>
         <source>Cannot save state while memory card is being saved.</source>
-        <translation>No se puede guardar un estado guardado mientras se está guardando en una Memory Card.</translation>
+        <translation>No se puede crear un guardado rápido mientras se esté guardando en una Memory Card.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2293"/>
@@ -15952,35 +15952,35 @@ La búsqueda recursiva lleva más tiempo, pero identificará los archivos que es
     <message>
         <location filename="../../core/system.cpp" line="2334"/>
         <source>This save state was created with a different BIOS. This may cause stability issues.</source>
-        <translation>Este estado guardado se creó con una BIOS distinta. Podría haber problemas de estabilidad.</translation>
+        <translation>Este guardado rápido se creó con una BIOS distinta. Podría haber problemas de estabilidad.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2405"/>
         <source>WARNING: CPU overclock ({}%) was different in save state ({}%).</source>
-        <translation>AVISO: el «overclocking» de la CPU ({}&#xa0;%) era distinto en el estado guardado ({}&#xa0;%).</translation>
+        <translation>AVISO: el «overclocking» de la CPU ({}&#xa0;%) era distinto en el guardado rápido ({}&#xa0;%).</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2521"/>
         <source>Save state is incompatible: minimum version is {0} but state is version {1}.</source>
-        <translation>Estado guardado incompatible: la versión mínima es la {0}, pero el estado es de la versión {1}.</translation>
+        <translation>Guardado rápido incompatible: la versión mínima es la {0}, pero el guardado es de la versión {1}.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2529"/>
         <source>Save state is incompatible: maximum version is {0} but state is version {1}.</source>
-        <translation>Estado guardado incompatible: la versión máxima es la {0}, pero el estado es de la versión {1}.</translation>
+        <translation>Guardado rápido incompatible: la versión máxima es la {0}, pero el guardado es de la versión {1}.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2573"/>
         <source>Failed to open CD image &apos;{}&apos; used by save state:
 </source>
-        <translation>Error al abrir la imagen de CD «{}» usada por el estado guardado:
+        <translation>Error al abrir la imagen de CD «{}» usada por el guardado rápido:
 </translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2597"/>
         <source>Failed to switch to subimage {} in CD image &apos;{}&apos; used by save state:
 </source>
-        <translation>Error al cambiar a la subimagen {} de la imagen de CD «{}» usada por el estado guardado:
+        <translation>Error al cambiar a la subimagen {} de la imagen de CD «{}» usada por el guardado rápido:
 </translation>
     </message>
     <message numerus="yes">
@@ -16133,7 +16133,7 @@ El nombre del archivo SBI debe ser idéntico al nombre de la imagen de disco.</t
     <message>
         <location filename="../../core/system.cpp" line="4640"/>
         <source>Failed to save resume state: {}</source>
-        <translation>Error al guardar el estado guardado de continuación: {}</translation>
+        <translation>Error al crear el guardado rápido de continuación: {}</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4903"/>
