@@ -396,10 +396,10 @@ bool PostProcessing::ReShadeFXShader::CreateModule(s32 buffer_width, s32 buffer_
   pp.add_include_path("shaders/reshade/Shaders");
 
   pp.add_macro_definition("__RESHADE__", "50901");
-  pp.add_macro_definition("BUFFER_WIDTH", std::to_string(buffer_width)); // TODO: can we make these uniforms?
-  pp.add_macro_definition("BUFFER_HEIGHT", std::to_string(buffer_height));
-  pp.add_macro_definition("BUFFER_RCP_WIDTH", std::to_string(1.0f / static_cast<float>(buffer_width)));
-  pp.add_macro_definition("BUFFER_RCP_HEIGHT", std::to_string(1.0f / static_cast<float>(buffer_height)));
+  pp.add_macro_definition("BUFFER_WIDTH", StringUtil::ToChars(buffer_width)); // TODO: can we make these uniforms?
+  pp.add_macro_definition("BUFFER_HEIGHT", StringUtil::ToChars(buffer_height));
+  pp.add_macro_definition("BUFFER_RCP_WIDTH", StringUtil::ToChars(1.0f / static_cast<float>(buffer_width)));
+  pp.add_macro_definition("BUFFER_RCP_HEIGHT", StringUtil::ToChars(1.0f / static_cast<float>(buffer_height)));
   pp.add_macro_definition("BUFFER_COLOR_BIT_DEPTH", "32");
   pp.add_macro_definition("RESHADE_DEPTH_INPUT_IS_UPSIDE_DOWN", "0");
   pp.add_macro_definition("RESHADE_DEPTH_INPUT_IS_LOGARITHMIC", "0");
