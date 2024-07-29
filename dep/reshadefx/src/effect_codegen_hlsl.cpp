@@ -11,7 +11,6 @@
 #include <cassert>
 #include <cstring> // stricmp
 #include <algorithm> // std::find_if, std::max
-#include <iomanip>
 #include <locale>
 #include <sstream>
 
@@ -345,7 +344,7 @@ private:
 				{
 					std::ostringstream ss;
 					ss.imbue(std::locale::classic());
-					ss << std::fixed << data.as_float[i];
+					ss << data.as_float[i];
 					s += ss.str();
 				}
 				break;
