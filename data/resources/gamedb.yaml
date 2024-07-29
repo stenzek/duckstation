@@ -66722,6 +66722,8 @@ SLPS-00719:
   name: "Great Battle VI, The (Japan)"
   controllers:
     - DigitalController
+  codes:
+    - HASH-2A8D6A1D4C539B43
   metadata:
     publisher: "Banpresto"
     developer: "Aspect"
