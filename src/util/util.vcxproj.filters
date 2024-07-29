@@ -142,7 +142,6 @@
     <ClCompile Include="http_downloader.cpp" />
     <ClCompile Include="metal_device.mm" />
     <ClCompile Include="metal_stream_buffer.mm" />
-    <ClCompile Include="zstd_byte_stream.cpp" />
     <ClCompile Include="opengl_context.cpp" />
     <ClCompile Include="opengl_context_egl.cpp" />
     <ClCompile Include="opengl_context_egl_wayland.cpp" />

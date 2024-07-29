@@ -199,7 +199,6 @@
     <ClCompile Include="win32_raw_input_source.cpp" />
     <ClCompile Include="window_info.cpp" />
     <ClCompile Include="xinput_source.cpp" />
-    <ClCompile Include="zstd_byte_stream.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\dep\cubeb\cubeb.vcxproj">

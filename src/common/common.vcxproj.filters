@@ -7,7 +7,6 @@
     <ClInclude Include="heap_array.h" />
     <ClInclude Include="log.h" />
     <ClInclude Include="small_string.h" />
-    <ClInclude Include="byte_stream.h" />
     <ClInclude Include="timer.h" />
     <ClInclude Include="assert.h" />
     <ClInclude Include="align.h" />
@@ -53,7 +52,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="small_string.cpp" />
-    <ClCompile Include="byte_stream.cpp" />
     <ClCompile Include="log.cpp" />
     <ClCompile Include="timer.cpp" />
     <ClCompile Include="assert.cpp" />

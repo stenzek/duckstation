@@ -7,7 +7,6 @@
     <ClInclude Include="bitfield.h" />
     <ClInclude Include="bitutils.h" />
     <ClInclude Include="build_timestamp.h" />
-    <ClInclude Include="byte_stream.h" />
     <ClInclude Include="crash_handler.h" />
     <ClInclude Include="dimensional_array.h" />
     <ClInclude Include="dynamic_library.h" />
@@ -50,7 +49,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="assert.cpp" />
-    <ClCompile Include="byte_stream.cpp" />
     <ClCompile Include="crash_handler.cpp" />
     <ClCompile Include="dynamic_library.cpp" />
     <ClCompile Include="error.cpp" />
