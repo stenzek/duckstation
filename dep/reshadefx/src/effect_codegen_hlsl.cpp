@@ -11,6 +11,9 @@
 #include <cassert>
 #include <cstring> // stricmp
 #include <algorithm> // std::find_if, std::max
+#include <iomanip>
+#include <locale>
+#include <sstream>
 
 using namespace reshadefx;
 
@@ -339,9 +342,12 @@ private:
 					s += std::signbit(data.as_float[i]) ? "1.#INF" : "-1.#INF";
 					break;
 				}
-				char temp[64]; // Will be null-terminated by snprintf
-				std::snprintf(temp, sizeof(temp), "%1.8e", data.as_float[i]);
-				s += temp;
+				{
+					std::ostringstream ss;
+					ss.imbue(std::locale::classic());
+					ss << std::fixed << data.as_float[i];
+					s += ss.str();
+				}
 				break;
 			default:
 				assert(false);
