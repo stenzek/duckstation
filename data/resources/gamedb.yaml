@@ -43231,6 +43231,7 @@ SLES-00132:
     - DigitalController
   traits:
     - DisablePGXP # 2.5D, not beneficial.
+    - DisableWidescreen # No effect.
   settings:
     gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
   metadata:
@@ -43255,6 +43256,7 @@ SLPS-00308:
     - DigitalController
   traits:
     - DisablePGXP # 2.5D, not beneficial.
+    - DisableWidescreen # No effect.
   settings:
     gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
   metadata:
@@ -43280,6 +43282,7 @@ SLUS-00077:
     - DigitalController
   traits:
     - DisablePGXP # 2.5D, not beneficial.
+    - DisableWidescreen # No effect.
   settings:
     gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
   metadata:
@@ -46296,6 +46299,7 @@ SLES-00703:
     - DigitalController
   traits:
     - DisablePGXP # 2.5D, not beneficial, breaks rendering.
+    - DisableWidescreen # No effect.
   settings:
     gpuLineDetectMode: AggressiveTriangles # Fixes upscaled rendering.
   metadata:
@@ -46319,6 +46323,7 @@ SLES-00987:
     - DigitalController
   traits:
     - DisablePGXP # 2.5D, not beneficial, breaks rendering.
+    - DisableWidescreen # No effect.
   settings:
     gpuLineDetectMode: AggressiveTriangles # Fixes upscaled rendering.
   metadata:
@@ -46339,6 +46344,7 @@ SLED-01027:
   name: "Duke Nukem (France) (Demo)"
   traits:
     - DisablePGXP # 2.5D, not beneficial, breaks rendering.
+    - DisableWidescreen # No effect.
   settings:
     gpuLineDetectMode: AggressiveTriangles # Fixes upscaled rendering.
 SLES-03405:
@@ -46534,6 +46540,7 @@ SLPS-01557:
     - DigitalController
   traits:
     - DisablePGXP # 2.5D, not beneficial, breaks rendering.
+    - DisableWidescreen # No effect.
   settings:
     gpuLineDetectMode: AggressiveTriangles # Fixes upscaled rendering.
   metadata:
@@ -46560,6 +46567,7 @@ SLUS-00355:
     - DigitalController
   traits:
     - DisablePGXP # 2.5D, not beneficial, breaks rendering.
+    - DisableWidescreen # No effect.
   settings:
     gpuLineDetectMode: AggressiveTriangles # Fixes upscaled rendering.
   metadata:
@@ -54974,6 +54982,7 @@ SLES-00487:
     - PlayStationMouse
   traits:
     - DisablePGXP # 2.5D, not beneficial.
+    - DisableWidescreen # No effect.
   settings:
     gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
   metadata:
@@ -54997,6 +55006,7 @@ SLPS-00727:
     - PlayStationMouse
   traits:
     - DisablePGXP # 2.5D, not beneficial.
+    - DisableWidescreen # No effect.
   settings:
     gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
   metadata:
@@ -55023,6 +55033,7 @@ SLUS-00331:
     - PlayStationMouse
   traits:
     - DisablePGXP # 2.5D, not beneficial.
+    - DisableWidescreen # No effect.
   settings:
     gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
   metadata:
@@ -68049,6 +68060,8 @@ SCPS-10006:
   compatibility:
     rating: NoIssues
     versionTested: "0.1-4525-gdfd67664"
+  traits:
+    - DisableWidescreen # No effect.
   controllers:
     - DigitalController
   codes:
@@ -71028,6 +71041,7 @@ SLES-00555:
     - DigitalController
   traits:
     - DisablePGXP # 2.5D, not beneficial.
+    - DisableWidescreen # No effect.
   settings:
     gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
   metadata:
@@ -71053,6 +71067,7 @@ SLUS-00348:
     - DigitalController
   traits:
     - DisablePGXP # 2.5D, not beneficial.
+    - DisableWidescreen # No effect.
   settings:
     gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
   metadata:
@@ -71075,6 +71090,7 @@ SLPS-00972:
     - DigitalController
   traits:
     - DisablePGXP # 2.5D, not beneficial.
+    - DisableWidescreen # No effect.
   settings:
     gpuLineDetectMode: BasicTriangles # Fixes upscaled rendering.
   metadata:
@@ -101336,8 +101352,7 @@ SLPS-00047:
   controllers:
     - DigitalController
   codes:
-    - SLPS-00047
-    - SLPS-02104
+    - HASH-F6005ABBC40728D4
   metadata:
     publisher: "Altron"
     developer: "Altron"
@@ -130311,6 +130326,8 @@ SCES-00004:
   compatibility:
     rating: NoIssues
     versionTested: "0.1-1308-g622e50fa"
+  traits:
+    - DisableWidescreen # No effect.
   controllers:
     - DigitalController
   metadata:
@@ -153514,6 +153531,7 @@ SLES-00585:
     - DigitalController
   traits:
     - DisablePGXP # 2.5D, PGXP is not beneficial.
+    - DisableWidescreen # No effect.
   settings:
     gpuLineDetectMode: AggressiveTriangles # Fixes upscaled rendering.
   metadata:
@@ -153536,6 +153554,7 @@ SLES-00640:
     - DigitalController
   traits:
     - DisablePGXP # 2.5D, PGXP is not beneficial.
+    - DisableWidescreen # No effect.
   settings:
     gpuLineDetectMode: AggressiveTriangles # Fixes upscaled rendering.
   metadata:
@@ -153559,6 +153578,7 @@ SLPS-00685:
     - DigitalController
   traits:
     - DisablePGXP # 2.5D, PGXP is not beneficial.
+    - DisableWidescreen # No effect.
   settings:
     gpuLineDetectMode: AggressiveTriangles # Fixes upscaled rendering.
   metadata:
@@ -153581,6 +153601,7 @@ SLES-00646:
     - DigitalController
   traits:
     - DisablePGXP # 2.5D, PGXP is not beneficial.
+    - DisableWidescreen # No effect.
   settings:
     gpuLineDetectMode: AggressiveTriangles # Fixes upscaled rendering.
   metadata:
@@ -153607,6 +153628,7 @@ SLUS-00297:
     - DigitalController
   traits:
     - DisablePGXP # 2.5D, PGXP is not beneficial.
+    - DisableWidescreen # No effect.
   settings:
     gpuLineDetectMode: AggressiveTriangles # Fixes upscaled rendering.
   metadata:
