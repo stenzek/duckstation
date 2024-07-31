@@ -112695,6 +112695,7 @@ SLPS-00050:
 SCES-00582:
   name: "Nightmare Creatures (Europe)"
   controllers:
+    - AnalogController
     - DigitalController
   metadata:
     publisher: "Activision"
@@ -112713,6 +112714,7 @@ SCES-00582:
 SCES-00684:
   name: "Nightmare Creatures (Germany)"
   controllers:
+    - AnalogController
     - DigitalController
   metadata:
     publisher: "Activision"
@@ -112731,6 +112733,7 @@ SCES-00684:
 SIPS-60027:
   name: "Nightmare Creatures (Japan)"
   controllers:
+    - AnalogController
     - DigitalController
   metadata:
     publisher: "Sony"
@@ -112754,6 +112757,7 @@ SLUS-00582:
     rating: NoIssues
     versionTested: "0.1-986-gfc911de1"
   controllers:
+    - AnalogController
     - DigitalController
   metadata:
     publisher: "Activision"
