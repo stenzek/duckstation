@@ -4,8 +4,8 @@
 #pragma once
 #include "gpu_types.h"
 #include "timers.h"
-#include "types.h"
 #include "timing_event.h"
+#include "types.h"
 
 #include "util/gpu_texture.h"
 
@@ -207,7 +207,8 @@ public:
   virtual void FlushRender() = 0;
 
   /// Helper function for computing the draw rectangle in a larger window.
-  GSVector4i CalculateDrawRect(s32 window_width, s32 window_height, bool apply_rotation, bool apply_aspect_ratio) const;
+  GSVector4i CalculateDrawRect(s32 window_width, s32 window_height, bool apply_rotation, bool apply_aspect_ratio,
+                               GSVector4i* padded_rect = nullptr) const;
 
   /// Helper function to save current display texture to PNG.
   bool WriteDisplayTextureToFile(std::string filename, bool compress_on_thread = false);
@@ -343,8 +344,7 @@ protected:
 
     AddCommandTicks(pixels);
   }
-  ALWAYS_INLINE_RELEASE void AddDrawRectangleTicks(const GSVector4i clamped_rect, bool textured,
-                                                   bool semitransparent)
+  ALWAYS_INLINE_RELEASE void AddDrawRectangleTicks(const GSVector4i clamped_rect, bool textured, bool semitransparent)
   {
     u32 drawn_width = clamped_rect.width();
     u32 drawn_height = clamped_rect.height();
@@ -591,7 +591,7 @@ protected:
   void SetDisplayTexture(GPUTexture* texture, GPUTexture* depth_texture, s32 view_x, s32 view_y, s32 view_width,
                          s32 view_height);
 
-  bool RenderDisplay(GPUTexture* target, const GSVector4i draw_rect, bool postfx);
+  bool RenderDisplay(GPUTexture* target, const GSVector4i draw_rect, const GSVector4i padded_draw_rect, bool postfx);
 
   bool Deinterlace(u32 field, u32 line_skip);
   bool DeinterlaceExtractField(u32 dst_bufidx, GPUTexture* src, u32 x, u32 y, u32 width, u32 height, u32 line_skip);
