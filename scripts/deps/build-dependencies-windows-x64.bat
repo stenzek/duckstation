@@ -46,14 +46,14 @@ set LIBJPEG=9f
 set LIBPNG=1643
 set QT=6.7.2
 set QTMINOR=6.7
-set SDL2=2.30.5
+set SDL2=2.30.6
 set WEBP=1.4.0
 set ZLIB=1.3.1
 set ZLIBSHORT=131
 set ZSTD=1.5.6
 
 set CPUINFO=7524ad504fdcfcf75a18a133da6abd75c5d48053
-set DISCORD_RPC=842c15192041f8e71c512851834f4dadb1a554fb
+set DISCORD_RPC=144f3a3f1209994d8d9e8a87964a989cb9911c1e
 set SHADERC=feb2460bf3a504d67011246edeb810c45ea58826
 set SOUNDTOUCH=463ade388f3a51da078dc9ed062bf28e4ba29da7
 set SPIRV_CROSS=vulkan-sdk-1.3.290.0
@@ -62,7 +62,7 @@ call :downloadfile "freetype-%FREETYPE%.tar.gz" https://download.savannah.gnu.or
 call :downloadfile "harfbuzz-%HARFBUZZ%.zip" https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip b2bc56184ae37324bc4829fde7d3f9e6916866ad711ee85792e457547c9fd127 || goto error
 call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lpng1643.zip fc466a1e638e635d6c66363bdf3f38555b81b0141d0b06ba45b49ccca327436d || goto error
 call :downloadfile "jpegsr%LIBJPEG%.zip" https://ijg.org/files/jpegsr%LIBJPEG%.zip 6255da8c89e09d694e6800688c76145eb6870a76ac0d36c74fccd61b3940aafa || goto error
-call :downloadfile "SDL2-%SDL2%.zip" "https://github.com/libsdl-org/SDL/releases/download/release-%SDL2%/SDL2-%SDL2%.zip" 688d3da2bf7e887d0ba8e0f81c926119f85029544f4f6da8dea96db70f9d28e3 || goto error
+call :downloadfile "SDL2-%SDL2%.zip" "https://github.com/libsdl-org/SDL/releases/download/release-%SDL2%/SDL2-%SDL2%.zip" 6d4e00fcbee9fd8985cc2869edeb0b1a751912b87506cf2fb6471e73d981e1f4 || goto error
 call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" 488119aad60719a085a1e45c31641ac2406ef86fc088a3c99885c18e9d6b4bb9 || goto error
 call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" 8e736b02db7dd67dbe834d56503b242344ce85d3532da692f1812b30ccf80997 || goto error
 call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtsvg-everywhere-src-%QT%.zip" 85a22142270a92be0dd0ab5d27cc53617b2a2f1a45fc0a3890024164032f8475 || goto error
@@ -74,7 +74,7 @@ call :downloadfile "zstd-%ZSTD%.zip" "https://github.com/facebook/zstd/archive/r
 call :downloadfile "zstd-fd5f8106a58601a963ee816e6a57aa7c61fafc53.patch" https://github.com/facebook/zstd/commit/fd5f8106a58601a963ee816e6a57aa7c61fafc53.patch 675f144b11f8ab2424b64bed8ccdca5d3f35b9326046fa7a883925dd180f0651 || goto error
 
 call :downloadfile "cpuinfo-%CPUINFO%.zip" "https://github.com/pytorch/cpuinfo/archive/%CPUINFO%.zip" 13146ae7983d767a678dd01b0d6af591e77cec82babd41264b9164ab808d7d41 || goto error
-call :downloadfile "discord-rpc-%DISCORD_RPC%.zip" "https://github.com/stenzek/discord-rpc/archive/%DISCORD_RPC%.zip" 2a32201439fc2ddfc9c0ea4f4f7cfce40706983b9abac22cdba4ce750bcb55a1 || goto error
+call :downloadfile "discord-rpc-%DISCORD_RPC%.zip" "https://github.com/stenzek/discord-rpc/archive/%DISCORD_RPC%.zip" 61e185e75d37b360c314125bcdf4697192d15e2d5209db3306ed6cd736d508b3 || goto error
 call :downloadfile "shaderc-%SHADERC%.zip" "https://github.com/stenzek/shaderc/archive/%SHADERC%.zip" a50687a3903328976c3a49f6ba6326196f7713660048957eb033408630af70b1 || goto error
 call :downloadfile "soundtouch-%SOUNDTOUCH%.zip" "https://github.com/stenzek/soundtouch/archive/%SOUNDTOUCH%.zip" 107a1941181a69abe28018b9ad26fc0218625758ac193bc979abc9e26b7c0c3a || goto error
 

@@ -13,7 +13,7 @@
     {
       "type": "git",
       "url": "https://github.com/stenzek/discord-rpc.git",
-      "commit": "842c15192041f8e71c512851834f4dadb1a554fb"
+      "commit": "144f3a3f1209994d8d9e8a87964a989cb9911c1e"
     }
   ],
   "cleanup": [
