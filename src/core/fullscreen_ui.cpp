@@ -1172,7 +1172,7 @@ void FullscreenUI::DoChangeDisc()
   if (const GameDatabase::Entry* entry = System::GetGameDatabaseEntry(); entry && !entry->disc_set_serials.empty())
   {
     const auto lock = GameList::GetLock();
-    const auto matches = GameList::GetMatchingEntriesForSerial(entry->disc_set_serials);
+    auto matches = GameList::GetMatchingEntriesForSerial(entry->disc_set_serials);
     if (matches.size() > 1)
     {
       options.reserve(matches.size() + 1);
@@ -5759,7 +5759,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
       if (i == 0)
         ResetFocusHere();
 
-      const SaveStateListEntry& entry = s_save_state_selector_slots[i];
+      SaveStateListEntry& entry = s_save_state_selector_slots[i];
       if (static_cast<s32>(i) == s_save_state_selector_submenu_index)
       {
         // can't use a choice dialog here, because we're already in a modal...
@@ -6021,7 +6021,7 @@ void FullscreenUI::DrawResumeStateSelector()
   if (ImGui::BeginPopupModal(FSUI_CSTR("Load Resume State"), &is_open,
                              ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
   {
-    const SaveStateListEntry& entry = s_save_state_selector_slots.front();
+    SaveStateListEntry& entry = s_save_state_selector_slots.front();
     SmallString time;
     TimeToPrintableString(&time, entry.timestamp);
     ImGui::TextWrapped(

@@ -76,7 +76,7 @@ private:
   CacheIndex m_index;
 
   std::string m_base_filename;
-  u32 m_version;
+  u32 m_version = 0;
 
   std::FILE* m_index_file = nullptr;
   std::FILE* m_blob_file = nullptr;

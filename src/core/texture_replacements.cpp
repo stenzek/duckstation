@@ -215,6 +215,8 @@ void TextureReplacements::Reload()
 void TextureReplacements::PurgeUnreferencedTexturesFromCache()
 {
   TextureCache old_map = std::move(s_texture_cache);
+  s_texture_cache = {};
+
   for (const auto& it : s_vram_write_replacements)
   {
     auto it2 = old_map.find(it.second);

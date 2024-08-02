@@ -1399,8 +1399,11 @@ template<MemoryAccessSize size>
 u32 Bus::HWHandlers::MemCtrlRead(PhysicalMemoryAddress address)
 {
   const u32 offset = address & MEMCTRL_MASK;
+  const u32 index = FIXUP_WORD_OFFSET(size, offset) / 4;
+  if (index >= std::size(s_MEMCTRL.regs)) [[unlikely]]
+    return 0;
 
-  u32 value = s_MEMCTRL.regs[FIXUP_WORD_OFFSET(size, offset) / 4];
+  u32 value = s_MEMCTRL.regs[index];
   value = FIXUP_WORD_READ_VALUE(size, offset, value);
   BUS_CYCLES(2);
   return value;
@@ -1411,6 +1414,9 @@ void Bus::HWHandlers::MemCtrlWrite(PhysicalMemoryAddress address, u32 value)
 {
   const u32 offset = address & MEMCTRL_MASK;
   const u32 index = FIXUP_WORD_OFFSET(size, offset) / 4;
+  if (index >= std::size(s_MEMCTRL.regs)) [[unlikely]]
+    return;
+
   value = FIXUP_WORD_WRITE_VALUE(size, offset, value);
 
   const u32 write_mask = (index == 8) ? COMDELAY::WRITE_MASK : MEMDELAY::WRITE_MASK;
@@ -1516,6 +1522,7 @@ u32 Bus::HWHandlers::CDROMRead(PhysicalMemoryAddress address)
       const u32 b3 = ZeroExtend32(CDROM::ReadRegister(offset + 3u));
       value = b0 | (b1 << 8) | (b2 << 16) | (b3 << 24);
     }
+    break;
 
     case MemoryAccessSize::HalfWord:
     {
@@ -1523,10 +1530,12 @@ u32 Bus::HWHandlers::CDROMRead(PhysicalMemoryAddress address)
       const u32 msb = ZeroExtend32(CDROM::ReadRegister(offset + 1u));
       value = lsb | (msb << 8);
     }
+    break;
 
     case MemoryAccessSize::Byte:
     default:
       value = ZeroExtend32(CDROM::ReadRegister(offset));
+      break;
   }
 
   BUS_CYCLES(Bus::g_cdrom_access_time[static_cast<u32>(size)]);

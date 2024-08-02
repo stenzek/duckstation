@@ -23,7 +23,7 @@ ShaderGen::ShaderGen(RenderAPI render_api, GPUShaderLanguage shader_language, bo
     m_glsl(shader_language == GPUShaderLanguage::GLSL || shader_language == GPUShaderLanguage::GLSLES ||
            shader_language == GPUShaderLanguage::GLSLVK),
     m_spirv(shader_language == GPUShaderLanguage::GLSLVK), m_supports_dual_source_blend(supports_dual_source_blend),
-    m_supports_framebuffer_fetch(supports_framebuffer_fetch), m_use_glsl_interface_blocks(false)
+    m_supports_framebuffer_fetch(supports_framebuffer_fetch)
 {
   if (m_glsl)
   {

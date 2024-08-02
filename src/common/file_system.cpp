@@ -505,7 +505,7 @@ std::string Path::Canonicalize(std::string_view path)
     {
       // current directory, so it can be skipped, unless it's the only component
       if (components.size() == 1)
-        new_components.push_back(std::move(component));
+        new_components.push_back(component);
     }
     else if (component == "..")
     {
@@ -513,12 +513,12 @@ std::string Path::Canonicalize(std::string_view path)
       if (!new_components.empty())
         new_components.pop_back();
       else
-        new_components.push_back(std::move(component));
+        new_components.push_back(component);
     }
     else
     {
       // anything else, preserve
-      new_components.push_back(std::move(component));
+      new_components.push_back(component);
     }
   }
 

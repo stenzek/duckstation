@@ -136,7 +136,7 @@ template<typename FBOType, FBOType (*FactoryFunc)(GPUTexture* const* rts, u32 nu
          void (*DestroyFunc)(FBOType fbo)>
 void GPUFramebufferManager<FBOType, FactoryFunc, DestroyFunc>::Clear()
 {
-  for (auto it : m_map)
+  for (const auto& it : m_map)
     DestroyFunc(it.second);
   m_map.clear();
 }

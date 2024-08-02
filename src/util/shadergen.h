@@ -72,8 +72,8 @@ protected:
   bool m_spirv;
   bool m_supports_dual_source_blend;
   bool m_supports_framebuffer_fetch;
-  bool m_use_glsl_interface_blocks;
-  bool m_use_glsl_binding_layout;
+  bool m_use_glsl_interface_blocks = false;
+  bool m_use_glsl_binding_layout = false;
   bool m_has_uniform_buffer = false;
 
   TinyString m_glsl_version_string;

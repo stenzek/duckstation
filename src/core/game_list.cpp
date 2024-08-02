@@ -1736,10 +1736,10 @@ std::string GameList::GetGameIconPath(std::string_view serial, std::string_view 
 
   // Try extracting an icon.
   Error error;
-  MemoryCardImage::DataArray data;
-  if (MemoryCardImage::LoadFromFile(&data, memcard_path.c_str(), &error))
+  std::unique_ptr<MemoryCardImage::DataArray> data = std::make_unique<MemoryCardImage::DataArray>();
+  if (MemoryCardImage::LoadFromFile(data.get(), memcard_path.c_str(), &error))
   {
-    std::vector<MemoryCardImage::FileInfo> files = MemoryCardImage::EnumerateFiles(data, false);
+    std::vector<MemoryCardImage::FileInfo> files = MemoryCardImage::EnumerateFiles(*data.get(), false);
     if (!files.empty())
     {
       const MemoryCardImage::FileInfo& fi = files.front();

@@ -248,10 +248,12 @@ void SmallStringBase::append_vsprintf(const char* format, va_list ap)
     va_copy(ap_copy, ap);
     const int ret = std::vsnprintf(buffer, buffer_size, format, ap_copy);
     va_end(ap_copy);
-    if (ret < 0 || ((u32)ret >= (buffer_size - 1)))
+    if (ret < 0 || (static_cast<u32>(ret) >= (buffer_size - 1)))
     {
       buffer_size *= 2;
       buffer = heap_buffer = reinterpret_cast<char*>(std::realloc(heap_buffer, buffer_size));
+      if (!buffer) [[unlikely]]
+        Panic("Memory allocation failed.");
       continue;
     }
 
@@ -303,7 +305,7 @@ void SmallStringBase::prepend_vsprintf(const char* format, va_list ArgPtr)
   // We have a 1KB byte buffer on the stack here. If this is too little, we'll grow it via the heap,
   // but 1KB should be enough for most strings.
   char stack_buffer[1024];
-  char* heap_buffer = NULL;
+  char* heap_buffer = nullptr;
   char* buffer = stack_buffer;
   u32 buffer_size = static_cast<u32>(std::size(stack_buffer));
   u32 written;
@@ -315,6 +317,8 @@ void SmallStringBase::prepend_vsprintf(const char* format, va_list ArgPtr)
     {
       buffer_size *= 2;
       buffer = heap_buffer = reinterpret_cast<char*>(std::realloc(heap_buffer, buffer_size));
+      if (!buffer) [[unlikely]]
+        Panic("Memory allocation failed.");
       continue;
     }
 

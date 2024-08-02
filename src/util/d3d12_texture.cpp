@@ -753,7 +753,7 @@ std::unique_ptr<GPUSampler> D3D12Device::CreateSampler(const GPUSampler::Config&
   if (!handle)
     return {};
 
-  return std::unique_ptr<GPUSampler>(new D3D12Sampler(std::move(handle)));
+  return std::unique_ptr<GPUSampler>(new D3D12Sampler(handle));
 }
 
 D3D12TextureBuffer::D3D12TextureBuffer(Format format, u32 size_in_elements) : GPUTextureBuffer(format, size_in_elements)

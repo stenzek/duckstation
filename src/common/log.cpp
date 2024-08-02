@@ -233,11 +233,11 @@ ALWAYS_INLINE_RELEASE void Log::FormatLogMessageAndPrintW(const char* channelNam
 
   wmessage_buflen =
     MultiByteToWideChar(CP_UTF8, 0, buffer.data(), static_cast<int>(buffer.size()), wmessage_buf, wmessage_buflen);
-  if (wmessage_buflen <= 0)
-    return;
-
-  wmessage_buf[wmessage_buflen] = '\0';
-  callback(std::wstring_view(wmessage_buf, wmessage_buflen));
+  if (wmessage_buflen > 0) [[likely]]
+  {
+    wmessage_buf[wmessage_buflen] = '\0';
+    callback(std::wstring_view(wmessage_buf, wmessage_buflen));
+  }
 
   if (wmessage_buf != wbuf)
     std::free(wmessage_buf);

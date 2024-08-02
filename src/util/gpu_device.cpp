@@ -415,7 +415,7 @@ void GPUDevice::OpenShaderCache(std::string_view base_path, u32 version)
   if (m_features.pipeline_cache && !base_path.empty())
   {
     const std::string basename = GetShaderCacheBaseName("pipelines");
-    const std::string filename = Path::Combine(base_path, TinyString::from_format("{}.bin", basename));
+    std::string filename = Path::Combine(base_path, TinyString::from_format("{}.bin", basename));
     if (ReadPipelineCache(filename))
       s_pipeline_cache_path = std::move(filename);
     else

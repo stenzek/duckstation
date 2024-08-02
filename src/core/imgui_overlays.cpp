@@ -239,7 +239,6 @@ void ImGuiManager::DrawPerformanceOverlay()
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
   SmallString text;
   ImVec2 text_size;
-  bool first = true;
 
 #define DRAW_LINE(font, text, color)                                                                                   \
   do                                                                                                                   \
@@ -260,21 +259,16 @@ void ImGuiManager::DrawPerformanceOverlay()
   {
     const float speed = System::GetEmulationSpeed();
     if (g_settings.display_show_fps)
-    {
       text.append_format("G: {:.2f} | V: {:.2f}", System::GetFPS(), System::GetVPS());
-      first = false;
-    }
     if (g_settings.display_show_speed)
     {
-      text.append_format("{}{}%", first ? "" : " | ", static_cast<u32>(std::round(speed)));
+      text.append_format("{}{}%", text.empty() ? "" : " | ", static_cast<u32>(std::round(speed)));
 
       const float target_speed = System::GetTargetSpeed();
       if (target_speed <= 0.0f)
         text.append(" (Max)");
       else
         text.append_format(" ({:.0f}%)", target_speed * 100.0f);
-
-      first = false;
     }
     if (!text.empty())
     {
@@ -325,7 +319,7 @@ void ImGuiManager::DrawPerformanceOverlay()
           g_settings.cpu_execution_mode != CPUExecutionMode::Recompiler || g_settings.cpu_recompiler_icache ||
           g_settings.cpu_recompiler_memory_exceptions)
       {
-        first = true;
+        bool first = true;
         text.assign("CPU[");
         if (g_settings.cpu_overclock_active)
         {

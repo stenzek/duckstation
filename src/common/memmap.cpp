@@ -67,12 +67,12 @@ std::string MemMap::GetFileMappingName(const char* prefix)
 void* MemMap::CreateSharedMemory(const char* name, size_t size, Error* error)
 {
   const HANDLE mapping =
-    static_cast<void*>(CreateFileMappingW(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, static_cast<DWORD>(size >> 32),
-                                          static_cast<DWORD>(size), StringUtil::UTF8StringToWideString(name).c_str()));
+    CreateFileMappingW(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, static_cast<DWORD>(size >> 32),
+                       static_cast<DWORD>(size), StringUtil::UTF8StringToWideString(name).c_str());
   if (!mapping)
     Error::SetWin32(error, "CreateFileMappingW() failed: ", GetLastError());
 
-  return mapping;
+  return static_cast<void*>(mapping);
 }
 
 void MemMap::DestroySharedMemory(void* ptr)

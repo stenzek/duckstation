@@ -42,9 +42,9 @@ public:
 
 private:
   ComPtr<ID3D11Buffer> m_buffer;
-  u32 m_size;
-  u32 m_max_size;
-  u32 m_position;
+  u32 m_size = 0;
+  u32 m_max_size = 0;
+  u32 m_position = 0;
   bool m_use_map_no_overwrite = false;
   bool m_mapped = false;
 };

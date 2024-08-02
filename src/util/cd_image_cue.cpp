@@ -86,7 +86,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Error* error)
     if (!track)
       break;
 
-    const std::string track_filename(track->file);
+    const std::string& track_filename = track->file;
     LBA track_start = track->start.ToLBA();
 
     u32 track_file_index = 0;
@@ -124,7 +124,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Error* error)
         return false;
       }
 
-      m_files.push_back(TrackFile{std::move(track_filename), track_fp, 0});
+      m_files.push_back(TrackFile{track_filename, track_fp, 0});
     }
 
     // data type determines the sector size

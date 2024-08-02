@@ -962,11 +962,11 @@ bool System::ReadExecutableFromImage(CDImage* cdi, std::string* out_executable_n
 bool System::ReadExecutableFromImage(IsoReader& iso, std::string* out_executable_name,
                                      std::vector<u8>* out_executable_data)
 {
-  const std::string executable_path = GetExecutableNameForImage(iso, false);
+  std::string executable_path = GetExecutableNameForImage(iso, false);
   DEV_LOG("Executable path: '{}'", executable_path);
   if (!executable_path.empty() && out_executable_data)
   {
-    if (!iso.ReadFile(executable_path.c_str(), out_executable_data))
+    if (!iso.ReadFile(executable_path, out_executable_data))
     {
       ERROR_LOG("Failed to read executable '{}' from disc", executable_path);
       return false;
@@ -993,26 +993,31 @@ System::GameHash System::GetGameHashFromBuffer(std::string_view exe_name, std::s
   return hash;
 }
 
-DiscRegion System::GetRegionForSerial(std::string_view serial)
+DiscRegion System::GetRegionForSerial(const std::string_view serial)
 {
-  std::string prefix;
-  for (size_t pos = 0; pos < serial.length(); pos++)
-  {
-    const int ch = std::tolower(serial[pos]);
-    if (ch < 'a' || ch > 'z')
-      break;
+  static constexpr const std::pair<const char*, DiscRegion> region_prefixes[] = {
+    {"sces", DiscRegion::PAL},
+    {"sced", DiscRegion::PAL},
+    {"sles", DiscRegion::PAL},
+    {"sled", DiscRegion::PAL},
 
-    prefix.push_back(static_cast<char>(ch));
+    {"scps", DiscRegion::NTSC_J},
+    {"slps", DiscRegion::NTSC_J},
+    {"slpm", DiscRegion::NTSC_J},
+    {"sczs", DiscRegion::NTSC_J},
+    {"papx", DiscRegion::NTSC_J},
+
+    {"scus", DiscRegion::NTSC_U},
+    {"slus", DiscRegion::NTSC_U},
+  };
+
+  for (const auto& [prefix, region] : region_prefixes)
+  {
+    if (StringUtil::StartsWithNoCase(serial, prefix))
+      return region;
   }
 
-  if (prefix == "sces" || prefix == "sced" || prefix == "sles" || prefix == "sled")
-    return DiscRegion::PAL;
-  else if (prefix == "scps" || prefix == "slps" || prefix == "slpm" || prefix == "sczs" || prefix == "papx")
-    return DiscRegion::NTSC_J;
-  else if (prefix == "scus" || prefix == "slus")
-    return DiscRegion::NTSC_U;
-  else
-    return DiscRegion::Other;
+  return DiscRegion::Other;
 }
 
 DiscRegion System::GetRegionFromSystemArea(CDImage* cdi)
@@ -1311,7 +1316,7 @@ bool System::UpdateGameSettingsLayer()
   std::unique_ptr<INISettingsInterface> input_interface;
   if (!input_profile_name.empty())
   {
-    const std::string filename(GetInputProfilePath(input_profile_name));
+    std::string filename = GetInputProfilePath(input_profile_name);
     if (FileSystem::FileExists(filename.c_str()))
     {
       INFO_LOG("Loading input profile from '{}'...", Path::GetFileName(filename));

@@ -55,6 +55,7 @@ AudioStream::AudioStream(u32 sample_rate, const AudioStreamParameters& parameter
 
 AudioStream::~AudioStream()
 {
+  StretchDestroy();
   DestroyBuffer();
 }
 

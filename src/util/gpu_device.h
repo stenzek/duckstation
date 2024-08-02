@@ -449,7 +449,7 @@ public:
 protected:
   Format m_format;
   u32 m_size_in_elements;
-  u32 m_current_position;
+  u32 m_current_position = 0;
 };
 
 class GPUDevice

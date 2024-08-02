@@ -11,11 +11,11 @@
 
 Log_SetChannel(D3D11Device);
 
-D3D11StreamBuffer::D3D11StreamBuffer() : m_size(0), m_position(0)
+D3D11StreamBuffer::D3D11StreamBuffer()
 {
 }
 
-D3D11StreamBuffer::D3D11StreamBuffer(ComPtr<ID3D11Buffer> buffer) : m_buffer(std::move(buffer)), m_position(0)
+D3D11StreamBuffer::D3D11StreamBuffer(ComPtr<ID3D11Buffer> buffer) : m_buffer(std::move(buffer))
 {
   D3D11_BUFFER_DESC desc;
   m_buffer->GetDesc(&desc);

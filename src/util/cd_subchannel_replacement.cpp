@@ -83,7 +83,7 @@ bool CDSubChannelReplacement::LoadSBI(const std::string& path)
     const u32 lba = MSFToLBA(entry.minute_bcd, entry.second_bcd, entry.frame_bcd);
 
     CDImage::SubChannelQ subq;
-    std::copy_n(entry.data, countof(entry.data), subq.data.data());
+    std::memcpy(subq.data.data(), entry.data, sizeof(entry.data));
 
     // generate an invalid crc by flipping all bits from the valid crc (will never collide)
     const u16 crc = subq.ComputeCRC(subq.data) ^ 0xFFFF;
@@ -119,7 +119,7 @@ bool CDSubChannelReplacement::LoadLSD(const std::string& path)
     const u32 lba = MSFToLBA(entry.minute_bcd, entry.second_bcd, entry.frame_bcd);
 
     CDImage::SubChannelQ subq;
-    std::copy_n(entry.data, countof(entry.data), subq.data.data());
+    std::memcpy(subq.data.data(), entry.data, sizeof(entry.data));
 
     DEBUG_LOG("{:02x}:{:02x}:{:02x}: CRC {}", entry.minute_bcd, entry.second_bcd, entry.frame_bcd,
               subq.IsCRCValid() ? "VALID" : "INVALID");

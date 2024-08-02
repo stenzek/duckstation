@@ -554,6 +554,7 @@ void OpenGLDevice::CommitRTClearInFB(OpenGLTexture* tex, u32 idx)
       glEnable(GL_SCISSOR_TEST);
       tex->SetState(GPUTexture::State::Dirty);
     }
+    break;
 
     case GPUTexture::State::Dirty:
       break;

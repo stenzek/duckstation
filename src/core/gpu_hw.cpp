@@ -2253,7 +2253,6 @@ void GPU_HW::DrawLine(const GSVector4 bounds, u32 col0, u32 col1, float depth)
     const float abs_dx = std::fabs(dx);
     const float abs_dy = std::fabs(dy);
     float fill_dx, fill_dy;
-    float dxdk, dydk;
     float pad_x0 = 0.0f;
     float pad_x1 = 0.0f;
     float pad_y0 = 0.0f;
@@ -2268,8 +2267,7 @@ void GPU_HW::DrawLine(const GSVector4 bounds, u32 col0, u32 col1, float depth)
     {
       fill_dx = 0.0f;
       fill_dy = 1.0f;
-      dxdk = 1.0f;
-      dydk = dy / abs_dx;
+      const float dydk = dy / abs_dx;
 
       if (dx > 0.0f)
       {
@@ -2288,8 +2286,7 @@ void GPU_HW::DrawLine(const GSVector4 bounds, u32 col0, u32 col1, float depth)
     {
       fill_dx = 1.0f;
       fill_dy = 0.0f;
-      dydk = 1.0f;
-      dxdk = dx / abs_dy;
+      const float dxdk = dx / abs_dy;
 
       if (dy > 0.0f)
       {

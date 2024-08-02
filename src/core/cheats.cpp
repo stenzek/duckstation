@@ -661,8 +661,10 @@ bool CheatList::LoadFromString(const std::string& str, Format format)
     return LoadFromPCSXRString(str);
   else if (format == Format::Libretro)
     return LoadFromLibretroString(str);
-  format = Format::EPSXe;
-  return LoadFromEPSXeString(str);
+  else if (format == Format::EPSXe)
+    return LoadFromEPSXeString(str);
+  else
+    return false;
 }
 
 bool CheatList::SaveToPCSXRFile(const char* filename)
@@ -2782,7 +2784,7 @@ const char* CheatCode::GetTypeDisplayName(Type type)
 
 std::optional<CheatCode::Type> CheatCode::ParseTypeName(const char* str)
 {
-  for (u32 i = 0; i < static_cast<u32>(s_cheat_code_type_names.size()); i++)
+  for (size_t i = 0; i < s_cheat_code_type_names.size(); i++)
   {
     if (std::strcmp(s_cheat_code_type_names[i], str) == 0)
       return static_cast<Type>(i);

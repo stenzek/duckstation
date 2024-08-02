@@ -75,7 +75,7 @@ std::optional<InputBindingKey> InputSource::ParseGenericControllerKey(InputSourc
     return std::nullopt;
 
   const std::optional<s32> source_index = StringUtil::FromChars<s32>(source.substr(pos));
-  if (source_index.has_value() || source_index.value() < 0)
+  if (!source_index.has_value() || source_index.value() < 0)
     return std::nullopt;
 
   InputBindingKey key = {};

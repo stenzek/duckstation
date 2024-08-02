@@ -365,7 +365,7 @@ bool CueParser::File::HandlePregapCommand(const char* line, u32 line_number, Err
     return false;
   }
 
-  m_current_track->zero_pregap = std::move(msf);
+  m_current_track->zero_pregap = msf;
   return true;
 }
 

@@ -142,7 +142,7 @@ bool ReadExecutableFromImage(CDImage* cdi, std::string* out_executable_name, std
 std::string GetGameHashId(GameHash hash);
 bool GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash* out_hash);
 GameHash GetGameHashFromFile(const char* path);
-DiscRegion GetRegionForSerial(std::string_view serial);
+DiscRegion GetRegionForSerial(const std::string_view serial);
 DiscRegion GetRegionFromSystemArea(CDImage* cdi);
 DiscRegion GetRegionForImage(CDImage* cdi);
 DiscRegion GetRegionForExe(const char* path);

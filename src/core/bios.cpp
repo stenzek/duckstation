@@ -351,7 +351,7 @@ std::optional<BIOS::Image> BIOS::FindBIOSImageInDirectory(ConsoleRegion region, 
 
     std::string full_path(Path::Combine(directory, fd.FileName));
     std::optional<Image> found_image = LoadImageFromFile(full_path.c_str(), nullptr);
-    if (!found_image)
+    if (!found_image.has_value())
       continue;
 
     if (found_image->info && IsValidBIOSForRegion(region, found_image->info->region))
