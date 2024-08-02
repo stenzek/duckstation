@@ -219,9 +219,6 @@
     <ProjectReference Include="..\..\dep\reshadefx\reshadefx.vcxproj">
       <Project>{27b8d4bb-4f01-4432-bc14-9bf6ca458eee}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\dep\soundtouch\soundtouch.vcxproj">
-      <Project>{751d9f62-881c-454e-bce8-cb9cf5f1d22f}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\dep\glad\glad.vcxproj" Condition="'$(Platform)'!='ARM64'">
       <Project>{43540154-9e1e-409c-834f-b84be5621388}</Project>
     </ProjectReference>
