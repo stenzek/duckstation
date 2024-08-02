@@ -1814,8 +1814,6 @@ void System::DestroySystem()
 
   ClearMemorySaveStates();
 
-  TextureReplacements::Shutdown();
-
   PCDrv::Shutdown();
   SIO::Shutdown();
   MDEC::Shutdown();
@@ -1830,6 +1828,7 @@ void System::DestroySystem()
   Bus::Shutdown();
   CPU::Shutdown();
   TimingEvents::Shutdown();
+  TextureReplacements::Shutdown();
   ClearRunningGame();
 
   // Restore present-all-frames behavior.
@@ -4182,6 +4181,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.gpu_downsample_mode != old_settings.gpu_downsample_mode ||
         g_settings.gpu_downsample_scale != old_settings.gpu_downsample_scale ||
         g_settings.gpu_wireframe_mode != old_settings.gpu_wireframe_mode ||
+        g_settings.gpu_texture_cache != old_settings.gpu_texture_cache ||
         g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode ||
         g_settings.display_24bit_chroma_smoothing != old_settings.display_24bit_chroma_smoothing ||
         g_settings.display_crop_mode != old_settings.display_crop_mode ||
@@ -4197,7 +4197,10 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.display_line_start_offset != old_settings.display_line_start_offset ||
         g_settings.display_line_end_offset != old_settings.display_line_end_offset ||
         g_settings.rewind_enable != old_settings.rewind_enable ||
-        g_settings.runahead_frames != old_settings.runahead_frames)
+        g_settings.runahead_frames != old_settings.runahead_frames ||
+        g_settings.texture_replacements.dump_textures != old_settings.texture_replacements.dump_textures ||
+        g_settings.texture_replacements.enable_texture_replacements !=
+          old_settings.texture_replacements.enable_texture_replacements)
     {
       g_gpu->UpdateSettings(old_settings);
       if (IsPaused())
@@ -4250,10 +4253,14 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
 
     if (g_settings.texture_replacements.enable_vram_write_replacements !=
           old_settings.texture_replacements.enable_vram_write_replacements ||
+        g_settings.texture_replacements.enable_texture_replacements !=
+          old_settings.texture_replacements.enable_texture_replacements ||
         g_settings.texture_replacements.preload_textures != old_settings.texture_replacements.preload_textures)
     {
       TextureReplacements::Reload();
     }
+    if (g_settings.texture_replacements.config != old_settings.texture_replacements.config)
+      TextureReplacements::UpdateConfiguration();
 
     if (g_settings.audio_backend != old_settings.audio_backend ||
         g_settings.increase_timer_resolution != old_settings.increase_timer_resolution ||
@@ -4416,6 +4423,13 @@ void System::WarnAboutUnsafeSettings()
     if (g_settings.enable_8mb_ram)
       append(ICON_FA_MICROCHIP,
              TRANSLATE_SV("System", "8MB RAM is enabled, this may be incompatible with some games."));
+    if (g_settings.gpu_texture_cache)
+    {
+      append(
+        ICON_FA_PAINT_ROLLER,
+        TRANSLATE_SV("System",
+                     "Texture cache is enabled. This feature is experimental, some games may not render correctly."));
+    }
   }
   else
   {

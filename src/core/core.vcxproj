@@ -47,6 +47,7 @@
     <ClCompile Include="gpu_backend.cpp" />
     <ClCompile Include="gpu_commands.cpp" />
     <ClCompile Include="gpu_hw_shadergen.cpp" />
+    <ClCompile Include="gpu_hw_texture_cache.cpp" />
     <ClCompile Include="gpu_shadergen.cpp" />
     <ClCompile Include="gpu_sw.cpp" />
     <ClCompile Include="gpu_sw_backend.cpp" />
@@ -125,6 +126,7 @@
     <ClInclude Include="gdb_server.h" />
     <ClInclude Include="gpu_backend.h" />
     <ClInclude Include="gpu_hw_shadergen.h" />
+    <ClInclude Include="gpu_hw_texture_cache.h" />
     <ClInclude Include="gpu_shadergen.h" />
     <ClInclude Include="gpu_sw.h" />
     <ClInclude Include="gpu_sw_backend.h" />

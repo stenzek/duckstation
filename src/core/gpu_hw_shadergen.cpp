@@ -57,13 +57,14 @@ void GPU_HW_ShaderGen::WriteBatchUniformBuffer(std::stringstream& ss)
                        false);
 }
 
-std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured, bool palette, bool uv_limits,
+std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured, bool palette, bool page_texture, bool uv_limits,
                                                         bool force_round_texcoords, bool pgxp_depth)
 {
   std::stringstream ss;
   WriteHeader(ss);
   DefineMacro(ss, "TEXTURED", textured);
   DefineMacro(ss, "PALETTE", palette);
+  DefineMacro(ss, "PAGE_TEXTURE", page_texture);
   DefineMacro(ss, "UV_LIMITS", uv_limits);
   DefineMacro(ss, "FORCE_ROUND_TEXCOORDS", force_round_texcoords);
   DefineMacro(ss, "PGXP_DEPTH", pgxp_depth);
@@ -71,7 +72,22 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured, bool pale
   WriteCommonFunctions(ss);
   WriteBatchUniformBuffer(ss);
 
-  if (textured)
+  if (textured && page_texture)
+  {
+    if (uv_limits)
+    {
+      DeclareVertexEntryPoint(
+        ss, {"float4 a_pos", "float4 a_col0", "uint a_texcoord", "uint a_texpage", "float4 a_uv_limits"}, 1, 1,
+        {{"nointerpolation", "float4 v_uv_limits"}}, false, "", UsingMSAA(), UsingPerSampleShading(),
+        m_disable_color_perspective);
+    }
+    else
+    {
+      DeclareVertexEntryPoint(ss, {"float4 a_pos", "float4 a_col0", "uint a_texcoord", "uint a_texpage"}, 1, 1, {},
+                              false, "", UsingMSAA(), UsingPerSampleShading(), m_disable_color_perspective);
+    }
+  }
+  else if (textured)
   {
     if (uv_limits)
     {
@@ -129,16 +145,18 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured, bool pale
   v_col0 = a_col0;
   #if TEXTURED
     v_tex0 = float2(uint2(a_texcoord & 0xFFFFu, a_texcoord >> 16));
-    #if !PALETTE
+    #if !PALETTE && !PAGE_TEXTURE
       v_tex0 *= float(RESOLUTION_SCALE);
     #endif
 
-    // base_x,base_y,palette_x,palette_y
-    v_texpage.x = (a_texpage & 15u) * 64u;
-    v_texpage.y = ((a_texpage >> 4) & 1u) * 256u;
-    #if PALETTE
-      v_texpage.z = ((a_texpage >> 16) & 63u) * 16u;
-      v_texpage.w = ((a_texpage >> 22) & 511u);
+    #if !PAGE_TEXTURE
+      // base_x,base_y,palette_x,palette_y
+      v_texpage.x = (a_texpage & 15u) * 64u;
+      v_texpage.y = ((a_texpage >> 4) & 1u) * 256u;
+      #if PALETTE
+        v_texpage.z = ((a_texpage >> 16) & 63u) * 16u;
+        v_texpage.w = ((a_texpage >> 22) & 511u);
+      #endif
     #endif
 
     #if UV_LIMITS
@@ -148,7 +166,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured, bool pale
         // Add 0.5 to the upper bounds when upscaling, to work around interpolation differences.
         // Limited to force-round-texcoord hack, to avoid breaking other games.
         v_uv_limits.zw += 0.5;
-      #elif !PALETTE
+      #elif !PAGE_TEXTURE && !PALETTE
         // Treat coordinates as being in upscaled space, and extend the UV range to all "upscaled"
         // pixels. This means 1-pixel-high polygon-based framebuffer effects won't be downsampled.
         // (e.g. Mega Man Legends 2 haze effect)
@@ -660,6 +678,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(
   const bool textured = (texture_mode != GPU_HW::BatchTextureMode::Disabled);
   const bool palette =
     (texture_mode == GPU_HW::BatchTextureMode::Palette4Bit || texture_mode == GPU_HW::BatchTextureMode::Palette8Bit);
+  const bool page_texture = (texture_mode == GPU_HW::BatchTextureMode::PageTexture);
   const bool shader_blending = (render_mode == GPU_HW::BatchRenderMode::ShaderBlend);
   const bool use_dual_source = (!shader_blending && !use_rov && m_supports_dual_source_blend &&
                                 ((render_mode != GPU_HW::BatchRenderMode::TransparencyDisabled &&
@@ -678,6 +697,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(
   DefineMacro(ss, "PALETTE", palette);
   DefineMacro(ss, "PALETTE_4_BIT", texture_mode == GPU_HW::BatchTextureMode::Palette4Bit);
   DefineMacro(ss, "PALETTE_8_BIT", texture_mode == GPU_HW::BatchTextureMode::Palette8Bit);
+  DefineMacro(ss, "PAGE_TEXTURE", page_texture);
   DefineMacro(ss, "DITHERING", dithering);
   DefineMacro(ss, "DITHERING_SCALED", m_scaled_dithering);
   // Debanding requires true color to work correctly.
@@ -760,6 +780,8 @@ uint2 FloatToIntegerCoords(float2 coords)
   return uint2((RESOLUTION_SCALE == 1u || FORCE_ROUND_TEXCOORDS != 0) ? roundEven(coords) : floor(coords));
 }
 
+#if !PAGE_TEXTURE
+
 float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
 {
   #if PALETTE
@@ -813,7 +835,20 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
   #endif
 }
 
+#else
+
+float4 SampleFromPageTexture(float2 coords)
+{
+  // Cached textures.
+  float2 fpart = frac(coords);
+  uint2 icoord = ApplyTextureWindow(FloatToIntegerCoords(coords));
+  coords = (float2(icoord) + fpart) * (1.0f / 256.0f);
+  return SAMPLE_TEXTURE(samp0, coords);
+}
+
 #endif
+
+#endif // TEXTURED
 
 // From https://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
 // and https://www.shadertoy.com/view/MslGR8 (5th one starting from the bottom)
@@ -835,7 +870,22 @@ float3 ApplyDebanding(float2 frag_coord)
 )";
 
   const u32 num_fragment_outputs = use_rov ? 0 : (use_dual_source ? 2 : 1);
-  if (textured)
+  if (textured && page_texture)
+  {
+    if (uv_limits)
+    {
+      DeclareFragmentEntryPoint(ss, 1, 1, {{"nointerpolation", "float4 v_uv_limits"}}, true, num_fragment_outputs,
+                                use_dual_source, m_write_mask_as_depth, UsingMSAA(), UsingPerSampleShading(), false,
+                                m_disable_color_perspective, shader_blending && !use_rov, use_rov);
+    }
+    else
+    {
+      DeclareFragmentEntryPoint(ss, 1, 1, {}, true, num_fragment_outputs, use_dual_source, m_write_mask_as_depth,
+                                UsingMSAA(), UsingPerSampleShading(), false, m_disable_color_perspective,
+                                shader_blending && !use_rov, use_rov);
+    }
+  }
+  else if (textured)
   {
     if (texture_filtering != GPUTextureFilter::Nearest)
       WriteBatchTextureFilter(ss, texture_filtering);
@@ -881,7 +931,17 @@ float3 ApplyDebanding(float2 frag_coord)
 
   #if TEXTURED
     float4 texcol;
-    #if TEXTURE_FILTERING
+    #if PAGE_TEXTURE
+      #if UV_LIMITS
+        texcol = SampleFromPageTexture(clamp(v_tex0, v_uv_limits.xy, v_uv_limits.zw));
+      #else
+        texcol = SampleFromPageTexture(v_tex0);
+      #endif
+      if (VECTOR_EQ(texcol, TRANSPARENT_PIXEL_COLOR))
+        discard;
+
+      ialpha = 1.0;
+    #elif TEXTURE_FILTERING
       FilteredSampleFromVRAM(v_texpage, v_tex0, v_uv_limits, texcol, ialpha);
       if (ialpha < 0.5)
         discard;
@@ -1675,6 +1735,36 @@ std::string GPU_HW_ShaderGen::GenerateBoxSampleDownsampleFragmentShader(u32 fact
   }
   color /= float(FACTOR * FACTOR);
   o_col0 = float4(color, 1.0);
+}
+)";
+
+  return ss.str();
+}
+
+std::string GPU_HW_ShaderGen::GenerateReplacementMergeFragmentShader(bool semitransparent)
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  DefineMacro(ss, "SEMITRANSPARENT", semitransparent);
+  DeclareUniformBuffer(ss, {"float4 u_src_rect"}, true);
+  DeclareTexture(ss, "samp0", 0);
+  DeclareFragmentEntryPoint(ss, 0, 1);
+
+  ss << R"(
+{
+  float2 coords = u_src_rect.xy + v_tex0 * u_src_rect.zw;
+  float4 color = SAMPLE_TEXTURE(samp0, coords);
+  o_col0.rgb = color.rgb;
+
+  // Alpha processing.
+  #if SEMITRANSPARENT
+    // Map anything not 255 to 1 for semitransparent, otherwise zero for opaque.
+    o_col0.a = (color.a <= 0.95f) ? 1.0f : 0.0f;
+    o_col0.a = VECTOR_EQ(color, float4(0.0, 0.0, 0.0, 0.0)) ? 0.0f : o_col0.a;
+  #else
+    // Leave (0,0,0,0) as 0000 for opaque replacements for cutout alpha.
+    o_col0.a = color.a;
+  #endif
 }
 )";
 

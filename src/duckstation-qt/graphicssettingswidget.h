@@ -32,8 +32,9 @@ private Q_SLOTS:
   void updateResolutionDependentOptions();
   void onTrueColorChanged();
   void onDownsampleModeChanged();
+  void onEnableTextureCacheChanged();
   void onEnableAnyTextureReplacementsChanged();
-  void onEnableVRAMWriteDumpingChanged();
+  void onTextureReplacementOptionsClicked();
 
 private:
   static constexpr int TAB_INDEX_RENDERING = 0;

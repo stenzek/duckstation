@@ -344,6 +344,9 @@
     <QtUi Include="selectdiscdialog.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="texturereplacementsettingsdialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <None Include="translations\duckstation-qt_es-es.ts" />
     <None Include="translations\duckstation-qt_tr.ts" />
   </ItemGroup>

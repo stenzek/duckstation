@@ -4,6 +4,7 @@
 #pragma once
 
 #include "gpu.h"
+#include "gpu_hw_texture_cache.h"
 #include "texture_replacements.h"
 
 #include "util/gpu_device.h"
@@ -40,6 +41,7 @@ public:
     Palette4Bit,
     Palette8Bit,
     Direct16Bit,
+    PageTexture,
     Disabled,
 
     SpritePalette4Bit,
@@ -53,6 +55,11 @@ public:
   static_assert(static_cast<u8>(BatchTextureMode::Palette4Bit) == static_cast<u8>(GPUTextureMode::Palette4Bit) &&
                 static_cast<u8>(BatchTextureMode::Palette8Bit) == static_cast<u8>(GPUTextureMode::Palette8Bit) &&
                 static_cast<u8>(BatchTextureMode::Direct16Bit) == static_cast<u8>(GPUTextureMode::Direct16Bit));
+
+  static constexpr GSVector4i VRAM_SIZE_RECT = GSVector4i::cxpr(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+  static constexpr GSVector4i INVALID_RECT =
+    GSVector4i::cxpr(std::numeric_limits<s32>::max(), std::numeric_limits<s32>::max(), std::numeric_limits<s32>::min(),
+                     std::numeric_limits<s32>::min());
 
   GPU_HW();
   ~GPU_HW() override;
@@ -85,6 +92,8 @@ private:
   {
     TEXPAGE_DIRTY_DRAWN_RECT = (1 << 0),
     TEXPAGE_DIRTY_WRITTEN_RECT = (1 << 1),
+    TEXPAGE_DIRTY_PAGE_RECT = (1 << 2),
+    TEXPAGE_DIRTY_ONLY_UV_RECT = (1 << 3),
   };
 
   static_assert(GPUDevice::MIN_TEXEL_BUFFER_ELEMENTS >= (VRAM_WIDTH * VRAM_HEIGHT));
@@ -118,6 +127,8 @@ private:
     bool use_depth_buffer = false;
     bool sprite_mode = false;
 
+    GPUTextureCache::SourceKey texture_cache_key = {};
+
     // Returns the render mode for this batch.
     BatchRenderMode GetRenderMode() const;
   };
@@ -137,11 +148,6 @@ private:
     u32 num_vram_read_texture_updates;
     u32 num_uniform_buffer_updates;
   };
-
-  static constexpr GSVector4i VRAM_SIZE_RECT = GSVector4i::cxpr(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
-  static constexpr GSVector4i INVALID_RECT =
-    GSVector4i::cxpr(std::numeric_limits<s32>::max(), std::numeric_limits<s32>::max(), std::numeric_limits<s32>::min(),
-                     std::numeric_limits<s32>::min());
 
   /// Returns true if a depth buffer should be created.
   GPUTexture::Format GetDepthBufferFormat() const;
@@ -167,7 +173,8 @@ private:
   void DeactivateROV();
   void MapGPUBuffer(u32 required_vertices, u32 required_indices);
   void UnmapGPUBuffer(u32 used_vertices, u32 used_indices);
-  void DrawBatchVertices(BatchRenderMode render_mode, u32 num_indices, u32 base_index, u32 base_vertex);
+  void DrawBatchVertices(BatchRenderMode render_mode, u32 num_indices, u32 base_index, u32 base_vertex,
+                         const GPUTextureCache::Source* texture);
 
   u32 CalculateResolutionScale() const;
   GPUDownsampleMode GetDownsampleMode(u32 resolution_scale) const;
@@ -184,6 +191,7 @@ private:
   void SetTexPageChangedOnOverlap(const GSVector4i update_rect);
 
   void CheckForTexPageOverlap(GSVector4i uv_rect);
+  bool ShouldCheckForTexPageOverlap() const;
 
   bool IsFlushed() const;
   void EnsureVertexBufferSpace(u32 required_vertices, u32 required_indices);
@@ -288,6 +296,9 @@ private:
   bool m_texture_window_active : 1 = false;
   bool m_rov_active : 1 = false;
 
+  bool m_use_texture_cache : 1 = false;
+  bool m_texture_dumping : 1 = false;
+
   u8 m_texpage_dirty = 0;
 
   BatchConfig m_batch;
@@ -298,8 +309,9 @@ private:
 
   // Bounding box of VRAM area that the GPU has drawn into.
   GSVector4i m_vram_dirty_draw_rect = INVALID_RECT;
-  GSVector4i m_vram_dirty_write_rect = INVALID_RECT;
+  GSVector4i m_vram_dirty_write_rect = INVALID_RECT; // TODO: Don't use in TC mode, should be kept at zero.
   GSVector4i m_current_uv_rect = INVALID_RECT;
+  GSVector4i m_current_draw_rect = INVALID_RECT;
   s32 m_current_texture_page_offset[2] = {};
 
   std::unique_ptr<GPUPipeline> m_wireframe_pipeline;

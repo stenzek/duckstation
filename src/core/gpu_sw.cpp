@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "gpu_sw.h"
+#include "gpu_hw_texture_cache.h"
 #include "system.h"
 
 #include "util/gpu_device.h"
@@ -69,7 +70,11 @@ bool GPU_SW::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
   m_backend.Sync(true);
 
   // ignore the host texture for software mode, since we want to save vram here
-  return GPU::DoState(sw, nullptr, update_display);
+  if (!GPU::DoState(sw, nullptr, update_display))
+    return false;
+
+  // need to still call the TC, to toss any data in the state
+  return GPUTextureCache::DoState(sw, true);
 }
 
 void GPU_SW::Reset(bool clear_vram)

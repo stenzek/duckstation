@@ -1665,8 +1665,8 @@ void GPU::SetDrawMode(u16 value)
   if (new_mode_reg.bits == m_draw_mode.mode_reg.bits)
     return;
 
-  m_draw_mode.texture_page_changed |= ((new_mode_reg.bits & GPUDrawModeReg::TEXTURE_PAGE_MASK) !=
-                                       (m_draw_mode.mode_reg.bits & GPUDrawModeReg::TEXTURE_PAGE_MASK));
+  m_draw_mode.texture_page_changed |= ((new_mode_reg.bits & GPUDrawModeReg::TEXTURE_MODE_AND_PAGE_MASK) !=
+                                       (m_draw_mode.mode_reg.bits & GPUDrawModeReg::TEXTURE_MODE_AND_PAGE_MASK));
   m_draw_mode.mode_reg.bits = new_mode_reg.bits;
 
   if (m_GPUSTAT.draw_to_displayed_field != new_mode_reg.draw_to_displayed_field)

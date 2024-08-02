@@ -225,6 +225,7 @@ void Settings::Load(SettingsInterface& si)
   gpu_disable_interlacing = si.GetBoolValue("GPU", "DisableInterlacing", true);
   gpu_force_ntsc_timings = si.GetBoolValue("GPU", "ForceNTSCTimings", false);
   gpu_widescreen_hack = si.GetBoolValue("GPU", "WidescreenHack", false);
+  gpu_texture_cache = si.GetBoolValue("GPU", "EnableTextureCache", false);
   display_24bit_chroma_smoothing = si.GetBoolValue("GPU", "ChromaSmoothing24Bit", false);
   gpu_pgxp_enable = si.GetBoolValue("GPU", "PGXPEnable", false);
   gpu_pgxp_culling = si.GetBoolValue("GPU", "PGXPCulling", true);
@@ -420,16 +421,14 @@ void Settings::Load(SettingsInterface& si)
   debugging.show_mdec_state = si.GetBoolValue("Debug", "ShowMDECState");
   debugging.show_dma_state = si.GetBoolValue("Debug", "ShowDMAState");
 
+  texture_replacements.enable_texture_replacements =
+    si.GetBoolValue("TextureReplacements", "EnableTextureReplacements", false);
   texture_replacements.enable_vram_write_replacements =
     si.GetBoolValue("TextureReplacements", "EnableVRAMWriteReplacements", false);
   texture_replacements.preload_textures = si.GetBoolValue("TextureReplacements", "PreloadTextures", false);
+  texture_replacements.dump_textures = si.GetBoolValue("TextureReplacements", "DumpTextures", false);
   texture_replacements.dump_vram_writes = si.GetBoolValue("TextureReplacements", "DumpVRAMWrites", false);
-  texture_replacements.dump_vram_write_force_alpha_channel =
-    si.GetBoolValue("TextureReplacements", "DumpVRAMWriteForceAlphaChannel", true);
-  texture_replacements.dump_vram_write_width_threshold =
-    si.GetIntValue("TextureReplacements", "DumpVRAMWriteWidthThreshold", 128);
-  texture_replacements.dump_vram_write_height_threshold =
-    si.GetIntValue("TextureReplacements", "DumpVRAMWriteHeightThreshold", 128);
+  texture_replacements.config.Load(si, "TextureReplacements", TextureReplacementSettings::Configuration());
 
 #ifdef __ANDROID__
   // No expansion due to license incompatibility.
@@ -523,6 +522,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("GPU", "DisableInterlacing", gpu_disable_interlacing);
   si.SetBoolValue("GPU", "ForceNTSCTimings", gpu_force_ntsc_timings);
   si.SetBoolValue("GPU", "WidescreenHack", gpu_widescreen_hack);
+  si.SetBoolValue("GPU", "EnableTextureCache", gpu_texture_cache);
   si.SetBoolValue("GPU", "ChromaSmoothing24Bit", display_24bit_chroma_smoothing);
   si.SetBoolValue("GPU", "PGXPEnable", gpu_pgxp_enable);
   si.SetBoolValue("GPU", "PGXPCulling", gpu_pgxp_culling);
@@ -671,16 +671,13 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
     si.SetBoolValue("Debug", "ShowDMAState", debugging.show_dma_state);
   }
 
+  si.SetBoolValue("TextureReplacements", "EnableTextureReplacements", texture_replacements.enable_texture_replacements);
   si.SetBoolValue("TextureReplacements", "EnableVRAMWriteReplacements",
                   texture_replacements.enable_vram_write_replacements);
   si.SetBoolValue("TextureReplacements", "PreloadTextures", texture_replacements.preload_textures);
   si.SetBoolValue("TextureReplacements", "DumpVRAMWrites", texture_replacements.dump_vram_writes);
-  si.SetBoolValue("TextureReplacements", "DumpVRAMWriteForceAlphaChannel",
-                  texture_replacements.dump_vram_write_force_alpha_channel);
-  si.SetIntValue("TextureReplacements", "DumpVRAMWriteWidthThreshold",
-                 texture_replacements.dump_vram_write_width_threshold);
-  si.SetIntValue("TextureReplacements", "DumpVRAMWriteHeightThreshold",
-                 texture_replacements.dump_vram_write_height_threshold);
+  si.SetBoolValue("TextureReplacements", "DumpTextures", texture_replacements.dump_textures);
+  texture_replacements.config.Save(si, "TextureReplacements");
 }
 
 void Settings::Clear(SettingsInterface& si)
@@ -708,6 +705,83 @@ void Settings::Clear(SettingsInterface& si)
   si.ClearSection("Logging");
   si.ClearSection("Debug");
   si.ClearSection("TextureReplacements");
+}
+
+bool Settings::TextureReplacementSettings::Configuration::operator==(const Configuration& rhs) const
+{
+  return (dump_texture_pages == rhs.dump_texture_pages &&
+          dump_texture_force_alpha_channel == rhs.dump_vram_write_force_alpha_channel &&
+          dump_c16_textures == rhs.dump_c16_textures && reduce_palette_range == rhs.reduce_palette_range &&
+          convert_copies_to_writes == rhs.convert_copies_to_writes &&
+          replacement_scale_linear_filter == rhs.replacement_scale_linear_filter &&
+          max_vram_write_splits == rhs.max_vram_write_splits &&
+          texture_dump_width_threshold == rhs.texture_dump_width_threshold &&
+          texture_dump_height_threshold == rhs.texture_dump_height_threshold &&
+          vram_write_dump_width_threshold == rhs.vram_write_dump_width_threshold &&
+          vram_write_dump_height_threshold == rhs.vram_write_dump_height_threshold);
+}
+
+bool Settings::TextureReplacementSettings::Configuration::operator!=(const Configuration& rhs) const
+{
+  return !operator==(rhs);
+}
+
+void Settings::TextureReplacementSettings::Configuration::Load(const SettingsInterface& si, const char* section,
+                                                               const Configuration& defaults)
+{
+  dump_texture_pages = si.GetBoolValue(section, "DumpTexturePages", defaults.dump_texture_pages);
+  dump_texture_force_alpha_channel =
+    si.GetBoolValue(section, "DumpTextureForceAlphaChannel", defaults.dump_texture_force_alpha_channel);
+  dump_vram_write_force_alpha_channel =
+    si.GetBoolValue(section, "DumpVRAMWriteForceAlphaChannel", defaults.dump_vram_write_force_alpha_channel);
+  dump_c16_textures = si.GetBoolValue(section, "DumpC16Textures", defaults.dump_c16_textures);
+  reduce_palette_range = si.GetBoolValue(section, "ReducePaletteRange", defaults.reduce_palette_range);
+  convert_copies_to_writes = si.GetBoolValue(section, "ConvertCopiesToWrites", defaults.convert_copies_to_writes);
+  replacement_scale_linear_filter =
+    si.GetBoolValue(section, "ReplacementScaleLinearFilter", defaults.replacement_scale_linear_filter);
+
+  max_vram_write_splits = si.GetUIntValue(section, "MaxVRAMWriteSplits", defaults.max_vram_write_splits);
+
+  texture_dump_width_threshold =
+    si.GetUIntValue(section, "DumpTextureWidthThreshold", defaults.texture_dump_width_threshold);
+  texture_dump_height_threshold =
+    si.GetUIntValue(section, "DumpTextureHeightThreshold", defaults.texture_dump_height_threshold);
+  vram_write_dump_width_threshold =
+    si.GetUIntValue(section, "DumpVRAMWriteWidthThreshold", defaults.vram_write_dump_width_threshold);
+  vram_write_dump_height_threshold =
+    si.GetUIntValue(section, "DumpVRAMWriteHeightThreshold", defaults.vram_write_dump_height_threshold);
+}
+
+void Settings::TextureReplacementSettings::Configuration::Save(SettingsInterface& si, const char* section) const
+{
+  si.SetBoolValue(section, "DumpTexturePages", dump_texture_pages);
+  si.SetBoolValue(section, "DumpTextureForceAlphaChannel", dump_texture_force_alpha_channel);
+
+  si.SetBoolValue(section, "DumpVRAMWriteForceAlphaChannel", dump_vram_write_force_alpha_channel);
+  si.SetBoolValue(section, "DumpC16Textures", dump_c16_textures);
+  si.SetBoolValue(section, "ReducePaletteRange", reduce_palette_range);
+  si.SetBoolValue(section, "ConvertCopiesToWrites", convert_copies_to_writes);
+  si.SetBoolValue(section, "ReplacementScaleLinearFilter", replacement_scale_linear_filter);
+
+  si.SetUIntValue(section, "MaxVRAMWriteSplits", max_vram_write_splits);
+
+  si.SetUIntValue(section, "DumpTextureWidthThreshold", texture_dump_width_threshold);
+  si.SetUIntValue(section, "DumpTextureHeightThreshold", texture_dump_height_threshold);
+  si.SetUIntValue(section, "DumpVRAMWriteWidthThreshold", vram_write_dump_width_threshold);
+  si.SetUIntValue(section, "DumpVRAMWriteHeightThreshold", vram_write_dump_height_threshold);
+}
+
+bool Settings::TextureReplacementSettings::operator==(const TextureReplacementSettings& rhs) const
+{
+  return (enable_texture_replacements == rhs.enable_texture_replacements &&
+          enable_vram_write_replacements == rhs.enable_vram_write_replacements &&
+          preload_textures == rhs.preload_textures && dump_textures == rhs.dump_textures &&
+          dump_vram_writes == rhs.dump_vram_writes && config == rhs.config);
+}
+
+bool Settings::TextureReplacementSettings::operator!=(const TextureReplacementSettings& rhs) const
+{
+  return !operator==(rhs);
 }
 
 void Settings::FixIncompatibleSettings(bool display_osd_messages)
@@ -1893,7 +1967,6 @@ bool EmuFolders::EnsureFoldersExist()
   result = FileSystem::EnsureDirectoryExists(Covers.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(Dumps.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(Path::Combine(Dumps, "audio").c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(Path::Combine(Dumps, "textures").c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(GameIcons.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(GameSettings.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(InputProfiles.c_str(), false) && result;

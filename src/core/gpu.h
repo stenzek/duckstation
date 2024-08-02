@@ -449,7 +449,7 @@ protected:
     bool texture_page_changed;
     bool texture_window_changed;
 
-    ALWAYS_INLINE bool IsTexturePageChanged() const { return texture_page_changed; }
+    ALWAYS_INLINE bool IsTexturePageChanged() const { return texture_page_changed; }// TODO: Remove this?
     ALWAYS_INLINE void SetTexturePageChanged() { texture_page_changed = true; }
     ALWAYS_INLINE void ClearTexturePageChangedFlag() { texture_page_changed = false; }
 

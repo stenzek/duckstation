@@ -124,6 +124,7 @@ struct Settings
   bool gpu_disable_interlacing : 1 = true;
   bool gpu_force_ntsc_timings : 1 = false;
   bool gpu_widescreen_hack : 1 = false;
+  bool gpu_texture_cache : 1 = false;
   bool gpu_pgxp_enable : 1 = false;
   bool gpu_pgxp_culling : 1 = true;
   bool gpu_pgxp_texture_correction : 1 = true;
@@ -242,20 +243,43 @@ struct Settings
   // texture replacements
   struct TextureReplacementSettings
   {
+    struct Configuration
+    {
+      constexpr Configuration() = default;
+
+      bool dump_texture_pages : 1 = false;
+      bool dump_texture_force_alpha_channel : 1 = false;
+      bool dump_vram_write_force_alpha_channel : 1 = true;
+      bool dump_c16_textures : 1 = false;
+      bool reduce_palette_range : 1 = true;
+      bool convert_copies_to_writes : 1 = false;
+      bool replacement_scale_linear_filter = true;
+
+      u32 max_vram_write_splits = 0;
+      u32 texture_dump_width_threshold = 16;
+      u32 texture_dump_height_threshold = 16;
+
+      u32 vram_write_dump_width_threshold = 128;
+      u32 vram_write_dump_height_threshold = 128;
+
+      void Load(const SettingsInterface& si, const char* section, const Configuration& defaults);
+      void Save(SettingsInterface& si, const char* section) const;
+
+      bool operator==(const Configuration& rhs) const;
+      bool operator!=(const Configuration& rhs) const;
+    };
+
+    bool enable_texture_replacements : 1 = false;
     bool enable_vram_write_replacements : 1 = false;
     bool preload_textures : 1 = false;
 
+    bool dump_textures : 1 = false;
     bool dump_vram_writes : 1 = false;
-    bool dump_vram_write_force_alpha_channel : 1 = true;
-    u32 dump_vram_write_width_threshold = 128;
-    u32 dump_vram_write_height_threshold = 128;
 
-    ALWAYS_INLINE bool AnyReplacementsEnabled() const { return enable_vram_write_replacements; }
+    Configuration config;
 
-    ALWAYS_INLINE bool ShouldDumpVRAMWrite(u32 width, u32 height)
-    {
-      return dump_vram_writes && width >= dump_vram_write_width_threshold && height >= dump_vram_write_height_threshold;
-    }
+    bool operator==(const TextureReplacementSettings& rhs) const;
+    bool operator!=(const TextureReplacementSettings& rhs) const;
   } texture_replacements;
 
   bool bios_tty_logging : 1 = false;
@@ -349,8 +373,6 @@ struct Settings
     DEFAULT_DMA_HALT_TICKS = 100,
     DEFAULT_GPU_FIFO_SIZE = 16,
     DEFAULT_GPU_MAX_RUN_AHEAD = 128,
-    DEFAULT_VRAM_WRITE_DUMP_WIDTH_THRESHOLD = 128,
-    DEFAULT_VRAM_WRITE_DUMP_HEIGHT_THRESHOLD = 128,
   };
 
   void Load(SettingsInterface& si);

@@ -288,6 +288,7 @@
     <QtUi Include="audiostretchsettingsdialog.ui" />
     <QtUi Include="controllerbindingwidget_justifier.ui" />
     <QtUi Include="selectdiscdialog.ui" />
+    <QtUi Include="texturereplacementsettingsdialog.ui" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="qt5.natvis" />
