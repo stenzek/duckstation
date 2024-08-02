@@ -5398,7 +5398,7 @@ void System::RequestDisplaySize(float scale /*= 0.0f*/)
     std::max<u32>(static_cast<u32>(std::ceil(static_cast<float>(g_gpu->GetCRTCDisplayHeight()) * y_scale * scale)), 1);
 
   if (g_settings.display_rotation == DisplayRotation::Rotate90 ||
-      g_settings.display_rotation == DisplayRotation::Rotate180)
+      g_settings.display_rotation == DisplayRotation::Rotate270)
     std::swap(requested_width, requested_height);
 
   Host::RequestResizeHostDisplay(static_cast<s32>(requested_width), static_cast<s32>(requested_height));
