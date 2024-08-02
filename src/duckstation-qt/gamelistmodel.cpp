@@ -8,7 +8,6 @@
 #include "core/system.h"
 
 #include "common/file_system.h"
-#include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
 
@@ -20,8 +19,6 @@
 #include <QtGui/QGuiApplication>
 #include <QtGui/QIcon>
 #include <QtGui/QPainter>
-
-Log_SetChannel(GameList);
 
 static constexpr std::array<const char*, GameListModel::Column_Count> s_column_names = {
   {"Icon", "Serial", "Title", "File Title", "Developer", "Publisher", "Genre", "Year", "Players", "Time Played",
@@ -334,9 +331,13 @@ int GameListModel::getCoverArtSpacing() const
 
 int GameListModel::rowCount(const QModelIndex& parent) const
 {
-  if (parent.isValid())
+  if (parent.isValid()) [[unlikely]]
     return 0;
 
+  if (m_taken_entries.has_value())
+    return static_cast<int>(m_taken_entries->size());
+
+  const auto lock = GameList::GetLock();
   return static_cast<int>(GameList::GetEntryCount());
 }
 
@@ -350,18 +351,32 @@ int GameListModel::columnCount(const QModelIndex& parent) const
 
 QVariant GameListModel::data(const QModelIndex& index, int role) const
 {
-  if (!index.isValid())
+  if (!index.isValid()) [[unlikely]]
     return {};
 
   const int row = index.row();
-  if (row < 0 || row >= static_cast<int>(GameList::GetEntryCount()))
-    return {};
+  DebugAssert(row >= 0);
 
-  const auto lock = GameList::GetLock();
-  const GameList::Entry* ge = GameList::GetEntryByIndex(row);
-  if (!ge)
-    return {};
+  if (m_taken_entries.has_value())
+  {
+    if (static_cast<u32>(row) >= m_taken_entries->size())
+      return {};
 
+    return data(index, role, &m_taken_entries.value()[row]);
+  }
+  else
+  {
+    const auto lock = GameList::GetLock();
+    const GameList::Entry* ge = GameList::GetEntryByIndex(static_cast<u32>(row));
+    if (!ge)
+      return {};
+
+    return data(index, role, ge);
+  }
+}
+
+QVariant GameListModel::data(const QModelIndex& index, int role, const GameList::Entry* ge) const
+{
   switch (role)
   {
     case Qt::DisplayRole:
@@ -544,9 +559,26 @@ QVariant GameListModel::headerData(int section, Qt::Orientation orientation, int
   return m_column_display_names[section];
 }
 
+bool GameListModel::hasTakenGameList() const
+{
+  return m_taken_entries.has_value();
+}
+
+void GameListModel::takeGameList()
+{
+  const auto lock = GameList::GetLock();
+  m_taken_entries = GameList::TakeEntryList();
+
+  // If it's empty (e.g. first boot), don't use it.
+  if (m_taken_entries->empty())
+    m_taken_entries.reset();
+}
+
 void GameListModel::refresh()
 {
   beginResetModel();
+
+  m_taken_entries.reset();
 
   // Invalidate memcard LRU cache, forcing a re-query of the memcard timestamps.
   m_memcard_pixmap_cache.Clear();

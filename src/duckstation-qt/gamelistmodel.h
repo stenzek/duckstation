@@ -56,6 +56,9 @@ public:
 
   ALWAYS_INLINE const QString& getColumnDisplayName(int column) { return m_column_display_names[column]; }
 
+  bool hasTakenGameList() const;
+  void takeGameList();
+
   void refresh();
   void reloadThemeSpecificImages();
 
@@ -98,6 +101,8 @@ private:
   };
 #pragma pack(pop)
 
+  QVariant data(const QModelIndex& index, int role, const GameList::Entry* ge) const;
+
   void loadCommonImages();
   void loadThemeSpecificImages();
   void setColumnDisplayNames();
@@ -108,6 +113,8 @@ private:
   static void fixIconPixmapSize(QPixmap& pm);
 
   static QString formatTimespan(time_t timespan);
+
+  std::optional<GameList::EntryList> m_taken_entries;
 
   float m_cover_scale = 0.0f;
   bool m_show_titles_for_covers = false;

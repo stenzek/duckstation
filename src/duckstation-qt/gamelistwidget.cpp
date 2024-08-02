@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "gamelistwidget.h"
@@ -182,9 +182,6 @@ void GameListWidget::initialize()
   connect(m_ui.searchText, &QLineEdit::textChanged, this,
           [this](const QString& text) { m_sort_model->setFilterName(text); });
 
-  // Works around a strange bug where after hiding the game list, the cursor for the whole window changes to a beam..
-  // m_ui.searchText->setCursor(QCursor(Qt::ArrowCursor));
-
   m_table_view = new QTableView(m_ui.stack);
   m_table_view->setModel(m_sort_model);
   m_table_view->setSortingEnabled(true);
@@ -285,6 +282,9 @@ void GameListWidget::refresh(bool invalidate_cache)
 {
   cancelRefresh();
 
+  if (!invalidate_cache)
+    m_model->takeGameList();
+
   m_refresh_thread = new GameListRefreshThread(invalidate_cache);
   connect(m_refresh_thread, &GameListRefreshThread::refreshProgress, this, &GameListWidget::onRefreshProgress,
           Qt::QueuedConnection);
@@ -314,14 +314,19 @@ void GameListWidget::reloadThemeSpecificImages()
   m_model->reloadThemeSpecificImages();
 }
 
-void GameListWidget::onRefreshProgress(const QString& status, int current, int total)
+void GameListWidget::onRefreshProgress(const QString& status, int current, int total, float time)
 {
+  // Avoid spamming the UI on very short refresh (e.g. game exit).
+  static constexpr float SHORT_REFRESH_TIME = 0.5f;
+  if (!m_model->hasTakenGameList())
+    m_model->refresh();
+
   // switch away from the placeholder while we scan, in case we find anything
   if (m_ui.stack->currentIndex() == 2)
     m_ui.stack->setCurrentIndex(Host::GetBaseBoolSettingValue("UI", "GameListGridView", false) ? 1 : 0);
 
-  m_model->refresh();
-  emit refreshProgress(status, current, total);
+  if (!m_model->hasTakenGameList() || time >= SHORT_REFRESH_TIME)
+    emit refreshProgress(status, current, total);
 }
 
 void GameListWidget::onRefreshComplete()

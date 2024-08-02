@@ -119,14 +119,14 @@ static std::string GetCustomPropertiesFile();
 static FileSystem::ManagedCFilePtr OpenMemoryCardTimestampCache(bool for_write);
 static bool UpdateMemcardTimestampCache(const MemcardTimestampCacheEntry& entry);
 
-} // namespace GameList
-
-static std::vector<GameList::Entry> s_entries;
+static EntryList s_entries;
 static std::recursive_mutex s_mutex;
-static GameList::CacheMap s_cache_map;
-static std::vector<GameList::MemcardTimestampCacheEntry> s_memcard_timestamp_cache_entries;
+static CacheMap s_cache_map;
+static std::vector<MemcardTimestampCacheEntry> s_memcard_timestamp_cache_entries;
 
 static bool s_game_list_loaded = false;
+
+} // namespace GameList
 
 const char* GameList::GetEntryTypeName(EntryType type)
 {
@@ -821,6 +821,13 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
 
   // merge multi-disc games
   CreateDiscSetEntries(played_time);
+}
+
+GameList::EntryList GameList::TakeEntryList()
+{
+  EntryList ret = std::move(s_entries);
+  s_entries = {};
+  return ret;
 }
 
 void GameList::CreateDiscSetEntries(const PlayedTimeMap& played_time_map)

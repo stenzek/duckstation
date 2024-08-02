@@ -16,6 +16,11 @@ AsyncRefreshProgressCallback::AsyncRefreshProgressCallback(GameListRefreshThread
 {
 }
 
+float AsyncRefreshProgressCallback::timeSinceStart() const
+{
+  return m_start_time.GetTimeSeconds();
+}
+
 void AsyncRefreshProgressCallback::Cancel()
 {
   // Not atomic, but we don't need to cancel immediately.
@@ -87,7 +92,7 @@ void AsyncRefreshProgressCallback::ModalInformation(const std::string_view messa
 
 void AsyncRefreshProgressCallback::fireUpdate()
 {
-  m_parent->refreshProgress(m_status_text, m_last_value, m_last_range);
+  m_parent->refreshProgress(m_status_text, m_last_value, m_last_range, m_start_time.GetTimeSeconds());
 }
 
 GameListRefreshThread::GameListRefreshThread(bool invalidate_cache)
@@ -96,6 +101,11 @@ GameListRefreshThread::GameListRefreshThread(bool invalidate_cache)
 }
 
 GameListRefreshThread::~GameListRefreshThread() = default;
+
+float GameListRefreshThread::timeSinceStart() const
+{
+  return m_progress.timeSinceStart();
+}
 
 void GameListRefreshThread::cancel()
 {

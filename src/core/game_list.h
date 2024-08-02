@@ -71,6 +71,8 @@ struct Entry
   ALWAYS_INLINE EntryType GetSortType() const { return (type == EntryType::DiscSet) ? EntryType::Disc : type; }
 };
 
+using EntryList = std::vector<Entry>;
+
 const char* GetEntryTypeName(EntryType type);
 const char* GetEntryTypeDisplayName(EntryType type);
 
@@ -96,6 +98,10 @@ bool IsGameListLoaded();
 /// If invalidate_cache is set, all files will be re-scanned.
 /// If only_cache is set, no new files will be scanned, only those present in the cache.
 void Refresh(bool invalidate_cache, bool only_cache = false, ProgressCallback* progress = nullptr);
+
+/// Moves the current game list, which can be temporarily displayed in the UI until refresh completes.
+/// The caller **must** call Refresh() afterward, otherwise it will be permanently lost.
+EntryList TakeEntryList();
 
 /// Add played time for the specified serial.
 void AddPlayedTimeForSerial(const std::string& serial, std::time_t last_time, std::time_t add_time);

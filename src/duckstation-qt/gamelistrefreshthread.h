@@ -16,6 +16,8 @@ class AsyncRefreshProgressCallback : public ProgressCallback
 public:
   AsyncRefreshProgressCallback(GameListRefreshThread* parent);
 
+  float timeSinceStart() const;
+
   void Cancel();
 
   void PushState() override;
@@ -33,7 +35,7 @@ private:
   void fireUpdate();
 
   GameListRefreshThread* m_parent;
-  Common::Timer m_last_update_time;
+  Common::Timer m_start_time;
   QString m_status_text;
   int m_last_range = 1;
   int m_last_value = 0;
@@ -47,10 +49,12 @@ public:
   GameListRefreshThread(bool invalidate_cache);
   ~GameListRefreshThread();
 
+  float timeSinceStart() const;
+
   void cancel();
 
 Q_SIGNALS:
-  void refreshProgress(const QString& status, int current, int total);
+  void refreshProgress(const QString& status, int current, int total, float time);
   void refreshComplete();
 
 protected:

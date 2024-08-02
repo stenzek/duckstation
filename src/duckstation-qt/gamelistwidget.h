@@ -69,7 +69,7 @@ Q_SIGNALS:
   void layoutChange();
 
 private Q_SLOTS:
-  void onRefreshProgress(const QString& status, int current, int total);
+  void onRefreshProgress(const QString& status, int current, int total, float time);
   void onRefreshComplete();
 
   void onSelectionModelCurrentChanged(const QModelIndex& current, const QModelIndex& previous);
