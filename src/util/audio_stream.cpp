@@ -13,7 +13,8 @@
 #include "common/small_string.h"
 #include "common/timer.h"
 
-#include "SoundTouch.h"
+#include "soundtouch/SoundTouch.h"
+#include "soundtouch/SoundTouchDLL.h"
 
 #ifndef __ANDROID__
 #include "freesurround_decoder.h"
@@ -505,9 +506,9 @@ void AudioStream::EmptyBuffer()
 
   if (IsStretchEnabled())
   {
-    m_soundtouch->clear();
+    soundtouch_clear(m_soundtouch);
     if (m_parameters.stretch_mode == AudioStretchMode::TimeStretch)
-      m_soundtouch->setTempo(m_nominal_rate);
+      soundtouch_setTempo(m_soundtouch, m_nominal_rate);
   }
 
   m_wpos.store(m_rpos.load(std::memory_order_acquire), std::memory_order_release);
@@ -517,9 +518,9 @@ void AudioStream::SetNominalRate(float tempo)
 {
   m_nominal_rate = tempo;
   if (m_parameters.stretch_mode == AudioStretchMode::Resample)
-    m_soundtouch->setRate(tempo);
+    soundtouch_setRate(m_soundtouch, tempo);
   else if (m_parameters.stretch_mode == AudioStretchMode::TimeStretch && m_stretch_inactive)
-    m_soundtouch->setTempo(tempo);
+    soundtouch_setTempo(m_soundtouch, tempo);
 }
 
 void AudioStream::SetStretchMode(AudioStretchMode mode)
@@ -703,21 +704,21 @@ void AudioStream::StretchAllocate()
   if (m_parameters.stretch_mode == AudioStretchMode::Off)
     return;
 
-  m_soundtouch = std::make_unique<soundtouch::SoundTouch>();
-  m_soundtouch->setSampleRate(m_sample_rate);
-  m_soundtouch->setChannels(m_internal_channels);
+  m_soundtouch = soundtouch_createInstance();
+  soundtouch_setSampleRate(m_soundtouch, m_sample_rate);
+  soundtouch_setChannels(m_soundtouch, m_internal_channels);
 
-  m_soundtouch->setSetting(SETTING_USE_QUICKSEEK, m_parameters.stretch_use_quickseek);
-  m_soundtouch->setSetting(SETTING_USE_AA_FILTER, m_parameters.stretch_use_aa_filter);
+  soundtouch_setSetting(m_soundtouch, SETTING_USE_QUICKSEEK, m_parameters.stretch_use_quickseek);
+  soundtouch_setSetting(m_soundtouch, SETTING_USE_AA_FILTER, m_parameters.stretch_use_aa_filter);
 
-  m_soundtouch->setSetting(SETTING_SEQUENCE_MS, m_parameters.stretch_sequence_length_ms);
-  m_soundtouch->setSetting(SETTING_SEEKWINDOW_MS, m_parameters.stretch_seekwindow_ms);
-  m_soundtouch->setSetting(SETTING_OVERLAP_MS, m_parameters.stretch_overlap_ms);
+  soundtouch_setSetting(m_soundtouch, SETTING_SEQUENCE_MS, m_parameters.stretch_sequence_length_ms);
+  soundtouch_setSetting(m_soundtouch, SETTING_SEEKWINDOW_MS, m_parameters.stretch_seekwindow_ms);
+  soundtouch_setSetting(m_soundtouch, SETTING_OVERLAP_MS, m_parameters.stretch_overlap_ms);
 
   if (m_parameters.stretch_mode == AudioStretchMode::Resample)
-    m_soundtouch->setRate(m_nominal_rate);
+    soundtouch_setRate(m_soundtouch, m_nominal_rate);
   else
-    m_soundtouch->setTempo(m_nominal_rate);
+    soundtouch_setTempo(m_soundtouch, m_nominal_rate);
 
   m_stretch_reset = STRETCH_RESET_THRESHOLD;
   m_stretch_inactive = false;
@@ -731,17 +732,21 @@ void AudioStream::StretchAllocate()
 
 void AudioStream::StretchDestroy()
 {
-  m_soundtouch.reset();
+  if (m_soundtouch)
+  {
+    soundtouch_destroyInstance(m_soundtouch);
+    m_soundtouch = nullptr;
+  }
 }
 
 void AudioStream::StretchWriteBlock(const float* block)
 {
   if (IsStretchEnabled())
   {
-    m_soundtouch->putSamples(block, CHUNK_SIZE);
+    soundtouch_putSamples(m_soundtouch, block, CHUNK_SIZE);
 
     u32 tempProgress;
-    while (tempProgress = m_soundtouch->receiveSamples(m_float_buffer.get(), CHUNK_SIZE), tempProgress != 0)
+    while (tempProgress = soundtouch_receiveSamples(m_soundtouch, m_float_buffer.get(), CHUNK_SIZE), tempProgress != 0)
     {
       FloatChunkToS16(m_staging_buffer.get(), m_float_buffer.get(), tempProgress * m_internal_channels);
       InternalWriteFrames(m_staging_buffer.get(), tempProgress);
@@ -865,7 +870,7 @@ void AudioStream::UpdateStretchTempo()
     iterations++;
   }
 
-  m_soundtouch->setTempo(tempo);
+  soundtouch_setTempo(m_soundtouch, tempo);
 
   if (m_stretch_reset >= STRETCH_RESET_THRESHOLD)
     m_stretch_reset = 0;

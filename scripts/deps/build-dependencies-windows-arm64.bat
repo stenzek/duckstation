@@ -57,6 +57,7 @@ set ZSTD=1.5.6
 set CPUINFO=7524ad504fdcfcf75a18a133da6abd75c5d48053
 set DISCORD_RPC=842c15192041f8e71c512851834f4dadb1a554fb
 set SHADERC=feb2460bf3a504d67011246edeb810c45ea58826
+set SOUNDTOUCH=463ade388f3a51da078dc9ed062bf28e4ba29da7
 set SPIRV_CROSS=vulkan-sdk-1.3.290.0
 
 call :downloadfile "freetype-%FREETYPE%.tar.gz" https://download.savannah.gnu.org/releases/freetype/freetype-%FREETYPE%.tar.gz 1ac27e16c134a7f2ccea177faba19801131116fd682efc1f5737037c5db224b5 || goto error
@@ -77,6 +78,7 @@ call :downloadfile "zstd-fd5f8106a58601a963ee816e6a57aa7c61fafc53.patch" https:/
 call :downloadfile "cpuinfo-%CPUINFO%.zip" "https://github.com/pytorch/cpuinfo/archive/%CPUINFO%.zip" 13146ae7983d767a678dd01b0d6af591e77cec82babd41264b9164ab808d7d41 || goto error
 call :downloadfile "discord-rpc-%DISCORD_RPC%.zip" "https://github.com/stenzek/discord-rpc/archive/%DISCORD_RPC%.zip" 2a32201439fc2ddfc9c0ea4f4f7cfce40706983b9abac22cdba4ce750bcb55a1 || goto error
 call :downloadfile "shaderc-%SHADERC%.zip" "https://github.com/stenzek/shaderc/archive/%SHADERC%.zip" a50687a3903328976c3a49f6ba6326196f7713660048957eb033408630af70b1 || goto error
+call :downloadfile "soundtouch-%SOUNDTOUCH%.zip" "https://github.com/stenzek/soundtouch/archive/%SOUNDTOUCH%.zip" 107a1941181a69abe28018b9ad26fc0218625758ac193bc979abc9e26b7c0c3a || goto error
 
 if not exist SPIRV-Cross\ (
   git clone https://github.com/KhronosGroup/SPIRV-Cross/ -b %SPIRV_CROSS% --depth 1 || goto error
@@ -269,6 +271,16 @@ rmdir /S /Q "discord-rpc-%DISCORD_RPC%"
 %SEVENZIP% x "discord-rpc-%DISCORD_RPC%.zip" || goto error
 cd "discord-rpc-%DISCORD_RPC%" || goto error
 cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -B build -G Ninja
+cmake --build build --parallel || goto error
+ninja -C build install || goto error
+cd .. || goto error
+
+rem This currently isn't using clang-cl. It probably should, might be losing a little speed.
+echo Building soundtouch...
+rmdir /S /Q "soundtouch-%SOUNDTOUCH%"
+%SEVENZIP% x "soundtouch-%SOUNDTOUCH%.zip" || goto error
+cd "soundtouch-%SOUNDTOUCH%" || goto error
+cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -B build -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error

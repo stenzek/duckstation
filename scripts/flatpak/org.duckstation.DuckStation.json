@@ -24,6 +24,7 @@
     "modules/23-spirv-cross.json",
     "modules/24-cpuinfo.json",
     "modules/25-discord-rpc.json",
+    "modules/26-soundtouch.json",
     {
       "name": "duckstation",
       "buildsystem": "cmake-ninja",

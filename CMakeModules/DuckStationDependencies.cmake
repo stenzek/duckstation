@@ -18,6 +18,7 @@ find_package(JPEG REQUIRED) # No version because flatpak uses libjpeg-turbo.
 find_package(Freetype 2.11.1 REQUIRED)
 find_package(cpuinfo REQUIRED)
 find_package(DiscordRPC 3.4.0 REQUIRED)
+find_package(SoundTouch 2.3.3 REQUIRED)
 
 if(NOT WIN32)
   find_package(CURL REQUIRED)

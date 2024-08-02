@@ -47,6 +47,7 @@ QT=6.7.2
 CPUINFO=7524ad504fdcfcf75a18a133da6abd75c5d48053
 DISCORD_RPC=842c15192041f8e71c512851834f4dadb1a554fb
 SHADERC=feb2460bf3a504d67011246edeb810c45ea58826
+SOUNDTOUCH=463ade388f3a51da078dc9ed062bf28e4ba29da7
 SPIRV_CROSS=vulkan-sdk-1.3.290.0
 
 mkdir -p deps-build
@@ -84,7 +85,7 @@ fb0d1286a35be3583fee34aeb5843c94719e07193bdf1d4d8b0dc14009caef01  qtsvg-everywhe
 e1351218d270db49c3dddcba04fb2153b09731ea3fa6830e423f5952f44585be  cpuinfo-$CPUINFO.tar.gz
 acb111ebdb4f1459899b9c594be81ed284de23ac0f5376e5963aad16df98584f  discord-rpc-$DISCORD_RPC.tar.gz
 5a7f86eba3c6301bb573def825977c31aa3d5fc5500f213c123498707fdbd378  shaderc-$SHADERC.tar.gz
-
+fe45c2af99f6102d2704277d392c1c83b55180a70bfd17fb888cc84a54b70573  soundtouch-$SOUNDTOUCH.tar.gz
 EOF
 
 curl -L \
@@ -103,7 +104,8 @@ curl -L \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttranslations-everywhere-src-$QT.tar.xz" \
 	-o "cpuinfo-$CPUINFO.tar.gz" "https://github.com/stenzek/cpuinfo/archive/$CPUINFO.tar.gz" \
 	-o "discord-rpc-$DISCORD_RPC.tar.gz" "https://github.com/stenzek/discord-rpc/archive/$DISCORD_RPC.tar.gz" \
-	-o "shaderc-$SHADERC.tar.gz" "https://github.com/stenzek/shaderc/archive/$SHADERC.tar.gz"
+	-o "shaderc-$SHADERC.tar.gz" "https://github.com/stenzek/shaderc/archive/$SHADERC.tar.gz" \
+	-o "soundtouch-$SOUNDTOUCH.tar.gz" "https://github.com/stenzek/soundtouch/archive/$SOUNDTOUCH.tar.gz"
 
 shasum -a 256 --check SHASUMS
 
@@ -343,6 +345,15 @@ rm -fr "discord-rpc-$DISCORD_RPC"
 tar xf "discord-rpc-$DISCORD_RPC.tar.gz"
 cd "discord-rpc-$DISCORD_RPC"
 cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -B build
+cmake --build build --parallel
+cmake --install build
+cd ..
+
+echo "Building soundtouch..."
+rm -fr "soundtouch-$SOUNDTOUCH"
+tar xf "soundtouch-$SOUNDTOUCH.tar.gz"
+cd "soundtouch-$SOUNDTOUCH"
+cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -B build
 cmake --build build --parallel
 cmake --install build
 cd ..
