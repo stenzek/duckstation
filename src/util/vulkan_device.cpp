@@ -2823,10 +2823,10 @@ void VulkanDevice::ClearDepth(GPUTexture* t, float d)
 void VulkanDevice::InvalidateRenderTarget(GPUTexture* t)
 {
   GPUDevice::InvalidateRenderTarget(t);
-  if (InRenderPass() && (t->IsRenderTarget() ? (IsRenderTargetBoundIndex(t) >= 0) : (m_current_depth_target == t)))
+  if (InRenderPass() && (t->IsDepthStencil() ? (m_current_depth_target == t) : (IsRenderTargetBoundIndex(t) >= 0)))
   {
     // Invalidate includes leaving whatever's in the current buffer.
-    GL_INS_FMT("Invalidating current {}", t->IsRenderTarget() ? "RT" : "DS");
+    GL_INS_FMT("Invalidating current {}", t->IsDepthStencil() ? "DS" : "RT");
     t->SetState(GPUTexture::State::Dirty);
   }
 }
@@ -3760,7 +3760,7 @@ void VulkanDevice::UnbindTexture(VulkanTexture* tex)
     }
   }
 
-  if (tex->IsRenderTarget())
+  if (tex->IsRenderTarget() || tex->IsDepthStencil())
   {
     for (u32 i = 0; i < m_num_current_render_targets; i++)
     {

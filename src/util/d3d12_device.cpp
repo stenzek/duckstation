@@ -1417,7 +1417,7 @@ void D3D12Device::ClearDepth(GPUTexture* t, float d)
 void D3D12Device::InvalidateRenderTarget(GPUTexture* t)
 {
   GPUDevice::InvalidateRenderTarget(t);
-  if (InRenderPass() && (t->IsRenderTarget() ? IsRenderTargetBound(t) : (m_current_depth_target == t)))
+  if (InRenderPass() && (t->IsDepthStencil() ? (m_current_depth_target == t) : IsRenderTargetBound(t)))
     EndRenderPass();
 }
 
@@ -2077,7 +2077,7 @@ void D3D12Device::UnbindTexture(D3D12Texture* tex)
     }
   }
 
-  if (tex->IsRenderTarget())
+  if (tex->IsRenderTarget() || tex->IsRWTexture())
   {
     for (u32 i = 0; i < m_num_current_render_targets; i++)
     {

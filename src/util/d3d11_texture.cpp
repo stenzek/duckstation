@@ -126,7 +126,7 @@ void D3D11Texture::CommitClear(ID3D11DeviceContext1* context)
     else
       context->ClearDepthStencilView(GetD3DDSV(), D3D11_CLEAR_DEPTH, GetClearDepth(), 0);
   }
-  else if (IsRenderTarget())
+  else if (IsRenderTarget() || IsRWTexture())
   {
     if (m_state == GPUTexture::State::Invalidated)
       context->DiscardView(GetD3DRTV());
