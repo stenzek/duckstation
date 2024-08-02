@@ -118,9 +118,14 @@ protected:
   void DestroyDevice() override;
 
 private:
+  using BlendStateMapKey = std::pair<u64, u32>;
+  struct BlendStateMapHash
+  {
+    size_t operator()(const BlendStateMapKey& key) const;
+  };
   using RasterizationStateMap = std::unordered_map<u8, ComPtr<ID3D11RasterizerState>>;
   using DepthStateMap = std::unordered_map<u8, ComPtr<ID3D11DepthStencilState>>;
-  using BlendStateMap = std::unordered_map<u64, ComPtr<ID3D11BlendState>>;
+  using BlendStateMap = std::unordered_map<BlendStateMapKey, ComPtr<ID3D11BlendState>, BlendStateMapHash>;
   using InputLayoutMap =
     std::unordered_map<GPUPipeline::InputLayout, ComPtr<ID3D11InputLayout>, GPUPipeline::InputLayoutHash>;
 
@@ -146,7 +151,7 @@ private:
 
   ComPtr<ID3D11RasterizerState> GetRasterizationState(const GPUPipeline::RasterizationState& rs, Error* error);
   ComPtr<ID3D11DepthStencilState> GetDepthState(const GPUPipeline::DepthState& ds, Error* error);
-  ComPtr<ID3D11BlendState> GetBlendState(const GPUPipeline::BlendState& bs, Error* error);
+  ComPtr<ID3D11BlendState> GetBlendState(const GPUPipeline::BlendState& bs, u32 num_rts, Error* error);
   ComPtr<ID3D11InputLayout> GetInputLayout(const GPUPipeline::InputLayout& il, const D3D11Shader* vs, Error* error);
 
   bool CreateTimestampQueries();

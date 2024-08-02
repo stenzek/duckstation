@@ -413,6 +413,7 @@ public:
 
     void SetTargetFormats(GPUTexture::Format color_format,
                           GPUTexture::Format depth_format_ = GPUTexture::Format::Unknown);
+    u32 GetRenderTargetCount() const;
   };
 
   GPUPipeline();

@@ -6,6 +6,7 @@
 #include "d3d_common.h"
 
 #include "common/error.h"
+#include "common/hash_combine.h"
 
 #include "fmt/format.h"
 
@@ -206,11 +207,19 @@ D3D11Device::ComPtr<ID3D11DepthStencilState> D3D11Device::GetDepthState(const GP
   return dds;
 }
 
-D3D11Device::ComPtr<ID3D11BlendState> D3D11Device::GetBlendState(const GPUPipeline::BlendState& bs, Error* error)
+size_t D3D11Device::BlendStateMapHash::operator()(const BlendStateMapKey& key) const
+{
+  size_t h = std::hash<u64>()(key.first);
+  hash_combine(h, key.second);
+  return h;
+}
+
+D3D11Device::ComPtr<ID3D11BlendState> D3D11Device::GetBlendState(const GPUPipeline::BlendState& bs, u32 num_rts, Error* error)
 {
   ComPtr<ID3D11BlendState> dbs;
 
-  const auto it = m_blend_states.find(bs.key);
+  const std::pair<u64, u32> key(bs.key, num_rts);
+  const auto it = m_blend_states.find(key);
   if (it != m_blend_states.end())
   {
     dbs = it->second;
@@ -243,24 +252,27 @@ D3D11Device::ComPtr<ID3D11BlendState> D3D11Device::GetBlendState(const GPUPipeli
   }};
 
   D3D11_BLEND_DESC blend_desc = {};
-  D3D11_RENDER_TARGET_BLEND_DESC& tgt_desc = blend_desc.RenderTarget[0];
-  tgt_desc.BlendEnable = bs.enable;
-  tgt_desc.RenderTargetWriteMask = bs.write_mask;
-  if (bs.enable)
+  for (u32 i = 0; i < num_rts; i++)
   {
-    tgt_desc.SrcBlend = blend_mapping[static_cast<u8>(bs.src_blend.GetValue())];
-    tgt_desc.DestBlend = blend_mapping[static_cast<u8>(bs.dst_blend.GetValue())];
-    tgt_desc.BlendOp = op_mapping[static_cast<u8>(bs.blend_op.GetValue())];
-    tgt_desc.SrcBlendAlpha = blend_mapping[static_cast<u8>(bs.src_alpha_blend.GetValue())];
-    tgt_desc.DestBlendAlpha = blend_mapping[static_cast<u8>(bs.dst_alpha_blend.GetValue())];
-    tgt_desc.BlendOpAlpha = op_mapping[static_cast<u8>(bs.alpha_blend_op.GetValue())];
+    D3D11_RENDER_TARGET_BLEND_DESC& tgt_desc = blend_desc.RenderTarget[i];
+    tgt_desc.BlendEnable = bs.enable;
+    tgt_desc.RenderTargetWriteMask = bs.write_mask;
+    if (bs.enable)
+    {
+      tgt_desc.SrcBlend = blend_mapping[static_cast<u8>(bs.src_blend.GetValue())];
+      tgt_desc.DestBlend = blend_mapping[static_cast<u8>(bs.dst_blend.GetValue())];
+      tgt_desc.BlendOp = op_mapping[static_cast<u8>(bs.blend_op.GetValue())];
+      tgt_desc.SrcBlendAlpha = blend_mapping[static_cast<u8>(bs.src_alpha_blend.GetValue())];
+      tgt_desc.DestBlendAlpha = blend_mapping[static_cast<u8>(bs.dst_alpha_blend.GetValue())];
+      tgt_desc.BlendOpAlpha = op_mapping[static_cast<u8>(bs.alpha_blend_op.GetValue())];
+    }
   }
 
   HRESULT hr = m_device->CreateBlendState(&blend_desc, dbs.GetAddressOf());
   if (FAILED(hr)) [[unlikely]]
     Error::SetHResult(error, "CreateBlendState() failed: ", hr);
   else
-    m_blend_states.emplace(bs.key, dbs);
+    m_blend_states.emplace(key, dbs);
 
   return dbs;
 }
@@ -322,7 +334,7 @@ std::unique_ptr<GPUPipeline> D3D11Device::CreatePipeline(const GPUPipeline::Grap
 {
   ComPtr<ID3D11RasterizerState> rs = GetRasterizationState(config.rasterization, error);
   ComPtr<ID3D11DepthStencilState> ds = GetDepthState(config.depth, error);
-  ComPtr<ID3D11BlendState> bs = GetBlendState(config.blend, error);
+  ComPtr<ID3D11BlendState> bs = GetBlendState(config.blend, config.GetRenderTargetCount(), error);
   if (!rs || !ds || !bs)
     return {};
 

@@ -167,6 +167,17 @@ void GPUPipeline::GraphicsConfig::SetTargetFormats(GPUTexture::Format color_form
   depth_format = depth_format_;
 }
 
+u32 GPUPipeline::GraphicsConfig::GetRenderTargetCount() const
+{
+  u32 num_rts = 0;
+  for (; num_rts < static_cast<u32>(std::size(color_formats)); num_rts++)
+  {
+    if (color_formats[num_rts] == GPUTexture::Format::Unknown)
+      break;
+  }
+  return num_rts;
+}
+
 GPUTextureBuffer::GPUTextureBuffer(Format format, u32 size) : m_format(format), m_size_in_elements(size)
 {
 }
