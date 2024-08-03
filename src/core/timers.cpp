@@ -254,7 +254,7 @@ void Timers::CheckForIRQ(u32 timer, u32 old_counter)
       if (!cs.irq_done || cs.mode.irq_repeat)
       {
         // this is actually low for a few cycles
-        DEBUG_LOG("Raising timer {} pulse IRQ", timer);
+        DEBUG_LOG("Raising timer {} pulse IRQ @ {}", timer, g_gpu->GetCRTCCurrentScanline());
         InterruptController::SetLineState(irqnum, false);
         InterruptController::SetLineState(irqnum, true);
       }
@@ -377,8 +377,8 @@ void Timers::WriteRegister(u32 offset, u32 value)
     case 0x00:
     {
       const u32 old_counter = cs.counter;
-      DEBUG_LOG("Timer {} write counter {}", timer_index, value);
-      cs.counter = value & u32(0xFFFF);
+      DEBUG_LOG("Timer {} write counter {}", timer_index, ZeroExtend32(Truncate16(value)));
+      cs.counter = ZeroExtend32(Truncate16(value));
       CheckForIRQ(timer_index, old_counter);
       if (timer_index == 2 || !cs.external_counting_enabled)
         UpdateSysClkEvent();
@@ -388,28 +388,42 @@ void Timers::WriteRegister(u32 offset, u32 value)
     case 0x04:
     {
       static constexpr u32 WRITE_MASK = 0b1110001111111111;
+      const bool prev_external_counting_enabled = cs.external_counting_enabled;
 
-      DEBUG_LOG("Timer {} write mode register 0x{:04X}", timer_index, value);
+      DEBUG_LOG("Timer {} write mode register 0x{:04X} @ scaline {}", timer_index, value, g_gpu->GetCRTCCurrentScanline());
       cs.mode.bits = (value & WRITE_MASK) | (cs.mode.bits & ~WRITE_MASK);
       cs.use_external_clock = (cs.mode.clock_source & (timer_index == 2 ? 2 : 1)) != 0;
+      UpdateCountingEnabled(cs);
+
+      // Need to re-sync GPU if ext counting changed, since we're resetting the counter.
+      if (timer_index < 2 && !prev_external_counting_enabled && cs.external_counting_enabled)
+      {
+        if (timer_index == 0 || g_gpu->IsCRTCScanlinePending())
+          g_gpu->SynchronizeCRTC();
+      }
+
       cs.counter = 0;
       cs.irq_done = false;
       InterruptController::SetLineState(
         static_cast<InterruptController::IRQ>(static_cast<u32>(InterruptController::IRQ::TMR0) + timer_index), false);
 
-      UpdateCountingEnabled(cs);
       CheckForIRQ(timer_index, cs.counter);
-      UpdateSysClkEvent();
+      if (timer_index == 2 || !cs.external_counting_enabled)
+        UpdateSysClkEvent();
+      else if (timer_index < 2 && cs.external_counting_enabled)
+        g_gpu->UpdateCRTCTickEvent();
     }
     break;
 
     case 0x08:
     {
-      DEBUG_LOG("Timer {} write target 0x{:04X}", timer_index, ZeroExtend32(Truncate16(value)));
-      cs.target = value & u32(0xFFFF);
+      DEBUG_LOG("Timer {} write target {} @ {}", timer_index, ZeroExtend32(Truncate16(value)), g_gpu->GetCRTCCurrentScanline());
+      cs.target = ZeroExtend32(Truncate16(value));
       CheckForIRQ(timer_index, cs.counter);
       if (timer_index == 2 || !cs.external_counting_enabled)
         UpdateSysClkEvent();
+      else if (timer_index < 2 && cs.external_counting_enabled)
+        g_gpu->UpdateCRTCTickEvent();
     }
     break;
 

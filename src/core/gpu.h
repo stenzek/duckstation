@@ -193,6 +193,7 @@ public:
   // Returns the number of visible lines.
   ALWAYS_INLINE u16 GetCRTCActiveStartLine() const { return m_crtc_state.vertical_display_start; }
   ALWAYS_INLINE u16 GetCRTCActiveEndLine() const { return m_crtc_state.vertical_display_end; }
+  ALWAYS_INLINE u32 GetCRTCCurrentScanline() const { return m_crtc_state.current_scanline; }
 
   // Returns the video clock frequency.
   TickCount GetCRTCFrequency() const;
@@ -258,7 +259,9 @@ protected:
   void UpdateCRTCDisplayParameters();
 
   // Update ticks for this execution slice
+public:
   void UpdateCRTCTickEvent();
+  protected:
   void UpdateCommandTickEvent();
 
   // Updates dynamic bits in GPUSTAT (ready to send VRAM/ready to receive DMA)
@@ -268,6 +271,7 @@ protected:
   // Ticks for hblank/vblank.
   void CRTCTickEvent(TickCount ticks);
   void CommandTickEvent(TickCount ticks);
+  void DoPartialScanout();
 
   /// Returns 0 if the currently-displayed field is on odd lines (1,3,5,...) or 1 if even (2,4,6,...).
   ALWAYS_INLINE u32 GetInterlacedDisplayField() const { return ZeroExtend32(m_crtc_state.interlaced_field); }
@@ -315,7 +319,7 @@ protected:
   virtual void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height);
   virtual void DispatchRenderCommand() = 0;
   virtual void UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit) = 0;
-  virtual void UpdateDisplay() = 0;
+  virtual void UpdateDisplay(bool partial, u32 start_line, u32 end_line) = 0;
   virtual void DrawRendererStats();
   virtual void OnBufferSwapped();
 
@@ -535,6 +539,9 @@ protected:
     u32 current_scanline;
 
     TickCount fractional_dot_ticks; // only used when timer0 is enabled
+
+    u32 last_scanout_line;
+    bool start_address_changed;
 
     bool in_hblank;
     bool in_vblank;

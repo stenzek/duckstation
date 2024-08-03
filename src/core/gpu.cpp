@@ -196,7 +196,7 @@ void GPU::Reset(bool clear_vram)
   m_command_tick_event.Deactivate();
 
   SoftReset();
-  UpdateDisplay();
+  UpdateDisplay(false, 0, 0);
 }
 
 void GPU::SoftReset()
@@ -373,7 +373,7 @@ bool GPU::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_displ
   {
     UpdateCRTCConfig();
     if (update_display)
-      UpdateDisplay();
+      UpdateDisplay(false, 0, 0);
 
     UpdateCommandTickEvent();
   }
@@ -950,6 +950,9 @@ void GPU::CRTCTickEvent(TickCount ticks)
         Timers::AddTicks(HBLANK_TIMER_INDEX, static_cast<TickCount>(hblank_timer_ticks));
     }
 
+    if (m_crtc_state.start_address_changed)
+      DoPartialScanout();
+
     UpdateCRTCTickEvent();
     return;
   }
@@ -995,6 +998,9 @@ void GPU::CRTCTickEvent(TickCount ticks)
       m_crtc_state.in_vblank = false;
     }
 
+    if (m_crtc_state.start_address_changed)
+      DoPartialScanout();
+
     const bool new_vblank = m_crtc_state.current_scanline < m_crtc_state.vertical_display_start ||
                             m_crtc_state.current_scanline >= m_crtc_state.vertical_display_end;
     if (m_crtc_state.in_vblank != new_vblank)
@@ -1003,10 +1009,14 @@ void GPU::CRTCTickEvent(TickCount ticks)
       {
         DEBUG_LOG("Now in v-blank");
 
-        // flush any pending draws and "scan out" the image
         // TODO: move present in here I guess
-        FlushRender();
-        UpdateDisplay();
+        if (m_crtc_state.last_scanout_line < m_crtc_state.display_vram_height)
+        {
+          UpdateDisplay(true, m_crtc_state.last_scanout_line, m_crtc_state.display_vram_height);
+          m_crtc_state.last_scanout_line = 0;
+          m_crtc_state.start_address_changed = false;
+        }
+
         TimingEvents::SetFrameDone();
 
         // switch fields early. this is needed so we draw to the correct one.
@@ -1068,6 +1078,20 @@ void GPU::CRTCTickEvent(TickCount ticks)
   }
 
   UpdateCRTCTickEvent();
+}
+
+void GPU::DoPartialScanout()
+{
+  const u32 vram_first_line = m_crtc_state.vertical_visible_start + m_crtc_state.display_origin_top;
+  const u32 vram_line = (m_crtc_state.current_scanline < vram_first_line) ? 0 : std::min<u32>(m_crtc_state.current_scanline - vram_first_line, m_crtc_state.display_vram_height);
+  if (vram_line != m_crtc_state.last_scanout_line && m_crtc_state.start_address_changed)
+  {
+    if (m_crtc_state.last_scanout_line < m_crtc_state.display_vram_height)
+      UpdateDisplay(true, m_crtc_state.last_scanout_line, vram_line);
+
+    m_crtc_state.last_scanout_line = vram_line;
+    m_crtc_state.start_address_changed = false;
+  }
 }
 
 void GPU::CommandTickEvent(TickCount ticks)
@@ -1286,8 +1310,16 @@ void GPU::WriteGP1(u32 value)
       System::IncrementInternalFrameNumber();
       if (m_crtc_state.regs.display_address_start != new_value)
       {
+        m_crtc_state.start_address_changed = true;
         SynchronizeCRTC();
         m_crtc_state.regs.display_address_start = new_value;
+
+        if (!m_crtc_state.in_vblank)
+        {
+          GL_INS_FMT("Display address start set to ({},{}) at scanline {}", m_crtc_state.regs.X.GetValue(),
+                     m_crtc_state.regs.Y.GetValue(), m_crtc_state.current_scanline);
+        }
+
         UpdateCRTCDisplayParameters();
         OnBufferSwapped();
       }

@@ -44,14 +44,14 @@ protected:
   void UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit) override;
 
   template<GPUTexture::Format display_format>
-  bool CopyOut15Bit(u32 src_x, u32 src_y, u32 width, u32 height, u32 line_skip);
+  bool CopyOut15Bit(u32 src_x, u32 src_y, u32 skip_y, u32 width, u32 height, u32 line_skip);
 
   template<GPUTexture::Format display_format>
-  bool CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u32 line_skip);
+  bool CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x, u32 skip_y, u32 width, u32 height, u32 line_skip);
 
-  bool CopyOut(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u32 line_skip, bool is_24bit);
+  bool CopyOut(u32 src_x, u32 src_y, u32 skip_x, u32 skip_y, u32 width, u32 height, u32 line_skip, bool is_24bit);
 
-  void UpdateDisplay() override;
+  void UpdateDisplay(bool partial, u32 start_line, u32 end_line) override;
 
   void DispatchRenderCommand() override;
 

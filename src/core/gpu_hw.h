@@ -71,7 +71,7 @@ public:
   std::tuple<u32, u32> GetEffectiveDisplayResolution(bool scaled = true) override;
   std::tuple<u32, u32> GetFullDisplayResolution(bool scaled = true) override;
 
-  void UpdateDisplay() override;
+  void UpdateDisplay(bool partial, u32 start_line, u32 end_line) override;
 
 private:
   enum : u32

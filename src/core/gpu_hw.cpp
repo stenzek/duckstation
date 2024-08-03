@@ -503,7 +503,7 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
     UpdateVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT, g_vram, false, false);
     if (m_write_mask_as_depth)
       UpdateDepthBufferFromMaskBit();
-    UpdateDisplay();
+    UpdateDisplay(false, 0, 0);
   }
   else if (m_vram_depth_texture && depth_buffer_changed)
   {
@@ -3593,7 +3593,7 @@ void GPU_HW::FlushRender()
   }
 }
 
-void GPU_HW::UpdateDisplay()
+void GPU_HW::UpdateDisplay(bool partial, u32 start_line, u32 end_line)
 {
   FlushRender();
   DeactivateROV();
