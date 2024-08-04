@@ -225,8 +225,9 @@ if(WIN32)
 elseif(APPLE)
   # Don't generate a bundle for XCode, it makes code signing fail...
   if(NOT CMAKE_GENERATOR MATCHES "Xcode")
+    get_scm_version()
     set(BUNDLE_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DuckStation.app)
-      set_target_properties(duckstation-qt PROPERTIES
+    set_target_properties(duckstation-qt PROPERTIES
       MACOSX_BUNDLE true
       MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in
       OUTPUT_NAME DuckStation

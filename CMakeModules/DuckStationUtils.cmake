@@ -200,3 +200,24 @@ int main() {
     set(HOST_CACHE_LINE_SIZE ${detect_cache_line_size_output} CACHE STRING "Reported host cache line size")
   endif()
 endfunction()
+
+function(get_scm_version)
+  if(SCM_VERSION)
+    return()
+  endif()
+
+  find_package(Git)
+  if(EXISTS "${PROJECT_SOURCE_DIR}/.git" AND GIT_FOUND)
+    execute_process(
+      COMMAND ${GIT_EXECUTABLE} describe --dirty
+      WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
+      OUTPUT_VARIABLE LOCAL_SCM_VERSION
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+  endif()
+  if(NOT LOCAL_SCM_VERSION)
+    set(SCM_VERSION "unknown" PARENT_SCOPE)
+  else()
+    set(SCM_VERSION ${LOCAL_SCM_VERSION} PARENT_SCOPE)
+  endif()
+endfunction()
