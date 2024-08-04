@@ -40,6 +40,7 @@
 #include "fmt/format.h"
 #include "imgui.h"
 #include "imgui_internal.h"
+#include "rc_api_runtime.h"
 #include "rc_client.h"
 
 #include <algorithm>
@@ -66,6 +67,7 @@ static constexpr const char* INFO_SOUND_NAME = "sounds/achievements/message.wav"
 static constexpr const char* UNLOCK_SOUND_NAME = "sounds/achievements/unlock.wav";
 static constexpr const char* LBSUBMIT_SOUND_NAME = "sounds/achievements/lbsubmit.wav";
 static constexpr const char* ACHEIVEMENT_DETAILS_URL_TEMPLATE = "https://retroachievements.org/achievement/{}";
+static constexpr const char* CACHE_SUBDIRECTORY_NAME = "achievement_images";
 
 static constexpr u32 LEADERBOARD_NEARBY_ENTRIES_TO_FETCH = 10;
 static constexpr u32 LEADERBOARD_ALL_FETCH_SIZE = 20;
@@ -123,7 +125,7 @@ template<typename... T>
 static void ReportFmtError(fmt::format_string<T...> fmt, T&&... args);
 template<typename... T>
 static void ReportRCError(int err, fmt::format_string<T...> fmt, T&&... args);
-static void EnsureCacheDirectoriesExist();
+static void EnsureCacheDirectoryExists();
 static void ClearGameInfo();
 static void ClearGameHash();
 static std::string GetGameHash(CDImage* image);
@@ -136,6 +138,7 @@ static void IdentifyGame(const std::string& path, CDImage* image);
 static void BeginLoadGame();
 static void BeginChangeDisc();
 static void UpdateGameSummary();
+static std::string GetLocalImagePath(const std::string_view image_name, int type);
 static void DownloadImage(std::string url, std::string cache_filename);
 
 static bool CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http);
@@ -194,7 +197,6 @@ static bool s_using_raintegration = false;
 
 static std::recursive_mutex s_achievements_mutex;
 static rc_client_t* s_client;
-static std::string s_image_directory;
 static std::unique_ptr<HTTPDownloader> s_http_downloader;
 
 static std::string s_game_path;
@@ -307,6 +309,36 @@ std::string Achievements::GetGameHash(CDImage* image)
   return hash_str;
 }
 
+std::string Achievements::GetLocalImagePath(const std::string_view image_name, int type)
+{
+  std::string_view prefix;
+  switch (type)
+  {
+    case RC_IMAGE_TYPE_GAME:
+      prefix = "image"; // https://media.retroachievements.org/Images/{}.png
+      break;
+
+    case RC_IMAGE_TYPE_USER:
+      prefix = "user"; // https://media.retroachievements.org/UserPic/{}.png
+      break;
+
+    case RC_IMAGE_TYPE_ACHIEVEMENT: // https://media.retroachievements.org/Badge/{}.png
+    case RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED:
+    default:
+      prefix = "badge";
+      break;
+  }
+
+  std::string ret;
+  if (!image_name.empty())
+  {
+    ret = fmt::format("{}" FS_OSPATH_SEPARATOR_STR "{}" FS_OSPATH_SEPARATOR_STR "{}_{}.png", EmuFolders::Cache,
+                      CACHE_SUBDIRECTORY_NAME, prefix, Path::SanitizeFileName(image_name));
+  }
+
+  return ret;
+}
+
 void Achievements::DownloadImage(std::string url, std::string cache_filename)
 {
   auto callback = [cache_filename](s32 status_code, const std::string& content_type,
@@ -395,7 +427,7 @@ bool Achievements::Initialize()
   if (IsUsingRAIntegration())
     return true;
 
-  EnsureCacheDirectoriesExist();
+  EnsureCacheDirectoryExists();
 
   auto lock = GetLock();
   AssertMsg(g_settings.achievements_enabled, "Achievements are enabled");
@@ -532,7 +564,7 @@ void Achievements::UpdateSettings(const Settings& old_config)
   }
 
   // in case cache directory changed
-  EnsureCacheDirectoriesExist();
+  EnsureCacheDirectoryExists();
 }
 
 bool Achievements::Shutdown(bool allow_cancel)
@@ -577,14 +609,13 @@ bool Achievements::Shutdown(bool allow_cancel)
   return true;
 }
 
-void Achievements::EnsureCacheDirectoriesExist()
+void Achievements::EnsureCacheDirectoryExists()
 {
-  s_image_directory = Path::Combine(EmuFolders::Cache, "achievement_images");
-
-  if (!FileSystem::DirectoryExists(s_image_directory.c_str()) &&
-      !FileSystem::CreateDirectory(s_image_directory.c_str(), false))
+  Error error;
+  if (const std::string path = Path::Combine(EmuFolders::Cache, CACHE_SUBDIRECTORY_NAME);
+      !FileSystem::EnsureDirectoryExists(path.c_str(), false, &error))
   {
-    ReportFmtError("Failed to create cache directory '{}'", s_image_directory);
+    ReportFmtError("Failed to create cache directory '{}': {}", CACHE_SUBDIRECTORY_NAME, error.GetDescription());
   }
 }
 
@@ -997,26 +1028,22 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   s_has_achievements = has_achievements;
   s_has_leaderboards = has_leaderboards;
   s_has_rich_presence = rc_client_has_rich_presence(client);
-  s_game_icon = {};
 
   // ensure fullscreen UI is ready for notifications
   if (display_summary)
     FullscreenUI::Initialize();
 
-  if (const std::string_view badge_name = info->badge_name; !badge_name.empty())
+  s_game_icon = GetLocalImagePath(info->badge_name, RC_IMAGE_TYPE_GAME);
+  if (!s_game_icon.empty() && !FileSystem::FileExists(s_game_icon.c_str()))
   {
-    s_game_icon = Path::Combine(s_image_directory, fmt::format("game_{}.png", info->id));
-    if (!FileSystem::FileExists(s_game_icon.c_str()))
+    char buf[512];
+    if (int err = rc_client_game_get_image_url(info, buf, std::size(buf)); err == RC_OK)
     {
-      char buf[512];
-      if (int err = rc_client_game_get_image_url(info, buf, std::size(buf)); err == RC_OK)
-      {
-        DownloadImage(buf, s_game_icon);
-      }
-      else
-      {
-        ReportRCError(err, "rc_client_game_get_image_url() failed: ");
-      }
+      DownloadImage(buf, s_game_icon);
+    }
+    else
+    {
+      ReportRCError(err, "rc_client_game_get_image_url() failed: ");
     }
   }
 
@@ -1618,18 +1645,10 @@ bool Achievements::DoState(StateWrapper& sw)
 std::string Achievements::GetAchievementBadgePath(const rc_client_achievement_t* achievement, int state,
                                                   bool download_if_missing)
 {
-  static constexpr std::array<const char*, NUM_RC_CLIENT_ACHIEVEMENT_STATES> s_achievement_state_strings = {
-    {"inactive", "active", "unlocked", "disabled"}};
-
-  std::string path;
-
-  if (achievement->badge_name[0] == 0)
-    return path;
-
-  path = Path::Combine(s_image_directory, TinyString::from_format("achievement_{}_{}_{}.png", s_game_id,
-                                                                  achievement->id, s_achievement_state_strings[state]));
-
-  if (download_if_missing && !FileSystem::FileExists(path.c_str()))
+  const std::string path = GetLocalImagePath(achievement->badge_name, (state == RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED) ?
+                                                                        RC_IMAGE_TYPE_ACHIEVEMENT :
+                                                                        RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED);
+  if (download_if_missing && !path.empty() && !FileSystem::FileExists(path.c_str()))
   {
     char buf[512];
     const int res = rc_client_achievement_get_image_url(achievement, state, buf, std::size(buf));
@@ -1642,20 +1661,10 @@ std::string Achievements::GetAchievementBadgePath(const rc_client_achievement_t*
   return path;
 }
 
-std::string Achievements::GetUserBadgePath(std::string_view username)
-{
-  // definitely want to sanitize usernames... :)
-  std::string path;
-  const std::string clean_username = Path::SanitizeFileName(username);
-  if (!clean_username.empty())
-    path = Path::Combine(s_image_directory, TinyString::from_format("user_{}.png", clean_username));
-  return path;
-}
-
 std::string Achievements::GetLeaderboardUserBadgePath(const rc_client_leaderboard_entry_t* entry)
 {
   // TODO: maybe we should just cache these in memory...
-  std::string path = GetUserBadgePath(entry->user);
+  const std::string path = GetLocalImagePath(entry->user, RC_IMAGE_TYPE_USER);
 
   if (!FileSystem::FileExists(path.c_str()))
   {
@@ -1837,8 +1846,8 @@ std::string Achievements::GetLoggedInUserBadgePath()
   if (!user) [[unlikely]]
     return badge_path;
 
-  badge_path = GetUserBadgePath(user->username);
-  if (!FileSystem::FileExists(badge_path.c_str())) [[unlikely]]
+  badge_path = GetLocalImagePath(user->username, RC_IMAGE_TYPE_USER);
+  if (!badge_path.empty() && !FileSystem::FileExists(badge_path.c_str())) [[unlikely]]
   {
     char url[512];
     const int res = rc_client_user_get_image_url(user, url, std::size(url));
