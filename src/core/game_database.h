@@ -80,6 +80,7 @@ struct Entry
   std::optional<s16> display_active_end_offset;
   std::optional<s8> display_line_start_offset;
   std::optional<s8> display_line_end_offset;
+  std::optional<DisplayCropMode> display_crop_mode;
   std::optional<DisplayDeinterlacingMode> display_deinterlacing_mode;
   std::optional<GPULineDetectMode> gpu_line_detect_mode;
   std::optional<u32> dma_max_slice_ticks;

@@ -30795,11 +30795,11 @@ SLUS-00576:
   compatibility:
     rating: NoIssues
     versionTested: "0.1-1409-ge198e315"
-    comments: "This game drawns in the \"typical\" overscan area. These areas would not be visible in a typical TV of the era. To bypass some of these problems, you can change the\
-      \ Crop to \"none\" or change the screen positioning with the in-game buit function."
   controllers:
     - AnalogController
     - DigitalController
+  settings:
+    displayCropMode: None # Game draws in overscan area.
   metadata:
     publisher: "Interplay"
     developer: "Pixelogic"
@@ -75170,9 +75170,10 @@ SLUS-00172:
   compatibility:
     rating: NoIssues
     versionTested: "0.1-2862-g6fbffb6f"
-    comments: "Image cut off on top and bottom - can be fixed by disabling cropping"
   controllers:
     - DigitalController
+  settings:
+    displayCropMode: None # Overscan cuts off HUD.
   metadata:
     publisher: "Xing Entertaiment / Kokopeli"
     developer: "Irem / Tsuji Jimusho"
@@ -80628,6 +80629,8 @@ SLPS-00086:
   name: "Kaitei Daisensou - In the Hunt (Japan)"
   controllers:
     - DigitalController
+  settings:
+    displayCropMode: None # Overscan cuts off HUD.
   metadata:
     publisher: "Xing Entertaiment"
     developer: "Irem / Tsuji Jimusho"
@@ -80646,6 +80649,8 @@ SLPS-02790:
   name: "Kaitei Daisensou - In the Hunt [Xing Maruyasu Series]"
   controllers:
     - DigitalController
+  settings:
+    displayCropMode: None # Overscan cuts off HUD.
   metadata:
     publisher: "Xing Entertaiment"
     developer: "Irem / Tsuji Jimusho"
