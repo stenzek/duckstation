@@ -20,6 +20,7 @@
 
 #include "common/error.h"
 #include "common/file_system.h"
+#include "common/timer.h"
 
 #include "IconsFontAwesome5.h"
 

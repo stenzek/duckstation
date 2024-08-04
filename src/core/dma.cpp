@@ -4,7 +4,6 @@
 #include "dma.h"
 #include "bus.h"
 #include "cdrom.h"
-#include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "gpu.h"
 #include "host.h"

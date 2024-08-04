@@ -1,13 +1,15 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
-#include "common/assert.h"
-#include "common/log.h"
-#include "common/string_util.h"
 #include "gpu.h"
 #include "interrupt_controller.h"
 #include "system.h"
 #include "texture_replacements.h"
+
+#include "common/assert.h"
+#include "common/log.h"
+#include "common/string_util.h"
+
 Log_SetChannel(GPU);
 
 #define CHECK_COMMAND_SIZE(num_words)                                                                                  \

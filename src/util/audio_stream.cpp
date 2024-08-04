@@ -10,7 +10,6 @@
 #include "common/gsvector.h"
 #include "common/log.h"
 #include "common/settings_interface.h"
-#include "common/small_string.h"
 #include "common/timer.h"
 
 #include "soundtouch/SoundTouch.h"

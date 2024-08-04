@@ -10,13 +10,8 @@
 #include "cpu_core_private.h"
 #include "cpu_types.h"
 
-#include "util/page_fault_handler.h"
-
 #include <array>
-#include <map>
-#include <memory>
 #include <unordered_map>
-#include <vector>
 
 namespace CPU::CodeCache {
 

@@ -30721,6 +30721,9 @@ SLES-02495:
     linkCable: false
 SCPS-10003:
   name: "Crime Crackers (Japan)"
+  compatibility:
+    rating: NoIssues
+    versionTested: "0.1-7272-g143acca03"
   controllers:
     - DigitalController
   settings:
@@ -31038,10 +31041,16 @@ SLUS-00530:
     linkCable: false
 SLED-02119:
   name: "Croc 2 (Europe) (Demo)"
+  compatibility:
+    rating: NoIssues
+    versionTested: "0.1-7272-g143acca03"
   traits:
     - ForcePGXPCPUMode
 SLES-02088:
   name: "Croc 2 (Europe) (En,Fr,De,Es,It,Nl,Sv)"
+  compatibility:
+    rating: NoIssues
+    versionTested: "0.1-7272-g143acca03"
   controllers:
     - AnalogController
     - DigitalController
@@ -56420,6 +56429,9 @@ SCES-00867:
       - SCES-00867
       - SCES-10867
       - SCES-20867
+  compatibility:
+    rating: NoIssues
+    versionTested: "0.1-7272-g143acca03"
   controllers:
     - DigitalController
   traits:
@@ -56449,6 +56461,9 @@ SCES-10867:
       - SCES-00867
       - SCES-10867
       - SCES-20867
+  compatibility:
+    rating: NoIssues
+    versionTested: "0.1-7272-g143acca03"
   controllers:
     - DigitalController
   traits:
@@ -56478,6 +56493,9 @@ SCES-20867:
       - SCES-00867
       - SCES-10867
       - SCES-20867
+  compatibility:
+    rating: NoIssues
+    versionTested: "0.1-7272-g143acca03"
   controllers:
     - DigitalController
   traits:
@@ -56507,6 +56525,9 @@ SCES-00868:
       - SCES-00868
       - SCES-10868
       - SCES-20868
+  compatibility:
+    rating: NoIssues
+    versionTested: "0.1-7272-g143acca03"
   controllers:
     - DigitalController
   traits:
@@ -56536,6 +56557,9 @@ SCES-10868:
       - SCES-00868
       - SCES-10868
       - SCES-20868
+  compatibility:
+    rating: NoIssues
+    versionTested: "0.1-7272-g143acca03"
   controllers:
     - DigitalController
   traits:
@@ -56565,6 +56589,9 @@ SCES-20868:
       - SCES-00868
       - SCES-10868
       - SCES-20868
+  compatibility:
+    rating: NoIssues
+    versionTested: "0.1-7272-g143acca03"
   controllers:
     - DigitalController
   traits:
@@ -56594,6 +56621,9 @@ SCES-00869:
       - SCES-00869
       - SCES-10869
       - SCES-20869
+  compatibility:
+    rating: NoIssues
+    versionTested: "0.1-7272-g143acca03"
   controllers:
     - DigitalController
   traits:
@@ -56623,6 +56653,9 @@ SCES-10869:
       - SCES-00869
       - SCES-10869
       - SCES-20869
+  compatibility:
+    rating: NoIssues
+    versionTested: "0.1-7272-g143acca03"
   controllers:
     - DigitalController
   traits:
@@ -56652,6 +56685,9 @@ SCES-20869:
       - SCES-00869
       - SCES-10869
       - SCES-20869
+  compatibility:
+    rating: NoIssues
+    versionTested: "0.1-7272-g143acca03"
   controllers:
     - DigitalController
   traits:
@@ -56711,6 +56747,9 @@ SLPS-00701:
       - SLPS-00700
       - SLPS-00701
       - SLPS-00702
+  compatibility:
+    rating: NoIssues
+    versionTested: "0.1-841-g777809b"
   controllers:
     - DigitalController
   traits:
@@ -56738,6 +56777,9 @@ SLPS-00702:
       - SLPS-00700
       - SLPS-00701
       - SLPS-00702
+  compatibility:
+    rating: NoIssues
+    versionTested: "0.1-841-g777809b"
   controllers:
     - DigitalController
   traits:
@@ -58208,9 +58250,8 @@ SCES-03884:
 SLPS-00148:
   name: "Firemen 2, The - Pete & Danny (Japan)"
   compatibility:
-    rating: GraphicalAudioIssues
-    versionTested: "0.1-4693-gbbcf1c67"
-    comments: "Dialogue in certain cutscenes ends too early or is missing entirely (Issue #575)"
+    rating: NoIssues
+    versionTested: "0.1-7272-g143acca03"
   controllers:
     - DigitalController
   codes:
@@ -71234,8 +71275,8 @@ SLUS-00830:
 SLUS-01244:
   name: "High Heat Major League Baseball 2002 (USA)"
   compatibility:
-    rating: GraphicalAudioIssues
-    versionTested: "0.1-4693-gbbcf1c67"
+    rating: NoIssues
+    versionTested: "0.1-7272-g143acca03"
   controllers:
     - AnalogController
     - DigitalController

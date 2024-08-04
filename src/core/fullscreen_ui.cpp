@@ -8,12 +8,9 @@
 #include "bios.h"
 #include "cheats.h"
 #include "controller.h"
-#include "core/memory_card_image.h"
-#include "cpu_core.h"
 #include "game_list.h"
 #include "gpu.h"
 #include "host.h"
-#include "resources.h"
 #include "settings.h"
 #include "system.h"
 
@@ -33,15 +30,13 @@
 #include "common/path.h"
 #include "common/small_string.h"
 #include "common/string_util.h"
-#include "common/threading.h"
+#include "common/timer.h"
 
 #include "IconsFontAwesome5.h"
 #include "IconsPromptFont.h"
 #include "fmt/chrono.h"
-#include "fmt/format.h"
 #include "imgui.h"
 #include "imgui_internal.h"
-#include "imgui_stdlib.h"
 
 #include <atomic>
 #include <bitset>

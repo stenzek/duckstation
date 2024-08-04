@@ -6,7 +6,6 @@
 #include "bus.h"
 #include "system.h"
 
-#include "common/assert.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
@@ -14,7 +13,6 @@
 
 #include "zlib.h"
 
-#include <cctype>
 #include <cstring>
 
 Log_SetChannel(PSFLoader);

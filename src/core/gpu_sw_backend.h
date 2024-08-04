@@ -7,8 +7,6 @@
 #include "gpu_backend.h"
 
 #include <array>
-#include <memory>
-#include <vector>
 
 class GPU_SW_Backend final : public GPUBackend
 {

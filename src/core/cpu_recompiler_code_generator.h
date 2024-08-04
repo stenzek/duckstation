@@ -2,16 +2,15 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
-#include <array>
-#include <initializer_list>
-#include <utility>
-#include <vector>
 
 #include "cpu_code_cache_private.h"
 #include "cpu_recompiler_register_cache.h"
 #include "cpu_recompiler_thunks.h"
 #include "cpu_recompiler_types.h"
 #include "cpu_types.h"
+
+#include <array>
+#include <utility>
 
 namespace CPU::Recompiler {
 

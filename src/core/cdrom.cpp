@@ -10,6 +10,7 @@
 #include "settings.h"
 #include "spu.h"
 #include "system.h"
+#include "timing_event.h"
 
 #include "util/cd_image.h"
 #include "util/imgui_manager.h"

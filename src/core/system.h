@@ -4,18 +4,13 @@
 #pragma once
 
 #include "settings.h"
-#include "timing_event.h"
 #include "types.h"
 
 #include "util/image.h"
 
-#include "common/timer.h"
-
 #include <memory>
 #include <optional>
-#include <span>
 #include <string>
-#include <utility>
 
 class ByteStream;
 class CDImage;
@@ -32,7 +27,6 @@ struct CheatCode;
 class CheatList;
 
 class GPUTexture;
-class GrowableMemoryByteStream;
 
 namespace BIOS {
 struct ImageInfo;

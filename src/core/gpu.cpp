@@ -22,7 +22,6 @@
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/gsvector_formatter.h"
-#include "common/heap_array.h"
 #include "common/log.h"
 #include "common/path.h"
 #include "common/small_string.h"

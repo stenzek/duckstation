@@ -17,8 +17,6 @@
 
 #include "IconsFontAwesome5.h"
 
-#include <cstdio>
-
 Log_SetChannel(MemoryCard);
 
 MemoryCard::MemoryCard()

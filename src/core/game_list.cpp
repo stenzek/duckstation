@@ -15,7 +15,6 @@
 #include "util/image.h"
 #include "util/ini_settings_interface.h"
 
-#include "common/assert.h"
 #include "common/binary_reader_writer.h"
 #include "common/error.h"
 #include "common/file_system.h"
@@ -24,10 +23,10 @@
 #include "common/path.h"
 #include "common/progress_callback.h"
 #include "common/string_util.h"
+#include "common/timer.h"
 
 #include <algorithm>
 #include <array>
-#include <cctype>
 #include <ctime>
 #include <string_view>
 #include <type_traits>

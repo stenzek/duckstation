@@ -10,12 +10,10 @@
 
 #include "common/dimensional_array.h"
 #include "common/gsvector.h"
-#include "common/heap_array.h"
 
 #include <limits>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 class Error;
 

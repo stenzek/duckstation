@@ -2,14 +2,16 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
+
+#include "gpu_types.h"
+
 #include "common/heap_array.h"
 #include "common/threading.h"
-#include "gpu_types.h"
+
 #include <atomic>
 #include <condition_variable>
 #include <memory>
 #include <mutex>
-#include <thread>
 
 #ifdef _MSC_VER
 #pragma warning(push)

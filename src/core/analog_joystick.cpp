@@ -15,8 +15,6 @@
 #include "IconsFontAwesome5.h"
 #include "IconsPromptFont.h"
 
-#include <cmath>
-
 Log_SetChannel(AnalogJoystick);
 
 AnalogJoystick::AnalogJoystick(u32 index) : Controller(index)

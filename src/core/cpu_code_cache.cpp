@@ -12,6 +12,8 @@
 #include "system.h"
 #include "timing_event.h"
 
+#include "util/page_fault_handler.h"
+
 #include "common/assert.h"
 #include "common/error.h"
 #include "common/intrin.h"

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "cd_image.h"
+
 #include "common/assert.h"
 #include "common/bitutils.h"
 #include "common/error.h"
@@ -9,7 +10,9 @@
 #include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
+
 #include <array>
+
 Log_SetChannel(CDImage);
 
 CDImage::CDImage() = default;

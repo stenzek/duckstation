@@ -7,7 +7,6 @@
 #include "cpu_core_private.h"
 #include "cpu_pgxp.h"
 #include "settings.h"
-#include "timing_event.h"
 
 #include "util/gpu_device.h"
 #include "util/state_wrapper.h"

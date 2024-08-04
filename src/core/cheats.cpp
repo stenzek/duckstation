@@ -4,12 +4,10 @@
 #include "cheats.h"
 #include "bus.h"
 #include "controller.h"
-#include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "host.h"
 #include "system.h"
 
-#include "common/assert.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/small_string.h"
@@ -19,7 +17,9 @@
 #include <iomanip>
 #include <sstream>
 #include <type_traits>
+
 Log_SetChannel(Cheats);
+
 static std::array<u32, 256> cht_register; // Used for D7 ,51 & 52 cheat types
 
 using KeyValuePairVector = std::vector<std::pair<std::string, std::string>>;

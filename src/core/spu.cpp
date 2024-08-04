@@ -8,6 +8,7 @@
 #include "imgui.h"
 #include "interrupt_controller.h"
 #include "system.h"
+#include "timing_event.h"
 
 #include "util/audio_stream.h"
 #include "util/imgui_manager.h"

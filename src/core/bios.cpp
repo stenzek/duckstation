@@ -13,8 +13,6 @@
 #include "common/md5_digest.h"
 #include "common/path.h"
 
-#include <cerrno>
-
 Log_SetChannel(BIOS);
 
 namespace BIOS {

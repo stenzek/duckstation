@@ -1,13 +1,16 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "multitap.h"
-#include "common/log.h"
-#include "common/types.h"
 #include "controller.h"
 #include "memory_card.h"
 #include "pad.h"
+
 #include "util/state_wrapper.h"
+
+#include "common/log.h"
+#include "common/types.h"
+
 Log_SetChannel(Multitap);
 
 Multitap::Multitap()

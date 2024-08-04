@@ -7,8 +7,6 @@
 #include "timing_event.h"
 
 #include <memory>
-#include <optional>
-#include <string_view>
 
 class TimingEvent;
 

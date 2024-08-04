@@ -26,6 +26,7 @@
 #include "common/scoped_guard.h"
 #include "common/small_string.h"
 #include "common/string_util.h"
+#include "common/timer.h"
 
 #include "util/cd_image.h"
 #include "util/http_downloader.h"
@@ -39,7 +40,6 @@
 #include "fmt/format.h"
 #include "imgui.h"
 #include "imgui_internal.h"
-#include "imgui_stdlib.h"
 #include "rc_client.h"
 
 #include <algorithm>

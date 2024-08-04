@@ -5,7 +5,6 @@
 #include "gpu.h"
 #include "host.h"
 #include "interrupt_controller.h"
-#include "resources.h"
 #include "system.h"
 
 #include "util/imgui_manager.h"

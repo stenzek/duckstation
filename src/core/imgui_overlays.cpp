@@ -12,12 +12,10 @@
 #include "gpu.h"
 #include "host.h"
 #include "mdec.h"
-#include "resources.h"
 #include "settings.h"
 #include "spu.h"
 #include "system.h"
 
-#include "util/audio_stream.h"
 #include "util/gpu_device.h"
 #include "util/imgui_animated.h"
 #include "util/imgui_fullscreen.h"
@@ -25,8 +23,6 @@
 #include "util/input_manager.h"
 
 #include "common/align.h"
-#include "common/assert.h"
-#include "common/easing.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/gsvector.h"
@@ -38,7 +34,6 @@
 
 #include "IconsFontAwesome5.h"
 #include "fmt/chrono.h"
-#include "fmt/format.h"
 #include "imgui.h"
 #include "imgui_internal.h"
 
@@ -48,7 +43,6 @@
 #include <deque>
 #include <mutex>
 #include <span>
-#include <unordered_map>
 
 Log_SetChannel(ImGuiManager);
 

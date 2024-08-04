@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
-#include "types.h"
+
+#include "common/types.h"
 
 class StateWrapper;
 

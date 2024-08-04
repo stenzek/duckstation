@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
+
 #include "gpu_hw.h"
+
 #include "util/shadergen.h"
 
 class GPU_HW_ShaderGen : public ShaderGen

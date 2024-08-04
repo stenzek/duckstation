@@ -9,7 +9,6 @@
 
 #include "scmversion/scmversion.h"
 
-#include "util/platform_misc.h"
 #include "util/sockets.h"
 
 #include "common/binary_reader_writer.h"
