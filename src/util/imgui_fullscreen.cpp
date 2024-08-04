@@ -283,6 +283,16 @@ const std::shared_ptr<GPUTexture>& ImGuiFullscreen::GetPlaceholderTexture()
   return s_placeholder_texture;
 }
 
+std::unique_ptr<GPUTexture> ImGuiFullscreen::CreateTextureFromImage(const RGBA8Image& image)
+{
+  std::unique_ptr<GPUTexture> ret =
+    g_gpu_device->CreateTexture(image.GetWidth(), image.GetHeight(), 1, 1, 1, GPUTexture::Type::Texture,
+                                GPUTexture::Format::RGBA8, image.GetPixels(), image.GetPitch());
+  if (!ret) [[unlikely]]
+    ERROR_LOG("Failed to upload {}x{} RGBA8Image to GPU", image.GetWidth(), image.GetHeight());
+  return ret;
+}
+
 std::optional<RGBA8Image> ImGuiFullscreen::LoadTextureImage(std::string_view path)
 {
   std::optional<RGBA8Image> image;

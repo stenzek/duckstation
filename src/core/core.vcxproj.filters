@@ -38,7 +38,6 @@
     <ClCompile Include="guncon.cpp" />
     <ClCompile Include="playstation_mouse.cpp" />
     <ClCompile Include="negcon.cpp" />
-    <ClCompile Include="resources.cpp" />
     <ClCompile Include="host_interface_progress_callback.cpp" />
     <ClCompile Include="cpu_pgxp.cpp" />
     <ClCompile Include="cheats.cpp" />
@@ -107,7 +106,6 @@
     <ClInclude Include="guncon.h" />
     <ClInclude Include="playstation_mouse.h" />
     <ClInclude Include="negcon.h" />
-    <ClInclude Include="resources.h" />
     <ClInclude Include="host_interface_progress_callback.h" />
     <ClInclude Include="gte_types.h" />
     <ClInclude Include="cpu_pgxp.h" />

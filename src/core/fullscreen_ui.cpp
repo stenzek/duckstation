@@ -116,6 +116,7 @@ using ImGuiFullscreen::BeginNavBar;
 using ImGuiFullscreen::CenterImage;
 using ImGuiFullscreen::CloseChoiceDialog;
 using ImGuiFullscreen::CloseFileSelector;
+using ImGuiFullscreen::CreateTextureFromImage;
 using ImGuiFullscreen::DrawShadowedText;
 using ImGuiFullscreen::EndFullscreenColumns;
 using ImGuiFullscreen::EndFullscreenColumnWindow;
@@ -436,7 +437,6 @@ static void InitializePlaceholderSaveStateListEntry(SaveStateListEntry* li, cons
 static bool InitializeSaveStateListEntryFromSerial(SaveStateListEntry* li, const std::string& serial, s32 slot,
                                                    bool global);
 static bool InitializeSaveStateListEntryFromPath(SaveStateListEntry* li, std::string path, s32 slot, bool global);
-static void PopulateSaveStateScreenshot(SaveStateListEntry* li, const ExtendedSaveStateInfo* ssi);
 static void ClearSaveStateEntryList();
 static u32 PopulateSaveStateListEntries(const std::string& title, const std::string& serial);
 static bool OpenLoadStateSelectorForGame(const std::string& game_path);
@@ -5550,29 +5550,10 @@ bool FullscreenUI::InitializeSaveStateListEntryFromPath(SaveStateListEntry* li, 
   li->slot = slot;
   li->path = std::move(path);
   li->global = global;
+  if (ssi->screenshot.IsValid())
+    li->preview_texture = CreateTextureFromImage(ssi->screenshot);
 
-  PopulateSaveStateScreenshot(li, &ssi.value());
   return true;
-}
-
-void FullscreenUI::PopulateSaveStateScreenshot(SaveStateListEntry* li, const ExtendedSaveStateInfo* ssi)
-{
-  li->preview_texture.reset();
-  if (ssi && ssi->screenshot.IsValid())
-  {
-    li->preview_texture = g_gpu_device->FetchTexture(ssi->screenshot.GetWidth(), ssi->screenshot.GetHeight(), 1, 1, 1,
-                                                     GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
-                                                     ssi->screenshot.GetPixels(), ssi->screenshot.GetPitch());
-  }
-  else
-  {
-    li->preview_texture = g_gpu_device->FetchTexture(
-      Resources::PLACEHOLDER_ICON_WIDTH, Resources::PLACEHOLDER_ICON_HEIGHT, 1, 1, 1, GPUTexture::Type::Texture,
-      GPUTexture::Format::RGBA8, Resources::PLACEHOLDER_ICON_DATA, sizeof(u32) * Resources::PLACEHOLDER_ICON_WIDTH);
-  }
-
-  if (!li->preview_texture)
-    ERROR_LOG("Failed to upload save state image to GPU");
 }
 
 void FullscreenUI::ClearSaveStateEntryList()
@@ -5595,9 +5576,10 @@ u32 FullscreenUI::PopulateSaveStateListEntries(const std::string& title, const s
     if (ssi)
     {
       SaveStateListEntry li;
-      PopulateSaveStateScreenshot(&li, &ssi.value());
       li.title = FSUI_STR("Undo Load State");
       li.summary = FSUI_STR("Restores the state of the system prior to the last state loaded.");
+      if (ssi->screenshot.IsValid())
+        li.preview_texture = CreateTextureFromImage(ssi->screenshot);
       s_save_state_selector_slots.push_back(std::move(li));
     }
   }
@@ -5896,7 +5878,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
         bb.Max -= style.FramePadding;
 
         GPUTexture* const screenshot =
-          entry.preview_texture ? entry.preview_texture.get() : GetPlaceholderTexture().get();
+          entry.preview_texture ? entry.preview_texture.get() : GetCachedTextureAsync("no-save.png");
         const ImRect image_rect(
           CenterImage(ImRect(bb.Min, bb.Min + image_size),
                       ImVec2(static_cast<float>(screenshot->GetWidth()), static_cast<float>(screenshot->GetHeight()))));

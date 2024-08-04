@@ -18,6 +18,7 @@
 #include <utility>
 #include <vector>
 
+class RGBA8Image;
 class GPUTexture;
 class SmallStringBase;
 
@@ -128,6 +129,7 @@ void Shutdown();
 
 /// Texture cache.
 const std::shared_ptr<GPUTexture>& GetPlaceholderTexture();
+std::unique_ptr<GPUTexture> CreateTextureFromImage(const RGBA8Image& image);
 std::shared_ptr<GPUTexture> LoadTexture(std::string_view path);
 GPUTexture* GetCachedTexture(std::string_view name);
 GPUTexture* GetCachedTextureAsync(std::string_view name);
