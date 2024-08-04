@@ -289,7 +289,7 @@ function(add_util_resources target)
     endif()
 
     # Copy shaderc into the bundle
-    get_target_property(SPIRV_CROSS_LIBRARY spirv-cross-c-shared IMPORTED_LOCATION_RELEASE)
+    get_target_property(SPIRV_CROSS_LIBRARY spirv-cross-c-shared IMPORTED_SONAME_RELEASE)
     target_sources(duckstation-qt PRIVATE "${SHADERC_LIBRARY}" "${SPIRV_CROSS_LIBRARY}")
     set_source_files_properties("${SHADERC_LIBRARY}" "${SPIRV_CROSS_LIBRARY}" PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks)
   endif()
