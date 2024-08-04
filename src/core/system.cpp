@@ -442,10 +442,6 @@ bool System::Internal::CPUThreadInitialize(Error* error)
   // This will call back to Host::LoadSettings() -> ReloadSources().
   LoadSettings(false);
 
-#ifdef ENABLE_RAINTEGRATION
-  if (Host::GetBaseBoolSettingValue("Cheevos", "UseRAIntegration", false))
-    Achievements::SwitchToRAIntegration();
-#endif
   if (g_settings.achievements_enabled)
     Achievements::Initialize();
 

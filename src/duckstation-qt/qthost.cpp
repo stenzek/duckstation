@@ -45,8 +45,8 @@
 
 #include "scmversion/scmversion.h"
 
-#include "imgui.h"
 #include "core/bus.h"
+#include "imgui.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDateTime>
@@ -167,6 +167,12 @@ bool QtHost::PerformEarlyHardwareChecks()
 
 bool QtHost::EarlyProcessStartup()
 {
+  // Config-based RAIntegration switch must happen before the main window is displayed.
+#ifdef ENABLE_RAINTEGRATION
+  if (!Achievements::IsUsingRAIntegration() && Host::GetBaseBoolSettingValue("Cheevos", "UseRAIntegration", false))
+    Achievements::SwitchToRAIntegration();
+#endif
+
   Error error;
   if (System::Internal::ProcessStartup(&error)) [[likely]]
     return true;
