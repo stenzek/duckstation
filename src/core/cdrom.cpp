@@ -404,7 +404,8 @@ static u8 s_xa_filter_file_number = 0;
 static u8 s_xa_filter_channel_number = 0;
 static u8 s_xa_current_file_number = 0;
 static u8 s_xa_current_channel_number = 0;
-static u8 s_xa_current_set = false;
+static bool s_xa_current_set = false;
+static XASubHeader::Codinginfo s_xa_current_codinginfo = {};
 
 static CDImage::SectorHeader s_last_sector_header{};
 static XASubHeader s_last_sector_subheader{};
@@ -3419,6 +3420,7 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessXAADPCMSector(const u8* raw_sector, con
   std::array<s16, XA_ADPCM_SAMPLES_PER_SECTOR_4BIT> sample_buffer;
   const u8* xa_block_start =
     raw_sector + CDImage::SECTOR_SYNC_SIZE + sizeof(CDImage::SectorHeader) + sizeof(XASubHeader) * 2;
+  s_xa_current_codinginfo.bits = s_last_sector_subheader.codinginfo.bits;
 
   if (s_last_sector_subheader.codinginfo.Is8BitADPCM())
   {
@@ -3907,8 +3909,11 @@ void CDROM::DrawDebugWindow()
   {
     if (s_drive_state == DriveState::Reading && s_mode.xa_enable)
     {
-      ImGui::TextColored(active_color, "Playing: XA-ADPCM (File %u / Channel %u)", s_xa_current_file_number,
-                         s_xa_current_channel_number);
+      ImGui::TextColored(active_color, "Playing: XA-ADPCM (File %u | Channel %u | %s | %s | %s)",
+                         s_xa_current_file_number, s_xa_current_channel_number,
+                         s_xa_current_codinginfo.IsStereo() ? "Stereo" : "Mono",
+                         s_xa_current_codinginfo.Is8BitADPCM() ? "8-bit" : "4-bit",
+                         s_xa_current_codinginfo.IsHalfSampleRate() ? "18900hz" : "37800hz");
     }
     else if (s_drive_state == DriveState::Playing)
     {
