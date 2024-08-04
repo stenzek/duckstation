@@ -58,7 +58,7 @@ STRIP=strip
 declare -a MANUAL_LIBS=(
 	"libdiscord-rpc.so"
 	"libshaderc_shared.so"
-	"libspirv-cross-c-shared.so.0.61.0"
+	"libspirv-cross-c-shared.so.0"
 )
 
 declare -a MANUAL_QT_LIBS=(

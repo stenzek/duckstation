@@ -1321,8 +1321,7 @@ bool dyn_libs::OpenSpirvCross(Error* error)
   // SPVC's build on Windows doesn't spit out a versioned DLL.
   const std::string libname = DynamicLibrary::GetVersionedFilename("spirv-cross-c-shared");
 #else
-  const std::string libname = DynamicLibrary::GetVersionedFilename("spirv-cross-c-shared", SPVC_C_API_VERSION_MAJOR,
-                                                                   SPVC_C_API_VERSION_MINOR, SPVC_C_API_VERSION_PATCH);
+  const std::string libname = DynamicLibrary::GetVersionedFilename("spirv-cross-c-shared", SPVC_C_API_VERSION_MAJOR);
 #endif
   if (!s_spirv_cross_library.Open(libname.c_str(), error))
   {
