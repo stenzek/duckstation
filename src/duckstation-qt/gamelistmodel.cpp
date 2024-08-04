@@ -211,18 +211,33 @@ void GameListModel::loadOrGenerateCover(const GameList::Entry* ge)
 
 void GameListModel::invalidateCoverForPath(const std::string& path)
 {
-  // This isn't ideal, but not sure how else we can get the row, when it might change while scanning...
-  auto lock = GameList::GetLock();
-  const u32 count = GameList::GetEntryCount();
   std::optional<u32> row;
-  for (u32 i = 0; i < count; i++)
+  if (hasTakenGameList())
   {
-    if (GameList::GetEntryByIndex(i)->path == path)
+    for (u32 i = 0; i < static_cast<u32>(m_taken_entries->size()); i++)
     {
-      row = i;
-      break;
+      if (path == m_taken_entries.value()[i].path)
+      {
+        row = i;
+        break;
+      }
     }
   }
+  else
+  {
+    // This isn't ideal, but not sure how else we can get the row, when it might change while scanning...
+    auto lock = GameList::GetLock();
+    const u32 count = GameList::GetEntryCount();
+    for (u32 i = 0; i < count; i++)
+    {
+      if (GameList::GetEntryByIndex(i)->path == path)
+      {
+        row = i;
+        break;
+      }
+    }
+  }
+
   if (!row.has_value())
   {
     // Game removed?
@@ -357,7 +372,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role) const
   const int row = index.row();
   DebugAssert(row >= 0);
 
-  if (m_taken_entries.has_value())
+  if (m_taken_entries.has_value()) [[unlikely]]
   {
     if (static_cast<u32>(row) >= m_taken_entries->size())
       return {};
@@ -586,16 +601,8 @@ void GameListModel::refresh()
   endResetModel();
 }
 
-bool GameListModel::titlesLessThan(int left_row, int right_row) const
+bool GameListModel::titlesLessThan(const GameList::Entry* left, const GameList::Entry* right) const
 {
-  if (left_row < 0 || left_row >= static_cast<int>(GameList::GetEntryCount()) || right_row < 0 ||
-      right_row >= static_cast<int>(GameList::GetEntryCount()))
-  {
-    return false;
-  }
-
-  const GameList::Entry* left = GameList::GetEntryByIndex(left_row);
-  const GameList::Entry* right = GameList::GetEntryByIndex(right_row);
   return (StringUtil::Strcasecmp(left->title.c_str(), right->title.c_str()) < 0);
 }
 
@@ -606,18 +613,32 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
 
   const int left_row = left_index.row();
   const int right_row = right_index.row();
-  if (left_row < 0 || left_row >= static_cast<int>(GameList::GetEntryCount()) || right_row < 0 ||
-      right_row >= static_cast<int>(GameList::GetEntryCount()))
+
+  if (m_taken_entries.has_value()) [[unlikely]]
   {
-    return false;
+    const GameList::Entry* left =
+      (static_cast<u32>(left_row) < m_taken_entries->size()) ? &m_taken_entries.value()[left_row] : nullptr;
+    const GameList::Entry* right =
+      (static_cast<u32>(right_row) < m_taken_entries->size()) ? &m_taken_entries.value()[right_row] : nullptr;
+    if (!left || !right)
+      return false;
+
+    return lessThan(left, right, column);
   }
+  else
+  {
+    const auto lock = GameList::GetLock();
+    const GameList::Entry* left = GameList::GetEntryByIndex(left_row);
+    const GameList::Entry* right = GameList::GetEntryByIndex(right_row);
+    if (!left || !right)
+      return false;
 
-  const auto lock = GameList::GetLock();
-  const GameList::Entry* left = GameList::GetEntryByIndex(left_row);
-  const GameList::Entry* right = GameList::GetEntryByIndex(right_row);
-  if (!left || !right)
-    return false;
+    return lessThan(left, right, column);
+  }
+}
 
+bool GameListModel::lessThan(const GameList::Entry* left, const GameList::Entry* right, int column) const
+{
   switch (column)
   {
     case Column_Icon:
@@ -625,7 +646,7 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
       const GameList::EntryType lst = left->GetSortType();
       const GameList::EntryType rst = right->GetSortType();
       if (lst == rst)
-        return titlesLessThan(left_row, right_row);
+        return titlesLessThan(left, right);
 
       return (static_cast<int>(lst) < static_cast<int>(rst));
     }
@@ -633,21 +654,21 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
     case Column_Serial:
     {
       if (left->serial == right->serial)
-        return titlesLessThan(left_row, right_row);
+        return titlesLessThan(left, right);
       return (StringUtil::Strcasecmp(left->serial.c_str(), right->serial.c_str()) < 0);
     }
 
     case Column_Title:
     {
-      return titlesLessThan(left_row, right_row);
+      return titlesLessThan(left, right);
     }
 
     case Column_FileTitle:
     {
-      const std::string_view file_title_left(Path::GetFileTitle(left->path));
-      const std::string_view file_title_right(Path::GetFileTitle(right->path));
+      const std::string_view file_title_left = Path::GetFileTitle(left->path);
+      const std::string_view file_title_right = Path::GetFileTitle(right->path);
       if (file_title_left == file_title_right)
-        return titlesLessThan(left_row, right_row);
+        return titlesLessThan(left, right);
 
       const std::size_t smallest = std::min(file_title_left.size(), file_title_right.size());
       return (StringUtil::Strncasecmp(file_title_left.data(), file_title_right.data(), smallest) < 0);
@@ -656,14 +677,14 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
     case Column_Region:
     {
       if (left->region == right->region)
-        return titlesLessThan(left_row, right_row);
+        return titlesLessThan(left, right);
       return (static_cast<int>(left->region) < static_cast<int>(right->region));
     }
 
     case Column_Compatibility:
     {
       if (left->compatibility == right->compatibility)
-        return titlesLessThan(left_row, right_row);
+        return titlesLessThan(left, right);
 
       return (static_cast<int>(left->compatibility) < static_cast<int>(right->compatibility));
     }
@@ -671,7 +692,7 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
     case Column_FileSize:
     {
       if (left->file_size == right->file_size)
-        return titlesLessThan(left_row, right_row);
+        return titlesLessThan(left, right);
 
       return (left->file_size < right->file_size);
     }
@@ -679,7 +700,7 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
     case Column_UncompressedSize:
     {
       if (left->uncompressed_size == right->uncompressed_size)
-        return titlesLessThan(left_row, right_row);
+        return titlesLessThan(left, right);
 
       return (left->uncompressed_size < right->uncompressed_size);
     }
@@ -687,28 +708,28 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
     case Column_Genre:
     {
       if (left->genre == right->genre)
-        return titlesLessThan(left_row, right_row);
+        return titlesLessThan(left, right);
       return (StringUtil::Strcasecmp(left->genre.c_str(), right->genre.c_str()) < 0);
     }
 
     case Column_Developer:
     {
       if (left->developer == right->developer)
-        return titlesLessThan(left_row, right_row);
+        return titlesLessThan(left, right);
       return (StringUtil::Strcasecmp(left->developer.c_str(), right->developer.c_str()) < 0);
     }
 
     case Column_Publisher:
     {
       if (left->publisher == right->publisher)
-        return titlesLessThan(left_row, right_row);
+        return titlesLessThan(left, right);
       return (StringUtil::Strcasecmp(left->publisher.c_str(), right->publisher.c_str()) < 0);
     }
 
     case Column_Year:
     {
       if (left->release_date == right->release_date)
-        return titlesLessThan(left_row, right_row);
+        return titlesLessThan(left, right);
 
       return (left->release_date < right->release_date);
     }
@@ -716,7 +737,7 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
     case Column_TimePlayed:
     {
       if (left->total_played_time == right->total_played_time)
-        return titlesLessThan(left_row, right_row);
+        return titlesLessThan(left, right);
 
       return (left->total_played_time < right->total_played_time);
     }
@@ -724,7 +745,7 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
     case Column_LastPlayed:
     {
       if (left->last_played_time == right->last_played_time)
-        return titlesLessThan(left_row, right_row);
+        return titlesLessThan(left, right);
 
       return (left->last_played_time < right->last_played_time);
     }
@@ -734,7 +755,7 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
       u8 left_players = (left->min_players << 4) + left->max_players;
       u8 right_players = (right->min_players << 4) + right->max_players;
       if (left_players == right_players)
-        return titlesLessThan(left_row, right_row);
+        return titlesLessThan(left, right);
 
       return (left_players < right_players);
     }

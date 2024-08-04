@@ -62,7 +62,8 @@ public:
   void refresh();
   void reloadThemeSpecificImages();
 
-  bool titlesLessThan(int left_row, int right_row) const;
+  bool titlesLessThan(const GameList::Entry* left, const GameList::Entry* right) const;
+  bool lessThan(const GameList::Entry* left, const GameList::Entry* right, int column) const;
 
   bool lessThan(const QModelIndex& left_index, const QModelIndex& right_index, int column) const;
 
