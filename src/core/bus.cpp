@@ -154,7 +154,7 @@ static u8** s_fastmem_lut = nullptr;
 
 static bool s_kernel_initialize_hook_run = false;
 
-static bool AllocateMemoryMap(Error* error);
+static bool AllocateMemoryMap(bool export_shared_memory, Error* error);
 static void ReleaseMemoryMap();
 static void SetRAMSize(bool enable_8mb_ram);
 
@@ -197,11 +197,14 @@ static constexpr size_t TOTAL_SIZE = LUT_OFFSET + LUT_SIZE;
 #define FIXUP_WORD_WRITE_VALUE(size, offset, value)                                                                    \
   ((size == MemoryAccessSize::Word) ? (value) : ((value) << (((offset) & 3u) * 8)))
 
-bool Bus::AllocateMemoryMap(Error* error)
+bool Bus::AllocateMemoryMap(bool export_shared_memory, Error* error)
 {
-  // This executes super early in process startup, therefore export_shared_memory will always be false.
-  if (g_settings.export_shared_memory)
+  INFO_LOG("Allocating{} shared memory map.", export_shared_memory ? " EXPORTED" : "");
+  if (export_shared_memory)
+  {
     s_shmem_name = MemMap::GetFileMappingName("duckstation");
+    INFO_LOG("Shared memory object name is \"{}\".", s_shmem_name);
+  }
   s_shmem_handle = MemMap::CreateSharedMemory(s_shmem_name.c_str(), MemoryMap::TOTAL_SIZE, error);
   if (!s_shmem_handle)
   {
@@ -304,9 +307,9 @@ void Bus::ReleaseMemoryMap()
   }
 }
 
-bool Bus::AllocateMemory(Error* error)
+bool Bus::AllocateMemory(bool export_shared_memory, Error* error)
 {
-  if (!AllocateMemoryMap(error))
+  if (!AllocateMemoryMap(export_shared_memory, error))
     return false;
 
 #ifdef ENABLE_MMAP_FASTMEM
@@ -336,7 +339,7 @@ void Bus::ReleaseMemory()
   ReleaseMemoryMap();
 }
 
-bool Bus::ReallocateMemoryMap(Error* error)
+bool Bus::ReallocateMemoryMap(bool export_shared_memory, Error* error)
 {
   // Need to back up RAM+BIOS.
   DynamicHeapArray<u8> ram_backup;
@@ -354,7 +357,7 @@ bool Bus::ReallocateMemoryMap(Error* error)
   }
 
   ReleaseMemoryMap();
-  if (!AllocateMemoryMap(error)) [[unlikely]]
+  if (!AllocateMemoryMap(export_shared_memory, error)) [[unlikely]]
     return false;
 
   if (System::IsValid())

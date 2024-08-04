@@ -712,6 +712,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
       Host::OSD_WARNING_DURATION);
   }
 
+#undef APPEND_MESSAGE_FMT
 #undef APPEND_MESSAGE
 
 #define BIT_FOR(ctype) (static_cast<u16>(1) << static_cast<u32>(ctype))

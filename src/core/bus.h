@@ -113,12 +113,12 @@ enum : u32
 static constexpr size_t FASTMEM_ARENA_SIZE = UINT64_C(0x100000000);
 #endif
 
-bool AllocateMemory(Error* error);
+bool AllocateMemory(bool export_shared_memory, Error* error);
 void ReleaseMemory();
 
 /// Frees and re-allocates the memory map for the process.
 /// This should be called when shared memory exports are enabled.
-bool ReallocateMemoryMap(Error* error);
+bool ReallocateMemoryMap(bool export_shared_memory, Error* error);
 
 /// Cleans up/deletes the shared memory object for this process.
 /// Should be called when the process crashes, to avoid leaking.

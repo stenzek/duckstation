@@ -402,8 +402,11 @@ bool System::Internal::ProcessStartup(Error* error)
   if (!CPU::CodeCache::ProcessStartup(error))
     return false;
 
+  // g_settings is not valid at this point, query global config directly.
+  const bool export_shared_memory = Host::GetBoolSettingValue("Hacks", "ExportSharedMemory", false);
+
   // Fastmem alloc *must* come after JIT alloc, otherwise it tends to eat the 4GB region after the executable on MacOS.
-  if (!Bus::AllocateMemory(error))
+  if (!Bus::AllocateMemory(export_shared_memory, error))
   {
     CPU::CodeCache::ProcessShutdown();
     return false;
@@ -438,13 +441,6 @@ bool System::Internal::CPUThreadInitialize(Error* error)
 
   // This will call back to Host::LoadSettings() -> ReloadSources().
   LoadSettings(false);
-
-  // Yuckity yuck. We have to test for memory export explicitly, because the allocation happens before config load.
-  if (g_settings.export_shared_memory && !Bus::ReallocateMemoryMap(error))
-  {
-    Error::AddPrefix(error, "Failed to reallocate memory map:\n");
-    return false;
-  }
 
 #ifdef ENABLE_RAINTEGRATION
   if (Host::GetBaseBoolSettingValue("Cheevos", "UseRAIntegration", false))
@@ -4367,7 +4363,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
   if (g_settings.export_shared_memory != old_settings.export_shared_memory) [[unlikely]]
   {
     Error error;
-    if (!Bus::ReallocateMemoryMap(&error)) [[unlikely]]
+    if (!Bus::ReallocateMemoryMap(g_settings.export_shared_memory, &error)) [[unlikely]]
     {
       ERROR_LOG(error.GetDescription());
       Panic("Failed to reallocate memory map. The log may contain more information.");
