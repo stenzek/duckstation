@@ -118,6 +118,7 @@ union RAM_SIZE_REG
 } // namespace
 
 static void* s_shmem_handle = nullptr;
+static std::string s_shmem_name;
 
 std::bitset<RAM_8MB_CODE_PAGE_COUNT> g_ram_code_bits{};
 u8* g_ram = nullptr;
@@ -153,6 +154,8 @@ static u8** s_fastmem_lut = nullptr;
 
 static bool s_kernel_initialize_hook_run = false;
 
+static bool AllocateMemoryMap(Error* error);
+static void ReleaseMemoryMap();
 static void SetRAMSize(bool enable_8mb_ram);
 
 static std::tuple<TickCount, TickCount, TickCount> CalculateMemoryTiming(MEMDELAY mem_delay, COMDELAY common_delay);
@@ -194,10 +197,12 @@ static constexpr size_t TOTAL_SIZE = LUT_OFFSET + LUT_SIZE;
 #define FIXUP_WORD_WRITE_VALUE(size, offset, value)                                                                    \
   ((size == MemoryAccessSize::Word) ? (value) : ((value) << (((offset) & 3u) * 8)))
 
-bool Bus::AllocateMemory(Error* error)
+bool Bus::AllocateMemoryMap(Error* error)
 {
-  s_shmem_handle =
-    MemMap::CreateSharedMemory(MemMap::GetFileMappingName("duckstation").c_str(), MemoryMap::TOTAL_SIZE, error);
+  // This executes super early in process startup, therefore export_shared_memory will always be false.
+  if (g_settings.export_shared_memory)
+    s_shmem_name = MemMap::GetFileMappingName("duckstation");
+  s_shmem_handle = MemMap::CreateSharedMemory(s_shmem_name.c_str(), MemoryMap::TOTAL_SIZE, error);
   if (!s_shmem_handle)
   {
 #ifndef __linux__
@@ -216,7 +221,7 @@ bool Bus::AllocateMemory(Error* error)
   if (!g_ram || !g_unprotected_ram)
   {
     Error::SetStringView(error, "Failed to map memory for RAM");
-    ReleaseMemory();
+    ReleaseMemoryMap();
     return false;
   }
 
@@ -227,7 +232,7 @@ bool Bus::AllocateMemory(Error* error)
   if (!g_bios)
   {
     Error::SetStringView(error, "Failed to map memory for BIOS");
-    ReleaseMemory();
+    ReleaseMemoryMap();
     return false;
   }
 
@@ -238,24 +243,13 @@ bool Bus::AllocateMemory(Error* error)
   if (!g_memory_handlers)
   {
     Error::SetStringView(error, "Failed to map memory for LUTs");
-    ReleaseMemory();
+    ReleaseMemoryMap();
     return false;
   }
 
   VERBOSE_LOG("LUTs are mapped at {}.", static_cast<void*>(g_memory_handlers));
   g_memory_handlers_isc = g_memory_handlers + MEMORY_LUT_SLOTS;
   SetHandlers();
-
-#ifdef ENABLE_MMAP_FASTMEM
-  if (!s_fastmem_arena.Create(FASTMEM_ARENA_SIZE))
-  {
-    Error::SetStringView(error, "Failed to create fastmem arena");
-    ReleaseMemory();
-    return false;
-  }
-
-  INFO_LOG("Fastmem base: {}", static_cast<void*>(s_fastmem_arena.BasePointer()));
-#endif
 
 #ifndef __ANDROID__
   Exports::RAM = reinterpret_cast<uintptr_t>(g_unprotected_ram);
@@ -264,21 +258,13 @@ bool Bus::AllocateMemory(Error* error)
   return true;
 }
 
-void Bus::ReleaseMemory()
+void Bus::ReleaseMemoryMap()
 {
 #ifndef __ANDROID__
   Exports::RAM = 0;
   Exports::RAM_SIZE = 0;
   Exports::RAM_MASK = 0;
 #endif
-
-#ifdef ENABLE_MMAP_FASTMEM
-  DebugAssert(s_fastmem_ram_views.empty());
-  s_fastmem_arena.Destroy();
-#endif
-
-  std::free(s_fastmem_lut);
-  s_fastmem_lut = nullptr;
 
   g_memory_handlers_isc = nullptr;
   if (g_memory_handlers)
@@ -309,7 +295,86 @@ void Bus::ReleaseMemory()
   {
     MemMap::DestroySharedMemory(s_shmem_handle);
     s_shmem_handle = nullptr;
+
+    if (!s_shmem_name.empty())
+    {
+      MemMap::DeleteSharedMemory(s_shmem_name.c_str());
+      s_shmem_name = {};
+    }
   }
+}
+
+bool Bus::AllocateMemory(Error* error)
+{
+  if (!AllocateMemoryMap(error))
+    return false;
+
+#ifdef ENABLE_MMAP_FASTMEM
+  if (!s_fastmem_arena.Create(FASTMEM_ARENA_SIZE))
+  {
+    Error::SetStringView(error, "Failed to create fastmem arena");
+    ReleaseMemory();
+    return false;
+  }
+
+  INFO_LOG("Fastmem base: {}", static_cast<void*>(s_fastmem_arena.BasePointer()));
+#endif
+
+  return true;
+}
+
+void Bus::ReleaseMemory()
+{
+#ifdef ENABLE_MMAP_FASTMEM
+  DebugAssert(s_fastmem_ram_views.empty());
+  s_fastmem_arena.Destroy();
+#endif
+
+  std::free(s_fastmem_lut);
+  s_fastmem_lut = nullptr;
+
+  ReleaseMemoryMap();
+}
+
+bool Bus::ReallocateMemoryMap(Error* error)
+{
+  // Need to back up RAM+BIOS.
+  DynamicHeapArray<u8> ram_backup;
+  DynamicHeapArray<u8> bios_backup;
+
+  if (System::IsValid())
+  {
+    CPU::CodeCache::InvalidateAllRAMBlocks();
+    UpdateFastmemViews(CPUFastmemMode::Disabled);
+
+    ram_backup.resize(RAM_8MB_SIZE);
+    std::memcpy(ram_backup.data(), g_unprotected_ram, RAM_8MB_SIZE);
+    bios_backup.resize(BIOS_SIZE);
+    std::memcpy(bios_backup.data(), g_bios, BIOS_SIZE);
+  }
+
+  ReleaseMemoryMap();
+  if (!AllocateMemoryMap(error)) [[unlikely]]
+    return false;
+
+  if (System::IsValid())
+  {
+    UpdateMappedRAMSize();
+    std::memcpy(g_unprotected_ram, ram_backup.data(), RAM_8MB_SIZE);
+    std::memcpy(g_bios, bios_backup.data(), BIOS_SIZE);
+    UpdateFastmemViews(g_settings.cpu_fastmem_mode);
+  }
+
+  return true;
+}
+
+void Bus::CleanupMemoryMap()
+{
+#if !defined(_WIN32) && !defined(__ANDROID__)
+  // This is only needed on Linux.
+  if (!s_shmem_name.empty())
+    MemMap::DeleteSharedMemory(s_shmem_name.c_str());
+#endif
 }
 
 bool Bus::Initialize()
@@ -337,12 +402,6 @@ void Bus::Shutdown()
 
   g_ram_mask = 0;
   g_ram_size = 0;
-
-#ifndef __ANDROID__
-  Exports::RAM = 0;
-  Exports::RAM_SIZE = 0;
-  Exports::RAM_MASK = 0;
-#endif
 }
 
 void Bus::Reset()

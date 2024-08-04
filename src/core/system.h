@@ -341,9 +341,6 @@ void ApplyCheatCode(const CheatCode& code);
 /// Sets or clears the provided cheat list, applying every frame.
 void SetCheatList(std::unique_ptr<CheatList> cheats);
 
-/// Checks for settings changes, std::move() the old settings away for comparing beforehand.
-void CheckForSettingsChanges(const Settings& old_settings);
-
 /// Updates throttler.
 void UpdateSpeedLimiterState();
 

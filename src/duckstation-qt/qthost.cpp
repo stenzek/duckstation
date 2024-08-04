@@ -46,6 +46,7 @@
 #include "scmversion/scmversion.h"
 
 #include "imgui.h"
+#include "core/bus.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDateTime>
@@ -2513,7 +2514,7 @@ bool QtHost::RunSetupWizard()
 
 int main(int argc, char* argv[])
 {
-  CrashHandler::Install();
+  CrashHandler::Install(&Bus::CleanupMemoryMap);
 
   QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
   QtHost::RegisterTypes();

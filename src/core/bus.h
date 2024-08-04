@@ -116,6 +116,14 @@ static constexpr size_t FASTMEM_ARENA_SIZE = UINT64_C(0x100000000);
 bool AllocateMemory(Error* error);
 void ReleaseMemory();
 
+/// Frees and re-allocates the memory map for the process.
+/// This should be called when shared memory exports are enabled.
+bool ReallocateMemoryMap(Error* error);
+
+/// Cleans up/deletes the shared memory object for this process.
+/// Should be called when the process crashes, to avoid leaking.
+void CleanupMemoryMap();
+
 bool Initialize();
 void Shutdown();
 void Reset();

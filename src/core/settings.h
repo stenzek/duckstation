@@ -199,6 +199,7 @@ struct Settings
 
   bool use_old_mdec_routines : 1 = false;
   bool pcdrv_enable : 1 = false;
+  bool export_shared_memory : 1 = false;
 
   // timing hacks section
   TickCount dma_max_slice_ticks = DEFAULT_DMA_MAX_SLICE_TICKS;

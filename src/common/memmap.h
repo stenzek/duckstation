@@ -53,6 +53,7 @@ class Error;
 namespace MemMap {
 std::string GetFileMappingName(const char* prefix);
 void* CreateSharedMemory(const char* name, size_t size, Error* error);
+void DeleteSharedMemory(const char* name);
 void DestroySharedMemory(void* ptr);
 void* MapSharedMemory(void* handle, size_t offset, void* baseaddr, size_t size, PageProtect mode);
 void UnmapSharedMemory(void* baseaddr, size_t size);

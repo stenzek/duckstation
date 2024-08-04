@@ -128,6 +128,9 @@ static bool SaveUndoLoadState();
 static void WarnAboutUnsafeSettings();
 static void LogUnsafeSettingsToConsole(const SmallStringBase& messages);
 
+/// Checks for settings changes, std::move() the old settings away for comparing beforehand.
+static void CheckForSettingsChanges(const Settings& old_settings);
+
 /// Throttles the system, i.e. sleeps until it's time to execute the next frame.
 static void Throttle(Common::Timer::Value current_time);
 static void UpdatePerformanceCounters();
@@ -435,6 +438,13 @@ bool System::Internal::CPUThreadInitialize(Error* error)
 
   // This will call back to Host::LoadSettings() -> ReloadSources().
   LoadSettings(false);
+
+  // Yuckity yuck. We have to test for memory export explicitly, because the allocation happens before config load.
+  if (g_settings.export_shared_memory && !Bus::ReallocateMemoryMap(error))
+  {
+    Error::AddPrefix(error, "Failed to reallocate memory map:\n");
+    return false;
+  }
 
 #ifdef ENABLE_RAINTEGRATION
   if (Host::GetBaseBoolSettingValue("Cheevos", "UseRAIntegration", false))
@@ -996,19 +1006,13 @@ System::GameHash System::GetGameHashFromBuffer(std::string_view exe_name, std::s
 DiscRegion System::GetRegionForSerial(const std::string_view serial)
 {
   static constexpr const std::pair<const char*, DiscRegion> region_prefixes[] = {
-    {"sces", DiscRegion::PAL},
-    {"sced", DiscRegion::PAL},
-    {"sles", DiscRegion::PAL},
+    {"sces", DiscRegion::PAL},    {"sced", DiscRegion::PAL},    {"sles", DiscRegion::PAL},
     {"sled", DiscRegion::PAL},
 
-    {"scps", DiscRegion::NTSC_J},
-    {"slps", DiscRegion::NTSC_J},
-    {"slpm", DiscRegion::NTSC_J},
-    {"sczs", DiscRegion::NTSC_J},
-    {"papx", DiscRegion::NTSC_J},
+    {"scps", DiscRegion::NTSC_J}, {"slps", DiscRegion::NTSC_J}, {"slpm", DiscRegion::NTSC_J},
+    {"sczs", DiscRegion::NTSC_J}, {"papx", DiscRegion::NTSC_J},
 
-    {"scus", DiscRegion::NTSC_U},
-    {"slus", DiscRegion::NTSC_U},
+    {"scus", DiscRegion::NTSC_U}, {"slus", DiscRegion::NTSC_U},
   };
 
   for (const auto& [prefix, region] : region_prefixes)
@@ -4359,6 +4363,16 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       ReleaseSocketMultiplexer();
   }
 #endif
+
+  if (g_settings.export_shared_memory != old_settings.export_shared_memory) [[unlikely]]
+  {
+    Error error;
+    if (!Bus::ReallocateMemoryMap(&error)) [[unlikely]]
+    {
+      ERROR_LOG(error.GetDescription());
+      Panic("Failed to reallocate memory map. The log may contain more information.");
+    }
+  }
 
   if (g_settings.log_level != old_settings.log_level || g_settings.log_filter != old_settings.log_filter ||
       g_settings.log_timestamps != old_settings.log_timestamps ||

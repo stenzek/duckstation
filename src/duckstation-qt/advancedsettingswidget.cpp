@@ -263,6 +263,8 @@ void AdvancedSettingsWidget::addTweakOptions()
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Allow Booting Without SBI File"), "CDROM",
                         "AllowBootingWithoutSBIFile", false);
 
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Export Shared Memory"), "Hacks", "ExportSharedMemory",
+                        false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable PINE"), "PINE", "Enabled", false);
   addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("PINE Slot"), "PINE", "Slot", 0, 65535,
                          Settings::DEFAULT_PINE_SLOT);
@@ -299,6 +301,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
                          Settings::DEFAULT_CDROM_MECHACON_VERSION);                  // CDROM Mechacon Version
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                        // CDROM Region Check
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                        // Allow booting without SBI file
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                        // Export Shared Memory
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                        // Enable PINE
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++, Settings::DEFAULT_PINE_SLOT); // PINE Slot
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                        // Enable PCDRV
@@ -322,6 +325,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue("Hacks", "DMAHaltTicks");
   sif->DeleteValue("Hacks", "GPUFIFOSize");
   sif->DeleteValue("Hacks", "GPUMaxRunAhead");
+  sif->DeleteValue("Hacks", "ExportSharedMemory");
   sif->DeleteValue("CPU", "RecompilerMemoryExceptions");
   sif->DeleteValue("CPU", "RecompilerBlockLinking");
   sif->DeleteValue("CPU", "FastmemMode");

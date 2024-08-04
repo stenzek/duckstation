@@ -85,6 +85,7 @@ static bool WriteMinidump(HMODULE hDbgHelp, HANDLE hFile, HANDLE hProcess, DWORD
 
 static std::wstring s_write_directory;
 static DynamicLibrary s_dbghelp_module;
+static CrashHandler::CleanupHandler s_cleanup_handler;
 static bool s_in_crash_handler = false;
 
 static void GenerateCrashFilename(wchar_t* buf, size_t len, const wchar_t* prefix, const wchar_t* extension)
@@ -99,8 +100,6 @@ static void GenerateCrashFilename(wchar_t* buf, size_t len, const wchar_t* prefi
 
 static void WriteMinidumpAndCallstack(PEXCEPTION_POINTERS exi)
 {
-  s_in_crash_handler = true;
-
   wchar_t filename[1024] = {};
   GenerateCrashFilename(filename, std::size(filename), s_write_directory.empty() ? nullptr : s_write_directory.c_str(),
                         L"txt");
@@ -148,7 +147,13 @@ static LONG NTAPI ExceptionHandler(PEXCEPTION_POINTERS exi)
 {
   // if the debugger is attached, or we're recursively crashing, let it take care of it.
   if (!s_in_crash_handler)
+  {
+    s_in_crash_handler = true;
+    if (s_cleanup_handler)
+      s_cleanup_handler();
+
     WriteMinidumpAndCallstack(exi);
+  }
 
   // returning EXCEPTION_CONTINUE_SEARCH makes sense, except for the fact that it seems to leave zombie processes
   // around. instead, force ourselves to terminate.
@@ -156,7 +161,7 @@ static LONG NTAPI ExceptionHandler(PEXCEPTION_POINTERS exi)
   return EXCEPTION_CONTINUE_SEARCH;
 }
 
-bool CrashHandler::Install()
+bool CrashHandler::Install(CleanupHandler cleanup_handler)
 {
   // load dbghelp at install/startup, that way we're not LoadLibrary()'ing after a crash
   // .. because that probably wouldn't go down well.
@@ -165,6 +170,7 @@ bool CrashHandler::Install()
     s_dbghelp_module.Adopt(mod);
 
   SetUnhandledExceptionFilter(ExceptionHandler);
+  s_cleanup_handler = cleanup_handler;
   return true;
 }
 
@@ -208,6 +214,7 @@ static void LogCallstack(int signal, const void* exception_pc);
 static std::recursive_mutex s_crash_mutex;
 static bool s_in_signal_handler = false;
 
+static CleanupHandler s_cleanup_handler;
 static backtrace_state* s_backtrace_state = nullptr;
 } // namespace CrashHandler
 
@@ -304,6 +311,9 @@ void CrashHandler::CrashSignalHandler(int signal, siginfo_t* siginfo, void* ctx)
   {
     s_in_signal_handler = true;
 
+    if (s_cleanup_handler)
+      s_cleanup_handler();
+
 #if defined(__APPLE__) && defined(__x86_64__)
     void* const exception_pc = reinterpret_cast<void*>(static_cast<ucontext_t*>(ctx)->uc_mcontext->__ss.__rip);
 #elif defined(__FreeBSD__) && defined(__x86_64__)
@@ -327,7 +337,7 @@ void CrashHandler::CrashSignalHandler(int signal, siginfo_t* siginfo, void* ctx)
   std::abort();
 }
 
-bool CrashHandler::Install()
+bool CrashHandler::Install(CleanupHandler cleanup_handler)
 {
   const std::string progpath = FileSystem::GetProgramPath();
   s_backtrace_state = backtrace_create_state(progpath.empty() ? nullptr : progpath.c_str(), 0, nullptr, nullptr);
@@ -344,6 +354,7 @@ bool CrashHandler::Install()
   if (sigaction(SIGSEGV, &sa, nullptr) != 0)
     return false;
 
+  s_cleanup_handler = cleanup_handler;
   return true;
 }
 
@@ -358,7 +369,7 @@ void CrashHandler::WriteDumpForCaller()
 
 #else
 
-bool CrashHandler::Install()
+bool CrashHandler::Install(CleanupHandler cleanup_handler)
 {
   return false;
 }

@@ -66,9 +66,10 @@ std::string MemMap::GetFileMappingName(const char* prefix)
 
 void* MemMap::CreateSharedMemory(const char* name, size_t size, Error* error)
 {
+  const std::wstring mapping_name = name ? StringUtil::UTF8StringToWideString(name) : std::wstring();
   const HANDLE mapping =
     CreateFileMappingW(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, static_cast<DWORD>(size >> 32),
-                       static_cast<DWORD>(size), StringUtil::UTF8StringToWideString(name).c_str());
+                       static_cast<DWORD>(size), mapping_name.empty() ? nullptr : mapping_name.c_str());
   if (!mapping)
     Error::SetWin32(error, "CreateFileMappingW() failed: ", GetLastError());
 
@@ -78,6 +79,11 @@ void* MemMap::CreateSharedMemory(const char* name, size_t size, Error* error)
 void MemMap::DestroySharedMemory(void* ptr)
 {
   CloseHandle(static_cast<HANDLE>(ptr));
+}
+
+void MemMap::DeleteSharedMemory(const char* name)
+{
+  // Automatically freed on close.
 }
 
 void* MemMap::MapSharedMemory(void* handle, size_t offset, void* baseaddr, size_t size, PageProtect mode)
@@ -374,6 +380,10 @@ void MemMap::DestroySharedMemory(void* ptr)
   mach_port_deallocate(mach_task_self(), static_cast<mach_port_t>(reinterpret_cast<uintptr_t>(ptr)));
 }
 
+void MemMap::DeleteSharedMemory(const char* name)
+{
+}
+
 void* MemMap::MapSharedMemory(void* handle, size_t offset, void* baseaddr, size_t size, PageProtect mode)
 {
   mach_vm_address_t ptr = reinterpret_cast<mach_vm_address_t>(baseaddr);
@@ -617,15 +627,25 @@ std::string MemMap::GetFileMappingName(const char* prefix)
 
 void* MemMap::CreateSharedMemory(const char* name, size_t size, Error* error)
 {
+  const bool is_anonymous = (!name || *name == 0);
+#if defined(__linux__) || defined(__FreeBSD__)
+  const int fd = is_anonymous ? memfd_create("", 0) : shm_open(name, O_CREAT | O_EXCL | O_RDWR, 0600);
+  if (fd < 0)
+  {
+    Error::SetErrno(error, is_anonymous ? "memfd_create() failed: " : "shm_open() failed: ", errno);
+    return nullptr;
+  }
+#else
   const int fd = shm_open(name, O_CREAT | O_EXCL | O_RDWR, 0600);
   if (fd < 0)
   {
-    Error::SetErrno(error, "shm_open failed: ", errno);
+    Error::SetErrno(error, "shm_open() failed: ", errno);
     return nullptr;
   }
 
   // we're not going to be opening this mapping in other processes, so remove the file
   shm_unlink(name);
+#endif
 
   // use fallocate() to ensure we don't SIGBUS later on.
 #ifdef __linux__
@@ -649,6 +669,11 @@ void* MemMap::CreateSharedMemory(const char* name, size_t size, Error* error)
 void MemMap::DestroySharedMemory(void* ptr)
 {
   close(static_cast<int>(reinterpret_cast<intptr_t>(ptr)));
+}
+
+void MemMap::DeleteSharedMemory(const char* name)
+{
+  shm_unlink(name);
 }
 
 void* MemMap::MapSharedMemory(void* handle, size_t offset, void* baseaddr, size_t size, PageProtect mode)

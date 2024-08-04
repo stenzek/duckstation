@@ -337,6 +337,7 @@ void Settings::Load(SettingsInterface& si)
   audio_output_muted = si.GetBoolValue("Audio", "OutputMuted", false);
 
   use_old_mdec_routines = si.GetBoolValue("Hacks", "UseOldMDECRoutines", false);
+  export_shared_memory = si.GetBoolValue("Hacks", "ExportSharedMemory", false);
   pcdrv_enable = si.GetBoolValue("PCDrv", "Enabled", false);
   pcdrv_enable_writes = si.GetBoolValue("PCDrv", "EnableWrites", false);
   pcdrv_root = si.GetStringValue("PCDrv", "Root");
@@ -597,6 +598,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("Audio", "OutputMuted", audio_output_muted);
 
   si.SetBoolValue("Hacks", "UseOldMDECRoutines", use_old_mdec_routines);
+  si.SetBoolValue("Hacks", "ExportSharedMemory", export_shared_memory);
 
   if (!ignore_base)
   {
