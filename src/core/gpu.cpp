@@ -1131,7 +1131,7 @@ bool GPU::ConvertDisplayCoordinatesToBeamTicksAndLines(float display_x, float di
     return false;
   }
 
-  *out_line = (static_cast<u32>(std::round(display_y)) >> BoolToUInt8(m_GPUSTAT.vertical_interlace)) +
+  *out_line = (static_cast<u32>(std::round(display_y)) >> BoolToUInt8(IsInterlacedDisplayEnabled())) +
               m_crtc_state.vertical_visible_start;
   *out_tick = static_cast<u32>(System::ScaleTicksToOverclock(
                 static_cast<TickCount>(std::round(display_x * static_cast<float>(m_crtc_state.dot_clock_divider))))) +
@@ -1259,7 +1259,7 @@ void GPU::WriteGP1(u32 value)
       DEBUG_LOG("Display {}", disable ? "disabled" : "enabled");
       SynchronizeCRTC();
 
-      if (!m_GPUSTAT.display_disable && disable && m_GPUSTAT.vertical_interlace && !m_force_progressive_scan)
+      if (!m_GPUSTAT.display_disable && disable && IsInterlacedDisplayEnabled())
         ClearDisplay();
 
       m_GPUSTAT.display_disable = disable;

@@ -134,13 +134,13 @@ public:
   /// Returns true if scanout should be interlaced.
   ALWAYS_INLINE bool IsInterlacedDisplayEnabled() const
   {
-    return (!m_force_progressive_scan) && m_GPUSTAT.vertical_interlace;
+    return (!m_force_progressive_scan && m_GPUSTAT.vertical_interlace);
   }
 
   /// Returns true if interlaced rendering is enabled and force progressive scan is disabled.
   ALWAYS_INLINE bool IsInterlacedRenderingEnabled() const
   {
-    return (!m_force_progressive_scan) && m_GPUSTAT.SkipDrawingToActiveField();
+    return (!m_force_progressive_scan && m_GPUSTAT.SkipDrawingToActiveField());
   }
 
   /// Returns true if we're in PAL mode, otherwise false if NTSC.
