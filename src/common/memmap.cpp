@@ -644,7 +644,8 @@ void* MemMap::CreateSharedMemory(const char* name, size_t size, Error* error)
   }
 
   // we're not going to be opening this mapping in other processes, so remove the file
-  shm_unlink(name);
+  if (!is_anonymous)
+    shm_unlink(name);
 #endif
 
   // use fallocate() to ensure we don't SIGBUS later on.
@@ -652,6 +653,9 @@ void* MemMap::CreateSharedMemory(const char* name, size_t size, Error* error)
   if (fallocate(fd, 0, 0, static_cast<off_t>(size)) < 0)
   {
     Error::SetErrno(error, TinyString::from_format("fallocate({}) failed: ", size), errno);
+    close(fd);
+    if (!is_anonymous)
+      shm_unlink(name);
     return nullptr;
   }
 #else
@@ -659,6 +663,9 @@ void* MemMap::CreateSharedMemory(const char* name, size_t size, Error* error)
   if (ftruncate(fd, static_cast<off_t>(size)) < 0)
   {
     Error::SetErrno(error, TinyString::from_format("ftruncate({}) failed: ", size), errno);
+    close(fd);
+    if (!is_anonymous)
+      shm_unlink(name);
     return nullptr;
   }
 #endif
