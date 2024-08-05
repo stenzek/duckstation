@@ -644,7 +644,7 @@ void* MemMap::CreateSharedMemory(const char* name, size_t size, Error* error)
   }
 
   // we're not going to be opening this mapping in other processes, so remove the file
-  if (!is_anonymous)
+  if (is_anonymous)
     shm_unlink(name);
 #endif
 
