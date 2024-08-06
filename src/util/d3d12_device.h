@@ -126,7 +126,7 @@ public:
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;
 
-  bool BeginPresent(bool skip_present) override;
+  bool BeginPresent(bool skip_present, u32 clear_color) override;
   void EndPresent(bool explicit_present) override;
   void SubmitPresent() override;
 
@@ -276,7 +276,7 @@ private:
   // Ends a render pass if we're currently in one.
   // When Bind() is next called, the pass will be restarted.
   void BeginRenderPass();
-  void BeginSwapChainRenderPass();
+  void BeginSwapChainRenderPass(u32 clear_color);
   void EndRenderPass();
   bool InRenderPass();
 

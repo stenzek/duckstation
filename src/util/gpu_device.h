@@ -700,7 +700,7 @@ public:
   virtual void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) = 0;
 
   /// Returns false if the window was completely occluded.
-  virtual bool BeginPresent(bool skip_present) = 0;
+  virtual bool BeginPresent(bool skip_present, u32 clear_color = 0xFF000000u) = 0;
   virtual void EndPresent(bool explicit_submit) = 0;
   virtual void SubmitPresent() = 0;
 

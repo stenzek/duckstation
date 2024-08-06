@@ -2313,7 +2313,7 @@ id<MTLBlitCommandEncoder> MetalDevice::GetBlitEncoder(bool is_inline)
   }
 }
 
-bool MetalDevice::BeginPresent(bool skip_present)
+bool MetalDevice::BeginPresent(bool skip_present, u32 clear_color)
 {
   @autoreleasepool
   {
@@ -2338,9 +2338,11 @@ bool MetalDevice::BeginPresent(bool skip_present)
     SetViewportAndScissor(0, 0, m_window_info.surface_width, m_window_info.surface_height);
 
     // Set up rendering to layer.
+    const GSVector4 clear_color_v = GSVector4::rgba32(clear_color);
     id<MTLTexture> layer_texture = [m_layer_drawable texture];
     m_layer_pass_desc.colorAttachments[0].texture = layer_texture;
     m_layer_pass_desc.colorAttachments[0].loadAction = MTLLoadActionClear;
+    m_layer_pass_desc.colorAttachments[0].clearColor = MTLClearColorMake(clear_color_v.r, clear_color_v.g, clear_color_v.g, clear_color_v.a);
     m_render_encoder = [[m_render_cmdbuf renderCommandEncoderWithDescriptor:m_layer_pass_desc] retain];
     s_stats.num_render_passes++;
     std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));

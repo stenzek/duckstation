@@ -640,7 +640,7 @@ void D3D11Device::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle)
   }
 }
 
-bool D3D11Device::BeginPresent(bool skip_present)
+bool D3D11Device::BeginPresent(bool skip_present, u32 clear_color)
 {
   if (skip_present)
     return false;
@@ -671,8 +671,7 @@ bool D3D11Device::BeginPresent(bool skip_present)
   if (m_vsync_mode == GPUVSyncMode::FIFO && m_gpu_timing_enabled)
     PopTimestampQuery();
 
-  static constexpr float clear_color[4] = {0.0f, 0.0f, 0.0f, 1.0f};
-  m_context->ClearRenderTargetView(m_swap_chain_rtv.Get(), clear_color);
+  m_context->ClearRenderTargetView(m_swap_chain_rtv.Get(), GSVector4::rgba32(clear_color).F32);
   m_context->OMSetRenderTargets(1, m_swap_chain_rtv.GetAddressOf(), nullptr);
   s_stats.num_render_passes++;
   m_num_current_render_targets = 0;

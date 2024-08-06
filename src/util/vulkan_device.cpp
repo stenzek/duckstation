@@ -98,8 +98,6 @@ const std::array<VkFormat, static_cast<u32>(GPUTexture::Format::MaxCount)> Vulka
   VK_FORMAT_A2R10G10B10_UNORM_PACK32, // RGB10A2
 };
 
-static constexpr VkClearValue s_present_clear_color = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
-
 // Handles are always 64-bit, even on 32-bit platforms.
 static const VkRenderPass DYNAMIC_RENDERING_RENDER_PASS = ((VkRenderPass) static_cast<s64>(-1LL));
 
@@ -2423,7 +2421,7 @@ void VulkanDevice::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle)
   }
 }
 
-bool VulkanDevice::BeginPresent(bool frame_skip)
+bool VulkanDevice::BeginPresent(bool frame_skip, u32 clear_color)
 {
   if (InRenderPass())
     EndRenderPass();
@@ -2486,7 +2484,7 @@ bool VulkanDevice::BeginPresent(bool frame_skip)
     }
   }
 
-  BeginSwapChainRenderPass();
+  BeginSwapChainRenderPass(clear_color);
   return true;
 }
 
@@ -3166,9 +3164,10 @@ void VulkanDevice::RenderBlankFrame()
 
   const VkImage image = m_swap_chain->GetCurrentImage();
   static constexpr VkImageSubresourceRange srr = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+  static constexpr VkClearColorValue clear_color = {{0.0f, 0.0f, 0.0f, 1.0f}};
   VulkanTexture::TransitionSubresourcesToLayout(cmdbuf, image, GPUTexture::Type::RenderTarget, 0, 1, 0, 1,
                                                 VulkanTexture::Layout::Undefined, VulkanTexture::Layout::TransferDst);
-  vkCmdClearColorImage(cmdbuf, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &s_present_clear_color.color, 1, &srr);
+  vkCmdClearColorImage(cmdbuf, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clear_color, 1, &srr);
   VulkanTexture::TransitionSubresourcesToLayout(cmdbuf, image, GPUTexture::Type::RenderTarget, 0, 1, 0, 1,
                                                 VulkanTexture::Layout::TransferDst, VulkanTexture::Layout::PresentSrc);
 
@@ -3527,7 +3526,7 @@ void VulkanDevice::BeginRenderPass()
     SetInitialPipelineState();
 }
 
-void VulkanDevice::BeginSwapChainRenderPass()
+void VulkanDevice::BeginSwapChainRenderPass(u32 clear_color)
 {
   DebugAssert(!InRenderPass());
 
@@ -3547,18 +3546,20 @@ void VulkanDevice::BeginSwapChainRenderPass()
       m_current_textures[i]->TransitionToLayout(VulkanTexture::Layout::ShaderReadOnly);
   }
 
+  VkClearValue clear_value;
+  GSVector4::store<false>(&clear_value.color.float32, GSVector4::rgba32(clear_color));
   if (m_optional_extensions.vk_khr_dynamic_rendering)
   {
-    const VkRenderingAttachmentInfo ai = {VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR,
-                                          nullptr,
-                                          m_swap_chain->GetCurrentImageView(),
-                                          VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                                          VK_RESOLVE_MODE_NONE_KHR,
-                                          VK_NULL_HANDLE,
-                                          VK_IMAGE_LAYOUT_UNDEFINED,
-                                          VK_ATTACHMENT_LOAD_OP_CLEAR,
-                                          VK_ATTACHMENT_STORE_OP_STORE,
-                                          s_present_clear_color};
+    VkRenderingAttachmentInfo ai = {VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR,
+                                    nullptr,
+                                    m_swap_chain->GetCurrentImageView(),
+                                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                    VK_RESOLVE_MODE_NONE_KHR,
+                                    VK_NULL_HANDLE,
+                                    VK_IMAGE_LAYOUT_UNDEFINED,
+                                    VK_ATTACHMENT_LOAD_OP_CLEAR,
+                                    VK_ATTACHMENT_STORE_OP_STORE,
+                                    clear_value};
 
     const VkRenderingInfoKHR ri = {VK_STRUCTURE_TYPE_RENDERING_INFO_KHR,
                                    nullptr,
@@ -3586,7 +3587,7 @@ void VulkanDevice::BeginSwapChainRenderPass()
                                       m_swap_chain->GetCurrentFramebuffer(),
                                       {{0, 0}, {m_swap_chain->GetWidth(), m_swap_chain->GetHeight()}},
                                       1u,
-                                      &s_present_clear_color};
+                                      &clear_value};
     vkCmdBeginRenderPass(GetCurrentCommandBuffer(), &rp, VK_SUBPASS_CONTENTS_INLINE);
   }
 
