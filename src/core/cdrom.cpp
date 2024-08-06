@@ -1418,7 +1418,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
   if (g_settings.cdrom_seek_speedup == 0)
     return MIN_TICKS;
 
-  u32 ticks = static_cast<u32>(MIN_TICKS);
+  u32 ticks = 0;
 
   // Update start position for seek.
   if (IsSeeking())
@@ -1426,9 +1426,6 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
   else
     UpdatePhysicalPosition(false);
 
-  const u32 ticks_per_sector =
-    s_mode.double_speed ? static_cast<u32>(System::MASTER_CLOCK / 150) : static_cast<u32>(System::MASTER_CLOCK / 75);
-  const u32 ticks_per_second = static_cast<u32>(System::MASTER_CLOCK);
   const CDImage::LBA current_lba = IsMotorOn() ? (IsSeeking() ? s_seek_end_lba : s_physical_lba) : 0;
   const u32 lba_diff = static_cast<u32>((new_lba > current_lba) ? (new_lba - current_lba) : (current_lba - new_lba));
 
@@ -1441,37 +1438,43 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
       ClearDriveState();
   }
 
-  if (lba_diff < 32)
+  float seconds;
+  if (current_lba < new_lba && lba_diff < 10)
   {
-    // Special case: when we land exactly on the right sector, we're already too late.
-    ticks += ticks_per_sector * std::min<u32>(5u, (lba_diff == 0) ? 4u : lba_diff);
+    // If we're behind the current sector, and within a small distance, the mech just waits for the sector to come up by
+    // reading normally (or apparently moves the lens according to some?). This timing is actually needed for
+    // Transformers - Beast Wars Transmetals, it gets very unstable during loading if seeks are too fast.
+    const u32 ticks_per_sector =
+      s_mode.double_speed ? static_cast<u32>(System::MASTER_CLOCK / 150) : static_cast<u32>(System::MASTER_CLOCK / 75);
+    ticks += ticks_per_sector * std::min<u32>(5u, lba_diff);
+    seconds = 0.0f;
+  }
+  else if (lba_diff < 6200)
+  {
+    // Not sled. The point at which we switch from faster to slower seeks varies across the disc. Around ~60 distance
+    // towards the end, but ~330 at the beginning. Likely based on sectors per track, so we use a logarithmic curve.
+    const u32 switch_point = static_cast<u32>(
+      330.0f +
+      (-63.1333f * std::log(std::clamp(static_cast<float>(current_lba) / static_cast<float>(CDImage::FRAMES_PER_MINUTE),
+                                       1.0f, 72.0f))));
+    seconds = (lba_diff < switch_point) ? 0.05f : 0.1f;
   }
   else
   {
-    // This is a still not a very accurate model, but it's roughly in line with the behavior of hardware tests.
-    const float disc_distance = 0.2323384936f * std::log(static_cast<float>((new_lba / 4500) + 1u));
-
-    float seconds;
-    if (lba_diff <= CDImage::FRAMES_PER_SECOND)
-    {
-      // 30ms + (diff * 30ms) + (disc distance * 30ms)
-      seconds = 0.03f + ((static_cast<float>(lba_diff) / static_cast<float>(CDImage::FRAMES_PER_SECOND)) * 0.03f) +
-                (disc_distance * 0.03f);
-    }
-    else if (lba_diff <= CDImage::FRAMES_PER_MINUTE)
-    {
-      // 150ms + (diff * 30ms) + (disc distance * 50ms)
-      seconds = 0.15f + ((static_cast<float>(lba_diff) / static_cast<float>(CDImage::FRAMES_PER_MINUTE)) * 0.03f) +
-                (disc_distance * 0.05f);
-    }
-    else
-    {
-      // 200ms + (diff * 500ms)
-      seconds = 0.2f + ((static_cast<float>(lba_diff) / static_cast<float>(72 * CDImage::FRAMES_PER_MINUTE)) * 0.4f);
-    }
-
-    ticks += static_cast<u32>(seconds * static_cast<float>(ticks_per_second));
+    // Sled seek. Minimum of approx. 200ms, up to 900ms or so. Mapped to a linear and logarithmic component, because
+    // there is a fixed cost which ramps up quickly, but the very slow sled seeks are only when doing a full disc sweep.
+    constexpr float SLED_FIXED_COST = 0.05f;
+    constexpr float SLED_VARIABLE_COST = 0.9f - SLED_FIXED_COST;
+    constexpr float LOG_WEIGHT = 0.4f;
+    constexpr float MAX_SLED_LBA = static_cast<float>(72 * CDImage::FRAMES_PER_MINUTE);
+    seconds =
+      SLED_FIXED_COST +
+      (((SLED_VARIABLE_COST * (std::log(static_cast<float>(lba_diff)) / std::log(MAX_SLED_LBA)))) * LOG_WEIGHT) +
+      ((SLED_VARIABLE_COST * (lba_diff / MAX_SLED_LBA)) * (1.0f - LOG_WEIGHT));
   }
+
+  constexpr u32 ticks_per_second = static_cast<u32>(System::MASTER_CLOCK);
+  ticks += static_cast<u32>(seconds * static_cast<float>(ticks_per_second));
 
   if (s_drive_state == DriveState::ChangingSpeedOrTOCRead && !ignore_speed_change)
   {
@@ -1501,8 +1504,8 @@ TickCount CDROM::GetTicksForStop(bool motor_was_on)
 
 TickCount CDROM::GetTicksForSpeedChange()
 {
-  static constexpr u32 ticks_single_to_double = static_cast<u32>(0.8 * static_cast<double>(System::MASTER_CLOCK));
-  static constexpr u32 ticks_double_to_single = static_cast<u32>(1.0 * static_cast<double>(System::MASTER_CLOCK));
+  static constexpr u32 ticks_single_to_double = static_cast<u32>(0.7 * static_cast<double>(System::MASTER_CLOCK));
+  static constexpr u32 ticks_double_to_single = static_cast<u32>(0.8 * static_cast<double>(System::MASTER_CLOCK));
   return System::ScaleTicksToOverclock(s_mode.double_speed ? ticks_single_to_double : ticks_double_to_single);
 }
 
