@@ -341,6 +341,7 @@ static s16 ReverbRead(u32 address, s32 offset = 0);
 static void ReverbWrite(u32 address, s16 data);
 static void ProcessReverb(s16 left_in, s16 right_in, s32* left_out, s32* right_out);
 
+static void InternalGeneratePendingSamples();
 static void Execute(void* param, TickCount ticks, TickCount ticks_late);
 static void UpdateEventInterval();
 
@@ -1268,6 +1269,7 @@ void SPU::ExecuteTransfer(void* param, TickCount ticks, TickCount ticks_late)
 {
   const RAMTransferMode mode = s_state.SPUCNT.ram_transfer_mode;
   DebugAssert(mode != RAMTransferMode::Stopped);
+  InternalGeneratePendingSamples();
 
   if (mode == RAMTransferMode::DMARead)
   {
@@ -1483,6 +1485,11 @@ void SPU::GeneratePendingSamples()
   if (s_state.transfer_event.IsActive())
     s_state.transfer_event.InvokeEarly();
 
+  InternalGeneratePendingSamples();
+}
+
+void SPU::InternalGeneratePendingSamples()
+{
   const TickCount ticks_pending = s_state.tick_event.GetTicksSinceLastExecution();
   TickCount frames_to_execute;
   if (g_settings.cpu_overclock_active)

@@ -1449,7 +1449,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
     ticks += ticks_per_sector * std::min<u32>(5u, lba_diff);
     seconds = 0.0f;
   }
-  else if (lba_diff < 6200)
+  else if (lba_diff < 7200)
   {
     // Not sled. The point at which we switch from faster to slower seeks varies across the disc. Around ~60 distance
     // towards the end, but ~330 at the beginning. Likely based on sectors per track, so we use a logarithmic curve.
