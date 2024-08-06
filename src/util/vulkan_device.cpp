@@ -3760,7 +3760,7 @@ void VulkanDevice::UnbindTexture(VulkanTexture* tex)
     }
   }
 
-  if (tex->IsRenderTarget() || tex->IsDepthStencil())
+  if (tex->IsRenderTarget() || tex->IsRWTexture())
   {
     for (u32 i = 0; i < m_num_current_render_targets; i++)
     {
