@@ -265,7 +265,7 @@ public:
 
   void SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle) override;
 
-  bool BeginPresent(bool skip_present) override;
+  bool BeginPresent(bool skip_present, u32 clear_color) override;
   void EndPresent(bool explicit_submit) override;
   void SubmitPresent() override;
 

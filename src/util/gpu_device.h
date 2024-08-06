@@ -532,6 +532,7 @@ public:
   static constexpr u32 MIN_TEXEL_BUFFER_ELEMENTS = 4 * 1024 * 512;
   static constexpr u32 MAX_RENDER_TARGETS = 4;
   static constexpr u32 MAX_IMAGE_RENDER_TARGETS = 2;
+  static constexpr u32 DEFAULT_CLEAR_COLOR = 0xFF000000u;
   static_assert(sizeof(GPUPipeline::GraphicsConfig::color_formats) == sizeof(GPUTexture::Format) * MAX_RENDER_TARGETS);
 
   GPUDevice();
@@ -700,7 +701,7 @@ public:
   virtual void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) = 0;
 
   /// Returns false if the window was completely occluded.
-  virtual bool BeginPresent(bool skip_present) = 0;
+  virtual bool BeginPresent(bool skip_present, u32 clear_color = DEFAULT_CLEAR_COLOR) = 0;
   virtual void EndPresent(bool explicit_submit) = 0;
   virtual void SubmitPresent() = 0;
 

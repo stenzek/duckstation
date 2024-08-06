@@ -21,7 +21,6 @@
 
 Log_SetChannel(OpenGLDevice);
 
-static constexpr const std::array<float, 4> s_clear_color = {{0.0f, 0.0f, 0.0f, 1.0f}};
 static constexpr const std::array<GLenum, GPUDevice::MAX_RENDER_TARGETS> s_draw_buffers = {
   {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3}};
 
@@ -616,7 +615,7 @@ void OpenGLDevice::RenderBlankFrame()
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
   glDisable(GL_SCISSOR_TEST);
   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-  glClearBufferfv(GL_COLOR, 0, s_clear_color.data());
+  glClearBufferfv(GL_COLOR, 0, GSVector4::cxpr(0.0f, 0.0f, 0.0f, 1.0f).F32);
   glColorMask(m_last_blend_state.write_r, m_last_blend_state.write_g, m_last_blend_state.write_b,
               m_last_blend_state.write_a);
   glEnable(GL_SCISSOR_TEST);
@@ -742,7 +741,7 @@ void OpenGLDevice::DestroyBuffers()
   m_vertex_buffer.reset();
 }
 
-bool OpenGLDevice::BeginPresent(bool skip_present)
+bool OpenGLDevice::BeginPresent(bool skip_present, u32 clear_color)
 {
   if (skip_present || m_window_info.type == WindowInfo::Type::Surfaceless)
   {
@@ -758,7 +757,7 @@ bool OpenGLDevice::BeginPresent(bool skip_present)
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glDisable(GL_SCISSOR_TEST);
   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-  glClearBufferfv(GL_COLOR, 0, s_clear_color.data());
+  glClearBufferfv(GL_COLOR, 0, GSVector4::rgba32(clear_color).F32);
   glColorMask(m_last_blend_state.write_r, m_last_blend_state.write_g, m_last_blend_state.write_b,
               m_last_blend_state.write_a);
   glEnable(GL_SCISSOR_TEST);

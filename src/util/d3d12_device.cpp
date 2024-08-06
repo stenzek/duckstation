@@ -57,7 +57,6 @@ enum : u32
 // We need to synchronize instance creation because of adapter enumeration from the UI thread.
 static std::mutex s_instance_mutex;
 
-static constexpr D3D12_CLEAR_VALUE s_present_clear_color = {DXGI_FORMAT_R8G8B8A8_UNORM, {{0.0f, 0.0f, 0.0f, 1.0f}}};
 static constexpr GPUTexture::Format s_swap_chain_format = GPUTexture::Format::RGBA8;
 
 // We just need to keep this alive, never reference it.
@@ -987,7 +986,7 @@ void D3D12Device::RenderBlankFrame()
   m_current_swap_chain_buffer = ((m_current_swap_chain_buffer + 1) % static_cast<u32>(m_swap_chain_buffers.size()));
   D3D12Texture::TransitionSubresourceToState(cmdlist, swap_chain_buf.first.Get(), 0, D3D12_RESOURCE_STATE_COMMON,
                                              D3D12_RESOURCE_STATE_RENDER_TARGET);
-  cmdlist->ClearRenderTargetView(swap_chain_buf.second, s_present_clear_color.Color, 0, nullptr);
+  cmdlist->ClearRenderTargetView(swap_chain_buf.second, GSVector4::cxpr(0.0f, 0.0f, 0.0f, 1.0f).F32, 0, nullptr);
   D3D12Texture::TransitionSubresourceToState(cmdlist, swap_chain_buf.first.Get(), 0, D3D12_RESOURCE_STATE_RENDER_TARGET,
                                              D3D12_RESOURCE_STATE_PRESENT);
   SubmitCommandList(false);
@@ -1118,7 +1117,7 @@ void D3D12Device::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle)
   }
 }
 
-bool D3D12Device::BeginPresent(bool frame_skip)
+bool D3D12Device::BeginPresent(bool frame_skip, u32 clear_color)
 {
   if (InRenderPass())
     EndRenderPass();
@@ -1147,7 +1146,7 @@ bool D3D12Device::BeginPresent(bool frame_skip)
     return false;
   }
 
-  BeginSwapChainRenderPass();
+  BeginSwapChainRenderPass(clear_color);
   return true;
 }
 
@@ -1844,7 +1843,7 @@ void D3D12Device::BeginRenderPass()
     SetInitialPipelineState();
 }
 
-void D3D12Device::BeginSwapChainRenderPass()
+void D3D12Device::BeginSwapChainRenderPass(u32 clear_color)
 {
   DebugAssert(!InRenderPass());
 
@@ -1862,10 +1861,10 @@ void D3D12Device::BeginSwapChainRenderPass()
       m_current_textures[i]->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
   }
 
-  const D3D12_RENDER_PASS_RENDER_TARGET_DESC rt_desc = {
-    swap_chain_buf.second,
-    {D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR, {s_present_clear_color}},
-    {D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE, {}}};
+  D3D12_RENDER_PASS_RENDER_TARGET_DESC rt_desc = {swap_chain_buf.second,
+                                                  {D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR, {}},
+                                                  {D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE, {}}};
+  GSVector4::store<false>(rt_desc.BeginningAccess.Clear.ClearValue.Color, GSVector4::rgba32(clear_color));
   cmdlist->BeginRenderPass(1, &rt_desc, nullptr, D3D12_RENDER_PASS_FLAG_NONE);
 
   std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));

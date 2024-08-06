@@ -1992,7 +1992,7 @@ bool GPU::RenderDisplay(GPUTexture* target, const GSVector4i draw_rect, bool pos
     g_gpu_device->UsesLowerLeftOrigin() ? GPUDevice::FlipToLowerLeft(draw_rect, target_height) : draw_rect;
   if (really_postfx)
   {
-    g_gpu_device->ClearRenderTarget(PostProcessing::DisplayChain.GetInputTexture(), 0);
+    g_gpu_device->ClearRenderTarget(PostProcessing::DisplayChain.GetInputTexture(), GPUDevice::DEFAULT_CLEAR_COLOR);
     g_gpu_device->SetRenderTarget(PostProcessing::DisplayChain.GetInputTexture());
   }
   else
@@ -2633,7 +2633,7 @@ bool GPU::RenderScreenshotToBuffer(u32 width, u32 height, const GSVector4i draw_
   if (!render_texture)
     return false;
 
-  g_gpu_device->ClearRenderTarget(render_texture.get(), 0);
+  g_gpu_device->ClearRenderTarget(render_texture.get(), GPUDevice::DEFAULT_CLEAR_COLOR);
 
   // TODO: this should use copy shader instead.
   RenderDisplay(render_texture.get(), draw_rect, postfx);
