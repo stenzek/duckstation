@@ -2432,7 +2432,7 @@ bool FileSystem::DirectoryExists(const char* path)
 bool FileSystem::IsRealDirectory(const char* path)
 {
   struct stat sysStatData;
-  if (stat(path, &sysStatData) < 0)
+  if (lstat(path, &sysStatData) < 0)
     return false;
 
   return (S_ISDIR(sysStatData.st_mode) && !S_ISLNK(sysStatData.st_mode));
