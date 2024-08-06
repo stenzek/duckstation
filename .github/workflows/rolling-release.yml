@@ -295,14 +295,14 @@ jobs:
       run: flatpak-builder-lint appstream scripts/flatpak/org.duckstation.DuckStation.metainfo.xml
 
     - name: Validate manifest
-      run: flatpak-builder-lint manifest scripts/flatpak/org.duckstation.DuckStation.json
+      run: flatpak-builder-lint manifest scripts/flatpak/org.duckstation.DuckStation.yaml
 
     - name: Build Flatpak
       uses: flathub-infra/flatpak-github-actions/flatpak-builder@23796715b3dfa4c86ddf50cf29c3cc8b3c82dca8
       with:
         bundle: duckstation-x64.flatpak
         upload-artifact: false
-        manifest-path: scripts/flatpak/org.duckstation.DuckStation.json
+        manifest-path: scripts/flatpak/org.duckstation.DuckStation.yaml
         arch: x86_64
         build-bundle: true
         verbose: true
@@ -310,7 +310,7 @@ jobs:
         branch: stable
         cache: true
         restore-cache: true
-        cache-key: flatpak-x64-${{ hashFiles('scripts/flatpak/**/*.json') }}
+        cache-key: flatpak-x64-${{ hashFiles('scripts/flatpak/**/*.yaml') }}
 
     - name: Push to Flathub stable
       if: github.ref == 'refs/heads/dev'

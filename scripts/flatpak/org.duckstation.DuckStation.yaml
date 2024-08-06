@@ -1,0 +1,82 @@
+app-id: "org.duckstation.DuckStation"
+runtime: "org.kde.Platform"
+runtime-version: "6.7"
+sdk: "org.kde.Sdk"
+sdk-extensions:
+  - "org.freedesktop.Sdk.Extension.llvm17"
+
+command: "duckstation-qt"
+
+finish-args:
+  - "--device=all"
+  - "--allow=bluetooth"
+  - "--share=network"
+  - "--share=ipc"
+  - "--socket=pulseaudio"
+  - "--talk-name=org.freedesktop.ScreenSaver"
+
+  # Wayland is disabled due to various QtWayland issues, causing broken UI.
+  - "--socket=x11"
+  - "--env=QT_QPA_PLATFORM=xcb"
+
+modules:
+  # Dependencies.
+  - "modules/20-sdl2.yaml"
+  - "modules/21-libbacktrace.yaml"
+  - "modules/22-shaderc.yaml"
+  - "modules/23-spirv-cross.yaml"
+  - "modules/24-cpuinfo.yaml"
+  - "modules/25-discord-rpc.yaml"
+  - "modules/26-soundtouch.yaml"
+
+  # Main module.
+  - name: duckstation
+    buildsystem: cmake-ninja
+    builddir: true
+    no-make-install: true
+    build-options:
+      # Preserve debug information, it is needed for backtraces.
+      strip: false
+      no-debuginfo: true
+
+      # Prevent flatpak defaults of fortify etc from creeping in.
+      cflags: ""
+      cflags-override: true
+      cxxflags: ""
+      cxxflags-override: true
+
+      config-opts:
+        # Flatpak build does not appear to default to Release.
+        - "-DCMAKE_BUILD_TYPE=Release"
+
+        # We're not running tests as part of the flatpak build.
+        - '-DBUILD_TESTS=OFF'
+
+        # Make sure we're using ThinLTO.
+        - "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON"
+        - "-DCMAKE_C_COMPILER=/usr/lib/sdk/llvm17/bin/clang"
+        - "-DCMAKE_CXX_COMPILER=/usr/lib/sdk/llvm17/bin/clang++"
+        - "-DCMAKE_EXE_LINKER_FLAGS_INIT=-fuse-ld=lld"
+        - "-DCMAKE_MODULE_LINKER_FLAGS_INIT=-fuse-ld=lld"
+        - "-DCMAKE_SHARED_LINKER_FLAGS_INIT=-fuse-ld=lld"
+    sources:
+      - type: dir
+        path: ../..
+
+    post-install:
+      # Copy the binary distribution.
+      - "cp -a bin \"${FLATPAK_DEST}\""
+
+      # Manually copy desktop file/metadata, it's not done as part of the regular build.
+      - >-
+        install -Dm644
+        "${FLATPAK_BUILDER_BUILDDIR}/scripts/org.duckstation.DuckStation.png"
+        "${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/org.duckstation.DuckStation.png"
+      - >-
+        install -Dm644
+        "${FLATPAK_BUILDER_BUILDDIR}/scripts/org.duckstation.DuckStation.desktop"
+        "${FLATPAK_DEST}/share/applications/org.duckstation.DuckStation.desktop"
+      - >-
+        install -Dm644
+        "${FLATPAK_BUILDER_BUILDDIR}/scripts/flatpak/org.duckstation.DuckStation.metainfo.xml"
+        "${FLATPAK_DEST}/share/metainfo/org.duckstation.DuckStation.metainfo.xml"

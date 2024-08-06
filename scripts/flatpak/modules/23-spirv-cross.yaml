@@ -1,0 +1,31 @@
+name: spirv-cross
+buildsystem: cmake-ninja
+builddir: true
+config-opts:
+  - "-DCMAKE_BUILD_TYPE=Release"
+  - "-DSPIRV_CROSS_SHARED=ON"
+  - "-DSPIRV_CROSS_STATIC=OFF"
+  - "-DSPIRV_CROSS_CLI=OFF"
+  - "-DSPIRV_CROSS_ENABLE_TESTS=OFF"
+  - "-DSPIRV_CROSS_ENABLE_GLSL=ON"
+  - "-DSPIRV_CROSS_ENABLE_HLSL=OFF"
+  - "-DSPIRV_CROSS_ENABLE_MSL=OFF"
+  - "-DSPIRV_CROSS_ENABLE_CPP=OFF"
+  - "-DSPIRV_CROSS_ENABLE_REFLECT=OFF"
+  - "-DSPIRV_CROSS_ENABLE_C_API=ON"
+  - "-DSPIRV_CROSS_ENABLE_UTIL=ON"
+build-options:
+  strip: true
+sources:
+  - type: git
+    url: "https://github.com/KhronosGroup/SPIRV-Cross.git"
+    tag: "vulkan-sdk-1.3.290.0"
+    commit: "5d127b917f080c6f052553c47170ec0ba702e54f"
+cleanup:
+  - /bin
+  - /include
+  - /lib/*.a
+  - /lib/*.la
+  - /lib/cmake
+  - /lib/pkgconfig
+  - /share
