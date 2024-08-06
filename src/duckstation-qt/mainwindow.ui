@@ -178,8 +178,6 @@
     <addaction name="menuRenderer"/>
     <addaction name="menuCropMode"/>
     <addaction name="actionDisableAllEnhancements"/>
-    <addaction name="actionDisableInterlacing"/>
-    <addaction name="actionForceNTSCTimings"/>
     <addaction name="separator"/>
     <addaction name="actionCPUDebugger"/>
     <addaction name="actionEnableGDBServer"/>
@@ -663,22 +661,6 @@
    </property>
    <property name="text">
     <string>Disable All Enhancements</string>
-   </property>
-  </action>
-  <action name="actionDisableInterlacing">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Disable Interlacing</string>
-   </property>
-  </action>
-  <action name="actionForceNTSCTimings">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Force NTSC Timings</string>
    </property>
   </action>
   <action name="actionDumpAudio">

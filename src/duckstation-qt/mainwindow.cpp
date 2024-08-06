@@ -2158,9 +2158,6 @@ void MainWindow::connectSignals()
 
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionDisableAllEnhancements, "Main",
                                                "DisableAllEnhancements", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionDisableInterlacing, "GPU", "DisableInterlacing",
-                                               true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionForceNTSCTimings, "GPU", "ForceNTSCTimings", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionDebugDumpCPUtoVRAMCopies, "Debug",
                                                "DumpCPUToVRAMCopies", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionDebugDumpVRAMtoCPUCopies, "Debug",
