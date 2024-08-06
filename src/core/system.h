@@ -77,12 +77,6 @@ struct ExtendedSaveStateInfo
 
 namespace System {
 
-enum : u32
-{
-  // 5 megabytes is sufficient for now, at the moment they're around 4.3MB, or 10.3MB with 8MB RAM enabled.
-  MAX_SAVE_STATE_SIZE = 11 * 1024 * 1024,
-};
-
 enum : s32
 {
   PER_GAME_SAVE_STATE_SLOTS = 10,

@@ -122,7 +122,7 @@ static void InternalReset();
 static void ClearRunningGame();
 static void DestroySystem();
 static std::string GetMediaPathFromSaveState(const char* path);
-static bool DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display, bool is_memory_state);
+
 static bool CreateGPU(GPURenderer renderer, bool is_switching, Error* error);
 static bool SaveUndoLoadState();
 static void WarnAboutUnsafeSettings();
@@ -174,6 +174,10 @@ struct MemorySaveState
 #endif
 };
 } // namespace
+
+/// Returns the maximum size of a save state, considering the current configuration.
+static size_t GetMaxSaveStateSize();
+
 static bool SaveMemoryState(MemorySaveState* mss);
 static bool LoadMemoryState(const MemorySaveState& mss);
 static bool LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bool update_display);
@@ -186,6 +190,7 @@ static bool SaveStateBufferToFile(const SaveStateBuffer& buffer, std::FILE* fp, 
                                   SaveStateCompression screenshot_compression = SaveStateCompression::ZLib,
                                   SaveStateCompression data_compression = SaveStateCompression::ZStd);
 static u32 CompressAndWriteStateData(std::FILE* fp, std::span<const u8> src, SaveStateCompression method, Error* error);
+static bool DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display, bool is_memory_state);
 
 static void UpdateSessionTime(const std::string& prev_serial);
 
@@ -1103,7 +1108,7 @@ bool System::RecreateGPU(GPURenderer renderer, bool force_recreate_device, bool 
   g_gpu->RestoreDeviceContext();
 
   // save current state
-  DynamicHeapArray<u8> state_data(MAX_SAVE_STATE_SIZE);
+  DynamicHeapArray<u8> state_data(GetMaxSaveStateSize());
   {
     StateWrapper sw(state_data.span(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
     if (!g_gpu->DoState(sw, nullptr, false) || !TimingEvents::DoState(sw))
@@ -2434,6 +2439,15 @@ void System::ResetBootMode()
   }
 }
 
+size_t System::GetMaxSaveStateSize()
+{
+  // 5 megabytes is sufficient for now, at the moment they're around 4.3MB, or 10.3MB with 8MB RAM enabled.
+  static constexpr u32 MAX_2MB_SAVE_STATE_SIZE = 5 * 1024 * 1024;
+  static constexpr u32 MAX_8MB_SAVE_STATE_SIZE = 11 * 1024 * 1024;
+  const bool is_8mb_ram = (System::IsValid() ? (Bus::g_ram_size > Bus::RAM_2MB_SIZE) : g_settings.enable_8mb_ram);
+  return is_8mb_ram ? MAX_8MB_SAVE_STATE_SIZE : MAX_2MB_SAVE_STATE_SIZE;
+}
+
 std::string System::GetMediaPathFromSaveState(const char* path)
 {
   SaveStateBuffer buffer;
@@ -2634,7 +2648,7 @@ bool System::LoadStateBufferFromFile(SaveStateBuffer* buffer, std::FILE* fp, Err
       (static_cast<s64>(header.offset_to_screenshot) + header.screenshot_compressed_size) > file_size ||
       header.screenshot_width >= 32768 || header.screenshot_height >= 32768 ||
       (static_cast<s64>(header.offset_to_data) + header.data_compressed_size) > file_size ||
-      header.data_uncompressed_size > MAX_SAVE_STATE_SIZE) [[unlikely]]
+      header.data_uncompressed_size > SAVE_STATE_HEADER::MAX_SAVE_STATE_SIZE) [[unlikely]]
   {
     Error::SetStringView(error, "Save state header is corrupted.");
     return false;
@@ -2885,7 +2899,7 @@ bool System::SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screen
 
   // write data
   if (buffer->state_data.empty())
-    buffer->state_data.resize(MAX_SAVE_STATE_SIZE);
+    buffer->state_data.resize(GetMaxSaveStateSize());
 
   g_gpu->RestoreDeviceContext();
   StateWrapper sw(buffer->state_data.span(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
@@ -4476,7 +4490,7 @@ void System::LogUnsafeSettingsToConsole(const SmallStringBase& messages)
 void System::CalculateRewindMemoryUsage(u32 num_saves, u32 resolution_scale, u64* ram_usage, u64* vram_usage)
 {
   const u64 real_resolution_scale = std::max<u64>(g_settings.gpu_resolution_scale, 1u);
-  *ram_usage = MAX_SAVE_STATE_SIZE * static_cast<u64>(num_saves);
+  *ram_usage = GetMaxSaveStateSize() * static_cast<u64>(num_saves);
   *vram_usage = ((VRAM_WIDTH * real_resolution_scale) * (VRAM_HEIGHT * real_resolution_scale) * 4) *
                 static_cast<u64>(g_settings.gpu_multisamples) * static_cast<u64>(num_saves);
 }
@@ -4536,7 +4550,7 @@ bool System::LoadMemoryState(const MemorySaveState& mss)
 bool System::SaveMemoryState(MemorySaveState* mss)
 {
   if (mss->state_data.empty())
-    mss->state_data.resize(MAX_SAVE_STATE_SIZE);
+    mss->state_data.resize(GetMaxSaveStateSize());
 
   GPUTexture* host_texture = mss->vram_texture.release();
   StateWrapper sw(mss->state_data.span(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);

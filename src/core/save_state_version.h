@@ -25,6 +25,7 @@ struct SAVE_STATE_HEADER
   {
     MAX_TITLE_LENGTH = 128,
     MAX_SERIAL_LENGTH = 32,
+    MAX_SAVE_STATE_SIZE = 32 * 1024 * 1024,
   };
 
   u32 magic;
