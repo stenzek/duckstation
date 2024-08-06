@@ -2869,19 +2869,22 @@ bool System::SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screen
   if (screenshot_size > 0)
   {
     // assume this size is the width
-    const float display_aspect_ratio = g_gpu->ComputeDisplayAspectRatio();
-    const u32 screenshot_width = screenshot_size;
-    const u32 screenshot_height =
-      std::max(1u, static_cast<u32>(static_cast<float>(screenshot_width) /
-                                    ((display_aspect_ratio > 0.0f) ? display_aspect_ratio : 1.0f)));
+    GSVector4i screenshot_display_rect, screenshot_draw_rect;
+    g_gpu->CalculateDrawRect(screenshot_size, screenshot_size, true, true, &screenshot_display_rect,
+                             &screenshot_draw_rect);
+
+    const u32 screenshot_width = static_cast<u32>(screenshot_display_rect.width());
+    const u32 screenshot_height = static_cast<u32>(screenshot_display_rect.height());
+    screenshot_draw_rect = screenshot_draw_rect.sub32(screenshot_display_rect.xyxy());
+    screenshot_display_rect = screenshot_display_rect.sub32(screenshot_display_rect.xyxy());
     VERBOSE_LOG("Saving {}x{} screenshot for state", screenshot_width, screenshot_height);
 
     std::vector<u32> screenshot_buffer;
     u32 screenshot_stride;
     GPUTexture::Format screenshot_format;
-    if (g_gpu->RenderScreenshotToBuffer(screenshot_width, screenshot_height,
-                                        GSVector4i(0, 0, screenshot_width, screenshot_height), false,
-                                        &screenshot_buffer, &screenshot_stride, &screenshot_format) &&
+    if (g_gpu->RenderScreenshotToBuffer(screenshot_width, screenshot_height, screenshot_display_rect,
+                                        screenshot_draw_rect, false, &screenshot_buffer, &screenshot_stride,
+                                        &screenshot_format) &&
         GPUTexture::ConvertTextureDataToRGBA8(screenshot_width, screenshot_height, screenshot_buffer, screenshot_stride,
                                               screenshot_format))
     {

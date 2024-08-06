@@ -1095,12 +1095,14 @@ void GPU::UpdateCommandTickEvent()
 void GPU::ConvertScreenCoordinatesToDisplayCoordinates(float window_x, float window_y, float* display_x,
                                                        float* display_y) const
 {
-  const GSVector4i draw_rc =
-    CalculateDrawRect(g_gpu_device->GetWindowWidth(), g_gpu_device->GetWindowHeight(), true, true);
+  GSVector4i display_rc, draw_rc;
+  CalculateDrawRect(g_gpu_device->GetWindowWidth(), g_gpu_device->GetWindowHeight(), true, true, &display_rc, &draw_rc);
 
   // convert coordinates to active display region, then to full display region
-  const float scaled_display_x = (window_x - static_cast<float>(draw_rc.left)) / static_cast<float>(draw_rc.width());
-  const float scaled_display_y = (window_y - static_cast<float>(draw_rc.top)) / static_cast<float>(draw_rc.height());
+  const float scaled_display_x =
+    (window_x - static_cast<float>(display_rc.left)) / static_cast<float>(display_rc.width());
+  const float scaled_display_y =
+    (window_y - static_cast<float>(display_rc.top)) / static_cast<float>(display_rc.height());
 
   // scale back to internal resolution
   *display_x = scaled_display_x * static_cast<float>(m_crtc_state.display_width);
@@ -1941,12 +1943,14 @@ bool GPU::PresentDisplay()
 {
   FlushRender();
 
-  const GSVector4i draw_rect = CalculateDrawRect(g_gpu_device->GetWindowWidth(), g_gpu_device->GetWindowHeight(),
-                                                 !g_settings.debugging.show_vram, true);
-  return RenderDisplay(nullptr, draw_rect, !g_settings.debugging.show_vram);
+  GSVector4i display_rect;
+  GSVector4i draw_rect;
+  CalculateDrawRect(g_gpu_device->GetWindowWidth(), g_gpu_device->GetWindowHeight(), !g_settings.debugging.show_vram,
+                    true, &display_rect, &draw_rect);
+  return RenderDisplay(nullptr, display_rect, draw_rect, !g_settings.debugging.show_vram);
 }
 
-bool GPU::RenderDisplay(GPUTexture* target, const GSVector4i draw_rect, bool postfx)
+bool GPU::RenderDisplay(GPUTexture* target, const GSVector4i display_rect, const GSVector4i draw_rect, bool postfx)
 {
   GL_SCOPE_FMT("RenderDisplay: {}", draw_rect);
 
@@ -2105,7 +2109,7 @@ bool GPU::RenderDisplay(GPUTexture* target, const GSVector4i draw_rect, bool pos
     const s32 orig_height = static_cast<s32>(std::ceil(static_cast<float>(m_crtc_state.display_height) * upscale_y));
 
     return PostProcessing::DisplayChain.Apply(PostProcessing::DisplayChain.GetInputTexture(), nullptr, target,
-                                              real_draw_rect, orig_width, orig_height, m_crtc_state.display_width,
+                                              display_rect, orig_width, orig_height, m_crtc_state.display_width,
                                               m_crtc_state.display_height);
   }
   else
@@ -2339,8 +2343,8 @@ bool GPU::ApplyChromaSmoothing()
   return true;
 }
 
-GSVector4i GPU::CalculateDrawRect(s32 window_width, s32 window_height, bool apply_rotation,
-                                  bool apply_aspect_ratio) const
+void GPU::CalculateDrawRect(s32 window_width, s32 window_height, bool apply_rotation, bool apply_aspect_ratio,
+                            GSVector4i* display_rect, GSVector4i* draw_rect) const
 {
   const bool integer_scale = (g_settings.display_scaling == DisplayScalingMode::NearestInteger ||
                               g_settings.display_scaling == DisplayScalingMode::BilinearInteger);
@@ -2450,7 +2454,9 @@ GSVector4i GPU::CalculateDrawRect(s32 window_width, s32 window_height, bool appl
   const s32 top = static_cast<s32>(active_top * scale + top_padding);
   const s32 right = left + static_cast<s32>(active_width * scale);
   const s32 bottom = top + static_cast<s32>(active_height * scale);
-  return GSVector4i(left, top, right, bottom);
+  *draw_rect = GSVector4i(left, top, right, bottom);
+  *display_rect = GSVector4i(
+    GSVector4(left_padding, top_padding, left_padding + display_width * scale, top_padding + display_height * scale));
 }
 
 bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string filename, FileSystem::ManagedCFilePtr fp,
@@ -2622,8 +2628,9 @@ bool GPU::WriteDisplayTextureToFile(std::string filename, bool compress_on_threa
     flip_y, std::move(texture_data), texture_data_stride, m_display_texture->GetFormat(), false, compress_on_thread);
 }
 
-bool GPU::RenderScreenshotToBuffer(u32 width, u32 height, const GSVector4i draw_rect, bool postfx,
-                                   std::vector<u32>* out_pixels, u32* out_stride, GPUTexture::Format* out_format)
+bool GPU::RenderScreenshotToBuffer(u32 width, u32 height, const GSVector4i display_rect, const GSVector4i draw_rect,
+                                   bool postfx, std::vector<u32>* out_pixels, u32* out_stride,
+                                   GPUTexture::Format* out_format)
 {
   const GPUTexture::Format hdformat =
     g_gpu_device->HasSurface() ? g_gpu_device->GetWindowFormat() : GPUTexture::Format::RGBA8;
@@ -2636,7 +2643,7 @@ bool GPU::RenderScreenshotToBuffer(u32 width, u32 height, const GSVector4i draw_
   g_gpu_device->ClearRenderTarget(render_texture.get(), GPUDevice::DEFAULT_CLEAR_COLOR);
 
   // TODO: this should use copy shader instead.
-  RenderDisplay(render_texture.get(), draw_rect, postfx);
+  RenderDisplay(render_texture.get(), display_rect, draw_rect, postfx);
 
   const u32 stride = Common::AlignUpPow2(GPUTexture::GetPixelSize(hdformat) * width, sizeof(u32));
   out_pixels->resize((height * stride) / sizeof(u32));
@@ -2674,7 +2681,8 @@ bool GPU::RenderScreenshotToFile(std::string filename, DisplayScreenshotMode mod
 {
   u32 width = g_gpu_device->GetWindowWidth();
   u32 height = g_gpu_device->GetWindowHeight();
-  GSVector4i draw_rect = CalculateDrawRect(width, height, true, !g_settings.debugging.show_vram);
+  GSVector4i display_rect, draw_rect;
+  CalculateDrawRect(width, height, true, !g_settings.debugging.show_vram, &display_rect, &draw_rect);
 
   const bool internal_resolution = (mode != DisplayScreenshotMode::ScreenResolution || g_settings.debugging.show_vram);
   if (internal_resolution && m_display_texture_view_width != 0 && m_display_texture_view_height != 0)
@@ -2727,6 +2735,7 @@ bool GPU::RenderScreenshotToFile(std::string filename, DisplayScreenshotMode mod
 
     // Remove padding, it's not part of the framebuffer.
     draw_rect = GSVector4i(0, 0, static_cast<s32>(width), static_cast<s32>(height));
+    display_rect = draw_rect;
   }
   if (width == 0 || height == 0)
     return false;
@@ -2734,7 +2743,7 @@ bool GPU::RenderScreenshotToFile(std::string filename, DisplayScreenshotMode mod
   std::vector<u32> pixels;
   u32 pixels_stride;
   GPUTexture::Format pixels_format;
-  if (!RenderScreenshotToBuffer(width, height, draw_rect, !internal_resolution, &pixels, &pixels_stride,
+  if (!RenderScreenshotToBuffer(width, height, display_rect, draw_rect, !internal_resolution, &pixels, &pixels_stride,
                                 &pixels_format))
   {
     ERROR_LOG("Failed to render {}x{} screenshot", width, height);
