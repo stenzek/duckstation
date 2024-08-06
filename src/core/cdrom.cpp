@@ -1933,6 +1933,9 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       }
       else
       {
+        // Small window of time when another INT1 could sneak in, don't let it.
+        ClearAsyncInterrupt();
+
         // Stop reading.
         s_drive_state = DriveState::Idle;
         s_drive_event.Deactivate();
@@ -1951,6 +1954,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     case Command::Stop:
     {
       const TickCount stop_time = GetTicksForStop(IsMotorOn());
+      ClearAsyncInterrupt();
       ClearCommandSecondResponse();
       SendACKAndStat();
 
