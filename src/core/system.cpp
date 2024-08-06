@@ -106,52 +106,6 @@ SystemBootParameters::SystemBootParameters(std::string filename_) : filename(std
 SystemBootParameters::~SystemBootParameters() = default;
 
 namespace System {
-static void CheckCacheLineSize();
-
-static void LoadInputBindings(SettingsInterface& si, std::unique_lock<std::mutex>& lock);
-
-static std::string GetExecutableNameForImage(IsoReader& iso, bool strip_subdirectories);
-static bool ReadExecutableFromImage(IsoReader& iso, std::string* out_executable_name,
-                                    std::vector<u8>* out_executable_data);
-static GameHash GetGameHashFromBuffer(std::string_view exe_name, std::span<const u8> exe_buffer,
-                                      const IsoReader::ISOPrimaryVolumeDescriptor& iso_pvd, u32 track_1_length);
-
-static bool LoadBIOS(Error* error);
-static void ResetBootMode();
-static void InternalReset();
-static void ClearRunningGame();
-static void DestroySystem();
-static std::string GetMediaPathFromSaveState(const char* path);
-
-static bool CreateGPU(GPURenderer renderer, bool is_switching, Error* error);
-static bool SaveUndoLoadState();
-static void WarnAboutUnsafeSettings();
-static void LogUnsafeSettingsToConsole(const SmallStringBase& messages);
-
-/// Checks for settings changes, std::move() the old settings away for comparing beforehand.
-static void CheckForSettingsChanges(const Settings& old_settings);
-
-/// Throttles the system, i.e. sleeps until it's time to execute the next frame.
-static void Throttle(Common::Timer::Value current_time);
-static void UpdatePerformanceCounters();
-static void AccumulatePreFrameSleepTime();
-static void UpdatePreFrameSleepTime();
-static void UpdateDisplayVSync();
-
-static void SetRewinding(bool enabled);
-static bool SaveRewindState();
-static void DoRewind();
-
-static void SaveRunaheadState();
-static bool DoRunahead();
-
-static bool Initialize(bool force_software_renderer, Error* error);
-
-static bool UpdateGameSettingsLayer();
-static void UpdateRunningGame(const std::string_view path, CDImage* image, bool booting);
-static bool CheckForSBIFile(CDImage* image, Error* error);
-static std::unique_ptr<MemoryCard> GetMemoryCardForSlot(u32 slot, MemoryCardType type);
-
 /// Memory save states - only for internal use.
 namespace {
 struct SaveStateBuffer
@@ -175,9 +129,61 @@ struct MemorySaveState
 };
 } // namespace
 
+static void CheckCacheLineSize();
+
+static void LoadInputBindings(SettingsInterface& si, std::unique_lock<std::mutex>& lock);
+
+static std::string GetExecutableNameForImage(IsoReader& iso, bool strip_subdirectories);
+static bool ReadExecutableFromImage(IsoReader& iso, std::string* out_executable_name,
+                                    std::vector<u8>* out_executable_data);
+static GameHash GetGameHashFromBuffer(std::string_view exe_name, std::span<const u8> exe_buffer,
+                                      const IsoReader::ISOPrimaryVolumeDescriptor& iso_pvd, u32 track_1_length);
+
+/// Checks for settings changes, std::move() the old settings away for comparing beforehand.
+static void CheckForSettingsChanges(const Settings& old_settings);
+static void WarnAboutUnsafeSettings();
+static void LogUnsafeSettingsToConsole(const SmallStringBase& messages);
+
+static bool Initialize(bool force_software_renderer, Error* error);
+static bool LoadBIOS(Error* error);
+static void ResetBootMode();
+static void InternalReset();
+static void ClearRunningGame();
+static void DestroySystem();
+
+static bool CreateGPU(GPURenderer renderer, bool is_switching, Error* error);
+static bool RecreateGPU(GPURenderer renderer, bool force_recreate_device = false, bool update_display = true);
+
+/// Updates the throttle period, call when target emulation speed changes.
+static void UpdateThrottlePeriod();
+static void ResetThrottler();
+
+/// Throttles the system, i.e. sleeps until it's time to execute the next frame.
+static void Throttle(Common::Timer::Value current_time);
+static void UpdatePerformanceCounters();
+static void AccumulatePreFrameSleepTime();
+static void UpdatePreFrameSleepTime();
+static void UpdateDisplayVSync();
+static void ResetPerformanceCounters();
+
+static bool UpdateGameSettingsLayer();
+static void UpdateRunningGame(const std::string_view path, CDImage* image, bool booting);
+static bool CheckForSBIFile(CDImage* image, Error* error);
+
+static void UpdateControllers();
+static void UpdateControllerSettings();
+static void ResetControllers();
+static void UpdatePerGameMemoryCards();
+static std::unique_ptr<MemoryCard> GetMemoryCardForSlot(u32 slot, MemoryCardType type);
+static void UpdateMultitaps();
+
 /// Returns the maximum size of a save state, considering the current configuration.
 static size_t GetMaxSaveStateSize();
 
+static std::string GetMediaPathFromSaveState(const char* path);
+static bool SaveUndoLoadState();
+static void UpdateMemorySaveStateSettings();
+static bool LoadRewindState(u32 skip_saves = 0, bool consume_state = true);
 static bool SaveMemoryState(MemorySaveState* mss);
 static bool LoadMemoryState(const MemorySaveState& mss);
 static bool LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bool update_display);
@@ -191,6 +197,13 @@ static bool SaveStateBufferToFile(const SaveStateBuffer& buffer, std::FILE* fp, 
                                   SaveStateCompression data_compression = SaveStateCompression::ZStd);
 static u32 CompressAndWriteStateData(std::FILE* fp, std::span<const u8> src, SaveStateCompression method, Error* error);
 static bool DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display, bool is_memory_state);
+
+static void SetRewinding(bool enabled);
+static bool SaveRewindState();
+static void DoRewind();
+
+static void SaveRunaheadState();
+static bool DoRunahead();
 
 static void UpdateSessionTime(const std::string& prev_serial);
 

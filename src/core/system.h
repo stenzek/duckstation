@@ -210,7 +210,6 @@ u64 GetSessionPlayedTime();
 
 const BIOS::ImageInfo* GetBIOSImageInfo();
 
-// TODO: Move to PerformanceMetrics
 static constexpr u32 NUM_FRAME_TIME_SAMPLES = 150;
 using FrameTimeHistory = std::array<float, NUM_FRAME_TIME_SAMPLES>;
 
@@ -259,9 +258,6 @@ bool SaveResumeState(Error* error);
 /// Runs the VM until the CPU execution is canceled.
 void Execute();
 
-/// Recreates the GPU component, saving/loading the state so it is preserved. Call when the GPU renderer changes.
-bool RecreateGPU(GPURenderer renderer, bool force_recreate_device = false, bool update_display = true);
-
 void SingleStepCPU();
 
 /// Sets target emulation speed.
@@ -271,25 +267,14 @@ float GetAudioNominalRate();
 /// Adjusts the throttle frequency, i.e. how many times we should sleep per second.
 void SetThrottleFrequency(float frequency);
 
-/// Updates the throttle period, call when target emulation speed changes.
-void UpdateThrottlePeriod();
-void ResetThrottler();
-void ResetPerformanceCounters();
-
 // Access controllers for simulating input.
 Controller* GetController(u32 slot);
-void UpdateControllers();
-void UpdateControllerSettings();
-void ResetControllers();
 void UpdateMemoryCardTypes();
-void UpdatePerGameMemoryCards();
 bool HasMemoryCard(u32 slot);
 bool IsSavingMemoryCards();
 
 /// Swaps memory cards in slot 1/2.
 void SwapMemoryCards();
-
-void UpdateMultitaps();
 
 /// Dumps RAM to a file.
 bool DumpRAM(const char* filename);
@@ -461,8 +446,6 @@ void InvalidateDisplay();
 //////////////////////////////////////////////////////////////////////////
 void CalculateRewindMemoryUsage(u32 num_saves, u32 resolution_scale, u64* ram_usage, u64* vram_usage);
 void ClearMemorySaveStates();
-void UpdateMemorySaveStateSettings();
-bool LoadRewindState(u32 skip_saves = 0, bool consume_state = true);
 void SetRunaheadReplayFlag();
 
 /// Shared socket multiplexer, used by PINE/GDB/etc.
