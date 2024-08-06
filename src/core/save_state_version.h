@@ -11,13 +11,6 @@ static constexpr u32 SAVE_STATE_MINIMUM_VERSION = 42;
 
 static_assert(SAVE_STATE_VERSION >= SAVE_STATE_MINIMUM_VERSION);
 
-enum class SaveStateCompression : u32
-{
-  None = 0,
-  ZLib = 1,
-  ZStd = 2,
-};
-
 #pragma pack(push, 4)
 struct SAVE_STATE_HEADER
 {
@@ -26,6 +19,13 @@ struct SAVE_STATE_HEADER
     MAX_TITLE_LENGTH = 128,
     MAX_SERIAL_LENGTH = 32,
     MAX_SAVE_STATE_SIZE = 32 * 1024 * 1024,
+  };
+
+  enum class CompressionType : u32
+  {
+    None = 0,
+    Deflate = 1,
+    Zstandard = 2,
   };
 
   u32 magic;

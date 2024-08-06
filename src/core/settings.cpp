@@ -147,7 +147,6 @@ void Settings::Load(SettingsInterface& si)
   pause_on_controller_disconnection = si.GetBoolValue("Main", "PauseOnControllerDisconnection", false);
   save_state_on_exit = si.GetBoolValue("Main", "SaveStateOnExit", true);
   create_save_state_backups = si.GetBoolValue("Main", "CreateSaveStateBackups", DEFAULT_SAVE_STATE_BACKUPS);
-  compress_save_states = si.GetBoolValue("Main", "CompressSaveStates", DEFAULT_SAVE_STATE_COMPRESSION);
   confim_power_off = si.GetBoolValue("Main", "ConfirmPowerOff", true);
   load_devices_from_save_states = si.GetBoolValue("Main", "LoadDevicesFromSaveStates", false);
   apply_compatibility_settings = si.GetBoolValue("Main", "ApplyCompatibilitySettings", true);
@@ -311,6 +310,12 @@ void Settings::Load(SettingsInterface& si)
   display_stretch_vertically = si.GetBoolValue("Display", "StretchVertically", false);
   display_osd_scale = si.GetFloatValue("Display", "OSDScale", DEFAULT_OSD_SCALE);
 
+  save_state_compression = ParseSaveStateCompressionModeName(
+                             si.GetStringValue("Main", "SaveStateCompression",
+                                               GetSaveStateCompressionModeName(DEFAULT_SAVE_STATE_COMPRESSION_MODE))
+                               .c_str())
+                             .value_or(DEFAULT_SAVE_STATE_COMPRESSION_MODE);
+
   cdrom_readahead_sectors =
     static_cast<u8>(si.GetIntValue("CDROM", "ReadaheadSectors", DEFAULT_CDROM_READAHEAD_SECTORS));
   cdrom_mechacon_version =
@@ -462,7 +467,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
     si.SetBoolValue("Main", "PauseOnControllerDisconnection", pause_on_controller_disconnection);
     si.SetBoolValue("Main", "SaveStateOnExit", save_state_on_exit);
     si.SetBoolValue("Main", "CreateSaveStateBackups", create_save_state_backups);
-    si.SetBoolValue("Main", "CompressSaveStates", compress_save_states);
+    si.SetStringValue("Main", "SaveStateCompression", GetSaveStateCompressionModeName(save_state_compression));
     si.SetBoolValue("Main", "ConfirmPowerOff", confim_power_off);
     si.SetBoolValue("Main", "EnableDiscordPresence", enable_discord_presence);
   }
@@ -1762,6 +1767,43 @@ const char* Settings::GetCDROMMechVersionName(CDROMMechaconVersion mode)
 const char* Settings::GetCDROMMechVersionDisplayName(CDROMMechaconVersion mode)
 {
   return s_mechacon_version_display_names[static_cast<size_t>(mode)];
+}
+
+static constexpr const std::array s_save_state_compression_mode_names = {
+  "Uncompressed", "DeflateLow", "DeflateDefault", "DeflateHigh", "ZstLow", "ZstDefault", "ZstHigh",
+};
+static constexpr const std::array s_save_state_compression_mode_display_names = {
+  TRANSLATE_NOOP("Settings", "Uncompressed"),      TRANSLATE_NOOP("Settings", "Deflate (Low)"),
+  TRANSLATE_NOOP("Settings", "Deflate (Default)"), TRANSLATE_NOOP("Settings", "Deflate (High)"),
+  TRANSLATE_NOOP("Settings", "Zstandard (Low)"),   TRANSLATE_NOOP("Settings", "Zstandard (Default)"),
+  TRANSLATE_NOOP("Settings", "Zstandard (High)"),
+};
+static_assert(s_save_state_compression_mode_names.size() == static_cast<size_t>(SaveStateCompressionMode::Count));
+static_assert(s_save_state_compression_mode_display_names.size() ==
+              static_cast<size_t>(SaveStateCompressionMode::Count));
+
+std::optional<SaveStateCompressionMode> Settings::ParseSaveStateCompressionModeName(const char* str)
+{
+  u32 index = 0;
+  for (const char* name : s_save_state_compression_mode_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<SaveStateCompressionMode>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetSaveStateCompressionModeName(SaveStateCompressionMode mode)
+{
+  return s_save_state_compression_mode_names[static_cast<size_t>(mode)];
+}
+
+const char* Settings::GetSaveStateCompressionModeDisplayName(SaveStateCompressionMode mode)
+{
+  return Host::TranslateToCString("Settings", s_save_state_compression_mode_display_names[static_cast<size_t>(mode)]);
 }
 
 std::string EmuFolders::AppRoot;

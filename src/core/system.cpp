@@ -190,12 +190,12 @@ static bool LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, boo
 static bool LoadStateBufferFromFile(SaveStateBuffer* buffer, std::FILE* fp, Error* error, bool read_title,
                                     bool read_media_path, bool read_screenshot, bool read_data);
 static bool ReadAndDecompressStateData(std::FILE* fp, std::span<u8> dst, u32 file_offset, u32 compressed_size,
-                                       SaveStateCompression method, Error* error);
+                                       SAVE_STATE_HEADER::CompressionType method, Error* error);
 static bool SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screenshot_size = 256);
 static bool SaveStateBufferToFile(const SaveStateBuffer& buffer, std::FILE* fp, Error* error,
-                                  SaveStateCompression screenshot_compression = SaveStateCompression::ZLib,
-                                  SaveStateCompression data_compression = SaveStateCompression::ZStd);
-static u32 CompressAndWriteStateData(std::FILE* fp, std::span<const u8> src, SaveStateCompression method, Error* error);
+                                  SaveStateCompressionMode compression_mode);
+static u32 CompressAndWriteStateData(std::FILE* fp, std::span<const u8> src, SaveStateCompressionMode method,
+                                     u32* header_type, Error* error);
 static bool DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display, bool is_memory_state);
 
 static void SetRewinding(bool enabled);
@@ -2699,9 +2699,9 @@ bool System::LoadStateBufferFromFile(SaveStateBuffer* buffer, std::FILE* fp, Err
     buffer->screenshot.SetSize(header.screenshot_width, header.screenshot_height);
     const u32 uncompressed_size = buffer->screenshot.GetPitch() * buffer->screenshot.GetHeight();
     const u32 compressed_size = (header.version >= 69) ? header.screenshot_compressed_size : uncompressed_size;
-    const SaveStateCompression compression_type =
-      (header.version >= 69) ? static_cast<SaveStateCompression>(header.screenshot_compression_type) :
-                               SaveStateCompression::None;
+    const SAVE_STATE_HEADER::CompressionType compression_type =
+      (header.version >= 69) ? static_cast<SAVE_STATE_HEADER::CompressionType>(header.screenshot_compression_type) :
+                               SAVE_STATE_HEADER::CompressionType::None;
     if (!ReadAndDecompressStateData(
           fp, std::span<u8>(reinterpret_cast<u8*>(buffer->screenshot.GetPixels()), uncompressed_size),
           header.offset_to_screenshot, compressed_size, compression_type, error)) [[unlikely]]
@@ -2716,8 +2716,8 @@ bool System::LoadStateBufferFromFile(SaveStateBuffer* buffer, std::FILE* fp, Err
     buffer->state_data.resize(header.data_uncompressed_size);
     buffer->state_size = header.data_uncompressed_size;
     if (!ReadAndDecompressStateData(fp, buffer->state_data.span(), header.offset_to_data, header.data_compressed_size,
-                                    static_cast<SaveStateCompression>(header.data_compression_type), error))
-      [[unlikely]]
+                                    static_cast<SAVE_STATE_HEADER::CompressionType>(header.data_compression_type),
+                                    error)) [[unlikely]]
     {
       return false;
     }
@@ -2727,12 +2727,12 @@ bool System::LoadStateBufferFromFile(SaveStateBuffer* buffer, std::FILE* fp, Err
 }
 
 bool System::ReadAndDecompressStateData(std::FILE* fp, std::span<u8> dst, u32 file_offset, u32 compressed_size,
-                                        SaveStateCompression method, Error* error)
+                                        SAVE_STATE_HEADER::CompressionType method, Error* error)
 {
   if (!FileSystem::FSeek64(fp, file_offset, SEEK_SET, error))
     return false;
 
-  if (method == SaveStateCompression::None)
+  if (method == SAVE_STATE_HEADER::CompressionType::None)
   {
     // Feed through.
     if (std::fread(dst.data(), dst.size(), 1, fp) != 1) [[unlikely]]
@@ -2751,7 +2751,7 @@ bool System::ReadAndDecompressStateData(std::FILE* fp, std::span<u8> dst, u32 fi
     return false;
   }
 
-  if (method == SaveStateCompression::ZLib)
+  if (method == SAVE_STATE_HEADER::CompressionType::Deflate)
   {
     uLong source_len = compressed_size;
     uLong dest_len = static_cast<uLong>(dst.size());
@@ -2772,7 +2772,7 @@ bool System::ReadAndDecompressStateData(std::FILE* fp, std::span<u8> dst, u32 fi
 
     return true;
   }
-  else if (method == SaveStateCompression::ZStd)
+  else if (method == SAVE_STATE_HEADER::CompressionType::Zstandard)
   {
     const size_t result = ZSTD_decompress(dst.data(), dst.size(), compressed_data.data(), compressed_size);
     if (ZSTD_isError(result)) [[unlikely]]
@@ -2832,9 +2832,7 @@ bool System::SaveState(const char* path, Error* error, bool backup_existing_save
 
   INFO_LOG("Saving state to '{}'...", path);
 
-  const SaveStateCompression compression =
-    g_settings.compress_save_states ? SaveStateCompression::ZStd : SaveStateCompression::None;
-  if (!SaveStateBufferToFile(buffer, fp.get(), error, compression, compression))
+  if (!SaveStateBufferToFile(buffer, fp.get(), error, g_settings.save_state_compression))
   {
     FileSystem::DiscardAtomicRenamedFile(fp);
     return false;
@@ -2927,7 +2925,7 @@ bool System::SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screen
 }
 
 bool System::SaveStateBufferToFile(const SaveStateBuffer& buffer, std::FILE* fp, Error* error,
-                                   SaveStateCompression screenshot_compression, SaveStateCompression data_compression)
+                                   SaveStateCompressionMode compression)
 {
   // Header gets rewritten below.
   SAVE_STATE_HEADER header = {};
@@ -2961,7 +2959,6 @@ bool System::SaveStateBufferToFile(const SaveStateBuffer& buffer, std::FILE* fp,
   if (buffer.screenshot.IsValid())
   {
     DebugAssert(FileSystem::FTell64(fp) == static_cast<s64>(file_position));
-    header.screenshot_compression_type = static_cast<u32>(screenshot_compression);
     header.screenshot_width = buffer.screenshot.GetWidth();
     header.screenshot_height = buffer.screenshot.GetHeight();
     header.offset_to_screenshot = file_position;
@@ -2969,7 +2966,7 @@ bool System::SaveStateBufferToFile(const SaveStateBuffer& buffer, std::FILE* fp,
       CompressAndWriteStateData(fp,
                                 std::span<const u8>(reinterpret_cast<const u8*>(buffer.screenshot.GetPixels()),
                                                     buffer.screenshot.GetPitch() * buffer.screenshot.GetHeight()),
-                                screenshot_compression, error);
+                                compression, &header.screenshot_compression_type, error);
     if (header.screenshot_compressed_size == 0)
       return false;
     file_position += header.screenshot_compressed_size;
@@ -2977,10 +2974,9 @@ bool System::SaveStateBufferToFile(const SaveStateBuffer& buffer, std::FILE* fp,
 
   DebugAssert(buffer.state_size > 0);
   header.offset_to_data = file_position;
-  header.data_compression_type = static_cast<u32>(data_compression);
   header.data_uncompressed_size = static_cast<u32>(buffer.state_size);
-  header.data_compressed_size =
-    CompressAndWriteStateData(fp, buffer.state_data.cspan(0, buffer.state_size), data_compression, error);
+  header.data_compressed_size = CompressAndWriteStateData(fp, buffer.state_data.cspan(0, buffer.state_size),
+                                                          compression, &header.data_compression_type, error);
   if (header.data_compressed_size == 0)
     return false;
 
@@ -3001,9 +2997,10 @@ bool System::SaveStateBufferToFile(const SaveStateBuffer& buffer, std::FILE* fp,
   return true;
 }
 
-u32 System::CompressAndWriteStateData(std::FILE* fp, std::span<const u8> src, SaveStateCompression method, Error* error)
+u32 System::CompressAndWriteStateData(std::FILE* fp, std::span<const u8> src, SaveStateCompressionMode method,
+                                      u32* header_type, Error* error)
 {
-  if (method == SaveStateCompression::None)
+  if (method == SaveStateCompressionMode::Uncompressed)
   {
     if (std::fwrite(src.data(), src.size(), 1, fp) != 1) [[unlikely]]
     {
@@ -3011,33 +3008,40 @@ u32 System::CompressAndWriteStateData(std::FILE* fp, std::span<const u8> src, Sa
       return 0;
     }
 
+    *header_type = static_cast<u32>(SAVE_STATE_HEADER::CompressionType::None);
     return static_cast<u32>(src.size());
   }
 
   DynamicHeapArray<u8> buffer;
   u32 write_size;
-  if (method == SaveStateCompression::ZLib)
+  if (method >= SaveStateCompressionMode::DeflateLow && method <= SaveStateCompressionMode::DeflateHigh)
   {
     const size_t buffer_size = compressBound(static_cast<uLong>(src.size()));
     buffer.resize(buffer_size);
 
     uLongf compressed_size = static_cast<uLongf>(buffer_size);
-    const int err =
-      compress2(buffer.data(), &compressed_size, src.data(), static_cast<uLong>(src.size()), Z_DEFAULT_COMPRESSION);
+    const int level =
+      ((method == SaveStateCompressionMode::DeflateLow) ?
+         Z_BEST_SPEED :
+         ((method == SaveStateCompressionMode::DeflateHigh) ? Z_BEST_COMPRESSION : Z_DEFAULT_COMPRESSION));
+    const int err = compress2(buffer.data(), &compressed_size, src.data(), static_cast<uLong>(src.size()), level);
     if (err != Z_OK) [[unlikely]]
     {
       Error::SetStringFmt(error, "compress2() failed: {}", err);
       return 0;
     }
 
+    *header_type = static_cast<u32>(SAVE_STATE_HEADER::CompressionType::Deflate);
     write_size = static_cast<u32>(compressed_size);
   }
-  else if (method == SaveStateCompression::ZStd)
+  else if (method >= SaveStateCompressionMode::ZstLow && method <= SaveStateCompressionMode::ZstHigh)
   {
     const size_t buffer_size = ZSTD_compressBound(src.size());
     buffer.resize(buffer_size);
 
-    const size_t compressed_size = ZSTD_compress(buffer.data(), buffer_size, src.data(), src.size(), 0);
+    const int level =
+      ((method == SaveStateCompressionMode::ZstLow) ? 1 : ((method == SaveStateCompressionMode::ZstHigh) ? 19 : 0));
+    const size_t compressed_size = ZSTD_compress(buffer.data(), buffer_size, src.data(), src.size(), level);
     if (ZSTD_isError(compressed_size)) [[unlikely]]
     {
       const char* errstr = ZSTD_getErrorString(ZSTD_getErrorCode(compressed_size));
@@ -3045,6 +3049,7 @@ u32 System::CompressAndWriteStateData(std::FILE* fp, std::span<const u8> src, Sa
       return 0;
     }
 
+    *header_type = static_cast<u32>(SAVE_STATE_HEADER::CompressionType::Zstandard);
     write_size = static_cast<u32>(compressed_size);
   }
   else [[unlikely]]

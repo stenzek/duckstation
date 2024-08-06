@@ -222,8 +222,11 @@ void AdvancedSettingsWidget::addTweakOptions()
                         "IncreaseTimerResolution", true);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Load Devices From Save States"), "Main",
                         "LoadDevicesFromSaveStates", false);
-  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Compress Save States"), "Main", "CompressSaveStates",
-                        Settings::DEFAULT_SAVE_STATE_COMPRESSION);
+  addChoiceTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Save State Compression"), "Main", "SaveStateCompression",
+                       &Settings::ParseSaveStateCompressionModeName, &Settings::GetSaveStateCompressionModeName,
+                       &Settings::GetSaveStateCompressionModeDisplayName,
+                       static_cast<u32>(SaveStateCompressionMode::Count),
+                       Settings::DEFAULT_SAVE_STATE_COMPRESSION_MODE);
 
   if (m_dialog->isPerGameSettings())
   {
@@ -284,7 +287,8 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);  // Apply compatibility settings
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);  // Increase Timer Resolution
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Load Devices From Save States
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, Settings::DEFAULT_SAVE_STATE_COMPRESSION); // Compress Save States
+    setChoiceTweakOption(m_ui.tweakOptionTable, i++,
+                         Settings::DEFAULT_SAVE_STATE_COMPRESSION_MODE); // Save State Compression
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
                            static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS)); // DMA max slice ticks
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,

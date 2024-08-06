@@ -235,7 +235,7 @@ enum : u32
   NUM_MULTITAPS = 2
 };
 
-enum class CPUFastmemMode
+enum class CPUFastmemMode : u8
 {
   Disabled,
   MMap,
@@ -258,6 +258,19 @@ enum class CDROMMechaconVersion : u8
   VC3A,
   VC3B,
   VC3C,
+
+  Count,
+};
+
+enum class SaveStateCompressionMode : u8
+{
+  Uncompressed,
+  DeflateLow,
+  DeflateDefault,
+  DeflateHigh,
+  ZstLow,
+  ZstDefault,
+  ZstHigh,
 
   Count,
 };

@@ -63,14 +63,14 @@ struct Settings
   ConsoleRegion region = DEFAULT_CONSOLE_REGION;
 
   CPUExecutionMode cpu_execution_mode = DEFAULT_CPU_EXECUTION_MODE;
-  u32 cpu_overclock_numerator = 1;
-  u32 cpu_overclock_denominator = 1;
+  CPUFastmemMode cpu_fastmem_mode = DEFAULT_CPU_FASTMEM_MODE;
   bool cpu_overclock_enable : 1 = false;
   bool cpu_overclock_active : 1 = false;
   bool cpu_recompiler_memory_exceptions : 1 = false;
   bool cpu_recompiler_block_linking : 1 = true;
   bool cpu_recompiler_icache : 1 = false;
-  CPUFastmemMode cpu_fastmem_mode = DEFAULT_CPU_FASTMEM_MODE;
+  u32 cpu_overclock_numerator = 1;
+  u32 cpu_overclock_denominator = 1;
 
   float emulation_speed = 1.0f;
   float fast_forward_speed = 0.0f;
@@ -84,7 +84,6 @@ struct Settings
   bool pause_on_controller_disconnection : 1 = false;
   bool save_state_on_exit : 1 = true;
   bool create_save_state_backups : 1 = DEFAULT_SAVE_STATE_BACKUPS;
-  bool compress_save_states : 1 = DEFAULT_SAVE_STATE_COMPRESSION;
   bool confim_power_off : 1 = true;
   bool load_devices_from_save_states : 1 = false;
   bool apply_compatibility_settings : 1 = true;
@@ -179,6 +178,8 @@ struct Settings
   float display_osd_scale = 100.0f;
   float gpu_pgxp_tolerance = -1.0f;
   float gpu_pgxp_depth_clear_threshold = DEFAULT_GPU_PGXP_DEPTH_THRESHOLD / GPU_PGXP_DEPTH_THRESHOLD_SCALE;
+
+  SaveStateCompressionMode save_state_compression = DEFAULT_SAVE_STATE_COMPRESSION_MODE;
 
   u8 cdrom_readahead_sectors = DEFAULT_CDROM_READAHEAD_SECTORS;
   CDROMMechaconVersion cdrom_mechacon_version = DEFAULT_CDROM_MECHACON_VERSION;
@@ -459,6 +460,10 @@ struct Settings
   static const char* GetCDROMMechVersionName(CDROMMechaconVersion mode);
   static const char* GetCDROMMechVersionDisplayName(CDROMMechaconVersion mode);
 
+  static std::optional<SaveStateCompressionMode> ParseSaveStateCompressionModeName(const char* str);
+  static const char* GetSaveStateCompressionModeName(SaveStateCompressionMode mode);
+  static const char* GetSaveStateCompressionModeDisplayName(SaveStateCompressionMode mode);
+
   static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::Automatic;
   static constexpr GPUTextureFilter DEFAULT_GPU_TEXTURE_FILTER = GPUTextureFilter::Nearest;
   static constexpr GPULineDetectMode DEFAULT_GPU_LINE_DETECT_MODE = GPULineDetectMode::Disabled;
@@ -510,7 +515,7 @@ struct Settings
 
   static constexpr LOGLEVEL DEFAULT_LOG_LEVEL = LOGLEVEL_INFO;
 
-  static constexpr bool DEFAULT_SAVE_STATE_COMPRESSION = true;
+  static constexpr SaveStateCompressionMode DEFAULT_SAVE_STATE_COMPRESSION_MODE = SaveStateCompressionMode::ZstDefault;
 
   // Enable console logging by default on Linux platforms.
 #if defined(__linux__) && !defined(__ANDROID__)
