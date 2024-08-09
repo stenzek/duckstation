@@ -275,7 +275,7 @@ static_assert(sizeof(XA_ADPCMBlockHeader) == 1, "XA-ADPCM block header is one by
 
 } // namespace
 
-static void SoftReset(TickCount ticks_late);
+static TickCount SoftReset(TickCount ticks_late);
 
 static bool IsDriveIdle();
 static bool IsMotorOn();
@@ -583,7 +583,7 @@ void CDROM::Reset()
   SetHoldPosition(0, true);
 }
 
-void CDROM::SoftReset(TickCount ticks_late)
+TickCount CDROM::SoftReset(TickCount ticks_late)
 {
   const bool was_double_speed = s_mode.double_speed;
 
@@ -612,6 +612,7 @@ void CDROM::SoftReset(TickCount ticks_late)
 
   UpdateStatusRegister();
 
+  TickCount total_ticks;
   if (HasMedia())
   {
     if (IsSeeking())
@@ -621,7 +622,7 @@ void CDROM::SoftReset(TickCount ticks_late)
 
     const TickCount speed_change_ticks = was_double_speed ? GetTicksForSpeedChange() : 0;
     const TickCount seek_ticks = (s_current_lba != 0) ? GetTicksForSeek(0) : 0;
-    const TickCount total_ticks = std::max<TickCount>(speed_change_ticks + seek_ticks, INIT_TICKS) - ticks_late;
+    total_ticks = std::max<TickCount>(speed_change_ticks + seek_ticks, INIT_TICKS) - ticks_late;
     DEV_LOG("CDROM init total disc ticks = {} (speed change = {}, seek = {})", total_ticks, speed_change_ticks,
             seek_ticks);
 
@@ -640,6 +641,12 @@ void CDROM::SoftReset(TickCount ticks_late)
       s_drive_event.Schedule(total_ticks);
     }
   }
+  else
+  {
+    total_ticks = INIT_TICKS - ticks_late;
+  }
+
+  return total_ticks;
 }
 
 bool CDROM::DoState(StateWrapper& sw)
@@ -1504,8 +1511,8 @@ TickCount CDROM::GetTicksForStop(bool motor_was_on)
 
 TickCount CDROM::GetTicksForSpeedChange()
 {
-  static constexpr u32 ticks_single_to_double = static_cast<u32>(0.7 * static_cast<double>(System::MASTER_CLOCK));
-  static constexpr u32 ticks_double_to_single = static_cast<u32>(0.8 * static_cast<double>(System::MASTER_CLOCK));
+  static constexpr u32 ticks_single_to_double = static_cast<u32>(0.6 * static_cast<double>(System::MASTER_CLOCK));
+  static constexpr u32 ticks_double_to_single = static_cast<u32>(0.7 * static_cast<double>(System::MASTER_CLOCK));
   return System::ScaleTicksToOverclock(s_mode.double_speed ? ticks_single_to_double : ticks_double_to_single);
 }
 
@@ -1981,9 +1988,8 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
       SendACKAndStat();
 
-      SoftReset(ticks_late);
-
-      QueueCommandSecondResponse(Command::Init, INIT_TICKS);
+      const TickCount reset_ticks = SoftReset(ticks_late);
+      QueueCommandSecondResponse(Command::Init, reset_ticks);
       EndCommand();
       return;
     }
