@@ -340,11 +340,13 @@ bool GPU_HW::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
       {
         delete tex;
 
-        tex =
-          g_gpu_device
-            ->FetchTexture(m_vram_texture->GetWidth(), m_vram_texture->GetHeight(), 1, 1, m_vram_texture->GetSamples(),
-                           GPUTexture::Type::RenderTarget, GPUTexture::Format::RGBA8, nullptr, 0)
-            .release();
+        // We copy to/from the save state texture, but we can't have multisampled non-RTs.
+        tex = g_gpu_device
+                ->FetchTexture(
+                  m_vram_texture->GetWidth(), m_vram_texture->GetHeight(), 1, 1, m_vram_texture->GetSamples(),
+                  m_vram_texture->IsMultisampled() ? GPUTexture::Type::RenderTarget : GPUTexture::Type::Texture,
+                  GPUTexture::Format::RGBA8, nullptr, 0)
+                .release();
         *host_texture = tex;
         if (!tex)
           return false;
