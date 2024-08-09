@@ -82,6 +82,7 @@ set -e
 LINUXDEPLOY=./linuxdeploy-x86_64
 LINUXDEPLOY_PLUGIN_QT=./linuxdeploy-plugin-qt-x86_64
 APPIMAGETOOL=./appimagetool-x86_64
+APPIMAGERUNTIME=./runtime-x86_64
 PATCHELF=patchelf
 
 if [ ! -f "$LINUXDEPLOY" ]; then
@@ -95,8 +96,12 @@ if [ ! -f "$LINUXDEPLOY_PLUGIN_QT" ]; then
 fi
 
 if [ ! -f "$APPIMAGETOOL" ]; then
-	retry_command wget -O "$APPIMAGETOOL" https://github.com/stenzek/duckstation-ext-qt-minimal/releases/download/linux/appimagetool-x86_64.AppImage
+	retry_command wget -O "$APPIMAGETOOL" https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
 	chmod +x "$APPIMAGETOOL"
+fi
+
+if [ ! -f "$APPIMAGERUNTIME" ]; then
+	retry_command wget -O "$APPIMAGERUNTIME" https://github.com/stenzek/type2-runtime/releases/download/continuous/runtime-x86_64
 fi
 
 OUTDIR=$(realpath "./$APPDIRNAME")
@@ -207,4 +212,4 @@ done
 
 echo "Generating AppImage..."
 rm -f "$NAME.AppImage"
-ARCH=x86_64 VERSION=test "$APPIMAGETOOL" -s "$OUTDIR" && mv ./*.AppImage "$NAME.AppImage"
+"$APPIMAGETOOL" -v --runtime-file "$APPIMAGERUNTIME" "$OUTDIR" "$NAME.AppImage"
