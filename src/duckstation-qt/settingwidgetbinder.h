@@ -1179,9 +1179,9 @@ static void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
 }
 
 static inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* widget, QAbstractButton* browse_button,
-                                             QAbstractButton* open_button, QAbstractButton* reset_button,
-                                             std::string section, std::string key, std::string default_value,
-                                             bool use_relative = true)
+                                             QString browse_title, QAbstractButton* open_button,
+                                             QAbstractButton* reset_button, std::string section, std::string key,
+                                             std::string default_value, bool use_relative = true)
 {
   using Accessor = SettingAccessor<QLineEdit>;
 
@@ -1250,19 +1250,16 @@ static inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* 
 
   if (browse_button)
   {
-    QObject::connect(browse_button, &QAbstractButton::clicked, browse_button, [widget, key, value_changed]() {
-      const QString path(QDir::toNativeSeparators(QFileDialog::getExistingDirectory(
-        QtUtils::GetRootWidget(widget),
-        // It seems that the latter half should show the types of folders that can be selected within Settings ->
-        // Folders, but right now it's broken. It would be best for localization purposes to duplicate this into
-        // multiple lines, each per type of folder.
-        qApp->translate("SettingWidgetBinder", "Select folder for %1").arg(QString::fromStdString(key)))));
-      if (path.isEmpty())
-        return;
+    QObject::connect(browse_button, &QAbstractButton::clicked, browse_button,
+                     [widget, browse_title = std::move(browse_title), value_changed]() {
+                       const QString path = QDir::toNativeSeparators(
+                         QFileDialog::getExistingDirectory(QtUtils::GetRootWidget(widget), browse_title));
+                       if (path.isEmpty())
+                         return;
 
-      widget->setText(path);
-      value_changed();
-    });
+                       widget->setText(path);
+                       value_changed();
+                     });
   }
   if (open_button)
   {
