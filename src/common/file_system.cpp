@@ -1235,6 +1235,9 @@ bool FileSystem::WriteAtomicRenamedFile(std::string filename, const void* data, 
                                         Error* error /*= nullptr*/)
 {
   AtomicRenamedFile fp = CreateAtomicRenamedFile(std::move(filename), "wb", error);
+  if (!fp)
+    return false;
+
   if (data_length > 0 && std::fwrite(data, 1u, data_length, fp.get()) != data_length) [[unlikely]]
   {
     Error::SetErrno(error, "fwrite() failed: ", errno);
