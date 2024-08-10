@@ -507,6 +507,14 @@ bool VulkanDevice::SelectDeviceExtensions(ExtensionList* extension_list, bool en
 #endif
   }
 
+  // Don't bother checking for maintenance 4/5 if we don't have 1-3, i.e. Vulkan 1.1.
+  if (m_device_properties.apiVersion >= VK_API_VERSION_1_1)
+  {
+    m_optional_extensions.vk_khr_maintenance4 = SupportsExtension(VK_KHR_MAINTENANCE_4_EXTENSION_NAME, false);
+    m_optional_extensions.vk_khr_maintenance5 =
+      m_optional_extensions.vk_khr_maintenance4 && SupportsExtension(VK_KHR_MAINTENANCE_4_EXTENSION_NAME, false);
+  }
+
   return true;
 }
 
@@ -708,6 +716,8 @@ void VulkanDevice::ProcessDeviceExtensions()
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_EXT, nullptr, VK_FALSE};
   VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT fragment_shader_interlock_feature = {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT, nullptr, VK_FALSE, VK_FALSE, VK_FALSE};
+  VkPhysicalDeviceMaintenance4Features maintenance4_features = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES, nullptr, VK_FALSE};
 
   // add in optional feature structs
   if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
@@ -722,6 +732,8 @@ void VulkanDevice::ProcessDeviceExtensions()
     if (m_optional_extensions.vk_ext_fragment_shader_interlock)
       Vulkan::AddPointerToChain(&features2, &fragment_shader_interlock_feature);
   }
+  if (m_optional_extensions.vk_khr_maintenance5)
+    Vulkan::AddPointerToChain(&features2, &maintenance4_features);
 
   // we might not have VK_KHR_get_physical_device_properties2...
   if (!vkGetPhysicalDeviceFeatures2 || !vkGetPhysicalDeviceProperties2 || !vkGetPhysicalDeviceMemoryProperties2)
@@ -758,6 +770,8 @@ void VulkanDevice::ProcessDeviceExtensions()
   m_optional_extensions.vk_ext_fragment_shader_interlock &=
     (m_optional_extensions.vk_khr_dynamic_rendering &&
      fragment_shader_interlock_feature.fragmentShaderPixelInterlock == VK_TRUE);
+  m_optional_extensions.vk_khr_maintenance4 &= (maintenance4_features.maintenance4 == VK_TRUE);
+  m_optional_extensions.vk_khr_maintenance5 &= m_optional_extensions.vk_khr_maintenance4;
 
   VkPhysicalDeviceProperties2 properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, nullptr, {}};
   VkPhysicalDevicePushDescriptorPropertiesKHR push_descriptor_properties = {
@@ -786,28 +800,24 @@ void VulkanDevice::ProcessDeviceExtensions()
   m_optional_extensions.vk_ext_external_memory_host &=
     (external_memory_host_properties.minImportedHostPointerAlignment == HOST_PAGE_SIZE);
 
-  INFO_LOG("VK_EXT_external_memory_host is {}",
-           m_optional_extensions.vk_ext_external_memory_host ? "supported" : "NOT supported");
-  INFO_LOG("VK_EXT_memory_budget is {}", m_optional_extensions.vk_ext_memory_budget ? "supported" : "NOT supported");
-  INFO_LOG("VK_EXT_fragment_shader_interlock is {}",
-           m_optional_extensions.vk_ext_fragment_shader_interlock ? "supported" : "NOT supported");
-  INFO_LOG("VK_EXT_rasterization_order_attachment_access is {}",
-           m_optional_extensions.vk_ext_rasterization_order_attachment_access ? "supported" : "NOT supported");
-  INFO_LOG("VK_EXT_swapchain_maintenance1 is {}",
-           m_optional_extensions.vk_ext_swapchain_maintenance1 ? "supported" : "NOT supported");
-  INFO_LOG("VK_KHR_get_memory_requirements2 is {}",
-           m_optional_extensions.vk_khr_get_memory_requirements2 ? "supported" : "NOT supported");
-  INFO_LOG("VK_KHR_bind_memory2 is {}", m_optional_extensions.vk_khr_bind_memory2 ? "supported" : "NOT supported");
-  INFO_LOG("VK_KHR_get_physical_device_properties2 is {}",
-           m_optional_extensions.vk_khr_get_physical_device_properties2 ? "supported" : "NOT supported");
-  INFO_LOG("VK_KHR_dedicated_allocation is {}",
-           m_optional_extensions.vk_khr_dedicated_allocation ? "supported" : "NOT supported");
-  INFO_LOG("VK_KHR_dynamic_rendering is {}",
-           m_optional_extensions.vk_khr_dynamic_rendering ? "supported" : "NOT supported");
-  INFO_LOG("VK_KHR_dynamic_rendering_local_read is {}",
-           m_optional_extensions.vk_khr_dynamic_rendering_local_read ? "supported" : "NOT supported");
-  INFO_LOG("VK_KHR_push_descriptor is {}",
-           m_optional_extensions.vk_khr_push_descriptor ? "supported" : "NOT supported");
+#define LOG_EXT(name, field) INFO_LOG(name " is {}", m_optional_extensions.field ? "supported" : "NOT supported")
+
+  LOG_EXT("VK_EXT_external_memory_host", vk_ext_external_memory_host);
+  LOG_EXT("VK_EXT_memory_budget", vk_ext_memory_budget);
+  LOG_EXT("VK_EXT_fragment_shader_interlock", vk_ext_fragment_shader_interlock);
+  LOG_EXT("VK_EXT_rasterization_order_attachment_access", vk_ext_rasterization_order_attachment_access);
+  LOG_EXT("VK_EXT_swapchain_maintenance1", vk_ext_swapchain_maintenance1);
+  LOG_EXT("VK_KHR_get_memory_requirements2", vk_khr_get_memory_requirements2);
+  LOG_EXT("VK_KHR_bind_memory2", vk_khr_bind_memory2);
+  LOG_EXT("VK_KHR_get_physical_device_properties2", vk_khr_get_physical_device_properties2);
+  LOG_EXT("VK_KHR_dedicated_allocation", vk_khr_dedicated_allocation);
+  LOG_EXT("VK_KHR_dynamic_rendering", vk_khr_dynamic_rendering);
+  LOG_EXT("VK_KHR_dynamic_rendering_local_read", vk_khr_dynamic_rendering_local_read);
+  LOG_EXT("VK_KHR_maintenance4", vk_khr_maintenance4);
+  LOG_EXT("VK_KHR_maintenance4", vk_khr_maintenance5);
+  LOG_EXT("VK_KHR_push_descriptor", vk_khr_push_descriptor);
+
+#undef LOG_EXT
 }
 
 bool VulkanDevice::CreateAllocator()
@@ -843,6 +853,18 @@ bool VulkanDevice::CreateAllocator()
   {
     DEV_LOG("Enabling VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT.");
     ci.flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
+  }
+
+  if (m_optional_extensions.vk_khr_maintenance4)
+  {
+    DEV_LOG("Enabling VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE4_BIT");
+    ci.flags |= VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE4_BIT;
+  }
+
+  if (m_optional_extensions.vk_khr_maintenance5)
+  {
+    DEV_LOG("Enabling VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE5_BIT");
+    ci.flags |= VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE5_BIT;
   }
 
   // Limit usage of the DEVICE_LOCAL upload heap when we're using a debug device.
