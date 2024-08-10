@@ -78,6 +78,7 @@ class Error;
 #pragma clang diagnostic ignored "-Wnullability-completeness"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #pragma clang diagnostic ignored "-Wmissing-field-initializers"
+#pragma clang diagnostic ignored "-Wunused-function"
 #elif defined(_MSC_VER)
 #pragma warning(push, 0)
 #endif
