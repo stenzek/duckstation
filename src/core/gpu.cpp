@@ -1458,6 +1458,7 @@ void GPU::UpdateCLUTIfNeeded(GPUTextureMode texmode, GPUTexturePaletteReg clut)
   if ((clut.bits != m_current_clut_reg_bits) || BoolToUInt8(needs_8bit) > BoolToUInt8(m_current_clut_is_8bit))
   {
     DEBUG_LOG("Reloading CLUT from {},{}, {}", clut.GetXBase(), clut.GetYBase(), needs_8bit ? "8-bit" : "4-bit");
+    AddCommandTicks(needs_8bit ? 256 : 16);
     UpdateCLUT(clut, needs_8bit);
     m_current_clut_reg_bits = clut.bits;
     m_current_clut_is_8bit = needs_8bit;
