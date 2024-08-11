@@ -86,7 +86,7 @@ float SettingInfo::FloatStepValue() const
 #if defined(_WIN32)
 const MediaCaptureBackend Settings::DEFAULT_MEDIA_CAPTURE_BACKEND = MediaCaptureBackend::MediaFoundation;
 #elif !defined(__ANDROID__)
-const MediaCaptureBackend Settings::DEFAULT_MEDIA_CAPTURE_BACKEND = MediaCaptureBackend::FFMPEG;
+const MediaCaptureBackend Settings::DEFAULT_MEDIA_CAPTURE_BACKEND = MediaCaptureBackend::FFmpeg;
 #endif
 
 Settings::Settings()

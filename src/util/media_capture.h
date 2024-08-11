@@ -20,7 +20,7 @@ enum class MediaCaptureBackend : u8
   MediaFoundation,
 #endif
 #ifndef __ANDROID__
-  FFMPEG,
+  FFmpeg,
 #endif
   MaxCount,
 };

@@ -621,9 +621,9 @@ struct MediaFoundationCodec
   bool require_hardware;
 };
 static constexpr const MediaFoundationCodec s_media_foundation_audio_codecs[] = {
-  {"aac", "Advanced Audio Coding", MFAudioFormat_AAC},
-  {"mp3", "MPEG-2 Audio Layer III", MFAudioFormat_MP3},
-  {"pcm", "Uncompressed PCM", MFAudioFormat_PCM},
+  {"aac", "Advanced Audio Coding", MFAudioFormat_AAC, false},
+  {"mp3", "MPEG-2 Audio Layer III", MFAudioFormat_MP3, false},
+  {"pcm", "Uncompressed PCM", MFAudioFormat_PCM, false},
 };
 static constexpr const MediaFoundationCodec s_media_foundation_video_codecs[] = {
   {"h264", "H.264 with Software Encoding", MFVideoFormat_H264, false},
@@ -1609,8 +1609,8 @@ MediaCapture::ContainerList MediaCapture::GetContainerList(MediaCaptureBackend b
       break;
 #endif
 #ifndef __ANDROID__
-    case MediaCaptureBackend::FFMPEG:
-      // ret = MediaCaptureFFMPEG::GetContainerList();
+    case MediaCaptureBackend::FFmpeg:
+      // ret = MediaCaptureFFmpeg::GetContainerList();
       break;
 #endif
     default:
@@ -1630,8 +1630,8 @@ MediaCapture::CodecList MediaCapture::GetVideoCodecList(MediaCaptureBackend back
       break;
 #endif
 #ifndef __ANDROID__
-    case MediaCaptureBackend::FFMPEG:
-      // ret = MediaCaptureFFMPEG::GetVideoCodecList(container);
+    case MediaCaptureBackend::FFmpeg:
+      // ret = MediaCaptureFFmpeg::GetVideoCodecList(container);
       break;
 #endif
     default:
@@ -1651,8 +1651,8 @@ MediaCapture::CodecList MediaCapture::GetAudioCodecList(MediaCaptureBackend back
       break;
 #endif
 #ifndef __ANDROID__
-    case MediaCaptureBackend::FFMPEG:
-      // ret = MediaCaptureFFMPEG::GetAudioCodecList(container);
+    case MediaCaptureBackend::FFmpeg:
+      // ret = MediaCaptureFFmpeg::GetAudioCodecList(container);
       break;
 #endif
     default:
@@ -1670,7 +1670,8 @@ std::unique_ptr<MediaCapture> MediaCapture::Create(MediaCaptureBackend backend, 
       return MediaCaptureMF::Create(error);
 #endif
 #ifndef __ANDROID__
-    case MediaCaptureBackend::FFMPEG:
+    case MediaCaptureBackend::FFmpeg:
+      // return MediaCaptureFFmpeg::Create(error);
       return nullptr;
 #endif
     default:
