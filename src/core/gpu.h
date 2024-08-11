@@ -360,7 +360,39 @@ protected:
 
     u32 ticks_per_row = drawn_width;
     if (textured)
-      ticks_per_row += drawn_width;
+    {
+      switch (m_draw_mode.mode_reg.texture_mode)
+      {
+        case GPUTextureMode::Palette4Bit:
+          ticks_per_row += drawn_width;
+          break;
+
+        case GPUTextureMode::Palette8Bit:
+        {
+          // Texture cache reload every 2 pixels, reads in 8 bytes (assuming 4x2). Cache only reloads if the
+          // draw width is greater than 32, otherwise the cache hits between rows.
+          if (drawn_width >= 32)
+            ticks_per_row += (drawn_width / 4) * 8;
+          else
+            ticks_per_row += drawn_width;
+        }
+        break;
+
+        case GPUTextureMode::Direct16Bit:
+        case GPUTextureMode::Reserved_Direct16Bit:
+        {
+          // Same as above, except with 2x2 blocks instead of 4x2.
+          if (drawn_width >= 32)
+            ticks_per_row += (drawn_width / 2) * 8;
+          else
+            ticks_per_row += drawn_width;
+        }
+        break;
+
+          DefaultCaseIsUnreachable()
+      }
+    }
+
     if (semitransparent || m_GPUSTAT.check_mask_before_draw)
       ticks_per_row += (drawn_width + 1u) / 2u;
     if (m_GPUSTAT.SkipDrawingToActiveField())
