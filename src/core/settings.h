@@ -19,6 +19,7 @@
 #include <vector>
 
 enum class RenderAPI : u32;
+enum class MediaCaptureBackend : u8;
 
 struct SettingInfo
 {
@@ -222,6 +223,25 @@ struct Settings
   bool achievements_use_raintegration : 1 = false;
   s32 achievements_notification_duration = DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME;
   s32 achievements_leaderboard_duration = DEFAULT_LEADERBOARD_NOTIFICATION_TIME;
+
+#ifndef __ANDROID__
+  // media capture
+  std::string media_capture_container;
+  std::string media_capture_audio_codec;
+  std::string media_capture_audio_codec_args;
+  std::string media_capture_video_codec;
+  std::string media_capture_video_codec_args;
+  u32 media_capture_video_width = 640;
+  u32 media_capture_video_height = 480;
+  u32 media_capture_video_bitrate = 6000;
+  u32 media_capture_audio_bitrate = 128;
+  MediaCaptureBackend media_capture_backend = DEFAULT_MEDIA_CAPTURE_BACKEND;
+  bool media_capture_video : 1 = true;
+  bool media_capture_video_codec_use_args : 1 = true;
+  bool media_capture_video_auto_size : 1 = false;
+  bool media_capture_audio : 1 = true;
+  bool media_capture_audio_codec_use_args : 1 = true;
+#endif
 
   struct DebugSettings
   {
@@ -517,6 +537,11 @@ struct Settings
 
   static constexpr SaveStateCompressionMode DEFAULT_SAVE_STATE_COMPRESSION_MODE = SaveStateCompressionMode::ZstDefault;
 
+#ifndef __ANDROID__
+  static const MediaCaptureBackend DEFAULT_MEDIA_CAPTURE_BACKEND;
+  static constexpr const char* DEFAULT_MEDIA_CAPTURE_CONTAINER = "mp4";
+#endif
+
   // Enable console logging by default on Linux platforms.
 #if defined(__linux__) && !defined(__ANDROID__)
   static constexpr bool DEFAULT_LOG_TO_CONSOLE = true;
@@ -562,6 +587,7 @@ extern std::string Screenshots;
 extern std::string Shaders;
 extern std::string Textures;
 extern std::string UserResources;
+extern std::string Videos;
 
 // Assumes that AppRoot and DataRoot have been initialized.
 void SetDefaults();

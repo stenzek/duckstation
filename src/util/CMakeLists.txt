@@ -44,6 +44,8 @@ add_library(util
   input_source.h
   iso_reader.cpp
   iso_reader.h
+  media_capture.cpp
+  media_capture.h
   page_fault_handler.cpp
   page_fault_handler.h
   platform_misc.h

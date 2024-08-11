@@ -188,7 +188,6 @@
     <addaction name="separator"/>
     <addaction name="actionDebugDumpCPUtoVRAMCopies"/>
     <addaction name="actionDebugDumpVRAMtoCPUCopies"/>
-    <addaction name="actionDumpAudio"/>
     <addaction name="separator"/>
     <addaction name="actionDebugShowVRAM"/>
     <addaction name="actionDebugShowGPUState"/>
@@ -233,6 +232,8 @@
     <addaction name="actionCoverDownloader"/>
     <addaction name="separator"/>
     <addaction name="actionMemoryScanner"/>
+    <addaction name="separator"/>
+    <addaction name="actionMediaCapture"/>
     <addaction name="separator"/>
     <addaction name="actionOpenDataDirectory"/>
    </widget>
@@ -663,14 +664,6 @@
     <string>Disable All Enhancements</string>
    </property>
   </action>
-  <action name="actionDumpAudio">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Dump Audio</string>
-   </property>
-  </action>
   <action name="actionDumpRAM">
    <property name="text">
     <string>Dump RAM...</string>
@@ -943,6 +936,14 @@
    </property>
    <property name="text">
     <string>Show Game Icons (List View)</string>
+   </property>
+  </action>
+  <action name="actionMediaCapture">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Media Ca&amp;pture</string>
    </property>
   </action>
  </widget>

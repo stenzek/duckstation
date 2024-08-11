@@ -623,6 +623,18 @@ void MainWindow::onRunningGameChanged(const QString& filename, const QString& ga
   updateWindowTitle();
 }
 
+void MainWindow::onMediaCaptureStarted()
+{
+  QSignalBlocker sb(m_ui.actionMediaCapture);
+  m_ui.actionMediaCapture->setChecked(true);
+}
+
+void MainWindow::onMediaCaptureStopped()
+{
+  QSignalBlocker sb(m_ui.actionMediaCapture);
+  m_ui.actionMediaCapture->setChecked(false);
+}
+
 void MainWindow::onApplicationStateChanged(Qt::ApplicationState state)
 {
   if (!s_system_valid)
@@ -1122,7 +1134,7 @@ const GameList::Entry* MainWindow::resolveDiscSetEntry(const GameList::Entry* en
 std::shared_ptr<SystemBootParameters> MainWindow::getSystemBootParameters(std::string file)
 {
   std::shared_ptr<SystemBootParameters> ret = std::make_shared<SystemBootParameters>(std::move(file));
-  ret->start_audio_dump = m_ui.actionDumpAudio->isChecked();
+  ret->start_media_capture = m_ui.actionMediaCapture->isChecked();
   return ret;
 }
 
@@ -2103,6 +2115,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionMemoryCardEditor, &QAction::triggered, this, &MainWindow::onToolsMemoryCardEditorTriggered);
   connect(m_ui.actionMemoryScanner, &QAction::triggered, this, &MainWindow::onToolsMemoryScannerTriggered);
   connect(m_ui.actionCoverDownloader, &QAction::triggered, this, &MainWindow::onToolsCoverDownloaderTriggered);
+  connect(m_ui.actionMediaCapture, &QAction::toggled, this, &MainWindow::onToolsMediaCaptureToggled);
   connect(m_ui.actionCPUDebugger, &QAction::triggered, this, &MainWindow::openCPUDebugger);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableGDBServer, "Debug", "EnableGDBServer", false);
   connect(m_ui.actionOpenDataDirectory, &QAction::triggered, this, &MainWindow::onToolsOpenDataDirectoryTriggered);
@@ -2137,6 +2150,8 @@ void MainWindow::connectSignals()
   connect(g_emu_thread, &EmuThread::systemPaused, this, &MainWindow::onSystemPaused);
   connect(g_emu_thread, &EmuThread::systemResumed, this, &MainWindow::onSystemResumed);
   connect(g_emu_thread, &EmuThread::runningGameChanged, this, &MainWindow::onRunningGameChanged);
+  connect(g_emu_thread, &EmuThread::mediaCaptureStarted, this, &MainWindow::onMediaCaptureStarted);
+  connect(g_emu_thread, &EmuThread::mediaCaptureStopped, this, &MainWindow::onMediaCaptureStopped);
   connect(g_emu_thread, &EmuThread::mouseModeRequested, this, &MainWindow::onMouseModeRequested);
   connect(g_emu_thread, &EmuThread::fullscreenUIStateChange, this, &MainWindow::onFullscreenUIStateChange);
   connect(g_emu_thread, &EmuThread::achievementsLoginRequested, this, &MainWindow::onAchievementsLoginRequested);
@@ -2162,12 +2177,6 @@ void MainWindow::connectSignals()
                                                "DumpCPUToVRAMCopies", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionDebugDumpVRAMtoCPUCopies, "Debug",
                                                "DumpVRAMToCPUCopies", false);
-  connect(m_ui.actionDumpAudio, &QAction::toggled, [](bool checked) {
-    if (checked)
-      g_emu_thread->startDumpingAudio();
-    else
-      g_emu_thread->stopDumpingAudio();
-  });
   connect(m_ui.actionDumpRAM, &QAction::triggered, [this]() {
     const QString filename = QDir::toNativeSeparators(
       QFileDialog::getSaveFileName(this, tr("Destination File"), QString(), tr("Binary Files (*.bin)")));
@@ -3032,6 +3041,41 @@ void MainWindow::onToolsCoverDownloaderTriggered()
   CoverDownloadDialog dlg(lock.getDialogParent());
   connect(&dlg, &CoverDownloadDialog::coverRefreshRequested, m_game_list_widget, &GameListWidget::refreshGridCovers);
   dlg.exec();
+}
+
+void MainWindow::onToolsMediaCaptureToggled(bool checked)
+{
+  if (!QtHost::IsSystemValid())
+  {
+    // leave it for later, we'll fill in the boot params
+    return;
+  }
+
+  if (!checked)
+  {
+    Host::RunOnCPUThread(&System::StopMediaCapture);
+    return;
+  }
+
+  const std::string container =
+    Host::GetStringSettingValue("MediaCapture", "Container", Settings::DEFAULT_MEDIA_CAPTURE_CONTAINER);
+  const QString qcontainer = QString::fromStdString(container);
+  const QString filter(tr("%1 Files (*.%2)").arg(qcontainer.toUpper()).arg(qcontainer));
+
+  QString path =
+    QString::fromStdString(System::GetNewMediaCapturePath(QtHost::GetCurrentGameTitle().toStdString(), container));
+  path = QDir::toNativeSeparators(QFileDialog::getSaveFileName(this, tr("Video Capture"), path, filter));
+  if (path.isEmpty())
+  {
+    // uncheck it again
+    const QSignalBlocker sb(m_ui.actionMediaCapture);
+    m_ui.actionMediaCapture->setChecked(false);
+    return;
+  }
+
+  Host::RunOnCPUThread([path = path.toStdString()]() {
+    System::StartMediaCapture(path, g_settings.media_capture_video, g_settings.media_capture_audio);
+  });
 }
 
 void MainWindow::onToolsMemoryScannerTriggered()

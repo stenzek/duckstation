@@ -140,6 +140,8 @@ private Q_SLOTS:
   void onSystemPaused();
   void onSystemResumed();
   void onRunningGameChanged(const QString& filename, const QString& game_serial, const QString& game_title);
+  void onMediaCaptureStarted();
+  void onMediaCaptureStopped();
   void onAchievementsLoginRequested(Achievements::LoginRequestReason reason);
   void onAchievementsChallengeModeChanged(bool enabled);
   void onApplicationStateChanged(Qt::ApplicationState state);
@@ -174,6 +176,7 @@ private Q_SLOTS:
   void onToolsMemoryCardEditorTriggered();
   void onToolsMemoryScannerTriggered();
   void onToolsCoverDownloaderTriggered();
+  void onToolsMediaCaptureToggled(bool checked);
   void onToolsOpenDataDirectoryTriggered();
   void onSettingsTriggeredFromToolbar();
 

@@ -10,6 +10,7 @@
 #include "util/gpu_device.h"
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
+#include "util/media_capture.h"
 
 #include "common/assert.h"
 #include "common/file_system.h"
@@ -81,6 +82,12 @@ float SettingInfo::FloatStepValue() const
   static constexpr float fallback_value = 0.1f;
   return step_value ? StringUtil::FromChars<float>(step_value).value_or(fallback_value) : fallback_value;
 }
+
+#if defined(_WIN32)
+const MediaCaptureBackend Settings::DEFAULT_MEDIA_CAPTURE_BACKEND = MediaCaptureBackend::MediaFoundation;
+#elif !defined(__ANDROID__)
+const MediaCaptureBackend Settings::DEFAULT_MEDIA_CAPTURE_BACKEND = MediaCaptureBackend::FFMPEG;
+#endif
 
 Settings::Settings()
 {
@@ -405,6 +412,27 @@ void Settings::Load(SettingsInterface& si)
   achievements_leaderboard_duration =
     si.GetIntValue("Cheevos", "LeaderboardsDuration", DEFAULT_LEADERBOARD_NOTIFICATION_TIME);
 
+#ifndef __ANDROID__
+  media_capture_backend =
+    MediaCapture::ParseBackendName(
+      si.GetStringValue("MediaCapture", "Backend", MediaCapture::GetBackendName(DEFAULT_MEDIA_CAPTURE_BACKEND)).c_str())
+      .value_or(DEFAULT_MEDIA_CAPTURE_BACKEND);
+  media_capture_container = si.GetStringValue("MediaCapture", "Container", "mp4");
+  media_capture_video = si.GetBoolValue("MediaCapture", "VideoCapture", true);
+  media_capture_video_width = si.GetUIntValue("MediaCapture", "VideoWidth", 640);
+  media_capture_video_height = si.GetUIntValue("MediaCapture", "VideoHeight", 480);
+  media_capture_video_auto_size = si.GetBoolValue("MediaCapture", "VideoAutoSize", false);
+  media_capture_video_bitrate = si.GetUIntValue("MediaCapture", "VideoBitrate", 6000);
+  media_capture_video_codec = si.GetStringValue("MediaCapture", "VideoCodec");
+  media_capture_video_codec_use_args = si.GetBoolValue("MediaCapture", "VideoCodecUseArgs", false);
+  media_capture_video_codec_args = si.GetStringValue("MediaCapture", "AudioCodecArgs");
+  media_capture_audio = si.GetBoolValue("MediaCapture", "AudioCapture", true);
+  media_capture_audio_bitrate = si.GetUIntValue("MediaCapture", "AudioBitrate", 128);
+  media_capture_audio_codec = si.GetStringValue("MediaCapture", "AudioCodec");
+  media_capture_audio_codec_use_args = si.GetBoolValue("MediaCapture", "AudioCodecUseArgs", false);
+  media_capture_audio_codec_args = si.GetStringValue("MediaCapture", "AudioCodecArgs");
+#endif
+
   log_level = ParseLogLevelName(si.GetStringValue("Logging", "LogLevel", GetLogLevelName(DEFAULT_LOG_LEVEL)).c_str())
                 .value_or(DEFAULT_LOG_LEVEL);
   log_filter = si.GetStringValue("Logging", "LogFilter", "");
@@ -656,6 +684,24 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("Cheevos", "UseRAIntegration", achievements_use_raintegration);
   si.SetIntValue("Cheevos", "NotificationsDuration", achievements_notification_duration);
   si.SetIntValue("Cheevos", "LeaderboardsDuration", achievements_leaderboard_duration);
+
+#ifndef __ANDROID__
+  si.SetStringValue("MediaCapture", "Backend", MediaCapture::GetBackendName(media_capture_backend));
+  si.SetStringValue("MediaCapture", "Container", media_capture_container.c_str());
+  si.SetBoolValue("MediaCapture", "VideoCapture", media_capture_video);
+  si.SetUIntValue("MediaCapture", "VideoWidth", media_capture_video_width);
+  si.SetUIntValue("MediaCapture", "VideoHeight", media_capture_video_height);
+  si.SetBoolValue("MediaCapture", "VideoAutoSize", media_capture_video_auto_size);
+  si.SetUIntValue("MediaCapture", "VideoBitrate", media_capture_video_bitrate);
+  si.SetStringValue("MediaCapture", "VideoCodec", media_capture_video_codec.c_str());
+  si.SetBoolValue("MediaCapture", "VideoCodecUseArgs", media_capture_video_codec_use_args);
+  si.SetStringValue("MediaCapture", "AudioCodecArgs", media_capture_video_codec_args.c_str());
+  si.SetBoolValue("MediaCapture", "AudioCapture", media_capture_audio);
+  si.SetUIntValue("MediaCapture", "AudioBitrate", media_capture_audio_bitrate);
+  si.SetStringValue("MediaCapture", "AudioCodec", media_capture_audio_codec.c_str());
+  si.SetBoolValue("MediaCapture", "AudioCodecUseArgs", media_capture_audio_codec_use_args);
+  si.SetStringValue("MediaCapture", "AudioCodecArgs", media_capture_audio_codec_args.c_str());
+#endif
 
   if (!ignore_base)
   {
@@ -1823,6 +1869,7 @@ std::string EmuFolders::Screenshots;
 std::string EmuFolders::Shaders;
 std::string EmuFolders::Textures;
 std::string EmuFolders::UserResources;
+std::string EmuFolders::Videos;
 
 void EmuFolders::SetDefaults()
 {
@@ -1840,6 +1887,7 @@ void EmuFolders::SetDefaults()
   Shaders = Path::Combine(DataRoot, "shaders");
   Textures = Path::Combine(DataRoot, "textures");
   UserResources = Path::Combine(DataRoot, "resources");
+  Videos = Path::Combine(DataRoot, "videos");
 }
 
 static std::string LoadPathFromSettings(SettingsInterface& si, const std::string& root, const char* section,
@@ -1870,6 +1918,7 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
   Shaders = LoadPathFromSettings(si, DataRoot, "Folders", "Shaders", "shaders");
   Textures = LoadPathFromSettings(si, DataRoot, "Folders", "Textures", "textures");
   UserResources = LoadPathFromSettings(si, DataRoot, "Folders", "UserResources", "resources");
+  Videos = LoadPathFromSettings(si, DataRoot, "Folders", "Videos", "videos");
 
   DEV_LOG("BIOS Directory: {}", Bios);
   DEV_LOG("Cache Directory: {}", Cache);
@@ -1886,6 +1935,7 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
   DEV_LOG("Shaders Directory: {}", Shaders);
   DEV_LOG("Textures Directory: {}", Textures);
   DEV_LOG("User Resources Directory: {}", UserResources);
+  DEV_LOG("Videos Directory: {}", Videos);
 }
 
 void EmuFolders::Save(SettingsInterface& si)
@@ -1905,6 +1955,7 @@ void EmuFolders::Save(SettingsInterface& si)
   si.SetStringValue("Folders", "Shaders", Path::MakeRelative(Shaders, DataRoot).c_str());
   si.SetStringValue("Folders", "Textures", Path::MakeRelative(Textures, DataRoot).c_str());
   si.SetStringValue("Folders", "UserResources", Path::MakeRelative(UserResources, DataRoot).c_str());
+  si.SetStringValue("Folders", "Videos", Path::MakeRelative(UserResources, Videos).c_str());
 }
 
 void EmuFolders::Update()
@@ -1954,6 +2005,7 @@ bool EmuFolders::EnsureFoldersExist()
            result;
   result = FileSystem::EnsureDirectoryExists(Textures.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(UserResources.c_str(), false) && result;
+  result = FileSystem::EnsureDirectoryExists(Videos.c_str(), false) && result;
   return result;
 }
 

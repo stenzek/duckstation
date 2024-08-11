@@ -41,6 +41,7 @@
 #include "util/ini_settings_interface.h"
 #include "util/input_manager.h"
 #include "util/iso_reader.h"
+#include "util/media_capture.h"
 #include "util/platform_misc.h"
 #include "util/postprocessing.h"
 #include "util/sockets.h"
@@ -78,6 +79,7 @@ Log_SetChannel(System);
 
 #ifdef _WIN32
 #include "common/windows_headers.h"
+#include <Objbase.h>
 #include <mmsystem.h>
 #include <objbase.h>
 #endif
@@ -302,6 +304,7 @@ static Common::Timer s_frame_timer;
 static Threading::ThreadHandle s_cpu_thread_handle;
 
 static std::unique_ptr<CheatList> s_cheat_list;
+static std::unique_ptr<MediaCapture> s_media_capture;
 
 // temporary save state, created when loading, used to undo load state
 static std::optional<System::SaveStateBuffer> s_undo_load_state;
@@ -445,6 +448,8 @@ void System::Internal::ProcessShutdown()
 
 bool System::Internal::CPUThreadInitialize(Error* error)
 {
+  Threading::SetNameOfCurrentThread("CPU Thread");
+
 #ifdef _WIN32
   // On Win32, we have a bunch of things which use COM (e.g. SDL, Cubeb, etc).
   // We need to initialize COM first, before anything else does, because otherwise they might
@@ -1690,8 +1695,8 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   if (parameters.load_image_to_ram || g_settings.cdrom_load_image_to_ram)
     CDROM::PrecacheMedia();
 
-  if (parameters.start_audio_dump)
-    StartDumpingAudio();
+  if (parameters.start_media_capture)
+    StartMediaCapture({});
 
   if (g_settings.start_paused || parameters.override_start_paused.value_or(false))
     PauseSystem(true);
@@ -1808,6 +1813,9 @@ void System::DestroySystem()
   DebugAssert(!s_system_executing);
   if (s_state == State::Shutdown)
     return;
+
+  if (s_media_capture)
+    StopMediaCapture();
 
   s_undo_load_state.reset();
 
@@ -2001,6 +2009,13 @@ void System::FrameDone()
     }
 
     SaveRunaheadState();
+  }
+
+  // Kick off media capture early, might take a while.
+  if (s_media_capture && s_media_capture->IsCapturingVideo()) [[unlikely]]
+  {
+    if (!g_gpu->SendDisplayToMediaCapture(s_media_capture.get())) [[unlikely]]
+      StopMediaCapture();
   }
 
   Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
@@ -3133,6 +3148,9 @@ void System::UpdatePerformanceCounters()
   s_cpu_thread_time = static_cast<float>(static_cast<double>(cpu_delta) * time_divider);
   s_sw_thread_usage = static_cast<float>(static_cast<double>(sw_delta) * pct_divider);
   s_sw_thread_time = static_cast<float>(static_cast<double>(sw_delta) * time_divider);
+
+  if (s_media_capture)
+    s_media_capture->UpdateCaptureThreadUsage(pct_divider, time_divider);
 
   s_fps_timer.ResetTo(now_ticks);
 
@@ -4896,61 +4914,6 @@ void System::UpdateVolume()
   SPU::GetOutputStream()->SetOutputVolume(GetAudioOutputVolume());
 }
 
-bool System::IsDumpingAudio()
-{
-  return SPU::IsDumpingAudio();
-}
-
-bool System::StartDumpingAudio(const char* filename)
-{
-  if (System::IsShutdown())
-    return false;
-
-  std::string auto_filename;
-  if (!filename)
-  {
-    const auto& serial = System::GetGameSerial();
-    if (serial.empty())
-    {
-      auto_filename = Path::Combine(
-        EmuFolders::Dumps, fmt::format("audio" FS_OSPATH_SEPARATOR_STR "{}.wav", GetTimestampStringForFileName()));
-    }
-    else
-    {
-      auto_filename = Path::Combine(EmuFolders::Dumps, fmt::format("audio" FS_OSPATH_SEPARATOR_STR "{}_{}.wav", serial,
-                                                                   GetTimestampStringForFileName()));
-    }
-
-    filename = auto_filename.c_str();
-  }
-
-  if (SPU::StartDumpingAudio(filename))
-  {
-    Host::AddIconOSDMessage(
-      "audio_dumping", ICON_FA_VOLUME_UP,
-      fmt::format(TRANSLATE_FS("OSDMessage", "Started dumping audio to '{}'."), Path::GetFileName(filename)),
-      Host::OSD_INFO_DURATION);
-    return true;
-  }
-  else
-  {
-    Host::AddIconOSDMessage(
-      "audio_dumping", ICON_FA_VOLUME_UP,
-      fmt::format(TRANSLATE_FS("OSDMessage", "Failed to start dumping audio to '{}'."), Path::GetFileName(filename)),
-      Host::OSD_ERROR_DURATION);
-    return false;
-  }
-}
-
-void System::StopDumpingAudio()
-{
-  if (System::IsShutdown() || !SPU::StopDumpingAudio())
-    return;
-
-  Host::AddIconOSDMessage("audio_dumping", ICON_FA_VOLUME_MUTE, TRANSLATE_STR("OSDMessage", "Stopped dumping audio."),
-                          Host::OSD_INFO_DURATION);
-}
-
 bool System::SaveScreenshot(const char* filename, DisplayScreenshotMode mode, DisplayScreenshotFormat format,
                             u8 quality, bool compress_on_thread)
 {
@@ -4983,6 +4946,132 @@ bool System::SaveScreenshot(const char* filename, DisplayScreenshotMode mode, Di
   }
 
   return g_gpu->RenderScreenshotToFile(filename, mode, quality, compress_on_thread, true);
+}
+
+static std::string_view GetCaptureTypeForMessage(bool capture_video, bool capture_audio)
+{
+  return capture_video ? (capture_audio ? TRANSLATE_SV("System", "capturing audio and video") :
+                                          TRANSLATE_SV("System", "capturing video")) :
+                         TRANSLATE_SV("System", "capturing audio");
+}
+
+MediaCapture* System::GetMediaCapture()
+{
+  return s_media_capture.get();
+}
+
+std::string System::GetNewMediaCapturePath(const std::string_view title, const std::string_view container)
+{
+  const std::string sanitized_name = Path::SanitizeFileName(title);
+  std::string path;
+  if (sanitized_name.empty())
+  {
+    path = Path::Combine(EmuFolders::Videos, fmt::format("{}.{}", GetTimestampStringForFileName(), container));
+  }
+  else
+  {
+    path = Path::Combine(EmuFolders::Videos,
+                         fmt::format("{} {}.{}", sanitized_name, GetTimestampStringForFileName(), container));
+  }
+
+  return path;
+}
+
+bool System::StartMediaCapture(std::string path, bool capture_video, bool capture_audio)
+{
+  if (!IsValid())
+    return false;
+
+  if (s_media_capture)
+    StopMediaCapture();
+
+  // Need to work out the size.
+  u32 capture_width = g_settings.media_capture_video_width;
+  u32 capture_height = g_settings.media_capture_video_height;
+  const GPUTexture::Format capture_format =
+    g_gpu_device->HasSurface() ? g_gpu_device->GetWindowFormat() : GPUTexture::Format::RGBA8;
+  const float fps = g_gpu->ComputeVerticalFrequency();
+  if (capture_video)
+  {
+    // TODO: This will be a mess with GPU thread.
+    if (g_settings.media_capture_video_auto_size)
+    {
+      GSVector4i unused_display_rect, unused_draw_rect;
+      g_gpu->CalculateScreenshotSize(DisplayScreenshotMode::InternalResolution, &capture_width, &capture_height,
+                                     &unused_display_rect, &unused_draw_rect);
+    }
+
+    MediaCapture::AdjustVideoSize(&capture_width, &capture_height);
+  }
+
+  // TODO: Render anamorphic capture instead?
+  constexpr float aspect = 1.0f;
+
+  if (path.empty())
+    path = GetNewMediaCapturePath(GetGameTitle(), g_settings.media_capture_container);
+
+  Error error;
+  s_media_capture = MediaCapture::Create(g_settings.media_capture_backend, &error);
+  if (!s_media_capture ||
+      !s_media_capture->BeginCapture(
+        fps, aspect, capture_width, capture_height, capture_format, SPU::SAMPLE_RATE, std::move(path), capture_video,
+        g_settings.media_capture_video_codec, g_settings.media_capture_video_bitrate,
+        g_settings.media_capture_video_codec_use_args ? std::string_view(g_settings.media_capture_video_codec_args) :
+                                                        std::string_view(),
+        capture_audio, g_settings.media_capture_audio_codec, g_settings.media_capture_audio_bitrate,
+        g_settings.media_capture_audio_codec_use_args ? std::string_view(g_settings.media_capture_audio_codec_args) :
+                                                        std::string_view(),
+        &error))
+  {
+    Host::AddIconOSDMessage(
+      "MediaCapture", ICON_FA_EXCLAMATION_TRIANGLE,
+      fmt::format(TRANSLATE_FS("System", "Failed to create media capture: {0}"), error.GetDescription()),
+      Host::OSD_ERROR_DURATION);
+    s_media_capture.reset();
+    Host::OnMediaCaptureStopped();
+    return false;
+  }
+
+  Host::AddIconOSDMessage(
+    "MediaCapture", ICON_FA_CAMERA,
+    fmt::format(TRANSLATE_FS("System", "Starting {0} to '{1}'."),
+                GetCaptureTypeForMessage(s_media_capture->IsCapturingVideo(), s_media_capture->IsCapturingAudio()),
+                Path::GetFileName(s_media_capture->GetPath())),
+    Host::OSD_INFO_DURATION);
+
+  Host::OnMediaCaptureStarted();
+  return true;
+}
+
+void System::StopMediaCapture()
+{
+  if (!s_media_capture)
+    return;
+
+  const bool was_capturing_audio = s_media_capture->IsCapturingAudio();
+  const bool was_capturing_video = s_media_capture->IsCapturingVideo();
+
+  Error error;
+  if (s_media_capture->EndCapture(&error))
+  {
+    Host::AddIconOSDMessage("MediaCapture", ICON_FA_CAMERA,
+                            fmt::format(TRANSLATE_FS("System", "Stopped {0} to '{1}'."),
+                                        GetCaptureTypeForMessage(was_capturing_video, was_capturing_audio),
+                                        Path::GetFileName(s_media_capture->GetPath())),
+                            Host::OSD_INFO_DURATION);
+  }
+  else
+  {
+    Host::AddIconOSDMessage(
+      "MediaCapture", ICON_FA_EXCLAMATION_TRIANGLE,
+      fmt::format(TRANSLATE_FS("System", "Stopped {0}: {1}."),
+                  GetCaptureTypeForMessage(s_media_capture->IsCapturingVideo(), s_media_capture->IsCapturingAudio()),
+                  error.GetDescription()),
+      Host::OSD_INFO_DURATION);
+  }
+  s_media_capture.reset();
+
+  Host::OnMediaCaptureStopped();
 }
 
 std::string System::GetGameSaveStateFileName(std::string_view serial, s32 slot)

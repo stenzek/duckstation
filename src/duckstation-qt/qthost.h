@@ -148,6 +148,8 @@ Q_SIGNALS:
   void achievementsRefreshed(quint32 id, const QString& game_info_string);
   void achievementsChallengeModeChanged(bool enabled);
   void cheatEnabled(quint32 index, bool enabled);
+  void mediaCaptureStarted();
+  void mediaCaptureStopped();
 
   /// Big Picture UI requests.
   void onCoverDownloaderOpenRequested();

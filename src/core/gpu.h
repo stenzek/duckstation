@@ -28,6 +28,7 @@ class StateWrapper;
 class GPUDevice;
 class GPUTexture;
 class GPUPipeline;
+class MediaCapture;
 
 struct Settings;
 
@@ -210,6 +211,10 @@ public:
   void CalculateDrawRect(s32 window_width, s32 window_height, bool apply_rotation, bool apply_aspect_ratio,
                          GSVector4i* display_rect, GSVector4i* draw_rect) const;
 
+  /// Helper function for computing screenshot bounds.
+  void CalculateScreenshotSize(DisplayScreenshotMode mode, u32* width, u32* height, GSVector4i* display_rect,
+                               GSVector4i* draw_rect) const;
+
   /// Helper function to save current display texture to PNG.
   bool WriteDisplayTextureToFile(std::string filename, bool compress_on_thread = false);
 
@@ -224,6 +229,9 @@ public:
 
   /// Draws the current display texture, with any post-processing.
   bool PresentDisplay();
+
+  /// Sends the current frame to media capture.
+  bool SendDisplayToMediaCapture(MediaCapture* cap);
 
   /// Reads the CLUT from the specified coordinates, accounting for wrap-around.
   static void ReadCLUT(u16* dest, GPUTexturePaletteReg reg, bool clut_is_8bit);

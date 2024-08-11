@@ -32,6 +32,13 @@ private Q_SLOTS:
   void updateResolutionDependentOptions();
   void onTrueColorChanged();
   void onDownsampleModeChanged();
+
+  void onMediaCaptureBackendChanged();
+  void onMediaCaptureContainerChanged();
+  void onMediaCaptureVideoEnabledChanged();
+  void onMediaCaptureVideoAutoResolutionChanged();
+  void onMediaCaptureAudioEnabledChanged();
+
   void onEnableAnyTextureReplacementsChanged();
   void onEnableVRAMWriteDumpingChanged();
 

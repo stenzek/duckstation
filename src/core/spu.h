@@ -38,15 +38,6 @@ void DrawDebugStateWindow();
 // Executes the SPU, generating any pending samples.
 void GeneratePendingSamples();
 
-/// Returns true if currently dumping audio.
-bool IsDumpingAudio();
-
-/// Starts dumping audio to file.
-bool StartDumpingAudio(const char* filename);
-
-/// Stops dumping audio to file, if started.
-bool StopDumpingAudio();
-
 /// Access to SPU RAM.
 const std::array<u8, RAM_SIZE>& GetRAM();
 std::array<u8, RAM_SIZE>& GetWritableRAM();

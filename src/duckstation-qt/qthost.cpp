@@ -1481,7 +1481,7 @@ void EmuThread::startDumpingAudio()
     return;
   }
 
-  System::StartDumpingAudio();
+  //System::StartDumpingAudio();
 }
 
 void EmuThread::stopDumpingAudio()
@@ -1492,7 +1492,7 @@ void EmuThread::stopDumpingAudio()
     return;
   }
 
-  System::StopDumpingAudio();
+  //System::StopDumpingAudio();
 }
 
 void EmuThread::singleStepCPU()
@@ -2063,6 +2063,16 @@ void Host::OnGameChanged(const std::string& disc_path, const std::string& game_s
 {
   emit g_emu_thread->runningGameChanged(QString::fromStdString(disc_path), QString::fromStdString(game_serial),
                                         QString::fromStdString(game_name));
+}
+
+void Host::OnMediaCaptureStarted()
+{
+  emit g_emu_thread->mediaCaptureStarted();
+}
+
+void Host::OnMediaCaptureStopped()
+{
+  emit g_emu_thread->mediaCaptureStopped();
 }
 
 void Host::SetMouseMode(bool relative, bool hide_cursor)

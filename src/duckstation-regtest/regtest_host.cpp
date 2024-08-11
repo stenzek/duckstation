@@ -283,6 +283,16 @@ void Host::OnGameChanged(const std::string& disc_path, const std::string& game_s
   INFO_LOG("Game Name: {}", game_name);
 }
 
+void Host::OnMediaCaptureStarted()
+{
+  //
+}
+
+void Host::OnMediaCaptureStopped()
+{
+  //
+}
+
 void Host::PumpMessagesOnCPUThread()
 {
   s_frames_to_run--;

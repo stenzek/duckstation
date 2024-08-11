@@ -27,6 +27,7 @@ struct CheatCode;
 class CheatList;
 
 class GPUTexture;
+class MediaCapture;
 
 namespace BIOS {
 struct ImageInfo;
@@ -54,7 +55,7 @@ struct SystemBootParameters
   bool load_image_to_ram = false;
   bool force_software_renderer = false;
   bool disable_achievements_hardcore_mode = false;
-  bool start_audio_dump = false;
+  bool start_media_capture = false;
 };
 
 struct SaveStateInfo
@@ -382,19 +383,21 @@ std::string GetGameMemoryCardPath(std::string_view serial, std::string_view path
 s32 GetAudioOutputVolume();
 void UpdateVolume();
 
-/// Returns true if currently dumping audio.
-bool IsDumpingAudio();
-
-/// Starts dumping audio to a file. If no file name is provided, one will be generated automatically.
-bool StartDumpingAudio(const char* filename = nullptr);
-
-/// Stops dumping audio to file if it has been started.
-void StopDumpingAudio();
-
 /// Saves a screenshot to the specified file. If no file name is provided, one will be generated automatically.
 bool SaveScreenshot(const char* filename = nullptr, DisplayScreenshotMode mode = g_settings.display_screenshot_mode,
                     DisplayScreenshotFormat format = g_settings.display_screenshot_format,
                     u8 quality = g_settings.display_screenshot_quality, bool compress_on_thread = true);
+
+/// Returns the path that a new media capture would be saved to by default. Safe to call from any thread.
+std::string GetNewMediaCapturePath(const std::string_view title, const std::string_view container);
+
+/// Current media capture (if active).
+MediaCapture* GetMediaCapture();
+
+/// Media capture (video and/or audio). If no path is provided, one will be generated automatically.
+bool StartMediaCapture(std::string path = {}, bool capture_video = g_settings.media_capture_video,
+                       bool capture_audio = g_settings.media_capture_audio);
+void StopMediaCapture();
 
 /// Loads the cheat list for the current game title from the user directory.
 bool LoadCheatList();
@@ -507,6 +510,10 @@ void OnPerformanceCountersUpdated();
 
 /// Provided by the host; called when the running executable changes.
 void OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name);
+
+/// Called when media capture starts/stops.
+void OnMediaCaptureStarted();
+void OnMediaCaptureStopped();
 
 /// Provided by the host; called once per frame at guest vsync.
 void PumpMessagesOnCPUThread();

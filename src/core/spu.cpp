@@ -12,6 +12,7 @@
 
 #include "util/audio_stream.h"
 #include "util/imgui_manager.h"
+#include "util/media_capture.h"
 #include "util/state_wrapper.h"
 #include "util/wav_writer.h"
 
@@ -482,7 +483,6 @@ void SPU::CPUClockChanged()
 
 void SPU::Shutdown()
 {
-  StopDumpingAudio();
   s_state.tick_event.Deactivate();
   s_state.transfer_event.Deactivate();
   s_state.audio_stream.reset();
@@ -1508,11 +1508,8 @@ void SPU::InternalGeneratePendingSamples()
   s_state.tick_event.InvokeEarly(force_exec);
 }
 
-bool SPU::IsDumpingAudio()
-{
-  return static_cast<bool>(s_state.dump_writer);
-}
-
+#if 0
+// TODO: FIXME
 bool SPU::StartDumpingAudio(const char* filename)
 {
   s_state.dump_writer.reset();
@@ -1562,6 +1559,7 @@ bool SPU::StopDumpingAudio()
 
   return true;
 }
+#endif
 
 const std::array<u8, SPU::RAM_SIZE>& SPU::GetRAM()
 {
@@ -2435,8 +2433,11 @@ void SPU::Execute(void* param, TickCount ticks, TickCount ticks_late)
       }
     }
 
-    if (s_state.dump_writer) [[unlikely]]
-      s_state.dump_writer->WriteFrames(output_frame_start, frames_in_this_batch);
+    if (MediaCapture* cap = System::GetMediaCapture()) [[unlikely]]
+    {
+      if (!cap->DeliverAudioFrames(output_frame_start, frames_in_this_batch))
+        System::StopMediaCapture();
+    }
 
     output_stream->EndWrite(frames_in_this_batch);
     remaining_frames -= frames_in_this_batch;

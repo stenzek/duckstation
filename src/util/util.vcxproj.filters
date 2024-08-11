@@ -71,6 +71,7 @@
     <ClInclude Include="opengl_context_wgl.h" />
     <ClInclude Include="image.h" />
     <ClInclude Include="sockets.h" />
+    <ClInclude Include="media_capture.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="state_wrapper.cpp" />
@@ -150,6 +151,7 @@
     <ClCompile Include="image.cpp" />
     <ClCompile Include="sdl_audio_stream.cpp" />
     <ClCompile Include="sockets.cpp" />
+    <ClCompile Include="media_capture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="metal_shaders.metal" />

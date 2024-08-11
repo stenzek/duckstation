@@ -14,6 +14,7 @@
 #include "util/gpu_device.h"
 #include "util/image.h"
 #include "util/imgui_manager.h"
+#include "util/media_capture.h"
 #include "util/postprocessing.h"
 #include "util/shadergen.h"
 #include "util/state_wrapper.h"
@@ -2116,6 +2117,26 @@ bool GPU::RenderDisplay(GPUTexture* target, const GSVector4i display_rect, const
     return true;
 }
 
+bool GPU::SendDisplayToMediaCapture(MediaCapture* cap)
+{
+  GPUTexture* target = cap->GetRenderTexture();
+  if (!target)
+    return false;
+
+  const bool apply_aspect_ratio =
+    (g_settings.display_screenshot_mode != DisplayScreenshotMode::UncorrectedInternalResolution);
+  const bool postfx = (g_settings.display_screenshot_mode != DisplayScreenshotMode::InternalResolution);
+  GSVector4i display_rect, draw_rect;
+  CalculateDrawRect(target->GetWidth(), target->GetHeight(), !g_settings.debugging.show_vram, apply_aspect_ratio,
+                    &display_rect, &draw_rect);
+  if (!RenderDisplay(target, display_rect, draw_rect, postfx))
+    return false;
+
+  // TODO: Check for frame rate change
+
+  return cap->DeliverVideoFrame(target);
+}
+
 void GPU::DestroyDeinterlaceTextures()
 {
   for (std::unique_ptr<GPUTexture>& tex : m_deinterlace_buffers)
@@ -2676,21 +2697,20 @@ bool GPU::RenderScreenshotToBuffer(u32 width, u32 height, const GSVector4i displ
   return true;
 }
 
-bool GPU::RenderScreenshotToFile(std::string filename, DisplayScreenshotMode mode, u8 quality, bool compress_on_thread,
-                                 bool show_osd_message)
+void GPU::CalculateScreenshotSize(DisplayScreenshotMode mode, u32* width, u32* height, GSVector4i* display_rect,
+                                  GSVector4i* draw_rect) const
 {
-  u32 width = g_gpu_device->GetWindowWidth();
-  u32 height = g_gpu_device->GetWindowHeight();
-  GSVector4i display_rect, draw_rect;
-  CalculateDrawRect(width, height, true, !g_settings.debugging.show_vram, &display_rect, &draw_rect);
+  *width = g_gpu_device->GetWindowWidth();
+  *height = g_gpu_device->GetWindowHeight();
+  CalculateDrawRect(*width, *height, true, !g_settings.debugging.show_vram, display_rect, draw_rect);
 
   const bool internal_resolution = (mode != DisplayScreenshotMode::ScreenResolution || g_settings.debugging.show_vram);
   if (internal_resolution && m_display_texture_view_width != 0 && m_display_texture_view_height != 0)
   {
     if (mode == DisplayScreenshotMode::InternalResolution)
     {
-      const u32 draw_width = static_cast<u32>(draw_rect.width());
-      const u32 draw_height = static_cast<u32>(draw_rect.height());
+      const u32 draw_width = static_cast<u32>(draw_rect->width());
+      const u32 draw_height = static_cast<u32>(draw_rect->height());
 
       // If internal res, scale the computed draw rectangle to the internal res.
       // We re-use the draw rect because it's already been AR corrected.
@@ -2701,42 +2721,52 @@ bool GPU::RenderScreenshotToFile(std::string filename, DisplayScreenshotMode mod
       {
         // stretch height, preserve width
         const float scale = static_cast<float>(m_display_texture_view_width) / static_cast<float>(draw_width);
-        width = m_display_texture_view_width;
-        height = static_cast<u32>(std::round(static_cast<float>(draw_height) * scale));
+        *width = m_display_texture_view_width;
+        *height = static_cast<u32>(std::round(static_cast<float>(draw_height) * scale));
       }
       else
       {
         // stretch width, preserve height
         const float scale = static_cast<float>(m_display_texture_view_height) / static_cast<float>(draw_height);
-        width = static_cast<u32>(std::round(static_cast<float>(draw_width) * scale));
-        height = m_display_texture_view_height;
+        *width = static_cast<u32>(std::round(static_cast<float>(draw_width) * scale));
+        *height = m_display_texture_view_height;
       }
 
       // DX11 won't go past 16K texture size.
       const u32 max_texture_size = g_gpu_device->GetMaxTextureSize();
-      if (width > max_texture_size)
+      if (*width > max_texture_size)
       {
-        height = static_cast<u32>(static_cast<float>(height) /
-                                  (static_cast<float>(width) / static_cast<float>(max_texture_size)));
-        width = max_texture_size;
+        *height = static_cast<u32>(static_cast<float>(*height) /
+                                   (static_cast<float>(*width) / static_cast<float>(max_texture_size)));
+        *width = max_texture_size;
       }
-      if (height > max_texture_size)
+      if (*height > max_texture_size)
       {
-        height = max_texture_size;
-        width = static_cast<u32>(static_cast<float>(width) /
-                                 (static_cast<float>(height) / static_cast<float>(max_texture_size)));
+        *height = max_texture_size;
+        *width = static_cast<u32>(static_cast<float>(*width) /
+                                  (static_cast<float>(*height) / static_cast<float>(max_texture_size)));
       }
     }
     else // if (mode == DisplayScreenshotMode::UncorrectedInternalResolution)
     {
-      width = m_display_texture_view_width;
-      height = m_display_texture_view_height;
+      *width = m_display_texture_view_width;
+      *height = m_display_texture_view_height;
     }
 
     // Remove padding, it's not part of the framebuffer.
-    draw_rect = GSVector4i(0, 0, static_cast<s32>(width), static_cast<s32>(height));
-    display_rect = draw_rect;
+    *draw_rect = GSVector4i(0, 0, static_cast<s32>(*width), static_cast<s32>(*height));
+    *display_rect = *draw_rect;
   }
+}
+
+bool GPU::RenderScreenshotToFile(std::string filename, DisplayScreenshotMode mode, u8 quality, bool compress_on_thread,
+                                 bool show_osd_message)
+{
+  u32 width, height;
+  GSVector4i display_rect, draw_rect;
+  CalculateScreenshotSize(mode, &width, &height, &display_rect, &draw_rect);
+
+  const bool internal_resolution = (mode != DisplayScreenshotMode::ScreenResolution);
   if (width == 0 || height == 0)
     return false;
 

@@ -358,6 +358,17 @@ DEFINE_HOTKEY("ResetEmulationSpeed", TRANSLATE_NOOP("Hotkeys", "System"),
                 }
               })
 
+DEFINE_HOTKEY("ToggleMediaCapture", TRANSLATE_NOOP("Hotkeys", "System"),
+              TRANSLATE_NOOP("Hotkeys", "Toggle Media Capture"), [](s32 pressed) {
+                if (!pressed)
+                {
+                  if (System::GetMediaCapture())
+                    System::StopMediaCapture();
+                  else
+                    System::StartMediaCapture();
+                }
+              })
+
 DEFINE_HOTKEY("ToggleSoftwareRendering", TRANSLATE_NOOP("Hotkeys", "Graphics"),
               TRANSLATE_NOOP("Hotkeys", "Toggle Software Rendering"), [](s32 pressed) {
                 if (!pressed && System::IsValid())
