@@ -981,9 +981,14 @@ bool Bus::InjectExecutable(std::span<const u8> buffer, bool set_pc, Error* error
   if (set_pc)
   {
     const u32 r_pc = header.initial_pc;
-    CPU::g_state.regs.gp = header.initial_gp;
-    CPU::g_state.regs.sp = header.initial_sp_base + header.initial_sp_offset;
-    CPU::g_state.regs.fp = header.initial_sp_base + header.initial_sp_offset;
+    const u32 r_gp = header.initial_gp;
+    const u32 r_sp = header.initial_sp_base + header.initial_sp_offset;
+    CPU::g_state.regs.gp = r_gp;
+    if (r_sp != 0)
+    {
+      CPU::g_state.regs.sp = r_sp;
+      CPU::g_state.regs.fp = r_sp;
+    }
     CPU::SetPC(r_pc);
   }
 
