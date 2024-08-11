@@ -715,29 +715,59 @@ void GPU_SW_Backend::DrawLine(const GPUBackendDrawLineCommand* cmd, const GPUBac
 void GPU_SW_Backend::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, GPUBackendCommandParameters params)
 {
   const u16 color16 = VRAMRGBA8888ToRGBA5551(color);
+  const GSVector4i fill = GSVector4i(color16, color16, color16, color16, color16, color16, color16, color16);
+  constexpr u32 vector_width = 8;
+  const u32 aligned_width = Common::AlignDownPow2(width, vector_width);
+
   if ((x + width) <= VRAM_WIDTH && !params.interlaced_rendering)
   {
     for (u32 yoffs = 0; yoffs < height; yoffs++)
     {
       const u32 row = (y + yoffs) % VRAM_HEIGHT;
-      std::fill_n(&g_vram[row * VRAM_WIDTH + x], width, color16);
+
+      u16* row_ptr = &g_vram[row * VRAM_WIDTH + x];
+      u32 xoffs = 0;
+      for (; xoffs < aligned_width; xoffs += vector_width, row_ptr += vector_width)
+        GSVector4i::store<false>(row_ptr, fill);
+      for (; xoffs < width; xoffs++)
+        *(row_ptr++) = color16;
     }
   }
   else if (params.interlaced_rendering)
   {
     // Hardware tests show that fills seem to break on the first two lines when the offset matches the displayed field.
     const u32 active_field = params.active_line_lsb;
-    for (u32 yoffs = 0; yoffs < height; yoffs++)
-    {
-      const u32 row = (y + yoffs) % VRAM_HEIGHT;
-      if ((row & u32(1)) == active_field)
-        continue;
 
-      u16* row_ptr = &g_vram[row * VRAM_WIDTH];
-      for (u32 xoffs = 0; xoffs < width; xoffs++)
+    if ((x + width) <= VRAM_WIDTH)
+    {
+      for (u32 yoffs = 0; yoffs < height; yoffs++)
       {
-        const u32 col = (x + xoffs) % VRAM_WIDTH;
-        row_ptr[col] = color16;
+        const u32 row = (y + yoffs) % VRAM_HEIGHT;
+        if ((row & u32(1)) == active_field)
+          continue;
+
+        u16* row_ptr = &g_vram[row * VRAM_WIDTH + x];
+        u32 xoffs = 0;
+        for (; xoffs < aligned_width; xoffs += vector_width, row_ptr += vector_width)
+          GSVector4i::store<false>(row_ptr, fill);
+        for (; xoffs < width; xoffs++)
+          *(row_ptr++) = color16;
+      }
+    }
+    else
+    {
+      for (u32 yoffs = 0; yoffs < height; yoffs++)
+      {
+        const u32 row = (y + yoffs) % VRAM_HEIGHT;
+        if ((row & u32(1)) == active_field)
+          continue;
+
+        u16* row_ptr = &g_vram[row * VRAM_WIDTH];
+        for (u32 xoffs = 0; xoffs < width; xoffs++)
+        {
+          const u32 col = (x + xoffs) % VRAM_WIDTH;
+          row_ptr[col] = color16;
+        }
       }
     }
   }
