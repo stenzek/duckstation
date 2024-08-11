@@ -14083,6 +14083,9 @@ SLPS-01548:
   controllers:
     - AnalogController
     - DigitalController
+  settings:
+    dmaMaxSliceTicks: 100 # Relies on GPU backpressure to limit frame rate.
+    dmaHaltTicks: 100 # Too fast DMA and cutscene frame rate will run at 60.
   metadata:
     publisher: "IPC Software"
     developer: "Exrays"
@@ -14102,6 +14105,9 @@ SLPM-86526:
   controllers:
     - AnalogController
     - DigitalController
+  settings:
+    dmaMaxSliceTicks: 100 # Relies on GPU backpressure to limit frame rate.
+    dmaHaltTicks: 100 # Too fast DMA and cutscene frame rate will run at 60.
   metadata:
     publisher: "Hamster"
     developer: "Exrays"
