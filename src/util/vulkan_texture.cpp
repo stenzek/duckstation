@@ -1158,9 +1158,15 @@ void VulkanDownloadTexture::Flush()
 
   // Need to execute command buffer.
   if (dev.GetCurrentFenceCounter() == m_copy_fence_counter)
+  {
+    if (dev.InRenderPass())
+      dev.EndRenderPass();
     dev.SubmitCommandBuffer(true);
+  }
   else
+  {
     dev.WaitForFenceCounter(m_copy_fence_counter);
+  }
 }
 
 void VulkanDownloadTexture::SetDebugName(std::string_view name)
