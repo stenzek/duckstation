@@ -32,6 +32,7 @@ public:
   ALWAYS_INLINE Type GetType() const { return m_type; }
   ALWAYS_INLINE bool IsValid() const { return (m_type != Type::None); }
   ALWAYS_INLINE const std::string& GetDescription() const { return m_description; }
+  ALWAYS_INLINE std::string TakeDescription() { return std::move(m_description); }
 
   void Clear();
 
