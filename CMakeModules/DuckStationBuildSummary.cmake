@@ -24,6 +24,12 @@ if(BUILD_TESTS)
   message(STATUS "Building unit tests.")
 endif()
 
+if(ALLOW_INSTALL)
+  message(WARNING "Install target is enabled. This will install all DuckStation files into:
+  ${CMAKE_INSTALL_PREFIX}
+It does **not** use the LSB subdirectories of bin, share, etc, so you should disable this option if it is set to /usr or /usr/local.")
+endif()
+
 if(NOT IS_SUPPORTED_COMPILER)
   message(WARNING "
 *************** UNSUPPORTED CONFIGURATION ***************

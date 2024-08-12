@@ -306,5 +306,13 @@ function(add_util_resources target)
       target_sources(${target} PRIVATE ${version_lib})
       set_source_files_properties(${target} PRIVATE ${version_lib} PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks)
     endforeach()
+  elseif(ALLOW_INSTALL)
+    # Ensure we look for dependency libraries in the installation directory.
+    set_target_properties(${target} PROPERTIES INSTALL_RPATH "$ORIGIN")
+
+    # Copy dependency libraries to installation directory.
+    install_imported_dep_library(Shaderc::shaderc_shared)
+    install_imported_dep_library(spirv-cross-c-shared)
+    install_imported_dep_library(SoundTouch::SoundTouchDLL)
   endif()
 endfunction()
