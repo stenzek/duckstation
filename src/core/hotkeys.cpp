@@ -223,6 +223,17 @@ DEFINE_HOTKEY("Screenshot", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_NOOP
               })
 
 #ifndef __ANDROID__
+DEFINE_HOTKEY("ToggleMediaCapture", TRANSLATE_NOOP("Hotkeys", "General"),
+              TRANSLATE_NOOP("Hotkeys", "Toggle Media Capture"), [](s32 pressed) {
+                if (!pressed)
+                {
+                  if (System::GetMediaCapture())
+                    System::StopMediaCapture();
+                  else
+                    System::StartMediaCapture();
+                }
+              })
+
 DEFINE_HOTKEY("OpenAchievements", TRANSLATE_NOOP("Hotkeys", "General"),
               TRANSLATE_NOOP("Hotkeys", "Open Achievement List"), [](s32 pressed) {
                 if (!pressed && CanPause())
@@ -355,17 +366,6 @@ DEFINE_HOTKEY("ResetEmulationSpeed", TRANSLATE_NOOP("Hotkeys", "System"),
                     fmt::format(TRANSLATE_FS("OSDMessage", "Emulation speed set to {}%."),
                                 static_cast<u32>(std::lround(g_settings.emulation_speed * 100.0f))),
                     Host::OSD_QUICK_DURATION);
-                }
-              })
-
-DEFINE_HOTKEY("ToggleMediaCapture", TRANSLATE_NOOP("Hotkeys", "System"),
-              TRANSLATE_NOOP("Hotkeys", "Toggle Media Capture"), [](s32 pressed) {
-                if (!pressed)
-                {
-                  if (System::GetMediaCapture())
-                    System::StopMediaCapture();
-                  else
-                    System::StartMediaCapture();
                 }
               })
 
