@@ -25,17 +25,21 @@ Other features include:
  - CPU Recompiler/JIT (x86-64, armv7/AArch32, AArch64, RISC-V/RV64).
  - Hardware (D3D11, D3D12, OpenGL, Vulkan, Metal) and software rendering.
  - Upscaling, texture filtering, and true colour (24-bit) in hardware renderers.
+ - Accurate blending via Rasterizer Order Views/Fragment Shader Interlock.
  - PGXP for geometry precision, texture correction, and depth buffer emulation.
+ - Motion adaptive deinterlacing.
  - Adaptive downsampling filter.
- - Post processing shader chains (GLSL and experimental Reshade FX).
+ - Post processing shader chains (GLSL and Reshade FX).
  - "Fast boot" for skipping BIOS splash/intro.
- - Save state support.
+ - Save state support, with runahead and rewind.
  - Windows, Linux, macOS support.
- - Supports bin/cue images, raw bin/img files, MAME CHD, single-track ECM, MDS/MDF, and unencrypted PBP formats.
+ - Supports reading directly from CD, bin/cue images, raw bin/img files, MAME CHD, single-track ECM, MDS/MDF, and unencrypted PBP formats.
+ - Preloading of disc images to RAM to avoid disk sleeping hitches.
+ - Automatic loading/applying of PPF patches.
  - Direct booting of homebrew executables.
  - Direct loading of Portable Sound Format (psf) files.
  - Digital and analog controllers for input (rumble is forwarded to host).
- - Namco GunCon lightgun support (simulated with mouse).
+ - GunCon and Justifier lightgun support (simulated with mouse).
  - NeGcon support.
  - Qt and "Big Picture" UI.
  - Automatic updates with preview and latest channels.
@@ -47,7 +51,8 @@ Other features include:
  - Integrated and remote debugging.
  - Multitap controllers (up to 8 devices).
  - RetroAchievements.
- - Automatic loading/applying of PPF patches.
+ - Discord Rich Presence.
+ - Video capture with Media Foundation (Windows) and [FFmpeg](https://www.ffmpeg.org/) (All Platforms) backends.
 
 ## System Requirements
  - A CPU faster than a potato. But it needs to be x86_64 (SSE4.1), AArch32/armv7, AArch64/ARMv8, or RISC-V/RV64.
@@ -160,7 +165,7 @@ build-essential clang cmake curl extra-cmake-modules git libasound2-dev libcurl4
 
 Fedora package names:
 ```
-alsa-lib-devel brotli-devel clang cmake dbus-devel egl-wayland-devel extra-cmake-modules fontconfig-devel gcc-c++ gtk3-devel libcurl-devel libdecor-devel libevdev-devel libICE-devel libinput-devel libSM-devel libX11-devel libXau-devel libxcb-devel libXcomposite-devel libXcursor-devel libXext-devel libXfixes-devel libXft-devel libXi-devel libxkbcommon-devel libxkbcommon-x11-devel libXpresent-devel libXrandr-devel libXrender-devel lld llvm make mesa-libEGL-devel mesa-libGL-devel ninja-build openssl-devel patch pcre2-devel perl-Digest-SHA pipewire-devel pulseaudio-libs-devel systemd-devel wayland-devel xcb-util-cursor-devel xcb-util-devel xcb-util-errors-devel xcb-util-image-devel xcb-util-keysyms-devel xcb-util-renderutil-devel xcb-util-wm-devel xcb-util-xrm-devel zlib-devel
+alsa-lib-devel brotli-devel clang cmake dbus-devel egl-wayland-devel extra-cmake-modules fontconfig-devel gcc-c++ gtk3-devel libavcodec-free-devel libavformat-free-devel libavutil-free-devel libcurl-devel libdecor-devel libevdev-devel libICE-devel libinput-devel libSM-devel libswresample-free-devel libswscale-free-devel libX11-devel libXau-devel libxcb-devel libXcomposite-devel libXcursor-devel libXext-devel libXfixes-devel libXft-devel libXi-devel libxkbcommon-devel libxkbcommon-x11-devel libXpresent-devel libXrandr-devel libXrender-devel lld llvm make mesa-libEGL-devel mesa-libGL-devel ninja-build openssl-devel patch pcre2-devel perl-Digest-SHA pipewire-devel pulseaudio-libs-devel systemd-devel wayland-devel xcb-util-cursor-devel xcb-util-devel xcb-util-errors-devel xcb-util-image-devel xcb-util-keysyms-devel xcb-util-renderutil-devel xcb-util-wm-devel xcb-util-xrm-devel zlib-devel
 ```
 
 #### Building
@@ -206,9 +211,9 @@ Your keyboard or game controller can be used to simulate a variety of PlayStatio
 To bind your input device, go to `Settings -> Controllers`. Each of the buttons/axes for the simulated controller will be listed, alongside the corresponding key/button on your device that it is currently bound to. To rebind, click the box next to the button/axis name, and press the key or button on your input device that you wish to bind to. When binding rumble, simply press any button on the controller you wish to send rumble to.
 
 ## SDL Game Controller Database
-DuckStation releases ship with a database of game controller mappings for the SDL controller backend, courtesy of https://github.com/gabomdq/SDL_GameControllerDB. The included `gamecontrollerdb.txt` file can be found in the `database` subdirectory of the DuckStation program directory.
+DuckStation releases ship with a database of game controller mappings for the SDL controller backend, courtesy of https://github.com/mdqinc/SDL_GameControllerDB. The included `gamecontrollerdb.txt` file can be found in the `resources` subdirectory of the DuckStation program directory.
 
-If you are experiencing issues binding your controller with the SDL controller backend, you may need to add a custom mapping to the database file. Make a copy of `gamecontrollerdb.txt` and place it in your [user directory](#user-directories) (or directly in the program directory, if running in portable mode) and then follow the instructions in the [SDL_GameControllerDB repository](https://github.com/gabomdq/SDL_GameControllerDB) for creating a new mapping. Add this mapping to the new copy of `gamecontrollerdb.txt` and your controller should then be recognized properly.
+If you are experiencing issues binding your controller with the SDL controller backend, you may need to add a custom mapping to the database file. Make a copy of `gamecontrollerdb.txt` and place it in your [user directory](#user-directories) (or directly in the program directory, if running in portable mode) and then follow the instructions in the [SDL_GameControllerDB repository](https://github.com/mdqinc/SDL_GameControllerDB) for creating a new mapping. Add this mapping to the new copy of `gamecontrollerdb.txt` and your controller should then be recognized properly.
 
 ## Default bindings
 Controller 1:
