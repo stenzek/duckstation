@@ -2159,6 +2159,10 @@ bool GPU::SendDisplayToMediaCapture(MediaCapture* cap)
   GSVector4i display_rect, draw_rect;
   CalculateDrawRect(target->GetWidth(), target->GetHeight(), !g_settings.debugging.show_vram, apply_aspect_ratio,
                     &display_rect, &draw_rect);
+
+  // Not cleared by RenderDisplay().
+  g_gpu_device->ClearRenderTarget(target, GPUDevice::DEFAULT_CLEAR_COLOR);
+
   if (!RenderDisplay(target, display_rect, draw_rect, postfx))
     return false;
 
