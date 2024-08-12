@@ -1046,7 +1046,12 @@ ALWAYS_INLINE_RELEASE void MediaCaptureMF::ConvertVideoFrame(u8* dst, size_t dst
   // need to convert rgba -> bgra, as well as flipping vertically
   const u32 vector_width = 4;
   const u32 aligned_width = Common::AlignDownPow2(width, vector_width);
-  src += src_stride * (height - 1);
+
+  if (!g_gpu_device->UsesLowerLeftOrigin())
+  {
+    src += src_stride * (height - 1);
+    src_stride = static_cast<size_t>(-static_cast<std::make_signed_t<size_t>>(src_stride));
+  }
 
   for (u32 remaining_rows = height;;)
   {
@@ -1072,7 +1077,7 @@ ALWAYS_INLINE_RELEASE void MediaCaptureMF::ConvertVideoFrame(u8* dst, size_t dst
       row_dst += sizeof(u32);
     }
 
-    src -= src_stride;
+    src += src_stride;
     dst += dst_stride;
 
     remaining_rows--;
