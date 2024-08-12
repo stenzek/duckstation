@@ -41,6 +41,7 @@ ZSTD=1.5.6
 LIBPNG=1.6.43
 LIBJPEG=9f
 LIBWEBP=1.4.0
+FFMPEG=7.0.2
 MOLTENVK=1.2.9
 QT=6.7.2
 
@@ -76,6 +77,7 @@ c6ef64ca18a19d13df6eb22df9aff19fb0db65610a74cc81dae33a82235cacd4  SDL2-$SDL2.tar
 6a5ca0652392a2d7c9db2ae5b40210843c0bbc081cbd410825ab00cc59f14a6c  libpng-$LIBPNG.tar.xz
 61f873ec69e3be1b99535634340d5bde750b2e4447caa1db9f61be3fd49ab1e5  libwebp-$LIBWEBP.tar.gz
 04705c110cb2469caa79fb71fba3d7bf834914706e9641a4589485c1f832565b  jpegsrc.v$LIBJPEG.tar.gz
+8646515b638a3ad303e23af6a3587734447cb8fc0a0c064ecdb8e95c4fd8b389  ffmpeg-$FFMPEG.tar.xz
 f415a09385030c6510a936155ce211f617c31506db5fbc563e804345f1ecf56e  v$MOLTENVK.tar.gz
 c5f22a5e10fb162895ded7de0963328e7307611c688487b5d152c9ee64767599  qtbase-everywhere-src-$QT.tar.xz
 e1a1d8785fae67d16ad0a443b01d5f32663a6b68d275f1806ebab257485ce5d6  qtimageformats-everywhere-src-$QT.tar.xz
@@ -96,6 +98,7 @@ curl -L \
 	-O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.xz" \
 	-O "https://ijg.org/files/jpegsrc.v$LIBJPEG.tar.gz" \
 	-O "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$LIBWEBP.tar.gz" \
+	-O "https://ffmpeg.org/releases/ffmpeg-$FFMPEG.tar.xz" \
 	-O "https://github.com/KhronosGroup/MoltenVK/archive/refs/tags/v$MOLTENVK.tar.gz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtbase-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtimageformats-everywhere-src-$QT.tar.xz" \
@@ -207,6 +210,41 @@ make -C build-arm64 "-j$NPROCS"
 merge_binaries $(realpath build) $(realpath build-arm64)
 make -C build install
 cd ..
+
+echo "Installing FFmpeg..."
+rm -fr "ffmpeg-$FFMPEG"
+tar xf "ffmpeg-$FFMPEG.tar.xz"
+cd "ffmpeg-$FFMPEG"
+mkdir build
+cd build
+LDFLAGS="-dead_strip $LDFLAGS" CFLAGS="-Os $CFLAGS" CXXFLAGS="-Os $CXXFLAGS" \
+	../configure --prefix="$INSTALLDIR" \
+	--enable-cross-compile --arch=x86_64 --cc='clang -arch x86_64' --cxx='clang++ -arch x86_64' --disable-x86asm \
+	--disable-all --disable-autodetect --disable-static --enable-shared \
+	--enable-avcodec --enable-avformat --enable-avutil --enable-swresample --enable-swscale \
+	--enable-audiotoolbox --enable-videotoolbox \
+	--enable-encoder=ffv1,qtrle,pcm_s16be,pcm_s16le,*_at,*_videotoolbox \
+	--enable-muxer=avi,matroska,mov,mp3,mp4,wav \
+	--enable-protocol=file
+make "-j$NPROCS"
+cd ..
+mkdir build-arm64
+cd build-arm64
+LDFLAGS="-dead_strip $LDFLAGS" CFLAGS="-Os $CFLAGS" CXXFLAGS="-Os $CXXFLAGS" \
+	../configure --prefix="$INSTALLDIR" \
+	--enable-cross-compile --arch=arm64 --cc='clang -arch arm64' --cxx='clang++ -arch arm64' --disable-x86asm \
+	--disable-all --disable-autodetect --disable-static --enable-shared \
+	--enable-avcodec --enable-avformat --enable-avutil --enable-swresample --enable-swscale \
+	--enable-audiotoolbox --enable-videotoolbox \
+	--enable-encoder=ffv1,qtrle,pcm_s16be,pcm_s16le,*_at,*_videotoolbox \
+	--enable-muxer=avi,matroska,mov,mp3,mp4,wav \
+	--enable-protocol=file
+make "-j$NPROCS"
+cd ..
+merge_binaries $(realpath build) $(realpath build-arm64)
+cd build
+make install
+cd ../..
 
 # MoltenVK already builds universal binaries, nothing special to do here.
 echo "Installing MoltenVK..."

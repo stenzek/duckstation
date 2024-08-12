@@ -6,6 +6,7 @@
 #include "host.h"
 
 #include "common/align.h"
+#include "common/dynamic_library.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/gsvector.h"
@@ -17,6 +18,7 @@
 #include "IconsFontAwesome5.h"
 #include "fmt/format.h"
 
+#include <algorithm>
 #include <atomic>
 #include <condition_variable>
 #include <cstring>
@@ -41,6 +43,33 @@
 #pragma comment(lib, "mfuuid")
 #endif
 
+#ifndef __ANDROID__
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4244) // warning C4244: 'return': conversion from 'int' to 'uint8_t', possible loss of data
+#endif
+
+extern "C" {
+#include "libavcodec/avcodec.h"
+#include "libavcodec/version.h"
+#include "libavformat/avformat.h"
+#include "libavformat/version.h"
+#include "libavutil/dict.h"
+#include "libavutil/opt.h"
+#include "libavutil/version.h"
+#include "libswresample/swresample.h"
+#include "libswresample/version.h"
+#include "libswscale/swscale.h"
+#include "libswscale/version.h"
+}
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
+#endif
+
 Log_SetChannel(MediaCapture);
 
 namespace {
@@ -54,7 +83,6 @@ public:
   static constexpr u32 NUM_FRAMES_IN_FLIGHT = 3;
   static constexpr u32 MAX_PENDING_FRAMES = NUM_FRAMES_IN_FLIGHT * 2;
   static constexpr u32 AUDIO_CHANNELS = 2;
-  static constexpr u32 AUDIO_BITS_PER_SAMPLE = sizeof(s16) * 8;
 
   virtual ~MediaCaptureBase() override;
 
@@ -195,6 +223,7 @@ bool MediaCaptureBase::BeginCapture(float fps, float aspect, u32 width, u32 heig
   if (!InternalBeginCapture(fps, aspect, sample_rate, capture_video, video_codec, video_bitrate, video_codec_args,
                             capture_audio, audio_codec, audio_bitrate, audio_codec_args, error))
   {
+    ClearState();
     return false;
   }
 
@@ -438,6 +467,9 @@ bool MediaCaptureBase::InternalEndCapture(std::unique_lock<std::mutex>& lock, Er
 
 void MediaCaptureBase::ClearState()
 {
+  m_next_video_pts = 0;
+  m_next_audio_pts = 0;
+
   m_pending_frames = {};
   m_pending_frames_pos = 0;
   m_frames_pending_map = 0;
@@ -551,6 +583,7 @@ class MediaCaptureMF final : public MediaCaptureBase
 
   static constexpr u32 TEN_NANOSECONDS = 10 * 1000 * 1000;
   static constexpr DWORD INVALID_STREAM_INDEX = std::numeric_limits<DWORD>::max();
+  static constexpr u32 AUDIO_BITS_PER_SAMPLE = sizeof(s16) * 8;
 
   static constexpr const GUID& AUDIO_INPUT_MEDIA_FORMAT = MFAudioFormat_PCM;
   static constexpr const GUID& VIDEO_RGB_MEDIA_FORMAT = MFVideoFormat_RGB32;
@@ -1569,6 +1602,1086 @@ bool MediaCaptureMF::ProcessAudioPackets(s64 video_pts, Error* error)
 
 #endif
 
+#ifndef __ANDROID__
+
+// We're using deprecated fields because we're targeting multiple ffmpeg versions.
+#if defined(_MSC_VER)
+#pragma warning(disable : 4996) // warning C4996: 'AVCodecContext::channels': was declared deprecated
+#elif defined(__clang__)
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
+// Compatibility with both ffmpeg 4.x and 5.x.
+#if (LIBAVFORMAT_VERSION_MAJOR < 59)
+#define ff_const59
+#else
+#define ff_const59 const
+#endif
+
+#define VISIT_AVCODEC_IMPORTS(X)                                                                                       \
+  X(avcodec_find_encoder_by_name)                                                                                      \
+  X(avcodec_find_encoder)                                                                                              \
+  X(avcodec_alloc_context3)                                                                                            \
+  X(avcodec_open2)                                                                                                     \
+  X(avcodec_free_context)                                                                                              \
+  X(avcodec_send_frame)                                                                                                \
+  X(avcodec_receive_packet)                                                                                            \
+  X(avcodec_parameters_from_context)                                                                                   \
+  X(avcodec_get_hw_config)                                                                                             \
+  X(av_codec_iterate)                                                                                                  \
+  X(av_packet_alloc)                                                                                                   \
+  X(av_packet_free)                                                                                                    \
+  X(av_packet_rescale_ts)                                                                                              \
+  X(av_packet_unref)
+
+#define VISIT_AVFORMAT_IMPORTS(X)                                                                                      \
+  X(avformat_alloc_output_context2)                                                                                    \
+  X(avformat_new_stream)                                                                                               \
+  X(avformat_write_header)                                                                                             \
+  X(av_guess_format)                                                                                                   \
+  X(av_interleaved_write_frame)                                                                                        \
+  X(av_write_trailer)                                                                                                  \
+  X(avformat_free_context)                                                                                             \
+  X(avformat_query_codec)                                                                                              \
+  X(avio_open)                                                                                                         \
+  X(avio_closep)
+
+#if LIBAVUTIL_VERSION_MAJOR < 57
+#define AVUTIL_57_IMPORTS(X)
+#else
+#define AVUTIL_57_IMPORTS(X)                                                                                           \
+  X(av_channel_layout_default)                                                                                         \
+  X(av_channel_layout_copy)                                                                                            \
+  X(av_opt_set_chlayout)
+#endif
+
+#define VISIT_AVUTIL_IMPORTS(X)                                                                                        \
+  AVUTIL_57_IMPORTS(X)                                                                                                 \
+  X(av_frame_alloc)                                                                                                    \
+  X(av_frame_get_buffer)                                                                                               \
+  X(av_frame_free)                                                                                                     \
+  X(av_frame_make_writable)                                                                                            \
+  X(av_strerror)                                                                                                       \
+  X(av_reduce)                                                                                                         \
+  X(av_dict_parse_string)                                                                                              \
+  X(av_dict_get)                                                                                                       \
+  X(av_dict_free)                                                                                                      \
+  X(av_opt_set_int)                                                                                                    \
+  X(av_opt_set_sample_fmt)                                                                                             \
+  X(av_compare_ts)                                                                                                     \
+  X(av_get_bytes_per_sample)                                                                                           \
+  X(av_sample_fmt_is_planar)                                                                                           \
+  X(av_d2q)                                                                                                            \
+  X(av_hwdevice_get_type_name)                                                                                         \
+  X(av_hwdevice_ctx_create)                                                                                            \
+  X(av_hwframe_ctx_alloc)                                                                                              \
+  X(av_hwframe_ctx_init)                                                                                               \
+  X(av_hwframe_transfer_data)                                                                                          \
+  X(av_hwframe_get_buffer)                                                                                             \
+  X(av_buffer_ref)                                                                                                     \
+  X(av_buffer_unref)
+
+#define VISIT_SWSCALE_IMPORTS(X)                                                                                       \
+  X(sws_getCachedContext)                                                                                              \
+  X(sws_scale)                                                                                                         \
+  X(sws_freeContext)
+
+#define VISIT_SWRESAMPLE_IMPORTS(X)                                                                                    \
+  X(swr_alloc)                                                                                                         \
+  X(swr_init)                                                                                                          \
+  X(swr_free)                                                                                                          \
+  X(swr_convert)                                                                                                       \
+  X(swr_next_pts)
+
+class MediaCaptureFFmpeg final : public MediaCaptureBase
+{
+public:
+  ~MediaCaptureFFmpeg() override = default;
+
+  static std::unique_ptr<MediaCapture> Create(Error* error);
+  static ContainerList GetContainerList();
+  static CodecList GetVideoCodecList(const char* container);
+  static CodecList GetAudioCodecList(const char* container);
+
+  bool IsCapturingAudio() const override;
+  bool IsCapturingVideo() const override;
+  time_t GetElapsedTime() const override;
+
+protected:
+  void ClearState() override;
+  bool SendFrame(const PendingFrame& pf, Error* error) override;
+  bool ProcessAudioPackets(s64 video_pts, Error* error) override;
+  bool InternalBeginCapture(float fps, float aspect, u32 sample_rate, bool capture_video, std::string_view video_codec,
+                            u32 video_bitrate, std::string_view video_codec_args, bool capture_audio,
+                            std::string_view audio_codec, u32 audio_bitrate, std::string_view audio_codec_args,
+                            Error* error) override;
+  bool InternalEndCapture(std::unique_lock<std::mutex>& lock, Error* error) override;
+
+private:
+  static void SetAVError(Error* error, std::string_view prefix, int errnum);
+  static CodecList GetCodecListForContainer(const char* container, AVMediaType type);
+
+  bool IsUsingHardwareVideoEncoding();
+
+  bool ReceivePackets(AVCodecContext* codec_context, AVStream* stream, AVPacket* packet, Error* error);
+
+  AVFormatContext* m_format_context = nullptr;
+
+  AVCodecContext* m_video_codec_context = nullptr;
+  AVStream* m_video_stream = nullptr;
+  AVFrame* m_converted_video_frame = nullptr; // YUV
+  AVFrame* m_hw_video_frame = nullptr;
+  AVPacket* m_video_packet = nullptr;
+  SwsContext* m_sws_context = nullptr;
+  AVDictionary* m_video_codec_arguments = nullptr;
+  AVBufferRef* m_video_hw_context = nullptr;
+  AVBufferRef* m_video_hw_frames = nullptr;
+
+  AVCodecContext* m_audio_codec_context = nullptr;
+  AVStream* m_audio_stream = nullptr;
+  AVFrame* m_converted_audio_frame = nullptr;
+  AVPacket* m_audio_packet = nullptr;
+  SwrContext* m_swr_context = nullptr;
+  AVDictionary* m_audio_codec_arguments = nullptr;
+
+  AVPixelFormat m_video_pixel_format = AV_PIX_FMT_NONE;
+  u32 m_audio_frame_bps = 0;
+  bool m_audio_frame_planar = false;
+
+#define DECLARE_IMPORT(X) static inline decltype(X)* wrap_##X;
+  VISIT_AVCODEC_IMPORTS(DECLARE_IMPORT);
+  VISIT_AVFORMAT_IMPORTS(DECLARE_IMPORT);
+  VISIT_AVUTIL_IMPORTS(DECLARE_IMPORT);
+  VISIT_SWSCALE_IMPORTS(DECLARE_IMPORT);
+  VISIT_SWRESAMPLE_IMPORTS(DECLARE_IMPORT);
+#undef DECLARE_IMPORT
+
+  static bool LoadFFmpeg(Error* error);
+  static void UnloadFFmpeg();
+
+  static inline DynamicLibrary s_avcodec_library;
+  static inline DynamicLibrary s_avformat_library;
+  static inline DynamicLibrary s_avutil_library;
+  static inline DynamicLibrary s_swscale_library;
+  static inline DynamicLibrary s_swresample_library;
+  static inline bool s_library_loaded = false;
+  static inline std::mutex s_load_mutex;
+};
+
+bool MediaCaptureFFmpeg::LoadFFmpeg(Error* error)
+{
+  std::unique_lock lock(s_load_mutex);
+  if (s_library_loaded)
+    return true;
+
+  static constexpr auto open_dynlib = [](DynamicLibrary& lib, const char* name, int major_version, Error* error) {
+    std::string full_name(DynamicLibrary::GetVersionedFilename(name, major_version));
+    return lib.Open(full_name.c_str(), error);
+  };
+
+  bool result = true;
+
+  result = result && open_dynlib(s_avutil_library, "avutil", LIBAVUTIL_VERSION_MAJOR, error);
+  result = result && open_dynlib(s_avcodec_library, "avcodec", LIBAVCODEC_VERSION_MAJOR, error);
+  result = result && open_dynlib(s_avformat_library, "avformat", LIBAVFORMAT_VERSION_MAJOR, error);
+  result = result && open_dynlib(s_swscale_library, "swscale", LIBSWSCALE_VERSION_MAJOR, error);
+  result = result && open_dynlib(s_swresample_library, "swresample", LIBSWRESAMPLE_VERSION_MAJOR, error);
+
+#define RESOLVE_IMPORT(X) result = result && s_avcodec_library.GetSymbol(#X, &wrap_##X);
+  VISIT_AVCODEC_IMPORTS(RESOLVE_IMPORT);
+#undef RESOLVE_IMPORT
+
+#define RESOLVE_IMPORT(X) result = result && s_avformat_library.GetSymbol(#X, &wrap_##X);
+  VISIT_AVFORMAT_IMPORTS(RESOLVE_IMPORT);
+#undef RESOLVE_IMPORT
+
+#define RESOLVE_IMPORT(X) result = result && s_avutil_library.GetSymbol(#X, &wrap_##X);
+  VISIT_AVUTIL_IMPORTS(RESOLVE_IMPORT);
+#undef RESOLVE_IMPORT
+
+#define RESOLVE_IMPORT(X) result = result && s_swscale_library.GetSymbol(#X, &wrap_##X);
+  VISIT_SWSCALE_IMPORTS(RESOLVE_IMPORT);
+#undef RESOLVE_IMPORT
+
+#define RESOLVE_IMPORT(X) result = result && s_swresample_library.GetSymbol(#X, &wrap_##X);
+  VISIT_SWRESAMPLE_IMPORTS(RESOLVE_IMPORT);
+#undef RESOLVE_IMPORT
+
+  if (result)
+  {
+    s_library_loaded = true;
+    std::atexit(&MediaCaptureFFmpeg::UnloadFFmpeg);
+    return true;
+  }
+
+  UnloadFFmpeg();
+
+  Error::SetStringFmt(
+    error,
+    TRANSLATE_FS(
+      "MediaCapture",
+      "You may be missing one or more files, or are using the incorrect version. This build of DuckStation requires:\n"
+      "  libavcodec: {}\n"
+      "  libavformat: {}\n"
+      "  libavutil: {}\n"
+      "  libswscale: {}\n"
+      "  libswresample: {}\n"),
+    LIBAVCODEC_VERSION_MAJOR, LIBAVFORMAT_VERSION_MAJOR, LIBAVUTIL_VERSION_MAJOR, LIBSWSCALE_VERSION_MAJOR,
+    LIBSWRESAMPLE_VERSION_MAJOR);
+  return false;
+}
+
+void MediaCaptureFFmpeg::UnloadFFmpeg()
+{
+#define CLEAR_IMPORT(X) wrap_##X = nullptr;
+  VISIT_AVCODEC_IMPORTS(CLEAR_IMPORT);
+  VISIT_AVFORMAT_IMPORTS(CLEAR_IMPORT);
+  VISIT_AVUTIL_IMPORTS(CLEAR_IMPORT);
+  VISIT_SWSCALE_IMPORTS(CLEAR_IMPORT);
+  VISIT_SWRESAMPLE_IMPORTS(CLEAR_IMPORT);
+#undef CLEAR_IMPORT
+
+  s_swresample_library.Close();
+  s_swscale_library.Close();
+  s_avutil_library.Close();
+  s_avformat_library.Close();
+  s_avcodec_library.Close();
+  s_library_loaded = false;
+}
+
+#undef VISIT_AVCODEC_IMPORTS
+#undef VISIT_AVFORMAT_IMPORTS
+#undef VISIT_AVUTIL_IMPORTS
+#undef VISIT_SWSCALE_IMPORTS
+#undef VISIT_SWRESAMPLE_IMPORTS
+
+void MediaCaptureFFmpeg::SetAVError(Error* error, std::string_view prefix, int errnum)
+{
+  char errbuf[128];
+  wrap_av_strerror(errnum, errbuf, sizeof(errbuf));
+
+  Error::SetStringFmt(error, "{} {}", prefix, errbuf);
+}
+
+bool MediaCaptureFFmpeg::IsCapturingAudio() const
+{
+  return (m_audio_stream != nullptr);
+}
+
+bool MediaCaptureFFmpeg::IsCapturingVideo() const
+{
+  return (m_video_stream != nullptr);
+}
+
+time_t MediaCaptureFFmpeg::GetElapsedTime() const
+{
+  std::unique_lock<std::mutex> lock(m_lock);
+  s64 seconds;
+  if (m_video_stream)
+  {
+    seconds = (m_next_video_pts * static_cast<s64>(m_video_codec_context->time_base.num)) /
+              static_cast<s64>(m_video_codec_context->time_base.den);
+  }
+  else
+  {
+    DebugAssert(IsCapturingAudio());
+    seconds = (m_next_audio_pts * static_cast<s64>(m_audio_codec_context->time_base.num)) /
+              static_cast<s64>(m_audio_codec_context->time_base.den);
+  }
+
+  return seconds;
+}
+
+bool MediaCaptureFFmpeg::IsUsingHardwareVideoEncoding()
+{
+  return (m_video_hw_context != nullptr);
+}
+
+bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sample_rate, bool capture_video,
+                                              std::string_view video_codec, u32 video_bitrate,
+                                              std::string_view video_codec_args, bool capture_audio,
+                                              std::string_view audio_codec, u32 audio_bitrate,
+                                              std::string_view audio_codec_args, Error* error)
+{
+  ff_const59 AVOutputFormat* output_format = wrap_av_guess_format(nullptr, m_path.c_str(), nullptr);
+  if (!output_format)
+  {
+    Error::SetStringFmt(error, "Failed to get output format for '{}'", Path::GetFileName(m_path));
+    return false;
+  }
+
+  int res = wrap_avformat_alloc_output_context2(&m_format_context, output_format, nullptr, m_path.c_str());
+  if (res < 0)
+  {
+    SetAVError(error, "avformat_alloc_output_context2() failed: ", res);
+    return false;
+  }
+
+  // find the codec id
+  if (capture_video)
+  {
+    const AVCodec* vcodec = nullptr;
+    if (!video_codec.empty())
+    {
+      vcodec = wrap_avcodec_find_encoder_by_name(TinyString(video_codec).c_str());
+      if (!vcodec)
+      {
+        Error::SetStringFmt(error, "Video codec {} not found.", video_codec);
+        return false;
+      }
+    }
+
+    // FFmpeg decides whether mp4, mkv, etc should use h264 or mpeg4 as their default codec by whether x264 was enabled
+    // But there's a lot of other h264 encoders (e.g. hardware encoders) we may want to use instead
+    if (!vcodec && wrap_avformat_query_codec(output_format, AV_CODEC_ID_H264, FF_COMPLIANCE_NORMAL))
+      vcodec = wrap_avcodec_find_encoder(AV_CODEC_ID_H264);
+    if (!vcodec)
+      vcodec = wrap_avcodec_find_encoder(output_format->video_codec);
+
+    if (!vcodec)
+    {
+      Error::SetStringView(error, "Failed to find video encoder.");
+      return false;
+    }
+
+    m_video_codec_context = wrap_avcodec_alloc_context3(vcodec);
+    if (!m_video_codec_context)
+    {
+      Error::SetStringView(error, "Failed to allocate video codec context.");
+      return false;
+    }
+
+    m_video_codec_context->codec_type = AVMEDIA_TYPE_VIDEO;
+    m_video_codec_context->bit_rate = video_bitrate * 1000;
+    m_video_codec_context->width = m_video_width;
+    m_video_codec_context->height = m_video_height;
+    m_video_codec_context->sample_aspect_ratio = wrap_av_d2q(aspect, 100000);
+    wrap_av_reduce(&m_video_codec_context->time_base.num, &m_video_codec_context->time_base.den, 10000,
+                   static_cast<s64>(static_cast<double>(fps) * 10000.0), std::numeric_limits<s32>::max());
+
+    // Map input pixel format.
+    static constexpr const std::pair<GPUTexture::Format, AVPixelFormat> texture_pf_mapping[] = {
+      {GPUTexture::Format::RGBA8, AV_PIX_FMT_RGBA},
+      {GPUTexture::Format::BGRA8, AV_PIX_FMT_BGRA},
+    };
+    if (const auto pf_mapping =
+          std::find_if(std::begin(texture_pf_mapping), std::end(texture_pf_mapping),
+                       [this](const auto& it) { return (it.first == m_video_render_texture_format); });
+        pf_mapping != std::end(texture_pf_mapping))
+    {
+      m_video_pixel_format = pf_mapping->second;
+    }
+    else
+    {
+      Error::SetStringFmt(error, "Unhandled input pixel format {}",
+                          GPUTexture::GetFormatName(m_video_render_texture_format));
+      return false;
+    }
+
+    // Default to YUV 4:2:0 if the codec doesn't specify a pixel format.
+    AVPixelFormat sw_pix_fmt = AV_PIX_FMT_YUV420P;
+    if (vcodec->pix_fmts)
+    {
+      // Prefer YUV420 given the choice, but otherwise fall back to whatever it supports.
+      sw_pix_fmt = vcodec->pix_fmts[0];
+      for (u32 i = 0; vcodec->pix_fmts[i] != AV_PIX_FMT_NONE; i++)
+      {
+        if (vcodec->pix_fmts[i] == AV_PIX_FMT_YUV420P)
+        {
+          sw_pix_fmt = vcodec->pix_fmts[i];
+          break;
+        }
+      }
+    }
+    m_video_codec_context->pix_fmt = sw_pix_fmt;
+
+    // Can we use hardware encoding?
+    const AVCodecHWConfig* hwconfig = wrap_avcodec_get_hw_config(vcodec, 0);
+    if (hwconfig && hwconfig->pix_fmt != AV_PIX_FMT_NONE && hwconfig->pix_fmt != sw_pix_fmt)
+    {
+      // First index isn't our preferred pixel format, try the others, but fall back if one doesn't exist.
+      int index = 1;
+      while (const AVCodecHWConfig* next_hwconfig = wrap_avcodec_get_hw_config(vcodec, index++))
+      {
+        if (next_hwconfig->pix_fmt == sw_pix_fmt)
+        {
+          hwconfig = next_hwconfig;
+          break;
+        }
+      }
+    }
+
+    if (hwconfig)
+    {
+      Error hw_error;
+
+      INFO_LOG("Trying to use {} hardware device for video encoding.",
+               wrap_av_hwdevice_get_type_name(hwconfig->device_type));
+      res = wrap_av_hwdevice_ctx_create(&m_video_hw_context, hwconfig->device_type, nullptr, nullptr, 0);
+      if (res < 0)
+      {
+        SetAVError(&hw_error, "av_hwdevice_ctx_create() failed: ", res);
+        ERROR_LOG(hw_error.GetDescription());
+      }
+      else
+      {
+        m_video_hw_frames = wrap_av_hwframe_ctx_alloc(m_video_hw_context);
+        if (!m_video_hw_frames)
+        {
+          ERROR_LOG("s_video_hw_frames() failed");
+          wrap_av_buffer_unref(&m_video_hw_context);
+        }
+        else
+        {
+          AVHWFramesContext* frames_ctx = reinterpret_cast<AVHWFramesContext*>(m_video_hw_frames->data);
+          frames_ctx->format = (hwconfig->pix_fmt != AV_PIX_FMT_NONE) ? hwconfig->pix_fmt : sw_pix_fmt;
+          frames_ctx->sw_format = sw_pix_fmt;
+          frames_ctx->width = m_video_codec_context->width;
+          frames_ctx->height = m_video_codec_context->height;
+          res = wrap_av_hwframe_ctx_init(m_video_hw_frames);
+          if (res < 0)
+          {
+            SetAVError(&hw_error, "av_hwframe_ctx_init() failed: ", res);
+            ERROR_LOG(hw_error.GetDescription());
+            wrap_av_buffer_unref(&m_video_hw_frames);
+            wrap_av_buffer_unref(&m_video_hw_context);
+          }
+          else
+          {
+            m_video_codec_context->hw_frames_ctx = wrap_av_buffer_ref(m_video_hw_frames);
+            if (hwconfig->pix_fmt != AV_PIX_FMT_NONE)
+              m_video_codec_context->pix_fmt = hwconfig->pix_fmt;
+          }
+        }
+      }
+
+      if (!m_video_hw_context)
+      {
+        ERROR_LOG("Failed to create hardware encoder, using software encoding.");
+        hwconfig = nullptr;
+      }
+    }
+
+    if (!video_codec_args.empty())
+    {
+      res = wrap_av_dict_parse_string(&m_video_codec_arguments, SmallString(video_codec_args).c_str(), "=", ":", 0);
+      if (res < 0)
+      {
+        SetAVError(error, "av_dict_parse_string() for video failed: ", res);
+        return false;
+      }
+    }
+
+    if (output_format->flags & AVFMT_GLOBALHEADER)
+      m_video_codec_context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+
+    bool has_pixel_format_override = wrap_av_dict_get(m_video_codec_arguments, "pixel_format", nullptr, 0);
+
+    res = wrap_avcodec_open2(m_video_codec_context, vcodec, &m_video_codec_arguments);
+    if (res < 0)
+    {
+      SetAVError(error, "avcodec_open2() for video failed: ", res);
+      return false;
+    }
+
+    // If the user overrode the pixel format, get that now
+    if (has_pixel_format_override)
+      sw_pix_fmt = m_video_codec_context->pix_fmt;
+
+    m_converted_video_frame = wrap_av_frame_alloc();
+    m_hw_video_frame = IsUsingHardwareVideoEncoding() ? wrap_av_frame_alloc() : nullptr;
+    if (!m_converted_video_frame || (IsUsingHardwareVideoEncoding() && !m_hw_video_frame))
+    {
+      SetAVError(error, "Failed to allocate frame: ", AVERROR(ENOMEM));
+      return false;
+    }
+
+    m_converted_video_frame->format = sw_pix_fmt;
+    m_converted_video_frame->width = m_video_codec_context->width;
+    m_converted_video_frame->height = m_video_codec_context->height;
+    res = wrap_av_frame_get_buffer(m_converted_video_frame, 0);
+    if (res < 0)
+    {
+      SetAVError(error, "av_frame_get_buffer() for converted frame failed: ", res);
+      return false;
+    }
+
+    if (IsUsingHardwareVideoEncoding())
+    {
+      m_hw_video_frame->format = m_video_codec_context->pix_fmt;
+      m_hw_video_frame->width = m_video_codec_context->width;
+      m_hw_video_frame->height = m_video_codec_context->height;
+      res = wrap_av_hwframe_get_buffer(m_video_hw_frames, m_hw_video_frame, 0);
+      if (res < 0)
+      {
+        SetAVError(error, "av_frame_get_buffer() for HW frame failed: ", res);
+        return false;
+      }
+    }
+
+    m_video_stream = wrap_avformat_new_stream(m_format_context, vcodec);
+    if (!m_video_stream)
+    {
+      SetAVError(error, "avformat_new_stream() for video failed: ", res);
+      return false;
+    }
+
+    res = wrap_avcodec_parameters_from_context(m_video_stream->codecpar, m_video_codec_context);
+    if (res < 0)
+    {
+      SetAVError(error, "avcodec_parameters_from_context() for video failed: ", AVERROR(ENOMEM));
+      return false;
+    }
+
+    m_video_stream->time_base = m_video_codec_context->time_base;
+    m_video_stream->sample_aspect_ratio = m_video_codec_context->sample_aspect_ratio;
+
+    m_video_packet = wrap_av_packet_alloc();
+    if (!m_video_packet)
+    {
+      SetAVError(error, "av_packet_alloc() for video failed: ", AVERROR(ENOMEM));
+      return false;
+    }
+  }
+
+  if (capture_audio)
+  {
+    const AVCodec* acodec = nullptr;
+    if (!audio_codec.empty())
+    {
+      acodec = wrap_avcodec_find_encoder_by_name(TinyString(audio_codec).c_str());
+      if (!acodec)
+      {
+        Error::SetStringFmt(error, "Audio codec {} not found.", video_codec);
+        return false;
+      }
+    }
+    if (!acodec)
+      acodec = wrap_avcodec_find_encoder(output_format->audio_codec);
+    if (!acodec)
+    {
+      Error::SetStringView(error, "Failed to find audio encoder.");
+      return false;
+    }
+
+    m_audio_codec_context = wrap_avcodec_alloc_context3(acodec);
+    if (!m_audio_codec_context)
+    {
+      Error::SetStringView(error, "Failed to allocate audio codec context.");
+      return false;
+    }
+
+    m_audio_codec_context->codec_type = AVMEDIA_TYPE_AUDIO;
+    m_audio_codec_context->bit_rate = audio_bitrate * 1000;
+    m_audio_codec_context->sample_fmt = AV_SAMPLE_FMT_S16;
+    m_audio_codec_context->sample_rate = sample_rate;
+    m_audio_codec_context->time_base = {1, static_cast<int>(sample_rate)};
+#if LIBAVUTIL_VERSION_MAJOR < 57
+    m_audio_codec_context->channels = AUDIO_CHANNELS;
+    m_audio_codec_context->channel_layout = AV_CH_LAYOUT_STEREO;
+#else
+    wrap_av_channel_layout_default(&m_audio_codec_context->ch_layout, AUDIO_CHANNELS);
+#endif
+
+    bool supports_format = false;
+    for (const AVSampleFormat* p = acodec->sample_fmts; *p != AV_SAMPLE_FMT_NONE; p++)
+    {
+      if (*p == m_audio_codec_context->sample_fmt)
+      {
+        supports_format = true;
+        break;
+      }
+    }
+    if (!supports_format)
+    {
+      WARNING_LOG("Audio codec '{}' does not support S16 samples, using default.", acodec->name);
+      m_audio_codec_context->sample_fmt = acodec->sample_fmts[0];
+      m_swr_context = wrap_swr_alloc();
+      if (!m_swr_context)
+      {
+        SetAVError(error, "swr_alloc() failed: ", AVERROR(ENOMEM));
+        return false;
+      }
+
+      wrap_av_opt_set_int(m_swr_context, "in_channel_count", AUDIO_CHANNELS, 0);
+      wrap_av_opt_set_int(m_swr_context, "in_sample_rate", sample_rate, 0);
+      wrap_av_opt_set_sample_fmt(m_swr_context, "in_sample_fmt", AV_SAMPLE_FMT_S16, 0);
+      wrap_av_opt_set_int(m_swr_context, "out_channel_count", AUDIO_CHANNELS, 0);
+      wrap_av_opt_set_int(m_swr_context, "out_sample_rate", sample_rate, 0);
+      wrap_av_opt_set_sample_fmt(m_swr_context, "out_sample_fmt", m_audio_codec_context->sample_fmt, 0);
+
+#if LIBAVUTIL_VERSION_MAJOR >= 59
+      wrap_av_opt_set_chlayout(m_swr_context, "in_chlayout", &m_audio_codec_context->ch_layout, 0);
+      wrap_av_opt_set_chlayout(m_swr_context, "out_chlayout", &m_audio_codec_context->ch_layout, 0);
+#endif
+
+      res = wrap_swr_init(m_swr_context);
+      if (res < 0)
+      {
+        SetAVError(error, "swr_init() failed: ", res);
+        return false;
+      }
+    }
+
+    // TODO: Check channel layout support
+
+    if (!audio_codec_args.empty())
+    {
+      res = wrap_av_dict_parse_string(&m_audio_codec_arguments, SmallString(audio_codec_args).c_str(), "=", ":", 0);
+      if (res < 0)
+      {
+        SetAVError(error, "av_dict_parse_string() for audio failed: ", res);
+        return false;
+      }
+    }
+
+    if (output_format->flags & AVFMT_GLOBALHEADER)
+      m_audio_codec_context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+
+    res = wrap_avcodec_open2(m_audio_codec_context, acodec, &m_audio_codec_arguments);
+    if (res < 0)
+    {
+      SetAVError(error, "avcodec_open2() for audio failed: ", res);
+      return false;
+    }
+
+    // Use packet size for frame if it supports it... but most don't.
+    if (acodec->capabilities & AV_CODEC_CAP_VARIABLE_FRAME_SIZE)
+      m_audio_frame_size = static_cast<u32>(static_cast<float>(sample_rate) / fps);
+    else
+      m_audio_frame_size = m_audio_codec_context->frame_size;
+    if (m_audio_frame_size >= m_audio_buffer.size())
+    {
+      SetAVError(error,
+                 TinyString::from_format("Audio frame size {} exceeds buffer size {}", m_audio_frame_size,
+                                         m_audio_buffer.size()),
+                 AVERROR(EINVAL));
+      return false;
+    }
+
+    m_audio_frame_bps = wrap_av_get_bytes_per_sample(m_audio_codec_context->sample_fmt);
+    m_audio_frame_planar = (wrap_av_sample_fmt_is_planar(m_audio_codec_context->sample_fmt) != 0);
+
+    m_converted_audio_frame = wrap_av_frame_alloc();
+    if (!m_converted_audio_frame)
+    {
+      SetAVError(error, "Failed to allocate audio frame: ", AVERROR(ENOMEM));
+      return false;
+    }
+
+    m_converted_audio_frame->format = m_audio_codec_context->sample_fmt;
+    m_converted_audio_frame->nb_samples = m_audio_frame_size;
+#if LIBAVUTIL_VERSION_MAJOR < 57
+    m_converted_audio_frame->channels = AUDIO_CHANNELS;
+    m_converted_audio_frame->channel_layout = m_audio_codec_context->channel_layout;
+#else
+    wrap_av_channel_layout_copy(&m_converted_audio_frame->ch_layout, &m_audio_codec_context->ch_layout);
+#endif
+    res = wrap_av_frame_get_buffer(m_converted_audio_frame, 0);
+    if (res < 0)
+    {
+      SetAVError(error, "av_frame_get_buffer() for audio frame failed: ", res);
+      return false;
+    }
+
+    m_audio_stream = wrap_avformat_new_stream(m_format_context, acodec);
+    if (!m_audio_stream)
+    {
+      SetAVError(error, "avformat_new_stream() for audio failed: ", AVERROR(ENOMEM));
+      return false;
+    }
+
+    res = wrap_avcodec_parameters_from_context(m_audio_stream->codecpar, m_audio_codec_context);
+    if (res < 0)
+    {
+      SetAVError(error, "avcodec_parameters_from_context() for audio failed: ", res);
+      return false;
+    }
+
+    m_audio_stream->time_base = m_audio_codec_context->time_base;
+
+    m_audio_packet = wrap_av_packet_alloc();
+    if (!m_audio_packet)
+    {
+      SetAVError(error, "av_packet_alloc() for audio failed: ", AVERROR(ENOMEM));
+      return false;
+    }
+  }
+
+  res = wrap_avio_open(&m_format_context->pb, m_path.c_str(), AVIO_FLAG_WRITE);
+  if (res < 0)
+  {
+    SetAVError(error, "avio_open() failed: ", res);
+    return false;
+  }
+
+  res = wrap_avformat_write_header(m_format_context, nullptr);
+  if (res < 0)
+  {
+    SetAVError(error, "avformat_write_header() failed: ", res);
+    return false;
+  }
+
+  return true;
+}
+
+bool MediaCaptureFFmpeg::InternalEndCapture(std::unique_lock<std::mutex>& lock, Error* error)
+{
+  int res = MediaCaptureBase::InternalEndCapture(lock, error) ? 0 : -1;
+  if (res == 0)
+  {
+    // end of stream
+    if (m_video_stream)
+    {
+      res = wrap_avcodec_send_frame(m_video_codec_context, nullptr);
+      if (res < 0)
+        SetAVError(error, "avcodec_send_frame() for video EOS failed: ", res);
+      else
+        res = ReceivePackets(m_video_codec_context, m_video_stream, m_video_packet, error) ? 0 : -1;
+    }
+    if (m_audio_stream)
+    {
+      res = wrap_avcodec_send_frame(m_audio_codec_context, nullptr);
+      if (res < 0)
+        SetAVError(error, "avcodec_send_frame() for audio EOS failed: ", res);
+      else
+        res = ReceivePackets(m_audio_codec_context, m_audio_stream, m_audio_packet, error) ? 0 : -1;
+    }
+
+    // end of file!
+    if (res == 0)
+    {
+      res = wrap_av_write_trailer(m_format_context);
+      if (res < 0)
+        SetAVError(error, "av_write_trailer() failed: ", res);
+    }
+  }
+
+  return (res == 0);
+}
+
+void MediaCaptureFFmpeg::ClearState()
+{
+  if (m_format_context)
+  {
+    int res = wrap_avio_closep(&m_format_context->pb);
+    if (res < 0) [[unlikely]]
+    {
+      Error close_error;
+      SetAVError(&close_error, "avio_closep() failed: ", res);
+      ERROR_LOG(close_error.GetDescription());
+    }
+  }
+
+  if (m_sws_context)
+  {
+    wrap_sws_freeContext(m_sws_context);
+    m_sws_context = nullptr;
+  }
+  if (m_video_packet)
+    wrap_av_packet_free(&m_video_packet);
+  if (m_converted_video_frame)
+    wrap_av_frame_free(&m_converted_video_frame);
+  if (m_hw_video_frame)
+    wrap_av_frame_free(&m_hw_video_frame);
+  if (m_video_hw_frames)
+    wrap_av_buffer_unref(&m_video_hw_frames);
+  if (m_video_hw_context)
+    wrap_av_buffer_unref(&m_video_hw_context);
+  if (m_video_codec_context)
+    wrap_avcodec_free_context(&m_video_codec_context);
+  m_video_stream = nullptr;
+
+  if (m_swr_context)
+    wrap_swr_free(&m_swr_context);
+  if (m_audio_packet)
+    wrap_av_packet_free(&m_audio_packet);
+  if (m_converted_audio_frame)
+    wrap_av_frame_free(&m_converted_audio_frame);
+  if (m_audio_codec_context)
+    wrap_avcodec_free_context(&m_audio_codec_context);
+  m_audio_stream = nullptr;
+
+  if (m_format_context)
+  {
+    wrap_avformat_free_context(m_format_context);
+    m_format_context = nullptr;
+  }
+  if (m_video_codec_arguments)
+    wrap_av_dict_free(&m_video_codec_arguments);
+  if (m_audio_codec_arguments)
+    wrap_av_dict_free(&m_audio_codec_arguments);
+}
+
+bool MediaCaptureFFmpeg::ReceivePackets(AVCodecContext* codec_context, AVStream* stream, AVPacket* packet, Error* error)
+{
+  for (;;)
+  {
+    int res = wrap_avcodec_receive_packet(codec_context, packet);
+    if (res == AVERROR(EAGAIN) || res == AVERROR_EOF)
+    {
+      // no more data available
+      break;
+    }
+    else if (res < 0) [[unlikely]]
+    {
+      SetAVError(error, "avcodec_receive_packet() failed: ", res);
+      return false;
+    }
+
+    packet->stream_index = stream->index;
+
+    // in case the frame rate changed...
+    wrap_av_packet_rescale_ts(packet, codec_context->time_base, stream->time_base);
+
+    res = wrap_av_interleaved_write_frame(m_format_context, packet);
+    if (res < 0) [[unlikely]]
+    {
+      SetAVError(error, "av_interleaved_write_frame() failed: ", res);
+      return false;
+    }
+
+    wrap_av_packet_unref(packet);
+  }
+
+  return true;
+}
+
+bool MediaCaptureFFmpeg::SendFrame(const PendingFrame& pf, Error* error)
+{
+  const u8* source_ptr = pf.tex->GetMapPointer();
+  const int source_width = static_cast<int>(pf.tex->GetWidth());
+  const int source_height = static_cast<int>(pf.tex->GetHeight());
+
+  // OpenGL lower-left flip.
+  int source_pitch = static_cast<int>(pf.tex->GetMapPitch());
+  if (g_gpu_device->UsesLowerLeftOrigin())
+  {
+    source_ptr = source_ptr + static_cast<size_t>(source_pitch) * static_cast<u32>(source_height - 1);
+    source_pitch = -source_pitch;
+  }
+
+  // In case a previous frame is still using the frame.
+  wrap_av_frame_make_writable(m_converted_video_frame);
+
+  m_sws_context = wrap_sws_getCachedContext(m_sws_context, source_width, source_height, m_video_pixel_format,
+                                            m_converted_video_frame->width, m_converted_video_frame->height,
+                                            static_cast<AVPixelFormat>(m_converted_video_frame->format), SWS_BICUBIC,
+                                            nullptr, nullptr, nullptr);
+  if (!m_sws_context) [[unlikely]]
+  {
+    Error::SetStringView(error, "sws_getCachedContext() failed");
+    return false;
+  }
+
+  wrap_sws_scale(m_sws_context, reinterpret_cast<const u8**>(&source_ptr), &source_pitch, 0, source_height,
+                 m_converted_video_frame->data, m_converted_video_frame->linesize);
+
+  AVFrame* frame_to_send = m_converted_video_frame;
+  if (IsUsingHardwareVideoEncoding())
+  {
+    // Need to transfer the frame to hardware.
+    const int res = wrap_av_hwframe_transfer_data(m_hw_video_frame, m_converted_video_frame, 0);
+    if (res < 0) [[unlikely]]
+    {
+      SetAVError(error, "av_hwframe_transfer_data() failed: ", res);
+      return false;
+    }
+
+    frame_to_send = m_hw_video_frame;
+  }
+
+  // Set the correct PTS before handing it off.
+  frame_to_send->pts = pf.pts;
+
+  const int res = wrap_avcodec_send_frame(m_video_codec_context, frame_to_send);
+  if (res < 0) [[unlikely]]
+  {
+    SetAVError(error, "avcodec_send_frame() failed: ", res);
+    return false;
+  }
+
+  return ReceivePackets(m_video_codec_context, m_video_stream, m_video_packet, error);
+}
+
+bool MediaCaptureFFmpeg::ProcessAudioPackets(s64 video_pts, Error* error)
+{
+  const u32 max_audio_buffer_size = GetAudioBufferSizeInFrames();
+
+  u32 pending_frames = m_audio_buffer_size.load(std::memory_order_acquire);
+  while (pending_frames > 0 &&
+         (!m_video_codec_context || wrap_av_compare_ts(video_pts, m_video_codec_context->time_base, m_next_audio_pts,
+                                                       m_audio_codec_context->time_base) > 0))
+  {
+    // In case the encoder is still using it.
+    if (m_audio_frame_pos == 0)
+      wrap_av_frame_make_writable(m_converted_audio_frame);
+
+    // Grab as many source frames as we can.
+    const u32 contig_frames = std::min(pending_frames, max_audio_buffer_size - m_audio_buffer_read_pos);
+    const u32 this_batch = std::min(m_audio_frame_size - m_audio_frame_pos, contig_frames);
+
+    // Do we need to convert the sample format?
+    if (!m_swr_context)
+    {
+      // No, just copy frames out of staging buffer.
+      if (m_audio_frame_planar)
+      {
+        // This is slow. Hopefully doesn't happen in too many configurations.
+        for (u32 i = 0; i < AUDIO_CHANNELS; i++)
+        {
+          u8* output = m_converted_audio_frame->data[i] + m_audio_frame_pos * m_audio_frame_bps;
+          const u8* input = reinterpret_cast<u8*>(&m_audio_buffer[m_audio_buffer_read_pos * AUDIO_CHANNELS + i]);
+          for (u32 j = 0; j < this_batch; j++)
+          {
+            std::memcpy(output, input, sizeof(s16));
+            input += sizeof(s16) * AUDIO_CHANNELS;
+            output += m_audio_frame_bps;
+          }
+        }
+      }
+      else
+      {
+        // Direct copy - optimal.
+        std::memcpy(m_converted_audio_frame->data[0] + m_audio_frame_pos * m_audio_frame_bps * AUDIO_CHANNELS,
+                    &m_audio_buffer[m_audio_buffer_read_pos * AUDIO_CHANNELS],
+                    this_batch * sizeof(s16) * AUDIO_CHANNELS);
+      }
+    }
+    else
+    {
+      // Use swresample to convert.
+      const u8* input = reinterpret_cast<u8*>(&m_audio_buffer[m_audio_buffer_read_pos * AUDIO_CHANNELS]);
+
+      // Might be planar, so offset both buffers.
+      u8* output[AUDIO_CHANNELS];
+      if (m_audio_frame_planar)
+      {
+        for (u32 i = 0; i < AUDIO_CHANNELS; i++)
+          output[i] = m_converted_audio_frame->data[i] + (m_audio_frame_pos * m_audio_frame_bps);
+      }
+      else
+      {
+        output[0] = m_converted_audio_frame->data[0] + (m_audio_frame_pos * m_audio_frame_bps * AUDIO_CHANNELS);
+      }
+
+      const int res = wrap_swr_convert(m_swr_context, output, this_batch, &input, this_batch);
+      if (res < 0)
+      {
+        SetAVError(error, "swr_convert() failed: ", res);
+        return false;
+      }
+    }
+
+    m_audio_buffer_read_pos = (m_audio_buffer_read_pos + this_batch) % max_audio_buffer_size;
+    m_audio_buffer_size.fetch_sub(this_batch);
+    m_audio_frame_pos += this_batch;
+    pending_frames -= this_batch;
+
+    // Do we have a complete frame?
+    if (m_audio_frame_pos == m_audio_frame_size)
+    {
+      m_audio_frame_pos = 0;
+
+      if (!m_swr_context)
+      {
+        // PTS is simply frames.
+        m_converted_audio_frame->pts = m_next_audio_pts;
+      }
+      else
+      {
+        m_converted_audio_frame->pts = wrap_swr_next_pts(m_swr_context, m_next_audio_pts);
+      }
+
+      // Increment PTS.
+      m_next_audio_pts += m_audio_frame_size;
+
+      // Send off for encoding.
+      int res = wrap_avcodec_send_frame(m_audio_codec_context, m_converted_audio_frame);
+      if (res < 0) [[unlikely]]
+      {
+        SetAVError(error, "avcodec_send_frame() for audio failed: ", res);
+        return false;
+      }
+
+      // Write any packets back to the output file.
+      if (!ReceivePackets(m_audio_codec_context, m_audio_stream, m_audio_packet, error)) [[unlikely]]
+        return false;
+    }
+  }
+
+  return true;
+}
+
+std::unique_ptr<MediaCapture> MediaCaptureFFmpeg::Create(Error* error)
+{
+  if (!LoadFFmpeg(error))
+    return nullptr;
+
+  return std::make_unique<MediaCaptureFFmpeg>();
+}
+
+MediaCapture::ContainerList MediaCaptureFFmpeg::GetContainerList()
+{
+  return {
+    {"avi", "Audio Video Interleave"}, {"mp4", "MPEG-4 Part 14"},         {"mkv", "Matroska Media Container"},
+    {"mov", "QuickTime File Format"},  {"mp3", "MPEG-2 Audio Layer III"}, {"wav", "Waveform Audio File Format"},
+  };
+}
+
+MediaCaptureBase::CodecList MediaCaptureFFmpeg::GetCodecListForContainer(const char* container, AVMediaType type)
+{
+  CodecList ret;
+
+  Error error;
+  if (!LoadFFmpeg(&error))
+  {
+    ERROR_LOG("FFmpeg load failed: {}", error.GetDescription());
+    return ret;
+  }
+
+  const AVOutputFormat* output_format =
+    wrap_av_guess_format(nullptr, fmt::format("video.{}", container ? container : "mp4").c_str(), nullptr);
+  if (!output_format)
+  {
+    ERROR_LOG("av_guess_format() failed");
+    return ret;
+  }
+
+  void* iter = nullptr;
+  const AVCodec* codec;
+  while ((codec = wrap_av_codec_iterate(&iter)) != nullptr)
+  {
+    // only get audio codecs
+    if (codec->type != type || !wrap_avcodec_find_encoder(codec->id) || !wrap_avcodec_find_encoder_by_name(codec->name))
+      continue;
+
+    if (!wrap_avformat_query_codec(output_format, codec->id, FF_COMPLIANCE_NORMAL))
+      continue;
+
+    if (std::find_if(ret.begin(), ret.end(), [codec](const auto& it) { return it.first == codec->name; }) != ret.end())
+      continue;
+
+    ret.emplace_back(codec->name, codec->long_name ? codec->long_name : codec->name);
+  }
+
+  return ret;
+}
+
+MediaCapture::CodecList MediaCaptureFFmpeg::GetVideoCodecList(const char* container)
+{
+  return GetCodecListForContainer(container, AVMEDIA_TYPE_VIDEO);
+}
+
+MediaCapture::CodecList MediaCaptureFFmpeg::GetAudioCodecList(const char* container)
+{
+  return GetCodecListForContainer(container, AVMEDIA_TYPE_AUDIO);
+}
+
+#endif
+
 } // namespace
 
 static constexpr const std::array s_backend_names = {
@@ -1576,7 +2689,7 @@ static constexpr const std::array s_backend_names = {
   "MediaFoundation",
 #endif
 #ifndef __ANDROID__
-  "FFMPEG",
+  "FFmpeg",
 #endif
 };
 static constexpr const std::array s_backend_display_names = {
@@ -1584,7 +2697,7 @@ static constexpr const std::array s_backend_display_names = {
   TRANSLATE_NOOP("MediaCapture", "Media Foundation"),
 #endif
 #ifndef __ANDROID__
-  TRANSLATE_NOOP("MediaCapture", "FFMPEG"),
+  TRANSLATE_NOOP("MediaCapture", "FFmpeg"),
 #endif
 };
 static_assert(s_backend_names.size() == static_cast<size_t>(MediaCaptureBackend::MaxCount));
@@ -1634,7 +2747,7 @@ MediaCapture::ContainerList MediaCapture::GetContainerList(MediaCaptureBackend b
 #endif
 #ifndef __ANDROID__
     case MediaCaptureBackend::FFmpeg:
-      // ret = MediaCaptureFFmpeg::GetContainerList();
+      ret = MediaCaptureFFmpeg::GetContainerList();
       break;
 #endif
     default:
@@ -1655,7 +2768,7 @@ MediaCapture::CodecList MediaCapture::GetVideoCodecList(MediaCaptureBackend back
 #endif
 #ifndef __ANDROID__
     case MediaCaptureBackend::FFmpeg:
-      // ret = MediaCaptureFFmpeg::GetVideoCodecList(container);
+      ret = MediaCaptureFFmpeg::GetVideoCodecList(container);
       break;
 #endif
     default:
@@ -1676,7 +2789,7 @@ MediaCapture::CodecList MediaCapture::GetAudioCodecList(MediaCaptureBackend back
 #endif
 #ifndef __ANDROID__
     case MediaCaptureBackend::FFmpeg:
-      // ret = MediaCaptureFFmpeg::GetAudioCodecList(container);
+      ret = MediaCaptureFFmpeg::GetAudioCodecList(container);
       break;
 #endif
     default:
@@ -1695,8 +2808,7 @@ std::unique_ptr<MediaCapture> MediaCapture::Create(MediaCaptureBackend backend, 
 #endif
 #ifndef __ANDROID__
     case MediaCaptureBackend::FFmpeg:
-      // return MediaCaptureFFmpeg::Create(error);
-      return nullptr;
+      return MediaCaptureFFmpeg::Create(error);
 #endif
     default:
       return nullptr;

@@ -184,6 +184,8 @@ if(NOT ANDROID)
     freesurround
     SDL2::SDL2
   )
+  # FFmpeg loaded dynamically on demand.
+  target_include_directories(util PUBLIC ${FFMPEG_INCLUDE_DIRS})
 endif()
 
 if(WIN32)
