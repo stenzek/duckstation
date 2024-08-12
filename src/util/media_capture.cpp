@@ -585,7 +585,7 @@ private:
                                                   Error* error);
   bool GetAudioTypes(std::string_view codec, ComPtr<IMFMediaType>* input_type, ComPtr<IMFMediaType>* output_type,
                      u32 sample_rate, u32 bitrate, Error* error);
-  static void ConvertVideoFrame(u8* dst, size_t dst_stride, const u8* src, size_t src_stride, u32 width, u32 height);
+  void ConvertVideoFrame(u8* dst, size_t dst_stride, const u8* src, size_t src_stride, u32 width, u32 height) const;
 
   bool ProcessVideoOutputSamples(Error* error); // synchronous
   bool ProcessVideoEvents(Error* error);        // asynchronous
@@ -1041,48 +1041,67 @@ MediaCaptureMF::ComPtr<IMFTransform> MediaCaptureMF::CreateVideoEncodeTransform(
 }
 
 ALWAYS_INLINE_RELEASE void MediaCaptureMF::ConvertVideoFrame(u8* dst, size_t dst_stride, const u8* src,
-                                                             size_t src_stride, u32 width, u32 height)
+                                                             size_t src_stride, u32 width, u32 height) const
 {
-  // need to convert rgba -> bgra, as well as flipping vertically
-  const u32 vector_width = 4;
-  const u32 aligned_width = Common::AlignDownPow2(width, vector_width);
-
   if (!g_gpu_device->UsesLowerLeftOrigin())
   {
     src += src_stride * (height - 1);
     src_stride = static_cast<size_t>(-static_cast<std::make_signed_t<size_t>>(src_stride));
   }
 
-  for (u32 remaining_rows = height;;)
+  if (m_video_render_texture_format == GPUTexture::Format::RGBA8)
   {
-    const u8* row_src = src;
-    u8* row_dst = dst;
-
-    u32 x = 0;
-    for (; x < aligned_width; x += vector_width)
+    // need to convert rgba -> bgra, as well as flipping vertically
+    const u32 vector_width = 4;
+    const u32 aligned_width = Common::AlignDownPow2(width, vector_width);
+    for (u32 remaining_rows = height;;)
     {
-      static constexpr GSVector4i mask = GSVector4i::cxpr8(2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15);
-      GSVector4i::store<false>(row_dst, GSVector4i::load<false>(row_src).shuffle8(mask));
-      row_src += vector_width * sizeof(u32);
-      row_dst += vector_width * sizeof(u32);
-    }
+      const u8* row_src = src;
+      u8* row_dst = dst;
 
-    for (; x < width; x++)
+      u32 x = 0;
+      for (; x < aligned_width; x += vector_width)
+      {
+        static constexpr GSVector4i mask = GSVector4i::cxpr8(2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15);
+        GSVector4i::store<false>(row_dst, GSVector4i::load<false>(row_src).shuffle8(mask));
+        row_src += vector_width * sizeof(u32);
+        row_dst += vector_width * sizeof(u32);
+      }
+
+      for (; x < width; x++)
+      {
+        row_dst[0] = row_src[2];
+        row_dst[1] = row_src[1];
+        row_dst[2] = row_src[0];
+        row_dst[3] = row_src[3];
+        row_src += sizeof(u32);
+        row_dst += sizeof(u32);
+      }
+
+      src += src_stride;
+      dst += dst_stride;
+
+      remaining_rows--;
+      if (remaining_rows == 0)
+        break;
+    }
+  }
+  else
+  {
+    // only flip
+    const u32 copy_width = sizeof(u32) * width;
+    for (u32 remaining_rows = height;;)
     {
-      row_dst[0] = row_src[2];
-      row_dst[1] = row_src[1];
-      row_dst[2] = row_src[0];
-      row_dst[3] = row_src[3];
-      row_src += sizeof(u32);
-      row_dst += sizeof(u32);
+      const u8* row_src = src;
+      u8* row_dst = dst;
+      std::memcpy(row_dst, row_src, copy_width);
+      src += src_stride;
+      dst += dst_stride;
+
+      remaining_rows--;
+      if (remaining_rows == 0)
+        break;
     }
-
-    src += src_stride;
-    dst += dst_stride;
-
-    remaining_rows--;
-    if (remaining_rows == 0)
-      break;
   }
 }
 
