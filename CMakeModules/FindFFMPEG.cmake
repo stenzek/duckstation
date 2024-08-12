@@ -97,7 +97,23 @@ function (_ffmpeg_find component headername)
         PARENT_SCOPE)
 
       set(version_header_path "${FFMPEG_${component}_INCLUDE_DIR}/lib${component}/version.h")
-      if (EXISTS "${version_header_path}")
+      set(major_version_header_path "${FFMPEG_${component}_INCLUDE_DIR}/lib${component}/version_major.h")
+      if (EXISTS "${major_version_header_path}")
+        string(TOUPPER "${component}" component_upper)
+        file(STRINGS "${major_version_header_path}" major_version
+          REGEX "#define  *LIB${component_upper}_VERSION_MAJOR ")
+        file(STRINGS "${version_header_path}" version
+          REGEX "#define  *LIB${component_upper}_VERSION_(MINOR|MICRO) ")
+        string(REGEX REPLACE ".*_MAJOR *\([0-9]*\).*" "\\1" major "${major_version}")
+        string(REGEX REPLACE ".*_MINOR *\([0-9]*\).*" "\\1" minor "${version}")
+        string(REGEX REPLACE ".*_MICRO *\([0-9]*\).*" "\\1" micro "${version}")
+        if (NOT major STREQUAL "" AND
+            NOT minor STREQUAL "" AND
+            NOT micro STREQUAL "")
+          set("FFMPEG_${component}_VERSION" "${major}.${minor}.${micro}"
+            PARENT_SCOPE)
+        endif ()
+      elseif (EXISTS "${version_header_path}")
         string(TOUPPER "${component}" component_upper)
         file(STRINGS "${version_header_path}" version
           REGEX "#define  *LIB${component_upper}_VERSION_(MAJOR|MINOR|MICRO) ")

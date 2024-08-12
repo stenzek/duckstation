@@ -294,7 +294,15 @@ function(add_util_resources target)
 
     # Copy shaderc into the bundle
     get_target_property(SPIRV_CROSS_LIBRARY spirv-cross-c-shared IMPORTED_SONAME_RELEASE)
-    target_sources(duckstation-qt PRIVATE "${SHADERC_LIBRARY}" "${SPIRV_CROSS_LIBRARY}")
+    target_sources(${target} PRIVATE "${SHADERC_LIBRARY}" "${SPIRV_CROSS_LIBRARY}")
     set_source_files_properties("${SHADERC_LIBRARY}" "${SPIRV_CROSS_LIBRARY}" PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks)
+
+    # Copy FFmpeg libraries into the bundle
+    foreach(component avcodec avformat avutil swresample swscale)
+      string(REGEX REPLACE "\([0-9]+\)\.[0-9]+\.[0-9]+" "\\1" major "${FFMPEG_${component}_VERSION}")
+      string(REPLACE "lib${component}.dylib" "lib${component}.${major}.dylib" version_lib "${FFMPEG_${component}_LIBRARIES}")
+      target_sources(${target} PRIVATE ${version_lib})
+      set_source_files_properties(${target} PRIVATE ${version_lib} PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks)
+    endforeach()
   endif()
 endfunction()
