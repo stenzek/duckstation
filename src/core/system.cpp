@@ -2556,7 +2556,7 @@ bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bo
     INFO_LOG("Re-using same media '{}'", buffer.media_path);
     media = std::move(old_media);
   }
-  else
+  else if (!buffer.media_path.empty())
   {
     Error local_error;
     media = CDImage::Open(buffer.media_path.c_str(), g_settings.cdrom_load_image_patches, error ? error : &local_error);
