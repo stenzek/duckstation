@@ -2603,9 +2603,9 @@ bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string filename, 
                 std::move(texture_data), texture_data_stride, texture_format, std::move(osd_key), use_thread);
   }
 
+  std::unique_lock lock(s_screenshot_threads_mutex);
   std::thread thread(proc, width, height, std::move(filename), std::move(fp), quality, clear_alpha, flip_y,
                      std::move(texture_data), texture_data_stride, texture_format, std::move(osd_key), use_thread);
-  std::unique_lock lock(s_screenshot_threads_mutex);
   s_screenshot_threads.push_back(std::move(thread));
   return true;
 }
