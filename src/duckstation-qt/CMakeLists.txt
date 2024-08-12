@@ -249,6 +249,11 @@ elseif(APPLE)
   set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/DuckStation.icns" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 endif()
 
+if(ALLOW_INSTALL)
+  # Install main binary.
+  install(TARGETS duckstation-qt RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}")
+endif()
+
 # Compile qrc to a binary file.
 if(NOT APPLE)
   set(RCC_FILE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/duckstation-qt.rcc")
@@ -271,6 +276,9 @@ if(NOT APPLE)
   foreach (QM_FILE IN LISTS QM_FILES)
     get_filename_component(QM_FILE_NAME ${QM_FILE} NAME)
     add_custom_command(TARGET duckstation-qt POST_BUILD COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${QM_FILE}" "${QM_OUTPUT_DIR}/${QM_FILE_NAME}")
+    if(ALLOW_INSTALL)
+      install(FILES "${QM_FILE}" DESTINATION "${CMAKE_INSTALL_PREFIX}/translations")
+    endif()
   endforeach()
 else()
   foreach (QM_FILE IN LISTS QM_FILES)
