@@ -81,6 +81,7 @@ add_library(core
   memory_card.h
   memory_card_image.cpp
   memory_card_image.h
+  mips_encoder.h
   multitap.cpp
   multitap.h
   negcon.cpp
