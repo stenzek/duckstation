@@ -78,9 +78,9 @@ struct PGXP_value
 struct State
 {
   // ticks the CPU has executed
-  TickCount downcount = 0;
-  TickCount pending_ticks = 0;
-  TickCount gte_completion_tick = 0;
+  u32 downcount = 0;
+  u32 pending_ticks = 0;
+  u32 gte_completion_tick = 0;
 
   Registers regs = {};
   Cop0Registers cop0_regs = {};
@@ -152,7 +152,7 @@ ALWAYS_INLINE static Registers& GetRegs()
   return g_state.regs;
 }
 
-ALWAYS_INLINE static TickCount GetPendingTicks()
+ALWAYS_INLINE static u32 GetPendingTicks()
 {
   return g_state.pending_ticks;
 }
@@ -164,7 +164,7 @@ ALWAYS_INLINE static void ResetPendingTicks()
 }
 ALWAYS_INLINE static void AddPendingTicks(TickCount ticks)
 {
-  g_state.pending_ticks += ticks;
+  g_state.pending_ticks += static_cast<u32>(ticks);
 }
 
 // state helpers
