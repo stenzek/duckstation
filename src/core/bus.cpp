@@ -1087,6 +1087,8 @@ template<MemoryAccessSize size> static u32 EXP2ReadHandler(VirtualMemoryAddress 
 template<MemoryAccessSize size> static void EXP2WriteHandler(VirtualMemoryAddress address, u32 value);
 template<MemoryAccessSize size> static u32 EXP3ReadHandler(VirtualMemoryAddress address);
 template<MemoryAccessSize size> static void EXP3WriteHandler(VirtualMemoryAddress address, u32 value);
+template<MemoryAccessSize size> static u32 SIO2ReadHandler(PhysicalMemoryAddress address);
+template<MemoryAccessSize size> static void SIO2WriteHandler(PhysicalMemoryAddress address, u32 value);
 
 template<MemoryAccessSize size> static u32 HardwareReadHandler(VirtualMemoryAddress address);
 template<MemoryAccessSize size> static void HardwareWriteHandler(VirtualMemoryAddress address, u32 value);
@@ -1429,6 +1431,36 @@ void Bus::EXP3WriteHandler(VirtualMemoryAddress address, u32 value)
     if (post_code == 0x07)
       KernelInitializedHook();
   }
+}
+
+template<MemoryAccessSize size>
+u32 Bus::SIO2ReadHandler(PhysicalMemoryAddress address)
+{
+  // Stub for using PS2 BIOS.
+  if (const BIOS::ImageInfo* ii = System::GetBIOSImageInfo();
+      !ii || ii->fastboot_patch != BIOS::ImageInfo::FastBootPatch::Type2) [[unlikely]]
+  {
+    // Throw exception when not using PS2 BIOS.
+    return UnmappedReadHandler<size>(address);
+  }
+
+  WARNING_LOG("SIO2 read: 0x{:08X}", address);
+  return 0;
+}
+
+template<MemoryAccessSize size>
+void Bus::SIO2WriteHandler(PhysicalMemoryAddress address, u32 value)
+{
+  // Stub for using PS2 BIOS.
+  if (const BIOS::ImageInfo* ii = System::GetBIOSImageInfo();
+      !ii || ii->fastboot_patch != BIOS::ImageInfo::FastBootPatch::Type2) [[unlikely]]
+  {
+    // Throw exception when not using PS2 BIOS.
+    UnmappedWriteHandler<size>(address, value);
+    return;
+  }
+
+  WARNING_LOG("SIO2 write: 0x{:08X} <- 0x{:08X}", address, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1900,6 +1932,7 @@ void Bus::SetHandlers()
   SET(g_memory_handlers, KUSEG | HW_BASE, HW_SIZE, HardwareReadHandler, HardwareWriteHandler);
   SET(g_memory_handlers, KUSEG | EXP2_BASE, EXP2_SIZE, EXP2ReadHandler, EXP2WriteHandler);
   SET(g_memory_handlers, KUSEG | EXP3_BASE, EXP3_SIZE, EXP3ReadHandler, EXP3WriteHandler);
+  SET(g_memory_handlers, KUSEG | SIO2_BASE, SIO2_SIZE, SIO2ReadHandler, SIO2WriteHandler);
   SET(g_memory_handlers_isc, KUSEG, 0x80000000, ICacheReadHandler, ICacheWriteHandler);
 
   // KSEG0 - Cached
@@ -1910,6 +1943,7 @@ void Bus::SetHandlers()
   SET(g_memory_handlers, KSEG0 | HW_BASE, HW_SIZE, HardwareReadHandler, HardwareWriteHandler);
   SET(g_memory_handlers, KSEG0 | EXP2_BASE, EXP2_SIZE, EXP2ReadHandler, EXP2WriteHandler);
   SET(g_memory_handlers, KSEG0 | EXP3_BASE, EXP3_SIZE, EXP3ReadHandler, EXP3WriteHandler);
+  SET(g_memory_handlers, KSEG0 | SIO2_BASE, SIO2_SIZE, SIO2ReadHandler, SIO2WriteHandler);
   SET(g_memory_handlers_isc, KSEG0, 0x20000000, ICacheReadHandler, ICacheWriteHandler);
 
   // KSEG1 - Uncached
@@ -1919,6 +1953,7 @@ void Bus::SetHandlers()
   SETUC(KSEG1 | HW_BASE, HW_SIZE, HardwareReadHandler, HardwareWriteHandler);
   SETUC(KSEG1 | EXP2_BASE, EXP2_SIZE, EXP2ReadHandler, EXP2WriteHandler);
   SETUC(KSEG1 | EXP3_BASE, EXP3_SIZE, EXP3ReadHandler, EXP3WriteHandler);
+  SETUC(KSEG1 | SIO2_BASE, SIO2_SIZE, SIO2ReadHandler, SIO2WriteHandler);
 
   // KSEG2 - Uncached - 0xFFFE0130
   SETUC(KSEG2 | 0xFFFE0000, 0x1000, CacheControlReadHandler, CacheControlWriteHandler);
