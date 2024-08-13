@@ -41,6 +41,7 @@ struct ImageInfo
   ConsoleRegion region;
   Hash hash;
   FastBootPatch fastboot_patch;
+  u8 priority;
 
   bool SupportsFastBoot() const { return (fastboot_patch != FastBootPatch::Unsupported); }
 
