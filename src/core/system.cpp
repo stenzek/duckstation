@@ -2438,7 +2438,7 @@ void System::ResetBootMode()
 
   // Reset fast boot flag from settings.
   const bool wants_fast_boot = (g_settings.bios_patch_fast_boot && CDROM::IsMediaPS1Disc() && s_bios_image_info &&
-                                s_bios_image_info->patch_compatible);
+                                s_bios_image_info->SupportsFastBoot());
   const System::BootMode new_boot_mode = (s_state != System::State::Starting) ?
                                            (wants_fast_boot ? System::BootMode::FastBoot : System::BootMode::FullBoot) :
                                            s_boot_mode;
@@ -2453,11 +2453,11 @@ void System::ResetBootMode()
   s_boot_mode = new_boot_mode;
   if (s_boot_mode == BootMode::FastBoot)
   {
-    if (s_bios_image_info && s_bios_image_info->patch_compatible)
+    if (s_bios_image_info && s_bios_image_info->SupportsFastBoot())
     {
       // Patch BIOS, this sucks.
       INFO_LOG("Patching BIOS for fast boot.");
-      BIOS::PatchBIOSFastBoot(Bus::g_bios, Bus::BIOS_SIZE);
+      BIOS::PatchBIOSFastBoot(Bus::g_bios, Bus::BIOS_SIZE, s_bios_image_info->fastboot_patch);
     }
     else
     {

@@ -30,10 +30,19 @@ struct ImageInfo
   static constexpr u32 HASH_SIZE = 16;
   using Hash = std::array<u8, HASH_SIZE>;
 
+  enum class FastBootPatch : u8
+  {
+    Unsupported,
+    Type1,
+    Type2,
+  };
+
   const char* description;
   ConsoleRegion region;
   Hash hash;
-  bool patch_compatible;
+  FastBootPatch fastboot_patch;
+
+  bool SupportsFastBoot() const { return (fastboot_patch != FastBootPatch::Unsupported); }
 
   static TinyString GetHashString(const Hash& hash);
 };
@@ -70,7 +79,7 @@ std::optional<Image> LoadImageFromFile(const char* filename, Error* error);
 
 bool IsValidBIOSForRegion(ConsoleRegion console_region, ConsoleRegion bios_region);
 
-bool PatchBIOSFastBoot(u8* image, u32 image_size);
+bool PatchBIOSFastBoot(u8* image, u32 image_size, ImageInfo::FastBootPatch type);
 
 bool IsValidPSExeHeader(const PSEXEHeader& header, size_t file_size);
 DiscRegion GetPSExeDiscRegion(const PSEXEHeader& header);
