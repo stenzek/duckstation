@@ -1939,7 +1939,8 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, const char* title,
                               (i == static_cast<size_t>(index)));
     }
     OpenChoiceDialog(title, false, std::move(cd_options),
-                     [game_settings, section, key, option_offset](s32 index, const std::string& title, bool checked) {
+                     [game_settings, section = TinyString(section), key = TinyString(key),
+                      option_offset](s32 index, const std::string& title, bool checked) {
                        if (index >= 0)
                        {
                          auto lock = Host::GetSettingsLock();
@@ -2556,30 +2557,30 @@ void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, const char* title, co
     for (u32 i = 0; i < static_cast<u32>(option_count); i++)
       cd_options.emplace_back(to_display_string_function(static_cast<DataType>(i)),
                               (typed_value.has_value() && i == static_cast<u32>(typed_value.value())));
-    OpenChoiceDialog(
-      title, false, std::move(cd_options),
-      [section, key, to_string_function, game_settings](s32 index, const std::string& title, bool checked) {
-        if (index >= 0)
-        {
-          auto lock = Host::GetSettingsLock();
-          SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-          if (game_settings)
-          {
-            if (index == 0)
-              bsi->DeleteValue(section, key);
-            else
-              bsi->SetStringValue(section, key, to_string_function(static_cast<DataType>(index - 1)));
-          }
-          else
-          {
-            bsi->SetStringValue(section, key, to_string_function(static_cast<DataType>(index)));
-          }
+    OpenChoiceDialog(title, false, std::move(cd_options),
+                     [section = TinyString(section), key = TinyString(key), to_string_function,
+                      game_settings](s32 index, const std::string& title, bool checked) {
+                       if (index >= 0)
+                       {
+                         auto lock = Host::GetSettingsLock();
+                         SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+                         if (game_settings)
+                         {
+                           if (index == 0)
+                             bsi->DeleteValue(section, key);
+                           else
+                             bsi->SetStringValue(section, key, to_string_function(static_cast<DataType>(index - 1)));
+                         }
+                         else
+                         {
+                           bsi->SetStringValue(section, key, to_string_function(static_cast<DataType>(index)));
+                         }
 
-          SetSettingsChanged(bsi);
-        }
+                         SetSettingsChanged(bsi);
+                       }
 
-        CloseChoiceDialog();
-      });
+                       CloseChoiceDialog();
+                     });
   }
 }
 void FullscreenUI::DrawFloatListSetting(SettingsInterface* bsi, const char* title, const char* summary,
@@ -2632,7 +2633,8 @@ void FullscreenUI::DrawFloatListSetting(SettingsInterface* bsi, const char* titl
                               (value.has_value() && i == static_cast<size_t>(index)));
     }
     OpenChoiceDialog(title, false, std::move(cd_options),
-                     [game_settings, section, key, option_values](s32 index, const std::string& title, bool checked) {
+                     [game_settings, section = TinyString(section), key = TinyString(key),
+                      option_values](s32 index, const std::string& title, bool checked) {
                        if (index >= 0)
                        {
                          auto lock = Host::GetSettingsLock();
@@ -2665,8 +2667,8 @@ void FullscreenUI::DrawFolderSetting(SettingsInterface* bsi, const char* title, 
   if (MenuButton(title, runtime_var.c_str()))
   {
     OpenFileSelector(title, true,
-                     [game_settings = IsEditingGameSettings(bsi), section = std::string(section),
-                      key = std::string(key)](const std::string& dir) {
+                     [game_settings = IsEditingGameSettings(bsi), section = TinyString(section),
+                      key = TinyString(key)](const std::string& dir) {
                        if (dir.empty())
                          return;
 
