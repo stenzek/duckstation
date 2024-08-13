@@ -171,7 +171,7 @@ void LogWindow::createUi()
   m_text = new QPlainTextEdit(this);
   m_text->setReadOnly(true);
   m_text->setUndoRedoEnabled(false);
-  m_text->setTextInteractionFlags(Qt::TextSelectableByKeyboard);
+  m_text->setTextInteractionFlags(Qt::TextSelectableByKeyboard | Qt::TextSelectableByMouse);
   m_text->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
 #if defined(_WIN32)
