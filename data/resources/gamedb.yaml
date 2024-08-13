@@ -154610,6 +154610,8 @@ SLUS-00057:
     - DigitalController
     - NeGcon
     - PlayStationMouse
+  codes:
+    - HASH-F864E385DC3A1F79
   metadata:
     publisher: "Namco"
     developer: "High-Tech Lab Japan"
