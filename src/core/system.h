@@ -192,7 +192,7 @@ ALWAYS_INLINE_RELEASE TickCount UnscaleTicksToOverclock(TickCount ticks, TickCou
 TickCount GetMaxSliceTicks();
 void UpdateOverclock();
 
-u32 GetGlobalTickCounter();
+GlobalTicks GetGlobalTickCounter();
 u32 GetFrameNumber();
 u32 GetInternalFrameNumber();
 void IncrementInternalFrameNumber();

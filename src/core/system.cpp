@@ -298,7 +298,7 @@ static System::FrameTimeHistory s_frame_time_history;
 static u32 s_frame_time_history_pos = 0;
 static u32 s_last_frame_number = 0;
 static u32 s_last_internal_frame_number = 0;
-static u32 s_last_global_tick_counter = 0;
+static GlobalTicks s_last_global_tick_counter = 0;
 static u64 s_last_cpu_time = 0;
 static u64 s_last_sw_time = 0;
 static u32 s_presents_since_last_update = 0;
@@ -633,7 +633,7 @@ void System::UpdateOverclock()
   UpdateThrottlePeriod();
 }
 
-u32 System::GetGlobalTickCounter()
+GlobalTicks System::GetGlobalTickCounter()
 {
   // When running events, the counter actually goes backwards, because the pending ticks are added in chunks.
   // So, we need to return the counter with all pending ticks added in such cases.
@@ -1957,7 +1957,7 @@ void System::Execute()
 
         // TODO: Purge reset/restore
         g_gpu->RestoreDeviceContext();
-        TimingEvents::UpdateCPUDowncount();
+        TimingEvents::CommitLeftoverTicks();
 
         if (s_rewind_load_counter >= 0)
           DoRewind();
@@ -3167,7 +3167,7 @@ void System::UpdatePerformanceCounters()
 
   const u32 frames_run = s_frame_number - s_last_frame_number;
   const float frames_runf = static_cast<float>(frames_run);
-  const u32 global_tick_counter = GetGlobalTickCounter();
+  const GlobalTicks global_tick_counter = GetGlobalTickCounter();
 
   // TODO: Make the math here less rubbish
   const double pct_divider =

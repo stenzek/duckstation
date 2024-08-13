@@ -25,7 +25,6 @@ public:
   // Returns the number of ticks between each event.
   ALWAYS_INLINE TickCount GetPeriod() const { return m_period; }
   ALWAYS_INLINE TickCount GetInterval() const { return m_interval; }
-  ALWAYS_INLINE TickCount GetDowncount() const { return m_downcount; }
 
   // Includes pending time.
   TickCount GetTicksSinceLastExecution() const;
@@ -65,8 +64,9 @@ public:
   TimingEventCallback m_callback;
   void* m_callback_param;
 
-  TickCount m_downcount;
-  TickCount m_time_since_last_run;
+  GlobalTicks m_next_run_time = 0;
+  GlobalTicks m_last_run_time = 0;
+
   TickCount m_period;
   TickCount m_interval;
   bool m_active = false;
@@ -76,8 +76,8 @@ public:
 
 namespace TimingEvents {
 
-u32 GetGlobalTickCounter();
-u32 GetEventRunTickCounter();
+GlobalTicks GetGlobalTickCounter();
+GlobalTicks GetEventRunTickCounter();
 
 void Initialize();
 void Reset();
@@ -87,7 +87,9 @@ bool DoState(StateWrapper& sw);
 
 bool IsRunningEvents();
 void SetFrameDone();
+void CancelRunningEvent();
 void RunEvents();
+void CommitLeftoverTicks();
 
 void UpdateCPUDowncount();
 

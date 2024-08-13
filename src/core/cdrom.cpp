@@ -383,7 +383,7 @@ static RequestRegister s_request_register = {};
 static u8 s_interrupt_enable_register = INTERRUPT_REGISTER_MASK;
 static u8 s_interrupt_flag_register = 0;
 static u8 s_pending_async_interrupt = 0;
-static u32 s_last_interrupt_time = 0;
+static GlobalTicks s_last_interrupt_time = 0;
 
 static CDImage::Position s_setloc_position = {};
 static CDImage::LBA s_requested_lba{};
@@ -391,7 +391,7 @@ static CDImage::LBA s_current_lba{}; // this is the hold position
 static CDImage::LBA s_seek_start_lba{};
 static CDImage::LBA s_seek_end_lba{};
 static CDImage::LBA s_physical_lba{}; // current position of the disc with respect to time
-static u32 s_physical_lba_update_tick = 0;
+static GlobalTicks s_physical_lba_update_tick = 0;
 static u32 s_physical_lba_update_carry = 0;
 static bool s_setloc_pending = false;
 static bool s_read_after_seek = false;
@@ -664,14 +664,36 @@ bool CDROM::DoState(StateWrapper& sw)
 
   sw.Do(&s_interrupt_enable_register);
   sw.Do(&s_interrupt_flag_register);
-  sw.DoEx(&s_last_interrupt_time, 57, System::GetGlobalTickCounter() - MINIMUM_INTERRUPT_DELAY);
+
+  if (sw.GetVersion() < 71) [[unlikely]]
+  {
+    u32 last_interrupt_time32 = 0;
+    sw.DoEx(&last_interrupt_time32, 57, static_cast<u32>(System::GetGlobalTickCounter() - MINIMUM_INTERRUPT_DELAY));
+    s_last_interrupt_time = last_interrupt_time32;
+  }
+  else
+  {
+    sw.Do(&s_last_interrupt_time);
+  }
+
   sw.Do(&s_pending_async_interrupt);
   sw.DoPOD(&s_setloc_position);
   sw.Do(&s_current_lba);
   sw.Do(&s_seek_start_lba);
   sw.Do(&s_seek_end_lba);
   sw.DoEx(&s_physical_lba, 49, s_current_lba);
-  sw.DoEx(&s_physical_lba_update_tick, 49, static_cast<u32>(0));
+
+  if (sw.GetVersion() < 71) [[unlikely]]
+  {
+    u32 physical_lba_update_tick32 = 0;
+    sw.DoEx(&physical_lba_update_tick32, 49, static_cast<u32>(0));
+    s_physical_lba_update_tick = physical_lba_update_tick32;
+  }
+  else
+  {
+    sw.Do(&s_physical_lba_update_tick);
+  }
+
   sw.DoEx(&s_physical_lba_update_carry, 54, static_cast<u32>(0));
   sw.Do(&s_setloc_pending);
   sw.Do(&s_read_after_seek);
@@ -1292,8 +1314,7 @@ void CDROM::QueueDeliverAsyncInterrupt()
   // something similar anyway, the INT1 task won't run immediately after the INT3 is cleared.
   DebugAssert(HasPendingAsyncInterrupt());
 
-  // underflows here are okay
-  const u32 diff = System::GetGlobalTickCounter() - s_last_interrupt_time;
+  const u32 diff = static_cast<u32>(System::GetGlobalTickCounter() - s_last_interrupt_time);
   if (diff >= MINIMUM_INTERRUPT_DELAY)
   {
     DeliverAsyncInterrupt(nullptr, 0, 0);
@@ -2657,7 +2678,7 @@ void CDROM::UpdatePositionWhileSeeking()
 
 void CDROM::UpdatePhysicalPosition(bool update_logical)
 {
-  const u32 ticks = System::GetGlobalTickCounter();
+  const GlobalTicks ticks = System::GetGlobalTickCounter();
   if (IsSeeking() || IsReadingOrPlaying() || !IsMotorOn())
   {
     // If we're seeking+reading the first sector (no stat bits set), we need to return the set/current lba, not the last
@@ -2676,7 +2697,7 @@ void CDROM::UpdatePhysicalPosition(bool update_logical)
   }
 
   const u32 ticks_per_read = GetTicksForRead();
-  const u32 diff = ticks - s_physical_lba_update_tick + s_physical_lba_update_carry;
+  const u32 diff = static_cast<u32>((ticks - s_physical_lba_update_tick) + s_physical_lba_update_carry);
   const u32 sector_diff = diff / ticks_per_read;
   const u32 carry = diff % ticks_per_read;
   if (sector_diff > 0)
