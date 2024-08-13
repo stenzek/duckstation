@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
@@ -8,6 +8,7 @@
 #include <cstring>
 #include <iomanip>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -274,6 +275,9 @@ size_t DecodeUTF8(const std::string& str, size_t offset, char32_t* ch);
 // Replaces the end of a string with ellipsis if it exceeds the specified length.
 std::string Ellipsise(const std::string_view str, u32 max_length, const char* ellipsis = "...");
 void EllipsiseInPlace(std::string& str, u32 max_length, const char* ellipsis = "...");
+
+/// Searches for the specified byte pattern in the given memory span. Wildcards (i.e. ??) are supported.
+std::optional<size_t> BytePatternSearch(const std::span<const u8> bytes, const std::string_view pattern);
 
 /// Strided memcpy/memcmp.
 ALWAYS_INLINE static void StrideMemCpy(void* dst, std::size_t dst_stride, const void* src, std::size_t src_stride,
