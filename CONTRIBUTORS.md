@@ -16,7 +16,7 @@ The following people have contributed to the project in some way, and are credit
 - posix - @Richard-L, blexx - German
 - @phoe-nix, @zkdpower - Chinese (Simplified)
 - Sorer - @MojoJojoDojo - Hebrew
-- Hipnosis - @Hipnosis183, MrHomunculus, @falsepopsky - Spanish, Spanish (Latin America)
+- @Hipnosis183, @falsepopsky - Spanish (Latin America)
 - @IlDucci - Spanish (Spain)
 - @RaydenX93 - Italian
 - @r57zone - Russian
