@@ -14,6 +14,7 @@
 
 #include "util/page_fault_handler.h"
 
+#include "common/align.h"
 #include "common/assert.h"
 #include "common/error.h"
 #include "common/intrin.h"
@@ -456,15 +457,15 @@ CPU::CodeCache::Block* CPU::CodeCache::CreateBlock(u32 pc, const BlockInstructio
       s_blocks.erase(it);
 
       block->~Block();
-      std::free(block);
+      Common::AlignedFree(block);
       block = nullptr;
     }
   }
 
   if (!block)
   {
-    block =
-      static_cast<Block*>(std::malloc(sizeof(Block) + (sizeof(Instruction) * size) + (sizeof(InstructionInfo) * size)));
+    block = static_cast<Block*>(Common::AlignedMalloc(
+      sizeof(Block) + (sizeof(Instruction) * size) + (sizeof(InstructionInfo) * size), alignof(Block)));
     Assert(block);
     new (block) Block();
     s_blocks.push_back(block);
@@ -734,7 +735,7 @@ void CPU::CodeCache::ClearBlocks()
   for (Block* block : s_blocks)
   {
     block->~Block();
-    std::free(block);
+    Common::AlignedFree(block);
   }
   s_blocks.clear();
 

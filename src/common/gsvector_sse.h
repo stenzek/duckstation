@@ -88,7 +88,7 @@ public:
   // so leave the non-constexpr version default
   ALWAYS_INLINE explicit GSVector2i(s32 i) { *this = i; }
 
-  ALWAYS_INLINE explicit GSVector2i(const GSVector2& v, bool truncate = true);
+  ALWAYS_INLINE explicit GSVector2i(const GSVector2& v);
 
   ALWAYS_INLINE static GSVector2i cast(const GSVector2& v);
 
@@ -840,9 +840,9 @@ public:
   // so leave the non-constexpr version default
   ALWAYS_INLINE explicit GSVector4i(s32 i) { *this = i; }
 
-  ALWAYS_INLINE explicit GSVector4i(const GSVector2& v, bool truncate = true);
+  ALWAYS_INLINE explicit GSVector4i(const GSVector2& v);
 
-  ALWAYS_INLINE explicit GSVector4i(const GSVector4& v, bool truncate = true);
+  ALWAYS_INLINE explicit GSVector4i(const GSVector4& v);
 
   ALWAYS_INLINE static GSVector4i cast(const GSVector4& v);
 
@@ -1952,9 +1952,9 @@ public:
     return GSVector4(_mm_cvtps_pd(_mm_castpd_ps(_mm_load_sd(static_cast<const double*>(p)))));
   }
 
-  ALWAYS_INLINE GSVector4i f64toi32(bool truncate = true) const
+  ALWAYS_INLINE GSVector4i f64toi32() const
   {
-    return GSVector4i(truncate ? _mm_cvttpd_epi32(_mm_castps_pd(m)) : _mm_cvtpd_epi32(_mm_castps_pd(m)));
+    return GSVector4i(_mm_cvttpd_epi32(_mm_castps_pd(m)));
   }
 
   // clang-format off
@@ -2007,9 +2007,9 @@ public:
   }
 };
 
-ALWAYS_INLINE GSVector2i::GSVector2i(const GSVector2& v, bool truncate)
+ALWAYS_INLINE GSVector2i::GSVector2i(const GSVector2& v)
 {
-  m = truncate ? _mm_cvttps_epi32(v) : _mm_cvtps_epi32(v);
+  m = _mm_cvttps_epi32(v);
 }
 
 ALWAYS_INLINE GSVector2::GSVector2(const GSVector2i& v)
@@ -2027,9 +2027,9 @@ ALWAYS_INLINE GSVector2 GSVector2::cast(const GSVector2i& v)
   return GSVector2(_mm_castsi128_ps(v.m));
 }
 
-ALWAYS_INLINE GSVector4i::GSVector4i(const GSVector4& v, bool truncate)
+ALWAYS_INLINE GSVector4i::GSVector4i(const GSVector4& v)
 {
-  m = truncate ? _mm_cvttps_epi32(v) : _mm_cvtps_epi32(v);
+  m = _mm_cvttps_epi32(v);
 }
 
 ALWAYS_INLINE GSVector4::GSVector4(const GSVector4i& v)

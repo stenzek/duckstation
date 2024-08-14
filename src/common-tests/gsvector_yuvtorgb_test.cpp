@@ -108,7 +108,7 @@ TEST(GSVector, YUVToRGB)
 
 #if 0
 // Performance test
-u32 g_gsvector_yuvtorgb_temp[64];
+alignas(VECTOR_ALIGNMENT) u32 g_gsvector_yuvtorgb_temp[64];
 
 TEST(GSVector, YUVToRGB_Scalar)
 {

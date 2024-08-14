@@ -121,7 +121,7 @@ public:
   // so leave the non-constexpr version default
   ALWAYS_INLINE explicit GSVector2i(s32 i) { *this = i; }
 
-  ALWAYS_INLINE explicit GSVector2i(const GSVector2& v, bool truncate = true);
+  ALWAYS_INLINE explicit GSVector2i(const GSVector2& v);
 
   ALWAYS_INLINE static GSVector2i cast(const GSVector2& v);
 
@@ -955,7 +955,7 @@ public:
   // so leave the non-constexpr version default
   ALWAYS_INLINE explicit GSVector4i(s32 i) { *this = i; }
 
-  ALWAYS_INLINE explicit GSVector4i(const GSVector4& v, bool truncate = true);
+  ALWAYS_INLINE explicit GSVector4i(const GSVector4& v);
 
   ALWAYS_INLINE static GSVector4i cast(const GSVector4& v);
 
@@ -1879,8 +1879,6 @@ public:
 
   ALWAYS_INLINE void operator=(float f) { x = y = z = w = f; }
 
-  ALWAYS_INLINE GSVector4 noopt() { return *this; }
-
   u32 rgba32() const { return GSVector4i(*this).rgba32(); }
 
   ALWAYS_INLINE static GSVector4 rgba32(u32 rgba) { return GSVector4(GSVector4i::load((int)rgba).u8to32()); }
@@ -2316,7 +2314,7 @@ public:
     return ret;
   }
 
-  ALWAYS_INLINE GSVector4i f64toi32(bool truncate = true) const
+  ALWAYS_INLINE GSVector4i f64toi32() const
   {
     return GSVector4i(static_cast<s32>(F64[0]), static_cast<s32>(F64[1]), 0, 0);
   }
@@ -2372,9 +2370,8 @@ public:
   }
 };
 
-ALWAYS_INLINE GSVector2i::GSVector2i(const GSVector2& v, bool truncate)
+ALWAYS_INLINE GSVector2i::GSVector2i(const GSVector2& v)
 {
-  // TODO: Truncation vs rounding...
   x = static_cast<s32>(v.x);
   y = static_cast<s32>(v.y);
 }
@@ -2399,9 +2396,8 @@ ALWAYS_INLINE GSVector2 GSVector2::cast(const GSVector2i& v)
   return ret;
 }
 
-ALWAYS_INLINE GSVector4i::GSVector4i(const GSVector4& v, bool truncate)
+ALWAYS_INLINE GSVector4i::GSVector4i(const GSVector4& v)
 {
-  // TODO: Truncation vs rounding...
   x = static_cast<s32>(v.x);
   y = static_cast<s32>(v.y);
   z = static_cast<s32>(v.z);

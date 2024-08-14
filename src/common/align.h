@@ -92,8 +92,8 @@ ALWAYS_INLINE static void* AlignedMalloc(size_t size, size_t alignment)
 #else
   // Unaligned sizes are slow on macOS.
 #ifdef __APPLE__
-    if (IsPow2(alignment))
-      size = (size + alignment - 1) & ~(alignment - 1);
+  if (IsPow2(alignment))
+    size = (size + alignment - 1) & ~(alignment - 1);
 #endif
   void* ret = nullptr;
   return (posix_memalign(&ret, alignment, size) == 0) ? ret : nullptr;
