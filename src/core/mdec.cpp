@@ -142,7 +142,7 @@ struct MDECState
   std::array<u8, 64> iq_uv{};
   std::array<u8, 64> iq_y{};
 
-  std::array<s16, 64> scale_table{};
+  alignas(VECTOR_ALIGNMENT) std::array<s16, 64> scale_table{};
 
   // blocks, for colour: 0 - Crblk, 1 - Cbblk, 2-5 - Y 1-4
   alignas(VECTOR_ALIGNMENT) std::array<std::array<s16, 64>, NUM_BLOCKS> blocks;
@@ -950,7 +950,7 @@ bool MDEC::DecodeRLE_New(s16* blk, const u8* qt)
 static s16 IDCTRow(const s16* blk, const s16* idct_matrix)
 {
   // IDCT matrix is -32768..32767, block is -16384..16383. 4 adds can happen without overflow.
-  GSVector4i sum = GSVector4i::load<false>(blk).madd_s16(GSVector4i::load<false>(idct_matrix)).addp_s32();
+  GSVector4i sum = GSVector4i::load<false>(blk).madd_s16(GSVector4i::load<true>(idct_matrix)).addp_s32();
   return static_cast<s16>(((static_cast<s64>(sum.extract32<0>()) + static_cast<s64>(sum.extract32<1>())) + 0x20000) >>
                           18);
 }

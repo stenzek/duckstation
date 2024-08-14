@@ -73,9 +73,9 @@ static void YUVToRGB_Scalar(const std::array<s16, 64>& Crblk, const std::array<s
 
 TEST(GSVector, YUVToRGB)
 {
-  std::array<s16, 64> crblk;
-  std::array<s16, 64> cbblk;
-  std::array<s16, 64> yblk;
+  alignas(VECTOR_ALIGNMENT) std::array<s16, 64> crblk;
+  alignas(VECTOR_ALIGNMENT) std::array<s16, 64> cbblk;
+  alignas(VECTOR_ALIGNMENT) std::array<s16, 64> yblk;
   for (s16 i = -128; i < 128; i++)
   {
     for (u32 j = 0; j < 64; j++)
@@ -91,10 +91,10 @@ TEST(GSVector, YUVToRGB)
         for (u32 j = 0; j < 64; j++)
           yblk[j] = l;
 
-        u32 rows[64];
+        alignas(VECTOR_ALIGNMENT) u32 rows[64];
         YUVToRGB_Scalar(crblk, cbblk, yblk, rows, false);
 
-        u32 rowv[64];
+        alignas(VECTOR_ALIGNMENT) u32 rowv[64];
         YUVToRGB_Vector(crblk, cbblk, yblk, rowv, false);
         ASSERT_EQ(std::memcmp(rows, rowv, sizeof(rows)), 0);
 
@@ -112,9 +112,9 @@ u32 g_gsvector_yuvtorgb_temp[64];
 
 TEST(GSVector, YUVToRGB_Scalar)
 {
-  std::array<s16, 64> crblk;
-  std::array<s16, 64> cbblk;
-  std::array<s16, 64> yblk;
+  alignas(VECTOR_ALIGNMENT) std::array<s16, 64> crblk;
+  alignas(VECTOR_ALIGNMENT) std::array<s16, 64> cbblk;
+  alignas(VECTOR_ALIGNMENT) std::array<s16, 64> yblk;
   for (s16 i = -128; i < 128; i++)
   {
     for (u32 j = 0; j < 64; j++)
@@ -138,9 +138,9 @@ TEST(GSVector, YUVToRGB_Scalar)
 
 TEST(GSVector, YUVToRGB_Vector)
 {
-  std::array<s16, 64> crblk;
-  std::array<s16, 64> cbblk;
-  std::array<s16, 64> yblk;
+  alignas(VECTOR_ALIGNMENT) std::array<s16, 64> crblk;
+  alignas(VECTOR_ALIGNMENT) std::array<s16, 64> cbblk;
+  alignas(VECTOR_ALIGNMENT) std::array<s16, 64> yblk;
   for (s16 i = -128; i < 128; i++)
   {
     for (u32 j = 0; j < 64; j++)
