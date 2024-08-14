@@ -26,6 +26,7 @@
 #include "common/memory_settings_interface.h"
 #include "common/path.h"
 #include "common/string_util.h"
+#include "common/timer.h"
 
 #include <csignal>
 #include <cstdio>
@@ -47,6 +48,7 @@ static std::string GetFrameDumpFilename(u32 frame);
 static std::unique_ptr<MemorySettingsInterface> s_base_settings_interface;
 
 static u32 s_frames_to_run = 60 * 60;
+static u32 s_frames_remaining = 0;
 static u32 s_frame_dump_interval = 0;
 static std::string s_dump_base_directory;
 
@@ -105,7 +107,7 @@ bool RegTestHost::InitializeConfig()
   si.SetStringValue("Audio", "Backend", AudioStream::GetBackendName(AudioBackend::Null));
   si.SetBoolValue("Logging", "LogToConsole", false);
   si.SetBoolValue("Logging", "LogToFile", false);
-  si.SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(LOGLEVEL_WARNING));
+  si.SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(LOGLEVEL_INFO));
   si.SetBoolValue("Main", "ApplyGameSettings", false); // don't want game settings interfering
   si.SetBoolValue("BIOS", "PatchFastBoot", true);      // no point validating the bios intro..
   si.SetFloatValue("Main", "EmulationSpeed", 0.0f);
@@ -295,8 +297,8 @@ void Host::OnMediaCaptureStopped()
 
 void Host::PumpMessagesOnCPUThread()
 {
-  s_frames_to_run--;
-  if (s_frames_to_run == 0)
+  s_frames_remaining--;
+  if (s_frames_remaining == 0)
     System::ShutdownSystem(false);
 }
 
@@ -552,7 +554,7 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
       else if (CHECK_ARG_PARAM("-dumpinterval"))
       {
         s_frame_dump_interval = StringUtil::FromChars<u32>(argv[++i]).value_or(0);
-        if (s_frames_to_run <= 0)
+        if (s_frame_dump_interval <= 0)
         {
           ERROR_LOG("Invalid dump interval specified: {}", argv[i]);
           return false;
@@ -580,8 +582,14 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
           return false;
         }
 
-        Log::SetConsoleOutputParams(true, level.value());
+        Log::SetLogLevel(level.value());
         s_base_settings_interface->SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(level.value()));
+        continue;
+      }
+      else if (CHECK_ARG_PARAM("-console"))
+      {
+        Log::SetConsoleOutputParams(true);
+        s_base_settings_interface->SetBoolValue("Logging", "LogToConsole", true);
         continue;
       }
       else if (CHECK_ARG_PARAM("-renderer"))
@@ -762,7 +770,19 @@ int main(int argc, char* argv[])
   }
 
   INFO_LOG("Running for {} frames...", s_frames_to_run);
-  System::Execute();
+  s_frames_remaining = s_frames_to_run;
+
+  {
+    const Common::Timer::Value start_time = Common::Timer::GetCurrentValue();
+
+    System::Execute();
+
+    const Common::Timer::Value elapsed_time = Common::Timer::GetCurrentValue() - start_time;
+    const double elapsed_time_ms = Common::Timer::ConvertValueToMilliseconds(elapsed_time);
+    INFO_LOG("Total execution time: {:.2f}ms, average frame time {:.2f}ms, {:.2f} FPS", elapsed_time_ms,
+             elapsed_time_ms / static_cast<double>(s_frames_to_run),
+             static_cast<double>(s_frames_to_run) / elapsed_time_ms * 1000.0);
+  }
 
   INFO_LOG("Exiting with success.");
   result = 0;
