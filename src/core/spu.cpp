@@ -1664,7 +1664,7 @@ static constexpr ADSRTableEntries ComputeADSRTableEntries()
   {
     for (u32 rate = 0; rate < NUM_ADSR_TABLE_ENTRIES; rate++)
     {
-      if (rate < 48)
+      if (rate < 44)
       {
         entries[decreasing][rate].ticks = 1;
         if (decreasing != 0)
