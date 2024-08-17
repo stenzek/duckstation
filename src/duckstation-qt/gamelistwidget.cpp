@@ -244,10 +244,12 @@ void GameListWidget::initialize()
   connect(m_empty_ui.scanForNewGames, &QPushButton::clicked, this, [this]() { refresh(false); });
   m_ui.stack->insertWidget(2, m_empty_widget);
 
-  if (Host::GetBaseBoolSettingValue("UI", "GameListGridView", false))
+  const bool grid_view = Host::GetBaseBoolSettingValue("UI", "GameListGridView", false);
+  if (grid_view)
     m_ui.stack->setCurrentIndex(1);
   else
     m_ui.stack->setCurrentIndex(0);
+  setFocusProxy(grid_view ? static_cast<QWidget*>(m_list_view) : static_cast<QWidget*>(m_table_view));
 
   updateToolbar();
   resizeTableViewColumnsToFit();
@@ -323,7 +325,11 @@ void GameListWidget::onRefreshProgress(const QString& status, int current, int t
 
   // switch away from the placeholder while we scan, in case we find anything
   if (m_ui.stack->currentIndex() == 2)
-    m_ui.stack->setCurrentIndex(Host::GetBaseBoolSettingValue("UI", "GameListGridView", false) ? 1 : 0);
+  {
+    const bool grid_view = Host::GetBaseBoolSettingValue("UI", "GameListGridView", false);
+    m_ui.stack->setCurrentIndex(grid_view ? 1 : 0);
+    setFocusProxy(grid_view ? static_cast<QWidget*>(m_list_view) : static_cast<QWidget*>(m_table_view));
+  }
 
   if (!m_model->hasTakenGameList() || time >= SHORT_REFRESH_TIME)
     emit refreshProgress(status, current, total);
@@ -341,7 +347,10 @@ void GameListWidget::onRefreshComplete()
 
   // if we still had no games, switch to the helper widget
   if (m_model->rowCount() == 0)
+  {
     m_ui.stack->setCurrentIndex(2);
+    setFocusProxy(nullptr);
+  }
 }
 
 void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, const QModelIndex& previous)
@@ -468,6 +477,7 @@ void GameListWidget::showGameList()
   Host::SetBaseBoolSettingValue("UI", "GameListGridView", false);
   Host::CommitBaseSettingChanges();
   m_ui.stack->setCurrentIndex(0);
+  setFocusProxy(m_table_view);
   resizeTableViewColumnsToFit();
   updateToolbar();
   emit layoutChange();
@@ -484,6 +494,7 @@ void GameListWidget::showGameGrid()
   Host::SetBaseBoolSettingValue("UI", "GameListGridView", true);
   Host::CommitBaseSettingChanges();
   m_ui.stack->setCurrentIndex(1);
+  setFocusProxy(m_list_view);
   updateToolbar();
   emit layoutChange();
 }

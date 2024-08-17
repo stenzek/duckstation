@@ -2003,23 +2003,22 @@ bool MainWindow::shouldHideMainWindow() const
 
 void MainWindow::switchToGameListView()
 {
-  if (isShowingGameList())
+  if (!isShowingGameList())
   {
-    m_game_list_widget->setFocus();
-    return;
+    if (m_display_created)
+    {
+      m_was_paused_on_surface_loss = s_system_paused;
+      if (!s_system_paused)
+        g_emu_thread->setSystemPaused(true);
+
+      // switch to surfaceless. we have to wait until the display widget is gone before we swap over.
+      g_emu_thread->setSurfaceless(true);
+      while (m_display_widget)
+        QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
+    }
   }
 
-  if (m_display_created)
-  {
-    m_was_paused_on_surface_loss = s_system_paused;
-    if (!s_system_paused)
-      g_emu_thread->setSystemPaused(true);
-
-    // switch to surfaceless. we have to wait until the display widget is gone before we swap over.
-    g_emu_thread->setSurfaceless(true);
-    while (m_display_widget)
-      QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
-  }
+  m_game_list_widget->setFocus();
 }
 
 void MainWindow::switchToEmulationView()
