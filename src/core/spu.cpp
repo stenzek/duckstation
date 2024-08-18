@@ -410,7 +410,6 @@ struct SPUState
 
   std::unique_ptr<AudioStream> audio_stream;
   std::unique_ptr<AudioStream> null_audio_stream;
-  std::unique_ptr<WAVWriter> dump_writer;
   bool audio_output_muted = false;
 
 #ifdef SPU_DUMP_ALL_VOICES
@@ -436,6 +435,30 @@ void SPU::Initialize()
 
   CreateOutputStream();
   Reset();
+
+#ifdef SPU_DUMP_ALL_VOICES
+  {
+    const std::string base_path = System::GetNewMediaCapturePath(System::GetGameTitle(), "wav");
+    for (size_t i = 0; i < s_state.s_voice_dump_writers.size(); i++)
+    {
+      s_state.s_voice_dump_writers[i].reset();
+      s_state.s_voice_dump_writers[i] = std::make_unique<WAVWriter>();
+
+      TinyString new_suffix;
+      if (i == NUM_VOICES)
+        new_suffix.assign("reverb.wav");
+      else
+        new_suffix.format("voice{}.wav", i);
+
+      const std::string voice_filename = Path::ReplaceExtension(base_path, new_suffix);
+      if (!s_state.s_voice_dump_writers[i]->Open(voice_filename.c_str(), SAMPLE_RATE, 2))
+      {
+        ERROR_LOG("Failed to open voice dump filename '{}'", voice_filename.c_str());
+        s_state.s_voice_dump_writers[i].reset();
+      }
+    }
+  }
+#endif
 }
 
 void SPU::CreateOutputStream()
@@ -483,6 +506,11 @@ void SPU::CPUClockChanged()
 
 void SPU::Shutdown()
 {
+#ifdef SPU_DUMP_ALL_VOICES
+  for (size_t i = 0; i < s_state.s_voice_dump_writers.size(); i++)
+    s_state.s_voice_dump_writers[i].reset();
+#endif
+
   s_state.tick_event.Deactivate();
   s_state.transfer_event.Deactivate();
   s_state.audio_stream.reset();
@@ -1508,59 +1536,6 @@ void SPU::InternalGeneratePendingSamples()
   s_state.tick_event.InvokeEarly(force_exec);
 }
 
-#if 0
-// TODO: FIXME
-bool SPU::StartDumpingAudio(const char* filename)
-{
-  s_state.dump_writer.reset();
-  s_state.dump_writer = std::make_unique<WAVWriter>();
-  if (!s_state.dump_writer->Open(filename, SAMPLE_RATE, 2))
-  {
-    ERROR_LOG("Failed to open '{}'", filename);
-    s_state.dump_writer.reset();
-    return false;
-  }
-
-#ifdef SPU_DUMP_ALL_VOICES
-  for (size_t i = 0; i < s_voice_dump_writers.size(); i++)
-  {
-    s_voice_dump_writers[i].reset();
-    s_voice_dump_writers[i] = std::make_unique<WAVWriter>();
-
-    TinyString new_suffix;
-    if (i == NUM_VOICES)
-      new_suffix.assign("reverb.wav");
-    else
-      new_suffix.format("voice{}.wav", i);
-
-    const std::string voice_filename = Path::ReplaceExtension(filename, new_suffix);
-    if (!s_voice_dump_writers[i]->Open(voice_filename.c_str(), SAMPLE_RATE, 2))
-    {
-      ERROR_LOG("Failed to open voice dump filename '{}'", voice_filename.c_str());
-      s_voice_dump_writers[i].reset();
-    }
-  }
-#endif
-
-  return true;
-}
-
-bool SPU::StopDumpingAudio()
-{
-  if (!s_state.dump_writer)
-    return false;
-
-  s_state.dump_writer.reset();
-
-#ifdef SPU_DUMP_ALL_VOICES
-  for (size_t i = 0; i < s_voice_dump_writers.size(); i++)
-    s_voice_dump_writers[i].reset();
-#endif
-
-  return true;
-}
-#endif
-
 const std::array<u8, SPU::RAM_SIZE>& SPU::GetRAM()
 {
   return s_ram;
@@ -1972,10 +1947,10 @@ ALWAYS_INLINE_RELEASE std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
     voice.last_volume = 0;
 
 #ifdef SPU_DUMP_ALL_VOICES
-    if (s_voice_dump_writers[voice_index])
+    if (s_state.s_voice_dump_writers[voice_index])
     {
       const s16 dump_samples[2] = {0, 0};
-      s_voice_dump_writers[voice_index]->WriteFrames(dump_samples, 1);
+      s_state.s_voice_dump_writers[voice_index]->WriteFrames(dump_samples, 1);
     }
 #endif
 
@@ -2075,10 +2050,10 @@ ALWAYS_INLINE_RELEASE std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
   voice.right_volume.Tick();
 
 #ifdef SPU_DUMP_ALL_VOICES
-  if (s_voice_dump_writers[voice_index])
+  if (s_state.s_voice_dump_writers[voice_index])
   {
     const s16 dump_samples[2] = {static_cast<s16>(Clamp16(left)), static_cast<s16>(Clamp16(right))};
-    s_voice_dump_writers[voice_index]->WriteFrames(dump_samples, 1);
+    s_state.s_voice_dump_writers[voice_index]->WriteFrames(dump_samples, 1);
   }
 #endif
 
@@ -2298,11 +2273,11 @@ void SPU::ProcessReverb(s16 left_in, s16 right_in, s32* left_out, s32* right_out
   s_last_reverb_output[1] = *right_out = ApplyVolume(out[1], s_state.reverb_registers.vROUT);
 
 #ifdef SPU_DUMP_ALL_VOICES
-  if (s_voice_dump_writers[NUM_VOICES])
+  if (s_state.s_voice_dump_writers[NUM_VOICES])
   {
     const s16 dump_samples[2] = {static_cast<s16>(Clamp16(s_last_reverb_output[0])),
                                  static_cast<s16>(Clamp16(s_last_reverb_output[1]))};
-    s_voice_dump_writers[NUM_VOICES]->WriteFrames(dump_samples, 1);
+    s_state.s_voice_dump_writers[NUM_VOICES]->WriteFrames(dump_samples, 1);
   }
 #endif
 }
