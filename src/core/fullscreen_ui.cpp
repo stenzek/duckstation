@@ -7054,7 +7054,7 @@ void FullscreenUI::DrawAboutWindow()
                        FSUI_CSTR("DuckStation is a free and open-source simulator/emulator of the Sony PlayStation(TM) "
                                  "console, focusing on playability, speed, and long-term maintainability."));
     ImGui::NewLine();
-    ImGui::TextWrapped("Version: %s", g_scm_tag_str);
+    ImGui::TextWrapped(FSUI_CSTR("Version: %s"), g_scm_tag_str);
     ImGui::NewLine();
     ImGui::TextWrapped(
       "%s", FSUI_CSTR("Duck icon by icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)"));
@@ -7855,5 +7855,6 @@ TRANSLATE_NOOP("FullscreenUI", "{} Frames");
 TRANSLATE_NOOP("FullscreenUI", "{} deleted.");
 TRANSLATE_NOOP("FullscreenUI", "{} does not exist.");
 TRANSLATE_NOOP("FullscreenUI", "{} is not a valid disc image.");
+TRANSLATE_NOOP("FullscreenUI", "Version: %s");
 // TRANSLATION-STRING-AREA-END
 #endif
