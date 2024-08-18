@@ -413,6 +413,7 @@ void Log::FileOutputLogCallback(void* pUserParam, const char* channelName, const
 
   FormatLogMessageAndPrint(channelName, functionName, level, message, true, false, true, [](std::string_view message) {
     std::fwrite(message.data(), 1, message.size(), s_file_handle.get());
+    std::fflush(s_file_handle.get());
   });
 }
 
