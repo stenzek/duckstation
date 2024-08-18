@@ -125,7 +125,6 @@ template<typename... T>
 static void ReportFmtError(fmt::format_string<T...> fmt, T&&... args);
 template<typename... T>
 static void ReportRCError(int err, fmt::format_string<T...> fmt, T&&... args);
-static void EnsureCacheDirectoryExists();
 static void ClearGameInfo();
 static void ClearGameHash();
 static std::string GetGameHash(CDImage* image);
@@ -427,8 +426,6 @@ bool Achievements::Initialize()
   if (IsUsingRAIntegration())
     return true;
 
-  EnsureCacheDirectoryExists();
-
   auto lock = GetLock();
   AssertMsg(g_settings.achievements_enabled, "Achievements are enabled");
   Assert(!s_client && !s_http_downloader);
@@ -562,9 +559,6 @@ void Achievements::UpdateSettings(const Settings& old_config)
     if (g_settings.achievements_unofficial_test_mode != old_config.achievements_unofficial_test_mode)
       rc_client_set_unofficial_enabled(s_client, g_settings.achievements_unofficial_test_mode);
   }
-
-  // in case cache directory changed
-  EnsureCacheDirectoryExists();
 }
 
 bool Achievements::Shutdown(bool allow_cancel)
@@ -607,16 +601,6 @@ bool Achievements::Shutdown(bool allow_cancel)
 
   Host::OnAchievementsRefreshed();
   return true;
-}
-
-void Achievements::EnsureCacheDirectoryExists()
-{
-  Error error;
-  if (const std::string path = Path::Combine(EmuFolders::Cache, CACHE_SUBDIRECTORY_NAME);
-      !FileSystem::EnsureDirectoryExists(path.c_str(), false, &error))
-  {
-    ReportFmtError("Failed to create cache directory '{}': {}", CACHE_SUBDIRECTORY_NAME, error.GetDescription());
-  }
 }
 
 void Achievements::ClientMessageCallback(const char* message, const rc_client_t* client)

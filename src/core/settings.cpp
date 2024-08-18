@@ -1982,8 +1982,7 @@ bool EmuFolders::EnsureFoldersExist()
 {
   bool result = FileSystem::EnsureDirectoryExists(Bios.c_str(), false);
   result = FileSystem::EnsureDirectoryExists(Cache.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(Path::Combine(Cache, "achievement_badge").c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(Path::Combine(Cache, "achievement_gameicon").c_str(), false) && result;
+  result = FileSystem::EnsureDirectoryExists(Path::Combine(Cache, "achievement_images").c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(Cheats.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(Covers.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(Dumps.c_str(), false) && result;
