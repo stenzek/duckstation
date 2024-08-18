@@ -65,7 +65,7 @@ void AnalogController::Reset()
     if (g_settings.controller_disable_analog_mode_forcing || System::IsRunningUnknownGame())
     {
       Host::AddIconOSDMessage(
-        fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
+        fmt::format("Controller{}AnalogMode", m_index), ICON_PF_GAMEPAD_ALT,
         TRANSLATE_STR("OSDMessage",
                       "Analog mode forcing is disabled by game settings. Controller will start in digital mode."),
         10.0f);
@@ -279,6 +279,11 @@ std::optional<u32> AnalogController::GetAnalogInputBytes() const
          m_axis_state[static_cast<size_t>(Axis::RightY)] << 8 | m_axis_state[static_cast<size_t>(Axis::RightX)];
 }
 
+u32 AnalogController::GetInputOverlayIconColor() const
+{
+  return m_analog_mode ? 0xFF2534F0u : 0xFFCCCCCCu;
+}
+
 void AnalogController::ResetTransferState()
 {
   if (m_analog_toggle_queued)
@@ -300,7 +305,7 @@ void AnalogController::SetAnalogMode(bool enabled, bool show_message)
   if (show_message)
   {
     Host::AddIconOSDMessage(
-      fmt::format("analog_mode_toggle_{}", m_index), ICON_FA_GAMEPAD,
+      fmt::format("analog_mode_toggle_{}", m_index), ICON_PF_GAMEPAD_ALT,
       enabled ? fmt::format(TRANSLATE_FS("Controller", "Controller {} switched to analog mode."), m_index + 1u) :
                 fmt::format(TRANSLATE_FS("Controller", "Controller {} switched to digital mode."), m_index + 1u));
   }
@@ -313,7 +318,7 @@ void AnalogController::ProcessAnalogModeToggle()
   if (m_analog_locked)
   {
     Host::AddIconOSDMessage(
-      fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
+      fmt::format("Controller{}AnalogMode", m_index), ICON_PF_GAMEPAD_ALT,
       fmt::format(m_analog_mode ?
                     TRANSLATE_FS("AnalogController", "Controller {} is locked to analog mode by the game.") :
                     TRANSLATE_FS("AnalogController", "Controller {} is locked to digital mode by the game."),
@@ -875,7 +880,7 @@ static const SettingInfo s_settings[] = {
 const Controller::ControllerInfo AnalogController::INFO = {ControllerType::AnalogController,
                                                            "AnalogController",
                                                            TRANSLATE_NOOP("ControllerType", "Analog Controller"),
-                                                           ICON_PF_GAMEPAD,
+                                                           ICON_PF_GAMEPAD_ALT,
                                                            s_binding_info,
                                                            s_settings,
                                                            Controller::VibrationCapabilities::LargeSmallMotors};

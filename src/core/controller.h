@@ -89,6 +89,9 @@ public:
   /// Returns analog input bytes packed as a u32. Values are specific to controller type.
   virtual std::optional<u32> GetAnalogInputBytes() const;
 
+  /// Returns the colour to use in the input overlay.
+  virtual u32 GetInputOverlayIconColor() const;
+
   /// Loads/refreshes any per-controller settings.
   virtual void LoadSettings(SettingsInterface& si, const char* section);
 
