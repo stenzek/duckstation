@@ -34,6 +34,7 @@ enum class Trait : u32
   ForceRoundUpscaledTextureCoordinates,
   ForceAccurateBlending,
   ForceInterlacing,
+  DisableAutoAnalogMode,
   DisableTrueColor,
   DisableUpscaling,
   DisableTextureFiltering,

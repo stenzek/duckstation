@@ -36,7 +36,7 @@ namespace GameDatabase {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 13,
+  GAME_DATABASE_CACHE_VERSION = 14,
 };
 
 static Entry* GetMutableEntry(std::string_view serial);
@@ -68,6 +68,7 @@ static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Tr
   "ForceRoundTextureCoordinates",
   "ForceAccurateBlending",
   "ForceInterlacing",
+  "DisableAutoAnalogMode",
   "DisableTrueColor",
   "DisableUpscaling",
   "DisableTextureFiltering",
@@ -96,6 +97,7 @@ static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Tr
   TRANSLATE_NOOP("GameDatabase", "Force Round Texture Coordinates"),
   TRANSLATE_NOOP("GameDatabase", "Force Accurate Blending"),
   TRANSLATE_NOOP("GameDatabase", "Force Interlacing"),
+  TRANSLATE_NOOP("GameDatabase", "Disable Automatic Analog Mode"),
   TRANSLATE_NOOP("GameDatabase", "Disable True Color"),
   TRANSLATE_NOOP("GameDatabase", "Disable Upscaling"),
   TRANSLATE_NOOP("GameDatabase", "Disable Texture Filtering"),
@@ -732,7 +734,6 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
       if (ctype == ControllerType::AnalogController &&
           (supported_controllers & BIT_FOR(ControllerType::DigitalController)) != 0)
       {
-        settings.controller_disable_analog_mode_forcing = true;
         continue;
       }
 

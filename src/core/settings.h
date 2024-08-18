@@ -266,8 +266,6 @@ struct Settings
   bool enable_8mb_ram : 1 = false;
 
   std::array<ControllerType, NUM_CONTROLLER_AND_CARD_PORTS> controller_types{};
-  bool controller_disable_analog_mode_forcing = false;
-
   std::array<MemoryCardType, NUM_CONTROLLER_AND_CARD_PORTS> memory_card_types{};
   std::array<std::string, NUM_CONTROLLER_AND_CARD_PORTS> memory_card_paths{};
   bool memory_card_use_playlist_title = true;
