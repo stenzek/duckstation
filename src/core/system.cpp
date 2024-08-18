@@ -34,6 +34,8 @@
 #include "texture_replacements.h"
 #include "timers.h"
 
+#include "scmversion/scmversion.h"
+
 #include "util/audio_stream.h"
 #include "util/cd_image.h"
 #include "util/gpu_device.h"
@@ -132,6 +134,7 @@ struct MemorySaveState
 } // namespace
 
 static void CheckCacheLineSize();
+static void LogStartupInformation();
 
 static void LoadInputBindings(SettingsInterface& si, std::unique_lock<std::mutex>& lock);
 
@@ -415,6 +418,19 @@ void System::CheckCacheLineSize()
   }
 }
 
+void System::LogStartupInformation()
+{
+  INFO_LOG("DuckStation Version {} [{}]", g_scm_tag_str, g_scm_branch_str);
+  INFO_LOG("SCM Timestamp: {}", g_scm_date_str);
+  INFO_LOG("Build Timestamp: {} {}", __DATE__, __TIME__);
+  if (const cpuinfo_package* package = cpuinfo_get_package(0)) [[likely]]
+  {
+    INFO_LOG("Host CPU: {}", package->name);
+    INFO_LOG("CPU has {} logical processor(s) and {} core(s) across {} cluster(s).", package->processor_count,
+             package->core_count, package->cluster_count);
+  }
+}
+
 bool System::Internal::ProcessStartup(Error* error)
 {
   Common::Timer timer;
@@ -464,6 +480,8 @@ bool System::Internal::CPUThreadInitialize(Error* error)
 
   // This will call back to Host::LoadSettings() -> ReloadSources().
   LoadSettings(false);
+
+  LogStartupInformation();
 
   if (g_settings.achievements_enabled)
     Achievements::Initialize();
