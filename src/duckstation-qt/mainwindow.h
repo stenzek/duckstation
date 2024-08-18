@@ -78,9 +78,6 @@ public:
   explicit MainWindow();
   ~MainWindow();
 
-  /// Sets application theme according to settings.
-  static void updateApplicationTheme();
-
   /// Performs update check if enabled in settings.
   void startupUpdateCheck();
 
@@ -205,9 +202,6 @@ protected:
 #endif
 
 private:
-  static void setStyleFromSettings();
-  static void setIconThemeFromSettings();
-
   /// Initializes the window. Call once at startup.
   void initialize();
 

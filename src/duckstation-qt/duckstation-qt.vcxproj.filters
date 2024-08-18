@@ -178,6 +178,7 @@
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="vcruntimecheck.cpp" />
+    <ClCompile Include="qtthemes.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />

@@ -2555,7 +2555,7 @@ int main(int argc, char* argv[])
     AutoUpdaterDialog::cleanupAfterUpdate();
 
   // Set theme before creating any windows.
-  MainWindow::updateApplicationTheme();
+  QtHost::UpdateApplicationTheme();
 
   // Start logging early.
   LogWindow::updateSettings();

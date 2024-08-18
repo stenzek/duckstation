@@ -68,6 +68,7 @@ private:
   void setupBIOSPage();
   void setupGameListPage();
   void setupControllerPage(bool initial);
+  void updateStylesheets();
 
   void pageChangedTo(int page);
   void updatePageLabels(int prev_page);

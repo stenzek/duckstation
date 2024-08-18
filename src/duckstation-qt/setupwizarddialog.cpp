@@ -198,7 +198,7 @@ void SetupWizardDialog::setupLanguagePage()
 void SetupWizardDialog::themeChanged()
 {
   // Main window gets recreated at the end here anyway, so it's fine to just yolo it.
-  MainWindow::updateApplicationTheme();
+  QtHost::UpdateApplicationTheme();
 }
 
 void SetupWizardDialog::languageChanged()
@@ -439,6 +439,10 @@ void SetupWizardDialog::setupControllerPage(bool initial)
     for (const PadWidgets& w : pad_widgets)
       w.type_combo->blockSignals(false);
   }
+}
+
+void SetupWizardDialog::updateStylesheets()
+{
 }
 
 void SetupWizardDialog::openAutomaticMappingMenu(u32 port, QLabel* update_label)

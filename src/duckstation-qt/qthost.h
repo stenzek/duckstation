@@ -250,6 +250,21 @@ private:
 extern EmuThread* g_emu_thread;
 
 namespace QtHost {
+/// Default theme name for the platform.
+const char* GetDefaultThemeName();
+
+/// Default language for the platform.
+const char* GetDefaultLanguage();
+
+/// Sets application theme according to settings.
+void UpdateApplicationTheme();
+
+/// Returns true if the application theme is using dark colours.
+bool IsDarkApplicationTheme();
+
+/// Sets the icon theme, based on the current style (light/dark).
+void SetIconThemeFromStyle();
+
 /// Sets batch mode (exit after game shutdown).
 bool InBatchMode();
 
