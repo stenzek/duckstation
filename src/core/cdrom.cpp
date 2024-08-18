@@ -1567,6 +1567,17 @@ void CDROM::BeginCommand(Command command)
       const TickCount elapsed_ticks = s_command_event.GetInterval() - s_command_event.GetTicksUntilNextExecution();
       ack_delay = std::max(ack_delay - elapsed_ticks, 1);
       s_command_event.Deactivate();
+
+      // If there's a pending async interrupt, we need to deliver it now, since we've deactivated the command that was
+      // blocking it from being delivered. Not doing so will cause lockups in Street Fighter Alpha 3, where it spams
+      // multiple pause commands while an INT1 is scheduled, and there isn't much that can stop an INT1 once it's been
+      // queued on real hardware.
+      if (HasPendingAsyncInterrupt())
+      {
+        WARNING_LOG("Delivering pending interrupt after command {} cancellation for {}.",
+                    s_command_info[static_cast<u8>(s_command)].name, s_command_info[static_cast<u8>(command)].name);
+        QueueDeliverAsyncInterrupt();
+      }
     }
   }
 
