@@ -224,25 +224,6 @@ struct Settings
   s32 achievements_notification_duration = DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME;
   s32 achievements_leaderboard_duration = DEFAULT_LEADERBOARD_NOTIFICATION_TIME;
 
-#ifndef __ANDROID__
-  // media capture
-  std::string media_capture_container;
-  std::string media_capture_audio_codec;
-  std::string media_capture_audio_codec_args;
-  std::string media_capture_video_codec;
-  std::string media_capture_video_codec_args;
-  u32 media_capture_video_width = 640;
-  u32 media_capture_video_height = 480;
-  u32 media_capture_video_bitrate = 6000;
-  u32 media_capture_audio_bitrate = 128;
-  MediaCaptureBackend media_capture_backend = DEFAULT_MEDIA_CAPTURE_BACKEND;
-  bool media_capture_video : 1 = true;
-  bool media_capture_video_codec_use_args : 1 = true;
-  bool media_capture_video_auto_size : 1 = false;
-  bool media_capture_audio : 1 = true;
-  bool media_capture_audio_codec_use_args : 1 = true;
-#endif
-
   struct DebugSettings
   {
     bool show_vram : 1 = false;
@@ -540,6 +521,10 @@ struct Settings
 #ifndef __ANDROID__
   static const MediaCaptureBackend DEFAULT_MEDIA_CAPTURE_BACKEND;
   static constexpr const char* DEFAULT_MEDIA_CAPTURE_CONTAINER = "mp4";
+  static constexpr u32 DEFAULT_MEDIA_CAPTURE_VIDEO_WIDTH = 640;
+  static constexpr u32 DEFAULT_MEDIA_CAPTURE_VIDEO_HEIGHT = 480;
+  static constexpr u32 DEFAULT_MEDIA_CAPTURE_VIDEO_BITRATE = 6000;
+  static constexpr u32 DEFAULT_MEDIA_CAPTURE_AUDIO_BITRATE = 128;
 #endif
 
   // Enable console logging by default on Linux platforms.

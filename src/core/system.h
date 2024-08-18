@@ -389,6 +389,8 @@ bool SaveScreenshot(const char* filename = nullptr, DisplayScreenshotMode mode =
                     DisplayScreenshotFormat format = g_settings.display_screenshot_format,
                     u8 quality = g_settings.display_screenshot_quality, bool compress_on_thread = true);
 
+#ifndef __ANDROID__
+
 /// Returns the path that a new media capture would be saved to by default. Safe to call from any thread.
 std::string GetNewMediaCapturePath(const std::string_view title, const std::string_view container);
 
@@ -396,9 +398,11 @@ std::string GetNewMediaCapturePath(const std::string_view title, const std::stri
 MediaCapture* GetMediaCapture();
 
 /// Media capture (video and/or audio). If no path is provided, one will be generated automatically.
-bool StartMediaCapture(std::string path = {}, bool capture_video = g_settings.media_capture_video,
-                       bool capture_audio = g_settings.media_capture_audio);
+bool StartMediaCapture(std::string path = {});
+bool StartMediaCapture(std::string path, bool capture_video, bool capture_audio);
 void StopMediaCapture();
+
+#endif
 
 /// Loads the cheat list for the current game title from the user directory.
 bool LoadCheatList();

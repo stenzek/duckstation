@@ -2806,7 +2806,7 @@ void MainWindow::onToolsMediaCaptureToggled(bool checked)
 
   QString path =
     QString::fromStdString(System::GetNewMediaCapturePath(QtHost::GetCurrentGameTitle().toStdString(), container));
-  path = QDir::toNativeSeparators(QFileDialog::getSaveFileName(this, tr("Video Capture"), path, filter));
+  path = QDir::toNativeSeparators(QFileDialog::getSaveFileName(this, tr("Media Capture"), path, filter));
   if (path.isEmpty())
   {
     // uncheck it again
@@ -2816,7 +2816,7 @@ void MainWindow::onToolsMediaCaptureToggled(bool checked)
   }
 
   Host::RunOnCPUThread([path = path.toStdString()]() {
-    System::StartMediaCapture(path, g_settings.media_capture_video, g_settings.media_capture_audio);
+    System::StartMediaCapture(path);
   });
 }
 

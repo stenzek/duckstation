@@ -412,27 +412,6 @@ void Settings::Load(SettingsInterface& si)
   achievements_leaderboard_duration =
     si.GetIntValue("Cheevos", "LeaderboardsDuration", DEFAULT_LEADERBOARD_NOTIFICATION_TIME);
 
-#ifndef __ANDROID__
-  media_capture_backend =
-    MediaCapture::ParseBackendName(
-      si.GetStringValue("MediaCapture", "Backend", MediaCapture::GetBackendName(DEFAULT_MEDIA_CAPTURE_BACKEND)).c_str())
-      .value_or(DEFAULT_MEDIA_CAPTURE_BACKEND);
-  media_capture_container = si.GetStringValue("MediaCapture", "Container", "mp4");
-  media_capture_video = si.GetBoolValue("MediaCapture", "VideoCapture", true);
-  media_capture_video_width = si.GetUIntValue("MediaCapture", "VideoWidth", 640);
-  media_capture_video_height = si.GetUIntValue("MediaCapture", "VideoHeight", 480);
-  media_capture_video_auto_size = si.GetBoolValue("MediaCapture", "VideoAutoSize", false);
-  media_capture_video_bitrate = si.GetUIntValue("MediaCapture", "VideoBitrate", 6000);
-  media_capture_video_codec = si.GetStringValue("MediaCapture", "VideoCodec");
-  media_capture_video_codec_use_args = si.GetBoolValue("MediaCapture", "VideoCodecUseArgs", false);
-  media_capture_video_codec_args = si.GetStringValue("MediaCapture", "AudioCodecArgs");
-  media_capture_audio = si.GetBoolValue("MediaCapture", "AudioCapture", true);
-  media_capture_audio_bitrate = si.GetUIntValue("MediaCapture", "AudioBitrate", 128);
-  media_capture_audio_codec = si.GetStringValue("MediaCapture", "AudioCodec");
-  media_capture_audio_codec_use_args = si.GetBoolValue("MediaCapture", "AudioCodecUseArgs", false);
-  media_capture_audio_codec_args = si.GetStringValue("MediaCapture", "AudioCodecArgs");
-#endif
-
   log_level = ParseLogLevelName(si.GetStringValue("Logging", "LogLevel", GetLogLevelName(DEFAULT_LOG_LEVEL)).c_str())
                 .value_or(DEFAULT_LOG_LEVEL);
   log_filter = si.GetStringValue("Logging", "LogFilter", "");
@@ -684,24 +663,6 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("Cheevos", "UseRAIntegration", achievements_use_raintegration);
   si.SetIntValue("Cheevos", "NotificationsDuration", achievements_notification_duration);
   si.SetIntValue("Cheevos", "LeaderboardsDuration", achievements_leaderboard_duration);
-
-#ifndef __ANDROID__
-  si.SetStringValue("MediaCapture", "Backend", MediaCapture::GetBackendName(media_capture_backend));
-  si.SetStringValue("MediaCapture", "Container", media_capture_container.c_str());
-  si.SetBoolValue("MediaCapture", "VideoCapture", media_capture_video);
-  si.SetUIntValue("MediaCapture", "VideoWidth", media_capture_video_width);
-  si.SetUIntValue("MediaCapture", "VideoHeight", media_capture_video_height);
-  si.SetBoolValue("MediaCapture", "VideoAutoSize", media_capture_video_auto_size);
-  si.SetUIntValue("MediaCapture", "VideoBitrate", media_capture_video_bitrate);
-  si.SetStringValue("MediaCapture", "VideoCodec", media_capture_video_codec.c_str());
-  si.SetBoolValue("MediaCapture", "VideoCodecUseArgs", media_capture_video_codec_use_args);
-  si.SetStringValue("MediaCapture", "AudioCodecArgs", media_capture_video_codec_args.c_str());
-  si.SetBoolValue("MediaCapture", "AudioCapture", media_capture_audio);
-  si.SetUIntValue("MediaCapture", "AudioBitrate", media_capture_audio_bitrate);
-  si.SetStringValue("MediaCapture", "AudioCodec", media_capture_audio_codec.c_str());
-  si.SetBoolValue("MediaCapture", "AudioCodecUseArgs", media_capture_audio_codec_use_args);
-  si.SetStringValue("MediaCapture", "AudioCodecArgs", media_capture_audio_codec_args.c_str());
-#endif
 
   if (!ignore_base)
   {

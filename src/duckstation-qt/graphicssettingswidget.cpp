@@ -208,16 +208,20 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                                &MediaCapture::ParseBackendName, &MediaCapture::GetBackendName,
                                                Settings::DEFAULT_MEDIA_CAPTURE_BACKEND);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableVideoCapture, "MediaCapture", "VideoCapture", true);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.videoCaptureWidth, "MediaCapture", "VideoWidth", 640);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.videoCaptureHeight, "MediaCapture", "VideoHeight", 480);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.videoCaptureWidth, "MediaCapture", "VideoWidth",
+                                              Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_WIDTH);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.videoCaptureHeight, "MediaCapture", "VideoHeight",
+                                              Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_HEIGHT);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.videoCaptureResolutionAuto, "MediaCapture", "VideoAutoSize",
                                                false);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.videoCaptureBitrate, "MediaCapture", "VideoBitrate", 6000);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.videoCaptureBitrate, "MediaCapture", "VideoBitrate",
+                                              Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_BITRATE);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableVideoCaptureArguments, "MediaCapture",
                                                "VideoCodecUseArgs", false);
   SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.videoCaptureArguments, "MediaCapture", "AudioCodecArgs");
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableAudioCapture, "MediaCapture", "AudioCapture", true);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.audioCaptureBitrate, "MediaCapture", "AudioBitrate", 128);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.audioCaptureBitrate, "MediaCapture", "AudioBitrate",
+                                              Settings::DEFAULT_MEDIA_CAPTURE_AUDIO_BITRATE);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableVideoCaptureArguments, "MediaCapture",
                                                "VideoCodecUseArgs", false);
   SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.audioCaptureArguments, "MediaCapture", "AudioCodecArgs");
@@ -1024,7 +1028,8 @@ void GraphicsSettingsWidget::onMediaCaptureBackendChanged()
       m_ui.captureContainer->addItem(tr("%1 (%2)").arg(QString::fromStdString(display_name)).arg(qname), qname);
     }
 
-    SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.captureContainer, "MediaCapture", "Container", "mp4");
+    SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.captureContainer, "MediaCapture", "Container",
+                                                   Settings::DEFAULT_MEDIA_CAPTURE_CONTAINER);
     connect(m_ui.captureContainer, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
             &GraphicsSettingsWidget::onMediaCaptureContainerChanged);
   }
