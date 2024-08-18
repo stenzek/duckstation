@@ -1955,7 +1955,7 @@ void EmuFolders::Save(SettingsInterface& si)
   si.SetStringValue("Folders", "Shaders", Path::MakeRelative(Shaders, DataRoot).c_str());
   si.SetStringValue("Folders", "Textures", Path::MakeRelative(Textures, DataRoot).c_str());
   si.SetStringValue("Folders", "UserResources", Path::MakeRelative(UserResources, DataRoot).c_str());
-  si.SetStringValue("Folders", "Videos", Path::MakeRelative(UserResources, Videos).c_str());
+  si.SetStringValue("Folders", "Videos", Path::MakeRelative(Videos, DataRoot).c_str());
 }
 
 void EmuFolders::Update()
