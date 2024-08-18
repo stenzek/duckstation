@@ -9,7 +9,7 @@
 
 DuckStation is an simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability. The goal is to be as accurate as possible while maintaining performance suitable for low-end devices. "Hack" options are discouraged, the default configuration should support all playable games with only some of the enhancements having compatibility issues.
 
-A "BIOS" ROM image is required to to start the emulator and to play games. You can use an image from any hardware version or region, although mismatching game regions and BIOS regions may have compatibility issues. A ROM image is not provided with the emulator for legal reasons, you should dump this from your own console using Caetla or other means.
+A PS1 or PS2 "BIOS" ROM image is required to to start the emulator and to play games. You can use an image from any hardware version or region, although mismatching game regions and BIOS regions may have compatibility issues. A ROM image is not provided with the emulator for legal reasons, you should dump this from your own console using Caetla or other means.
 
 ## Features
 
@@ -29,6 +29,7 @@ Other features include:
  - PGXP for geometry precision, texture correction, and depth buffer emulation.
  - Motion adaptive deinterlacing.
  - Adaptive downsampling filter.
+ - Screen rotation for vertical or "TATE" shmup games.
  - Post processing shader chains (GLSL and Reshade FX).
  - "Fast boot" for skipping BIOS splash/intro.
  - Save state support, with runahead and rewind.
@@ -38,6 +39,7 @@ Other features include:
  - Automatic loading/applying of PPF patches.
  - Direct booting of homebrew executables.
  - Direct loading of Portable Sound Format (psf) files.
+ - Time stretched audio when running outside of 100% speed, and surround sound expansion.
  - Digital and analog controllers for input (rumble is forwarded to host).
  - GunCon and Justifier lightgun support (simulated with mouse).
  - NeGcon support.
