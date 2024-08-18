@@ -263,7 +263,7 @@ bool BIOS::PatchBIOSFastBoot(u8* image, u32 image_size, ImageInfo::FastBootPatch
                                                   "?? ?? c6 24"  // addiu a2, -0x6bb8
                                                   "c0 bf 04 3c"  // lui a0, 0xbfc0
                                                   "?? ?? ?? 0f"; // jal 0xbfc58720
-    constexpr u32 FALLBACK_OFFSET = 0x0FC52AFC;
+    constexpr u32 FALLBACK_OFFSET = 0x00052AFC;
     const std::optional<size_t> offset =
       StringUtil::BytePatternSearch(std::span<const u8>(image, image_size), search_pattern);
     if (offset.has_value())

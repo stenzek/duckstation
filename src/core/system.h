@@ -100,6 +100,7 @@ enum class State
 
 enum class BootMode
 {
+  None,
   FullBoot,
   FastBoot,
   BootEXE,

@@ -148,7 +148,7 @@ static void LogUnsafeSettingsToConsole(const SmallStringBase& messages);
 
 static bool Initialize(bool force_software_renderer, Error* error);
 static bool LoadBIOS(Error* error);
-static void ResetBootMode();
+static bool SetBootMode(BootMode new_boot_mode, Error* error);
 static void InternalReset();
 static void ClearRunningGame();
 static void DestroySystem();
@@ -245,7 +245,7 @@ static std::string s_running_game_title;
 static std::string s_exe_override;
 static const GameDatabase::Entry* s_running_game_entry = nullptr;
 static System::GameHash s_running_game_hash;
-static System::BootMode s_boot_mode = System::BootMode::FullBoot;
+static System::BootMode s_boot_mode = System::BootMode::None;
 static bool s_running_game_custom_title = false;
 
 static bool s_system_executing = false;
@@ -1377,10 +1377,20 @@ void System::ResetSystem()
   }
 
   InternalReset();
+
+  // Reset boot mode/reload BIOS if needed. Preserve exe/psf boot.
+  const BootMode new_boot_mode = (s_boot_mode == BootMode::BootEXE || s_boot_mode == BootMode::BootPSF) ?
+                                   s_boot_mode :
+                                   (g_settings.bios_patch_fast_boot ? BootMode::FastBoot : BootMode::FullBoot);
+  if (Error error; !SetBootMode(new_boot_mode, &error))
+    ERROR_LOG("Failed to reload BIOS on boot mode change, the system may be unstable: {}", error.GetDescription());
+
   ResetPerformanceCounters();
   ResetThrottler();
   Host::AddIconOSDMessage("system_reset", ICON_FA_POWER_OFF, TRANSLATE_STR("OSDMessage", "System reset."),
                           Host::OSD_QUICK_DURATION);
+
+  InterruptExecution();
 }
 
 void System::PauseSystem(bool paused)
@@ -1631,7 +1641,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   }
 
   // Load BIOS image.
-  if (!LoadBIOS(error))
+  if (!SetBootMode(boot_mode, error))
   {
     s_state = State::Shutdown;
     ClearRunningGame();
@@ -1643,6 +1653,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   // Component setup.
   if (!Initialize(parameters.force_software_renderer, error))
   {
+    s_boot_mode = System::BootMode::None;
     s_state = State::Shutdown;
     ClearRunningGame();
     Host::OnSystemDestroyed();
@@ -1654,7 +1665,6 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   if (disc)
     CDROM::InsertMedia(std::move(disc), disc_region);
 
-  s_boot_mode = boot_mode;
   s_exe_override = std::move(exe_override);
 
   UpdateControllers();
@@ -1873,7 +1883,7 @@ void System::DestroySystem()
   s_bios_hash = {};
   s_bios_image_info = nullptr;
   s_exe_override = {};
-  s_boot_mode = BootMode::FullBoot;
+  s_boot_mode = BootMode::None;
   s_cheat_list.reset();
 
   s_state = State::Shutdown;
@@ -2418,46 +2428,35 @@ void System::InternalReset()
   MDEC::Reset();
   SIO::Reset();
   PCDrv::Reset();
+  Achievements::ResetClient();
   s_frame_number = 1;
   s_internal_frame_number = 0;
-  InterruptExecution();
-  ResetPerformanceCounters();
-  ResetBootMode();
-
-  Achievements::ResetClient();
 }
 
-void System::ResetBootMode()
+bool System::SetBootMode(BootMode new_boot_mode, Error* error)
 {
-  // Preserve exe/psf boot.
-  if (s_boot_mode == BootMode::BootEXE || s_boot_mode == BootMode::BootPSF)
-  {
-    DebugAssert(!s_exe_override.empty());
-    return;
-  }
+  // Can we actually fast boot? If starting, s_bios_image_info won't be valid.
+  const bool can_fast_boot =
+    (CDROM::IsMediaPS1Disc() &&
+     (s_state == State::Starting || (s_bios_image_info && s_bios_image_info->SupportsFastBoot())));
+  const System::BootMode actual_new_boot_mode =
+    (new_boot_mode == BootMode::FastBoot) ? (can_fast_boot ? BootMode::FastBoot : BootMode::FullBoot) : new_boot_mode;
+  if (actual_new_boot_mode == s_boot_mode)
+    return true;
 
-  // Reset fast boot flag from settings.
-  const bool wants_fast_boot = (g_settings.bios_patch_fast_boot && CDROM::IsMediaPS1Disc() && s_bios_image_info &&
-                                s_bios_image_info->SupportsFastBoot());
-  const System::BootMode new_boot_mode = (s_state != System::State::Starting) ?
-                                           (wants_fast_boot ? System::BootMode::FastBoot : System::BootMode::FullBoot) :
-                                           s_boot_mode;
-  if (new_boot_mode != s_boot_mode)
-  {
-    // Need to reload the BIOS to wipe out the patching.
-    Error error;
-    if (!LoadBIOS(&error))
-      ERROR_LOG("Failed to reload BIOS on boot mode change, the system may be unstable: {}", error.GetDescription());
-  }
+  // Need to reload the BIOS to wipe out the patching.
+  if (!LoadBIOS(error))
+    return false;
 
-  s_boot_mode = new_boot_mode;
+  s_boot_mode = actual_new_boot_mode;
   if (s_boot_mode == BootMode::FastBoot)
   {
     if (s_bios_image_info && s_bios_image_info->SupportsFastBoot())
     {
       // Patch BIOS, this sucks.
       INFO_LOG("Patching BIOS for fast boot.");
-      BIOS::PatchBIOSFastBoot(Bus::g_bios, Bus::BIOS_SIZE, s_bios_image_info->fastboot_patch);
+      if (!BIOS::PatchBIOSFastBoot(Bus::g_bios, Bus::BIOS_SIZE, s_bios_image_info->fastboot_patch))
+        s_boot_mode = BootMode::FullBoot;
     }
     else
     {
@@ -2465,6 +2464,8 @@ void System::ResetBootMode()
       s_boot_mode = BootMode::FullBoot;
     }
   }
+
+  return true;
 }
 
 size_t System::GetMaxSaveStateSize()
@@ -4576,10 +4577,10 @@ bool System::LoadMemoryState(const MemorySaveState& mss)
 {
   StateWrapper sw(mss.state_data.cspan(), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
   GPUTexture* host_texture = mss.vram_texture.get();
-  if (!DoState(sw, &host_texture, true, true))
+  if (!DoState(sw, &host_texture, true, true)) [[unlikely]]
   {
     Host::ReportErrorAsync("Error", "Failed to load memory save state, resetting.");
-    InternalReset();
+    ResetSystem();
     return false;
   }
 
