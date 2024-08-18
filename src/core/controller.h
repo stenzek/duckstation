@@ -134,5 +134,8 @@ public:
   static bool InCircularDeadzone(float deadzone, float pos_x, float pos_y);
 
 protected:
+  /// Returns true if automatic analog mode can be used.
+  static bool CanStartInAnalogMode(ControllerType ctype);
+
   u32 m_index;
 };

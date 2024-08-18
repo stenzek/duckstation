@@ -1,18 +1,22 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "controller.h"
 #include "analog_controller.h"
 #include "analog_joystick.h"
 #include "digital_controller.h"
-#include "fmt/format.h"
+#include "game_database.h"
 #include "guncon.h"
 #include "host.h"
 #include "justifier.h"
 #include "negcon.h"
 #include "negcon_rumble.h"
 #include "playstation_mouse.h"
+#include "system.h"
+
 #include "util/state_wrapper.h"
+
+#include "fmt/format.h"
 
 static const Controller::ControllerInfo s_none_info = {ControllerType::None,
                                                        "None",
@@ -228,4 +232,14 @@ bool Controller::InCircularDeadzone(float deadzone, float pos_x, float pos_y)
   const bool in_x = (pos_x < 0.0f) ? (pos_x > dz_x) : (pos_x <= dz_x);
   const bool in_y = (pos_y < 0.0f) ? (pos_y > dz_y) : (pos_y <= dz_y);
   return (in_x && in_y);
+}
+
+bool Controller::CanStartInAnalogMode(ControllerType ctype)
+{
+  const GameDatabase::Entry* dbentry = System::GetGameDatabaseEntry();
+  if (!dbentry)
+    return false;
+
+  return ((dbentry->supported_controllers & (1u << static_cast<u8>(ctype))) != 0 &&
+          !dbentry->HasTrait(GameDatabase::Trait::DisableAutoAnalogMode));
 }
