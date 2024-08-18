@@ -13746,6 +13746,8 @@ SLUS-01207:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Required for PGXP.
   metadata:
     publisher: "UBI Soft Entertainment"
     developer: "Kemco"
@@ -13946,6 +13948,8 @@ SCES-00700:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   metadata:
     publisher: "Sony"
     developer: "Takara"
@@ -13969,6 +13973,8 @@ SLUS-00483:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   metadata:
     publisher: "Playmates Interactive Entertainment"
     developer: "Takara"
@@ -14027,6 +14033,8 @@ SLPS-00650:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   metadata:
     publisher: "Takara"
     developer: "Takara"
@@ -21994,6 +22002,8 @@ SLES-03889:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   metadata:
     publisher: "Capcom"
     developer: "Capcom"
@@ -22016,6 +22026,8 @@ SLPM-87053:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   metadata:
     publisher: "Capcom"
     developer: "Capcom"
@@ -22040,6 +22052,8 @@ SLUS-01476:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   metadata:
     publisher: "Capcom"
     developer: "Capcom"
@@ -22061,7 +22075,6 @@ SLPS-01567:
     versionTested: "0.1-2433-g9089c973"
     upscalingIssues: "There's garbage in right of the screen and the first boss sprite is corrupted."
   controllers:
-    - AnalogController
     - DigitalController
   settings:
     displayActiveStartOffset: -62
@@ -34449,6 +34462,8 @@ SLES-01719:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom"
@@ -34471,6 +34486,8 @@ SLUS-00745:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   metadata:
     publisher: "Capcom"
     developer: "Capcom"
@@ -34781,6 +34798,8 @@ SCPS-45190:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   codes:
     - SCPS-45190
     - SCPS-45191
@@ -34803,6 +34822,8 @@ SCES-01259:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   metadata:
     publisher: "Sony"
     developer: "Team Ninja"
@@ -34822,6 +34843,8 @@ SLPS-01289:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   metadata:
     publisher: "Tecmo"
     developer: "Team Ninja"
@@ -34838,6 +34861,11 @@ SLPS-01289:
     linkCable: false
 SCED-01372:
   name: "Dead or Alive (UK) (Demo)"
+  controllers:
+    - AnalogController
+    - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
 SLUS-00606:
   name: "Dead or Alive (USA)"
   compatibility:
@@ -34846,6 +34874,8 @@ SLUS-00606:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   metadata:
     publisher: "Tecmo"
     developer: "Team Ninja"
@@ -34862,6 +34892,11 @@ SLUS-00606:
     linkCable: false
 SLUS-80606:
   name: "Dead or Alive (USA) (En,Ja) (Demo)"
+  controllers:
+    - AnalogController
+    - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
 SLPS-00267:
   name: "Deadheat Road (Japan)"
   controllers:
@@ -80831,6 +80866,8 @@ SLPS-03344:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   metadata:
     publisher: "Bandai"
     developer: "Kaze"
@@ -80852,6 +80889,8 @@ SLPS-03529:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   metadata:
     publisher: "Bandai"
     developer: "Kaze"
@@ -96072,6 +96111,8 @@ SLES-01792:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom"
@@ -96093,6 +96134,8 @@ SLUS-00793:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   metadata:
     publisher: "Capcom"
     developer: "Capcom"
@@ -96115,6 +96158,8 @@ SLPS-01915:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   metadata:
     publisher: "Capcom"
     developer: "Capcom"
@@ -96139,6 +96184,8 @@ SLES-02305:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom / Value Wave"
@@ -96161,6 +96208,8 @@ SLUS-01059:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   metadata:
     publisher: "Capcom"
     developer: "Capcom / Value Wave"
@@ -96180,6 +96229,8 @@ SLPS-02368:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   codes:
     - SLPS-02368
     - SLPS-02356
@@ -96202,6 +96253,8 @@ SLPS-02368:
     linkCable: false
 SLPM-80508:
   name: "Marvel vs. Capcom - Clash of Super Heroes - EX Edition (Japan) (Demo)"
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
 SLES-02379:
   name: "Mary King's Riding Star (Europe) (En,Fr,De,Es,It,Nl,Pt)"
   controllers:
@@ -131662,6 +131715,8 @@ SCPS-45276:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   metadata:
     publisher: "SNK Corporation"
     developer: "SNK Corporation"
@@ -131681,6 +131736,8 @@ SLPM-86085:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   metadata:
     publisher: "SNK Corporation"
     developer: "SNK Corporation"
@@ -131697,11 +131754,18 @@ SLPM-86085:
     linkCable: false
 SLPM-80246:
   name: "Real Bout Garou Densetsu Special - Dominated Mind (Japan) (Demo)"
+  controllers:
+    - AnalogController
+    - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
 SLPM-86090:
   name: "Real Bout Garou Densetsu Special - Dominated Mind (Japan) (Shokai Genteiban)"
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   metadata:
     publisher: "SNK Corporation"
     developer: "SNK Corporation"
@@ -131721,6 +131785,8 @@ SLPM-86321:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   metadata:
     publisher: "SNK Corporation"
     developer: "SNK Corporation"
@@ -148093,6 +148159,8 @@ SLPS-02789:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   codes:
     - SLPS-02789
     - SLPS-91460
@@ -149953,7 +150021,10 @@ SCES-00577:
     rating: NoIssues
     versionTested: "0.1-2949-gcd2c581f"
   controllers:
+    - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   settings:
     gpuLineDetectMode: BasicTriangles # Fixes upscaled water rendering.
     dmaMaxSliceTicks: 100 # Tight timing required for DMA modified after start.
@@ -149978,7 +150049,10 @@ SLUS-00240:
     rating: NoIssues
     versionTested: "0.1-1409-ge198e315"
   controllers:
+    - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   settings:
     gpuLineDetectMode: BasicTriangles # Fixes upscaled water rendering.
     dmaMaxSliceTicks: 100 # Tight timing required for DMA modified after start.
@@ -150003,7 +150077,10 @@ SLPS-00555:
     rating: NoIssues
     versionTested: "0.1-2202-ga17e15f1"
   controllers:
+    - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   settings:
     gpuLineDetectMode: BasicTriangles # Fixes upscaled water rendering.
     dmaMaxSliceTicks: 100 # Tight timing required for DMA modified after start.
@@ -150028,7 +150105,10 @@ SLPS-00545:
     rating: NoIssues
     versionTested: "0.1-2202-ga17e15f1"
   controllers:
+    - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   settings:
     gpuLineDetectMode: BasicTriangles # Fixes upscaled water rendering.
     dmaMaxSliceTicks: 100 # Tight timing required for DMA modified after start.
@@ -150050,7 +150130,10 @@ SLPS-00545:
 SLPS-91168:
   name: "Soul Edge (Japan) (Rev 1)"
   controllers:
+    - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   codes:
     - SLPS-91168
     - SLPS-91454
@@ -155262,6 +155345,8 @@ SLES-01863:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog controls do nothing.
   metadata:
     publisher: "Virgin Interactive"
     developer: "Capcom"
@@ -155284,6 +155369,8 @@ SLUS-00821:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog controls do nothing.
   metadata:
     publisher: "Capcom"
     developer: "Capcom"
@@ -155743,6 +155830,8 @@ SLPM-86877:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableAutoAnalogMode # Analog controls do nothing.
   codes:
     - SLPM-86877
     - SLPS-01777
@@ -164244,6 +164333,8 @@ SCES-01237:
     - AnalogController
     - DigitalController
     - NeGcon
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   metadata:
     publisher: "Sony"
     developer: "Namco"
@@ -164260,14 +164351,20 @@ SCES-01237:
     linkCable: false
 SCED-01146:
   name: "Tekken 3 (Europe) (Demo)"
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
 SCED-01384:
   name: "Tekken 3 (France) (Demo)"
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
 SLPS-91202:
   name: "Tekken 3 (Japan) (Rev 1)"
   controllers:
     - AnalogController
     - DigitalController
     - NeGcon
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   metadata:
     publisher: "Namco"
     developer: "Namco"
@@ -164291,6 +164388,8 @@ SCPS-45213:
     - AnalogController
     - DigitalController
     - NeGcon
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   codes:
     - SCPS-45213
     - SCPS-45215
@@ -164318,6 +164417,8 @@ SLUS-00402:
     - AnalogController
     - DigitalController
     - NeGcon
+  traits:
+    - DisableAutoAnalogMode # Analog sticks do nothing.
   metadata:
     publisher: "Namco"
     developer: "Namco"
