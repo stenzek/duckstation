@@ -57,11 +57,6 @@ enum : u32
   NUM_REVERB_REGS = 32,
   FIFO_SIZE_IN_HALFWORDS = 32
 };
-enum : s16
-{
-  ENVELOPE_MIN_VOLUME = 0,
-  ENVELOPE_MAX_VOLUME = 0x7FFF
-};
 enum : TickCount
 {
   TRANSFER_TICKS_PER_HALFWORD = 16
@@ -211,21 +206,26 @@ struct ADPCMBlock
 
 struct VolumeEnvelope
 {
-  s32 counter;
+  static constexpr s32 MIN_VOLUME = -32768;
+  static constexpr s32 MAX_VOLUME = 32767;
+
+  u32 counter;
+  u16 counter_increment;
+  s16 step;
   u8 rate;
   bool decreasing;
   bool exponential;
   bool phase_invert;
 
-  void Reset(u8 rate_, bool decreasing_, bool exponential_, bool phase_invert_);
-  s16 Tick(s16 current_level);
+  void Reset(u8 rate_, u8 rate_mask_, bool decreasing_, bool exponential_, bool phase_invert_);
+  bool Tick(s16& current_level);
 };
 
 struct VolumeSweep
 {
   VolumeEnvelope envelope;
-  bool envelope_active;
   s16 current_level;
+  bool envelope_active;
 
   void Reset(VolumeRegister reg);
   void Tick();
@@ -314,15 +314,18 @@ struct ReverbRegisters
 };
 } // namespace
 
+template<bool COMPATIBILITY>
+static bool DoCompatibleState(StateWrapper& sw);
+
 static ADSRPhase GetNextADSRPhase(ADSRPhase phase);
 
-bool IsVoiceReverbEnabled(u32 i);
-bool IsVoiceNoiseEnabled(u32 i);
-bool IsPitchModulationEnabled(u32 i);
-s16 GetVoiceNoiseLevel();
+static bool IsVoiceReverbEnabled(u32 i);
+static bool IsVoiceNoiseEnabled(u32 i);
+static bool IsPitchModulationEnabled(u32 i);
+static s16 GetVoiceNoiseLevel();
 
-u16 ReadVoiceRegister(u32 offset);
-void WriteVoiceRegister(u32 offset, u16 value);
+static u16 ReadVoiceRegister(u32 offset);
+static void WriteVoiceRegister(u32 offset, u16 value);
 
 static bool IsRAMIRQTriggerable();
 static bool CheckRAMIRQ(u32 address);
@@ -561,7 +564,7 @@ void SPU::Reset()
     v.is_first_block = 0;
     v.current_block_samples.fill(s16(0));
     v.adpcm_last_samples.fill(s32(0));
-    v.adsr_envelope.Reset(0, false, false, false);
+    v.adsr_envelope.Reset(0, 0, false, false, false);
     v.adsr_phase = ADSRPhase::Off;
     v.adsr_target = 0;
     v.has_samples = false;
@@ -575,8 +578,58 @@ void SPU::Reset()
   UpdateEventInterval();
 }
 
-bool SPU::DoState(StateWrapper& sw)
+template<bool COMPATIBILITY>
+bool SPU::DoCompatibleState(StateWrapper& sw)
 {
+  struct OldEnvelope
+  {
+    s32 counter;
+    u8 rate;
+    bool decreasing;
+    bool exponential;
+    bool phase_invert;
+  };
+  struct OldSweep
+  {
+    OldEnvelope env;
+    bool envelope_active;
+    s16 current_level;
+  };
+
+  static constexpr const auto do_compatible_volume_envelope = [](StateWrapper& sw, VolumeEnvelope* env) {
+    if constexpr (COMPATIBILITY)
+    {
+      if (sw.GetVersion() < 70) [[unlikely]]
+      {
+        OldEnvelope oenv;
+        sw.DoPOD(&oenv);
+        env->Reset(oenv.rate, 0x7f, oenv.decreasing, oenv.exponential, oenv.phase_invert);
+        env->counter = oenv.counter; // wrong
+        return;
+      }
+    }
+
+    sw.DoPOD(env);
+  };
+  static constexpr const auto do_compatible_volume_sweep = [](StateWrapper& sw, VolumeSweep* sweep) {
+    if constexpr (COMPATIBILITY)
+    {
+      if (sw.GetVersion() < 70) [[unlikely]]
+      {
+        OldSweep osweep;
+        sw.DoPOD(&osweep);
+        sweep->envelope.Reset(osweep.env.rate, 0x7f, osweep.env.decreasing, osweep.env.exponential,
+                              osweep.env.phase_invert);
+        sweep->envelope.counter = osweep.env.counter; // wrong
+        sweep->envelope_active = osweep.envelope_active;
+        sweep->current_level = osweep.current_level;
+        return;
+      }
+    }
+
+    sw.DoPOD(sweep);
+  };
+
   sw.Do(&s_state.ticks_carry);
   sw.Do(&s_state.SPUCNT.bits);
   sw.Do(&s_state.SPUSTAT.bits);
@@ -587,8 +640,8 @@ bool SPU::DoState(StateWrapper& sw)
   sw.Do(&s_state.capture_buffer_position);
   sw.Do(&s_state.main_volume_left_reg.bits);
   sw.Do(&s_state.main_volume_right_reg.bits);
-  sw.DoPOD(&s_state.main_volume_left);
-  sw.DoPOD(&s_state.main_volume_right);
+  do_compatible_volume_sweep(sw, &s_state.main_volume_left);
+  do_compatible_volume_sweep(sw, &s_state.main_volume_right);
   sw.Do(&s_state.cd_audio_volume_left);
   sw.Do(&s_state.cd_audio_volume_right);
   sw.Do(&s_state.external_volume_left);
@@ -619,14 +672,17 @@ bool SPU::DoState(StateWrapper& sw)
     sw.DoArray(v.regs.index, NUM_VOICE_REGISTERS);
     sw.Do(&v.counter.bits);
     sw.Do(&v.current_block_flags.bits);
-    sw.DoEx(&v.is_first_block, 47, false);
+    if constexpr (COMPATIBILITY)
+      sw.DoEx(&v.is_first_block, 47, false);
+    else
+      sw.Do(&v.is_first_block);
     sw.DoArray(&v.current_block_samples[NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK], NUM_SAMPLES_PER_ADPCM_BLOCK);
     sw.DoArray(&v.current_block_samples[0], NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK);
     sw.Do(&v.adpcm_last_samples);
     sw.Do(&v.last_volume);
-    sw.DoPOD(&v.left_volume);
-    sw.DoPOD(&v.right_volume);
-    sw.DoPOD(&v.adsr_envelope);
+    do_compatible_volume_sweep(sw, &v.left_volume);
+    do_compatible_volume_sweep(sw, &v.right_volume);
+    do_compatible_volume_envelope(sw, &v.adsr_envelope);
     sw.Do(&v.adsr_phase);
     sw.Do(&v.adsr_target);
     sw.Do(&v.has_samples);
@@ -643,6 +699,14 @@ bool SPU::DoState(StateWrapper& sw)
   }
 
   return !sw.HasError();
+}
+
+bool SPU::DoState(StateWrapper& sw)
+{
+  if (sw.GetVersion() < 70) [[unlikely]]
+    return DoCompatibleState<true>(sw);
+  else
+    return DoCompatibleState<false>(sw);
 }
 
 u16 SPU::ReadRegister(u32 offset)
@@ -1620,71 +1684,45 @@ SPU::ADSRPhase SPU::GetNextADSRPhase(ADSRPhase phase)
   }
 }
 
-struct ADSRTableEntry
-{
-  s32 ticks;
-  s32 step;
-};
-enum : u32
-{
-  NUM_ADSR_TABLE_ENTRIES = 128,
-  NUM_ADSR_DIRECTIONS = 2 // increasing, decreasing
-};
-using ADSRTableEntries = std::array<std::array<ADSRTableEntry, NUM_ADSR_TABLE_ENTRIES>, NUM_ADSR_DIRECTIONS>;
-
-static constexpr ADSRTableEntries ComputeADSRTableEntries()
-{
-  ADSRTableEntries entries = {};
-  for (u32 decreasing = 0; decreasing < 2; decreasing++)
-  {
-    for (u32 rate = 0; rate < NUM_ADSR_TABLE_ENTRIES; rate++)
-    {
-      if (rate < 44)
-      {
-        entries[decreasing][rate].ticks = 1;
-        if (decreasing != 0)
-          entries[decreasing][rate].step =
-            static_cast<s32>(static_cast<u32>(-8 + static_cast<s32>(rate & 3)) << (11 - (rate >> 2)));
-        else
-          entries[decreasing][rate].step = (7 - static_cast<s32>(rate & 3)) << (11 - (rate >> 2));
-      }
-      else
-      {
-        entries[decreasing][rate].ticks = 1 << (static_cast<s32>(rate >> 2) - 11);
-        if (decreasing != 0)
-          entries[decreasing][rate].step = (-8 + static_cast<s32>(rate & 3));
-        else
-          entries[decreasing][rate].step = (7 - static_cast<s32>(rate & 3));
-      }
-    }
-  }
-
-  return entries;
-}
-
-static constexpr ADSRTableEntries s_adsr_table = ComputeADSRTableEntries();
-
-void SPU::VolumeEnvelope::Reset(u8 rate_, bool decreasing_, bool exponential_, bool phase_invert_)
+void SPU::VolumeEnvelope::Reset(u8 rate_, u8 rate_mask_, bool decreasing_, bool exponential_, bool phase_invert_)
 {
   rate = rate_;
   decreasing = decreasing_;
   exponential = exponential_;
-  phase_invert = phase_invert_;
 
-  const ADSRTableEntry& table_entry = s_adsr_table[BoolToUInt8(decreasing)][rate];
-  counter = table_entry.ticks;
+  // psx-spx says "The Phase bit seems to have no effect in Exponential Decrease mode."
+  // TODO: This needs to be tested on hardware.
+  phase_invert = phase_invert_ && !(decreasing_ && exponential_);
+
+  counter = 0;
+  counter_increment = 0x8000;
+
+  // negative level * negative step would give a positive number in decreasing+exponential mode, when we want it to be
+  // negative. Phase invert cause the step to be positive in decreasing mode, otherwise negative. Bitwise NOT, so that
+  // +7,+6,+5,+4 becomes -8,-7,-6,-5 as per psx-spx.
+  const s16 base_step = 7 - (rate & 3);
+  step = ((decreasing_ ^ phase_invert_) | (decreasing_ & exponential_)) ? ~base_step : base_step;
+  if (rate < 44)
+  {
+    // AdsrStep = StepValue SHL Max(0,11-ShiftValue)
+    step <<= (11 - (rate >> 2));
+  }
+  else if (rate >= 48)
+  {
+    // AdsrCycles = 1 SHL Max(0,ShiftValue-11)
+    counter_increment >>= ((rate >> 2) - 11);
+
+    // Rate of 0x7F (or more specifically all bits set, for decay/release) is a special case that never ticks.
+    if ((rate_ & rate_mask_) != rate_mask_)
+      counter_increment = std::max<u16>(counter_increment, 1u);
+  }
 }
 
-s16 SPU::VolumeEnvelope::Tick(s16 current_level)
+ALWAYS_INLINE_RELEASE bool SPU::VolumeEnvelope::Tick(s16& current_level)
 {
-  counter--;
-  if (counter > 0)
-    return current_level;
-
-  const ADSRTableEntry& table_entry = s_adsr_table[BoolToUInt8(decreasing)][rate];
-  s32 this_step = table_entry.step;
-  counter = table_entry.ticks;
-
+  // Recompute step in exponential/decrement mode.
+  u32 this_increment = counter_increment;
+  s32 this_step = step;
   if (exponential)
   {
     if (decreasing)
@@ -1701,26 +1739,41 @@ s16 SPU::VolumeEnvelope::Tick(s16 current_level)
         }
         else if (rate >= 44)
         {
-          counter >>= 2;
+          this_increment >>= 2;
         }
         else
         {
           this_step >>= 1;
-          counter >>= 1;
+          this_increment >>= 1;
         }
       }
     }
   }
 
-  if (phase_invert) [[unlikely]]
+  counter += this_increment;
+
+  // Very strange behavior. Rate of 0x76 behaves like 0x6A, seems it's dependent on the MSB=1.
+  if (!(counter & 0x8000))
+    return true;
+  counter = 0;
+
+  // Phase invert acts very strange. If the volume is positive, it will decrease to zero, then increase back to maximum
+  // negative (inverted) volume. Except when decrementing, then it snaps straight to zero. Simply clamping to int16
+  // range will be fine for incrementing, because the volume never decreases past zero. If the volume _was_ negative,
+  // and is incrementing, hardware tests show that it only clamps to max, not 0.
+  s32 new_level = current_level + this_step;
+  if (!decreasing)
   {
-    return static_cast<s16>(
-      std::clamp<s32>(static_cast<s32>(current_level) - this_step, -ENVELOPE_MAX_VOLUME, ENVELOPE_MIN_VOLUME));
+    current_level = Truncate16(new_level = std::clamp(new_level, MIN_VOLUME, MAX_VOLUME));
+    return (new_level != ((this_step < 0) ? MIN_VOLUME : MAX_VOLUME));
   }
   else
   {
-    return static_cast<s16>(
-      std::clamp<s32>(static_cast<s32>(current_level) + this_step, ENVELOPE_MIN_VOLUME, ENVELOPE_MAX_VOLUME));
+    if (phase_invert)
+      current_level = Truncate16(new_level = std::clamp(new_level, MIN_VOLUME, 0));
+    else
+      current_level = Truncate16(new_level = std::max(new_level, 0));
+    return (new_level == 0);
   }
 }
 
@@ -1733,9 +1786,8 @@ void SPU::VolumeSweep::Reset(VolumeRegister reg)
     return;
   }
 
-  envelope.Reset(reg.sweep_rate, reg.sweep_direction_decrease, reg.sweep_exponential,
-                 !(reg.sweep_exponential && reg.sweep_direction_decrease) && reg.sweep_phase_negative);
-  envelope_active = true;
+  envelope.Reset(reg.sweep_rate, 0x7F, reg.sweep_direction_decrease, reg.sweep_exponential, reg.sweep_phase_negative);
+  envelope_active = (envelope.counter_increment > 0);
 }
 
 void SPU::VolumeSweep::Tick()
@@ -1743,9 +1795,7 @@ void SPU::VolumeSweep::Tick()
   if (!envelope_active)
     return;
 
-  current_level = envelope.Tick(current_level);
-  envelope_active =
-    (envelope.decreasing ? (current_level > ENVELOPE_MIN_VOLUME) : (current_level < ENVELOPE_MAX_VOLUME));
+  envelope_active = envelope.Tick(current_level);
 }
 
 void SPU::Voice::UpdateADSREnvelope()
@@ -1754,29 +1804,29 @@ void SPU::Voice::UpdateADSREnvelope()
   {
     case ADSRPhase::Off:
       adsr_target = 0;
-      adsr_envelope.Reset(0, false, false, false);
+      adsr_envelope.Reset(0, 0, false, false, false);
       return;
 
     case ADSRPhase::Attack:
       adsr_target = 32767; // 0 -> max
-      adsr_envelope.Reset(regs.adsr.attack_rate, false, regs.adsr.attack_exponential, false);
+      adsr_envelope.Reset(regs.adsr.attack_rate, 0x7F, false, regs.adsr.attack_exponential, false);
       break;
 
     case ADSRPhase::Decay:
       adsr_target = static_cast<s16>(std::min<s32>((u32(regs.adsr.sustain_level.GetValue()) + 1) * 0x800,
-                                                   ENVELOPE_MAX_VOLUME)); // max -> sustain level
-      adsr_envelope.Reset(regs.adsr.decay_rate_shr2 << 2, true, true, false);
+                                                   VolumeEnvelope::MAX_VOLUME)); // max -> sustain level
+      adsr_envelope.Reset(regs.adsr.decay_rate_shr2 << 2, 0x1F << 2, true, true, false);
       break;
 
     case ADSRPhase::Sustain:
       adsr_target = 0;
-      adsr_envelope.Reset(regs.adsr.sustain_rate, regs.adsr.sustain_direction_decrease, regs.adsr.sustain_exponential,
-                          false);
+      adsr_envelope.Reset(regs.adsr.sustain_rate, 0x7F, regs.adsr.sustain_direction_decrease,
+                          regs.adsr.sustain_exponential, false);
       break;
 
     case ADSRPhase::Release:
       adsr_target = 0;
-      adsr_envelope.Reset(regs.adsr.release_rate_shr2 << 2, true, regs.adsr.release_exponential, false);
+      adsr_envelope.Reset(regs.adsr.release_rate_shr2 << 2, 0x1F << 2, true, regs.adsr.release_exponential, false);
       break;
 
     default:
@@ -1786,7 +1836,8 @@ void SPU::Voice::UpdateADSREnvelope()
 
 void SPU::Voice::TickADSR()
 {
-  regs.adsr_volume = adsr_envelope.Tick(regs.adsr_volume);
+  if (adsr_envelope.counter_increment > 0)
+    adsr_envelope.Tick(regs.adsr_volume);
 
   if (adsr_phase != ADSRPhase::Sustain)
   {
