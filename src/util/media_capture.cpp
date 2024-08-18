@@ -41,6 +41,7 @@
 #pragma comment(lib, "mfreadwrite")
 #pragma comment(lib, "mfplat")
 #pragma comment(lib, "mfuuid")
+#pragma comment(lib, "Mf")
 #endif
 
 #ifndef __ANDROID__
@@ -341,7 +342,7 @@ void MediaCaptureBase::EncoderThreadEntryPoint()
       break;
 
     PendingFrame& pf = m_pending_frames[m_frames_encode_consume_pos];
-    DebugAssert(pf.state == PendingFrame::State::NeedsEncoding);
+    DebugAssert(!IsCapturingVideo() || pf.state == PendingFrame::State::NeedsEncoding);
 
     lock.unlock();
 
@@ -684,19 +685,22 @@ private:
 static std::once_flag s_media_foundation_initialized_flag;
 static HRESULT s_media_foundation_initialized = S_OK;
 
-struct MediaFoundationCodec
+struct MediaFoundationVideoCodec
 {
   const char* name;
   const char* display_name;
   const GUID& guid;
   bool require_hardware;
 };
-static constexpr const MediaFoundationCodec s_media_foundation_audio_codecs[] = {
-  {"aac", "Advanced Audio Coding", MFAudioFormat_AAC, false},
-  {"mp3", "MPEG-2 Audio Layer III", MFAudioFormat_MP3, false},
-  {"pcm", "Uncompressed PCM", MFAudioFormat_PCM, false},
+struct MediaFoundationAudioCodec
+{
+  const char* name;
+  const char* display_name;
+  const GUID& guid;
+  u32 min_bitrate;
+  u32 max_bitrate;
 };
-static constexpr const MediaFoundationCodec s_media_foundation_video_codecs[] = {
+static constexpr const MediaFoundationVideoCodec s_media_foundation_video_codecs[] = {
   {"h264", "H.264 with Software Encoding", MFVideoFormat_H264, false},
   {"h264_hw", "H.264 with Hardware Encoding", MFVideoFormat_H264, true},
   {"h265", "H.265 with Software Encoding", MFVideoFormat_H265, false},
@@ -707,6 +711,11 @@ static constexpr const MediaFoundationCodec s_media_foundation_video_codecs[] = 
   {"vp9_hw", "VP9 with Hardware Encoding", MFVideoFormat_VP90, true},
   {"av1", "AV1 with Software Encoding", MFVideoFormat_AV1, false},
   {"av1_hw", "AV1 with Hardware Encoding", MFVideoFormat_AV1, false},
+};
+static constexpr const MediaFoundationAudioCodec s_media_foundation_audio_codecs[] = {
+  {"aac", "Advanced Audio Coding", MFAudioFormat_AAC, 64, 224},
+  {"mp3", "MPEG-2 Audio Layer III", MFAudioFormat_MP3, 64, 320},
+  {"pcm", "Uncompressed PCM", MFAudioFormat_PCM, 0, std::numeric_limits<u32>::max()},
 };
 
 static bool InitializeMediaFoundation(Error* error)
@@ -738,8 +747,9 @@ std::unique_ptr<MediaCapture> MediaCaptureMF::Create(Error* error)
 MediaCapture::ContainerList MediaCaptureMF::GetContainerList()
 {
   return {
-    {"avi", "Audio Video Interleave"},     {"mp4", "MPEG-4 Part 14"},
-    {"mkv", "Matroska Media Container"},   {"mp3", "MPEG-2 Audio Layer III"},
+    {"avi", "Audio Video Interleave"},
+    {"mp4", "MPEG-4 Part 14"},
+    {"mp3", "MPEG-2 Audio Layer III"},
     {"wav", "Waveform Audio File Format"},
   };
 }
@@ -748,7 +758,7 @@ MediaCapture::ContainerList MediaCaptureMF::GetAudioCodecList(const char* contai
 {
   ContainerList ret;
   ret.reserve(std::size(s_media_foundation_audio_codecs));
-  for (const MediaFoundationCodec& codec : s_media_foundation_audio_codecs)
+  for (const MediaFoundationAudioCodec& codec : s_media_foundation_audio_codecs)
     ret.emplace_back(codec.name, codec.display_name);
   return ret;
 }
@@ -757,7 +767,7 @@ MediaCapture::ContainerList MediaCaptureMF::GetVideoCodecList(const char* contai
 {
   ContainerList ret;
   ret.reserve(std::size(s_media_foundation_video_codecs));
-  for (const MediaFoundationCodec& codec : s_media_foundation_video_codecs)
+  for (const MediaFoundationVideoCodec& codec : s_media_foundation_video_codecs)
     ret.emplace_back(codec.name, codec.display_name);
   return ret;
 }
@@ -848,8 +858,9 @@ bool MediaCaptureMF::InternalBeginCapture(float fps, float aspect, u32 sample_ra
       Error::SetHResult(error, "Audio AddStream() failed: ", hr);
     }
 
-    if (SUCCEEDED(hr) && FAILED(hr = m_sink_writer->SetInputMediaType(m_audio_stream_index, audio_input_type.Get(),
-                                                                      nullptr))) [[unlikely]]
+    if (SUCCEEDED(hr) && audio_input_type &&
+        FAILED(hr = m_sink_writer->SetInputMediaType(m_audio_stream_index, audio_input_type.Get(), nullptr)))
+      [[unlikely]]
     {
       Error::SetHResult(error, "Audio SetInputMediaType() failed: ", hr);
     }
@@ -864,8 +875,11 @@ bool MediaCaptureMF::InternalBeginCapture(float fps, float aspect, u32 sample_ra
       Error::SetHResult(error, "Getting video encode event generator failed: ", hr);
   }
 
-  if (SUCCEEDED(hr) && FAILED(hr = m_video_encode_transform->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, 0)))
+  if (capture_video && SUCCEEDED(hr) &&
+      FAILED(hr = m_video_encode_transform->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, 0)))
+  {
     Error::SetHResult(error, "MFT_MESSAGE_NOTIFY_START_OF_STREAM failed: ", hr);
+  }
 
   if (FAILED(hr))
   {
@@ -986,7 +1000,7 @@ MediaCaptureMF::ComPtr<IMFTransform> MediaCaptureMF::CreateVideoEncodeTransform(
   if (!codec.empty())
   {
     bool found = false;
-    for (const MediaFoundationCodec& tcodec : s_media_foundation_video_codecs)
+    for (const MediaFoundationVideoCodec& tcodec : s_media_foundation_video_codecs)
     {
       if (StringUtil::EqualNoCase(codec, tcodec.name))
       {
@@ -1508,23 +1522,16 @@ bool MediaCaptureMF::ProcessVideoEvents(Error* error)
 bool MediaCaptureMF::GetAudioTypes(std::string_view codec, ComPtr<IMFMediaType>* input_type,
                                    ComPtr<IMFMediaType>* output_type, u32 sample_rate, u32 bitrate, Error* error)
 {
-  HRESULT hr;
-  if (FAILED(hr = MFCreateMediaType(input_type->GetAddressOf())) ||
-      FAILED(hr = MFCreateMediaType(output_type->GetAddressOf()))) [[unlikely]]
-  {
-    Error::SetHResult(error, "Audio MFCreateMediaType() failed: ", hr);
-    return false;
-  }
-
   GUID output_subtype = MFAudioFormat_AAC;
   if (!codec.empty())
   {
     bool found = false;
-    for (const MediaFoundationCodec& tcodec : s_media_foundation_audio_codecs)
+    for (const MediaFoundationAudioCodec& tcodec : s_media_foundation_audio_codecs)
     {
       if (StringUtil::EqualNoCase(codec, tcodec.name))
       {
         output_subtype = tcodec.guid;
+        bitrate = std::clamp(bitrate, tcodec.min_bitrate, tcodec.max_bitrate);
         found = true;
         break;
       }
@@ -1536,23 +1543,87 @@ bool MediaCaptureMF::GetAudioTypes(std::string_view codec, ComPtr<IMFMediaType>*
     }
   }
 
+  HRESULT hr;
+  if (FAILED(hr = MFCreateMediaType(input_type->GetAddressOf()))) [[unlikely]]
+  {
+    Error::SetHResult(error, "Audio MFCreateMediaType() failed: ", hr);
+    return false;
+  }
+
+  const u32 block_align = AUDIO_CHANNELS * (AUDIO_BITS_PER_SAMPLE / 8);
+  const u32 bytes_per_second = block_align * sample_rate;
+
   if (FAILED(hr = (*input_type)->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio)) ||
       FAILED(hr = (*input_type)->SetGUID(MF_MT_SUBTYPE, AUDIO_INPUT_MEDIA_FORMAT)) ||
       FAILED(hr = (*input_type)->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS, AUDIO_CHANNELS)) ||
       FAILED(hr = (*input_type)->SetUINT32(MF_MT_AUDIO_BITS_PER_SAMPLE, AUDIO_BITS_PER_SAMPLE)) ||
       FAILED(hr = (*input_type)->SetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, sample_rate)) ||
-
-      FAILED(hr = (*output_type)->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio)) ||
-      FAILED(hr = (*output_type)->SetGUID(MF_MT_SUBTYPE, output_subtype)) ||
-      FAILED(hr = (*output_type)->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS, AUDIO_CHANNELS)) ||
-      FAILED(hr = (*output_type)->SetUINT32(MF_MT_AUDIO_BITS_PER_SAMPLE, AUDIO_BITS_PER_SAMPLE)) ||
-      FAILED(hr = (*output_type)->SetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, sample_rate)) ||
-      FAILED(hr = (*output_type)->SetUINT32(MF_MT_AVG_BITRATE, bitrate * 1000))) [[unlikely]]
+      FAILED(hr = (*input_type)->SetUINT32(MF_MT_AUDIO_BLOCK_ALIGNMENT, block_align)) ||
+      FAILED(hr = (*input_type)->SetUINT32(MF_MT_AUDIO_AVG_BYTES_PER_SECOND, bytes_per_second)) ||
+      FAILED(hr = (*input_type)->SetUINT32(MF_MT_ALL_SAMPLES_INDEPENDENT, TRUE))) [[unlikely]]
   {
     Error::SetHResult(error, "Audio setting attributes failed: ", hr);
     return false;
   }
 
+  // If our input type is PCM, no need for an input type, it's the same as output.
+  if (output_subtype == AUDIO_INPUT_MEDIA_FORMAT)
+  {
+    *output_type = std::move(*input_type);
+    return true;
+  }
+
+  ComPtr<IMFCollection> output_types_collection;
+  DWORD output_types_collection_size = 0;
+  hr = MFTranscodeGetAudioOutputAvailableTypes(output_subtype, 0, nullptr, output_types_collection.GetAddressOf());
+  if (FAILED(hr) || FAILED(hr = output_types_collection->GetElementCount(&output_types_collection_size))) [[unlikely]]
+  {
+    Error::SetHResult(error, "MFTranscodeGetAudioOutputAvailableTypes() failed: ", hr);
+    return false;
+  }
+
+  std::vector<std::pair<ComPtr<IMFMediaType>, u32>> output_types;
+  for (DWORD i = 0; i < output_types_collection_size; i++)
+  {
+    ComPtr<IUnknown> current_output_type;
+    ComPtr<IMFMediaType> current_output_type_c;
+    if (SUCCEEDED(hr = output_types_collection->GetElement(i, current_output_type.GetAddressOf())) &&
+        SUCCEEDED(current_output_type.As(&current_output_type_c)))
+    {
+      UINT32 current_channel_count, current_sample_rate;
+      if (SUCCEEDED(current_output_type_c->GetUINT32(MF_MT_AUDIO_NUM_CHANNELS, &current_channel_count)) &&
+          SUCCEEDED(current_output_type_c->GetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, &current_sample_rate)) &&
+          current_channel_count == AUDIO_CHANNELS && current_sample_rate == sample_rate)
+      {
+        u32 current_bitrate;
+        if (SUCCEEDED(current_output_type_c->GetUINT32(MF_MT_AUDIO_AVG_BYTES_PER_SECOND, &current_bitrate)))
+          current_bitrate *= 8;
+        else if (FAILED(current_output_type_c->GetUINT32(MF_MT_AVG_BITRATE, &current_bitrate)))
+          continue;
+
+        output_types.emplace_back(std::move(current_output_type_c), current_bitrate);
+      }
+    }
+  }
+
+  // pick the closest bitrate
+  const u32 bitrate_kbps = bitrate * 1000;
+  std::pair<ComPtr<IMFMediaType>, u32>* selected_output_type = nullptr;
+  for (auto it = output_types.begin(); it != output_types.end(); ++it)
+  {
+    if (it->second >= bitrate_kbps &&
+        (!selected_output_type || (selected_output_type->second - bitrate_kbps) > (it->second - bitrate_kbps)))
+    {
+      selected_output_type = &(*it);
+    }
+  }
+  if (!selected_output_type)
+  {
+    Error::SetStringView(error, "Unable to find a matching audio output type.");
+    return false;
+  }
+
+  *output_type = std::move(selected_output_type->first);
   return true;
 }
 
