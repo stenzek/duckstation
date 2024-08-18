@@ -648,10 +648,22 @@ void ImGuiManager::DrawInputsOverlay()
     if (!cinfo)
       continue;
 
+    float text_start_x = current_x;
     if (cinfo->icon_name)
-      text.format("{} {}", cinfo->icon_name, port + 1u);
+    {
+      const ImVec2 icon_size = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, cinfo->icon_name);
+      const u32 icon_color = controller->GetInputOverlayIconColor();
+      dl->AddText(font, font->FontSize, ImVec2(current_x + shadow_offset, current_y + shadow_offset), shadow_color,
+                  cinfo->icon_name, nullptr, 0.0f, &clip_rect);
+      dl->AddText(font, font->FontSize, ImVec2(current_x, current_y), icon_color, cinfo->icon_name, nullptr, 0.0f,
+                  &clip_rect);
+      text_start_x += icon_size.x;
+      text.format(" {}", port + 1u);
+    }
     else
+    {
       text.format("{} |", port + 1u);
+    }
 
     for (const Controller::ControllerBindingInfo& bi : cinfo->bindings)
     {
@@ -687,9 +699,9 @@ void ImGuiManager::DrawInputsOverlay()
       }
     }
 
-    dl->AddText(font, font->FontSize, ImVec2(current_x + shadow_offset, current_y + shadow_offset), shadow_color,
+    dl->AddText(font, font->FontSize, ImVec2(text_start_x + shadow_offset, current_y + shadow_offset), shadow_color,
                 text.c_str(), text.end_ptr(), 0.0f, &clip_rect);
-    dl->AddText(font, font->FontSize, ImVec2(current_x, current_y), text_color, text.c_str(), text.end_ptr(), 0.0f,
+    dl->AddText(font, font->FontSize, ImVec2(text_start_x, current_y), text_color, text.c_str(), text.end_ptr(), 0.0f,
                 &clip_rect);
 
     current_y += font->FontSize + spacing;

@@ -182,7 +182,7 @@ static const SettingInfo s_settings[] = {
 const Controller::ControllerInfo DigitalController::INFO = {ControllerType::DigitalController,
                                                             "DigitalController",
                                                             TRANSLATE_NOOP("ControllerType", "Digital Controller"),
-                                                            ICON_PF_GAMEPAD,
+                                                            ICON_PF_GAMEPAD_ALT,
                                                             s_binding_info,
                                                             s_settings,
                                                             Controller::VibrationCapabilities::NoVibration};
