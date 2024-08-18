@@ -56,10 +56,12 @@ public:
 
   // TODO: make non-virtual?
   virtual const std::string& GetPath() const = 0;
+  virtual std::string GetNextCapturePath() const = 0;
   virtual bool IsCapturingAudio() const = 0;
   virtual bool IsCapturingVideo() const = 0;
   virtual u32 GetVideoWidth() const = 0;
   virtual u32 GetVideoHeight() const = 0;
+  virtual float GetVideoFPS() const = 0;
 
   /// Returns the elapsed time in seconds.
   virtual time_t GetElapsedTime() const = 0;

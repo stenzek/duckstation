@@ -89,21 +89,23 @@ public:
   bool BeginCapture(float fps, float aspect, u32 width, u32 height, GPUTexture::Format texture_format, u32 sample_rate,
                     std::string path, bool capture_video, std::string_view video_codec, u32 video_bitrate,
                     std::string_view video_codec_args, bool capture_audio, std::string_view audio_codec,
-                    u32 audio_bitrate, std::string_view audio_codec_args, Error* error) override;
+                    u32 audio_bitrate, std::string_view audio_codec_args, Error* error) override final;
 
-  const std::string& GetPath() const override;
-  u32 GetVideoWidth() const override;
-  u32 GetVideoHeight() const override;
+  const std::string& GetPath() const override final;
+  std::string GetNextCapturePath() const override final;
+  u32 GetVideoWidth() const override final;
+  u32 GetVideoHeight() const override final;
+  float GetVideoFPS() const override final;
 
-  float GetCaptureThreadUsage() const override;
-  float GetCaptureThreadTime() const override;
-  void UpdateCaptureThreadUsage(double pct_divider, double time_divider) override;
+  float GetCaptureThreadUsage() const override final;
+  float GetCaptureThreadTime() const override final;
+  void UpdateCaptureThreadUsage(double pct_divider, double time_divider) override final;
 
-  GPUTexture* GetRenderTexture() override;
-  bool DeliverVideoFrame(GPUTexture* stex) override;
-  bool DeliverAudioFrames(const s16* frames, u32 num_frames) override;
-  bool EndCapture(Error* error) override;
-  void Flush() override;
+  GPUTexture* GetRenderTexture() override final;
+  bool DeliverVideoFrame(GPUTexture* stex) override final;
+  bool DeliverAudioFrames(const s16* frames, u32 num_frames) override final;
+  bool EndCapture(Error* error) override final;
+  void Flush() override final;
 
 protected:
   struct PendingFrame
@@ -147,9 +149,10 @@ protected:
   std::atomic_bool m_capturing{false};
   std::atomic_bool m_encoding_error{false};
 
+  GPUTexture::Format m_video_render_texture_format = GPUTexture::Format::Unknown;
   u32 m_video_width = 0;
   u32 m_video_height = 0;
-  GPUTexture::Format m_video_render_texture_format = GPUTexture::Format::Unknown;
+  float m_video_fps = 0;
   s64 m_next_video_pts = 0;
   std::unique_ptr<GPUTexture> m_render_texture;
 
@@ -185,17 +188,19 @@ bool MediaCaptureBase::BeginCapture(float fps, float aspect, u32 width, u32 heig
                                     std::string_view audio_codec, u32 audio_bitrate, std::string_view audio_codec_args,
                                     Error* error)
 {
+  m_video_render_texture_format = texture_format;
   m_video_width = width;
   m_video_height = height;
-  m_video_render_texture_format = texture_format;
+  m_video_fps = fps;
 
   if (path.empty())
   {
     Error::SetStringView(error, "No path specified.");
     return false;
   }
-  else if (fps == 0.0f || m_video_width == 0 || !Common::IsAlignedPow2(m_video_width, VIDEO_WIDTH_ALIGNMENT) ||
-           m_video_height == 0 || !Common::IsAlignedPow2(m_video_height, VIDEO_HEIGHT_ALIGNMENT))
+  else if (capture_video &&
+           (fps == 0.0f || m_video_width == 0 || !Common::IsAlignedPow2(m_video_width, VIDEO_WIDTH_ALIGNMENT) ||
+            m_video_height == 0 || !Common::IsAlignedPow2(m_video_height, VIDEO_HEIGHT_ALIGNMENT)))
   {
     Error::SetStringView(error, "Invalid video dimensions/rate.");
     return false;
@@ -506,6 +511,34 @@ const std::string& MediaCaptureBase::GetPath() const
   return m_path;
 }
 
+std::string MediaCaptureBase::GetNextCapturePath() const
+{
+  const std::string_view ext = Path::GetExtension(m_path);
+  std::string_view name = Path::GetFileTitle(m_path);
+
+  // Should end with a number.
+  u32 partnum = 2;
+  std::string_view::size_type pos = name.rfind("_part");
+  if (pos != std::string_view::npos)
+  {
+    std::string_view::size_type cpos = pos + 5;
+    for (; cpos < name.length(); cpos++)
+    {
+      if (name[cpos] < '0' || name[cpos] > '9')
+        break;
+    }
+    if (cpos == name.length())
+    {
+      // Has existing part number, so add to it.
+      partnum = StringUtil::FromChars<u32>(name.substr(pos + 5)).value_or(1) + 1;
+      name = name.substr(0, pos);
+    }
+  }
+
+  // If we haven't started a new file previously, add "_part2".
+  return Path::BuildRelativePath(m_path, fmt::format("{}_part{:03d}.{}", name, partnum, ext));
+}
+
 u32 MediaCaptureBase::GetVideoWidth() const
 {
   return m_video_width;
@@ -514,6 +547,11 @@ u32 MediaCaptureBase::GetVideoWidth() const
 u32 MediaCaptureBase::GetVideoHeight() const
 {
   return m_video_height;
+}
+
+float MediaCaptureBase::GetVideoFPS() const
+{
+  return m_video_fps;
 }
 
 float MediaCaptureBase::GetCaptureThreadUsage() const

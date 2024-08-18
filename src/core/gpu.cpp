@@ -2150,7 +2150,7 @@ bool GPU::RenderDisplay(GPUTexture* target, const GSVector4i display_rect, const
 bool GPU::SendDisplayToMediaCapture(MediaCapture* cap)
 {
   GPUTexture* target = cap->GetRenderTexture();
-  if (!target)
+  if (!target) [[unlikely]]
     return false;
 
   const bool apply_aspect_ratio =
@@ -2163,10 +2163,8 @@ bool GPU::SendDisplayToMediaCapture(MediaCapture* cap)
   // Not cleared by RenderDisplay().
   g_gpu_device->ClearRenderTarget(target, GPUDevice::DEFAULT_CLEAR_COLOR);
 
-  if (!RenderDisplay(target, display_rect, draw_rect, postfx))
+  if (!RenderDisplay(target, display_rect, draw_rect, postfx)) [[unlikely]]
     return false;
-
-  // TODO: Check for frame rate change
 
   return cap->DeliverVideoFrame(target);
 }

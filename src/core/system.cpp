@@ -2024,8 +2024,24 @@ void System::FrameDone()
   // Kick off media capture early, might take a while.
   if (s_media_capture && s_media_capture->IsCapturingVideo()) [[unlikely]]
   {
-    if (!g_gpu->SendDisplayToMediaCapture(s_media_capture.get())) [[unlikely]]
+    if (s_media_capture->GetVideoFPS() != GetThrottleFrequency()) [[unlikely]]
+    {
+      const std::string next_capture_path = s_media_capture->GetNextCapturePath();
+      INFO_LOG("Video frame rate changed, switching to new capture file {}", Path::GetFileName(next_capture_path));
+
+      const bool was_capturing_audio = s_media_capture->IsCapturingAudio();
       StopMediaCapture();
+      if (StartMediaCapture(std::move(next_capture_path), true, was_capturing_audio) &&
+          !g_gpu->SendDisplayToMediaCapture(s_media_capture.get())) [[unlikely]]
+      {
+        StopMediaCapture();
+      }
+    }
+    else
+    {
+      if (!g_gpu->SendDisplayToMediaCapture(s_media_capture.get())) [[unlikely]]
+        StopMediaCapture();
+    }
   }
 
   Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
@@ -4991,7 +5007,7 @@ bool System::StartMediaCapture(std::string path, bool capture_video, bool captur
   u32 capture_height = g_settings.media_capture_video_height;
   const GPUTexture::Format capture_format =
     g_gpu_device->HasSurface() ? g_gpu_device->GetWindowFormat() : GPUTexture::Format::RGBA8;
-  const float fps = g_gpu->ComputeVerticalFrequency();
+  const float fps = System::GetThrottleFrequency();
   if (capture_video)
   {
     // TODO: This will be a mess with GPU thread.
