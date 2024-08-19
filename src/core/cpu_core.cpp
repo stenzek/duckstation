@@ -2306,11 +2306,12 @@ ALWAYS_INLINE_RELEASE void CPU::MemoryBreakpointCheck(VirtualMemoryAddress addre
 template<PGXPMode pgxp_mode, bool debug>
 [[noreturn]] void CPU::ExecuteImpl()
 {
-  for (;;)
-  {
+  if (g_state.pending_ticks >= g_state.downcount)
     TimingEvents::RunEvents();
 
-    while (g_state.pending_ticks < g_state.downcount)
+  for (;;)
+  {
+    do
     {
       if constexpr (debug)
       {
@@ -2350,7 +2351,7 @@ template<PGXPMode pgxp_mode, bool debug>
       {
         if (g_state.m_regs.v1 != g_state.m_regs.v0)
           printf("Got %08X Expected? %08X\n", g_state.m_regs.v1, g_state.m_regs.v0);
-      }
+    }
 #endif
 
       // execute the instruction we previously fetched
@@ -2369,7 +2370,9 @@ template<PGXPMode pgxp_mode, bool debug>
           ExitExecution();
         }
       }
-    }
+    } while (g_state.pending_ticks < g_state.downcount);
+
+    TimingEvents::RunEvents();
   }
 }
 
