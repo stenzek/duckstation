@@ -17,23 +17,23 @@ int GTE_NCLIP_valid(u32 sxy0, u32 sxy1, u32 sxy2);
 float GTE_NCLIP();
 
 // Data transfer tracking
-void CPU_MFC2(u32 instr, u32 rdVal); // copy GTE data reg to GPR reg (MFC2)
-void CPU_MTC2(u32 instr, u32 rtVal); // copy GPR reg to GTE data reg (MTC2)
+void CPU_MFC2(Instruction instr, u32 rdVal); // copy GTE data reg to GPR reg (MFC2)
+void CPU_MTC2(Instruction instr, u32 rtVal); // copy GPR reg to GTE data reg (MTC2)
 // Memory Access
-void CPU_LWC2(u32 instr, u32 addr, u32 rtVal); // copy memory to GTE reg
-void CPU_SWC2(u32 instr, u32 addr, u32 rtVal); // copy GTE reg to memory
+void CPU_LWC2(Instruction instr, u32 addr, u32 rtVal); // copy memory to GTE reg
+void CPU_SWC2(Instruction instr, u32 addr, u32 rtVal); // copy GTE reg to memory
 
 bool GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, int yOffs, float* out_x, float* out_y,
                       float* out_w);
 
 // -- CPU functions
-void CPU_LW(u32 instr, u32 addr, u32 rtVal);
-void CPU_LH(u32 instr, u32 addr, u32 rtVal);
-void CPU_LHU(u32 instr, u32 addr, u32 rtVal);
-void CPU_LBx(u32 instr, u32 addr, u32 rtVal);
-void CPU_SB(u32 instr, u32 addr, u32 rtVal);
-void CPU_SH(u32 instr, u32 addr, u32 rtVal);
-void CPU_SW(u32 instr, u32 addr, u32 rtVal);
+void CPU_LW(Instruction instr, u32 addr, u32 rtVal);
+void CPU_LH(Instruction instr, u32 addr, u32 rtVal);
+void CPU_LHU(Instruction instr, u32 addr, u32 rtVal);
+void CPU_LBx(Instruction instr, u32 addr, u32 rtVal);
+void CPU_SB(Instruction instr, u32 addr, u32 rtVal);
+void CPU_SH(Instruction instr, u32 addr, u32 rtVal);
+void CPU_SW(Instruction instr, u32 addr, u32 rtVal);
 void CPU_MOVE(u32 Rd, u32 Rs, u32 rsVal);
 
 ALWAYS_INLINE static u32 PackMoveArgs(Reg rd, Reg rs)
@@ -43,45 +43,45 @@ ALWAYS_INLINE static u32 PackMoveArgs(Reg rd, Reg rs)
 void CPU_MOVE_Packed(u32 rd_and_rs, u32 rsVal);
 
 // Arithmetic with immediate value
-void CPU_ADDI(u32 instr, u32 rsVal);
-void CPU_ANDI(u32 instr, u32 rsVal);
-void CPU_ORI(u32 instr, u32 rsVal);
-void CPU_XORI(u32 instr, u32 rsVal);
-void CPU_SLTI(u32 instr, u32 rsVal);
-void CPU_SLTIU(u32 instr, u32 rsVal);
+void CPU_ADDI(Instruction instr, u32 rsVal);
+void CPU_ANDI(Instruction instr, u32 rsVal);
+void CPU_ORI(Instruction instr, u32 rsVal);
+void CPU_XORI(Instruction instr, u32 rsVal);
+void CPU_SLTI(Instruction instr, u32 rsVal);
+void CPU_SLTIU(Instruction instr, u32 rsVal);
 
 // Load Upper
-void CPU_LUI(u32 instr);
+void CPU_LUI(Instruction instr);
 
 // Register Arithmetic
-void CPU_ADD(u32 instr, u32 rsVal, u32 rtVal);
-void CPU_SUB(u32 instr, u32 rsVal, u32 rtVal);
-void CPU_AND_(u32 instr, u32 rsVal, u32 rtVal);
-void CPU_OR_(u32 instr, u32 rsVal, u32 rtVal);
-void CPU_XOR_(u32 instr, u32 rsVal, u32 rtVal);
-void CPU_NOR(u32 instr, u32 rsVal, u32 rtVal);
-void CPU_SLT(u32 instr, u32 rsVal, u32 rtVal);
-void CPU_SLTU(u32 instr, u32 rsVal, u32 rtVal);
+void CPU_ADD(Instruction instr, u32 rsVal, u32 rtVal);
+void CPU_SUB(Instruction instr, u32 rsVal, u32 rtVal);
+void CPU_AND_(Instruction instr, u32 rsVal, u32 rtVal);
+void CPU_OR_(Instruction instr, u32 rsVal, u32 rtVal);
+void CPU_XOR_(Instruction instr, u32 rsVal, u32 rtVal);
+void CPU_NOR(Instruction instr, u32 rsVal, u32 rtVal);
+void CPU_SLT(Instruction instr, u32 rsVal, u32 rtVal);
+void CPU_SLTU(Instruction instr, u32 rsVal, u32 rtVal);
 
 // Register mult/div
-void CPU_MULT(u32 instr, u32 rsVal, u32 rtVal);
-void CPU_MULTU(u32 instr, u32 rsVal, u32 rtVal);
-void CPU_DIV(u32 instr, u32 rsVal, u32 rtVal);
-void CPU_DIVU(u32 instr, u32 rsVal, u32 rtVal);
+void CPU_MULT(Instruction instr, u32 rsVal, u32 rtVal);
+void CPU_MULTU(Instruction instr, u32 rsVal, u32 rtVal);
+void CPU_DIV(Instruction instr, u32 rsVal, u32 rtVal);
+void CPU_DIVU(Instruction instr, u32 rsVal, u32 rtVal);
 
 // Shift operations (sa)
-void CPU_SLL(u32 instr, u32 rtVal);
-void CPU_SRL(u32 instr, u32 rtVal);
-void CPU_SRA(u32 instr, u32 rtVal);
+void CPU_SLL(Instruction instr, u32 rtVal);
+void CPU_SRL(Instruction instr, u32 rtVal);
+void CPU_SRA(Instruction instr, u32 rtVal);
 
 // Shift operations variable
-void CPU_SLLV(u32 instr, u32 rtVal, u32 rsVal);
-void CPU_SRLV(u32 instr, u32 rtVal, u32 rsVal);
-void CPU_SRAV(u32 instr, u32 rtVal, u32 rsVal);
+void CPU_SLLV(Instruction instr, u32 rtVal, u32 rsVal);
+void CPU_SRLV(Instruction instr, u32 rtVal, u32 rsVal);
+void CPU_SRAV(Instruction instr, u32 rtVal, u32 rsVal);
 
 // CP0 Data transfer tracking
-void CPU_MFC0(u32 instr, u32 rdVal);
-void CPU_MTC0(u32 instr, u32 rdVal, u32 rtVal);
+void CPU_MFC0(Instruction instr, u32 rdVal);
+void CPU_MTC0(Instruction instr, u32 rdVal, u32 rtVal);
 
 ALWAYS_INLINE void TryMove(Reg rd, Reg rs, Reg rt)
 {
