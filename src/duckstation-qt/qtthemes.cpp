@@ -42,13 +42,10 @@ void QtHost::SetStyleFromSettings()
 {
   const std::string theme = Host::GetBaseStringSettingValue("UI", "Theme", InterfaceSettingsWidget::DEFAULT_THEME_NAME);
 
-  // setPalette() shouldn't be necessary, as the documentation claims that setStyle() resets the palette, but it
-  // is here, to work around a bug in 6.4.x and 6.5.x where the palette doesn't restore after changing themes.
-  qApp->setPalette(s_unthemed_palette);
-
   if (theme == "qdarkstyle")
   {
     qApp->setStyle(s_unthemed_style_name);
+    qApp->setPalette(s_unthemed_palette);
     qApp->setStyleSheet(QString());
 
     QFile f(QStringLiteral(":qdarkstyle/style.qss"));
@@ -58,13 +55,13 @@ void QtHost::SetStyleFromSettings()
   else if (theme == "fusion")
   {
     qApp->setStyle(QStyleFactory::create("Fusion"));
+    qApp->setPalette(s_unthemed_palette);
     qApp->setStyleSheet(QString());
   }
   else if (theme == "darkfusion")
   {
     // adapted from https://gist.github.com/QuantumCD/6245215
     qApp->setStyle(QStyleFactory::create("Fusion"));
-    qApp->setStyleSheet(QString());
 
     const QColor lighterGray(75, 75, 75);
     const QColor darkGray(53, 53, 53);
@@ -94,12 +91,12 @@ void QtHost::SetStyleFromSettings()
     darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkGray);
 
     qApp->setPalette(darkPalette);
+    qApp->setStyleSheet(QString());
   }
   else if (theme == "darkfusionblue")
   {
     // adapted from https://gist.github.com/QuantumCD/6245215
     qApp->setStyle(QStyleFactory::create("Fusion"));
-    qApp->setStyleSheet(QString());
 
     // const QColor lighterGray(75, 75, 75);
     const QColor darkGray(53, 53, 53);
@@ -130,6 +127,7 @@ void QtHost::SetStyleFromSettings()
     darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkGray);
 
     qApp->setPalette(darkPalette);
+    qApp->setStyleSheet(QString());
   }
   else if (theme == "cobaltsky")
   {
@@ -137,7 +135,6 @@ void QtHost::SetStyleFromSettings()
     // that are meant to be easy on the eyes as the main color.
     // Alternative dark theme.
     qApp->setStyle(QStyleFactory::create("Fusion"));
-    qApp->setStyleSheet(QString());
 
     const QColor gray(150, 150, 150);
     const QColor royalBlue(29, 41, 81);
@@ -167,11 +164,11 @@ void QtHost::SetStyleFromSettings()
     darkPalette.setColor(QPalette::Disabled, QPalette::Light, gray);
 
     qApp->setPalette(darkPalette);
+    qApp->setStyleSheet(QString());
   }
   else if (theme == "greymatter")
   {
     qApp->setStyle(QStyleFactory::create("Fusion"));
-    qApp->setStyleSheet(QString());
 
     const QColor darkGray(46, 52, 64);
     const QColor lighterGray(59, 66, 82);
@@ -200,11 +197,11 @@ void QtHost::SetStyleFromSettings()
     darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkGray);
 
     qApp->setPalette(darkPalette);
+    qApp->setStyleSheet(QString());
   }
   else if (theme == "darkruby")
   {
     qApp->setStyle(QStyleFactory::create("Fusion"));
-    qApp->setStyleSheet(QString());
 
     const QColor gray(128, 128, 128);
     const QColor slate(18, 18, 18);
@@ -231,11 +228,11 @@ void QtHost::SetStyleFromSettings()
     darkPalette.setColor(QPalette::Disabled, QPalette::Light, slate.lighter());
 
     qApp->setPalette(darkPalette);
+    qApp->setStyleSheet(QString());
   }
   else if (theme == "purplerain")
   {
     qApp->setStyle(QStyleFactory::create("Fusion"));
-    qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #505a70; border: 1px solid white; }");
 
     const QColor darkPurple(73, 41, 121);
     const QColor darkerPurple(53, 29, 87);
@@ -263,17 +260,20 @@ void QtHost::SetStyleFromSettings()
     darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkPurple);
 
     qApp->setPalette(darkPalette);
+    qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #505a70; border: 1px solid white; }");
   }
 #ifdef _WIN32
   else if (theme == "windowsvista")
   {
     qApp->setStyle(QStyleFactory::create("windowsvista"));
+    qApp->setPalette(s_unthemed_palette);
     qApp->setStyleSheet(QString());
   }
 #endif
   else
   {
     qApp->setStyle(s_unthemed_style_name);
+    qApp->setPalette(s_unthemed_palette);
     qApp->setStyleSheet(QString());
   }
 }
