@@ -147,7 +147,6 @@ std::string GetInputProfilePath(std::string_view name);
 State GetState();
 void SetState(State new_state);
 bool IsRunning();
-bool IsExecutionInterrupted();
 bool IsPaused();
 bool IsShutdown();
 bool IsValid();

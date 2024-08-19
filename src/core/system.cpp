@@ -203,6 +203,9 @@ static u32 CompressAndWriteStateData(std::FILE* fp, std::span<const u8> src, Sav
                                      u32* header_type, Error* error);
 static bool DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display, bool is_memory_state);
 
+static bool IsExecutionInterrupted();
+static void ExitExecution();
+
 static void SetRewinding(bool enabled);
 static bool SaveRewindState();
 static void DoRewind();
@@ -557,6 +560,12 @@ bool System::IsRunning()
 bool System::IsExecutionInterrupted()
 {
   return s_state != State::Running || s_system_interrupted;
+}
+
+void System::ExitExecution()
+{
+  TimingEvents::CancelRunningEvent();
+  CPU::ExitExecution();
 }
 
 bool System::IsPaused()
@@ -2043,7 +2052,7 @@ void System::FrameDone()
       if (IsExecutionInterrupted())
       {
         s_system_interrupted = false;
-        CPU::ExitExecution();
+        ExitExecution();
         return;
       }
     }
@@ -2154,7 +2163,7 @@ void System::FrameDone()
     if (IsExecutionInterrupted())
     {
       s_system_interrupted = false;
-      CPU::ExitExecution();
+      ExitExecution();
       return;
     }
   }

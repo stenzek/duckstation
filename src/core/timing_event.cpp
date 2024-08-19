@@ -32,7 +32,6 @@ struct TimingEventsState
   TimingEvent* active_events_tail = nullptr;
   TimingEvent* current_event = nullptr;
   u32 active_event_count = 0;
-  bool frame_done = false;
   GlobalTicks current_event_next_run_time = 0;
   GlobalTicks global_tick_counter = 0;
   GlobalTicks event_run_tick_counter = 0;
@@ -305,20 +304,19 @@ bool TimingEvents::IsRunningEvents()
   return (s_state.current_event != nullptr);
 }
 
-void TimingEvents::SetFrameDone()
-{
-  s_state.frame_done = true;
-  CPU::g_state.downcount = 0;
-}
-
 void TimingEvents::CancelRunningEvent()
 {
-  if (!s_state.current_event)
+  TimingEvent* const event = s_state.current_event;
+  if (!event)
     return;
 
   // Might need to sort it, since we're bailing out.
-  if (s_state.current_event->IsActive())
-    SortEvent(s_state.current_event);
+  if (event->IsActive())
+  {
+    event->m_next_run_time = s_state.current_event_next_run_time;
+    SortEvent(event);
+  }
+
   s_state.current_event = nullptr;
 }
 
@@ -373,12 +371,6 @@ void TimingEvents::RunEvents()
     {
       CPU::ResetPendingTicks();
       CommitGlobalTicks(new_global_ticks);
-    }
-
-    if (s_state.frame_done)
-    {
-      s_state.frame_done = false;
-      System::FrameDone();
     }
 
     if (CPU::HasPendingInterrupt())

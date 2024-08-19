@@ -86,7 +86,6 @@ void Shutdown();
 bool DoState(StateWrapper& sw);
 
 bool IsRunningEvents();
-void SetFrameDone();
 void CancelRunningEvent();
 void RunEvents();
 void CommitLeftoverTicks();
