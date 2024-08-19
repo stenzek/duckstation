@@ -977,6 +977,7 @@ void GPU::CRTCTickEvent(TickCount ticks)
       Timers::AddTicks(HBLANK_TIMER_INDEX, static_cast<TickCount>(hblank_timer_ticks));
   }
 
+  bool frame_done = false;
   while (lines_to_draw > 0)
   {
     const u32 lines_to_draw_this_loop =
@@ -1007,7 +1008,7 @@ void GPU::CRTCTickEvent(TickCount ticks)
         // TODO: move present in here I guess
         FlushRender();
         UpdateDisplay();
-        TimingEvents::SetFrameDone();
+        frame_done = true;
 
         // switch fields early. this is needed so we draw to the correct one.
         if (m_GPUSTAT.InInterleaved480iMode())
@@ -1068,6 +1069,9 @@ void GPU::CRTCTickEvent(TickCount ticks)
   }
 
   UpdateCRTCTickEvent();
+
+  if (frame_done)
+    System::FrameDone();
 }
 
 void GPU::CommandTickEvent(TickCount ticks)

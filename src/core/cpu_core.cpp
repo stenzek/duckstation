@@ -2019,10 +2019,8 @@ bool CPU::UpdateDebugDispatcherFlag()
 void CPU::ExitExecution()
 {
   // can't exit while running events without messing things up
-  if (TimingEvents::IsRunningEvents())
-    TimingEvents::SetFrameDone();
-  else
-    fastjmp_jmp(&s_jmp_buf, 1);
+  DebugAssert(!TimingEvents::IsRunningEvents());
+  fastjmp_jmp(&s_jmp_buf, 1);
 }
 
 bool CPU::HasAnyBreakpoints()
