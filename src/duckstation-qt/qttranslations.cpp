@@ -66,7 +66,7 @@ static constexpr const char* DEFAULT_IMGUI_FONT_NAME = "Roboto-Regular.ttf";
 static std::vector<QTranslator*> s_translators;
 } // namespace QtHost
 
-void QtHost::InstallTranslator(QWidget* dialog_parent)
+void QtHost::UpdateApplicationLanguage(QWidget* dialog_parent)
 {
   for (QTranslator* translator : s_translators)
   {
@@ -206,7 +206,7 @@ bool Host::ChangeLanguage(const char* new_language)
   QtHost::RunOnUIThread([new_language = std::string(new_language)]() {
     Host::SetBaseStringSettingValue("Main", "Language", new_language.c_str());
     Host::CommitBaseSettingChanges();
-    QtHost::InstallTranslator(g_main_window);
+    QtHost::UpdateApplicationLanguage(g_main_window);
     g_main_window->recreate();
   });
   return true;

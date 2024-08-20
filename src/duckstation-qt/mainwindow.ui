@@ -100,22 +100,6 @@
     <property name="title">
      <string>S&amp;ettings</string>
     </property>
-    <widget class="QMenu" name="menuSettingsTheme">
-     <property name="title">
-      <string>Theme</string>
-     </property>
-     <property name="icon">
-      <iconset theme="paint-brush-line"/>
-     </property>
-    </widget>
-    <widget class="QMenu" name="menuSettingsLanguage">
-     <property name="title">
-      <string>Language</string>
-     </property>
-     <property name="icon">
-      <iconset theme="global-line"/>
-     </property>
-    </widget>
     <addaction name="actionViewGameProperties"/>
     <addaction name="separator"/>
     <addaction name="actionInterfaceSettings"/>
@@ -137,9 +121,6 @@
     <addaction name="actionAddGameDirectory"/>
     <addaction name="actionScanForNewGames"/>
     <addaction name="actionRescanAllGames"/>
-    <addaction name="separator"/>
-    <addaction name="menuSettingsLanguage"/>
-    <addaction name="menuSettingsTheme"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">

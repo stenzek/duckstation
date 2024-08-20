@@ -17,8 +17,14 @@ public:
   explicit InterfaceSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~InterfaceSettingsWidget();
 
+  static void populateLanguageDropdown(QComboBox* cb);
+
+Q_SIGNALS:
+  void themeChanged();
+
 private Q_SLOTS:
   void onRenderToSeparateWindowChanged();
+  void onLanguageChanged();
 
 private:
   Ui::InterfaceSettingsWidget m_ui;

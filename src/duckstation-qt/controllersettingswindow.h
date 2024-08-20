@@ -56,6 +56,8 @@ public:
   ALWAYS_INLINE bool isEditingProfile() const { return !m_profile_name.isEmpty(); }
   ALWAYS_INLINE SettingsInterface* getProfileSettingsInterface() { return m_profile_interface.get(); }
 
+  Category getCurrentCategory() const;
+
   void updateListDescription(u32 global_slot, ControllerBindingWidget* widget);
 
   // Helper functions for updating setting values globally or in the profile.
@@ -90,6 +92,7 @@ private Q_SLOTS:
   void createWidgets();
 
 private:
+  int getHotkeyCategoryIndex() const;
   void refreshProfileList();
   void switchProfile(const QString& name);
 

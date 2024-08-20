@@ -79,7 +79,7 @@ void SettingsWindow::closeEvent(QCloseEvent* event)
 void SettingsWindow::addPages()
 {
   addWidget(
-    m_general_settings = new InterfaceSettingsWidget(this, m_ui.settingsContainer), tr("Interface"),
+    m_interface_settings = new InterfaceSettingsWidget(this, m_ui.settingsContainer), tr("Interface"),
     QStringLiteral("settings-3-line"),
     tr("<strong>Interface Settings</strong><hr>These options control how the emulator looks and "
        "behaves.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
@@ -248,6 +248,16 @@ void SettingsWindow::setCategory(const char* category)
       break;
     }
   }
+}
+
+int SettingsWindow::getCategoryRow() const
+{
+  return m_ui.settingsCategory->currentRow();
+}
+
+void SettingsWindow::setCategoryRow(int index)
+{
+  m_ui.settingsCategory->setCurrentRow(index);
 }
 
 void SettingsWindow::onCategoryCurrentRowChanged(int row)

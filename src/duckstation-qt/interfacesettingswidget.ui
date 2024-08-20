@@ -140,9 +140,38 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="automaticUpdaterGroup">
+    <widget class="QGroupBox" name="appearanceGroup">
      <property name="title">
-      <string>Automatic Updater</string>
+      <string>Appearance</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_3" columnstretch="0,1,0,1">
+      <item row="0" column="3">
+       <widget class="QComboBox" name="theme"/>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Language:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Theme:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="language"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="updatesGroup">
+     <property name="title">
+      <string>Updates</string>
      </property>
      <layout class="QFormLayout" name="formLayout_2">
       <item row="0" column="0">
