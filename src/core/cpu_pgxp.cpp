@@ -215,16 +215,15 @@ ALWAYS_INLINE_RELEASE double CPU::PGXP::f16Sign(double in)
   const s32 s = static_cast<s32>(static_cast<s64>(in * (USHRT_MAX + 1)));
   return static_cast<double>(s) / static_cast<double>(USHRT_MAX + 1);
 }
+
 ALWAYS_INLINE_RELEASE double CPU::PGXP::f16Unsign(double in)
 {
   return (in >= 0) ? in : (in + (USHRT_MAX + 1));
 }
+
 ALWAYS_INLINE_RELEASE double CPU::PGXP::f16Overflow(double in)
 {
-  double out = 0;
-  s64 v = ((s64)in) >> 16;
-  out = (double)v;
-  return out;
+  return static_cast<double>(static_cast<s64>(in) >> 16);
 }
 
 ALWAYS_INLINE CPU::PGXP_value& CPU::PGXP::GetRdValue(Instruction instr)
@@ -343,7 +342,7 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::ValidateAndLoadMem16(PGXP_value* dest, u32
   // only set y as valid if x is also valid.. don't want to make fake values
   if (dest->HasValid(COMP_X))
   {
-    dest->y = (dest->x < 0) ? -1.f * sign : 0.f;
+    dest->y = (dest->x < 0) ? -1.0f * sign : 0.0f;
     dest->SetValid(COMP_Y);
   }
   else
@@ -775,13 +774,12 @@ void CPU::PGXP::CPU_ADDI(Instruction instr, u32 rsVal)
   prtVal.x += static_cast<float>(LOWORD_U16(immVal));
 
   // carry on over/underflow
-  float of = (prtVal.x > USHRT_MAX) ? 1.f : (prtVal.x < 0) ? -1.f : 0.f;
+  const float of = (prtVal.x > USHRT_MAX) ? 1.0f : (prtVal.x < 0.0f) ? -1.0f : 0.0f;
   prtVal.x = static_cast<float>(f16Sign(prtVal.x));
-  // ret.x -= of * (USHRT_MAX + 1);
   prtVal.y += HIWORD_S16(immVal) + of;
 
   // truncate on overflow/underflow
-  prtVal.y += (prtVal.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (prtVal.y < SHRT_MIN) ? USHRT_MAX + 1 : 0.f;
+  prtVal.y += (prtVal.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (prtVal.y < SHRT_MIN) ? (USHRT_MAX + 1) : 0.0f;
 
   prtVal.value = rsVal + immVal;
 
@@ -798,7 +796,8 @@ void CPU::PGXP::CPU_ANDI(Instruction instr, u32 rsVal)
   PGXP_value& prsVal = ValidateAndGetRsValue(instr, rsVal);
   PGXP_value& prtVal = GetRtValue(instr);
 
-  prtVal.y = 0.0f; // remove upper 16-bits
+  // remove upper 16-bits
+  prtVal.y = 0.0f;
   prtVal.z = prsVal.z;
   prtVal.value = rtVal;
   prtVal.flags = prsVal.flags | VALID_Y | VALID_TAINTED_Z;
@@ -892,7 +891,7 @@ void CPU::PGXP::CPU_SLTI(Instruction instr, u32 rsVal)
   const float fimmy = fimmx < 0.0f ? -1.0f : 0.0f;
 
   PGXP_value& prtVal = GetRtValue(instr);
-  prtVal.x = (prsVal.GetValidY(rsVal) < fimmy || prsVal.GetValidX(rsVal) < fimmx) ? 1.f : 0.f;
+  prtVal.x = (prsVal.GetValidY(rsVal) < fimmy || prsVal.GetValidX(rsVal) < fimmx) ? 1.0f : 0.0f;
   prtVal.y = 0.0f;
   prtVal.z = prsVal.z;
   prtVal.flags = prsVal.flags | VALID_X | VALID_Y | VALID_TAINTED_Z;
@@ -913,7 +912,7 @@ void CPU::PGXP::CPU_SLTIU(Instruction instr, u32 rsVal)
   PGXP_value& prtVal = GetRtValue(instr);
   prtVal.x =
     (f16Unsign(prsVal.GetValidY(rsVal)) < f16Unsign(fimmy) || f16Unsign(prsVal.GetValidX(rsVal)) < fimmx) ? 1.0f : 0.0f;
-  prtVal.y = 0.f;
+  prtVal.y = 0.0f;
   prtVal.z = prsVal.z;
   prtVal.flags = prsVal.flags | VALID_X | VALID_Y | VALID_TAINTED_Z;
   prtVal.value = BoolToUInt32(rsVal < imm);
@@ -962,13 +961,12 @@ void CPU::PGXP::CPU_ADD(Instruction instr, u32 rsVal, u32 rtVal)
     const double x = f16Unsign(prsVal.GetValidX(rsVal)) + f16Unsign(prtVal.GetValidX(rtVal));
 
     // carry on over/underflow
-    const float of = (x > USHRT_MAX) ? 1.f : (x < 0) ? -1.f : 0.f;
+    const float of = (x > USHRT_MAX) ? 1.0f : (x < 0.0f) ? -1.0f : 0.0f;
     prdVal.x = static_cast<float>(f16Sign(x));
-    // prdVal.x -= of * (USHRT_MAX + 1);
     prdVal.y = prsVal.GetValidY(rsVal) + prtVal.GetValidY(rtVal) + of;
 
     // truncate on overflow/underflow
-    prdVal.y += (prdVal.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (prdVal.y < SHRT_MIN) ? USHRT_MAX + 1 : 0.f;
+    prdVal.y += (prdVal.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (prdVal.y < SHRT_MIN) ? (USHRT_MAX + 1) : 0.0f;
 
     prdVal.value = rsVal + rtVal;
 
@@ -998,13 +996,12 @@ void CPU::PGXP::CPU_SUB(Instruction instr, u32 rsVal, u32 rtVal)
     const double x = f16Unsign(prsVal.GetValidX(rsVal)) - f16Unsign(prtVal.GetValidX(rtVal));
 
     // carry on over/underflow
-    const float of = (x > USHRT_MAX) ? 1.f : (x < 0) ? -1.f : 0.f;
+    const float of = (x > USHRT_MAX) ? 1.0f : (x < 0.0f) ? -1.0f : 0.0f;
     prdVal.x = static_cast<float>(f16Sign(x));
-    // prdVal.x -= of * (USHRT_MAX + 1);
     prdVal.y = prsVal.GetValidY(rsVal) - (prtVal.GetValidY(rtVal) - of);
 
     // truncate on overflow/underflow
-    prdVal.y += (prdVal.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (prdVal.y < SHRT_MIN) ? USHRT_MAX + 1 : 0.f;
+    prdVal.y += (prdVal.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (prdVal.y < SHRT_MIN) ? (USHRT_MAX + 1) : 0.0f;
 
     prdVal.value = rsVal - rtVal;
 
@@ -1142,36 +1139,28 @@ void CPU::PGXP::CPU_MULT(Instruction instr, u32 rsVal, u32 rtVal)
   // Z/valid is the same
   phiVal = ploVal;
 
-  double xx, xy, yx, yy;
-  double lx = 0, ly = 0, hx = 0, hy = 0;
-
   const float rsx = prsVal.GetValidX(rsVal);
   const float rsy = prsVal.GetValidY(rsVal);
   const float rtx = prtVal.GetValidX(rtVal);
   const float rty = prtVal.GetValidY(rtVal);
 
   // Multiply out components
-  xx = f16Unsign(rsx) * f16Unsign(rtx);
-  xy = f16Unsign(rsx) * (rty);
-  yx = (rsy)*f16Unsign(rtx);
-  yy = (rsy) * (rty);
+  const double xx = f16Unsign(rsx) * f16Unsign(rtx);
+  const double xy = f16Unsign(rsx) * (rty);
+  const double yx = rsy * f16Unsign(rtx);
+  const double yy = rsy * rty;
 
   // Split values into outputs
-  lx = xx;
+  const double lx = xx;
+  const double ly = f16Overflow(xx) + (xy + yx);
+  const double hx = f16Overflow(ly)+ yy;
+  const double hy = f16Overflow(hx);
 
-  ly = f16Overflow(xx);
-  ly += xy + yx;
-
-  hx = f16Overflow(ly);
-  hx += yy;
-
-  hy = f16Overflow(hx);
-
-  ploVal.x = (float)f16Sign(lx);
-  ploVal.y = (float)f16Sign(ly);
+  ploVal.x = static_cast<float>(f16Sign(lx));
+  ploVal.y = static_cast<float>(f16Sign(ly));
   ploVal.flags |= VALID_TAINTED_Z | (prtVal.flags & VALID_XY);
-  phiVal.x = (float)f16Sign(hx);
-  phiVal.y = (float)f16Sign(hy);
+  phiVal.x = static_cast<float>(f16Sign(hx));
+  phiVal.y = static_cast<float>(f16Sign(hy));
   phiVal.flags |= VALID_TAINTED_Z | (prtVal.flags & VALID_XY);
 
   // compute PSX value
@@ -1196,36 +1185,28 @@ void CPU::PGXP::CPU_MULTU(Instruction instr, u32 rsVal, u32 rtVal)
   // Z/valid is the same
   phiVal = ploVal;
 
-  double xx, xy, yx, yy;
-  double lx = 0, ly = 0, hx = 0, hy = 0;
-
   const float rsx = prsVal.GetValidX(rsVal);
   const float rsy = prsVal.GetValidY(rsVal);
   const float rtx = prtVal.GetValidX(rtVal);
   const float rty = prtVal.GetValidY(rtVal);
 
   // Multiply out components
-  xx = f16Unsign(rsx) * f16Unsign(rtx);
-  xy = f16Unsign(rsx) * f16Unsign(rty);
-  yx = f16Unsign(rsy) * f16Unsign(rtx);
-  yy = f16Unsign(rsy) * f16Unsign(rty);
+  const double xx = f16Unsign(rsx) * f16Unsign(rtx);
+  const double xy = f16Unsign(rsx) * f16Unsign(rty);
+  const double yx = f16Unsign(rsy) * f16Unsign(rtx);
+  const double yy = f16Unsign(rsy) * f16Unsign(rty);
 
   // Split values into outputs
-  lx = xx;
+  const double lx = xx;
+  const double ly = f16Overflow(xx) + (xy + yx);
+  const double hx = f16Overflow(ly) + yy;
+  const double hy = f16Overflow(hx);
 
-  ly = f16Overflow(xx);
-  ly += xy + yx;
-
-  hx = f16Overflow(ly);
-  hx += yy;
-
-  hy = f16Overflow(hx);
-
-  ploVal.x = (float)f16Sign(lx);
-  ploVal.y = (float)f16Sign(ly);
+  ploVal.x = static_cast<float>(f16Sign(lx));
+  ploVal.y = static_cast<float>(f16Sign(ly));
   ploVal.flags |= VALID_TAINTED_Z | (prtVal.flags & VALID_XY);
-  phiVal.x = (float)f16Sign(hx);
-  phiVal.y = (float)f16Sign(hy);
+  phiVal.x = static_cast<float>(f16Sign(hx));
+  phiVal.y = static_cast<float>(f16Sign(hy));
   phiVal.flags |= VALID_TAINTED_Z | (prtVal.flags & VALID_XY);
 
   // compute PSX value
@@ -1251,17 +1232,17 @@ void CPU::PGXP::CPU_DIV(Instruction instr, u32 rsVal, u32 rtVal)
   // Z/valid is the same
   phiVal = ploVal;
 
-  double vs = f16Unsign(prsVal.GetValidX(rsVal)) + prsVal.GetValidY(rsVal) * (double)(1 << 16);
-  double vt = f16Unsign(prtVal.GetValidX(rtVal)) + prtVal.GetValidY(rtVal) * (double)(1 << 16);
+  const double vs = f16Unsign(prsVal.GetValidX(rsVal)) + prsVal.GetValidY(rsVal) * static_cast<double>(1 << 16);
+  const double vt = f16Unsign(prtVal.GetValidX(rtVal)) + prtVal.GetValidY(rtVal) * static_cast<double>(1 << 16);
 
-  double lo = vs / vt;
-  ploVal.y = (float)f16Sign(f16Overflow(lo));
-  ploVal.x = (float)f16Sign(lo);
+  const double lo = vs / vt;
+  ploVal.y = static_cast<float>(f16Sign(f16Overflow(lo)));
+  ploVal.x = static_cast<float>(f16Sign(lo));
   ploVal.flags |= VALID_TAINTED_Z | (prtVal.flags & VALID_XY);
 
-  double hi = fmod(vs, vt);
-  phiVal.y = (float)f16Sign(f16Overflow(hi));
-  phiVal.x = (float)f16Sign(hi);
+  const double hi = std::fmod(vs, vt);
+  phiVal.y = static_cast<float>(f16Sign(f16Overflow(hi)));
+  phiVal.x = static_cast<float>(f16Sign(hi));
   phiVal.flags |= VALID_TAINTED_Z | (prtVal.flags & VALID_XY);
 
   // compute PSX value
@@ -1301,17 +1282,17 @@ void CPU::PGXP::CPU_DIVU(Instruction instr, u32 rsVal, u32 rtVal)
   // Z/valid is the same
   phiVal = ploVal;
 
-  double vs = f16Unsign(prsVal.GetValidX(rsVal)) + f16Unsign(prsVal.GetValidY(rsVal)) * (double)(1 << 16);
-  double vt = f16Unsign(prtVal.GetValidX(rtVal)) + f16Unsign(prtVal.GetValidY(rtVal)) * (double)(1 << 16);
+  const double vs = f16Unsign(prsVal.GetValidX(rsVal)) + f16Unsign(prsVal.GetValidY(rsVal)) * static_cast<double>(1 << 16);
+  const double vt = f16Unsign(prtVal.GetValidX(rtVal)) + f16Unsign(prtVal.GetValidY(rtVal)) * static_cast<double>(1 << 16);
 
-  double lo = vs / vt;
-  ploVal.y = (float)f16Sign(f16Overflow(lo));
-  ploVal.x = (float)f16Sign(lo);
+  const double lo = vs / vt;
+  ploVal.y = static_cast<float>(f16Sign(f16Overflow(lo)));
+  ploVal.x = static_cast<float>(f16Sign(lo));
   ploVal.flags |= VALID_TAINTED_Z | (prtVal.flags & VALID_XY);
 
-  double hi = fmod(vs, vt);
-  phiVal.y = (float)f16Sign(f16Overflow(hi));
-  phiVal.x = (float)f16Sign(hi);
+  const double hi = std::fmod(vs, vt);
+  phiVal.y = static_cast<float>(f16Sign(f16Overflow(hi)));
+  phiVal.x = static_cast<float>(f16Sign(hi));
   phiVal.flags |= VALID_TAINTED_Z | (prtVal.flags & VALID_XY);
 
   if (rtVal == 0)
