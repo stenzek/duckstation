@@ -50,7 +50,7 @@ union CacheControl
   BitField<u32, bool, 11, 1> icache_enable;
 };
 
-struct PGXP_value
+struct PGXPValue
 {
   float x;
   float y;
@@ -118,9 +118,9 @@ struct State
   void* fastmem_base = nullptr;
   void** memory_handlers = nullptr;
 
-  PGXP_value pgxp_gpr[static_cast<u8>(Reg::count)] = {};
-  PGXP_value pgxp_cop0[32] = {};
-  PGXP_value pgxp_gte[64] = {};
+  PGXPValue pgxp_gpr[static_cast<u8>(Reg::count)] = {};
+  PGXPValue pgxp_cop0[32] = {};
+  PGXPValue pgxp_gte[64] = {};
 
   std::array<u32, ICACHE_LINES> icache_tags = {};
   std::array<u8, ICACHE_SIZE> icache_data = {};
