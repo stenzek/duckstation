@@ -1328,41 +1328,43 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SLL(Instruction instr, u32 rtVal, u32 
 {
   const u32 rdVal = rtVal << sh;
   PGXP_value& prtVal = ValidateAndGetRtValue(instr, rtVal);
+  PGXP_value& prdVal = GetRdValue(instr);
+  prdVal.z = prtVal.z;
+  prdVal.value = rdVal;
 
-  // TODO: Shift flags
-  double x = f16Unsign(prtVal.x);
-  double y = f16Unsign(prtVal.y);
-  if (sh >= 32)
+  if (sh >= 32) [[unlikely]]
   {
-    x = 0.f;
-    y = 0.f;
+    prdVal.x = 0.0f;
+    prdVal.y = 0.0f;
+    prdVal.flags = prtVal.flags | VALID_XY | VALID_TAINTED_Z;
   }
   else if (sh == 16)
   {
-    y = f16Sign(x);
-    x = 0.f;
+    prdVal.y = prtVal.x;
+    prdVal.x = 0.0f;
+
+    // Only set valid X if there's also a valid Y. We could use GetValidX() to pull it from the low precision value
+    // instead, need to investigate further. Spyro breaks if only X is set even if Y is not valid.
+    // prdVal.flags = (prtVal.flags & ~VALID_Y) | ((prtVal.flags & VALID_X) << 1) | VALID_X | VALID_TAINTED_Z;
+    prdVal.flags = (prtVal.flags | VALID_TAINTED_Z) | ((prtVal.flags & VALID_Y) >> 1);
   }
   else if (sh >= 16)
   {
-    y = x * static_cast<float>(1 << (sh - 16));
-    y = f16Sign(y);
-    x = 0.f;
+    prdVal.y = static_cast<float>(f16Sign(f16Unsign(prtVal.x * static_cast<double>(1 << (sh - 16)))));
+    prdVal.x = 0.0f;
+
+    // See above.
+    // prdVal.flags = (prtVal.flags & ~VALID_Y) | ((prtVal.flags & VALID_X) << 1) | VALID_X | VALID_TAINTED_Z;
+    prdVal.flags = (prtVal.flags | VALID_TAINTED_Z) | ((prtVal.flags & VALID_Y) >> 1);
   }
   else
   {
-    x = x * static_cast<float>(1 << sh);
-    y = y * static_cast<float>(1 << sh);
-    y += f16Overflow(x);
-    x = f16Sign(x);
-    y = f16Sign(y);
+    const double x = f16Unsign(prtVal.x) * static_cast<double>(1 << sh);
+    const double y = (f16Unsign(prtVal.y) * static_cast<double>(1 << sh)) + f16Overflow(x);
+    prdVal.x = static_cast<float>(f16Sign(x));
+    prdVal.y = static_cast<float>(f16Sign(y));
+    prdVal.flags = (prtVal.flags | VALID_TAINTED_Z);
   }
-
-  PGXP_value& prdVal = GetRdValue(instr);
-  prdVal = prtVal;
-  prdVal.x = static_cast<float>(x);
-  prdVal.y = static_cast<float>(y);
-  prdVal.value = rdVal;
-  prdVal.flags |= VALID_TAINTED_Z;
 }
 
 void CPU::PGXP::CPU_SLL(Instruction instr, u32 rtVal)
