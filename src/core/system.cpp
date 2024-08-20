@@ -2685,9 +2685,6 @@ bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bo
     return false;
   }
 
-  if (s_state == State::Starting)
-    s_state = State::Running;
-
   InterruptExecution();
   ResetPerformanceCounters();
   ResetThrottler();
