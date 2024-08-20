@@ -23,7 +23,6 @@ Log_SetChannel(CPU::PGXP);
 // TODO: Don't update flags on Validate(), instead return it.
 
 namespace CPU::PGXP {
-namespace {
 
 enum : u32
 {
@@ -62,21 +61,6 @@ enum : u32
 #define SET_LOWORD(val, loword) ((static_cast<u32>(val) & 0xFFFF0000u) | static_cast<u32>(static_cast<u16>(loword)))
 #define SET_HIWORD(val, hiword) ((static_cast<u32>(val) & 0x0000FFFFu) | (static_cast<u32>(hiword) << 16))
 
-union psx_value
-{
-  u32 d;
-  s32 sd;
-  struct
-  {
-    u16 l, h;
-  } w;
-  struct
-  {
-    s16 l, h;
-  } sw;
-};
-} // namespace
-
 static void CacheVertex(u32 value, const PGXP_value& vertex);
 static PGXP_value* GetCachedVertex(u32 value);
 
@@ -86,7 +70,6 @@ static bool IsWithinTolerance(float precise_x, float precise_y, int int_x, int i
 static void MakeValid(PGXP_value* pV, u32 psxV);
 
 static void Validate(PGXP_value* pV, u32 psxV);
-static void MaskValidate(PGXP_value* pV, u32 psxV, u32 mask, u32 validMask);
 
 static double f16Sign(double in);
 static double f16Unsign(double in);
@@ -233,11 +216,6 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::Validate(PGXP_value* pV, u32 psxV)
   pV->flags = (pV->value == psxV) ? pV->flags : 0;
 }
 
-ALWAYS_INLINE_RELEASE void CPU::PGXP::MaskValidate(PGXP_value* pV, u32 psxV, u32 mask, u32 validMask)
-{
-  pV->flags = ((pV->value & mask) == (psxV & mask)) ? pV->flags : (pV->flags & ~validMask);
-}
-
 ALWAYS_INLINE_RELEASE double CPU::PGXP::f16Sign(double in)
 {
   const s32 s = static_cast<s32>(static_cast<s64>(in * (USHRT_MAX + 1)));
@@ -322,32 +300,21 @@ ALWAYS_INLINE_RELEASE const CPU::PGXP_value& CPU::PGXP::ValidateAndLoadMem(u32 a
 ALWAYS_INLINE_RELEASE void CPU::PGXP::ValidateAndLoadMem16(PGXP_value* dest, u32 addr, u32 value, bool sign)
 {
   PGXP_value* pMem = GetPtr(addr);
-  if (!pMem)
+  if (!pMem) [[unlikely]]
   {
     *dest = PGXP_value_invalid;
     return;
   }
 
-  psx_value val{0}, mask{0};
-  u32 valid_mask = 0;
-
   // determine if high or low word
   const bool hiword = ((addr & 2) != 0);
-  if (hiword)
-  {
-    val.w.h = static_cast<u16>(value);
-    mask.w.h = 0xFFFF;
-    valid_mask = VALID_Y;
-  }
-  else
-  {
-    val.w.l = static_cast<u16>(value);
-    mask.w.l = 0xFFFF;
-    valid_mask = VALID_X;
-  }
 
-  // validate and copy whole value
-  MaskValidate(pMem, val.d, mask.d, valid_mask);
+  // only validate the component we're interested in
+  pMem->flags = hiword ?
+                  ((Truncate16(pMem->value >> 16) == Truncate16(value)) ? pMem->flags : (pMem->flags & ~VALID_Y)) :
+                  ((Truncate16(pMem->value) == Truncate16(value)) ? pMem->flags : (pMem->flags & ~VALID_X));
+
+  // copy whole value
   *dest = *pMem;
 
   // if high word then shift
