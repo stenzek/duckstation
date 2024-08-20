@@ -91,7 +91,7 @@ static PGXP_value* GetPtr(u32 addr);
 static void ValidateAndCopyMem(PGXP_value* dest, u32 addr, u32 value);
 static void ValidateAndCopyMem16(PGXP_value* dest, u32 addr, u32 value, bool sign);
 
-static void CPU_MTC2_int(const PGXP_value& value, u32 reg);
+static void CPU_MTC2_int(const PGXP_value& value, u32 reg, u32 rtVal);
 static void CPU_BITWISE(u32 instr, u32 rdVal, u32 rsVal, u32 rtVal);
 
 static void WriteMem(const PGXP_value* value, u32 addr);
@@ -517,7 +517,7 @@ float CPU::PGXP::GTE_NCLIP()
   return nclip;
 }
 
-ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_MTC2_int(const PGXP_value& value, u32 reg)
+ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_MTC2_int(const PGXP_value& value, u32 reg, u32 rtVal)
 {
   switch (reg)
   {
@@ -534,6 +534,7 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_MTC2_int(const PGXP_value& value, u32 
   }
 
   g_state.pgxp_gte[reg] = value;
+  g_state.pgxp_gte[reg].value = rtVal;
 }
 
 ////////////////////////////////////
@@ -556,8 +557,7 @@ void CPU::PGXP::CPU_MTC2(u32 instr, u32 rtVal)
   const u32 idx = cop2idx(instr);
   LOG_VALUES_C1(rt(instr), rtVal);
   Validate(&g_state.pgxp_gpr[rt(instr)], rtVal);
-  CPU_MTC2_int(g_state.pgxp_gpr[rt(instr)], idx);
-  g_state.pgxp_gte[idx].value = rtVal;
+  CPU_MTC2_int(g_state.pgxp_gpr[rt(instr)], idx, rtVal);
 }
 
 ////////////////////////////////////
@@ -569,7 +569,7 @@ void CPU::PGXP::CPU_LWC2(u32 instr, u32 addr, u32 rtVal)
   LOG_VALUES_LOAD(addr, rtVal);
   PGXP_value val;
   ValidateAndCopyMem(&val, addr, rtVal);
-  CPU_MTC2_int(val, rt(instr));
+  CPU_MTC2_int(val, rt(instr), rtVal);
 }
 
 void CPU::PGXP::CPU_SWC2(u32 instr, u32 addr, u32 rtVal)
