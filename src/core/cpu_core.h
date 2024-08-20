@@ -63,6 +63,7 @@ struct PGXP_value
     const u32 mask = (1u << comp);
     flags = valid ? (flags | mask) : (flags & ~mask);
   }
+  ALWAYS_INLINE void Validate(u32 psxval) { flags = (value == psxval) ? flags : 0; }
 
   ALWAYS_INLINE bool HasValid(u32 comp) const { return ConvertToBoolUnchecked((flags >> comp) & 1); }
   ALWAYS_INLINE float GetValidX(u32 psxval) const
