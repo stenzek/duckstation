@@ -59,6 +59,8 @@ enum : u32
 #define HIWORD_U16(val) (static_cast<u16>(static_cast<u32>(val) >> 16))
 #define LOWORD_S16(val) (static_cast<s16>(static_cast<u16>(val)))
 #define HIWORD_S16(val) (static_cast<s16>(static_cast<u16>(static_cast<u32>(val) >> 16)))
+#define SET_LOWORD(val, loword) ((static_cast<u32>(val) & 0xFFFF0000u) | static_cast<u32>(static_cast<u16>(loword)))
+#define SET_HIWORD(val, hiword) ((static_cast<u32>(val) & 0x0000FFFFu) | (static_cast<u32>(hiword) << 16))
 
 union psx_value
 {
@@ -1376,14 +1378,14 @@ void CPU::PGXP::CPU_SLL(Instruction instr, u32 rtVal)
   }
   else if (sh >= 16)
   {
-    y = x * (1 << (sh - 16));
+    y = x * static_cast<float>(1 << (sh - 16));
     y = f16Sign(y);
     x = 0.f;
   }
   else
   {
-    x = x * (1 << sh);
-    y = y * (1 << sh);
+    x = x * static_cast<float>(1 << sh);
+    y = y * static_cast<float>(1 << sh);
     y += f16Overflow(x);
     x = f16Sign(x);
     y = f16Sign(y);
@@ -1409,26 +1411,19 @@ void CPU::PGXP::CPU_SRL(Instruction instr, u32 rtVal)
   double x = prtVal.x;
   double y = f16Unsign(prtVal.y);
 
-  psx_value iX;
-  iX.d = rtVal;
-  psx_value iY;
-  iY.d = rtVal;
-
-  iX.sd = (iX.sd << 16) >> 16; // remove Y
-  iY.sw.l = iX.sw.h;           // overwrite x with sign(x)
+  const u32 iX = SignExtend32(LOWORD_S16(rtVal));   // remove Y
+  const u32 iY = SET_LOWORD(rtVal, HIWORD_U16(iX)); // overwrite x with sign(x)
 
   // Shift test values
-  psx_value dX;
-  dX.sd = iX.sd >> sh;
-  psx_value dY;
-  dY.d = iY.d >> sh;
+  const u32 dX = static_cast<u32>(static_cast<s32>(iX) >> sh);
+  const u32 dY = iY >> sh;
 
-  if (dX.sw.l != iX.sw.h)
+  if (LOWORD_S16(dX) != HIWORD_S16(iX))
     x = x / (1 << sh);
   else
-    x = dX.sw.l; // only sign bits left
+    x = LOWORD_S16(dX); // only sign bits left
 
-  if (dY.sw.l != iX.sw.h)
+  if (LOWORD_S16(dY) != HIWORD_S16(iX))
   {
     if (sh == 16)
     {
@@ -1436,20 +1431,20 @@ void CPU::PGXP::CPU_SRL(Instruction instr, u32 rtVal)
     }
     else if (sh < 16)
     {
-      x += y * (1 << (16 - sh));
+      x += y * static_cast<float>(1 << (16 - sh));
       if (GetRtValue(instr).x < 0)
-        x += 1 << (16 - sh);
+        x += static_cast<float>(1 << (16 - sh));
     }
     else
     {
-      x += y / (1 << (sh - 16));
+      x += y / static_cast<float>(1 << (sh - 16));
     }
   }
 
-  if ((dY.sw.h == 0) || (dY.sw.h == -1))
-    y = dY.sw.h;
+  if ((HIWORD_S16(dY) == 0) || (HIWORD_S16(dY) == -1))
+    y = HIWORD_S16(dY);
   else
-    y = y / (1 << sh);
+    y = y / static_cast<float>(1 << sh);
 
   x = f16Sign(x);
   y = f16Sign(y);
@@ -1474,26 +1469,19 @@ void CPU::PGXP::CPU_SRA(Instruction instr, u32 rtVal)
   double x = prtVal.x;
   double y = prtVal.y;
 
-  psx_value iX;
-  iX.d = rtVal;
-  psx_value iY;
-  iY.d = rtVal;
-
-  iX.sd = (iX.sd << 16) >> 16; // remove Y
-  iY.sw.l = iX.sw.h;           // overwrite x with sign(x)
+  const u32 iX = SignExtend32(LOWORD_S16(rtVal));   // remove Y
+  const u32 iY = SET_LOWORD(rtVal, HIWORD_U16(iX)); // overwrite x with sign(x)
 
   // Shift test values
-  psx_value dX;
-  dX.sd = iX.sd >> sh;
-  psx_value dY;
-  dY.sd = iY.sd >> sh;
+  const u32 dX = static_cast<u32>(static_cast<s32>(iX) >> sh);
+  const u32 dY = static_cast<u32>(static_cast<s32>(iY) >> sh);
 
-  if (dX.sw.l != iX.sw.h)
+  if (LOWORD_S16(dX) != HIWORD_S16(iX))
     x = x / (1 << sh);
   else
-    x = dX.sw.l; // only sign bits left
+    x = LOWORD_S16(dX); // only sign bits left
 
-  if (dY.sw.l != iX.sw.h)
+  if (LOWORD_S16(dY) != HIWORD_S16(iX))
   {
     if (sh == 16)
     {
@@ -1511,8 +1499,8 @@ void CPU::PGXP::CPU_SRA(Instruction instr, u32 rtVal)
     }
   }
 
-  if ((dY.sw.h == 0) || (dY.sw.h == -1))
-    y = dY.sw.h;
+  if ((HIWORD_S16(dY) == 0) || (HIWORD_S16(dY) == -1))
+    y = HIWORD_S16(dY);
   else
     y = y / (1 << sh);
 
@@ -1598,26 +1586,19 @@ void CPU::PGXP::CPU_SRLV(Instruction instr, u32 rtVal, u32 rsVal)
   double x = prtVal.x;
   double y = f16Unsign(prtVal.y);
 
-  psx_value iX;
-  iX.d = rtVal;
-  psx_value iY;
-  iY.d = rtVal;
-
-  iX.sd = (iX.sd << 16) >> 16; // remove Y
-  iY.sw.l = iX.sw.h;           // overwrite x with sign(x)
+  const u32 iX = SignExtend32(LOWORD_S16(rtVal));   // remove Y
+  const u32 iY = SET_LOWORD(rtVal, HIWORD_U16(iX)); // overwrite x with sign(x)
 
   // Shift test values
-  psx_value dX;
-  dX.sd = iX.sd >> sh;
-  psx_value dY;
-  dY.d = iY.d >> sh;
+  const u32 dX = static_cast<u32>(static_cast<s32>(iX) >> sh);
+  const u32 dY = iY >> sh;
 
-  if (dX.sw.l != iX.sw.h)
+  if (LOWORD_S16(dX) != HIWORD_S16(iX))
     x = x / (1 << sh);
   else
-    x = dX.sw.l; // only sign bits left
+    x = LOWORD_S16(dX); // only sign bits left
 
-  if (dY.sw.l != iX.sw.h)
+  if (LOWORD_S16(dY) != HIWORD_S16(iX))
   {
     if (sh == 16)
     {
@@ -1635,8 +1616,8 @@ void CPU::PGXP::CPU_SRLV(Instruction instr, u32 rtVal, u32 rsVal)
     }
   }
 
-  if ((dY.sw.h == 0) || (dY.sw.h == -1))
-    y = dY.sw.h;
+  if ((HIWORD_S16(dY) == 0) || (HIWORD_S16(dY) == -1))
+    y = HIWORD_S16(dY);
   else
     y = y / (1 << sh);
 
@@ -1661,26 +1642,19 @@ void CPU::PGXP::CPU_SRAV(Instruction instr, u32 rtVal, u32 rsVal)
   double x = prtVal.x;
   double y = prtVal.y;
 
-  psx_value iX;
-  iX.d = rtVal;
-  psx_value iY;
-  iY.d = rtVal;
-
-  iX.sd = (iX.sd << 16) >> 16; // remove Y
-  iY.sw.l = iX.sw.h;           // overwrite x with sign(x)
+  const u32 iX = SignExtend32(LOWORD_S16(rtVal));   // remove Y
+  const u32 iY = SET_LOWORD(rtVal, HIWORD_U16(iX)); // overwrite x with sign(x)
 
   // Shift test values
-  psx_value dX;
-  dX.sd = iX.sd >> sh;
-  psx_value dY;
-  dY.sd = iY.sd >> sh;
+  const u32 dX = static_cast<u32>(static_cast<s32>(iX) >> sh);
+  const u32 dY = static_cast<u32>(static_cast<s32>(iY) >> sh);
 
-  if (dX.sw.l != iX.sw.h)
+  if (LOWORD_S16(dX) != HIWORD_S16(iX))
     x = x / (1 << sh);
   else
-    x = dX.sw.l; // only sign bits left
+    x = LOWORD_S16(dX); // only sign bits left
 
-  if (dY.sw.l != iX.sw.h)
+  if (LOWORD_S16(dY) != HIWORD_S16(iX))
   {
     if (sh == 16)
     {
@@ -1698,8 +1672,8 @@ void CPU::PGXP::CPU_SRAV(Instruction instr, u32 rtVal, u32 rsVal)
     }
   }
 
-  if ((dY.sw.h == 0) || (dY.sw.h == -1))
-    y = dY.sw.h;
+  if ((HIWORD_S16(dY) == 0) || (HIWORD_S16(dY) == -1))
+    y = HIWORD_S16(dY);
   else
     y = y / (1 << sh);
 
