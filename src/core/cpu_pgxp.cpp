@@ -89,6 +89,9 @@ static void ValidateAndLoadMem16(PGXP_value* dest, u32 addr, u32 value, bool sig
 
 static void CPU_MTC2_int(const PGXP_value& value, u32 reg, u32 val);
 static void CPU_BITWISE(Instruction instr, u32 rdVal, u32 rsVal, u32 rtVal);
+static void CPU_SLL(Instruction instr, u32 rtVal, u32 sh);
+static void CPU_SRL(Instruction instr, u32 rtVal, u32 sh);
+static void CPU_SRA(Instruction instr, u32 rtVal, u32 sh, bool is_variable);
 
 static void WriteMem(u32 addr, const PGXP_value& value);
 static void WriteMem16(u32 addr, const PGXP_value& value);
@@ -1321,12 +1324,9 @@ void CPU::PGXP::CPU_DIVU(Instruction instr, u32 rsVal, u32 rtVal)
 ////////////////////////////////////
 // Shift operations (sa)
 ////////////////////////////////////
-void CPU::PGXP::CPU_SLL(Instruction instr, u32 rtVal)
-{
-  LOG_VALUES_C1(instr.r.rt.GetValue(), rtVal);
 
-  // Rd = Rt << Sa
-  const u32 sh = instr.r.shamt;
+ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SLL(Instruction instr, u32 rtVal, u32 sh)
+{
   const u32 rdVal = rtVal << sh;
   PGXP_value& prtVal = ValidateAndGetRtValue(instr, rtVal);
 
@@ -1366,12 +1366,26 @@ void CPU::PGXP::CPU_SLL(Instruction instr, u32 rtVal)
   prdVal.flags |= VALID_TAINTED_Z;
 }
 
-void CPU::PGXP::CPU_SRL(Instruction instr, u32 rtVal)
+void CPU::PGXP::CPU_SLL(Instruction instr, u32 rtVal)
 {
   LOG_VALUES_C1(instr.r.rt.GetValue(), rtVal);
 
-  // Rd = Rt >> Sa
+  // Rd = Rt << Sa
   const u32 sh = instr.r.shamt;
+  CPU_SLL(instr, rtVal, sh);
+}
+
+void CPU::PGXP::CPU_SLLV(Instruction instr, u32 rtVal, u32 rsVal)
+{
+  LOG_VALUES_C2(instr.r.rt.GetValue(), rtVal, instr.r.rs.GetValue(), rsVal);
+
+  // Rd = Rt << Rs
+  const u32 sh = rsVal & 0x1F;
+  CPU_SLL(instr, rtVal, sh);
+}
+
+ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SRL(Instruction instr, u32 rtVal, u32 sh)
+{
   const u32 rdVal = rtVal >> sh;
   PGXP_value& prtVal = ValidateAndGetRtValue(instr, rtVal);
 
@@ -1413,23 +1427,34 @@ void CPU::PGXP::CPU_SRL(Instruction instr, u32 rtVal)
   else
     y = y / static_cast<float>(1 << sh);
 
-  x = f16Sign(x);
-  y = f16Sign(y);
-
   PGXP_value& prdVal = GetRdValue(instr);
   prdVal = prtVal;
-  prdVal.x = static_cast<float>(x);
-  prdVal.y = static_cast<float>(y);
+  prdVal.x = static_cast<float>(f16Sign(x));
+  prdVal.y = static_cast<float>(f16Sign(y));
   prdVal.value = rdVal;
   prdVal.flags |= VALID_TAINTED_Z;
 }
 
-void CPU::PGXP::CPU_SRA(Instruction instr, u32 rtVal)
+void CPU::PGXP::CPU_SRL(Instruction instr, u32 rtVal)
 {
   LOG_VALUES_C1(instr.r.rt.GetValue(), rtVal);
 
   // Rd = Rt >> Sa
   const u32 sh = instr.r.shamt;
+  CPU_SRL(instr, rtVal, sh);
+}
+
+void CPU::PGXP::CPU_SRLV(Instruction instr, u32 rtVal, u32 rsVal)
+{
+  LOG_VALUES_C2(instr.r.rt.GetValue(), rtVal, instr.r.rs.GetValue(), rsVal);
+
+  // Rd = Rt >> Sa
+  const u32 sh = rsVal & 0x1F;
+  CPU_SRL(instr, rtVal, sh);
+}
+
+void CPU::PGXP::CPU_SRA(Instruction instr, u32 rtVal, u32 sh, bool is_variable)
+{
   const u32 rdVal = static_cast<u32>(static_cast<s32>(rtVal) >> sh);
   PGXP_value& prtVal = ValidateAndGetRtValue(instr, rtVal);
 
@@ -1485,115 +1510,20 @@ void CPU::PGXP::CPU_SRA(Instruction instr, u32 rtVal)
   // and it's not originally from a 3D value. Too many false positives in P2/etc.
   // What we probably should do is not set the valid flag on non-3D values to begin
   // with, only letting them become valid when used in another expression.
-  if (!(prdVal.flags & VALID_Z) && sh < 16)
+  if (!is_variable && !(prdVal.flags & VALID_Z) && sh < 16)
   {
     prdVal.flags = 0;
     MakeValid(&prdVal, rdVal);
   }
 }
 
-////////////////////////////////////
-// Shift operations variable
-////////////////////////////////////
-void CPU::PGXP::CPU_SLLV(Instruction instr, u32 rtVal, u32 rsVal)
+void CPU::PGXP::CPU_SRA(Instruction instr, u32 rtVal)
 {
-  LOG_VALUES_C2(instr.r.rt.GetValue(), rtVal, instr.r.rs.GetValue(), rsVal);
-
-  // Rd = Rt << Rs
-  const u32 rdVal = rtVal << rsVal;
-  const u32 sh = rsVal & 0x1F;
-  PGXP_value& prtVal = ValidateAndGetRtValue(instr, rtVal);
-  [[maybe_unused]] PGXP_value& prsVal = ValidateAndGetRsValue(instr, rsVal); // TODO: Remove me
-
-  double x = f16Unsign(prtVal.x);
-  double y = f16Unsign(prtVal.y);
-  if (sh >= 32)
-  {
-    x = 0.f;
-    y = 0.f;
-  }
-  else if (sh == 16)
-  {
-    y = f16Sign(x);
-    x = 0.f;
-  }
-  else if (sh >= 16)
-  {
-    y = x * (1 << (sh - 16));
-    y = f16Sign(y);
-    x = 0.f;
-  }
-  else
-  {
-    x = x * (1 << sh);
-    y = y * (1 << sh);
-    y += f16Overflow(x);
-    x = f16Sign(x);
-    y = f16Sign(y);
-  }
-
-  PGXP_value& prdVal = GetRdValue(instr);
-  prdVal = prtVal;
-  prdVal.x = static_cast<float>(x);
-  prdVal.y = static_cast<float>(y);
-  prdVal.value = rdVal;
-  prdVal.flags |= VALID_TAINTED_Z;
-}
-
-void CPU::PGXP::CPU_SRLV(Instruction instr, u32 rtVal, u32 rsVal)
-{
-  LOG_VALUES_C2(instr.r.rt.GetValue(), rtVal, instr.r.rs.GetValue(), rsVal);
+  LOG_VALUES_C1(instr.r.rt.GetValue(), rtVal);
 
   // Rd = Rt >> Sa
-  const u32 rdVal = rtVal >> rsVal;
-  const u32 sh = rsVal & 0x1F;
-  PGXP_value& prtVal = ValidateAndGetRtValue(instr, rtVal);
-  [[maybe_unused]] PGXP_value& prsVal = ValidateAndGetRsValue(instr, rsVal); // TODO: remove me
-
-  double x = prtVal.x;
-  double y = f16Unsign(prtVal.y);
-
-  const u32 iX = SignExtend32(LOWORD_S16(rtVal));   // remove Y
-  const u32 iY = SET_LOWORD(rtVal, HIWORD_U16(iX)); // overwrite x with sign(x)
-
-  // Shift test values
-  const u32 dX = static_cast<u32>(static_cast<s32>(iX) >> sh);
-  const u32 dY = iY >> sh;
-
-  if (LOWORD_S16(dX) != HIWORD_S16(iX))
-    x = x / (1 << sh);
-  else
-    x = LOWORD_S16(dX); // only sign bits left
-
-  if (LOWORD_S16(dY) != HIWORD_S16(iX))
-  {
-    if (sh == 16)
-    {
-      x = y;
-    }
-    else if (sh < 16)
-    {
-      x += y * (1 << (16 - sh));
-      if (GetRtValue(instr).x < 0)
-        x += 1 << (16 - sh);
-    }
-    else
-    {
-      x += y / (1 << (sh - 16));
-    }
-  }
-
-  if ((HIWORD_S16(dY) == 0) || (HIWORD_S16(dY) == -1))
-    y = HIWORD_S16(dY);
-  else
-    y = y / (1 << sh);
-
-  PGXP_value& prdVal = GetRdValue(instr);
-  prdVal = prtVal;
-  prdVal.x = static_cast<float>(f16Sign(x));
-  prdVal.y = static_cast<float>(f16Sign(y));
-  prdVal.value = rdVal;
-  prdVal.flags |= VALID_TAINTED_Z;
+  const u32 sh = instr.r.shamt;
+  CPU_SRA(instr, rtVal, sh, false);
 }
 
 void CPU::PGXP::CPU_SRAV(Instruction instr, u32 rtVal, u32 rsVal)
@@ -1601,55 +1531,8 @@ void CPU::PGXP::CPU_SRAV(Instruction instr, u32 rtVal, u32 rsVal)
   LOG_VALUES_C2(instr.r.rt.GetValue(), rtVal, instr.r.rs.GetValue(), rsVal);
 
   // Rd = Rt >> Sa
-  const u32 rdVal = static_cast<u32>(static_cast<s32>(rtVal) >> rsVal);
   const u32 sh = rsVal & 0x1F;
-  PGXP_value& prtVal = ValidateAndGetRtValue(instr, rtVal);
-  [[maybe_unused]] PGXP_value& prsVal = ValidateAndGetRsValue(instr, rsVal); // TODO: remove me
-
-  double x = prtVal.x;
-  double y = prtVal.y;
-
-  const u32 iX = SignExtend32(LOWORD_S16(rtVal));   // remove Y
-  const u32 iY = SET_LOWORD(rtVal, HIWORD_U16(iX)); // overwrite x with sign(x)
-
-  // Shift test values
-  const u32 dX = static_cast<u32>(static_cast<s32>(iX) >> sh);
-  const u32 dY = static_cast<u32>(static_cast<s32>(iY) >> sh);
-
-  if (LOWORD_S16(dX) != HIWORD_S16(iX))
-    x = x / (1 << sh);
-  else
-    x = LOWORD_S16(dX); // only sign bits left
-
-  if (LOWORD_S16(dY) != HIWORD_S16(iX))
-  {
-    if (sh == 16)
-    {
-      x = y;
-    }
-    else if (sh < 16)
-    {
-      x += y * (1 << (16 - sh));
-      if (GetRtValue(instr).x < 0)
-        x += 1 << (16 - sh);
-    }
-    else
-    {
-      x += y / (1 << (sh - 16));
-    }
-  }
-
-  if ((HIWORD_S16(dY) == 0) || (HIWORD_S16(dY) == -1))
-    y = HIWORD_S16(dY);
-  else
-    y = y / (1 << sh);
-
-  PGXP_value& prdVal = GetRdValue(instr);
-  prdVal = prtVal;
-  prdVal.x = static_cast<float>(f16Sign(x));
-  prdVal.y = static_cast<float>(f16Sign(y));
-  prdVal.value = rdVal;
-  prdVal.flags |= VALID_TAINTED_Z;
+  CPU_SRA(instr, rtVal, sh, true);
 }
 
 void CPU::PGXP::CPU_MFC0(Instruction instr, u32 rdVal)
