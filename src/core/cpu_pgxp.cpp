@@ -39,13 +39,6 @@ enum : u32
 
 enum : u32
 {
-  COMP_X,
-  COMP_Y,
-  COMP_Z,
-};
-
-enum : u32
-{
   VALID_X = (1u << 0),
   VALID_Y = (1u << 1),
   VALID_Z = (1u << 2),
@@ -317,19 +310,19 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::ValidateAndLoadMem16(PGXPValue& dest, u32 
   if (hiword)
   {
     dest.x = dest.y;
-    dest.SetValid(COMP_X, dest.HasValid(COMP_Y));
+    dest.flags = (dest.flags & ~VALID_X) | ((dest.flags & VALID_Y) >> 1);
   }
 
   // only set y as valid if x is also valid.. don't want to make fake values
-  if (dest.HasValid(COMP_X))
+  if (dest.flags & VALID_X)
   {
     dest.y = (dest.x < 0) ? -1.0f * sign : 0.0f;
-    dest.SetValid(COMP_Y);
+    dest.flags |= VALID_Y;
   }
   else
   {
     dest.y = 0.0f;
-    dest.SetValid(COMP_Y, false);
+    dest.flags &= ~VALID_Y;
   }
 
   dest.value = value;
@@ -356,23 +349,22 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::WriteMem16(u32 addr, const PGXPValue& valu
   if (hiword)
   {
     dest->y = value.x;
-    dest->SetValid(COMP_Y, value.HasValid(COMP_X));
+    dest->flags = (dest->flags & ~VALID_Y) | ((value.flags & VALID_X) << 1);
     dest->value = (dest->value & UINT32_C(0x0000FFFF)) | (value.value << 16);
   }
   else
   {
     dest->x = value.x;
-    dest->SetValid(COMP_X, value.HasValid(COMP_X));
+    dest->flags = (dest->flags & ~VALID_X) | (value.flags & VALID_X);
     dest->value = (dest->value & UINT32_C(0xFFFF0000)) | (value.value & UINT32_C(0x0000FFFF));
   }
 
   // overwrite z/w if valid
   // TODO: Check modified
-  if (value.HasValid(COMP_Z))
+  if (value.flags & VALID_Z)
   {
     dest->z = value.z;
-    dest->SetValid(COMP_Z);
-    dest->flags |= hiword ? VALID_HIGHZ : VALID_LOWZ;
+    dest->flags |= VALID_Z | (hiword ? VALID_HIGHZ : VALID_LOWZ);
   }
   else
   {
@@ -384,7 +376,7 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::WriteMem16(u32 addr, const PGXPValue& valu
 
 ALWAYS_INLINE_RELEASE void CPU::PGXP::CopyZIfMissing(PGXPValue& dst, const PGXPValue& src)
 {
-  dst.z = dst.HasValid(COMP_Z) ? dst.z : src.z;
+  dst.z = (dst.flags & VALID_Z) ? dst.z : src.z;
   dst.flags |= (src.flags & VALID_Z);
 }
 
@@ -783,7 +775,7 @@ void CPU::PGXP::CPU_ANDI(Instruction instr, u32 rsVal)
     {
       // if 0 then x == 0
       prtVal.x = 0.0f;
-      prtVal.SetValid(COMP_X);
+      prtVal.flags |= VALID_X;
     }
     break;
 
@@ -798,7 +790,7 @@ void CPU::PGXP::CPU_ANDI(Instruction instr, u32 rsVal)
     {
       // otherwise x is low precision value
       prtVal.x = static_cast<float>(LOWORD_S16(rtVal));
-      prtVal.SetValid(COMP_X);
+      prtVal.flags |= VALID_X;
     }
     break;
   }
