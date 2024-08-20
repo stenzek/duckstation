@@ -1125,7 +1125,7 @@ void CPU::PGXP::CPU_SLTU(u32 instr, u32 rsVal, u32 rtVal)
   LOG_VALUES_C2(rs(instr), rsVal, rt(instr), rtVal);
 
   // Rd = Rs < Rt (unsigned)
-  PGXP_value& prsVal = g_state.pgxp_gpr[rt(instr)];
+  PGXP_value& prsVal = g_state.pgxp_gpr[rs(instr)];
   PGXP_value& prtVal = g_state.pgxp_gpr[rt(instr)];
   Validate(&prsVal, rsVal);
   Validate(&prtVal, rtVal);
