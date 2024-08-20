@@ -81,13 +81,17 @@ static PGXP_value& ValidateAndGetRtValue(Instruction instr, u32 rtVal);
 static PGXP_value& ValidateAndGetRsValue(Instruction instr, u32 rsVal);
 static void SetRtValue(Instruction instr, const PGXP_value& val);
 static void SetRtValue(Instruction instr, const PGXP_value& val, u32 rtVal);
+static PGXP_value& GetSXY0();
+static PGXP_value& GetSXY1();
+static PGXP_value& GetSXY2();
+static PGXP_value& PushSXY();
 
 static PGXP_value* GetPtr(u32 addr);
 
 static const PGXP_value& ValidateAndLoadMem(u32 addr, u32 value);
 static void ValidateAndLoadMem16(PGXP_value* dest, u32 addr, u32 value, bool sign);
 
-static void CPU_MTC2_int(const PGXP_value& value, u32 reg, u32 val);
+static void CPU_MTC2(u32 reg, const PGXP_value& value, u32 val);
 static void CPU_BITWISE(Instruction instr, u32 rdVal, u32 rsVal, u32 rtVal);
 static void CPU_SLL(Instruction instr, u32 rtVal, u32 sh);
 static void CPU_SRx(Instruction instr, u32 rtVal, u32 sh, bool sign, bool is_variable);
@@ -189,18 +193,6 @@ void CPU::PGXP::Shutdown()
   std::memset(g_state.pgxp_cop0, 0, sizeof(g_state.pgxp_cop0));
 }
 
-#define SX0 (g_state.pgxp_gte[12].x)
-#define SY0 (g_state.pgxp_gte[12].y)
-#define SX1 (g_state.pgxp_gte[13].x)
-#define SY1 (g_state.pgxp_gte[13].y)
-#define SX2 (g_state.pgxp_gte[14].x)
-#define SY2 (g_state.pgxp_gte[14].y)
-
-#define SXY0 (g_state.pgxp_gte[12])
-#define SXY1 (g_state.pgxp_gte[13])
-#define SXY2 (g_state.pgxp_gte[14])
-#define SXYP (g_state.pgxp_gte[15])
-
 ALWAYS_INLINE_RELEASE void CPU::PGXP::MakeValid(PGXP_value* pV, u32 psxV)
 {
   if ((pV->flags & VALID_XY) == VALID_XY)
@@ -269,6 +261,28 @@ ALWAYS_INLINE void CPU::PGXP::SetRtValue(Instruction instr, const PGXP_value& va
   PGXP_value& prtVal = g_state.pgxp_gpr[static_cast<u8>(instr.r.rt.GetValue())];
   prtVal = val;
   prtVal.value = rtVal;
+}
+
+ALWAYS_INLINE CPU::PGXP_value& CPU::PGXP::GetSXY0()
+{
+  return g_state.pgxp_gte[12];
+}
+
+ALWAYS_INLINE CPU::PGXP_value& CPU::PGXP::GetSXY1()
+{
+  return g_state.pgxp_gte[13];
+}
+
+ALWAYS_INLINE CPU::PGXP_value& CPU::PGXP::GetSXY2()
+{
+  return g_state.pgxp_gte[14];
+}
+
+ALWAYS_INLINE CPU::PGXP_value& CPU::PGXP::PushSXY()
+{
+  g_state.pgxp_gte[12] = g_state.pgxp_gte[13];
+  g_state.pgxp_gte[13] = g_state.pgxp_gte[14];
+  return g_state.pgxp_gte[14];
 }
 
 ALWAYS_INLINE_RELEASE CPU::PGXP_value* CPU::PGXP::GetPtr(u32 addr)
@@ -469,26 +483,22 @@ void CPU::PGXP::LogValueStr(SmallStringBase& str, const char* name, u32 rval, co
 
 void CPU::PGXP::GTE_RTPS(float x, float y, float z, u32 value)
 {
-  // push values down FIFO
-  SXY0 = SXY1;
-  SXY1 = SXY2;
-
-  SXY2.x = x;
-  SXY2.y = y;
-  SXY2.z = z;
-  SXY2.value = value;
-  SXY2.flags = VALID_ALL;
+  PGXP_value& pvalue = PushSXY();
+  pvalue.x = x;
+  pvalue.y = y;
+  pvalue.z = z;
+  pvalue.value = value;
+  pvalue.flags = VALID_ALL;
 
   if (g_settings.gpu_pgxp_vertex_cache)
-    CacheVertex(value, SXY2);
+    CacheVertex(value, pvalue);
 }
-
-#define VX(n) (psxRegs.CP2D.p[n << 1].sw.l)
-#define VY(n) (psxRegs.CP2D.p[n << 1].sw.h)
-#define VZ(n) (psxRegs.CP2D.p[(n << 1) + 1].sw.l)
 
 int CPU::PGXP::GTE_NCLIP_valid(u32 sxy0, u32 sxy1, u32 sxy2)
 {
+  PGXP_value& SXY0 = GetSXY0();
+  PGXP_value& SXY1 = GetSXY1();
+  PGXP_value& SXY2 = GetSXY2();
   Validate(&SXY0, sxy0);
   Validate(&SXY1, sxy1);
   Validate(&SXY2, sxy2);
@@ -499,48 +509,47 @@ int CPU::PGXP::GTE_NCLIP_valid(u32 sxy0, u32 sxy1, u32 sxy2)
 
 float CPU::PGXP::GTE_NCLIP()
 {
-  float nclip = ((SX0 * SY1) + (SX1 * SY2) + (SX2 * SY0) - (SX0 * SY2) - (SX1 * SY0) - (SX2 * SY1));
+  const PGXP_value& SXY0 = GetSXY0();
+  const PGXP_value& SXY1 = GetSXY1();
+  const PGXP_value& SXY2 = GetSXY2();
+  float nclip = ((SXY0.x * SXY1.y) + (SXY1.x * SXY2.y) + (SXY2.x * SXY0.y) - (SXY0.x * SXY2.y) - (SXY1.x * SXY0.y) -
+                 (SXY2.x * SXY1.y));
 
   // ensure fractional values are not incorrectly rounded to 0
-  float nclipAbs = std::abs(nclip);
-  if ((0.1f < nclipAbs) && (nclipAbs < 1.f))
-    nclip += (nclip < 0.f ? -1 : 1);
-
-  // float AX = SX1 - SX0;
-  // float AY = SY1 - SY0;
-
-  // float BX = SX2 - SX0;
-  // float BY = SY2 - SY0;
-
-  //// normalise A and B
-  // float mA = sqrt((AX*AX) + (AY*AY));
-  // float mB = sqrt((BX*BX) + (BY*BY));
-
-  //// calculate AxB to get Z component of C
-  // float CZ = ((AX * BY) - (AY * BX)) * (1 << 12);
+  const float nclip_abs = std::abs(nclip);
+  if (0.1f < nclip_abs && nclip_abs < 1.0f)
+    nclip += (nclip < 0.0f ? -1.0f : 1.0f);
 
   return nclip;
 }
 
-ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_MTC2_int(const PGXP_value& value, u32 reg, u32 val)
+ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_MTC2(u32 reg, const PGXP_value& value, u32 val)
 {
   switch (reg)
   {
     case 15:
+    {
       // push FIFO
-      SXY0 = SXY1;
-      SXY1 = SXY2;
+      PGXP_value& SXY2 = PushSXY();
       SXY2 = value;
-      SXYP = SXY2;
-      break;
-
-    case 31:
       return;
-  }
+    }
 
-  PGXP_value& gteVal = g_state.pgxp_gte[reg];
-  gteVal = value;
-  gteVal.value = val;
+    // read-only registers
+    case 29:
+    case 31:
+    {
+      return;
+    }
+
+    default:
+    {
+      PGXP_value& gteVal = g_state.pgxp_gte[reg];
+      gteVal = value;
+      gteVal.value = val;
+      return;
+    }
+  }
 }
 
 ////////////////////////////////////
@@ -565,7 +574,7 @@ void CPU::PGXP::CPU_MTC2(Instruction instr, u32 rtVal)
   LOG_VALUES_C1(instr.r.rt.GetValue(), rtVal);
 
   PGXP_value& prtVal = ValidateAndGetRtValue(instr, rtVal);
-  CPU_MTC2_int(prtVal, idx, rtVal);
+  CPU_MTC2(idx, prtVal, rtVal);
 }
 
 ////////////////////////////////////
@@ -577,7 +586,7 @@ void CPU::PGXP::CPU_LWC2(Instruction instr, u32 addr, u32 rtVal)
   LOG_VALUES_LOAD(addr, rtVal);
 
   const PGXP_value& pMem = ValidateAndLoadMem(addr, rtVal);
-  CPU_MTC2_int(pMem, static_cast<u32>(instr.r.rt.GetValue()), rtVal);
+  CPU_MTC2(static_cast<u32>(instr.r.rt.GetValue()), pMem, rtVal);
 }
 
 void CPU::PGXP::CPU_SWC2(Instruction instr, u32 addr, u32 rtVal)
