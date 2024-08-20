@@ -61,19 +61,15 @@ enum : u32
 #define SET_LOWORD(val, loword) ((static_cast<u32>(val) & 0xFFFF0000u) | static_cast<u32>(static_cast<u16>(loword)))
 #define SET_HIWORD(val, hiword) ((static_cast<u32>(val) & 0x0000FFFFu) | (static_cast<u32>(hiword) << 16))
 
+static double f16Sign(double val);
+static double f16Unsign(double val);
+static double f16Overflow(double val);
+
 static void CacheVertex(u32 value, const PGXP_value& vertex);
 static PGXP_value* GetCachedVertex(u32 value);
 
 static float TruncateVertexPosition(float p);
 static bool IsWithinTolerance(float precise_x, float precise_y, int int_x, int int_y);
-
-static void MakeValid(PGXP_value* pV, u32 psxV);
-
-static void Validate(PGXP_value* pV, u32 psxV);
-
-static double f16Sign(double in);
-static double f16Unsign(double in);
-static double f16Overflow(double in);
 
 static PGXP_value& GetRdValue(Instruction instr);
 static PGXP_value& GetRtValue(Instruction instr);
@@ -89,7 +85,7 @@ static PGXP_value& PushSXY();
 static PGXP_value* GetPtr(u32 addr);
 
 static const PGXP_value& ValidateAndLoadMem(u32 addr, u32 value);
-static void ValidateAndLoadMem16(PGXP_value* dest, u32 addr, u32 value, bool sign);
+static void ValidateAndLoadMem16(PGXP_value& dest, u32 addr, u32 value, bool sign);
 
 static void CPU_MTC2(u32 reg, const PGXP_value& value, u32 val);
 static void CPU_BITWISE(Instruction instr, u32 rdVal, u32 rsVal, u32 rtVal);
@@ -193,37 +189,20 @@ void CPU::PGXP::Shutdown()
   std::memset(g_state.pgxp_cop0, 0, sizeof(g_state.pgxp_cop0));
 }
 
-ALWAYS_INLINE_RELEASE void CPU::PGXP::MakeValid(PGXP_value* pV, u32 psxV)
+ALWAYS_INLINE_RELEASE double CPU::PGXP::f16Sign(double val)
 {
-  if ((pV->flags & VALID_XY) == VALID_XY)
-    return;
-
-  pV->x = static_cast<float>(static_cast<s16>(Truncate16(psxV)));
-  pV->y = static_cast<float>(static_cast<s16>(Truncate16(psxV >> 16)));
-  pV->z = 0.0f;
-  pV->flags = VALID_XY | VALID_TAINTED_Z;
-  pV->value = psxV;
-}
-
-ALWAYS_INLINE_RELEASE void CPU::PGXP::Validate(PGXP_value* pV, u32 psxV)
-{
-  pV->flags = (pV->value == psxV) ? pV->flags : 0;
-}
-
-ALWAYS_INLINE_RELEASE double CPU::PGXP::f16Sign(double in)
-{
-  const s32 s = static_cast<s32>(static_cast<s64>(in * (USHRT_MAX + 1)));
+  const s32 s = static_cast<s32>(static_cast<s64>(val * (USHRT_MAX + 1)));
   return static_cast<double>(s) / static_cast<double>(USHRT_MAX + 1);
 }
 
-ALWAYS_INLINE_RELEASE double CPU::PGXP::f16Unsign(double in)
+ALWAYS_INLINE_RELEASE double CPU::PGXP::f16Unsign(double val)
 {
-  return (in >= 0) ? in : (in + (USHRT_MAX + 1));
+  return (val >= 0) ? val : (val + (USHRT_MAX + 1));
 }
 
-ALWAYS_INLINE_RELEASE double CPU::PGXP::f16Overflow(double in)
+ALWAYS_INLINE_RELEASE double CPU::PGXP::f16Overflow(double val)
 {
-  return static_cast<double>(static_cast<s64>(in) >> 16);
+  return static_cast<double>(static_cast<s64>(val) >> 16);
 }
 
 ALWAYS_INLINE CPU::PGXP_value& CPU::PGXP::GetRdValue(Instruction instr)
@@ -239,14 +218,14 @@ ALWAYS_INLINE CPU::PGXP_value& CPU::PGXP::GetRtValue(Instruction instr)
 ALWAYS_INLINE CPU::PGXP_value& CPU::PGXP::ValidateAndGetRtValue(Instruction instr, u32 rtVal)
 {
   PGXP_value& ret = g_state.pgxp_gpr[static_cast<u8>(instr.r.rt.GetValue())];
-  Validate(&ret, rtVal);
+  ret.Validate(rtVal);
   return ret;
 }
 
 ALWAYS_INLINE CPU::PGXP_value& CPU::PGXP::ValidateAndGetRsValue(Instruction instr, u32 rsVal)
 {
   PGXP_value& ret = g_state.pgxp_gpr[static_cast<u8>(instr.r.rs.GetValue())];
-  Validate(&ret, rsVal);
+  ret.Validate(rsVal);
   return ret;
 }
 
@@ -308,16 +287,16 @@ ALWAYS_INLINE_RELEASE const CPU::PGXP_value& CPU::PGXP::ValidateAndLoadMem(u32 a
   if (!pMem) [[unlikely]]
     return PGXP_value_invalid;
 
-  Validate(pMem, value);
+  pMem->Validate(value);
   return *pMem;
 }
 
-ALWAYS_INLINE_RELEASE void CPU::PGXP::ValidateAndLoadMem16(PGXP_value* dest, u32 addr, u32 value, bool sign)
+ALWAYS_INLINE_RELEASE void CPU::PGXP::ValidateAndLoadMem16(PGXP_value& dest, u32 addr, u32 value, bool sign)
 {
   PGXP_value* pMem = GetPtr(addr);
   if (!pMem) [[unlikely]]
   {
-    *dest = PGXP_value_invalid;
+    dest = PGXP_value_invalid;
     return;
   }
 
@@ -330,28 +309,28 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::ValidateAndLoadMem16(PGXP_value* dest, u32
                   ((Truncate16(pMem->value) == Truncate16(value)) ? pMem->flags : (pMem->flags & ~VALID_X));
 
   // copy whole value
-  *dest = *pMem;
+  dest = *pMem;
 
   // if high word then shift
   if (hiword)
   {
-    dest->x = dest->y;
-    dest->SetValid(COMP_X, dest->HasValid(COMP_Y));
+    dest.x = dest.y;
+    dest.SetValid(COMP_X, dest.HasValid(COMP_Y));
   }
 
   // only set y as valid if x is also valid.. don't want to make fake values
-  if (dest->HasValid(COMP_X))
+  if (dest.HasValid(COMP_X))
   {
-    dest->y = (dest->x < 0) ? -1.0f * sign : 0.0f;
-    dest->SetValid(COMP_Y);
+    dest.y = (dest.x < 0) ? -1.0f * sign : 0.0f;
+    dest.SetValid(COMP_Y);
   }
   else
   {
-    dest->y = 0.0f;
-    dest->SetValid(COMP_Y, false);
+    dest.y = 0.0f;
+    dest.SetValid(COMP_Y, false);
   }
 
-  dest->value = value;
+  dest.value = value;
 }
 
 ALWAYS_INLINE_RELEASE void CPU::PGXP::WriteMem(u32 addr, const PGXP_value& value)
@@ -496,11 +475,11 @@ void CPU::PGXP::GTE_RTPS(float x, float y, float z, u32 value)
 int CPU::PGXP::GTE_NCLIP_valid(u32 sxy0, u32 sxy1, u32 sxy2)
 {
   PGXP_value& SXY0 = GetSXY0();
+  SXY0.Validate(sxy0);
   PGXP_value& SXY1 = GetSXY1();
+  SXY1.Validate(sxy1);
   PGXP_value& SXY2 = GetSXY2();
-  Validate(&SXY0, sxy0);
-  Validate(&SXY1, sxy1);
-  Validate(&SXY2, sxy2);
+  SXY2.Validate(sxy2);
 
   // Don't use accurate clipping for game-constructed values, which don't have a valid Z.
   return (((SXY0.flags & SXY1.flags & SXY2.flags & VALID_XYZ) == VALID_XYZ));
@@ -562,7 +541,7 @@ void CPU::PGXP::CPU_MFC2(Instruction instr, u32 rdVal)
   LOG_VALUES_1(CPU::GetGTERegisterName(idx), rdVal, &g_state.pgxp_gte[idx]);
 
   PGXP_value& prdVal = g_state.pgxp_gte[idx];
-  Validate(&prdVal, rdVal);
+  prdVal.Validate(rdVal);
   SetRtValue(instr, prdVal, rdVal);
 }
 
@@ -597,7 +576,7 @@ void CPU::PGXP::CPU_SWC2(Instruction instr, u32 addr, u32 rtVal)
   LOG_VALUES_1(CPU::GetGTERegisterName(idx), rtVal, &prtVal);
   std::fprintf(s_log, " addr=%08X", addr);
 #endif
-  Validate(&prtVal, rtVal);
+  prtVal.Validate(rtVal);
   WriteMem(addr, prtVal);
 }
 
@@ -697,14 +676,14 @@ void CPU::PGXP::CPU_LH(Instruction instr, u32 addr, u32 rtVal)
 {
   // Rt = Mem[Rs + Im] (sign extended)
   LOG_VALUES_LOAD(addr, rtVal);
-  ValidateAndLoadMem16(&GetRtValue(instr), addr, rtVal, true);
+  ValidateAndLoadMem16(GetRtValue(instr), addr, rtVal, true);
 }
 
 void CPU::PGXP::CPU_LHU(Instruction instr, u32 addr, u32 rtVal)
 {
   // Rt = Mem[Rs + Im] (zero extended)
   LOG_VALUES_LOAD(addr, rtVal);
-  ValidateAndLoadMem16(&GetRtValue(instr), addr, rtVal, false);
+  ValidateAndLoadMem16(GetRtValue(instr), addr, rtVal, false);
 }
 
 void CPU::PGXP::CPU_SB(Instruction instr, u32 addr, u32 rtVal)
@@ -741,8 +720,9 @@ void CPU::PGXP::CPU_MOVE(u32 Rd, u32 Rs, u32 rsVal)
   const Instruction instr = {0};
   LOG_VALUES_C1(Rs, rsVal);
 #endif
-  Validate(&g_state.pgxp_gpr[Rs], rsVal);
-  g_state.pgxp_gpr[Rd] = g_state.pgxp_gpr[Rs];
+  PGXP_value& prsVal = g_state.pgxp_gpr[Rs];
+  prsVal.Validate(rsVal);
+  g_state.pgxp_gpr[Rd] = prsVal;
 }
 
 void CPU::PGXP::CPU_ADDI(Instruction instr, u32 rsVal)
@@ -1153,7 +1133,7 @@ void CPU::PGXP::CPU_MULT(Instruction instr, u32 rsVal, u32 rtVal)
   // Split values into outputs
   const double lx = xx;
   const double ly = f16Overflow(xx) + (xy + yx);
-  const double hx = f16Overflow(ly)+ yy;
+  const double hx = f16Overflow(ly) + yy;
   const double hy = f16Overflow(hx);
 
   ploVal.x = static_cast<float>(f16Sign(lx));
@@ -1282,8 +1262,10 @@ void CPU::PGXP::CPU_DIVU(Instruction instr, u32 rsVal, u32 rtVal)
   // Z/valid is the same
   phiVal = ploVal;
 
-  const double vs = f16Unsign(prsVal.GetValidX(rsVal)) + f16Unsign(prsVal.GetValidY(rsVal)) * static_cast<double>(1 << 16);
-  const double vt = f16Unsign(prtVal.GetValidX(rtVal)) + f16Unsign(prtVal.GetValidY(rtVal)) * static_cast<double>(1 << 16);
+  const double vs =
+    f16Unsign(prsVal.GetValidX(rsVal)) + f16Unsign(prsVal.GetValidY(rsVal)) * static_cast<double>(1 << 16);
+  const double vt =
+    f16Unsign(prtVal.GetValidX(rtVal)) + f16Unsign(prtVal.GetValidY(rtVal)) * static_cast<double>(1 << 16);
 
   const double lo = vs / vt;
   ploVal.y = static_cast<float>(f16Sign(f16Overflow(lo)));
@@ -1417,20 +1399,26 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SRx(Instruction instr, u32 rtVal, u32 
     y = y / static_cast<double>(1 << sh);
 
   PGXP_value& prdVal = GetRdValue(instr);
-  prdVal = prtVal;
-  prdVal.x = static_cast<float>(f16Sign(x));
-  prdVal.y = static_cast<float>(f16Sign(y));
-  prdVal.value = rdVal;
-  prdVal.flags |= VALID_TAINTED_Z;
 
   // Use low precision/rounded values when we're not shifting an entire component,
   // and it's not originally from a 3D value. Too many false positives in P2/etc.
   // What we probably should do is not set the valid flag on non-3D values to begin
   // with, only letting them become valid when used in another expression.
-  if (sign && !is_variable && !(prdVal.flags & VALID_Z) && sh < 16)
+  if (sign && !is_variable && !(prtVal.flags & VALID_Z) && sh < 16)
   {
-    prdVal.flags = 0;
-    MakeValid(&prdVal, rdVal);
+    prdVal.x = static_cast<float>(LOWORD_S16(rdVal));
+    prdVal.y = static_cast<float>(HIWORD_S16(rdVal));
+    prdVal.z = 0.0f;
+    prdVal.value = rdVal;
+    prdVal.flags = VALID_XY | VALID_TAINTED_Z;
+  }
+  else
+  {
+    prdVal.x = static_cast<float>(f16Sign(x));
+    prdVal.y = static_cast<float>(f16Sign(y));
+    prdVal.z = prtVal.z;
+    prdVal.value = rdVal;
+    prdVal.flags = prtVal.flags | VALID_TAINTED_Z;
   }
 }
 
@@ -1478,7 +1466,7 @@ void CPU::PGXP::CPU_MFC0(Instruction instr, u32 rdVal)
   LOG_VALUES_1(TinyString::from_format("cop0_{}", idx).c_str(), rdVal, &prdVal);
 
   // CPU[Rt] = CP0[Rd]
-  Validate(&prdVal, rdVal);
+  prdVal.Validate(rdVal);
   PGXP_value& prtVal = GetRtValue(instr);
   prtVal = prdVal;
   prtVal.value = rdVal;
