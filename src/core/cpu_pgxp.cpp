@@ -1,5 +1,9 @@
 // SPDX-FileCopyrightText: 2016 iCatButler, 2019-2023 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: GPL-2.0+
+//
+// This file has been completely rewritten over the years compared to the original PCSXR-PGXP release.
+// No original code remains. The original copyright notice is included above for historical purposes.
+//
 
 #include "cpu_pgxp.h"
 #include "bus.h"
@@ -65,43 +69,42 @@ static double f16Sign(double val);
 static double f16Unsign(double val);
 static double f16Overflow(double val);
 
-static void CacheVertex(u32 value, const PGXP_value& vertex);
-static PGXP_value* GetCachedVertex(u32 value);
+static void CacheVertex(u32 value, const PGXPValue& vertex);
+static PGXPValue* GetCachedVertex(u32 value);
 
 static float TruncateVertexPosition(float p);
 static bool IsWithinTolerance(float precise_x, float precise_y, int int_x, int int_y);
 
-static PGXP_value& GetRdValue(Instruction instr);
-static PGXP_value& GetRtValue(Instruction instr);
-static PGXP_value& ValidateAndGetRtValue(Instruction instr, u32 rtVal);
-static PGXP_value& ValidateAndGetRsValue(Instruction instr, u32 rsVal);
-static void SetRtValue(Instruction instr, const PGXP_value& val);
-static void SetRtValue(Instruction instr, const PGXP_value& val, u32 rtVal);
-static PGXP_value& GetSXY0();
-static PGXP_value& GetSXY1();
-static PGXP_value& GetSXY2();
-static PGXP_value& PushSXY();
+static PGXPValue& GetRdValue(Instruction instr);
+static PGXPValue& GetRtValue(Instruction instr);
+static PGXPValue& ValidateAndGetRtValue(Instruction instr, u32 rtVal);
+static PGXPValue& ValidateAndGetRsValue(Instruction instr, u32 rsVal);
+static void SetRtValue(Instruction instr, const PGXPValue& val);
+static void SetRtValue(Instruction instr, const PGXPValue& val, u32 rtVal);
+static PGXPValue& GetSXY0();
+static PGXPValue& GetSXY1();
+static PGXPValue& GetSXY2();
+static PGXPValue& PushSXY();
 
-static PGXP_value* GetPtr(u32 addr);
+static PGXPValue* GetPtr(u32 addr);
+static const PGXPValue& ValidateAndLoadMem(u32 addr, u32 value);
+static void ValidateAndLoadMem16(PGXPValue& dest, u32 addr, u32 value, bool sign);
 
-static const PGXP_value& ValidateAndLoadMem(u32 addr, u32 value);
-static void ValidateAndLoadMem16(PGXP_value& dest, u32 addr, u32 value, bool sign);
-
-static void CPU_MTC2(u32 reg, const PGXP_value& value, u32 val);
+static void CPU_MTC2(u32 reg, const PGXPValue& value, u32 val);
 static void CPU_BITWISE(Instruction instr, u32 rdVal, u32 rsVal, u32 rtVal);
 static void CPU_SLL(Instruction instr, u32 rtVal, u32 sh);
 static void CPU_SRx(Instruction instr, u32 rtVal, u32 sh, bool sign, bool is_variable);
 
-static void WriteMem(u32 addr, const PGXP_value& value);
-static void WriteMem16(u32 addr, const PGXP_value& value);
+static void WriteMem(u32 addr, const PGXPValue& value);
+static void WriteMem16(u32 addr, const PGXPValue& value);
 
-static void CopyZIfMissing(PGXP_value& dst, const PGXP_value& src);
-static void SelectZ(float& dst_z, u32& dst_flags, const PGXP_value& src1, const PGXP_value& src2);
+static void CopyZIfMissing(PGXPValue& dst, const PGXPValue& src);
+static void SelectZ(float& dst_z, u32& dst_flags, const PGXPValue& src1, const PGXPValue& src2);
 
 #ifdef LOG_VALUES
 static void LogInstruction(u32 pc, Instruction instr);
-static void LogValue(const char* name, u32 rval, const PGXP_value* val);
-static void LogValueStr(SmallStringBase& str, const char* name, u32 rval, const PGXP_value* val);
+static void LogValue(const char* name, u32 rval, const PGXPValue* val);
+static void LogValueStr(SmallStringBase& str, const char* name, u32 rval, const PGXPValue* val);
 
 // clang-format off
 #define LOG_VALUES_NV() do { LogInstruction(CPU::g_state.current_instruction_pc, instr); } while (0)
@@ -120,11 +123,10 @@ static void LogValueStr(SmallStringBase& str, const char* name, u32 rval, const 
 #endif
 // clang-format on
 
-static constexpr PGXP_value PGXP_value_invalid = {0.f, 0.f, 0.f, 0, 0};
-static constexpr PGXP_value PGXP_value_zero = {0.f, 0.f, 0.f, 0, VALID_XY};
+static constexpr const PGXPValue INVALID_VALUE = {};
 
-static PGXP_value* s_mem = nullptr;
-static PGXP_value* s_vertex_cache = nullptr;
+static PGXPValue* s_mem = nullptr;
+static PGXPValue* s_vertex_cache = nullptr;
 
 #ifdef LOG_VALUES
 static std::FILE* s_log;
@@ -139,14 +141,14 @@ void CPU::PGXP::Initialize()
 
   if (!s_mem)
   {
-    s_mem = static_cast<PGXP_value*>(std::calloc(PGXP_MEM_SIZE, sizeof(PGXP_value)));
+    s_mem = static_cast<PGXPValue*>(std::calloc(PGXP_MEM_SIZE, sizeof(PGXPValue)));
     if (!s_mem)
       Panic("Failed to allocate PGXP memory");
   }
 
   if (g_settings.gpu_pgxp_vertex_cache && !s_vertex_cache)
   {
-    s_vertex_cache = static_cast<PGXP_value*>(std::calloc(VERTEX_CACHE_SIZE, sizeof(PGXP_value)));
+    s_vertex_cache = static_cast<PGXPValue*>(std::calloc(VERTEX_CACHE_SIZE, sizeof(PGXPValue)));
     if (!s_vertex_cache)
     {
       ERROR_LOG("Failed to allocate memory for vertex cache, disabling.");
@@ -155,7 +157,7 @@ void CPU::PGXP::Initialize()
   }
 
   if (s_vertex_cache)
-    std::memset(s_vertex_cache, 0, sizeof(PGXP_value) * VERTEX_CACHE_SIZE);
+    std::memset(s_vertex_cache, 0, sizeof(PGXPValue) * VERTEX_CACHE_SIZE);
 }
 
 void CPU::PGXP::Reset()
@@ -165,10 +167,10 @@ void CPU::PGXP::Reset()
   std::memset(g_state.pgxp_gte, 0, sizeof(g_state.pgxp_gte));
 
   if (s_mem)
-    std::memset(s_mem, 0, sizeof(PGXP_value) * PGXP_MEM_SIZE);
+    std::memset(s_mem, 0, sizeof(PGXPValue) * PGXP_MEM_SIZE);
 
   if (g_settings.gpu_pgxp_vertex_cache && s_vertex_cache)
-    std::memset(s_vertex_cache, 0, sizeof(PGXP_value) * VERTEX_CACHE_SIZE);
+    std::memset(s_vertex_cache, 0, sizeof(PGXPValue) * VERTEX_CACHE_SIZE);
 }
 
 void CPU::PGXP::Shutdown()
@@ -205,65 +207,65 @@ ALWAYS_INLINE_RELEASE double CPU::PGXP::f16Overflow(double val)
   return static_cast<double>(static_cast<s64>(val) >> 16);
 }
 
-ALWAYS_INLINE CPU::PGXP_value& CPU::PGXP::GetRdValue(Instruction instr)
+ALWAYS_INLINE CPU::PGXPValue& CPU::PGXP::GetRdValue(Instruction instr)
 {
   return g_state.pgxp_gpr[static_cast<u8>(instr.r.rd.GetValue())];
 }
 
-ALWAYS_INLINE CPU::PGXP_value& CPU::PGXP::GetRtValue(Instruction instr)
+ALWAYS_INLINE CPU::PGXPValue& CPU::PGXP::GetRtValue(Instruction instr)
 {
   return g_state.pgxp_gpr[static_cast<u8>(instr.r.rt.GetValue())];
 }
 
-ALWAYS_INLINE CPU::PGXP_value& CPU::PGXP::ValidateAndGetRtValue(Instruction instr, u32 rtVal)
+ALWAYS_INLINE CPU::PGXPValue& CPU::PGXP::ValidateAndGetRtValue(Instruction instr, u32 rtVal)
 {
-  PGXP_value& ret = g_state.pgxp_gpr[static_cast<u8>(instr.r.rt.GetValue())];
+  PGXPValue& ret = g_state.pgxp_gpr[static_cast<u8>(instr.r.rt.GetValue())];
   ret.Validate(rtVal);
   return ret;
 }
 
-ALWAYS_INLINE CPU::PGXP_value& CPU::PGXP::ValidateAndGetRsValue(Instruction instr, u32 rsVal)
+ALWAYS_INLINE CPU::PGXPValue& CPU::PGXP::ValidateAndGetRsValue(Instruction instr, u32 rsVal)
 {
-  PGXP_value& ret = g_state.pgxp_gpr[static_cast<u8>(instr.r.rs.GetValue())];
+  PGXPValue& ret = g_state.pgxp_gpr[static_cast<u8>(instr.r.rs.GetValue())];
   ret.Validate(rsVal);
   return ret;
 }
 
-ALWAYS_INLINE void CPU::PGXP::SetRtValue(Instruction instr, const PGXP_value& val)
+ALWAYS_INLINE void CPU::PGXP::SetRtValue(Instruction instr, const PGXPValue& val)
 {
   g_state.pgxp_gpr[static_cast<u8>(instr.r.rt.GetValue())] = val;
 }
 
-ALWAYS_INLINE void CPU::PGXP::SetRtValue(Instruction instr, const PGXP_value& val, u32 rtVal)
+ALWAYS_INLINE void CPU::PGXP::SetRtValue(Instruction instr, const PGXPValue& val, u32 rtVal)
 {
-  PGXP_value& prtVal = g_state.pgxp_gpr[static_cast<u8>(instr.r.rt.GetValue())];
+  PGXPValue& prtVal = g_state.pgxp_gpr[static_cast<u8>(instr.r.rt.GetValue())];
   prtVal = val;
   prtVal.value = rtVal;
 }
 
-ALWAYS_INLINE CPU::PGXP_value& CPU::PGXP::GetSXY0()
+ALWAYS_INLINE CPU::PGXPValue& CPU::PGXP::GetSXY0()
 {
   return g_state.pgxp_gte[12];
 }
 
-ALWAYS_INLINE CPU::PGXP_value& CPU::PGXP::GetSXY1()
+ALWAYS_INLINE CPU::PGXPValue& CPU::PGXP::GetSXY1()
 {
   return g_state.pgxp_gte[13];
 }
 
-ALWAYS_INLINE CPU::PGXP_value& CPU::PGXP::GetSXY2()
+ALWAYS_INLINE CPU::PGXPValue& CPU::PGXP::GetSXY2()
 {
   return g_state.pgxp_gte[14];
 }
 
-ALWAYS_INLINE CPU::PGXP_value& CPU::PGXP::PushSXY()
+ALWAYS_INLINE CPU::PGXPValue& CPU::PGXP::PushSXY()
 {
   g_state.pgxp_gte[12] = g_state.pgxp_gte[13];
   g_state.pgxp_gte[13] = g_state.pgxp_gte[14];
   return g_state.pgxp_gte[14];
 }
 
-ALWAYS_INLINE_RELEASE CPU::PGXP_value* CPU::PGXP::GetPtr(u32 addr)
+ALWAYS_INLINE_RELEASE CPU::PGXPValue* CPU::PGXP::GetPtr(u32 addr)
 {
 #if 0
   if ((addr & CPU::PHYSICAL_MEMORY_ADDRESS_MASK) >= 0x0017A2B4 &&
@@ -281,22 +283,22 @@ ALWAYS_INLINE_RELEASE CPU::PGXP_value* CPU::PGXP::GetPtr(u32 addr)
     return nullptr;
 }
 
-ALWAYS_INLINE_RELEASE const CPU::PGXP_value& CPU::PGXP::ValidateAndLoadMem(u32 addr, u32 value)
+ALWAYS_INLINE_RELEASE const CPU::PGXPValue& CPU::PGXP::ValidateAndLoadMem(u32 addr, u32 value)
 {
-  PGXP_value* pMem = GetPtr(addr);
+  PGXPValue* pMem = GetPtr(addr);
   if (!pMem) [[unlikely]]
-    return PGXP_value_invalid;
+    return INVALID_VALUE;
 
   pMem->Validate(value);
   return *pMem;
 }
 
-ALWAYS_INLINE_RELEASE void CPU::PGXP::ValidateAndLoadMem16(PGXP_value& dest, u32 addr, u32 value, bool sign)
+ALWAYS_INLINE_RELEASE void CPU::PGXP::ValidateAndLoadMem16(PGXPValue& dest, u32 addr, u32 value, bool sign)
 {
-  PGXP_value* pMem = GetPtr(addr);
+  PGXPValue* pMem = GetPtr(addr);
   if (!pMem) [[unlikely]]
   {
-    dest = PGXP_value_invalid;
+    dest = INVALID_VALUE;
     return;
   }
 
@@ -333,9 +335,9 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::ValidateAndLoadMem16(PGXP_value& dest, u32
   dest.value = value;
 }
 
-ALWAYS_INLINE_RELEASE void CPU::PGXP::WriteMem(u32 addr, const PGXP_value& value)
+ALWAYS_INLINE_RELEASE void CPU::PGXP::WriteMem(u32 addr, const PGXPValue& value)
 {
-  PGXP_value* pMem = GetPtr(addr);
+  PGXPValue* pMem = GetPtr(addr);
   if (!pMem) [[unlikely]]
     return;
 
@@ -343,9 +345,9 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::WriteMem(u32 addr, const PGXP_value& value
   pMem->flags |= VALID_LOWZ | VALID_HIGHZ;
 }
 
-ALWAYS_INLINE_RELEASE void CPU::PGXP::WriteMem16(u32 addr, const PGXP_value& value)
+ALWAYS_INLINE_RELEASE void CPU::PGXP::WriteMem16(u32 addr, const PGXPValue& value)
 {
-  PGXP_value* dest = GetPtr(addr);
+  PGXPValue* dest = GetPtr(addr);
   if (!dest) [[unlikely]]
     return;
 
@@ -380,14 +382,14 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::WriteMem16(u32 addr, const PGXP_value& val
   }
 }
 
-ALWAYS_INLINE_RELEASE void CPU::PGXP::CopyZIfMissing(PGXP_value& dst, const PGXP_value& src)
+ALWAYS_INLINE_RELEASE void CPU::PGXP::CopyZIfMissing(PGXPValue& dst, const PGXPValue& src)
 {
   dst.z = dst.HasValid(COMP_Z) ? dst.z : src.z;
   dst.flags |= (src.flags & VALID_Z);
 }
 
-ALWAYS_INLINE_RELEASE void CPU::PGXP::SelectZ(float& dst_z, u32& dst_flags, const PGXP_value& src1,
-                                              const PGXP_value& src2)
+ALWAYS_INLINE_RELEASE void CPU::PGXP::SelectZ(float& dst_z, u32& dst_flags, const PGXPValue& src1,
+                                              const PGXPValue& src2)
 {
   // Prefer src2 if src1 is missing Z, or is potentially an imprecise value, when src2 is precise.
   dst_z = (!(src1.flags & VALID_Z) ||
@@ -415,7 +417,7 @@ void CPU::PGXP::LogInstruction(u32 pc, Instruction instr)
   std::fprintf(s_log, "%08X %08X %-20s", pc, instr.bits, str.c_str());
 }
 
-void CPU::PGXP::LogValue(const char* name, u32 rval, const PGXP_value* val)
+void CPU::PGXP::LogValue(const char* name, u32 rval, const PGXPValue* val)
 {
   if (!s_log) [[unlikely]]
     return;
@@ -425,7 +427,7 @@ void CPU::PGXP::LogValue(const char* name, u32 rval, const PGXP_value* val)
   std::fprintf(s_log, " %s", str.c_str());
 }
 
-void CPU::PGXP::LogValueStr(SmallStringBase& str, const char* name, u32 rval, const PGXP_value* val)
+void CPU::PGXP::LogValueStr(SmallStringBase& str, const char* name, u32 rval, const PGXPValue* val)
 {
   str.append_format("{}=[{:08X}", name, rval);
   if (!val)
@@ -461,7 +463,7 @@ void CPU::PGXP::LogValueStr(SmallStringBase& str, const char* name, u32 rval, co
 
 void CPU::PGXP::GTE_RTPS(float x, float y, float z, u32 value)
 {
-  PGXP_value& pvalue = PushSXY();
+  PGXPValue& pvalue = PushSXY();
   pvalue.x = x;
   pvalue.y = y;
   pvalue.z = z;
@@ -472,13 +474,13 @@ void CPU::PGXP::GTE_RTPS(float x, float y, float z, u32 value)
     CacheVertex(value, pvalue);
 }
 
-int CPU::PGXP::GTE_NCLIP_valid(u32 sxy0, u32 sxy1, u32 sxy2)
+bool CPU::PGXP::GTE_HasPreciseVertices(u32 sxy0, u32 sxy1, u32 sxy2)
 {
-  PGXP_value& SXY0 = GetSXY0();
+  PGXPValue& SXY0 = GetSXY0();
   SXY0.Validate(sxy0);
-  PGXP_value& SXY1 = GetSXY1();
+  PGXPValue& SXY1 = GetSXY1();
   SXY1.Validate(sxy1);
-  PGXP_value& SXY2 = GetSXY2();
+  PGXPValue& SXY2 = GetSXY2();
   SXY2.Validate(sxy2);
 
   // Don't use accurate clipping for game-constructed values, which don't have a valid Z.
@@ -487,9 +489,9 @@ int CPU::PGXP::GTE_NCLIP_valid(u32 sxy0, u32 sxy1, u32 sxy2)
 
 float CPU::PGXP::GTE_NCLIP()
 {
-  const PGXP_value& SXY0 = GetSXY0();
-  const PGXP_value& SXY1 = GetSXY1();
-  const PGXP_value& SXY2 = GetSXY2();
+  const PGXPValue& SXY0 = GetSXY0();
+  const PGXPValue& SXY1 = GetSXY1();
+  const PGXPValue& SXY2 = GetSXY2();
   float nclip = ((SXY0.x * SXY1.y) + (SXY1.x * SXY2.y) + (SXY2.x * SXY0.y) - (SXY0.x * SXY2.y) - (SXY1.x * SXY0.y) -
                  (SXY2.x * SXY1.y));
 
@@ -501,14 +503,14 @@ float CPU::PGXP::GTE_NCLIP()
   return nclip;
 }
 
-ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_MTC2(u32 reg, const PGXP_value& value, u32 val)
+ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_MTC2(u32 reg, const PGXPValue& value, u32 val)
 {
   switch (reg)
   {
     case 15:
     {
       // push FIFO
-      PGXP_value& SXY2 = PushSXY();
+      PGXPValue& SXY2 = PushSXY();
       SXY2 = value;
       return;
     }
@@ -522,7 +524,7 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_MTC2(u32 reg, const PGXP_value& value,
 
     default:
     {
-      PGXP_value& gteVal = g_state.pgxp_gte[reg];
+      PGXPValue& gteVal = g_state.pgxp_gte[reg];
       gteVal = value;
       gteVal.value = val;
       return;
@@ -530,17 +532,13 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_MTC2(u32 reg, const PGXP_value& value,
   }
 }
 
-////////////////////////////////////
-// Data transfer tracking
-////////////////////////////////////
-
 void CPU::PGXP::CPU_MFC2(Instruction instr, u32 rdVal)
 {
   // CPU[Rt] = GTE_D[Rd]
   const u32 idx = instr.cop.Cop2Index();
   LOG_VALUES_1(CPU::GetGTERegisterName(idx), rdVal, &g_state.pgxp_gte[idx]);
 
-  PGXP_value& prdVal = g_state.pgxp_gte[idx];
+  PGXPValue& prdVal = g_state.pgxp_gte[idx];
   prdVal.Validate(rdVal);
   SetRtValue(instr, prdVal, rdVal);
 }
@@ -551,19 +549,16 @@ void CPU::PGXP::CPU_MTC2(Instruction instr, u32 rtVal)
   const u32 idx = instr.cop.Cop2Index();
   LOG_VALUES_C1(instr.r.rt.GetValue(), rtVal);
 
-  PGXP_value& prtVal = ValidateAndGetRtValue(instr, rtVal);
+  PGXPValue& prtVal = ValidateAndGetRtValue(instr, rtVal);
   CPU_MTC2(idx, prtVal, rtVal);
 }
 
-////////////////////////////////////
-// Memory Access
-////////////////////////////////////
 void CPU::PGXP::CPU_LWC2(Instruction instr, u32 addr, u32 rtVal)
 {
   // GTE_D[Rt] = Mem[addr]
   LOG_VALUES_LOAD(addr, rtVal);
 
-  const PGXP_value& pMem = ValidateAndLoadMem(addr, rtVal);
+  const PGXPValue& pMem = ValidateAndLoadMem(addr, rtVal);
   CPU_MTC2(static_cast<u32>(instr.r.rt.GetValue()), pMem, rtVal);
 }
 
@@ -571,7 +566,7 @@ void CPU::PGXP::CPU_SWC2(Instruction instr, u32 addr, u32 rtVal)
 {
   //  Mem[addr] = GTE_D[Rt]
   const u32 idx = static_cast<u32>(instr.r.rt.GetValue());
-  PGXP_value& prtVal = g_state.pgxp_gte[idx];
+  PGXPValue& prtVal = g_state.pgxp_gte[idx];
 #ifdef LOG_VALUES
   LOG_VALUES_1(CPU::GetGTERegisterName(idx), rtVal, &prtVal);
   std::fprintf(s_log, " addr=%08X", addr);
@@ -580,7 +575,7 @@ void CPU::PGXP::CPU_SWC2(Instruction instr, u32 addr, u32 rtVal)
   WriteMem(addr, prtVal);
 }
 
-ALWAYS_INLINE_RELEASE void CPU::PGXP::CacheVertex(u32 value, const PGXP_value& vertex)
+ALWAYS_INLINE_RELEASE void CPU::PGXP::CacheVertex(u32 value, const PGXPValue& vertex)
 {
   const s16 sx = static_cast<s16>(value & 0xFFFFu);
   const s16 sy = static_cast<s16>(value >> 16);
@@ -588,7 +583,7 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CacheVertex(u32 value, const PGXP_value& v
   s_vertex_cache[(sy + 1024) * VERTEX_CACHE_WIDTH + (sx + 1024)] = vertex;
 }
 
-ALWAYS_INLINE_RELEASE CPU::PGXP_value* CPU::PGXP::GetCachedVertex(u32 value)
+ALWAYS_INLINE_RELEASE CPU::PGXPValue* CPU::PGXP::GetCachedVertex(u32 value)
 {
   const s16 sx = static_cast<s16>(value & 0xFFFFu);
   const s16 sy = static_cast<s16>(value >> 16);
@@ -617,7 +612,7 @@ ALWAYS_INLINE_RELEASE bool CPU::PGXP::IsWithinTolerance(float precise_x, float p
 bool CPU::PGXP::GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, int yOffs, float* out_x, float* out_y,
                                  float* out_w)
 {
-  const PGXP_value* vert = GetPtr(addr);
+  const PGXPValue* vert = GetPtr(addr);
   if (vert && ((vert->flags & VALID_XY) == VALID_XY) && (vert->value == value))
   {
     // There is a value here with valid X and Y coordinates
@@ -669,7 +664,7 @@ void CPU::PGXP::CPU_LW(Instruction instr, u32 addr, u32 rtVal)
 void CPU::PGXP::CPU_LBx(Instruction instr, u32 addr, u32 rtVal)
 {
   LOG_VALUES_LOAD(addr, rtVal);
-  SetRtValue(instr, PGXP_value_invalid);
+  SetRtValue(instr, INVALID_VALUE);
 }
 
 void CPU::PGXP::CPU_LH(Instruction instr, u32 addr, u32 rtVal)
@@ -689,13 +684,13 @@ void CPU::PGXP::CPU_LHU(Instruction instr, u32 addr, u32 rtVal)
 void CPU::PGXP::CPU_SB(Instruction instr, u32 addr, u32 rtVal)
 {
   LOG_VALUES_STORE(instr.r.rt.GetValue(), rtVal, addr);
-  WriteMem(addr, PGXP_value_invalid);
+  WriteMem(addr, INVALID_VALUE);
 }
 
 void CPU::PGXP::CPU_SH(Instruction instr, u32 addr, u32 rtVal)
 {
   LOG_VALUES_STORE(instr.r.rt.GetValue(), rtVal, addr);
-  PGXP_value& prtVal = ValidateAndGetRtValue(instr, rtVal);
+  PGXPValue& prtVal = ValidateAndGetRtValue(instr, rtVal);
   WriteMem16(addr, prtVal);
 }
 
@@ -703,7 +698,7 @@ void CPU::PGXP::CPU_SW(Instruction instr, u32 addr, u32 rtVal)
 {
   // Mem[Rs + Im] = Rt
   LOG_VALUES_STORE(instr.r.rt.GetValue(), rtVal, addr);
-  PGXP_value& prtVal = ValidateAndGetRtValue(instr, rtVal);
+  PGXPValue& prtVal = ValidateAndGetRtValue(instr, rtVal);
   WriteMem(addr, prtVal);
 }
 
@@ -720,7 +715,7 @@ void CPU::PGXP::CPU_MOVE(u32 Rd, u32 Rs, u32 rsVal)
   const Instruction instr = {0};
   LOG_VALUES_C1(Rs, rsVal);
 #endif
-  PGXP_value& prsVal = g_state.pgxp_gpr[Rs];
+  PGXPValue& prsVal = g_state.pgxp_gpr[Rs];
   prsVal.Validate(rsVal);
   g_state.pgxp_gpr[Rd] = prsVal;
 }
@@ -730,11 +725,11 @@ void CPU::PGXP::CPU_ADDI(Instruction instr, u32 rsVal)
   LOG_VALUES_C1(instr.i.rs.GetValue(), rsVal);
 
   // Rt = Rs + Imm (signed)
-  PGXP_value& prsVal = ValidateAndGetRsValue(instr, rsVal);
+  PGXPValue& prsVal = ValidateAndGetRsValue(instr, rsVal);
 
   const u32 immVal = instr.i.imm_sext32();
 
-  PGXP_value& prtVal = GetRtValue(instr);
+  PGXPValue& prtVal = GetRtValue(instr);
   prtVal = prsVal;
 
   if (immVal == 0)
@@ -773,8 +768,8 @@ void CPU::PGXP::CPU_ANDI(Instruction instr, u32 rsVal)
   // Rt = Rs & Imm
   const u32 imm = instr.i.imm_zext32();
   const u32 rtVal = rsVal & imm;
-  PGXP_value& prsVal = ValidateAndGetRsValue(instr, rsVal);
-  PGXP_value& prtVal = GetRtValue(instr);
+  PGXPValue& prsVal = ValidateAndGetRsValue(instr, rsVal);
+  PGXPValue& prtVal = GetRtValue(instr);
 
   // remove upper 16-bits
   prtVal.y = 0.0f;
@@ -817,8 +812,8 @@ void CPU::PGXP::CPU_ORI(Instruction instr, u32 rsVal)
   const u32 imm = instr.i.imm_zext32();
   const u32 rtVal = rsVal | imm;
 
-  PGXP_value& pRsVal = ValidateAndGetRsValue(instr, rsVal);
-  PGXP_value& pRtVal = GetRtValue(instr);
+  PGXPValue& pRsVal = ValidateAndGetRsValue(instr, rsVal);
+  PGXPValue& pRtVal = GetRtValue(instr);
   pRtVal = pRsVal;
   pRtVal.value = rtVal;
 
@@ -842,8 +837,8 @@ void CPU::PGXP::CPU_XORI(Instruction instr, u32 rsVal)
   const u32 imm = instr.i.imm_zext32();
   const u32 rtVal = rsVal ^ imm;
 
-  PGXP_value& pRsVal = ValidateAndGetRsValue(instr, rsVal);
-  PGXP_value& pRtVal = GetRtValue(instr);
+  PGXPValue& pRsVal = ValidateAndGetRsValue(instr, rsVal);
+  PGXPValue& pRtVal = GetRtValue(instr);
   pRtVal = pRsVal;
   pRtVal.value = rtVal;
 
@@ -865,12 +860,12 @@ void CPU::PGXP::CPU_SLTI(Instruction instr, u32 rsVal)
 
   // Rt = Rs < Imm (signed)
   const s32 imm = instr.i.imm_s16();
-  PGXP_value& prsVal = ValidateAndGetRsValue(instr, rsVal);
+  PGXPValue& prsVal = ValidateAndGetRsValue(instr, rsVal);
 
   const float fimmx = static_cast<float>(imm);
   const float fimmy = fimmx < 0.0f ? -1.0f : 0.0f;
 
-  PGXP_value& prtVal = GetRtValue(instr);
+  PGXPValue& prtVal = GetRtValue(instr);
   prtVal.x = (prsVal.GetValidY(rsVal) < fimmy || prsVal.GetValidX(rsVal) < fimmx) ? 1.0f : 0.0f;
   prtVal.y = 0.0f;
   prtVal.z = prsVal.z;
@@ -884,12 +879,12 @@ void CPU::PGXP::CPU_SLTIU(Instruction instr, u32 rsVal)
 
   // Rt = Rs < Imm (Unsigned)
   const u32 imm = instr.i.imm_u16();
-  PGXP_value& prsVal = ValidateAndGetRsValue(instr, rsVal);
+  PGXPValue& prsVal = ValidateAndGetRsValue(instr, rsVal);
 
   const float fimmx = static_cast<float>(static_cast<s16>(imm)); // deliberately signed
   const float fimmy = fimmx < 0.0f ? -1.0f : 0.0f;
 
-  PGXP_value& prtVal = GetRtValue(instr);
+  PGXPValue& prtVal = GetRtValue(instr);
   prtVal.x =
     (f16Unsign(prsVal.GetValidY(rsVal)) < f16Unsign(fimmy) || f16Unsign(prsVal.GetValidX(rsVal)) < fimmx) ? 1.0f : 0.0f;
   prtVal.y = 0.0f;
@@ -898,33 +893,27 @@ void CPU::PGXP::CPU_SLTIU(Instruction instr, u32 rsVal)
   prtVal.value = BoolToUInt32(rsVal < imm);
 }
 
-////////////////////////////////////
-// Load Upper
-////////////////////////////////////
 void CPU::PGXP::CPU_LUI(Instruction instr)
 {
   LOG_VALUES_NV();
 
   // Rt = Imm << 16
-  PGXP_value& pRtVal = GetRtValue(instr);
-  pRtVal = PGXP_value_zero;
+  PGXPValue& pRtVal = GetRtValue(instr);
+  pRtVal.x = 0.0f;
   pRtVal.y = static_cast<float>(instr.i.imm_s16());
+  pRtVal.z = 0.0f;
   pRtVal.value = instr.i.imm_zext32() << 16;
   pRtVal.flags = VALID_XY;
 }
-
-////////////////////////////////////
-// Register Arithmetic
-////////////////////////////////////
 
 void CPU::PGXP::CPU_ADD(Instruction instr, u32 rsVal, u32 rtVal)
 {
   LOG_VALUES_C2(instr.r.rs.GetValue(), rsVal, instr.r.rt.GetValue(), rtVal);
 
   // Rd = Rs + Rt (signed)
-  PGXP_value& prsVal = ValidateAndGetRsValue(instr, rsVal);
-  PGXP_value& prtVal = ValidateAndGetRtValue(instr, rtVal);
-  PGXP_value& prdVal = GetRdValue(instr);
+  PGXPValue& prsVal = ValidateAndGetRsValue(instr, rsVal);
+  PGXPValue& prtVal = ValidateAndGetRtValue(instr, rtVal);
+  PGXPValue& prdVal = GetRdValue(instr);
 
   if (rtVal == 0)
   {
@@ -962,9 +951,9 @@ void CPU::PGXP::CPU_SUB(Instruction instr, u32 rsVal, u32 rtVal)
   LOG_VALUES_C2(instr.r.rs.GetValue(), rsVal, instr.r.rt.GetValue(), rtVal);
 
   // Rd = Rs - Rt (signed)
-  PGXP_value& prsVal = ValidateAndGetRsValue(instr, rsVal);
-  PGXP_value& prtVal = ValidateAndGetRtValue(instr, rtVal);
-  PGXP_value& prdVal = GetRdValue(instr);
+  PGXPValue& prsVal = ValidateAndGetRsValue(instr, rsVal);
+  PGXPValue& prtVal = ValidateAndGetRtValue(instr, rtVal);
+  PGXPValue& prdVal = GetRdValue(instr);
 
   if (rtVal == 0)
   {
@@ -995,8 +984,8 @@ void CPU::PGXP::CPU_SUB(Instruction instr, u32 rsVal, u32 rtVal)
 ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_BITWISE(Instruction instr, u32 rdVal, u32 rsVal, u32 rtVal)
 {
   // Rd = Rs & Rt
-  PGXP_value& prsVal = ValidateAndGetRsValue(instr, rsVal);
-  PGXP_value& prtVal = ValidateAndGetRtValue(instr, rtVal);
+  PGXPValue& prsVal = ValidateAndGetRsValue(instr, rsVal);
+  PGXPValue& prtVal = ValidateAndGetRtValue(instr, rtVal);
 
   float x, y;
   if (LOWORD_U16(rdVal) == 0)
@@ -1019,7 +1008,7 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_BITWISE(Instruction instr, u32 rdVal, 
 
   // Why not write directly to prdVal? Because it might be the same as the source.
   u32 flags = ((prsVal.flags | prtVal.flags) & VALID_XY) ? (VALID_XY | VALID_TAINTED_Z) : 0;
-  PGXP_value& prdVal = GetRdValue(instr);
+  PGXPValue& prdVal = GetRdValue(instr);
   SelectZ(prdVal.z, flags, prsVal, prtVal);
   prdVal.x = x;
   prdVal.y = y;
@@ -1068,9 +1057,9 @@ void CPU::PGXP::CPU_SLT(Instruction instr, u32 rsVal, u32 rtVal)
   LOG_VALUES_C2(instr.r.rs.GetValue(), rsVal, instr.r.rt.GetValue(), rtVal);
 
   // Rd = Rs < Rt (signed)
-  PGXP_value& prsVal = ValidateAndGetRsValue(instr, rsVal);
-  PGXP_value& prtVal = ValidateAndGetRtValue(instr, rtVal);
-  PGXP_value& prdVal = GetRdValue(instr);
+  PGXPValue& prsVal = ValidateAndGetRsValue(instr, rsVal);
+  PGXPValue& prtVal = ValidateAndGetRtValue(instr, rtVal);
+  PGXPValue& prdVal = GetRdValue(instr);
   prdVal.x = (prsVal.GetValidY(rsVal) < prtVal.GetValidY(rtVal) ||
               f16Unsign(prsVal.GetValidX(rsVal)) < f16Unsign(prtVal.GetValidX(rtVal))) ?
                1.0f :
@@ -1086,9 +1075,9 @@ void CPU::PGXP::CPU_SLTU(Instruction instr, u32 rsVal, u32 rtVal)
   LOG_VALUES_C2(instr.r.rs.GetValue(), rsVal, instr.r.rt.GetValue(), rtVal);
 
   // Rd = Rs < Rt (unsigned)
-  PGXP_value& prsVal = ValidateAndGetRsValue(instr, rsVal);
-  PGXP_value& prtVal = ValidateAndGetRtValue(instr, rtVal);
-  PGXP_value& prdVal = GetRdValue(instr);
+  PGXPValue& prsVal = ValidateAndGetRsValue(instr, rsVal);
+  PGXPValue& prtVal = ValidateAndGetRtValue(instr, rtVal);
+  PGXPValue& prdVal = GetRdValue(instr);
   prdVal.x = (f16Unsign(prsVal.GetValidY(rsVal)) < f16Unsign(prtVal.GetValidY(rtVal)) ||
               f16Unsign(prsVal.GetValidX(rsVal)) < f16Unsign(prtVal.GetValidX(rtVal))) ?
                1.0f :
@@ -1099,20 +1088,16 @@ void CPU::PGXP::CPU_SLTU(Instruction instr, u32 rsVal, u32 rtVal)
   prdVal.value = BoolToUInt32(rsVal < rtVal);
 }
 
-////////////////////////////////////
-// Register mult/div
-////////////////////////////////////
-
 void CPU::PGXP::CPU_MULT(Instruction instr, u32 rsVal, u32 rtVal)
 {
   LOG_VALUES_C2(instr.r.rs.GetValue(), rsVal, instr.r.rt.GetValue(), rtVal);
 
   // Hi/Lo = Rs * Rt (signed)
-  PGXP_value& prsVal = ValidateAndGetRsValue(instr, rsVal);
-  PGXP_value& prtVal = ValidateAndGetRtValue(instr, rtVal);
+  PGXPValue& prsVal = ValidateAndGetRsValue(instr, rsVal);
+  PGXPValue& prtVal = ValidateAndGetRtValue(instr, rtVal);
 
-  PGXP_value& ploVal = g_state.pgxp_gpr[static_cast<u8>(Reg::lo)];
-  PGXP_value& phiVal = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)];
+  PGXPValue& ploVal = g_state.pgxp_gpr[static_cast<u8>(Reg::lo)];
+  PGXPValue& phiVal = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)];
   ploVal = prsVal;
   CopyZIfMissing(ploVal, prsVal);
 
@@ -1154,11 +1139,11 @@ void CPU::PGXP::CPU_MULTU(Instruction instr, u32 rsVal, u32 rtVal)
   LOG_VALUES_C2(instr.r.rs.GetValue(), rsVal, instr.r.rt.GetValue(), rtVal);
 
   // Hi/Lo = Rs * Rt (unsigned)
-  PGXP_value& prsVal = ValidateAndGetRsValue(instr, rsVal);
-  PGXP_value& prtVal = ValidateAndGetRtValue(instr, rtVal);
+  PGXPValue& prsVal = ValidateAndGetRsValue(instr, rsVal);
+  PGXPValue& prtVal = ValidateAndGetRtValue(instr, rtVal);
 
-  PGXP_value& ploVal = g_state.pgxp_gpr[static_cast<u8>(Reg::lo)];
-  PGXP_value& phiVal = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)];
+  PGXPValue& ploVal = g_state.pgxp_gpr[static_cast<u8>(Reg::lo)];
+  PGXPValue& phiVal = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)];
   ploVal = prsVal;
   CopyZIfMissing(ploVal, prsVal);
 
@@ -1201,11 +1186,11 @@ void CPU::PGXP::CPU_DIV(Instruction instr, u32 rsVal, u32 rtVal)
 
   // Lo = Rs / Rt (signed)
   // Hi = Rs % Rt (signed)
-  PGXP_value& prsVal = ValidateAndGetRsValue(instr, rsVal);
-  PGXP_value& prtVal = ValidateAndGetRtValue(instr, rtVal);
+  PGXPValue& prsVal = ValidateAndGetRsValue(instr, rsVal);
+  PGXPValue& prtVal = ValidateAndGetRtValue(instr, rtVal);
 
-  PGXP_value& ploVal = g_state.pgxp_gpr[static_cast<u8>(Reg::lo)];
-  PGXP_value& phiVal = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)];
+  PGXPValue& ploVal = g_state.pgxp_gpr[static_cast<u8>(Reg::lo)];
+  PGXPValue& phiVal = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)];
   ploVal = prsVal;
   CopyZIfMissing(ploVal, prsVal);
 
@@ -1251,11 +1236,11 @@ void CPU::PGXP::CPU_DIVU(Instruction instr, u32 rsVal, u32 rtVal)
 
   // Lo = Rs / Rt (unsigned)
   // Hi = Rs % Rt (unsigned)
-  PGXP_value& prsVal = ValidateAndGetRsValue(instr, rsVal);
-  PGXP_value& prtVal = ValidateAndGetRtValue(instr, rtVal);
+  PGXPValue& prsVal = ValidateAndGetRsValue(instr, rsVal);
+  PGXPValue& prtVal = ValidateAndGetRtValue(instr, rtVal);
 
-  PGXP_value& ploVal = g_state.pgxp_gpr[static_cast<u8>(Reg::lo)];
-  PGXP_value& phiVal = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)];
+  PGXPValue& ploVal = g_state.pgxp_gpr[static_cast<u8>(Reg::lo)];
+  PGXPValue& phiVal = g_state.pgxp_gpr[static_cast<u8>(Reg::hi)];
   ploVal = prsVal;
   CopyZIfMissing(ploVal, prsVal);
 
@@ -1290,15 +1275,11 @@ void CPU::PGXP::CPU_DIVU(Instruction instr, u32 rsVal, u32 rtVal)
   }
 }
 
-////////////////////////////////////
-// Shift operations (sa)
-////////////////////////////////////
-
 ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SLL(Instruction instr, u32 rtVal, u32 sh)
 {
   const u32 rdVal = rtVal << sh;
-  PGXP_value& prtVal = ValidateAndGetRtValue(instr, rtVal);
-  PGXP_value& prdVal = GetRdValue(instr);
+  PGXPValue& prtVal = ValidateAndGetRtValue(instr, rtVal);
+  PGXPValue& prdVal = GetRdValue(instr);
   prdVal.z = prtVal.z;
   prdVal.value = rdVal;
 
@@ -1358,7 +1339,7 @@ void CPU::PGXP::CPU_SLLV(Instruction instr, u32 rtVal, u32 rsVal)
 ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SRx(Instruction instr, u32 rtVal, u32 sh, bool sign, bool is_variable)
 {
   const u32 rdVal = sign ? static_cast<u32>(static_cast<s32>(rtVal) >> sh) : (rtVal >> sh);
-  PGXP_value& prtVal = ValidateAndGetRtValue(instr, rtVal);
+  PGXPValue& prtVal = ValidateAndGetRtValue(instr, rtVal);
 
   double x = prtVal.x;
   double y = sign ? prtVal.y : f16Unsign(prtVal.y);
@@ -1398,7 +1379,7 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_SRx(Instruction instr, u32 rtVal, u32 
   else
     y = y / static_cast<double>(1 << sh);
 
-  PGXP_value& prdVal = GetRdValue(instr);
+  PGXPValue& prdVal = GetRdValue(instr);
 
   // Use low precision/rounded values when we're not shifting an entire component,
   // and it's not originally from a 3D value. Too many false positives in P2/etc.
@@ -1461,13 +1442,13 @@ void CPU::PGXP::CPU_SRAV(Instruction instr, u32 rtVal, u32 rsVal)
 void CPU::PGXP::CPU_MFC0(Instruction instr, u32 rdVal)
 {
   const u32 idx = static_cast<u8>(instr.r.rd.GetValue());
-  PGXP_value& prdVal = g_state.pgxp_cop0[idx];
-
-  LOG_VALUES_1(TinyString::from_format("cop0_{}", idx).c_str(), rdVal, &prdVal);
+  LOG_VALUES_1(TinyString::from_format("cop0_{}", idx).c_str(), rdVal, &g_state.pgxp_cop0[idx]);
 
   // CPU[Rt] = CP0[Rd]
+  PGXPValue& prdVal = g_state.pgxp_cop0[idx];
   prdVal.Validate(rdVal);
-  PGXP_value& prtVal = GetRtValue(instr);
+
+  PGXPValue& prtVal = GetRtValue(instr);
   prtVal = prdVal;
   prtVal.value = rdVal;
 }
@@ -1477,8 +1458,8 @@ void CPU::PGXP::CPU_MTC0(Instruction instr, u32 rdVal, u32 rtVal)
   LOG_VALUES_C1(instr.r.rt.GetValue(), rtVal);
 
   // CP0[Rd] = CPU[Rt]
-  PGXP_value& prtVal = ValidateAndGetRtValue(instr, rtVal);
-  PGXP_value& prdVal = g_state.pgxp_cop0[static_cast<u8>(instr.r.rd.GetValue())];
+  PGXPValue& prtVal = ValidateAndGetRtValue(instr, rtVal);
+  PGXPValue& prdVal = g_state.pgxp_cop0[static_cast<u8>(instr.r.rd.GetValue())];
   prdVal = prtVal;
   prtVal.value = rdVal;
 }

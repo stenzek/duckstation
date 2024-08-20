@@ -849,7 +849,7 @@ void GTE::Execute_NCLIP(Instruction inst)
 
 void GTE::Execute_NCLIP_PGXP(Instruction inst)
 {
-  if (CPU::PGXP::GTE_NCLIP_valid(REGS.dr32[12], REGS.dr32[13], REGS.dr32[14]))
+  if (CPU::PGXP::GTE_HasPreciseVertices(REGS.dr32[12], REGS.dr32[13], REGS.dr32[14]))
   {
     REGS.FLAG.Clear();
     REGS.MAC0 = static_cast<s32>(CPU::PGXP::GTE_NCLIP());
