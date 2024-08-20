@@ -2016,7 +2016,7 @@ bool CPU::UpdateDebugDispatcherFlag()
   return true;
 }
 
-void CPU::ExitExecution()
+[[noreturn]] void CPU::ExitExecution()
 {
   // can't exit while running events without messing things up
   DebugAssert(!TimingEvents::IsRunningEvents());

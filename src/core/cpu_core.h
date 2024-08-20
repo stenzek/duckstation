@@ -145,7 +145,7 @@ void ExecutionModeChanged();
 void Execute();
 
 // Forces an early exit from the CPU dispatcher.
-void ExitExecution();
+[[noreturn]] void ExitExecution();
 
 ALWAYS_INLINE static Registers& GetRegs()
 {

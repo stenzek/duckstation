@@ -204,7 +204,7 @@ static u32 CompressAndWriteStateData(std::FILE* fp, std::span<const u8> src, Sav
 static bool DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display, bool is_memory_state);
 
 static bool IsExecutionInterrupted();
-static void ExitExecution();
+static void CheckForAndExitExecution();
 
 static void SetRewinding(bool enabled);
 static bool SaveRewindState();
@@ -557,15 +557,20 @@ bool System::IsRunning()
   return s_state == State::Running;
 }
 
-bool System::IsExecutionInterrupted()
+ALWAYS_INLINE bool System::IsExecutionInterrupted()
 {
   return s_state != State::Running || s_system_interrupted;
 }
 
-void System::ExitExecution()
+ALWAYS_INLINE_RELEASE void System::CheckForAndExitExecution()
 {
-  TimingEvents::CancelRunningEvent();
-  CPU::ExitExecution();
+  if (IsExecutionInterrupted()) [[unlikely]]
+  {
+    s_system_interrupted = false;
+
+    TimingEvents::CancelRunningEvent();
+    CPU::ExitExecution();
+  }
 }
 
 bool System::IsPaused()
@@ -2048,13 +2053,7 @@ void System::FrameDone()
       Host::PumpMessagesOnCPUThread();
       InputManager::PollSources();
       g_gpu->RestoreDeviceContext();
-
-      if (IsExecutionInterrupted())
-      {
-        s_system_interrupted = false;
-        ExitExecution();
-        return;
-      }
+      CheckForAndExitExecution();
     }
 
     if (DoRunahead())
@@ -2159,13 +2158,7 @@ void System::FrameDone()
   {
     Host::PumpMessagesOnCPUThread();
     InputManager::PollSources();
-
-    if (IsExecutionInterrupted())
-    {
-      s_system_interrupted = false;
-      ExitExecution();
-      return;
-    }
+    CheckForAndExitExecution();
   }
 
   g_gpu->RestoreDeviceContext();
@@ -4831,6 +4824,8 @@ bool System::DoRunahead()
 
     // we don't want to save the frame we just loaded. but we are "one frame ahead", because the frame we just tossed
     // was never saved, so return but don't decrement the counter
+    InterruptExecution();
+    CheckForAndExitExecution();
     return true;
   }
   else if (s_runahead_replay_frames == 0)

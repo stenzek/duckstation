@@ -384,7 +384,7 @@ void TimingEvents::CommitLeftoverTicks()
 {
 #ifdef _DEBUG
   if (s_state.event_run_tick_counter > s_state.global_tick_counter)
-    WARNING_LOG("Late-running {} ticks before execution", s_state.event_run_tick_counter - s_state.global_tick_counter);
+    DEV_LOG("Late-running {} ticks before execution", s_state.event_run_tick_counter - s_state.global_tick_counter);
 #endif
 
   CommitGlobalTicks(s_state.event_run_tick_counter);
@@ -441,6 +441,7 @@ bool TimingEvents::DoState(StateWrapper& sw)
     }
 
     DEBUG_LOG("Loaded {} events from save state.", event_count);
+    s_state.current_event = nullptr;
 
     // Add pending ticks to the CPU, this'll happen if we saved state when we weren't paused.
     const TickCount pending_ticks =
@@ -489,7 +490,12 @@ bool TimingEvents::DoState(StateWrapper& sw)
       }
 
       DEBUG_LOG("Loaded {} events from save state.", event_count);
+
+      // Even if we're actually running an event, we don't want to set it to a new counter.
+      s_state.current_event = nullptr;
+
       SortEvents();
+      UpdateCPUDowncount();
     }
     else
     {
@@ -498,7 +504,9 @@ bool TimingEvents::DoState(StateWrapper& sw)
       for (TimingEvent* event = s_state.active_events_head; event; event = event->next)
       {
         sw.Do(&event->m_name);
-        sw.Do(&event->m_next_run_time);
+        GlobalTicks next_run_time =
+          (s_state.current_event == event) ? s_state.current_event_next_run_time : event->m_next_run_time;
+        sw.Do(&next_run_time);
         sw.Do(&event->m_last_run_time);
         sw.Do(&event->m_period);
         sw.Do(&event->m_interval);
