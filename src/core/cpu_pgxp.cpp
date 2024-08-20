@@ -55,6 +55,11 @@ enum : u32
   VALID_ALL = (VALID_X | VALID_Y | VALID_Z),
 };
 
+#define LOWORD_U16(val) (static_cast<u16>(val))
+#define HIWORD_U16(val) (static_cast<u16>(static_cast<u32>(val) >> 16))
+#define LOWORD_S16(val) (static_cast<s16>(static_cast<u16>(val)))
+#define HIWORD_S16(val) (static_cast<s16>(static_cast<u16>(static_cast<u32>(val) >> 16)))
+
 union psx_value
 {
   u32 d;
@@ -104,7 +109,7 @@ static void WriteMem(u32 addr, const PGXP_value& value);
 static void WriteMem16(u32 addr, const PGXP_value& value);
 
 static void CopyZIfMissing(PGXP_value& dst, const PGXP_value& src);
-static void SelectZ(PGXP_value& dst, const PGXP_value& src1, const PGXP_value& src2);
+static void SelectZ(float& dst_z, u32& dst_flags, const PGXP_value& src1, const PGXP_value& src2);
 
 #ifdef LOG_VALUES
 static void LogInstruction(u32 pc, Instruction instr);
@@ -418,14 +423,15 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CopyZIfMissing(PGXP_value& dst, const PGXP
   dst.flags |= (src.flags & VALID_Z);
 }
 
-ALWAYS_INLINE_RELEASE void CPU::PGXP::SelectZ(PGXP_value& dst, const PGXP_value& src1, const PGXP_value& src2)
+ALWAYS_INLINE_RELEASE void CPU::PGXP::SelectZ(float& dst_z, u32& dst_flags, const PGXP_value& src1,
+                                              const PGXP_value& src2)
 {
   // Prefer src2 if src1 is missing Z, or is potentially an imprecise value, when src2 is precise.
-  dst.z = (!(src1.flags & VALID_Z) ||
+  dst_z = (!(src1.flags & VALID_Z) ||
            (src1.flags & VALID_TAINTED_Z && (src2.flags & (VALID_Z | VALID_TAINTED_Z)) == VALID_Z)) ?
             src2.z :
             src1.z;
-  dst.flags |= ((src1.flags | src2.flags) & VALID_Z);
+  dst_flags |= ((src1.flags | src2.flags) & VALID_Z);
 }
 
 #ifdef LOG_VALUES
@@ -767,38 +773,37 @@ void CPU::PGXP::CPU_ADDI(Instruction instr, u32 rsVal)
   // Rt = Rs + Imm (signed)
   PGXP_value& prsVal = ValidateAndGetRsValue(instr, rsVal);
 
-  psx_value imm;
-  imm.d = instr.i.imm_sext32();
+  const u32 immVal = instr.i.imm_sext32();
 
   PGXP_value& prtVal = GetRtValue(instr);
   prtVal = prsVal;
 
-  if (imm.d == 0)
+  if (immVal == 0)
     return;
 
   if (rsVal == 0)
   {
     // x is low precision value
-    prtVal.x = static_cast<float>(imm.sw.l);
-    prtVal.y = static_cast<float>(imm.sw.h);
+    prtVal.x = static_cast<float>(LOWORD_S16(immVal));
+    prtVal.y = static_cast<float>(HIWORD_S16(immVal));
     prtVal.flags |= VALID_X | VALID_Y | VALID_TAINTED_Z;
-    prtVal.value = imm.d;
+    prtVal.value = immVal;
     return;
   }
 
-  prtVal.x = (float)f16Unsign(prtVal.x);
-  prtVal.x += (float)imm.w.l;
+  prtVal.x = static_cast<float>(f16Unsign(prtVal.x));
+  prtVal.x += static_cast<float>(LOWORD_U16(immVal));
 
   // carry on over/underflow
   float of = (prtVal.x > USHRT_MAX) ? 1.f : (prtVal.x < 0) ? -1.f : 0.f;
-  prtVal.x = (float)f16Sign(prtVal.x);
+  prtVal.x = static_cast<float>(f16Sign(prtVal.x));
   // ret.x -= of * (USHRT_MAX + 1);
-  prtVal.y += imm.sw.h + of;
+  prtVal.y += HIWORD_S16(immVal) + of;
 
   // truncate on overflow/underflow
   prtVal.y += (prtVal.y > SHRT_MAX) ? -(USHRT_MAX + 1) : (prtVal.y < SHRT_MIN) ? USHRT_MAX + 1 : 0.f;
 
-  prtVal.value = rsVal + imm.d;
+  prtVal.value = rsVal + immVal;
 
   prtVal.flags |= VALID_TAINTED_Z;
 }
@@ -811,33 +816,37 @@ void CPU::PGXP::CPU_ANDI(Instruction instr, u32 rsVal)
   const u32 imm = instr.i.imm_zext32();
   const u32 rtVal = rsVal & imm;
   PGXP_value& prsVal = ValidateAndGetRsValue(instr, rsVal);
-
-  psx_value vRt;
-  vRt.d = rtVal;
-
   PGXP_value& prtVal = GetRtValue(instr);
-  prtVal = prsVal;
 
+  prtVal.y = 0.0f; // remove upper 16-bits
+  prtVal.z = prsVal.z;
   prtVal.value = rtVal;
-  prtVal.y = 0.f; // remove upper 16-bits
-  prtVal.SetValid(COMP_Y);
-  prtVal.flags |= VALID_TAINTED_Z;
+  prtVal.flags = prsVal.flags | VALID_Y | VALID_TAINTED_Z;
 
   switch (imm)
   {
     case 0:
+    {
       // if 0 then x == 0
       prtVal.x = 0.0f;
       prtVal.SetValid(COMP_X);
-      break;
-    case 0xFFFF:
+    }
+    break;
+
+    case 0xFFFFu:
+    {
       // if saturated then x == x
-      break;
+      prtVal.x = prsVal.x;
+    }
+    break;
+
     default:
+    {
       // otherwise x is low precision value
-      prtVal.x = vRt.sw.l;
+      prtVal.x = static_cast<float>(LOWORD_S16(rtVal));
       prtVal.SetValid(COMP_X);
-      break;
+    }
+    break;
   }
 }
 
@@ -854,20 +863,15 @@ void CPU::PGXP::CPU_ORI(Instruction instr, u32 rsVal)
   pRtVal = pRsVal;
   pRtVal.value = rtVal;
 
-  psx_value vRt;
-  vRt.d = rtVal;
-
-  switch (imm)
+  if (imm == 0) [[unlikely]]
   {
-    case 0:
-      // if 0 then x == x
-      break;
-    default:
-      // otherwise x is low precision value
-      pRtVal.x = vRt.sw.l;
-      pRtVal.SetValid(COMP_X);
-      pRtVal.flags |= VALID_TAINTED_Z;
-      break;
+    // if 0 then x == x
+  }
+  else
+  {
+    // otherwise x is low precision value
+    pRtVal.x = static_cast<float>(LOWORD_S16(rtVal));
+    pRtVal.flags |= VALID_X | VALID_TAINTED_Z;
   }
 }
 
@@ -884,20 +888,15 @@ void CPU::PGXP::CPU_XORI(Instruction instr, u32 rsVal)
   pRtVal = pRsVal;
   pRtVal.value = rtVal;
 
-  psx_value vRt;
-  vRt.d = rtVal;
-
-  switch (imm)
+  if (imm == 0) [[unlikely]]
   {
-    case 0:
-      // if 0 then x == x
-      break;
-    default:
-      // otherwise x is low precision value
-      pRtVal.x = vRt.sw.l;
-      pRtVal.SetValid(COMP_X);
-      pRtVal.flags |= VALID_TAINTED_Z;
-      break;
+    // if 0 then x == x
+  }
+  else
+  {
+    // otherwise x is low precision value
+    pRtVal.x = static_cast<float>(LOWORD_S16(rtVal));
+    pRtVal.flags |= VALID_X | VALID_TAINTED_Z;
   }
 }
 
@@ -996,7 +995,7 @@ void CPU::PGXP::CPU_ADD(Instruction instr, u32 rsVal, u32 rtVal)
     // valid x/y only if one side had a valid x/y
     prdVal.flags = prsVal.flags | (prtVal.flags & VALID_XY) | VALID_TAINTED_Z;
 
-    SelectZ(prdVal, prsVal, prtVal);
+    SelectZ(prdVal.z, prdVal.flags, prsVal, prtVal);
   }
 }
 
@@ -1032,7 +1031,7 @@ void CPU::PGXP::CPU_SUB(Instruction instr, u32 rsVal, u32 rtVal)
     // valid x/y only if one side had a valid x/y
     prdVal.flags = prsVal.flags | (prtVal.flags & VALID_XY) | VALID_TAINTED_Z;
 
-    SelectZ(prdVal, prsVal, prtVal);
+    SelectZ(prdVal.z, prdVal.flags, prsVal, prtVal);
   }
 }
 
@@ -1042,36 +1041,33 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_BITWISE(Instruction instr, u32 rdVal, 
   PGXP_value& prsVal = ValidateAndGetRsValue(instr, rsVal);
   PGXP_value& prtVal = ValidateAndGetRtValue(instr, rtVal);
 
-  psx_value vald, vals, valt;
-  vald.d = rdVal;
-  vals.d = rsVal;
-  valt.d = rtVal;
-
-  PGXP_value ret;
-  ret.flags = ((prsVal.flags | prtVal.flags) & VALID_XY) ? (VALID_XY | VALID_TAINTED_Z) : 0;
-
-  if (vald.w.l == 0)
-    ret.x = 0.f;
-  else if (vald.w.l == vals.w.l)
-    ret.x = prsVal.GetValidX(rsVal);
-  else if (vald.w.l == valt.w.l)
-    ret.x = prtVal.GetValidX(rtVal);
+  float x, y;
+  if (LOWORD_U16(rdVal) == 0)
+    x = 0.0f;
+  else if (LOWORD_U16(rdVal) == LOWORD_U16(rsVal))
+    x = prsVal.GetValidX(rsVal);
+  else if (LOWORD_U16(rdVal) == LOWORD_U16(rtVal))
+    x = prtVal.GetValidX(rtVal);
   else
-    ret.x = static_cast<float>(vald.sw.l);
+    x = static_cast<float>(LOWORD_S16(rdVal));
 
-  if (vald.w.h == 0)
-    ret.y = 0.f;
-  else if (vald.w.h == vals.w.h)
-    ret.y = prsVal.GetValidY(rsVal);
-  else if (vald.w.h == valt.w.h)
-    ret.y = prtVal.GetValidY(rtVal);
+  if (HIWORD_U16(rdVal) == 0)
+    y = 0.0f;
+  else if (HIWORD_U16(rdVal) == HIWORD_U16(rsVal))
+    y = prsVal.GetValidY(rsVal);
+  else if (HIWORD_U16(rdVal) == HIWORD_U16(rtVal))
+    y = prtVal.GetValidY(rtVal);
   else
-    ret.y = static_cast<float>(vald.sw.h);
+    y = static_cast<float>(HIWORD_S16(rdVal));
 
-  SelectZ(ret, prsVal, prtVal);
-
-  ret.value = rdVal;
-  GetRdValue(instr) = ret;
+  // Why not write directly to prdVal? Because it might be the same as the source.
+  u32 flags = ((prsVal.flags | prtVal.flags) & VALID_XY) ? (VALID_XY | VALID_TAINTED_Z) : 0;
+  PGXP_value& prdVal = GetRdValue(instr);
+  SelectZ(prdVal.z, flags, prsVal, prtVal);
+  prdVal.x = x;
+  prdVal.y = y;
+  prdVal.flags = flags;
+  prdVal.value = rdVal;
 }
 
 void CPU::PGXP::CPU_AND_(Instruction instr, u32 rsVal, u32 rtVal)
