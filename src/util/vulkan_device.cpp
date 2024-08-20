@@ -814,7 +814,7 @@ void VulkanDevice::ProcessDeviceExtensions()
   LOG_EXT("VK_KHR_dynamic_rendering", vk_khr_dynamic_rendering);
   LOG_EXT("VK_KHR_dynamic_rendering_local_read", vk_khr_dynamic_rendering_local_read);
   LOG_EXT("VK_KHR_maintenance4", vk_khr_maintenance4);
-  LOG_EXT("VK_KHR_maintenance4", vk_khr_maintenance5);
+  LOG_EXT("VK_KHR_maintenance5", vk_khr_maintenance5);
   LOG_EXT("VK_KHR_push_descriptor", vk_khr_push_descriptor);
 
 #undef LOG_EXT
