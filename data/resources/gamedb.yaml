@@ -152522,7 +152522,7 @@ SCES-02835:
     - AnalogController
     - DigitalController
   traits:
-    - ForcePGXPCPUMode
+    - ForcePGXPCPUMode # Required, but not perfect. Game messes with geometry.
   libcrypt: true
   metadata:
     publisher: "Sony"
@@ -152551,7 +152551,7 @@ SCUS-94467:
     - AnalogController
     - DigitalController
   traits:
-    - ForcePGXPCPUMode
+    - ForcePGXPCPUMode # Required, but not perfect. Game messes with geometry.
   metadata:
     publisher: "Sony"
     developer: "Insomniac Games"
@@ -152568,6 +152568,8 @@ SCUS-94467:
     linkCable: false
 SCUS-94615:
   name: "Spyro - Year of the Dragon (USA) (Demo)"
+  traits:
+    - ForcePGXPCPUMode # Required, but not perfect. Game messes with geometry.
 SCES-02104:
   name: "Spyro 2 - Gateway to Glimmer (Europe) (En,Fr,De,Es,It)"
   compatibility:
@@ -152576,7 +152578,7 @@ SCES-02104:
     - AnalogController
     - DigitalController
   traits:
-    - ForcePGXPCPUMode
+    - ForcePGXPCPUMode # Required, but not perfect. Game messes with geometry.
   libcrypt: true
   metadata:
     publisher: "Sony"
@@ -152605,7 +152607,7 @@ SCUS-94425:
     - AnalogController
     - DigitalController
   traits:
-    - ForcePGXPCPUMode
+    - ForcePGXPCPUMode # Required, but not perfect. Game messes with geometry.
   metadata:
     publisher: "Sony"
     developer: "Insomniac Games"
@@ -152622,13 +152624,19 @@ SCUS-94425:
     linkCable: false
 SCUS-94460:
   name: "Spyro 2 - Ripto's Rage! (USA) (Demo)"
+  traits:
+    - ForcePGXPCPUMode # Required, but not perfect. Game messes with geometry.
 SCUS-94632:
   name: "Spyro 2 - Ripto's Rage! + Crash Team Racing (USA)"
+  traits:
+    - ForcePGXPCPUMode # Required, but not perfect. Game messes with geometry.
 SCPS-45395:
   name: "Spyro the Dragon"
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Required, but not perfect. Game messes with geometry.
   metadata:
     publisher: "Sony Computer Entertaiment Japan"
     developer: "Insomniac Games"
@@ -152651,8 +152659,7 @@ SCES-01438:
     - AnalogController
     - DigitalController
   traits:
-    - DisablePGXPCulling
-    - ForcePGXPCPUMode
+    - ForcePGXPCPUMode # Required, but not perfect. Game messes with geometry.
   metadata:
     publisher: "Sony Computer Entertainment Europe"
     developer: "Insomniac Games"
@@ -152680,7 +152687,7 @@ SCPS-10085:
     - AnalogController
     - DigitalController
   traits:
-    - ForcePGXPCPUMode
+    - ForcePGXPCPUMode # Required, but not perfect. Game messes with geometry.
   metadata:
     publisher: "Sony Computer Entertaiment Japan"
     developer: "Insomniac Games"
@@ -152697,11 +152704,15 @@ SCPS-10085:
     linkCable: false
 PAPX-90078:
   name: "Spyro the Dragon (Japan) (Demo)"
+  traits:
+    - ForcePGXPCPUMode # Required, but not perfect. Game messes with geometry.
 SCPS-10083:
   name: "Spyro the Dragon (Japan) (Shokai Genteiban)"
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Required, but not perfect. Game messes with geometry.
   metadata:
     publisher: "Sony Computer Entertaiment Japan"
     developer: "Insomniac Games"
@@ -152725,8 +152736,7 @@ SCUS-94228:
     - AnalogController
     - DigitalController
   traits:
-    - DisablePGXPCulling
-    - ForcePGXPCPUMode
+    - ForcePGXPCPUMode # Required, but not perfect. Game messes with geometry.
   metadata:
     publisher: "Sony Computer Entertaiment America"
     developer: "Insomniac Games"
@@ -152744,11 +152754,15 @@ SCUS-94228:
 SCUS-94290:
   name: "Spyro the Dragon (USA) (Demo 1)"
   traits:
-    - ForcePGXPCPUMode
+    - ForcePGXPCPUMode # Required, but not perfect. Game messes with geometry.
 SCUS-94439:
   name: "Spyro the Dragon (USA) (Demo 2)"
+  traits:
+    - ForcePGXPCPUMode # Required, but not perfect. Game messes with geometry.
 SCED-01637:
   name: "Spyro the Dragon Speciale (France)"
+  traits:
+    - ForcePGXPCPUMode # Required, but not perfect. Game messes with geometry.
 SCPS-10128:
   name: "Spyro x Sparx - Tondemo Tours (Japan)"
   controllers:
