@@ -236,21 +236,21 @@ private:
   void updateDisplayWidgetCursor();
   void updateDisplayRelatedActions(bool has_surface, bool render_to_main, bool fullscreen);
 
-  SettingsWindow* getSettingsDialog();
+  SettingsWindow* getSettingsWindow();
   void doSettings(const char* category = nullptr);
 
+  ControllerSettingsWindow* getControllerSettingsWindow();
   void doControllerSettings(ControllerSettingsWindow::Category category = ControllerSettingsWindow::Category::Count);
 
   void updateDebugMenuCPUExecutionMode();
   void updateDebugMenuGPURenderer();
   void updateDebugMenuCropMode();
-  void updateMenuSelectedTheme();
   std::string getDeviceDiscPath(const QString& title);
   void setGameListEntryCoverImage(const GameList::Entry* entry);
   void clearGameListEntryPlayTime(const GameList::Entry* entry);
-  void setTheme(const QString& theme);
   void updateTheme();
   void reloadThemeSpecificImages();
+  void onSettingsThemeChanged();
   void destroySubWindows();
 
   void registerForDeviceNotifications();

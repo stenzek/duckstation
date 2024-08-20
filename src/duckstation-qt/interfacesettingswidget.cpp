@@ -76,6 +76,14 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
   connect(m_ui.renderToSeparateWindow, &QCheckBox::checkStateChanged, this,
           &InterfaceSettingsWidget::onRenderToSeparateWindowChanged);
 
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.theme, "UI", "Theme", THEME_NAMES, THEME_VALUES,
+                                               QtHost::GetDefaultThemeName(), "MainWindow");
+  connect(m_ui.theme, QOverload<int>::of(&QComboBox::currentIndexChanged), [this]() { emit themeChanged(); });
+
+  populateLanguageDropdown(m_ui.language);
+  SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.language, "Main", "Language", QtHost::GetDefaultLanguage());
+  connect(m_ui.language, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &InterfaceSettingsWidget::onLanguageChanged);
+
   onRenderToSeparateWindowChanged();
 
   dialog->registerWidgetHelp(
@@ -126,14 +134,37 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
   }
   else
   {
-    m_ui.verticalLayout->removeWidget(m_ui.automaticUpdaterGroup);
-    m_ui.automaticUpdaterGroup->hide();
+    m_ui.verticalLayout->removeWidget(m_ui.updatesGroup);
+    m_ui.updatesGroup->hide();
   }
 }
 
 InterfaceSettingsWidget::~InterfaceSettingsWidget() = default;
 
+void InterfaceSettingsWidget::populateLanguageDropdown(QComboBox* cb)
+{
+  for (const auto& [language, code] : Host::GetAvailableLanguageList())
+  {
+    QString icon_filename(QStringLiteral(":/icons/flags/%1.png").arg(QLatin1StringView(code)));
+    if (!QFile::exists(icon_filename))
+    {
+      // try without the suffix (e.g. es-es -> es)
+      const char* pos = std::strrchr(code, '-');
+      if (pos)
+        icon_filename = QStringLiteral(":/icons/flags/%1.png").arg(QLatin1StringView(pos));
+    }
+
+    cb->addItem(QIcon(icon_filename), QString::fromUtf8(language), QString::fromLatin1(code));
+  }
+}
+
 void InterfaceSettingsWidget::onRenderToSeparateWindowChanged()
 {
   m_ui.hideMainWindow->setEnabled(m_ui.renderToSeparateWindow->isChecked());
+}
+
+void InterfaceSettingsWidget::onLanguageChanged()
+{
+  QtHost::UpdateApplicationLanguage(QtUtils::GetRootWidget(this));
+  g_main_window->recreate();
 }

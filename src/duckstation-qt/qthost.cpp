@@ -478,7 +478,7 @@ bool QtHost::InitializeConfig(std::string settings_filename)
     Log::SetConsoleOutputParams(true, s_base_settings_interface->GetBoolValue("Logging", "LogTimestamps", true));
   }
 
-  InstallTranslator(nullptr);
+  UpdateApplicationLanguage(nullptr);
   return true;
 }
 

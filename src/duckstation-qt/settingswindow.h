@@ -20,7 +20,7 @@ enum class DiscRegion : u8;
 namespace GameDatabase {
 enum class Trait : u32;
 struct Entry;
-}
+} // namespace GameDatabase
 
 class InterfaceSettingsWidget;
 class BIOSSettingsWidget;
@@ -52,10 +52,12 @@ public:
   // Helper for externally setting fields in game settings ini.
   static bool setGameSettingsBoolForSerial(const std::string& serial, const char* section, const char* key, bool value);
 
+  int getCategoryRow() const;
+
   ALWAYS_INLINE bool isPerGameSettings() const { return static_cast<bool>(m_sif); }
   ALWAYS_INLINE INISettingsInterface* getSettingsInterface() const { return m_sif.get(); }
 
-  ALWAYS_INLINE InterfaceSettingsWidget* getGeneralSettingsWidget() const { return m_general_settings; }
+  ALWAYS_INLINE InterfaceSettingsWidget* getInterfaceSettingsWidget() const { return m_interface_settings; }
   ALWAYS_INLINE BIOSSettingsWidget* getBIOSSettingsWidget() const { return m_bios_settings; }
   ALWAYS_INLINE ConsoleSettingsWidget* getConsoleSettingsWidget() const { return m_console_settings; }
   ALWAYS_INLINE EmulationSettingsWidget* getEmulationSettingsWidget() const { return m_emulation_settings; }
@@ -99,6 +101,7 @@ Q_SIGNALS:
 
 public Q_SLOTS:
   void setCategory(const char* category);
+  void setCategoryRow(int index);
 
 private Q_SLOTS:
   void onCategoryCurrentRowChanged(int row);
@@ -128,7 +131,7 @@ private:
   std::unique_ptr<INISettingsInterface> m_sif;
   const GameDatabase::Entry* m_database_entry = nullptr;
 
-  InterfaceSettingsWidget* m_general_settings = nullptr;
+  InterfaceSettingsWidget* m_interface_settings = nullptr;
   BIOSSettingsWidget* m_bios_settings = nullptr;
   ConsoleSettingsWidget* m_console_settings = nullptr;
   EmulationSettingsWidget* m_emulation_settings = nullptr;

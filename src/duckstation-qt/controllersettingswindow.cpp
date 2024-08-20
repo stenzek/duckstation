@@ -58,6 +58,23 @@ ControllerSettingsWindow::ControllerSettingsWindow() : QWidget()
 
 ControllerSettingsWindow::~ControllerSettingsWindow() = default;
 
+int ControllerSettingsWindow::getHotkeyCategoryIndex() const
+{
+  const std::array<bool, 2> mtap_enabled = getEnabledMultitaps();
+  return 1 + (mtap_enabled[0] ? 4 : 1) + (mtap_enabled[1] ? 4 : 1);
+}
+
+ControllerSettingsWindow::Category ControllerSettingsWindow::getCurrentCategory() const
+{
+  const int index = m_ui.settingsCategory->currentRow();
+  if (index == 0)
+    return Category::GlobalSettings;
+  else if (index >= getHotkeyCategoryIndex())
+    return Category::HotkeySettings;
+  else
+    return Category::FirstControllerSettings;
+}
+
 void ControllerSettingsWindow::setCategory(Category category)
 {
   switch (category)
@@ -66,13 +83,12 @@ void ControllerSettingsWindow::setCategory(Category category)
       m_ui.settingsCategory->setCurrentRow(0);
       break;
 
-      // TODO: These will need to take multitap into consideration in the future.
     case Category::FirstControllerSettings:
       m_ui.settingsCategory->setCurrentRow(1);
       break;
 
     case Category::HotkeySettings:
-      m_ui.settingsCategory->setCurrentRow(3);
+      m_ui.settingsCategory->setCurrentRow(getHotkeyCategoryIndex());
       break;
 
     default:

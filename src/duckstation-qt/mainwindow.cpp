@@ -725,6 +725,22 @@ void MainWindow::quit()
 
 void MainWindow::recreate()
 {
+  std::optional<QPoint> settings_window_pos;
+  int settings_window_row = 0;
+  std::optional<QPoint> controller_settings_window_pos;
+  ControllerSettingsWindow::Category controller_settings_window_row =
+    ControllerSettingsWindow::Category::GlobalSettings;
+  if (m_settings_window && m_settings_window->isVisible())
+  {
+    settings_window_pos = m_settings_window->pos();
+    settings_window_row = m_settings_window->getCategoryRow();
+  }
+  if (m_controller_settings_window && m_controller_settings_window->isVisible())
+  {
+    controller_settings_window_pos = m_controller_settings_window->pos();
+    controller_settings_window_row = m_controller_settings_window->getCurrentCategory();
+  }
+
   // Remove subwindows before switching to surfaceless, because otherwise e.g. the debugger can cause funkyness.
   destroySubWindows();
 
@@ -762,6 +778,21 @@ void MainWindow::recreate()
     g_emu_thread->setSurfaceless(false);
     g_main_window->updateEmulationActions(false, System::IsValid(), Achievements::IsHardcoreModeActive());
     g_main_window->onFullscreenUIStateChange(g_emu_thread->isRunningFullscreenUI());
+  }
+
+  if (settings_window_pos.has_value())
+  {
+    SettingsWindow* dlg = g_main_window->getSettingsWindow();
+    dlg->move(settings_window_pos.value());
+    dlg->setCategoryRow(settings_window_row);
+    QtUtils::ShowOrRaiseWindow(dlg);
+  }
+  if (controller_settings_window_pos.has_value())
+  {
+    ControllerSettingsWindow* dlg = g_main_window->getControllerSettingsWindow();
+    dlg->move(controller_settings_window_pos.value());
+    dlg->setCategory(controller_settings_window_row);
+    QtUtils::ShowOrRaiseWindow(dlg);
   }
 }
 
@@ -1524,7 +1555,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
       menu.addSeparator();
 
       connect(menu.addAction(tr("Exclude From List")), &QAction::triggered,
-              [this, entry]() { getSettingsDialog()->getGameListSettingsWidget()->addExcludedPath(entry->path); });
+              [this, entry]() { getSettingsWindow()->getGameListSettingsWidget()->addExcludedPath(entry->path); });
 
       connect(menu.addAction(tr("Reset Play Time")), &QAction::triggered,
               [this, entry]() { clearGameListEntryPlayTime(entry); });
@@ -1558,7 +1589,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
   menu.addSeparator();
 
   connect(menu.addAction(tr("Add Search Directory...")), &QAction::triggered,
-          [this]() { getSettingsDialog()->getGameListSettingsWidget()->addSearchDirectory(this); });
+          [this]() { getSettingsWindow()->getGameListSettingsWidget()->addSearchDirectory(this); });
 
   menu.exec(point);
 }
@@ -1731,32 +1762,6 @@ void MainWindow::setupAdditionalUi()
     });
   }
   updateDebugMenuCropMode();
-
-  const std::string current_language = Host::GetBaseStringSettingValue("Main", "Language", "");
-  QActionGroup* language_group = new QActionGroup(m_ui.menuSettingsLanguage);
-  for (const auto& [language, code] : Host::GetAvailableLanguageList())
-  {
-    QAction* action = language_group->addAction(QString::fromUtf8(language));
-    action->setCheckable(true);
-    action->setChecked(current_language == code);
-
-    QString icon_filename(QStringLiteral(":/icons/flags/%1.png").arg(QLatin1StringView(code)));
-    if (!QFile::exists(icon_filename))
-    {
-      // try without the suffix (e.g. es-es -> es)
-      const char* pos = std::strrchr(code, '-');
-      if (pos)
-        icon_filename = QStringLiteral(":/icons/flags/%1.png").arg(QLatin1StringView(pos));
-    }
-    action->setIcon(QIcon(icon_filename));
-
-    m_ui.menuSettingsLanguage->addAction(action);
-    action->setData(QString::fromLatin1(code));
-    connect(action, &QAction::triggered, [action]() {
-      const QString new_language = action->data().toString();
-      Host::ChangeLanguage(new_language.toUtf8().constData());
-    });
-  }
 
   for (u32 scale = 1; scale <= 10; scale++)
   {
@@ -2050,7 +2055,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionStartFullscreenUI2, &QAction::triggered, this, &MainWindow::onStartFullscreenUITriggered);
   connect(m_ui.actionRemoveDisc, &QAction::triggered, this, &MainWindow::onRemoveDiscActionTriggered);
   connect(m_ui.actionAddGameDirectory, &QAction::triggered,
-          [this]() { getSettingsDialog()->getGameListSettingsWidget()->addSearchDirectory(this); });
+          [this]() { getSettingsWindow()->getGameListSettingsWidget()->addSearchDirectory(this); });
   connect(m_ui.actionPowerOff, &QAction::triggered, this,
           [this]() { requestShutdown(true, true, g_settings.save_state_on_exit); });
   connect(m_ui.actionPowerOffWithoutSaving, &QAction::triggered, this,
@@ -2154,7 +2159,7 @@ void MainWindow::connectSignals()
   connect(m_game_list_widget, &GameListWidget::entryContextMenuRequested, this,
           &MainWindow::onGameListEntryContextMenuRequested, Qt::QueuedConnection);
   connect(m_game_list_widget, &GameListWidget::addGameDirectoryRequested, this,
-          [this]() { getSettingsDialog()->getGameListSettingsWidget()->addSearchDirectory(this); });
+          [this]() { getSettingsWindow()->getGameListSettingsWidget()->addSearchDirectory(this); });
 
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionDisableAllEnhancements, "Main",
                                                "DisableAllEnhancements", false);
@@ -2195,26 +2200,25 @@ void MainWindow::connectSignals()
                                                false);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionDebugShowMDECState, "Debug", "ShowMDECState", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionDebugShowDMAState, "Debug", "ShowDMAState", false);
-
-  for (u32 i = 0; InterfaceSettingsWidget::THEME_NAMES[i]; i++)
-  {
-    const QString key = QString::fromUtf8(InterfaceSettingsWidget::THEME_VALUES[i]);
-    QAction* action =
-      m_ui.menuSettingsTheme->addAction(qApp->translate("MainWindow", InterfaceSettingsWidget::THEME_NAMES[i]));
-    action->setCheckable(true);
-    action->setData(key);
-    connect(action, &QAction::toggled, [this, key](bool) { setTheme(key); });
-  }
-
-  updateMenuSelectedTheme();
 }
 
-void MainWindow::setTheme(const QString& theme)
+void MainWindow::updateTheme()
 {
-  [[maybe_unused]] const QString old_style_name = qApp->style()->name();
+  QtHost::UpdateApplicationTheme();
+  reloadThemeSpecificImages();
+}
 
-  Host::SetBaseStringSettingValue("UI", "Theme", theme.toUtf8().constData());
-  Host::CommitBaseSettingChanges();
+void MainWindow::reloadThemeSpecificImages()
+{
+  m_game_list_widget->reloadThemeSpecificImages();
+}
+
+void MainWindow::onSettingsThemeChanged()
+{
+#ifdef _WIN32
+  const QString old_style_name = qApp->style()->name();
+#endif
+
   updateTheme();
 
 #ifdef _WIN32
@@ -2223,18 +2227,6 @@ void MainWindow::setTheme(const QString& theme)
   if ((old_style_name == QStringLiteral("windowsvista")) != (new_style_name == QStringLiteral("windowsvista")))
     recreate();
 #endif
-}
-
-void MainWindow::updateTheme()
-{
-  QtHost::UpdateApplicationTheme();
-  updateMenuSelectedTheme();
-  reloadThemeSpecificImages();
-}
-
-void MainWindow::reloadThemeSpecificImages()
-{
-  m_game_list_widget->reloadThemeSpecificImages();
 }
 
 void MainWindow::onSettingsResetToDefault(bool system, bool controller)
@@ -2265,7 +2257,6 @@ void MainWindow::onSettingsResetToDefault(bool system, bool controller)
   updateDebugMenuGPURenderer();
   updateDebugMenuCropMode();
   updateDebugMenuVisibility();
-  updateMenuSelectedTheme();
 }
 
 void MainWindow::saveStateToConfig()
@@ -2366,31 +2357,41 @@ void MainWindow::restoreDisplayWindowGeometryFromConfig()
   }
 }
 
-SettingsWindow* MainWindow::getSettingsDialog()
+SettingsWindow* MainWindow::getSettingsWindow()
 {
   if (!m_settings_window)
+  {
     m_settings_window = new SettingsWindow();
+    connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::themeChanged, this,
+            &MainWindow::onSettingsThemeChanged);
+  }
 
   return m_settings_window;
 }
 
 void MainWindow::doSettings(const char* category /* = nullptr */)
 {
-  SettingsWindow* dlg = getSettingsDialog();
+  SettingsWindow* dlg = getSettingsWindow();
   QtUtils::ShowOrRaiseWindow(dlg);
   if (category)
     dlg->setCategory(category);
 }
 
-void MainWindow::doControllerSettings(
-  ControllerSettingsWindow::Category category /*= ControllerSettingsDialog::Category::Count*/)
+ControllerSettingsWindow* MainWindow::getControllerSettingsWindow()
 {
   if (!m_controller_settings_window)
     m_controller_settings_window = new ControllerSettingsWindow();
 
-  QtUtils::ShowOrRaiseWindow(m_controller_settings_window);
+  return m_controller_settings_window;
+}
+
+void MainWindow::doControllerSettings(
+  ControllerSettingsWindow::Category category /*= ControllerSettingsDialog::Category::Count*/)
+{
+  ControllerSettingsWindow* dlg = getControllerSettingsWindow();
+  QtUtils::ShowOrRaiseWindow(dlg);
   if (category != ControllerSettingsWindow::Category::Count)
-    m_controller_settings_window->setCategory(category);
+    dlg->setCategory(category);
 }
 
 void MainWindow::updateDebugMenuCPUExecutionMode()
@@ -2442,26 +2443,6 @@ void MainWindow::updateDebugMenuCropMode()
     QAction* action = qobject_cast<QAction*>(obj);
     if (action)
       action->setChecked(action->text() == current_crop_mode_display_name);
-  }
-}
-
-void MainWindow::updateMenuSelectedTheme()
-{
-  QString theme =
-    QString::fromStdString(Host::GetBaseStringSettingValue("UI", "Theme", InterfaceSettingsWidget::DEFAULT_THEME_NAME));
-
-  for (QObject* obj : m_ui.menuSettingsTheme->children())
-  {
-    QAction* action = qobject_cast<QAction*>(obj);
-    if (action)
-    {
-      QVariant action_data(action->data());
-      if (action_data.isValid())
-      {
-        QSignalBlocker blocker(action);
-        action->setChecked(action_data == theme);
-      }
-    }
   }
 }
 
@@ -2815,9 +2796,7 @@ void MainWindow::onToolsMediaCaptureToggled(bool checked)
     return;
   }
 
-  Host::RunOnCPUThread([path = path.toStdString()]() {
-    System::StartMediaCapture(path);
-  });
+  Host::RunOnCPUThread([path = path.toStdString()]() { System::StartMediaCapture(path); });
 }
 
 void MainWindow::onToolsMemoryScannerTriggered()

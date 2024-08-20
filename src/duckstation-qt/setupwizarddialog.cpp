@@ -185,8 +185,7 @@ void SetupWizardDialog::setupLanguagePage()
                                                InterfaceSettingsWidget::DEFAULT_THEME_NAME, "InterfaceSettingsWidget");
   connect(m_ui.theme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SetupWizardDialog::themeChanged);
 
-  for (const auto& [language, code] : Host::GetAvailableLanguageList())
-    m_ui.language->addItem(QString::fromUtf8(language), QString::fromLatin1(code));
+  InterfaceSettingsWidget::populateLanguageDropdown(m_ui.language);
   SettingWidgetBinder::BindWidgetToStringSetting(nullptr, m_ui.language, "Main", "Language",
                                                  QtHost::GetDefaultLanguage());
   connect(m_ui.language, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
@@ -204,7 +203,7 @@ void SetupWizardDialog::themeChanged()
 void SetupWizardDialog::languageChanged()
 {
   // Skip the recreation, since we don't have many dynamic UI elements.
-  QtHost::InstallTranslator(this);
+  QtHost::UpdateApplicationLanguage(this);
   m_ui.retranslateUi(this);
   setupControllerPage(false);
 }
