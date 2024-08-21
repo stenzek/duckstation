@@ -127,7 +127,6 @@
      <string>&amp;Help</string>
     </property>
     <addaction name="actionGitHubRepository"/>
-    <addaction name="actionIssueTracker"/>
     <addaction name="actionDiscordServer"/>
     <addaction name="separator"/>
     <addaction name="actionCheckForUpdates"/>
@@ -430,15 +429,6 @@
    </property>
    <property name="text">
     <string>&amp;GitHub Repository...</string>
-   </property>
-  </action>
-  <action name="actionIssueTracker">
-   <property name="icon">
-    <iconset resource="resources/duckstation-qt.qrc">
-     <normaloff>:/icons/IssueTracker.png</normaloff>:/icons/IssueTracker.png</iconset>
-   </property>
-   <property name="text">
-    <string>&amp;Issue Tracker...</string>
    </property>
   </action>
   <action name="actionDiscordServer">
