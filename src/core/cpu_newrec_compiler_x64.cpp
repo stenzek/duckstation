@@ -1615,6 +1615,8 @@ void CPU::NewRec::X64Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize siz
 
   if (g_settings.gpu_pgxp_enable)
   {
+    Flush(FLUSH_FOR_C_CALL);
+
     DebugAssert(value != RWARG3);
     cg->mov(RWARG3, value);
     cg->mov(RWARG2, addr);
